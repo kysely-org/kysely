@@ -1,3 +1,7 @@
 tsconfig.json
 .prettierrc.json
 src
+test
+node_modules
+docs
+assets
