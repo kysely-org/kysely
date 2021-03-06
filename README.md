@@ -4,16 +4,16 @@ A type safe typescript SQL query builder for node.js.
 
 ![](https://github.com/koskimas/kysely/blob/master/assets/demo.gif)
 
-Kysely's typescript typings only allow you to join tables that are available in the database and refer to
-columns of the tables that are joined to the query. The result type also always only contains the selected
+Kysely's typescript typings only allow you to use tables that are available in the database and refer to
+columns of the tables that are joined to the query. The result type always contains only the selected
 columns with correct types and aliases. This allows tools like vscode autocomplete to make your life so
 much easier.
 
 As you can see in the gif above, through the pure magic of modern typescript, Kysely is even able to parse
 the alias given to `pet.name` and add a column `pet_name` to the result row type. Kysely is also able to
-retain and parse columns and types from selected subqueries, joined subqueries, with statements and
-pretty much anything you can think of. Typescript is always there for you to immediately tell what
-kind of query you can build and offer completions.
+infer colum names and types from selected subqueries, joined subqueries, with statements and pretty much
+anything you can think of. Typescript is always there for you to immediately tell what kind of query you
+can build and offer completions.
 
 Of course there are cases where things cannot be typed at compile time, and Kysely offers escape
 hatches for these situations. With typescript you can always cast something to `any` if the types
@@ -60,6 +60,7 @@ async function demo() {
     .query('person')
     .innerJoin('pet', 'pet.owner_id', 'person.id')
     .select(['person.first_name', 'pet.name as pet_name'])
+    .where('person.id', '=', 1)
     .execute()
 
   person.pet_name
