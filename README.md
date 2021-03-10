@@ -1,6 +1,7 @@
 # Kysely
 
-A type-safe and autocompletion-friendly typescript SQL query builder for node.js
+A type-safe and autocompletion-friendly typescript SQL query builder for node.js. Heavily inspired by
+[knex](http://knexjs.org/) but not intended to be a clone.
 
 ![](https://github.com/koskimas/kysely/blob/master/assets/demo.gif)
 
@@ -75,3 +76,12 @@ implemented.
 
 However, I'd say the concept is pretty much proven! Typescript is amazing! Let me know if this is something
 you'd use and I'll continue working on this.
+
+# Why not just contribute to knex
+
+Kysely is very similar to knex, but it also attempts to fix things that I personally find not-so-good
+in knex. Bringing the type system and the changes to knex would mean very significantly breaking the
+backwards compatibility. That's not possible at this point of the project. Knex was also originally
+written for javascript and the typescript typings were added afterwards. That always leads to
+compromises in the types. Designing a library for typescript from the ground up produces much
+better and simpler types.
