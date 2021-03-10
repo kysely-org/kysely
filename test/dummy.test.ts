@@ -101,6 +101,13 @@ describe('dummy test', () => {
         'a.n'
       )
       .innerJoin('movie as m', 'stars', 'a.n')
+
+    const qb4 = db
+      .query('person as p')
+      .innerJoin('animal as a', (join) =>
+        join.on('a.ownerId', '=', 'p.id').on('a.ownerId', '=', 'p.id')
+      )
+    console.log(qb4.compile(new QueryCompiler()).sql)
   })
 
   it('sql', async () => {

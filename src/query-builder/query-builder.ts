@@ -2,7 +2,11 @@ import { AliasNode, createAliasNode } from '../operation-node/alias-node'
 import { OperationNodeSource } from '../operation-node/operation-node-source'
 import { CompiledQuery } from '../query-compiler/compiled-query'
 import { QueryCompiler } from '../query-compiler/query-compiler'
-import { JoinReferenceArg, parseJoinArgs } from './methods/join-method'
+import {
+  JoinCallbackArg,
+  JoinReferenceArg,
+  parseJoinArgs,
+} from './methods/join-method'
 
 import {
   QueryNode,
@@ -136,6 +140,22 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    *
    * ```sql
    * select * from "person" where "id" = $1
+   * ```
+   *
+   * @example
+   * Operator can be any supported operator or if the typings don't support it
+   * you can always use `db.raw('your operator')`.
+   *
+   * ```ts
+   * db.query('person')
+   *   .where('id', '>', 100)
+   *   .selectAll()
+   * ```
+   *
+   * The generated SQL (postgresql):
+   *
+   * ```sql
+   * select * from "person" where "id" > $1
    * ```
    *
    * @example
@@ -546,6 +566,11 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
     K1 extends JoinReferenceArg<DB, TB, F>,
     K2 extends JoinReferenceArg<DB, TB, F>
   >(table: F, k1: K1, k2: K2): FromQueryBuilder<DB, TB, O, F>
+
+  innerJoin<
+    F extends TableArg<DB, TB, O>,
+    FN extends JoinCallbackArg<DB, TB, F>
+  >(table: F, callback: FN): FromQueryBuilder<DB, TB, O, F>
 
   innerJoin(...args: any): any {
     return new QueryBuilder(

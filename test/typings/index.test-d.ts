@@ -18,7 +18,7 @@ interface Person {
   gender: 'male' | 'female' | 'other'
 }
 
-interface Animal {
+interface Pet {
   id: string
   name: string
   ownerId: number
@@ -30,20 +30,20 @@ interface Movie {
   stars: number
 }
 
-interface Tables {
+interface Database {
   person: Person
-  animal: Animal
+  pet: Pet
   movie: Movie
   'someSchema.movie': Movie
 }
 
-async function testFromSingle(db: Kysely<Tables>) {
+async function testFromSingle(db: Kysely<Database>) {
   // Single table
   const [r1] = await db.query('person').selectAll().execute()
   expectType<Person>(r1)
 
   // Table with alias
-  const [r2] = await db.query('animal as a').select('a.species').execute()
+  const [r2] = await db.query('pet as p').select('p.species').execute()
   expectType<{ species: 'dog' | 'cat' }>(r2)
 
   // Subquery
@@ -72,17 +72,17 @@ async function testFromSingle(db: Kysely<Tables>) {
   expectType<{ stars: number }>(r6)
 
   // Should not be able to select animal columns from person.
-  expectError(db.query('person').select('animal.id'))
+  expectError(db.query('person').select('pet.id'))
 
   // Should not be able to start a query against non-existent table.
   expectError(db.query('doesntExist'))
 }
 
-async function testFromMultiple(db: Kysely<Tables>) {
+async function testFromMultiple(db: Kysely<Database>) {
   const [r1] = await db
     .query([
       'person',
-      'animal as a',
+      'pet as a',
       db.query('movie').select('movie.id as movieId').as('m'),
     ])
     .select(['person.firstName', 'm.movieId', 'a.species'])
@@ -90,13 +90,13 @@ async function testFromMultiple(db: Kysely<Tables>) {
   expectType<{ firstName: string; movieId: string; species: 'dog' | 'cat' }>(r1)
 
   // Should not be able to select animal columns from person or movie.
-  expectError(db.query(['person', 'movie']).select('animal.id'))
+  expectError(db.query(['person', 'movie']).select('pet.id'))
 
   // Should not be able to start a query against non-existent table.
   expectError(db.query(['person', 'doesntExist']))
 }
 
-async function testSelectSingle(db: Kysely<Tables>) {
+async function testSelectSingle(db: Kysely<Database>) {
   const qb = db.query('person')
 
   // Column name
@@ -144,7 +144,7 @@ async function testSelectSingle(db: Kysely<Tables>) {
   expectType<{ movieId: string }>(r7)
 
   // Aliased table
-  const [r8] = await db.query('animal as a').select('a.name').execute()
+  const [r8] = await db.query('pet as p').select('p.name').execute()
   expectType<{ name: string }>(r8)
 
   // Table with schema
@@ -166,7 +166,7 @@ async function testSelectSingle(db: Kysely<Tables>) {
   expectError(qb.select('person.notProperty as np'))
 }
 
-async function testSelectMultiple(db: Kysely<Tables>) {
+async function testSelectMultiple(db: Kysely<Database>) {
   const qb = db
     .query([
       'person',
@@ -176,14 +176,14 @@ async function testSelectMultiple(db: Kysely<Tables>) {
           .select(['movie.stars', 'movie.id as movieId'])
           .as('m'),
     ])
-    .innerJoin('animal as a', 'id', 'id')
+    .innerJoin('pet as p', 'id', 'id')
 
   const [r1] = await qb
     .select([
       'firstName',
       'person.age',
       'species',
-      'a.name as petName',
+      'p.name as petName',
       'm.stars',
       'movieId',
       db.raw<number>('random()').as('rand1'),
@@ -207,7 +207,7 @@ async function testSelectMultiple(db: Kysely<Tables>) {
   expectError(qb.select(['person.id', 'person.notColumn as foo']))
 }
 
-function testWhere(db: Kysely<Tables>) {
+function testWhere(db: Kysely<Database>) {
   db.query('person').where('person.age', '=', 25)
   db.query('person').where('person.age', db.raw('lol'), 25)
   db.query('person').where('firstName', '=', 'Arnold')
@@ -221,4 +221,24 @@ function testWhere(db: Kysely<Tables>) {
 
   // Invalid column.
   expectError(db.query('person').where('stars', '=', 25))
+}
+
+function testJoin(db: Kysely<Database>) {
+  db.query('person').innerJoin('movie as m', (join) =>
+    join.on('m.id', '=', 'person.id')
+  )
+
+  // Refer to table that's not joined.
+  expectError(
+    db
+      .query('person')
+      .innerJoin('movie as m', (join) => join.on('pet.id', '=', 'person.id'))
+  )
+
+  // Refer to table with wrong alias.
+  expectError(
+    db
+      .query('person')
+      .innerJoin('movie as m', (join) => join.on('movie.id', '=', 'person.id'))
+  )
 }

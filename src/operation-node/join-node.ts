@@ -28,6 +28,7 @@ export function createJoinNode(joinType: JoinType, table: FromNode): JoinNode {
     on: undefined,
   })
 }
+
 export function cloneJoinNodeWithOn(
   joinNode: JoinNode,
   op: 'and' | 'or',
