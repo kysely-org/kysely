@@ -285,7 +285,7 @@ export class Kysely<DB> {
    * The generated SQL (postgresql):
    *
    * ```sql
-   * select * from "person" where now() - birth_date > interval $0 year
+   * select * from "person" where now() - birth_date > interval $1 year
    * ```
    *
    * The function in the above example returns people that are older than the given number of

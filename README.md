@@ -1,6 +1,6 @@
 # Kysely
 
-A type safe typescript SQL query builder for node.js.
+A type-safe and autocompletion-friendly typescript SQL query builder for node.js
 
 ![](https://github.com/koskimas/kysely/blob/master/assets/demo.gif)
 

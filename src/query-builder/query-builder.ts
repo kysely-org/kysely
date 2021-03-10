@@ -2,7 +2,6 @@ import { AliasNode, createAliasNode } from '../operation-node/alias-node'
 import { OperationNodeSource } from '../operation-node/operation-node-source'
 import { CompiledQuery } from '../query-compiler/compiled-query'
 import { QueryCompiler } from '../query-compiler/query-compiler'
-import { AnyQueryBuilder, QueryBuilderFactory } from './type-utils'
 import { JoinReferenceArg, parseJoinArgs } from './methods/join-method'
 
 import {
@@ -121,6 +120,108 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
 
   /**
    * Adds a `where` clause to the query.
+   *
+   * Also see {@link QueryBuilder.whereExists | whereExists} and {@link QueryBuilder.whereRef | whereRef}
+   *
+   * @example
+   * Find a row by column value:
+   *
+   * ```ts
+   * db.query('person')
+   *   .where('id', '=', 100)
+   *   .selectAll()
+   * ```
+   *
+   * The generated SQL (postgresql):
+   *
+   * ```sql
+   * select * from "person" where "id" = $1
+   * ```
+   *
+   * @example
+   * A `where in` query. The first argument can contain
+   * the table name, but it's not mandatory.
+   *
+   * ```ts
+   * db.query('person')
+   *   .where('person.id', 'in', [100, 200, 300])
+   *   .selectAll()
+   * ```
+   *
+   * The generated SQL (postgresql):
+   *
+   * ```sql
+   * select * from "person" where "id" in ($1, $2, $3)
+   * ```
+   *
+   * @example
+   * Both the first and third argument can also be a subquery.
+   * A subquery is defined by passing a function:
+   *
+   * ```ts
+   * db.query('person')
+   *   .where(
+   *     (qb) => qb.subQuery('pet')
+   *       .select('pet.id')
+   *       .whereRef('pet.owner_id', '=', 'person.id'),
+   *     'in',
+   *     [100, 200, 300]
+   *   )
+   *   .selectAll()
+   * ```
+   *
+   * The generated SQL (postgresql):
+   *
+   * ```sql
+   * select *
+   * from "person"
+   * where (
+   *   select "pet"."id"
+   *   from "pet"
+   *   where "pet"."owner_id" = "person"."id"
+   * ) in ($1, $2, $3)
+   * ```
+   *
+   * @example
+   * If everything else fails, you can always pass {@link Kysely.raw | raw}
+   * as any of the arguments, including the operator:
+   *
+   * ```ts
+   * db.query('person')
+   *   .where(
+   *     db.raw('coalesce(first_name, last_name)'),
+   *     'like',
+   *     '%' + name + '%',
+   *   )
+   *   .selectAll()
+   * ```
+   *
+   * The generated SQL (postgresql):
+   *
+   * ```sql
+   * select *
+   * from "person"
+   * where coalesce(first_name, last_name) like $1
+   * ```
+   *
+   * @example
+   * If you only pass one function argument to this method, it can be
+   * used to create parentheses around other where clauses:
+   *
+   * ```ts
+   * db.query('person')
+   *   .selectAll()
+   *   .where((qb) => qb
+   *     .where('id', '=', 1)
+   *     .orWhere('id', '=', 2)
+   *   )
+   * ```
+   *
+   * The generated SQL (postgresql):
+   *
+   * ```sql
+   * select * from "person" (where "id" = 1 or "id" = 2)
+   * ```
    */
   where(
     lhs: FilterReferenceArg<DB, TB, O>,
@@ -164,7 +265,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * {@link QueryBuilder.where}.
    *
    * It's often necessary to wrap `or where` clauses in parentheses to control
-   * the precendence. You can use the one argument version of the `where` method
+   * precendence. You can use the one argument version of the `where` method
    * for that. See the examples.
    *
    * @example
