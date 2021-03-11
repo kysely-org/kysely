@@ -152,4 +152,35 @@ describe('dummy test', () => {
 
     console.log(qb.compile(new QueryCompiler()).sql)
   })
+
+  it('simple perf test for building the query', async () => {
+    const compiler = new QueryCompiler()
+
+    function test() {
+      const qb = db
+        .query(['animal', 'person as p'])
+        .select('animal.name')
+        .distinctOn('p.firstName')
+        .whereRef('p.lastName', '=', 'animal.name')
+        .where('animal.name', 'in', ['foo', 'bar', 'baz'])
+        .whereExists((qb) =>
+          qb.subQuery('movie as m').whereRef('m.id', '=', 'p.id').selectAll()
+        )
+
+      qb.compile(compiler)
+    }
+
+    // Warmup.
+    for (let i = 0; i < 1000; ++i) {
+      test()
+    }
+
+    const rounds = 100000
+    const t = new Date()
+    for (let i = 0; i < rounds; ++i) {
+      test()
+    }
+
+    console.log((new Date().valueOf() - t.valueOf()) / rounds)
+  })
 })
