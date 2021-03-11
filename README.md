@@ -5,14 +5,14 @@ A type-safe and autocompletion-friendly typescript SQL query builder for node.js
 
 ![](https://github.com/koskimas/kysely/blob/master/assets/demo.gif)
 
-Kysely's typescript typings only allow you to use tables that are available in the database and refer to
+Kysely's typings only allow you to use tables that are available in the database and refer to
 columns of the tables that are joined to the query. The result type always only contains the selected
 columns with correct types and aliases. This allows tools like vscode autocompletion to make your life
 so much easier.
 
 As you can see in the gif above, through the pure magic of modern typescript, Kysely is even able to parse
 the alias given to `pet.name` and add a column `pet_name` to the result row type. Kysely is also able to
-infer colum names and types from selected subqueries, joined subqueries, with statements and pretty much
+infer colum names and types from selected subqueries, joined subqueries, `with` statements and pretty much
 anything you can think of. Typescript is always there for you to tell what kind of query you can build and
 offer completions.
 
