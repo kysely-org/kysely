@@ -43,6 +43,8 @@ import {
   parseExistsFilterArgs,
   FilterOperatorArg,
 } from './methods/filter-method'
+import { ConnectionProvider } from '../driver/connection-provider'
+import { Connection } from '../driver/connection'
 
 /**
  * The main query builder class.
@@ -62,9 +64,13 @@ import {
 export class QueryBuilder<DB, TB extends keyof DB, O = {}>
   implements OperationNodeSource {
   readonly #queryNode: QueryNode
+  readonly #compiler?: QueryCompiler
+  readonly #connectionProvider?: ConnectionProvider
 
-  constructor(queryNode: QueryNode = createQueryNode()) {
+  constructor({ queryNode, compiler, connectionProvider }: QueryBuilderArgs) {
     this.#queryNode = queryNode
+    this.#compiler = compiler
+    this.#connectionProvider = connectionProvider
   }
 
   /**
@@ -117,9 +123,12 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
   ): FromQueryBuilder<DB, TB, O, F>
 
   subQuery(table: any): any {
-    return new QueryBuilder(
-      cloneQueryNodeWithFroms(createQueryNode(), parseFromArgs(this, table))
-    )
+    return new QueryBuilder({
+      queryNode: cloneQueryNodeWithFroms(
+        createQueryNode(),
+        parseFromArgs(this, table)
+      ),
+    })
   }
 
   /**
@@ -254,13 +263,15 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
   ): QueryBuilder<DB, TB, O>
 
   where(...args: any[]): any {
-    return new QueryBuilder(
-      cloneQueryNodeWithWhere(
+    return new QueryBuilder({
+      compiler: this.#compiler,
+      connectionProvider: this.#connectionProvider,
+      queryNode: cloneQueryNodeWithWhere(
         this.#queryNode,
         'and',
         parseFilterArgs(this, args)
-      )
-    )
+      ),
+    })
   }
 
   /**
@@ -271,13 +282,15 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
     op: FilterOperatorArg,
     rhs: FilterReferenceArg<DB, TB, O>
   ): QueryBuilder<DB, TB, O> {
-    return new QueryBuilder(
-      cloneQueryNodeWithWhere(
+    return new QueryBuilder({
+      compiler: this.#compiler,
+      connectionProvider: this.#connectionProvider,
+      queryNode: cloneQueryNodeWithWhere(
         this.#queryNode,
         'and',
         parseFilterReferenceArgs(this, lhs, op, rhs)
-      )
-    )
+      ),
+    })
   }
 
   /**
@@ -350,13 +363,15 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
   ): QueryBuilder<DB, TB, O>
 
   orWhere(...args: any[]): any {
-    return new QueryBuilder(
-      cloneQueryNodeWithWhere(
+    return new QueryBuilder({
+      compiler: this.#compiler,
+      connectionProvider: this.#connectionProvider,
+      queryNode: cloneQueryNodeWithWhere(
         this.#queryNode,
         'or',
         parseFilterArgs(this, args)
-      )
-    )
+      ),
+    })
   }
 
   /**
@@ -367,65 +382,75 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
     op: FilterOperatorArg,
     rhs: FilterReferenceArg<DB, TB, O>
   ): QueryBuilder<DB, TB, O> {
-    return new QueryBuilder(
-      cloneQueryNodeWithWhere(
+    return new QueryBuilder({
+      compiler: this.#compiler,
+      connectionProvider: this.#connectionProvider,
+      queryNode: cloneQueryNodeWithWhere(
         this.#queryNode,
         'or',
         parseFilterReferenceArgs(this, lhs, op, rhs)
-      )
-    )
+      ),
+    })
   }
 
   /**
    *
    */
   whereExists(arg: ExistsFilterArg<DB, TB, O>): QueryBuilder<DB, TB, O> {
-    return new QueryBuilder(
-      cloneQueryNodeWithWhere(
+    return new QueryBuilder({
+      compiler: this.#compiler,
+      connectionProvider: this.#connectionProvider,
+      queryNode: cloneQueryNodeWithWhere(
         this.#queryNode,
         'and',
         parseExistsFilterArgs(this, 'exists', arg)
-      )
-    )
+      ),
+    })
   }
 
   /**
    *
    */
   whereNotExists(arg: ExistsFilterArg<DB, TB, O>): QueryBuilder<DB, TB, O> {
-    return new QueryBuilder(
-      cloneQueryNodeWithWhere(
+    return new QueryBuilder({
+      compiler: this.#compiler,
+      connectionProvider: this.#connectionProvider,
+      queryNode: cloneQueryNodeWithWhere(
         this.#queryNode,
         'and',
         parseExistsFilterArgs(this, 'not exists', arg)
-      )
-    )
+      ),
+    })
   }
 
   /**
    *
    */
   orWhereExists(arg: ExistsFilterArg<DB, TB, O>): QueryBuilder<DB, TB, O> {
-    return new QueryBuilder(
-      cloneQueryNodeWithWhere(
+    return new QueryBuilder({
+      compiler: this.#compiler,
+      connectionProvider: this.#connectionProvider,
+      queryNode: cloneQueryNodeWithWhere(
         this.#queryNode,
         'or',
         parseExistsFilterArgs(this, 'exists', arg)
-      )
-    )
+      ),
+    })
   }
 
   /**
    *
    */
   orWhereNotExists(arg: ExistsFilterArg<DB, TB, O>): QueryBuilder<DB, TB, O> {
-    return new QueryBuilder(
-      cloneQueryNodeWithWhere(
+    return new QueryBuilder({
+      compiler: this.#compiler,
+      connectionProvider: this.#connectionProvider,
+      queryNode: cloneQueryNodeWithWhere(
         this.#queryNode,
         'or',
         parseExistsFilterArgs(this, 'not exists', arg)
-      )
-    )
+      ),
+    })
   }
 
   /**
@@ -443,12 +468,14 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
   ): SelectQueryBuilder<DB, TB, O, S>
 
   select(selection: any): any {
-    return new QueryBuilder(
-      cloneQueryNodeWithSelections(
+    return new QueryBuilder({
+      compiler: this.#compiler,
+      connectionProvider: this.#connectionProvider,
+      queryNode: cloneQueryNodeWithSelections(
         this.#queryNode,
         parseSelectArgs(this, selection)
-      )
-    )
+      ),
+    })
   }
 
   /**
@@ -466,75 +493,91 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
   ): QueryBuilder<DB, TB, O>
 
   distinctOn(selection: any): any {
-    return new QueryBuilder(
-      cloneQueryNodeWithDistinctOnSelections(
+    return new QueryBuilder({
+      compiler: this.#compiler,
+      connectionProvider: this.#connectionProvider,
+      queryNode: cloneQueryNodeWithDistinctOnSelections(
         this.#queryNode,
         parseSelectArgs(this, selection)
-      )
-    )
+      ),
+    })
   }
 
   /**
    *
    */
   distinct(): QueryBuilder<DB, TB, O> {
-    return new QueryBuilder(
-      cloneQueryNodeWithSelectModifier(this.#queryNode, 'Distinct')
-    )
+    return new QueryBuilder({
+      compiler: this.#compiler,
+      connectionProvider: this.#connectionProvider,
+      queryNode: cloneQueryNodeWithSelectModifier(this.#queryNode, 'Distinct'),
+    })
   }
 
   /**
    *
    */
   forUpdate(): QueryBuilder<DB, TB, O> {
-    return new QueryBuilder(
-      cloneQueryNodeWithModifier(this.#queryNode, 'ForUpdate')
-    )
+    return new QueryBuilder({
+      compiler: this.#compiler,
+      connectionProvider: this.#connectionProvider,
+      queryNode: cloneQueryNodeWithModifier(this.#queryNode, 'ForUpdate'),
+    })
   }
 
   /**
    *
    */
   forShare(): QueryBuilder<DB, TB, O> {
-    return new QueryBuilder(
-      cloneQueryNodeWithModifier(this.#queryNode, 'ForShare')
-    )
+    return new QueryBuilder({
+      compiler: this.#compiler,
+      connectionProvider: this.#connectionProvider,
+      queryNode: cloneQueryNodeWithModifier(this.#queryNode, 'ForShare'),
+    })
   }
 
   /**
    *
    */
   forKeyShare(): QueryBuilder<DB, TB, O> {
-    return new QueryBuilder(
-      cloneQueryNodeWithModifier(this.#queryNode, 'ForKeyShare')
-    )
+    return new QueryBuilder({
+      compiler: this.#compiler,
+      connectionProvider: this.#connectionProvider,
+      queryNode: cloneQueryNodeWithModifier(this.#queryNode, 'ForKeyShare'),
+    })
   }
 
   /**
    *
    */
   forNoKeyUpdate(): QueryBuilder<DB, TB, O> {
-    return new QueryBuilder(
-      cloneQueryNodeWithModifier(this.#queryNode, 'ForNoKeyUpdate')
-    )
+    return new QueryBuilder({
+      compiler: this.#compiler,
+      connectionProvider: this.#connectionProvider,
+      queryNode: cloneQueryNodeWithModifier(this.#queryNode, 'ForNoKeyUpdate'),
+    })
   }
 
   /**
    *
    */
   skipLocked(): QueryBuilder<DB, TB, O> {
-    return new QueryBuilder(
-      cloneQueryNodeWithModifier(this.#queryNode, 'SkipLocked')
-    )
+    return new QueryBuilder({
+      compiler: this.#compiler,
+      connectionProvider: this.#connectionProvider,
+      queryNode: cloneQueryNodeWithModifier(this.#queryNode, 'SkipLocked'),
+    })
   }
 
   /**
    *
    */
   noWait(): QueryBuilder<DB, TB, O> {
-    return new QueryBuilder(
-      cloneQueryNodeWithModifier(this.#queryNode, 'NoWait')
-    )
+    return new QueryBuilder({
+      compiler: this.#compiler,
+      connectionProvider: this.#connectionProvider,
+      queryNode: cloneQueryNodeWithModifier(this.#queryNode, 'NoWait'),
+    })
   }
 
   /**
@@ -553,9 +596,14 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
   selectAll<T extends TB>(): SelectAllQueryBuiler<DB, TB, O, T>
 
   selectAll(table?: any): any {
-    return new QueryBuilder(
-      cloneQueryNodeWithSelections(this.#queryNode, parseSelectAllArgs(table))
-    )
+    return new QueryBuilder({
+      compiler: this.#compiler,
+      connectionProvider: this.#connectionProvider,
+      queryNode: cloneQueryNodeWithSelections(
+        this.#queryNode,
+        parseSelectAllArgs(table)
+      ),
+    })
   }
 
   /**
@@ -573,12 +621,14 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
   >(table: F, callback: FN): FromQueryBuilder<DB, TB, O, F>
 
   innerJoin(...args: any): any {
-    return new QueryBuilder(
-      cloneQueryNodeWithJoin(
+    return new QueryBuilder({
+      compiler: this.#compiler,
+      connectionProvider: this.#connectionProvider,
+      queryNode: cloneQueryNodeWithJoin(
         this.#queryNode,
         parseJoinArgs(this, 'InnerJoin', args)
-      )
-    )
+      ),
+    })
   }
 
   /**
@@ -592,17 +642,43 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
     return this.#queryNode
   }
 
-  compile(compiler: QueryCompiler): CompiledQuery {
-    return compiler.compile(this.#queryNode)
+  castTo<T>(): QueryBuilder<DB, TB, T> {
+    return new QueryBuilder({
+      compiler: this.#compiler,
+      connectionProvider: this.#connectionProvider,
+      queryNode: this.#queryNode,
+    })
   }
 
-  castTo<T>(): QueryBuilder<DB, TB, T> {
-    return new QueryBuilder(this.#queryNode)
+  compile(): CompiledQuery {
+    if (!this.#compiler) {
+      throw new Error(`this query cannot be compiled to SQL`)
+    }
+
+    return this.#compiler.compile(this.#queryNode)
   }
 
   async execute(): Promise<O[]> {
-    return [{} as any]
+    if (!this.#connectionProvider) {
+      throw new Error(`this query cannot be executed`)
+    }
+
+    let connection: Connection | undefined
+    try {
+      connection = await this.#connectionProvider.acquireConnection()
+      return await connection.execute(this.compile())
+    } finally {
+      if (connection) {
+        await this.#connectionProvider.releaseConnection(connection)
+      }
+    }
   }
+}
+
+export interface QueryBuilderArgs {
+  queryNode: QueryNode
+  compiler?: QueryCompiler
+  connectionProvider?: ConnectionProvider
 }
 
 /**

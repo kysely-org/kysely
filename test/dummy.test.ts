@@ -1,18 +1,17 @@
 import { Kysely } from '../src'
-import { QueryCompiler } from '../src/query-compiler/query-compiler'
 
 interface Person {
   id: number
-  firstName: string
-  lastName: string
+  first_name: string
+  last_name: string
   age: number
   gender: 'male' | 'female' | 'other'
 }
 
-interface Animal {
-  id: string
+interface Pet {
+  id: number
   name: string
-  ownerId: number
+  owner_id: number
   species: 'dog' | 'cat'
 }
 
@@ -23,53 +22,59 @@ interface Movie {
 
 interface Database {
   person: Person
-  animal: Animal
+  pet: Pet
   movie: Movie
-  'someSchema.movie': Movie
+  'some_schema.movie': Movie
 }
 
 describe('dummy test', () => {
   let db: Kysely<Database>
 
   beforeEach(async () => {
-    db = new Kysely<Database>()
+    db = new Kysely<Database>({
+      dialect: 'postgres',
+      host: 'localhost',
+      database: 'kysely_test',
+    })
   })
 
-  it('smple', async () => {
-    const [{ id, firstName }] = await db
+  afterEach(async () => {
+    await db?.destroy()
+  })
+
+  it('simple', async () => {
+    const [{ id, first_name }] = await db
       .query('person')
-      .select(['id', 'firstName'])
+      .select(['id', 'first_name'])
       .execute()
   })
 
   it('selects', async () => {
-    const { query } = db
-
     const [r] = await db
       .query([
         'person',
-        'animal as a',
-        query('movie as m').select('m.stars as strs').as('muuvi'),
+        'pet as p',
+        db.query('movie as m').select('m.stars as strs').as('muuvi'),
       ])
       .select([
-        'firstName',
-        'person.lastName as pln',
+        'first_name',
+        'person.last_name as pln',
         'strs',
         'muuvi.strs as movieStarz',
         'person.id',
         'person.age',
-        'a.name as foo',
-        'a.species as faz',
-        'a.ownerId as bar',
+        'p.name as foo',
+        'p.species as faz',
+        'p.owner_id as bar',
         'person.id as baz',
         db.raw<boolean>('random() > 0.5').as('rand1'),
         db.raw<boolean>('random() < 0.5').as('rand2'),
-        query('movie').select('stars').as('sub1'),
+        db.query('movie').select('stars').as('sub1'),
         (qb) => qb.subQuery('movie').select('stars').as('sub2'),
       ])
       .execute()
 
-    r.firstName
+    r.first_name
     r.pln
     r.strs
     r.movieStarz
@@ -86,49 +91,44 @@ describe('dummy test', () => {
   })
 
   it('join', async () => {
-    const { query } = db
-
-    const qb1 = query('person').innerJoin('movie', 'stars', 'id').selectAll()
+    const qb1 = db.query('person').innerJoin('movie', 'stars', 'id').selectAll()
     //console.log(qb1.compile(new QueryCompiler()).sql)
 
-    const qb2 = query('person').innerJoin('animal as a', 'ownerId', 'id')
+    const qb2 = db.query('person').innerJoin('pet as p', 'owner_id', 'id')
 
     const qb3 = db
       .query('person as p')
       .innerJoin(
-        (qb) => qb.subQuery('animal as a').select('a.name as n').as('a'),
+        (qb) => qb.subQuery('pet as p').select('p.name as n').as('pet'),
         'p.id',
-        'a.n'
+        'pet.n'
       )
-      .innerJoin('movie as m', 'stars', 'a.n')
+      .innerJoin('movie as m', 'stars', 'pet.n')
 
     const qb4 = db
-      .query('person as p')
-      .innerJoin('animal as a', (join) =>
-        join.on('a.ownerId', '=', 'p.id').on('a.ownerId', '=', 'p.id')
+      .query('person as per')
+      .innerJoin('pet as p', (join) =>
+        join.on('p.owner_id', '=', 'per.id').on('p.owner_id', '=', 'per.id')
       )
-    console.log(qb4.compile(new QueryCompiler()).sql)
+    console.log(qb4.compile().sql)
   })
 
   it('sql', async () => {
     const qb = db
-      .query(['animal', 'person as p'])
-      .select('animal.name')
-      .distinctOn('p.firstName')
-      .whereRef('p.lastName', '=', 'animal.name')
-      .where('animal.name', 'in', ['foo', 'bar', 'baz'])
+      .query(['pet', 'person as p'])
+      .select('pet.name')
+      .distinctOn('p.first_name')
+      .whereRef('p.last_name', '=', 'pet.name')
+      .where('pet.name', 'in', ['foo', 'bar', 'baz'])
       .whereExists((qb) =>
         qb.subQuery('movie as m').whereRef('m.id', '=', 'p.id').selectAll()
       )
 
-    console.log(qb.compile(new QueryCompiler()).sql)
+    console.log(qb.compile().sql)
   })
 
   it('from', async () => {
-    const [res] = await db
-      .query('someSchema.movie')
-      .select('someSchema.movie.stars')
-      .execute()
+    db.query('some_schema.movie').select('some_schema.movie.stars')
 
     const qb2 = db
       .query(() => db.query('movie').selectAll().as('m'))
@@ -136,11 +136,11 @@ describe('dummy test', () => {
         qb
           .subQuery('person')
           .whereRef('m.id', '=', 'person.id')
-          .select('firstName')
+          .select('first_name')
           .as('f')
       )
 
-    console.log(qb2.compile(new QueryCompiler()).sql)
+    console.log(qb2.compile().sql)
   })
 
   it('raw', async () => {
@@ -150,24 +150,22 @@ describe('dummy test', () => {
         .as('thing')
     )
 
-    console.log(qb.compile(new QueryCompiler()).sql)
+    console.log(qb.compile().sql)
   })
 
   it('simple perf test for building the query', async () => {
-    const compiler = new QueryCompiler()
-
     function test() {
       const qb = db
-        .query(['animal', 'person as p'])
-        .select('animal.name')
-        .distinctOn('p.firstName')
-        .whereRef('p.lastName', '=', 'animal.name')
-        .where('animal.name', 'in', ['foo', 'bar', 'baz'])
+        .query(['pet', 'person as p'])
+        .select('pet.name')
+        .distinctOn('p.first_name')
+        .whereRef('p.last_name', '=', 'pet.name')
+        .where('pet.name', 'in', ['foo', 'bar', 'baz'])
         .whereExists((qb) =>
           qb.subQuery('movie as m').whereRef('m.id', '=', 'p.id').selectAll()
         )
 
-      qb.compile(compiler)
+      qb.compile()
     }
 
     // Warmup.

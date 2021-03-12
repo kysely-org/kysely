@@ -54,7 +54,11 @@ interface Database {
 }
 
 // You'd create one of these when you start your app.
-const db = new Kysely<Database>()
+const db = new Kysely<Database>({
+  dialect: 'postgres',
+  host: 'localhost',
+  database: 'kysely_test',
+})
 
 async function demo() {
   const [person] = await db
@@ -71,8 +75,7 @@ async function demo() {
 # Work in progress
 
 This whole library is still just a proof of concept and you can't yet start using it for anything
-serious. You can't even connect to an actual database yet. Just the query building is partially
-implemented.
+serious. Only a small subset of postgres dialect is implemented.
 
 However, I'd say the concept is pretty much proven! Typescript is amazing! Let me know if this is something
 you'd use and I'll continue working on this.

@@ -42,6 +42,7 @@ import { QueryBuilder } from '../query-builder'
 import { AndNode } from '../../operation-node/and-node'
 import { OrNode } from '../../operation-node/or-node'
 import { createParensNode, ParensNode } from '../../operation-node/parens-node'
+import { createQueryNode } from '../../operation-node/query-node'
 
 export type FilterReferenceArg<DB, TB extends keyof DB, O> =
   | AnyColumn<DB, TB>
@@ -253,7 +254,11 @@ function parseOneArgFilter(
     )
   }
 
-  const query = grouper(new QueryBuilder<any, any, any>())
+  const inputQuery = new QueryBuilder<any, any, any>({
+    queryNode: createQueryNode(),
+  })
+
+  const query = grouper(inputQuery)
   const where = query.toOperationNode().where
 
   if (!where) {

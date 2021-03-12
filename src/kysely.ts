@@ -1,4 +1,7 @@
-import { cloneQueryNodeWithFroms } from './operation-node/query-node'
+import {
+  cloneQueryNodeWithFroms,
+  createQueryNode,
+} from './operation-node/query-node'
 import { QueryBuilder } from './query-builder/query-builder'
 import { RawBuilder } from './raw-builder/raw-builder'
 import {
@@ -6,6 +9,16 @@ import {
   FromQueryBuilder,
   parseFromArgs,
 } from './query-builder/methods/from-method'
+import { DriverConfig } from './driver/driver-config'
+import { Dialect } from './dialect/dialect'
+import { PostgresDialect } from './dialect/postgres/postgres-dialect'
+import { Driver } from './driver/driver'
+import { QueryCompiler } from './query-compiler/query-compiler'
+import { SimpleConnectionProvider } from './driver/simple-connection-provider'
+
+export interface KyselyConfig extends DriverConfig {
+  dialect: 'postgres' | string
+}
 
 /**
  * The main Kysely class.
@@ -42,6 +55,24 @@ import {
  *    tables. See the examples above.
  */
 export class Kysely<DB> {
+  #config: KyselyConfig
+  #dialect: Dialect
+  #driver: Driver
+  #compiler: QueryCompiler
+
+  constructor(config: KyselyConfig) {
+    this.#config = config
+
+    if (this.#config.dialect === 'postgres') {
+      this.#dialect = new PostgresDialect()
+    } else {
+      throw new Error(`unknown dialect ${this.#config.dialect}`)
+    }
+
+    this.#driver = this.#dialect.createDriver(this.#config)
+    this.#compiler = this.#dialect.createQueryCompiler()
+  }
+
   /**
    * Creates a query builder against the given table/tables.
    *
@@ -176,14 +207,17 @@ export class Kysely<DB> {
   ): FromQueryBuilder<DB, never, {}, F>
 
   query(from: any): any {
-    const query = new QueryBuilder()
+    const query = new QueryBuilder({ queryNode: createQueryNode() })
+    const connectionProvider = new SimpleConnectionProvider(this.#driver)
 
-    return new QueryBuilder(
-      cloneQueryNodeWithFroms(
+    return new QueryBuilder({
+      compiler: this.#compiler,
+      connectionProvider,
+      queryNode: cloneQueryNodeWithFroms(
         query.toOperationNode(),
         parseFromArgs(query, from)
-      )
-    )
+      ),
+    })
   }
 
   /**
@@ -306,5 +340,9 @@ export class Kysely<DB> {
    */
   raw<T = unknown>(sql: string, params?: any[]): RawBuilder<T> {
     return new RawBuilder(sql, params)
+  }
+
+  async destroy(): Promise<void> {
+    await this.#driver.destroy()
   }
 }
