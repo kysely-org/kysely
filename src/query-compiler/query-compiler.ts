@@ -157,12 +157,12 @@ export class QueryCompiler extends OperationNodeVisitor {
   }
 
   protected visitIdentifier(node: IdentifierNode): void {
-    this.appendIdentifierWrapper()
-    this.visitUnwrappedIdentifier(node)
-    this.appendIdentifierWrapper()
+    this.appendLeftIdentifierWrapper()
+    this.compileUnwrappedIdentifier(node)
+    this.appendRightIdentifierWrapper()
   }
 
-  protected visitUnwrappedIdentifier(node: IdentifierNode): void {
+  protected compileUnwrappedIdentifier(node: IdentifierNode): void {
     this.append(node.identifier)
   }
 
@@ -254,7 +254,11 @@ export class QueryCompiler extends OperationNodeVisitor {
     this.visitNode(node.table)
   }
 
-  protected appendIdentifierWrapper(): void {
+  protected appendLeftIdentifierWrapper(): void {
+    this.append('"')
+  }
+
+  protected appendRightIdentifierWrapper(): void {
     this.append('"')
   }
 

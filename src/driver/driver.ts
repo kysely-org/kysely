@@ -7,14 +7,25 @@ export abstract class Driver {
   #initPromise: Promise<void> | null = null
 
   constructor(config: DriverConfig) {
-    this.config = {
+    this.config = freeze({
       ...config,
-    }
 
-    freeze(this.config)
-    freeze(this.config.pool)
+      pool: freeze({
+        ...config.pool,
+      }),
+    })
   }
 
+  abstract init(): Promise<void>
+  abstract destroy(): Promise<void>
+
+  abstract acquireConnection(): Promise<Connection>
+  abstract releaseConnection(connection: Connection): Promise<void>
+
+  /**
+   * @internal
+   * For internal use only. Don't override this.
+   */
   async ensureInit(): Promise<void> {
     if (!this.#initPromise) {
       this.#initPromise = this.init().catch((err) => {
@@ -26,9 +37,15 @@ export abstract class Driver {
     await this.#initPromise
   }
 
-  abstract init(): Promise<void>
-  abstract destroy(): Promise<void>
+  /**
+   * @internal
+   * For internal use only. Don't override this.
+   */
+  async ensureDestroy(): Promise<void> {
+    if (this.#initPromise) {
+      await this.#initPromise
+    }
 
-  abstract acquireConnection(): Promise<Connection>
-  abstract releaseConnection(connection: Connection): Promise<void>
+    await this.destroy()
+  }
 }

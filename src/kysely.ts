@@ -14,11 +14,9 @@ import { Dialect } from './dialect/dialect'
 import { PostgresDialect } from './dialect/postgres/postgres-dialect'
 import { Driver } from './driver/driver'
 import { QueryCompiler } from './query-compiler/query-compiler'
-import { SimpleConnectionProvider } from './driver/simple-connection-provider'
-
-export interface KyselyConfig extends DriverConfig {
-  dialect: 'postgres' | string
-}
+import { TransactionalConnectionProvider } from './driver/transactional-connection-provider'
+import { AsyncLocalStorage } from 'async_hooks'
+import { Connection } from './driver/connection'
 
 /**
  * The main Kysely class.
@@ -55,22 +53,15 @@ export interface KyselyConfig extends DriverConfig {
  *    tables. See the examples above.
  */
 export class Kysely<DB> {
-  #config: KyselyConfig
-  #dialect: Dialect
-  #driver: Driver
-  #compiler: QueryCompiler
+  readonly #driver: Driver
+  readonly #compiler: QueryCompiler
+  readonly #transactions = new AsyncLocalStorage<Connection>()
 
   constructor(config: KyselyConfig) {
-    this.#config = config
+    const dialect = createDialect(config)
 
-    if (this.#config.dialect === 'postgres') {
-      this.#dialect = new PostgresDialect()
-    } else {
-      throw new Error(`unknown dialect ${this.#config.dialect}`)
-    }
-
-    this.#driver = this.#dialect.createDriver(this.#config)
-    this.#compiler = this.#dialect.createQueryCompiler()
+    this.#driver = dialect.createDriver(config)
+    this.#compiler = dialect.createQueryCompiler()
   }
 
   /**
@@ -208,7 +199,11 @@ export class Kysely<DB> {
 
   query(from: any): any {
     const query = new QueryBuilder({ queryNode: createQueryNode() })
-    const connectionProvider = new SimpleConnectionProvider(this.#driver)
+
+    const connectionProvider = new TransactionalConnectionProvider(
+      this.#driver,
+      this.#transactions
+    )
 
     return new QueryBuilder({
       compiler: this.#compiler,
@@ -342,7 +337,92 @@ export class Kysely<DB> {
     return new RawBuilder(sql, params)
   }
 
+  /**
+   * Returns true if called inside a Kysely.transaction() callback.
+   */
+  isTransactionRunning(): boolean {
+    return !!this.#transactions.getStore()
+  }
+
+  /**
+   * Begins a transaction for the async chain started inside the callback.
+   *
+   * Any `kysely` query started inside the callback or any method called
+   * by the callback will automatically use the save transaction. No need to
+   * pass around a transaction object. This is possible through node's async
+   * hooks and specifically `AsyncLocalStorage`.
+   *
+   * @example
+   * ```ts
+   * async function main() {
+   *   await db.transaction(async () => {
+   *     await doStuff()
+   *   });
+   * }
+   *
+   * async function doStuff() {
+   *   // This automatically uses the correct transasction because `doStuff` was
+   *   // called inside the transaction method that registers the transaction
+   *   // for a shared `AsyncLocalStorage` inside `Kysely`.
+   *   await db.query('person').insert({ first_name: 'Jennifer' }).execute()
+   *
+   *   return doMoreStuff();
+   * }
+   *
+   * function doMoreStuff(): Promise<void> {
+   *   // Even this is automatically uses the correct transaction even though
+   *   // we didn't `await` on the method. Node's async hooks work with all
+   *   // possible kinds of async events.
+   *   return db.query('pet').insert({ name: 'Fluffy' }).execute()
+   * }
+   * ```
+   */
+  async transaction<T>(callback: () => Promise<T>): Promise<T> {
+    let connection: Connection | null = null
+
+    if (this.isTransactionRunning()) {
+      throw new Error(
+        'You attempted to call Kysely.transaction() inside an existing transaction. Nested transactions are not yet supported. See the Kysely.isTransactionRunning() method.'
+      )
+    }
+
+    try {
+      await this.#driver.ensureInit()
+
+      connection = await this.#driver.acquireConnection()
+      await connection.execute<void>({ sql: 'BEGIN', bindings: [] })
+
+      return await this.#transactions.run(connection, () => {
+        return callback()
+      })
+    } catch (error) {
+      if (connection) {
+        await connection.execute<void>({ sql: 'ROLLBACK', bindings: [] })
+      }
+      throw error
+    } finally {
+      if (connection) {
+        await this.#driver.releaseConnection(connection)
+      }
+    }
+  }
+
   async destroy(): Promise<void> {
-    await this.#driver.destroy()
+    await this.#driver.ensureDestroy()
+    this.#transactions.disable()
+  }
+}
+
+export interface KyselyConfig extends DriverConfig {
+  dialect: 'postgres' | Dialect
+}
+
+function createDialect(config: KyselyConfig) {
+  if (typeof config.dialect !== 'string') {
+    return config.dialect
+  } else if (config.dialect === 'postgres') {
+    return new PostgresDialect()
+  } else {
+    throw new Error(`unknown dialect ${config.dialect}`)
   }
 }
