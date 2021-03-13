@@ -254,16 +254,17 @@ function parseOneArgFilter(
     )
   }
 
-  const inputQuery = new QueryBuilder<any, any, any>({
-    queryNode: createQueryNode(),
-  })
+  const query = grouper(
+    new QueryBuilder({
+      queryNode: createQueryNode(),
+    })
+  )
 
-  const query = grouper(inputQuery)
-  const where = query.toOperationNode().where
+  const queryNode = query.toOperationNode()
 
-  if (!where) {
+  if (!queryNode.where) {
     throw new Error('no where methods called insided a grouper where')
   }
 
-  return createParensNode(where)
+  return createParensNode(queryNode.where.where)
 }

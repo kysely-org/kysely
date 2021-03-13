@@ -19,6 +19,7 @@ import { SelectionNode } from '../operation-node/selection-node'
 import { TableNode } from '../operation-node/table-node'
 import { ValueListNode } from '../operation-node/value-list-node'
 import { ValueNode } from '../operation-node/value-node'
+import { WhereNode } from '../operation-node/where-node'
 import { isEmpty, getLast, freeze } from '../utils/object-utils'
 import { CompiledQuery } from './compiled-query'
 
@@ -57,24 +58,26 @@ export class QueryCompiler extends OperationNodeVisitor {
     }
 
     if (node.select) {
-      this.compileSelect(node.select)
+      this.visitNode(node.select)
       this.append(' ')
     }
 
-    this.compileFrom(node.from)
-
-    if (!isEmpty(node.joins)) {
+    if (node.from) {
+      this.visitNode(node.from)
       this.append(' ')
+    }
+
+    if (node.joins) {
       node.joins.forEach(this.visitNode)
+      this.append(' ')
     }
 
     if (node.where) {
+      this.visitNode(node.where)
       this.append(' ')
-      this.compileWhere(node.where)
     }
 
     if (node.modifier) {
-      this.append(' ')
       this.compileQueryModifier(node.modifier)
     }
 
@@ -85,41 +88,30 @@ export class QueryCompiler extends OperationNodeVisitor {
     --this.#subQueryDepth
   }
 
-  protected compileSelect(node: SelectNode): void {
-    this.visitNode(node)
-  }
-
-  protected compileFrom(nodes: ReadonlyArray<FromNode>): void {
-    this.append('from ')
-    this.compileList(nodes)
-  }
-
-  protected compileWhere(node: OperationNode): void {
-    this.append('where ')
-    this.visitNode(node)
-  }
-
   protected compileQueryModifier(modifier: QueryModifier): void {
     this.append(QUERY_MODIFIER_SQL[modifier])
   }
 
-  protected visitSelect({
-    selections,
-    distinctOnSelections,
-    modifier,
-  }: SelectNode): void {
+  protected visitFrom(node: FromNode): void {
+    this.append('from ')
+    this.compileList(node.froms)
+  }
+
+  protected visitSelect(node: SelectNode): void {
     this.append('select ')
 
-    if (!isEmpty(distinctOnSelections)) {
-      this.compileDistinctOn(distinctOnSelections)
+    if (node.distinctOnSelections && !isEmpty(node.distinctOnSelections)) {
+      this.compileDistinctOn(node.distinctOnSelections)
       this.append(' ')
     }
 
-    if (modifier === 'Distinct') {
+    if (node.modifier === 'Distinct') {
       this.append('distinct ')
     }
 
-    this.compileList(selections)
+    if (node.selections) {
+      this.compileList(node.selections)
+    }
   }
 
   protected compileDistinctOn(selections: ReadonlyArray<SelectionNode>): void {
@@ -138,6 +130,11 @@ export class QueryCompiler extends OperationNodeVisitor {
         this.append(', ')
       }
     }
+  }
+
+  protected visitWhere(node: WhereNode): void {
+    this.append('where ')
+    this.visitNode(node.where)
   }
 
   protected visitAlias(node: AliasNode): void {
@@ -267,8 +264,8 @@ export class QueryCompiler extends OperationNodeVisitor {
   }
 
   protected appendValue(value: any): void {
-    this.append(`$${this.#bindings.length}`)
     this.#bindings.push(value)
+    this.append(`$${this.#bindings.length}`)
   }
 }
 

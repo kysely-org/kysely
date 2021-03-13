@@ -1,22 +1,29 @@
 import { freeze } from '../utils/object-utils'
-import { AliasNode } from './alias-node'
+import { FromItemNode } from './from-item-node'
 import { OperationNode } from './operation-node'
-import { TableNode } from './table-node'
-
-type FromNodeChild = TableNode | AliasNode
 
 export interface FromNode extends OperationNode {
   readonly kind: 'FromNode'
-  readonly from: FromNodeChild
+  readonly froms: ReadonlyArray<FromItemNode>
 }
 
 export function isFromNode(node: OperationNode): node is FromNode {
   return node.kind === 'FromNode'
 }
 
-export function createFromNode(from: FromNodeChild): FromNode {
+export function createFromNodeWithItems(froms: ReadonlyArray<FromItemNode>): FromNode {
   return freeze({
     kind: 'FromNode',
-    from,
+    froms: freeze(froms),
+  })
+}
+
+export function cloneFromNodeWithItems(
+  from: FromNode,
+  items: ReadonlyArray<FromItemNode>
+): FromNode {
+  return freeze({
+    ...from,
+    froms: freeze([...from.froms, ...items]),
   })
 }

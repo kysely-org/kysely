@@ -1,7 +1,7 @@
 import { freeze } from '../utils/object-utils'
 import { AndNode, createAndNode } from './and-node'
 import { FilterNode } from './filter-node'
-import { FromNode } from './from-node'
+import { FromItemNode } from './from-item-node'
 import { OperationNode } from './operation-node'
 import { createOrNode, OrNode } from './or-node'
 import { ParensNode } from './parens-node'
@@ -12,7 +12,7 @@ export type JoinNodeOnNode = FilterNode | AndNode | OrNode | ParensNode
 export interface JoinNode extends OperationNode {
   readonly kind: 'JoinNode'
   readonly joinType: JoinType
-  readonly table: FromNode
+  readonly table: FromItemNode
   readonly on?: JoinNodeOnNode
 }
 
@@ -20,7 +20,10 @@ export function isJoinNode(node: OperationNode): node is JoinNode {
   return node.kind === 'JoinNode'
 }
 
-export function createJoinNode(joinType: JoinType, table: FromNode): JoinNode {
+export function createJoinNode(
+  joinType: JoinType,
+  table: FromItemNode
+): JoinNode {
   return freeze({
     kind: 'JoinNode',
     joinType,

@@ -1,6 +1,5 @@
 import { AliasNode } from '../operation-node/alias-node'
 import { ColumnNode } from '../operation-node/column-node'
-import { FromNode } from '../operation-node/from-node'
 import { IdentifierNode } from '../operation-node/identifier-node'
 import {
   OperationNode,
@@ -22,6 +21,9 @@ import { ValueListNode } from './value-list-node'
 import { ValueNode } from './value-node'
 import { FilterNode } from './filter-node'
 import { OperatorNode } from './operator-node'
+import { FromNode } from './from-node'
+import { FromItemNode } from './from-item-node'
+import { WhereNode } from './where-node'
 
 export class OperationNodeVisitor {
   #visitors: Record<OperationNodeKind, Function> = {
@@ -35,6 +37,7 @@ export class OperationNodeVisitor {
     SelectionNode: this.visitSelection.bind(this),
     TableNode: this.visitTable.bind(this),
     FromNode: this.visitFrom.bind(this),
+    FromItemNode: this.visitFromItem.bind(this),
     SelectAllNode: this.visitSelectAll.bind(this),
     FilterNode: this.visitFilter.bind(this),
     AndNode: this.visitAnd.bind(this),
@@ -45,6 +48,7 @@ export class OperationNodeVisitor {
     ParensNode: this.visitParens.bind(this),
     JoinNode: this.visitJoin.bind(this),
     OperatorNode: this.visitOperator.bind(this),
+    WhereNode: this.visitWhere.bind(this),
   }
 
   readonly visitNode = (node: OperationNode): void => {
@@ -52,7 +56,9 @@ export class OperationNodeVisitor {
   }
 
   protected visitQuery(node: QueryNode): void {
-    node.from.forEach(this.visitNode)
+    if (node.from) {
+      this.visitNode(node.from)
+    }
 
     if (node.select) {
       this.visitNode(node.select)
@@ -64,8 +70,13 @@ export class OperationNodeVisitor {
   }
 
   protected visitSelect(node: SelectNode): void {
-    node.selections.forEach(this.visitNode)
-    node.distinctOnSelections.forEach(this.visitNode)
+    if (node.selections) {
+      node.selections.forEach(this.visitNode)
+    }
+
+    if (node.distinctOnSelections) {
+      node.distinctOnSelections.forEach(this.visitNode)
+    }
   }
 
   protected visitSelection(node: SelectionNode): void {
@@ -89,6 +100,10 @@ export class OperationNodeVisitor {
   }
 
   protected visitFrom(node: FromNode): void {
+    node.froms.forEach(this.visitNode)
+  }
+
+  protected visitFromItem(node: FromItemNode): void {
     this.visitNode(node.from)
   }
 
@@ -134,6 +149,10 @@ export class OperationNodeVisitor {
 
   protected visitRaw(node: RawNode): void {
     node.params.forEach(this.visitNode)
+  }
+
+  protected visitWhere(node: WhereNode): void {
+    this.visitNode(node.where)
   }
 
   protected visitSelectAll(_: SelectAllNode): void {}

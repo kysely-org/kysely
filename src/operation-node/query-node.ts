@@ -1,13 +1,29 @@
-import { AndNode, createAndNode } from './and-node'
-import { FromNode } from './from-node'
 import { JoinNode } from './join-node'
 import { OperationNode } from './operation-node'
-import { createOrNode, OrNode } from './or-node'
-import { ParensNode } from './parens-node'
-import { SelectNode, createSelectNode, SelectModifier } from './select-node'
+import {
+  SelectNode,
+  SelectModifier,
+  cloneSelectNodeWithSelections,
+  cloneSelectNodeWithDistinctOnSelections,
+  createSelectNodeWithDistinctOnSelections,
+  createSelectNodeWithSelections,
+  cloneSelectNodeWithModifier,
+  createSelectNodeWithModifier,
+} from './select-node'
 import { SelectionNode } from './selection-node'
-import { FilterNode } from './filter-node'
 import { freeze } from '../utils/object-utils'
+import {
+  cloneFromNodeWithItems,
+  createFromNodeWithItems,
+  FromNode,
+} from './from-node'
+import { FromItemNode } from './from-item-node'
+import {
+  cloneWhereNodeWithFilter,
+  createWhereNodeWithFilter,
+  WhereChildNode,
+  WhereNode,
+} from './where-node'
 
 export type QueryModifier =
   | 'ForUpdate'
@@ -17,15 +33,13 @@ export type QueryModifier =
   | 'NoWait'
   | 'SkipLocked'
 
-type WhereNode = FilterNode | AndNode | OrNode | ParensNode
-
 export interface QueryNode extends OperationNode {
   readonly kind: 'QueryNode'
-  readonly select?: SelectNode
-  readonly from: ReadonlyArray<FromNode>
+  readonly from?: FromNode
+  readonly joins?: ReadonlyArray<JoinNode>
   readonly where?: WhereNode
+  readonly select?: SelectNode
   readonly modifier?: QueryModifier
-  readonly joins: ReadonlyArray<JoinNode>
 }
 
 export function isQueryNode(node: OperationNode): node is QueryNode {
@@ -35,9 +49,6 @@ export function isQueryNode(node: OperationNode): node is QueryNode {
 export function createQueryNode(): QueryNode {
   return freeze({
     kind: 'QueryNode',
-    select: undefined,
-    from: freeze([]),
-    joins: freeze([]),
   })
 }
 
@@ -45,32 +56,23 @@ export function cloneQueryNodeWithSelections(
   queryNode: QueryNode,
   selections: ReadonlyArray<SelectionNode>
 ): QueryNode {
-  const select = queryNode.select ?? createSelectNode()
-
   return freeze({
     ...queryNode,
-    select: freeze({
-      ...select,
-      selections: freeze([...select.selections, ...selections]),
-    }),
+    select: queryNode.select
+      ? cloneSelectNodeWithSelections(queryNode.select, selections)
+      : createSelectNodeWithSelections(selections),
   })
 }
 
 export function cloneQueryNodeWithDistinctOnSelections(
   queryNode: QueryNode,
-  distinctOnSelections: ReadonlyArray<SelectionNode>
+  selections: ReadonlyArray<SelectionNode>
 ): QueryNode {
-  const select = queryNode.select ?? createSelectNode()
-
   return freeze({
     ...queryNode,
-    select: freeze({
-      ...select,
-      distinctOnSelections: freeze([
-        ...select.distinctOnSelections,
-        ...distinctOnSelections,
-      ]),
-    }),
+    select: queryNode.select
+      ? cloneSelectNodeWithDistinctOnSelections(queryNode.select, selections)
+      : createSelectNodeWithDistinctOnSelections(selections),
   })
 }
 
@@ -78,14 +80,11 @@ export function cloneQueryNodeWithSelectModifier(
   queryNode: QueryNode,
   modifier: SelectModifier
 ): QueryNode {
-  const select = queryNode.select ?? createSelectNode()
-
   return freeze({
     ...queryNode,
-    select: freeze({
-      ...select,
-      modifier,
-    }),
+    select: queryNode.select
+      ? cloneSelectNodeWithModifier(queryNode.select, modifier)
+      : createSelectNodeWithModifier(modifier),
   })
 }
 
@@ -101,26 +100,26 @@ export function cloneQueryNodeWithModifier(
 
 export function cloneQueryNodeWithFroms(
   queryNode: QueryNode,
-  froms: ReadonlyArray<FromNode>
+  froms: ReadonlyArray<FromItemNode>
 ): QueryNode {
   return freeze({
     ...queryNode,
-    from: freeze([...queryNode.from, ...froms]),
+    from: queryNode.from
+      ? cloneFromNodeWithItems(queryNode.from, froms)
+      : createFromNodeWithItems(froms),
   })
 }
 
 export function cloneQueryNodeWithWhere(
   queryNode: QueryNode,
   op: 'and' | 'or',
-  where: WhereNode
+  filter: WhereChildNode
 ): QueryNode {
   return freeze({
     ...queryNode,
     where: queryNode.where
-      ? op === 'and'
-        ? createAndNode(queryNode.where, where)
-        : createOrNode(queryNode.where, where)
-      : where,
+      ? cloneWhereNodeWithFilter(queryNode.where, op, filter)
+      : createWhereNodeWithFilter(filter),
   })
 }
 
@@ -130,6 +129,8 @@ export function cloneQueryNodeWithJoin(
 ): QueryNode {
   return freeze({
     ...queryNode,
-    joins: freeze([...queryNode.joins, join]),
+    joins: queryNode.joins
+      ? freeze([...queryNode.joins, join])
+      : freeze([join]),
   })
 }

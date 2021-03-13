@@ -1,6 +1,5 @@
 import { AliasedQueryBuilder, QueryBuilder } from '../query-builder'
 import { isFunction, isString } from '../../utils/object-utils'
-import { createFromNode, FromNode } from '../../operation-node/from-node'
 import { AliasNode, createAliasNode } from '../../operation-node/alias-node'
 import { createTableNode, TableNode } from '../../operation-node/table-node'
 import {
@@ -10,6 +9,10 @@ import {
 } from '../type-utils'
 import { isOperationNodeSource } from '../../operation-node/operation-node-source'
 import { AliasedRawBuilder } from '../../raw-builder/raw-builder'
+import {
+  createFromItemNode,
+  FromItemNode,
+} from '../../operation-node/from-item-node'
 
 /**
  * Table argument type.
@@ -95,7 +98,7 @@ type ExtractRowTypeFromFromArg<
 export function parseFromArgs(
   query: AnyQueryBuilder,
   from: TableArg<any, any, any> | TableArg<any, any, any>[]
-): FromNode[] {
+): FromItemNode[] {
   if (Array.isArray(from)) {
     return from.map((it) => parseFromArg(query, it))
   } else {
@@ -106,13 +109,13 @@ export function parseFromArgs(
 export function parseFromArg(
   query: AnyQueryBuilder,
   from: TableArg<any, any, any>
-): FromNode {
+): FromItemNode {
   if (isString(from)) {
-    return createFromNode(parseAliasedTable(from))
+    return createFromItemNode(parseAliasedTable(from))
   } else if (isOperationNodeSource(from)) {
-    return createFromNode(from.toOperationNode())
+    return createFromItemNode(from.toOperationNode())
   } else if (isFunction(from)) {
-    return createFromNode(from(query).toOperationNode())
+    return createFromItemNode(from(query).toOperationNode())
   } else {
     throw new Error(
       `invalid value passed to query method: ${JSON.stringify(from)}`
