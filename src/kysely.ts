@@ -348,7 +348,7 @@ export class Kysely<DB> {
    * Begins a transaction for the async chain started inside the callback.
    *
    * Any `kysely` query started inside the callback or any method called
-   * by the callback will automatically use the save transaction. No need to
+   * by the callback will automatically use the same transaction. No need to
    * pass around a transaction object. This is possible through node's async
    * hooks and specifically `AsyncLocalStorage`.
    *
