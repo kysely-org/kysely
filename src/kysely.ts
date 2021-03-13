@@ -370,7 +370,7 @@ export class Kysely<DB> {
    * }
    *
    * function doMoreStuff(): Promise<void> {
-   *   // Even this is automatically uses the correct transaction even though
+   *   // Even this automatically uses the correct transaction even though
    *   // we didn't `await` on the method. Node's async hooks work with all
    *   // possible kinds of async events.
    *   return db.query('pet').insert({ name: 'Fluffy' }).execute()
@@ -392,9 +392,12 @@ export class Kysely<DB> {
       connection = await this.#driver.acquireConnection()
       await connection.execute<void>({ sql: 'BEGIN', bindings: [] })
 
-      return await this.#transactions.run(connection, () => {
+      const result = await this.#transactions.run(connection, () => {
         return callback()
       })
+
+      await connection.execute<void>({ sql: 'COMMIT', bindings: [] })
+      return result
     } catch (error) {
       if (connection) {
         await connection.execute<void>({ sql: 'ROLLBACK', bindings: [] })
