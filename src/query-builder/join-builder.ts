@@ -1,9 +1,6 @@
 import { cloneJoinNodeWithOn, JoinNode } from '../operation-node/join-node'
 import { OperationNodeSource } from '../operation-node/operation-node-source'
-import {
-  cloneQueryNodeWithFroms,
-  createQueryNode,
-} from '../operation-node/query-node'
+import { createQueryWithFromItems } from '../operation-node/query-node'
 import { RawBuilder } from '../raw-builder/raw-builder'
 import {
   parseFromArgs,
@@ -47,15 +44,8 @@ export class JoinBuilder<DB, TB extends keyof DB, O = {}>
   ): FromQueryBuilder<DB, TB, O, F>
 
   subQuery(table: any): any {
-    const query = new QueryBuilder<any, any, any>({
-      queryNode: createQueryNode(),
-    })
-
     return new QueryBuilder({
-      queryNode: cloneQueryNodeWithFroms(
-        query.toOperationNode(),
-        parseFromArgs(query, table)
-      ),
+      queryNode: createQueryWithFromItems(parseFromArgs(table)),
     })
   }
 
@@ -67,15 +57,11 @@ export class JoinBuilder<DB, TB extends keyof DB, O = {}>
     op: FilterOperatorArg,
     rhs: FilterReferenceArg<DB, TB, O>
   ): JoinBuilder<DB, TB, O> {
-    const query = new QueryBuilder<any, any, any>({
-      queryNode: createQueryNode(),
-    })
-
     return new JoinBuilder(
       cloneJoinNodeWithOn(
         this.#joinNode,
         'and',
-        parseFilterReferenceArgs(query, lhs, op, rhs)
+        parseFilterReferenceArgs(lhs, op, rhs)
       )
     )
   }

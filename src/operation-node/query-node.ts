@@ -54,6 +54,15 @@ export function createQueryNode(): QueryNode {
   })
 }
 
+export function createQueryWithFromItems(
+  fromItems: ReadonlyArray<FromItemNode>
+): QueryNode {
+  return freeze({
+    kind: 'QueryNode',
+    from: createFromNodeWithItems(fromItems),
+  })
+}
+
 export function cloneQueryNodeWithSelections(
   queryNode: QueryNode,
   selections: ReadonlyArray<SelectionNode>

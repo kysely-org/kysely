@@ -101,11 +101,10 @@ export type FilterOperatorArg =
   | RawBuilder<any>
 
 export function parseFilterArgs(
-  query: AnyQueryBuilder,
   args: any[]
 ): FilterNode | AndNode | OrNode | ParensNode {
   if (args.length === 3) {
-    return parseThreeArgFilter(query, args[0], args[1], args[2])
+    return parseThreeArgFilter(args[0], args[1], args[2])
   } else if (args.length === 1) {
     return parseOneArgFilter(args[0])
   } else {
@@ -116,15 +115,14 @@ export function parseFilterArgs(
 }
 
 export function parseFilterReferenceArgs(
-  query: AnyQueryBuilder,
   lhs: FilterReferenceArg<any, any, any>,
   op: FilterOperatorArg,
   rhs: FilterReferenceArg<any, any, any>
 ): FilterNode {
   return createFilterNode(
-    parseFilterReference(query, lhs),
+    parseFilterReference(lhs),
     parseFilterOperator(op),
-    parseFilterReference(query, rhs)
+    parseFilterReference(rhs)
   )
 }
 
@@ -149,20 +147,18 @@ export function parseExistsFilterArgs(
 }
 
 function parseThreeArgFilter(
-  query: AnyQueryBuilder,
   lhs: FilterReferenceArg<any, any, any>,
   op: FilterOperatorArg,
   rhs: FilterValueArg<any, any, any>
 ): FilterNode {
   return createFilterNode(
-    parseFilterReference(query, lhs),
+    parseFilterReference(lhs),
     parseFilterOperator(op),
-    parseFilterValue(query, rhs)
+    parseFilterValue(rhs)
   )
 }
 
 function parseFilterReference(
-  query: AnyQueryBuilder,
   arg: FilterReferenceArg<any, any, any>
 ): FilterNodeLhsNode {
   if (isString(arg)) {
@@ -170,7 +166,7 @@ function parseFilterReference(
   } else if (isOperationNodeSource(arg)) {
     return arg.toOperationNode()
   } else if (isFunction(arg)) {
-    return arg(query).toOperationNode()
+    return arg(new QueryBuilder()).toOperationNode()
   } else {
     throw new Error(
       `unsupported left hand side filter argument ${JSON.stringify(arg)}`
@@ -197,17 +193,16 @@ function parseFilterOperator(op: FilterOperatorArg): OperatorNode | RawNode {
 }
 
 function parseFilterValue(
-  query: AnyQueryBuilder,
   arg: FilterValueArg<any, any, any>
 ): FilterNodeRhsNode {
   if (isPrimitive(arg)) {
     return createValueNode(arg)
   } else if (Array.isArray(arg)) {
-    return parseFilterValueList(query, arg)
+    return parseFilterValueList(arg)
   } else if (isOperationNodeSource(arg)) {
     return arg.toOperationNode()
   } else if (isFunction(arg)) {
-    return arg(query).toOperationNode()
+    return arg(new QueryBuilder()).toOperationNode()
   } else {
     throw new Error(
       `unsupported right hand side filter argument ${JSON.stringify(arg)}`
@@ -216,7 +211,6 @@ function parseFilterValue(
 }
 
 function parseFilterValueList(
-  query: AnyQueryBuilder,
   arg: FilterValueArg<any, any, any>[]
 ): PrimitiveValueListNode | ValueListNode {
   if (arg.every(isPrimitive)) {
@@ -226,7 +220,7 @@ function parseFilterValueList(
 
   return createValueListNode(
     arg.map((it) => {
-      const node = parseFilterValue(query, it)
+      const node = parseFilterValue(it)
 
       if (isColumnNode(node)) {
         throw new Error(
@@ -254,12 +248,7 @@ function parseOneArgFilter(
     )
   }
 
-  const query = grouper(
-    new QueryBuilder({
-      queryNode: createQueryNode(),
-    })
-  )
-
+  const query = grouper(new QueryBuilder())
   const queryNode = query.toOperationNode()
 
   if (!queryNode.where) {

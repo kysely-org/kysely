@@ -1,7 +1,4 @@
-import {
-  cloneQueryNodeWithFroms,
-  createQueryNode,
-} from './operation-node/query-node'
+import { createQueryWithFromItems } from './operation-node/query-node'
 import { QueryBuilder } from './query-builder/query-builder'
 import { RawBuilder } from './raw-builder/raw-builder'
 import {
@@ -198,8 +195,6 @@ export class Kysely<DB> {
   ): FromQueryBuilder<DB, never, {}, F>
 
   query(from: any): any {
-    const query = new QueryBuilder({ queryNode: createQueryNode() })
-
     const connectionProvider = new TransactionalConnectionProvider(
       this.#driver,
       this.#transactions
@@ -208,10 +203,7 @@ export class Kysely<DB> {
     return new QueryBuilder({
       compiler: this.#compiler,
       connectionProvider,
-      queryNode: cloneQueryNodeWithFroms(
-        query.toOperationNode(),
-        parseFromArgs(query, from)
-      ),
+      queryNode: createQueryWithFromItems(parseFromArgs(from)),
     })
   }
 

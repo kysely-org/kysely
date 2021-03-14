@@ -69,7 +69,11 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
   readonly #compiler?: QueryCompiler
   readonly #connectionProvider?: ConnectionProvider
 
-  constructor({ queryNode, compiler, connectionProvider }: QueryBuilderArgs) {
+  constructor(
+    { queryNode, compiler, connectionProvider }: QueryBuilderArgs = {
+      queryNode: createQueryNode(),
+    }
+  ) {
     this.#queryNode = queryNode
     this.#compiler = compiler
     this.#connectionProvider = connectionProvider
@@ -128,7 +132,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
     return new QueryBuilder({
       queryNode: cloneQueryNodeWithFroms(
         createQueryNode(),
-        parseFromArgs(this, table)
+        parseFromArgs(table)
       ),
     })
   }
@@ -271,7 +275,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
       queryNode: cloneQueryNodeWithWhere(
         this.#queryNode,
         'and',
-        parseFilterArgs(this, args)
+        parseFilterArgs(args)
       ),
     })
   }
@@ -290,7 +294,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
       queryNode: cloneQueryNodeWithWhere(
         this.#queryNode,
         'and',
-        parseFilterReferenceArgs(this, lhs, op, rhs)
+        parseFilterReferenceArgs(lhs, op, rhs)
       ),
     })
   }
@@ -371,7 +375,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
       queryNode: cloneQueryNodeWithWhere(
         this.#queryNode,
         'or',
-        parseFilterArgs(this, args)
+        parseFilterArgs(args)
       ),
     })
   }
@@ -390,7 +394,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
       queryNode: cloneQueryNodeWithWhere(
         this.#queryNode,
         'or',
-        parseFilterReferenceArgs(this, lhs, op, rhs)
+        parseFilterReferenceArgs(lhs, op, rhs)
       ),
     })
   }
@@ -475,7 +479,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
       connectionProvider: this.#connectionProvider,
       queryNode: cloneQueryNodeWithSelections(
         this.#queryNode,
-        parseSelectArgs(this, selection)
+        parseSelectArgs(selection)
       ),
     })
   }
@@ -500,7 +504,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
       connectionProvider: this.#connectionProvider,
       queryNode: cloneQueryNodeWithDistinctOnSelections(
         this.#queryNode,
-        parseSelectArgs(this, selection)
+        parseSelectArgs(selection)
       ),
     })
   }

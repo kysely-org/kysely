@@ -28,7 +28,6 @@ import {
   AnyAliasedQueryBuilder,
   AnyColumn,
   AnyColumnWithTable,
-  AnyQueryBuilder,
   RowType,
   ValueType,
 } from '../type-utils'
@@ -156,26 +155,22 @@ type ExtractTypeFromSelectArg<
   : never
 
 export function parseSelectArgs(
-  query: AnyQueryBuilder,
   selection: SelectArg<any, any, any> | SelectArg<any, any, any>[]
 ): SelectionNode[] {
   if (Array.isArray(selection)) {
-    return selection.map((it) => parseSelectArg(query, it))
+    return selection.map((it) => parseSelectArg(it))
   } else {
-    return [parseSelectArg(query, selection)]
+    return [parseSelectArg(selection)]
   }
 }
 
-function parseSelectArg(
-  query: AnyQueryBuilder,
-  selection: SelectArg<any, any, any>
-): SelectionNode {
+function parseSelectArg(selection: SelectArg<any, any, any>): SelectionNode {
   if (isString(selection)) {
     return createSelectionNode(parseAliasedStringReference(selection))
   } else if (isOperationNodeSource(selection)) {
     return createSelectionNode(selection.toOperationNode())
   } else if (isFunction(selection)) {
-    return createSelectionNode(selection(query).toOperationNode())
+    return createSelectionNode(selection(new QueryBuilder()).toOperationNode())
   } else {
     throw new Error(
       `invalid value passed to select method: ${JSON.stringify(selection)}`
