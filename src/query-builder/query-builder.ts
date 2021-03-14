@@ -18,6 +18,7 @@ import {
   cloneQueryNodeWithSelections,
   cloneQueryNodeWithModifier,
   cloneQueryNodeWithSelectModifier,
+  cloneQueryNodeWithInsert,
 } from '../operation-node/query-node'
 
 import {
@@ -45,6 +46,7 @@ import {
 } from './methods/filter-method'
 import { ConnectionProvider } from '../driver/connection-provider'
 import { Connection } from '../driver/connection'
+import { InsertArg, parseInsertArgs } from './methods/insert-method'
 
 /**
  * The main query builder class.
@@ -632,6 +634,47 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
   }
 
   /**
+   * Creates an insert query.
+   *
+   * This method takes an object whose keys are column names and values are either
+   * values to insert. In addition to the column's type, the values can be `raw`
+   * instances or queries.
+   *
+   * The return value is the primary key of the inserted row BUT on some databases
+   * there is no return value by default. That's the reason for the `number | undefined`
+   * type of the return value. On postgres you need to additionally call `returning`
+   * to get something out of the query.
+   *
+   * @example
+   * ```ts
+   * const [maybeId] = await db.
+   *   query('person')
+   *   .insert({
+   *     first_name: 'Jennifer',
+   *     last_name: 'Aniston'
+   *   })
+   *   .execute()
+   * ```
+   */
+  insert(row: InsertArg<DB, TB>): QueryBuilder<DB, TB, number | undefined>
+
+  insert(row: InsertArg<DB, TB>[]): QueryBuilder<DB, TB, number | undefined>
+
+  insert(args: any): any {
+    return new QueryBuilder({
+      compiler: this.#compiler,
+      connectionProvider: this.#connectionProvider,
+      queryNode: cloneQueryNodeWithInsert(
+        this.#queryNode,
+        // TODO(samiko): Getting the first item of the `from` clause
+        //               seems like a hack. Maybe rethink this? At
+        //               least check that it exists.
+        parseInsertArgs(this.#queryNode.from!.froms[0], args)
+      ),
+    })
+  }
+
+  /**
    *
    */
   as<A extends string>(alias: A): AliasedQueryBuilder<DB, TB, O, A> {
@@ -672,6 +715,11 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
         await this.#connectionProvider.releaseConnection(connection)
       }
     }
+  }
+
+  async executeTakeFirst(): Promise<O | undefined> {
+    const result = await this.execute()
+    return result[0]
   }
 }
 

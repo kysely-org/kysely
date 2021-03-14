@@ -9,7 +9,6 @@ export type OperationNodeKind =
   | 'TableNode'
   | 'AliasNode'
   | 'FromNode'
-  | 'FromItemNode'
   | 'SelectAllNode'
   | 'FilterNode'
   | 'AndNode'
@@ -21,6 +20,7 @@ export type OperationNodeKind =
   | 'JoinNode'
   | 'OperatorNode'
   | 'WhereNode'
+  | 'InsertNode'
 
 export interface OperationNode {
   readonly kind: OperationNodeKind

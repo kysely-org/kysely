@@ -15,15 +15,16 @@ import { freeze } from '../utils/object-utils'
 import {
   cloneFromNodeWithItems,
   createFromNodeWithItems,
+  FromItemNode,
   FromNode,
 } from './from-node'
-import { FromItemNode } from './from-item-node'
 import {
   cloneWhereNodeWithFilter,
   createWhereNodeWithFilter,
   WhereChildNode,
   WhereNode,
 } from './where-node'
+import { InsertNode } from './insert-node'
 
 export type QueryModifier =
   | 'ForUpdate'
@@ -39,6 +40,7 @@ export interface QueryNode extends OperationNode {
   readonly joins?: ReadonlyArray<JoinNode>
   readonly where?: WhereNode
   readonly select?: SelectNode
+  readonly insert?: InsertNode
   readonly modifier?: QueryModifier
 }
 
@@ -132,5 +134,16 @@ export function cloneQueryNodeWithJoin(
     joins: queryNode.joins
       ? freeze([...queryNode.joins, join])
       : freeze([join]),
+  })
+}
+
+export function cloneQueryNodeWithInsert(
+  queryNode: QueryNode,
+  insert: InsertNode
+): QueryNode {
+  return freeze({
+    ...queryNode,
+    from: undefined,
+    insert,
   })
 }

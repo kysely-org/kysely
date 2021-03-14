@@ -9,11 +9,7 @@ import {
 } from '../type-utils'
 import { isOperationNodeSource } from '../../operation-node/operation-node-source'
 import { AliasedRawBuilder } from '../../raw-builder/raw-builder'
-import {
-  createFromItemNode,
-  FromItemNode,
-} from '../../operation-node/from-item-node'
-
+import { FromItemNode } from '../../operation-node/from-node'
 /**
  * Table argument type.
  */
@@ -111,11 +107,11 @@ export function parseFromArg(
   from: TableArg<any, any, any>
 ): FromItemNode {
   if (isString(from)) {
-    return createFromItemNode(parseAliasedTable(from))
+    return parseAliasedTable(from)
   } else if (isOperationNodeSource(from)) {
-    return createFromItemNode(from.toOperationNode())
+    return from.toOperationNode()
   } else if (isFunction(from)) {
-    return createFromItemNode(from(query).toOperationNode())
+    return from(query).toOperationNode()
   } else {
     throw new Error(
       `invalid value passed to query method: ${JSON.stringify(from)}`

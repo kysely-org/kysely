@@ -43,14 +43,18 @@ describe('dummy test', () => {
   })
 
   it('simple', async () => {
-    const [{ id, first_name }] = await db
+    const row = await db
       .query('person')
       .select(['id', 'first_name'])
-      .execute()
+      .executeTakeFirst()
+
+    if (row) {
+      console.log(row.first_name)
+    }
   })
 
   it('selects', async () => {
-    const [r] = await db
+    const r = await db
       .query([
         'person',
         'pet as p',
@@ -72,22 +76,24 @@ describe('dummy test', () => {
         db.query('movie').select('stars').as('sub1'),
         (qb) => qb.subQuery('movie').select('stars').as('sub2'),
       ])
-      .execute()
+      .executeTakeFirst()
 
-    r.first_name
-    r.pln
-    r.strs
-    r.movieStarz
-    r.id
-    r.age
-    r.foo
-    r.faz
-    r.bar
-    r.baz
-    r.rand1
-    r.rand2
-    r.sub1
-    r.sub2
+    if (r) {
+      r.first_name
+      r.pln
+      r.strs
+      r.movieStarz
+      r.id
+      r.age
+      r.foo
+      r.faz
+      r.bar
+      r.baz
+      r.rand1
+      r.rand2
+      r.sub1
+      r.sub2
+    }
   })
 
   it('join', async () => {
@@ -107,9 +113,11 @@ describe('dummy test', () => {
 
     const qb4 = db
       .query('person as per')
+      .selectAll('per')
       .innerJoin('pet as p', (join) =>
         join.on('p.owner_id', '=', 'per.id').on('p.owner_id', '=', 'per.id')
       )
+
     console.log(qb4.compile().sql)
   })
 
@@ -180,5 +188,18 @@ describe('dummy test', () => {
     }
 
     console.log((new Date().valueOf() - t.valueOf()) / rounds)
+  })
+
+  it('insert', async () => {
+    const qb = db.query('person').insert({
+      last_name: 'Test',
+      gender: 'male',
+      age: db.raw('?', [10]),
+      first_name: db.query('person').where('id', '=', 1).select('first_name'),
+    })
+
+    console.log(qb.compile())
+    const result = await qb.execute()
+    console.log(result)
   })
 })

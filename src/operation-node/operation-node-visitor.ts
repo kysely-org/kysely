@@ -22,8 +22,8 @@ import { ValueNode } from './value-node'
 import { FilterNode } from './filter-node'
 import { OperatorNode } from './operator-node'
 import { FromNode } from './from-node'
-import { FromItemNode } from './from-item-node'
 import { WhereNode } from './where-node'
+import { InsertNode } from './insert-node'
 
 export class OperationNodeVisitor {
   #visitors: Record<OperationNodeKind, Function> = {
@@ -37,7 +37,6 @@ export class OperationNodeVisitor {
     SelectionNode: this.visitSelection.bind(this),
     TableNode: this.visitTable.bind(this),
     FromNode: this.visitFrom.bind(this),
-    FromItemNode: this.visitFromItem.bind(this),
     SelectAllNode: this.visitSelectAll.bind(this),
     FilterNode: this.visitFilter.bind(this),
     AndNode: this.visitAnd.bind(this),
@@ -49,6 +48,7 @@ export class OperationNodeVisitor {
     JoinNode: this.visitJoin.bind(this),
     OperatorNode: this.visitOperator.bind(this),
     WhereNode: this.visitWhere.bind(this),
+    InsertNode: this.visitInsert.bind(this),
   }
 
   readonly visitNode = (node: OperationNode): void => {
@@ -60,8 +60,16 @@ export class OperationNodeVisitor {
       this.visitNode(node.from)
     }
 
+    if (node.joins) {
+      node.joins.forEach(this.visitNode)
+    }
+
     if (node.select) {
       this.visitNode(node.select)
+    }
+
+    if (node.insert) {
+      this.visitNode(node.insert)
     }
 
     if (node.where) {
@@ -101,10 +109,6 @@ export class OperationNodeVisitor {
 
   protected visitFrom(node: FromNode): void {
     node.froms.forEach(this.visitNode)
-  }
-
-  protected visitFromItem(node: FromItemNode): void {
-    this.visitNode(node.from)
   }
 
   protected visitReference(node: ReferenceNode): void {
@@ -153,6 +157,12 @@ export class OperationNodeVisitor {
 
   protected visitWhere(node: WhereNode): void {
     this.visitNode(node.where)
+  }
+
+  protected visitInsert(node: InsertNode): void {
+    this.visitNode(node.into)
+    node.columns.forEach(this.visitNode)
+    node.values.forEach(this.visitNode)
   }
 
   protected visitSelectAll(_: SelectAllNode): void {}

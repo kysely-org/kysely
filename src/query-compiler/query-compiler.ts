@@ -3,6 +3,7 @@ import { AndNode } from '../operation-node/and-node'
 import { FilterNode } from '../operation-node/filter-node'
 import { FromNode } from '../operation-node/from-node'
 import { IdentifierNode } from '../operation-node/identifier-node'
+import { InsertNode } from '../operation-node/insert-node'
 import { JoinNode, JoinType } from '../operation-node/join-node'
 import { OperationNode } from '../operation-node/operation-node'
 import { OperationNodeVisitor } from '../operation-node/operation-node-visitor'
@@ -26,12 +27,13 @@ import { CompiledQuery } from './compiled-query'
 export class QueryCompiler extends OperationNodeVisitor {
   #sqlFragments: string[] = []
   #bindings: any[] = []
-  #subQueryDepth = 0
+
+  protected queryNodeStack: QueryNode[] = []
 
   compile(queryNode: QueryNode): CompiledQuery {
     this.#sqlFragments = []
     this.#bindings = []
-    this.#subQueryDepth = 0
+    this.queryNodeStack = []
 
     this.visitQuery(queryNode)
 
@@ -50,8 +52,8 @@ export class QueryCompiler extends OperationNodeVisitor {
   }
 
   protected visitQuery(node: QueryNode): void {
-    const needsParens = this.#subQueryDepth > 0
-    ++this.#subQueryDepth
+    const needsParens = !isEmpty(this.queryNodeStack)
+    this.queryNodeStack.push(node)
 
     if (needsParens) {
       this.append('(')
@@ -59,25 +61,29 @@ export class QueryCompiler extends OperationNodeVisitor {
 
     if (node.select) {
       this.visitNode(node.select)
-      this.append(' ')
+    }
+
+    if (node.insert) {
+      this.visitNode(node.insert)
     }
 
     if (node.from) {
-      this.visitNode(node.from)
       this.append(' ')
+      this.visitNode(node.from)
     }
 
     if (node.joins) {
-      node.joins.forEach(this.visitNode)
       this.append(' ')
+      node.joins.forEach(this.visitNode)
     }
 
     if (node.where) {
-      this.visitNode(node.where)
       this.append(' ')
+      this.visitNode(node.where)
     }
 
     if (node.modifier) {
+      this.append(' ')
       this.compileQueryModifier(node.modifier)
     }
 
@@ -85,7 +91,7 @@ export class QueryCompiler extends OperationNodeVisitor {
       this.append(')')
     }
 
-    --this.#subQueryDepth
+    this.queryNodeStack.pop()
   }
 
   protected compileQueryModifier(modifier: QueryModifier): void {
@@ -135,6 +141,20 @@ export class QueryCompiler extends OperationNodeVisitor {
   protected visitWhere(node: WhereNode): void {
     this.append('where ')
     this.visitNode(node.where)
+  }
+
+  protected visitInsert(node: InsertNode): void {
+    this.append('insert into ')
+    this.visitNode(node.into)
+    this.append(' (')
+    this.compileList(node.columns)
+    this.append(') values ')
+
+    if (node.values.length === 1) {
+      this.visitNode(node.values[0])
+    } else {
+      this.compileList(node.values)
+    }
   }
 
   protected visitAlias(node: AliasNode): void {
