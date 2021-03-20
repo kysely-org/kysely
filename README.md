@@ -35,7 +35,7 @@ interface Person {
 }
 
 interface Pet {
-  id: string
+  id: number
   name: string
   owner_id: number
   species: 'dog' | 'cat'
@@ -62,7 +62,7 @@ const db = new Kysely<Database>({
 
 async function demo() {
   const [person] = await db
-    .query('person')
+    .selectFrom('person')
     .innerJoin('pet', 'pet.owner_id', 'person.id')
     .select(['first_name', 'pet.name as pet_name'])
     .where('person.id', '=', 1)

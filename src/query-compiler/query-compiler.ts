@@ -1,5 +1,12 @@
 import { AliasNode } from '../operation-node/alias-node'
 import { AndNode } from '../operation-node/and-node'
+import {
+  ColumnDataType,
+  ColumnDefinitionNode,
+} from '../operation-node/column-definition-node'
+import { CreateTableNode } from '../operation-node/create-table-node'
+import { DeleteNode } from '../operation-node/delete-node'
+import { DropTableNode } from '../operation-node/drop-table-node'
 import { FilterNode } from '../operation-node/filter-node'
 import { FromNode } from '../operation-node/from-node'
 import { IdentifierNode } from '../operation-node/identifier-node'
@@ -14,6 +21,7 @@ import { PrimitiveValueListNode } from '../operation-node/primitive-value-list-n
 import { QueryModifier, QueryNode } from '../operation-node/query-node'
 import { RawNode } from '../operation-node/raw-node'
 import { ReferenceNode } from '../operation-node/reference-node'
+import { ReturningNode } from '../operation-node/returning-node'
 import { SelectAllNode } from '../operation-node/select-all-node'
 import { SelectNode } from '../operation-node/select-node'
 import { SelectionNode } from '../operation-node/selection-node'
@@ -30,12 +38,14 @@ export class QueryCompiler extends OperationNodeVisitor {
 
   protected queryNodeStack: QueryNode[] = []
 
-  compile(queryNode: QueryNode): CompiledQuery {
+  compile(
+    queryNode: QueryNode | CreateTableNode | DropTableNode
+  ): CompiledQuery {
     this.#sqlFragments = []
     this.#bindings = []
     this.queryNodeStack = []
 
-    this.visitQuery(queryNode)
+    this.visitNode(queryNode)
 
     return freeze({
       sql: this.getSql(),
@@ -59,12 +69,16 @@ export class QueryCompiler extends OperationNodeVisitor {
       this.append('(')
     }
 
-    if (node.select) {
-      this.visitNode(node.select)
-    }
-
     if (node.insert) {
       this.visitNode(node.insert)
+    }
+
+    if (node.delete) {
+      this.visitNode(node.delete)
+    }
+
+    if (node.select) {
+      this.visitNode(node.select)
     }
 
     if (node.from) {
@@ -85,6 +99,11 @@ export class QueryCompiler extends OperationNodeVisitor {
     if (node.modifier) {
       this.append(' ')
       this.compileQueryModifier(node.modifier)
+    }
+
+    if (node.returning) {
+      this.append(' ')
+      this.visitNode(node.returning)
     }
 
     if (needsParens) {
@@ -146,15 +165,32 @@ export class QueryCompiler extends OperationNodeVisitor {
   protected visitInsert(node: InsertNode): void {
     this.append('insert into ')
     this.visitNode(node.into)
-    this.append(' (')
-    this.compileList(node.columns)
-    this.append(') values ')
 
-    if (node.values.length === 1) {
-      this.visitNode(node.values[0])
-    } else {
-      this.compileList(node.values)
+    if (node.columns) {
+      this.append(' (')
+      this.compileList(node.columns)
+      this.append(')')
     }
+
+    if (node.values) {
+      this.append(' values ')
+
+      if (node.values.length === 1) {
+        this.visitNode(node.values[0])
+      } else {
+        this.compileList(node.values)
+      }
+    }
+  }
+
+  protected visitDelete(node: DeleteNode): void {
+    this.append('delete from ')
+    this.visitNode(node.from)
+  }
+
+  protected visitReturning(node: ReturningNode): void {
+    this.append('returning ')
+    this.compileList(node.selections)
   }
 
   protected visitAlias(node: AliasNode): void {
@@ -271,6 +307,55 @@ export class QueryCompiler extends OperationNodeVisitor {
     this.visitNode(node.table)
   }
 
+  protected visitCreateTable(node: CreateTableNode): void {
+    this.append('create table ')
+    this.visitNode(node.table)
+    this.append(' (')
+    this.compileList(node.columns)
+    this.append(')')
+  }
+
+  protected visitColumnDefinition(node: ColumnDefinitionNode): void {
+    this.visitNode(node.column)
+    this.append(' ')
+
+    if (node.isAutoIncrementing) {
+      this.append('serial')
+    } else {
+      this.append(DATA_TYPE_SQL[node.dataType!](node))
+    }
+
+    if (!node.isNullable) {
+      this.append(' not null')
+    }
+
+    if (node.isUnique) {
+      this.append(' unique')
+    }
+
+    if (node.isPrimaryKey) {
+      this.append(' primary key')
+    }
+
+    if (node.references) {
+      this.append(' references ')
+      this.visitNode(node.references.table)
+      this.append('(')
+      this.visitNode(node.references.column)
+      this.append(')')
+    }
+  }
+
+  protected visitDropTable(node: DropTableNode): void {
+    this.append('drop table ')
+
+    if (node.modifier === 'IfExists') {
+      this.append('if exists ')
+    }
+
+    this.visitNode(node.table)
+  }
+
   protected appendLeftIdentifierWrapper(): void {
     this.append('"')
   }
@@ -303,4 +388,18 @@ const JOIN_TYPE_SQL: Record<JoinType, string> = {
   LeftJoin: 'left join',
   RightJoin: 'right join',
   FullJoin: 'full join',
+}
+
+const DATA_TYPE_SQL: Record<
+  ColumnDataType,
+  (node: ColumnDefinitionNode) => string
+> = {
+  BigInteger: () => 'bigint',
+  Binary: () => '???',
+  Boolean: () => 'boolean',
+  Double: () => 'double precision',
+  Float: () => 'real',
+  Integer: () => 'integer',
+  String: (node) => `varchar(${node.dataTypeSize ?? 255})`,
+  Text: () => 'text',
 }

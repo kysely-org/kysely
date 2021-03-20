@@ -21,6 +21,11 @@ export type OperationNodeKind =
   | 'OperatorNode'
   | 'WhereNode'
   | 'InsertNode'
+  | 'DeleteNode'
+  | 'ReturningNode'
+  | 'CreateTableNode'
+  | 'ColumnDefinitionNode'
+  | 'DropTableNode'
 
 export interface OperationNode {
   readonly kind: OperationNodeKind

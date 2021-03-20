@@ -24,7 +24,20 @@ import {
   WhereChildNode,
   WhereNode,
 } from './where-node'
-import { InsertNode } from './insert-node'
+import {
+  cloneInsertNodeWithColumnsAndValues,
+  createInsertNodeWithTable,
+  InsertNode,
+  InsertValuesNode,
+} from './insert-node'
+import { TableNode } from './table-node'
+import { ColumnNode } from './column-node'
+import { createDeleteNodeWithTable, DeleteNode } from './delete-node'
+import {
+  cloneReturningNodeWithSelections,
+  createReturningNodeWithSelections,
+  ReturningNode,
+} from './returning-node'
 
 export type QueryModifier =
   | 'ForUpdate'
@@ -36,11 +49,14 @@ export type QueryModifier =
 
 export interface QueryNode extends OperationNode {
   readonly kind: 'QueryNode'
+  // TODO(samiko): Move this inside SelectNode?
   readonly from?: FromNode
   readonly joins?: ReadonlyArray<JoinNode>
   readonly where?: WhereNode
   readonly select?: SelectNode
   readonly insert?: InsertNode
+  readonly delete?: DeleteNode
+  readonly returning?: ReturningNode
   readonly modifier?: QueryModifier
 }
 
@@ -60,6 +76,20 @@ export function createQueryWithFromItems(
   return freeze({
     kind: 'QueryNode',
     from: createFromNodeWithItems(fromItems),
+  })
+}
+
+export function createQueryNodeWithInsertTable(into: TableNode): QueryNode {
+  return freeze({
+    kind: 'QueryNode',
+    insert: createInsertNodeWithTable(into),
+  })
+}
+
+export function createQueryNodeWithDeleteTable(from: TableNode): QueryNode {
+  return freeze({
+    kind: 'QueryNode',
+    delete: createDeleteNodeWithTable(from),
   })
 }
 
@@ -146,13 +176,29 @@ export function cloneQueryNodeWithJoin(
   })
 }
 
-export function cloneQueryNodeWithInsert(
+export function cloneQueryNodeWithInsertColumnsAndValues(
   queryNode: QueryNode,
-  insert: InsertNode
+  columns: ReadonlyArray<ColumnNode>,
+  values: ReadonlyArray<InsertValuesNode>
 ): QueryNode {
   return freeze({
     ...queryNode,
-    from: undefined,
-    insert,
+    insert: cloneInsertNodeWithColumnsAndValues(
+      queryNode.insert!,
+      columns,
+      values
+    ),
+  })
+}
+
+export function cloneQueryNodeWithReturningSelections(
+  queryNode: QueryNode,
+  selections: ReadonlyArray<SelectionNode>
+): QueryNode {
+  return freeze({
+    ...queryNode,
+    returning: queryNode.returning
+      ? cloneReturningNodeWithSelections(queryNode.returning, selections)
+      : createReturningNodeWithSelections(selections),
   })
 }

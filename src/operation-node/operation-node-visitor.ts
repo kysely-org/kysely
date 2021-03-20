@@ -24,6 +24,11 @@ import { OperatorNode } from './operator-node'
 import { FromNode } from './from-node'
 import { WhereNode } from './where-node'
 import { InsertNode } from './insert-node'
+import { DeleteNode } from './delete-node'
+import { ReturningNode } from './returning-node'
+import { CreateTableNode } from './create-table-node'
+import { ColumnDefinitionNode } from './column-definition-node'
+import { DropTableNode } from './drop-table-node'
 
 export class OperationNodeVisitor {
   #visitors: Record<OperationNodeKind, Function> = {
@@ -49,6 +54,11 @@ export class OperationNodeVisitor {
     OperatorNode: this.visitOperator.bind(this),
     WhereNode: this.visitWhere.bind(this),
     InsertNode: this.visitInsert.bind(this),
+    DeleteNode: this.visitDelete.bind(this),
+    ReturningNode: this.visitReturning.bind(this),
+    CreateTableNode: this.visitCreateTable.bind(this),
+    ColumnDefinitionNode: this.visitColumnDefinition.bind(this),
+    DropTableNode: this.visitDropTable.bind(this),
   }
 
   readonly visitNode = (node: OperationNode): void => {
@@ -161,8 +171,35 @@ export class OperationNodeVisitor {
 
   protected visitInsert(node: InsertNode): void {
     this.visitNode(node.into)
+
+    if (node.columns) {
+      node.columns.forEach(this.visitNode)
+    }
+
+    if (node.values) {
+      node.values.forEach(this.visitNode)
+    }
+  }
+
+  protected visitDelete(node: DeleteNode): void {
+    this.visitNode(node.from)
+  }
+
+  protected visitReturning(node: ReturningNode): void {
+    node.selections.forEach(this.visitNode)
+  }
+
+  protected visitCreateTable(node: CreateTableNode): void {
+    this.visitNode(node.table)
     node.columns.forEach(this.visitNode)
-    node.values.forEach(this.visitNode)
+  }
+
+  protected visitColumnDefinition(node: ColumnDefinitionNode): void {
+    this.visitNode(node.column)
+  }
+
+  protected visitDropTable(node: DropTableNode): void {
+    this.visitNode(node.table)
   }
 
   protected visitSelectAll(_: SelectAllNode): void {}

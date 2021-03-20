@@ -1,7 +1,11 @@
 import { AliasedQueryBuilder, QueryBuilder } from '../query-builder'
 import { isFunction, isString } from '../../utils/object-utils'
 import { AliasNode, createAliasNode } from '../../operation-node/alias-node'
-import { createTableNode, TableNode } from '../../operation-node/table-node'
+import {
+  createTableNode,
+  createTableNodeWithSchema,
+  TableNode,
+} from '../../operation-node/table-node'
 import {
   AliasedQueryBuilderFactory,
   AnyAliasedQueryBuilder,
@@ -9,6 +13,7 @@ import {
 import { isOperationNodeSource } from '../../operation-node/operation-node-source'
 import { AliasedRawBuilder } from '../../raw-builder/raw-builder'
 import { FromItemNode } from '../../operation-node/from-node'
+
 /**
  * Table argument type.
  */
@@ -114,12 +119,22 @@ export function parseFromArg(from: TableArg<any, any, any>): FromItemNode {
   }
 }
 
-function parseAliasedTable(from: string): AliasNode | TableNode {
+export function parseAliasedTable(from: string): AliasNode | TableNode {
   const [table, alias] = from.split(' as ').map((it) => it.trim())
 
   if (alias) {
     return createAliasNode(createTableNode(table), alias)
   } else {
-    return createTableNode(table)
+    return parseTable(table)
+  }
+}
+
+export function parseTable(from: string): TableNode {
+  if (from.includes('.')) {
+    const [schema, table] = from.split('.').map((it) => it.trim())
+
+    return createTableNodeWithSchema(schema, table)
+  } else {
+    return createTableNode(from)
   }
 }

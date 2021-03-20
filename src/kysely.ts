@@ -1,10 +1,15 @@
-import { createQueryWithFromItems } from './operation-node/query-node'
+import {
+  createQueryNodeWithDeleteTable,
+  createQueryNodeWithInsertTable,
+  createQueryWithFromItems,
+} from './operation-node/query-node'
 import { QueryBuilder } from './query-builder/query-builder'
 import { RawBuilder } from './raw-builder/raw-builder'
 import {
   TableArg,
   FromQueryBuilder,
   parseFromArgs,
+  parseTable,
 } from './query-builder/methods/from-method'
 import { DriverConfig } from './driver/driver-config'
 import { Dialect } from './dialect/dialect'
@@ -14,6 +19,9 @@ import { QueryCompiler } from './query-compiler/query-compiler'
 import { TransactionalConnectionProvider } from './driver/transactional-connection-provider'
 import { AsyncLocalStorage } from 'async_hooks'
 import { Connection } from './driver/connection'
+import { ConnectionProvider } from './driver/connection-provider'
+import { InsertResultTypeTag } from './query-builder/methods/insert-values-method'
+import { SchemaBuilder } from './schema/schema-builder'
 
 /**
  * The main Kysely class.
@@ -53,29 +61,43 @@ export class Kysely<DB> {
   readonly #driver: Driver
   readonly #compiler: QueryCompiler
   readonly #transactions = new AsyncLocalStorage<Connection>()
+  readonly #connectionProvider: ConnectionProvider
 
   constructor(config: KyselyConfig) {
     const dialect = createDialect(config)
 
     this.#driver = dialect.createDriver(config)
     this.#compiler = dialect.createQueryCompiler()
+
+    this.#connectionProvider = new TransactionalConnectionProvider(
+      this.#driver,
+      this.#transactions
+    )
+  }
+
+  get schema(): SchemaBuilder {
+    return new SchemaBuilder(this.#compiler, this.#connectionProvider)
   }
 
   /**
-   * Creates a query builder against the given table/tables.
+   * Creates a `select` query builder against the given table/tables.
    *
-   * The tables passed to this method are built as the query's `from` clause in case
-   * of `select` and `delete` queries, `into` clause in case of `insert` queries and
-   * `update` clause in case of `update` queries.
+   * The tables passed to this method are built as the query's `from` clause.
    *
-   * The tables must be either one of the keys of the `DB` type, aliased versions of
-   * the keys of the `DB` type, queries or `raw` statements. See the examples.
+   * The tables must be:
+   *
+   *  - one of the keys of the `DB` type
+   *  - aliased versions of the keys of the `DB` type
+   *  - select queries
+   *  - `raw` statements.
+   *
+   * See the examples.
    *
    * @example
    * Create a select query from one table:
    *
    * ```ts
-   * db.query('person').selectAll('person')
+   * db.selectFrom('person').selectAll('person')
    * ```
    *
    * The generated SQL (postgresql):
@@ -88,7 +110,7 @@ export class Kysely<DB> {
    * Create a select query from one table with an alias:
    *
    * ```ts
-   * const persons = await db.query('person as p')
+   * const persons = await db.selectFrom('person as p')
    *   .select(['p.id', 'p.first_name'])
    *   .execute()
    *
@@ -105,8 +127,8 @@ export class Kysely<DB> {
    * Create a select query from a subquery:
    *
    * ```ts
-   * const persons = await db.query(
-   *     db.query('person').select('person.id as identifier').as('p')
+   * const persons = await db.selectFrom(
+   *     db.selectFrom('person').select('person.id as identifier').as('p')
    *   )
    *   .select('p.identifier')
    *   .execute()
@@ -127,7 +149,7 @@ export class Kysely<DB> {
    * Create a select query from raw sql:
    *
    * ```ts
-   * const items = await db.query(
+   * const items = await db.selectFrom(
    *     db.raw<{ one: number }>('select 1 as one').as('q')
    *   )
    *   .select('q.one')
@@ -154,10 +176,10 @@ export class Kysely<DB> {
    * the above examples can also be used in an array.
    *
    * ```ts
-   * const items = await db.query([
+   * const items = await db.selectFrom([
    *     'person',
    *     'movie as m',
-   *     db.query('pet').select('pet.species').as('a'),
+   *     db.selectFrom('pet').select('pet.species').as('a'),
    *     db.raw<{ one: number }>('select 1 as one').as('q')
    *   ])
    *   .select(['person.id', 'm.stars', 'a.species', 'q.one'])
@@ -181,29 +203,72 @@ export class Kysely<DB> {
    * raw statement (unless that raw statement is simply a table name).
    *
    * ```ts
-   * db.query('person').insert(person)
-   * db.query('person').delete().where('id', 'in', [1, 2, 3])
-   * db.query('person').update({ species: 'cat' }).where('id', 'in', [1, 2, 3])
+   * db.selectFrom('person').insert(person)
+   * db.selectFrom('person').delete().where('id', 'in', [1, 2, 3])
+   * db.selectFrom('person').update({ species: 'cat' }).where('id', 'in', [1, 2, 3])
    * ```
    */
-  query<F extends TableArg<DB, keyof DB, {}>>(
+  selectFrom<F extends TableArg<DB, keyof DB, {}>>(
     from: F[]
   ): FromQueryBuilder<DB, never, {}, F>
 
-  query<F extends TableArg<DB, keyof DB, {}>>(
+  selectFrom<F extends TableArg<DB, keyof DB, {}>>(
     from: F
   ): FromQueryBuilder<DB, never, {}, F>
 
-  query(from: any): any {
-    const connectionProvider = new TransactionalConnectionProvider(
-      this.#driver,
-      this.#transactions
-    )
-
+  selectFrom(from: any): any {
     return new QueryBuilder({
       compiler: this.#compiler,
-      connectionProvider,
+      connectionProvider: this.#connectionProvider,
       queryNode: createQueryWithFromItems(parseFromArgs(from)),
+    })
+  }
+
+  /**
+   * Creates an insert query.
+   *
+   * See {@link QueryBuilder.values} for more info and examples.
+   *
+   * @example
+   * ```ts
+   * const maybePrimaryKey = await db
+   *   .insertInto('person')
+   *   .values({
+   *     first_name: 'Jennifer',
+   *     last_name: 'Aniston'
+   *   })
+   *   .executeTakeFirst()
+   * ```
+   */
+  insertInto<T extends keyof DB & string>(
+    table: T
+  ): QueryBuilder<DB, T, InsertResultTypeTag> {
+    return new QueryBuilder({
+      compiler: this.#compiler,
+      connectionProvider: this.#connectionProvider,
+      queryNode: createQueryNodeWithInsertTable(parseTable(table)),
+    })
+  }
+
+  /**
+   * Creates a delete query.
+   *
+   * See {@link QueryBuilder.where} for examples on how to specify the where
+   * clauses for the delete operation.
+   *
+   * @example
+   * ```ts
+   * const [maybeId] = await db
+   *   .deleteFrom('person')
+   *   .where('person.id', '=', 1)
+   *   .executeTakeFirst()
+   * ```
+   */
+  deleteFrom<T extends keyof DB & string>(table: T): QueryBuilder<DB, T, any> {
+    return new QueryBuilder({
+      compiler: this.#compiler,
+      connectionProvider: this.#connectionProvider,
+      queryNode: createQueryNodeWithDeleteTable(parseTable(table)),
     })
   }
 
@@ -237,7 +302,7 @@ export class Kysely<DB> {
    * Example of using `raw` in a select statement:
    *
    * ```ts
-   * const [person] = await db.query('person')
+   * const [person] = await db.selectFrom('person')
    *   .select(db.raw<string>('concat(first_name, ' ', last_name)').as('name'))
    *   .where('id', '=', 1)
    *   .execute()
@@ -292,7 +357,7 @@ export class Kysely<DB> {
    *
    * ```ts
    * function getPersonsOlderThan(ageLimit: number) {
-   *   return await db.query('person')
+   *   return await db.selectFrom('person')
    *     .selectAll()
    *     .where(
    *       db.raw('now() - birth_date'),
@@ -356,7 +421,7 @@ export class Kysely<DB> {
    *   // This automatically uses the correct transasction because `doStuff` was
    *   // called inside the transaction method that registers the transaction
    *   // for a shared `AsyncLocalStorage` inside `Kysely`.
-   *   await db.query('person').insert({ first_name: 'Jennifer' }).execute()
+   *   await db.selectFrom('person').insert({ first_name: 'Jennifer' }).execute()
    *
    *   return doMoreStuff();
    * }
@@ -365,7 +430,7 @@ export class Kysely<DB> {
    *   // Even this automatically uses the correct transaction even though
    *   // we didn't `await` on the method. Node's async hooks work with all
    *   // possible kinds of async events.
-   *   return db.query('pet').insert({ name: 'Fluffy' }).execute()
+   *   return db.selectFrom('pet').insert({ name: 'Fluffy' }).execute()
    * }
    * ```
    */

@@ -31,6 +31,7 @@ import {
   RowType,
   ValueType,
 } from '../type-utils'
+import { InsertResultTypeTag } from './insert-values-method'
 
 /**
  * `select` method argument type.
@@ -50,7 +51,9 @@ export type SelectArg<DB, TB extends keyof DB, O> =
 export type SelectQueryBuilder<DB, TB extends keyof DB, O, S> = QueryBuilder<
   DB,
   TB,
-  O & SelectResultType<DB, TB, S>
+  O extends InsertResultTypeTag
+    ? InsertResultTypeTag
+    : O & SelectResultType<DB, TB, S>
 >
 
 /**
@@ -63,14 +66,14 @@ export type SelectAllQueryBuiler<
   S extends keyof DB
 > = QueryBuilder<DB, TB, O & RowType<DB, S>>
 
+export type SelectResultType<DB, TB extends keyof DB, S> = {
+  [A in ExtractAliasesFromSelectArg<S>]: ExtractTypeFromSelectArg<DB, TB, S, A>
+}
+
 type AnyAliasedColumnWithTable<DB, TB extends keyof DB> = `${AnyColumnWithTable<
   DB,
   TB
 >} as ${string}`
-
-type SelectResultType<DB, TB extends keyof DB, S> = {
-  [A in ExtractAliasesFromSelectArg<S>]: ExtractTypeFromSelectArg<DB, TB, S, A>
-}
 
 type ExtractAliasesFromSelectArg<
   S

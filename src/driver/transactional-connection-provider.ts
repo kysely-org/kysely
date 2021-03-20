@@ -4,15 +4,27 @@ import { ConnectionProvider } from './connection-provider'
 import { Driver } from './driver'
 
 export class TransactionalConnectionProvider implements ConnectionProvider {
-  #driver: Driver
-  #transactions: AsyncLocalStorage<Connection>
+  readonly #driver: Driver
+  readonly #transactions: AsyncLocalStorage<Connection>
 
   constructor(driver: Driver, transactions: AsyncLocalStorage<Connection>) {
     this.#driver = driver
     this.#transactions = transactions
   }
 
-  async acquireConnection(): Promise<Connection> {
+  async withConnection<T>(
+    runner: (connection: Connection) => Promise<T>
+  ): Promise<T> {
+    const connection = await this.acquireConnection()
+
+    try {
+      return await runner(connection)
+    } finally {
+      await this.releaseConnection(connection)
+    }
+  }
+
+  private async acquireConnection(): Promise<Connection> {
     const transaction = this.#transactions.getStore()
 
     if (transaction) {
@@ -23,7 +35,7 @@ export class TransactionalConnectionProvider implements ConnectionProvider {
     }
   }
 
-  async releaseConnection(connection: Connection): Promise<void> {
+  private async releaseConnection(connection: Connection): Promise<void> {
     const transaction = this.#transactions.getStore()
 
     if (transaction) {

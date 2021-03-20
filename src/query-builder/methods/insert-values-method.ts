@@ -1,10 +1,5 @@
 import { ColumnNode, createColumnNode } from '../../operation-node/column-node'
-import { FromItemNode } from '../../operation-node/from-node'
-import {
-  createInsertNode,
-  InsertNode,
-  InsertValuesNode,
-} from '../../operation-node/insert-node'
+import { InsertValuesNode } from '../../operation-node/insert-node'
 import { isOperationNodeSource } from '../../operation-node/operation-node-source'
 import { createPrimitiveValueListNode } from '../../operation-node/primitive-value-list-node'
 import {
@@ -16,23 +11,23 @@ import { RawBuilder } from '../../raw-builder/raw-builder'
 import { isPrimitive, PrimitiveValue } from '../../utils/object-utils'
 import { AnyQueryBuilder, RowType } from '../type-utils'
 
-export type InsertArg<DB, TB extends keyof DB, R = RowType<DB, TB>> = {
+export type InsertValuesArg<DB, TB extends keyof DB, R = RowType<DB, TB>> = {
   [C in keyof R]?: R[C] | AnyQueryBuilder | RawBuilder<any>
+}
+
+export interface InsertResultTypeTag {
+  __isInsertResultTypeTag__: boolean
 }
 
 type InsertValueType = PrimitiveValue | AnyQueryBuilder | RawBuilder<any>
 
-export function parseInsertArgs(into: FromItemNode, args: any): InsertNode {
-  if (!Array.isArray(args)) {
-    args = [args]
-  }
-
-  const [columns, values] = parseInsertColumnsAndValues(args)
-  return createInsertNode(into, columns, values)
+export function parseInsertValuesArgs(
+  args: any
+): [ReadonlyArray<ColumnNode>, ReadonlyArray<InsertValuesNode>] {
+  return parseInsertColumnsAndValues(Array.isArray(args) ? args : [args])
 }
-
 function parseInsertColumnsAndValues(
-  rows: InsertArg<any, any>[]
+  rows: InsertValuesArg<any, any>[]
 ): [ReadonlyArray<ColumnNode>, ReadonlyArray<InsertValuesNode>] {
   const columns: string[] = []
   const values: InsertValuesNode[] = []

@@ -39,65 +39,65 @@ interface Database {
 
 async function testFromSingle(db: Kysely<Database>) {
   // Single table
-  const [r1] = await db.query('person').selectAll().execute()
+  const [r1] = await db.selectFrom('person').selectAll().execute()
   expectType<Person>(r1)
 
   // Table with alias
-  const [r2] = await db.query('pet as p').select('p.species').execute()
+  const [r2] = await db.selectFrom('pet as p').select('p.species').execute()
   expectType<{ species: 'dog' | 'cat' }>(r2)
 
   // Subquery
   const [r3] = await db
-    .query(db.query('movie').select('movie.stars as strs').as('m'))
+    .selectFrom(db.selectFrom('movie').select('movie.stars as strs').as('m'))
     .selectAll()
     .execute()
   expectType<{ strs: number }>(r3)
 
   // Subquery factory
   const [r4] = await db
-    .query(() => db.query('movie').select('movie.stars as strs').as('m'))
+    .selectFrom(() => db.selectFrom('movie').select('movie.stars as strs').as('m'))
     .selectAll()
     .execute()
   expectType<{ strs: number }>(r4)
 
   // Table with schema
-  const [r5] = await db.query('someSchema.movie').select('stars').execute()
+  const [r5] = await db.selectFrom('someSchema.movie').select('stars').execute()
   expectType<{ stars: number }>(r5)
 
   // Table with schema and alias
   const [r6] = await db
-    .query('someSchema.movie as m')
+    .selectFrom('someSchema.movie as m')
     .select('m.stars')
     .execute()
   expectType<{ stars: number }>(r6)
 
   // Should not be able to select animal columns from person.
-  expectError(db.query('person').select('pet.id'))
+  expectError(db.selectFrom('person').select('pet.id'))
 
   // Should not be able to start a query against non-existent table.
-  expectError(db.query('doesntExist'))
+  expectError(db.selectFrom('doesntExist'))
 }
 
 async function testFromMultiple(db: Kysely<Database>) {
   const [r1] = await db
-    .query([
+    .selectFrom([
       'person',
       'pet as a',
-      db.query('movie').select('movie.id as movieId').as('m'),
+      db.selectFrom('movie').select('movie.id as movieId').as('m'),
     ])
     .select(['person.firstName', 'm.movieId', 'a.species'])
     .execute()
   expectType<{ firstName: string; movieId: string; species: 'dog' | 'cat' }>(r1)
 
   // Should not be able to select animal columns from person or movie.
-  expectError(db.query(['person', 'movie']).select('pet.id'))
+  expectError(db.selectFrom(['person', 'movie']).select('pet.id'))
 
   // Should not be able to start a query against non-existent table.
-  expectError(db.query(['person', 'doesntExist']))
+  expectError(db.selectFrom(['person', 'doesntExist']))
 }
 
 async function testSelectSingle(db: Kysely<Database>) {
-  const qb = db.query('person')
+  const qb = db.selectFrom('person')
 
   // Column name
   const [r1] = await qb.select('id').execute()
@@ -127,7 +127,7 @@ async function testSelectSingle(db: Kysely<Database>) {
 
   // Sub query
   const [r6] = await qb
-    .select(db.query('movie').select('id').as('movieId'))
+    .select(db.selectFrom('movie').select('id').as('movieId'))
     .execute()
   expectType<{ movieId: string }>(r6)
 
@@ -144,19 +144,19 @@ async function testSelectSingle(db: Kysely<Database>) {
   expectType<{ movieId: string }>(r7)
 
   // Aliased table
-  const [r8] = await db.query('pet as p').select('p.name').execute()
+  const [r8] = await db.selectFrom('pet as p').select('p.name').execute()
   expectType<{ name: string }>(r8)
 
   // Table with schema
   const [r9] = await db
-    .query('someSchema.movie')
+    .selectFrom('someSchema.movie')
     .select('someSchema.movie.id')
     .execute()
   expectType<{ id: string }>(r9)
 
   // Aliased table with schema and selection with alias
   const [r10] = await db
-    .query('someSchema.movie as sm')
+    .selectFrom('someSchema.movie as sm')
     .select('sm.id as identifier')
     .execute()
   expectType<{ identifier: string }>(r10)
@@ -168,7 +168,7 @@ async function testSelectSingle(db: Kysely<Database>) {
 
 async function testSelectMultiple(db: Kysely<Database>) {
   const qb = db
-    .query([
+    .selectFrom([
       'person',
       (qb) =>
         qb
@@ -208,37 +208,37 @@ async function testSelectMultiple(db: Kysely<Database>) {
 }
 
 function testWhere(db: Kysely<Database>) {
-  db.query('person').where('person.age', '=', 25)
-  db.query('person').where('person.age', db.raw('lol'), 25)
-  db.query('person').where('firstName', '=', 'Arnold')
-  db.query('someSchema.movie').where('someSchema.movie.id', '=', 1)
+  db.selectFrom('person').where('person.age', '=', 25)
+  db.selectFrom('person').where('person.age', db.raw('lol'), 25)
+  db.selectFrom('person').where('firstName', '=', 'Arnold')
+  db.selectFrom('someSchema.movie').where('someSchema.movie.id', '=', 1)
 
   // Invalid operator.
-  expectError(db.query('person').where('person.age', 'lol', 25))
+  expectError(db.selectFrom('person').where('person.age', 'lol', 25))
 
   // Invalid table.
-  expectError(db.query('person').where('movie.stars', '=', 25))
+  expectError(db.selectFrom('person').where('movie.stars', '=', 25))
 
   // Invalid column.
-  expectError(db.query('person').where('stars', '=', 25))
+  expectError(db.selectFrom('person').where('stars', '=', 25))
 }
 
 function testJoin(db: Kysely<Database>) {
-  db.query('person').innerJoin('movie as m', (join) =>
+  db.selectFrom('person').innerJoin('movie as m', (join) =>
     join.on('m.id', '=', 'person.id')
   )
 
   // Refer to table that's not joined.
   expectError(
     db
-      .query('person')
+      .selectFrom('person')
       .innerJoin('movie as m', (join) => join.on('pet.id', '=', 'person.id'))
   )
 
   // Refer to table with wrong alias.
   expectError(
     db
-      .query('person')
+      .selectFrom('person')
       .innerJoin('movie as m', (join) => join.on('movie.id', '=', 'person.id'))
   )
 }

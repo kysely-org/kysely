@@ -7,7 +7,6 @@ import {
   JoinReferenceArg,
   parseJoinArgs,
 } from './methods/join-method'
-
 import {
   QueryNode,
   createQueryNode,
@@ -18,15 +17,14 @@ import {
   cloneQueryNodeWithSelections,
   cloneQueryNodeWithModifier,
   cloneQueryNodeWithSelectModifier,
-  cloneQueryNodeWithInsert,
+  cloneQueryNodeWithInsertColumnsAndValues,
+  cloneQueryNodeWithReturningSelections,
 } from '../operation-node/query-node'
-
 import {
   parseFromArgs,
   TableArg,
   FromQueryBuilder,
 } from './methods/from-method'
-
 import {
   parseSelectArgs,
   parseSelectAllArgs,
@@ -34,7 +32,6 @@ import {
   SelectQueryBuilder,
   SelectAllQueryBuiler,
 } from './methods/select-method'
-
 import {
   parseFilterArgs,
   parseFilterReferenceArgs,
@@ -46,7 +43,12 @@ import {
 } from './methods/filter-method'
 import { ConnectionProvider } from '../driver/connection-provider'
 import { Connection } from '../driver/connection'
-import { InsertArg, parseInsertArgs } from './methods/insert-method'
+import {
+  InsertResultTypeTag,
+  InsertValuesArg,
+  parseInsertValuesArgs,
+} from './methods/insert-values-method'
+import { ReturningQueryBuilder } from './methods/returning-method'
 
 /**
  * The main query builder class.
@@ -466,9 +468,6 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
     selections: S[]
   ): SelectQueryBuilder<DB, TB, O, S>
 
-  /**
-   *
-   */
   select<S extends SelectArg<DB, TB, O>>(
     selection: S
   ): SelectQueryBuilder<DB, TB, O, S>
@@ -638,42 +637,138 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
   }
 
   /**
-   * Creates an insert query.
+   * Sets the values to insert for an `insertInto` query.
    *
    * This method takes an object whose keys are column names and values are either
    * values to insert. In addition to the column's type, the values can be `raw`
    * instances or queries.
    *
    * The return value is the primary key of the inserted row BUT on some databases
-   * there is no return value by default. That's the reason for the `number | undefined`
-   * type of the return value. On postgres you need to additionally call `returning`
-   * to get something out of the query.
+   * there is no return value by default. That's the reason for the `any` type of the
+   * return value. On postgres you need to additionally call `returning` to get
+   * something out of the query.
    *
    * @example
+   * Insert a row into `person`:
    * ```ts
-   * const [maybeId] = await db.
-   *   query('person')
-   *   .insert({
+   * const maybeId = await db
+   *   .insertInto('person')
+   *   .values({
    *     first_name: 'Jennifer',
    *     last_name: 'Aniston'
    *   })
-   *   .execute()
+   *   .executeTakeFirst()
+   * ```
+   *
+   * The generated SQL (postgresql):
+   *
+   * ```sql
+   * insert into "person" ("first_name", "last_name") values ($1, $2)
+   * ```
+   *
+   * @example
+   * On dialects that support it (for example postgres) you can insert multiple
+   * rows by providing an array. Note that the return value is once again very
+   * dialect-specific. Some databases may only return the id of the *first* inserted
+   * row and some return nothing at all unless you call `returning`.
+   *
+   * ```ts
+   * const maybeId = await db
+   *   .insertInto('person')
+   *   .values([{
+   *     first_name: 'Jennifer',
+   *     last_name: 'Aniston'
+   *   }, {
+   *     first_name: 'Arnold',
+   *     last_name: 'Schwarzenegger',
+   *   }])
+   *   .executeTakeFirst()
+   * ```
+   *
+   * The generated SQL (postgresql):
+   *
+   * ```sql
+   * insert into "person" ("first_name", "last_name") values (($1, $2), ($3, $4))
+   * ```
+   *
+   * @example
+   * On postgresql you need to chain `returning` to the query to get
+   * anything as the return value:
+   *
+   * ```ts
+   * const row = await db
+   *   .insertInto('person')
+   *   .values({
+   *     first_name: 'Jennifer',
+   *     last_name: 'Aniston'
+   *   })
+   *   .returning('id')
+   *   .executeTakeFirst()
+   *
+   * row.id
+   * ```
+   *
+   * The generated SQL (postgresql):
+   *
+   * ```sql
+   * insert into "person" ("first_name", "last_name") values ($1, $2) returning "id"
+   * ```
+   *
+   * @example
+   * In addition to primitives, the values can also be `raw` expressions or queries
+   * ```ts
+   * const maybeId = await db
+   *   .insertInto('person')
+   *   .values({
+   *     first_name: 'Jennifer',
+   *     last_name: db.raw('? || ?', ['Ani', 'ston']),
+   *     age: db.selectFrom('person').select(raw('avg(age)')),
+   *   })
+   *   .executeTakeFirst()
+   * ```
+   *
+   * The generated SQL (postgresql):
+   *
+   * ```sql
+   * insert into "person" ("first_name", "last_name", "age")
+   * values ($1, $2 || $3, (select avg(age) from "person"))
    * ```
    */
-  insert(row: InsertArg<DB, TB>): QueryBuilder<DB, TB, number | undefined>
+  values(row: InsertValuesArg<DB, TB>): QueryBuilder<DB, TB, O>
+  values(row: InsertValuesArg<DB, TB>[]): QueryBuilder<DB, TB, O>
+  values(args: any): any {
+    if (!this.#queryNode.insert) {
+      throw new Error('`values` method can only be used in an insert query')
+    }
 
-  insert(row: InsertArg<DB, TB>[]): QueryBuilder<DB, TB, number | undefined>
-
-  insert(args: any): any {
     return new QueryBuilder({
       compiler: this.#compiler,
       connectionProvider: this.#connectionProvider,
-      queryNode: cloneQueryNodeWithInsert(
+      queryNode: cloneQueryNodeWithInsertColumnsAndValues(
         this.#queryNode,
-        // TODO(samiko): Getting the first item of the `from` clause
-        //               seems like a hack. Maybe rethink this? At
-        //               least check that it exists.
-        parseInsertArgs(this.#queryNode.from!.froms[0], args)
+        ...parseInsertValuesArgs(args)
+      ),
+    })
+  }
+
+  /**
+   *
+   */
+  returning<S extends SelectArg<DB, TB, O>>(
+    selections: S[]
+  ): ReturningQueryBuilder<DB, TB, O, S>
+
+  returning<S extends SelectArg<DB, TB, O>>(
+    selection: S
+  ): ReturningQueryBuilder<DB, TB, O, S>
+
+  returning(selection: any): any {
+    return new QueryBuilder({
+      compiler: this.#compiler,
+      connectionProvider: this.#connectionProvider,
+      queryNode: cloneQueryNodeWithReturningSelections(
+        this.#queryNode,
+        parseSelectArgs(selection)
       ),
     })
   }
@@ -705,20 +800,14 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
     return this.#compiler.compile(this.#queryNode)
   }
 
-  async execute(): Promise<O[]> {
+  async execute(): Promise<ResultType<O>[]> {
     if (!this.#connectionProvider) {
       throw new Error(`this query cannot be executed`)
     }
 
-    let connection: Connection | undefined
-    try {
-      connection = await this.#connectionProvider.acquireConnection()
+    return await this.#connectionProvider.withConnection(async (connection) => {
       return await connection.execute(this.compile())
-    } finally {
-      if (connection) {
-        await this.#connectionProvider.releaseConnection(connection)
-      }
-    }
+    })
   }
 
   async executeTakeFirst(): Promise<O | undefined> {
@@ -766,3 +855,5 @@ export class AliasedQueryBuilder<
     this.#alias = alias
   }
 }
+
+type ResultType<O> = O extends InsertResultTypeTag ? any : O
