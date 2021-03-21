@@ -1,10 +1,8 @@
 import { AliasNode } from '../operation-node/alias-node'
 import { AndNode } from '../operation-node/and-node'
-import {
-  ColumnDataType,
-  ColumnDefinitionNode,
-} from '../operation-node/column-definition-node'
+import { ColumnDefinitionNode } from '../operation-node/column-definition-node'
 import { CreateTableNode } from '../operation-node/create-table-node'
+import { ColumnDataType, DataTypeNode } from '../operation-node/data-type-node'
 import { DeleteNode } from '../operation-node/delete-node'
 import { DropTableNode } from '../operation-node/drop-table-node'
 import { FilterNode } from '../operation-node/filter-node'
@@ -322,7 +320,7 @@ export class QueryCompiler extends OperationNodeVisitor {
     if (node.isAutoIncrementing) {
       this.append('serial')
     } else {
-      this.append(DATA_TYPE_SQL[node.dataType!](node))
+      this.visitNode(node.dataType)
     }
 
     if (!node.isNullable) {
@@ -354,6 +352,10 @@ export class QueryCompiler extends OperationNodeVisitor {
     }
 
     this.visitNode(node.table)
+  }
+
+  protected visitDataType(node: DataTypeNode): void {
+    this.append(DATA_TYPE_SQL[node.dataType](node))
   }
 
   protected appendLeftIdentifierWrapper(): void {
@@ -390,16 +392,13 @@ const JOIN_TYPE_SQL: Record<JoinType, string> = {
   FullJoin: 'full join',
 }
 
-const DATA_TYPE_SQL: Record<
-  ColumnDataType,
-  (node: ColumnDefinitionNode) => string
-> = {
+const DATA_TYPE_SQL: Record<ColumnDataType, (node: DataTypeNode) => string> = {
   BigInteger: () => 'bigint',
   Binary: () => '???',
   Boolean: () => 'boolean',
   Double: () => 'double precision',
   Float: () => 'real',
   Integer: () => 'integer',
-  String: (node) => `varchar(${node.dataTypeSize ?? 255})`,
+  String: (node) => `varchar(${node.size ?? 255})`,
   Text: () => 'text',
 }

@@ -26,6 +26,7 @@ export type OperationNodeKind =
   | 'CreateTableNode'
   | 'ColumnDefinitionNode'
   | 'DropTableNode'
+  | 'DataTypeNode'
 
 export interface OperationNode {
   readonly kind: OperationNodeKind

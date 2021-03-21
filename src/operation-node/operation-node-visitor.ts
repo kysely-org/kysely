@@ -29,6 +29,7 @@ import { ReturningNode } from './returning-node'
 import { CreateTableNode } from './create-table-node'
 import { ColumnDefinitionNode } from './column-definition-node'
 import { DropTableNode } from './drop-table-node'
+import { DataTypeNode } from './data-type-node'
 
 export class OperationNodeVisitor {
   #visitors: Record<OperationNodeKind, Function> = {
@@ -59,6 +60,7 @@ export class OperationNodeVisitor {
     CreateTableNode: this.visitCreateTable.bind(this),
     ColumnDefinitionNode: this.visitColumnDefinition.bind(this),
     DropTableNode: this.visitDropTable.bind(this),
+    DataTypeNode: this.visitDataType.bind(this),
   }
 
   readonly visitNode = (node: OperationNode): void => {
@@ -196,11 +198,14 @@ export class OperationNodeVisitor {
 
   protected visitColumnDefinition(node: ColumnDefinitionNode): void {
     this.visitNode(node.column)
+    this.visitNode(node.dataType)
   }
 
   protected visitDropTable(node: DropTableNode): void {
     this.visitNode(node.table)
   }
+
+  protected visitDataType(node: DataTypeNode): void {}
 
   protected visitSelectAll(_: SelectAllNode): void {}
 

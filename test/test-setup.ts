@@ -58,33 +58,7 @@ export async function initTest(): Promise<TestContext> {
   }
 
   for (const db of Object.values(dbs)) {
-    await db.schema.dropTableIfExists('toy')
-    await db.schema.dropTableIfExists('pet')
-    await db.schema.dropTableIfExists('person')
-
-    await db.schema.createTable('person', (table) =>
-      table
-        .column('id', (col) => col.integer().increments().primary())
-        .column('first_name', (col) => col.string())
-        .column('last_name', (col) => col.string())
-        .column('gender', (col) => col.string())
-    )
-
-    await db.schema.createTable('pet', (table) =>
-      table
-        .column('id', (col) => col.integer().increments().primary())
-        .column('name', (col) => col.string())
-        .column('owner_id', (col) => col.integer().references('person.id'))
-        .column('species', (col) => col.string())
-    )
-
-    await db.schema.createTable('toy', (table) =>
-      table
-        .column('id', (col) => col.integer().increments().primary())
-        .column('name', (col) => col.string())
-        .column('pet_id', (col) => col.integer().references('pet.id'))
-        .column('price', (col) => col.double())
-    )
+    await createDatabase(db)
   }
 
   return {
@@ -94,9 +68,7 @@ export async function initTest(): Promise<TestContext> {
 
 export async function destroyTest(ctx: TestContext): Promise<void> {
   for (const db of Object.values(ctx.dbs)) {
-    await db.schema.dropTable('toy')
-    await db.schema.dropTable('pet')
-    await db.schema.dropTable('person')
+    await dropDatabase(db)
     await db.destroy()
   }
 }
@@ -130,6 +102,40 @@ export async function clearDatabase(ctx: TestContext): Promise<void> {
     await db.deleteFrom('pet').execute()
     await db.deleteFrom('person').execute()
   }
+}
+
+async function createDatabase(db: Kysely<Database>): Promise<void> {
+  await dropDatabase(db)
+
+  await db.schema.createTable('person', (table) =>
+    table
+      .integer('id', (col) => col.increments().primary())
+      .string('first_name')
+      .string('last_name')
+      .string('gender')
+  )
+
+  await db.schema.createTable('pet', (table) =>
+    table
+      .integer('id', (col) => col.increments().primary())
+      .string('name')
+      .integer('owner_id', (col) => col.references('person.id'))
+      .string('species')
+  )
+
+  await db.schema.createTable('toy', (table) =>
+    table
+      .integer('id', (col) => col.increments().primary())
+      .string('name')
+      .integer('pet_id', (col) => col.references('pet.id'))
+      .double('price')
+  )
+}
+
+async function dropDatabase(db: Kysely<Database>): Promise<void> {
+  await db.schema.dropTableIfExists('toy')
+  await db.schema.dropTableIfExists('pet')
+  await db.schema.dropTableIfExists('person')
 }
 
 async function insertPetForPerson(

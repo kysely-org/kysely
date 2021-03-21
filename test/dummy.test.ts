@@ -240,12 +240,4 @@ describe.skip('dummy test', () => {
     const result = await qb.execute()
     console.log(result)
   })
-
-  it.skip('schema', async () => {
-    await db.schema.createTable('person', (table) =>
-      table
-        .column('id', (col) => col.increments().primary())
-        .column('first_name', (col) => col.string())
-    )
-  })
 })

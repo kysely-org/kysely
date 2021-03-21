@@ -1,12 +1,17 @@
 import { ConnectionProvider } from '../driver/connection-provider'
-import { createColumnDefinitionNode } from '../operation-node/column-definition-node'
+import {
+  ColumnDataTypeNode,
+  createColumnDefinitionNode,
+} from '../operation-node/column-definition-node'
 import {
   cloneCreateTableNodeWithColumn,
   CreateTableNode,
 } from '../operation-node/create-table-node'
+import { createDataTypeNode } from '../operation-node/data-type-node'
 import { OperationNodeSource } from '../operation-node/operation-node-source'
 import { CompiledQuery } from '../query-compiler/compiled-query'
 import { QueryCompiler } from '../query-compiler/query-compiler'
+import { isFunction, isNumber, isString } from '../utils/object-utils'
 import { ColumnBuilder } from './column-builder'
 
 export class CreateTableBuilder implements OperationNodeSource {
@@ -25,29 +30,72 @@ export class CreateTableBuilder implements OperationNodeSource {
   }
 
   /**
-   * Adds a column to the table.
+   * Adds a string column to the table.
    *
-   * @example
-   * ```ts
-   * table.column('id', (col) => col.increments().primary())
-   * ```
+   * This creates a `varchar(255)` data type on most dialects.
    */
-  column(
-    columnName: string,
-    build: (tableBuilder: ColumnBuilder) => ColumnBuilder
-  ): CreateTableBuilder {
-    const columnBuilder = build(
-      new ColumnBuilder(createColumnDefinitionNode(columnName))
-    )
+  string(columnName: string, build?: ColumnBuilderCallback): CreateTableBuilder
 
-    return new CreateTableBuilder({
-      compiler: this.#compiler,
-      connectionProvider: this.#connectionProvider,
-      createTableNode: cloneCreateTableNodeWithColumn(
-        this.#createTableNode,
-        columnBuilder.toOperationNode()
-      ),
-    })
+  /**
+   * Adds a string column to the table.
+   *
+   * This creates a `varchar(maxLength)` data type on most dialects.
+   */
+  string(
+    columnName: string,
+    maxLength: number,
+    build?: ColumnBuilderCallback
+  ): CreateTableBuilder
+
+  string(...args: any[]): any {
+    return this.addColumn(
+      args[0],
+      createDataTypeNode('String', isNumber(args[1]) ? args[1] : undefined),
+      isFunction(args[1]) ? args[1] : args[2]
+    )
+  }
+
+  /**
+   * Adds a text column to the table.
+   *
+   * Unlike {@link CreateTableBuilder.string} this creates a string column
+   * that doesn't have a maximum length.
+   */
+  text(columnName: string, build?: ColumnBuilderCallback): CreateTableBuilder {
+    return this.addColumn(columnName, createDataTypeNode('Text'), build)
+  }
+
+  /**
+   * Adds an integer column.
+   */
+  integer(
+    columnName: string,
+    build?: ColumnBuilderCallback
+  ): CreateTableBuilder {
+    return this.addColumn(columnName, createDataTypeNode('Integer'), build)
+  }
+
+  /**
+   * Adds a big integer column.
+   *
+   * Creates a `bigint` column on dialects that support it and defaults
+   * to a normal integer on others.
+   */
+  bigInteger(
+    columnName: string,
+    build?: ColumnBuilderCallback
+  ): CreateTableBuilder {
+    return this.addColumn(columnName, createDataTypeNode('BigInteger'), build)
+  }
+
+  /**
+   * Adds a double precision floating poin number column.
+   */
+  double(
+    columnName: string,
+    build?: ColumnBuilderCallback
+  ): CreateTableBuilder {
+    return this.addColumn(columnName, createDataTypeNode('Double'), build)
   }
 
   toOperationNode(): CreateTableNode {
@@ -71,6 +119,29 @@ export class CreateTableBuilder implements OperationNodeSource {
       await connection.execute(this.compile())
     })
   }
+
+  private addColumn(
+    columnName: string,
+    dataType: ColumnDataTypeNode,
+    build?: ColumnBuilderCallback
+  ): CreateTableBuilder {
+    let columnBuilder = new ColumnBuilder(
+      createColumnDefinitionNode(columnName, dataType)
+    )
+
+    if (build) {
+      columnBuilder = build(columnBuilder)
+    }
+
+    return new CreateTableBuilder({
+      compiler: this.#compiler,
+      connectionProvider: this.#connectionProvider,
+      createTableNode: cloneCreateTableNodeWithColumn(
+        this.#createTableNode,
+        columnBuilder.toOperationNode()
+      ),
+    })
+  }
 }
 
 export interface CreateTableBuilderArgs {
@@ -78,3 +149,7 @@ export interface CreateTableBuilderArgs {
   compiler?: QueryCompiler
   connectionProvider?: ConnectionProvider
 }
+
+export type ColumnBuilderCallback = (
+  tableBuilder: ColumnBuilder
+) => ColumnBuilder

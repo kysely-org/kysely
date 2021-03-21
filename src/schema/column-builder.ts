@@ -14,62 +14,6 @@ export class ColumnBuilder implements OperationNodeSource {
   }
 
   /**
-   * Sets the columns datatype to string with a given maximum length.
-   *
-   * This creates a `varchar(maxLength)` data type on most dialects.
-   */
-  string(maxLength: number = 255): ColumnBuilder {
-    return new ColumnBuilder(
-      cloneColumnDefinitionNode(this.#node, {
-        dataType: 'String',
-        dataTypeSize: maxLength,
-      })
-    )
-  }
-
-  /**
-   * Sets the columns datatype to text.
-   *
-   * Unlike {@link ColumnBuilder.string} this creates a string column
-   * that doesn't have a maximum length.
-   */
-  text(): ColumnBuilder {
-    return new ColumnBuilder(
-      cloneColumnDefinitionNode(this.#node, { dataType: 'Text' })
-    )
-  }
-
-  /**
-   * Sets the columns datatype to integer.
-   */
-  integer(): ColumnBuilder {
-    return new ColumnBuilder(
-      cloneColumnDefinitionNode(this.#node, { dataType: 'Integer' })
-    )
-  }
-
-  /**
-   * Sets the columns datatype to big integer.
-   *
-   * Creates a `bigint` column on dialects that support it and defaults
-   * to a normal integer on others.
-   */
-  bigInteger(): ColumnBuilder {
-    return new ColumnBuilder(
-      cloneColumnDefinitionNode(this.#node, { dataType: 'BigInteger' })
-    )
-  }
-
-  /**
-   * Sets the columns datatype to double.
-   */
-  double(): ColumnBuilder {
-    return new ColumnBuilder(
-      cloneColumnDefinitionNode(this.#node, { dataType: 'Double' })
-    )
-  }
-
-  /**
    * Adds an index for the column.
    */
   index(): ColumnBuilder {
