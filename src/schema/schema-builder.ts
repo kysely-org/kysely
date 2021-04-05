@@ -15,38 +15,27 @@ export class SchemaBuilder {
     this.#connectionProvider = connectionProvider
   }
 
-  createTable(
-    table: string,
-    build: (tableBuilder: CreateTableBuilder) => CreateTableBuilder
-  ): Promise<void> {
-    const tableBuilder = build(
-      new CreateTableBuilder({
-        compiler: this.#compiler,
-        connectionProvider: this.#connectionProvider,
-        createTableNode: createCreateTableNode(parseTable(table)),
-      })
-    )
-
-    return tableBuilder.execute()
+  createTable(table: string): CreateTableBuilder {
+    return new CreateTableBuilder({
+      compiler: this.#compiler,
+      connectionProvider: this.#connectionProvider,
+      createTableNode: createCreateTableNode(parseTable(table)),
+    })
   }
 
-  dropTable(table: string): Promise<void> {
-    const dropBuilder = new DropTableBuilder({
+  dropTable(table: string): DropTableBuilder {
+    return new DropTableBuilder({
       compiler: this.#compiler,
       connectionProvider: this.#connectionProvider,
       dropTableNode: createDropTableNode(parseTable(table)),
     })
-
-    return dropBuilder.execute()
   }
 
-  dropTableIfExists(table: string): Promise<void> {
-    const dropBuilder = new DropTableBuilder({
+  dropTableIfExists(table: string): DropTableBuilder {
+    return new DropTableBuilder({
       compiler: this.#compiler,
       connectionProvider: this.#connectionProvider,
       dropTableNode: createDropTableNode(parseTable(table), 'IfExists'),
     })
-
-    return dropBuilder.execute()
   }
 }

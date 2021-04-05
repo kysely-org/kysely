@@ -11,7 +11,7 @@ import { createDataTypeNode } from '../operation-node/data-type-node'
 import { OperationNodeSource } from '../operation-node/operation-node-source'
 import { CompiledQuery } from '../query-compiler/compiled-query'
 import { QueryCompiler } from '../query-compiler/query-compiler'
-import { isFunction, isNumber, isString } from '../utils/object-utils'
+import { isFunction, isNumber } from '../utils/object-utils'
 import { ColumnBuilder } from './column-builder'
 
 export class CreateTableBuilder implements OperationNodeSource {

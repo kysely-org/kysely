@@ -37,105 +37,93 @@ interface PetInsertParams extends Omit<Pet, 'id' | 'owner_id'> {
   toys?: Omit<Toy, 'id' | 'pet_id'>[]
 }
 
-export interface InitTestArgs {
-  insertPersons: PersonInsertParams[]
+type BuiltInDialect = Exclude<KyselyConfig['dialect'], Dialect>
+type PerDialect<T> = Record<BuiltInDialect, T>
+
+const DB_CONFIGS: PerDialect<KyselyConfig> = {
+  postgres: {
+    dialect: 'postgres',
+    host: 'localhost',
+    database: 'kysely_test',
+  },
 }
 
-type BuiltInDialects = Exclude<KyselyConfig['dialect'], Dialect>
-type PerDialect<T> = Record<BuiltInDialects, T>
+export const BUILT_IN_DIALECTS: BuiltInDialect[] = ['postgres']
 
 export interface TestContext {
-  dbs: PerDialect<Kysely<Database>>
+  db: Kysely<Database>
 }
 
-export async function initTest(): Promise<TestContext> {
-  const dbs = {
-    postgres: new Kysely<Database>({
-      dialect: 'postgres',
-      host: 'localhost',
-      database: 'kysely_test',
-    }),
-  }
-
-  for (const db of Object.values(dbs)) {
-    await createDatabase(db)
-  }
-
-  return {
-    dbs,
-  }
+export async function initTest(dialect: BuiltInDialect): Promise<TestContext> {
+  const db = new Kysely<Database>(DB_CONFIGS[dialect])
+  await createDatabase(db)
+  return { db }
 }
 
 export async function destroyTest(ctx: TestContext): Promise<void> {
-  for (const db of Object.values(ctx.dbs)) {
-    await dropDatabase(db)
-    await db.destroy()
-  }
+  await dropDatabase(ctx.db)
+  await ctx.db.destroy()
 }
 
 export async function insertPersons(
   ctx: TestContext,
   insertPersons: PersonInsertParams[]
 ): Promise<void> {
-  for (const db of Object.values(ctx.dbs)) {
-    for (const insertPerson of insertPersons) {
-      const { pets, ...person } = insertPerson
+  for (const insertPerson of insertPersons) {
+    const { pets, ...person } = insertPerson
 
-      const personRes = await db
-        .insertInto('person')
-        .values(person)
-        .returning('id')
-        .executeTakeFirst()
+    const personRes = await ctx.db
+      .insertInto('person')
+      .values(person)
+      .returning('id')
+      .executeTakeFirst()
 
-      const personId = getIdFromInsertResult<number>(personRes)
+    const personId = getIdFromInsertResult<number>(personRes)
 
-      for (const insertPet of pets ?? []) {
-        await insertPetForPerson(db, personId, insertPet)
-      }
+    for (const insertPet of pets ?? []) {
+      await insertPetForPerson(ctx.db, personId, insertPet)
     }
   }
 }
 
 export async function clearDatabase(ctx: TestContext): Promise<void> {
-  for (const db of Object.values(ctx.dbs)) {
-    await db.deleteFrom('toy').execute()
-    await db.deleteFrom('pet').execute()
-    await db.deleteFrom('person').execute()
-  }
+  await ctx.db.deleteFrom('toy').execute()
+  await ctx.db.deleteFrom('pet').execute()
+  await ctx.db.deleteFrom('person').execute()
 }
 
 async function createDatabase(db: Kysely<Database>): Promise<void> {
   await dropDatabase(db)
 
-  await db.schema.createTable('person', (table) =>
-    table
-      .integer('id', (col) => col.increments().primary())
-      .string('first_name')
-      .string('last_name')
-      .string('gender')
-  )
+  await db.schema
+    .createTable('person')
+    .integer('id', (col) => col.increments().primary())
+    .string('first_name')
+    .string('last_name')
+    .string('gender')
+    .execute()
 
-  await db.schema.createTable('pet', (table) =>
-    table
-      .integer('id', (col) => col.increments().primary())
-      .string('name')
-      .integer('owner_id', (col) => col.references('person.id'))
-      .string('species')
-  )
+  await db.schema
+    .createTable('pet')
+    .integer('id', (col) => col.increments().primary())
+    .string('name')
+    .integer('owner_id', (col) => col.references('person.id'))
+    .string('species')
+    .execute()
 
-  await db.schema.createTable('toy', (table) =>
-    table
-      .integer('id', (col) => col.increments().primary())
-      .string('name')
-      .integer('pet_id', (col) => col.references('pet.id'))
-      .double('price')
-  )
+  await db.schema
+    .createTable('toy')
+    .integer('id', (col) => col.increments().primary())
+    .string('name')
+    .integer('pet_id', (col) => col.references('pet.id'))
+    .double('price')
+    .execute()
 }
 
 async function dropDatabase(db: Kysely<Database>): Promise<void> {
-  await db.schema.dropTableIfExists('toy')
-  await db.schema.dropTableIfExists('pet')
-  await db.schema.dropTableIfExists('person')
+  await db.schema.dropTableIfExists('toy').execute()
+  await db.schema.dropTableIfExists('pet').execute()
+  await db.schema.dropTableIfExists('person').execute()
 }
 
 async function insertPetForPerson(
