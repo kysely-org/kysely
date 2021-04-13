@@ -77,8 +77,6 @@ class PostgresConnection implements Connection {
   }
 
   async execute<R>(compiledQuery: CompiledQuery): Promise<R[]> {
-    console.log(compiledQuery)
-
     const result = await this.#pgClient.query<R>(compiledQuery.sql, [
       ...compiledQuery.bindings,
     ])

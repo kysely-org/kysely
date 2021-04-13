@@ -14,10 +14,13 @@
   "author": "Sami Koskimäki <sami@jakso.me>",
   "license": "MIT",
   "devDependencies": {
+    "@types/chai": "^4.2.16",
+    "@types/chai-subset": "^1.3.3",
     "@types/mocha": "^8.2.0",
     "@types/node": "^14.14.31",
     "@types/pg": "^7.14.11",
     "chai": "^4.3.0",
+    "chai-subset": "^1.6.0",
     "mocha": "^8.3.0",
     "pg": "^8.5.1",
     "prettier": "^2.2.1",

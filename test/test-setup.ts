@@ -1,4 +1,8 @@
-import { Kysely, KyselyConfig } from '../src'
+import * as chai from 'chai'
+import * as chaiSubset from 'chai-subset'
+chai.use(chaiSubset)
+
+import { CompiledQuery, Kysely, KyselyConfig, QueryBuilder } from '../src'
 import { Dialect } from '../src/dialect/dialect'
 
 interface Person {
@@ -12,7 +16,7 @@ interface Pet {
   id: number
   name: string
   owner_id: number
-  species: 'dog' | 'cat'
+  species: 'dog' | 'cat' | 'hamster'
 }
 
 interface Toy {
@@ -91,6 +95,20 @@ export async function clearDatabase(ctx: TestContext): Promise<void> {
   await ctx.db.deleteFrom('pet').execute()
   await ctx.db.deleteFrom('person').execute()
 }
+
+export function testSql(
+  query: QueryBuilder<Database, any, any>,
+  dialect: BuiltInDialect,
+  expectedSql: PerDialect<CompiledQuery>
+): void {
+  const expected = expectedSql[dialect]
+  const sql = query.compile()
+
+  chai.expect(expected.sql).to.equal(sql.sql)
+  chai.expect(expected.bindings).to.eql(sql.bindings)
+}
+
+export const expect = chai.expect
 
 async function createDatabase(db: Kysely<Database>): Promise<void> {
   await dropDatabase(db)

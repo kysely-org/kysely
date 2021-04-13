@@ -93,7 +93,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * subqueries:
    *
    * ```ts
-   * const result = await db.query('pet')
+   * const result = await db.selectFrom('pet')
    *   .select([
    *     'pet.name',
    *     (qb) => qb.subQuery('person')
@@ -148,7 +148,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * Find a row by column value:
    *
    * ```ts
-   * db.query('person')
+   * db.selectFrom('person')
    *   .where('id', '=', 100)
    *   .selectAll()
    * ```
@@ -164,7 +164,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * you can always use `db.raw('your operator')`.
    *
    * ```ts
-   * db.query('person')
+   * db.selectFrom('person')
    *   .where('id', '>', 100)
    *   .selectAll()
    * ```
@@ -176,11 +176,12 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * ```
    *
    * @example
-   * A `where in` query. The first argument can contain
-   * the table name, but it's not mandatory.
+   * A `where in` query an be built by using the `in` operator and an array
+   * of values. The values in the array can also be subqueries or raw
+   * instances.
    *
    * ```ts
-   * db.query('person')
+   * db.selectFrom('person')
    *   .where('person.id', 'in', [100, 200, 300])
    *   .selectAll()
    * ```
@@ -192,11 +193,13 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * ```
    *
    * @example
-   * Both the first and third argument can also be a subquery.
-   * A subquery is defined by passing a function:
+   * Both the first and third argument can also be subqueries.
+   * A subquery is defined by passing a function and calling
+   * the `subQuery` method of the object passed into the
+   * function:
    *
    * ```ts
-   * db.query('person')
+   * db.selectFrom('person')
    *   .where(
    *     (qb) => qb.subQuery('pet')
    *       .select('pet.id')
@@ -224,7 +227,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * as any of the arguments, including the operator:
    *
    * ```ts
-   * db.query('person')
+   * db.selectFrom('person')
    *   .where(
    *     db.raw('coalesce(first_name, last_name)'),
    *     'like',
@@ -246,7 +249,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * used to create parentheses around other where clauses:
    *
    * ```ts
-   * db.query('person')
+   * db.selectFrom('person')
    *   .selectAll()
    *   .where((qb) => qb
    *     .where('id', '=', 1)
@@ -283,7 +286,52 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
   }
 
   /**
+   * Adds a `where` clause where both sides of the operator are references
+   * to columns.
    *
+   * The normal `where` method treats the right hand side argument as a
+   * value by default. `whereRef` treats it as a column reference. This method is
+   * expecially useful with joins and correclated subqueries.
+   *
+   * @example
+   * Usage with a join:
+   *
+   * ```ts
+   * db.selectFrom(['person', 'pet'])
+   *   .selectAll()
+   *   .whereRef('person.first_name', '=', 'pet.name')
+   * ```
+   *
+   * The generated SQL (postgresql):
+   *
+   * ```sql
+   * select * from "person", "pet" where "person"."first_name" = "pet"."name"
+   * ```
+   *
+   * @example
+   * Usage in a subquery:
+   *
+   * ```ts
+   * db.selectFrom('person)
+   *   .selectAll('person')
+   *   .select((qb) => qb
+   *     .subQuery('pet')
+   *     .select('name')
+   *     .whereRef('pet.owner_id', '=', 'person.id')
+   *     .limit(1)
+   *     .as('pet_name')
+   *   )
+   * ```
+   *
+   * The generated SQL (postgresql):
+   *
+   * ```sql
+   * select "person".*, (
+   *   select "name"
+   *   from "pet"
+   *   where "pet"."owner_id" = "person"."id"
+   * ) as pet_name
+   * from "person"`
    */
   whereRef(
     lhs: FilterReferenceArg<DB, TB, O>,
@@ -303,7 +351,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
 
   /**
    * Adds an `or where` clause to the query. Otherwise works just like
-   * {@link QueryBuilder.where}.
+   * {@link QueryBuilder.where | where}.
    *
    * It's often necessary to wrap `or where` clauses in parentheses to control
    * precendence. You can use the one argument version of the `where` method
@@ -311,7 +359,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    *
    * @example
    * ```ts
-   * db.query('person')
+   * db.selectFrom('person')
    *   .selectAll()
    *   .where('id', '=', 1)
    *   .orWhere('id', '=', 2)
@@ -327,7 +375,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * Grouping with parentheses:
    *
    * ```ts
-   * db.query('person')
+   * db.selectFrom('person')
    *   .selectAll()
    *   .where((qb) => qb
    *     .where('id', '=', 1)
@@ -346,7 +394,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * if you are looping through a set of conditions:
    *
    * ```ts
-   * db.query('person')
+   * db.selectFrom('person')
    *   .selectAll()
    *   .where((qb) => qb
    *     .orWhere('id', '=', 1)
@@ -383,7 +431,10 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
   }
 
   /**
+   * Adds an `or where` clause to the query. Otherwise works just like
+   * {@link QueryBuilder.whereRef | whereRef}.
    *
+   * Also see {@link QueryBuilder.orWhere | orWhere} and {@link QueryBuilder.where | where}.
    */
   orWhereRef(
     lhs: FilterReferenceArg<DB, TB, O>,

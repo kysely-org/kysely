@@ -94,20 +94,20 @@ export class Kysely<DB> {
    * See the examples.
    *
    * @example
-   * Create a select query from one table:
+   * Create a select query for one table:
    *
    * ```ts
-   * db.selectFrom('person').selectAll('person')
+   * db.selectFrom('person').selectAll()
    * ```
    *
    * The generated SQL (postgresql):
    *
    * ```sql
-   * select "person".* from "person"
+   * select * from "person"
    * ```
    *
    * @example
-   * Create a select query from one table with an alias:
+   * Create a select query for one table with an alias:
    *
    * ```ts
    * const persons = await db.selectFrom('person as p')
@@ -172,7 +172,7 @@ export class Kysely<DB> {
    * available for the query.
    *
    * @example
-   * The `query` method also accepts an array for multiple tables. All
+   * The `selectFrom` method also accepts an array for multiple tables. All
    * the above examples can also be used in an array.
    *
    * ```ts
@@ -195,17 +195,6 @@ export class Kysely<DB> {
    *   "movie" as "m",
    *   (select "pet"."species" from "pet") as a,
    *   (select 1 as one) as "q"
-   * ```
-   *
-   * @example
-   * With `insert`, `delete` and `update` you can only use existing tables.
-   * You obviously can't insert rows to a subquery or delete rows from a random
-   * raw statement (unless that raw statement is simply a table name).
-   *
-   * ```ts
-   * db.selectFrom('person').insert(person)
-   * db.selectFrom('person').delete().where('id', 'in', [1, 2, 3])
-   * db.selectFrom('person').update({ species: 'cat' }).where('id', 'in', [1, 2, 3])
    * ```
    */
   selectFrom<F extends TableArg<DB, keyof DB, {}>>(
