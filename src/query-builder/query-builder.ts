@@ -13,12 +13,12 @@ import {
   cloneQueryNodeWithWhere,
   cloneQueryNodeWithJoin,
   cloneQueryNodeWithDistinctOnSelections,
-  cloneQueryNodeWithFroms,
   cloneQueryNodeWithSelections,
   cloneQueryNodeWithModifier,
   cloneQueryNodeWithSelectModifier,
   cloneQueryNodeWithInsertColumnsAndValues,
   cloneQueryNodeWithReturningSelections,
+  createQueryNodeWithSelectFromItems,
 } from '../operation-node/query-node'
 import {
   parseFromArgs,
@@ -132,10 +132,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
 
   subQuery(table: any): any {
     return new QueryBuilder({
-      queryNode: cloneQueryNodeWithFroms(
-        createQueryNode(),
-        parseFromArgs(table)
-      ),
+      queryNode: createQueryNodeWithSelectFromItems(parseFromArgs(table)),
     })
   }
 

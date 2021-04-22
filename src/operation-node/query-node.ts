@@ -5,10 +5,8 @@ import {
   SelectModifier,
   cloneSelectNodeWithSelections,
   cloneSelectNodeWithDistinctOnSelections,
-  createSelectNodeWithDistinctOnSelections,
-  createSelectNodeWithSelections,
   cloneSelectNodeWithModifier,
-  createSelectNodeWithModifier,
+  createSelectNode,
 } from './select-node'
 import { SelectionNode } from './selection-node'
 import { freeze } from '../utils/object-utils'
@@ -38,6 +36,7 @@ import {
   createReturningNodeWithSelections,
   ReturningNode,
 } from './returning-node'
+import { assertNotNullOrUndefined } from '../utils/assert'
 
 export type QueryModifier =
   | 'ForUpdate'
@@ -49,8 +48,6 @@ export type QueryModifier =
 
 export interface QueryNode extends OperationNode {
   readonly kind: 'QueryNode'
-  // TODO(samiko): Move this inside SelectNode?
-  readonly from?: FromNode
   readonly joins?: ReadonlyArray<JoinNode>
   readonly where?: WhereNode
   readonly select?: SelectNode
@@ -70,12 +67,12 @@ export function createQueryNode(): QueryNode {
   })
 }
 
-export function createQueryWithFromItems(
+export function createQueryNodeWithSelectFromItems(
   fromItems: ReadonlyArray<FromItemNode>
 ): QueryNode {
   return freeze({
     kind: 'QueryNode',
-    from: createFromNodeWithItems(fromItems),
+    select: createSelectNode(createFromNodeWithItems(fromItems)),
   })
 }
 
@@ -97,11 +94,11 @@ export function cloneQueryNodeWithSelections(
   queryNode: QueryNode,
   selections: ReadonlyArray<SelectionNode>
 ): QueryNode {
+  assertNotNullOrUndefined(queryNode.select)
+
   return freeze({
     ...queryNode,
-    select: queryNode.select
-      ? cloneSelectNodeWithSelections(queryNode.select, selections)
-      : createSelectNodeWithSelections(selections),
+    select: cloneSelectNodeWithSelections(queryNode.select, selections),
   })
 }
 
@@ -109,11 +106,14 @@ export function cloneQueryNodeWithDistinctOnSelections(
   queryNode: QueryNode,
   selections: ReadonlyArray<SelectionNode>
 ): QueryNode {
+  assertNotNullOrUndefined(queryNode.select)
+
   return freeze({
     ...queryNode,
-    select: queryNode.select
-      ? cloneSelectNodeWithDistinctOnSelections(queryNode.select, selections)
-      : createSelectNodeWithDistinctOnSelections(selections),
+    select: cloneSelectNodeWithDistinctOnSelections(
+      queryNode.select,
+      selections
+    ),
   })
 }
 
@@ -121,11 +121,11 @@ export function cloneQueryNodeWithSelectModifier(
   queryNode: QueryNode,
   modifier: SelectModifier
 ): QueryNode {
+  assertNotNullOrUndefined(queryNode.select)
+
   return freeze({
     ...queryNode,
-    select: queryNode.select
-      ? cloneSelectNodeWithModifier(queryNode.select, modifier)
-      : createSelectNodeWithModifier(modifier),
+    select: cloneSelectNodeWithModifier(queryNode.select, modifier),
   })
 }
 
@@ -136,18 +136,6 @@ export function cloneQueryNodeWithModifier(
   return freeze({
     ...queryNode,
     modifier,
-  })
-}
-
-export function cloneQueryNodeWithFroms(
-  queryNode: QueryNode,
-  froms: ReadonlyArray<FromItemNode>
-): QueryNode {
-  return freeze({
-    ...queryNode,
-    from: queryNode.from
-      ? cloneFromNodeWithItems(queryNode.from, froms)
-      : createFromNodeWithItems(froms),
   })
 }
 

@@ -68,10 +68,6 @@ export class OperationNodeVisitor {
   }
 
   protected visitQuery(node: QueryNode): void {
-    if (node.from) {
-      this.visitNode(node.from)
-    }
-
     if (node.joins) {
       node.joins.forEach(this.visitNode)
     }
@@ -96,6 +92,10 @@ export class OperationNodeVisitor {
 
     if (node.distinctOnSelections) {
       node.distinctOnSelections.forEach(this.visitNode)
+    }
+
+    if (node.from) {
+      this.visitNode(node.from)
     }
   }
 

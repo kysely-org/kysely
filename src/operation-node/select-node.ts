@@ -1,4 +1,5 @@
 import { freeze } from '../utils/object-utils'
+import { FromNode } from './from-node'
 import { OperationNode } from './operation-node'
 import { SelectionNode } from './selection-node'
 
@@ -6,6 +7,7 @@ export type SelectModifier = 'Distinct'
 
 export interface SelectNode extends OperationNode {
   readonly kind: 'SelectNode'
+  readonly from: FromNode
   readonly selections?: ReadonlyArray<SelectionNode>
   readonly distinctOnSelections?: ReadonlyArray<SelectionNode>
   readonly modifier?: SelectModifier
@@ -15,30 +17,10 @@ export function isSelectNode(node: OperationNode): node is SelectNode {
   return node.kind === 'SelectNode'
 }
 
-export function createSelectNodeWithSelections(
-  selections: ReadonlyArray<SelectionNode>
-): SelectNode {
+export function createSelectNode(from: FromNode): SelectNode {
   return freeze({
     kind: 'SelectNode',
-    selections: freeze(selections),
-  })
-}
-
-export function createSelectNodeWithDistinctOnSelections(
-  selections: ReadonlyArray<SelectionNode>
-): SelectNode {
-  return freeze({
-    kind: 'SelectNode',
-    distinctOnSelections: freeze(selections),
-  })
-}
-
-export function createSelectNodeWithModifier(
-  modifier: SelectModifier
-): SelectNode {
-  return freeze({
-    kind: 'SelectNode',
-    modifier,
+    from,
   })
 }
 

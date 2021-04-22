@@ -79,11 +79,6 @@ export class QueryCompiler extends OperationNodeVisitor {
       this.visitNode(node.select)
     }
 
-    if (node.from) {
-      this.append(' ')
-      this.visitNode(node.from)
-    }
-
     if (node.joins) {
       this.append(' ')
       node.joins.forEach(this.visitNode)
@@ -115,11 +110,6 @@ export class QueryCompiler extends OperationNodeVisitor {
     this.append(QUERY_MODIFIER_SQL[modifier])
   }
 
-  protected visitFrom(node: FromNode): void {
-    this.append('from ')
-    this.compileList(node.froms)
-  }
-
   protected visitSelect(node: SelectNode): void {
     this.append('select ')
 
@@ -134,7 +124,15 @@ export class QueryCompiler extends OperationNodeVisitor {
 
     if (node.selections) {
       this.compileList(node.selections)
+      this.append(' ')
     }
+
+    this.visitNode(node.from)
+  }
+
+  protected visitFrom(node: FromNode): void {
+    this.append('from ')
+    this.compileList(node.froms)
   }
 
   protected compileDistinctOn(selections: ReadonlyArray<SelectionNode>): void {

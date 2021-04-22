@@ -1,6 +1,5 @@
 import { cloneJoinNodeWithOn, JoinNode } from '../operation-node/join-node'
 import { OperationNodeSource } from '../operation-node/operation-node-source'
-import { createQueryWithFromItems } from '../operation-node/query-node'
 import { RawBuilder } from '../raw-builder/raw-builder'
 import {
   parseFromArgs,
@@ -13,6 +12,7 @@ import {
   FilterOperatorArg,
 } from './methods/filter-method'
 import { QueryBuilder } from './query-builder'
+import { createQueryNodeWithSelectFromItems } from '../operation-node/query-node'
 
 export class JoinBuilder<DB, TB extends keyof DB, O = {}>
   implements OperationNodeSource {
@@ -45,7 +45,7 @@ export class JoinBuilder<DB, TB extends keyof DB, O = {}>
 
   subQuery(table: any): any {
     return new QueryBuilder({
-      queryNode: createQueryWithFromItems(parseFromArgs(table)),
+      queryNode: createQueryNodeWithSelectFromItems(parseFromArgs(table)),
     })
   }
 

@@ -1,7 +1,7 @@
 import {
   createQueryNodeWithDeleteTable,
   createQueryNodeWithInsertTable,
-  createQueryWithFromItems,
+  createQueryNodeWithSelectFromItems,
 } from './operation-node/query-node'
 import { QueryBuilder } from './query-builder/query-builder'
 import { RawBuilder } from './raw-builder/raw-builder'
@@ -209,7 +209,7 @@ export class Kysely<DB> {
     return new QueryBuilder({
       compiler: this.#compiler,
       connectionProvider: this.#connectionProvider,
-      queryNode: createQueryWithFromItems(parseFromArgs(from)),
+      queryNode: createQueryNodeWithSelectFromItems(parseFromArgs(from)),
     })
   }
 
