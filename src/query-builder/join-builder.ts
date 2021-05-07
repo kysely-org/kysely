@@ -5,14 +5,14 @@ import {
   parseFromArgs,
   TableArg,
   FromQueryBuilder,
-} from './methods/from-method'
+} from './parsers/from-parser'
 import {
-  parseFilterReferenceArgs,
-  FilterReferenceArg,
   FilterOperatorArg,
-} from './methods/filter-method'
+  parseReferenceFilterArgs,
+} from './parsers/filter-parser'
 import { QueryBuilder } from './query-builder'
 import { createQueryNodeWithSelectFromItems } from '../operation-node/query-node'
+import { ReferenceExpression } from './parsers/reference-parser'
 
 export class JoinBuilder<DB, TB extends keyof DB, O = {}>
   implements OperationNodeSource {
@@ -53,15 +53,15 @@ export class JoinBuilder<DB, TB extends keyof DB, O = {}>
    *
    */
   on(
-    lhs: FilterReferenceArg<DB, TB, O>,
+    lhs: ReferenceExpression<DB, TB, O>,
     op: FilterOperatorArg,
-    rhs: FilterReferenceArg<DB, TB, O>
+    rhs: ReferenceExpression<DB, TB, O>
   ): JoinBuilder<DB, TB, O> {
     return new JoinBuilder(
       cloneJoinNodeWithOn(
         this.#joinNode,
         'and',
-        parseFilterReferenceArgs(lhs, op, rhs)
+        parseReferenceFilterArgs(lhs, op, rhs)
       )
     )
   }

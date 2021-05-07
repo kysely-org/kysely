@@ -1,14 +1,7 @@
-import { AliasNode, createAliasNode } from '../../operation-node/alias-node'
-import { ColumnNode, createColumnNode } from '../../operation-node/column-node'
 import { isOperationNodeSource } from '../../operation-node/operation-node-source'
 import { AliasedRawBuilder } from '../../raw-builder/raw-builder'
 import { isFunction, isString } from '../../utils/object-utils'
 import { AliasedQueryBuilder, QueryBuilder } from '../query-builder'
-
-import {
-  createReferenceNode,
-  ReferenceNode,
-} from '../../operation-node/reference-node'
 
 import {
   createSelectAllSelectionNode,
@@ -16,11 +9,6 @@ import {
   createSelectionNode,
   SelectionNode,
 } from '../../operation-node/selection-node'
-
-import {
-  createTableNode,
-  createTableNodeWithSchema,
-} from '../../operation-node/table-node'
 
 import {
   AliasedQueryBuilderFactory,
@@ -31,7 +19,8 @@ import {
   RowType,
   ValueType,
 } from '../type-utils'
-import { InsertResultTypeTag } from './insert-values-method'
+import { InsertResultTypeTag } from './insert-values-parser'
+import { parseAliasedStringReference } from './reference-parser'
 
 /**
  * `select` method argument type.
@@ -179,50 +168,6 @@ function parseSelectArg(selection: SelectArg<any, any, any>): SelectionNode {
       `invalid value passed to select method: ${JSON.stringify(selection)}`
     )
   }
-}
-
-function parseAliasedStringReference(
-  str: string
-): ColumnNode | ReferenceNode | AliasNode {
-  if (str.includes(' as ')) {
-    const [tableColumn, alias] = str.split(' as ').map((it) => it.trim())
-    const tableColumnNode = parseStringReference(tableColumn)
-    return createAliasNode(tableColumnNode, alias)
-  } else {
-    return parseStringReference(str)
-  }
-}
-
-export function parseStringReference(str: string): ColumnNode | ReferenceNode {
-  if (str.includes('.')) {
-    const parts = str.split('.').map((it) => it.trim())
-
-    if (parts.length === 3) {
-      return parseStringReferenceWithTableAndSchema(parts)
-    } else if (parts.length === 2) {
-      return parseStringReferenceWithTable(parts)
-    } else {
-      throw new Error(`invalid column reference ${str}`)
-    }
-  } else {
-    return createColumnNode(str)
-  }
-}
-
-function parseStringReferenceWithTableAndSchema(
-  parts: string[]
-): ReferenceNode {
-  const [schema, table, column] = parts
-
-  return createReferenceNode(
-    createTableNodeWithSchema(schema, table),
-    createColumnNode(column)
-  )
-}
-
-function parseStringReferenceWithTable(parts: string[]): ReferenceNode {
-  const [table, column] = parts
-  return createReferenceNode(createTableNode(table), createColumnNode(column))
 }
 
 export function parseSelectAllArgs(table?: string | string[]): SelectionNode[] {

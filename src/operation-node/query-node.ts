@@ -48,11 +48,13 @@ export type QueryModifier =
 
 export interface QueryNode extends OperationNode {
   readonly kind: 'QueryNode'
-  readonly joins?: ReadonlyArray<JoinNode>
-  readonly where?: WhereNode
+
   readonly select?: SelectNode
   readonly insert?: InsertNode
   readonly delete?: DeleteNode
+
+  readonly joins?: ReadonlyArray<JoinNode>
+  readonly where?: WhereNode
   readonly returning?: ReturningNode
   readonly modifier?: QueryModifier
 }

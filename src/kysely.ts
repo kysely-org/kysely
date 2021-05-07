@@ -10,7 +10,7 @@ import {
   FromQueryBuilder,
   parseFromArgs,
   parseTable,
-} from './query-builder/methods/from-method'
+} from './query-builder/parsers/from-parser'
 import { DriverConfig } from './driver/driver-config'
 import { Dialect } from './dialect/dialect'
 import { PostgresDialect } from './dialect/postgres/postgres-dialect'
@@ -20,7 +20,7 @@ import { TransactionalConnectionProvider } from './driver/transactional-connecti
 import { AsyncLocalStorage } from 'async_hooks'
 import { Connection } from './driver/connection'
 import { ConnectionProvider } from './driver/connection-provider'
-import { InsertResultTypeTag } from './query-builder/methods/insert-values-method'
+import { InsertResultTypeTag } from './query-builder/parsers/insert-values-parser'
 import { SchemaBuilder } from './schema/schema-builder'
 
 /**

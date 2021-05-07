@@ -10,8 +10,8 @@ import {
   parseFromArg,
   FromArgDatabaseType,
   ExtractAliasesFromFromArg,
-} from './from-method'
-import { parseFilterArgs } from './filter-method'
+} from './from-parser'
+import { parseFilterArgs } from './filter-parser'
 import { JoinBuilder } from '../join-builder'
 
 export type JoinReferenceArg<DB, TB extends keyof DB, F> =

@@ -1,6 +1,6 @@
 import { freeze } from '../utils/object-utils'
 import { AliasNode } from './alias-node'
-import { ColumnNode, createColumnNode } from './column-node'
+import { ColumnNode } from './column-node'
 import { OperationNode } from './operation-node'
 import { createSelectAllReferenceNode, ReferenceNode } from './reference-node'
 import { createSelectAllNode, SelectAllNode } from './select-all-node'

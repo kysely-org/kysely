@@ -30,6 +30,7 @@ import { CreateTableNode } from './create-table-node'
 import { ColumnDefinitionNode } from './column-definition-node'
 import { DropTableNode } from './drop-table-node'
 import { DataTypeNode } from './data-type-node'
+import { OrderByNode } from './order-by-node'
 
 export class OperationNodeVisitor {
   #visitors: Record<OperationNodeKind, Function> = {
@@ -61,6 +62,7 @@ export class OperationNodeVisitor {
     ColumnDefinitionNode: this.visitColumnDefinition.bind(this),
     DropTableNode: this.visitDropTable.bind(this),
     DataTypeNode: this.visitDataType.bind(this),
+    OrderByNode: this.visitOrderBy.bind(this),
   }
 
   readonly visitNode = (node: OperationNode): void => {
@@ -203,6 +205,10 @@ export class OperationNodeVisitor {
 
   protected visitDropTable(node: DropTableNode): void {
     this.visitNode(node.table)
+  }
+
+  protected visitOrderBy(node: OrderByNode): void {
+    this.visitNode(node.orderBy)
   }
 
   protected visitDataType(node: DataTypeNode): void {}

@@ -6,7 +6,7 @@ import {
   JoinCallbackArg,
   JoinReferenceArg,
   parseJoinArgs,
-} from './methods/join-method'
+} from './parsers/join-parser'
 import {
   QueryNode,
   createQueryNode,
@@ -24,31 +24,30 @@ import {
   parseFromArgs,
   TableArg,
   FromQueryBuilder,
-} from './methods/from-method'
+} from './parsers/from-parser'
 import {
   parseSelectArgs,
   parseSelectAllArgs,
   SelectArg,
   SelectQueryBuilder,
   SelectAllQueryBuiler,
-} from './methods/select-method'
+} from './parsers/select-parser'
 import {
   parseFilterArgs,
-  parseFilterReferenceArgs,
-  FilterReferenceArg,
-  FilterValueArg,
   ExistsFilterArg,
   parseExistsFilterArgs,
   FilterOperatorArg,
-} from './methods/filter-method'
+  parseReferenceFilterArgs,
+} from './parsers/filter-parser'
 import { ConnectionProvider } from '../driver/connection-provider'
-import { Connection } from '../driver/connection'
 import {
   InsertResultTypeTag,
   InsertValuesArg,
   parseInsertValuesArgs,
-} from './methods/insert-values-method'
-import { ReturningQueryBuilder } from './methods/returning-method'
+} from './parsers/insert-values-parser'
+import { ReturningQueryBuilder } from './parsers/returning-parser'
+import { ReferenceExpression } from './parsers/reference-parser'
+import { ValueExpression, ValueExpressionOrList } from './parsers/value-parser'
 
 /**
  * The main query builder class.
@@ -261,9 +260,9 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * ```
    */
   where(
-    lhs: FilterReferenceArg<DB, TB, O>,
+    lhs: ReferenceExpression<DB, TB, O>,
     op: FilterOperatorArg,
-    rhs: FilterValueArg<DB, TB, O>
+    rhs: ValueExpressionOrList<DB, TB, O>
   ): QueryBuilder<DB, TB, O>
 
   where(
@@ -331,9 +330,9 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * from "person"`
    */
   whereRef(
-    lhs: FilterReferenceArg<DB, TB, O>,
+    lhs: ReferenceExpression<DB, TB, O>,
     op: FilterOperatorArg,
-    rhs: FilterReferenceArg<DB, TB, O>
+    rhs: ReferenceExpression<DB, TB, O>
   ): QueryBuilder<DB, TB, O> {
     return new QueryBuilder({
       compiler: this.#compiler,
@@ -341,7 +340,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
       queryNode: cloneQueryNodeWithWhere(
         this.#queryNode,
         'and',
-        parseFilterReferenceArgs(lhs, op, rhs)
+        parseReferenceFilterArgs(lhs, op, rhs)
       ),
     })
   }
@@ -406,9 +405,9 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * ```
    */
   orWhere(
-    lhs: FilterReferenceArg<DB, TB, O>,
+    lhs: ReferenceExpression<DB, TB, O>,
     op: FilterOperatorArg,
-    rhs: FilterValueArg<DB, TB, O>
+    rhs: ValueExpression<DB, TB, O>
   ): QueryBuilder<DB, TB, O>
 
   orWhere(
@@ -434,9 +433,9 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * Also see {@link QueryBuilder.orWhere | orWhere} and {@link QueryBuilder.where | where}.
    */
   orWhereRef(
-    lhs: FilterReferenceArg<DB, TB, O>,
+    lhs: ReferenceExpression<DB, TB, O>,
     op: FilterOperatorArg,
-    rhs: FilterReferenceArg<DB, TB, O>
+    rhs: ReferenceExpression<DB, TB, O>
   ): QueryBuilder<DB, TB, O> {
     return new QueryBuilder({
       compiler: this.#compiler,
@@ -444,7 +443,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
       queryNode: cloneQueryNodeWithWhere(
         this.#queryNode,
         'or',
-        parseFilterReferenceArgs(lhs, op, rhs)
+        parseReferenceFilterArgs(lhs, op, rhs)
       ),
     })
   }
@@ -820,6 +819,10 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
       ),
     })
   }
+
+  /**
+   * Adds an `order by` clause to the query.
+   */
 
   /**
    *

@@ -6,7 +6,7 @@ import {
 } from '../operation-node/operation-node-source'
 import { createRawNode, RawNode } from '../operation-node/raw-node'
 import { createValueNode } from '../operation-node/value-node'
-import { parseStringReference } from '../query-builder/methods/select-method'
+import { parseStringReference } from '../query-builder/parsers/reference-parser'
 
 export class RawBuilder<O = unknown> implements OperationNodeSource {
   #sql: string

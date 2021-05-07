@@ -4,7 +4,8 @@
   "description": "Type safe SQL query builder",
   "main": "lib/index.js",
   "scripts": {
-    "test": "mocha -r ts-node/register test/**/*.test.ts",
+    "test": "npm run test:integration && npm run test:typings",
+    "test:integration": "mocha -r ts-node/register test/**/*.test.ts",
     "test:typings": "npm run build && tsd test/typings",
     "prettier": "prettier --write src/**/*.ts test/**/*.ts",
     "build": "rm -rf lib && tsc",

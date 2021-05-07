@@ -1,27 +1,19 @@
 import { freeze } from '../utils/object-utils'
-import { ColumnNode } from './column-node'
 import { OperationNode } from './operation-node'
+import {
+  ReferenceExpressionNode,
+  ValueExpressionNode,
+} from './operation-node-utils'
 import { OperatorNode } from './operator-node'
-import { PrimitiveValueListNode } from './primitive-value-list-node'
-import { QueryNode } from './query-node'
 import { RawNode } from './raw-node'
-import { ReferenceNode } from './reference-node'
-import { ValueListNode } from './value-list-node'
-import { ValueNode } from './value-node'
 
-export type FilterNodeLhsNode = ColumnNode | ReferenceNode | QueryNode | RawNode
 export type FilterOperatorNode = OperatorNode | RawNode
-export type FilterNodeRhsNode =
-  | ValueNode
-  | ValueListNode
-  | PrimitiveValueListNode
-  | FilterNodeLhsNode
 
 export interface FilterNode extends OperationNode {
   readonly kind: 'FilterNode'
-  readonly lhs?: FilterNodeLhsNode
+  readonly lhs?: ReferenceExpressionNode
   readonly op: OperatorNode | RawNode
-  readonly rhs: FilterNodeRhsNode
+  readonly rhs: ValueExpressionNode
 }
 
 export function isFilterNode(node: OperationNode): node is FilterNode {
@@ -29,9 +21,9 @@ export function isFilterNode(node: OperationNode): node is FilterNode {
 }
 
 export function createFilterNode(
-  lhs: FilterNodeLhsNode | undefined,
+  lhs: ReferenceExpressionNode | undefined,
   op: OperatorNode | RawNode,
-  rhs: FilterNodeRhsNode
+  rhs: ValueExpressionNode
 ): FilterNode {
   return freeze({
     kind: 'FilterNode',

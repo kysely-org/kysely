@@ -1,6 +1,6 @@
 import { QueryBuilder } from '../query-builder'
-import { InsertResultTypeTag } from './insert-values-method'
-import { SelectResultType } from './select-method'
+import { InsertResultTypeTag } from './insert-values-parser'
+import { SelectResultType } from './select-parser'
 
 /**
  * `returning` method output query builder type
