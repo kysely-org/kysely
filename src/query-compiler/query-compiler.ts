@@ -3,25 +3,29 @@ import { AndNode } from '../operation-node/and-node'
 import { ColumnDefinitionNode } from '../operation-node/column-definition-node'
 import { CreateTableNode } from '../operation-node/create-table-node'
 import { ColumnDataType, DataTypeNode } from '../operation-node/data-type-node'
-import { DeleteNode } from '../operation-node/delete-node'
+import { DeleteQueryNode } from '../operation-node/delete-query-node'
 import { DropTableNode } from '../operation-node/drop-table-node'
 import { FilterNode } from '../operation-node/filter-node'
 import { FromNode } from '../operation-node/from-node'
 import { IdentifierNode } from '../operation-node/identifier-node'
-import { InsertNode } from '../operation-node/insert-node'
+import { InsertQueryNode } from '../operation-node/insert-query-node'
 import { JoinNode, JoinType } from '../operation-node/join-node'
 import { OperationNode } from '../operation-node/operation-node'
 import { OperationNodeVisitor } from '../operation-node/operation-node-visitor'
 import { OperatorNode } from '../operation-node/operator-node'
 import { OrNode } from '../operation-node/or-node'
+import { OrderByItemNode } from '../operation-node/order-by-item-node'
+import { OrderByNode } from '../operation-node/order-by-node'
 import { ParensNode } from '../operation-node/parens-node'
 import { PrimitiveValueListNode } from '../operation-node/primitive-value-list-node'
-import { QueryModifier, QueryNode } from '../operation-node/query-node'
 import { RawNode } from '../operation-node/raw-node'
 import { ReferenceNode } from '../operation-node/reference-node'
 import { ReturningNode } from '../operation-node/returning-node'
 import { SelectAllNode } from '../operation-node/select-all-node'
-import { SelectNode } from '../operation-node/select-node'
+import {
+  SelectModifier,
+  SelectQueryNode,
+} from '../operation-node/select-query-node'
 import { SelectionNode } from '../operation-node/selection-node'
 import { TableNode } from '../operation-node/table-node'
 import { ValueListNode } from '../operation-node/value-list-node'
@@ -34,16 +38,21 @@ export class QueryCompiler extends OperationNodeVisitor {
   #sqlFragments: string[] = []
   #bindings: any[] = []
 
-  protected queryNodeStack: QueryNode[] = []
+  protected selectQueryNodeStack: SelectQueryNode[] = []
 
   compile(
-    queryNode: QueryNode | CreateTableNode | DropTableNode
+    node:
+      | SelectQueryNode
+      | InsertQueryNode
+      | DeleteQueryNode
+      | CreateTableNode
+      | DropTableNode
   ): CompiledQuery {
     this.#sqlFragments = []
     this.#bindings = []
-    this.queryNodeStack = []
+    this.selectQueryNodeStack = []
 
-    this.visitNode(queryNode)
+    this.visitNode(node)
 
     return freeze({
       sql: this.getSql(),
@@ -59,25 +68,32 @@ export class QueryCompiler extends OperationNodeVisitor {
     return this.#bindings
   }
 
-  protected visitQuery(node: QueryNode): void {
-    const needsParens = !isEmpty(this.queryNodeStack)
-    this.queryNodeStack.push(node)
+  protected visitSelectQuery(node: SelectQueryNode): void {
+    const needsParens = !isEmpty(this.selectQueryNodeStack)
+    this.selectQueryNodeStack.push(node)
 
     if (needsParens) {
       this.append('(')
     }
 
-    if (node.insert) {
-      this.visitNode(node.insert)
+    this.append('select ')
+
+    if (node.distinctOnSelections && !isEmpty(node.distinctOnSelections)) {
+      this.compileDistinctOn(node.distinctOnSelections)
+      this.append(' ')
     }
 
-    if (node.delete) {
-      this.visitNode(node.delete)
+    if (node.modifier === 'Distinct') {
+      this.append(SELECT_MODIFIER_SQL[node.modifier])
+      this.append(' ')
     }
 
-    if (node.select) {
-      this.visitNode(node.select)
+    if (node.selections) {
+      this.compileList(node.selections)
+      this.append(' ')
     }
+
+    this.visitNode(node.from)
 
     if (node.joins) {
       this.append(' ')
@@ -89,45 +105,21 @@ export class QueryCompiler extends OperationNodeVisitor {
       this.visitNode(node.where)
     }
 
-    if (node.modifier) {
+    if (node.orderBy) {
       this.append(' ')
-      this.compileQueryModifier(node.modifier)
+      this.visitNode(node.orderBy)
     }
 
-    if (node.returning) {
+    if (node.modifier) {
       this.append(' ')
-      this.visitNode(node.returning)
+      this.append(SELECT_MODIFIER_SQL[node.modifier])
     }
 
     if (needsParens) {
       this.append(')')
     }
 
-    this.queryNodeStack.pop()
-  }
-
-  protected compileQueryModifier(modifier: QueryModifier): void {
-    this.append(QUERY_MODIFIER_SQL[modifier])
-  }
-
-  protected visitSelect(node: SelectNode): void {
-    this.append('select ')
-
-    if (node.distinctOnSelections && !isEmpty(node.distinctOnSelections)) {
-      this.compileDistinctOn(node.distinctOnSelections)
-      this.append(' ')
-    }
-
-    if (node.modifier === 'Distinct') {
-      this.append('distinct ')
-    }
-
-    if (node.selections) {
-      this.compileList(node.selections)
-      this.append(' ')
-    }
-
-    this.visitNode(node.from)
+    this.selectQueryNodeStack.pop()
   }
 
   protected visitFrom(node: FromNode): void {
@@ -158,7 +150,7 @@ export class QueryCompiler extends OperationNodeVisitor {
     this.visitNode(node.where)
   }
 
-  protected visitInsert(node: InsertNode): void {
+  protected visitInsertQuery(node: InsertQueryNode): void {
     this.append('insert into ')
     this.visitNode(node.into)
 
@@ -177,11 +169,31 @@ export class QueryCompiler extends OperationNodeVisitor {
         this.compileList(node.values)
       }
     }
+
+    if (node.returning) {
+      this.append(' ')
+      this.visitNode(node.returning)
+    }
   }
 
-  protected visitDelete(node: DeleteNode): void {
+  protected visitDeleteQuery(node: DeleteQueryNode): void {
     this.append('delete from ')
     this.visitNode(node.from)
+
+    if (node.joins) {
+      this.append(' ')
+      node.joins.forEach(this.visitNode)
+    }
+
+    if (node.where) {
+      this.append(' ')
+      this.visitNode(node.where)
+    }
+
+    if (node.returning) {
+      this.append(' ')
+      this.visitNode(node.returning)
+    }
   }
 
   protected visitReturning(node: ReturningNode): void {
@@ -356,6 +368,17 @@ export class QueryCompiler extends OperationNodeVisitor {
     this.append(DATA_TYPE_SQL[node.dataType](node))
   }
 
+  protected visitOrderBy(node: OrderByNode): void {
+    this.append('order by ')
+    this.compileList(node.items)
+  }
+
+  protected visitOrderByItem(node: OrderByItemNode): void {
+    this.visitNode(node.orderBy)
+    this.append(' ')
+    this.append(node.direction)
+  }
+
   protected appendLeftIdentifierWrapper(): void {
     this.append('"')
   }
@@ -374,7 +397,8 @@ export class QueryCompiler extends OperationNodeVisitor {
   }
 }
 
-const QUERY_MODIFIER_SQL: Record<QueryModifier, string> = {
+const SELECT_MODIFIER_SQL: Record<SelectModifier, string> = {
+  Distinct: 'distinct',
   ForKeyShare: 'for key share',
   ForNoKeyUpdate: 'for no key update',
   ForUpdate: 'for update',

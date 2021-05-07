@@ -1,11 +1,11 @@
 import { freeze } from '../utils/object-utils'
 import { OperationNode } from './operation-node'
-import { QueryNode } from './query-node'
 import { RawNode } from './raw-node'
 import { ReferenceNode } from './reference-node'
+import { SelectQueryNode } from './select-query-node'
 import { ValueNode } from './value-node'
 
-export type ListNodeItem = ValueNode | ReferenceNode | QueryNode | RawNode
+export type ListNodeItem = ValueNode | ReferenceNode | SelectQueryNode | RawNode
 
 export interface ValueListNode extends OperationNode {
   readonly kind: 'ValueListNode'

@@ -1,8 +1,7 @@
 export type OperationNodeKind =
   | 'IdentifierNode'
-  | 'QueryNode'
   | 'RawNode'
-  | 'SelectNode'
+  | 'SelectQueryNode'
   | 'SelectionNode'
   | 'ReferenceNode'
   | 'ColumnNode'
@@ -20,14 +19,15 @@ export type OperationNodeKind =
   | 'JoinNode'
   | 'OperatorNode'
   | 'WhereNode'
-  | 'InsertNode'
-  | 'DeleteNode'
+  | 'InsertQueryNode'
+  | 'DeleteQueryNode'
   | 'ReturningNode'
   | 'CreateTableNode'
   | 'ColumnDefinitionNode'
   | 'DropTableNode'
   | 'DataTypeNode'
   | 'OrderByNode'
+  | 'OrderByItemNode'
 
 export interface OperationNode {
   readonly kind: OperationNodeKind

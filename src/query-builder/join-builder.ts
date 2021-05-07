@@ -11,8 +11,8 @@ import {
   parseReferenceFilterArgs,
 } from './parsers/filter-parser'
 import { QueryBuilder } from './query-builder'
-import { createQueryNodeWithSelectFromItems } from '../operation-node/query-node'
 import { ReferenceExpression } from './parsers/reference-parser'
+import { createSelectQueryNodeWithFromItems } from '../operation-node/select-query-node'
 
 export class JoinBuilder<DB, TB extends keyof DB, O = {}>
   implements OperationNodeSource {
@@ -45,7 +45,7 @@ export class JoinBuilder<DB, TB extends keyof DB, O = {}>
 
   subQuery(table: any): any {
     return new QueryBuilder({
-      queryNode: createQueryNodeWithSelectFromItems(parseFromArgs(table)),
+      queryNode: createSelectQueryNodeWithFromItems(parseFromArgs(table)),
     })
   }
 

@@ -1,8 +1,3 @@
-import {
-  createQueryNodeWithDeleteTable,
-  createQueryNodeWithInsertTable,
-  createQueryNodeWithSelectFromItems,
-} from './operation-node/query-node'
 import { QueryBuilder } from './query-builder/query-builder'
 import { RawBuilder } from './raw-builder/raw-builder'
 import {
@@ -22,6 +17,9 @@ import { Connection } from './driver/connection'
 import { ConnectionProvider } from './driver/connection-provider'
 import { InsertResultTypeTag } from './query-builder/parsers/insert-values-parser'
 import { SchemaBuilder } from './schema/schema-builder'
+import { createSelectQueryNodeWithFromItems } from './operation-node/select-query-node'
+import { createInsertQueryNodeWithTable } from './operation-node/insert-query-node'
+import { createDeleteQueryNodeWithTable } from './operation-node/delete-query-node'
 
 /**
  * The main Kysely class.
@@ -209,7 +207,7 @@ export class Kysely<DB> {
     return new QueryBuilder({
       compiler: this.#compiler,
       connectionProvider: this.#connectionProvider,
-      queryNode: createQueryNodeWithSelectFromItems(parseFromArgs(from)),
+      queryNode: createSelectQueryNodeWithFromItems(parseFromArgs(from)),
     })
   }
 
@@ -235,7 +233,7 @@ export class Kysely<DB> {
     return new QueryBuilder({
       compiler: this.#compiler,
       connectionProvider: this.#connectionProvider,
-      queryNode: createQueryNodeWithInsertTable(parseTable(table)),
+      queryNode: createInsertQueryNodeWithTable(parseTable(table)),
     })
   }
 
@@ -257,7 +255,7 @@ export class Kysely<DB> {
     return new QueryBuilder({
       compiler: this.#compiler,
       connectionProvider: this.#connectionProvider,
-      queryNode: createQueryNodeWithDeleteTable(parseTable(table)),
+      queryNode: createDeleteQueryNodeWithTable(parseTable(table)),
     })
   }
 

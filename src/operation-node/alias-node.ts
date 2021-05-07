@@ -2,16 +2,16 @@ import { freeze } from '../utils/object-utils'
 import { ColumnNode } from './column-node'
 import { createIdentifierNode, IdentifierNode } from './identifier-node'
 import { OperationNode } from './operation-node'
-import { QueryNode } from './query-node'
 import { RawNode } from './raw-node'
 import { ReferenceNode } from './reference-node'
+import { SelectQueryNode } from './select-query-node'
 import { TableNode } from './table-node'
 
 type AliasNodeChild =
   | ReferenceNode
   | TableNode
   | RawNode
-  | QueryNode
+  | SelectQueryNode
   | ColumnNode
 
 export interface AliasNode extends OperationNode {

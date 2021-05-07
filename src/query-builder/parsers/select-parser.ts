@@ -1,7 +1,11 @@
 import { isOperationNodeSource } from '../../operation-node/operation-node-source'
 import { AliasedRawBuilder } from '../../raw-builder/raw-builder'
 import { isFunction, isString } from '../../utils/object-utils'
-import { AliasedQueryBuilder, QueryBuilder } from '../query-builder'
+import {
+  AliasedQueryBuilder,
+  createEmptySelectQuery,
+  QueryBuilder,
+} from '../query-builder'
 
 import {
   createSelectAllSelectionNode,
@@ -162,7 +166,9 @@ function parseSelectArg(selection: SelectArg<any, any, any>): SelectionNode {
   } else if (isOperationNodeSource(selection)) {
     return createSelectionNode(selection.toOperationNode())
   } else if (isFunction(selection)) {
-    return createSelectionNode(selection(new QueryBuilder()).toOperationNode())
+    return createSelectionNode(
+      selection(createEmptySelectQuery()).toOperationNode()
+    )
   } else {
     throw new Error(
       `invalid value passed to select method: ${JSON.stringify(selection)}`

@@ -1,5 +1,9 @@
 import { ColumnNode, createColumnNode } from '../../operation-node/column-node'
-import { InsertValuesNode } from '../../operation-node/insert-node'
+import { isDeleteQueryNode } from '../../operation-node/delete-query-node'
+import {
+  InsertValuesNode,
+  isInsertQueryNode,
+} from '../../operation-node/insert-query-node'
 import { isOperationNodeSource } from '../../operation-node/operation-node-source'
 import { createPrimitiveValueListNode } from '../../operation-node/primitive-value-list-node'
 import {
@@ -62,10 +66,14 @@ function parseValue(value: InsertValueType): ListNodeItem {
   if (isPrimitive(value)) {
     return createValueNode(value)
   } else if (isOperationNodeSource(value)) {
-    return value.toOperationNode()
-  } else {
-    throw new Error(
-      `unsupported value for insert object ${JSON.stringify(value)}`
-    )
+    const node = value.toOperationNode()
+
+    if (!isInsertQueryNode(node) && !isDeleteQueryNode(node)) {
+      return node
+    }
   }
+
+  throw new Error(
+    `unsupported value for insert object ${JSON.stringify(value)}`
+  )
 }

@@ -1,5 +1,7 @@
 import { QueryBuilder, RawBuilder } from '../..'
 import { isColumnNode } from '../../operation-node/column-node'
+import { isDeleteQueryNode } from '../../operation-node/delete-query-node'
+import { isInsertQueryNode } from '../../operation-node/insert-query-node'
 import { isOperationNodeSource } from '../../operation-node/operation-node-source'
 import { ValueExpressionNode } from '../../operation-node/operation-node-utils'
 import {
@@ -18,6 +20,7 @@ import {
   isPrimitive,
   PrimitiveValue,
 } from '../../utils/object-utils'
+import { createEmptySelectQuery } from '../query-builder'
 import {
   AnyQueryBuilder,
   QueryBuilderFactory,
@@ -41,14 +44,20 @@ export function parseValueExpression(
   if (isPrimitive(arg)) {
     return createValueNode(arg)
   } else if (isOperationNodeSource(arg)) {
-    return arg.toOperationNode()
+    const node = arg.toOperationNode()
+
+    if (!isDeleteQueryNode(node) && !isInsertQueryNode(node)) {
+      return node
+    }
   } else if (isFunction(arg)) {
-    return arg(new QueryBuilder()).toOperationNode()
-  } else {
-    throw new Error(
-      `unsupported right hand side filter argument ${JSON.stringify(arg)}`
-    )
+    const node = arg(createEmptySelectQuery()).toOperationNode()
+
+    if (!isDeleteQueryNode(node) && !isInsertQueryNode(node)) {
+      return node
+    }
   }
+
+  throw new Error(`invalid value expression ${JSON.stringify(arg)}`)
 }
 
 export function parseValueExpressionOrList(

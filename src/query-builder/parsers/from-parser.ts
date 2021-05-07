@@ -1,4 +1,8 @@
-import { AliasedQueryBuilder, QueryBuilder } from '../query-builder'
+import {
+  AliasedQueryBuilder,
+  createEmptySelectQuery,
+  QueryBuilder,
+} from '../query-builder'
 import { isFunction, isString } from '../../utils/object-utils'
 import { AliasNode, createAliasNode } from '../../operation-node/alias-node'
 import {
@@ -111,7 +115,7 @@ export function parseFromArg(from: TableArg<any, any, any>): FromItemNode {
   } else if (isOperationNodeSource(from)) {
     return from.toOperationNode()
   } else if (isFunction(from)) {
-    return from(new QueryBuilder()).toOperationNode()
+    return from(createEmptySelectQuery()).toOperationNode()
   } else {
     throw new Error(
       `invalid value passed to query method: ${JSON.stringify(from)}`

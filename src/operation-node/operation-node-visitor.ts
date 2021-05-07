@@ -14,33 +14,32 @@ import { JoinNode } from './join-node'
 import { OrNode } from './or-node'
 import { ParensNode } from './parens-node'
 import { PrimitiveValueListNode } from './primitive-value-list-node'
-import { QueryNode } from './query-node'
 import { RawNode } from './raw-node'
-import { SelectNode } from './select-node'
+import { SelectQueryNode } from './select-query-node'
 import { ValueListNode } from './value-list-node'
 import { ValueNode } from './value-node'
 import { FilterNode } from './filter-node'
 import { OperatorNode } from './operator-node'
 import { FromNode } from './from-node'
 import { WhereNode } from './where-node'
-import { InsertNode } from './insert-node'
-import { DeleteNode } from './delete-node'
+import { InsertQueryNode } from './insert-query-node'
+import { DeleteQueryNode } from './delete-query-node'
 import { ReturningNode } from './returning-node'
 import { CreateTableNode } from './create-table-node'
 import { ColumnDefinitionNode } from './column-definition-node'
 import { DropTableNode } from './drop-table-node'
 import { DataTypeNode } from './data-type-node'
 import { OrderByNode } from './order-by-node'
+import { OrderByItemNode } from './order-by-item-node'
 
 export class OperationNodeVisitor {
   #visitors: Record<OperationNodeKind, Function> = {
     AliasNode: this.visitAlias.bind(this),
     ColumnNode: this.visitColumn.bind(this),
     IdentifierNode: this.visitIdentifier.bind(this),
-    QueryNode: this.visitQuery.bind(this),
     RawNode: this.visitRaw.bind(this),
     ReferenceNode: this.visitReference.bind(this),
-    SelectNode: this.visitSelect.bind(this),
+    SelectQueryNode: this.visitSelectQuery.bind(this),
     SelectionNode: this.visitSelection.bind(this),
     TableNode: this.visitTable.bind(this),
     FromNode: this.visitFrom.bind(this),
@@ -55,39 +54,22 @@ export class OperationNodeVisitor {
     JoinNode: this.visitJoin.bind(this),
     OperatorNode: this.visitOperator.bind(this),
     WhereNode: this.visitWhere.bind(this),
-    InsertNode: this.visitInsert.bind(this),
-    DeleteNode: this.visitDelete.bind(this),
+    InsertQueryNode: this.visitInsertQuery.bind(this),
+    DeleteQueryNode: this.visitDeleteQuery.bind(this),
     ReturningNode: this.visitReturning.bind(this),
     CreateTableNode: this.visitCreateTable.bind(this),
     ColumnDefinitionNode: this.visitColumnDefinition.bind(this),
     DropTableNode: this.visitDropTable.bind(this),
     DataTypeNode: this.visitDataType.bind(this),
     OrderByNode: this.visitOrderBy.bind(this),
+    OrderByItemNode: this.visitOrderByItem.bind(this),
   }
 
   readonly visitNode = (node: OperationNode): void => {
     this.#visitors[node.kind](node)
   }
 
-  protected visitQuery(node: QueryNode): void {
-    if (node.joins) {
-      node.joins.forEach(this.visitNode)
-    }
-
-    if (node.select) {
-      this.visitNode(node.select)
-    }
-
-    if (node.insert) {
-      this.visitNode(node.insert)
-    }
-
-    if (node.where) {
-      this.visitNode(node.where)
-    }
-  }
-
-  protected visitSelect(node: SelectNode): void {
+  protected visitSelectQuery(node: SelectQueryNode): void {
     if (node.selections) {
       node.selections.forEach(this.visitNode)
     }
@@ -98,6 +80,18 @@ export class OperationNodeVisitor {
 
     if (node.from) {
       this.visitNode(node.from)
+    }
+
+    if (node.joins) {
+      node.joins.forEach(this.visitNode)
+    }
+
+    if (node.where) {
+      this.visitNode(node.where)
+    }
+
+    if (node.orderBy) {
+      this.visitNode(node.orderBy)
     }
   }
 
@@ -173,7 +167,7 @@ export class OperationNodeVisitor {
     this.visitNode(node.where)
   }
 
-  protected visitInsert(node: InsertNode): void {
+  protected visitInsertQuery(node: InsertQueryNode): void {
     this.visitNode(node.into)
 
     if (node.columns) {
@@ -183,10 +177,26 @@ export class OperationNodeVisitor {
     if (node.values) {
       node.values.forEach(this.visitNode)
     }
+
+    if (node.returning) {
+      this.visitNode(node.returning)
+    }
   }
 
-  protected visitDelete(node: DeleteNode): void {
+  protected visitDeleteQuery(node: DeleteQueryNode): void {
     this.visitNode(node.from)
+
+    if (node.joins) {
+      node.joins.forEach(this.visitNode)
+    }
+
+    if (node.where) {
+      this.visitNode(node.where)
+    }
+
+    if (node.returning) {
+      this.visitNode(node.returning)
+    }
   }
 
   protected visitReturning(node: ReturningNode): void {
@@ -208,6 +218,10 @@ export class OperationNodeVisitor {
   }
 
   protected visitOrderBy(node: OrderByNode): void {
+    node.items.forEach(this.visitNode)
+  }
+
+  protected visitOrderByItem(node: OrderByItemNode): void {
     this.visitNode(node.orderBy)
   }
 

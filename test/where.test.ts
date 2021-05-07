@@ -220,26 +220,29 @@ for (const dialect of BUILT_IN_DIALECTS) {
           .selectFrom('person')
           .selectAll()
           .where('first_name', 'in', ['Arnold', 'Jennifer'])
+          .orderBy('first_name', 'desc')
 
         testSql(query, dialect, {
           postgres: {
-            sql: 'select * from "person" where "first_name" in ($1, $2)',
+            sql:
+              'select * from "person" where "first_name" in ($1, $2) order by "first_name" desc',
             bindings: ['Arnold', 'Jennifer'],
           },
         })
 
         const persons = await query.execute()
         expect(persons).to.have.length(2)
+        expect(persons[0].first_name).to.equal('Jennifer')
         expect(persons).to.containSubset([
-          {
-            first_name: 'Arnold',
-            last_name: 'Schwarzenegger',
-            gender: 'male',
-          },
           {
             first_name: 'Jennifer',
             last_name: 'Aniston',
             gender: 'female',
+          },
+          {
+            first_name: 'Arnold',
+            last_name: 'Schwarzenegger',
+            gender: 'male',
           },
         ])
       })

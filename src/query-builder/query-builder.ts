@@ -8,19 +8,6 @@ import {
   parseJoinArgs,
 } from './parsers/join-parser'
 import {
-  QueryNode,
-  createQueryNode,
-  cloneQueryNodeWithWhere,
-  cloneQueryNodeWithJoin,
-  cloneQueryNodeWithDistinctOnSelections,
-  cloneQueryNodeWithSelections,
-  cloneQueryNodeWithModifier,
-  cloneQueryNodeWithSelectModifier,
-  cloneQueryNodeWithInsertColumnsAndValues,
-  cloneQueryNodeWithReturningSelections,
-  createQueryNodeWithSelectFromItems,
-} from '../operation-node/query-node'
-import {
   parseFromArgs,
   TableArg,
   FromQueryBuilder,
@@ -46,8 +33,39 @@ import {
   parseInsertValuesArgs,
 } from './parsers/insert-values-parser'
 import { ReturningQueryBuilder } from './parsers/returning-parser'
-import { ReferenceExpression } from './parsers/reference-parser'
+import {
+  parseReferenceExpression,
+  ReferenceExpression,
+} from './parsers/reference-parser'
 import { ValueExpression, ValueExpressionOrList } from './parsers/value-parser'
+import {
+  createOrderByItemNode,
+  OrderByDirection,
+} from '../operation-node/order-by-item-node'
+import {
+  cloneSelectQueryNodeWithDistinctOnSelections,
+  cloneSelectQueryNodeWithModifier,
+  cloneSelectQueryNodeWithOrderByItem,
+  cloneSelectQueryNodeWithSelections,
+  createSelectQueryNodeWithFromItems,
+  isSelectQueryNode,
+  SelectQueryNode,
+} from '../operation-node/select-query-node'
+import {
+  cloneInsertQueryNodeWithColumnsAndValues,
+  InsertQueryNode,
+  isInsertQueryNode,
+} from '../operation-node/insert-query-node'
+import {
+  DeleteQueryNode,
+  isDeleteQueryNode,
+} from '../operation-node/delete-query-node'
+import {
+  cloneQueryNodeWithJoin,
+  cloneQueryNodeWithReturningSelections,
+  cloneQueryNodeWithWhere,
+  QueryNode,
+} from '../operation-node/query-node-utils'
 
 /**
  * The main query builder class.
@@ -70,11 +88,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
   readonly #compiler?: QueryCompiler
   readonly #connectionProvider?: ConnectionProvider
 
-  constructor(
-    { queryNode, compiler, connectionProvider }: QueryBuilderArgs = {
-      queryNode: createQueryNode(),
-    }
-  ) {
+  constructor({ queryNode, compiler, connectionProvider }: QueryBuilderArgs) {
     this.#queryNode = queryNode
     this.#compiler = compiler
     this.#connectionProvider = connectionProvider
@@ -131,7 +145,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
 
   subQuery(table: any): any {
     return new QueryBuilder({
-      queryNode: createQueryNodeWithSelectFromItems(parseFromArgs(table)),
+      queryNode: createSelectQueryNodeWithFromItems(parseFromArgs(table)),
     })
   }
 
@@ -270,6 +284,8 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
   ): QueryBuilder<DB, TB, O>
 
   where(...args: any[]): any {
+    ensureCanHaveWhereClause(this.#queryNode)
+
     return new QueryBuilder({
       compiler: this.#compiler,
       connectionProvider: this.#connectionProvider,
@@ -334,6 +350,8 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
     op: FilterOperatorArg,
     rhs: ReferenceExpression<DB, TB, O>
   ): QueryBuilder<DB, TB, O> {
+    ensureCanHaveWhereClause(this.#queryNode)
+
     return new QueryBuilder({
       compiler: this.#compiler,
       connectionProvider: this.#connectionProvider,
@@ -415,6 +433,8 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
   ): QueryBuilder<DB, TB, O>
 
   orWhere(...args: any[]): any {
+    ensureCanHaveWhereClause(this.#queryNode)
+
     return new QueryBuilder({
       compiler: this.#compiler,
       connectionProvider: this.#connectionProvider,
@@ -437,6 +457,8 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
     op: FilterOperatorArg,
     rhs: ReferenceExpression<DB, TB, O>
   ): QueryBuilder<DB, TB, O> {
+    ensureCanHaveWhereClause(this.#queryNode)
+
     return new QueryBuilder({
       compiler: this.#compiler,
       connectionProvider: this.#connectionProvider,
@@ -452,6 +474,8 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    *
    */
   whereExists(arg: ExistsFilterArg<DB, TB, O>): QueryBuilder<DB, TB, O> {
+    ensureCanHaveWhereClause(this.#queryNode)
+
     return new QueryBuilder({
       compiler: this.#compiler,
       connectionProvider: this.#connectionProvider,
@@ -467,6 +491,8 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    *
    */
   whereNotExists(arg: ExistsFilterArg<DB, TB, O>): QueryBuilder<DB, TB, O> {
+    ensureCanHaveWhereClause(this.#queryNode)
+
     return new QueryBuilder({
       compiler: this.#compiler,
       connectionProvider: this.#connectionProvider,
@@ -482,6 +508,8 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    *
    */
   orWhereExists(arg: ExistsFilterArg<DB, TB, O>): QueryBuilder<DB, TB, O> {
+    ensureCanHaveWhereClause(this.#queryNode)
+
     return new QueryBuilder({
       compiler: this.#compiler,
       connectionProvider: this.#connectionProvider,
@@ -497,6 +525,8 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    *
    */
   orWhereNotExists(arg: ExistsFilterArg<DB, TB, O>): QueryBuilder<DB, TB, O> {
+    ensureCanHaveWhereClause(this.#queryNode)
+
     return new QueryBuilder({
       compiler: this.#compiler,
       connectionProvider: this.#connectionProvider,
@@ -520,10 +550,12 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
   ): SelectQueryBuilder<DB, TB, O, S>
 
   select(selection: any): any {
+    ensureCanHaveSelectClause(this.#queryNode)
+
     return new QueryBuilder({
       compiler: this.#compiler,
       connectionProvider: this.#connectionProvider,
-      queryNode: cloneQueryNodeWithSelections(
+      queryNode: cloneSelectQueryNodeWithSelections(
         this.#queryNode,
         parseSelectArgs(selection)
       ),
@@ -545,10 +577,12 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
   ): QueryBuilder<DB, TB, O>
 
   distinctOn(selection: any): any {
+    ensureCanHaveSelectClause(this.#queryNode)
+
     return new QueryBuilder({
       compiler: this.#compiler,
       connectionProvider: this.#connectionProvider,
-      queryNode: cloneQueryNodeWithDistinctOnSelections(
+      queryNode: cloneSelectQueryNodeWithDistinctOnSelections(
         this.#queryNode,
         parseSelectArgs(selection)
       ),
@@ -559,10 +593,12 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    *
    */
   distinct(): QueryBuilder<DB, TB, O> {
+    ensureCanHaveSelectClause(this.#queryNode)
+
     return new QueryBuilder({
       compiler: this.#compiler,
       connectionProvider: this.#connectionProvider,
-      queryNode: cloneQueryNodeWithSelectModifier(this.#queryNode, 'Distinct'),
+      queryNode: cloneSelectQueryNodeWithModifier(this.#queryNode, 'Distinct'),
     })
   }
 
@@ -570,10 +606,12 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    *
    */
   forUpdate(): QueryBuilder<DB, TB, O> {
+    ensureCanHaveSelectClause(this.#queryNode)
+
     return new QueryBuilder({
       compiler: this.#compiler,
       connectionProvider: this.#connectionProvider,
-      queryNode: cloneQueryNodeWithModifier(this.#queryNode, 'ForUpdate'),
+      queryNode: cloneSelectQueryNodeWithModifier(this.#queryNode, 'ForUpdate'),
     })
   }
 
@@ -581,10 +619,12 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    *
    */
   forShare(): QueryBuilder<DB, TB, O> {
+    ensureCanHaveSelectClause(this.#queryNode)
+
     return new QueryBuilder({
       compiler: this.#compiler,
       connectionProvider: this.#connectionProvider,
-      queryNode: cloneQueryNodeWithModifier(this.#queryNode, 'ForShare'),
+      queryNode: cloneSelectQueryNodeWithModifier(this.#queryNode, 'ForShare'),
     })
   }
 
@@ -592,10 +632,15 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    *
    */
   forKeyShare(): QueryBuilder<DB, TB, O> {
+    ensureCanHaveSelectClause(this.#queryNode)
+
     return new QueryBuilder({
       compiler: this.#compiler,
       connectionProvider: this.#connectionProvider,
-      queryNode: cloneQueryNodeWithModifier(this.#queryNode, 'ForKeyShare'),
+      queryNode: cloneSelectQueryNodeWithModifier(
+        this.#queryNode,
+        'ForKeyShare'
+      ),
     })
   }
 
@@ -603,10 +648,15 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    *
    */
   forNoKeyUpdate(): QueryBuilder<DB, TB, O> {
+    ensureCanHaveSelectClause(this.#queryNode)
+
     return new QueryBuilder({
       compiler: this.#compiler,
       connectionProvider: this.#connectionProvider,
-      queryNode: cloneQueryNodeWithModifier(this.#queryNode, 'ForNoKeyUpdate'),
+      queryNode: cloneSelectQueryNodeWithModifier(
+        this.#queryNode,
+        'ForNoKeyUpdate'
+      ),
     })
   }
 
@@ -614,10 +664,15 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    *
    */
   skipLocked(): QueryBuilder<DB, TB, O> {
+    ensureCanHaveSelectClause(this.#queryNode)
+
     return new QueryBuilder({
       compiler: this.#compiler,
       connectionProvider: this.#connectionProvider,
-      queryNode: cloneQueryNodeWithModifier(this.#queryNode, 'SkipLocked'),
+      queryNode: cloneSelectQueryNodeWithModifier(
+        this.#queryNode,
+        'SkipLocked'
+      ),
     })
   }
 
@@ -625,10 +680,12 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    *
    */
   noWait(): QueryBuilder<DB, TB, O> {
+    ensureCanHaveSelectClause(this.#queryNode)
+
     return new QueryBuilder({
       compiler: this.#compiler,
       connectionProvider: this.#connectionProvider,
-      queryNode: cloneQueryNodeWithModifier(this.#queryNode, 'NoWait'),
+      queryNode: cloneSelectQueryNodeWithModifier(this.#queryNode, 'NoWait'),
     })
   }
 
@@ -648,10 +705,12 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
   selectAll<T extends TB>(): SelectAllQueryBuiler<DB, TB, O, T>
 
   selectAll(table?: any): any {
+    ensureCanHaveSelectClause(this.#queryNode)
+
     return new QueryBuilder({
       compiler: this.#compiler,
       connectionProvider: this.#connectionProvider,
-      queryNode: cloneQueryNodeWithSelections(
+      queryNode: cloneSelectQueryNodeWithSelections(
         this.#queryNode,
         parseSelectAllArgs(table)
       ),
@@ -673,6 +732,8 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
   >(table: F, callback: FN): FromQueryBuilder<DB, TB, O, F>
 
   innerJoin(...args: any): any {
+    ensureCanHaveJoins(this.#queryNode)
+
     return new QueryBuilder({
       compiler: this.#compiler,
       connectionProvider: this.#connectionProvider,
@@ -784,14 +845,12 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
   values(row: InsertValuesArg<DB, TB>): QueryBuilder<DB, TB, O>
   values(row: InsertValuesArg<DB, TB>[]): QueryBuilder<DB, TB, O>
   values(args: any): any {
-    if (!this.#queryNode.insert) {
-      throw new Error('`values` method can only be used in an insert query')
-    }
+    ensureCanHaveInsertValues(this.#queryNode)
 
     return new QueryBuilder({
       compiler: this.#compiler,
       connectionProvider: this.#connectionProvider,
-      queryNode: cloneQueryNodeWithInsertColumnsAndValues(
+      queryNode: cloneInsertQueryNodeWithColumnsAndValues(
         this.#queryNode,
         ...parseInsertValuesArgs(args)
       ),
@@ -810,6 +869,8 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
   ): ReturningQueryBuilder<DB, TB, O, S>
 
   returning(selection: any): any {
+    ensureCanHaveReturningClause(this.#queryNode)
+
     return new QueryBuilder({
       compiler: this.#compiler,
       connectionProvider: this.#connectionProvider,
@@ -823,6 +884,21 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
   /**
    * Adds an `order by` clause to the query.
    */
+  orderBy(
+    orderBy: ReferenceExpression<DB, TB, O>,
+    direction: OrderByDirection = 'asc'
+  ): QueryBuilder<DB, TB, O> {
+    ensureCanHaveOrderByClause(this.#queryNode)
+
+    return new QueryBuilder({
+      compiler: this.#compiler,
+      connectionProvider: this.#connectionProvider,
+      queryNode: cloneSelectQueryNodeWithOrderByItem(
+        this.#queryNode,
+        createOrderByItemNode(parseReferenceExpression(orderBy), direction)
+      ),
+    })
+  }
 
   /**
    *
@@ -885,6 +961,11 @@ export class AliasedQueryBuilder<
   #queryBuilder: QueryBuilder<DB, TB, O>
   #alias: A
 
+  constructor(queryBuilder: QueryBuilder<DB, TB, O>, alias: A) {
+    this.#queryBuilder = queryBuilder
+    this.#alias = alias
+  }
+
   /**
    * @private
    *
@@ -898,12 +979,75 @@ export class AliasedQueryBuilder<
   }
 
   toOperationNode(): AliasNode {
-    return createAliasNode(this.#queryBuilder.toOperationNode(), this.#alias)
-  }
+    const node = this.#queryBuilder.toOperationNode()
 
-  constructor(queryBuilder: QueryBuilder<DB, TB, O>, alias: A) {
-    this.#queryBuilder = queryBuilder
-    this.#alias = alias
+    if (isSelectQueryNode(node)) {
+      return createAliasNode(node, this.#alias)
+    }
+
+    throw new Error('only select queries can be aliased')
+  }
+}
+
+export function createEmptySelectQuery<
+  DB,
+  TB extends keyof DB,
+  O = {}
+>(): QueryBuilder<DB, TB, O> {
+  return new QueryBuilder<DB, TB, O>({
+    queryNode: createSelectQueryNodeWithFromItems([]),
+  })
+}
+
+function ensureCanHaveWhereClause(
+  node: QueryNode
+): asserts node is SelectQueryNode | DeleteQueryNode {
+  if (!isSelectQueryNode(node) && !isDeleteQueryNode(node)) {
+    throw new Error(
+      'only select, delete and update queries can have a where clause'
+    )
+  }
+}
+
+function ensureCanHaveSelectClause(
+  node: QueryNode
+): asserts node is SelectQueryNode {
+  if (!isSelectQueryNode(node)) {
+    throw new Error('only a select query can have selections')
+  }
+}
+
+function ensureCanHaveJoins(
+  node: QueryNode
+): asserts node is SelectQueryNode | DeleteQueryNode {
+  if (!isInsertQueryNode(node) && !isDeleteQueryNode(node)) {
+    throw new Error('only select, delete and update queries can have joins')
+  }
+}
+
+function ensureCanHaveInsertValues(
+  node: QueryNode
+): asserts node is InsertQueryNode {
+  if (!isInsertQueryNode(node)) {
+    throw new Error('only an insert query can have insert values')
+  }
+}
+
+function ensureCanHaveReturningClause(
+  node: QueryNode
+): asserts node is InsertQueryNode | DeleteQueryNode {
+  if (!isInsertQueryNode(node) && !isDeleteQueryNode(node)) {
+    throw new Error(
+      'only an insert, delte and update queries can have a returning clause'
+    )
+  }
+}
+
+function ensureCanHaveOrderByClause(
+  node: QueryNode
+): asserts node is SelectQueryNode {
+  if (!isSelectQueryNode(node)) {
+    throw new Error('only a select query can have an order by clause')
   }
 }
 

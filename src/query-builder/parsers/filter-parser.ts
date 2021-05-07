@@ -8,12 +8,12 @@ import {
   RawBuilderFactory,
 } from '../type-utils'
 import { isOperationNodeSource } from '../../operation-node/operation-node-source'
-import { RawNode } from '../../operation-node/raw-node'
+import { isRawNode, RawNode } from '../../operation-node/raw-node'
 import {
   createOperatorNode,
   OperatorNode,
 } from '../../operation-node/operator-node'
-import { QueryBuilder } from '../query-builder'
+import { createEmptySelectQuery, QueryBuilder } from '../query-builder'
 import { AndNode } from '../../operation-node/and-node'
 import { OrNode } from '../../operation-node/or-node'
 import { createParensNode, ParensNode } from '../../operation-node/parens-node'
@@ -25,6 +25,11 @@ import {
   parseValueExpressionOrList,
   ValueExpressionOrList,
 } from './value-parser'
+import {
+  createSelectQueryNodeWithFromItems,
+  isSelectQueryNode,
+  SelectQueryNode,
+} from '../../operation-node/select-query-node'
 
 export type ExistsFilterArg<DB, TB extends keyof DB, O> =
   | AnyQueryBuilder
@@ -94,19 +99,15 @@ export function parseExistsFilterArgs(
   type: 'exists' | 'not exists',
   arg: ExistsFilterArg<any, any, any>
 ): FilterNode {
-  if (isFunction(arg)) {
-    return createFilterNode(
-      undefined,
-      createOperatorNode(type),
-      arg(query).toOperationNode()
-    )
-  } else {
-    return createFilterNode(
-      undefined,
-      createOperatorNode(type),
-      arg.toOperationNode()
-    )
+  const node = isFunction(arg)
+    ? arg(query).toOperationNode()
+    : arg.toOperationNode()
+
+  if (!isSelectQueryNode(node) && !isRawNode(node)) {
+    throw new Error('invalid where exists arg')
   }
+
+  return createFilterNode(undefined, createOperatorNode(type), node)
 }
 
 function parseThreeArgFilter(
@@ -148,8 +149,8 @@ function parseOneArgFilter(
     )
   }
 
-  const query = grouper(new QueryBuilder())
-  const queryNode = query.toOperationNode()
+  const query = grouper(createEmptySelectQuery())
+  const queryNode = query.toOperationNode() as SelectQueryNode
 
   if (!queryNode.where) {
     throw new Error('no where methods called insided a grouper where')

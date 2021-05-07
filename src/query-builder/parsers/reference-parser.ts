@@ -1,5 +1,7 @@
 import { AliasNode, createAliasNode } from '../../operation-node/alias-node'
 import { ColumnNode, createColumnNode } from '../../operation-node/column-node'
+import { isDeleteQueryNode } from '../../operation-node/delete-query-node'
+import { isInsertQueryNode } from '../../operation-node/insert-query-node'
 import { isOperationNodeSource } from '../../operation-node/operation-node-source'
 import { ReferenceExpressionNode } from '../../operation-node/operation-node-utils'
 import {
@@ -12,7 +14,7 @@ import {
 } from '../../operation-node/table-node'
 import { RawBuilder } from '../../raw-builder/raw-builder'
 import { isFunction, isString } from '../../utils/object-utils'
-import { QueryBuilder } from '../query-builder'
+import { createEmptySelectQuery } from '../query-builder'
 import {
   AnyColumn,
   AnyColumnWithTable,
@@ -35,14 +37,20 @@ export function parseReferenceExpression(
   if (isString(arg)) {
     return parseStringReference(arg)
   } else if (isOperationNodeSource(arg)) {
-    return arg.toOperationNode()
+    const node = arg.toOperationNode()
+
+    if (!isDeleteQueryNode(node) && !isInsertQueryNode(node)) {
+      return node
+    }
   } else if (isFunction(arg)) {
-    return arg(new QueryBuilder()).toOperationNode()
-  } else {
-    throw new Error(
-      `unsupported left hand side filter argument ${JSON.stringify(arg)}`
-    )
+    const node = arg(createEmptySelectQuery()).toOperationNode()
+
+    if (!isDeleteQueryNode(node) && !isInsertQueryNode(node)) {
+      return node
+    }
   }
+
+  throw new Error(`invalid reference expression ${JSON.stringify(arg)}`)
 }
 
 export function parseStringReference(str: string): ColumnNode | ReferenceNode {
