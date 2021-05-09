@@ -26,7 +26,6 @@ import {
   ValueExpressionOrList,
 } from './value-parser'
 import {
-  createSelectQueryNodeWithFromItems,
   isSelectQueryNode,
   SelectQueryNode,
 } from '../../operation-node/select-query-node'

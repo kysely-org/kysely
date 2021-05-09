@@ -6,14 +6,12 @@ import {
   createEmptySelectQuery,
   QueryBuilder,
 } from '../query-builder'
-
 import {
   createSelectAllSelectionNode,
   createSelectAllSelectionNodeWithTable,
   createSelectionNode,
   SelectionNode,
 } from '../../operation-node/selection-node'
-
 import {
   AliasedQueryBuilderFactory,
   AliasedRawBuilderFactory,
@@ -27,7 +25,7 @@ import { InsertResultTypeTag } from './insert-values-parser'
 import { parseAliasedStringReference } from './reference-parser'
 
 /**
- * `select` method argument type.
+ * `select` argument type.
  */
 export type SelectArg<DB, TB extends keyof DB, O> =
   | AnyAliasedColumnWithTable<DB, TB>
@@ -39,7 +37,7 @@ export type SelectArg<DB, TB extends keyof DB, O> =
   | AliasedQueryBuilderFactory<DB, TB, O>
 
 /**
- * `select` method output query builder type
+ * `select` output query builder type.
  */
 export type SelectQueryBuilder<DB, TB extends keyof DB, O, S> = QueryBuilder<
   DB,
@@ -50,9 +48,9 @@ export type SelectQueryBuilder<DB, TB extends keyof DB, O, S> = QueryBuilder<
 >
 
 /**
- * `selectAll` method output query builder type
+ * `selectAll` output query builder type.
  */
-export type SelectAllQueryBuiler<
+export type SelectAllQueryBuilder<
   DB,
   TB extends keyof DB,
   O,
@@ -60,7 +58,7 @@ export type SelectAllQueryBuiler<
 > = QueryBuilder<DB, TB, O & RowType<DB, S>>
 
 export type SelectResultType<DB, TB extends keyof DB, S> = {
-  [A in ExtractAliasesFromSelectArg<S>]: ExtractTypeFromSelectArg<DB, TB, S, A>
+  [A in ExtractAliasFromSelectArg<S>]: ExtractTypeFromSelectArg<DB, TB, S, A>
 }
 
 type AnyAliasedColumnWithTable<DB, TB extends keyof DB> = `${AnyColumnWithTable<
@@ -68,7 +66,7 @@ type AnyAliasedColumnWithTable<DB, TB extends keyof DB> = `${AnyColumnWithTable<
   TB
 >} as ${string}`
 
-type ExtractAliasesFromSelectArg<
+type ExtractAliasFromSelectArg<
   S
 > = S extends `${string}.${string}.${string} as ${infer A}`
   ? A

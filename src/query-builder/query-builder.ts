@@ -17,7 +17,7 @@ import {
   parseSelectAllArgs,
   SelectArg,
   SelectQueryBuilder,
-  SelectAllQueryBuiler,
+  SelectAllQueryBuilder,
 } from './parsers/select-parser'
 import {
   parseFilterArgs,
@@ -873,17 +873,17 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
   /**
    *
    */
-  selectAll<T extends TB>(table: T[]): SelectAllQueryBuiler<DB, TB, O, T>
+  selectAll<T extends TB>(table: T[]): SelectAllQueryBuilder<DB, TB, O, T>
 
   /**
    *
    */
-  selectAll<T extends TB>(table: T): SelectAllQueryBuiler<DB, TB, O, T>
+  selectAll<T extends TB>(table: T): SelectAllQueryBuilder<DB, TB, O, T>
 
   /**
    *
    */
-  selectAll<T extends TB>(): SelectAllQueryBuiler<DB, TB, O, T>
+  selectAll<T extends TB>(): SelectAllQueryBuilder<DB, TB, O, T>
 
   selectAll(table?: any): any {
     ensureCanHaveSelectClause(this.#queryNode)
