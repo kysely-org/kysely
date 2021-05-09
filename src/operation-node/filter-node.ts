@@ -11,9 +11,9 @@ export type FilterOperatorNode = OperatorNode | RawNode
 
 export interface FilterNode extends OperationNode {
   readonly kind: 'FilterNode'
-  readonly lhs?: ReferenceExpressionNode
+  readonly left?: ReferenceExpressionNode
   readonly op: OperatorNode | RawNode
-  readonly rhs: ValueExpressionNode
+  readonly right: ValueExpressionNode
 }
 
 export function isFilterNode(node: OperationNode): node is FilterNode {
@@ -21,14 +21,14 @@ export function isFilterNode(node: OperationNode): node is FilterNode {
 }
 
 export function createFilterNode(
-  lhs: ReferenceExpressionNode | undefined,
+  left: ReferenceExpressionNode | undefined,
   op: OperatorNode | RawNode,
-  rhs: ValueExpressionNode
+  right: ValueExpressionNode
 ): FilterNode {
   return freeze({
     kind: 'FilterNode',
-    lhs,
+    left,
     op,
-    rhs,
+    right,
   })
 }

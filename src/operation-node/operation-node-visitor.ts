@@ -125,22 +125,22 @@ export class OperationNodeVisitor {
   }
 
   protected visitFilter(node: FilterNode): void {
-    if (node.lhs) {
-      this.visitNode(node.lhs)
+    if (node.left) {
+      this.visitNode(node.left)
     }
 
     this.visitNode(node.op)
-    this.visitNode(node.rhs)
+    this.visitNode(node.right)
   }
 
   protected visitAnd(node: AndNode): void {
-    this.visitNode(node.lhs)
-    this.visitNode(node.rhs)
+    this.visitNode(node.left)
+    this.visitNode(node.right)
   }
 
   protected visitOr(node: OrNode): void {
-    this.visitNode(node.lhs)
-    this.visitNode(node.rhs)
+    this.visitNode(node.left)
+    this.visitNode(node.right)
   }
 
   protected visitValueList(node: ValueListNode): void {

@@ -6,8 +6,8 @@ type OrNodeChildNode = AndNodeChildNode
 
 export interface OrNode extends OperationNode {
   readonly kind: 'OrNode'
-  readonly lhs: OrNodeChildNode
-  readonly rhs: OrNodeChildNode
+  readonly left: OrNodeChildNode
+  readonly right: OrNodeChildNode
 }
 
 export function isOrNode(node: OperationNode): node is OrNode {
@@ -15,12 +15,12 @@ export function isOrNode(node: OperationNode): node is OrNode {
 }
 
 export function createOrNode(
-  lhs: OrNodeChildNode,
-  rhs: OrNodeChildNode
+  left: OrNodeChildNode,
+  right: OrNodeChildNode
 ): OrNode {
   return freeze({
     kind: 'OrNode',
-    lhs,
-    rhs,
+    left,
+    right,
   })
 }

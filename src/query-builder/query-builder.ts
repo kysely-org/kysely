@@ -471,7 +471,61 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
   }
 
   /**
+   * Adds a `where exists` clause to the query.
    *
+   * You can either use a subquery or a raw instance.
+   *
+   * @example
+   * The query below selets all persons that own a pet named Catto:
+   *
+   * ```ts
+   * db.selectFrom('person')
+   *   .selectAll()
+   *   .whereExists((qb) => qb
+   *     .subQuery('pet')
+   *     .select('pet.id')
+   *     .whereRef('person.id', '=', 'pet.owner_id')
+   *     .where('pet.name', '=', 'Catto')
+   *   )
+   * ```
+   *
+   * The generated SQL (postgresql):
+   *
+   * ```sql
+   * select * from "person"
+   * where exists (
+   *   select "pet"."id"
+   *   from "pet"
+   *   where "person"."id" = "pet"."owner_id"
+   *   and "pet"."name" = $1
+   * )
+   * ```
+   *
+   * @example
+   * The same query as in the previous example but with using raw:
+   *
+   * ```ts
+   * db.selectFrom('person')
+   *   .selectAll()
+   *   .whereExists(
+   *     db.raw(
+   *       '(select pet.id from pet where person.id = pet.owner_id and pet.name = ?)',
+   *       ['Catto']
+   *     )
+   *   )
+   * ```
+   *
+   * The generated SQL (postgresql):
+   *
+   * ```sql
+   * select * from "person"
+   * where exists (
+   *   select pet.id
+   *   from pet
+   *   where person.id = pet.owner_id
+   *   and pet.name = $1
+   * )
+   * ```
    */
   whereExists(arg: ExistsFilterArg<DB, TB, O>): QueryBuilder<DB, TB, O> {
     ensureCanHaveWhereClause(this.#queryNode)
@@ -488,7 +542,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
   }
 
   /**
-   *
+   * Just like {@link QueryBuilder.whereExists | whereExists} but creates a `not exists` clause.
    */
   whereNotExists(arg: ExistsFilterArg<DB, TB, O>): QueryBuilder<DB, TB, O> {
     ensureCanHaveWhereClause(this.#queryNode)
@@ -505,7 +559,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
   }
 
   /**
-   *
+   * Just like {@link QueryBuilder.whereExists | whereExists} but creates a `or exists` clause.
    */
   orWhereExists(arg: ExistsFilterArg<DB, TB, O>): QueryBuilder<DB, TB, O> {
     ensureCanHaveWhereClause(this.#queryNode)
@@ -522,7 +576,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
   }
 
   /**
-   *
+   * Just like {@link QueryBuilder.whereExists | whereExists} but creates a `or not exists` clause.
    */
   orWhereNotExists(arg: ExistsFilterArg<DB, TB, O>): QueryBuilder<DB, TB, O> {
     ensureCanHaveWhereClause(this.#queryNode)
@@ -539,7 +593,134 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
   }
 
   /**
+   * Adds a select clause to the query.
    *
+   * When a column (or any expression) is selected, Kysely also adds it to the return
+   * type of the query. Kysely is smart enough to parse the field names and types from
+   * aliases, subqueries, raw expressions etc.
+   *
+   * Kysely only allows you to select columns and expressions that exist and would
+   * produce valid SQL. However, Kysely is not perfect and there may be cases where
+   * the type inference doesn't work and you need to override it. You can always
+   * use {@link Kysely.raw | raw} to override the types. See the examples below.
+   *
+   * Select calls are additive. Calling `select('id').select('first_name')` is the
+   * same as calling `select(['id', 'first_name']).
+   *
+   * To select all columns of the query or specific tables see {@link QueryBuilder.selectAll | selectAll}.
+   *
+   * @example
+   * Select a single column:
+   *
+   * ```ts
+   * const [person] = await db.selectFrom('person')
+   *   .select('id')
+   *   .execute()
+   *
+   * person.id
+   * ```
+   *
+   * The generated SQL (postgresql):
+   *
+   * ```sql
+   * select "id" from "person"
+   * ```
+   *
+   * @example
+   * Select a single column and specify a table:
+   *
+   * ```ts
+   * const [person] = await db.selectFrom(['person', 'pet'])
+   *   .select('person.id')
+   *   .execute()
+   *
+   * person.id
+   * ```
+   *
+   * The generated SQL (postgresql):
+   *
+   * ```sql
+   * select "person"."id" from "person", "pet"
+   * ```
+   *
+   * @example
+   * Select multiple columns:
+   *
+   * ```ts
+   * const [person] = await db.selectFrom('person')
+   *   .select(['person.id', 'first_name'])
+   *   .execute()
+   *
+   * person.id
+   * person.first_name
+   * ```
+   *
+   * The generated SQL (postgresql):
+   *
+   * ```sql
+   * select "person"."id", "first_name" from "person"
+   * ```
+   *
+   * @example
+   * Giving an alias for a selection:
+   *
+   * ```ts
+   * const [person] = await db.selectFrom('person')
+   *   .select([
+   *     'person.first_name as fn',
+   *     'person.last_name as ln'
+   *   ])
+   *   .execute()
+   *
+   * person.fn
+   * person.ln
+   * ```
+   *
+   * The generated SQL (postgresql):
+   *
+   * ```sql
+   * select
+   *   "person"."first_name" as "fn",
+   *   "person"."last_name" as "ln"
+   * from "person"
+   * ```
+   *
+   * @example
+   * You can also select subqueries and raw expressions. Note that you
+   * always need to give a name for the selections using the `as`
+   * method:
+   *
+   * ```ts
+   * const [person] = await db.selectFrom('person')
+   *   .select([
+   *     (qb) => qb
+   *       .subQuery('pet')
+   *       .whereRef('person.id', '=', 'pet.owner_id')
+   *       .select('pet.name')
+   *       .as('pet_name')
+   *     db.raw<string>("concat(first_name, ' ', last_name)").as('full_name')
+   *   ])
+   *   .execute()
+   *
+   * person.pet_name
+   * person.full_name
+   * ```
+   *
+   * The generated SQL (postgresql):
+   *
+   * ```sql
+   * select
+   *   (
+   *     select "pet"."name"
+   *     from "pet"
+   *     where "person"."id" = "pet"."owner_id"
+   *   ) as pet_name,
+   *   concat(first_name, ' ', last_name) as full_name
+   * from "person"
+   * ```
+   *
+   * In case you use `raw` you need to specify the type of the expression
+   * (in this example `string`).
    */
   select<S extends SelectArg<DB, TB, O>>(
     selections: S[]

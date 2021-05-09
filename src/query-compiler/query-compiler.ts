@@ -18,6 +18,7 @@ import { OrderByItemNode } from '../operation-node/order-by-item-node'
 import { OrderByNode } from '../operation-node/order-by-node'
 import { ParensNode } from '../operation-node/parens-node'
 import { PrimitiveValueListNode } from '../operation-node/primitive-value-list-node'
+import { QueryNode } from '../operation-node/query-node-utils'
 import { RawNode } from '../operation-node/raw-node'
 import { ReferenceNode } from '../operation-node/reference-node'
 import { ReturningNode } from '../operation-node/returning-node'
@@ -38,19 +39,12 @@ export class QueryCompiler extends OperationNodeVisitor {
   #sqlFragments: string[] = []
   #bindings: any[] = []
 
-  protected selectQueryNodeStack: SelectQueryNode[] = []
+  protected queryNodeStack: QueryNode[] = []
 
-  compile(
-    node:
-      | SelectQueryNode
-      | InsertQueryNode
-      | DeleteQueryNode
-      | CreateTableNode
-      | DropTableNode
-  ): CompiledQuery {
+  compile(node: QueryNode | CreateTableNode | DropTableNode): CompiledQuery {
     this.#sqlFragments = []
     this.#bindings = []
-    this.selectQueryNodeStack = []
+    this.queryNodeStack = []
 
     this.visitNode(node)
 
@@ -69,8 +63,8 @@ export class QueryCompiler extends OperationNodeVisitor {
   }
 
   protected visitSelectQuery(node: SelectQueryNode): void {
-    const needsParens = !isEmpty(this.selectQueryNodeStack)
-    this.selectQueryNodeStack.push(node)
+    const needsParens = !isEmpty(this.queryNodeStack)
+    this.queryNodeStack.push(node)
 
     if (needsParens) {
       this.append('(')
@@ -119,7 +113,7 @@ export class QueryCompiler extends OperationNodeVisitor {
       this.append(')')
     }
 
-    this.selectQueryNodeStack.pop()
+    this.queryNodeStack.pop()
   }
 
   protected visitFrom(node: FromNode): void {
@@ -151,6 +145,8 @@ export class QueryCompiler extends OperationNodeVisitor {
   }
 
   protected visitInsertQuery(node: InsertQueryNode): void {
+    this.queryNodeStack.push(node)
+
     this.append('insert into ')
     this.visitNode(node.into)
 
@@ -174,9 +170,13 @@ export class QueryCompiler extends OperationNodeVisitor {
       this.append(' ')
       this.visitNode(node.returning)
     }
+
+    this.queryNodeStack.pop()
   }
 
   protected visitDeleteQuery(node: DeleteQueryNode): void {
+    this.queryNodeStack.push(node)
+
     this.append('delete from ')
     this.visitNode(node.from)
 
@@ -194,6 +194,8 @@ export class QueryCompiler extends OperationNodeVisitor {
       this.append(' ')
       this.visitNode(node.returning)
     }
+
+    this.queryNodeStack.pop()
   }
 
   protected visitReturning(node: ReturningNode): void {
@@ -228,26 +230,26 @@ export class QueryCompiler extends OperationNodeVisitor {
   }
 
   protected visitFilter(node: FilterNode): void {
-    if (node.lhs) {
-      this.visitNode(node.lhs)
+    if (node.left) {
+      this.visitNode(node.left)
       this.append(' ')
     }
 
     this.visitNode(node.op)
     this.append(' ')
-    this.visitNode(node.rhs)
+    this.visitNode(node.right)
   }
 
   protected visitAnd(node: AndNode): void {
-    this.visitNode(node.lhs)
+    this.visitNode(node.left)
     this.append(' and ')
-    this.visitNode(node.rhs)
+    this.visitNode(node.right)
   }
 
   protected visitOr(node: OrNode): void {
-    this.visitNode(node.lhs)
+    this.visitNode(node.left)
     this.append(' or ')
-    this.visitNode(node.rhs)
+    this.visitNode(node.right)
   }
 
   protected visitValue(node: ValueNode): void {

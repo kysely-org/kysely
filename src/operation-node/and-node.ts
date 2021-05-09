@@ -8,8 +8,8 @@ export type AndNodeChildNode = FilterNode | AndNode | OrNode | ParensNode
 
 export interface AndNode extends OperationNode {
   readonly kind: 'AndNode'
-  readonly lhs: AndNodeChildNode
-  readonly rhs: AndNodeChildNode
+  readonly left: AndNodeChildNode
+  readonly right: AndNodeChildNode
 }
 
 export function isAndNode(node: OperationNode): node is AndNode {
@@ -17,12 +17,12 @@ export function isAndNode(node: OperationNode): node is AndNode {
 }
 
 export function createAndNode(
-  lhs: AndNodeChildNode,
-  rhs: AndNodeChildNode
+  left: AndNodeChildNode,
+  right: AndNodeChildNode
 ): AndNode {
   return freeze({
     kind: 'AndNode',
-    lhs,
-    rhs,
+    left,
+    right,
   })
 }

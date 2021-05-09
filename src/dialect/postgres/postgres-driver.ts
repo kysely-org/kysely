@@ -16,7 +16,7 @@ export class PostgresDriver extends Driver {
     const pg = await importPg()
 
     const cfg = this.config
-    // Use the pg modules own pool. All drivers should use the
+    // Use the `pg` module's own pool. All drivers should use the
     // pool provided by the database connector library if possible.
     this.#pgPool = new pg.Pool({
       host: cfg.host,

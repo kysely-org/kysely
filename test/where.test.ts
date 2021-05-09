@@ -370,5 +370,149 @@ for (const dialect of BUILT_IN_DIALECTS) {
         ])
       })
     })
+
+    describe('whereRef', () => {
+      it('should compare two columns', async () => {
+        const query = ctx.db
+          .selectFrom(['person', 'pet'])
+          .selectAll()
+          .whereRef('person.id', '=', 'pet.id')
+
+        testSql(query, dialect, {
+          postgres: {
+            sql:
+              'select * from "person", "pet" where "person"."id" = "pet"."id"',
+            bindings: [],
+          },
+        })
+      })
+    })
+
+    describe('orWhereRef', () => {
+      it('should compare two columns', async () => {
+        const query = ctx.db
+          .selectFrom(['person', 'pet'])
+          .selectAll()
+          .where((qb) =>
+            qb
+              .whereRef('person.id', '=', 'pet.id')
+              .orWhereRef('person.first_name', '=', 'pet.name')
+          )
+
+        testSql(query, dialect, {
+          postgres: {
+            sql:
+              'select * from "person", "pet" where ("person"."id" = "pet"."id" or "person"."first_name" = "pet"."name")',
+            bindings: [],
+          },
+        })
+      })
+    })
+
+    describe('whereExists', () => {
+      it('should accept a subquery', async () => {
+        const query = ctx.db
+          .selectFrom('person')
+          .selectAll()
+          .whereExists((qb) =>
+            qb
+              .subQuery('pet')
+              .select('pet.id')
+              .whereRef('pet.owner_id', '=', 'person.id')
+              .where('pet.species', '=', 'dog')
+          )
+
+        testSql(query, dialect, {
+          postgres: {
+            sql: `select * from "person" where exists (select "pet"."id" from "pet" where "pet"."owner_id" = "person"."id" and "pet"."species" = $1)`,
+            bindings: ['dog'],
+          },
+        })
+
+        const persons = await query.execute()
+        expect(persons).to.have.length(1)
+        expect(persons).to.containSubset([
+          {
+            first_name: 'Arnold',
+            last_name: 'Schwarzenegger',
+            gender: 'male',
+          },
+        ])
+      })
+
+      it('should accept a raw instance', async () => {
+        const query = ctx.db
+          .selectFrom('person')
+          .selectAll()
+          .whereExists(
+            ctx.db.raw('(select ?? from ?? where ?? = ?? and ?? = ?)', [
+              'pet.id',
+              'pet',
+              'pet.owner_id',
+              'person.id',
+              'pet.species',
+              'cat',
+            ])
+          )
+
+        testSql(query, dialect, {
+          postgres: {
+            sql: `select * from "person" where exists (select "pet"."id" from "pet" where "pet"."owner_id" = "person"."id" and "pet"."species" = $1)`,
+            bindings: ['cat'],
+          },
+        })
+
+        const persons = await query.execute()
+        expect(persons).to.have.length(1)
+        expect(persons).to.containSubset([
+          {
+            first_name: 'Jennifer',
+            last_name: 'Aniston',
+            gender: 'female',
+          },
+        ])
+      })
+    })
+
+    describe('orWhereExists', () => {
+      it('should accept a subquery', async () => {
+        const query = ctx.db
+          .selectFrom('person')
+          .selectAll()
+          .where((qb) =>
+            qb
+              .where('first_name', '=', 'Jennifer')
+              .orWhereExists((qb) =>
+                qb
+                  .subQuery('pet')
+                  .select('pet.id')
+                  .whereRef('pet.owner_id', '=', 'person.id')
+                  .where('pet.species', '=', 'hamster')
+              )
+          )
+
+        testSql(query, dialect, {
+          postgres: {
+            sql: `select * from "person" where ("first_name" = $1 or exists (select "pet"."id" from "pet" where "pet"."owner_id" = "person"."id" and "pet"."species" = $2))`,
+            bindings: ['Jennifer', 'hamster'],
+          },
+        })
+
+        const persons = await query.execute()
+        expect(persons).to.have.length(2)
+        expect(persons).to.containSubset([
+          {
+            first_name: 'Sylvester',
+            last_name: 'Stallone',
+            gender: 'male',
+          },
+          {
+            first_name: 'Jennifer',
+            last_name: 'Aniston',
+            gender: 'female',
+          },
+        ])
+      })
+    })
   })
 }
