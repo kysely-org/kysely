@@ -8,15 +8,15 @@ import {
   parseJoinArgs,
 } from './parsers/join-parser'
 import {
-  parseFromArgs,
-  TableArg,
-  FromQueryBuilder,
-} from './parsers/from-parser'
+  parseTableExpressionOrList,
+  TableExpression,
+  QueryBuilderWithTable,
+} from './parsers/table-parser'
 import {
   parseSelectArgs,
   parseSelectAllArgs,
-  SelectArg,
-  SelectQueryBuilder,
+  SelectExpression,
+  QueryBuilderWithSelection,
   SelectAllQueryBuilder,
 } from './parsers/select-parser'
 import {
@@ -135,17 +135,19 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * that case Kysely typings wouldn't allow you to reference `pet.owner_id`
    * because `pet` is not joined to that query.
    */
-  subQuery<F extends TableArg<DB, TB, O>>(
+  subQuery<F extends TableExpression<DB, TB, O>>(
     from: F[]
-  ): FromQueryBuilder<DB, TB, O, F>
+  ): QueryBuilderWithTable<DB, TB, O, F>
 
-  subQuery<F extends TableArg<DB, TB, O>>(
+  subQuery<F extends TableExpression<DB, TB, O>>(
     from: F
-  ): FromQueryBuilder<DB, TB, O, F>
+  ): QueryBuilderWithTable<DB, TB, O, F>
 
   subQuery(table: any): any {
     return new QueryBuilder({
-      queryNode: createSelectQueryNodeWithFromItems(parseFromArgs(table)),
+      queryNode: createSelectQueryNodeWithFromItems(
+        parseTableExpressionOrList(table)
+      ),
     })
   }
 
@@ -722,13 +724,13 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * In case you use `raw` you need to specify the type of the expression
    * (in this example `string`).
    */
-  select<S extends SelectArg<DB, TB, O>>(
+  select<S extends SelectExpression<DB, TB, O>>(
     selections: S[]
-  ): SelectQueryBuilder<DB, TB, O, S>
+  ): QueryBuilderWithSelection<DB, TB, O, S>
 
-  select<S extends SelectArg<DB, TB, O>>(
+  select<S extends SelectExpression<DB, TB, O>>(
     selection: S
-  ): SelectQueryBuilder<DB, TB, O, S>
+  ): QueryBuilderWithSelection<DB, TB, O, S>
 
   select(selection: any): any {
     ensureCanHaveSelectClause(this.#queryNode)
@@ -746,14 +748,14 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
   /**
    *
    */
-  distinctOn<S extends SelectArg<DB, TB, O>>(
+  distinctOn<S extends SelectExpression<DB, TB, O>>(
     selections: S[]
   ): QueryBuilder<DB, TB, O>
 
   /**
    *
    */
-  distinctOn<S extends SelectArg<DB, TB, O>>(
+  distinctOn<S extends SelectExpression<DB, TB, O>>(
     selection: S
   ): QueryBuilder<DB, TB, O>
 
@@ -902,15 +904,15 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    *
    */
   innerJoin<
-    F extends TableArg<DB, TB, O>,
-    K1 extends JoinReferenceArg<DB, TB, F>,
-    K2 extends JoinReferenceArg<DB, TB, F>
-  >(table: F, k1: K1, k2: K2): FromQueryBuilder<DB, TB, O, F>
+    TE extends TableExpression<DB, TB, O>,
+    K1 extends JoinReferenceArg<DB, TB, TE>,
+    K2 extends JoinReferenceArg<DB, TB, TE>
+  >(table: TE, k1: K1, k2: K2): QueryBuilderWithTable<DB, TB, O, TE>
 
   innerJoin<
-    F extends TableArg<DB, TB, O>,
-    FN extends JoinCallbackArg<DB, TB, F>
-  >(table: F, callback: FN): FromQueryBuilder<DB, TB, O, F>
+    TE extends TableExpression<DB, TB, O>,
+    FN extends JoinCallbackArg<DB, TB, TE>
+  >(table: TE, callback: FN): QueryBuilderWithTable<DB, TB, O, TE>
 
   innerJoin(...args: any): any {
     ensureCanHaveJoins(this.#queryNode)
@@ -920,7 +922,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
       connectionProvider: this.#connectionProvider,
       queryNode: cloneQueryNodeWithJoin(
         this.#queryNode,
-        parseJoinArgs(this, 'InnerJoin', args)
+        parseJoinArgs('InnerJoin', args)
       ),
     })
   }
@@ -1041,11 +1043,11 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
   /**
    *
    */
-  returning<S extends SelectArg<DB, TB, O>>(
+  returning<S extends SelectExpression<DB, TB, O>>(
     selections: S[]
   ): ReturningQueryBuilder<DB, TB, O, S>
 
-  returning<S extends SelectArg<DB, TB, O>>(
+  returning<S extends SelectExpression<DB, TB, O>>(
     selection: S
   ): ReturningQueryBuilder<DB, TB, O, S>
 

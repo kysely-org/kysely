@@ -2,10 +2,10 @@ import { cloneJoinNodeWithOn, JoinNode } from '../operation-node/join-node'
 import { OperationNodeSource } from '../operation-node/operation-node-source'
 import { RawBuilder } from '../raw-builder/raw-builder'
 import {
-  parseFromArgs,
-  TableArg,
-  FromQueryBuilder,
-} from './parsers/from-parser'
+  parseTableExpressionOrList,
+  TableExpression,
+  QueryBuilderWithTable,
+} from './parsers/table-parser'
 import {
   FilterOperatorArg,
   parseReferenceFilterArgs,
@@ -32,20 +32,22 @@ export class JoinBuilder<DB, TB extends keyof DB, O = {}>
   /**
    *
    */
-  subQuery<F extends TableArg<DB, TB, O>>(
+  subQuery<F extends TableExpression<DB, TB, O>>(
     from: F[]
-  ): FromQueryBuilder<DB, TB, O, F>
+  ): QueryBuilderWithTable<DB, TB, O, F>
 
   /**
    *
    */
-  subQuery<F extends TableArg<DB, TB, O>>(
+  subQuery<F extends TableExpression<DB, TB, O>>(
     from: F
-  ): FromQueryBuilder<DB, TB, O, F>
+  ): QueryBuilderWithTable<DB, TB, O, F>
 
   subQuery(table: any): any {
     return new QueryBuilder({
-      queryNode: createSelectQueryNodeWithFromItems(parseFromArgs(table)),
+      queryNode: createSelectQueryNodeWithFromItems(
+        parseTableExpressionOrList(table)
+      ),
     })
   }
 

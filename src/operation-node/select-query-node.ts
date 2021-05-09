@@ -1,7 +1,8 @@
 import { freeze } from '../utils/object-utils'
-import { createFromNodeWithItems, FromItemNode, FromNode } from './from-node'
+import { createFromNodeWithItems, FromNode } from './from-node'
 import { JoinNode } from './join-node'
 import { OperationNode } from './operation-node'
+import { TableExpressionNode } from './operation-node-utils'
 import { OrderByItemNode } from './order-by-item-node'
 import {
   cloneOrderByNodeWithItem,
@@ -38,7 +39,7 @@ export function isSelectQueryNode(
 }
 
 export function createSelectQueryNodeWithFromItems(
-  fromItems: ReadonlyArray<FromItemNode>
+  fromItems: ReadonlyArray<TableExpressionNode>
 ): SelectQueryNode {
   return freeze({
     kind: 'SelectQueryNode',

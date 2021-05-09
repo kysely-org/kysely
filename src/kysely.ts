@@ -1,11 +1,11 @@
 import { QueryBuilder } from './query-builder/query-builder'
 import { RawBuilder } from './raw-builder/raw-builder'
 import {
-  TableArg,
-  FromQueryBuilder,
-  parseFromArgs,
+  TableExpression,
+  QueryBuilderWithTable,
+  parseTableExpressionOrList,
   parseTable,
-} from './query-builder/parsers/from-parser'
+} from './query-builder/parsers/table-parser'
 import { DriverConfig } from './driver/driver-config'
 import { Dialect } from './dialect/dialect'
 import { PostgresDialect } from './dialect/postgres/postgres-dialect'
@@ -16,10 +16,11 @@ import { AsyncLocalStorage } from 'async_hooks'
 import { Connection } from './driver/connection'
 import { ConnectionProvider } from './driver/connection-provider'
 import { InsertResultTypeTag } from './query-builder/parsers/insert-values-parser'
-import { SchemaBuilder } from './schema/schema-builder'
+import { createSchemaObject, Schema } from './schema/schema'
 import { createSelectQueryNodeWithFromItems } from './operation-node/select-query-node'
 import { createInsertQueryNodeWithTable } from './operation-node/insert-query-node'
 import { createDeleteQueryNodeWithTable } from './operation-node/delete-query-node'
+import { createDynamicObject, Dynamic } from './dynamic/dynamic'
 
 /**
  * The main Kysely class.
@@ -73,8 +74,12 @@ export class Kysely<DB> {
     )
   }
 
-  get schema(): SchemaBuilder {
-    return new SchemaBuilder(this.#compiler, this.#connectionProvider)
+  get schema(): Schema {
+    return createSchemaObject(this.#compiler, this.#connectionProvider)
+  }
+
+  get dynamic(): Dynamic {
+    return createDynamicObject()
   }
 
   /**
@@ -195,19 +200,21 @@ export class Kysely<DB> {
    *   (select 1 as one) as "q"
    * ```
    */
-  selectFrom<F extends TableArg<DB, keyof DB, {}>>(
+  selectFrom<F extends TableExpression<DB, keyof DB, {}>>(
     from: F[]
-  ): FromQueryBuilder<DB, never, {}, F>
+  ): QueryBuilderWithTable<DB, never, {}, F>
 
-  selectFrom<F extends TableArg<DB, keyof DB, {}>>(
+  selectFrom<F extends TableExpression<DB, keyof DB, {}>>(
     from: F
-  ): FromQueryBuilder<DB, never, {}, F>
+  ): QueryBuilderWithTable<DB, never, {}, F>
 
   selectFrom(from: any): any {
     return new QueryBuilder({
       compiler: this.#compiler,
       connectionProvider: this.#connectionProvider,
-      queryNode: createSelectQueryNodeWithFromItems(parseFromArgs(from)),
+      queryNode: createSelectQueryNodeWithFromItems(
+        parseTableExpressionOrList(from)
+      ),
     })
   }
 

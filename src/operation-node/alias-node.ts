@@ -8,11 +8,11 @@ import { SelectQueryNode } from './select-query-node'
 import { TableNode } from './table-node'
 
 type AliasNodeChild =
+  | ColumnNode
   | ReferenceNode
   | TableNode
   | RawNode
   | SelectQueryNode
-  | ColumnNode
 
 export interface AliasNode extends OperationNode {
   readonly kind: 'AliasNode'

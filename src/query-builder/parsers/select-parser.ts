@@ -15,6 +15,7 @@ import {
 import {
   AliasedQueryBuilderFactory,
   AliasedRawBuilderFactory,
+  AnyAliasedColumnWithTable,
   AnyAliasedQueryBuilder,
   AnyColumn,
   AnyColumnWithTable,
@@ -23,11 +24,12 @@ import {
 } from '../type-utils'
 import { InsertResultTypeTag } from './insert-values-parser'
 import { parseAliasedStringReference } from './reference-parser'
+import { DynamicReferenceBuilder } from '../../dynamic/dynamic-reference-builder'
 
 /**
- * `select` argument type.
+ * A selection exrpession.
  */
-export type SelectArg<DB, TB extends keyof DB, O> =
+export type SelectExpression<DB, TB extends keyof DB, O> =
   | AnyAliasedColumnWithTable<DB, TB>
   | AnyColumnWithTable<DB, TB>
   | AnyColumn<DB, TB>
@@ -35,11 +37,18 @@ export type SelectArg<DB, TB extends keyof DB, O> =
   | AliasedRawBuilderFactory<DB, TB, O>
   | AnyAliasedQueryBuilder
   | AliasedQueryBuilderFactory<DB, TB, O>
+  | DynamicReferenceBuilder<any>
 
 /**
- * `select` output query builder type.
+ * Given a selection expression returns a query builder type that
+ * has the selection.
  */
-export type SelectQueryBuilder<DB, TB extends keyof DB, O, S> = QueryBuilder<
+export type QueryBuilderWithSelection<
+  DB,
+  TB extends keyof DB,
+  O,
+  S
+> = QueryBuilder<
   DB,
   TB,
   O extends InsertResultTypeTag
@@ -58,26 +67,16 @@ export type SelectAllQueryBuilder<
 > = QueryBuilder<DB, TB, O & RowType<DB, S>>
 
 export type SelectResultType<DB, TB extends keyof DB, S> = {
-  [A in ExtractAliasFromSelectArg<S>]: ExtractTypeFromSelectArg<DB, TB, S, A>
+  [A in ExtractAliasFromSelectExpression<S>]: ExtractTypeFromSelectExpression<
+    DB,
+    TB,
+    S,
+    A
+  >
 }
 
-type AnyAliasedColumnWithTable<DB, TB extends keyof DB> = `${AnyColumnWithTable<
-  DB,
-  TB
->} as ${string}`
-
-type ExtractAliasFromSelectArg<
-  S
-> = S extends `${string}.${string}.${string} as ${infer A}`
-  ? A
-  : S extends `${string}.${string}.${infer C}`
-  ? C
-  : S extends `${string}.${string} as ${infer A}`
-  ? A
-  : S extends `${string}.${infer C}`
-  ? C
-  : S extends keyof any
-  ? S
+type ExtractAliasFromSelectExpression<S> = S extends string
+  ? ExtractAliasFromStringSelectExpression<S>
   : S extends AliasedRawBuilder<any, infer RA>
   ? RA
   : S extends (qb: any) => AliasedRawBuilder<any, infer RA>
@@ -86,12 +85,55 @@ type ExtractAliasFromSelectArg<
   ? QA
   : S extends (qb: any) => AliasedQueryBuilder<any, any, any, infer QA>
   ? QA
+  : S extends DynamicReferenceBuilder<infer RA>
+  ? ExtractAliasFromStringSelectExpression<RA>
   : never
 
-type ExtractTypeFromSelectArg<
+type ExtractAliasFromStringSelectExpression<
+  S extends string
+> = S extends `${string}.${string}.${string} as ${infer A}`
+  ? A
+  : S extends `${string}.${string}.${infer C}`
+  ? C
+  : S extends `${string}.${string} as ${infer A}`
+  ? A
+  : S extends `${string}.${infer C}`
+  ? C
+  : S
+
+type ExtractTypeFromSelectExpression<
   DB,
   TB extends keyof DB,
   S,
+  A extends keyof any
+> = S extends string
+  ? ExtractTypeFromStringSelectExpression<DB, TB, S, A>
+  : S extends AliasedRawBuilder<infer O, infer RA>
+  ? RA extends A
+    ? O
+    : never
+  : S extends (qb: any) => AliasedRawBuilder<infer O, infer RA>
+  ? RA extends A
+    ? O
+    : never
+  : S extends AliasedQueryBuilder<any, any, infer O, infer QA>
+  ? QA extends A
+    ? ValueType<O>
+    : never
+  : S extends (qb: any) => AliasedQueryBuilder<any, any, infer O, infer QA>
+  ? QA extends A
+    ? ValueType<O>
+    : never
+  : S extends DynamicReferenceBuilder<infer RA>
+  ? A extends ExtractAliasFromStringSelectExpression<RA>
+    ? ExtractTypeFromStringSelectExpression<DB, TB, RA, A> | undefined
+    : never
+  : never
+
+type ExtractTypeFromStringSelectExpression<
+  DB,
+  TB extends keyof DB,
+  S extends string,
   A extends keyof any,
   R = RowType<DB, TB>
 > = S extends `${infer SC}.${infer T}.${infer C} as ${infer RA}`
@@ -130,26 +172,10 @@ type ExtractTypeFromSelectArg<
   ? S extends keyof R
     ? R[S]
     : never
-  : S extends AliasedRawBuilder<infer O, infer RA>
-  ? RA extends A
-    ? O
-    : never
-  : S extends (qb: any) => AliasedRawBuilder<infer O, infer RA>
-  ? RA extends A
-    ? O
-    : never
-  : S extends AliasedQueryBuilder<any, any, infer O, infer QA>
-  ? QA extends A
-    ? ValueType<O>
-    : never
-  : S extends (qb: any) => AliasedQueryBuilder<any, any, infer O, infer QA>
-  ? QA extends A
-    ? ValueType<O>
-    : never
   : never
 
 export function parseSelectArgs(
-  selection: SelectArg<any, any, any> | SelectArg<any, any, any>[]
+  selection: SelectExpression<any, any, any> | SelectExpression<any, any, any>[]
 ): SelectionNode[] {
   if (Array.isArray(selection)) {
     return selection.map((it) => parseSelectArg(it))
@@ -158,7 +184,9 @@ export function parseSelectArgs(
   }
 }
 
-function parseSelectArg(selection: SelectArg<any, any, any>): SelectionNode {
+function parseSelectArg(
+  selection: SelectExpression<any, any, any>
+): SelectionNode {
   if (isString(selection)) {
     return createSelectionNode(parseAliasedStringReference(selection))
   } else if (isOperationNodeSource(selection)) {

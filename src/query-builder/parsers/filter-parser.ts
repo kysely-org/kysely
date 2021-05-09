@@ -13,7 +13,7 @@ import {
   createOperatorNode,
   OperatorNode,
 } from '../../operation-node/operator-node'
-import { createEmptySelectQuery, QueryBuilder } from '../query-builder'
+import { createEmptySelectQuery } from '../query-builder'
 import { AndNode } from '../../operation-node/and-node'
 import { OrNode } from '../../operation-node/or-node'
 import { createParensNode, ParensNode } from '../../operation-node/parens-node'

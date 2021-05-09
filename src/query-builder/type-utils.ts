@@ -120,6 +120,11 @@ export type AnyColumnWithTable<DB, TB extends keyof DB> = {
     : never
 }[TB]
 
+export type AnyAliasedColumnWithTable<
+  DB,
+  TB extends keyof DB
+> = `${AnyColumnWithTable<DB, TB>} as ${string}`
+
 /**
  * Extracts an array item type.
  */

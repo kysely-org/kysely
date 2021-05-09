@@ -1,13 +1,10 @@
 import { freeze } from '../utils/object-utils'
-import { AliasNode } from './alias-node'
 import { OperationNode } from './operation-node'
-import { TableNode } from './table-node'
-
-export type FromItemNode = TableNode | AliasNode
+import { TableExpressionNode } from './operation-node-utils'
 
 export interface FromNode extends OperationNode {
   readonly kind: 'FromNode'
-  readonly froms: ReadonlyArray<FromItemNode>
+  readonly froms: ReadonlyArray<TableExpressionNode>
 }
 
 export function isFromNode(node: OperationNode): node is FromNode {
@@ -15,7 +12,7 @@ export function isFromNode(node: OperationNode): node is FromNode {
 }
 
 export function createFromNodeWithItems(
-  froms: ReadonlyArray<FromItemNode>
+  froms: ReadonlyArray<TableExpressionNode>
 ): FromNode {
   return freeze({
     kind: 'FromNode',
@@ -25,7 +22,7 @@ export function createFromNodeWithItems(
 
 export function cloneFromNodeWithItems(
   from: FromNode,
-  items: ReadonlyArray<FromItemNode>
+  items: ReadonlyArray<TableExpressionNode>
 ): FromNode {
   return freeze({
     ...from,
