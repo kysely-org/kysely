@@ -598,13 +598,14 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * Adds a select clause to the query.
    *
    * When a column (or any expression) is selected, Kysely also adds it to the return
-   * type of the query. Kysely is smart enough to parse the field names and types from
-   * aliases, subqueries, raw expressions etc.
+   * type of the query. Kysely is smart enough to parse the field names and types even
+   * from aliased columns, subqueries, raw expressions etc.
    *
    * Kysely only allows you to select columns and expressions that exist and would
    * produce valid SQL. However, Kysely is not perfect and there may be cases where
    * the type inference doesn't work and you need to override it. You can always
-   * use {@link Kysely.raw | raw} to override the types. See the examples below.
+   * use the {@link Kysely.dynamic | dynamic} object and {@link Kysely.raw | raw}
+   * to override the types.
    *
    * Select calls are additive. Calling `select('id').select('first_name')` is the
    * same as calling `select(['id', 'first_name']).
@@ -723,6 +724,39 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    *
    * In case you use `raw` you need to specify the type of the expression
    * (in this example `string`).
+   *
+   * @example
+   * All the examples above assume you know the column names at compile time.
+   * While it's better to build your code in that way (that way you also know
+   * the types) sometimes it's not possible or you just prefer to write more
+   * dynamic code.
+   *
+   * In this example, we use the `dynamic` object's methods to add selections
+   * dynamically:
+   *
+   * ```ts
+   * // Some column name provided by the user. Value not know compile-time.
+   * const columnFromUserInput = req.params.select;
+   *
+   * // A type that lists all possible values `columnFromUserInput` can have.
+   * type PossibleColumns = 'last_name' | 'first_name' | 'birth_date'
+   *
+   * const [person] = db.selectFrom('person')
+   *   .select([
+   *     db.dynamic.ref<PossibleColumns>(columnFromUserInput)
+   *     'id'
+   *   ])
+   *
+   * // The resulting type contains all `PossibleColumns` as optional fields
+   * // because we cannot know which field was actually selected before
+   * // running the code.
+   * const lastName: string | undefined = person.last_name
+   * const firstName: string | undefined = person.first_name
+   * const birthDate: string | undefined = person.birth_date
+   *
+   * // The result type also contains the compile time selection `id`.
+   * person.id
+   * ```
    */
   select<S extends SelectExpression<DB, TB, O>>(
     selections: S[]
