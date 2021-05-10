@@ -3,8 +3,8 @@ import {
   createJoinNode,
   JoinNode,
   JoinType,
-} from '../../operation-node/join-node'
-import { AnyColumn, AnyColumnWithTable } from '../type-utils'
+} from '../operation-node/join-node'
+import { AnyColumn, AnyColumnWithTable } from '../query-builder/type-utils'
 import {
   TableExpression,
   parseTableExpression,
@@ -12,7 +12,7 @@ import {
   TableExpressionDatabaseType,
 } from './table-parser'
 import { parseFilterArgs } from './filter-parser'
-import { JoinBuilder } from '../join-builder'
+import { JoinBuilder } from '../query-builder/join-builder'
 
 export type JoinReferenceArg<DB, TB extends keyof DB, F> =
   | AnyColumn<

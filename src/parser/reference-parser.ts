@@ -1,27 +1,27 @@
-import { AliasNode, createAliasNode } from '../../operation-node/alias-node'
-import { ColumnNode, createColumnNode } from '../../operation-node/column-node'
-import { isDeleteQueryNode } from '../../operation-node/delete-query-node'
-import { isInsertQueryNode } from '../../operation-node/insert-query-node'
-import { isOperationNodeSource } from '../../operation-node/operation-node-source'
-import { ReferenceExpressionNode } from '../../operation-node/operation-node-utils'
+import { AliasNode, createAliasNode } from '../operation-node/alias-node'
+import { ColumnNode, createColumnNode } from '../operation-node/column-node'
+import { isDeleteQueryNode } from '../operation-node/delete-query-node'
+import { isInsertQueryNode } from '../operation-node/insert-query-node'
+import { isOperationNodeSource } from '../operation-node/operation-node-source'
+import { ReferenceExpressionNode } from '../operation-node/operation-node-utils'
 import {
   createReferenceNode,
   ReferenceNode,
-} from '../../operation-node/reference-node'
+} from '../operation-node/reference-node'
 import {
   createTableNode,
   createTableNodeWithSchema,
-} from '../../operation-node/table-node'
-import { RawBuilder } from '../../raw-builder/raw-builder'
-import { isFunction, isString } from '../../utils/object-utils'
-import { createEmptySelectQuery } from '../query-builder'
+} from '../operation-node/table-node'
+import { RawBuilder } from '../raw-builder/raw-builder'
+import { isFunction, isString } from '../utils/object-utils'
+import { createEmptySelectQuery } from '../query-builder/query-builder'
 import {
   AnyColumn,
   AnyColumnWithTable,
   AnyQueryBuilder,
   QueryBuilderFactory,
   RawBuilderFactory,
-} from '../type-utils'
+} from '../query-builder/type-utils'
 
 export type ReferenceExpression<DB, TB extends keyof DB, O> =
   | AnyColumn<DB, TB>

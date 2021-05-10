@@ -29,12 +29,12 @@ interface Database {
 const db = new Kysely<Database>({
   dialect: 'postgres',
   host: 'localhost',
-  database: 'kysely_test'
+  database: 'kysely_test',
 })
 
 async function demo() {
   const [person] = await db
-    .query('person')
+    .selectFrom('person')
     .innerJoin('pet', 'pet.owner_id', 'person.id')
     .select(['first_name', 'pet.name as pet_name'])
     .where('person.id', '=', 1)

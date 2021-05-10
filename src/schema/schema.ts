@@ -1,7 +1,7 @@
 import { ConnectionProvider } from '../driver/connection-provider'
 import { createCreateTableNode } from '../operation-node/create-table-node'
 import { createDropTableNode } from '../operation-node/drop-table-node'
-import { parseTable } from '../query-builder/parsers/table-parser'
+import { parseTable } from '../parser/table-parser'
 import { QueryCompiler } from '../query-compiler/query-compiler'
 import { freeze } from '../utils/object-utils'
 import { CreateTableBuilder } from './create-table-builder'

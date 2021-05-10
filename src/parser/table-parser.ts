@@ -2,21 +2,21 @@ import {
   AliasedQueryBuilder,
   createEmptySelectQuery,
   QueryBuilder,
-} from '../query-builder'
-import { isFunction, isString } from '../../utils/object-utils'
-import { createAliasNode } from '../../operation-node/alias-node'
+} from '../query-builder/query-builder'
+import { isFunction, isString } from '../utils/object-utils'
+import { createAliasNode } from '../operation-node/alias-node'
 import {
   createTableNode,
   createTableNodeWithSchema,
   TableNode,
-} from '../../operation-node/table-node'
+} from '../operation-node/table-node'
 import {
   AliasedQueryBuilderFactory,
   AnyAliasedQueryBuilder,
-} from '../type-utils'
-import { isOperationNodeSource } from '../../operation-node/operation-node-source'
-import { AliasedRawBuilder } from '../../raw-builder/raw-builder'
-import { TableExpressionNode } from '../../operation-node/operation-node-utils'
+} from '../query-builder/type-utils'
+import { isOperationNodeSource } from '../operation-node/operation-node-source'
+import { AliasedRawBuilder } from '../raw-builder/raw-builder'
+import { TableExpressionNode } from '../operation-node/operation-node-utils'
 
 export type TableExpression<DB, TB extends keyof DB, O> =
   | AnyAliasedTable<DB, any, any>

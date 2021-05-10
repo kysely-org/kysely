@@ -514,5 +514,80 @@ for (const dialect of BUILT_IN_DIALECTS) {
         ])
       })
     })
+
+    describe('whereNotExists', () => {
+      it('should accept a subquery', async () => {
+        const query = ctx.db
+          .selectFrom('person')
+          .selectAll()
+          .whereNotExists((qb) =>
+            qb
+              .subQuery('pet')
+              .select('pet.id')
+              .whereRef('pet.owner_id', '=', 'person.id')
+              .where('pet.species', '=', 'dog')
+          )
+
+        testSql(query, dialect, {
+          postgres: {
+            sql: `select * from "person" where not exists (select "pet"."id" from "pet" where "pet"."owner_id" = "person"."id" and "pet"."species" = $1)`,
+            bindings: ['dog'],
+          },
+        })
+
+        const persons = await query.execute()
+        expect(persons).to.have.length(2)
+        expect(persons).to.containSubset([
+          {
+            first_name: 'Sylvester',
+            last_name: 'Stallone',
+            gender: 'male',
+          },
+          {
+            first_name: 'Jennifer',
+            last_name: 'Aniston',
+            gender: 'female',
+          },
+        ])
+      })
+    })
+
+    describe('orWhereNotExists', () => {
+      it('should accept a subquery', async () => {
+        const query = ctx.db
+          .selectFrom('person')
+          .selectAll()
+          .where('first_name', '!=', null)
+          .orWhereNotExists((qb) =>
+            qb
+              .subQuery('pet')
+              .select('pet.id')
+              .whereRef('pet.owner_id', '=', 'person.id')
+              .where('pet.species', '=', 'hamster')
+          )
+
+        testSql(query, dialect, {
+          postgres: {
+            sql: `select * from "person" where "first_name" != $1 or not exists (select "pet"."id" from "pet" where "pet"."owner_id" = "person"."id" and "pet"."species" = $2)`,
+            bindings: [null, 'hamster'],
+          },
+        })
+
+        const persons = await query.execute()
+        expect(persons).to.have.length(2)
+        expect(persons).to.containSubset([
+          {
+            first_name: 'Arnold',
+            last_name: 'Schwarzenegger',
+            gender: 'male',
+          },
+          {
+            first_name: 'Jennifer',
+            last_name: 'Aniston',
+            gender: 'female',
+          },
+        ])
+      })
+    })
   })
 }

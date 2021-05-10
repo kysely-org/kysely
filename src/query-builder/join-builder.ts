@@ -5,13 +5,13 @@ import {
   parseTableExpressionOrList,
   TableExpression,
   QueryBuilderWithTable,
-} from './parsers/table-parser'
+} from '../parser/table-parser'
 import {
   FilterOperatorArg,
   parseReferenceFilterArgs,
-} from './parsers/filter-parser'
+} from '../parser/filter-parser'
 import { QueryBuilder } from './query-builder'
-import { ReferenceExpression } from './parsers/reference-parser'
+import { ReferenceExpression } from '../parser/reference-parser'
 import { createSelectQueryNodeWithFromItems } from '../operation-node/select-query-node'
 
 export class JoinBuilder<DB, TB extends keyof DB, O = {}>

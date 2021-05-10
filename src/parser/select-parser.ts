@@ -1,17 +1,17 @@
-import { isOperationNodeSource } from '../../operation-node/operation-node-source'
-import { AliasedRawBuilder } from '../../raw-builder/raw-builder'
-import { isFunction, isString } from '../../utils/object-utils'
+import { isOperationNodeSource } from '../operation-node/operation-node-source'
+import { AliasedRawBuilder } from '../raw-builder/raw-builder'
+import { isFunction, isString } from '../utils/object-utils'
 import {
   AliasedQueryBuilder,
   createEmptySelectQuery,
   QueryBuilder,
-} from '../query-builder'
+} from '../query-builder/query-builder'
 import {
   createSelectAllSelectionNode,
   createSelectAllSelectionNodeWithTable,
   createSelectionNode,
   SelectionNode,
-} from '../../operation-node/selection-node'
+} from '../operation-node/selection-node'
 import {
   AliasedQueryBuilderFactory,
   AliasedRawBuilderFactory,
@@ -21,10 +21,10 @@ import {
   AnyColumnWithTable,
   RowType,
   ValueType,
-} from '../type-utils'
+} from '../query-builder/type-utils'
 import { InsertResultTypeTag } from './insert-values-parser'
 import { parseAliasedStringReference } from './reference-parser'
-import { DynamicReferenceBuilder } from '../../dynamic/dynamic-reference-builder'
+import { DynamicReferenceBuilder } from '../dynamic/dynamic-reference-builder'
 
 /**
  * A selection exrpession.
@@ -174,17 +174,17 @@ type ExtractTypeFromStringSelectExpression<
     : never
   : never
 
-export function parseSelectArgs(
+export function parseSelectExpressionOrList(
   selection: SelectExpression<any, any, any> | SelectExpression<any, any, any>[]
 ): SelectionNode[] {
   if (Array.isArray(selection)) {
-    return selection.map((it) => parseSelectArg(it))
+    return selection.map((it) => parseSelectExpression(it))
   } else {
-    return [parseSelectArg(selection)]
+    return [parseSelectExpression(selection)]
   }
 }
 
-function parseSelectArg(
+function parseSelectExpression(
   selection: SelectExpression<any, any, any>
 ): SelectionNode {
   if (isString(selection)) {

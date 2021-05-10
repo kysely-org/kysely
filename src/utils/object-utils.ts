@@ -1,4 +1,11 @@
-export type PrimitiveValue = string | number | boolean | null | Date | Buffer
+export type PrimitiveValue =
+  | string
+  | number
+  | boolean
+  | null
+  | Date
+  | Buffer
+  | BigInt
 
 export function isEmpty(
   obj: ArrayLike<any> | string | object | Buffer
@@ -36,6 +43,10 @@ export function isBuffer(obj: any): obj is Buffer {
   return Buffer.isBuffer(obj)
 }
 
+export function isBigInt(obj: any): obj is BigInt {
+  return typeof obj === 'bigint'
+}
+
 export function isPrimitive(obj: any): obj is PrimitiveValue {
   return (
     isString(obj) ||
@@ -43,7 +54,8 @@ export function isPrimitive(obj: any): obj is PrimitiveValue {
     isBoolean(obj) ||
     isNull(obj) ||
     isDate(obj) ||
-    isBuffer(obj)
+    isBuffer(obj) ||
+    isBigInt(obj)
   )
 }
 

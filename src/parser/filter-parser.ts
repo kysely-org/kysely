@@ -1,22 +1,22 @@
-import { createFilterNode, FilterNode } from '../../operation-node/filter-node'
-import { RawBuilder } from '../../raw-builder/raw-builder'
-import { isFunction, isString } from '../../utils/object-utils'
+import { createFilterNode, FilterNode } from '../operation-node/filter-node'
+import { RawBuilder } from '../raw-builder/raw-builder'
+import { isFunction, isString } from '../utils/object-utils'
 import {
   AnyQueryBuilder,
   ArrayItemType,
   QueryBuilderFactory,
   RawBuilderFactory,
-} from '../type-utils'
-import { isOperationNodeSource } from '../../operation-node/operation-node-source'
-import { isRawNode, RawNode } from '../../operation-node/raw-node'
+} from '../query-builder/type-utils'
+import { isOperationNodeSource } from '../operation-node/operation-node-source'
+import { isRawNode, RawNode } from '../operation-node/raw-node'
 import {
   createOperatorNode,
   OperatorNode,
-} from '../../operation-node/operator-node'
-import { createEmptySelectQuery } from '../query-builder'
-import { AndNode } from '../../operation-node/and-node'
-import { OrNode } from '../../operation-node/or-node'
-import { createParensNode, ParensNode } from '../../operation-node/parens-node'
+} from '../operation-node/operator-node'
+import { createEmptySelectQuery } from '../query-builder/query-builder'
+import { AndNode } from '../operation-node/and-node'
+import { OrNode } from '../operation-node/or-node'
+import { createParensNode, ParensNode } from '../operation-node/parens-node'
 import {
   parseReferenceExpression,
   ReferenceExpression,
@@ -28,7 +28,7 @@ import {
 import {
   isSelectQueryNode,
   SelectQueryNode,
-} from '../../operation-node/select-query-node'
+} from '../operation-node/select-query-node'
 
 export type ExistsFilterArg<DB, TB extends keyof DB, O> =
   | AnyQueryBuilder

@@ -4,7 +4,7 @@ import {
 } from '../operation-node/column-definition-node'
 import { OperationNodeSource } from '../operation-node/operation-node-source'
 import { isReferenceNode } from '../operation-node/reference-node'
-import { parseStringReference } from '../query-builder/parsers/reference-parser'
+import { parseStringReference } from '../parser/reference-parser'
 
 export class ColumnBuilder implements OperationNodeSource {
   readonly #node: ColumnDefinitionNode

@@ -5,7 +5,7 @@ import {
   QueryBuilderWithTable,
   parseTableExpressionOrList,
   parseTable,
-} from './query-builder/parsers/table-parser'
+} from './parser/table-parser'
 import { DriverConfig } from './driver/driver-config'
 import { Dialect } from './dialect/dialect'
 import { PostgresDialect } from './dialect/postgres/postgres-dialect'
@@ -15,7 +15,7 @@ import { TransactionalConnectionProvider } from './driver/transactional-connecti
 import { AsyncLocalStorage } from 'async_hooks'
 import { Connection } from './driver/connection'
 import { ConnectionProvider } from './driver/connection-provider'
-import { InsertResultTypeTag } from './query-builder/parsers/insert-values-parser'
+import { InsertResultTypeTag } from './parser/insert-values-parser'
 import { createSchemaObject, Schema } from './schema/schema'
 import { createSelectQueryNodeWithFromItems } from './operation-node/select-query-node'
 import { createInsertQueryNodeWithTable } from './operation-node/insert-query-node'

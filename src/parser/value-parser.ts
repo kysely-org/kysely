@@ -1,31 +1,27 @@
-import { QueryBuilder, RawBuilder } from '../..'
-import { isColumnNode } from '../../operation-node/column-node'
-import { isDeleteQueryNode } from '../../operation-node/delete-query-node'
-import { isInsertQueryNode } from '../../operation-node/insert-query-node'
-import { isOperationNodeSource } from '../../operation-node/operation-node-source'
-import { ValueExpressionNode } from '../../operation-node/operation-node-utils'
+import { QueryBuilder, RawBuilder } from '..'
+import { isColumnNode } from '../operation-node/column-node'
+import { isDeleteQueryNode } from '../operation-node/delete-query-node'
+import { isInsertQueryNode } from '../operation-node/insert-query-node'
+import { isOperationNodeSource } from '../operation-node/operation-node-source'
+import { ValueExpressionNode } from '../operation-node/operation-node-utils'
 import {
   createPrimitiveValueListNode,
   isPrimitiveValueListNode,
   PrimitiveValueListNode,
-} from '../../operation-node/primitive-value-list-node'
+} from '../operation-node/primitive-value-list-node'
 import {
   createValueListNode,
   isValueListNode,
   ValueListNode,
-} from '../../operation-node/value-list-node'
-import { createValueNode } from '../../operation-node/value-node'
-import {
-  isFunction,
-  isPrimitive,
-  PrimitiveValue,
-} from '../../utils/object-utils'
-import { createEmptySelectQuery } from '../query-builder'
+} from '../operation-node/value-list-node'
+import { createValueNode } from '../operation-node/value-node'
+import { isFunction, isPrimitive, PrimitiveValue } from '../utils/object-utils'
+import { createEmptySelectQuery } from '../query-builder/query-builder'
 import {
   AnyQueryBuilder,
   QueryBuilderFactory,
   RawBuilderFactory,
-} from '../type-utils'
+} from '../query-builder/type-utils'
 
 export type ValueExpression<DB, TB extends keyof DB, O> =
   | PrimitiveValue
@@ -37,6 +33,16 @@ export type ValueExpression<DB, TB extends keyof DB, O> =
 export type ValueExpressionOrList<DB, TB extends keyof DB, O> =
   | ValueExpression<DB, TB, O>
   | ValueExpression<DB, TB, O>[]
+
+export function parseValueExpressionOrList(
+  arg: ValueExpressionOrList<any, any, any>
+) {
+  if (Array.isArray(arg)) {
+    return parseValueExpressionList(arg)
+  } else {
+    return parseValueExpression(arg)
+  }
+}
 
 export function parseValueExpression(
   arg: ValueExpression<any, any, any>
@@ -58,16 +64,6 @@ export function parseValueExpression(
   }
 
   throw new Error(`invalid value expression ${JSON.stringify(arg)}`)
-}
-
-export function parseValueExpressionOrList(
-  arg: ValueExpressionOrList<any, any, any>
-) {
-  if (Array.isArray(arg)) {
-    return parseValueExpressionList(arg)
-  } else {
-    return parseValueExpression(arg)
-  }
 }
 
 function parseValueExpressionList(

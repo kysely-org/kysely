@@ -6,38 +6,38 @@ import {
   JoinCallbackArg,
   JoinReferenceArg,
   parseJoinArgs,
-} from './parsers/join-parser'
+} from '../parser/join-parser'
 import {
   parseTableExpressionOrList,
   TableExpression,
   QueryBuilderWithTable,
-} from './parsers/table-parser'
+} from '../parser/table-parser'
 import {
-  parseSelectArgs,
+  parseSelectExpressionOrList,
   parseSelectAllArgs,
   SelectExpression,
   QueryBuilderWithSelection,
   SelectAllQueryBuilder,
-} from './parsers/select-parser'
+} from '../parser/select-parser'
 import {
   parseFilterArgs,
   ExistsFilterArg,
   parseExistsFilterArgs,
   FilterOperatorArg,
   parseReferenceFilterArgs,
-} from './parsers/filter-parser'
+} from '../parser/filter-parser'
 import { ConnectionProvider } from '../driver/connection-provider'
 import {
   InsertResultTypeTag,
   InsertValuesArg,
   parseInsertValuesArgs,
-} from './parsers/insert-values-parser'
-import { ReturningQueryBuilder } from './parsers/returning-parser'
+} from '../parser/insert-values-parser'
+import { QueryBuilderWithReturning } from '../parser/returning-parser'
 import {
   parseReferenceExpression,
   ReferenceExpression,
-} from './parsers/reference-parser'
-import { ValueExpression, ValueExpressionOrList } from './parsers/value-parser'
+} from '../parser/reference-parser'
+import { ValueExpression, ValueExpressionOrList } from '../parser/value-parser'
 import {
   createOrderByItemNode,
   OrderByDirection,
@@ -740,7 +740,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
       connectionProvider: this.#connectionProvider,
       queryNode: cloneSelectQueryNodeWithSelections(
         this.#queryNode,
-        parseSelectArgs(selection)
+        parseSelectExpressionOrList(selection)
       ),
     })
   }
@@ -767,7 +767,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
       connectionProvider: this.#connectionProvider,
       queryNode: cloneSelectQueryNodeWithDistinctOnSelections(
         this.#queryNode,
-        parseSelectArgs(selection)
+        parseSelectExpressionOrList(selection)
       ),
     })
   }
@@ -1045,11 +1045,11 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    */
   returning<S extends SelectExpression<DB, TB, O>>(
     selections: S[]
-  ): ReturningQueryBuilder<DB, TB, O, S>
+  ): QueryBuilderWithReturning<DB, TB, O, S>
 
   returning<S extends SelectExpression<DB, TB, O>>(
     selection: S
-  ): ReturningQueryBuilder<DB, TB, O, S>
+  ): QueryBuilderWithReturning<DB, TB, O, S>
 
   returning(selection: any): any {
     ensureCanHaveReturningClause(this.#queryNode)
@@ -1059,7 +1059,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
       connectionProvider: this.#connectionProvider,
       queryNode: cloneQueryNodeWithReturningSelections(
         this.#queryNode,
-        parseSelectArgs(selection)
+        parseSelectExpressionOrList(selection)
       ),
     })
   }
@@ -1120,7 +1120,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
     })
   }
 
-  async executeTakeFirst(): Promise<O | undefined> {
+  async executeTakeFirst(): Promise<ResultType<O> | undefined> {
     const result = await this.execute()
     return result[0]
   }
