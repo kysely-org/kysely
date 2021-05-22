@@ -19,10 +19,10 @@ import {
   AnyAliasedQueryBuilder,
   AnyColumn,
   AnyColumnWithTable,
+  InsertResultTypeTag,
   RowType,
   ValueType,
 } from '../query-builder/type-utils'
-import { InsertResultTypeTag } from './insert-values-parser'
 import { parseAliasedStringReference } from './reference-parser'
 import { DynamicReferenceBuilder } from '../dynamic/dynamic-reference-builder'
 

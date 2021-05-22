@@ -16,7 +16,7 @@ interface Pet {
   id: number
   name: string
   owner_id: number
-  species: 'dog' | 'cat' | 'hamster'
+  species: 'dog' | 'cat' | 'hamster'
 }
 
 interface Toy {

@@ -22,6 +22,7 @@ import {
   QueryBuilderFactory,
   RawBuilderFactory,
 } from '../query-builder/type-utils'
+import { DynamicReferenceBuilder } from '../dynamic/dynamic-reference-builder'
 
 export type ReferenceExpression<DB, TB extends keyof DB, O> =
   | AnyColumn<DB, TB>
@@ -30,6 +31,7 @@ export type ReferenceExpression<DB, TB extends keyof DB, O> =
   | QueryBuilderFactory<DB, TB, O>
   | RawBuilder<any>
   | RawBuilderFactory<DB, TB, O>
+  | DynamicReferenceBuilder<any>
 
 export function parseReferenceExpression(
   arg: ReferenceExpression<any, any, any>

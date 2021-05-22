@@ -177,7 +177,7 @@ export class QueryCompiler extends OperationNodeVisitor {
   protected visitDeleteQuery(node: DeleteQueryNode): void {
     this.queryNodeStack.push(node)
 
-    this.append('delete from ')
+    this.append('delete ')
     this.visitNode(node.from)
 
     if (node.joins) {

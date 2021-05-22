@@ -1,5 +1,9 @@
 import { QueryBuilder } from '../query-builder/query-builder'
-import { InsertResultTypeTag } from './insert-values-parser'
+import {
+  DeleteResultTypeTag,
+  InsertResultTypeTag,
+  UpdateResultTypeTag,
+} from '../query-builder/type-utils'
 import { SelectResultType } from './select-parser'
 
 /**
@@ -15,5 +19,9 @@ export type QueryBuilderWithReturning<
   TB,
   O extends InsertResultTypeTag
     ? SelectResultType<DB, TB, S>
-    : O & SelectResultType<DB, TB, S>
+    : O extends DeleteResultTypeTag
+    ? SelectResultType<DB, TB, S>
+    : O extends UpdateResultTypeTag
+    ? SelectResultType<DB, TB, S>
+    : O
 >

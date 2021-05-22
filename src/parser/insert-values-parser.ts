@@ -19,10 +19,6 @@ export type InsertValuesArg<DB, TB extends keyof DB, R = RowType<DB, TB>> = {
   [C in keyof R]?: R[C] | AnyQueryBuilder | RawBuilder<any>
 }
 
-export interface InsertResultTypeTag {
-  __isInsertResultTypeTag__: boolean
-}
-
 type InsertValueType = PrimitiveValue | AnyQueryBuilder | RawBuilder<any>
 
 export function parseInsertValuesArgs(

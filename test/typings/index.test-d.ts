@@ -9,7 +9,6 @@
 
 import { Kysely } from '.'
 import { expectType, expectError } from 'tsd'
-import { stringify } from 'node:querystring'
 
 interface Person {
   id: number
@@ -278,21 +277,23 @@ function testWhere(db: Kysely<Database>) {
 
 function testJoin(db: Kysely<Database>) {
   db.selectFrom('person').innerJoin('movie as m', (join) =>
-    join.on('m.id', '=', 'person.id')
+    join.onRef('m.id', '=', 'person.id')
   )
 
   // Refer to table that's not joined
   expectError(
     db
       .selectFrom('person')
-      .innerJoin('movie as m', (join) => join.on('pet.id', '=', 'person.id'))
+      .innerJoin('movie as m', (join) => join.onRef('pet.id', '=', 'person.id'))
   )
 
   // Refer to table with wrong alias
   expectError(
     db
       .selectFrom('person')
-      .innerJoin('movie as m', (join) => join.on('movie.id', '=', 'person.id'))
+      .innerJoin('movie as m', (join) =>
+        join.onRef('movie.id', '=', 'person.id')
+      )
   )
 }
 

@@ -63,6 +63,35 @@ for (const dialect of BUILT_IN_DIALECTS) {
         })
 
         const persons = await query.execute()
+
+        expect(persons).to.have.length(1)
+        expect(persons[0].id).to.be.a('number')
+        expect(persons).to.containSubset([
+          {
+            first_name: 'Arnold',
+            last_name: 'Schwarzenegger',
+            gender: 'male',
+          },
+        ])
+      })
+
+      it('a dynamic column name and a primitive value', async () => {
+        const { ref } = ctx.db.dynamic
+
+        const columnName: string = 'first_name'
+        const query = ctx.db
+          .selectFrom('person')
+          .selectAll()
+          .where(ref(columnName), '=', 'Arnold')
+
+        testSql(query, dialect, {
+          postgres: {
+            sql: 'select * from "person" where "first_name" = $1',
+            bindings: ['Arnold'],
+          },
+        })
+
+        const persons = await query.execute()
         expect(persons).to.have.length(1)
         expect(persons[0].id).to.be.a('number')
         expect(persons).to.containSubset([

@@ -18,11 +18,14 @@ import { isOperationNodeSource } from '../operation-node/operation-node-source'
 import { AliasedRawBuilder } from '../raw-builder/raw-builder'
 import { TableExpressionNode } from '../operation-node/operation-node-utils'
 
-export type TableExpression<DB, TB extends keyof DB, O> =
+export type TableExpression<DB, TB extends keyof DB> =
+  | TableReference<DB>
+  | AnyAliasedQueryBuilder
+  | AliasedQueryBuilderFactory<DB, TB, {}>
+
+export type TableReference<DB> =
   | AnyAliasedTable<DB, any, any>
   | AnyTable<DB>
-  | AnyAliasedQueryBuilder
-  | AliasedQueryBuilderFactory<DB, TB, O>
   | AliasedRawBuilder<any, any>
 
 export type QueryBuilderWithTable<
@@ -102,7 +105,7 @@ type ExtractRowTypeFromTableExpression<
   : never
 
 export function parseTableExpressionOrList(
-  table: TableExpression<any, any, any> | TableExpression<any, any, any>[]
+  table: TableExpression<any, any> | TableExpression<any, any>[]
 ): TableExpressionNode[] {
   if (Array.isArray(table)) {
     return table.map((it) => parseTableExpression(it))
@@ -112,7 +115,7 @@ export function parseTableExpressionOrList(
 }
 
 export function parseTableExpression(
-  table: TableExpression<any, any, any>
+  table: TableExpression<any, any>
 ): TableExpressionNode {
   if (isString(table)) {
     return parseAliasedTable(table)

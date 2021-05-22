@@ -43,7 +43,7 @@ export function parseJoinArgs(joinType: JoinType, args: any[]): JoinNode {
 
 function parseCallbackJoin(
   joinType: JoinType,
-  from: TableExpression<any, any, any>,
+  from: TableExpression<any, any>,
   callback: JoinCallbackArg<any, any, any>
 ): JoinNode {
   const tableNode = parseTableExpression(from)
@@ -57,7 +57,7 @@ function parseCallbackJoin(
 
 function parseSingleOnJoin(
   joinType: JoinType,
-  from: TableExpression<any, any, any>,
+  from: TableExpression<any, any>,
   lhsColumn: string,
   rhsColumn: string
 ): JoinNode {

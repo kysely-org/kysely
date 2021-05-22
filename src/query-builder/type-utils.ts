@@ -148,3 +148,15 @@ export type RawBuilderFactory<DB, TB extends keyof DB, O> = (
 export type AliasedRawBuilderFactory<DB, TB extends keyof DB, O> = (
   qb: QueryBuilder<DB, TB, O>
 ) => AliasedRawBuilder<any, any>
+
+export interface InsertResultTypeTag {
+  __isInsertResultTypeTag__: true
+}
+
+export interface DeleteResultTypeTag {
+  __isDeleteResultTypeTag__: true
+}
+
+export interface UpdateResultTypeTag {
+  __isUpdateResultTypeTag__: true
+}

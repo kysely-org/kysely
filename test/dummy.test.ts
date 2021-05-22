@@ -151,7 +151,9 @@ describe.skip('dummy test', () => {
       .selectFrom('person as per')
       .selectAll('per')
       .innerJoin('pet as p', (join) =>
-        join.on('p.owner_id', '=', 'per.id').on('p.owner_id', '=', 'per.id')
+        join
+          .onRef('p.owner_id', '=', 'per.id')
+          .onRef('p.owner_id', '=', 'per.id')
       )
 
     console.log(qb4.compile().sql)

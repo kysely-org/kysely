@@ -5,6 +5,8 @@ import {
   QueryBuilderWithTable,
   parseTableExpressionOrList,
   parseTable,
+  parseTableExpression,
+  TableReference,
 } from './parser/table-parser'
 import { DriverConfig } from './driver/driver-config'
 import { Dialect } from './dialect/dialect'
@@ -15,12 +17,15 @@ import { TransactionalConnectionProvider } from './driver/transactional-connecti
 import { AsyncLocalStorage } from 'async_hooks'
 import { Connection } from './driver/connection'
 import { ConnectionProvider } from './driver/connection-provider'
-import { InsertResultTypeTag } from './parser/insert-values-parser'
 import { createSchemaObject, Schema } from './schema/schema'
 import { createSelectQueryNodeWithFromItems } from './operation-node/select-query-node'
 import { createInsertQueryNodeWithTable } from './operation-node/insert-query-node'
-import { createDeleteQueryNodeWithTable } from './operation-node/delete-query-node'
+import { createDeleteQueryNodeWithFromItem } from './operation-node/delete-query-node'
 import { createDynamicObject, Dynamic } from './dynamic/dynamic'
+import {
+  DeleteResultTypeTag,
+  InsertResultTypeTag,
+} from './query-builder/type-utils'
 
 /**
  * The main Kysely class.
@@ -200,11 +205,11 @@ export class Kysely<DB> {
    *   (select 1 as one) as "q"
    * ```
    */
-  selectFrom<F extends TableExpression<DB, keyof DB, {}>>(
+  selectFrom<F extends TableExpression<DB, keyof DB>>(
     from: F[]
   ): QueryBuilderWithTable<DB, never, {}, F>
 
-  selectFrom<F extends TableExpression<DB, keyof DB, {}>>(
+  selectFrom<F extends TableExpression<DB, keyof DB>>(
     from: F
   ): QueryBuilderWithTable<DB, never, {}, F>
 
@@ -221,16 +226,38 @@ export class Kysely<DB> {
   /**
    * Creates an insert query.
    *
-   * See {@link QueryBuilder.values} for more info and examples.
+   * The return value of this query is `number | undefined` because of the differences
+   * between database engines. Most engines (like Mysql) return the auto incrementing
+   * primary key (if it exists), but some (like postgres) return nothing by default.
+   * If you are running a database engine like `Mysql` that always returns the primary
+   * key, you can safely use `!` or the {@link QueryBuilder.castTo | castTo} method
+   * to cast away the `undefined` from the type.
+   *
+   * See the {@link QueryBuilder.values | values} method for more info and examples. Also see
+   * the {@link QueryBuilder.returning | returning} method for a way to return columns
+   * on supported databases like postgres.
    *
    * @example
    * ```ts
-   * const maybePrimaryKey = await db
+   * const maybePrimaryKey: number | undefined = await db
    *   .insertInto('person')
    *   .values({
    *     first_name: 'Jennifer',
    *     last_name: 'Aniston'
    *   })
+   *   .executeTakeFirst()
+   * ```
+   *
+   * @example
+   * Some databases like postgres support the `returning` method:
+   * ```ts
+   * const { id } = await db
+   *   .insertInto('person')
+   *   .values({
+   *     first_name: 'Jennifer',
+   *     last_name: 'Aniston'
+   *   })
+   *   .returning('id')
    *   .executeTakeFirst()
    * ```
    */
@@ -258,11 +285,13 @@ export class Kysely<DB> {
    *   .executeTakeFirst()
    * ```
    */
-  deleteFrom<T extends keyof DB & string>(table: T): QueryBuilder<DB, T, any> {
+  deleteFrom<TR extends TableReference<DB>>(
+    table: TR
+  ): QueryBuilderWithTable<DB, never, DeleteResultTypeTag, TR> {
     return new QueryBuilder({
       compiler: this.#compiler,
       connectionProvider: this.#connectionProvider,
-      queryNode: createDeleteQueryNodeWithTable(parseTable(table)),
+      queryNode: createDeleteQueryNodeWithFromItem(parseTableExpression(table)),
     })
   }
 

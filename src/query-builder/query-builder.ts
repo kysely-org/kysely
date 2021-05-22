@@ -28,7 +28,6 @@ import {
 } from '../parser/filter-parser'
 import { ConnectionProvider } from '../driver/connection-provider'
 import {
-  InsertResultTypeTag,
   InsertValuesArg,
   parseInsertValuesArgs,
 } from '../parser/insert-values-parser'
@@ -66,6 +65,11 @@ import {
   cloneQueryNodeWithWhere,
   QueryNode,
 } from '../operation-node/query-node-utils'
+import {
+  DeleteResultTypeTag,
+  InsertResultTypeTag,
+  UpdateResultTypeTag,
+} from './type-utils'
 
 /**
  * The main query builder class.
@@ -135,11 +139,11 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * that case Kysely typings wouldn't allow you to reference `pet.owner_id`
    * because `pet` is not joined to that query.
    */
-  subQuery<F extends TableExpression<DB, TB, O>>(
+  subQuery<F extends TableExpression<DB, TB>>(
     from: F[]
   ): QueryBuilderWithTable<DB, TB, O, F>
 
-  subQuery<F extends TableExpression<DB, TB, O>>(
+  subQuery<F extends TableExpression<DB, TB>>(
     from: F
   ): QueryBuilderWithTable<DB, TB, O, F>
 
@@ -154,7 +158,8 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
   /**
    * Adds a `where` clause to the query.
    *
-   * Also see {@link QueryBuilder.whereExists | whereExists} and {@link QueryBuilder.whereRef | whereRef}
+   * Also see {@link QueryBuilder.whereExists | whereExists}, {@link QueryBuilder.whereRef | whereRef}
+   * and {@link QueryBuilder.whereRef | orWhere}.
    *
    * @example
    * Find a row by column value:
@@ -273,6 +278,27 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    *
    * ```sql
    * select * from "person" (where "id" = 1 or "id" = 2)
+   * ```
+   *
+   * @example
+   * In all examples above the columns were known at compile time
+   * (except for the `raw` expressions). By default kysely only allows
+   * you to refer to columns that exist in the database **and** can be
+   * referred to in the current query and context.
+   *
+   * Sometimes you may want to refer to columns that come from the user
+   * input and thus are not available at compile time.
+   *
+   * You have two options, `db.raw` or `db.dynamic`. The example below
+   * uses both:
+   *
+   * ```ts
+   * const { ref } = db.dynamic
+   *
+   * db.selectFrom('person')
+   *   .selectAll()
+   *   .where(ref(columnFromUserInput), '=', 1)
+   *   .orWhere(db.raw('??', [columnFromUserInput]), '=', 2)
    * ```
    */
   where(
@@ -610,7 +636,8 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * Select calls are additive. Calling `select('id').select('first_name')` is the
    * same as calling `select(['id', 'first_name']).
    *
-   * To select all columns of the query or specific tables see {@link QueryBuilder.selectAll | selectAll}.
+   * To select all columns of the query or specific tables see the
+   * {@link QueryBuilder.selectAll | selectAll} method.
    *
    * @example
    * Select a single column:
@@ -735,6 +762,8 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * dynamically:
    *
    * ```ts
+   * const { ref } = db.dynamic
+   *
    * // Some column name provided by the user. Value not know compile-time.
    * const columnFromUserInput = req.params.select;
    *
@@ -743,7 +772,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    *
    * const [person] = db.selectFrom('person')
    *   .select([
-   *     db.dynamic.ref<PossibleColumns>(columnFromUserInput)
+   *     ref<PossibleColumns>(columnFromUserInput)
    *     'id'
    *   ])
    *
@@ -780,15 +809,31 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
   }
 
   /**
+   * Adds `distinct on` selections to the select clause.
    *
+   * @example
+   * ```ts
+   * await db.selectFrom('person')
+   *   .selectAll('person')
+   *   .distinctOn('person.id')
+   *   .innerJoin('pet', 'pet.owner_id', 'person.id')
+   *   .where('pet.name', '=', 'Doggo')
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (postgresql):
+   *
+   * ```sql
+   * select distinct on ("person".id") "person".*
+   * from "person"
+   * inner join "pet" on "pet"."owner_id" = "person"."id"
+   * where "pet"."name" = $1
+   * ```
    */
   distinctOn<S extends SelectExpression<DB, TB, O>>(
     selections: S[]
   ): QueryBuilder<DB, TB, O>
 
-  /**
-   *
-   */
   distinctOn<S extends SelectExpression<DB, TB, O>>(
     selection: S
   ): QueryBuilder<DB, TB, O>
@@ -820,7 +865,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
   }
 
   /**
-   *
+   * Adds the `for update` option to a select query on supported databases.
    */
   forUpdate(): QueryBuilder<DB, TB, O> {
     ensureCanHaveSelectClause(this.#queryNode)
@@ -833,7 +878,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
   }
 
   /**
-   *
+   * Adds the `for share` option to a select query on supported databases.
    */
   forShare(): QueryBuilder<DB, TB, O> {
     ensureCanHaveSelectClause(this.#queryNode)
@@ -846,7 +891,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
   }
 
   /**
-   *
+   * Adds the `for key share` option to a select query on supported databases.
    */
   forKeyShare(): QueryBuilder<DB, TB, O> {
     ensureCanHaveSelectClause(this.#queryNode)
@@ -862,7 +907,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
   }
 
   /**
-   *
+   * Adds the `for no key update` option to a select query on supported databases.
    */
   forNoKeyUpdate(): QueryBuilder<DB, TB, O> {
     ensureCanHaveSelectClause(this.#queryNode)
@@ -878,7 +923,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
   }
 
   /**
-   *
+   * Adds the `skip locked` option to a select query on supported databases.
    */
   skipLocked(): QueryBuilder<DB, TB, O> {
     ensureCanHaveSelectClause(this.#queryNode)
@@ -894,7 +939,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
   }
 
   /**
-   *
+   * Adds the `nowait` option to a select query on supported databases.
    */
   noWait(): QueryBuilder<DB, TB, O> {
     ensureCanHaveSelectClause(this.#queryNode)
@@ -907,18 +952,51 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
   }
 
   /**
+   * Adds a `select *` or `select table.*` clause to the query.
    *
+   * @example
+   * ```ts
+   * await db.selectFrom('person')
+   *   .selectAll()
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (postgresql):
+   *
+   * ```sql
+   * select * from "person"
+   * ```
+   *
+   * @example
+   * ```ts
+   * await db.selectFrom('person')
+   *   .selectAll('person')
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (postgresql):
+   *
+   * ```sql
+   * select "person".* from "person"
+   * ```
+   *
+   * @example
+   * ```ts
+   * await db.selectFrom(['person', 'pet'])
+   *   .selectAll(['person', 'pet'])
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (postgresql):
+   *
+   * ```sql
+   * select "person".*, "pet".* from "person", "pet"
+   * ```
    */
   selectAll<T extends TB>(table: T[]): SelectAllQueryBuilder<DB, TB, O, T>
 
-  /**
-   *
-   */
   selectAll<T extends TB>(table: T): SelectAllQueryBuilder<DB, TB, O, T>
 
-  /**
-   *
-   */
   selectAll<T extends TB>(): SelectAllQueryBuilder<DB, TB, O, T>
 
   selectAll(table?: any): any {
@@ -935,16 +1013,118 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
   }
 
   /**
+   * Joins another table to the query using an inner join.
    *
+   * @example
+   * Simple usage by providing a table name and two columns to join:
+   *
+   * ```ts
+   * await db.selectFrom('person')
+   *   .selectAll()
+   *   .innerJoin('pet', 'pet.owner_id', 'person.id')
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (postgresql):
+   *
+   * ```sql
+   * select *
+   * from "person"
+   * inner join "pet"
+   * on "pet"."owner_id" = "person"."id"
+   * ```
+   *
+   * @example
+   * You can give an alias for the joined table like this:
+   *
+   * ```ts
+   * await db.selectFrom('person')
+   *   .selectAll()
+   *   .innerJoin('pet as p', 'p.owner_id', 'person.id')
+   *   .where('p.name', '=', 'Doggo')
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (postgresql):
+   *
+   * ```sql
+   * select *
+   * from "person"
+   * inner join "pet" as "p"
+   * on "p"."owner_id" = "person"."id"
+   * where "p".name" = $1
+   * ```
+   *
+   * @example
+   * You can provide a function as the second argument to get a join
+   * builder for creating more complex joins. The join builder has a
+   * bunch of `on*` methods for building the `on` clause of the join.
+   * There's basically an equivalent for every `where` method
+   * (`on`, `onRef`, `onExists` etc.). You can do all the same things
+   * with the `on` method that you can with the corresponding `where`
+   * method. See the `where` method documentation for more examples.
+   *
+   * ```ts
+   * await db.selectFrom('person')
+   *   .selectAll()
+   *   .innerJoin(
+   *     'pet',
+   *     (join) => join
+   *       .onRef('pet.owner_id', '=', 'person.id')
+   *       .on('pet.name', '=', 'Doggo')
+   *   )
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (postgresql):
+   *
+   * ```sql
+   * select *
+   * from "person"
+   * inner join "pet"
+   * on "pet"."owner_id" = "person"."id"
+   * and "pet"."name" = $1
+   * ```
+   *
+   * @example
+   * You can join a subquery by providing a function as the first
+   * argument:
+   *
+   * ```ts
+   * await db.selectFrom('person')
+   *   .selectAll()
+   *   .innerJoin(
+   *     (qb) => qb.subQuery('pet')
+   *       .select(['owner_id', 'name'])
+   *       .where('name', '=', 'Doggo')
+   *       .as('doggos'),
+   *     'doggos.owner_id',
+   *     'person.id',
+   *   )
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (postgresql):
+   *
+   * ```sql
+   * select *
+   * from "person"
+   * inner join (
+   *   select "owner_id", "name"
+   *   from "pet"
+   *   where "name" = $1
+   * ) as doggos
+   * on "doggos"."owner_id" = "person"."id"
+   * ```
    */
   innerJoin<
-    TE extends TableExpression<DB, TB, O>,
+    TE extends TableExpression<DB, TB>,
     K1 extends JoinReferenceArg<DB, TB, TE>,
     K2 extends JoinReferenceArg<DB, TB, TE>
   >(table: TE, k1: K1, k2: K2): QueryBuilderWithTable<DB, TB, O, TE>
 
   innerJoin<
-    TE extends TableExpression<DB, TB, O>,
+    TE extends TableExpression<DB, TB>,
     FN extends JoinCallbackArg<DB, TB, TE>
   >(table: TE, callback: FN): QueryBuilderWithTable<DB, TB, O, TE>
 
@@ -1075,7 +1255,24 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
   }
 
   /**
+   * Allows you to return data from modified rows.
    *
+   * On supported databases like postgres, this method can be chained to
+   * `insert`, `update` and `delete` queries to return data.
+   *
+   * Also see the {@link QueryBuilder.returningAll | returningAll} method.
+   *
+   * @example
+   * ```ts
+   * const { id, first_name } = await db
+   *   .insertInto('person')
+   *   .values({
+   *     first_name: 'Jennifer',
+   *     last_name: 'Aniston'
+   *   })
+   *   .returning(['id', 'last_name'])
+   *   .executeTakeFirst()
+   * ```
    */
   returning<S extends SelectExpression<DB, TB, O>>(
     selections: S[]
@@ -1099,7 +1296,29 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
   }
 
   /**
+   * Adds a `returning *` to an insert/update/delete query on databases
+   * that support `returning` such as postgres.
+   */
+  returningAll(): QueryBuilder<DB, TB, DB[TB]> {
+    ensureCanHaveReturningClause(this.#queryNode)
+
+    return new QueryBuilder({
+      compiler: this.#compiler,
+      connectionProvider: this.#connectionProvider,
+      queryNode: cloneQueryNodeWithReturningSelections(
+        this.#queryNode,
+        parseSelectAllArgs()
+      ),
+    })
+  }
+
+  /**
    * Adds an `order by` clause to the query.
+   *
+   * @example
+   * ```ts
+   *
+   * ```
    */
   orderBy(
     orderBy: ReferenceExpression<DB, TB, O>,
@@ -1144,19 +1363,26 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
     return this.#compiler.compile(this.#queryNode)
   }
 
-  async execute(): Promise<ResultType<O>[]> {
+  async execute(): Promise<ManyResultType<O>> {
     if (!this.#connectionProvider) {
       throw new Error(`this query cannot be executed`)
     }
 
-    return await this.#connectionProvider.withConnection(async (connection) => {
-      return await connection.execute(this.compile())
-    })
+    const result = await this.#connectionProvider.withConnection(
+      async (connection) => {
+        return await connection.execute(this.compile())
+      }
+    )
+
+    // Ugly cast but trust me, the type is correct.
+    return (result as unknown) as ManyResultType<O>
   }
 
-  async executeTakeFirst(): Promise<ResultType<O> | undefined> {
+  async executeTakeFirst(): Promise<SingleResultType<O>> {
     const result = await this.execute()
-    return result[0]
+
+    // Ugly cast but trust me, the type is correct.
+    return (result[0] as unknown) as SingleResultType<O>
   }
 }
 
@@ -1268,4 +1494,18 @@ function ensureCanHaveOrderByClause(
   }
 }
 
-type ResultType<O> = O extends InsertResultTypeTag ? any : O
+type ManyResultType<O> = O extends InsertResultTypeTag
+  ? (number | undefined)[]
+  : O extends DeleteResultTypeTag
+  ? number[]
+  : O extends UpdateResultTypeTag
+  ? number[]
+  : O[]
+
+type SingleResultType<O> = O extends InsertResultTypeTag
+  ? number | undefined
+  : O extends DeleteResultTypeTag
+  ? number
+  : O extends UpdateResultTypeTag
+  ? number
+  : O | undefined

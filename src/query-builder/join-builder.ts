@@ -32,14 +32,14 @@ export class JoinBuilder<DB, TB extends keyof DB, O = {}>
   /**
    *
    */
-  subQuery<F extends TableExpression<DB, TB, O>>(
+  subQuery<F extends TableExpression<DB, TB>>(
     from: F[]
   ): QueryBuilderWithTable<DB, TB, O, F>
 
   /**
    *
    */
-  subQuery<F extends TableExpression<DB, TB, O>>(
+  subQuery<F extends TableExpression<DB, TB>>(
     from: F
   ): QueryBuilderWithTable<DB, TB, O, F>
 
@@ -54,7 +54,7 @@ export class JoinBuilder<DB, TB extends keyof DB, O = {}>
   /**
    *
    */
-  on(
+  onRef(
     lhs: ReferenceExpression<DB, TB, O>,
     op: FilterOperatorArg,
     rhs: ReferenceExpression<DB, TB, O>
