@@ -5,28 +5,28 @@ chai.use(chaiSubset)
 import { CompiledQuery, Kysely, KyselyConfig, QueryBuilder } from '../src'
 import { Dialect } from '../src/dialect/dialect'
 
-interface Person {
+export interface Person {
   id: number
   first_name: string
   last_name: string
   gender: 'male' | 'female' | 'other'
 }
 
-interface Pet {
+export interface Pet {
   id: number
   name: string
   owner_id: number
   species: 'dog' | 'cat' | 'hamster'
 }
 
-interface Toy {
+export interface Toy {
   id: string
   name: string
   price: number
   pet_id: number
 }
 
-interface Database {
+export interface Database {
   person: Person
   pet: Pet
   toy: Toy

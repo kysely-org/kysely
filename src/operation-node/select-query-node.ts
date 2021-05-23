@@ -1,5 +1,11 @@
 import { freeze } from '../utils/object-utils'
 import { createFromNodeWithItems, FromNode } from './from-node'
+import { GroupByItemNode } from './group-by-item-node'
+import {
+  cloneGroupByNodeWithItems,
+  createGroupByNode,
+  GroupByNode,
+} from './group-by-node'
 import { JoinNode } from './join-node'
 import { OperationNode } from './operation-node'
 import { TableExpressionNode } from './operation-node-utils'
@@ -27,6 +33,7 @@ export interface SelectQueryNode extends OperationNode {
   readonly selections?: ReadonlyArray<SelectionNode>
   readonly distinctOnSelections?: ReadonlyArray<SelectionNode>
   readonly joins?: ReadonlyArray<JoinNode>
+  readonly groupBy?: GroupByNode
   readonly orderBy?: OrderByNode
   readonly where?: WhereNode
   readonly modifier?: SelectModifier
@@ -90,5 +97,17 @@ export function cloneSelectQueryNodeWithOrderByItem(
     orderBy: selectNode.orderBy
       ? cloneOrderByNodeWithItem(selectNode.orderBy, item)
       : createOrderByNode(item),
+  })
+}
+
+export function cloneSelectQueryNodeWithGroupByItems(
+  selectNode: SelectQueryNode,
+  items: ReadonlyArray<GroupByItemNode>
+): SelectQueryNode {
+  return freeze({
+    ...selectNode,
+    groupBy: selectNode.groupBy
+      ? cloneGroupByNodeWithItems(selectNode.groupBy, items)
+      : createGroupByNode(items),
   })
 }

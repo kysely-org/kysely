@@ -28,6 +28,8 @@ export type OperationNodeKind =
   | 'DataTypeNode'
   | 'OrderByNode'
   | 'OrderByItemNode'
+  | 'GroupByNode'
+  | 'GroupByItemNode'
 
 export interface OperationNode {
   readonly kind: OperationNodeKind

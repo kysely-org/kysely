@@ -7,6 +7,8 @@ import { DeleteQueryNode } from '../operation-node/delete-query-node'
 import { DropTableNode } from '../operation-node/drop-table-node'
 import { FilterNode } from '../operation-node/filter-node'
 import { FromNode } from '../operation-node/from-node'
+import { GroupByItemNode } from '../operation-node/group-by-item-node'
+import { GroupByNode } from '../operation-node/group-by-node'
 import { IdentifierNode } from '../operation-node/identifier-node'
 import { InsertQueryNode } from '../operation-node/insert-query-node'
 import { JoinNode, JoinType } from '../operation-node/join-node'
@@ -97,6 +99,11 @@ export class QueryCompiler extends OperationNodeVisitor {
     if (node.where) {
       this.append(' ')
       this.visitNode(node.where)
+    }
+
+    if (node.groupBy) {
+      this.append(' ')
+      this.visitNode(node.groupBy)
     }
 
     if (node.orderBy) {
@@ -379,6 +386,15 @@ export class QueryCompiler extends OperationNodeVisitor {
     this.visitNode(node.orderBy)
     this.append(' ')
     this.append(node.direction)
+  }
+
+  protected visitGroupBy(node: GroupByNode): void {
+    this.append('group by ')
+    this.compileList(node.items)
+  }
+
+  protected visitGroupByItem(node: GroupByItemNode): void {
+    this.visitNode(node.groupBy)
   }
 
   protected appendLeftIdentifierWrapper(): void {

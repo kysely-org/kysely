@@ -33,6 +33,20 @@ export type ReferenceExpression<DB, TB extends keyof DB, O> =
   | RawBuilderFactory<DB, TB, O>
   | DynamicReferenceBuilder<any>
 
+export type ReferenceExpressionOrList<DB, TB extends keyof DB, O> =
+  | ReferenceExpression<DB, TB, O>
+  | ReferenceExpression<DB, TB, O>[]
+
+export function parseReferenceExpressionOrList(
+  arg: ReferenceExpressionOrList<any, any, any>
+): ReferenceExpressionNode[] {
+  if (Array.isArray(arg)) {
+    return arg.map(parseReferenceExpression)
+  } else {
+    return [parseReferenceExpression(arg)]
+  }
+}
+
 export function parseReferenceExpression(
   arg: ReferenceExpression<any, any, any>
 ): ReferenceExpressionNode {

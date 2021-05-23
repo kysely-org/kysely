@@ -34,6 +34,7 @@ import {
 import { QueryBuilderWithReturning } from '../parser/returning-parser'
 import {
   parseReferenceExpression,
+  parseReferenceExpressionOrList,
   ReferenceExpression,
 } from '../parser/reference-parser'
 import { ValueExpression, ValueExpressionOrList } from '../parser/value-parser'
@@ -43,6 +44,7 @@ import {
 } from '../operation-node/order-by-item-node'
 import {
   cloneSelectQueryNodeWithDistinctOnSelections,
+  cloneSelectQueryNodeWithGroupByItems,
   cloneSelectQueryNodeWithModifier,
   cloneSelectQueryNodeWithOrderByItem,
   cloneSelectQueryNodeWithSelections,
@@ -70,6 +72,8 @@ import {
   InsertResultTypeTag,
   UpdateResultTypeTag,
 } from './type-utils'
+import { OrderByExpression } from '../parser/order-by-parser'
+import { createGroupByItemNode } from '../operation-node/group-by-item-node'
 
 /**
  * The main query builder class.
@@ -1142,6 +1146,90 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
   }
 
   /**
+   * Just like {@link QueryBuilder.innerJoin | innerJoin} but adds a left join
+   * instead of an inner join.
+   */
+  leftJoin<
+    TE extends TableExpression<DB, TB>,
+    K1 extends JoinReferenceArg<DB, TB, TE>,
+    K2 extends JoinReferenceArg<DB, TB, TE>
+  >(table: TE, k1: K1, k2: K2): QueryBuilderWithTable<DB, TB, O, TE>
+
+  leftJoin<
+    TE extends TableExpression<DB, TB>,
+    FN extends JoinCallbackArg<DB, TB, TE>
+  >(table: TE, callback: FN): QueryBuilderWithTable<DB, TB, O, TE>
+
+  leftJoin(...args: any): any {
+    ensureCanHaveJoins(this.#queryNode)
+
+    return new QueryBuilder({
+      compiler: this.#compiler,
+      connectionProvider: this.#connectionProvider,
+      queryNode: cloneQueryNodeWithJoin(
+        this.#queryNode,
+        parseJoinArgs('LeftJoin', args)
+      ),
+    })
+  }
+
+  /**
+   * Just like {@link QueryBuilder.innerJoin | innerJoin} but adds a right join
+   * instead of an inner join.
+   */
+  rightJoin<
+    TE extends TableExpression<DB, TB>,
+    K1 extends JoinReferenceArg<DB, TB, TE>,
+    K2 extends JoinReferenceArg<DB, TB, TE>
+  >(table: TE, k1: K1, k2: K2): QueryBuilderWithTable<DB, TB, O, TE>
+
+  rightJoin<
+    TE extends TableExpression<DB, TB>,
+    FN extends JoinCallbackArg<DB, TB, TE>
+  >(table: TE, callback: FN): QueryBuilderWithTable<DB, TB, O, TE>
+
+  rightJoin(...args: any): any {
+    ensureCanHaveJoins(this.#queryNode)
+
+    return new QueryBuilder({
+      compiler: this.#compiler,
+      connectionProvider: this.#connectionProvider,
+      queryNode: cloneQueryNodeWithJoin(
+        this.#queryNode,
+        parseJoinArgs('RightJoin', args)
+      ),
+    })
+  }
+
+  /**
+   * Just like {@link QueryBuilder.innerJoin | innerJoin} but adds a full join
+   * instead of an inner join.
+   */
+  fullJoin<
+    TE extends TableExpression<DB, TB>,
+    K1 extends JoinReferenceArg<DB, TB, TE>,
+    K2 extends JoinReferenceArg<DB, TB, TE>
+  >(table: TE, k1: K1, k2: K2): QueryBuilderWithTable<DB, TB, O, TE>
+
+  fullJoin<
+    TE extends TableExpression<DB, TB>,
+    FN extends JoinCallbackArg<DB, TB, TE>
+  >(table: TE, callback: FN): QueryBuilderWithTable<DB, TB, O, TE>
+
+  fullJoin(...args: any): any {
+    ensureCanHaveJoins(this.#queryNode)
+
+    return new QueryBuilder({
+      compiler: this.#compiler,
+      connectionProvider: this.#connectionProvider,
+      queryNode: cloneQueryNodeWithJoin(
+        this.#queryNode,
+        parseJoinArgs('FullJoin', args)
+      ),
+    })
+  }
+
+  /**
    * Sets the values to insert for an `insertInto` query.
    *
    * This method takes an object whose keys are column names and values are either
@@ -1240,7 +1328,9 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * ```
    */
   values(row: InsertValuesArg<DB, TB>): QueryBuilder<DB, TB, O>
+
   values(row: InsertValuesArg<DB, TB>[]): QueryBuilder<DB, TB, O>
+
   values(args: any): any {
     ensureCanHaveInsertValues(this.#queryNode)
 
@@ -1315,13 +1405,88 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
   /**
    * Adds an `order by` clause to the query.
    *
+   * `orderBy` calls are additive. To order by multiple columns, call `orderBy`
+   * multiple times.
+   *
+   * The first argument is the expression to order by and the second is the
+   * order (`asc` or `desc`).
+   *
    * @example
    * ```ts
+   * await db
+   *   .selectFrom('person')
+   *   .select('person.first_name as fn')
+   *   .orderBy('id')
+   *   .orderBy('fn', 'desc')
+   * ```
    *
+   * The generated SQL (postgresql):
+   *
+   * ```sql
+   * select "person"."first_name" as "fn"
+   * from "person"
+   * order by "id" asc, "fn" desc
+   * ```
+   *
+   * @example
+   * The order by expression can also be a `raw` expression or a subquery
+   * in addition to column references:
+   *
+   * ```ts
+   * await db
+   *   .selectFrom('person')
+   *   .selectAll()
+   *   .orderBy((qb) => qb.subQuery('pet')
+   *     .select('pet.name')
+   *     .whereRef('pet.owner_id', '=', 'person.id')
+   *     .limit(1)
+   *   )
+   *   .orderBy(
+   *     db.raw('concat(first_name, last_name)')
+   *   )
+   * ```
+   *
+   * The generated SQL (postgresql):
+   *
+   * ```sql
+   * select *
+   * from "person"
+   * order by
+   *   ( select "pet"."name"
+   *     from "pet"
+   *     where "pet"."owner_id" = "person"."id"
+   *     limit 1
+   *   ) asc,
+   *   concat(first_name, last_name) asc
+   * ```
+   *
+   * @example
+   * `dynamic.ref` can be used to refer to columns not known at
+   * compile time:
+   *
+   * ```ts
+   * async function someQuery(orderBy: string) {
+   *   const { ref } = db.dynamic
+   *
+   *   return await db
+   *     .selectFrom('person')
+   *     .select('person.first_name as fn')
+   *     .orderBy(ref(orderBy))
+   * }
+   *
+   * someQuery('fn')
+   * ```
+   *
+   * The generated SQL (postgresql):
+   *
+   * ```sql
+   * select "person"."first_name" as "fn"
+   * from "person"
+   * order by "fn" asc
    * ```
    */
   orderBy(
-    orderBy: ReferenceExpression<DB, TB, O>,
+    orderBy: OrderByExpression<DB, TB, O>,
     direction: OrderByDirection = 'asc'
   ): QueryBuilder<DB, TB, O> {
     ensureCanHaveOrderByClause(this.#queryNode)
@@ -1337,6 +1502,117 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
   }
 
   /**
+   * Adds a `group by` clause to the query.
+   *
+   * @example
+   * ```ts
+   * await db
+   *   .selectFrom('person')
+   *   .select([
+   *     'first_name',
+   *     db.raw('max(id)').as('max_id')
+   *   ])
+   *   .groupBy('first_name')
+   * ```
+   *
+   * The generated SQL (postgresql):
+   *
+   * ```sql
+   * select "first_name", max(id)
+   * from "person"
+   * group by "first_name"
+   * ```
+   *
+   * @example
+   * `groupBy` also accepts an array:
+   *
+   * ```ts
+   * const { raw } = db
+   *
+   * await db
+   *   .selectFrom('person')
+   *   .select([
+   *     'first_name',
+   *     'last_name',
+   *     raw('max(id)').as('max_id')
+   *   ])
+   *   .groupBy([
+   *     'first_name',
+   *     'last_name'
+   *   ])
+   * ```
+   *
+   * The generated SQL (postgresql):
+   *
+   * ```sql
+   * select "first_name", "last_name", max(id)
+   * from "person"
+   * group by "first_name", "last_name"
+   * ```
+   *
+   * @example
+   * The group by expressions can also be subqueries or
+   * raw expressions:
+   *
+   * ```ts
+   * const { raw } = db
+   *
+   * await db
+   *   .selectFrom('person')
+   *   .select([
+   *     'first_name',
+   *     'last_name',
+   *     raw('max(id)').as('max_id')
+   *   ])
+   *   .groupBy([
+   *     raw('concat(first_name, last_name)'),
+   *     (qb) => qb.subQuery('pet').select('id').limit(1)
+   *   ])
+   * ```
+   *
+   * @example
+   * `dynamic.ref` can be used to refer to columns not known at
+   * compile time:
+   *
+   * ```ts
+   * async function someQuery(groupBy: string) {
+   *   const { ref } = db.dynamic
+   *
+   *   return await db
+   *     .selectFrom('person')
+   *     .select('first_name')
+   *     .groupBy(ref(groupBy))
+   * }
+   *
+   * someQuery('first_name')
+   * ```
+   *
+   * The generated SQL (postgresql):
+   *
+   * ```sql
+   * select "first_name"
+   * from "person"
+   * group by "first_name"
+   * ```
+   */
+  groupBy(orderBy: ReferenceExpression<DB, TB, O>[]): QueryBuilder<DB, TB, O>
+
+  groupBy(orderBy: ReferenceExpression<DB, TB, O>): QueryBuilder<DB, TB, O>
+
+  groupBy(orderBy: any): QueryBuilder<DB, TB, O> {
+    ensureCanHaveGroupByClause(this.#queryNode)
+
+    return new QueryBuilder({
+      compiler: this.#compiler,
+      connectionProvider: this.#connectionProvider,
+      queryNode: cloneSelectQueryNodeWithGroupByItems(
+        this.#queryNode,
+        parseReferenceExpressionOrList(orderBy).map(createGroupByItemNode)
+      ),
+    })
+  }
+
+  /**
    *
    */
   as<A extends string>(alias: A): AliasedQueryBuilder<DB, TB, O, A> {
@@ -1347,6 +1623,9 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
     return this.#queryNode
   }
 
+  /**
+   * Change the output type of the query.
+   */
   castTo<T>(): QueryBuilder<DB, TB, T> {
     return new QueryBuilder({
       compiler: this.#compiler,
@@ -1491,6 +1770,14 @@ function ensureCanHaveOrderByClause(
 ): asserts node is SelectQueryNode {
   if (!isSelectQueryNode(node)) {
     throw new Error('only a select query can have an order by clause')
+  }
+}
+
+function ensureCanHaveGroupByClause(
+  node: QueryNode
+): asserts node is SelectQueryNode {
+  if (!isSelectQueryNode(node)) {
+    throw new Error('only a select query can have a group by clause')
   }
 }
 

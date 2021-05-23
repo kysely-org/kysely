@@ -1,3 +1,4 @@
+import { Kysely } from '../src'
 import {
   BUILT_IN_DIALECTS,
   clearDatabase,
@@ -7,6 +8,8 @@ import {
   TestContext,
   testSql,
   expect,
+  Person,
+  Database,
 } from './test-setup'
 
 for (const dialect of BUILT_IN_DIALECTS) {
@@ -63,21 +66,117 @@ for (const dialect of BUILT_IN_DIALECTS) {
 
       const result = await query.executeTakeFirst()
 
-      // Get the row with the highest id from the db.
-      const row = await ctx.db
-        .selectFrom('person')
-        .select(['first_name', 'last_name'])
-        .where(
-          'id',
-          '=',
-          ctx.db.selectFrom('person').select(ctx.db.raw('max(id)').as('max_id'))
-        )
-        .executeTakeFirst()
+      if (dialect === 'postgres') {
+        expect(result).to.be.undefined
+      }
 
-      expect(row).to.eql({
+      expect(await getNewestPerson(ctx.db)).to.eql({
         first_name: 'Foo',
         last_name: 'Barson',
       })
     })
+
+    it('should insert one row with complex values', async () => {
+      const query = ctx.db.insertInto('person').values({
+        first_name: ctx.db
+          .selectFrom('person')
+          .select(ctx.db.raw('max(first_name)').as('max_first_name')),
+        last_name: ctx.db.raw(
+          'concat(cast(? as varchar), cast(? as varchar))',
+          ['Bar', 'son']
+        ),
+      })
+
+      testSql(query, dialect, {
+        postgres: {
+          sql:
+            'insert into "person" ("first_name", "last_name") values ((select max(first_name) as "max_first_name" from "person"), concat(cast($1 as varchar), cast($2 as varchar)))',
+          bindings: ['Bar', 'son'],
+        },
+      })
+
+      const result = await query.executeTakeFirst()
+
+      if (dialect === 'postgres') {
+        expect(result).to.be.undefined
+      }
+
+      expect(await getNewestPerson(ctx.db)).to.eql({
+        first_name: 'Sylvester',
+        last_name: 'Barson',
+      })
+    })
+
+    if (dialect === 'postgres') {
+      it('should return data using `returning`', async () => {
+        const result = await ctx.db
+          .insertInto('person')
+          .values({
+            gender: 'other',
+            first_name: ctx.db
+              .selectFrom('person')
+              .select(ctx.db.raw('max(first_name)').as('max_first_name')),
+            last_name: ctx.db.raw(
+              'concat(cast(? as varchar), cast(? as varchar))',
+              ['Bar', 'son']
+            ),
+          })
+          .returning(['first_name', 'last_name', 'gender'])
+          .executeTakeFirst()
+
+        expect(result).to.eql({
+          first_name: 'Sylvester',
+          last_name: 'Barson',
+          gender: 'other',
+        })
+
+        expect(await getNewestPerson(ctx.db)).to.eql({
+          first_name: 'Sylvester',
+          last_name: 'Barson',
+        })
+      })
+
+      it('should return data using `returningAll`', async () => {
+        const result = await ctx.db
+          .insertInto('person')
+          .values({
+            gender: 'other',
+            first_name: ctx.db
+              .selectFrom('person')
+              .select(ctx.db.raw('max(first_name)').as('max_first_name')),
+            last_name: ctx.db.raw(
+              'concat(cast(? as varchar), cast(? as varchar))',
+              ['Bar', 'son']
+            ),
+          })
+          .returningAll()
+          .executeTakeFirst()
+
+        expect(result).to.containSubset({
+          first_name: 'Sylvester',
+          last_name: 'Barson',
+          gender: 'other',
+        })
+
+        expect(await getNewestPerson(ctx.db)).to.eql({
+          first_name: 'Sylvester',
+          last_name: 'Barson',
+        })
+      })
+    }
   })
+
+  async function getNewestPerson(
+    db: Kysely<Database>
+  ): Promise<Pick<Person, 'first_name' | 'last_name'> | undefined> {
+    return await db
+      .selectFrom('person')
+      .select(['first_name', 'last_name'])
+      .where(
+        'id',
+        '=',
+        db.selectFrom('person').select(db.raw('max(id)').as('max_id'))
+      )
+      .executeTakeFirst()
+  }
 }

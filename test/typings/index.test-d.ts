@@ -297,8 +297,20 @@ function testJoin(db: Kysely<Database>) {
   )
 }
 
-function testInsert(db: Kysely<Database>) {
-  db.insertInto('person').values({ first_name: 'Jennifer' })
+async function testInsert(db: Kysely<Database>) {
+  const r1 = await db
+    .insertInto('person')
+    .values({ first_name: 'Jennifer' })
+    .execute()
+
+  expectType<(number | undefined)[]>(r1)
+
+  const r2 = await db
+    .insertInto('person')
+    .values({ first_name: 'Jennifer' })
+    .executeTakeFirst()
+
+  expectType<number | undefined>(r2)
 
   // Non-existent column
   expectError(db.insertInto('person').values({ not_column: 'foo' }))
@@ -324,14 +336,13 @@ async function testReturning(db: Kysely<Database>) {
     .insertInto('person')
     .values({ first_name: 'Jennifer' })
     .returning(['id', 'person.first_name as fn'])
-    .executeTakeFirst()
+    .execute()
 
   expectType<
-    | {
-        id: number
-        fn: string
-      }
-    | undefined
+    {
+      id: number
+      fn: string
+    }[]
   >(r2)
 
   // Non-existent column
@@ -341,4 +352,13 @@ async function testReturning(db: Kysely<Database>) {
       .values({ first_name: 'Jennifer' })
       .returning('not_column')
   )
+}
+
+async function testOrderBy(db: Kysely<Database>) {
+  const r1 = await db
+    .selectFrom('person')
+    .select(['id', 'person.first_name as fn'])
+    .orderBy('first_name', 'desc')
+    .orderBy('fn')
+    .execute()
 }

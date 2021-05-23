@@ -31,6 +31,8 @@ import { DropTableNode } from './drop-table-node'
 import { DataTypeNode } from './data-type-node'
 import { OrderByNode } from './order-by-node'
 import { OrderByItemNode } from './order-by-item-node'
+import { GroupByNode } from './group-by-node'
+import { GroupByItemNode } from './group-by-item-node'
 
 export class OperationNodeVisitor {
   #visitors: Record<OperationNodeKind, Function> = {
@@ -63,6 +65,8 @@ export class OperationNodeVisitor {
     DataTypeNode: this.visitDataType.bind(this),
     OrderByNode: this.visitOrderBy.bind(this),
     OrderByItemNode: this.visitOrderByItem.bind(this),
+    GroupByNode: this.visitGroupBy.bind(this),
+    GroupByItemNode: this.visitGroupByItem.bind(this),
   }
 
   readonly visitNode = (node: OperationNode): void => {
@@ -223,6 +227,14 @@ export class OperationNodeVisitor {
 
   protected visitOrderByItem(node: OrderByItemNode): void {
     this.visitNode(node.orderBy)
+  }
+
+  protected visitGroupBy(node: GroupByNode): void {
+    node.items.forEach(this.visitNode)
+  }
+
+  protected visitGroupByItem(node: GroupByItemNode): void {
+    this.visitNode(node.groupBy)
   }
 
   protected visitDataType(node: DataTypeNode): void {}
