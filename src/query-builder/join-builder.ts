@@ -8,11 +8,13 @@ import {
 } from '../parser/table-parser'
 import {
   FilterOperatorArg,
+  parseFilterArgs,
   parseReferenceFilterArgs,
 } from '../parser/filter-parser'
 import { QueryBuilder } from './query-builder'
 import { ReferenceExpression } from '../parser/reference-parser'
 import { createSelectQueryNodeWithFromItems } from '../operation-node/select-query-node'
+import { ValueExpression, ValueExpressionOrList } from '../parser/value-parser'
 
 export class JoinBuilder<DB, TB extends keyof DB, O = {}>
   implements OperationNodeSource {
@@ -64,6 +66,23 @@ export class JoinBuilder<DB, TB extends keyof DB, O = {}>
         this.#joinNode,
         'and',
         parseReferenceFilterArgs(lhs, op, rhs)
+      )
+    )
+  }
+
+  /**
+   *
+   */
+  on(
+    lhs: ReferenceExpression<DB, TB>,
+    op: FilterOperatorArg,
+    rhs: ValueExpressionOrList<DB, TB>
+  ): JoinBuilder<DB, TB, O> {
+    return new JoinBuilder(
+      cloneJoinNodeWithOn(
+        this.#joinNode,
+        'and',
+        parseFilterArgs([lhs, op, rhs])
       )
     )
   }
