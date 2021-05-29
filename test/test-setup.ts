@@ -47,8 +47,10 @@ type PerDialect<T> = Record<BuiltInDialect, T>
 const DB_CONFIGS: PerDialect<KyselyConfig> = {
   postgres: {
     dialect: 'postgres',
-    host: 'localhost',
     database: 'kysely_test',
+    host: process.env.POSTGRES_HOST ?? 'localhost',
+    user: process.env.POSTGRES_USER,
+    password: process.env.POSTGRES_PASSWORD,
   },
 }
 
