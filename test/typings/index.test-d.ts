@@ -277,10 +277,23 @@ function testWhere(db: Kysely<Database>) {
   expectError(db.selectFrom('person').where('stars', '=', 25))
 }
 
-function testJoin(db: Kysely<Database>) {
-  db.selectFrom('person').innerJoin('movie as m', (join) =>
-    join.onRef('m.id', '=', 'person.id')
-  )
+async function testJoin(db: Kysely<Database>) {
+  const r1 = await db
+    .selectFrom('person')
+    .innerJoin('movie', 'movie.id', 'person.id')
+    .selectAll()
+    .execute()
+
+  expectType<(Person & Movie)[]>(r1)
+
+  const r2 = await db
+    .selectFrom('person')
+    .innerJoin('movie as m', (join) => join.onRef('m.id', '=', 'person.id'))
+    .where('m.stars', '>', 2)
+    .selectAll('m')
+    .execute()
+
+  expectType<Movie[]>(r2)
 
   // Refer to table that's not joined
   expectError(

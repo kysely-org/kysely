@@ -12,7 +12,6 @@ import { DriverConfig } from './driver/driver-config'
 import { Dialect } from './dialect/dialect'
 import { PostgresDialect } from './dialect/postgres/postgres-dialect'
 import { Driver } from './driver/driver'
-import { QueryCompiler } from './query-compiler/query-compiler'
 import { TransactionalConnectionProvider } from './driver/transactional-connection-provider'
 import { AsyncLocalStorage } from 'async_hooks'
 import { Connection } from './driver/connection'
@@ -28,6 +27,7 @@ import {
   UpdateResultTypeTag,
 } from './query-builder/type-utils'
 import { createUpdateQueryNodeWithTable } from './operation-node/update-query-node'
+import { QueryCompiler } from './query-compiler/query-compiler'
 
 /**
  * The main Kysely class.
@@ -276,8 +276,8 @@ export class Kysely<DB> {
   /**
    * Creates a delete query.
    *
-   * See {@link QueryBuilder.where} for examples on how to specify the where
-   * clauses for the delete operation.
+   * See the {@link QueryBuilder.where} method for examples on how to specify
+   * a where clause for the delete operation.
    *
    * @example
    * ```ts
@@ -300,8 +300,8 @@ export class Kysely<DB> {
   /**
    * Creates an update query.
    *
-   * See {@link QueryBuilder.where} for examples on how to specify the where
-   * clauses for the update operation.
+   * See the {@link QueryBuilder.where} method for examples on how to specify
+   * a where clause for the update operation.
    *
    * @example
    * ```ts

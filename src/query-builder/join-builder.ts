@@ -1,6 +1,5 @@
 import { cloneJoinNodeWithOn, JoinNode } from '../operation-node/join-node'
 import { OperationNodeSource } from '../operation-node/operation-node-source'
-import { RawBuilder } from '../raw-builder/raw-builder'
 import {
   parseTableExpressionOrList,
   TableExpression,
@@ -14,9 +13,9 @@ import {
 import { QueryBuilder } from './query-builder'
 import { ReferenceExpression } from '../parser/reference-parser'
 import { createSelectQueryNodeWithFromItems } from '../operation-node/select-query-node'
-import { ValueExpression, ValueExpressionOrList } from '../parser/value-parser'
+import { ValueExpressionOrList } from '../parser/value-parser'
 
-export class JoinBuilder<DB, TB extends keyof DB, O = {}>
+export class JoinBuilder<DB, TB extends keyof DB>
   implements OperationNodeSource {
   readonly #joinNode: JoinNode
 
@@ -25,25 +24,17 @@ export class JoinBuilder<DB, TB extends keyof DB, O = {}>
   }
 
   /**
+   * This method can be used to start a subquery.
    *
-   */
-  raw<T = unknown>(sql: string, args?: any[]): RawBuilder<T> {
-    return new RawBuilder(sql, args)
-  }
-
-  /**
-   *
+   * Works just like {@link QueryBuilder.subQuery}.
    */
   subQuery<F extends TableExpression<DB, TB>>(
     from: F[]
-  ): QueryBuilderWithTable<DB, TB, O, F>
+  ): QueryBuilderWithTable<DB, TB, {}, F>
 
-  /**
-   *
-   */
   subQuery<F extends TableExpression<DB, TB>>(
     from: F
-  ): QueryBuilderWithTable<DB, TB, O, F>
+  ): QueryBuilderWithTable<DB, TB, {}, F>
 
   subQuery(table: any): any {
     return new QueryBuilder({
@@ -54,13 +45,36 @@ export class JoinBuilder<DB, TB extends keyof DB, O = {}>
   }
 
   /**
+   * Just like {@link QueryBuilder.where} but adds an item to the join's
+   * `on` clause instead.
    *
+   * See {@link QueryBuilder.where} for documentation and examples.
+   */
+  on(
+    lhs: ReferenceExpression<DB, TB>,
+    op: FilterOperatorArg,
+    rhs: ValueExpressionOrList<DB, TB>
+  ): JoinBuilder<DB, TB> {
+    return new JoinBuilder(
+      cloneJoinNodeWithOn(
+        this.#joinNode,
+        'and',
+        parseFilterArgs([lhs, op, rhs])
+      )
+    )
+  }
+
+  /**
+   * Just like {@link QueryBuilder.whereRef} but adds an item to the join's
+   * `on` clause instead.
+   *
+   * See {@link QueryBuilder.whereRef} for documentation and examples.
    */
   onRef(
     lhs: ReferenceExpression<DB, TB>,
     op: FilterOperatorArg,
     rhs: ReferenceExpression<DB, TB>
-  ): JoinBuilder<DB, TB, O> {
+  ): JoinBuilder<DB, TB> {
     return new JoinBuilder(
       cloneJoinNodeWithOn(
         this.#joinNode,
@@ -71,18 +85,21 @@ export class JoinBuilder<DB, TB extends keyof DB, O = {}>
   }
 
   /**
+   * Just like {@link QueryBuilder.orWhereRef} but adds an item to the join's
+   * `on` clause instead.
    *
+   * See {@link QueryBuilder.orWhereRef} for documentation and examples.
    */
-  on(
+  orOnRef(
     lhs: ReferenceExpression<DB, TB>,
     op: FilterOperatorArg,
-    rhs: ValueExpressionOrList<DB, TB>
-  ): JoinBuilder<DB, TB, O> {
+    rhs: ReferenceExpression<DB, TB>
+  ): JoinBuilder<DB, TB> {
     return new JoinBuilder(
       cloneJoinNodeWithOn(
         this.#joinNode,
-        'and',
-        parseFilterArgs([lhs, op, rhs])
+        'or',
+        parseReferenceFilterArgs(lhs, op, rhs)
       )
     )
   }

@@ -73,7 +73,7 @@ export class OperationNodeVisitor {
     ColumnUpdateNode: this.visitColumnUpdate.bind(this),
   }
 
-  readonly visitNode = (node: OperationNode): void => {
+  protected readonly visitNode = (node: OperationNode): void => {
     this.#visitors[node.kind](node)
   }
 

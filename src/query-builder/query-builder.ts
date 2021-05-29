@@ -1,7 +1,6 @@
 import { AliasNode, createAliasNode } from '../operation-node/alias-node'
 import { OperationNodeSource } from '../operation-node/operation-node-source'
 import { CompiledQuery } from '../query-compiler/compiled-query'
-import { QueryCompiler } from '../query-compiler/query-compiler'
 import {
   JoinCallbackArg,
   JoinReferenceArg,
@@ -80,13 +79,14 @@ import {
 } from '../operation-node/update-query-node'
 import { MutationObject } from '../parser/mutation-parser'
 import { parseUpdateSetArgs } from '../parser/update-set-parser'
+import { QueryCompiler } from '../query-compiler/query-compiler'
 
 /**
  * The main query builder class.
  *
  * @typeParam DB - A type whose keys are table names/aliases and values are interfaces that
- *    define the table's columns and their typs. This type defines the tables, subqueries
- *    etc. that are avaialable to the query. This type contains all tables, even the ones
+ *    define the table's columns and their types. This type defines the tables, subqueries
+ *    etc. that are available to the query. This type contains all tables, even the ones
  *    that have not actually been joined to the query. the `TB` parameter defines the
  *    table names/aliases that have been joined to the query.
  *

@@ -11,7 +11,7 @@ import {
   ExtractAliasFromTableExpression,
   TableExpressionDatabaseType,
 } from './table-parser'
-import { parseFilterArgs, parseReferenceFilterArgs } from './filter-parser'
+import { parseReferenceFilterArgs } from './filter-parser'
 import { JoinBuilder } from '../query-builder/join-builder'
 
 export type JoinReferenceArg<DB, TB extends keyof DB, F> =

@@ -1,6 +1,6 @@
 {
   "name": "kysely",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Type safe SQL query builder",
   "main": "lib/index.js",
   "scripts": {
@@ -9,7 +9,8 @@
     "test:typings": "npm run build && tsd test/typings",
     "prettier": "prettier --write src/**/*.ts test/**/*.ts",
     "build": "rm -rf lib && tsc",
-    "build:docs": "typedoc src/index.ts",
+    "docs:build": "typedoc src/index.ts && npm run docs:override-theme",
+    "docs:override-theme": "cat docs-theme.css >> docs/assets/css/main.css",
     "prepublish": "npm run build"
   },
   "author": "Sami Koskimäki <sami@jakso.me>",
@@ -26,8 +27,8 @@
     "pg": "^8.5.1",
     "prettier": "^2.2.1",
     "ts-node": "^9.1.1",
-    "tsd": "^0.14.0",
-    "typedoc": "^0.20.28",
-    "typescript": "4.1.x"
+    "tsd": "^0.16.0",
+    "typedoc": "^0.20.36",
+    "typescript": "4.2.x"
   }
 }
