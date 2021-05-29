@@ -1,4 +1,4 @@
-import { AsyncLocalStorage } from 'node:async_hooks'
+import { AsyncLocalStorage } from 'async_hooks'
 import { Connection } from './connection'
 import { ConnectionProvider } from './connection-provider'
 import { Driver } from './driver'
