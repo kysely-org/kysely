@@ -1886,7 +1886,7 @@ function ensureCanHaveJoins(
   node: QueryNode
 ): asserts node is SelectQueryNode | DeleteQueryNode | UpdateQueryNode {
   if (
-    !isInsertQueryNode(node) &&
+    !isSelectQueryNode(node) &&
     !isDeleteQueryNode(node) &&
     !isUpdateQueryNode(node)
   ) {

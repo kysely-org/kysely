@@ -11,7 +11,7 @@ import {
   ExtractAliasFromTableExpression,
   TableExpressionDatabaseType,
 } from './table-parser'
-import { parseFilterArgs } from './filter-parser'
+import { parseFilterArgs, parseReferenceFilterArgs } from './filter-parser'
 import { JoinBuilder } from '../query-builder/join-builder'
 
 export type JoinReferenceArg<DB, TB extends keyof DB, F> =
@@ -66,6 +66,6 @@ function parseSingleOnJoin(
   return cloneJoinNodeWithOn(
     createJoinNode(joinType, tableNode),
     'and',
-    parseFilterArgs([lhsColumn, '=', rhsColumn])
+    parseReferenceFilterArgs(lhsColumn, '=', rhsColumn)
   )
 }
