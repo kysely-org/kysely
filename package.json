@@ -11,8 +11,7 @@
     "build": "rm -rf lib && tsc",
     "docs:build": "typedoc src/index.ts && npm run docs:override-theme",
     "docs:override-theme": "cat docs-theme.css >> docs/assets/css/main.css",
-    "prepublish": "npm run build",
-    "prepare": "husky install"
+    "prepublish": "npm run build"
   },
   "author": "Sami Koskimäki <sami@jakso.me>",
   "license": "MIT",
@@ -24,7 +23,6 @@
     "@types/pg": "^7.14.11",
     "chai": "^4.3.0",
     "chai-subset": "^1.6.0",
-    "husky": "^6.0.0",
     "mocha": "^8.3.0",
     "pg": "^8.5.1",
     "prettier": "^2.2.1",
