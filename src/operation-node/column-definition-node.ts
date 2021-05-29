@@ -10,6 +10,8 @@ export type ColumnDefinitionNodeParams = Omit<
   'kind'
 >
 
+export type OnDelete = 'cascade' | 'set null'
+
 export type ColumnDataTypeNode = DataTypeNode | RawNode
 
 export interface ColumnDefinitionNode extends OperationNode {
@@ -20,8 +22,8 @@ export interface ColumnDefinitionNode extends OperationNode {
   readonly isPrimaryKey: boolean
   readonly isAutoIncrementing: boolean
   readonly isUnique: boolean
-  readonly hasIndex: boolean
   readonly isNullable: boolean
+  readonly onDelete?: OnDelete
 }
 
 export function isColumnDefinitionNode(
@@ -41,7 +43,6 @@ export function createColumnDefinitionNode(
     isPrimaryKey: false,
     isAutoIncrementing: false,
     isUnique: false,
-    hasIndex: false,
     isNullable: true,
   })
 }

@@ -1,6 +1,7 @@
 import {
   cloneColumnDefinitionNode,
   ColumnDefinitionNode,
+  OnDelete,
 } from '../operation-node/column-definition-node'
 import { OperationNodeSource } from '../operation-node/operation-node-source'
 import { isReferenceNode } from '../operation-node/reference-node'
@@ -11,15 +12,6 @@ export class ColumnBuilder implements OperationNodeSource {
 
   constructor(node: ColumnDefinitionNode) {
     this.#node = node
-  }
-
-  /**
-   * Adds an index for the column.
-   */
-  index(): ColumnBuilder {
-    return new ColumnBuilder(
-      cloneColumnDefinitionNode(this.#node, { hasIndex: true })
-    )
   }
 
   /**
@@ -64,6 +56,12 @@ export class ColumnBuilder implements OperationNodeSource {
   unique(): ColumnBuilder {
     return new ColumnBuilder(
       cloneColumnDefinitionNode(this.#node, { isUnique: true })
+    )
+  }
+
+  onDelete(onDelete: OnDelete): ColumnBuilder {
+    return new ColumnBuilder(
+      cloneColumnDefinitionNode(this.#node, { onDelete })
     )
   }
 

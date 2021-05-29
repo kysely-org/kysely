@@ -362,6 +362,11 @@ export class QueryCompiler extends OperationNodeVisitor {
       this.append('(')
       this.visitNode(node.references.column)
       this.append(')')
+
+      if (node.onDelete) {
+        this.append(' on delete ')
+        this.append(node.onDelete)
+      }
     }
   }
 
@@ -404,6 +409,7 @@ export class QueryCompiler extends OperationNodeVisitor {
 
     this.append('update ')
     this.visitNode(node.table)
+    this.append(' set ')
 
     if (node.updates) {
       this.compileList(node.updates)

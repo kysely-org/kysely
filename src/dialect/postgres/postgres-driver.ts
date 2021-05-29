@@ -76,11 +76,13 @@ class PostgresConnection implements Connection {
     this.#pgClient = pgClient
   }
 
-  async execute<R>(compiledQuery: CompiledQuery): Promise<R[]> {
+  async execute<R>(compiledQuery: CompiledQuery): Promise<R[] | number[]> {
     const result = await this.#pgClient.query<R>(compiledQuery.sql, [
       ...compiledQuery.bindings,
     ])
 
-    return result.rows
+    return result.command === 'UPDATE' || result.command === 'DELETE'
+      ? [result.rowCount]
+      : result.rows
   }
 }

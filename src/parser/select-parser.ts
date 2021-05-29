@@ -27,7 +27,7 @@ import { parseAliasedStringReference } from './reference-parser'
 import { DynamicReferenceBuilder } from '../dynamic/dynamic-reference-builder'
 
 /**
- * A selection exrpession.
+ * A selection expression.
  */
 export type SelectExpression<DB, TB extends keyof DB> =
   | AnyAliasedColumnWithTable<DB, TB>

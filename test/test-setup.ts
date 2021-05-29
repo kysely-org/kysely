@@ -125,7 +125,9 @@ async function createDatabase(db: Kysely<Database>): Promise<void> {
     .createTable('pet')
     .integer('id', (col) => col.increments().primary())
     .string('name')
-    .integer('owner_id', (col) => col.references('person.id'))
+    .integer('owner_id', (col) =>
+      col.references('person.id').onDelete('cascade')
+    )
     .string('species')
     .execute()
 
