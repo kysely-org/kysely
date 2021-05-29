@@ -277,7 +277,7 @@ export class Kysely<DB> {
    * Creates a delete query.
    *
    * See the {@link QueryBuilder.where} method for examples on how to specify
-   * a where clause for the delete operation.
+   * a where clause for the delete operation .
    *
    * @example
    * ```ts
