@@ -4,7 +4,6 @@ import { JoinNode } from './join-node'
 import { OperationNode } from './operation-node'
 import { TableExpressionNode } from './operation-node-utils'
 import { ReturningNode } from './returning-node'
-import { TableNode } from './table-node'
 import { WhereNode } from './where-node'
 
 export interface DeleteQueryNode extends OperationNode {

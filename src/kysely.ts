@@ -25,7 +25,9 @@ import { createDynamicObject, Dynamic } from './dynamic/dynamic'
 import {
   DeleteResultTypeTag,
   InsertResultTypeTag,
+  UpdateResultTypeTag,
 } from './query-builder/type-utils'
+import { createUpdateQueryNodeWithTable } from './operation-node/update-query-node'
 
 /**
  * The main Kysely class.
@@ -279,7 +281,7 @@ export class Kysely<DB> {
    *
    * @example
    * ```ts
-   * const [maybeId] = await db
+   * const numAffectedRows = await db
    *   .deleteFrom('person')
    *   .where('person.id', '=', 1)
    *   .executeTakeFirst()
@@ -292,6 +294,31 @@ export class Kysely<DB> {
       compiler: this.#compiler,
       connectionProvider: this.#connectionProvider,
       queryNode: createDeleteQueryNodeWithFromItem(parseTableExpression(table)),
+    })
+  }
+
+  /**
+   * Creates an update query.
+   *
+   * See {@link QueryBuilder.where} for examples on how to specify the where
+   * clauses for the update operation.
+   *
+   * @example
+   * ```ts
+   * const numAffectedRows = await db
+   *   .updateTable('person')
+   *   .set({ first_name: 'Jennifer' })
+   *   .where('person.id', '=', 1)
+   *   .executeTakeFirst()
+   * ```
+   */
+  updateTable<TR extends TableReference<DB>>(
+    table: TR
+  ): QueryBuilderWithTable<DB, never, UpdateResultTypeTag, TR> {
+    return new QueryBuilder({
+      compiler: this.#compiler,
+      connectionProvider: this.#connectionProvider,
+      queryNode: createUpdateQueryNodeWithTable(parseTableExpression(table)),
     })
   }
 

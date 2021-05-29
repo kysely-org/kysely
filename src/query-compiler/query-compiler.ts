@@ -1,6 +1,7 @@
 import { AliasNode } from '../operation-node/alias-node'
 import { AndNode } from '../operation-node/and-node'
 import { ColumnDefinitionNode } from '../operation-node/column-definition-node'
+import { ColumnUpdateNode } from '../operation-node/column-update-node'
 import { CreateTableNode } from '../operation-node/create-table-node'
 import { ColumnDataType, DataTypeNode } from '../operation-node/data-type-node'
 import { DeleteQueryNode } from '../operation-node/delete-query-node'
@@ -31,6 +32,7 @@ import {
 } from '../operation-node/select-query-node'
 import { SelectionNode } from '../operation-node/selection-node'
 import { TableNode } from '../operation-node/table-node'
+import { UpdateQueryNode } from '../operation-node/update-query-node'
 import { ValueListNode } from '../operation-node/value-list-node'
 import { ValueNode } from '../operation-node/value-node'
 import { WhereNode } from '../operation-node/where-node'
@@ -395,6 +397,40 @@ export class QueryCompiler extends OperationNodeVisitor {
 
   protected visitGroupByItem(node: GroupByItemNode): void {
     this.visitNode(node.groupBy)
+  }
+
+  protected visitUpdateQuery(node: UpdateQueryNode): void {
+    this.queryNodeStack.push(node)
+
+    this.append('update ')
+    this.visitNode(node.table)
+
+    if (node.updates) {
+      this.compileList(node.updates)
+    }
+
+    if (node.joins) {
+      this.append(' ')
+      node.joins.forEach(this.visitNode)
+    }
+
+    if (node.where) {
+      this.append(' ')
+      this.visitNode(node.where)
+    }
+
+    if (node.returning) {
+      this.append(' ')
+      this.visitNode(node.returning)
+    }
+
+    this.queryNodeStack.pop()
+  }
+
+  protected visitColumnUpdate(node: ColumnUpdateNode): void {
+    this.visitNode(node.column)
+    this.append(' = ')
+    this.visitNode(node.value)
   }
 
   protected appendLeftIdentifierWrapper(): void {

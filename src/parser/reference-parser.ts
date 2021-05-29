@@ -1,7 +1,5 @@
 import { AliasNode, createAliasNode } from '../operation-node/alias-node'
 import { ColumnNode, createColumnNode } from '../operation-node/column-node'
-import { isDeleteQueryNode } from '../operation-node/delete-query-node'
-import { isInsertQueryNode } from '../operation-node/insert-query-node'
 import { isOperationNodeSource } from '../operation-node/operation-node-source'
 import { ReferenceExpressionNode } from '../operation-node/operation-node-utils'
 import {
@@ -23,6 +21,7 @@ import {
   RawBuilderFactory,
 } from '../query-builder/type-utils'
 import { DynamicReferenceBuilder } from '../dynamic/dynamic-reference-builder'
+import { isMutatingQueryNode } from '../operation-node/query-node-utils'
 
 export type ReferenceExpression<DB, TB extends keyof DB, O> =
   | AnyColumn<DB, TB>
@@ -55,13 +54,13 @@ export function parseReferenceExpression(
   } else if (isOperationNodeSource(arg)) {
     const node = arg.toOperationNode()
 
-    if (!isDeleteQueryNode(node) && !isInsertQueryNode(node)) {
+    if (!isMutatingQueryNode(node)) {
       return node
     }
   } else if (isFunction(arg)) {
     const node = arg(createEmptySelectQuery()).toOperationNode()
 
-    if (!isDeleteQueryNode(node) && !isInsertQueryNode(node)) {
+    if (!isMutatingQueryNode(node)) {
       return node
     }
   }

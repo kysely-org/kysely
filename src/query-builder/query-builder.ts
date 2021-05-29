@@ -27,10 +27,7 @@ import {
   parseReferenceFilterArgs,
 } from '../parser/filter-parser'
 import { ConnectionProvider } from '../driver/connection-provider'
-import {
-  InsertValuesArg,
-  parseInsertValuesArgs,
-} from '../parser/insert-values-parser'
+import { parseInsertValuesArgs } from '../parser/insert-values-parser'
 import { QueryBuilderWithReturning } from '../parser/returning-parser'
 import {
   parseReferenceExpression,
@@ -65,6 +62,8 @@ import {
   cloneQueryNodeWithJoin,
   cloneQueryNodeWithReturningSelections,
   cloneQueryNodeWithWhere,
+  isMutatingQueryNode,
+  MutatingQueryNode,
   QueryNode,
 } from '../operation-node/query-node-utils'
 import {
@@ -74,6 +73,13 @@ import {
 } from './type-utils'
 import { OrderByExpression } from '../parser/order-by-parser'
 import { createGroupByItemNode } from '../operation-node/group-by-item-node'
+import {
+  cloneUpdateQueryNodeWithColumnUpdates,
+  isUpdateQueryNode,
+  UpdateQueryNode,
+} from '../operation-node/update-query-node'
+import { MutationObject } from '../parser/mutation-parser'
+import { parseUpdateSetArgs } from '../parser/update-set-parser'
 
 /**
  * The main query builder class.
@@ -1232,9 +1238,9 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
   /**
    * Sets the values to insert for an `insertInto` query.
    *
-   * This method takes an object whose keys are column names and values are either
+   * This method takes an object whose keys are column names and values are
    * values to insert. In addition to the column's type, the values can be `raw`
-   * instances or queries.
+   * instances or select queries.
    *
    * The return value is the primary key of the inserted row BUT on some databases
    * there is no return value by default. That's the reason for the `any` type of the
@@ -1286,7 +1292,8 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    *
    * @example
    * On postgresql you need to chain `returning` to the query to get
-   * anything as the return value:
+   * the inserted row's columns (or any other expression) as the
+   * return value:
    *
    * ```ts
    * const row = await db
@@ -1308,7 +1315,9 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * ```
    *
    * @example
-   * In addition to primitives, the values can also be `raw` expressions or queries
+   * In addition to primitives, the values can also be `raw` expressions or
+   * select queries:
+   *
    * ```ts
    * const maybeId = await db
    *   .insertInto('person')
@@ -1327,9 +1336,9 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * values ($1, $2 || $3, (select avg(age) from "person"))
    * ```
    */
-  values(row: InsertValuesArg<DB, TB>): QueryBuilder<DB, TB, O>
+  values(row: MutationObject<DB, TB>): QueryBuilder<DB, TB, O>
 
-  values(row: InsertValuesArg<DB, TB>[]): QueryBuilder<DB, TB, O>
+  values(row: MutationObject<DB, TB>[]): QueryBuilder<DB, TB, O>
 
   values(args: any): any {
     ensureCanHaveInsertValues(this.#queryNode)
@@ -1345,6 +1354,101 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
   }
 
   /**
+   * Sets the values to update for an `updateTable` query.
+   *
+   * This method takes an object whose keys are column names and values are
+   * values to update. In addition to the column's type, the values can be `raw`
+   * instances or select queries.
+   *
+   * The return value is the number of affected rows. You can use the
+   * {@link QueryBuilder.returning | returning} method on supported databases
+   * to get out the updated rows.
+   *
+   * @example
+   * Update a row in `person` table:
+   *
+   * ```ts
+   * const numAffectedRows = await db
+   *   .updateTable('person')
+   *   .set({
+   *     first_name: 'Jennifer',
+   *     last_name: 'Aniston'
+   *   })
+   *   .where('id', '=', 1)
+   *   .executeTakeFirst()
+   * ```
+   *
+   * The generated SQL (postgresql):
+   *
+   * ```sql
+   * update "person" set "first_name" = $1, "last_name" = $2 where "id" = $3
+   * ```
+   *
+   * @example
+   * On postgresql you need to chain `returning` to the query to get
+   * the updated rows' columns (or any other expression) as the
+   * return value:
+   *
+   * ```ts
+   * const row = await db
+   *   .updateTable('person')
+   *   .set({
+   *     first_name: 'Jennifer',
+   *     last_name: 'Aniston'
+   *   })
+   *   .where('id', '=', 1)
+   *   .returning('id')
+   *   .executeTakeFirst()
+   *
+   * row.id
+   * ```
+   *
+   * The generated SQL (postgresql):
+   *
+   * ```sql
+   * update "person" set "first_name" = $1, "last_name" = $2 where "id" = $3 returning "id"
+   * ```
+   *
+   * @example
+   * In addition to primitives, the values can also be `raw` expressions or
+   * select queries:
+   *
+   * ```ts
+   * const numAffectedRows = await db
+   *   .updateTable('person')
+   *   .set({
+   *     first_name: 'Jennifer',
+   *     last_name: db.raw('? || ?', ['Ani', 'ston']),
+   *     age: db.selectFrom('person').select(raw('avg(age)')),
+   *   })
+   *   .where('id', '=', 1)
+   *   .executeTakeFirst()
+   * ```
+   *
+   * The generated SQL (postgresql):
+   *
+   * ```sql
+   * update "person" set
+   * "first_name" = $1,
+   * "last_name" = $2 || $3,
+   * "age" = (select avg(age) from "person")
+   * where "id" = $4
+   * ```
+   */
+  set(row: MutationObject<DB, TB>): QueryBuilder<DB, TB, O> {
+    ensureCanHaveUpdates(this.#queryNode)
+
+    return new QueryBuilder({
+      compiler: this.#compiler,
+      connectionProvider: this.#connectionProvider,
+      queryNode: cloneUpdateQueryNodeWithColumnUpdates(
+        this.#queryNode,
+        parseUpdateSetArgs(row)
+      ),
+    })
+  }
+
+  /**
    * Allows you to return data from modified rows.
    *
    * On supported databases like postgres, this method can be chained to
@@ -1353,6 +1457,22 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * Also see the {@link QueryBuilder.returningAll | returningAll} method.
    *
    * @example
+   * Return one column:
+   *
+   * ```ts
+   * const { id } = await db
+   *   .insertInto('person')
+   *   .values({
+   *     first_name: 'Jennifer',
+   *     last_name: 'Aniston'
+   *   })
+   *   .returning('id')
+   *   .executeTakeFirst()
+   * ```
+   *
+   * @example
+   * Return multiple columns:
+   *
    * ```ts
    * const { id, first_name } = await db
    *   .insertInto('person')
@@ -1361,6 +1481,24 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    *     last_name: 'Aniston'
    *   })
    *   .returning(['id', 'last_name'])
+   *   .executeTakeFirst()
+   * ```
+   *
+   * @example
+   * Return arbitrary expressions:
+   *
+   * ```ts
+   * const { raw } = db
+   *
+   * const { id, first_name } = await db
+   *   .insertInto('person')
+   *   .values({
+   *     first_name: 'Jennifer',
+   *     last_name: 'Aniston'
+   *   })
+   *   .returning([
+   *     raw<string>(`concat(first_name, ' ', last_name)`).as('full_name'),
+   *   ])
    *   .executeTakeFirst()
    * ```
    */
@@ -1723,8 +1861,12 @@ export function createEmptySelectQuery<
 
 function ensureCanHaveWhereClause(
   node: QueryNode
-): asserts node is SelectQueryNode | DeleteQueryNode {
-  if (!isSelectQueryNode(node) && !isDeleteQueryNode(node)) {
+): asserts node is SelectQueryNode | DeleteQueryNode | UpdateQueryNode {
+  if (
+    !isSelectQueryNode(node) &&
+    !isDeleteQueryNode(node) &&
+    !isUpdateQueryNode(node)
+  ) {
     throw new Error(
       'only select, delete and update queries can have a where clause'
     )
@@ -1741,8 +1883,12 @@ function ensureCanHaveSelectClause(
 
 function ensureCanHaveJoins(
   node: QueryNode
-): asserts node is SelectQueryNode | DeleteQueryNode {
-  if (!isInsertQueryNode(node) && !isDeleteQueryNode(node)) {
+): asserts node is SelectQueryNode | DeleteQueryNode | UpdateQueryNode {
+  if (
+    !isInsertQueryNode(node) &&
+    !isDeleteQueryNode(node) &&
+    !isUpdateQueryNode(node)
+  ) {
     throw new Error('only select, delete and update queries can have joins')
   }
 }
@@ -1755,12 +1901,20 @@ function ensureCanHaveInsertValues(
   }
 }
 
+function ensureCanHaveUpdates(
+  node: QueryNode
+): asserts node is UpdateQueryNode {
+  if (!isUpdateQueryNode(node)) {
+    throw new Error('only an update query can set values')
+  }
+}
+
 function ensureCanHaveReturningClause(
   node: QueryNode
-): asserts node is InsertQueryNode | DeleteQueryNode {
-  if (!isInsertQueryNode(node) && !isDeleteQueryNode(node)) {
+): asserts node is MutatingQueryNode {
+  if (!isMutatingQueryNode(node)) {
     throw new Error(
-      'only an insert, delte and update queries can have a returning clause'
+      'only an insert, delete and update queries can have a returning clause'
     )
   }
 }

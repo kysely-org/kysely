@@ -134,19 +134,19 @@ export type AnyQueryBuilder = QueryBuilder<any, any, any>
 export type AnyAliasedQueryBuilder = AliasedQueryBuilder<any, any, any, any>
 
 export type QueryBuilderFactory<DB, TB extends keyof DB, O> = (
-  qb: QueryBuilder<DB, TB, O>
+  qb: QueryBuilder<DB, TB, {}>
 ) => QueryBuilder<any, any, any>
 
 export type AliasedQueryBuilderFactory<DB, TB extends keyof DB, O> = (
-  qb: QueryBuilder<DB, TB, O>
+  qb: QueryBuilder<DB, TB, {}>
 ) => AnyAliasedQueryBuilder
 
 export type RawBuilderFactory<DB, TB extends keyof DB, O> = (
-  qb: QueryBuilder<DB, TB, O>
+  qb: QueryBuilder<DB, TB, {}>
 ) => RawBuilder<any>
 
 export type AliasedRawBuilderFactory<DB, TB extends keyof DB, O> = (
-  qb: QueryBuilder<DB, TB, O>
+  qb: QueryBuilder<DB, TB, {}>
 ) => AliasedRawBuilder<any, any>
 
 export interface InsertResultTypeTag {

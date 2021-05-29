@@ -23,5 +23,5 @@ export type QueryBuilderWithReturning<
     ? SelectResultType<DB, TB, S>
     : O extends UpdateResultTypeTag
     ? SelectResultType<DB, TB, S>
-    : O
+    : O & SelectResultType<DB, TB, S>
 >

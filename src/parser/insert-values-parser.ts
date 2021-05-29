@@ -1,9 +1,5 @@
 import { ColumnNode, createColumnNode } from '../operation-node/column-node'
-import { isDeleteQueryNode } from '../operation-node/delete-query-node'
-import {
-  InsertValuesNode,
-  isInsertQueryNode,
-} from '../operation-node/insert-query-node'
+import { InsertValuesNode } from '../operation-node/insert-query-node'
 import { isOperationNodeSource } from '../operation-node/operation-node-source'
 import { createPrimitiveValueListNode } from '../operation-node/primitive-value-list-node'
 import {
@@ -13,21 +9,22 @@ import {
 import { createValueNode } from '../operation-node/value-node'
 import { RawBuilder } from '../raw-builder/raw-builder'
 import { isPrimitive, PrimitiveValue } from '../utils/object-utils'
-import { AnyQueryBuilder, RowType } from '../query-builder/type-utils'
-
-export type InsertValuesArg<DB, TB extends keyof DB, R = RowType<DB, TB>> = {
-  [C in keyof R]?: R[C] | AnyQueryBuilder | RawBuilder<any>
-}
-
-type InsertValueType = PrimitiveValue | AnyQueryBuilder | RawBuilder<any>
+import { AnyQueryBuilder } from '../query-builder/type-utils'
+import { isMutatingQueryNode } from '../operation-node/query-node-utils'
+import {
+  MutationObject,
+  MutationValueExpression,
+  parseMutationValueExpression,
+} from './mutation-parser'
 
 export function parseInsertValuesArgs(
   args: any
 ): [ReadonlyArray<ColumnNode>, ReadonlyArray<InsertValuesNode>] {
   return parseInsertColumnsAndValues(Array.isArray(args) ? args : [args])
 }
+
 function parseInsertColumnsAndValues(
-  rows: InsertValuesArg<any, any>[]
+  rows: MutationObject<any, any>[]
 ): [ReadonlyArray<ColumnNode>, ReadonlyArray<InsertValuesNode>] {
   const columns: string[] = []
   const values: InsertValuesNode[] = []
@@ -41,7 +38,9 @@ function parseInsertColumnsAndValues(
   }
 
   for (const row of rows) {
-    const rowValues: InsertValueType[] = columns.map(() => null)
+    const rowValues: MutationValueExpression<PrimitiveValue>[] = columns.map(
+      () => null
+    )
 
     for (const column of Object.keys(row)) {
       const columnIdx = columns.indexOf(column)
@@ -51,25 +50,11 @@ function parseInsertColumnsAndValues(
     if (rowValues.every(isPrimitive)) {
       values.push(createPrimitiveValueListNode(rowValues))
     } else {
-      values.push(createValueListNode(rowValues.map(parseValue)))
+      values.push(
+        createValueListNode(rowValues.map(parseMutationValueExpression))
+      )
     }
   }
 
   return [columns.map(createColumnNode), values]
-}
-
-function parseValue(value: InsertValueType): ListNodeItem {
-  if (isPrimitive(value)) {
-    return createValueNode(value)
-  } else if (isOperationNodeSource(value)) {
-    const node = value.toOperationNode()
-
-    if (!isInsertQueryNode(node) && !isDeleteQueryNode(node)) {
-      return node
-    }
-  }
-
-  throw new Error(
-    `unsupported value for insert object ${JSON.stringify(value)}`
-  )
 }

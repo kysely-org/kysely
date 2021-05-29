@@ -10,7 +10,7 @@ import {
 } from './test-setup'
 
 for (const dialect of BUILT_IN_DIALECTS) {
-  describe(`${dialect}: tests for group by`, () => {
+  describe(`${dialect}: group by`, () => {
     let ctx: TestContext
 
     before(async () => {

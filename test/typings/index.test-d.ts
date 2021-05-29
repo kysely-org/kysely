@@ -195,6 +195,7 @@ async function testSelectMultiple(db: Kysely<Database>) {
       'movie_id',
       db.raw<number>('random()').as('rand1'),
       db.raw<number>('random()').as('rand2'),
+      (qb) => qb.subQuery('pet').select('pet.id').as('sub'),
     ])
     .execute()
 
@@ -207,6 +208,7 @@ async function testSelectMultiple(db: Kysely<Database>) {
     movie_id: string
     rand1: number
     rand2: number
+    sub: string
   }>(r1)
 
   expectError(qb.select(['person.id', 'notColumn']))
@@ -345,12 +347,49 @@ async function testReturning(db: Kysely<Database>) {
     }[]
   >(r2)
 
+  // Non-column reference returning expressions
+  const r3 = await db
+    .insertInto('person')
+    .values({ first_name: 'Jennifer' })
+    .returning([
+      'id',
+      db.raw<string>(`concat(first_name, ' ', last_name)`).as('full_name'),
+      (qb) => qb.subQuery('pet').select('pet.id').as('sub'),
+    ])
+    .execute()
+
+  expectType<
+    {
+      id: number
+      full_name: string
+      sub: string
+    }[]
+  >(r3)
+
   // Non-existent column
   expectError(
     db
       .insertInto('person')
       .values({ first_name: 'Jennifer' })
       .returning('not_column')
+  )
+}
+
+async function testUpdate(db: Kysely<Database>) {
+  const r1 = await db
+    .updateTable('pet as p')
+    .where('p.id', '=', 1)
+    .set({ name: 'Fluffy' })
+    .executeTakeFirst()
+
+  expectType<number>(r1)
+
+  // Non-existent column
+  expectError(
+    db
+      .updateTable('pet as p')
+      .where('p.id', '=', 1)
+      .set({ not_a_column: 'Fluffy' })
   )
 }
 

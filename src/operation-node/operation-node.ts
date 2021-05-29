@@ -30,6 +30,8 @@ export type OperationNodeKind =
   | 'OrderByItemNode'
   | 'GroupByNode'
   | 'GroupByItemNode'
+  | 'UpdateQueryNode'
+  | 'ColumnUpdateNode'
 
 export interface OperationNode {
   readonly kind: OperationNodeKind

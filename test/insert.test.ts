@@ -13,7 +13,7 @@ import {
 } from './test-setup'
 
 for (const dialect of BUILT_IN_DIALECTS) {
-  describe(`${dialect}: tests for insert methods`, () => {
+  describe(`${dialect}: insert`, () => {
     let ctx: TestContext
 
     before(async () => {

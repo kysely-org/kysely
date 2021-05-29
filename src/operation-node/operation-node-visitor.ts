@@ -33,6 +33,8 @@ import { OrderByNode } from './order-by-node'
 import { OrderByItemNode } from './order-by-item-node'
 import { GroupByNode } from './group-by-node'
 import { GroupByItemNode } from './group-by-item-node'
+import { UpdateQueryNode } from './update-query-node'
+import { ColumnUpdateNode } from './column-update-node'
 
 export class OperationNodeVisitor {
   #visitors: Record<OperationNodeKind, Function> = {
@@ -67,6 +69,8 @@ export class OperationNodeVisitor {
     OrderByItemNode: this.visitOrderByItem.bind(this),
     GroupByNode: this.visitGroupBy.bind(this),
     GroupByItemNode: this.visitGroupByItem.bind(this),
+    UpdateQueryNode: this.visitUpdateQuery.bind(this),
+    ColumnUpdateNode: this.visitColumnUpdate.bind(this),
   }
 
   readonly visitNode = (node: OperationNode): void => {
@@ -235,6 +239,31 @@ export class OperationNodeVisitor {
 
   protected visitGroupByItem(node: GroupByItemNode): void {
     this.visitNode(node.groupBy)
+  }
+
+  protected visitUpdateQuery(node: UpdateQueryNode): void {
+    this.visitNode(node.table)
+
+    if (node.updates) {
+      node.updates.forEach(this.visitNode)
+    }
+
+    if (node.joins) {
+      node.joins.forEach(this.visitNode)
+    }
+
+    if (node.where) {
+      this.visitNode(node.where)
+    }
+
+    if (node.returning) {
+      this.visitNode(node.returning)
+    }
+  }
+
+  protected visitColumnUpdate(node: ColumnUpdateNode): void {
+    this.visitNode(node.column)
+    this.visitNode(node.value)
   }
 
   protected visitDataType(node: DataTypeNode): void {}
