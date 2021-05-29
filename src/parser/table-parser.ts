@@ -21,7 +21,7 @@ import { TableExpressionNode } from '../operation-node/operation-node-utils'
 export type TableExpression<DB, TB extends keyof DB> =
   | TableReference<DB>
   | AnyAliasedQueryBuilder
-  | AliasedQueryBuilderFactory<DB, TB, {}>
+  | AliasedQueryBuilderFactory<DB, TB>
 
 export type TableReference<DB> =
   | AnyAliasedTable<DB, any, any>

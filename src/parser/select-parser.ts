@@ -29,14 +29,14 @@ import { DynamicReferenceBuilder } from '../dynamic/dynamic-reference-builder'
 /**
  * A selection exrpession.
  */
-export type SelectExpression<DB, TB extends keyof DB, O> =
+export type SelectExpression<DB, TB extends keyof DB> =
   | AnyAliasedColumnWithTable<DB, TB>
   | AnyColumnWithTable<DB, TB>
   | AnyColumn<DB, TB>
   | AliasedRawBuilder<any, any>
-  | AliasedRawBuilderFactory<DB, TB, O>
+  | AliasedRawBuilderFactory<DB, TB>
   | AnyAliasedQueryBuilder
-  | AliasedQueryBuilderFactory<DB, TB, O>
+  | AliasedQueryBuilderFactory<DB, TB>
   | DynamicReferenceBuilder<any>
 
 /**
@@ -175,7 +175,7 @@ type ExtractTypeFromStringSelectExpression<
   : never
 
 export function parseSelectExpressionOrList(
-  selection: SelectExpression<any, any, any> | SelectExpression<any, any, any>[]
+  selection: SelectExpression<any, any> | SelectExpression<any, any>[]
 ): SelectionNode[] {
   if (Array.isArray(selection)) {
     return selection.map((it) => parseSelectExpression(it))
@@ -185,7 +185,7 @@ export function parseSelectExpressionOrList(
 }
 
 function parseSelectExpression(
-  selection: SelectExpression<any, any, any>
+  selection: SelectExpression<any, any>
 ): SelectionNode {
   if (isString(selection)) {
     return createSelectionNode(parseAliasedStringReference(selection))

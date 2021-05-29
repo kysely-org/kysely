@@ -23,21 +23,21 @@ import {
 import { DynamicReferenceBuilder } from '../dynamic/dynamic-reference-builder'
 import { isMutatingQueryNode } from '../operation-node/query-node-utils'
 
-export type ReferenceExpression<DB, TB extends keyof DB, O> =
+export type ReferenceExpression<DB, TB extends keyof DB> =
   | AnyColumn<DB, TB>
   | AnyColumnWithTable<DB, TB>
   | AnyQueryBuilder
-  | QueryBuilderFactory<DB, TB, O>
+  | QueryBuilderFactory<DB, TB>
   | RawBuilder<any>
-  | RawBuilderFactory<DB, TB, O>
+  | RawBuilderFactory<DB, TB>
   | DynamicReferenceBuilder<any>
 
-export type ReferenceExpressionOrList<DB, TB extends keyof DB, O> =
-  | ReferenceExpression<DB, TB, O>
-  | ReferenceExpression<DB, TB, O>[]
+export type ReferenceExpressionOrList<DB, TB extends keyof DB> =
+  | ReferenceExpression<DB, TB>
+  | ReferenceExpression<DB, TB>[]
 
 export function parseReferenceExpressionOrList(
-  arg: ReferenceExpressionOrList<any, any, any>
+  arg: ReferenceExpressionOrList<any, any>
 ): ReferenceExpressionNode[] {
   if (Array.isArray(arg)) {
     return arg.map(parseReferenceExpression)
@@ -47,7 +47,7 @@ export function parseReferenceExpressionOrList(
 }
 
 export function parseReferenceExpression(
-  arg: ReferenceExpression<any, any, any>
+  arg: ReferenceExpression<any, any>
 ): ReferenceExpressionNode {
   if (isString(arg)) {
     return parseStringReference(arg)

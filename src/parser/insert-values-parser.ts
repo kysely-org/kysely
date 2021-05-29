@@ -1,16 +1,8 @@
 import { ColumnNode, createColumnNode } from '../operation-node/column-node'
 import { InsertValuesNode } from '../operation-node/insert-query-node'
-import { isOperationNodeSource } from '../operation-node/operation-node-source'
 import { createPrimitiveValueListNode } from '../operation-node/primitive-value-list-node'
-import {
-  createValueListNode,
-  ListNodeItem,
-} from '../operation-node/value-list-node'
-import { createValueNode } from '../operation-node/value-node'
-import { RawBuilder } from '../raw-builder/raw-builder'
+import { createValueListNode } from '../operation-node/value-list-node'
 import { isPrimitive, PrimitiveValue } from '../utils/object-utils'
-import { AnyQueryBuilder } from '../query-builder/type-utils'
-import { isMutatingQueryNode } from '../operation-node/query-node-utils'
 import {
   MutationObject,
   MutationValueExpression,

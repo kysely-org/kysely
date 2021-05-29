@@ -312,9 +312,9 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * ```
    */
   where(
-    lhs: ReferenceExpression<DB, TB, O>,
+    lhs: ReferenceExpression<DB, TB>,
     op: FilterOperatorArg,
-    rhs: ValueExpressionOrList<DB, TB, O>
+    rhs: ValueExpressionOrList<DB, TB>
   ): QueryBuilder<DB, TB, O>
 
   where(
@@ -384,9 +384,9 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * from "person"`
    */
   whereRef(
-    lhs: ReferenceExpression<DB, TB, O>,
+    lhs: ReferenceExpression<DB, TB>,
     op: FilterOperatorArg,
-    rhs: ReferenceExpression<DB, TB, O>
+    rhs: ReferenceExpression<DB, TB>
   ): QueryBuilder<DB, TB, O> {
     ensureCanHaveWhereClause(this.#queryNode)
 
@@ -461,9 +461,9 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * ```
    */
   orWhere(
-    lhs: ReferenceExpression<DB, TB, O>,
+    lhs: ReferenceExpression<DB, TB>,
     op: FilterOperatorArg,
-    rhs: ValueExpression<DB, TB, O>
+    rhs: ValueExpression<DB, TB>
   ): QueryBuilder<DB, TB, O>
 
   orWhere(
@@ -491,9 +491,9 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * Also see {@link QueryBuilder.orWhere | orWhere} and {@link QueryBuilder.where | where}.
    */
   orWhereRef(
-    lhs: ReferenceExpression<DB, TB, O>,
+    lhs: ReferenceExpression<DB, TB>,
     op: FilterOperatorArg,
-    rhs: ReferenceExpression<DB, TB, O>
+    rhs: ReferenceExpression<DB, TB>
   ): QueryBuilder<DB, TB, O> {
     ensureCanHaveWhereClause(this.#queryNode)
 
@@ -565,7 +565,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * )
    * ```
    */
-  whereExists(arg: ExistsFilterArg<DB, TB, O>): QueryBuilder<DB, TB, O> {
+  whereExists(arg: ExistsFilterArg<DB, TB>): QueryBuilder<DB, TB, O> {
     ensureCanHaveWhereClause(this.#queryNode)
 
     return new QueryBuilder({
@@ -582,7 +582,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
   /**
    * Just like {@link QueryBuilder.whereExists | whereExists} but creates a `not exists` clause.
    */
-  whereNotExists(arg: ExistsFilterArg<DB, TB, O>): QueryBuilder<DB, TB, O> {
+  whereNotExists(arg: ExistsFilterArg<DB, TB>): QueryBuilder<DB, TB, O> {
     ensureCanHaveWhereClause(this.#queryNode)
 
     return new QueryBuilder({
@@ -599,7 +599,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
   /**
    * Just like {@link QueryBuilder.whereExists | whereExists} but creates a `or exists` clause.
    */
-  orWhereExists(arg: ExistsFilterArg<DB, TB, O>): QueryBuilder<DB, TB, O> {
+  orWhereExists(arg: ExistsFilterArg<DB, TB>): QueryBuilder<DB, TB, O> {
     ensureCanHaveWhereClause(this.#queryNode)
 
     return new QueryBuilder({
@@ -616,7 +616,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
   /**
    * Just like {@link QueryBuilder.whereExists | whereExists} but creates a `or not exists` clause.
    */
-  orWhereNotExists(arg: ExistsFilterArg<DB, TB, O>): QueryBuilder<DB, TB, O> {
+  orWhereNotExists(arg: ExistsFilterArg<DB, TB>): QueryBuilder<DB, TB, O> {
     ensureCanHaveWhereClause(this.#queryNode)
 
     return new QueryBuilder({
@@ -797,11 +797,11 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * person.id
    * ```
    */
-  select<S extends SelectExpression<DB, TB, O>>(
+  select<S extends SelectExpression<DB, TB>>(
     selections: S[]
   ): QueryBuilderWithSelection<DB, TB, O, S>
 
-  select<S extends SelectExpression<DB, TB, O>>(
+  select<S extends SelectExpression<DB, TB>>(
     selection: S
   ): QueryBuilderWithSelection<DB, TB, O, S>
 
@@ -840,11 +840,11 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * where "pet"."name" = $1
    * ```
    */
-  distinctOn<S extends SelectExpression<DB, TB, O>>(
+  distinctOn<S extends SelectExpression<DB, TB>>(
     selections: S[]
   ): QueryBuilder<DB, TB, O>
 
-  distinctOn<S extends SelectExpression<DB, TB, O>>(
+  distinctOn<S extends SelectExpression<DB, TB>>(
     selection: S
   ): QueryBuilder<DB, TB, O>
 
@@ -1502,11 +1502,11 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    *   .executeTakeFirst()
    * ```
    */
-  returning<S extends SelectExpression<DB, TB, O>>(
+  returning<S extends SelectExpression<DB, TB>>(
     selections: S[]
   ): QueryBuilderWithReturning<DB, TB, O, S>
 
-  returning<S extends SelectExpression<DB, TB, O>>(
+  returning<S extends SelectExpression<DB, TB>>(
     selection: S
   ): QueryBuilderWithReturning<DB, TB, O, S>
 
@@ -1733,9 +1733,9 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * group by "first_name"
    * ```
    */
-  groupBy(orderBy: ReferenceExpression<DB, TB, O>[]): QueryBuilder<DB, TB, O>
+  groupBy(orderBy: ReferenceExpression<DB, TB>[]): QueryBuilder<DB, TB, O>
 
-  groupBy(orderBy: ReferenceExpression<DB, TB, O>): QueryBuilder<DB, TB, O>
+  groupBy(orderBy: ReferenceExpression<DB, TB>): QueryBuilder<DB, TB, O>
 
   groupBy(orderBy: any): QueryBuilder<DB, TB, O> {
     ensureCanHaveGroupByClause(this.#queryNode)

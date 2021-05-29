@@ -133,19 +133,19 @@ export type ArrayItemType<T> = T extends ReadonlyArray<infer I> ? I : never
 export type AnyQueryBuilder = QueryBuilder<any, any, any>
 export type AnyAliasedQueryBuilder = AliasedQueryBuilder<any, any, any, any>
 
-export type QueryBuilderFactory<DB, TB extends keyof DB, O> = (
+export type QueryBuilderFactory<DB, TB extends keyof DB> = (
   qb: QueryBuilder<DB, TB, {}>
 ) => QueryBuilder<any, any, any>
 
-export type AliasedQueryBuilderFactory<DB, TB extends keyof DB, O> = (
+export type AliasedQueryBuilderFactory<DB, TB extends keyof DB> = (
   qb: QueryBuilder<DB, TB, {}>
 ) => AnyAliasedQueryBuilder
 
-export type RawBuilderFactory<DB, TB extends keyof DB, O> = (
+export type RawBuilderFactory<DB, TB extends keyof DB> = (
   qb: QueryBuilder<DB, TB, {}>
 ) => RawBuilder<any>
 
-export type AliasedRawBuilderFactory<DB, TB extends keyof DB, O> = (
+export type AliasedRawBuilderFactory<DB, TB extends keyof DB> = (
   qb: QueryBuilder<DB, TB, {}>
 ) => AliasedRawBuilder<any, any>
 

@@ -30,11 +30,11 @@ import {
   SelectQueryNode,
 } from '../operation-node/select-query-node'
 
-export type ExistsFilterArg<DB, TB extends keyof DB, O> =
+export type ExistsFilterArg<DB, TB extends keyof DB> =
   | AnyQueryBuilder
-  | QueryBuilderFactory<DB, TB, O>
+  | QueryBuilderFactory<DB, TB>
   | RawBuilder<any>
-  | RawBuilderFactory<DB, TB, O>
+  | RawBuilderFactory<DB, TB>
 
 const OPERATOR_WHITELIST = [
   '=',
@@ -82,9 +82,9 @@ export function parseFilterArgs(
 }
 
 export function parseReferenceFilterArgs(
-  lhs: ReferenceExpression<any, any, any>,
+  lhs: ReferenceExpression<any, any>,
   op: FilterOperatorArg,
-  rhs: ReferenceExpression<any, any, any>
+  rhs: ReferenceExpression<any, any>
 ): FilterNode {
   return createFilterNode(
     parseReferenceExpression(lhs),
@@ -96,7 +96,7 @@ export function parseReferenceFilterArgs(
 export function parseExistsFilterArgs(
   query: AnyQueryBuilder,
   type: 'exists' | 'not exists',
-  arg: ExistsFilterArg<any, any, any>
+  arg: ExistsFilterArg<any, any>
 ): FilterNode {
   const node = isFunction(arg)
     ? arg(query).toOperationNode()
@@ -110,9 +110,9 @@ export function parseExistsFilterArgs(
 }
 
 function parseThreeArgFilter(
-  lhs: ReferenceExpression<any, any, any>,
+  lhs: ReferenceExpression<any, any>,
   op: FilterOperatorArg,
-  rhs: ValueExpressionOrList<any, any, any>
+  rhs: ValueExpressionOrList<any, any>
 ): FilterNode {
   return createFilterNode(
     parseReferenceExpression(lhs),

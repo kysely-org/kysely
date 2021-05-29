@@ -55,9 +55,9 @@ export class JoinBuilder<DB, TB extends keyof DB, O = {}>
    *
    */
   onRef(
-    lhs: ReferenceExpression<DB, TB, O>,
+    lhs: ReferenceExpression<DB, TB>,
     op: FilterOperatorArg,
-    rhs: ReferenceExpression<DB, TB, O>
+    rhs: ReferenceExpression<DB, TB>
   ): JoinBuilder<DB, TB, O> {
     return new JoinBuilder(
       cloneJoinNodeWithOn(

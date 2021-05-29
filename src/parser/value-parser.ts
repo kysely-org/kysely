@@ -22,19 +22,19 @@ import {
 } from '../query-builder/type-utils'
 import { isMutatingQueryNode } from '../operation-node/query-node-utils'
 
-export type ValueExpression<DB, TB extends keyof DB, O> =
+export type ValueExpression<DB, TB extends keyof DB> =
   | PrimitiveValue
   | AnyQueryBuilder
-  | QueryBuilderFactory<DB, TB, O>
+  | QueryBuilderFactory<DB, TB>
   | RawBuilder<any>
-  | RawBuilderFactory<DB, TB, O>
+  | RawBuilderFactory<DB, TB>
 
-export type ValueExpressionOrList<DB, TB extends keyof DB, O> =
-  | ValueExpression<DB, TB, O>
-  | ValueExpression<DB, TB, O>[]
+export type ValueExpressionOrList<DB, TB extends keyof DB> =
+  | ValueExpression<DB, TB>
+  | ValueExpression<DB, TB>[]
 
 export function parseValueExpressionOrList(
-  arg: ValueExpressionOrList<any, any, any>
+  arg: ValueExpressionOrList<any, any>
 ) {
   if (Array.isArray(arg)) {
     return parseValueExpressionList(arg)
@@ -44,7 +44,7 @@ export function parseValueExpressionOrList(
 }
 
 export function parseValueExpression(
-  arg: ValueExpression<any, any, any>
+  arg: ValueExpression<any, any>
 ): ValueExpressionNode {
   if (isPrimitive(arg)) {
     return createValueNode(arg)
@@ -66,7 +66,7 @@ export function parseValueExpression(
 }
 
 function parseValueExpressionList(
-  arg: ValueExpression<any, any, any>[]
+  arg: ValueExpression<any, any>[]
 ): PrimitiveValueListNode | ValueListNode {
   if (arg.every(isPrimitive)) {
     // Optimization for large lists of primitive values.
