@@ -115,23 +115,27 @@
 <span style="color: #000000">})</span>
 
 <span style="color: #0000FF">async</span><span style="color: #000000"> </span><span style="color: #0000FF">function</span><span style="color: #000000"> </span><span style="color: #795E26">demo</span><span style="color: #000000">() {</span>
-<span style="color: #000000">  </span><span style="color: #0000FF">const</span><span style="color: #000000"> [</span><span style="color: #0070C1">person</span><span style="color: #000000">] = </span><span style="color: #AF00DB">await</span><span style="color: #000000"> </span><span style="color: #001080">db</span>
+<span style="color: #000000">  </span><span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">person</span><span style="color: #000000"> = </span><span style="color: #AF00DB">await</span><span style="color: #000000"> </span><span style="color: #001080">db</span>
 <span style="color: #000000">    .</span><span style="color: #795E26">selectFrom</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;person&#039;</span><span style="color: #000000">)</span>
 <span style="color: #000000">    .</span><span style="color: #795E26">innerJoin</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;pet&#039;</span><span style="color: #000000">, </span><span style="color: #A31515">&#039;pet.owner_id&#039;</span><span style="color: #000000">, </span><span style="color: #A31515">&#039;person.id&#039;</span><span style="color: #000000">)</span>
 <span style="color: #000000">    .</span><span style="color: #795E26">select</span><span style="color: #000000">([</span><span style="color: #A31515">&#039;first_name&#039;</span><span style="color: #000000">, </span><span style="color: #A31515">&#039;pet.name as pet_name&#039;</span><span style="color: #000000">])</span>
 <span style="color: #000000">    .</span><span style="color: #795E26">where</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;person.id&#039;</span><span style="color: #000000">, </span><span style="color: #A31515">&#039;=&#039;</span><span style="color: #000000">, </span><span style="color: #098658">1</span><span style="color: #000000">)</span>
-<span style="color: #000000">    .</span><span style="color: #795E26">execute</span><span style="color: #000000">()</span>
+<span style="color: #000000">    .</span><span style="color: #795E26">executeTakeFirst</span><span style="color: #000000">()</span>
 
-<span style="color: #000000">  </span><span style="color: #001080">person</span><span style="color: #000000">.</span><span style="color: #001080">pet_name</span>
+<span style="color: #000000">  </span><span style="color: #AF00DB">if</span><span style="color: #000000"> (</span><span style="color: #001080">person</span><span style="color: #000000">) {</span>
+<span style="color: #000000">    </span><span style="color: #001080">person</span><span style="color: #000000">.</span><span style="color: #001080">pet_name</span>
+<span style="color: #000000">  }</span>
 <span style="color: #000000">}</span>
 </code></pre>
 				<a href="#work-in-progress" id="work-in-progress" style="color: inherit; text-decoration: none;">
 					<h1>Work in progress</h1>
 				</a>
-				<p>This whole library is still just a proof of concept and you can&#39;t yet start using it for anything
-				serious. Only a small subset of postgres dialect is implemented.</p>
-				<p>However, I&#39;d say the concept is pretty much proven! Typescript is amazing! Let me know if this is something
-				you&#39;d use and I&#39;ll continue working on this.</p>
+				<p>Kysely currently only works on postgres. You can install it using</p>
+				<pre><code><span style="color: #001080">npm</span><span style="color: #000000"> </span><span style="color: #001080">install</span><span style="color: #000000"> </span><span style="color: #001080">kysely</span><span style="color: #000000"> </span><span style="color: #001080">pg</span>
+</code></pre>
+				<p>Many features are still missing and the documentation is very limited. Kysely is being
+					actively developed and things will improve fast. I wouldn&#39;t recommend using it for anything
+				serious yet, but you can install it and play around with it.</p>
 				<a href="#why-not-just-contribute-to-knex" id="why-not-just-contribute-to-knex" style="color: inherit; text-decoration: none;">
 					<h1>Why not just contribute to knex</h1>
 				</a>
