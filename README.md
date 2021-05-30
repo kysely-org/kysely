@@ -61,24 +61,30 @@ const db = new Kysely<Database>({
 })
 
 async function demo() {
-  const [person] = await db
+  const person = await db
     .selectFrom('person')
     .innerJoin('pet', 'pet.owner_id', 'person.id')
     .select(['first_name', 'pet.name as pet_name'])
     .where('person.id', '=', 1)
-    .execute()
+    .executeTakeFirst()
 
-  person.pet_name
+  if (person) {
+    person.pet_name
+  }
 }
 ```
 
 # Work in progress
 
-This whole library is still just a proof of concept and you can't yet start using it for anything
-serious. Only a small subset of postgres dialect is implemented.
+Kysely currently only works on postgres. You can install it using
 
-However, I'd say the concept is pretty much proven! Typescript is amazing! Let me know if this is something
-you'd use and I'll continue working on this.
+```
+npm install kysely pg
+```
+
+Many features are still missing and the documentation is very limited. Kysely is being
+actively developed and things will improve fast. I wouldn't recommend using it for anything
+serious yet, but you can install it and play around with it.
 
 # Why not just contribute to knex
 

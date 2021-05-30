@@ -1,8 +1,11 @@
-tsconfig.json
-.prettierrc.json
+.github
+assets
+docs
+node_modules
 src
 test
-node_modules
-docs
-assets
+.gitignore
+.prettierrc.json
 docs-theme.css
+post-process-docs.js
+tsconfig.json
