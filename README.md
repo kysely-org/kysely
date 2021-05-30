@@ -89,8 +89,7 @@ serious yet, but you can install it and play around with it.
 # Why not just contribute to knex
 
 Kysely is very similar to knex, but it also attempts to fix things that I personally find not-so-good
-in knex. Bringing the type system and the changes to knex would mean very significantly breaking the
-backwards compatibility. That's not possible at this point of the project. Knex was also originally
-written for javascript and the typescript typings were added afterwards. That always leads to
-compromises in the types. Designing a library for typescript from the ground up produces much
-better and simpler types.
+in knex. Bringing the type system and the changes to knex would mean very significant breaking changes
+That's not possible at this point of the project. Knex was also originally written for javascript and
+the typescript typings were added afterwards. That always leads to compromises in the types. Designing
+a library for typescript from the ground up produces much better and simpler types.
