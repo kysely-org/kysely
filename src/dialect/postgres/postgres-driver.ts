@@ -87,7 +87,7 @@ class PostgresConnection implements Connection {
         result.command === 'UPDATE' || result.command === 'DELETE'
           ? result.rowCount
           : undefined,
-      insertPrimaryKey: undefined,
+      insertedPrimaryKey: undefined,
       rows: result.rows,
     })
   }
