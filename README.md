@@ -11,15 +11,15 @@ columns with correct types and aliases. This allows tools like vscode autocomple
 so much easier.
 
 As you can see in the gif above, through the pure magic of modern typescript, Kysely is even able to parse
-the alias given to `pet.name` and add a column `pet_name` to the result row type. Kysely is also able to
-infer colum names and types from selected subqueries, joined subqueries, `with` statements and pretty much
-anything you can think of. Typescript is always there for you to tell what kind of query you can build and
-offer completions.
+the alias given to `pet.name` and add the `pet_name` column to the result row type. Kysely is able to infer
+colum names and types from selected subqueries, joined subqueries, `with` statements and pretty much
+anything you can think of. Typescript is always there for you to tell what kind of query you can build
+and offer completions.
 
 Of course there are cases where things cannot be typed at compile time, and Kysely offers escape
 hatches for these situations. With typescript you can always cast something to `any` if the types
 fail you. with Kysely you can also explicitly tell it to ignore the typings, but the default is always
-type safety!
+type-safety!
 
 All you need to do is define an interface for each table in the database and pass those
 interfaces to the `Kysely` constructor:

@@ -134,7 +134,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/3307233/src/raw-builder/raw-builder.ts#L122">raw-builder/raw-builder.ts:122</a></li>
+									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/c56d35d/src/raw-builder/raw-builder.ts#L122">raw-builder/raw-builder.ts:122</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-type-parameters-title">Type parameters</h4>
@@ -168,7 +168,7 @@
 					<div class="tsd-signature tsd-kind-icon">#alias<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">A</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/koskimas/kysely/blob/3307233/src/raw-builder/raw-builder.ts#L106">raw-builder/raw-builder.ts:106</a></li>
+							<li>Defined in <a href="https://github.com/koskimas/kysely/blob/c56d35d/src/raw-builder/raw-builder.ts#L106">raw-builder/raw-builder.ts:106</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -178,7 +178,7 @@
 					<div class="tsd-signature tsd-kind-icon">#raw<wbr>Builder<span class="tsd-signature-symbol">:</span> <a href="rawbuilder.html" class="tsd-signature-type" data-tsd-kind="Class">RawBuilder</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">O</span><span class="tsd-signature-symbol">&gt;</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/koskimas/kysely/blob/3307233/src/raw-builder/raw-builder.ts#L105">raw-builder/raw-builder.ts:105</a></li>
+							<li>Defined in <a href="https://github.com/koskimas/kysely/blob/c56d35d/src/raw-builder/raw-builder.ts#L105">raw-builder/raw-builder.ts:105</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -195,7 +195,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/3307233/src/raw-builder/raw-builder.ts#L116">raw-builder/raw-builder.ts:116</a></li>
+									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/c56d35d/src/raw-builder/raw-builder.ts#L116">raw-builder/raw-builder.ts:116</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">A</span></h4>
@@ -216,7 +216,7 @@
 							<aside class="tsd-sources">
 								<p>Implementation of OperationNodeSource.toOperationNode</p>
 								<ul>
-									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/3307233/src/raw-builder/raw-builder.ts#L120">raw-builder/raw-builder.ts:120</a></li>
+									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/c56d35d/src/raw-builder/raw-builder.ts#L120">raw-builder/raw-builder.ts:120</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">AliasNode</span></h4>
@@ -274,6 +274,12 @@
 					<li class=" tsd-kind-class tsd-has-type-parameter">
 						<a href="kysely.html" class="tsd-kind-icon">Kysely</a>
 					</li>
+					<li class=" tsd-kind-class">
+						<a href="postgresdialect.html" class="tsd-kind-icon">Postgres<wbr>Dialect</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="postgresdriver.html" class="tsd-kind-icon">Postgres<wbr>Driver</a>
+					</li>
 					<li class=" tsd-kind-class tsd-has-type-parameter">
 						<a href="querybuilder.html" class="tsd-kind-icon">Query<wbr>Builder</a>
 					</li>
@@ -290,10 +296,16 @@
 						<a href="../interfaces/driverconfig.html" class="tsd-kind-icon">Driver<wbr>Config</a>
 					</li>
 					<li class=" tsd-kind-interface">
+						<a href="../interfaces/driverconfigwithdefaults.html" class="tsd-kind-icon">Driver<wbr>Config<wbr>With<wbr>Defaults</a>
+					</li>
+					<li class=" tsd-kind-interface">
 						<a href="../interfaces/kyselyconfig.html" class="tsd-kind-icon">Kysely<wbr>Config</a>
 					</li>
 					<li class=" tsd-kind-interface">
 						<a href="../interfaces/poolconfig.html" class="tsd-kind-icon">Pool<wbr>Config</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="../interfaces/poolconfigwithdefaults.html" class="tsd-kind-icon">Pool<wbr>Config<wbr>With<wbr>Defaults</a>
 					</li>
 					<li class=" tsd-kind-interface">
 						<a href="../interfaces/querybuilderconstructorargs.html" class="tsd-kind-icon">Query<wbr>Builder<wbr>Constructor<wbr>Args</a>
@@ -337,15 +349,16 @@
 				<li class="tsd-kind-method tsd-parent-kind-class"><span class="tsd-kind-icon">Method</span></li>
 			</ul>
 			<ul class="tsd-legend">
+				<li class="tsd-kind-constructor tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited constructor</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited method</span></li>
+			</ul>
+			<ul class="tsd-legend">
 				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-protected"><span class="tsd-kind-icon">Protected property</span></li>
 				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-protected"><span class="tsd-kind-icon">Protected method</span></li>
 			</ul>
 			<ul class="tsd-legend">
 				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-private"><span class="tsd-kind-icon">Private property</span></li>
 				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-private"><span class="tsd-kind-icon">Private method</span></li>
-			</ul>
-			<ul class="tsd-legend">
-				<li class="tsd-kind-constructor tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited constructor</span></li>
 			</ul>
 		</div>
 	</div>

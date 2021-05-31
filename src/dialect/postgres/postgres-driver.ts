@@ -6,7 +6,7 @@ import { freeze } from '../../utils/object-utils'
 
 export class PostgresDriver extends Driver {
   #pgPool: Pool | null = null
-  #pgClients = new WeakMap<Connection, PoolClient>()
+  #pgClients = new WeakSet<PoolClient>()
 
   async init(): Promise<void> {
     // Import the `pg` module here instead at the top of the file
@@ -22,16 +22,19 @@ export class PostgresDriver extends Driver {
     this.#pgPool = new pg.Pool({
       host: cfg.host,
       database: cfg.database,
-
-      port: cfg.port ?? 5432,
+      port: cfg.port,
       user: cfg.user,
       password: cfg.password,
 
       // Pool options.
-      connectionTimeoutMillis: cfg.pool?.connectionTimeoutMillis ?? 0,
-      idleTimeoutMillis: cfg.pool?.idleTimeoutMillis ?? 10000,
-      max: cfg.pool?.maxConnections ?? 10,
+      connectionTimeoutMillis: cfg.pool.connectionTimeoutMillis,
+      idleTimeoutMillis: cfg.pool.idleTimeoutMillis,
+      max: cfg.pool.maxConnections,
     })
+  }
+
+  getDefaultPort(): number {
+    return 5432
   }
 
   async destroy(): Promise<void> {
@@ -46,17 +49,19 @@ export class PostgresDriver extends Driver {
     const pgClient = await this.#pgPool!.connect()
     const connection = new PostgresConnection(pgClient)
 
-    // Save the client to a local weak map so that we can keep the
-    // client completely hidden inside the PostgresConnection without
-    // any way to get it out of it.
-    this.#pgClients.set(connection, pgClient)
+    if (!this.#pgClients.has(pgClient)) {
+      this.#pgClients.add(pgClient)
+
+      if (this.config.pool.onCreateConnection) {
+        await this.config.pool.onCreateConnection(connection)
+      }
+    }
 
     return connection
   }
 
   async releaseConnection(connection: Connection): Promise<void> {
-    this.#pgClients.get(connection)?.release()
-    this.#pgClients.delete(connection)
+    await (connection as PostgresConnection).release()
   }
 }
 
@@ -90,5 +95,9 @@ class PostgresConnection implements Connection {
       insertedPrimaryKey: undefined,
       rows: result.rows,
     })
+  }
+
+  async release(): Promise<void> {
+    await this.#pgClient.release()
   }
 }

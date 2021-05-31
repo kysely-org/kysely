@@ -1,11 +1,34 @@
 import { Connection } from './connection'
 
 export interface DriverConfig {
+  /**
+   * Database server host.
+   */
   host: string
+
+  /**
+   * The database name.
+   */
   database: string
+
+  /**
+   * Database server port. Optional, defaults to the engine's default port.
+   */
   port?: number
+
+  /**
+   * Database user. Optional, defaults to the engine's default user.
+   */
   user?: string
+
+  /**
+   * Database user password. Optional, defaults to no password.
+   */
   password?: string
+
+  /**
+   * Connection pooling config.
+   */
   pool?: PoolConfig
 }
 
@@ -46,4 +69,21 @@ export interface PoolConfig {
    * ```
    */
   onCreateConnection?: (connection: Connection) => Promise<void>
+}
+
+/**
+ * Driver config with default values set.
+ */
+export interface DriverConfigWithDefaults extends DriverConfig {
+  port: number
+  pool: PoolConfigWithDefaults
+}
+
+/**
+ * Pool config with default values set.
+ */
+export interface PoolConfigWithDefaults extends PoolConfig {
+  maxConnections: number
+  connectionTimeoutMillis: number
+  idleTimeoutMillis: number
 }

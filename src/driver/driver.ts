@@ -1,25 +1,67 @@
 import { freeze } from '../utils/object-utils'
 import { Connection } from './connection'
-import { DriverConfig } from './driver-config'
+import { DriverConfig, DriverConfigWithDefaults } from './driver-config'
 
+const POOL_CONFIG_DEFAULTS = freeze({
+  maxConnections: 10,
+  idleTimeoutMillis: 10000,
+  connectionTimeoutMillis: 0,
+})
+
+/**
+ * A Driver is responsible for abstracting away the database engine details.
+ *
+ * The Driver creates and releases database connections and is also responsible
+ * for connection pooling. The built-in dial
+ */
 export abstract class Driver {
-  protected readonly config: DriverConfig
+  protected readonly config: DriverConfigWithDefaults
+
   #initPromise: Promise<void> | null = null
+  #destroyPromise: Promise<void> | null = null
 
   constructor(config: DriverConfig) {
     this.config = freeze({
       ...config,
-
+      port: config.port ?? this.getDefaultPort(),
       pool: freeze({
+        ...POOL_CONFIG_DEFAULTS,
         ...config.pool,
       }),
     })
   }
 
+  /**
+   * Returns the default port for the database engine.
+   */
+  abstract getDefaultPort(): number
+
+  /**
+   * Initializes the driver.
+   *
+   * After calling this method the driver should be usable and `acquireConnection` etc.
+   * methods should be callable.
+   *
+   * IMPORTANT: The underlying database engine driver (like [pg](https://node-postgres.com/))
+   * should be imported inside this function, not at the top of the driver file! This is
+   * important so that Kysely is usable without installing all database driver libraries
+   * it supports.
+   */
   abstract init(): Promise<void>
+
+  /**
+   * Destroys the driver and releases all resources.
+   */
   abstract destroy(): Promise<void>
 
+  /**
+   * Acquires a new connection from the pool.
+   */
   abstract acquireConnection(): Promise<Connection>
+
+  /**
+   * Releases a connection back to the pool.
+   */
   abstract releaseConnection(connection: Connection): Promise<void>
 
   /**
@@ -46,6 +88,13 @@ export abstract class Driver {
       await this.#initPromise
     }
 
-    await this.destroy()
+    if (!this.#destroyPromise) {
+      this.#destroyPromise = this.destroy().catch((err) => {
+        this.#destroyPromise = null
+        return Promise.reject(err)
+      })
+    }
+
+    await this.#destroyPromise
   }
 }

@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>KyselyConfig | kysely</title>
+	<title>PoolConfigWithDefaults | kysely</title>
 	<meta name="description" content="Documentation for kysely">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="../assets/css/main.css">
@@ -55,24 +55,31 @@
 					<a href="../modules.html">kysely</a>
 				</li>
 				<li>
-					<a href="kyselyconfig.html">KyselyConfig</a>
+					<a href="poolconfigwithdefaults.html">PoolConfigWithDefaults</a>
 				</li>
 			</ul>
-			<h1>Interface KyselyConfig</h1>
+			<h1>Interface PoolConfigWithDefaults</h1>
 		</div>
 	</div>
 </header>
 <div class="container container-main">
 	<div class="row">
 		<div class="col-8 col-content">
+			<section class="tsd-panel tsd-comment">
+				<div class="tsd-comment tsd-typography">
+					<div class="lead">
+						<p>Pool config with default values set.</p>
+					</div>
+				</div>
+			</section>
 			<section class="tsd-panel tsd-hierarchy">
 				<h3>Hierarchy</h3>
 				<ul class="tsd-hierarchy">
 					<li>
-						<a href="driverconfig.html" class="tsd-signature-type" data-tsd-kind="Interface">DriverConfig</a>
+						<a href="poolconfig.html" class="tsd-signature-type" data-tsd-kind="Interface">PoolConfig</a>
 						<ul class="tsd-hierarchy">
 							<li>
-								<span class="target">KyselyConfig</span>
+								<span class="target">PoolConfigWithDefaults</span>
 							</li>
 						</ul>
 					</li>
@@ -85,13 +92,10 @@
 						<section class="tsd-index-section ">
 							<h3>Properties</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><a href="kyselyconfig.html#database" class="tsd-kind-icon">database</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="kyselyconfig.html#dialect" class="tsd-kind-icon">dialect</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><a href="kyselyconfig.html#host" class="tsd-kind-icon">host</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><a href="kyselyconfig.html#password" class="tsd-kind-icon">password</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><a href="kyselyconfig.html#pool" class="tsd-kind-icon">pool</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><a href="kyselyconfig.html#port" class="tsd-kind-icon">port</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><a href="kyselyconfig.html#user" class="tsd-kind-icon">user</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-overwrite"><a href="poolconfigwithdefaults.html#connectiontimeoutmillis" class="tsd-kind-icon">connection<wbr>Timeout<wbr>Millis</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-overwrite"><a href="poolconfigwithdefaults.html#idletimeoutmillis" class="tsd-kind-icon">idle<wbr>Timeout<wbr>Millis</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-overwrite"><a href="poolconfigwithdefaults.html#maxconnections" class="tsd-kind-icon">max<wbr>Connections</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><a href="poolconfigwithdefaults.html#oncreateconnection" class="tsd-kind-icon">on<wbr>Create<wbr>Connection</a></li>
 							</ul>
 						</section>
 					</div>
@@ -99,110 +103,107 @@
 			</section>
 			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Properties</h2>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-inherited">
-					<a name="database" class="tsd-anchor"></a>
-					<h3>database</h3>
-					<div class="tsd-signature tsd-kind-icon">database<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-overwrite">
+					<a name="connectiontimeoutmillis" class="tsd-anchor"></a>
+					<h3>connection<wbr>Timeout<wbr>Millis</h3>
+					<div class="tsd-signature tsd-kind-icon">connection<wbr>Timeout<wbr>Millis<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
 					<aside class="tsd-sources">
-						<p>Inherited from <a href="driverconfig.html">DriverConfig</a>.<a href="driverconfig.html#database">database</a></p>
+						<p>Overrides <a href="poolconfig.html">PoolConfig</a>.<a href="poolconfig.html#connectiontimeoutmillis">connectionTimeoutMillis</a></p>
 						<ul>
-							<li>Defined in <a href="https://github.com/koskimas/kysely/blob/c56d35d/src/driver/driver-config.ts#L12">driver/driver-config.ts:12</a></li>
+							<li>Defined in <a href="https://github.com/koskimas/kysely/blob/c56d35d/src/driver/driver-config.ts#L87">driver/driver-config.ts:87</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
 						<div class="lead">
-							<p>The database name.</p>
+							<p>Number of milliseconds to wait before timing out when connecting a new
+							connection. By default this is 0 which means no timeout.</p>
 						</div>
 					</div>
 				</section>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="dialect" class="tsd-anchor"></a>
-					<h3>dialect</h3>
-					<div class="tsd-signature tsd-kind-icon">dialect<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">&quot;postgres&quot;</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">Dialect</span></div>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-overwrite">
+					<a name="idletimeoutmillis" class="tsd-anchor"></a>
+					<h3>idle<wbr>Timeout<wbr>Millis</h3>
+					<div class="tsd-signature tsd-kind-icon">idle<wbr>Timeout<wbr>Millis<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
 					<aside class="tsd-sources">
+						<p>Overrides <a href="poolconfig.html">PoolConfig</a>.<a href="poolconfig.html#idletimeoutmillis">idleTimeoutMillis</a></p>
 						<ul>
-							<li>Defined in <a href="https://github.com/koskimas/kysely/blob/c56d35d/src/kysely.ts#L541">kysely.ts:541</a></li>
-						</ul>
-					</aside>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-inherited">
-					<a name="host" class="tsd-anchor"></a>
-					<h3>host</h3>
-					<div class="tsd-signature tsd-kind-icon">host<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
-					<aside class="tsd-sources">
-						<p>Inherited from <a href="driverconfig.html">DriverConfig</a>.<a href="driverconfig.html#host">host</a></p>
-						<ul>
-							<li>Defined in <a href="https://github.com/koskimas/kysely/blob/c56d35d/src/driver/driver-config.ts#L7">driver/driver-config.ts:7</a></li>
+							<li>Defined in <a href="https://github.com/koskimas/kysely/blob/c56d35d/src/driver/driver-config.ts#L88">driver/driver-config.ts:88</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
 						<div class="lead">
-							<p>Database server host.</p>
+							<p>Number of milliseconds a connection must sit idle in the pool and not
+								be checked out before it is disconnected from the backend and discarded.
+								Default is 10000 (10 seconds). Set to 0 to disable auto-disconnection of
+							idle clients</p>
 						</div>
 					</div>
 				</section>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-inherited">
-					<a name="password" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagOptional">Optional</span> password</h3>
-					<div class="tsd-signature tsd-kind-icon">password<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-overwrite">
+					<a name="maxconnections" class="tsd-anchor"></a>
+					<h3>max<wbr>Connections</h3>
+					<div class="tsd-signature tsd-kind-icon">max<wbr>Connections<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
 					<aside class="tsd-sources">
-						<p>Inherited from <a href="driverconfig.html">DriverConfig</a>.<a href="driverconfig.html#password">password</a></p>
+						<p>Overrides <a href="poolconfig.html">PoolConfig</a>.<a href="poolconfig.html#maxconnections">maxConnections</a></p>
 						<ul>
-							<li>Defined in <a href="https://github.com/koskimas/kysely/blob/c56d35d/src/driver/driver-config.ts#L27">driver/driver-config.ts:27</a></li>
+							<li>Defined in <a href="https://github.com/koskimas/kysely/blob/c56d35d/src/driver/driver-config.ts#L86">driver/driver-config.ts:86</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
 						<div class="lead">
-							<p>Database user password. Optional, defaults to no password.</p>
+							<p>Maximum number of connections the pool should contain
+							by default this is set to 10.</p>
 						</div>
 					</div>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-inherited">
-					<a name="pool" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagOptional">Optional</span> pool</h3>
-					<div class="tsd-signature tsd-kind-icon">pool<span class="tsd-signature-symbol">:</span> <a href="poolconfig.html" class="tsd-signature-type" data-tsd-kind="Interface">PoolConfig</a></div>
+					<a name="oncreateconnection" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagOptional">Optional</span> on<wbr>Create<wbr>Connection</h3>
+					<div class="tsd-signature tsd-kind-icon">on<wbr>Create<wbr>Connection<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">(</span>connection<span class="tsd-signature-symbol">: </span><a href="connection.html" class="tsd-signature-type" data-tsd-kind="Interface">Connection</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></div>
 					<aside class="tsd-sources">
-						<p>Inherited from <a href="driverconfig.html">DriverConfig</a>.<a href="driverconfig.html#pool">pool</a></p>
+						<p>Inherited from <a href="poolconfig.html">PoolConfig</a>.<a href="poolconfig.html#oncreateconnection">onCreateConnection</a></p>
 						<ul>
-							<li>Defined in <a href="https://github.com/koskimas/kysely/blob/c56d35d/src/driver/driver-config.ts#L32">driver/driver-config.ts:32</a></li>
+							<li>Defined in <a href="https://github.com/koskimas/kysely/blob/c56d35d/src/driver/driver-config.ts#L71">driver/driver-config.ts:71</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
 						<div class="lead">
-							<p>Connection pooling config.</p>
+							<p>This is executed for each database connection when it is created.</p>
 						</div>
+						<dl class="tsd-comment-tags">
+							<dt>example</dt>
+							<dd><pre><code class="language-ts"><span style="color: #000000">{</span>
+<span style="color: #000000">  </span><span style="color: #001080">async</span><span style="color: #000000"> </span><span style="color: #795E26">onCreateConnection</span><span style="color: #000000">(</span><span style="color: #001080">connection</span><span style="color: #000000">: </span><span style="color: #001080">Connection</span><span style="color: #000000">): </span><span style="color: #267F99">Promise</span><span style="color: #000000">&lt;</span><span style="color: #0000FF">void</span><span style="color: #000000">&gt; {</span>
+<span style="color: #000000">    await connection.execute({</span>
+<span style="color: #000000">      </span><span style="color: #001080">sql:</span><span style="color: #000000"> </span><span style="color: #A31515">`SET TIMEZONE = &#039;UTC&#039;`</span><span style="color: #000000">,</span>
+<span style="color: #000000">      </span><span style="color: #001080">bindings:</span><span style="color: #000000"> []</span>
+<span style="color: #000000">    })</span>
+<span style="color: #000000">  }</span>
+<span style="color: #000000">}</span>
+</code></pre>
+							</dd>
+						</dl>
 					</div>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-inherited">
-					<a name="port" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagOptional">Optional</span> port</h3>
-					<div class="tsd-signature tsd-kind-icon">port<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
-					<aside class="tsd-sources">
-						<p>Inherited from <a href="driverconfig.html">DriverConfig</a>.<a href="driverconfig.html#port">port</a></p>
-						<ul>
-							<li>Defined in <a href="https://github.com/koskimas/kysely/blob/c56d35d/src/driver/driver-config.ts#L17">driver/driver-config.ts:17</a></li>
+					<div class="tsd-type-declaration">
+						<h4>Type declaration</h4>
+						<ul class="tsd-parameters">
+							<li class="tsd-parameter-signature">
+								<ul class="tsd-signatures tsd-kind-type-literal tsd-parent-kind-interface">
+									<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">(</span>connection<span class="tsd-signature-symbol">: </span><a href="connection.html" class="tsd-signature-type" data-tsd-kind="Interface">Connection</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></li>
+								</ul>
+								<ul class="tsd-descriptions">
+									<li class="tsd-description">
+										<h4 class="tsd-parameters-title">Parameters</h4>
+										<ul class="tsd-parameters">
+											<li>
+												<h5>connection: <a href="connection.html" class="tsd-signature-type" data-tsd-kind="Interface">Connection</a></h5>
+											</li>
+										</ul>
+										<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4>
+									</li>
+								</ul>
+							</li>
 						</ul>
-					</aside>
-					<div class="tsd-comment tsd-typography">
-						<div class="lead">
-							<p>Database server port. Optional, defaults to the engine&#39;s default port.</p>
-						</div>
-					</div>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-inherited">
-					<a name="user" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagOptional">Optional</span> user</h3>
-					<div class="tsd-signature tsd-kind-icon">user<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
-					<aside class="tsd-sources">
-						<p>Inherited from <a href="driverconfig.html">DriverConfig</a>.<a href="driverconfig.html#user">user</a></p>
-						<ul>
-							<li>Defined in <a href="https://github.com/koskimas/kysely/blob/c56d35d/src/driver/driver-config.ts#L22">driver/driver-config.ts:22</a></li>
-						</ul>
-					</aside>
-					<div class="tsd-comment tsd-typography">
-						<div class="lead">
-							<p>Database user. Optional, defaults to the engine&#39;s default user.</p>
-						</div>
 					</div>
 				</section>
 			</section>
@@ -259,42 +260,33 @@
 					<li class=" tsd-kind-interface">
 						<a href="driverconfigwithdefaults.html" class="tsd-kind-icon">Driver<wbr>Config<wbr>With<wbr>Defaults</a>
 					</li>
+					<li class=" tsd-kind-interface">
+						<a href="kyselyconfig.html" class="tsd-kind-icon">Kysely<wbr>Config</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="poolconfig.html" class="tsd-kind-icon">Pool<wbr>Config</a>
+					</li>
 				</ul>
 				<ul class="current">
 					<li class="current tsd-kind-interface">
-						<a href="kyselyconfig.html" class="tsd-kind-icon">Kysely<wbr>Config</a>
+						<a href="poolconfigwithdefaults.html" class="tsd-kind-icon">Pool<wbr>Config<wbr>With<wbr>Defaults</a>
 						<ul>
-							<li class=" tsd-kind-property tsd-parent-kind-interface tsd-is-inherited">
-								<a href="kyselyconfig.html#database" class="tsd-kind-icon">database</a>
+							<li class=" tsd-kind-property tsd-parent-kind-interface tsd-is-overwrite">
+								<a href="poolconfigwithdefaults.html#connectiontimeoutmillis" class="tsd-kind-icon">connection<wbr>Timeout<wbr>Millis</a>
 							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="kyselyconfig.html#dialect" class="tsd-kind-icon">dialect</a>
+							<li class=" tsd-kind-property tsd-parent-kind-interface tsd-is-overwrite">
+								<a href="poolconfigwithdefaults.html#idletimeoutmillis" class="tsd-kind-icon">idle<wbr>Timeout<wbr>Millis</a>
 							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-interface tsd-is-inherited">
-								<a href="kyselyconfig.html#host" class="tsd-kind-icon">host</a>
-							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-interface tsd-is-inherited">
-								<a href="kyselyconfig.html#password" class="tsd-kind-icon">password</a>
+							<li class=" tsd-kind-property tsd-parent-kind-interface tsd-is-overwrite">
+								<a href="poolconfigwithdefaults.html#maxconnections" class="tsd-kind-icon">max<wbr>Connections</a>
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-interface tsd-is-inherited">
-								<a href="kyselyconfig.html#pool" class="tsd-kind-icon">pool</a>
-							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-interface tsd-is-inherited">
-								<a href="kyselyconfig.html#port" class="tsd-kind-icon">port</a>
-							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-interface tsd-is-inherited">
-								<a href="kyselyconfig.html#user" class="tsd-kind-icon">user</a>
+								<a href="poolconfigwithdefaults.html#oncreateconnection" class="tsd-kind-icon">on<wbr>Create<wbr>Connection</a>
 							</li>
 						</ul>
 					</li>
 				</ul>
 				<ul class="after-current">
-					<li class=" tsd-kind-interface">
-						<a href="poolconfig.html" class="tsd-kind-icon">Pool<wbr>Config</a>
-					</li>
-					<li class=" tsd-kind-interface">
-						<a href="poolconfigwithdefaults.html" class="tsd-kind-icon">Pool<wbr>Config<wbr>With<wbr>Defaults</a>
-					</li>
 					<li class=" tsd-kind-interface">
 						<a href="querybuilderconstructorargs.html" class="tsd-kind-icon">Query<wbr>Builder<wbr>Constructor<wbr>Args</a>
 					</li>

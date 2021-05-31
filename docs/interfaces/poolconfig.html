@@ -70,6 +70,11 @@
 				<ul class="tsd-hierarchy">
 					<li>
 						<span class="target">PoolConfig</span>
+						<ul class="tsd-hierarchy">
+							<li>
+								<a href="poolconfigwithdefaults.html" class="tsd-signature-type" data-tsd-kind="Interface">PoolConfigWithDefaults</a>
+							</li>
+						</ul>
 					</li>
 				</ul>
 			</section>
@@ -97,7 +102,7 @@
 					<div class="tsd-signature tsd-kind-icon">connection<wbr>Timeout<wbr>Millis<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/koskimas/kysely/blob/3307233/src/driver/driver-config.ts#L23">driver/driver-config.ts:23</a></li>
+							<li>Defined in <a href="https://github.com/koskimas/kysely/blob/c56d35d/src/driver/driver-config.ts#L46">driver/driver-config.ts:46</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -113,7 +118,7 @@
 					<div class="tsd-signature tsd-kind-icon">idle<wbr>Timeout<wbr>Millis<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/koskimas/kysely/blob/3307233/src/driver/driver-config.ts#L31">driver/driver-config.ts:31</a></li>
+							<li>Defined in <a href="https://github.com/koskimas/kysely/blob/c56d35d/src/driver/driver-config.ts#L54">driver/driver-config.ts:54</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -131,7 +136,7 @@
 					<div class="tsd-signature tsd-kind-icon">max<wbr>Connections<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/koskimas/kysely/blob/3307233/src/driver/driver-config.ts#L17">driver/driver-config.ts:17</a></li>
+							<li>Defined in <a href="https://github.com/koskimas/kysely/blob/c56d35d/src/driver/driver-config.ts#L40">driver/driver-config.ts:40</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -147,7 +152,7 @@
 					<div class="tsd-signature tsd-kind-icon">on<wbr>Create<wbr>Connection<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">(</span>connection<span class="tsd-signature-symbol">: </span><a href="connection.html" class="tsd-signature-type" data-tsd-kind="Interface">Connection</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/koskimas/kysely/blob/3307233/src/driver/driver-config.ts#L48">driver/driver-config.ts:48</a></li>
+							<li>Defined in <a href="https://github.com/koskimas/kysely/blob/c56d35d/src/driver/driver-config.ts#L71">driver/driver-config.ts:71</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -220,6 +225,12 @@
 					<li class=" tsd-kind-class tsd-has-type-parameter">
 						<a href="../classes/kysely.html" class="tsd-kind-icon">Kysely</a>
 					</li>
+					<li class=" tsd-kind-class">
+						<a href="../classes/postgresdialect.html" class="tsd-kind-icon">Postgres<wbr>Dialect</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="../classes/postgresdriver.html" class="tsd-kind-icon">Postgres<wbr>Driver</a>
+					</li>
 					<li class=" tsd-kind-class tsd-has-type-parameter">
 						<a href="../classes/querybuilder.html" class="tsd-kind-icon">Query<wbr>Builder</a>
 					</li>
@@ -234,6 +245,9 @@
 					</li>
 					<li class=" tsd-kind-interface">
 						<a href="driverconfig.html" class="tsd-kind-icon">Driver<wbr>Config</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="driverconfigwithdefaults.html" class="tsd-kind-icon">Driver<wbr>Config<wbr>With<wbr>Defaults</a>
 					</li>
 					<li class=" tsd-kind-interface">
 						<a href="kyselyconfig.html" class="tsd-kind-icon">Kysely<wbr>Config</a>
@@ -259,6 +273,9 @@
 					</li>
 				</ul>
 				<ul class="after-current">
+					<li class=" tsd-kind-interface">
+						<a href="poolconfigwithdefaults.html" class="tsd-kind-icon">Pool<wbr>Config<wbr>With<wbr>Defaults</a>
+					</li>
 					<li class=" tsd-kind-interface">
 						<a href="querybuilderconstructorargs.html" class="tsd-kind-icon">Query<wbr>Builder<wbr>Constructor<wbr>Args</a>
 					</li>
@@ -301,15 +318,16 @@
 				<li class="tsd-kind-method tsd-parent-kind-class"><span class="tsd-kind-icon">Method</span></li>
 			</ul>
 			<ul class="tsd-legend">
+				<li class="tsd-kind-constructor tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited constructor</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited method</span></li>
+			</ul>
+			<ul class="tsd-legend">
 				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-protected"><span class="tsd-kind-icon">Protected property</span></li>
 				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-protected"><span class="tsd-kind-icon">Protected method</span></li>
 			</ul>
 			<ul class="tsd-legend">
 				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-private"><span class="tsd-kind-icon">Private property</span></li>
 				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-private"><span class="tsd-kind-icon">Private method</span></li>
-			</ul>
-			<ul class="tsd-legend">
-				<li class="tsd-kind-constructor tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited constructor</span></li>
 			</ul>
 		</div>
 	</div>

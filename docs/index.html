@@ -69,14 +69,14 @@
 					columns with correct types and aliases. This allows tools like vscode autocompletion to make your life
 				so much easier.</p>
 				<p>As you can see in the gif above, through the pure magic of modern typescript, Kysely is even able to parse
-					the alias given to <code>pet.name</code> and add a column <code>pet_name</code> to the result row type. Kysely is also able to
-					infer colum names and types from selected subqueries, joined subqueries, <code>with</code> statements and pretty much
-					anything you can think of. Typescript is always there for you to tell what kind of query you can build and
-				offer completions.</p>
+					the alias given to <code>pet.name</code> and add the <code>pet_name</code> column to the result row type. Kysely is able to infer
+					colum names and types from selected subqueries, joined subqueries, <code>with</code> statements and pretty much
+					anything you can think of. Typescript is always there for you to tell what kind of query you can build
+				and offer completions.</p>
 				<p>Of course there are cases where things cannot be typed at compile time, and Kysely offers escape
 					hatches for these situations. With typescript you can always cast something to <code>any</code> if the types
 					fail you. with Kysely you can also explicitly tell it to ignore the typings, but the default is always
-				type safety!</p>
+				type-safety!</p>
 				<p>All you need to do is define an interface for each table in the database and pass those
 				interfaces to the <code>Kysely</code> constructor:</p>
 				<pre><code class="language-ts"><span style="color: #AF00DB">import</span><span style="color: #000000"> { </span><span style="color: #001080">Kysely</span><span style="color: #000000"> } </span><span style="color: #AF00DB">from</span><span style="color: #000000"> </span><span style="color: #A31515">&#039;kysely&#039;</span>
@@ -174,6 +174,12 @@
 					<li class=" tsd-kind-class tsd-has-type-parameter">
 						<a href="classes/kysely.html" class="tsd-kind-icon">Kysely</a>
 					</li>
+					<li class=" tsd-kind-class">
+						<a href="classes/postgresdialect.html" class="tsd-kind-icon">Postgres<wbr>Dialect</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="classes/postgresdriver.html" class="tsd-kind-icon">Postgres<wbr>Driver</a>
+					</li>
 					<li class=" tsd-kind-class tsd-has-type-parameter">
 						<a href="classes/querybuilder.html" class="tsd-kind-icon">Query<wbr>Builder</a>
 					</li>
@@ -190,10 +196,16 @@
 						<a href="interfaces/driverconfig.html" class="tsd-kind-icon">Driver<wbr>Config</a>
 					</li>
 					<li class=" tsd-kind-interface">
+						<a href="interfaces/driverconfigwithdefaults.html" class="tsd-kind-icon">Driver<wbr>Config<wbr>With<wbr>Defaults</a>
+					</li>
+					<li class=" tsd-kind-interface">
 						<a href="interfaces/kyselyconfig.html" class="tsd-kind-icon">Kysely<wbr>Config</a>
 					</li>
 					<li class=" tsd-kind-interface">
 						<a href="interfaces/poolconfig.html" class="tsd-kind-icon">Pool<wbr>Config</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/poolconfigwithdefaults.html" class="tsd-kind-icon">Pool<wbr>Config<wbr>With<wbr>Defaults</a>
 					</li>
 					<li class=" tsd-kind-interface">
 						<a href="interfaces/querybuilderconstructorargs.html" class="tsd-kind-icon">Query<wbr>Builder<wbr>Constructor<wbr>Args</a>
@@ -237,15 +249,16 @@
 				<li class="tsd-kind-method tsd-parent-kind-class"><span class="tsd-kind-icon">Method</span></li>
 			</ul>
 			<ul class="tsd-legend">
+				<li class="tsd-kind-constructor tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited constructor</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited method</span></li>
+			</ul>
+			<ul class="tsd-legend">
 				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-protected"><span class="tsd-kind-icon">Protected property</span></li>
 				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-protected"><span class="tsd-kind-icon">Protected method</span></li>
 			</ul>
 			<ul class="tsd-legend">
 				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-private"><span class="tsd-kind-icon">Private property</span></li>
 				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-private"><span class="tsd-kind-icon">Private method</span></li>
-			</ul>
-			<ul class="tsd-legend">
-				<li class="tsd-kind-constructor tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited constructor</span></li>
 			</ul>
 		</div>
 	</div>
