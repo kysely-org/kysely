@@ -13,14 +13,45 @@ import { DropTableBuilder } from './drop-table-builder'
 export interface Schema {
   /**
    * Create a new table.
-   * 
+   *
    * @example
+   * This example creates a new table with columns `id`, `first_name`,
+   * `last_name` and `gender`:
+   *
    * ```ts
-   * await db.schema.
+   * await db.schema
+   *   .createTable('person')
+   *   .integer('id', col => col.primary().increments())
+   *   .string('first_name', col => col.notNullable())
+   *   .string('last_name', col => col.notNullable())
+   *   .string('gender', col => col.notNullable())
+   *   .execute()
    * ```
    */
   createTable(table: string): CreateTableBuilder
+
+  /**
+   * Drop a table.
+   *
+   * @example
+   * ```ts
+   * await db.schema
+   *   .dropTable('person')
+   *   .execute()
+   * ```
+   */
   dropTable(table: string): DropTableBuilder
+
+  /**
+   * Drop a table if it exists. Does nothing if it doesn't.
+   *
+   * @example
+   * ```ts
+   * await db.schema
+   *   .dropTableIfExists('person')
+   *   .execute()
+   * ```
+   */
   dropTableIfExists(table: string): DropTableBuilder
 }
 

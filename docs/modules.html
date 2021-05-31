@@ -66,8 +66,11 @@
 							<ul class="tsd-index-list">
 								<li class="tsd-kind-class tsd-has-type-parameter"><a href="classes/aliasedquerybuilder.html" class="tsd-kind-icon">Aliased<wbr>Query<wbr>Builder</a></li>
 								<li class="tsd-kind-class tsd-has-type-parameter"><a href="classes/aliasedrawbuilder.html" class="tsd-kind-icon">Aliased<wbr>Raw<wbr>Builder</a></li>
+								<li class="tsd-kind-class"><a href="classes/columnbuilder.html" class="tsd-kind-icon">Column<wbr>Builder</a></li>
+								<li class="tsd-kind-class"><a href="classes/createtablebuilder.html" class="tsd-kind-icon">Create<wbr>Table<wbr>Builder</a></li>
 								<li class="tsd-kind-class"><a href="classes/defaultquerycompiler.html" class="tsd-kind-icon">Default<wbr>Query<wbr>Compiler</a></li>
 								<li class="tsd-kind-class"><a href="classes/driver.html" class="tsd-kind-icon">Driver</a></li>
+								<li class="tsd-kind-class"><a href="classes/droptablebuilder.html" class="tsd-kind-icon">Drop<wbr>Table<wbr>Builder</a></li>
 								<li class="tsd-kind-class tsd-has-type-parameter"><a href="classes/joinbuilder.html" class="tsd-kind-icon">Join<wbr>Builder</a></li>
 								<li class="tsd-kind-class tsd-has-type-parameter"><a href="classes/kysely.html" class="tsd-kind-icon">Kysely</a></li>
 								<li class="tsd-kind-class"><a href="classes/postgresdialect.html" class="tsd-kind-icon">Postgres<wbr>Dialect</a></li>
@@ -81,8 +84,11 @@
 							<ul class="tsd-index-list">
 								<li class="tsd-kind-interface"><a href="interfaces/compiledquery.html" class="tsd-kind-icon">Compiled<wbr>Query</a></li>
 								<li class="tsd-kind-interface"><a href="interfaces/connection.html" class="tsd-kind-icon">Connection</a></li>
+								<li class="tsd-kind-interface"><a href="interfaces/createtablebuilderconstructorargs.html" class="tsd-kind-icon">Create<wbr>Table<wbr>Builder<wbr>Constructor<wbr>Args</a></li>
 								<li class="tsd-kind-interface"><a href="interfaces/driverconfig.html" class="tsd-kind-icon">Driver<wbr>Config</a></li>
 								<li class="tsd-kind-interface"><a href="interfaces/driverconfigwithdefaults.html" class="tsd-kind-icon">Driver<wbr>Config<wbr>With<wbr>Defaults</a></li>
+								<li class="tsd-kind-interface"><a href="interfaces/droptablebuilderconstructorargs.html" class="tsd-kind-icon">Drop<wbr>Table<wbr>Builder<wbr>Constructor<wbr>Args</a></li>
+								<li class="tsd-kind-interface"><a href="interfaces/dynamic.html" class="tsd-kind-icon">Dynamic</a></li>
 								<li class="tsd-kind-interface"><a href="interfaces/kyselyconfig.html" class="tsd-kind-icon">Kysely<wbr>Config</a></li>
 								<li class="tsd-kind-interface"><a href="interfaces/poolconfig.html" class="tsd-kind-icon">Pool<wbr>Config</a></li>
 								<li class="tsd-kind-interface"><a href="interfaces/poolconfigwithdefaults.html" class="tsd-kind-icon">Pool<wbr>Config<wbr>With<wbr>Defaults</a></li>
@@ -96,12 +102,14 @@
 						<section class="tsd-index-section ">
 							<h3>Type aliases</h3>
 							<ul class="tsd-index-list">
+								<li class="tsd-kind-type-alias"><a href="modules.html#columnbuildercallback" class="tsd-kind-icon">Column<wbr>Builder<wbr>Callback</a></li>
 								<li class="tsd-kind-type-alias"><a href="modules.html#compileentrypointnode" class="tsd-kind-icon">Compile<wbr>Entry<wbr>Point<wbr>Node</a></li>
 							</ul>
 						</section>
 						<section class="tsd-index-section ">
 							<h3>Functions</h3>
 							<ul class="tsd-index-list">
+								<li class="tsd-kind-function"><a href="modules.html#createdynamicobject" class="tsd-kind-icon">create<wbr>Dynamic<wbr>Object</a></li>
 								<li class="tsd-kind-function tsd-has-type-parameter"><a href="modules.html#createemptyselectquery" class="tsd-kind-icon">create<wbr>Empty<wbr>Select<wbr>Query</a></li>
 								<li class="tsd-kind-function"><a href="modules.html#createschemaobject" class="tsd-kind-icon">create<wbr>Schema<wbr>Object</a></li>
 							</ul>
@@ -112,18 +120,66 @@
 			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Type aliases</h2>
 				<section class="tsd-panel tsd-member tsd-kind-type-alias">
+					<a name="columnbuildercallback" class="tsd-anchor"></a>
+					<h3>Column<wbr>Builder<wbr>Callback</h3>
+					<div class="tsd-signature tsd-kind-icon">Column<wbr>Builder<wbr>Callback<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">(</span>tableBuilder<span class="tsd-signature-symbol">: </span><a href="classes/columnbuilder.html" class="tsd-signature-type" data-tsd-kind="Class">ColumnBuilder</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><a href="classes/columnbuilder.html" class="tsd-signature-type" data-tsd-kind="Class">ColumnBuilder</a></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/koskimas/kysely/blob/b487c75/src/schema/create-table-builder.ts#L165">schema/create-table-builder.ts:165</a></li>
+						</ul>
+					</aside>
+					<div class="tsd-type-declaration">
+						<h4>Type declaration</h4>
+						<ul class="tsd-parameters">
+							<li class="tsd-parameter-signature">
+								<ul class="tsd-signatures tsd-kind-type-literal tsd-parent-kind-type-alias">
+									<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">(</span>tableBuilder<span class="tsd-signature-symbol">: </span><a href="classes/columnbuilder.html" class="tsd-signature-type" data-tsd-kind="Class">ColumnBuilder</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="classes/columnbuilder.html" class="tsd-signature-type" data-tsd-kind="Class">ColumnBuilder</a></li>
+								</ul>
+								<ul class="tsd-descriptions">
+									<li class="tsd-description">
+										<h4 class="tsd-parameters-title">Parameters</h4>
+										<ul class="tsd-parameters">
+											<li>
+												<h5>tableBuilder: <a href="classes/columnbuilder.html" class="tsd-signature-type" data-tsd-kind="Class">ColumnBuilder</a></h5>
+											</li>
+										</ul>
+										<h4 class="tsd-returns-title">Returns <a href="classes/columnbuilder.html" class="tsd-signature-type" data-tsd-kind="Class">ColumnBuilder</a></h4>
+									</li>
+								</ul>
+							</li>
+						</ul>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-type-alias">
 					<a name="compileentrypointnode" class="tsd-anchor"></a>
 					<h3>Compile<wbr>Entry<wbr>Point<wbr>Node</h3>
 					<div class="tsd-signature tsd-kind-icon">Compile<wbr>Entry<wbr>Point<wbr>Node<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">QueryNode</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">CreateTableNode</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">DropTableNode</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">RawNode</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/koskimas/kysely/blob/c56d35d/src/query-compiler/query-compiler.ts#L7">query-compiler/query-compiler.ts:7</a></li>
+							<li>Defined in <a href="https://github.com/koskimas/kysely/blob/b487c75/src/query-compiler/query-compiler.ts#L7">query-compiler/query-compiler.ts:7</a></li>
 						</ul>
 					</aside>
 				</section>
 			</section>
 			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Functions</h2>
+				<section class="tsd-panel tsd-member tsd-kind-function">
+					<a name="createdynamicobject" class="tsd-anchor"></a>
+					<h3>create<wbr>Dynamic<wbr>Object</h3>
+					<ul class="tsd-signatures tsd-kind-function">
+						<li class="tsd-signature tsd-kind-icon">create<wbr>Dynamic<wbr>Object<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="interfaces/dynamic.html" class="tsd-signature-type" data-tsd-kind="Interface">Dynamic</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/b487c75/src/dynamic/dynamic.ts#L8">dynamic/dynamic.ts:8</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-returns-title">Returns <a href="interfaces/dynamic.html" class="tsd-signature-type" data-tsd-kind="Interface">Dynamic</a></h4>
+						</li>
+					</ul>
+				</section>
 				<section class="tsd-panel tsd-member tsd-kind-function tsd-has-type-parameter">
 					<a name="createemptyselectquery" class="tsd-anchor"></a>
 					<h3>create<wbr>Empty<wbr>Select<wbr>Query</h3>
@@ -134,7 +190,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/c56d35d/src/query-builder/query-builder.ts#L1882">query-builder/query-builder.ts:1882</a></li>
+									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/b487c75/src/query-builder/query-builder.ts#L1882">query-builder/query-builder.ts:1882</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-type-parameters-title">Type parameters</h4>
@@ -163,7 +219,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/c56d35d/src/schema/schema.ts#L27">schema/schema.ts:27</a></li>
+									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/b487c75/src/schema/schema.ts#L58">schema/schema.ts:58</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -198,10 +254,19 @@
 						<a href="classes/aliasedrawbuilder.html" class="tsd-kind-icon">Aliased<wbr>Raw<wbr>Builder</a>
 					</li>
 					<li class=" tsd-kind-class">
+						<a href="classes/columnbuilder.html" class="tsd-kind-icon">Column<wbr>Builder</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="classes/createtablebuilder.html" class="tsd-kind-icon">Create<wbr>Table<wbr>Builder</a>
+					</li>
+					<li class=" tsd-kind-class">
 						<a href="classes/defaultquerycompiler.html" class="tsd-kind-icon">Default<wbr>Query<wbr>Compiler</a>
 					</li>
 					<li class=" tsd-kind-class">
 						<a href="classes/driver.html" class="tsd-kind-icon">Driver</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="classes/droptablebuilder.html" class="tsd-kind-icon">Drop<wbr>Table<wbr>Builder</a>
 					</li>
 					<li class=" tsd-kind-class tsd-has-type-parameter">
 						<a href="classes/joinbuilder.html" class="tsd-kind-icon">Join<wbr>Builder</a>
@@ -228,10 +293,19 @@
 						<a href="interfaces/connection.html" class="tsd-kind-icon">Connection</a>
 					</li>
 					<li class=" tsd-kind-interface">
+						<a href="interfaces/createtablebuilderconstructorargs.html" class="tsd-kind-icon">Create<wbr>Table<wbr>Builder<wbr>Constructor<wbr>Args</a>
+					</li>
+					<li class=" tsd-kind-interface">
 						<a href="interfaces/driverconfig.html" class="tsd-kind-icon">Driver<wbr>Config</a>
 					</li>
 					<li class=" tsd-kind-interface">
 						<a href="interfaces/driverconfigwithdefaults.html" class="tsd-kind-icon">Driver<wbr>Config<wbr>With<wbr>Defaults</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/droptablebuilderconstructorargs.html" class="tsd-kind-icon">Drop<wbr>Table<wbr>Builder<wbr>Constructor<wbr>Args</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/dynamic.html" class="tsd-kind-icon">Dynamic</a>
 					</li>
 					<li class=" tsd-kind-interface">
 						<a href="interfaces/kyselyconfig.html" class="tsd-kind-icon">Kysely<wbr>Config</a>
@@ -258,7 +332,13 @@
 						<a href="interfaces/schema.html" class="tsd-kind-icon">Schema</a>
 					</li>
 					<li class=" tsd-kind-type-alias">
+						<a href="modules.html#columnbuildercallback" class="tsd-kind-icon">Column<wbr>Builder<wbr>Callback</a>
+					</li>
+					<li class=" tsd-kind-type-alias">
 						<a href="modules.html#compileentrypointnode" class="tsd-kind-icon">Compile<wbr>Entry<wbr>Point<wbr>Node</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#createdynamicobject" class="tsd-kind-icon">create<wbr>Dynamic<wbr>Object</a>
 					</li>
 					<li class=" tsd-kind-function tsd-has-type-parameter">
 						<a href="modules.html#createemptyselectquery" class="tsd-kind-icon">create<wbr>Empty<wbr>Select<wbr>Query</a>

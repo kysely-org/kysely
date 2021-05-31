@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>Schema | kysely</title>
+	<title>Dynamic | kysely</title>
 	<meta name="description" content="Documentation for kysely">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="../assets/css/main.css">
@@ -55,28 +55,21 @@
 					<a href="../modules.html">kysely</a>
 				</li>
 				<li>
-					<a href="schema.html">Schema</a>
+					<a href="dynamic.html">Dynamic</a>
 				</li>
 			</ul>
-			<h1>Interface Schema</h1>
+			<h1>Interface Dynamic</h1>
 		</div>
 	</div>
 </header>
 <div class="container container-main">
 	<div class="row">
 		<div class="col-8 col-content">
-			<section class="tsd-panel tsd-comment">
-				<div class="tsd-comment tsd-typography">
-					<div class="lead">
-						<p>Provides methods for building database schema.</p>
-					</div>
-				</div>
-			</section>
 			<section class="tsd-panel tsd-hierarchy">
 				<h3>Hierarchy</h3>
 				<ul class="tsd-hierarchy">
 					<li>
-						<span class="target">Schema</span>
+						<span class="target">Dynamic</span>
 					</li>
 				</ul>
 			</section>
@@ -87,9 +80,7 @@
 						<section class="tsd-index-section ">
 							<h3>Methods</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="schema.html#createtable" class="tsd-kind-icon">create<wbr>Table</a></li>
-								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="schema.html#droptable" class="tsd-kind-icon">drop<wbr>Table</a></li>
-								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="schema.html#droptableifexists" class="tsd-kind-icon">drop<wbr>Table<wbr>IfExists</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface tsd-has-type-parameter"><a href="dynamic.html#ref" class="tsd-kind-icon">ref</a></li>
 							</ul>
 						</section>
 					</div>
@@ -97,117 +88,32 @@
 			</section>
 			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Methods</h2>
-				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
-					<a name="createtable" class="tsd-anchor"></a>
-					<h3>create<wbr>Table</h3>
-					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
-						<li class="tsd-signature tsd-kind-icon">create<wbr>Table<span class="tsd-signature-symbol">(</span>table<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../classes/createtablebuilder.html" class="tsd-signature-type" data-tsd-kind="Class">CreateTableBuilder</a></li>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface tsd-has-type-parameter">
+					<a name="ref" class="tsd-anchor"></a>
+					<h3>ref</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface tsd-has-type-parameter">
+						<li class="tsd-signature tsd-kind-icon">ref&lt;R&gt;<span class="tsd-signature-symbol">(</span>reference<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">DynamicReferenceBuilder</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">R</span><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/b487c75/src/schema/schema.ts#L31">schema/schema.ts:31</a></li>
+									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/b487c75/src/dynamic/dynamic.ts#L5">dynamic/dynamic.ts:5</a></li>
 								</ul>
 							</aside>
-							<div class="tsd-comment tsd-typography">
-								<div class="lead">
-									<p>Create a new table.</p>
-								</div>
-								<dl class="tsd-comment-tags">
-									<dt>example</dt>
-									<dd><p>This example creates a new table with columns <code>id</code>, <code>first_name</code>,
-										<code>last_name</code> and <code>gender</code>:</p>
-										<pre><code class="language-ts"><span style="color: #AF00DB">await</span><span style="color: #000000"> </span><span style="color: #001080">db</span><span style="color: #000000">.</span><span style="color: #001080">schema</span>
-<span style="color: #000000">  .</span><span style="color: #795E26">createTable</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;person&#039;</span><span style="color: #000000">)</span>
-<span style="color: #000000">  .</span><span style="color: #795E26">integer</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;id&#039;</span><span style="color: #000000">, </span><span style="color: #001080">col</span><span style="color: #000000"> </span><span style="color: #0000FF">=&gt;</span><span style="color: #000000"> </span><span style="color: #001080">col</span><span style="color: #000000">.</span><span style="color: #795E26">primary</span><span style="color: #000000">().</span><span style="color: #795E26">increments</span><span style="color: #000000">())</span>
-<span style="color: #000000">  .</span><span style="color: #795E26">string</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;first_name&#039;</span><span style="color: #000000">, </span><span style="color: #001080">col</span><span style="color: #000000"> </span><span style="color: #0000FF">=&gt;</span><span style="color: #000000"> </span><span style="color: #001080">col</span><span style="color: #000000">.</span><span style="color: #795E26">notNullable</span><span style="color: #000000">())</span>
-<span style="color: #000000">  .</span><span style="color: #795E26">string</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;last_name&#039;</span><span style="color: #000000">, </span><span style="color: #001080">col</span><span style="color: #000000"> </span><span style="color: #0000FF">=&gt;</span><span style="color: #000000"> </span><span style="color: #001080">col</span><span style="color: #000000">.</span><span style="color: #795E26">notNullable</span><span style="color: #000000">())</span>
-<span style="color: #000000">  .</span><span style="color: #795E26">string</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;gender&#039;</span><span style="color: #000000">, </span><span style="color: #001080">col</span><span style="color: #000000"> </span><span style="color: #0000FF">=&gt;</span><span style="color: #000000"> </span><span style="color: #001080">col</span><span style="color: #000000">.</span><span style="color: #795E26">notNullable</span><span style="color: #000000">())</span>
-<span style="color: #000000">  .</span><span style="color: #795E26">execute</span><span style="color: #000000">()</span>
-</code></pre>
-									</dd>
-								</dl>
-							</div>
+							<h4 class="tsd-type-parameters-title">Type parameters</h4>
+							<ul class="tsd-type-parameters">
+								<li>
+									<h4>R<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span> = <span class="tsd-signature-type">never</span></h4>
+								</li>
+							</ul>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
-									<h5>table: <span class="tsd-signature-type">string</span></h5>
+									<h5>reference: <span class="tsd-signature-type">string</span></h5>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <a href="../classes/createtablebuilder.html" class="tsd-signature-type" data-tsd-kind="Class">CreateTableBuilder</a></h4>
-						</li>
-					</ul>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
-					<a name="droptable" class="tsd-anchor"></a>
-					<h3>drop<wbr>Table</h3>
-					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
-						<li class="tsd-signature tsd-kind-icon">drop<wbr>Table<span class="tsd-signature-symbol">(</span>table<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../classes/droptablebuilder.html" class="tsd-signature-type" data-tsd-kind="Class">DropTableBuilder</a></li>
-					</ul>
-					<ul class="tsd-descriptions">
-						<li class="tsd-description">
-							<aside class="tsd-sources">
-								<ul>
-									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/b487c75/src/schema/schema.ts#L43">schema/schema.ts:43</a></li>
-								</ul>
-							</aside>
-							<div class="tsd-comment tsd-typography">
-								<div class="lead">
-									<p>Drop a table.</p>
-								</div>
-								<dl class="tsd-comment-tags">
-									<dt>example</dt>
-									<dd><pre><code class="language-ts"><span style="color: #AF00DB">await</span><span style="color: #000000"> </span><span style="color: #001080">db</span><span style="color: #000000">.</span><span style="color: #001080">schema</span>
-<span style="color: #000000">  .</span><span style="color: #795E26">dropTable</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;person&#039;</span><span style="color: #000000">)</span>
-<span style="color: #000000">  .</span><span style="color: #795E26">execute</span><span style="color: #000000">()</span>
-</code></pre>
-									</dd>
-								</dl>
-							</div>
-							<h4 class="tsd-parameters-title">Parameters</h4>
-							<ul class="tsd-parameters">
-								<li>
-									<h5>table: <span class="tsd-signature-type">string</span></h5>
-								</li>
-							</ul>
-							<h4 class="tsd-returns-title">Returns <a href="../classes/droptablebuilder.html" class="tsd-signature-type" data-tsd-kind="Class">DropTableBuilder</a></h4>
-						</li>
-					</ul>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
-					<a name="droptableifexists" class="tsd-anchor"></a>
-					<h3>drop<wbr>Table<wbr>IfExists</h3>
-					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
-						<li class="tsd-signature tsd-kind-icon">drop<wbr>Table<wbr>IfExists<span class="tsd-signature-symbol">(</span>table<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../classes/droptablebuilder.html" class="tsd-signature-type" data-tsd-kind="Class">DropTableBuilder</a></li>
-					</ul>
-					<ul class="tsd-descriptions">
-						<li class="tsd-description">
-							<aside class="tsd-sources">
-								<ul>
-									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/b487c75/src/schema/schema.ts#L55">schema/schema.ts:55</a></li>
-								</ul>
-							</aside>
-							<div class="tsd-comment tsd-typography">
-								<div class="lead">
-									<p>Drop a table if it exists. Does nothing if it doesn&#39;t.</p>
-								</div>
-								<dl class="tsd-comment-tags">
-									<dt>example</dt>
-									<dd><pre><code class="language-ts"><span style="color: #AF00DB">await</span><span style="color: #000000"> </span><span style="color: #001080">db</span><span style="color: #000000">.</span><span style="color: #001080">schema</span>
-<span style="color: #000000">  .</span><span style="color: #795E26">dropTableIfExists</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;person&#039;</span><span style="color: #000000">)</span>
-<span style="color: #000000">  .</span><span style="color: #795E26">execute</span><span style="color: #000000">()</span>
-</code></pre>
-									</dd>
-								</dl>
-							</div>
-							<h4 class="tsd-parameters-title">Parameters</h4>
-							<ul class="tsd-parameters">
-								<li>
-									<h5>table: <span class="tsd-signature-type">string</span></h5>
-								</li>
-							</ul>
-							<h4 class="tsd-returns-title">Returns <a href="../classes/droptablebuilder.html" class="tsd-signature-type" data-tsd-kind="Class">DropTableBuilder</a></h4>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">DynamicReferenceBuilder</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">R</span><span class="tsd-signature-symbol">&gt;</span></h4>
 						</li>
 					</ul>
 				</section>
@@ -280,9 +186,18 @@
 					<li class=" tsd-kind-interface">
 						<a href="droptablebuilderconstructorargs.html" class="tsd-kind-icon">Drop<wbr>Table<wbr>Builder<wbr>Constructor<wbr>Args</a>
 					</li>
-					<li class=" tsd-kind-interface">
+				</ul>
+				<ul class="current">
+					<li class="current tsd-kind-interface">
 						<a href="dynamic.html" class="tsd-kind-icon">Dynamic</a>
+						<ul>
+							<li class=" tsd-kind-method tsd-parent-kind-interface tsd-has-type-parameter">
+								<a href="dynamic.html#ref" class="tsd-kind-icon">ref</a>
+							</li>
+						</ul>
 					</li>
+				</ul>
+				<ul class="after-current">
 					<li class=" tsd-kind-interface">
 						<a href="kyselyconfig.html" class="tsd-kind-icon">Kysely<wbr>Config</a>
 					</li>
@@ -304,24 +219,9 @@
 					<li class=" tsd-kind-interface">
 						<a href="rawbuilderconstructorargs.html" class="tsd-kind-icon">Raw<wbr>Builder<wbr>Constructor<wbr>Args</a>
 					</li>
-				</ul>
-				<ul class="current">
-					<li class="current tsd-kind-interface">
+					<li class=" tsd-kind-interface">
 						<a href="schema.html" class="tsd-kind-icon">Schema</a>
-						<ul>
-							<li class=" tsd-kind-method tsd-parent-kind-interface">
-								<a href="schema.html#createtable" class="tsd-kind-icon">create<wbr>Table</a>
-							</li>
-							<li class=" tsd-kind-method tsd-parent-kind-interface">
-								<a href="schema.html#droptable" class="tsd-kind-icon">drop<wbr>Table</a>
-							</li>
-							<li class=" tsd-kind-method tsd-parent-kind-interface">
-								<a href="schema.html#droptableifexists" class="tsd-kind-icon">drop<wbr>Table<wbr>IfExists</a>
-							</li>
-						</ul>
 					</li>
-				</ul>
-				<ul class="after-current">
 					<li class=" tsd-kind-type-alias">
 						<a href="../modules.html#columnbuildercallback" class="tsd-kind-icon">Column<wbr>Builder<wbr>Callback</a>
 					</li>

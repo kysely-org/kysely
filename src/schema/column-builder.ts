@@ -59,6 +59,12 @@ export class ColumnBuilder implements OperationNodeSource {
     )
   }
 
+  notNullable(): ColumnBuilder {
+    return new ColumnBuilder(
+      cloneColumnDefinitionNode(this.#node, { isNullable: false })
+    )
+  }
+
   onDelete(onDelete: OnDelete): ColumnBuilder {
     return new ColumnBuilder(
       cloneColumnDefinitionNode(this.#node, { onDelete })

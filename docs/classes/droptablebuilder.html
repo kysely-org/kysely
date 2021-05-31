@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>AliasedQueryBuilder | kysely</title>
+	<title>DropTableBuilder | kysely</title>
 	<meta name="description" content="Documentation for kysely">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="../assets/css/main.css">
@@ -55,46 +55,28 @@
 					<a href="../modules.html">kysely</a>
 				</li>
 				<li>
-					<a href="aliasedquerybuilder.html">AliasedQueryBuilder</a>
+					<a href="droptablebuilder.html">DropTableBuilder</a>
 				</li>
 			</ul>
-			<h1>Class AliasedQueryBuilder&lt;DB, TB, O, A&gt;</h1>
+			<h1>Class DropTableBuilder</h1>
 		</div>
 	</div>
 </header>
 <div class="container container-main">
 	<div class="row">
 		<div class="col-8 col-content">
-			<section class="tsd-panel tsd-comment">
-				<div class="tsd-comment tsd-typography">
-					<div class="lead">
-						<p><a href="querybuilder.html">QueryBuilder</a> with an alias. The result of calling <a href="querybuilder.html#as">QueryBuilder.as</a>.</p>
-					</div>
-				</div>
-			</section>
-			<section class="tsd-panel tsd-type-parameters">
-				<h3>Type parameters</h3>
-				<ul class="tsd-type-parameters">
-					<li>
-						<h4>DB</h4>
-					</li>
-					<li>
-						<h4>TB<span class="tsd-signature-symbol">: </span><span class="tsd-signature-symbol">keyof </span><span class="tsd-signature-type">DB</span></h4>
-					</li>
-					<li>
-						<h4>O = <span class="tsd-signature-type">undefined</span></h4>
-					</li>
-					<li>
-						<h4>A<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span> = <span class="tsd-signature-type">never</span></h4>
-					</li>
-				</ul>
-			</section>
 			<section class="tsd-panel tsd-hierarchy">
 				<h3>Hierarchy</h3>
 				<ul class="tsd-hierarchy">
 					<li>
-						<span class="target">AliasedQueryBuilder</span>
+						<span class="target">DropTableBuilder</span>
 					</li>
+				</ul>
+			</section>
+			<section class="tsd-panel">
+				<h3>Implements</h3>
+				<ul class="tsd-hierarchy">
+					<li><span class="tsd-signature-type">OperationNodeSource</span></li>
 				</ul>
 			</section>
 			<section class="tsd-panel-group tsd-index-group">
@@ -104,26 +86,24 @@
 						<section class="tsd-index-section ">
 							<h3>Constructors</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-constructor tsd-parent-kind-class tsd-has-type-parameter"><a href="aliasedquerybuilder.html#constructor" class="tsd-kind-icon">constructor</a></li>
+								<li class="tsd-kind-constructor tsd-parent-kind-class"><a href="droptablebuilder.html#constructor" class="tsd-kind-icon">constructor</a></li>
 							</ul>
 						</section>
 						<section class="tsd-index-section tsd-is-private tsd-is-private-protected">
 							<h3>Properties</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-private"><a href="aliasedquerybuilder.html#_alias" class="tsd-kind-icon">#alias</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-private"><a href="aliasedquerybuilder.html#_querybuilder" class="tsd-kind-icon">#query<wbr>Builder</a></li>
-							</ul>
-						</section>
-						<section class="tsd-index-section tsd-is-private tsd-is-private-protected">
-							<h3>Accessors</h3>
-							<ul class="tsd-index-list">
-								<li class="tsd-kind-get-signature tsd-parent-kind-class tsd-is-private"><a href="aliasedquerybuilder.html#alias" class="tsd-kind-icon">alias</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-private"><a href="droptablebuilder.html#_compiler" class="tsd-kind-icon">#compiler</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-private"><a href="droptablebuilder.html#_connectionprovider" class="tsd-kind-icon">#connection<wbr>Provider</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-private"><a href="droptablebuilder.html#_droptablenode" class="tsd-kind-icon">#drop<wbr>Table<wbr>Node</a></li>
 							</ul>
 						</section>
 						<section class="tsd-index-section ">
 							<h3>Methods</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-method tsd-parent-kind-class"><a href="aliasedquerybuilder.html#tooperationnode" class="tsd-kind-icon">to<wbr>Operation<wbr>Node</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="droptablebuilder.html#compile" class="tsd-kind-icon">compile</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="droptablebuilder.html#execute" class="tsd-kind-icon">execute</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-private"><a href="droptablebuilder.html#then" class="tsd-kind-icon">then</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="droptablebuilder.html#tooperationnode" class="tsd-kind-icon">to<wbr>Operation<wbr>Node</a></li>
 							</ul>
 						</section>
 					</div>
@@ -131,44 +111,26 @@
 			</section>
 			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Constructors</h2>
-				<section class="tsd-panel tsd-member tsd-kind-constructor tsd-parent-kind-class tsd-has-type-parameter">
+				<section class="tsd-panel tsd-member tsd-kind-constructor tsd-parent-kind-class">
 					<a name="constructor" class="tsd-anchor"></a>
 					<h3>constructor</h3>
-					<ul class="tsd-signatures tsd-kind-constructor tsd-parent-kind-class tsd-has-type-parameter">
-						<li class="tsd-signature tsd-kind-icon">new <wbr>Aliased<wbr>Query<wbr>Builder&lt;DB, TB, O, A&gt;<span class="tsd-signature-symbol">(</span>queryBuilder<span class="tsd-signature-symbol">: </span><a href="querybuilder.html" class="tsd-signature-type" data-tsd-kind="Class">QueryBuilder</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">TB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">O</span><span class="tsd-signature-symbol">&gt;</span>, alias<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">A</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="aliasedquerybuilder.html" class="tsd-signature-type" data-tsd-kind="Class">AliasedQueryBuilder</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">TB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">O</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">A</span><span class="tsd-signature-symbol">&gt;</span></li>
+					<ul class="tsd-signatures tsd-kind-constructor tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon">new <wbr>Drop<wbr>Table<wbr>Builder<span class="tsd-signature-symbol">(</span>__namedParameters<span class="tsd-signature-symbol">: </span><a href="../interfaces/droptablebuilderconstructorargs.html" class="tsd-signature-type" data-tsd-kind="Interface">DropTableBuilderConstructorArgs</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="droptablebuilder.html" class="tsd-signature-type" data-tsd-kind="Class">DropTableBuilder</a></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/b487c75/src/query-builder/query-builder.ts#L1852">query-builder/query-builder.ts:1852</a></li>
+									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/b487c75/src/schema/drop-table-builder.ts#L10">schema/drop-table-builder.ts:10</a></li>
 								</ul>
 							</aside>
-							<h4 class="tsd-type-parameters-title">Type parameters</h4>
-							<ul class="tsd-type-parameters">
-								<li>
-									<h4>DB</h4>
-								</li>
-								<li>
-									<h4>TB<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">symbol</span></h4>
-								</li>
-								<li>
-									<h4>O = <span class="tsd-signature-type">undefined</span></h4>
-								</li>
-								<li>
-									<h4>A<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span> = <span class="tsd-signature-type">never</span></h4>
-								</li>
-							</ul>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
-									<h5>queryBuilder: <a href="querybuilder.html" class="tsd-signature-type" data-tsd-kind="Class">QueryBuilder</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">TB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">O</span><span class="tsd-signature-symbol">&gt;</span></h5>
-								</li>
-								<li>
-									<h5>alias: <span class="tsd-signature-type">A</span></h5>
+									<h5>__namedParameters: <a href="../interfaces/droptablebuilderconstructorargs.html" class="tsd-signature-type" data-tsd-kind="Interface">DropTableBuilderConstructorArgs</a></h5>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <a href="aliasedquerybuilder.html" class="tsd-signature-type" data-tsd-kind="Class">AliasedQueryBuilder</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">TB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">O</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">A</span><span class="tsd-signature-symbol">&gt;</span></h4>
+							<h4 class="tsd-returns-title">Returns <a href="droptablebuilder.html" class="tsd-signature-type" data-tsd-kind="Class">DropTableBuilder</a></h4>
 						</li>
 					</ul>
 				</section>
@@ -176,62 +138,117 @@
 			<section class="tsd-panel-group tsd-member-group tsd-is-private tsd-is-private-protected">
 				<h2>Properties</h2>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-private">
-					<a name="_alias" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagPrivate">Private</span> #alias</h3>
-					<div class="tsd-signature tsd-kind-icon">#alias<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">A</span></div>
+					<a name="_compiler" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagPrivate">Private</span> <span class="tsd-flag ts-flagOptional">Optional</span> <span class="tsd-flag ts-flagReadonly">Readonly</span> #compiler</h3>
+					<div class="tsd-signature tsd-kind-icon">#compiler<span class="tsd-signature-symbol">:</span> <a href="../interfaces/querycompiler.html" class="tsd-signature-type" data-tsd-kind="Interface">QueryCompiler</a></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/koskimas/kysely/blob/b487c75/src/query-builder/query-builder.ts#L1852">query-builder/query-builder.ts:1852</a></li>
+							<li>Defined in <a href="https://github.com/koskimas/kysely/blob/b487c75/src/schema/drop-table-builder.ts#L9">schema/drop-table-builder.ts:9</a></li>
 						</ul>
 					</aside>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-private">
-					<a name="_querybuilder" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagPrivate">Private</span> #query<wbr>Builder</h3>
-					<div class="tsd-signature tsd-kind-icon">#query<wbr>Builder<span class="tsd-signature-symbol">:</span> <a href="querybuilder.html" class="tsd-signature-type" data-tsd-kind="Class">QueryBuilder</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">TB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">O</span><span class="tsd-signature-symbol">&gt;</span></div>
+					<a name="_connectionprovider" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagPrivate">Private</span> <span class="tsd-flag ts-flagOptional">Optional</span> <span class="tsd-flag ts-flagReadonly">Readonly</span> #connection<wbr>Provider</h3>
+					<div class="tsd-signature tsd-kind-icon">#connection<wbr>Provider<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">ConnectionProvider</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/koskimas/kysely/blob/b487c75/src/query-builder/query-builder.ts#L1851">query-builder/query-builder.ts:1851</a></li>
+							<li>Defined in <a href="https://github.com/koskimas/kysely/blob/b487c75/src/schema/drop-table-builder.ts#L10">schema/drop-table-builder.ts:10</a></li>
 						</ul>
 					</aside>
 				</section>
-			</section>
-			<section class="tsd-panel-group tsd-member-group tsd-is-private tsd-is-private-protected">
-				<h2>Accessors</h2>
-				<section class="tsd-panel tsd-member tsd-kind-get-signature tsd-parent-kind-class tsd-is-private">
-					<a name="alias" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagPrivate">Private</span> alias</h3>
-					<ul class="tsd-signatures tsd-kind-get-signature tsd-parent-kind-class tsd-is-private">
-						<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">get</span> alias<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">A</span></li>
-					</ul>
-					<ul class="tsd-descriptions">
-						<li class="tsd-description">
-							<aside class="tsd-sources">
-								<ul>
-									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/b487c75/src/query-builder/query-builder.ts#L1867">query-builder/query-builder.ts:1867</a></li>
-								</ul>
-							</aside>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">A</span></h4>
-						</li>
-					</ul>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-private">
+					<a name="_droptablenode" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagPrivate">Private</span> <span class="tsd-flag ts-flagReadonly">Readonly</span> #drop<wbr>Table<wbr>Node</h3>
+					<div class="tsd-signature tsd-kind-icon">#drop<wbr>Table<wbr>Node<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">DropTableNode</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/koskimas/kysely/blob/b487c75/src/schema/drop-table-builder.ts#L8">schema/drop-table-builder.ts:8</a></li>
+						</ul>
+					</aside>
 				</section>
 			</section>
 			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Methods</h2>
 				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
-					<a name="tooperationnode" class="tsd-anchor"></a>
-					<h3>to<wbr>Operation<wbr>Node</h3>
+					<a name="compile" class="tsd-anchor"></a>
+					<h3>compile</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">to<wbr>Operation<wbr>Node<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">AliasNode</span></li>
+						<li class="tsd-signature tsd-kind-icon">compile<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../interfaces/compiledquery.html" class="tsd-signature-type" data-tsd-kind="Interface">CompiledQuery</a></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/b487c75/src/query-builder/query-builder.ts#L1871">query-builder/query-builder.ts:1871</a></li>
+									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/b487c75/src/schema/drop-table-builder.ts#L26">schema/drop-table-builder.ts:26</a></li>
 								</ul>
 							</aside>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">AliasNode</span></h4>
+							<h4 class="tsd-returns-title">Returns <a href="../interfaces/compiledquery.html" class="tsd-signature-type" data-tsd-kind="Interface">CompiledQuery</a></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
+					<a name="execute" class="tsd-anchor"></a>
+					<h3>execute</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon">execute<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/b487c75/src/schema/drop-table-builder.ts#L34">schema/drop-table-builder.ts:34</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-private">
+					<a name="then" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagPrivate">Private</span> then</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-private">
+						<li class="tsd-signature tsd-kind-icon">then<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">...</span>_<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">never</span><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/b487c75/src/schema/drop-table-builder.ts#L50">schema/drop-table-builder.ts:50</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>DropTableBuilder is NOT thenable.</p>
+								</div>
+								<p>This method is here just to throw an exception if someone awaits
+								a DropTableBuilder directly without calling <code>execute</code>.</p>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5><span class="tsd-flag ts-flagRest">Rest</span> <span class="tsd-signature-symbol">...</span>_: <span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">[]</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">never</span><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
+					<a name="tooperationnode" class="tsd-anchor"></a>
+					<h3>to<wbr>Operation<wbr>Node</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon">to<wbr>Operation<wbr>Node<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">DropTableNode</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<p>Implementation of OperationNodeSource.toOperationNode</p>
+								<ul>
+									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/b487c75/src/schema/drop-table-builder.ts#L22">schema/drop-table-builder.ts:22</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">DropTableNode</span></h4>
 						</li>
 					</ul>
 				</section>
@@ -247,30 +264,9 @@
 			</nav>
 			<nav class="tsd-navigation secondary menu-sticky">
 				<ul class="before-current">
-				</ul>
-				<ul class="current">
-					<li class="current tsd-kind-class tsd-has-type-parameter">
+					<li class=" tsd-kind-class tsd-has-type-parameter">
 						<a href="aliasedquerybuilder.html" class="tsd-kind-icon">Aliased<wbr>Query<wbr>Builder</a>
-						<ul>
-							<li class=" tsd-kind-constructor tsd-parent-kind-class tsd-has-type-parameter">
-								<a href="aliasedquerybuilder.html#constructor" class="tsd-kind-icon">constructor</a>
-							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-private">
-								<a href="aliasedquerybuilder.html#_alias" class="tsd-kind-icon">#alias</a>
-							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-private">
-								<a href="aliasedquerybuilder.html#_querybuilder" class="tsd-kind-icon">#query<wbr>Builder</a>
-							</li>
-							<li class=" tsd-kind-get-signature tsd-parent-kind-class tsd-is-private">
-								<a href="aliasedquerybuilder.html#alias" class="tsd-kind-icon">alias</a>
-							</li>
-							<li class=" tsd-kind-method tsd-parent-kind-class">
-								<a href="aliasedquerybuilder.html#tooperationnode" class="tsd-kind-icon">to<wbr>Operation<wbr>Node</a>
-							</li>
-						</ul>
 					</li>
-				</ul>
-				<ul class="after-current">
 					<li class=" tsd-kind-class tsd-has-type-parameter">
 						<a href="aliasedrawbuilder.html" class="tsd-kind-icon">Aliased<wbr>Raw<wbr>Builder</a>
 					</li>
@@ -286,9 +282,39 @@
 					<li class=" tsd-kind-class">
 						<a href="driver.html" class="tsd-kind-icon">Driver</a>
 					</li>
-					<li class=" tsd-kind-class">
+				</ul>
+				<ul class="current">
+					<li class="current tsd-kind-class">
 						<a href="droptablebuilder.html" class="tsd-kind-icon">Drop<wbr>Table<wbr>Builder</a>
+						<ul>
+							<li class=" tsd-kind-constructor tsd-parent-kind-class">
+								<a href="droptablebuilder.html#constructor" class="tsd-kind-icon">constructor</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-private">
+								<a href="droptablebuilder.html#_compiler" class="tsd-kind-icon">#compiler</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-private">
+								<a href="droptablebuilder.html#_connectionprovider" class="tsd-kind-icon">#connection<wbr>Provider</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-private">
+								<a href="droptablebuilder.html#_droptablenode" class="tsd-kind-icon">#drop<wbr>Table<wbr>Node</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="droptablebuilder.html#compile" class="tsd-kind-icon">compile</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="droptablebuilder.html#execute" class="tsd-kind-icon">execute</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-private">
+								<a href="droptablebuilder.html#then" class="tsd-kind-icon">then</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="droptablebuilder.html#tooperationnode" class="tsd-kind-icon">to<wbr>Operation<wbr>Node</a>
+							</li>
+						</ul>
 					</li>
+				</ul>
+				<ul class="after-current">
 					<li class=" tsd-kind-class tsd-has-type-parameter">
 						<a href="joinbuilder.html" class="tsd-kind-icon">Join<wbr>Builder</a>
 					</li>

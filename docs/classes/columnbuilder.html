@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>RawBuilder | kysely</title>
+	<title>ColumnBuilder | kysely</title>
 	<meta name="description" content="Documentation for kysely">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="../assets/css/main.css">
@@ -55,29 +55,21 @@
 					<a href="../modules.html">kysely</a>
 				</li>
 				<li>
-					<a href="rawbuilder.html">RawBuilder</a>
+					<a href="columnbuilder.html">ColumnBuilder</a>
 				</li>
 			</ul>
-			<h1>Class RawBuilder&lt;O&gt;</h1>
+			<h1>Class ColumnBuilder</h1>
 		</div>
 	</div>
 </header>
 <div class="container container-main">
 	<div class="row">
 		<div class="col-8 col-content">
-			<section class="tsd-panel tsd-type-parameters">
-				<h3>Type parameters</h3>
-				<ul class="tsd-type-parameters">
-					<li>
-						<h4>O = <span class="tsd-signature-type">unknown</span></h4>
-					</li>
-				</ul>
-			</section>
 			<section class="tsd-panel tsd-hierarchy">
 				<h3>Hierarchy</h3>
 				<ul class="tsd-hierarchy">
 					<li>
-						<span class="target">RawBuilder</span>
+						<span class="target">ColumnBuilder</span>
 					</li>
 				</ul>
 			</section>
@@ -94,26 +86,26 @@
 						<section class="tsd-index-section ">
 							<h3>Constructors</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-constructor tsd-parent-kind-class tsd-has-type-parameter"><a href="rawbuilder.html#constructor" class="tsd-kind-icon">constructor</a></li>
+								<li class="tsd-kind-constructor tsd-parent-kind-class"><a href="columnbuilder.html#constructor" class="tsd-kind-icon">constructor</a></li>
 							</ul>
 						</section>
 						<section class="tsd-index-section tsd-is-private tsd-is-private-protected">
 							<h3>Properties</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-private"><a href="rawbuilder.html#_compiler" class="tsd-kind-icon">#compiler</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-private"><a href="rawbuilder.html#_connectionprovider" class="tsd-kind-icon">#connection<wbr>Provider</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-private"><a href="rawbuilder.html#_params" class="tsd-kind-icon">#params</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-private"><a href="rawbuilder.html#_sql" class="tsd-kind-icon">#sql</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-private"><a href="columnbuilder.html#_node" class="tsd-kind-icon">#node</a></li>
 							</ul>
 						</section>
 						<section class="tsd-index-section ">
 							<h3>Methods</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter"><a href="rawbuilder.html#as" class="tsd-kind-icon">as</a></li>
-								<li class="tsd-kind-method tsd-parent-kind-class"><a href="rawbuilder.html#compile" class="tsd-kind-icon">compile</a></li>
-								<li class="tsd-kind-method tsd-parent-kind-class"><a href="rawbuilder.html#execute" class="tsd-kind-icon">execute</a></li>
-								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-private"><a href="rawbuilder.html#then" class="tsd-kind-icon">then</a></li>
-								<li class="tsd-kind-method tsd-parent-kind-class"><a href="rawbuilder.html#tooperationnode" class="tsd-kind-icon">to<wbr>Operation<wbr>Node</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="columnbuilder.html#increments" class="tsd-kind-icon">increments</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="columnbuilder.html#notnullable" class="tsd-kind-icon">not<wbr>Nullable</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="columnbuilder.html#ondelete" class="tsd-kind-icon">on<wbr>Delete</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="columnbuilder.html#primary" class="tsd-kind-icon">primary</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="columnbuilder.html#references" class="tsd-kind-icon">references</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-private"><a href="columnbuilder.html#then" class="tsd-kind-icon">then</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="columnbuilder.html#tooperationnode" class="tsd-kind-icon">to<wbr>Operation<wbr>Node</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="columnbuilder.html#unique" class="tsd-kind-icon">unique</a></li>
 							</ul>
 						</section>
 					</div>
@@ -121,32 +113,26 @@
 			</section>
 			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Constructors</h2>
-				<section class="tsd-panel tsd-member tsd-kind-constructor tsd-parent-kind-class tsd-has-type-parameter">
+				<section class="tsd-panel tsd-member tsd-kind-constructor tsd-parent-kind-class">
 					<a name="constructor" class="tsd-anchor"></a>
 					<h3>constructor</h3>
-					<ul class="tsd-signatures tsd-kind-constructor tsd-parent-kind-class tsd-has-type-parameter">
-						<li class="tsd-signature tsd-kind-icon">new <wbr>Raw<wbr>Builder&lt;O&gt;<span class="tsd-signature-symbol">(</span>__namedParameters<span class="tsd-signature-symbol">: </span><a href="../interfaces/rawbuilderconstructorargs.html" class="tsd-signature-type" data-tsd-kind="Interface">RawBuilderConstructorArgs</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="rawbuilder.html" class="tsd-signature-type" data-tsd-kind="Class">RawBuilder</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">O</span><span class="tsd-signature-symbol">&gt;</span></li>
+					<ul class="tsd-signatures tsd-kind-constructor tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon">new <wbr>Column<wbr>Builder<span class="tsd-signature-symbol">(</span>node<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">ColumnDefinitionNode</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="columnbuilder.html" class="tsd-signature-type" data-tsd-kind="Class">ColumnBuilder</a></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/b487c75/src/raw-builder/raw-builder.ts#L19">raw-builder/raw-builder.ts:19</a></li>
+									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/b487c75/src/schema/column-builder.ts#L11">schema/column-builder.ts:11</a></li>
 								</ul>
 							</aside>
-							<h4 class="tsd-type-parameters-title">Type parameters</h4>
-							<ul class="tsd-type-parameters">
-								<li>
-									<h4>O = <span class="tsd-signature-type">unknown</span></h4>
-								</li>
-							</ul>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
-									<h5>__namedParameters: <a href="../interfaces/rawbuilderconstructorargs.html" class="tsd-signature-type" data-tsd-kind="Interface">RawBuilderConstructorArgs</a></h5>
+									<h5>node: <span class="tsd-signature-type">ColumnDefinitionNode</span></h5>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <a href="rawbuilder.html" class="tsd-signature-type" data-tsd-kind="Class">RawBuilder</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">O</span><span class="tsd-signature-symbol">&gt;</span></h4>
+							<h4 class="tsd-returns-title">Returns <a href="columnbuilder.html" class="tsd-signature-type" data-tsd-kind="Class">ColumnBuilder</a></h4>
 						</li>
 					</ul>
 				</section>
@@ -154,108 +140,127 @@
 			<section class="tsd-panel-group tsd-member-group tsd-is-private tsd-is-private-protected">
 				<h2>Properties</h2>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-private">
-					<a name="_compiler" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagPrivate">Private</span> <span class="tsd-flag ts-flagOptional">Optional</span> #compiler</h3>
-					<div class="tsd-signature tsd-kind-icon">#compiler<span class="tsd-signature-symbol">:</span> <a href="../interfaces/querycompiler.html" class="tsd-signature-type" data-tsd-kind="Interface">QueryCompiler</a></div>
+					<a name="_node" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagPrivate">Private</span> <span class="tsd-flag ts-flagReadonly">Readonly</span> #node</h3>
+					<div class="tsd-signature tsd-kind-icon">#node<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">ColumnDefinitionNode</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/koskimas/kysely/blob/b487c75/src/raw-builder/raw-builder.ts#L19">raw-builder/raw-builder.ts:19</a></li>
-						</ul>
-					</aside>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-private">
-					<a name="_connectionprovider" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagPrivate">Private</span> <span class="tsd-flag ts-flagOptional">Optional</span> #connection<wbr>Provider</h3>
-					<div class="tsd-signature tsd-kind-icon">#connection<wbr>Provider<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">ConnectionProvider</span></div>
-					<aside class="tsd-sources">
-						<ul>
-							<li>Defined in <a href="https://github.com/koskimas/kysely/blob/b487c75/src/raw-builder/raw-builder.ts#L18">raw-builder/raw-builder.ts:18</a></li>
-						</ul>
-					</aside>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-private">
-					<a name="_params" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagPrivate">Private</span> <span class="tsd-flag ts-flagOptional">Optional</span> #params</h3>
-					<div class="tsd-signature tsd-kind-icon">#params<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">[]</span></div>
-					<aside class="tsd-sources">
-						<ul>
-							<li>Defined in <a href="https://github.com/koskimas/kysely/blob/b487c75/src/raw-builder/raw-builder.ts#L17">raw-builder/raw-builder.ts:17</a></li>
-						</ul>
-					</aside>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-private">
-					<a name="_sql" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagPrivate">Private</span> #sql</h3>
-					<div class="tsd-signature tsd-kind-icon">#sql<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
-					<aside class="tsd-sources">
-						<ul>
-							<li>Defined in <a href="https://github.com/koskimas/kysely/blob/b487c75/src/raw-builder/raw-builder.ts#L16">raw-builder/raw-builder.ts:16</a></li>
+							<li>Defined in <a href="https://github.com/koskimas/kysely/blob/b487c75/src/schema/column-builder.ts#L11">schema/column-builder.ts:11</a></li>
 						</ul>
 					</aside>
 				</section>
 			</section>
 			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Methods</h2>
-				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter">
-					<a name="as" class="tsd-anchor"></a>
-					<h3>as</h3>
-					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter">
-						<li class="tsd-signature tsd-kind-icon">as&lt;A&gt;<span class="tsd-signature-symbol">(</span>alias<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">A</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="aliasedrawbuilder.html" class="tsd-signature-type" data-tsd-kind="Class">AliasedRawBuilder</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">O</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">A</span><span class="tsd-signature-symbol">&gt;</span></li>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
+					<a name="increments" class="tsd-anchor"></a>
+					<h3>increments</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon">increments<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="columnbuilder.html" class="tsd-signature-type" data-tsd-kind="Class">ColumnBuilder</a></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/b487c75/src/raw-builder/raw-builder.ts#L68">raw-builder/raw-builder.ts:68</a></li>
+									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/b487c75/src/schema/column-builder.ts#L24">schema/column-builder.ts:24</a></li>
 								</ul>
 							</aside>
-							<h4 class="tsd-type-parameters-title">Type parameters</h4>
-							<ul class="tsd-type-parameters">
-								<li>
-									<h4>A<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span></h4>
-								</li>
-							</ul>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Makes the column automatically incrementing.</p>
+								</div>
+								<p>On some dialects this may change the column type as well. For example
+									on postgres this sets the column type to <code>serial</code> no matter what you
+								have specified before.</p>
+							</div>
+							<h4 class="tsd-returns-title">Returns <a href="columnbuilder.html" class="tsd-signature-type" data-tsd-kind="Class">ColumnBuilder</a></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
+					<a name="notnullable" class="tsd-anchor"></a>
+					<h3>not<wbr>Nullable</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon">not<wbr>Nullable<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="columnbuilder.html" class="tsd-signature-type" data-tsd-kind="Class">ColumnBuilder</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/b487c75/src/schema/column-builder.ts#L62">schema/column-builder.ts:62</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-returns-title">Returns <a href="columnbuilder.html" class="tsd-signature-type" data-tsd-kind="Class">ColumnBuilder</a></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
+					<a name="ondelete" class="tsd-anchor"></a>
+					<h3>on<wbr>Delete</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon">on<wbr>Delete<span class="tsd-signature-symbol">(</span>onDelete<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">OnDelete</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="columnbuilder.html" class="tsd-signature-type" data-tsd-kind="Class">ColumnBuilder</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/b487c75/src/schema/column-builder.ts#L68">schema/column-builder.ts:68</a></li>
+								</ul>
+							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
-									<h5>alias: <span class="tsd-signature-type">A</span></h5>
+									<h5>onDelete: <span class="tsd-signature-type">OnDelete</span></h5>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <a href="aliasedrawbuilder.html" class="tsd-signature-type" data-tsd-kind="Class">AliasedRawBuilder</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">O</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">A</span><span class="tsd-signature-symbol">&gt;</span></h4>
+							<h4 class="tsd-returns-title">Returns <a href="columnbuilder.html" class="tsd-signature-type" data-tsd-kind="Class">ColumnBuilder</a></h4>
 						</li>
 					</ul>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
-					<a name="compile" class="tsd-anchor"></a>
-					<h3>compile</h3>
+					<a name="primary" class="tsd-anchor"></a>
+					<h3>primary</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">compile<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../interfaces/compiledquery.html" class="tsd-signature-type" data-tsd-kind="Interface">CompiledQuery</a></li>
+						<li class="tsd-signature tsd-kind-icon">primary<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="columnbuilder.html" class="tsd-signature-type" data-tsd-kind="Class">ColumnBuilder</a></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/b487c75/src/raw-builder/raw-builder.ts#L72">raw-builder/raw-builder.ts:72</a></li>
+									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/b487c75/src/schema/column-builder.ts#L36">schema/column-builder.ts:36</a></li>
 								</ul>
 							</aside>
-							<h4 class="tsd-returns-title">Returns <a href="../interfaces/compiledquery.html" class="tsd-signature-type" data-tsd-kind="Interface">CompiledQuery</a></h4>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Makes the column the primary key.</p>
+								</div>
+								<p>If you want to specify a composite primary key use the
+								{@link TableBuilder.primary} method.</p>
+							</div>
+							<h4 class="tsd-returns-title">Returns <a href="columnbuilder.html" class="tsd-signature-type" data-tsd-kind="Class">ColumnBuilder</a></h4>
 						</li>
 					</ul>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
-					<a name="execute" class="tsd-anchor"></a>
-					<h3>execute</h3>
+					<a name="references" class="tsd-anchor"></a>
+					<h3>references</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">execute<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/queryresult.html" class="tsd-signature-type" data-tsd-kind="Interface">QueryResult</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">O</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span></li>
+						<li class="tsd-signature tsd-kind-icon">references<span class="tsd-signature-symbol">(</span>ref<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="columnbuilder.html" class="tsd-signature-type" data-tsd-kind="Class">ColumnBuilder</a></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/b487c75/src/raw-builder/raw-builder.ts#L80">raw-builder/raw-builder.ts:80</a></li>
+									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/b487c75/src/schema/column-builder.ts#L42">schema/column-builder.ts:42</a></li>
 								</ul>
 							</aside>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/queryresult.html" class="tsd-signature-type" data-tsd-kind="Interface">QueryResult</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">O</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span></h4>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>ref: <span class="tsd-signature-type">string</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="columnbuilder.html" class="tsd-signature-type" data-tsd-kind="Class">ColumnBuilder</a></h4>
 						</li>
 					</ul>
 				</section>
@@ -269,15 +274,15 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/b487c75/src/raw-builder/raw-builder.ts#L96">raw-builder/raw-builder.ts:96</a></li>
+									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/b487c75/src/schema/column-builder.ts#L84">schema/column-builder.ts:84</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
 								<div class="lead">
-									<p>RawBuilder is NOT thenable.</p>
+									<p>ColumnBuilder is NOT thenable.</p>
 								</div>
 								<p>This method is here just to throw an exception if someone awaits
-								a RawBuilder directly without calling <code>execute</code>.</p>
+								a ColumnBuilder.</p>
 							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
@@ -293,17 +298,34 @@
 					<a name="tooperationnode" class="tsd-anchor"></a>
 					<h3>to<wbr>Operation<wbr>Node</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">to<wbr>Operation<wbr>Node<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">RawNode</span></li>
+						<li class="tsd-signature tsd-kind-icon">to<wbr>Operation<wbr>Node<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">ColumnDefinitionNode</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<p>Implementation of OperationNodeSource.toOperationNode</p>
 								<ul>
-									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/b487c75/src/raw-builder/raw-builder.ts#L33">raw-builder/raw-builder.ts:33</a></li>
+									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/b487c75/src/schema/column-builder.ts#L74">schema/column-builder.ts:74</a></li>
 								</ul>
 							</aside>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">RawNode</span></h4>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">ColumnDefinitionNode</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
+					<a name="unique" class="tsd-anchor"></a>
+					<h3>unique</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon">unique<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="columnbuilder.html" class="tsd-signature-type" data-tsd-kind="Class">ColumnBuilder</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/b487c75/src/schema/column-builder.ts#L56">schema/column-builder.ts:56</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-returns-title">Returns <a href="columnbuilder.html" class="tsd-signature-type" data-tsd-kind="Class">ColumnBuilder</a></h4>
 						</li>
 					</ul>
 				</section>
@@ -325,9 +347,45 @@
 					<li class=" tsd-kind-class tsd-has-type-parameter">
 						<a href="aliasedrawbuilder.html" class="tsd-kind-icon">Aliased<wbr>Raw<wbr>Builder</a>
 					</li>
-					<li class=" tsd-kind-class">
+				</ul>
+				<ul class="current">
+					<li class="current tsd-kind-class">
 						<a href="columnbuilder.html" class="tsd-kind-icon">Column<wbr>Builder</a>
+						<ul>
+							<li class=" tsd-kind-constructor tsd-parent-kind-class">
+								<a href="columnbuilder.html#constructor" class="tsd-kind-icon">constructor</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-private">
+								<a href="columnbuilder.html#_node" class="tsd-kind-icon">#node</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="columnbuilder.html#increments" class="tsd-kind-icon">increments</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="columnbuilder.html#notnullable" class="tsd-kind-icon">not<wbr>Nullable</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="columnbuilder.html#ondelete" class="tsd-kind-icon">on<wbr>Delete</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="columnbuilder.html#primary" class="tsd-kind-icon">primary</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="columnbuilder.html#references" class="tsd-kind-icon">references</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-private">
+								<a href="columnbuilder.html#then" class="tsd-kind-icon">then</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="columnbuilder.html#tooperationnode" class="tsd-kind-icon">to<wbr>Operation<wbr>Node</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="columnbuilder.html#unique" class="tsd-kind-icon">unique</a>
+							</li>
+						</ul>
 					</li>
+				</ul>
+				<ul class="after-current">
 					<li class=" tsd-kind-class">
 						<a href="createtablebuilder.html" class="tsd-kind-icon">Create<wbr>Table<wbr>Builder</a>
 					</li>
@@ -355,45 +413,9 @@
 					<li class=" tsd-kind-class tsd-has-type-parameter">
 						<a href="querybuilder.html" class="tsd-kind-icon">Query<wbr>Builder</a>
 					</li>
-				</ul>
-				<ul class="current">
-					<li class="current tsd-kind-class tsd-has-type-parameter">
+					<li class=" tsd-kind-class tsd-has-type-parameter">
 						<a href="rawbuilder.html" class="tsd-kind-icon">Raw<wbr>Builder</a>
-						<ul>
-							<li class=" tsd-kind-constructor tsd-parent-kind-class tsd-has-type-parameter">
-								<a href="rawbuilder.html#constructor" class="tsd-kind-icon">constructor</a>
-							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-private">
-								<a href="rawbuilder.html#_compiler" class="tsd-kind-icon">#compiler</a>
-							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-private">
-								<a href="rawbuilder.html#_connectionprovider" class="tsd-kind-icon">#connection<wbr>Provider</a>
-							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-private">
-								<a href="rawbuilder.html#_params" class="tsd-kind-icon">#params</a>
-							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-private">
-								<a href="rawbuilder.html#_sql" class="tsd-kind-icon">#sql</a>
-							</li>
-							<li class=" tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter">
-								<a href="rawbuilder.html#as" class="tsd-kind-icon">as</a>
-							</li>
-							<li class=" tsd-kind-method tsd-parent-kind-class">
-								<a href="rawbuilder.html#compile" class="tsd-kind-icon">compile</a>
-							</li>
-							<li class=" tsd-kind-method tsd-parent-kind-class">
-								<a href="rawbuilder.html#execute" class="tsd-kind-icon">execute</a>
-							</li>
-							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-private">
-								<a href="rawbuilder.html#then" class="tsd-kind-icon">then</a>
-							</li>
-							<li class=" tsd-kind-method tsd-parent-kind-class">
-								<a href="rawbuilder.html#tooperationnode" class="tsd-kind-icon">to<wbr>Operation<wbr>Node</a>
-							</li>
-						</ul>
 					</li>
-				</ul>
-				<ul class="after-current">
 					<li class=" tsd-kind-interface">
 						<a href="../interfaces/compiledquery.html" class="tsd-kind-icon">Compiled<wbr>Query</a>
 					</li>
