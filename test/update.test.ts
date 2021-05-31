@@ -78,5 +78,35 @@ for (const dialect of BUILT_IN_DIALECTS) {
         { first_name: 'Sylvester', last_name: 'Stallone', gender: 'male' },
       ])
     })
+
+    if (dialect === 'postgres') {
+      it('should return updated rows when `returning` is used', async () => {
+        const query = ctx.db
+          .updateTable('person')
+          .set({ last_name: 'Barson' })
+          .where('gender', '=', 'male')
+          .returning(['first_name', 'last_name'])
+
+        testSql(query, dialect, {
+          postgres: {
+            sql:
+              'update "person" set "last_name" = $1 where "gender" = $2 returning "first_name", "last_name"',
+            bindings: ['Barson', 'male'],
+          },
+        })
+
+        const result = await query.execute()
+
+        expect(result).to.have.length(2)
+        expect(Object.keys(result[0]).sort()).to.eql([
+          'first_name',
+          'last_name',
+        ])
+        expect(result).to.containSubset([
+          { first_name: 'Arnold', last_name: 'Barson' },
+          { first_name: 'Sylvester', last_name: 'Barson' },
+        ])
+      })
+    }
   })
 }

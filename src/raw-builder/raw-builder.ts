@@ -1,3 +1,5 @@
+import { QueryResult } from '../driver/connection'
+import { ConnectionProvider } from '../driver/connection-provider'
 import { AliasNode, createAliasNode } from '../operation-node/alias-node'
 import { OperationNode } from '../operation-node/operation-node'
 import {
@@ -7,14 +9,25 @@ import {
 import { createRawNode, RawNode } from '../operation-node/raw-node'
 import { createValueNode } from '../operation-node/value-node'
 import { parseStringReference } from '../parser/reference-parser'
+import { CompiledQuery } from '../query-compiler/compiled-query'
+import { QueryCompiler } from '../query-compiler/query-compiler'
 
 export class RawBuilder<O = unknown> implements OperationNodeSource {
   #sql: string
   #params?: any[]
+  #connectionProvider?: ConnectionProvider
+  #compiler?: QueryCompiler
 
-  constructor(sql: string, params?: any[]) {
+  constructor({
+    sql,
+    params,
+    compiler,
+    connectionProvider,
+  }: RawBuilderConstructorArgs) {
     this.#sql = sql
     this.#params = params
+    this.#compiler = compiler
+    this.#connectionProvider = connectionProvider
   }
 
   toOperationNode(): RawNode {
@@ -55,6 +68,36 @@ export class RawBuilder<O = unknown> implements OperationNodeSource {
   as<A extends string>(alias: A): AliasedRawBuilder<O, A> {
     return new AliasedRawBuilder(this, alias)
   }
+
+  compile(): CompiledQuery {
+    if (!this.#compiler) {
+      throw new Error(`this query cannot be compiled to SQL`)
+    }
+
+    return this.#compiler.compile(this.toOperationNode())
+  }
+
+  async execute(): Promise<QueryResult<O>> {
+    if (!this.#connectionProvider) {
+      throw new Error(`this query cannot be executed`)
+    }
+
+    return this.#connectionProvider.withConnection(async (connection) => {
+      return await connection.execute<O>(this.compile())
+    })
+  }
+
+  /**
+   * RawBuilder is NOT thenable.
+   *
+   * This method is here just to throw an exception if someone awaits
+   * a RawBuilder directly without calling `execute`.
+   */
+  private async then(..._: any[]): Promise<never> {
+    throw new Error(
+      "don't await RawBuilder instances directly. To execute the query you need to call `execute`"
+    )
+  }
 }
 
 export class AliasedRawBuilder<O = unknown, A extends string = never>
@@ -92,4 +135,11 @@ function parseRawArg(match: string, arg: any): OperationNode {
   } else {
     return createValueNode(arg)
   }
+}
+
+export interface RawBuilderConstructorArgs {
+  compiler?: QueryCompiler
+  connectionProvider?: ConnectionProvider
+  sql: string
+  params?: any
 }

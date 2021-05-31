@@ -102,7 +102,11 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
   readonly #compiler?: QueryCompiler
   readonly #connectionProvider?: ConnectionProvider
 
-  constructor({ queryNode, compiler, connectionProvider }: QueryBuilderArgs) {
+  constructor({
+    queryNode,
+    compiler,
+    connectionProvider,
+  }: QueryBuilderConstructorArgs) {
     this.#queryNode = queryNode
     this.#compiler = compiler
     this.#connectionProvider = connectionProvider
@@ -1781,30 +1785,55 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
     return this.#compiler.compile(this.#queryNode)
   }
 
-  async execute(): Promise<ManyResultType<O>> {
+  async execute(): Promise<ManyResultRowType<O>[]> {
     if (!this.#connectionProvider) {
       throw new Error(`this query cannot be executed`)
     }
 
     const result = await this.#connectionProvider.withConnection(
       async (connection) => {
-        return await connection.execute(this.compile())
+        return await connection.execute<ManyResultRowType<O>>(this.compile())
       }
     )
 
-    // Ugly cast but trust me, the type is correct.
-    return (result as unknown) as ManyResultType<O>
+    if (isMutatingQueryNode(this.#queryNode) && this.#queryNode.returning) {
+      return result.rows ?? []
+    }
+
+    if (result.insertedPrimaryKey != null) {
+      return [result.insertedPrimaryKey as ManyResultRowType<O>]
+    }
+
+    if (result.numUpdatedOrDeletedRows != null) {
+      return [result.numUpdatedOrDeletedRows as ManyResultRowType<O>]
+    }
+
+    if (result.rows) {
+      return result.rows
+    }
+
+    return []
   }
 
-  async executeTakeFirst(): Promise<SingleResultType<O>> {
-    const result = await this.execute()
+  async executeTakeFirst(): Promise<SingleResultRowType<O>> {
+    const [result] = await this.execute()
+    return result
+  }
 
-    // Ugly cast but trust me, the type is correct.
-    return (result[0] as unknown) as SingleResultType<O>
+  /**
+   * QueryBuilder is NOT thenable.
+   *
+   * This method is here just to throw an exception if someone awaits
+   * a QueryBuilder directly without calling `execute` or `executeTakeFirst`.
+   */
+  private async then(..._: any[]): Promise<never> {
+    throw new Error(
+      "don't await QueryBuilder instances directly. To execute the query you need to call `execute` or `executeTakeFirst`."
+    )
   }
 }
 
-export interface QueryBuilderArgs {
+export interface QueryBuilderConstructorArgs {
   queryNode: QueryNode
   compiler?: QueryCompiler
   connectionProvider?: ConnectionProvider
@@ -1936,15 +1965,15 @@ function ensureCanHaveGroupByClause(
   }
 }
 
-type ManyResultType<O> = O extends InsertResultTypeTag
-  ? (number | undefined)[]
+type ManyResultRowType<O> = O extends InsertResultTypeTag
+  ? number | undefined
   : O extends DeleteResultTypeTag
-  ? number[]
+  ? number
   : O extends UpdateResultTypeTag
-  ? number[]
-  : O[]
+  ? number
+  : O
 
-type SingleResultType<O> = O extends InsertResultTypeTag
+type SingleResultRowType<O> = O extends InsertResultTypeTag
   ? number | undefined
   : O extends DeleteResultTypeTag
   ? number

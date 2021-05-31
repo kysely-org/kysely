@@ -111,8 +111,10 @@
 							<ul class="tsd-index-list">
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="joinbuilder.html#on" class="tsd-kind-icon">on</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="joinbuilder.html#onref" class="tsd-kind-icon">on<wbr>Ref</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="joinbuilder.html#oron" class="tsd-kind-icon">or<wbr>On</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="joinbuilder.html#oronref" class="tsd-kind-icon">or<wbr>OnRef</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter"><a href="joinbuilder.html#subquery" class="tsd-kind-icon">sub<wbr>Query</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-private"><a href="joinbuilder.html#then" class="tsd-kind-icon">then</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="joinbuilder.html#tooperationnode" class="tsd-kind-icon">to<wbr>Operation<wbr>Node</a></li>
 							</ul>
 						</section>
@@ -131,7 +133,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/752b00a/src/query-builder/join-builder.ts#L20">query-builder/join-builder.ts:20</a></li>
+									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/3307233/src/query-builder/join-builder.ts#L20">query-builder/join-builder.ts:20</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-type-parameters-title">Type parameters</h4>
@@ -162,7 +164,7 @@
 					<div class="tsd-signature tsd-kind-icon">#join<wbr>Node<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">JoinNode</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/koskimas/kysely/blob/752b00a/src/query-builder/join-builder.ts#L20">query-builder/join-builder.ts:20</a></li>
+							<li>Defined in <a href="https://github.com/koskimas/kysely/blob/3307233/src/query-builder/join-builder.ts#L20">query-builder/join-builder.ts:20</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -179,7 +181,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/752b00a/src/query-builder/join-builder.ts#L53">query-builder/join-builder.ts:53</a></li>
+									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/3307233/src/query-builder/join-builder.ts#L53">query-builder/join-builder.ts:53</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -215,7 +217,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/752b00a/src/query-builder/join-builder.ts#L73">query-builder/join-builder.ts:73</a></li>
+									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/3307233/src/query-builder/join-builder.ts#L89">query-builder/join-builder.ts:89</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -242,6 +244,42 @@
 					</ul>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
+					<a name="oron" class="tsd-anchor"></a>
+					<h3>or<wbr>On</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon">or<wbr>On<span class="tsd-signature-symbol">(</span>lhs<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">ReferenceExpression</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">TB</span><span class="tsd-signature-symbol">&gt;</span>, op<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">FilterOperatorArg</span>, rhs<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">ValueExpressionOrList</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">TB</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="joinbuilder.html" class="tsd-signature-type" data-tsd-kind="Class">JoinBuilder</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">TB</span><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/3307233/src/query-builder/join-builder.ts#L73">query-builder/join-builder.ts:73</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Just like <a href="querybuilder.html#orwhere">QueryBuilder.orWhere</a> but adds an item to the join&#39;s
+									<code>on</code> clause instead.</p>
+								</div>
+								<p>See <a href="querybuilder.html#orwhere">QueryBuilder.orWhere</a> for documentation and examples.</p>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>lhs: <span class="tsd-signature-type">ReferenceExpression</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">TB</span><span class="tsd-signature-symbol">&gt;</span></h5>
+								</li>
+								<li>
+									<h5>op: <span class="tsd-signature-type">FilterOperatorArg</span></h5>
+								</li>
+								<li>
+									<h5>rhs: <span class="tsd-signature-type">ValueExpressionOrList</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">TB</span><span class="tsd-signature-symbol">&gt;</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="joinbuilder.html" class="tsd-signature-type" data-tsd-kind="Class">JoinBuilder</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">TB</span><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
 					<a name="oronref" class="tsd-anchor"></a>
 					<h3>or<wbr>OnRef</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
@@ -251,7 +289,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/752b00a/src/query-builder/join-builder.ts#L93">query-builder/join-builder.ts:93</a></li>
+									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/3307233/src/query-builder/join-builder.ts#L109">query-builder/join-builder.ts:109</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -288,7 +326,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/752b00a/src/query-builder/join-builder.ts#L31">query-builder/join-builder.ts:31</a></li>
+									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/3307233/src/query-builder/join-builder.ts#L31">query-builder/join-builder.ts:31</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -314,7 +352,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/752b00a/src/query-builder/join-builder.ts#L35">query-builder/join-builder.ts:35</a></li>
+									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/3307233/src/query-builder/join-builder.ts#L35">query-builder/join-builder.ts:35</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-type-parameters-title">Type parameters</h4>
@@ -333,6 +371,35 @@
 						</li>
 					</ul>
 				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-private">
+					<a name="then" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagPrivate">Private</span> then</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-private">
+						<li class="tsd-signature tsd-kind-icon">then<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">...</span>_<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">never</span><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/3307233/src/query-builder/join-builder.ts#L132">query-builder/join-builder.ts:132</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>JoinBuilder is NOT thenable.</p>
+								</div>
+								<p>This method is here just to throw an exception if someone awaits a JoinBuilder.</p>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5><span class="tsd-flag ts-flagRest">Rest</span> <span class="tsd-signature-symbol">...</span>_: <span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">[]</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">never</span><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+					</ul>
+				</section>
 				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
 					<a name="tooperationnode" class="tsd-anchor"></a>
 					<h3>to<wbr>Operation<wbr>Node</h3>
@@ -344,7 +411,7 @@
 							<aside class="tsd-sources">
 								<p>Implementation of OperationNodeSource.toOperationNode</p>
 								<ul>
-									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/752b00a/src/query-builder/join-builder.ts#L107">query-builder/join-builder.ts:107</a></li>
+									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/3307233/src/query-builder/join-builder.ts#L123">query-builder/join-builder.ts:123</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">JoinNode</span></h4>
@@ -393,10 +460,16 @@
 								<a href="joinbuilder.html#onref" class="tsd-kind-icon">on<wbr>Ref</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="joinbuilder.html#oron" class="tsd-kind-icon">or<wbr>On</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
 								<a href="joinbuilder.html#oronref" class="tsd-kind-icon">or<wbr>OnRef</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter">
 								<a href="joinbuilder.html#subquery" class="tsd-kind-icon">sub<wbr>Query</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-private">
+								<a href="joinbuilder.html#then" class="tsd-kind-icon">then</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class">
 								<a href="joinbuilder.html#tooperationnode" class="tsd-kind-icon">to<wbr>Operation<wbr>Node</a>
@@ -430,10 +503,16 @@
 						<a href="../interfaces/poolconfig.html" class="tsd-kind-icon">Pool<wbr>Config</a>
 					</li>
 					<li class=" tsd-kind-interface">
-						<a href="../interfaces/querybuilderargs.html" class="tsd-kind-icon">Query<wbr>Builder<wbr>Args</a>
+						<a href="../interfaces/querybuilderconstructorargs.html" class="tsd-kind-icon">Query<wbr>Builder<wbr>Constructor<wbr>Args</a>
 					</li>
 					<li class=" tsd-kind-interface">
 						<a href="../interfaces/querycompiler.html" class="tsd-kind-icon">Query<wbr>Compiler</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-has-type-parameter">
+						<a href="../interfaces/queryresult.html" class="tsd-kind-icon">Query<wbr>Result</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="../interfaces/rawbuilderconstructorargs.html" class="tsd-kind-icon">Raw<wbr>Builder<wbr>Constructor<wbr>Args</a>
 					</li>
 					<li class=" tsd-kind-interface">
 						<a href="../interfaces/schema.html" class="tsd-kind-icon">Schema</a>

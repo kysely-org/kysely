@@ -7,7 +7,18 @@ import { freeze } from '../utils/object-utils'
 import { CreateTableBuilder } from './create-table-builder'
 import { DropTableBuilder } from './drop-table-builder'
 
+/**
+ * Provides methods for building database schema.
+ */
 export interface Schema {
+  /**
+   * Create a new table.
+   * 
+   * @example
+   * ```ts
+   * await db.schema.
+   * ```
+   */
   createTable(table: string): CreateTableBuilder
   dropTable(table: string): DropTableBuilder
   dropTableIfExists(table: string): DropTableBuilder

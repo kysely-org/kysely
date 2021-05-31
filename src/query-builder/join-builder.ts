@@ -65,6 +65,22 @@ export class JoinBuilder<DB, TB extends keyof DB>
   }
 
   /**
+   * Just like {@link QueryBuilder.orWhere} but adds an item to the join's
+   * `on` clause instead.
+   *
+   * See {@link QueryBuilder.orWhere} for documentation and examples.
+   */
+  orOn(
+    lhs: ReferenceExpression<DB, TB>,
+    op: FilterOperatorArg,
+    rhs: ValueExpressionOrList<DB, TB>
+  ): JoinBuilder<DB, TB> {
+    return new JoinBuilder(
+      cloneJoinNodeWithOn(this.#joinNode, 'or', parseFilterArgs([lhs, op, rhs]))
+    )
+  }
+
+  /**
    * Just like {@link QueryBuilder.whereRef} but adds an item to the join's
    * `on` clause instead.
    *
@@ -106,5 +122,16 @@ export class JoinBuilder<DB, TB extends keyof DB>
 
   toOperationNode(): JoinNode {
     return this.#joinNode
+  }
+
+  /**
+   * JoinBuilder is NOT thenable.
+   *
+   * This method is here just to throw an exception if someone awaits a JoinBuilder.
+   */
+  private async then(..._: any[]): Promise<never> {
+    throw new Error(
+      "don't await JoinBuilder instances. They are never executed directly and are always just part of a query."
+    )
   }
 }

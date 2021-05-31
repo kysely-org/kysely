@@ -23,7 +23,7 @@ export class CreateTableBuilder implements OperationNodeSource {
     createTableNode,
     compiler,
     connectionProvider,
-  }: CreateTableBuilderArgs) {
+  }: CreateTableBuilderConstructorArgs) {
     this.#createTableNode = createTableNode
     this.#compiler = compiler
     this.#connectionProvider = connectionProvider
@@ -142,9 +142,21 @@ export class CreateTableBuilder implements OperationNodeSource {
       ),
     })
   }
+
+  /**
+   * CreateTableBuilder is NOT thenable.
+   *
+   * This method is here just to throw an exception if someone awaits
+   * a CreateTableBuilder directly without calling `execute`.
+   */
+  private async then(..._: any[]): Promise<never> {
+    throw new Error(
+      "don't await CreateTableBuilder instances directly. To execute the query you need to call `execute`"
+    )
+  }
 }
 
-export interface CreateTableBuilderArgs {
+export interface CreateTableBuilderConstructorArgs {
   createTableNode: CreateTableNode
   compiler?: QueryCompiler
   connectionProvider?: ConnectionProvider

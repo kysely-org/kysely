@@ -68,4 +68,14 @@ export class ColumnBuilder implements OperationNodeSource {
   toOperationNode(): ColumnDefinitionNode {
     return this.#node
   }
+
+  /**
+   * ColumnBuilder is NOT thenable.
+   *
+   * This method is here just to throw an exception if someone awaits
+   * a ColumnBuilder.
+   */
+  private async then(..._: any[]): Promise<never> {
+    throw new Error("don't await ColumnBuilder instances directly.")
+  }
 }

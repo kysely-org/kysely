@@ -1,7 +1,8 @@
 import { Pool, PoolClient } from 'pg'
-import { Connection } from '../../driver/connection'
+import { Connection, QueryResult } from '../../driver/connection'
 import { Driver } from '../../driver/driver'
 import { CompiledQuery } from '../../query-compiler/compiled-query'
+import { freeze } from '../../utils/object-utils'
 
 export class PostgresDriver extends Driver {
   #pgPool: Pool | null = null
@@ -76,13 +77,18 @@ class PostgresConnection implements Connection {
     this.#pgClient = pgClient
   }
 
-  async execute<R>(compiledQuery: CompiledQuery): Promise<R[] | number[]> {
-    const result = await this.#pgClient.query<R>(compiledQuery.sql, [
+  async execute<O>(compiledQuery: CompiledQuery): Promise<QueryResult<O>> {
+    const result = await this.#pgClient.query<O>(compiledQuery.sql, [
       ...compiledQuery.bindings,
     ])
 
-    return result.command === 'UPDATE' || result.command === 'DELETE'
-      ? [result.rowCount]
-      : result.rows
+    return freeze({
+      numUpdatedOrDeletedRows:
+        result.command === 'UPDATE' || result.command === 'DELETE'
+          ? result.rowCount
+          : undefined,
+      insertPrimaryKey: undefined,
+      rows: result.rows,
+    })
   }
 }

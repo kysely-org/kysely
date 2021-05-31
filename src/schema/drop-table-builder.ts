@@ -13,7 +13,7 @@ export class DropTableBuilder implements OperationNodeSource {
     dropTableNode,
     compiler,
     connectionProvider,
-  }: DropTableBuilderArgs) {
+  }: DropTableBuilderConstructorArgs) {
     this.#dropTableNode = dropTableNode
     this.#compiler = compiler
     this.#connectionProvider = connectionProvider
@@ -40,9 +40,21 @@ export class DropTableBuilder implements OperationNodeSource {
       await connection.execute(this.compile())
     })
   }
+
+  /**
+   * DropTableBuilder is NOT thenable.
+   *
+   * This method is here just to throw an exception if someone awaits
+   * a DropTableBuilder directly without calling `execute`.
+   */
+  private async then(..._: any[]): Promise<never> {
+    throw new Error(
+      "don't await DropTableBuilder instances directly. To execute the query you need to call `execute`"
+    )
+  }
 }
 
-export interface DropTableBuilderArgs {
+export interface DropTableBuilderConstructorArgs {
   dropTableNode: DropTableNode
   compiler?: QueryCompiler
   connectionProvider?: ConnectionProvider

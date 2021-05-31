@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>QueryBuilderArgs | kysely</title>
+	<title>RawBuilderConstructorArgs | kysely</title>
 	<meta name="description" content="Documentation for kysely">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="../assets/css/main.css">
@@ -55,10 +55,10 @@
 					<a href="../modules.html">kysely</a>
 				</li>
 				<li>
-					<a href="querybuilderargs.html">QueryBuilderArgs</a>
+					<a href="rawbuilderconstructorargs.html">RawBuilderConstructorArgs</a>
 				</li>
 			</ul>
-			<h1>Interface QueryBuilderArgs</h1>
+			<h1>Interface RawBuilderConstructorArgs</h1>
 		</div>
 	</div>
 </header>
@@ -69,7 +69,7 @@
 				<h3>Hierarchy</h3>
 				<ul class="tsd-hierarchy">
 					<li>
-						<span class="target">QueryBuilderArgs</span>
+						<span class="target">RawBuilderConstructorArgs</span>
 					</li>
 				</ul>
 			</section>
@@ -80,9 +80,10 @@
 						<section class="tsd-index-section ">
 							<h3>Properties</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="querybuilderargs.html#compiler" class="tsd-kind-icon">compiler</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="querybuilderargs.html#connectionprovider" class="tsd-kind-icon">connection<wbr>Provider</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="querybuilderargs.html#querynode" class="tsd-kind-icon">query<wbr>Node</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="rawbuilderconstructorargs.html#compiler" class="tsd-kind-icon">compiler</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="rawbuilderconstructorargs.html#connectionprovider" class="tsd-kind-icon">connection<wbr>Provider</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="rawbuilderconstructorargs.html#params" class="tsd-kind-icon">params</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="rawbuilderconstructorargs.html#sql" class="tsd-kind-icon">sql</a></li>
 							</ul>
 						</section>
 					</div>
@@ -96,7 +97,7 @@
 					<div class="tsd-signature tsd-kind-icon">compiler<span class="tsd-signature-symbol">:</span> <a href="querycompiler.html" class="tsd-signature-type" data-tsd-kind="Interface">QueryCompiler</a></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/koskimas/kysely/blob/752b00a/src/query-builder/query-builder.ts#L1809">query-builder/query-builder.ts:1809</a></li>
+							<li>Defined in <a href="https://github.com/koskimas/kysely/blob/3307233/src/raw-builder/raw-builder.ts#L141">raw-builder/raw-builder.ts:141</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -106,17 +107,27 @@
 					<div class="tsd-signature tsd-kind-icon">connection<wbr>Provider<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">ConnectionProvider</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/koskimas/kysely/blob/752b00a/src/query-builder/query-builder.ts#L1810">query-builder/query-builder.ts:1810</a></li>
+							<li>Defined in <a href="https://github.com/koskimas/kysely/blob/3307233/src/raw-builder/raw-builder.ts#L142">raw-builder/raw-builder.ts:142</a></li>
 						</ul>
 					</aside>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="querynode" class="tsd-anchor"></a>
-					<h3>query<wbr>Node</h3>
-					<div class="tsd-signature tsd-kind-icon">query<wbr>Node<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">QueryNode</span></div>
+					<a name="params" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagOptional">Optional</span> params</h3>
+					<div class="tsd-signature tsd-kind-icon">params<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">any</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/koskimas/kysely/blob/752b00a/src/query-builder/query-builder.ts#L1808">query-builder/query-builder.ts:1808</a></li>
+							<li>Defined in <a href="https://github.com/koskimas/kysely/blob/3307233/src/raw-builder/raw-builder.ts#L144">raw-builder/raw-builder.ts:144</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
+					<a name="sql" class="tsd-anchor"></a>
+					<h3>sql</h3>
+					<div class="tsd-signature tsd-kind-icon">sql<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/koskimas/kysely/blob/3307233/src/raw-builder/raw-builder.ts#L143">raw-builder/raw-builder.ts:143</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -171,27 +182,36 @@
 					<li class=" tsd-kind-interface">
 						<a href="poolconfig.html" class="tsd-kind-icon">Pool<wbr>Config</a>
 					</li>
+					<li class=" tsd-kind-interface">
+						<a href="querybuilderconstructorargs.html" class="tsd-kind-icon">Query<wbr>Builder<wbr>Constructor<wbr>Args</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="querycompiler.html" class="tsd-kind-icon">Query<wbr>Compiler</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-has-type-parameter">
+						<a href="queryresult.html" class="tsd-kind-icon">Query<wbr>Result</a>
+					</li>
 				</ul>
 				<ul class="current">
 					<li class="current tsd-kind-interface">
-						<a href="querybuilderargs.html" class="tsd-kind-icon">Query<wbr>Builder<wbr>Args</a>
+						<a href="rawbuilderconstructorargs.html" class="tsd-kind-icon">Raw<wbr>Builder<wbr>Constructor<wbr>Args</a>
 						<ul>
 							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="querybuilderargs.html#compiler" class="tsd-kind-icon">compiler</a>
+								<a href="rawbuilderconstructorargs.html#compiler" class="tsd-kind-icon">compiler</a>
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="querybuilderargs.html#connectionprovider" class="tsd-kind-icon">connection<wbr>Provider</a>
+								<a href="rawbuilderconstructorargs.html#connectionprovider" class="tsd-kind-icon">connection<wbr>Provider</a>
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="querybuilderargs.html#querynode" class="tsd-kind-icon">query<wbr>Node</a>
+								<a href="rawbuilderconstructorargs.html#params" class="tsd-kind-icon">params</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-interface">
+								<a href="rawbuilderconstructorargs.html#sql" class="tsd-kind-icon">sql</a>
 							</li>
 						</ul>
 					</li>
 				</ul>
 				<ul class="after-current">
-					<li class=" tsd-kind-interface">
-						<a href="querycompiler.html" class="tsd-kind-icon">Query<wbr>Compiler</a>
-					</li>
 					<li class=" tsd-kind-interface">
 						<a href="schema.html" class="tsd-kind-icon">Schema</a>
 					</li>

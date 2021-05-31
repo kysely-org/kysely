@@ -73,5 +73,34 @@ for (const dialect of BUILT_IN_DIALECTS) {
         { first_name: 'Sylvester', last_name: 'Stallone', gender: 'male' },
       ])
     })
+
+    if (dialect === 'postgres') {
+      it('should return deleted rows when `returning` is used', async () => {
+        const query = ctx.db
+          .deleteFrom('person')
+          .where('gender', '=', 'male')
+          .returning(['first_name', 'last_name'])
+
+        testSql(query, dialect, {
+          postgres: {
+            sql:
+              'delete from "person" where "gender" = $1 returning "first_name", "last_name"',
+            bindings: ['male'],
+          },
+        })
+
+        const result = await query.execute()
+
+        expect(result).to.have.length(2)
+        expect(Object.keys(result[0]).sort()).to.eql([
+          'first_name',
+          'last_name',
+        ])
+        expect(result).to.containSubset([
+          { first_name: 'Arnold', last_name: 'Schwarzenegger' },
+          { first_name: 'Sylvester', last_name: 'Stallone' },
+        ])
+      })
+    }
   })
 }

@@ -81,10 +81,19 @@ export class Kysely<DB> {
     )
   }
 
+  /**
+   * Returns a the {@link Schema} module for bulding database schema.
+   */
   get schema(): Schema {
     return createSchemaObject(this.#compiler, this.#connectionProvider)
   }
 
+  /**
+   * Returns a the {@link Dynamic} module.
+   *
+   * The {@link Dynamic} module can be used to bypass strict typing in and
+   * passing in dynamic values for the queries.
+   */
   get dynamic(): Dynamic {
     return createDynamicObject()
   }
@@ -441,7 +450,12 @@ export class Kysely<DB> {
    * the `persons` variable is `Person[]`.
    */
   raw<T = unknown>(sql: string, params?: any[]): RawBuilder<T> {
-    return new RawBuilder(sql, params)
+    return new RawBuilder({
+      sql,
+      params,
+      compiler: this.#compiler,
+      connectionProvider: this.#connectionProvider,
+    })
   }
 
   /**
