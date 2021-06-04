@@ -14,9 +14,11 @@ import { QueryBuilder } from './query-builder'
 import { ReferenceExpression } from '../parser/reference-parser'
 import { createSelectQueryNodeWithFromItems } from '../operation-node/select-query-node'
 import { ValueExpressionOrList } from '../parser/value-parser'
+import { preventAwait } from '../util/prevent-await'
 
 export class JoinBuilder<DB, TB extends keyof DB>
-  implements OperationNodeSource {
+  implements OperationNodeSource
+{
   readonly #joinNode: JoinNode
 
   constructor(joinNode: JoinNode) {
@@ -123,15 +125,9 @@ export class JoinBuilder<DB, TB extends keyof DB>
   toOperationNode(): JoinNode {
     return this.#joinNode
   }
-
-  /**
-   * JoinBuilder is NOT thenable.
-   *
-   * This method is here just to throw an exception if someone awaits a JoinBuilder.
-   */
-  private async then(..._: any[]): Promise<never> {
-    throw new Error(
-      "don't await JoinBuilder instances. They are never executed directly and are always just part of a query."
-    )
-  }
 }
+
+preventAwait(
+  JoinBuilder,
+  "don't await JoinBuilder instances. They are never executed directly and are always just a part of a query."
+)

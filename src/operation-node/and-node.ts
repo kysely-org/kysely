@@ -2,7 +2,7 @@ import { OperationNode } from './operation-node'
 import { OrNode } from './or-node'
 import { ParensNode } from './parens-node'
 import { FilterNode } from './filter-node'
-import { freeze } from '../utils/object-utils'
+import { freeze } from '../util/object-utils'
 
 export type AndNodeChildNode = FilterNode | AndNode | OrNode | ParensNode
 

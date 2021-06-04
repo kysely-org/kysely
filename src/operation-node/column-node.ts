@@ -1,4 +1,4 @@
-import { freeze } from '../utils/object-utils'
+import { freeze } from '../util/object-utils'
 import { createIdentifierNode, IdentifierNode } from './identifier-node'
 import { OperationNode } from './operation-node'
 

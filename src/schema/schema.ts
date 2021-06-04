@@ -3,7 +3,7 @@ import { createCreateTableNode } from '../operation-node/create-table-node'
 import { createDropTableNode } from '../operation-node/drop-table-node'
 import { parseTable } from '../parser/table-parser'
 import { QueryCompiler } from '../query-compiler/query-compiler'
-import { freeze } from '../utils/object-utils'
+import { freeze } from '../util/object-utils'
 import { CreateTableBuilder } from './create-table-builder'
 import { DropTableBuilder } from './drop-table-builder'
 

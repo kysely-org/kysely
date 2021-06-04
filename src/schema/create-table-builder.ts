@@ -11,7 +11,8 @@ import { createDataTypeNode } from '../operation-node/data-type-node'
 import { OperationNodeSource } from '../operation-node/operation-node-source'
 import { CompiledQuery } from '../query-compiler/compiled-query'
 import { QueryCompiler } from '../query-compiler/query-compiler'
-import { isFunction, isNumber } from '../utils/object-utils'
+import { isFunction, isNumber } from '../util/object-utils'
+import { preventAwait } from '../util/prevent-await'
 import { ColumnBuilder } from './column-builder'
 
 export class CreateTableBuilder implements OperationNodeSource {
@@ -142,19 +143,12 @@ export class CreateTableBuilder implements OperationNodeSource {
       ),
     })
   }
-
-  /**
-   * CreateTableBuilder is NOT thenable.
-   *
-   * This method is here just to throw an exception if someone awaits
-   * a CreateTableBuilder directly without calling `execute`.
-   */
-  private async then(..._: any[]): Promise<never> {
-    throw new Error(
-      "don't await CreateTableBuilder instances directly. To execute the query you need to call `execute`"
-    )
-  }
 }
+
+preventAwait(
+  CreateTableBuilder,
+  "don't await CreateTableBuilder instances directly. To execute the query you need to call `execute`"
+)
 
 export interface CreateTableBuilderConstructorArgs {
   createTableNode: CreateTableNode

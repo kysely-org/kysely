@@ -11,6 +11,7 @@ import { createValueNode } from '../operation-node/value-node'
 import { parseStringReference } from '../parser/reference-parser'
 import { CompiledQuery } from '../query-compiler/compiled-query'
 import { QueryCompiler } from '../query-compiler/query-compiler'
+import { preventAwait } from '../util/prevent-await'
 
 export class RawBuilder<O = unknown> implements OperationNodeSource {
   #sql: string
@@ -86,22 +87,16 @@ export class RawBuilder<O = unknown> implements OperationNodeSource {
       return await connection.execute<O>(this.compile())
     })
   }
-
-  /**
-   * RawBuilder is NOT thenable.
-   *
-   * This method is here just to throw an exception if someone awaits
-   * a RawBuilder directly without calling `execute`.
-   */
-  private async then(..._: any[]): Promise<never> {
-    throw new Error(
-      "don't await RawBuilder instances directly. To execute the query you need to call `execute`"
-    )
-  }
 }
 
+preventAwait(
+  RawBuilder,
+  "don't await RawBuilder instances directly. To execute the query you need to call `execute`"
+)
+
 export class AliasedRawBuilder<O = unknown, A extends string = never>
-  implements OperationNodeSource {
+  implements OperationNodeSource
+{
   #rawBuilder: RawBuilder<O>
   #alias: A
 

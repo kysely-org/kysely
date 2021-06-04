@@ -5,11 +5,14 @@ import { Driver } from './driver'
 
 export class TransactionalConnectionProvider implements ConnectionProvider {
   readonly #driver: Driver
-  readonly #transactions: AsyncLocalStorage<Connection>
+  readonly #transactions = new AsyncLocalStorage<Connection>()
 
-  constructor(driver: Driver, transactions: AsyncLocalStorage<Connection>) {
+  constructor(driver: Driver) {
     this.#driver = driver
-    this.#transactions = transactions
+  }
+
+  isTransactionRunning(): boolean {
+    return !!this.#transactions.getStore()
   }
 
   async withConnection<T>(
@@ -22,6 +25,43 @@ export class TransactionalConnectionProvider implements ConnectionProvider {
     } finally {
       await this.releaseConnection(connection)
     }
+  }
+
+  async transaction<T>(callback: () => Promise<T>): Promise<T> {
+    let connection: Connection | null = null
+
+    if (this.isTransactionRunning()) {
+      throw new Error(
+        'You attempted to call Kysely.transaction() inside an existing transaction. Nested transactions are not yet supported. See the Kysely.isTransactionRunning() method.'
+      )
+    }
+
+    try {
+      await this.#driver.ensureInit()
+
+      connection = await this.#driver.acquireConnection()
+      await connection.execute<void>({ sql: 'begin', bindings: [] })
+
+      const result = await this.#transactions.run(connection, () => {
+        return callback()
+      })
+
+      await connection.execute<void>({ sql: 'commit', bindings: [] })
+      return result
+    } catch (error) {
+      if (connection) {
+        await connection.execute<void>({ sql: 'rollback', bindings: [] })
+      }
+      throw error
+    } finally {
+      if (connection) {
+        await this.#driver.releaseConnection(connection)
+      }
+    }
+  }
+
+  destroy() {
+    this.#transactions.disable()
   }
 
   private async acquireConnection(): Promise<Connection> {

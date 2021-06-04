@@ -1,4 +1,4 @@
-import { freeze } from '../utils/object-utils'
+import { freeze } from '../util/object-utils'
 import { DynamicReferenceBuilder } from './dynamic-reference-builder'
 
 export interface Dynamic {

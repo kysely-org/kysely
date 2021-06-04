@@ -80,6 +80,7 @@ import {
 import { MutationObject } from '../parser/mutation-parser'
 import { parseUpdateSetArgs } from '../parser/update-set-parser'
 import { QueryCompiler } from '../query-compiler/query-compiler'
+import { preventAwait } from '../util/prevent-await'
 
 /**
  * The main query builder class.
@@ -97,7 +98,8 @@ import { QueryCompiler } from '../query-compiler/query-compiler'
  * @typePAram O - The query output row type.
  */
 export class QueryBuilder<DB, TB extends keyof DB, O = {}>
-  implements OperationNodeSource {
+  implements OperationNodeSource
+{
   readonly #queryNode: QueryNode
   readonly #compiler?: QueryCompiler
   readonly #connectionProvider?: ConnectionProvider
@@ -1819,19 +1821,12 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
     const [result] = await this.execute()
     return result
   }
-
-  /**
-   * QueryBuilder is NOT thenable.
-   *
-   * This method is here just to throw an exception if someone awaits
-   * a QueryBuilder directly without calling `execute` or `executeTakeFirst`.
-   */
-  private async then(..._: any[]): Promise<never> {
-    throw new Error(
-      "don't await QueryBuilder instances directly. To execute the query you need to call `execute` or `executeTakeFirst`."
-    )
-  }
 }
+
+preventAwait(
+  QueryBuilder,
+  "don't await QueryBuilder instances directly. To execute the query you need to call `execute` or `executeTakeFirst`."
+)
 
 export interface QueryBuilderConstructorArgs {
   queryNode: QueryNode

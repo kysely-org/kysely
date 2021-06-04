@@ -6,6 +6,7 @@ import {
 import { OperationNodeSource } from '../operation-node/operation-node-source'
 import { isReferenceNode } from '../operation-node/reference-node'
 import { parseStringReference } from '../parser/reference-parser'
+import { preventAwait } from '../util/prevent-await'
 
 export class ColumnBuilder implements OperationNodeSource {
   readonly #node: ColumnDefinitionNode
@@ -74,14 +75,6 @@ export class ColumnBuilder implements OperationNodeSource {
   toOperationNode(): ColumnDefinitionNode {
     return this.#node
   }
-
-  /**
-   * ColumnBuilder is NOT thenable.
-   *
-   * This method is here just to throw an exception if someone awaits
-   * a ColumnBuilder.
-   */
-  private async then(..._: any[]): Promise<never> {
-    throw new Error("don't await ColumnBuilder instances directly.")
-  }
 }
+
+preventAwait(ColumnBuilder, "don't await ColumnBuilder instances directly.")

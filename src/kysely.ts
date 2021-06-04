@@ -13,9 +13,6 @@ import { Dialect } from './dialect/dialect'
 import { PostgresDialect } from './dialect/postgres/postgres-dialect'
 import { Driver } from './driver/driver'
 import { TransactionalConnectionProvider } from './driver/transactional-connection-provider'
-import { AsyncLocalStorage } from 'async_hooks'
-import { Connection } from './driver/connection'
-import { ConnectionProvider } from './driver/connection-provider'
 import { createSchemaObject, Schema } from './schema/schema'
 import { createSelectQueryNodeWithFromItems } from './operation-node/select-query-node'
 import { createInsertQueryNodeWithTable } from './operation-node/insert-query-node'
@@ -66,8 +63,7 @@ import { QueryCompiler } from './query-compiler/query-compiler'
 export class Kysely<DB> {
   readonly #driver: Driver
   readonly #compiler: QueryCompiler
-  readonly #transactions = new AsyncLocalStorage<Connection>()
-  readonly #connectionProvider: ConnectionProvider
+  readonly #connectionProvider: TransactionalConnectionProvider
 
   constructor(config: KyselyConfig) {
     const dialect = createDialect(config)
@@ -75,10 +71,7 @@ export class Kysely<DB> {
     this.#driver = dialect.createDriver(config)
     this.#compiler = dialect.createQueryCompiler()
 
-    this.#connectionProvider = new TransactionalConnectionProvider(
-      this.#driver,
-      this.#transactions
-    )
+    this.#connectionProvider = new TransactionalConnectionProvider(this.#driver)
   }
 
   /**
@@ -462,7 +455,7 @@ export class Kysely<DB> {
    * Returns true if called inside a Kysely.transaction() callback.
    */
   isTransactionRunning(): boolean {
-    return !!this.#transactions.getStore()
+    return this.#connectionProvider.isTransactionRunning()
   }
 
   /**
@@ -499,41 +492,12 @@ export class Kysely<DB> {
    * ```
    */
   async transaction<T>(callback: () => Promise<T>): Promise<T> {
-    let connection: Connection | null = null
-
-    if (this.isTransactionRunning()) {
-      throw new Error(
-        'You attempted to call Kysely.transaction() inside an existing transaction. Nested transactions are not yet supported. See the Kysely.isTransactionRunning() method.'
-      )
-    }
-
-    try {
-      await this.#driver.ensureInit()
-
-      connection = await this.#driver.acquireConnection()
-      await connection.execute<void>({ sql: 'BEGIN', bindings: [] })
-
-      const result = await this.#transactions.run(connection, () => {
-        return callback()
-      })
-
-      await connection.execute<void>({ sql: 'COMMIT', bindings: [] })
-      return result
-    } catch (error) {
-      if (connection) {
-        await connection.execute<void>({ sql: 'ROLLBACK', bindings: [] })
-      }
-      throw error
-    } finally {
-      if (connection) {
-        await this.#driver.releaseConnection(connection)
-      }
-    }
+    return this.#connectionProvider.transaction(callback)
   }
 
   async destroy(): Promise<void> {
     await this.#driver.ensureDestroy()
-    this.#transactions.disable()
+    this.#connectionProvider.destroy()
   }
 }
 

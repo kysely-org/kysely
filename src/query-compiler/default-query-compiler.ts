@@ -21,7 +21,7 @@ import { OrderByItemNode } from '../operation-node/order-by-item-node'
 import { OrderByNode } from '../operation-node/order-by-node'
 import { ParensNode } from '../operation-node/parens-node'
 import { PrimitiveValueListNode } from '../operation-node/primitive-value-list-node'
-import { QueryNode } from '../operation-node/query-node-utils'
+import { isQueryNode } from '../operation-node/query-node-utils'
 import { RawNode } from '../operation-node/raw-node'
 import { ReferenceNode } from '../operation-node/reference-node'
 import { ReturningNode } from '../operation-node/returning-node'
@@ -36,7 +36,7 @@ import { UpdateQueryNode } from '../operation-node/update-query-node'
 import { ValueListNode } from '../operation-node/value-list-node'
 import { ValueNode } from '../operation-node/value-node'
 import { WhereNode } from '../operation-node/where-node'
-import { isEmpty, getLast, freeze } from '../utils/object-utils'
+import { isEmpty, getLast, freeze } from '../util/object-utils'
 import { CompiledQuery } from './compiled-query'
 import { CompileEntryPointNode, QueryCompiler } from './query-compiler'
 
@@ -46,12 +46,9 @@ export class DefaultQueryCompiler
   #sqlFragments: string[] = []
   #bindings: any[] = []
 
-  protected queryNodeStack: QueryNode[] = []
-
   compile(node: CompileEntryPointNode): CompiledQuery {
     this.#sqlFragments = []
     this.#bindings = []
-    this.queryNodeStack = []
 
     this.visitNode(node)
 
@@ -70,8 +67,8 @@ export class DefaultQueryCompiler
   }
 
   protected visitSelectQuery(node: SelectQueryNode): void {
-    const needsParens = !isEmpty(this.queryNodeStack)
-    this.queryNodeStack.push(node)
+    // We need parens if there is an ancestor query node.
+    const needsParens = this.nodeStack.find(isQueryNode) !== node
 
     if (needsParens) {
       this.append('(')
@@ -124,8 +121,6 @@ export class DefaultQueryCompiler
     if (needsParens) {
       this.append(')')
     }
-
-    this.queryNodeStack.pop()
   }
 
   protected visitFrom(node: FromNode): void {
@@ -157,8 +152,6 @@ export class DefaultQueryCompiler
   }
 
   protected visitInsertQuery(node: InsertQueryNode): void {
-    this.queryNodeStack.push(node)
-
     this.append('insert into ')
     this.visitNode(node.into)
 
@@ -182,13 +175,9 @@ export class DefaultQueryCompiler
       this.append(' ')
       this.visitNode(node.returning)
     }
-
-    this.queryNodeStack.pop()
   }
 
   protected visitDeleteQuery(node: DeleteQueryNode): void {
-    this.queryNodeStack.push(node)
-
     this.append('delete ')
     this.visitNode(node.from)
 
@@ -206,8 +195,6 @@ export class DefaultQueryCompiler
       this.append(' ')
       this.visitNode(node.returning)
     }
-
-    this.queryNodeStack.pop()
   }
 
   protected visitReturning(node: ReturningNode): void {
@@ -408,8 +395,6 @@ export class DefaultQueryCompiler
   }
 
   protected visitUpdateQuery(node: UpdateQueryNode): void {
-    this.queryNodeStack.push(node)
-
     this.append('update ')
     this.visitNode(node.table)
     this.append(' set ')
@@ -432,8 +417,6 @@ export class DefaultQueryCompiler
       this.append(' ')
       this.visitNode(node.returning)
     }
-
-    this.queryNodeStack.pop()
   }
 
   protected visitColumnUpdate(node: ColumnUpdateNode): void {

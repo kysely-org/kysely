@@ -1,4 +1,4 @@
-import { freeze } from '../utils/object-utils'
+import { freeze } from '../util/object-utils'
 import { ColumnDefinitionNode } from './column-definition-node'
 import { OperationNode } from './operation-node'
 import { TableNode } from './table-node'

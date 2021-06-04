@@ -1,4 +1,4 @@
-import { freeze } from '../utils/object-utils'
+import { freeze } from '../util/object-utils'
 import { createFromNodeWithItems, FromNode } from './from-node'
 import { GroupByItemNode } from './group-by-item-node'
 import {

@@ -1,4 +1,4 @@
-import { isFunction, isObject } from '../utils/object-utils'
+import { isFunction, isObject } from '../util/object-utils'
 import { OperationNode } from './operation-node'
 
 export interface OperationNodeSource {

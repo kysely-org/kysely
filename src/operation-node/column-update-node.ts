@@ -1,4 +1,4 @@
-import { freeze } from '../utils/object-utils'
+import { freeze } from '../util/object-utils'
 import { ColumnNode } from './column-node'
 import { OperationNode } from './operation-node'
 import { ValueExpressionNode } from './operation-node-utils'

@@ -3,7 +3,7 @@ import {
   createEmptySelectQuery,
   QueryBuilder,
 } from '../query-builder/query-builder'
-import { isFunction, isString } from '../utils/object-utils'
+import { isFunction, isString } from '../util/object-utils'
 import { createAliasNode } from '../operation-node/alias-node'
 import {
   createTableNode,

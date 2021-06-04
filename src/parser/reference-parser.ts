@@ -11,7 +11,7 @@ import {
   createTableNodeWithSchema,
 } from '../operation-node/table-node'
 import { RawBuilder } from '../raw-builder/raw-builder'
-import { isFunction, isString } from '../utils/object-utils'
+import { isFunction, isString } from '../util/object-utils'
 import { createEmptySelectQuery } from '../query-builder/query-builder'
 import {
   AnyColumn,

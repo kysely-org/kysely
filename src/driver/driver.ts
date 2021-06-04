@@ -1,4 +1,4 @@
-import { freeze } from '../utils/object-utils'
+import { freeze } from '../util/object-utils'
 import { Connection } from './connection'
 import { DriverConfig, DriverConfigWithDefaults } from './driver-config'
 
@@ -12,7 +12,7 @@ const POOL_CONFIG_DEFAULTS = freeze({
  * A Driver is responsible for abstracting away the database engine details.
  *
  * The Driver creates and releases database connections and is also responsible
- * for connection pooling. The built-in dial
+ * for connection pooling.
  */
 export abstract class Driver {
   protected readonly config: DriverConfigWithDefaults

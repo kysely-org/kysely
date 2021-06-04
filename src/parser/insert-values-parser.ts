@@ -2,7 +2,7 @@ import { ColumnNode, createColumnNode } from '../operation-node/column-node'
 import { InsertValuesNode } from '../operation-node/insert-query-node'
 import { createPrimitiveValueListNode } from '../operation-node/primitive-value-list-node'
 import { createValueListNode } from '../operation-node/value-list-node'
-import { isPrimitive, PrimitiveValue } from '../utils/object-utils'
+import { isPrimitive, PrimitiveValue } from '../util/object-utils'
 import {
   MutationObject,
   MutationValueExpression,

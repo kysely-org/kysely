@@ -1,6 +1,6 @@
 import { createFilterNode, FilterNode } from '../operation-node/filter-node'
 import { RawBuilder } from '../raw-builder/raw-builder'
-import { isFunction, isString } from '../utils/object-utils'
+import { isFunction, isString } from '../util/object-utils'
 import {
   AnyQueryBuilder,
   ArrayItemType,

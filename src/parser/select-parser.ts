@@ -1,6 +1,6 @@
 import { isOperationNodeSource } from '../operation-node/operation-node-source'
 import { AliasedRawBuilder } from '../raw-builder/raw-builder'
-import { isFunction, isString } from '../utils/object-utils'
+import { isFunction, isString } from '../util/object-utils'
 import {
   AliasedQueryBuilder,
   createEmptySelectQuery,

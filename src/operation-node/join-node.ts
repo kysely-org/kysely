@@ -1,4 +1,4 @@
-import { freeze } from '../utils/object-utils'
+import { freeze } from '../util/object-utils'
 import { AliasNode } from './alias-node'
 import { AndNode, createAndNode } from './and-node'
 import { FilterNode } from './filter-node'

@@ -1,11 +1,11 @@
-import { SelectQueryNode } from './select-query-node'
+import { isSelectQueryNode, SelectQueryNode } from './select-query-node'
 import { DeleteQueryNode, isDeleteQueryNode } from './delete-query-node'
 import {
   cloneWhereNodeWithFilter,
   createWhereNodeWithFilter,
   WhereChildNode,
 } from './where-node'
-import { freeze } from '../utils/object-utils'
+import { freeze } from '../util/object-utils'
 import { InsertQueryNode, isInsertQueryNode } from './insert-query-node'
 import { JoinNode } from './join-node'
 import { SelectionNode } from './selection-node'
@@ -26,6 +26,15 @@ export type MutatingQueryNode =
   | DeleteQueryNode
   | InsertQueryNode
   | UpdateQueryNode
+
+export function isQueryNode(node: OperationNode): node is QueryNode {
+  return (
+    isDeleteQueryNode(node) ||
+    isInsertQueryNode(node) ||
+    isUpdateQueryNode(node) ||
+    isSelectQueryNode(node)
+  )
+}
 
 export function isMutatingQueryNode(
   node: OperationNode

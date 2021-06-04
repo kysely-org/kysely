@@ -37,6 +37,8 @@ import { UpdateQueryNode } from './update-query-node'
 import { ColumnUpdateNode } from './column-update-node'
 
 export class OperationNodeVisitor {
+  protected nodeStack: OperationNode[] = []
+
   #visitors: Record<OperationNodeKind, Function> = {
     AliasNode: this.visitAlias.bind(this),
     ColumnNode: this.visitColumn.bind(this),
@@ -74,7 +76,9 @@ export class OperationNodeVisitor {
   }
 
   protected readonly visitNode = (node: OperationNode): void => {
+    this.nodeStack.push(node)
     this.#visitors[node.kind](node)
+    this.nodeStack.pop()
   }
 
   protected visitSelectQuery(node: SelectQueryNode): void {

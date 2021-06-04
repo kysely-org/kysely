@@ -13,7 +13,7 @@ import {
   ValueListNode,
 } from '../operation-node/value-list-node'
 import { createValueNode } from '../operation-node/value-node'
-import { isFunction, isPrimitive, PrimitiveValue } from '../utils/object-utils'
+import { isFunction, isPrimitive, PrimitiveValue } from '../util/object-utils'
 import { createEmptySelectQuery } from '../query-builder/query-builder'
 import {
   AnyQueryBuilder,

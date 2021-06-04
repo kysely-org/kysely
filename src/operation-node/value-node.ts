@@ -1,4 +1,4 @@
-import { freeze, PrimitiveValue } from '../utils/object-utils'
+import { freeze, PrimitiveValue } from '../util/object-utils'
 import { OperationNode } from './operation-node'
 
 export interface ValueNode extends OperationNode {

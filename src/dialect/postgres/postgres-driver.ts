@@ -1,12 +1,16 @@
+import * as crypto from 'crypto'
+
 import { Pool, PoolClient } from 'pg'
 import { Connection, QueryResult } from '../../driver/connection'
 import { Driver } from '../../driver/driver'
 import { CompiledQuery } from '../../query-compiler/compiled-query'
-import { freeze } from '../../utils/object-utils'
+import { freeze } from '../../util/object-utils'
+
+const PRIVATE_RELEASE_METHOD = Symbol()
 
 export class PostgresDriver extends Driver {
-  #pgPool: Pool | null = null
-  #pgClients = new WeakSet<PoolClient>()
+  #pool: Pool | null = null
+  #connections = new WeakMap<PoolClient, Connection>()
 
   async init(): Promise<void> {
     // Import the `pg` module here instead at the top of the file
@@ -18,8 +22,8 @@ export class PostgresDriver extends Driver {
 
     const cfg = this.config
     // Use the `pg` module's own pool. All drivers should use the
-    // pool provided by the database connector library if possible.
-    this.#pgPool = new pg.Pool({
+    // pool provided by the database library if possible.
+    this.#pool = new pg.Pool({
       host: cfg.host,
       database: cfg.database,
       port: cfg.port,
@@ -38,19 +42,20 @@ export class PostgresDriver extends Driver {
   }
 
   async destroy(): Promise<void> {
-    if (this.#pgPool) {
-      const pool = this.#pgPool
-      this.#pgPool = null
+    if (this.#pool) {
+      const pool = this.#pool
+      this.#pool = null
       await pool.end()
     }
   }
 
   async acquireConnection(): Promise<Connection> {
-    const pgClient = await this.#pgPool!.connect()
-    const connection = new PostgresConnection(pgClient)
+    const client = await this.#pool!.connect()
+    let connection = this.#connections.get(client)
 
-    if (!this.#pgClients.has(pgClient)) {
-      this.#pgClients.add(pgClient)
+    if (!connection) {
+      connection = new PostgresConnection(client)
+      this.#connections.set(client, connection)
 
       if (this.config.pool.onCreateConnection) {
         await this.config.pool.onCreateConnection(connection)
@@ -61,7 +66,8 @@ export class PostgresDriver extends Driver {
   }
 
   async releaseConnection(connection: Connection): Promise<void> {
-    await (connection as PostgresConnection).release()
+    const pgConnection = connection as PostgresConnection
+    pgConnection[PRIVATE_RELEASE_METHOD]()
   }
 }
 
@@ -76,14 +82,15 @@ async function importPg() {
 }
 
 class PostgresConnection implements Connection {
-  #pgClient: PoolClient
+  #id = crypto.randomBytes(4).toString('hex')
+  #client: PoolClient
 
-  constructor(pgClient: PoolClient) {
-    this.#pgClient = pgClient
+  constructor(client: PoolClient) {
+    this.#client = client
   }
 
   async execute<O>(compiledQuery: CompiledQuery): Promise<QueryResult<O>> {
-    const result = await this.#pgClient.query<O>(compiledQuery.sql, [
+    const result = await this.#client.query<O>(compiledQuery.sql, [
       ...compiledQuery.bindings,
     ])
 
@@ -97,7 +104,7 @@ class PostgresConnection implements Connection {
     })
   }
 
-  async release(): Promise<void> {
-    await this.#pgClient.release()
+  [PRIVATE_RELEASE_METHOD](): void {
+    this.#client.release()
   }
 }

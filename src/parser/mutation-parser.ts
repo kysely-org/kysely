@@ -7,7 +7,7 @@ import {
 import { createValueNode, ValueNode } from '../operation-node/value-node'
 import { AnyQueryBuilder } from '../query-builder/type-utils'
 import { RawBuilder } from '../raw-builder/raw-builder'
-import { isPrimitive, PrimitiveValue } from '../utils/object-utils'
+import { isPrimitive, PrimitiveValue } from '../util/object-utils'
 
 export type MutationObject<DB, TB extends keyof DB> = {
   [C in keyof DB[TB]]?: MutationValueExpression<DB[TB][C]>
