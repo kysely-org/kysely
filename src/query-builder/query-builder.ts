@@ -115,63 +115,6 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
   }
 
   /**
-   * Creates a subquery.
-   *
-   * The query builder returned by this method is typed in a way that you can refer to
-   * all tables of the parent query in addition to the subquery's tables.
-   *
-   * @example
-   * This example shows that you can refer to both `pet.owner_id` and `person.id`
-   * columns from the subquery. This is needed to be able to create correlated
-   * subqueries:
-   *
-   * ```ts
-   * const result = await db.selectFrom('pet')
-   *   .select([
-   *     'pet.name',
-   *     (qb) => qb.subQuery('person')
-   *       .whereRef('person.id', '=', 'pet.owner_id')
-   *       .select('person.first_name')
-   *       .as('owner_name')
-   *   ])
-   *   .execute()
-   *
-   * console.log(result[0].owner_name)
-   * ```
-   *
-   * The generated SQL (postgresql):
-   *
-   * ```sql
-   * select
-   *   "pet"."name",
-   *   ( select "person"."first_name"
-   *     from "person"
-   *     where "person"."id" = "pet"."owner_id"
-   *   ) as "owner_name"
-   * from "pet"
-   * ```
-   *
-   * You can use a normal query in place of `(qb) => qb.subQuery(...)` but in
-   * that case Kysely typings wouldn't allow you to reference `pet.owner_id`
-   * because `pet` is not joined to that query.
-   */
-  subQuery<F extends TableExpression<DB, TB>>(
-    from: F[]
-  ): QueryBuilderWithTable<DB, TB, O, F>
-
-  subQuery<F extends TableExpression<DB, TB>>(
-    from: F
-  ): QueryBuilderWithTable<DB, TB, O, F>
-
-  subQuery(table: any): any {
-    return new QueryBuilder({
-      queryNode: createSelectQueryNodeWithFromItems(
-        parseTableExpressionOrList(table)
-      ),
-    })
-  }
-
-  /**
    * Adds a `where` clause to the query.
    *
    * Also see {@link QueryBuilder.whereExists | whereExists}, {@link QueryBuilder.whereRef | whereRef}
@@ -580,7 +523,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
       queryNode: cloneQueryNodeWithWhere(
         this.#queryNode,
         'and',
-        parseExistsFilterArgs(this, 'exists', arg)
+        parseExistsFilterArgs('exists', arg)
       ),
     })
   }
@@ -597,7 +540,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
       queryNode: cloneQueryNodeWithWhere(
         this.#queryNode,
         'and',
-        parseExistsFilterArgs(this, 'not exists', arg)
+        parseExistsFilterArgs('not exists', arg)
       ),
     })
   }
@@ -614,7 +557,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
       queryNode: cloneQueryNodeWithWhere(
         this.#queryNode,
         'or',
-        parseExistsFilterArgs(this, 'exists', arg)
+        parseExistsFilterArgs('exists', arg)
       ),
     })
   }
@@ -631,7 +574,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
       queryNode: cloneQueryNodeWithWhere(
         this.#queryNode,
         'or',
-        parseExistsFilterArgs(this, 'not exists', arg)
+        parseExistsFilterArgs('not exists', arg)
       ),
     })
   }
@@ -1794,7 +1737,9 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
 
     const result = await this.#connectionProvider.withConnection(
       async (connection) => {
-        return await connection.executeQuery<ManyResultRowType<O>>(this.compile())
+        return await connection.executeQuery<ManyResultRowType<O>>(
+          this.compile()
+        )
       }
     )
 

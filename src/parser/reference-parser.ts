@@ -12,7 +12,6 @@ import {
 } from '../operation-node/table-node'
 import { RawBuilder } from '../raw-builder/raw-builder'
 import { isFunction, isString } from '../util/object-utils'
-import { createEmptySelectQuery } from '../query-builder/query-builder'
 import {
   AnyColumn,
   AnyColumnWithTable,
@@ -22,6 +21,7 @@ import {
 } from '../query-builder/type-utils'
 import { DynamicReferenceBuilder } from '../dynamic/dynamic-reference-builder'
 import { isMutatingQueryNode } from '../operation-node/query-node-utils'
+import { SubQueryBuilder } from '../query-builder/sub-query-builder'
 
 export type ReferenceExpression<DB, TB extends keyof DB> =
   | AnyColumn<DB, TB>
@@ -58,7 +58,7 @@ export function parseReferenceExpression(
       return node
     }
   } else if (isFunction(arg)) {
-    const node = arg(createEmptySelectQuery()).toOperationNode()
+    const node = arg(new SubQueryBuilder()).toOperationNode()
 
     if (!isMutatingQueryNode(node)) {
       return node

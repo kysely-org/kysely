@@ -13,7 +13,6 @@ import {
   createOperatorNode,
   OperatorNode,
 } from '../operation-node/operator-node'
-import { createEmptySelectQuery } from '../query-builder/query-builder'
 import { AndNode } from '../operation-node/and-node'
 import { OrNode } from '../operation-node/or-node'
 import { createParensNode, ParensNode } from '../operation-node/parens-node'
@@ -29,6 +28,8 @@ import {
   isSelectQueryNode,
   SelectQueryNode,
 } from '../operation-node/select-query-node'
+import { SubQueryBuilder } from '../query-builder/sub-query-builder'
+import { createEmptySelectQuery } from '../query-builder/query-builder'
 
 export type ExistsFilterArg<DB, TB extends keyof DB> =
   | AnyQueryBuilder
@@ -94,12 +95,11 @@ export function parseReferenceFilterArgs(
 }
 
 export function parseExistsFilterArgs(
-  query: AnyQueryBuilder,
   type: 'exists' | 'not exists',
   arg: ExistsFilterArg<any, any>
 ): FilterNode {
   const node = isFunction(arg)
-    ? arg(query).toOperationNode()
+    ? arg(new SubQueryBuilder()).toOperationNode()
     : arg.toOperationNode()
 
   if (!isSelectQueryNode(node) && !isRawNode(node)) {

@@ -3,7 +3,6 @@ import { AliasedRawBuilder } from '../raw-builder/raw-builder'
 import { isFunction, isString } from '../util/object-utils'
 import {
   AliasedQueryBuilder,
-  createEmptySelectQuery,
   QueryBuilder,
 } from '../query-builder/query-builder'
 import {
@@ -25,6 +24,7 @@ import {
 } from '../query-builder/type-utils'
 import { parseAliasedStringReference } from './reference-parser'
 import { DynamicReferenceBuilder } from '../dynamic/dynamic-reference-builder'
+import { SubQueryBuilder } from '../query-builder/sub-query-builder'
 
 /**
  * A selection expression.
@@ -43,18 +43,14 @@ export type SelectExpression<DB, TB extends keyof DB> =
  * Given a selection expression returns a query builder type that
  * has the selection.
  */
-export type QueryBuilderWithSelection<
-  DB,
-  TB extends keyof DB,
-  O,
-  S
-> = QueryBuilder<
-  DB,
-  TB,
-  O extends InsertResultTypeTag
-    ? InsertResultTypeTag
-    : O & SelectResultType<DB, TB, S>
->
+export type QueryBuilderWithSelection<DB, TB extends keyof DB, O, S> =
+  QueryBuilder<
+    DB,
+    TB,
+    O extends InsertResultTypeTag
+      ? InsertResultTypeTag
+      : O & SelectResultType<DB, TB, S>
+  >
 
 /**
  * `selectAll` output query builder type.
@@ -89,17 +85,16 @@ type ExtractAliasFromSelectExpression<S> = S extends string
   ? ExtractAliasFromStringSelectExpression<RA>
   : never
 
-type ExtractAliasFromStringSelectExpression<
-  S extends string
-> = S extends `${string}.${string}.${string} as ${infer A}`
-  ? A
-  : S extends `${string}.${string}.${infer C}`
-  ? C
-  : S extends `${string}.${string} as ${infer A}`
-  ? A
-  : S extends `${string}.${infer C}`
-  ? C
-  : S
+type ExtractAliasFromStringSelectExpression<S extends string> =
+  S extends `${string}.${string}.${string} as ${infer A}`
+    ? A
+    : S extends `${string}.${string}.${infer C}`
+    ? C
+    : S extends `${string}.${string} as ${infer A}`
+    ? A
+    : S extends `${string}.${infer C}`
+    ? C
+    : S
 
 type ExtractTypeFromSelectExpression<
   DB,
@@ -193,7 +188,7 @@ function parseSelectExpression(
     return createSelectionNode(selection.toOperationNode())
   } else if (isFunction(selection)) {
     return createSelectionNode(
-      selection(createEmptySelectQuery()).toOperationNode()
+      selection(new SubQueryBuilder()).toOperationNode()
     )
   } else {
     throw new Error(

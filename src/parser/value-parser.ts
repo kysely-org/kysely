@@ -14,13 +14,13 @@ import {
 } from '../operation-node/value-list-node'
 import { createValueNode } from '../operation-node/value-node'
 import { isFunction, isPrimitive, PrimitiveValue } from '../util/object-utils'
-import { createEmptySelectQuery } from '../query-builder/query-builder'
 import {
   AnyQueryBuilder,
   QueryBuilderFactory,
   RawBuilderFactory,
 } from '../query-builder/type-utils'
 import { isMutatingQueryNode } from '../operation-node/query-node-utils'
+import { SubQueryBuilder } from '../query-builder/sub-query-builder'
 
 export type ValueExpression<DB, TB extends keyof DB> =
   | PrimitiveValue
@@ -55,7 +55,7 @@ export function parseValueExpression(
       return node
     }
   } else if (isFunction(arg)) {
-    const node = arg(createEmptySelectQuery()).toOperationNode()
+    const node = arg(new SubQueryBuilder()).toOperationNode()
 
     if (!isMutatingQueryNode(node)) {
       return node

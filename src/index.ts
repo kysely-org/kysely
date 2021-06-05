@@ -1,6 +1,7 @@
 export * from './kysely'
 export * from './query-builder/query-builder'
 export * from './query-builder/join-builder'
+export * from './query-builder/sub-query-builder'
 export * from './raw-builder/raw-builder'
 export * from './query-compiler/default-query-compiler'
 export * from './query-compiler/compiled-query'
