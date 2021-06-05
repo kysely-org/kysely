@@ -3,11 +3,11 @@ import { CompiledQuery } from '../query-compiler/compiled-query'
 /**
  * A database connection.
  */
-export interface Connection {
+export interface DatabaseConnection {
   /**
    * Executes a query.
    */
-  execute<R>(compiledQuery: CompiledQuery): Promise<QueryResult<R>>
+  executeQuery<R>(compiledQuery: CompiledQuery): Promise<QueryResult<R>>
 }
 
 export interface QueryResult<O> {

@@ -1,7 +1,5 @@
-import * as crypto from 'crypto'
-
 import { Pool, PoolClient } from 'pg'
-import { Connection, QueryResult } from '../../driver/connection'
+import { DatabaseConnection, QueryResult } from '../../driver/database-connection'
 import { Driver } from '../../driver/driver'
 import { CompiledQuery } from '../../query-compiler/compiled-query'
 import { freeze } from '../../util/object-utils'
@@ -10,9 +8,13 @@ const PRIVATE_RELEASE_METHOD = Symbol()
 
 export class PostgresDriver extends Driver {
   #pool: Pool | null = null
-  #connections = new WeakMap<PoolClient, Connection>()
+  #connections = new WeakMap<PoolClient, DatabaseConnection>()
 
-  async init(): Promise<void> {
+  getDefaultPort(): number {
+    return 5432
+  }
+
+  protected async initImpl(): Promise<void> {
     // Import the `pg` module here instead at the top of the file
     // so that this file can be loaded by node without `pg` driver
     // installed. As you can see, there IS an import from `pg` at the
@@ -37,11 +39,7 @@ export class PostgresDriver extends Driver {
     })
   }
 
-  getDefaultPort(): number {
-    return 5432
-  }
-
-  async destroy(): Promise<void> {
+  protected async destroyImpl(): Promise<void> {
     if (this.#pool) {
       const pool = this.#pool
       this.#pool = null
@@ -49,7 +47,7 @@ export class PostgresDriver extends Driver {
     }
   }
 
-  async acquireConnection(): Promise<Connection> {
+  protected async acquireConnectionImpl(): Promise<DatabaseConnection> {
     const client = await this.#pool!.connect()
     let connection = this.#connections.get(client)
 
@@ -65,7 +63,7 @@ export class PostgresDriver extends Driver {
     return connection
   }
 
-  async releaseConnection(connection: Connection): Promise<void> {
+  protected async releaseConnectionImpl(connection: DatabaseConnection): Promise<void> {
     const pgConnection = connection as PostgresConnection
     pgConnection[PRIVATE_RELEASE_METHOD]()
   }
@@ -81,15 +79,14 @@ async function importPg() {
   }
 }
 
-class PostgresConnection implements Connection {
-  #id = crypto.randomBytes(4).toString('hex')
+class PostgresConnection implements DatabaseConnection {
   #client: PoolClient
 
   constructor(client: PoolClient) {
     this.#client = client
   }
 
-  async execute<O>(compiledQuery: CompiledQuery): Promise<QueryResult<O>> {
+  async executeQuery<O>(compiledQuery: CompiledQuery): Promise<QueryResult<O>> {
     const result = await this.#client.query<O>(compiledQuery.sql, [
       ...compiledQuery.bindings,
     ])

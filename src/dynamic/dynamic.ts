@@ -5,7 +5,7 @@ export interface Dynamic {
   ref<R extends string = never>(reference: string): DynamicReferenceBuilder<R>
 }
 
-export function createDynamicObject(): Dynamic {
+export function createDynamicModule(): Dynamic {
   return freeze({
     ref<R extends string = never>(reference: string) {
       return new DynamicReferenceBuilder<R>(reference)

@@ -55,7 +55,7 @@ export interface Schema {
   dropTableIfExists(table: string): DropTableBuilder
 }
 
-export function createSchemaObject(
+export function createSchemaModule(
   compiler: QueryCompiler,
   connectionProvider: ConnectionProvider
 ): Schema {

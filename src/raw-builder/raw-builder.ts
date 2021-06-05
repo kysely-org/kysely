@@ -1,4 +1,4 @@
-import { QueryResult } from '../driver/connection'
+import { QueryResult } from '../driver/database-connection'
 import { ConnectionProvider } from '../driver/connection-provider'
 import { AliasNode, createAliasNode } from '../operation-node/alias-node'
 import { OperationNode } from '../operation-node/operation-node'
@@ -84,7 +84,7 @@ export class RawBuilder<O = unknown> implements OperationNodeSource {
     }
 
     return this.#connectionProvider.withConnection(async (connection) => {
-      return await connection.execute<O>(this.compile())
+      return await connection.executeQuery<O>(this.compile())
     })
   }
 }

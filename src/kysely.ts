@@ -12,12 +12,11 @@ import { DriverConfig } from './driver/driver-config'
 import { Dialect } from './dialect/dialect'
 import { PostgresDialect } from './dialect/postgres/postgres-dialect'
 import { Driver } from './driver/driver'
-import { TransactionalConnectionProvider } from './driver/transactional-connection-provider'
-import { createSchemaObject, Schema } from './schema/schema'
+import { createSchemaModule, Schema } from './schema/schema'
 import { createSelectQueryNodeWithFromItems } from './operation-node/select-query-node'
 import { createInsertQueryNodeWithTable } from './operation-node/insert-query-node'
 import { createDeleteQueryNodeWithFromItem } from './operation-node/delete-query-node'
-import { createDynamicObject, Dynamic } from './dynamic/dynamic'
+import { createDynamicModule, Dynamic } from './dynamic/dynamic'
 import {
   DeleteResultTypeTag,
   InsertResultTypeTag,
@@ -25,6 +24,10 @@ import {
 } from './query-builder/type-utils'
 import { createUpdateQueryNodeWithTable } from './operation-node/update-query-node'
 import { QueryCompiler } from './query-compiler/query-compiler'
+import { DefaultConnectionProvider } from './driver/default-connection-provider'
+import { ConnectionProvider } from './driver/connection-provider'
+import { isObject } from './util/object-utils'
+import { SingleConnectionProvider } from './driver/single-connection-provider'
 
 /**
  * The main Kysely class.
@@ -63,47 +66,48 @@ import { QueryCompiler } from './query-compiler/query-compiler'
 export class Kysely<DB> {
   readonly #driver: Driver
   readonly #compiler: QueryCompiler
-  readonly #connectionProvider: TransactionalConnectionProvider
+  readonly #connectionProvider: ConnectionProvider
 
-  constructor(config: KyselyConfig) {
-    const dialect = createDialect(config)
+  constructor(config: KyselyConfig)
+  constructor(args: KyselyConstructorArgs)
+  constructor(configOrArgs: KyselyConfig | KyselyConstructorArgs) {
+    if (isKyselyConstructorArgs(configOrArgs)) {
+      const { driver, compiler, connectionProvider } = configOrArgs
 
-    this.#driver = dialect.createDriver(config)
-    this.#compiler = dialect.createQueryCompiler()
+      this.#driver = driver
+      this.#compiler = compiler
+      this.#connectionProvider = connectionProvider
+    } else {
+      const config = configOrArgs
+      const dialect = createDialect(config)
 
-    this.#connectionProvider = new TransactionalConnectionProvider(this.#driver)
+      this.#driver = dialect.createDriver(config)
+      this.#compiler = dialect.createQueryCompiler()
+      this.#connectionProvider = new DefaultConnectionProvider(this.#driver)
+    }
   }
 
   /**
-   * Returns a the {@link Schema} module for bulding database schema.
+   * Returns a the {@link Schema} module for building database schema.
    */
   get schema(): Schema {
-    return createSchemaObject(this.#compiler, this.#connectionProvider)
+    return createSchemaModule(this.#compiler, this.#connectionProvider)
   }
 
   /**
    * Returns a the {@link Dynamic} module.
    *
-   * The {@link Dynamic} module can be used to bypass strict typing in and
+   * The {@link Dynamic} module can be used to bypass strict typing and
    * passing in dynamic values for the queries.
    */
   get dynamic(): Dynamic {
-    return createDynamicObject()
+    return createDynamicModule()
   }
 
   /**
    * Creates a `select` query builder against the given table/tables.
    *
    * The tables passed to this method are built as the query's `from` clause.
-   *
-   * The tables must be:
-   *
-   *  - one of the keys of the `DB` type
-   *  - aliased versions of the keys of the `DB` type
-   *  - select queries
-   *  - `raw` statements.
-   *
-   * See the examples.
    *
    * @example
    * Create a select query for one table:
@@ -254,6 +258,7 @@ export class Kysely<DB> {
    *
    * @example
    * Some databases like postgres support the `returning` method:
+   *
    * ```ts
    * const { id } = await db
    *   .insertInto('person')
@@ -452,53 +457,71 @@ export class Kysely<DB> {
   }
 
   /**
-   * Returns true if called inside a Kysely.transaction() callback.
+   *
    */
-  isTransactionRunning(): boolean {
-    return this.#connectionProvider.isTransactionRunning()
-  }
+  async transaction<T>(callback: (trx: Transaction<DB>) => T): Promise<T> {
+    const connection = await this.#driver.acquireConnection()
+    const transaction = new Transaction<DB>({
+      driver: this.#driver,
+      compiler: this.#compiler,
+      connectionProvider: new SingleConnectionProvider(connection),
+    })
 
-  /**
-   * Begins a transaction for the async chain started inside the callback.
-   *
-   * Any `kysely` query started inside the callback or any method called
-   * by the callback will automatically use the same transaction. No need to
-   * pass around a transaction object. This is possible through node's async
-   * hooks and specifically `AsyncLocalStorage`.
-   *
-   * @example
-   * ```ts
-   * async function main() {
-   *   await db.transaction(async () => {
-   *     await doStuff()
-   *   });
-   * }
-   *
-   * async function doStuff() {
-   *   // This automatically uses the correct transasction because `doStuff` was
-   *   // called inside the transaction method that registers the transaction
-   *   // for a shared `AsyncLocalStorage` inside `Kysely`.
-   *   await db.selectFrom('person').insert({ first_name: 'Jennifer' }).execute()
-   *
-   *   return doMoreStuff();
-   * }
-   *
-   * function doMoreStuff(): Promise<void> {
-   *   // Even this automatically uses the correct transaction even though
-   *   // we didn't `await` on the method. Node's async hooks work with all
-   *   // possible kinds of async events.
-   *   return db.selectFrom('pet').insert({ name: 'Fluffy' }).execute()
-   * }
-   * ```
-   */
-  async transaction<T>(callback: () => Promise<T>): Promise<T> {
-    return this.#connectionProvider.transaction(callback)
+    try {
+      await connection.executeQuery({ sql: 'begin', bindings: [] })
+      const result = await callback(transaction)
+      await connection.executeQuery({ sql: 'commit', bindings: [] })
+
+      return result
+    } catch (error) {
+      await connection.executeQuery({ sql: 'rollback', bindings: [] })
+      throw error
+    } finally {
+      await this.#driver.releaseConnection(connection)
+    }
   }
 
   async destroy(): Promise<void> {
     await this.#driver.ensureDestroy()
-    this.#connectionProvider.destroy()
   }
+}
+
+export class Transaction<DB> extends Kysely<DB> {
+  /**
+   * Always returns true.
+   *
+   * This method is here just to make Kysely<DB> unassignable to Transaction<DB>.
+   */
+  get isTransaction(): true {
+    return true
+  }
+
+  async transaction<T>(_: (trx: Transaction<DB>) => T): Promise<T> {
+    throw new Error(
+      'calling the transaction method for a Transaction is not supported'
+    )
+  }
+
+  async destroy(): Promise<void> {
+    throw new Error(
+      'calling the destroy method for a Transaction is not supported'
+    )
+  }
+}
+
+export interface KyselyConstructorArgs {
+  driver: Driver
+  compiler: QueryCompiler
+  connectionProvider: ConnectionProvider
+}
+
+function isKyselyConstructorArgs(obj: any): obj is KyselyConstructorArgs {
+  return (
+    isObject(obj) &&
+    obj.hasOwnProperty('driver') &&
+    obj.hasOwnProperty('compiler') &&
+    obj.hasOwnProperty('connectionProvider')
+  )
 }
 
 export interface KyselyConfig extends DriverConfig {

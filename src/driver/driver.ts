@@ -1,5 +1,5 @@
 import { freeze } from '../util/object-utils'
-import { Connection } from './connection'
+import { DatabaseConnection } from './database-connection'
 import { DriverConfig, DriverConfigWithDefaults } from './driver-config'
 
 const POOL_CONFIG_DEFAULTS = freeze({
@@ -47,30 +47,49 @@ export abstract class Driver {
    * important so that Kysely is usable without installing all database driver libraries
    * it supports.
    */
-  abstract init(): Promise<void>
+  protected abstract initImpl(): Promise<void>
 
   /**
    * Destroys the driver and releases all resources.
    */
-  abstract destroy(): Promise<void>
+  protected abstract destroyImpl(): Promise<void>
 
   /**
    * Acquires a new connection from the pool.
    */
-  abstract acquireConnection(): Promise<Connection>
+  protected abstract acquireConnectionImpl(): Promise<DatabaseConnection>
 
   /**
    * Releases a connection back to the pool.
    */
-  abstract releaseConnection(connection: Connection): Promise<void>
+  protected abstract releaseConnectionImpl(
+    connection: DatabaseConnection
+  ): Promise<void>
 
   /**
    * @internal
    * For internal use only. Don't override this.
    */
-  async ensureInit(): Promise<void> {
+  async acquireConnection(): Promise<DatabaseConnection> {
+    await this.ensureInit()
+    return this.acquireConnectionImpl()
+  }
+
+  /**
+   * @internal
+   * For internal use only. Don't override this.
+   */
+  releaseConnection(connection: DatabaseConnection): Promise<void> {
+    return this.releaseConnectionImpl(connection)
+  }
+
+  /**
+   * @internal
+   * For internal use only. Don't override this.
+   */
+  private async ensureInit(): Promise<void> {
     if (!this.#initPromise) {
-      this.#initPromise = this.init().catch((err) => {
+      this.#initPromise = this.initImpl().catch((err) => {
         this.#initPromise = null
         return Promise.reject(err)
       })
@@ -89,7 +108,7 @@ export abstract class Driver {
     }
 
     if (!this.#destroyPromise) {
-      this.#destroyPromise = this.destroy().catch((err) => {
+      this.#destroyPromise = this.destroyImpl().catch((err) => {
         this.#destroyPromise = null
         return Promise.reject(err)
       })

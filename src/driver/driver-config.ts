@@ -1,4 +1,4 @@
-import { Connection } from './connection'
+import { DatabaseConnection } from './database-connection'
 
 export interface DriverConfig {
   /**
@@ -68,7 +68,7 @@ export interface PoolConfig {
    * }
    * ```
    */
-  onCreateConnection?: (connection: Connection) => Promise<void>
+  onCreateConnection?: (connection: DatabaseConnection) => Promise<void>
 }
 
 /**

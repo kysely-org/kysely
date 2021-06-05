@@ -1,3 +1,4 @@
+import { Transaction } from '../src'
 import {
   BUILT_IN_DIALECTS,
   clearDatabase,
@@ -6,6 +7,7 @@ import {
   insertPersons,
   TestContext,
   expect,
+  Database,
 } from './test-setup'
 
 for (const dialect of BUILT_IN_DIALECTS) {
@@ -75,17 +77,9 @@ for (const dialect of BUILT_IN_DIALECTS) {
       }
 
       async function executeThread(id: number, fails: boolean): Promise<void> {
-        await ctx.db.transaction(async () => {
-          await insertPerson(id)
-
-          await new Promise<void>((resolve) => {
-            // Use a setTimeout to make sure the async hooks are used
-            // properly and even the query executed from the setTimeout
-            // callback gets the correct transaction.
-            setTimeout(() => {
-              insertPet(id).then(resolve)
-            }, 2)
-          })
+        const trx = await ctx.db.transaction(async (trx) => {
+          await insertPerson(trx, id)
+          await insertPet(trx, id)
 
           if (fails) {
             throw new Error()
@@ -93,15 +87,21 @@ for (const dialect of BUILT_IN_DIALECTS) {
         })
       }
 
-      async function insertPet(ownerId: number): Promise<void> {
-        await ctx.db
+      async function insertPet(
+        trx: Transaction<Database>,
+        ownerId: number
+      ): Promise<void> {
+        await trx
           .insertInto('pet')
           .values({ name: `Pet of ${ownerId}`, owner_id: ownerId })
           .execute()
       }
 
-      async function insertPerson(id: number): Promise<void> {
-        await ctx.db
+      async function insertPerson(
+        trx: Transaction<Database>,
+        id: number
+      ): Promise<void> {
+        await trx
           .insertInto('person')
           .values({ id, first_name: `Person ${id}` })
           .execute()

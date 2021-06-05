@@ -117,7 +117,7 @@ export class CreateTableBuilder implements OperationNodeSource {
     }
 
     await this.#connectionProvider.withConnection(async (connection) => {
-      await connection.execute(this.compile())
+      await connection.executeQuery(this.compile())
     })
   }
 

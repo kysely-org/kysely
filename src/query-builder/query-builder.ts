@@ -1794,7 +1794,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
 
     const result = await this.#connectionProvider.withConnection(
       async (connection) => {
-        return await connection.execute<ManyResultRowType<O>>(this.compile())
+        return await connection.executeQuery<ManyResultRowType<O>>(this.compile())
       }
     )
 
