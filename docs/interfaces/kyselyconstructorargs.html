@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>Connection | kysely</title>
+	<title>KyselyConstructorArgs | kysely</title>
 	<meta name="description" content="Documentation for kysely">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="../assets/css/main.css">
@@ -55,28 +55,21 @@
 					<a href="../modules.html">kysely</a>
 				</li>
 				<li>
-					<a href="connection.html">Connection</a>
+					<a href="kyselyconstructorargs.html">KyselyConstructorArgs</a>
 				</li>
 			</ul>
-			<h1>Interface Connection</h1>
+			<h1>Interface KyselyConstructorArgs</h1>
 		</div>
 	</div>
 </header>
 <div class="container container-main">
 	<div class="row">
 		<div class="col-8 col-content">
-			<section class="tsd-panel tsd-comment">
-				<div class="tsd-comment tsd-typography">
-					<div class="lead">
-						<p>A database connection.</p>
-					</div>
-				</div>
-			</section>
 			<section class="tsd-panel tsd-hierarchy">
 				<h3>Hierarchy</h3>
 				<ul class="tsd-hierarchy">
 					<li>
-						<span class="target">Connection</span>
+						<span class="target">KyselyConstructorArgs</span>
 					</li>
 				</ul>
 			</section>
@@ -85,49 +78,47 @@
 				<section class="tsd-panel tsd-index-panel">
 					<div class="tsd-index-content">
 						<section class="tsd-index-section ">
-							<h3>Methods</h3>
+							<h3>Properties</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-method tsd-parent-kind-interface tsd-has-type-parameter"><a href="connection.html#execute" class="tsd-kind-icon">execute</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="kyselyconstructorargs.html#compiler" class="tsd-kind-icon">compiler</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="kyselyconstructorargs.html#connectionprovider" class="tsd-kind-icon">connection<wbr>Provider</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="kyselyconstructorargs.html#driver" class="tsd-kind-icon">driver</a></li>
 							</ul>
 						</section>
 					</div>
 				</section>
 			</section>
 			<section class="tsd-panel-group tsd-member-group ">
-				<h2>Methods</h2>
-				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface tsd-has-type-parameter">
-					<a name="execute" class="tsd-anchor"></a>
-					<h3>execute</h3>
-					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface tsd-has-type-parameter">
-						<li class="tsd-signature tsd-kind-icon">execute&lt;R&gt;<span class="tsd-signature-symbol">(</span>compiledQuery<span class="tsd-signature-symbol">: </span><a href="compiledquery.html" class="tsd-signature-type" data-tsd-kind="Interface">CompiledQuery</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="queryresult.html" class="tsd-signature-type" data-tsd-kind="Interface">QueryResult</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">R</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span></li>
-					</ul>
-					<ul class="tsd-descriptions">
-						<li class="tsd-description">
-							<aside class="tsd-sources">
-								<ul>
-									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/b487c75/src/driver/connection.ts#L10">driver/connection.ts:10</a></li>
-								</ul>
-							</aside>
-							<div class="tsd-comment tsd-typography">
-								<div class="lead">
-									<p>Executes a query.</p>
-								</div>
-							</div>
-							<h4 class="tsd-type-parameters-title">Type parameters</h4>
-							<ul class="tsd-type-parameters">
-								<li>
-									<h4>R</h4>
-								</li>
-							</ul>
-							<h4 class="tsd-parameters-title">Parameters</h4>
-							<ul class="tsd-parameters">
-								<li>
-									<h5>compiledQuery: <a href="compiledquery.html" class="tsd-signature-type" data-tsd-kind="Interface">CompiledQuery</a></h5>
-								</li>
-							</ul>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="queryresult.html" class="tsd-signature-type" data-tsd-kind="Interface">QueryResult</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">R</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span></h4>
-						</li>
-					</ul>
+				<h2>Properties</h2>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
+					<a name="compiler" class="tsd-anchor"></a>
+					<h3>compiler</h3>
+					<div class="tsd-signature tsd-kind-icon">compiler<span class="tsd-signature-symbol">:</span> <a href="querycompiler.html" class="tsd-signature-type" data-tsd-kind="Interface">QueryCompiler</a></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cd46714/src/kysely.ts#L514">kysely.ts:514</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
+					<a name="connectionprovider" class="tsd-anchor"></a>
+					<h3>connection<wbr>Provider</h3>
+					<div class="tsd-signature tsd-kind-icon">connection<wbr>Provider<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">ConnectionProvider</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cd46714/src/kysely.ts#L515">kysely.ts:515</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
+					<a name="driver" class="tsd-anchor"></a>
+					<h3>driver</h3>
+					<div class="tsd-signature tsd-kind-icon">driver<span class="tsd-signature-symbol">:</span> <a href="../classes/driver.html" class="tsd-signature-type" data-tsd-kind="Class">Driver</a></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cd46714/src/kysely.ts#L513">kysely.ts:513</a></li>
+						</ul>
+					</aside>
 				</section>
 			</section>
 		</div>
@@ -180,23 +171,20 @@
 					<li class=" tsd-kind-class tsd-has-type-parameter">
 						<a href="../classes/rawbuilder.html" class="tsd-kind-icon">Raw<wbr>Builder</a>
 					</li>
+					<li class=" tsd-kind-class tsd-has-type-parameter">
+						<a href="../classes/subquerybuilder.html" class="tsd-kind-icon">Sub<wbr>Query<wbr>Builder</a>
+					</li>
+					<li class=" tsd-kind-class tsd-has-type-parameter">
+						<a href="../classes/transaction.html" class="tsd-kind-icon">Transaction</a>
+					</li>
 					<li class=" tsd-kind-interface">
 						<a href="compiledquery.html" class="tsd-kind-icon">Compiled<wbr>Query</a>
 					</li>
-				</ul>
-				<ul class="current">
-					<li class="current tsd-kind-interface">
-						<a href="connection.html" class="tsd-kind-icon">Connection</a>
-						<ul>
-							<li class=" tsd-kind-method tsd-parent-kind-interface tsd-has-type-parameter">
-								<a href="connection.html#execute" class="tsd-kind-icon">execute</a>
-							</li>
-						</ul>
-					</li>
-				</ul>
-				<ul class="after-current">
 					<li class=" tsd-kind-interface">
 						<a href="createtablebuilderconstructorargs.html" class="tsd-kind-icon">Create<wbr>Table<wbr>Builder<wbr>Constructor<wbr>Args</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="databaseconnection.html" class="tsd-kind-icon">Database<wbr>Connection</a>
 					</li>
 					<li class=" tsd-kind-interface">
 						<a href="driverconfig.html" class="tsd-kind-icon">Driver<wbr>Config</a>
@@ -213,6 +201,24 @@
 					<li class=" tsd-kind-interface">
 						<a href="kyselyconfig.html" class="tsd-kind-icon">Kysely<wbr>Config</a>
 					</li>
+				</ul>
+				<ul class="current">
+					<li class="current tsd-kind-interface">
+						<a href="kyselyconstructorargs.html" class="tsd-kind-icon">Kysely<wbr>Constructor<wbr>Args</a>
+						<ul>
+							<li class=" tsd-kind-property tsd-parent-kind-interface">
+								<a href="kyselyconstructorargs.html#compiler" class="tsd-kind-icon">compiler</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-interface">
+								<a href="kyselyconstructorargs.html#connectionprovider" class="tsd-kind-icon">connection<wbr>Provider</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-interface">
+								<a href="kyselyconstructorargs.html#driver" class="tsd-kind-icon">driver</a>
+							</li>
+						</ul>
+					</li>
+				</ul>
+				<ul class="after-current">
 					<li class=" tsd-kind-interface">
 						<a href="poolconfig.html" class="tsd-kind-icon">Pool<wbr>Config</a>
 					</li>
@@ -241,13 +247,13 @@
 						<a href="../modules.html#compileentrypointnode" class="tsd-kind-icon">Compile<wbr>Entry<wbr>Point<wbr>Node</a>
 					</li>
 					<li class=" tsd-kind-function">
-						<a href="../modules.html#createdynamicobject" class="tsd-kind-icon">create<wbr>Dynamic<wbr>Object</a>
+						<a href="../modules.html#createdynamicmodule" class="tsd-kind-icon">create<wbr>Dynamic<wbr>Module</a>
 					</li>
 					<li class=" tsd-kind-function tsd-has-type-parameter">
 						<a href="../modules.html#createemptyselectquery" class="tsd-kind-icon">create<wbr>Empty<wbr>Select<wbr>Query</a>
 					</li>
 					<li class=" tsd-kind-function">
-						<a href="../modules.html#createschemaobject" class="tsd-kind-icon">create<wbr>Schema<wbr>Object</a>
+						<a href="../modules.html#createschemamodule" class="tsd-kind-icon">create<wbr>Schema<wbr>Module</a>
 					</li>
 				</ul>
 			</nav>

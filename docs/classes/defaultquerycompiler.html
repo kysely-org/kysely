@@ -100,7 +100,7 @@
 								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-private"><a href="defaultquerycompiler.html#_bindings" class="tsd-kind-icon">#bindings</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-private"><a href="defaultquerycompiler.html#_sqlfragments" class="tsd-kind-icon">#sql<wbr>Fragments</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-inherited tsd-is-private"><a href="defaultquerycompiler.html#_visitors" class="tsd-kind-icon">#visitors</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-protected"><a href="defaultquerycompiler.html#querynodestack" class="tsd-kind-icon">query<wbr>Node<wbr>Stack</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-inherited tsd-is-protected"><a href="defaultquerycompiler.html#nodestack" class="tsd-kind-icon">node<wbr>Stack</a></li>
 							</ul>
 						</section>
 						<section class="tsd-index-section ">
@@ -181,7 +181,7 @@
 					<div class="tsd-signature tsd-kind-icon">#bindings<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol"> = []</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/koskimas/kysely/blob/b487c75/src/query-compiler/default-query-compiler.ts#L47">query-compiler/default-query-compiler.ts:47</a></li>
+							<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cd46714/src/query-compiler/default-query-compiler.ts#L47">query-compiler/default-query-compiler.ts:47</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -191,7 +191,7 @@
 					<div class="tsd-signature tsd-kind-icon">#sql<wbr>Fragments<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol"> = []</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/koskimas/kysely/blob/b487c75/src/query-compiler/default-query-compiler.ts#L46">query-compiler/default-query-compiler.ts:46</a></li>
+							<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cd46714/src/query-compiler/default-query-compiler.ts#L46">query-compiler/default-query-compiler.ts:46</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -202,17 +202,18 @@
 					<aside class="tsd-sources">
 						<p>Inherited from OperationNodeVisitor.#visitors</p>
 						<ul>
-							<li>Defined in <a href="https://github.com/koskimas/kysely/blob/b487c75/src/operation-node/operation-node-visitor.ts#L40">operation-node/operation-node-visitor.ts:40</a></li>
+							<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cd46714/src/operation-node/operation-node-visitor.ts#L42">operation-node/operation-node-visitor.ts:42</a></li>
 						</ul>
 					</aside>
 				</section>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-protected">
-					<a name="querynodestack" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagProtected">Protected</span> query<wbr>Node<wbr>Stack</h3>
-					<div class="tsd-signature tsd-kind-icon">query<wbr>Node<wbr>Stack<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">QueryNode</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol"> = []</span></div>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-inherited tsd-is-protected">
+					<a name="nodestack" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagProtected">Protected</span> node<wbr>Stack</h3>
+					<div class="tsd-signature tsd-kind-icon">node<wbr>Stack<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">OperationNode</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol"> = []</span></div>
 					<aside class="tsd-sources">
+						<p>Inherited from OperationNodeVisitor.nodeStack</p>
 						<ul>
-							<li>Defined in <a href="https://github.com/koskimas/kysely/blob/b487c75/src/query-compiler/default-query-compiler.ts#L49">query-compiler/default-query-compiler.ts:49</a></li>
+							<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cd46714/src/operation-node/operation-node-visitor.ts#L40">operation-node/operation-node-visitor.ts:40</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -229,7 +230,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/b487c75/src/query-compiler/default-query-compiler.ts#L453">query-compiler/default-query-compiler.ts:453</a></li>
+									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cd46714/src/query-compiler/default-query-compiler.ts#L436">query-compiler/default-query-compiler.ts:436</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -252,7 +253,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/b487c75/src/query-compiler/default-query-compiler.ts#L445">query-compiler/default-query-compiler.ts:445</a></li>
+									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cd46714/src/query-compiler/default-query-compiler.ts#L428">query-compiler/default-query-compiler.ts:428</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
@@ -269,7 +270,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/b487c75/src/query-compiler/default-query-compiler.ts#L449">query-compiler/default-query-compiler.ts:449</a></li>
+									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cd46714/src/query-compiler/default-query-compiler.ts#L432">query-compiler/default-query-compiler.ts:432</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
@@ -286,7 +287,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/b487c75/src/query-compiler/default-query-compiler.ts#L457">query-compiler/default-query-compiler.ts:457</a></li>
+									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cd46714/src/query-compiler/default-query-compiler.ts#L440">query-compiler/default-query-compiler.ts:440</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -310,7 +311,7 @@
 							<aside class="tsd-sources">
 								<p>Implementation of <a href="../interfaces/querycompiler.html">QueryCompiler</a>.<a href="../interfaces/querycompiler.html#compile">compile</a></p>
 								<ul>
-									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/b487c75/src/query-compiler/default-query-compiler.ts#L51">query-compiler/default-query-compiler.ts:51</a></li>
+									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cd46714/src/query-compiler/default-query-compiler.ts#L49">query-compiler/default-query-compiler.ts:49</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -333,7 +334,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/b487c75/src/query-compiler/default-query-compiler.ts#L136">query-compiler/default-query-compiler.ts:136</a></li>
+									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cd46714/src/query-compiler/default-query-compiler.ts#L131">query-compiler/default-query-compiler.ts:131</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -356,7 +357,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/b487c75/src/query-compiler/default-query-compiler.ts#L142">query-compiler/default-query-compiler.ts:142</a></li>
+									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cd46714/src/query-compiler/default-query-compiler.ts#L137">query-compiler/default-query-compiler.ts:137</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -379,7 +380,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/b487c75/src/query-compiler/default-query-compiler.ts#L240">query-compiler/default-query-compiler.ts:240</a></li>
+									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cd46714/src/query-compiler/default-query-compiler.ts#L227">query-compiler/default-query-compiler.ts:227</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -402,7 +403,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/b487c75/src/query-compiler/default-query-compiler.ts#L68">query-compiler/default-query-compiler.ts:68</a></li>
+									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cd46714/src/query-compiler/default-query-compiler.ts#L65">query-compiler/default-query-compiler.ts:65</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">[]</span></h4>
@@ -419,7 +420,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/b487c75/src/query-compiler/default-query-compiler.ts#L64">query-compiler/default-query-compiler.ts:64</a></li>
+									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cd46714/src/query-compiler/default-query-compiler.ts#L61">query-compiler/default-query-compiler.ts:61</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">string</span></h4>
@@ -437,7 +438,7 @@
 							<aside class="tsd-sources">
 								<p>Overrides OperationNodeVisitor.visitAlias</p>
 								<ul>
-									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/b487c75/src/query-compiler/default-query-compiler.ts#L218">query-compiler/default-query-compiler.ts:218</a></li>
+									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cd46714/src/query-compiler/default-query-compiler.ts#L205">query-compiler/default-query-compiler.ts:205</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -461,7 +462,7 @@
 							<aside class="tsd-sources">
 								<p>Overrides OperationNodeVisitor.visitAnd</p>
 								<ul>
-									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/b487c75/src/query-compiler/default-query-compiler.ts#L255">query-compiler/default-query-compiler.ts:255</a></li>
+									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cd46714/src/query-compiler/default-query-compiler.ts#L242">query-compiler/default-query-compiler.ts:242</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -485,7 +486,7 @@
 							<aside class="tsd-sources">
 								<p>Inherited from OperationNodeVisitor.visitColumn</p>
 								<ul>
-									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/b487c75/src/operation-node/operation-node-visitor.ts#L110">operation-node/operation-node-visitor.ts:110</a></li>
+									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cd46714/src/operation-node/operation-node-visitor.ts#L114">operation-node/operation-node-visitor.ts:114</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -509,7 +510,7 @@
 							<aside class="tsd-sources">
 								<p>Overrides OperationNodeVisitor.visitColumnDefinition</p>
 								<ul>
-									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/b487c75/src/query-compiler/default-query-compiler.ts#L340">query-compiler/default-query-compiler.ts:340</a></li>
+									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cd46714/src/query-compiler/default-query-compiler.ts#L327">query-compiler/default-query-compiler.ts:327</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -533,7 +534,7 @@
 							<aside class="tsd-sources">
 								<p>Overrides OperationNodeVisitor.visitColumnUpdate</p>
 								<ul>
-									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/b487c75/src/query-compiler/default-query-compiler.ts#L439">query-compiler/default-query-compiler.ts:439</a></li>
+									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cd46714/src/query-compiler/default-query-compiler.ts#L422">query-compiler/default-query-compiler.ts:422</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -557,7 +558,7 @@
 							<aside class="tsd-sources">
 								<p>Overrides OperationNodeVisitor.visitCreateTable</p>
 								<ul>
-									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/b487c75/src/query-compiler/default-query-compiler.ts#L332">query-compiler/default-query-compiler.ts:332</a></li>
+									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cd46714/src/query-compiler/default-query-compiler.ts#L319">query-compiler/default-query-compiler.ts:319</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -581,7 +582,7 @@
 							<aside class="tsd-sources">
 								<p>Overrides OperationNodeVisitor.visitDataType</p>
 								<ul>
-									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/b487c75/src/query-compiler/default-query-compiler.ts#L386">query-compiler/default-query-compiler.ts:386</a></li>
+									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cd46714/src/query-compiler/default-query-compiler.ts#L373">query-compiler/default-query-compiler.ts:373</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -605,7 +606,7 @@
 							<aside class="tsd-sources">
 								<p>Overrides OperationNodeVisitor.visitDeleteQuery</p>
 								<ul>
-									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/b487c75/src/query-compiler/default-query-compiler.ts#L189">query-compiler/default-query-compiler.ts:189</a></li>
+									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cd46714/src/query-compiler/default-query-compiler.ts#L180">query-compiler/default-query-compiler.ts:180</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -629,7 +630,7 @@
 							<aside class="tsd-sources">
 								<p>Overrides OperationNodeVisitor.visitDropTable</p>
 								<ul>
-									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/b487c75/src/query-compiler/default-query-compiler.ts#L376">query-compiler/default-query-compiler.ts:376</a></li>
+									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cd46714/src/query-compiler/default-query-compiler.ts#L363">query-compiler/default-query-compiler.ts:363</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -653,7 +654,7 @@
 							<aside class="tsd-sources">
 								<p>Overrides OperationNodeVisitor.visitFilter</p>
 								<ul>
-									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/b487c75/src/query-compiler/default-query-compiler.ts#L244">query-compiler/default-query-compiler.ts:244</a></li>
+									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cd46714/src/query-compiler/default-query-compiler.ts#L231">query-compiler/default-query-compiler.ts:231</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -677,7 +678,7 @@
 							<aside class="tsd-sources">
 								<p>Overrides OperationNodeVisitor.visitFrom</p>
 								<ul>
-									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/b487c75/src/query-compiler/default-query-compiler.ts#L131">query-compiler/default-query-compiler.ts:131</a></li>
+									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cd46714/src/query-compiler/default-query-compiler.ts#L126">query-compiler/default-query-compiler.ts:126</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -701,7 +702,7 @@
 							<aside class="tsd-sources">
 								<p>Overrides OperationNodeVisitor.visitGroupBy</p>
 								<ul>
-									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/b487c75/src/query-compiler/default-query-compiler.ts#L401">query-compiler/default-query-compiler.ts:401</a></li>
+									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cd46714/src/query-compiler/default-query-compiler.ts#L388">query-compiler/default-query-compiler.ts:388</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -725,7 +726,7 @@
 							<aside class="tsd-sources">
 								<p>Overrides OperationNodeVisitor.visitGroupByItem</p>
 								<ul>
-									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/b487c75/src/query-compiler/default-query-compiler.ts#L406">query-compiler/default-query-compiler.ts:406</a></li>
+									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cd46714/src/query-compiler/default-query-compiler.ts#L393">query-compiler/default-query-compiler.ts:393</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -749,7 +750,7 @@
 							<aside class="tsd-sources">
 								<p>Overrides OperationNodeVisitor.visitIdentifier</p>
 								<ul>
-									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/b487c75/src/query-compiler/default-query-compiler.ts#L234">query-compiler/default-query-compiler.ts:234</a></li>
+									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cd46714/src/query-compiler/default-query-compiler.ts#L221">query-compiler/default-query-compiler.ts:221</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -773,7 +774,7 @@
 							<aside class="tsd-sources">
 								<p>Overrides OperationNodeVisitor.visitInsertQuery</p>
 								<ul>
-									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/b487c75/src/query-compiler/default-query-compiler.ts#L159">query-compiler/default-query-compiler.ts:159</a></li>
+									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cd46714/src/query-compiler/default-query-compiler.ts#L154">query-compiler/default-query-compiler.ts:154</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -797,7 +798,7 @@
 							<aside class="tsd-sources">
 								<p>Overrides OperationNodeVisitor.visitJoin</p>
 								<ul>
-									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/b487c75/src/query-compiler/default-query-compiler.ts#L298">query-compiler/default-query-compiler.ts:298</a></li>
+									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cd46714/src/query-compiler/default-query-compiler.ts#L285">query-compiler/default-query-compiler.ts:285</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -821,7 +822,7 @@
 							<aside class="tsd-sources">
 								<p>Inherited from OperationNodeVisitor.visitNode</p>
 								<ul>
-									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/b487c75/src/operation-node/operation-node-visitor.ts#L76">operation-node/operation-node-visitor.ts:76</a></li>
+									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cd46714/src/operation-node/operation-node-visitor.ts#L78">operation-node/operation-node-visitor.ts:78</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -845,7 +846,7 @@
 							<aside class="tsd-sources">
 								<p>Overrides OperationNodeVisitor.visitOperator</p>
 								<ul>
-									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/b487c75/src/query-compiler/default-query-compiler.ts#L319">query-compiler/default-query-compiler.ts:319</a></li>
+									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cd46714/src/query-compiler/default-query-compiler.ts#L306">query-compiler/default-query-compiler.ts:306</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -869,7 +870,7 @@
 							<aside class="tsd-sources">
 								<p>Overrides OperationNodeVisitor.visitOr</p>
 								<ul>
-									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/b487c75/src/query-compiler/default-query-compiler.ts#L261">query-compiler/default-query-compiler.ts:261</a></li>
+									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cd46714/src/query-compiler/default-query-compiler.ts#L248">query-compiler/default-query-compiler.ts:248</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -893,7 +894,7 @@
 							<aside class="tsd-sources">
 								<p>Overrides OperationNodeVisitor.visitOrderBy</p>
 								<ul>
-									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/b487c75/src/query-compiler/default-query-compiler.ts#L390">query-compiler/default-query-compiler.ts:390</a></li>
+									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cd46714/src/query-compiler/default-query-compiler.ts#L377">query-compiler/default-query-compiler.ts:377</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -917,7 +918,7 @@
 							<aside class="tsd-sources">
 								<p>Overrides OperationNodeVisitor.visitOrderByItem</p>
 								<ul>
-									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/b487c75/src/query-compiler/default-query-compiler.ts#L395">query-compiler/default-query-compiler.ts:395</a></li>
+									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cd46714/src/query-compiler/default-query-compiler.ts#L382">query-compiler/default-query-compiler.ts:382</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -941,7 +942,7 @@
 							<aside class="tsd-sources">
 								<p>Overrides OperationNodeVisitor.visitParens</p>
 								<ul>
-									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/b487c75/src/query-compiler/default-query-compiler.ts#L292">query-compiler/default-query-compiler.ts:292</a></li>
+									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cd46714/src/query-compiler/default-query-compiler.ts#L279">query-compiler/default-query-compiler.ts:279</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -965,7 +966,7 @@
 							<aside class="tsd-sources">
 								<p>Overrides OperationNodeVisitor.visitPrimitiveValueList</p>
 								<ul>
-									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/b487c75/src/query-compiler/default-query-compiler.ts#L277">query-compiler/default-query-compiler.ts:277</a></li>
+									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cd46714/src/query-compiler/default-query-compiler.ts#L264">query-compiler/default-query-compiler.ts:264</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -989,7 +990,7 @@
 							<aside class="tsd-sources">
 								<p>Overrides OperationNodeVisitor.visitRaw</p>
 								<ul>
-									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/b487c75/src/query-compiler/default-query-compiler.ts#L309">query-compiler/default-query-compiler.ts:309</a></li>
+									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cd46714/src/query-compiler/default-query-compiler.ts#L296">query-compiler/default-query-compiler.ts:296</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -1013,7 +1014,7 @@
 							<aside class="tsd-sources">
 								<p>Overrides OperationNodeVisitor.visitReference</p>
 								<ul>
-									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/b487c75/src/query-compiler/default-query-compiler.ts#L224">query-compiler/default-query-compiler.ts:224</a></li>
+									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cd46714/src/query-compiler/default-query-compiler.ts#L211">query-compiler/default-query-compiler.ts:211</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -1037,7 +1038,7 @@
 							<aside class="tsd-sources">
 								<p>Overrides OperationNodeVisitor.visitReturning</p>
 								<ul>
-									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/b487c75/src/query-compiler/default-query-compiler.ts#L213">query-compiler/default-query-compiler.ts:213</a></li>
+									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cd46714/src/query-compiler/default-query-compiler.ts#L200">query-compiler/default-query-compiler.ts:200</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -1061,7 +1062,7 @@
 							<aside class="tsd-sources">
 								<p>Overrides OperationNodeVisitor.visitSelectAll</p>
 								<ul>
-									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/b487c75/src/query-compiler/default-query-compiler.ts#L230">query-compiler/default-query-compiler.ts:230</a></li>
+									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cd46714/src/query-compiler/default-query-compiler.ts#L217">query-compiler/default-query-compiler.ts:217</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -1085,7 +1086,7 @@
 							<aside class="tsd-sources">
 								<p>Overrides OperationNodeVisitor.visitSelectQuery</p>
 								<ul>
-									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/b487c75/src/query-compiler/default-query-compiler.ts#L72">query-compiler/default-query-compiler.ts:72</a></li>
+									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cd46714/src/query-compiler/default-query-compiler.ts#L69">query-compiler/default-query-compiler.ts:69</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -1109,7 +1110,7 @@
 							<aside class="tsd-sources">
 								<p>Inherited from OperationNodeVisitor.visitSelection</p>
 								<ul>
-									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/b487c75/src/operation-node/operation-node-visitor.ts#L106">operation-node/operation-node-visitor.ts:106</a></li>
+									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cd46714/src/operation-node/operation-node-visitor.ts#L110">operation-node/operation-node-visitor.ts:110</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -1133,7 +1134,7 @@
 							<aside class="tsd-sources">
 								<p>Overrides OperationNodeVisitor.visitTable</p>
 								<ul>
-									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/b487c75/src/query-compiler/default-query-compiler.ts#L323">query-compiler/default-query-compiler.ts:323</a></li>
+									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cd46714/src/query-compiler/default-query-compiler.ts#L310">query-compiler/default-query-compiler.ts:310</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -1157,7 +1158,7 @@
 							<aside class="tsd-sources">
 								<p>Overrides OperationNodeVisitor.visitUpdateQuery</p>
 								<ul>
-									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/b487c75/src/query-compiler/default-query-compiler.ts#L410">query-compiler/default-query-compiler.ts:410</a></li>
+									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cd46714/src/query-compiler/default-query-compiler.ts#L397">query-compiler/default-query-compiler.ts:397</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -1181,7 +1182,7 @@
 							<aside class="tsd-sources">
 								<p>Overrides OperationNodeVisitor.visitValue</p>
 								<ul>
-									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/b487c75/src/query-compiler/default-query-compiler.ts#L267">query-compiler/default-query-compiler.ts:267</a></li>
+									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cd46714/src/query-compiler/default-query-compiler.ts#L254">query-compiler/default-query-compiler.ts:254</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -1205,7 +1206,7 @@
 							<aside class="tsd-sources">
 								<p>Overrides OperationNodeVisitor.visitValueList</p>
 								<ul>
-									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/b487c75/src/query-compiler/default-query-compiler.ts#L271">query-compiler/default-query-compiler.ts:271</a></li>
+									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cd46714/src/query-compiler/default-query-compiler.ts#L258">query-compiler/default-query-compiler.ts:258</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -1229,7 +1230,7 @@
 							<aside class="tsd-sources">
 								<p>Overrides OperationNodeVisitor.visitWhere</p>
 								<ul>
-									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/b487c75/src/query-compiler/default-query-compiler.ts#L154">query-compiler/default-query-compiler.ts:154</a></li>
+									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cd46714/src/query-compiler/default-query-compiler.ts#L149">query-compiler/default-query-compiler.ts:149</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -1283,8 +1284,8 @@
 							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-inherited tsd-is-private">
 								<a href="defaultquerycompiler.html#_visitors" class="tsd-kind-icon">#visitors</a>
 							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-protected">
-								<a href="defaultquerycompiler.html#querynodestack" class="tsd-kind-icon">query<wbr>Node<wbr>Stack</a>
+							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-inherited tsd-is-protected">
+								<a href="defaultquerycompiler.html#nodestack" class="tsd-kind-icon">node<wbr>Stack</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-protected">
 								<a href="defaultquerycompiler.html#append" class="tsd-kind-icon">append</a>
@@ -1446,14 +1447,20 @@
 					<li class=" tsd-kind-class tsd-has-type-parameter">
 						<a href="rawbuilder.html" class="tsd-kind-icon">Raw<wbr>Builder</a>
 					</li>
+					<li class=" tsd-kind-class tsd-has-type-parameter">
+						<a href="subquerybuilder.html" class="tsd-kind-icon">Sub<wbr>Query<wbr>Builder</a>
+					</li>
+					<li class=" tsd-kind-class tsd-has-type-parameter">
+						<a href="transaction.html" class="tsd-kind-icon">Transaction</a>
+					</li>
 					<li class=" tsd-kind-interface">
 						<a href="../interfaces/compiledquery.html" class="tsd-kind-icon">Compiled<wbr>Query</a>
 					</li>
 					<li class=" tsd-kind-interface">
-						<a href="../interfaces/connection.html" class="tsd-kind-icon">Connection</a>
+						<a href="../interfaces/createtablebuilderconstructorargs.html" class="tsd-kind-icon">Create<wbr>Table<wbr>Builder<wbr>Constructor<wbr>Args</a>
 					</li>
 					<li class=" tsd-kind-interface">
-						<a href="../interfaces/createtablebuilderconstructorargs.html" class="tsd-kind-icon">Create<wbr>Table<wbr>Builder<wbr>Constructor<wbr>Args</a>
+						<a href="../interfaces/databaseconnection.html" class="tsd-kind-icon">Database<wbr>Connection</a>
 					</li>
 					<li class=" tsd-kind-interface">
 						<a href="../interfaces/driverconfig.html" class="tsd-kind-icon">Driver<wbr>Config</a>
@@ -1469,6 +1476,9 @@
 					</li>
 					<li class=" tsd-kind-interface">
 						<a href="../interfaces/kyselyconfig.html" class="tsd-kind-icon">Kysely<wbr>Config</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="../interfaces/kyselyconstructorargs.html" class="tsd-kind-icon">Kysely<wbr>Constructor<wbr>Args</a>
 					</li>
 					<li class=" tsd-kind-interface">
 						<a href="../interfaces/poolconfig.html" class="tsd-kind-icon">Pool<wbr>Config</a>
@@ -1498,13 +1508,13 @@
 						<a href="../modules.html#compileentrypointnode" class="tsd-kind-icon">Compile<wbr>Entry<wbr>Point<wbr>Node</a>
 					</li>
 					<li class=" tsd-kind-function">
-						<a href="../modules.html#createdynamicobject" class="tsd-kind-icon">create<wbr>Dynamic<wbr>Object</a>
+						<a href="../modules.html#createdynamicmodule" class="tsd-kind-icon">create<wbr>Dynamic<wbr>Module</a>
 					</li>
 					<li class=" tsd-kind-function tsd-has-type-parameter">
 						<a href="../modules.html#createemptyselectquery" class="tsd-kind-icon">create<wbr>Empty<wbr>Select<wbr>Query</a>
 					</li>
 					<li class=" tsd-kind-function">
-						<a href="../modules.html#createschemaobject" class="tsd-kind-icon">create<wbr>Schema<wbr>Object</a>
+						<a href="../modules.html#createschemamodule" class="tsd-kind-icon">create<wbr>Schema<wbr>Module</a>
 					</li>
 				</ul>
 			</nav>

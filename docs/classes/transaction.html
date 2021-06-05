@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>Kysely | kysely</title>
+	<title>Transaction | kysely</title>
 	<meta name="description" content="Documentation for kysely">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="../assets/css/main.css">
@@ -55,61 +55,21 @@
 					<a href="../modules.html">kysely</a>
 				</li>
 				<li>
-					<a href="kysely.html">Kysely</a>
+					<a href="transaction.html">Transaction</a>
 				</li>
 			</ul>
-			<h1>Class Kysely&lt;DB&gt;</h1>
+			<h1>Class Transaction&lt;DB&gt;</h1>
 		</div>
 	</div>
 </header>
 <div class="container container-main">
 	<div class="row">
 		<div class="col-8 col-content">
-			<section class="tsd-panel tsd-comment">
-				<div class="tsd-comment tsd-typography">
-					<div class="lead">
-						<p>The main Kysely class.</p>
-					</div>
-					<p>You should create one instance of <code>Kysely</code> per database. Each <code>Kysely</code> instance
-					maintains it&#39;s own connection pool.</p>
-					<dl class="tsd-comment-tags">
-						<dt>example</dt>
-						<dd><p>This example assumes your database has tables <code>person</code> and <code>pet</code>:</p>
-							<pre><code class="language-ts"><span style="color: #0000FF">interface</span><span style="color: #000000"> </span><span style="color: #267F99">PersonRow</span><span style="color: #000000"> {</span>
-<span style="color: #000000">  </span><span style="color: #001080">id</span><span style="color: #000000">: </span><span style="color: #267F99">number</span>
-<span style="color: #000000">  </span><span style="color: #001080">first_name</span><span style="color: #000000">: </span><span style="color: #267F99">string</span>
-<span style="color: #000000">}</span>
-
-<span style="color: #0000FF">interface</span><span style="color: #000000"> </span><span style="color: #267F99">PetRow</span><span style="color: #000000"> {</span>
-<span style="color: #000000">  </span><span style="color: #001080">id</span><span style="color: #000000">: </span><span style="color: #267F99">number</span>
-<span style="color: #000000">  </span><span style="color: #001080">owner_id</span><span style="color: #000000">: </span><span style="color: #267F99">number</span>
-<span style="color: #000000">  </span><span style="color: #001080">name</span><span style="color: #000000">: </span><span style="color: #267F99">string</span>
-<span style="color: #000000">  </span><span style="color: #001080">species</span><span style="color: #000000"> </span><span style="color: #A31515">&#039;cat&#039;</span><span style="color: #000000"> | </span><span style="color: #A31515">&#039;do</span><span style="color: #CD3131">g</span>
-<span style="color: #000000">}</span>
-
-<span style="color: #0000FF">interface</span><span style="color: #000000"> </span><span style="color: #267F99">Database</span><span style="color: #000000"> {</span>
-<span style="color: #000000">  </span><span style="color: #001080">person</span><span style="color: #000000">: </span><span style="color: #267F99">PersonRow</span><span style="color: #000000">,</span>
-<span style="color: #000000">  </span><span style="color: #001080">pet</span><span style="color: #000000">: </span><span style="color: #267F99">PetRow</span>
-<span style="color: #000000">}</span>
-
-<span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">db</span><span style="color: #000000"> = </span><span style="color: #0000FF">new</span><span style="color: #000000"> </span><span style="color: #795E26">Kysely</span><span style="color: #000000">&lt;</span><span style="color: #267F99">Database</span><span style="color: #000000">&gt;(</span><span style="color: #001080">config</span><span style="color: #000000">)</span>
-</code></pre>
-						</dd>
-					</dl>
-				</div>
-			</section>
 			<section class="tsd-panel tsd-type-parameters">
 				<h3>Type parameters</h3>
 				<ul class="tsd-type-parameters">
 					<li>
 						<h4>DB</h4>
-						<div class="tsd-comment tsd-typography">
-							<div class="lead">
-								<p>The database interface type. Keys of this type must be table names
-									in the database and values must be interfaces that describe the rows in those
-								tables. See the examples above.</p>
-							</div>
-						</div>
 					</li>
 				</ul>
 			</section>
@@ -117,10 +77,10 @@
 				<h3>Hierarchy</h3>
 				<ul class="tsd-hierarchy">
 					<li>
-						<span class="target">Kysely</span>
+						<a href="kysely.html" class="tsd-signature-type" data-tsd-kind="Class">Kysely</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">&gt;</span>
 						<ul class="tsd-hierarchy">
 							<li>
-								<a href="transaction.html" class="tsd-signature-type" data-tsd-kind="Class">Transaction</a>
+								<span class="target">Transaction</span>
 							</li>
 						</ul>
 					</li>
@@ -130,54 +90,56 @@
 				<h2>Index</h2>
 				<section class="tsd-panel tsd-index-panel">
 					<div class="tsd-index-content">
-						<section class="tsd-index-section ">
+						<section class="tsd-index-section tsd-is-inherited">
 							<h3>Constructors</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-constructor tsd-parent-kind-class tsd-has-type-parameter"><a href="kysely.html#constructor" class="tsd-kind-icon">constructor</a></li>
+								<li class="tsd-kind-constructor tsd-parent-kind-class tsd-has-type-parameter tsd-is-inherited"><a href="transaction.html#constructor" class="tsd-kind-icon">constructor</a></li>
 							</ul>
 						</section>
-						<section class="tsd-index-section tsd-is-private tsd-is-private-protected">
+						<section class="tsd-index-section tsd-is-inherited tsd-is-private tsd-is-private-protected">
 							<h3>Properties</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-private"><a href="kysely.html#_compiler" class="tsd-kind-icon">#compiler</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-private"><a href="kysely.html#_connectionprovider" class="tsd-kind-icon">#connection<wbr>Provider</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-private"><a href="kysely.html#_driver" class="tsd-kind-icon">#driver</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-inherited tsd-is-private"><a href="transaction.html#_compiler" class="tsd-kind-icon">#compiler</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-inherited tsd-is-private"><a href="transaction.html#_connectionprovider" class="tsd-kind-icon">#connection<wbr>Provider</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-inherited tsd-is-private"><a href="transaction.html#_driver" class="tsd-kind-icon">#driver</a></li>
 							</ul>
 						</section>
 						<section class="tsd-index-section ">
 							<h3>Accessors</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-get-signature tsd-parent-kind-class"><a href="kysely.html#dynamic" class="tsd-kind-icon">dynamic</a></li>
-								<li class="tsd-kind-get-signature tsd-parent-kind-class"><a href="kysely.html#schema" class="tsd-kind-icon">schema</a></li>
+								<li class="tsd-kind-get-signature tsd-parent-kind-class tsd-is-inherited"><a href="transaction.html#dynamic" class="tsd-kind-icon">dynamic</a></li>
+								<li class="tsd-kind-get-signature tsd-parent-kind-class"><a href="transaction.html#istransaction" class="tsd-kind-icon">is<wbr>Transaction</a></li>
+								<li class="tsd-kind-get-signature tsd-parent-kind-class tsd-is-inherited"><a href="transaction.html#schema" class="tsd-kind-icon">schema</a></li>
 							</ul>
 						</section>
 						<section class="tsd-index-section ">
 							<h3>Methods</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter"><a href="kysely.html#deletefrom" class="tsd-kind-icon">delete<wbr>From</a></li>
-								<li class="tsd-kind-method tsd-parent-kind-class"><a href="kysely.html#destroy" class="tsd-kind-icon">destroy</a></li>
-								<li class="tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter"><a href="kysely.html#insertinto" class="tsd-kind-icon">insert<wbr>Into</a></li>
-								<li class="tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter"><a href="kysely.html#raw" class="tsd-kind-icon">raw</a></li>
-								<li class="tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter"><a href="kysely.html#selectfrom" class="tsd-kind-icon">select<wbr>From</a></li>
-								<li class="tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter"><a href="kysely.html#transaction" class="tsd-kind-icon">transaction</a></li>
-								<li class="tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter"><a href="kysely.html#updatetable" class="tsd-kind-icon">update<wbr>Table</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter tsd-is-inherited"><a href="transaction.html#deletefrom" class="tsd-kind-icon">delete<wbr>From</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-overwrite"><a href="transaction.html#destroy" class="tsd-kind-icon">destroy</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter tsd-is-inherited"><a href="transaction.html#insertinto" class="tsd-kind-icon">insert<wbr>Into</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter tsd-is-inherited"><a href="transaction.html#raw" class="tsd-kind-icon">raw</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter tsd-is-inherited"><a href="transaction.html#selectfrom" class="tsd-kind-icon">select<wbr>From</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter tsd-is-overwrite"><a href="transaction.html#transaction-1" class="tsd-kind-icon">transaction</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter tsd-is-inherited"><a href="transaction.html#updatetable" class="tsd-kind-icon">update<wbr>Table</a></li>
 							</ul>
 						</section>
 					</div>
 				</section>
 			</section>
-			<section class="tsd-panel-group tsd-member-group ">
+			<section class="tsd-panel-group tsd-member-group tsd-is-inherited">
 				<h2>Constructors</h2>
-				<section class="tsd-panel tsd-member tsd-kind-constructor tsd-parent-kind-class tsd-has-type-parameter">
+				<section class="tsd-panel tsd-member tsd-kind-constructor tsd-parent-kind-class tsd-has-type-parameter tsd-is-inherited">
 					<a name="constructor" class="tsd-anchor"></a>
 					<h3>constructor</h3>
-					<ul class="tsd-signatures tsd-kind-constructor tsd-parent-kind-class tsd-has-type-parameter">
-						<li class="tsd-signature tsd-kind-icon">new <wbr>Kysely&lt;DB&gt;<span class="tsd-signature-symbol">(</span>config<span class="tsd-signature-symbol">: </span><a href="../interfaces/kyselyconfig.html" class="tsd-signature-type" data-tsd-kind="Interface">KyselyConfig</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="kysely.html" class="tsd-signature-type" data-tsd-kind="Class">Kysely</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">&gt;</span></li>
-						<li class="tsd-signature tsd-kind-icon">new <wbr>Kysely&lt;DB&gt;<span class="tsd-signature-symbol">(</span>args<span class="tsd-signature-symbol">: </span><a href="../interfaces/kyselyconstructorargs.html" class="tsd-signature-type" data-tsd-kind="Interface">KyselyConstructorArgs</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="kysely.html" class="tsd-signature-type" data-tsd-kind="Class">Kysely</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">&gt;</span></li>
+					<ul class="tsd-signatures tsd-kind-constructor tsd-parent-kind-class tsd-has-type-parameter tsd-is-inherited">
+						<li class="tsd-signature tsd-kind-icon">new <wbr>Transaction&lt;DB&gt;<span class="tsd-signature-symbol">(</span>config<span class="tsd-signature-symbol">: </span><a href="../interfaces/kyselyconfig.html" class="tsd-signature-type" data-tsd-kind="Interface">KyselyConfig</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="transaction.html" class="tsd-signature-type" data-tsd-kind="Class">Transaction</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">&gt;</span></li>
+						<li class="tsd-signature tsd-kind-icon">new <wbr>Transaction&lt;DB&gt;<span class="tsd-signature-symbol">(</span>args<span class="tsd-signature-symbol">: </span><a href="../interfaces/kyselyconstructorargs.html" class="tsd-signature-type" data-tsd-kind="Interface">KyselyConstructorArgs</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="transaction.html" class="tsd-signature-type" data-tsd-kind="Class">Transaction</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
+								<p>Inherited from <a href="kysely.html">Kysely</a>.<a href="kysely.html#constructor">constructor</a></p>
 								<ul>
 									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cd46714/src/kysely.ts#L69">kysely.ts:69</a></li>
 								</ul>
@@ -194,10 +156,11 @@
 									<h5>config: <a href="../interfaces/kyselyconfig.html" class="tsd-signature-type" data-tsd-kind="Interface">KyselyConfig</a></h5>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <a href="kysely.html" class="tsd-signature-type" data-tsd-kind="Class">Kysely</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">&gt;</span></h4>
+							<h4 class="tsd-returns-title">Returns <a href="transaction.html" class="tsd-signature-type" data-tsd-kind="Class">Transaction</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">&gt;</span></h4>
 						</li>
 						<li class="tsd-description">
 							<aside class="tsd-sources">
+								<p>Inherited from <a href="kysely.html">Kysely</a>.<a href="kysely.html#constructor">constructor</a></p>
 								<ul>
 									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cd46714/src/kysely.ts#L71">kysely.ts:71</a></li>
 								</ul>
@@ -214,38 +177,41 @@
 									<h5>args: <a href="../interfaces/kyselyconstructorargs.html" class="tsd-signature-type" data-tsd-kind="Interface">KyselyConstructorArgs</a></h5>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <a href="kysely.html" class="tsd-signature-type" data-tsd-kind="Class">Kysely</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">&gt;</span></h4>
+							<h4 class="tsd-returns-title">Returns <a href="transaction.html" class="tsd-signature-type" data-tsd-kind="Class">Transaction</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">&gt;</span></h4>
 						</li>
 					</ul>
 				</section>
 			</section>
-			<section class="tsd-panel-group tsd-member-group tsd-is-private tsd-is-private-protected">
+			<section class="tsd-panel-group tsd-member-group tsd-is-inherited tsd-is-private tsd-is-private-protected">
 				<h2>Properties</h2>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-private">
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-inherited tsd-is-private">
 					<a name="_compiler" class="tsd-anchor"></a>
 					<h3><span class="tsd-flag ts-flagPrivate">Private</span> <span class="tsd-flag ts-flagReadonly">Readonly</span> #compiler</h3>
 					<div class="tsd-signature tsd-kind-icon">#compiler<span class="tsd-signature-symbol">:</span> <a href="../interfaces/querycompiler.html" class="tsd-signature-type" data-tsd-kind="Interface">QueryCompiler</a></div>
 					<aside class="tsd-sources">
+						<p>Inherited from <a href="kysely.html">Kysely</a>.<a href="kysely.html#_compiler">#compiler</a></p>
 						<ul>
 							<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cd46714/src/kysely.ts#L68">kysely.ts:68</a></li>
 						</ul>
 					</aside>
 				</section>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-private">
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-inherited tsd-is-private">
 					<a name="_connectionprovider" class="tsd-anchor"></a>
 					<h3><span class="tsd-flag ts-flagPrivate">Private</span> <span class="tsd-flag ts-flagReadonly">Readonly</span> #connection<wbr>Provider</h3>
 					<div class="tsd-signature tsd-kind-icon">#connection<wbr>Provider<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">ConnectionProvider</span></div>
 					<aside class="tsd-sources">
+						<p>Inherited from <a href="kysely.html">Kysely</a>.<a href="kysely.html#_connectionprovider">#connectionProvider</a></p>
 						<ul>
 							<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cd46714/src/kysely.ts#L69">kysely.ts:69</a></li>
 						</ul>
 					</aside>
 				</section>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-private">
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-inherited tsd-is-private">
 					<a name="_driver" class="tsd-anchor"></a>
 					<h3><span class="tsd-flag ts-flagPrivate">Private</span> <span class="tsd-flag ts-flagReadonly">Readonly</span> #driver</h3>
 					<div class="tsd-signature tsd-kind-icon">#driver<span class="tsd-signature-symbol">:</span> <a href="driver.html" class="tsd-signature-type" data-tsd-kind="Class">Driver</a></div>
 					<aside class="tsd-sources">
+						<p>Inherited from <a href="kysely.html">Kysely</a>.<a href="kysely.html#_driver">#driver</a></p>
 						<ul>
 							<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cd46714/src/kysely.ts#L67">kysely.ts:67</a></li>
 						</ul>
@@ -254,10 +220,10 @@
 			</section>
 			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Accessors</h2>
-				<section class="tsd-panel tsd-member tsd-kind-get-signature tsd-parent-kind-class">
+				<section class="tsd-panel tsd-member tsd-kind-get-signature tsd-parent-kind-class tsd-is-inherited">
 					<a name="dynamic" class="tsd-anchor"></a>
 					<h3>dynamic</h3>
-					<ul class="tsd-signatures tsd-kind-get-signature tsd-parent-kind-class">
+					<ul class="tsd-signatures tsd-kind-get-signature tsd-parent-kind-class tsd-is-inherited">
 						<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">get</span> dynamic<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../interfaces/dynamic.html" class="tsd-signature-type" data-tsd-kind="Interface">Dynamic</a></li>
 					</ul>
 					<ul class="tsd-descriptions">
@@ -279,9 +245,32 @@
 					</ul>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-get-signature tsd-parent-kind-class">
+					<a name="istransaction" class="tsd-anchor"></a>
+					<h3>is<wbr>Transaction</h3>
+					<ul class="tsd-signatures tsd-kind-get-signature tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">get</span> isTransaction<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">true</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cd46714/src/kysely.ts#L495">kysely.ts:495</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Always returns true.</p>
+								</div>
+								<p>This method is here just to make Kysely<DB> unassignable to Transaction<DB>.</p>
+							</div>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">true</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-get-signature tsd-parent-kind-class tsd-is-inherited">
 					<a name="schema" class="tsd-anchor"></a>
 					<h3>schema</h3>
-					<ul class="tsd-signatures tsd-kind-get-signature tsd-parent-kind-class">
+					<ul class="tsd-signatures tsd-kind-get-signature tsd-parent-kind-class tsd-is-inherited">
 						<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">get</span> schema<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../interfaces/schema.html" class="tsd-signature-type" data-tsd-kind="Interface">Schema</a></li>
 					</ul>
 					<ul class="tsd-descriptions">
@@ -303,15 +292,16 @@
 			</section>
 			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Methods</h2>
-				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter">
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter tsd-is-inherited">
 					<a name="deletefrom" class="tsd-anchor"></a>
 					<h3>delete<wbr>From</h3>
-					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter">
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter tsd-is-inherited">
 						<li class="tsd-signature tsd-kind-icon">delete<wbr>From&lt;TR&gt;<span class="tsd-signature-symbol">(</span>table<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">TR</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">QueryBuilderWithTable</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">never</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">DeleteResultTypeTag</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">TR</span><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
+								<p>Inherited from <a href="kysely.html">Kysely</a>.<a href="kysely.html#deletefrom">deleteFrom</a></p>
 								<ul>
 									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cd46714/src/kysely.ts#L297">kysely.ts:297</a></li>
 								</ul>
@@ -348,32 +338,34 @@
 						</li>
 					</ul>
 				</section>
-				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-overwrite">
 					<a name="destroy" class="tsd-anchor"></a>
 					<h3>destroy</h3>
-					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-overwrite">
 						<li class="tsd-signature tsd-kind-icon">destroy<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
+								<p>Overrides <a href="kysely.html">Kysely</a>.<a href="kysely.html#destroy">destroy</a></p>
 								<ul>
-									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cd46714/src/kysely.ts#L484">kysely.ts:484</a></li>
+									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cd46714/src/kysely.ts#L505">kysely.ts:505</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4>
 						</li>
 					</ul>
 				</section>
-				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter">
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter tsd-is-inherited">
 					<a name="insertinto" class="tsd-anchor"></a>
 					<h3>insert<wbr>Into</h3>
-					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter">
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter tsd-is-inherited">
 						<li class="tsd-signature tsd-kind-icon">insert<wbr>Into&lt;T&gt;<span class="tsd-signature-symbol">(</span>table<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="querybuilder.html" class="tsd-signature-type" data-tsd-kind="Class">QueryBuilder</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">InsertResultTypeTag</span><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
+								<p>Inherited from <a href="kysely.html">Kysely</a>.<a href="kysely.html#insertinto">insertInto</a></p>
 								<ul>
 									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cd46714/src/kysely.ts#L273">kysely.ts:273</a></li>
 								</ul>
@@ -432,15 +424,16 @@
 						</li>
 					</ul>
 				</section>
-				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter">
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter tsd-is-inherited">
 					<a name="raw" class="tsd-anchor"></a>
 					<h3>raw</h3>
-					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter">
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter tsd-is-inherited">
 						<li class="tsd-signature tsd-kind-icon">raw&lt;T&gt;<span class="tsd-signature-symbol">(</span>sql<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, params<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="rawbuilder.html" class="tsd-signature-type" data-tsd-kind="Class">RawBuilder</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
+								<p>Inherited from <a href="kysely.html">Kysely</a>.<a href="kysely.html#raw">raw</a></p>
 								<ul>
 									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cd46714/src/kysely.ts#L450">kysely.ts:450</a></li>
 								</ul>
@@ -564,16 +557,17 @@
 						</li>
 					</ul>
 				</section>
-				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter">
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter tsd-is-inherited">
 					<a name="selectfrom" class="tsd-anchor"></a>
 					<h3>select<wbr>From</h3>
-					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter">
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter tsd-is-inherited">
 						<li class="tsd-signature tsd-kind-icon">select<wbr>From&lt;F&gt;<span class="tsd-signature-symbol">(</span>from<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">F</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">QueryBuilderWithTable</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">never</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-symbol">{}</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">F</span><span class="tsd-signature-symbol">&gt;</span></li>
 						<li class="tsd-signature tsd-kind-icon">select<wbr>From&lt;F&gt;<span class="tsd-signature-symbol">(</span>from<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">F</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">QueryBuilderWithTable</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">never</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-symbol">{}</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">F</span><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
+								<p>Inherited from <a href="kysely.html">Kysely</a>.<a href="kysely.html#selectfrom">selectFrom</a></p>
 								<ul>
 									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cd46714/src/kysely.ts#L216">kysely.ts:216</a></li>
 								</ul>
@@ -680,6 +674,7 @@
 						</li>
 						<li class="tsd-description">
 							<aside class="tsd-sources">
+								<p>Inherited from <a href="kysely.html">Kysely</a>.<a href="kysely.html#selectfrom">selectFrom</a></p>
 								<ul>
 									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cd46714/src/kysely.ts#L220">kysely.ts:220</a></li>
 								</ul>
@@ -700,17 +695,18 @@
 						</li>
 					</ul>
 				</section>
-				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter">
-					<a name="transaction" class="tsd-anchor"></a>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter tsd-is-overwrite">
+					<a name="transaction-1" class="tsd-anchor"></a>
 					<h3>transaction</h3>
-					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter">
-						<li class="tsd-signature tsd-kind-icon">transaction&lt;T&gt;<span class="tsd-signature-symbol">(</span>callback<span class="tsd-signature-symbol">: </span><span class="tsd-signature-symbol">(</span>trx<span class="tsd-signature-symbol">: </span><a href="transaction.html" class="tsd-signature-type" data-tsd-kind="Class">Transaction</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">&gt;</span></li>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter tsd-is-overwrite">
+						<li class="tsd-signature tsd-kind-icon">transaction&lt;T&gt;<span class="tsd-signature-symbol">(</span>_<span class="tsd-signature-symbol">: </span><span class="tsd-signature-symbol">(</span>trx<span class="tsd-signature-symbol">: </span><a href="transaction.html" class="tsd-signature-type" data-tsd-kind="Class">Transaction</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
+								<p>Overrides <a href="kysely.html">Kysely</a>.<a href="kysely.html#transaction">transaction</a></p>
 								<ul>
-									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cd46714/src/kysely.ts#L462">kysely.ts:462</a></li>
+									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cd46714/src/kysely.ts#L499">kysely.ts:499</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-type-parameters-title">Type parameters</h4>
@@ -722,7 +718,7 @@
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
-									<h5>callback: <span class="tsd-signature-symbol">(</span>trx<span class="tsd-signature-symbol">: </span><a href="transaction.html" class="tsd-signature-type" data-tsd-kind="Class">Transaction</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">T</span></h5>
+									<h5>_: <span class="tsd-signature-symbol">(</span>trx<span class="tsd-signature-symbol">: </span><a href="transaction.html" class="tsd-signature-type" data-tsd-kind="Class">Transaction</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">T</span></h5>
 									<ul class="tsd-parameters">
 										<li class="tsd-parameter-signature">
 											<ul class="tsd-signatures tsd-kind-type-literal">
@@ -747,15 +743,16 @@
 						</li>
 					</ul>
 				</section>
-				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter">
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter tsd-is-inherited">
 					<a name="updatetable" class="tsd-anchor"></a>
 					<h3>update<wbr>Table</h3>
-					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter">
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter tsd-is-inherited">
 						<li class="tsd-signature tsd-kind-icon">update<wbr>Table&lt;TR&gt;<span class="tsd-signature-symbol">(</span>table<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">TR</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">QueryBuilderWithTable</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">never</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">UpdateResultTypeTag</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">TR</span><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
+								<p>Inherited from <a href="kysely.html">Kysely</a>.<a href="kysely.html#updatetable">updateTable</a></p>
 								<ul>
 									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cd46714/src/kysely.ts#L322">kysely.ts:322</a></li>
 								</ul>
@@ -829,54 +826,9 @@
 					<li class=" tsd-kind-class tsd-has-type-parameter">
 						<a href="joinbuilder.html" class="tsd-kind-icon">Join<wbr>Builder</a>
 					</li>
-				</ul>
-				<ul class="current">
-					<li class="current tsd-kind-class tsd-has-type-parameter">
+					<li class=" tsd-kind-class tsd-has-type-parameter">
 						<a href="kysely.html" class="tsd-kind-icon">Kysely</a>
-						<ul>
-							<li class=" tsd-kind-constructor tsd-parent-kind-class tsd-has-type-parameter">
-								<a href="kysely.html#constructor" class="tsd-kind-icon">constructor</a>
-							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-private">
-								<a href="kysely.html#_compiler" class="tsd-kind-icon">#compiler</a>
-							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-private">
-								<a href="kysely.html#_connectionprovider" class="tsd-kind-icon">#connection<wbr>Provider</a>
-							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-private">
-								<a href="kysely.html#_driver" class="tsd-kind-icon">#driver</a>
-							</li>
-							<li class=" tsd-kind-get-signature tsd-parent-kind-class">
-								<a href="kysely.html#dynamic" class="tsd-kind-icon">dynamic</a>
-							</li>
-							<li class=" tsd-kind-get-signature tsd-parent-kind-class">
-								<a href="kysely.html#schema" class="tsd-kind-icon">schema</a>
-							</li>
-							<li class=" tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter">
-								<a href="kysely.html#deletefrom" class="tsd-kind-icon">delete<wbr>From</a>
-							</li>
-							<li class=" tsd-kind-method tsd-parent-kind-class">
-								<a href="kysely.html#destroy" class="tsd-kind-icon">destroy</a>
-							</li>
-							<li class=" tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter">
-								<a href="kysely.html#insertinto" class="tsd-kind-icon">insert<wbr>Into</a>
-							</li>
-							<li class=" tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter">
-								<a href="kysely.html#raw" class="tsd-kind-icon">raw</a>
-							</li>
-							<li class=" tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter">
-								<a href="kysely.html#selectfrom" class="tsd-kind-icon">select<wbr>From</a>
-							</li>
-							<li class=" tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter">
-								<a href="kysely.html#transaction" class="tsd-kind-icon">transaction</a>
-							</li>
-							<li class=" tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter">
-								<a href="kysely.html#updatetable" class="tsd-kind-icon">update<wbr>Table</a>
-							</li>
-						</ul>
 					</li>
-				</ul>
-				<ul class="after-current">
 					<li class=" tsd-kind-class">
 						<a href="postgresdialect.html" class="tsd-kind-icon">Postgres<wbr>Dialect</a>
 					</li>
@@ -892,9 +844,57 @@
 					<li class=" tsd-kind-class tsd-has-type-parameter">
 						<a href="subquerybuilder.html" class="tsd-kind-icon">Sub<wbr>Query<wbr>Builder</a>
 					</li>
-					<li class=" tsd-kind-class tsd-has-type-parameter">
+				</ul>
+				<ul class="current">
+					<li class="current tsd-kind-class tsd-has-type-parameter">
 						<a href="transaction.html" class="tsd-kind-icon">Transaction</a>
+						<ul>
+							<li class=" tsd-kind-constructor tsd-parent-kind-class tsd-has-type-parameter tsd-is-inherited">
+								<a href="transaction.html#constructor" class="tsd-kind-icon">constructor</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-inherited tsd-is-private">
+								<a href="transaction.html#_compiler" class="tsd-kind-icon">#compiler</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-inherited tsd-is-private">
+								<a href="transaction.html#_connectionprovider" class="tsd-kind-icon">#connection<wbr>Provider</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-inherited tsd-is-private">
+								<a href="transaction.html#_driver" class="tsd-kind-icon">#driver</a>
+							</li>
+							<li class=" tsd-kind-get-signature tsd-parent-kind-class tsd-is-inherited">
+								<a href="transaction.html#dynamic" class="tsd-kind-icon">dynamic</a>
+							</li>
+							<li class=" tsd-kind-get-signature tsd-parent-kind-class">
+								<a href="transaction.html#istransaction" class="tsd-kind-icon">is<wbr>Transaction</a>
+							</li>
+							<li class=" tsd-kind-get-signature tsd-parent-kind-class tsd-is-inherited">
+								<a href="transaction.html#schema" class="tsd-kind-icon">schema</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter tsd-is-inherited">
+								<a href="transaction.html#deletefrom" class="tsd-kind-icon">delete<wbr>From</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-overwrite">
+								<a href="transaction.html#destroy" class="tsd-kind-icon">destroy</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter tsd-is-inherited">
+								<a href="transaction.html#insertinto" class="tsd-kind-icon">insert<wbr>Into</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter tsd-is-inherited">
+								<a href="transaction.html#raw" class="tsd-kind-icon">raw</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter tsd-is-inherited">
+								<a href="transaction.html#selectfrom" class="tsd-kind-icon">select<wbr>From</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter tsd-is-overwrite">
+								<a href="transaction.html#transaction-1" class="tsd-kind-icon">transaction</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter tsd-is-inherited">
+								<a href="transaction.html#updatetable" class="tsd-kind-icon">update<wbr>Table</a>
+							</li>
+						</ul>
 					</li>
+				</ul>
+				<ul class="after-current">
 					<li class=" tsd-kind-interface">
 						<a href="../interfaces/compiledquery.html" class="tsd-kind-icon">Compiled<wbr>Query</a>
 					</li>

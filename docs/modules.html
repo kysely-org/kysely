@@ -77,19 +77,22 @@
 								<li class="tsd-kind-class"><a href="classes/postgresdriver.html" class="tsd-kind-icon">Postgres<wbr>Driver</a></li>
 								<li class="tsd-kind-class tsd-has-type-parameter"><a href="classes/querybuilder.html" class="tsd-kind-icon">Query<wbr>Builder</a></li>
 								<li class="tsd-kind-class tsd-has-type-parameter"><a href="classes/rawbuilder.html" class="tsd-kind-icon">Raw<wbr>Builder</a></li>
+								<li class="tsd-kind-class tsd-has-type-parameter"><a href="classes/subquerybuilder.html" class="tsd-kind-icon">Sub<wbr>Query<wbr>Builder</a></li>
+								<li class="tsd-kind-class tsd-has-type-parameter"><a href="classes/transaction.html" class="tsd-kind-icon">Transaction</a></li>
 							</ul>
 						</section>
 						<section class="tsd-index-section ">
 							<h3>Interfaces</h3>
 							<ul class="tsd-index-list">
 								<li class="tsd-kind-interface"><a href="interfaces/compiledquery.html" class="tsd-kind-icon">Compiled<wbr>Query</a></li>
-								<li class="tsd-kind-interface"><a href="interfaces/connection.html" class="tsd-kind-icon">Connection</a></li>
 								<li class="tsd-kind-interface"><a href="interfaces/createtablebuilderconstructorargs.html" class="tsd-kind-icon">Create<wbr>Table<wbr>Builder<wbr>Constructor<wbr>Args</a></li>
+								<li class="tsd-kind-interface"><a href="interfaces/databaseconnection.html" class="tsd-kind-icon">Database<wbr>Connection</a></li>
 								<li class="tsd-kind-interface"><a href="interfaces/driverconfig.html" class="tsd-kind-icon">Driver<wbr>Config</a></li>
 								<li class="tsd-kind-interface"><a href="interfaces/driverconfigwithdefaults.html" class="tsd-kind-icon">Driver<wbr>Config<wbr>With<wbr>Defaults</a></li>
 								<li class="tsd-kind-interface"><a href="interfaces/droptablebuilderconstructorargs.html" class="tsd-kind-icon">Drop<wbr>Table<wbr>Builder<wbr>Constructor<wbr>Args</a></li>
 								<li class="tsd-kind-interface"><a href="interfaces/dynamic.html" class="tsd-kind-icon">Dynamic</a></li>
 								<li class="tsd-kind-interface"><a href="interfaces/kyselyconfig.html" class="tsd-kind-icon">Kysely<wbr>Config</a></li>
+								<li class="tsd-kind-interface"><a href="interfaces/kyselyconstructorargs.html" class="tsd-kind-icon">Kysely<wbr>Constructor<wbr>Args</a></li>
 								<li class="tsd-kind-interface"><a href="interfaces/poolconfig.html" class="tsd-kind-icon">Pool<wbr>Config</a></li>
 								<li class="tsd-kind-interface"><a href="interfaces/poolconfigwithdefaults.html" class="tsd-kind-icon">Pool<wbr>Config<wbr>With<wbr>Defaults</a></li>
 								<li class="tsd-kind-interface"><a href="interfaces/querybuilderconstructorargs.html" class="tsd-kind-icon">Query<wbr>Builder<wbr>Constructor<wbr>Args</a></li>
@@ -109,9 +112,9 @@
 						<section class="tsd-index-section ">
 							<h3>Functions</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-function"><a href="modules.html#createdynamicobject" class="tsd-kind-icon">create<wbr>Dynamic<wbr>Object</a></li>
+								<li class="tsd-kind-function"><a href="modules.html#createdynamicmodule" class="tsd-kind-icon">create<wbr>Dynamic<wbr>Module</a></li>
 								<li class="tsd-kind-function tsd-has-type-parameter"><a href="modules.html#createemptyselectquery" class="tsd-kind-icon">create<wbr>Empty<wbr>Select<wbr>Query</a></li>
-								<li class="tsd-kind-function"><a href="modules.html#createschemaobject" class="tsd-kind-icon">create<wbr>Schema<wbr>Object</a></li>
+								<li class="tsd-kind-function"><a href="modules.html#createschemamodule" class="tsd-kind-icon">create<wbr>Schema<wbr>Module</a></li>
 							</ul>
 						</section>
 					</div>
@@ -125,7 +128,7 @@
 					<div class="tsd-signature tsd-kind-icon">Column<wbr>Builder<wbr>Callback<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">(</span>tableBuilder<span class="tsd-signature-symbol">: </span><a href="classes/columnbuilder.html" class="tsd-signature-type" data-tsd-kind="Class">ColumnBuilder</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><a href="classes/columnbuilder.html" class="tsd-signature-type" data-tsd-kind="Class">ColumnBuilder</a></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/koskimas/kysely/blob/b487c75/src/schema/create-table-builder.ts#L165">schema/create-table-builder.ts:165</a></li>
+							<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cd46714/src/schema/create-table-builder.ts#L159">schema/create-table-builder.ts:159</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-type-declaration">
@@ -156,7 +159,7 @@
 					<div class="tsd-signature tsd-kind-icon">Compile<wbr>Entry<wbr>Point<wbr>Node<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">QueryNode</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">CreateTableNode</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">DropTableNode</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">RawNode</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/koskimas/kysely/blob/b487c75/src/query-compiler/query-compiler.ts#L7">query-compiler/query-compiler.ts:7</a></li>
+							<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cd46714/src/query-compiler/query-compiler.ts#L7">query-compiler/query-compiler.ts:7</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -164,16 +167,16 @@
 			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Functions</h2>
 				<section class="tsd-panel tsd-member tsd-kind-function">
-					<a name="createdynamicobject" class="tsd-anchor"></a>
-					<h3>create<wbr>Dynamic<wbr>Object</h3>
+					<a name="createdynamicmodule" class="tsd-anchor"></a>
+					<h3>create<wbr>Dynamic<wbr>Module</h3>
 					<ul class="tsd-signatures tsd-kind-function">
-						<li class="tsd-signature tsd-kind-icon">create<wbr>Dynamic<wbr>Object<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="interfaces/dynamic.html" class="tsd-signature-type" data-tsd-kind="Interface">Dynamic</a></li>
+						<li class="tsd-signature tsd-kind-icon">create<wbr>Dynamic<wbr>Module<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="interfaces/dynamic.html" class="tsd-signature-type" data-tsd-kind="Interface">Dynamic</a></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/b487c75/src/dynamic/dynamic.ts#L8">dynamic/dynamic.ts:8</a></li>
+									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cd46714/src/dynamic/dynamic.ts#L8">dynamic/dynamic.ts:8</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-returns-title">Returns <a href="interfaces/dynamic.html" class="tsd-signature-type" data-tsd-kind="Interface">Dynamic</a></h4>
@@ -190,7 +193,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/b487c75/src/query-builder/query-builder.ts#L1882">query-builder/query-builder.ts:1882</a></li>
+									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cd46714/src/query-builder/query-builder.ts#L1822">query-builder/query-builder.ts:1822</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-type-parameters-title">Type parameters</h4>
@@ -210,16 +213,16 @@
 					</ul>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-function">
-					<a name="createschemaobject" class="tsd-anchor"></a>
-					<h3>create<wbr>Schema<wbr>Object</h3>
+					<a name="createschemamodule" class="tsd-anchor"></a>
+					<h3>create<wbr>Schema<wbr>Module</h3>
 					<ul class="tsd-signatures tsd-kind-function">
-						<li class="tsd-signature tsd-kind-icon">create<wbr>Schema<wbr>Object<span class="tsd-signature-symbol">(</span>compiler<span class="tsd-signature-symbol">: </span><a href="interfaces/querycompiler.html" class="tsd-signature-type" data-tsd-kind="Interface">QueryCompiler</a>, connectionProvider<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">ConnectionProvider</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="interfaces/schema.html" class="tsd-signature-type" data-tsd-kind="Interface">Schema</a></li>
+						<li class="tsd-signature tsd-kind-icon">create<wbr>Schema<wbr>Module<span class="tsd-signature-symbol">(</span>compiler<span class="tsd-signature-symbol">: </span><a href="interfaces/querycompiler.html" class="tsd-signature-type" data-tsd-kind="Interface">QueryCompiler</a>, connectionProvider<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">ConnectionProvider</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="interfaces/schema.html" class="tsd-signature-type" data-tsd-kind="Interface">Schema</a></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/b487c75/src/schema/schema.ts#L58">schema/schema.ts:58</a></li>
+									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cd46714/src/schema/schema.ts#L58">schema/schema.ts:58</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -286,14 +289,20 @@
 					<li class=" tsd-kind-class tsd-has-type-parameter">
 						<a href="classes/rawbuilder.html" class="tsd-kind-icon">Raw<wbr>Builder</a>
 					</li>
+					<li class=" tsd-kind-class tsd-has-type-parameter">
+						<a href="classes/subquerybuilder.html" class="tsd-kind-icon">Sub<wbr>Query<wbr>Builder</a>
+					</li>
+					<li class=" tsd-kind-class tsd-has-type-parameter">
+						<a href="classes/transaction.html" class="tsd-kind-icon">Transaction</a>
+					</li>
 					<li class=" tsd-kind-interface">
 						<a href="interfaces/compiledquery.html" class="tsd-kind-icon">Compiled<wbr>Query</a>
 					</li>
 					<li class=" tsd-kind-interface">
-						<a href="interfaces/connection.html" class="tsd-kind-icon">Connection</a>
+						<a href="interfaces/createtablebuilderconstructorargs.html" class="tsd-kind-icon">Create<wbr>Table<wbr>Builder<wbr>Constructor<wbr>Args</a>
 					</li>
 					<li class=" tsd-kind-interface">
-						<a href="interfaces/createtablebuilderconstructorargs.html" class="tsd-kind-icon">Create<wbr>Table<wbr>Builder<wbr>Constructor<wbr>Args</a>
+						<a href="interfaces/databaseconnection.html" class="tsd-kind-icon">Database<wbr>Connection</a>
 					</li>
 					<li class=" tsd-kind-interface">
 						<a href="interfaces/driverconfig.html" class="tsd-kind-icon">Driver<wbr>Config</a>
@@ -309,6 +318,9 @@
 					</li>
 					<li class=" tsd-kind-interface">
 						<a href="interfaces/kyselyconfig.html" class="tsd-kind-icon">Kysely<wbr>Config</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/kyselyconstructorargs.html" class="tsd-kind-icon">Kysely<wbr>Constructor<wbr>Args</a>
 					</li>
 					<li class=" tsd-kind-interface">
 						<a href="interfaces/poolconfig.html" class="tsd-kind-icon">Pool<wbr>Config</a>
@@ -338,13 +350,13 @@
 						<a href="modules.html#compileentrypointnode" class="tsd-kind-icon">Compile<wbr>Entry<wbr>Point<wbr>Node</a>
 					</li>
 					<li class=" tsd-kind-function">
-						<a href="modules.html#createdynamicobject" class="tsd-kind-icon">create<wbr>Dynamic<wbr>Object</a>
+						<a href="modules.html#createdynamicmodule" class="tsd-kind-icon">create<wbr>Dynamic<wbr>Module</a>
 					</li>
 					<li class=" tsd-kind-function tsd-has-type-parameter">
 						<a href="modules.html#createemptyselectquery" class="tsd-kind-icon">create<wbr>Empty<wbr>Select<wbr>Query</a>
 					</li>
 					<li class=" tsd-kind-function">
-						<a href="modules.html#createschemaobject" class="tsd-kind-icon">create<wbr>Schema<wbr>Object</a>
+						<a href="modules.html#createschemamodule" class="tsd-kind-icon">create<wbr>Schema<wbr>Module</a>
 					</li>
 				</ul>
 			</nav>

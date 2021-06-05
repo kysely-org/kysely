@@ -91,23 +91,24 @@
 						<section class="tsd-index-section tsd-is-private-protected">
 							<h3>Properties</h3>
 							<ul class="tsd-index-list">
+								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-private"><a href="postgresdriver.html#_connections" class="tsd-kind-icon">#connections</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-inherited tsd-is-private"><a href="postgresdriver.html#_destroypromise" class="tsd-kind-icon">#destroy<wbr>Promise</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-inherited tsd-is-private"><a href="postgresdriver.html#_initpromise" class="tsd-kind-icon">#init<wbr>Promise</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-private"><a href="postgresdriver.html#_pgclients" class="tsd-kind-icon">#pg<wbr>Clients</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-private"><a href="postgresdriver.html#_pgpool" class="tsd-kind-icon">#pg<wbr>Pool</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-private"><a href="postgresdriver.html#_pool" class="tsd-kind-icon">#pool</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-inherited tsd-is-protected"><a href="postgresdriver.html#config" class="tsd-kind-icon">config</a></li>
 							</ul>
 						</section>
 						<section class="tsd-index-section ">
 							<h3>Methods</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-overwrite"><a href="postgresdriver.html#acquireconnection" class="tsd-kind-icon">acquire<wbr>Connection</a></li>
-								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-overwrite"><a href="postgresdriver.html#destroy" class="tsd-kind-icon">destroy</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><a href="postgresdriver.html#acquireconnection" class="tsd-kind-icon">acquire<wbr>Connection</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-overwrite tsd-is-protected"><a href="postgresdriver.html#acquireconnectionimpl" class="tsd-kind-icon">acquire<wbr>Connection<wbr>Impl</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-overwrite tsd-is-protected"><a href="postgresdriver.html#destroyimpl" class="tsd-kind-icon">destroy<wbr>Impl</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><a href="postgresdriver.html#ensuredestroy" class="tsd-kind-icon">ensure<wbr>Destroy</a></li>
-								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><a href="postgresdriver.html#ensureinit" class="tsd-kind-icon">ensure<wbr>Init</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-overwrite"><a href="postgresdriver.html#getdefaultport" class="tsd-kind-icon">get<wbr>Default<wbr>Port</a></li>
-								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-overwrite"><a href="postgresdriver.html#init" class="tsd-kind-icon">init</a></li>
-								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-overwrite"><a href="postgresdriver.html#releaseconnection" class="tsd-kind-icon">release<wbr>Connection</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-overwrite tsd-is-protected"><a href="postgresdriver.html#initimpl" class="tsd-kind-icon">init<wbr>Impl</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><a href="postgresdriver.html#releaseconnection" class="tsd-kind-icon">release<wbr>Connection</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-overwrite tsd-is-protected"><a href="postgresdriver.html#releaseconnectionimpl" class="tsd-kind-icon">release<wbr>Connection<wbr>Impl</a></li>
 							</ul>
 						</section>
 					</div>
@@ -126,7 +127,7 @@
 							<aside class="tsd-sources">
 								<p>Inherited from <a href="driver.html">Driver</a>.<a href="driver.html#constructor">constructor</a></p>
 								<ul>
-									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/b487c75/src/driver/driver.ts#L21">driver/driver.ts:21</a></li>
+									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cd46714/src/driver/driver.ts#L21">driver/driver.ts:21</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -142,6 +143,16 @@
 			</section>
 			<section class="tsd-panel-group tsd-member-group tsd-is-private-protected">
 				<h2>Properties</h2>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-private">
+					<a name="_connections" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagPrivate">Private</span> #connections</h3>
+					<div class="tsd-signature tsd-kind-icon">#connections<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">WeakMap</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">PoolClient</span><span class="tsd-signature-symbol">, </span><a href="../interfaces/databaseconnection.html" class="tsd-signature-type" data-tsd-kind="Interface">DatabaseConnection</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol"> = ...</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cd46714/src/dialect/postgres/postgres-driver.ts#L11">dialect/postgres/postgres-driver.ts:11</a></li>
+						</ul>
+					</aside>
+				</section>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-inherited tsd-is-private">
 					<a name="_destroypromise" class="tsd-anchor"></a>
 					<h3><span class="tsd-flag ts-flagPrivate">Private</span> #destroy<wbr>Promise</h3>
@@ -149,7 +160,7 @@
 					<aside class="tsd-sources">
 						<p>Inherited from <a href="driver.html">Driver</a>.<a href="driver.html#_destroypromise">#destroyPromise</a></p>
 						<ul>
-							<li>Defined in <a href="https://github.com/koskimas/kysely/blob/b487c75/src/driver/driver.ts#L21">driver/driver.ts:21</a></li>
+							<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cd46714/src/driver/driver.ts#L21">driver/driver.ts:21</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -160,27 +171,17 @@
 					<aside class="tsd-sources">
 						<p>Inherited from <a href="driver.html">Driver</a>.<a href="driver.html#_initpromise">#initPromise</a></p>
 						<ul>
-							<li>Defined in <a href="https://github.com/koskimas/kysely/blob/b487c75/src/driver/driver.ts#L20">driver/driver.ts:20</a></li>
+							<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cd46714/src/driver/driver.ts#L20">driver/driver.ts:20</a></li>
 						</ul>
 					</aside>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-private">
-					<a name="_pgclients" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagPrivate">Private</span> #pg<wbr>Clients</h3>
-					<div class="tsd-signature tsd-kind-icon">#pg<wbr>Clients<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">WeakSet</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">PoolClient</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol"> = ...</span></div>
+					<a name="_pool" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagPrivate">Private</span> #pool</h3>
+					<div class="tsd-signature tsd-kind-icon">#pool<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">null</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">Pool</span><span class="tsd-signature-symbol"> = null</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/koskimas/kysely/blob/b487c75/src/dialect/postgres/postgres-driver.ts#L9">dialect/postgres/postgres-driver.ts:9</a></li>
-						</ul>
-					</aside>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-private">
-					<a name="_pgpool" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagPrivate">Private</span> #pg<wbr>Pool</h3>
-					<div class="tsd-signature tsd-kind-icon">#pg<wbr>Pool<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">null</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">Pool</span><span class="tsd-signature-symbol"> = null</span></div>
-					<aside class="tsd-sources">
-						<ul>
-							<li>Defined in <a href="https://github.com/koskimas/kysely/blob/b487c75/src/dialect/postgres/postgres-driver.ts#L8">dialect/postgres/postgres-driver.ts:8</a></li>
+							<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cd46714/src/dialect/postgres/postgres-driver.ts#L10">dialect/postgres/postgres-driver.ts:10</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -191,43 +192,68 @@
 					<aside class="tsd-sources">
 						<p>Inherited from <a href="driver.html">Driver</a>.<a href="driver.html#config">config</a></p>
 						<ul>
-							<li>Defined in <a href="https://github.com/koskimas/kysely/blob/b487c75/src/driver/driver.ts#L18">driver/driver.ts:18</a></li>
+							<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cd46714/src/driver/driver.ts#L18">driver/driver.ts:18</a></li>
 						</ul>
 					</aside>
 				</section>
 			</section>
 			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Methods</h2>
-				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-overwrite">
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
 					<a name="acquireconnection" class="tsd-anchor"></a>
 					<h3>acquire<wbr>Connection</h3>
-					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-overwrite">
-						<li class="tsd-signature tsd-kind-icon">acquire<wbr>Connection<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/connection.html" class="tsd-signature-type" data-tsd-kind="Interface">Connection</a><span class="tsd-signature-symbol">&gt;</span></li>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+						<li class="tsd-signature tsd-kind-icon">acquire<wbr>Connection<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/databaseconnection.html" class="tsd-signature-type" data-tsd-kind="Interface">DatabaseConnection</a><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
-								<p>Overrides <a href="driver.html">Driver</a>.<a href="driver.html#acquireconnection">acquireConnection</a></p>
+								<p>Inherited from <a href="driver.html">Driver</a>.<a href="driver.html#acquireconnection">acquireConnection</a></p>
 								<ul>
-									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/b487c75/src/dialect/postgres/postgres-driver.ts#L48">dialect/postgres/postgres-driver.ts:48</a></li>
+									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cd46714/src/driver/driver.ts#L73">driver/driver.ts:73</a></li>
 								</ul>
 							</aside>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/connection.html" class="tsd-signature-type" data-tsd-kind="Interface">Connection</a><span class="tsd-signature-symbol">&gt;</span></h4>
+							<div class="tsd-comment tsd-typography">
+								<dl class="tsd-comment-tags">
+									<dt>internal</dt>
+									<dd><p>For internal use only. Don&#39;t override this.</p>
+									</dd>
+								</dl>
+							</div>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/databaseconnection.html" class="tsd-signature-type" data-tsd-kind="Interface">DatabaseConnection</a><span class="tsd-signature-symbol">&gt;</span></h4>
 						</li>
 					</ul>
 				</section>
-				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-overwrite">
-					<a name="destroy" class="tsd-anchor"></a>
-					<h3>destroy</h3>
-					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-overwrite">
-						<li class="tsd-signature tsd-kind-icon">destroy<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></li>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-overwrite tsd-is-protected">
+					<a name="acquireconnectionimpl" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagProtected">Protected</span> acquire<wbr>Connection<wbr>Impl</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-overwrite tsd-is-protected">
+						<li class="tsd-signature tsd-kind-icon">acquire<wbr>Connection<wbr>Impl<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/databaseconnection.html" class="tsd-signature-type" data-tsd-kind="Interface">DatabaseConnection</a><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
-								<p>Overrides <a href="driver.html">Driver</a>.<a href="driver.html#destroy">destroy</a></p>
+								<p>Overrides <a href="driver.html">Driver</a>.<a href="driver.html#acquireconnectionimpl">acquireConnectionImpl</a></p>
 								<ul>
-									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/b487c75/src/dialect/postgres/postgres-driver.ts#L40">dialect/postgres/postgres-driver.ts:40</a></li>
+									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cd46714/src/dialect/postgres/postgres-driver.ts#L50">dialect/postgres/postgres-driver.ts:50</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/databaseconnection.html" class="tsd-signature-type" data-tsd-kind="Interface">DatabaseConnection</a><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-overwrite tsd-is-protected">
+					<a name="destroyimpl" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagProtected">Protected</span> destroy<wbr>Impl</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-overwrite tsd-is-protected">
+						<li class="tsd-signature tsd-kind-icon">destroy<wbr>Impl<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<p>Overrides <a href="driver.html">Driver</a>.<a href="driver.html#destroyimpl">destroyImpl</a></p>
+								<ul>
+									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cd46714/src/dialect/postgres/postgres-driver.ts#L42">dialect/postgres/postgres-driver.ts:42</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4>
@@ -245,32 +271,7 @@
 							<aside class="tsd-sources">
 								<p>Inherited from <a href="driver.html">Driver</a>.<a href="driver.html#ensuredestroy">ensureDestroy</a></p>
 								<ul>
-									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/b487c75/src/driver/driver.ts#L86">driver/driver.ts:86</a></li>
-								</ul>
-							</aside>
-							<div class="tsd-comment tsd-typography">
-								<dl class="tsd-comment-tags">
-									<dt>internal</dt>
-									<dd><p>For internal use only. Don&#39;t override this.</p>
-									</dd>
-								</dl>
-							</div>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4>
-						</li>
-					</ul>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
-					<a name="ensureinit" class="tsd-anchor"></a>
-					<h3>ensure<wbr>Init</h3>
-					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
-						<li class="tsd-signature tsd-kind-icon">ensure<wbr>Init<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></li>
-					</ul>
-					<ul class="tsd-descriptions">
-						<li class="tsd-description">
-							<aside class="tsd-sources">
-								<p>Inherited from <a href="driver.html">Driver</a>.<a href="driver.html#ensureinit">ensureInit</a></p>
-								<ul>
-									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/b487c75/src/driver/driver.ts#L71">driver/driver.ts:71</a></li>
+									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cd46714/src/driver/driver.ts#L105">driver/driver.ts:105</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -295,49 +296,80 @@
 							<aside class="tsd-sources">
 								<p>Overrides <a href="driver.html">Driver</a>.<a href="driver.html#getdefaultport">getDefaultPort</a></p>
 								<ul>
-									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/b487c75/src/dialect/postgres/postgres-driver.ts#L36">dialect/postgres/postgres-driver.ts:36</a></li>
+									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cd46714/src/dialect/postgres/postgres-driver.ts#L13">dialect/postgres/postgres-driver.ts:13</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">number</span></h4>
 						</li>
 					</ul>
 				</section>
-				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-overwrite">
-					<a name="init" class="tsd-anchor"></a>
-					<h3>init</h3>
-					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-overwrite">
-						<li class="tsd-signature tsd-kind-icon">init<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></li>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-overwrite tsd-is-protected">
+					<a name="initimpl" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagProtected">Protected</span> init<wbr>Impl</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-overwrite tsd-is-protected">
+						<li class="tsd-signature tsd-kind-icon">init<wbr>Impl<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
-								<p>Overrides <a href="driver.html">Driver</a>.<a href="driver.html#init">init</a></p>
+								<p>Overrides <a href="driver.html">Driver</a>.<a href="driver.html#initimpl">initImpl</a></p>
 								<ul>
-									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/b487c75/src/dialect/postgres/postgres-driver.ts#L11">dialect/postgres/postgres-driver.ts:11</a></li>
+									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cd46714/src/dialect/postgres/postgres-driver.ts#L17">dialect/postgres/postgres-driver.ts:17</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4>
 						</li>
 					</ul>
 				</section>
-				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-overwrite">
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
 					<a name="releaseconnection" class="tsd-anchor"></a>
 					<h3>release<wbr>Connection</h3>
-					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-overwrite">
-						<li class="tsd-signature tsd-kind-icon">release<wbr>Connection<span class="tsd-signature-symbol">(</span>connection<span class="tsd-signature-symbol">: </span><a href="../interfaces/connection.html" class="tsd-signature-type" data-tsd-kind="Interface">Connection</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></li>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+						<li class="tsd-signature tsd-kind-icon">release<wbr>Connection<span class="tsd-signature-symbol">(</span>connection<span class="tsd-signature-symbol">: </span><a href="../interfaces/databaseconnection.html" class="tsd-signature-type" data-tsd-kind="Interface">DatabaseConnection</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
-								<p>Overrides <a href="driver.html">Driver</a>.<a href="driver.html#releaseconnection">releaseConnection</a></p>
+								<p>Inherited from <a href="driver.html">Driver</a>.<a href="driver.html#releaseconnection">releaseConnection</a></p>
 								<ul>
-									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/b487c75/src/dialect/postgres/postgres-driver.ts#L63">dialect/postgres/postgres-driver.ts:63</a></li>
+									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cd46714/src/driver/driver.ts#L82">driver/driver.ts:82</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<dl class="tsd-comment-tags">
+									<dt>internal</dt>
+									<dd><p>For internal use only. Don&#39;t override this.</p>
+									</dd>
+								</dl>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>connection: <a href="../interfaces/databaseconnection.html" class="tsd-signature-type" data-tsd-kind="Interface">DatabaseConnection</a></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-overwrite tsd-is-protected">
+					<a name="releaseconnectionimpl" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagProtected">Protected</span> release<wbr>Connection<wbr>Impl</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-overwrite tsd-is-protected">
+						<li class="tsd-signature tsd-kind-icon">release<wbr>Connection<wbr>Impl<span class="tsd-signature-symbol">(</span>connection<span class="tsd-signature-symbol">: </span><a href="../interfaces/databaseconnection.html" class="tsd-signature-type" data-tsd-kind="Interface">DatabaseConnection</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<p>Overrides <a href="driver.html">Driver</a>.<a href="driver.html#releaseconnectionimpl">releaseConnectionImpl</a></p>
+								<ul>
+									<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cd46714/src/dialect/postgres/postgres-driver.ts#L66">dialect/postgres/postgres-driver.ts:66</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
-									<h5>connection: <a href="../interfaces/connection.html" class="tsd-signature-type" data-tsd-kind="Interface">Connection</a></h5>
+									<h5>connection: <a href="../interfaces/databaseconnection.html" class="tsd-signature-type" data-tsd-kind="Interface">DatabaseConnection</a></h5>
 								</li>
 							</ul>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4>
@@ -394,6 +426,9 @@
 							<li class=" tsd-kind-constructor tsd-parent-kind-class tsd-is-inherited">
 								<a href="postgresdriver.html#constructor" class="tsd-kind-icon">constructor</a>
 							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-private">
+								<a href="postgresdriver.html#_connections" class="tsd-kind-icon">#connections</a>
+							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-inherited tsd-is-private">
 								<a href="postgresdriver.html#_destroypromise" class="tsd-kind-icon">#destroy<wbr>Promise</a>
 							</li>
@@ -401,34 +436,34 @@
 								<a href="postgresdriver.html#_initpromise" class="tsd-kind-icon">#init<wbr>Promise</a>
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-private">
-								<a href="postgresdriver.html#_pgclients" class="tsd-kind-icon">#pg<wbr>Clients</a>
-							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-private">
-								<a href="postgresdriver.html#_pgpool" class="tsd-kind-icon">#pg<wbr>Pool</a>
+								<a href="postgresdriver.html#_pool" class="tsd-kind-icon">#pool</a>
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-inherited tsd-is-protected">
 								<a href="postgresdriver.html#config" class="tsd-kind-icon">config</a>
 							</li>
-							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-overwrite">
+							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
 								<a href="postgresdriver.html#acquireconnection" class="tsd-kind-icon">acquire<wbr>Connection</a>
 							</li>
-							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-overwrite">
-								<a href="postgresdriver.html#destroy" class="tsd-kind-icon">destroy</a>
+							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-overwrite tsd-is-protected">
+								<a href="postgresdriver.html#acquireconnectionimpl" class="tsd-kind-icon">acquire<wbr>Connection<wbr>Impl</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-overwrite tsd-is-protected">
+								<a href="postgresdriver.html#destroyimpl" class="tsd-kind-icon">destroy<wbr>Impl</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
 								<a href="postgresdriver.html#ensuredestroy" class="tsd-kind-icon">ensure<wbr>Destroy</a>
 							</li>
-							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
-								<a href="postgresdriver.html#ensureinit" class="tsd-kind-icon">ensure<wbr>Init</a>
-							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-overwrite">
 								<a href="postgresdriver.html#getdefaultport" class="tsd-kind-icon">get<wbr>Default<wbr>Port</a>
 							</li>
-							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-overwrite">
-								<a href="postgresdriver.html#init" class="tsd-kind-icon">init</a>
+							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-overwrite tsd-is-protected">
+								<a href="postgresdriver.html#initimpl" class="tsd-kind-icon">init<wbr>Impl</a>
 							</li>
-							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-overwrite">
+							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
 								<a href="postgresdriver.html#releaseconnection" class="tsd-kind-icon">release<wbr>Connection</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-overwrite tsd-is-protected">
+								<a href="postgresdriver.html#releaseconnectionimpl" class="tsd-kind-icon">release<wbr>Connection<wbr>Impl</a>
 							</li>
 						</ul>
 					</li>
@@ -440,14 +475,20 @@
 					<li class=" tsd-kind-class tsd-has-type-parameter">
 						<a href="rawbuilder.html" class="tsd-kind-icon">Raw<wbr>Builder</a>
 					</li>
+					<li class=" tsd-kind-class tsd-has-type-parameter">
+						<a href="subquerybuilder.html" class="tsd-kind-icon">Sub<wbr>Query<wbr>Builder</a>
+					</li>
+					<li class=" tsd-kind-class tsd-has-type-parameter">
+						<a href="transaction.html" class="tsd-kind-icon">Transaction</a>
+					</li>
 					<li class=" tsd-kind-interface">
 						<a href="../interfaces/compiledquery.html" class="tsd-kind-icon">Compiled<wbr>Query</a>
 					</li>
 					<li class=" tsd-kind-interface">
-						<a href="../interfaces/connection.html" class="tsd-kind-icon">Connection</a>
+						<a href="../interfaces/createtablebuilderconstructorargs.html" class="tsd-kind-icon">Create<wbr>Table<wbr>Builder<wbr>Constructor<wbr>Args</a>
 					</li>
 					<li class=" tsd-kind-interface">
-						<a href="../interfaces/createtablebuilderconstructorargs.html" class="tsd-kind-icon">Create<wbr>Table<wbr>Builder<wbr>Constructor<wbr>Args</a>
+						<a href="../interfaces/databaseconnection.html" class="tsd-kind-icon">Database<wbr>Connection</a>
 					</li>
 					<li class=" tsd-kind-interface">
 						<a href="../interfaces/driverconfig.html" class="tsd-kind-icon">Driver<wbr>Config</a>
@@ -463,6 +504,9 @@
 					</li>
 					<li class=" tsd-kind-interface">
 						<a href="../interfaces/kyselyconfig.html" class="tsd-kind-icon">Kysely<wbr>Config</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="../interfaces/kyselyconstructorargs.html" class="tsd-kind-icon">Kysely<wbr>Constructor<wbr>Args</a>
 					</li>
 					<li class=" tsd-kind-interface">
 						<a href="../interfaces/poolconfig.html" class="tsd-kind-icon">Pool<wbr>Config</a>
@@ -492,13 +536,13 @@
 						<a href="../modules.html#compileentrypointnode" class="tsd-kind-icon">Compile<wbr>Entry<wbr>Point<wbr>Node</a>
 					</li>
 					<li class=" tsd-kind-function">
-						<a href="../modules.html#createdynamicobject" class="tsd-kind-icon">create<wbr>Dynamic<wbr>Object</a>
+						<a href="../modules.html#createdynamicmodule" class="tsd-kind-icon">create<wbr>Dynamic<wbr>Module</a>
 					</li>
 					<li class=" tsd-kind-function tsd-has-type-parameter">
 						<a href="../modules.html#createemptyselectquery" class="tsd-kind-icon">create<wbr>Empty<wbr>Select<wbr>Query</a>
 					</li>
 					<li class=" tsd-kind-function">
-						<a href="../modules.html#createschemaobject" class="tsd-kind-icon">create<wbr>Schema<wbr>Object</a>
+						<a href="../modules.html#createschemamodule" class="tsd-kind-icon">create<wbr>Schema<wbr>Module</a>
 					</li>
 				</ul>
 			</nav>
