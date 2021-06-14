@@ -9,7 +9,7 @@
     "test:typings": "npm run build && tsd test/typings",
     "prettier": "prettier --write src/**/*.ts test/**/*.ts",
     "build": "rm -rf lib && tsc",
-    "docs:build": "typedoc src/index.ts && npm run docs:postprocess",
+    "docs:build": "typedoc  --disableSources --excludePrivate --excludeInternal src/index.ts && npm run docs:postprocess",
     "docs:postprocess": "node post-process-docs.js",
     "prepublish": "npm run build"
   },

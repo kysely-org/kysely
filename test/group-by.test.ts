@@ -51,14 +51,13 @@ for (const dialect of BUILT_IN_DIALECTS) {
     it('group by one column', async () => {
       const query = ctx.db
         .selectFrom('person')
-        .select(['gender', ctx.db.raw('max(first_name)').as('min_first_name')])
+        .select(['gender', ctx.db.raw('max(first_name)').as('max_first_name')])
         .groupBy('gender')
         .orderBy('gender')
 
       testSql(query, dialect, {
         postgres: {
-          sql:
-            'select "gender", max(first_name) as "min_first_name" from "person" group by "gender" order by "gender" asc',
+          sql: 'select "gender", max(first_name) as "max_first_name" from "person" group by "gender" order by "gender" asc',
           bindings: [],
         },
       })
@@ -68,11 +67,11 @@ for (const dialect of BUILT_IN_DIALECTS) {
       expect(persons).to.have.length(2)
       expect(persons).to.containSubset([
         {
-          min_first_name: 'Jennifer',
+          max_first_name: 'Jennifer',
           gender: 'female',
         },
         {
-          min_first_name: 'Sylvester',
+          max_first_name: 'Sylvester',
           gender: 'male',
         },
       ])

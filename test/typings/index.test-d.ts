@@ -168,6 +168,10 @@ async function testSelectSingle(db: Kysely<Database>) {
     .execute()
   expectType<{ identifier: string }>(r10)
 
+  // Column name with alias
+  const [r11] = await qb.select('id as identifier').execute()
+  expectType<{ identifier: number }>(r11)
+
   expectError(qb.select('not_property'))
   expectError(qb.select('person.not_property'))
   expectError(qb.select('person.not_property as np'))
@@ -189,7 +193,7 @@ async function testSelectMultiple(db: Kysely<Database>) {
     .select([
       'first_name',
       'person.age',
-      'species',
+      'species as sp',
       'p.name as pet_name',
       'm.stars',
       'movie_id',
@@ -202,7 +206,7 @@ async function testSelectMultiple(db: Kysely<Database>) {
   expectType<{
     first_name: string
     age: number
-    species: 'dog' | 'cat'
+    sp: 'dog' | 'cat'
     pet_name: string
     stars: number
     movie_id: string

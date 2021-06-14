@@ -23,7 +23,13 @@ for (const dialect of BUILT_IN_DIALECTS) {
           first_name: 'Jennifer',
           last_name: 'Aniston',
           gender: 'female',
-          pets: [{ name: 'Catto', species: 'cat' }],
+          pets: [
+            {
+              name: 'Catto',
+              species: 'cat',
+              toys: [{ name: 'spool', price: 10 }],
+            },
+          ],
         },
         {
           first_name: 'Arnold',
@@ -86,6 +92,32 @@ for (const dialect of BUILT_IN_DIALECTS) {
             first_name: 'Sylvester',
             last_name: 'Stallone',
             name: 'Hammo',
+          },
+        ])
+      })
+
+      it(`should ${joinSql} multiple tables`, async () => {
+        const query = ctx.db
+          .selectFrom('person')
+          [joinType]('pet', 'pet.owner_id', 'person.id')
+          [joinType]('toy', 'toy.pet_id', 'pet.id')
+          .select(['pet.name as pet_name', 'toy.name as toy_name'])
+          .where('first_name', '=', 'Jennifer')
+
+        testSql(query, dialect, {
+          postgres: {
+            sql: `select "pet"."name" as "pet_name", "toy"."name" as "toy_name" from "person" ${joinSql} "pet" on "pet"."owner_id" = "person"."id" ${joinSql} "toy" on "toy"."pet_id" = "pet"."id" where "first_name" = $1`,
+            bindings: ['Jennifer'],
+          },
+        })
+
+        const result = await query.execute()
+
+        expect(result).to.have.length(1)
+        expect(result).to.containSubset([
+          {
+            pet_name: 'Catto',
+            toy_name: 'spool',
           },
         ])
       })

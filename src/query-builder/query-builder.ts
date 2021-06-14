@@ -713,17 +713,17 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    *
    * @example
    * All the examples above assume you know the column names at compile time.
-   * While it's better to build your code in that way (that way you also know
+   * While it's better to build your code like that (that way you also know
    * the types) sometimes it's not possible or you just prefer to write more
    * dynamic code.
-   *
+   * <br><br>
    * In this example, we use the `dynamic` object's methods to add selections
    * dynamically:
    *
    * ```ts
    * const { ref } = db.dynamic
    *
-   * // Some column name provided by the user. Value not know compile-time.
+   * // Some column name provided by the user. Value not known compile-time.
    * const columnFromUserInput = req.params.select;
    *
    * // A type that lists all possible values `columnFromUserInput` can have.

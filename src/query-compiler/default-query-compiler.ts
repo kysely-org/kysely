@@ -42,7 +42,8 @@ import { CompileEntryPointNode, QueryCompiler } from './query-compiler'
 
 export class DefaultQueryCompiler
   extends OperationNodeVisitor
-  implements QueryCompiler {
+  implements QueryCompiler
+{
   #sqlFragments: string[] = []
   #bindings: any[] = []
 
@@ -95,7 +96,7 @@ export class DefaultQueryCompiler
 
     if (node.joins) {
       this.append(' ')
-      node.joins.forEach(this.visitNode)
+      this.compileList(node.joins, ' ')
     }
 
     if (node.where) {
@@ -134,14 +135,17 @@ export class DefaultQueryCompiler
     this.append(')')
   }
 
-  protected compileList(nodes: ReadonlyArray<OperationNode>): void {
+  protected compileList(
+    nodes: ReadonlyArray<OperationNode>,
+    separator = ', '
+  ): void {
     const lastNode = getLast(nodes)
 
     for (const node of nodes) {
       this.visitNode(node)
 
       if (node !== lastNode) {
-        this.append(', ')
+        this.append(separator)
       }
     }
   }
@@ -183,7 +187,7 @@ export class DefaultQueryCompiler
 
     if (node.joins) {
       this.append(' ')
-      node.joins.forEach(this.visitNode)
+      this.compileList(node.joins, ' ')
     }
 
     if (node.where) {
@@ -405,7 +409,7 @@ export class DefaultQueryCompiler
 
     if (node.joins) {
       this.append(' ')
-      node.joins.forEach(this.visitNode)
+      this.compileList(node.joins, ' ')
     }
 
     if (node.where) {

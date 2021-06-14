@@ -121,6 +121,14 @@ export type AnyColumnWithTable<DB, TB extends keyof DB> = {
     : never
 }[TB]
 
+export type AnyAliasedColumn<DB, TB extends keyof DB> = {
+  [T in TB]: T extends string
+    ? keyof DB[T] extends string
+      ? `${keyof DB[T]} as ${string}`
+      : never
+    : never
+}[TB]
+
 export type AnyAliasedColumnWithTable<DB, TB extends keyof DB> =
   `${AnyColumnWithTable<DB, TB>} as ${string}`
 

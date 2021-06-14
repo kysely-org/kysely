@@ -5,7 +5,6 @@ import {
   initTest,
   insertPersons,
   TestContext,
-  testSql,
   expect,
 } from './test-setup'
 

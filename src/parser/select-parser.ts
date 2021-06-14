@@ -14,6 +14,7 @@ import {
 import {
   AliasedQueryBuilderFactory,
   AliasedRawBuilderFactory,
+  AnyAliasedColumn,
   AnyAliasedColumnWithTable,
   AnyAliasedQueryBuilder,
   AnyColumn,
@@ -31,6 +32,7 @@ import { SubQueryBuilder } from '../query-builder/sub-query-builder'
  */
 export type SelectExpression<DB, TB extends keyof DB> =
   | AnyAliasedColumnWithTable<DB, TB>
+  | AnyAliasedColumn<DB, TB>
   | AnyColumnWithTable<DB, TB>
   | AnyColumn<DB, TB>
   | AliasedRawBuilder<any, any>
@@ -88,10 +90,12 @@ type ExtractAliasFromSelectExpression<S> = S extends string
 type ExtractAliasFromStringSelectExpression<S extends string> =
   S extends `${string}.${string}.${string} as ${infer A}`
     ? A
-    : S extends `${string}.${string}.${infer C}`
-    ? C
     : S extends `${string}.${string} as ${infer A}`
     ? A
+    : S extends `${string} as ${infer A}`
+    ? A
+    : S extends `${string}.${string}.${infer C}`
+    ? C
     : S extends `${string}.${infer C}`
     ? C
     : S
@@ -139,19 +143,25 @@ type ExtractTypeFromStringSelectExpression<
         : never
       : never
     : never
-  : S extends `${infer SC}.${infer T}.${infer C}`
-  ? C extends A
-    ? `${SC}.${T}` extends TB
-      ? C extends keyof DB[`${SC}.${T}`]
-        ? DB[`${SC}.${T}`][C]
-        : never
-      : never
-    : never
   : S extends `${infer T}.${infer C} as ${infer RA}`
   ? RA extends A
     ? T extends TB
       ? C extends keyof DB[T]
         ? DB[T][C]
+        : never
+      : never
+    : never
+  : S extends `${infer C} as ${infer RA}`
+  ? RA extends A
+    ? C extends keyof R
+      ? R[C]
+      : never
+    : never
+  : S extends `${infer SC}.${infer T}.${infer C}`
+  ? C extends A
+    ? `${SC}.${T}` extends TB
+      ? C extends keyof DB[`${SC}.${T}`]
+        ? DB[`${SC}.${T}`][C]
         : never
       : never
     : never

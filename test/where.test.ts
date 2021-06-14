@@ -174,8 +174,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
 
         testSql(query, dialect, {
           postgres: {
-            sql:
-              'select * from "person" where (select "pet"."name" from "pet" where "owner_id" = "person"."id") = $1',
+            sql: 'select * from "person" where (select "pet"."name" from "pet" where "owner_id" = "person"."id") = $1',
             bindings: ['Catto'],
           },
         })
@@ -205,8 +204,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
 
         testSql(query, dialect, {
           postgres: {
-            sql:
-              'select * from "person" where $1 = (select "pet"."name" from "pet" where "owner_id" = "person"."id")',
+            sql: 'select * from "person" where $1 = (select "pet"."name" from "pet" where "owner_id" = "person"."id")',
             bindings: ['Catto'],
           },
         })
@@ -253,8 +251,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
 
         testSql(query, dialect, {
           postgres: {
-            sql:
-              'select * from "person" where "first_name" in ($1, $2) order by "first_name" desc',
+            sql: 'select * from "person" where "first_name" in ($1, $2) order by "first_name" desc',
             bindings: ['Arnold', 'Jennifer'],
           },
         })
@@ -285,8 +282,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
 
         testSql(query, dialect, {
           postgres: {
-            sql:
-              'select * from "person" where "first_name" = $1 and "person"."last_name" = $2',
+            sql: 'select * from "person" where "first_name" = $1 and "person"."last_name" = $2',
             bindings: ['Arnold', 'Schwarzenegger'],
           },
         })
@@ -314,8 +310,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
 
         testSql(query, dialect, {
           postgres: {
-            sql:
-              'select * from "person" where ("first_name" = $1 and "last_name" = $2)',
+            sql: 'select * from "person" where ("first_name" = $1 and "last_name" = $2)',
             bindings: ['Jennifer', 'Aniston'],
           },
         })
@@ -342,8 +337,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
 
         testSql(query, dialect, {
           postgres: {
-            sql:
-              'select * from "person" where "first_name" = $1 or "first_name" = $2',
+            sql: 'select * from "person" where "first_name" = $1 or "first_name" = $2',
             bindings: ['Arnold', 'Jennifer'],
           },
         })
@@ -377,8 +371,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
 
         testSql(query, dialect, {
           postgres: {
-            sql:
-              'select * from "person" where "first_name" = $1 or ("first_name" = $2 and "last_name" = $3)',
+            sql: 'select * from "person" where "first_name" = $1 or ("first_name" = $2 and "last_name" = $3)',
             bindings: ['Arnold', 'Jennifer', 'Aniston'],
           },
         })
@@ -409,8 +402,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
 
         testSql(query, dialect, {
           postgres: {
-            sql:
-              'select * from "person", "pet" where "person"."id" = "pet"."id"',
+            sql: 'select * from "person", "pet" where "person"."id" = "pet"."id"',
             bindings: [],
           },
         })
@@ -430,8 +422,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
 
         testSql(query, dialect, {
           postgres: {
-            sql:
-              'select * from "person", "pet" where ("person"."id" = "pet"."id" or "person"."first_name" = "pet"."name")',
+            sql: 'select * from "person", "pet" where ("person"."id" = "pet"."id" or "person"."first_name" = "pet"."name")',
             bindings: [],
           },
         })
