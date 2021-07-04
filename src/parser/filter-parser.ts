@@ -30,6 +30,9 @@ import {
 } from '../operation-node/select-query-node'
 import { SubQueryBuilder } from '../query-builder/sub-query-builder'
 import { createEmptySelectQuery } from '../query-builder/query-builder'
+import { JoinBuilder } from '../query-builder/join-builder'
+import { parseTableExpression } from './table-parser'
+import { createJoinNode, JoinNode } from '../operation-node/join-node'
 
 export type ExistsFilterArg<DB, TB extends keyof DB> =
   | AnyQueryBuilder
@@ -68,13 +71,20 @@ export type FilterOperatorArg =
   | ArrayItemType<typeof OPERATOR_WHITELIST>
   | RawBuilder<any>
 
+export type FilterType = 'Where' | 'On' | 'Having'
+
 export function parseFilterArgs(
+  filterType: FilterType,
   args: any[]
 ): FilterNode | AndNode | OrNode | ParensNode {
   if (args.length === 3) {
     return parseThreeArgFilter(args[0], args[1], args[2])
   } else if (args.length === 1) {
-    return parseOneArgFilter(args[0])
+    if (filterType === 'Where') {
+      return parseWhereGrouper(args[0])
+    } else {
+      return parseOnGrouper(args[0])
+    }
   } else {
     throw new Error(
       `invalid arguments passed to a filter method ${JSON.stringify(args)}`
@@ -110,14 +120,14 @@ export function parseExistsFilterArgs(
 }
 
 function parseThreeArgFilter(
-  lhs: ReferenceExpression<any, any>,
+  left: ReferenceExpression<any, any>,
   op: FilterOperatorArg,
-  rhs: ValueExpressionOrList<any, any>
+  right: ValueExpressionOrList<any, any>
 ): FilterNode {
   return createFilterNode(
-    parseReferenceExpression(lhs),
+    parseReferenceExpression(left),
     parseFilterOperator(op),
-    parseValueExpressionOrList(rhs)
+    parseValueExpressionOrList(right)
   )
 }
 
@@ -139,12 +149,12 @@ function parseFilterOperator(op: FilterOperatorArg): OperatorNode | RawNode {
   )
 }
 
-function parseOneArgFilter(
+function parseWhereGrouper(
   grouper: (qb: AnyQueryBuilder) => AnyQueryBuilder
 ): ParensNode {
   if (!isFunction(grouper)) {
     throw new Error(
-      `invalid single arg filter argument ${JSON.stringify(grouper)}`
+      `invalid call to queryBuilder.where: ${JSON.stringify(grouper)}`
     )
   }
 
@@ -156,4 +166,29 @@ function parseOneArgFilter(
   }
 
   return createParensNode(queryNode.where.where)
+}
+
+function parseOnGrouper(
+  grouper: (qb: JoinBuilder<any, any>) => JoinBuilder<any, any>
+): ParensNode {
+  if (!isFunction(grouper)) {
+    throw new Error(
+      `invalid call to joinBuilder.on: ${JSON.stringify(grouper)}`
+    )
+  }
+
+  const joinBuilder = grouper(createEmptyJoinBuilder())
+  const joinNode = joinBuilder.toOperationNode() as JoinNode
+
+  if (!joinNode.on) {
+    throw new Error('no `on` methods called insided a grouper where')
+  }
+
+  return createParensNode(joinNode.on)
+}
+
+export function createEmptyJoinBuilder(): JoinBuilder<any, any> {
+  return new JoinBuilder(
+    createJoinNode('InnerJoin', parseTableExpression('table'))
+  )
 }

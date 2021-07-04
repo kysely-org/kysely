@@ -128,15 +128,21 @@ for (const dialect of BUILT_IN_DIALECTS) {
           [joinType]('pet', (join) =>
             join
               .onRef('pet.owner_id', '=', 'person.id')
-              .on('pet.species', 'in', ['cat', 'dog', 'hamster'])
+              .on('pet.name', 'in', ['Catto', 'Doggo', 'Hammo'])
+              .on((jb) =>
+                jb
+                  .on('pet.species', '=', 'cat')
+                  .orOn('species', '=', 'dog')
+                  .orOn('species', '=', 'hamster')
+              )
           )
           .selectAll()
           .orderBy('person.first_name')
 
         testSql(query, dialect, {
           postgres: {
-            sql: `select * from "person" ${joinSql} "pet" on "pet"."owner_id" = "person"."id" and "pet"."species" in ($1, $2, $3) order by "person"."first_name" asc`,
-            bindings: ['cat', 'dog', 'hamster'],
+            sql: `select * from "person" ${joinSql} "pet" on "pet"."owner_id" = "person"."id" and "pet"."name" in ($1, $2, $3) and ("pet"."species" = $4 or "species" = $5 or "species" = $6) order by "person"."first_name" asc`,
+            bindings: ['Catto', 'Doggo', 'Hammo', 'cat', 'dog', 'hamster'],
           },
         })
 

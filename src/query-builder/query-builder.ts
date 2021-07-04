@@ -6,11 +6,7 @@ import {
   JoinReferenceArg,
   parseJoinArgs,
 } from '../parser/join-parser'
-import {
-  parseTableExpressionOrList,
-  TableExpression,
-  QueryBuilderWithTable,
-} from '../parser/table-parser'
+import { TableExpression, QueryBuilderWithTable } from '../parser/table-parser'
 import {
   parseSelectExpressionOrList,
   parseSelectAllArgs,
@@ -33,7 +29,7 @@ import {
   parseReferenceExpressionOrList,
   ReferenceExpression,
 } from '../parser/reference-parser'
-import { ValueExpression, ValueExpressionOrList } from '../parser/value-parser'
+import { ValueExpressionOrList } from '../parser/value-parser'
 import {
   createOrderByItemNode,
   OrderByDirection,
@@ -279,7 +275,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
       queryNode: cloneQueryNodeWithWhere(
         this.#queryNode,
         'and',
-        parseFilterArgs(args)
+        parseFilterArgs('Where', args)
       ),
     })
   }
@@ -412,7 +408,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
   orWhere(
     lhs: ReferenceExpression<DB, TB>,
     op: FilterOperatorArg,
-    rhs: ValueExpression<DB, TB>
+    rhs: ValueExpressionOrList<DB, TB>
   ): QueryBuilder<DB, TB, O>
 
   orWhere(
@@ -428,7 +424,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
       queryNode: cloneQueryNodeWithWhere(
         this.#queryNode,
         'or',
-        parseFilterArgs(args)
+        parseFilterArgs('Where', args)
       ),
     })
   }
