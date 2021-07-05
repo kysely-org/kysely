@@ -35,6 +35,8 @@ import { GroupByNode } from './group-by-node'
 import { GroupByItemNode } from './group-by-item-node'
 import { UpdateQueryNode } from './update-query-node'
 import { ColumnUpdateNode } from './column-update-node'
+import { LimitNode } from './limit-node'
+import { OffsetNode } from './offset-node'
 
 export class OperationNodeVisitor {
   protected nodeStack: OperationNode[] = []
@@ -73,6 +75,8 @@ export class OperationNodeVisitor {
     GroupByItemNode: this.visitGroupByItem.bind(this),
     UpdateQueryNode: this.visitUpdateQuery.bind(this),
     ColumnUpdateNode: this.visitColumnUpdate.bind(this),
+    LimitNode: this.visitLimit.bind(this),
+    OffsetNode: this.visitOffset.bind(this),
   }
 
   protected readonly visitNode = (node: OperationNode): void => {
@@ -104,6 +108,14 @@ export class OperationNodeVisitor {
 
     if (node.orderBy) {
       this.visitNode(node.orderBy)
+    }
+
+    if (node.limit) {
+      this.visitNode(node.limit)
+    }
+
+    if (node.offset) {
+      this.visitNode(node.offset)
     }
   }
 
@@ -268,6 +280,14 @@ export class OperationNodeVisitor {
   protected visitColumnUpdate(node: ColumnUpdateNode): void {
     this.visitNode(node.column)
     this.visitNode(node.value)
+  }
+
+  protected visitLimit(node: LimitNode): void {
+    this.visitNode(node.limit)
+  }
+
+  protected visitOffset(node: OffsetNode): void {
+    this.visitNode(node.offset)
   }
 
   protected visitDataType(node: DataTypeNode): void {}

@@ -149,7 +149,9 @@
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="querybuilder.html#groupby" class="tsd-kind-icon">group<wbr>By</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter"><a href="querybuilder.html#innerjoin" class="tsd-kind-icon">inner<wbr>Join</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter"><a href="querybuilder.html#leftjoin" class="tsd-kind-icon">left<wbr>Join</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="querybuilder.html#limit" class="tsd-kind-icon">limit</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="querybuilder.html#nowait" class="tsd-kind-icon">no<wbr>Wait</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="querybuilder.html#offset" class="tsd-kind-icon">offset</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="querybuilder.html#orwhere" class="tsd-kind-icon">or<wbr>Where</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="querybuilder.html#orwhereexists" class="tsd-kind-icon">or<wbr>Where<wbr>Exists</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="querybuilder.html#orwherenotexists" class="tsd-kind-icon">or<wbr>Where<wbr>Not<wbr>Exists</a></li>
@@ -861,6 +863,50 @@
 					</ul>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
+					<a name="limit" class="tsd-anchor"></a>
+					<h3>limit</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon">limit<span class="tsd-signature-symbol">(</span>limit<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="querybuilder.html" class="tsd-signature-type" data-tsd-kind="Class">QueryBuilder</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">TB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">O</span><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Adds a limit clause to the query.</p>
+								</div>
+								<dl class="tsd-comment-tags">
+									<dt>example</dt>
+									<dd><p>Select the first 10 rows of the result:</p>
+										<pre><code class="language-ts"><span style="color: #AF00DB">return</span><span style="color: #000000"> </span><span style="color: #AF00DB">await</span><span style="color: #000000"> </span><span style="color: #001080">db</span>
+<span style="color: #000000">  .</span><span style="color: #795E26">selectFrom</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;person&#039;</span><span style="color: #000000">)</span>
+<span style="color: #000000">  .</span><span style="color: #795E26">select</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;first_name&#039;</span><span style="color: #000000">)</span>
+<span style="color: #000000">  .</span><span style="color: #795E26">limit</span><span style="color: #000000">(</span><span style="color: #098658">10</span><span style="color: #000000">)</span>
+</code></pre>
+									</dd>
+									<dt>example</dt>
+									<dd><p>Select rows 10 to 20 of the result:</p>
+										<pre><code class="language-ts"><span style="color: #AF00DB">return</span><span style="color: #000000"> </span><span style="color: #AF00DB">await</span><span style="color: #000000"> </span><span style="color: #001080">db</span>
+<span style="color: #000000">  .</span><span style="color: #795E26">selectFrom</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;person&#039;</span><span style="color: #000000">)</span>
+<span style="color: #000000">  .</span><span style="color: #795E26">select</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;first_name&#039;</span><span style="color: #000000">)</span>
+<span style="color: #000000">  .</span><span style="color: #795E26">offset</span><span style="color: #000000">(</span><span style="color: #098658">10</span><span style="color: #000000">)</span>
+<span style="color: #000000">  .</span><span style="color: #795E26">limit</span><span style="color: #000000">(</span><span style="color: #098658">10</span><span style="color: #000000">)</span>
+</code></pre>
+									</dd>
+								</dl>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>limit: <span class="tsd-signature-type">number</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="querybuilder.html" class="tsd-signature-type" data-tsd-kind="Class">QueryBuilder</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">TB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">O</span><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
 					<a name="nowait" class="tsd-anchor"></a>
 					<h3>no<wbr>Wait</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
@@ -875,6 +921,42 @@
 									<p>Adds the <code>nowait</code> option to a select query on supported databases.</p>
 								</div>
 							</div>
+							<h4 class="tsd-returns-title">Returns <a href="querybuilder.html" class="tsd-signature-type" data-tsd-kind="Class">QueryBuilder</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">TB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">O</span><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
+					<a name="offset" class="tsd-anchor"></a>
+					<h3>offset</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon">offset<span class="tsd-signature-symbol">(</span>offset<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="querybuilder.html" class="tsd-signature-type" data-tsd-kind="Class">QueryBuilder</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">TB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">O</span><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Adds an offset clause to the query.</p>
+								</div>
+								<dl class="tsd-comment-tags">
+									<dt>example</dt>
+									<dd><p>Select rows 10 to 20 of the result:</p>
+										<pre><code class="language-ts"><span style="color: #AF00DB">return</span><span style="color: #000000"> </span><span style="color: #AF00DB">await</span><span style="color: #000000"> </span><span style="color: #001080">db</span>
+<span style="color: #000000">  .</span><span style="color: #795E26">selectFrom</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;person&#039;</span><span style="color: #000000">)</span>
+<span style="color: #000000">  .</span><span style="color: #795E26">select</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;first_name&#039;</span><span style="color: #000000">)</span>
+<span style="color: #000000">  .</span><span style="color: #795E26">offset</span><span style="color: #000000">(</span><span style="color: #098658">10</span><span style="color: #000000">)</span>
+<span style="color: #000000">  .</span><span style="color: #795E26">limit</span><span style="color: #000000">(</span><span style="color: #098658">10</span><span style="color: #000000">)</span>
+</code></pre>
+									</dd>
+								</dl>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>offset: <span class="tsd-signature-type">number</span></h5>
+								</li>
+							</ul>
 							<h4 class="tsd-returns-title">Returns <a href="querybuilder.html" class="tsd-signature-type" data-tsd-kind="Class">QueryBuilder</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">TB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">O</span><span class="tsd-signature-symbol">&gt;</span></h4>
 						</li>
 					</ul>
@@ -2288,7 +2370,13 @@
 								<a href="querybuilder.html#leftjoin" class="tsd-kind-icon">left<wbr>Join</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="querybuilder.html#limit" class="tsd-kind-icon">limit</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
 								<a href="querybuilder.html#nowait" class="tsd-kind-icon">no<wbr>Wait</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="querybuilder.html#offset" class="tsd-kind-icon">offset</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class">
 								<a href="querybuilder.html#orwhere" class="tsd-kind-icon">or<wbr>Where</a>

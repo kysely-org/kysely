@@ -37,7 +37,9 @@ import {
 import {
   cloneSelectQueryNodeWithDistinctOnSelections,
   cloneSelectQueryNodeWithGroupByItems,
+  cloneSelectQueryNodeWithLimit,
   cloneSelectQueryNodeWithModifier,
+  cloneSelectQueryNodeWithOffset,
   cloneSelectQueryNodeWithOrderByItem,
   cloneSelectQueryNodeWithSelections,
   createSelectQueryNodeWithFromItems,
@@ -77,6 +79,8 @@ import { MutationObject } from '../parser/mutation-parser'
 import { parseUpdateSetArgs } from '../parser/update-set-parser'
 import { QueryCompiler } from '../query-compiler/query-compiler'
 import { preventAwait } from '../util/prevent-await'
+import { createLimitNode } from '../operation-node/limit-node'
+import { createOffsetNode } from '../operation-node/offset-node'
 
 /**
  * The main query builder class.
@@ -1697,6 +1701,70 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
   }
 
   /**
+   * Adds a limit clause to the query.
+   *
+   * @example
+   * Select the first 10 rows of the result:
+   *
+   * ```ts
+   * return await db
+   *   .selectFrom('person')
+   *   .select('first_name')
+   *   .limit(10)
+   * ```
+   *
+   * @example
+   * Select rows 10 to 20 of the result:
+   *
+   * ```ts
+   * return await db
+   *   .selectFrom('person')
+   *   .select('first_name')
+   *   .offset(10)
+   *   .limit(10)
+   * ```
+   */
+  limit(limit: number): QueryBuilder<DB, TB, O> {
+    ensureCanHaveLimit(this.#queryNode)
+
+    return new QueryBuilder({
+      compiler: this.#compiler,
+      connectionProvider: this.#connectionProvider,
+      queryNode: cloneSelectQueryNodeWithLimit(
+        this.#queryNode,
+        createLimitNode(limit)
+      ),
+    })
+  }
+
+  /**
+   * Adds an offset clause to the query.
+   *
+   * @example
+   * Select rows 10 to 20 of the result:
+   *
+   * ```ts
+   * return await db
+   *   .selectFrom('person')
+   *   .select('first_name')
+   *   .offset(10)
+   *   .limit(10)
+   * ```
+   */
+  offset(offset: number): QueryBuilder<DB, TB, O> {
+    ensureCanHaveLimit(this.#queryNode)
+
+    return new QueryBuilder({
+      compiler: this.#compiler,
+      connectionProvider: this.#connectionProvider,
+      queryNode: cloneSelectQueryNodeWithOffset(
+        this.#queryNode,
+        createOffsetNode(offset)
+      ),
+    })
+  }
+
+  /**
    *
    */
   as<A extends string>(alias: A): AliasedQueryBuilder<DB, TB, O, A> {
@@ -1898,6 +1966,18 @@ function ensureCanHaveGroupByClause(
 ): asserts node is SelectQueryNode {
   if (!isSelectQueryNode(node)) {
     throw new Error('only a select query can have a group by clause')
+  }
+}
+
+function ensureCanHaveLimit(node: QueryNode): asserts node is SelectQueryNode {
+  if (!isSelectQueryNode(node)) {
+    throw new Error('only a select query can have a limit')
+  }
+}
+
+function ensureCanHaveOffset(node: QueryNode): asserts node is SelectQueryNode {
+  if (!isSelectQueryNode(node)) {
+    throw new Error('only a select query can have an offset')
   }
 }
 

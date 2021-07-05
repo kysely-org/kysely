@@ -129,11 +129,17 @@ for (const dialect of BUILT_IN_DIALECTS) {
             join
               .onRef('pet.owner_id', '=', 'person.id')
               .on('pet.name', 'in', ['Catto', 'Doggo', 'Hammo'])
-              .on((jb) =>
-                jb
+              .on((join) =>
+                join
                   .on('pet.species', '=', 'cat')
                   .orOn('species', '=', 'dog')
-                  .orOn('species', '=', 'hamster')
+                  .orOn(ctx.db.raw('??', ['species']), '=', (qb) =>
+                    qb
+                      .subQuery('pet')
+                      .select(ctx.db.raw(`'hamster'`).as('hamster'))
+                      .limit(1)
+                      .offset(0)
+                  )
               )
           )
           .selectAll()
@@ -141,31 +147,12 @@ for (const dialect of BUILT_IN_DIALECTS) {
 
         testSql(query, dialect, {
           postgres: {
-            sql: `select * from "person" ${joinSql} "pet" on "pet"."owner_id" = "person"."id" and "pet"."name" in ($1, $2, $3) and ("pet"."species" = $4 or "species" = $5 or "species" = $6) order by "person"."first_name" asc`,
-            bindings: ['Catto', 'Doggo', 'Hammo', 'cat', 'dog', 'hamster'],
+            sql: `select * from "person" ${joinSql} "pet" on "pet"."owner_id" = "person"."id" and "pet"."name" in ($1, $2, $3) and ("pet"."species" = $4 or "species" = $5 or "species" = (select 'hamster' as "hamster" from "pet" limit $6 offset $7)) order by "person"."first_name" asc`,
+            bindings: ['Catto', 'Doggo', 'Hammo', 'cat', 'dog', 1, 0],
           },
         })
 
-        const result = await query.execute()
-
-        expect(result).to.have.length(3)
-        expect(result).to.containSubset([
-          {
-            first_name: 'Jennifer',
-            last_name: 'Aniston',
-            name: 'Catto',
-          },
-          {
-            first_name: 'Arnold',
-            last_name: 'Schwarzenegger',
-            name: 'Doggo',
-          },
-          {
-            first_name: 'Sylvester',
-            last_name: 'Stallone',
-            name: 'Hammo',
-          },
-        ])
+        await query.execute()
       })
     }
   })

@@ -7,6 +7,8 @@ import {
   GroupByNode,
 } from './group-by-node'
 import { JoinNode } from './join-node'
+import { LimitNode } from './limit-node'
+import { OffsetNode } from './offset-node'
 import { OperationNode } from './operation-node'
 import { TableExpressionNode } from './operation-node-utils'
 import { OrderByItemNode } from './order-by-item-node'
@@ -37,6 +39,8 @@ export interface SelectQueryNode extends OperationNode {
   readonly orderBy?: OrderByNode
   readonly where?: WhereNode
   readonly modifier?: SelectModifier
+  readonly limit?: LimitNode
+  readonly offset?: OffsetNode
 }
 
 export function isSelectQueryNode(
@@ -109,5 +113,25 @@ export function cloneSelectQueryNodeWithGroupByItems(
     groupBy: selectNode.groupBy
       ? cloneGroupByNodeWithItems(selectNode.groupBy, items)
       : createGroupByNode(items),
+  })
+}
+
+export function cloneSelectQueryNodeWithLimit(
+  selectNode: SelectQueryNode,
+  limit: LimitNode
+): SelectQueryNode {
+  return freeze({
+    ...selectNode,
+    limit,
+  })
+}
+
+export function cloneSelectQueryNodeWithOffset(
+  selectNode: SelectQueryNode,
+  offset: OffsetNode
+): SelectQueryNode {
+  return freeze({
+    ...selectNode,
+    offset,
   })
 }

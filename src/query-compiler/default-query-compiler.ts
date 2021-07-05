@@ -13,6 +13,8 @@ import { GroupByNode } from '../operation-node/group-by-node'
 import { IdentifierNode } from '../operation-node/identifier-node'
 import { InsertQueryNode } from '../operation-node/insert-query-node'
 import { JoinNode, JoinType } from '../operation-node/join-node'
+import { LimitNode } from '../operation-node/limit-node'
+import { OffsetNode } from '../operation-node/offset-node'
 import { OperationNode } from '../operation-node/operation-node'
 import { OperationNodeVisitor } from '../operation-node/operation-node-visitor'
 import { OperatorNode } from '../operation-node/operator-node'
@@ -112,6 +114,16 @@ export class DefaultQueryCompiler
     if (node.orderBy) {
       this.append(' ')
       this.visitNode(node.orderBy)
+    }
+
+    if (node.limit) {
+      this.append(' ')
+      this.visitNode(node.limit)
+    }
+
+    if (node.offset) {
+      this.append(' ')
+      this.visitNode(node.offset)
     }
 
     if (node.modifier) {
@@ -427,6 +439,16 @@ export class DefaultQueryCompiler
     this.visitNode(node.column)
     this.append(' = ')
     this.visitNode(node.value)
+  }
+
+  protected visitLimit(node: LimitNode): void {
+    this.append('limit ')
+    this.visitNode(node.limit)
+  }
+
+  protected visitOffset(node: OffsetNode): void {
+    this.append('offset ')
+    this.visitNode(node.offset)
   }
 
   protected appendLeftIdentifierWrapper(): void {
