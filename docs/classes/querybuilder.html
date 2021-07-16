@@ -152,6 +152,8 @@
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="querybuilder.html#limit" class="tsd-kind-icon">limit</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="querybuilder.html#nowait" class="tsd-kind-icon">no<wbr>Wait</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="querybuilder.html#offset" class="tsd-kind-icon">offset</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="querybuilder.html#onconflictdonothing" class="tsd-kind-icon">on<wbr>Conflict<wbr>DoNothing</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="querybuilder.html#onconflictupdate" class="tsd-kind-icon">on<wbr>Conflict<wbr>Update</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="querybuilder.html#orwhere" class="tsd-kind-icon">or<wbr>Where</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="querybuilder.html#orwhereexists" class="tsd-kind-icon">or<wbr>Where<wbr>Exists</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="querybuilder.html#orwherenotexists" class="tsd-kind-icon">or<wbr>Where<wbr>Not<wbr>Exists</a></li>
@@ -886,7 +888,7 @@
 </code></pre>
 									</dd>
 									<dt>example</dt>
-									<dd><p>Select rows 10 to 20 of the result:</p>
+									<dd><p>Select rows from index 10 to index 19 of the result:</p>
 										<pre><code class="language-ts"><span style="color: #AF00DB">return</span><span style="color: #000000"> </span><span style="color: #AF00DB">await</span><span style="color: #000000"> </span><span style="color: #001080">db</span>
 <span style="color: #000000">  .</span><span style="color: #795E26">selectFrom</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;person&#039;</span><span style="color: #000000">)</span>
 <span style="color: #000000">  .</span><span style="color: #795E26">select</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;first_name&#039;</span><span style="color: #000000">)</span>
@@ -941,7 +943,7 @@
 								</div>
 								<dl class="tsd-comment-tags">
 									<dt>example</dt>
-									<dd><p>Select rows 10 to 20 of the result:</p>
+									<dd><p>Select rows from index 10 to index 19 of the result:</p>
 										<pre><code class="language-ts"><span style="color: #AF00DB">return</span><span style="color: #000000"> </span><span style="color: #AF00DB">await</span><span style="color: #000000"> </span><span style="color: #001080">db</span>
 <span style="color: #000000">  .</span><span style="color: #795E26">selectFrom</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;person&#039;</span><span style="color: #000000">)</span>
 <span style="color: #000000">  .</span><span style="color: #795E26">select</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;first_name&#039;</span><span style="color: #000000">)</span>
@@ -955,6 +957,148 @@
 							<ul class="tsd-parameters">
 								<li>
 									<h5>offset: <span class="tsd-signature-type">number</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="querybuilder.html" class="tsd-signature-type" data-tsd-kind="Class">QueryBuilder</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">TB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">O</span><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
+					<a name="onconflictdonothing" class="tsd-anchor"></a>
+					<h3>on<wbr>Conflict<wbr>DoNothing</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon">on<wbr>Conflict<wbr>DoNothing<span class="tsd-signature-symbol">(</span>column<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">AnyColumn</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">TB</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="querybuilder.html" class="tsd-signature-type" data-tsd-kind="Class">QueryBuilder</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">TB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">O</span><span class="tsd-signature-symbol">&gt;</span></li>
+						<li class="tsd-signature tsd-kind-icon">on<wbr>Conflict<wbr>DoNothing<span class="tsd-signature-symbol">(</span>columns<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">AnyColumn</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">TB</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="querybuilder.html" class="tsd-signature-type" data-tsd-kind="Class">QueryBuilder</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">TB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">O</span><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Ignores the insert if the column (or columns) given as the first
+										argument conflicts with the current rows in the database. The
+									default behavior without this method call is to throw an error.</p>
+								</div>
+								<p>For example if a table has a field <code>name</code> that has a unique constraint
+									and you try to insert a row with a <code>name</code> that already exists in the
+									database, calling <code>onConflictDoNothing(&#39;name&#39;)</code> will ignore the conflict
+								and do nothing. By default the query would throw.</p>
+								<p>This method generates different SQL on different dialects. For example
+									<code>insert ignore</code> is used on mysql and <code>on conflict (columns) do nothing</code>
+								on postgres and sqlite.</p>
+								<p>Also see the <a href="querybuilder.html#onconflictupdate">onConflictUpdate</a>
+								method if you want to perform an update in case of a conflict (upsert).</p>
+								<dl class="tsd-comment-tags">
+									<dt>example</dt>
+									<dd><pre><code class="language-ts"><span style="color: #AF00DB">await</span><span style="color: #000000"> </span><span style="color: #001080">db</span>
+<span style="color: #000000">  .</span><span style="color: #795E26">insertInto</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;pet&#039;</span><span style="color: #000000">)</span>
+<span style="color: #000000">  .</span><span style="color: #795E26">values</span><span style="color: #000000">({</span>
+<span style="color: #000000">    </span><span style="color: #001080">name:</span><span style="color: #000000"> </span><span style="color: #A31515">&#039;Catto&#039;</span><span style="color: #000000">,</span>
+<span style="color: #000000">    </span><span style="color: #001080">species:</span><span style="color: #000000"> </span><span style="color: #A31515">&#039;cat&#039;</span><span style="color: #000000">,</span>
+<span style="color: #000000">  })</span>
+<span style="color: #000000">  .</span><span style="color: #795E26">onConflictDoNothing</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;name&#039;</span><span style="color: #000000">)</span>
+<span style="color: #000000">  .</span><span style="color: #795E26">execute</span><span style="color: #000000">()</span>
+</code></pre>
+										<p>The generated SQL (postgresql):</p>
+										<pre><code class="language-sql"><span style="color: #0000FF">insert</span><span style="color: #000000"> </span><span style="color: #0000FF">into</span><span style="color: #000000"> </span><span style="color: #A31515">&quot;pet&quot;</span><span style="color: #000000"> (</span><span style="color: #A31515">&quot;name&quot;</span><span style="color: #000000">, </span><span style="color: #A31515">&quot;species&quot;</span><span style="color: #000000">)</span>
+<span style="color: #0000FF">values</span><span style="color: #000000"> ($</span><span style="color: #098658">1</span><span style="color: #000000">, $</span><span style="color: #098658">2</span><span style="color: #000000">)</span>
+<span style="color: #0000FF">on</span><span style="color: #000000"> conflict do nothing</span>
+</code></pre>
+									</dd>
+								</dl>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>column: <span class="tsd-signature-type">AnyColumn</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">TB</span><span class="tsd-signature-symbol">&gt;</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="querybuilder.html" class="tsd-signature-type" data-tsd-kind="Class">QueryBuilder</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">TB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">O</span><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+							</aside>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>columns: <span class="tsd-signature-type">AnyColumn</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">TB</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">[]</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="querybuilder.html" class="tsd-signature-type" data-tsd-kind="Class">QueryBuilder</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">TB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">O</span><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
+					<a name="onconflictupdate" class="tsd-anchor"></a>
+					<h3>on<wbr>Conflict<wbr>Update</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon">on<wbr>Conflict<wbr>Update<span class="tsd-signature-symbol">(</span>column<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">AnyColumn</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">TB</span><span class="tsd-signature-symbol">&gt;</span>, updates<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">MutationObject</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">TB</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="querybuilder.html" class="tsd-signature-type" data-tsd-kind="Class">QueryBuilder</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">TB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">O</span><span class="tsd-signature-symbol">&gt;</span></li>
+						<li class="tsd-signature tsd-kind-icon">on<wbr>Conflict<wbr>Update<span class="tsd-signature-symbol">(</span>columns<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">AnyColumn</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">TB</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">[]</span>, updates<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">MutationObject</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">TB</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="querybuilder.html" class="tsd-signature-type" data-tsd-kind="Class">QueryBuilder</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">TB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">O</span><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Ignores an insert if the column (or columns) given as the first
+										argument conflicts with the current rows in the database and
+										performs an update on the conflicting row instead. This method
+									can be used to implement an upsert operation.</p>
+								</div>
+								<p>For example if a table has a field <code>name</code> that has a unique constraint
+									and you try to insert a row with a <code>name</code> that already exists in the
+									database, calling <code>onConfictUpdate(&#39;name&#39;, { species: &#39;hamster&#39; })</code>
+									will set the conflicting row&#39;s <code>species</code> field to value <code>&#39;hamster&#39;</code>.
+								By default the query would throw.</p>
+								<p>The second argument (updates) can be anything the <a href="querybuilder.html#set">set</a>
+								method accepts.</p>
+								<p>This method generates different SQL on different dialects. For example
+									<code>on duplicate key update</code> is used on mysql and <code>on conflict (columns) do update</code>
+								on postgres and sqlite.</p>
+								<p>Also see the <a href="querybuilder.html#onconflictdonothing">onConflictDoNothing</a>
+								method.</p>
+								<dl class="tsd-comment-tags">
+									<dt>example</dt>
+									<dd><pre><code class="language-ts"><span style="color: #AF00DB">await</span><span style="color: #000000"> </span><span style="color: #001080">db</span>
+<span style="color: #000000">  .</span><span style="color: #795E26">insertInto</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;pet&#039;</span><span style="color: #000000">)</span>
+<span style="color: #000000">  .</span><span style="color: #795E26">values</span><span style="color: #000000">({</span>
+<span style="color: #000000">    </span><span style="color: #001080">name:</span><span style="color: #000000"> </span><span style="color: #A31515">&#039;Catto&#039;</span><span style="color: #000000">,</span>
+<span style="color: #000000">    </span><span style="color: #001080">species:</span><span style="color: #000000"> </span><span style="color: #A31515">&#039;cat&#039;</span><span style="color: #000000">,</span>
+<span style="color: #000000">  })</span>
+<span style="color: #000000">  .</span><span style="color: #795E26">onConflictUpdate</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;name&#039;</span><span style="color: #000000">, { </span><span style="color: #001080">species:</span><span style="color: #000000"> </span><span style="color: #A31515">&#039;hamster&#039;</span><span style="color: #000000"> })</span>
+<span style="color: #000000">  .</span><span style="color: #795E26">execute</span><span style="color: #000000">()</span>
+</code></pre>
+										<p>The generated SQL (postgresql):</p>
+										<pre><code class="language-sql"><span style="color: #0000FF">insert</span><span style="color: #000000"> </span><span style="color: #0000FF">into</span><span style="color: #000000"> </span><span style="color: #A31515">&quot;pet&quot;</span><span style="color: #000000"> (</span><span style="color: #A31515">&quot;name&quot;</span><span style="color: #000000">, </span><span style="color: #A31515">&quot;species&quot;</span><span style="color: #000000">)</span>
+<span style="color: #0000FF">values</span><span style="color: #000000"> ($</span><span style="color: #098658">1</span><span style="color: #000000">, $</span><span style="color: #098658">2</span><span style="color: #000000">)</span>
+<span style="color: #0000FF">on</span><span style="color: #000000"> conflict do </span><span style="color: #0000FF">update</span><span style="color: #000000"> </span><span style="color: #0000FF">set</span><span style="color: #000000"> </span><span style="color: #A31515">&quot;species&quot;</span><span style="color: #000000"> = $</span><span style="color: #098658">3</span>
+</code></pre>
+									</dd>
+								</dl>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>column: <span class="tsd-signature-type">AnyColumn</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">TB</span><span class="tsd-signature-symbol">&gt;</span></h5>
+								</li>
+								<li>
+									<h5>updates: <span class="tsd-signature-type">MutationObject</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">TB</span><span class="tsd-signature-symbol">&gt;</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="querybuilder.html" class="tsd-signature-type" data-tsd-kind="Class">QueryBuilder</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">TB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">O</span><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+							</aside>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>columns: <span class="tsd-signature-type">AnyColumn</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">TB</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">[]</span></h5>
+								</li>
+								<li>
+									<h5>updates: <span class="tsd-signature-type">MutationObject</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">TB</span><span class="tsd-signature-symbol">&gt;</span></h5>
 								</li>
 							</ul>
 							<h4 class="tsd-returns-title">Returns <a href="querybuilder.html" class="tsd-signature-type" data-tsd-kind="Class">QueryBuilder</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">TB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">O</span><span class="tsd-signature-symbol">&gt;</span></h4>
@@ -2377,6 +2521,12 @@
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class">
 								<a href="querybuilder.html#offset" class="tsd-kind-icon">offset</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="querybuilder.html#onconflictdonothing" class="tsd-kind-icon">on<wbr>Conflict<wbr>DoNothing</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="querybuilder.html#onconflictupdate" class="tsd-kind-icon">on<wbr>Conflict<wbr>Update</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class">
 								<a href="querybuilder.html#orwhere" class="tsd-kind-icon">or<wbr>Where</a>

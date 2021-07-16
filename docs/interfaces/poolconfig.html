@@ -151,7 +151,7 @@
 							<dt>example</dt>
 							<dd><pre><code class="language-ts"><span style="color: #000000">{</span>
 <span style="color: #000000">  </span><span style="color: #001080">async</span><span style="color: #000000"> </span><span style="color: #795E26">onCreateConnection</span><span style="color: #000000">(</span><span style="color: #001080">connection</span><span style="color: #000000">: </span><span style="color: #001080">Connection</span><span style="color: #000000">): </span><span style="color: #267F99">Promise</span><span style="color: #000000">&lt;</span><span style="color: #0000FF">void</span><span style="color: #000000">&gt; {</span>
-<span style="color: #000000">    await connection.execute({</span>
+<span style="color: #000000">    await connection.executeQuery({</span>
 <span style="color: #000000">      </span><span style="color: #001080">sql:</span><span style="color: #000000"> </span><span style="color: #A31515">`SET TIMEZONE = &#039;UTC&#039;`</span><span style="color: #000000">,</span>
 <span style="color: #000000">      </span><span style="color: #001080">bindings:</span><span style="color: #000000"> []</span>
 <span style="color: #000000">    })</span>

@@ -100,7 +100,7 @@
 							<h3>Accessors</h3>
 							<ul class="tsd-index-list">
 								<li class="tsd-kind-get-signature tsd-parent-kind-class tsd-is-inherited"><a href="transaction.html#dynamic" class="tsd-kind-icon">dynamic</a></li>
-								<li class="tsd-kind-get-signature tsd-parent-kind-class"><a href="transaction.html#istransaction" class="tsd-kind-icon">is<wbr>Transaction</a></li>
+								<li class="tsd-kind-get-signature tsd-parent-kind-class tsd-is-inherited"><a href="transaction.html#istransaction" class="tsd-kind-icon">is<wbr>Transaction</a></li>
 								<li class="tsd-kind-get-signature tsd-parent-kind-class tsd-is-inherited"><a href="transaction.html#schema" class="tsd-kind-icon">schema</a></li>
 							</ul>
 						</section>
@@ -191,10 +191,10 @@
 						</li>
 					</ul>
 				</section>
-				<section class="tsd-panel tsd-member tsd-kind-get-signature tsd-parent-kind-class">
+				<section class="tsd-panel tsd-member tsd-kind-get-signature tsd-parent-kind-class tsd-is-inherited">
 					<a name="istransaction" class="tsd-anchor"></a>
 					<h3>is<wbr>Transaction</h3>
-					<ul class="tsd-signatures tsd-kind-get-signature tsd-parent-kind-class">
+					<ul class="tsd-signatures tsd-kind-get-signature tsd-parent-kind-class tsd-is-inherited">
 						<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">get</span> isTransaction<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">true</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
@@ -203,9 +203,9 @@
 							</aside>
 							<div class="tsd-comment tsd-typography">
 								<div class="lead">
-									<p>Always returns true.</p>
+									<p>Always returns true if this <code>Kysely</code> instance is a transaction.</p>
 								</div>
-								<p>This method is here just to make Kysely<DB> unassignable to Transaction<DB>.</p>
+								<p>You can also use <code>db instanceof Transaction</code>.</p>
 							</div>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">true</span></h4>
 						</li>
@@ -772,7 +772,7 @@
 							<li class=" tsd-kind-get-signature tsd-parent-kind-class tsd-is-inherited">
 								<a href="transaction.html#dynamic" class="tsd-kind-icon">dynamic</a>
 							</li>
-							<li class=" tsd-kind-get-signature tsd-parent-kind-class">
+							<li class=" tsd-kind-get-signature tsd-parent-kind-class tsd-is-inherited">
 								<a href="transaction.html#istransaction" class="tsd-kind-icon">is<wbr>Transaction</a>
 							</li>
 							<li class=" tsd-kind-get-signature tsd-parent-kind-class tsd-is-inherited">
