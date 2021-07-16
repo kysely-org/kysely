@@ -319,6 +319,9 @@ export class Kysely<DB> {
    * See the {@link QueryBuilder.where} method for examples on how to specify
    * a where clause for the update operation.
    *
+   * See the {@link QueryBuilder.set} method for examples on how to
+   * specify the updates.
+   *
    * @example
    * ```ts
    * const numAffectedRows = await db

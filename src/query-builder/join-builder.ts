@@ -1,7 +1,9 @@
 import { cloneJoinNodeWithOn, JoinNode } from '../operation-node/join-node'
 import { OperationNodeSource } from '../operation-node/operation-node-source'
 import {
+  ExistsFilterArg,
   FilterOperatorArg,
+  parseExistsFilterArgs,
   parseFilterArgs,
   parseReferenceFilterArgs,
 } from '../parser/filter-parser'
@@ -98,6 +100,61 @@ export class JoinBuilder<DB, TB extends keyof DB>
         this.#joinNode,
         'or',
         parseReferenceFilterArgs(lhs, op, rhs)
+      )
+    )
+  }
+
+  /**
+   * Just like {@link QueryBuilder.whereExists} but adds an item to the join's
+   * `on` clause instead.
+   *
+   * See {@link QueryBuilder.whereExists} for documentation and examples.
+   */
+  onExists(arg: ExistsFilterArg<DB, TB>): JoinBuilder<DB, TB> {
+    return new JoinBuilder(
+      cloneJoinNodeWithOn(
+        this.#joinNode,
+        'and',
+        parseExistsFilterArgs('exists', arg)
+      )
+    )
+  }
+
+  /**
+   * Just like {@link JoinBuilder.onExists | onExists} but creates a `not exists` clause.
+   */
+  onNotExists(arg: ExistsFilterArg<DB, TB>): JoinBuilder<DB, TB> {
+    return new JoinBuilder(
+      cloneJoinNodeWithOn(
+        this.#joinNode,
+        'and',
+        parseExistsFilterArgs('not exists', arg)
+      )
+    )
+  }
+
+  /**
+   * Just like {@link JoinBuilder.onExists | onExists} but creates a `or exists` clause.
+   */
+  orOnExists(arg: ExistsFilterArg<DB, TB>): JoinBuilder<DB, TB> {
+    return new JoinBuilder(
+      cloneJoinNodeWithOn(
+        this.#joinNode,
+        'or',
+        parseExistsFilterArgs('exists', arg)
+      )
+    )
+  }
+
+  /**
+   * Just like {@link JoinBuilder.onExists | onExists} but creates a `or not exists` clause.
+   */
+  orOnNotExists(arg: ExistsFilterArg<DB, TB>): JoinBuilder<DB, TB> {
+    return new JoinBuilder(
+      cloneJoinNodeWithOn(
+        this.#joinNode,
+        'or',
+        parseExistsFilterArgs('not exists', arg)
       )
     )
   }

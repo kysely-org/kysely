@@ -161,6 +161,42 @@ for (const dialect of BUILT_IN_DIALECTS) {
 
         await query.execute()
       })
+
+      // Can't full join when there's an "on exists" clause.
+      if (joinType !== 'fullJoin') {
+        for (const [existsType, existsSql] of [
+          ['onExists', 'exists'],
+          ['onNotExists', 'not exists'],
+        ] as const) {
+          it(`should ${joinSql} a table using "${existsType}" statements`, async () => {
+            const query = ctx.db
+              .selectFrom('person')
+              [joinType]('pet', (join) =>
+                join[existsType]((qb) =>
+                  qb
+                    .subQuery('pet as p')
+                    .whereRef('p.id', '=', 'pet.id')
+                    .whereRef('p.owner_id', '=', 'person.id')
+                    .select('id')
+                )
+              )
+              .select('pet.id')
+
+            testSql(query, dialect, {
+              postgres: {
+                sql: [
+                  `select "pet"."id" from "person"`,
+                  `${joinSql} "pet"`,
+                  `on ${existsSql} (select "id" from "pet" as "p" where "p"."id" = "pet"."id" and "p"."owner_id" = "person"."id")`,
+                ],
+                bindings: [],
+              },
+            })
+
+            const result = await query.execute()
+          })
+        }
+      }
     }
   })
 }
