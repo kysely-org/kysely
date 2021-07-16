@@ -96,6 +96,54 @@ for (const dialect of BUILT_IN_DIALECTS) {
         ])
       })
 
+      it(`should ${joinSql} a subquery`, async () => {
+        const query = ctx.db
+          .selectFrom('person')
+          [joinType](
+            ctx.db
+              .selectFrom('pet')
+              .select(['owner_id as oid', 'name'])
+              .as('p'),
+            'p.oid',
+            'person.id'
+          )
+          .selectAll()
+          .orderBy('person.first_name')
+
+        testSql(query, dialect, {
+          postgres: {
+            sql: [
+              `select * from "person"`,
+              `${joinSql} (select "owner_id" as "oid", "name" from "pet") as "p"`,
+              `on "p"."oid" = "person"."id"`,
+              `order by "person"."first_name" asc`,
+            ],
+            bindings: [],
+          },
+        })
+
+        const result = await query.execute()
+
+        expect(result).to.have.length(3)
+        expect(result).to.containSubset([
+          {
+            first_name: 'Arnold',
+            last_name: 'Schwarzenegger',
+            name: 'Doggo',
+          },
+          {
+            first_name: 'Jennifer',
+            last_name: 'Aniston',
+            name: 'Catto',
+          },
+          {
+            first_name: 'Sylvester',
+            last_name: 'Stallone',
+            name: 'Hammo',
+          },
+        ])
+      })
+
       it(`should ${joinSql} multiple tables`, async () => {
         const query = ctx.db
           .selectFrom('person')
