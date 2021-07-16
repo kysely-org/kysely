@@ -121,7 +121,10 @@ export class JoinBuilder<DB, TB extends keyof DB>
   }
 
   /**
-   * Just like {@link JoinBuilder.onExists | onExists} but creates a `not exists` clause.
+   * Just like {@link QueryBuilder.whereNotExists} but adds an item to the join's
+   * `on` clause instead.
+   *
+   * See {@link QueryBuilder.whereNotExists} for documentation and examples.
    */
   onNotExists(arg: ExistsFilterArg<DB, TB>): JoinBuilder<DB, TB> {
     return new JoinBuilder(
@@ -134,7 +137,10 @@ export class JoinBuilder<DB, TB extends keyof DB>
   }
 
   /**
-   * Just like {@link JoinBuilder.onExists | onExists} but creates a `or exists` clause.
+   * Just like {@link QueryBuilder.orWhereExists} but adds an item to the join's
+   * `on` clause instead.
+   *
+   * See {@link QueryBuilder.orWhereExists} for documentation and examples.
    */
   orOnExists(arg: ExistsFilterArg<DB, TB>): JoinBuilder<DB, TB> {
     return new JoinBuilder(
@@ -147,7 +153,10 @@ export class JoinBuilder<DB, TB extends keyof DB>
   }
 
   /**
-   * Just like {@link JoinBuilder.onExists | onExists} but creates a `or not exists` clause.
+   * Just like {@link QueryBuilder.orWhereNotExists} but adds an item to the join's
+   * `on` clause instead.
+   *
+   * See {@link QueryBuilder.orWhereNotExists} for documentation and examples.
    */
   orOnNotExists(arg: ExistsFilterArg<DB, TB>): JoinBuilder<DB, TB> {
     return new JoinBuilder(
