@@ -5,7 +5,7 @@ import {
 } from '../operation-node/column-update-node'
 import { MutationObject, parseMutationValueExpression } from './mutation-parser'
 
-export function parseUpdateSetArgs(
+export function parseUpdateObject(
   row: MutationObject<any, any>
 ): ReadonlyArray<ColumnUpdateNode> {
   return Object.entries(row).map(([key, value]) => {

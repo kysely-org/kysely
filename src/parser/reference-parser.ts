@@ -96,6 +96,10 @@ export function parseAliasedStringReference(
   }
 }
 
+export function parseColumnName(column: AnyColumn<any, any>): ColumnNode {
+  return createColumnNode(column as string)
+}
+
 function parseStringReferenceWithTableAndSchema(
   parts: string[]
 ): ReferenceNode {

@@ -1,5 +1,11 @@
 import { freeze } from '../util/object-utils'
 import { ColumnNode } from './column-node'
+import { ColumnUpdateNode } from './column-update-node'
+import {
+  createOnConflictNodeWithDoNothing,
+  createOnConflictNodeWithUpdates,
+  OnConflictNode,
+} from './on-conflict-node'
 import { OperationNode } from './operation-node'
 import { PrimitiveValueListNode } from './primitive-value-list-node'
 import { ReturningNode } from './returning-node'
@@ -14,6 +20,7 @@ export interface InsertQueryNode extends OperationNode {
   readonly columns?: ReadonlyArray<ColumnNode>
   readonly values?: ReadonlyArray<InsertValuesNode>
   readonly returning?: ReturningNode
+  readonly onConflict?: OnConflictNode
 }
 
 export function isInsertQueryNode(
@@ -40,5 +47,26 @@ export function cloneInsertQueryNodeWithColumnsAndValues(
     ...insertQuery,
     columns,
     values,
+  })
+}
+
+export function cloneInsertQueryNodeWithOnConflictDoNothing(
+  insertQuery: InsertQueryNode,
+  columns: ReadonlyArray<ColumnNode>
+): InsertQueryNode {
+  return freeze({
+    ...insertQuery,
+    onConflict: createOnConflictNodeWithDoNothing(columns),
+  })
+}
+
+export function cloneInsertQueryNodeWithOnConflictUpdate(
+  insertQuery: InsertQueryNode,
+  columns: ReadonlyArray<ColumnNode>,
+  updates: ReadonlyArray<ColumnUpdateNode>
+): InsertQueryNode {
+  return freeze({
+    ...insertQuery,
+    onConflict: createOnConflictNodeWithUpdates(columns, updates),
   })
 }

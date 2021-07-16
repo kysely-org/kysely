@@ -58,8 +58,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
 
       testSql(query, dialect, {
         postgres: {
-          sql:
-            'insert into "person" ("first_name", "last_name") values ($1, $2)',
+          sql: 'insert into "person" ("first_name", "last_name") values ($1, $2)',
           bindings: ['Foo', 'Barson'],
         },
       })
@@ -89,8 +88,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
 
       testSql(query, dialect, {
         postgres: {
-          sql:
-            'insert into "person" ("first_name", "last_name") values ((select max(first_name) as "max_first_name" from "person"), concat(cast($1 as varchar), cast($2 as varchar)))',
+          sql: 'insert into "person" ("first_name", "last_name") values ((select max(first_name) as "max_first_name" from "person"), concat(cast($1 as varchar), cast($2 as varchar)))',
           bindings: ['Bar', 'son'],
         },
       })
@@ -104,6 +102,47 @@ for (const dialect of BUILT_IN_DIALECTS) {
       expect(await getNewestPerson(ctx.db)).to.eql({
         first_name: 'Sylvester',
         last_name: 'Barson',
+      })
+    })
+
+    it('should insert one row and ignore conflicts using onConflictDoNothing', async () => {
+      const [{ name }] = await ctx.db.selectFrom('pet').select('name').execute()
+
+      const query = ctx.db
+        .insertInto('pet')
+        .values({ name })
+        .onConflictDoNothing('name')
+
+      testSql(query, dialect, {
+        postgres: {
+          sql: 'insert into "pet" ("name") values ($1) on conflict ("name") do nothing',
+          bindings: ['Catto'],
+        },
+      })
+
+      const result = await query.executeTakeFirst()
+      expect(result).to.be.undefined
+    })
+
+    it('should update instead of insert on conflict when using onConfictUpdate', async () => {
+      const query = ctx.db
+        .insertInto('pet')
+        .values({ name: 'Catto' })
+        .onConflictUpdate('name', { species: 'hamster' })
+        .returningAll()
+
+      testSql(query, dialect, {
+        postgres: {
+          sql: 'insert into "pet" ("name") values ($1) on conflict ("name") do update set "species" = $2 returning *',
+          bindings: ['Catto', 'hamster'],
+        },
+      })
+
+      const result = await query.executeTakeFirst()
+
+      expect(result).to.containSubset({
+        name: 'Catto',
+        species: 'hamster',
       })
     })
 

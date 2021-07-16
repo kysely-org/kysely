@@ -37,6 +37,7 @@ import { UpdateQueryNode } from './update-query-node'
 import { ColumnUpdateNode } from './column-update-node'
 import { LimitNode } from './limit-node'
 import { OffsetNode } from './offset-node'
+import { OnConflictNode } from './on-conflict-node'
 
 export class OperationNodeVisitor {
   protected nodeStack: OperationNode[] = []
@@ -77,6 +78,7 @@ export class OperationNodeVisitor {
     ColumnUpdateNode: this.visitColumnUpdate.bind(this),
     LimitNode: this.visitLimit.bind(this),
     OffsetNode: this.visitOffset.bind(this),
+    OnConflictNode: this.visitOnConflict.bind(this),
   }
 
   protected readonly visitNode = (node: OperationNode): void => {
@@ -288,6 +290,14 @@ export class OperationNodeVisitor {
 
   protected visitOffset(node: OffsetNode): void {
     this.visitNode(node.offset)
+  }
+
+  protected visitOnConflict(node: OnConflictNode): void {
+    node.columns.forEach(this.visitNode)
+
+    if (node.updates) {
+      node.updates.forEach(this.visitNode)
+    }
   }
 
   protected visitDataType(node: DataTypeNode): void {}

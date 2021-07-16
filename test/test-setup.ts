@@ -101,12 +101,15 @@ export async function clearDatabase(ctx: TestContext): Promise<void> {
 export function testSql(
   query: QueryBuilder<Database, any, any>,
   dialect: BuiltInDialect,
-  expectedSql: PerDialect<CompiledQuery>
+  expectedPerDialect: PerDialect<{ sql: string | string[]; bindings: any[] }>
 ): void {
-  const expected = expectedSql[dialect]
+  const expected = expectedPerDialect[dialect]
+  const expectedSql = Array.isArray(expected.sql)
+    ? expected.sql.map((it) => it.trim()).join(' ')
+    : expected.sql
   const sql = query.compile()
 
-  chai.expect(expected.sql).to.equal(sql.sql)
+  chai.expect(expectedSql).to.equal(sql.sql)
   chai.expect(expected.bindings).to.eql(sql.bindings)
 }
 
@@ -126,7 +129,7 @@ async function createDatabase(db: Kysely<Database>): Promise<void> {
   await db.schema
     .createTable('pet')
     .integer('id', (col) => col.increments().primary())
-    .string('name')
+    .string('name', (col) => col.unique())
     .integer('owner_id', (col) =>
       col.references('person.id').onDelete('cascade')
     )

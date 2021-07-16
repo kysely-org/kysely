@@ -9,6 +9,7 @@
 
 import { Kysely } from '.'
 import { expectType, expectError } from 'tsd'
+import { Transaction } from '../../lib'
 
 interface Person {
   id: number
@@ -417,4 +418,14 @@ async function testOrderBy(db: Kysely<Database>) {
     .orderBy('first_name', 'desc')
     .orderBy('fn')
     .execute()
+}
+
+async function testKyselyAndTransactionTypes(db: Kysely<Database>) {
+  let trx: Transaction<Database> = {} as unknown as Transaction<Database>
+
+  // Should not be able to assign a Kysely to a Transaction
+  expectError((trx = db))
+
+  // Should be able to assign a Transaction to Kysely.
+  db = trx
 }

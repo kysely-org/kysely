@@ -1,4 +1,3 @@
-import { RawBuilder } from '..'
 import { isColumnNode } from '../operation-node/column-node'
 import { isOperationNodeSource } from '../operation-node/operation-node-source'
 import { ValueExpressionNode } from '../operation-node/operation-node-utils'
@@ -21,6 +20,7 @@ import {
 } from '../query-builder/type-utils'
 import { isMutatingQueryNode } from '../operation-node/query-node-utils'
 import { SubQueryBuilder } from '../query-builder/sub-query-builder'
+import { RawBuilder } from '../raw-builder/raw-builder'
 
 export type ValueExpression<DB, TB extends keyof DB> =
   | PrimitiveValue

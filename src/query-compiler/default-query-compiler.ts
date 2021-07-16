@@ -15,6 +15,7 @@ import { InsertQueryNode } from '../operation-node/insert-query-node'
 import { JoinNode, JoinType } from '../operation-node/join-node'
 import { LimitNode } from '../operation-node/limit-node'
 import { OffsetNode } from '../operation-node/offset-node'
+import { OnConflictNode } from '../operation-node/on-conflict-node'
 import { OperationNode } from '../operation-node/operation-node'
 import { OperationNodeVisitor } from '../operation-node/operation-node-visitor'
 import { OperatorNode } from '../operation-node/operator-node'
@@ -185,6 +186,11 @@ export class DefaultQueryCompiler
       } else {
         this.compileList(node.values)
       }
+    }
+
+    if (node.onConflict) {
+      this.append(' ')
+      this.visitNode(node.onConflict)
     }
 
     if (node.returning) {
@@ -449,6 +455,21 @@ export class DefaultQueryCompiler
   protected visitOffset(node: OffsetNode): void {
     this.append('offset ')
     this.visitNode(node.offset)
+  }
+
+  protected visitOnConflict(node: OnConflictNode): void {
+    this.append('on conflict ')
+
+    this.append('(')
+    this.compileList(node.columns)
+    this.append(')')
+
+    if (node.doNothing === true) {
+      this.append(' do nothing')
+    } else if (node.updates) {
+      this.append(' do update set ')
+      this.compileList(node.updates)
+    }
   }
 
   protected appendLeftIdentifierWrapper(): void {

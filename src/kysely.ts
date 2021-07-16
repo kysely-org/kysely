@@ -88,6 +88,15 @@ export class Kysely<DB> {
   }
 
   /**
+   * Always returns true if this `Kysely` instance is a transaction.
+   *
+   * You can also use `db instanceof Transaction`.
+   */
+  get isTransaction(): boolean {
+    return false
+  }
+
+  /**
    * Returns a the {@link Schema} module for building database schema.
    */
   get schema(): Schema {
@@ -457,7 +466,48 @@ export class Kysely<DB> {
   }
 
   /**
+   * Starts a transaction. If the callback throws the transaction is rolled back,
+   * otherwise it's committed.
    *
+   * @example
+   * In the example below if either query fails or `someFunction` throws, both inserts
+   * will be rolled back. Otherwise the transaction will be committed by the time the
+   * `transaction` function returns the output value. The output value of the
+   * `transaction` method is the value returned from the callback.
+   *
+   * ```ts
+   * const catto = await db.transaction(async (trx) => {
+   *   const jennifer = await trx.insertInto('person')
+   *     .values({
+   *       first_name: 'Jennifer',
+   *      last_name: 'Aniston',
+   *     })
+   *     .returning('id')
+   *     .executeTakeFirst()
+   *
+   *   await someFunction(trx, jennifer)
+   *
+   *   return await trx.insertInto('pet')
+   *     .values({
+   *       user_id: jennifer!.id,
+   *       name: 'Catto',
+   *       species: 'cat'
+   *     })
+   *     .returning('*')
+   *     .executeTakeFirst()
+   * })
+   * ```
+   *
+   * @example
+   * If you need to set the isolation level or any other transaction property,
+   * you can use `raw`:
+   *
+   * ```ts
+   * await db.transaction(async (trx) => {
+   *   await trx.raw('SET TRANSACTION ISOLATION LEVEL SERIALIZABLE').execute()
+   *   await doStuff(trx)
+   * })
+   * ```
    */
   async transaction<T>(callback: (trx: Transaction<DB>) => T): Promise<T> {
     const connection = await this.#driver.acquireConnection()
@@ -481,17 +531,20 @@ export class Kysely<DB> {
     }
   }
 
+  /**
+   * Releases all resources and disconnects from the database.
+   *
+   * You need to call this when you are done using the `Kysely` instance.
+   */
   async destroy(): Promise<void> {
     await this.#driver.ensureDestroy()
   }
 }
 
 export class Transaction<DB> extends Kysely<DB> {
-  /**
-   * Always returns true.
-   *
-   * This method is here just to make Kysely<DB> unassignable to Transaction<DB>.
-   */
+  // The return type is `true` instead of `boolean` to make Kysely<DB>
+  // unassignable to Transaction<DB> while allowing assignment the
+  // other way around.
   get isTransaction(): true {
     return true
   }

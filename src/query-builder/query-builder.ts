@@ -25,6 +25,7 @@ import { ConnectionProvider } from '../driver/connection-provider'
 import { parseInsertValuesArgs } from '../parser/insert-values-parser'
 import { QueryBuilderWithReturning } from '../parser/returning-parser'
 import {
+  parseColumnName,
   parseReferenceExpression,
   parseReferenceExpressionOrList,
   ReferenceExpression,
@@ -48,6 +49,8 @@ import {
 } from '../operation-node/select-query-node'
 import {
   cloneInsertQueryNodeWithColumnsAndValues,
+  cloneInsertQueryNodeWithOnConflictDoNothing,
+  cloneInsertQueryNodeWithOnConflictUpdate,
   InsertQueryNode,
   isInsertQueryNode,
 } from '../operation-node/insert-query-node'
@@ -64,6 +67,7 @@ import {
   QueryNode,
 } from '../operation-node/query-node-utils'
 import {
+  AnyColumn,
   DeleteResultTypeTag,
   InsertResultTypeTag,
   UpdateResultTypeTag,
@@ -76,11 +80,13 @@ import {
   UpdateQueryNode,
 } from '../operation-node/update-query-node'
 import { MutationObject } from '../parser/mutation-parser'
-import { parseUpdateSetArgs } from '../parser/update-set-parser'
+import { parseUpdateObject } from '../parser/update-set-parser'
 import { QueryCompiler } from '../query-compiler/query-compiler'
 import { preventAwait } from '../util/prevent-await'
 import { createLimitNode } from '../operation-node/limit-node'
 import { createOffsetNode } from '../operation-node/offset-node'
+import { asArray, isString } from '../util/object-utils'
+import { createColumnNode } from '../operation-node/column-node'
 
 /**
  * The main query builder class.
@@ -1303,6 +1309,131 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
   }
 
   /**
+   * Ignores the insert if the column (or columns) given as the first
+   * argument conflicts with the current rows in the database. The
+   * default behavior without this method call is to throw an error.
+   *
+   * For example if a table has a field `name` that has a unique constraint
+   * and you try to insert a row with a `name` that already exists in the
+   * database, calling `onConflictDoNothing('name')` will ignore the conflict
+   * and do nothing. By default the query would throw.
+   *
+   * This method generates different SQL on different dialects. For example
+   * `insert ignore` is used on mysql and `on conflict (columns) do nothing`
+   * on postgres and sqlite.
+   *
+   * Also see the {@link QueryBuilder.onConflictUpdate | onConflictUpdate}
+   * method if you want to perform an update in case of a conflict (upsert).
+   *
+   * @example
+   * ```ts
+   * await db
+   *   .insertInto('pet')
+   *   .values({
+   *     name: 'Catto',
+   *     species: 'cat',
+   *   })
+   *   .onConflictDoNothing('name')
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (postgresql):
+   *
+   * ```sql
+   * insert into "pet" ("name", "species")
+   * values ($1, $2)
+   * on conflict do nothing
+   * ```
+   */
+  onConflictDoNothing(column: AnyColumn<DB, TB>): QueryBuilder<DB, TB, O>
+
+  onConflictDoNothing(columns: AnyColumn<DB, TB>[]): QueryBuilder<DB, TB, O>
+
+  onConflictDoNothing(
+    columns: AnyColumn<DB, TB> | AnyColumn<DB, TB>[]
+  ): QueryBuilder<DB, TB, O> {
+    ensureCanHaveOnConflict(this.#queryNode)
+
+    return new QueryBuilder({
+      compiler: this.#compiler,
+      connectionProvider: this.#connectionProvider,
+      queryNode: cloneInsertQueryNodeWithOnConflictDoNothing(
+        this.#queryNode,
+        asArray(columns).map(parseColumnName)
+      ),
+    })
+  }
+
+  /**
+   * Ignores an insert if the column (or columns) given as the first
+   * argument conflicts with the current rows in the database and
+   * performs an update on the conflicting row instead. This method
+   * can be used to implement an upsert operation.
+   *
+   * For example if a table has a field `name` that has a unique constraint
+   * and you try to insert a row with a `name` that already exists in the
+   * database, calling `onConfictUpdate('name', { species: 'hamster' })`
+   * will set the conflicting row's `species` field to value `'hamster'`.
+   * By default the query would throw.
+   *
+   * The second argument (updates) can be anything the {@link QueryBuilder.set | set}
+   * method accepts.
+   *
+   * This method generates different SQL on different dialects. For example
+   * `on duplicate key update` is used on mysql and `on conflict (columns) do update`
+   * on postgres and sqlite.
+   *
+   * Also see the {@link QueryBuilder.onConflictDoNothing | onConflictDoNothing}
+   * method.
+   *
+   * @example
+   * ```ts
+   * await db
+   *   .insertInto('pet')
+   *   .values({
+   *     name: 'Catto',
+   *     species: 'cat',
+   *   })
+   *   .onConflictUpdate('name', { species: 'hamster' })
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (postgresql):
+   *
+   * ```sql
+   * insert into "pet" ("name", "species")
+   * values ($1, $2)
+   * on conflict do update set "species" = $3
+   * ```
+   */
+  onConflictUpdate(
+    column: AnyColumn<DB, TB>,
+    updates: MutationObject<DB, TB>
+  ): QueryBuilder<DB, TB, O>
+
+  onConflictUpdate(
+    columns: AnyColumn<DB, TB>[],
+    updates: MutationObject<DB, TB>
+  ): QueryBuilder<DB, TB, O>
+
+  onConflictUpdate(
+    columns: AnyColumn<DB, TB> | AnyColumn<DB, TB>[],
+    updates: MutationObject<DB, TB>
+  ): QueryBuilder<DB, TB, O> {
+    ensureCanHaveOnConflict(this.#queryNode)
+
+    return new QueryBuilder({
+      compiler: this.#compiler,
+      connectionProvider: this.#connectionProvider,
+      queryNode: cloneInsertQueryNodeWithOnConflictUpdate(
+        this.#queryNode,
+        asArray(columns).map(parseColumnName),
+        parseUpdateObject(updates)
+      ),
+    })
+  }
+
+  /**
    * Sets the values to update for an `updateTable` query.
    *
    * This method takes an object whose keys are column names and values are
@@ -1392,7 +1523,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
       connectionProvider: this.#connectionProvider,
       queryNode: cloneUpdateQueryNodeWithColumnUpdates(
         this.#queryNode,
-        parseUpdateSetArgs(row)
+        parseUpdateObject(row)
       ),
     })
   }
@@ -1714,7 +1845,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * ```
    *
    * @example
-   * Select rows 10 to 20 of the result:
+   * Select rows from index 10 to index 19 of the result:
    *
    * ```ts
    * return await db
@@ -1741,7 +1872,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * Adds an offset clause to the query.
    *
    * @example
-   * Select rows 10 to 20 of the result:
+   * Select rows from index 10 to index 19 of the result:
    *
    * ```ts
    * return await db
@@ -1752,7 +1883,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * ```
    */
   offset(offset: number): QueryBuilder<DB, TB, O> {
-    ensureCanHaveLimit(this.#queryNode)
+    ensureCanHaveOffset(this.#queryNode)
 
     return new QueryBuilder({
       compiler: this.#compiler,
@@ -1932,6 +2063,14 @@ function ensureCanHaveInsertValues(
 ): asserts node is InsertQueryNode {
   if (!isInsertQueryNode(node)) {
     throw new Error('only an insert query can have insert values')
+  }
+}
+
+function ensureCanHaveOnConflict(
+  node: QueryNode
+): asserts node is InsertQueryNode {
+  if (!isInsertQueryNode(node)) {
+    throw new Error('only an insert query can have an on conflict clause')
   }
 }
 

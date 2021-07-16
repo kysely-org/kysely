@@ -74,3 +74,11 @@ export function getLast<T>(arr: ArrayLike<T>): T | undefined {
 export function freeze<T>(obj: T): Readonly<T> {
   return Object.freeze(obj)
 }
+
+export function asArray<T>(arg: T | T[]): T[] {
+  if (Array.isArray(arg)) {
+    return arg
+  } else {
+    return [arg]
+  }
+}
