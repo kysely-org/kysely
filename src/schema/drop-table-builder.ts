@@ -29,7 +29,7 @@ export class DropTableBuilder implements OperationNodeSource {
       throw new Error(`this builder cannot be compiled to SQL`)
     }
 
-    return this.#compiler.compile(this.#dropTableNode)
+    return this.#compiler.compileQuery(this.#dropTableNode)
   }
 
   async execute(): Promise<void> {

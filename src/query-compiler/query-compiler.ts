@@ -11,5 +11,5 @@ export type CompileEntryPointNode =
   | RawNode
 
 export interface QueryCompiler {
-  compile(node: CompileEntryPointNode): CompiledQuery
+  compileQuery(node: CompileEntryPointNode): CompiledQuery
 }

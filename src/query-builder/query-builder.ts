@@ -1922,7 +1922,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
       throw new Error(`this query cannot be compiled to SQL`)
     }
 
-    return this.#compiler.compile(this.#queryNode)
+    return this.#compiler.compileQuery(this.#queryNode)
   }
 
   async execute(): Promise<ManyResultRowType<O>[]> {

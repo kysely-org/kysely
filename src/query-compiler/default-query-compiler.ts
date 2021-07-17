@@ -50,7 +50,7 @@ export class DefaultQueryCompiler
   #sqlFragments: string[] = []
   #bindings: any[] = []
 
-  compile(node: CompileEntryPointNode): CompiledQuery {
+  compileQuery(node: CompileEntryPointNode): CompiledQuery {
     this.#sqlFragments = []
     this.#bindings = []
 

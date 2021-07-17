@@ -75,7 +75,7 @@ export class RawBuilder<O = unknown> implements OperationNodeSource {
       throw new Error(`this query cannot be compiled to SQL`)
     }
 
-    return this.#compiler.compile(this.toOperationNode())
+    return this.#compiler.compileQuery(this.toOperationNode())
   }
 
   async execute(): Promise<QueryResult<O>> {

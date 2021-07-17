@@ -108,7 +108,7 @@ export class CreateTableBuilder implements OperationNodeSource {
       throw new Error(`this builder cannot be compiled to SQL`)
     }
 
-    return this.#compiler.compile(this.#createTableNode)
+    return this.#compiler.compileQuery(this.#createTableNode)
   }
 
   async execute(): Promise<void> {
