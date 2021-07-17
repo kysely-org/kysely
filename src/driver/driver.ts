@@ -1,6 +1,12 @@
 import { freeze } from '../util/object-utils'
 import { DatabaseConnection } from './database-connection'
 import { DriverConfig, DriverConfigWithDefaults } from './driver-config'
+import {
+  INTERNAL_DRIVER_ACQUIRE_CONNECTION,
+  INTERNAL_DRIVER_ENSURE_DESTROY,
+  INTERNAL_DRIVER_ENSURE_INIT,
+  INTERNAL_DRIVER_RELEASE_CONNECTION,
+} from './driver-internal'
 
 const POOL_CONFIG_DEFAULTS = freeze({
   maxConnections: 10,
@@ -34,7 +40,7 @@ export abstract class Driver {
   /**
    * Returns the default port for the database engine.
    */
-  abstract getDefaultPort(): number
+  protected abstract getDefaultPort(): number
 
   /**
    * Initializes the driver.
@@ -70,8 +76,8 @@ export abstract class Driver {
    * @internal
    * For internal use only. Don't override this.
    */
-  async acquireConnection(): Promise<DatabaseConnection> {
-    await this.ensureInit()
+  async [INTERNAL_DRIVER_ACQUIRE_CONNECTION](): Promise<DatabaseConnection> {
+    await this[INTERNAL_DRIVER_ENSURE_INIT]()
     return this.acquireConnectionImpl()
   }
 
@@ -79,7 +85,9 @@ export abstract class Driver {
    * @internal
    * For internal use only. Don't override this.
    */
-  releaseConnection(connection: DatabaseConnection): Promise<void> {
+  async [INTERNAL_DRIVER_RELEASE_CONNECTION](
+    connection: DatabaseConnection
+  ): Promise<void> {
     return this.releaseConnectionImpl(connection)
   }
 
@@ -87,7 +95,7 @@ export abstract class Driver {
    * @internal
    * For internal use only. Don't override this.
    */
-  private async ensureInit(): Promise<void> {
+  async [INTERNAL_DRIVER_ENSURE_INIT](): Promise<void> {
     if (!this.#initPromise) {
       this.#initPromise = this.initImpl().catch((err) => {
         this.#initPromise = null
@@ -102,7 +110,7 @@ export abstract class Driver {
    * @internal
    * For internal use only. Don't override this.
    */
-  async ensureDestroy(): Promise<void> {
+  async [INTERNAL_DRIVER_ENSURE_DESTROY](): Promise<void> {
     if (this.#initPromise) {
       await this.#initPromise
     }

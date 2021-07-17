@@ -28,6 +28,11 @@ import { DefaultConnectionProvider } from './driver/default-connection-provider'
 import { ConnectionProvider } from './driver/connection-provider'
 import { isObject } from './util/object-utils'
 import { SingleConnectionProvider } from './driver/single-connection-provider'
+import {
+  INTERNAL_DRIVER_ACQUIRE_CONNECTION,
+  INTERNAL_DRIVER_ENSURE_DESTROY,
+  INTERNAL_DRIVER_RELEASE_CONNECTION,
+} from './driver/driver-internal'
 
 /**
  * The main Kysely class.
@@ -513,7 +518,7 @@ export class Kysely<DB> {
    * ```
    */
   async transaction<T>(callback: (trx: Transaction<DB>) => T): Promise<T> {
-    const connection = await this.#driver.acquireConnection()
+    const connection = await this.#driver[INTERNAL_DRIVER_ACQUIRE_CONNECTION]()
     const transaction = new Transaction<DB>({
       driver: this.#driver,
       compiler: this.#compiler,
@@ -530,7 +535,7 @@ export class Kysely<DB> {
       await connection.executeQuery({ sql: 'rollback', bindings: [] })
       throw error
     } finally {
-      await this.#driver.releaseConnection(connection)
+      await this.#driver[INTERNAL_DRIVER_RELEASE_CONNECTION](connection)
     }
   }
 
@@ -540,7 +545,7 @@ export class Kysely<DB> {
    * You need to call this when you are done using the `Kysely` instance.
    */
   async destroy(): Promise<void> {
-    await this.#driver.ensureDestroy()
+    await this.#driver[INTERNAL_DRIVER_ENSURE_DESTROY]()
   }
 }
 

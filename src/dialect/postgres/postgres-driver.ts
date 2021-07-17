@@ -1,5 +1,8 @@
 import { Pool, PoolClient } from 'pg'
-import { DatabaseConnection, QueryResult } from '../../driver/database-connection'
+import {
+  DatabaseConnection,
+  QueryResult,
+} from '../../driver/database-connection'
 import { Driver } from '../../driver/driver'
 import { CompiledQuery } from '../../query-compiler/compiled-query'
 import { freeze } from '../../util/object-utils'
@@ -10,7 +13,7 @@ export class PostgresDriver extends Driver {
   #pool: Pool | null = null
   #connections = new WeakMap<PoolClient, DatabaseConnection>()
 
-  getDefaultPort(): number {
+  protected getDefaultPort(): number {
     return 5432
   }
 
@@ -63,7 +66,9 @@ export class PostgresDriver extends Driver {
     return connection
   }
 
-  protected async releaseConnectionImpl(connection: DatabaseConnection): Promise<void> {
+  protected async releaseConnectionImpl(
+    connection: DatabaseConnection
+  ): Promise<void> {
     const pgConnection = connection as PostgresConnection
     pgConnection[PRIVATE_RELEASE_METHOD]()
   }
