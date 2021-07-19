@@ -7,14 +7,18 @@ export type ColumnDataType =
   | 'Integer'
   | 'BigInteger'
   | 'Boolean'
-  | 'Double'
   | 'Float'
+  | 'Double'
+  | 'Decimal'
+  | 'Numeric'
   | 'Binary'
 
 export interface DataTypeNode extends OperationNode {
   readonly kind: 'DataTypeNode'
   readonly dataType: ColumnDataType
   readonly size?: number
+  readonly precision?: number
+  readonly scale?: number
 }
 
 export function isDataTypeNode(node: OperationNode): node is DataTypeNode {
@@ -23,11 +27,11 @@ export function isDataTypeNode(node: OperationNode): node is DataTypeNode {
 
 export function createDataTypeNode(
   dataType: ColumnDataType,
-  size?: number
+  args?: { size?: number; precision?: number; scale?: number }
 ): DataTypeNode {
   return freeze({
     kind: 'DataTypeNode',
     dataType,
-    size,
+    ...args,
   })
 }

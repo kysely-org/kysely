@@ -16,11 +16,11 @@ export function isDropTableNode(node: OperationNode): node is DropTableNode {
 
 export function createDropTableNode(
   table: TableNode,
-  modifier?: DropTableNodeModifier
+  params?: { modifier?: DropTableNodeModifier }
 ): DropTableNode {
   return freeze({
     kind: 'DropTableNode',
     table,
-    modifier,
+    ...params,
   })
 }

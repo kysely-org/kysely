@@ -1,28 +1,28 @@
 import { ConnectionProvider } from '../driver/connection-provider'
-import { DropTableNode } from '../operation-node/drop-table-node'
+import { DropIndexNode } from '../operation-node/drop-index-node'
 import { OperationNodeSource } from '../operation-node/operation-node-source'
 import { CompiledQuery } from '../query-compiler/compiled-query'
 import { QueryCompiler } from '../query-compiler/query-compiler'
 import { Compilable } from '../util/compilable'
 import { preventAwait } from '../util/prevent-await'
 
-export class DropTableBuilder implements OperationNodeSource, Compilable {
-  readonly #dropTableNode: DropTableNode
+export class DropIndexBuilder implements OperationNodeSource, Compilable {
+  readonly #dropIndexNode: DropIndexNode
   readonly #compiler?: QueryCompiler
   readonly #connectionProvider?: ConnectionProvider
 
   constructor({
-    dropTableNode,
+    dropIndexNode,
     compiler,
     connectionProvider,
-  }: DropTableBuilderConstructorArgs) {
-    this.#dropTableNode = dropTableNode
+  }: DropIndexBuilderConstructorArgs) {
+    this.#dropIndexNode = dropIndexNode
     this.#compiler = compiler
     this.#connectionProvider = connectionProvider
   }
 
-  toOperationNode(): DropTableNode {
-    return this.#dropTableNode
+  toOperationNode(): DropIndexNode {
+    return this.#dropIndexNode
   }
 
   compile(): CompiledQuery {
@@ -30,7 +30,7 @@ export class DropTableBuilder implements OperationNodeSource, Compilable {
       throw new Error(`this builder cannot be compiled to SQL`)
     }
 
-    return this.#compiler.compileQuery(this.#dropTableNode)
+    return this.#compiler.compileQuery(this.#dropIndexNode)
   }
 
   async execute(): Promise<void> {
@@ -45,12 +45,12 @@ export class DropTableBuilder implements OperationNodeSource, Compilable {
 }
 
 preventAwait(
-  DropTableBuilder,
-  "don't await DropTableBuilder instances directly. To execute the query you need to call `execute`"
+  DropIndexBuilder,
+  "don't await DropIndexBuilder instances directly. To execute the query you need to call `execute`"
 )
 
-export interface DropTableBuilderConstructorArgs {
-  dropTableNode: DropTableNode
+export interface DropIndexBuilderConstructorArgs {
+  dropIndexNode: DropIndexNode
   compiler?: QueryCompiler
   connectionProvider?: ConnectionProvider
 }

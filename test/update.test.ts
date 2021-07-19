@@ -56,8 +56,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
 
       testSql(query, dialect, {
         postgres: {
-          sql:
-            'update "person" set "first_name" = $1, "last_name" = $2 where "gender" = $3',
+          sql: 'update "person" set "first_name" = $1, "last_name" = $2 where "gender" = $3',
           bindings: ['Foo', 'Barson', 'female'],
         },
       })
@@ -89,8 +88,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
 
         testSql(query, dialect, {
           postgres: {
-            sql:
-              'update "person" set "last_name" = $1 where "gender" = $2 returning "first_name", "last_name"',
+            sql: 'update "person" set "last_name" = $1 where "gender" = $2 returning "first_name", "last_name"',
             bindings: ['Barson', 'male'],
           },
         })

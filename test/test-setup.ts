@@ -2,8 +2,9 @@ import * as chai from 'chai'
 import * as chaiSubset from 'chai-subset'
 chai.use(chaiSubset)
 
-import { CompiledQuery, Kysely, KyselyConfig, QueryBuilder } from '../src'
+import { Kysely, KyselyConfig } from '../src'
 import { Dialect } from '../src/dialect/dialect'
+import { Compilable } from '../src/util/compilable'
 
 export interface Person {
   id: number
@@ -99,7 +100,7 @@ export async function clearDatabase(ctx: TestContext): Promise<void> {
 }
 
 export function testSql(
-  query: QueryBuilder<Database, any, any>,
+  query: Compilable,
   dialect: BuiltInDialect,
   expectedPerDialect: PerDialect<{ sql: string | string[]; bindings: any[] }>
 ): void {

@@ -35,6 +35,9 @@ export type OperationNodeKind =
   | 'LimitNode'
   | 'OffsetNode'
   | 'OnConflictNode'
+  | 'CreateIndexNode'
+  | 'DropIndexNode'
+  | 'ListNode'
 
 export interface OperationNode {
   readonly kind: OperationNodeKind

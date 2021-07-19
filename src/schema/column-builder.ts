@@ -40,6 +40,14 @@ export class ColumnBuilder implements OperationNodeSource {
     )
   }
 
+  /**
+   * Adds a foreign key constraint for the column.
+   *
+   * @example
+   * ```ts
+   * col.references('person.id')
+   * ```
+   */
   references(ref: string): ColumnBuilder {
     const references = parseStringReference(ref)
 
@@ -54,18 +62,27 @@ export class ColumnBuilder implements OperationNodeSource {
     )
   }
 
+  /**
+   * Adds a unique constraint for the column.
+   */
   unique(): ColumnBuilder {
     return new ColumnBuilder(
       cloneColumnDefinitionNode(this.#node, { isUnique: true })
     )
   }
 
+  /**
+   * Makes the column non-nullable.
+   */
   notNullable(): ColumnBuilder {
     return new ColumnBuilder(
       cloneColumnDefinitionNode(this.#node, { isNullable: false })
     )
   }
 
+  /**
+   * Adds an `on delete` constraint for the column.
+   */
   onDelete(onDelete: OnDelete): ColumnBuilder {
     return new ColumnBuilder(
       cloneColumnDefinitionNode(this.#node, { onDelete })

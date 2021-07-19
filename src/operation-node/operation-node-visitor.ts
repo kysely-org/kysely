@@ -38,6 +38,9 @@ import { ColumnUpdateNode } from './column-update-node'
 import { LimitNode } from './limit-node'
 import { OffsetNode } from './offset-node'
 import { OnConflictNode } from './on-conflict-node'
+import { CreateIndexNode } from './create-index-node'
+import { ListNode } from './list-node'
+import { DropIndexNode } from './drop-index-node'
 
 export class OperationNodeVisitor {
   protected nodeStack: OperationNode[] = []
@@ -79,6 +82,9 @@ export class OperationNodeVisitor {
     LimitNode: this.visitLimit.bind(this),
     OffsetNode: this.visitOffset.bind(this),
     OnConflictNode: this.visitOnConflict.bind(this),
+    CreateIndexNode: this.visitCreateIndex.bind(this),
+    DropIndexNode: this.visitDropIndex.bind(this),
+    ListNode: this.visitList.bind(this),
   }
 
   protected readonly visitNode = (node: OperationNode): void => {
@@ -298,6 +304,30 @@ export class OperationNodeVisitor {
     if (node.updates) {
       node.updates.forEach(this.visitNode)
     }
+  }
+
+  protected visitCreateIndex(node: CreateIndexNode): void {
+    this.visitNode(node.name)
+
+    if (node.on) {
+      this.visitNode(node.on)
+    }
+
+    if (node.using) {
+      this.visitNode(node.using)
+    }
+
+    if (node.expression) {
+      this.visitNode(node.expression)
+    }
+  }
+
+  protected visitList(node: ListNode): void {
+    node.items.forEach(this.visitNode)
+  }
+
+  protected visitDropIndex(node: DropIndexNode): void {
+    this.visitNode(node.name)
   }
 
   protected visitDataType(node: DataTypeNode): void {}

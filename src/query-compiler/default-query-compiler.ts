@@ -2,9 +2,15 @@ import { AliasNode } from '../operation-node/alias-node'
 import { AndNode } from '../operation-node/and-node'
 import { ColumnDefinitionNode } from '../operation-node/column-definition-node'
 import { ColumnUpdateNode } from '../operation-node/column-update-node'
+import { CreateIndexNode } from '../operation-node/create-index-node'
 import { CreateTableNode } from '../operation-node/create-table-node'
-import { ColumnDataType, DataTypeNode } from '../operation-node/data-type-node'
+import {
+  ColumnDataType,
+  DataTypeNode,
+  isDataTypeNode,
+} from '../operation-node/data-type-node'
 import { DeleteQueryNode } from '../operation-node/delete-query-node'
+import { DropIndexNode } from '../operation-node/drop-index-node'
 import { DropTableNode } from '../operation-node/drop-table-node'
 import { FilterNode } from '../operation-node/filter-node'
 import { FromNode } from '../operation-node/from-node'
@@ -14,6 +20,7 @@ import { IdentifierNode } from '../operation-node/identifier-node'
 import { InsertQueryNode } from '../operation-node/insert-query-node'
 import { JoinNode, JoinType } from '../operation-node/join-node'
 import { LimitNode } from '../operation-node/limit-node'
+import { ListNode } from '../operation-node/list-node'
 import { OffsetNode } from '../operation-node/offset-node'
 import { OnConflictNode } from '../operation-node/on-conflict-node'
 import { OperationNode } from '../operation-node/operation-node'
@@ -25,7 +32,7 @@ import { OrderByNode } from '../operation-node/order-by-node'
 import { ParensNode } from '../operation-node/parens-node'
 import { PrimitiveValueListNode } from '../operation-node/primitive-value-list-node'
 import { isQueryNode } from '../operation-node/query-node-utils'
-import { RawNode } from '../operation-node/raw-node'
+import { isRawNode, RawNode } from '../operation-node/raw-node'
 import { ReferenceNode } from '../operation-node/reference-node'
 import { ReturningNode } from '../operation-node/returning-node'
 import { SelectAllNode } from '../operation-node/select-all-node'
@@ -351,7 +358,15 @@ export class DefaultQueryCompiler
     this.append(' ')
 
     if (node.isAutoIncrementing) {
-      this.append('serial')
+      // Postgres overrides the data type for autoincrementing columns.
+      if (
+        isDataTypeNode(node.dataType) &&
+        node.dataType.dataType === 'BigInteger'
+      ) {
+        this.append('bigserial')
+      } else {
+        this.append('serial')
+      }
     } else {
       this.visitNode(node.dataType)
     }
@@ -472,6 +487,57 @@ export class DefaultQueryCompiler
     }
   }
 
+  protected visitCreateIndex(node: CreateIndexNode): void {
+    this.append('create ')
+
+    if (node.unique) {
+      this.append('unique ')
+    }
+
+    this.append('index ')
+    this.visitNode(node.name)
+
+    if (node.on) {
+      this.append(' on ')
+      this.visitNode(node.on)
+    }
+
+    if (node.using) {
+      this.append(' using ')
+      this.visitNode(node.using)
+    }
+
+    if (node.expression) {
+      this.append(' (')
+
+      if (isRawNode(node.expression)) {
+        this.append('(')
+      }
+
+      this.visitNode(node.expression)
+
+      if (isRawNode(node.expression)) {
+        this.append(')')
+      }
+
+      this.append(')')
+    }
+  }
+
+  protected visitDropIndex(node: DropIndexNode): void {
+    this.append('drop index ')
+
+    if (node.modifier === 'IfExists') {
+      this.append('if exists ')
+    }
+
+    this.visitNode(node.name)
+  }
+
+  protected visitList(node: ListNode): void {
+    this.compileList(node.items)
+  }
+
   protected appendLeftIdentifierWrapper(): void {
     this.append('"')
   }
@@ -516,4 +582,6 @@ const DATA_TYPE_SQL: Record<ColumnDataType, (node: DataTypeNode) => string> = {
   Integer: () => 'integer',
   String: (node) => `varchar(${node.size ?? 255})`,
   Text: () => 'text',
+  Numeric: (node) => `numeric(${node.precision}, ${node.scale})`,
+  Decimal: (node) => `decimal(${node.precision}, ${node.scale})`,
 }

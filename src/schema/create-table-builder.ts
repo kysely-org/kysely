@@ -9,13 +9,15 @@ import {
 } from '../operation-node/create-table-node'
 import { createDataTypeNode } from '../operation-node/data-type-node'
 import { OperationNodeSource } from '../operation-node/operation-node-source'
+import { createRawNodeWithSql } from '../operation-node/raw-node'
 import { CompiledQuery } from '../query-compiler/compiled-query'
 import { QueryCompiler } from '../query-compiler/query-compiler'
+import { Compilable } from '../util/compilable'
 import { isFunction, isNumber } from '../util/object-utils'
 import { preventAwait } from '../util/prevent-await'
 import { ColumnBuilder } from './column-builder'
 
-export class CreateTableBuilder implements OperationNodeSource {
+export class CreateTableBuilder implements OperationNodeSource, Compilable {
   readonly #createTableNode: CreateTableNode
   readonly #compiler?: QueryCompiler
   readonly #connectionProvider?: ConnectionProvider
@@ -51,7 +53,9 @@ export class CreateTableBuilder implements OperationNodeSource {
   string(...args: any[]): any {
     return this.addColumn(
       args[0],
-      createDataTypeNode('String', isNumber(args[1]) ? args[1] : undefined),
+      createDataTypeNode('String', {
+        size: isNumber(args[1]) ? args[1] : undefined,
+      }),
       isFunction(args[1]) ? args[1] : args[2]
     )
   }
@@ -90,13 +94,78 @@ export class CreateTableBuilder implements OperationNodeSource {
   }
 
   /**
-   * Adds a double precision floating poin number column.
+   * Adds a single precision floating point number column.
+   */
+  float(columnName: string, build?: ColumnBuilderCallback): CreateTableBuilder {
+    return this.addColumn(columnName, createDataTypeNode('Float'), build)
+  }
+
+  /**
+   * Adds a double precision floating point number column.
    */
   double(
     columnName: string,
     build?: ColumnBuilderCallback
   ): CreateTableBuilder {
     return this.addColumn(columnName, createDataTypeNode('Double'), build)
+  }
+
+  /**
+   * Adds a numeric column with precision and scale.
+   */
+  numeric(
+    columnName: string,
+    precision: number,
+    scale: number,
+    build?: ColumnBuilderCallback
+  ): CreateTableBuilder {
+    return this.addColumn(
+      columnName,
+      createDataTypeNode('Numeric', { precision, scale }),
+      build
+    )
+  }
+
+  /**
+   * Adds a decimal column with precision and scale.
+   */
+  decimal(
+    columnName: string,
+    precision: number,
+    scale: number,
+    build?: ColumnBuilderCallback
+  ): CreateTableBuilder {
+    return this.addColumn(
+      columnName,
+      createDataTypeNode('Decimal', { precision, scale }),
+      build
+    )
+  }
+
+  /**
+   * Adds a boolean column.
+   */
+  boolean(
+    columnName: string,
+    build?: ColumnBuilderCallback
+  ): CreateTableBuilder {
+    return this.addColumn(columnName, createDataTypeNode('Boolean'), build)
+  }
+
+  /**
+   * Adds a column with a specific data type.
+   *
+   * @example
+   * ```ts
+   * specificType('some_column', 'char(255)')
+   * ```
+   */
+  specificType(
+    columnName: string,
+    dataType: string,
+    build?: ColumnBuilderCallback
+  ): CreateTableBuilder {
+    return this.addColumn(columnName, createRawNodeWithSql(dataType), build)
   }
 
   toOperationNode(): CreateTableNode {

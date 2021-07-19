@@ -17,7 +17,9 @@ export class PostgresDriver extends Driver {
     return 5432
   }
 
-  protected async initImpl(): Promise<void> {
+  protected async init(): Promise<void> {
+    const cfg = this.config
+
     // Import the `pg` module here instead at the top of the file
     // so that this file can be loaded by node without `pg` driver
     // installed. As you can see, there IS an import from `pg` at the
@@ -25,7 +27,6 @@ export class PostgresDriver extends Driver {
     // into javascript. You can check the built javascript code.
     const pg = await importPg()
 
-    const cfg = this.config
     // Use the `pg` module's own pool. All drivers should use the
     // pool provided by the database library if possible.
     this.#pool = new pg.Pool({
@@ -42,15 +43,7 @@ export class PostgresDriver extends Driver {
     })
   }
 
-  protected async destroyImpl(): Promise<void> {
-    if (this.#pool) {
-      const pool = this.#pool
-      this.#pool = null
-      await pool.end()
-    }
-  }
-
-  protected async acquireConnectionImpl(): Promise<DatabaseConnection> {
+  protected async acquireConnection(): Promise<DatabaseConnection> {
     const client = await this.#pool!.connect()
     let connection = this.#connections.get(client)
 
@@ -58,6 +51,9 @@ export class PostgresDriver extends Driver {
       connection = new PostgresConnection(client)
       this.#connections.set(client, connection)
 
+      // The driver must take care of calling `onCreateConnection` when a new
+      // connection is created. The `pg` module doesn't provide an async hook
+      // for the connection creation. We need to call the method explicitly.
       if (this.config.pool.onCreateConnection) {
         await this.config.pool.onCreateConnection(connection)
       }
@@ -66,11 +62,19 @@ export class PostgresDriver extends Driver {
     return connection
   }
 
-  protected async releaseConnectionImpl(
+  protected async releaseConnection(
     connection: DatabaseConnection
   ): Promise<void> {
     const pgConnection = connection as PostgresConnection
     pgConnection[PRIVATE_RELEASE_METHOD]()
+  }
+
+  protected async destroy(): Promise<void> {
+    if (this.#pool) {
+      const pool = this.#pool
+      this.#pool = null
+      await pool.end()
+    }
   }
 }
 

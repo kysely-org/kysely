@@ -53,24 +53,24 @@ export abstract class Driver {
    * important so that Kysely is usable without installing all database driver libraries
    * it supports.
    */
-  protected abstract initImpl(): Promise<void>
-
-  /**
-   * Destroys the driver and releases all resources.
-   */
-  protected abstract destroyImpl(): Promise<void>
+  protected abstract init(): Promise<void>
 
   /**
    * Acquires a new connection from the pool.
    */
-  protected abstract acquireConnectionImpl(): Promise<DatabaseConnection>
+  protected abstract acquireConnection(): Promise<DatabaseConnection>
 
   /**
    * Releases a connection back to the pool.
    */
-  protected abstract releaseConnectionImpl(
+  protected abstract releaseConnection(
     connection: DatabaseConnection
   ): Promise<void>
+
+  /**
+   * Destroys the driver and releases all resources.
+   */
+  protected abstract destroy(): Promise<void>
 
   /**
    * @internal
@@ -78,7 +78,7 @@ export abstract class Driver {
    */
   async [INTERNAL_DRIVER_ACQUIRE_CONNECTION](): Promise<DatabaseConnection> {
     await this[INTERNAL_DRIVER_ENSURE_INIT]()
-    return this.acquireConnectionImpl()
+    return this.acquireConnection()
   }
 
   /**
@@ -88,7 +88,7 @@ export abstract class Driver {
   async [INTERNAL_DRIVER_RELEASE_CONNECTION](
     connection: DatabaseConnection
   ): Promise<void> {
-    return this.releaseConnectionImpl(connection)
+    return this.releaseConnection(connection)
   }
 
   /**
@@ -97,7 +97,7 @@ export abstract class Driver {
    */
   async [INTERNAL_DRIVER_ENSURE_INIT](): Promise<void> {
     if (!this.#initPromise) {
-      this.#initPromise = this.initImpl().catch((err) => {
+      this.#initPromise = this.init().catch((err) => {
         this.#initPromise = null
         return Promise.reject(err)
       })
@@ -116,7 +116,7 @@ export abstract class Driver {
     }
 
     if (!this.#destroyPromise) {
-      this.#destroyPromise = this.destroyImpl().catch((err) => {
+      this.#destroyPromise = this.destroy().catch((err) => {
         this.#destroyPromise = null
         return Promise.reject(err)
       })

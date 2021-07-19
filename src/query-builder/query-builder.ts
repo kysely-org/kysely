@@ -87,6 +87,7 @@ import { createLimitNode } from '../operation-node/limit-node'
 import { createOffsetNode } from '../operation-node/offset-node'
 import { asArray, isString } from '../util/object-utils'
 import { createColumnNode } from '../operation-node/column-node'
+import { Compilable } from '../util/compilable'
 
 /**
  * The main query builder class.
@@ -104,7 +105,7 @@ import { createColumnNode } from '../operation-node/column-node'
  * @typePAram O - The query output row type.
  */
 export class QueryBuilder<DB, TB extends keyof DB, O = {}>
-  implements OperationNodeSource
+  implements OperationNodeSource, Compilable
 {
   readonly #queryNode: QueryNode
   readonly #compiler?: QueryCompiler

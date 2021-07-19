@@ -21,3 +21,7 @@ export function createRawNode(
     params: freeze(params),
   })
 }
+
+export function createRawNodeWithSql(sql: string): RawNode {
+  return createRawNode([sql], [])
+}
