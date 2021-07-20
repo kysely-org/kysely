@@ -21,17 +21,19 @@ export interface DataTypeNode extends OperationNode {
   readonly scale?: number
 }
 
-export function isDataTypeNode(node: OperationNode): node is DataTypeNode {
-  return node.kind === 'DataTypeNode'
-}
+export const dataTypeNode = freeze({
+  is(node: OperationNode): node is DataTypeNode {
+    return node.kind === 'DataTypeNode'
+  },
 
-export function createDataTypeNode(
-  dataType: ColumnDataType,
-  args?: { size?: number; precision?: number; scale?: number }
-): DataTypeNode {
-  return freeze({
-    kind: 'DataTypeNode',
-    dataType,
-    ...args,
-  })
-}
+  create(
+    dataType: ColumnDataType,
+    params?: { size?: number; precision?: number; scale?: number }
+  ): DataTypeNode {
+    return freeze({
+      kind: 'DataTypeNode',
+      dataType,
+      ...params,
+    })
+  },
+})

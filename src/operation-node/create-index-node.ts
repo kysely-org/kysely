@@ -1,6 +1,6 @@
 import { freeze } from '../util/object-utils'
 import { ColumnNode } from './column-node'
-import { createIdentifierNode, IdentifierNode } from './identifier-node'
+import { IdentifierNode, identifierNode } from './identifier-node'
 import { ListNode } from './list-node'
 import { OperationNode } from './operation-node'
 import { RawNode } from './raw-node'
@@ -19,25 +19,25 @@ export interface CreateIndexNode extends OperationNode {
   readonly using?: RawNode
 }
 
-export function isCreateIndexNode(
-  node: OperationNode
-): node is CreateIndexNode {
-  return node.kind === 'CreateIndexNode'
-}
+export const createIndexNode = freeze({
+  is(node: OperationNode): node is CreateIndexNode {
+    return node.kind === 'CreateIndexNode'
+  },
 
-export function createCreateIndexNode(name: string): CreateIndexNode {
-  return freeze({
-    kind: 'CreateIndexNode',
-    name: createIdentifierNode(name),
-  })
-}
+  create(name: string): CreateIndexNode {
+    return freeze({
+      kind: 'CreateIndexNode',
+      name: identifierNode.create(name),
+    })
+  },
 
-export function cloneCreateIndexNode(
-  node: CreateIndexNode,
-  params: CreateIndexNodeParams
-): CreateIndexNode {
-  return freeze({
-    ...node,
-    ...params,
-  })
-}
+  cloneWith(
+    node: CreateIndexNode,
+    params: CreateIndexNodeParams
+  ): CreateIndexNode {
+    return freeze({
+      ...node,
+      ...params,
+    })
+  },
+})

@@ -7,27 +7,27 @@ export interface ReturningNode extends OperationNode {
   readonly selections: ReadonlyArray<SelectionNode>
 }
 
-export function isReturningNode(node: OperationNode): node is ReturningNode {
-  return node.kind === 'ReturningNode'
-}
+export const returningNode = freeze({
+  is(node: OperationNode): node is ReturningNode {
+    return node.kind === 'ReturningNode'
+  },
 
-export function createReturningNodeWithSelections(
-  selections: ReadonlyArray<SelectionNode>
-): ReturningNode {
-  return freeze({
-    kind: 'ReturningNode',
-    selections: freeze(selections),
-  })
-}
+  create(selections: ReadonlyArray<SelectionNode>): ReturningNode {
+    return freeze({
+      kind: 'ReturningNode',
+      selections: freeze(selections),
+    })
+  },
 
-export function cloneReturningNodeWithSelections(
-  returning: ReturningNode,
-  selections: ReadonlyArray<SelectionNode>
-): ReturningNode {
-  return freeze({
-    ...returning,
-    selections: returning.selections
-      ? freeze([...returning.selections, ...selections])
-      : freeze(selections),
-  })
-}
+  cloneWithSelections(
+    returning: ReturningNode,
+    selections: ReadonlyArray<SelectionNode>
+  ): ReturningNode {
+    return freeze({
+      ...returning,
+      selections: returning.selections
+        ? freeze([...returning.selections, ...selections])
+        : freeze(selections),
+    })
+  },
+})

@@ -7,7 +7,7 @@ import { CreateTableNode } from '../operation-node/create-table-node'
 import {
   ColumnDataType,
   DataTypeNode,
-  isDataTypeNode,
+  dataTypeNode,
 } from '../operation-node/data-type-node'
 import { DeleteQueryNode } from '../operation-node/delete-query-node'
 import { DropIndexNode } from '../operation-node/drop-index-node'
@@ -31,8 +31,8 @@ import { OrderByItemNode } from '../operation-node/order-by-item-node'
 import { OrderByNode } from '../operation-node/order-by-node'
 import { ParensNode } from '../operation-node/parens-node'
 import { PrimitiveValueListNode } from '../operation-node/primitive-value-list-node'
-import { isQueryNode } from '../operation-node/query-node-utils'
-import { isRawNode, RawNode } from '../operation-node/raw-node'
+import { queryNode } from '../operation-node/query-node'
+import { rawNode, RawNode } from '../operation-node/raw-node'
 import { ReferenceNode } from '../operation-node/reference-node'
 import { ReturningNode } from '../operation-node/returning-node'
 import { SelectAllNode } from '../operation-node/select-all-node'
@@ -78,10 +78,9 @@ export class DefaultQueryCompiler
   }
 
   protected visitSelectQuery(node: SelectQueryNode): void {
-    // We need parens if there is an ancestor query node.
-    const needsParens = this.nodeStack.find(isQueryNode) !== node
+    const isSubQuery = this.nodeStack.find(queryNode.is) !== node
 
-    if (needsParens) {
+    if (isSubQuery) {
       this.append('(')
     }
 
@@ -139,7 +138,7 @@ export class DefaultQueryCompiler
       this.append(SELECT_MODIFIER_SQL[node.modifier])
     }
 
-    if (needsParens) {
+    if (isSubQuery) {
       this.append(')')
     }
   }
@@ -187,12 +186,7 @@ export class DefaultQueryCompiler
 
     if (node.values) {
       this.append(' values ')
-
-      if (node.values.length === 1) {
-        this.visitNode(node.values[0])
-      } else {
-        this.compileList(node.values)
-      }
+      this.compileList(node.values)
     }
 
     if (node.onConflict) {
@@ -360,7 +354,7 @@ export class DefaultQueryCompiler
     if (node.isAutoIncrementing) {
       // Postgres overrides the data type for autoincrementing columns.
       if (
-        isDataTypeNode(node.dataType) &&
+        dataTypeNode.is(node.dataType) &&
         node.dataType.dataType === 'BigInteger'
       ) {
         this.append('bigserial')
@@ -510,13 +504,13 @@ export class DefaultQueryCompiler
     if (node.expression) {
       this.append(' (')
 
-      if (isRawNode(node.expression)) {
+      if (rawNode.is(node.expression)) {
         this.append('(')
       }
 
       this.visitNode(node.expression)
 
-      if (isRawNode(node.expression)) {
+      if (rawNode.is(node.expression)) {
         this.append(')')
       }
 

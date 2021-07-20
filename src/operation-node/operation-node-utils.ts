@@ -1,5 +1,9 @@
 import { AliasNode } from './alias-node'
+import { AndNode } from './and-node'
 import { ColumnNode } from './column-node'
+import { FilterNode } from './filter-node'
+import { OrNode } from './or-node'
+import { ParensNode } from './parens-node'
 import { PrimitiveValueListNode } from './primitive-value-list-node'
 import { RawNode } from './raw-node'
 import { ReferenceNode } from './reference-node'
@@ -21,3 +25,4 @@ export type ValueExpressionNode =
   | ReferenceExpressionNode
 
 export type TableExpressionNode = TableNode | AliasNode
+export type FilterExpressionNode = FilterNode | AndNode | OrNode | ParensNode

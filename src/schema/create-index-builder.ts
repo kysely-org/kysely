@@ -1,32 +1,28 @@
-import { ConnectionProvider } from '../driver/connection-provider'
 import {
-  cloneCreateIndexNode,
+  createIndexNode,
   CreateIndexNode,
   IndexType,
 } from '../operation-node/create-index-node'
-import { createListNode } from '../operation-node/list-node'
+import { listNode } from '../operation-node/list-node'
 import { OperationNodeSource } from '../operation-node/operation-node-source'
-import { createRawNodeWithSql } from '../operation-node/raw-node'
+import { rawNode } from '../operation-node/raw-node'
 import { parseColumnName } from '../parser/reference-parser'
 import { parseTable } from '../parser/table-parser'
 import { CompiledQuery } from '../query-compiler/compiled-query'
-import { QueryCompiler } from '../query-compiler/query-compiler'
 import { Compilable } from '../util/compilable'
 import { preventAwait } from '../util/prevent-await'
+import { QueryExecutor } from '../util/query-executor'
 
 export class CreateIndexBuilder implements OperationNodeSource, Compilable {
   readonly #createIndexNode: CreateIndexNode
-  readonly #compiler?: QueryCompiler
-  readonly #connectionProvider?: ConnectionProvider
+  readonly #executor: QueryExecutor
 
   constructor({
     createIndexNode,
-    compiler,
-    connectionProvider,
+    executor,
   }: CreateIndexBuilderConstructorArgs) {
     this.#createIndexNode = createIndexNode
-    this.#compiler = compiler
-    this.#connectionProvider = connectionProvider
+    this.#executor = executor
   }
 
   /**
@@ -34,9 +30,8 @@ export class CreateIndexBuilder implements OperationNodeSource, Compilable {
    */
   unique(): CreateIndexBuilder {
     return new CreateIndexBuilder({
-      compiler: this.#compiler,
-      connectionProvider: this.#connectionProvider,
-      createIndexNode: cloneCreateIndexNode(this.#createIndexNode, {
+      executor: this.#executor,
+      createIndexNode: createIndexNode.cloneWith(this.#createIndexNode, {
         unique: true,
       }),
     })
@@ -47,9 +42,8 @@ export class CreateIndexBuilder implements OperationNodeSource, Compilable {
    */
   on(table: string): CreateIndexBuilder {
     return new CreateIndexBuilder({
-      compiler: this.#compiler,
-      connectionProvider: this.#connectionProvider,
-      createIndexNode: cloneCreateIndexNode(this.#createIndexNode, {
+      executor: this.#executor,
+      createIndexNode: createIndexNode.cloneWith(this.#createIndexNode, {
         on: parseTable(table),
       }),
     })
@@ -62,9 +56,8 @@ export class CreateIndexBuilder implements OperationNodeSource, Compilable {
    */
   column(column: string): CreateIndexBuilder {
     return new CreateIndexBuilder({
-      compiler: this.#compiler,
-      connectionProvider: this.#connectionProvider,
-      createIndexNode: cloneCreateIndexNode(this.#createIndexNode, {
+      executor: this.#executor,
+      createIndexNode: createIndexNode.cloneWith(this.#createIndexNode, {
         expression: parseColumnName(column),
       }),
     })
@@ -77,10 +70,9 @@ export class CreateIndexBuilder implements OperationNodeSource, Compilable {
    */
   columns(columns: string[]): CreateIndexBuilder {
     return new CreateIndexBuilder({
-      compiler: this.#compiler,
-      connectionProvider: this.#connectionProvider,
-      createIndexNode: cloneCreateIndexNode(this.#createIndexNode, {
-        expression: createListNode(columns.map(parseColumnName)),
+      executor: this.#executor,
+      createIndexNode: createIndexNode.cloneWith(this.#createIndexNode, {
+        expression: listNode.create(columns.map(parseColumnName)),
       }),
     })
   }
@@ -99,10 +91,9 @@ export class CreateIndexBuilder implements OperationNodeSource, Compilable {
    */
   expression(expression: string): CreateIndexBuilder {
     return new CreateIndexBuilder({
-      compiler: this.#compiler,
-      connectionProvider: this.#connectionProvider,
-      createIndexNode: cloneCreateIndexNode(this.#createIndexNode, {
-        expression: createRawNodeWithSql(expression),
+      executor: this.#executor,
+      createIndexNode: createIndexNode.cloneWith(this.#createIndexNode, {
+        expression: rawNode.createWithSql(expression),
       }),
     })
   }
@@ -114,10 +105,9 @@ export class CreateIndexBuilder implements OperationNodeSource, Compilable {
   using(indexType: string): CreateIndexBuilder
   using(indexType: string): CreateIndexBuilder {
     return new CreateIndexBuilder({
-      compiler: this.#compiler,
-      connectionProvider: this.#connectionProvider,
-      createIndexNode: cloneCreateIndexNode(this.#createIndexNode, {
-        using: createRawNodeWithSql(indexType),
+      executor: this.#executor,
+      createIndexNode: createIndexNode.cloneWith(this.#createIndexNode, {
+        using: rawNode.createWithSql(indexType),
       }),
     })
   }
@@ -127,21 +117,11 @@ export class CreateIndexBuilder implements OperationNodeSource, Compilable {
   }
 
   compile(): CompiledQuery {
-    if (!this.#compiler) {
-      throw new Error(`this builder cannot be compiled to SQL`)
-    }
-
-    return this.#compiler.compileQuery(this.#createIndexNode)
+    return this.#executor.compileQuery(this.#createIndexNode)
   }
 
   async execute(): Promise<void> {
-    if (!this.#connectionProvider) {
-      throw new Error(`this builder cannot be executed`)
-    }
-
-    await this.#connectionProvider.withConnection(async (connection) => {
-      await connection.executeQuery(this.compile())
-    })
+    await this.#executor.executeQuery(this.#createIndexNode)
   }
 }
 
@@ -152,6 +132,5 @@ preventAwait(
 
 export interface CreateIndexBuilderConstructorArgs {
   createIndexNode: CreateIndexNode
-  compiler?: QueryCompiler
-  connectionProvider?: ConnectionProvider
+  executor: QueryExecutor
 }

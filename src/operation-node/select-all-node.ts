@@ -5,12 +5,14 @@ export interface SelectAllNode extends OperationNode {
   readonly kind: 'SelectAllNode'
 }
 
-export function isSelectAllNode(node: OperationNode): node is SelectAllNode {
-  return node.kind === 'SelectAllNode'
-}
+export const selectAllNode = freeze({
+  is(node: OperationNode): node is SelectAllNode {
+    return node.kind === 'SelectAllNode'
+  },
 
-export function createSelectAllNode(): SelectAllNode {
-  return freeze({
-    kind: 'SelectAllNode',
-  })
-}
+  create(): SelectAllNode {
+    return freeze({
+      kind: 'SelectAllNode',
+    })
+  },
+})

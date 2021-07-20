@@ -1,11 +1,7 @@
 import { freeze } from '../util/object-utils'
 import { ColumnNode } from './column-node'
 import { ColumnUpdateNode } from './column-update-node'
-import {
-  createOnConflictNodeWithDoNothing,
-  createOnConflictNodeWithUpdates,
-  OnConflictNode,
-} from './on-conflict-node'
+import { OnConflictNode, onConflictNode } from './on-conflict-node'
 import { OperationNode } from './operation-node'
 import { PrimitiveValueListNode } from './primitive-value-list-node'
 import { ReturningNode } from './returning-node'
@@ -23,50 +19,48 @@ export interface InsertQueryNode extends OperationNode {
   readonly onConflict?: OnConflictNode
 }
 
-export function isInsertQueryNode(
-  node: OperationNode
-): node is InsertQueryNode {
-  return node.kind === 'InsertQueryNode'
-}
+export const insertQueryNode = freeze({
+  is(node: OperationNode): node is InsertQueryNode {
+    return node.kind === 'InsertQueryNode'
+  },
 
-export function createInsertQueryNodeWithTable(
-  into: TableNode
-): InsertQueryNode {
-  return {
-    kind: 'InsertQueryNode',
-    into,
-  }
-}
+  create(into: TableNode): InsertQueryNode {
+    return {
+      kind: 'InsertQueryNode',
+      into,
+    }
+  },
 
-export function cloneInsertQueryNodeWithColumnsAndValues(
-  insertQuery: InsertQueryNode,
-  columns: ReadonlyArray<ColumnNode>,
-  values: ReadonlyArray<InsertValuesNode>
-): InsertQueryNode {
-  return freeze({
-    ...insertQuery,
-    columns,
-    values,
-  })
-}
+  cloneWithColumnsAndValues(
+    insertQuery: InsertQueryNode,
+    columns: ReadonlyArray<ColumnNode>,
+    values: ReadonlyArray<InsertValuesNode>
+  ): InsertQueryNode {
+    return freeze({
+      ...insertQuery,
+      columns,
+      values,
+    })
+  },
 
-export function cloneInsertQueryNodeWithOnConflictDoNothing(
-  insertQuery: InsertQueryNode,
-  columns: ReadonlyArray<ColumnNode>
-): InsertQueryNode {
-  return freeze({
-    ...insertQuery,
-    onConflict: createOnConflictNodeWithDoNothing(columns),
-  })
-}
+  cloneWithOnConflictDoNothing(
+    insertQuery: InsertQueryNode,
+    columns: ReadonlyArray<ColumnNode>
+  ): InsertQueryNode {
+    return freeze({
+      ...insertQuery,
+      onConflict: onConflictNode.createWithDoNothing(columns),
+    })
+  },
 
-export function cloneInsertQueryNodeWithOnConflictUpdate(
-  insertQuery: InsertQueryNode,
-  columns: ReadonlyArray<ColumnNode>,
-  updates: ReadonlyArray<ColumnUpdateNode>
-): InsertQueryNode {
-  return freeze({
-    ...insertQuery,
-    onConflict: createOnConflictNodeWithUpdates(columns, updates),
-  })
-}
+  cloneWithOnConflictUpdate(
+    insertQuery: InsertQueryNode,
+    columns: ReadonlyArray<ColumnNode>,
+    updates: ReadonlyArray<ColumnUpdateNode>
+  ): InsertQueryNode {
+    return freeze({
+      ...insertQuery,
+      onConflict: onConflictNode.createWithUpdates(columns, updates),
+    })
+  },
+})

@@ -12,15 +12,15 @@ export interface ValueListNode extends OperationNode {
   readonly values: ReadonlyArray<ListNodeItem>
 }
 
-export function isValueListNode(node: OperationNode): node is ValueListNode {
-  return node.kind === 'ValueListNode'
-}
+export const valueListNode = freeze({
+  is(node: OperationNode): node is ValueListNode {
+    return node.kind === 'ValueListNode'
+  },
 
-export function createValueListNode(
-  values: ReadonlyArray<ListNodeItem>
-): ValueListNode {
-  return freeze({
-    kind: 'ValueListNode',
-    values: freeze(values),
-  })
-}
+  create(values: ReadonlyArray<ListNodeItem>): ValueListNode {
+    return freeze({
+      kind: 'ValueListNode',
+      values: freeze(values),
+    })
+  },
+})

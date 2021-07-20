@@ -1,9 +1,9 @@
 import { freeze } from '../util/object-utils'
 import { AliasNode } from './alias-node'
-import { AndNode, createAndNode } from './and-node'
+import { AndNode, andNode } from './and-node'
 import { FilterNode } from './filter-node'
 import { OperationNode } from './operation-node'
-import { createOrNode, OrNode } from './or-node'
+import { OrNode, orNode } from './or-node'
 import { ParensNode } from './parens-node'
 import { TableNode } from './table-node'
 
@@ -18,33 +18,32 @@ export interface JoinNode extends OperationNode {
   readonly on?: JoinNodeOnNode
 }
 
-export function isJoinNode(node: OperationNode): node is JoinNode {
-  return node.kind === 'JoinNode'
-}
+export const joinNode = freeze({
+  is(node: OperationNode): node is JoinNode {
+    return node.kind === 'JoinNode'
+  },
 
-export function createJoinNode(
-  joinType: JoinType,
-  table: JoinTableNode
-): JoinNode {
-  return freeze({
-    kind: 'JoinNode',
-    joinType,
-    table,
-    on: undefined,
-  })
-}
+  create(joinType: JoinType, table: JoinTableNode): JoinNode {
+    return freeze({
+      kind: 'JoinNode',
+      joinType,
+      table,
+      on: undefined,
+    })
+  },
 
-export function cloneJoinNodeWithOn(
-  joinNode: JoinNode,
-  op: 'and' | 'or',
-  on: JoinNodeOnNode
-): JoinNode {
-  return freeze({
-    ...joinNode,
-    on: joinNode.on
-      ? op === 'and'
-        ? createAndNode(joinNode.on, on)
-        : createOrNode(joinNode.on, on)
-      : on,
-  })
-}
+  cloneWithOn(
+    joinNode: JoinNode,
+    op: 'and' | 'or',
+    on: JoinNodeOnNode
+  ): JoinNode {
+    return freeze({
+      ...joinNode,
+      on: joinNode.on
+        ? op === 'and'
+          ? andNode.create(joinNode.on, on)
+          : orNode.create(joinNode.on, on)
+        : on,
+    })
+  },
+})

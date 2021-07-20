@@ -6,13 +6,15 @@ export interface IdentifierNode extends OperationNode {
   readonly identifier: string
 }
 
-export function isIdentifierNode(node: OperationNode): node is IdentifierNode {
-  return node.kind === 'IdentifierNode'
-}
+export const identifierNode = freeze({
+  is(node: OperationNode): node is IdentifierNode {
+    return node.kind === 'IdentifierNode'
+  },
 
-export function createIdentifierNode(identifier: string): IdentifierNode {
-  return freeze({
-    kind: 'IdentifierNode',
-    identifier,
-  })
-}
+  create(identifier: string): IdentifierNode {
+    return freeze({
+      kind: 'IdentifierNode',
+      identifier,
+    })
+  },
+})

@@ -14,4 +14,12 @@ export class PostgresDialect implements Dialect {
     // The default query compiler is for postgres dialect.
     return new DefaultQueryCompiler()
   }
+
+  lockMigration(): Promise<void> {
+    throw new Error('Method not implemented.')
+  }
+
+  unlockMigration(): Promise<void> {
+    throw new Error('Method not implemented.')
+  }
 }

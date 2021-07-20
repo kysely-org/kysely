@@ -1,4 +1,4 @@
-import { cloneJoinNodeWithOn, JoinNode } from '../operation-node/join-node'
+import { JoinNode, joinNode } from '../operation-node/join-node'
 import { OperationNodeSource } from '../operation-node/operation-node-source'
 import {
   ExistsFilterArg,
@@ -38,7 +38,7 @@ export class JoinBuilder<DB, TB extends keyof DB>
 
   on(...args: any[]): JoinBuilder<DB, TB> {
     return new JoinBuilder(
-      cloneJoinNodeWithOn(this.#joinNode, 'and', parseFilterArgs('On', args))
+      joinNode.cloneWithOn(this.#joinNode, 'and', parseFilterArgs('On', args))
     )
   }
 
@@ -60,7 +60,7 @@ export class JoinBuilder<DB, TB extends keyof DB>
 
   orOn(...args: any[]): JoinBuilder<DB, TB> {
     return new JoinBuilder(
-      cloneJoinNodeWithOn(this.#joinNode, 'or', parseFilterArgs('On', args))
+      joinNode.cloneWithOn(this.#joinNode, 'or', parseFilterArgs('On', args))
     )
   }
 
@@ -76,7 +76,7 @@ export class JoinBuilder<DB, TB extends keyof DB>
     rhs: ReferenceExpression<DB, TB>
   ): JoinBuilder<DB, TB> {
     return new JoinBuilder(
-      cloneJoinNodeWithOn(
+      joinNode.cloneWithOn(
         this.#joinNode,
         'and',
         parseReferenceFilterArgs(lhs, op, rhs)
@@ -96,7 +96,7 @@ export class JoinBuilder<DB, TB extends keyof DB>
     rhs: ReferenceExpression<DB, TB>
   ): JoinBuilder<DB, TB> {
     return new JoinBuilder(
-      cloneJoinNodeWithOn(
+      joinNode.cloneWithOn(
         this.#joinNode,
         'or',
         parseReferenceFilterArgs(lhs, op, rhs)
@@ -112,7 +112,7 @@ export class JoinBuilder<DB, TB extends keyof DB>
    */
   onExists(arg: ExistsFilterArg<DB, TB>): JoinBuilder<DB, TB> {
     return new JoinBuilder(
-      cloneJoinNodeWithOn(
+      joinNode.cloneWithOn(
         this.#joinNode,
         'and',
         parseExistsFilterArgs('exists', arg)
@@ -128,7 +128,7 @@ export class JoinBuilder<DB, TB extends keyof DB>
    */
   onNotExists(arg: ExistsFilterArg<DB, TB>): JoinBuilder<DB, TB> {
     return new JoinBuilder(
-      cloneJoinNodeWithOn(
+      joinNode.cloneWithOn(
         this.#joinNode,
         'and',
         parseExistsFilterArgs('not exists', arg)
@@ -144,7 +144,7 @@ export class JoinBuilder<DB, TB extends keyof DB>
    */
   orOnExists(arg: ExistsFilterArg<DB, TB>): JoinBuilder<DB, TB> {
     return new JoinBuilder(
-      cloneJoinNodeWithOn(
+      joinNode.cloneWithOn(
         this.#joinNode,
         'or',
         parseExistsFilterArgs('exists', arg)
@@ -160,7 +160,7 @@ export class JoinBuilder<DB, TB extends keyof DB>
    */
   orOnNotExists(arg: ExistsFilterArg<DB, TB>): JoinBuilder<DB, TB> {
     return new JoinBuilder(
-      cloneJoinNodeWithOn(
+      joinNode.cloneWithOn(
         this.#joinNode,
         'or',
         parseExistsFilterArgs('not exists', arg)

@@ -1,10 +1,10 @@
 import { isOperationNodeSource } from '../operation-node/operation-node-source'
-import { isRawNode, RawNode } from '../operation-node/raw-node'
+import { RawNode, rawNode } from '../operation-node/raw-node'
 import {
-  isSelectQueryNode,
+  selectQueryNode,
   SelectQueryNode,
 } from '../operation-node/select-query-node'
-import { createValueNode, ValueNode } from '../operation-node/value-node'
+import { valueNode, ValueNode } from '../operation-node/value-node'
 import { AnyQueryBuilder } from '../query-builder/type-utils'
 import { RawBuilder } from '../raw-builder/raw-builder'
 import { isPrimitive, PrimitiveValue } from '../util/object-utils'
@@ -22,11 +22,11 @@ export function parseMutationValueExpression(
   value: MutationValueExpression<PrimitiveValue>
 ): ValueNode | RawNode | SelectQueryNode {
   if (isPrimitive(value)) {
-    return createValueNode(value)
+    return valueNode.create(value)
   } else if (isOperationNodeSource(value)) {
     const node = value.toOperationNode()
 
-    if (isRawNode(node) || isSelectQueryNode(node)) {
+    if (rawNode.is(node) || selectQueryNode.is(node)) {
       return node
     }
   }

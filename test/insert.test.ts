@@ -147,6 +147,26 @@ for (const dialect of BUILT_IN_DIALECTS) {
     })
 
     if (dialect === 'postgres') {
+      it('should insert multiple rows', async () => {
+        const query = ctx.db
+          .insertInto('person')
+          .values([
+            { first_name: 'Foo', last_name: 'Barson' },
+            { first_name: 'Baz', last_name: 'Spam' },
+          ])
+          .returningAll()
+
+        testSql(query, dialect, {
+          postgres: {
+            sql: 'insert into "person" ("first_name", "last_name") values ($1, $2), ($3, $4) returning *',
+            bindings: ['Foo', 'Barson', 'Baz', 'Spam'],
+          },
+        })
+
+        const result = await query.execute()
+        expect(result).to.have.length(2)
+      })
+
       it('should return data using `returning`', async () => {
         const result = await ctx.db
           .insertInto('person')

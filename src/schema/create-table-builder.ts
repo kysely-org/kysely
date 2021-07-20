@@ -1,35 +1,31 @@
-import { ConnectionProvider } from '../driver/connection-provider'
 import {
   ColumnDataTypeNode,
-  createColumnDefinitionNode,
+  columnDefinitionNode,
 } from '../operation-node/column-definition-node'
 import {
-  cloneCreateTableNodeWithColumn,
   CreateTableNode,
+  createTableNode,
 } from '../operation-node/create-table-node'
-import { createDataTypeNode } from '../operation-node/data-type-node'
+import { dataTypeNode } from '../operation-node/data-type-node'
 import { OperationNodeSource } from '../operation-node/operation-node-source'
-import { createRawNodeWithSql } from '../operation-node/raw-node'
+import { rawNode } from '../operation-node/raw-node'
 import { CompiledQuery } from '../query-compiler/compiled-query'
-import { QueryCompiler } from '../query-compiler/query-compiler'
 import { Compilable } from '../util/compilable'
 import { isFunction, isNumber } from '../util/object-utils'
 import { preventAwait } from '../util/prevent-await'
+import { QueryExecutor } from '../util/query-executor'
 import { ColumnBuilder } from './column-builder'
 
 export class CreateTableBuilder implements OperationNodeSource, Compilable {
   readonly #createTableNode: CreateTableNode
-  readonly #compiler?: QueryCompiler
-  readonly #connectionProvider?: ConnectionProvider
+  readonly #executor: QueryExecutor
 
   constructor({
     createTableNode,
-    compiler,
-    connectionProvider,
+    executor,
   }: CreateTableBuilderConstructorArgs) {
     this.#createTableNode = createTableNode
-    this.#compiler = compiler
-    this.#connectionProvider = connectionProvider
+    this.#executor = executor
   }
 
   /**
@@ -53,7 +49,7 @@ export class CreateTableBuilder implements OperationNodeSource, Compilable {
   string(...args: any[]): any {
     return this.addColumn(
       args[0],
-      createDataTypeNode('String', {
+      dataTypeNode.create('String', {
         size: isNumber(args[1]) ? args[1] : undefined,
       }),
       isFunction(args[1]) ? args[1] : args[2]
@@ -67,7 +63,7 @@ export class CreateTableBuilder implements OperationNodeSource, Compilable {
    * that doesn't have a maximum length.
    */
   text(columnName: string, build?: ColumnBuilderCallback): CreateTableBuilder {
-    return this.addColumn(columnName, createDataTypeNode('Text'), build)
+    return this.addColumn(columnName, dataTypeNode.create('Text'), build)
   }
 
   /**
@@ -77,7 +73,7 @@ export class CreateTableBuilder implements OperationNodeSource, Compilable {
     columnName: string,
     build?: ColumnBuilderCallback
   ): CreateTableBuilder {
-    return this.addColumn(columnName, createDataTypeNode('Integer'), build)
+    return this.addColumn(columnName, dataTypeNode.create('Integer'), build)
   }
 
   /**
@@ -90,14 +86,14 @@ export class CreateTableBuilder implements OperationNodeSource, Compilable {
     columnName: string,
     build?: ColumnBuilderCallback
   ): CreateTableBuilder {
-    return this.addColumn(columnName, createDataTypeNode('BigInteger'), build)
+    return this.addColumn(columnName, dataTypeNode.create('BigInteger'), build)
   }
 
   /**
    * Adds a single precision floating point number column.
    */
   float(columnName: string, build?: ColumnBuilderCallback): CreateTableBuilder {
-    return this.addColumn(columnName, createDataTypeNode('Float'), build)
+    return this.addColumn(columnName, dataTypeNode.create('Float'), build)
   }
 
   /**
@@ -107,7 +103,7 @@ export class CreateTableBuilder implements OperationNodeSource, Compilable {
     columnName: string,
     build?: ColumnBuilderCallback
   ): CreateTableBuilder {
-    return this.addColumn(columnName, createDataTypeNode('Double'), build)
+    return this.addColumn(columnName, dataTypeNode.create('Double'), build)
   }
 
   /**
@@ -121,7 +117,7 @@ export class CreateTableBuilder implements OperationNodeSource, Compilable {
   ): CreateTableBuilder {
     return this.addColumn(
       columnName,
-      createDataTypeNode('Numeric', { precision, scale }),
+      dataTypeNode.create('Numeric', { precision, scale }),
       build
     )
   }
@@ -137,7 +133,7 @@ export class CreateTableBuilder implements OperationNodeSource, Compilable {
   ): CreateTableBuilder {
     return this.addColumn(
       columnName,
-      createDataTypeNode('Decimal', { precision, scale }),
+      dataTypeNode.create('Decimal', { precision, scale }),
       build
     )
   }
@@ -149,7 +145,7 @@ export class CreateTableBuilder implements OperationNodeSource, Compilable {
     columnName: string,
     build?: ColumnBuilderCallback
   ): CreateTableBuilder {
-    return this.addColumn(columnName, createDataTypeNode('Boolean'), build)
+    return this.addColumn(columnName, dataTypeNode.create('Boolean'), build)
   }
 
   /**
@@ -165,7 +161,7 @@ export class CreateTableBuilder implements OperationNodeSource, Compilable {
     dataType: string,
     build?: ColumnBuilderCallback
   ): CreateTableBuilder {
-    return this.addColumn(columnName, createRawNodeWithSql(dataType), build)
+    return this.addColumn(columnName, rawNode.createWithSql(dataType), build)
   }
 
   toOperationNode(): CreateTableNode {
@@ -173,21 +169,11 @@ export class CreateTableBuilder implements OperationNodeSource, Compilable {
   }
 
   compile(): CompiledQuery {
-    if (!this.#compiler) {
-      throw new Error(`this builder cannot be compiled to SQL`)
-    }
-
-    return this.#compiler.compileQuery(this.#createTableNode)
+    return this.#executor.compileQuery(this.#createTableNode)
   }
 
   async execute(): Promise<void> {
-    if (!this.#connectionProvider) {
-      throw new Error(`this builder cannot be executed`)
-    }
-
-    await this.#connectionProvider.withConnection(async (connection) => {
-      await connection.executeQuery(this.compile())
-    })
+    await this.#executor.executeQuery(this.#createTableNode)
   }
 
   private addColumn(
@@ -196,7 +182,7 @@ export class CreateTableBuilder implements OperationNodeSource, Compilable {
     build?: ColumnBuilderCallback
   ): CreateTableBuilder {
     let columnBuilder = new ColumnBuilder(
-      createColumnDefinitionNode(columnName, dataType)
+      columnDefinitionNode.create(columnName, dataType)
     )
 
     if (build) {
@@ -204,9 +190,8 @@ export class CreateTableBuilder implements OperationNodeSource, Compilable {
     }
 
     return new CreateTableBuilder({
-      compiler: this.#compiler,
-      connectionProvider: this.#connectionProvider,
-      createTableNode: cloneCreateTableNodeWithColumn(
+      executor: this.#executor,
+      createTableNode: createTableNode.cloneWithColumn(
         this.#createTableNode,
         columnBuilder.toOperationNode()
       ),
@@ -221,8 +206,7 @@ preventAwait(
 
 export interface CreateTableBuilderConstructorArgs {
   createTableNode: CreateTableNode
-  compiler?: QueryCompiler
-  connectionProvider?: ConnectionProvider
+  executor: QueryExecutor
 }
 
 export type ColumnBuilderCallback = (

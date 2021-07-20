@@ -7,23 +7,22 @@ export interface OrderByNode extends OperationNode {
   readonly items: ReadonlyArray<OrderByItemNode>
 }
 
-export function isOrderByNode(node: OperationNode): node is OrderByNode {
-  return node.kind === 'OrderByNode'
-}
+export const orderByNode = freeze({
+  is(node: OperationNode): node is OrderByNode {
+    return node.kind === 'OrderByNode'
+  },
 
-export function createOrderByNode(item: OrderByItemNode): OrderByNode {
-  return freeze({
-    kind: 'OrderByNode',
-    items: freeze([item]),
-  })
-}
+  create(item: OrderByItemNode): OrderByNode {
+    return freeze({
+      kind: 'OrderByNode',
+      items: freeze([item]),
+    })
+  },
 
-export function cloneOrderByNodeWithItem(
-  orderBy: OrderByNode,
-  item: OrderByItemNode
-): OrderByNode {
-  return freeze({
-    ...orderBy,
-    items: freeze([...orderBy.items, item]),
-  })
-}
+  cloneWithItem(orderBy: OrderByNode, item: OrderByItemNode): OrderByNode {
+    return freeze({
+      ...orderBy,
+      items: freeze([...orderBy.items, item]),
+    })
+  },
+})

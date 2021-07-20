@@ -1,21 +1,20 @@
-import { createFilterNode, FilterNode } from '../operation-node/filter-node'
+import { FilterNode, filterNode } from '../operation-node/filter-node'
 import { RawBuilder } from '../raw-builder/raw-builder'
 import { isFunction, isString } from '../util/object-utils'
 import {
   AnyQueryBuilder,
-  ArrayItemType,
   QueryBuilderFactory,
   RawBuilderFactory,
 } from '../query-builder/type-utils'
 import { isOperationNodeSource } from '../operation-node/operation-node-source'
-import { isRawNode, RawNode } from '../operation-node/raw-node'
+import { RawNode, rawNode } from '../operation-node/raw-node'
 import {
-  createOperatorNode,
+  Operator,
   OperatorNode,
+  operatorNode,
+  OPERATORS,
 } from '../operation-node/operator-node'
-import { AndNode } from '../operation-node/and-node'
-import { OrNode } from '../operation-node/or-node'
-import { createParensNode, ParensNode } from '../operation-node/parens-node'
+import { ParensNode, parensNode } from '../operation-node/parens-node'
 import {
   parseReferenceExpression,
   ReferenceExpression,
@@ -25,14 +24,15 @@ import {
   ValueExpressionOrList,
 } from './value-parser'
 import {
-  isSelectQueryNode,
+  selectQueryNode,
   SelectQueryNode,
 } from '../operation-node/select-query-node'
 import { SubQueryBuilder } from '../query-builder/sub-query-builder'
 import { createEmptySelectQuery } from '../query-builder/query-builder'
 import { JoinBuilder } from '../query-builder/join-builder'
 import { parseTableExpression } from './table-parser'
-import { createJoinNode, JoinNode } from '../operation-node/join-node'
+import { JoinNode, joinNode } from '../operation-node/join-node'
+import { FilterExpressionNode } from '../operation-node/operation-node-utils'
 
 export type ExistsFilterArg<DB, TB extends keyof DB> =
   | AnyQueryBuilder
@@ -40,43 +40,13 @@ export type ExistsFilterArg<DB, TB extends keyof DB> =
   | RawBuilder<any>
   | RawBuilderFactory<DB, TB>
 
-const OPERATOR_WHITELIST = [
-  '=',
-  '==',
-  '!=',
-  '<>',
-  '>',
-  '>=',
-  '<',
-  '<=',
-  'in',
-  'not in',
-  'is',
-  'is not',
-  'like',
-  'not like',
-  'ilike',
-  'not ilike',
-  '@>',
-  '<@',
-  '?',
-  '?',
-  '?&',
-  '!<',
-  '!>',
-  '<=>',
-] as const
-
-export type FilterOperatorArg =
-  | ArrayItemType<typeof OPERATOR_WHITELIST>
-  | RawBuilder<any>
-
+export type FilterOperatorArg = Operator | RawBuilder<any>
 export type FilterType = 'Where' | 'On' | 'Having'
 
 export function parseFilterArgs(
   filterType: FilterType,
   args: any[]
-): FilterNode | AndNode | OrNode | ParensNode {
+): FilterExpressionNode {
   if (args.length === 3) {
     return parseThreeArgFilter(args[0], args[1], args[2])
   } else if (args.length === 1) {
@@ -97,7 +67,7 @@ export function parseReferenceFilterArgs(
   op: FilterOperatorArg,
   rhs: ReferenceExpression<any, any>
 ): FilterNode {
-  return createFilterNode(
+  return filterNode.create(
     parseReferenceExpression(lhs),
     parseFilterOperator(op),
     parseReferenceExpression(rhs)
@@ -112,11 +82,11 @@ export function parseExistsFilterArgs(
     ? arg(new SubQueryBuilder()).toOperationNode()
     : arg.toOperationNode()
 
-  if (!isSelectQueryNode(node) && !isRawNode(node)) {
+  if (!selectQueryNode.is(node) && !rawNode.is(node)) {
     throw new Error('invalid where exists arg')
   }
 
-  return createFilterNode(undefined, createOperatorNode(type), node)
+  return filterNode.create(undefined, operatorNode.create(type), node)
 }
 
 function parseThreeArgFilter(
@@ -124,7 +94,7 @@ function parseThreeArgFilter(
   op: FilterOperatorArg,
   right: ValueExpressionOrList<any, any>
 ): FilterNode {
-  return createFilterNode(
+  return filterNode.create(
     parseReferenceExpression(left),
     parseFilterOperator(op),
     parseValueExpressionOrList(right)
@@ -137,8 +107,8 @@ function parseFilterOperator(op: FilterOperatorArg): OperatorNode | RawNode {
   } else if (isString(op)) {
     const opString = op.trim().toLowerCase()
 
-    if (OPERATOR_WHITELIST.includes(opString as any)) {
-      return createOperatorNode(opString)
+    if (OPERATORS.some((it) => it === opString)) {
+      return operatorNode.create(opString as Operator)
     }
   }
 
@@ -165,7 +135,7 @@ function parseWhereGrouper(
     throw new Error('no where methods called insided a grouper where')
   }
 
-  return createParensNode(queryNode.where.where)
+  return parensNode.create(queryNode.where.where)
 }
 
 function parseOnGrouper(
@@ -184,11 +154,11 @@ function parseOnGrouper(
     throw new Error('no `on` methods called insided a grouper where')
   }
 
-  return createParensNode(joinNode.on)
+  return parensNode.create(joinNode.on)
 }
 
 export function createEmptyJoinBuilder(): JoinBuilder<any, any> {
   return new JoinBuilder(
-    createJoinNode('InnerJoin', parseTableExpression('table'))
+    joinNode.create('InnerJoin', parseTableExpression('table'))
   )
 }

@@ -1,11 +1,10 @@
-import { ConnectionProvider } from '../driver/connection-provider'
-import { createCreateIndexNode } from '../operation-node/create-index-node'
-import { createCreateTableNode } from '../operation-node/create-table-node'
-import { createDropIndexNode } from '../operation-node/drop-index-node'
-import { createDropTableNode } from '../operation-node/drop-table-node'
+import { createIndexNode } from '../operation-node/create-index-node'
+import { createTableNode } from '../operation-node/create-table-node'
+import { dropIndexNode } from '../operation-node/drop-index-node'
+import { dropTableNode } from '../operation-node/drop-table-node'
 import { parseTable } from '../parser/table-parser'
-import { QueryCompiler } from '../query-compiler/query-compiler'
 import { freeze } from '../util/object-utils'
+import { QueryExecutor } from '../util/query-executor'
 import { CreateIndexBuilder } from './create-index-builder'
 import { CreateTableBuilder } from './create-table-builder'
 import { DropIndexBuilder } from './drop-index-builder'
@@ -97,32 +96,26 @@ export interface Schema {
   dropIndexIfExists(indexName: string): DropIndexBuilder
 }
 
-export function createSchemaModule(
-  compiler: QueryCompiler,
-  connectionProvider: ConnectionProvider
-): Schema {
+export function createSchemaModule(executor: QueryExecutor): Schema {
   return freeze({
     createTable(table: string): CreateTableBuilder {
       return new CreateTableBuilder({
-        compiler,
-        connectionProvider,
-        createTableNode: createCreateTableNode(parseTable(table)),
+        executor,
+        createTableNode: createTableNode.create(parseTable(table)),
       })
     },
 
     dropTable(table: string): DropTableBuilder {
       return new DropTableBuilder({
-        compiler,
-        connectionProvider,
-        dropTableNode: createDropTableNode(parseTable(table)),
+        executor,
+        dropTableNode: dropTableNode.create(parseTable(table)),
       })
     },
 
     dropTableIfExists(table: string): DropTableBuilder {
       return new DropTableBuilder({
-        compiler,
-        connectionProvider,
-        dropTableNode: createDropTableNode(parseTable(table), {
+        executor,
+        dropTableNode: dropTableNode.create(parseTable(table), {
           modifier: 'IfExists',
         }),
       })
@@ -130,25 +123,24 @@ export function createSchemaModule(
 
     createIndex(name: string): CreateIndexBuilder {
       return new CreateIndexBuilder({
-        compiler,
-        connectionProvider,
-        createIndexNode: createCreateIndexNode(name),
+        executor,
+        createIndexNode: createIndexNode.create(name),
       })
     },
 
     dropIndex(indexName: string): DropIndexBuilder {
       return new DropIndexBuilder({
-        compiler,
-        connectionProvider,
-        dropIndexNode: createDropIndexNode(indexName),
+        executor,
+        dropIndexNode: dropIndexNode.create(indexName),
       })
     },
 
     dropIndexIfExists(indexName: string): DropIndexBuilder {
       return new DropIndexBuilder({
-        compiler,
-        connectionProvider,
-        dropIndexNode: createDropIndexNode(indexName, { modifier: 'IfExists' }),
+        executor,
+        dropIndexNode: dropIndexNode.create(indexName, {
+          modifier: 'IfExists',
+        }),
       })
     },
   })

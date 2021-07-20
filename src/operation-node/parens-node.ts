@@ -1,23 +1,21 @@
-import { AndNode } from './and-node'
 import { OperationNode } from './operation-node'
-import { OrNode } from './or-node'
-import { FilterNode } from './filter-node'
 import { freeze } from '../util/object-utils'
-
-type ParensNodeChild = FilterNode | AndNode | OrNode | ParensNode
+import { FilterExpressionNode } from './operation-node-utils'
 
 export interface ParensNode extends OperationNode {
   readonly kind: 'ParensNode'
-  readonly node: ParensNodeChild
+  readonly node: FilterExpressionNode
 }
 
-export function isParensNode(node: OperationNode): node is ParensNode {
-  return node.kind === 'ParensNode'
-}
+export const parensNode = freeze({
+  is(node: OperationNode): node is ParensNode {
+    return node.kind === 'ParensNode'
+  },
 
-export function createParensNode(node: ParensNodeChild): ParensNode {
-  return freeze({
-    kind: 'ParensNode',
-    node,
-  })
-}
+  create(node: FilterExpressionNode): ParensNode {
+    return freeze({
+      kind: 'ParensNode',
+      node,
+    })
+  },
+})

@@ -16,19 +16,21 @@ export interface FilterNode extends OperationNode {
   readonly right: ValueExpressionNode
 }
 
-export function isFilterNode(node: OperationNode): node is FilterNode {
-  return node.kind === 'FilterNode'
-}
+export const filterNode = freeze({
+  is(node: OperationNode): node is FilterNode {
+    return node.kind === 'FilterNode'
+  },
 
-export function createFilterNode(
-  left: ReferenceExpressionNode | undefined,
-  op: OperatorNode | RawNode,
-  right: ValueExpressionNode
-): FilterNode {
-  return freeze({
-    kind: 'FilterNode',
-    left,
-    op,
-    right,
-  })
-}
+  create(
+    left: ReferenceExpressionNode | undefined,
+    op: OperatorNode | RawNode,
+    right: ValueExpressionNode
+  ): FilterNode {
+    return freeze({
+      kind: 'FilterNode',
+      left,
+      op,
+      right,
+    })
+  },
+})

@@ -7,8 +7,6 @@ import {
   testSql,
 } from './test-setup'
 
-const TEST_TABLE = 'test'
-
 for (const dialect of BUILT_IN_DIALECTS) {
   describe(`${dialect}: schema`, () => {
     let ctx: TestContext
@@ -18,7 +16,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
     })
 
     afterEach(async () => {
-      await ctx.db.schema.dropTableIfExists(TEST_TABLE).execute()
+      await ctx.db.schema.dropTableIfExists('test').execute()
       await clearDatabase(ctx)
     })
 
@@ -29,7 +27,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
     describe('create table', () => {
       it('should create a table with all data types', async () => {
         const builder = ctx.db.schema
-          .createTable(TEST_TABLE)
+          .createTable('test')
           .integer('a', (col) => col.primary().increments())
           .integer('b', (col) => col.references('test.a').onDelete('cascade'))
           .string('c')
@@ -70,7 +68,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
       if (dialect === 'postgres') {
         it('bigInteger increments key should create a bigserial column', async () => {
           const builder = ctx.db.schema
-            .createTable(TEST_TABLE)
+            .createTable('test')
             .bigInteger('a', (col) => col.primary().increments())
 
           testSql(builder, dialect, {
@@ -82,25 +80,79 @@ for (const dialect of BUILT_IN_DIALECTS) {
 
           await builder.execute()
         })
+
+        it('should create a table in specific schema', async () => {
+          const builder = ctx.db.schema
+            .createTable('public.test')
+            .integer('id', (col) => col.primary().increments())
+            .integer('foreign_key', (col) => col.references('public.test.id'))
+
+          testSql(builder, dialect, {
+            postgres: {
+              sql: `create table "public"."test" ("id" serial primary key, "foreign_key" integer references "public"."test"("id"))`,
+              bindings: [],
+            },
+          })
+
+          await builder.execute()
+        })
       }
     })
 
-    describe('create index', () => {
-      it('should create an index', async () => {
+    describe('drop table', () => {
+      beforeEach(async () => {
         await ctx.db.schema
-          .createTable(TEST_TABLE)
+          .createTable('test')
           .bigInteger('id', (col) => col.primary().increments())
-          .string('name')
           .execute()
+      })
 
-        const builder = ctx.db.schema
-          .createIndex(`${TEST_TABLE}_name_index`)
-          .on(TEST_TABLE)
-          .column('name')
+      it('should drop a table', async () => {
+        const builder = ctx.db.schema.dropTable('test')
 
         testSql(builder, dialect, {
           postgres: {
-            sql: `create index "test_name_index" on "test" ("name")`,
+            sql: `drop table "test"`,
+            bindings: [],
+          },
+        })
+
+        await builder.execute()
+      })
+
+      it('should drop a table if it exists', async () => {
+        const builder = ctx.db.schema.dropTableIfExists('test')
+
+        testSql(builder, dialect, {
+          postgres: {
+            sql: `drop table if exists "test"`,
+            bindings: [],
+          },
+        })
+
+        await builder.execute()
+      })
+    })
+
+    describe('create index', () => {
+      beforeEach(async () => {
+        await ctx.db.schema
+          .createTable('test')
+          .bigInteger('id', (col) => col.primary().increments())
+          .string('first_name')
+          .string('last_name')
+          .execute()
+      })
+
+      it('should create an index', async () => {
+        const builder = ctx.db.schema
+          .createIndex(`test_first_name_index`)
+          .on('test')
+          .column('first_name')
+
+        testSql(builder, dialect, {
+          postgres: {
+            sql: `create index "test_first_name_index" on "test" ("first_name")`,
             bindings: [],
           },
         })
@@ -109,21 +161,15 @@ for (const dialect of BUILT_IN_DIALECTS) {
       })
 
       it('should create a unique index', async () => {
-        await ctx.db.schema
-          .createTable(TEST_TABLE)
-          .bigInteger('id', (col) => col.primary().increments())
-          .string('name')
-          .execute()
-
         const builder = ctx.db.schema
-          .createIndex(`${TEST_TABLE}_name_index`)
+          .createIndex(`test_first_name_index`)
           .unique()
-          .on(TEST_TABLE)
-          .column('name')
+          .on('test')
+          .column('first_name')
 
         testSql(builder, dialect, {
           postgres: {
-            sql: `create unique index "test_name_index" on "test" ("name")`,
+            sql: `create unique index "test_first_name_index" on "test" ("first_name")`,
             bindings: [],
           },
         })
@@ -132,21 +178,15 @@ for (const dialect of BUILT_IN_DIALECTS) {
       })
 
       it('should create an index with a type', async () => {
-        await ctx.db.schema
-          .createTable(TEST_TABLE)
-          .bigInteger('id', (col) => col.primary().increments())
-          .string('name')
-          .execute()
-
         const builder = ctx.db.schema
-          .createIndex(`${TEST_TABLE}_name_index`)
-          .on(TEST_TABLE)
+          .createIndex(`test_first_name_index`)
+          .on('test')
           .using('hash')
-          .column('name')
+          .column('first_name')
 
         testSql(builder, dialect, {
           postgres: {
-            sql: `create index "test_name_index" on "test" using hash ("name")`,
+            sql: `create index "test_first_name_index" on "test" using hash ("first_name")`,
             bindings: [],
           },
         })
@@ -155,16 +195,9 @@ for (const dialect of BUILT_IN_DIALECTS) {
       })
 
       it('should create an index for multiple columns', async () => {
-        await ctx.db.schema
-          .createTable(TEST_TABLE)
-          .bigInteger('id', (col) => col.primary().increments())
-          .string('first_name')
-          .string('last_name')
-          .execute()
-
         const builder = ctx.db.schema
-          .createIndex(`${TEST_TABLE}_name_index`)
-          .on(TEST_TABLE)
+          .createIndex(`test_name_index`)
+          .on('test')
           .columns(['first_name', 'last_name'])
 
         testSql(builder, dialect, {
@@ -178,20 +211,56 @@ for (const dialect of BUILT_IN_DIALECTS) {
       })
 
       it('should create an index for an expression', async () => {
-        await ctx.db.schema
-          .createTable(TEST_TABLE)
-          .bigInteger('id', (col) => col.primary().increments())
-          .string('name')
-          .execute()
-
         const builder = ctx.db.schema
-          .createIndex(`${TEST_TABLE}_name_index`)
-          .on(TEST_TABLE)
-          .expression(`name < 'Sami'`)
+          .createIndex(`test_first_name_index`)
+          .on('test')
+          .expression(`first_name < 'Sami'`)
 
         testSql(builder, dialect, {
           postgres: {
-            sql: `create index "test_name_index" on "test" ((name < 'Sami'))`,
+            sql: `create index "test_first_name_index" on "test" ((first_name < 'Sami'))`,
+            bindings: [],
+          },
+        })
+
+        await builder.execute()
+      })
+    })
+
+    describe('drop index', () => {
+      beforeEach(async () => {
+        await ctx.db.schema
+          .createTable('test')
+          .bigInteger('id', (col) => col.primary().increments())
+          .string('first_name')
+          .execute()
+
+        await ctx.db.schema
+          .createIndex(`test_first_name_index`)
+          .on('test')
+          .column('first_name')
+          .execute()
+      })
+
+      it('should drop an index', async () => {
+        const builder = ctx.db.schema.dropIndex(`test_first_name_index`)
+
+        testSql(builder, dialect, {
+          postgres: {
+            sql: `drop index "test_first_name_index"`,
+            bindings: [],
+          },
+        })
+
+        await builder.execute()
+      })
+
+      it('should drop an index if it exists', async () => {
+        const builder = ctx.db.schema.dropIndexIfExists(`test_first_name_index`)
+
+        testSql(builder, dialect, {
+          postgres: {
+            sql: `drop index if exists "test_first_name_index"`,
             bindings: [],
           },
         })

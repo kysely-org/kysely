@@ -7,17 +7,15 @@ export interface GroupByItemNode extends OperationNode {
   readonly groupBy: ReferenceExpressionNode
 }
 
-export function isGroupByItemNode(
-  node: OperationNode
-): node is GroupByItemNode {
-  return node.kind === 'GroupByItemNode'
-}
+export const groupByItemNode = freeze({
+  is(node: OperationNode): node is GroupByItemNode {
+    return node.kind === 'GroupByItemNode'
+  },
 
-export function createGroupByItemNode(
-  groupBy: ReferenceExpressionNode
-): GroupByItemNode {
-  return freeze({
-    kind: 'GroupByItemNode',
-    groupBy,
-  })
-}
+  create(groupBy: ReferenceExpressionNode): GroupByItemNode {
+    return freeze({
+      kind: 'GroupByItemNode',
+      groupBy,
+    })
+  },
+})

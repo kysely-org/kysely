@@ -9,26 +9,26 @@ export interface CreateTableNode extends OperationNode {
   readonly columns: ReadonlyArray<ColumnDefinitionNode>
 }
 
-export function isCreateTableNode(
-  node: OperationNode
-): node is CreateTableNode {
-  return node.kind === 'CreateTableNode'
-}
+export const createTableNode = freeze({
+  is(node: OperationNode): node is CreateTableNode {
+    return node.kind === 'CreateTableNode'
+  },
 
-export function createCreateTableNode(table: TableNode): CreateTableNode {
-  return freeze({
-    kind: 'CreateTableNode',
-    table,
-    columns: freeze([]),
-  })
-}
+  create(table: TableNode): CreateTableNode {
+    return freeze({
+      kind: 'CreateTableNode',
+      table,
+      columns: freeze([]),
+    })
+  },
 
-export function cloneCreateTableNodeWithColumn(
-  node: CreateTableNode,
-  column: ColumnDefinitionNode
-): CreateTableNode {
-  return freeze({
-    ...node,
-    columns: freeze([...node.columns, column]),
-  })
-}
+  cloneWithColumn(
+    node: CreateTableNode,
+    column: ColumnDefinitionNode
+  ): CreateTableNode {
+    return freeze({
+      ...node,
+      columns: freeze([...node.columns, column]),
+    })
+  },
+})

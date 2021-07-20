@@ -1,7 +1,7 @@
-import { ColumnNode, createColumnNode } from '../operation-node/column-node'
+import { ColumnNode, columnNode } from '../operation-node/column-node'
 import { InsertValuesNode } from '../operation-node/insert-query-node'
-import { createPrimitiveValueListNode } from '../operation-node/primitive-value-list-node'
-import { createValueListNode } from '../operation-node/value-list-node'
+import { primitiveValueListNode } from '../operation-node/primitive-value-list-node'
+import { valueListNode } from '../operation-node/value-list-node'
 import { isPrimitive, PrimitiveValue } from '../util/object-utils'
 import {
   MutationObject,
@@ -40,13 +40,13 @@ function parseInsertColumnsAndValues(
     }
 
     if (rowValues.every(isPrimitive)) {
-      values.push(createPrimitiveValueListNode(rowValues))
+      values.push(primitiveValueListNode.create(rowValues))
     } else {
       values.push(
-        createValueListNode(rowValues.map(parseMutationValueExpression))
+        valueListNode.create(rowValues.map(parseMutationValueExpression))
       )
     }
   }
 
-  return [columns.map(createColumnNode), values]
+  return [columns.map(columnNode.create), values]
 }

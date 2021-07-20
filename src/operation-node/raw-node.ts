@@ -7,21 +7,23 @@ export interface RawNode extends OperationNode {
   readonly params: ReadonlyArray<OperationNode>
 }
 
-export function isRawNode(node: OperationNode): node is RawNode {
-  return node.kind === 'RawNode'
-}
+export const rawNode = freeze({
+  is(node: OperationNode): node is RawNode {
+    return node.kind === 'RawNode'
+  },
 
-export function createRawNode(
-  sqlFragments: string[],
-  params: ReadonlyArray<OperationNode>
-): RawNode {
-  return freeze({
-    kind: 'RawNode',
-    sqlFragments: freeze(sqlFragments),
-    params: freeze(params),
-  })
-}
+  create(
+    sqlFragments: string[],
+    params: ReadonlyArray<OperationNode>
+  ): RawNode {
+    return freeze({
+      kind: 'RawNode',
+      sqlFragments: freeze(sqlFragments),
+      params: freeze(params),
+    })
+  },
 
-export function createRawNodeWithSql(sql: string): RawNode {
-  return createRawNode([sql], [])
-}
+  createWithSql(sql: string): RawNode {
+    return rawNode.create([sql], [])
+  },
+})

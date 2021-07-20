@@ -1,24 +1,17 @@
-import { ConnectionProvider } from '../driver/connection-provider'
 import { DropTableNode } from '../operation-node/drop-table-node'
 import { OperationNodeSource } from '../operation-node/operation-node-source'
 import { CompiledQuery } from '../query-compiler/compiled-query'
-import { QueryCompiler } from '../query-compiler/query-compiler'
 import { Compilable } from '../util/compilable'
 import { preventAwait } from '../util/prevent-await'
+import { QueryExecutor } from '../util/query-executor'
 
 export class DropTableBuilder implements OperationNodeSource, Compilable {
   readonly #dropTableNode: DropTableNode
-  readonly #compiler?: QueryCompiler
-  readonly #connectionProvider?: ConnectionProvider
+  readonly #executor: QueryExecutor
 
-  constructor({
-    dropTableNode,
-    compiler,
-    connectionProvider,
-  }: DropTableBuilderConstructorArgs) {
+  constructor({ dropTableNode, executor }: DropTableBuilderConstructorArgs) {
     this.#dropTableNode = dropTableNode
-    this.#compiler = compiler
-    this.#connectionProvider = connectionProvider
+    this.#executor = executor
   }
 
   toOperationNode(): DropTableNode {
@@ -26,21 +19,11 @@ export class DropTableBuilder implements OperationNodeSource, Compilable {
   }
 
   compile(): CompiledQuery {
-    if (!this.#compiler) {
-      throw new Error(`this builder cannot be compiled to SQL`)
-    }
-
-    return this.#compiler.compileQuery(this.#dropTableNode)
+    return this.#executor.compileQuery(this.#dropTableNode)
   }
 
   async execute(): Promise<void> {
-    if (!this.#connectionProvider) {
-      throw new Error(`this builder cannot be executed`)
-    }
-
-    await this.#connectionProvider.withConnection(async (connection) => {
-      await connection.executeQuery(this.compile())
-    })
+    await this.#executor.executeQuery(this.#dropTableNode)
   }
 }
 
@@ -51,6 +34,5 @@ preventAwait(
 
 export interface DropTableBuilderConstructorArgs {
   dropTableNode: DropTableNode
-  compiler?: QueryCompiler
-  connectionProvider?: ConnectionProvider
+  executor: QueryExecutor
 }

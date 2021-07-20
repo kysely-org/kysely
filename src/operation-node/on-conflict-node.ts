@@ -10,27 +10,27 @@ export interface OnConflictNode extends OperationNode {
   readonly updates?: ReadonlyArray<ColumnUpdateNode>
 }
 
-export function isOnConflictNode(node: OperationNode): node is OnConflictNode {
-  return node.kind === 'OnConflictNode'
-}
+export const onConflictNode = freeze({
+  is(node: OperationNode): node is OnConflictNode {
+    return node.kind === 'OnConflictNode'
+  },
 
-export function createOnConflictNodeWithDoNothing(
-  columns: ReadonlyArray<ColumnNode>
-): OnConflictNode {
-  return freeze({
-    kind: 'OnConflictNode',
-    columns,
-    doNothing: true,
-  })
-}
+  createWithDoNothing(columns: ReadonlyArray<ColumnNode>): OnConflictNode {
+    return freeze({
+      kind: 'OnConflictNode',
+      columns,
+      doNothing: true,
+    })
+  },
 
-export function createOnConflictNodeWithUpdates(
-  columns: ReadonlyArray<ColumnNode>,
-  updates: ReadonlyArray<ColumnUpdateNode>
-): OnConflictNode {
-  return freeze({
-    kind: 'OnConflictNode',
-    columns,
-    updates,
-  })
-}
+  createWithUpdates(
+    columns: ReadonlyArray<ColumnNode>,
+    updates: ReadonlyArray<ColumnUpdateNode>
+  ): OnConflictNode {
+    return freeze({
+      kind: 'OnConflictNode',
+      columns,
+      updates,
+    })
+  },
+})

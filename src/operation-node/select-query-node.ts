@@ -1,22 +1,14 @@
 import { freeze } from '../util/object-utils'
-import { createFromNodeWithItems, FromNode } from './from-node'
+import { FromNode, fromNode } from './from-node'
 import { GroupByItemNode } from './group-by-item-node'
-import {
-  cloneGroupByNodeWithItems,
-  createGroupByNode,
-  GroupByNode,
-} from './group-by-node'
+import { GroupByNode, groupByNode } from './group-by-node'
 import { JoinNode } from './join-node'
 import { LimitNode } from './limit-node'
 import { OffsetNode } from './offset-node'
 import { OperationNode } from './operation-node'
 import { TableExpressionNode } from './operation-node-utils'
 import { OrderByItemNode } from './order-by-item-node'
-import {
-  cloneOrderByNodeWithItem,
-  createOrderByNode,
-  OrderByNode,
-} from './order-by-node'
+import { OrderByNode, orderByNode } from './order-by-node'
 import { SelectionNode } from './selection-node'
 import { WhereNode } from './where-node'
 
@@ -43,95 +35,93 @@ export interface SelectQueryNode extends OperationNode {
   readonly offset?: OffsetNode
 }
 
-export function isSelectQueryNode(
-  node: OperationNode
-): node is SelectQueryNode {
-  return node.kind === 'SelectQueryNode'
-}
+export const selectQueryNode = freeze({
+  is(node: OperationNode): node is SelectQueryNode {
+    return node.kind === 'SelectQueryNode'
+  },
 
-export function createSelectQueryNodeWithFromItems(
-  fromItems: ReadonlyArray<TableExpressionNode>
-): SelectQueryNode {
-  return freeze({
-    kind: 'SelectQueryNode',
-    from: createFromNodeWithItems(fromItems),
-  })
-}
+  create(fromItems: ReadonlyArray<TableExpressionNode>): SelectQueryNode {
+    return freeze({
+      kind: 'SelectQueryNode',
+      from: fromNode.create(fromItems),
+    })
+  },
 
-export function cloneSelectQueryNodeWithSelections(
-  select: SelectQueryNode,
-  selections: ReadonlyArray<SelectionNode>
-): SelectQueryNode {
-  return freeze({
-    ...select,
-    selections: select.selections
-      ? freeze([...select.selections, ...selections])
-      : freeze(selections),
-  })
-}
+  cloneWithSelections(
+    select: SelectQueryNode,
+    selections: ReadonlyArray<SelectionNode>
+  ): SelectQueryNode {
+    return freeze({
+      ...select,
+      selections: select.selections
+        ? freeze([...select.selections, ...selections])
+        : freeze(selections),
+    })
+  },
 
-export function cloneSelectQueryNodeWithDistinctOnSelections(
-  select: SelectQueryNode,
-  selections: ReadonlyArray<SelectionNode>
-): SelectQueryNode {
-  return freeze({
-    ...select,
-    distinctOnSelections: select.distinctOnSelections
-      ? freeze([...select.distinctOnSelections, ...selections])
-      : freeze(selections),
-  })
-}
+  cloneWithDistinctOnSelections(
+    select: SelectQueryNode,
+    selections: ReadonlyArray<SelectionNode>
+  ): SelectQueryNode {
+    return freeze({
+      ...select,
+      distinctOnSelections: select.distinctOnSelections
+        ? freeze([...select.distinctOnSelections, ...selections])
+        : freeze(selections),
+    })
+  },
 
-export function cloneSelectQueryNodeWithModifier(
-  select: SelectQueryNode,
-  modifier: SelectModifier
-): SelectQueryNode {
-  return freeze({
-    ...select,
-    modifier,
-  })
-}
+  cloneWithModifier(
+    select: SelectQueryNode,
+    modifier: SelectModifier
+  ): SelectQueryNode {
+    return freeze({
+      ...select,
+      modifier,
+    })
+  },
 
-export function cloneSelectQueryNodeWithOrderByItem(
-  selectNode: SelectQueryNode,
-  item: OrderByItemNode
-): SelectQueryNode {
-  return freeze({
-    ...selectNode,
-    orderBy: selectNode.orderBy
-      ? cloneOrderByNodeWithItem(selectNode.orderBy, item)
-      : createOrderByNode(item),
-  })
-}
+  cloneWithOrderByItem(
+    selectNode: SelectQueryNode,
+    item: OrderByItemNode
+  ): SelectQueryNode {
+    return freeze({
+      ...selectNode,
+      orderBy: selectNode.orderBy
+        ? orderByNode.cloneWithItem(selectNode.orderBy, item)
+        : orderByNode.create(item),
+    })
+  },
 
-export function cloneSelectQueryNodeWithGroupByItems(
-  selectNode: SelectQueryNode,
-  items: ReadonlyArray<GroupByItemNode>
-): SelectQueryNode {
-  return freeze({
-    ...selectNode,
-    groupBy: selectNode.groupBy
-      ? cloneGroupByNodeWithItems(selectNode.groupBy, items)
-      : createGroupByNode(items),
-  })
-}
+  cloneWithGroupByItems(
+    selectNode: SelectQueryNode,
+    items: ReadonlyArray<GroupByItemNode>
+  ): SelectQueryNode {
+    return freeze({
+      ...selectNode,
+      groupBy: selectNode.groupBy
+        ? groupByNode.cloneWithItems(selectNode.groupBy, items)
+        : groupByNode.create(items),
+    })
+  },
 
-export function cloneSelectQueryNodeWithLimit(
-  selectNode: SelectQueryNode,
-  limit: LimitNode
-): SelectQueryNode {
-  return freeze({
-    ...selectNode,
-    limit,
-  })
-}
+  cloneWithLimit(
+    selectNode: SelectQueryNode,
+    limit: LimitNode
+  ): SelectQueryNode {
+    return freeze({
+      ...selectNode,
+      limit,
+    })
+  },
 
-export function cloneSelectQueryNodeWithOffset(
-  selectNode: SelectQueryNode,
-  offset: OffsetNode
-): SelectQueryNode {
-  return freeze({
-    ...selectNode,
-    offset,
-  })
-}
+  cloneWithOffset(
+    selectNode: SelectQueryNode,
+    offset: OffsetNode
+  ): SelectQueryNode {
+    return freeze({
+      ...selectNode,
+      offset,
+    })
+  },
+})

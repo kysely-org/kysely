@@ -13,16 +13,16 @@ import { Dialect } from './dialect/dialect'
 import { PostgresDialect } from './dialect/postgres/postgres-dialect'
 import { Driver } from './driver/driver'
 import { createSchemaModule, Schema } from './schema/schema'
-import { createSelectQueryNodeWithFromItems } from './operation-node/select-query-node'
-import { createInsertQueryNodeWithTable } from './operation-node/insert-query-node'
-import { createDeleteQueryNodeWithFromItem } from './operation-node/delete-query-node'
+import { selectQueryNode } from './operation-node/select-query-node'
+import { insertQueryNode } from './operation-node/insert-query-node'
+import { deleteQueryNode } from './operation-node/delete-query-node'
 import { createDynamicModule, Dynamic } from './dynamic/dynamic'
 import {
   DeleteResultTypeTag,
   InsertResultTypeTag,
   UpdateResultTypeTag,
 } from './query-builder/type-utils'
-import { createUpdateQueryNodeWithTable } from './operation-node/update-query-node'
+import { updateQueryNode } from './operation-node/update-query-node'
 import { QueryCompiler } from './query-compiler/query-compiler'
 import { DefaultConnectionProvider } from './driver/default-connection-provider'
 import { ConnectionProvider } from './driver/connection-provider'
@@ -33,6 +33,8 @@ import {
   INTERNAL_DRIVER_ENSURE_DESTROY,
   INTERNAL_DRIVER_RELEASE_CONNECTION,
 } from './driver/driver-internal'
+import { createMigrationModule, Migration } from './migration/migration'
+import { QueryExecutor } from './util/query-executor'
 
 /**
  * The main Kysely class.
@@ -69,6 +71,7 @@ import {
  *    tables. See the examples above.
  */
 export class Kysely<DB> {
+  readonly #dialect: Dialect
   readonly #driver: Driver
   readonly #compiler: QueryCompiler
   readonly #connectionProvider: ConnectionProvider
@@ -77,23 +80,24 @@ export class Kysely<DB> {
   constructor(args: KyselyConstructorArgs)
   constructor(configOrArgs: KyselyConfig | KyselyConstructorArgs) {
     if (isKyselyConstructorArgs(configOrArgs)) {
-      const { driver, compiler, connectionProvider } = configOrArgs
+      const { dialect, driver, compiler, connectionProvider } = configOrArgs
 
+      this.#dialect = dialect
       this.#driver = driver
       this.#compiler = compiler
       this.#connectionProvider = connectionProvider
     } else {
       const config = configOrArgs
-      const dialect = createDialect(config)
 
-      this.#driver = dialect.createDriver(config)
-      this.#compiler = dialect.createQueryCompiler()
+      this.#dialect = createDialect(config)
+      this.#driver = this.#dialect.createDriver(config)
+      this.#compiler = this.#dialect.createQueryCompiler()
       this.#connectionProvider = new DefaultConnectionProvider(this.#driver)
     }
   }
 
   /**
-   * Always returns true if this `Kysely` instance is a transaction.
+   * Returns true if this `Kysely` instance is a transaction.
    *
    * You can also use `db instanceof Transaction`.
    */
@@ -105,7 +109,16 @@ export class Kysely<DB> {
    * Returns a the {@link Schema} module for building database schema.
    */
   get schema(): Schema {
-    return createSchemaModule(this.#compiler, this.#connectionProvider)
+    return createSchemaModule(
+      QueryExecutor.create(this.#compiler, this.#connectionProvider)
+    )
+  }
+
+  /**
+   * Returns a the {@link Migration} module for managing and running migrations.
+   */
+  get migration(): Migration {
+    return createMigrationModule(this.#dialect, this.#compiler, this.#driver)
   }
 
   /**
@@ -237,11 +250,8 @@ export class Kysely<DB> {
 
   selectFrom(from: any): any {
     return new QueryBuilder({
-      compiler: this.#compiler,
-      connectionProvider: this.#connectionProvider,
-      queryNode: createSelectQueryNodeWithFromItems(
-        parseTableExpressionOrList(from)
-      ),
+      executor: QueryExecutor.create(this.#compiler, this.#connectionProvider),
+      queryNode: selectQueryNode.create(parseTableExpressionOrList(from)),
     })
   }
 
@@ -288,9 +298,8 @@ export class Kysely<DB> {
     table: T
   ): QueryBuilder<DB, T, InsertResultTypeTag> {
     return new QueryBuilder({
-      compiler: this.#compiler,
-      connectionProvider: this.#connectionProvider,
-      queryNode: createInsertQueryNodeWithTable(parseTable(table)),
+      executor: QueryExecutor.create(this.#compiler, this.#connectionProvider),
+      queryNode: insertQueryNode.create(parseTable(table)),
     })
   }
 
@@ -312,9 +321,8 @@ export class Kysely<DB> {
     table: TR
   ): QueryBuilderWithTable<DB, never, DeleteResultTypeTag, TR> {
     return new QueryBuilder({
-      compiler: this.#compiler,
-      connectionProvider: this.#connectionProvider,
-      queryNode: createDeleteQueryNodeWithFromItem(parseTableExpression(table)),
+      executor: QueryExecutor.create(this.#compiler, this.#connectionProvider),
+      queryNode: deleteQueryNode.create(parseTableExpression(table)),
     })
   }
 
@@ -340,9 +348,8 @@ export class Kysely<DB> {
     table: TR
   ): QueryBuilderWithTable<DB, never, UpdateResultTypeTag, TR> {
     return new QueryBuilder({
-      compiler: this.#compiler,
-      connectionProvider: this.#connectionProvider,
-      queryNode: createUpdateQueryNodeWithTable(parseTableExpression(table)),
+      executor: QueryExecutor.create(this.#compiler, this.#connectionProvider),
+      queryNode: updateQueryNode.create(parseTableExpression(table)),
     })
   }
 
@@ -468,8 +475,7 @@ export class Kysely<DB> {
     return new RawBuilder({
       sql,
       params,
-      compiler: this.#compiler,
-      connectionProvider: this.#connectionProvider,
+      executor: QueryExecutor.create(this.#compiler, this.#connectionProvider),
     })
   }
 
@@ -519,7 +525,9 @@ export class Kysely<DB> {
    */
   async transaction<T>(callback: (trx: Transaction<DB>) => T): Promise<T> {
     const connection = await this.#driver[INTERNAL_DRIVER_ACQUIRE_CONNECTION]()
+
     const transaction = new Transaction<DB>({
+      dialect: this.#dialect,
       driver: this.#driver,
       compiler: this.#compiler,
       connectionProvider: new SingleConnectionProvider(connection),
@@ -571,6 +579,7 @@ export class Transaction<DB> extends Kysely<DB> {
 }
 
 export interface KyselyConstructorArgs {
+  dialect: Dialect
   driver: Driver
   compiler: QueryCompiler
   connectionProvider: ConnectionProvider
@@ -579,6 +588,7 @@ export interface KyselyConstructorArgs {
 function isKyselyConstructorArgs(obj: any): obj is KyselyConstructorArgs {
   return (
     isObject(obj) &&
+    obj.hasOwnProperty('dialect') &&
     obj.hasOwnProperty('driver') &&
     obj.hasOwnProperty('compiler') &&
     obj.hasOwnProperty('connectionProvider')

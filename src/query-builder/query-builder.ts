@@ -1,4 +1,4 @@
-import { AliasNode, createAliasNode } from '../operation-node/alias-node'
+import { AliasNode, aliasNode } from '../operation-node/alias-node'
 import { OperationNodeSource } from '../operation-node/operation-node-source'
 import { CompiledQuery } from '../query-compiler/compiled-query'
 import {
@@ -21,7 +21,6 @@ import {
   FilterOperatorArg,
   parseReferenceFilterArgs,
 } from '../parser/filter-parser'
-import { ConnectionProvider } from '../driver/connection-provider'
 import { parseInsertValuesArgs } from '../parser/insert-values-parser'
 import { QueryBuilderWithReturning } from '../parser/returning-parser'
 import {
@@ -32,40 +31,23 @@ import {
 } from '../parser/reference-parser'
 import { ValueExpressionOrList } from '../parser/value-parser'
 import {
-  createOrderByItemNode,
+  orderByItemNode,
   OrderByDirection,
 } from '../operation-node/order-by-item-node'
 import {
-  cloneSelectQueryNodeWithDistinctOnSelections,
-  cloneSelectQueryNodeWithGroupByItems,
-  cloneSelectQueryNodeWithLimit,
-  cloneSelectQueryNodeWithModifier,
-  cloneSelectQueryNodeWithOffset,
-  cloneSelectQueryNodeWithOrderByItem,
-  cloneSelectQueryNodeWithSelections,
-  createSelectQueryNodeWithFromItems,
-  isSelectQueryNode,
+  selectQueryNode,
   SelectQueryNode,
 } from '../operation-node/select-query-node'
 import {
-  cloneInsertQueryNodeWithColumnsAndValues,
-  cloneInsertQueryNodeWithOnConflictDoNothing,
-  cloneInsertQueryNodeWithOnConflictUpdate,
   InsertQueryNode,
-  isInsertQueryNode,
+  insertQueryNode,
 } from '../operation-node/insert-query-node'
 import {
-  DeleteQueryNode,
-  isDeleteQueryNode,
-} from '../operation-node/delete-query-node'
-import {
-  cloneQueryNodeWithJoin,
-  cloneQueryNodeWithReturningSelections,
-  cloneQueryNodeWithWhere,
-  isMutatingQueryNode,
+  queryNode,
+  FilterableQueryNode,
   MutatingQueryNode,
   QueryNode,
-} from '../operation-node/query-node-utils'
+} from '../operation-node/query-node'
 import {
   AnyColumn,
   DeleteResultTypeTag,
@@ -73,21 +55,19 @@ import {
   UpdateResultTypeTag,
 } from './type-utils'
 import { OrderByExpression } from '../parser/order-by-parser'
-import { createGroupByItemNode } from '../operation-node/group-by-item-node'
+import { groupByItemNode } from '../operation-node/group-by-item-node'
 import {
-  cloneUpdateQueryNodeWithColumnUpdates,
-  isUpdateQueryNode,
+  updateQueryNode,
   UpdateQueryNode,
 } from '../operation-node/update-query-node'
 import { MutationObject } from '../parser/mutation-parser'
 import { parseUpdateObject } from '../parser/update-set-parser'
-import { QueryCompiler } from '../query-compiler/query-compiler'
 import { preventAwait } from '../util/prevent-await'
-import { createLimitNode } from '../operation-node/limit-node'
-import { createOffsetNode } from '../operation-node/offset-node'
-import { asArray, isString } from '../util/object-utils'
-import { createColumnNode } from '../operation-node/column-node'
+import { limitNode } from '../operation-node/limit-node'
+import { offsetNode } from '../operation-node/offset-node'
+import { asArray } from '../util/object-utils'
 import { Compilable } from '../util/compilable'
+import { QueryExecutor } from '../util/query-executor'
 
 /**
  * The main query builder class.
@@ -108,17 +88,11 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
   implements OperationNodeSource, Compilable
 {
   readonly #queryNode: QueryNode
-  readonly #compiler?: QueryCompiler
-  readonly #connectionProvider?: ConnectionProvider
+  readonly #executor: QueryExecutor
 
-  constructor({
-    queryNode,
-    compiler,
-    connectionProvider,
-  }: QueryBuilderConstructorArgs) {
+  constructor({ queryNode, executor }: QueryBuilderConstructorArgs) {
     this.#queryNode = queryNode
-    this.#compiler = compiler
-    this.#connectionProvider = connectionProvider
+    this.#executor = executor
   }
 
   /**
@@ -281,9 +255,8 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
     ensureCanHaveWhereClause(this.#queryNode)
 
     return new QueryBuilder({
-      compiler: this.#compiler,
-      connectionProvider: this.#connectionProvider,
-      queryNode: cloneQueryNodeWithWhere(
+      executor: this.#executor,
+      queryNode: queryNode.cloneWithWhere(
         this.#queryNode,
         'and',
         parseFilterArgs('Where', args)
@@ -347,9 +320,8 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
     ensureCanHaveWhereClause(this.#queryNode)
 
     return new QueryBuilder({
-      compiler: this.#compiler,
-      connectionProvider: this.#connectionProvider,
-      queryNode: cloneQueryNodeWithWhere(
+      executor: this.#executor,
+      queryNode: queryNode.cloneWithWhere(
         this.#queryNode,
         'and',
         parseReferenceFilterArgs(lhs, op, rhs)
@@ -430,9 +402,8 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
     ensureCanHaveWhereClause(this.#queryNode)
 
     return new QueryBuilder({
-      compiler: this.#compiler,
-      connectionProvider: this.#connectionProvider,
-      queryNode: cloneQueryNodeWithWhere(
+      executor: this.#executor,
+      queryNode: queryNode.cloneWithWhere(
         this.#queryNode,
         'or',
         parseFilterArgs('Where', args)
@@ -454,9 +425,8 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
     ensureCanHaveWhereClause(this.#queryNode)
 
     return new QueryBuilder({
-      compiler: this.#compiler,
-      connectionProvider: this.#connectionProvider,
-      queryNode: cloneQueryNodeWithWhere(
+      executor: this.#executor,
+      queryNode: queryNode.cloneWithWhere(
         this.#queryNode,
         'or',
         parseReferenceFilterArgs(lhs, op, rhs)
@@ -525,9 +495,8 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
     ensureCanHaveWhereClause(this.#queryNode)
 
     return new QueryBuilder({
-      compiler: this.#compiler,
-      connectionProvider: this.#connectionProvider,
-      queryNode: cloneQueryNodeWithWhere(
+      executor: this.#executor,
+      queryNode: queryNode.cloneWithWhere(
         this.#queryNode,
         'and',
         parseExistsFilterArgs('exists', arg)
@@ -542,9 +511,8 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
     ensureCanHaveWhereClause(this.#queryNode)
 
     return new QueryBuilder({
-      compiler: this.#compiler,
-      connectionProvider: this.#connectionProvider,
-      queryNode: cloneQueryNodeWithWhere(
+      executor: this.#executor,
+      queryNode: queryNode.cloneWithWhere(
         this.#queryNode,
         'and',
         parseExistsFilterArgs('not exists', arg)
@@ -559,9 +527,8 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
     ensureCanHaveWhereClause(this.#queryNode)
 
     return new QueryBuilder({
-      compiler: this.#compiler,
-      connectionProvider: this.#connectionProvider,
-      queryNode: cloneQueryNodeWithWhere(
+      executor: this.#executor,
+      queryNode: queryNode.cloneWithWhere(
         this.#queryNode,
         'or',
         parseExistsFilterArgs('exists', arg)
@@ -576,9 +543,8 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
     ensureCanHaveWhereClause(this.#queryNode)
 
     return new QueryBuilder({
-      compiler: this.#compiler,
-      connectionProvider: this.#connectionProvider,
-      queryNode: cloneQueryNodeWithWhere(
+      executor: this.#executor,
+      queryNode: queryNode.cloneWithWhere(
         this.#queryNode,
         'or',
         parseExistsFilterArgs('not exists', arg)
@@ -765,9 +731,8 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
     ensureCanHaveSelectClause(this.#queryNode)
 
     return new QueryBuilder({
-      compiler: this.#compiler,
-      connectionProvider: this.#connectionProvider,
-      queryNode: cloneSelectQueryNodeWithSelections(
+      executor: this.#executor,
+      queryNode: selectQueryNode.cloneWithSelections(
         this.#queryNode,
         parseSelectExpressionOrList(selection)
       ),
@@ -808,9 +773,8 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
     ensureCanHaveSelectClause(this.#queryNode)
 
     return new QueryBuilder({
-      compiler: this.#compiler,
-      connectionProvider: this.#connectionProvider,
-      queryNode: cloneSelectQueryNodeWithDistinctOnSelections(
+      executor: this.#executor,
+      queryNode: selectQueryNode.cloneWithDistinctOnSelections(
         this.#queryNode,
         parseSelectExpressionOrList(selection)
       ),
@@ -824,9 +788,8 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
     ensureCanHaveSelectClause(this.#queryNode)
 
     return new QueryBuilder({
-      compiler: this.#compiler,
-      connectionProvider: this.#connectionProvider,
-      queryNode: cloneSelectQueryNodeWithModifier(this.#queryNode, 'Distinct'),
+      executor: this.#executor,
+      queryNode: selectQueryNode.cloneWithModifier(this.#queryNode, 'Distinct'),
     })
   }
 
@@ -837,9 +800,11 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
     ensureCanHaveSelectClause(this.#queryNode)
 
     return new QueryBuilder({
-      compiler: this.#compiler,
-      connectionProvider: this.#connectionProvider,
-      queryNode: cloneSelectQueryNodeWithModifier(this.#queryNode, 'ForUpdate'),
+      executor: this.#executor,
+      queryNode: selectQueryNode.cloneWithModifier(
+        this.#queryNode,
+        'ForUpdate'
+      ),
     })
   }
 
@@ -850,9 +815,8 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
     ensureCanHaveSelectClause(this.#queryNode)
 
     return new QueryBuilder({
-      compiler: this.#compiler,
-      connectionProvider: this.#connectionProvider,
-      queryNode: cloneSelectQueryNodeWithModifier(this.#queryNode, 'ForShare'),
+      executor: this.#executor,
+      queryNode: selectQueryNode.cloneWithModifier(this.#queryNode, 'ForShare'),
     })
   }
 
@@ -863,9 +827,8 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
     ensureCanHaveSelectClause(this.#queryNode)
 
     return new QueryBuilder({
-      compiler: this.#compiler,
-      connectionProvider: this.#connectionProvider,
-      queryNode: cloneSelectQueryNodeWithModifier(
+      executor: this.#executor,
+      queryNode: selectQueryNode.cloneWithModifier(
         this.#queryNode,
         'ForKeyShare'
       ),
@@ -879,9 +842,8 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
     ensureCanHaveSelectClause(this.#queryNode)
 
     return new QueryBuilder({
-      compiler: this.#compiler,
-      connectionProvider: this.#connectionProvider,
-      queryNode: cloneSelectQueryNodeWithModifier(
+      executor: this.#executor,
+      queryNode: selectQueryNode.cloneWithModifier(
         this.#queryNode,
         'ForNoKeyUpdate'
       ),
@@ -895,9 +857,8 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
     ensureCanHaveSelectClause(this.#queryNode)
 
     return new QueryBuilder({
-      compiler: this.#compiler,
-      connectionProvider: this.#connectionProvider,
-      queryNode: cloneSelectQueryNodeWithModifier(
+      executor: this.#executor,
+      queryNode: selectQueryNode.cloneWithModifier(
         this.#queryNode,
         'SkipLocked'
       ),
@@ -911,9 +872,8 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
     ensureCanHaveSelectClause(this.#queryNode)
 
     return new QueryBuilder({
-      compiler: this.#compiler,
-      connectionProvider: this.#connectionProvider,
-      queryNode: cloneSelectQueryNodeWithModifier(this.#queryNode, 'NoWait'),
+      executor: this.#executor,
+      queryNode: selectQueryNode.cloneWithModifier(this.#queryNode, 'NoWait'),
     })
   }
 
@@ -969,9 +929,8 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
     ensureCanHaveSelectClause(this.#queryNode)
 
     return new QueryBuilder({
-      compiler: this.#compiler,
-      connectionProvider: this.#connectionProvider,
-      queryNode: cloneSelectQueryNodeWithSelections(
+      executor: this.#executor,
+      queryNode: selectQueryNode.cloneWithSelections(
         this.#queryNode,
         parseSelectAllArgs(table)
       ),
@@ -1098,9 +1057,8 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
     ensureCanHaveJoins(this.#queryNode)
 
     return new QueryBuilder({
-      compiler: this.#compiler,
-      connectionProvider: this.#connectionProvider,
-      queryNode: cloneQueryNodeWithJoin(
+      executor: this.#executor,
+      queryNode: queryNode.cloneWithJoin(
         this.#queryNode,
         parseJoinArgs('InnerJoin', args)
       ),
@@ -1126,9 +1084,8 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
     ensureCanHaveJoins(this.#queryNode)
 
     return new QueryBuilder({
-      compiler: this.#compiler,
-      connectionProvider: this.#connectionProvider,
-      queryNode: cloneQueryNodeWithJoin(
+      executor: this.#executor,
+      queryNode: queryNode.cloneWithJoin(
         this.#queryNode,
         parseJoinArgs('LeftJoin', args)
       ),
@@ -1154,9 +1111,8 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
     ensureCanHaveJoins(this.#queryNode)
 
     return new QueryBuilder({
-      compiler: this.#compiler,
-      connectionProvider: this.#connectionProvider,
-      queryNode: cloneQueryNodeWithJoin(
+      executor: this.#executor,
+      queryNode: queryNode.cloneWithJoin(
         this.#queryNode,
         parseJoinArgs('RightJoin', args)
       ),
@@ -1182,9 +1138,8 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
     ensureCanHaveJoins(this.#queryNode)
 
     return new QueryBuilder({
-      compiler: this.#compiler,
-      connectionProvider: this.#connectionProvider,
-      queryNode: cloneQueryNodeWithJoin(
+      executor: this.#executor,
+      queryNode: queryNode.cloneWithJoin(
         this.#queryNode,
         parseJoinArgs('FullJoin', args)
       ),
@@ -1300,9 +1255,8 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
     ensureCanHaveInsertValues(this.#queryNode)
 
     return new QueryBuilder({
-      compiler: this.#compiler,
-      connectionProvider: this.#connectionProvider,
-      queryNode: cloneInsertQueryNodeWithColumnsAndValues(
+      executor: this.#executor,
+      queryNode: insertQueryNode.cloneWithColumnsAndValues(
         this.#queryNode,
         ...parseInsertValuesArgs(args)
       ),
@@ -1356,9 +1310,8 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
     ensureCanHaveOnConflict(this.#queryNode)
 
     return new QueryBuilder({
-      compiler: this.#compiler,
-      connectionProvider: this.#connectionProvider,
-      queryNode: cloneInsertQueryNodeWithOnConflictDoNothing(
+      executor: this.#executor,
+      queryNode: insertQueryNode.cloneWithOnConflictDoNothing(
         this.#queryNode,
         asArray(columns).map(parseColumnName)
       ),
@@ -1424,9 +1377,8 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
     ensureCanHaveOnConflict(this.#queryNode)
 
     return new QueryBuilder({
-      compiler: this.#compiler,
-      connectionProvider: this.#connectionProvider,
-      queryNode: cloneInsertQueryNodeWithOnConflictUpdate(
+      executor: this.#executor,
+      queryNode: insertQueryNode.cloneWithOnConflictUpdate(
         this.#queryNode,
         asArray(columns).map(parseColumnName),
         parseUpdateObject(updates)
@@ -1520,9 +1472,8 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
     ensureCanHaveUpdates(this.#queryNode)
 
     return new QueryBuilder({
-      compiler: this.#compiler,
-      connectionProvider: this.#connectionProvider,
-      queryNode: cloneUpdateQueryNodeWithColumnUpdates(
+      executor: this.#executor,
+      queryNode: updateQueryNode.cloneWithUpdates(
         this.#queryNode,
         parseUpdateObject(row)
       ),
@@ -1596,9 +1547,8 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
     ensureCanHaveReturningClause(this.#queryNode)
 
     return new QueryBuilder({
-      compiler: this.#compiler,
-      connectionProvider: this.#connectionProvider,
-      queryNode: cloneQueryNodeWithReturningSelections(
+      executor: this.#executor,
+      queryNode: queryNode.cloneWithReturning(
         this.#queryNode,
         parseSelectExpressionOrList(selection)
       ),
@@ -1613,9 +1563,8 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
     ensureCanHaveReturningClause(this.#queryNode)
 
     return new QueryBuilder({
-      compiler: this.#compiler,
-      connectionProvider: this.#connectionProvider,
-      queryNode: cloneQueryNodeWithReturningSelections(
+      executor: this.#executor,
+      queryNode: queryNode.cloneWithReturning(
         this.#queryNode,
         parseSelectAllArgs()
       ),
@@ -1712,11 +1661,10 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
     ensureCanHaveOrderByClause(this.#queryNode)
 
     return new QueryBuilder({
-      compiler: this.#compiler,
-      connectionProvider: this.#connectionProvider,
-      queryNode: cloneSelectQueryNodeWithOrderByItem(
+      executor: this.#executor,
+      queryNode: selectQueryNode.cloneWithOrderByItem(
         this.#queryNode,
-        createOrderByItemNode(parseReferenceExpression(orderBy), direction)
+        orderByItemNode.create(parseReferenceExpression(orderBy), direction)
       ),
     })
   }
@@ -1823,11 +1771,10 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
     ensureCanHaveGroupByClause(this.#queryNode)
 
     return new QueryBuilder({
-      compiler: this.#compiler,
-      connectionProvider: this.#connectionProvider,
-      queryNode: cloneSelectQueryNodeWithGroupByItems(
+      executor: this.#executor,
+      queryNode: selectQueryNode.cloneWithGroupByItems(
         this.#queryNode,
-        parseReferenceExpressionOrList(orderBy).map(createGroupByItemNode)
+        parseReferenceExpressionOrList(orderBy).map(groupByItemNode.create)
       ),
     })
   }
@@ -1860,11 +1807,10 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
     ensureCanHaveLimit(this.#queryNode)
 
     return new QueryBuilder({
-      compiler: this.#compiler,
-      connectionProvider: this.#connectionProvider,
-      queryNode: cloneSelectQueryNodeWithLimit(
+      executor: this.#executor,
+      queryNode: selectQueryNode.cloneWithLimit(
         this.#queryNode,
-        createLimitNode(limit)
+        limitNode.create(limit)
       ),
     })
   }
@@ -1887,11 +1833,10 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
     ensureCanHaveOffset(this.#queryNode)
 
     return new QueryBuilder({
-      compiler: this.#compiler,
-      connectionProvider: this.#connectionProvider,
-      queryNode: cloneSelectQueryNodeWithOffset(
+      executor: this.#executor,
+      queryNode: selectQueryNode.cloneWithOffset(
         this.#queryNode,
-        createOffsetNode(offset)
+        offsetNode.create(offset)
       ),
     })
   }
@@ -1912,34 +1857,21 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    */
   castTo<T>(): QueryBuilder<DB, TB, T> {
     return new QueryBuilder({
-      compiler: this.#compiler,
-      connectionProvider: this.#connectionProvider,
+      executor: this.#executor,
       queryNode: this.#queryNode,
     })
   }
 
   compile(): CompiledQuery {
-    if (!this.#compiler) {
-      throw new Error(`this query cannot be compiled to SQL`)
-    }
-
-    return this.#compiler.compileQuery(this.#queryNode)
+    return this.#executor.compileQuery(this.#queryNode)
   }
 
   async execute(): Promise<ManyResultRowType<O>[]> {
-    if (!this.#connectionProvider) {
-      throw new Error(`this query cannot be executed`)
-    }
-
-    const result = await this.#connectionProvider.withConnection(
-      async (connection) => {
-        return await connection.executeQuery<ManyResultRowType<O>>(
-          this.compile()
-        )
-      }
+    const result = await this.#executor.executeQuery<ManyResultRowType<O>>(
+      this.#queryNode
     )
 
-    if (isMutatingQueryNode(this.#queryNode) && this.#queryNode.returning) {
+    if (queryNode.isMutating(this.#queryNode) && this.#queryNode.returning) {
       return result.rows ?? []
     }
 
@@ -1971,8 +1903,7 @@ preventAwait(
 
 export interface QueryBuilderConstructorArgs {
   queryNode: QueryNode
-  compiler?: QueryCompiler
-  connectionProvider?: ConnectionProvider
+  executor: QueryExecutor
 }
 
 /**
@@ -2007,8 +1938,8 @@ export class AliasedQueryBuilder<
   toOperationNode(): AliasNode {
     const node = this.#queryBuilder.toOperationNode()
 
-    if (isSelectQueryNode(node)) {
-      return createAliasNode(node, this.#alias)
+    if (selectQueryNode.is(node)) {
+      return aliasNode.create(node, this.#alias)
     }
 
     throw new Error('only select queries can be aliased')
@@ -2021,18 +1952,15 @@ export function createEmptySelectQuery<
   O = {}
 >(): QueryBuilder<DB, TB, O> {
   return new QueryBuilder<DB, TB, O>({
-    queryNode: createSelectQueryNodeWithFromItems([]),
+    executor: QueryExecutor.createNeverExecutingExecutor(),
+    queryNode: selectQueryNode.create([]),
   })
 }
 
 function ensureCanHaveWhereClause(
   node: QueryNode
-): asserts node is SelectQueryNode | DeleteQueryNode | UpdateQueryNode {
-  if (
-    !isSelectQueryNode(node) &&
-    !isDeleteQueryNode(node) &&
-    !isUpdateQueryNode(node)
-  ) {
+): asserts node is FilterableQueryNode {
+  if (!queryNode.isFilterable(node)) {
     throw new Error(
       'only select, delete and update queries can have a where clause'
     )
@@ -2042,19 +1970,15 @@ function ensureCanHaveWhereClause(
 function ensureCanHaveSelectClause(
   node: QueryNode
 ): asserts node is SelectQueryNode {
-  if (!isSelectQueryNode(node)) {
+  if (!selectQueryNode.is(node)) {
     throw new Error('only a select query can have selections')
   }
 }
 
 function ensureCanHaveJoins(
   node: QueryNode
-): asserts node is SelectQueryNode | DeleteQueryNode | UpdateQueryNode {
-  if (
-    !isSelectQueryNode(node) &&
-    !isDeleteQueryNode(node) &&
-    !isUpdateQueryNode(node)
-  ) {
+): asserts node is FilterableQueryNode {
+  if (!queryNode.isFilterable(node)) {
     throw new Error('only select, delete and update queries can have joins')
   }
 }
@@ -2062,7 +1986,7 @@ function ensureCanHaveJoins(
 function ensureCanHaveInsertValues(
   node: QueryNode
 ): asserts node is InsertQueryNode {
-  if (!isInsertQueryNode(node)) {
+  if (!insertQueryNode.is(node)) {
     throw new Error('only an insert query can have insert values')
   }
 }
@@ -2070,7 +1994,7 @@ function ensureCanHaveInsertValues(
 function ensureCanHaveOnConflict(
   node: QueryNode
 ): asserts node is InsertQueryNode {
-  if (!isInsertQueryNode(node)) {
+  if (!insertQueryNode.is(node)) {
     throw new Error('only an insert query can have an on conflict clause')
   }
 }
@@ -2078,7 +2002,7 @@ function ensureCanHaveOnConflict(
 function ensureCanHaveUpdates(
   node: QueryNode
 ): asserts node is UpdateQueryNode {
-  if (!isUpdateQueryNode(node)) {
+  if (!updateQueryNode.is(node)) {
     throw new Error('only an update query can set values')
   }
 }
@@ -2086,7 +2010,7 @@ function ensureCanHaveUpdates(
 function ensureCanHaveReturningClause(
   node: QueryNode
 ): asserts node is MutatingQueryNode {
-  if (!isMutatingQueryNode(node)) {
+  if (!queryNode.isMutating(node)) {
     throw new Error(
       'only an insert, delete and update queries can have a returning clause'
     )
@@ -2096,7 +2020,7 @@ function ensureCanHaveReturningClause(
 function ensureCanHaveOrderByClause(
   node: QueryNode
 ): asserts node is SelectQueryNode {
-  if (!isSelectQueryNode(node)) {
+  if (!selectQueryNode.is(node)) {
     throw new Error('only a select query can have an order by clause')
   }
 }
@@ -2104,19 +2028,19 @@ function ensureCanHaveOrderByClause(
 function ensureCanHaveGroupByClause(
   node: QueryNode
 ): asserts node is SelectQueryNode {
-  if (!isSelectQueryNode(node)) {
+  if (!selectQueryNode.is(node)) {
     throw new Error('only a select query can have a group by clause')
   }
 }
 
 function ensureCanHaveLimit(node: QueryNode): asserts node is SelectQueryNode {
-  if (!isSelectQueryNode(node)) {
+  if (!selectQueryNode.is(node)) {
     throw new Error('only a select query can have a limit')
   }
 }
 
 function ensureCanHaveOffset(node: QueryNode): asserts node is SelectQueryNode {
-  if (!isSelectQueryNode(node)) {
+  if (!selectQueryNode.is(node)) {
     throw new Error('only a select query can have an offset')
   }
 }

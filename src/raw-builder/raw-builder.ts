@@ -1,34 +1,26 @@
 import { QueryResult } from '../driver/database-connection'
-import { ConnectionProvider } from '../driver/connection-provider'
-import { AliasNode, createAliasNode } from '../operation-node/alias-node'
+import { AliasNode, aliasNode } from '../operation-node/alias-node'
 import { OperationNode } from '../operation-node/operation-node'
 import {
   isOperationNodeSource,
   OperationNodeSource,
 } from '../operation-node/operation-node-source'
-import { createRawNode, RawNode } from '../operation-node/raw-node'
-import { createValueNode } from '../operation-node/value-node'
+import { RawNode, rawNode } from '../operation-node/raw-node'
+import { valueNode } from '../operation-node/value-node'
 import { parseStringReference } from '../parser/reference-parser'
 import { CompiledQuery } from '../query-compiler/compiled-query'
-import { QueryCompiler } from '../query-compiler/query-compiler'
 import { preventAwait } from '../util/prevent-await'
+import { QueryExecutor } from '../util/query-executor'
 
 export class RawBuilder<O = unknown> implements OperationNodeSource {
   #sql: string
   #params?: any[]
-  #connectionProvider?: ConnectionProvider
-  #compiler?: QueryCompiler
+  #executor: QueryExecutor
 
-  constructor({
-    sql,
-    params,
-    compiler,
-    connectionProvider,
-  }: RawBuilderConstructorArgs) {
+  constructor({ sql, params, executor }: RawBuilderConstructorArgs) {
     this.#sql = sql
     this.#params = params
-    this.#compiler = compiler
-    this.#connectionProvider = connectionProvider
+    this.#executor = executor
   }
 
   toOperationNode(): RawNode {
@@ -63,7 +55,7 @@ export class RawBuilder<O = unknown> implements OperationNodeSource {
     }
 
     sqlFragments.push(sql.slice(sqlIdx))
-    return createRawNode(sqlFragments, argNodes)
+    return rawNode.create(sqlFragments, argNodes)
   }
 
   as<A extends string>(alias: A): AliasedRawBuilder<O, A> {
@@ -71,21 +63,11 @@ export class RawBuilder<O = unknown> implements OperationNodeSource {
   }
 
   compile(): CompiledQuery {
-    if (!this.#compiler) {
-      throw new Error(`this query cannot be compiled to SQL`)
-    }
-
-    return this.#compiler.compileQuery(this.toOperationNode())
+    return this.#executor.compileQuery(this.toOperationNode())
   }
 
   async execute(): Promise<QueryResult<O>> {
-    if (!this.#connectionProvider) {
-      throw new Error(`this query cannot be executed`)
-    }
-
-    return this.#connectionProvider.withConnection(async (connection) => {
-      return await connection.executeQuery<O>(this.compile())
-    })
+    return this.#executor.executeQuery<O>(this.toOperationNode())
   }
 }
 
@@ -113,7 +95,7 @@ export class AliasedRawBuilder<O = unknown, A extends string = never>
   }
 
   toOperationNode(): AliasNode {
-    return createAliasNode(this.#rawBuilder.toOperationNode(), this.#alias)
+    return aliasNode.create(this.#rawBuilder.toOperationNode(), this.#alias)
   }
 
   constructor(rawBuilder: RawBuilder<O>, alias: A) {
@@ -128,13 +110,12 @@ function parseRawArg(match: string, arg: any): OperationNode {
   } else if (match === '??') {
     return parseStringReference(arg)
   } else {
-    return createValueNode(arg)
+    return valueNode.create(arg)
   }
 }
 
 export interface RawBuilderConstructorArgs {
-  compiler?: QueryCompiler
-  connectionProvider?: ConnectionProvider
   sql: string
   params?: any
+  executor: QueryExecutor
 }

@@ -19,29 +19,27 @@ export interface UpdateQueryNode extends OperationNode {
   readonly returning?: ReturningNode
 }
 
-export function isUpdateQueryNode(
-  node: OperationNode
-): node is UpdateQueryNode {
-  return node.kind === 'UpdateQueryNode'
-}
+export const updateQueryNode = freeze({
+  is(node: OperationNode): node is UpdateQueryNode {
+    return node.kind === 'UpdateQueryNode'
+  },
 
-export function createUpdateQueryNodeWithTable(
-  table: TableExpressionNode
-): UpdateQueryNode {
-  return {
-    kind: 'UpdateQueryNode',
-    table,
-  }
-}
+  create(table: TableExpressionNode): UpdateQueryNode {
+    return {
+      kind: 'UpdateQueryNode',
+      table,
+    }
+  },
 
-export function cloneUpdateQueryNodeWithColumnUpdates(
-  updateQuery: UpdateQueryNode,
-  updates: ReadonlyArray<ColumnUpdateNode>
-): UpdateQueryNode {
-  return freeze({
-    ...updateQuery,
-    updates: updateQuery.updates
-      ? [...updateQuery.updates, ...updates]
-      : updates,
-  })
-}
+  cloneWithUpdates(
+    updateQuery: UpdateQueryNode,
+    updates: ReadonlyArray<ColumnUpdateNode>
+  ): UpdateQueryNode {
+    return freeze({
+      ...updateQuery,
+      updates: updateQuery.updates
+        ? [...updateQuery.updates, ...updates]
+        : updates,
+    })
+  },
+})

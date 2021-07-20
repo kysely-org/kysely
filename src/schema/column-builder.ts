@@ -1,10 +1,10 @@
 import {
-  cloneColumnDefinitionNode,
   ColumnDefinitionNode,
   OnDelete,
+  columnDefinitionNode,
 } from '../operation-node/column-definition-node'
 import { OperationNodeSource } from '../operation-node/operation-node-source'
-import { isReferenceNode } from '../operation-node/reference-node'
+import { referenceNode } from '../operation-node/reference-node'
 import { parseStringReference } from '../parser/reference-parser'
 import { preventAwait } from '../util/prevent-await'
 
@@ -24,7 +24,7 @@ export class ColumnBuilder implements OperationNodeSource {
    */
   increments(): ColumnBuilder {
     return new ColumnBuilder(
-      cloneColumnDefinitionNode(this.#node, { isAutoIncrementing: true })
+      columnDefinitionNode.cloneWith(this.#node, { isAutoIncrementing: true })
     )
   }
 
@@ -36,7 +36,7 @@ export class ColumnBuilder implements OperationNodeSource {
    */
   primary(): ColumnBuilder {
     return new ColumnBuilder(
-      cloneColumnDefinitionNode(this.#node, { isPrimaryKey: true })
+      columnDefinitionNode.cloneWith(this.#node, { isPrimaryKey: true })
     )
   }
 
@@ -51,14 +51,14 @@ export class ColumnBuilder implements OperationNodeSource {
   references(ref: string): ColumnBuilder {
     const references = parseStringReference(ref)
 
-    if (!isReferenceNode(references)) {
+    if (!referenceNode.is(references)) {
       throw new Error(
         `invalid call references('${ref}'). The reference must have format table.column or schema.table.column`
       )
     }
 
     return new ColumnBuilder(
-      cloneColumnDefinitionNode(this.#node, { references })
+      columnDefinitionNode.cloneWith(this.#node, { references })
     )
   }
 
@@ -67,7 +67,7 @@ export class ColumnBuilder implements OperationNodeSource {
    */
   unique(): ColumnBuilder {
     return new ColumnBuilder(
-      cloneColumnDefinitionNode(this.#node, { isUnique: true })
+      columnDefinitionNode.cloneWith(this.#node, { isUnique: true })
     )
   }
 
@@ -76,7 +76,7 @@ export class ColumnBuilder implements OperationNodeSource {
    */
   notNullable(): ColumnBuilder {
     return new ColumnBuilder(
-      cloneColumnDefinitionNode(this.#node, { isNullable: false })
+      columnDefinitionNode.cloneWith(this.#node, { isNullable: false })
     )
   }
 
@@ -85,7 +85,7 @@ export class ColumnBuilder implements OperationNodeSource {
    */
   onDelete(onDelete: OnDelete): ColumnBuilder {
     return new ColumnBuilder(
-      cloneColumnDefinitionNode(this.#node, { onDelete })
+      columnDefinitionNode.cloneWith(this.#node, { onDelete })
     )
   }
 

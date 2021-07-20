@@ -6,13 +6,15 @@ export interface ListNode extends OperationNode {
   readonly items: ReadonlyArray<OperationNode>
 }
 
-export function isListNode(node: OperationNode): node is ListNode {
-  return node.kind === 'ListNode'
-}
+export const listNode = freeze({
+  is(node: OperationNode): node is ListNode {
+    return node.kind === 'ListNode'
+  },
 
-export function createListNode(items: ReadonlyArray<OperationNode>): ListNode {
-  return freeze({
-    kind: 'ListNode',
-    items: freeze(items),
-  })
-}
+  create(items: ReadonlyArray<OperationNode>): ListNode {
+    return freeze({
+      kind: 'ListNode',
+      items: freeze(items),
+    })
+  },
+})

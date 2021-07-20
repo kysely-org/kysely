@@ -1,9 +1,4 @@
-import {
-  cloneJoinNodeWithOn,
-  createJoinNode,
-  JoinNode,
-  JoinType,
-} from '../operation-node/join-node'
+import { JoinNode, JoinType, joinNode } from '../operation-node/join-node'
 import { AnyColumn, AnyColumnWithTable } from '../query-builder/type-utils'
 import {
   TableExpression,
@@ -49,7 +44,7 @@ function parseCallbackJoin(
   const tableNode = parseTableExpression(from)
 
   const joinBuilder = callback(
-    new JoinBuilder(createJoinNode(joinType, tableNode))
+    new JoinBuilder(joinNode.create(joinType, tableNode))
   )
 
   return joinBuilder.toOperationNode()
@@ -63,8 +58,8 @@ function parseSingleOnJoin(
 ): JoinNode {
   const tableNode = parseTableExpression(from)
 
-  return cloneJoinNodeWithOn(
-    createJoinNode(joinType, tableNode),
+  return joinNode.cloneWithOn(
+    joinNode.create(joinType, tableNode),
     'and',
     parseReferenceFilterArgs(lhsColumn, '=', rhsColumn)
   )

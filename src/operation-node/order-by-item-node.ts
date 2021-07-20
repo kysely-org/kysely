@@ -10,19 +10,19 @@ export interface OrderByItemNode extends OperationNode {
   readonly direction: OrderByDirection
 }
 
-export function isOrderByItemNode(
-  node: OperationNode
-): node is OrderByItemNode {
-  return node.kind === 'OrderByItemNode'
-}
+export const orderByItemNode = freeze({
+  is(node: OperationNode): node is OrderByItemNode {
+    return node.kind === 'OrderByItemNode'
+  },
 
-export function createOrderByItemNode(
-  orderBy: ReferenceExpressionNode,
-  direction: OrderByDirection
-): OrderByItemNode {
-  return freeze({
-    kind: 'OrderByItemNode',
-    orderBy,
-    direction,
-  })
-}
+  create(
+    orderBy: ReferenceExpressionNode,
+    direction: OrderByDirection
+  ): OrderByItemNode {
+    return freeze({
+      kind: 'OrderByItemNode',
+      orderBy,
+      direction,
+    })
+  },
+})

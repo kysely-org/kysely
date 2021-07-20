@@ -11,17 +11,15 @@ export interface PrimitiveValueListNode extends OperationNode {
   readonly values: ReadonlyArray<PrimitiveValue>
 }
 
-export function isPrimitiveValueListNode(
-  node: OperationNode
-): node is PrimitiveValueListNode {
-  return node.kind === 'PrimitiveValueListNode'
-}
+export const primitiveValueListNode = freeze({
+  is(node: OperationNode): node is PrimitiveValueListNode {
+    return node.kind === 'PrimitiveValueListNode'
+  },
 
-export function createPrimitiveValueListNode(
-  values: ReadonlyArray<PrimitiveValue>
-): PrimitiveValueListNode {
-  return freeze({
-    kind: 'PrimitiveValueListNode',
-    values: freeze(values),
-  })
-}
+  create(values: ReadonlyArray<PrimitiveValue>): PrimitiveValueListNode {
+    return freeze({
+      kind: 'PrimitiveValueListNode',
+      values: freeze(values),
+    })
+  },
+})

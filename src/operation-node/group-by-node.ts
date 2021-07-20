@@ -7,25 +7,25 @@ export interface GroupByNode extends OperationNode {
   readonly items: ReadonlyArray<GroupByItemNode>
 }
 
-export function isGroupByNode(node: OperationNode): node is GroupByNode {
-  return node.kind === 'GroupByNode'
-}
+export const groupByNode = freeze({
+  is(node: OperationNode): node is GroupByNode {
+    return node.kind === 'GroupByNode'
+  },
 
-export function createGroupByNode(
-  items: ReadonlyArray<GroupByItemNode>
-): GroupByNode {
-  return freeze({
-    kind: 'GroupByNode',
-    items: freeze(items),
-  })
-}
+  create(items: ReadonlyArray<GroupByItemNode>): GroupByNode {
+    return freeze({
+      kind: 'GroupByNode',
+      items: freeze(items),
+    })
+  },
 
-export function cloneGroupByNodeWithItems(
-  orderBy: GroupByNode,
-  items: ReadonlyArray<GroupByItemNode>
-): GroupByNode {
-  return freeze({
-    ...orderBy,
-    items: freeze([...orderBy.items, ...items]),
-  })
-}
+  cloneWithItems(
+    orderBy: GroupByNode,
+    items: ReadonlyArray<GroupByItemNode>
+  ): GroupByNode {
+    return freeze({
+      ...orderBy,
+      items: freeze([...orderBy.items, ...items]),
+    })
+  },
+})

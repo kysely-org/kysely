@@ -1,15 +1,9 @@
-import { AliasNode, createAliasNode } from '../operation-node/alias-node'
-import { ColumnNode, createColumnNode } from '../operation-node/column-node'
+import { AliasNode, aliasNode } from '../operation-node/alias-node'
+import { ColumnNode, columnNode } from '../operation-node/column-node'
 import { isOperationNodeSource } from '../operation-node/operation-node-source'
 import { ReferenceExpressionNode } from '../operation-node/operation-node-utils'
-import {
-  createReferenceNode,
-  ReferenceNode,
-} from '../operation-node/reference-node'
-import {
-  createTableNode,
-  createTableNodeWithSchema,
-} from '../operation-node/table-node'
+import { referenceNode, ReferenceNode } from '../operation-node/reference-node'
+import { tableNode } from '../operation-node/table-node'
 import { RawBuilder } from '../raw-builder/raw-builder'
 import { isFunction, isString } from '../util/object-utils'
 import {
@@ -20,7 +14,7 @@ import {
   RawBuilderFactory,
 } from '../query-builder/type-utils'
 import { DynamicReferenceBuilder } from '../dynamic/dynamic-reference-builder'
-import { isMutatingQueryNode } from '../operation-node/query-node-utils'
+import { queryNode } from '../operation-node/query-node'
 import { SubQueryBuilder } from '../query-builder/sub-query-builder'
 
 export type ReferenceExpression<DB, TB extends keyof DB> =
@@ -54,13 +48,13 @@ export function parseReferenceExpression(
   } else if (isOperationNodeSource(arg)) {
     const node = arg.toOperationNode()
 
-    if (!isMutatingQueryNode(node)) {
+    if (!queryNode.isMutating(node)) {
       return node
     }
   } else if (isFunction(arg)) {
     const node = arg(new SubQueryBuilder()).toOperationNode()
 
-    if (!isMutatingQueryNode(node)) {
+    if (!queryNode.isMutating(node)) {
       return node
     }
   }
@@ -80,7 +74,7 @@ export function parseStringReference(str: string): ColumnNode | ReferenceNode {
       throw new Error(`invalid column reference ${str}`)
     }
   } else {
-    return createColumnNode(str)
+    return columnNode.create(str)
   }
 }
 
@@ -90,14 +84,14 @@ export function parseAliasedStringReference(
   if (str.includes(' as ')) {
     const [tableColumn, alias] = str.split(' as ').map((it) => it.trim())
     const tableColumnNode = parseStringReference(tableColumn)
-    return createAliasNode(tableColumnNode, alias)
+    return aliasNode.create(tableColumnNode, alias)
   } else {
     return parseStringReference(str)
   }
 }
 
 export function parseColumnName(column: AnyColumn<any, any>): ColumnNode {
-  return createColumnNode(column as string)
+  return columnNode.create(column as string)
 }
 
 function parseStringReferenceWithTableAndSchema(
@@ -105,13 +99,17 @@ function parseStringReferenceWithTableAndSchema(
 ): ReferenceNode {
   const [schema, table, column] = parts
 
-  return createReferenceNode(
-    createTableNodeWithSchema(schema, table),
-    createColumnNode(column)
+  return referenceNode.create(
+    tableNode.createWithSchema(schema, table),
+    columnNode.create(column)
   )
 }
 
 function parseStringReferenceWithTable(parts: string[]): ReferenceNode {
   const [table, column] = parts
-  return createReferenceNode(createTableNode(table), createColumnNode(column))
+
+  return referenceNode.create(
+    tableNode.create(table),
+    columnNode.create(column)
+  )
 }

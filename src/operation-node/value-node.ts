@@ -6,13 +6,15 @@ export interface ValueNode extends OperationNode {
   readonly value: PrimitiveValue
 }
 
-export function isValueNode(node: OperationNode): node is ValueNode {
-  return node.kind === 'ValueNode'
-}
+export const valueNode = freeze({
+  is(node: OperationNode): node is ValueNode {
+    return node.kind === 'ValueNode'
+  },
 
-export function createValueNode(value: PrimitiveValue): ValueNode {
-  return freeze({
-    kind: 'ValueNode',
-    value,
-  })
-}
+  create(value: PrimitiveValue): ValueNode {
+    return freeze({
+      kind: 'ValueNode',
+      value,
+    })
+  },
+})

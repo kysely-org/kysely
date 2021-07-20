@@ -7,25 +7,25 @@ export interface FromNode extends OperationNode {
   readonly froms: ReadonlyArray<TableExpressionNode>
 }
 
-export function isFromNode(node: OperationNode): node is FromNode {
-  return node.kind === 'FromNode'
-}
+export const fromNode = freeze({
+  is(node: OperationNode): node is FromNode {
+    return node.kind === 'FromNode'
+  },
 
-export function createFromNodeWithItems(
-  froms: ReadonlyArray<TableExpressionNode>
-): FromNode {
-  return freeze({
-    kind: 'FromNode',
-    froms: freeze(froms),
-  })
-}
+  create(froms: ReadonlyArray<TableExpressionNode>): FromNode {
+    return freeze({
+      kind: 'FromNode',
+      froms: freeze(froms),
+    })
+  },
 
-export function cloneFromNodeWithItems(
-  from: FromNode,
-  items: ReadonlyArray<TableExpressionNode>
-): FromNode {
-  return freeze({
-    ...from,
-    froms: freeze([...from.froms, ...items]),
-  })
-}
+  cloneWithFroms(
+    from: FromNode,
+    froms: ReadonlyArray<TableExpressionNode>
+  ): FromNode {
+    return freeze({
+      ...from,
+      froms: freeze([...from.froms, ...froms]),
+    })
+  },
+})

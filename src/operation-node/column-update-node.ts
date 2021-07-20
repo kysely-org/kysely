@@ -9,19 +9,16 @@ export interface ColumnUpdateNode extends OperationNode {
   readonly value: ValueExpressionNode
 }
 
-export function isColumnUpdateNode(
-  node: OperationNode
-): node is ColumnUpdateNode {
-  return node.kind === 'ColumnUpdateNode'
-}
+export const columnUpdateNode = freeze({
+  is(node: OperationNode): node is ColumnUpdateNode {
+    return node.kind === 'ColumnUpdateNode'
+  },
 
-export function createColumnUpdateNode(
-  column: ColumnNode,
-  value: ValueExpressionNode
-): ColumnUpdateNode {
-  return freeze({
-    kind: 'ColumnUpdateNode',
-    column,
-    value,
-  })
-}
+  create(column: ColumnNode, value: ValueExpressionNode): ColumnUpdateNode {
+    return freeze({
+      kind: 'ColumnUpdateNode',
+      column,
+      value,
+    })
+  },
+})

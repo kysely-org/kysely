@@ -1,5 +1,5 @@
 import { freeze } from '../util/object-utils'
-import { createFromNodeWithItems, FromNode } from './from-node'
+import { FromNode, fromNode } from './from-node'
 import { JoinNode } from './join-node'
 import { OperationNode } from './operation-node'
 import { TableExpressionNode } from './operation-node-utils'
@@ -14,17 +14,15 @@ export interface DeleteQueryNode extends OperationNode {
   readonly returning?: ReturningNode
 }
 
-export function isDeleteQueryNode(
-  node: OperationNode
-): node is DeleteQueryNode {
-  return node.kind === 'DeleteQueryNode'
-}
+export const deleteQueryNode = freeze({
+  is(node: OperationNode): node is DeleteQueryNode {
+    return node.kind === 'DeleteQueryNode'
+  },
 
-export function createDeleteQueryNodeWithFromItem(
-  fromItem: TableExpressionNode
-): DeleteQueryNode {
-  return freeze({
-    kind: 'DeleteQueryNode',
-    from: createFromNodeWithItems([fromItem]),
-  })
-}
+  create(fromItem: TableExpressionNode): DeleteQueryNode {
+    return freeze({
+      kind: 'DeleteQueryNode',
+      from: fromNode.create([fromItem]),
+    })
+  },
+})

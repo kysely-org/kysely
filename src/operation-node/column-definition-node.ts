@@ -1,5 +1,5 @@
 import { freeze } from '../util/object-utils'
-import { ColumnNode, createColumnNode } from './column-node'
+import { ColumnNode, columnNode } from './column-node'
 import { DataTypeNode } from './data-type-node'
 import { OperationNode } from './operation-node'
 import { RawNode } from './raw-node'
@@ -11,7 +11,6 @@ export type ColumnDefinitionNodeParams = Omit<
 >
 
 export type OnDelete = 'cascade' | 'set null'
-
 export type ColumnDataTypeNode = DataTypeNode | RawNode
 
 export interface ColumnDefinitionNode extends OperationNode {
@@ -26,33 +25,30 @@ export interface ColumnDefinitionNode extends OperationNode {
   readonly onDelete?: OnDelete
 }
 
-export function isColumnDefinitionNode(
-  node: OperationNode
-): node is ColumnDefinitionNode {
-  return node.kind === 'ColumnDefinitionNode'
-}
+export const columnDefinitionNode = freeze({
+  is(node: OperationNode): node is ColumnDefinitionNode {
+    return node.kind === 'ColumnDefinitionNode'
+  },
 
-export function createColumnDefinitionNode(
-  column: string,
-  dataType: ColumnDataTypeNode
-): ColumnDefinitionNode {
-  return freeze({
-    kind: 'ColumnDefinitionNode',
-    column: createColumnNode(column),
-    dataType,
-    isPrimaryKey: false,
-    isAutoIncrementing: false,
-    isUnique: false,
-    isNullable: true,
-  })
-}
+  create(column: string, dataType: ColumnDataTypeNode): ColumnDefinitionNode {
+    return freeze({
+      kind: 'ColumnDefinitionNode',
+      column: columnNode.create(column),
+      dataType,
+      isPrimaryKey: false,
+      isAutoIncrementing: false,
+      isUnique: false,
+      isNullable: true,
+    })
+  },
 
-export function cloneColumnDefinitionNode(
-  node: ColumnDefinitionNode,
-  params: ColumnDefinitionNodeParams
-): ColumnDefinitionNode {
-  return freeze({
-    ...node,
-    ...params,
-  })
-}
+  cloneWith(
+    node: ColumnDefinitionNode,
+    params: ColumnDefinitionNodeParams
+  ): ColumnDefinitionNode {
+    return freeze({
+      ...node,
+      ...params,
+    })
+  },
+})
