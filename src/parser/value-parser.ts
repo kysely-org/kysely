@@ -30,7 +30,7 @@ export type ValueExpressionOrList<DB, TB extends keyof DB> =
 
 export function parseValueExpressionOrList(
   arg: ValueExpressionOrList<any, any>
-) {
+): ValueExpressionNode {
   if (Array.isArray(arg)) {
     return parseValueExpressionList(arg)
   } else {
@@ -73,15 +73,11 @@ function parseValueExpressionList(
       const node = parseValueExpression(it)
 
       if (columnNode.is(node)) {
-        throw new Error(
-          `filter method right hand side argument cannot have column references in a list`
-        )
+        throw new Error('value lists cannot have column references')
       }
 
       if (valueListNode.is(node) || primitiveValueListNode.is(node)) {
-        throw new Error(
-          `filter method right hand side argument cannot have nested lists`
-        )
+        throw new Error('value lists cannot have nested lists')
       }
 
       return node

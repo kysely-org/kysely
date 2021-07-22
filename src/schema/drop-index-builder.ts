@@ -1,4 +1,4 @@
-import { DropIndexNode } from '../operation-node/drop-index-node'
+import { dropIndexNode, DropIndexNode } from '../operation-node/drop-index-node'
 import { OperationNodeSource } from '../operation-node/operation-node-source'
 import { CompiledQuery } from '../query-compiler/compiled-query'
 import { Compilable } from '../util/compilable'
@@ -12,6 +12,16 @@ export class DropIndexBuilder implements OperationNodeSource, Compilable {
   constructor({ dropIndexNode, executor }: DropIndexBuilderConstructorArgs) {
     this.#dropIndexNode = dropIndexNode
     this.#executor = executor
+  }
+
+  ifExists(): DropIndexBuilder {
+    return new DropIndexBuilder({
+      executor: this.#executor,
+      dropIndexNode: dropIndexNode.cloneWithModifier(
+        this.#dropIndexNode,
+        'IfExists'
+      ),
+    })
   }
 
   toOperationNode(): DropIndexNode {

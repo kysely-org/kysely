@@ -23,4 +23,14 @@ export const dropIndexNode = freeze({
       ...params,
     })
   },
+
+  cloneWithModifier(
+    dropIndex: DropIndexNode,
+    modifier: DropIndexNodeModifier
+  ): DropIndexNode {
+    return freeze({
+      ...dropIndex,
+      modifier,
+    })
+  },
 })

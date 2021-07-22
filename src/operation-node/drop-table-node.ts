@@ -23,4 +23,14 @@ export const dropTableNode = freeze({
       ...params,
     })
   },
+
+  cloneWithModifier(
+    dropIndex: DropTableNode,
+    modifier: DropTableNodeModifier
+  ): DropTableNode {
+    return freeze({
+      ...dropIndex,
+      modifier,
+    })
+  },
 })

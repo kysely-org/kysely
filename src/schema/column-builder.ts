@@ -3,9 +3,16 @@ import {
   OnDelete,
   columnDefinitionNode,
 } from '../operation-node/column-definition-node'
-import { OperationNodeSource } from '../operation-node/operation-node-source'
+import {
+  isOperationNodeSource,
+  OperationNodeSource,
+} from '../operation-node/operation-node-source'
 import { referenceNode } from '../operation-node/reference-node'
+import { valueNode } from '../operation-node/value-node'
 import { parseStringReference } from '../parser/reference-parser'
+import { parseValueExpression, ValueExpression } from '../parser/value-parser'
+import { RawBuilder } from '../raw-builder/raw-builder'
+import { PrimitiveValue } from '../util/object-utils'
 import { preventAwait } from '../util/prevent-await'
 
 export class ColumnBuilder implements OperationNodeSource {
@@ -86,6 +93,16 @@ export class ColumnBuilder implements OperationNodeSource {
   onDelete(onDelete: OnDelete): ColumnBuilder {
     return new ColumnBuilder(
       columnDefinitionNode.cloneWith(this.#node, { onDelete })
+    )
+  }
+
+  defaultTo(value: PrimitiveValue | RawBuilder<any>): ColumnBuilder {
+    return new ColumnBuilder(
+      columnDefinitionNode.cloneWith(this.#node, {
+        defaultTo: isOperationNodeSource(value)
+          ? value.toOperationNode()
+          : valueNode.createImmediate(value),
+      })
     )
   }
 

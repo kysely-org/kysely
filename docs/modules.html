@@ -90,16 +90,18 @@
 								<li class="tsd-kind-interface"><a href="interfaces/driverconfig.html" class="tsd-kind-icon">Driver<wbr>Config</a></li>
 								<li class="tsd-kind-interface"><a href="interfaces/driverconfigwithdefaults.html" class="tsd-kind-icon">Driver<wbr>Config<wbr>With<wbr>Defaults</a></li>
 								<li class="tsd-kind-interface"><a href="interfaces/droptablebuilderconstructorargs.html" class="tsd-kind-icon">Drop<wbr>Table<wbr>Builder<wbr>Constructor<wbr>Args</a></li>
-								<li class="tsd-kind-interface"><a href="interfaces/dynamic.html" class="tsd-kind-icon">Dynamic</a></li>
+								<li class="tsd-kind-interface"><a href="interfaces/dynamicmodule.html" class="tsd-kind-icon">Dynamic<wbr>Module</a></li>
 								<li class="tsd-kind-interface"><a href="interfaces/kyselyconfig.html" class="tsd-kind-icon">Kysely<wbr>Config</a></li>
 								<li class="tsd-kind-interface"><a href="interfaces/kyselyconstructorargs.html" class="tsd-kind-icon">Kysely<wbr>Constructor<wbr>Args</a></li>
+								<li class="tsd-kind-interface"><a href="interfaces/migration.html" class="tsd-kind-icon">Migration</a></li>
+								<li class="tsd-kind-interface"><a href="interfaces/migrationmodule.html" class="tsd-kind-icon">Migration<wbr>Module</a></li>
 								<li class="tsd-kind-interface"><a href="interfaces/poolconfig.html" class="tsd-kind-icon">Pool<wbr>Config</a></li>
 								<li class="tsd-kind-interface"><a href="interfaces/poolconfigwithdefaults.html" class="tsd-kind-icon">Pool<wbr>Config<wbr>With<wbr>Defaults</a></li>
 								<li class="tsd-kind-interface"><a href="interfaces/querybuilderconstructorargs.html" class="tsd-kind-icon">Query<wbr>Builder<wbr>Constructor<wbr>Args</a></li>
 								<li class="tsd-kind-interface"><a href="interfaces/querycompiler.html" class="tsd-kind-icon">Query<wbr>Compiler</a></li>
 								<li class="tsd-kind-interface tsd-has-type-parameter"><a href="interfaces/queryresult.html" class="tsd-kind-icon">Query<wbr>Result</a></li>
 								<li class="tsd-kind-interface"><a href="interfaces/rawbuilderconstructorargs.html" class="tsd-kind-icon">Raw<wbr>Builder<wbr>Constructor<wbr>Args</a></li>
-								<li class="tsd-kind-interface"><a href="interfaces/schema.html" class="tsd-kind-icon">Schema</a></li>
+								<li class="tsd-kind-interface"><a href="interfaces/schemamodule.html" class="tsd-kind-icon">Schema<wbr>Module</a></li>
 							</ul>
 						</section>
 						<section class="tsd-index-section ">
@@ -110,10 +112,19 @@
 							</ul>
 						</section>
 						<section class="tsd-index-section ">
+							<h3>Variables</h3>
+							<ul class="tsd-index-list">
+								<li class="tsd-kind-variable"><a href="modules.html#migration_lock_id" class="tsd-kind-icon">MIGRATION_<wbr>LOCK_<wbr>ID</a></li>
+								<li class="tsd-kind-variable"><a href="modules.html#migration_lock_table" class="tsd-kind-icon">MIGRATION_<wbr>LOCK_<wbr>TABLE</a></li>
+								<li class="tsd-kind-variable"><a href="modules.html#migration_table" class="tsd-kind-icon">MIGRATION_<wbr>TABLE</a></li>
+							</ul>
+						</section>
+						<section class="tsd-index-section ">
 							<h3>Functions</h3>
 							<ul class="tsd-index-list">
 								<li class="tsd-kind-function"><a href="modules.html#createdynamicmodule" class="tsd-kind-icon">create<wbr>Dynamic<wbr>Module</a></li>
 								<li class="tsd-kind-function tsd-has-type-parameter"><a href="modules.html#createemptyselectquery" class="tsd-kind-icon">create<wbr>Empty<wbr>Select<wbr>Query</a></li>
+								<li class="tsd-kind-function"><a href="modules.html#createmigrationmodule" class="tsd-kind-icon">create<wbr>Migration<wbr>Module</a></li>
 								<li class="tsd-kind-function"><a href="modules.html#createschemamodule" class="tsd-kind-icon">create<wbr>Schema<wbr>Module</a></li>
 							</ul>
 						</section>
@@ -153,7 +164,31 @@
 				<section class="tsd-panel tsd-member tsd-kind-type-alias">
 					<a name="compileentrypointnode" class="tsd-anchor"></a>
 					<h3>Compile<wbr>Entry<wbr>Point<wbr>Node</h3>
-					<div class="tsd-signature tsd-kind-icon">Compile<wbr>Entry<wbr>Point<wbr>Node<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">QueryNode</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">CreateTableNode</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">DropTableNode</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">RawNode</span></div>
+					<div class="tsd-signature tsd-kind-icon">Compile<wbr>Entry<wbr>Point<wbr>Node<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">QueryNode</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">CreateTableNode</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">CreateIndexNode</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">DropTableNode</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">DropIndexNode</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">RawNode</span></div>
+					<aside class="tsd-sources">
+					</aside>
+				</section>
+			</section>
+			<section class="tsd-panel-group tsd-member-group ">
+				<h2>Variables</h2>
+				<section class="tsd-panel tsd-member tsd-kind-variable">
+					<a name="migration_lock_id" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagConst">Const</span> MIGRATION_<wbr>LOCK_<wbr>ID</h3>
+					<div class="tsd-signature tsd-kind-icon">MIGRATION_<wbr>LOCK_<wbr>ID<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">&quot;migration_lock&quot;</span><span class="tsd-signature-symbol"> = &#x27;migration_lock&#x27;</span></div>
+					<aside class="tsd-sources">
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-variable">
+					<a name="migration_lock_table" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagConst">Const</span> MIGRATION_<wbr>LOCK_<wbr>TABLE</h3>
+					<div class="tsd-signature tsd-kind-icon">MIGRATION_<wbr>LOCK_<wbr>TABLE<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">&quot;kysely_migration_lock&quot;</span><span class="tsd-signature-symbol"> = &#x27;kysely_migration_lock&#x27;</span></div>
+					<aside class="tsd-sources">
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-variable">
+					<a name="migration_table" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagConst">Const</span> MIGRATION_<wbr>TABLE</h3>
+					<div class="tsd-signature tsd-kind-icon">MIGRATION_<wbr>TABLE<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">&quot;kysely_migration&quot;</span><span class="tsd-signature-symbol"> = &#x27;kysely_migration&#x27;</span></div>
 					<aside class="tsd-sources">
 					</aside>
 				</section>
@@ -164,13 +199,13 @@
 					<a name="createdynamicmodule" class="tsd-anchor"></a>
 					<h3>create<wbr>Dynamic<wbr>Module</h3>
 					<ul class="tsd-signatures tsd-kind-function">
-						<li class="tsd-signature tsd-kind-icon">create<wbr>Dynamic<wbr>Module<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="interfaces/dynamic.html" class="tsd-signature-type" data-tsd-kind="Interface">Dynamic</a></li>
+						<li class="tsd-signature tsd-kind-icon">create<wbr>Dynamic<wbr>Module<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="interfaces/dynamicmodule.html" class="tsd-signature-type" data-tsd-kind="Interface">DynamicModule</a></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 							</aside>
-							<h4 class="tsd-returns-title">Returns <a href="interfaces/dynamic.html" class="tsd-signature-type" data-tsd-kind="Interface">Dynamic</a></h4>
+							<h4 class="tsd-returns-title">Returns <a href="interfaces/dynamicmodule.html" class="tsd-signature-type" data-tsd-kind="Interface">DynamicModule</a></h4>
 						</li>
 					</ul>
 				</section>
@@ -201,10 +236,10 @@
 					</ul>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-function">
-					<a name="createschemamodule" class="tsd-anchor"></a>
-					<h3>create<wbr>Schema<wbr>Module</h3>
+					<a name="createmigrationmodule" class="tsd-anchor"></a>
+					<h3>create<wbr>Migration<wbr>Module</h3>
 					<ul class="tsd-signatures tsd-kind-function">
-						<li class="tsd-signature tsd-kind-icon">create<wbr>Schema<wbr>Module<span class="tsd-signature-symbol">(</span>compiler<span class="tsd-signature-symbol">: </span><a href="interfaces/querycompiler.html" class="tsd-signature-type" data-tsd-kind="Interface">QueryCompiler</a>, connectionProvider<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">ConnectionProvider</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="interfaces/schema.html" class="tsd-signature-type" data-tsd-kind="Interface">Schema</a></li>
+						<li class="tsd-signature tsd-kind-icon">create<wbr>Migration<wbr>Module<span class="tsd-signature-symbol">(</span>db<span class="tsd-signature-symbol">: </span><a href="classes/kysely.html" class="tsd-signature-type" data-tsd-kind="Class">Kysely</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="interfaces/migrationmodule.html" class="tsd-signature-type" data-tsd-kind="Interface">MigrationModule</a></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
@@ -213,13 +248,30 @@
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
-									<h5>compiler: <a href="interfaces/querycompiler.html" class="tsd-signature-type" data-tsd-kind="Interface">QueryCompiler</a></h5>
-								</li>
-								<li>
-									<h5>connectionProvider: <span class="tsd-signature-type">ConnectionProvider</span></h5>
+									<h5>db: <a href="classes/kysely.html" class="tsd-signature-type" data-tsd-kind="Class">Kysely</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span></h5>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <a href="interfaces/schema.html" class="tsd-signature-type" data-tsd-kind="Interface">Schema</a></h4>
+							<h4 class="tsd-returns-title">Returns <a href="interfaces/migrationmodule.html" class="tsd-signature-type" data-tsd-kind="Interface">MigrationModule</a></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-function">
+					<a name="createschemamodule" class="tsd-anchor"></a>
+					<h3>create<wbr>Schema<wbr>Module</h3>
+					<ul class="tsd-signatures tsd-kind-function">
+						<li class="tsd-signature tsd-kind-icon">create<wbr>Schema<wbr>Module<span class="tsd-signature-symbol">(</span>executor<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">QueryExecutor</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="interfaces/schemamodule.html" class="tsd-signature-type" data-tsd-kind="Interface">SchemaModule</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+							</aside>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>executor: <span class="tsd-signature-type">QueryExecutor</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="interfaces/schemamodule.html" class="tsd-signature-type" data-tsd-kind="Interface">SchemaModule</a></h4>
 						</li>
 					</ul>
 				</section>
@@ -299,13 +351,19 @@
 						<a href="interfaces/droptablebuilderconstructorargs.html" class="tsd-kind-icon">Drop<wbr>Table<wbr>Builder<wbr>Constructor<wbr>Args</a>
 					</li>
 					<li class=" tsd-kind-interface">
-						<a href="interfaces/dynamic.html" class="tsd-kind-icon">Dynamic</a>
+						<a href="interfaces/dynamicmodule.html" class="tsd-kind-icon">Dynamic<wbr>Module</a>
 					</li>
 					<li class=" tsd-kind-interface">
 						<a href="interfaces/kyselyconfig.html" class="tsd-kind-icon">Kysely<wbr>Config</a>
 					</li>
 					<li class=" tsd-kind-interface">
 						<a href="interfaces/kyselyconstructorargs.html" class="tsd-kind-icon">Kysely<wbr>Constructor<wbr>Args</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/migration.html" class="tsd-kind-icon">Migration</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/migrationmodule.html" class="tsd-kind-icon">Migration<wbr>Module</a>
 					</li>
 					<li class=" tsd-kind-interface">
 						<a href="interfaces/poolconfig.html" class="tsd-kind-icon">Pool<wbr>Config</a>
@@ -326,7 +384,7 @@
 						<a href="interfaces/rawbuilderconstructorargs.html" class="tsd-kind-icon">Raw<wbr>Builder<wbr>Constructor<wbr>Args</a>
 					</li>
 					<li class=" tsd-kind-interface">
-						<a href="interfaces/schema.html" class="tsd-kind-icon">Schema</a>
+						<a href="interfaces/schemamodule.html" class="tsd-kind-icon">Schema<wbr>Module</a>
 					</li>
 					<li class=" tsd-kind-type-alias">
 						<a href="modules.html#columnbuildercallback" class="tsd-kind-icon">Column<wbr>Builder<wbr>Callback</a>
@@ -334,11 +392,23 @@
 					<li class=" tsd-kind-type-alias">
 						<a href="modules.html#compileentrypointnode" class="tsd-kind-icon">Compile<wbr>Entry<wbr>Point<wbr>Node</a>
 					</li>
+					<li class=" tsd-kind-variable">
+						<a href="modules.html#migration_lock_id" class="tsd-kind-icon">MIGRATION_<wbr>LOCK_<wbr>ID</a>
+					</li>
+					<li class=" tsd-kind-variable">
+						<a href="modules.html#migration_lock_table" class="tsd-kind-icon">MIGRATION_<wbr>LOCK_<wbr>TABLE</a>
+					</li>
+					<li class=" tsd-kind-variable">
+						<a href="modules.html#migration_table" class="tsd-kind-icon">MIGRATION_<wbr>TABLE</a>
+					</li>
 					<li class=" tsd-kind-function">
 						<a href="modules.html#createdynamicmodule" class="tsd-kind-icon">create<wbr>Dynamic<wbr>Module</a>
 					</li>
 					<li class=" tsd-kind-function tsd-has-type-parameter">
 						<a href="modules.html#createemptyselectquery" class="tsd-kind-icon">create<wbr>Empty<wbr>Select<wbr>Query</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#createmigrationmodule" class="tsd-kind-icon">create<wbr>Migration<wbr>Module</a>
 					</li>
 					<li class=" tsd-kind-function">
 						<a href="modules.html#createschemamodule" class="tsd-kind-icon">create<wbr>Schema<wbr>Module</a>
@@ -361,11 +431,12 @@
 				<li class="tsd-kind-method tsd-parent-kind-class"><span class="tsd-kind-icon">Method</span></li>
 			</ul>
 			<ul class="tsd-legend">
-				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-protected"><span class="tsd-kind-icon">Protected property</span></li>
-				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-protected"><span class="tsd-kind-icon">Protected method</span></li>
+				<li class="tsd-kind-constructor tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited constructor</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited method</span></li>
 			</ul>
 			<ul class="tsd-legend">
-				<li class="tsd-kind-constructor tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited constructor</span></li>
+				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-protected"><span class="tsd-kind-icon">Protected property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-protected"><span class="tsd-kind-icon">Protected method</span></li>
 			</ul>
 		</div>
 	</div>

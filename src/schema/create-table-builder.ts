@@ -29,6 +29,21 @@ export class CreateTableBuilder implements OperationNodeSource, Compilable {
   }
 
   /**
+   * Adds the "if not exists" modifier.
+   *
+   * If the table already exists, no error is thrown if this method has been called.
+   */
+  ifNotExists(): CreateTableBuilder {
+    return new CreateTableBuilder({
+      executor: this.#executor,
+      createTableNode: createTableNode.cloneWithModifier(
+        this.#createTableNode,
+        'IfNotExists'
+      ),
+    })
+  }
+
+  /**
    * Adds a string column to the table.
    *
    * This creates a `varchar(255)` data type on most dialects.

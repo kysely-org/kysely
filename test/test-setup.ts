@@ -147,9 +147,9 @@ async function createDatabase(db: Kysely<Database>): Promise<void> {
 }
 
 async function dropDatabase(db: Kysely<Database>): Promise<void> {
-  await db.schema.dropTableIfExists('toy').execute()
-  await db.schema.dropTableIfExists('pet').execute()
-  await db.schema.dropTableIfExists('person').execute()
+  await db.schema.dropTable('toy').ifExists().execute()
+  await db.schema.dropTable('pet').ifExists().execute()
+  await db.schema.dropTable('person').ifExists().execute()
 }
 
 async function insertPetForPerson(

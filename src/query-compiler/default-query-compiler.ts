@@ -46,7 +46,18 @@ import { UpdateQueryNode } from '../operation-node/update-query-node'
 import { ValueListNode } from '../operation-node/value-list-node'
 import { ValueNode } from '../operation-node/value-node'
 import { WhereNode } from '../operation-node/where-node'
-import { isEmpty, getLast, freeze } from '../util/object-utils'
+import {
+  isEmpty,
+  getLast,
+  freeze,
+  isString,
+  isNumber,
+  isBoolean,
+  isNull,
+  PrimitiveValue,
+  isDate,
+  isBigInt,
+} from '../util/object-utils'
 import { CompiledQuery } from './compiled-query'
 import { CompileEntryPointNode, QueryCompiler } from './query-compiler'
 
@@ -275,7 +286,11 @@ export class DefaultQueryCompiler
   }
 
   protected visitValue(node: ValueNode): void {
-    this.appendValue(node.value)
+    if (node.immediate) {
+      this.appendImmediateValue(node.value)
+    } else {
+      this.appendValue(node.value)
+    }
   }
 
   protected visitValueList(node: ValueListNode): void {
@@ -341,6 +356,11 @@ export class DefaultQueryCompiler
 
   protected visitCreateTable(node: CreateTableNode): void {
     this.append('create table ')
+
+    if (node.modifier === 'IfNotExists') {
+      this.append('if not exists ')
+    }
+
     this.visitNode(node.table)
     this.append(' (')
     this.compileList(node.columns)
@@ -363,6 +383,11 @@ export class DefaultQueryCompiler
       }
     } else {
       this.visitNode(node.dataType)
+    }
+
+    if (node.defaultTo) {
+      this.append(' default ')
+      this.visitNode(node.defaultTo)
     }
 
     if (!node.isNullable) {
@@ -544,9 +569,25 @@ export class DefaultQueryCompiler
     this.#sqlFragments.push(str)
   }
 
-  protected appendValue(value: any): void {
+  protected appendValue(value: PrimitiveValue): void {
     this.#bindings.push(value)
     this.append(`$${this.#bindings.length}`)
+  }
+
+  protected appendImmediateValue(value: PrimitiveValue): void {
+    if (isString(value)) {
+      this.append(`'${value}'`)
+    } else if (isNumber(value) || isBoolean(value)) {
+      this.append(value.toString())
+    } else if (isNull(value)) {
+      this.append('null')
+    } else if (isDate(value)) {
+      this.appendImmediateValue(value.toISOString())
+    } else if (isBigInt(value)) {
+      this.appendImmediateValue(value.toString())
+    } else {
+      throw new Error(`invalid immediate value ${value}`)
+    }
   }
 }
 

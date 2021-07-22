@@ -3,10 +3,13 @@ import { ColumnDefinitionNode } from './column-definition-node'
 import { OperationNode } from './operation-node'
 import { TableNode } from './table-node'
 
+export type CreateTableNodeModifier = 'IfNotExists'
+
 export interface CreateTableNode extends OperationNode {
   readonly kind: 'CreateTableNode'
   readonly table: TableNode
   readonly columns: ReadonlyArray<ColumnDefinitionNode>
+  readonly modifier?: CreateTableNodeModifier
 }
 
 export const createTableNode = freeze({
@@ -23,12 +26,22 @@ export const createTableNode = freeze({
   },
 
   cloneWithColumn(
-    node: CreateTableNode,
+    createTable: CreateTableNode,
     column: ColumnDefinitionNode
   ): CreateTableNode {
     return freeze({
-      ...node,
-      columns: freeze([...node.columns, column]),
+      ...createTable,
+      columns: freeze([...createTable.columns, column]),
+    })
+  },
+
+  cloneWithModifier(
+    createTable: CreateTableNode,
+    modifier: CreateTableNodeModifier
+  ): CreateTableNode {
+    return freeze({
+      ...createTable,
+      modifier,
     })
   },
 })

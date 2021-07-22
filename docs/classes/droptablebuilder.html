@@ -77,6 +77,7 @@
 				<h3>Implements</h3>
 				<ul class="tsd-hierarchy">
 					<li><span class="tsd-signature-type">OperationNodeSource</span></li>
+					<li><span class="tsd-signature-type">Compilable</span></li>
 				</ul>
 			</section>
 			<section class="tsd-panel-group tsd-index-group">
@@ -94,6 +95,7 @@
 							<ul class="tsd-index-list">
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="droptablebuilder.html#compile" class="tsd-kind-icon">compile</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="droptablebuilder.html#execute" class="tsd-kind-icon">execute</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="droptablebuilder.html#ifexists" class="tsd-kind-icon">if<wbr>Exists</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="droptablebuilder.html#tooperationnode" class="tsd-kind-icon">to<wbr>Operation<wbr>Node</a></li>
 							</ul>
 						</section>
@@ -134,6 +136,7 @@
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
+								<p>Implementation of Compilable.compile</p>
 							</aside>
 							<h4 class="tsd-returns-title">Returns <a href="../interfaces/compiledquery.html" class="tsd-signature-type" data-tsd-kind="Interface">CompiledQuery</a></h4>
 						</li>
@@ -150,6 +153,20 @@
 							<aside class="tsd-sources">
 							</aside>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
+					<a name="ifexists" class="tsd-anchor"></a>
+					<h3>if<wbr>Exists</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon">if<wbr>Exists<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="droptablebuilder.html" class="tsd-signature-type" data-tsd-kind="Class">DropTableBuilder</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+							</aside>
+							<h4 class="tsd-returns-title">Returns <a href="droptablebuilder.html" class="tsd-signature-type" data-tsd-kind="Class">DropTableBuilder</a></h4>
 						</li>
 					</ul>
 				</section>
@@ -180,24 +197,6 @@
 			</nav>
 			<nav class="tsd-navigation secondary menu-sticky">
 				<ul class="before-current">
-					<li class=" tsd-kind-class tsd-has-type-parameter">
-						<a href="aliasedquerybuilder.html" class="tsd-kind-icon">Aliased<wbr>Query<wbr>Builder</a>
-					</li>
-					<li class=" tsd-kind-class tsd-has-type-parameter">
-						<a href="aliasedrawbuilder.html" class="tsd-kind-icon">Aliased<wbr>Raw<wbr>Builder</a>
-					</li>
-					<li class=" tsd-kind-class">
-						<a href="columnbuilder.html" class="tsd-kind-icon">Column<wbr>Builder</a>
-					</li>
-					<li class=" tsd-kind-class">
-						<a href="createtablebuilder.html" class="tsd-kind-icon">Create<wbr>Table<wbr>Builder</a>
-					</li>
-					<li class=" tsd-kind-class">
-						<a href="defaultquerycompiler.html" class="tsd-kind-icon">Default<wbr>Query<wbr>Compiler</a>
-					</li>
-					<li class=" tsd-kind-class">
-						<a href="driver.html" class="tsd-kind-icon">Driver</a>
-					</li>
 				</ul>
 				<ul class="current">
 					<li class="current tsd-kind-class">
@@ -213,99 +212,15 @@
 								<a href="droptablebuilder.html#execute" class="tsd-kind-icon">execute</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="droptablebuilder.html#ifexists" class="tsd-kind-icon">if<wbr>Exists</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
 								<a href="droptablebuilder.html#tooperationnode" class="tsd-kind-icon">to<wbr>Operation<wbr>Node</a>
 							</li>
 						</ul>
 					</li>
 				</ul>
 				<ul class="after-current">
-					<li class=" tsd-kind-class tsd-has-type-parameter">
-						<a href="joinbuilder.html" class="tsd-kind-icon">Join<wbr>Builder</a>
-					</li>
-					<li class=" tsd-kind-class tsd-has-type-parameter">
-						<a href="kysely.html" class="tsd-kind-icon">Kysely</a>
-					</li>
-					<li class=" tsd-kind-class">
-						<a href="postgresdialect.html" class="tsd-kind-icon">Postgres<wbr>Dialect</a>
-					</li>
-					<li class=" tsd-kind-class">
-						<a href="postgresdriver.html" class="tsd-kind-icon">Postgres<wbr>Driver</a>
-					</li>
-					<li class=" tsd-kind-class tsd-has-type-parameter">
-						<a href="querybuilder.html" class="tsd-kind-icon">Query<wbr>Builder</a>
-					</li>
-					<li class=" tsd-kind-class tsd-has-type-parameter">
-						<a href="rawbuilder.html" class="tsd-kind-icon">Raw<wbr>Builder</a>
-					</li>
-					<li class=" tsd-kind-class tsd-has-type-parameter">
-						<a href="subquerybuilder.html" class="tsd-kind-icon">Sub<wbr>Query<wbr>Builder</a>
-					</li>
-					<li class=" tsd-kind-class tsd-has-type-parameter">
-						<a href="transaction.html" class="tsd-kind-icon">Transaction</a>
-					</li>
-					<li class=" tsd-kind-interface">
-						<a href="../interfaces/compiledquery.html" class="tsd-kind-icon">Compiled<wbr>Query</a>
-					</li>
-					<li class=" tsd-kind-interface">
-						<a href="../interfaces/createtablebuilderconstructorargs.html" class="tsd-kind-icon">Create<wbr>Table<wbr>Builder<wbr>Constructor<wbr>Args</a>
-					</li>
-					<li class=" tsd-kind-interface">
-						<a href="../interfaces/databaseconnection.html" class="tsd-kind-icon">Database<wbr>Connection</a>
-					</li>
-					<li class=" tsd-kind-interface">
-						<a href="../interfaces/driverconfig.html" class="tsd-kind-icon">Driver<wbr>Config</a>
-					</li>
-					<li class=" tsd-kind-interface">
-						<a href="../interfaces/driverconfigwithdefaults.html" class="tsd-kind-icon">Driver<wbr>Config<wbr>With<wbr>Defaults</a>
-					</li>
-					<li class=" tsd-kind-interface">
-						<a href="../interfaces/droptablebuilderconstructorargs.html" class="tsd-kind-icon">Drop<wbr>Table<wbr>Builder<wbr>Constructor<wbr>Args</a>
-					</li>
-					<li class=" tsd-kind-interface">
-						<a href="../interfaces/dynamic.html" class="tsd-kind-icon">Dynamic</a>
-					</li>
-					<li class=" tsd-kind-interface">
-						<a href="../interfaces/kyselyconfig.html" class="tsd-kind-icon">Kysely<wbr>Config</a>
-					</li>
-					<li class=" tsd-kind-interface">
-						<a href="../interfaces/kyselyconstructorargs.html" class="tsd-kind-icon">Kysely<wbr>Constructor<wbr>Args</a>
-					</li>
-					<li class=" tsd-kind-interface">
-						<a href="../interfaces/poolconfig.html" class="tsd-kind-icon">Pool<wbr>Config</a>
-					</li>
-					<li class=" tsd-kind-interface">
-						<a href="../interfaces/poolconfigwithdefaults.html" class="tsd-kind-icon">Pool<wbr>Config<wbr>With<wbr>Defaults</a>
-					</li>
-					<li class=" tsd-kind-interface">
-						<a href="../interfaces/querybuilderconstructorargs.html" class="tsd-kind-icon">Query<wbr>Builder<wbr>Constructor<wbr>Args</a>
-					</li>
-					<li class=" tsd-kind-interface">
-						<a href="../interfaces/querycompiler.html" class="tsd-kind-icon">Query<wbr>Compiler</a>
-					</li>
-					<li class=" tsd-kind-interface tsd-has-type-parameter">
-						<a href="../interfaces/queryresult.html" class="tsd-kind-icon">Query<wbr>Result</a>
-					</li>
-					<li class=" tsd-kind-interface">
-						<a href="../interfaces/rawbuilderconstructorargs.html" class="tsd-kind-icon">Raw<wbr>Builder<wbr>Constructor<wbr>Args</a>
-					</li>
-					<li class=" tsd-kind-interface">
-						<a href="../interfaces/schema.html" class="tsd-kind-icon">Schema</a>
-					</li>
-					<li class=" tsd-kind-type-alias">
-						<a href="../modules.html#columnbuildercallback" class="tsd-kind-icon">Column<wbr>Builder<wbr>Callback</a>
-					</li>
-					<li class=" tsd-kind-type-alias">
-						<a href="../modules.html#compileentrypointnode" class="tsd-kind-icon">Compile<wbr>Entry<wbr>Point<wbr>Node</a>
-					</li>
-					<li class=" tsd-kind-function">
-						<a href="../modules.html#createdynamicmodule" class="tsd-kind-icon">create<wbr>Dynamic<wbr>Module</a>
-					</li>
-					<li class=" tsd-kind-function tsd-has-type-parameter">
-						<a href="../modules.html#createemptyselectquery" class="tsd-kind-icon">create<wbr>Empty<wbr>Select<wbr>Query</a>
-					</li>
-					<li class=" tsd-kind-function">
-						<a href="../modules.html#createschemamodule" class="tsd-kind-icon">create<wbr>Schema<wbr>Module</a>
-					</li>
 				</ul>
 			</nav>
 		</div>
@@ -324,11 +239,12 @@
 				<li class="tsd-kind-method tsd-parent-kind-class"><span class="tsd-kind-icon">Method</span></li>
 			</ul>
 			<ul class="tsd-legend">
-				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-protected"><span class="tsd-kind-icon">Protected property</span></li>
-				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-protected"><span class="tsd-kind-icon">Protected method</span></li>
+				<li class="tsd-kind-constructor tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited constructor</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited method</span></li>
 			</ul>
 			<ul class="tsd-legend">
-				<li class="tsd-kind-constructor tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited constructor</span></li>
+				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-protected"><span class="tsd-kind-icon">Protected property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-protected"><span class="tsd-kind-icon">Protected method</span></li>
 			</ul>
 		</div>
 	</div>

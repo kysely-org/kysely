@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>DropTableBuilderConstructorArgs | kysely</title>
+	<title>DynamicModule | kysely</title>
 	<meta name="description" content="Documentation for kysely">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="../assets/css/main.css">
@@ -55,10 +55,10 @@
 					<a href="../modules.html">kysely</a>
 				</li>
 				<li>
-					<a href="droptablebuilderconstructorargs.html">DropTableBuilderConstructorArgs</a>
+					<a href="dynamicmodule.html">DynamicModule</a>
 				</li>
 			</ul>
-			<h1>Interface DropTableBuilderConstructorArgs</h1>
+			<h1>Interface DynamicModule</h1>
 		</div>
 	</div>
 </header>
@@ -69,7 +69,7 @@
 				<h3>Hierarchy</h3>
 				<ul class="tsd-hierarchy">
 					<li>
-						<span class="target">DropTableBuilderConstructorArgs</span>
+						<span class="target">DynamicModule</span>
 					</li>
 				</ul>
 			</section>
@@ -78,30 +78,41 @@
 				<section class="tsd-panel tsd-index-panel">
 					<div class="tsd-index-content">
 						<section class="tsd-index-section ">
-							<h3>Properties</h3>
+							<h3>Methods</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="droptablebuilderconstructorargs.html#droptablenode" class="tsd-kind-icon">drop<wbr>Table<wbr>Node</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="droptablebuilderconstructorargs.html#executor" class="tsd-kind-icon">executor</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface tsd-has-type-parameter"><a href="dynamicmodule.html#ref" class="tsd-kind-icon">ref</a></li>
 							</ul>
 						</section>
 					</div>
 				</section>
 			</section>
 			<section class="tsd-panel-group tsd-member-group ">
-				<h2>Properties</h2>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="droptablenode" class="tsd-anchor"></a>
-					<h3>drop<wbr>Table<wbr>Node</h3>
-					<div class="tsd-signature tsd-kind-icon">drop<wbr>Table<wbr>Node<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">DropTableNode</span></div>
-					<aside class="tsd-sources">
-					</aside>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="executor" class="tsd-anchor"></a>
-					<h3>executor</h3>
-					<div class="tsd-signature tsd-kind-icon">executor<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">QueryExecutor</span></div>
-					<aside class="tsd-sources">
-					</aside>
+				<h2>Methods</h2>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface tsd-has-type-parameter">
+					<a name="ref" class="tsd-anchor"></a>
+					<h3>ref</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface tsd-has-type-parameter">
+						<li class="tsd-signature tsd-kind-icon">ref&lt;R&gt;<span class="tsd-signature-symbol">(</span>reference<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">DynamicReferenceBuilder</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">R</span><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+							</aside>
+							<h4 class="tsd-type-parameters-title">Type parameters</h4>
+							<ul class="tsd-type-parameters">
+								<li>
+									<h4>R<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span> = <span class="tsd-signature-type">never</span></h4>
+								</li>
+							</ul>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>reference: <span class="tsd-signature-type">string</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">DynamicReferenceBuilder</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">R</span><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+					</ul>
 				</section>
 			</section>
 		</div>
@@ -118,13 +129,10 @@
 				</ul>
 				<ul class="current">
 					<li class="current tsd-kind-interface">
-						<a href="droptablebuilderconstructorargs.html" class="tsd-kind-icon">Drop<wbr>Table<wbr>Builder<wbr>Constructor<wbr>Args</a>
+						<a href="dynamicmodule.html" class="tsd-kind-icon">Dynamic<wbr>Module</a>
 						<ul>
-							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="droptablebuilderconstructorargs.html#droptablenode" class="tsd-kind-icon">drop<wbr>Table<wbr>Node</a>
-							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="droptablebuilderconstructorargs.html#executor" class="tsd-kind-icon">executor</a>
+							<li class=" tsd-kind-method tsd-parent-kind-interface tsd-has-type-parameter">
+								<a href="dynamicmodule.html#ref" class="tsd-kind-icon">ref</a>
 							</li>
 						</ul>
 					</li>

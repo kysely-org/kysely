@@ -243,6 +243,10 @@ export class OperationNodeVisitor {
   protected visitColumnDefinition(node: ColumnDefinitionNode): void {
     this.visitNode(node.column)
     this.visitNode(node.dataType)
+
+    if (node.defaultTo) {
+      this.visitNode(node.defaultTo)
+    }
   }
 
   protected visitDropTable(node: DropTableNode): void {

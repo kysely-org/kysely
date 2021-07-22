@@ -2,8 +2,10 @@ import { freeze } from '../util/object-utils'
 import { ColumnNode, columnNode } from './column-node'
 import { DataTypeNode } from './data-type-node'
 import { OperationNode } from './operation-node'
+import { ValueExpressionNode } from './operation-node-utils'
 import { RawNode } from './raw-node'
 import { ReferenceNode } from './reference-node'
+import { ValueNode } from './value-node'
 
 export type ColumnDefinitionNodeParams = Omit<
   Partial<ColumnDefinitionNode>,
@@ -23,6 +25,7 @@ export interface ColumnDefinitionNode extends OperationNode {
   readonly isUnique: boolean
   readonly isNullable: boolean
   readonly onDelete?: OnDelete
+  readonly defaultTo?: ValueNode | RawNode
 }
 
 export const columnDefinitionNode = freeze({

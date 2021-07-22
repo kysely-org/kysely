@@ -13,7 +13,7 @@ import { DropTableBuilder } from './drop-table-builder'
 /**
  * Provides methods for building database schema.
  */
-export interface Schema {
+export interface SchemaModule {
   /**
    * Create a new table.
    *
@@ -46,18 +46,6 @@ export interface Schema {
   dropTable(table: string): DropTableBuilder
 
   /**
-   * Drop a table if it exists. Does nothing if it doesn't.
-   *
-   * @example
-   * ```ts
-   * await db.schema
-   *   .dropTableIfExists('person')
-   *   .execute()
-   * ```
-   */
-  dropTableIfExists(table: string): DropTableBuilder
-
-  /**
    * Create a new index.
    *
    * @example
@@ -82,21 +70,9 @@ export interface Schema {
    * ```
    */
   dropIndex(indexName: string): DropIndexBuilder
-
-  /**
-   * Drop an index if it exists. Does nothing if it doesn't.
-   *
-   * @example
-   * ```ts
-   * await db.schema
-   *   .dropIndexIfExists('person_full_name_unique_index')
-   *   .execute()
-   * ```
-   */
-  dropIndexIfExists(indexName: string): DropIndexBuilder
 }
 
-export function createSchemaModule(executor: QueryExecutor): Schema {
+export function createSchemaModule(executor: QueryExecutor): SchemaModule {
   return freeze({
     createTable(table: string): CreateTableBuilder {
       return new CreateTableBuilder({

@@ -16,7 +16,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
     })
 
     afterEach(async () => {
-      await ctx.db.schema.dropTableIfExists('test').execute()
+      await ctx.db.schema.dropTable('test').ifExists().execute()
       await clearDatabase(ctx)
     })
 
@@ -39,7 +39,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
           .specificType('i', 'varchar(123)')
           .numeric('j', 6, 2)
           .decimal('k', 8, 4)
-          .boolean('l')
+          .boolean('l', (col) => col.notNullable().defaultTo(false))
 
         testSql(builder, dialect, {
           postgres: {
@@ -56,8 +56,24 @@ for (const dialect of BUILT_IN_DIALECTS) {
               `"i" varchar(123),`,
               `"j" numeric(6, 2),`,
               `"k" decimal(8, 4),`,
-              `"l" boolean)`,
+              `"l" boolean default false not null)`,
             ],
+            bindings: [],
+          },
+        })
+
+        await builder.execute()
+      })
+
+      it("should create a table if it doesn't already exist", async () => {
+        const builder = ctx.db.schema
+          .createTable('test')
+          .ifNotExists()
+          .integer('id', (col) => col.primary().increments())
+
+        testSql(builder, dialect, {
+          postgres: {
+            sql: `create table if not exists "test" ("id" serial primary key)`,
             bindings: [],
           },
         })
@@ -121,7 +137,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
       })
 
       it('should drop a table if it exists', async () => {
-        const builder = ctx.db.schema.dropTableIfExists('test')
+        const builder = ctx.db.schema.dropTable('test').ifExists()
 
         testSql(builder, dialect, {
           postgres: {
@@ -256,7 +272,9 @@ for (const dialect of BUILT_IN_DIALECTS) {
       })
 
       it('should drop an index if it exists', async () => {
-        const builder = ctx.db.schema.dropIndexIfExists(`test_first_name_index`)
+        const builder = ctx.db.schema
+          .dropIndex(`test_first_name_index`)
+          .ifExists()
 
         testSql(builder, dialect, {
           postgres: {

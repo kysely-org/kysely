@@ -9,14 +9,14 @@ import {
   TableReference,
 } from './parser/table-parser'
 import { DriverConfig } from './driver/driver-config'
-import { Dialect } from './dialect/dialect'
+import { Dialect, TableMetadata } from './dialect/dialect'
 import { PostgresDialect } from './dialect/postgres/postgres-dialect'
 import { Driver } from './driver/driver'
-import { createSchemaModule, Schema } from './schema/schema'
+import { createSchemaModule, SchemaModule } from './schema/schema'
 import { selectQueryNode } from './operation-node/select-query-node'
 import { insertQueryNode } from './operation-node/insert-query-node'
 import { deleteQueryNode } from './operation-node/delete-query-node'
-import { createDynamicModule, Dynamic } from './dynamic/dynamic'
+import { createDynamicModule, DynamicModule } from './dynamic/dynamic'
 import {
   DeleteResultTypeTag,
   InsertResultTypeTag,
@@ -33,7 +33,7 @@ import {
   INTERNAL_DRIVER_ENSURE_DESTROY,
   INTERNAL_DRIVER_RELEASE_CONNECTION,
 } from './driver/driver-internal'
-import { createMigrationModule, Migration } from './migration/migration'
+import { createMigrationModule, MigrationModule } from './migration/migration'
 import { QueryExecutor } from './util/query-executor'
 
 /**
@@ -108,7 +108,7 @@ export class Kysely<DB> {
   /**
    * Returns a the {@link Schema} module for building database schema.
    */
-  get schema(): Schema {
+  get schema(): SchemaModule {
     return createSchemaModule(
       QueryExecutor.create(this.#compiler, this.#connectionProvider)
     )
@@ -117,8 +117,8 @@ export class Kysely<DB> {
   /**
    * Returns a the {@link Migration} module for managing and running migrations.
    */
-  get migration(): Migration {
-    return createMigrationModule(this.#dialect, this.#compiler, this.#driver)
+  get migration(): MigrationModule {
+    return createMigrationModule(this)
   }
 
   /**
@@ -127,7 +127,7 @@ export class Kysely<DB> {
    * The {@link Dynamic} module can be used to bypass strict typing and
    * passing in dynamic values for the queries.
    */
-  get dynamic(): Dynamic {
+  get dynamic(): DynamicModule {
     return createDynamicModule()
   }
 
@@ -547,6 +547,12 @@ export class Kysely<DB> {
     }
   }
 
+  async getTableMetadata(
+    tableName: string
+  ): Promise<TableMetadata | undefined> {
+    return this.#dialect.getTableMetadata(this, tableName)
+  }
+
   /**
    * Releases all resources and disconnects from the database.
    *
@@ -563,6 +569,12 @@ export class Transaction<DB> extends Kysely<DB> {
   // other way around.
   get isTransaction(): true {
     return true
+  }
+
+  get migration(): MigrationModule {
+    throw new Error(
+      'the migration module is not available for a transaction. Use the main Kysely instance to run migrations'
+    )
   }
 
   async transaction<T>(_: (trx: Transaction<DB>) => T): Promise<T> {
