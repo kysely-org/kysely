@@ -1,9 +1,10 @@
 import { freeze } from '../util/object-utils'
+import { CheckConstraintNode } from './check-constraint-node'
 import { ColumnNode, columnNode } from './column-node'
 import { DataTypeNode } from './data-type-node'
 import { OperationNode } from './operation-node'
 import { RawNode } from './raw-node'
-import { ReferenceNode } from './reference-node'
+import { ReferencesNode } from './references-node'
 import { ValueNode } from './value-node'
 
 export type ColumnDefinitionNodeParams = Omit<
@@ -11,20 +12,19 @@ export type ColumnDefinitionNodeParams = Omit<
   'kind'
 >
 
-export type OnDelete = 'cascade' | 'set null'
 export type ColumnDataTypeNode = DataTypeNode | RawNode
 
 export interface ColumnDefinitionNode extends OperationNode {
   readonly kind: 'ColumnDefinitionNode'
   readonly column: ColumnNode
   readonly dataType: ColumnDataTypeNode
-  readonly references?: ReferenceNode
+  readonly references?: ReferencesNode
   readonly isPrimaryKey: boolean
   readonly isAutoIncrementing: boolean
   readonly isUnique: boolean
   readonly isNullable: boolean
-  readonly onDelete?: OnDelete
   readonly defaultTo?: ValueNode | RawNode
+  readonly check?: CheckConstraintNode
 }
 
 export const columnDefinitionNode = freeze({

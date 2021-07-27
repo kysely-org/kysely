@@ -1,5 +1,6 @@
 import { AliasNode } from '../operation-node/alias-node'
 import { AndNode } from '../operation-node/and-node'
+import { CheckConstraintNode } from '../operation-node/check-constraint-node'
 import { ColumnDefinitionNode } from '../operation-node/column-definition-node'
 import { ColumnUpdateNode } from '../operation-node/column-update-node'
 import { CreateIndexNode } from '../operation-node/create-index-node'
@@ -34,6 +35,7 @@ import { PrimitiveValueListNode } from '../operation-node/primitive-value-list-n
 import { queryNode } from '../operation-node/query-node'
 import { rawNode, RawNode } from '../operation-node/raw-node'
 import { ReferenceNode } from '../operation-node/reference-node'
+import { ReferencesNode } from '../operation-node/references-node'
 import { ReturningNode } from '../operation-node/returning-node'
 import { SelectAllNode } from '../operation-node/select-all-node'
 import {
@@ -42,6 +44,8 @@ import {
 } from '../operation-node/select-query-node'
 import { SelectionNode } from '../operation-node/selection-node'
 import { TableNode } from '../operation-node/table-node'
+import { TablePrimaryConstraintNode } from '../operation-node/table-primary-constraint-node'
+import { TableUniqueConstraintNode } from '../operation-node/table-unique-constraint-node'
 import { UpdateQueryNode } from '../operation-node/update-query-node'
 import { ValueListNode } from '../operation-node/value-list-node'
 import { ValueNode } from '../operation-node/value-node'
@@ -88,7 +92,7 @@ export class DefaultQueryCompiler
     return this.#bindings
   }
 
-  protected visitSelectQuery(node: SelectQueryNode): void {
+  protected override visitSelectQuery(node: SelectQueryNode): void {
     const isSubQuery = this.nodeStack.find(queryNode.is) !== node
 
     if (isSubQuery) {
@@ -154,7 +158,7 @@ export class DefaultQueryCompiler
     }
   }
 
-  protected visitFrom(node: FromNode): void {
+  protected override visitFrom(node: FromNode): void {
     this.append('from ')
     this.compileList(node.froms)
   }
@@ -180,12 +184,12 @@ export class DefaultQueryCompiler
     }
   }
 
-  protected visitWhere(node: WhereNode): void {
+  protected override visitWhere(node: WhereNode): void {
     this.append('where ')
     this.visitNode(node.where)
   }
 
-  protected visitInsertQuery(node: InsertQueryNode): void {
+  protected override visitInsertQuery(node: InsertQueryNode): void {
     this.append('insert into ')
     this.visitNode(node.into)
 
@@ -211,7 +215,7 @@ export class DefaultQueryCompiler
     }
   }
 
-  protected visitDeleteQuery(node: DeleteQueryNode): void {
+  protected override visitDeleteQuery(node: DeleteQueryNode): void {
     this.append('delete ')
     this.visitNode(node.from)
 
@@ -231,28 +235,28 @@ export class DefaultQueryCompiler
     }
   }
 
-  protected visitReturning(node: ReturningNode): void {
+  protected override visitReturning(node: ReturningNode): void {
     this.append('returning ')
     this.compileList(node.selections)
   }
 
-  protected visitAlias(node: AliasNode): void {
+  protected override visitAlias(node: AliasNode): void {
     this.visitNode(node.node)
     this.append(' as ')
     this.visitNode(node.alias)
   }
 
-  protected visitReference(node: ReferenceNode): void {
+  protected override visitReference(node: ReferenceNode): void {
     this.visitNode(node.table)
     this.append('.')
     this.visitNode(node.column)
   }
 
-  protected visitSelectAll(_: SelectAllNode): void {
+  protected override visitSelectAll(_: SelectAllNode): void {
     this.append('*')
   }
 
-  protected visitIdentifier(node: IdentifierNode): void {
+  protected override visitIdentifier(node: IdentifierNode): void {
     this.appendLeftIdentifierWrapper()
     this.compileUnwrappedIdentifier(node)
     this.appendRightIdentifierWrapper()
@@ -262,7 +266,7 @@ export class DefaultQueryCompiler
     this.append(node.identifier)
   }
 
-  protected visitFilter(node: FilterNode): void {
+  protected override visitFilter(node: FilterNode): void {
     if (node.left) {
       this.visitNode(node.left)
       this.append(' ')
@@ -273,19 +277,19 @@ export class DefaultQueryCompiler
     this.visitNode(node.right)
   }
 
-  protected visitAnd(node: AndNode): void {
+  protected override visitAnd(node: AndNode): void {
     this.visitNode(node.left)
     this.append(' and ')
     this.visitNode(node.right)
   }
 
-  protected visitOr(node: OrNode): void {
+  protected override visitOr(node: OrNode): void {
     this.visitNode(node.left)
     this.append(' or ')
     this.visitNode(node.right)
   }
 
-  protected visitValue(node: ValueNode): void {
+  protected override visitValue(node: ValueNode): void {
     if (node.immediate) {
       this.appendImmediateValue(node.value)
     } else {
@@ -293,13 +297,13 @@ export class DefaultQueryCompiler
     }
   }
 
-  protected visitValueList(node: ValueListNode): void {
+  protected override visitValueList(node: ValueListNode): void {
     this.append('(')
     this.compileList(node.values)
     this.append(')')
   }
 
-  protected visitPrimitiveValueList(node: PrimitiveValueListNode): void {
+  protected override visitPrimitiveValueList(node: PrimitiveValueListNode): void {
     this.append('(')
 
     const { values } = node
@@ -314,13 +318,13 @@ export class DefaultQueryCompiler
     this.append(')')
   }
 
-  protected visitParens(node: ParensNode): void {
+  protected override visitParens(node: ParensNode): void {
     this.append('(')
     this.visitNode(node.node)
     this.append(')')
   }
 
-  protected visitJoin(node: JoinNode): void {
+  protected override visitJoin(node: JoinNode): void {
     this.append(JOIN_TYPE_SQL[node.joinType])
     this.append(' ')
     this.visitNode(node.table)
@@ -331,7 +335,7 @@ export class DefaultQueryCompiler
     }
   }
 
-  protected visitRaw(node: RawNode): void {
+  protected override visitRaw(node: RawNode): void {
     node.sqlFragments.forEach((sql, i) => {
       this.append(sql)
 
@@ -341,11 +345,11 @@ export class DefaultQueryCompiler
     })
   }
 
-  protected visitOperator(node: OperatorNode): void {
+  protected override visitOperator(node: OperatorNode): void {
     this.append(node.operator)
   }
 
-  protected visitTable(node: TableNode): void {
+  protected override visitTable(node: TableNode): void {
     if (node.schema) {
       this.visitNode(node.schema)
       this.append('.')
@@ -354,7 +358,7 @@ export class DefaultQueryCompiler
     this.visitNode(node.table)
   }
 
-  protected visitCreateTable(node: CreateTableNode): void {
+  protected override visitCreateTable(node: CreateTableNode): void {
     this.append('create table ')
 
     if (node.modifier === 'IfNotExists') {
@@ -363,11 +367,16 @@ export class DefaultQueryCompiler
 
     this.visitNode(node.table)
     this.append(' (')
-    this.compileList(node.columns)
+    this.compileList([
+      ...node.columns,
+      ...(node.primaryKeyConstraint ? [node.primaryKeyConstraint] : []),
+      ...(node.uniqueConstraints ?? []),
+      ...(node.checkConstraints ?? []),
+    ])
     this.append(')')
   }
 
-  protected visitColumnDefinition(node: ColumnDefinitionNode): void {
+  protected override visitColumnDefinition(node: ColumnDefinitionNode): void {
     this.visitNode(node.column)
     this.append(' ')
 
@@ -403,20 +412,30 @@ export class DefaultQueryCompiler
     }
 
     if (node.references) {
-      this.append(' references ')
-      this.visitNode(node.references.table)
-      this.append('(')
-      this.visitNode(node.references.column)
-      this.append(')')
+      this.append(' ')
+      this.visitNode(node.references)
+    }
 
-      if (node.onDelete) {
-        this.append(' on delete ')
-        this.append(node.onDelete)
-      }
+    if (node.check) {
+      this.append(' ')
+      this.visitNode(node.check)
     }
   }
 
-  protected visitDropTable(node: DropTableNode): void {
+  protected override visitReferences(node: ReferencesNode): void {
+    this.append('references ')
+    this.visitNode(node.table)
+    this.append(' (')
+    this.visitNode(node.column)
+    this.append(')')
+
+    if (node.onDelete) {
+      this.append(' on delete ')
+      this.append(node.onDelete)
+    }
+  }
+
+  protected override visitDropTable(node: DropTableNode): void {
     this.append('drop table ')
 
     if (node.modifier === 'IfExists') {
@@ -426,31 +445,31 @@ export class DefaultQueryCompiler
     this.visitNode(node.table)
   }
 
-  protected visitDataType(node: DataTypeNode): void {
+  protected override visitDataType(node: DataTypeNode): void {
     this.append(DATA_TYPE_SQL[node.dataType](node))
   }
 
-  protected visitOrderBy(node: OrderByNode): void {
+  protected override visitOrderBy(node: OrderByNode): void {
     this.append('order by ')
     this.compileList(node.items)
   }
 
-  protected visitOrderByItem(node: OrderByItemNode): void {
+  protected override visitOrderByItem(node: OrderByItemNode): void {
     this.visitNode(node.orderBy)
     this.append(' ')
     this.append(node.direction)
   }
 
-  protected visitGroupBy(node: GroupByNode): void {
+  protected override visitGroupBy(node: GroupByNode): void {
     this.append('group by ')
     this.compileList(node.items)
   }
 
-  protected visitGroupByItem(node: GroupByItemNode): void {
+  protected override visitGroupByItem(node: GroupByItemNode): void {
     this.visitNode(node.groupBy)
   }
 
-  protected visitUpdateQuery(node: UpdateQueryNode): void {
+  protected override visitUpdateQuery(node: UpdateQueryNode): void {
     this.append('update ')
     this.visitNode(node.table)
     this.append(' set ')
@@ -475,23 +494,23 @@ export class DefaultQueryCompiler
     }
   }
 
-  protected visitColumnUpdate(node: ColumnUpdateNode): void {
+  protected override visitColumnUpdate(node: ColumnUpdateNode): void {
     this.visitNode(node.column)
     this.append(' = ')
     this.visitNode(node.value)
   }
 
-  protected visitLimit(node: LimitNode): void {
+  protected override visitLimit(node: LimitNode): void {
     this.append('limit ')
     this.visitNode(node.limit)
   }
 
-  protected visitOffset(node: OffsetNode): void {
+  protected override visitOffset(node: OffsetNode): void {
     this.append('offset ')
     this.visitNode(node.offset)
   }
 
-  protected visitOnConflict(node: OnConflictNode): void {
+  protected override visitOnConflict(node: OnConflictNode): void {
     this.append('on conflict ')
 
     this.append('(')
@@ -506,7 +525,7 @@ export class DefaultQueryCompiler
     }
   }
 
-  protected visitCreateIndex(node: CreateIndexNode): void {
+  protected override visitCreateIndex(node: CreateIndexNode): void {
     this.append('create ')
 
     if (node.unique) {
@@ -543,7 +562,7 @@ export class DefaultQueryCompiler
     }
   }
 
-  protected visitDropIndex(node: DropIndexNode): void {
+  protected override visitDropIndex(node: DropIndexNode): void {
     this.append('drop index ')
 
     if (node.modifier === 'IfExists') {
@@ -553,7 +572,25 @@ export class DefaultQueryCompiler
     this.visitNode(node.name)
   }
 
-  protected visitList(node: ListNode): void {
+  protected override visitTablePrimaryConstraint(node: TablePrimaryConstraintNode): void {
+    this.append('primary key (')
+    this.compileList(node.columns)
+    this.append(')')
+  }
+
+  protected override visitTableUniqueConstraint(node: TableUniqueConstraintNode): void {
+    this.append('unique (')
+    this.compileList(node.columns)
+    this.append(')')
+  }
+
+  protected override visitCheckConstraint(node: CheckConstraintNode): void {
+    this.append('check (')
+    this.visitNode(node.expression)
+    this.append(')')
+  }
+
+  protected override visitList(node: ListNode): void {
     this.compileList(node.items)
   }
 

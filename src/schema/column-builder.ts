@@ -1,6 +1,6 @@
+import { checkConstraintNode } from '../operation-node/check-constraint-node'
 import {
   ColumnDefinitionNode,
-  OnDelete,
   columnDefinitionNode,
 } from '../operation-node/column-definition-node'
 import {
@@ -8,6 +8,8 @@ import {
   OperationNodeSource,
 } from '../operation-node/operation-node-source'
 import { referenceNode } from '../operation-node/reference-node'
+import { OnDelete, referencesNode } from '../operation-node/references-node'
+import { selectAllNode } from '../operation-node/select-all-node'
 import { valueNode } from '../operation-node/value-node'
 import { parseStringReference } from '../parser/reference-parser'
 import { RawBuilder } from '../raw-builder/raw-builder'
@@ -57,14 +59,34 @@ export class ColumnBuilder implements OperationNodeSource {
   references(ref: string): ColumnBuilder {
     const references = parseStringReference(ref)
 
-    if (!referenceNode.is(references)) {
+    if (!referenceNode.is(references) || selectAllNode.is(references.column)) {
       throw new Error(
         `invalid call references('${ref}'). The reference must have format table.column or schema.table.column`
       )
     }
 
     return new ColumnBuilder(
-      columnDefinitionNode.cloneWith(this.#node, { references })
+      columnDefinitionNode.cloneWith(this.#node, {
+        references: referencesNode.create(references.table, references.column),
+      })
+    )
+  }
+
+  /**
+   * Adds an `on delete` constraint for the foreign key column.
+   */
+  onDelete(onDelete: OnDelete): ColumnBuilder {
+    if (!this.#node.references) {
+      throw new Error('on delete constraint can only be added for foreign keys')
+    }
+
+    return new ColumnBuilder(
+      columnDefinitionNode.cloneWith(this.#node, {
+        references: referencesNode.cloneWithOnDelete(
+          this.#node.references,
+          onDelete
+        ),
+      })
     )
   }
 
@@ -78,7 +100,7 @@ export class ColumnBuilder implements OperationNodeSource {
   }
 
   /**
-   * Makes the column non-nullable.
+   * Adds a `not null` constraint for the column.
    */
   notNullable(): ColumnBuilder {
     return new ColumnBuilder(
@@ -87,16 +109,15 @@ export class ColumnBuilder implements OperationNodeSource {
   }
 
   /**
-   * Adds an `on delete` constraint for the column.
-   */
-  onDelete(onDelete: OnDelete): ColumnBuilder {
-    return new ColumnBuilder(
-      columnDefinitionNode.cloneWith(this.#node, { onDelete })
-    )
-  }
-
-  /**
    * Adds a default value constraint for the column.
+   *
+   * @example
+   * ```ts
+   * db.schema
+   *   .createTable('pet')
+   *   .integer('number_of_legs', (col) => col.defaultTo(4))
+   *   .execute()
+   * ```
    */
   defaultTo(value: PrimitiveValue | RawBuilder<any>): ColumnBuilder {
     return new ColumnBuilder(
@@ -104,6 +125,25 @@ export class ColumnBuilder implements OperationNodeSource {
         defaultTo: isOperationNodeSource(value)
           ? value.toOperationNode()
           : valueNode.createImmediate(value),
+      })
+    )
+  }
+
+  /**
+   * Adds a check constraint for the column.
+   *
+   * @example
+   * ```ts
+   * db.schema
+   *   .createTable('pet')
+   *   .integer('number_of_legs', (col) => col.check('number_of_legs < 5'))
+   *   .execute()
+   * ```
+   */
+  check(sql: string): ColumnBuilder {
+    return new ColumnBuilder(
+      columnDefinitionNode.cloneWith(this.#node, {
+        check: checkConstraintNode.create(sql),
       })
     )
   }

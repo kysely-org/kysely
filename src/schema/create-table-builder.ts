@@ -179,6 +179,60 @@ export class CreateTableBuilder implements OperationNodeSource, Compilable {
     return this.addColumn(columnName, rawNode.createWithSql(dataType), build)
   }
 
+  /**
+   * Adds a primary key constraint for one or more columns.
+   *
+   * @example
+   * ```ts
+   * primary(['first_name', 'last_name'])
+   * ```
+   */
+  primary(columns: string[]): CreateTableBuilder {
+    return new CreateTableBuilder({
+      executor: this.#executor,
+      createTableNode: createTableNode.cloneWithPrimaryKeyConstraint(
+        this.#createTableNode,
+        columns
+      ),
+    })
+  }
+
+  /**
+   * Adds a unique constraint for one or more columns.
+   *
+   * @example
+   * ```ts
+   * unique(['first_name', 'last_name'])
+   * ```
+   */
+  unique(columns: string[]): CreateTableBuilder {
+    return new CreateTableBuilder({
+      executor: this.#executor,
+      createTableNode: createTableNode.cloneWithUniqueConstraint(
+        this.#createTableNode,
+        columns
+      ),
+    })
+  }
+
+  /**
+   * Adds a check constraint.
+   *
+   * @example
+   * ```ts
+   * check('number_of_legs < 5')
+   * ```
+   */
+  check(checkExpression: string): CreateTableBuilder {
+    return new CreateTableBuilder({
+      executor: this.#executor,
+      createTableNode: createTableNode.cloneWithCheckConstraint(
+        this.#createTableNode,
+        checkExpression
+      ),
+    })
+  }
+
   toOperationNode(): CreateTableNode {
     return this.#createTableNode
   }

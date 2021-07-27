@@ -29,7 +29,9 @@ for (const dialect of BUILT_IN_DIALECTS) {
         const builder = ctx.db.schema
           .createTable('test')
           .integer('a', (col) => col.primary().increments())
-          .integer('b', (col) => col.references('test.a').onDelete('cascade'))
+          .integer('b', (col) =>
+            col.references('test.a').onDelete('cascade').check('b < a')
+          )
           .string('c')
           .string('d', 10)
           .bigInteger('e', (col) => col.unique().notNullable())
@@ -46,7 +48,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
             sql: [
               `create table "test"`,
               `("a" serial primary key,`,
-              `"b" integer references "test"("a") on delete cascade,`,
+              `"b" integer references "test" ("a") on delete cascade check (b < a),`,
               `"c" varchar(255),`,
               `"d" varchar(10),`,
               `"e" bigint not null unique,`,
@@ -58,6 +60,44 @@ for (const dialect of BUILT_IN_DIALECTS) {
               `"k" decimal(8, 4),`,
               `"l" boolean default false not null)`,
             ],
+            bindings: [],
+          },
+        })
+
+        await builder.execute()
+      })
+
+      it('should create a table with unique constraints', async () => {
+        const builder = ctx.db.schema
+          .createTable('test')
+          .string('a')
+          .string('b')
+          .string('c')
+          .unique(['a', 'b'])
+          .unique(['b', 'c'])
+
+        testSql(builder, dialect, {
+          postgres: {
+            sql: `create table "test" ("a" varchar(255), "b" varchar(255), "c" varchar(255), unique ("a", "b"), unique ("b", "c"))`,
+            bindings: [],
+          },
+        })
+
+        await builder.execute()
+      })
+
+      it('should create a table with check constraints', async () => {
+        const builder = ctx.db.schema
+          .createTable('test')
+          .integer('a')
+          .integer('b')
+          .integer('c')
+          .check('a > 1')
+          .check('b < c')
+
+        testSql(builder, dialect, {
+          postgres: {
+            sql: `create table "test" ("a" integer, "b" integer, "c" integer, check (a > 1), check (b < c))`,
             bindings: [],
           },
         })
@@ -105,7 +145,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
 
           testSql(builder, dialect, {
             postgres: {
-              sql: `create table "public"."test" ("id" serial primary key, "foreign_key" integer references "public"."test"("id"))`,
+              sql: `create table "public"."test" ("id" serial primary key, "foreign_key" integer references "public"."test" ("id"))`,
               bindings: [],
             },
           })

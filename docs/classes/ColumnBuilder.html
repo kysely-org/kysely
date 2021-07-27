@@ -92,6 +92,7 @@
 						<section class="tsd-index-section ">
 							<h3>Methods</h3>
 							<ul class="tsd-index-list">
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="ColumnBuilder.html#check" class="tsd-kind-icon">check</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="ColumnBuilder.html#defaultTo" class="tsd-kind-icon">default<wbr>To</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="ColumnBuilder.html#increments" class="tsd-kind-icon">increments</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="ColumnBuilder.html#notNullable" class="tsd-kind-icon">not<wbr>Nullable</a></li>
@@ -131,6 +132,40 @@
 			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Methods</h2>
 				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
+					<a name="check" class="tsd-anchor"></a>
+					<h3>check</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon">check<span class="tsd-signature-symbol">(</span>sql<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="ColumnBuilder.html" class="tsd-signature-type" data-tsd-kind="Class">ColumnBuilder</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Adds a check constraint for the column.</p>
+								</div>
+								<dl class="tsd-comment-tags">
+									<dt>example</dt>
+									<dd><pre><code class="language-ts"><span style="color: #001080">db</span><span style="color: #000000">.</span><span style="color: #001080">schema</span>
+<span style="color: #000000">  .</span><span style="color: #795E26">createTable</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;pet&#039;</span><span style="color: #000000">)</span>
+<span style="color: #000000">  .</span><span style="color: #795E26">integer</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;number_of_legs&#039;</span><span style="color: #000000">, (</span><span style="color: #001080">col</span><span style="color: #000000">) </span><span style="color: #0000FF">=&gt;</span><span style="color: #000000"> </span><span style="color: #001080">col</span><span style="color: #000000">.</span><span style="color: #795E26">check</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;number_of_legs &lt; 5&#039;</span><span style="color: #000000">))</span>
+<span style="color: #000000">  .</span><span style="color: #795E26">execute</span><span style="color: #000000">()</span>
+</code></pre>
+									</dd>
+								</dl>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>sql: <span class="tsd-signature-type">string</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="ColumnBuilder.html" class="tsd-signature-type" data-tsd-kind="Class">ColumnBuilder</a></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
 					<a name="defaultTo" class="tsd-anchor"></a>
 					<h3>default<wbr>To</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
@@ -144,6 +179,15 @@
 								<div class="lead">
 									<p>Adds a default value constraint for the column.</p>
 								</div>
+								<dl class="tsd-comment-tags">
+									<dt>example</dt>
+									<dd><pre><code class="language-ts"><span style="color: #001080">db</span><span style="color: #000000">.</span><span style="color: #001080">schema</span>
+<span style="color: #000000">  .</span><span style="color: #795E26">createTable</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;pet&#039;</span><span style="color: #000000">)</span>
+<span style="color: #000000">  .</span><span style="color: #795E26">integer</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;number_of_legs&#039;</span><span style="color: #000000">, (</span><span style="color: #001080">col</span><span style="color: #000000">) </span><span style="color: #0000FF">=&gt;</span><span style="color: #000000"> </span><span style="color: #001080">col</span><span style="color: #000000">.</span><span style="color: #795E26">defaultTo</span><span style="color: #000000">(</span><span style="color: #098658">4</span><span style="color: #000000">))</span>
+<span style="color: #000000">  .</span><span style="color: #795E26">execute</span><span style="color: #000000">()</span>
+</code></pre>
+									</dd>
+								</dl>
 							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
@@ -189,7 +233,7 @@
 							</aside>
 							<div class="tsd-comment tsd-typography">
 								<div class="lead">
-									<p>Makes the column non-nullable.</p>
+									<p>Adds a <code>not null</code> constraint for the column.</p>
 								</div>
 							</div>
 							<h4 class="tsd-returns-title">Returns <a href="ColumnBuilder.html" class="tsd-signature-type" data-tsd-kind="Class">ColumnBuilder</a></h4>
@@ -208,7 +252,7 @@
 							</aside>
 							<div class="tsd-comment tsd-typography">
 								<div class="lead">
-									<p>Adds an <code>on delete</code> constraint for the column.</p>
+									<p>Adds an <code>on delete</code> constraint for the foreign key column.</p>
 								</div>
 							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -326,6 +370,9 @@
 						<ul>
 							<li class=" tsd-kind-constructor tsd-parent-kind-class">
 								<a href="ColumnBuilder.html#constructor" class="tsd-kind-icon">constructor</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="ColumnBuilder.html#check" class="tsd-kind-icon">check</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class">
 								<a href="ColumnBuilder.html#defaultTo" class="tsd-kind-icon">default<wbr>To</a>

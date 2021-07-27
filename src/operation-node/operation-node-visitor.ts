@@ -41,6 +41,10 @@ import { OnConflictNode } from './on-conflict-node'
 import { CreateIndexNode } from './create-index-node'
 import { ListNode } from './list-node'
 import { DropIndexNode } from './drop-index-node'
+import { TablePrimaryConstraintNode } from './table-primary-constraint-node'
+import { TableUniqueConstraintNode } from './table-unique-constraint-node'
+import { ReferencesNode } from './references-node'
+import { CheckConstraintNode } from './check-constraint-node'
 
 export class OperationNodeVisitor {
   protected nodeStack: OperationNode[] = []
@@ -85,6 +89,10 @@ export class OperationNodeVisitor {
     CreateIndexNode: this.visitCreateIndex.bind(this),
     DropIndexNode: this.visitDropIndex.bind(this),
     ListNode: this.visitList.bind(this),
+    TablePrimaryConstraintNode: this.visitTablePrimaryConstraint.bind(this),
+    TableUniqueConstraintNode: this.visitTableUniqueConstraint.bind(this),
+    ReferencesNode: this.visitReferences.bind(this),
+    CheckConstraintNode: this.visitCheckConstraint.bind(this),
   }
 
   protected readonly visitNode = (node: OperationNode): void => {
@@ -247,6 +255,10 @@ export class OperationNodeVisitor {
     if (node.defaultTo) {
       this.visitNode(node.defaultTo)
     }
+
+    if (node.check) {
+      this.visitNode(node.check)
+    }
   }
 
   protected visitDropTable(node: DropTableNode): void {
@@ -332,6 +344,25 @@ export class OperationNodeVisitor {
 
   protected visitDropIndex(node: DropIndexNode): void {
     this.visitNode(node.name)
+  }
+
+  protected visitTablePrimaryConstraint(
+    node: TablePrimaryConstraintNode
+  ): void {
+    node.columns.forEach(this.visitNode)
+  }
+
+  protected visitTableUniqueConstraint(node: TableUniqueConstraintNode): void {
+    node.columns.forEach(this.visitNode)
+  }
+
+  protected visitReferences(node: ReferencesNode): void {
+    this.visitNode(node.column)
+    this.visitNode(node.table)
+  }
+
+  protected visitCheckConstraint(node: CheckConstraintNode): void {
+    this.visitNode(node.expression)
   }
 
   protected visitDataType(node: DataTypeNode): void {}

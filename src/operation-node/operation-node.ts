@@ -38,6 +38,10 @@ export type OperationNodeKind =
   | 'CreateIndexNode'
   | 'DropIndexNode'
   | 'ListNode'
+  | 'TablePrimaryConstraintNode'
+  | 'TableUniqueConstraintNode'
+  | 'ReferencesNode'
+  | 'CheckConstraintNode'
 
 export interface OperationNode {
   readonly kind: OperationNodeKind
