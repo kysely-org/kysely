@@ -76,6 +76,9 @@ preventAwait(
   "don't await RawBuilder instances directly. To execute the query you need to call `execute`"
 )
 
+/**
+ * {@link RawBuilder} with an alias. The result of calling {@link RawBuilder.as}.
+ */
 export class AliasedRawBuilder<O = unknown, A extends string = never>
   implements OperationNodeSource
 {
