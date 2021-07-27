@@ -1,0 +1,860 @@
+<!doctype html>
+<html class="default no-js">
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<title>Transaction | kysely</title>
+	<meta name="description" content="Documentation for kysely">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="../assets/css/main.css">
+	<script async src="../assets/js/search.js" id="search-script"></script>
+</head>
+<body>
+<header>
+	<div class="tsd-page-toolbar">
+		<div class="container">
+			<div class="table-wrap">
+				<div class="table-cell" id="tsd-search" data-index="../assets/js/search.json" data-base="..">
+					<div class="field">
+						<label for="tsd-search-field" class="tsd-widget search no-caption">Search</label>
+						<input id="tsd-search-field" type="text" />
+					</div>
+					<ul class="results">
+						<li class="state loading">Preparing search index...</li>
+						<li class="state failure">The search index is not available</li>
+					</ul>
+					<a href="../index.html" class="title">kysely</a>
+				</div>
+				<div class="table-cell" id="tsd-widgets">
+					<div id="tsd-filter">
+						<a href="#" class="tsd-widget options no-caption" data-toggle="options">Options</a>
+						<div class="tsd-filter-group">
+							<div class="tsd-select" id="tsd-filter-visibility">
+								<span class="tsd-select-label">All</span>
+								<ul class="tsd-select-list">
+									<li data-value="public">Public</li>
+									<li data-value="protected">Public/Protected</li>
+									<li data-value="private" class="selected">All</li>
+								</ul>
+							</div>
+							<input type="checkbox" id="tsd-filter-inherited" checked />
+							<label class="tsd-widget" for="tsd-filter-inherited">Inherited</label>
+							<input type="checkbox" id="tsd-filter-externals" checked />
+							<label class="tsd-widget" for="tsd-filter-externals">Externals</label>
+						</div>
+					</div>
+					<a href="#" class="tsd-widget menu no-caption" data-toggle="menu">Menu</a>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="tsd-page-title">
+		<div class="container">
+			<ul class="tsd-breadcrumb">
+				<li>
+					<a href="../modules.html">kysely</a>
+				</li>
+				<li>
+					<a href="Transaction.html">Transaction</a>
+				</li>
+			</ul>
+			<h1>Class Transaction&lt;DB&gt;</h1>
+		</div>
+	</div>
+</header>
+<div class="container container-main">
+	<div class="row">
+		<div class="col-8 col-content">
+			<section class="tsd-panel tsd-type-parameters">
+				<h3>Type parameters</h3>
+				<ul class="tsd-type-parameters">
+					<li>
+						<h4>DB</h4>
+					</li>
+				</ul>
+			</section>
+			<section class="tsd-panel tsd-hierarchy">
+				<h3>Hierarchy</h3>
+				<ul class="tsd-hierarchy">
+					<li>
+						<a href="Kysely.html" class="tsd-signature-type" data-tsd-kind="Class">Kysely</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">&gt;</span>
+						<ul class="tsd-hierarchy">
+							<li>
+								<span class="target">Transaction</span>
+							</li>
+						</ul>
+					</li>
+				</ul>
+			</section>
+			<section class="tsd-panel-group tsd-index-group">
+				<h2>Index</h2>
+				<section class="tsd-panel tsd-index-panel">
+					<div class="tsd-index-content">
+						<section class="tsd-index-section tsd-is-inherited">
+							<h3>Constructors</h3>
+							<ul class="tsd-index-list">
+								<li class="tsd-kind-constructor tsd-parent-kind-class tsd-has-type-parameter tsd-is-inherited"><a href="Transaction.html#constructor" class="tsd-kind-icon">constructor</a></li>
+							</ul>
+						</section>
+						<section class="tsd-index-section ">
+							<h3>Accessors</h3>
+							<ul class="tsd-index-list">
+								<li class="tsd-kind-get-signature tsd-parent-kind-class tsd-is-inherited"><a href="Transaction.html#dynamic" class="tsd-kind-icon">dynamic</a></li>
+								<li class="tsd-kind-get-signature tsd-parent-kind-class tsd-is-inherited"><a href="Transaction.html#isTransaction" class="tsd-kind-icon">is<wbr>Transaction</a></li>
+								<li class="tsd-kind-get-signature tsd-parent-kind-class tsd-is-inherited"><a href="Transaction.html#migration" class="tsd-kind-icon">migration</a></li>
+								<li class="tsd-kind-get-signature tsd-parent-kind-class tsd-is-inherited"><a href="Transaction.html#schema" class="tsd-kind-icon">schema</a></li>
+							</ul>
+						</section>
+						<section class="tsd-index-section ">
+							<h3>Methods</h3>
+							<ul class="tsd-index-list">
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter tsd-is-inherited"><a href="Transaction.html#deleteFrom" class="tsd-kind-icon">delete<wbr>From</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-overwrite"><a href="Transaction.html#destroy" class="tsd-kind-icon">destroy</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><a href="Transaction.html#getTableMetadata" class="tsd-kind-icon">get<wbr>Table<wbr>Metadata</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter tsd-is-inherited"><a href="Transaction.html#insertInto" class="tsd-kind-icon">insert<wbr>Into</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter tsd-is-inherited"><a href="Transaction.html#raw" class="tsd-kind-icon">raw</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter tsd-is-inherited"><a href="Transaction.html#selectFrom" class="tsd-kind-icon">select<wbr>From</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter tsd-is-overwrite"><a href="Transaction.html#transaction" class="tsd-kind-icon">transaction</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter tsd-is-inherited"><a href="Transaction.html#updateTable" class="tsd-kind-icon">update<wbr>Table</a></li>
+							</ul>
+						</section>
+					</div>
+				</section>
+			</section>
+			<section class="tsd-panel-group tsd-member-group tsd-is-inherited">
+				<h2>Constructors</h2>
+				<section class="tsd-panel tsd-member tsd-kind-constructor tsd-parent-kind-class tsd-has-type-parameter tsd-is-inherited">
+					<a name="constructor" class="tsd-anchor"></a>
+					<h3>constructor</h3>
+					<ul class="tsd-signatures tsd-kind-constructor tsd-parent-kind-class tsd-has-type-parameter tsd-is-inherited">
+						<li class="tsd-signature tsd-kind-icon">new <wbr>Transaction&lt;DB&gt;<span class="tsd-signature-symbol">(</span>config<span class="tsd-signature-symbol">: </span><a href="../interfaces/KyselyConfig.html" class="tsd-signature-type" data-tsd-kind="Interface">KyselyConfig</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="Transaction.html" class="tsd-signature-type" data-tsd-kind="Class">Transaction</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">&gt;</span></li>
+						<li class="tsd-signature tsd-kind-icon">new <wbr>Transaction&lt;DB&gt;<span class="tsd-signature-symbol">(</span>args<span class="tsd-signature-symbol">: </span><a href="../interfaces/KyselyConstructorArgs.html" class="tsd-signature-type" data-tsd-kind="Interface">KyselyConstructorArgs</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="Transaction.html" class="tsd-signature-type" data-tsd-kind="Class">Transaction</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<p>Inherited from <a href="Kysely.html">Kysely</a>.<a href="Kysely.html#constructor">constructor</a></p>
+							</aside>
+							<h4 class="tsd-type-parameters-title">Type parameters</h4>
+							<ul class="tsd-type-parameters">
+								<li>
+									<h4>DB</h4>
+								</li>
+							</ul>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>config: <a href="../interfaces/KyselyConfig.html" class="tsd-signature-type" data-tsd-kind="Interface">KyselyConfig</a></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="Transaction.html" class="tsd-signature-type" data-tsd-kind="Class">Transaction</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<p>Inherited from <a href="Kysely.html">Kysely</a>.<a href="Kysely.html#constructor">constructor</a></p>
+							</aside>
+							<h4 class="tsd-type-parameters-title">Type parameters</h4>
+							<ul class="tsd-type-parameters">
+								<li>
+									<h4>DB</h4>
+								</li>
+							</ul>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>args: <a href="../interfaces/KyselyConstructorArgs.html" class="tsd-signature-type" data-tsd-kind="Interface">KyselyConstructorArgs</a></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="Transaction.html" class="tsd-signature-type" data-tsd-kind="Class">Transaction</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+					</ul>
+				</section>
+			</section>
+			<section class="tsd-panel-group tsd-member-group ">
+				<h2>Accessors</h2>
+				<section class="tsd-panel tsd-member tsd-kind-get-signature tsd-parent-kind-class tsd-is-inherited">
+					<a name="dynamic" class="tsd-anchor"></a>
+					<h3>dynamic</h3>
+					<ul class="tsd-signatures tsd-kind-get-signature tsd-parent-kind-class tsd-is-inherited">
+						<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">get</span> dynamic<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../interfaces/DynamicModule.html" class="tsd-signature-type" data-tsd-kind="Interface">DynamicModule</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Returns a the {@link Dynamic} module.</p>
+								</div>
+								<p>The {@link Dynamic} module can be used to bypass strict typing and
+								passing in dynamic values for the queries.</p>
+							</div>
+							<h4 class="tsd-returns-title">Returns <a href="../interfaces/DynamicModule.html" class="tsd-signature-type" data-tsd-kind="Interface">DynamicModule</a></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-get-signature tsd-parent-kind-class tsd-is-inherited">
+					<a name="isTransaction" class="tsd-anchor"></a>
+					<h3>is<wbr>Transaction</h3>
+					<ul class="tsd-signatures tsd-kind-get-signature tsd-parent-kind-class tsd-is-inherited">
+						<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">get</span> isTransaction<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">true</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Returns true if this <code>Kysely</code> instance is a transaction.</p>
+								</div>
+								<p>You can also use <code>db instanceof Transaction</code>.</p>
+							</div>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">true</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-get-signature tsd-parent-kind-class tsd-is-inherited">
+					<a name="migration" class="tsd-anchor"></a>
+					<h3>migration</h3>
+					<ul class="tsd-signatures tsd-kind-get-signature tsd-parent-kind-class tsd-is-inherited">
+						<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">get</span> migration<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../interfaces/MigrationModule.html" class="tsd-signature-type" data-tsd-kind="Interface">MigrationModule</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Returns a the <a href="../interfaces/Migration.html">Migration</a> module for managing and running migrations.</p>
+								</div>
+							</div>
+							<h4 class="tsd-returns-title">Returns <a href="../interfaces/MigrationModule.html" class="tsd-signature-type" data-tsd-kind="Interface">MigrationModule</a></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-get-signature tsd-parent-kind-class tsd-is-inherited">
+					<a name="schema" class="tsd-anchor"></a>
+					<h3>schema</h3>
+					<ul class="tsd-signatures tsd-kind-get-signature tsd-parent-kind-class tsd-is-inherited">
+						<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">get</span> schema<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../interfaces/SchemaModule.html" class="tsd-signature-type" data-tsd-kind="Interface">SchemaModule</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Returns a the {@link Schema} module for building database schema.</p>
+								</div>
+							</div>
+							<h4 class="tsd-returns-title">Returns <a href="../interfaces/SchemaModule.html" class="tsd-signature-type" data-tsd-kind="Interface">SchemaModule</a></h4>
+						</li>
+					</ul>
+				</section>
+			</section>
+			<section class="tsd-panel-group tsd-member-group ">
+				<h2>Methods</h2>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter tsd-is-inherited">
+					<a name="deleteFrom" class="tsd-anchor"></a>
+					<h3>delete<wbr>From</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter tsd-is-inherited">
+						<li class="tsd-signature tsd-kind-icon">delete<wbr>From&lt;TR&gt;<span class="tsd-signature-symbol">(</span>table<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">TR</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">QueryBuilderWithTable</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">never</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">DeleteResultTypeTag</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">TR</span><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<p>Inherited from <a href="Kysely.html">Kysely</a>.<a href="Kysely.html#deleteFrom">deleteFrom</a></p>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Creates a delete query.</p>
+								</div>
+								<p>See the <a href="QueryBuilder.html#where">QueryBuilder.where</a> method for examples on how to specify
+								a where clause for the delete operation .</p>
+								<dl class="tsd-comment-tags">
+									<dt>example</dt>
+									<dd><pre><code class="language-ts"><span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">numAffectedRows</span><span style="color: #000000"> = </span><span style="color: #AF00DB">await</span><span style="color: #000000"> </span><span style="color: #001080">db</span>
+<span style="color: #000000">  .</span><span style="color: #795E26">deleteFrom</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;person&#039;</span><span style="color: #000000">)</span>
+<span style="color: #000000">  .</span><span style="color: #795E26">where</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;person.id&#039;</span><span style="color: #000000">, </span><span style="color: #A31515">&#039;=&#039;</span><span style="color: #000000">, </span><span style="color: #098658">1</span><span style="color: #000000">)</span>
+<span style="color: #000000">  .</span><span style="color: #795E26">executeTakeFirst</span><span style="color: #000000">()</span>
+</code></pre>
+									</dd>
+								</dl>
+							</div>
+							<h4 class="tsd-type-parameters-title">Type parameters</h4>
+							<ul class="tsd-type-parameters">
+								<li>
+									<h4>TR<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">symbol</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-symbol">`</span><span class="tsd-signature-symbol">${</span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">}</span><span class="tsd-signature-type"> as </span><span class="tsd-signature-symbol">${</span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">}</span><span class="tsd-signature-symbol">`</span><span class="tsd-signature-symbol"> | </span><a href="AliasedRawBuilder.html" class="tsd-signature-type" data-tsd-kind="Class">AliasedRawBuilder</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span></h4>
+								</li>
+							</ul>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>table: <span class="tsd-signature-type">TR</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">QueryBuilderWithTable</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">never</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">DeleteResultTypeTag</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">TR</span><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-overwrite">
+					<a name="destroy" class="tsd-anchor"></a>
+					<h3>destroy</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-overwrite">
+						<li class="tsd-signature tsd-kind-icon">destroy<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<p>Overrides <a href="Kysely.html">Kysely</a>.<a href="Kysely.html#destroy">destroy</a></p>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Releases all resources and disconnects from the database.</p>
+								</div>
+								<p>You need to call this when you are done using the <code>Kysely</code> instance.</p>
+							</div>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+					<a name="getTableMetadata" class="tsd-anchor"></a>
+					<h3>get<wbr>Table<wbr>Metadata</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+						<li class="tsd-signature tsd-kind-icon">get<wbr>Table<wbr>Metadata<span class="tsd-signature-symbol">(</span>tableName<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">TableMetadata</span><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<p>Inherited from <a href="Kysely.html">Kysely</a>.<a href="Kysely.html#getTableMetadata">getTableMetadata</a></p>
+							</aside>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>tableName: <span class="tsd-signature-type">string</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">TableMetadata</span><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter tsd-is-inherited">
+					<a name="insertInto" class="tsd-anchor"></a>
+					<h3>insert<wbr>Into</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter tsd-is-inherited">
+						<li class="tsd-signature tsd-kind-icon">insert<wbr>Into&lt;T&gt;<span class="tsd-signature-symbol">(</span>table<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="QueryBuilder.html" class="tsd-signature-type" data-tsd-kind="Class">QueryBuilder</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">InsertResultTypeTag</span><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<p>Inherited from <a href="Kysely.html">Kysely</a>.<a href="Kysely.html#insertInto">insertInto</a></p>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Creates an insert query.</p>
+								</div>
+								<p>The return value of this query is <code>number | undefined</code> because of the differences
+									between database engines. Most engines (like Mysql) return the auto incrementing
+									primary key (if it exists), but some (like postgres) return nothing by default.
+									If you are running a database engine like <code>Mysql</code> that always returns the primary
+									key, you can safely use <code>!</code> or the <a href="QueryBuilder.html#castTo">castTo</a> method
+								to cast away the <code>undefined</code> from the type.</p>
+								<p>See the <a href="QueryBuilder.html#values">values</a> method for more info and examples. Also see
+									the <a href="QueryBuilder.html#returning">returning</a> method for a way to return columns
+								on supported databases like postgres.</p>
+								<dl class="tsd-comment-tags">
+									<dt>example</dt>
+									<dd><pre><code class="language-ts"><span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">maybePrimaryKey</span><span style="color: #000000">: </span><span style="color: #267F99">number</span><span style="color: #000000"> | </span><span style="color: #267F99">undefined</span><span style="color: #000000"> = </span><span style="color: #AF00DB">await</span><span style="color: #000000"> </span><span style="color: #001080">db</span>
+<span style="color: #000000">  .</span><span style="color: #795E26">insertInto</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;person&#039;</span><span style="color: #000000">)</span>
+<span style="color: #000000">  .</span><span style="color: #795E26">values</span><span style="color: #000000">({</span>
+<span style="color: #000000">    </span><span style="color: #001080">first_name:</span><span style="color: #000000"> </span><span style="color: #A31515">&#039;Jennifer&#039;</span><span style="color: #000000">,</span>
+<span style="color: #000000">    </span><span style="color: #001080">last_name:</span><span style="color: #000000"> </span><span style="color: #A31515">&#039;Aniston&#039;</span>
+<span style="color: #000000">  })</span>
+<span style="color: #000000">  .</span><span style="color: #795E26">executeTakeFirst</span><span style="color: #000000">()</span>
+</code></pre>
+									</dd>
+									<dt>example</dt>
+									<dd><p>Some databases like postgres support the <code>returning</code> method:</p>
+										<pre><code class="language-ts"><span style="color: #0000FF">const</span><span style="color: #000000"> { </span><span style="color: #0070C1">id</span><span style="color: #000000"> } = </span><span style="color: #AF00DB">await</span><span style="color: #000000"> </span><span style="color: #001080">db</span>
+<span style="color: #000000">  .</span><span style="color: #795E26">insertInto</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;person&#039;</span><span style="color: #000000">)</span>
+<span style="color: #000000">  .</span><span style="color: #795E26">values</span><span style="color: #000000">({</span>
+<span style="color: #000000">    </span><span style="color: #001080">first_name:</span><span style="color: #000000"> </span><span style="color: #A31515">&#039;Jennifer&#039;</span><span style="color: #000000">,</span>
+<span style="color: #000000">    </span><span style="color: #001080">last_name:</span><span style="color: #000000"> </span><span style="color: #A31515">&#039;Aniston&#039;</span>
+<span style="color: #000000">  })</span>
+<span style="color: #000000">  .</span><span style="color: #795E26">returning</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;id&#039;</span><span style="color: #000000">)</span>
+<span style="color: #000000">  .</span><span style="color: #795E26">executeTakeFirst</span><span style="color: #000000">()</span>
+</code></pre>
+									</dd>
+								</dl>
+							</div>
+							<h4 class="tsd-type-parameters-title">Type parameters</h4>
+							<ul class="tsd-type-parameters">
+								<li>
+									<h4>T<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span></h4>
+								</li>
+							</ul>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>table: <span class="tsd-signature-type">T</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="QueryBuilder.html" class="tsd-signature-type" data-tsd-kind="Class">QueryBuilder</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">InsertResultTypeTag</span><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter tsd-is-inherited">
+					<a name="raw" class="tsd-anchor"></a>
+					<h3>raw</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter tsd-is-inherited">
+						<li class="tsd-signature tsd-kind-icon">raw&lt;T&gt;<span class="tsd-signature-symbol">(</span>sql<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, params<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="RawBuilder.html" class="tsd-signature-type" data-tsd-kind="Class">RawBuilder</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<p>Inherited from <a href="Kysely.html">Kysely</a>.<a href="Kysely.html#raw">raw</a></p>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Provides a way to pass arbitrary SQL into your query and executing completely
+									raw queries.</p>
+								</div>
+								<p>You can use strings <code>?</code> and <code>??</code> in the <code>sql</code> to bind parameters such as
+									user input to the SQL. You should never EVER concatenate untrusted user
+									input to the SQL string to avoid injection vulnerabilities. Instead use <code>?</code>
+									in place of the value and pass the actual value in the <code>params</code> list. See
+								the examples below.</p>
+								<p>You should only use <code>raw</code> when there is no other way to get the job done. This is
+									because Kysely is not able to use type inference when you use raw SQL. For example
+									Kysely won&#39;t be able to automatically provide you with the correct query result
+									type. However, there are ways to manually provide types when you use <code>raw</code> in most
+								cases. See the examples below.</p>
+								<p>Raw builder instances can be passed to pretty much anywhere: <code>select</code>, <code>where</code>,
+								<code>*Join</code>, <code>groupBy</code>, <code>orderBy</code> etc. Just try it. If the method accepts it, it works.</p>
+								<dl class="tsd-comment-tags">
+									<dt>example</dt>
+									<dd><p>Example of using <code>raw</code> in a select statement:</p>
+										<pre><code class="language-ts"><span style="color: #0000FF">const</span><span style="color: #000000"> [</span><span style="color: #0070C1">person</span><span style="color: #000000">] = </span><span style="color: #AF00DB">await</span><span style="color: #000000"> </span><span style="color: #001080">db</span><span style="color: #000000">.</span><span style="color: #795E26">selectFrom</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;person&#039;</span><span style="color: #000000">)</span>
+<span style="color: #000000">  .</span><span style="color: #795E26">select</span><span style="color: #000000">(</span><span style="color: #001080">db</span><span style="color: #000000">.</span><span style="color: #795E26">raw</span><span style="color: #000000">&lt;</span><span style="color: #267F99">string</span><span style="color: #000000">&gt;(</span><span style="color: #A31515">&#039;concat(first_name, &#039;</span><span style="color: #000000"> </span><span style="color: #A31515">&#039;, last_name)&#039;</span><span style="color: #000000">).</span><span style="color: #795E26">as</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;name&#039;</span><span style="color: #000000">))</span>
+<span style="color: #000000">  .</span><span style="color: #795E26">where</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;id&#039;</span><span style="color: #000000">, </span><span style="color: #A31515">&#039;=&#039;</span><span style="color: #000000">, </span><span style="color: #098658">1</span><span style="color: #000000">)</span>
+<span style="color: #000000">  .</span><span style="color: #795E26">execute</span><span style="color: #000000">()</span>
+
+<span style="color: #001080">console</span><span style="color: #000000">.</span><span style="color: #795E26">log</span><span style="color: #000000">(</span><span style="color: #001080">person</span><span style="color: #000000">.</span><span style="color: #001080">name</span><span style="color: #000000">)</span>
+</code></pre>
+										<p>The generated SQL (postgresql):</p>
+										<pre><code class="language-sql"><span style="color: #0000FF">select</span><span style="color: #000000"> </span><span style="color: #795E26">concat</span><span style="color: #000000">(first_name, </span><span style="color: #A31515">&#039; &#039;</span><span style="color: #000000">, last_name) </span><span style="color: #0000FF">as</span><span style="color: #000000"> </span><span style="color: #A31515">&quot;name&quot;</span>
+<span style="color: #0000FF">from</span><span style="color: #000000"> </span><span style="color: #A31515">&quot;person&quot;</span><span style="color: #000000"> </span><span style="color: #0000FF">where</span><span style="color: #000000"> </span><span style="color: #A31515">&quot;id&quot;</span><span style="color: #000000"> = </span><span style="color: #098658">1</span>
+</code></pre>
+										<p>The above example selects computed column <code>name</code> by concatenating the first name
+										and last name together.</p>
+										<p>There are couple of things worth noticing:</p>
+										<ol>
+											<li><p>You need to provide the output type of your SQL segment for the <code>raw</code> method
+													so that Kysely knows what type to give for the <code>name</code> column. In this case it&#39;s
+												a <code>string</code> since that&#39;s the output type of the <code>concat</code> function in SQL.</p>
+											</li>
+											<li><p>You need to give an alias for the selection using the <code>as</code> method so that
+													Kysely is able to add a column to the output type. The alias needs to be
+													known at compile time! If you pass a string variable whose value is not known
+													at compile time, there is no way for Kysely or typescript to add a column to
+													the output type. In this case you need to use the <code>castTo</code> method on the query
+												to specify a return type for the query.</p>
+											</li>
+										</ol>
+										<p>We could&#39;ve also used <code>??</code> bindings to provide <code>first_name</code> and <code>last_name</code> like
+										this:</p>
+										<pre><code class="language-ts"><span style="color: #001080">db</span><span style="color: #000000">.</span><span style="color: #795E26">raw</span><span style="color: #000000">&lt;</span><span style="color: #267F99">string</span><span style="color: #000000">&gt;(</span><span style="color: #A31515">&#039;concat(??, &#039;</span><span style="color: #000000"> </span><span style="color: #A31515">&#039;, ??)&#039;</span><span style="color: #000000">, [</span><span style="color: #A31515">&#039;first_name&#039;</span><span style="color: #000000">, </span><span style="color: #A31515">&#039;last_name&#039;</span><span style="color: #000000">])</span>
+</code></pre>
+										<p>or this:</p>
+										<pre><code class="language-ts"><span style="color: #001080">db</span><span style="color: #000000">.</span><span style="color: #795E26">raw</span><span style="color: #000000">&lt;</span><span style="color: #267F99">string</span><span style="color: #000000">&gt;(</span><span style="color: #A31515">&#039;concat(??, &#039;</span><span style="color: #000000"> </span><span style="color: #A31515">&#039;, ??)&#039;</span><span style="color: #000000">, [</span><span style="color: #A31515">&#039;person.first_name&#039;</span><span style="color: #000000">, </span><span style="color: #A31515">&#039;person.last_name&#039;</span><span style="color: #000000">])</span>
+</code></pre>
+										<p>But it&#39;s often cleaner to just write the column names in the SQL. Again remember to
+											never concatenate column names or any other untrusted user input to the SQL string or you
+											are going to create an injection vulnerability. All user input should go to the bindings
+											array, never to the SQL string directly. But if the column names or values are trusted
+										and known at compile time, there is no reason to use bindings.</p>
+									</dd>
+									<dt>example</dt>
+									<dd><p>Example of using <code>raw</code> in <code>where</code>:</p>
+										<pre><code class="language-ts"><span style="color: #0000FF">function</span><span style="color: #000000"> </span><span style="color: #795E26">getPersonsOlderThan</span><span style="color: #000000">(</span><span style="color: #001080">ageLimit</span><span style="color: #000000">: </span><span style="color: #267F99">number</span><span style="color: #000000">) {</span>
+<span style="color: #000000">  </span><span style="color: #AF00DB">return</span><span style="color: #000000"> </span><span style="color: #AF00DB">await</span><span style="color: #000000"> </span><span style="color: #001080">db</span><span style="color: #000000">.</span><span style="color: #795E26">selectFrom</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;person&#039;</span><span style="color: #000000">)</span>
+<span style="color: #000000">    .</span><span style="color: #795E26">selectAll</span><span style="color: #000000">()</span>
+<span style="color: #000000">    .</span><span style="color: #795E26">where</span><span style="color: #000000">(</span>
+<span style="color: #000000">      </span><span style="color: #001080">db</span><span style="color: #000000">.</span><span style="color: #795E26">raw</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;now() - birth_date&#039;</span><span style="color: #000000">),</span>
+<span style="color: #000000">      </span><span style="color: #A31515">&#039;&gt;&#039;</span><span style="color: #000000">,</span>
+<span style="color: #000000">      </span><span style="color: #001080">db</span><span style="color: #000000">.</span><span style="color: #795E26">raw</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;interval ? year&#039;</span><span style="color: #000000">, [</span><span style="color: #001080">ageLimit</span><span style="color: #000000">.</span><span style="color: #795E26">toString</span><span style="color: #000000">()])</span>
+<span style="color: #000000">    )</span>
+<span style="color: #000000">    .</span><span style="color: #795E26">execute</span><span style="color: #000000">()</span>
+<span style="color: #000000">}</span>
+</code></pre>
+										<p>The generated SQL (postgresql):</p>
+										<pre><code class="language-sql"><span style="color: #0000FF">select</span><span style="color: #000000"> * </span><span style="color: #0000FF">from</span><span style="color: #000000"> </span><span style="color: #A31515">&quot;person&quot;</span><span style="color: #000000"> </span><span style="color: #0000FF">where</span><span style="color: #000000"> </span><span style="color: #0000FF">now</span><span style="color: #000000">() - birth_date &gt; interval $</span><span style="color: #098658">1</span><span style="color: #000000"> </span><span style="color: #795E26">year</span>
+</code></pre>
+										<p>The function in the above example returns people that are older than the given number of
+											years. The number of years in this example is an untrusted user input, and therefore we use
+										a <code>?</code> binding for it.</p>
+									</dd>
+									<dt>example</dt>
+									<dd><p>Example of creating a completely raw query from scratch:</p>
+										<pre><code class="language-ts"><span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">persons</span><span style="color: #000000"> = </span><span style="color: #AF00DB">await</span><span style="color: #000000"> </span><span style="color: #001080">db</span><span style="color: #000000">.</span><span style="color: #795E26">raw</span><span style="color: #000000">&lt;</span><span style="color: #267F99">Person</span><span style="color: #000000">&gt;(</span><span style="color: #A31515">&#039;select p.* from person p&#039;</span><span style="color: #000000">).</span><span style="color: #795E26">execute</span><span style="color: #000000">()</span>
+</code></pre>
+										<p>For a raw query, you need to specify the type of the returned <strong>row</strong>. In
+											this case we know the resulting items will be of type <code>Person</code> se specify that.
+											The result of <code>execute()</code> method is always an array. In this case the type of
+										the <code>persons</code> variable is <code>Person[]</code>.</p>
+									</dd>
+								</dl>
+							</div>
+							<h4 class="tsd-type-parameters-title">Type parameters</h4>
+							<ul class="tsd-type-parameters">
+								<li>
+									<h4>T = <span class="tsd-signature-type">unknown</span></h4>
+								</li>
+							</ul>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>sql: <span class="tsd-signature-type">string</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>The raw SQL. Special strings <code>?</code> and <code>??</code> can be used to provide
+											parameter bindings. <code>?</code> for values and <code>??</code> for identifiers such as column names
+										or <code>column.table</code> references.</p>
+									</div>
+								</li>
+								<li>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> params: <span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">[]</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>The parameters that will be bound to the <code>?</code> and <code>??</code> bindings in
+										the sql string.</p>
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="RawBuilder.html" class="tsd-signature-type" data-tsd-kind="Class">RawBuilder</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter tsd-is-inherited">
+					<a name="selectFrom" class="tsd-anchor"></a>
+					<h3>select<wbr>From</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter tsd-is-inherited">
+						<li class="tsd-signature tsd-kind-icon">select<wbr>From&lt;F&gt;<span class="tsd-signature-symbol">(</span>from<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">F</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">QueryBuilderWithTable</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">never</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-symbol">{}</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">F</span><span class="tsd-signature-symbol">&gt;</span></li>
+						<li class="tsd-signature tsd-kind-icon">select<wbr>From&lt;F&gt;<span class="tsd-signature-symbol">(</span>from<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">F</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">QueryBuilderWithTable</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">never</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-symbol">{}</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">F</span><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<p>Inherited from <a href="Kysely.html">Kysely</a>.<a href="Kysely.html#selectFrom">selectFrom</a></p>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Creates a <code>select</code> query builder against the given table/tables.</p>
+								</div>
+								<p>The tables passed to this method are built as the query&#39;s <code>from</code> clause.</p>
+								<dl class="tsd-comment-tags">
+									<dt>example</dt>
+									<dd><p>Create a select query for one table:</p>
+										<pre><code class="language-ts"><span style="color: #001080">db</span><span style="color: #000000">.</span><span style="color: #795E26">selectFrom</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;person&#039;</span><span style="color: #000000">).</span><span style="color: #795E26">selectAll</span><span style="color: #000000">()</span>
+</code></pre>
+										<p>The generated SQL (postgresql):</p>
+										<pre><code class="language-sql"><span style="color: #0000FF">select</span><span style="color: #000000"> * </span><span style="color: #0000FF">from</span><span style="color: #000000"> </span><span style="color: #A31515">&quot;person&quot;</span>
+</code></pre>
+									</dd>
+									<dt>example</dt>
+									<dd><p>Create a select query for one table with an alias:</p>
+										<pre><code class="language-ts"><span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">persons</span><span style="color: #000000"> = </span><span style="color: #AF00DB">await</span><span style="color: #000000"> </span><span style="color: #001080">db</span><span style="color: #000000">.</span><span style="color: #795E26">selectFrom</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;person as p&#039;</span><span style="color: #000000">)</span>
+<span style="color: #000000">  .</span><span style="color: #795E26">select</span><span style="color: #000000">([</span><span style="color: #A31515">&#039;p.id&#039;</span><span style="color: #000000">, </span><span style="color: #A31515">&#039;p.first_name&#039;</span><span style="color: #000000">])</span>
+<span style="color: #000000">  .</span><span style="color: #795E26">execute</span><span style="color: #000000">()</span>
+
+<span style="color: #001080">console</span><span style="color: #000000">.</span><span style="color: #795E26">log</span><span style="color: #000000">(</span><span style="color: #001080">persons</span><span style="color: #000000">[</span><span style="color: #098658">0</span><span style="color: #000000">].</span><span style="color: #001080">id</span><span style="color: #000000">)</span>
+</code></pre>
+										<p>The generated SQL (postgresql):</p>
+										<pre><code class="language-sql"><span style="color: #0000FF">select</span><span style="color: #000000"> </span><span style="color: #A31515">&quot;p&quot;</span><span style="color: #000000">.</span><span style="color: #A31515">&quot;id&quot;</span><span style="color: #000000">, </span><span style="color: #A31515">&quot;p&quot;</span><span style="color: #000000">.</span><span style="color: #A31515">&quot;first_name&quot;</span><span style="color: #000000"> </span><span style="color: #0000FF">from</span><span style="color: #000000"> </span><span style="color: #A31515">&quot;person&quot;</span><span style="color: #000000"> </span><span style="color: #0000FF">as</span><span style="color: #000000"> </span><span style="color: #A31515">&quot;p&quot;</span>
+</code></pre>
+									</dd>
+									<dt>example</dt>
+									<dd><p>Create a select query from a subquery:</p>
+										<pre><code class="language-ts"><span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">persons</span><span style="color: #000000"> = </span><span style="color: #AF00DB">await</span><span style="color: #000000"> </span><span style="color: #001080">db</span><span style="color: #000000">.</span><span style="color: #795E26">selectFrom</span><span style="color: #000000">(</span>
+<span style="color: #000000">    </span><span style="color: #001080">db</span><span style="color: #000000">.</span><span style="color: #795E26">selectFrom</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;person&#039;</span><span style="color: #000000">).</span><span style="color: #795E26">select</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;person.id as identifier&#039;</span><span style="color: #000000">).</span><span style="color: #795E26">as</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;p&#039;</span><span style="color: #000000">)</span>
+<span style="color: #000000">  )</span>
+<span style="color: #000000">  .</span><span style="color: #795E26">select</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;p.identifier&#039;</span><span style="color: #000000">)</span>
+<span style="color: #000000">  .</span><span style="color: #795E26">execute</span><span style="color: #000000">()</span>
+
+<span style="color: #001080">console</span><span style="color: #000000">.</span><span style="color: #795E26">log</span><span style="color: #000000">(</span><span style="color: #001080">persons</span><span style="color: #000000">[</span><span style="color: #098658">0</span><span style="color: #000000">].</span><span style="color: #001080">identifier</span><span style="color: #000000">)</span>
+</code></pre>
+										<p>The generated SQL (postgresql):</p>
+										<pre><code class="language-sql"><span style="color: #0000FF">select</span><span style="color: #000000"> </span><span style="color: #A31515">&quot;p&quot;</span><span style="color: #000000">.</span><span style="color: #A31515">&quot;identifier&quot;</span><span style="color: #000000">,</span>
+<span style="color: #0000FF">from</span><span style="color: #000000"> (</span>
+<span style="color: #000000">  </span><span style="color: #0000FF">select</span><span style="color: #000000"> </span><span style="color: #A31515">&quot;person&quot;</span><span style="color: #000000">.</span><span style="color: #A31515">&quot;id&quot;</span><span style="color: #000000"> </span><span style="color: #0000FF">as</span><span style="color: #000000"> </span><span style="color: #A31515">&quot;identifier&quot;</span><span style="color: #000000"> </span><span style="color: #0000FF">from</span><span style="color: #000000"> </span><span style="color: #A31515">&quot;person&quot;</span>
+<span style="color: #000000">) </span><span style="color: #0000FF">as</span><span style="color: #000000"> p</span>
+</code></pre>
+									</dd>
+									<dt>example</dt>
+									<dd><p>Create a select query from raw sql:</p>
+										<pre><code class="language-ts"><span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">items</span><span style="color: #000000"> = </span><span style="color: #AF00DB">await</span><span style="color: #000000"> </span><span style="color: #001080">db</span><span style="color: #000000">.</span><span style="color: #795E26">selectFrom</span><span style="color: #000000">(</span>
+<span style="color: #000000">    </span><span style="color: #001080">db</span><span style="color: #000000">.</span><span style="color: #795E26">raw</span><span style="color: #000000">&lt;{ </span><span style="color: #001080">one</span><span style="color: #000000">: </span><span style="color: #267F99">number</span><span style="color: #000000"> }&gt;(</span><span style="color: #A31515">&#039;select 1 as one&#039;</span><span style="color: #000000">).</span><span style="color: #795E26">as</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;q&#039;</span><span style="color: #000000">)</span>
+<span style="color: #000000">  )</span>
+<span style="color: #000000">  .</span><span style="color: #795E26">select</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;q.one&#039;</span><span style="color: #000000">)</span>
+<span style="color: #000000">  .</span><span style="color: #795E26">execute</span><span style="color: #000000">()</span>
+
+<span style="color: #001080">console</span><span style="color: #000000">.</span><span style="color: #795E26">log</span><span style="color: #000000">(</span><span style="color: #001080">items</span><span style="color: #000000">[</span><span style="color: #098658">0</span><span style="color: #000000">].</span><span style="color: #001080">one</span><span style="color: #000000">)</span>
+</code></pre>
+										<p>The generated SQL (postgresql):</p>
+										<pre><code class="language-sql"><span style="color: #0000FF">select</span><span style="color: #000000"> </span><span style="color: #A31515">&quot;q&quot;</span><span style="color: #000000">.</span><span style="color: #A31515">&quot;one&quot;</span><span style="color: #000000">,</span>
+<span style="color: #0000FF">from</span><span style="color: #000000"> (</span>
+<span style="color: #000000">  </span><span style="color: #0000FF">select</span><span style="color: #000000"> </span><span style="color: #098658">1</span><span style="color: #000000"> </span><span style="color: #0000FF">as</span><span style="color: #000000"> one</span>
+<span style="color: #000000">) </span><span style="color: #0000FF">as</span><span style="color: #000000"> q</span>
+</code></pre>
+										<p>When you use <code>raw</code> you need to also provide the result type of the
+											raw segment / query so that Kysely can figure out what columns are
+										available for the query.</p>
+									</dd>
+									<dt>example</dt>
+									<dd><p>The <code>selectFrom</code> method also accepts an array for multiple tables. All
+										the above examples can also be used in an array.</p>
+										<pre><code class="language-ts"><span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">items</span><span style="color: #000000"> = </span><span style="color: #AF00DB">await</span><span style="color: #000000"> </span><span style="color: #001080">db</span><span style="color: #000000">.</span><span style="color: #795E26">selectFrom</span><span style="color: #000000">([</span>
+<span style="color: #000000">    </span><span style="color: #A31515">&#039;person&#039;</span><span style="color: #000000">,</span>
+<span style="color: #000000">    </span><span style="color: #A31515">&#039;movie as m&#039;</span><span style="color: #000000">,</span>
+<span style="color: #000000">    </span><span style="color: #001080">db</span><span style="color: #000000">.</span><span style="color: #795E26">selectFrom</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;pet&#039;</span><span style="color: #000000">).</span><span style="color: #795E26">select</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;pet.species&#039;</span><span style="color: #000000">).</span><span style="color: #795E26">as</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;a&#039;</span><span style="color: #000000">),</span>
+<span style="color: #000000">    </span><span style="color: #001080">db</span><span style="color: #000000">.</span><span style="color: #795E26">raw</span><span style="color: #000000">&lt;{ </span><span style="color: #001080">one</span><span style="color: #000000">: </span><span style="color: #267F99">number</span><span style="color: #000000"> }&gt;(</span><span style="color: #A31515">&#039;select 1 as one&#039;</span><span style="color: #000000">).</span><span style="color: #795E26">as</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;q&#039;</span><span style="color: #000000">)</span>
+<span style="color: #000000">  ])</span>
+<span style="color: #000000">  .</span><span style="color: #795E26">select</span><span style="color: #000000">([</span><span style="color: #A31515">&#039;person.id&#039;</span><span style="color: #000000">, </span><span style="color: #A31515">&#039;m.stars&#039;</span><span style="color: #000000">, </span><span style="color: #A31515">&#039;a.species&#039;</span><span style="color: #000000">, </span><span style="color: #A31515">&#039;q.one&#039;</span><span style="color: #000000">])</span>
+<span style="color: #000000">  .</span><span style="color: #795E26">execute</span><span style="color: #000000">()</span>
+</code></pre>
+										<p>The generated SQL (postgresql):</p>
+										<pre><code class="language-sql"><span style="color: #0000FF">select</span><span style="color: #000000"> </span><span style="color: #A31515">&quot;person&quot;</span><span style="color: #000000">.id, </span><span style="color: #A31515">&quot;m&quot;</span><span style="color: #000000">.</span><span style="color: #A31515">&quot;stars&quot;</span><span style="color: #000000">, </span><span style="color: #A31515">&quot;a&quot;</span><span style="color: #000000">.</span><span style="color: #A31515">&quot;species&quot;</span><span style="color: #000000">, </span><span style="color: #A31515">&quot;q&quot;</span><span style="color: #000000">.</span><span style="color: #A31515">&quot;one&quot;</span>
+<span style="color: #0000FF">from</span>
+<span style="color: #000000">  </span><span style="color: #A31515">&quot;person&quot;</span><span style="color: #000000">,</span>
+<span style="color: #000000">  </span><span style="color: #A31515">&quot;movie&quot;</span><span style="color: #000000"> </span><span style="color: #0000FF">as</span><span style="color: #000000"> </span><span style="color: #A31515">&quot;m&quot;</span><span style="color: #000000">,</span>
+<span style="color: #000000">  (</span><span style="color: #0000FF">select</span><span style="color: #000000"> </span><span style="color: #A31515">&quot;pet&quot;</span><span style="color: #000000">.</span><span style="color: #A31515">&quot;species&quot;</span><span style="color: #000000"> </span><span style="color: #0000FF">from</span><span style="color: #000000"> </span><span style="color: #A31515">&quot;pet&quot;</span><span style="color: #000000">) </span><span style="color: #0000FF">as</span><span style="color: #000000"> a,</span>
+<span style="color: #000000">  (</span><span style="color: #0000FF">select</span><span style="color: #000000"> </span><span style="color: #098658">1</span><span style="color: #000000"> </span><span style="color: #0000FF">as</span><span style="color: #000000"> one) </span><span style="color: #0000FF">as</span><span style="color: #000000"> </span><span style="color: #A31515">&quot;q&quot;</span>
+</code></pre>
+									</dd>
+								</dl>
+							</div>
+							<h4 class="tsd-type-parameters-title">Type parameters</h4>
+							<ul class="tsd-type-parameters">
+								<li>
+									<h4>F<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">symbol</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-symbol">`</span><span class="tsd-signature-symbol">${</span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">}</span><span class="tsd-signature-type"> as </span><span class="tsd-signature-symbol">${</span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">}</span><span class="tsd-signature-symbol">`</span><span class="tsd-signature-symbol"> | </span><a href="AliasedRawBuilder.html" class="tsd-signature-type" data-tsd-kind="Class">AliasedRawBuilder</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">AnyAliasedQueryBuilder</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">AliasedQueryBuilderFactory</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-symbol">keyof </span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">&gt;</span></h4>
+								</li>
+							</ul>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>from: <span class="tsd-signature-type">F</span><span class="tsd-signature-symbol">[]</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">QueryBuilderWithTable</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">never</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-symbol">{}</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">F</span><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<p>Inherited from <a href="Kysely.html">Kysely</a>.<a href="Kysely.html#selectFrom">selectFrom</a></p>
+							</aside>
+							<h4 class="tsd-type-parameters-title">Type parameters</h4>
+							<ul class="tsd-type-parameters">
+								<li>
+									<h4>F<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">symbol</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-symbol">`</span><span class="tsd-signature-symbol">${</span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">}</span><span class="tsd-signature-type"> as </span><span class="tsd-signature-symbol">${</span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">}</span><span class="tsd-signature-symbol">`</span><span class="tsd-signature-symbol"> | </span><a href="AliasedRawBuilder.html" class="tsd-signature-type" data-tsd-kind="Class">AliasedRawBuilder</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">AnyAliasedQueryBuilder</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">AliasedQueryBuilderFactory</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-symbol">keyof </span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">&gt;</span></h4>
+								</li>
+							</ul>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>from: <span class="tsd-signature-type">F</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">QueryBuilderWithTable</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">never</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-symbol">{}</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">F</span><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter tsd-is-overwrite">
+					<a name="transaction" class="tsd-anchor"></a>
+					<h3>transaction</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter tsd-is-overwrite">
+						<li class="tsd-signature tsd-kind-icon">transaction&lt;T&gt;<span class="tsd-signature-symbol">(</span>_<span class="tsd-signature-symbol">: </span><span class="tsd-signature-symbol">(</span>trx<span class="tsd-signature-symbol">: </span><a href="Transaction.html" class="tsd-signature-type" data-tsd-kind="Class">Transaction</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<p>Overrides <a href="Kysely.html">Kysely</a>.<a href="Kysely.html#transaction">transaction</a></p>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Starts a transaction. If the callback throws the transaction is rolled back,
+									otherwise it&#39;s committed.</p>
+								</div>
+							</div>
+							<h4 class="tsd-type-parameters-title">Type parameters</h4>
+							<ul class="tsd-type-parameters">
+								<li>
+									<h4>T</h4>
+								</li>
+							</ul>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>_: <span class="tsd-signature-symbol">(</span>trx<span class="tsd-signature-symbol">: </span><a href="Transaction.html" class="tsd-signature-type" data-tsd-kind="Class">Transaction</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">&gt;</span></h5>
+									<ul class="tsd-parameters">
+										<li class="tsd-parameter-signature">
+											<ul class="tsd-signatures tsd-kind-type-literal">
+												<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">(</span>trx<span class="tsd-signature-symbol">: </span><a href="Transaction.html" class="tsd-signature-type" data-tsd-kind="Class">Transaction</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">&gt;</span></li>
+											</ul>
+											<ul class="tsd-descriptions">
+												<li class="tsd-description">
+													<h4 class="tsd-parameters-title">Parameters</h4>
+													<ul class="tsd-parameters">
+														<li>
+															<h5>trx: <a href="Transaction.html" class="tsd-signature-type" data-tsd-kind="Class">Transaction</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">&gt;</span></h5>
+														</li>
+													</ul>
+													<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">&gt;</span></h4>
+												</li>
+											</ul>
+										</li>
+									</ul>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter tsd-is-inherited">
+					<a name="updateTable" class="tsd-anchor"></a>
+					<h3>update<wbr>Table</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter tsd-is-inherited">
+						<li class="tsd-signature tsd-kind-icon">update<wbr>Table&lt;TR&gt;<span class="tsd-signature-symbol">(</span>table<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">TR</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">QueryBuilderWithTable</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">never</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">UpdateResultTypeTag</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">TR</span><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<p>Inherited from <a href="Kysely.html">Kysely</a>.<a href="Kysely.html#updateTable">updateTable</a></p>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Creates an update query.</p>
+								</div>
+								<p>See the <a href="QueryBuilder.html#where">QueryBuilder.where</a> method for examples on how to specify
+								a where clause for the update operation.</p>
+								<p>See the <a href="QueryBuilder.html#set">QueryBuilder.set</a> method for examples on how to
+								specify the updates.</p>
+								<dl class="tsd-comment-tags">
+									<dt>example</dt>
+									<dd><pre><code class="language-ts"><span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">numAffectedRows</span><span style="color: #000000"> = </span><span style="color: #AF00DB">await</span><span style="color: #000000"> </span><span style="color: #001080">db</span>
+<span style="color: #000000">  .</span><span style="color: #795E26">updateTable</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;person&#039;</span><span style="color: #000000">)</span>
+<span style="color: #000000">  .</span><span style="color: #795E26">set</span><span style="color: #000000">({ </span><span style="color: #001080">first_name:</span><span style="color: #000000"> </span><span style="color: #A31515">&#039;Jennifer&#039;</span><span style="color: #000000"> })</span>
+<span style="color: #000000">  .</span><span style="color: #795E26">where</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;person.id&#039;</span><span style="color: #000000">, </span><span style="color: #A31515">&#039;=&#039;</span><span style="color: #000000">, </span><span style="color: #098658">1</span><span style="color: #000000">)</span>
+<span style="color: #000000">  .</span><span style="color: #795E26">executeTakeFirst</span><span style="color: #000000">()</span>
+</code></pre>
+									</dd>
+								</dl>
+							</div>
+							<h4 class="tsd-type-parameters-title">Type parameters</h4>
+							<ul class="tsd-type-parameters">
+								<li>
+									<h4>TR<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">symbol</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-symbol">`</span><span class="tsd-signature-symbol">${</span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">}</span><span class="tsd-signature-type"> as </span><span class="tsd-signature-symbol">${</span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">}</span><span class="tsd-signature-symbol">`</span><span class="tsd-signature-symbol"> | </span><a href="AliasedRawBuilder.html" class="tsd-signature-type" data-tsd-kind="Class">AliasedRawBuilder</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span></h4>
+								</li>
+							</ul>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>table: <span class="tsd-signature-type">TR</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">QueryBuilderWithTable</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">never</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">UpdateResultTypeTag</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">TR</span><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+					</ul>
+				</section>
+			</section>
+		</div>
+		<div class="col-4 col-menu menu-sticky-wrap menu-highlight">
+			<nav class="tsd-navigation primary">
+				<ul>
+					<li class=" ">
+						<a href="../modules.html">Exports</a>
+					</li>
+				</ul>
+			</nav>
+			<nav class="tsd-navigation secondary menu-sticky">
+				<ul class="before-current">
+				</ul>
+				<ul class="current">
+					<li class="current tsd-kind-class tsd-has-type-parameter">
+						<a href="Transaction.html" class="tsd-kind-icon">Transaction</a>
+						<ul>
+							<li class=" tsd-kind-constructor tsd-parent-kind-class tsd-has-type-parameter tsd-is-inherited">
+								<a href="Transaction.html#constructor" class="tsd-kind-icon">constructor</a>
+							</li>
+							<li class=" tsd-kind-get-signature tsd-parent-kind-class tsd-is-inherited">
+								<a href="Transaction.html#dynamic" class="tsd-kind-icon">dynamic</a>
+							</li>
+							<li class=" tsd-kind-get-signature tsd-parent-kind-class tsd-is-inherited">
+								<a href="Transaction.html#isTransaction" class="tsd-kind-icon">is<wbr>Transaction</a>
+							</li>
+							<li class=" tsd-kind-get-signature tsd-parent-kind-class tsd-is-inherited">
+								<a href="Transaction.html#migration" class="tsd-kind-icon">migration</a>
+							</li>
+							<li class=" tsd-kind-get-signature tsd-parent-kind-class tsd-is-inherited">
+								<a href="Transaction.html#schema" class="tsd-kind-icon">schema</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter tsd-is-inherited">
+								<a href="Transaction.html#deleteFrom" class="tsd-kind-icon">delete<wbr>From</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-overwrite">
+								<a href="Transaction.html#destroy" class="tsd-kind-icon">destroy</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+								<a href="Transaction.html#getTableMetadata" class="tsd-kind-icon">get<wbr>Table<wbr>Metadata</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter tsd-is-inherited">
+								<a href="Transaction.html#insertInto" class="tsd-kind-icon">insert<wbr>Into</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter tsd-is-inherited">
+								<a href="Transaction.html#raw" class="tsd-kind-icon">raw</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter tsd-is-inherited">
+								<a href="Transaction.html#selectFrom" class="tsd-kind-icon">select<wbr>From</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter tsd-is-overwrite">
+								<a href="Transaction.html#transaction" class="tsd-kind-icon">transaction</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter tsd-is-inherited">
+								<a href="Transaction.html#updateTable" class="tsd-kind-icon">update<wbr>Table</a>
+							</li>
+						</ul>
+					</li>
+				</ul>
+				<ul class="after-current">
+				</ul>
+			</nav>
+		</div>
+	</div>
+</div>
+<footer class="with-border-bottom">
+	<div class="container">
+		<h2>Legend</h2>
+		<div class="tsd-legend-group">
+			<ul class="tsd-legend">
+				<li class="tsd-kind-property tsd-parent-kind-interface"><span class="tsd-kind-icon">Property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-interface"><span class="tsd-kind-icon">Method</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-constructor tsd-parent-kind-class"><span class="tsd-kind-icon">Constructor</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-class"><span class="tsd-kind-icon">Method</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-constructor tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited constructor</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited method</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-protected"><span class="tsd-kind-icon">Protected property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-protected"><span class="tsd-kind-icon">Protected method</span></li>
+			</ul>
+		</div>
+	</div>
+</footer>
+<div class="container tsd-generator">
+	<p>Generated using <a href="https://typedoc.org/" target="_blank">TypeDoc</a></p>
+</div>
+<div class="overlay"></div>
+<script src="../assets/js/main.js"></script>
+</body>
+</html>
