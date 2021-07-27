@@ -4,7 +4,8 @@ import { ReferenceNode } from '../operation-node/reference-node'
 import { parseStringReference } from '../parser/reference-parser'
 
 export class DynamicReferenceBuilder<R extends string = never>
-  implements OperationNodeSource {
+  implements OperationNodeSource
+{
   #dynamicReference: string
 
   get dynamicReference(): string {
@@ -20,7 +21,7 @@ export class DynamicReferenceBuilder<R extends string = never>
    * any R.
    */
   protected get refType(): R {
-    return (undefined as unknown) as R
+    return undefined as unknown as R
   }
 
   constructor(reference: string) {

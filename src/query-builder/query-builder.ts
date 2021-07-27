@@ -67,7 +67,10 @@ import { limitNode } from '../operation-node/limit-node'
 import { offsetNode } from '../operation-node/offset-node'
 import { asArray } from '../util/object-utils'
 import { Compilable } from '../util/compilable'
-import { QueryExecutor } from '../util/query-executor'
+import {
+  NeverExecutingQueryExecutor,
+  QueryExecutor,
+} from '../util/query-executor'
 
 /**
  * The main query builder class.
@@ -1952,7 +1955,7 @@ export function createEmptySelectQuery<
   O = {}
 >(): QueryBuilder<DB, TB, O> {
   return new QueryBuilder<DB, TB, O>({
-    executor: QueryExecutor.createNeverExecutingExecutor(),
+    executor: new NeverExecutingQueryExecutor(),
     queryNode: selectQueryNode.create([]),
   })
 }

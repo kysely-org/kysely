@@ -10,7 +10,6 @@ import {
 import { referenceNode } from '../operation-node/reference-node'
 import { valueNode } from '../operation-node/value-node'
 import { parseStringReference } from '../parser/reference-parser'
-import { parseValueExpression, ValueExpression } from '../parser/value-parser'
 import { RawBuilder } from '../raw-builder/raw-builder'
 import { PrimitiveValue } from '../util/object-utils'
 import { preventAwait } from '../util/prevent-await'

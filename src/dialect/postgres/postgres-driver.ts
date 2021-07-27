@@ -13,11 +13,11 @@ export class PostgresDriver extends Driver {
   #pool: Pool | null = null
   #connections = new WeakMap<PoolClient, DatabaseConnection>()
 
-  protected getDefaultPort(): number {
+  protected override getDefaultPort(): number {
     return 5432
   }
 
-  protected async init(): Promise<void> {
+  protected override async init(): Promise<void> {
     const cfg = this.config
 
     // Import the `pg` module here instead at the top of the file
@@ -43,7 +43,7 @@ export class PostgresDriver extends Driver {
     })
   }
 
-  protected async acquireConnection(): Promise<DatabaseConnection> {
+  protected override async acquireConnection(): Promise<DatabaseConnection> {
     const client = await this.#pool!.connect()
     let connection = this.#connections.get(client)
 
@@ -62,14 +62,14 @@ export class PostgresDriver extends Driver {
     return connection
   }
 
-  protected async releaseConnection(
+  protected override async releaseConnection(
     connection: DatabaseConnection
   ): Promise<void> {
     const pgConnection = connection as PostgresConnection
     pgConnection[PRIVATE_RELEASE_METHOD]()
   }
 
-  protected async destroy(): Promise<void> {
+  protected override async destroy(): Promise<void> {
     if (this.#pool) {
       const pool = this.#pool
       this.#pool = null

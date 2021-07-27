@@ -6,23 +6,12 @@ import {
   QueryCompiler,
 } from '../query-compiler/query-compiler'
 
-export abstract class QueryExecutor {
-  static create(
-    compiler: QueryCompiler,
-    connectionProvider: ConnectionProvider
-  ): QueryExecutor {
-    return new QueryExecutorImpl(compiler, connectionProvider)
-  }
-
-  static createNeverExecutingExecutor(): QueryExecutor {
-    return new NeverExecutingExecutor()
-  }
-
-  abstract compileQuery(node: CompileEntryPointNode): CompiledQuery
-  abstract executeQuery<R>(node: CompileEntryPointNode): Promise<QueryResult<R>>
+export interface QueryExecutor {
+  compileQuery(node: CompileEntryPointNode): CompiledQuery
+  executeQuery<R>(node: CompileEntryPointNode): Promise<QueryResult<R>>
 }
 
-class QueryExecutorImpl {
+export class DefaultQueryExecutor implements QueryExecutor {
   #compiler: QueryCompiler
   #connectionProvider: ConnectionProvider
 
@@ -42,7 +31,7 @@ class QueryExecutorImpl {
   }
 }
 
-class NeverExecutingExecutor extends QueryExecutor {
+export class NeverExecutingQueryExecutor implements QueryExecutor {
   compileQuery(_node: CompileEntryPointNode): CompiledQuery {
     throw new Error(`this query cannot be compiled to SQL`)
   }

@@ -1,3 +1,7 @@
+import * as path from 'path'
+import * as os from 'os'
+import { promises as fs } from 'fs'
+
 import {
   Migration,
   MIGRATION_LOCK_TABLE,
@@ -155,6 +159,38 @@ for (const dialect of BUILT_IN_DIALECTS) {
 
         await Promise.all(promises)
         expect(executedUpMethods).to.eql(['migration1', 'migration2'])
+      })
+
+      describe('using folder of migration files', () => {
+        beforeEach(async () => {
+          await dropTestMigrationTables()
+        })
+
+        afterEach(async () => {
+          await dropTestMigrationTables()
+        })
+
+        it('should run migrations from a folder', async () => {
+          await ctx.db.migration.migrateToLatest(
+            path.join(__dirname, 'test-migrations')
+          )
+
+          // The migrations should create two tables test1 and test2.
+          // Make sure they were correctly created.
+
+          expect(await ctx.db.getTableMetadata('test1')).to.eql({
+            tableName: 'test1',
+          })
+
+          expect(await ctx.db.getTableMetadata('test2')).to.eql({
+            tableName: 'test2',
+          })
+        })
+
+        async function dropTestMigrationTables(): Promise<void> {
+          await ctx.db.schema.dropTable('test2').ifExists().execute()
+          await ctx.db.schema.dropTable('test1').ifExists().execute()
+        }
       })
     })
 

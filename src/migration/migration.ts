@@ -8,6 +8,9 @@ export const MIGRATION_TABLE = 'kysely_migration'
 export const MIGRATION_LOCK_TABLE = 'kysely_migration_lock'
 export const MIGRATION_LOCK_ID = 'migration_lock'
 
+const MAX_LOCK_WAIT_TIME_MS = 60000
+const LOCK_ATTEMPT_GAP_MS = 100
+
 export interface MigrationModule {
   /**
    * Runs all migrations that have not yet been run.
@@ -40,6 +43,8 @@ export function createMigrationModule(db: Kysely<any>): MigrationModule {
     async migrateToLatest(
       migrations: string | Record<string, Migration>
     ): Promise<void> {
+      await ensureMigrationTablesExists(db)
+
       if (isString(migrations)) {
         return doMigrateToLatest(db, await readMigrationsFromFolder(migrations))
       } else {
@@ -47,41 +52,6 @@ export function createMigrationModule(db: Kysely<any>): MigrationModule {
       }
     },
   })
-}
-
-async function doMigrateToLatest(
-  db: Kysely<any>,
-  migrations: Record<string, Migration>
-): Promise<void> {
-  await ensureMigrationTablesExists(db)
-
-  await db.transaction(async (trx) => {
-    await acquireLock(trx)
-    await runNewMigrations(trx, migrations)
-    await releaseLock(trx)
-  })
-}
-
-async function readMigrationsFromFolder(
-  migrationsFolderPath: string
-): Promise<Record<string, Migration>> {
-  const files = await fs.readdir(migrationsFolderPath)
-  const migrations: Record<string, Migration> = {}
-
-  for (const file of files) {
-    if (
-      (file.endsWith('.js') || file.endsWith('.ts')) &&
-      !file.endsWith('.d.ts')
-    ) {
-      const migration = await import(path.join(migrationsFolderPath, file))
-
-      if (isMigration(migration)) {
-        migrations[file.substring(0, file.length - 3)] = migration
-      }
-    }
-  }
-
-  return migrations
 }
 
 async function ensureMigrationTablesExists(db: Kysely<any>): Promise<void> {
@@ -156,9 +126,64 @@ async function doesLockRowExists(db: Kysely<any>): Promise<boolean> {
   return !!lockRow
 }
 
+async function doMigrateToLatest(
+  db: Kysely<any>,
+  migrations: Record<string, Migration>
+): Promise<void> {
+  await db.transaction(async (trx) => {
+    await acquireLock(trx)
+    await runNewMigrations(trx, migrations)
+    await releaseLock(trx)
+  })
+}
+
+async function readMigrationsFromFolder(
+  migrationsFolderPath: string
+): Promise<Record<string, Migration>> {
+  const files = await fs.readdir(migrationsFolderPath)
+  const migrations: Record<string, Migration> = {}
+
+  for (const file of files) {
+    if (
+      (file.endsWith('.js') || file.endsWith('.ts')) &&
+      !file.endsWith('.d.ts')
+    ) {
+      const migration = await import(path.join(migrationsFolderPath, file))
+
+      if (isMigration(migration)) {
+        migrations[file.substring(0, file.length - 3)] = migration
+      }
+    }
+  }
+
+  return migrations
+}
+
 async function acquireLock(db: Kysely<any>): Promise<void> {
-  while (!(await tryAcquireLock(db))) {
-    await sleep(100)
+  const startTime = performance.now()
+
+  while (true) {
+    let error: Error | undefined
+
+    try {
+      const gotLock = await tryAcquireLock(db)
+
+      if (gotLock) {
+        return
+      }
+    } catch (err) {
+      error = err
+    }
+
+    const now = performance.now()
+
+    if (now - startTime > MAX_LOCK_WAIT_TIME_MS) {
+      throw new Error(
+        'could not acquire migration lock' + (error ? `: ${error.message}` : '')
+      )
+    }
+
+    await sleep(LOCK_ATTEMPT_GAP_MS)
   }
 }
 

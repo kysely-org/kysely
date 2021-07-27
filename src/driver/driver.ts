@@ -111,9 +111,11 @@ export abstract class Driver {
    * For internal use only. Don't override this.
    */
   async [INTERNAL_DRIVER_ENSURE_DESTROY](): Promise<void> {
-    if (this.#initPromise) {
-      await this.#initPromise
+    if (!this.#initPromise) {
+      return
     }
+
+    await this.#initPromise
 
     if (!this.#destroyPromise) {
       this.#destroyPromise = this.destroy().catch((err) => {

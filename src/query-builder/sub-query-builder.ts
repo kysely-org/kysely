@@ -1,11 +1,11 @@
 import { QueryBuilder } from './query-builder'
 import { selectQueryNode } from '../operation-node/select-query-node'
+import { NeverExecutingQueryExecutor } from '../util/query-executor'
 import {
   parseTableExpressionOrList,
   TableExpression,
   QueryBuilderWithTable,
 } from '../parser/table-parser'
-import { QueryExecutor } from '../util/query-executor'
 
 export class SubQueryBuilder<DB, TB extends keyof DB> {
   /**
@@ -59,7 +59,7 @@ export class SubQueryBuilder<DB, TB extends keyof DB> {
 
   subQuery(table: any): any {
     return new QueryBuilder({
-      executor: QueryExecutor.createNeverExecutingExecutor(),
+      executor: new NeverExecutingQueryExecutor(),
       queryNode: selectQueryNode.create(parseTableExpressionOrList(table)),
     })
   }

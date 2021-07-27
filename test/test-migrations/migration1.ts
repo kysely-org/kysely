@@ -1,0 +1,12 @@
+import { Kysely } from '../../src'
+
+export async function up(db: Kysely<any>): Promise<void> {
+  await db.schema
+    .createTable('test1')
+    .integer('id', (col) => col.primary())
+    .execute()
+}
+
+export async function down(db: Kysely<any>): Promise<void> {
+  await db.schema.dropTable('test1').execute()
+}

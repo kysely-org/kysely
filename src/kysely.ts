@@ -25,7 +25,6 @@ import {
 import { updateQueryNode } from './operation-node/update-query-node'
 import { QueryCompiler } from './query-compiler/query-compiler'
 import { DefaultConnectionProvider } from './driver/default-connection-provider'
-import { ConnectionProvider } from './driver/connection-provider'
 import { isObject } from './util/object-utils'
 import { SingleConnectionProvider } from './driver/single-connection-provider'
 import {
@@ -34,7 +33,8 @@ import {
   INTERNAL_DRIVER_RELEASE_CONNECTION,
 } from './driver/driver-internal'
 import { createMigrationModule, MigrationModule } from './migration/migration'
-import { QueryExecutor } from './util/query-executor'
+import { DefaultQueryExecutor, QueryExecutor } from './util/query-executor'
+import { ConnectionProvider } from './driver/connection-provider'
 
 /**
  * The main Kysely class.
@@ -75,17 +75,20 @@ export class Kysely<DB> {
   readonly #driver: Driver
   readonly #compiler: QueryCompiler
   readonly #connectionProvider: ConnectionProvider
+  readonly #executor: QueryExecutor
 
   constructor(config: KyselyConfig)
   constructor(args: KyselyConstructorArgs)
   constructor(configOrArgs: KyselyConfig | KyselyConstructorArgs) {
     if (isKyselyConstructorArgs(configOrArgs)) {
-      const { dialect, driver, compiler, connectionProvider } = configOrArgs
+      const { dialect, driver, compiler, connectionProvider, executor } =
+        configOrArgs
 
       this.#dialect = dialect
       this.#driver = driver
       this.#compiler = compiler
       this.#connectionProvider = connectionProvider
+      this.#executor = executor
     } else {
       const config = configOrArgs
 
@@ -93,6 +96,10 @@ export class Kysely<DB> {
       this.#driver = this.#dialect.createDriver(config)
       this.#compiler = this.#dialect.createQueryCompiler()
       this.#connectionProvider = new DefaultConnectionProvider(this.#driver)
+      this.#executor = new DefaultQueryExecutor(
+        this.#compiler,
+        this.#connectionProvider
+      )
     }
   }
 
@@ -109,9 +116,7 @@ export class Kysely<DB> {
    * Returns a the {@link Schema} module for building database schema.
    */
   get schema(): SchemaModule {
-    return createSchemaModule(
-      QueryExecutor.create(this.#compiler, this.#connectionProvider)
-    )
+    return createSchemaModule(this.#executor)
   }
 
   /**
@@ -250,7 +255,7 @@ export class Kysely<DB> {
 
   selectFrom(from: any): any {
     return new QueryBuilder({
-      executor: QueryExecutor.create(this.#compiler, this.#connectionProvider),
+      executor: this.#executor,
       queryNode: selectQueryNode.create(parseTableExpressionOrList(from)),
     })
   }
@@ -298,7 +303,7 @@ export class Kysely<DB> {
     table: T
   ): QueryBuilder<DB, T, InsertResultTypeTag> {
     return new QueryBuilder({
-      executor: QueryExecutor.create(this.#compiler, this.#connectionProvider),
+      executor: this.#executor,
       queryNode: insertQueryNode.create(parseTable(table)),
     })
   }
@@ -321,7 +326,7 @@ export class Kysely<DB> {
     table: TR
   ): QueryBuilderWithTable<DB, never, DeleteResultTypeTag, TR> {
     return new QueryBuilder({
-      executor: QueryExecutor.create(this.#compiler, this.#connectionProvider),
+      executor: this.#executor,
       queryNode: deleteQueryNode.create(parseTableExpression(table)),
     })
   }
@@ -348,7 +353,7 @@ export class Kysely<DB> {
     table: TR
   ): QueryBuilderWithTable<DB, never, UpdateResultTypeTag, TR> {
     return new QueryBuilder({
-      executor: QueryExecutor.create(this.#compiler, this.#connectionProvider),
+      executor: this.#executor,
       queryNode: updateQueryNode.create(parseTableExpression(table)),
     })
   }
@@ -475,7 +480,7 @@ export class Kysely<DB> {
     return new RawBuilder({
       sql,
       params,
-      executor: QueryExecutor.create(this.#compiler, this.#connectionProvider),
+      executor: this.#executor,
     })
   }
 
@@ -523,14 +528,18 @@ export class Kysely<DB> {
    * })
    * ```
    */
-  async transaction<T>(callback: (trx: Transaction<DB>) => T): Promise<T> {
+  async transaction<T>(
+    callback: (trx: Transaction<DB>) => Promise<T>
+  ): Promise<T> {
     const connection = await this.#driver[INTERNAL_DRIVER_ACQUIRE_CONNECTION]()
+    const connectionProvider = new SingleConnectionProvider(connection)
 
     const transaction = new Transaction<DB>({
       dialect: this.#dialect,
       driver: this.#driver,
       compiler: this.#compiler,
-      connectionProvider: new SingleConnectionProvider(connection),
+      connectionProvider: connectionProvider,
+      executor: new DefaultQueryExecutor(this.#compiler, connectionProvider),
     })
 
     try {
@@ -577,7 +586,7 @@ export class Transaction<DB> extends Kysely<DB> {
     )
   }
 
-  async transaction<T>(_: (trx: Transaction<DB>) => T): Promise<T> {
+  async transaction<T>(_: (trx: Transaction<DB>) => Promise<T>): Promise<T> {
     throw new Error(
       'calling the transaction method for a Transaction is not supported'
     )
@@ -595,6 +604,7 @@ export interface KyselyConstructorArgs {
   driver: Driver
   compiler: QueryCompiler
   connectionProvider: ConnectionProvider
+  executor: QueryExecutor
 }
 
 function isKyselyConstructorArgs(obj: any): obj is KyselyConstructorArgs {
@@ -603,7 +613,8 @@ function isKyselyConstructorArgs(obj: any): obj is KyselyConstructorArgs {
     obj.hasOwnProperty('dialect') &&
     obj.hasOwnProperty('driver') &&
     obj.hasOwnProperty('compiler') &&
-    obj.hasOwnProperty('connectionProvider')
+    obj.hasOwnProperty('connectionProvider') &&
+    obj.hasOwnProperty('executor')
   )
 }
 

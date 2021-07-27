@@ -55,7 +55,7 @@
 					<a href="../modules.html">kysely</a>
 				</li>
 				<li>
-					<a href="poolconfigwithdefaults.html">PoolConfigWithDefaults</a>
+					<a href="PoolConfigWithDefaults.html">PoolConfigWithDefaults</a>
 				</li>
 			</ul>
 			<h1>Interface PoolConfigWithDefaults</h1>
@@ -76,7 +76,7 @@
 				<h3>Hierarchy</h3>
 				<ul class="tsd-hierarchy">
 					<li>
-						<a href="poolconfig.html" class="tsd-signature-type" data-tsd-kind="Interface">PoolConfig</a>
+						<a href="PoolConfig.html" class="tsd-signature-type" data-tsd-kind="Interface">PoolConfig</a>
 						<ul class="tsd-hierarchy">
 							<li>
 								<span class="target">PoolConfigWithDefaults</span>
@@ -92,10 +92,15 @@
 						<section class="tsd-index-section ">
 							<h3>Properties</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-overwrite"><a href="poolconfigwithdefaults.html#connectiontimeoutmillis" class="tsd-kind-icon">connection<wbr>Timeout<wbr>Millis</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-overwrite"><a href="poolconfigwithdefaults.html#idletimeoutmillis" class="tsd-kind-icon">idle<wbr>Timeout<wbr>Millis</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-overwrite"><a href="poolconfigwithdefaults.html#maxconnections" class="tsd-kind-icon">max<wbr>Connections</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><a href="poolconfigwithdefaults.html#oncreateconnection" class="tsd-kind-icon">on<wbr>Create<wbr>Connection</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-overwrite"><a href="PoolConfigWithDefaults.html#connectionTimeoutMillis" class="tsd-kind-icon">connection<wbr>Timeout<wbr>Millis</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-overwrite"><a href="PoolConfigWithDefaults.html#idleTimeoutMillis" class="tsd-kind-icon">idle<wbr>Timeout<wbr>Millis</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-overwrite"><a href="PoolConfigWithDefaults.html#maxConnections" class="tsd-kind-icon">max<wbr>Connections</a></li>
+							</ul>
+						</section>
+						<section class="tsd-index-section tsd-is-inherited">
+							<h3>Methods</h3>
+							<ul class="tsd-index-list">
+								<li class="tsd-kind-method tsd-parent-kind-interface tsd-is-inherited"><a href="PoolConfigWithDefaults.html#onCreateConnection" class="tsd-kind-icon">on<wbr>Create<wbr>Connection</a></li>
 							</ul>
 						</section>
 					</div>
@@ -104,11 +109,11 @@
 			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Properties</h2>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-overwrite">
-					<a name="connectiontimeoutmillis" class="tsd-anchor"></a>
+					<a name="connectionTimeoutMillis" class="tsd-anchor"></a>
 					<h3>connection<wbr>Timeout<wbr>Millis</h3>
 					<div class="tsd-signature tsd-kind-icon">connection<wbr>Timeout<wbr>Millis<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
 					<aside class="tsd-sources">
-						<p>Overrides <a href="poolconfig.html">PoolConfig</a>.<a href="poolconfig.html#connectiontimeoutmillis">connectionTimeoutMillis</a></p>
+						<p>Overrides <a href="PoolConfig.html">PoolConfig</a>.<a href="PoolConfig.html#connectionTimeoutMillis">connectionTimeoutMillis</a></p>
 					</aside>
 					<div class="tsd-comment tsd-typography">
 						<div class="lead">
@@ -118,11 +123,11 @@
 					</div>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-overwrite">
-					<a name="idletimeoutmillis" class="tsd-anchor"></a>
+					<a name="idleTimeoutMillis" class="tsd-anchor"></a>
 					<h3>idle<wbr>Timeout<wbr>Millis</h3>
 					<div class="tsd-signature tsd-kind-icon">idle<wbr>Timeout<wbr>Millis<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
 					<aside class="tsd-sources">
-						<p>Overrides <a href="poolconfig.html">PoolConfig</a>.<a href="poolconfig.html#idletimeoutmillis">idleTimeoutMillis</a></p>
+						<p>Overrides <a href="PoolConfig.html">PoolConfig</a>.<a href="PoolConfig.html#idleTimeoutMillis">idleTimeoutMillis</a></p>
 					</aside>
 					<div class="tsd-comment tsd-typography">
 						<div class="lead">
@@ -134,11 +139,11 @@
 					</div>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-overwrite">
-					<a name="maxconnections" class="tsd-anchor"></a>
+					<a name="maxConnections" class="tsd-anchor"></a>
 					<h3>max<wbr>Connections</h3>
 					<div class="tsd-signature tsd-kind-icon">max<wbr>Connections<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
 					<aside class="tsd-sources">
-						<p>Overrides <a href="poolconfig.html">PoolConfig</a>.<a href="poolconfig.html#maxconnections">maxConnections</a></p>
+						<p>Overrides <a href="PoolConfig.html">PoolConfig</a>.<a href="PoolConfig.html#maxConnections">maxConnections</a></p>
 					</aside>
 					<div class="tsd-comment tsd-typography">
 						<div class="lead">
@@ -147,20 +152,27 @@
 						</div>
 					</div>
 				</section>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-inherited">
-					<a name="oncreateconnection" class="tsd-anchor"></a>
+			</section>
+			<section class="tsd-panel-group tsd-member-group tsd-is-inherited">
+				<h2>Methods</h2>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface tsd-is-inherited">
+					<a name="onCreateConnection" class="tsd-anchor"></a>
 					<h3><span class="tsd-flag ts-flagOptional">Optional</span> on<wbr>Create<wbr>Connection</h3>
-					<div class="tsd-signature tsd-kind-icon">on<wbr>Create<wbr>Connection<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">(</span>connection<span class="tsd-signature-symbol">: </span><a href="databaseconnection.html" class="tsd-signature-type" data-tsd-kind="Interface">DatabaseConnection</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></div>
-					<aside class="tsd-sources">
-						<p>Inherited from <a href="poolconfig.html">PoolConfig</a>.<a href="poolconfig.html#oncreateconnection">onCreateConnection</a></p>
-					</aside>
-					<div class="tsd-comment tsd-typography">
-						<div class="lead">
-							<p>This is executed for each database connection when it is created.</p>
-						</div>
-						<dl class="tsd-comment-tags">
-							<dt>example</dt>
-							<dd><pre><code class="language-ts"><span style="color: #000000">{</span>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface tsd-is-inherited">
+						<li class="tsd-signature tsd-kind-icon">on<wbr>Create<wbr>Connection<span class="tsd-signature-symbol">(</span>connection<span class="tsd-signature-symbol">: </span><a href="DatabaseConnection.html" class="tsd-signature-type" data-tsd-kind="Interface">DatabaseConnection</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<p>Inherited from <a href="PoolConfig.html">PoolConfig</a>.<a href="PoolConfig.html#onCreateConnection">onCreateConnection</a></p>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>This is executed for each database connection when it is created.</p>
+								</div>
+								<dl class="tsd-comment-tags">
+									<dt>example</dt>
+									<dd><pre><code class="language-ts"><span style="color: #000000">{</span>
 <span style="color: #000000">  </span><span style="color: #001080">async</span><span style="color: #000000"> </span><span style="color: #795E26">onCreateConnection</span><span style="color: #000000">(</span><span style="color: #001080">connection</span><span style="color: #000000">: </span><span style="color: #001080">Connection</span><span style="color: #000000">): </span><span style="color: #267F99">Promise</span><span style="color: #000000">&lt;</span><span style="color: #0000FF">void</span><span style="color: #000000">&gt; {</span>
 <span style="color: #000000">    await connection.executeQuery({</span>
 <span style="color: #000000">      </span><span style="color: #001080">sql:</span><span style="color: #000000"> </span><span style="color: #A31515">`SET TIMEZONE = &#039;UTC&#039;`</span><span style="color: #000000">,</span>
@@ -169,30 +181,18 @@
 <span style="color: #000000">  }</span>
 <span style="color: #000000">}</span>
 </code></pre>
-							</dd>
-						</dl>
-					</div>
-					<div class="tsd-type-declaration">
-						<h4>Type declaration</h4>
-						<ul class="tsd-parameters">
-							<li class="tsd-parameter-signature">
-								<ul class="tsd-signatures tsd-kind-type-literal tsd-parent-kind-interface">
-									<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">(</span>connection<span class="tsd-signature-symbol">: </span><a href="databaseconnection.html" class="tsd-signature-type" data-tsd-kind="Interface">DatabaseConnection</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></li>
-								</ul>
-								<ul class="tsd-descriptions">
-									<li class="tsd-description">
-										<h4 class="tsd-parameters-title">Parameters</h4>
-										<ul class="tsd-parameters">
-											<li>
-												<h5>connection: <a href="databaseconnection.html" class="tsd-signature-type" data-tsd-kind="Interface">DatabaseConnection</a></h5>
-											</li>
-										</ul>
-										<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4>
-									</li>
-								</ul>
-							</li>
-						</ul>
-					</div>
+									</dd>
+								</dl>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>connection: <a href="DatabaseConnection.html" class="tsd-signature-type" data-tsd-kind="Interface">DatabaseConnection</a></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+					</ul>
 				</section>
 			</section>
 		</div>
@@ -209,19 +209,19 @@
 				</ul>
 				<ul class="current">
 					<li class="current tsd-kind-interface">
-						<a href="poolconfigwithdefaults.html" class="tsd-kind-icon">Pool<wbr>Config<wbr>With<wbr>Defaults</a>
+						<a href="PoolConfigWithDefaults.html" class="tsd-kind-icon">Pool<wbr>Config<wbr>With<wbr>Defaults</a>
 						<ul>
 							<li class=" tsd-kind-property tsd-parent-kind-interface tsd-is-overwrite">
-								<a href="poolconfigwithdefaults.html#connectiontimeoutmillis" class="tsd-kind-icon">connection<wbr>Timeout<wbr>Millis</a>
+								<a href="PoolConfigWithDefaults.html#connectionTimeoutMillis" class="tsd-kind-icon">connection<wbr>Timeout<wbr>Millis</a>
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-interface tsd-is-overwrite">
-								<a href="poolconfigwithdefaults.html#idletimeoutmillis" class="tsd-kind-icon">idle<wbr>Timeout<wbr>Millis</a>
+								<a href="PoolConfigWithDefaults.html#idleTimeoutMillis" class="tsd-kind-icon">idle<wbr>Timeout<wbr>Millis</a>
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-interface tsd-is-overwrite">
-								<a href="poolconfigwithdefaults.html#maxconnections" class="tsd-kind-icon">max<wbr>Connections</a>
+								<a href="PoolConfigWithDefaults.html#maxConnections" class="tsd-kind-icon">max<wbr>Connections</a>
 							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-interface tsd-is-inherited">
-								<a href="poolconfigwithdefaults.html#oncreateconnection" class="tsd-kind-icon">on<wbr>Create<wbr>Connection</a>
+							<li class=" tsd-kind-method tsd-parent-kind-interface tsd-is-inherited">
+								<a href="PoolConfigWithDefaults.html#onCreateConnection" class="tsd-kind-icon">on<wbr>Create<wbr>Connection</a>
 							</li>
 						</ul>
 					</li>
