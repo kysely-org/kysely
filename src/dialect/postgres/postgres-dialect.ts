@@ -1,4 +1,3 @@
-import { table } from 'console'
 import { Driver } from '../../driver/driver'
 import { DriverConfig } from '../../driver/driver-config'
 import { Kysely } from '../../kysely'

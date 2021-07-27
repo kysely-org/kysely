@@ -95,6 +95,9 @@ export class ColumnBuilder implements OperationNodeSource {
     )
   }
 
+  /**
+   * Adds a default value constraint for the column.
+   */
   defaultTo(value: PrimitiveValue | RawBuilder<any>): ColumnBuilder {
     return new ColumnBuilder(
       columnDefinitionNode.cloneWith(this.#node, {
