@@ -7,9 +7,8 @@
  * happy, but we can catch it here.
  */
 
-import { Kysely } from '.'
+import { Kysely, Transaction } from '.'
 import { expectType, expectError } from 'tsd'
-import { Transaction } from '../../lib'
 
 interface Person {
   id: number
