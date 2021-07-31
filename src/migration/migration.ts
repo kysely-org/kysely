@@ -16,7 +16,7 @@ export interface MigrationModule {
    * Runs all migrations that have not yet been run.
    *
    * The only argument must either be a file path to the folder that contains all migrations
-   * OR an objection that contains all migrations (not just the ones that need to be run).
+   * OR an object that contains all migrations (not just the ones that need to be run).
    * The keys in the object must be the unique migration names.
    *
    * This method goes through all possible migrations (passed as the argument) and runs the
