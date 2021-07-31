@@ -26,7 +26,9 @@ export interface MigrationModule {
    *
    * @example
    * ```ts
-   * await db.migration.migrateToLatest(path.join(__dirname, 'migrations'))
+   * await db.migration.migrateToLatest(
+   *   path.join(__dirname, 'migrations')
+   * )
    * ```
    */
   migrateToLatest(migrationsFolderPath: string): Promise<void>
@@ -69,6 +71,9 @@ async function ensureMigrationTableExists(db: Kysely<any>): Promise<void> {
         .string('name', (col) => col.primary())
         .execute()
     } catch (error) {
+      // At least on postgres, `if not exists` doesn't guarantee the `create table`
+      // query doesn't throw if the table already exits. That's why we check if
+      // the table exist here and ignore the error if it does.
       if (!(await doesTableExists(db, MIGRATION_TABLE))) {
         throw error
       }
@@ -86,6 +91,9 @@ async function ensureMigrationLockTableExists(db: Kysely<any>): Promise<void> {
         .integer('is_locked', (col) => col.notNullable().defaultTo(0))
         .execute()
     } catch (error) {
+      // At least on postgres, `if not exists` doesn't guarantee the `create table`
+      // query doesn't throw if the table already exits. That's why we check if
+      // the table exist here and ignore the error if it does.
       if (!(await doesTableExists(db, MIGRATION_LOCK_TABLE))) {
         throw error
       }
