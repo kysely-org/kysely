@@ -1,4 +1,5 @@
 export * from './kysely'
+export * from './query-creator'
 export * from './query-builder/query-builder'
 export * from './query-builder/join-builder'
 export * from './query-builder/sub-query-builder'

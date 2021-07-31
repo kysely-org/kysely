@@ -48,12 +48,7 @@ import {
   MutatingQueryNode,
   QueryNode,
 } from '../operation-node/query-node'
-import {
-  AnyColumn,
-  DeleteResultTypeTag,
-  InsertResultTypeTag,
-  UpdateResultTypeTag,
-} from './type-utils'
+import { AnyColumn, ManyResultRowType, SingleResultRowType } from './type-utils'
 import { OrderByExpression } from '../parser/order-by-parser'
 import { groupByItemNode } from '../operation-node/group-by-item-node'
 import {
@@ -2047,19 +2042,3 @@ function ensureCanHaveOffset(node: QueryNode): asserts node is SelectQueryNode {
     throw new Error('only a select query can have an offset')
   }
 }
-
-type ManyResultRowType<O> = O extends InsertResultTypeTag
-  ? number | undefined
-  : O extends DeleteResultTypeTag
-  ? number
-  : O extends UpdateResultTypeTag
-  ? number
-  : O
-
-type SingleResultRowType<O> = O extends InsertResultTypeTag
-  ? number | undefined
-  : O extends DeleteResultTypeTag
-  ? number
-  : O extends UpdateResultTypeTag
-  ? number
-  : O | undefined

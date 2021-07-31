@@ -11,6 +11,7 @@ import { OrderByItemNode } from './order-by-item-node'
 import { OrderByNode, orderByNode } from './order-by-node'
 import { SelectionNode } from './selection-node'
 import { WhereNode } from './where-node'
+import { WithNode } from './with-node'
 
 export type SelectModifier =
   | 'Distinct'
@@ -33,6 +34,7 @@ export interface SelectQueryNode extends OperationNode {
   readonly modifier?: SelectModifier
   readonly limit?: LimitNode
   readonly offset?: OffsetNode
+  readonly with?: WithNode
 }
 
 export const selectQueryNode = freeze({
@@ -40,10 +42,14 @@ export const selectQueryNode = freeze({
     return node.kind === 'SelectQueryNode'
   },
 
-  create(fromItems: ReadonlyArray<TableExpressionNode>): SelectQueryNode {
+  create(
+    fromItems: ReadonlyArray<TableExpressionNode>,
+    withNode?: WithNode
+  ): SelectQueryNode {
     return freeze({
       kind: 'SelectQueryNode',
       from: fromNode.create(fromItems),
+      ...(withNode && { with: withNode }),
     })
   },
 

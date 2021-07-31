@@ -5,6 +5,7 @@ import { OperationNode } from './operation-node'
 import { TableExpressionNode } from './operation-node-utils'
 import { ReturningNode } from './returning-node'
 import { WhereNode } from './where-node'
+import { WithNode } from './with-node'
 
 export interface DeleteQueryNode extends OperationNode {
   readonly kind: 'DeleteQueryNode'
@@ -12,6 +13,7 @@ export interface DeleteQueryNode extends OperationNode {
   readonly joins?: ReadonlyArray<JoinNode>
   readonly where?: WhereNode
   readonly returning?: ReturningNode
+  readonly with?: WithNode
 }
 
 export const deleteQueryNode = freeze({
@@ -19,10 +21,11 @@ export const deleteQueryNode = freeze({
     return node.kind === 'DeleteQueryNode'
   },
 
-  create(fromItem: TableExpressionNode): DeleteQueryNode {
+  create(fromItem: TableExpressionNode, withNode?: WithNode): DeleteQueryNode {
     return freeze({
       kind: 'DeleteQueryNode',
       from: fromNode.create([fromItem]),
+      ...(withNode && { with: withNode }),
     })
   },
 })

@@ -50,6 +50,8 @@ import { UpdateQueryNode } from '../operation-node/update-query-node'
 import { ValueListNode } from '../operation-node/value-list-node'
 import { ValueNode } from '../operation-node/value-node'
 import { WhereNode } from '../operation-node/where-node'
+import { CommonTableExpressionNode } from '../operation-node/with-expression-node'
+import { WithNode } from '../operation-node/with-node'
 import {
   isEmpty,
   getLast,
@@ -97,6 +99,11 @@ export class DefaultQueryCompiler
 
     if (isSubQuery) {
       this.append('(')
+    }
+
+    if (node.with) {
+      this.visitNode(node.with)
+      this.append(' ')
     }
 
     this.append('select ')
@@ -190,6 +197,17 @@ export class DefaultQueryCompiler
   }
 
   protected override visitInsertQuery(node: InsertQueryNode): void {
+    const isSubQuery = this.nodeStack.find(queryNode.is) !== node
+
+    if (isSubQuery) {
+      this.append('(')
+    }
+
+    if (node.with) {
+      this.visitNode(node.with)
+      this.append(' ')
+    }
+
     this.append('insert into ')
     this.visitNode(node.into)
 
@@ -213,9 +231,24 @@ export class DefaultQueryCompiler
       this.append(' ')
       this.visitNode(node.returning)
     }
+
+    if (isSubQuery) {
+      this.append(')')
+    }
   }
 
   protected override visitDeleteQuery(node: DeleteQueryNode): void {
+    const isSubQuery = this.nodeStack.find(queryNode.is) !== node
+
+    if (isSubQuery) {
+      this.append('(')
+    }
+
+    if (node.with) {
+      this.visitNode(node.with)
+      this.append(' ')
+    }
+
     this.append('delete ')
     this.visitNode(node.from)
 
@@ -232,6 +265,10 @@ export class DefaultQueryCompiler
     if (node.returning) {
       this.append(' ')
       this.visitNode(node.returning)
+    }
+
+    if (isSubQuery) {
+      this.append(')')
     }
   }
 
@@ -303,7 +340,9 @@ export class DefaultQueryCompiler
     this.append(')')
   }
 
-  protected override visitPrimitiveValueList(node: PrimitiveValueListNode): void {
+  protected override visitPrimitiveValueList(
+    node: PrimitiveValueListNode
+  ): void {
     this.append('(')
 
     const { values } = node
@@ -470,6 +509,17 @@ export class DefaultQueryCompiler
   }
 
   protected override visitUpdateQuery(node: UpdateQueryNode): void {
+    const isSubQuery = this.nodeStack.find(queryNode.is) !== node
+
+    if (isSubQuery) {
+      this.append('(')
+    }
+
+    if (node.with) {
+      this.visitNode(node.with)
+      this.append(' ')
+    }
+
     this.append('update ')
     this.visitNode(node.table)
     this.append(' set ')
@@ -491,6 +541,10 @@ export class DefaultQueryCompiler
     if (node.returning) {
       this.append(' ')
       this.visitNode(node.returning)
+    }
+
+    if (isSubQuery) {
+      this.append(')')
     }
   }
 
@@ -572,13 +626,17 @@ export class DefaultQueryCompiler
     this.visitNode(node.name)
   }
 
-  protected override visitTablePrimaryConstraint(node: TablePrimaryConstraintNode): void {
+  protected override visitTablePrimaryConstraint(
+    node: TablePrimaryConstraintNode
+  ): void {
     this.append('primary key (')
     this.compileList(node.columns)
     this.append(')')
   }
 
-  protected override visitTableUniqueConstraint(node: TableUniqueConstraintNode): void {
+  protected override visitTableUniqueConstraint(
+    node: TableUniqueConstraintNode
+  ): void {
     this.append('unique (')
     this.compileList(node.columns)
     this.append(')')
@@ -592,6 +650,19 @@ export class DefaultQueryCompiler
 
   protected override visitList(node: ListNode): void {
     this.compileList(node.items)
+  }
+
+  protected override visitWith(node: WithNode): void {
+    this.append('with ')
+    this.compileList(node.expressions)
+  }
+
+  protected override visitCommonTableExpression(
+    node: CommonTableExpressionNode
+  ): void {
+    this.visitNode(node.name)
+    this.append(' as ')
+    this.visitNode(node.expression)
   }
 
   protected appendLeftIdentifierWrapper(): void {

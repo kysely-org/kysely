@@ -129,8 +129,10 @@ export type AnyAliasedColumn<DB, TB extends keyof DB> = {
     : never
 }[TB]
 
-export type AnyAliasedColumnWithTable<DB, TB extends keyof DB> =
-  `${AnyColumnWithTable<DB, TB>} as ${string}`
+export type AnyAliasedColumnWithTable<
+  DB,
+  TB extends keyof DB
+> = `${AnyColumnWithTable<DB, TB>} as ${string}`
 
 /**
  * Extracts an array item type.
@@ -167,3 +169,19 @@ export interface DeleteResultTypeTag {
 export interface UpdateResultTypeTag {
   __isUpdateResultTypeTag__: true
 }
+
+export type ManyResultRowType<O> = O extends InsertResultTypeTag
+  ? number | undefined
+  : O extends DeleteResultTypeTag
+  ? number
+  : O extends UpdateResultTypeTag
+  ? number
+  : O
+
+export type SingleResultRowType<O> = O extends InsertResultTypeTag
+  ? number | undefined
+  : O extends DeleteResultTypeTag
+  ? number
+  : O extends UpdateResultTypeTag
+  ? number
+  : O | undefined

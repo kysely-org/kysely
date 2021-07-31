@@ -45,6 +45,8 @@ import { TablePrimaryConstraintNode } from './table-primary-constraint-node'
 import { TableUniqueConstraintNode } from './table-unique-constraint-node'
 import { ReferencesNode } from './references-node'
 import { CheckConstraintNode } from './check-constraint-node'
+import { WithNode } from './with-node'
+import { CommonTableExpressionNode } from './with-expression-node'
 
 export class OperationNodeVisitor {
   protected nodeStack: OperationNode[] = []
@@ -93,6 +95,8 @@ export class OperationNodeVisitor {
     TableUniqueConstraintNode: this.visitTableUniqueConstraint.bind(this),
     ReferencesNode: this.visitReferences.bind(this),
     CheckConstraintNode: this.visitCheckConstraint.bind(this),
+    WithNode: this.visitWith.bind(this),
+    CommonTableExpressionNode: this.visitCommonTableExpression.bind(this),
   }
 
   protected readonly visitNode = (node: OperationNode): void => {
@@ -102,6 +106,10 @@ export class OperationNodeVisitor {
   }
 
   protected visitSelectQuery(node: SelectQueryNode): void {
+    if (node.with) {
+      this.visitNode(node.with)
+    }
+
     if (node.selections) {
       node.selections.forEach(this.visitNode)
     }
@@ -208,6 +216,10 @@ export class OperationNodeVisitor {
   }
 
   protected visitInsertQuery(node: InsertQueryNode): void {
+    if (node.with) {
+      this.visitNode(node.with)
+    }
+
     this.visitNode(node.into)
 
     if (node.columns) {
@@ -224,6 +236,10 @@ export class OperationNodeVisitor {
   }
 
   protected visitDeleteQuery(node: DeleteQueryNode): void {
+    if (node.with) {
+      this.visitNode(node.with)
+    }
+
     this.visitNode(node.from)
 
     if (node.joins) {
@@ -282,6 +298,10 @@ export class OperationNodeVisitor {
   }
 
   protected visitUpdateQuery(node: UpdateQueryNode): void {
+    if (node.with) {
+      this.visitNode(node.with)
+    }
+
     this.visitNode(node.table)
 
     if (node.updates) {
@@ -362,6 +382,15 @@ export class OperationNodeVisitor {
   }
 
   protected visitCheckConstraint(node: CheckConstraintNode): void {
+    this.visitNode(node.expression)
+  }
+
+  protected visitWith(node: WithNode): void {
+    node.expressions.forEach(this.visitNode)
+  }
+
+  protected visitCommonTableExpression(node: CommonTableExpressionNode): void {
+    this.visitNode(node.name)
     this.visitNode(node.expression)
   }
 

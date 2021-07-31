@@ -7,6 +7,7 @@ import { PrimitiveValueListNode } from './primitive-value-list-node'
 import { ReturningNode } from './returning-node'
 import { ValueListNode } from './value-list-node'
 import { WhereNode } from './where-node'
+import { WithNode } from './with-node'
 
 export type UpdateValuesNode = ValueListNode | PrimitiveValueListNode
 
@@ -17,6 +18,7 @@ export interface UpdateQueryNode extends OperationNode {
   readonly where?: WhereNode
   readonly updates?: ReadonlyArray<ColumnUpdateNode>
   readonly returning?: ReturningNode
+  readonly with?: WithNode
 }
 
 export const updateQueryNode = freeze({
@@ -24,10 +26,11 @@ export const updateQueryNode = freeze({
     return node.kind === 'UpdateQueryNode'
   },
 
-  create(table: TableExpressionNode): UpdateQueryNode {
+  create(table: TableExpressionNode, withNode?: WithNode): UpdateQueryNode {
     return {
       kind: 'UpdateQueryNode',
       table,
+      ...(withNode && { with: withNode }),
     }
   },
 
@@ -38,7 +41,7 @@ export const updateQueryNode = freeze({
     return freeze({
       ...updateQuery,
       updates: updateQuery.updates
-        ? [...updateQuery.updates, ...updates]
+        ? freeze([...updateQuery.updates, ...updates])
         : updates,
     })
   },

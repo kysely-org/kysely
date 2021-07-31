@@ -7,6 +7,7 @@ import { PrimitiveValueListNode } from './primitive-value-list-node'
 import { ReturningNode } from './returning-node'
 import { TableNode } from './table-node'
 import { ValueListNode } from './value-list-node'
+import { WithNode } from './with-node'
 
 export type InsertValuesNode = ValueListNode | PrimitiveValueListNode
 
@@ -17,6 +18,7 @@ export interface InsertQueryNode extends OperationNode {
   readonly values?: ReadonlyArray<InsertValuesNode>
   readonly returning?: ReturningNode
   readonly onConflict?: OnConflictNode
+  readonly with?: WithNode
 }
 
 export const insertQueryNode = freeze({
@@ -24,11 +26,12 @@ export const insertQueryNode = freeze({
     return node.kind === 'InsertQueryNode'
   },
 
-  create(into: TableNode): InsertQueryNode {
-    return {
+  create(into: TableNode, withNode?: WithNode): InsertQueryNode {
+    return freeze({
       kind: 'InsertQueryNode',
       into,
-    }
+      ...(withNode && { with: withNode }),
+    })
   },
 
   cloneWithColumnsAndValues(

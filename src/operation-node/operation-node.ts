@@ -42,6 +42,8 @@ export type OperationNodeKind =
   | 'TableUniqueConstraintNode'
   | 'ReferencesNode'
   | 'CheckConstraintNode'
+  | 'WithNode'
+  | 'CommonTableExpressionNode'
 
 export interface OperationNode {
   readonly kind: OperationNodeKind

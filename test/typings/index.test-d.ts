@@ -429,3 +429,28 @@ async function testKyselyAndTransactionTypes(db: Kysely<Database>) {
   // Should be able to assign a Transaction to Kysely.
   db = trx
 }
+
+async function testWith(db: Kysely<Database>) {
+  const r1 = await db
+    .with('jennifers', (db) =>
+      db.selectFrom('person').where('first_name', '=', 'Jennifer').selectAll()
+    )
+    .with('female_jennifers', (db) =>
+      db
+        .selectFrom('jennifers')
+        .select('first_name')
+        .where('gender', '=', 'female')
+        .selectAll('jennifers')
+        .select(['first_name as fn', 'last_name as ln'])
+    )
+    .selectFrom('female_jennifers')
+    .select(['fn', 'ln'])
+    .execute()
+
+  expectType<
+    {
+      fn: string
+      ln: string
+    }[]
+  >(r1)
+}
