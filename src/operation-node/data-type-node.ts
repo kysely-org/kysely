@@ -12,6 +12,8 @@ export type ColumnDataType =
   | 'Decimal'
   | 'Numeric'
   | 'Binary'
+  | 'Date'
+  | 'DateTime'
 
 export interface DataTypeNode extends OperationNode {
   readonly kind: 'DataTypeNode'

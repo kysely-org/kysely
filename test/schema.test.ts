@@ -42,6 +42,8 @@ for (const dialect of BUILT_IN_DIALECTS) {
           .numeric('j', 6, 2)
           .decimal('k', 8, 4)
           .boolean('l', (col) => col.notNullable().defaultTo(false))
+          .date('m')
+          .dateTime('n')
 
         testSql(builder, dialect, {
           postgres: {
@@ -58,7 +60,9 @@ for (const dialect of BUILT_IN_DIALECTS) {
               `"i" varchar(123),`,
               `"j" numeric(6, 2),`,
               `"k" decimal(8, 4),`,
-              `"l" boolean default false not null)`,
+              `"l" boolean default false not null,`,
+              `"m" date,`,
+              `"n" timestamp with time zone)`,
             ],
             bindings: [],
           },

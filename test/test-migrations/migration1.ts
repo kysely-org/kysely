@@ -1,4 +1,4 @@
-import { Kysely } from '../../src'
+import { Kysely } from '../../'
 
 export async function up(db: Kysely<any>): Promise<void> {
   await db.schema

@@ -727,4 +727,6 @@ const DATA_TYPE_SQL: Record<ColumnDataType, (node: DataTypeNode) => string> = {
   Text: () => 'text',
   Numeric: (node) => `numeric(${node.precision}, ${node.scale})`,
   Decimal: (node) => `decimal(${node.precision}, ${node.scale})`,
+  Date: () => 'date',
+  DateTime: () => 'timestamp with time zone',
 }

@@ -164,6 +164,25 @@ export class CreateTableBuilder implements OperationNodeSource, Compilable {
   }
 
   /**
+   * Adds a date column.
+   */
+  date(columnName: string, build?: ColumnBuilderCallback): CreateTableBuilder {
+    return this.addColumn(columnName, dataTypeNode.create('Date'), build)
+  }
+
+  /**
+   * Adds a datetime column.
+   *
+   * On postgres timestampz is used.
+   */
+  dateTime(
+    columnName: string,
+    build?: ColumnBuilderCallback
+  ): CreateTableBuilder {
+    return this.addColumn(columnName, dataTypeNode.create('DateTime'), build)
+  }
+
+  /**
    * Adds a column with a specific data type.
    *
    * @example
