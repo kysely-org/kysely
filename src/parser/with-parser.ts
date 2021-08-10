@@ -2,7 +2,7 @@ import { identifierNode } from '../operation-node/identifier-node'
 import {
   commonTableExpressionNode,
   CommonTableExpressionNode,
-} from '../operation-node/with-expression-node'
+} from '../operation-node/common-table-expression-node'
 import { QueryBuilder } from '../query-builder/query-builder'
 import { QueryCreator } from '../query-creator'
 import { RawBuilder } from '../raw-builder/raw-builder'

@@ -44,6 +44,7 @@ export type OperationNodeKind =
   | 'CheckConstraintNode'
   | 'WithNode'
   | 'CommonTableExpressionNode'
+  | 'HavingNode'
 
 export interface OperationNode {
   readonly kind: OperationNodeKind

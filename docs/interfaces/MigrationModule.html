@@ -104,7 +104,7 @@
 									<p>Runs all migrations that have not yet been run.</p>
 								</div>
 								<p>The only argument must either be a file path to the folder that contains all migrations
-									OR an objection that contains all migrations (not just the ones that need to be run).
+									OR an object that contains all migrations (not just the ones that need to be run).
 								The keys in the object must be the unique migration names.</p>
 								<p>This method goes through all possible migrations (passed as the argument) and runs the
 									ones whose names are alphabetically after the last migration that has been run. If the
@@ -112,7 +112,9 @@
 								is thrown.</p>
 								<dl class="tsd-comment-tags">
 									<dt>example</dt>
-									<dd><pre><code class="language-ts"><span style="color: #AF00DB">await</span><span style="color: #000000"> </span><span style="color: #001080">db</span><span style="color: #000000">.</span><span style="color: #001080">migration</span><span style="color: #000000">.</span><span style="color: #795E26">migrateToLatest</span><span style="color: #000000">(</span><span style="color: #001080">path</span><span style="color: #000000">.</span><span style="color: #795E26">join</span><span style="color: #000000">(</span><span style="color: #001080">__dirname</span><span style="color: #000000">, </span><span style="color: #A31515">&#039;migrations&#039;</span><span style="color: #000000">))</span>
+									<dd><pre><code class="language-ts"><span style="color: #AF00DB">await</span><span style="color: #000000"> </span><span style="color: #001080">db</span><span style="color: #000000">.</span><span style="color: #001080">migration</span><span style="color: #000000">.</span><span style="color: #795E26">migrateToLatest</span><span style="color: #000000">(</span>
+<span style="color: #000000">  </span><span style="color: #001080">path</span><span style="color: #000000">.</span><span style="color: #795E26">join</span><span style="color: #000000">(</span><span style="color: #001080">__dirname</span><span style="color: #000000">, </span><span style="color: #A31515">&#039;migrations&#039;</span><span style="color: #000000">)</span>
+<span style="color: #000000">)</span>
 </code></pre>
 									</dd>
 								</dl>

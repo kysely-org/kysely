@@ -148,6 +148,10 @@
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="QueryBuilder.html#forUpdate" class="tsd-kind-icon">for<wbr>Update</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter"><a href="QueryBuilder.html#fullJoin" class="tsd-kind-icon">full<wbr>Join</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="QueryBuilder.html#groupBy" class="tsd-kind-icon">group<wbr>By</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="QueryBuilder.html#having" class="tsd-kind-icon">having</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="QueryBuilder.html#havingExists" class="tsd-kind-icon">having<wbr>Exists</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="QueryBuilder.html#havingNotExist" class="tsd-kind-icon">having<wbr>Not<wbr>Exist</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="QueryBuilder.html#havingRef" class="tsd-kind-icon">having<wbr>Ref</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter"><a href="QueryBuilder.html#innerJoin" class="tsd-kind-icon">inner<wbr>Join</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter"><a href="QueryBuilder.html#leftJoin" class="tsd-kind-icon">left<wbr>Join</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="QueryBuilder.html#limit" class="tsd-kind-icon">limit</a></li>
@@ -155,6 +159,10 @@
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="QueryBuilder.html#offset" class="tsd-kind-icon">offset</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="QueryBuilder.html#onConflictDoNothing" class="tsd-kind-icon">on<wbr>Conflict<wbr>DoNothing</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="QueryBuilder.html#onConflictUpdate" class="tsd-kind-icon">on<wbr>Conflict<wbr>Update</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="QueryBuilder.html#orHaving" class="tsd-kind-icon">or<wbr>Having</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="QueryBuilder.html#orHavingExists" class="tsd-kind-icon">or<wbr>Having<wbr>Exists</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="QueryBuilder.html#orHavingNotExists" class="tsd-kind-icon">or<wbr>Having<wbr>Not<wbr>Exists</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="QueryBuilder.html#orHavingRef" class="tsd-kind-icon">or<wbr>Having<wbr>Ref</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="QueryBuilder.html#orWhere" class="tsd-kind-icon">or<wbr>Where</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="QueryBuilder.html#orWhereExists" class="tsd-kind-icon">or<wbr>Where<wbr>Exists</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="QueryBuilder.html#orWhereNotExists" class="tsd-kind-icon">or<wbr>Where<wbr>Not<wbr>Exists</a></li>
@@ -647,6 +655,152 @@
 						</li>
 					</ul>
 				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
+					<a name="having" class="tsd-anchor"></a>
+					<h3>having</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon">having<span class="tsd-signature-symbol">(</span>lhs<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">ReferenceExpression</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">TB</span><span class="tsd-signature-symbol">&gt;</span>, op<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">FilterOperatorArg</span>, rhs<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">ValueExpressionOrList</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">TB</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="QueryBuilder.html" class="tsd-signature-type" data-tsd-kind="Class">QueryBuilder</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">TB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">O</span><span class="tsd-signature-symbol">&gt;</span></li>
+						<li class="tsd-signature tsd-kind-icon">having<span class="tsd-signature-symbol">(</span>grouper<span class="tsd-signature-symbol">: </span><span class="tsd-signature-symbol">(</span>qb<span class="tsd-signature-symbol">: </span><a href="QueryBuilder.html" class="tsd-signature-type" data-tsd-kind="Class">QueryBuilder</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">TB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">O</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><a href="QueryBuilder.html" class="tsd-signature-type" data-tsd-kind="Class">QueryBuilder</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">TB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">O</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="QueryBuilder.html" class="tsd-signature-type" data-tsd-kind="Class">QueryBuilder</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">TB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">O</span><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Just like <a href="QueryBuilder.html#where">where</a> but adds a <code>having</code> statement
+									instead of a <code>where</code> statement.</p>
+								</div>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>lhs: <span class="tsd-signature-type">ReferenceExpression</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">TB</span><span class="tsd-signature-symbol">&gt;</span></h5>
+								</li>
+								<li>
+									<h5>op: <span class="tsd-signature-type">FilterOperatorArg</span></h5>
+								</li>
+								<li>
+									<h5>rhs: <span class="tsd-signature-type">ValueExpressionOrList</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">TB</span><span class="tsd-signature-symbol">&gt;</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="QueryBuilder.html" class="tsd-signature-type" data-tsd-kind="Class">QueryBuilder</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">TB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">O</span><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+							</aside>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>grouper: <span class="tsd-signature-symbol">(</span>qb<span class="tsd-signature-symbol">: </span><a href="QueryBuilder.html" class="tsd-signature-type" data-tsd-kind="Class">QueryBuilder</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">TB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">O</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><a href="QueryBuilder.html" class="tsd-signature-type" data-tsd-kind="Class">QueryBuilder</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">TB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">O</span><span class="tsd-signature-symbol">&gt;</span></h5>
+									<ul class="tsd-parameters">
+										<li class="tsd-parameter-signature">
+											<ul class="tsd-signatures tsd-kind-type-literal">
+												<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">(</span>qb<span class="tsd-signature-symbol">: </span><a href="QueryBuilder.html" class="tsd-signature-type" data-tsd-kind="Class">QueryBuilder</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">TB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">O</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="QueryBuilder.html" class="tsd-signature-type" data-tsd-kind="Class">QueryBuilder</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">TB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">O</span><span class="tsd-signature-symbol">&gt;</span></li>
+											</ul>
+											<ul class="tsd-descriptions">
+												<li class="tsd-description">
+													<h4 class="tsd-parameters-title">Parameters</h4>
+													<ul class="tsd-parameters">
+														<li>
+															<h5>qb: <a href="QueryBuilder.html" class="tsd-signature-type" data-tsd-kind="Class">QueryBuilder</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">TB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">O</span><span class="tsd-signature-symbol">&gt;</span></h5>
+														</li>
+													</ul>
+													<h4 class="tsd-returns-title">Returns <a href="QueryBuilder.html" class="tsd-signature-type" data-tsd-kind="Class">QueryBuilder</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">TB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">O</span><span class="tsd-signature-symbol">&gt;</span></h4>
+												</li>
+											</ul>
+										</li>
+									</ul>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="QueryBuilder.html" class="tsd-signature-type" data-tsd-kind="Class">QueryBuilder</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">TB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">O</span><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
+					<a name="havingExists" class="tsd-anchor"></a>
+					<h3>having<wbr>Exists</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon">having<wbr>Exists<span class="tsd-signature-symbol">(</span>arg<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">ExistsFilterArg</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">TB</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="QueryBuilder.html" class="tsd-signature-type" data-tsd-kind="Class">QueryBuilder</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">TB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">O</span><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Just like <a href="QueryBuilder.html#whereExists">whereExists</a> but adds a <code>having</code> statement
+									instead of a <code>where</code> statement.</p>
+								</div>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>arg: <span class="tsd-signature-type">ExistsFilterArg</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">TB</span><span class="tsd-signature-symbol">&gt;</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="QueryBuilder.html" class="tsd-signature-type" data-tsd-kind="Class">QueryBuilder</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">TB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">O</span><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
+					<a name="havingNotExist" class="tsd-anchor"></a>
+					<h3>having<wbr>Not<wbr>Exist</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon">having<wbr>Not<wbr>Exist<span class="tsd-signature-symbol">(</span>arg<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">ExistsFilterArg</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">TB</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="QueryBuilder.html" class="tsd-signature-type" data-tsd-kind="Class">QueryBuilder</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">TB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">O</span><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Just like <a href="QueryBuilder.html#whereNotExists">whereNotExists</a> but adds a <code>having</code> statement
+									instead of a <code>where</code> statement.</p>
+								</div>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>arg: <span class="tsd-signature-type">ExistsFilterArg</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">TB</span><span class="tsd-signature-symbol">&gt;</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="QueryBuilder.html" class="tsd-signature-type" data-tsd-kind="Class">QueryBuilder</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">TB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">O</span><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
+					<a name="havingRef" class="tsd-anchor"></a>
+					<h3>having<wbr>Ref</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon">having<wbr>Ref<span class="tsd-signature-symbol">(</span>lhs<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">ReferenceExpression</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">TB</span><span class="tsd-signature-symbol">&gt;</span>, op<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">FilterOperatorArg</span>, rhs<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">ReferenceExpression</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">TB</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="QueryBuilder.html" class="tsd-signature-type" data-tsd-kind="Class">QueryBuilder</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">TB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">O</span><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Just like <a href="QueryBuilder.html#whereRef">whereRef</a> but adds a <code>having</code> statement
+									instead of a <code>where</code> statement.</p>
+								</div>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>lhs: <span class="tsd-signature-type">ReferenceExpression</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">TB</span><span class="tsd-signature-symbol">&gt;</span></h5>
+								</li>
+								<li>
+									<h5>op: <span class="tsd-signature-type">FilterOperatorArg</span></h5>
+								</li>
+								<li>
+									<h5>rhs: <span class="tsd-signature-type">ReferenceExpression</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">TB</span><span class="tsd-signature-symbol">&gt;</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="QueryBuilder.html" class="tsd-signature-type" data-tsd-kind="Class">QueryBuilder</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">TB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">O</span><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+					</ul>
+				</section>
 				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter">
 					<a name="innerJoin" class="tsd-anchor"></a>
 					<h3>inner<wbr>Join</h3>
@@ -1101,6 +1255,152 @@
 								</li>
 								<li>
 									<h5>updates: <span class="tsd-signature-type">MutationObject</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">TB</span><span class="tsd-signature-symbol">&gt;</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="QueryBuilder.html" class="tsd-signature-type" data-tsd-kind="Class">QueryBuilder</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">TB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">O</span><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
+					<a name="orHaving" class="tsd-anchor"></a>
+					<h3>or<wbr>Having</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon">or<wbr>Having<span class="tsd-signature-symbol">(</span>lhs<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">ReferenceExpression</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">TB</span><span class="tsd-signature-symbol">&gt;</span>, op<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">FilterOperatorArg</span>, rhs<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">ValueExpressionOrList</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">TB</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="QueryBuilder.html" class="tsd-signature-type" data-tsd-kind="Class">QueryBuilder</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">TB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">O</span><span class="tsd-signature-symbol">&gt;</span></li>
+						<li class="tsd-signature tsd-kind-icon">or<wbr>Having<span class="tsd-signature-symbol">(</span>grouper<span class="tsd-signature-symbol">: </span><span class="tsd-signature-symbol">(</span>qb<span class="tsd-signature-symbol">: </span><a href="QueryBuilder.html" class="tsd-signature-type" data-tsd-kind="Class">QueryBuilder</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">TB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">O</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><a href="QueryBuilder.html" class="tsd-signature-type" data-tsd-kind="Class">QueryBuilder</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">TB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">O</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="QueryBuilder.html" class="tsd-signature-type" data-tsd-kind="Class">QueryBuilder</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">TB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">O</span><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Just like <a href="QueryBuilder.html#orWhere">orWhere</a> but adds a <code>having</code> statement
+									instead of a <code>where</code> statement.</p>
+								</div>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>lhs: <span class="tsd-signature-type">ReferenceExpression</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">TB</span><span class="tsd-signature-symbol">&gt;</span></h5>
+								</li>
+								<li>
+									<h5>op: <span class="tsd-signature-type">FilterOperatorArg</span></h5>
+								</li>
+								<li>
+									<h5>rhs: <span class="tsd-signature-type">ValueExpressionOrList</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">TB</span><span class="tsd-signature-symbol">&gt;</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="QueryBuilder.html" class="tsd-signature-type" data-tsd-kind="Class">QueryBuilder</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">TB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">O</span><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+							</aside>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>grouper: <span class="tsd-signature-symbol">(</span>qb<span class="tsd-signature-symbol">: </span><a href="QueryBuilder.html" class="tsd-signature-type" data-tsd-kind="Class">QueryBuilder</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">TB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">O</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><a href="QueryBuilder.html" class="tsd-signature-type" data-tsd-kind="Class">QueryBuilder</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">TB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">O</span><span class="tsd-signature-symbol">&gt;</span></h5>
+									<ul class="tsd-parameters">
+										<li class="tsd-parameter-signature">
+											<ul class="tsd-signatures tsd-kind-type-literal">
+												<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">(</span>qb<span class="tsd-signature-symbol">: </span><a href="QueryBuilder.html" class="tsd-signature-type" data-tsd-kind="Class">QueryBuilder</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">TB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">O</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="QueryBuilder.html" class="tsd-signature-type" data-tsd-kind="Class">QueryBuilder</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">TB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">O</span><span class="tsd-signature-symbol">&gt;</span></li>
+											</ul>
+											<ul class="tsd-descriptions">
+												<li class="tsd-description">
+													<h4 class="tsd-parameters-title">Parameters</h4>
+													<ul class="tsd-parameters">
+														<li>
+															<h5>qb: <a href="QueryBuilder.html" class="tsd-signature-type" data-tsd-kind="Class">QueryBuilder</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">TB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">O</span><span class="tsd-signature-symbol">&gt;</span></h5>
+														</li>
+													</ul>
+													<h4 class="tsd-returns-title">Returns <a href="QueryBuilder.html" class="tsd-signature-type" data-tsd-kind="Class">QueryBuilder</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">TB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">O</span><span class="tsd-signature-symbol">&gt;</span></h4>
+												</li>
+											</ul>
+										</li>
+									</ul>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="QueryBuilder.html" class="tsd-signature-type" data-tsd-kind="Class">QueryBuilder</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">TB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">O</span><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
+					<a name="orHavingExists" class="tsd-anchor"></a>
+					<h3>or<wbr>Having<wbr>Exists</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon">or<wbr>Having<wbr>Exists<span class="tsd-signature-symbol">(</span>arg<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">ExistsFilterArg</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">TB</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="QueryBuilder.html" class="tsd-signature-type" data-tsd-kind="Class">QueryBuilder</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">TB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">O</span><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Just like <a href="QueryBuilder.html#orWhereExists">orWhereExists</a> but adds a <code>having</code> statement
+									instead of a <code>where</code> statement.</p>
+								</div>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>arg: <span class="tsd-signature-type">ExistsFilterArg</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">TB</span><span class="tsd-signature-symbol">&gt;</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="QueryBuilder.html" class="tsd-signature-type" data-tsd-kind="Class">QueryBuilder</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">TB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">O</span><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
+					<a name="orHavingNotExists" class="tsd-anchor"></a>
+					<h3>or<wbr>Having<wbr>Not<wbr>Exists</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon">or<wbr>Having<wbr>Not<wbr>Exists<span class="tsd-signature-symbol">(</span>arg<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">ExistsFilterArg</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">TB</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="QueryBuilder.html" class="tsd-signature-type" data-tsd-kind="Class">QueryBuilder</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">TB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">O</span><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Just like <a href="QueryBuilder.html#orWhereNotExists">orWhereNotExists</a> but adds a <code>having</code> statement
+									instead of a <code>where</code> statement.</p>
+								</div>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>arg: <span class="tsd-signature-type">ExistsFilterArg</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">TB</span><span class="tsd-signature-symbol">&gt;</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="QueryBuilder.html" class="tsd-signature-type" data-tsd-kind="Class">QueryBuilder</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">TB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">O</span><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
+					<a name="orHavingRef" class="tsd-anchor"></a>
+					<h3>or<wbr>Having<wbr>Ref</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon">or<wbr>Having<wbr>Ref<span class="tsd-signature-symbol">(</span>lhs<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">ReferenceExpression</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">TB</span><span class="tsd-signature-symbol">&gt;</span>, op<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">FilterOperatorArg</span>, rhs<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">ReferenceExpression</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">TB</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="QueryBuilder.html" class="tsd-signature-type" data-tsd-kind="Class">QueryBuilder</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">TB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">O</span><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Just like <a href="QueryBuilder.html#orWhereRef">orWhereRef</a> but adds a <code>having</code> statement
+									instead of a <code>where</code> statement.</p>
+								</div>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>lhs: <span class="tsd-signature-type">ReferenceExpression</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">TB</span><span class="tsd-signature-symbol">&gt;</span></h5>
+								</li>
+								<li>
+									<h5>op: <span class="tsd-signature-type">FilterOperatorArg</span></h5>
+								</li>
+								<li>
+									<h5>rhs: <span class="tsd-signature-type">ReferenceExpression</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">TB</span><span class="tsd-signature-symbol">&gt;</span></h5>
 								</li>
 							</ul>
 							<h4 class="tsd-returns-title">Returns <a href="QueryBuilder.html" class="tsd-signature-type" data-tsd-kind="Class">QueryBuilder</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">TB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">O</span><span class="tsd-signature-symbol">&gt;</span></h4>
@@ -2476,6 +2776,18 @@
 							<li class=" tsd-kind-method tsd-parent-kind-class">
 								<a href="QueryBuilder.html#groupBy" class="tsd-kind-icon">group<wbr>By</a>
 							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="QueryBuilder.html#having" class="tsd-kind-icon">having</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="QueryBuilder.html#havingExists" class="tsd-kind-icon">having<wbr>Exists</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="QueryBuilder.html#havingNotExist" class="tsd-kind-icon">having<wbr>Not<wbr>Exist</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="QueryBuilder.html#havingRef" class="tsd-kind-icon">having<wbr>Ref</a>
+							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter">
 								<a href="QueryBuilder.html#innerJoin" class="tsd-kind-icon">inner<wbr>Join</a>
 							</li>
@@ -2496,6 +2808,18 @@
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class">
 								<a href="QueryBuilder.html#onConflictUpdate" class="tsd-kind-icon">on<wbr>Conflict<wbr>Update</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="QueryBuilder.html#orHaving" class="tsd-kind-icon">or<wbr>Having</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="QueryBuilder.html#orHavingExists" class="tsd-kind-icon">or<wbr>Having<wbr>Exists</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="QueryBuilder.html#orHavingNotExists" class="tsd-kind-icon">or<wbr>Having<wbr>Not<wbr>Exists</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="QueryBuilder.html#orHavingRef" class="tsd-kind-icon">or<wbr>Having<wbr>Ref</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class">
 								<a href="QueryBuilder.html#orWhere" class="tsd-kind-icon">or<wbr>Where</a>

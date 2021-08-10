@@ -2,6 +2,7 @@ import { freeze } from '../util/object-utils'
 import { FromNode, fromNode } from './from-node'
 import { GroupByItemNode } from './group-by-item-node'
 import { GroupByNode, groupByNode } from './group-by-node'
+import { havingNode, HavingNode, HavingNodeChild } from './having-node'
 import { JoinNode } from './join-node'
 import { LimitNode } from './limit-node'
 import { OffsetNode } from './offset-node'
@@ -35,6 +36,7 @@ export interface SelectQueryNode extends OperationNode {
   readonly limit?: LimitNode
   readonly offset?: OffsetNode
   readonly with?: WithNode
+  readonly having?: HavingNode
 }
 
 export const selectQueryNode = freeze({
@@ -128,6 +130,19 @@ export const selectQueryNode = freeze({
     return freeze({
       ...selectNode,
       offset,
+    })
+  },
+
+  cloneWithHaving(
+    selectNode: SelectQueryNode,
+    op: 'and' | 'or',
+    filter: HavingNodeChild
+  ): SelectQueryNode {
+    return freeze({
+      ...selectNode,
+      having: selectNode.having
+        ? havingNode.cloneWithFilter(selectNode.having, op, filter)
+        : havingNode.create(filter),
     })
   },
 })

@@ -551,6 +551,170 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
   }
 
   /**
+   * Just like {@link QueryBuilder.where | where} but adds a `having` statement
+   * instead of a `where` statement.
+   */
+  having(
+    lhs: ReferenceExpression<DB, TB>,
+    op: FilterOperatorArg,
+    rhs: ValueExpressionOrList<DB, TB>
+  ): QueryBuilder<DB, TB, O>
+
+  having(
+    grouper: (qb: QueryBuilder<DB, TB, O>) => QueryBuilder<DB, TB, O>
+  ): QueryBuilder<DB, TB, O>
+
+  having(...args: any[]): any {
+    ensureCanHaveHavingClause(this.#queryNode)
+
+    return new QueryBuilder({
+      executor: this.#executor,
+      queryNode: selectQueryNode.cloneWithHaving(
+        this.#queryNode,
+        'and',
+        parseFilterArgs('Having', args)
+      ),
+    })
+  }
+
+  /**
+   * Just like {@link QueryBuilder.whereRef | whereRef} but adds a `having` statement
+   * instead of a `where` statement.
+   */
+  havingRef(
+    lhs: ReferenceExpression<DB, TB>,
+    op: FilterOperatorArg,
+    rhs: ReferenceExpression<DB, TB>
+  ): QueryBuilder<DB, TB, O> {
+    ensureCanHaveHavingClause(this.#queryNode)
+
+    return new QueryBuilder({
+      executor: this.#executor,
+      queryNode: selectQueryNode.cloneWithHaving(
+        this.#queryNode,
+        'and',
+        parseReferenceFilterArgs(lhs, op, rhs)
+      ),
+    })
+  }
+
+  /**
+   * Just like {@link QueryBuilder.orWhere | orWhere} but adds a `having` statement
+   * instead of a `where` statement.
+   */
+  orHaving(
+    lhs: ReferenceExpression<DB, TB>,
+    op: FilterOperatorArg,
+    rhs: ValueExpressionOrList<DB, TB>
+  ): QueryBuilder<DB, TB, O>
+
+  orHaving(
+    grouper: (qb: QueryBuilder<DB, TB, O>) => QueryBuilder<DB, TB, O>
+  ): QueryBuilder<DB, TB, O>
+
+  orHaving(...args: any[]): any {
+    ensureCanHaveHavingClause(this.#queryNode)
+
+    return new QueryBuilder({
+      executor: this.#executor,
+      queryNode: selectQueryNode.cloneWithHaving(
+        this.#queryNode,
+        'or',
+        parseFilterArgs('Having', args)
+      ),
+    })
+  }
+
+  /**
+   * Just like {@link QueryBuilder.orWhereRef | orWhereRef} but adds a `having` statement
+   * instead of a `where` statement.
+   */
+  orHavingRef(
+    lhs: ReferenceExpression<DB, TB>,
+    op: FilterOperatorArg,
+    rhs: ReferenceExpression<DB, TB>
+  ): QueryBuilder<DB, TB, O> {
+    ensureCanHaveHavingClause(this.#queryNode)
+
+    return new QueryBuilder({
+      executor: this.#executor,
+      queryNode: selectQueryNode.cloneWithHaving(
+        this.#queryNode,
+        'or',
+        parseReferenceFilterArgs(lhs, op, rhs)
+      ),
+    })
+  }
+
+  /**
+   * Just like {@link QueryBuilder.whereExists | whereExists} but adds a `having` statement
+   * instead of a `where` statement.
+   */
+  havingExists(arg: ExistsFilterArg<DB, TB>): QueryBuilder<DB, TB, O> {
+    ensureCanHaveHavingClause(this.#queryNode)
+
+    return new QueryBuilder({
+      executor: this.#executor,
+      queryNode: selectQueryNode.cloneWithHaving(
+        this.#queryNode,
+        'and',
+        parseExistsFilterArgs('exists', arg)
+      ),
+    })
+  }
+
+  /**
+   * Just like {@link QueryBuilder.whereNotExists | whereNotExists} but adds a `having` statement
+   * instead of a `where` statement.
+   */
+  havingNotExist(arg: ExistsFilterArg<DB, TB>): QueryBuilder<DB, TB, O> {
+    ensureCanHaveHavingClause(this.#queryNode)
+
+    return new QueryBuilder({
+      executor: this.#executor,
+      queryNode: selectQueryNode.cloneWithHaving(
+        this.#queryNode,
+        'and',
+        parseExistsFilterArgs('not exists', arg)
+      ),
+    })
+  }
+
+  /**
+   * Just like {@link QueryBuilder.orWhereExists | orWhereExists} but adds a `having` statement
+   * instead of a `where` statement.
+   */
+  orHavingExists(arg: ExistsFilterArg<DB, TB>): QueryBuilder<DB, TB, O> {
+    ensureCanHaveHavingClause(this.#queryNode)
+
+    return new QueryBuilder({
+      executor: this.#executor,
+      queryNode: selectQueryNode.cloneWithHaving(
+        this.#queryNode,
+        'or',
+        parseExistsFilterArgs('exists', arg)
+      ),
+    })
+  }
+
+  /**
+   * Just like {@link QueryBuilder.orWhereNotExists | orWhereNotExists} but adds a `having` statement
+   * instead of a `where` statement.
+   */
+  orHavingNotExists(arg: ExistsFilterArg<DB, TB>): QueryBuilder<DB, TB, O> {
+    ensureCanHaveHavingClause(this.#queryNode)
+
+    return new QueryBuilder({
+      executor: this.#executor,
+      queryNode: selectQueryNode.cloneWithHaving(
+        this.#queryNode,
+        'or',
+        parseExistsFilterArgs('not exists', arg)
+      ),
+    })
+  }
+
+  /**
    * Adds a select clause to the query.
    *
    * When a column (or any expression) is selected, Kysely also adds it to the return
@@ -1962,6 +2126,14 @@ function ensureCanHaveWhereClause(
     throw new Error(
       'only select, delete and update queries can have a where clause'
     )
+  }
+}
+
+function ensureCanHaveHavingClause(
+  node: QueryNode
+): asserts node is SelectQueryNode {
+  if (!selectQueryNode.is(node)) {
+    throw new Error('only select queries can have a having clause')
   }
 }
 

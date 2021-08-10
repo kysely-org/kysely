@@ -50,7 +50,7 @@ import { UpdateQueryNode } from '../operation-node/update-query-node'
 import { ValueListNode } from '../operation-node/value-list-node'
 import { ValueNode } from '../operation-node/value-node'
 import { WhereNode } from '../operation-node/where-node'
-import { CommonTableExpressionNode } from '../operation-node/with-expression-node'
+import { CommonTableExpressionNode } from '../operation-node/common-table-expression-node'
 import { WithNode } from '../operation-node/with-node'
 import {
   isEmpty,
@@ -66,6 +66,7 @@ import {
 } from '../util/object-utils'
 import { CompiledQuery } from './compiled-query'
 import { CompileEntryPointNode, QueryCompiler } from './query-compiler'
+import { HavingNode } from '../operation-node/having-node'
 
 export class DefaultQueryCompiler
   extends OperationNodeVisitor
@@ -140,6 +141,11 @@ export class DefaultQueryCompiler
       this.visitNode(node.groupBy)
     }
 
+    if (node.having) {
+      this.append(' ')
+      this.visitNode(node.having)
+    }
+
     if (node.orderBy) {
       this.append(' ')
       this.visitNode(node.orderBy)
@@ -194,6 +200,11 @@ export class DefaultQueryCompiler
   protected override visitWhere(node: WhereNode): void {
     this.append('where ')
     this.visitNode(node.where)
+  }
+
+  protected override visitHaving(node: HavingNode): void {
+    this.append('having ')
+    this.visitNode(node.having)
   }
 
   protected override visitInsertQuery(node: InsertQueryNode): void {

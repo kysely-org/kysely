@@ -52,6 +52,8 @@ export function parseFilterArgs(
   } else if (args.length === 1) {
     if (filterType === 'Where') {
       return parseWhereGrouper(args[0])
+    } else if (filterType === 'Having') {
+      return parseHavingGrouper(args[0])
     } else {
       return parseOnGrouper(args[0])
     }
@@ -132,10 +134,29 @@ function parseWhereGrouper(
   const queryNode = query.toOperationNode() as SelectQueryNode
 
   if (!queryNode.where) {
-    throw new Error('no where methods called insided a grouper where')
+    throw new Error('no where methods called insided a grouper')
   }
 
   return parensNode.create(queryNode.where.where)
+}
+
+function parseHavingGrouper(
+  grouper: (qb: AnyQueryBuilder) => AnyQueryBuilder
+): ParensNode {
+  if (!isFunction(grouper)) {
+    throw new Error(
+      `invalid call to queryBuilder.having: ${JSON.stringify(grouper)}`
+    )
+  }
+
+  const query = grouper(createEmptySelectQuery())
+  const queryNode = query.toOperationNode() as SelectQueryNode
+
+  if (!queryNode.having) {
+    throw new Error('no having methods called insided a grouper')
+  }
+
+  return parensNode.create(queryNode.having.having)
 }
 
 function parseOnGrouper(

@@ -1,6 +1,6 @@
 import { freeze } from '../util/object-utils'
 import { OperationNode } from './operation-node'
-import { CommonTableExpressionNode } from './with-expression-node'
+import { CommonTableExpressionNode } from './common-table-expression-node'
 
 export interface WithNode extends OperationNode {
   readonly kind: 'WithNode'
