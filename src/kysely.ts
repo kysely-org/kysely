@@ -110,9 +110,9 @@ export class Kysely<DB> extends QueryCreator<DB> {
   }
 
   /**
-   * Returns a the {@link Dynamic} module.
+   * Returns a the {@link DynamicModule} module.
    *
-   * The {@link Dynamic} module can be used to bypass strict typing and
+   * The {@link DynamicModule} module can be used to bypass strict typing and
    * passing in dynamic values for the queries.
    */
   get dynamic(): DynamicModule {
