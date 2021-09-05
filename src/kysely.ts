@@ -2,8 +2,8 @@ import { DriverConfig } from './driver/driver-config'
 import { Dialect, TableMetadata } from './dialect/dialect'
 import { PostgresDialect } from './dialect/postgres/postgres-dialect'
 import { Driver } from './driver/driver'
-import { createSchemaModule, SchemaModule } from './schema/schema'
-import { createDynamicModule, DynamicModule } from './dynamic/dynamic'
+import { SchemaModule } from './schema/schema'
+import { DynamicModule } from './dynamic/dynamic'
 import { QueryCompiler } from './query-compiler/query-compiler'
 import { DefaultConnectionProvider } from './driver/default-connection-provider'
 import { isObject } from './util/object-utils'
@@ -13,7 +13,7 @@ import {
   INTERNAL_DRIVER_ENSURE_DESTROY,
   INTERNAL_DRIVER_RELEASE_CONNECTION,
 } from './driver/driver-internal'
-import { createMigrationModule, MigrationModule } from './migration/migration'
+import { MigrationModule } from './migration/migration'
 import { DefaultQueryExecutor, QueryExecutor } from './util/query-executor'
 import { QueryCreator } from './query-creator'
 
@@ -99,14 +99,14 @@ export class Kysely<DB> extends QueryCreator<DB> {
    * Returns the {@link Schema} module for building database schema.
    */
   get schema(): SchemaModule {
-    return createSchemaModule(this.#executor)
+    return new SchemaModule(this.#executor)
   }
 
   /**
    * Returns the {@link Migration} module for managing and running migrations.
    */
   get migration(): MigrationModule {
-    return createMigrationModule(this)
+    return new MigrationModule(this)
   }
 
   /**
@@ -116,7 +116,7 @@ export class Kysely<DB> extends QueryCreator<DB> {
    * passing in dynamic values for the queries.
    */
   get dynamic(): DynamicModule {
-    return createDynamicModule()
+    return new DynamicModule()
   }
 
   /**

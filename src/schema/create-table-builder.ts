@@ -253,15 +253,15 @@ export class CreateTableBuilder implements OperationNodeSource, Compilable {
   }
 
   toOperationNode(): CreateTableNode {
-    return this.#createTableNode
+    return this.#executor.transformNode(this.#createTableNode)
   }
 
   compile(): CompiledQuery {
-    return this.#executor.compileQuery(this.#createTableNode)
+    return this.#executor.compileQuery(this.toOperationNode())
   }
 
   async execute(): Promise<void> {
-    await this.#executor.executeQuery(this.#createTableNode)
+    await this.#executor.executeQuery(this.compile())
   }
 
   private addColumn(

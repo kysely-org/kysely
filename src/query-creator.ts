@@ -24,7 +24,7 @@ import {
   QueryCreatorWithCommonTableExpression,
 } from './parser/with-parser'
 import { withNode, WithNode } from './operation-node/with-node'
-import { WithSchemaTransformer } from './transformations/with-schema-transformer'
+import { WithSchemaTransformer } from './transformers/with-schema-transformer'
 
 export class QueryCreator<DB> {
   #executor: QueryExecutor

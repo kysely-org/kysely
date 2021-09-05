@@ -219,19 +219,26 @@ for (const dialect of ['postgres'] as const) {
 
     async function createTables(): Promise<void> {
       await ctx.db.raw('create schema if not exists mammals').execute()
+
       await ctx.db.schema
-        .createTable('mammals.pet')
+        .withSchema('mammals')
+        .createTable('pet')
         .integer('id', (col) => col.increments().primary())
         .string('name', (col) => col.unique())
         .integer('owner_id', (col) =>
-          col.references('person.id').onDelete('cascade')
+          col.references('public.person.id').onDelete('cascade')
         )
         .string('species')
         .execute()
     }
 
     async function dropTables(): Promise<void> {
-      await ctx.db.schema.dropTable('mammals.pet').ifExists().execute()
+      await ctx.db.schema
+        .withSchema('mammals')
+        .dropTable('pet')
+        .ifExists()
+        .execute()
+
       await ctx.db.raw('drop schema if exists mammals').execute()
     }
   })

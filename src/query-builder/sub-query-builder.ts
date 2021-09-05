@@ -6,7 +6,7 @@ import {
   TableExpression,
   QueryBuilderWithTable,
 } from '../parser/table-parser'
-import { WithSchemaTransformer } from '../transformations/with-schema-transformer'
+import { WithSchemaTransformer } from '../transformers/with-schema-transformer'
 
 export class SubQueryBuilder<DB, TB extends keyof DB> {
   #executor: NeverExecutingQueryExecutor

@@ -2,7 +2,7 @@ import * as path from 'path'
 
 import { promises as fs } from 'fs'
 import { Kysely } from '../kysely'
-import { freeze, getLast, isFunction, isString } from '../util/object-utils'
+import { getLast, isFunction, isString } from '../util/object-utils'
 
 export const MIGRATION_TABLE = 'kysely_migration'
 export const MIGRATION_LOCK_TABLE = 'kysely_migration_lock'
@@ -11,7 +11,13 @@ export const MIGRATION_LOCK_ID = 'migration_lock'
 const MAX_LOCK_WAIT_TIME_MS = 60000
 const LOCK_ATTEMPT_GAP_MS = 100
 
-export interface MigrationModule {
+export class MigrationModule {
+  #db: Kysely<any>
+
+  constructor(db: Kysely<any>) {
+    this.#db = db
+  }
+
   /**
    * Runs all migrations that have not yet been run.
    *
@@ -33,27 +39,26 @@ export interface MigrationModule {
    */
   migrateToLatest(migrationsFolderPath: string): Promise<void>
   migrateToLatest(allMigrations: Record<string, Migration>): Promise<void>
+
+  async migrateToLatest(
+    migrationsFolderPath: string | Record<string, Migration>
+  ): Promise<void> {
+    await ensureMigrationTablesExists(this.#db)
+
+    if (isString(migrationsFolderPath)) {
+      return doMigrateToLatest(
+        this.#db,
+        await readMigrationsFromFolder(migrationsFolderPath)
+      )
+    } else {
+      return doMigrateToLatest(this.#db, migrationsFolderPath)
+    }
+  }
 }
 
 export interface Migration {
   up(db: Kysely<any>): Promise<void>
   down(db: Kysely<any>): Promise<void>
-}
-
-export function createMigrationModule(db: Kysely<any>): MigrationModule {
-  return freeze({
-    async migrateToLatest(
-      migrations: string | Record<string, Migration>
-    ): Promise<void> {
-      await ensureMigrationTablesExists(db)
-
-      if (isString(migrations)) {
-        return doMigrateToLatest(db, await readMigrationsFromFolder(migrations))
-      } else {
-        return doMigrateToLatest(db, migrations)
-      }
-    },
-  })
 }
 
 async function ensureMigrationTablesExists(db: Kysely<any>): Promise<void> {

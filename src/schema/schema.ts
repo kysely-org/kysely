@@ -3,7 +3,7 @@ import { createTableNode } from '../operation-node/create-table-node'
 import { dropIndexNode } from '../operation-node/drop-index-node'
 import { dropTableNode } from '../operation-node/drop-table-node'
 import { parseTable } from '../parser/table-parser'
-import { freeze } from '../util/object-utils'
+import { WithSchemaTransformer } from '../transformers/with-schema-transformer'
 import { QueryExecutor } from '../util/query-executor'
 import { CreateIndexBuilder } from './create-index-builder'
 import { CreateTableBuilder } from './create-table-builder'
@@ -13,7 +13,13 @@ import { DropTableBuilder } from './drop-table-builder'
 /**
  * Provides methods for building database schema.
  */
-export interface SchemaModule {
+export class SchemaModule {
+  #executor: QueryExecutor
+
+  constructor(executor: QueryExecutor) {
+    this.#executor = executor
+  }
+
   /**
    * Create a new table.
    *
@@ -31,7 +37,12 @@ export interface SchemaModule {
    *   .execute()
    * ```
    */
-  createTable(table: string): CreateTableBuilder
+  createTable(table: string): CreateTableBuilder {
+    return new CreateTableBuilder({
+      executor: this.#executor,
+      createTableNode: createTableNode.create(parseTable(table)),
+    })
+  }
 
   /**
    * Drop a table.
@@ -43,7 +54,12 @@ export interface SchemaModule {
    *   .execute()
    * ```
    */
-  dropTable(table: string): DropTableBuilder
+  dropTable(table: string): DropTableBuilder {
+    return new DropTableBuilder({
+      executor: this.#executor,
+      dropTableNode: dropTableNode.create(parseTable(table)),
+    })
+  }
 
   /**
    * Create a new index.
@@ -57,7 +73,12 @@ export interface SchemaModule {
    *   .execute()
    * ```
    */
-  createIndex(indexName: string): CreateIndexBuilder
+  createIndex(indexName: string): CreateIndexBuilder {
+    return new CreateIndexBuilder({
+      executor: this.#executor,
+      createIndexNode: createIndexNode.create(indexName),
+    })
+  }
 
   /**
    * Drop an index.
@@ -69,55 +90,19 @@ export interface SchemaModule {
    *   .execute()
    * ```
    */
-  dropIndex(indexName: string): DropIndexBuilder
-}
+  dropIndex(indexName: string): DropIndexBuilder {
+    return new DropIndexBuilder({
+      executor: this.#executor,
+      dropIndexNode: dropIndexNode.create(indexName),
+    })
+  }
 
-export function createSchemaModule(executor: QueryExecutor): SchemaModule {
-  return freeze({
-    createTable(table: string): CreateTableBuilder {
-      return new CreateTableBuilder({
-        executor,
-        createTableNode: createTableNode.create(parseTable(table)),
-      })
-    },
-
-    dropTable(table: string): DropTableBuilder {
-      return new DropTableBuilder({
-        executor,
-        dropTableNode: dropTableNode.create(parseTable(table)),
-      })
-    },
-
-    dropTableIfExists(table: string): DropTableBuilder {
-      return new DropTableBuilder({
-        executor,
-        dropTableNode: dropTableNode.create(parseTable(table), {
-          modifier: 'IfExists',
-        }),
-      })
-    },
-
-    createIndex(name: string): CreateIndexBuilder {
-      return new CreateIndexBuilder({
-        executor,
-        createIndexNode: createIndexNode.create(name),
-      })
-    },
-
-    dropIndex(indexName: string): DropIndexBuilder {
-      return new DropIndexBuilder({
-        executor,
-        dropIndexNode: dropIndexNode.create(indexName),
-      })
-    },
-
-    dropIndexIfExists(indexName: string): DropIndexBuilder {
-      return new DropIndexBuilder({
-        executor,
-        dropIndexNode: dropIndexNode.create(indexName, {
-          modifier: 'IfExists',
-        }),
-      })
-    },
-  })
+  /**
+   * See {@link QueryCreator.withSchema}
+   */
+  withSchema(schema: string): SchemaModule {
+    return new SchemaModule(
+      this.#executor.copyWithTransformer(new WithSchemaTransformer(schema))
+    )
+  }
 }

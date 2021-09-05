@@ -25,15 +25,15 @@ export class DropIndexBuilder implements OperationNodeSource, Compilable {
   }
 
   toOperationNode(): DropIndexNode {
-    return this.#dropIndexNode
+    return this.#executor.transformNode(this.#dropIndexNode)
   }
 
   compile(): CompiledQuery {
-    return this.#executor.compileQuery(this.#dropIndexNode)
+    return this.#executor.compileQuery(this.toOperationNode())
   }
 
   async execute(): Promise<void> {
-    await this.#executor.executeQuery(this.#dropIndexNode)
+    await this.#executor.executeQuery(this.compile())
   }
 }
 

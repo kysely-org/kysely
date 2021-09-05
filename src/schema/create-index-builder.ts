@@ -113,15 +113,15 @@ export class CreateIndexBuilder implements OperationNodeSource, Compilable {
   }
 
   toOperationNode(): CreateIndexNode {
-    return this.#createIndexNode
+    return this.#executor.transformNode(this.#createIndexNode)
   }
 
   compile(): CompiledQuery {
-    return this.#executor.compileQuery(this.#createIndexNode)
+    return this.#executor.compileQuery(this.toOperationNode())
   }
 
   async execute(): Promise<void> {
-    await this.#executor.executeQuery(this.#createIndexNode)
+    await this.#executor.executeQuery(this.compile())
   }
 }
 

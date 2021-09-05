@@ -67,7 +67,7 @@ export class RawBuilder<O = unknown> implements OperationNodeSource {
   }
 
   async execute(): Promise<QueryResult<O>> {
-    return this.#executor.executeQuery<O>(this.toOperationNode())
+    return this.#executor.executeQuery<O>(this.compile())
   }
 }
 

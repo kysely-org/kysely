@@ -25,15 +25,15 @@ export class DropTableBuilder implements OperationNodeSource, Compilable {
   }
 
   toOperationNode(): DropTableNode {
-    return this.#dropTableNode
+    return this.#executor.transformNode(this.#dropTableNode)
   }
 
   compile(): CompiledQuery {
-    return this.#executor.compileQuery(this.#dropTableNode)
+    return this.#executor.compileQuery(this.toOperationNode())
   }
 
   async execute(): Promise<void> {
-    await this.#executor.executeQuery(this.#dropTableNode)
+    await this.#executor.executeQuery(this.compile())
   }
 }
 

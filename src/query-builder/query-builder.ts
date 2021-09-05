@@ -2029,8 +2029,11 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
   }
 
   async execute(): Promise<ManyResultRowType<O>[]> {
-    const node = this.toOperationNode()
-    const result = await this.#executor.executeQuery<ManyResultRowType<O>>(node)
+    const node = this.#executor.transformNode(this.#queryNode)
+    const compildQuery = this.#executor.compileQuery(node)
+    const result = await this.#executor.executeQuery<ManyResultRowType<O>>(
+      compildQuery
+    )
 
     if (queryNode.isMutating(node) && node.returning) {
       return result.rows ?? []
