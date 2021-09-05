@@ -7,7 +7,7 @@ import {
 } from './test-setup'
 
 for (const dialect of ['postgres'] as const) {
-  describe.only(`${dialect}: with schema`, () => {
+  describe(`${dialect}: with schema`, () => {
     let ctx: TestContext
 
     before(async () => {
@@ -121,24 +121,24 @@ for (const dialect of ['postgres'] as const) {
     it('subqueries should use their own schema if specified', async () => {
       const query = ctx.db
         .withSchema('mammals')
-        .selectFrom('pet as p')
+        .selectFrom('pet')
         .select([
-          'p.name',
+          'pet.name',
           (qb) =>
             qb
               .withSchema('public')
               .subQuery('person')
               .select('first_name')
-              .whereRef('p.owner_id', '=', 'person.id')
+              .whereRef('pet.owner_id', '=', 'person.id')
               .as('owner_first_name'),
         ])
 
       testSql(query, dialect, {
         postgres: {
           sql: [
-            'select "p"."name",',
-            '(select "first_name" from "public"."person" where "p"."owner_id" = "public"."person"."id") as "owner_first_name"',
-            'from "mammals"."pet" as "p"',
+            'select "mammals"."pet"."name",',
+            '(select "first_name" from "public"."person" where "mammals"."pet"."owner_id" = "public"."person"."id") as "owner_first_name"',
+            'from "mammals"."pet"',
           ],
           bindings: [],
         },
