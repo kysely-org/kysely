@@ -112,17 +112,15 @@ export class OperationNodeVisitor {
       this.visitNode(node.with)
     }
 
-    if (node.selections) {
-      node.selections.forEach(this.visitNode)
-    }
-
     if (node.distinctOnSelections) {
       node.distinctOnSelections.forEach(this.visitNode)
     }
 
-    if (node.from) {
-      this.visitNode(node.from)
+    if (node.selections) {
+      node.selections.forEach(this.visitNode)
     }
+
+    this.visitNode(node.from)
 
     if (node.joins) {
       node.joins.forEach(this.visitNode)
@@ -130,6 +128,14 @@ export class OperationNodeVisitor {
 
     if (node.where) {
       this.visitNode(node.where)
+    }
+
+    if (node.groupBy) {
+      this.visitNode(node.groupBy)
+    }
+
+    if (node.having) {
+      this.visitNode(node.having)
     }
 
     if (node.orderBy) {

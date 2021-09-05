@@ -6,8 +6,17 @@ import {
   TableExpression,
   QueryBuilderWithTable,
 } from '../parser/table-parser'
+import { WithSchemaTransformer } from '../transformations/with-schema-transformer'
 
 export class SubQueryBuilder<DB, TB extends keyof DB> {
+  #executor: NeverExecutingQueryExecutor
+
+  constructor(
+    executor: NeverExecutingQueryExecutor = new NeverExecutingQueryExecutor()
+  ) {
+    this.#executor = executor
+  }
+
   /**
    * Creates a subquery.
    *
@@ -59,8 +68,17 @@ export class SubQueryBuilder<DB, TB extends keyof DB> {
 
   subQuery(table: any): any {
     return new QueryBuilder({
-      executor: new NeverExecutingQueryExecutor(),
+      executor: this.#executor,
       queryNode: selectQueryNode.create(parseTableExpressionOrList(table)),
     })
+  }
+
+  /**
+   * See {@link QueryCreator.withSchema}
+   */
+  withSchema(schema: string): SubQueryBuilder<DB, TB> {
+    return new SubQueryBuilder(
+      this.#executor.copyWithTransformer(new WithSchemaTransformer(schema))
+    )
   }
 }

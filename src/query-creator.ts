@@ -24,6 +24,7 @@ import {
   QueryCreatorWithCommonTableExpression,
 } from './parser/with-parser'
 import { withNode, WithNode } from './operation-node/with-node'
+import { WithSchemaTransformer } from './transformations/with-schema-transformer'
 
 export class QueryCreator<DB> {
   #executor: QueryExecutor
@@ -266,6 +267,88 @@ export class QueryCreator<DB> {
   }
 
   /**
+   * Creates a `with` query (common table expressions).
+   *
+   * @example
+   * ```ts
+   * await db
+   *   .with('jennifers', (db) => db
+   *     .selectFrom('person')
+   *     .where('first_name', '=', 'Jennifer')
+   *     .select(['id', 'age'])
+   *   )
+   *   .with('adult_jennifers', (db) => db
+   *     .selectFrom('jennifers')
+   *     .where('age', '>', 18)
+   *     .select(['id', 'age'])
+   *   )
+   *   .selectFrom('adult_jennifers')
+   *   .where('age', '<', 60)
+   *   .selectAll()
+   *   .execute()
+   * ```
+   */
+  with<N extends string, E extends CommonTableExpression<DB>>(
+    name: N,
+    expression: E
+  ): QueryCreatorWithCommonTableExpression<DB, N, E> {
+    const cte = parseCommonTableExpression(name, expression)
+
+    return new QueryCreator(
+      this.#executor,
+      this.#withNode
+        ? withNode.cloneWithExpression(this.#withNode, cte)
+        : withNode.create(cte)
+    )
+  }
+
+  /**
+   * Sets the schema to be used for all table references that don't explicitly
+   * specify a schema.
+   *
+   * @example
+   * ```
+   * await db.withSchema('mammals')
+   *  .selectFrom('pet')
+   *  .selectAll()
+   *  .innerJoin('public.person', 'public.person.id', 'pet.owner_id')
+   *  .execute()
+   * ```
+   *
+   * The generated SQL (postgresql):
+   *
+   * ```sql
+   * select * from "mammals"."pet"
+   * inner join "public"."person"
+   * on "public"."person"."id" = "mammals"."pet"."owner_id"
+   * ```
+   *
+   * @example
+   * `withSchema` is smart enough to not add schema for aliases
+   * common table expressions or other places where the schema
+   * doesn't belong to:
+   *
+   * ```
+   * await db.withSchema('mammals')
+   *  .selectFrom('pet as p')
+   *  .select('p.name')
+   *  .execute()
+   * ```
+   *
+   * The generated SQL (postgresql):
+   *
+   * ```sql
+   * select "p"."name" from "mammals"."pet" as "p"
+   * ```
+   */
+  withSchema(schema: string): QueryCreator<DB> {
+    return new QueryCreator(
+      this.#executor.copyWithTransformer(new WithSchemaTransformer(schema)),
+      this.#withNode
+    )
+  }
+
+  /**
    * Provides a way to pass arbitrary SQL into your query and executing completely
    * raw queries.
    *
@@ -389,41 +472,5 @@ export class QueryCreator<DB> {
       params,
       executor: this.#executor,
     })
-  }
-
-  /**
-   * Creates a `with` query (common table expressions).
-   *
-   * @example
-   * ```ts
-   * await db
-   *   .with('jennifers', (db) => db
-   *     .selectFrom('person')
-   *     .where('first_name', '=', 'Jennifer')
-   *     .select(['id', 'age'])
-   *   )
-   *   .with('adult_jennifers', (db) => db
-   *     .selectFrom('jennifers')
-   *     .where('age', '>', 18)
-   *     .select(['id', 'age'])
-   *   )
-   *   .selectFrom('adult_jennifers')
-   *   .where('age', '<', 60)
-   *   .selectAll()
-   *   .execute()
-   * ```
-   */
-  with<N extends string, E extends CommonTableExpression<DB>>(
-    name: N,
-    expression: E
-  ): QueryCreatorWithCommonTableExpression<DB, N, E> {
-    const cte = parseCommonTableExpression(name, expression)
-
-    return new QueryCreator(
-      this.#executor,
-      this.#withNode
-        ? withNode.cloneWithExpression(this.#withNode, cte)
-        : withNode.create(cte)
-    )
   }
 }

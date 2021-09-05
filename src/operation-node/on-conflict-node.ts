@@ -6,8 +6,8 @@ import { OperationNode } from './operation-node'
 export interface OnConflictNode extends OperationNode {
   readonly kind: 'OnConflictNode'
   readonly columns: ReadonlyArray<ColumnNode>
-  readonly doNothing?: boolean
   readonly updates?: ReadonlyArray<ColumnUpdateNode>
+  readonly doNothing?: boolean
 }
 
 export const onConflictNode = freeze({

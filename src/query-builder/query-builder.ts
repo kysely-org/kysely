@@ -2010,10 +2010,6 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
     return new AliasedQueryBuilder(this, alias)
   }
 
-  toOperationNode(): QueryNode {
-    return this.#queryNode
-  }
-
   /**
    * Change the output type of the query.
    */
@@ -2024,16 +2020,19 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
     })
   }
 
+  toOperationNode(): QueryNode {
+    return this.#executor.transformNode(this.#queryNode)
+  }
+
   compile(): CompiledQuery {
-    return this.#executor.compileQuery(this.#queryNode)
+    return this.#executor.compileQuery(this.toOperationNode())
   }
 
   async execute(): Promise<ManyResultRowType<O>[]> {
-    const result = await this.#executor.executeQuery<ManyResultRowType<O>>(
-      this.#queryNode
-    )
+    const node = this.toOperationNode()
+    const result = await this.#executor.executeQuery<ManyResultRowType<O>>(node)
 
-    if (queryNode.isMutating(this.#queryNode) && this.#queryNode.returning) {
+    if (queryNode.isMutating(node) && node.returning) {
       return result.rows ?? []
     }
 
