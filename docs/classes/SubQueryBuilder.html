@@ -98,6 +98,7 @@
 							<h3>Methods</h3>
 							<ul class="tsd-index-list">
 								<li class="tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter"><a href="SubQueryBuilder.html#subQuery" class="tsd-kind-icon">sub<wbr>Query</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="SubQueryBuilder.html#withSchema" class="tsd-kind-icon">with<wbr>Schema</a></li>
 							</ul>
 						</section>
 					</div>
@@ -109,7 +110,7 @@
 					<a name="constructor" class="tsd-anchor"></a>
 					<h3>constructor</h3>
 					<ul class="tsd-signatures tsd-kind-constructor tsd-parent-kind-class tsd-has-type-parameter">
-						<li class="tsd-signature tsd-kind-icon">new <wbr>Sub<wbr>Query<wbr>Builder&lt;DB, TB&gt;<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="SubQueryBuilder.html" class="tsd-signature-type" data-tsd-kind="Class">SubQueryBuilder</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">TB</span><span class="tsd-signature-symbol">&gt;</span></li>
+						<li class="tsd-signature tsd-kind-icon">new <wbr>Sub<wbr>Query<wbr>Builder&lt;DB, TB&gt;<span class="tsd-signature-symbol">(</span>executor<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">NeverExecutingQueryExecutor</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="SubQueryBuilder.html" class="tsd-signature-type" data-tsd-kind="Class">SubQueryBuilder</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">TB</span><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
@@ -122,6 +123,12 @@
 								</li>
 								<li>
 									<h4>TB<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">symbol</span></h4>
+								</li>
+							</ul>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>executor: <span class="tsd-signature-type">NeverExecutingQueryExecutor</span><span class="tsd-signature-symbol"> = ...</span></h5>
 								</li>
 							</ul>
 							<h4 class="tsd-returns-title">Returns <a href="SubQueryBuilder.html" class="tsd-signature-type" data-tsd-kind="Class">SubQueryBuilder</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">TB</span><span class="tsd-signature-symbol">&gt;</span></h4>
@@ -213,6 +220,31 @@
 						</li>
 					</ul>
 				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
+					<a name="withSchema" class="tsd-anchor"></a>
+					<h3>with<wbr>Schema</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon">with<wbr>Schema<span class="tsd-signature-symbol">(</span>schema<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="SubQueryBuilder.html" class="tsd-signature-type" data-tsd-kind="Class">SubQueryBuilder</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">TB</span><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>See <a href="QueryCreator.html#withSchema">QueryCreator.withSchema</a></p>
+								</div>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>schema: <span class="tsd-signature-type">string</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="SubQueryBuilder.html" class="tsd-signature-type" data-tsd-kind="Class">SubQueryBuilder</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">TB</span><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+					</ul>
+				</section>
 			</section>
 		</div>
 		<div class="col-4 col-menu menu-sticky-wrap menu-highlight">
@@ -235,6 +267,9 @@
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter">
 								<a href="SubQueryBuilder.html#subQuery" class="tsd-kind-icon">sub<wbr>Query</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="SubQueryBuilder.html#withSchema" class="tsd-kind-icon">with<wbr>Schema</a>
 							</li>
 						</ul>
 					</li>

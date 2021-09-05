@@ -162,6 +162,7 @@
 								<li class="tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter"><a href="Kysely.html#transaction" class="tsd-kind-icon">transaction</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter tsd-is-inherited"><a href="Kysely.html#updateTable" class="tsd-kind-icon">update<wbr>Table</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter tsd-is-inherited"><a href="Kysely.html#with" class="tsd-kind-icon">with</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><a href="Kysely.html#withSchema" class="tsd-kind-icon">with<wbr>Schema</a></li>
 							</ul>
 						</section>
 					</div>
@@ -907,6 +908,61 @@
 						</li>
 					</ul>
 				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+					<a name="withSchema" class="tsd-anchor"></a>
+					<h3>with<wbr>Schema</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+						<li class="tsd-signature tsd-kind-icon">with<wbr>Schema<span class="tsd-signature-symbol">(</span>schema<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="QueryCreator.html" class="tsd-signature-type" data-tsd-kind="Class">QueryCreator</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<p>Inherited from <a href="QueryCreator.html">QueryCreator</a>.<a href="QueryCreator.html#withSchema">withSchema</a></p>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Sets the schema to be used for all table references that don&#39;t explicitly
+									specify a schema.</p>
+								</div>
+								<dl class="tsd-comment-tags">
+									<dt>example</dt>
+									<dd><pre><code><span style="color: #AF00DB">await</span><span style="color: #000000"> </span><span style="color: #001080">db</span><span style="color: #000000">.</span><span style="color: #795E26">withSchema</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;mammals&#039;</span><span style="color: #000000">)</span>
+<span style="color: #000000"> .</span><span style="color: #795E26">selectFrom</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;pet&#039;</span><span style="color: #000000">)</span>
+<span style="color: #000000"> .</span><span style="color: #795E26">selectAll</span><span style="color: #000000">()</span>
+<span style="color: #000000"> .</span><span style="color: #795E26">innerJoin</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;public.person&#039;</span><span style="color: #000000">, </span><span style="color: #A31515">&#039;public.person.id&#039;</span><span style="color: #000000">, </span><span style="color: #A31515">&#039;pet.owner_id&#039;</span><span style="color: #000000">)</span>
+<span style="color: #000000"> .</span><span style="color: #795E26">execute</span><span style="color: #000000">()</span>
+</code></pre>
+										<p>The generated SQL (postgresql):</p>
+										<pre><code class="language-sql"><span style="color: #0000FF">select</span><span style="color: #000000"> * </span><span style="color: #0000FF">from</span><span style="color: #000000"> </span><span style="color: #A31515">&quot;mammals&quot;</span><span style="color: #000000">.</span><span style="color: #A31515">&quot;pet&quot;</span>
+<span style="color: #0000FF">inner join</span><span style="color: #000000"> </span><span style="color: #A31515">&quot;public&quot;</span><span style="color: #000000">.</span><span style="color: #A31515">&quot;person&quot;</span>
+<span style="color: #0000FF">on</span><span style="color: #000000"> </span><span style="color: #A31515">&quot;public&quot;</span><span style="color: #000000">.</span><span style="color: #A31515">&quot;person&quot;</span><span style="color: #000000">.</span><span style="color: #A31515">&quot;id&quot;</span><span style="color: #000000"> = </span><span style="color: #A31515">&quot;mammals&quot;</span><span style="color: #000000">.</span><span style="color: #A31515">&quot;pet&quot;</span><span style="color: #000000">.</span><span style="color: #A31515">&quot;owner_id&quot;</span>
+</code></pre>
+									</dd>
+									<dt>example</dt>
+									<dd><p><code>withSchema</code> is smart enough to not add schema for aliases
+											common table expressions or other places where the schema
+										doesn&#39;t belong to:</p>
+										<pre><code><span style="color: #AF00DB">await</span><span style="color: #000000"> </span><span style="color: #001080">db</span><span style="color: #000000">.</span><span style="color: #795E26">withSchema</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;mammals&#039;</span><span style="color: #000000">)</span>
+<span style="color: #000000"> .</span><span style="color: #795E26">selectFrom</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;pet as p&#039;</span><span style="color: #000000">)</span>
+<span style="color: #000000"> .</span><span style="color: #795E26">select</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;p.name&#039;</span><span style="color: #000000">)</span>
+<span style="color: #000000"> .</span><span style="color: #795E26">execute</span><span style="color: #000000">()</span>
+</code></pre>
+										<p>The generated SQL (postgresql):</p>
+										<pre><code class="language-sql"><span style="color: #0000FF">select</span><span style="color: #000000"> </span><span style="color: #A31515">&quot;p&quot;</span><span style="color: #000000">.</span><span style="color: #A31515">&quot;name&quot;</span><span style="color: #000000"> </span><span style="color: #0000FF">from</span><span style="color: #000000"> </span><span style="color: #A31515">&quot;mammals&quot;</span><span style="color: #000000">.</span><span style="color: #A31515">&quot;pet&quot;</span><span style="color: #000000"> </span><span style="color: #0000FF">as</span><span style="color: #000000"> </span><span style="color: #A31515">&quot;p&quot;</span>
+</code></pre>
+									</dd>
+								</dl>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>schema: <span class="tsd-signature-type">string</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="QueryCreator.html" class="tsd-signature-type" data-tsd-kind="Class">QueryCreator</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">DB</span><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+					</ul>
+				</section>
 			</section>
 		</div>
 		<div class="col-4 col-menu menu-sticky-wrap menu-highlight">
@@ -965,6 +1021,9 @@
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter tsd-is-inherited">
 								<a href="Kysely.html#with" class="tsd-kind-icon">with</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+								<a href="Kysely.html#withSchema" class="tsd-kind-icon">with<wbr>Schema</a>
 							</li>
 						</ul>
 					</li>
