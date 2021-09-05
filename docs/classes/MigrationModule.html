@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>PostgresDialect | kysely</title>
+	<title>MigrationModule | kysely</title>
 	<meta name="description" content="Documentation for kysely">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="../assets/css/main.css">
@@ -55,10 +55,10 @@
 					<a href="../modules.html">kysely</a>
 				</li>
 				<li>
-					<a href="PostgresDialect.html">PostgresDialect</a>
+					<a href="MigrationModule.html">MigrationModule</a>
 				</li>
 			</ul>
-			<h1>Class PostgresDialect</h1>
+			<h1>Class MigrationModule</h1>
 		</div>
 	</div>
 </header>
@@ -69,14 +69,8 @@
 				<h3>Hierarchy</h3>
 				<ul class="tsd-hierarchy">
 					<li>
-						<span class="target">PostgresDialect</span>
+						<span class="target">MigrationModule</span>
 					</li>
-				</ul>
-			</section>
-			<section class="tsd-panel">
-				<h3>Implements</h3>
-				<ul class="tsd-hierarchy">
-					<li><span class="tsd-signature-type">Dialect</span></li>
 				</ul>
 			</section>
 			<section class="tsd-panel-group tsd-index-group">
@@ -86,15 +80,13 @@
 						<section class="tsd-index-section ">
 							<h3>Constructors</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-constructor tsd-parent-kind-class"><a href="PostgresDialect.html#constructor" class="tsd-kind-icon">constructor</a></li>
+								<li class="tsd-kind-constructor tsd-parent-kind-class"><a href="MigrationModule.html#constructor" class="tsd-kind-icon">constructor</a></li>
 							</ul>
 						</section>
 						<section class="tsd-index-section ">
 							<h3>Methods</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-method tsd-parent-kind-class"><a href="PostgresDialect.html#createDriver" class="tsd-kind-icon">create<wbr>Driver</a></li>
-								<li class="tsd-kind-method tsd-parent-kind-class"><a href="PostgresDialect.html#createQueryCompiler" class="tsd-kind-icon">create<wbr>Query<wbr>Compiler</a></li>
-								<li class="tsd-kind-method tsd-parent-kind-class"><a href="PostgresDialect.html#getTableMetadata" class="tsd-kind-icon">get<wbr>Table<wbr>Metadata</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="MigrationModule.html#migrateToLatest" class="tsd-kind-icon">migrate<wbr>ToLatest</a></li>
 							</ul>
 						</section>
 					</div>
@@ -106,13 +98,19 @@
 					<a name="constructor" class="tsd-anchor"></a>
 					<h3>constructor</h3>
 					<ul class="tsd-signatures tsd-kind-constructor tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">new <wbr>Postgres<wbr>Dialect<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="PostgresDialect.html" class="tsd-signature-type" data-tsd-kind="Class">PostgresDialect</a></li>
+						<li class="tsd-signature tsd-kind-icon">new <wbr>Migration<wbr>Module<span class="tsd-signature-symbol">(</span>db<span class="tsd-signature-symbol">: </span><a href="Kysely.html" class="tsd-signature-type" data-tsd-kind="Class">Kysely</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="MigrationModule.html" class="tsd-signature-type" data-tsd-kind="Class">MigrationModule</a></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 							</aside>
-							<h4 class="tsd-returns-title">Returns <a href="PostgresDialect.html" class="tsd-signature-type" data-tsd-kind="Class">PostgresDialect</a></h4>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>db: <a href="Kysely.html" class="tsd-signature-type" data-tsd-kind="Class">Kysely</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="MigrationModule.html" class="tsd-signature-type" data-tsd-kind="Class">MigrationModule</a></h4>
 						</li>
 					</ul>
 				</section>
@@ -120,62 +118,54 @@
 			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Methods</h2>
 				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
-					<a name="createDriver" class="tsd-anchor"></a>
-					<h3>create<wbr>Driver</h3>
+					<a name="migrateToLatest" class="tsd-anchor"></a>
+					<h3>migrate<wbr>ToLatest</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">create<wbr>Driver<span class="tsd-signature-symbol">(</span>config<span class="tsd-signature-symbol">: </span><a href="../interfaces/DriverConfig.html" class="tsd-signature-type" data-tsd-kind="Interface">DriverConfig</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="Driver.html" class="tsd-signature-type" data-tsd-kind="Class">Driver</a></li>
+						<li class="tsd-signature tsd-kind-icon">migrate<wbr>ToLatest<span class="tsd-signature-symbol">(</span>migrationsFolderPath<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></li>
+						<li class="tsd-signature tsd-kind-icon">migrate<wbr>ToLatest<span class="tsd-signature-symbol">(</span>allMigrations<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Record</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><a href="../interfaces/Migration.html" class="tsd-signature-type" data-tsd-kind="Interface">Migration</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
-								<p>Implementation of Dialect.createDriver</p>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Runs all migrations that have not yet been run.</p>
+								</div>
+								<p>The only argument must either be a file path to the folder that contains all migrations
+									OR an object that contains all migrations (not just the ones that need to be run).
+								The keys in the object must be the unique migration names.</p>
+								<p>This method goes through all possible migrations (passed as the argument) and runs the
+									ones whose names are alphabetically after the last migration that has been run. If the
+									list of executed migrations doesn&#39;t match the list of possible migrations, and error
+								is thrown.</p>
+								<dl class="tsd-comment-tags">
+									<dt>example</dt>
+									<dd><pre><code class="language-ts"><span style="color: #AF00DB">await</span><span style="color: #000000"> </span><span style="color: #001080">db</span><span style="color: #000000">.</span><span style="color: #001080">migration</span><span style="color: #000000">.</span><span style="color: #795E26">migrateToLatest</span><span style="color: #000000">(</span>
+<span style="color: #000000">  </span><span style="color: #001080">path</span><span style="color: #000000">.</span><span style="color: #795E26">join</span><span style="color: #000000">(</span><span style="color: #001080">__dirname</span><span style="color: #000000">, </span><span style="color: #A31515">&#039;migrations&#039;</span><span style="color: #000000">)</span>
+<span style="color: #000000">)</span>
+</code></pre>
+									</dd>
+								</dl>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>migrationsFolderPath: <span class="tsd-signature-type">string</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+						<li class="tsd-description">
+							<aside class="tsd-sources">
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
-									<h5>config: <a href="../interfaces/DriverConfig.html" class="tsd-signature-type" data-tsd-kind="Interface">DriverConfig</a></h5>
+									<h5>allMigrations: <span class="tsd-signature-type">Record</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><a href="../interfaces/Migration.html" class="tsd-signature-type" data-tsd-kind="Interface">Migration</a><span class="tsd-signature-symbol">&gt;</span></h5>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <a href="Driver.html" class="tsd-signature-type" data-tsd-kind="Class">Driver</a></h4>
-						</li>
-					</ul>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
-					<a name="createQueryCompiler" class="tsd-anchor"></a>
-					<h3>create<wbr>Query<wbr>Compiler</h3>
-					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">create<wbr>Query<wbr>Compiler<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../interfaces/QueryCompiler.html" class="tsd-signature-type" data-tsd-kind="Interface">QueryCompiler</a></li>
-					</ul>
-					<ul class="tsd-descriptions">
-						<li class="tsd-description">
-							<aside class="tsd-sources">
-								<p>Implementation of Dialect.createQueryCompiler</p>
-							</aside>
-							<h4 class="tsd-returns-title">Returns <a href="../interfaces/QueryCompiler.html" class="tsd-signature-type" data-tsd-kind="Interface">QueryCompiler</a></h4>
-						</li>
-					</ul>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
-					<a name="getTableMetadata" class="tsd-anchor"></a>
-					<h3>get<wbr>Table<wbr>Metadata</h3>
-					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">get<wbr>Table<wbr>Metadata<span class="tsd-signature-symbol">(</span>db<span class="tsd-signature-symbol">: </span><a href="Kysely.html" class="tsd-signature-type" data-tsd-kind="Class">Kysely</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span>, tableName<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">TableMetadata</span><span class="tsd-signature-symbol">&gt;</span></li>
-					</ul>
-					<ul class="tsd-descriptions">
-						<li class="tsd-description">
-							<aside class="tsd-sources">
-								<p>Implementation of Dialect.getTableMetadata</p>
-							</aside>
-							<h4 class="tsd-parameters-title">Parameters</h4>
-							<ul class="tsd-parameters">
-								<li>
-									<h5>db: <a href="Kysely.html" class="tsd-signature-type" data-tsd-kind="Class">Kysely</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span></h5>
-								</li>
-								<li>
-									<h5>tableName: <span class="tsd-signature-type">string</span></h5>
-								</li>
-							</ul>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">TableMetadata</span><span class="tsd-signature-symbol">&gt;</span></h4>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4>
 						</li>
 					</ul>
 				</section>
@@ -221,30 +211,24 @@
 					<li class=" tsd-kind-class tsd-has-type-parameter">
 						<a href="Kysely.html" class="tsd-kind-icon">Kysely</a>
 					</li>
-					<li class=" tsd-kind-class">
-						<a href="MigrationModule.html" class="tsd-kind-icon">Migration<wbr>Module</a>
-					</li>
 				</ul>
 				<ul class="current">
 					<li class="current tsd-kind-class">
-						<a href="PostgresDialect.html" class="tsd-kind-icon">Postgres<wbr>Dialect</a>
+						<a href="MigrationModule.html" class="tsd-kind-icon">Migration<wbr>Module</a>
 						<ul>
 							<li class=" tsd-kind-constructor tsd-parent-kind-class">
-								<a href="PostgresDialect.html#constructor" class="tsd-kind-icon">constructor</a>
+								<a href="MigrationModule.html#constructor" class="tsd-kind-icon">constructor</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class">
-								<a href="PostgresDialect.html#createDriver" class="tsd-kind-icon">create<wbr>Driver</a>
-							</li>
-							<li class=" tsd-kind-method tsd-parent-kind-class">
-								<a href="PostgresDialect.html#createQueryCompiler" class="tsd-kind-icon">create<wbr>Query<wbr>Compiler</a>
-							</li>
-							<li class=" tsd-kind-method tsd-parent-kind-class">
-								<a href="PostgresDialect.html#getTableMetadata" class="tsd-kind-icon">get<wbr>Table<wbr>Metadata</a>
+								<a href="MigrationModule.html#migrateToLatest" class="tsd-kind-icon">migrate<wbr>ToLatest</a>
 							</li>
 						</ul>
 					</li>
 				</ul>
 				<ul class="after-current">
+					<li class=" tsd-kind-class">
+						<a href="PostgresDialect.html" class="tsd-kind-icon">Postgres<wbr>Dialect</a>
+					</li>
 					<li class=" tsd-kind-class">
 						<a href="PostgresDriver.html" class="tsd-kind-icon">Postgres<wbr>Driver</a>
 					</li>
