@@ -858,10 +858,11 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * ```ts
    * const { ref } = db.dynamic
    *
-   * // Some column name provided by the user. Value not known compile-time.
+   * // Some column name provided by the user. Value not known at compile time.
    * const columnFromUserInput = req.params.select;
    *
    * // A type that lists all possible values `columnFromUserInput` can have.
+   * // You can use `keyof Person` if any column of an interface is allowed.
    * type PossibleColumns = 'last_name' | 'first_name' | 'birth_date'
    *
    * const [person] = db.selectFrom('person')
@@ -2004,7 +2005,20 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
   }
 
   /**
+   * Gives an alias for the query. This method is only useful for sub queries.
    *
+   * @example
+   * ```ts
+   * await db.selectFrom('pet')
+   *   .selectAll('pet')
+   *   .select(
+   *     (qb) => qb.subQuery('person')
+   *       .select('first_name')
+   *       .whereRef('pet.owner_id', '=', 'person.id')
+   *       .as('owner_first_name')
+   *   )
+   *   .execute()
+   * ```
    */
   as<A extends string>(alias: A): AliasedQueryBuilder<DB, TB, O, A> {
     return new AliasedQueryBuilder(this, alias)
@@ -2012,6 +2026,9 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
 
   /**
    * Change the output type of the query.
+   *
+   * You should only use this method as the last resort if the types
+   * don't support your use case.
    */
   castTo<T>(): QueryBuilder<DB, TB, T> {
     return new QueryBuilder({

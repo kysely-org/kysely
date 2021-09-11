@@ -3,9 +3,16 @@ import { DriverConfig } from '../driver/driver-config'
 import { Kysely } from '../kysely'
 import { QueryCompiler } from '../query-compiler/query-compiler'
 
+/**
+ * A Dialect is an adapter between Kysely and the underlying database driver.
+ *
+ * See the built-in {@link PostgresDialect} as an example of a dialect.
+ * Users can implement their own dialects and use them by passing it
+ * in the {@link KyselyConfig.dialect} property.
+ */
 export interface Dialect {
   /**
-   * Creates a driver for the dialect.
+   * Creates a driver for the dialect¨.
    */
   createDriver(config: DriverConfig): Driver
 

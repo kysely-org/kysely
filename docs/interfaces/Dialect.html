@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>Migration | kysely</title>
+	<title>Dialect | kysely</title>
 	<meta name="description" content="Documentation for kysely">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="../assets/css/main.css">
@@ -55,22 +55,38 @@
 					<a href="../modules.html">kysely</a>
 				</li>
 				<li>
-					<a href="Migration.html">Migration</a>
+					<a href="Dialect.html">Dialect</a>
 				</li>
 			</ul>
-			<h1>Interface Migration</h1>
+			<h1>Interface Dialect</h1>
 		</div>
 	</div>
 </header>
 <div class="container container-main">
 	<div class="row">
 		<div class="col-8 col-content">
+			<section class="tsd-panel tsd-comment">
+				<div class="tsd-comment tsd-typography">
+					<div class="lead">
+						<p>A Dialect is an adapter between Kysely and the underlying database driver.</p>
+					</div>
+					<p>See the built-in <a href="../classes/PostgresDialect.html">PostgresDialect</a> as an example of a dialect.
+						Users can implement their own dialects and use them by passing it
+					in the <a href="KyselyConfig.html#dialect">KyselyConfig.dialect</a> property.</p>
+				</div>
+			</section>
 			<section class="tsd-panel tsd-hierarchy">
 				<h3>Hierarchy</h3>
 				<ul class="tsd-hierarchy">
 					<li>
-						<span class="target">Migration</span>
+						<span class="target">Dialect</span>
 					</li>
+				</ul>
+			</section>
+			<section class="tsd-panel">
+				<h3>Implemented by</h3>
+				<ul class="tsd-hierarchy">
+					<li><a href="../classes/PostgresDialect.html" class="tsd-signature-type" data-tsd-kind="Class">PostgresDialect</a></li>
 				</ul>
 			</section>
 			<section class="tsd-panel-group tsd-index-group">
@@ -80,8 +96,9 @@
 						<section class="tsd-index-section ">
 							<h3>Methods</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="Migration.html#down" class="tsd-kind-icon">down</a></li>
-								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="Migration.html#up" class="tsd-kind-icon">up</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="Dialect.html#createDriver" class="tsd-kind-icon">create<wbr>Driver</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="Dialect.html#createQueryCompiler" class="tsd-kind-icon">create<wbr>Query<wbr>Compiler</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="Dialect.html#getTableMetadata" class="tsd-kind-icon">get<wbr>Table<wbr>Metadata</a></li>
 							</ul>
 						</section>
 					</div>
@@ -90,42 +107,74 @@
 			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Methods</h2>
 				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
-					<a name="down" class="tsd-anchor"></a>
-					<h3>down</h3>
+					<a name="createDriver" class="tsd-anchor"></a>
+					<h3>create<wbr>Driver</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
-						<li class="tsd-signature tsd-kind-icon">down<span class="tsd-signature-symbol">(</span>db<span class="tsd-signature-symbol">: </span><a href="../classes/Kysely.html" class="tsd-signature-type" data-tsd-kind="Class">Kysely</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></li>
+						<li class="tsd-signature tsd-kind-icon">create<wbr>Driver<span class="tsd-signature-symbol">(</span>config<span class="tsd-signature-symbol">: </span><a href="DriverConfig.html" class="tsd-signature-type" data-tsd-kind="Interface">DriverConfig</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../classes/Driver.html" class="tsd-signature-type" data-tsd-kind="Class">Driver</a></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Creates a driver for the dialect¨.</p>
+								</div>
+							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
-									<h5>db: <a href="../classes/Kysely.html" class="tsd-signature-type" data-tsd-kind="Class">Kysely</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span></h5>
+									<h5>config: <a href="DriverConfig.html" class="tsd-signature-type" data-tsd-kind="Interface">DriverConfig</a></h5>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4>
+							<h4 class="tsd-returns-title">Returns <a href="../classes/Driver.html" class="tsd-signature-type" data-tsd-kind="Class">Driver</a></h4>
 						</li>
 					</ul>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
-					<a name="up" class="tsd-anchor"></a>
-					<h3>up</h3>
+					<a name="createQueryCompiler" class="tsd-anchor"></a>
+					<h3>create<wbr>Query<wbr>Compiler</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
-						<li class="tsd-signature tsd-kind-icon">up<span class="tsd-signature-symbol">(</span>db<span class="tsd-signature-symbol">: </span><a href="../classes/Kysely.html" class="tsd-signature-type" data-tsd-kind="Class">Kysely</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></li>
+						<li class="tsd-signature tsd-kind-icon">create<wbr>Query<wbr>Compiler<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="QueryCompiler.html" class="tsd-signature-type" data-tsd-kind="Interface">QueryCompiler</a></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Creates a query compiler for the dialect.</p>
+								</div>
+							</div>
+							<h4 class="tsd-returns-title">Returns <a href="QueryCompiler.html" class="tsd-signature-type" data-tsd-kind="Interface">QueryCompiler</a></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+					<a name="getTableMetadata" class="tsd-anchor"></a>
+					<h3>get<wbr>Table<wbr>Metadata</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+						<li class="tsd-signature tsd-kind-icon">get<wbr>Table<wbr>Metadata<span class="tsd-signature-symbol">(</span>db<span class="tsd-signature-symbol">: </span><a href="../classes/Kysely.html" class="tsd-signature-type" data-tsd-kind="Class">Kysely</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span>, tableName<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><a href="TableMetadata.html" class="tsd-signature-type" data-tsd-kind="Interface">TableMetadata</a><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Returns metadata for a table or <code>undefined</code> if the table doesn&#39;t exists.</p>
+								</div>
+							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
 									<h5>db: <a href="../classes/Kysely.html" class="tsd-signature-type" data-tsd-kind="Class">Kysely</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span></h5>
 								</li>
+								<li>
+									<h5>tableName: <span class="tsd-signature-type">string</span></h5>
+								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><a href="TableMetadata.html" class="tsd-signature-type" data-tsd-kind="Interface">TableMetadata</a><span class="tsd-signature-symbol">&gt;</span></h4>
 						</li>
 					</ul>
 				</section>
@@ -144,13 +193,16 @@
 				</ul>
 				<ul class="current">
 					<li class="current tsd-kind-interface">
-						<a href="Migration.html" class="tsd-kind-icon">Migration</a>
+						<a href="Dialect.html" class="tsd-kind-icon">Dialect</a>
 						<ul>
 							<li class=" tsd-kind-method tsd-parent-kind-interface">
-								<a href="Migration.html#down" class="tsd-kind-icon">down</a>
+								<a href="Dialect.html#createDriver" class="tsd-kind-icon">create<wbr>Driver</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-interface">
-								<a href="Migration.html#up" class="tsd-kind-icon">up</a>
+								<a href="Dialect.html#createQueryCompiler" class="tsd-kind-icon">create<wbr>Query<wbr>Compiler</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="Dialect.html#getTableMetadata" class="tsd-kind-icon">get<wbr>Table<wbr>Metadata</a>
 							</li>
 						</ul>
 					</li>

@@ -65,18 +65,30 @@
 				<a href="http://knexjs.org/">knex</a> but not a clone.</p>
 				<p><img src="assets/images/demo.gif" alt=""></p>
 				<p>Kysely&#39;s typings only allow you to use tables that are available in the database and refer to
-					columns of the tables that are joined to the query. The result type always only contains the selected
+					columns of the tables that are joined to the query. The result type only contains the selected
 					columns with correct types and aliases. This allows tools like vscode autocompletion to make your life
 				so much easier.</p>
 				<p>As you can see in the gif above, through the pure magic of modern typescript, Kysely is even able to parse
 					the alias given to <code>pet.name</code> and add the <code>pet_name</code> column to the result row type. Kysely is able to infer
-					colum names and types from selected subqueries, joined subqueries, <code>with</code> statements and pretty much
-					anything you can think of. Typescript is always there for you to tell what kind of query you can build
-				and offer completions.</p>
+					column names and types from selected subqueries, joined subqueries, <code>with</code> statements and pretty much
+					anything you can think of. Typescript is always there for you to offer completions and tell what kind
+				of query you can build.</p>
 				<p>Of course there are cases where things cannot be typed at compile time, and Kysely offers escape
 					hatches for these situations. With typescript you can always cast something to <code>any</code> if the types
 					fail you. with Kysely you can also explicitly tell it to ignore the typings, but the default is always
-				type-safety!</p>
+					type-safety! See the <a href="https://koskimas.github.io/kysely/classes/DynamicModule.html#ref">DynamicModule</a>
+				for more info.</p>
+				<a href="#installation" id="installation" style="color: inherit; text-decoration: none;">
+					<h1>Installation</h1>
+				</a>
+				<p>Kysely currently only works on postgres. You can install it using</p>
+				<pre><code><span style="color: #001080">npm</span><span style="color: #000000"> </span><span style="color: #001080">install</span><span style="color: #000000"> </span><span style="color: #001080">kysely</span><span style="color: #000000"> </span><span style="color: #001080">pg</span>
+</code></pre>
+				<p>MySQL and sqlite support will be added soon. Kysely also has a simple interface
+				for <a href="https://koskimas.github.io/kysely/interfaces/Dialect.html">third-party dialects</a>.</p>
+				<a href="#minimal-example" id="minimal-example" style="color: inherit; text-decoration: none;">
+					<h1>Minimal example</h1>
+				</a>
 				<p>All you need to do is define an interface for each table in the database and pass those
 				interfaces to the <code>Kysely</code> constructor:</p>
 				<pre><code class="language-ts"><span style="color: #AF00DB">import</span><span style="color: #000000"> { </span><span style="color: #001080">Kysely</span><span style="color: #000000"> } </span><span style="color: #AF00DB">from</span><span style="color: #000000"> </span><span style="color: #A31515">&#039;kysely&#039;</span>
@@ -127,21 +139,12 @@
 <span style="color: #000000">  }</span>
 <span style="color: #000000">}</span>
 </code></pre>
-				<a href="#work-in-progress" id="work-in-progress" style="color: inherit; text-decoration: none;">
-					<h1>Work in progress</h1>
-				</a>
-				<p>Kysely currently only works on postgres. You can install it using</p>
-				<pre><code><span style="color: #001080">npm</span><span style="color: #000000"> </span><span style="color: #001080">install</span><span style="color: #000000"> </span><span style="color: #001080">kysely</span><span style="color: #000000"> </span><span style="color: #001080">pg</span>
-</code></pre>
-				<p>Many features are still missing and the documentation is very limited. Kysely is being
-					actively developed and things will improve fast. I wouldn&#39;t recommend using it for anything
-				serious yet, but you can install it and play around with it.</p>
 				<a href="#why-not-just-contribute-to-knex" id="why-not-just-contribute-to-knex" style="color: inherit; text-decoration: none;">
 					<h1>Why not just contribute to knex</h1>
 				</a>
 				<p>Kysely is very similar to knex, but it also attempts to fix things that I personally find not-so-good
 					in knex. Bringing the type system and the changes to knex would mean very significant breaking changes
-					That&#39;s not possible at this point of the project. Knex was also originally written for javascript and
+					that aren&#39;t possible at this point of the project. Knex was also originally written for javascript and
 					the typescript typings were added afterwards. That always leads to compromises in the types. Designing
 				a library for typescript from the ground up produces much better and simpler types.</p>
 			</div>
@@ -223,6 +226,9 @@
 						<a href="interfaces/DatabaseConnection.html" class="tsd-kind-icon">Database<wbr>Connection</a>
 					</li>
 					<li class=" tsd-kind-interface">
+						<a href="interfaces/Dialect.html" class="tsd-kind-icon">Dialect</a>
+					</li>
+					<li class=" tsd-kind-interface">
 						<a href="interfaces/DriverConfig.html" class="tsd-kind-icon">Driver<wbr>Config</a>
 					</li>
 					<li class=" tsd-kind-interface">
@@ -257,6 +263,9 @@
 					</li>
 					<li class=" tsd-kind-interface">
 						<a href="interfaces/RawBuilderConstructorArgs.html" class="tsd-kind-icon">Raw<wbr>Builder<wbr>Constructor<wbr>Args</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/TableMetadata.html" class="tsd-kind-icon">Table<wbr>Metadata</a>
 					</li>
 					<li class=" tsd-kind-type-alias">
 						<a href="modules.html#ColumnBuilderCallback" class="tsd-kind-icon">Column<wbr>Builder<wbr>Callback</a>

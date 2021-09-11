@@ -121,6 +121,82 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Creates a dynamic reference to a column that is not know at compile time.</p>
+								</div>
+								<p>Kysely is built in a way that by default you can&#39;t refer to tables or columns
+									that are not actually visible in the current query and context. This is all
+									done by typescript at compile time, which means that you need to know the
+								columns and tables at compile time. This is not always the case of course.</p>
+								<p>This method is meant to be used in those cases where the column names
+								come from the user input or are not otherwise known at compile time.</p>
+								<p>WARNING! Unlike values, column names are not escaped by the database engine
+									or Kysely and if you pass in unchecked column names using this method, you
+									create an SQL injection vulnerability. Always <strong>always</strong> validate the user
+								input before passing it to this method.</p>
+								<p>There are couple of examples below for some use cases, but you can pass
+									<code>ref</code> to other methods as well. If the types allow you to pass a <code>ref</code>
+								value to some place, it should work.</p>
+								<dl class="tsd-comment-tags">
+									<dt>example</dt>
+									<dd><p>Filter by a column not know at compile time:</p>
+										<pre><code class="language-ts"><span style="color: #0000FF">async</span><span style="color: #000000"> </span><span style="color: #0000FF">function</span><span style="color: #000000"> </span><span style="color: #795E26">someQuery</span><span style="color: #000000">(</span><span style="color: #001080">filterColumn</span><span style="color: #000000">: </span><span style="color: #267F99">string</span><span style="color: #000000">, </span><span style="color: #001080">filterValue</span><span style="color: #000000">: </span><span style="color: #267F99">string</span><span style="color: #000000">) {</span>
+<span style="color: #000000">  </span><span style="color: #0000FF">const</span><span style="color: #000000"> { </span><span style="color: #0070C1">ref</span><span style="color: #000000"> } = </span><span style="color: #001080">db</span><span style="color: #000000">.</span><span style="color: #001080">dynamic</span>
+
+<span style="color: #000000">  </span><span style="color: #AF00DB">return</span><span style="color: #000000"> </span><span style="color: #AF00DB">await</span><span style="color: #000000"> </span><span style="color: #001080">db</span>
+<span style="color: #000000">    .</span><span style="color: #795E26">selectFrom</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;person&#039;</span><span style="color: #000000">)</span>
+<span style="color: #000000">    .</span><span style="color: #795E26">selectAll</span><span style="color: #000000">()</span>
+<span style="color: #000000">    .</span><span style="color: #795E26">where</span><span style="color: #000000">(</span><span style="color: #795E26">ref</span><span style="color: #000000">(</span><span style="color: #001080">filterColumn</span><span style="color: #000000">), </span><span style="color: #A31515">&#039;=&#039;</span><span style="color: #000000">, </span><span style="color: #001080">filterValue</span><span style="color: #000000">)</span>
+<span style="color: #000000">}</span>
+
+<span style="color: #795E26">someQuery</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;first_name&#039;</span><span style="color: #000000">, </span><span style="color: #A31515">&#039;Arnold&#039;</span><span style="color: #000000">)</span>
+</code></pre>
+									</dd>
+									<dt>example</dt>
+									<dd><p>Order by a column not know at compile time:</p>
+										<pre><code class="language-ts"><span style="color: #0000FF">async</span><span style="color: #000000"> </span><span style="color: #0000FF">function</span><span style="color: #000000"> </span><span style="color: #795E26">someQuery</span><span style="color: #000000">(</span><span style="color: #001080">orderBy</span><span style="color: #000000">: </span><span style="color: #267F99">string</span><span style="color: #000000">) {</span>
+<span style="color: #000000">  </span><span style="color: #0000FF">const</span><span style="color: #000000"> { </span><span style="color: #0070C1">ref</span><span style="color: #000000"> } = </span><span style="color: #001080">db</span><span style="color: #000000">.</span><span style="color: #001080">dynamic</span>
+
+<span style="color: #000000">  </span><span style="color: #AF00DB">return</span><span style="color: #000000"> </span><span style="color: #AF00DB">await</span><span style="color: #000000"> </span><span style="color: #001080">db</span>
+<span style="color: #000000">    .</span><span style="color: #795E26">selectFrom</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;person&#039;</span><span style="color: #000000">)</span>
+<span style="color: #000000">    .</span><span style="color: #795E26">select</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;person.first_name as fn&#039;</span><span style="color: #000000">)</span>
+<span style="color: #000000">    .</span><span style="color: #795E26">orderBy</span><span style="color: #000000">(</span><span style="color: #795E26">ref</span><span style="color: #000000">(</span><span style="color: #001080">orderBy</span><span style="color: #000000">))</span>
+<span style="color: #000000">}</span>
+
+<span style="color: #795E26">someQuery</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;fn&#039;</span><span style="color: #000000">)</span>
+</code></pre>
+									</dd>
+									<dt>example</dt>
+									<dd><p>In this example we add selections dynamically:</p>
+										<pre><code class="language-ts"><span style="color: #0000FF">const</span><span style="color: #000000"> { </span><span style="color: #0070C1">ref</span><span style="color: #000000"> } = </span><span style="color: #001080">db</span><span style="color: #000000">.</span><span style="color: #001080">dynamic</span>
+
+<span style="color: #008000">// Some column name provided by the user. Value not known at compile time.</span>
+<span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">columnFromUserInput</span><span style="color: #000000"> = </span><span style="color: #001080">req</span><span style="color: #000000">.</span><span style="color: #001080">params</span><span style="color: #000000">.</span><span style="color: #001080">select</span><span style="color: #000000">;</span>
+
+<span style="color: #008000">// A type that lists all possible values `columnFromUserInput` can have.</span>
+<span style="color: #008000">// You can use `keyof Person` if any column of an interface is allowed.</span>
+<span style="color: #0000FF">type</span><span style="color: #000000"> </span><span style="color: #267F99">PossibleColumns</span><span style="color: #000000"> = </span><span style="color: #A31515">&#039;last_name&#039;</span><span style="color: #000000"> | </span><span style="color: #A31515">&#039;first_name&#039;</span><span style="color: #000000"> | </span><span style="color: #A31515">&#039;birth_date&#039;</span>
+
+<span style="color: #0000FF">const</span><span style="color: #000000"> [</span><span style="color: #0070C1">person</span><span style="color: #000000">] = </span><span style="color: #001080">db</span><span style="color: #000000">.</span><span style="color: #795E26">selectFrom</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;person&#039;</span><span style="color: #000000">)</span>
+<span style="color: #000000">  .</span><span style="color: #795E26">select</span><span style="color: #000000">([</span>
+<span style="color: #000000">    </span><span style="color: #795E26">ref</span><span style="color: #000000">&lt;</span><span style="color: #267F99">PossibleColumns</span><span style="color: #000000">&gt;(</span><span style="color: #001080">columnFromUserInput</span><span style="color: #000000">)</span>
+<span style="color: #000000">    </span><span style="color: #A31515">&#039;id&#039;</span>
+<span style="color: #000000">  ])</span>
+
+<span style="color: #008000">// The resulting type contains all `PossibleColumns` as optional fields</span>
+<span style="color: #008000">// because we cannot know which field was actually selected before</span>
+<span style="color: #008000">// running the code.</span>
+<span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">lastName</span><span style="color: #000000">: </span><span style="color: #267F99">string</span><span style="color: #000000"> | </span><span style="color: #267F99">undefined</span><span style="color: #000000"> = </span><span style="color: #001080">person</span><span style="color: #000000">.</span><span style="color: #001080">last_name</span>
+<span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">firstName</span><span style="color: #000000">: </span><span style="color: #267F99">string</span><span style="color: #000000"> | </span><span style="color: #267F99">undefined</span><span style="color: #000000"> = </span><span style="color: #001080">person</span><span style="color: #000000">.</span><span style="color: #001080">first_name</span>
+<span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">birthDate</span><span style="color: #000000">: </span><span style="color: #267F99">string</span><span style="color: #000000"> | </span><span style="color: #267F99">undefined</span><span style="color: #000000"> = </span><span style="color: #001080">person</span><span style="color: #000000">.</span><span style="color: #001080">birth_date</span>
+
+<span style="color: #008000">// The result type also contains the compile time selection `id`.</span>
+<span style="color: #001080">person</span><span style="color: #000000">.</span><span style="color: #001080">id</span>
+</code></pre>
+									</dd>
+								</dl>
+							</div>
 							<h4 class="tsd-type-parameters-title">Type parameters</h4>
 							<ul class="tsd-type-parameters">
 								<li>
@@ -149,27 +225,6 @@
 			</nav>
 			<nav class="tsd-navigation secondary menu-sticky">
 				<ul class="before-current">
-					<li class=" tsd-kind-class tsd-has-type-parameter">
-						<a href="AliasedQueryBuilder.html" class="tsd-kind-icon">Aliased<wbr>Query<wbr>Builder</a>
-					</li>
-					<li class=" tsd-kind-class tsd-has-type-parameter">
-						<a href="AliasedRawBuilder.html" class="tsd-kind-icon">Aliased<wbr>Raw<wbr>Builder</a>
-					</li>
-					<li class=" tsd-kind-class">
-						<a href="ColumnBuilder.html" class="tsd-kind-icon">Column<wbr>Builder</a>
-					</li>
-					<li class=" tsd-kind-class">
-						<a href="CreateTableBuilder.html" class="tsd-kind-icon">Create<wbr>Table<wbr>Builder</a>
-					</li>
-					<li class=" tsd-kind-class">
-						<a href="DefaultQueryCompiler.html" class="tsd-kind-icon">Default<wbr>Query<wbr>Compiler</a>
-					</li>
-					<li class=" tsd-kind-class">
-						<a href="Driver.html" class="tsd-kind-icon">Driver</a>
-					</li>
-					<li class=" tsd-kind-class">
-						<a href="DropTableBuilder.html" class="tsd-kind-icon">Drop<wbr>Table<wbr>Builder</a>
-					</li>
 				</ul>
 				<ul class="current">
 					<li class="current tsd-kind-class">
@@ -185,102 +240,6 @@
 					</li>
 				</ul>
 				<ul class="after-current">
-					<li class=" tsd-kind-class tsd-has-type-parameter">
-						<a href="JoinBuilder.html" class="tsd-kind-icon">Join<wbr>Builder</a>
-					</li>
-					<li class=" tsd-kind-class tsd-has-type-parameter">
-						<a href="Kysely.html" class="tsd-kind-icon">Kysely</a>
-					</li>
-					<li class=" tsd-kind-class">
-						<a href="MigrationModule.html" class="tsd-kind-icon">Migration<wbr>Module</a>
-					</li>
-					<li class=" tsd-kind-class">
-						<a href="PostgresDialect.html" class="tsd-kind-icon">Postgres<wbr>Dialect</a>
-					</li>
-					<li class=" tsd-kind-class">
-						<a href="PostgresDriver.html" class="tsd-kind-icon">Postgres<wbr>Driver</a>
-					</li>
-					<li class=" tsd-kind-class tsd-has-type-parameter">
-						<a href="QueryBuilder.html" class="tsd-kind-icon">Query<wbr>Builder</a>
-					</li>
-					<li class=" tsd-kind-class tsd-has-type-parameter">
-						<a href="QueryCreator.html" class="tsd-kind-icon">Query<wbr>Creator</a>
-					</li>
-					<li class=" tsd-kind-class tsd-has-type-parameter">
-						<a href="RawBuilder.html" class="tsd-kind-icon">Raw<wbr>Builder</a>
-					</li>
-					<li class=" tsd-kind-class">
-						<a href="SchemaModule.html" class="tsd-kind-icon">Schema<wbr>Module</a>
-					</li>
-					<li class=" tsd-kind-class tsd-has-type-parameter">
-						<a href="SubQueryBuilder.html" class="tsd-kind-icon">Sub<wbr>Query<wbr>Builder</a>
-					</li>
-					<li class=" tsd-kind-class tsd-has-type-parameter">
-						<a href="Transaction.html" class="tsd-kind-icon">Transaction</a>
-					</li>
-					<li class=" tsd-kind-interface">
-						<a href="../interfaces/CompiledQuery.html" class="tsd-kind-icon">Compiled<wbr>Query</a>
-					</li>
-					<li class=" tsd-kind-interface">
-						<a href="../interfaces/CreateTableBuilderConstructorArgs.html" class="tsd-kind-icon">Create<wbr>Table<wbr>Builder<wbr>Constructor<wbr>Args</a>
-					</li>
-					<li class=" tsd-kind-interface">
-						<a href="../interfaces/DatabaseConnection.html" class="tsd-kind-icon">Database<wbr>Connection</a>
-					</li>
-					<li class=" tsd-kind-interface">
-						<a href="../interfaces/DriverConfig.html" class="tsd-kind-icon">Driver<wbr>Config</a>
-					</li>
-					<li class=" tsd-kind-interface">
-						<a href="../interfaces/DriverConfigWithDefaults.html" class="tsd-kind-icon">Driver<wbr>Config<wbr>With<wbr>Defaults</a>
-					</li>
-					<li class=" tsd-kind-interface">
-						<a href="../interfaces/DropTableBuilderConstructorArgs.html" class="tsd-kind-icon">Drop<wbr>Table<wbr>Builder<wbr>Constructor<wbr>Args</a>
-					</li>
-					<li class=" tsd-kind-interface">
-						<a href="../interfaces/KyselyConfig.html" class="tsd-kind-icon">Kysely<wbr>Config</a>
-					</li>
-					<li class=" tsd-kind-interface">
-						<a href="../interfaces/KyselyConstructorArgs.html" class="tsd-kind-icon">Kysely<wbr>Constructor<wbr>Args</a>
-					</li>
-					<li class=" tsd-kind-interface">
-						<a href="../interfaces/Migration.html" class="tsd-kind-icon">Migration</a>
-					</li>
-					<li class=" tsd-kind-interface">
-						<a href="../interfaces/PoolConfig.html" class="tsd-kind-icon">Pool<wbr>Config</a>
-					</li>
-					<li class=" tsd-kind-interface">
-						<a href="../interfaces/PoolConfigWithDefaults.html" class="tsd-kind-icon">Pool<wbr>Config<wbr>With<wbr>Defaults</a>
-					</li>
-					<li class=" tsd-kind-interface">
-						<a href="../interfaces/QueryBuilderConstructorArgs.html" class="tsd-kind-icon">Query<wbr>Builder<wbr>Constructor<wbr>Args</a>
-					</li>
-					<li class=" tsd-kind-interface">
-						<a href="../interfaces/QueryCompiler.html" class="tsd-kind-icon">Query<wbr>Compiler</a>
-					</li>
-					<li class=" tsd-kind-interface tsd-has-type-parameter">
-						<a href="../interfaces/QueryResult.html" class="tsd-kind-icon">Query<wbr>Result</a>
-					</li>
-					<li class=" tsd-kind-interface">
-						<a href="../interfaces/RawBuilderConstructorArgs.html" class="tsd-kind-icon">Raw<wbr>Builder<wbr>Constructor<wbr>Args</a>
-					</li>
-					<li class=" tsd-kind-type-alias">
-						<a href="../modules.html#ColumnBuilderCallback" class="tsd-kind-icon">Column<wbr>Builder<wbr>Callback</a>
-					</li>
-					<li class=" tsd-kind-type-alias">
-						<a href="../modules.html#CompileEntryPointNode" class="tsd-kind-icon">Compile<wbr>Entry<wbr>Point<wbr>Node</a>
-					</li>
-					<li class=" tsd-kind-variable">
-						<a href="../modules.html#MIGRATION_LOCK_ID" class="tsd-kind-icon">MIGRATION_<wbr>LOCK_<wbr>ID</a>
-					</li>
-					<li class=" tsd-kind-variable">
-						<a href="../modules.html#MIGRATION_LOCK_TABLE" class="tsd-kind-icon">MIGRATION_<wbr>LOCK_<wbr>TABLE</a>
-					</li>
-					<li class=" tsd-kind-variable">
-						<a href="../modules.html#MIGRATION_TABLE" class="tsd-kind-icon">MIGRATION_<wbr>TABLE</a>
-					</li>
-					<li class=" tsd-kind-function tsd-has-type-parameter">
-						<a href="../modules.html#createEmptySelectQuery" class="tsd-kind-icon">create<wbr>Empty<wbr>Select<wbr>Query</a>
-					</li>
 				</ul>
 			</nav>
 		</div>

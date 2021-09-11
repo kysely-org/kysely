@@ -1,12 +1,6 @@
 import { CompiledQuery } from '../query-compiler/compiled-query'
 
-/**
- * A database connection.
- */
 export interface DatabaseConnection {
-  /**
-   * Executes a query.
-   */
   executeQuery<R>(compiledQuery: CompiledQuery): Promise<QueryResult<R>>
 }
 

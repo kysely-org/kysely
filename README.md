@@ -6,20 +6,34 @@ A type-safe and autocompletion-friendly typescript SQL query builder for node.js
 ![](https://github.com/koskimas/kysely/blob/master/assets/demo.gif)
 
 Kysely's typings only allow you to use tables that are available in the database and refer to
-columns of the tables that are joined to the query. The result type always only contains the selected
+columns of the tables that are joined to the query. The result type only contains the selected
 columns with correct types and aliases. This allows tools like vscode autocompletion to make your life
 so much easier.
 
 As you can see in the gif above, through the pure magic of modern typescript, Kysely is even able to parse
 the alias given to `pet.name` and add the `pet_name` column to the result row type. Kysely is able to infer
-colum names and types from selected subqueries, joined subqueries, `with` statements and pretty much
-anything you can think of. Typescript is always there for you to tell what kind of query you can build
-and offer completions.
+column names and types from selected subqueries, joined subqueries, `with` statements and pretty much
+anything you can think of. Typescript is always there for you to offer completions and tell what kind
+of query you can build.
 
 Of course there are cases where things cannot be typed at compile time, and Kysely offers escape
 hatches for these situations. With typescript you can always cast something to `any` if the types
 fail you. with Kysely you can also explicitly tell it to ignore the typings, but the default is always
-type-safety!
+type-safety! See the [DynamicModule](https://koskimas.github.io/kysely/classes/DynamicModule.html#ref)
+for more info.
+
+# Installation
+
+Kysely currently only works on postgres. You can install it using
+
+```
+npm install kysely pg
+```
+
+MySQL and sqlite support will be added soon. Kysely also has a simple interface
+for [third-party dialects](https://koskimas.github.io/kysely/interfaces/Dialect.html).
+
+# Minimal example
 
 All you need to do is define an interface for each table in the database and pass those
 interfaces to the `Kysely` constructor:
@@ -74,22 +88,10 @@ async function demo() {
 }
 ```
 
-# Work in progress
-
-Kysely currently only works on postgres. You can install it using
-
-```
-npm install kysely pg
-```
-
-Many features are still missing and the documentation is very limited. Kysely is being
-actively developed and things will improve fast. I wouldn't recommend using it for anything
-serious yet, but you can install it and play around with it.
-
 # Why not just contribute to knex
 
 Kysely is very similar to knex, but it also attempts to fix things that I personally find not-so-good
 in knex. Bringing the type system and the changes to knex would mean very significant breaking changes
-That's not possible at this point of the project. Knex was also originally written for javascript and
+that aren't possible at this point of the project. Knex was also originally written for javascript and
 the typescript typings were added afterwards. That always leads to compromises in the types. Designing
 a library for typescript from the ground up produces much better and simpler types.
