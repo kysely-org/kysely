@@ -67,6 +67,8 @@ import {
 import { CompiledQuery } from './compiled-query'
 import { CompileEntryPointNode, QueryCompiler } from './query-compiler'
 import { HavingNode } from '../operation-node/having-node'
+import { CreateSchemaNode } from '../operation-node/create-schema-node'
+import { DropSchemaNode } from '../operation-node/drop-schema-node'
 
 export class DefaultQueryCompiler
   extends OperationNodeVisitor
@@ -635,6 +637,26 @@ export class DefaultQueryCompiler
     }
 
     this.visitNode(node.name)
+  }
+
+  protected override visitCreateSchema(node: CreateSchemaNode): void {
+    this.append('create schema ')
+
+    if (node.modifier === 'IfNotExists') {
+      this.append('if not exists ')
+    }
+
+    this.visitNode(node.schema)
+  }
+
+  protected override visitDropSchema(node: DropSchemaNode): void {
+    this.append('drop schema ')
+
+    if (node.modifier === 'IfExists') {
+      this.append('if exists ')
+    }
+
+    this.visitNode(node.schema)
   }
 
   protected override visitTablePrimaryConstraint(

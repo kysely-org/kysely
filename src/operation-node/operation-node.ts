@@ -45,6 +45,8 @@ export type OperationNodeKind =
   | 'WithNode'
   | 'CommonTableExpressionNode'
   | 'HavingNode'
+  | 'CreateSchemaNode'
+  | 'DropSchemaNode'
 
 export interface OperationNode {
   readonly kind: OperationNodeKind

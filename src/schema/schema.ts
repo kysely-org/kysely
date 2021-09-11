@@ -1,13 +1,17 @@
 import { createIndexNode } from '../operation-node/create-index-node'
+import { createSchemaNode } from '../operation-node/create-schema-node'
 import { createTableNode } from '../operation-node/create-table-node'
 import { dropIndexNode } from '../operation-node/drop-index-node'
+import { dropSchemaNode } from '../operation-node/drop-schema-node'
 import { dropTableNode } from '../operation-node/drop-table-node'
 import { parseTable } from '../parser/table-parser'
 import { WithSchemaTransformer } from '../transformers/with-schema-transformer'
 import { QueryExecutor } from '../util/query-executor'
 import { CreateIndexBuilder } from './create-index-builder'
+import { CreateSchemaBuilder } from './create-schema-builder'
 import { CreateTableBuilder } from './create-table-builder'
 import { DropIndexBuilder } from './drop-index-builder'
+import { DropSchemaBuilder } from './drop-schema-builder'
 import { DropTableBuilder } from './drop-table-builder'
 
 /**
@@ -94,6 +98,40 @@ export class SchemaModule {
     return new DropIndexBuilder({
       executor: this.#executor,
       dropIndexNode: dropIndexNode.create(indexName),
+    })
+  }
+
+  /**
+   * Create a new schema.
+   *
+   * @example
+   * ```ts
+   * await db.schema
+   *   .createSchema('some_schema')
+   *   .execute()
+   * ```
+   */
+  createSchema(schema: string): CreateSchemaBuilder {
+    return new CreateSchemaBuilder({
+      executor: this.#executor,
+      createSchemaNode: createSchemaNode.create(schema),
+    })
+  }
+
+  /**
+   * Drop a schema.
+   *
+   * @example
+   * ```ts
+   * await db.schema
+   *   .dropSchema('some_schema')
+   *   .execute()
+   * ```
+   */
+  dropSchema(schema: string): DropSchemaBuilder {
+    return new DropSchemaBuilder({
+      executor: this.#executor,
+      dropSchemaNode: dropSchemaNode.create(schema),
     })
   }
 

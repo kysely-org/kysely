@@ -46,6 +46,8 @@ import { WithNode } from './with-node'
 import { CommonTableExpressionNode } from './common-table-expression-node'
 import { HavingNode } from './having-node'
 import { freeze } from '../util/object-utils'
+import { CreateSchemaNode } from './create-schema-node'
+import { DropSchemaNode } from './drop-schema-node'
 
 export class OperationNodeTransformer {
   protected nodeStack: OperationNode[] = []
@@ -97,6 +99,8 @@ export class OperationNodeTransformer {
     WithNode: this.transformWith.bind(this),
     CommonTableExpressionNode: this.transformCommonTableExpression.bind(this),
     HavingNode: this.transformHaving.bind(this),
+    CreateSchemaNode: this.transformCreateSchema.bind(this),
+    DropSchemaNode: this.transformDropSchema.bind(this),
   }
 
   readonly transformNode = <T extends OperationNode | undefined>(
@@ -471,6 +475,21 @@ export class OperationNodeTransformer {
     return {
       kind: 'HavingNode',
       having: this.transformNode(node.having),
+    }
+  }
+
+  protected transformCreateSchema(node: CreateSchemaNode): CreateSchemaNode {
+    return {
+      kind: 'CreateSchemaNode',
+      schema: this.transformNode(node.schema),
+    }
+  }
+
+  protected transformDropSchema(node: DropSchemaNode): DropSchemaNode {
+    return {
+      kind: 'DropSchemaNode',
+      schema: this.transformNode(node.schema),
+      modifier: node.modifier,
     }
   }
 

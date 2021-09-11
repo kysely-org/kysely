@@ -152,6 +152,7 @@
 <span style="color: #000000">}</span>
 
 <span style="color: #795E26">someQuery</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;first_name&#039;</span><span style="color: #000000">, </span><span style="color: #A31515">&#039;Arnold&#039;</span><span style="color: #000000">)</span>
+<span style="color: #795E26">someQuery</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;person.last_name&#039;</span><span style="color: #000000">, </span><span style="color: #A31515">&#039;Aniston&#039;</span><span style="color: #000000">)</span>
 </code></pre>
 									</dd>
 									<dt>example</dt>
@@ -174,7 +175,7 @@
 										<pre><code class="language-ts"><span style="color: #0000FF">const</span><span style="color: #000000"> { </span><span style="color: #0070C1">ref</span><span style="color: #000000"> } = </span><span style="color: #001080">db</span><span style="color: #000000">.</span><span style="color: #001080">dynamic</span>
 
 <span style="color: #008000">// Some column name provided by the user. Value not known at compile time.</span>
-<span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">columnFromUserInput</span><span style="color: #000000"> = </span><span style="color: #001080">req</span><span style="color: #000000">.</span><span style="color: #001080">params</span><span style="color: #000000">.</span><span style="color: #001080">select</span><span style="color: #000000">;</span>
+<span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">columnFromUserInput</span><span style="color: #000000"> = </span><span style="color: #001080">req</span><span style="color: #000000">.</span><span style="color: #001080">query</span><span style="color: #000000">.</span><span style="color: #001080">select</span><span style="color: #000000">;</span>
 
 <span style="color: #008000">// A type that lists all possible values `columnFromUserInput` can have.</span>
 <span style="color: #008000">// You can use `keyof Person` if any column of an interface is allowed.</span>

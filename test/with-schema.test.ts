@@ -218,7 +218,7 @@ for (const dialect of ['postgres'] as const) {
     })
 
     async function createTables(): Promise<void> {
-      await ctx.db.raw('create schema if not exists mammals').execute()
+      await ctx.db.schema.createSchema('mammals').ifNotExists().execute()
 
       await ctx.db.schema
         .withSchema('mammals')
@@ -239,7 +239,7 @@ for (const dialect of ['postgres'] as const) {
         .ifExists()
         .execute()
 
-      await ctx.db.raw('drop schema if exists mammals').execute()
+      await ctx.db.schema.dropSchema('mammals').ifExists().execute()
     }
   })
 }

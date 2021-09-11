@@ -94,8 +94,10 @@
 							<h3>Methods</h3>
 							<ul class="tsd-index-list">
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="SchemaModule.html#createIndex" class="tsd-kind-icon">create<wbr>Index</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="SchemaModule.html#createSchema" class="tsd-kind-icon">create<wbr>Schema</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="SchemaModule.html#createTable" class="tsd-kind-icon">create<wbr>Table</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="SchemaModule.html#dropIndex" class="tsd-kind-icon">drop<wbr>Index</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="SchemaModule.html#dropSchema" class="tsd-kind-icon">drop<wbr>Schema</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="SchemaModule.html#dropTable" class="tsd-kind-icon">drop<wbr>Table</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="SchemaModule.html#withSchema" class="tsd-kind-icon">with<wbr>Schema</a></li>
 							</ul>
@@ -132,7 +134,7 @@
 					<a name="createIndex" class="tsd-anchor"></a>
 					<h3>create<wbr>Index</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">create<wbr>Index<span class="tsd-signature-symbol">(</span>indexName<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">CreateIndexBuilder</span></li>
+						<li class="tsd-signature tsd-kind-icon">create<wbr>Index<span class="tsd-signature-symbol">(</span>indexName<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="CreateIndexBuilder.html" class="tsd-signature-type" data-tsd-kind="Class">CreateIndexBuilder</a></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
@@ -159,7 +161,40 @@
 									<h5>indexName: <span class="tsd-signature-type">string</span></h5>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">CreateIndexBuilder</span></h4>
+							<h4 class="tsd-returns-title">Returns <a href="CreateIndexBuilder.html" class="tsd-signature-type" data-tsd-kind="Class">CreateIndexBuilder</a></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
+					<a name="createSchema" class="tsd-anchor"></a>
+					<h3>create<wbr>Schema</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon">create<wbr>Schema<span class="tsd-signature-symbol">(</span>schema<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="CreateSchemaBuilder.html" class="tsd-signature-type" data-tsd-kind="Class">CreateSchemaBuilder</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Create a new schema.</p>
+								</div>
+								<dl class="tsd-comment-tags">
+									<dt>example</dt>
+									<dd><pre><code class="language-ts"><span style="color: #AF00DB">await</span><span style="color: #000000"> </span><span style="color: #001080">db</span><span style="color: #000000">.</span><span style="color: #001080">schema</span>
+<span style="color: #000000">  .</span><span style="color: #795E26">createSchema</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;some_schema&#039;</span><span style="color: #000000">)</span>
+<span style="color: #000000">  .</span><span style="color: #795E26">execute</span><span style="color: #000000">()</span>
+</code></pre>
+									</dd>
+								</dl>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>schema: <span class="tsd-signature-type">string</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="CreateSchemaBuilder.html" class="tsd-signature-type" data-tsd-kind="Class">CreateSchemaBuilder</a></h4>
 						</li>
 					</ul>
 				</section>
@@ -206,7 +241,7 @@
 					<a name="dropIndex" class="tsd-anchor"></a>
 					<h3>drop<wbr>Index</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">drop<wbr>Index<span class="tsd-signature-symbol">(</span>indexName<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">DropIndexBuilder</span></li>
+						<li class="tsd-signature tsd-kind-icon">drop<wbr>Index<span class="tsd-signature-symbol">(</span>indexName<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="DropIndexBuilder.html" class="tsd-signature-type" data-tsd-kind="Class">DropIndexBuilder</a></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
@@ -231,7 +266,40 @@
 									<h5>indexName: <span class="tsd-signature-type">string</span></h5>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">DropIndexBuilder</span></h4>
+							<h4 class="tsd-returns-title">Returns <a href="DropIndexBuilder.html" class="tsd-signature-type" data-tsd-kind="Class">DropIndexBuilder</a></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
+					<a name="dropSchema" class="tsd-anchor"></a>
+					<h3>drop<wbr>Schema</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon">drop<wbr>Schema<span class="tsd-signature-symbol">(</span>schema<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="DropSchemaBuilder.html" class="tsd-signature-type" data-tsd-kind="Class">DropSchemaBuilder</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Drop a schema.</p>
+								</div>
+								<dl class="tsd-comment-tags">
+									<dt>example</dt>
+									<dd><pre><code class="language-ts"><span style="color: #AF00DB">await</span><span style="color: #000000"> </span><span style="color: #001080">db</span><span style="color: #000000">.</span><span style="color: #001080">schema</span>
+<span style="color: #000000">  .</span><span style="color: #795E26">dropSchema</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;some_schema&#039;</span><span style="color: #000000">)</span>
+<span style="color: #000000">  .</span><span style="color: #795E26">execute</span><span style="color: #000000">()</span>
+</code></pre>
+									</dd>
+								</dl>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>schema: <span class="tsd-signature-type">string</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="DropSchemaBuilder.html" class="tsd-signature-type" data-tsd-kind="Class">DropSchemaBuilder</a></h4>
 						</li>
 					</ul>
 				</section>
@@ -317,10 +385,16 @@
 								<a href="SchemaModule.html#createIndex" class="tsd-kind-icon">create<wbr>Index</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="SchemaModule.html#createSchema" class="tsd-kind-icon">create<wbr>Schema</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
 								<a href="SchemaModule.html#createTable" class="tsd-kind-icon">create<wbr>Table</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class">
 								<a href="SchemaModule.html#dropIndex" class="tsd-kind-icon">drop<wbr>Index</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="SchemaModule.html#dropSchema" class="tsd-kind-icon">drop<wbr>Schema</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class">
 								<a href="SchemaModule.html#dropTable" class="tsd-kind-icon">drop<wbr>Table</a>

@@ -859,7 +859,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * const { ref } = db.dynamic
    *
    * // Some column name provided by the user. Value not known at compile time.
-   * const columnFromUserInput = req.params.select;
+   * const columnFromUserInput = req.query.select;
    *
    * // A type that lists all possible values `columnFromUserInput` can have.
    * // You can use `keyof Person` if any column of an interface is allowed.
@@ -1461,7 +1461,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * ```sql
    * insert into "pet" ("name", "species")
    * values ($1, $2)
-   * on conflict do nothing
+   * on conflict ("name") do nothing
    * ```
    */
   onConflictDoNothing(column: AnyColumn<DB, TB>): QueryBuilder<DB, TB, O>
@@ -1521,7 +1521,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * ```sql
    * insert into "pet" ("name", "species")
    * values ($1, $2)
-   * on conflict do update set "species" = $3
+   * on conflict ("name") do update set "species" = $3
    * ```
    */
   onConflictUpdate(

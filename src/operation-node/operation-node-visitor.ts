@@ -48,6 +48,8 @@ import { CheckConstraintNode } from './check-constraint-node'
 import { WithNode } from './with-node'
 import { CommonTableExpressionNode } from './common-table-expression-node'
 import { HavingNode } from './having-node'
+import { CreateSchemaNode } from './create-schema-node'
+import { DropSchemaNode } from './drop-schema-node'
 
 export class OperationNodeVisitor {
   protected nodeStack: OperationNode[] = []
@@ -99,6 +101,8 @@ export class OperationNodeVisitor {
     WithNode: this.visitWith.bind(this),
     CommonTableExpressionNode: this.visitCommonTableExpression.bind(this),
     HavingNode: this.visitHaving.bind(this),
+    CreateSchemaNode: this.visitCreateSchema.bind(this),
+    DropSchemaNode: this.visitDropSchema.bind(this),
   }
 
   protected readonly visitNode = (node: OperationNode): void => {
@@ -404,6 +408,14 @@ export class OperationNodeVisitor {
 
   protected visitHaving(node: HavingNode): void {
     this.visitNode(node.having)
+  }
+
+  protected visitCreateSchema(node: CreateSchemaNode): void {
+    this.visitNode(node.schema)
+  }
+
+  protected visitDropSchema(node: DropSchemaNode): void {
+    this.visitNode(node.schema)
   }
 
   protected visitDataType(node: DataTypeNode): void {}

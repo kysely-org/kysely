@@ -67,9 +67,13 @@
 								<li class="tsd-kind-class tsd-has-type-parameter"><a href="classes/AliasedQueryBuilder.html" class="tsd-kind-icon">Aliased<wbr>Query<wbr>Builder</a></li>
 								<li class="tsd-kind-class tsd-has-type-parameter"><a href="classes/AliasedRawBuilder.html" class="tsd-kind-icon">Aliased<wbr>Raw<wbr>Builder</a></li>
 								<li class="tsd-kind-class"><a href="classes/ColumnBuilder.html" class="tsd-kind-icon">Column<wbr>Builder</a></li>
+								<li class="tsd-kind-class"><a href="classes/CreateIndexBuilder.html" class="tsd-kind-icon">Create<wbr>Index<wbr>Builder</a></li>
+								<li class="tsd-kind-class"><a href="classes/CreateSchemaBuilder.html" class="tsd-kind-icon">Create<wbr>Schema<wbr>Builder</a></li>
 								<li class="tsd-kind-class"><a href="classes/CreateTableBuilder.html" class="tsd-kind-icon">Create<wbr>Table<wbr>Builder</a></li>
 								<li class="tsd-kind-class"><a href="classes/DefaultQueryCompiler.html" class="tsd-kind-icon">Default<wbr>Query<wbr>Compiler</a></li>
 								<li class="tsd-kind-class"><a href="classes/Driver.html" class="tsd-kind-icon">Driver</a></li>
+								<li class="tsd-kind-class"><a href="classes/DropIndexBuilder.html" class="tsd-kind-icon">Drop<wbr>Index<wbr>Builder</a></li>
+								<li class="tsd-kind-class"><a href="classes/DropSchemaBuilder.html" class="tsd-kind-icon">Drop<wbr>Schema<wbr>Builder</a></li>
 								<li class="tsd-kind-class"><a href="classes/DropTableBuilder.html" class="tsd-kind-icon">Drop<wbr>Table<wbr>Builder</a></li>
 								<li class="tsd-kind-class"><a href="classes/DynamicModule.html" class="tsd-kind-icon">Dynamic<wbr>Module</a></li>
 								<li class="tsd-kind-class tsd-has-type-parameter"><a href="classes/JoinBuilder.html" class="tsd-kind-icon">Join<wbr>Builder</a></li>
@@ -89,11 +93,15 @@
 							<h3>Interfaces</h3>
 							<ul class="tsd-index-list">
 								<li class="tsd-kind-interface"><a href="interfaces/CompiledQuery.html" class="tsd-kind-icon">Compiled<wbr>Query</a></li>
+								<li class="tsd-kind-interface"><a href="interfaces/CreateIndexBuilderConstructorArgs.html" class="tsd-kind-icon">Create<wbr>Index<wbr>Builder<wbr>Constructor<wbr>Args</a></li>
+								<li class="tsd-kind-interface"><a href="interfaces/CreateSchemaBuilderConstructorArgs.html" class="tsd-kind-icon">Create<wbr>Schema<wbr>Builder<wbr>Constructor<wbr>Args</a></li>
 								<li class="tsd-kind-interface"><a href="interfaces/CreateTableBuilderConstructorArgs.html" class="tsd-kind-icon">Create<wbr>Table<wbr>Builder<wbr>Constructor<wbr>Args</a></li>
 								<li class="tsd-kind-interface"><a href="interfaces/DatabaseConnection.html" class="tsd-kind-icon">Database<wbr>Connection</a></li>
 								<li class="tsd-kind-interface"><a href="interfaces/Dialect.html" class="tsd-kind-icon">Dialect</a></li>
 								<li class="tsd-kind-interface"><a href="interfaces/DriverConfig.html" class="tsd-kind-icon">Driver<wbr>Config</a></li>
 								<li class="tsd-kind-interface"><a href="interfaces/DriverConfigWithDefaults.html" class="tsd-kind-icon">Driver<wbr>Config<wbr>With<wbr>Defaults</a></li>
+								<li class="tsd-kind-interface"><a href="interfaces/DropIndexBuilderConstructorArgs.html" class="tsd-kind-icon">Drop<wbr>Index<wbr>Builder<wbr>Constructor<wbr>Args</a></li>
+								<li class="tsd-kind-interface"><a href="interfaces/DropSchemaBuilderConstructorArgs.html" class="tsd-kind-icon">Drop<wbr>Schema<wbr>Builder<wbr>Constructor<wbr>Args</a></li>
 								<li class="tsd-kind-interface"><a href="interfaces/DropTableBuilderConstructorArgs.html" class="tsd-kind-icon">Drop<wbr>Table<wbr>Builder<wbr>Constructor<wbr>Args</a></li>
 								<li class="tsd-kind-interface"><a href="interfaces/KyselyConfig.html" class="tsd-kind-icon">Kysely<wbr>Config</a></li>
 								<li class="tsd-kind-interface"><a href="interfaces/KyselyConstructorArgs.html" class="tsd-kind-icon">Kysely<wbr>Constructor<wbr>Args</a></li>
@@ -164,7 +172,7 @@
 				<section class="tsd-panel tsd-member tsd-kind-type-alias">
 					<a name="CompileEntryPointNode" class="tsd-anchor"></a>
 					<h3>Compile<wbr>Entry<wbr>Point<wbr>Node</h3>
-					<div class="tsd-signature tsd-kind-icon">Compile<wbr>Entry<wbr>Point<wbr>Node<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">QueryNode</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">CreateTableNode</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">CreateIndexNode</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">DropTableNode</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">DropIndexNode</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">RawNode</span></div>
+					<div class="tsd-signature tsd-kind-icon">Compile<wbr>Entry<wbr>Point<wbr>Node<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">QueryNode</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">CreateTableNode</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">CreateIndexNode</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">DropTableNode</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">DropIndexNode</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">CreateSchemaNode</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">DropSchemaNode</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">RawNode</span></div>
 					<aside class="tsd-sources">
 					</aside>
 				</section>
@@ -243,6 +251,12 @@
 						<a href="classes/ColumnBuilder.html" class="tsd-kind-icon">Column<wbr>Builder</a>
 					</li>
 					<li class=" tsd-kind-class">
+						<a href="classes/CreateIndexBuilder.html" class="tsd-kind-icon">Create<wbr>Index<wbr>Builder</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="classes/CreateSchemaBuilder.html" class="tsd-kind-icon">Create<wbr>Schema<wbr>Builder</a>
+					</li>
+					<li class=" tsd-kind-class">
 						<a href="classes/CreateTableBuilder.html" class="tsd-kind-icon">Create<wbr>Table<wbr>Builder</a>
 					</li>
 					<li class=" tsd-kind-class">
@@ -250,6 +264,12 @@
 					</li>
 					<li class=" tsd-kind-class">
 						<a href="classes/Driver.html" class="tsd-kind-icon">Driver</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="classes/DropIndexBuilder.html" class="tsd-kind-icon">Drop<wbr>Index<wbr>Builder</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="classes/DropSchemaBuilder.html" class="tsd-kind-icon">Drop<wbr>Schema<wbr>Builder</a>
 					</li>
 					<li class=" tsd-kind-class">
 						<a href="classes/DropTableBuilder.html" class="tsd-kind-icon">Drop<wbr>Table<wbr>Builder</a>
@@ -294,6 +314,12 @@
 						<a href="interfaces/CompiledQuery.html" class="tsd-kind-icon">Compiled<wbr>Query</a>
 					</li>
 					<li class=" tsd-kind-interface">
+						<a href="interfaces/CreateIndexBuilderConstructorArgs.html" class="tsd-kind-icon">Create<wbr>Index<wbr>Builder<wbr>Constructor<wbr>Args</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/CreateSchemaBuilderConstructorArgs.html" class="tsd-kind-icon">Create<wbr>Schema<wbr>Builder<wbr>Constructor<wbr>Args</a>
+					</li>
+					<li class=" tsd-kind-interface">
 						<a href="interfaces/CreateTableBuilderConstructorArgs.html" class="tsd-kind-icon">Create<wbr>Table<wbr>Builder<wbr>Constructor<wbr>Args</a>
 					</li>
 					<li class=" tsd-kind-interface">
@@ -307,6 +333,12 @@
 					</li>
 					<li class=" tsd-kind-interface">
 						<a href="interfaces/DriverConfigWithDefaults.html" class="tsd-kind-icon">Driver<wbr>Config<wbr>With<wbr>Defaults</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/DropIndexBuilderConstructorArgs.html" class="tsd-kind-icon">Drop<wbr>Index<wbr>Builder<wbr>Constructor<wbr>Args</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/DropSchemaBuilderConstructorArgs.html" class="tsd-kind-icon">Drop<wbr>Schema<wbr>Builder<wbr>Constructor<wbr>Args</a>
 					</li>
 					<li class=" tsd-kind-interface">
 						<a href="interfaces/DropTableBuilderConstructorArgs.html" class="tsd-kind-icon">Drop<wbr>Table<wbr>Builder<wbr>Constructor<wbr>Args</a>

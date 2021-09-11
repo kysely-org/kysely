@@ -1184,7 +1184,7 @@
 										<p>The generated SQL (postgresql):</p>
 										<pre><code class="language-sql"><span style="color: #0000FF">insert</span><span style="color: #000000"> </span><span style="color: #0000FF">into</span><span style="color: #000000"> </span><span style="color: #A31515">&quot;pet&quot;</span><span style="color: #000000"> (</span><span style="color: #A31515">&quot;name&quot;</span><span style="color: #000000">, </span><span style="color: #A31515">&quot;species&quot;</span><span style="color: #000000">)</span>
 <span style="color: #0000FF">values</span><span style="color: #000000"> ($</span><span style="color: #098658">1</span><span style="color: #000000">, $</span><span style="color: #098658">2</span><span style="color: #000000">)</span>
-<span style="color: #0000FF">on</span><span style="color: #000000"> conflict do nothing</span>
+<span style="color: #0000FF">on</span><span style="color: #000000"> conflict (</span><span style="color: #A31515">&quot;name&quot;</span><span style="color: #000000">) do nothing</span>
 </code></pre>
 									</dd>
 								</dl>
@@ -1254,7 +1254,7 @@
 										<p>The generated SQL (postgresql):</p>
 										<pre><code class="language-sql"><span style="color: #0000FF">insert</span><span style="color: #000000"> </span><span style="color: #0000FF">into</span><span style="color: #000000"> </span><span style="color: #A31515">&quot;pet&quot;</span><span style="color: #000000"> (</span><span style="color: #A31515">&quot;name&quot;</span><span style="color: #000000">, </span><span style="color: #A31515">&quot;species&quot;</span><span style="color: #000000">)</span>
 <span style="color: #0000FF">values</span><span style="color: #000000"> ($</span><span style="color: #098658">1</span><span style="color: #000000">, $</span><span style="color: #098658">2</span><span style="color: #000000">)</span>
-<span style="color: #0000FF">on</span><span style="color: #000000"> conflict do </span><span style="color: #0000FF">update</span><span style="color: #000000"> </span><span style="color: #0000FF">set</span><span style="color: #000000"> </span><span style="color: #A31515">&quot;species&quot;</span><span style="color: #000000"> = $</span><span style="color: #098658">3</span>
+<span style="color: #0000FF">on</span><span style="color: #000000"> conflict (</span><span style="color: #A31515">&quot;name&quot;</span><span style="color: #000000">) do </span><span style="color: #0000FF">update</span><span style="color: #000000"> </span><span style="color: #0000FF">set</span><span style="color: #000000"> </span><span style="color: #A31515">&quot;species&quot;</span><span style="color: #000000"> = $</span><span style="color: #098658">3</span>
 </code></pre>
 									</dd>
 								</dl>
@@ -2025,7 +2025,7 @@
 										<pre><code class="language-ts"><span style="color: #0000FF">const</span><span style="color: #000000"> { </span><span style="color: #0070C1">ref</span><span style="color: #000000"> } = </span><span style="color: #001080">db</span><span style="color: #000000">.</span><span style="color: #001080">dynamic</span>
 
 <span style="color: #008000">// Some column name provided by the user. Value not known at compile time.</span>
-<span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">columnFromUserInput</span><span style="color: #000000"> = </span><span style="color: #001080">req</span><span style="color: #000000">.</span><span style="color: #001080">params</span><span style="color: #000000">.</span><span style="color: #001080">select</span><span style="color: #000000">;</span>
+<span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">columnFromUserInput</span><span style="color: #000000"> = </span><span style="color: #001080">req</span><span style="color: #000000">.</span><span style="color: #001080">query</span><span style="color: #000000">.</span><span style="color: #001080">select</span><span style="color: #000000">;</span>
 
 <span style="color: #008000">// A type that lists all possible values `columnFromUserInput` can have.</span>
 <span style="color: #008000">// You can use `keyof Person` if any column of an interface is allowed.</span>

@@ -36,6 +36,7 @@ export class DynamicModule {
    * }
    *
    * someQuery('first_name', 'Arnold')
+   * someQuery('person.last_name', 'Aniston')
    * ```
    *
    * @example
@@ -62,7 +63,7 @@ export class DynamicModule {
    * const { ref } = db.dynamic
    *
    * // Some column name provided by the user. Value not known at compile time.
-   * const columnFromUserInput = req.params.select;
+   * const columnFromUserInput = req.query.select;
    *
    * // A type that lists all possible values `columnFromUserInput` can have.
    * // You can use `keyof Person` if any column of an interface is allowed.
