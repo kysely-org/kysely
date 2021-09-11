@@ -166,7 +166,7 @@ have. You will probably want to add a simple migration script to your projects l
 
 ```ts
 import path from 'path'
-import { db } from './databse'
+import { db } from './database'
 
 db.migrate.migrateToLatest(path.join(__dirname, 'migrations'))
 ```
