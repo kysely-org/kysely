@@ -12,7 +12,7 @@ import { QueryCompiler } from '../query-compiler/query-compiler'
  */
 export interface Dialect {
   /**
-   * Creates a driver for the dialect¨.
+   * Creates a driver for the dialect.
    */
   createDriver(config: DriverConfig): Driver
 
