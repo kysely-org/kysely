@@ -1751,6 +1751,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    *   .select('person.first_name as fn')
    *   .orderBy('id')
    *   .orderBy('fn', 'desc')
+   *   .execute()
    * ```
    *
    * The generated SQL (postgresql):
@@ -1777,6 +1778,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    *   .orderBy(
    *     db.raw('concat(first_name, last_name)')
    *   )
+   *   .execute()
    * ```
    *
    * The generated SQL (postgresql):
@@ -1805,6 +1807,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    *     .selectFrom('person')
    *     .select('person.first_name as fn')
    *     .orderBy(ref(orderBy))
+   *     .execute()
    * }
    *
    * someQuery('fn')
@@ -1845,6 +1848,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    *     db.raw('max(id)').as('max_id')
    *   ])
    *   .groupBy('first_name')
+   *   .execute()
    * ```
    *
    * The generated SQL (postgresql):
@@ -1872,6 +1876,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    *     'first_name',
    *     'last_name'
    *   ])
+   *   .execute()
    * ```
    *
    * The generated SQL (postgresql):
@@ -1900,6 +1905,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    *     raw('concat(first_name, last_name)'),
    *     (qb) => qb.subQuery('pet').select('id').limit(1)
    *   ])
+   *   .execute()
    * ```
    *
    * @example
@@ -1914,6 +1920,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    *     .selectFrom('person')
    *     .select('first_name')
    *     .groupBy(ref(groupBy))
+   *     .execute()
    * }
    *
    * someQuery('first_name')

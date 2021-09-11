@@ -148,6 +148,7 @@
 <span style="color: #000000">    .</span><span style="color: #795E26">selectFrom</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;person&#039;</span><span style="color: #000000">)</span>
 <span style="color: #000000">    .</span><span style="color: #795E26">selectAll</span><span style="color: #000000">()</span>
 <span style="color: #000000">    .</span><span style="color: #795E26">where</span><span style="color: #000000">(</span><span style="color: #795E26">ref</span><span style="color: #000000">(</span><span style="color: #001080">filterColumn</span><span style="color: #000000">), </span><span style="color: #A31515">&#039;=&#039;</span><span style="color: #000000">, </span><span style="color: #001080">filterValue</span><span style="color: #000000">)</span>
+<span style="color: #000000">    .</span><span style="color: #795E26">execute</span><span style="color: #000000">()</span>
 <span style="color: #000000">}</span>
 
 <span style="color: #795E26">someQuery</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;first_name&#039;</span><span style="color: #000000">, </span><span style="color: #A31515">&#039;Arnold&#039;</span><span style="color: #000000">)</span>
@@ -162,6 +163,7 @@
 <span style="color: #000000">    .</span><span style="color: #795E26">selectFrom</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;person&#039;</span><span style="color: #000000">)</span>
 <span style="color: #000000">    .</span><span style="color: #795E26">select</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;person.first_name as fn&#039;</span><span style="color: #000000">)</span>
 <span style="color: #000000">    .</span><span style="color: #795E26">orderBy</span><span style="color: #000000">(</span><span style="color: #795E26">ref</span><span style="color: #000000">(</span><span style="color: #001080">orderBy</span><span style="color: #000000">))</span>
+<span style="color: #000000">    .</span><span style="color: #795E26">execute</span><span style="color: #000000">()</span>
 <span style="color: #000000">}</span>
 
 <span style="color: #795E26">someQuery</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;fn&#039;</span><span style="color: #000000">)</span>

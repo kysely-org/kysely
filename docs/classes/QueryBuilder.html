@@ -586,6 +586,7 @@
 <span style="color: #000000">    </span><span style="color: #001080">db</span><span style="color: #000000">.</span><span style="color: #795E26">raw</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;max(id)&#039;</span><span style="color: #000000">).</span><span style="color: #795E26">as</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;max_id&#039;</span><span style="color: #000000">)</span>
 <span style="color: #000000">  ])</span>
 <span style="color: #000000">  .</span><span style="color: #795E26">groupBy</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;first_name&#039;</span><span style="color: #000000">)</span>
+<span style="color: #000000">  .</span><span style="color: #795E26">execute</span><span style="color: #000000">()</span>
 </code></pre>
 										<p>The generated SQL (postgresql):</p>
 										<pre><code class="language-sql"><span style="color: #0000FF">select</span><span style="color: #000000"> </span><span style="color: #A31515">&quot;first_name&quot;</span><span style="color: #000000">, </span><span style="color: #795E26">max</span><span style="color: #000000">(id)</span>
@@ -608,6 +609,7 @@
 <span style="color: #000000">    </span><span style="color: #A31515">&#039;first_name&#039;</span><span style="color: #000000">,</span>
 <span style="color: #000000">    </span><span style="color: #A31515">&#039;last_name&#039;</span>
 <span style="color: #000000">  ])</span>
+<span style="color: #000000">  .</span><span style="color: #795E26">execute</span><span style="color: #000000">()</span>
 </code></pre>
 										<p>The generated SQL (postgresql):</p>
 										<pre><code class="language-sql"><span style="color: #0000FF">select</span><span style="color: #000000"> </span><span style="color: #A31515">&quot;first_name&quot;</span><span style="color: #000000">, </span><span style="color: #A31515">&quot;last_name&quot;</span><span style="color: #000000">, </span><span style="color: #795E26">max</span><span style="color: #000000">(id)</span>
@@ -631,6 +633,7 @@
 <span style="color: #000000">    </span><span style="color: #795E26">raw</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;concat(first_name, last_name)&#039;</span><span style="color: #000000">),</span>
 <span style="color: #000000">    (</span><span style="color: #001080">qb</span><span style="color: #000000">) </span><span style="color: #0000FF">=&gt;</span><span style="color: #000000"> </span><span style="color: #001080">qb</span><span style="color: #000000">.</span><span style="color: #795E26">subQuery</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;pet&#039;</span><span style="color: #000000">).</span><span style="color: #795E26">select</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;id&#039;</span><span style="color: #000000">).</span><span style="color: #795E26">limit</span><span style="color: #000000">(</span><span style="color: #098658">1</span><span style="color: #000000">)</span>
 <span style="color: #000000">  ])</span>
+<span style="color: #000000">  .</span><span style="color: #795E26">execute</span><span style="color: #000000">()</span>
 </code></pre>
 									</dd>
 									<dt>example</dt>
@@ -643,6 +646,7 @@
 <span style="color: #000000">    .</span><span style="color: #795E26">selectFrom</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;person&#039;</span><span style="color: #000000">)</span>
 <span style="color: #000000">    .</span><span style="color: #795E26">select</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;first_name&#039;</span><span style="color: #000000">)</span>
 <span style="color: #000000">    .</span><span style="color: #795E26">groupBy</span><span style="color: #000000">(</span><span style="color: #795E26">ref</span><span style="color: #000000">(</span><span style="color: #001080">groupBy</span><span style="color: #000000">))</span>
+<span style="color: #000000">    .</span><span style="color: #795E26">execute</span><span style="color: #000000">()</span>
 <span style="color: #000000">}</span>
 
 <span style="color: #795E26">someQuery</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;first_name&#039;</span><span style="color: #000000">)</span>
@@ -1640,6 +1644,7 @@
 <span style="color: #000000">  .</span><span style="color: #795E26">select</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;person.first_name as fn&#039;</span><span style="color: #000000">)</span>
 <span style="color: #000000">  .</span><span style="color: #795E26">orderBy</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;id&#039;</span><span style="color: #000000">)</span>
 <span style="color: #000000">  .</span><span style="color: #795E26">orderBy</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;fn&#039;</span><span style="color: #000000">, </span><span style="color: #A31515">&#039;desc&#039;</span><span style="color: #000000">)</span>
+<span style="color: #000000">  .</span><span style="color: #795E26">execute</span><span style="color: #000000">()</span>
 </code></pre>
 										<p>The generated SQL (postgresql):</p>
 										<pre><code class="language-sql"><span style="color: #0000FF">select</span><span style="color: #000000"> </span><span style="color: #A31515">&quot;person&quot;</span><span style="color: #000000">.</span><span style="color: #A31515">&quot;first_name&quot;</span><span style="color: #000000"> </span><span style="color: #0000FF">as</span><span style="color: #000000"> </span><span style="color: #A31515">&quot;fn&quot;</span>
@@ -1661,6 +1666,7 @@
 <span style="color: #000000">  .</span><span style="color: #795E26">orderBy</span><span style="color: #000000">(</span>
 <span style="color: #000000">    </span><span style="color: #001080">db</span><span style="color: #000000">.</span><span style="color: #795E26">raw</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;concat(first_name, last_name)&#039;</span><span style="color: #000000">)</span>
 <span style="color: #000000">  )</span>
+<span style="color: #000000">  .</span><span style="color: #795E26">execute</span><span style="color: #000000">()</span>
 </code></pre>
 										<p>The generated SQL (postgresql):</p>
 										<pre><code class="language-sql"><span style="color: #0000FF">select</span><span style="color: #000000"> *</span>
@@ -1684,6 +1690,7 @@
 <span style="color: #000000">    .</span><span style="color: #795E26">selectFrom</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;person&#039;</span><span style="color: #000000">)</span>
 <span style="color: #000000">    .</span><span style="color: #795E26">select</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;person.first_name as fn&#039;</span><span style="color: #000000">)</span>
 <span style="color: #000000">    .</span><span style="color: #795E26">orderBy</span><span style="color: #000000">(</span><span style="color: #795E26">ref</span><span style="color: #000000">(</span><span style="color: #001080">orderBy</span><span style="color: #000000">))</span>
+<span style="color: #000000">    .</span><span style="color: #795E26">execute</span><span style="color: #000000">()</span>
 <span style="color: #000000">}</span>
 
 <span style="color: #795E26">someQuery</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;fn&#039;</span><span style="color: #000000">)</span>
