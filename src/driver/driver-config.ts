@@ -59,7 +59,7 @@ export interface PoolConfig {
    * @example
    * ```ts
    * {
-   *   async onCreateConnection(connection: Connection): Promise<void> {
+   *   async onCreateConnection(connection: DatabaseConnection): Promise<void> {
    *     await connection.executeQuery({
    *       sql: `SET TIMEZONE = 'UTC'`,
    *       bindings: []
