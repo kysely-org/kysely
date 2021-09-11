@@ -78,6 +78,10 @@
 					fail you. with Kysely you can also explicitly tell it to ignore the typings, but the default is always
 					type-safety! See the <a href="https://koskimas.github.io/kysely/classes/DynamicModule.html#ref">DynamicModule</a>
 				for more info.</p>
+				<ul>
+					<li><a href="https://koskimas.github.io/kysely/index.html">API reference</a></li>
+					<li><a href="#migrations">Migrations</a></li>
+				</ul>
 				<a href="#installation" id="installation" style="color: inherit; text-decoration: none;">
 					<h1>Installation</h1>
 				</a>
@@ -139,6 +143,72 @@
 <span style="color: #000000">  }</span>
 <span style="color: #000000">}</span>
 </code></pre>
+				<a href="#migrations" id="migrations" style="color: inherit; text-decoration: none;">
+					<h1>Migrations</h1>
+				</a>
+				<p>Migration files should look like this:</p>
+				<pre><code class="language-ts"><span style="color: #AF00DB">export</span><span style="color: #000000"> </span><span style="color: #0000FF">async</span><span style="color: #000000"> </span><span style="color: #0000FF">function</span><span style="color: #000000"> </span><span style="color: #795E26">up</span><span style="color: #000000">(</span><span style="color: #001080">db</span><span style="color: #000000">: </span><span style="color: #267F99">Kysely</span><span style="color: #000000">&lt;</span><span style="color: #267F99">any</span><span style="color: #000000">&gt;): </span><span style="color: #267F99">Promise</span><span style="color: #000000">&lt;</span><span style="color: #267F99">void</span><span style="color: #000000">&gt; {</span>
+<span style="color: #000000">  </span><span style="color: #008000">// Migration code</span>
+<span style="color: #000000">}</span>
+
+<span style="color: #AF00DB">export</span><span style="color: #000000"> </span><span style="color: #0000FF">async</span><span style="color: #000000"> </span><span style="color: #0000FF">function</span><span style="color: #000000"> </span><span style="color: #795E26">down</span><span style="color: #000000">(</span><span style="color: #001080">db</span><span style="color: #000000">: </span><span style="color: #267F99">Kysely</span><span style="color: #000000">&lt;</span><span style="color: #267F99">any</span><span style="color: #000000">&gt;): </span><span style="color: #267F99">Promise</span><span style="color: #000000">&lt;</span><span style="color: #267F99">void</span><span style="color: #000000">&gt; {</span>
+<span style="color: #000000">  </span><span style="color: #008000">// Migration code</span>
+<span style="color: #000000">}</span>
+</code></pre>
+				<p>The <code>up</code> function is called when you update your database schema to next version and <code>down</code>
+					when you go back to previous version. The only argument to the methods is an instance of
+					<code>Kysely&lt;any&gt;</code>. It is important to use <code>Kysely&lt;any&gt;</code> and not <code>Kysely&lt;YourDatabase&gt;</code>. Migrations
+					should never depend on the current code because they need to work even if the code changes
+				completely. Migrations need to be &quot;frozen in time&quot;.</p>
+				<p>The migrations can use the <a href="https://koskimas.github.io/kysely/classes/SchemaModule.html">Kysely.schema</a>
+				to modify the schema. Migrations can also run normal queries to modify the data.</p>
+				<pre><code class="language-ts"><span style="color: #AF00DB">export</span><span style="color: #000000"> </span><span style="color: #0000FF">async</span><span style="color: #000000"> </span><span style="color: #0000FF">function</span><span style="color: #000000"> </span><span style="color: #795E26">up</span><span style="color: #000000">(</span><span style="color: #001080">db</span><span style="color: #000000">: </span><span style="color: #267F99">Kysely</span><span style="color: #000000">&lt;</span><span style="color: #267F99">any</span><span style="color: #000000">&gt;): </span><span style="color: #267F99">Promise</span><span style="color: #000000">&lt;</span><span style="color: #267F99">void</span><span style="color: #000000">&gt; {</span>
+<span style="color: #000000">  </span><span style="color: #AF00DB">await</span><span style="color: #000000"> </span><span style="color: #001080">db</span><span style="color: #000000">.</span><span style="color: #001080">schema</span>
+<span style="color: #000000">    .</span><span style="color: #795E26">createTable</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;person&#039;</span><span style="color: #000000">)</span>
+<span style="color: #000000">    .</span><span style="color: #795E26">integer</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;id&#039;</span><span style="color: #000000">, (</span><span style="color: #001080">col</span><span style="color: #000000">) </span><span style="color: #0000FF">=&gt;</span><span style="color: #000000"> </span><span style="color: #001080">col</span><span style="color: #000000">.</span><span style="color: #795E26">increments</span><span style="color: #000000">().</span><span style="color: #795E26">primary</span><span style="color: #000000">())</span>
+<span style="color: #000000">    .</span><span style="color: #795E26">string</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;first_name&#039;</span><span style="color: #000000">)</span>
+<span style="color: #000000">    .</span><span style="color: #795E26">string</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;last_name&#039;</span><span style="color: #000000">)</span>
+<span style="color: #000000">    .</span><span style="color: #795E26">string</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;gender&#039;</span><span style="color: #000000">)</span>
+<span style="color: #000000">    .</span><span style="color: #795E26">execute</span><span style="color: #000000">()</span>
+
+<span style="color: #000000">  </span><span style="color: #AF00DB">await</span><span style="color: #000000"> </span><span style="color: #001080">db</span><span style="color: #000000">.</span><span style="color: #001080">schema</span>
+<span style="color: #000000">    .</span><span style="color: #795E26">createTable</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;pet&#039;</span><span style="color: #000000">)</span>
+<span style="color: #000000">    .</span><span style="color: #795E26">integer</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;id&#039;</span><span style="color: #000000">, (</span><span style="color: #001080">col</span><span style="color: #000000">) </span><span style="color: #0000FF">=&gt;</span><span style="color: #000000"> </span><span style="color: #001080">col</span><span style="color: #000000">.</span><span style="color: #795E26">increments</span><span style="color: #000000">().</span><span style="color: #795E26">primary</span><span style="color: #000000">())</span>
+<span style="color: #000000">    .</span><span style="color: #795E26">string</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;name&#039;</span><span style="color: #000000">, (</span><span style="color: #001080">col</span><span style="color: #000000">) </span><span style="color: #0000FF">=&gt;</span><span style="color: #000000"> </span><span style="color: #001080">col</span><span style="color: #000000">.</span><span style="color: #795E26">unique</span><span style="color: #000000">())</span>
+<span style="color: #000000">    .</span><span style="color: #795E26">integer</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;owner_id&#039;</span><span style="color: #000000">, (</span><span style="color: #001080">col</span><span style="color: #000000">) </span><span style="color: #0000FF">=&gt;</span>
+<span style="color: #000000">      </span><span style="color: #001080">col</span><span style="color: #000000">.</span><span style="color: #795E26">references</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;person.id&#039;</span><span style="color: #000000">).</span><span style="color: #795E26">onDelete</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;cascade&#039;</span><span style="color: #000000">)</span>
+<span style="color: #000000">    )</span>
+<span style="color: #000000">    .</span><span style="color: #795E26">string</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;species&#039;</span><span style="color: #000000">)</span>
+<span style="color: #000000">    .</span><span style="color: #795E26">execute</span><span style="color: #000000">()</span>
+
+<span style="color: #000000">  </span><span style="color: #AF00DB">await</span><span style="color: #000000"> </span><span style="color: #001080">db</span><span style="color: #000000">.</span><span style="color: #001080">schema</span>
+<span style="color: #000000">    .</span><span style="color: #795E26">createIndex</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;pet_owner_id_index&#039;</span><span style="color: #000000">)</span>
+<span style="color: #000000">    .</span><span style="color: #795E26">on</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;pet&#039;</span><span style="color: #000000">)</span>
+<span style="color: #000000">    .</span><span style="color: #795E26">column</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;owner_id&#039;</span><span style="color: #000000">)</span>
+<span style="color: #000000">    .</span><span style="color: #795E26">execute</span><span style="color: #000000">()</span>
+<span style="color: #000000">}</span>
+
+<span style="color: #AF00DB">export</span><span style="color: #000000"> </span><span style="color: #0000FF">async</span><span style="color: #000000"> </span><span style="color: #0000FF">function</span><span style="color: #000000"> </span><span style="color: #795E26">down</span><span style="color: #000000">(</span><span style="color: #001080">db</span><span style="color: #000000">: </span><span style="color: #267F99">Kysely</span><span style="color: #000000">&lt;</span><span style="color: #267F99">any</span><span style="color: #000000">&gt;): </span><span style="color: #267F99">Promise</span><span style="color: #000000">&lt;</span><span style="color: #267F99">void</span><span style="color: #000000">&gt; {</span>
+<span style="color: #000000">  </span><span style="color: #AF00DB">await</span><span style="color: #000000"> </span><span style="color: #001080">db</span><span style="color: #000000">.</span><span style="color: #795E26">dropTable</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;pet&#039;</span><span style="color: #000000">).</span><span style="color: #795E26">execute</span><span style="color: #000000">()</span>
+<span style="color: #000000">  </span><span style="color: #AF00DB">await</span><span style="color: #000000"> </span><span style="color: #001080">db</span><span style="color: #000000">.</span><span style="color: #795E26">dropTable</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;person&#039;</span><span style="color: #000000">).</span><span style="color: #795E26">execute</span><span style="color: #000000">()</span>
+<span style="color: #000000">}</span>
+</code></pre>
+				<p>You can then use <code>db.migration.migrateToLatest(pathToMigrationsFolder)</code> to run all migrations that
+				have not yet been run. The migrations are executed in alphabetical order by their file name.</p>
+				<p>Kysely doesn&#39;t have a CLI for running migrations and probably never will. This is because Kysely&#39;s
+					migrations are also written in typescript. To run the migrations, you need to first build the
+					typescript code into javascript. The CLI would cause confusion over which migrations are being
+					run, the typescript ones or the javascript ones. If we added support for both, it would mean the
+					CLI would depend on a typescript compiler, which most production environments don&#39;t (and shouldn&#39;t)
+				have. You will probably want to add a simple migration script to your projects like this:</p>
+				<pre><code class="language-ts"><span style="color: #AF00DB">import</span><span style="color: #000000"> </span><span style="color: #001080">path</span><span style="color: #000000"> </span><span style="color: #AF00DB">from</span><span style="color: #000000"> </span><span style="color: #A31515">&#039;path&#039;</span>
+<span style="color: #AF00DB">import</span><span style="color: #000000"> { </span><span style="color: #001080">db</span><span style="color: #000000"> } </span><span style="color: #AF00DB">from</span><span style="color: #000000"> </span><span style="color: #A31515">&#039;./databse&#039;</span>
+
+<span style="color: #001080">db</span><span style="color: #000000">.</span><span style="color: #001080">migrate</span><span style="color: #000000">.</span><span style="color: #795E26">migrateToLatest</span><span style="color: #000000">(</span><span style="color: #001080">path</span><span style="color: #000000">.</span><span style="color: #795E26">join</span><span style="color: #000000">(</span><span style="color: #001080">__dirname</span><span style="color: #000000">, </span><span style="color: #A31515">&#039;migrations&#039;</span><span style="color: #000000">))</span>
+</code></pre>
+				<p>The migration methods use a lock in the database leve, and parallel calls are executed serially.
+					This means that you can safely call <code>migrateToLatest</code> and other migration methods from multiple
+				server instances simultaneously and the migrations are guaranteed to only be executed once.</p>
 				<a href="#why-not-just-contribute-to-knex" id="why-not-just-contribute-to-knex" style="color: inherit; text-decoration: none;">
 					<h1>Why not just contribute to knex</h1>
 				</a>

@@ -144,6 +144,12 @@ async function createDatabase(db: Kysely<Database>): Promise<void> {
     .integer('pet_id', (col) => col.references('pet.id'))
     .double('price')
     .execute()
+
+  await db.schema
+    .createIndex('pet_owner_id_index')
+    .on('pet')
+    .column('owner_id')
+    .execute()
 }
 
 async function dropDatabase(db: Kysely<Database>): Promise<void> {

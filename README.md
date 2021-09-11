@@ -22,6 +22,9 @@ fail you. with Kysely you can also explicitly tell it to ignore the typings, but
 type-safety! See the [DynamicModule](https://koskimas.github.io/kysely/classes/DynamicModule.html#ref)
 for more info.
 
+- [API reference](https://koskimas.github.io/kysely/index.html)
+- [Migrations](#migrations)
+
 # Installation
 
 Kysely currently only works on postgres. You can install it using
@@ -87,6 +90,83 @@ async function demo() {
   }
 }
 ```
+
+# Migrations
+
+Migration files should look like this:
+
+```ts
+export async function up(db: Kysely<any>): Promise<void> {
+  // Migration code
+}
+
+export async function down(db: Kysely<any>): Promise<void> {
+  // Migration code
+}
+```
+
+The `up` function is called when you update your database schema to next version and `down`
+when you go back to previous version. The only argument to the methods is an instance of
+`Kysely<any>`. It is important to use `Kysely<any>` and not `Kysely<YourDatabase>`. Migrations
+should never depend on the current code because they need to work even if the code changes
+completely. Migrations need to be "frozen in time".
+
+The migrations can use the [Kysely.schema](https://koskimas.github.io/kysely/classes/SchemaModule.html)
+to modify the schema. Migrations can also run normal queries to modify the data.
+
+```ts
+export async function up(db: Kysely<any>): Promise<void> {
+  await db.schema
+    .createTable('person')
+    .integer('id', (col) => col.increments().primary())
+    .string('first_name')
+    .string('last_name')
+    .string('gender')
+    .execute()
+
+  await db.schema
+    .createTable('pet')
+    .integer('id', (col) => col.increments().primary())
+    .string('name', (col) => col.unique())
+    .integer('owner_id', (col) =>
+      col.references('person.id').onDelete('cascade')
+    )
+    .string('species')
+    .execute()
+
+  await db.schema
+    .createIndex('pet_owner_id_index')
+    .on('pet')
+    .column('owner_id')
+    .execute()
+}
+
+export async function down(db: Kysely<any>): Promise<void> {
+  await db.dropTable('pet').execute()
+  await db.dropTable('person').execute()
+}
+```
+
+You can then use `db.migration.migrateToLatest(pathToMigrationsFolder)` to run all migrations that
+have not yet been run. The migrations are executed in alphabetical order by their file name.
+
+Kysely doesn't have a CLI for running migrations and probably never will. This is because Kysely's
+migrations are also written in typescript. To run the migrations, you need to first build the
+typescript code into javascript. The CLI would cause confusion over which migrations are being
+run, the typescript ones or the javascript ones. If we added support for both, it would mean the
+CLI would depend on a typescript compiler, which most production environments don't (and shouldn't)
+have. You will probably want to add a simple migration script to your projects like this:
+
+```ts
+import path from 'path'
+import { db } from './databse'
+
+db.migrate.migrateToLatest(path.join(__dirname, 'migrations'))
+```
+
+The migration methods use a lock in the database leve, and parallel calls are executed serially.
+This means that you can safely call `migrateToLatest` and other migration methods from multiple
+server instances simultaneously and the migrations are guaranteed to only be executed once.
 
 # Why not just contribute to knex
 
