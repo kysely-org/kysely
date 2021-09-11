@@ -96,6 +96,8 @@ async function demo() {
 Migration files should look like this:
 
 ```ts
+import { Kysely } from 'kysely'
+
 export async function up(db: Kysely<any>): Promise<void> {
   // Migration code
 }
@@ -115,6 +117,8 @@ The migrations can use the [Kysely.schema](https://koskimas.github.io/kysely/cla
 to modify the schema. Migrations can also run normal queries to modify the data.
 
 ```ts
+import { Kysely } from 'kysely'
+
 export async function up(db: Kysely<any>): Promise<void> {
   await db.schema
     .createTable('person')
