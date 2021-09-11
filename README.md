@@ -22,6 +22,9 @@ fail you. with Kysely you can also explicitly tell it to ignore the typings, but
 type-safety! See the [DynamicModule](https://koskimas.github.io/kysely/classes/DynamicModule.html#ref)
 for more info.
 
+Kysely is still young and some useful methods and modules are not yet implemented. If you start using
+Kysely, please open an issue as soon as you can't find something you want to use. 
+
 - [API reference](https://koskimas.github.io/kysely/index.html)
 - [Migrations](#migrations)
 
@@ -114,7 +117,7 @@ should never depend on the current code because they need to work even if the co
 completely. Migrations need to be "frozen in time".
 
 The migrations can use the [Kysely.schema](https://koskimas.github.io/kysely/classes/SchemaModule.html)
-to modify the schema. Migrations can also run normal queries to modify the data.
+module to modify the schema. Migrations can also run normal queries to modify the data.
 
 ```ts
 import { Kysely } from 'kysely'
@@ -146,8 +149,8 @@ export async function up(db: Kysely<any>): Promise<void> {
 }
 
 export async function down(db: Kysely<any>): Promise<void> {
-  await db.dropTable('pet').execute()
-  await db.dropTable('person').execute()
+  await db.schema.dropTable('pet').execute()
+  await db.schema.dropTable('person').execute()
 }
 ```
 
@@ -171,6 +174,10 @@ db.migrate.migrateToLatest(path.join(__dirname, 'migrations'))
 The migration methods use a lock in the database leve, and parallel calls are executed serially.
 This means that you can safely call `migrateToLatest` and other migration methods from multiple
 server instances simultaneously and the migrations are guaranteed to only be executed once.
+
+NOTE: Only `db.schema.migrateToLatest` method is implemented at the moment. There is no way
+to run the down migrations, or to go forward to a specific migration. These methods will be
+added soon.
 
 # Why not just contribute to knex
 
