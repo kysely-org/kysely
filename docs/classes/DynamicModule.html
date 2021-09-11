@@ -178,11 +178,12 @@
 <span style="color: #008000">// You can use `keyof Person` if any column of an interface is allowed.</span>
 <span style="color: #0000FF">type</span><span style="color: #000000"> </span><span style="color: #267F99">PossibleColumns</span><span style="color: #000000"> = </span><span style="color: #A31515">&#039;last_name&#039;</span><span style="color: #000000"> | </span><span style="color: #A31515">&#039;first_name&#039;</span><span style="color: #000000"> | </span><span style="color: #A31515">&#039;birth_date&#039;</span>
 
-<span style="color: #0000FF">const</span><span style="color: #000000"> [</span><span style="color: #0070C1">person</span><span style="color: #000000">] = </span><span style="color: #001080">db</span><span style="color: #000000">.</span><span style="color: #795E26">selectFrom</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;person&#039;</span><span style="color: #000000">)</span>
+<span style="color: #0000FF">const</span><span style="color: #000000"> [</span><span style="color: #0070C1">person</span><span style="color: #000000">] = </span><span style="color: #AF00DB">await</span><span style="color: #000000"> </span><span style="color: #001080">db</span><span style="color: #000000">.</span><span style="color: #795E26">selectFrom</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;person&#039;</span><span style="color: #000000">)</span>
 <span style="color: #000000">  .</span><span style="color: #795E26">select</span><span style="color: #000000">([</span>
 <span style="color: #000000">    </span><span style="color: #795E26">ref</span><span style="color: #000000">&lt;</span><span style="color: #267F99">PossibleColumns</span><span style="color: #000000">&gt;(</span><span style="color: #001080">columnFromUserInput</span><span style="color: #000000">)</span>
 <span style="color: #000000">    </span><span style="color: #A31515">&#039;id&#039;</span>
 <span style="color: #000000">  ])</span>
+<span style="color: #000000">  .</span><span style="color: #795E26">execute</span><span style="color: #000000">()</span>
 
 <span style="color: #008000">// The resulting type contains all `PossibleColumns` as optional fields</span>
 <span style="color: #008000">// because we cannot know which field was actually selected before</span>

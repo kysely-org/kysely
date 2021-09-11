@@ -66,11 +66,12 @@ export class DynamicModule {
    * // You can use `keyof Person` if any column of an interface is allowed.
    * type PossibleColumns = 'last_name' | 'first_name' | 'birth_date'
    *
-   * const [person] = db.selectFrom('person')
+   * const [person] = await db.selectFrom('person')
    *   .select([
    *     ref<PossibleColumns>(columnFromUserInput)
    *     'id'
    *   ])
+   *   .execute()
    *
    * // The resulting type contains all `PossibleColumns` as optional fields
    * // because we cannot know which field was actually selected before
