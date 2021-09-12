@@ -49,6 +49,35 @@ import { freeze } from '../util/object-utils'
 import { CreateSchemaNode } from './create-schema-node'
 import { DropSchemaNode } from './drop-schema-node'
 
+/**
+ * Transforms an operation node tree into another one.
+ *
+ * Kysely queries are expressed internally by a tree of objects (operation nodes).
+ * `OperationNodeTransformer` takes such a tree as its input and returns a
+ * transformed deep copy of it. By default the `OperationNodeTransformer`
+ * does nothing. You need to override one or more methods to make it do
+ * something.
+ *
+ * There's a method for each node type. For example if you'd like to convert
+ * each identifier (table name, column name, alias etc.) from camelCase to
+ * snake_case, you'd do something like this:
+ *
+ * ```ts
+ * class CamelCaseTransformer extends OperationNodeTransformer {
+ *   transformIdentifier(node: IdentifierNode): IdentifierNode {
+ *     node = super.transformIdentifier(node),
+ *
+ *     return {
+ *       ...node,
+ *       identifier: snakeCase(node.identifier),
+ *     }
+ *   }
+ * }
+ *
+ * const transformer = new WithSchemaTransformer('some_schema')
+ * const tree = transformer.transformNode(tree)
+ * ```
+ */
 export class OperationNodeTransformer {
   protected nodeStack: OperationNode[] = []
 

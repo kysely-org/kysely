@@ -14,8 +14,14 @@ import {
   INTERNAL_DRIVER_RELEASE_CONNECTION,
 } from './driver/driver-internal'
 import { MigrationModule } from './migration/migration'
-import { DefaultQueryExecutor, QueryExecutor } from './util/query-executor'
+import {
+  DefaultQueryExecutor,
+  QueryExecutor,
+  RowMapper,
+} from './util/query-executor'
 import { QueryCreator } from './query-creator'
+import { KyselyPlugin } from './plugin/plugin'
+import { OperationNodeTransformer } from './operation-node/operation-node-transformer'
 
 /**
  * The main Kysely class.
@@ -72,10 +78,17 @@ export class Kysely<DB> extends QueryCreator<DB> {
     } else {
       const config = configOrArgs
       const dialect = createDialect(config)
+      const transformers = collectTransformers(config)
+      const rowMappers = collectRowMappers(config)
       const driver = dialect.createDriver(config)
       const compiler = dialect.createQueryCompiler()
       const connectionProvider = new DefaultConnectionProvider(driver)
-      const executor = new DefaultQueryExecutor(compiler, connectionProvider)
+      const executor = new DefaultQueryExecutor(
+        compiler,
+        connectionProvider,
+        transformers,
+        rowMappers
+      )
 
       super(executor)
 
@@ -255,9 +268,10 @@ function isKyselyConstructorArgs(obj: any): obj is KyselyConstructorArgs {
 
 export interface KyselyConfig extends DriverConfig {
   dialect: 'postgres' | Dialect
+  plugins?: KyselyPlugin[]
 }
 
-function createDialect(config: KyselyConfig) {
+function createDialect(config: KyselyConfig): Dialect {
   if (typeof config.dialect !== 'string') {
     return config.dialect
   } else if (config.dialect === 'postgres') {
@@ -265,4 +279,20 @@ function createDialect(config: KyselyConfig) {
   } else {
     throw new Error(`unknown dialect ${config.dialect}`)
   }
+}
+
+function collectTransformers(config: KyselyConfig): OperationNodeTransformer[] {
+  return (
+    config.plugins?.reduce<OperationNodeTransformer[]>(
+      (transformers, plugin) => [
+        ...transformers,
+        ...plugin.createTransformers(),
+      ],
+      []
+    ) ?? []
+  )
+}
+
+function collectRowMappers(config: KyselyConfig): RowMapper[] {
+  return config.plugins?.map((plugin) => plugin.mapRow.bind(plugin)) ?? []
 }

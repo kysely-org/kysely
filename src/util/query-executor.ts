@@ -8,11 +8,13 @@ import {
 } from '../query-compiler/query-compiler'
 import { freeze } from './object-utils'
 
+export type RowMapper = (row: Record<string, any>) => Record<string, any>
+
 export abstract class QueryExecutor {
   #transformers: ReadonlyArray<OperationNodeTransformer>
 
   constructor(transformers: OperationNodeTransformer[] = []) {
-    this.#transformers = freeze(transformers)
+    this.#transformers = freeze([...transformers])
   }
 
   protected get transformers(): ReadonlyArray<OperationNodeTransformer> {
@@ -41,15 +43,18 @@ export abstract class QueryExecutor {
 export class DefaultQueryExecutor extends QueryExecutor {
   #compiler: QueryCompiler
   #connectionProvider: ConnectionProvider
+  #rowMappers: ReadonlyArray<RowMapper>
 
   constructor(
     compiler: QueryCompiler,
     connectionProvider: ConnectionProvider,
-    transformers: OperationNodeTransformer[] = []
+    transformers: OperationNodeTransformer[] = [],
+    rowMappers: RowMapper[] = []
   ) {
     super(transformers)
     this.#compiler = compiler
     this.#connectionProvider = connectionProvider
+    this.#rowMappers = freeze([...rowMappers])
   }
 
   compileQuery(node: CompileEntryPointNode): CompiledQuery {
@@ -57,18 +62,37 @@ export class DefaultQueryExecutor extends QueryExecutor {
   }
 
   async executeQuery<R>(compiledQuery: CompiledQuery): Promise<QueryResult<R>> {
-    return await this.#connectionProvider.withConnection((connection) => {
-      return connection.executeQuery<R>(compiledQuery)
+    return await this.#connectionProvider.withConnection(async (connection) => {
+      const result = await connection.executeQuery<R>(compiledQuery)
+      return this.mapQueryResult(result)
     })
   }
 
   copyWithTransformer(
     transformer: OperationNodeTransformer
   ): DefaultQueryExecutor {
-    return new DefaultQueryExecutor(this.#compiler, this.#connectionProvider, [
-      ...this.transformers,
-      transformer,
-    ])
+    return new DefaultQueryExecutor(
+      this.#compiler,
+      this.#connectionProvider,
+      [...this.transformers, transformer],
+      [...this.#rowMappers]
+    )
+  }
+
+  private mapQueryResult<T>(result: QueryResult<any>): QueryResult<T> {
+    if (result.rows && result.rows.length > 0 && this.#rowMappers.length > 0) {
+      return freeze({
+        ...result,
+        rows: result.rows.map((row) => {
+          return this.#rowMappers.reduce(
+            (row, rowMapper) => rowMapper(row),
+            row
+          )
+        }),
+      })
+    }
+
+    return result
   }
 }
 

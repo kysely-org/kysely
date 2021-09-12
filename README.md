@@ -111,7 +111,7 @@ export async function down(db: Kysely<any>): Promise<void> {
 ```
 
 The `up` function is called when you update your database schema to next version and `down`
-when you go back to previous version. The only argument to the methods is an instance of
+when you go back to previous version. The only argument to the functions is an instance of
 `Kysely<any>`. It is important to use `Kysely<any>` and not `Kysely<YourDatabase>`. Migrations
 should never depend on the current code because they need to work even if the code changes
 completely. Migrations need to be "frozen in time".
@@ -154,8 +154,14 @@ export async function down(db: Kysely<any>): Promise<void> {
 }
 ```
 
-You can then use `db.migration.migrateToLatest(pathToMigrationsFolder)` to run all migrations that
-have not yet been run. The migrations are executed in alphabetical order by their file name.
+You can then use
+
+```ts
+await db.migration.migrateToLatest(pathToMigrationsFolder)
+```
+
+to run all migrations that have not yet been run. The migrations are executed in alphabetical
+order by their file name.
 
 Kysely doesn't have a CLI for running migrations and probably never will. This is because Kysely's
 migrations are also written in typescript. To run the migrations, you need to first build the

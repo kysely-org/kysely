@@ -160,7 +160,7 @@
 <span style="color: #000000">}</span>
 </code></pre>
 				<p>The <code>up</code> function is called when you update your database schema to next version and <code>down</code>
-					when you go back to previous version. The only argument to the methods is an instance of
+					when you go back to previous version. The only argument to the functions is an instance of
 					<code>Kysely&lt;any&gt;</code>. It is important to use <code>Kysely&lt;any&gt;</code> and not <code>Kysely&lt;YourDatabase&gt;</code>. Migrations
 					should never depend on the current code because they need to work even if the code changes
 				completely. Migrations need to be &quot;frozen in time&quot;.</p>
@@ -199,8 +199,11 @@
 <span style="color: #000000">  </span><span style="color: #AF00DB">await</span><span style="color: #000000"> </span><span style="color: #001080">db</span><span style="color: #000000">.</span><span style="color: #001080">schema</span><span style="color: #000000">.</span><span style="color: #795E26">dropTable</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;person&#039;</span><span style="color: #000000">).</span><span style="color: #795E26">execute</span><span style="color: #000000">()</span>
 <span style="color: #000000">}</span>
 </code></pre>
-				<p>You can then use <code>db.migration.migrateToLatest(pathToMigrationsFolder)</code> to run all migrations that
-				have not yet been run. The migrations are executed in alphabetical order by their file name.</p>
+				<p>You can then use</p>
+				<pre><code class="language-ts"><span style="color: #AF00DB">await</span><span style="color: #000000"> </span><span style="color: #001080">db</span><span style="color: #000000">.</span><span style="color: #001080">migration</span><span style="color: #000000">.</span><span style="color: #795E26">migrateToLatest</span><span style="color: #000000">(</span><span style="color: #001080">pathToMigrationsFolder</span><span style="color: #000000">)</span>
+</code></pre>
+				<p>to run all migrations that have not yet been run. The migrations are executed in alphabetical
+				order by their file name.</p>
 				<p>Kysely doesn&#39;t have a CLI for running migrations and probably never will. This is because Kysely&#39;s
 					migrations are also written in typescript. To run the migrations, you need to first build the
 					typescript code into javascript. The CLI would cause confusion over which migrations are being
@@ -243,6 +246,9 @@
 					</li>
 					<li class=" tsd-kind-class tsd-has-type-parameter">
 						<a href="classes/AliasedRawBuilder.html" class="tsd-kind-icon">Aliased<wbr>Raw<wbr>Builder</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="classes/CamelCasePlugin.html" class="tsd-kind-icon">Camel<wbr>Case<wbr>Plugin</a>
 					</li>
 					<li class=" tsd-kind-class">
 						<a href="classes/ColumnBuilder.html" class="tsd-kind-icon">Column<wbr>Builder</a>
@@ -312,6 +318,9 @@
 					</li>
 					<li class=" tsd-kind-class tsd-has-type-parameter">
 						<a href="classes/Transaction.html" class="tsd-kind-icon">Transaction</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/CamelCasePluginOptions.html" class="tsd-kind-icon">Camel<wbr>Case<wbr>Plugin<wbr>Options</a>
 					</li>
 					<li class=" tsd-kind-interface">
 						<a href="interfaces/CompiledQuery.html" class="tsd-kind-icon">Compiled<wbr>Query</a>

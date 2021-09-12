@@ -58,13 +58,16 @@ const DB_CONFIGS: PerDialect<KyselyConfig> = {
 export const BUILT_IN_DIALECTS: BuiltInDialect[] = ['postgres']
 
 export interface TestContext {
+  config: KyselyConfig
   db: Kysely<Database>
 }
 
 export async function initTest(dialect: BuiltInDialect): Promise<TestContext> {
+  const config = DB_CONFIGS[dialect]
   const db = new Kysely<Database>(DB_CONFIGS[dialect])
+
   await createDatabase(db)
-  return { db }
+  return { config, db }
 }
 
 export async function destroyTest(ctx: TestContext): Promise<void> {

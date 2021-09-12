@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>KyselyPlugin | kysely</title>
+	<title>CamelCasePluginOptions | kysely</title>
 	<meta name="description" content="Documentation for kysely">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="../assets/css/main.css">
@@ -55,10 +55,10 @@
 					<a href="../modules.html">kysely</a>
 				</li>
 				<li>
-					<a href="KyselyPlugin.html">KyselyPlugin</a>
+					<a href="CamelCasePluginOptions.html">CamelCasePluginOptions</a>
 				</li>
 			</ul>
-			<h1>Interface KyselyPlugin</h1>
+			<h1>Interface CamelCasePluginOptions</h1>
 		</div>
 	</div>
 </header>
@@ -69,14 +69,8 @@
 				<h3>Hierarchy</h3>
 				<ul class="tsd-hierarchy">
 					<li>
-						<span class="target">KyselyPlugin</span>
+						<span class="target">CamelCasePluginOptions</span>
 					</li>
-				</ul>
-			</section>
-			<section class="tsd-panel">
-				<h3>Implemented by</h3>
-				<ul class="tsd-hierarchy">
-					<li><a href="../classes/CamelCasePlugin.html" class="tsd-signature-type" data-tsd-kind="Class">CamelCasePlugin</a></li>
 				</ul>
 			</section>
 			<section class="tsd-panel-group tsd-index-group">
@@ -84,61 +78,61 @@
 				<section class="tsd-panel tsd-index-panel">
 					<div class="tsd-index-content">
 						<section class="tsd-index-section ">
-							<h3>Methods</h3>
+							<h3>Properties</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="KyselyPlugin.html#createTransformers" class="tsd-kind-icon">create<wbr>Transformers</a></li>
-								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="KyselyPlugin.html#mapRow" class="tsd-kind-icon">map<wbr>Row</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="CamelCasePluginOptions.html#underscoreBeforeDigits" class="tsd-kind-icon">underscore<wbr>Before<wbr>Digits</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="CamelCasePluginOptions.html#underscoreBetweenUppercaseLetters" class="tsd-kind-icon">underscore<wbr>Between<wbr>Uppercase<wbr>Letters</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="CamelCasePluginOptions.html#upperCase" class="tsd-kind-icon">upper<wbr>Case</a></li>
 							</ul>
 						</section>
 					</div>
 				</section>
 			</section>
 			<section class="tsd-panel-group tsd-member-group ">
-				<h2>Methods</h2>
-				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
-					<a name="createTransformers" class="tsd-anchor"></a>
-					<h3>create<wbr>Transformers</h3>
-					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
-						<li class="tsd-signature tsd-kind-icon">create<wbr>Transformers<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../classes/OperationNodeTransformer.html" class="tsd-signature-type" data-tsd-kind="Class">OperationNodeTransformer</a><span class="tsd-signature-symbol">[]</span></li>
-					</ul>
-					<ul class="tsd-descriptions">
-						<li class="tsd-description">
-							<aside class="tsd-sources">
-							</aside>
-							<div class="tsd-comment tsd-typography">
-								<div class="lead">
-									<p>Returns a list of transformers each query&#39;s operation node tree is
-									passed through before it&#39;s compiled to SQL and executed.</p>
-								</div>
-							</div>
-							<h4 class="tsd-returns-title">Returns <a href="../classes/OperationNodeTransformer.html" class="tsd-signature-type" data-tsd-kind="Class">OperationNodeTransformer</a><span class="tsd-signature-symbol">[]</span></h4>
-						</li>
-					</ul>
+				<h2>Properties</h2>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
+					<a name="underscoreBeforeDigits" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagOptional">Optional</span> underscore<wbr>Before<wbr>Digits</h3>
+					<div class="tsd-signature tsd-kind-icon">underscore<wbr>Before<wbr>Digits<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span></div>
+					<aside class="tsd-sources">
+					</aside>
+					<div class="tsd-comment tsd-typography">
+						<div class="lead">
+							<p>If true, an underscore is added before each digit when converting
+								camelCase to snake_case. For example <code>foo1Bar =&gt; foo_1_bar</code> and
+							<code>foo_1_bar =&gt; foo1Bar</code></p>
+						</div>
+						<p>Defaults to false.</p>
+					</div>
 				</section>
-				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
-					<a name="mapRow" class="tsd-anchor"></a>
-					<h3>map<wbr>Row</h3>
-					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
-						<li class="tsd-signature tsd-kind-icon">map<wbr>Row<span class="tsd-signature-symbol">(</span>row<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Record</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Record</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span></li>
-					</ul>
-					<ul class="tsd-descriptions">
-						<li class="tsd-description">
-							<aside class="tsd-sources">
-							</aside>
-							<div class="tsd-comment tsd-typography">
-								<div class="lead">
-									<p>Each result row is passed through this method.</p>
-								</div>
-							</div>
-							<h4 class="tsd-parameters-title">Parameters</h4>
-							<ul class="tsd-parameters">
-								<li>
-									<h5>row: <span class="tsd-signature-type">Record</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span></h5>
-								</li>
-							</ul>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Record</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span></h4>
-						</li>
-					</ul>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
+					<a name="underscoreBetweenUppercaseLetters" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagOptional">Optional</span> underscore<wbr>Between<wbr>Uppercase<wbr>Letters</h3>
+					<div class="tsd-signature tsd-kind-icon">underscore<wbr>Between<wbr>Uppercase<wbr>Letters<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span></div>
+					<aside class="tsd-sources">
+					</aside>
+					<div class="tsd-comment tsd-typography">
+						<div class="lead">
+							<p>If true, an underscore is added between consecutive upper case
+								letters when converting from camelCase to snake_case. For example
+							<code>fooBAR =&gt; foo_b_a_r</code> and <code>foo_b_a_r =&gt; fooBAR</code>.</p>
+						</div>
+						<p>Defaults to false.</p>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
+					<a name="upperCase" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagOptional">Optional</span> upper<wbr>Case</h3>
+					<div class="tsd-signature tsd-kind-icon">upper<wbr>Case<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span></div>
+					<aside class="tsd-sources">
+					</aside>
+					<div class="tsd-comment tsd-typography">
+						<div class="lead">
+							<p>If true, camelCase is transformed into upper case SNAKE_CASE.
+							For example <code>fooBar =&gt; FOO_BAR</code> and <code>FOO_BAR =&gt; fooBar</code></p>
+						</div>
+						<p>Defaults to false.</p>
+					</div>
 				</section>
 			</section>
 		</div>
@@ -155,13 +149,16 @@
 				</ul>
 				<ul class="current">
 					<li class="current tsd-kind-interface">
-						<a href="KyselyPlugin.html" class="tsd-kind-icon">Kysely<wbr>Plugin</a>
+						<a href="CamelCasePluginOptions.html" class="tsd-kind-icon">Camel<wbr>Case<wbr>Plugin<wbr>Options</a>
 						<ul>
-							<li class=" tsd-kind-method tsd-parent-kind-interface">
-								<a href="KyselyPlugin.html#createTransformers" class="tsd-kind-icon">create<wbr>Transformers</a>
+							<li class=" tsd-kind-property tsd-parent-kind-interface">
+								<a href="CamelCasePluginOptions.html#underscoreBeforeDigits" class="tsd-kind-icon">underscore<wbr>Before<wbr>Digits</a>
 							</li>
-							<li class=" tsd-kind-method tsd-parent-kind-interface">
-								<a href="KyselyPlugin.html#mapRow" class="tsd-kind-icon">map<wbr>Row</a>
+							<li class=" tsd-kind-property tsd-parent-kind-interface">
+								<a href="CamelCasePluginOptions.html#underscoreBetweenUppercaseLetters" class="tsd-kind-icon">underscore<wbr>Between<wbr>Uppercase<wbr>Letters</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-interface">
+								<a href="CamelCasePluginOptions.html#upperCase" class="tsd-kind-icon">upper<wbr>Case</a>
 							</li>
 						</ul>
 					</li>
