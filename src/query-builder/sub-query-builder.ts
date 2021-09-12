@@ -9,7 +9,7 @@ import {
 import { WithSchemaTransformer } from '../transformers/with-schema-transformer'
 
 export class SubQueryBuilder<DB, TB extends keyof DB> {
-  #executor: NeverExecutingQueryExecutor
+  readonly #executor: NeverExecutingQueryExecutor
 
   constructor(
     executor: NeverExecutingQueryExecutor = new NeverExecutingQueryExecutor()

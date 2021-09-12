@@ -18,7 +18,7 @@ import { DropTableBuilder } from './drop-table-builder'
  * Provides methods for building database schema.
  */
 export class SchemaModule {
-  #executor: QueryExecutor
+  readonly #executor: QueryExecutor
 
   constructor(executor: QueryExecutor) {
     this.#executor = executor

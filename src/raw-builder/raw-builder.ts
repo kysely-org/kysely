@@ -13,9 +13,9 @@ import { preventAwait } from '../util/prevent-await'
 import { QueryExecutor } from '../util/query-executor'
 
 export class RawBuilder<O = unknown> implements OperationNodeSource {
-  #sql: string
-  #params?: any[]
-  #executor: QueryExecutor
+  readonly #sql: string
+  readonly #params?: any[]
+  readonly #executor: QueryExecutor
 
   constructor({ sql, params, executor }: RawBuilderConstructorArgs) {
     this.#sql = sql
@@ -82,8 +82,8 @@ preventAwait(
 export class AliasedRawBuilder<O = unknown, A extends string = never>
   implements OperationNodeSource
 {
-  #rawBuilder: RawBuilder<O>
-  #alias: A
+  readonly #rawBuilder: RawBuilder<O>
+  readonly #alias: A
 
   /**
    * @private

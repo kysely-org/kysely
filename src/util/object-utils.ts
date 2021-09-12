@@ -63,7 +63,7 @@ export function isFunction(obj: any): obj is Function {
   return typeof obj === 'function'
 }
 
-export function isObject(obj: any): obj is object {
+export function isObject(obj: any): obj is Record<string, any> {
   return obj && typeof obj === 'object'
 }
 

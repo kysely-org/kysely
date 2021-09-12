@@ -14,8 +14,8 @@ import { UpdateQueryNode } from '../operation-node/update-query-node'
 import { CompileEntryPointNode } from '../query-compiler/query-compiler'
 
 export class WithSchemaTransformer extends OperationNodeTransformer {
-  #schema: string
-  #tables = new Set<string>()
+  readonly #schema: string
+  readonly #tables = new Set<string>()
 
   constructor(schema: string) {
     super()

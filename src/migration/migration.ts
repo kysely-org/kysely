@@ -2,7 +2,7 @@ import * as path from 'path'
 
 import { promises as fs } from 'fs'
 import { Kysely } from '../kysely'
-import { getLast, isFunction, isString } from '../util/object-utils'
+import { getLast, isFunction, isObject, isString } from '../util/object-utils'
 
 export const MIGRATION_TABLE = 'kysely_migration'
 export const MIGRATION_LOCK_TABLE = 'kysely_migration_lock'
@@ -12,7 +12,7 @@ const MAX_LOCK_WAIT_TIME_MS = 60000
 const LOCK_ATTEMPT_GAP_MS = 100
 
 export class MigrationModule {
-  #db: Kysely<any>
+  readonly #db: Kysely<any>
 
   constructor(db: Kysely<any>) {
     this.#db = db
@@ -176,7 +176,7 @@ async function acquireLock(db: Kysely<any>): Promise<void> {
   const startTime = performance.now()
 
   while (true) {
-    let error: Error | undefined
+    let error: unknown
 
     try {
       const gotLock = await tryAcquireLock(db)
@@ -192,7 +192,8 @@ async function acquireLock(db: Kysely<any>): Promise<void> {
 
     if (now - startTime > MAX_LOCK_WAIT_TIME_MS) {
       throw new Error(
-        'could not acquire migration lock' + (error ? `: ${error.message}` : '')
+        'could not acquire migration lock' +
+          (isObject(error) ? `: ${error.message}` : '')
       )
     }
 

@@ -95,8 +95,8 @@ export interface CamelCasePluginOptions {
  * ```
  */
 export class CamelCasePlugin implements KyselyPlugin {
-  #camelCase: StringMapper
-  #snakeCase: StringMapper
+  readonly #camelCase: StringMapper
+  readonly #snakeCase: StringMapper
 
   constructor(opt: CamelCasePluginOptions = {}) {
     this.#camelCase = createCamelCase(opt)
@@ -111,9 +111,9 @@ export class CamelCasePlugin implements KyselyPlugin {
     return Object.keys(row).reduce<Record<string, any>>((obj, key) => {
       let value = row[key]
 
-      if (Array.isArray(value) && value.length > 0 && isObject(value[0])) {
-        value = value.map((it) => this.mapRow(it))
-      } else if (isObject(value) && !(value instanceof Date)) {
+      if (Array.isArray(value)) {
+        value = value.map((it) => (canMap(it) ? this.mapRow(it) : it))
+      } else if (canMap(value)) {
         value = this.mapRow(value)
       }
 
@@ -149,6 +149,10 @@ class SnakeCaseTransformer extends OperationNodeTransformer {
       identifier: this.#snakeCase(node.identifier),
     }
   }
+}
+
+function canMap(obj: any): obj is Record<string, any> {
+  return isObject(obj) && !(obj instanceof Date) && !Buffer.isBuffer(obj)
 }
 
 function createSnakeCase({
