@@ -117,7 +117,7 @@ export class CamelCasePlugin implements KyselyPlugin {
         value = this.mapRow(value)
       }
 
-      obj[this.#camelCase(key)] = value
+      obj[this.camelCase(key)] = value
       return obj
     }, {})
   }
