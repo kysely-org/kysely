@@ -23,7 +23,7 @@ export type OperationNodeKind =
   | 'DeleteQueryNode'
   | 'ReturningNode'
   | 'CreateTableNode'
-  | 'ColumnDefinitionNode'
+  | 'AddColumnNode'
   | 'DropTableNode'
   | 'DataTypeNode'
   | 'OrderByNode'

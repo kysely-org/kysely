@@ -223,12 +223,12 @@ for (const dialect of ['postgres'] as const) {
       await ctx.db.schema
         .withSchema('mammals')
         .createTable('pet')
-        .integer('id', (col) => col.increments().primary())
-        .varchar('name', (col) => col.unique())
-        .integer('owner_id', (col) =>
+        .addColumn('integer', 'id', (col) => col.increments().primary())
+        .addColumn('varchar', 'name', (col) => col.unique())
+        .addColumn('integer', 'owner_id', (col) =>
           col.references('public.person.id').onDelete('cascade')
         )
-        .varchar('species')
+        .addColumn('varchar', 'species')
         .execute()
     }
 

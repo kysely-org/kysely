@@ -26,7 +26,7 @@ import { InsertQueryNode } from './insert-query-node'
 import { DeleteQueryNode } from './delete-query-node'
 import { ReturningNode } from './returning-node'
 import { CreateTableNode } from './create-table-node'
-import { ColumnDefinitionNode } from './column-definition-node'
+import { AddColumnNode } from './add-column-node'
 import { DropTableNode } from './drop-table-node'
 import { DataTypeNode } from './data-type-node'
 import { OrderByNode } from './order-by-node'
@@ -79,7 +79,7 @@ export class OperationNodeVisitor {
     DeleteQueryNode: this.visitDeleteQuery.bind(this),
     ReturningNode: this.visitReturning.bind(this),
     CreateTableNode: this.visitCreateTable.bind(this),
-    ColumnDefinitionNode: this.visitColumnDefinition.bind(this),
+    AddColumnNode: this.visitAddColumn.bind(this),
     DropTableNode: this.visitDropTable.bind(this),
     DataTypeNode: this.visitDataType.bind(this),
     OrderByNode: this.visitOrderBy.bind(this),
@@ -276,7 +276,7 @@ export class OperationNodeVisitor {
     node.columns.forEach(this.visitNode)
   }
 
-  protected visitColumnDefinition(node: ColumnDefinitionNode): void {
+  protected visitAddColumn(node: AddColumnNode): void {
     this.visitNode(node.column)
     this.visitNode(node.dataType)
 

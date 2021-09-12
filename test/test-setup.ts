@@ -124,28 +124,28 @@ async function createDatabase(db: Kysely<Database>): Promise<void> {
 
   await db.schema
     .createTable('person')
-    .integer('id', (col) => col.increments().primary())
-    .varchar('first_name')
-    .varchar('last_name')
-    .varchar('gender', 50)
+    .addColumn('integer', 'id', (col) => col.increments().primary())
+    .addColumn('varchar', 'first_name')
+    .addColumn('varchar', 'last_name')
+    .addColumn('varchar(50)', 'gender')
     .execute()
 
   await db.schema
     .createTable('pet')
-    .integer('id', (col) => col.increments().primary())
-    .varchar('name', (col) => col.unique())
-    .integer('owner_id', (col) =>
+    .addColumn('integer', 'id', (col) => col.increments().primary())
+    .addColumn('varchar', 'name', (col) => col.unique())
+    .addColumn('integer', 'owner_id', (col) =>
       col.references('person.id').onDelete('cascade')
     )
-    .varchar('species')
+    .addColumn('varchar', 'species')
     .execute()
 
   await db.schema
     .createTable('toy')
-    .integer('id', (col) => col.increments().primary())
-    .varchar('name')
-    .integer('pet_id', (col) => col.references('pet.id'))
-    .double('price')
+    .addColumn('integer', 'id', (col) => col.increments().primary())
+    .addColumn('varchar', 'name')
+    .addColumn('integer', 'pet_id', (col) => col.references('pet.id'))
+    .addColumn('double precision', 'price')
     .execute()
 
   await db.schema

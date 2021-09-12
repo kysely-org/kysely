@@ -23,7 +23,7 @@ import { InsertQueryNode } from './insert-query-node'
 import { DeleteQueryNode } from './delete-query-node'
 import { ReturningNode } from './returning-node'
 import { CreateTableNode } from './create-table-node'
-import { ColumnDefinitionNode } from './column-definition-node'
+import { AddColumnNode } from './add-column-node'
 import { DropTableNode } from './drop-table-node'
 import { DataTypeNode } from './data-type-node'
 import { OrderByNode } from './order-by-node'
@@ -106,7 +106,7 @@ export class OperationNodeTransformer {
     DeleteQueryNode: this.transformDeleteQuery.bind(this),
     ReturningNode: this.transformReturning.bind(this),
     CreateTableNode: this.transformCreateTable.bind(this),
-    ColumnDefinitionNode: this.transformColumnDefinition.bind(this),
+    AddColumnNode: this.transformAddColumn.bind(this),
     DropTableNode: this.transformDropTable.bind(this),
     DataTypeNode: this.transformDataType.bind(this),
     OrderByNode: this.transformOrderBy.bind(this),
@@ -324,11 +324,9 @@ export class OperationNodeTransformer {
     }
   }
 
-  protected transformColumnDefinition(
-    node: ColumnDefinitionNode
-  ): ColumnDefinitionNode {
+  protected transformAddColumn(node: AddColumnNode): AddColumnNode {
     return {
-      kind: 'ColumnDefinitionNode',
+      kind: 'AddColumnNode',
       column: this.transformNode(node.column),
       dataType: this.transformNode(node.dataType),
       references: this.transformNode(node.references),

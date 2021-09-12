@@ -1,8 +1,5 @@
 import { checkConstraintNode } from '../operation-node/check-constraint-node'
-import {
-  ColumnDefinitionNode,
-  columnDefinitionNode,
-} from '../operation-node/column-definition-node'
+import { AddColumnNode, addColumnNode } from '../operation-node/add-column-node'
 import {
   isOperationNodeSource,
   OperationNodeSource,
@@ -16,10 +13,10 @@ import { RawBuilder } from '../raw-builder/raw-builder'
 import { PrimitiveValue } from '../util/object-utils'
 import { preventAwait } from '../util/prevent-await'
 
-export class ColumnBuilder implements OperationNodeSource {
-  readonly #node: ColumnDefinitionNode
+export class AddColumnBuilder implements OperationNodeSource {
+  readonly #node: AddColumnNode
 
-  constructor(node: ColumnDefinitionNode) {
+  constructor(node: AddColumnNode) {
     this.#node = node
   }
 
@@ -30,9 +27,9 @@ export class ColumnBuilder implements OperationNodeSource {
    * on postgres this sets the column type to `serial` no matter what you
    * have specified before.
    */
-  increments(): ColumnBuilder {
-    return new ColumnBuilder(
-      columnDefinitionNode.cloneWith(this.#node, { isAutoIncrementing: true })
+  increments(): AddColumnBuilder {
+    return new AddColumnBuilder(
+      addColumnNode.cloneWith(this.#node, { isAutoIncrementing: true })
     )
   }
 
@@ -42,9 +39,9 @@ export class ColumnBuilder implements OperationNodeSource {
    * If you want to specify a composite primary key use the
    * {@link TableBuilder.primary} method.
    */
-  primary(): ColumnBuilder {
-    return new ColumnBuilder(
-      columnDefinitionNode.cloneWith(this.#node, { isPrimaryKey: true })
+  primary(): AddColumnBuilder {
+    return new AddColumnBuilder(
+      addColumnNode.cloneWith(this.#node, { isPrimaryKey: true })
     )
   }
 
@@ -56,7 +53,7 @@ export class ColumnBuilder implements OperationNodeSource {
    * col.references('person.id')
    * ```
    */
-  references(ref: string): ColumnBuilder {
+  references(ref: string): AddColumnBuilder {
     const references = parseStringReference(ref)
 
     if (!referenceNode.is(references) || selectAllNode.is(references.column)) {
@@ -65,8 +62,8 @@ export class ColumnBuilder implements OperationNodeSource {
       )
     }
 
-    return new ColumnBuilder(
-      columnDefinitionNode.cloneWith(this.#node, {
+    return new AddColumnBuilder(
+      addColumnNode.cloneWith(this.#node, {
         references: referencesNode.create(references.table, references.column),
       })
     )
@@ -75,13 +72,13 @@ export class ColumnBuilder implements OperationNodeSource {
   /**
    * Adds an `on delete` constraint for the foreign key column.
    */
-  onDelete(onDelete: OnDelete): ColumnBuilder {
+  onDelete(onDelete: OnDelete): AddColumnBuilder {
     if (!this.#node.references) {
       throw new Error('on delete constraint can only be added for foreign keys')
     }
 
-    return new ColumnBuilder(
-      columnDefinitionNode.cloneWith(this.#node, {
+    return new AddColumnBuilder(
+      addColumnNode.cloneWith(this.#node, {
         references: referencesNode.cloneWithOnDelete(
           this.#node.references,
           onDelete
@@ -93,18 +90,18 @@ export class ColumnBuilder implements OperationNodeSource {
   /**
    * Adds a unique constraint for the column.
    */
-  unique(): ColumnBuilder {
-    return new ColumnBuilder(
-      columnDefinitionNode.cloneWith(this.#node, { isUnique: true })
+  unique(): AddColumnBuilder {
+    return new AddColumnBuilder(
+      addColumnNode.cloneWith(this.#node, { isUnique: true })
     )
   }
 
   /**
    * Adds a `not null` constraint for the column.
    */
-  notNullable(): ColumnBuilder {
-    return new ColumnBuilder(
-      columnDefinitionNode.cloneWith(this.#node, { isNullable: false })
+  notNullable(): AddColumnBuilder {
+    return new AddColumnBuilder(
+      addColumnNode.cloneWith(this.#node, { isNullable: false })
     )
   }
 
@@ -115,13 +112,13 @@ export class ColumnBuilder implements OperationNodeSource {
    * ```ts
    * db.schema
    *   .createTable('pet')
-   *   .integer('number_of_legs', (col) => col.defaultTo(4))
+   *   .addColumn('integer', 'number_of_legs', (col) => col.defaultTo(4))
    *   .execute()
    * ```
    */
-  defaultTo(value: PrimitiveValue | RawBuilder<any>): ColumnBuilder {
-    return new ColumnBuilder(
-      columnDefinitionNode.cloneWith(this.#node, {
+  defaultTo(value: PrimitiveValue | RawBuilder<any>): AddColumnBuilder {
+    return new AddColumnBuilder(
+      addColumnNode.cloneWith(this.#node, {
         defaultTo: isOperationNodeSource(value)
           ? value.toOperationNode()
           : valueNode.createImmediate(value),
@@ -136,21 +133,21 @@ export class ColumnBuilder implements OperationNodeSource {
    * ```ts
    * db.schema
    *   .createTable('pet')
-   *   .integer('number_of_legs', (col) => col.check('number_of_legs < 5'))
+   *   .addColumn('integer', 'number_of_legs', (col) => col.check('number_of_legs < 5'))
    *   .execute()
    * ```
    */
-  check(sql: string): ColumnBuilder {
-    return new ColumnBuilder(
-      columnDefinitionNode.cloneWith(this.#node, {
+  check(sql: string): AddColumnBuilder {
+    return new AddColumnBuilder(
+      addColumnNode.cloneWith(this.#node, {
         check: checkConstraintNode.create(sql),
       })
     )
   }
 
-  toOperationNode(): ColumnDefinitionNode {
+  toOperationNode(): AddColumnNode {
     return this.#node
   }
 }
 
-preventAwait(ColumnBuilder, "don't await ColumnBuilder instances directly.")
+preventAwait(AddColumnBuilder, "don't await ColumnBuilder instances directly.")

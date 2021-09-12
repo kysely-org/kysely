@@ -3,7 +3,7 @@ import {
   checkConstraintNode,
   CheckConstraintNode,
 } from './check-constraint-node'
-import { ColumnDefinitionNode } from './column-definition-node'
+import { AddColumnNode } from './add-column-node'
 import { ColumnNode } from './column-node'
 import { OperationNode } from './operation-node'
 import { rawNode } from './raw-node'
@@ -22,7 +22,7 @@ export type CreateTableNodeModifier = 'IfNotExists'
 export interface CreateTableNode extends OperationNode {
   readonly kind: 'CreateTableNode'
   readonly table: TableNode
-  readonly columns: ReadonlyArray<ColumnDefinitionNode>
+  readonly columns: ReadonlyArray<AddColumnNode>
   readonly modifier?: CreateTableNodeModifier
   readonly primaryKeyConstraint?: TablePrimaryConstraintNode
   readonly uniqueConstraints?: ReadonlyArray<TableUniqueConstraintNode>
@@ -44,7 +44,7 @@ export const createTableNode = freeze({
 
   cloneWithColumn(
     createTable: CreateTableNode,
-    column: ColumnDefinitionNode
+    column: AddColumnNode
   ): CreateTableNode {
     return freeze({
       ...createTable,

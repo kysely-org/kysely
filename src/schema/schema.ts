@@ -34,10 +34,10 @@ export class SchemaModule {
    * ```ts
    * await db.schema
    *   .createTable('person')
-   *   .integer('id', col => col.primary().increments())
-   *   .string('first_name', col => col.notNullable())
-   *   .string('last_name', col => col.notNullable())
-   *   .string('gender')
+   *   .addColumn('int', 'id', col => col.primary().increments())
+   *   .addColumn('varchar', 'first_name', col => col.notNullable())
+   *   .addColumn('varchar', 'last_name', col => col.notNullable())
+   *   .addColumn('varchar', 'gender')
    *   .execute()
    * ```
    */
@@ -140,7 +140,9 @@ export class SchemaModule {
    */
   withSchema(schema: string): SchemaModule {
     return new SchemaModule(
-      this.#executor.copyWithTransformerAtFront(new WithSchemaTransformer(schema))
+      this.#executor.copyWithTransformerAtFront(
+        new WithSchemaTransformer(schema)
+      )
     )
   }
 }

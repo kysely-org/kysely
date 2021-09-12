@@ -7,15 +7,12 @@ import { RawNode } from './raw-node'
 import { ReferencesNode } from './references-node'
 import { ValueNode } from './value-node'
 
-export type ColumnDefinitionNodeParams = Omit<
-  Partial<ColumnDefinitionNode>,
-  'kind'
->
+export type AddColumnNodeParams = Omit<Partial<AddColumnNode>, 'kind'>
 
 export type ColumnDataTypeNode = DataTypeNode | RawNode
 
-export interface ColumnDefinitionNode extends OperationNode {
-  readonly kind: 'ColumnDefinitionNode'
+export interface AddColumnNode extends OperationNode {
+  readonly kind: 'AddColumnNode'
   readonly column: ColumnNode
   readonly dataType: ColumnDataTypeNode
   readonly references?: ReferencesNode
@@ -27,14 +24,14 @@ export interface ColumnDefinitionNode extends OperationNode {
   readonly check?: CheckConstraintNode
 }
 
-export const columnDefinitionNode = freeze({
-  is(node: OperationNode): node is ColumnDefinitionNode {
-    return node.kind === 'ColumnDefinitionNode'
+export const addColumnNode = freeze({
+  is(node: OperationNode): node is AddColumnNode {
+    return node.kind === 'AddColumnNode'
   },
 
-  create(column: string, dataType: ColumnDataTypeNode): ColumnDefinitionNode {
+  create(column: string, dataType: ColumnDataTypeNode): AddColumnNode {
     return freeze({
-      kind: 'ColumnDefinitionNode',
+      kind: 'AddColumnNode',
       column: columnNode.create(column),
       dataType,
       isPrimaryKey: false,
@@ -44,10 +41,7 @@ export const columnDefinitionNode = freeze({
     })
   },
 
-  cloneWith(
-    node: ColumnDefinitionNode,
-    params: ColumnDefinitionNodeParams
-  ): ColumnDefinitionNode {
+  cloneWith(node: AddColumnNode, params: AddColumnNodeParams): AddColumnNode {
     return freeze({
       ...node,
       ...params,

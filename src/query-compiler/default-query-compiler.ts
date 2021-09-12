@@ -1,15 +1,11 @@
 import { AliasNode } from '../operation-node/alias-node'
 import { AndNode } from '../operation-node/and-node'
 import { CheckConstraintNode } from '../operation-node/check-constraint-node'
-import { ColumnDefinitionNode } from '../operation-node/column-definition-node'
+import { AddColumnNode } from '../operation-node/add-column-node'
 import { ColumnUpdateNode } from '../operation-node/column-update-node'
 import { CreateIndexNode } from '../operation-node/create-index-node'
 import { CreateTableNode } from '../operation-node/create-table-node'
-import {
-  ColumnDataType,
-  DataTypeNode,
-  dataTypeNode,
-} from '../operation-node/data-type-node'
+import { DataTypeNode, dataTypeNode } from '../operation-node/data-type-node'
 import { DeleteQueryNode } from '../operation-node/delete-query-node'
 import { DropIndexNode } from '../operation-node/drop-index-node'
 import { DropTableNode } from '../operation-node/drop-table-node'
@@ -428,7 +424,7 @@ export class DefaultQueryCompiler
     this.append(')')
   }
 
-  protected override visitColumnDefinition(node: ColumnDefinitionNode): void {
+  protected override visitAddColumn(node: AddColumnNode): void {
     this.visitNode(node.column)
     this.append(' ')
 
@@ -436,7 +432,7 @@ export class DefaultQueryCompiler
       // Postgres overrides the data type for autoincrementing columns.
       if (
         dataTypeNode.is(node.dataType) &&
-        node.dataType.dataType === 'BigInteger'
+        node.dataType.dataType === 'bigint'
       ) {
         this.append('bigserial')
       } else {
@@ -498,7 +494,7 @@ export class DefaultQueryCompiler
   }
 
   protected override visitDataType(node: DataTypeNode): void {
-    this.append(DATA_TYPE_SQL[node.dataType](node))
+    this.append(node.dataType)
   }
 
   protected override visitOrderBy(node: OrderByNode): void {
@@ -747,19 +743,4 @@ const JOIN_TYPE_SQL: Record<JoinType, string> = {
   LeftJoin: 'left join',
   RightJoin: 'right join',
   FullJoin: 'full join',
-}
-
-const DATA_TYPE_SQL: Record<ColumnDataType, (node: DataTypeNode) => string> = {
-  BigInteger: () => 'bigint',
-  Binary: () => '???',
-  Boolean: () => 'boolean',
-  Double: () => 'double precision',
-  Float: () => 'real',
-  Integer: () => 'integer',
-  VarChar: (node) => `varchar(${node.size ?? 255})`,
-  Text: () => 'text',
-  Numeric: (node) => `numeric(${node.precision}, ${node.scale})`,
-  Decimal: (node) => `decimal(${node.precision}, ${node.scale})`,
-  Date: () => 'date',
-  DateTime: () => 'timestamp with time zone',
 }

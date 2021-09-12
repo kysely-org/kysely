@@ -73,7 +73,7 @@ async function ensureMigrationTableExists(db: Kysely<any>): Promise<void> {
       await db.schema
         .createTable(MIGRATION_TABLE)
         .ifNotExists()
-        .varchar('name', (col) => col.primary())
+        .addColumn('varchar', 'name', (col) => col.primary())
         .execute()
     } catch (error) {
       // At least on postgres, `if not exists` doesn't guarantee the `create table`
@@ -92,8 +92,10 @@ async function ensureMigrationLockTableExists(db: Kysely<any>): Promise<void> {
       await db.schema
         .createTable(MIGRATION_LOCK_TABLE)
         .ifNotExists()
-        .varchar('id', (col) => col.primary())
-        .integer('is_locked', (col) => col.notNullable().defaultTo(0))
+        .addColumn('varchar', 'id', (col) => col.primary())
+        .addColumn('integer', 'is_locked', (col) =>
+          col.notNullable().defaultTo(0)
+        )
         .execute()
     } catch (error) {
       // At least on postgres, `if not exists` doesn't guarantee the `create table`
