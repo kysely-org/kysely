@@ -756,7 +756,7 @@ const DATA_TYPE_SQL: Record<ColumnDataType, (node: DataTypeNode) => string> = {
   Double: () => 'double precision',
   Float: () => 'real',
   Integer: () => 'integer',
-  String: (node) => `varchar(${node.size ?? 255})`,
+  VarChar: (node) => `varchar(${node.size ?? 255})`,
   Text: () => 'text',
   Numeric: (node) => `numeric(${node.precision}, ${node.scale})`,
   Decimal: (node) => `decimal(${node.precision}, ${node.scale})`,

@@ -125,25 +125,25 @@ async function createDatabase(db: Kysely<Database>): Promise<void> {
   await db.schema
     .createTable('person')
     .integer('id', (col) => col.increments().primary())
-    .string('first_name')
-    .string('last_name')
-    .string('gender')
+    .varchar('first_name')
+    .varchar('last_name')
+    .varchar('gender', 50)
     .execute()
 
   await db.schema
     .createTable('pet')
     .integer('id', (col) => col.increments().primary())
-    .string('name', (col) => col.unique())
+    .varchar('name', (col) => col.unique())
     .integer('owner_id', (col) =>
       col.references('person.id').onDelete('cascade')
     )
-    .string('species')
+    .varchar('species')
     .execute()
 
   await db.schema
     .createTable('toy')
     .integer('id', (col) => col.increments().primary())
-    .string('name')
+    .varchar('name')
     .integer('pet_id', (col) => col.references('pet.id'))
     .double('price')
     .execute()

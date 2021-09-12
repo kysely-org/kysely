@@ -32,8 +32,8 @@ for (const dialect of BUILT_IN_DIALECTS) {
           .integer('b', (col) =>
             col.references('test.a').onDelete('cascade').check('b < a')
           )
-          .string('c')
-          .string('d', 10)
+          .varchar('c')
+          .varchar('d', 10)
           .bigInteger('e', (col) => col.unique().notNullable())
           .double('f')
           .float('g')
@@ -74,9 +74,9 @@ for (const dialect of BUILT_IN_DIALECTS) {
       it('should create a table with unique constraints', async () => {
         const builder = ctx.db.schema
           .createTable('test')
-          .string('a')
-          .string('b')
-          .string('c')
+          .varchar('a')
+          .varchar('b')
+          .varchar('c')
           .unique(['a', 'b'])
           .unique(['b', 'c'])
 
@@ -199,8 +199,8 @@ for (const dialect of BUILT_IN_DIALECTS) {
         await ctx.db.schema
           .createTable('test')
           .bigInteger('id', (col) => col.primary().increments())
-          .string('first_name')
-          .string('last_name')
+          .varchar('first_name')
+          .varchar('last_name')
           .execute()
       })
 
@@ -292,7 +292,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
         await ctx.db.schema
           .createTable('test')
           .bigInteger('id', (col) => col.primary().increments())
-          .string('first_name')
+          .varchar('first_name')
           .execute()
 
         await ctx.db.schema

@@ -224,11 +224,11 @@ for (const dialect of ['postgres'] as const) {
         .withSchema('mammals')
         .createTable('pet')
         .integer('id', (col) => col.increments().primary())
-        .string('name', (col) => col.unique())
+        .varchar('name', (col) => col.unique())
         .integer('owner_id', (col) =>
           col.references('public.person.id').onDelete('cascade')
         )
-        .string('species')
+        .varchar('species')
         .execute()
     }
 

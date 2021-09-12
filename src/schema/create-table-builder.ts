@@ -44,27 +44,23 @@ export class CreateTableBuilder implements OperationNodeSource, Compilable {
   }
 
   /**
-   * Adds a string column to the table.
-   *
-   * This creates a `varchar(255)` data type on most dialects.
+   * Adds a varchar(255) column to the table.
    */
-  string(columnName: string, build?: ColumnBuilderCallback): CreateTableBuilder
+  varchar(columnName: string, build?: ColumnBuilderCallback): CreateTableBuilder
 
   /**
-   * Adds a string column to the table.
-   *
-   * This creates a `varchar(maxLength)` data type on most dialects.
+   * Adds a varchar(maxLength) column to the table.
    */
-  string(
+  varchar(
     columnName: string,
     maxLength: number,
     build?: ColumnBuilderCallback
   ): CreateTableBuilder
 
-  string(...args: any[]): any {
+  varchar(...args: any[]): any {
     return this.addColumn(
       args[0],
-      dataTypeNode.create('String', {
+      dataTypeNode.create('VarChar', {
         size: isNumber(args[1]) ? args[1] : undefined,
       }),
       isFunction(args[1]) ? args[1] : args[2]
@@ -74,7 +70,7 @@ export class CreateTableBuilder implements OperationNodeSource, Compilable {
   /**
    * Adds a text column to the table.
    *
-   * Unlike {@link CreateTableBuilder.string} this creates a string column
+   * Unlike {@link CreateTableBuilder.varchar} this creates a string column
    * that doesn't have a maximum length.
    */
   text(columnName: string, build?: ColumnBuilderCallback): CreateTableBuilder {

@@ -2,7 +2,7 @@ import { freeze } from '../util/object-utils'
 import { OperationNode } from './operation-node'
 
 export type ColumnDataType =
-  | 'String'
+  | 'VarChar'
   | 'Text'
   | 'Integer'
   | 'BigInteger'
