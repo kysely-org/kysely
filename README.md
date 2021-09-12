@@ -23,7 +23,7 @@ type-safety! See the [DynamicModule](https://koskimas.github.io/kysely/classes/D
 for more info.
 
 Kysely is still young and some useful methods and modules are not yet implemented. If you start using
-Kysely, please open an issue as soon as you can't find something you want to use. 
+Kysely, please open an issue as soon as you can't find something you want to use.
 
 - [API reference](https://koskimas.github.io/kysely/index.html)
 - [Migrations](#migrations)
@@ -168,14 +168,14 @@ have. You will probably want to add a simple migration script to your projects l
 import path from 'path'
 import { db } from './database'
 
-db.migrate.migrateToLatest(path.join(__dirname, 'migrations'))
+db.migration.migrateToLatest(path.join(__dirname, 'migrations'))
 ```
 
-The migration methods use a lock in the database leve, and parallel calls are executed serially.
+The migration methods use a lock in the database level, and parallel calls are executed serially.
 This means that you can safely call `migrateToLatest` and other migration methods from multiple
 server instances simultaneously and the migrations are guaranteed to only be executed once.
 
-NOTE: Only `db.schema.migrateToLatest` method is implemented at the moment. There is no way
+NOTE: Only `db.migration.migrateToLatest` method is implemented at the moment. There is no way
 to run the down migrations, or to go forward to a specific migration. These methods will be
 added soon.
 

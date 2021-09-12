@@ -79,7 +79,7 @@
 					type-safety! See the <a href="https://koskimas.github.io/kysely/classes/DynamicModule.html#ref">DynamicModule</a>
 				for more info.</p>
 				<p>Kysely is still young and some useful methods and modules are not yet implemented. If you start using
-				Kysely, please open an issue as soon as you can&#39;t find something you want to use. </p>
+				Kysely, please open an issue as soon as you can&#39;t find something you want to use.</p>
 				<ul>
 					<li><a href="https://koskimas.github.io/kysely/index.html">API reference</a></li>
 					<li><a href="#migrations">Migrations</a></li>
@@ -210,12 +210,12 @@
 				<pre><code class="language-ts"><span style="color: #AF00DB">import</span><span style="color: #000000"> </span><span style="color: #001080">path</span><span style="color: #000000"> </span><span style="color: #AF00DB">from</span><span style="color: #000000"> </span><span style="color: #A31515">&#039;path&#039;</span>
 <span style="color: #AF00DB">import</span><span style="color: #000000"> { </span><span style="color: #001080">db</span><span style="color: #000000"> } </span><span style="color: #AF00DB">from</span><span style="color: #000000"> </span><span style="color: #A31515">&#039;./database&#039;</span>
 
-<span style="color: #001080">db</span><span style="color: #000000">.</span><span style="color: #001080">migrate</span><span style="color: #000000">.</span><span style="color: #795E26">migrateToLatest</span><span style="color: #000000">(</span><span style="color: #001080">path</span><span style="color: #000000">.</span><span style="color: #795E26">join</span><span style="color: #000000">(</span><span style="color: #001080">__dirname</span><span style="color: #000000">, </span><span style="color: #A31515">&#039;migrations&#039;</span><span style="color: #000000">))</span>
+<span style="color: #001080">db</span><span style="color: #000000">.</span><span style="color: #001080">migration</span><span style="color: #000000">.</span><span style="color: #795E26">migrateToLatest</span><span style="color: #000000">(</span><span style="color: #001080">path</span><span style="color: #000000">.</span><span style="color: #795E26">join</span><span style="color: #000000">(</span><span style="color: #001080">__dirname</span><span style="color: #000000">, </span><span style="color: #A31515">&#039;migrations&#039;</span><span style="color: #000000">))</span>
 </code></pre>
-				<p>The migration methods use a lock in the database leve, and parallel calls are executed serially.
+				<p>The migration methods use a lock in the database level, and parallel calls are executed serially.
 					This means that you can safely call <code>migrateToLatest</code> and other migration methods from multiple
 				server instances simultaneously and the migrations are guaranteed to only be executed once.</p>
-				<p>NOTE: Only <code>db.schema.migrateToLatest</code> method is implemented at the moment. There is no way
+				<p>NOTE: Only <code>db.migration.migrateToLatest</code> method is implemented at the moment. There is no way
 					to run the down migrations, or to go forward to a specific migration. These methods will be
 				added soon.</p>
 				<a href="#why-not-just-contribute-to-knex" id="why-not-just-contribute-to-knex" style="color: inherit; text-decoration: none;">
@@ -284,6 +284,12 @@
 						<a href="classes/MigrationModule.html" class="tsd-kind-icon">Migration<wbr>Module</a>
 					</li>
 					<li class=" tsd-kind-class">
+						<a href="classes/OperationNodeTransformer.html" class="tsd-kind-icon">Operation<wbr>Node<wbr>Transformer</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="classes/OperationNodeVisitor.html" class="tsd-kind-icon">Operation<wbr>Node<wbr>Visitor</a>
+					</li>
+					<li class=" tsd-kind-class">
 						<a href="classes/PostgresDialect.html" class="tsd-kind-icon">Postgres<wbr>Dialect</a>
 					</li>
 					<li class=" tsd-kind-class">
@@ -345,6 +351,9 @@
 					</li>
 					<li class=" tsd-kind-interface">
 						<a href="interfaces/KyselyConstructorArgs.html" class="tsd-kind-icon">Kysely<wbr>Constructor<wbr>Args</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/KyselyPlugin.html" class="tsd-kind-icon">Kysely<wbr>Plugin</a>
 					</li>
 					<li class=" tsd-kind-interface">
 						<a href="interfaces/Migration.html" class="tsd-kind-icon">Migration</a>
