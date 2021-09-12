@@ -6,7 +6,7 @@ import { parseStringReference } from '../parser/reference-parser'
 export class DynamicReferenceBuilder<R extends string = never>
   implements OperationNodeSource
 {
-  #dynamicReference: string
+  readonly #dynamicReference: string
 
   get dynamicReference(): string {
     return this.#dynamicReference

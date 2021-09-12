@@ -27,8 +27,8 @@ import { withNode, WithNode } from './operation-node/with-node'
 import { WithSchemaTransformer } from './transformers/with-schema-transformer'
 
 export class QueryCreator<DB> {
-  #executor: QueryExecutor
-  #withNode?: WithNode
+  readonly #executor: QueryExecutor
+  readonly #withNode?: WithNode
 
   constructor(executor: QueryExecutor, withNode?: WithNode) {
     this.#executor = executor
@@ -343,7 +343,7 @@ export class QueryCreator<DB> {
    */
   withSchema(schema: string): QueryCreator<DB> {
     return new QueryCreator(
-      this.#executor.copyWithTransformer(new WithSchemaTransformer(schema)),
+      this.#executor.copyWithTransformerAtFront(new WithSchemaTransformer(schema)),
       this.#withNode
     )
   }

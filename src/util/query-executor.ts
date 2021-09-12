@@ -11,7 +11,7 @@ import { freeze } from './object-utils'
 export type RowMapper = (row: Record<string, any>) => Record<string, any>
 
 export abstract class QueryExecutor {
-  #transformers: ReadonlyArray<OperationNodeTransformer>
+  readonly #transformers: ReadonlyArray<OperationNodeTransformer>
 
   constructor(transformers: OperationNodeTransformer[] = []) {
     this.#transformers = freeze([...transformers])
@@ -35,7 +35,7 @@ export abstract class QueryExecutor {
     compiledQuery: CompiledQuery
   ): Promise<QueryResult<R>>
 
-  abstract copyWithTransformer(
+  abstract copyWithTransformerAtFront(
     transformer: OperationNodeTransformer
   ): QueryExecutor
 }
@@ -68,13 +68,13 @@ export class DefaultQueryExecutor extends QueryExecutor {
     })
   }
 
-  copyWithTransformer(
+  copyWithTransformerAtFront(
     transformer: OperationNodeTransformer
   ): DefaultQueryExecutor {
     return new DefaultQueryExecutor(
       this.#compiler,
       this.#connectionProvider,
-      [...this.transformers, transformer],
+      [transformer, ...this.transformers],
       [...this.#rowMappers]
     )
   }
@@ -107,9 +107,9 @@ export class NeverExecutingQueryExecutor extends QueryExecutor {
     throw new Error(`this query cannot be executed`)
   }
 
-  copyWithTransformer(
+  copyWithTransformerAtFront(
     transformer: OperationNodeTransformer
   ): NeverExecutingQueryExecutor {
-    return new NeverExecutingQueryExecutor([...this.transformers, transformer])
+    return new NeverExecutingQueryExecutor([transformer, ...this.transformers])
   }
 }

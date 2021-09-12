@@ -79,9 +79,9 @@ import { DropSchemaNode } from './drop-schema-node'
  * ```
  */
 export class OperationNodeTransformer {
-  protected nodeStack: OperationNode[] = []
+  protected readonly nodeStack: OperationNode[] = []
 
-  #transformers: Record<OperationNodeKind, Function> = {
+  readonly #transformers: Record<OperationNodeKind, Function> = {
     AliasNode: this.transformAlias.bind(this),
     ColumnNode: this.transformColumn.bind(this),
     IdentifierNode: this.transformIdentifier.bind(this),

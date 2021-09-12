@@ -78,7 +78,7 @@ export class SubQueryBuilder<DB, TB extends keyof DB> {
    */
   withSchema(schema: string): SubQueryBuilder<DB, TB> {
     return new SubQueryBuilder(
-      this.#executor.copyWithTransformer(new WithSchemaTransformer(schema))
+      this.#executor.copyWithTransformerAtFront(new WithSchemaTransformer(schema))
     )
   }
 }

@@ -134,7 +134,7 @@ export class CamelCasePlugin implements KyselyPlugin {
 type StringMapper = (str: string) => string
 
 class SnakeCaseTransformer extends OperationNodeTransformer {
-  #snakeCase: StringMapper
+  readonly #snakeCase: StringMapper
 
   constructor(snakeCase: StringMapper) {
     super()

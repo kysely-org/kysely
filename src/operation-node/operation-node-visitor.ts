@@ -52,9 +52,9 @@ import { CreateSchemaNode } from './create-schema-node'
 import { DropSchemaNode } from './drop-schema-node'
 
 export class OperationNodeVisitor {
-  protected nodeStack: OperationNode[] = []
+  protected readonly nodeStack: OperationNode[] = []
 
-  #visitors: Record<OperationNodeKind, Function> = {
+  readonly #visitors: Record<OperationNodeKind, Function> = {
     AliasNode: this.visitAlias.bind(this),
     ColumnNode: this.visitColumn.bind(this),
     IdentifierNode: this.visitIdentifier.bind(this),

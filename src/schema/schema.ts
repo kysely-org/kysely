@@ -140,7 +140,7 @@ export class SchemaModule {
    */
   withSchema(schema: string): SchemaModule {
     return new SchemaModule(
-      this.#executor.copyWithTransformer(new WithSchemaTransformer(schema))
+      this.#executor.copyWithTransformerAtFront(new WithSchemaTransformer(schema))
     )
   }
 }

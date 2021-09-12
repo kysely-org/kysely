@@ -11,7 +11,7 @@ const PRIVATE_RELEASE_METHOD = Symbol()
 
 export class PostgresDriver extends Driver {
   #pool: Pool | null = null
-  #connections = new WeakMap<PoolClient, DatabaseConnection>()
+  readonly #connections = new WeakMap<PoolClient, DatabaseConnection>()
 
   protected override getDefaultPort(): number {
     return 5432

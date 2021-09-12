@@ -919,7 +919,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * The generated SQL (postgresql):
    *
    * ```sql
-   * select distinct on ("person".id") "person".*
+   * select distinct on ("person"."id") "person".*
    * from "person"
    * inner join "pet" on "pet"."owner_id" = "person"."id"
    * where "pet"."name" = $1
@@ -2104,8 +2104,8 @@ export class AliasedQueryBuilder<
   O = undefined,
   A extends string = never
 > {
-  #queryBuilder: QueryBuilder<DB, TB, O>
-  #alias: A
+  readonly #queryBuilder: QueryBuilder<DB, TB, O>
+  readonly #alias: A
 
   constructor(queryBuilder: QueryBuilder<DB, TB, O>, alias: A) {
     this.#queryBuilder = queryBuilder
