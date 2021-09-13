@@ -87,10 +87,10 @@ export class CreateTableBuilder implements OperationNodeSource, Compilable {
    *
    * @example
    * ```ts
-   * primary(['first_name', 'last_name'])
+   * addPrimaryKeyConstraint(['first_name', 'last_name'])
    * ```
    */
-  primary(columns: string[]): CreateTableBuilder {
+  addPrimaryKeyConstraint(columns: string[]): CreateTableBuilder {
     return new CreateTableBuilder({
       executor: this.#executor,
       createTableNode: createTableNode.cloneWithPrimaryKeyConstraint(
@@ -105,10 +105,10 @@ export class CreateTableBuilder implements OperationNodeSource, Compilable {
    *
    * @example
    * ```ts
-   * unique(['first_name', 'last_name'])
+   * addUniqueConstraint(['first_name', 'last_name'])
    * ```
    */
-  unique(columns: string[]): CreateTableBuilder {
+  addUniqueConstraint(columns: string[]): CreateTableBuilder {
     return new CreateTableBuilder({
       executor: this.#executor,
       createTableNode: createTableNode.cloneWithUniqueConstraint(
@@ -123,10 +123,10 @@ export class CreateTableBuilder implements OperationNodeSource, Compilable {
    *
    * @example
    * ```ts
-   * check('number_of_legs < 5')
+   * addCheckConstraint('number_of_legs < 5')
    * ```
    */
-  check(checkExpression: string): CreateTableBuilder {
+  addCheckConstraint(checkExpression: string): CreateTableBuilder {
     return new CreateTableBuilder({
       executor: this.#executor,
       createTableNode: createTableNode.cloneWithCheckConstraint(

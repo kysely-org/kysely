@@ -1,6 +1,6 @@
 {
   "name": "kysely",
-  "version": "0.1.32",
+  "version": "0.2.1",
   "description": "Type safe SQL query builder",
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",

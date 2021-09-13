@@ -3,7 +3,7 @@ import { Kysely } from '../../src'
 export async function up(db: Kysely<any>): Promise<void> {
   await db.schema
     .createTable('test2')
-    .addColumn('integer', 'id', (col) => col.primary())
+    .addColumn('integer', 'id', (col) => col.primaryKey())
     .addColumn('integer', 'test1_id', (col) => col.references('test1.id'))
     .execute()
 }

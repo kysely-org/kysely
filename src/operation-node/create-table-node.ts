@@ -4,9 +4,7 @@ import {
   CheckConstraintNode,
 } from './check-constraint-node'
 import { AddColumnNode } from './add-column-node'
-import { ColumnNode } from './column-node'
 import { OperationNode } from './operation-node'
-import { rawNode } from './raw-node'
 import { TableNode } from './table-node'
 import {
   tablePrimaryConstraintNode,

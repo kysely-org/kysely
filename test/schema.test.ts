@@ -28,7 +28,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
       it('should create a table with all data types', async () => {
         const builder = ctx.db.schema
           .createTable('test')
-          .addColumn('integer', 'a', (col) => col.primary().increments())
+          .addColumn('integer', 'a', (col) => col.primaryKey().increments())
           .addColumn('integer', 'b', (col) =>
             col.references('test.a').onDelete('cascade').check('b < a')
           )
@@ -79,8 +79,8 @@ for (const dialect of BUILT_IN_DIALECTS) {
           .addColumn('varchar', 'a')
           .addColumn('varchar', 'b')
           .addColumn('varchar', 'c')
-          .unique(['a', 'b'])
-          .unique(['b', 'c'])
+          .addUniqueConstraint(['a', 'b'])
+          .addUniqueConstraint(['b', 'c'])
 
         testSql(builder, dialect, {
           postgres: {
@@ -98,8 +98,8 @@ for (const dialect of BUILT_IN_DIALECTS) {
           .addColumn('integer', 'a')
           .addColumn('integer', 'b')
           .addColumn('integer', 'c')
-          .check('a > 1')
-          .check('b < c')
+          .addCheckConstraint('a > 1')
+          .addCheckConstraint('b < c')
 
         testSql(builder, dialect, {
           postgres: {
@@ -111,11 +111,28 @@ for (const dialect of BUILT_IN_DIALECTS) {
         await builder.execute()
       })
 
+      it('should add a composite primary key constraint', async () => {
+        const builder = ctx.db.schema
+          .createTable('test')
+          .addColumn('integer', 'a')
+          .addColumn('integer', 'b')
+          .addPrimaryKeyConstraint(['a', 'b'])
+
+        testSql(builder, dialect, {
+          postgres: {
+            sql: `create table "test" ("a" integer, "b" integer, primary key ("a", "b"))`,
+            bindings: [],
+          },
+        })
+
+        await builder.execute()
+      })
+
       it("should create a table if it doesn't already exist", async () => {
         const builder = ctx.db.schema
           .createTable('test')
           .ifNotExists()
-          .addColumn('integer', 'id', (col) => col.primary().increments())
+          .addColumn('integer', 'id', (col) => col.primaryKey().increments())
 
         testSql(builder, dialect, {
           postgres: {
@@ -131,7 +148,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
         it('bigInteger increments key should create a bigserial column', async () => {
           const builder = ctx.db.schema
             .createTable('test')
-            .addColumn('bigint', 'a', (col) => col.primary().increments())
+            .addColumn('bigint', 'a', (col) => col.primaryKey().increments())
 
           testSql(builder, dialect, {
             postgres: {
@@ -146,7 +163,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
         it('should create a table in specific schema', async () => {
           const builder = ctx.db.schema
             .createTable('public.test')
-            .addColumn('integer', 'id', (col) => col.primary().increments())
+            .addColumn('integer', 'id', (col) => col.primaryKey().increments())
             .addColumn('integer', 'foreign_key', (col) =>
               col.references('public.test.id')
             )
@@ -167,7 +184,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
       beforeEach(async () => {
         await ctx.db.schema
           .createTable('test')
-          .addColumn('bigint', 'id', (col) => col.primary().increments())
+          .addColumn('bigint', 'id', (col) => col.primaryKey().increments())
           .execute()
       })
 
@@ -202,7 +219,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
       beforeEach(async () => {
         await ctx.db.schema
           .createTable('test')
-          .addColumn('bigint', 'id', (col) => col.primary().increments())
+          .addColumn('bigint', 'id', (col) => col.primaryKey().increments())
           .addColumn('varchar', 'first_name')
           .addColumn('varchar', 'last_name')
           .execute()
@@ -295,7 +312,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
       beforeEach(async () => {
         await ctx.db.schema
           .createTable('test')
-          .addColumn('bigint', 'id', (col) => col.primary().increments())
+          .addColumn('bigint', 'id', (col) => col.primaryKey().increments())
           .addColumn('varchar', 'first_name')
           .execute()
 

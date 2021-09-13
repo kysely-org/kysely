@@ -34,7 +34,7 @@ export class SchemaModule {
    * ```ts
    * await db.schema
    *   .createTable('person')
-   *   .addColumn('int', 'id', col => col.primary().increments())
+   *   .addColumn('int', 'id', col => col.primaryKey().increments())
    *   .addColumn('varchar', 'first_name', col => col.notNullable())
    *   .addColumn('varchar', 'last_name', col => col.notNullable())
    *   .addColumn('varchar', 'gender')

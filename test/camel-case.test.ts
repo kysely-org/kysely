@@ -35,7 +35,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
       await camelDb.schema.dropTable('camelPerson').ifExists().execute()
       await camelDb.schema
         .createTable('camelPerson')
-        .addColumn('integer', 'id', (col) => col.increments().primary())
+        .addColumn('integer', 'id', (col) => col.increments().primaryKey())
         .addColumn('varchar', 'firstName')
         .addColumn('varchar', 'lastName')
         .execute()

@@ -37,9 +37,9 @@ export class AddColumnBuilder implements OperationNodeSource {
    * Makes the column the primary key.
    *
    * If you want to specify a composite primary key use the
-   * {@link TableBuilder.primary} method.
+   * {@link TableBuilder.addPrimaryKeyConstraint} method.
    */
-  primary(): AddColumnBuilder {
+  primaryKey(): AddColumnBuilder {
     return new AddColumnBuilder(
       addColumnNode.cloneWith(this.#node, { isPrimaryKey: true })
     )

@@ -125,20 +125,20 @@ import { Kysely } from 'kysely'
 export async function up(db: Kysely<any>): Promise<void> {
   await db.schema
     .createTable('person')
-    .integer('id', (col) => col.increments().primary())
-    .string('first_name')
-    .string('last_name')
-    .string('gender')
+    .addColumn('integer', 'id', (col) => col.increments().primaryKey())
+    .addColumn('varchar', 'first_name')
+    .addColumn('varchar', 'last_name')
+    .addColumn('varchar(50)', 'gender')
     .execute()
 
   await db.schema
     .createTable('pet')
-    .integer('id', (col) => col.increments().primary())
-    .string('name', (col) => col.unique())
-    .integer('owner_id', (col) =>
+    .addColumn('integer', 'id', (col) => col.increments().primaryKey())
+    .addColumn('varchar', 'name', (col) => col.unique())
+    .addColumn('integer', 'owner_id', (col) =>
       col.references('person.id').onDelete('cascade')
     )
-    .string('species')
+    .addColumn('varchar', 'species')
     .execute()
 
   await db.schema

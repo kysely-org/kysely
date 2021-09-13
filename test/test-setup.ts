@@ -124,7 +124,7 @@ async function createDatabase(db: Kysely<Database>): Promise<void> {
 
   await db.schema
     .createTable('person')
-    .addColumn('integer', 'id', (col) => col.increments().primary())
+    .addColumn('integer', 'id', (col) => col.increments().primaryKey())
     .addColumn('varchar', 'first_name')
     .addColumn('varchar', 'last_name')
     .addColumn('varchar(50)', 'gender')
@@ -132,7 +132,7 @@ async function createDatabase(db: Kysely<Database>): Promise<void> {
 
   await db.schema
     .createTable('pet')
-    .addColumn('integer', 'id', (col) => col.increments().primary())
+    .addColumn('integer', 'id', (col) => col.increments().primaryKey())
     .addColumn('varchar', 'name', (col) => col.unique())
     .addColumn('integer', 'owner_id', (col) =>
       col.references('person.id').onDelete('cascade')
@@ -142,7 +142,7 @@ async function createDatabase(db: Kysely<Database>): Promise<void> {
 
   await db.schema
     .createTable('toy')
-    .addColumn('integer', 'id', (col) => col.increments().primary())
+    .addColumn('integer', 'id', (col) => col.increments().primaryKey())
     .addColumn('varchar', 'name')
     .addColumn('integer', 'pet_id', (col) => col.references('pet.id'))
     .addColumn('double precision', 'price')
