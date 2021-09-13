@@ -125,20 +125,20 @@ import { Kysely } from 'kysely'
 export async function up(db: Kysely<any>): Promise<void> {
   await db.schema
     .createTable('person')
-    .addColumn('integer', 'id', (col) => col.increments().primaryKey())
-    .addColumn('varchar', 'first_name')
-    .addColumn('varchar', 'last_name')
-    .addColumn('varchar(50)', 'gender')
+    .addColumn('id', 'integer', (col) => col.increments().primaryKey())
+    .addColumn('first_name', 'varchar')
+    .addColumn('last_name', 'varchar')
+    .addColumn('gender', 'varchar(50)')
     .execute()
 
   await db.schema
     .createTable('pet')
-    .addColumn('integer', 'id', (col) => col.increments().primaryKey())
-    .addColumn('varchar', 'name', (col) => col.unique())
-    .addColumn('integer', 'owner_id', (col) =>
+    .addColumn('id', 'integer', (col) => col.increments().primaryKey())
+    .addColumn('name', 'varchar', (col) => col.unique())
+    .addColumn('owner_id', 'integer', (col) =>
       col.references('person.id').onDelete('cascade')
     )
-    .addColumn('varchar', 'species')
+    .addColumn('species', 'varchar')
     .execute()
 
   await db.schema

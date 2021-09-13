@@ -37,7 +37,7 @@ export interface CamelCasePluginOptions {
  *
  * For example let's assume we have a table called `person_table`
  * with columns `first_name` and `last_name` in the database. When
- * using `CamelCasePlugin` one would setup Kysely like this:
+ * using `CamelCasePlugin` we would setup Kysely like this:
  *
  * ```ts
  * interface Person {

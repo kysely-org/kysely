@@ -47,6 +47,10 @@ export type OperationNodeKind =
   | 'HavingNode'
   | 'CreateSchemaNode'
   | 'DropSchemaNode'
+  | 'AlterTableNode'
+  | 'DropColumnNode'
+  | 'RenameColumnNode'
+  | 'AlterColumnNode'
 
 export interface OperationNode {
   readonly kind: OperationNodeKind

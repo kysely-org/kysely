@@ -112,7 +112,7 @@ export class AddColumnBuilder implements OperationNodeSource {
    * ```ts
    * db.schema
    *   .createTable('pet')
-   *   .addColumn('integer', 'number_of_legs', (col) => col.defaultTo(4))
+   *   .addColumn('number_of_legs', 'integer', (col) => col.defaultTo(4))
    *   .execute()
    * ```
    */
@@ -133,7 +133,7 @@ export class AddColumnBuilder implements OperationNodeSource {
    * ```ts
    * db.schema
    *   .createTable('pet')
-   *   .addColumn('integer', 'number_of_legs', (col) => col.check('number_of_legs < 5'))
+   *   .addColumn('number_of_legs', (col) => col.check('number_of_legs < 5', 'integer'))
    *   .execute()
    * ```
    */

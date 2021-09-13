@@ -65,6 +65,10 @@ import { CompileEntryPointNode, QueryCompiler } from './query-compiler'
 import { HavingNode } from '../operation-node/having-node'
 import { CreateSchemaNode } from '../operation-node/create-schema-node'
 import { DropSchemaNode } from '../operation-node/drop-schema-node'
+import { AlterTableNode } from '../operation-node/alter-table-node'
+import { DropColumnNode } from '../operation-node/drop-column-node'
+import { RenameColumnNode } from '../operation-node/rename-column-node'
+import { AlterColumnNode } from '../operation-node/alter-column-node'
 
 export class DefaultQueryCompiler
   extends OperationNodeVisitor
@@ -692,6 +696,58 @@ export class DefaultQueryCompiler
     this.visitNode(node.name)
     this.append(' as ')
     this.visitNode(node.expression)
+  }
+
+  protected visitAlterTable(node: AlterTableNode): void {
+    this.append('alter table ')
+
+    this.visitNode(node.table)
+    this.append(' ')
+
+    if (node.renameTo) {
+      this.append('rename to ')
+      this.visitNode(node.renameTo)
+    }
+
+    if (node.setSchema) {
+      this.append('set schema ')
+      this.visitNode(node.setSchema)
+    }
+
+    if (node.renameColumn) {
+      this.visitNode(node.renameColumn)
+    }
+
+    if (node.addColumn) {
+      this.visitNode(node.addColumn)
+    }
+
+    if (node.dropColumn) {
+      this.visitNode(node.dropColumn)
+    }
+
+    if (node.alterColumn) {
+      this.visitNode(node.alterColumn)
+    }
+  }
+
+  protected visitRenameColumn(node: RenameColumnNode): void {
+    this.append('rename column ')
+    this.visitNode(node.column)
+    this.append(' to ')
+    this.visitNode(node.renameTo)
+  }
+
+  protected visitDropColumn(node: DropColumnNode): void {
+    this.append('drop column ')
+    this.visitNode(node.column)
+  }
+
+  protected visitAlterColumn(node: AlterColumnNode): void {
+    this.append('alter column ')
+    this.visitNode(node.column)
+
+    
   }
 
   protected appendLeftIdentifierWrapper(): void {

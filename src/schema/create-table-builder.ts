@@ -50,14 +50,15 @@ export class CreateTableBuilder implements OperationNodeSource, Compilable {
    * await db.schema
    *   .createTable('person')
    *   .addColumn('int', 'id', (col) => col.increments().primary()),
-   *   .addColumn('varchar(50), 'first_name', (col) => col.notNullable())
-   *   .addColumn('varchar(50), 'last_name')
+   *   .addColumn('first_name', 'varchar(50), (col) => col.notNullable())
+   *   .addColumn('varchar', 'last_name')
    *   .addColumn('numeric(8, 2)', 'bank_balance')
+   *   .addColumn('data', db.raw('customtype'))
    * ```
    */
   addColumn(
-    dataType: ColumnDataType | RawBuilder,
     columnName: string,
+    dataType: ColumnDataType | RawBuilder,
     build?: ColumnBuilderCallback
   ): CreateTableBuilder {
     let columnBuilder = new AddColumnBuilder(

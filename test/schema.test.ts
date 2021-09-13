@@ -28,24 +28,24 @@ for (const dialect of BUILT_IN_DIALECTS) {
       it('should create a table with all data types', async () => {
         const builder = ctx.db.schema
           .createTable('test')
-          .addColumn('integer', 'a', (col) => col.primaryKey().increments())
-          .addColumn('integer', 'b', (col) =>
+          .addColumn('a', 'integer', (col) => col.primaryKey().increments())
+          .addColumn('b', 'integer', (col) =>
             col.references('test.a').onDelete('cascade').check('b < a')
           )
-          .addColumn('varchar', 'c')
-          .addColumn('varchar(10)', 'd')
-          .addColumn('bigint', 'e', (col) => col.unique().notNullable())
-          .addColumn('double precision', 'f')
-          .addColumn('real', 'g')
-          .addColumn('text', 'h')
-          .addColumn(ctx.db.raw('varchar(123)'), 'i')
-          .addColumn('numeric(6, 2)', 'j')
-          .addColumn('decimal(8, 4)', 'k')
-          .addColumn('boolean', 'l', (col) =>
+          .addColumn('c', 'varchar')
+          .addColumn('d', 'varchar(10)')
+          .addColumn('e', 'bigint', (col) => col.unique().notNullable())
+          .addColumn('f', 'double precision')
+          .addColumn('g', 'real')
+          .addColumn('h', 'text')
+          .addColumn('i', ctx.db.raw('varchar(123)'))
+          .addColumn('j', 'numeric(6, 2)')
+          .addColumn('k', 'decimal(8, 4)')
+          .addColumn('l', 'boolean', (col) =>
             col.notNullable().defaultTo(false)
           )
-          .addColumn('date', 'm')
-          .addColumn('timestamp with time zone', 'n')
+          .addColumn('m', 'date')
+          .addColumn('n', 'timestamp with time zone')
 
         testSql(builder, dialect, {
           postgres: {
@@ -76,9 +76,9 @@ for (const dialect of BUILT_IN_DIALECTS) {
       it('should create a table with unique constraints', async () => {
         const builder = ctx.db.schema
           .createTable('test')
-          .addColumn('varchar', 'a')
-          .addColumn('varchar', 'b')
-          .addColumn('varchar', 'c')
+          .addColumn('a', 'varchar')
+          .addColumn('b', 'varchar')
+          .addColumn('c', 'varchar')
           .addUniqueConstraint(['a', 'b'])
           .addUniqueConstraint(['b', 'c'])
 
@@ -95,9 +95,9 @@ for (const dialect of BUILT_IN_DIALECTS) {
       it('should create a table with check constraints', async () => {
         const builder = ctx.db.schema
           .createTable('test')
-          .addColumn('integer', 'a')
-          .addColumn('integer', 'b')
-          .addColumn('integer', 'c')
+          .addColumn('a', 'integer')
+          .addColumn('b', 'integer')
+          .addColumn('c', 'integer')
           .addCheckConstraint('a > 1')
           .addCheckConstraint('b < c')
 
@@ -114,8 +114,8 @@ for (const dialect of BUILT_IN_DIALECTS) {
       it('should add a composite primary key constraint', async () => {
         const builder = ctx.db.schema
           .createTable('test')
-          .addColumn('integer', 'a')
-          .addColumn('integer', 'b')
+          .addColumn('a', 'integer')
+          .addColumn('b', 'integer')
           .addPrimaryKeyConstraint(['a', 'b'])
 
         testSql(builder, dialect, {
@@ -132,7 +132,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
         const builder = ctx.db.schema
           .createTable('test')
           .ifNotExists()
-          .addColumn('integer', 'id', (col) => col.primaryKey().increments())
+          .addColumn('id', 'integer', (col) => col.primaryKey().increments())
 
         testSql(builder, dialect, {
           postgres: {
@@ -148,7 +148,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
         it('bigInteger increments key should create a bigserial column', async () => {
           const builder = ctx.db.schema
             .createTable('test')
-            .addColumn('bigint', 'a', (col) => col.primaryKey().increments())
+            .addColumn('a', 'bigint', (col) => col.primaryKey().increments())
 
           testSql(builder, dialect, {
             postgres: {
@@ -163,8 +163,8 @@ for (const dialect of BUILT_IN_DIALECTS) {
         it('should create a table in specific schema', async () => {
           const builder = ctx.db.schema
             .createTable('public.test')
-            .addColumn('integer', 'id', (col) => col.primaryKey().increments())
-            .addColumn('integer', 'foreign_key', (col) =>
+            .addColumn('id', 'integer', (col) => col.primaryKey().increments())
+            .addColumn('foreign_key', 'integer', (col) =>
               col.references('public.test.id')
             )
 
@@ -184,7 +184,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
       beforeEach(async () => {
         await ctx.db.schema
           .createTable('test')
-          .addColumn('bigint', 'id', (col) => col.primaryKey().increments())
+          .addColumn('id', 'bigint', (col) => col.primaryKey().increments())
           .execute()
       })
 
@@ -219,9 +219,9 @@ for (const dialect of BUILT_IN_DIALECTS) {
       beforeEach(async () => {
         await ctx.db.schema
           .createTable('test')
-          .addColumn('bigint', 'id', (col) => col.primaryKey().increments())
-          .addColumn('varchar', 'first_name')
-          .addColumn('varchar', 'last_name')
+          .addColumn('id', 'bigint', (col) => col.primaryKey().increments())
+          .addColumn('first_name', 'varchar')
+          .addColumn('last_name', 'varchar')
           .execute()
       })
 
@@ -312,8 +312,8 @@ for (const dialect of BUILT_IN_DIALECTS) {
       beforeEach(async () => {
         await ctx.db.schema
           .createTable('test')
-          .addColumn('bigint', 'id', (col) => col.primaryKey().increments())
-          .addColumn('varchar', 'first_name')
+          .addColumn('id', 'bigint', (col) => col.primaryKey().increments())
+          .addColumn('first_name', 'varchar')
           .execute()
 
         await ctx.db.schema

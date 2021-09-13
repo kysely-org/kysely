@@ -48,6 +48,10 @@ import { HavingNode } from './having-node'
 import { freeze } from '../util/object-utils'
 import { CreateSchemaNode } from './create-schema-node'
 import { DropSchemaNode } from './drop-schema-node'
+import { AlterTableNode } from './alter-table-node'
+import { DropColumnNode } from './drop-column-node'
+import { RenameColumnNode } from './rename-column-node'
+import { AlterColumnNode } from './alter-column-node'
 
 /**
  * Transforms an operation node tree into another one.
@@ -130,6 +134,10 @@ export class OperationNodeTransformer {
     HavingNode: this.transformHaving.bind(this),
     CreateSchemaNode: this.transformCreateSchema.bind(this),
     DropSchemaNode: this.transformDropSchema.bind(this),
+    AlterTableNode: this.transformAlterTable.bind(this),
+    DropColumnNode: this.transformDropColumn.bind(this),
+    RenameColumnNode: this.transformRenameColumn.bind(this),
+    AlterColumnNode: this.transformAlterColumn.bind(this),
   }
 
   readonly transformNode = <T extends OperationNode | undefined>(
@@ -517,6 +525,41 @@ export class OperationNodeTransformer {
       kind: 'DropSchemaNode',
       schema: this.transformNode(node.schema),
       modifier: node.modifier,
+    }
+  }
+
+  protected transformAlterTable(node: AlterTableNode): AlterTableNode {
+    return {
+      kind: 'AlterTableNode',
+      table: this.transformNode(node.table),
+      renameTo: this.transformNode(node.renameTo),
+      renameColumn: this.transformNode(node.renameColumn),
+      setSchema: this.transformNode(node.setSchema),
+      addColumn: this.transformNode(node.addColumn),
+      dropColumn: this.transformNode(node.dropColumn),
+      alterColumn: this.transformNode(node.alterColumn),
+    }
+  }
+
+  protected transformDropColumn(node: DropColumnNode): DropColumnNode {
+    return {
+      kind: 'DropColumnNode',
+      column: this.transformNode(node.column),
+    }
+  }
+
+  protected transformRenameColumn(node: RenameColumnNode): RenameColumnNode {
+    return {
+      kind: 'RenameColumnNode',
+      column: this.transformNode(node.column),
+      renameTo: this.transformNode(node.renameTo),
+    }
+  }
+
+  protected transformAlterColumn(node: AlterColumnNode): AlterColumnNode {
+    return {
+      kind: 'AlterColumnNode',
+      column: this.transformNode(node.column),
     }
   }
 

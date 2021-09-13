@@ -50,6 +50,10 @@ import { CommonTableExpressionNode } from './common-table-expression-node'
 import { HavingNode } from './having-node'
 import { CreateSchemaNode } from './create-schema-node'
 import { DropSchemaNode } from './drop-schema-node'
+import { AlterTableNode } from './alter-table-node'
+import { DropColumnNode } from './drop-column-node'
+import { RenameColumnNode } from './rename-column-node'
+import { AlterColumnNode } from './alter-column-node'
 
 export class OperationNodeVisitor {
   protected readonly nodeStack: OperationNode[] = []
@@ -103,6 +107,10 @@ export class OperationNodeVisitor {
     HavingNode: this.visitHaving.bind(this),
     CreateSchemaNode: this.visitCreateSchema.bind(this),
     DropSchemaNode: this.visitDropSchema.bind(this),
+    AlterTableNode: this.visitAlterTable.bind(this),
+    DropColumnNode: this.visitDropColumn.bind(this),
+    RenameColumnNode: this.visitRenameColumn.bind(this),
+    AlterColumnNode: this.visitAlterColumn.bind(this),
   }
 
   protected readonly visitNode = (node: OperationNode): void => {
@@ -416,6 +424,47 @@ export class OperationNodeVisitor {
 
   protected visitDropSchema(node: DropSchemaNode): void {
     this.visitNode(node.schema)
+  }
+
+  protected visitAlterTable(node: AlterTableNode): void {
+    this.visitNode(node.table)
+
+    if (node.renameTo) {
+      this.visitNode(node.renameTo)
+    }
+
+    if (node.renameColumn) {
+      this.visitNode(node.renameColumn)
+    }
+
+    if (node.setSchema) {
+      this.visitNode(node.setSchema)
+    }
+
+    if (node.addColumn) {
+      this.visitNode(node.addColumn)
+    }
+
+    if (node.dropColumn) {
+      this.visitNode(node.dropColumn)
+    }
+
+    if (node.alterColumn) {
+      this.visitNode(node.alterColumn)
+    }
+  }
+
+  protected visitDropColumn(node: DropColumnNode): void {
+    this.visitNode(node.column)
+  }
+
+  protected visitRenameColumn(node: RenameColumnNode): void {
+    this.visitNode(node.column)
+    this.visitNode(node.renameTo)
+  }
+
+  protected visitAlterColumn(node: AlterColumnNode): void {
+    this.visitNode(node.column)
   }
 
   protected visitDataType(node: DataTypeNode): void {}
