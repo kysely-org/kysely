@@ -41,8 +41,8 @@ import { OnConflictNode } from './on-conflict-node'
 import { CreateIndexNode } from './create-index-node'
 import { ListNode } from './list-node'
 import { DropIndexNode } from './drop-index-node'
-import { TablePrimaryConstraintNode } from './table-primary-constraint-node'
-import { TableUniqueConstraintNode } from './table-unique-constraint-node'
+import { PrimaryKeyConstraintNode } from './primary-constraint-node'
+import { UniqueConstraintNode } from './unique-constraint-node'
 import { ReferencesNode } from './references-node'
 import { CheckConstraintNode } from './check-constraint-node'
 import { WithNode } from './with-node'
@@ -54,6 +54,9 @@ import { AlterTableNode } from './alter-table-node'
 import { DropColumnNode } from './drop-column-node'
 import { RenameColumnNode } from './rename-column-node'
 import { AlterColumnNode } from './alter-column-node'
+import { AddConstraintNode } from './add-constraint-node'
+import { DropConstraintNode } from './drop-constraint-node'
+import { ForeignKeyConstraintNode } from './foreign-key-constraint-node'
 
 export class OperationNodeVisitor {
   protected readonly nodeStack: OperationNode[] = []
@@ -98,8 +101,8 @@ export class OperationNodeVisitor {
     CreateIndexNode: this.visitCreateIndex.bind(this),
     DropIndexNode: this.visitDropIndex.bind(this),
     ListNode: this.visitList.bind(this),
-    TablePrimaryConstraintNode: this.visitTablePrimaryConstraint.bind(this),
-    TableUniqueConstraintNode: this.visitTableUniqueConstraint.bind(this),
+    PrimaryKeyConstraintNode: this.visitPrimaryKeyConstraint.bind(this),
+    UniqueConstraintNode: this.visitUniqueConstraint.bind(this),
     ReferencesNode: this.visitReferences.bind(this),
     CheckConstraintNode: this.visitCheckConstraint.bind(this),
     WithNode: this.visitWith.bind(this),
@@ -111,6 +114,9 @@ export class OperationNodeVisitor {
     DropColumnNode: this.visitDropColumn.bind(this),
     RenameColumnNode: this.visitRenameColumn.bind(this),
     AlterColumnNode: this.visitAlterColumn.bind(this),
+    AddConstraintNode: this.visitAddConstraint.bind(this),
+    DropConstraintNode: this.visitDropConstraint.bind(this),
+    ForeignKeyConstraintNode: this.visitForeignKeyConstraint.bind(this),
   }
 
   protected readonly visitNode = (node: OperationNode): void => {
@@ -386,13 +392,19 @@ export class OperationNodeVisitor {
     this.visitNode(node.name)
   }
 
-  protected visitTablePrimaryConstraint(
-    node: TablePrimaryConstraintNode
-  ): void {
+  protected visitPrimaryKeyConstraint(node: PrimaryKeyConstraintNode): void {
+    if (node.name) {
+      this.visitNode(node.name)
+    }
+
     node.columns.forEach(this.visitNode)
   }
 
-  protected visitTableUniqueConstraint(node: TableUniqueConstraintNode): void {
+  protected visitUniqueConstraint(node: UniqueConstraintNode): void {
+    if (node.name) {
+      this.visitNode(node.name)
+    }
+
     node.columns.forEach(this.visitNode)
   }
 
@@ -402,6 +414,10 @@ export class OperationNodeVisitor {
   }
 
   protected visitCheckConstraint(node: CheckConstraintNode): void {
+    if (node.name) {
+      this.visitNode(node.name)
+    }
+
     this.visitNode(node.expression)
   }
 
@@ -465,6 +481,22 @@ export class OperationNodeVisitor {
 
   protected visitAlterColumn(node: AlterColumnNode): void {
     this.visitNode(node.column)
+  }
+
+  protected visitAddConstraint(node: AddConstraintNode): void {
+    this.visitNode(node.constraint)
+  }
+
+  protected visitDropConstraint(node: DropConstraintNode): void {
+    this.visitNode(node.constraintName)
+  }
+
+  protected visitForeignKeyConstraint(node: ForeignKeyConstraintNode): void {
+    if (node.name) {
+      this.visitNode(node.name)
+    }
+
+    this.visitNode(node.references)
   }
 
   protected visitDataType(node: DataTypeNode): void {}

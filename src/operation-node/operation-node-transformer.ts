@@ -38,8 +38,8 @@ import { OnConflictNode } from './on-conflict-node'
 import { CreateIndexNode } from './create-index-node'
 import { ListNode } from './list-node'
 import { DropIndexNode } from './drop-index-node'
-import { TablePrimaryConstraintNode } from './table-primary-constraint-node'
-import { TableUniqueConstraintNode } from './table-unique-constraint-node'
+import { PrimaryKeyConstraintNode } from './primary-constraint-node'
+import { UniqueConstraintNode } from './unique-constraint-node'
 import { ReferencesNode } from './references-node'
 import { CheckConstraintNode } from './check-constraint-node'
 import { WithNode } from './with-node'
@@ -52,6 +52,9 @@ import { AlterTableNode } from './alter-table-node'
 import { DropColumnNode } from './drop-column-node'
 import { RenameColumnNode } from './rename-column-node'
 import { AlterColumnNode } from './alter-column-node'
+import { AddConstraintNode } from './add-constraint-node'
+import { DropConstraintNode } from './drop-constraint-node'
+import { ForeignKeyConstraintNode } from './foreign-key-constraint-node'
 
 /**
  * Transforms an operation node tree into another one.
@@ -125,8 +128,8 @@ export class OperationNodeTransformer {
     CreateIndexNode: this.transformCreateIndex.bind(this),
     DropIndexNode: this.transformDropIndex.bind(this),
     ListNode: this.transformList.bind(this),
-    TablePrimaryConstraintNode: this.transformTablePrimaryConstraint.bind(this),
-    TableUniqueConstraintNode: this.transformTableUniqueConstraint.bind(this),
+    PrimaryKeyConstraintNode: this.transformPrimaryKeyConstraint.bind(this),
+    UniqueConstraintNode: this.transformUniqueConstraint.bind(this),
     ReferencesNode: this.transformReferences.bind(this),
     CheckConstraintNode: this.transformCheckConstraint.bind(this),
     WithNode: this.transformWith.bind(this),
@@ -138,6 +141,9 @@ export class OperationNodeTransformer {
     DropColumnNode: this.transformDropColumn.bind(this),
     RenameColumnNode: this.transformRenameColumn.bind(this),
     AlterColumnNode: this.transformAlterColumn.bind(this),
+    AddConstraintNode: this.transformAddConstraint.bind(this),
+    DropConstraintNode: this.transformDropConstraint.bind(this),
+    ForeignKeyConstraintNode: this.transformForeignKeyConstraint.bind(this),
   }
 
   readonly transformNode = <T extends OperationNode | undefined>(
@@ -453,21 +459,33 @@ export class OperationNodeTransformer {
     }
   }
 
-  protected transformTablePrimaryConstraint(
-    node: TablePrimaryConstraintNode
-  ): TablePrimaryConstraintNode {
+  protected transformPrimaryKeyConstraint(
+    node: PrimaryKeyConstraintNode
+  ): PrimaryKeyConstraintNode {
     return {
-      kind: 'TablePrimaryConstraintNode',
+      kind: 'PrimaryKeyConstraintNode',
       columns: this.transformNodeList(node.columns),
+      name: this.transformNode(node.name),
     }
   }
 
-  protected transformTableUniqueConstraint(
-    node: TableUniqueConstraintNode
-  ): TableUniqueConstraintNode {
+  protected transformUniqueConstraint(
+    node: UniqueConstraintNode
+  ): UniqueConstraintNode {
     return {
-      kind: 'TableUniqueConstraintNode',
+      kind: 'UniqueConstraintNode',
       columns: this.transformNodeList(node.columns),
+      name: this.transformNode(node.name),
+    }
+  }
+
+  protected transformForeignKeyConstraint(
+    node: ForeignKeyConstraintNode
+  ): ForeignKeyConstraintNode {
+    return {
+      kind: 'ForeignKeyConstraintNode',
+      references: this.transformNode(node.references),
+      name: this.transformNode(node.name),
     }
   }
 
@@ -486,6 +504,7 @@ export class OperationNodeTransformer {
     return {
       kind: 'CheckConstraintNode',
       expression: this.transformNode(node.expression),
+      name: this.transformNode(node.name),
     }
   }
 
@@ -538,6 +557,8 @@ export class OperationNodeTransformer {
       addColumn: this.transformNode(node.addColumn),
       dropColumn: this.transformNode(node.dropColumn),
       alterColumn: this.transformNode(node.alterColumn),
+      addConstraint: this.transformNode(node.addConstraint),
+      dropConstraint: this.transformNode(node.dropConstraint),
     }
   }
 
@@ -560,6 +581,28 @@ export class OperationNodeTransformer {
     return {
       kind: 'AlterColumnNode',
       column: this.transformNode(node.column),
+      dataType: this.transformNode(node.dataType),
+      dataTypeExpression: this.transformNode(node.dataTypeExpression),
+      setDefault: this.transformNode(node.setDefault),
+      dropDefault: node.dropDefault,
+      setNotNull: node.setNotNull,
+      dropNotNull: node.dropNotNull,
+    }
+  }
+
+  protected transformAddConstraint(node: AddConstraintNode): AddConstraintNode {
+    return {
+      kind: 'AddConstraintNode',
+      constraint: this.transformNode(node.constraint),
+    }
+  }
+
+  protected transformDropConstraint(
+    node: DropConstraintNode
+  ): DropConstraintNode {
+    return {
+      kind: 'DropConstraintNode',
+      constraintName: this.transformNode(node.constraintName),
     }
   }
 

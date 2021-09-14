@@ -40,8 +40,8 @@ import {
 } from '../operation-node/select-query-node'
 import { SelectionNode } from '../operation-node/selection-node'
 import { TableNode } from '../operation-node/table-node'
-import { TablePrimaryConstraintNode } from '../operation-node/table-primary-constraint-node'
-import { TableUniqueConstraintNode } from '../operation-node/table-unique-constraint-node'
+import { PrimaryKeyConstraintNode } from '../operation-node/primary-constraint-node'
+import { UniqueConstraintNode } from '../operation-node/unique-constraint-node'
 import { UpdateQueryNode } from '../operation-node/update-query-node'
 import { ValueListNode } from '../operation-node/value-list-node'
 import { ValueNode } from '../operation-node/value-node'
@@ -69,6 +69,9 @@ import { AlterTableNode } from '../operation-node/alter-table-node'
 import { DropColumnNode } from '../operation-node/drop-column-node'
 import { RenameColumnNode } from '../operation-node/rename-column-node'
 import { AlterColumnNode } from '../operation-node/alter-column-node'
+import { AddConstraintNode } from '../operation-node/add-constraint-node'
+import { DropConstraintNode } from '../operation-node/drop-constraint-node'
+import { ForeignKeyConstraintNode } from '../operation-node/foreign-key-constraint-node'
 
 export class DefaultQueryCompiler
   extends OperationNodeVisitor
@@ -659,26 +662,55 @@ export class DefaultQueryCompiler
     this.visitNode(node.schema)
   }
 
-  protected override visitTablePrimaryConstraint(
-    node: TablePrimaryConstraintNode
+  protected override visitPrimaryKeyConstraint(
+    node: PrimaryKeyConstraintNode
   ): void {
+    if (node.name) {
+      this.append('constraint ')
+      this.visitNode(node.name)
+      this.append(' ')
+    }
+
     this.append('primary key (')
     this.compileList(node.columns)
     this.append(')')
   }
 
-  protected override visitTableUniqueConstraint(
-    node: TableUniqueConstraintNode
-  ): void {
+  protected override visitUniqueConstraint(node: UniqueConstraintNode): void {
+    if (node.name) {
+      this.append('constraint ')
+      this.visitNode(node.name)
+      this.append(' ')
+    }
+
     this.append('unique (')
     this.compileList(node.columns)
     this.append(')')
   }
 
   protected override visitCheckConstraint(node: CheckConstraintNode): void {
+    if (node.name) {
+      this.append('constraint ')
+      this.visitNode(node.name)
+      this.append(' ')
+    }
+
     this.append('check (')
     this.visitNode(node.expression)
     this.append(')')
+  }
+
+  protected override visitForeignKeyConstraint(
+    node: ForeignKeyConstraintNode
+  ): void {
+    if (node.name) {
+      this.append('constraint ')
+      this.visitNode(node.name)
+      this.append(' ')
+    }
+
+    this.append('foreign key ')
+    this.visitNode(node.references)
   }
 
   protected override visitList(node: ListNode): void {
@@ -698,9 +730,8 @@ export class DefaultQueryCompiler
     this.visitNode(node.expression)
   }
 
-  protected visitAlterTable(node: AlterTableNode): void {
+  protected override visitAlterTable(node: AlterTableNode): void {
     this.append('alter table ')
-
     this.visitNode(node.table)
     this.append(' ')
 
@@ -712,6 +743,14 @@ export class DefaultQueryCompiler
     if (node.setSchema) {
       this.append('set schema ')
       this.visitNode(node.setSchema)
+    }
+
+    if (node.addConstraint) {
+      this.visitNode(node.addConstraint)
+    }
+
+    if (node.dropConstraint) {
+      this.visitNode(node.dropConstraint)
     }
 
     if (node.renameColumn) {
@@ -731,23 +770,59 @@ export class DefaultQueryCompiler
     }
   }
 
-  protected visitRenameColumn(node: RenameColumnNode): void {
+  protected override visitRenameColumn(node: RenameColumnNode): void {
     this.append('rename column ')
     this.visitNode(node.column)
     this.append(' to ')
     this.visitNode(node.renameTo)
   }
 
-  protected visitDropColumn(node: DropColumnNode): void {
+  protected override visitDropColumn(node: DropColumnNode): void {
     this.append('drop column ')
     this.visitNode(node.column)
   }
 
-  protected visitAlterColumn(node: AlterColumnNode): void {
+  protected override visitAlterColumn(node: AlterColumnNode): void {
     this.append('alter column ')
     this.visitNode(node.column)
+    this.append(' ')
 
-    
+    if (node.dataType) {
+      this.append('type ')
+      this.visitNode(node.dataType)
+
+      if (node.dataTypeExpression) {
+        this.append('using ')
+        this.visitNode(node.dataTypeExpression)
+      }
+    }
+
+    if (node.setDefault) {
+      this.append('set default ')
+      this.visitNode(node.setDefault)
+    }
+
+    if (node.dropDefault) {
+      this.append('drop default')
+    }
+
+    if (node.setNotNull) {
+      this.append('set not null')
+    }
+
+    if (node.dropNotNull) {
+      this.append('drop not null')
+    }
+  }
+
+  protected override visitAddConstraint(node: AddConstraintNode): void {
+    this.append('add ')
+    this.visitNode(node.constraint)
+  }
+
+  protected override visitDropConstraint(node: DropConstraintNode): void {
+    this.append('drop constraint ')
+    this.visitNode(node.constraintName)
   }
 
   protected appendLeftIdentifierWrapper(): void {

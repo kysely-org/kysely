@@ -79,12 +79,12 @@ for (const dialect of BUILT_IN_DIALECTS) {
           .addColumn('a', 'varchar')
           .addColumn('b', 'varchar')
           .addColumn('c', 'varchar')
-          .addUniqueConstraint(['a', 'b'])
-          .addUniqueConstraint(['b', 'c'])
+          .addUniqueConstraint('a_b_unique', ['a', 'b'])
+          .addUniqueConstraint('b_c_unique', ['b', 'c'])
 
         testSql(builder, dialect, {
           postgres: {
-            sql: `create table "test" ("a" varchar, "b" varchar, "c" varchar, unique ("a", "b"), unique ("b", "c"))`,
+            sql: `create table "test" ("a" varchar, "b" varchar, "c" varchar, constraint "a_b_unique" unique ("a", "b"), constraint "b_c_unique" unique ("b", "c"))`,
             bindings: [],
           },
         })
@@ -98,12 +98,12 @@ for (const dialect of BUILT_IN_DIALECTS) {
           .addColumn('a', 'integer')
           .addColumn('b', 'integer')
           .addColumn('c', 'integer')
-          .addCheckConstraint('a > 1')
-          .addCheckConstraint('b < c')
+          .addCheckConstraint('check_a', 'a > 1')
+          .addCheckConstraint('check_b', 'b < c')
 
         testSql(builder, dialect, {
           postgres: {
-            sql: `create table "test" ("a" integer, "b" integer, "c" integer, check (a > 1), check (b < c))`,
+            sql: `create table "test" ("a" integer, "b" integer, "c" integer, constraint "check_a" check (a > 1), constraint "check_b" check (b < c))`,
             bindings: [],
           },
         })
@@ -116,11 +116,11 @@ for (const dialect of BUILT_IN_DIALECTS) {
           .createTable('test')
           .addColumn('a', 'integer')
           .addColumn('b', 'integer')
-          .addPrimaryKeyConstraint(['a', 'b'])
+          .addPrimaryKeyConstraint('primary', ['a', 'b'])
 
         testSql(builder, dialect, {
           postgres: {
-            sql: `create table "test" ("a" integer, "b" integer, primary key ("a", "b"))`,
+            sql: `create table "test" ("a" integer, "b" integer, constraint "primary" primary key ("a", "b"))`,
             bindings: [],
           },
         })

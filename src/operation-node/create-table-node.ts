@@ -7,13 +7,13 @@ import { AddColumnNode } from './add-column-node'
 import { OperationNode } from './operation-node'
 import { TableNode } from './table-node'
 import {
-  tablePrimaryConstraintNode,
-  TablePrimaryConstraintNode,
-} from './table-primary-constraint-node'
+  primaryConstraintNode,
+  PrimaryKeyConstraintNode,
+} from './primary-constraint-node'
 import {
-  tableUniqueConstraintNode,
-  TableUniqueConstraintNode,
-} from './table-unique-constraint-node'
+  UniqueConstraintNode,
+  uniqueConstraintNode,
+} from './unique-constraint-node'
 
 export type CreateTableNodeModifier = 'IfNotExists'
 
@@ -22,8 +22,8 @@ export interface CreateTableNode extends OperationNode {
   readonly table: TableNode
   readonly columns: ReadonlyArray<AddColumnNode>
   readonly modifier?: CreateTableNodeModifier
-  readonly primaryKeyConstraint?: TablePrimaryConstraintNode
-  readonly uniqueConstraints?: ReadonlyArray<TableUniqueConstraintNode>
+  readonly primaryKeyConstraint?: PrimaryKeyConstraintNode
+  readonly uniqueConstraints?: ReadonlyArray<UniqueConstraintNode>
   readonly checkConstraints?: ReadonlyArray<CheckConstraintNode>
 }
 
@@ -62,19 +62,24 @@ export const createTableNode = freeze({
 
   cloneWithPrimaryKeyConstraint(
     createTable: CreateTableNode,
+    constraintName: string,
     columns: string[]
   ): CreateTableNode {
     return freeze({
       ...createTable,
-      primaryKeyConstraint: tablePrimaryConstraintNode.create(columns),
+      primaryKeyConstraint: primaryConstraintNode.create(
+        columns,
+        constraintName
+      ),
     })
   },
 
   cloneWithUniqueConstraint(
     createTable: CreateTableNode,
+    constraintName: string,
     columns: string[]
   ): CreateTableNode {
-    const constraint = tableUniqueConstraintNode.create(columns)
+    const constraint = uniqueConstraintNode.create(columns, constraintName)
 
     return freeze({
       ...createTable,
@@ -86,9 +91,10 @@ export const createTableNode = freeze({
 
   cloneWithCheckConstraint(
     createTable: CreateTableNode,
+    constraintName: string,
     sql: string
   ): CreateTableNode {
-    const constraint = checkConstraintNode.create(sql)
+    const constraint = checkConstraintNode.create(sql, constraintName)
 
     return freeze({
       ...createTable,

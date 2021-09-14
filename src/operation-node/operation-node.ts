@@ -38,10 +38,11 @@ export type OperationNodeKind =
   | 'CreateIndexNode'
   | 'DropIndexNode'
   | 'ListNode'
-  | 'TablePrimaryConstraintNode'
-  | 'TableUniqueConstraintNode'
   | 'ReferencesNode'
+  | 'PrimaryKeyConstraintNode'
+  | 'UniqueConstraintNode'
   | 'CheckConstraintNode'
+  | 'ForeignKeyConstraintNode'
   | 'WithNode'
   | 'CommonTableExpressionNode'
   | 'HavingNode'
@@ -51,6 +52,8 @@ export type OperationNodeKind =
   | 'DropColumnNode'
   | 'RenameColumnNode'
   | 'AlterColumnNode'
+  | 'AddConstraintNode'
+  | 'DropConstraintNode'
 
 export interface OperationNode {
   readonly kind: OperationNodeKind

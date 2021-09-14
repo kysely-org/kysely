@@ -6,6 +6,11 @@ import { tableNode, TableNode } from './table-node'
 import { IdentifierNode } from './identifier-node'
 import { RenameColumnNode } from './rename-column-node'
 import { AlterColumnNode } from './alter-column-node'
+import { PrimaryKeyConstraintNode } from './primary-constraint-node'
+import { UniqueConstraintNode } from './unique-constraint-node'
+import { CheckConstraintNode } from './check-constraint-node'
+import { AddConstraintNode } from './add-constraint-node'
+import { DropConstraintNode } from './drop-constraint-node'
 
 export interface AlterTableNode extends OperationNode {
   readonly kind: 'AlterTableNode'
@@ -16,6 +21,8 @@ export interface AlterTableNode extends OperationNode {
   readonly addColumn?: AddColumnNode
   readonly dropColumn?: DropColumnNode
   readonly alterColumn?: AlterColumnNode
+  readonly addConstraint?: AddConstraintNode
+  readonly dropConstraint?: DropConstraintNode
 }
 
 export const alterTableNode = freeze({
