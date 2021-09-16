@@ -6,11 +6,13 @@ import { tableNode, TableNode } from './table-node'
 import { IdentifierNode } from './identifier-node'
 import { RenameColumnNode } from './rename-column-node'
 import { AlterColumnNode } from './alter-column-node'
-import { PrimaryKeyConstraintNode } from './primary-constraint-node'
-import { UniqueConstraintNode } from './unique-constraint-node'
-import { CheckConstraintNode } from './check-constraint-node'
 import { AddConstraintNode } from './add-constraint-node'
 import { DropConstraintNode } from './drop-constraint-node'
+
+export type AlterTableNodeParams = Omit<
+  Partial<AlterTableNode>,
+  'kind' | 'table'
+>
 
 export interface AlterTableNode extends OperationNode {
   readonly kind: 'AlterTableNode'
@@ -34,6 +36,16 @@ export const alterTableNode = freeze({
     return freeze({
       kind: 'AlterTableNode',
       table: tableNode.create(table),
+    })
+  },
+
+  cloneWith(
+    node: AlterTableNode,
+    params: AlterTableNodeParams
+  ): AlterTableNode {
+    return freeze({
+      ...node,
+      ...params,
     })
   },
 })

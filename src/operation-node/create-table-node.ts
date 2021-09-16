@@ -1,19 +1,13 @@
 import { freeze } from '../util/object-utils'
-import {
-  checkConstraintNode,
-  CheckConstraintNode,
-} from './check-constraint-node'
+import { checkConstraintNode } from './check-constraint-node'
 import { AddColumnNode } from './add-column-node'
 import { OperationNode } from './operation-node'
-import { TableNode } from './table-node'
-import {
-  primaryConstraintNode,
-  PrimaryKeyConstraintNode,
-} from './primary-constraint-node'
-import {
-  UniqueConstraintNode,
-  uniqueConstraintNode,
-} from './unique-constraint-node'
+import { tableNode, TableNode } from './table-node'
+import { primaryConstraintNode } from './primary-constraint-node'
+import { uniqueConstraintNode } from './unique-constraint-node'
+import { foreignKeyConstraintNode } from './foreign-key-constraint-node'
+import { columnNode } from './column-node'
+import { ConstraintNode } from './constraint-node'
 
 export type CreateTableNodeModifier = 'IfNotExists'
 
@@ -22,9 +16,7 @@ export interface CreateTableNode extends OperationNode {
   readonly table: TableNode
   readonly columns: ReadonlyArray<AddColumnNode>
   readonly modifier?: CreateTableNodeModifier
-  readonly primaryKeyConstraint?: PrimaryKeyConstraintNode
-  readonly uniqueConstraints?: ReadonlyArray<UniqueConstraintNode>
-  readonly checkConstraints?: ReadonlyArray<CheckConstraintNode>
+  readonly constraints?: ReadonlyArray<ConstraintNode>
 }
 
 export const createTableNode = freeze({
@@ -65,12 +57,13 @@ export const createTableNode = freeze({
     constraintName: string,
     columns: string[]
   ): CreateTableNode {
+    const constraint = primaryConstraintNode.create(columns, constraintName)
+
     return freeze({
       ...createTable,
-      primaryKeyConstraint: primaryConstraintNode.create(
-        columns,
-        constraintName
-      ),
+      constraints: createTable.constraints
+        ? freeze([...createTable.constraints, constraint])
+        : freeze([constraint]),
     })
   },
 
@@ -83,8 +76,8 @@ export const createTableNode = freeze({
 
     return freeze({
       ...createTable,
-      uniqueConstraints: createTable.uniqueConstraints
-        ? freeze([...createTable.uniqueConstraints, constraint])
+      constraints: createTable.constraints
+        ? freeze([...createTable.constraints, constraint])
         : freeze([constraint]),
     })
   },
@@ -98,8 +91,30 @@ export const createTableNode = freeze({
 
     return freeze({
       ...createTable,
-      checkConstraints: createTable.checkConstraints
-        ? freeze([...createTable.checkConstraints, constraint])
+      constraints: createTable.constraints
+        ? freeze([...createTable.constraints, constraint])
+        : freeze([constraint]),
+    })
+  },
+
+  cloneWithForeignKeyConstraint(
+    createTable: CreateTableNode,
+    constraintName: string,
+    sourceColumns: string[],
+    targetTable: string,
+    targetColumns: string[]
+  ): CreateTableNode {
+    const constraint = foreignKeyConstraintNode.create(
+      sourceColumns.map(columnNode.create),
+      tableNode.create(targetTable),
+      targetColumns.map(columnNode.create),
+      constraintName
+    )
+
+    return freeze({
+      ...createTable,
+      constraints: createTable.constraints
+        ? freeze([...createTable.constraints, constraint])
         : freeze([constraint]),
     })
   },

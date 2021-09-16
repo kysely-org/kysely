@@ -13,10 +13,11 @@ for (const dialect of BUILT_IN_DIALECTS) {
 
     before(async () => {
       ctx = await initTest(dialect)
+      await dropTestTables()
     })
 
     afterEach(async () => {
-      await ctx.db.schema.dropTable('test').ifExists().execute()
+      await dropTestTables()
       await clearDatabase(ctx)
     })
 
@@ -121,6 +122,33 @@ for (const dialect of BUILT_IN_DIALECTS) {
         testSql(builder, dialect, {
           postgres: {
             sql: `create table "test" ("a" integer, "b" integer, constraint "primary" primary key ("a", "b"))`,
+            bindings: [],
+          },
+        })
+
+        await builder.execute()
+      })
+
+      it('should add a foreignt key constraint', async () => {
+        await ctx.db.schema
+          .createTable('test2')
+          .addColumn('c', 'integer')
+          .addColumn('d', 'integer')
+          .addPrimaryKeyConstraint('primary_key', ['c', 'd'])
+          .execute()
+
+        const builder = ctx.db.schema
+          .createTable('test')
+          .addColumn('a', 'integer')
+          .addColumn('b', 'integer')
+          .addForeignKeyConstraint('foreign_key', ['a', 'b'], 'test2', [
+            'c',
+            'd',
+          ])
+
+        testSql(builder, dialect, {
+          postgres: {
+            sql: `create table "test" ("a" integer, "b" integer, constraint "foreign_key" foreign key ("a", "b") references "test2" ("c", "d"))`,
             bindings: [],
           },
         })
@@ -351,5 +379,38 @@ for (const dialect of BUILT_IN_DIALECTS) {
         await builder.execute()
       })
     })
+
+    describe('alter table', () => {
+      beforeEach(async () => {
+        await ctx.db.schema
+          .createTable('test')
+          .addColumn('varchar_col', 'varchar')
+          .addColumn('integer_col', 'integer')
+          .execute()
+      })
+
+      describe('alter column', () => {
+        it('should set column data type', async () => {
+          const builder = ctx.db.schema
+            .alterTable('test')
+            .alterColumn('varchar_col')
+            .setDataType('text')
+
+          testSql(builder, dialect, {
+            postgres: {
+              sql: `alter table "test" alter column "varchar_col" type text`,
+              bindings: [],
+            },
+          })
+
+          await builder.execute()
+        })
+      })
+    })
+
+    async function dropTestTables(): Promise<void> {
+      await ctx.db.schema.dropTable('test').ifExists().execute()
+      await ctx.db.schema.dropTable('test2').ifExists().execute()
+    }
   })
 }

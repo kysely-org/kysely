@@ -2,7 +2,12 @@ import * as chai from 'chai'
 import * as chaiSubset from 'chai-subset'
 chai.use(chaiSubset)
 
-import { Kysely, KyselyConfig } from '../src'
+import {
+  Kysely,
+  KyselyConfig,
+  KyselyPlugin,
+  OperationNodeTransformer,
+} from '../src'
 import { Dialect } from '../src/dialect/dialect'
 import { Compilable } from '../src/util/compilable'
 
@@ -45,6 +50,12 @@ interface PetInsertParams extends Omit<Pet, 'id' | 'owner_id'> {
 type BuiltInDialect = Exclude<KyselyConfig['dialect'], Dialect>
 type PerDialect<T> = Record<BuiltInDialect, T>
 
+const plugins: KyselyPlugin[] = []
+
+if (process.env.TEST_TRANSFORMER) {
+  plugins.push(createNoopPlugin())
+}
+
 const DB_CONFIGS: PerDialect<KyselyConfig> = {
   postgres: {
     dialect: 'postgres',
@@ -52,6 +63,7 @@ const DB_CONFIGS: PerDialect<KyselyConfig> = {
     host: process.env.POSTGRES_HOST ?? 'localhost',
     user: process.env.POSTGRES_USER,
     password: process.env.POSTGRES_PASSWORD,
+    plugins,
   },
 }
 
@@ -197,5 +209,17 @@ function getIdFromInsertResult<T>(result: any): T {
     return result.id
   } else {
     return result
+  }
+}
+
+function createNoopPlugin(): KyselyPlugin {
+  return {
+    createTransformers() {
+      return [new OperationNodeTransformer()]
+    },
+
+    mapRow(row) {
+      return row
+    },
   }
 }

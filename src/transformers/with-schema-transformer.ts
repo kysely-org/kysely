@@ -1,4 +1,5 @@
 import { aliasNode } from '../operation-node/alias-node'
+import { AlterTableNode } from '../operation-node/alter-table-node'
 import { CreateIndexNode } from '../operation-node/create-index-node'
 import { CreateTableNode } from '../operation-node/create-table-node'
 import { DeleteQueryNode } from '../operation-node/delete-query-node'
@@ -79,6 +80,12 @@ export class WithSchemaTransformer extends OperationNodeTransformer {
   protected override transformDropIndex(node: DropIndexNode): DropIndexNode {
     return this.transformEntryPoint(node, (node) =>
       super.transformDropIndex(node)
+    )
+  }
+
+  protected override transformAlterTable(node: AlterTableNode): AlterTableNode {
+    return this.transformEntryPoint(node, (node) =>
+      super.transformAlterTable(node)
     )
   }
 

@@ -287,7 +287,12 @@ export class OperationNodeVisitor {
 
   protected visitCreateTable(node: CreateTableNode): void {
     this.visitNode(node.table)
+
     node.columns.forEach(this.visitNode)
+
+    if (node.constraints) {
+      node.constraints.forEach(this.visitNode)
+    }
   }
 
   protected visitAddColumn(node: AddColumnNode): void {
@@ -409,7 +414,7 @@ export class OperationNodeVisitor {
   }
 
   protected visitReferences(node: ReferencesNode): void {
-    this.visitNode(node.column)
+    node.columns.forEach(this.visitNode)
     this.visitNode(node.table)
   }
 
@@ -496,6 +501,7 @@ export class OperationNodeVisitor {
       this.visitNode(node.name)
     }
 
+    node.columns.forEach(this.visitNode)
     this.visitNode(node.references)
   }
 

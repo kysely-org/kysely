@@ -64,7 +64,9 @@ export class AddColumnBuilder implements OperationNodeSource {
 
     return new AddColumnBuilder(
       addColumnNode.cloneWith(this.#node, {
-        references: referencesNode.create(references.table, references.column),
+        references: referencesNode.create(references.table, [
+          references.column,
+        ]),
       })
     )
   }

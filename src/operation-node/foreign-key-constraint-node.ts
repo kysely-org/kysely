@@ -7,6 +7,7 @@ import { TableNode } from './table-node'
 
 export interface ForeignKeyConstraintNode extends OperationNode {
   readonly kind: 'ForeignKeyConstraintNode'
+  readonly columns: ReadonlyArray<ColumnNode>
   readonly references: ReferencesNode
   readonly name?: IdentifierNode
 }
@@ -17,13 +18,15 @@ export const foreignKeyConstraintNode = freeze({
   },
 
   create(
-    table: TableNode,
-    column: ColumnNode,
+    sourceColumns: ReadonlyArray<ColumnNode>,
+    targetTable: TableNode,
+    targetColumns: ReadonlyArray<ColumnNode>,
     constraintName?: string
   ): ForeignKeyConstraintNode {
     return freeze({
       kind: 'ForeignKeyConstraintNode',
-      references: referencesNode.create(table, column),
+      columns: sourceColumns,
+      references: referencesNode.create(targetTable, targetColumns),
       name: constraintName ? identifierNode.create(constraintName) : undefined,
     })
   },

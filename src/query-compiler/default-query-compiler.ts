@@ -422,12 +422,7 @@ export class DefaultQueryCompiler
 
     this.visitNode(node.table)
     this.append(' (')
-    this.compileList([
-      ...node.columns,
-      ...(node.primaryKeyConstraint ? [node.primaryKeyConstraint] : []),
-      ...(node.uniqueConstraints ?? []),
-      ...(node.checkConstraints ?? []),
-    ])
+    this.compileList([...node.columns, ...(node.constraints ?? [])])
     this.append(')')
   }
 
@@ -481,7 +476,7 @@ export class DefaultQueryCompiler
     this.append('references ')
     this.visitNode(node.table)
     this.append(' (')
-    this.visitNode(node.column)
+    this.compileList(node.columns)
     this.append(')')
 
     if (node.onDelete) {
@@ -709,7 +704,9 @@ export class DefaultQueryCompiler
       this.append(' ')
     }
 
-    this.append('foreign key ')
+    this.append('foreign key (')
+    this.compileList(node.columns)
+    this.append(') ')
     this.visitNode(node.references)
   }
 

@@ -1,3 +1,4 @@
+import { AlterTableNode } from '../operation-node/alter-table-node'
 import { CreateIndexNode } from '../operation-node/create-index-node'
 import { CreateSchemaNode } from '../operation-node/create-schema-node'
 import { CreateTableNode } from '../operation-node/create-table-node'
@@ -12,6 +13,7 @@ export type CompileEntryPointNode =
   | QueryNode
   | CreateTableNode
   | CreateIndexNode
+  | AlterTableNode
   | DropTableNode
   | DropIndexNode
   | CreateSchemaNode

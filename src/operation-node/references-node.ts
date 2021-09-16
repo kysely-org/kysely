@@ -8,7 +8,7 @@ export type OnDelete = 'cascade' | 'set null'
 export interface ReferencesNode extends OperationNode {
   readonly kind: 'ReferencesNode'
   readonly table: TableNode
-  readonly column: ColumnNode
+  readonly columns: ReadonlyArray<ColumnNode>
   readonly onDelete?: OnDelete
 }
 
@@ -17,11 +17,11 @@ export const referencesNode = freeze({
     return node.kind === 'ReferencesNode'
   },
 
-  create(table: TableNode, column: ColumnNode): ReferencesNode {
+  create(table: TableNode, columns: ReadonlyArray<ColumnNode>): ReferencesNode {
     return freeze({
       kind: 'ReferencesNode',
       table,
-      column,
+      columns: freeze([...columns]),
     })
   },
 

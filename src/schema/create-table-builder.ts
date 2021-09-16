@@ -132,7 +132,7 @@ export class CreateTableBuilder implements OperationNodeSource, Compilable {
    *
    * @example
    * ```ts
-   * addCheckConstraint('number_of_legs < 5')
+   * addCheckConstraint('check_legs', 'number_of_legs < 5')
    * ```
    */
   addCheckConstraint(
@@ -145,6 +145,37 @@ export class CreateTableBuilder implements OperationNodeSource, Compilable {
         this.#createTableNode,
         constraintName,
         checkExpression
+      ),
+    })
+  }
+
+  /**
+   * Adds a foreign key constraint.
+   *
+   * @example
+   * ```ts
+   * addForeignKeyConstraint(
+   *   'owner_id_foreign',
+   *   ['owner_id'],
+   *   'person',
+   *   ['id'],
+   * )
+   * ```
+   */
+  addForeignKeyConstraint(
+    constraintName: string,
+    columns: string[],
+    targetTable: string,
+    targetColumns: string[]
+  ): CreateTableBuilder {
+    return new CreateTableBuilder({
+      executor: this.#executor,
+      createTableNode: createTableNode.cloneWithForeignKeyConstraint(
+        this.#createTableNode,
+        constraintName,
+        columns,
+        targetTable,
+        targetColumns
       ),
     })
   }

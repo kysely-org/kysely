@@ -1,3 +1,4 @@
+import { alterTableNode } from '../operation-node/alter-table-node'
 import { createIndexNode } from '../operation-node/create-index-node'
 import { createSchemaNode } from '../operation-node/create-schema-node'
 import { createTableNode } from '../operation-node/create-table-node'
@@ -7,6 +8,7 @@ import { dropTableNode } from '../operation-node/drop-table-node'
 import { parseTable } from '../parser/table-parser'
 import { WithSchemaTransformer } from '../transformers/with-schema-transformer'
 import { QueryExecutor } from '../util/query-executor'
+import { AlterTableBuilder } from './alter-table-builder'
 import { CreateIndexBuilder } from './create-index-builder'
 import { CreateSchemaBuilder } from './create-schema-builder'
 import { CreateTableBuilder } from './create-table-builder'
@@ -132,6 +134,25 @@ export class SchemaModule {
     return new DropSchemaBuilder({
       executor: this.#executor,
       dropSchemaNode: dropSchemaNode.create(schema),
+    })
+  }
+
+  /**
+   * Alter a table.
+   *
+   * @example
+   * ```ts
+   * await db.schema
+   *   .alterTable('person')
+   *   .alterColumn('first_name')
+   *   .setDataType('text')
+   *   .execute()
+   * ```
+   */
+  alterTable(table: string): AlterTableBuilder {
+    return new AlterTableBuilder({
+      executor: this.#executor,
+      alterTableNode: alterTableNode.create(table),
     })
   }
 

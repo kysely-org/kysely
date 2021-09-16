@@ -331,10 +331,8 @@ export class OperationNodeTransformer {
       kind: 'CreateTableNode',
       table: this.transformNode(node.table),
       columns: this.transformNodeList(node.columns),
+      constraints: this.transformNodeList(node.constraints),
       modifier: node.modifier,
-      primaryKeyConstraint: this.transformNode(node.primaryKeyConstraint),
-      uniqueConstraints: this.transformNodeList(node.uniqueConstraints),
-      checkConstraints: this.transformNodeList(node.checkConstraints),
     }
   }
 
@@ -484,6 +482,7 @@ export class OperationNodeTransformer {
   ): ForeignKeyConstraintNode {
     return {
       kind: 'ForeignKeyConstraintNode',
+      columns: this.transformNodeList(node.columns),
       references: this.transformNode(node.references),
       name: this.transformNode(node.name),
     }
@@ -493,7 +492,7 @@ export class OperationNodeTransformer {
     return {
       kind: 'ReferencesNode',
       table: this.transformNode(node.table),
-      column: this.transformNode(node.column),
+      columns: this.transformNodeList(node.columns),
       onDelete: node.onDelete,
     }
   }
