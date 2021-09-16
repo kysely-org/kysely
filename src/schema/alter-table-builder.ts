@@ -71,7 +71,7 @@ export class AlterTableExecutor implements OperationNodeSource, Compilable {
   readonly #alterTableNode: AlterTableNode
   readonly #executor: QueryExecutor
 
-  constructor({ alterTableNode, executor }: AlterTableBuilderConstructorArgs) {
+  constructor({ alterTableNode, executor }: AlterTableExecutorConstructorArgs) {
     this.#alterTableNode = alterTableNode
     this.#executor = executor
   }
@@ -89,14 +89,11 @@ export class AlterTableExecutor implements OperationNodeSource, Compilable {
   }
 }
 
+preventAwait(AlterTableBuilder, "don't await AlterTableBuilder instances")
+preventAwait(AlterColumnBuilder, "don't await AlterColumnBuilder instances")
 preventAwait(
-  AlterTableBuilder,
-  "don't await AlterTableBuilder instances directly. To execute the query you need to call `execute`"
-)
-
-preventAwait(
-  AlterColumnBuilder,
-  "don't await AlterColumnBuilder instances directly. To execute the query you need to call `execute`"
+  AlterTableExecutor,
+  "don't await AlterTableExecutor instances directly. To execute the query you need to call `execute`"
 )
 
 export interface AlterTableBuilderConstructorArgs {
@@ -108,3 +105,6 @@ export interface AlterColumnBuilderConstructorArgs
   extends AlterTableBuilderConstructorArgs {
   alterColumnNode: AlterColumnNode
 }
+
+export interface AlterTableExecutorConstructorArgs
+  extends AlterTableBuilderConstructorArgs {}
