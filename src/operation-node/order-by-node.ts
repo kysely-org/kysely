@@ -7,6 +7,9 @@ export interface OrderByNode extends OperationNode {
   readonly items: ReadonlyArray<OrderByItemNode>
 }
 
+/**
+ * @internal
+ */
 export const orderByNode = freeze({
   is(node: OperationNode): node is OrderByNode {
     return node.kind === 'OrderByNode'

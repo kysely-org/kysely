@@ -16,6 +16,9 @@ export interface FilterNode extends OperationNode {
   readonly right: ValueExpressionNode
 }
 
+/**
+ * @internal
+ */
 export const filterNode = freeze({
   is(node: OperationNode): node is FilterNode {
     return node.kind === 'FilterNode'

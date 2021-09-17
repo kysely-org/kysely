@@ -10,6 +10,9 @@ export interface ReferenceNode extends OperationNode {
   readonly column: ColumnNode | SelectAllNode
 }
 
+/**
+ * @internal
+ */
 export const referenceNode = freeze({
   is(node: OperationNode): node is ReferenceNode {
     return node.kind === 'ReferenceNode'

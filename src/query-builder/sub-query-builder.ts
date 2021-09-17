@@ -1,6 +1,6 @@
 import { QueryBuilder } from './query-builder'
 import { selectQueryNode } from '../operation-node/select-query-node'
-import { NeverExecutingQueryExecutor } from '../util/query-executor'
+import { NeverExecutingQueryExecutor } from '../query-executor/query-executor'
 import {
   parseTableExpressionOrList,
   TableExpression,

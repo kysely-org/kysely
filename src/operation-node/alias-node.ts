@@ -7,7 +7,7 @@ import { ReferenceNode } from './reference-node'
 import { SelectQueryNode } from './select-query-node'
 import { TableNode } from './table-node'
 
-type AliasNodeChild =
+export type AliasNodeChild =
   | ColumnNode
   | ReferenceNode
   | TableNode
@@ -20,6 +20,9 @@ export interface AliasNode extends OperationNode {
   readonly alias: IdentifierNode
 }
 
+/**
+ * @internal
+ */
 export const aliasNode = freeze({
   is(node: OperationNode): node is AliasNode {
     return node.kind === 'AliasNode'

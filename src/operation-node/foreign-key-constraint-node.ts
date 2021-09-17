@@ -12,6 +12,9 @@ export interface ForeignKeyConstraintNode extends OperationNode {
   readonly name?: IdentifierNode
 }
 
+/**
+ * @internal
+ */
 export const foreignKeyConstraintNode = freeze({
   is(node: OperationNode): node is ForeignKeyConstraintNode {
     return node.kind === 'ForeignKeyConstraintNode'

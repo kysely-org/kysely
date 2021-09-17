@@ -7,6 +7,9 @@ export interface FromNode extends OperationNode {
   readonly froms: ReadonlyArray<TableExpressionNode>
 }
 
+/**
+ * @internal
+ */
 export const fromNode = freeze({
   is(node: OperationNode): node is FromNode {
     return node.kind === 'FromNode'

@@ -21,6 +21,9 @@ export interface AlterColumnNode extends OperationNode {
   readonly dropNotNull?: true
 }
 
+/**
+ * @internal
+ */
 export const alterColumnNode = freeze({
   is(node: OperationNode): node is AlterColumnNode {
     return node.kind === 'AlterColumnNode'

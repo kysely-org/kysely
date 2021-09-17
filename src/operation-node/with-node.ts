@@ -7,6 +7,9 @@ export interface WithNode extends OperationNode {
   readonly expressions: ReadonlyArray<CommonTableExpressionNode>
 }
 
+/**
+ * @internal
+ */
 export const withNode = freeze({
   is(node: OperationNode): node is WithNode {
     return node.kind === 'WithNode'

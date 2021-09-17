@@ -11,7 +11,7 @@ import { parseTable } from '../parser/table-parser'
 import { CompiledQuery } from '../query-compiler/compiled-query'
 import { Compilable } from '../util/compilable'
 import { preventAwait } from '../util/prevent-await'
-import { QueryExecutor } from '../util/query-executor'
+import { QueryExecutor } from '../query-executor/query-executor'
 
 export class CreateIndexBuilder implements OperationNodeSource, Compilable {
   readonly #createIndexNode: CreateIndexNode

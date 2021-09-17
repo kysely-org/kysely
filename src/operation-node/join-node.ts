@@ -18,6 +18,9 @@ export interface JoinNode extends OperationNode {
   readonly on?: JoinNodeOnNode
 }
 
+/**
+ * @internal
+ */
 export const joinNode = freeze({
   is(node: OperationNode): node is JoinNode {
     return node.kind === 'JoinNode'

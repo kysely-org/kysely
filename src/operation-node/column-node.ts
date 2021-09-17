@@ -7,6 +7,9 @@ export interface ColumnNode extends OperationNode {
   readonly column: IdentifierNode
 }
 
+/**
+ * @internal
+ */
 export const columnNode = freeze({
   is(node: OperationNode): node is ColumnNode {
     return node.kind === 'ColumnNode'

@@ -65,7 +65,7 @@ import { Compilable } from '../util/compilable'
 import {
   NeverExecutingQueryExecutor,
   QueryExecutor,
-} from '../util/query-executor'
+} from '../query-executor/query-executor'
 
 /**
  * The main query builder class.

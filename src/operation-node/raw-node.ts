@@ -7,6 +7,9 @@ export interface RawNode extends OperationNode {
   readonly params: ReadonlyArray<OperationNode>
 }
 
+/**
+ * @internal
+ */
 export const rawNode = freeze({
   is(node: OperationNode): node is RawNode {
     return node.kind === 'RawNode'

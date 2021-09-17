@@ -12,6 +12,9 @@ export interface ReferencesNode extends OperationNode {
   readonly onDelete?: OnDelete
 }
 
+/**
+ * @internal
+ */
 export const referencesNode = freeze({
   is(node: OperationNode): node is ReferencesNode {
     return node.kind === 'ReferencesNode'

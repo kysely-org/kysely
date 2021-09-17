@@ -8,6 +8,9 @@ export interface OrNode extends OperationNode {
   readonly right: FilterExpressionNode
 }
 
+/**
+ * @internal
+ */
 export const orNode = freeze({
   is(node: OperationNode): node is OrNode {
     return node.kind === 'OrNode'

@@ -7,6 +7,9 @@ export interface ReturningNode extends OperationNode {
   readonly selections: ReadonlyArray<SelectionNode>
 }
 
+/**
+ * @internal
+ */
 export const returningNode = freeze({
   is(node: OperationNode): node is ReturningNode {
     return node.kind === 'ReturningNode'

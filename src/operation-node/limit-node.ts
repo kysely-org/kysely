@@ -7,6 +7,9 @@ export interface LimitNode extends OperationNode {
   readonly limit: ValueNode
 }
 
+/**
+ * @internal
+ */
 export const limitNode = freeze({
   is(node: OperationNode): node is LimitNode {
     return node.kind === 'LimitNode'

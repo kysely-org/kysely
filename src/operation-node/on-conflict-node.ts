@@ -10,6 +10,9 @@ export interface OnConflictNode extends OperationNode {
   readonly doNothing?: boolean
 }
 
+/**
+ * @internal
+ */
 export const onConflictNode = freeze({
   is(node: OperationNode): node is OnConflictNode {
     return node.kind === 'OnConflictNode'

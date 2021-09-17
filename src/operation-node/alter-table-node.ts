@@ -27,6 +27,9 @@ export interface AlterTableNode extends OperationNode {
   readonly dropConstraint?: DropConstraintNode
 }
 
+/**
+ * @internal
+ */
 export const alterTableNode = freeze({
   is(node: OperationNode): node is AlterTableNode {
     return node.kind === 'AlterTableNode'

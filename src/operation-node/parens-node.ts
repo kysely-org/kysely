@@ -7,6 +7,9 @@ export interface ParensNode extends OperationNode {
   readonly node: FilterExpressionNode
 }
 
+/**
+ * @internal
+ */
 export const parensNode = freeze({
   is(node: OperationNode): node is ParensNode {
     return node.kind === 'ParensNode'

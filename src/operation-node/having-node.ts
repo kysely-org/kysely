@@ -12,6 +12,9 @@ export interface HavingNode extends OperationNode {
   readonly having: HavingNodeChild
 }
 
+/**
+ * @internal
+ */
 export const havingNode = freeze({
   is(node: OperationNode): node is HavingNode {
     return node.kind === 'HavingNode'

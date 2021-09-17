@@ -19,6 +19,9 @@ export interface CreateIndexNode extends OperationNode {
   readonly using?: RawNode
 }
 
+/**
+ * @internal
+ */
 export const createIndexNode = freeze({
   is(node: OperationNode): node is CreateIndexNode {
     return node.kind === 'CreateIndexNode'

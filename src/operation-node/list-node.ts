@@ -6,6 +6,9 @@ export interface ListNode extends OperationNode {
   readonly items: ReadonlyArray<OperationNode>
 }
 
+/**
+ * @internal
+ */
 export const listNode = freeze({
   is(node: OperationNode): node is ListNode {
     return node.kind === 'ListNode'

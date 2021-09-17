@@ -7,6 +7,9 @@ export interface GroupByNode extends OperationNode {
   readonly items: ReadonlyArray<GroupByItemNode>
 }
 
+/**
+ * @internal
+ */
 export const groupByNode = freeze({
   is(node: OperationNode): node is GroupByNode {
     return node.kind === 'GroupByNode'

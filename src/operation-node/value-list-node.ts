@@ -12,6 +12,9 @@ export interface ValueListNode extends OperationNode {
   readonly values: ReadonlyArray<ListNodeItem>
 }
 
+/**
+ * @internal
+ */
 export const valueListNode = freeze({
   is(node: OperationNode): node is ValueListNode {
     return node.kind === 'ValueListNode'

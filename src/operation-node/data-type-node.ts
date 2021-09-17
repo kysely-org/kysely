@@ -28,6 +28,9 @@ export interface DataTypeNode extends OperationNode {
   readonly dataType: ColumnDataType
 }
 
+/**
+ * @internal
+ */
 export const dataTypeNode = freeze({
   is(node: OperationNode): node is DataTypeNode {
     return node.kind === 'DataTypeNode'

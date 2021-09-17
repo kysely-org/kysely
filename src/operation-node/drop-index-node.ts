@@ -11,6 +11,9 @@ export interface DropIndexNode extends OperationNode {
   readonly modifier?: DropIndexNodeModifier
 }
 
+/**
+ * @internal
+ */
 export const dropIndexNode = freeze({
   is(node: OperationNode): node is DropIndexNode {
     return node.kind === 'DropIndexNode'

@@ -25,7 +25,7 @@ import { RawBuilder } from '../raw-builder/raw-builder'
 import { Compilable } from '../util/compilable'
 import { PrimitiveValue } from '../util/object-utils'
 import { preventAwait } from '../util/prevent-await'
-import { QueryExecutor } from '../util/query-executor'
+import { QueryExecutor } from '../query-executor/query-executor'
 
 export class AlterTableBuilder {
   readonly #alterTableNode: AlterTableNode

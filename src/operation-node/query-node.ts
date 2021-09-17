@@ -25,6 +25,9 @@ export type FilterableQueryNode =
   | DeleteQueryNode
   | UpdateQueryNode
 
+/**
+ * @internal
+ */
 export const queryNode = freeze({
   is(node: OperationNode): node is QueryNode {
     return (

@@ -7,6 +7,9 @@ export interface ValueNode extends OperationNode {
   readonly immediate?: boolean
 }
 
+/**
+ * @internal
+ */
 export const valueNode = freeze({
   is(node: OperationNode): node is ValueNode {
     return node.kind === 'ValueNode'

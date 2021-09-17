@@ -16,7 +16,7 @@ import {
   DeleteResultTypeTag,
   UpdateResultTypeTag,
 } from './query-builder/type-utils'
-import { QueryExecutor } from './util/query-executor'
+import { QueryExecutor } from './query-executor/query-executor'
 import { RawBuilder } from './raw-builder/raw-builder'
 import {
   CommonTableExpression,

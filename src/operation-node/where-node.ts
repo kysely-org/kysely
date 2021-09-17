@@ -12,6 +12,9 @@ export interface WhereNode extends OperationNode {
   readonly where: WhereChildNode
 }
 
+/**
+ * @internal
+ */
 export const whereNode = freeze({
   is(node: OperationNode): node is WhereNode {
     return node.kind === 'WhereNode'

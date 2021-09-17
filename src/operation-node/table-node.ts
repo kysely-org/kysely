@@ -8,6 +8,9 @@ export interface TableNode extends OperationNode {
   readonly table: IdentifierNode
 }
 
+/**
+ * @internal
+ */
 export const tableNode = freeze({
   is(node: OperationNode): node is TableNode {
     return node.kind === 'TableNode'

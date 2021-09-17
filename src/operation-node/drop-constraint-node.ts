@@ -7,6 +7,9 @@ export interface DropConstraintNode extends OperationNode {
   readonly constraintName: IdentifierNode
 }
 
+/**
+ * @internal
+ */
 export const dropConstraintNode = freeze({
   is(node: OperationNode): node is DropConstraintNode {
     return node.kind === 'DropConstraintNode'

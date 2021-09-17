@@ -10,7 +10,7 @@ import { valueNode } from '../operation-node/value-node'
 import { parseStringReference } from '../parser/reference-parser'
 import { CompiledQuery } from '../query-compiler/compiled-query'
 import { preventAwait } from '../util/prevent-await'
-import { QueryExecutor } from '../util/query-executor'
+import { QueryExecutor } from '../query-executor/query-executor'
 
 export class RawBuilder<O = unknown> implements OperationNodeSource {
   readonly #sql: string

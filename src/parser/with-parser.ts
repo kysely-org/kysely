@@ -6,7 +6,7 @@ import {
 import { QueryBuilder } from '../query-builder/query-builder'
 import { QueryCreator } from '../query-creator'
 import { RawBuilder } from '../raw-builder/raw-builder'
-import { NeverExecutingQueryExecutor } from '../util/query-executor'
+import { NeverExecutingQueryExecutor } from '../query-executor/query-executor'
 
 export type CommonTableExpression<DB> = (
   creator: QueryCreator<DB>

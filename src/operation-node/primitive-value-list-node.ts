@@ -11,6 +11,9 @@ export interface PrimitiveValueListNode extends OperationNode {
   readonly values: ReadonlyArray<PrimitiveValue>
 }
 
+/**
+ * @internal
+ */
 export const primitiveValueListNode = freeze({
   is(node: OperationNode): node is PrimitiveValueListNode {
     return node.kind === 'PrimitiveValueListNode'

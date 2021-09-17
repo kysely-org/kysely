@@ -7,6 +7,9 @@ export interface OffsetNode extends OperationNode {
   readonly offset: ValueNode
 }
 
+/**
+ * @internal
+ */
 export const offsetNode = freeze({
   is(node: OperationNode): node is OffsetNode {
     return node.kind === 'OffsetNode'

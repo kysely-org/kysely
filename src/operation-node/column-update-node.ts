@@ -9,6 +9,9 @@ export interface ColumnUpdateNode extends OperationNode {
   readonly value: ValueExpressionNode
 }
 
+/**
+ * @internal
+ */
 export const columnUpdateNode = freeze({
   is(node: OperationNode): node is ColumnUpdateNode {
     return node.kind === 'ColumnUpdateNode'

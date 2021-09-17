@@ -10,6 +10,9 @@ export interface OrderByItemNode extends OperationNode {
   readonly direction: OrderByDirection
 }
 
+/**
+ * @internal
+ */
 export const orderByItemNode = freeze({
   is(node: OperationNode): node is OrderByItemNode {
     return node.kind === 'OrderByItemNode'

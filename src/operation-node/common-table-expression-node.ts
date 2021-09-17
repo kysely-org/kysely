@@ -10,6 +10,9 @@ export interface CommonTableExpressionNode extends OperationNode {
   readonly expression: QueryNode | RawNode
 }
 
+/**
+ * @internal
+ */
 export const commonTableExpressionNode = freeze({
   is(node: OperationNode): node is CommonTableExpressionNode {
     return node.kind === 'CommonTableExpressionNode'

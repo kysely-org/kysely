@@ -18,7 +18,7 @@ import {
   DefaultQueryExecutor,
   QueryExecutor,
   RowMapper,
-} from './util/query-executor'
+} from './query-executor/query-executor'
 import { QueryCreator } from './query-creator'
 import { KyselyPlugin } from './plugin/plugin'
 import { OperationNodeTransformer } from './operation-node/operation-node-transformer'

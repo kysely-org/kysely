@@ -39,6 +39,9 @@ export interface SelectQueryNode extends OperationNode {
   readonly having?: HavingNode
 }
 
+/**
+ * @internal
+ */
 export const selectQueryNode = freeze({
   is(node: OperationNode): node is SelectQueryNode {
     return node.kind === 'SelectQueryNode'

@@ -20,6 +20,9 @@ export interface CreateTableNode extends OperationNode {
   readonly constraints?: ReadonlyArray<ConstraintNode>
 }
 
+/**
+ * @internal
+ */
 export const createTableNode = freeze({
   is(node: OperationNode): node is CreateTableNode {
     return node.kind === 'CreateTableNode'

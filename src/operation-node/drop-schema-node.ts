@@ -14,6 +14,9 @@ export interface DropSchemaNode extends OperationNode {
   readonly modifier?: DropSchemaNodeModifier
 }
 
+/**
+ * @internal
+ */
 export const dropSchemaNode = freeze({
   is(node: OperationNode): node is DropSchemaNode {
     return node.kind === 'DropSchemaNode'

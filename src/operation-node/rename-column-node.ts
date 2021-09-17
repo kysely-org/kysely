@@ -8,6 +8,9 @@ export interface RenameColumnNode extends OperationNode {
   readonly renameTo: ColumnNode
 }
 
+/**
+ * @internal
+ */
 export const renameColumnNode = freeze({
   is(node: OperationNode): node is RenameColumnNode {
     return node.kind === 'RenameColumnNode'

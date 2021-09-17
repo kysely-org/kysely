@@ -6,7 +6,7 @@ import {
   CompileEntryPointNode,
   QueryCompiler,
 } from '../query-compiler/query-compiler'
-import { freeze } from './object-utils'
+import { freeze } from '../util/object-utils'
 
 export type RowMapper = (row: Record<string, any>) => Record<string, any>
 

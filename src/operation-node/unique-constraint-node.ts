@@ -9,6 +9,9 @@ export interface UniqueConstraintNode extends OperationNode {
   readonly name?: IdentifierNode
 }
 
+/**
+ * @internal
+ */
 export const uniqueConstraintNode = freeze({
   is(node: OperationNode): node is UniqueConstraintNode {
     return node.kind === 'UniqueConstraintNode'

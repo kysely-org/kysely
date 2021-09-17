@@ -21,6 +21,9 @@ export interface InsertQueryNode extends OperationNode {
   readonly with?: WithNode
 }
 
+/**
+ * @internal
+ */
 export const insertQueryNode = freeze({
   is(node: OperationNode): node is InsertQueryNode {
     return node.kind === 'InsertQueryNode'

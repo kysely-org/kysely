@@ -16,6 +16,9 @@ export interface DeleteQueryNode extends OperationNode {
   readonly with?: WithNode
 }
 
+/**
+ * @internal
+ */
 export const deleteQueryNode = freeze({
   is(node: OperationNode): node is DeleteQueryNode {
     return node.kind === 'DeleteQueryNode'

@@ -26,6 +26,9 @@ export interface ColumnDefinitionNode extends OperationNode {
   readonly check?: CheckConstraintNode
 }
 
+/**
+ * @internal
+ */
 export const columnDefinitionNode = freeze({
   is(node: OperationNode): node is ColumnDefinitionNode {
     return node.kind === 'ColumnDefinitionNode'

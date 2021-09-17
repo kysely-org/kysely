@@ -38,6 +38,9 @@ export interface OperatorNode extends OperationNode {
   readonly operator: Operator
 }
 
+/**
+ * @internal
+ */
 export const operatorNode = freeze({
   is(node: OperationNode): node is OperatorNode {
     return node.kind === 'OperatorNode'

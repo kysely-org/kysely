@@ -6,7 +6,7 @@ import { OperationNodeSource } from '../operation-node/operation-node-source'
 import { CompiledQuery } from '../query-compiler/compiled-query'
 import { Compilable } from '../util/compilable'
 import { preventAwait } from '../util/prevent-await'
-import { QueryExecutor } from '../util/query-executor'
+import { QueryExecutor } from '../query-executor/query-executor'
 
 export class CreateSchemaBuilder implements OperationNodeSource, Compilable {
   readonly #createSchemaNode: CreateSchemaNode

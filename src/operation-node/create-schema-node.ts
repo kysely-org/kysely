@@ -14,6 +14,9 @@ export interface CreateSchemaNode extends OperationNode {
   readonly modifier?: CreateSchemaNodeModifier
 }
 
+/**
+ * @internal
+ */
 export const createSchemaNode = freeze({
   is(node: OperationNode): node is CreateSchemaNode {
     return node.kind === 'CreateSchemaNode'

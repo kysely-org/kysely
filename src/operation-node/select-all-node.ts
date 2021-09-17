@@ -5,6 +5,9 @@ export interface SelectAllNode extends OperationNode {
   readonly kind: 'SelectAllNode'
 }
 
+/**
+ * @internal
+ */
 export const selectAllNode = freeze({
   is(node: OperationNode): node is SelectAllNode {
     return node.kind === 'SelectAllNode'
