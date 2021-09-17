@@ -35,16 +35,14 @@ for (const dialect of BUILT_IN_DIALECTS) {
           )
           .addColumn('c', 'varchar')
           .addColumn('d', 'varchar(10)')
-          .addColumn('e', 'bigint', (col) => col.unique().notNullable())
+          .addColumn('e', 'bigint', (col) => col.unique().notNull())
           .addColumn('f', 'double precision')
           .addColumn('g', 'real')
           .addColumn('h', 'text')
           .addColumn('i', ctx.db.raw('varchar(123)'))
           .addColumn('j', 'numeric(6, 2)')
           .addColumn('k', 'decimal(8, 4)')
-          .addColumn('l', 'boolean', (col) =>
-            col.notNullable().defaultTo(false)
-          )
+          .addColumn('l', 'boolean', (col) => col.notNull().defaultTo(false))
           .addColumn('m', 'date')
           .addColumn('n', 'timestamp with time zone')
 
@@ -399,6 +397,165 @@ for (const dialect of BUILT_IN_DIALECTS) {
           testSql(builder, dialect, {
             postgres: {
               sql: `alter table "test" alter column "varchar_col" type text`,
+              bindings: [],
+            },
+          })
+
+          await builder.execute()
+        })
+
+        it('should set default value', async () => {
+          const builder = ctx.db.schema
+            .alterTable('test')
+            .alterColumn('varchar_col')
+            .setDefault('foo')
+
+          testSql(builder, dialect, {
+            postgres: {
+              sql: `alter table "test" alter column "varchar_col" set default 'foo'`,
+              bindings: [],
+            },
+          })
+
+          await builder.execute()
+        })
+
+        it('should drop default value', async () => {
+          await ctx.db.schema
+            .alterTable('test')
+            .alterColumn('varchar_col')
+            .setDefault('foo')
+            .execute()
+
+          const builder = ctx.db.schema
+            .alterTable('test')
+            .alterColumn('varchar_col')
+            .dropDefault()
+
+          testSql(builder, dialect, {
+            postgres: {
+              sql: `alter table "test" alter column "varchar_col" drop default`,
+              bindings: [],
+            },
+          })
+
+          await builder.execute()
+        })
+
+        it('should add not null constraint for column', async () => {
+          const builder = ctx.db.schema
+            .alterTable('test')
+            .alterColumn('varchar_col')
+            .setNotNull()
+
+          testSql(builder, dialect, {
+            postgres: {
+              sql: `alter table "test" alter column "varchar_col" set not null`,
+              bindings: [],
+            },
+          })
+
+          await builder.execute()
+        })
+
+        it('should drop not null constraint for column', async () => {
+          await ctx.db.schema
+            .alterTable('test')
+            .alterColumn('varchar_col')
+            .setNotNull()
+            .execute()
+
+          const builder = ctx.db.schema
+            .alterTable('test')
+            .alterColumn('varchar_col')
+            .dropNotNull()
+
+          testSql(builder, dialect, {
+            postgres: {
+              sql: `alter table "test" alter column "varchar_col" drop not null`,
+              bindings: [],
+            },
+          })
+
+          await builder.execute()
+        })
+      })
+
+      describe('drop column', () => {
+        it('should drop a column', async () => {
+          const builder = ctx.db.schema
+            .alterTable('test')
+            .dropColumn('varchar_col')
+
+          testSql(builder, dialect, {
+            postgres: {
+              sql: `alter table "test" drop column "varchar_col"`,
+              bindings: [],
+            },
+          })
+
+          await builder.execute()
+        })
+      })
+
+      describe('rename', () => {
+        it('should rename a table', async () => {
+          const builder = ctx.db.schema.alterTable('test').renameTo('test2')
+
+          testSql(builder, dialect, {
+            postgres: {
+              sql: `alter table "test" rename to "test2"`,
+              bindings: [],
+            },
+          })
+
+          await builder.execute()
+        })
+      })
+
+      describe('set schema', () => {
+        it('should rename a table', async () => {
+          const builder = ctx.db.schema.alterTable('test').setSchema('public')
+
+          testSql(builder, dialect, {
+            postgres: {
+              sql: `alter table "test" set schema "public"`,
+              bindings: [],
+            },
+          })
+
+          await builder.execute()
+        })
+      })
+
+      describe('rename column', () => {
+        it('should rename a column', async () => {
+          const builder = ctx.db.schema
+            .alterTable('test')
+            .renameColumn('varchar_col', 'text_col')
+
+          testSql(builder, dialect, {
+            postgres: {
+              sql: `alter table "test" rename column "varchar_col" to "text_col"`,
+              bindings: [],
+            },
+          })
+
+          await builder.execute()
+        })
+      })
+
+      describe('add column', () => {
+        it('should add a column', async () => {
+          const builder = ctx.db.schema
+            .alterTable('test')
+            .addColumn('bool_col', 'boolean')
+            .notNull()
+            .unique()
+
+          testSql(builder, dialect, {
+            postgres: {
+              sql: `alter table "test" add column "bool_col" boolean not null unique`,
               bindings: [],
             },
           })

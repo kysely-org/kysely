@@ -8,7 +8,7 @@ export interface RenameColumnNode extends OperationNode {
   readonly renameTo: ColumnNode
 }
 
-export const dropColumnNode = freeze({
+export const renameColumnNode = freeze({
   is(node: OperationNode): node is RenameColumnNode {
     return node.kind === 'RenameColumnNode'
   },

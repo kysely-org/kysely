@@ -134,7 +134,7 @@ export async function up(db: Kysely<any>): Promise<void> {
   await db.schema
     .createTable('pet')
     .addColumn('id', 'integer', (col) => col.increments().primaryKey())
-    .addColumn('name', 'varchar', (col) => col.unique())
+    .addColumn('name', 'varchar', (col) => col.notNull().unique())
     .addColumn('owner_id', 'integer', (col) =>
       col.references('person.id').onDelete('cascade')
     )

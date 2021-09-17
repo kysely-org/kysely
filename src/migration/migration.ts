@@ -94,7 +94,7 @@ async function ensureMigrationLockTableExists(db: Kysely<any>): Promise<void> {
         .ifNotExists()
         .addColumn('id', 'varchar', (col) => col.primaryKey())
         .addColumn('is_locked', 'integer', (col) =>
-          col.notNullable().defaultTo(0)
+          col.notNull().defaultTo(0)
         )
         .execute()
     } catch (error) {

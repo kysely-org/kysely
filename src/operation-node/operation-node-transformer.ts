@@ -55,6 +55,7 @@ import { AlterColumnNode } from './alter-column-node'
 import { AddConstraintNode } from './add-constraint-node'
 import { DropConstraintNode } from './drop-constraint-node'
 import { ForeignKeyConstraintNode } from './foreign-key-constraint-node'
+import { ColumnDefinitionNode } from './column-definition-node'
 
 /**
  * Transforms an operation node tree into another one.
@@ -114,6 +115,7 @@ export class OperationNodeTransformer {
     ReturningNode: this.transformReturning.bind(this),
     CreateTableNode: this.transformCreateTable.bind(this),
     AddColumnNode: this.transformAddColumn.bind(this),
+    ColumnDefinitionNode: this.transformColumnDefinition.bind(this),
     DropTableNode: this.transformDropTable.bind(this),
     DataTypeNode: this.transformDataType.bind(this),
     OrderByNode: this.transformOrderBy.bind(this),
@@ -336,9 +338,11 @@ export class OperationNodeTransformer {
     }
   }
 
-  protected transformAddColumn(node: AddColumnNode): AddColumnNode {
+  protected transformColumnDefinition(
+    node: ColumnDefinitionNode
+  ): ColumnDefinitionNode {
     return {
-      kind: 'AddColumnNode',
+      kind: 'ColumnDefinitionNode',
       column: this.transformNode(node.column),
       dataType: this.transformNode(node.dataType),
       references: this.transformNode(node.references),
@@ -348,6 +352,13 @@ export class OperationNodeTransformer {
       isNullable: node.isNullable,
       defaultTo: this.transformNode(node.defaultTo),
       check: this.transformNode(node.check),
+    }
+  }
+
+  protected transformAddColumn(node: AddColumnNode): AddColumnNode {
+    return {
+      kind: 'AddColumnNode',
+      column: this.transformNode(node.column),
     }
   }
 

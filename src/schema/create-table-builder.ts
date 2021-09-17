@@ -1,5 +1,6 @@
 import { RawBuilder } from '..'
 import { addColumnNode } from '../operation-node/add-column-node'
+import { columnDefinitionNode } from '../operation-node/column-definition-node'
 import {
   CreateTableNode,
   createTableNode,
@@ -13,7 +14,7 @@ import { CompiledQuery } from '../query-compiler/compiled-query'
 import { Compilable } from '../util/compilable'
 import { preventAwait } from '../util/prevent-await'
 import { QueryExecutor } from '../util/query-executor'
-import { AddColumnBuilder } from './add-column-builder'
+import { ColumnDefinitionBuilder } from './column-definition-builder'
 
 export class CreateTableBuilder implements OperationNodeSource, Compilable {
   readonly #createTableNode: CreateTableNode
@@ -50,7 +51,7 @@ export class CreateTableBuilder implements OperationNodeSource, Compilable {
    * await db.schema
    *   .createTable('person')
    *   .addColumn('int', 'id', (col) => col.increments().primary()),
-   *   .addColumn('first_name', 'varchar(50), (col) => col.notNullable())
+   *   .addColumn('first_name', 'varchar(50), (col) => col.notNull())
    *   .addColumn('varchar', 'last_name')
    *   .addColumn('numeric(8, 2)', 'bank_balance')
    *   .addColumn('data', db.raw('customtype'))
@@ -61,8 +62,8 @@ export class CreateTableBuilder implements OperationNodeSource, Compilable {
     dataType: ColumnDataType | RawBuilder,
     build?: ColumnBuilderCallback
   ): CreateTableBuilder {
-    let columnBuilder = new AddColumnBuilder(
-      addColumnNode.create(
+    let columnBuilder = new ColumnDefinitionBuilder(
+      columnDefinitionNode.create(
         columnName,
         isOperationNodeSource(dataType)
           ? dataType.toOperationNode()
@@ -204,5 +205,5 @@ export interface CreateTableBuilderConstructorArgs {
 }
 
 export type ColumnBuilderCallback = (
-  tableBuilder: AddColumnBuilder
-) => AddColumnBuilder
+  tableBuilder: ColumnDefinitionBuilder
+) => ColumnDefinitionBuilder

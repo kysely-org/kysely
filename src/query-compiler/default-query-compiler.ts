@@ -72,6 +72,7 @@ import { AlterColumnNode } from '../operation-node/alter-column-node'
 import { AddConstraintNode } from '../operation-node/add-constraint-node'
 import { DropConstraintNode } from '../operation-node/drop-constraint-node'
 import { ForeignKeyConstraintNode } from '../operation-node/foreign-key-constraint-node'
+import { ColumnDefinitionNode } from '../operation-node/column-definition-node'
 
 export class DefaultQueryCompiler
   extends OperationNodeVisitor
@@ -426,7 +427,7 @@ export class DefaultQueryCompiler
     this.append(')')
   }
 
-  protected override visitAddColumn(node: AddColumnNode): void {
+  protected override visitColumnDefinition(node: ColumnDefinitionNode): void {
     this.visitNode(node.column)
     this.append(' ')
 
@@ -765,6 +766,11 @@ export class DefaultQueryCompiler
     if (node.alterColumn) {
       this.visitNode(node.alterColumn)
     }
+  }
+
+  protected override visitAddColumn(node: AddColumnNode): void {
+    this.append('add column ')
+    this.visitNode(node.column)
   }
 
   protected override visitRenameColumn(node: RenameColumnNode): void {

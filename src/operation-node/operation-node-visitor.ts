@@ -57,6 +57,7 @@ import { AlterColumnNode } from './alter-column-node'
 import { AddConstraintNode } from './add-constraint-node'
 import { DropConstraintNode } from './drop-constraint-node'
 import { ForeignKeyConstraintNode } from './foreign-key-constraint-node'
+import { ColumnDefinitionNode } from './column-definition-node'
 
 export class OperationNodeVisitor {
   protected readonly nodeStack: OperationNode[] = []
@@ -87,6 +88,7 @@ export class OperationNodeVisitor {
     ReturningNode: this.visitReturning.bind(this),
     CreateTableNode: this.visitCreateTable.bind(this),
     AddColumnNode: this.visitAddColumn.bind(this),
+    ColumnDefinitionNode: this.visitColumnDefinition.bind(this),
     DropTableNode: this.visitDropTable.bind(this),
     DataTypeNode: this.visitDataType.bind(this),
     OrderByNode: this.visitOrderBy.bind(this),
@@ -297,10 +299,18 @@ export class OperationNodeVisitor {
 
   protected visitAddColumn(node: AddColumnNode): void {
     this.visitNode(node.column)
+  }
+
+  protected visitColumnDefinition(node: ColumnDefinitionNode): void {
+    this.visitNode(node.column)
     this.visitNode(node.dataType)
 
     if (node.defaultTo) {
       this.visitNode(node.defaultTo)
+    }
+
+    if (node.references) {
+      this.visitNode(node.references)
     }
 
     if (node.check) {
