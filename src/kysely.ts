@@ -101,23 +101,14 @@ export class Kysely<DB> extends QueryCreator<DB> {
   }
 
   /**
-   * Returns true if this `Kysely` instance is a transaction.
-   *
-   * You can also use `db instanceof Transaction`.
-   */
-  get isTransaction(): boolean {
-    return false
-  }
-
-  /**
-   * Returns the {@link Schema} module for building database schema.
+   * Returns the {@link SchemaModule} module for building database schema.
    */
   get schema(): SchemaModule {
     return new SchemaModule(this.#executor)
   }
 
   /**
-   * Returns the {@link Migration} module for managing and running migrations.
+   * Returns the {@link MigrationModule} module for managing and running migrations.
    */
   get migration(): MigrationModule {
     return new MigrationModule(this)
@@ -220,6 +211,15 @@ export class Kysely<DB> extends QueryCreator<DB> {
    */
   async destroy(): Promise<void> {
     await this.#driver[INTERNAL_DRIVER_ENSURE_DESTROY]()
+  }
+
+  /**
+   * Returns true if this `Kysely` instance is a transaction.
+   *
+   * You can also use `db instanceof Transaction`.
+   */
+  get isTransaction(): boolean {
+    return false
   }
 }
 
