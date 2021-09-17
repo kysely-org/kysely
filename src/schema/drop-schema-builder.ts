@@ -12,9 +12,9 @@ export class DropSchemaBuilder implements OperationNodeSource, Compilable {
   readonly #dropSchemaNode: DropSchemaNode
   readonly #executor: QueryExecutor
 
-  constructor({ dropSchemaNode, executor }: DropSchemaBuilderConstructorArgs) {
-    this.#dropSchemaNode = dropSchemaNode
-    this.#executor = executor
+  constructor(args: DropSchemaBuilderConstructorArgs) {
+    this.#dropSchemaNode = args.dropSchemaNode
+    this.#executor = args.executor
   }
 
   ifExists(): DropSchemaBuilder {

@@ -324,7 +324,7 @@ export class QueryCreator<DB> {
    * ```
    *
    * @example
-   * `withSchema` is smart enough to not add schema for aliases
+   * `withSchema` is smart enough to not add schema for aliases,
    * common table expressions or other places where the schema
    * doesn't belong to:
    *
@@ -343,7 +343,9 @@ export class QueryCreator<DB> {
    */
   withSchema(schema: string): QueryCreator<DB> {
     return new QueryCreator(
-      this.#executor.copyWithTransformerAtFront(new WithSchemaTransformer(schema)),
+      this.#executor.copyWithTransformerAtFront(
+        new WithSchemaTransformer(schema)
+      ),
       this.#withNode
     )
   }

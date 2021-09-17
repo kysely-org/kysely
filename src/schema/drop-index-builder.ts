@@ -9,9 +9,9 @@ export class DropIndexBuilder implements OperationNodeSource, Compilable {
   readonly #dropIndexNode: DropIndexNode
   readonly #executor: QueryExecutor
 
-  constructor({ dropIndexNode, executor }: DropIndexBuilderConstructorArgs) {
-    this.#dropIndexNode = dropIndexNode
-    this.#executor = executor
+  constructor(args: DropIndexBuilderConstructorArgs) {
+    this.#dropIndexNode = args.dropIndexNode
+    this.#executor = args.executor
   }
 
   ifExists(): DropIndexBuilder {

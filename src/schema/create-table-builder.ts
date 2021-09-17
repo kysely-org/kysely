@@ -1,5 +1,4 @@
 import { RawBuilder } from '..'
-import { addColumnNode } from '../operation-node/add-column-node'
 import { columnDefinitionNode } from '../operation-node/column-definition-node'
 import {
   CreateTableNode,
@@ -20,12 +19,9 @@ export class CreateTableBuilder implements OperationNodeSource, Compilable {
   readonly #createTableNode: CreateTableNode
   readonly #executor: QueryExecutor
 
-  constructor({
-    createTableNode,
-    executor,
-  }: CreateTableBuilderConstructorArgs) {
-    this.#createTableNode = createTableNode
-    this.#executor = executor
+  constructor(args: CreateTableBuilderConstructorArgs) {
+    this.#createTableNode = args.createTableNode
+    this.#executor = args.executor
   }
 
   /**

@@ -31,9 +31,9 @@ export class AlterTableBuilder {
   readonly #alterTableNode: AlterTableNode
   readonly #executor: QueryExecutor
 
-  constructor({ alterTableNode, executor }: AlterTableBuilderConstructorArgs) {
-    this.#alterTableNode = alterTableNode
-    this.#executor = executor
+  constructor(args: AlterTableBuilderConstructorArgs) {
+    this.#alterTableNode = args.alterTableNode
+    this.#executor = args.executor
   }
 
   renameTo(newTableName: string): AlterTableExecutor {
@@ -104,14 +104,10 @@ export class AlterColumnBuilder {
   readonly #alterColumnNode: AlterColumnNode
   readonly #executor: QueryExecutor
 
-  constructor({
-    alterTableNode,
-    alterColumnNode,
-    executor,
-  }: AlterColumnBuilderConstructorArgs) {
-    this.#alterTableNode = alterTableNode
-    this.#alterColumnNode = alterColumnNode
-    this.#executor = executor
+  constructor(args: AlterColumnBuilderConstructorArgs) {
+    this.#alterTableNode = args.alterTableNode
+    this.#alterColumnNode = args.alterColumnNode
+    this.#executor = args.executor
   }
 
   setDataType(dataType: ColumnDataType): AlterTableExecutor {
@@ -176,9 +172,9 @@ export class AlterTableExecutor implements OperationNodeSource, Compilable {
   readonly #alterTableNode: AlterTableNode
   readonly #executor: QueryExecutor
 
-  constructor({ alterTableNode, executor }: AlterTableExecutorConstructorArgs) {
-    this.#alterTableNode = alterTableNode
-    this.#executor = executor
+  constructor(args: AlterTableExecutorConstructorArgs) {
+    this.#alterTableNode = args.alterTableNode
+    this.#executor = args.executor
   }
 
   toOperationNode(): AlterTableNode {
@@ -201,14 +197,10 @@ export class AlterTableAddColumnBuilder
   readonly #executor: QueryExecutor
   readonly #columnBuilder: ColumnDefinitionBuilder
 
-  constructor({
-    alterTableNode,
-    columnBuilder,
-    executor,
-  }: AlterTableAddColumnBuilderConstructorArgs) {
-    this.#alterTableNode = alterTableNode
-    this.#executor = executor
-    this.#columnBuilder = columnBuilder
+  constructor(args: AlterTableAddColumnBuilderConstructorArgs) {
+    this.#alterTableNode = args.alterTableNode
+    this.#executor = args.executor
+    this.#columnBuilder = args.columnBuilder
   }
 
   increments(): AlterTableAddColumnBuilder {

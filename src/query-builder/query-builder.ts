@@ -88,9 +88,9 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
   readonly #queryNode: QueryNode
   readonly #executor: QueryExecutor
 
-  constructor({ queryNode, executor }: QueryBuilderConstructorArgs) {
-    this.#queryNode = queryNode
-    this.#executor = executor
+  constructor(args: QueryBuilderConstructorArgs) {
+    this.#queryNode = args.queryNode
+    this.#executor = args.executor
   }
 
   /**

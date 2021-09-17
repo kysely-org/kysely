@@ -33,21 +33,22 @@ import { OperationNodeTransformer } from './operation-node/operation-node-transf
  * This example assumes your database has tables `person` and `pet`:
  *
  * ```ts
- * interface PersonRow {
+ * interface Person {
  *   id: number
  *   first_name: string
+ *   last_name: string
  * }
  *
- * interface PetRow {
+ * interface Pet {
  *   id: number
  *   owner_id: number
  *   name: string
- *   species 'cat' | 'dog
+ *   species 'cat' | 'dog'
  * }
  *
  * interface Database {
- *   person: PersonRow,
- *   pet: PetRow
+ *   person: Person,
+ *   pet: Pet
  * }
  *
  * const db = new Kysely<Database>(config)

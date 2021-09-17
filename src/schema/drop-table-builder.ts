@@ -9,9 +9,9 @@ export class DropTableBuilder implements OperationNodeSource, Compilable {
   readonly #dropTableNode: DropTableNode
   readonly #executor: QueryExecutor
 
-  constructor({ dropTableNode, executor }: DropTableBuilderConstructorArgs) {
-    this.#dropTableNode = dropTableNode
-    this.#executor = executor
+  constructor(args: DropTableBuilderConstructorArgs) {
+    this.#dropTableNode = args.dropTableNode
+    this.#executor = args.executor
   }
 
   ifExists(): DropTableBuilder {

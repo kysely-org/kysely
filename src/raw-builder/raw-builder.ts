@@ -17,10 +17,10 @@ export class RawBuilder<O = unknown> implements OperationNodeSource {
   readonly #params?: any[]
   readonly #executor: QueryExecutor
 
-  constructor({ sql, params, executor }: RawBuilderConstructorArgs) {
-    this.#sql = sql
-    this.#params = params
-    this.#executor = executor
+  constructor(args: RawBuilderConstructorArgs) {
+    this.#sql = args.sql
+    this.#params = args.params
+    this.#executor = args.executor
   }
 
   toOperationNode(): RawNode {

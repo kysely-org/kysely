@@ -17,12 +17,9 @@ export class CreateIndexBuilder implements OperationNodeSource, Compilable {
   readonly #createIndexNode: CreateIndexNode
   readonly #executor: QueryExecutor
 
-  constructor({
-    createIndexNode,
-    executor,
-  }: CreateIndexBuilderConstructorArgs) {
-    this.#createIndexNode = createIndexNode
-    this.#executor = executor
+  constructor(args: CreateIndexBuilderConstructorArgs) {
+    this.#createIndexNode = args.createIndexNode
+    this.#executor = args.executor
   }
 
   /**

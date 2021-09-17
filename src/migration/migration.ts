@@ -9,7 +9,7 @@ export const MIGRATION_LOCK_TABLE = 'kysely_migration_lock'
 export const MIGRATION_LOCK_ID = 'migration_lock'
 
 const MAX_LOCK_WAIT_TIME_MS = 60000
-const LOCK_ATTEMPT_GAP_MS = 100
+const LOCK_ATTEMPT_GAP_MS = 500
 
 export class MigrationModule {
   readonly #db: Kysely<any>
@@ -93,9 +93,7 @@ async function ensureMigrationLockTableExists(db: Kysely<any>): Promise<void> {
         .createTable(MIGRATION_LOCK_TABLE)
         .ifNotExists()
         .addColumn('id', 'varchar', (col) => col.primaryKey())
-        .addColumn('is_locked', 'integer', (col) =>
-          col.notNull().defaultTo(0)
-        )
+        .addColumn('is_locked', 'integer', (col) => col.notNull().defaultTo(0))
         .execute()
     } catch (error) {
       // At least on postgres, `if not exists` doesn't guarantee the `create table`

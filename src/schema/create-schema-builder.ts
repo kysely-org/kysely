@@ -12,12 +12,9 @@ export class CreateSchemaBuilder implements OperationNodeSource, Compilable {
   readonly #createSchemaNode: CreateSchemaNode
   readonly #executor: QueryExecutor
 
-  constructor({
-    createSchemaNode,
-    executor,
-  }: CreateSchemaBuilderConstructorArgs) {
-    this.#createSchemaNode = createSchemaNode
-    this.#executor = executor
+  constructor(args: CreateSchemaBuilderConstructorArgs) {
+    this.#createSchemaNode = args.createSchemaNode
+    this.#executor = args.executor
   }
 
   ifNotExists(): CreateSchemaBuilder {
