@@ -20,6 +20,7 @@ export type ColumnDataType =
   | 'timestamp with time zone'
   | 'serial'
   | 'bigserial'
+  | 'uuid'
 
 export type DataTypeParams = Omit<DataTypeNode, 'kind' | 'dataType'>
 
