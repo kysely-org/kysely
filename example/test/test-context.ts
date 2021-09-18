@@ -23,17 +23,16 @@ export class TestContext {
   }
 
   before = async (): Promise<void> => {
-    // Connect to the default `postgres` database that should always exists
-    let db = new Kysely<any>({ ...testConfig.database, database: 'postgres' })
+    const adminDb = new Kysely<any>(testConfig.adminDatabase)
 
     // Create our test database
     const { database } = testConfig.database
-    await db.raw(`drop database if exists ${database}`).execute()
-    await db.raw(`create database ${database}`).execute()
-    await db.destroy()
+    await adminDb.raw(`drop database if exists ${database}`).execute()
+    await adminDb.raw(`create database ${database}`).execute()
+    await adminDb.destroy()
 
     // Now connect to the test databse and run the migrations
-    db = new Kysely<any>(testConfig.database)
+    const db = new Kysely<any>(testConfig.database)
     await db.migration.migrateToLatest(
       path.join(__dirname, '../src/migrations')
     )
