@@ -1,6 +1,7 @@
 import { Driver } from '../../driver/driver'
 import { DriverConfig } from '../../driver/driver-config'
 import { Kysely } from '../../kysely'
+import { parseTable } from '../../parser/table-parser'
 import { DefaultQueryCompiler } from '../../query-compiler/default-query-compiler'
 import { QueryCompiler } from '../../query-compiler/query-compiler'
 import { Dialect, TableMetadata } from '../dialect'
@@ -20,15 +21,15 @@ export class PostgresDialect implements Dialect {
     db: Kysely<any>,
     tableName: string
   ): Promise<TableMetadata | undefined> {
-    const parts = tableName.split('.')
+    const tableNode = parseTable(tableName)
 
     let query = db
       .selectFrom('information_schema.tables')
-      .where('table_name', '=', parts[parts.length - 1])
+      .where('table_name', '=', tableNode.table.identifier)
       .select('table_name')
 
-    if (parts.length === 2) {
-      query = query.where('table_schema', '=', parts[0])
+    if (tableNode.schema) {
+      query = query.where('table_schema', '=', tableNode.schema.identifier)
     }
 
     const result = await query.executeTakeFirst()

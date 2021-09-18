@@ -60,7 +60,7 @@ import { parseUpdateObject } from '../parser/update-set-parser'
 import { preventAwait } from '../util/prevent-await'
 import { limitNode } from '../operation-node/limit-node'
 import { offsetNode } from '../operation-node/offset-node'
-import { asArray } from '../util/object-utils'
+import { asArray, asReadonlyArray } from '../util/object-utils'
 import { Compilable } from '../util/compilable'
 import {
   NeverExecutingQueryExecutor,
@@ -884,7 +884,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * ```
    */
   select<S extends SelectExpression<DB, TB>>(
-    selections: S[]
+    selections: ReadonlyArray<S>
   ): QueryBuilderWithSelection<DB, TB, O, S>
 
   select<S extends SelectExpression<DB, TB>>(
@@ -926,7 +926,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * ```
    */
   distinctOn<S extends SelectExpression<DB, TB>>(
-    selections: S[]
+    selections: ReadonlyArray<S>
   ): QueryBuilder<DB, TB, O>
 
   distinctOn<S extends SelectExpression<DB, TB>>(
@@ -1083,7 +1083,9 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * select "person".*, "pet".* from "person", "pet"
    * ```
    */
-  selectAll<T extends TB>(table: T[]): SelectAllQueryBuilder<DB, TB, O, T>
+  selectAll<T extends TB>(
+    table: ReadonlyArray<T>
+  ): SelectAllQueryBuilder<DB, TB, O, T>
 
   selectAll<T extends TB>(table: T): SelectAllQueryBuilder<DB, TB, O, T>
 
@@ -1466,10 +1468,12 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    */
   onConflictDoNothing(column: AnyColumn<DB, TB>): QueryBuilder<DB, TB, O>
 
-  onConflictDoNothing(columns: AnyColumn<DB, TB>[]): QueryBuilder<DB, TB, O>
+  onConflictDoNothing(
+    columns: ReadonlyArray<AnyColumn<DB, TB>>
+  ): QueryBuilder<DB, TB, O>
 
   onConflictDoNothing(
-    columns: AnyColumn<DB, TB> | AnyColumn<DB, TB>[]
+    columns: AnyColumn<DB, TB> | ReadonlyArray<AnyColumn<DB, TB>>
   ): QueryBuilder<DB, TB, O> {
     ensureCanHaveOnConflict(this.#queryNode)
 
@@ -1477,7 +1481,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
       executor: this.#executor,
       queryNode: insertQueryNode.cloneWithOnConflictDoNothing(
         this.#queryNode,
-        asArray(columns).map(parseColumnName)
+        asReadonlyArray(columns).map(parseColumnName)
       ),
     })
   }
@@ -1530,12 +1534,12 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
   ): QueryBuilder<DB, TB, O>
 
   onConflictUpdate(
-    columns: AnyColumn<DB, TB>[],
+    columns: ReadonlyArray<AnyColumn<DB, TB>>,
     updates: MutationObject<DB, TB>
   ): QueryBuilder<DB, TB, O>
 
   onConflictUpdate(
-    columns: AnyColumn<DB, TB> | AnyColumn<DB, TB>[],
+    columns: AnyColumn<DB, TB> | ReadonlyArray<AnyColumn<DB, TB>>,
     updates: MutationObject<DB, TB>
   ): QueryBuilder<DB, TB, O> {
     ensureCanHaveOnConflict(this.#queryNode)
@@ -1544,7 +1548,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
       executor: this.#executor,
       queryNode: insertQueryNode.cloneWithOnConflictUpdate(
         this.#queryNode,
-        asArray(columns).map(parseColumnName),
+        asReadonlyArray(columns).map(parseColumnName),
         parseUpdateObject(updates)
       ),
     })
@@ -1700,7 +1704,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * ```
    */
   returning<S extends SelectExpression<DB, TB>>(
-    selections: S[]
+    selections: ReadonlyArray<S>
   ): QueryBuilderWithReturning<DB, TB, O, S>
 
   returning<S extends SelectExpression<DB, TB>>(
@@ -1934,7 +1938,9 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * group by "first_name"
    * ```
    */
-  groupBy(orderBy: ReferenceExpression<DB, TB>[]): QueryBuilder<DB, TB, O>
+  groupBy(
+    orderBy: ReadonlyArray<ReferenceExpression<DB, TB>>
+  ): QueryBuilder<DB, TB, O>
 
   groupBy(orderBy: ReferenceExpression<DB, TB>): QueryBuilder<DB, TB, O>
 

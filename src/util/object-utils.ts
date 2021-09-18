@@ -82,3 +82,17 @@ export function asArray<T>(arg: T | T[]): T[] {
     return [arg]
   }
 }
+
+export function asReadonlyArray<T>(
+  arg: T | ReadonlyArray<T>
+): ReadonlyArray<T> {
+  if (isReadonlyArray(arg)) {
+    return arg
+  } else {
+    return freeze([arg])
+  }
+}
+
+function isReadonlyArray(arg: any): arg is ReadonlyArray<any> {
+  return Array.isArray(arg)
+}
