@@ -1,6 +1,6 @@
 import { Router } from '../router'
 import { createError } from '../util/errors'
-import * as userService from './user.service'
+import { userService } from './user.service'
 
 export function userController(router: Router): void {
   router.get('/api/v1/user/:userId', async (ctx) => {

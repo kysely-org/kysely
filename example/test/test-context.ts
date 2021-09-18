@@ -2,13 +2,12 @@ import * as path from 'path'
 import axios from 'axios'
 import { Kysely } from 'kysely'
 
-import * as userRepository from '../src/user/user.repository'
-
 import { testConfig } from './test-config'
 import { App } from '../src/app'
 import { Database } from '../src/database'
 import { User } from '../src/user/user'
-import { userRowToUser } from '../src/user/user.service'
+import { userRepository } from '../src/user/user.repository'
+import { userService } from '../src/user/user.service'
 
 export class TestContext {
   #app?: App
@@ -65,6 +64,6 @@ export class TestContext {
       password_hash: 'fake hash',
     })
 
-    return userRowToUser(user)
+    return userService.userRowToUser(user)
   }
 }

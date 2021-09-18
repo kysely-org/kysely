@@ -2,7 +2,7 @@ import { Kysely } from 'kysely'
 import { Database } from '../database'
 import { UserRow } from './user.row'
 
-export async function insertUser(
+async function insertUser(
   db: Kysely<Database>,
   user: Omit<UserRow, 'user_id'>
 ): Promise<UserRow> {
@@ -18,7 +18,7 @@ export async function insertUser(
   }
 }
 
-export async function getUserById(
+async function getUserById(
   db: Kysely<Database>,
   id: number
 ): Promise<UserRow | undefined> {
@@ -30,3 +30,8 @@ export async function getUserById(
 
   return user
 }
+
+export const userRepository = Object.freeze({
+  insertUser,
+  getUserById,
+})

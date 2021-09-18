@@ -1,10 +1,10 @@
 import { Kysely } from 'kysely'
 import { Database } from '../database'
 import { User } from './user'
+import { userRepository } from './user.repository'
 import { UserRow } from './user.row'
-import * as userRepository from './user.repository'
 
-export async function getUserById(
+async function getUserById(
   db: Kysely<Database>,
   userId: number
 ): Promise<User | undefined> {
@@ -15,7 +15,7 @@ export async function getUserById(
   }
 }
 
-export function userRowToUser(user: UserRow): User {
+function userRowToUser(user: UserRow): User {
   return {
     id: user.user_id,
     firstName: user.first_name,
@@ -23,3 +23,8 @@ export function userRowToUser(user: UserRow): User {
     email: user.email,
   }
 }
+
+export const userService = Object.freeze({
+  getUserById,
+  userRowToUser,
+})
