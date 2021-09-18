@@ -61,7 +61,6 @@ export class TestContext {
       first_name: 'Foo',
       last_name: 'Fighter',
       email: 'foo@fighter.fake',
-      password_hash: 'fake hash',
     })
 
     return userService.userRowToUser(user)

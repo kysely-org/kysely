@@ -17,6 +17,6 @@ describe('user tests', () => {
     const res = await ctx.request.get(`/api/v1/user/${user.id}`)
 
     expect(res.status).to.equal(200)
-    expect(res.data).to.eql(user)
+    expect(res.data).to.eql({ user })
   })
 })

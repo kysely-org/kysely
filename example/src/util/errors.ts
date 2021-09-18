@@ -1,6 +1,11 @@
 export type UserApiErrors = 'InvalidUserId' | 'UserNotFound'
+export type SignInMethodApiErros =
+  | 'InvalidSignInMethod'
+  | 'UserAlreadyHasSignInMethod'
+  | 'PasswordTooWeak'
+  | 'PasswordTooLong'
 
-export type ErrorCode = UserApiErrors
+export type ErrorCode = 'UnknownError' | UserApiErrors | SignInMethodApiErros
 
 export interface ErrorBody {
   error: {
@@ -14,3 +19,5 @@ export function createError(code: ErrorCode, message: string): ErrorBody {
     error: { code, message },
   }
 }
+
+export class UserNotFoundError extends Error {}

@@ -4,11 +4,11 @@ import { User } from './user'
 import { userRepository } from './user.repository'
 import { UserRow } from './user.row'
 
-async function getUserById(
+async function findUserById(
   db: Kysely<Database>,
-  userId: number
+  userId: string
 ): Promise<User | undefined> {
-  const userRow = await userRepository.getUserById(db, userId)
+  const userRow = await userRepository.findUserById(db, userId)
 
   if (userRow) {
     return userRowToUser(userRow)
@@ -25,6 +25,6 @@ function userRowToUser(user: UserRow): User {
 }
 
 export const userService = Object.freeze({
-  getUserById,
+  findUserById,
   userRowToUser,
 })

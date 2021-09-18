@@ -1,6 +1,7 @@
 import * as Koa from 'koa'
 import * as json from 'koa-json'
 import * as compress from 'koa-compress'
+import * as bodyParser from 'koa-bodyparser'
 import { Server } from 'http'
 import { Kysely } from 'kysely'
 
@@ -24,6 +25,7 @@ export class App {
     this.#db = new Kysely(config.database)
 
     this.#koa.use(compress())
+    this.#koa.use(bodyParser())
     this.#koa.use(json())
     this.#koa.use(async (ctx, next) => {
       ctx.db = this.#db

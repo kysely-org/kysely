@@ -1,10 +1,11 @@
 import { Router } from '../router'
 import { createError } from '../util/errors'
+import { signInMethodController } from './sign-in-method/sign-in-method.controller'
 import { userService } from './user.service'
 
 export function userController(router: Router): void {
   router.get('/api/v1/user/:userId', async (ctx) => {
-    const userId = parseInt(ctx.params.userId, 10)
+    const { userId } = ctx.params
 
     if (!userId) {
       ctx.status = 400
@@ -12,7 +13,7 @@ export function userController(router: Router): void {
       return
     }
 
-    const user = await userService.getUserById(ctx.db, userId)
+    const user = await userService.findUserById(ctx.db, userId)
 
     if (!user) {
       ctx.status = 404
@@ -23,6 +24,8 @@ export function userController(router: Router): void {
       return
     }
 
-    ctx.body = user
+    ctx.body = { user }
   })
+
+  signInMethodController(router)
 }

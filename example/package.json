@@ -10,17 +10,22 @@
   "author": "Sami Koskimäki <sami@jakso.me>",
   "license": "MIT",
   "dependencies": {
+    "ajv": "^8.6.3",
     "dotenv": "^10.0.0",
+    "jsonwebtoken": "^8.5.1",
     "koa": "^2.13.1",
+    "koa-bodyparser": "^4.3.0",
     "koa-compress": "^5.1.0",
     "koa-json": "^2.0.2",
     "koa-router": "^10.0.0",
-    "kysely": "^0.2.5",
+    "kysely": "^0.2.6",
     "pg": "^8.7.1"
   },
   "devDependencies": {
     "@types/chai": "^4.2.21",
+    "@types/jsonwebtoken": "^8.5.5",
     "@types/koa": "^2.13.4",
+    "@types/koa-bodyparser": "^4.3.3",
     "@types/koa-compress": "^4.0.3",
     "@types/koa-json": "^2.0.20",
     "@types/koa-router": "^7.4.4",
