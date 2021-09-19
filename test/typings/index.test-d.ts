@@ -453,3 +453,13 @@ async function testWith(db: Kysely<Database>) {
     }[]
   >(r1)
 }
+
+async function testExecuteTakeFirstOrThrow(db: Kysely<Database>) {
+  const r1 = await db
+    .selectFrom('person')
+    .selectAll()
+    .where('id', '=', 1)
+    .executeTakeFirstOrThrow()
+
+  expectType<Person>(r1)
+}

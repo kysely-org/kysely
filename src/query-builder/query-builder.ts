@@ -2059,6 +2059,11 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
     return this.#executor.compileQuery(this.toOperationNode())
   }
 
+  /**
+   * Executes the query and returns an array of rows.
+   *
+   * Also see the {@link executeTakeFirst} and {@link executeTakeFirstOrThrow} methods.
+   */
   async execute(): Promise<ManyResultRowType<O>[]> {
     const node = this.#executor.transformNode(this.#queryNode)
     const compildQuery = this.#executor.compileQuery(node)
@@ -2085,8 +2090,32 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
     return []
   }
 
+  /**
+   * Executes the query and returns the first result or undefined if
+   * the query returned no result.
+   */
   async executeTakeFirst(): Promise<SingleResultRowType<O>> {
     const [result] = await this.execute()
+    return result
+  }
+
+  /**
+   * Executes the query and returns the first result or throws if
+   * the query returned no result.
+   *
+   * By default an instance of {@link NoResultError} is thrown, but you can
+   * provide a custom error class as the only argument to throw a different
+   * error.
+   */
+  async executeTakeFirstOrThrow(
+    errorConstructor: NoResultErrorConstructor = NoResultError
+  ): Promise<ManyResultRowType<O>> {
+    const [result] = await this.execute()
+
+    if (result === undefined) {
+      throw new errorConstructor(this.toOperationNode())
+    }
+
     return result
   }
 }
@@ -2138,6 +2167,20 @@ export class AliasedQueryBuilder<
     }
 
     throw new Error('only select queries can be aliased')
+  }
+}
+
+export type NoResultErrorConstructor = new (node: QueryNode) => Error
+
+export class NoResultError extends Error {
+  /**
+   * The operation node tree of the query that was executed.
+   */
+  readonly node: QueryNode
+
+  constructor(node: QueryNode) {
+    super('no result')
+    this.node = node
   }
 }
 
