@@ -6,8 +6,8 @@ export async function up(db: Kysely<any>): Promise<void> {
     .addColumn('user_id', 'uuid', (col) =>
       col.primaryKey().defaultTo(db.raw('gen_random_uuid()'))
     )
-    .addColumn('first_name', 'text', (col) => col.notNull())
-    .addColumn('last_name', 'text', (col) => col.notNull())
+    .addColumn('first_name', 'text')
+    .addColumn('last_name', 'text')
     .addColumn('email', 'text', (col) => col.unique())
     .addColumn('created_at', 'timestamp', (col) =>
       col.defaultTo(db.raw('NOW()'))

@@ -1,5 +1,5 @@
 import { Router } from '../../router'
-import { createError, UserNotFoundError } from '../../util/errors'
+import { UserNotFoundError } from '../../util/errors'
 import { validatePasswordSignInMethod } from './sign-in-method'
 import {
   PasswordTooLongError,
@@ -26,28 +26,23 @@ export function signInMethodController(router: Router): void {
         ctx.body = { success: true }
       } catch (error) {
         if (error instanceof UserNotFoundError) {
-          ctx.status = 404
-          ctx.body = createError('UserNotFound', 'user not found')
+          ctx.throwError(404, 'UserNotFound', 'user not found')
         } else if (error instanceof PasswordTooWeakError) {
-          ctx.status = 400
-          ctx.body = createError('PasswordTooWeak', 'password is too weak')
+          ctx.throwError(400, 'PasswordTooWeak', 'password is too weak')
         } else if (error instanceof PasswordTooLongError) {
-          ctx.status = 400
-          ctx.body = createError('PasswordTooLong', 'password is too long')
+          ctx.throwError(400, 'PasswordTooLong', 'password is too long')
         } else if (error instanceof UserAlreadyHasSignInMethod) {
-          ctx.status = 409
-          ctx.body = createError(
+          ctx.throwError(
+            409,
             'UserAlreadyHasSignInMethod',
             'the user already has a sign in method'
           )
-        } else {
-          ctx.status = 500
-          ctx.body = createError('UnknownError', 'unknown error occurred')
         }
+
+        throw error
       }
     } else {
-      ctx.status = 400
-      ctx.body = createError('InvalidSignInMethod', 'invalid sign in method')
+      ctx.throwError(400, 'InvalidSignInMethod', 'invalid sign in method')
     }
   })
 

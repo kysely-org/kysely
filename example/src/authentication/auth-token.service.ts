@@ -1,6 +1,9 @@
 import * as jwt from 'jsonwebtoken'
+import { Next } from 'koa'
 import { Kysely } from 'kysely'
+
 import { config } from '../config'
+import { Context } from '../context'
 import { Database } from '../database'
 import { refreshTokenRepository } from './refresh-token.repository'
 
@@ -12,7 +15,7 @@ export interface AuthToken {
   authToken: string
 }
 
-interface AuthTokenPayload {
+export interface AuthTokenPayload {
   userId: string
   refreshTokenId: string
 }
@@ -48,8 +51,18 @@ function signRefreshToken(tokenPayload: RefreshTokenPayload): RefreshToken {
   return { refreshToken: jwt.sign(tokenPayload, config.authTokenSecret) }
 }
 
-function createAuthToken(refreshToken: RefreshToken): AuthToken {
+async function createAuthToken(
+  db: Kysely<Database>,
+  refreshToken: RefreshToken
+): Promise<AuthToken> {
   const { userId, refreshTokenId } = verifyRefreshToken(refreshToken)
+
+  await db
+    .updateTable('refresh_token')
+    .set({ last_refreshed_at: new Date() })
+    .where('refresh_token_id', '=', refreshTokenId)
+    .execute()
+
   return signAuthToken({ userId, refreshTokenId })
 }
 

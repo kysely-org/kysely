@@ -1,8 +1,43 @@
 import { Kysely } from 'kysely'
+import {
+  AuthToken,
+  authTokenService,
+  RefreshToken,
+} from '../authentication/auth-token.service'
 import { Database } from '../database'
-import { User } from './user'
+import { CreateAnonymousUserRequest, User } from './user'
 import { userRepository } from './user.repository'
 import { UserRow } from './user.row'
+
+export interface SignedInUser {
+  refreshToken: RefreshToken
+  authToken: AuthToken
+  user: User
+}
+
+async function createAnonymousUser(
+  db: Kysely<Database>,
+  request: CreateAnonymousUserRequest
+): Promise<SignedInUser> {
+  const user = await userRepository.insertUser(db, {
+    first_name: request.firstName ?? null,
+    last_name: request.lastName ?? null,
+    email: null,
+  })
+
+  const refreshToken = await authTokenService.createRefreshToken(
+    db,
+    user.user_id
+  )
+
+  const authToken = await authTokenService.createAuthToken(db, refreshToken)
+
+  return {
+    refreshToken,
+    authToken,
+    user: userRowToUser(user),
+  }
+}
 
 async function findUserById(
   db: Kysely<Database>,
@@ -27,4 +62,5 @@ function userRowToUser(user: UserRow): User {
 export const userService = Object.freeze({
   findUserById,
   userRowToUser,
+  createAnonymousUser,
 })

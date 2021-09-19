@@ -3,17 +3,19 @@ import * as json from 'koa-json'
 import * as compress from 'koa-compress'
 import * as bodyParser from 'koa-bodyparser'
 import { Server } from 'http'
-import { Kysely } from 'kysely'
+import { createIndexNode, Kysely } from 'kysely'
 
 import { Config } from './config'
-import { Context } from './context'
+import { Context, ContextExtension } from './context'
 import { Database } from './database'
 import { Router } from './router'
 import { userController } from './user/user.controller'
+import { ControllerError } from './util/errors'
+import { isObject } from 'kysely/lib/util/object-utils'
 
 export class App {
   #config: Config
-  #koa: Koa<any, Context>
+  #koa: Koa<any, ContextExtension>
   #router: Router
   #db: Kysely<Database>
   #server?: Server
@@ -27,10 +29,9 @@ export class App {
     this.#koa.use(compress())
     this.#koa.use(bodyParser())
     this.#koa.use(json())
-    this.#koa.use(async (ctx, next) => {
-      ctx.db = this.#db
-      await next()
-    })
+
+    this.#koa.use(this.errorHandler)
+    this.#koa.use(this.decorateContext)
 
     userController(this.#router)
 
@@ -61,4 +62,42 @@ export class App {
 
     await this.#db.destroy()
   }
+
+  private readonly errorHandler = async (
+    ctx: Context,
+    next: Koa.Next
+  ): Promise<void> => {
+    try {
+      await next()
+    } catch (error) {
+      if (error instanceof ControllerError) {
+        respondError(ctx, error)
+      } else {
+        respondError(
+          ctx,
+          new ControllerError(
+            500,
+            'UnknownError',
+            isObject(error) ? error.message : 'Unknown error'
+          )
+        )
+      }
+    }
+  }
+
+  private readonly decorateContext = async (
+    ctx: Context,
+    next: Koa.Next
+  ): Promise<void> => {
+    ctx.db = this.#db
+    ctx.throwError = (status, code, message, data): never => {
+      throw new ControllerError(status, code, message, data)
+    }
+    await next()
+  }
+}
+
+function respondError(ctx: Context, error: ControllerError): void {
+  ctx.status = error.status
+  ctx.body = error.toJSON()
 }

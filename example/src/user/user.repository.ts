@@ -1,4 +1,4 @@
-import { Kysely } from 'kysely'
+import { Kysely, Transaction } from 'kysely'
 import { Database } from '../database'
 import { UserRow } from './user.row'
 
@@ -29,10 +29,10 @@ async function findUserById(
 }
 
 async function lockUser(
-  db: Kysely<Database>,
+  trx: Transaction<Database>,
   id: string
 ): Promise<UserRow | undefined> {
-  const user = await db
+  const user = await trx
     .selectFrom('user')
     .where('user_id', '=', id)
     .selectAll('user')
@@ -58,5 +58,5 @@ export const userRepository = Object.freeze({
   insertUser,
   findUserById,
   lockUser,
-  setUserEmail
+  setUserEmail,
 })

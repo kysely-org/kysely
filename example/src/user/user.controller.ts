@@ -1,31 +1,48 @@
+import { authTokenService } from '../authentication/auth-token.service'
+import { authenticationService } from '../authentication/authentication.service'
 import { Router } from '../router'
-import { createError } from '../util/errors'
 import { signInMethodController } from './sign-in-method/sign-in-method.controller'
+import { validateCreateAnonymousUserRequest } from './user'
 import { userService } from './user.service'
 
 export function userController(router: Router): void {
-  router.get('/api/v1/user/:userId', async (ctx) => {
-    const { userId } = ctx.params
+  router.post('/api/v1/user', async (ctx) => {
+    const { body } = ctx.request
 
-    if (!userId) {
-      ctx.status = 400
-      ctx.body = createError('InvalidUserId', 'invalid user id in the path')
-      return
+    if (validateCreateAnonymousUserRequest(body)) {
+      const result = await ctx.db.transaction(async (trx) => {
+        return userService.createAnonymousUser(trx, body)
+      })
+
+      ctx.status = 201
+      ctx.body = {
+        user: result.user,
+        authToken: result.authToken.authToken,
+        refreshToken: result.refreshToken.refreshToken,
+      }
+    } else {
+      ctx.throwError(400, 'InvalidUser', 'invalid user')
     }
-
-    const user = await userService.findUserById(ctx.db, userId)
-
-    if (!user) {
-      ctx.status = 404
-      ctx.body = createError(
-        'UserNotFound',
-        `user with id ${userId} was not found`
-      )
-      return
-    }
-
-    ctx.body = { user }
   })
+
+  router.get(
+    '/api/v1/user/:userId',
+    authenticationService.authenticateUser,
+    async (ctx) => {
+      const { userId } = ctx.params
+      const user = await userService.findUserById(ctx.db, userId)
+
+      if (!user) {
+        ctx.throwError(
+          404,
+          'UserNotFound',
+          `user with id ${userId} was not found`
+        )
+      }
+
+      ctx.body = { user }
+    }
+  )
 
   signInMethodController(router)
 }

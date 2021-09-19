@@ -1,22 +1,39 @@
-export type UserApiErrors = 'InvalidUserId' | 'UserNotFound'
+export type AuthenticationErrors =
+  | 'NoUserIdParameter'
+  | 'InvalidAuthorizationHeader'
+  | 'InvalidAuthToken'
+  | 'ExpiredAuthToken'
+  | 'UserMismatch'
+  | 'UserOrRefreshTokenNotFound'
+export type UserApiErrors = 'InvalidUser' | 'UserNotFound'
 export type SignInMethodApiErros =
   | 'InvalidSignInMethod'
   | 'UserAlreadyHasSignInMethod'
   | 'PasswordTooWeak'
   | 'PasswordTooLong'
 
-export type ErrorCode = 'UnknownError' | UserApiErrors | SignInMethodApiErros
+export type ErrorCode =
+  | 'UnknownError'
+  | AuthenticationErrors
+  | UserApiErrors
+  | SignInMethodApiErros
 
-export interface ErrorBody {
-  error: {
-    code: ErrorCode
-    message: string
+export class ControllerError extends Error {
+  readonly status: number
+  readonly code: ErrorCode
+  readonly data?: any
+
+  constructor(status: number, code: ErrorCode, message: string, data?: any) {
+    super(message)
+    this.status = status
+    this.code = code
+    this.data = data
   }
-}
 
-export function createError(code: ErrorCode, message: string): ErrorBody {
-  return {
-    error: { code, message },
+  toJSON() {
+    return {
+      error: { code: this.code, message: this.message },
+    }
   }
 }
 

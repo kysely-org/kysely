@@ -9,6 +9,7 @@ export interface PasswordSignInMethod {
 
 export const validatePasswordSignInMethod = ajv.compile<PasswordSignInMethod>({
   type: 'object',
+  required: ['email', 'password'],
   properties: {
     email: {
       type: 'string',

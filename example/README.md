@@ -1,6 +1,6 @@
 # An example server that uses Kysely
 
-This is a simple Koa based server that shows one way to uses Kysely. This is by no means the best or right way to use Kysely, but simply one possible way.
+This is a simple Koa based server that shows one way to use Kysely. This is by no means the best or right way to use Kysely, but simply one possible way.
 
 The server has three main levels of abstraction:
 
@@ -12,7 +12,7 @@ The server has three main levels of abstraction:
 
 ## Running the example
 
-All you need to do start poking around with the code is to clone kysely, got to the example folder and run:
+All you need to do start poking around with the code is to clone kysely, go to the example folder and run:
 
 ```
 npm install

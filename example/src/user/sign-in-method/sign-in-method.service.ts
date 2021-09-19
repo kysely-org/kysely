@@ -1,5 +1,5 @@
 import * as crypto from 'crypto'
-import { Kysely } from 'kysely'
+import { Transaction } from 'kysely'
 import { Database } from '../../database'
 import { UserNotFoundError } from '../../util/errors'
 import { userRepository } from '../user.repository'
@@ -14,11 +14,11 @@ export class PasswordTooWeakError extends Error {}
 export class PasswordTooLongError extends Error {}
 
 async function addPasswordSignInMethod(
-  db: Kysely<Database>,
+  trx: Transaction<Database>,
   userId: string,
   method: PasswordSignInMethod
 ): Promise<void> {
-  const user = await userRepository.lockUser(db, userId)
+  const user = await userRepository.lockUser(trx, userId)
 
   if (!user) {
     throw new UserNotFoundError()
@@ -28,12 +28,12 @@ async function addPasswordSignInMethod(
     throw new UserAlreadyHasSignInMethod()
   }
 
-  await signInMethodRepository.insertPasswordSignInMethod(db, {
+  await signInMethodRepository.insertPasswordSignInMethod(trx, {
     user_id: userId,
     password_hash: await encryptPassword(method.password),
   })
 
-  await userRepository.setUserEmail(db, userId, method.email)
+  await userRepository.setUserEmail(trx, userId, method.email)
 }
 
 export async function encryptPassword(password: string): Promise<string> {
