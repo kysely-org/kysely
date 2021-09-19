@@ -1,7 +1,11 @@
 {
   "name": "kysely",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "Type safe SQL query builder",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/koskimas/kysely.git"
+  },
   "main": "dist/cjs/index.js",
   "module": "dist/esm/index.js",
   "exports": {
