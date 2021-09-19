@@ -1,8 +1,8 @@
-import { QueryBuilder } from './query-builder/query-builder'
-import { deleteQueryNode } from './operation-node/delete-query-node'
-import { insertQueryNode } from './operation-node/insert-query-node'
-import { selectQueryNode } from './operation-node/select-query-node'
-import { updateQueryNode } from './operation-node/update-query-node'
+import { QueryBuilder } from './query-builder/query-builder.js'
+import { deleteQueryNode } from './operation-node/delete-query-node.js'
+import { insertQueryNode } from './operation-node/insert-query-node.js'
+import { selectQueryNode } from './operation-node/select-query-node.js'
+import { updateQueryNode } from './operation-node/update-query-node.js'
 import {
   parseTable,
   parseTableExpression,
@@ -10,21 +10,21 @@ import {
   QueryBuilderWithTable,
   TableExpression,
   TableReference,
-} from './parser/table-parser'
+} from './parser/table-parser.js'
 import {
   InsertResultTypeTag,
   DeleteResultTypeTag,
   UpdateResultTypeTag,
-} from './query-builder/type-utils'
-import { QueryExecutor } from './query-executor/query-executor'
-import { RawBuilder } from './raw-builder/raw-builder'
+} from './query-builder/type-utils.js'
+import { QueryExecutor } from './query-executor/query-executor.js'
+import { RawBuilder } from './raw-builder/raw-builder.js'
 import {
   CommonTableExpression,
   parseCommonTableExpression,
   QueryCreatorWithCommonTableExpression,
-} from './parser/with-parser'
-import { withNode, WithNode } from './operation-node/with-node'
-import { WithSchemaTransformer } from './transformers/with-schema-transformer'
+} from './parser/with-parser.js'
+import { withNode, WithNode } from './operation-node/with-node.js'
+import { WithSchemaTransformer } from './transformers/with-schema-transformer.js'
 
 export class QueryCreator<DB> {
   readonly #executor: QueryExecutor

@@ -1,13 +1,13 @@
-import { freeze } from '../util/object-utils'
-import { ColumnNode } from './column-node'
-import { ColumnUpdateNode } from './column-update-node'
-import { OnConflictNode, onConflictNode } from './on-conflict-node'
-import { OperationNode } from './operation-node'
-import { PrimitiveValueListNode } from './primitive-value-list-node'
-import { ReturningNode } from './returning-node'
-import { TableNode } from './table-node'
-import { ValueListNode } from './value-list-node'
-import { WithNode } from './with-node'
+import { freeze } from '../util/object-utils.js'
+import { ColumnNode } from './column-node.js'
+import { ColumnUpdateNode } from './column-update-node.js'
+import { OnConflictNode, onConflictNode } from './on-conflict-node.js'
+import { OperationNode } from './operation-node.js'
+import { PrimitiveValueListNode } from './primitive-value-list-node.js'
+import { ReturningNode } from './returning-node.js'
+import { TableNode } from './table-node.js'
+import { ValueListNode } from './value-list-node.js'
+import { WithNode } from './with-node.js'
 
 export type InsertValuesNode = ValueListNode | PrimitiveValueListNode
 

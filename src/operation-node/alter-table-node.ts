@@ -1,13 +1,13 @@
-import { OperationNode } from './operation-node'
-import { freeze } from '../util/object-utils'
-import { AddColumnNode } from './add-column-node'
-import { DropColumnNode } from './drop-column-node'
-import { tableNode, TableNode } from './table-node'
-import { IdentifierNode } from './identifier-node'
-import { RenameColumnNode } from './rename-column-node'
-import { AlterColumnNode } from './alter-column-node'
-import { AddConstraintNode } from './add-constraint-node'
-import { DropConstraintNode } from './drop-constraint-node'
+import { OperationNode } from './operation-node.js'
+import { freeze } from '../util/object-utils.js'
+import { AddColumnNode } from './add-column-node.js'
+import { DropColumnNode } from './drop-column-node.js'
+import { tableNode, TableNode } from './table-node.js'
+import { IdentifierNode } from './identifier-node.js'
+import { RenameColumnNode } from './rename-column-node.js'
+import { AlterColumnNode } from './alter-column-node.js'
+import { AddConstraintNode } from './add-constraint-node.js'
+import { DropConstraintNode } from './drop-constraint-node.js'
 
 export type AlterTableNodeParams = Omit<
   Partial<AlterTableNode>,

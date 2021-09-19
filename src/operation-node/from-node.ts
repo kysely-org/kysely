@@ -1,6 +1,6 @@
-import { freeze } from '../util/object-utils'
-import { OperationNode } from './operation-node'
-import { TableExpressionNode } from './operation-node-utils'
+import { freeze } from '../util/object-utils.js'
+import { OperationNode } from './operation-node.js'
+import { TableExpressionNode } from './operation-node-utils.js'
 
 export interface FromNode extends OperationNode {
   readonly kind: 'FromNode'

@@ -1,5 +1,5 @@
-import { freeze, PrimitiveValue } from '../util/object-utils'
-import { OperationNode } from './operation-node'
+import { freeze, PrimitiveValue } from '../util/object-utils.js'
+import { OperationNode } from './operation-node.js'
 
 export interface ValueNode extends OperationNode {
   readonly kind: 'ValueNode'

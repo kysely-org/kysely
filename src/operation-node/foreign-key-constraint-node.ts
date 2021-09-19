@@ -1,9 +1,9 @@
-import { freeze } from '../util/object-utils'
-import { ColumnNode } from './column-node'
-import { identifierNode, IdentifierNode } from './identifier-node'
-import { OperationNode } from './operation-node'
-import { referencesNode, ReferencesNode } from './references-node'
-import { TableNode } from './table-node'
+import { freeze } from '../util/object-utils.js'
+import { ColumnNode } from './column-node.js'
+import { identifierNode, IdentifierNode } from './identifier-node.js'
+import { OperationNode } from './operation-node.js'
+import { referencesNode, ReferencesNode } from './references-node.js'
+import { TableNode } from './table-node.js'
 
 export interface ForeignKeyConstraintNode extends OperationNode {
   readonly kind: 'ForeignKeyConstraintNode'

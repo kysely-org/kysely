@@ -1,7 +1,7 @@
-import { Driver } from '../driver/driver'
-import { DriverConfig } from '../driver/driver-config'
-import { Kysely } from '../kysely'
-import { QueryCompiler } from '../query-compiler/query-compiler'
+import { Driver } from '../driver/driver.js'
+import { DriverConfig } from '../driver/driver-config.js'
+import { Kysely } from '../kysely.js'
+import { QueryCompiler } from '../query-compiler/query-compiler.js'
 
 /**
  * A Dialect is an adapter between Kysely and the underlying database driver.

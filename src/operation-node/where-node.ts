@@ -1,9 +1,9 @@
-import { freeze } from '../util/object-utils'
-import { AndNode, andNode } from './and-node'
-import { FilterNode } from './filter-node'
-import { OperationNode } from './operation-node'
-import { OrNode, orNode } from './or-node'
-import { ParensNode } from './parens-node'
+import { freeze } from '../util/object-utils.js'
+import { AndNode, andNode } from './and-node.js'
+import { FilterNode } from './filter-node.js'
+import { OperationNode } from './operation-node.js'
+import { OrNode, orNode } from './or-node.js'
+import { ParensNode } from './parens-node.js'
 
 export type WhereChildNode = FilterNode | AndNode | OrNode | ParensNode
 

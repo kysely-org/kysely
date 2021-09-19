@@ -1,6 +1,6 @@
-import { OperationNode } from './operation-node'
-import { freeze } from '../util/object-utils'
-import { columnNode, ColumnNode } from './column-node'
+import { OperationNode } from './operation-node.js'
+import { freeze } from '../util/object-utils.js'
+import { columnNode, ColumnNode } from './column-node.js'
 
 export interface DropColumnNode extends OperationNode {
   readonly kind: 'DropColumnNode'

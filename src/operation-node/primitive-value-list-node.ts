@@ -1,5 +1,5 @@
-import { freeze, PrimitiveValue } from '../util/object-utils'
-import { OperationNode } from './operation-node'
+import { freeze, PrimitiveValue } from '../util/object-utils.js'
+import { OperationNode } from './operation-node.js'
 
 /**
  * This node is basically just a performance optimization over the normal ValueListNode.

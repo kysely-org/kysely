@@ -1,13 +1,15 @@
 {
   "name": "kysely",
-  "version": "0.2.7",
+  "version": "0.3.0",
   "description": "Type safe SQL query builder",
   "main": "./lib/index.js",
+  "type": "module",
   "types": "./lib/index.d.ts",
   "scripts": {
-    "test": "npm run test:integration && npm run test:typings",
-    "test:integration": "mocha --timeout 5000 -r ts-node/register test/**/*.test.ts",
-    "test:typings": "npm run build && tsd test/typings",
+    "test:build": "rm -rf test/lib && tsc -p test",
+    "test": "npm run build && npm run test:build && npm run test:integration && npm run test:typings",
+    "test:integration": "mocha --timeout 5000 - test/lib/**/*.test.js",
+    "test:typings": "tsd test/typings",
     "prettier": "prettier --write src/**/*.ts test/**/*.ts",
     "build": "rm -rf lib && tsc",
     "docs:build": "typedoc --excludePrivate --excludeInternal src/index.ts && npm run docs:postprocess",
@@ -27,7 +29,6 @@
     "mocha": "^9.1.1",
     "pg": "^8.7.1",
     "prettier": "^2.4.0",
-    "ts-node": "^10.2.1",
     "tsd": "^0.17.0",
     "typedoc": "^0.22.4",
     "typescript": "4.4.3"

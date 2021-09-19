@@ -1,6 +1,6 @@
-import { ArrayItemType } from '../query-builder/type-utils'
-import { freeze } from '../util/object-utils'
-import { OperationNode } from './operation-node'
+import { ArrayItemType } from '../query-builder/type-utils.js'
+import { freeze } from '../util/object-utils.js'
+import { OperationNode } from './operation-node.js'
 
 export const OPERATORS = [
   '=',

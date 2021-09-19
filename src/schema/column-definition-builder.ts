@@ -1,20 +1,20 @@
-import { checkConstraintNode } from '../operation-node/check-constraint-node'
+import { checkConstraintNode } from '../operation-node/check-constraint-node.js'
 import {
   isOperationNodeSource,
   OperationNodeSource,
-} from '../operation-node/operation-node-source'
-import { referenceNode } from '../operation-node/reference-node'
-import { OnDelete, referencesNode } from '../operation-node/references-node'
-import { selectAllNode } from '../operation-node/select-all-node'
-import { valueNode } from '../operation-node/value-node'
-import { parseStringReference } from '../parser/reference-parser'
-import { RawBuilder } from '../raw-builder/raw-builder'
-import { PrimitiveValue } from '../util/object-utils'
-import { preventAwait } from '../util/prevent-await'
+} from '../operation-node/operation-node-source.js'
+import { referenceNode } from '../operation-node/reference-node.js'
+import { OnDelete, referencesNode } from '../operation-node/references-node.js'
+import { selectAllNode } from '../operation-node/select-all-node.js'
+import { valueNode } from '../operation-node/value-node.js'
+import { parseStringReference } from '../parser/reference-parser.js'
+import { RawBuilder } from '../raw-builder/raw-builder.js'
+import { PrimitiveValue } from '../util/object-utils.js'
+import { preventAwait } from '../util/prevent-await.js'
 import {
   columnDefinitionNode,
   ColumnDefinitionNode,
-} from '../operation-node/column-definition-node'
+} from '../operation-node/column-definition-node.js'
 
 export interface ColumnDefinitionBuilderInterface<R> {
   /**

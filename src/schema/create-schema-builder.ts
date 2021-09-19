@@ -1,12 +1,12 @@
 import {
   createSchemaNode,
   CreateSchemaNode,
-} from '../operation-node/create-schema-node'
-import { OperationNodeSource } from '../operation-node/operation-node-source'
-import { CompiledQuery } from '../query-compiler/compiled-query'
-import { Compilable } from '../util/compilable'
-import { preventAwait } from '../util/prevent-await'
-import { QueryExecutor } from '../query-executor/query-executor'
+} from '../operation-node/create-schema-node.js'
+import { OperationNodeSource } from '../operation-node/operation-node-source.js'
+import { CompiledQuery } from '../query-compiler/compiled-query.js'
+import { Compilable } from '../util/compilable.js'
+import { preventAwait } from '../util/prevent-await.js'
+import { QueryExecutor } from '../query-executor/query-executor.js'
 
 export class CreateSchemaBuilder implements OperationNodeSource, Compilable {
   readonly #createSchemaNode: CreateSchemaNode

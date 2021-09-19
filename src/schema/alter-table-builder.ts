@@ -1,31 +1,37 @@
-import { ColumnDefinitionBuilder, ColumnDefinitionBuilderInterface } from '..'
-import { addColumnNode } from '../operation-node/add-column-node'
+import { addColumnNode } from '../operation-node/add-column-node.js'
 import {
   alterColumnNode,
   AlterColumnNode,
-} from '../operation-node/alter-column-node'
+} from '../operation-node/alter-column-node.js'
 import {
   alterTableNode,
   AlterTableNode,
-} from '../operation-node/alter-table-node'
-import { columnDefinitionNode } from '../operation-node/column-definition-node'
-import { ColumnDataType, dataTypeNode } from '../operation-node/data-type-node'
-import { dropColumnNode } from '../operation-node/drop-column-node'
-import { identifierNode } from '../operation-node/identifier-node'
+} from '../operation-node/alter-table-node.js'
+import { columnDefinitionNode } from '../operation-node/column-definition-node.js'
+import {
+  ColumnDataType,
+  dataTypeNode,
+} from '../operation-node/data-type-node.js'
+import { dropColumnNode } from '../operation-node/drop-column-node.js'
+import { identifierNode } from '../operation-node/identifier-node.js'
 import {
   isOperationNodeSource,
   OperationNodeSource,
-} from '../operation-node/operation-node-source'
-import { OnDelete } from '../operation-node/references-node'
-import { renameColumnNode } from '../operation-node/rename-column-node'
-import { tableNode } from '../operation-node/table-node'
-import { valueNode } from '../operation-node/value-node'
-import { CompiledQuery } from '../query-compiler/compiled-query'
-import { RawBuilder } from '../raw-builder/raw-builder'
-import { Compilable } from '../util/compilable'
-import { PrimitiveValue } from '../util/object-utils'
-import { preventAwait } from '../util/prevent-await'
-import { QueryExecutor } from '../query-executor/query-executor'
+} from '../operation-node/operation-node-source.js'
+import { OnDelete } from '../operation-node/references-node.js'
+import { renameColumnNode } from '../operation-node/rename-column-node.js'
+import { tableNode } from '../operation-node/table-node.js'
+import { valueNode } from '../operation-node/value-node.js'
+import { CompiledQuery } from '../query-compiler/compiled-query.js'
+import { RawBuilder } from '../raw-builder/raw-builder.js'
+import { Compilable } from '../util/compilable.js'
+import { PrimitiveValue } from '../util/object-utils.js'
+import { preventAwait } from '../util/prevent-await.js'
+import { QueryExecutor } from '../query-executor/query-executor.js'
+import {
+  ColumnDefinitionBuilder,
+  ColumnDefinitionBuilderInterface,
+} from './column-definition-builder.js'
 
 export class AlterTableBuilder {
   readonly #alterTableNode: AlterTableNode

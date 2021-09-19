@@ -1,27 +1,27 @@
-import { DriverConfig } from './driver/driver-config'
-import { Dialect, TableMetadata } from './dialect/dialect'
-import { PostgresDialect } from './dialect/postgres/postgres-dialect'
-import { Driver } from './driver/driver'
-import { SchemaModule } from './schema/schema'
-import { DynamicModule } from './dynamic/dynamic'
-import { QueryCompiler } from './query-compiler/query-compiler'
-import { DefaultConnectionProvider } from './driver/default-connection-provider'
-import { isObject } from './util/object-utils'
-import { SingleConnectionProvider } from './driver/single-connection-provider'
+import { DriverConfig } from './driver/driver-config.js'
+import { Dialect, TableMetadata } from './dialect/dialect.js'
+import { PostgresDialect } from './dialect/postgres/postgres-dialect.js'
+import { Driver } from './driver/driver.js'
+import { SchemaModule } from './schema/schema.js'
+import { DynamicModule } from './dynamic/dynamic.js'
+import { QueryCompiler } from './query-compiler/query-compiler.js'
+import { DefaultConnectionProvider } from './driver/default-connection-provider.js'
+import { isObject } from './util/object-utils.js'
+import { SingleConnectionProvider } from './driver/single-connection-provider.js'
 import {
   INTERNAL_DRIVER_ACQUIRE_CONNECTION,
   INTERNAL_DRIVER_ENSURE_DESTROY,
   INTERNAL_DRIVER_RELEASE_CONNECTION,
-} from './driver/driver-internal'
-import { MigrationModule } from './migration/migration'
+} from './driver/driver-internal.js'
+import { MigrationModule } from './migration/migration.js'
 import {
   DefaultQueryExecutor,
   QueryExecutor,
   RowMapper,
-} from './query-executor/query-executor'
-import { QueryCreator } from './query-creator'
-import { KyselyPlugin } from './plugin/plugin'
-import { OperationNodeTransformer } from './operation-node/operation-node-transformer'
+} from './query-executor/query-executor.js'
+import { QueryCreator } from './query-creator.js'
+import { KyselyPlugin } from './plugin/plugin.js'
+import { OperationNodeTransformer } from './operation-node/operation-node-transformer.js'
 
 /**
  * The main Kysely class.

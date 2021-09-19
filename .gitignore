@@ -1,4 +1,5 @@
 lib
+test/lib
 node_modules
 .vscode
 demo.ts

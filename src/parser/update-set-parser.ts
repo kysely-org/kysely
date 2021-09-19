@@ -1,9 +1,12 @@
-import { columnNode } from '../operation-node/column-node'
+import { columnNode } from '../operation-node/column-node.js'
 import {
   ColumnUpdateNode,
   columnUpdateNode,
-} from '../operation-node/column-update-node'
-import { MutationObject, parseMutationValueExpression } from './mutation-parser'
+} from '../operation-node/column-update-node.js'
+import {
+  MutationObject,
+  parseMutationValueExpression,
+} from './mutation-parser.js'
 
 export function parseUpdateObject(
   row: MutationObject<any, any>

@@ -1,11 +1,11 @@
-import { Pool, PoolClient } from 'pg'
+import { Pool, PoolClient, PoolConfig } from 'pg'
 import {
   DatabaseConnection,
   QueryResult,
-} from '../../driver/database-connection'
-import { Driver } from '../../driver/driver'
-import { CompiledQuery } from '../../query-compiler/compiled-query'
-import { freeze } from '../../util/object-utils'
+} from '../../driver/database-connection.js'
+import { Driver } from '../../driver/driver.js'
+import { CompiledQuery } from '../../query-compiler/compiled-query.js'
+import { freeze } from '../../util/object-utils.js'
 
 const PRIVATE_RELEASE_METHOD = Symbol()
 
@@ -25,11 +25,11 @@ export class PostgresDriver extends Driver {
     // installed. As you can see, there IS an import from `pg` at the
     // top level too, but that's only for types. It doesn't get compiled
     // into javascript. You can check the built javascript code.
-    const pg = await importPg()
+    const PoolConstrucor = await importPgPool()
 
     // Use the `pg` module's own pool. All drivers should use the
     // pool provided by the database library if possible.
-    this.#pool = new pg.Pool({
+    this.#pool = new PoolConstrucor({
       host: cfg.host,
       database: cfg.database,
       port: cfg.port,
@@ -78,9 +78,11 @@ export class PostgresDriver extends Driver {
   }
 }
 
-async function importPg() {
+async function importPgPool(): Promise<new (config: PoolConfig) => Pool> {
   try {
-    return import('pg')
+    // There's something funky in the typings here.
+    const pg = (await import('pg')) as any
+    return pg.default.Pool
   } catch (error) {
     throw new Error(
       'Postgres client not installed. Please run `npm install pg`'

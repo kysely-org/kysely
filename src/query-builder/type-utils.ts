@@ -1,6 +1,6 @@
-import { AliasedRawBuilder, RawBuilder } from '../raw-builder/raw-builder'
-import { AliasedQueryBuilder, QueryBuilder } from './query-builder'
-import { SubQueryBuilder } from './sub-query-builder'
+import { AliasedRawBuilder, RawBuilder } from '../raw-builder/raw-builder.js'
+import { AliasedQueryBuilder, QueryBuilder } from './query-builder.js'
+import { SubQueryBuilder } from './sub-query-builder.js'
 
 export type ValueType<T> = T[keyof T]
 
@@ -185,3 +185,11 @@ export type SingleResultRowType<O> = O extends InsertResultTypeTag
   : O extends UpdateResultTypeTag
   ? number
   : O | undefined
+
+export type NonEmptySingleResultRowType<O> = O extends InsertResultTypeTag
+  ? number
+  : O extends DeleteResultTypeTag
+  ? number
+  : O extends UpdateResultTypeTag
+  ? number
+  : O

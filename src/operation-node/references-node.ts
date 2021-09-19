@@ -1,7 +1,7 @@
-import { OperationNode } from './operation-node'
-import { ColumnNode } from './column-node'
-import { TableNode } from './table-node'
-import { freeze } from '../util/object-utils'
+import { OperationNode } from './operation-node.js'
+import { ColumnNode } from './column-node.js'
+import { TableNode } from './table-node.js'
+import { freeze } from '../util/object-utils.js'
 
 export type OnDelete = 'cascade' | 'set null'
 

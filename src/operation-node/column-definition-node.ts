@@ -1,11 +1,11 @@
-import { freeze } from '../util/object-utils'
-import { CheckConstraintNode } from './check-constraint-node'
-import { columnNode, ColumnNode } from './column-node'
-import { DataTypeNode } from './data-type-node'
-import { OperationNode } from './operation-node'
-import { RawNode } from './raw-node'
-import { ReferencesNode } from './references-node'
-import { ValueNode } from './value-node'
+import { freeze } from '../util/object-utils.js'
+import { CheckConstraintNode } from './check-constraint-node.js'
+import { columnNode, ColumnNode } from './column-node.js'
+import { DataTypeNode } from './data-type-node.js'
+import { OperationNode } from './operation-node.js'
+import { RawNode } from './raw-node.js'
+import { ReferencesNode } from './references-node.js'
+import { ValueNode } from './value-node.js'
 
 export type ColumnDefinitionNodeParams = Omit<
   Partial<ColumnDefinitionNode>,

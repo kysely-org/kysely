@@ -7,7 +7,7 @@ import {
   TestContext,
   testSql,
   expect,
-} from './test-setup'
+} from './test-setup.js'
 
 for (const dialect of BUILT_IN_DIALECTS) {
   describe(`${dialect}: join`, () => {

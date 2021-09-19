@@ -1,21 +1,21 @@
-import { AliasNode, aliasNode } from '../operation-node/alias-node'
-import { ColumnNode, columnNode } from '../operation-node/column-node'
-import { isOperationNodeSource } from '../operation-node/operation-node-source'
-import { ReferenceExpressionNode } from '../operation-node/operation-node-utils'
-import { referenceNode, ReferenceNode } from '../operation-node/reference-node'
-import { tableNode } from '../operation-node/table-node'
-import { RawBuilder } from '../raw-builder/raw-builder'
-import { isFunction, isString } from '../util/object-utils'
+import { AliasNode, aliasNode } from '../operation-node/alias-node.js'
+import { ColumnNode, columnNode } from '../operation-node/column-node.js'
+import { isOperationNodeSource } from '../operation-node/operation-node-source.js'
+import { ReferenceExpressionNode } from '../operation-node/operation-node-utils.js'
+import { referenceNode, ReferenceNode } from '../operation-node/reference-node.js'
+import { tableNode } from '../operation-node/table-node.js'
+import { RawBuilder } from '../raw-builder/raw-builder.js'
+import { isFunction, isString } from '../util/object-utils.js'
 import {
   AnyColumn,
   AnyColumnWithTable,
   AnyQueryBuilder,
   QueryBuilderFactory,
   RawBuilderFactory,
-} from '../query-builder/type-utils'
-import { DynamicReferenceBuilder } from '../dynamic/dynamic-reference-builder'
-import { queryNode } from '../operation-node/query-node'
-import { SubQueryBuilder } from '../query-builder/sub-query-builder'
+} from '../query-builder/type-utils.js'
+import { DynamicReferenceBuilder } from '../dynamic/dynamic-reference-builder.js'
+import { queryNode } from '../operation-node/query-node.js'
+import { SubQueryBuilder } from '../query-builder/sub-query-builder.js'
 
 export type ReferenceExpression<DB, TB extends keyof DB> =
   | AnyColumn<DB, TB>

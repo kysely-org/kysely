@@ -1,4 +1,4 @@
-import { Kysely } from '../src'
+import { Kysely } from '../../lib/index.js'
 import {
   BUILT_IN_DIALECTS,
   clearDatabase,
@@ -10,7 +10,7 @@ import {
   expect,
   Person,
   Database,
-} from './test-setup'
+} from './test-setup.js'
 
 for (const dialect of BUILT_IN_DIALECTS) {
   describe(`${dialect}: insert`, () => {

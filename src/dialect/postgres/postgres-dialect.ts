@@ -1,11 +1,11 @@
-import { Driver } from '../../driver/driver'
-import { DriverConfig } from '../../driver/driver-config'
-import { Kysely } from '../../kysely'
-import { parseTable } from '../../parser/table-parser'
-import { DefaultQueryCompiler } from '../../query-compiler/default-query-compiler'
-import { QueryCompiler } from '../../query-compiler/query-compiler'
-import { Dialect, TableMetadata } from '../dialect'
-import { PostgresDriver } from './postgres-driver'
+import { Driver } from '../../driver/driver.js'
+import { DriverConfig } from '../../driver/driver-config.js'
+import { Kysely } from '../../kysely.js'
+import { parseTable } from '../../parser/table-parser.js'
+import { DefaultQueryCompiler } from '../../query-compiler/default-query-compiler.js'
+import { QueryCompiler } from '../../query-compiler/query-compiler.js'
+import { Dialect, TableMetadata } from '../dialect.js'
+import { PostgresDriver } from './postgres-driver.js'
 
 export class PostgresDialect implements Dialect {
   createDriver(config: DriverConfig): Driver {

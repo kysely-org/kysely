@@ -1,8 +1,13 @@
 import * as path from 'path'
-
 import { promises as fs } from 'fs'
-import { Kysely } from '../kysely'
-import { getLast, isFunction, isObject, isString } from '../util/object-utils'
+
+import { Kysely } from '../kysely.js'
+import {
+  getLast,
+  isFunction,
+  isObject,
+  isString,
+} from '../util/object-utils.js'
 
 export const MIGRATION_TABLE = 'kysely_migration'
 export const MIGRATION_LOCK_TABLE = 'kysely_migration_lock'

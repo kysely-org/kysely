@@ -1,9 +1,9 @@
-import { OperationNode } from './operation-node'
-import { freeze } from '../util/object-utils'
-import { columnNode, ColumnNode } from './column-node'
-import { DataTypeNode } from './data-type-node'
-import { ValueNode } from './value-node'
-import { RawNode } from './raw-node'
+import { OperationNode } from './operation-node.js'
+import { freeze } from '../util/object-utils.js'
+import { columnNode, ColumnNode } from './column-node.js'
+import { DataTypeNode } from './data-type-node.js'
+import { ValueNode } from './value-node.js'
+import { RawNode } from './raw-node.js'
 
 export type AlterColumnNodeParams = Omit<
   Partial<AlterColumnNode>,

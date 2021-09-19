@@ -1,5 +1,4 @@
-import { CamelCasePlugin } from '../src'
-import { Kysely } from '../src/kysely'
+import { CamelCasePlugin, Kysely } from '../../lib/index.js'
 import {
   BUILT_IN_DIALECTS,
   destroyTest,
@@ -7,7 +6,7 @@ import {
   TestContext,
   testSql,
   expect,
-} from './test-setup'
+} from './test-setup.js'
 
 for (const dialect of BUILT_IN_DIALECTS) {
   describe(`${dialect}: camel case test`, () => {

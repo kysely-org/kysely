@@ -1,13 +1,13 @@
-import { insertQueryNode, InsertQueryNode } from './insert-query-node'
-import { selectQueryNode, SelectQueryNode } from './select-query-node'
-import { updateQueryNode, UpdateQueryNode } from './update-query-node'
-import { deleteQueryNode, DeleteQueryNode } from './delete-query-node'
-import { whereNode, WhereChildNode } from './where-node'
-import { freeze } from '../util/object-utils'
-import { JoinNode } from './join-node'
-import { SelectionNode } from './selection-node'
-import { returningNode } from './returning-node'
-import { OperationNode } from './operation-node'
+import { insertQueryNode, InsertQueryNode } from './insert-query-node.js'
+import { selectQueryNode, SelectQueryNode } from './select-query-node.js'
+import { updateQueryNode, UpdateQueryNode } from './update-query-node.js'
+import { deleteQueryNode, DeleteQueryNode } from './delete-query-node.js'
+import { whereNode, WhereChildNode } from './where-node.js'
+import { freeze } from '../util/object-utils.js'
+import { JoinNode } from './join-node.js'
+import { SelectionNode } from './selection-node.js'
+import { returningNode } from './returning-node.js'
+import { OperationNode } from './operation-node.js'
 
 export type QueryNode =
   | SelectQueryNode

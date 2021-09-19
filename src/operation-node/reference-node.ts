@@ -1,8 +1,8 @@
-import { OperationNode } from './operation-node'
-import { ColumnNode } from './column-node'
-import { tableNode, TableNode } from './table-node'
-import { selectAllNode, SelectAllNode } from './select-all-node'
-import { freeze } from '../util/object-utils'
+import { OperationNode } from './operation-node.js'
+import { ColumnNode } from './column-node.js'
+import { tableNode, TableNode } from './table-node.js'
+import { selectAllNode, SelectAllNode } from './select-all-node.js'
+import { freeze } from '../util/object-utils.js'
 
 export interface ReferenceNode extends OperationNode {
   readonly kind: 'ReferenceNode'

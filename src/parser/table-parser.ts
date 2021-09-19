@@ -1,18 +1,18 @@
 import {
   AliasedQueryBuilder,
   QueryBuilder,
-} from '../query-builder/query-builder'
-import { isFunction, isString } from '../util/object-utils'
-import { aliasNode } from '../operation-node/alias-node'
-import { tableNode, TableNode } from '../operation-node/table-node'
+} from '../query-builder/query-builder.js'
+import { isFunction, isString } from '../util/object-utils.js'
+import { aliasNode } from '../operation-node/alias-node.js'
+import { tableNode, TableNode } from '../operation-node/table-node.js'
 import {
   AliasedQueryBuilderFactory,
   AnyAliasedQueryBuilder,
-} from '../query-builder/type-utils'
-import { isOperationNodeSource } from '../operation-node/operation-node-source'
-import { AliasedRawBuilder } from '../raw-builder/raw-builder'
-import { TableExpressionNode } from '../operation-node/operation-node-utils'
-import { SubQueryBuilder } from '../query-builder/sub-query-builder'
+} from '../query-builder/type-utils.js'
+import { isOperationNodeSource } from '../operation-node/operation-node-source.js'
+import { AliasedRawBuilder } from '../raw-builder/raw-builder.js'
+import { TableExpressionNode } from '../operation-node/operation-node-utils.js'
+import { SubQueryBuilder } from '../query-builder/sub-query-builder.js'
 
 export type TableExpression<DB, TB extends keyof DB> =
   | TableReference<DB>

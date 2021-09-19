@@ -1,12 +1,12 @@
-import { freeze } from '../util/object-utils'
-import { DatabaseConnection } from './database-connection'
-import { DriverConfig, DriverConfigWithDefaults } from './driver-config'
+import { freeze } from '../util/object-utils.js'
+import { DatabaseConnection } from './database-connection.js'
+import { DriverConfig, DriverConfigWithDefaults } from './driver-config.js'
 import {
   INTERNAL_DRIVER_ACQUIRE_CONNECTION,
   INTERNAL_DRIVER_ENSURE_DESTROY,
   INTERNAL_DRIVER_ENSURE_INIT,
   INTERNAL_DRIVER_RELEASE_CONNECTION,
-} from './driver-internal'
+} from './driver-internal.js'
 
 const POOL_CONFIG_DEFAULTS = freeze({
   maxConnections: 10,

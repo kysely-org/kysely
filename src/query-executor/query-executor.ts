@@ -1,12 +1,12 @@
-import { ConnectionProvider } from '../driver/connection-provider'
-import { QueryResult } from '../driver/database-connection'
-import { OperationNodeTransformer } from '../operation-node/operation-node-transformer'
-import { CompiledQuery } from '../query-compiler/compiled-query'
+import { ConnectionProvider } from '../driver/connection-provider.js'
+import { QueryResult } from '../driver/database-connection.js'
+import { OperationNodeTransformer } from '../operation-node/operation-node-transformer.js'
+import { CompiledQuery } from '../query-compiler/compiled-query.js'
 import {
   CompileEntryPointNode,
   QueryCompiler,
 } from '../query-compiler/query-compiler'
-import { freeze } from '../util/object-utils'
+import { freeze } from '../util/object-utils.js'
 
 export type RowMapper = (row: Record<string, any>) => Record<string, any>
 

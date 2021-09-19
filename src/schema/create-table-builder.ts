@@ -1,19 +1,22 @@
-import { RawBuilder } from '..'
-import { columnDefinitionNode } from '../operation-node/column-definition-node'
+import { columnDefinitionNode } from '../operation-node/column-definition-node.js'
 import {
   CreateTableNode,
   createTableNode,
-} from '../operation-node/create-table-node'
-import { ColumnDataType, dataTypeNode } from '../operation-node/data-type-node'
+} from '../operation-node/create-table-node.js'
+import {
+  ColumnDataType,
+  dataTypeNode,
+} from '../operation-node/data-type-node.js'
 import {
   isOperationNodeSource,
   OperationNodeSource,
-} from '../operation-node/operation-node-source'
-import { CompiledQuery } from '../query-compiler/compiled-query'
-import { Compilable } from '../util/compilable'
-import { preventAwait } from '../util/prevent-await'
-import { QueryExecutor } from '../query-executor/query-executor'
-import { ColumnDefinitionBuilder } from './column-definition-builder'
+} from '../operation-node/operation-node-source.js'
+import { CompiledQuery } from '../query-compiler/compiled-query.js'
+import { Compilable } from '../util/compilable.js'
+import { preventAwait } from '../util/prevent-await.js'
+import { QueryExecutor } from '../query-executor/query-executor.js'
+import { ColumnDefinitionBuilder } from './column-definition-builder.js'
+import { RawBuilder } from '../raw-builder/raw-builder.js'
 
 export class CreateTableBuilder implements OperationNodeSource, Compilable {
   readonly #createTableNode: CreateTableNode

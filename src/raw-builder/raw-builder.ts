@@ -1,16 +1,16 @@
-import { QueryResult } from '../driver/database-connection'
-import { AliasNode, aliasNode } from '../operation-node/alias-node'
-import { OperationNode } from '../operation-node/operation-node'
+import { QueryResult } from '../driver/database-connection.js'
+import { AliasNode, aliasNode } from '../operation-node/alias-node.js'
+import { OperationNode } from '../operation-node/operation-node.js'
 import {
   isOperationNodeSource,
   OperationNodeSource,
-} from '../operation-node/operation-node-source'
-import { RawNode, rawNode } from '../operation-node/raw-node'
-import { valueNode } from '../operation-node/value-node'
-import { parseStringReference } from '../parser/reference-parser'
-import { CompiledQuery } from '../query-compiler/compiled-query'
-import { preventAwait } from '../util/prevent-await'
-import { QueryExecutor } from '../query-executor/query-executor'
+} from '../operation-node/operation-node-source.js'
+import { RawNode, rawNode } from '../operation-node/raw-node.js'
+import { valueNode } from '../operation-node/value-node.js'
+import { parseStringReference } from '../parser/reference-parser.js'
+import { CompiledQuery } from '../query-compiler/compiled-query.js'
+import { preventAwait } from '../util/prevent-await.js'
+import { QueryExecutor } from '../query-executor/query-executor.js'
 
 export class RawBuilder<O = unknown> implements OperationNodeSource {
   readonly #sql: string

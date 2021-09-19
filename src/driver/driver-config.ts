@@ -1,4 +1,4 @@
-import { DatabaseConnection } from './database-connection'
+import { DatabaseConnection } from './database-connection.js'
 
 export interface DriverConfig {
   /**

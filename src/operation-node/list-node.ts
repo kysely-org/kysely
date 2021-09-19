@@ -1,5 +1,5 @@
-import { freeze } from '../util/object-utils'
-import { OperationNode } from './operation-node'
+import { freeze } from '../util/object-utils.js'
+import { OperationNode } from './operation-node.js'
 
 export interface ListNode extends OperationNode {
   readonly kind: 'ListNode'

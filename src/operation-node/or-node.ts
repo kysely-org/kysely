@@ -1,6 +1,6 @@
-import { freeze } from '../util/object-utils'
-import { OperationNode } from './operation-node'
-import { FilterExpressionNode } from './operation-node-utils'
+import { freeze } from '../util/object-utils.js'
+import { OperationNode } from './operation-node.js'
+import { FilterExpressionNode } from './operation-node-utils.js'
 
 export interface OrNode extends OperationNode {
   readonly kind: 'OrNode'

@@ -1,13 +1,13 @@
-import { ColumnNode, columnNode } from '../operation-node/column-node'
-import { InsertValuesNode } from '../operation-node/insert-query-node'
-import { primitiveValueListNode } from '../operation-node/primitive-value-list-node'
-import { valueListNode } from '../operation-node/value-list-node'
-import { isPrimitive, PrimitiveValue } from '../util/object-utils'
+import { ColumnNode, columnNode } from '../operation-node/column-node.js'
+import { InsertValuesNode } from '../operation-node/insert-query-node.js'
+import { primitiveValueListNode } from '../operation-node/primitive-value-list-node.js'
+import { valueListNode } from '../operation-node/value-list-node.js'
+import { isPrimitive, PrimitiveValue } from '../util/object-utils.js'
 import {
   MutationObject,
   MutationValueExpression,
   parseMutationValueExpression,
-} from './mutation-parser'
+} from './mutation-parser.js'
 
 export function parseInsertValuesArgs(
   args: any

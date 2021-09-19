@@ -1,10 +1,10 @@
-import { QueryBuilder } from '../query-builder/query-builder'
+import { QueryBuilder } from '../query-builder/query-builder.js'
 import {
   DeleteResultTypeTag,
   InsertResultTypeTag,
   UpdateResultTypeTag,
-} from '../query-builder/type-utils'
-import { SelectResultType } from './select-parser'
+} from '../query-builder/type-utils.js'
+import { SelectResultType } from './select-parser.js'
 
 /**
  * `returning` method output query builder type

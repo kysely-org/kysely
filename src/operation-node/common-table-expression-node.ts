@@ -1,8 +1,8 @@
-import { freeze } from '../util/object-utils'
-import { IdentifierNode } from './identifier-node'
-import { OperationNode } from './operation-node'
-import { QueryNode } from './query-node'
-import { RawNode } from './raw-node'
+import { freeze } from '../util/object-utils.js'
+import { IdentifierNode } from './identifier-node.js'
+import { OperationNode } from './operation-node.js'
+import { QueryNode } from './query-node.js'
+import { RawNode } from './raw-node.js'
 
 export interface CommonTableExpressionNode extends OperationNode {
   readonly kind: 'CommonTableExpressionNode'

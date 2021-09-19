@@ -1,6 +1,6 @@
-import { freeze } from '../util/object-utils'
-import { IdentifierNode, identifierNode } from './identifier-node'
-import { OperationNode } from './operation-node'
+import { freeze } from '../util/object-utils.js'
+import { IdentifierNode, identifierNode } from './identifier-node.js'
+import { OperationNode } from './operation-node.js'
 
 export type DropSchemaNodeModifier = 'IfExists'
 export type DropSchemaNodeParams = Omit<

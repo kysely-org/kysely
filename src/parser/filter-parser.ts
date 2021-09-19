@@ -1,38 +1,38 @@
-import { FilterNode, filterNode } from '../operation-node/filter-node'
-import { RawBuilder } from '../raw-builder/raw-builder'
-import { isFunction, isString } from '../util/object-utils'
+import { FilterNode, filterNode } from '../operation-node/filter-node.js'
+import { RawBuilder } from '../raw-builder/raw-builder.js'
+import { isFunction, isString } from '../util/object-utils.js'
 import {
   AnyQueryBuilder,
   QueryBuilderFactory,
   RawBuilderFactory,
-} from '../query-builder/type-utils'
-import { isOperationNodeSource } from '../operation-node/operation-node-source'
-import { RawNode, rawNode } from '../operation-node/raw-node'
+} from '../query-builder/type-utils.js'
+import { isOperationNodeSource } from '../operation-node/operation-node-source.js'
+import { RawNode, rawNode } from '../operation-node/raw-node.js'
 import {
   Operator,
   OperatorNode,
   operatorNode,
   OPERATORS,
-} from '../operation-node/operator-node'
-import { ParensNode, parensNode } from '../operation-node/parens-node'
+} from '../operation-node/operator-node.js'
+import { ParensNode, parensNode } from '../operation-node/parens-node.js'
 import {
   parseReferenceExpression,
   ReferenceExpression,
-} from './reference-parser'
+} from './reference-parser.js'
 import {
   parseValueExpressionOrList,
   ValueExpressionOrList,
-} from './value-parser'
+} from './value-parser.js'
 import {
   selectQueryNode,
   SelectQueryNode,
-} from '../operation-node/select-query-node'
-import { SubQueryBuilder } from '../query-builder/sub-query-builder'
-import { createEmptySelectQuery } from '../query-builder/query-builder'
-import { JoinBuilder } from '../query-builder/join-builder'
-import { parseTableExpression } from './table-parser'
-import { JoinNode, joinNode } from '../operation-node/join-node'
-import { FilterExpressionNode } from '../operation-node/operation-node-utils'
+} from '../operation-node/select-query-node.js'
+import { SubQueryBuilder } from '../query-builder/sub-query-builder.js'
+import { createEmptySelectQuery } from '../query-builder/query-builder.js'
+import { JoinBuilder } from '../query-builder/join-builder.js'
+import { parseTableExpression } from './table-parser.js'
+import { JoinNode, joinNode } from '../operation-node/join-node.js'
+import { FilterExpressionNode } from '../operation-node/operation-node-utils.js'
 
 export type ExistsFilterArg<DB, TB extends keyof DB> =
   | AnyQueryBuilder

@@ -4,7 +4,7 @@ import {
   initTest,
   TestContext,
   testSql,
-} from './test-setup'
+} from './test-setup.js'
 
 for (const dialect of ['postgres'] as const) {
   describe(`${dialect}: with schema`, () => {

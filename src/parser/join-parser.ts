@@ -1,13 +1,13 @@
-import { JoinNode, JoinType, joinNode } from '../operation-node/join-node'
-import { AnyColumn, AnyColumnWithTable } from '../query-builder/type-utils'
+import { JoinNode, JoinType, joinNode } from '../operation-node/join-node.js'
+import { AnyColumn, AnyColumnWithTable } from '../query-builder/type-utils.js'
 import {
   TableExpression,
   parseTableExpression,
   ExtractAliasFromTableExpression,
   TableExpressionDatabaseType,
-} from './table-parser'
-import { parseReferenceFilterArgs } from './filter-parser'
-import { JoinBuilder } from '../query-builder/join-builder'
+} from './table-parser.js'
+import { parseReferenceFilterArgs } from './filter-parser.js'
+import { JoinBuilder } from '../query-builder/join-builder.js'
 
 export type JoinReferenceArg<DB, TB extends keyof DB, F> =
   | AnyColumn<

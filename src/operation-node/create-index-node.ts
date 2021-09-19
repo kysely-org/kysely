@@ -1,10 +1,10 @@
-import { freeze } from '../util/object-utils'
-import { ColumnNode } from './column-node'
-import { IdentifierNode, identifierNode } from './identifier-node'
-import { ListNode } from './list-node'
-import { OperationNode } from './operation-node'
-import { RawNode } from './raw-node'
-import { TableNode } from './table-node'
+import { freeze } from '../util/object-utils.js'
+import { ColumnNode } from './column-node.js'
+import { IdentifierNode, identifierNode } from './identifier-node.js'
+import { ListNode } from './list-node.js'
+import { OperationNode } from './operation-node.js'
+import { RawNode } from './raw-node.js'
+import { TableNode } from './table-node.js'
 
 export type CreateIndexNodeParams = Omit<Partial<CreateIndexNode>, 'kind'>
 export type IndexType = 'btree' | 'hash' | 'gist' | 'gin'

@@ -1,9 +1,9 @@
-import { freeze } from '../util/object-utils'
-import { AliasNode } from './alias-node'
-import { ColumnNode } from './column-node'
-import { OperationNode } from './operation-node'
-import { referenceNode, ReferenceNode } from './reference-node'
-import { selectAllNode, SelectAllNode } from './select-all-node'
+import { freeze } from '../util/object-utils.js'
+import { AliasNode } from './alias-node.js'
+import { ColumnNode } from './column-node.js'
+import { OperationNode } from './operation-node.js'
+import { referenceNode, ReferenceNode } from './reference-node.js'
+import { selectAllNode, SelectAllNode } from './select-all-node.js'
 
 type SelectionNodeChild = ColumnNode | ReferenceNode | AliasNode | SelectAllNode
 

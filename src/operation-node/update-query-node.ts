@@ -1,13 +1,13 @@
-import { freeze } from '../util/object-utils'
-import { ColumnUpdateNode } from './column-update-node'
-import { JoinNode } from './join-node'
-import { OperationNode } from './operation-node'
-import { TableExpressionNode } from './operation-node-utils'
-import { PrimitiveValueListNode } from './primitive-value-list-node'
-import { ReturningNode } from './returning-node'
-import { ValueListNode } from './value-list-node'
-import { WhereNode } from './where-node'
-import { WithNode } from './with-node'
+import { freeze } from '../util/object-utils.js'
+import { ColumnUpdateNode } from './column-update-node.js'
+import { JoinNode } from './join-node.js'
+import { OperationNode } from './operation-node.js'
+import { TableExpressionNode } from './operation-node-utils.js'
+import { PrimitiveValueListNode } from './primitive-value-list-node.js'
+import { ReturningNode } from './returning-node.js'
+import { ValueListNode } from './value-list-node.js'
+import { WhereNode } from './where-node.js'
+import { WithNode } from './with-node.js'
 
 export type UpdateValuesNode = ValueListNode | PrimitiveValueListNode
 

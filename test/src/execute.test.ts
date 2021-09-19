@@ -1,4 +1,4 @@
-import { NoResultError, QueryNode } from '../src'
+import { NoResultError, QueryNode } from '../../lib/index.js'
 import {
   BUILT_IN_DIALECTS,
   clearDatabase,
@@ -7,7 +7,7 @@ import {
   insertPersons,
   TestContext,
   expect,
-} from './test-setup'
+} from './test-setup.js'
 
 for (const dialect of BUILT_IN_DIALECTS) {
   describe(`${dialect}: execute`, () => {

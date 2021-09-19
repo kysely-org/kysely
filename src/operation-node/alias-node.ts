@@ -1,11 +1,11 @@
-import { freeze } from '../util/object-utils'
-import { ColumnNode } from './column-node'
-import { IdentifierNode, identifierNode } from './identifier-node'
-import { OperationNode } from './operation-node'
-import { RawNode } from './raw-node'
-import { ReferenceNode } from './reference-node'
-import { SelectQueryNode } from './select-query-node'
-import { TableNode } from './table-node'
+import { freeze } from '../util/object-utils.js'
+import { ColumnNode } from './column-node.js'
+import { IdentifierNode, identifierNode } from './identifier-node.js'
+import { OperationNode } from './operation-node.js'
+import { RawNode } from './raw-node.js'
+import { ReferenceNode } from './reference-node.js'
+import { SelectQueryNode } from './select-query-node.js'
+import { TableNode } from './table-node.js'
 
 export type AliasNodeChild =
   | ColumnNode

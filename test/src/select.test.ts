@@ -7,7 +7,7 @@ import {
   TestContext,
   testSql,
   expect,
-} from './test-setup'
+} from './test-setup.js'
 
 for (const dialect of BUILT_IN_DIALECTS) {
   describe(`${dialect}: select`, () => {
@@ -266,5 +266,27 @@ for (const dialect of BUILT_IN_DIALECTS) {
         { first_name: 'Jennifer', pet_name: 'Catto', toy_name: 'spool' },
       ])
     })
+
+    if (dialect === 'postgres') {
+      it('should select a row for update', async () => {
+        const query = ctx.db
+          .selectFrom('person')
+          .select('last_name')
+          .where('first_name', '=', 'Jennifer')
+          .forUpdate()
+
+        testSql(query, dialect, {
+          postgres: {
+            sql: 'select "last_name" from "person" where "first_name" = $1 for update',
+            bindings: ['Jennifer'],
+          },
+        })
+
+        const persons = await query.execute()
+
+        expect(persons).to.have.length(1)
+        expect(persons).to.eql([{ last_name: 'Aniston' }])
+      })
+    }
   })
 }

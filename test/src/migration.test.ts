@@ -1,12 +1,12 @@
 import * as path from 'path'
-import * as os from 'os'
-import { promises as fs } from 'fs'
+import { dirname } from 'path'
+import { fileURLToPath } from 'url'
 
 import {
   Migration,
   MIGRATION_LOCK_TABLE,
   MIGRATION_TABLE,
-} from '../src/migration/migration'
+} from '../../lib/index.js'
 import {
   BUILT_IN_DIALECTS,
   clearDatabase,
@@ -14,7 +14,7 @@ import {
   expect,
   initTest,
   TestContext,
-} from './test-setup'
+} from './test-setup.js'
 
 for (const dialect of BUILT_IN_DIALECTS) {
   describe(`${dialect}: migration`, () => {
@@ -171,6 +171,8 @@ for (const dialect of BUILT_IN_DIALECTS) {
         })
 
         it('should run migrations from a folder', async () => {
+          const __dirname = dirname(fileURLToPath(import.meta.url))
+
           await ctx.db.migration.migrateToLatest(
             path.join(__dirname, 'test-migrations')
           )

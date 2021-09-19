@@ -1,12 +1,12 @@
-import { identifierNode } from '../operation-node/identifier-node'
+import { identifierNode } from '../operation-node/identifier-node.js'
 import {
   commonTableExpressionNode,
   CommonTableExpressionNode,
-} from '../operation-node/common-table-expression-node'
-import { QueryBuilder } from '../query-builder/query-builder'
-import { QueryCreator } from '../query-creator'
-import { RawBuilder } from '../raw-builder/raw-builder'
-import { NeverExecutingQueryExecutor } from '../query-executor/query-executor'
+} from '../operation-node/common-table-expression-node.js'
+import { QueryBuilder } from '../query-builder/query-builder.js'
+import { QueryCreator } from '../query-creator.js'
+import { RawBuilder } from '../raw-builder/raw-builder.js'
+import { NeverExecutingQueryExecutor } from '../query-executor/query-executor.js'
 
 export type CommonTableExpression<DB> = (
   creator: QueryCreator<DB>

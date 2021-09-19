@@ -1,6 +1,6 @@
-import { freeze } from '../util/object-utils'
-import { OperationNode } from './operation-node'
-import { OrderByItemNode } from './order-by-item-node'
+import { freeze } from '../util/object-utils.js'
+import { OperationNode } from './operation-node.js'
+import { OrderByItemNode } from './order-by-item-node.js'
 
 export interface OrderByNode extends OperationNode {
   readonly kind: 'OrderByNode'

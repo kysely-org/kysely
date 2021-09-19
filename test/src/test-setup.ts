@@ -1,15 +1,15 @@
 import * as chai from 'chai'
 import * as chaiSubset from 'chai-subset'
-chai.use(chaiSubset)
+chai.use((chaiSubset as any).default)
 
 import {
+  Dialect,
   Kysely,
   KyselyConfig,
   KyselyPlugin,
   OperationNodeTransformer,
-} from '../src'
-import { Dialect } from '../src/dialect/dialect'
-import { Compilable } from '../src/util/compilable'
+  Compilable,
+} from '../../lib/index.js'
 
 export interface Person {
   id: number

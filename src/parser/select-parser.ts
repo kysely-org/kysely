@@ -1,11 +1,14 @@
-import { isOperationNodeSource } from '../operation-node/operation-node-source'
-import { AliasedRawBuilder } from '../raw-builder/raw-builder'
-import { isFunction, isString } from '../util/object-utils'
+import { isOperationNodeSource } from '../operation-node/operation-node-source.js'
+import { AliasedRawBuilder } from '../raw-builder/raw-builder.js'
+import { isFunction, isString } from '../util/object-utils.js'
 import {
   AliasedQueryBuilder,
   QueryBuilder,
-} from '../query-builder/query-builder'
-import { selectionNode, SelectionNode } from '../operation-node/selection-node'
+} from '../query-builder/query-builder.js'
+import {
+  selectionNode,
+  SelectionNode,
+} from '../operation-node/selection-node.js'
 import {
   AliasedQueryBuilderFactory,
   AliasedRawBuilderFactory,
@@ -17,10 +20,10 @@ import {
   InsertResultTypeTag,
   RowType,
   ValueType,
-} from '../query-builder/type-utils'
-import { parseAliasedStringReference } from './reference-parser'
-import { DynamicReferenceBuilder } from '../dynamic/dynamic-reference-builder'
-import { SubQueryBuilder } from '../query-builder/sub-query-builder'
+} from '../query-builder/type-utils.js'
+import { parseAliasedStringReference } from './reference-parser.js'
+import { DynamicReferenceBuilder } from '../dynamic/dynamic-reference-builder.js'
+import { SubQueryBuilder } from '../query-builder/sub-query-builder.js'
 
 /**
  * A selection expression.
@@ -40,14 +43,18 @@ export type SelectExpression<DB, TB extends keyof DB> =
  * Given a selection expression returns a query builder type that
  * has the selection.
  */
-export type QueryBuilderWithSelection<DB, TB extends keyof DB, O, S> =
-  QueryBuilder<
-    DB,
-    TB,
-    O extends InsertResultTypeTag
-      ? InsertResultTypeTag
-      : O & SelectResultType<DB, TB, S>
-  >
+export type QueryBuilderWithSelection<
+  DB,
+  TB extends keyof DB,
+  O,
+  S
+> = QueryBuilder<
+  DB,
+  TB,
+  O extends InsertResultTypeTag
+    ? InsertResultTypeTag
+    : O & SelectResultType<DB, TB, S>
+>
 
 /**
  * `selectAll` output query builder type.

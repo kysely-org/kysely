@@ -1,71 +1,79 @@
-import { AliasNode, aliasNode } from '../operation-node/alias-node'
-import { OperationNodeSource } from '../operation-node/operation-node-source'
-import { CompiledQuery } from '../query-compiler/compiled-query'
+import { AliasNode, aliasNode } from '../operation-node/alias-node.js'
+import { OperationNodeSource } from '../operation-node/operation-node-source.js'
+import { CompiledQuery } from '../query-compiler/compiled-query.js'
 import {
   JoinCallbackArg,
   JoinReferenceArg,
   parseJoinArgs,
-} from '../parser/join-parser'
-import { TableExpression, QueryBuilderWithTable } from '../parser/table-parser'
+} from '../parser/join-parser.js'
+import {
+  TableExpression,
+  QueryBuilderWithTable,
+} from '../parser/table-parser.js'
 import {
   parseSelectExpressionOrList,
   parseSelectAllArgs,
   SelectExpression,
   QueryBuilderWithSelection,
   SelectAllQueryBuilder,
-} from '../parser/select-parser'
+} from '../parser/select-parser.js'
 import {
   parseFilterArgs,
   ExistsFilterArg,
   parseExistsFilterArgs,
   FilterOperatorArg,
   parseReferenceFilterArgs,
-} from '../parser/filter-parser'
-import { parseInsertValuesArgs } from '../parser/insert-values-parser'
-import { QueryBuilderWithReturning } from '../parser/returning-parser'
+} from '../parser/filter-parser.js'
+import { parseInsertValuesArgs } from '../parser/insert-values-parser.js'
+import { QueryBuilderWithReturning } from '../parser/returning-parser.js'
 import {
   parseColumnName,
   parseReferenceExpression,
   parseReferenceExpressionOrList,
   ReferenceExpression,
-} from '../parser/reference-parser'
-import { ValueExpressionOrList } from '../parser/value-parser'
+} from '../parser/reference-parser.js'
+import { ValueExpressionOrList } from '../parser/value-parser.js'
 import {
   orderByItemNode,
   OrderByDirection,
-} from '../operation-node/order-by-item-node'
+} from '../operation-node/order-by-item-node.js'
 import {
   selectQueryNode,
   SelectQueryNode,
-} from '../operation-node/select-query-node'
+} from '../operation-node/select-query-node.js'
 import {
   InsertQueryNode,
   insertQueryNode,
-} from '../operation-node/insert-query-node'
+} from '../operation-node/insert-query-node.js'
 import {
   queryNode,
   FilterableQueryNode,
   MutatingQueryNode,
   QueryNode,
-} from '../operation-node/query-node'
-import { AnyColumn, ManyResultRowType, SingleResultRowType } from './type-utils'
-import { OrderByExpression } from '../parser/order-by-parser'
-import { groupByItemNode } from '../operation-node/group-by-item-node'
+} from '../operation-node/query-node.js'
+import {
+  AnyColumn,
+  ManyResultRowType,
+  NonEmptySingleResultRowType,
+  SingleResultRowType,
+} from './type-utils.js'
+import { OrderByExpression } from '../parser/order-by-parser.js'
+import { groupByItemNode } from '../operation-node/group-by-item-node.js'
 import {
   updateQueryNode,
   UpdateQueryNode,
-} from '../operation-node/update-query-node'
-import { MutationObject } from '../parser/mutation-parser'
-import { parseUpdateObject } from '../parser/update-set-parser'
-import { preventAwait } from '../util/prevent-await'
-import { limitNode } from '../operation-node/limit-node'
-import { offsetNode } from '../operation-node/offset-node'
-import { asArray, asReadonlyArray } from '../util/object-utils'
-import { Compilable } from '../util/compilable'
+} from '../operation-node/update-query-node.js'
+import { MutationObject } from '../parser/mutation-parser.js'
+import { parseUpdateObject } from '../parser/update-set-parser.js'
+import { preventAwait } from '../util/prevent-await.js'
+import { limitNode } from '../operation-node/limit-node.js'
+import { offsetNode } from '../operation-node/offset-node.js'
+import { asReadonlyArray } from '../util/object-utils.js'
+import { Compilable } from '../util/compilable.js'
 import {
   NeverExecutingQueryExecutor,
   QueryExecutor,
-} from '../query-executor/query-executor'
+} from '../query-executor/query-executor.js'
 
 /**
  * The main query builder class.
@@ -2109,14 +2117,14 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    */
   async executeTakeFirstOrThrow(
     errorConstructor: NoResultErrorConstructor = NoResultError
-  ): Promise<ManyResultRowType<O>> {
+  ): Promise<NonEmptySingleResultRowType<O>> {
     const [result] = await this.execute()
 
     if (result === undefined) {
       throw new errorConstructor(this.toOperationNode())
     }
 
-    return result
+    return result as NonEmptySingleResultRowType<O>
   }
 }
 

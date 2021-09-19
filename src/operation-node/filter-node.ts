@@ -1,11 +1,11 @@
-import { freeze } from '../util/object-utils'
-import { OperationNode } from './operation-node'
+import { freeze } from '../util/object-utils.js'
+import { OperationNode } from './operation-node.js'
 import {
   ReferenceExpressionNode,
   ValueExpressionNode,
-} from './operation-node-utils'
-import { OperatorNode } from './operator-node'
-import { RawNode } from './raw-node'
+} from './operation-node-utils.js'
+import { OperatorNode } from './operator-node.js'
+import { RawNode } from './raw-node.js'
 
 export type FilterOperatorNode = OperatorNode | RawNode
 

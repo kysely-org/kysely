@@ -1,7 +1,7 @@
-import { freeze } from '../util/object-utils'
-import { ColumnNode } from './column-node'
-import { OperationNode } from './operation-node'
-import { ValueExpressionNode } from './operation-node-utils'
+import { freeze } from '../util/object-utils.js'
+import { ColumnNode } from './column-node.js'
+import { OperationNode } from './operation-node.js'
+import { ValueExpressionNode } from './operation-node-utils.js'
 
 export interface ColumnUpdateNode extends OperationNode {
   readonly kind: 'ColumnUpdateNode'

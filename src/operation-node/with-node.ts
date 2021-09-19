@@ -1,6 +1,6 @@
-import { freeze } from '../util/object-utils'
-import { OperationNode } from './operation-node'
-import { CommonTableExpressionNode } from './common-table-expression-node'
+import { freeze } from '../util/object-utils.js'
+import { OperationNode } from './operation-node.js'
+import { CommonTableExpressionNode } from './common-table-expression-node.js'
 
 export interface WithNode extends OperationNode {
   readonly kind: 'WithNode'

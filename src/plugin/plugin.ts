@@ -1,4 +1,4 @@
-import { OperationNodeTransformer } from '../operation-node/operation-node-transformer'
+import { OperationNodeTransformer } from '../operation-node/operation-node-transformer.js'
 
 export interface KyselyPlugin {
   /**

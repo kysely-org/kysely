@@ -1,5 +1,5 @@
-import { DatabaseConnection } from './database-connection'
-import { ConnectionProvider } from './connection-provider'
+import { DatabaseConnection } from './database-connection.js'
+import { ConnectionProvider } from './connection-provider.js'
 
 export class SingleConnectionProvider implements ConnectionProvider {
   readonly #connection: DatabaseConnection

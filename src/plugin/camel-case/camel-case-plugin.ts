@@ -1,7 +1,7 @@
-import { IdentifierNode } from '../../operation-node/identifier-node'
-import { OperationNodeTransformer } from '../../operation-node/operation-node-transformer'
-import { isObject } from '../../util/object-utils'
-import { KyselyPlugin } from '../plugin'
+import { IdentifierNode } from '../../operation-node/identifier-node.js'
+import { OperationNodeTransformer } from '../../operation-node/operation-node-transformer.js'
+import { isObject } from '../../util/object-utils.js'
+import { KyselyPlugin } from '../plugin.js'
 
 export interface CamelCasePluginOptions {
   /**

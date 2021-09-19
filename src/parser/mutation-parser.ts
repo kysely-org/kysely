@@ -1,13 +1,13 @@
-import { isOperationNodeSource } from '../operation-node/operation-node-source'
-import { RawNode, rawNode } from '../operation-node/raw-node'
+import { isOperationNodeSource } from '../operation-node/operation-node-source.js'
+import { RawNode, rawNode } from '../operation-node/raw-node.js'
 import {
   selectQueryNode,
   SelectQueryNode,
-} from '../operation-node/select-query-node'
-import { valueNode, ValueNode } from '../operation-node/value-node'
-import { AnyQueryBuilder } from '../query-builder/type-utils'
-import { RawBuilder } from '../raw-builder/raw-builder'
-import { isPrimitive, PrimitiveValue } from '../util/object-utils'
+} from '../operation-node/select-query-node.js'
+import { valueNode, ValueNode } from '../operation-node/value-node.js'
+import { AnyQueryBuilder } from '../query-builder/type-utils.js'
+import { RawBuilder } from '../raw-builder/raw-builder.js'
+import { isPrimitive, PrimitiveValue } from '../util/object-utils.js'
 
 export type MutationObject<DB, TB extends keyof DB> = {
   [C in keyof DB[TB]]?: MutationValueExpression<DB[TB][C]>
