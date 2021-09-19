@@ -414,22 +414,22 @@ blockquote {
 }
 
 @media (min-width: 901px) and (max-width: 1024px) {
-    html.default .col-content {
+    html .col-content {
         width: 72%;
     }
-    html.default .col-menu {
+    html .col-menu {
         width: 28%;
     }
-    html.default .tsd-navigation {
+    html .tsd-navigation {
         padding-left: 10px;
     }
 }
 @media (max-width: 900px) {
-    html.default .col-content {
+    html .col-content {
         float: none;
         width: 100%;
     }
-    html.default .col-menu {
+    html .col-menu {
         position: fixed !important;
         overflow: auto;
         -webkit-overflow-scrolling: touch;
@@ -445,10 +445,10 @@ blockquote {
         background-color: var(--color-panel);
         transform: translate(100%, 0);
     }
-    html.default .col-menu > *:last-child {
+    html .col-menu > *:last-child {
         padding-bottom: 20px;
     }
-    html.default .overlay {
+    html .overlay {
         content: "";
         display: block;
         position: fixed;
@@ -459,6 +459,50 @@ blockquote {
         bottom: 0;
         background-color: rgba(0, 0, 0, 0.75);
         visibility: hidden;
+    }
+
+    .to-has-menu .overlay {
+        animation: fade-in 0.4s;
+    }
+
+    .to-has-menu :is(header, footer, .col-content) {
+        animation: shift-to-left 0.4s;
+    }
+
+    .to-has-menu .col-menu {
+        animation: pop-in-from-right 0.4s;
+    }
+
+    .from-has-menu .overlay {
+        animation: fade-out 0.4s;
+    }
+
+    .from-has-menu :is(header, footer, .col-content) {
+        animation: unshift-to-left 0.4s;
+    }
+
+    .from-has-menu .col-menu {
+        animation: pop-out-to-right 0.4s;
+    }
+
+    .has-menu body {
+        overflow: hidden;
+    }
+    .has-menu .overlay {
+        visibility: visible;
+    }
+    .has-menu :is(header, footer, .col-content) {
+        transform: translate(-25%, 0);
+    }
+    .has-menu .col-menu {
+        visibility: visible;
+        transform: translate(0, 0);
+        display: grid;
+        grid-template-rows: auto 1fr;
+        max-height: 100vh;
+    }
+    .has-menu .tsd-navigation {
+        max-height: 100%;
     }
 }
 
@@ -819,7 +863,6 @@ footer .tsd-legend {
 .tsd-navigation.secondary {
     max-height: calc(100vh - 1rem - 40px);
     overflow: auto;
-    position: -webkit-sticky;
     position: sticky;
     top: calc(0.5rem + 40px);
     transition: 0.3s;
