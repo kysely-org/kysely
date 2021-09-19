@@ -3,10 +3,10 @@
   "version": "0.3.1",
   "description": "Type safe SQL query builder",
   "main": "dist/cjs/index.js",
-  "module": "dist/mjs/index.js",
+  "module": "dist/esm/index.js",
   "exports": {
     ".": {
-      "import": "./dist/mjs/index.js",
+      "import": "./dist/esm/index.js",
       "require": "./dist/cjs/index.js"
     }
   },
@@ -16,8 +16,8 @@
     "test:integration": "mocha --timeout 5000 - test/dist/**/*.test.js",
     "test:typings": "tsd test/typings",
     "prettier": "prettier --write src/**/*.ts test/**/*.ts",
-    "build": "rm -rf dist && npm run build:mjs && npm run build:cjs && ./fixup",
-    "build:mjs": "tsc -p tsconfig.json",
+    "build": "rm -rf dist && npm run build:esm && npm run build:cjs && ./module-fixup.sh",
+    "build:esm": "tsc -p tsconfig.json",
     "build:cjs": "tsc -p tsconfig-cjs.json",
     "docs:build": "typedoc --excludePrivate --excludeInternal src/index.ts && npm run docs:postprocess",
     "docs:postprocess": "node post-process-docs.js",

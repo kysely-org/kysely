@@ -8,7 +8,7 @@ test
 .gitignore
 .prettierrc.json
 docs-theme.css
-fixup
+module-fixup.sh
 package-lock.json
 post-process-docs.js
 tsconfig-base.json
