@@ -5,7 +5,7 @@ import {
 } from '../../driver/database-connection.js'
 import { Driver } from '../../driver/driver.js'
 import { CompiledQuery } from '../../query-compiler/compiled-query.js'
-import { freeze } from '../../util/object-utils.js'
+import { freeze, isFunction } from '../../util/object-utils.js'
 
 const PRIVATE_RELEASE_METHOD = Symbol()
 
@@ -80,9 +80,16 @@ export class PostgresDriver extends Driver {
 
 async function importPgPool(): Promise<new (config: PoolConfig) => Pool> {
   try {
-    // There's something funky in the typings here.
+    // For this to work with both esm and cjs modules we need
+    // this hacky craph here.
     const pg = (await import('pg')) as any
-    return pg.default.Pool
+
+    if (isFunction(pg.Pool)) {
+      return pg.Pool
+    } else {
+      // With esm the imported module doesn't match the typings.
+      return pg.default.Pool
+    }
   } catch (error) {
     throw new Error(
       'Postgres client not installed. Please run `npm install pg`'

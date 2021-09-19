@@ -3,7 +3,7 @@ import * as json from 'koa-json'
 import * as compress from 'koa-compress'
 import * as bodyParser from 'koa-bodyparser'
 import { Server } from 'http'
-import { createIndexNode, Kysely } from 'kysely'
+import { Kysely } from 'kysely'
 
 import { Config } from './config'
 import { Context, ContextExtension } from './context'
@@ -11,7 +11,7 @@ import { Database } from './database'
 import { Router } from './router'
 import { userController } from './user/user.controller'
 import { ControllerError } from './util/errors'
-import { isObject } from 'kysely/lib/util/object-utils'
+import { isObject } from './util/object'
 
 export class App {
   #config: Config

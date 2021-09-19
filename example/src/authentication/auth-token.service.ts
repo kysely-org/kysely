@@ -1,9 +1,7 @@
 import * as jwt from 'jsonwebtoken'
-import { Next } from 'koa'
 import { Kysely } from 'kysely'
 
 import { config } from '../config'
-import { Context } from '../context'
 import { Database } from '../database'
 import { refreshTokenRepository } from './refresh-token.repository'
 

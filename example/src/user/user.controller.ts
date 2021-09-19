@@ -1,4 +1,3 @@
-import { authTokenService } from '../authentication/auth-token.service'
 import { authenticationService } from '../authentication/authentication.service'
 import { Router } from '../router'
 import { signInMethodController } from './sign-in-method/sign-in-method.controller'

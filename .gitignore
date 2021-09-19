@@ -1,5 +1,5 @@
-lib
-test/lib
+dist
+test/dist
 node_modules
 .vscode
 demo.ts

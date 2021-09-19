@@ -1,4 +1,4 @@
-import { CamelCasePlugin, Kysely } from '../../lib/index.js'
+import { CamelCasePlugin, Kysely } from '../../'
 import {
   BUILT_IN_DIALECTS,
   destroyTest,

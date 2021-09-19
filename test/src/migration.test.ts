@@ -1,12 +1,11 @@
 import * as path from 'path'
-import { dirname } from 'path'
-import { fileURLToPath } from 'url'
 
 import {
   Migration,
   MIGRATION_LOCK_TABLE,
   MIGRATION_TABLE,
-} from '../../lib/index.js'
+} from '../../'
+
 import {
   BUILT_IN_DIALECTS,
   clearDatabase,
@@ -171,8 +170,6 @@ for (const dialect of BUILT_IN_DIALECTS) {
         })
 
         it('should run migrations from a folder', async () => {
-          const __dirname = dirname(fileURLToPath(import.meta.url))
-
           await ctx.db.migration.migrateToLatest(
             path.join(__dirname, 'test-migrations')
           )

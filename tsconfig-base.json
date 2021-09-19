@@ -1,10 +1,9 @@
 {
   "compilerOptions": {
-    "module": "CommonJS",
     "moduleResolution": "Node",
     "target": "ESNext",
     "declaration": true,
-    "outDir": "dist",
+    "outDir": "./lib",
     "strict": true,
     "noImplicitAny": true
   },

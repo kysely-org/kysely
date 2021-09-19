@@ -1,12 +1,16 @@
 .github
 assets
 docs
+example
 node_modules
 src
 test
 .gitignore
 .prettierrc.json
 docs-theme.css
+fixup
+package-lock.json
 post-process-docs.js
+tsconfig-base.json
+tsconfig-cjs.json
 tsconfig.json
-example

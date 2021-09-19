@@ -1,4 +1,4 @@
-import { Kysely } from '../../lib/index.js'
+import { Kysely } from '../../'
 import {
   BUILT_IN_DIALECTS,
   clearDatabase,

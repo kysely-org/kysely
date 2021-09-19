@@ -1,4 +1,4 @@
-import { Transaction } from '../../lib/index.js'
+import { Transaction } from '../../'
 import {
   BUILT_IN_DIALECTS,
   clearDatabase,

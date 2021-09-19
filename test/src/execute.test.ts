@@ -1,4 +1,4 @@
-import { NoResultError, QueryNode } from '../../lib/index.js'
+import { NoResultError, QueryNode } from '../../'
 import {
   BUILT_IN_DIALECTS,
   clearDatabase,
