@@ -1,6 +1,6 @@
 {
   "name": "kysely",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "description": "Type safe SQL query builder",
   "repository": {
     "type": "git",
@@ -29,11 +29,13 @@
   },
   "author": "Sami Koskimäki <sami@jakso.me>",
   "license": "MIT",
+  "dependencies": {
+    "@types/node": "^16.9.3"
+  },
   "devDependencies": {
     "@types/chai": "^4.2.21",
     "@types/chai-subset": "^1.3.3",
     "@types/mocha": "^9.0.0",
-    "@types/node": "^16.9.3",
     "@types/pg": "^8.6.1",
     "chai": "^4.3.4",
     "chai-subset": "^1.6.0",

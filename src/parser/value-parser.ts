@@ -11,7 +11,9 @@ import {
 } from '../operation-node/value-list-node.js'
 import { valueNode } from '../operation-node/value-node.js'
 import {
+  isBoolean,
   isFunction,
+  isNull,
   isPrimitive,
   PrimitiveValue,
 } from '../util/object-utils.js'

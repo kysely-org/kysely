@@ -75,6 +75,53 @@ for (const dialect of BUILT_IN_DIALECTS) {
         ])
       })
 
+      it('a column name and a null value with `is not` operator', async () => {
+        await ctx.db
+          .updateTable('person')
+          .set({ last_name: null })
+          .where('first_name', '=', 'Jennifer')
+          .execute()
+
+        const query = ctx.db
+          .selectFrom('person')
+          .selectAll()
+          .where('last_name', 'is not', null)
+
+        testSql(query, dialect, {
+          postgres: {
+            sql: 'select * from "person" where "last_name" is not null',
+            bindings: [],
+          },
+        })
+
+        const persons = await query.execute()
+        expect(persons).to.have.length(2)
+      })
+
+      it('a column name and a null value with `is` operator', async () => {
+        await ctx.db
+          .updateTable('person')
+          .set({ last_name: null })
+          .where('first_name', '=', 'Jennifer')
+          .execute()
+
+        const query = ctx.db
+          .selectFrom('person')
+          .selectAll()
+          .where('last_name', 'is', null)
+
+        testSql(query, dialect, {
+          postgres: {
+            sql: 'select * from "person" where "last_name" is null',
+            bindings: [],
+          },
+        })
+
+        const persons = await query.execute()
+        expect(persons).to.have.length(1)
+        expect(persons[0].first_name).to.equal('Jennifer')
+      })
+
       it('a dynamic column name and a primitive value', async () => {
         const { ref } = ctx.db.dynamic
 
@@ -156,6 +203,23 @@ for (const dialect of BUILT_IN_DIALECTS) {
 
         const person = await query.executeTakeFirst()
         expect(person!.first_name).to.equal('Arnold')
+      })
+
+      it('a raw instance and a boolean value', async () => {
+        const query = ctx.db
+          .selectFrom('person')
+          .selectAll()
+          .where(ctx.db.raw('(first_name is null)'), 'is', false)
+
+        testSql(query, dialect, {
+          postgres: {
+            sql: 'select * from "person" where (first_name is null) is false',
+            bindings: [],
+          },
+        })
+
+        const persons = await query.execute()
+        expect(persons).to.have.length(3)
       })
 
       it('a subquery and a primitive value', async () => {
@@ -577,7 +641,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
         const query = ctx.db
           .selectFrom('person')
           .selectAll()
-          .where('first_name', '!=', null)
+          .where('first_name', 'is', null)
           .orWhereNotExists((qb) =>
             qb
               .subQuery('pet')
@@ -588,8 +652,8 @@ for (const dialect of BUILT_IN_DIALECTS) {
 
         testSql(query, dialect, {
           postgres: {
-            sql: `select * from "person" where "first_name" != $1 or not exists (select "pet"."id" from "pet" where "pet"."owner_id" = "person"."id" and "pet"."species" = $2)`,
-            bindings: [null, 'hamster'],
+            sql: `select * from "person" where "first_name" is null or not exists (select "pet"."id" from "pet" where "pet"."owner_id" = "person"."id" and "pet"."species" = $1)`,
+            bindings: ['hamster'],
           },
         })
 

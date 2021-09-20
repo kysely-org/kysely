@@ -1,6 +1,11 @@
 import { FilterNode, filterNode } from '../operation-node/filter-node.js'
 import { RawBuilder } from '../raw-builder/raw-builder.js'
-import { isFunction, isString } from '../util/object-utils.js'
+import {
+  isBoolean,
+  isFunction,
+  isNull,
+  isString,
+} from '../util/object-utils.js'
 import {
   AnyQueryBuilder,
   QueryBuilderFactory,
@@ -33,6 +38,7 @@ import { JoinBuilder } from '../query-builder/join-builder.js'
 import { parseTableExpression } from './table-parser.js'
 import { JoinNode, joinNode } from '../operation-node/join-node.js'
 import { FilterExpressionNode } from '../operation-node/operation-node-utils.js'
+import { valueNode } from '../index.js'
 
 export type ExistsFilterArg<DB, TB extends keyof DB> =
   | AnyQueryBuilder
@@ -96,10 +102,26 @@ function parseThreeArgFilter(
   op: FilterOperatorArg,
   right: ValueExpressionOrList<any, any>
 ): FilterNode {
+  if ((op === 'is' || op === 'is not') && (isNull(right) || isBoolean(right))) {
+    return parseIsFilter(left, op, right)
+  }
+
   return filterNode.create(
     parseReferenceExpression(left),
     parseFilterOperator(op),
     parseValueExpressionOrList(right)
+  )
+}
+
+function parseIsFilter(
+  left: ReferenceExpression<any, any>,
+  op: 'is' | 'is not',
+  right: null | boolean
+) {
+  return filterNode.create(
+    parseReferenceExpression(left),
+    parseFilterOperator(op),
+    valueNode.createImmediate(right)
   )
 }
 
