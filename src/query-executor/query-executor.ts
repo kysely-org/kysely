@@ -38,6 +38,10 @@ export abstract class QueryExecutor {
   abstract copyWithTransformerAtFront(
     transformer: OperationNodeTransformer
   ): QueryExecutor
+
+  abstract copyWithConnectionProvider(
+    connectionProvider: ConnectionProvider
+  ): QueryExecutor
 }
 
 export class DefaultQueryExecutor extends QueryExecutor {
@@ -79,6 +83,17 @@ export class DefaultQueryExecutor extends QueryExecutor {
     )
   }
 
+  copyWithConnectionProvider(
+    connectionProvider: ConnectionProvider
+  ): QueryExecutor {
+    return new DefaultQueryExecutor(
+      this.#compiler,
+      connectionProvider,
+      [...this.transformers],
+      [...this.#rowMappers]
+    )
+  }
+
   private mapQueryResult<T>(result: QueryResult<any>): QueryResult<T> {
     if (result.rows && result.rows.length > 0 && this.#rowMappers.length > 0) {
       return freeze({
@@ -98,18 +113,24 @@ export class DefaultQueryExecutor extends QueryExecutor {
 
 export class NeverExecutingQueryExecutor extends QueryExecutor {
   compileQuery(_node: CompileEntryPointNode): CompiledQuery {
-    throw new Error(`this query cannot be compiled to SQL`)
+    throw new Error('this query cannot be compiled to SQL')
   }
 
   async executeQuery<R>(
     _compiledQuery: CompiledQuery
   ): Promise<QueryResult<R>> {
-    throw new Error(`this query cannot be executed`)
+    throw new Error('this query cannot be executed')
   }
 
   copyWithTransformerAtFront(
     transformer: OperationNodeTransformer
   ): NeverExecutingQueryExecutor {
     return new NeverExecutingQueryExecutor([transformer, ...this.transformers])
+  }
+
+  copyWithConnectionProvider(
+    _connectionProvider: ConnectionProvider
+  ): QueryExecutor {
+    throw new Error('this makes no sense')
   }
 }

@@ -178,7 +178,7 @@ export class Kysely<DB> extends QueryCreator<DB> {
       dialect: this.#dialect,
       driver: this.#driver,
       compiler: this.#compiler,
-      executor: new DefaultQueryExecutor(this.#compiler, connectionProvider),
+      executor: this.#executor.copyWithConnectionProvider(connectionProvider),
     })
 
     try {

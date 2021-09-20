@@ -101,5 +101,38 @@ for (const dialect of BUILT_IN_DIALECTS) {
         { firstName: 'Arnold' },
       ])
     })
+
+    it('should convert a select query between camelCase and snake_case in a transaction', async () => {
+      await camelDb.transaction(async (trx) => {
+        const query = trx
+          .selectFrom('camelPerson')
+          .select('camelPerson.firstName')
+          .innerJoin(
+            'camelPerson as camelPerson2',
+            'camelPerson2.id',
+            'camelPerson.id'
+          )
+          .orderBy('firstName')
+
+        testSql(query, dialect, {
+          postgres: {
+            sql: [
+              `select "camel_person"."first_name"`,
+              `from "camel_person"`,
+              `inner join "camel_person" as "camel_person2" on "camel_person2"."id" = "camel_person"."id"`,
+              `order by "first_name" asc`,
+            ],
+            bindings: [],
+          },
+        })
+
+        const result = await query.execute()
+        expect(result).to.have.length(2)
+        expect(result).to.containSubset([
+          { firstName: 'Jennifer' },
+          { firstName: 'Arnold' },
+        ])
+      })
+    })
   })
 }
