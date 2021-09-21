@@ -8,13 +8,13 @@ import { OnDelete, referencesNode } from '../operation-node/references-node.js'
 import { selectAllNode } from '../operation-node/select-all-node.js'
 import { valueNode } from '../operation-node/value-node.js'
 import { parseStringReference } from '../parser/reference-parser.js'
-import { RawBuilder } from '../raw-builder/raw-builder.js'
 import { PrimitiveValue } from '../util/object-utils.js'
 import { preventAwait } from '../util/prevent-await.js'
 import {
   columnDefinitionNode,
   ColumnDefinitionNode,
 } from '../operation-node/column-definition-node.js'
+import { AnyRawBuilder } from '../query-builder/type-utils.js'
 
 export interface ColumnDefinitionBuilderInterface<R> {
   /**
@@ -70,7 +70,7 @@ export interface ColumnDefinitionBuilderInterface<R> {
    *   .execute()
    * ```
    */
-  defaultTo(value: PrimitiveValue | RawBuilder<any>): R
+  defaultTo(value: PrimitiveValue | AnyRawBuilder): R
 
   /**
    * Adds a check constraint for the column.
@@ -154,7 +154,7 @@ export class ColumnDefinitionBuilder
     )
   }
 
-  defaultTo(value: PrimitiveValue | RawBuilder<any>): ColumnDefinitionBuilder {
+  defaultTo(value: PrimitiveValue | AnyRawBuilder): ColumnDefinitionBuilder {
     return new ColumnDefinitionBuilder(
       columnDefinitionNode.cloneWith(this.#node, {
         defaultTo: isOperationNodeSource(value)

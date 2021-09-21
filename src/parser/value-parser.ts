@@ -11,26 +11,24 @@ import {
 } from '../operation-node/value-list-node.js'
 import { valueNode } from '../operation-node/value-node.js'
 import {
-  isBoolean,
   isFunction,
-  isNull,
   isPrimitive,
   PrimitiveValue,
 } from '../util/object-utils.js'
 import {
   AnyQueryBuilder,
+  AnyRawBuilder,
   QueryBuilderFactory,
   RawBuilderFactory,
 } from '../query-builder/type-utils.js'
 import { queryNode } from '../operation-node/query-node.js'
 import { SubQueryBuilder } from '../query-builder/sub-query-builder.js'
-import { RawBuilder } from '../raw-builder/raw-builder.js'
 
 export type ValueExpression<DB, TB extends keyof DB> =
   | PrimitiveValue
   | AnyQueryBuilder
   | QueryBuilderFactory<DB, TB>
-  | RawBuilder<any>
+  | AnyRawBuilder
   | RawBuilderFactory<DB, TB>
 
 export type ValueExpressionOrList<DB, TB extends keyof DB> =

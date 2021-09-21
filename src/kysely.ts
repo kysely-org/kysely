@@ -22,6 +22,8 @@ import {
 import { QueryCreator } from './query-creator.js'
 import { KyselyPlugin } from './plugin/plugin.js'
 import { OperationNodeTransformer } from './operation-node/operation-node-transformer.js'
+import { GeneratedPlaceholder } from './query-builder/type-utils.js'
+import { generatedPlaceholder } from './util/generated-placeholder.js'
 
 /**
  * The main Kysely class.
@@ -122,6 +124,33 @@ export class Kysely<DB> extends QueryCreator<DB> {
    */
   get dynamic(): DynamicModule {
     return new DynamicModule()
+  }
+
+  /**
+   * A value to be used in place of columns that are generated in the database
+   * when inserting rows.
+   *
+   * @example
+   * In this example the `Person` table has non-null properties `id` and `created_at`
+   * which are both automatically genereted by the database. Since their types are
+   * `number` and `string` respectively instead of `number | null` and `string | null`
+   * the `values` method requires you to give a value for them. the `generated`
+   * placeholder can be used in these cases.
+   *
+   * ```ts
+   * await db.insertInto('person')
+   *   .values({
+   *     id: db.generated,
+   *     created_at: db.generated,
+   *     first_name: 'Jennifer',
+   *     last_name: 'Aniston',
+   *     gender: 'female'
+   *   })
+   *   .execute()
+   * ```
+   */
+  get generated(): GeneratedPlaceholder {
+    return generatedPlaceholder
   }
 
   /**

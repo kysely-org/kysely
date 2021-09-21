@@ -52,14 +52,17 @@ for (const dialect of BUILT_IN_DIALECTS) {
     })
 
     it('should insert one row', async () => {
-      const query = ctx.db
-        .insertInto('person')
-        .values({ first_name: 'Foo', last_name: 'Barson' })
+      const query = ctx.db.insertInto('person').values({
+        id: ctx.db.generated,
+        first_name: 'Foo',
+        last_name: 'Barson',
+        gender: 'other',
+      })
 
       testSql(query, dialect, {
         postgres: {
-          sql: 'insert into "person" ("first_name", "last_name") values ($1, $2)',
-          bindings: ['Foo', 'Barson'],
+          sql: 'insert into "person" ("first_name", "last_name", "gender") values ($1, $2, $3)',
+          bindings: ['Foo', 'Barson', 'other'],
         },
       })
 
@@ -77,6 +80,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
 
     it('should insert one row with complex values', async () => {
       const query = ctx.db.insertInto('person').values({
+        id: ctx.db.generated,
         first_name: ctx.db
           .selectFrom('person')
           .select(ctx.db.raw('max(first_name)').as('max_first_name')),
@@ -84,12 +88,13 @@ for (const dialect of BUILT_IN_DIALECTS) {
           'concat(cast(? as varchar), cast(? as varchar))',
           ['Bar', 'son']
         ),
+        gender: 'other',
       })
 
       testSql(query, dialect, {
         postgres: {
-          sql: 'insert into "person" ("first_name", "last_name") values ((select max(first_name) as "max_first_name" from "person"), concat(cast($1 as varchar), cast($2 as varchar)))',
-          bindings: ['Bar', 'son'],
+          sql: 'insert into "person" ("first_name", "last_name", "gender") values ((select max(first_name) as "max_first_name" from "person"), concat(cast($1 as varchar), cast($2 as varchar)), $3)',
+          bindings: ['Bar', 'son', 'other'],
         },
       })
 
@@ -106,17 +111,26 @@ for (const dialect of BUILT_IN_DIALECTS) {
     })
 
     it('should insert one row and ignore conflicts using onConflictDoNothing', async () => {
-      const [{ name }] = await ctx.db.selectFrom('pet').select('name').execute()
+      const [existingPet] = await ctx.db
+        .selectFrom('pet')
+        .selectAll()
+        .limit(1)
+        .execute()
 
       const query = ctx.db
         .insertInto('pet')
-        .values({ name })
+        .values(existingPet)
         .onConflictDoNothing('name')
 
       testSql(query, dialect, {
         postgres: {
-          sql: 'insert into "pet" ("name") values ($1) on conflict ("name") do nothing',
-          bindings: ['Catto'],
+          sql: 'insert into "pet" ("id", "name", "owner_id", "species") values ($1, $2, $3, $4) on conflict ("name") do nothing',
+          bindings: [
+            existingPet.id,
+            existingPet.name,
+            existingPet.owner_id,
+            existingPet.species,
+          ],
         },
       })
 
@@ -125,16 +139,27 @@ for (const dialect of BUILT_IN_DIALECTS) {
     })
 
     it('should update instead of insert on conflict when using onConfictUpdate', async () => {
+      const [anyPerson] = await ctx.db
+        .selectFrom('person')
+        .selectAll()
+        .limit(1)
+        .execute()
+
       const query = ctx.db
         .insertInto('pet')
-        .values({ name: 'Catto' })
+        .values({
+          id: ctx.db.generated,
+          name: 'Catto',
+          species: 'cat',
+          owner_id: anyPerson.id,
+        })
         .onConflictUpdate('name', { species: 'hamster' })
         .returningAll()
 
       testSql(query, dialect, {
         postgres: {
-          sql: 'insert into "pet" ("name") values ($1) on conflict ("name") do update set "species" = $2 returning *',
-          bindings: ['Catto', 'hamster'],
+          sql: 'insert into "pet" ("name", "species", "owner_id") values ($1, $2, $3) on conflict ("name") do update set "species" = $4 returning *',
+          bindings: ['Catto', 'cat', anyPerson.id, 'hamster'],
         },
       })
 
@@ -151,15 +176,25 @@ for (const dialect of BUILT_IN_DIALECTS) {
         const query = ctx.db
           .insertInto('person')
           .values([
-            { first_name: 'Foo', last_name: 'Barson' },
-            { first_name: 'Baz', last_name: 'Spam' },
+            {
+              id: ctx.db.generated,
+              first_name: 'Foo',
+              last_name: 'Barson',
+              gender: 'other',
+            },
+            {
+              id: ctx.db.generated,
+              first_name: 'Baz',
+              last_name: 'Spam',
+              gender: 'other',
+            },
           ])
           .returningAll()
 
         testSql(query, dialect, {
           postgres: {
-            sql: 'insert into "person" ("first_name", "last_name") values ($1, $2), ($3, $4) returning *',
-            bindings: ['Foo', 'Barson', 'Baz', 'Spam'],
+            sql: 'insert into "person" ("first_name", "last_name", "gender") values ($1, $2, $3), ($4, $5, $6) returning *',
+            bindings: ['Foo', 'Barson', 'other', 'Baz', 'Spam', 'other'],
           },
         })
 
@@ -171,6 +206,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
         const result = await ctx.db
           .insertInto('person')
           .values({
+            id: ctx.db.generated,
             gender: 'other',
             first_name: ctx.db
               .selectFrom('person')
@@ -199,6 +235,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
         const result = await ctx.db
           .insertInto('person')
           .values({
+            id: ctx.db.generated,
             gender: 'other',
             first_name: ctx.db
               .selectFrom('person')

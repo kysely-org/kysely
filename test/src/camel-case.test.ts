@@ -44,8 +44,16 @@ for (const dialect of BUILT_IN_DIALECTS) {
       await camelDb
         .insertInto('camelPerson')
         .values([
-          { firstName: 'Jennifer', lastName: 'Aniston' },
-          { firstName: 'Arnold', lastName: 'Schwarzenegger' },
+          {
+            id: ctx.db.generated,
+            firstName: 'Jennifer',
+            lastName: 'Aniston',
+          },
+          {
+            id: ctx.db.generated,
+            firstName: 'Arnold',
+            lastName: 'Schwarzenegger',
+          },
         ])
         .execute()
     })

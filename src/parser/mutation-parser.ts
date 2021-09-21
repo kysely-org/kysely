@@ -5,8 +5,7 @@ import {
   SelectQueryNode,
 } from '../operation-node/select-query-node.js'
 import { valueNode, ValueNode } from '../operation-node/value-node.js'
-import { AnyQueryBuilder } from '../query-builder/type-utils.js'
-import { RawBuilder } from '../raw-builder/raw-builder.js'
+import { AnyQueryBuilder, AnyRawBuilder } from '../query-builder/type-utils.js'
 import { isPrimitive, PrimitiveValue } from '../util/object-utils.js'
 
 export type MutationObject<DB, TB extends keyof DB> = {
@@ -16,7 +15,7 @@ export type MutationObject<DB, TB extends keyof DB> = {
 export type MutationValueExpression<T extends PrimitiveValue> =
   | T
   | AnyQueryBuilder
-  | RawBuilder<any>
+  | AnyRawBuilder
 
 export function parseMutationValueExpression(
   value: MutationValueExpression<PrimitiveValue>

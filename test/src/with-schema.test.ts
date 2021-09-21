@@ -18,11 +18,24 @@ for (const dialect of ['postgres'] as const) {
     })
 
     beforeEach(async () => {
+      const person = await ctx.db
+        .insertInto('person')
+        .values({
+          id: ctx.db.generated,
+          first_name: 'Foo',
+          last_name: 'Bar',
+          gender: 'other',
+        })
+        .returning('id')
+        .executeTakeFirst()
+
       await ctx.db
         .withSchema('mammals')
         .insertInto('pet')
         .values({
+          id: ctx.db.generated,
           name: 'Catto',
+          owner_id: person!.id,
           species: 'cat',
         })
         .execute()
@@ -162,19 +175,27 @@ for (const dialect of ['postgres'] as const) {
 
     describe('insert into', () => {
       it('should add schema', async () => {
+        const [anyPerson] = await ctx.db
+          .selectFrom('person')
+          .selectAll()
+          .limit(1)
+          .execute()
+
         const query = ctx.db
           .withSchema('mammals')
           .insertInto('pet')
           .values({
+            id: ctx.db.generated,
             name: 'Doggo',
             species: 'dog',
+            owner_id: anyPerson.id,
           })
           .returning('pet.id')
 
         testSql(query, dialect, {
           postgres: {
-            sql: 'insert into "mammals"."pet" ("name", "species") values ($1, $2) returning "mammals"."pet"."id"',
-            bindings: ['Doggo', 'dog'],
+            sql: 'insert into "mammals"."pet" ("name", "species", "owner_id") values ($1, $2, $3) returning "mammals"."pet"."id"',
+            bindings: ['Doggo', 'dog', anyPerson.id],
           },
         })
       })

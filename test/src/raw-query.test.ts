@@ -93,8 +93,8 @@ for (const dialect of BUILT_IN_DIALECTS) {
       it('should run a raw insert query', async () => {
         const result = await ctx.db
           .raw(
-            'insert into person (first_name, last_name) values (?, ?) returning first_name, last_name',
-            ['New', 'Personsson']
+            'insert into person (first_name, last_name, gender) values (?, ?, ?) returning first_name, last_name',
+            ['New', 'Personsson', 'other']
           )
           .execute()
 
@@ -107,9 +107,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
     } else {
       it('should run a raw insert query', async () => {
         const result = await ctx.db
-          .raw('insert into person (first_name, last_name) values (?, ?)', [
+          .raw('insert into person (first_name, last_name, gender) values (?, ?, ?)', [
             'New',
             'Personsson',
+            'other'
           ])
           .execute()
 

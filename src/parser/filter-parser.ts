@@ -1,5 +1,4 @@
 import { FilterNode, filterNode } from '../operation-node/filter-node.js'
-import { RawBuilder } from '../raw-builder/raw-builder.js'
 import {
   isBoolean,
   isFunction,
@@ -8,6 +7,7 @@ import {
 } from '../util/object-utils.js'
 import {
   AnyQueryBuilder,
+  AnyRawBuilder,
   QueryBuilderFactory,
   RawBuilderFactory,
 } from '../query-builder/type-utils.js'
@@ -43,10 +43,10 @@ import { valueNode } from '../index.js'
 export type ExistsFilterArg<DB, TB extends keyof DB> =
   | AnyQueryBuilder
   | QueryBuilderFactory<DB, TB>
-  | RawBuilder<any>
+  | AnyRawBuilder
   | RawBuilderFactory<DB, TB>
 
-export type FilterOperatorArg = Operator | RawBuilder<any>
+export type FilterOperatorArg = Operator | AnyRawBuilder
 export type FilterType = 'Where' | 'On' | 'Having'
 
 export function parseFilterArgs(

@@ -99,6 +99,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
             db
               .insertInto('person')
               .values({
+                id: ctx.db.generated,
                 first_name: 'Matt',
                 last_name: 'Damon',
                 gender: 'male',

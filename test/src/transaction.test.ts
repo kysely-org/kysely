@@ -93,7 +93,12 @@ for (const dialect of BUILT_IN_DIALECTS) {
       ): Promise<void> {
         await trx
           .insertInto('pet')
-          .values({ name: `Pet of ${ownerId}`, owner_id: ownerId })
+          .values({
+            id: ctx.db.generated,
+            name: `Pet of ${ownerId}`,
+            owner_id: ownerId,
+            species: 'cat',
+          })
           .execute()
       }
 
@@ -103,7 +108,12 @@ for (const dialect of BUILT_IN_DIALECTS) {
       ): Promise<void> {
         await trx
           .insertInto('person')
-          .values({ id, first_name: `Person ${id}` })
+          .values({
+            id,
+            first_name: `Person ${id}`,
+            last_name: null,
+            gender: 'other',
+          })
           .execute()
       }
 

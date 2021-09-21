@@ -96,7 +96,7 @@ export async function insertPersons(
 
     const personRes = await ctx.db
       .insertInto('person')
-      .values(person)
+      .values({ ...person, id: ctx.db.generated })
       .returning('id')
       .executeTakeFirst()
 
@@ -139,25 +139,25 @@ async function createDatabase(db: Kysely<Database>): Promise<void> {
     .addColumn('id', 'integer', (col) => col.increments().primaryKey())
     .addColumn('first_name', 'varchar')
     .addColumn('last_name', 'varchar')
-    .addColumn('gender', 'varchar(50)')
+    .addColumn('gender', 'varchar(50)', (col) => col.notNull())
     .execute()
 
   await db.schema
     .createTable('pet')
     .addColumn('id', 'integer', (col) => col.increments().primaryKey())
-    .addColumn('name', 'varchar', (col) => col.unique())
+    .addColumn('name', 'varchar', (col) => col.unique().notNull())
     .addColumn('owner_id', 'integer', (col) =>
-      col.references('person.id').onDelete('cascade')
+      col.references('person.id').onDelete('cascade').notNull()
     )
-    .addColumn('species', 'varchar')
+    .addColumn('species', 'varchar', (col) => col.notNull())
     .execute()
 
   await db.schema
     .createTable('toy')
     .addColumn('id', 'integer', (col) => col.increments().primaryKey())
-    .addColumn('name', 'varchar')
-    .addColumn('pet_id', 'integer', (col) => col.references('pet.id'))
-    .addColumn('price', 'double precision')
+    .addColumn('name', 'varchar', (col) => col.notNull())
+    .addColumn('pet_id', 'integer', (col) => col.references('pet.id').notNull())
+    .addColumn('price', 'double precision', (col) => col.notNull())
     .execute()
 
   await db.schema
@@ -182,7 +182,7 @@ async function insertPetForPerson(
 
   const petRes = await db
     .insertInto('pet')
-    .values({ ...pet, owner_id: personId })
+    .values({ ...pet, owner_id: personId, id: db.generated })
     .returning('id')
     .executeTakeFirst()
 
@@ -200,7 +200,7 @@ async function insertToysForPet(
 ): Promise<void> {
   await db
     .insertInto('toy')
-    .values({ ...toy, pet_id: petId })
+    .values({ ...toy, pet_id: petId, id: db.generated })
     .executeTakeFirst()
 }
 

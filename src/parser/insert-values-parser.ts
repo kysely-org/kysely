@@ -2,28 +2,45 @@ import { ColumnNode, columnNode } from '../operation-node/column-node.js'
 import { InsertValuesNode } from '../operation-node/insert-query-node.js'
 import { primitiveValueListNode } from '../operation-node/primitive-value-list-node.js'
 import { valueListNode } from '../operation-node/value-list-node.js'
+import {
+  AnyQueryBuilder,
+  AnyRawBuilder,
+  GeneratedPlaceholder,
+} from '../query-builder/type-utils.js'
+import { isGeneratedPlaceholder } from '../util/generated-placeholder.js'
 import { isPrimitive, PrimitiveValue } from '../util/object-utils.js'
 import {
-  MutationObject,
   MutationValueExpression,
   parseMutationValueExpression,
 } from './mutation-parser.js'
 
+export type InsertObject<DB, TB extends keyof DB> = {
+  [C in keyof DB[TB]]: InsertValueExpression<DB[TB][C]>
+}
+
+type InsertValueExpression<T extends PrimitiveValue> =
+  | T
+  | AnyQueryBuilder
+  | AnyRawBuilder
+  | GeneratedPlaceholder
+
 export function parseInsertValuesArgs(
-  args: any
+  args: InsertObject<any, any> | InsertObject<any, any>[]
 ): [ReadonlyArray<ColumnNode>, ReadonlyArray<InsertValuesNode>] {
   return parseInsertColumnsAndValues(Array.isArray(args) ? args : [args])
 }
 
 function parseInsertColumnsAndValues(
-  rows: MutationObject<any, any>[]
+  rows: InsertObject<any, any>[]
 ): [ReadonlyArray<ColumnNode>, ReadonlyArray<InsertValuesNode>] {
   const columns: string[] = []
   const values: InsertValuesNode[] = []
 
   for (const row of rows) {
     for (const column of Object.keys(row)) {
-      if (!columns.includes(column)) {
+      const value = row[column]
+
+      if (!columns.includes(column) && !isGeneratedPlaceholder(value)) {
         columns.push(column)
       }
     }
@@ -36,7 +53,10 @@ function parseInsertColumnsAndValues(
 
     for (const column of Object.keys(row)) {
       const columnIdx = columns.indexOf(column)
-      rowValues[columnIdx] = row[column]
+
+      if (columnIdx !== -1) {
+        rowValues[columnIdx] = row[column]
+      }
     }
 
     if (rowValues.every(isPrimitive)) {

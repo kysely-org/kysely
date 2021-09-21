@@ -32,6 +32,7 @@ import {
   ColumnDefinitionBuilder,
   ColumnDefinitionBuilderInterface,
 } from './column-definition-builder.js'
+import { AnyRawBuilder } from '../query-builder/type-utils.js'
 
 export class AlterTableBuilder {
   readonly #alterTableNode: AlterTableNode
@@ -127,7 +128,7 @@ export class AlterColumnBuilder {
     })
   }
 
-  setDefault(value: PrimitiveValue | RawBuilder<any>): AlterTableExecutor {
+  setDefault(value: PrimitiveValue | AnyRawBuilder): AlterTableExecutor {
     return new AlterTableExecutor({
       executor: this.#executor,
       alterTableNode: alterTableNode.cloneWith(this.#alterTableNode, {
@@ -257,9 +258,7 @@ export class AlterTableAddColumnBuilder
     })
   }
 
-  defaultTo(
-    value: PrimitiveValue | RawBuilder<any>
-  ): AlterTableAddColumnBuilder {
+  defaultTo(value: PrimitiveValue | AnyRawBuilder): AlterTableAddColumnBuilder {
     return new AlterTableAddColumnBuilder({
       executor: this.#executor,
       alterTableNode: this.#alterTableNode,

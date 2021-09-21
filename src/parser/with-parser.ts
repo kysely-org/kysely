@@ -7,10 +7,11 @@ import { QueryBuilder } from '../query-builder/query-builder.js'
 import { QueryCreator } from '../query-creator.js'
 import { RawBuilder } from '../raw-builder/raw-builder.js'
 import { NeverExecutingQueryExecutor } from '../query-executor/query-executor.js'
+import { AnyRawBuilder } from '../query-builder/type-utils.js'
 
 export type CommonTableExpression<DB> = (
   creator: QueryCreator<DB>
-) => QueryBuilder<DB, any> | RawBuilder<any>
+) => QueryBuilder<DB, any> | AnyRawBuilder
 
 export type QueryCreatorWithCommonTableExpression<
   DB,

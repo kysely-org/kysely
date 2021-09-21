@@ -2,14 +2,17 @@ import { AliasNode, aliasNode } from '../operation-node/alias-node.js'
 import { ColumnNode, columnNode } from '../operation-node/column-node.js'
 import { isOperationNodeSource } from '../operation-node/operation-node-source.js'
 import { ReferenceExpressionNode } from '../operation-node/operation-node-utils.js'
-import { referenceNode, ReferenceNode } from '../operation-node/reference-node.js'
+import {
+  referenceNode,
+  ReferenceNode,
+} from '../operation-node/reference-node.js'
 import { tableNode } from '../operation-node/table-node.js'
-import { RawBuilder } from '../raw-builder/raw-builder.js'
 import { isFunction, isString } from '../util/object-utils.js'
 import {
   AnyColumn,
   AnyColumnWithTable,
   AnyQueryBuilder,
+  AnyRawBuilder,
   QueryBuilderFactory,
   RawBuilderFactory,
 } from '../query-builder/type-utils.js'
@@ -22,7 +25,7 @@ export type ReferenceExpression<DB, TB extends keyof DB> =
   | AnyColumnWithTable<DB, TB>
   | AnyQueryBuilder
   | QueryBuilderFactory<DB, TB>
-  | RawBuilder<any>
+  | AnyRawBuilder
   | RawBuilderFactory<DB, TB>
   | DynamicReferenceBuilder<any>
 

@@ -142,6 +142,8 @@ export type ArrayItemType<T> = T extends ReadonlyArray<infer I> ? I : never
 export type AnyQueryBuilder = QueryBuilder<any, any, any>
 export type AnyAliasedQueryBuilder = AliasedQueryBuilder<any, any, any, any>
 
+export type AnyRawBuilder = RawBuilder<any>
+
 export type QueryBuilderFactory<DB, TB extends keyof DB> = (
   qb: SubQueryBuilder<DB, TB>
 ) => QueryBuilder<any, any, any>
@@ -152,22 +154,30 @@ export type AliasedQueryBuilderFactory<DB, TB extends keyof DB> = (
 
 export type RawBuilderFactory<DB, TB extends keyof DB> = (
   qb: SubQueryBuilder<DB, TB>
-) => RawBuilder<any>
+) => AnyRawBuilder
 
 export type AliasedRawBuilderFactory<DB, TB extends keyof DB> = (
   qb: SubQueryBuilder<DB, TB>
 ) => AliasedRawBuilder<any, any>
 
 export interface InsertResultTypeTag {
+  /** @internal */
   __isInsertResultTypeTag__: true
 }
 
 export interface DeleteResultTypeTag {
+  /** @internal */
   __isDeleteResultTypeTag__: true
 }
 
 export interface UpdateResultTypeTag {
+  /** @internal */
   __isUpdateResultTypeTag__: true
+}
+
+export interface GeneratedPlaceholder {
+  /** @internal */
+  __isGeneratedPlaceholder__: true
 }
 
 export type ManyResultRowType<O> = O extends InsertResultTypeTag

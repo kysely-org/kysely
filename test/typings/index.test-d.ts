@@ -13,7 +13,7 @@ import { expectType, expectError } from 'tsd'
 interface Person {
   id: number
   first_name: string
-  last_name: string
+  last_name: string | null
   age: number
   gender: 'male' | 'female' | 'other'
 }
@@ -243,7 +243,7 @@ async function testSelectDynamic(db: Kysely<Database>) {
     .select(['last_name', db.dynamic.ref(dynamicColumn)])
     .execute()
   expectType<{
-    last_name: string
+    last_name: string | null
   }>(r3)
 
   // Static selections and a dynamic one
@@ -257,7 +257,7 @@ async function testSelectDynamic(db: Kysely<Database>) {
     .execute()
 
   expectType<{
-    last_name: string
+    last_name: string | null
     first_name: string | undefined
     age: number | undefined
     name: string | undefined
@@ -317,29 +317,42 @@ async function testJoin(db: Kysely<Database>) {
 }
 
 async function testInsert(db: Kysely<Database>) {
-  const r1 = await db
-    .insertInto('person')
-    .values({ first_name: 'Jennifer' })
-    .execute()
+  const person = {
+    id: db.generated,
+    first_name: 'Jennifer',
+    last_name: 'Aniston',
+    gender: 'other' as const,
+    age: 30,
+  }
+
+  const r1 = await db.insertInto('person').values(person).execute()
 
   expectType<(number | undefined)[]>(r1)
 
-  const r2 = await db
-    .insertInto('person')
-    .values({ first_name: 'Jennifer' })
-    .executeTakeFirst()
+  const r2 = await db.insertInto('person').values(person).executeTakeFirst()
 
   expectType<number | undefined>(r2)
 
   // Non-existent column
   expectError(db.insertInto('person').values({ not_column: 'foo' }))
+
+  // Missing required columns
+  expectError(db.insertInto('person').values({ first_name: 'Jennifer' }))
 }
 
 async function testReturning(db: Kysely<Database>) {
+  const person = {
+    id: db.generated,
+    first_name: 'Jennifer',
+    last_name: 'Aniston',
+    gender: 'other' as const,
+    age: 30,
+  }
+
   // One returning expression
   const r1 = await db
     .insertInto('person')
-    .values({ first_name: 'Jennifer' })
+    .values(person)
     .returning('id')
     .executeTakeFirst()
 
@@ -353,7 +366,7 @@ async function testReturning(db: Kysely<Database>) {
   // Multiple returning expressions
   const r2 = await db
     .insertInto('person')
-    .values({ first_name: 'Jennifer' })
+    .values(person)
     .returning(['id', 'person.first_name as fn'])
     .execute()
 
@@ -367,7 +380,7 @@ async function testReturning(db: Kysely<Database>) {
   // Non-column reference returning expressions
   const r3 = await db
     .insertInto('person')
-    .values({ first_name: 'Jennifer' })
+    .values(person)
     .returning([
       'id',
       db.raw<string>(`concat(first_name, ' ', last_name)`).as('full_name'),
@@ -384,12 +397,7 @@ async function testReturning(db: Kysely<Database>) {
   >(r3)
 
   // Non-existent column
-  expectError(
-    db
-      .insertInto('person')
-      .values({ first_name: 'Jennifer' })
-      .returning('not_column')
-  )
+  expectError(db.insertInto('person').values(person).returning('not_column'))
 }
 
 async function testUpdate(db: Kysely<Database>) {
@@ -449,7 +457,7 @@ async function testWith(db: Kysely<Database>) {
   expectType<
     {
       fn: string
-      ln: string
+      ln: string | null
     }[]
   >(r1)
 }

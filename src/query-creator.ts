@@ -181,6 +181,7 @@ export class QueryCreator<DB> {
    * const maybePrimaryKey: number | undefined = await db
    *   .insertInto('person')
    *   .values({
+   *     id: db.generated,
    *     first_name: 'Jennifer',
    *     last_name: 'Aniston'
    *   })
@@ -194,6 +195,7 @@ export class QueryCreator<DB> {
    * const { id } = await db
    *   .insertInto('person')
    *   .values({
+   *     id: db.generated,
    *     first_name: 'Jennifer',
    *     last_name: 'Aniston'
    *   })
