@@ -9,6 +9,8 @@ async function insertRefreshToken(
   const [refreshToken] = await db
     .insertInto('refresh_token')
     .values({
+      refresh_token_id: db.generated,
+      created_at: db.generated,
       user_id: userId,
       last_refreshed_at: new Date(),
     })

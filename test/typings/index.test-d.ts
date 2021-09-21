@@ -276,16 +276,19 @@ function testWhere(db: Kysely<Database>) {
   db.selectFrom('some_schema.movie').where('some_schema.movie.id', '=', '1')
 
   // Subquery
-  db.selectFrom('some_schema.movie').where(
+  db.selectFrom('movie').where(
     (qb) => qb.subQuery('person').select('gender'),
     '=',
     'female'
   )
 
   // Raw expression
-  db.selectFrom('some_schema.movie').where(db.raw('whatever'), '=', 1)
-  db.selectFrom('some_schema.movie').where(db.raw('whatever'), '=', true)
-  db.selectFrom('some_schema.movie').where(db.raw('whatever'), '=', '1')
+  db.selectFrom('person').where(db.raw('whatever'), '=', 1)
+  db.selectFrom('person').where(db.raw('whatever'), '=', true)
+  db.selectFrom('person').where(db.raw('whatever'), '=', '1')
+
+  // List value
+  db.selectFrom('person').where('gender', 'in', ['female', 'male'])
 
   // Raw operator
   db.selectFrom('person').where('person.age', db.raw('lol'), 25)
@@ -304,6 +307,11 @@ function testWhere(db: Kysely<Database>) {
 
   // Invalid type for column
   expectError(db.selectFrom('person').where('gender', '=', 'not_a_gender'))
+
+  // Invalid type for column
+  expectError(
+    db.selectFrom('person').where('gender', 'in', ['female', 'not_a_gender'])
+  )
 
   // Invalid type for column
   expectError(

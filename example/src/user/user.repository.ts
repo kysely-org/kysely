@@ -8,7 +8,11 @@ async function insertUser(
 ): Promise<UserRow> {
   const [{ user_id, created_at }] = await db
     .insertInto('user')
-    .values(user)
+    .values({
+      user_id: db.generated,
+      created_at: db.generated,
+      ...user,
+    })
     .returning(['user_id', 'created_at'])
     .execute()
 
