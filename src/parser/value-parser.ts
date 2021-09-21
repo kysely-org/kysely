@@ -10,11 +10,7 @@ import {
   ValueListNode,
 } from '../operation-node/value-list-node.js'
 import { valueNode } from '../operation-node/value-node.js'
-import {
-  isFunction,
-  isPrimitive,
-  PrimitiveValue,
-} from '../util/object-utils.js'
+import { isFunction, isPrimitive } from '../util/object-utils.js'
 import {
   AnyQueryBuilder,
   AnyRawBuilder,
@@ -23,11 +19,9 @@ import {
 } from '../query-builder/type-utils.js'
 import { queryNode } from '../operation-node/query-node.js'
 import { SubQueryBuilder } from '../query-builder/sub-query-builder.js'
-import {
-  ExtractTypeFromReferenceExpression,
-  ReferenceExpression,
-} from './reference-parser.js'
-import { rawNode, selectQueryNode } from '../index.js'
+import { ExtractTypeFromReferenceExpression } from './reference-parser.js'
+import { rawNode } from '../operation-node/raw-node.js'
+import { selectQueryNode } from '../operation-node/select-query-node.js'
 
 export type ValueExpression<DB, TB extends keyof DB, RE> =
   | ExtractTypeFromReferenceExpression<DB, TB, RE>

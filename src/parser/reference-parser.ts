@@ -21,7 +21,8 @@ import {
 import { DynamicReferenceBuilder } from '../dynamic/dynamic-reference-builder.js'
 import { queryNode } from '../operation-node/query-node.js'
 import { SubQueryBuilder } from '../query-builder/sub-query-builder.js'
-import { QueryBuilder, RawBuilder } from '../index.js'
+import { RawBuilder } from '../raw-builder/raw-builder.js'
+import { QueryBuilder } from '../query-builder/query-builder.js'
 
 export type ReferenceExpression<DB, TB extends keyof DB> =
   | AnyColumn<DB, TB>

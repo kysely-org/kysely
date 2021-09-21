@@ -38,7 +38,7 @@ import { JoinBuilder } from '../query-builder/join-builder.js'
 import { parseTableExpression } from './table-parser.js'
 import { JoinNode, joinNode } from '../operation-node/join-node.js'
 import { FilterExpressionNode } from '../operation-node/operation-node-utils.js'
-import { valueNode } from '../index.js'
+import { valueNode } from '../operation-node/value-node.js'
 
 export type ExistsFilterArg<DB, TB extends keyof DB> =
   | AnyQueryBuilder
