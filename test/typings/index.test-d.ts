@@ -266,10 +266,29 @@ async function testSelectDynamic(db: Kysely<Database>) {
 }
 
 function testWhere(db: Kysely<Database>) {
-  db.selectFrom('person').where('person.age', '=', 25)
-  db.selectFrom('person').where('person.age', db.raw('lol'), 25)
+  // Column name
   db.selectFrom('person').where('first_name', '=', 'Arnold')
-  db.selectFrom('some_schema.movie').where('some_schema.movie.id', '=', 1)
+
+  // Table and column
+  db.selectFrom('person').where('person.age', '=', 25)
+
+  // Schema, table and column
+  db.selectFrom('some_schema.movie').where('some_schema.movie.id', '=', '1')
+
+  // Subquery
+  db.selectFrom('some_schema.movie').where(
+    (qb) => qb.subQuery('person').select('gender'),
+    '=',
+    'female'
+  )
+
+  // Raw expression
+  db.selectFrom('some_schema.movie').where(db.raw('whatever'), '=', 1)
+  db.selectFrom('some_schema.movie').where(db.raw('whatever'), '=', true)
+  db.selectFrom('some_schema.movie').where(db.raw('whatever'), '=', '1')
+
+  // Raw operator
+  db.selectFrom('person').where('person.age', db.raw('lol'), 25)
 
   // Invalid operator
   expectError(db.selectFrom('person').where('person.age', 'lol', 25))
@@ -279,6 +298,28 @@ function testWhere(db: Kysely<Database>) {
 
   // Invalid column
   expectError(db.selectFrom('person').where('stars', '=', 25))
+
+  // Invalid type for column
+  expectError(db.selectFrom('person').where('age', '=', '25'))
+
+  // Invalid type for column
+  expectError(db.selectFrom('person').where('gender', '=', 'not_a_gender'))
+
+  // Invalid type for column
+  expectError(
+    db.selectFrom('some_schema.movie').where('some_schema.movie.id', '=', 1)
+  )
+
+  // Invalid type for column
+  expectError(
+    db
+      .selectFrom('some_schema.movie')
+      .where(
+        (qb) => qb.subQuery('person').select('gender'),
+        '=',
+        'not_a_gender'
+      )
+  )
 }
 
 async function testJoin(db: Kysely<Database>) {
@@ -403,7 +444,7 @@ async function testReturning(db: Kysely<Database>) {
 async function testUpdate(db: Kysely<Database>) {
   const r1 = await db
     .updateTable('pet as p')
-    .where('p.id', '=', 1)
+    .where('p.id', '=', '1')
     .set({ name: 'Fluffy' })
     .executeTakeFirst()
 
@@ -413,7 +454,7 @@ async function testUpdate(db: Kysely<Database>) {
   expectError(
     db
       .updateTable('pet as p')
-      .where('p.id', '=', 1)
+      .where('p.id', '=', '1')
       .set({ not_a_column: 'Fluffy' })
   )
 }

@@ -7,7 +7,7 @@ import {
   ReferenceNode,
 } from '../operation-node/reference-node.js'
 import { tableNode } from '../operation-node/table-node.js'
-import { isFunction, isString } from '../util/object-utils.js'
+import { isFunction, isString, PrimitiveValue } from '../util/object-utils.js'
 import {
   AnyColumn,
   AnyColumnWithTable,
@@ -15,10 +15,13 @@ import {
   AnyRawBuilder,
   QueryBuilderFactory,
   RawBuilderFactory,
+  RowType,
+  ValueType,
 } from '../query-builder/type-utils.js'
 import { DynamicReferenceBuilder } from '../dynamic/dynamic-reference-builder.js'
 import { queryNode } from '../operation-node/query-node.js'
 import { SubQueryBuilder } from '../query-builder/sub-query-builder.js'
+import { QueryBuilder, RawBuilder } from '../index.js'
 
 export type ReferenceExpression<DB, TB extends keyof DB> =
   | AnyColumn<DB, TB>
@@ -32,6 +35,43 @@ export type ReferenceExpression<DB, TB extends keyof DB> =
 export type ReferenceExpressionOrList<DB, TB extends keyof DB> =
   | ReferenceExpression<DB, TB>
   | ReferenceExpression<DB, TB>[]
+
+export type ExtractTypeFromReferenceExpression<
+  DB,
+  TB extends keyof DB,
+  RE
+> = RE extends string
+  ? ExtractTypeFromStringReference<DB, TB, RE>
+  : RE extends RawBuilder<infer O>
+  ? O
+  : RE extends (qb: any) => RawBuilder<infer O>
+  ? O
+  : RE extends QueryBuilder<any, any, infer O>
+  ? ValueType<O>
+  : RE extends (qb: any) => QueryBuilder<any, any, infer O>
+  ? ValueType<O>
+  : PrimitiveValue
+
+type ExtractTypeFromStringReference<
+  DB,
+  TB extends keyof DB,
+  S extends string,
+  R = RowType<DB, TB>
+> = S extends `${infer SC}.${infer T}.${infer C}`
+  ? `${SC}.${T}` extends TB
+    ? C extends keyof DB[`${SC}.${T}`]
+      ? DB[`${SC}.${T}`][C]
+      : never
+    : never
+  : S extends `${infer T}.${infer C}`
+  ? T extends TB
+    ? C extends keyof DB[T]
+      ? DB[T][C]
+      : never
+    : never
+  : S extends keyof R
+  ? R[S]
+  : PrimitiveValue
 
 export function parseReferenceExpressionOrList(
   arg: ReferenceExpressionOrList<any, any>

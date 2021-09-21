@@ -26,10 +26,10 @@ export class JoinBuilder<DB, TB extends keyof DB>
    *
    * See {@link QueryBuilder.where} for documentation and examples.
    */
-  on(
-    lhs: ReferenceExpression<DB, TB>,
+  on<RE extends ReferenceExpression<DB, TB>>(
+    lhs: RE,
     op: FilterOperatorArg,
-    rhs: ValueExpressionOrList<DB, TB>
+    rhs: ValueExpressionOrList<DB, TB, RE>
   ): JoinBuilder<DB, TB>
 
   on(
@@ -48,10 +48,10 @@ export class JoinBuilder<DB, TB extends keyof DB>
    *
    * See {@link QueryBuilder.orWhere} for documentation and examples.
    */
-  orOn(
-    lhs: ReferenceExpression<DB, TB>,
+  orOn<RE extends ReferenceExpression<DB, TB>>(
+    lhs: RE,
     op: FilterOperatorArg,
-    rhs: ValueExpressionOrList<DB, TB>
+    rhs: ValueExpressionOrList<DB, TB, RE>
   ): JoinBuilder<DB, TB>
 
   orOn(

@@ -23,20 +23,25 @@ import {
 } from '../query-builder/type-utils.js'
 import { queryNode } from '../operation-node/query-node.js'
 import { SubQueryBuilder } from '../query-builder/sub-query-builder.js'
+import {
+  ExtractTypeFromReferenceExpression,
+  ReferenceExpression,
+} from './reference-parser.js'
+import { rawNode, selectQueryNode } from '../index.js'
 
-export type ValueExpression<DB, TB extends keyof DB> =
-  | PrimitiveValue
+export type ValueExpression<DB, TB extends keyof DB, RE> =
+  | ExtractTypeFromReferenceExpression<DB, TB, RE>
   | AnyQueryBuilder
   | QueryBuilderFactory<DB, TB>
   | AnyRawBuilder
   | RawBuilderFactory<DB, TB>
 
-export type ValueExpressionOrList<DB, TB extends keyof DB> =
-  | ValueExpression<DB, TB>
-  | ValueExpression<DB, TB>[]
+export type ValueExpressionOrList<DB, TB extends keyof DB, RE> =
+  | ValueExpression<DB, TB, RE>
+  | ValueExpression<DB, TB, RE>[]
 
 export function parseValueExpressionOrList(
-  arg: ValueExpressionOrList<any, any>
+  arg: ValueExpressionOrList<any, any, any>
 ): ValueExpressionNode {
   if (Array.isArray(arg)) {
     return parseValueExpressionList(arg)
@@ -46,14 +51,14 @@ export function parseValueExpressionOrList(
 }
 
 export function parseValueExpression(
-  arg: ValueExpression<any, any>
+  arg: ValueExpression<any, any, any>
 ): ValueExpressionNode {
   if (isPrimitive(arg)) {
     return valueNode.create(arg)
   } else if (isOperationNodeSource(arg)) {
     const node = arg.toOperationNode()
 
-    if (!queryNode.isMutating(node)) {
+    if (rawNode.is(node) || selectQueryNode.is(node)) {
       return node
     }
   } else if (isFunction(arg)) {
@@ -68,7 +73,7 @@ export function parseValueExpression(
 }
 
 function parseValueExpressionList(
-  arg: ValueExpression<any, any>[]
+  arg: ValueExpression<any, any, any>[]
 ): PrimitiveValueListNode | ValueListNode {
   if (arg.every(isPrimitive)) {
     // Optimization for large lists of primitive values.

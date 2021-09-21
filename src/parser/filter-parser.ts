@@ -100,7 +100,7 @@ export function parseExistsFilterArgs(
 function parseThreeArgFilter(
   left: ReferenceExpression<any, any>,
   op: FilterOperatorArg,
-  right: ValueExpressionOrList<any, any>
+  right: ValueExpressionOrList<any, any, any>
 ): FilterNode {
   if ((op === 'is' || op === 'is not') && (isNull(right) || isBoolean(right))) {
     return parseIsFilter(left, op, right)

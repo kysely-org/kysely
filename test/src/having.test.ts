@@ -55,7 +55,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
     })
 
     it('should add a having statement', async () => {
-      const petCount = ctx.db.raw<string>('count(pet.id)')
+      const petCount = ctx.db.raw<number>('count(pet.id)')
 
       const query = ctx.db
         .selectFrom('person')
