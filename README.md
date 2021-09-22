@@ -1,4 +1,4 @@
-![Discord](https://img.shields.io/discord/890118421587578920)
+[![Discord](https://img.shields.io/discord/890118421587578920)](https://discord.gg/C9aJ49mCra)
 
 # [Kysely](https://koskimas.github.io/kysely/index.html)
 
