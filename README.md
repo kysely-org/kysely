@@ -1,3 +1,5 @@
+![Discord](https://img.shields.io/discord/890118421587578920)
+
 # [Kysely](https://koskimas.github.io/kysely/index.html)
 
 A type-safe and autocompletion-friendly typescript SQL query builder for node.js. Heavily inspired by
