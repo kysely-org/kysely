@@ -267,6 +267,26 @@ for (const dialect of BUILT_IN_DIALECTS) {
       ])
     })
 
+    it('should select with distinct', async () => {
+      const query = ctx.db
+        .selectFrom('person')
+        .select('gender')
+        .distinct()
+        .orderBy('gender')
+
+      testSql(query, dialect, {
+        postgres: {
+          sql: 'select distinct "gender" from "person" order by "gender" asc',
+          bindings: [],
+        },
+      })
+
+      const persons = await query.execute()
+
+      expect(persons).to.have.length(2)
+      expect(persons).to.eql([{ gender: 'female' }, { gender: 'male' }])
+    })
+
     if (dialect === 'postgres') {
       it('should select a row for update', async () => {
         const query = ctx.db
@@ -286,6 +306,30 @@ for (const dialect of BUILT_IN_DIALECTS) {
 
         expect(persons).to.have.length(1)
         expect(persons).to.eql([{ last_name: 'Aniston' }])
+      })
+
+      it('should select with distinct on', async () => {
+        const query = ctx.db
+          .selectFrom('person')
+          .select('first_name')
+          .distinctOn('gender')
+          .orderBy('gender')
+          .orderBy('last_name')
+
+        testSql(query, dialect, {
+          postgres: {
+            sql: 'select distinct on ("gender") "first_name" from "person" order by "gender" asc, "last_name" asc',
+            bindings: [],
+          },
+        })
+
+        const persons = await query.execute()
+
+        expect(persons).to.have.length(2)
+        expect(persons).to.eql([
+          { first_name: 'Jennifer' },
+          { first_name: 'Arnold' },
+        ])
       })
     }
   })

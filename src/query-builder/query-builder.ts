@@ -957,14 +957,28 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
   }
 
   /**
+   * Makes the selection distinct.
    *
+   * @example
+   * ```ts
+   * await db.selectFrom('person')
+   *   .select('first_name')
+   *   .distinct()
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (postgresql):
+   *
+   * ```sql
+   * select distinct "first_name" from "person"
+   * ```
    */
   distinct(): QueryBuilder<DB, TB, O> {
     ensureCanHaveSelectClause(this.#queryNode)
 
     return new QueryBuilder({
       executor: this.#executor,
-      queryNode: selectQueryNode.cloneWithModifier(this.#queryNode, 'Distinct'),
+      queryNode: selectQueryNode.cloneWithDistinct(this.#queryNode),
     })
   }
 

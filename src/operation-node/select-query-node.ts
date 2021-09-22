@@ -15,7 +15,6 @@ import { WhereNode } from './where-node.js'
 import { WithNode } from './with-node.js'
 
 export type SelectModifier =
-  | 'Distinct'
   | 'ForUpdate'
   | 'ForNoKeyUpdate'
   | 'ForShare'
@@ -28,6 +27,7 @@ export interface SelectQueryNode extends OperationNode {
   readonly from: FromNode
   readonly selections?: ReadonlyArray<SelectionNode>
   readonly distinctOnSelections?: ReadonlyArray<SelectionNode>
+  readonly isDistinct?: boolean
   readonly joins?: ReadonlyArray<JoinNode>
   readonly groupBy?: GroupByNode
   readonly orderBy?: OrderByNode
@@ -148,6 +148,13 @@ export const selectQueryNode = freeze({
       having: selectNode.having
         ? havingNode.cloneWithFilter(selectNode.having, op, filter)
         : havingNode.create(filter),
+    })
+  },
+
+  cloneWithDistinct(selectNode: SelectQueryNode): SelectQueryNode {
+    return freeze({
+      ...selectNode,
+      isDistinct: true,
     })
   },
 })

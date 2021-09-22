@@ -178,6 +178,7 @@ export class OperationNodeTransformer {
       from: this.transformNode(node.from),
       selections: this.transformNodeList(node.selections),
       distinctOnSelections: this.transformNodeList(node.distinctOnSelections),
+      isDistinct: node.isDistinct,
       joins: this.transformNodeList(node.joins),
       groupBy: this.transformNode(node.groupBy),
       orderBy: this.transformNode(node.orderBy),
