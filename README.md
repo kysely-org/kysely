@@ -1,4 +1,5 @@
 [![Discord](https://img.shields.io/discord/890118421587578920)](https://discord.com/channels/890118421587578920/890118421587578925)
+![Tests](https://github.com/koskimas/kysely/actions/workflows/test.yml/badge.svg)
 
 # [Kysely](https://koskimas.github.io/kysely/index.html)
 
