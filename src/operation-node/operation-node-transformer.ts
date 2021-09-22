@@ -182,7 +182,7 @@ export class OperationNodeTransformer {
       groupBy: this.transformNode(node.groupBy),
       orderBy: this.transformNode(node.orderBy),
       where: this.transformNode(node.where),
-      modifier: node.modifier,
+      modifiers: node.modifiers,
       limit: this.transformNode(node.limit),
       offset: this.transformNode(node.offset),
       with: this.transformNode(node.with),

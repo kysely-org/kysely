@@ -32,7 +32,7 @@ export interface SelectQueryNode extends OperationNode {
   readonly groupBy?: GroupByNode
   readonly orderBy?: OrderByNode
   readonly where?: WhereNode
-  readonly modifier?: SelectModifier
+  readonly modifiers?: ReadonlyArray<SelectModifier>
   readonly limit?: LimitNode
   readonly offset?: OffsetNode
   readonly with?: WithNode
@@ -88,7 +88,9 @@ export const selectQueryNode = freeze({
   ): SelectQueryNode {
     return freeze({
       ...select,
-      modifier,
+      modifiers: select.modifiers
+        ? freeze([...select.modifiers, modifier])
+        : freeze([modifier]),
     })
   },
 

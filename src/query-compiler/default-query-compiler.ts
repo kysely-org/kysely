@@ -120,8 +120,8 @@ export class DefaultQueryCompiler
       this.append(' ')
     }
 
-    if (node.modifier === 'Distinct') {
-      this.append(SELECT_MODIFIER_SQL[node.modifier])
+    if (node.modifiers?.includes('Distinct')) {
+      this.append(SELECT_MODIFIER_SQL.Distinct)
       this.append(' ')
     }
 
@@ -167,9 +167,13 @@ export class DefaultQueryCompiler
       this.visitNode(node.offset)
     }
 
-    if (node.modifier) {
-      this.append(' ')
-      this.append(SELECT_MODIFIER_SQL[node.modifier])
+    if (node.modifiers) {
+      node.modifiers.forEach((modifier) => {
+        if (modifier !== 'Distinct') {
+          this.append(' ')
+          this.append(SELECT_MODIFIER_SQL[modifier])
+        }
+      })
     }
 
     if (isSubQuery) {
