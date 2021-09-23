@@ -29,16 +29,13 @@ Kysely is still young and some useful methods and modules are not yet implemente
 Kysely, please open an issue as soon as you can't find something you want to use.
 
 - [API reference](https://koskimas.github.io/kysely/index.html)
+    - [select](https://koskimas.github.io/kysely/classes/QueryBuilder.html#select)
+    - [where](https://koskimas.github.io/kysely/classes/QueryBuilder.html#where)
+    - [join](https://koskimas.github.io/kysely/classes/QueryBuilder.html#innerJoin)
+    - [insert](https://koskimas.github.io/kysely/classes/QueryBuilder.html#values)
+    - [update](https://koskimas.github.io/kysely/classes/QueryBuilder.html#set)
+    - [delete](https://koskimas.github.io/kysely/classes/Kysely.html#deleteFrom)
 - [Migrations](#migrations)
-
-## API reference shortcuts
-
-- [select](https://koskimas.github.io/kysely/classes/QueryBuilder.html#select)
-- [where](https://koskimas.github.io/kysely/classes/QueryBuilder.html#where)
-- [join](https://koskimas.github.io/kysely/classes/QueryBuilder.html#innerJoin)
-- [insert](https://koskimas.github.io/kysely/classes/QueryBuilder.html#values)
-- [update](https://koskimas.github.io/kysely/classes/QueryBuilder.html#set)
-- [delete](https://koskimas.github.io/kysely/classes/Kysely.html#deleteFrom)
 
 # Installation
 
