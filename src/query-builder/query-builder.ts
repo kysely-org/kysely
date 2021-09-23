@@ -152,7 +152,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * conditional `where`s easily by doing something like this:
    *
    * ```ts
-   * let query = persons
+   * let query = db
    *   .selectFrom('person')
    *   .selectAll()
    *
