@@ -116,9 +116,11 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * Find a row by column value:
    *
    * ```ts
-   * db.selectFrom('person')
-   *   .where('id', '=', 100)
+   * const person = await db
+   *   .selectFrom('person')
    *   .selectAll()
+   *   .where('id', '=', 100)
+   *   .executeTakeFirst()
    * ```
    *
    * The generated SQL (postgresql):
@@ -132,9 +134,11 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * you can always use `db.raw('your operator')`.
    *
    * ```ts
-   * db.selectFrom('person')
-   *   .where('id', '>', 100)
+   * const persons = await db
+   *   .selectFrom('person')
    *   .selectAll()
+   *   .where('id', '>', 100)
+   *   .execute()
    * ```
    *
    * The generated SQL (postgresql):
@@ -144,14 +148,70 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * ```
    *
    * @example
-   * A `where in` query an be built by using the `in` operator and an array
+   * The `where` methods don't change the type of the query. You can add
+   * conditional `where`s easily by doing something like this:
+   *
+   * ```ts
+   * let query = persons
+   *   .selectFrom('person')
+   *   .selectAll()
+   *
+   * if (firstName) {
+   *   query = query.where('first_name', '=', firstName)
+   * }
+   *
+   * const persons = await query.execute()
+   * ```
+   *
+   * This is true for basically all methods execpt the `select` and
+   * `returning` methods, which DO change the return type of the
+   * query.
+   *
+   * @example
+   * Both the first and third argument can also be subqueries.
+   * A subquery is defined by passing a function and calling
+   * the `subQuery` method of the object passed into the
+   * function:
+   *
+   * ```ts
+   * const persons = await db
+   *   .selectFrom('person')
+   *   .selectAll()
+   *   .where(
+   *     (qb) => qb.subQuery('pet')
+   *       .select('pet.name')
+   *       .whereRef('pet.owner_id', '=', 'person.id')
+   *       .limit(1),
+   *     '=',
+   *     'Fluffy'
+   *   )
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (postgresql):
+   *
+   * ```sql
+   * select *
+   * from "person"
+   * where (
+   *   select "pet"."name"
+   *   from "pet"
+   *   where "pet"."owner_id" = "person"."id"
+   *   limit $1
+   * ) = $2
+   * ```
+   *
+   * @example
+   * A `where in` query can be built by using the `in` operator and an array
    * of values. The values in the array can also be subqueries or raw
    * instances.
    *
    * ```ts
-   * db.selectFrom('person')
-   *   .where('person.id', 'in', [100, 200, 300])
+   * const persons = await db
+   *   .selectFrom('person')
    *   .selectAll()
+   *   .where('person.id', 'in', [100, 200, 300])
+   *   .execute()
    * ```
    *
    * The generated SQL (postgresql):
@@ -161,54 +221,25 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * ```
    *
    * @example
-   * Both the first and third argument can also be subqueries.
-   * A subquery is defined by passing a function and calling
-   * the `subQuery` method of the object passed into the
-   * function:
-   *
-   * ```ts
-   * db.selectFrom('person')
-   *   .where(
-   *     (qb) => qb.subQuery('pet')
-   *       .select('pet.id')
-   *       .whereRef('pet.owner_id', '=', 'person.id'),
-   *     'in',
-   *     [100, 200, 300]
-   *   )
-   *   .selectAll()
-   * ```
-   *
-   * The generated SQL (postgresql):
-   *
-   * ```sql
-   * select *
-   * from "person"
-   * where (
-   *   select "pet"."id"
-   *   from "pet"
-   *   where "pet"."owner_id" = "person"."id"
-   * ) in ($1, $2, $3)
-   * ```
-   *
-   * @example
    * If everything else fails, you can always pass {@link Kysely.raw | raw}
    * as any of the arguments, including the operator:
    *
    * ```ts
-   * db.selectFrom('person')
+   * const persons = await db
+   *   .selectFrom('person')
+   *   .selectAll()
    *   .where(
    *     db.raw('coalesce(first_name, last_name)'),
    *     'like',
    *     '%' + name + '%',
    *   )
-   *   .selectAll()
+   *   .execute()
    * ```
    *
    * The generated SQL (postgresql):
    *
    * ```sql
-   * select *
-   * from "person"
+   * select * from "person"
    * where coalesce(first_name, last_name) like $1
    * ```
    *
@@ -217,12 +248,14 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * used to create parentheses around other where clauses:
    *
    * ```ts
-   * db.selectFrom('person')
+   * const persons = await db
+   *   .selectFrom('person')
    *   .selectAll()
    *   .where((qb) => qb
    *     .where('id', '=', 1)
    *     .orWhere('id', '=', 2)
    *   )
+   *   .execute()
    * ```
    *
    * The generated SQL (postgresql):
@@ -246,10 +279,12 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * ```ts
    * const { ref } = db.dynamic
    *
-   * db.selectFrom('person')
+   * const persons = await db
+   *   .selectFrom('person')
    *   .selectAll()
    *   .where(ref(columnFromUserInput), '=', 1)
    *   .orWhere(db.raw('??', [columnFromUserInput]), '=', 2)
+   *   .execute()
    * ```
    */
   where<RE extends ReferenceExpression<DB, TB>>(
@@ -302,7 +337,8 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * Usage in a subquery:
    *
    * ```ts
-   * db.selectFrom('person)
+   * const persons = await db
+   *   .selectFrom('person')
    *   .selectAll('person')
    *   .select((qb) => qb
    *     .subQuery('pet')
@@ -311,6 +347,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    *     .limit(1)
    *     .as('pet_name')
    *   )
+   *   .execute()
    * ```
    *
    * The generated SQL (postgresql):
@@ -320,8 +357,9 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    *   select "name"
    *   from "pet"
    *   where "pet"."owner_id" = "person"."id"
-   * ) as pet_name
-   * from "person"`
+   *   limit $1
+   * ) as "pet_name"
+   * from "person"
    */
   whereRef(
     lhs: ReferenceExpression<DB, TB>,
@@ -350,10 +388,12 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    *
    * @example
    * ```ts
-   * db.selectFrom('person')
+   * const persons = await db
+   *   .selectFrom('person')
    *   .selectAll()
    *   .where('id', '=', 1)
    *   .orWhere('id', '=', 2)
+   *   .execute()
    * ```
    *
    * The generated SQL (postgresql):
@@ -366,12 +406,14 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * Grouping with parentheses:
    *
    * ```ts
-   * db.selectFrom('person')
+   * const persons = await db
+   *   .selectFrom('person')
    *   .selectAll()
    *   .where((qb) => qb
    *     .where('id', '=', 1)
    *     .orWhere('id', '=', 2)
    *   )
+   *   .execute()
    * ```
    *
    * The generated SQL (postgresql):
@@ -385,12 +427,14 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * if you are looping through a set of conditions:
    *
    * ```ts
-   * db.selectFrom('person')
+   * const persons = await db
+   *   .selectFrom('person')
    *   .selectAll()
    *   .where((qb) => qb
    *     .orWhere('id', '=', 1)
    *     .orWhere('id', '=', 2)
    *   )
+   *   .execute()
    * ```
    *
    * The generated SQL (postgresql):
@@ -454,7 +498,8 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * The query below selets all persons that own a pet named Catto:
    *
    * ```ts
-   * db.selectFrom('person')
+   * const persons = await db
+   *   .selectFrom('person')
    *   .selectAll()
    *   .whereExists((qb) => qb
    *     .subQuery('pet')
@@ -462,6 +507,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    *     .whereRef('person.id', '=', 'pet.owner_id')
    *     .where('pet.name', '=', 'Catto')
    *   )
+   *   .execute()
    * ```
    *
    * The generated SQL (postgresql):
@@ -730,14 +776,14 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
   /**
    * Adds a select clause to the query.
    *
-   * When a column (or any expression) is selected, Kysely also adds it to the return
-   * type of the query. Kysely is smart enough to parse the field names and types even
+   * When a column (or any expression) is selected, Kysely adds its type to the return
+   * type of the query. Kysely is smart enough to parse the column names and types even
    * from aliased columns, subqueries, raw expressions etc.
    *
    * Kysely only allows you to select columns and expressions that exist and would
    * produce valid SQL. However, Kysely is not perfect and there may be cases where
    * the type inference doesn't work and you need to override it. You can always
-   * use the {@link Kysely.dynamic | dynamic} object and {@link Kysely.raw | raw}
+   * use the {@link Kysely.dynamic | dynamic} module and {@link Kysely.raw | raw}
    * to override the types.
    *
    * Select calls are additive. Calling `select('id').select('first_name')` is the
@@ -750,28 +796,29 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * Select a single column:
    *
    * ```ts
-   * const [person] = await db.selectFrom('person')
+   * const persons = await db.selectFrom('person')
    *   .select('id')
+   *   .where('first_name', '=', 'Arnold')
    *   .execute()
    *
-   * person.id
+   * persons[0].id
    * ```
    *
    * The generated SQL (postgresql):
    *
    * ```sql
-   * select "id" from "person"
+   * select "id" from "person" where "first_name" = $1
    * ```
    *
    * @example
    * Select a single column and specify a table:
    *
    * ```ts
-   * const [person] = await db.selectFrom(['person', 'pet'])
+   * const persons = await db.selectFrom(['person', 'pet'])
    *   .select('person.id')
    *   .execute()
    *
-   * person.id
+   * persons[0].id
    * ```
    *
    * The generated SQL (postgresql):
@@ -784,12 +831,12 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * Select multiple columns:
    *
    * ```ts
-   * const [person] = await db.selectFrom('person')
+   * const persons = await db.selectFrom('person')
    *   .select(['person.id', 'first_name'])
    *   .execute()
    *
-   * person.id
-   * person.first_name
+   * persons[0].id
+   * persons[0].first_name
    * ```
    *
    * The generated SQL (postgresql):
@@ -799,18 +846,18 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * ```
    *
    * @example
-   * Giving an alias for a selection:
+   * Aliased selections:
    *
    * ```ts
-   * const [person] = await db.selectFrom('person')
+   * const persons = await db.selectFrom('person')
    *   .select([
    *     'person.first_name as fn',
    *     'person.last_name as ln'
    *   ])
    *   .execute()
    *
-   * person.fn
-   * person.ln
+   * persons[0].fn
+   * persons[0].ln
    * ```
    *
    * The generated SQL (postgresql):
@@ -828,19 +875,20 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * method:
    *
    * ```ts
-   * const [person] = await db.selectFrom('person')
+   * const persons = await db.selectFrom('person')
    *   .select([
    *     (qb) => qb
    *       .subQuery('pet')
    *       .whereRef('person.id', '=', 'pet.owner_id')
    *       .select('pet.name')
+   *       .limit(1)
    *       .as('pet_name')
    *     db.raw<string>("concat(first_name, ' ', last_name)").as('full_name')
    *   ])
    *   .execute()
    *
-   * person.pet_name
-   * person.full_name
+   * persons[0].pet_name
+   * persons[0].full_name
    * ```
    *
    * The generated SQL (postgresql):
@@ -851,7 +899,8 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    *     select "pet"."name"
    *     from "pet"
    *     where "person"."id" = "pet"."owner_id"
-   *   ) as pet_name,
+   *     limit $1
+   *   ) as "pet_name",
    *   concat(first_name, ' ', last_name) as full_name
    * from "person"
    * ```
@@ -865,7 +914,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * the types) sometimes it's not possible or you just prefer to write more
    * dynamic code.
    * <br><br>
-   * In this example, we use the `dynamic` object's methods to add selections
+   * In this example, we use the `dynamic` module's methods to add selections
    * dynamically:
    *
    * ```ts
@@ -878,7 +927,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * // You can use `keyof Person` if any column of an interface is allowed.
    * type PossibleColumns = 'last_name' | 'first_name' | 'birth_date'
    *
-   * const [person] = await db.selectFrom('person')
+   * const spersons = await db.selectFrom('person')
    *   .select([
    *     ref<PossibleColumns>(columnFromUserInput)
    *     'id'
@@ -888,12 +937,12 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * // The resulting type contains all `PossibleColumns` as optional fields
    * // because we cannot know which field was actually selected before
    * // running the code.
-   * const lastName: string | undefined = person.last_name
-   * const firstName: string | undefined = person.first_name
-   * const birthDate: string | undefined = person.birth_date
+   * const lastName: string | undefined = persons[0].last_name
+   * const firstName: string | undefined = persons[0].first_name
+   * const birthDate: string | undefined = persons[0].birth_date
    *
    * // The result type also contains the compile time selection `id`.
-   * person.id
+   * persons[0].id
    * ```
    */
   select<S extends SelectExpression<DB, TB>>(
@@ -918,6 +967,10 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
 
   /**
    * Adds `distinct on` selections to the select clause.
+   *
+   * Takes the same inputs as the {@link QueryBuilder.select | select} method.
+   * See the {@link QueryBuilder.select | select} method's documentation for
+   * more examples.
    *
    * @example
    * ```ts
@@ -1073,7 +1126,8 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    *
    * @example
    * ```ts
-   * await db.selectFrom('person')
+   * const persons = await db
+   *   .selectFrom('person')
    *   .selectAll()
    *   .execute()
    * ```
@@ -1086,7 +1140,8 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    *
    * @example
    * ```ts
-   * await db.selectFrom('person')
+   * const persons = await db
+   *   .selectFrom('person')
    *   .selectAll('person')
    *   .execute()
    * ```
@@ -1099,7 +1154,8 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    *
    * @example
    * ```ts
-   * await db.selectFrom(['person', 'pet'])
+   * const personsPets = await db
+   *   .selectFrom(['person', 'pet'])
    *   .selectAll(['person', 'pet'])
    *   .execute()
    * ```
@@ -1137,10 +1193,17 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * Simple usage by providing a table name and two columns to join:
    *
    * ```ts
-   * await db.selectFrom('person')
+   * const result = await db
+   *   .selectFrom('person')
    *   .selectAll()
    *   .innerJoin('pet', 'pet.owner_id', 'person.id')
    *   .execute()
+   *
+   * // The result has all `Person` columns
+   * result[0].first_name
+   *
+   * // The result has all `Pet` columns
+   * result[0].species
    * ```
    *
    * The generated SQL (postgresql):
@@ -1231,7 +1294,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    *   select "owner_id", "name"
    *   from "pet"
    *   where "name" = $1
-   * ) as doggos
+   * ) as "doggos"
    * on "doggos"."owner_id" = "person"."id"
    * ```
    */
@@ -1340,20 +1403,24 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
   }
 
   /**
-   * Sets the values to insert for an `insertInto` query.
+   * Sets the values to insert for an {@link Kysely.insertInto | insert} query.
    *
    * This method takes an object whose keys are column names and values are
-   * values to insert. In addition to the column's type, the values can be `raw`
-   * instances, select queries or the {@link Kysely.generated} placeholder.
+   * values to insert. In addition to the column's type, the values can be
+   * {@link Kysely.raw | raw} instances, select queries or the
+   * {@link Kysely.generated} placeholder.
    *
-   * You must provide all values defined by the interface to for the table you
+   * You must provide all values defined by the interface for the table you
    * are inserting into. Values that are generated by the database like autoincrementing
-   * identifiers can be marked with the {@link Kysely.generated} placeholder.
+   * identifiers can be marked with the {@link Kysely.generated} placeholder unless you
+   * want to insert a specific value instead of the generated default.
    *
    * The return value is the primary key of the inserted row BUT on some databases
    * there is no return value by default. That's the reason for the `number | undefined`
    * type of the return value. On postgres you need to additionally call `returning` to get
-   * something out of the query.
+   * something out of the query. If you know your database engine always returns the primary
+   * key, you can use the {@link QueryBuilder.executeTakeFirstOrThrow | executeTakeFirstOrThrow}
+   * method to execute the query.
    *
    * @example
    * Insert a row into `person`:
@@ -1365,7 +1432,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    *     first_name: 'Jennifer',
    *     last_name: 'Aniston'
    *   })
-   *   .executeTakeFirst()
+   *   .executeTakeFirstOrThrow()
    * ```
    *
    * The generated SQL (postgresql):
@@ -1415,9 +1482,9 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    *     last_name: 'Aniston'
    *   })
    *   .returning('id')
-   *   .executeTakeFirst()
+   *   .executeTakeFirstOrThrow()
    *
-   * row!.id
+   * row.id
    * ```
    *
    * The generated SQL (postgresql):
@@ -1593,7 +1660,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
   }
 
   /**
-   * Sets the values to update for an `updateTable` query.
+   * Sets the values to update for an {@link Kysely.updateTable | update} query.
    *
    * This method takes an object whose keys are column names and values are
    * values to update. In addition to the column's type, the values can be `raw`
@@ -1624,7 +1691,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * ```
    *
    * @example
-   * On postgresql you need to chain `returning` to the query to get
+   * On postgresql you ca chain `returning` to the query to get
    * the updated rows' columns (or any other expression) as the
    * return value:
    *
@@ -1637,7 +1704,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    *   })
    *   .where('id', '=', 1)
    *   .returning('id')
-   *   .executeTakeFirst()
+   *   .executeTakeFirstOrThrow()
    *
    * row.id
    * ```
