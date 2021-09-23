@@ -109,5 +109,26 @@ export * from './operation-node/offset-node.js'
 export * from './operation-node//on-conflict-node.js'
 export * from './operation-node/operation-node.js'
 export * from './operation-node/operation-node-source.js'
+export * from './operation-node/order-by-node.js'
 
 export * from './util/compilable.js'
+export { AnyColumn } from './query-builder/type-utils.js'
+
+export {
+  SelectExpression,
+  SelectExpressionOrList,
+} from './parser/select-parser'
+export {
+  ReferenceExpression,
+  ReferenceExpressionOrList,
+} from './parser/reference-parser'
+export { ValueExpression, ValueExpressionOrList } from './parser/value-parser'
+export { ExistsExpression, FilterOperator } from './parser/filter-parser'
+export { TableExpression } from './parser/table-parser'
+export {
+  JoinReferenceExpression,
+  JoinCallbackExpression,
+} from './parser/join-parser'
+export { InsertObject } from './parser/insert-values-parser'
+export { MutationObject } from './parser/mutation-parser'
+export { OrderByExpression } from './parser/order-by-parser'

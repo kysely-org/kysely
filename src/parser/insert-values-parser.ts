@@ -18,14 +18,18 @@ export type InsertObject<DB, TB extends keyof DB> = {
   [C in keyof DB[TB]]: InsertValueExpression<DB[TB][C]>
 }
 
+export type InsertObjectOrList<DB, TB extends keyof DB> =
+  | InsertObject<DB, TB>
+  | InsertObject<DB, TB>[]
+
 type InsertValueExpression<T extends PrimitiveValue> =
   | T
   | AnyQueryBuilder
   | AnyRawBuilder
   | GeneratedPlaceholder
 
-export function parseInsertValuesArgs(
-  args: InsertObject<any, any> | InsertObject<any, any>[]
+export function parseInsertObjectOrList(
+  args: InsertObjectOrList<any, any>
 ): [ReadonlyArray<ColumnNode>, ReadonlyArray<InsertValuesNode>] {
   return parseInsertColumnsAndValues(Array.isArray(args) ? args : [args])
 }

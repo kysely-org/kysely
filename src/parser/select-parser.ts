@@ -1,6 +1,6 @@
 import { isOperationNodeSource } from '../operation-node/operation-node-source.js'
 import { AliasedRawBuilder } from '../raw-builder/raw-builder.js'
-import { isFunction, isString } from '../util/object-utils.js'
+import { isFunction, isReadonlyArray, isString } from '../util/object-utils.js'
 import {
   AliasedQueryBuilder,
   QueryBuilder,
@@ -39,6 +39,10 @@ export type SelectExpression<DB, TB extends keyof DB> =
   | AliasedQueryBuilderFactory<DB, TB>
   | DynamicReferenceBuilder<any>
 
+export type SelectExpressionOrList<DB, TB extends keyof DB> =
+  | SelectExpression<DB, TB>
+  | ReadonlyArray<SelectExpression<DB, TB>>
+
 /**
  * Given a selection expression returns a query builder type that
  * has the selection.
@@ -51,9 +55,7 @@ export type QueryBuilderWithSelection<
 > = QueryBuilder<
   DB,
   TB,
-  O extends InsertResultTypeTag
-    ? InsertResultTypeTag
-    : O & SelectResultType<DB, TB, S>
+  O extends InsertResultTypeTag ? InsertResultTypeTag : O & Selection<DB, TB, S>
 >
 
 /**
@@ -66,7 +68,7 @@ export type SelectAllQueryBuilder<
   S extends keyof DB
 > = QueryBuilder<DB, TB, O & RowType<DB, S>>
 
-export type SelectResultType<DB, TB extends keyof DB, S> = {
+export type Selection<DB, TB extends keyof DB, S> = {
   [A in ExtractAliasFromSelectExpression<S>]: ExtractTypeFromSelectExpression<
     DB,
     TB,
@@ -182,9 +184,9 @@ type ExtractTypeFromStringSelectExpression<
   : never
 
 export function parseSelectExpressionOrList(
-  selection: SelectExpression<any, any> | SelectExpression<any, any>[]
+  selection: SelectExpressionOrList<any, any>
 ): SelectionNode[] {
-  if (Array.isArray(selection)) {
+  if (isReadonlyArray(selection)) {
     return selection.map((it) => parseSelectExpression(it))
   } else {
     return [parseSelectExpression(selection)]

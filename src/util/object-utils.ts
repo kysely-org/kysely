@@ -93,6 +93,6 @@ export function asReadonlyArray<T>(
   }
 }
 
-function isReadonlyArray(arg: any): arg is ReadonlyArray<any> {
+export function isReadonlyArray(arg: unknown): arg is ReadonlyArray<unknown> {
   return Array.isArray(arg)
 }

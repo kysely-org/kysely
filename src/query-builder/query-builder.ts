@@ -2,8 +2,8 @@ import { AliasNode, aliasNode } from '../operation-node/alias-node.js'
 import { OperationNodeSource } from '../operation-node/operation-node-source.js'
 import { CompiledQuery } from '../query-compiler/compiled-query.js'
 import {
-  JoinCallbackArg,
-  JoinReferenceArg,
+  JoinCallbackExpression,
+  JoinReferenceExpression,
   parseJoinArgs,
 } from '../parser/join-parser.js'
 import {
@@ -16,17 +16,19 @@ import {
   SelectExpression,
   QueryBuilderWithSelection,
   SelectAllQueryBuilder,
+  SelectExpressionOrList,
 } from '../parser/select-parser.js'
 import {
-  parseFilterArgs,
-  ExistsFilterArg,
-  parseExistsFilterArgs,
-  FilterOperatorArg,
-  parseReferenceFilterArgs,
+  parseFilter,
+  ExistsExpression,
+  parseExistExpression,
+  FilterOperator,
+  parseReferenceFilter,
 } from '../parser/filter-parser.js'
 import {
   InsertObject,
-  parseInsertValuesArgs,
+  InsertObjectOrList,
+  parseInsertObjectOrList,
 } from '../parser/insert-values-parser.js'
 import { QueryBuilderWithReturning } from '../parser/returning-parser.js'
 import {
@@ -252,7 +254,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    */
   where<RE extends ReferenceExpression<DB, TB>>(
     lhs: RE,
-    op: FilterOperatorArg,
+    op: FilterOperator,
     rhs: ValueExpressionOrList<DB, TB, RE>
   ): QueryBuilder<DB, TB, O>
 
@@ -268,7 +270,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
       queryNode: queryNode.cloneWithWhere(
         this.#queryNode,
         'and',
-        parseFilterArgs('Where', args)
+        parseFilter('Where', args)
       ),
     })
   }
@@ -323,7 +325,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    */
   whereRef(
     lhs: ReferenceExpression<DB, TB>,
-    op: FilterOperatorArg,
+    op: FilterOperator,
     rhs: ReferenceExpression<DB, TB>
   ): QueryBuilder<DB, TB, O> {
     ensureCanHaveWhereClause(this.#queryNode)
@@ -333,7 +335,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
       queryNode: queryNode.cloneWithWhere(
         this.#queryNode,
         'and',
-        parseReferenceFilterArgs(lhs, op, rhs)
+        parseReferenceFilter(lhs, op, rhs)
       ),
     })
   }
@@ -399,7 +401,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    */
   orWhere<RE extends ReferenceExpression<DB, TB>>(
     lhs: RE,
-    op: FilterOperatorArg,
+    op: FilterOperator,
     rhs: ValueExpressionOrList<DB, TB, RE>
   ): QueryBuilder<DB, TB, O>
 
@@ -415,7 +417,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
       queryNode: queryNode.cloneWithWhere(
         this.#queryNode,
         'or',
-        parseFilterArgs('Where', args)
+        parseFilter('Where', args)
       ),
     })
   }
@@ -428,7 +430,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    */
   orWhereRef(
     lhs: ReferenceExpression<DB, TB>,
-    op: FilterOperatorArg,
+    op: FilterOperator,
     rhs: ReferenceExpression<DB, TB>
   ): QueryBuilder<DB, TB, O> {
     ensureCanHaveWhereClause(this.#queryNode)
@@ -438,7 +440,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
       queryNode: queryNode.cloneWithWhere(
         this.#queryNode,
         'or',
-        parseReferenceFilterArgs(lhs, op, rhs)
+        parseReferenceFilter(lhs, op, rhs)
       ),
     })
   }
@@ -500,7 +502,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * )
    * ```
    */
-  whereExists(arg: ExistsFilterArg<DB, TB>): QueryBuilder<DB, TB, O> {
+  whereExists(arg: ExistsExpression<DB, TB>): QueryBuilder<DB, TB, O> {
     ensureCanHaveWhereClause(this.#queryNode)
 
     return new QueryBuilder({
@@ -508,7 +510,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
       queryNode: queryNode.cloneWithWhere(
         this.#queryNode,
         'and',
-        parseExistsFilterArgs('exists', arg)
+        parseExistExpression('exists', arg)
       ),
     })
   }
@@ -516,7 +518,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
   /**
    * Just like {@link QueryBuilder.whereExists | whereExists} but creates a `not exists` clause.
    */
-  whereNotExists(arg: ExistsFilterArg<DB, TB>): QueryBuilder<DB, TB, O> {
+  whereNotExists(arg: ExistsExpression<DB, TB>): QueryBuilder<DB, TB, O> {
     ensureCanHaveWhereClause(this.#queryNode)
 
     return new QueryBuilder({
@@ -524,7 +526,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
       queryNode: queryNode.cloneWithWhere(
         this.#queryNode,
         'and',
-        parseExistsFilterArgs('not exists', arg)
+        parseExistExpression('not exists', arg)
       ),
     })
   }
@@ -532,7 +534,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
   /**
    * Just like {@link QueryBuilder.whereExists | whereExists} but creates a `or exists` clause.
    */
-  orWhereExists(arg: ExistsFilterArg<DB, TB>): QueryBuilder<DB, TB, O> {
+  orWhereExists(arg: ExistsExpression<DB, TB>): QueryBuilder<DB, TB, O> {
     ensureCanHaveWhereClause(this.#queryNode)
 
     return new QueryBuilder({
@@ -540,7 +542,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
       queryNode: queryNode.cloneWithWhere(
         this.#queryNode,
         'or',
-        parseExistsFilterArgs('exists', arg)
+        parseExistExpression('exists', arg)
       ),
     })
   }
@@ -548,7 +550,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
   /**
    * Just like {@link QueryBuilder.whereExists | whereExists} but creates a `or not exists` clause.
    */
-  orWhereNotExists(arg: ExistsFilterArg<DB, TB>): QueryBuilder<DB, TB, O> {
+  orWhereNotExists(arg: ExistsExpression<DB, TB>): QueryBuilder<DB, TB, O> {
     ensureCanHaveWhereClause(this.#queryNode)
 
     return new QueryBuilder({
@@ -556,7 +558,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
       queryNode: queryNode.cloneWithWhere(
         this.#queryNode,
         'or',
-        parseExistsFilterArgs('not exists', arg)
+        parseExistExpression('not exists', arg)
       ),
     })
   }
@@ -567,7 +569,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    */
   having<RE extends ReferenceExpression<DB, TB>>(
     lhs: RE,
-    op: FilterOperatorArg,
+    op: FilterOperator,
     rhs: ValueExpressionOrList<DB, TB, RE>
   ): QueryBuilder<DB, TB, O>
 
@@ -583,7 +585,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
       queryNode: selectQueryNode.cloneWithHaving(
         this.#queryNode,
         'and',
-        parseFilterArgs('Having', args)
+        parseFilter('Having', args)
       ),
     })
   }
@@ -594,7 +596,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    */
   havingRef(
     lhs: ReferenceExpression<DB, TB>,
-    op: FilterOperatorArg,
+    op: FilterOperator,
     rhs: ReferenceExpression<DB, TB>
   ): QueryBuilder<DB, TB, O> {
     ensureCanHaveHavingClause(this.#queryNode)
@@ -604,7 +606,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
       queryNode: selectQueryNode.cloneWithHaving(
         this.#queryNode,
         'and',
-        parseReferenceFilterArgs(lhs, op, rhs)
+        parseReferenceFilter(lhs, op, rhs)
       ),
     })
   }
@@ -615,7 +617,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    */
   orHaving<RE extends ReferenceExpression<DB, TB>>(
     lhs: RE,
-    op: FilterOperatorArg,
+    op: FilterOperator,
     rhs: ValueExpressionOrList<DB, TB, RE>
   ): QueryBuilder<DB, TB, O>
 
@@ -631,7 +633,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
       queryNode: selectQueryNode.cloneWithHaving(
         this.#queryNode,
         'or',
-        parseFilterArgs('Having', args)
+        parseFilter('Having', args)
       ),
     })
   }
@@ -642,7 +644,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    */
   orHavingRef(
     lhs: ReferenceExpression<DB, TB>,
-    op: FilterOperatorArg,
+    op: FilterOperator,
     rhs: ReferenceExpression<DB, TB>
   ): QueryBuilder<DB, TB, O> {
     ensureCanHaveHavingClause(this.#queryNode)
@@ -652,7 +654,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
       queryNode: selectQueryNode.cloneWithHaving(
         this.#queryNode,
         'or',
-        parseReferenceFilterArgs(lhs, op, rhs)
+        parseReferenceFilter(lhs, op, rhs)
       ),
     })
   }
@@ -661,7 +663,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * Just like {@link QueryBuilder.whereExists | whereExists} but adds a `having` statement
    * instead of a `where` statement.
    */
-  havingExists(arg: ExistsFilterArg<DB, TB>): QueryBuilder<DB, TB, O> {
+  havingExists(arg: ExistsExpression<DB, TB>): QueryBuilder<DB, TB, O> {
     ensureCanHaveHavingClause(this.#queryNode)
 
     return new QueryBuilder({
@@ -669,7 +671,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
       queryNode: selectQueryNode.cloneWithHaving(
         this.#queryNode,
         'and',
-        parseExistsFilterArgs('exists', arg)
+        parseExistExpression('exists', arg)
       ),
     })
   }
@@ -678,7 +680,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * Just like {@link QueryBuilder.whereNotExists | whereNotExists} but adds a `having` statement
    * instead of a `where` statement.
    */
-  havingNotExist(arg: ExistsFilterArg<DB, TB>): QueryBuilder<DB, TB, O> {
+  havingNotExist(arg: ExistsExpression<DB, TB>): QueryBuilder<DB, TB, O> {
     ensureCanHaveHavingClause(this.#queryNode)
 
     return new QueryBuilder({
@@ -686,7 +688,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
       queryNode: selectQueryNode.cloneWithHaving(
         this.#queryNode,
         'and',
-        parseExistsFilterArgs('not exists', arg)
+        parseExistExpression('not exists', arg)
       ),
     })
   }
@@ -695,7 +697,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * Just like {@link QueryBuilder.orWhereExists | orWhereExists} but adds a `having` statement
    * instead of a `where` statement.
    */
-  orHavingExists(arg: ExistsFilterArg<DB, TB>): QueryBuilder<DB, TB, O> {
+  orHavingExists(arg: ExistsExpression<DB, TB>): QueryBuilder<DB, TB, O> {
     ensureCanHaveHavingClause(this.#queryNode)
 
     return new QueryBuilder({
@@ -703,7 +705,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
       queryNode: selectQueryNode.cloneWithHaving(
         this.#queryNode,
         'or',
-        parseExistsFilterArgs('exists', arg)
+        parseExistExpression('exists', arg)
       ),
     })
   }
@@ -712,7 +714,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * Just like {@link QueryBuilder.orWhereNotExists | orWhereNotExists} but adds a `having` statement
    * instead of a `where` statement.
    */
-  orHavingNotExists(arg: ExistsFilterArg<DB, TB>): QueryBuilder<DB, TB, O> {
+  orHavingNotExists(arg: ExistsExpression<DB, TB>): QueryBuilder<DB, TB, O> {
     ensureCanHaveHavingClause(this.#queryNode)
 
     return new QueryBuilder({
@@ -720,7 +722,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
       queryNode: selectQueryNode.cloneWithHaving(
         this.#queryNode,
         'or',
-        parseExistsFilterArgs('not exists', arg)
+        parseExistExpression('not exists', arg)
       ),
     })
   }
@@ -902,7 +904,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
     selection: S
   ): QueryBuilderWithSelection<DB, TB, O, S>
 
-  select(selection: any): any {
+  select(selection: SelectExpressionOrList<DB, TB>): any {
     ensureCanHaveSelectClause(this.#queryNode)
 
     return new QueryBuilder({
@@ -944,7 +946,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
     selection: S
   ): QueryBuilder<DB, TB, O>
 
-  distinctOn(selection: any): any {
+  distinctOn(selection: SelectExpressionOrList<DB, TB>): any {
     ensureCanHaveSelectClause(this.#queryNode)
 
     return new QueryBuilder({
@@ -1235,13 +1237,13 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    */
   innerJoin<
     TE extends TableExpression<DB, TB>,
-    K1 extends JoinReferenceArg<DB, TB, TE>,
-    K2 extends JoinReferenceArg<DB, TB, TE>
+    K1 extends JoinReferenceExpression<DB, TB, TE>,
+    K2 extends JoinReferenceExpression<DB, TB, TE>
   >(table: TE, k1: K1, k2: K2): QueryBuilderWithTable<DB, TB, O, TE>
 
   innerJoin<
     TE extends TableExpression<DB, TB>,
-    FN extends JoinCallbackArg<DB, TB, TE>
+    FN extends JoinCallbackExpression<DB, TB, TE>
   >(table: TE, callback: FN): QueryBuilderWithTable<DB, TB, O, TE>
 
   innerJoin(...args: any): any {
@@ -1262,13 +1264,13 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    */
   leftJoin<
     TE extends TableExpression<DB, TB>,
-    K1 extends JoinReferenceArg<DB, TB, TE>,
-    K2 extends JoinReferenceArg<DB, TB, TE>
+    K1 extends JoinReferenceExpression<DB, TB, TE>,
+    K2 extends JoinReferenceExpression<DB, TB, TE>
   >(table: TE, k1: K1, k2: K2): QueryBuilderWithTable<DB, TB, O, TE>
 
   leftJoin<
     TE extends TableExpression<DB, TB>,
-    FN extends JoinCallbackArg<DB, TB, TE>
+    FN extends JoinCallbackExpression<DB, TB, TE>
   >(table: TE, callback: FN): QueryBuilderWithTable<DB, TB, O, TE>
 
   leftJoin(...args: any): any {
@@ -1289,13 +1291,13 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    */
   rightJoin<
     TE extends TableExpression<DB, TB>,
-    K1 extends JoinReferenceArg<DB, TB, TE>,
-    K2 extends JoinReferenceArg<DB, TB, TE>
+    K1 extends JoinReferenceExpression<DB, TB, TE>,
+    K2 extends JoinReferenceExpression<DB, TB, TE>
   >(table: TE, k1: K1, k2: K2): QueryBuilderWithTable<DB, TB, O, TE>
 
   rightJoin<
     TE extends TableExpression<DB, TB>,
-    FN extends JoinCallbackArg<DB, TB, TE>
+    FN extends JoinCallbackExpression<DB, TB, TE>
   >(table: TE, callback: FN): QueryBuilderWithTable<DB, TB, O, TE>
 
   rightJoin(...args: any): any {
@@ -1316,13 +1318,13 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    */
   fullJoin<
     TE extends TableExpression<DB, TB>,
-    K1 extends JoinReferenceArg<DB, TB, TE>,
-    K2 extends JoinReferenceArg<DB, TB, TE>
+    K1 extends JoinReferenceExpression<DB, TB, TE>,
+    K2 extends JoinReferenceExpression<DB, TB, TE>
   >(table: TE, k1: K1, k2: K2): QueryBuilderWithTable<DB, TB, O, TE>
 
   fullJoin<
     TE extends TableExpression<DB, TB>,
-    FN extends JoinCallbackArg<DB, TB, TE>
+    FN extends JoinCallbackExpression<DB, TB, TE>
   >(table: TE, callback: FN): QueryBuilderWithTable<DB, TB, O, TE>
 
   fullJoin(...args: any): any {
@@ -1451,14 +1453,14 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
 
   values(row: InsertObject<DB, TB>[]): QueryBuilder<DB, TB, O>
 
-  values(args: any): any {
+  values(args: InsertObjectOrList<DB, TB>): any {
     ensureCanHaveInsertValues(this.#queryNode)
 
     return new QueryBuilder({
       executor: this.#executor,
       queryNode: insertQueryNode.cloneWithColumnsAndValues(
         this.#queryNode,
-        ...parseInsertValuesArgs(args)
+        ...parseInsertObjectOrList(args)
       ),
     })
   }
@@ -1750,7 +1752,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
     selection: S
   ): QueryBuilderWithReturning<DB, TB, O, S>
 
-  returning(selection: any): any {
+  returning(selection: SelectExpressionOrList<DB, TB>): any {
     ensureCanHaveReturningClause(this.#queryNode)
 
     return new QueryBuilder({

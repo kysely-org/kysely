@@ -81,7 +81,7 @@ export class PostgresDriver extends Driver {
 async function importPgPool(): Promise<new (config: PoolConfig) => Pool> {
   try {
     // For this to work with both esm and cjs modules we need
-    // this hacky craph here.
+    // this hacky crap here.
     const pg = (await import('pg')) as any
 
     if (isFunction(pg.Pool)) {

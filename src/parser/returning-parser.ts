@@ -4,7 +4,7 @@ import {
   InsertResultTypeTag,
   UpdateResultTypeTag,
 } from '../query-builder/type-utils.js'
-import { SelectResultType } from './select-parser.js'
+import { Selection } from './select-parser.js'
 
 /**
  * `returning` method output query builder type
@@ -18,10 +18,10 @@ export type QueryBuilderWithReturning<
   DB,
   TB,
   O extends InsertResultTypeTag
-    ? SelectResultType<DB, TB, S>
+    ? Selection<DB, TB, S>
     : O extends DeleteResultTypeTag
-    ? SelectResultType<DB, TB, S>
+    ? Selection<DB, TB, S>
     : O extends UpdateResultTypeTag
-    ? SelectResultType<DB, TB, S>
-    : O & SelectResultType<DB, TB, S>
+    ? Selection<DB, TB, S>
+    : O & Selection<DB, TB, S>
 >

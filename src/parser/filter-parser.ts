@@ -40,22 +40,22 @@ import { JoinNode, joinNode } from '../operation-node/join-node.js'
 import { FilterExpressionNode } from '../operation-node/operation-node-utils.js'
 import { valueNode } from '../operation-node/value-node.js'
 
-export type ExistsFilterArg<DB, TB extends keyof DB> =
+export type ExistsExpression<DB, TB extends keyof DB> =
   | AnyQueryBuilder
   | QueryBuilderFactory<DB, TB>
   | AnyRawBuilder
   | RawBuilderFactory<DB, TB>
 
-export type FilterOperatorArg = Operator | AnyRawBuilder
+export type FilterOperator = Operator | AnyRawBuilder
 export type FilterType = 'Where' | 'On' | 'Having'
 
-export function parseFilterArgs(
+export function parseFilter(
   filterType: FilterType,
   args: any[]
 ): FilterExpressionNode {
   if (args.length === 3) {
     return parseThreeArgFilter(args[0], args[1], args[2])
-  } else if (args.length === 1) {
+  } else if (args.length === 1 && isFunction(args[0])) {
     if (filterType === 'Where') {
       return parseWhereGrouper(args[0])
     } else if (filterType === 'Having') {
@@ -70,9 +70,9 @@ export function parseFilterArgs(
   }
 }
 
-export function parseReferenceFilterArgs(
+export function parseReferenceFilter(
   lhs: ReferenceExpression<any, any>,
-  op: FilterOperatorArg,
+  op: FilterOperator,
   rhs: ReferenceExpression<any, any>
 ): FilterNode {
   return filterNode.create(
@@ -82,9 +82,9 @@ export function parseReferenceFilterArgs(
   )
 }
 
-export function parseExistsFilterArgs(
+export function parseExistExpression(
   type: 'exists' | 'not exists',
-  arg: ExistsFilterArg<any, any>
+  arg: ExistsExpression<any, any>
 ): FilterNode {
   const node = isFunction(arg)
     ? arg(new SubQueryBuilder()).toOperationNode()
@@ -99,7 +99,7 @@ export function parseExistsFilterArgs(
 
 function parseThreeArgFilter(
   left: ReferenceExpression<any, any>,
-  op: FilterOperatorArg,
+  op: FilterOperator,
   right: ValueExpressionOrList<any, any, any>
 ): FilterNode {
   if ((op === 'is' || op === 'is not') && (isNull(right) || isBoolean(right))) {
@@ -125,7 +125,7 @@ function parseIsFilter(
   )
 }
 
-function parseFilterOperator(op: FilterOperatorArg): OperatorNode | RawNode {
+function parseFilterOperator(op: FilterOperator): OperatorNode | RawNode {
   if (isOperationNodeSource(op)) {
     return op.toOperationNode()
   } else if (isString(op)) {
@@ -146,12 +146,6 @@ function parseFilterOperator(op: FilterOperatorArg): OperatorNode | RawNode {
 function parseWhereGrouper(
   grouper: (qb: AnyQueryBuilder) => AnyQueryBuilder
 ): ParensNode {
-  if (!isFunction(grouper)) {
-    throw new Error(
-      `invalid call to queryBuilder.where: ${JSON.stringify(grouper)}`
-    )
-  }
-
   const query = grouper(createEmptySelectQuery())
   const queryNode = query.toOperationNode() as SelectQueryNode
 
@@ -165,12 +159,6 @@ function parseWhereGrouper(
 function parseHavingGrouper(
   grouper: (qb: AnyQueryBuilder) => AnyQueryBuilder
 ): ParensNode {
-  if (!isFunction(grouper)) {
-    throw new Error(
-      `invalid call to queryBuilder.having: ${JSON.stringify(grouper)}`
-    )
-  }
-
   const query = grouper(createEmptySelectQuery())
   const queryNode = query.toOperationNode() as SelectQueryNode
 
@@ -184,12 +172,6 @@ function parseHavingGrouper(
 function parseOnGrouper(
   grouper: (qb: JoinBuilder<any, any>) => JoinBuilder<any, any>
 ): ParensNode {
-  if (!isFunction(grouper)) {
-    throw new Error(
-      `invalid call to joinBuilder.on: ${JSON.stringify(grouper)}`
-    )
-  }
-
   const joinBuilder = grouper(createEmptyJoinBuilder())
   const joinNode = joinBuilder.toOperationNode() as JoinNode
 

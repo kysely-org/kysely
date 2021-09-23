@@ -6,10 +6,10 @@ import {
   ExtractAliasFromTableExpression,
   TableExpressionDatabaseType,
 } from './table-parser.js'
-import { parseReferenceFilterArgs } from './filter-parser.js'
+import { parseReferenceFilter } from './filter-parser.js'
 import { JoinBuilder } from '../query-builder/join-builder.js'
 
-export type JoinReferenceArg<DB, TB extends keyof DB, F> =
+export type JoinReferenceExpression<DB, TB extends keyof DB, F> =
   | AnyColumn<
       TableExpressionDatabaseType<DB, F>,
       TB | ExtractAliasFromTableExpression<DB, F>
@@ -19,7 +19,7 @@ export type JoinReferenceArg<DB, TB extends keyof DB, F> =
       TB | ExtractAliasFromTableExpression<DB, F>
     >
 
-export type JoinCallbackArg<DB, TB extends keyof DB, F> = (
+export type JoinCallbackExpression<DB, TB extends keyof DB, F> = (
   join: JoinBuilder<
     TableExpressionDatabaseType<DB, F>,
     TB | ExtractAliasFromTableExpression<DB, F>
@@ -39,7 +39,7 @@ export function parseJoinArgs(joinType: JoinType, args: any[]): JoinNode {
 function parseCallbackJoin(
   joinType: JoinType,
   from: TableExpression<any, any>,
-  callback: JoinCallbackArg<any, any, any>
+  callback: JoinCallbackExpression<any, any, any>
 ): JoinNode {
   const tableNode = parseTableExpression(from)
 
@@ -61,6 +61,6 @@ function parseSingleOnJoin(
   return joinNode.cloneWithOn(
     joinNode.create(joinType, tableNode),
     'and',
-    parseReferenceFilterArgs(lhsColumn, '=', rhsColumn)
+    parseReferenceFilter(lhsColumn, '=', rhsColumn)
   )
 }
