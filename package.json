@@ -24,7 +24,7 @@
     "build": "npm run clean && npm run build:esm && npm run build:cjs && ./module-fixup.sh",
     "build:esm": "tsc -p tsconfig.json",
     "build:cjs": "tsc -p tsconfig-cjs.json",
-    "docs:build": "typedoc --excludePrivate --excludeInternal src/index.ts && npm run docs:postprocess",
+    "docs:build": "typedoc --excludePrivate --excludeInternal --customCss ./docs-theme.css src/index.ts && npm run docs:postprocess",
     "docs:postprocess": "node post-process-docs.js",
     "prepublish": "npm run build"
   },
