@@ -35,6 +35,7 @@ export class PostgresDriver extends Driver {
       port: cfg.port,
       user: cfg.user,
       password: cfg.password,
+      ssl: cfg.ssl,
 
       // Pool options.
       connectionTimeoutMillis: cfg.pool.connectionTimeoutMillis,

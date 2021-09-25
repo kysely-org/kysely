@@ -1,3 +1,4 @@
+import { SecureContextOptions } from 'tls'
 import { DatabaseConnection } from './database-connection.js'
 
 export interface DriverConfig {
@@ -30,6 +31,11 @@ export interface DriverConfig {
    * Connection pooling config.
    */
   pool?: PoolConfig
+
+  /**
+   * Optional SSL configuration.
+   */
+  ssl?: SecureContextOptions
 }
 
 export interface PoolConfig {

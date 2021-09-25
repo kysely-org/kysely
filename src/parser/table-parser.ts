@@ -8,6 +8,7 @@ import { tableNode, TableNode } from '../operation-node/table-node.js'
 import {
   AliasedQueryBuilderFactory,
   AnyAliasedQueryBuilder,
+  AnyAliasedRawBuilder,
 } from '../query-builder/type-utils.js'
 import { isOperationNodeSource } from '../operation-node/operation-node-source.js'
 import { AliasedRawBuilder } from '../raw-builder/raw-builder.js'
@@ -22,7 +23,7 @@ export type TableExpression<DB, TB extends keyof DB> =
 export type TableReference<DB> =
   | AnyAliasedTable<DB, any, any>
   | AnyTable<DB>
-  | AliasedRawBuilder<any, any>
+  | AnyAliasedRawBuilder
 
 export type QueryBuilderWithTable<
   DB,

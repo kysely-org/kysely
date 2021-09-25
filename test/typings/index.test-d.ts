@@ -348,6 +348,35 @@ async function testJoin(db: Kysely<Database>) {
 
   expectType<Movie[]>(r2)
 
+  const r3 = await db
+    .selectFrom('person')
+    .innerJoin(
+      (qb) =>
+        qb
+          .subQuery('movie')
+          .select(['movie.id', 'movie.stars as rating'])
+          .as('m'),
+      'm.id',
+      'person.id'
+    )
+    .where('m.rating', '>', 2)
+    .selectAll('m')
+    .execute()
+
+  expectType<{ id: string; rating: number }[]>(r3)
+
+  const r4 = await db
+    .selectFrom('person')
+    .innerJoin(
+      (qb) => qb.subQuery('movie').selectAll('movie').as('m'),
+      (join) => join.onRef('m.id', '=', 'person.id')
+    )
+    .where('m.stars', '>', 2)
+    .selectAll('m')
+    .execute()
+
+  expectType<Movie[]>(r4)
+
   // Refer to table that's not joined
   expectError(
     db

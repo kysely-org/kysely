@@ -15,6 +15,7 @@ import {
   AnyAliasedColumn,
   AnyAliasedColumnWithTable,
   AnyAliasedQueryBuilder,
+  AnyAliasedRawBuilder,
   AnyColumn,
   AnyColumnWithTable,
   InsertResultTypeTag,
@@ -33,7 +34,7 @@ export type SelectExpression<DB, TB extends keyof DB> =
   | AnyAliasedColumn<DB, TB>
   | AnyColumnWithTable<DB, TB>
   | AnyColumn<DB, TB>
-  | AliasedRawBuilder<any, any>
+  | AnyAliasedRawBuilder
   | AliasedRawBuilderFactory<DB, TB>
   | AnyAliasedQueryBuilder
   | AliasedQueryBuilderFactory<DB, TB>

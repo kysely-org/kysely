@@ -48,7 +48,7 @@ export type UnionToIntersection<U> = (
   : never
 
 /**
- * Given a database type and a union of table name in that db returns
+ * Given a database type and a union of table names in that db, returns
  * a union type with all possible column names.
  *
  * Example:
@@ -83,7 +83,7 @@ export type AnyColumn<DB, TB extends keyof DB> = {
 }[TB]
 
 /**
- * Given a database type and a union of table names in that db returns
+ * Given a database type and a union of table names in that db, returns
  * a union type with all possible `table`.`column` combinations.
  *
  * Example:
@@ -121,6 +121,9 @@ export type AnyColumnWithTable<DB, TB extends keyof DB> = {
     : never
 }[TB]
 
+/**
+ * Just like {@link AnyColumn} but with a ` as <string>` suffix.
+ */
 export type AnyAliasedColumn<DB, TB extends keyof DB> = {
   [T in TB]: T extends string
     ? keyof DB[T] extends string
@@ -129,20 +132,26 @@ export type AnyAliasedColumn<DB, TB extends keyof DB> = {
     : never
 }[TB]
 
-export type AnyAliasedColumnWithTable<
-  DB,
-  TB extends keyof DB
-> = `${AnyColumnWithTable<DB, TB>} as ${string}`
+/**
+ * Just like {@link AnyColumnWithTable} but with a ` as <string>` suffix.
+ */
+export type AnyAliasedColumnWithTable<DB, TB extends keyof DB> = {
+  [T in TB]: T extends string
+    ? keyof DB[T] extends string
+      ? `${T}.${keyof DB[T]} as ${string}`
+      : never
+    : never
+}[TB]
 
 /**
- * Extracts an array item type.
+ * Extracts the item type of an array.
  */
 export type ArrayItemType<T> = T extends ReadonlyArray<infer I> ? I : never
 
 export type AnyQueryBuilder = QueryBuilder<any, any, any>
 export type AnyAliasedQueryBuilder = AliasedQueryBuilder<any, any, any, any>
-
 export type AnyRawBuilder = RawBuilder<any>
+export type AnyAliasedRawBuilder = AliasedRawBuilder<any, any>
 
 export type QueryBuilderFactory<DB, TB extends keyof DB> = (
   qb: SubQueryBuilder<DB, TB>
@@ -158,7 +167,7 @@ export type RawBuilderFactory<DB, TB extends keyof DB> = (
 
 export type AliasedRawBuilderFactory<DB, TB extends keyof DB> = (
   qb: SubQueryBuilder<DB, TB>
-) => AliasedRawBuilder<any, any>
+) => AnyAliasedRawBuilder
 
 export interface InsertResultTypeTag {
   /** @internal */
