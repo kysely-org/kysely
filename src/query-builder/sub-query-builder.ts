@@ -1,12 +1,12 @@
 import { QueryBuilder } from './query-builder.js'
 import { selectQueryNode } from '../operation-node/select-query-node.js'
-import { NeverExecutingQueryExecutor } from '../query-executor/query-executor.js'
 import {
   parseTableExpressionOrList,
   TableExpression,
   QueryBuilderWithTable,
 } from '../parser/table-parser.js'
 import { WithSchemaTransformer } from '../transformers/with-schema-transformer.js'
+import { NeverExecutingQueryExecutor } from '../query-executor/never-executing-query-executor.js'
 
 export class SubQueryBuilder<DB, TB extends keyof DB> {
   readonly #executor: NeverExecutingQueryExecutor
@@ -78,7 +78,7 @@ export class SubQueryBuilder<DB, TB extends keyof DB> {
    */
   withSchema(schema: string): SubQueryBuilder<DB, TB> {
     return new SubQueryBuilder(
-      this.#executor.copyWithTransformerAtFront(
+      this.#executor.withTransformerAtFront(
         new WithSchemaTransformer(schema)
       )
     )

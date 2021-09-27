@@ -345,7 +345,7 @@ export class QueryCreator<DB> {
    */
   withSchema(schema: string): QueryCreator<DB> {
     return new QueryCreator(
-      this.#executor.copyWithTransformerAtFront(
+      this.#executor.withTransformerAtFront(
         new WithSchemaTransformer(schema)
       ),
       this.#withNode

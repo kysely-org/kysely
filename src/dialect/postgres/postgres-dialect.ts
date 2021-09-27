@@ -24,6 +24,7 @@ export class PostgresDialect implements Dialect {
     const tableNode = parseTable(tableName)
 
     let query = db
+      .withoutPlugins()
       .selectFrom('information_schema.tables')
       .where('table_name', '=', tableNode.table.identifier)
       .select('table_name')

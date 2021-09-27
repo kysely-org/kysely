@@ -75,10 +75,8 @@ import { limitNode } from '../operation-node/limit-node.js'
 import { offsetNode } from '../operation-node/offset-node.js'
 import { asReadonlyArray } from '../util/object-utils.js'
 import { Compilable } from '../util/compilable.js'
-import {
-  NeverExecutingQueryExecutor,
-  QueryExecutor,
-} from '../query-executor/query-executor.js'
+import { QueryExecutor } from '../query-executor/query-executor.js'
+import { NeverExecutingQueryExecutor } from '../query-executor/never-executing-query-executor.js'
 
 /**
  * The main query builder class.

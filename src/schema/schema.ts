@@ -161,7 +161,7 @@ export class SchemaModule {
    */
   withSchema(schema: string): SchemaModule {
     return new SchemaModule(
-      this.#executor.copyWithTransformerAtFront(
+      this.#executor.withTransformerAtFront(
         new WithSchemaTransformer(schema)
       )
     )

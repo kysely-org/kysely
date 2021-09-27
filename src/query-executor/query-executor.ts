@@ -2,23 +2,29 @@ import { ConnectionProvider } from '../driver/connection-provider.js'
 import { QueryResult } from '../driver/database-connection.js'
 import { OperationNodeTransformer } from '../operation-node/operation-node-transformer.js'
 import { CompiledQuery } from '../query-compiler/compiled-query.js'
-import {
-  CompileEntryPointNode,
-  QueryCompiler,
-} from '../query-compiler/query-compiler'
+import { CompileEntryPointNode } from '../query-compiler/query-compiler'
 import { freeze } from '../util/object-utils.js'
 
 export type RowMapper = (row: Record<string, any>) => Record<string, any>
 
 export abstract class QueryExecutor {
   readonly #transformers: ReadonlyArray<OperationNodeTransformer>
+  readonly #rowMappers: ReadonlyArray<RowMapper>
 
-  constructor(transformers: OperationNodeTransformer[] = []) {
+  constructor(
+    transformers: OperationNodeTransformer[] = [],
+    rowMappers: RowMapper[] = []
+  ) {
     this.#transformers = freeze([...transformers])
+    this.#rowMappers = freeze([...rowMappers])
   }
 
   protected get transformers(): ReadonlyArray<OperationNodeTransformer> {
     return this.#transformers
+  }
+
+  protected get rowMappers(): ReadonlyArray<RowMapper> {
+    return this.#rowMappers
   }
 
   transformNode<T extends CompileEntryPointNode>(node: T): T {
@@ -35,66 +41,17 @@ export abstract class QueryExecutor {
     compiledQuery: CompiledQuery
   ): Promise<QueryResult<R>>
 
-  abstract copyWithTransformerAtFront(
+  abstract withTransformerAtFront(
     transformer: OperationNodeTransformer
   ): QueryExecutor
 
-  abstract copyWithConnectionProvider(
+  abstract withConnectionProvider(
     connectionProvider: ConnectionProvider
   ): QueryExecutor
-}
 
-export class DefaultQueryExecutor extends QueryExecutor {
-  #compiler: QueryCompiler
-  #connectionProvider: ConnectionProvider
-  #rowMappers: ReadonlyArray<RowMapper>
+  abstract withoutTransformersOrRowMappers(): QueryExecutor
 
-  constructor(
-    compiler: QueryCompiler,
-    connectionProvider: ConnectionProvider,
-    transformers: OperationNodeTransformer[] = [],
-    rowMappers: RowMapper[] = []
-  ) {
-    super(transformers)
-    this.#compiler = compiler
-    this.#connectionProvider = connectionProvider
-    this.#rowMappers = freeze([...rowMappers])
-  }
-
-  compileQuery(node: CompileEntryPointNode): CompiledQuery {
-    return this.#compiler.compileQuery(node)
-  }
-
-  async executeQuery<R>(compiledQuery: CompiledQuery): Promise<QueryResult<R>> {
-    return await this.#connectionProvider.withConnection(async (connection) => {
-      const result = await connection.executeQuery<R>(compiledQuery)
-      return this.mapQueryResult(result)
-    })
-  }
-
-  copyWithTransformerAtFront(
-    transformer: OperationNodeTransformer
-  ): DefaultQueryExecutor {
-    return new DefaultQueryExecutor(
-      this.#compiler,
-      this.#connectionProvider,
-      [transformer, ...this.transformers],
-      [...this.#rowMappers]
-    )
-  }
-
-  copyWithConnectionProvider(
-    connectionProvider: ConnectionProvider
-  ): QueryExecutor {
-    return new DefaultQueryExecutor(
-      this.#compiler,
-      connectionProvider,
-      [...this.transformers],
-      [...this.#rowMappers]
-    )
-  }
-
-  private mapQueryResult<T>(result: QueryResult<any>): QueryResult<T> {
+  protected mapQueryResult<T>(result: QueryResult<any>): QueryResult<T> {
     if (result.rows && result.rows.length > 0 && this.#rowMappers.length > 0) {
       return freeze({
         ...result,
@@ -108,29 +65,5 @@ export class DefaultQueryExecutor extends QueryExecutor {
     }
 
     return result
-  }
-}
-
-export class NeverExecutingQueryExecutor extends QueryExecutor {
-  compileQuery(_node: CompileEntryPointNode): CompiledQuery {
-    throw new Error('this query cannot be compiled to SQL')
-  }
-
-  async executeQuery<R>(
-    _compiledQuery: CompiledQuery
-  ): Promise<QueryResult<R>> {
-    throw new Error('this query cannot be executed')
-  }
-
-  copyWithTransformerAtFront(
-    transformer: OperationNodeTransformer
-  ): NeverExecutingQueryExecutor {
-    return new NeverExecutingQueryExecutor([transformer, ...this.transformers])
-  }
-
-  copyWithConnectionProvider(
-    _connectionProvider: ConnectionProvider
-  ): QueryExecutor {
-    throw new Error('this makes no sense')
   }
 }

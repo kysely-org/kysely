@@ -14,16 +14,13 @@ import {
   INTERNAL_DRIVER_RELEASE_CONNECTION,
 } from './driver/driver-internal.js'
 import { MigrationModule } from './migration/migration.js'
-import {
-  DefaultQueryExecutor,
-  QueryExecutor,
-  RowMapper,
-} from './query-executor/query-executor.js'
+import { QueryExecutor, RowMapper } from './query-executor/query-executor.js'
 import { QueryCreator } from './query-creator.js'
 import { KyselyPlugin } from './plugin/plugin.js'
 import { OperationNodeTransformer } from './operation-node/operation-node-transformer.js'
 import { GeneratedPlaceholder } from './query-builder/type-utils.js'
 import { generatedPlaceholder } from './util/generated-placeholder.js'
+import { DefaultQueryExecutor } from './query-executor/default-query-executor.js'
 
 /**
  * The main Kysely class.
@@ -207,7 +204,7 @@ export class Kysely<DB> extends QueryCreator<DB> {
       dialect: this.#dialect,
       driver: this.#driver,
       compiler: this.#compiler,
-      executor: this.#executor.copyWithConnectionProvider(connectionProvider),
+      executor: this.#executor.withConnectionProvider(connectionProvider),
     })
 
     try {
@@ -222,6 +219,18 @@ export class Kysely<DB> extends QueryCreator<DB> {
     } finally {
       await this.#driver[INTERNAL_DRIVER_RELEASE_CONNECTION](connection)
     }
+  }
+
+  /**
+   * Returns a copy of this Kysely instance without any plugins.
+   */
+  withoutPlugins(): Kysely<DB> {
+    return new Kysely({
+      dialect: this.#dialect,
+      driver: this.#driver,
+      compiler: this.#compiler,
+      executor: this.#executor.withoutTransformersOrRowMappers(),
+    })
   }
 
   /**
