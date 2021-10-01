@@ -36,7 +36,20 @@ async function findRefreshToken(
   return token
 }
 
+async function updateRefreshToken(
+  db: Kysely<Database>,
+  refreshTokenId: string,
+  patch: Pick<RefreshTokenRow, 'last_refreshed_at'>
+): Promise<void> {
+  await db
+    .updateTable('refresh_token')
+    .set(patch)
+    .where('refresh_token_id', '=', refreshTokenId)
+    .execute()
+}
+
 export const refreshTokenRepository = Object.freeze({
   insertRefreshToken,
   findRefreshToken,
+  updateRefreshToken,
 })

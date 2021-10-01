@@ -55,11 +55,9 @@ async function createAuthToken(
 ): Promise<AuthToken> {
   const { userId, refreshTokenId } = verifyRefreshToken(refreshToken)
 
-  await db
-    .updateTable('refresh_token')
-    .set({ last_refreshed_at: new Date() })
-    .where('refresh_token_id', '=', refreshTokenId)
-    .execute()
+  await refreshTokenRepository.updateRefreshToken(db, refreshTokenId, {
+    last_refreshed_at: new Date(),
+  })
 
   return signAuthToken({ userId, refreshTokenId })
 }
