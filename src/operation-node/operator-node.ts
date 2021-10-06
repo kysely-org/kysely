@@ -27,6 +27,10 @@ export const OPERATORS = [
   '!<',
   '!>',
   '<=>',
+  '!~',
+  '~',
+  '~*',
+  '!~*',
   'exists',
   'not exists',
 ] as const

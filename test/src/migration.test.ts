@@ -1,10 +1,6 @@
 import * as path from 'path'
 
-import {
-  Migration,
-  MIGRATION_LOCK_TABLE,
-  MIGRATION_TABLE,
-} from '../../'
+import { Migration, MIGRATION_LOCK_TABLE, MIGRATION_TABLE } from '../../'
 
 import {
   BUILT_IN_DIALECTS,
@@ -177,13 +173,8 @@ for (const dialect of BUILT_IN_DIALECTS) {
           // The migrations should create two tables test1 and test2.
           // Make sure they were correctly created.
 
-          expect(await ctx.db.getTableMetadata('test1')).to.eql({
-            tableName: 'test1',
-          })
-
-          expect(await ctx.db.getTableMetadata('test2')).to.eql({
-            tableName: 'test2',
-          })
+          expect(await doesTableExists('test1')).to.eql(true)
+          expect(await doesTableExists('test2')).to.eql(true)
         })
 
         async function dropTestMigrationTables(): Promise<void> {
@@ -222,6 +213,11 @@ for (const dialect of BUILT_IN_DIALECTS) {
       )
 
       return [migrations, executedUpMethods, executedDownMethods]
+    }
+
+    async function doesTableExists(tableName: string): Promise<boolean> {
+      const metadata = await ctx.db.introspection.getMetadata()
+      return !!metadata.tables.find((it) => it.name === tableName)
     }
 
     function sleep(millis: number): Promise<void> {

@@ -6,21 +6,30 @@ export type ColumnDataType =
   | `varchar(${number})`
   | 'text'
   | 'integer'
+  | 'int2'
+  | 'int4'
+  | 'int8'
   | 'bigint'
   | 'boolean'
   | 'real'
   | 'double precision'
+  | 'float4'
+  | 'float8'
   | 'decimal'
   | `decimal(${number}, ${number})`
   | 'numeric'
   | `numeric(${number}, ${number})`
   | 'binary'
   | 'date'
+  | 'time'
+  | 'timetz'
   | 'timestamp'
-  | 'timestamp with time zone'
+  | 'timestamptz'
   | 'serial'
   | 'bigserial'
   | 'uuid'
+  | 'json'
+  | 'jsonb'
 
 export type DataTypeParams = Omit<DataTypeNode, 'kind' | 'dataType'>
 

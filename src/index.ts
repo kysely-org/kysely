@@ -33,6 +33,7 @@ export * from './driver/database-connection.js'
 
 export * from './dialect/postgres/postgres-dialect.js'
 export * from './dialect/postgres/postgres-driver.js'
+export * from './dialect/postgres/postgres-introspector.js'
 
 export * from './query-compiler/default-query-compiler.js'
 export * from './query-compiler/query-compiler.js'
@@ -112,6 +113,8 @@ export * from './operation-node//on-conflict-node.js'
 export * from './operation-node/operation-node.js'
 export * from './operation-node/operation-node-source.js'
 export * from './operation-node/order-by-node.js'
+
+export * from './introspection/database-introspector.js'
 
 export * from './util/compilable.js'
 export { AnyColumn } from './query-builder/type-utils.js'

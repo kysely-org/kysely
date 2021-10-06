@@ -44,10 +44,13 @@ for (const dialect of BUILT_IN_DIALECTS) {
           .addColumn('k', 'decimal(8, 4)')
           .addColumn('l', 'boolean', (col) => col.notNull().defaultTo(false))
           .addColumn('m', 'date')
-          .addColumn('n', 'timestamp with time zone')
+          .addColumn('n', 'timestamptz')
           .addColumn('o', 'uuid', (col) =>
             col.defaultTo(ctx.db.raw('gen_random_uuid()'))
           )
+          .addColumn('p', 'int2')
+          .addColumn('q', 'int4')
+          .addColumn('r', 'int8')
 
         testSql(builder, dialect, {
           postgres: {
@@ -66,8 +69,11 @@ for (const dialect of BUILT_IN_DIALECTS) {
               `"k" decimal(8, 4),`,
               `"l" boolean default false not null,`,
               `"m" date,`,
-              `"n" timestamp with time zone,`,
-              `"o" uuid default gen_random_uuid())`
+              `"n" timestamptz,`,
+              `"o" uuid default gen_random_uuid(),`,
+              `"p" int2,`,
+              `"q" int4,`,
+              `"r" int8)`,
             ],
             bindings: [],
           },

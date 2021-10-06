@@ -130,9 +130,11 @@ async function doesTableExists(
   db: Kysely<any>,
   tableName: string
 ): Promise<boolean> {
-  const metadata = await db.getTableMetadata(tableName)
+  const metadata = await db.introspection.getMetadata({
+    withInternalKyselyTables: true,
+  })
 
-  return !!metadata
+  return !!metadata.tables.find((it) => it.name === tableName)
 }
 
 async function doesLockRowExists(db: Kysely<any>): Promise<boolean> {

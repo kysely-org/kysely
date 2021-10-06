@@ -2,6 +2,7 @@ import { Driver } from '../driver/driver.js'
 import { DriverConfig } from '../driver/driver-config.js'
 import { Kysely } from '../kysely.js'
 import { QueryCompiler } from '../query-compiler/query-compiler.js'
+import { DatabaseIntrospector } from '../introspection/database-introspector.js'
 
 /**
  * A Dialect is an adapter between Kysely and the underlying database driver.
@@ -22,14 +23,8 @@ export interface Dialect {
   createQueryCompiler(): QueryCompiler
 
   /**
-   * Returns metadata for a table or `undefined` if the table doesn't exists.
+   * Creates a database introspector that can be used to get the database metadata
+   * such as the tables and columns that exist in the database.
    */
-  getTableMetadata(
-    db: Kysely<any>,
-    tableName: string
-  ): Promise<TableMetadata | undefined>
-}
-
-export interface TableMetadata {
-  tableName: string
+  createIntrospector(db: Kysely<any>): DatabaseIntrospector
 }

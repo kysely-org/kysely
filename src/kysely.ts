@@ -1,5 +1,5 @@
 import { DriverConfig } from './driver/driver-config.js'
-import { Dialect, TableMetadata } from './dialect/dialect.js'
+import { Dialect } from './dialect/dialect.js'
 import { PostgresDialect } from './dialect/postgres/postgres-dialect.js'
 import { Driver } from './driver/driver.js'
 import { SchemaModule } from './schema/schema.js'
@@ -21,6 +21,7 @@ import { OperationNodeTransformer } from './operation-node/operation-node-transf
 import { GeneratedPlaceholder } from './query-builder/type-utils.js'
 import { generatedPlaceholder } from './util/generated-placeholder.js'
 import { DefaultQueryExecutor } from './query-executor/default-query-executor.js'
+import { DatabaseIntrospector } from './introspection/database-introspector.js'
 
 /**
  * The main Kysely class.
@@ -121,6 +122,13 @@ export class Kysely<DB> extends QueryCreator<DB> {
    */
   get dynamic(): DynamicModule {
     return new DynamicModule()
+  }
+
+  /**
+   * Returns a {@link DatabaseIntrospector | database introspector}.
+   */
+  get introspection(): DatabaseIntrospector {
+    return this.#dialect.createIntrospector(this)
   }
 
   /**
@@ -231,15 +239,6 @@ export class Kysely<DB> extends QueryCreator<DB> {
       compiler: this.#compiler,
       executor: this.#executor.withoutTransformersOrRowMappers(),
     })
-  }
-
-  /**
-   * Returns the table metadata for a table.
-   */
-  async getTableMetadata(
-    tableName: string
-  ): Promise<TableMetadata | undefined> {
-    return this.#dialect.getTableMetadata(this, tableName)
   }
 
   /**

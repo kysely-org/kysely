@@ -1,11 +1,12 @@
 import { Driver } from '../../driver/driver.js'
 import { DriverConfig } from '../../driver/driver-config.js'
 import { Kysely } from '../../kysely.js'
-import { parseTable } from '../../parser/table-parser.js'
 import { DefaultQueryCompiler } from '../../query-compiler/default-query-compiler.js'
 import { QueryCompiler } from '../../query-compiler/query-compiler.js'
-import { Dialect, TableMetadata } from '../dialect.js'
+import { Dialect } from '../dialect.js'
 import { PostgresDriver } from './postgres-driver.js'
+import { DatabaseIntrospector } from '../../introspection/database-introspector.js'
+import { PostgresIntrospector } from './postgres-introspector.js'
 
 export class PostgresDialect implements Dialect {
   createDriver(config: DriverConfig): Driver {
@@ -17,30 +18,7 @@ export class PostgresDialect implements Dialect {
     return new DefaultQueryCompiler()
   }
 
-  async getTableMetadata(
-    db: Kysely<any>,
-    tableName: string
-  ): Promise<TableMetadata | undefined> {
-    const tableNode = parseTable(tableName)
-
-    let query = db
-      .withoutPlugins()
-      .selectFrom('information_schema.tables')
-      .where('table_name', '=', tableNode.table.identifier)
-      .select('table_name')
-
-    if (tableNode.schema) {
-      query = query.where('table_schema', '=', tableNode.schema.identifier)
-    }
-
-    const result = await query.executeTakeFirst()
-
-    if (!result) {
-      return undefined
-    }
-
-    return {
-      tableName: result.table_name,
-    }
+  createIntrospector(db: Kysely<any>): DatabaseIntrospector {
+    return new PostgresIntrospector(db)
   }
 }
