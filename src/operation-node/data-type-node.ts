@@ -41,7 +41,7 @@ export interface DataTypeNode extends OperationNode {
 /**
  * @internal
  */
-export const dataTypeNode = freeze({
+export const DataTypeNode = freeze({
   is(node: OperationNode): node is DataTypeNode {
     return node.kind === 'DataTypeNode'
   },

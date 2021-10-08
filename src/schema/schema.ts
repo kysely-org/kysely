@@ -1,10 +1,10 @@
-import { alterTableNode } from '../operation-node/alter-table-node.js'
-import { createIndexNode } from '../operation-node/create-index-node.js'
-import { createSchemaNode } from '../operation-node/create-schema-node.js'
-import { createTableNode } from '../operation-node/create-table-node.js'
-import { dropIndexNode } from '../operation-node/drop-index-node.js'
-import { dropSchemaNode } from '../operation-node/drop-schema-node.js'
-import { dropTableNode } from '../operation-node/drop-table-node.js'
+import { AlterTableNode } from '../operation-node/alter-table-node.js'
+import { CreateIndexNode } from '../operation-node/create-index-node.js'
+import { CreateSchemaNode } from '../operation-node/create-schema-node.js'
+import { CreateTableNode } from '../operation-node/create-table-node.js'
+import { DropIndexNode } from '../operation-node/drop-index-node.js'
+import { DropSchemaNode } from '../operation-node/drop-schema-node.js'
+import { DropTableNode } from '../operation-node/drop-table-node.js'
 import { parseTable } from '../parser/table-parser.js'
 import { WithSchemaTransformer } from '../transformers/with-schema-transformer.js'
 import { QueryExecutor } from '../query-executor/query-executor.js'
@@ -46,7 +46,7 @@ export class SchemaModule {
   createTable(table: string): CreateTableBuilder {
     return new CreateTableBuilder({
       executor: this.#executor,
-      createTableNode: createTableNode.create(parseTable(table)),
+      createTableNode: CreateTableNode.create(parseTable(table)),
     })
   }
 
@@ -63,7 +63,7 @@ export class SchemaModule {
   dropTable(table: string): DropTableBuilder {
     return new DropTableBuilder({
       executor: this.#executor,
-      dropTableNode: dropTableNode.create(parseTable(table)),
+      dropTableNode: DropTableNode.create(parseTable(table)),
     })
   }
 
@@ -82,7 +82,7 @@ export class SchemaModule {
   createIndex(indexName: string): CreateIndexBuilder {
     return new CreateIndexBuilder({
       executor: this.#executor,
-      createIndexNode: createIndexNode.create(indexName),
+      createIndexNode: CreateIndexNode.create(indexName),
     })
   }
 
@@ -99,7 +99,7 @@ export class SchemaModule {
   dropIndex(indexName: string): DropIndexBuilder {
     return new DropIndexBuilder({
       executor: this.#executor,
-      dropIndexNode: dropIndexNode.create(indexName),
+      dropIndexNode: DropIndexNode.create(indexName),
     })
   }
 
@@ -116,7 +116,7 @@ export class SchemaModule {
   createSchema(schema: string): CreateSchemaBuilder {
     return new CreateSchemaBuilder({
       executor: this.#executor,
-      createSchemaNode: createSchemaNode.create(schema),
+      createSchemaNode: CreateSchemaNode.create(schema),
     })
   }
 
@@ -133,7 +133,7 @@ export class SchemaModule {
   dropSchema(schema: string): DropSchemaBuilder {
     return new DropSchemaBuilder({
       executor: this.#executor,
-      dropSchemaNode: dropSchemaNode.create(schema),
+      dropSchemaNode: DropSchemaNode.create(schema),
     })
   }
 
@@ -152,7 +152,7 @@ export class SchemaModule {
   alterTable(table: string): AlterTableBuilder {
     return new AlterTableBuilder({
       executor: this.#executor,
-      alterTableNode: alterTableNode.create(table),
+      alterTableNode: AlterTableNode.create(table),
     })
   }
 
@@ -161,9 +161,7 @@ export class SchemaModule {
    */
   withSchema(schema: string): SchemaModule {
     return new SchemaModule(
-      this.#executor.withTransformerAtFront(
-        new WithSchemaTransformer(schema)
-      )
+      this.#executor.withTransformerAtFront(new WithSchemaTransformer(schema))
     )
   }
 }

@@ -17,7 +17,7 @@ export interface DropTableNode extends OperationNode {
 /**
  * @internal
  */
-export const dropTableNode = freeze({
+export const DropTableNode = freeze({
   is(node: OperationNode): node is DropTableNode {
     return node.kind === 'DropTableNode'
   },

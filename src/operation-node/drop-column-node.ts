@@ -1,6 +1,6 @@
 import { OperationNode } from './operation-node.js'
 import { freeze } from '../util/object-utils.js'
-import { columnNode, ColumnNode } from './column-node.js'
+import { ColumnNode } from './column-node.js'
 
 export interface DropColumnNode extends OperationNode {
   readonly kind: 'DropColumnNode'
@@ -10,7 +10,7 @@ export interface DropColumnNode extends OperationNode {
 /**
  * @internal
  */
-export const dropColumnNode = freeze({
+export const DropColumnNode = freeze({
   is(node: OperationNode): node is DropColumnNode {
     return node.kind === 'DropColumnNode'
   },
@@ -18,7 +18,7 @@ export const dropColumnNode = freeze({
   create(column: string): DropColumnNode {
     return freeze({
       kind: 'DropColumnNode',
-      column: columnNode.create(column),
+      column: ColumnNode.create(column),
     })
   },
 })

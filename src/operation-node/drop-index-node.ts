@@ -1,5 +1,5 @@
 import { freeze } from '../util/object-utils.js'
-import { IdentifierNode, identifierNode } from './identifier-node.js'
+import { IdentifierNode } from './identifier-node.js'
 import { OperationNode } from './operation-node.js'
 
 export type DropIndexNodeParams = Omit<Partial<DropIndexNode>, 'kind' | 'name'>
@@ -14,7 +14,7 @@ export interface DropIndexNode extends OperationNode {
 /**
  * @internal
  */
-export const dropIndexNode = freeze({
+export const DropIndexNode = freeze({
   is(node: OperationNode): node is DropIndexNode {
     return node.kind === 'DropIndexNode'
   },
@@ -22,7 +22,7 @@ export const dropIndexNode = freeze({
   create(name: string, params?: DropIndexNodeParams): DropIndexNode {
     return freeze({
       kind: 'DropIndexNode',
-      name: identifierNode.create(name),
+      name: IdentifierNode.create(name),
       ...params,
     })
   },

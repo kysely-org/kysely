@@ -5,10 +5,7 @@ import {
   AliasedQueryBuilder,
   QueryBuilder,
 } from '../query-builder/query-builder.js'
-import {
-  selectionNode,
-  SelectionNode,
-} from '../operation-node/selection-node.js'
+import { SelectionNode } from '../operation-node/selection-node.js'
 import {
   AliasedQueryBuilderFactory,
   AliasedRawBuilderFactory,
@@ -198,11 +195,11 @@ function parseSelectExpression(
   selection: SelectExpression<any, any>
 ): SelectionNode {
   if (isString(selection)) {
-    return selectionNode.create(parseAliasedStringReference(selection))
+    return SelectionNode.create(parseAliasedStringReference(selection))
   } else if (isOperationNodeSource(selection)) {
-    return selectionNode.create(selection.toOperationNode())
+    return SelectionNode.create(selection.toOperationNode())
   } else if (isFunction(selection)) {
-    return selectionNode.create(
+    return SelectionNode.create(
       selection(new SubQueryBuilder()).toOperationNode()
     )
   } else {
@@ -214,7 +211,7 @@ function parseSelectExpression(
 
 export function parseSelectAllArgs(table?: string | string[]): SelectionNode[] {
   if (!table) {
-    return [selectionNode.createSelectAll()]
+    return [SelectionNode.createSelectAll()]
   } else if (Array.isArray(table)) {
     return table.map(parseSelectAllArg)
   } else {
@@ -224,7 +221,7 @@ export function parseSelectAllArgs(table?: string | string[]): SelectionNode[] {
 
 export function parseSelectAllArg(table: string): SelectionNode {
   if (isString(table)) {
-    return selectionNode.createSelectAllFromTable(table)
+    return SelectionNode.createSelectAllFromTable(table)
   } else {
     throw new Error(
       `invalid value passed to selectAll method: ${JSON.stringify(table)}`

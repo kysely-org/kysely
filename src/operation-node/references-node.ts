@@ -15,7 +15,7 @@ export interface ReferencesNode extends OperationNode {
 /**
  * @internal
  */
-export const referencesNode = freeze({
+export const ReferencesNode = freeze({
   is(node: OperationNode): node is ReferencesNode {
     return node.kind === 'ReferencesNode'
   },

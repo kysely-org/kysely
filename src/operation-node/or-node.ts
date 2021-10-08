@@ -11,7 +11,7 @@ export interface OrNode extends OperationNode {
 /**
  * @internal
  */
-export const orNode = freeze({
+export const OrNode = freeze({
   is(node: OperationNode): node is OrNode {
     return node.kind === 'OrNode'
   },

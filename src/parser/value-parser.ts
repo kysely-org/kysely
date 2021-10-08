@@ -1,15 +1,9 @@
-import { columnNode } from '../operation-node/column-node.js'
+import { ColumnNode } from '../operation-node/column-node.js'
 import { isOperationNodeSource } from '../operation-node/operation-node-source.js'
 import { ValueExpressionNode } from '../operation-node/operation-node-utils.js'
-import {
-  PrimitiveValueListNode,
-  primitiveValueListNode,
-} from '../operation-node/primitive-value-list-node.js'
-import {
-  valueListNode,
-  ValueListNode,
-} from '../operation-node/value-list-node.js'
-import { valueNode } from '../operation-node/value-node.js'
+import { PrimitiveValueListNode } from '../operation-node/primitive-value-list-node.js'
+import { ValueListNode } from '../operation-node/value-list-node.js'
+import { ValueNode } from '../operation-node/value-node.js'
 import { isFunction, isPrimitive } from '../util/object-utils.js'
 import {
   AnyQueryBuilder,
@@ -17,11 +11,11 @@ import {
   QueryBuilderFactory,
   RawBuilderFactory,
 } from '../query-builder/type-utils.js'
-import { queryNode } from '../operation-node/query-node.js'
+import { QueryNode } from '../operation-node/query-node.js'
 import { SubQueryBuilder } from '../query-builder/sub-query-builder.js'
 import { ExtractTypeFromReferenceExpression } from './reference-parser.js'
-import { rawNode } from '../operation-node/raw-node.js'
-import { selectQueryNode } from '../operation-node/select-query-node.js'
+import { RawNode } from '../operation-node/raw-node.js'
+import { SelectQueryNode } from '../operation-node/select-query-node.js'
 
 export type ValueExpression<DB, TB extends keyof DB, RE> =
   | ExtractTypeFromReferenceExpression<DB, TB, RE>
@@ -48,17 +42,17 @@ export function parseValueExpression(
   arg: ValueExpression<any, any, any>
 ): ValueExpressionNode {
   if (isPrimitive(arg)) {
-    return valueNode.create(arg)
+    return ValueNode.create(arg)
   } else if (isOperationNodeSource(arg)) {
     const node = arg.toOperationNode()
 
-    if (rawNode.is(node) || selectQueryNode.is(node)) {
+    if (RawNode.is(node) || SelectQueryNode.is(node)) {
       return node
     }
   } else if (isFunction(arg)) {
     const node = arg(new SubQueryBuilder()).toOperationNode()
 
-    if (!queryNode.isMutating(node)) {
+    if (!QueryNode.isMutating(node)) {
       return node
     }
   }
@@ -71,18 +65,18 @@ function parseValueExpressionList(
 ): PrimitiveValueListNode | ValueListNode {
   if (arg.every(isPrimitive)) {
     // Optimization for large lists of primitive values.
-    return primitiveValueListNode.create(arg)
+    return PrimitiveValueListNode.create(arg)
   }
 
-  return valueListNode.create(
+  return ValueListNode.create(
     arg.map((it) => {
       const node = parseValueExpression(it)
 
-      if (columnNode.is(node)) {
+      if (ColumnNode.is(node)) {
         throw new Error('value lists cannot have column references')
       }
 
-      if (valueListNode.is(node) || primitiveValueListNode.is(node)) {
+      if (ValueListNode.is(node) || PrimitiveValueListNode.is(node)) {
         throw new Error('value lists cannot have nested lists')
       }
 

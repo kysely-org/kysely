@@ -1,7 +1,7 @@
 import { OperationNode } from './operation-node.js'
 import { ColumnNode } from './column-node.js'
-import { tableNode, TableNode } from './table-node.js'
-import { selectAllNode, SelectAllNode } from './select-all-node.js'
+import { TableNode } from './table-node.js'
+import { SelectAllNode } from './select-all-node.js'
 import { freeze } from '../util/object-utils.js'
 
 export interface ReferenceNode extends OperationNode {
@@ -13,7 +13,7 @@ export interface ReferenceNode extends OperationNode {
 /**
  * @internal
  */
-export const referenceNode = freeze({
+export const ReferenceNode = freeze({
   is(node: OperationNode): node is ReferenceNode {
     return node.kind === 'ReferenceNode'
   },
@@ -29,8 +29,8 @@ export const referenceNode = freeze({
   createSelectAll(table: string): ReferenceNode {
     return freeze({
       kind: 'ReferenceNode',
-      table: tableNode.create(table),
-      column: selectAllNode.create(),
+      table: TableNode.create(table),
+      column: SelectAllNode.create(),
     })
   },
 })

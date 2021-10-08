@@ -1,4 +1,4 @@
-import { AliasNode, aliasNode } from '../operation-node/alias-node.js'
+import { AliasNode } from '../operation-node/alias-node.js'
 import { OperationNodeSource } from '../operation-node/operation-node-source.js'
 import { CompiledQuery } from '../query-compiler/compiled-query.js'
 import {
@@ -39,22 +39,15 @@ import {
 } from '../parser/reference-parser.js'
 import { ValueExpressionOrList } from '../parser/value-parser.js'
 import {
-  orderByItemNode,
+  OrderByItemNode,
   OrderByDirection,
 } from '../operation-node/order-by-item-node.js'
+import { SelectQueryNode } from '../operation-node/select-query-node.js'
+import { InsertQueryNode } from '../operation-node/insert-query-node.js'
 import {
-  selectQueryNode,
-  SelectQueryNode,
-} from '../operation-node/select-query-node.js'
-import {
-  InsertQueryNode,
-  insertQueryNode,
-} from '../operation-node/insert-query-node.js'
-import {
-  queryNode,
+  QueryNode,
   FilterableQueryNode,
   MutatingQueryNode,
-  QueryNode,
 } from '../operation-node/query-node.js'
 import {
   AnyColumn,
@@ -63,16 +56,13 @@ import {
   SingleResultRowType,
 } from './type-utils.js'
 import { OrderByExpression } from '../parser/order-by-parser.js'
-import { groupByItemNode } from '../operation-node/group-by-item-node.js'
-import {
-  updateQueryNode,
-  UpdateQueryNode,
-} from '../operation-node/update-query-node.js'
+import { GroupByItemNode } from '../operation-node/group-by-item-node.js'
+import { UpdateQueryNode } from '../operation-node/update-query-node.js'
 import { MutationObject } from '../parser/mutation-parser.js'
 import { parseUpdateObject } from '../parser/update-set-parser.js'
 import { preventAwait } from '../util/prevent-await.js'
-import { limitNode } from '../operation-node/limit-node.js'
-import { offsetNode } from '../operation-node/offset-node.js'
+import { LimitNode } from '../operation-node/limit-node.js'
+import { OffsetNode } from '../operation-node/offset-node.js'
 import { asReadonlyArray } from '../util/object-utils.js'
 import { Compilable } from '../util/compilable.js'
 import { QueryExecutor } from '../query-executor/query-executor.js'
@@ -300,7 +290,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
 
     return new QueryBuilder({
       executor: this.#executor,
-      queryNode: queryNode.cloneWithWhere(
+      queryNode: QueryNode.cloneWithWhere(
         this.#queryNode,
         'and',
         parseFilter('Where', args)
@@ -368,7 +358,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
 
     return new QueryBuilder({
       executor: this.#executor,
-      queryNode: queryNode.cloneWithWhere(
+      queryNode: QueryNode.cloneWithWhere(
         this.#queryNode,
         'and',
         parseReferenceFilter(lhs, op, rhs)
@@ -456,7 +446,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
 
     return new QueryBuilder({
       executor: this.#executor,
-      queryNode: queryNode.cloneWithWhere(
+      queryNode: QueryNode.cloneWithWhere(
         this.#queryNode,
         'or',
         parseFilter('Where', args)
@@ -479,7 +469,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
 
     return new QueryBuilder({
       executor: this.#executor,
-      queryNode: queryNode.cloneWithWhere(
+      queryNode: QueryNode.cloneWithWhere(
         this.#queryNode,
         'or',
         parseReferenceFilter(lhs, op, rhs)
@@ -551,7 +541,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
 
     return new QueryBuilder({
       executor: this.#executor,
-      queryNode: queryNode.cloneWithWhere(
+      queryNode: QueryNode.cloneWithWhere(
         this.#queryNode,
         'and',
         parseExistExpression('exists', arg)
@@ -567,7 +557,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
 
     return new QueryBuilder({
       executor: this.#executor,
-      queryNode: queryNode.cloneWithWhere(
+      queryNode: QueryNode.cloneWithWhere(
         this.#queryNode,
         'and',
         parseExistExpression('not exists', arg)
@@ -583,7 +573,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
 
     return new QueryBuilder({
       executor: this.#executor,
-      queryNode: queryNode.cloneWithWhere(
+      queryNode: QueryNode.cloneWithWhere(
         this.#queryNode,
         'or',
         parseExistExpression('exists', arg)
@@ -599,7 +589,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
 
     return new QueryBuilder({
       executor: this.#executor,
-      queryNode: queryNode.cloneWithWhere(
+      queryNode: QueryNode.cloneWithWhere(
         this.#queryNode,
         'or',
         parseExistExpression('not exists', arg)
@@ -626,7 +616,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
 
     return new QueryBuilder({
       executor: this.#executor,
-      queryNode: selectQueryNode.cloneWithHaving(
+      queryNode: SelectQueryNode.cloneWithHaving(
         this.#queryNode,
         'and',
         parseFilter('Having', args)
@@ -647,7 +637,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
 
     return new QueryBuilder({
       executor: this.#executor,
-      queryNode: selectQueryNode.cloneWithHaving(
+      queryNode: SelectQueryNode.cloneWithHaving(
         this.#queryNode,
         'and',
         parseReferenceFilter(lhs, op, rhs)
@@ -674,7 +664,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
 
     return new QueryBuilder({
       executor: this.#executor,
-      queryNode: selectQueryNode.cloneWithHaving(
+      queryNode: SelectQueryNode.cloneWithHaving(
         this.#queryNode,
         'or',
         parseFilter('Having', args)
@@ -695,7 +685,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
 
     return new QueryBuilder({
       executor: this.#executor,
-      queryNode: selectQueryNode.cloneWithHaving(
+      queryNode: SelectQueryNode.cloneWithHaving(
         this.#queryNode,
         'or',
         parseReferenceFilter(lhs, op, rhs)
@@ -712,7 +702,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
 
     return new QueryBuilder({
       executor: this.#executor,
-      queryNode: selectQueryNode.cloneWithHaving(
+      queryNode: SelectQueryNode.cloneWithHaving(
         this.#queryNode,
         'and',
         parseExistExpression('exists', arg)
@@ -729,7 +719,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
 
     return new QueryBuilder({
       executor: this.#executor,
-      queryNode: selectQueryNode.cloneWithHaving(
+      queryNode: SelectQueryNode.cloneWithHaving(
         this.#queryNode,
         'and',
         parseExistExpression('not exists', arg)
@@ -746,7 +736,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
 
     return new QueryBuilder({
       executor: this.#executor,
-      queryNode: selectQueryNode.cloneWithHaving(
+      queryNode: SelectQueryNode.cloneWithHaving(
         this.#queryNode,
         'or',
         parseExistExpression('exists', arg)
@@ -763,7 +753,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
 
     return new QueryBuilder({
       executor: this.#executor,
-      queryNode: selectQueryNode.cloneWithHaving(
+      queryNode: SelectQueryNode.cloneWithHaving(
         this.#queryNode,
         'or',
         parseExistExpression('not exists', arg)
@@ -956,7 +946,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
 
     return new QueryBuilder({
       executor: this.#executor,
-      queryNode: selectQueryNode.cloneWithSelections(
+      queryNode: SelectQueryNode.cloneWithSelections(
         this.#queryNode,
         parseSelectExpressionOrList(selection)
       ),
@@ -1002,7 +992,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
 
     return new QueryBuilder({
       executor: this.#executor,
-      queryNode: selectQueryNode.cloneWithDistinctOnSelections(
+      queryNode: SelectQueryNode.cloneWithDistinctOnSelections(
         this.#queryNode,
         parseSelectExpressionOrList(selection)
       ),
@@ -1031,7 +1021,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
 
     return new QueryBuilder({
       executor: this.#executor,
-      queryNode: selectQueryNode.cloneWithDistinct(this.#queryNode),
+      queryNode: SelectQueryNode.cloneWithDistinct(this.#queryNode),
     })
   }
 
@@ -1043,7 +1033,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
 
     return new QueryBuilder({
       executor: this.#executor,
-      queryNode: selectQueryNode.cloneWithModifier(
+      queryNode: SelectQueryNode.cloneWithModifier(
         this.#queryNode,
         'ForUpdate'
       ),
@@ -1058,7 +1048,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
 
     return new QueryBuilder({
       executor: this.#executor,
-      queryNode: selectQueryNode.cloneWithModifier(this.#queryNode, 'ForShare'),
+      queryNode: SelectQueryNode.cloneWithModifier(this.#queryNode, 'ForShare'),
     })
   }
 
@@ -1070,7 +1060,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
 
     return new QueryBuilder({
       executor: this.#executor,
-      queryNode: selectQueryNode.cloneWithModifier(
+      queryNode: SelectQueryNode.cloneWithModifier(
         this.#queryNode,
         'ForKeyShare'
       ),
@@ -1085,7 +1075,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
 
     return new QueryBuilder({
       executor: this.#executor,
-      queryNode: selectQueryNode.cloneWithModifier(
+      queryNode: SelectQueryNode.cloneWithModifier(
         this.#queryNode,
         'ForNoKeyUpdate'
       ),
@@ -1100,7 +1090,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
 
     return new QueryBuilder({
       executor: this.#executor,
-      queryNode: selectQueryNode.cloneWithModifier(
+      queryNode: SelectQueryNode.cloneWithModifier(
         this.#queryNode,
         'SkipLocked'
       ),
@@ -1115,7 +1105,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
 
     return new QueryBuilder({
       executor: this.#executor,
-      queryNode: selectQueryNode.cloneWithModifier(this.#queryNode, 'NoWait'),
+      queryNode: SelectQueryNode.cloneWithModifier(this.#queryNode, 'NoWait'),
     })
   }
 
@@ -1177,7 +1167,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
 
     return new QueryBuilder({
       executor: this.#executor,
-      queryNode: selectQueryNode.cloneWithSelections(
+      queryNode: SelectQueryNode.cloneWithSelections(
         this.#queryNode,
         parseSelectAllArgs(table)
       ),
@@ -1312,7 +1302,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
 
     return new QueryBuilder({
       executor: this.#executor,
-      queryNode: queryNode.cloneWithJoin(
+      queryNode: QueryNode.cloneWithJoin(
         this.#queryNode,
         parseJoinArgs('InnerJoin', args)
       ),
@@ -1339,7 +1329,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
 
     return new QueryBuilder({
       executor: this.#executor,
-      queryNode: queryNode.cloneWithJoin(
+      queryNode: QueryNode.cloneWithJoin(
         this.#queryNode,
         parseJoinArgs('LeftJoin', args)
       ),
@@ -1366,7 +1356,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
 
     return new QueryBuilder({
       executor: this.#executor,
-      queryNode: queryNode.cloneWithJoin(
+      queryNode: QueryNode.cloneWithJoin(
         this.#queryNode,
         parseJoinArgs('RightJoin', args)
       ),
@@ -1393,7 +1383,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
 
     return new QueryBuilder({
       executor: this.#executor,
-      queryNode: queryNode.cloneWithJoin(
+      queryNode: QueryNode.cloneWithJoin(
         this.#queryNode,
         parseJoinArgs('FullJoin', args)
       ),
@@ -1523,7 +1513,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
 
     return new QueryBuilder({
       executor: this.#executor,
-      queryNode: insertQueryNode.cloneWithColumnsAndValues(
+      queryNode: InsertQueryNode.cloneWithColumnsAndValues(
         this.#queryNode,
         ...parseInsertObjectOrList(args)
       ),
@@ -1581,7 +1571,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
 
     return new QueryBuilder({
       executor: this.#executor,
-      queryNode: insertQueryNode.cloneWithOnConflictDoNothing(
+      queryNode: InsertQueryNode.cloneWithOnConflictDoNothing(
         this.#queryNode,
         asReadonlyArray(columns).map(parseColumnName)
       ),
@@ -1649,7 +1639,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
 
     return new QueryBuilder({
       executor: this.#executor,
-      queryNode: insertQueryNode.cloneWithOnConflictUpdate(
+      queryNode: InsertQueryNode.cloneWithOnConflictUpdate(
         this.#queryNode,
         asReadonlyArray(columns).map(parseColumnName),
         parseUpdateObject(updates)
@@ -1744,7 +1734,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
 
     return new QueryBuilder({
       executor: this.#executor,
-      queryNode: updateQueryNode.cloneWithUpdates(
+      queryNode: UpdateQueryNode.cloneWithUpdates(
         this.#queryNode,
         parseUpdateObject(row)
       ),
@@ -1822,7 +1812,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
 
     return new QueryBuilder({
       executor: this.#executor,
-      queryNode: queryNode.cloneWithReturning(
+      queryNode: QueryNode.cloneWithReturning(
         this.#queryNode,
         parseSelectExpressionOrList(selection)
       ),
@@ -1838,7 +1828,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
 
     return new QueryBuilder({
       executor: this.#executor,
-      queryNode: queryNode.cloneWithReturning(
+      queryNode: QueryNode.cloneWithReturning(
         this.#queryNode,
         parseSelectAllArgs()
       ),
@@ -1939,9 +1929,9 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
 
     return new QueryBuilder({
       executor: this.#executor,
-      queryNode: selectQueryNode.cloneWithOrderByItem(
+      queryNode: SelectQueryNode.cloneWithOrderByItem(
         this.#queryNode,
-        orderByItemNode.create(parseReferenceExpression(orderBy), direction)
+        OrderByItemNode.create(parseReferenceExpression(orderBy), direction)
       ),
     })
   }
@@ -2055,9 +2045,9 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
 
     return new QueryBuilder({
       executor: this.#executor,
-      queryNode: selectQueryNode.cloneWithGroupByItems(
+      queryNode: SelectQueryNode.cloneWithGroupByItems(
         this.#queryNode,
-        parseReferenceExpressionOrList(orderBy).map(groupByItemNode.create)
+        parseReferenceExpressionOrList(orderBy).map(GroupByItemNode.create)
       ),
     })
   }
@@ -2091,9 +2081,9 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
 
     return new QueryBuilder({
       executor: this.#executor,
-      queryNode: selectQueryNode.cloneWithLimit(
+      queryNode: SelectQueryNode.cloneWithLimit(
         this.#queryNode,
-        limitNode.create(limit)
+        LimitNode.create(limit)
       ),
     })
   }
@@ -2117,9 +2107,9 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
 
     return new QueryBuilder({
       executor: this.#executor,
-      queryNode: selectQueryNode.cloneWithOffset(
+      queryNode: SelectQueryNode.cloneWithOffset(
         this.#queryNode,
-        offsetNode.create(offset)
+        OffsetNode.create(offset)
       ),
     })
   }
@@ -2177,7 +2167,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
       compildQuery
     )
 
-    if (queryNode.isMutating(node) && node.returning) {
+    if (QueryNode.isMutating(node) && node.returning) {
       return result.rows ?? []
     }
 
@@ -2268,8 +2258,8 @@ export class AliasedQueryBuilder<
   toOperationNode(): AliasNode {
     const node = this.#queryBuilder.toOperationNode()
 
-    if (selectQueryNode.is(node)) {
-      return aliasNode.create(node, this.#alias)
+    if (SelectQueryNode.is(node)) {
+      return AliasNode.create(node, this.#alias)
     }
 
     throw new Error('only select queries can be aliased')
@@ -2297,14 +2287,14 @@ export function createEmptySelectQuery<
 >(): QueryBuilder<DB, TB, O> {
   return new QueryBuilder<DB, TB, O>({
     executor: new NeverExecutingQueryExecutor(),
-    queryNode: selectQueryNode.create([]),
+    queryNode: SelectQueryNode.create([]),
   })
 }
 
 function ensureCanHaveWhereClause(
   node: QueryNode
 ): asserts node is FilterableQueryNode {
-  if (!queryNode.isFilterable(node)) {
+  if (!QueryNode.isFilterable(node)) {
     throw new Error(
       'only select, delete and update queries can have a where clause'
     )
@@ -2314,7 +2304,7 @@ function ensureCanHaveWhereClause(
 function ensureCanHaveHavingClause(
   node: QueryNode
 ): asserts node is SelectQueryNode {
-  if (!selectQueryNode.is(node)) {
+  if (!SelectQueryNode.is(node)) {
     throw new Error('only select queries can have a having clause')
   }
 }
@@ -2322,7 +2312,7 @@ function ensureCanHaveHavingClause(
 function ensureCanHaveSelectClause(
   node: QueryNode
 ): asserts node is SelectQueryNode {
-  if (!selectQueryNode.is(node)) {
+  if (!SelectQueryNode.is(node)) {
     throw new Error('only a select query can have selections')
   }
 }
@@ -2330,7 +2320,7 @@ function ensureCanHaveSelectClause(
 function ensureCanHaveJoins(
   node: QueryNode
 ): asserts node is FilterableQueryNode {
-  if (!queryNode.isFilterable(node)) {
+  if (!QueryNode.isFilterable(node)) {
     throw new Error('only select, delete and update queries can have joins')
   }
 }
@@ -2338,7 +2328,7 @@ function ensureCanHaveJoins(
 function ensureCanHaveInsertValues(
   node: QueryNode
 ): asserts node is InsertQueryNode {
-  if (!insertQueryNode.is(node)) {
+  if (!InsertQueryNode.is(node)) {
     throw new Error('only an insert query can have insert values')
   }
 }
@@ -2346,7 +2336,7 @@ function ensureCanHaveInsertValues(
 function ensureCanHaveOnConflict(
   node: QueryNode
 ): asserts node is InsertQueryNode {
-  if (!insertQueryNode.is(node)) {
+  if (!InsertQueryNode.is(node)) {
     throw new Error('only an insert query can have an on conflict clause')
   }
 }
@@ -2354,7 +2344,7 @@ function ensureCanHaveOnConflict(
 function ensureCanHaveUpdates(
   node: QueryNode
 ): asserts node is UpdateQueryNode {
-  if (!updateQueryNode.is(node)) {
+  if (!UpdateQueryNode.is(node)) {
     throw new Error('only an update query can set values')
   }
 }
@@ -2362,7 +2352,7 @@ function ensureCanHaveUpdates(
 function ensureCanHaveReturningClause(
   node: QueryNode
 ): asserts node is MutatingQueryNode {
-  if (!queryNode.isMutating(node)) {
+  if (!QueryNode.isMutating(node)) {
     throw new Error(
       'only an insert, delete and update queries can have a returning clause'
     )
@@ -2372,7 +2362,7 @@ function ensureCanHaveReturningClause(
 function ensureCanHaveOrderByClause(
   node: QueryNode
 ): asserts node is SelectQueryNode {
-  if (!selectQueryNode.is(node)) {
+  if (!SelectQueryNode.is(node)) {
     throw new Error('only a select query can have an order by clause')
   }
 }
@@ -2380,19 +2370,19 @@ function ensureCanHaveOrderByClause(
 function ensureCanHaveGroupByClause(
   node: QueryNode
 ): asserts node is SelectQueryNode {
-  if (!selectQueryNode.is(node)) {
+  if (!SelectQueryNode.is(node)) {
     throw new Error('only a select query can have a group by clause')
   }
 }
 
 function ensureCanHaveLimit(node: QueryNode): asserts node is SelectQueryNode {
-  if (!selectQueryNode.is(node)) {
+  if (!SelectQueryNode.is(node)) {
     throw new Error('only a select query can have a limit')
   }
 }
 
 function ensureCanHaveOffset(node: QueryNode): asserts node is SelectQueryNode {
-  if (!selectQueryNode.is(node)) {
+  if (!SelectQueryNode.is(node)) {
     throw new Error('only a select query can have an offset')
   }
 }

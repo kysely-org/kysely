@@ -11,7 +11,7 @@ export interface AndNode extends OperationNode {
 /**
  * @internal
  */
-export const andNode = freeze({
+export const AndNode = freeze({
   is(node: OperationNode): node is AndNode {
     return node.kind === 'AndNode'
   },

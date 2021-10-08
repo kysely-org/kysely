@@ -1,7 +1,7 @@
-import { ColumnNode, columnNode } from '../operation-node/column-node.js'
+import { ColumnNode } from '../operation-node/column-node.js'
 import { InsertValuesNode } from '../operation-node/insert-query-node.js'
-import { primitiveValueListNode } from '../operation-node/primitive-value-list-node.js'
-import { valueListNode } from '../operation-node/value-list-node.js'
+import { PrimitiveValueListNode } from '../operation-node/primitive-value-list-node.js'
+import { ValueListNode } from '../operation-node/value-list-node.js'
 import {
   AnyQueryBuilder,
   AnyRawBuilder,
@@ -64,13 +64,13 @@ function parseInsertColumnsAndValues(
     }
 
     if (rowValues.every(isPrimitive)) {
-      values.push(primitiveValueListNode.create(rowValues))
+      values.push(PrimitiveValueListNode.create(rowValues))
     } else {
       values.push(
-        valueListNode.create(rowValues.map(parseMutationValueExpression))
+        ValueListNode.create(rowValues.map(parseMutationValueExpression))
       )
     }
   }
 
-  return [columns.map(columnNode.create), values]
+  return [columns.map(ColumnNode.create), values]
 }

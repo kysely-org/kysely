@@ -1,11 +1,8 @@
-import { columnDefinitionNode } from '../operation-node/column-definition-node.js'
-import {
-  CreateTableNode,
-  createTableNode,
-} from '../operation-node/create-table-node.js'
+import { ColumnDefinitionNode } from '../operation-node/column-definition-node.js'
+import { CreateTableNode } from '../operation-node/create-table-node.js'
 import {
   ColumnDataType,
-  dataTypeNode,
+  DataTypeNode,
 } from '../operation-node/data-type-node.js'
 import {
   isOperationNodeSource,
@@ -35,7 +32,7 @@ export class CreateTableBuilder implements OperationNodeSource, Compilable {
   ifNotExists(): CreateTableBuilder {
     return new CreateTableBuilder({
       executor: this.#executor,
-      createTableNode: createTableNode.cloneWithModifier(
+      createTableNode: CreateTableNode.cloneWithModifier(
         this.#createTableNode,
         'IfNotExists'
       ),
@@ -62,11 +59,11 @@ export class CreateTableBuilder implements OperationNodeSource, Compilable {
     build?: ColumnBuilderCallback
   ): CreateTableBuilder {
     let columnBuilder = new ColumnDefinitionBuilder(
-      columnDefinitionNode.create(
+      ColumnDefinitionNode.create(
         columnName,
         isOperationNodeSource(dataType)
           ? dataType.toOperationNode()
-          : dataTypeNode.create(dataType)
+          : DataTypeNode.create(dataType)
       )
     )
 
@@ -76,7 +73,7 @@ export class CreateTableBuilder implements OperationNodeSource, Compilable {
 
     return new CreateTableBuilder({
       executor: this.#executor,
-      createTableNode: createTableNode.cloneWithColumn(
+      createTableNode: CreateTableNode.cloneWithColumn(
         this.#createTableNode,
         columnBuilder.toOperationNode()
       ),
@@ -97,7 +94,7 @@ export class CreateTableBuilder implements OperationNodeSource, Compilable {
   ): CreateTableBuilder {
     return new CreateTableBuilder({
       executor: this.#executor,
-      createTableNode: createTableNode.cloneWithPrimaryKeyConstraint(
+      createTableNode: CreateTableNode.cloneWithPrimaryKeyConstraint(
         this.#createTableNode,
         constraintName,
         columns
@@ -119,7 +116,7 @@ export class CreateTableBuilder implements OperationNodeSource, Compilable {
   ): CreateTableBuilder {
     return new CreateTableBuilder({
       executor: this.#executor,
-      createTableNode: createTableNode.cloneWithUniqueConstraint(
+      createTableNode: CreateTableNode.cloneWithUniqueConstraint(
         this.#createTableNode,
         constraintName,
         columns
@@ -141,7 +138,7 @@ export class CreateTableBuilder implements OperationNodeSource, Compilable {
   ): CreateTableBuilder {
     return new CreateTableBuilder({
       executor: this.#executor,
-      createTableNode: createTableNode.cloneWithCheckConstraint(
+      createTableNode: CreateTableNode.cloneWithCheckConstraint(
         this.#createTableNode,
         constraintName,
         checkExpression
@@ -170,7 +167,7 @@ export class CreateTableBuilder implements OperationNodeSource, Compilable {
   ): CreateTableBuilder {
     return new CreateTableBuilder({
       executor: this.#executor,
-      createTableNode: createTableNode.cloneWithForeignKeyConstraint(
+      createTableNode: CreateTableNode.cloneWithForeignKeyConstraint(
         this.#createTableNode,
         constraintName,
         columns,

@@ -3,8 +3,8 @@ import {
   QueryBuilder,
 } from '../query-builder/query-builder.js'
 import { isFunction, isString } from '../util/object-utils.js'
-import { aliasNode } from '../operation-node/alias-node.js'
-import { tableNode, TableNode } from '../operation-node/table-node.js'
+import { AliasNode } from '../operation-node/alias-node.js'
+import { TableNode } from '../operation-node/table-node.js'
 import {
   AliasedQueryBuilderFactory,
   AnyAliasedQueryBuilder,
@@ -125,7 +125,7 @@ export function parseAliasedTable(from: string): TableExpressionNode {
   const [table, alias] = from.split(' as ').map((it) => it.trim())
 
   if (alias) {
-    return aliasNode.create(parseTable(table), alias)
+    return AliasNode.create(parseTable(table), alias)
   } else {
     return parseTable(table)
   }
@@ -135,8 +135,8 @@ export function parseTable(from: string): TableNode {
   if (from.includes('.')) {
     const [schema, table] = from.split('.').map((it) => it.trim())
 
-    return tableNode.createWithSchema(schema, table)
+    return TableNode.createWithSchema(schema, table)
   } else {
-    return tableNode.create(from)
+    return TableNode.create(from)
   }
 }

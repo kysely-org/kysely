@@ -1,6 +1,6 @@
 import { freeze } from '../util/object-utils.js'
-import { columnNode, ColumnNode } from './column-node.js'
-import { identifierNode, IdentifierNode } from './identifier-node.js'
+import { ColumnNode } from './column-node.js'
+import { IdentifierNode } from './identifier-node.js'
 import { OperationNode } from './operation-node.js'
 
 export interface UniqueConstraintNode extends OperationNode {
@@ -12,7 +12,7 @@ export interface UniqueConstraintNode extends OperationNode {
 /**
  * @internal
  */
-export const uniqueConstraintNode = freeze({
+export const UniqueConstraintNode = freeze({
   is(node: OperationNode): node is UniqueConstraintNode {
     return node.kind === 'UniqueConstraintNode'
   },
@@ -20,8 +20,8 @@ export const uniqueConstraintNode = freeze({
   create(columns: string[], constraintName?: string): UniqueConstraintNode {
     return freeze({
       kind: 'UniqueConstraintNode',
-      columns: freeze(columns.map(columnNode.create)),
-      name: constraintName ? identifierNode.create(constraintName) : undefined,
+      columns: freeze(columns.map(ColumnNode.create)),
+      name: constraintName ? IdentifierNode.create(constraintName) : undefined,
     })
   },
 })

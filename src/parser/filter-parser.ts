@@ -1,4 +1,4 @@
-import { FilterNode, filterNode } from '../operation-node/filter-node.js'
+import { FilterNode } from '../operation-node/filter-node.js'
 import {
   isBoolean,
   isFunction,
@@ -12,14 +12,13 @@ import {
   RawBuilderFactory,
 } from '../query-builder/type-utils.js'
 import { isOperationNodeSource } from '../operation-node/operation-node-source.js'
-import { RawNode, rawNode } from '../operation-node/raw-node.js'
+import { RawNode } from '../operation-node/raw-node.js'
 import {
   Operator,
   OperatorNode,
-  operatorNode,
   OPERATORS,
 } from '../operation-node/operator-node.js'
-import { ParensNode, parensNode } from '../operation-node/parens-node.js'
+import { ParensNode } from '../operation-node/parens-node.js'
 import {
   parseReferenceExpression,
   ReferenceExpression,
@@ -28,17 +27,14 @@ import {
   parseValueExpressionOrList,
   ValueExpressionOrList,
 } from './value-parser.js'
-import {
-  selectQueryNode,
-  SelectQueryNode,
-} from '../operation-node/select-query-node.js'
+import { SelectQueryNode } from '../operation-node/select-query-node.js'
 import { SubQueryBuilder } from '../query-builder/sub-query-builder.js'
 import { createEmptySelectQuery } from '../query-builder/query-builder.js'
 import { JoinBuilder } from '../query-builder/join-builder.js'
 import { parseTableExpression } from './table-parser.js'
-import { JoinNode, joinNode } from '../operation-node/join-node.js'
+import { JoinNode } from '../operation-node/join-node.js'
 import { FilterExpressionNode } from '../operation-node/operation-node-utils.js'
-import { valueNode } from '../operation-node/value-node.js'
+import { ValueNode } from '../operation-node/value-node.js'
 
 export type ExistsExpression<DB, TB extends keyof DB> =
   | AnyQueryBuilder
@@ -75,7 +71,7 @@ export function parseReferenceFilter(
   op: FilterOperator,
   rhs: ReferenceExpression<any, any>
 ): FilterNode {
-  return filterNode.create(
+  return FilterNode.create(
     parseReferenceExpression(lhs),
     parseFilterOperator(op),
     parseReferenceExpression(rhs)
@@ -90,11 +86,11 @@ export function parseExistExpression(
     ? arg(new SubQueryBuilder()).toOperationNode()
     : arg.toOperationNode()
 
-  if (!selectQueryNode.is(node) && !rawNode.is(node)) {
+  if (!SelectQueryNode.is(node) && !RawNode.is(node)) {
     throw new Error('invalid where exists arg')
   }
 
-  return filterNode.create(undefined, operatorNode.create(type), node)
+  return FilterNode.create(undefined, OperatorNode.create(type), node)
 }
 
 function parseThreeArgFilter(
@@ -106,7 +102,7 @@ function parseThreeArgFilter(
     return parseIsFilter(left, op, right)
   }
 
-  return filterNode.create(
+  return FilterNode.create(
     parseReferenceExpression(left),
     parseFilterOperator(op),
     parseValueExpressionOrList(right)
@@ -118,10 +114,10 @@ function parseIsFilter(
   op: 'is' | 'is not',
   right: null | boolean
 ) {
-  return filterNode.create(
+  return FilterNode.create(
     parseReferenceExpression(left),
     parseFilterOperator(op),
-    valueNode.createImmediate(right)
+    ValueNode.createImmediate(right)
   )
 }
 
@@ -132,7 +128,7 @@ function parseFilterOperator(op: FilterOperator): OperatorNode | RawNode {
     const opString = op.trim().toLowerCase()
 
     if (OPERATORS.some((it) => it === opString)) {
-      return operatorNode.create(opString as Operator)
+      return OperatorNode.create(opString as Operator)
     }
   }
 
@@ -153,7 +149,7 @@ function parseWhereGrouper(
     throw new Error('no where methods called insided a grouper')
   }
 
-  return parensNode.create(queryNode.where.where)
+  return ParensNode.create(queryNode.where.where)
 }
 
 function parseHavingGrouper(
@@ -166,7 +162,7 @@ function parseHavingGrouper(
     throw new Error('no having methods called insided a grouper')
   }
 
-  return parensNode.create(queryNode.having.having)
+  return ParensNode.create(queryNode.having.having)
 }
 
 function parseOnGrouper(
@@ -179,11 +175,11 @@ function parseOnGrouper(
     throw new Error('no `on` methods called insided a grouper where')
   }
 
-  return parensNode.create(joinNode.on)
+  return ParensNode.create(joinNode.on)
 }
 
 export function createEmptyJoinBuilder(): JoinBuilder<any, any> {
   return new JoinBuilder(
-    joinNode.create('InnerJoin', parseTableExpression('table'))
+    JoinNode.create('InnerJoin', parseTableExpression('table'))
   )
 }

@@ -5,7 +5,7 @@ import { AddColumnNode } from '../operation-node/add-column-node.js'
 import { ColumnUpdateNode } from '../operation-node/column-update-node.js'
 import { CreateIndexNode } from '../operation-node/create-index-node.js'
 import { CreateTableNode } from '../operation-node/create-table-node.js'
-import { DataTypeNode, dataTypeNode } from '../operation-node/data-type-node.js'
+import { DataTypeNode } from '../operation-node/data-type-node.js'
 import { DeleteQueryNode } from '../operation-node/delete-query-node.js'
 import { DropIndexNode } from '../operation-node/drop-index-node.js'
 import { DropTableNode } from '../operation-node/drop-table-node.js'
@@ -28,8 +28,8 @@ import { OrderByItemNode } from '../operation-node/order-by-item-node.js'
 import { OrderByNode } from '../operation-node/order-by-node.js'
 import { ParensNode } from '../operation-node/parens-node.js'
 import { PrimitiveValueListNode } from '../operation-node/primitive-value-list-node.js'
-import { queryNode } from '../operation-node/query-node.js'
-import { rawNode, RawNode } from '../operation-node/raw-node.js'
+import { QueryNode } from '../operation-node/query-node.js'
+import { RawNode } from '../operation-node/raw-node.js'
 import { ReferenceNode } from '../operation-node/reference-node.js'
 import { ReferencesNode } from '../operation-node/references-node.js'
 import { ReturningNode } from '../operation-node/returning-node.js'
@@ -102,7 +102,7 @@ export class DefaultQueryCompiler
   }
 
   protected override visitSelectQuery(node: SelectQueryNode): void {
-    const isSubQuery = this.nodeStack.find(queryNode.is) !== node
+    const isSubQuery = this.nodeStack.find(QueryNode.is) !== node
 
     if (isSubQuery) {
       this.append('(')
@@ -216,7 +216,7 @@ export class DefaultQueryCompiler
   }
 
   protected override visitInsertQuery(node: InsertQueryNode): void {
-    const isSubQuery = this.nodeStack.find(queryNode.is) !== node
+    const isSubQuery = this.nodeStack.find(QueryNode.is) !== node
 
     if (isSubQuery) {
       this.append('(')
@@ -257,7 +257,7 @@ export class DefaultQueryCompiler
   }
 
   protected override visitDeleteQuery(node: DeleteQueryNode): void {
-    const isSubQuery = this.nodeStack.find(queryNode.is) !== node
+    const isSubQuery = this.nodeStack.find(QueryNode.is) !== node
 
     if (isSubQuery) {
       this.append('(')
@@ -436,7 +436,7 @@ export class DefaultQueryCompiler
     if (node.isAutoIncrementing) {
       // Postgres overrides the data type for autoincrementing columns.
       if (
-        dataTypeNode.is(node.dataType) &&
+        DataTypeNode.is(node.dataType) &&
         node.dataType.dataType === 'bigint'
       ) {
         this.append('bigserial')
@@ -523,7 +523,7 @@ export class DefaultQueryCompiler
   }
 
   protected override visitUpdateQuery(node: UpdateQueryNode): void {
-    const isSubQuery = this.nodeStack.find(queryNode.is) !== node
+    const isSubQuery = this.nodeStack.find(QueryNode.is) !== node
 
     if (isSubQuery) {
       this.append('(')
@@ -616,13 +616,13 @@ export class DefaultQueryCompiler
     if (node.expression) {
       this.append(' (')
 
-      if (rawNode.is(node.expression)) {
+      if (RawNode.is(node.expression)) {
         this.append('(')
       }
 
       this.visitNode(node.expression)
 
-      if (rawNode.is(node.expression)) {
+      if (RawNode.is(node.expression)) {
         this.append(')')
       }
 

@@ -1,15 +1,15 @@
 import { freeze } from '../util/object-utils.js'
-import { FromNode, fromNode } from './from-node.js'
+import { FromNode } from './from-node.js'
 import { GroupByItemNode } from './group-by-item-node.js'
-import { GroupByNode, groupByNode } from './group-by-node.js'
-import { havingNode, HavingNode, HavingNodeChild } from './having-node.js'
+import { GroupByNode } from './group-by-node.js'
+import { HavingNode, HavingNodeChild } from './having-node.js'
 import { JoinNode } from './join-node.js'
 import { LimitNode } from './limit-node.js'
 import { OffsetNode } from './offset-node.js'
 import { OperationNode } from './operation-node.js'
 import { TableExpressionNode } from './operation-node-utils.js'
 import { OrderByItemNode } from './order-by-item-node.js'
-import { OrderByNode, orderByNode } from './order-by-node.js'
+import { OrderByNode } from './order-by-node.js'
 import { SelectionNode } from './selection-node.js'
 import { WhereNode } from './where-node.js'
 import { WithNode } from './with-node.js'
@@ -42,7 +42,7 @@ export interface SelectQueryNode extends OperationNode {
 /**
  * @internal
  */
-export const selectQueryNode = freeze({
+export const SelectQueryNode = freeze({
   is(node: OperationNode): node is SelectQueryNode {
     return node.kind === 'SelectQueryNode'
   },
@@ -53,7 +53,7 @@ export const selectQueryNode = freeze({
   ): SelectQueryNode {
     return freeze({
       kind: 'SelectQueryNode',
-      from: fromNode.create(fromItems),
+      from: FromNode.create(fromItems),
       ...(withNode && { with: withNode }),
     })
   },
@@ -101,8 +101,8 @@ export const selectQueryNode = freeze({
     return freeze({
       ...selectNode,
       orderBy: selectNode.orderBy
-        ? orderByNode.cloneWithItem(selectNode.orderBy, item)
-        : orderByNode.create(item),
+        ? OrderByNode.cloneWithItem(selectNode.orderBy, item)
+        : OrderByNode.create(item),
     })
   },
 
@@ -113,8 +113,8 @@ export const selectQueryNode = freeze({
     return freeze({
       ...selectNode,
       groupBy: selectNode.groupBy
-        ? groupByNode.cloneWithItems(selectNode.groupBy, items)
-        : groupByNode.create(items),
+        ? GroupByNode.cloneWithItems(selectNode.groupBy, items)
+        : GroupByNode.create(items),
     })
   },
 
@@ -146,8 +146,8 @@ export const selectQueryNode = freeze({
     return freeze({
       ...selectNode,
       having: selectNode.having
-        ? havingNode.cloneWithFilter(selectNode.having, op, filter)
-        : havingNode.create(filter),
+        ? HavingNode.cloneWithFilter(selectNode.having, op, filter)
+        : HavingNode.create(filter),
     })
   },
 

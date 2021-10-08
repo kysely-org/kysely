@@ -9,7 +9,7 @@ export interface IdentifierNode extends OperationNode {
 /**
  * @internal
  */
-export const identifierNode = freeze({
+export const IdentifierNode = freeze({
   is(node: OperationNode): node is IdentifierNode {
     return node.kind === 'IdentifierNode'
   },

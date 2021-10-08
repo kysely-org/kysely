@@ -1,7 +1,7 @@
 import { freeze } from '../util/object-utils.js'
 import { ColumnNode } from './column-node.js'
 import { ColumnUpdateNode } from './column-update-node.js'
-import { OnConflictNode, onConflictNode } from './on-conflict-node.js'
+import { OnConflictNode } from './on-conflict-node.js'
 import { OperationNode } from './operation-node.js'
 import { PrimitiveValueListNode } from './primitive-value-list-node.js'
 import { ReturningNode } from './returning-node.js'
@@ -24,7 +24,7 @@ export interface InsertQueryNode extends OperationNode {
 /**
  * @internal
  */
-export const insertQueryNode = freeze({
+export const InsertQueryNode = freeze({
   is(node: OperationNode): node is InsertQueryNode {
     return node.kind === 'InsertQueryNode'
   },
@@ -55,7 +55,7 @@ export const insertQueryNode = freeze({
   ): InsertQueryNode {
     return freeze({
       ...insertQuery,
-      onConflict: onConflictNode.createWithDoNothing(columns),
+      onConflict: OnConflictNode.createWithDoNothing(columns),
     })
   },
 
@@ -66,7 +66,7 @@ export const insertQueryNode = freeze({
   ): InsertQueryNode {
     return freeze({
       ...insertQuery,
-      onConflict: onConflictNode.createWithUpdates(columns, updates),
+      onConflict: OnConflictNode.createWithUpdates(columns, updates),
     })
   },
 })

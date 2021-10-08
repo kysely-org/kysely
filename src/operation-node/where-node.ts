@@ -1,8 +1,8 @@
 import { freeze } from '../util/object-utils.js'
-import { AndNode, andNode } from './and-node.js'
+import { AndNode } from './and-node.js'
 import { FilterNode } from './filter-node.js'
 import { OperationNode } from './operation-node.js'
-import { OrNode, orNode } from './or-node.js'
+import { OrNode } from './or-node.js'
 import { ParensNode } from './parens-node.js'
 
 export type WhereChildNode = FilterNode | AndNode | OrNode | ParensNode
@@ -15,7 +15,7 @@ export interface WhereNode extends OperationNode {
 /**
  * @internal
  */
-export const whereNode = freeze({
+export const WhereNode = freeze({
   is(node: OperationNode): node is WhereNode {
     return node.kind === 'WhereNode'
   },
@@ -36,8 +36,8 @@ export const whereNode = freeze({
       ...whereNode,
       where:
         op === 'and'
-          ? andNode.create(whereNode.where, where)
-          : orNode.create(whereNode.where, where),
+          ? AndNode.create(whereNode.where, where)
+          : OrNode.create(whereNode.where, where),
     })
   },
 })

@@ -1,11 +1,11 @@
 import { freeze } from '../util/object-utils.js'
-import { checkConstraintNode } from './check-constraint-node.js'
+import { CheckConstraintNode } from './check-constraint-node.js'
 import { OperationNode } from './operation-node.js'
-import { tableNode, TableNode } from './table-node.js'
-import { primaryConstraintNode } from './primary-constraint-node.js'
-import { uniqueConstraintNode } from './unique-constraint-node.js'
-import { foreignKeyConstraintNode } from './foreign-key-constraint-node.js'
-import { columnNode } from './column-node.js'
+import { TableNode } from './table-node.js'
+import { PrimaryConstraintNode } from './primary-constraint-node.js'
+import { UniqueConstraintNode } from './unique-constraint-node.js'
+import { ForeignKeyConstraintNode } from './foreign-key-constraint-node.js'
+import { ColumnNode } from './column-node.js'
 import { ConstraintNode } from './constraint-node.js'
 import { ColumnDefinitionNode } from './column-definition-node.js'
 
@@ -22,7 +22,7 @@ export interface CreateTableNode extends OperationNode {
 /**
  * @internal
  */
-export const createTableNode = freeze({
+export const CreateTableNode = freeze({
   is(node: OperationNode): node is CreateTableNode {
     return node.kind === 'CreateTableNode'
   },
@@ -60,7 +60,7 @@ export const createTableNode = freeze({
     constraintName: string,
     columns: string[]
   ): CreateTableNode {
-    const constraint = primaryConstraintNode.create(columns, constraintName)
+    const constraint = PrimaryConstraintNode.create(columns, constraintName)
 
     return freeze({
       ...createTable,
@@ -75,7 +75,7 @@ export const createTableNode = freeze({
     constraintName: string,
     columns: string[]
   ): CreateTableNode {
-    const constraint = uniqueConstraintNode.create(columns, constraintName)
+    const constraint = UniqueConstraintNode.create(columns, constraintName)
 
     return freeze({
       ...createTable,
@@ -90,7 +90,7 @@ export const createTableNode = freeze({
     constraintName: string,
     sql: string
   ): CreateTableNode {
-    const constraint = checkConstraintNode.create(sql, constraintName)
+    const constraint = CheckConstraintNode.create(sql, constraintName)
 
     return freeze({
       ...createTable,
@@ -107,10 +107,10 @@ export const createTableNode = freeze({
     targetTable: string,
     targetColumns: string[]
   ): CreateTableNode {
-    const constraint = foreignKeyConstraintNode.create(
-      sourceColumns.map(columnNode.create),
-      tableNode.create(targetTable),
-      targetColumns.map(columnNode.create),
+    const constraint = ForeignKeyConstraintNode.create(
+      sourceColumns.map(ColumnNode.create),
+      TableNode.create(targetTable),
+      targetColumns.map(ColumnNode.create),
       constraintName
     )
 

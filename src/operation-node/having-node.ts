@@ -1,8 +1,8 @@
 import { freeze } from '../util/object-utils.js'
-import { AndNode, andNode } from './and-node.js'
+import { AndNode } from './and-node.js'
 import { FilterNode } from './filter-node.js'
 import { OperationNode } from './operation-node.js'
-import { OrNode, orNode } from './or-node.js'
+import { OrNode } from './or-node.js'
 import { ParensNode } from './parens-node.js'
 
 export type HavingNodeChild = FilterNode | AndNode | OrNode | ParensNode
@@ -15,7 +15,7 @@ export interface HavingNode extends OperationNode {
 /**
  * @internal
  */
-export const havingNode = freeze({
+export const HavingNode = freeze({
   is(node: OperationNode): node is HavingNode {
     return node.kind === 'HavingNode'
   },
@@ -36,8 +36,8 @@ export const havingNode = freeze({
       ...havingNode,
       having:
         op === 'and'
-          ? andNode.create(havingNode.having, having)
-          : orNode.create(havingNode.having, having),
+          ? AndNode.create(havingNode.having, having)
+          : OrNode.create(havingNode.having, having),
     })
   },
 })

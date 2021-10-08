@@ -1,5 +1,5 @@
 import { freeze } from '../util/object-utils.js'
-import { IdentifierNode, identifierNode } from './identifier-node.js'
+import { IdentifierNode } from './identifier-node.js'
 import { OperationNode } from './operation-node.js'
 
 export interface TableNode extends OperationNode {
@@ -11,7 +11,7 @@ export interface TableNode extends OperationNode {
 /**
  * @internal
  */
-export const tableNode = freeze({
+export const TableNode = freeze({
   is(node: OperationNode): node is TableNode {
     return node.kind === 'TableNode'
   },
@@ -19,15 +19,15 @@ export const tableNode = freeze({
   create(table: string): TableNode {
     return {
       kind: 'TableNode',
-      table: identifierNode.create(table),
+      table: IdentifierNode.create(table),
     }
   },
 
   createWithSchema(schema: string, table: string): TableNode {
     return freeze({
       kind: 'TableNode',
-      schema: identifierNode.create(schema),
-      table: identifierNode.create(table),
+      schema: IdentifierNode.create(schema),
+      table: IdentifierNode.create(table),
     })
   },
 })

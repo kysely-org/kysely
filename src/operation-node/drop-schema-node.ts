@@ -1,5 +1,5 @@
 import { freeze } from '../util/object-utils.js'
-import { IdentifierNode, identifierNode } from './identifier-node.js'
+import { IdentifierNode } from './identifier-node.js'
 import { OperationNode } from './operation-node.js'
 
 export type DropSchemaNodeModifier = 'IfExists'
@@ -17,7 +17,7 @@ export interface DropSchemaNode extends OperationNode {
 /**
  * @internal
  */
-export const dropSchemaNode = freeze({
+export const DropSchemaNode = freeze({
   is(node: OperationNode): node is DropSchemaNode {
     return node.kind === 'DropSchemaNode'
   },
@@ -25,7 +25,7 @@ export const dropSchemaNode = freeze({
   create(schema: string, params?: DropSchemaNodeParams): DropSchemaNode {
     return freeze({
       kind: 'DropSchemaNode',
-      schema: identifierNode.create(schema),
+      schema: IdentifierNode.create(schema),
       ...params,
     })
   },

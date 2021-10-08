@@ -1,7 +1,4 @@
-import {
-  dropTableNode,
-  DropTableNode,
-} from '../operation-node/drop-table-node.js'
+import { DropTableNode } from '../operation-node/drop-table-node.js'
 import { OperationNodeSource } from '../operation-node/operation-node-source.js'
 import { CompiledQuery } from '../query-compiler/compiled-query.js'
 import { Compilable } from '../util/compilable.js'
@@ -20,7 +17,7 @@ export class DropTableBuilder implements OperationNodeSource, Compilable {
   ifExists(): DropTableBuilder {
     return new DropTableBuilder({
       executor: this.#executor,
-      dropTableNode: dropTableNode.cloneWithModifier(
+      dropTableNode: DropTableNode.cloneWithModifier(
         this.#dropTableNode,
         'IfExists'
       ),

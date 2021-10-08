@@ -1,19 +1,16 @@
-import { checkConstraintNode } from '../operation-node/check-constraint-node.js'
+import { CheckConstraintNode } from '../operation-node/check-constraint-node.js'
 import {
   isOperationNodeSource,
   OperationNodeSource,
 } from '../operation-node/operation-node-source.js'
-import { referenceNode } from '../operation-node/reference-node.js'
-import { OnDelete, referencesNode } from '../operation-node/references-node.js'
-import { selectAllNode } from '../operation-node/select-all-node.js'
-import { valueNode } from '../operation-node/value-node.js'
+import { ReferenceNode } from '../operation-node/reference-node.js'
+import { OnDelete, ReferencesNode } from '../operation-node/references-node.js'
+import { SelectAllNode } from '../operation-node/select-all-node.js'
+import { ValueNode } from '../operation-node/value-node.js'
 import { parseStringReference } from '../parser/reference-parser.js'
 import { PrimitiveValue } from '../util/object-utils.js'
 import { preventAwait } from '../util/prevent-await.js'
-import {
-  columnDefinitionNode,
-  ColumnDefinitionNode,
-} from '../operation-node/column-definition-node.js'
+import { ColumnDefinitionNode } from '../operation-node/column-definition-node.js'
 import { AnyRawBuilder } from '../query-builder/type-utils.js'
 
 export interface ColumnDefinitionBuilderInterface<R> {
@@ -99,28 +96,28 @@ export class ColumnDefinitionBuilder
 
   increments(): ColumnDefinitionBuilder {
     return new ColumnDefinitionBuilder(
-      columnDefinitionNode.cloneWith(this.#node, { isAutoIncrementing: true })
+      ColumnDefinitionNode.cloneWith(this.#node, { isAutoIncrementing: true })
     )
   }
 
   primaryKey(): ColumnDefinitionBuilder {
     return new ColumnDefinitionBuilder(
-      columnDefinitionNode.cloneWith(this.#node, { isPrimaryKey: true })
+      ColumnDefinitionNode.cloneWith(this.#node, { isPrimaryKey: true })
     )
   }
 
   references(ref: string): ColumnDefinitionBuilder {
     const references = parseStringReference(ref)
 
-    if (!referenceNode.is(references) || selectAllNode.is(references.column)) {
+    if (!ReferenceNode.is(references) || SelectAllNode.is(references.column)) {
       throw new Error(
         `invalid call references('${ref}'). The reference must have format table.column or schema.table.column`
       )
     }
 
     return new ColumnDefinitionBuilder(
-      columnDefinitionNode.cloneWith(this.#node, {
-        references: referencesNode.create(references.table, [
+      ColumnDefinitionNode.cloneWith(this.#node, {
+        references: ReferencesNode.create(references.table, [
           references.column,
         ]),
       })
@@ -133,8 +130,8 @@ export class ColumnDefinitionBuilder
     }
 
     return new ColumnDefinitionBuilder(
-      columnDefinitionNode.cloneWith(this.#node, {
-        references: referencesNode.cloneWithOnDelete(
+      ColumnDefinitionNode.cloneWith(this.#node, {
+        references: ReferencesNode.cloneWithOnDelete(
           this.#node.references,
           onDelete
         ),
@@ -144,30 +141,30 @@ export class ColumnDefinitionBuilder
 
   unique(): ColumnDefinitionBuilder {
     return new ColumnDefinitionBuilder(
-      columnDefinitionNode.cloneWith(this.#node, { isUnique: true })
+      ColumnDefinitionNode.cloneWith(this.#node, { isUnique: true })
     )
   }
 
   notNull(): ColumnDefinitionBuilder {
     return new ColumnDefinitionBuilder(
-      columnDefinitionNode.cloneWith(this.#node, { isNullable: false })
+      ColumnDefinitionNode.cloneWith(this.#node, { isNullable: false })
     )
   }
 
   defaultTo(value: PrimitiveValue | AnyRawBuilder): ColumnDefinitionBuilder {
     return new ColumnDefinitionBuilder(
-      columnDefinitionNode.cloneWith(this.#node, {
+      ColumnDefinitionNode.cloneWith(this.#node, {
         defaultTo: isOperationNodeSource(value)
           ? value.toOperationNode()
-          : valueNode.createImmediate(value),
+          : ValueNode.createImmediate(value),
       })
     )
   }
 
   check(sql: string): ColumnDefinitionBuilder {
     return new ColumnDefinitionBuilder(
-      columnDefinitionNode.cloneWith(this.#node, {
-        check: checkConstraintNode.create(sql),
+      ColumnDefinitionNode.cloneWith(this.#node, {
+        check: CheckConstraintNode.create(sql),
       })
     )
   }

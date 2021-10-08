@@ -1,4 +1,4 @@
-import { aliasNode } from '../operation-node/alias-node.js'
+import { AliasNode } from '../operation-node/alias-node.js'
 import { AlterTableNode } from '../operation-node/alter-table-node.js'
 import { CreateIndexNode } from '../operation-node/create-index-node.js'
 import { CreateTableNode } from '../operation-node/create-table-node.js'
@@ -10,7 +10,7 @@ import { JoinNode } from '../operation-node/join-node.js'
 import { OperationNodeTransformer } from '../operation-node/operation-node-transformer.js'
 import { TableExpressionNode } from '../operation-node/operation-node-utils.js'
 import { SelectQueryNode } from '../operation-node/select-query-node.js'
-import { tableNode, TableNode } from '../operation-node/table-node.js'
+import { TableNode } from '../operation-node/table-node.js'
 import { UpdateQueryNode } from '../operation-node/update-query-node.js'
 import { CompileEntryPointNode } from '../query-compiler/query-compiler.js'
 
@@ -168,9 +168,9 @@ export class WithSchemaTransformer extends OperationNodeTransformer {
     node: TableExpressionNode,
     tables: Set<string>
   ): void {
-    const table = tableNode.is(node)
+    const table = TableNode.is(node)
       ? node
-      : aliasNode.is(node) && tableNode.is(node.node)
+      : AliasNode.is(node) && TableNode.is(node.node)
       ? node.node
       : null
 

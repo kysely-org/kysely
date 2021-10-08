@@ -1,4 +1,3 @@
-import { ColumnDataType, MIGRATION_LOCK_TABLE, MIGRATION_TABLE } from '../..'
 import {
   DatabaseIntrospector,
   DatabaseMetadata,
@@ -6,6 +5,11 @@ import {
   TableMetadata,
 } from '../../introspection/database-introspector'
 import { Kysely } from '../../kysely'
+import {
+  MIGRATION_LOCK_TABLE,
+  MIGRATION_TABLE,
+} from '../../migration/migration'
+import { ColumnDataType } from '../../operation-node/data-type-node'
 import { freeze } from '../../util/object-utils'
 
 export class PostgresIntrospector implements DatabaseIntrospector {

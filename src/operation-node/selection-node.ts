@@ -2,8 +2,8 @@ import { freeze } from '../util/object-utils.js'
 import { AliasNode } from './alias-node.js'
 import { ColumnNode } from './column-node.js'
 import { OperationNode } from './operation-node.js'
-import { referenceNode, ReferenceNode } from './reference-node.js'
-import { selectAllNode, SelectAllNode } from './select-all-node.js'
+import { ReferenceNode } from './reference-node.js'
+import { SelectAllNode } from './select-all-node.js'
 
 type SelectionNodeChild = ColumnNode | ReferenceNode | AliasNode | SelectAllNode
 
@@ -15,7 +15,7 @@ export interface SelectionNode extends OperationNode {
 /**
  * @internal
  */
-export const selectionNode = freeze({
+export const SelectionNode = freeze({
   is(node: OperationNode): node is SelectionNode {
     return node.kind === 'SelectionNode'
   },
@@ -30,14 +30,14 @@ export const selectionNode = freeze({
   createSelectAll(): SelectionNode {
     return freeze({
       kind: 'SelectionNode',
-      selection: selectAllNode.create(),
+      selection: SelectAllNode.create(),
     })
   },
 
   createSelectAllFromTable(table: string): SelectionNode {
     return freeze({
       kind: 'SelectionNode',
-      selection: referenceNode.createSelectAll(table),
+      selection: ReferenceNode.createSelectAll(table),
     })
   },
 })

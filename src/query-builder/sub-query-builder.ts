@@ -1,5 +1,5 @@
 import { QueryBuilder } from './query-builder.js'
-import { selectQueryNode } from '../operation-node/select-query-node.js'
+import { SelectQueryNode } from '../operation-node/select-query-node.js'
 import {
   parseTableExpressionOrList,
   TableExpression,
@@ -69,7 +69,7 @@ export class SubQueryBuilder<DB, TB extends keyof DB> {
   subQuery(table: any): any {
     return new QueryBuilder({
       executor: this.#executor,
-      queryNode: selectQueryNode.create(parseTableExpressionOrList(table)),
+      queryNode: SelectQueryNode.create(parseTableExpressionOrList(table)),
     })
   }
 

@@ -10,7 +10,7 @@ export interface ReturningNode extends OperationNode {
 /**
  * @internal
  */
-export const returningNode = freeze({
+export const ReturningNode = freeze({
   is(node: OperationNode): node is ReturningNode {
     return node.kind === 'ReturningNode'
   },

@@ -13,7 +13,7 @@ export interface OnConflictNode extends OperationNode {
 /**
  * @internal
  */
-export const onConflictNode = freeze({
+export const OnConflictNode = freeze({
   is(node: OperationNode): node is OnConflictNode {
     return node.kind === 'OnConflictNode'
   },

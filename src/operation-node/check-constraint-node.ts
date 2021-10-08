@@ -1,7 +1,7 @@
 import { OperationNode } from './operation-node.js'
 import { freeze } from '../util/object-utils.js'
-import { rawNode, RawNode } from './raw-node.js'
-import { identifierNode, IdentifierNode } from './identifier-node.js'
+import { RawNode } from './raw-node.js'
+import { IdentifierNode } from './identifier-node.js'
 
 export interface CheckConstraintNode extends OperationNode {
   readonly kind: 'CheckConstraintNode'
@@ -12,7 +12,7 @@ export interface CheckConstraintNode extends OperationNode {
 /**
  * @internal
  */
-export const checkConstraintNode = freeze({
+export const CheckConstraintNode = freeze({
   is(node: OperationNode): node is CheckConstraintNode {
     return node.kind === 'CheckConstraintNode'
   },
@@ -20,8 +20,8 @@ export const checkConstraintNode = freeze({
   create(expressionSql: string, constraintName?: string): CheckConstraintNode {
     return freeze({
       kind: 'CheckConstraintNode',
-      expression: rawNode.createWithSql(expressionSql),
-      name: constraintName ? identifierNode.create(constraintName) : undefined,
+      expression: RawNode.createWithSql(expressionSql),
+      name: constraintName ? IdentifierNode.create(constraintName) : undefined,
     })
   },
 })

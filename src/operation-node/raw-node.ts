@@ -10,7 +10,7 @@ export interface RawNode extends OperationNode {
 /**
  * @internal
  */
-export const rawNode = freeze({
+export const RawNode = freeze({
   is(node: OperationNode): node is RawNode {
     return node.kind === 'RawNode'
   },
@@ -27,6 +27,6 @@ export const rawNode = freeze({
   },
 
   createWithSql(sql: string): RawNode {
-    return rawNode.create([sql], [])
+    return RawNode.create([sql], [])
   },
 })

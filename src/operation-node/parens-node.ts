@@ -10,7 +10,7 @@ export interface ParensNode extends OperationNode {
 /**
  * @internal
  */
-export const parensNode = freeze({
+export const ParensNode = freeze({
   is(node: OperationNode): node is ParensNode {
     return node.kind === 'ParensNode'
   },

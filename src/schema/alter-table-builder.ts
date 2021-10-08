@@ -1,27 +1,21 @@
-import { addColumnNode } from '../operation-node/add-column-node.js'
-import {
-  alterColumnNode,
-  AlterColumnNode,
-} from '../operation-node/alter-column-node.js'
-import {
-  alterTableNode,
-  AlterTableNode,
-} from '../operation-node/alter-table-node.js'
-import { columnDefinitionNode } from '../operation-node/column-definition-node.js'
+import { AddColumnNode } from '../operation-node/add-column-node.js'
+import { AlterColumnNode } from '../operation-node/alter-column-node.js'
+import { AlterTableNode } from '../operation-node/alter-table-node.js'
+import { ColumnDefinitionNode } from '../operation-node/column-definition-node.js'
 import {
   ColumnDataType,
-  dataTypeNode,
+  DataTypeNode,
 } from '../operation-node/data-type-node.js'
-import { dropColumnNode } from '../operation-node/drop-column-node.js'
-import { identifierNode } from '../operation-node/identifier-node.js'
+import { DropColumnNode } from '../operation-node/drop-column-node.js'
+import { IdentifierNode } from '../operation-node/identifier-node.js'
 import {
   isOperationNodeSource,
   OperationNodeSource,
 } from '../operation-node/operation-node-source.js'
 import { OnDelete } from '../operation-node/references-node.js'
-import { renameColumnNode } from '../operation-node/rename-column-node.js'
-import { tableNode } from '../operation-node/table-node.js'
-import { valueNode } from '../operation-node/value-node.js'
+import { RenameColumnNode } from '../operation-node/rename-column-node.js'
+import { TableNode } from '../operation-node/table-node.js'
+import { ValueNode } from '../operation-node/value-node.js'
 import { CompiledQuery } from '../query-compiler/compiled-query.js'
 import { RawBuilder } from '../raw-builder/raw-builder.js'
 import { Compilable } from '../util/compilable.js'
@@ -46,8 +40,8 @@ export class AlterTableBuilder {
   renameTo(newTableName: string): AlterTableExecutor {
     return new AlterTableExecutor({
       executor: this.#executor,
-      alterTableNode: alterTableNode.cloneWith(this.#alterTableNode, {
-        renameTo: tableNode.create(newTableName),
+      alterTableNode: AlterTableNode.cloneWith(this.#alterTableNode, {
+        renameTo: TableNode.create(newTableName),
       }),
     })
   }
@@ -55,8 +49,8 @@ export class AlterTableBuilder {
   setSchema(newSchema: string): AlterTableExecutor {
     return new AlterTableExecutor({
       executor: this.#executor,
-      alterTableNode: alterTableNode.cloneWith(this.#alterTableNode, {
-        setSchema: identifierNode.create(newSchema),
+      alterTableNode: AlterTableNode.cloneWith(this.#alterTableNode, {
+        setSchema: IdentifierNode.create(newSchema),
       }),
     })
   }
@@ -64,7 +58,7 @@ export class AlterTableBuilder {
   alterColumn(column: string): AlterColumnBuilder {
     return new AlterColumnBuilder({
       alterTableNode: this.#alterTableNode,
-      alterColumnNode: alterColumnNode.create(column),
+      alterColumnNode: AlterColumnNode.create(column),
       executor: this.#executor,
     })
   }
@@ -72,8 +66,8 @@ export class AlterTableBuilder {
   dropColumn(column: string): AlterTableExecutor {
     return new AlterTableExecutor({
       executor: this.#executor,
-      alterTableNode: alterTableNode.cloneWith(this.#alterTableNode, {
-        dropColumn: dropColumnNode.create(column),
+      alterTableNode: AlterTableNode.cloneWith(this.#alterTableNode, {
+        dropColumn: DropColumnNode.create(column),
       }),
     })
   }
@@ -81,8 +75,8 @@ export class AlterTableBuilder {
   renameColumn(column: string, newColumn: string): AlterTableExecutor {
     return new AlterTableExecutor({
       executor: this.#executor,
-      alterTableNode: alterTableNode.cloneWith(this.#alterTableNode, {
-        renameColumn: renameColumnNode.create(column, newColumn),
+      alterTableNode: AlterTableNode.cloneWith(this.#alterTableNode, {
+        renameColumn: RenameColumnNode.create(column, newColumn),
       }),
     })
   }
@@ -95,11 +89,11 @@ export class AlterTableBuilder {
       executor: this.#executor,
       alterTableNode: this.#alterTableNode,
       columnBuilder: new ColumnDefinitionBuilder(
-        columnDefinitionNode.create(
+        ColumnDefinitionNode.create(
           columnName,
           isOperationNodeSource(dataType)
             ? dataType.toOperationNode()
-            : dataTypeNode.create(dataType)
+            : DataTypeNode.create(dataType)
         )
       ),
     })
@@ -120,9 +114,9 @@ export class AlterColumnBuilder {
   setDataType(dataType: ColumnDataType): AlterTableExecutor {
     return new AlterTableExecutor({
       executor: this.#executor,
-      alterTableNode: alterTableNode.cloneWith(this.#alterTableNode, {
-        alterColumn: alterColumnNode.cloneWith(this.#alterColumnNode, {
-          dataType: dataTypeNode.create(dataType),
+      alterTableNode: AlterTableNode.cloneWith(this.#alterTableNode, {
+        alterColumn: AlterColumnNode.cloneWith(this.#alterColumnNode, {
+          dataType: DataTypeNode.create(dataType),
         }),
       }),
     })
@@ -131,11 +125,11 @@ export class AlterColumnBuilder {
   setDefault(value: PrimitiveValue | AnyRawBuilder): AlterTableExecutor {
     return new AlterTableExecutor({
       executor: this.#executor,
-      alterTableNode: alterTableNode.cloneWith(this.#alterTableNode, {
-        alterColumn: alterColumnNode.cloneWith(this.#alterColumnNode, {
+      alterTableNode: AlterTableNode.cloneWith(this.#alterTableNode, {
+        alterColumn: AlterColumnNode.cloneWith(this.#alterColumnNode, {
           setDefault: isOperationNodeSource(value)
             ? value.toOperationNode()
-            : valueNode.createImmediate(value),
+            : ValueNode.createImmediate(value),
         }),
       }),
     })
@@ -144,8 +138,8 @@ export class AlterColumnBuilder {
   dropDefault(): AlterTableExecutor {
     return new AlterTableExecutor({
       executor: this.#executor,
-      alterTableNode: alterTableNode.cloneWith(this.#alterTableNode, {
-        alterColumn: alterColumnNode.cloneWith(this.#alterColumnNode, {
+      alterTableNode: AlterTableNode.cloneWith(this.#alterTableNode, {
+        alterColumn: AlterColumnNode.cloneWith(this.#alterColumnNode, {
           dropDefault: true,
         }),
       }),
@@ -155,8 +149,8 @@ export class AlterColumnBuilder {
   setNotNull(): AlterTableExecutor {
     return new AlterTableExecutor({
       executor: this.#executor,
-      alterTableNode: alterTableNode.cloneWith(this.#alterTableNode, {
-        alterColumn: alterColumnNode.cloneWith(this.#alterColumnNode, {
+      alterTableNode: AlterTableNode.cloneWith(this.#alterTableNode, {
+        alterColumn: AlterColumnNode.cloneWith(this.#alterColumnNode, {
           setNotNull: true,
         }),
       }),
@@ -166,8 +160,8 @@ export class AlterColumnBuilder {
   dropNotNull(): AlterTableExecutor {
     return new AlterTableExecutor({
       executor: this.#executor,
-      alterTableNode: alterTableNode.cloneWith(this.#alterTableNode, {
-        alterColumn: alterColumnNode.cloneWith(this.#alterColumnNode, {
+      alterTableNode: AlterTableNode.cloneWith(this.#alterTableNode, {
+        alterColumn: AlterColumnNode.cloneWith(this.#alterColumnNode, {
           dropNotNull: true,
         }),
       }),
@@ -276,8 +270,8 @@ export class AlterTableAddColumnBuilder
 
   toOperationNode(): AlterTableNode {
     return this.#executor.transformNode(
-      alterTableNode.cloneWith(this.#alterTableNode, {
-        addColumn: addColumnNode.create(this.#columnBuilder.toOperationNode()),
+      AlterTableNode.cloneWith(this.#alterTableNode, {
+        addColumn: AddColumnNode.create(this.#columnBuilder.toOperationNode()),
       })
     )
   }

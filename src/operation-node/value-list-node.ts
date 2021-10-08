@@ -15,7 +15,7 @@ export interface ValueListNode extends OperationNode {
 /**
  * @internal
  */
-export const valueListNode = freeze({
+export const ValueListNode = freeze({
   is(node: OperationNode): node is ValueListNode {
     return node.kind === 'ValueListNode'
   },

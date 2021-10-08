@@ -10,7 +10,7 @@ export interface ValueNode extends OperationNode {
 /**
  * @internal
  */
-export const valueNode = freeze({
+export const ValueNode = freeze({
   is(node: OperationNode): node is ValueNode {
     return node.kind === 'ValueNode'
   },

@@ -10,7 +10,7 @@ export interface GroupByItemNode extends OperationNode {
 /**
  * @internal
  */
-export const groupByItemNode = freeze({
+export const GroupByItemNode = freeze({
   is(node: OperationNode): node is GroupByItemNode {
     return node.kind === 'GroupByItemNode'
   },

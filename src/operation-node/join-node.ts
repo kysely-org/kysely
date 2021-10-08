@@ -1,9 +1,9 @@
 import { freeze } from '../util/object-utils.js'
 import { AliasNode } from './alias-node.js'
-import { AndNode, andNode } from './and-node.js'
+import { AndNode } from './and-node.js'
 import { FilterNode } from './filter-node.js'
 import { OperationNode } from './operation-node.js'
-import { OrNode, orNode } from './or-node.js'
+import { OrNode } from './or-node.js'
 import { ParensNode } from './parens-node.js'
 import { TableNode } from './table-node.js'
 
@@ -21,7 +21,7 @@ export interface JoinNode extends OperationNode {
 /**
  * @internal
  */
-export const joinNode = freeze({
+export const JoinNode = freeze({
   is(node: OperationNode): node is JoinNode {
     return node.kind === 'JoinNode'
   },
@@ -44,8 +44,8 @@ export const joinNode = freeze({
       ...joinNode,
       on: joinNode.on
         ? op === 'and'
-          ? andNode.create(joinNode.on, on)
-          : orNode.create(joinNode.on, on)
+          ? AndNode.create(joinNode.on, on)
+          : OrNode.create(joinNode.on, on)
         : on,
     })
   },

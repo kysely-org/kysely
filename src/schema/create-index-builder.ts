@@ -1,11 +1,10 @@
 import {
-  createIndexNode,
   CreateIndexNode,
   IndexType,
 } from '../operation-node/create-index-node.js'
-import { listNode } from '../operation-node/list-node.js'
+import { ListNode } from '../operation-node/list-node.js'
 import { OperationNodeSource } from '../operation-node/operation-node-source.js'
-import { rawNode } from '../operation-node/raw-node.js'
+import { RawNode } from '../operation-node/raw-node.js'
 import { parseColumnName } from '../parser/reference-parser.js'
 import { parseTable } from '../parser/table-parser.js'
 import { CompiledQuery } from '../query-compiler/compiled-query.js'
@@ -28,7 +27,7 @@ export class CreateIndexBuilder implements OperationNodeSource, Compilable {
   unique(): CreateIndexBuilder {
     return new CreateIndexBuilder({
       executor: this.#executor,
-      createIndexNode: createIndexNode.cloneWith(this.#createIndexNode, {
+      createIndexNode: CreateIndexNode.cloneWith(this.#createIndexNode, {
         unique: true,
       }),
     })
@@ -40,7 +39,7 @@ export class CreateIndexBuilder implements OperationNodeSource, Compilable {
   on(table: string): CreateIndexBuilder {
     return new CreateIndexBuilder({
       executor: this.#executor,
-      createIndexNode: createIndexNode.cloneWith(this.#createIndexNode, {
+      createIndexNode: CreateIndexNode.cloneWith(this.#createIndexNode, {
         on: parseTable(table),
       }),
     })
@@ -54,7 +53,7 @@ export class CreateIndexBuilder implements OperationNodeSource, Compilable {
   column(column: string): CreateIndexBuilder {
     return new CreateIndexBuilder({
       executor: this.#executor,
-      createIndexNode: createIndexNode.cloneWith(this.#createIndexNode, {
+      createIndexNode: CreateIndexNode.cloneWith(this.#createIndexNode, {
         expression: parseColumnName(column),
       }),
     })
@@ -68,8 +67,8 @@ export class CreateIndexBuilder implements OperationNodeSource, Compilable {
   columns(columns: string[]): CreateIndexBuilder {
     return new CreateIndexBuilder({
       executor: this.#executor,
-      createIndexNode: createIndexNode.cloneWith(this.#createIndexNode, {
-        expression: listNode.create(columns.map(parseColumnName)),
+      createIndexNode: CreateIndexNode.cloneWith(this.#createIndexNode, {
+        expression: ListNode.create(columns.map(parseColumnName)),
       }),
     })
   }
@@ -89,8 +88,8 @@ export class CreateIndexBuilder implements OperationNodeSource, Compilable {
   expression(expression: string): CreateIndexBuilder {
     return new CreateIndexBuilder({
       executor: this.#executor,
-      createIndexNode: createIndexNode.cloneWith(this.#createIndexNode, {
-        expression: rawNode.createWithSql(expression),
+      createIndexNode: CreateIndexNode.cloneWith(this.#createIndexNode, {
+        expression: RawNode.createWithSql(expression),
       }),
     })
   }
@@ -103,8 +102,8 @@ export class CreateIndexBuilder implements OperationNodeSource, Compilable {
   using(indexType: string): CreateIndexBuilder {
     return new CreateIndexBuilder({
       executor: this.#executor,
-      createIndexNode: createIndexNode.cloneWith(this.#createIndexNode, {
-        using: rawNode.createWithSql(indexType),
+      createIndexNode: CreateIndexNode.cloneWith(this.#createIndexNode, {
+        using: RawNode.createWithSql(indexType),
       }),
     })
   }

@@ -1,6 +1,6 @@
 import { freeze } from '../util/object-utils.js'
 import { CheckConstraintNode } from './check-constraint-node.js'
-import { columnNode, ColumnNode } from './column-node.js'
+import { ColumnNode } from './column-node.js'
 import { DataTypeNode } from './data-type-node.js'
 import { OperationNode } from './operation-node.js'
 import { RawNode } from './raw-node.js'
@@ -29,7 +29,7 @@ export interface ColumnDefinitionNode extends OperationNode {
 /**
  * @internal
  */
-export const columnDefinitionNode = freeze({
+export const ColumnDefinitionNode = freeze({
   is(node: OperationNode): node is ColumnDefinitionNode {
     return node.kind === 'ColumnDefinitionNode'
   },
@@ -37,7 +37,7 @@ export const columnDefinitionNode = freeze({
   create(column: string, dataType: ColumnDataTypeNode): ColumnDefinitionNode {
     return freeze({
       kind: 'ColumnDefinitionNode',
-      column: columnNode.create(column),
+      column: ColumnNode.create(column),
       dataType,
       isPrimaryKey: false,
       isAutoIncrementing: false,

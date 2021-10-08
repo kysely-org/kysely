@@ -1,6 +1,6 @@
 import { freeze } from '../util/object-utils.js'
 import { ColumnNode } from './column-node.js'
-import { IdentifierNode, identifierNode } from './identifier-node.js'
+import { IdentifierNode } from './identifier-node.js'
 import { ListNode } from './list-node.js'
 import { OperationNode } from './operation-node.js'
 import { RawNode } from './raw-node.js'
@@ -22,7 +22,7 @@ export interface CreateIndexNode extends OperationNode {
 /**
  * @internal
  */
-export const createIndexNode = freeze({
+export const CreateIndexNode = freeze({
   is(node: OperationNode): node is CreateIndexNode {
     return node.kind === 'CreateIndexNode'
   },
@@ -30,7 +30,7 @@ export const createIndexNode = freeze({
   create(name: string): CreateIndexNode {
     return freeze({
       kind: 'CreateIndexNode',
-      name: identifierNode.create(name),
+      name: IdentifierNode.create(name),
     })
   },
 

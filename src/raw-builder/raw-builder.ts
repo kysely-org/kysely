@@ -1,12 +1,12 @@
 import { QueryResult } from '../driver/database-connection.js'
-import { AliasNode, aliasNode } from '../operation-node/alias-node.js'
+import { AliasNode } from '../operation-node/alias-node.js'
 import { OperationNode } from '../operation-node/operation-node.js'
 import {
   isOperationNodeSource,
   OperationNodeSource,
 } from '../operation-node/operation-node-source.js'
-import { RawNode, rawNode } from '../operation-node/raw-node.js'
-import { valueNode } from '../operation-node/value-node.js'
+import { RawNode } from '../operation-node/raw-node.js'
+import { ValueNode } from '../operation-node/value-node.js'
 import { parseStringReference } from '../parser/reference-parser.js'
 import { CompiledQuery } from '../query-compiler/compiled-query.js'
 import { preventAwait } from '../util/prevent-await.js'
@@ -55,7 +55,7 @@ export class RawBuilder<O = unknown> implements OperationNodeSource {
     }
 
     sqlFragments.push(sql.slice(sqlIdx))
-    return rawNode.create(sqlFragments, argNodes)
+    return RawNode.create(sqlFragments, argNodes)
   }
 
   as<A extends string>(alias: A): AliasedRawBuilder<O, A> {
@@ -98,7 +98,7 @@ export class AliasedRawBuilder<O = unknown, A extends string = never>
   }
 
   toOperationNode(): AliasNode {
-    return aliasNode.create(this.#rawBuilder.toOperationNode(), this.#alias)
+    return AliasNode.create(this.#rawBuilder.toOperationNode(), this.#alias)
   }
 
   constructor(rawBuilder: RawBuilder<O>, alias: A) {
@@ -113,7 +113,7 @@ function parseRawArg(match: string, arg: any): OperationNode {
   } else if (match === '??') {
     return parseStringReference(arg)
   } else {
-    return valueNode.create(arg)
+    return ValueNode.create(arg)
   }
 }
 

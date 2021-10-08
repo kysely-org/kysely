@@ -1,7 +1,4 @@
-import {
-  dropSchemaNode,
-  DropSchemaNode,
-} from '../operation-node/drop-schema-node.js'
+import { DropSchemaNode } from '../operation-node/drop-schema-node.js'
 import { OperationNodeSource } from '../operation-node/operation-node-source.js'
 import { CompiledQuery } from '../query-compiler/compiled-query.js'
 import { Compilable } from '../util/compilable.js'
@@ -20,7 +17,7 @@ export class DropSchemaBuilder implements OperationNodeSource, Compilable {
   ifExists(): DropSchemaBuilder {
     return new DropSchemaBuilder({
       executor: this.#executor,
-      dropSchemaNode: dropSchemaNode.cloneWithModifier(
+      dropSchemaNode: DropSchemaNode.cloneWithModifier(
         this.#dropSchemaNode,
         'IfExists'
       ),

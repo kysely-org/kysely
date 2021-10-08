@@ -10,7 +10,7 @@ export interface OrderByNode extends OperationNode {
 /**
  * @internal
  */
-export const orderByNode = freeze({
+export const OrderByNode = freeze({
   is(node: OperationNode): node is OrderByNode {
     return node.kind === 'OrderByNode'
   },

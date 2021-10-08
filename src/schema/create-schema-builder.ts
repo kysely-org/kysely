@@ -1,7 +1,4 @@
-import {
-  createSchemaNode,
-  CreateSchemaNode,
-} from '../operation-node/create-schema-node.js'
+import { CreateSchemaNode } from '../operation-node/create-schema-node.js'
 import { OperationNodeSource } from '../operation-node/operation-node-source.js'
 import { CompiledQuery } from '../query-compiler/compiled-query.js'
 import { Compilable } from '../util/compilable.js'
@@ -20,7 +17,7 @@ export class CreateSchemaBuilder implements OperationNodeSource, Compilable {
   ifNotExists(): CreateSchemaBuilder {
     return new CreateSchemaBuilder({
       executor: this.#executor,
-      createSchemaNode: createSchemaNode.cloneWithModifier(
+      createSchemaNode: CreateSchemaNode.cloneWithModifier(
         this.#createSchemaNode,
         'IfNotExists'
       ),

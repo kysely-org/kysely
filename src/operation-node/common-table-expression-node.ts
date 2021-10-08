@@ -13,7 +13,7 @@ export interface CommonTableExpressionNode extends OperationNode {
 /**
  * @internal
  */
-export const commonTableExpressionNode = freeze({
+export const CommonTableExpressionNode = freeze({
   is(node: OperationNode): node is CommonTableExpressionNode {
     return node.kind === 'CommonTableExpressionNode'
   },

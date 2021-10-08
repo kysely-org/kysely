@@ -2,7 +2,7 @@ import { OperationNode } from './operation-node.js'
 import { freeze } from '../util/object-utils.js'
 import { AddColumnNode } from './add-column-node.js'
 import { DropColumnNode } from './drop-column-node.js'
-import { tableNode, TableNode } from './table-node.js'
+import { TableNode } from './table-node.js'
 import { IdentifierNode } from './identifier-node.js'
 import { RenameColumnNode } from './rename-column-node.js'
 import { AlterColumnNode } from './alter-column-node.js'
@@ -30,7 +30,7 @@ export interface AlterTableNode extends OperationNode {
 /**
  * @internal
  */
-export const alterTableNode = freeze({
+export const AlterTableNode = freeze({
   is(node: OperationNode): node is AlterTableNode {
     return node.kind === 'AlterTableNode'
   },
@@ -38,7 +38,7 @@ export const alterTableNode = freeze({
   create(table: string): AlterTableNode {
     return freeze({
       kind: 'AlterTableNode',
-      table: tableNode.create(table),
+      table: TableNode.create(table),
     })
   },
 

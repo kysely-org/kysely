@@ -1,6 +1,6 @@
 import { freeze } from '../util/object-utils.js'
 import { OperationNode } from './operation-node.js'
-import { valueNode, ValueNode } from './value-node.js'
+import { ValueNode } from './value-node.js'
 
 export interface LimitNode extends OperationNode {
   readonly kind: 'LimitNode'
@@ -10,7 +10,7 @@ export interface LimitNode extends OperationNode {
 /**
  * @internal
  */
-export const limitNode = freeze({
+export const LimitNode = freeze({
   is(node: OperationNode): node is LimitNode {
     return node.kind === 'LimitNode'
   },
@@ -18,7 +18,7 @@ export const limitNode = freeze({
   create(limit: number): LimitNode {
     return freeze({
       kind: 'LimitNode',
-      limit: valueNode.create(limit),
+      limit: ValueNode.create(limit),
     })
   },
 })

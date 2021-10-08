@@ -1,6 +1,6 @@
 import { OperationNode } from './operation-node.js'
 import { freeze } from '../util/object-utils.js'
-import { columnNode, ColumnNode } from './column-node.js'
+import { ColumnNode } from './column-node.js'
 import { DataTypeNode } from './data-type-node.js'
 import { ValueNode } from './value-node.js'
 import { RawNode } from './raw-node.js'
@@ -24,7 +24,7 @@ export interface AlterColumnNode extends OperationNode {
 /**
  * @internal
  */
-export const alterColumnNode = freeze({
+export const AlterColumnNode = freeze({
   is(node: OperationNode): node is AlterColumnNode {
     return node.kind === 'AlterColumnNode'
   },
@@ -32,7 +32,7 @@ export const alterColumnNode = freeze({
   create(column: string): AlterColumnNode {
     return freeze({
       kind: 'AlterColumnNode',
-      column: columnNode.create(column),
+      column: ColumnNode.create(column),
     })
   },
 

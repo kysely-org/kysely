@@ -1,6 +1,6 @@
 import { freeze } from '../util/object-utils.js'
 import { ColumnNode } from './column-node.js'
-import { IdentifierNode, identifierNode } from './identifier-node.js'
+import { IdentifierNode } from './identifier-node.js'
 import { OperationNode } from './operation-node.js'
 import { RawNode } from './raw-node.js'
 import { ReferenceNode } from './reference-node.js'
@@ -23,7 +23,7 @@ export interface AliasNode extends OperationNode {
 /**
  * @internal
  */
-export const aliasNode = freeze({
+export const AliasNode = freeze({
   is(node: OperationNode): node is AliasNode {
     return node.kind === 'AliasNode'
   },
@@ -32,7 +32,7 @@ export const aliasNode = freeze({
     return freeze({
       kind: 'AliasNode',
       node,
-      alias: identifierNode.create(alias),
+      alias: IdentifierNode.create(alias),
     })
   },
 })

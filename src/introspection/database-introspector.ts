@@ -27,8 +27,8 @@ export interface DatabaseMetadata {
 
 export interface TableMetadata {
   readonly name: string
-  readonly schema?: string
   readonly columns: ColumnMetadata[]
+  readonly schema?: string
 }
 
 export interface ColumnMetadata {

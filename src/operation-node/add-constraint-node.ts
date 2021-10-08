@@ -10,7 +10,7 @@ export interface AddConstraintNode extends OperationNode {
 /**
  * @internal
  */
-export const addConstraintNode = freeze({
+export const AddConstraintNode = freeze({
   is(node: OperationNode): node is AddConstraintNode {
     return node.kind === 'AddConstraintNode'
   },

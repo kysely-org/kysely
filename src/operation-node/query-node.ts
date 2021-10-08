@@ -1,12 +1,12 @@
-import { insertQueryNode, InsertQueryNode } from './insert-query-node.js'
-import { selectQueryNode, SelectQueryNode } from './select-query-node.js'
-import { updateQueryNode, UpdateQueryNode } from './update-query-node.js'
-import { deleteQueryNode, DeleteQueryNode } from './delete-query-node.js'
-import { whereNode, WhereChildNode } from './where-node.js'
+import { InsertQueryNode } from './insert-query-node.js'
+import { SelectQueryNode } from './select-query-node.js'
+import { UpdateQueryNode } from './update-query-node.js'
+import { DeleteQueryNode } from './delete-query-node.js'
+import { WhereNode, WhereChildNode } from './where-node.js'
 import { freeze } from '../util/object-utils.js'
 import { JoinNode } from './join-node.js'
 import { SelectionNode } from './selection-node.js'
-import { returningNode } from './returning-node.js'
+import { ReturningNode } from './returning-node.js'
 import { OperationNode } from './operation-node.js'
 
 export type QueryNode =
@@ -28,29 +28,29 @@ export type FilterableQueryNode =
 /**
  * @internal
  */
-export const queryNode = freeze({
+export const QueryNode = freeze({
   is(node: OperationNode): node is QueryNode {
     return (
-      deleteQueryNode.is(node) ||
-      insertQueryNode.is(node) ||
-      updateQueryNode.is(node) ||
-      selectQueryNode.is(node)
+      DeleteQueryNode.is(node) ||
+      InsertQueryNode.is(node) ||
+      UpdateQueryNode.is(node) ||
+      SelectQueryNode.is(node)
     )
   },
 
   isMutating(node: OperationNode): node is MutatingQueryNode {
     return (
-      deleteQueryNode.is(node) ||
-      insertQueryNode.is(node) ||
-      updateQueryNode.is(node)
+      DeleteQueryNode.is(node) ||
+      InsertQueryNode.is(node) ||
+      UpdateQueryNode.is(node)
     )
   },
 
   isFilterable(node: OperationNode): node is FilterableQueryNode {
     return (
-      selectQueryNode.is(node) ||
-      deleteQueryNode.is(node) ||
-      updateQueryNode.is(node)
+      SelectQueryNode.is(node) ||
+      DeleteQueryNode.is(node) ||
+      UpdateQueryNode.is(node)
     )
   },
 
@@ -62,8 +62,8 @@ export const queryNode = freeze({
     return freeze({
       ...node,
       where: node.where
-        ? whereNode.cloneWithFilter(node.where, op, filter)
-        : whereNode.create(filter),
+        ? WhereNode.cloneWithFilter(node.where, op, filter)
+        : WhereNode.create(filter),
     })
   },
 
@@ -81,8 +81,8 @@ export const queryNode = freeze({
     return freeze({
       ...node,
       returning: node.returning
-        ? returningNode.cloneWithSelections(node.returning, selections)
-        : returningNode.create(selections),
+        ? ReturningNode.cloneWithSelections(node.returning, selections)
+        : ReturningNode.create(selections),
     })
   },
 })

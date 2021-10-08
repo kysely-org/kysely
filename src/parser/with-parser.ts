@@ -1,8 +1,5 @@
-import { identifierNode } from '../operation-node/identifier-node.js'
-import {
-  commonTableExpressionNode,
-  CommonTableExpressionNode,
-} from '../operation-node/common-table-expression-node.js'
+import { IdentifierNode } from '../operation-node/identifier-node.js'
+import { CommonTableExpressionNode } from '../operation-node/common-table-expression-node.js'
 import { QueryBuilder } from '../query-builder/query-builder.js'
 import { QueryCreator } from '../query-creator.js'
 import { RawBuilder } from '../raw-builder/raw-builder.js'
@@ -37,8 +34,8 @@ export function parseCommonTableExpression(
     new QueryCreator(new NeverExecutingQueryExecutor())
   )
 
-  return commonTableExpressionNode.create(
-    identifierNode.create(name),
+  return CommonTableExpressionNode.create(
+    IdentifierNode.create(name),
     builder.toOperationNode()
   )
 }
