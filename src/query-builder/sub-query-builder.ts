@@ -5,8 +5,9 @@ import {
   TableExpression,
   QueryBuilderWithTable,
 } from '../parser/table-parser.js'
-import { WithSchemaTransformer } from '../transformers/with-schema-transformer.js'
 import { NeverExecutingQueryExecutor } from '../query-executor/never-executing-query-executor.js'
+import { WithSchemaPlugin } from '../plugin/with-schema/with-schema-plugin.js'
+import { createQueryId } from '../util/query-id.js'
 
 export class SubQueryBuilder<DB, TB extends keyof DB> {
   readonly #executor: NeverExecutingQueryExecutor
@@ -68,6 +69,7 @@ export class SubQueryBuilder<DB, TB extends keyof DB> {
 
   subQuery(table: any): any {
     return new QueryBuilder({
+      queryId: createQueryId(),
       executor: this.#executor,
       queryNode: SelectQueryNode.create(parseTableExpressionOrList(table)),
     })
@@ -78,9 +80,7 @@ export class SubQueryBuilder<DB, TB extends keyof DB> {
    */
   withSchema(schema: string): SubQueryBuilder<DB, TB> {
     return new SubQueryBuilder(
-      this.#executor.withTransformerAtFront(
-        new WithSchemaTransformer(schema)
-      )
+      this.#executor.withPluginAtFront(new WithSchemaPlugin(schema))
     )
   }
 }

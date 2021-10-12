@@ -24,7 +24,8 @@ import {
   QueryCreatorWithCommonTableExpression,
 } from './parser/with-parser.js'
 import { WithNode } from './operation-node/with-node.js'
-import { WithSchemaTransformer } from './transformers/with-schema-transformer.js'
+import { createQueryId } from './util/query-id.js'
+import { WithSchemaPlugin } from './plugin/with-schema/with-schema-plugin.js'
 
 export class QueryCreator<DB> {
   readonly #executor: QueryExecutor
@@ -154,6 +155,7 @@ export class QueryCreator<DB> {
 
   selectFrom(from: any): any {
     return new QueryBuilder({
+      queryId: createQueryId(),
       executor: this.#executor,
       queryNode: SelectQueryNode.create(
         parseTableExpressionOrList(from),
@@ -207,6 +209,7 @@ export class QueryCreator<DB> {
     table: T
   ): QueryBuilder<DB, T, InsertResultTypeTag> {
     return new QueryBuilder({
+      queryId: createQueryId(),
       executor: this.#executor,
       queryNode: InsertQueryNode.create(parseTable(table), this.#withNode),
     })
@@ -230,6 +233,7 @@ export class QueryCreator<DB> {
     table: TR
   ): QueryBuilderWithTable<DB, never, DeleteResultTypeTag, TR> {
     return new QueryBuilder({
+      queryId: createQueryId(),
       executor: this.#executor,
       queryNode: DeleteQueryNode.create(
         parseTableExpression(table),
@@ -260,6 +264,7 @@ export class QueryCreator<DB> {
     table: TR
   ): QueryBuilderWithTable<DB, never, UpdateResultTypeTag, TR> {
     return new QueryBuilder({
+      queryId: createQueryId(),
       executor: this.#executor,
       queryNode: UpdateQueryNode.create(
         parseTableExpression(table),
@@ -345,7 +350,7 @@ export class QueryCreator<DB> {
    */
   withSchema(schema: string): QueryCreator<DB> {
     return new QueryCreator(
-      this.#executor.withTransformerAtFront(new WithSchemaTransformer(schema)),
+      this.#executor.withPluginAtFront(new WithSchemaPlugin(schema)),
       this.#withNode
     )
   }

@@ -1,14 +1,17 @@
-import { OperationNodeTransformer } from '../operation-node/operation-node-transformer.js'
+import { ExecutorPlugin } from '../index.js'
+import { Kysely } from '../kysely.js'
 
-export interface KyselyPlugin {
+export interface KyselyPlugin extends ExecutorPlugin {
   /**
-   * Returns a list of transformers each query's operation node tree is
-   * passed through before it's compiled to SQL and executed.
+   * This method is called from {@link Kysely.create} function. The `Kysely` instance
+   * passed as an argument is a version of the `Kysely` instance being created __without__
+   * any plugins installed. As if it was created without the `plugins` property in the
+   * config.
    */
-  createTransformers(): OperationNodeTransformer[]
+  init(db: Kysely<any>): Promise<void>
 
   /**
-   * Each result row is passed through this method.
+   * This is called from {@link Kysely.destroy}.
    */
-  mapRow(row: Record<string, any>): Record<string, any>
+  destroy(): Promise<void>
 }

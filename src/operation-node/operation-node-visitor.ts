@@ -386,8 +386,8 @@ export class OperationNodeVisitor {
   protected visitCreateIndex(node: CreateIndexNode): void {
     this.visitNode(node.name)
 
-    if (node.on) {
-      this.visitNode(node.on)
+    if (node.table) {
+      this.visitNode(node.table)
     }
 
     if (node.using) {

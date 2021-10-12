@@ -1,12 +1,13 @@
+import { ExecutorPlugin } from '..'
 import { ConnectionProvider } from '../driver/connection-provider'
 import { QueryResult } from '../driver/database-connection'
-import { OperationNodeTransformer } from '../operation-node/operation-node-transformer'
 import { CompiledQuery } from '../query-compiler/compiled-query'
 import {
-  CompileEntryPointNode,
+  RootOperationNode,
   QueryCompiler,
 } from '../query-compiler/query-compiler'
-import { QueryExecutor, RowMapper } from './query-executor'
+import { QueryId } from '../util/query-id'
+import { QueryExecutor } from './query-executor'
 
 export class DefaultQueryExecutor extends QueryExecutor {
   #compiler: QueryCompiler
@@ -15,53 +16,47 @@ export class DefaultQueryExecutor extends QueryExecutor {
   constructor(
     compiler: QueryCompiler,
     connectionProvider: ConnectionProvider,
-    transformers: OperationNodeTransformer[] = [],
-    rowMappers: RowMapper[] = []
+    plugins: ExecutorPlugin[] = []
   ) {
-    super(transformers, rowMappers)
+    super(plugins)
 
     this.#compiler = compiler
     this.#connectionProvider = connectionProvider
   }
 
-  compileQuery(node: CompileEntryPointNode): CompiledQuery {
+  compileQuery(node: RootOperationNode): CompiledQuery {
     return this.#compiler.compileQuery(node)
   }
 
-  async executeQuery<R>(compiledQuery: CompiledQuery): Promise<QueryResult<R>> {
+  async executeQuery<R>(
+    compiledQuery: CompiledQuery,
+    queryId: QueryId
+  ): Promise<QueryResult<R>> {
     return await this.#connectionProvider.withConnection(async (connection) => {
       const result = await connection.executeQuery<R>(compiledQuery)
-      return this.mapQueryResult(result)
+      return this.mapQueryResult(result, queryId)
     })
   }
 
-  withTransformerAtFront(
-    transformer: OperationNodeTransformer
-  ): DefaultQueryExecutor {
-    return new DefaultQueryExecutor(
-      this.#compiler,
-      this.#connectionProvider,
-      [transformer, ...this.transformers],
-      [...this.rowMappers]
-    )
+  withPluginAtFront(plugin: ExecutorPlugin): DefaultQueryExecutor {
+    return new DefaultQueryExecutor(this.#compiler, this.#connectionProvider, [
+      plugin,
+      ...this.plugins,
+    ])
   }
 
   withConnectionProvider(
     connectionProvider: ConnectionProvider
   ): QueryExecutor {
-    return new DefaultQueryExecutor(
-      this.#compiler,
-      connectionProvider,
-      [...this.transformers],
-      [...this.rowMappers]
-    )
+    return new DefaultQueryExecutor(this.#compiler, connectionProvider, [
+      ...this.plugins,
+    ])
   }
 
-  withoutTransformersOrRowMappers(): QueryExecutor {
+  withoutPlugins(): QueryExecutor {
     return new DefaultQueryExecutor(
       this.#compiler,
       this.#connectionProvider,
-      [],
       []
     )
   }

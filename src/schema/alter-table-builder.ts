@@ -27,18 +27,22 @@ import {
   ColumnDefinitionBuilderInterface,
 } from './column-definition-builder.js'
 import { AnyRawBuilder } from '../query-builder/type-utils.js'
+import { QueryId } from '../util/query-id.js'
 
 export class AlterTableBuilder {
+  readonly #queryId: QueryId
   readonly #alterTableNode: AlterTableNode
   readonly #executor: QueryExecutor
 
   constructor(args: AlterTableBuilderConstructorArgs) {
+    this.#queryId = args.queryId
     this.#alterTableNode = args.alterTableNode
     this.#executor = args.executor
   }
 
   renameTo(newTableName: string): AlterTableExecutor {
     return new AlterTableExecutor({
+      queryId: this.#queryId,
       executor: this.#executor,
       alterTableNode: AlterTableNode.cloneWith(this.#alterTableNode, {
         renameTo: TableNode.create(newTableName),
@@ -48,6 +52,7 @@ export class AlterTableBuilder {
 
   setSchema(newSchema: string): AlterTableExecutor {
     return new AlterTableExecutor({
+      queryId: this.#queryId,
       executor: this.#executor,
       alterTableNode: AlterTableNode.cloneWith(this.#alterTableNode, {
         setSchema: IdentifierNode.create(newSchema),
@@ -57,6 +62,7 @@ export class AlterTableBuilder {
 
   alterColumn(column: string): AlterColumnBuilder {
     return new AlterColumnBuilder({
+      queryId: this.#queryId,
       alterTableNode: this.#alterTableNode,
       alterColumnNode: AlterColumnNode.create(column),
       executor: this.#executor,
@@ -65,6 +71,7 @@ export class AlterTableBuilder {
 
   dropColumn(column: string): AlterTableExecutor {
     return new AlterTableExecutor({
+      queryId: this.#queryId,
       executor: this.#executor,
       alterTableNode: AlterTableNode.cloneWith(this.#alterTableNode, {
         dropColumn: DropColumnNode.create(column),
@@ -74,6 +81,7 @@ export class AlterTableBuilder {
 
   renameColumn(column: string, newColumn: string): AlterTableExecutor {
     return new AlterTableExecutor({
+      queryId: this.#queryId,
       executor: this.#executor,
       alterTableNode: AlterTableNode.cloneWith(this.#alterTableNode, {
         renameColumn: RenameColumnNode.create(column, newColumn),
@@ -86,6 +94,7 @@ export class AlterTableBuilder {
     dataType: ColumnDataType | RawBuilder
   ): AlterTableAddColumnBuilder {
     return new AlterTableAddColumnBuilder({
+      queryId: this.#queryId,
       executor: this.#executor,
       alterTableNode: this.#alterTableNode,
       columnBuilder: new ColumnDefinitionBuilder(
@@ -101,11 +110,13 @@ export class AlterTableBuilder {
 }
 
 export class AlterColumnBuilder {
+  readonly #queryId: QueryId
   readonly #alterTableNode: AlterTableNode
   readonly #alterColumnNode: AlterColumnNode
   readonly #executor: QueryExecutor
 
   constructor(args: AlterColumnBuilderConstructorArgs) {
+    this.#queryId = args.queryId
     this.#alterTableNode = args.alterTableNode
     this.#alterColumnNode = args.alterColumnNode
     this.#executor = args.executor
@@ -113,6 +124,7 @@ export class AlterColumnBuilder {
 
   setDataType(dataType: ColumnDataType): AlterTableExecutor {
     return new AlterTableExecutor({
+      queryId: this.#queryId,
       executor: this.#executor,
       alterTableNode: AlterTableNode.cloneWith(this.#alterTableNode, {
         alterColumn: AlterColumnNode.cloneWith(this.#alterColumnNode, {
@@ -124,6 +136,7 @@ export class AlterColumnBuilder {
 
   setDefault(value: PrimitiveValue | AnyRawBuilder): AlterTableExecutor {
     return new AlterTableExecutor({
+      queryId: this.#queryId,
       executor: this.#executor,
       alterTableNode: AlterTableNode.cloneWith(this.#alterTableNode, {
         alterColumn: AlterColumnNode.cloneWith(this.#alterColumnNode, {
@@ -137,6 +150,7 @@ export class AlterColumnBuilder {
 
   dropDefault(): AlterTableExecutor {
     return new AlterTableExecutor({
+      queryId: this.#queryId,
       executor: this.#executor,
       alterTableNode: AlterTableNode.cloneWith(this.#alterTableNode, {
         alterColumn: AlterColumnNode.cloneWith(this.#alterColumnNode, {
@@ -148,6 +162,7 @@ export class AlterColumnBuilder {
 
   setNotNull(): AlterTableExecutor {
     return new AlterTableExecutor({
+      queryId: this.#queryId,
       executor: this.#executor,
       alterTableNode: AlterTableNode.cloneWith(this.#alterTableNode, {
         alterColumn: AlterColumnNode.cloneWith(this.#alterColumnNode, {
@@ -159,6 +174,7 @@ export class AlterColumnBuilder {
 
   dropNotNull(): AlterTableExecutor {
     return new AlterTableExecutor({
+      queryId: this.#queryId,
       executor: this.#executor,
       alterTableNode: AlterTableNode.cloneWith(this.#alterTableNode, {
         alterColumn: AlterColumnNode.cloneWith(this.#alterColumnNode, {
@@ -170,35 +186,39 @@ export class AlterColumnBuilder {
 }
 
 export class AlterTableExecutor implements OperationNodeSource, Compilable {
+  readonly #queryId: QueryId
   readonly #alterTableNode: AlterTableNode
   readonly #executor: QueryExecutor
 
   constructor(args: AlterTableExecutorConstructorArgs) {
+    this.#queryId = args.queryId
     this.#alterTableNode = args.alterTableNode
     this.#executor = args.executor
   }
 
   toOperationNode(): AlterTableNode {
-    return this.#executor.transformNode(this.#alterTableNode)
+    return this.#executor.transformQuery(this.#alterTableNode, this.#queryId)
   }
 
   compile(): CompiledQuery {
-    return this.#executor.compileQuery(this.toOperationNode())
+    return this.#executor.compileQuery(this.toOperationNode(), this.#queryId)
   }
 
   async execute(): Promise<void> {
-    await this.#executor.executeQuery(this.compile())
+    await this.#executor.executeQuery(this.compile(), this.#queryId)
   }
 }
 
 export class AlterTableAddColumnBuilder
   implements ColumnDefinitionBuilderInterface<AlterTableAddColumnBuilder>
 {
+  readonly #queryId: QueryId
   readonly #alterTableNode: AlterTableNode
   readonly #executor: QueryExecutor
   readonly #columnBuilder: ColumnDefinitionBuilder
 
   constructor(args: AlterTableAddColumnBuilderConstructorArgs) {
+    this.#queryId = args.queryId
     this.#alterTableNode = args.alterTableNode
     this.#executor = args.executor
     this.#columnBuilder = args.columnBuilder
@@ -206,6 +226,7 @@ export class AlterTableAddColumnBuilder
 
   increments(): AlterTableAddColumnBuilder {
     return new AlterTableAddColumnBuilder({
+      queryId: this.#queryId,
       executor: this.#executor,
       alterTableNode: this.#alterTableNode,
       columnBuilder: this.#columnBuilder.increments(),
@@ -214,6 +235,7 @@ export class AlterTableAddColumnBuilder
 
   primaryKey(): AlterTableAddColumnBuilder {
     return new AlterTableAddColumnBuilder({
+      queryId: this.#queryId,
       executor: this.#executor,
       alterTableNode: this.#alterTableNode,
       columnBuilder: this.#columnBuilder.primaryKey(),
@@ -222,6 +244,7 @@ export class AlterTableAddColumnBuilder
 
   references(ref: string): AlterTableAddColumnBuilder {
     return new AlterTableAddColumnBuilder({
+      queryId: this.#queryId,
       executor: this.#executor,
       alterTableNode: this.#alterTableNode,
       columnBuilder: this.#columnBuilder.references(ref),
@@ -230,6 +253,7 @@ export class AlterTableAddColumnBuilder
 
   onDelete(onDelete: OnDelete): AlterTableAddColumnBuilder {
     return new AlterTableAddColumnBuilder({
+      queryId: this.#queryId,
       executor: this.#executor,
       alterTableNode: this.#alterTableNode,
       columnBuilder: this.#columnBuilder.onDelete(onDelete),
@@ -238,6 +262,7 @@ export class AlterTableAddColumnBuilder
 
   unique(): AlterTableAddColumnBuilder {
     return new AlterTableAddColumnBuilder({
+      queryId: this.#queryId,
       executor: this.#executor,
       alterTableNode: this.#alterTableNode,
       columnBuilder: this.#columnBuilder.unique(),
@@ -246,6 +271,7 @@ export class AlterTableAddColumnBuilder
 
   notNull(): AlterTableAddColumnBuilder {
     return new AlterTableAddColumnBuilder({
+      queryId: this.#queryId,
       executor: this.#executor,
       alterTableNode: this.#alterTableNode,
       columnBuilder: this.#columnBuilder.notNull(),
@@ -254,6 +280,7 @@ export class AlterTableAddColumnBuilder
 
   defaultTo(value: PrimitiveValue | AnyRawBuilder): AlterTableAddColumnBuilder {
     return new AlterTableAddColumnBuilder({
+      queryId: this.#queryId,
       executor: this.#executor,
       alterTableNode: this.#alterTableNode,
       columnBuilder: this.#columnBuilder.defaultTo(value),
@@ -262,6 +289,7 @@ export class AlterTableAddColumnBuilder
 
   check(sql: string): AlterTableAddColumnBuilder {
     return new AlterTableAddColumnBuilder({
+      queryId: this.#queryId,
       executor: this.#executor,
       alterTableNode: this.#alterTableNode,
       columnBuilder: this.#columnBuilder.check(sql),
@@ -269,19 +297,20 @@ export class AlterTableAddColumnBuilder
   }
 
   toOperationNode(): AlterTableNode {
-    return this.#executor.transformNode(
+    return this.#executor.transformQuery(
       AlterTableNode.cloneWith(this.#alterTableNode, {
         addColumn: AddColumnNode.create(this.#columnBuilder.toOperationNode()),
-      })
+      }),
+      this.#queryId
     )
   }
 
   compile(): CompiledQuery {
-    return this.#executor.compileQuery(this.toOperationNode())
+    return this.#executor.compileQuery(this.toOperationNode(), this.#queryId)
   }
 
   async execute(): Promise<void> {
-    await this.#executor.executeQuery(this.compile())
+    await this.#executor.executeQuery(this.compile(), this.#queryId)
   }
 }
 
@@ -299,6 +328,7 @@ preventAwait(
 )
 
 export interface AlterTableBuilderConstructorArgs {
+  queryId: QueryId
   alterTableNode: AlterTableNode
   executor: QueryExecutor
 }

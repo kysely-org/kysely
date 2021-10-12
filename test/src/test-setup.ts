@@ -7,8 +7,13 @@ import {
   Kysely,
   KyselyConfig,
   KyselyPlugin,
-  OperationNodeTransformer,
   Compilable,
+  RootOperationNode,
+  PluginTransformQueryArgs,
+  PluginTransformResultArgs,
+  QueryResult,
+  AnyRow,
+  OperationNodeTransformer,
 } from '../../'
 
 export interface Person {
@@ -53,6 +58,7 @@ type PerDialect<T> = Record<BuiltInDialect, T>
 const plugins: KyselyPlugin[] = []
 
 if (process.env.TEST_TRANSFORMER) {
+  console.log('running tests with a transformer')
   plugins.push(createNoopPlugin())
 }
 
@@ -76,7 +82,7 @@ export interface TestContext {
 
 export async function initTest(dialect: BuiltInDialect): Promise<TestContext> {
   const config = DB_CONFIGS[dialect]
-  const db = new Kysely<Database>(DB_CONFIGS[dialect])
+  const db = await Kysely.create<Database>(DB_CONFIGS[dialect])
 
   await createDatabase(db)
   return { config, db }
@@ -213,13 +219,20 @@ function getIdFromInsertResult<T>(result: any): T {
 }
 
 function createNoopPlugin(): KyselyPlugin {
+  const transformer = new OperationNodeTransformer()
+
   return {
-    createTransformers() {
-      return [new OperationNodeTransformer()]
+    async init(): Promise<void> {},
+    async destroy(): Promise<void> {},
+
+    transformQuery(args: PluginTransformQueryArgs): RootOperationNode {
+      return transformer.transformNode(args.node)
     },
 
-    mapRow(row) {
-      return row
+    async transformResult(
+      args: PluginTransformResultArgs
+    ): Promise<QueryResult<AnyRow>> {
+      return args.result
     },
   }
 }

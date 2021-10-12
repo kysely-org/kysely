@@ -1,5 +1,12 @@
+import { QueryResult } from '../../driver/database-connection.js'
 import { IdentifierNode } from '../../operation-node/identifier-node.js'
 import { OperationNodeTransformer } from '../../operation-node/operation-node-transformer.js'
+import { RootOperationNode } from '../../query-compiler/query-compiler.js'
+import {
+  AnyRow,
+  PluginTransformQueryArgs,
+  PluginTransformResultArgs,
+} from '../../query-executor/query-executor.js'
 import { isObject } from '../../util/object-utils.js'
 import { KyselyPlugin } from '../plugin.js'
 
@@ -49,7 +56,7 @@ export interface CamelCasePluginOptions {
  *   personTable: Person
  * }
  *
- * const db = new Kysely<Database>({
+ * const db = await Kysely.create<Database>({
  *  dialect: 'postgres',
  *  database: 'kysely_test',
  *  host: 'localhost',
@@ -88,7 +95,7 @@ export interface CamelCasePluginOptions {
  *     return mySnakeCase(str)
  *   }
  *
- *    protected override camelCase(str: string): string {
+ *   protected override camelCase(str: string): string {
  *     return myCamelCase(str)
  *   }
  * }
@@ -97,18 +104,44 @@ export interface CamelCasePluginOptions {
 export class CamelCasePlugin implements KyselyPlugin {
   readonly #camelCase: StringMapper
   readonly #snakeCase: StringMapper
+  readonly #snakeCaseTransformer: SnakeCaseTransformer
 
   constructor(opt: CamelCasePluginOptions = {}) {
     this.#camelCase = createCamelCase(opt)
     this.#snakeCase = createSnakeCase(opt)
+
+    this.#snakeCaseTransformer = new SnakeCaseTransformer(
+      this.snakeCase.bind(this)
+    )
   }
 
-  createTransformers(): OperationNodeTransformer[] {
-    return [new SnakeCaseTransformer(this.snakeCase.bind(this))]
+  async init(): Promise<void> {
+    // Nothing to do here.
   }
 
-  mapRow(row: Record<string, any>): Record<string, any> {
-    return Object.keys(row).reduce<Record<string, any>>((obj, key) => {
+  transformQuery(args: PluginTransformQueryArgs): RootOperationNode {
+    return this.#snakeCaseTransformer.transformNode(args.node)
+  }
+
+  async transformResult(
+    args: PluginTransformResultArgs
+  ): Promise<QueryResult<AnyRow>> {
+    if (args.result.rows && Array.isArray(args.result.rows)) {
+      return {
+        ...args.result,
+        rows: args.result.rows.map((row) => this.mapRow(row)),
+      }
+    }
+
+    return args.result
+  }
+
+  async destroy(): Promise<void> {
+    // Nothing to do here.
+  }
+
+  protected mapRow(row: AnyRow): AnyRow {
+    return Object.keys(row).reduce<AnyRow>((obj, key) => {
       let value = row[key]
 
       if (Array.isArray(value)) {

@@ -4,9 +4,7 @@ import { PostgresDialect } from './dialect/postgres/postgres-dialect.js'
 import { Driver } from './driver/driver.js'
 import { SchemaModule } from './schema/schema.js'
 import { DynamicModule } from './dynamic/dynamic.js'
-import { QueryCompiler } from './query-compiler/query-compiler.js'
 import { DefaultConnectionProvider } from './driver/default-connection-provider.js'
-import { isObject } from './util/object-utils.js'
 import { SingleConnectionProvider } from './driver/single-connection-provider.js'
 import {
   INTERNAL_DRIVER_ACQUIRE_CONNECTION,
@@ -14,10 +12,9 @@ import {
   INTERNAL_DRIVER_RELEASE_CONNECTION,
 } from './driver/driver-internal.js'
 import { MigrationModule } from './migration/migration.js'
-import { QueryExecutor, RowMapper } from './query-executor/query-executor.js'
+import { QueryExecutor } from './query-executor/query-executor.js'
 import { QueryCreator } from './query-creator.js'
 import { KyselyPlugin } from './plugin/plugin.js'
-import { OperationNodeTransformer } from './operation-node/operation-node-transformer.js'
 import { GeneratedPlaceholder } from './query-builder/type-utils.js'
 import { generatedPlaceholder } from './util/generated-placeholder.js'
 import { DefaultQueryExecutor } from './query-executor/default-query-executor.js'
@@ -26,8 +23,8 @@ import { DatabaseIntrospector } from './introspection/database-introspector.js'
 /**
  * The main Kysely class.
  *
- * You should create one instance of `Kysely` per database. Each `Kysely` instance
- * maintains it's own connection pool.
+ * You should create one instance of `Kysely` per database using the {@link Kysely.create}
+ * function. Each `Kysely` instance maintains it's own connection pool.
  *
  * @example
  * This example assumes your database has tables `person` and `pet`:
@@ -51,7 +48,7 @@ import { DatabaseIntrospector } from './introspection/database-introspector.js'
  *   pet: Pet
  * }
  *
- * const db = new Kysely<Database>(config)
+ * const db = await Kysely.create<Database>(config)
  * ```
  *
  * @typeParam DB - The database interface type. Keys of this type must be table names
@@ -59,45 +56,47 @@ import { DatabaseIntrospector } from './introspection/database-introspector.js'
  *    tables. See the examples above.
  */
 export class Kysely<DB> extends QueryCreator<DB> {
+  readonly #config: KyselyConfig
   readonly #dialect: Dialect
   readonly #driver: Driver
-  readonly #compiler: QueryCompiler
   readonly #executor: QueryExecutor
 
-  constructor(config: KyselyConfig)
-  constructor(args: KyselyConstructorArgs)
-  constructor(configOrArgs: KyselyConfig | KyselyConstructorArgs) {
-    if (isKyselyConstructorArgs(configOrArgs)) {
-      const { dialect, driver, compiler, executor } = configOrArgs
+  constructor(args: KyselyConstructorArgs) {
+    super(args.executor)
 
-      super(executor)
+    this.#config = args.config
+    this.#dialect = args.dialect
+    this.#driver = args.driver
+    this.#executor = args.executor
+  }
 
-      this.#dialect = dialect
-      this.#driver = driver
-      this.#compiler = compiler
-      this.#executor = executor
-    } else {
-      const config = configOrArgs
-      const dialect = createDialect(config)
-      const transformers = collectTransformers(config)
-      const rowMappers = collectRowMappers(config)
-      const driver = dialect.createDriver(config)
-      const compiler = dialect.createQueryCompiler()
-      const connectionProvider = new DefaultConnectionProvider(driver)
-      const executor = new DefaultQueryExecutor(
-        compiler,
-        connectionProvider,
-        transformers,
-        rowMappers
-      )
+  /**
+   * Creates a Kysely instance.
+   */
+  static async create<T>(config: KyselyConfig): Promise<Kysely<T>> {
+    const dialect = createDialect(config)
+    const driver = dialect.createDriver(config)
+    const compiler = dialect.createQueryCompiler()
 
-      super(executor)
+    const connectionProvider = new DefaultConnectionProvider(driver)
+    const executor = new DefaultQueryExecutor(
+      compiler,
+      connectionProvider,
+      config.plugins ?? []
+    )
 
-      this.#dialect = dialect
-      this.#driver = driver
-      this.#compiler = compiler
-      this.#executor = executor
+    const db = new Kysely<T>({
+      config,
+      dialect,
+      driver,
+      executor,
+    })
+
+    for (const plugin of config.plugins ?? []) {
+      await plugin.init(db.withoutPlugins())
     }
+
+    return db
   }
 
   /**
@@ -209,9 +208,9 @@ export class Kysely<DB> extends QueryCreator<DB> {
     const connectionProvider = new SingleConnectionProvider(connection)
 
     const transaction = new Transaction<DB>({
+      config: this.#config,
       dialect: this.#dialect,
       driver: this.#driver,
-      compiler: this.#compiler,
       executor: this.#executor.withConnectionProvider(connectionProvider),
     })
 
@@ -234,10 +233,10 @@ export class Kysely<DB> extends QueryCreator<DB> {
    */
   withoutPlugins(): Kysely<DB> {
     return new Kysely({
+      config: this.#config,
       dialect: this.#dialect,
       driver: this.#driver,
-      compiler: this.#compiler,
-      executor: this.#executor.withoutTransformersOrRowMappers(),
+      executor: this.#executor.withoutPlugins(),
     })
   }
 
@@ -247,6 +246,10 @@ export class Kysely<DB> extends QueryCreator<DB> {
    * You need to call this when you are done using the `Kysely` instance.
    */
   async destroy(): Promise<void> {
+    for (const plugin of this.#config.plugins ?? []) {
+      await plugin.destroy()
+    }
+
     await this.#driver[INTERNAL_DRIVER_ENSURE_DESTROY]()
   }
 
@@ -288,20 +291,10 @@ export class Transaction<DB> extends Kysely<DB> {
 }
 
 export interface KyselyConstructorArgs {
+  config: KyselyConfig
   dialect: Dialect
   driver: Driver
-  compiler: QueryCompiler
   executor: QueryExecutor
-}
-
-function isKyselyConstructorArgs(obj: any): obj is KyselyConstructorArgs {
-  return (
-    isObject(obj) &&
-    obj.hasOwnProperty('dialect') &&
-    obj.hasOwnProperty('driver') &&
-    obj.hasOwnProperty('compiler') &&
-    obj.hasOwnProperty('executor')
-  )
 }
 
 export interface KyselyConfig extends DriverConfig {
@@ -317,20 +310,4 @@ function createDialect(config: KyselyConfig): Dialect {
   } else {
     throw new Error(`unknown dialect ${config.dialect}`)
   }
-}
-
-function collectTransformers(config: KyselyConfig): OperationNodeTransformer[] {
-  return (
-    config.plugins?.reduce<OperationNodeTransformer[]>(
-      (transformers, plugin) => [
-        ...transformers,
-        ...plugin.createTransformers(),
-      ],
-      []
-    ) ?? []
-  )
-}
-
-function collectRowMappers(config: KyselyConfig): RowMapper[] {
-  return config.plugins?.map((plugin) => plugin.mapRow.bind(plugin)) ?? []
 }

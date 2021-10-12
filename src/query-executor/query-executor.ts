@@ -1,69 +1,113 @@
 import { ConnectionProvider } from '../driver/connection-provider.js'
 import { QueryResult } from '../driver/database-connection.js'
-import { OperationNodeTransformer } from '../operation-node/operation-node-transformer.js'
 import { CompiledQuery } from '../query-compiler/compiled-query.js'
-import { CompileEntryPointNode } from '../query-compiler/query-compiler'
+import { RootOperationNode } from '../query-compiler/query-compiler'
 import { freeze } from '../util/object-utils.js'
-
-export type RowMapper = (row: Record<string, any>) => Record<string, any>
+import { QueryId } from '../util/query-id.js'
 
 export abstract class QueryExecutor {
-  readonly #transformers: ReadonlyArray<OperationNodeTransformer>
-  readonly #rowMappers: ReadonlyArray<RowMapper>
+  readonly #plugins: ReadonlyArray<ExecutorPlugin>
 
-  constructor(
-    transformers: OperationNodeTransformer[] = [],
-    rowMappers: RowMapper[] = []
-  ) {
-    this.#transformers = freeze([...transformers])
-    this.#rowMappers = freeze([...rowMappers])
+  constructor(plugins: ExecutorPlugin[] = []) {
+    this.#plugins = freeze([...plugins])
   }
 
-  protected get transformers(): ReadonlyArray<OperationNodeTransformer> {
-    return this.#transformers
+  get plugins(): ReadonlyArray<ExecutorPlugin> {
+    return this.#plugins
   }
 
-  protected get rowMappers(): ReadonlyArray<RowMapper> {
-    return this.#rowMappers
-  }
+  transformQuery<T extends RootOperationNode>(node: T, queryId: QueryId): T {
+    for (const plugin of this.#plugins) {
+      const transformedNode = plugin.transformQuery({ node, queryId })
 
-  transformNode<T extends CompileEntryPointNode>(node: T): T {
-    for (const transformer of this.#transformers) {
-      node = transformer.transformNode(node)
+      // We need to do a runtime check here instead of compile-time. There is no good way
+      // to write types that enforce this constraint.
+      if (transformedNode.kind === node.kind) {
+        node = transformedNode as T
+      } else {
+        throw new Error(
+          `KyselyPlugin.transformQuery must return a node of the same kind that was given to it. The plugin was given a ${node.kind} but it returned a ${transformedNode.kind}`
+        )
+      }
     }
 
     return node
   }
 
-  abstract compileQuery(node: CompileEntryPointNode): CompiledQuery
+  abstract compileQuery(
+    node: RootOperationNode,
+    queryId: QueryId
+  ): CompiledQuery
 
   abstract executeQuery<R>(
-    compiledQuery: CompiledQuery
+    compiledQuery: CompiledQuery,
+    queryId: QueryId
   ): Promise<QueryResult<R>>
 
-  abstract withTransformerAtFront(
-    transformer: OperationNodeTransformer
-  ): QueryExecutor
+  abstract withPluginAtFront(plugin: ExecutorPlugin): QueryExecutor
 
   abstract withConnectionProvider(
     connectionProvider: ConnectionProvider
   ): QueryExecutor
 
-  abstract withoutTransformersOrRowMappers(): QueryExecutor
+  abstract withoutPlugins(): QueryExecutor
 
-  protected mapQueryResult<T>(result: QueryResult<any>): QueryResult<T> {
-    if (result.rows && result.rows.length > 0 && this.#rowMappers.length > 0) {
-      return freeze({
-        ...result,
-        rows: result.rows.map((row) => {
-          return this.#rowMappers.reduce(
-            (row, rowMapper) => rowMapper(row),
-            row
-          )
-        }),
-      })
+  protected async mapQueryResult<T>(
+    result: QueryResult<any>,
+    queryId: QueryId
+  ): Promise<QueryResult<T>> {
+    for (const plugin of this.#plugins) {
+      result = await plugin.transformResult({ result, queryId })
     }
 
     return result
   }
+}
+
+export interface ExecutorPlugin {
+  /**
+   * This is called for each query before it is executed. You can modify the query by
+   * transforming its {@link OperationNode} tree provided in {@link PluginTransformQueryArgs.node | args.node}
+   * and returning the transformed tree. You'd usually  want to use an {@link OperationNodeTransformer}
+   * for this.
+   *
+   * If you need to pass some query-related data between this method and `transformResult` you
+   * can use a `WeakMap` with {@link PluginTransformQueryArgs.queryId | args.queryId} as the key:
+   *
+   * ```ts
+   * const plugin = {
+   *   data: new WeakMap<QueryId, SomeData>(),
+   *
+   *   transformQuery(args: PluginTransformQueryArgs): RootOperationNode {
+   *     this.data.set(args.queryId, something)
+   *     return args.node
+   *   },
+   *
+   *   transformResult(args: PluginTransformResultArgs): QueryResult<AnyRow> {
+   *     const data = this.data.get(args.queryId)
+   *     return data.result
+   *   }
+   * }
+   * ```
+   */
+  transformQuery(args: PluginTransformQueryArgs): RootOperationNode
+
+  /**
+   * This method is called for each query after it has been executed. The result
+   * of the query can be accessed through {@link PluginTransformResultArgs.result | args.result}.
+   * You can modify the result and return the modifier result.
+   */
+  transformResult(args: PluginTransformResultArgs): Promise<QueryResult<AnyRow>>
+}
+
+export interface PluginTransformQueryArgs {
+  readonly queryId: QueryId
+  readonly node: RootOperationNode
+}
+
+export type AnyRow = Record<string, unknown>
+
+export interface PluginTransformResultArgs {
+  readonly queryId: QueryId
+  readonly result: QueryResult<AnyRow>
 }

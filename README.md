@@ -76,14 +76,14 @@ interface Database {
   movie: Movie
 }
 
-// You'd create one of these when you start your app.
-const db = new Kysely<Database>({
-  dialect: 'postgres',
-  host: 'localhost',
-  database: 'kysely_test',
-})
-
 async function demo() {
+  // You'd create one of these when you start your app.
+  const db = await Kysely.create<Database>({
+    dialect: 'postgres',
+    host: 'localhost',
+    database: 'kysely_test',
+  })
+
   const person = await db
     .selectFrom('person')
     .innerJoin('pet', 'pet.owner_id', 'person.id')

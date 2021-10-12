@@ -26,7 +26,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
     before(async () => {
       ctx = await initTest(dialect)
 
-      camelDb = new Kysely<CamelDatabase>({
+      camelDb = await Kysely.create<CamelDatabase>({
         ...ctx.config,
         plugins: [new CamelCasePlugin()],
       })

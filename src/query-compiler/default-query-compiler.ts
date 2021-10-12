@@ -61,7 +61,7 @@ import {
   isBigInt,
 } from '../util/object-utils.js'
 import { CompiledQuery } from './compiled-query.js'
-import { CompileEntryPointNode, QueryCompiler } from './query-compiler.js'
+import { RootOperationNode, QueryCompiler } from './query-compiler.js'
 import { HavingNode } from '../operation-node/having-node.js'
 import { CreateSchemaNode } from '../operation-node/create-schema-node.js'
 import { DropSchemaNode } from '../operation-node/drop-schema-node.js'
@@ -81,7 +81,7 @@ export class DefaultQueryCompiler
   #sqlFragments: string[] = []
   #bindings: any[] = []
 
-  compileQuery(node: CompileEntryPointNode): CompiledQuery {
+  compileQuery(node: RootOperationNode): CompiledQuery {
     this.#sqlFragments = []
     this.#bindings = []
 
@@ -102,7 +102,8 @@ export class DefaultQueryCompiler
   }
 
   protected override visitSelectQuery(node: SelectQueryNode): void {
-    const isSubQuery = this.nodeStack.find(QueryNode.is) !== node
+    // This is a sub query if this is not the root node.
+    const isSubQuery = this.nodeStack.length !== 1
 
     if (isSubQuery) {
       this.append('(')
@@ -603,9 +604,9 @@ export class DefaultQueryCompiler
     this.append('index ')
     this.visitNode(node.name)
 
-    if (node.on) {
+    if (node.table) {
       this.append(' on ')
-      this.visitNode(node.on)
+      this.visitNode(node.table)
     }
 
     if (node.using) {

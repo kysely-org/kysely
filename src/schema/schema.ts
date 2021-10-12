@@ -15,6 +15,8 @@ import { CreateTableBuilder } from './create-table-builder.js'
 import { DropIndexBuilder } from './drop-index-builder.js'
 import { DropSchemaBuilder } from './drop-schema-builder.js'
 import { DropTableBuilder } from './drop-table-builder.js'
+import { createQueryId } from '../util/query-id.js'
+import { WithSchemaPlugin } from '../plugin/with-schema/with-schema-plugin.js'
 
 /**
  * Provides methods for building database schema.
@@ -45,6 +47,7 @@ export class SchemaModule {
    */
   createTable(table: string): CreateTableBuilder {
     return new CreateTableBuilder({
+      queryId: createQueryId(),
       executor: this.#executor,
       createTableNode: CreateTableNode.create(parseTable(table)),
     })
@@ -62,6 +65,7 @@ export class SchemaModule {
    */
   dropTable(table: string): DropTableBuilder {
     return new DropTableBuilder({
+      queryId: createQueryId(),
       executor: this.#executor,
       dropTableNode: DropTableNode.create(parseTable(table)),
     })
@@ -81,6 +85,7 @@ export class SchemaModule {
    */
   createIndex(indexName: string): CreateIndexBuilder {
     return new CreateIndexBuilder({
+      queryId: createQueryId(),
       executor: this.#executor,
       createIndexNode: CreateIndexNode.create(indexName),
     })
@@ -98,6 +103,7 @@ export class SchemaModule {
    */
   dropIndex(indexName: string): DropIndexBuilder {
     return new DropIndexBuilder({
+      queryId: createQueryId(),
       executor: this.#executor,
       dropIndexNode: DropIndexNode.create(indexName),
     })
@@ -115,6 +121,7 @@ export class SchemaModule {
    */
   createSchema(schema: string): CreateSchemaBuilder {
     return new CreateSchemaBuilder({
+      queryId: createQueryId(),
       executor: this.#executor,
       createSchemaNode: CreateSchemaNode.create(schema),
     })
@@ -132,6 +139,7 @@ export class SchemaModule {
    */
   dropSchema(schema: string): DropSchemaBuilder {
     return new DropSchemaBuilder({
+      queryId: createQueryId(),
       executor: this.#executor,
       dropSchemaNode: DropSchemaNode.create(schema),
     })
@@ -151,6 +159,7 @@ export class SchemaModule {
    */
   alterTable(table: string): AlterTableBuilder {
     return new AlterTableBuilder({
+      queryId: createQueryId(),
       executor: this.#executor,
       alterTableNode: AlterTableNode.create(table),
     })
@@ -161,7 +170,7 @@ export class SchemaModule {
    */
   withSchema(schema: string): SchemaModule {
     return new SchemaModule(
-      this.#executor.withTransformerAtFront(new WithSchemaTransformer(schema))
+      this.#executor.withPluginAtFront(new WithSchemaPlugin(schema))
     )
   }
 }

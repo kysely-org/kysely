@@ -60,7 +60,7 @@ import { ColumnDefinitionNode } from './column-definition-node.js'
 /**
  * Transforms an operation node tree into another one.
  *
- * Kysely queries are expressed internally by a tree of objects (operation nodes).
+ * Kysely queries are expressed internally as a tree of objects (operation nodes).
  * `OperationNodeTransformer` takes such a tree as its input and returns a
  * transformed deep copy of it. By default the `OperationNodeTransformer`
  * does nothing. You need to override one or more methods to make it do
@@ -82,7 +82,7 @@ import { ColumnDefinitionNode } from './column-definition-node.js'
  *   }
  * }
  *
- * const transformer = new WithSchemaTransformer('some_schema')
+ * const transformer = new CamelCaseTransformer()
  * const tree = transformer.transformNode(tree)
  * ```
  */
@@ -447,7 +447,7 @@ export class OperationNodeTransformer {
     return {
       kind: 'CreateIndexNode',
       name: this.transformNode(node.name),
-      on: this.transformNode(node.on),
+      table: this.transformNode(node.table),
       expression: this.transformNode(node.expression),
       unique: node.unique,
       using: this.transformNode(node.using),

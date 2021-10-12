@@ -12,7 +12,7 @@ import { TableExpressionNode } from '../operation-node/operation-node-utils.js'
 import { SelectQueryNode } from '../operation-node/select-query-node.js'
 import { TableNode } from '../operation-node/table-node.js'
 import { UpdateQueryNode } from '../operation-node/update-query-node.js'
-import { CompileEntryPointNode } from '../query-compiler/query-compiler.js'
+import { RootOperationNode } from '../query-compiler/query-compiler.js'
 
 export class WithSchemaTransformer extends OperationNodeTransformer {
   readonly #schema: string
@@ -26,67 +26,49 @@ export class WithSchemaTransformer extends OperationNodeTransformer {
   protected override transformSelectQuery(
     node: SelectQueryNode
   ): SelectQueryNode {
-    return this.transformEntryPoint(node, (node) =>
-      super.transformSelectQuery(node)
-    )
+    return this.transformRoot(node, (node) => super.transformSelectQuery(node))
   }
 
   protected override transformInsertQuery(
     node: InsertQueryNode
   ): InsertQueryNode {
-    return this.transformEntryPoint(node, (node) =>
-      super.transformInsertQuery(node)
-    )
+    return this.transformRoot(node, (node) => super.transformInsertQuery(node))
   }
 
   protected override transformUpdateQuery(
     node: UpdateQueryNode
   ): UpdateQueryNode {
-    return this.transformEntryPoint(node, (node) =>
-      super.transformUpdateQuery(node)
-    )
+    return this.transformRoot(node, (node) => super.transformUpdateQuery(node))
   }
 
   protected override transformDeleteQuery(
     node: DeleteQueryNode
   ): DeleteQueryNode {
-    return this.transformEntryPoint(node, (node) =>
-      super.transformDeleteQuery(node)
-    )
+    return this.transformRoot(node, (node) => super.transformDeleteQuery(node))
   }
 
   protected override transformCreateTable(
     node: CreateTableNode
   ): CreateTableNode {
-    return this.transformEntryPoint(node, (node) =>
-      super.transformCreateTable(node)
-    )
+    return this.transformRoot(node, (node) => super.transformCreateTable(node))
   }
 
   protected override transformDropTable(node: DropTableNode): DropTableNode {
-    return this.transformEntryPoint(node, (node) =>
-      super.transformDropTable(node)
-    )
+    return this.transformRoot(node, (node) => super.transformDropTable(node))
   }
 
   protected override transformCreateIndex(
     node: CreateIndexNode
   ): CreateIndexNode {
-    return this.transformEntryPoint(node, (node) =>
-      super.transformCreateIndex(node)
-    )
+    return this.transformRoot(node, (node) => super.transformCreateIndex(node))
   }
 
   protected override transformDropIndex(node: DropIndexNode): DropIndexNode {
-    return this.transformEntryPoint(node, (node) =>
-      super.transformDropIndex(node)
-    )
+    return this.transformRoot(node, (node) => super.transformDropIndex(node))
   }
 
   protected override transformAlterTable(node: AlterTableNode): AlterTableNode {
-    return this.transformEntryPoint(node, (node) =>
-      super.transformAlterTable(node)
-    )
+    return this.transformRoot(node, (node) => super.transformAlterTable(node))
   }
 
   protected override transformTable(node: TableNode): TableNode {
@@ -105,7 +87,7 @@ export class WithSchemaTransformer extends OperationNodeTransformer {
     }
   }
 
-  private transformEntryPoint<T extends CompileEntryPointNode>(
+  private transformRoot<T extends RootOperationNode>(
     node: T,
     transform: (node: T) => T
   ): T {
@@ -124,7 +106,7 @@ export class WithSchemaTransformer extends OperationNodeTransformer {
     return transformed
   }
 
-  private collectTables(node: CompileEntryPointNode): Set<string> {
+  private collectTables(node: RootOperationNode): Set<string> {
     const tables = new Set<string>()
 
     if ('from' in node && node.from) {

@@ -4,18 +4,22 @@ import { CompiledQuery } from '../query-compiler/compiled-query.js'
 import { Compilable } from '../util/compilable.js'
 import { preventAwait } from '../util/prevent-await.js'
 import { QueryExecutor } from '../query-executor/query-executor.js'
+import { QueryId } from '../util/query-id.js'
 
 export class DropSchemaBuilder implements OperationNodeSource, Compilable {
+  readonly #queryId: QueryId
   readonly #dropSchemaNode: DropSchemaNode
   readonly #executor: QueryExecutor
 
   constructor(args: DropSchemaBuilderConstructorArgs) {
+    this.#queryId = args.queryId
     this.#dropSchemaNode = args.dropSchemaNode
     this.#executor = args.executor
   }
 
   ifExists(): DropSchemaBuilder {
     return new DropSchemaBuilder({
+      queryId: this.#queryId,
       executor: this.#executor,
       dropSchemaNode: DropSchemaNode.cloneWithModifier(
         this.#dropSchemaNode,
@@ -25,15 +29,15 @@ export class DropSchemaBuilder implements OperationNodeSource, Compilable {
   }
 
   toOperationNode(): DropSchemaNode {
-    return this.#executor.transformNode(this.#dropSchemaNode)
+    return this.#executor.transformQuery(this.#dropSchemaNode, this.#queryId)
   }
 
   compile(): CompiledQuery {
-    return this.#executor.compileQuery(this.toOperationNode())
+    return this.#executor.compileQuery(this.toOperationNode(), this.#queryId)
   }
 
   async execute(): Promise<void> {
-    await this.#executor.executeQuery(this.compile())
+    await this.#executor.executeQuery(this.compile(), this.#queryId)
   }
 }
 
@@ -43,6 +47,7 @@ preventAwait(
 )
 
 export interface DropSchemaBuilderConstructorArgs {
+  queryId: QueryId
   dropSchemaNode: DropSchemaNode
   executor: QueryExecutor
 }

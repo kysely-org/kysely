@@ -14,12 +14,15 @@ import { preventAwait } from '../util/prevent-await.js'
 import { QueryExecutor } from '../query-executor/query-executor.js'
 import { ColumnDefinitionBuilder } from './column-definition-builder.js'
 import { RawBuilder } from '../raw-builder/raw-builder.js'
+import { QueryId } from '../util/query-id.js'
 
 export class CreateTableBuilder implements OperationNodeSource, Compilable {
+  readonly #queryId: QueryId
   readonly #createTableNode: CreateTableNode
   readonly #executor: QueryExecutor
 
   constructor(args: CreateTableBuilderConstructorArgs) {
+    this.#queryId = args.queryId
     this.#createTableNode = args.createTableNode
     this.#executor = args.executor
   }
@@ -31,6 +34,7 @@ export class CreateTableBuilder implements OperationNodeSource, Compilable {
    */
   ifNotExists(): CreateTableBuilder {
     return new CreateTableBuilder({
+      queryId: this.#queryId,
       executor: this.#executor,
       createTableNode: CreateTableNode.cloneWithModifier(
         this.#createTableNode,
@@ -72,6 +76,7 @@ export class CreateTableBuilder implements OperationNodeSource, Compilable {
     }
 
     return new CreateTableBuilder({
+      queryId: this.#queryId,
       executor: this.#executor,
       createTableNode: CreateTableNode.cloneWithColumn(
         this.#createTableNode,
@@ -93,6 +98,7 @@ export class CreateTableBuilder implements OperationNodeSource, Compilable {
     columns: string[]
   ): CreateTableBuilder {
     return new CreateTableBuilder({
+      queryId: this.#queryId,
       executor: this.#executor,
       createTableNode: CreateTableNode.cloneWithPrimaryKeyConstraint(
         this.#createTableNode,
@@ -115,6 +121,7 @@ export class CreateTableBuilder implements OperationNodeSource, Compilable {
     columns: string[]
   ): CreateTableBuilder {
     return new CreateTableBuilder({
+      queryId: this.#queryId,
       executor: this.#executor,
       createTableNode: CreateTableNode.cloneWithUniqueConstraint(
         this.#createTableNode,
@@ -137,6 +144,7 @@ export class CreateTableBuilder implements OperationNodeSource, Compilable {
     checkExpression: string
   ): CreateTableBuilder {
     return new CreateTableBuilder({
+      queryId: this.#queryId,
       executor: this.#executor,
       createTableNode: CreateTableNode.cloneWithCheckConstraint(
         this.#createTableNode,
@@ -166,6 +174,7 @@ export class CreateTableBuilder implements OperationNodeSource, Compilable {
     targetColumns: string[]
   ): CreateTableBuilder {
     return new CreateTableBuilder({
+      queryId: this.#queryId,
       executor: this.#executor,
       createTableNode: CreateTableNode.cloneWithForeignKeyConstraint(
         this.#createTableNode,
@@ -178,15 +187,15 @@ export class CreateTableBuilder implements OperationNodeSource, Compilable {
   }
 
   toOperationNode(): CreateTableNode {
-    return this.#executor.transformNode(this.#createTableNode)
+    return this.#executor.transformQuery(this.#createTableNode, this.#queryId)
   }
 
   compile(): CompiledQuery {
-    return this.#executor.compileQuery(this.toOperationNode())
+    return this.#executor.compileQuery(this.toOperationNode(), this.#queryId)
   }
 
   async execute(): Promise<void> {
-    await this.#executor.executeQuery(this.compile())
+    await this.#executor.executeQuery(this.compile(), this.#queryId)
   }
 }
 
@@ -196,6 +205,7 @@ preventAwait(
 )
 
 export interface CreateTableBuilderConstructorArgs {
+  queryId: QueryId
   createTableNode: CreateTableNode
   executor: QueryExecutor
 }

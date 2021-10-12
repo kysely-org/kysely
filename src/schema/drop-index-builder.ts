@@ -4,18 +4,22 @@ import { CompiledQuery } from '../query-compiler/compiled-query.js'
 import { Compilable } from '../util/compilable.js'
 import { preventAwait } from '../util/prevent-await.js'
 import { QueryExecutor } from '../query-executor/query-executor.js'
+import { QueryId } from '../util/query-id.js'
 
 export class DropIndexBuilder implements OperationNodeSource, Compilable {
+  readonly #queryId: QueryId
   readonly #dropIndexNode: DropIndexNode
   readonly #executor: QueryExecutor
 
   constructor(args: DropIndexBuilderConstructorArgs) {
+    this.#queryId = args.queryId
     this.#dropIndexNode = args.dropIndexNode
     this.#executor = args.executor
   }
 
   ifExists(): DropIndexBuilder {
     return new DropIndexBuilder({
+      queryId: this.#queryId,
       executor: this.#executor,
       dropIndexNode: DropIndexNode.cloneWithModifier(
         this.#dropIndexNode,
@@ -25,15 +29,15 @@ export class DropIndexBuilder implements OperationNodeSource, Compilable {
   }
 
   toOperationNode(): DropIndexNode {
-    return this.#executor.transformNode(this.#dropIndexNode)
+    return this.#executor.transformQuery(this.#dropIndexNode, this.#queryId)
   }
 
   compile(): CompiledQuery {
-    return this.#executor.compileQuery(this.toOperationNode())
+    return this.#executor.compileQuery(this.toOperationNode(), this.#queryId)
   }
 
   async execute(): Promise<void> {
-    await this.#executor.executeQuery(this.compile())
+    await this.#executor.executeQuery(this.compile(), this.#queryId)
   }
 }
 
@@ -43,6 +47,7 @@ preventAwait(
 )
 
 export interface DropIndexBuilderConstructorArgs {
+  queryId: QueryId
   dropIndexNode: DropIndexNode
   executor: QueryExecutor
 }

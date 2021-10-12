@@ -67,6 +67,7 @@ import { asReadonlyArray } from '../util/object-utils.js'
 import { Compilable } from '../util/compilable.js'
 import { QueryExecutor } from '../query-executor/query-executor.js'
 import { NeverExecutingQueryExecutor } from '../query-executor/never-executing-query-executor.js'
+import { createQueryId, QueryId } from '../util/query-id.js'
 
 /**
  * The main query builder class.
@@ -86,10 +87,12 @@ import { NeverExecutingQueryExecutor } from '../query-executor/never-executing-q
 export class QueryBuilder<DB, TB extends keyof DB, O = {}>
   implements OperationNodeSource, Compilable
 {
+  readonly #queryId: QueryId
   readonly #queryNode: QueryNode
   readonly #executor: QueryExecutor
 
   constructor(args: QueryBuilderConstructorArgs) {
+    this.#queryId = args.queryId
     this.#queryNode = args.queryNode
     this.#executor = args.executor
   }
@@ -289,6 +292,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
     ensureCanHaveWhereClause(this.#queryNode)
 
     return new QueryBuilder({
+      queryId: this.#queryId,
       executor: this.#executor,
       queryNode: QueryNode.cloneWithWhere(
         this.#queryNode,
@@ -357,6 +361,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
     ensureCanHaveWhereClause(this.#queryNode)
 
     return new QueryBuilder({
+      queryId: this.#queryId,
       executor: this.#executor,
       queryNode: QueryNode.cloneWithWhere(
         this.#queryNode,
@@ -445,6 +450,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
     ensureCanHaveWhereClause(this.#queryNode)
 
     return new QueryBuilder({
+      queryId: this.#queryId,
       executor: this.#executor,
       queryNode: QueryNode.cloneWithWhere(
         this.#queryNode,
@@ -468,6 +474,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
     ensureCanHaveWhereClause(this.#queryNode)
 
     return new QueryBuilder({
+      queryId: this.#queryId,
       executor: this.#executor,
       queryNode: QueryNode.cloneWithWhere(
         this.#queryNode,
@@ -540,6 +547,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
     ensureCanHaveWhereClause(this.#queryNode)
 
     return new QueryBuilder({
+      queryId: this.#queryId,
       executor: this.#executor,
       queryNode: QueryNode.cloneWithWhere(
         this.#queryNode,
@@ -556,6 +564,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
     ensureCanHaveWhereClause(this.#queryNode)
 
     return new QueryBuilder({
+      queryId: this.#queryId,
       executor: this.#executor,
       queryNode: QueryNode.cloneWithWhere(
         this.#queryNode,
@@ -572,6 +581,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
     ensureCanHaveWhereClause(this.#queryNode)
 
     return new QueryBuilder({
+      queryId: this.#queryId,
       executor: this.#executor,
       queryNode: QueryNode.cloneWithWhere(
         this.#queryNode,
@@ -588,6 +598,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
     ensureCanHaveWhereClause(this.#queryNode)
 
     return new QueryBuilder({
+      queryId: this.#queryId,
       executor: this.#executor,
       queryNode: QueryNode.cloneWithWhere(
         this.#queryNode,
@@ -615,6 +626,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
     ensureCanHaveHavingClause(this.#queryNode)
 
     return new QueryBuilder({
+      queryId: this.#queryId,
       executor: this.#executor,
       queryNode: SelectQueryNode.cloneWithHaving(
         this.#queryNode,
@@ -636,6 +648,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
     ensureCanHaveHavingClause(this.#queryNode)
 
     return new QueryBuilder({
+      queryId: this.#queryId,
       executor: this.#executor,
       queryNode: SelectQueryNode.cloneWithHaving(
         this.#queryNode,
@@ -663,6 +676,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
     ensureCanHaveHavingClause(this.#queryNode)
 
     return new QueryBuilder({
+      queryId: this.#queryId,
       executor: this.#executor,
       queryNode: SelectQueryNode.cloneWithHaving(
         this.#queryNode,
@@ -684,6 +698,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
     ensureCanHaveHavingClause(this.#queryNode)
 
     return new QueryBuilder({
+      queryId: this.#queryId,
       executor: this.#executor,
       queryNode: SelectQueryNode.cloneWithHaving(
         this.#queryNode,
@@ -701,6 +716,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
     ensureCanHaveHavingClause(this.#queryNode)
 
     return new QueryBuilder({
+      queryId: this.#queryId,
       executor: this.#executor,
       queryNode: SelectQueryNode.cloneWithHaving(
         this.#queryNode,
@@ -718,6 +734,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
     ensureCanHaveHavingClause(this.#queryNode)
 
     return new QueryBuilder({
+      queryId: this.#queryId,
       executor: this.#executor,
       queryNode: SelectQueryNode.cloneWithHaving(
         this.#queryNode,
@@ -735,6 +752,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
     ensureCanHaveHavingClause(this.#queryNode)
 
     return new QueryBuilder({
+      queryId: this.#queryId,
       executor: this.#executor,
       queryNode: SelectQueryNode.cloneWithHaving(
         this.#queryNode,
@@ -752,6 +770,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
     ensureCanHaveHavingClause(this.#queryNode)
 
     return new QueryBuilder({
+      queryId: this.#queryId,
       executor: this.#executor,
       queryNode: SelectQueryNode.cloneWithHaving(
         this.#queryNode,
@@ -945,6 +964,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
     ensureCanHaveSelectClause(this.#queryNode)
 
     return new QueryBuilder({
+      queryId: this.#queryId,
       executor: this.#executor,
       queryNode: SelectQueryNode.cloneWithSelections(
         this.#queryNode,
@@ -991,6 +1011,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
     ensureCanHaveSelectClause(this.#queryNode)
 
     return new QueryBuilder({
+      queryId: this.#queryId,
       executor: this.#executor,
       queryNode: SelectQueryNode.cloneWithDistinctOnSelections(
         this.#queryNode,
@@ -1020,6 +1041,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
     ensureCanHaveSelectClause(this.#queryNode)
 
     return new QueryBuilder({
+      queryId: this.#queryId,
       executor: this.#executor,
       queryNode: SelectQueryNode.cloneWithDistinct(this.#queryNode),
     })
@@ -1032,6 +1054,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
     ensureCanHaveSelectClause(this.#queryNode)
 
     return new QueryBuilder({
+      queryId: this.#queryId,
       executor: this.#executor,
       queryNode: SelectQueryNode.cloneWithModifier(
         this.#queryNode,
@@ -1047,6 +1070,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
     ensureCanHaveSelectClause(this.#queryNode)
 
     return new QueryBuilder({
+      queryId: this.#queryId,
       executor: this.#executor,
       queryNode: SelectQueryNode.cloneWithModifier(this.#queryNode, 'ForShare'),
     })
@@ -1059,6 +1083,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
     ensureCanHaveSelectClause(this.#queryNode)
 
     return new QueryBuilder({
+      queryId: this.#queryId,
       executor: this.#executor,
       queryNode: SelectQueryNode.cloneWithModifier(
         this.#queryNode,
@@ -1074,6 +1099,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
     ensureCanHaveSelectClause(this.#queryNode)
 
     return new QueryBuilder({
+      queryId: this.#queryId,
       executor: this.#executor,
       queryNode: SelectQueryNode.cloneWithModifier(
         this.#queryNode,
@@ -1089,6 +1115,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
     ensureCanHaveSelectClause(this.#queryNode)
 
     return new QueryBuilder({
+      queryId: this.#queryId,
       executor: this.#executor,
       queryNode: SelectQueryNode.cloneWithModifier(
         this.#queryNode,
@@ -1104,6 +1131,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
     ensureCanHaveSelectClause(this.#queryNode)
 
     return new QueryBuilder({
+      queryId: this.#queryId,
       executor: this.#executor,
       queryNode: SelectQueryNode.cloneWithModifier(this.#queryNode, 'NoWait'),
     })
@@ -1166,6 +1194,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
     ensureCanHaveSelectClause(this.#queryNode)
 
     return new QueryBuilder({
+      queryId: this.#queryId,
       executor: this.#executor,
       queryNode: SelectQueryNode.cloneWithSelections(
         this.#queryNode,
@@ -1301,6 +1330,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
     ensureCanHaveJoins(this.#queryNode)
 
     return new QueryBuilder({
+      queryId: this.#queryId,
       executor: this.#executor,
       queryNode: QueryNode.cloneWithJoin(
         this.#queryNode,
@@ -1328,6 +1358,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
     ensureCanHaveJoins(this.#queryNode)
 
     return new QueryBuilder({
+      queryId: this.#queryId,
       executor: this.#executor,
       queryNode: QueryNode.cloneWithJoin(
         this.#queryNode,
@@ -1355,6 +1386,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
     ensureCanHaveJoins(this.#queryNode)
 
     return new QueryBuilder({
+      queryId: this.#queryId,
       executor: this.#executor,
       queryNode: QueryNode.cloneWithJoin(
         this.#queryNode,
@@ -1382,6 +1414,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
     ensureCanHaveJoins(this.#queryNode)
 
     return new QueryBuilder({
+      queryId: this.#queryId,
       executor: this.#executor,
       queryNode: QueryNode.cloneWithJoin(
         this.#queryNode,
@@ -1512,6 +1545,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
     ensureCanHaveInsertValues(this.#queryNode)
 
     return new QueryBuilder({
+      queryId: this.#queryId,
       executor: this.#executor,
       queryNode: InsertQueryNode.cloneWithColumnsAndValues(
         this.#queryNode,
@@ -1570,6 +1604,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
     ensureCanHaveOnConflict(this.#queryNode)
 
     return new QueryBuilder({
+      queryId: this.#queryId,
       executor: this.#executor,
       queryNode: InsertQueryNode.cloneWithOnConflictDoNothing(
         this.#queryNode,
@@ -1638,6 +1673,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
     ensureCanHaveOnConflict(this.#queryNode)
 
     return new QueryBuilder({
+      queryId: this.#queryId,
       executor: this.#executor,
       queryNode: InsertQueryNode.cloneWithOnConflictUpdate(
         this.#queryNode,
@@ -1733,6 +1769,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
     ensureCanHaveUpdates(this.#queryNode)
 
     return new QueryBuilder({
+      queryId: this.#queryId,
       executor: this.#executor,
       queryNode: UpdateQueryNode.cloneWithUpdates(
         this.#queryNode,
@@ -1811,6 +1848,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
     ensureCanHaveReturningClause(this.#queryNode)
 
     return new QueryBuilder({
+      queryId: this.#queryId,
       executor: this.#executor,
       queryNode: QueryNode.cloneWithReturning(
         this.#queryNode,
@@ -1827,6 +1865,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
     ensureCanHaveReturningClause(this.#queryNode)
 
     return new QueryBuilder({
+      queryId: this.#queryId,
       executor: this.#executor,
       queryNode: QueryNode.cloneWithReturning(
         this.#queryNode,
@@ -1928,6 +1967,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
     ensureCanHaveOrderByClause(this.#queryNode)
 
     return new QueryBuilder({
+      queryId: this.#queryId,
       executor: this.#executor,
       queryNode: SelectQueryNode.cloneWithOrderByItem(
         this.#queryNode,
@@ -2044,6 +2084,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
     ensureCanHaveGroupByClause(this.#queryNode)
 
     return new QueryBuilder({
+      queryId: this.#queryId,
       executor: this.#executor,
       queryNode: SelectQueryNode.cloneWithGroupByItems(
         this.#queryNode,
@@ -2080,6 +2121,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
     ensureCanHaveLimit(this.#queryNode)
 
     return new QueryBuilder({
+      queryId: this.#queryId,
       executor: this.#executor,
       queryNode: SelectQueryNode.cloneWithLimit(
         this.#queryNode,
@@ -2106,6 +2148,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
     ensureCanHaveOffset(this.#queryNode)
 
     return new QueryBuilder({
+      queryId: this.#queryId,
       executor: this.#executor,
       queryNode: SelectQueryNode.cloneWithOffset(
         this.#queryNode,
@@ -2142,17 +2185,18 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    */
   castTo<T>(): QueryBuilder<DB, TB, T> {
     return new QueryBuilder({
+      queryId: this.#queryId,
       executor: this.#executor,
       queryNode: this.#queryNode,
     })
   }
 
   toOperationNode(): QueryNode {
-    return this.#executor.transformNode(this.#queryNode)
+    return this.#executor.transformQuery(this.#queryNode, this.#queryId)
   }
 
   compile(): CompiledQuery {
-    return this.#executor.compileQuery(this.toOperationNode())
+    return this.#executor.compileQuery(this.toOperationNode(), this.#queryId)
   }
 
   /**
@@ -2161,10 +2205,11 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * Also see the {@link executeTakeFirst} and {@link executeTakeFirstOrThrow} methods.
    */
   async execute(): Promise<ManyResultRowType<O>[]> {
-    const node = this.#executor.transformNode(this.#queryNode)
-    const compildQuery = this.#executor.compileQuery(node)
+    const node = this.#executor.transformQuery(this.#queryNode, this.#queryId)
+    const compildQuery = this.#executor.compileQuery(node, this.#queryId)
     const result = await this.#executor.executeQuery<ManyResultRowType<O>>(
-      compildQuery
+      compildQuery,
+      this.#queryId
     )
 
     if (QueryNode.isMutating(node) && node.returning) {
@@ -2222,6 +2267,7 @@ preventAwait(
 )
 
 export interface QueryBuilderConstructorArgs {
+  queryId: QueryId
   queryNode: QueryNode
   executor: QueryExecutor
 }
@@ -2286,6 +2332,7 @@ export function createEmptySelectQuery<
   O = {}
 >(): QueryBuilder<DB, TB, O> {
   return new QueryBuilder<DB, TB, O>({
+    queryId: createQueryId(),
     executor: new NeverExecutingQueryExecutor(),
     queryNode: SelectQueryNode.create([]),
   })

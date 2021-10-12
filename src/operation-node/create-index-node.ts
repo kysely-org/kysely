@@ -12,7 +12,7 @@ export type IndexType = 'btree' | 'hash' | 'gist' | 'gin'
 export interface CreateIndexNode extends OperationNode {
   readonly kind: 'CreateIndexNode'
   readonly name: IdentifierNode
-  readonly on?: TableNode
+  readonly table?: TableNode
   readonly expression?: ColumnNode | ListNode | RawNode
   readonly unique?: boolean
   // TODO(samiko): Implemented as a raw node because I'm lazy today.

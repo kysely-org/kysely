@@ -9,7 +9,7 @@ import { QueryNode } from '../operation-node/query-node.js'
 import { RawNode } from '../operation-node/raw-node.js'
 import { CompiledQuery } from './compiled-query.js'
 
-export type CompileEntryPointNode =
+export type RootOperationNode =
   | QueryNode
   | CreateTableNode
   | CreateIndexNode
@@ -21,5 +21,5 @@ export type CompileEntryPointNode =
   | RawNode
 
 export interface QueryCompiler {
-  compileQuery(node: CompileEntryPointNode): CompiledQuery
+  compileQuery(node: RootOperationNode): CompiledQuery
 }

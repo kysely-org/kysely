@@ -11,16 +11,23 @@ import { parseStringReference } from '../parser/reference-parser.js'
 import { CompiledQuery } from '../query-compiler/compiled-query.js'
 import { preventAwait } from '../util/prevent-await.js'
 import { QueryExecutor } from '../query-executor/query-executor.js'
+import { createQueryId, QueryId } from '../util/query-id.js'
 
 export class RawBuilder<O = unknown> implements OperationNodeSource {
+  readonly #queryId: QueryId
   readonly #sql: string
   readonly #params?: any[]
   readonly #executor: QueryExecutor
 
   constructor(args: RawBuilderConstructorArgs) {
+    this.#queryId = createQueryId()
     this.#sql = args.sql
     this.#params = args.params
     this.#executor = args.executor
+  }
+
+  as<A extends string>(alias: A): AliasedRawBuilder<O, A> {
+    return new AliasedRawBuilder(this, alias)
   }
 
   toOperationNode(): RawNode {
@@ -55,19 +62,19 @@ export class RawBuilder<O = unknown> implements OperationNodeSource {
     }
 
     sqlFragments.push(sql.slice(sqlIdx))
-    return RawNode.create(sqlFragments, argNodes)
-  }
 
-  as<A extends string>(alias: A): AliasedRawBuilder<O, A> {
-    return new AliasedRawBuilder(this, alias)
+    return this.#executor.transformQuery(
+      RawNode.create(sqlFragments, argNodes),
+      this.#queryId
+    )
   }
 
   compile(): CompiledQuery {
-    return this.#executor.compileQuery(this.toOperationNode())
+    return this.#executor.compileQuery(this.toOperationNode(), this.#queryId)
   }
 
   async execute(): Promise<QueryResult<O>> {
-    return this.#executor.executeQuery<O>(this.compile())
+    return this.#executor.executeQuery<O>(this.compile(), this.#queryId)
   }
 }
 
