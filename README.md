@@ -48,7 +48,7 @@ All you need to do is define an interface for each table in the database and pas
 interfaces to the `Kysely` constructor:
 
 ```ts
-import { Kysely } from 'kysely'
+import { Kysely, PostgresDialect } from 'kysely'
 
 interface Person {
   id: number
@@ -79,9 +79,10 @@ interface Database {
 async function demo() {
   // You'd create one of these when you start your app.
   const db = await Kysely.create<Database>({
-    dialect: 'postgres',
-    host: 'localhost',
-    database: 'kysely_test',
+    dialect: new PostgresDialect({
+      host: 'localhost',
+      database: 'kysely_test',
+    })
   })
 
   const person = await db

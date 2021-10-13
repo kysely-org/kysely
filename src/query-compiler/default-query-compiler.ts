@@ -851,8 +851,12 @@ export class DefaultQueryCompiler
   }
 
   protected appendValue(value: PrimitiveValue): void {
-    this.#bindings.push(value)
+    this.addBinding(value)
     this.append(`$${this.#bindings.length}`)
+  }
+
+  protected addBinding(binding: any): void {
+    this.#bindings.push(binding)
   }
 
   protected appendImmediateValue(value: PrimitiveValue): void {

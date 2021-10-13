@@ -6,20 +6,21 @@ import {
 import { Driver } from '../../driver/driver.js'
 import { CompiledQuery } from '../../query-compiler/compiled-query.js'
 import { freeze, isFunction } from '../../util/object-utils.js'
+import { PostgresDialectConfig } from './postgres-dialect.js'
 
 const PRIVATE_RELEASE_METHOD = Symbol()
 
 export class PostgresDriver extends Driver {
-  #pool: Pool | null = null
+  readonly #config: PostgresDialectConfig
   readonly #connections = new WeakMap<PoolClient, DatabaseConnection>()
+  #pool: Pool | null = null
 
-  protected override getDefaultPort(): number {
-    return 5432
+  constructor(config: PostgresDialectConfig) {
+    super()
+    this.#config = config
   }
 
   protected override async init(): Promise<void> {
-    const cfg = this.config
-
     // Import the `pg` module here instead at the top of the file
     // so that this file can be loaded by node without `pg` driver
     // installed. As you can see, there IS an import from `pg` at the
@@ -29,19 +30,7 @@ export class PostgresDriver extends Driver {
 
     // Use the `pg` module's own pool. All drivers should use the
     // pool provided by the database library if possible.
-    this.#pool = new PoolConstrucor({
-      host: cfg.host,
-      database: cfg.database,
-      port: cfg.port,
-      user: cfg.user,
-      password: cfg.password,
-      ssl: cfg.ssl,
-
-      // Pool options.
-      connectionTimeoutMillis: cfg.pool.connectionTimeoutMillis,
-      idleTimeoutMillis: cfg.pool.idleTimeoutMillis,
-      max: cfg.pool.maxConnections,
-    })
+    this.#pool = new PoolConstrucor(this.#config)
   }
 
   protected override async acquireConnection(): Promise<DatabaseConnection> {
@@ -55,8 +44,8 @@ export class PostgresDriver extends Driver {
       // The driver must take care of calling `onCreateConnection` when a new
       // connection is created. The `pg` module doesn't provide an async hook
       // for the connection creation. We need to call the method explicitly.
-      if (this.config.pool.onCreateConnection) {
-        await this.config.pool.onCreateConnection(connection)
+      if (this.#config.onCreateConnection) {
+        await this.#config.onCreateConnection(connection)
       }
     }
 

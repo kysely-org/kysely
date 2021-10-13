@@ -1,18 +1,10 @@
-import { freeze } from '../util/object-utils.js'
 import { DatabaseConnection } from './database-connection.js'
-import { DriverConfig, DriverConfigWithDefaults } from './driver-config.js'
 import {
   INTERNAL_DRIVER_ACQUIRE_CONNECTION,
   INTERNAL_DRIVER_ENSURE_DESTROY,
   INTERNAL_DRIVER_ENSURE_INIT,
   INTERNAL_DRIVER_RELEASE_CONNECTION,
 } from './driver-internal.js'
-
-const POOL_CONFIG_DEFAULTS = freeze({
-  maxConnections: 10,
-  idleTimeoutMillis: 10000,
-  connectionTimeoutMillis: 0,
-})
 
 /**
  * A Driver is responsible for abstracting away the database engine details.
@@ -21,26 +13,8 @@ const POOL_CONFIG_DEFAULTS = freeze({
  * for connection pooling.
  */
 export abstract class Driver {
-  protected readonly config: DriverConfigWithDefaults
-
-  #initPromise: Promise<void> | null = null
-  #destroyPromise: Promise<void> | null = null
-
-  constructor(config: DriverConfig) {
-    this.config = freeze({
-      ...config,
-      port: config.port ?? this.getDefaultPort(),
-      pool: freeze({
-        ...POOL_CONFIG_DEFAULTS,
-        ...config.pool,
-      }),
-    })
-  }
-
-  /**
-   * Returns the default port for the database engine.
-   */
-  protected abstract getDefaultPort(): number
+  #initPromise?: Promise<void>
+  #destroyPromise?: Promise<void>
 
   /**
    * Initializes the driver.
@@ -98,7 +72,7 @@ export abstract class Driver {
   async [INTERNAL_DRIVER_ENSURE_INIT](): Promise<void> {
     if (!this.#initPromise) {
       this.#initPromise = this.init().catch((err) => {
-        this.#initPromise = null
+        this.#initPromise = undefined
         return Promise.reject(err)
       })
     }
@@ -119,7 +93,7 @@ export abstract class Driver {
 
     if (!this.#destroyPromise) {
       this.#destroyPromise = this.destroy().catch((err) => {
-        this.#destroyPromise = null
+        this.#destroyPromise = undefined
         return Promise.reject(err)
       })
     }

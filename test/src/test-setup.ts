@@ -3,7 +3,6 @@ import * as chaiSubset from 'chai-subset'
 chai.use(chaiSubset)
 
 import {
-  Dialect,
   Kysely,
   KyselyConfig,
   KyselyPlugin,
@@ -14,6 +13,7 @@ import {
   QueryResult,
   AnyRow,
   OperationNodeTransformer,
+  PostgresDialect,
 } from '../../'
 
 export interface Person {
@@ -52,7 +52,7 @@ interface PetInsertParams extends Omit<Pet, 'id' | 'owner_id'> {
   toys?: Omit<Toy, 'id' | 'pet_id'>[]
 }
 
-type BuiltInDialect = Exclude<KyselyConfig['dialect'], Dialect>
+type BuiltInDialect = 'postgres'
 type PerDialect<T> = Record<BuiltInDialect, T>
 
 const plugins: KyselyPlugin[] = []
@@ -64,11 +64,12 @@ if (process.env.TEST_TRANSFORMER) {
 
 const DB_CONFIGS: PerDialect<KyselyConfig> = {
   postgres: {
-    dialect: 'postgres',
-    database: 'kysely_test',
-    host: process.env.POSTGRES_HOST ?? 'localhost',
-    user: process.env.POSTGRES_USER,
-    password: process.env.POSTGRES_PASSWORD,
+    dialect: new PostgresDialect({
+      database: 'kysely_test',
+      host: process.env.POSTGRES_HOST ?? 'localhost',
+      user: process.env.POSTGRES_USER,
+      password: process.env.POSTGRES_PASSWORD,
+    }),
     plugins,
   },
 }

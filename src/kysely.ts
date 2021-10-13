@@ -1,6 +1,4 @@
-import { DriverConfig } from './driver/driver-config.js'
 import { Dialect } from './dialect/dialect.js'
-import { PostgresDialect } from './dialect/postgres/postgres-dialect.js'
 import { Driver } from './driver/driver.js'
 import { SchemaModule } from './schema/schema.js'
 import { DynamicModule } from './dynamic/dynamic.js'
@@ -48,7 +46,12 @@ import { DatabaseIntrospector } from './introspection/database-introspector.js'
  *   pet: Pet
  * }
  *
- * const db = await Kysely.create<Database>(config)
+ * const db = await Kysely.create<Database>({
+ *   dialect: new PostgresDialect({
+ *     host: 'localhost',
+ *     database: 'kysely_test',
+ *   })
+ * })
  * ```
  *
  * @typeParam DB - The database interface type. Keys of this type must be table names
@@ -74,8 +77,8 @@ export class Kysely<DB> extends QueryCreator<DB> {
    * Creates a Kysely instance.
    */
   static async create<T>(config: KyselyConfig): Promise<Kysely<T>> {
-    const dialect = createDialect(config)
-    const driver = dialect.createDriver(config)
+    const dialect = config.dialect
+    const driver = dialect.createDriver()
     const compiler = dialect.createQueryCompiler()
 
     const connectionProvider = new DefaultConnectionProvider(driver)
@@ -297,17 +300,7 @@ export interface KyselyConstructorArgs {
   executor: QueryExecutor
 }
 
-export interface KyselyConfig extends DriverConfig {
-  dialect: 'postgres' | Dialect
+export interface KyselyConfig {
+  dialect: Dialect
   plugins?: KyselyPlugin[]
-}
-
-function createDialect(config: KyselyConfig): Dialect {
-  if (typeof config.dialect !== 'string') {
-    return config.dialect
-  } else if (config.dialect === 'postgres') {
-    return new PostgresDialect()
-  } else {
-    throw new Error(`unknown dialect ${config.dialect}`)
-  }
 }

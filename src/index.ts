@@ -27,11 +27,11 @@ export * from './schema/alter-table-builder.js'
 
 export * from './dynamic/dynamic.js'
 export * from './driver/driver.js'
-export * from './driver/driver-config.js'
 export * from './driver/database-connection.js'
 export * from './driver/database-connection.js'
 
 export * from './dialect/postgres/postgres-dialect.js'
+export * from './dialect/postgres/postgres-query-compiler'
 export * from './dialect/postgres/postgres-driver.js'
 export * from './dialect/postgres/postgres-introspector.js'
 
