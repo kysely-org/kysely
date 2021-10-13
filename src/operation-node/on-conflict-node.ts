@@ -1,11 +1,15 @@
 import { freeze } from '../util/object-utils.js'
 import { ColumnNode } from './column-node.js'
 import { ColumnUpdateNode } from './column-update-node.js'
+import { IdentifierNode } from './identifier-node.js'
 import { OperationNode } from './operation-node.js'
+
+export type OnConflictNodeParams = Omit<OnConflictNode, 'kind'>
 
 export interface OnConflictNode extends OperationNode {
   readonly kind: 'OnConflictNode'
-  readonly columns: ReadonlyArray<ColumnNode>
+  readonly columns?: ReadonlyArray<ColumnNode>
+  readonly constraint?: IdentifierNode
   readonly updates?: ReadonlyArray<ColumnUpdateNode>
   readonly doNothing?: boolean
 }
@@ -18,22 +22,10 @@ export const OnConflictNode = freeze({
     return node.kind === 'OnConflictNode'
   },
 
-  createWithDoNothing(columns: ReadonlyArray<ColumnNode>): OnConflictNode {
+  create(params: OnConflictNodeParams): OnConflictNode {
     return freeze({
       kind: 'OnConflictNode',
-      columns,
-      doNothing: true,
-    })
-  },
-
-  createWithUpdates(
-    columns: ReadonlyArray<ColumnNode>,
-    updates: ReadonlyArray<ColumnUpdateNode>
-  ): OnConflictNode {
-    return freeze({
-      kind: 'OnConflictNode',
-      columns,
-      updates,
+      ...params,
     })
   },
 })

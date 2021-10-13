@@ -1,5 +1,5 @@
-import { ExecutorPlugin } from '../index.js'
-import { Kysely } from '../kysely.js'
+import { Kysely } from '../kysely'
+import { ExecutorPlugin } from '../query-executor/query-executor'
 
 export interface KyselyPlugin extends ExecutorPlugin {
   /**

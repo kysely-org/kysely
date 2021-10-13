@@ -49,24 +49,13 @@ export const InsertQueryNode = freeze({
     })
   },
 
-  cloneWithOnConflictDoNothing(
+  cloneWithOnConflict(
     insertQuery: InsertQueryNode,
-    columns: ReadonlyArray<ColumnNode>
+    onConflict: OnConflictNode
   ): InsertQueryNode {
     return freeze({
       ...insertQuery,
-      onConflict: OnConflictNode.createWithDoNothing(columns),
-    })
-  },
-
-  cloneWithOnConflictUpdate(
-    insertQuery: InsertQueryNode,
-    columns: ReadonlyArray<ColumnNode>,
-    updates: ReadonlyArray<ColumnUpdateNode>
-  ): InsertQueryNode {
-    return freeze({
-      ...insertQuery,
-      onConflict: OnConflictNode.createWithUpdates(columns, updates),
+      onConflict,
     })
   },
 })

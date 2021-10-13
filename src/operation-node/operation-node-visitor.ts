@@ -376,7 +376,13 @@ export class OperationNodeVisitor {
   }
 
   protected visitOnConflict(node: OnConflictNode): void {
-    node.columns.forEach(this.visitNode)
+    if (node.columns) {
+      node.columns.forEach(this.visitNode)
+    }
+
+    if (node.constraint) {
+      this.visitNode(node.constraint)
+    }
 
     if (node.updates) {
       node.updates.forEach(this.visitNode)

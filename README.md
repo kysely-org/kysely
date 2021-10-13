@@ -116,8 +116,8 @@ export async function down(db: Kysely<any>): Promise<void> {
 The `up` function is called when you update your database schema to next version and `down`
 when you go back to previous version. The only argument to the functions is an instance of
 `Kysely<any>`. It is important to use `Kysely<any>` and not `Kysely<YourDatabase>`. Migrations
-should never depend on the current code because they need to work even if the code changes
-completely. Migrations need to be "frozen in time".
+should never depend on the current code of your app because they need to work even if the app
+changes completely. Migrations need to be "frozen in time".
 
 The migrations can use the [Kysely.schema](https://koskimas.github.io/kysely/classes/SchemaModule.html)
 module to modify the schema. Migrations can also run normal queries to modify the data.
@@ -177,10 +177,12 @@ have. You will probably want to add a simple migration script to your projects l
 import path from 'path'
 import { db } from './database'
 
-db.migration.migrateToLatest(path.join(__dirname, 'migrations'))
+db.migration
+  .migrateToLatest(path.join(__dirname, 'migrations'))
+  .then(() => db.destroy())
 ```
 
-The migration methods use a lock in the database level, and parallel calls are executed serially.
+The migration methods use a lock on the database level, and parallel calls are executed serially.
 This means that you can safely call `migrateToLatest` and other migration methods from multiple
 server instances simultaneously and the migrations are guaranteed to only be executed once.
 

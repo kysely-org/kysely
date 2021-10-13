@@ -580,11 +580,18 @@ export class DefaultQueryCompiler
   }
 
   protected override visitOnConflict(node: OnConflictNode): void {
-    this.append('on conflict ')
+    this.append('on conflict')
 
-    this.append('(')
-    this.compileList(node.columns)
-    this.append(')')
+    if (node.columns) {
+      this.append(' (')
+      this.compileList(node.columns)
+      this.append(')')
+    }
+
+    if (node.constraint) {
+      this.append(' on constraint ')
+      this.visitNode(node.constraint)
+    }
 
     if (node.doNothing === true) {
       this.append(' do nothing')

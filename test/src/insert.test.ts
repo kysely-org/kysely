@@ -119,14 +119,40 @@ for (const dialect of BUILT_IN_DIALECTS) {
 
       const query = ctx.db
         .insertInto('pet')
-        .values(existingPet)
+        .values({ ...existingPet, id: ctx.db.generated })
         .onConflictDoNothing('name')
 
       testSql(query, dialect, {
         postgres: {
-          sql: 'insert into "pet" ("id", "name", "owner_id", "species") values ($1, $2, $3, $4) on conflict ("name") do nothing',
+          sql: 'insert into "pet" ("name", "owner_id", "species") values ($1, $2, $3) on conflict ("name") do nothing',
           bindings: [
-            existingPet.id,
+            existingPet.name,
+            existingPet.owner_id,
+            existingPet.species,
+          ],
+        },
+      })
+
+      const result = await query.executeTakeFirst()
+      expect(result).to.be.undefined
+    })
+
+    it('should insert one row and ignore conflicts using onConflictDoNothing and a constraint name', async () => {
+      const [existingPet] = await ctx.db
+        .selectFrom('pet')
+        .selectAll()
+        .limit(1)
+        .execute()
+
+      const query = ctx.db
+        .insertInto('pet')
+        .values({ ...existingPet, id: ctx.db.generated })
+        .onConflictDoNothing({ constraint: 'pet_name_key' })
+
+      testSql(query, dialect, {
+        postgres: {
+          sql: 'insert into "pet" ("name", "owner_id", "species") values ($1, $2, $3) on conflict on constraint "pet_name_key" do nothing',
+          bindings: [
             existingPet.name,
             existingPet.owner_id,
             existingPet.species,
@@ -139,27 +165,63 @@ for (const dialect of BUILT_IN_DIALECTS) {
     })
 
     it('should update instead of insert on conflict when using onConfictUpdate', async () => {
-      const [anyPerson] = await ctx.db
-        .selectFrom('person')
+      const [existingPet] = await ctx.db
+        .selectFrom('pet')
         .selectAll()
         .limit(1)
         .execute()
 
       const query = ctx.db
         .insertInto('pet')
-        .values({
-          id: ctx.db.generated,
-          name: 'Catto',
-          species: 'cat',
-          owner_id: anyPerson.id,
-        })
+        .values({ ...existingPet, id: ctx.db.generated })
         .onConflictUpdate('name', { species: 'hamster' })
         .returningAll()
 
       testSql(query, dialect, {
         postgres: {
-          sql: 'insert into "pet" ("name", "species", "owner_id") values ($1, $2, $3) on conflict ("name") do update set "species" = $4 returning *',
-          bindings: ['Catto', 'cat', anyPerson.id, 'hamster'],
+          sql: 'insert into "pet" ("name", "owner_id", "species") values ($1, $2, $3) on conflict ("name") do update set "species" = $4 returning *',
+          bindings: [
+            existingPet.name,
+            existingPet.owner_id,
+            existingPet.species,
+            'hamster',
+          ],
+        },
+      })
+
+      const result = await query.executeTakeFirst()
+
+      expect(result).to.containSubset({
+        name: 'Catto',
+        species: 'hamster',
+      })
+    })
+
+    it('should update instead of insert on conflict when using onConfictUpdate and a constraint name', async () => {
+      const [existingPet] = await ctx.db
+        .selectFrom('pet')
+        .selectAll()
+        .limit(1)
+        .execute()
+
+      const query = ctx.db
+        .insertInto('pet')
+        .values({ ...existingPet, id: ctx.db.generated })
+        .onConflictUpdate(
+          { constraint: 'pet_name_key' },
+          { species: 'hamster' }
+        )
+        .returningAll()
+
+      testSql(query, dialect, {
+        postgres: {
+          sql: 'insert into "pet" ("name", "owner_id", "species") values ($1, $2, $3) on conflict on constraint "pet_name_key" do update set "species" = $4 returning *',
+          bindings: [
+            existingPet.name,
+            existingPet.owner_id,
+            existingPet.species,
+            'hamster',
+          ],
         },
       })
 

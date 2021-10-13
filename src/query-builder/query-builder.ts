@@ -32,7 +32,6 @@ import {
 } from '../parser/insert-values-parser.js'
 import { QueryBuilderWithReturning } from '../parser/returning-parser.js'
 import {
-  parseColumnName,
   parseReferenceExpression,
   parseReferenceExpressionOrList,
   ReferenceExpression,
@@ -63,11 +62,16 @@ import { parseUpdateObject } from '../parser/update-set-parser.js'
 import { preventAwait } from '../util/prevent-await.js'
 import { LimitNode } from '../operation-node/limit-node.js'
 import { OffsetNode } from '../operation-node/offset-node.js'
-import { asReadonlyArray } from '../util/object-utils.js'
 import { Compilable } from '../util/compilable.js'
 import { QueryExecutor } from '../query-executor/query-executor.js'
 import { NeverExecutingQueryExecutor } from '../query-executor/never-executing-query-executor.js'
 import { createQueryId, QueryId } from '../util/query-id.js'
+import {
+  OnConflictConstraintTarget,
+  OnConflictTargetExpression,
+  parseOnConflictDoNothing,
+  parseOnConflictUpdate,
+} from '../parser/on-conflict-parser.js'
 
 /**
  * The main query builder class.
@@ -1555,7 +1559,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
   }
 
   /**
-   * Ignores the insert if the column (or columns) given as the first
+   * Ignores the insert if the column or constraint given as the first
    * argument conflicts with the current rows in the database. The
    * default behavior without this method call is to throw an error.
    *
@@ -1591,6 +1595,32 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * values ($1, $2)
    * on conflict ("name") do nothing
    * ```
+   *
+   * @example
+   * You can provied the name of the constraint instead of a column name
+   *
+   * ```ts
+   * await db
+   *   .insertInto('pet')
+   *   .values({
+   *     id: db.generated,
+   *     name: 'Catto',
+   *     species: 'cat',
+   *   })
+   *   .onConflictDoNothing({
+   *     constraint: 'pet_name_key'
+   *   })
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (postgresql):
+   *
+   * ```sql
+   * insert into "pet" ("name", "species")
+   * values ($1, $2)
+   * on conflict on constraint "pet_name_key"
+   * do nothing
+   * ```
    */
   onConflictDoNothing(column: AnyColumn<DB, TB>): QueryBuilder<DB, TB, O>
 
@@ -1599,22 +1629,26 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
   ): QueryBuilder<DB, TB, O>
 
   onConflictDoNothing(
-    columns: AnyColumn<DB, TB> | ReadonlyArray<AnyColumn<DB, TB>>
+    constraint: OnConflictConstraintTarget
+  ): QueryBuilder<DB, TB, O>
+
+  onConflictDoNothing(
+    target: OnConflictTargetExpression<DB, TB>
   ): QueryBuilder<DB, TB, O> {
     ensureCanHaveOnConflict(this.#queryNode)
 
     return new QueryBuilder({
       queryId: this.#queryId,
       executor: this.#executor,
-      queryNode: InsertQueryNode.cloneWithOnConflictDoNothing(
+      queryNode: InsertQueryNode.cloneWithOnConflict(
         this.#queryNode,
-        asReadonlyArray(columns).map(parseColumnName)
+        parseOnConflictDoNothing(target)
       ),
     })
   }
 
   /**
-   * Ignores an insert if the column (or columns) given as the first
+   * Ignores an insert if the column or constraint given as the first
    * argument conflicts with the current rows in the database and
    * performs an update on the conflicting row instead. This method
    * can be used to implement an upsert operation.
@@ -1655,6 +1689,33 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * values ($1, $2)
    * on conflict ("name") do update set "species" = $3
    * ```
+   *
+   * @example
+   * You can provied the name of the constraint instead of a column name
+   *
+   * ```ts
+   * await db
+   *   .insertInto('pet')
+   *   .values({
+   *     id: db.generated,
+   *     name: 'Catto',
+   *     species: 'cat',
+   *   })
+   *   .onConflictUpdate(
+   *     { constraint: 'pet_name_key' },
+   *     { species: 'hamster' }
+   *   )
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (postgresql):
+   *
+   * ```sql
+   * insert into "pet" ("name", "species")
+   * values ($1, $2)
+   * on conflict on constraint "pet_name_key"
+   * do update set "species" = $3
+   * ```
    */
   onConflictUpdate(
     column: AnyColumn<DB, TB>,
@@ -1667,7 +1728,12 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
   ): QueryBuilder<DB, TB, O>
 
   onConflictUpdate(
-    columns: AnyColumn<DB, TB> | ReadonlyArray<AnyColumn<DB, TB>>,
+    constraint: OnConflictConstraintTarget,
+    updates: MutationObject<DB, TB>
+  ): QueryBuilder<DB, TB, O>
+
+  onConflictUpdate(
+    target: OnConflictTargetExpression<DB, TB>,
     updates: MutationObject<DB, TB>
   ): QueryBuilder<DB, TB, O> {
     ensureCanHaveOnConflict(this.#queryNode)
@@ -1675,10 +1741,9 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
     return new QueryBuilder({
       queryId: this.#queryId,
       executor: this.#executor,
-      queryNode: InsertQueryNode.cloneWithOnConflictUpdate(
+      queryNode: InsertQueryNode.cloneWithOnConflict(
         this.#queryNode,
-        asReadonlyArray(columns).map(parseColumnName),
-        parseUpdateObject(updates)
+        parseOnConflictUpdate(target, updates)
       ),
     })
   }
