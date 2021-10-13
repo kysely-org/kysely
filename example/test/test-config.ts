@@ -1,8 +1,8 @@
-import { KyselyConfig } from 'kysely'
+import { PostgresDialectConfig } from 'kysely'
 import { Config } from '../src/config'
 
 export interface TestConfig extends Config {
-  readonly adminDatabase: KyselyConfig
+  readonly adminDatabase: PostgresDialectConfig
 }
 
 export const testConfig: TestConfig = {
@@ -11,12 +11,10 @@ export const testConfig: TestConfig = {
   authTokenExpiryDuration: '2h',
   database: {
     host: 'localhost',
-    dialect: 'postgres',
     database: 'kysely_koa_example_test',
   },
   adminDatabase: {
     host: 'localhost',
-    dialect: 'postgres',
     database: 'postgres',
   },
 }

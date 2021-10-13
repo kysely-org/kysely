@@ -1,5 +1,5 @@
 import * as dotenv from 'dotenv'
-import { KyselyConfig } from 'kysely'
+import { PostgresDialectConfig } from 'kysely'
 
 dotenv.config()
 
@@ -7,7 +7,7 @@ export interface Config {
   readonly port: number
   readonly authTokenSecret: string
   readonly authTokenExpiryDuration: string
-  readonly database: KyselyConfig
+  readonly database: PostgresDialectConfig
 }
 
 export const config: Config = Object.freeze({

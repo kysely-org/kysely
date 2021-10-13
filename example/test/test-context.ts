@@ -1,6 +1,6 @@
 import * as path from 'path'
 import axios from 'axios'
-import { Kysely } from 'kysely'
+import { Kysely, PostgresDialect } from 'kysely'
 
 import { testConfig } from './test-config'
 import { App } from '../src/app'
@@ -20,7 +20,9 @@ export class TestContext {
   }
 
   before = async (): Promise<void> => {
-    const adminDb = new Kysely<any>(testConfig.adminDatabase)
+    const adminDb = await Kysely.create<any>({
+      dialect: new PostgresDialect(testConfig.adminDatabase),
+    })
 
     // Create our test database
     const { database } = testConfig.database
@@ -29,7 +31,10 @@ export class TestContext {
     await adminDb.destroy()
 
     // Now connect to the test databse and run the migrations
-    const db = new Kysely<any>(testConfig.database)
+    const db = await Kysely.create<any>({
+      dialect: new PostgresDialect(testConfig.database),
+    })
+
     await db.migration.migrateToLatest(
       path.join(__dirname, '../src/migrations')
     )
@@ -43,10 +48,10 @@ export class TestContext {
   beforeEach = async (): Promise<void> => {
     this.#app = new App(testConfig)
 
+    await this.#app.start()
+
     // Clear the database
     await this.db.deleteFrom('user').execute()
-
-    await this.#app.start()
   }
 
   afterEach = async (): Promise<void> => {

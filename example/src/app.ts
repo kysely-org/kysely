@@ -3,7 +3,7 @@ import * as json from 'koa-json'
 import * as compress from 'koa-compress'
 import * as bodyParser from 'koa-bodyparser'
 import { Server } from 'http'
-import { Kysely } from 'kysely'
+import { Kysely, PostgresDialect } from 'kysely'
 
 import { Config } from './config'
 import { Context, ContextExtension } from './context'
@@ -17,14 +17,13 @@ export class App {
   #config: Config
   #koa: Koa<any, ContextExtension>
   #router: Router
-  #db: Kysely<Database>
+  #db?: Kysely<Database>
   #server?: Server
 
   constructor(config: Config) {
     this.#config = config
     this.#koa = new Koa()
     this.#router = new Router()
-    this.#db = new Kysely(config.database)
 
     this.#koa.use(compress())
     this.#koa.use(bodyParser())
@@ -40,10 +39,18 @@ export class App {
   }
 
   get db(): Kysely<Database> {
+    if (!this.#db) {
+      throw new Error('app is not strted yet')
+    }
+
     return this.#db
   }
 
   async start(): Promise<void> {
+    this.#db = await Kysely.create<Database>({
+      dialect: new PostgresDialect(this.#config.database),
+    })
+
     return new Promise((resolve) => {
       this.#server = this.#koa.listen(this.#config.port, resolve)
     })
@@ -60,7 +67,7 @@ export class App {
       })
     })
 
-    await this.#db.destroy()
+    await this.#db?.destroy()
   }
 
   private readonly errorHandler = async (
@@ -89,7 +96,7 @@ export class App {
     ctx: Context,
     next: Koa.Next
   ): Promise<void> => {
-    ctx.db = this.#db
+    ctx.db = this.#db!
     ctx.throwError = (status, code, message, data): never => {
       throw new ControllerError(status, code, message, data)
     }
