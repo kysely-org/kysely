@@ -83,7 +83,7 @@ export interface TestContext {
 
 export async function initTest(dialect: BuiltInDialect): Promise<TestContext> {
   const config = DB_CONFIGS[dialect]
-  const db = await Kysely.create<Database>(DB_CONFIGS[dialect])
+  const db = new Kysely<Database>(DB_CONFIGS[dialect])
 
   await createDatabase(db)
   return { config, db }
@@ -223,9 +223,6 @@ function createNoopPlugin(): KyselyPlugin {
   const transformer = new OperationNodeTransformer()
 
   return {
-    async init(): Promise<void> {},
-    async destroy(): Promise<void> {},
-
     transformQuery(args: PluginTransformQueryArgs): RootOperationNode {
       return transformer.transformNode(args.node)
     },

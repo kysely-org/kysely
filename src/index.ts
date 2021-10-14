@@ -47,7 +47,7 @@ export * from './dialect/postgres/postgres-driver.js'
 export * from './operation-node/operation-node-transformer.js'
 export * from './operation-node/operation-node-visitor.js'
 
-export * from './plugin/plugin.js'
+export * from './plugin/kysely-plugin.js'
 export * from './plugin/camel-case/camel-case-plugin.js'
 
 export * from './operation-node/operation-node-transformer.js'

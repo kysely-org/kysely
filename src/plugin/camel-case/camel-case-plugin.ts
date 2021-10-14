@@ -2,13 +2,13 @@ import { QueryResult } from '../../driver/database-connection.js'
 import { IdentifierNode } from '../../operation-node/identifier-node.js'
 import { OperationNodeTransformer } from '../../operation-node/operation-node-transformer.js'
 import { RootOperationNode } from '../../query-compiler/query-compiler.js'
+import { isObject } from '../../util/object-utils.js'
 import {
   AnyRow,
+  KyselyPlugin,
   PluginTransformQueryArgs,
   PluginTransformResultArgs,
-} from '../../query-executor/query-executor.js'
-import { isObject } from '../../util/object-utils.js'
-import { KyselyPlugin } from '../plugin.js'
+} from '../kysely-plugin.js'
 
 export interface CamelCasePluginOptions {
   /**
@@ -56,7 +56,7 @@ export interface CamelCasePluginOptions {
  *   personTable: Person
  * }
  *
- * const db = await Kysely.create<Database>({
+ * const db = new Kysely<Database>({
  *   dialect: new PostgresDialect({
  *     database: 'kysely_test',
  *     host: 'localhost',
@@ -116,10 +116,6 @@ export class CamelCasePlugin implements KyselyPlugin {
     )
   }
 
-  async init(): Promise<void> {
-    // Nothing to do here.
-  }
-
   transformQuery(args: PluginTransformQueryArgs): RootOperationNode {
     return this.#snakeCaseTransformer.transformNode(args.node)
   }
@@ -135,10 +131,6 @@ export class CamelCasePlugin implements KyselyPlugin {
     }
 
     return args.result
-  }
-
-  async destroy(): Promise<void> {
-    // Nothing to do here.
   }
 
   protected mapRow(row: AnyRow): AnyRow {

@@ -20,7 +20,7 @@ export class TestContext {
   }
 
   before = async (): Promise<void> => {
-    const adminDb = await Kysely.create<any>({
+    const adminDb = new Kysely<any>({
       dialect: new PostgresDialect(testConfig.adminDatabase),
     })
 
@@ -31,7 +31,7 @@ export class TestContext {
     await adminDb.destroy()
 
     // Now connect to the test databse and run the migrations
-    const db = await Kysely.create<any>({
+    const db = new Kysely<any>({
       dialect: new PostgresDialect(testConfig.database),
     })
 

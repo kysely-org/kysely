@@ -2,13 +2,13 @@ import { QueryResult } from '../../driver/database-connection.js'
 import { RootOperationNode } from '../../query-compiler/query-compiler.js'
 import {
   AnyRow,
-  ExecutorPlugin,
+  KyselyPlugin,
   PluginTransformQueryArgs,
   PluginTransformResultArgs,
-} from '../../query-executor/query-executor.js'
+} from '../kysely-plugin.js'
 import { WithSchemaTransformer } from '../../transformers/with-schema-transformer.js'
 
-export class WithSchemaPlugin implements ExecutorPlugin {
+export class WithSchemaPlugin implements KyselyPlugin {
   readonly #transformer: WithSchemaTransformer
 
   constructor(schema: string) {

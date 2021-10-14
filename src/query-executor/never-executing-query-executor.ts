@@ -1,6 +1,7 @@
 import { QueryResult } from '../driver/database-connection.js'
 import { CompiledQuery } from '../query-compiler/compiled-query.js'
-import { ExecutorPlugin, QueryExecutor } from './query-executor.js'
+import { QueryExecutor } from './query-executor.js'
+import { KyselyPlugin } from '../plugin/kysely-plugin.js'
 
 export class NeverExecutingQueryExecutor extends QueryExecutor {
   compileQuery(): CompiledQuery {
@@ -15,7 +16,7 @@ export class NeverExecutingQueryExecutor extends QueryExecutor {
     throw new Error('this makes no sense')
   }
 
-  withPluginAtFront(plugin: ExecutorPlugin): NeverExecutingQueryExecutor {
+  withPluginAtFront(plugin: KyselyPlugin): NeverExecutingQueryExecutor {
     return new NeverExecutingQueryExecutor([plugin, ...this.plugins])
   }
 

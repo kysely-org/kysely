@@ -6,7 +6,8 @@ import {
   QueryCompiler,
 } from '../query-compiler/query-compiler.js'
 import { QueryId } from '../util/query-id.js'
-import { ExecutorPlugin, QueryExecutor } from './query-executor.js'
+import { KyselyPlugin } from '../plugin/kysely-plugin.js'
+import { QueryExecutor } from './query-executor.js'
 
 export class DefaultQueryExecutor extends QueryExecutor {
   #compiler: QueryCompiler
@@ -15,7 +16,7 @@ export class DefaultQueryExecutor extends QueryExecutor {
   constructor(
     compiler: QueryCompiler,
     connectionProvider: ConnectionProvider,
-    plugins: ExecutorPlugin[] = []
+    plugins: KyselyPlugin[] = []
   ) {
     super(plugins)
 
@@ -37,7 +38,7 @@ export class DefaultQueryExecutor extends QueryExecutor {
     })
   }
 
-  withPluginAtFront(plugin: ExecutorPlugin): DefaultQueryExecutor {
+  withPluginAtFront(plugin: KyselyPlugin): DefaultQueryExecutor {
     return new DefaultQueryExecutor(this.#compiler, this.#connectionProvider, [
       plugin,
       ...this.plugins,
