@@ -3,7 +3,7 @@ import { ConnectionProvider } from './connection-provider.js'
 
 export class SingleConnectionProvider implements ConnectionProvider {
   readonly #connection: DatabaseConnection
-  #runningPromise: Promise<void> | null = null
+  #runningPromise?: Promise<void>
 
   constructor(connection: DatabaseConnection) {
     this.#connection = connection
@@ -20,10 +20,10 @@ export class SingleConnectionProvider implements ConnectionProvider {
 
     this.#runningPromise = promise
       .then(() => {
-        this.#runningPromise = null
+        this.#runningPromise = undefined
       })
       .catch(() => {
-        this.#runningPromise = null
+        this.#runningPromise = undefined
       })
 
     return promise

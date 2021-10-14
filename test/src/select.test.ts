@@ -1,3 +1,4 @@
+import { RawBuilder } from '../../dist/cjs/index.js'
 import {
   BUILT_IN_DIALECTS,
   clearDatabase,

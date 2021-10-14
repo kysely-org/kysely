@@ -38,7 +38,7 @@ export class JoinBuilder<DB, TB extends keyof DB>
 
   on(...args: any[]): JoinBuilder<DB, TB> {
     return new JoinBuilder(
-      JoinNode.cloneWithOn(this.#joinNode, 'and', parseFilter('On', args))
+      JoinNode.cloneWithOn(this.#joinNode, 'And', parseFilter('On', args))
     )
   }
 
@@ -60,7 +60,7 @@ export class JoinBuilder<DB, TB extends keyof DB>
 
   orOn(...args: any[]): JoinBuilder<DB, TB> {
     return new JoinBuilder(
-      JoinNode.cloneWithOn(this.#joinNode, 'or', parseFilter('On', args))
+      JoinNode.cloneWithOn(this.#joinNode, 'Or', parseFilter('On', args))
     )
   }
 
@@ -78,7 +78,7 @@ export class JoinBuilder<DB, TB extends keyof DB>
     return new JoinBuilder(
       JoinNode.cloneWithOn(
         this.#joinNode,
-        'and',
+        'And',
         parseReferenceFilter(lhs, op, rhs)
       )
     )
@@ -98,7 +98,7 @@ export class JoinBuilder<DB, TB extends keyof DB>
     return new JoinBuilder(
       JoinNode.cloneWithOn(
         this.#joinNode,
-        'or',
+        'Or',
         parseReferenceFilter(lhs, op, rhs)
       )
     )
@@ -114,7 +114,7 @@ export class JoinBuilder<DB, TB extends keyof DB>
     return new JoinBuilder(
       JoinNode.cloneWithOn(
         this.#joinNode,
-        'and',
+        'And',
         parseExistExpression('exists', arg)
       )
     )
@@ -130,7 +130,7 @@ export class JoinBuilder<DB, TB extends keyof DB>
     return new JoinBuilder(
       JoinNode.cloneWithOn(
         this.#joinNode,
-        'and',
+        'And',
         parseExistExpression('not exists', arg)
       )
     )
@@ -146,7 +146,7 @@ export class JoinBuilder<DB, TB extends keyof DB>
     return new JoinBuilder(
       JoinNode.cloneWithOn(
         this.#joinNode,
-        'or',
+        'Or',
         parseExistExpression('exists', arg)
       )
     )
@@ -162,7 +162,7 @@ export class JoinBuilder<DB, TB extends keyof DB>
     return new JoinBuilder(
       JoinNode.cloneWithOn(
         this.#joinNode,
-        'or',
+        'Or',
         parseExistExpression('not exists', arg)
       )
     )

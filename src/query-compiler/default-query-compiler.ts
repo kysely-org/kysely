@@ -81,6 +81,10 @@ export class DefaultQueryCompiler
   #sqlFragments: string[] = []
   #bindings: any[] = []
 
+  protected get numBindings(): number {
+    return this.#bindings.length
+  }
+
   compileQuery(node: RootOperationNode): CompiledQuery {
     this.#sqlFragments = []
     this.#bindings = []
@@ -88,17 +92,9 @@ export class DefaultQueryCompiler
     this.visitNode(node)
 
     return freeze({
-      sql: this.getSql(),
-      bindings: this.getBindings(),
+      sql: this.#sqlFragments.join(''),
+      bindings: this.#bindings,
     })
-  }
-
-  private getSql(): string {
-    return this.#sqlFragments.join('')
-  }
-
-  private getBindings(): any[] {
-    return this.#bindings
   }
 
   protected override visitSelectQuery(node: SelectQueryNode): void {
@@ -852,7 +848,11 @@ export class DefaultQueryCompiler
 
   protected appendValue(value: PrimitiveValue): void {
     this.addBinding(value)
-    this.append(`$${this.#bindings.length}`)
+    this.append(this.getCurrentParameterPlaceholder())
+  }
+
+  protected getCurrentParameterPlaceholder(): string {
+    return '$' + this.numBindings
   }
 
   protected addBinding(binding: any): void {

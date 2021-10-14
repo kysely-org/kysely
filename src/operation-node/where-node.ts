@@ -29,13 +29,13 @@ export const WhereNode = freeze({
 
   cloneWithFilter(
     whereNode: WhereNode,
-    op: 'and' | 'or',
+    op: 'And' | 'Or',
     where: WhereChildNode
   ): WhereNode {
     return freeze({
       ...whereNode,
       where:
-        op === 'and'
+        op === 'And'
           ? AndNode.create(whereNode.where, where)
           : OrNode.create(whereNode.where, where),
     })

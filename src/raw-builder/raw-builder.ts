@@ -39,14 +39,14 @@ export class RawBuilder<O = unknown> implements OperationNodeSource {
     const sqlFragments: string[] = []
     const argNodes: OperationNode[] = []
 
-    let idx = 0
+    let paramIdx = 0
     let sqlIdx = 0
     let match: RegExpExecArray | null = null
 
     while ((match = bindingRegex.exec(sql))) {
       const str = match[1]
 
-      if (idx >= params.length) {
+      if (paramIdx >= params.length) {
         throw new Error(`value not provided for all bindings in string ${sql}`)
       }
 
@@ -55,18 +55,16 @@ export class RawBuilder<O = unknown> implements OperationNodeSource {
       }
 
       sqlFragments.push(sql.slice(sqlIdx, match.index).replaceAll('\\?', '?'))
-      argNodes.push(parseRawArg(str, params[idx]))
+      argNodes.push(parseRawArg(str, params[paramIdx]))
 
       sqlIdx = match.index + str.length
-      ++idx
+      ++paramIdx
     }
 
     sqlFragments.push(sql.slice(sqlIdx))
 
-    return this.#executor.transformQuery(
-      RawNode.create(sqlFragments, argNodes),
-      this.#queryId
-    )
+    const rawNode = RawNode.create(sqlFragments, argNodes)
+    return this.#executor.transformQuery(rawNode, this.#queryId)
   }
 
   compile(): CompiledQuery {

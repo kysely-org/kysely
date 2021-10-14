@@ -77,7 +77,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
       }
 
       async function executeThread(id: number, fails: boolean): Promise<void> {
-        const trx = await ctx.db.transaction(async (trx) => {
+        await ctx.db.transaction(async (trx) => {
           await insertPerson(trx, id)
           await insertPet(trx, id)
 

@@ -74,7 +74,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
           node: QueryNode
 
           constructor(node: QueryNode) {
-            super('custom ereror')
+            super('custom error')
             this.node = node
           }
         }

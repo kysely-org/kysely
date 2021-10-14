@@ -1,3 +1,4 @@
+import { QueryNode } from '../index.js'
 import { isOperationNodeSource } from '../operation-node/operation-node-source.js'
 import { RawNode } from '../operation-node/raw-node.js'
 import { SelectQueryNode } from '../operation-node/select-query-node.js'
@@ -22,7 +23,7 @@ export function parseMutationValueExpression(
   } else if (isOperationNodeSource(value)) {
     const node = value.toOperationNode()
 
-    if (RawNode.is(node) || SelectQueryNode.is(node)) {
+    if (!QueryNode.isMutating(node)) {
       return node
     }
   }

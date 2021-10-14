@@ -3,21 +3,18 @@ const path = require('path')
 
 let errorsFound = false
 
-function checkFolder(folder) {
-  for (const file of fs.readdirSync(folder)) {
+function checkDir(dir) {
+  const files = fs.readdirSync(dir).filter((it) => it !== '.' && it !== '..')
+
+  for (const file of files) {
+    const filePath = path.join(dir, file)
     let errorsFoundInFile = false
 
-    if (file === '.' || file === '..') {
-      continue
-    }
-
-    const filePath = path.join(folder, file)
-
     if (isDir(filePath)) {
-      checkFolder(filePath)
+      checkDir(filePath)
     } else if (file.endsWith('.ts')) {
       for (const row of fs.readFileSync(filePath).toString().split('\n')) {
-        if (row.includes("from '.") && !row.endsWith(".js'")) {
+        if (isLocalImport(row) && !isDotJsImport(row)) {
           if (!errorsFoundInFile) {
             if (errorsFound) {
               console.log(' ')
@@ -39,7 +36,15 @@ function isDir(file) {
   return fs.lstatSync(file).isDirectory()
 }
 
-checkFolder(path.join(__dirname, 'src'))
+function isLocalImport(row) {
+  return row.includes("from '.")
+}
+
+function isDotJsImport(row) {
+  return row.endsWith(".js'")
+}
+
+checkDir(path.join(__dirname, 'src'))
 
 if (errorsFound) {
   console.log(' ')

@@ -37,13 +37,13 @@ export const JoinNode = freeze({
 
   cloneWithOn(
     joinNode: JoinNode,
-    op: 'and' | 'or',
+    op: 'And' | 'Or',
     on: JoinNodeOnNode
   ): JoinNode {
     return freeze({
       ...joinNode,
       on: joinNode.on
-        ? op === 'and'
+        ? op === 'And'
           ? AndNode.create(joinNode.on, on)
           : OrNode.create(joinNode.on, on)
         : on,

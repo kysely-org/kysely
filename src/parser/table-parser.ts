@@ -2,7 +2,7 @@ import {
   AliasedQueryBuilder,
   QueryBuilder,
 } from '../query-builder/query-builder.js'
-import { isFunction, isString } from '../util/object-utils.js'
+import { isFunction, isReadonlyArray, isString } from '../util/object-utils.js'
 import { AliasNode } from '../operation-node/alias-node.js'
 import { TableNode } from '../operation-node/table-node.js'
 import {
@@ -19,6 +19,10 @@ export type TableExpression<DB, TB extends keyof DB> =
   | TableReference<DB>
   | AnyAliasedQueryBuilder
   | AliasedQueryBuilderFactory<DB, TB>
+
+export type TableExpressionOrList<DB, TB extends keyof DB> =
+  | TableExpression<DB, TB>
+  | ReadonlyArray<TableExpression<DB, TB>>
 
 export type TableReference<DB> =
   | AnyAliasedTable<DB, any, any>
@@ -98,9 +102,9 @@ type ExtractRowTypeFromTableExpression<
   : never
 
 export function parseTableExpressionOrList(
-  table: TableExpression<any, any> | TableExpression<any, any>[]
+  table: TableExpressionOrList<any, any>
 ): TableExpressionNode[] {
-  if (Array.isArray(table)) {
+  if (isReadonlyArray(table)) {
     return table.map((it) => parseTableExpression(it))
   } else {
     return [parseTableExpression(table)]

@@ -14,8 +14,6 @@ import {
 import { QueryNode } from '../operation-node/query-node.js'
 import { SubQueryBuilder } from '../query-builder/sub-query-builder.js'
 import { ExtractTypeFromReferenceExpression } from './reference-parser.js'
-import { RawNode } from '../operation-node/raw-node.js'
-import { SelectQueryNode } from '../operation-node/select-query-node.js'
 
 export type ValueExpression<DB, TB extends keyof DB, RE> =
   | ExtractTypeFromReferenceExpression<DB, TB, RE>
@@ -46,8 +44,8 @@ export function parseValueExpression(
   } else if (isOperationNodeSource(arg)) {
     const node = arg.toOperationNode()
 
-    if (RawNode.is(node) || SelectQueryNode.is(node)) {
-      return node
+    if (!QueryNode.isMutating(node)) {
+      return node as ValueExpressionNode
     }
   } else if (isFunction(arg)) {
     const node = arg(new SubQueryBuilder()).toOperationNode()

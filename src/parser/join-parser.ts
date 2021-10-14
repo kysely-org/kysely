@@ -60,7 +60,7 @@ function parseSingleOnJoin(
 
   return JoinNode.cloneWithOn(
     JoinNode.create(joinType, tableNode),
-    'and',
+    'And',
     parseReferenceFilter(lhsColumn, '=', rhsColumn)
   )
 }

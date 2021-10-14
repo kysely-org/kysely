@@ -1,6 +1,6 @@
 {
   "name": "kysely",
-  "version": "0.6.1",
+  "version": "0.6.2",
   "description": "Type safe SQL query builder",
   "repository": {
     "type": "git",
@@ -27,25 +27,25 @@
     "build:cjs": "tsc -p tsconfig-cjs.json",
     "docs:build": "typedoc --excludePrivate --excludeInternal --customCss ./docs-theme.css src/index.ts && npm run docs:postprocess",
     "docs:postprocess": "node post-process-docs.js",
-    "prepublish": "npm run build"
+    "prepublishOnly": "npm run build"
   },
   "author": "Sami Koskimäki <sami@jakso.me>",
   "license": "MIT",
   "dependencies": {
-    "@types/node": "^16.9.3"
+    "@types/node": "^16.10.9"
   },
   "devDependencies": {
-    "@types/chai": "^4.2.21",
+    "@types/chai": "^4.2.22",
     "@types/chai-subset": "^1.3.3",
     "@types/mocha": "^9.0.0",
     "@types/pg": "^8.6.1",
     "chai": "^4.3.4",
     "chai-subset": "^1.6.0",
-    "mocha": "^9.1.1",
+    "mocha": "^9.1.2",
     "pg": "^8.7.1",
-    "prettier": "^2.4.0",
-    "tsd": "^0.17.0",
-    "typedoc": "^0.22.4",
-    "typescript": "4.4.3"
+    "prettier": "^2.4.1",
+    "tsd": "^0.18.0",
+    "typedoc": "^0.22.5",
+    "typescript": "4.4.4"
   }
 }

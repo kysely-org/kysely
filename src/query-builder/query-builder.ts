@@ -300,7 +300,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
       executor: this.#executor,
       queryNode: QueryNode.cloneWithWhere(
         this.#queryNode,
-        'and',
+        'And',
         parseFilter('Where', args)
       ),
     })
@@ -369,7 +369,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
       executor: this.#executor,
       queryNode: QueryNode.cloneWithWhere(
         this.#queryNode,
-        'and',
+        'And',
         parseReferenceFilter(lhs, op, rhs)
       ),
     })
@@ -458,7 +458,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
       executor: this.#executor,
       queryNode: QueryNode.cloneWithWhere(
         this.#queryNode,
-        'or',
+        'Or',
         parseFilter('Where', args)
       ),
     })
@@ -482,7 +482,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
       executor: this.#executor,
       queryNode: QueryNode.cloneWithWhere(
         this.#queryNode,
-        'or',
+        'Or',
         parseReferenceFilter(lhs, op, rhs)
       ),
     })
@@ -555,7 +555,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
       executor: this.#executor,
       queryNode: QueryNode.cloneWithWhere(
         this.#queryNode,
-        'and',
+        'And',
         parseExistExpression('exists', arg)
       ),
     })
@@ -572,7 +572,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
       executor: this.#executor,
       queryNode: QueryNode.cloneWithWhere(
         this.#queryNode,
-        'and',
+        'And',
         parseExistExpression('not exists', arg)
       ),
     })
@@ -589,7 +589,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
       executor: this.#executor,
       queryNode: QueryNode.cloneWithWhere(
         this.#queryNode,
-        'or',
+        'Or',
         parseExistExpression('exists', arg)
       ),
     })
@@ -606,7 +606,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
       executor: this.#executor,
       queryNode: QueryNode.cloneWithWhere(
         this.#queryNode,
-        'or',
+        'Or',
         parseExistExpression('not exists', arg)
       ),
     })
@@ -634,7 +634,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
       executor: this.#executor,
       queryNode: SelectQueryNode.cloneWithHaving(
         this.#queryNode,
-        'and',
+        'And',
         parseFilter('Having', args)
       ),
     })
@@ -656,7 +656,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
       executor: this.#executor,
       queryNode: SelectQueryNode.cloneWithHaving(
         this.#queryNode,
-        'and',
+        'And',
         parseReferenceFilter(lhs, op, rhs)
       ),
     })
@@ -684,7 +684,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
       executor: this.#executor,
       queryNode: SelectQueryNode.cloneWithHaving(
         this.#queryNode,
-        'or',
+        'Or',
         parseFilter('Having', args)
       ),
     })
@@ -706,7 +706,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
       executor: this.#executor,
       queryNode: SelectQueryNode.cloneWithHaving(
         this.#queryNode,
-        'or',
+        'Or',
         parseReferenceFilter(lhs, op, rhs)
       ),
     })
@@ -724,7 +724,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
       executor: this.#executor,
       queryNode: SelectQueryNode.cloneWithHaving(
         this.#queryNode,
-        'and',
+        'And',
         parseExistExpression('exists', arg)
       ),
     })
@@ -742,7 +742,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
       executor: this.#executor,
       queryNode: SelectQueryNode.cloneWithHaving(
         this.#queryNode,
-        'and',
+        'And',
         parseExistExpression('not exists', arg)
       ),
     })
@@ -760,7 +760,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
       executor: this.#executor,
       queryNode: SelectQueryNode.cloneWithHaving(
         this.#queryNode,
-        'or',
+        'Or',
         parseExistExpression('exists', arg)
       ),
     })
@@ -778,7 +778,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
       executor: this.#executor,
       queryNode: SelectQueryNode.cloneWithHaving(
         this.#queryNode,
-        'or',
+        'Or',
         parseExistExpression('not exists', arg)
       ),
     })
@@ -2316,7 +2316,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
   async executeTakeFirstOrThrow(
     errorConstructor: NoResultErrorConstructor = NoResultError
   ): Promise<NonEmptySingleResultRowType<O>> {
-    const [result] = await this.execute()
+    const result = await this.executeTakeFirst()
 
     if (result === undefined) {
       throw new errorConstructor(this.toOperationNode())

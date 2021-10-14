@@ -29,13 +29,13 @@ export const HavingNode = freeze({
 
   cloneWithFilter(
     havingNode: HavingNode,
-    op: 'and' | 'or',
+    op: 'And' | 'Or',
     having: HavingNodeChild
   ): HavingNode {
     return freeze({
       ...havingNode,
       having:
-        op === 'and'
+        op === 'And'
           ? AndNode.create(havingNode.having, having)
           : OrNode.create(havingNode.having, having),
     })

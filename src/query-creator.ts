@@ -9,6 +9,7 @@ import {
   parseTableExpressionOrList,
   QueryBuilderWithTable,
   TableExpression,
+  TableExpressionOrList,
   TableReference,
 } from './parser/table-parser.js'
 import {
@@ -153,7 +154,7 @@ export class QueryCreator<DB> {
     from: F
   ): QueryBuilderWithTable<DB, never, {}, F>
 
-  selectFrom(from: any): any {
+  selectFrom(from: TableExpressionOrList<any, any>): any {
     return new QueryBuilder({
       queryId: createQueryId(),
       executor: this.#executor,

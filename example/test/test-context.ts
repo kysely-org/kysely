@@ -38,6 +38,7 @@ export class TestContext {
     await db.migration.migrateToLatest(
       path.join(__dirname, '../src/migrations')
     )
+
     await db.destroy()
   }
 
@@ -48,10 +49,10 @@ export class TestContext {
   beforeEach = async (): Promise<void> => {
     this.#app = new App(testConfig)
 
-    await this.#app.start()
-
     // Clear the database
     await this.db.deleteFrom('user').execute()
+
+    await this.#app.start()
   }
 
   afterEach = async (): Promise<void> => {
