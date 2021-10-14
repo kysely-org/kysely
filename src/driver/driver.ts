@@ -61,7 +61,7 @@ export abstract class Driver {
   }
 
   /**
-   * Commits a transaction.
+   * Rolls back a transaction.
    */
   async rollbackTransaction(connection: DatabaseConnection): Promise<void> {
     await connection.executeQuery({ sql: 'rollback', bindings: [] })

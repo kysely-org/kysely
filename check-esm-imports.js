@@ -5,6 +5,8 @@ let errorsFound = false
 
 function checkFolder(folder) {
   for (const file of fs.readdirSync(folder)) {
+    let errorsFoundInFile = false
+
     if (file === '.' || file === '..') {
       continue
     }
@@ -13,12 +15,18 @@ function checkFolder(folder) {
 
     if (isDir(filePath)) {
       checkFolder(filePath)
-    }
-
-    if (file.endsWith('.ts')) {
+    } else if (file.endsWith('.ts')) {
       for (const row of fs.readFileSync(filePath).toString().split('\n')) {
         if (row.includes("from '.") && !row.endsWith(".js'")) {
-          console.log(`invalid import in file ${filePath}`)
+          if (!errorsFoundInFile) {
+            if (errorsFound) {
+              console.log(' ')
+            }
+
+            console.log(`invalid imports in file ${filePath}`)
+            errorsFoundInFile = true
+          }
+
           console.log(row)
           errorsFound = true
         }
@@ -34,5 +42,7 @@ function isDir(file) {
 checkFolder(path.join(__dirname, 'src'))
 
 if (errorsFound) {
+  console.log(' ')
+  console.log('check-esm-imports.js failed!')
   process.exit(1)
 }
