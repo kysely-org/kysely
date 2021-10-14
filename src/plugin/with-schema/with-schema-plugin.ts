@@ -1,12 +1,12 @@
-import { QueryResult } from '../../driver/database-connection'
-import { RootOperationNode } from '../../query-compiler/query-compiler'
+import { QueryResult } from '../../driver/database-connection.js'
+import { RootOperationNode } from '../../query-compiler/query-compiler.js'
 import {
   AnyRow,
   ExecutorPlugin,
   PluginTransformQueryArgs,
   PluginTransformResultArgs,
-} from '../../query-executor/query-executor'
-import { WithSchemaTransformer } from '../../transformers/with-schema-transformer'
+} from '../../query-executor/query-executor.js'
+import { WithSchemaTransformer } from '../../transformers/with-schema-transformer.js'
 
 export class WithSchemaPlugin implements ExecutorPlugin {
   readonly #transformer: WithSchemaTransformer

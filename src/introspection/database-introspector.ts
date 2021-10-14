@@ -1,4 +1,4 @@
-import { ColumnDataType } from '../operation-node/data-type-node'
+import { ColumnDataType } from '../operation-node/data-type-node.js'
 
 /**
  * An interface for getting the database metadata (names of the tables and columns etc.)

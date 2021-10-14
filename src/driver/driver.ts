@@ -47,6 +47,27 @@ export abstract class Driver {
   protected abstract destroy(): Promise<void>
 
   /**
+   * Begins a transaction.
+   */
+  async beginTransaction(connection: DatabaseConnection): Promise<void> {
+    await connection.executeQuery({ sql: 'begin', bindings: [] })
+  }
+
+  /**
+   * Commits a transaction.
+   */
+  async commitTransaction(connection: DatabaseConnection): Promise<void> {
+    await connection.executeQuery({ sql: 'commit', bindings: [] })
+  }
+
+  /**
+   * Commits a transaction.
+   */
+  async rollbackTransaction(connection: DatabaseConnection): Promise<void> {
+    await connection.executeQuery({ sql: 'rollback', bindings: [] })
+  }
+
+  /**
    * @internal
    * For internal use only. Don't override this.
    */

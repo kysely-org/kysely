@@ -1,6 +1,6 @@
 {
   "name": "kysely",
-  "version": "0.5.0",
+  "version": "0.5.5",
   "description": "Type safe SQL query builder",
   "repository": {
     "type": "git",
@@ -17,9 +17,10 @@
   "scripts": {
     "test:build": "rm -rf test/lib && tsc -p test",
     "clean": "rm -rf dist && rm -rf test/dist",
-    "test": "npm run clean && npm run build:cjs && npm run test:build && npm run test:integration && npm run test:typings",
+    "test": "npm run clean && npm run build:cjs && npm run test:build && npm run test:integration && npm run test:typings && npm run test:esmimports",
     "test:integration": "mocha --timeout 5000 test/dist/**/*.test.js",
     "test:typings": "tsd test/typings",
+    "test:esmimports": "node check-esm-imports.js",
     "prettier": "prettier --write src/**/*.ts test/**/*.ts",
     "build": "npm run clean && npm run build:esm && npm run build:cjs && ./module-fixup.sh",
     "build:esm": "tsc -p tsconfig.json",

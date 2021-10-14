@@ -1,15 +1,15 @@
-import { IdentifierNode } from '../operation-node/identifier-node'
-import { OnConflictNode } from '../operation-node/on-conflict-node'
-import { AnyColumn } from '../query-builder/type-utils'
+import { IdentifierNode } from '../operation-node/identifier-node.js'
+import { OnConflictNode } from '../operation-node/on-conflict-node.js'
+import { AnyColumn } from '../query-builder/type-utils.js'
 import {
   asReadonlyArray,
   isObject,
   isReadonlyArray,
   isString,
-} from '../util/object-utils'
-import { MutationObject } from './mutation-parser'
-import { parseColumnName } from './reference-parser'
-import { parseUpdateObject } from './update-set-parser'
+} from '../util/object-utils.js'
+import { MutationObject } from './mutation-parser.js'
+import { parseColumnName } from './reference-parser.js'
+import { parseUpdateObject } from './update-set-parser.js'
 
 export type OnConflictConstraintTarget = { constraint: string }
 

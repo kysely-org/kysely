@@ -218,13 +218,13 @@ export class Kysely<DB> extends QueryCreator<DB> {
     })
 
     try {
-      await connection.executeQuery({ sql: 'begin', bindings: [] })
+      await this.#driver.beginTransaction(connection)
       const result = await callback(transaction)
-      await connection.executeQuery({ sql: 'commit', bindings: [] })
+      await this.#driver.commitTransaction(connection)
 
       return result
     } catch (error) {
-      await connection.executeQuery({ sql: 'rollback', bindings: [] })
+      await this.#driver.rollbackTransaction(connection)
       throw error
     } finally {
       await this.#driver[INTERNAL_DRIVER_RELEASE_CONNECTION](connection)

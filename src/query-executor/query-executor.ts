@@ -1,7 +1,7 @@
 import { ConnectionProvider } from '../driver/connection-provider.js'
 import { QueryResult } from '../driver/database-connection.js'
 import { CompiledQuery } from '../query-compiler/compiled-query.js'
-import { RootOperationNode } from '../query-compiler/query-compiler'
+import { RootOperationNode } from '../query-compiler/query-compiler.js'
 import { freeze } from '../util/object-utils.js'
 import { QueryId } from '../util/query-id.js'
 

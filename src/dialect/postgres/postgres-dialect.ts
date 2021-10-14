@@ -3,7 +3,6 @@ import { ConnectionOptions } from 'tls'
 
 import { Driver } from '../../driver/driver.js'
 import { Kysely } from '../../kysely.js'
-import { DefaultQueryCompiler } from '../../query-compiler/default-query-compiler.js'
 import { QueryCompiler } from '../../query-compiler/query-compiler.js'
 import { Dialect } from '../dialect.js'
 import { PostgresDriver } from './postgres-driver.js'

@@ -31,7 +31,7 @@ export * from './driver/database-connection.js'
 export * from './driver/database-connection.js'
 
 export * from './dialect/postgres/postgres-dialect.js'
-export * from './dialect/postgres/postgres-query-compiler'
+export * from './dialect/postgres/postgres-query-compiler.js'
 export * from './dialect/postgres/postgres-driver.js'
 export * from './dialect/postgres/postgres-introspector.js'
 
@@ -122,18 +122,18 @@ export { AnyColumn } from './query-builder/type-utils.js'
 export {
   SelectExpression,
   SelectExpressionOrList,
-} from './parser/select-parser'
+} from './parser/select-parser.js'
 export {
   ReferenceExpression,
   ReferenceExpressionOrList,
-} from './parser/reference-parser'
-export { ValueExpression, ValueExpressionOrList } from './parser/value-parser'
-export { ExistsExpression, FilterOperator } from './parser/filter-parser'
-export { TableExpression } from './parser/table-parser'
+} from './parser/reference-parser.js'
+export { ValueExpression, ValueExpressionOrList } from './parser/value-parser.js'
+export { ExistsExpression, FilterOperator } from './parser/filter-parser.js'
+export { TableExpression } from './parser/table-parser.js'
 export {
   JoinReferenceExpression,
   JoinCallbackExpression,
-} from './parser/join-parser'
-export { InsertObject } from './parser/insert-values-parser'
-export { MutationObject } from './parser/mutation-parser'
-export { OrderByExpression } from './parser/order-by-parser'
+} from './parser/join-parser.js'
+export { InsertObject } from './parser/insert-values-parser.js'
+export { MutationObject } from './parser/mutation-parser.js'
+export { OrderByExpression } from './parser/order-by-parser.js'

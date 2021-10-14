@@ -1,6 +1,6 @@
-import { QueryResult } from '../driver/database-connection'
-import { CompiledQuery } from '../query-compiler/compiled-query'
-import { ExecutorPlugin, QueryExecutor } from './query-executor'
+import { QueryResult } from '../driver/database-connection.js'
+import { CompiledQuery } from '../query-compiler/compiled-query.js'
+import { ExecutorPlugin, QueryExecutor } from './query-executor.js'
 
 export class NeverExecutingQueryExecutor extends QueryExecutor {
   compileQuery(): CompiledQuery {

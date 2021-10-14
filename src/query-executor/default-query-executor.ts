@@ -1,13 +1,12 @@
-import { ExecutorPlugin } from '..'
-import { ConnectionProvider } from '../driver/connection-provider'
-import { QueryResult } from '../driver/database-connection'
-import { CompiledQuery } from '../query-compiler/compiled-query'
+import { ConnectionProvider } from '../driver/connection-provider.js'
+import { QueryResult } from '../driver/database-connection.js'
+import { CompiledQuery } from '../query-compiler/compiled-query.js'
 import {
   RootOperationNode,
   QueryCompiler,
-} from '../query-compiler/query-compiler'
-import { QueryId } from '../util/query-id'
-import { QueryExecutor } from './query-executor'
+} from '../query-compiler/query-compiler.js'
+import { QueryId } from '../util/query-id.js'
+import { ExecutorPlugin, QueryExecutor } from './query-executor.js'
 
 export class DefaultQueryExecutor extends QueryExecutor {
   #compiler: QueryCompiler

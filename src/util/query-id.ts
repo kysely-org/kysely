@@ -1,5 +1,5 @@
-import { freeze } from './object-utils'
-import { randomString } from './random-string'
+import { freeze } from './object-utils.js'
+import { randomString } from './random-string.js'
 
 export interface QueryId {
   readonly queryId: string

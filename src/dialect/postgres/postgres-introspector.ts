@@ -3,14 +3,14 @@ import {
   DatabaseMetadata,
   DatabaseMetadataOptions,
   TableMetadata,
-} from '../../introspection/database-introspector'
-import { Kysely } from '../../kysely'
+} from '../../introspection/database-introspector.js'
 import {
   MIGRATION_LOCK_TABLE,
   MIGRATION_TABLE,
-} from '../../migration/migration'
-import { ColumnDataType } from '../../operation-node/data-type-node'
-import { freeze } from '../../util/object-utils'
+} from '../../migration/migration.js'
+import { Kysely } from '../../kysely.js'
+import { ColumnDataType } from '../../operation-node/data-type-node.js'
+import { freeze } from '../../util/object-utils.js'
 
 export class PostgresIntrospector implements DatabaseIntrospector {
   readonly #db: Kysely<any>
