@@ -1,19 +1,10 @@
-import { Kysely } from 'kysely'
-import {
-  AuthToken,
-  authTokenService,
-  RefreshToken,
-} from '../authentication/auth-token.service'
+import { Kysely, Transaction } from 'kysely'
+import { authTokenService } from '../authentication/auth-token.service'
 import { Database } from '../database'
+import { SignedInUser } from './signed-in-user'
 import { CreateAnonymousUserRequest, User } from './user'
 import { userRepository } from './user.repository'
 import { UserRow } from './user.row'
-
-export interface SignedInUser {
-  refreshToken: RefreshToken
-  authToken: AuthToken
-  user: User
-}
 
 async function createAnonymousUser(
   db: Kysely<Database>,
@@ -50,6 +41,36 @@ async function findUserById(
   }
 }
 
+async function lockUserById(
+  trx: Transaction<Database>,
+  id: string
+): Promise<User | undefined> {
+  const userRow = await userRepository.lockUserById(trx, id)
+
+  if (userRow) {
+    return userRowToUser(userRow)
+  }
+}
+
+async function lockUserByEmail(
+  trx: Transaction<Database>,
+  email: string
+): Promise<User | undefined> {
+  const userRow = await userRepository.lockUserByEmail(trx, email)
+
+  if (userRow) {
+    return userRowToUser(userRow)
+  }
+}
+
+async function setUserEmail(
+  db: Kysely<Database>,
+  userId: string,
+  email: string
+): Promise<void> {
+  await userRepository.setUserEmail(db, userId, email)
+}
+
 function userRowToUser(user: UserRow): User {
   return {
     id: user.user_id,
@@ -61,6 +82,9 @@ function userRowToUser(user: UserRow): User {
 
 export const userService = Object.freeze({
   findUserById,
+  lockUserById,
+  lockUserByEmail,
   userRowToUser,
   createAnonymousUser,
+  setUserEmail,
 })

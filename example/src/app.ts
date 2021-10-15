@@ -75,14 +75,7 @@ export class App {
       if (error instanceof ControllerError) {
         respondError(ctx, error)
       } else {
-        respondError(
-          ctx,
-          new ControllerError(
-            500,
-            'UnknownError',
-            isObject(error) ? error.message : 'Unknown error'
-          )
-        )
+        respondError(ctx, createUnknownError(error))
       }
     }
   }
@@ -102,4 +95,12 @@ export class App {
 function respondError(ctx: Context, error: ControllerError): void {
   ctx.status = error.status
   ctx.body = error.toJSON()
+}
+
+function createUnknownError(error: unknown): ControllerError {
+  return new ControllerError(
+    500,
+    'UnknownError',
+    (isObject(error) ? error.message : undefined) ?? 'unknown error'
+  )
 }

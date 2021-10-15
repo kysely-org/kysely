@@ -5,7 +5,8 @@ import { Kysely, PostgresDialect } from 'kysely'
 import { testConfig } from './test-config'
 import { App } from '../src/app'
 import { Database } from '../src/database'
-import { SignedInUser } from '../src/user/user.service'
+import { SignedInUser } from '../src/user/signed-in-user'
+import { User } from '../src/user/user'
 
 export class TestContext {
   #app?: App
@@ -60,8 +61,12 @@ export class TestContext {
     this.#app = undefined
   }
 
-  createUser = async (): Promise<SignedInUser> => {
-    const res = await this.request.post<SignedInUser>(`/api/v1/user`, {
+  createUser = async (): Promise<{
+    user: User
+    authToken: string
+    refreshToken: string
+  }> => {
+    const res = await this.request.post(`/api/v1/user`, {
       firstName: 'Test',
       lastName: 'Testerson',
     })

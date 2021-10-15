@@ -1,15 +1,22 @@
 import * as crypto from 'crypto'
 import { Transaction } from 'kysely'
+import { AuthToken } from '../../authentication/auth-token'
+import { authTokenService } from '../../authentication/auth-token.service'
+import { RefreshToken } from '../../authentication/refresh-token'
 import { Database } from '../../database'
 import { UserNotFoundError } from '../../util/errors'
-import { userRepository } from '../user.repository'
+import { SignedInUser } from '../signed-in-user'
+import { User } from '../user'
+import { userService } from '../user.service'
 import { PasswordSignInMethod } from './sign-in-method'
 import { signInMethodRepository } from './sign-in-method.repository'
 
 export const MIN_PASSWORD_LENGTH = 8
 export const MAX_PASSWORD_LENGTH = 255
 
-export class UserAlreadyHasSignInMethod extends Error {}
+export class UserAlreadyHasSignInMethodError extends Error {}
+export class SignInMethodNotFoundError extends Error {}
+export class WrongPasswordError extends Error {}
 export class PasswordTooWeakError extends Error {}
 export class PasswordTooLongError extends Error {}
 
@@ -18,14 +25,14 @@ async function addPasswordSignInMethod(
   userId: string,
   method: PasswordSignInMethod
 ): Promise<void> {
-  const user = await userRepository.lockUser(trx, userId)
+  const user = await userService.lockUserById(trx, userId)
 
   if (!user) {
     throw new UserNotFoundError()
   }
 
   if (user.email) {
-    throw new UserAlreadyHasSignInMethod()
+    throw new UserAlreadyHasSignInMethodError()
   }
 
   await signInMethodRepository.insertPasswordSignInMethod(trx, {
@@ -33,10 +40,10 @@ async function addPasswordSignInMethod(
     password_hash: await encryptPassword(method.password),
   })
 
-  await userRepository.setUserEmail(trx, userId, method.email)
+  await userService.setUserEmail(trx, userId, method.email)
 }
 
-export async function encryptPassword(password: string): Promise<string> {
+async function encryptPassword(password: string): Promise<string> {
   if (password.length < MIN_PASSWORD_LENGTH) {
     throw new PasswordTooWeakError()
   }
@@ -48,22 +55,12 @@ export async function encryptPassword(password: string): Promise<string> {
   return encryptSecret(password)
 }
 
-export async function verifyPassword(
-  password: string,
-  hash: string
-): Promise<boolean> {
-  return verifySecret(password, hash)
-}
-
-export async function encryptSecret(secret: string): Promise<string> {
+async function encryptSecret(secret: string): Promise<string> {
   const salt = crypto.randomBytes(16).toString('hex')
   return `${salt}:${await scrypt(secret, salt)}`
 }
 
-export async function verifySecret(
-  secret: string,
-  hash: string
-): Promise<boolean> {
+async function verifySecret(secret: string, hash: string): Promise<boolean> {
   const [salt, secretHash] = hash.split(':')
   return (await scrypt(secret, salt)) === secretHash
 }
@@ -86,6 +83,47 @@ async function scrypt(secret: string, salt: string): Promise<string> {
   })
 }
 
+async function singInUsingPassword(
+  trx: Transaction<Database>,
+  method: PasswordSignInMethod
+): Promise<SignedInUser> {
+  const user = await userService.lockUserByEmail(trx, method.email)
+
+  if (!user) {
+    throw new UserNotFoundError()
+  }
+
+  const signInMethod = await signInMethodRepository.findPasswordSignInMethod(
+    trx,
+    user.id
+  )
+
+  if (!signInMethod) {
+    throw new SignInMethodNotFoundError()
+  }
+
+  if (!(await verifyPassword(method.password, signInMethod.password_hash))) {
+    throw new WrongPasswordError()
+  }
+
+  const refreshToken = await authTokenService.createRefreshToken(trx, user.id)
+  const authToken = await authTokenService.createAuthToken(trx, refreshToken)
+
+  return {
+    user,
+    authToken,
+    refreshToken,
+  }
+}
+
+async function verifyPassword(
+  password: string,
+  hash: string
+): Promise<boolean> {
+  return verifySecret(password, hash)
+}
+
 export const signInMethodService = Object.freeze({
   addPasswordSignInMethod,
+  singInUsingPassword,
 })

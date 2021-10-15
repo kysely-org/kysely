@@ -5,12 +5,17 @@ export type AuthenticationErrors =
   | 'ExpiredAuthToken'
   | 'UserMismatch'
   | 'UserOrRefreshTokenNotFound'
+
 export type UserApiErrors = 'InvalidUser' | 'UserNotFound'
+
 export type SignInMethodApiErros =
   | 'InvalidSignInMethod'
   | 'UserAlreadyHasSignInMethod'
   | 'PasswordTooWeak'
   | 'PasswordTooLong'
+  | 'InvalidCredentials'
+  | 'InvalidRefreshToken'
+  | 'RefreshTokenUserIdMismatch'
 
 export type ErrorCode =
   | 'UnknownError'

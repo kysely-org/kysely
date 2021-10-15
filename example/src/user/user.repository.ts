@@ -32,13 +32,28 @@ async function findUserById(
   return user
 }
 
-async function lockUser(
+async function lockUserById(
   trx: Transaction<Database>,
   id: string
 ): Promise<UserRow | undefined> {
+  return lockUser(trx, 'user_id', id)
+}
+
+async function lockUserByEmail(
+  trx: Transaction<Database>,
+  email: string
+): Promise<UserRow | undefined> {
+  return lockUser(trx, 'email', email)
+}
+
+async function lockUser(
+  trx: Transaction<Database>,
+  column: 'user_id' | 'email',
+  value: string
+): Promise<UserRow | undefined> {
   const user = await trx
     .selectFrom('user')
-    .where('user_id', '=', id)
+    .where(column, '=', value)
     .selectAll('user')
     .forUpdate()
     .executeTakeFirst()
@@ -61,6 +76,7 @@ async function setUserEmail(
 export const userRepository = Object.freeze({
   insertUser,
   findUserById,
-  lockUser,
+  lockUserById,
+  lockUserByEmail,
   setUserEmail,
 })
