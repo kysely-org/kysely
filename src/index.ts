@@ -10,7 +10,7 @@ export * from './raw-builder/raw-builder.js'
 
 export * from './query-executor/query-executor.js'
 export * from './query-executor/default-query-executor.js'
-export * from './query-executor/never-executing-query-executor.js'
+export * from './query-executor/noop-query-executor.js'
 
 export * from './query-compiler/default-query-compiler.js'
 export * from './query-compiler/compiled-query.js'
@@ -34,11 +34,13 @@ export * from './dialect/postgres/postgres-dialect.js'
 export * from './dialect/postgres/postgres-query-compiler.js'
 export * from './dialect/postgres/postgres-driver.js'
 export * from './dialect/postgres/postgres-introspector.js'
+export * from './dialect/postgres/postgres-migration-adapter.js'
 
 export * from './query-compiler/default-query-compiler.js'
 export * from './query-compiler/query-compiler.js'
 
 export * from './migration/migration.js'
+export * from './migration/migration-adapter.js'
 
 export * from './dialect/dialect.js'
 export * from './dialect/postgres/postgres-dialect.js'
@@ -127,7 +129,10 @@ export {
   ReferenceExpression,
   ReferenceExpressionOrList,
 } from './parser/reference-parser.js'
-export { ValueExpression, ValueExpressionOrList } from './parser/value-parser.js'
+export {
+  ValueExpression,
+  ValueExpressionOrList,
+} from './parser/value-parser.js'
 export { ExistsExpression, FilterOperator } from './parser/filter-parser.js'
 export { TableExpression } from './parser/table-parser.js'
 export {

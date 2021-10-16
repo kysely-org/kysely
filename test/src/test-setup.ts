@@ -14,6 +14,7 @@ import {
   AnyRow,
   OperationNodeTransformer,
   PostgresDialect,
+  Dialect,
 } from '../../'
 
 export interface Person {
@@ -81,9 +82,18 @@ export interface TestContext {
   db: Kysely<Database>
 }
 
-export async function initTest(dialect: BuiltInDialect): Promise<TestContext> {
+export type DialectWrapper = (dialect: Dialect) => Dialect
+
+export async function initTest(
+  dialect: BuiltInDialect,
+  wrapDialect: DialectWrapper = (it) => it
+): Promise<TestContext> {
   const config = DB_CONFIGS[dialect]
-  const db = new Kysely<Database>(DB_CONFIGS[dialect])
+
+  const db = new Kysely<Database>({
+    ...config,
+    dialect: wrapDialect(config.dialect),
+  })
 
   await createDatabase(db)
   return { config, db }

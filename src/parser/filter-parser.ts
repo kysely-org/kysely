@@ -29,12 +29,14 @@ import {
 } from './value-parser.js'
 import { SelectQueryNode } from '../operation-node/select-query-node.js'
 import { SubQueryBuilder } from '../query-builder/sub-query-builder.js'
-import { createEmptySelectQuery } from '../query-builder/query-builder.js'
 import { JoinBuilder } from '../query-builder/join-builder.js'
 import { parseTableExpression } from './table-parser.js'
 import { JoinNode } from '../operation-node/join-node.js'
 import { FilterExpressionNode } from '../operation-node/operation-node-utils.js'
 import { ValueNode } from '../operation-node/value-node.js'
+import { QueryBuilder } from '../query-builder/query-builder.js'
+import { createQueryId } from '../util/query-id.js'
+import { NoopQueryExecutor } from '../query-executor/noop-query-executor.js'
 
 export type ExistsExpression<DB, TB extends keyof DB> =
   | AnyQueryBuilder
@@ -178,7 +180,15 @@ function parseOnGrouper(
   return ParensNode.create(joinNode.on)
 }
 
-export function createEmptyJoinBuilder(): JoinBuilder<any, any> {
+function createEmptySelectQuery(): QueryBuilder<any, any, any> {
+  return new QueryBuilder({
+    queryId: createQueryId(),
+    executor: new NoopQueryExecutor(),
+    queryNode: SelectQueryNode.create([]),
+  })
+}
+
+function createEmptyJoinBuilder(): JoinBuilder<any, any> {
   return new JoinBuilder(
     JoinNode.create('InnerJoin', parseTableExpression('table'))
   )

@@ -5,7 +5,6 @@ import {
   RootOperationNode,
   QueryCompiler,
 } from '../query-compiler/query-compiler.js'
-import { QueryId } from '../util/query-id.js'
 import { KyselyPlugin } from '../plugin/kysely-plugin.js'
 import { QueryExecutor } from './query-executor.js'
 
@@ -28,13 +27,11 @@ export class DefaultQueryExecutor extends QueryExecutor {
     return this.#compiler.compileQuery(node)
   }
 
-  async executeQuery<R>(
-    compiledQuery: CompiledQuery,
-    queryId: QueryId
+  protected async executeQueryImpl<R>(
+    compiledQuery: CompiledQuery
   ): Promise<QueryResult<R>> {
-    return await this.#connectionProvider.withConnection(async (connection) => {
-      const result = await connection.executeQuery<R>(compiledQuery)
-      return this.mapQueryResult(result, queryId)
+    return this.#connectionProvider.withConnection((connection) => {
+      return connection.executeQuery<R>(compiledQuery)
     })
   }
 

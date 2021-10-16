@@ -203,6 +203,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
               await sleep(20)
               executedUpMethods.push(name)
             },
+
             async down(_db): Promise<void> {
               await sleep(20)
               executedDownMethods.push(name)

@@ -2,25 +2,20 @@ import * as path from 'path'
 import { promises as fs } from 'fs'
 
 import { Kysely } from '../kysely.js'
-import {
-  getLast,
-  isFunction,
-  isObject,
-  isString,
-} from '../util/object-utils.js'
+import { getLast, isFunction, isString } from '../util/object-utils.js'
+import { MigrationAdapter } from './migration-adapter.js'
 
 export const MIGRATION_TABLE = 'kysely_migration'
 export const MIGRATION_LOCK_TABLE = 'kysely_migration_lock'
 export const MIGRATION_LOCK_ID = 'migration_lock'
 
-const MAX_LOCK_WAIT_TIME_MS = 60000
-const LOCK_ATTEMPT_GAP_MS = 500
-
 export class MigrationModule {
   readonly #db: Kysely<any>
+  readonly #adapter: MigrationAdapter
 
-  constructor(db: Kysely<any>) {
+  constructor(db: Kysely<any>, adapter: MigrationAdapter) {
     this.#db = db
+    this.#adapter = adapter
   }
 
   /**
@@ -51,12 +46,28 @@ export class MigrationModule {
     await ensureMigrationTablesExists(this.#db)
 
     if (isString(migrationsFolderPath)) {
-      return doMigrateToLatest(
-        this.#db,
+      return this.#migrateToLatest(
         await readMigrationsFromFolder(migrationsFolderPath)
       )
     } else {
-      return doMigrateToLatest(this.#db, migrationsFolderPath)
+      return this.#migrateToLatest(migrationsFolderPath)
+    }
+  }
+
+  async #migrateToLatest(migrations: Record<string, Migration>): Promise<void> {
+    const run = async (db: Kysely<any>) => {
+      try {
+        await this.#adapter.acquireMigrationLock(db)
+        await runNewMigrations(db, migrations)
+      } finally {
+        await this.#adapter.releaseMigrationLock(db)
+      }
+    }
+
+    if (this.#adapter.supportsTransactionalDdl) {
+      await this.#db.transaction().execute(run)
+    } else {
+      await run(this.#db)
     }
   }
 }
@@ -79,6 +90,9 @@ async function ensureMigrationTableExists(db: Kysely<any>): Promise<void> {
         .createTable(MIGRATION_TABLE)
         .ifNotExists()
         .addColumn('name', 'varchar', (col) => col.primaryKey())
+        // The migration run time as ISO string. This is not a real date type as we
+        // can't know which data type is supported by all future dialects.
+        .addColumn('timestamp', 'varchar', (col) => col.notNull())
         .execute()
     } catch (error) {
       // At least on postgres, `if not exists` doesn't guarantee the `create table`
@@ -146,17 +160,6 @@ async function doesLockRowExists(db: Kysely<any>): Promise<boolean> {
   return !!lockRow
 }
 
-async function doMigrateToLatest(
-  db: Kysely<any>,
-  migrations: Record<string, Migration>
-): Promise<void> {
-  await db.transaction(async (trx) => {
-    await acquireLock(trx)
-    await runNewMigrations(trx, migrations)
-    await releaseLock(trx)
-  })
-}
-
 async function readMigrationsFromFolder(
   migrationsFolderPath: string
 ): Promise<Record<string, Migration>> {
@@ -177,54 +180,6 @@ async function readMigrationsFromFolder(
   }
 
   return migrations
-}
-
-async function acquireLock(db: Kysely<any>): Promise<void> {
-  const startTime = performance.now()
-
-  while (true) {
-    let error: unknown
-
-    try {
-      const gotLock = await tryAcquireLock(db)
-
-      if (gotLock) {
-        return
-      }
-    } catch (err) {
-      error = err
-    }
-
-    const now = performance.now()
-
-    if (now - startTime > MAX_LOCK_WAIT_TIME_MS) {
-      throw new Error(
-        'could not acquire migration lock' +
-          (isObject(error) ? `: ${error.message}` : '')
-      )
-    }
-
-    await sleep(LOCK_ATTEMPT_GAP_MS)
-  }
-}
-
-async function tryAcquireLock(db: Kysely<any>): Promise<boolean> {
-  const numUpdatedRows = await db
-    .updateTable(MIGRATION_LOCK_TABLE)
-    .set({ is_locked: 1 })
-    .where('is_locked', '=', 0)
-    .where('id', '=', MIGRATION_LOCK_ID)
-    .executeTakeFirst()
-
-  return numUpdatedRows === 1
-}
-
-async function releaseLock(db: Kysely<any>): Promise<void> {
-  await db
-    .updateTable(MIGRATION_LOCK_TABLE)
-    .set({ is_locked: 0 })
-    .where('id', '=', MIGRATION_LOCK_ID)
-    .execute()
 }
 
 async function runNewMigrations(
@@ -272,7 +227,10 @@ async function runNewMigrations(
     await migration.up(db)
     await db
       .insertInto(MIGRATION_TABLE)
-      .values({ name: migration.name })
+      .values({
+        name: migration.name,
+        timestamp: new Date().toISOString(),
+      })
       .execute()
   }
 }
@@ -299,10 +257,6 @@ function ensureMigrationsAreNotCorrupted(
       )
     }
   }
-}
-
-function sleep(millis: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, millis))
 }
 
 function isMigration(obj: any): obj is Migration {

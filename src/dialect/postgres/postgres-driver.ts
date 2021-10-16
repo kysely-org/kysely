@@ -3,24 +3,23 @@ import {
   DatabaseConnection,
   QueryResult,
 } from '../../driver/database-connection.js'
-import { Driver } from '../../driver/driver.js'
+import { Driver, TransactionSettings } from '../../driver/driver.js'
 import { CompiledQuery } from '../../query-compiler/compiled-query.js'
 import { freeze, isFunction } from '../../util/object-utils.js'
 import { PostgresDialectConfig } from './postgres-dialect.js'
 
 const PRIVATE_RELEASE_METHOD = Symbol()
 
-export class PostgresDriver extends Driver {
+export class PostgresDriver implements Driver {
   readonly #config: PostgresDialectConfig
   readonly #connections = new WeakMap<PoolClient, DatabaseConnection>()
   #pool: Pool | null = null
 
   constructor(config: PostgresDialectConfig) {
-    super()
     this.#config = config
   }
 
-  protected override async init(): Promise<void> {
+  async init(): Promise<void> {
     // Import the `pg` module here instead at the top of the file
     // so that this file can be loaded by node without `pg` driver
     // installed. As you can see, there IS an import from `pg` at the
@@ -33,7 +32,7 @@ export class PostgresDriver extends Driver {
     this.#pool = new PoolConstrucor(this.#config)
   }
 
-  protected override async acquireConnection(): Promise<DatabaseConnection> {
+  async acquireConnection(): Promise<DatabaseConnection> {
     const client = await this.#pool!.connect()
     let connection = this.#connections.get(client)
 
@@ -52,14 +51,34 @@ export class PostgresDriver extends Driver {
     return connection
   }
 
-  protected override async releaseConnection(
-    connection: DatabaseConnection
+  async beginTransaction(
+    connection: DatabaseConnection,
+    settings: TransactionSettings
   ): Promise<void> {
+    if (settings.isolationLevel) {
+      await connection.executeQuery({
+        sql: `start transaction isolation level ${settings.isolationLevel}`,
+        bindings: [],
+      })
+    } else {
+      await connection.executeQuery({ sql: 'begin', bindings: [] })
+    }
+  }
+
+  async commitTransaction(connection: DatabaseConnection): Promise<void> {
+    await connection.executeQuery({ sql: 'commit', bindings: [] })
+  }
+
+  async rollbackTransaction(connection: DatabaseConnection): Promise<void> {
+    await connection.executeQuery({ sql: 'rollback', bindings: [] })
+  }
+
+  async releaseConnection(connection: DatabaseConnection): Promise<void> {
     const pgConnection = connection as PostgresConnection
     pgConnection[PRIVATE_RELEASE_METHOD]()
   }
 
-  protected override async destroy(): Promise<void> {
+  async destroy(): Promise<void> {
     if (this.#pool) {
       const pool = this.#pool
       this.#pool = null

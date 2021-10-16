@@ -1,14 +1,7 @@
 import { Dialect } from './dialect/dialect.js'
-import { Driver } from './driver/driver.js'
 import { SchemaModule } from './schema/schema.js'
 import { DynamicModule } from './dynamic/dynamic.js'
 import { DefaultConnectionProvider } from './driver/default-connection-provider.js'
-import { SingleConnectionProvider } from './driver/single-connection-provider.js'
-import {
-  INTERNAL_DRIVER_ACQUIRE_CONNECTION,
-  INTERNAL_DRIVER_ENSURE_DESTROY,
-  INTERNAL_DRIVER_RELEASE_CONNECTION,
-} from './driver/driver-internal.js'
 import { MigrationModule } from './migration/migration.js'
 import { QueryExecutor } from './query-executor/query-executor.js'
 import { QueryCreator } from './query-creator.js'
@@ -18,6 +11,15 @@ import { generatedPlaceholder } from './util/generated-placeholder.js'
 import { DefaultQueryExecutor } from './query-executor/default-query-executor.js'
 import { DatabaseIntrospector } from './introspection/database-introspector.js'
 import { isObject } from './util/object-utils.js'
+import { RuntimeDriver } from './driver/runtime-driver.js'
+import { SingleConnectionProvider } from './driver/single-connection-provider.js'
+import {
+  Driver,
+  IsolationLevel,
+  TransactionSettings,
+  TRANSACTION_ISOLATION_LEVELS,
+} from './driver/driver.js'
+import { preventAwait } from './util/prevent-await.js'
 
 /**
  * The main Kysely class.
@@ -79,8 +81,9 @@ export class Kysely<DB> extends QueryCreator<DB> {
       const dialect = args.dialect
       const driver = dialect.createDriver()
       const compiler = dialect.createQueryCompiler()
+      const runtimeDriver = new RuntimeDriver(driver)
 
-      const connectionProvider = new DefaultConnectionProvider(driver)
+      const connectionProvider = new DefaultConnectionProvider(runtimeDriver)
       const executor = new DefaultQueryExecutor(
         compiler,
         connectionProvider,
@@ -91,7 +94,7 @@ export class Kysely<DB> extends QueryCreator<DB> {
 
       this.#config = args
       this.#dialect = dialect
-      this.#driver = driver
+      this.#driver = runtimeDriver
       this.#executor = executor
     }
   }
@@ -107,7 +110,7 @@ export class Kysely<DB> extends QueryCreator<DB> {
    * Returns the {@link MigrationModule} module for managing and running migrations.
    */
   get migration(): MigrationModule {
-    return new MigrationModule(this)
+    return new MigrationModule(this, this.#dialect.createMigrationAdapter())
   }
 
   /**
@@ -124,7 +127,7 @@ export class Kysely<DB> extends QueryCreator<DB> {
    * Returns a {@link DatabaseIntrospector | database introspector}.
    */
   get introspection(): DatabaseIntrospector {
-    return this.#dialect.createIntrospector(this)
+    return this.#dialect.createIntrospector(this.withoutPlugins())
   }
 
   /**
@@ -165,7 +168,7 @@ export class Kysely<DB> extends QueryCreator<DB> {
    * `transaction` method is the value returned from the callback.
    *
    * ```ts
-   * const catto = await db.transaction(async (trx) => {
+   * const catto = await db.transaction().execute(async (trx) => {
    *   const jennifer = await trx.insertInto('person')
    *     .values({
    *       first_name: 'Jennifer',
@@ -188,41 +191,24 @@ export class Kysely<DB> extends QueryCreator<DB> {
    * ```
    *
    * @example
-   * If you need to set the isolation level or any other transaction property,
-   * you can use `raw`:
+   * Setting the isolation level.
    *
    * ```ts
-   * await db.transaction(async (trx) => {
-   *   await trx.raw('SET TRANSACTION ISOLATION LEVEL SERIALIZABLE').execute()
-   *   await doStuff(trx)
-   * })
+   * await db
+   *   .transaction()
+   *   .setIsolationLevel('serializable')
+   *   .execute(async (trx) => {
+   *     await doStuff(trx)
+   *   })
    * ```
    */
-  async transaction<T>(
-    callback: (trx: Transaction<DB>) => Promise<T>
-  ): Promise<T> {
-    const connection = await this.#driver[INTERNAL_DRIVER_ACQUIRE_CONNECTION]()
-    const connectionProvider = new SingleConnectionProvider(connection)
-
-    const transaction = new Transaction<DB>({
+  transaction(): TransactionBuilder<DB> {
+    return new TransactionBuilder({
       config: this.#config,
       dialect: this.#dialect,
       driver: this.#driver,
-      executor: this.#executor.withConnectionProvider(connectionProvider),
+      executor: this.#executor,
     })
-
-    try {
-      await this.#driver.beginTransaction(connection)
-      const result = await callback(transaction)
-      await this.#driver.commitTransaction(connection)
-
-      return result
-    } catch (error) {
-      await this.#driver.rollbackTransaction(connection)
-      throw error
-    } finally {
-      await this.#driver[INTERNAL_DRIVER_RELEASE_CONNECTION](connection)
-    }
   }
 
   /**
@@ -243,7 +229,7 @@ export class Kysely<DB> extends QueryCreator<DB> {
    * You need to call this when you are done using the `Kysely` instance.
    */
   async destroy(): Promise<void> {
-    await this.#driver[INTERNAL_DRIVER_ENSURE_DESTROY]()
+    await this.#driver.destroy()
   }
 
   /**
@@ -270,7 +256,7 @@ export class Transaction<DB> extends Kysely<DB> {
     )
   }
 
-  async transaction<T>(_: (trx: Transaction<DB>) => Promise<T>): Promise<T> {
+  transaction(): TransactionBuilder<DB> {
     throw new Error(
       'calling the transaction method for a Transaction is not supported'
     )
@@ -290,11 +276,6 @@ export interface KyselyConstructorArgs {
   executor: QueryExecutor
 }
 
-export interface KyselyConfig {
-  dialect: Dialect
-  plugins?: KyselyPlugin[]
-}
-
 export function isKyselyConstructorArgs(
   obj: unknown
 ): obj is KyselyConstructorArgs {
@@ -305,4 +286,87 @@ export function isKyselyConstructorArgs(
     isObject(obj.driver) &&
     isObject(obj.executor)
   )
+}
+
+export interface KyselyConfig {
+  dialect: Dialect
+  plugins?: KyselyPlugin[]
+}
+
+export class TransactionBuilder<DB> {
+  readonly #config: KyselyConfig
+  readonly #dialect: Dialect
+  readonly #driver: Driver
+  readonly #executor: QueryExecutor
+  readonly #isolationLevel?: IsolationLevel
+
+  constructor(args: TransactionBuilderConstructorArgs) {
+    this.#config = args.config
+    this.#dialect = args.dialect
+    this.#driver = args.driver
+    this.#executor = args.executor
+    this.#isolationLevel = args.isolationLevel
+  }
+
+  setIsolationLevel(isolationLevel: IsolationLevel): TransactionBuilder<DB> {
+    return new TransactionBuilder({
+      config: this.#config,
+      dialect: this.#dialect,
+      driver: this.#driver,
+      executor: this.#executor,
+      isolationLevel,
+    })
+  }
+
+  async execute<T>(callback: (trx: Transaction<DB>) => Promise<T>): Promise<T> {
+    const settings = { isolationLevel: this.#isolationLevel }
+    validateTransactionSettings(settings)
+
+    const connection = await this.#driver.acquireConnection()
+    const connectionProvider = new SingleConnectionProvider(connection)
+
+    const transaction = new Transaction<DB>({
+      config: this.#config,
+      dialect: this.#dialect,
+      driver: this.#driver,
+      executor: this.#executor.withConnectionProvider(connectionProvider),
+    })
+
+    try {
+      await this.#driver.beginTransaction(connection, settings)
+      const result = await callback(transaction)
+      await this.#driver.commitTransaction(connection)
+
+      return result
+    } catch (error) {
+      await this.#driver.rollbackTransaction(connection)
+      throw error
+    } finally {
+      await this.#driver.releaseConnection(connection)
+    }
+  }
+}
+
+preventAwait(
+  TransactionBuilder,
+  "don't await TransactionBuilder instances directly. To execute the query you need to call the `execute` method"
+)
+
+export interface TransactionBuilderConstructorArgs {
+  config: KyselyConfig
+  dialect: Dialect
+  driver: Driver
+  executor: QueryExecutor
+  isolationLevel?: IsolationLevel
+}
+
+function validateTransactionSettings(settings: TransactionSettings): void {
+  if (
+    settings.isolationLevel &&
+    !TRANSACTION_ISOLATION_LEVELS.includes(settings.isolationLevel)
+  ) {
+    throw new Error(
+      `invalid transaction isolation level ${settings.isolationLevel}`
+    )
+  }
 }

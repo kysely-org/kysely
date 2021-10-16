@@ -5,16 +5,14 @@ import {
   TableExpression,
   QueryBuilderWithTable,
 } from '../parser/table-parser.js'
-import { NeverExecutingQueryExecutor } from '../query-executor/never-executing-query-executor.js'
+import { NoopQueryExecutor } from '../query-executor/noop-query-executor.js'
 import { WithSchemaPlugin } from '../plugin/with-schema/with-schema-plugin.js'
 import { createQueryId } from '../util/query-id.js'
 
 export class SubQueryBuilder<DB, TB extends keyof DB> {
-  readonly #executor: NeverExecutingQueryExecutor
+  readonly #executor: NoopQueryExecutor
 
-  constructor(
-    executor: NeverExecutingQueryExecutor = new NeverExecutingQueryExecutor()
-  ) {
+  constructor(executor: NoopQueryExecutor = new NoopQueryExecutor()) {
     this.#executor = executor
   }
 

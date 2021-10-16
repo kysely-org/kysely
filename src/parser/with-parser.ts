@@ -4,7 +4,7 @@ import { QueryBuilder } from '../query-builder/query-builder.js'
 import { QueryCreator } from '../query-creator.js'
 import { RawBuilder } from '../raw-builder/raw-builder.js'
 import { AnyRawBuilder } from '../query-builder/type-utils.js'
-import { NeverExecutingQueryExecutor } from '../query-executor/never-executing-query-executor.js'
+import { NoopQueryExecutor } from '../query-executor/noop-query-executor.js'
 
 export type CommonTableExpression<DB> = (
   creator: QueryCreator<DB>
@@ -30,9 +30,7 @@ export function parseCommonTableExpression(
   name: string,
   expression: CommonTableExpression<any>
 ): CommonTableExpressionNode {
-  const builder = expression(
-    new QueryCreator(new NeverExecutingQueryExecutor())
-  )
+  const builder = expression(new QueryCreator(new NoopQueryExecutor()))
 
   return CommonTableExpressionNode.create(
     IdentifierNode.create(name),

@@ -64,8 +64,7 @@ import { LimitNode } from '../operation-node/limit-node.js'
 import { OffsetNode } from '../operation-node/offset-node.js'
 import { Compilable } from '../util/compilable.js'
 import { QueryExecutor } from '../query-executor/query-executor.js'
-import { NeverExecutingQueryExecutor } from '../query-executor/never-executing-query-executor.js'
-import { createQueryId, QueryId } from '../util/query-id.js'
+import { QueryId } from '../util/query-id.js'
 import {
   OnConflictConstraintTarget,
   OnConflictTargetExpression,
@@ -2272,6 +2271,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
   async execute(): Promise<ManyResultRowType<O>[]> {
     const node = this.#executor.transformQuery(this.#queryNode, this.#queryId)
     const compildQuery = this.#executor.compileQuery(node, this.#queryId)
+
     const result = await this.#executor.executeQuery<ManyResultRowType<O>>(
       compildQuery,
       this.#queryId
@@ -2389,18 +2389,6 @@ export class NoResultError extends Error {
     super('no result')
     this.node = node
   }
-}
-
-export function createEmptySelectQuery<
-  DB,
-  TB extends keyof DB,
-  O = {}
->(): QueryBuilder<DB, TB, O> {
-  return new QueryBuilder<DB, TB, O>({
-    queryId: createQueryId(),
-    executor: new NeverExecutingQueryExecutor(),
-    queryNode: SelectQueryNode.create([]),
-  })
 }
 
 function ensureCanHaveWhereClause(

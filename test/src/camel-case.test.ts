@@ -111,7 +111,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
     })
 
     it('should convert a select query between camelCase and snake_case in a transaction', async () => {
-      await camelDb.transaction(async (trx) => {
+      await camelDb.transaction().execute(async (trx) => {
         const query = trx
           .selectFrom('camelPerson')
           .select('camelPerson.firstName')
