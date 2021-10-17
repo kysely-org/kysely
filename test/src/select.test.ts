@@ -245,6 +245,27 @@ for (const dialect of BUILT_IN_DIALECTS) {
       expect(persons).to.eql([{ last_name: 'Aniston', pet_name: 'Catto' }])
     })
 
+    it('should select columns from multiple expressions in a from clause', async () => {
+      const query = ctx.db
+        .selectFrom([
+          'person',
+          ctx.db.selectFrom('pet').select(['owner_id', 'species']).as('p'),
+          ctx.db.raw<{ one: number }>('(select 1 as one)').as('o'),
+        ])
+        .select(['last_name', 'species as pet_species', 'one'])
+        .whereRef('p.owner_id', '=', 'person.id')
+        .where('first_name', '=', 'Jennifer')
+
+      testSql(query, dialect, {
+        postgres: {
+          sql: 'select "last_name", "species" as "pet_species", "one" from "person", (select "owner_id", "species" from "pet") as "p", (select 1 as one) as "o" where "p"."owner_id" = "person"."id" and "first_name" = $1',
+          bindings: ['Jennifer'],
+        },
+      })
+
+      await query.execute()
+    })
+
     it('should select columns from joined tables', async () => {
       const query = ctx.db
         .selectFrom('person')

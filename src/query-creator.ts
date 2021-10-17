@@ -99,7 +99,7 @@ export class QueryCreator<DB> {
    *
    * ```ts
    * const items = await db.selectFrom(
-   *     db.raw<{ one: number }>('select 1 as one').as('q')
+   *     db.raw<{ one: number }>('(select 1 as one)').as('q')
    *   )
    *   .select('q.one')
    *   .execute()
@@ -126,22 +126,20 @@ export class QueryCreator<DB> {
    *
    * ```ts
    * const items = await db.selectFrom([
-   *     'person',
-   *     'movie as m',
+   *     'person as p',
    *     db.selectFrom('pet').select('pet.species').as('a'),
-   *     db.raw<{ one: number }>('select 1 as one').as('q')
+   *     db.raw<{ one: number }>('(select 1 as one)').as('q')
    *   ])
-   *   .select(['person.id', 'm.stars', 'a.species', 'q.one'])
+   *   .select(['p.id', 'a.species', 'q.one'])
    *   .execute()
    * ```
    *
    * The generated SQL (postgresql):
    *
    * ```sql
-   * select "person".id, "m"."stars", "a"."species", "q"."one"
+   * select "p".id, "a"."species", "q"."one"
    * from
-   *   "person",
-   *   "movie" as "m",
+   *   "person" as "p",
    *   (select "pet"."species" from "pet") as a,
    *   (select 1 as one) as "q"
    * ```

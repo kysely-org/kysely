@@ -54,6 +54,8 @@ export type ExtractAliasFromTableExpression<DB, TE> =
     ? QA
     : TE extends (qb: any) => AliasedQueryBuilder<any, any, any, infer QA>
     ? QA
+    : TE extends AliasedRawBuilder<any, infer RA>
+    ? RA
     : TE extends (qb: any) => AliasedRawBuilder<any, infer RA>
     ? RA
     : never
