@@ -78,6 +78,48 @@ for (const dialect of BUILT_IN_DIALECTS) {
       ])
     })
 
+    it('should update using a subquery', async () => {
+      const query = ctx.db
+        .updateTable('person')
+        .set({
+          last_name: (qb) =>
+            qb
+              .subQuery('pet')
+              .whereRef('person.id', '=', 'owner_id')
+              .select('name'),
+        })
+        .where('first_name', '=', 'Jennifer')
+        .returning('last_name')
+
+      testSql(query, dialect, {
+        postgres: {
+          sql: 'update "person" set "last_name" = (select "name" from "pet" where "person"."id" = "owner_id") where "first_name" = $1 returning "last_name"',
+          bindings: ['Jennifer'],
+        },
+      })
+
+      const person = await query.executeTakeFirstOrThrow()
+      expect(person.last_name).to.equal('Catto')
+    })
+
+    it('should update update using a raw expression', async () => {
+      const query = ctx.db
+        .updateTable('person')
+        .set({
+          last_name: ctx.db.raw('??', ['first_name']),
+        })
+        .where('first_name', '=', 'Jennifer')
+
+      testSql(query, dialect, {
+        postgres: {
+          sql: 'update "person" set "last_name" = "first_name" where "first_name" = $1',
+          bindings: ['Jennifer'],
+        },
+      })
+
+      await query.execute()
+    })
+
     if (dialect === 'postgres') {
       it('should return updated rows when `returning` is used', async () => {
         const query = ctx.db

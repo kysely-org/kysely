@@ -140,5 +140,5 @@ export {
   JoinCallbackExpression,
 } from './parser/join-parser.js'
 export { InsertObject } from './parser/insert-values-parser.js'
-export { MutationObject } from './parser/mutation-parser.js'
+export { MutationObject } from './parser/update-set-parser.js'
 export { OrderByExpression } from './parser/order-by-parser.js'

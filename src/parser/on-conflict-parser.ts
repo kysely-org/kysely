@@ -7,9 +7,8 @@ import {
   isReadonlyArray,
   isString,
 } from '../util/object-utils.js'
-import { MutationObject } from './mutation-parser.js'
 import { parseColumnName } from './reference-parser.js'
-import { parseUpdateObject } from './update-set-parser.js'
+import { MutationObject, parseUpdateObject } from './update-set-parser.js'
 
 export type OnConflictConstraintTarget = { constraint: string }
 

@@ -1,7 +1,12 @@
 import { ColumnNode } from '../operation-node/column-node.js'
 import { InsertValuesNode } from '../operation-node/insert-query-node.js'
+import { isOperationNodeSource } from '../operation-node/operation-node-source.js'
 import { PrimitiveValueListNode } from '../operation-node/primitive-value-list-node.js'
+import { QueryNode } from '../operation-node/query-node.js'
+import { RawNode } from '../operation-node/raw-node.js'
+import { SelectQueryNode } from '../operation-node/select-query-node.js'
 import { ValueListNode } from '../operation-node/value-list-node.js'
+import { ValueNode } from '../operation-node/value-node.js'
 import {
   AnyQueryBuilder,
   AnyRawBuilder,
@@ -9,10 +14,6 @@ import {
 } from '../query-builder/type-utils.js'
 import { isGeneratedPlaceholder } from '../util/generated-placeholder.js'
 import { isPrimitive, PrimitiveValue } from '../util/object-utils.js'
-import {
-  MutationValueExpression,
-  parseMutationValueExpression,
-} from './mutation-parser.js'
 
 export type InsertObject<DB, TB extends keyof DB> = {
   [C in keyof DB[TB]]: InsertValueExpression<DB[TB][C]>
@@ -51,7 +52,7 @@ function parseInsertColumnsAndValues(
   }
 
   for (const row of rows) {
-    const rowValues: MutationValueExpression<PrimitiveValue>[] = columns.map(
+    const rowValues: InsertValueExpression<PrimitiveValue>[] = columns.map(
       () => null
     )
 
@@ -67,10 +68,28 @@ function parseInsertColumnsAndValues(
       values.push(PrimitiveValueListNode.create(rowValues))
     } else {
       values.push(
-        ValueListNode.create(rowValues.map(parseMutationValueExpression))
+        ValueListNode.create(rowValues.map(parseInsertValueExpression))
       )
     }
   }
 
   return [columns.map(ColumnNode.create), values]
+}
+
+export function parseInsertValueExpression(
+  value: InsertValueExpression<PrimitiveValue>
+): ValueNode | RawNode | SelectQueryNode {
+  if (isPrimitive(value)) {
+    return ValueNode.create(value)
+  } else if (isOperationNodeSource(value)) {
+    const node = value.toOperationNode()
+
+    if (!QueryNode.isMutating(node)) {
+      return node
+    }
+  }
+
+  throw new Error(
+    `unsupported value for inserty object ${JSON.stringify(value)}`
+  )
 }

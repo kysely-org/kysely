@@ -57,8 +57,10 @@ import {
 import { OrderByExpression } from '../parser/order-by-parser.js'
 import { GroupByItemNode } from '../operation-node/group-by-item-node.js'
 import { UpdateQueryNode } from '../operation-node/update-query-node.js'
-import { MutationObject } from '../parser/mutation-parser.js'
-import { parseUpdateObject } from '../parser/update-set-parser.js'
+import {
+  MutationObject,
+  parseUpdateObject,
+} from '../parser/update-set-parser.js'
 import { preventAwait } from '../util/prevent-await.js'
 import { LimitNode } from '../operation-node/limit-node.js'
 import { OffsetNode } from '../operation-node/offset-node.js'
