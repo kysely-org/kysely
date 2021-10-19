@@ -28,8 +28,9 @@ export * from './schema/alter-table-builder.js'
 export * from './dynamic/dynamic.js'
 export * from './driver/driver.js'
 export * from './driver/database-connection.js'
-export * from './driver/default-connection-provider.js';
-export * from './driver/single-connection-provider.js';
+export * from './driver/connection-provider.js'
+export * from './driver/default-connection-provider.js'
+export * from './driver/single-connection-provider.js'
 
 export * from './dialect/postgres/postgres-dialect.js'
 export * from './dialect/postgres/postgres-query-compiler.js'
