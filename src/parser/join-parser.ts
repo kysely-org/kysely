@@ -8,6 +8,7 @@ import {
 } from './table-parser.js'
 import { parseReferenceFilter } from './filter-parser.js'
 import { JoinBuilder } from '../query-builder/join-builder.js'
+import { ParseContext } from './parse-context.js'
 
 export type JoinReferenceExpression<DB, TB extends keyof DB, F> =
   | AnyColumn<
@@ -26,41 +27,43 @@ export type JoinCallbackExpression<DB, TB extends keyof DB, F> = (
   >
 ) => JoinBuilder<any, any>
 
-export function parseJoinArgs(joinType: JoinType, args: any[]): JoinNode {
+export function parseJoinArgs(
+  ctx: ParseContext,
+  joinType: JoinType,
+  args: any[]
+): JoinNode {
   if (args.length === 2) {
-    return parseCallbackJoin(joinType, args[0], args[1])
+    return parseCallbackJoin(ctx, joinType, args[0], args[1])
   } else if (args.length === 3) {
-    return parseSingleOnJoin(joinType, args[0], args[1], args[2])
+    return parseSingleOnJoin(ctx, joinType, args[0], args[1], args[2])
   } else {
     throw new Error('not implemented')
   }
 }
 
 function parseCallbackJoin(
+  ctx: ParseContext,
   joinType: JoinType,
   from: TableExpression<any, any>,
   callback: JoinCallbackExpression<any, any, any>
 ): JoinNode {
-  const tableNode = parseTableExpression(from)
-
-  const joinBuilder = callback(
-    new JoinBuilder(JoinNode.create(joinType, tableNode))
-  )
-
+  const tableNode = parseTableExpression(ctx, from)
+  const joinBuilder = callback(ctx.createJoinBuilder(joinType, tableNode))
   return joinBuilder.toOperationNode()
 }
 
 function parseSingleOnJoin(
+  ctx: ParseContext,
   joinType: JoinType,
   from: TableExpression<any, any>,
   lhsColumn: string,
   rhsColumn: string
 ): JoinNode {
-  const tableNode = parseTableExpression(from)
+  const tableNode = parseTableExpression(ctx, from)
 
   return JoinNode.cloneWithOn(
     JoinNode.create(joinType, tableNode),
     'And',
-    parseReferenceFilter(lhsColumn, '=', rhsColumn)
+    parseReferenceFilter(ctx, lhsColumn, '=', rhsColumn)
   )
 }

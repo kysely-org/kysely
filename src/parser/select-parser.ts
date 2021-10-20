@@ -21,7 +21,7 @@ import {
 } from '../query-builder/type-utils.js'
 import { parseAliasedStringReference } from './reference-parser.js'
 import { DynamicReferenceBuilder } from '../dynamic/dynamic-reference-builder.js'
-import { SubQueryBuilder } from '../query-builder/sub-query-builder.js'
+import { ParseContext } from './parse-context.js'
 
 /**
  * A selection expression.
@@ -182,16 +182,18 @@ type ExtractTypeFromStringSelectExpression<
   : never
 
 export function parseSelectExpressionOrList(
+  ctx: ParseContext,
   selection: SelectExpressionOrList<any, any>
 ): SelectionNode[] {
   if (isReadonlyArray(selection)) {
-    return selection.map((it) => parseSelectExpression(it))
+    return selection.map((it) => parseSelectExpression(ctx, it))
   } else {
-    return [parseSelectExpression(selection)]
+    return [parseSelectExpression(ctx, selection)]
   }
 }
 
 function parseSelectExpression(
+  ctx: ParseContext,
   selection: SelectExpression<any, any>
 ): SelectionNode {
   if (isString(selection)) {
@@ -200,7 +202,7 @@ function parseSelectExpression(
     return SelectionNode.create(selection.toOperationNode())
   } else if (isFunction(selection)) {
     return SelectionNode.create(
-      selection(new SubQueryBuilder()).toOperationNode()
+      selection(ctx.createSubQueryBuilder()).toOperationNode()
     )
   } else {
     throw new Error(

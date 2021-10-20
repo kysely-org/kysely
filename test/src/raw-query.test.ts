@@ -6,13 +6,15 @@ import {
   insertPersons,
   TestContext,
   expect,
+  TEST_INIT_TIMEOUT,
 } from './test-setup.js'
 
 for (const dialect of BUILT_IN_DIALECTS) {
   describe(`${dialect}: raw queries`, () => {
     let ctx: TestContext
 
-    before(async () => {
+    before(async function () {
+      this.timeout(TEST_INIT_TIMEOUT)
       ctx = await initTest(dialect)
     })
 
@@ -56,8 +58,6 @@ for (const dialect of BUILT_IN_DIALECTS) {
         .execute()
 
       expect(result).to.eql({
-        numUpdatedOrDeletedRows: undefined,
-        insertedPrimaryKey: undefined,
         rows: [{ first_name: 'Arnold' }, { first_name: 'Sylvester' }],
       })
     })
@@ -72,7 +72,6 @@ for (const dialect of BUILT_IN_DIALECTS) {
 
       expect(result).to.eql({
         numUpdatedOrDeletedRows: 2,
-        insertedPrimaryKey: undefined,
         rows: [],
       })
     })
@@ -84,7 +83,6 @@ for (const dialect of BUILT_IN_DIALECTS) {
 
       expect(result).to.eql({
         numUpdatedOrDeletedRows: 2,
-        insertedPrimaryKey: undefined,
         rows: [],
       })
     })
@@ -99,19 +97,16 @@ for (const dialect of BUILT_IN_DIALECTS) {
           .execute()
 
         expect(result).to.eql({
-          numUpdatedOrDeletedRows: undefined,
-          insertedPrimaryKey: undefined,
           rows: [{ first_name: 'New', last_name: 'Personsson' }],
         })
       })
     } else {
       it('should run a raw insert query', async () => {
         const result = await ctx.db
-          .raw('insert into person (first_name, last_name, gender) values (?, ?, ?)', [
-            'New',
-            'Personsson',
-            'other'
-          ])
+          .raw(
+            'insert into person (first_name, last_name, gender) values (?, ?, ?)',
+            ['New', 'Personsson', 'other']
+          )
           .execute()
 
         expect(result.insertedPrimaryKey).to.be.a('number')

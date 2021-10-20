@@ -10,7 +10,7 @@ import { GeneratedPlaceholder } from './query-builder/type-utils.js'
 import { generatedPlaceholder } from './util/generated-placeholder.js'
 import { DefaultQueryExecutor } from './query-executor/default-query-executor.js'
 import { DatabaseIntrospector } from './introspection/database-introspector.js'
-import { isObject } from './util/object-utils.js'
+import { freeze, isObject } from './util/object-utils.js'
 import { RuntimeDriver } from './driver/runtime-driver.js'
 import { SingleConnectionProvider } from './driver/single-connection-provider.js'
 import {
@@ -20,6 +20,7 @@ import {
   TRANSACTION_ISOLATION_LEVELS,
 } from './driver/driver.js'
 import { preventAwait } from './util/prevent-await.js'
+import { DialectAdapter } from './index.js'
 
 /**
  * The main Kysely class.
@@ -62,25 +63,19 @@ import { preventAwait } from './util/prevent-await.js'
  *    tables. See the examples above.
  */
 export class Kysely<DB> extends QueryCreator<DB> {
-  readonly #config: KyselyConfig
-  readonly #dialect: Dialect
-  readonly #driver: Driver
-  readonly #executor: QueryExecutor
+  readonly #props: KyselyProps
 
   constructor(args: KyselyConfig)
-  constructor(args: KyselyConstructorArgs)
-  constructor(args: KyselyConfig | KyselyConstructorArgs) {
-    if (isKyselyConstructorArgs(args)) {
-      super(args.executor)
-
-      this.#config = args.config
-      this.#dialect = args.dialect
-      this.#driver = args.driver
-      this.#executor = args.executor
+  constructor(args: KyselyProps)
+  constructor(args: KyselyConfig | KyselyProps) {
+    if (isKyselyProps(args)) {
+      super({ executor: args.executor, adapter: args.adapter })
+      this.#props = freeze(args)
     } else {
       const dialect = args.dialect
       const driver = dialect.createDriver()
       const compiler = dialect.createQueryCompiler()
+      const adapter = dialect.createAdapter()
       const runtimeDriver = new RuntimeDriver(driver)
 
       const connectionProvider = new DefaultConnectionProvider(runtimeDriver)
@@ -90,12 +85,15 @@ export class Kysely<DB> extends QueryCreator<DB> {
         args.plugins ?? []
       )
 
-      super(executor)
+      super({ executor, adapter })
 
-      this.#config = args
-      this.#dialect = dialect
-      this.#driver = runtimeDriver
-      this.#executor = executor
+      this.#props = freeze({
+        config: args,
+        executor,
+        adapter,
+        dialect,
+        driver,
+      })
     }
   }
 
@@ -103,14 +101,14 @@ export class Kysely<DB> extends QueryCreator<DB> {
    * Returns the {@link SchemaModule} module for building database schema.
    */
   get schema(): SchemaModule {
-    return new SchemaModule(this.#executor)
+    return new SchemaModule(this.#props.executor)
   }
 
   /**
    * Returns the {@link MigrationModule} module for managing and running migrations.
    */
   get migration(): MigrationModule {
-    return new MigrationModule(this, this.#dialect.createMigrationAdapter())
+    return new MigrationModule(this, this.#props.adapter)
   }
 
   /**
@@ -127,7 +125,7 @@ export class Kysely<DB> extends QueryCreator<DB> {
    * Returns a {@link DatabaseIntrospector | database introspector}.
    */
   get introspection(): DatabaseIntrospector {
-    return this.#dialect.createIntrospector(this.withoutPlugins())
+    return this.#props.dialect.createIntrospector(this.withoutPlugins())
   }
 
   /**
@@ -203,12 +201,26 @@ export class Kysely<DB> extends QueryCreator<DB> {
    * ```
    */
   transaction(): TransactionBuilder<DB> {
-    return new TransactionBuilder({
-      config: this.#config,
-      dialect: this.#dialect,
-      driver: this.#driver,
-      executor: this.#executor,
-    })
+    return new TransactionBuilder({ ...this.#props })
+  }
+
+  /**
+   * Provides a kysely instance bound to a single database connection.
+   *
+   * @example
+   * ```ts
+   * await db
+   *   .connection()
+   *   .execute(async (db) => {
+   *     // `db` is an instance of `Kysely` that's bound to a single
+   *     // database connection. All queries executed through `db` use
+   *     // the same donnection and not the connection pool.
+   *     await doStuff(db)
+   *   })
+   * ```
+   */
+  connection(): ConnectionBuilder<DB> {
+    return new ConnectionBuilder({ ...this.#props })
   }
 
   /**
@@ -216,10 +228,8 @@ export class Kysely<DB> extends QueryCreator<DB> {
    */
   withoutPlugins(): Kysely<DB> {
     return new Kysely({
-      config: this.#config,
-      dialect: this.#dialect,
-      driver: this.#driver,
-      executor: this.#executor.withoutPlugins(),
+      ...this.#props,
+      executor: this.#props.executor.withoutPlugins(),
     })
   }
 
@@ -229,7 +239,7 @@ export class Kysely<DB> extends QueryCreator<DB> {
    * You need to call this when you are done using the `Kysely` instance.
    */
   async destroy(): Promise<void> {
-    await this.#driver.destroy()
+    await this.#props.driver.destroy()
   }
 
   /**
@@ -269,22 +279,22 @@ export class Transaction<DB> extends Kysely<DB> {
   }
 }
 
-export interface KyselyConstructorArgs {
-  config: KyselyConfig
-  dialect: Dialect
-  driver: Driver
-  executor: QueryExecutor
+export interface KyselyProps {
+  readonly config: KyselyConfig
+  readonly driver: Driver
+  readonly executor: QueryExecutor
+  readonly dialect: Dialect
+  readonly adapter: DialectAdapter
 }
 
-export function isKyselyConstructorArgs(
-  obj: unknown
-): obj is KyselyConstructorArgs {
+export function isKyselyProps(obj: unknown): obj is KyselyProps {
   return (
     isObject(obj) &&
     isObject(obj.config) &&
-    isObject(obj.dialect) &&
     isObject(obj.driver) &&
-    isObject(obj.executor)
+    isObject(obj.executor) &&
+    isObject(obj.dialect) &&
+    isObject(obj.adapter)
   )
 }
 
@@ -293,71 +303,87 @@ export interface KyselyConfig {
   plugins?: KyselyPlugin[]
 }
 
-export class TransactionBuilder<DB> {
-  readonly #config: KyselyConfig
-  readonly #dialect: Dialect
-  readonly #driver: Driver
-  readonly #executor: QueryExecutor
-  readonly #isolationLevel?: IsolationLevel
+export class ConnectionBuilder<DB> {
+  readonly #props: ConnectionBuilderProps
 
-  constructor(args: TransactionBuilderConstructorArgs) {
-    this.#config = args.config
-    this.#dialect = args.dialect
-    this.#driver = args.driver
-    this.#executor = args.executor
-    this.#isolationLevel = args.isolationLevel
+  constructor(props: ConnectionBuilderProps) {
+    this.#props = freeze(props)
+  }
+
+  async execute<T>(callback: (trx: Kysely<DB>) => Promise<T>): Promise<T> {
+    const connection = await this.#props.driver.acquireConnection()
+    const connectionProvider = new SingleConnectionProvider(connection)
+
+    const transaction = new Kysely<DB>({
+      ...this.#props,
+      executor: this.#props.executor.withConnectionProvider(connectionProvider),
+    })
+
+    try {
+      return await callback(transaction)
+    } finally {
+      await this.#props.driver.releaseConnection(connection)
+    }
+  }
+}
+
+preventAwait(
+  ConnectionBuilder,
+  "don't await ConnectionBuilder instances directly. To execute the query you need to call the `execute` method"
+)
+
+export interface ConnectionBuilderProps extends KyselyProps {}
+
+export class TransactionBuilder<DB> {
+  readonly #props: TransactionBuilerProps
+
+  constructor(props: TransactionBuilerProps) {
+    this.#props = props
   }
 
   setIsolationLevel(isolationLevel: IsolationLevel): TransactionBuilder<DB> {
     return new TransactionBuilder({
-      config: this.#config,
-      dialect: this.#dialect,
-      driver: this.#driver,
-      executor: this.#executor,
+      ...this.#props,
       isolationLevel,
     })
   }
 
   async execute<T>(callback: (trx: Transaction<DB>) => Promise<T>): Promise<T> {
-    const settings = { isolationLevel: this.#isolationLevel }
+    const { isolationLevel, ...kyselyProps } = this.#props
+    const settings = { isolationLevel }
+
     validateTransactionSettings(settings)
 
-    const connection = await this.#driver.acquireConnection()
+    const connection = await this.#props.driver.acquireConnection()
     const connectionProvider = new SingleConnectionProvider(connection)
 
     const transaction = new Transaction<DB>({
-      config: this.#config,
-      dialect: this.#dialect,
-      driver: this.#driver,
-      executor: this.#executor.withConnectionProvider(connectionProvider),
+      ...kyselyProps,
+      executor: this.#props.executor.withConnectionProvider(connectionProvider),
     })
 
     try {
-      await this.#driver.beginTransaction(connection, settings)
+      await this.#props.driver.beginTransaction(connection, settings)
       const result = await callback(transaction)
-      await this.#driver.commitTransaction(connection)
+      await this.#props.driver.commitTransaction(connection)
 
       return result
     } catch (error) {
-      await this.#driver.rollbackTransaction(connection)
+      await this.#props.driver.rollbackTransaction(connection)
       throw error
     } finally {
-      await this.#driver.releaseConnection(connection)
+      await this.#props.driver.releaseConnection(connection)
     }
   }
 }
 
 preventAwait(
   TransactionBuilder,
-  "don't await TransactionBuilder instances directly. To execute the query you need to call the `execute` method"
+  "don't await TransactionBuilder instances directly. To execute the transaction you need to call the `execute` method"
 )
 
-export interface TransactionBuilderConstructorArgs {
-  config: KyselyConfig
-  dialect: Dialect
-  driver: Driver
-  executor: QueryExecutor
-  isolationLevel?: IsolationLevel
+export interface TransactionBuilerProps extends KyselyProps {
+  readonly isolationLevel?: IsolationLevel
 }
 
 function validateTransactionSettings(settings: TransactionSettings): void {

@@ -9,6 +9,7 @@ import {
   TestContext,
   expect,
   Database,
+  TEST_INIT_TIMEOUT,
 } from './test-setup.js'
 
 for (const dialect of BUILT_IN_DIALECTS) {
@@ -16,7 +17,8 @@ for (const dialect of BUILT_IN_DIALECTS) {
     let ctx: TestContext
     let executedQueries: CompiledQuery[]
 
-    before(async () => {
+    before(async function () {
+      this.timeout(TEST_INIT_TIMEOUT)
       const [wrapper, queries] = getExecutedQueries()
 
       executedQueries = queries
@@ -54,25 +56,25 @@ for (const dialect of BUILT_IN_DIALECTS) {
       await destroyTest(ctx)
     })
 
-    if (dialect == 'postgres') {
-      it('should set the transaction isolation level', async () => {
-        executedQueries.splice(0, executedQueries.length)
+    it('should set the transaction isolation level', async () => {
+      executedQueries.splice(0, executedQueries.length)
 
-        await ctx.db
-          .transaction()
-          .setIsolationLevel('serializable')
-          .execute(async (trx) => {
-            await trx
-              .insertInto('person')
-              .values({
-                id: ctx.db.generated,
-                first_name: 'Foo',
-                last_name: 'Barson',
-                gender: 'male',
-              })
-              .execute()
-          })
+      await ctx.db
+        .transaction()
+        .setIsolationLevel('serializable')
+        .execute(async (trx) => {
+          await trx
+            .insertInto('person')
+            .values({
+              id: ctx.db.generated,
+              first_name: 'Foo',
+              last_name: 'Barson',
+              gender: 'male',
+            })
+            .execute()
+        })
 
+      if (dialect == 'postgres') {
         expect(executedQueries).to.eql([
           {
             sql: 'start transaction isolation level serializable',
@@ -84,8 +86,24 @@ for (const dialect of BUILT_IN_DIALECTS) {
           },
           { sql: 'commit', bindings: [] },
         ])
-      })
-    }
+      } else if (dialect === 'mysql') {
+        expect(executedQueries).to.eql([
+          {
+            sql: 'set transaction isolation level serializable',
+            bindings: [],
+          },
+          {
+            sql: 'begin',
+            bindings: [],
+          },
+          {
+            sql: 'insert into `person` (`first_name`, `last_name`, `gender`) values (?, ?, ?)',
+            bindings: ['Foo', 'Barson', 'male'],
+          },
+          { sql: 'commit', bindings: [] },
+        ])
+      }
+    })
 
     it('should run multiple transactions in parallel', async () => {
       const threads = Array.from({ length: 100 }).map((_, index) => ({
@@ -159,6 +177,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
     async function doesPersonExists(id: number): Promise<boolean> {
       return !!(await ctx.db
         .selectFrom('person')
+        .select('id')
         .where('id', '=', id)
         .where('first_name', '=', `Person ${id}`)
         .executeTakeFirst())
@@ -167,6 +186,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
     async function doesPetExists(ownerId: number): Promise<boolean> {
       return !!(await ctx.db
         .selectFrom('pet')
+        .select('id')
         .where('owner_id', '=', ownerId)
         .where('name', '=', `Pet of ${ownerId}`)
         .executeTakeFirst())

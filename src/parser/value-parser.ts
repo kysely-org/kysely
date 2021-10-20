@@ -12,8 +12,8 @@ import {
   RawBuilderFactory,
 } from '../query-builder/type-utils.js'
 import { QueryNode } from '../operation-node/query-node.js'
-import { SubQueryBuilder } from '../query-builder/sub-query-builder.js'
 import { ExtractTypeFromReferenceExpression } from './reference-parser.js'
+import { ParseContext } from './parse-context.js'
 
 export type ValueExpression<DB, TB extends keyof DB, RE> =
   | ExtractTypeFromReferenceExpression<DB, TB, RE>
@@ -27,16 +27,18 @@ export type ValueExpressionOrList<DB, TB extends keyof DB, RE> =
   | ValueExpression<DB, TB, RE>[]
 
 export function parseValueExpressionOrList(
+  ctx: ParseContext,
   arg: ValueExpressionOrList<any, any, any>
 ): ValueExpressionNode {
   if (Array.isArray(arg)) {
-    return parseValueExpressionList(arg)
+    return parseValueExpressionList(ctx, arg)
   } else {
-    return parseValueExpression(arg)
+    return parseValueExpression(ctx, arg)
   }
 }
 
 export function parseValueExpression(
+  ctx: ParseContext,
   arg: ValueExpression<any, any, any>
 ): ValueExpressionNode {
   if (isPrimitive(arg)) {
@@ -48,7 +50,7 @@ export function parseValueExpression(
       return node as ValueExpressionNode
     }
   } else if (isFunction(arg)) {
-    const node = arg(new SubQueryBuilder()).toOperationNode()
+    const node = arg(ctx.createSubQueryBuilder()).toOperationNode()
 
     if (!QueryNode.isMutating(node)) {
       return node
@@ -59,6 +61,7 @@ export function parseValueExpression(
 }
 
 function parseValueExpressionList(
+  ctx: ParseContext,
   arg: ValueExpression<any, any, any>[]
 ): PrimitiveValueListNode | ValueListNode {
   if (arg.every(isPrimitive)) {
@@ -68,7 +71,7 @@ function parseValueExpressionList(
 
   return ValueListNode.create(
     arg.map((it) => {
-      const node = parseValueExpression(it)
+      const node = parseValueExpression(ctx, it)
 
       if (ColumnNode.is(node)) {
         throw new Error('value lists cannot have column references')

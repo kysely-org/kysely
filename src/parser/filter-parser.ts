@@ -28,15 +28,12 @@ import {
   ValueExpressionOrList,
 } from './value-parser.js'
 import { SelectQueryNode } from '../operation-node/select-query-node.js'
-import { SubQueryBuilder } from '../query-builder/sub-query-builder.js'
 import { JoinBuilder } from '../query-builder/join-builder.js'
-import { parseTableExpression } from './table-parser.js'
 import { JoinNode } from '../operation-node/join-node.js'
 import { FilterExpressionNode } from '../operation-node/operation-node-utils.js'
 import { ValueNode } from '../operation-node/value-node.js'
-import { QueryBuilder } from '../query-builder/query-builder.js'
-import { createQueryId } from '../util/query-id.js'
-import { NoopQueryExecutor } from '../query-executor/noop-query-executor.js'
+import { ParseContext } from './parse-context.js'
+import { parseTableExpression } from './table-parser.js'
 
 export type ExistsExpression<DB, TB extends keyof DB> =
   | AnyQueryBuilder
@@ -45,47 +42,86 @@ export type ExistsExpression<DB, TB extends keyof DB> =
   | RawBuilderFactory<DB, TB>
 
 export type FilterOperator = Operator | AnyRawBuilder
-export type FilterType = 'Where' | 'On' | 'Having'
 
-export function parseFilter(
-  filterType: FilterType,
+export function parseWhereFilter(
+  ctx: ParseContext,
   args: any[]
 ): FilterExpressionNode {
   if (args.length === 3) {
-    return parseThreeArgFilter(args[0], args[1], args[2])
+    return parseThreeArgFilter(ctx, args[0], args[1], args[2])
   } else if (args.length === 1 && isFunction(args[0])) {
-    if (filterType === 'Where') {
-      return parseWhereGrouper(args[0])
-    } else if (filterType === 'Having') {
-      return parseHavingGrouper(args[0])
-    } else {
-      return parseOnGrouper(args[0])
-    }
+    return parseWhereGrouper(ctx, args[0])
   } else {
     throw new Error(
-      `invalid arguments passed to a filter method ${JSON.stringify(args)}`
+      `invalid arguments passed to a where method ${JSON.stringify(args)}`
+    )
+  }
+}
+
+export function parseHavingFilter(
+  ctx: ParseContext,
+  args: any[]
+): FilterExpressionNode {
+  if (args.length === 3) {
+    return parseThreeArgFilter(ctx, args[0], args[1], args[2])
+  } else if (args.length === 1 && isFunction(args[0])) {
+    return parseHavingGrouper(ctx, args[0])
+  } else {
+    throw new Error(
+      `invalid arguments passed to a having method ${JSON.stringify(args)}`
+    )
+  }
+}
+
+export function parseOnFilter(
+  ctx: ParseContext,
+  args: any[]
+): FilterExpressionNode {
+  if (args.length === 3) {
+    return parseThreeArgFilter(ctx, args[0], args[1], args[2])
+  } else if (args.length === 1 && isFunction(args[0])) {
+    return parseOnGrouper(ctx, args[0])
+  } else {
+    throw new Error(
+      `invalid arguments passed to an on method ${JSON.stringify(args)}`
     )
   }
 }
 
 export function parseReferenceFilter(
+  ctx: ParseContext,
   lhs: ReferenceExpression<any, any>,
   op: FilterOperator,
   rhs: ReferenceExpression<any, any>
 ): FilterNode {
   return FilterNode.create(
-    parseReferenceExpression(lhs),
+    parseReferenceExpression(ctx, lhs),
     parseFilterOperator(op),
-    parseReferenceExpression(rhs)
+    parseReferenceExpression(ctx, rhs)
   )
 }
 
 export function parseExistExpression(
+  ctx: ParseContext,
+  arg: ExistsExpression<any, any>
+): FilterNode {
+  return doParseExistExpression(ctx, 'exists', arg)
+}
+
+export function parseNotExistExpression(
+  ctx: ParseContext,
+  arg: ExistsExpression<any, any>
+): FilterNode {
+  return doParseExistExpression(ctx, 'not exists', arg)
+}
+
+function doParseExistExpression(
+  ctx: ParseContext,
   type: 'exists' | 'not exists',
   arg: ExistsExpression<any, any>
 ): FilterNode {
   const node = isFunction(arg)
-    ? arg(new SubQueryBuilder()).toOperationNode()
+    ? arg(ctx.createSubQueryBuilder()).toOperationNode()
     : arg.toOperationNode()
 
   if (!SelectQueryNode.is(node) && !RawNode.is(node)) {
@@ -96,28 +132,30 @@ export function parseExistExpression(
 }
 
 function parseThreeArgFilter(
+  ctx: ParseContext,
   left: ReferenceExpression<any, any>,
   op: FilterOperator,
   right: ValueExpressionOrList<any, any, any>
 ): FilterNode {
   if ((op === 'is' || op === 'is not') && (isNull(right) || isBoolean(right))) {
-    return parseIsFilter(left, op, right)
+    return parseIsFilter(ctx, left, op, right)
   }
 
   return FilterNode.create(
-    parseReferenceExpression(left),
+    parseReferenceExpression(ctx, left),
     parseFilterOperator(op),
-    parseValueExpressionOrList(right)
+    parseValueExpressionOrList(ctx, right)
   )
 }
 
 function parseIsFilter(
+  ctx: ParseContext,
   left: ReferenceExpression<any, any>,
   op: 'is' | 'is not',
   right: null | boolean
 ) {
   return FilterNode.create(
-    parseReferenceExpression(left),
+    parseReferenceExpression(ctx, left),
     parseFilterOperator(op),
     ValueNode.createImmediate(right)
   )
@@ -142,9 +180,10 @@ function parseFilterOperator(op: FilterOperator): OperatorNode | RawNode {
 }
 
 function parseWhereGrouper(
+  ctx: ParseContext,
   grouper: (qb: AnyQueryBuilder) => AnyQueryBuilder
 ): ParensNode {
-  const query = grouper(createEmptySelectQuery())
+  const query = grouper(ctx.createEmptySelectQuery())
   const queryNode = query.toOperationNode() as SelectQueryNode
 
   if (!queryNode.where) {
@@ -155,9 +194,10 @@ function parseWhereGrouper(
 }
 
 function parseHavingGrouper(
+  ctx: ParseContext,
   grouper: (qb: AnyQueryBuilder) => AnyQueryBuilder
 ): ParensNode {
-  const query = grouper(createEmptySelectQuery())
+  const query = grouper(ctx.createEmptySelectQuery())
   const queryNode = query.toOperationNode() as SelectQueryNode
 
   if (!queryNode.having) {
@@ -168,9 +208,12 @@ function parseHavingGrouper(
 }
 
 function parseOnGrouper(
+  ctx: ParseContext,
   grouper: (qb: JoinBuilder<any, any>) => JoinBuilder<any, any>
 ): ParensNode {
-  const joinBuilder = grouper(createEmptyJoinBuilder())
+  const joinBuilder = grouper(
+    ctx.createJoinBuilder('InnerJoin', parseTableExpression(ctx, 'table'))
+  )
   const joinNode = joinBuilder.toOperationNode() as JoinNode
 
   if (!joinNode.on) {
@@ -178,18 +221,4 @@ function parseOnGrouper(
   }
 
   return ParensNode.create(joinNode.on)
-}
-
-function createEmptySelectQuery(): QueryBuilder<any, any, any> {
-  return new QueryBuilder({
-    queryId: createQueryId(),
-    executor: new NoopQueryExecutor(),
-    queryNode: SelectQueryNode.create([]),
-  })
-}
-
-function createEmptyJoinBuilder(): JoinBuilder<any, any> {
-  return new JoinBuilder(
-    JoinNode.create('InnerJoin', parseTableExpression('table'))
-  )
 }

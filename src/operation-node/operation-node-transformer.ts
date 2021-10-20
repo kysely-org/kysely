@@ -56,6 +56,7 @@ import { AddConstraintNode } from './add-constraint-node.js'
 import { DropConstraintNode } from './drop-constraint-node.js'
 import { ForeignKeyConstraintNode } from './foreign-key-constraint-node.js'
 import { ColumnDefinitionNode } from './column-definition-node.js'
+import { ModifyColumnNode } from './modify-column-node.js'
 
 /**
  * Transforms an operation node tree into another one.
@@ -143,6 +144,7 @@ export class OperationNodeTransformer {
     DropColumnNode: this.transformDropColumn.bind(this),
     RenameColumnNode: this.transformRenameColumn.bind(this),
     AlterColumnNode: this.transformAlterColumn.bind(this),
+    ModifyColumnNode: this.transformModifyColumn.bind(this),
     AddConstraintNode: this.transformAddConstraint.bind(this),
     DropConstraintNode: this.transformDropConstraint.bind(this),
     ForeignKeyConstraintNode: this.transformForeignKeyConstraint.bind(this),
@@ -466,6 +468,7 @@ export class OperationNodeTransformer {
     return {
       kind: 'DropIndexNode',
       name: this.transformNode(node.name),
+      table: this.transformNode(node.table),
       modifier: node.modifier,
     }
   }
@@ -599,6 +602,13 @@ export class OperationNodeTransformer {
       dropDefault: node.dropDefault,
       setNotNull: node.setNotNull,
       dropNotNull: node.dropNotNull,
+    }
+  }
+
+  protected transformModifyColumn(node: ModifyColumnNode): ModifyColumnNode {
+    return {
+      kind: 'ModifyColumnNode',
+      column: this.transformNode(node.column),
     }
   }
 

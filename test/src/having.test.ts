@@ -7,13 +7,15 @@ import {
   TestContext,
   testSql,
   expect,
+  TEST_INIT_TIMEOUT,
 } from './test-setup.js'
 
 for (const dialect of BUILT_IN_DIALECTS) {
   describe(`${dialect}: having`, () => {
     let ctx: TestContext
 
-    before(async () => {
+    before(async function () {
+      this.timeout(TEST_INIT_TIMEOUT)
       ctx = await initTest(dialect)
     })
 
@@ -75,6 +77,16 @@ for (const dialect of BUILT_IN_DIALECTS) {
           ],
           bindings: [1],
         },
+        mysql: {
+          sql: [
+            'select `first_name`, count(pet.id) as `num_pets`',
+            'from `person`',
+            'inner join `pet` on `pet`.`owner_id` = `person`.`id`',
+            'group by `first_name`',
+            'having count(pet.id) > ?',
+          ],
+          bindings: [1],
+        },
       })
 
       const result = await query.execute()
@@ -85,7 +97,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
       ])
     })
 
-    it('smoke test for all *having* methods', () => {
+    it('smoke test for all *having* methods', async () => {
       const query = ctx.db
         .selectFrom('person')
         .selectAll()
@@ -114,6 +126,22 @@ for (const dialect of BUILT_IN_DIALECTS) {
             `and not exists (select "id" from "pet")`,
             `or not exists (select "id" from "pet")`,
             'and ("id" = $5 or "id" = $6)',
+          ],
+          bindings: [1, 2, 3, 'foo', 1, 2],
+        },
+        mysql: {
+          sql: [
+            'select * from `person`',
+            'group by `first_name`',
+            'having `id` in (?, ?, ?)',
+            'or `first_name` < ?',
+            'and `first_name` = `first_name`',
+            'or `first_name` = `first_name`',
+            'and exists (select `id` from `pet`)',
+            'or exists (select `id` from `pet`)',
+            'and not exists (select `id` from `pet`)',
+            'or not exists (select `id` from `pet`)',
+            'and (`id` = ? or `id` = ?)',
           ],
           bindings: [1, 2, 3, 'foo', 1, 2],
         },

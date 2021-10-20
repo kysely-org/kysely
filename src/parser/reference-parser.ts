@@ -17,9 +17,9 @@ import {
 } from '../query-builder/type-utils.js'
 import { DynamicReferenceBuilder } from '../dynamic/dynamic-reference-builder.js'
 import { QueryNode } from '../operation-node/query-node.js'
-import { SubQueryBuilder } from '../query-builder/sub-query-builder.js'
 import { RawBuilder } from '../raw-builder/raw-builder.js'
 import { QueryBuilder } from '../query-builder/query-builder.js'
+import { ParseContext } from './parse-context.js'
 
 export type ReferenceExpression<DB, TB extends keyof DB> =
   | AnyColumn<DB, TB>
@@ -72,16 +72,18 @@ type ExtractTypeFromStringReference<
   : PrimitiveValue
 
 export function parseReferenceExpressionOrList(
+  ctx: ParseContext,
   arg: ReferenceExpressionOrList<any, any>
 ): ReferenceExpressionNode[] {
   if (Array.isArray(arg)) {
-    return arg.map(parseReferenceExpression)
+    return arg.map((it) => parseReferenceExpression(ctx, it))
   } else {
-    return [parseReferenceExpression(arg)]
+    return [parseReferenceExpression(ctx, arg)]
   }
 }
 
 export function parseReferenceExpression(
+  ctx: ParseContext,
   arg: ReferenceExpression<any, any>
 ): ReferenceExpressionNode {
   if (isString(arg)) {
@@ -93,7 +95,7 @@ export function parseReferenceExpression(
       return node
     }
   } else if (isFunction(arg)) {
-    const node = arg(new SubQueryBuilder()).toOperationNode()
+    const node = arg(ctx.createSubQueryBuilder()).toOperationNode()
 
     if (!QueryNode.isMutating(node)) {
       return node

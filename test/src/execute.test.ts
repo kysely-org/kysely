@@ -7,13 +7,15 @@ import {
   insertPersons,
   TestContext,
   expect,
+  TEST_INIT_TIMEOUT,
 } from './test-setup.js'
 
 for (const dialect of BUILT_IN_DIALECTS) {
   describe(`${dialect}: execute`, () => {
     let ctx: TestContext
 
-    before(async () => {
+    before(async function () {
+      this.timeout(TEST_INIT_TIMEOUT)
       ctx = await initTest(dialect)
     })
 

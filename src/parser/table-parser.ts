@@ -13,7 +13,7 @@ import {
 import { isOperationNodeSource } from '../operation-node/operation-node-source.js'
 import { AliasedRawBuilder } from '../raw-builder/raw-builder.js'
 import { TableExpressionNode } from '../operation-node/operation-node-utils.js'
-import { SubQueryBuilder } from '../query-builder/sub-query-builder.js'
+import { ParseContext } from './parse-context.js'
 
 export type TableExpression<DB, TB extends keyof DB> =
   | TableReference<DB>
@@ -104,16 +104,18 @@ type ExtractRowTypeFromTableExpression<
   : never
 
 export function parseTableExpressionOrList(
+  ctx: ParseContext,
   table: TableExpressionOrList<any, any>
 ): TableExpressionNode[] {
   if (isReadonlyArray(table)) {
-    return table.map((it) => parseTableExpression(it))
+    return table.map((it) => parseTableExpression(ctx, it))
   } else {
-    return [parseTableExpression(table)]
+    return [parseTableExpression(ctx, table)]
   }
 }
 
 export function parseTableExpression(
+  ctx: ParseContext,
   table: TableExpression<any, any>
 ): TableExpressionNode {
   if (isString(table)) {
@@ -121,7 +123,7 @@ export function parseTableExpression(
   } else if (isOperationNodeSource(table)) {
     return table.toOperationNode()
   } else if (isFunction(table)) {
-    return table(new SubQueryBuilder()).toOperationNode()
+    return table(ctx.createSubQueryBuilder()).toOperationNode()
   } else {
     throw new Error(`invalid table expression ${JSON.stringify(table)}`)
   }

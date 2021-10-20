@@ -36,17 +36,22 @@ export * from './dialect/postgres/postgres-dialect.js'
 export * from './dialect/postgres/postgres-query-compiler.js'
 export * from './dialect/postgres/postgres-driver.js'
 export * from './dialect/postgres/postgres-introspector.js'
-export * from './dialect/postgres/postgres-migration-adapter.js'
+export * from './dialect/postgres/postgres-adapter.js'
+
+export * from './dialect/mysql/mysql-dialect.js'
+export * from './dialect/mysql/mysql-query-compiler.js'
+export * from './dialect/mysql/mysql-driver.js'
+export * from './dialect/mysql/mysql-introspector.js'
+export * from './dialect/mysql/mysql-adapter.js'
 
 export * from './query-compiler/default-query-compiler.js'
 export * from './query-compiler/query-compiler.js'
 
 export * from './migration/migration.js'
-export * from './migration/migration-adapter.js'
 
 export * from './dialect/dialect.js'
-export * from './dialect/postgres/postgres-dialect.js'
-export * from './dialect/postgres/postgres-driver.js'
+export * from './dialect/dialect-adapter.js'
+export * from './dialect/dialect-adapter-base.js'
 
 export * from './operation-node/operation-node-transformer.js'
 export * from './operation-node/operation-node-visitor.js'

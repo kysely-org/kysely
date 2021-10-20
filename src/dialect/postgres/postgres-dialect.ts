@@ -8,10 +8,10 @@ import { Dialect } from '../dialect.js'
 import { PostgresDriver } from './postgres-driver.js'
 import { DatabaseIntrospector } from '../../introspection/database-introspector.js'
 import { PostgresIntrospector } from './postgres-introspector.js'
-import { DatabaseConnection } from '../../index.js'
 import { PostgresQueryCompiler } from './postgres-query-compiler.js'
-import { MigrationAdapter } from '../../migration/migration-adapter.js'
-import { PostgresMigrationAdapter } from './postgres-migration-adapter.js'
+import { DialectAdapter } from '../dialect-adapter.js'
+import { PostgresAdapter } from './postgres-adapter.js'
+import { DatabaseConnection } from '../../driver/database-connection.js'
 
 export class PostgresDialect implements Dialect {
   readonly #config: PostgresDialectConfig
@@ -28,8 +28,8 @@ export class PostgresDialect implements Dialect {
     return new PostgresQueryCompiler()
   }
 
-  createMigrationAdapter(): MigrationAdapter {
-    return new PostgresMigrationAdapter()
+  createAdapter(): DialectAdapter {
+    return new PostgresAdapter()
   }
 
   createIntrospector(db: Kysely<any>): DatabaseIntrospector {

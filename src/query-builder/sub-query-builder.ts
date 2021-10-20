@@ -8,12 +8,15 @@ import {
 import { NoopQueryExecutor } from '../query-executor/noop-query-executor.js'
 import { WithSchemaPlugin } from '../plugin/with-schema/with-schema-plugin.js'
 import { createQueryId } from '../util/query-id.js'
+import { DialectAdapter } from '../index.js'
+import { freeze } from '../util/object-utils.js'
+import { createParseContext } from '../parser/parse-context.js'
 
 export class SubQueryBuilder<DB, TB extends keyof DB> {
-  readonly #executor: NoopQueryExecutor
+  readonly #props: SubQueryBuilderProps
 
-  constructor(executor: NoopQueryExecutor = new NoopQueryExecutor()) {
-    this.#executor = executor
+  constructor(props: SubQueryBuilderProps) {
+    this.#props = freeze(props)
   }
 
   /**
@@ -68,8 +71,11 @@ export class SubQueryBuilder<DB, TB extends keyof DB> {
   subQuery(table: any): any {
     return new QueryBuilder({
       queryId: createQueryId(),
-      executor: this.#executor,
-      queryNode: SelectQueryNode.create(parseTableExpressionOrList(table)),
+      executor: this.#props.executor,
+      adapter: this.#props.adapter,
+      queryNode: SelectQueryNode.create(
+        parseTableExpressionOrList(this.#parseContext, table)
+      ),
     })
   }
 
@@ -77,8 +83,20 @@ export class SubQueryBuilder<DB, TB extends keyof DB> {
    * See {@link QueryCreator.withSchema}
    */
   withSchema(schema: string): SubQueryBuilder<DB, TB> {
-    return new SubQueryBuilder(
-      this.#executor.withPluginAtFront(new WithSchemaPlugin(schema))
-    )
+    return new SubQueryBuilder({
+      ...this.#props,
+      executor: this.#props.executor.withPluginAtFront(
+        new WithSchemaPlugin(schema)
+      ),
+    })
   }
+
+  get #parseContext() {
+    return createParseContext(this.#props.adapter)
+  }
+}
+
+export interface SubQueryBuilderProps {
+  executor: NoopQueryExecutor
+  adapter: DialectAdapter
 }

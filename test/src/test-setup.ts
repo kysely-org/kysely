@@ -14,6 +14,7 @@ import {
   AnyRow,
   OperationNodeTransformer,
   PostgresDialect,
+  MysqlDialect,
   Dialect,
 } from '../../'
 
@@ -53,36 +54,52 @@ interface PetInsertParams extends Omit<Pet, 'id' | 'owner_id'> {
   toys?: Omit<Toy, 'id' | 'pet_id'>[]
 }
 
-type BuiltInDialect = 'postgres'
-type PerDialect<T> = Record<BuiltInDialect, T>
-
-const plugins: KyselyPlugin[] = []
-
-if (process.env.TEST_TRANSFORMER) {
-  console.log('running tests with a transformer')
-  plugins.push(createNoopPlugin())
-}
-
-const DB_CONFIGS: PerDialect<KyselyConfig> = {
-  postgres: {
-    dialect: new PostgresDialect({
-      database: 'kysely_test',
-      host: process.env.POSTGRES_HOST ?? 'localhost',
-      user: process.env.POSTGRES_USER,
-      password: process.env.POSTGRES_PASSWORD,
-    }),
-    plugins,
-  },
-}
-
-export const BUILT_IN_DIALECTS: BuiltInDialect[] = ['postgres']
-
 export interface TestContext {
   config: KyselyConfig
   db: Kysely<Database>
 }
 
 export type DialectWrapper = (dialect: Dialect) => Dialect
+export type BuiltInDialect = 'postgres' | 'mysql'
+export type PerDialect<T> = Record<BuiltInDialect, T>
+
+export const BUILT_IN_DIALECTS: BuiltInDialect[] = ['postgres', 'mysql']
+export const TEST_INIT_TIMEOUT = 5 * 60 * 1000
+// This can be used as a placeholder for testSql when a query is not
+// supported on some dialect.
+export const NOT_SUPPORTED = { sql: '', bindings: [] }
+
+const PLUGINS: KyselyPlugin[] = []
+
+if (process.env.TEST_TRANSFORMER) {
+  console.log('running tests with a transformer')
+  PLUGINS.push(createNoopPlugin())
+}
+
+const DB_CONFIGS: PerDialect<KyselyConfig> = {
+  postgres: {
+    dialect: new PostgresDialect({
+      database: 'kysely_test',
+      host: 'localhost',
+      user: 'kysely',
+      port: 5434,
+    }),
+    plugins: PLUGINS,
+  },
+  mysql: {
+    dialect: new MysqlDialect({
+      database: 'kysely_test',
+      host: 'localhost',
+      user: 'kysely',
+      password: 'kysely',
+      port: 3308,
+      // Return big numbers as strings just like pg does.
+      supportBigNumbers: true,
+      bigNumberStrings: true,
+    }),
+    plugins: PLUGINS,
+  },
+}
 
 export async function initTest(
   dialect: BuiltInDialect,
@@ -90,7 +107,7 @@ export async function initTest(
 ): Promise<TestContext> {
   const config = DB_CONFIGS[dialect]
 
-  const db = new Kysely<Database>({
+  const db = await connect({
     ...config,
     dialect: wrapDialect(config.dialect),
   })
@@ -146,33 +163,31 @@ export function testSql(
   chai.expect(expected.bindings).to.eql(sql.bindings)
 }
 
-export const expect = chai.expect
-
 async function createDatabase(db: Kysely<Database>): Promise<void> {
   await dropDatabase(db)
 
   await db.schema
     .createTable('person')
     .addColumn('id', 'integer', (col) => col.increments().primaryKey())
-    .addColumn('first_name', 'varchar')
-    .addColumn('last_name', 'varchar')
+    .addColumn('first_name', 'varchar(255)')
+    .addColumn('last_name', 'varchar(255)')
     .addColumn('gender', 'varchar(50)', (col) => col.notNull())
     .execute()
 
   await db.schema
     .createTable('pet')
     .addColumn('id', 'integer', (col) => col.increments().primaryKey())
-    .addColumn('name', 'varchar', (col) => col.unique().notNull())
+    .addColumn('name', 'varchar(255)', (col) => col.unique().notNull())
     .addColumn('owner_id', 'integer', (col) =>
       col.references('person.id').onDelete('cascade').notNull()
     )
-    .addColumn('species', 'varchar', (col) => col.notNull())
+    .addColumn('species', 'varchar(50)', (col) => col.notNull())
     .execute()
 
   await db.schema
     .createTable('toy')
     .addColumn('id', 'integer', (col) => col.increments().primaryKey())
-    .addColumn('name', 'varchar', (col) => col.notNull())
+    .addColumn('name', 'varchar(255)', (col) => col.notNull())
     .addColumn('pet_id', 'integer', (col) => col.references('pet.id').notNull())
     .addColumn('price', 'double precision', (col) => col.notNull())
     .execute()
@@ -184,11 +199,34 @@ async function createDatabase(db: Kysely<Database>): Promise<void> {
     .execute()
 }
 
+async function connect(config: KyselyConfig): Promise<Kysely<Database>> {
+  for (let i = 0; i < TEST_INIT_TIMEOUT; i += 1000) {
+    let db: Kysely<Database> | undefined
+
+    try {
+      db = new Kysely<Database>(config)
+      await db.raw('select 1').execute()
+      return db
+    } catch (error) {
+      if (db) {
+        await db.destroy().catch((error) => error)
+      }
+
+      console.log('waiting for database to become available')
+      await sleep(1000)
+    }
+  }
+
+  throw new Error('could not connect to database')
+}
+
 async function dropDatabase(db: Kysely<Database>): Promise<void> {
   await db.schema.dropTable('toy').ifExists().execute()
   await db.schema.dropTable('pet').ifExists().execute()
   await db.schema.dropTable('person').ifExists().execute()
 }
+
+export const expect = chai.expect
 
 async function insertPetForPerson(
   db: Kysely<Database>,
@@ -243,4 +281,8 @@ function createNoopPlugin(): KyselyPlugin {
       return args.result
     },
   }
+}
+
+function sleep(millis: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, millis))
 }

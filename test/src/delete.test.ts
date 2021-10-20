@@ -7,13 +7,16 @@ import {
   TestContext,
   testSql,
   expect,
+  NOT_SUPPORTED,
+  TEST_INIT_TIMEOUT,
 } from './test-setup.js'
 
 for (const dialect of BUILT_IN_DIALECTS) {
   describe(`${dialect}: delete`, () => {
     let ctx: TestContext
 
-    before(async () => {
+    before(async function () {
+      this.timeout(TEST_INIT_TIMEOUT)
       ctx = await initTest(dialect)
     })
 
@@ -56,6 +59,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
           sql: 'delete from "person" where "gender" = $1',
           bindings: ['female'],
         },
+        mysql: {
+          sql: 'delete from `person` where `gender` = ?',
+          bindings: ['female'],
+        },
       })
 
       const result = await query.executeTakeFirst()
@@ -74,6 +81,25 @@ for (const dialect of BUILT_IN_DIALECTS) {
       ])
     })
 
+    it('should delete two rows', async () => {
+      const query = ctx.db
+        .deleteFrom('person')
+        .where('first_name', '=', 'Jennifer')
+        .orWhere('first_name', '=', 'Arnold')
+
+      const result = await query.executeTakeFirst()
+      expect(result).to.equal(2)
+    })
+
+    it('should delete zero rows', async () => {
+      const query = ctx.db
+        .deleteFrom('person')
+        .where('first_name', '=', 'Nobody')
+
+      const result = await query.executeTakeFirst()
+      expect(result).to.equal(0)
+    })
+
     if (dialect === 'postgres') {
       it('should return deleted rows when `returning` is used', async () => {
         const query = ctx.db
@@ -83,10 +109,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
 
         testSql(query, dialect, {
           postgres: {
-            sql:
-              'delete from "person" where "gender" = $1 returning "first_name", "last_name"',
+            sql: 'delete from "person" where "gender" = $1 returning "first_name", "last_name"',
             bindings: ['male'],
           },
+          mysql: NOT_SUPPORTED,
         })
 
         const result = await query.execute()

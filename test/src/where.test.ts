@@ -7,13 +7,15 @@ import {
   TestContext,
   testSql,
   expect,
+  TEST_INIT_TIMEOUT,
 } from './test-setup.js'
 
 for (const dialect of BUILT_IN_DIALECTS) {
   describe(`${dialect}: where`, () => {
     let ctx: TestContext
 
-    before(async () => {
+    before(async function () {
+      this.timeout(TEST_INIT_TIMEOUT)
       ctx = await initTest(dialect)
     })
 
@@ -60,6 +62,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
             sql: 'select * from "person" where "first_name" = $1',
             bindings: ['Arnold'],
           },
+          mysql: {
+            sql: 'select * from `person` where `first_name` = ?',
+            bindings: ['Arnold'],
+          },
         })
 
         const persons = await query.execute()
@@ -92,6 +98,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
             sql: 'select * from "person" where "last_name" is not null',
             bindings: [],
           },
+          mysql: {
+            sql: 'select * from `person` where `last_name` is not null',
+            bindings: [],
+          },
         })
 
         const persons = await query.execute()
@@ -115,6 +125,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
             sql: 'select * from "person" where "last_name" is null',
             bindings: [],
           },
+          mysql: {
+            sql: 'select * from `person` where `last_name` is null',
+            bindings: [],
+          },
         })
 
         const persons = await query.execute()
@@ -134,6 +148,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
         testSql(query, dialect, {
           postgres: {
             sql: 'select * from "person" where "first_name" = $1',
+            bindings: ['Arnold'],
+          },
+          mysql: {
+            sql: 'select * from `person` where `first_name` = ?',
             bindings: ['Arnold'],
           },
         })
@@ -161,6 +179,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
             sql: 'select * from "person" where "person"."first_name" = $1',
             bindings: ['Arnold'],
           },
+          mysql: {
+            sql: 'select * from `person` where `person`.`first_name` = ?',
+            bindings: ['Arnold'],
+          },
         })
 
         const person = await query.executeTakeFirst()
@@ -182,6 +204,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
             sql: 'select * from "person" where person.first_name = $1',
             bindings: ['Arnold'],
           },
+          mysql: {
+            sql: 'select * from `person` where person.first_name = ?',
+            bindings: ['Arnold'],
+          },
         })
 
         const person = await query.executeTakeFirst()
@@ -199,6 +225,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
             sql: 'select * from "person" where "person"."first_name" = $1',
             bindings: ['Arnold'],
           },
+          mysql: {
+            sql: 'select * from `person` where `person`.`first_name` = ?',
+            bindings: ['Arnold'],
+          },
         })
 
         const person = await query.executeTakeFirst()
@@ -214,6 +244,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
         testSql(query, dialect, {
           postgres: {
             sql: 'select * from "person" where (first_name is null) is false',
+            bindings: [],
+          },
+          mysql: {
+            sql: 'select * from `person` where (first_name is null) is false',
             bindings: [],
           },
         })
@@ -239,6 +273,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
         testSql(query, dialect, {
           postgres: {
             sql: 'select * from "person" where (select "pet"."name" from "pet" where "owner_id" = "person"."id") = $1',
+            bindings: ['Catto'],
+          },
+          mysql: {
+            sql: 'select * from `person` where (select `pet`.`name` from `pet` where `owner_id` = `person`.`id`) = ?',
             bindings: ['Catto'],
           },
         })
@@ -271,6 +309,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
             sql: 'select * from "person" where $1 = (select "pet"."name" from "pet" where "owner_id" = "person"."id")',
             bindings: ['Catto'],
           },
+          mysql: {
+            sql: 'select * from `person` where ? = (select `pet`.`name` from `pet` where `owner_id` = `person`.`id`)',
+            bindings: ['Catto'],
+          },
         })
 
         const person = await query.executeTakeFirst()
@@ -290,6 +332,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
         testSql(query, dialect, {
           postgres: {
             sql: 'select * from "person" where "first_name" = $1',
+            bindings: ['Arnold'],
+          },
+          mysql: {
+            sql: 'select * from `person` where `first_name` = ?',
             bindings: ['Arnold'],
           },
         })
@@ -316,6 +362,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
         testSql(query, dialect, {
           postgres: {
             sql: 'select * from "person" where "first_name" in ($1, $2) order by "first_name" desc',
+            bindings: ['Arnold', 'Jennifer'],
+          },
+          mysql: {
+            sql: 'select * from `person` where `first_name` in (?, ?) order by `first_name` desc',
             bindings: ['Arnold', 'Jennifer'],
           },
         })
@@ -349,6 +399,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
             sql: 'select * from "person" where "first_name" = $1 and "person"."last_name" = $2',
             bindings: ['Arnold', 'Schwarzenegger'],
           },
+          mysql: {
+            sql: 'select * from `person` where `first_name` = ? and `person`.`last_name` = ?',
+            bindings: ['Arnold', 'Schwarzenegger'],
+          },
         })
 
         const persons = await query.execute()
@@ -377,6 +431,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
             sql: 'select * from "person" where ("first_name" = $1 and "last_name" = $2)',
             bindings: ['Jennifer', 'Aniston'],
           },
+          mysql: {
+            sql: 'select * from `person` where (`first_name` = ? and `last_name` = ?)',
+            bindings: ['Jennifer', 'Aniston'],
+          },
         })
 
         const persons = await query.execute()
@@ -402,6 +460,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
         testSql(query, dialect, {
           postgres: {
             sql: 'select * from "person" where "first_name" = $1 or "first_name" = $2',
+            bindings: ['Arnold', 'Jennifer'],
+          },
+          mysql: {
+            sql: 'select * from `person` where `first_name` = ? or `first_name` = ?',
             bindings: ['Arnold', 'Jennifer'],
           },
         })
@@ -438,6 +500,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
             sql: 'select * from "person" where "first_name" = $1 or ("first_name" = $2 and "last_name" = $3)',
             bindings: ['Arnold', 'Jennifer', 'Aniston'],
           },
+          mysql: {
+            sql: 'select * from `person` where `first_name` = ? or (`first_name` = ? and `last_name` = ?)',
+            bindings: ['Arnold', 'Jennifer', 'Aniston'],
+          },
         })
 
         const persons = await query.execute()
@@ -469,6 +535,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
             sql: 'select * from "person", "pet" where "person"."id" = "pet"."id"',
             bindings: [],
           },
+          mysql: {
+            sql: 'select * from `person`, `pet` where `person`.`id` = `pet`.`id`',
+            bindings: [],
+          },
         })
       })
     })
@@ -487,6 +557,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
         testSql(query, dialect, {
           postgres: {
             sql: 'select * from "person", "pet" where ("person"."id" = "pet"."id" or "person"."first_name" = "pet"."name")',
+            bindings: [],
+          },
+          mysql: {
+            sql: 'select * from `person`, `pet` where (`person`.`id` = `pet`.`id` or `person`.`first_name` = `pet`.`name`)',
             bindings: [],
           },
         })
@@ -509,6 +583,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
         testSql(query, dialect, {
           postgres: {
             sql: `select * from "person" where exists (select "pet"."id" from "pet" where "pet"."owner_id" = "person"."id" and "pet"."species" = $1)`,
+            bindings: ['dog'],
+          },
+          mysql: {
+            sql: 'select * from `person` where exists (select `pet`.`id` from `pet` where `pet`.`owner_id` = `person`.`id` and `pet`.`species` = ?)',
             bindings: ['dog'],
           },
         })
@@ -542,6 +620,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
         testSql(query, dialect, {
           postgres: {
             sql: `select * from "person" where exists (select "pet"."id" from "pet" where "pet"."owner_id" = "person"."id" and "pet"."species" = $1)`,
+            bindings: ['cat'],
+          },
+          mysql: {
+            sql: 'select * from `person` where exists (select `pet`.`id` from `pet` where `pet`.`owner_id` = `person`.`id` and `pet`.`species` = ?)',
             bindings: ['cat'],
           },
         })
@@ -578,6 +660,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
         testSql(query, dialect, {
           postgres: {
             sql: `select * from "person" where ("first_name" = $1 or exists (select "pet"."id" from "pet" where "pet"."owner_id" = "person"."id" and "pet"."species" = $2))`,
+            bindings: ['Jennifer', 'hamster'],
+          },
+          mysql: {
+            sql: 'select * from `person` where (`first_name` = ? or exists (select `pet`.`id` from `pet` where `pet`.`owner_id` = `person`.`id` and `pet`.`species` = ?))',
             bindings: ['Jennifer', 'hamster'],
           },
         })
@@ -617,6 +703,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
             sql: `select * from "person" where not exists (select "pet"."id" from "pet" where "pet"."owner_id" = "person"."id" and "pet"."species" = $1)`,
             bindings: ['dog'],
           },
+          mysql: {
+            sql: 'select * from `person` where not exists (select `pet`.`id` from `pet` where `pet`.`owner_id` = `person`.`id` and `pet`.`species` = ?)',
+            bindings: ['dog'],
+          },
         })
 
         const persons = await query.execute()
@@ -653,6 +743,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
         testSql(query, dialect, {
           postgres: {
             sql: `select * from "person" where "first_name" is null or not exists (select "pet"."id" from "pet" where "pet"."owner_id" = "person"."id" and "pet"."species" = $1)`,
+            bindings: ['hamster'],
+          },
+          mysql: {
+            sql: 'select * from `person` where `first_name` is null or not exists (select `pet`.`id` from `pet` where `pet`.`owner_id` = `person`.`id` and `pet`.`species` = ?)',
             bindings: ['hamster'],
           },
         })

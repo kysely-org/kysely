@@ -3,7 +3,7 @@ import { promises as fs } from 'fs'
 
 import { Kysely } from '../kysely.js'
 import { getLast, isFunction, isString } from '../util/object-utils.js'
-import { MigrationAdapter } from './migration-adapter.js'
+import { DialectAdapter } from '../dialect/dialect-adapter.js'
 
 export const MIGRATION_TABLE = 'kysely_migration'
 export const MIGRATION_LOCK_TABLE = 'kysely_migration_lock'
@@ -11,9 +11,9 @@ export const MIGRATION_LOCK_ID = 'migration_lock'
 
 export class MigrationModule {
   readonly #db: Kysely<any>
-  readonly #adapter: MigrationAdapter
+  readonly #adapter: DialectAdapter
 
-  constructor(db: Kysely<any>, adapter: MigrationAdapter) {
+  constructor(db: Kysely<any>, adapter: DialectAdapter) {
     this.#db = db
     this.#adapter = adapter
   }
@@ -67,7 +67,7 @@ export class MigrationModule {
     if (this.#adapter.supportsTransactionalDdl) {
       await this.#db.transaction().execute(run)
     } else {
-      await run(this.#db)
+      await this.#db.connection().execute(run)
     }
   }
 }
@@ -89,10 +89,10 @@ async function ensureMigrationTableExists(db: Kysely<any>): Promise<void> {
       await db.schema
         .createTable(MIGRATION_TABLE)
         .ifNotExists()
-        .addColumn('name', 'varchar', (col) => col.primaryKey())
+        .addColumn('name', 'varchar(255)', (col) => col.notNull().primaryKey())
         // The migration run time as ISO string. This is not a real date type as we
         // can't know which data type is supported by all future dialects.
-        .addColumn('timestamp', 'varchar', (col) => col.notNull())
+        .addColumn('timestamp', 'varchar(255)', (col) => col.notNull())
         .execute()
     } catch (error) {
       // At least on postgres, `if not exists` doesn't guarantee the `create table`
@@ -111,7 +111,7 @@ async function ensureMigrationLockTableExists(db: Kysely<any>): Promise<void> {
       await db.schema
         .createTable(MIGRATION_LOCK_TABLE)
         .ifNotExists()
-        .addColumn('id', 'varchar', (col) => col.primaryKey())
+        .addColumn('id', 'varchar(255)', (col) => col.notNull().primaryKey())
         .addColumn('is_locked', 'integer', (col) => col.notNull().defaultTo(0))
         .execute()
     } catch (error) {
@@ -155,6 +155,7 @@ async function doesLockRowExists(db: Kysely<any>): Promise<boolean> {
   const lockRow = await db
     .selectFrom(MIGRATION_LOCK_TABLE)
     .where('id', '=', MIGRATION_LOCK_ID)
+    .select('id')
     .executeTakeFirst()
 
   return !!lockRow

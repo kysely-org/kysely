@@ -58,6 +58,7 @@ import { AddConstraintNode } from './add-constraint-node.js'
 import { DropConstraintNode } from './drop-constraint-node.js'
 import { ForeignKeyConstraintNode } from './foreign-key-constraint-node.js'
 import { ColumnDefinitionNode } from './column-definition-node.js'
+import { ModifyColumnNode } from './modify-column-node.js'
 
 export class OperationNodeVisitor {
   protected readonly nodeStack: OperationNode[] = []
@@ -116,6 +117,7 @@ export class OperationNodeVisitor {
     DropColumnNode: this.visitDropColumn.bind(this),
     RenameColumnNode: this.visitRenameColumn.bind(this),
     AlterColumnNode: this.visitAlterColumn.bind(this),
+    ModifyColumnNode: this.visitModifyColumn.bind(this),
     AddConstraintNode: this.visitAddConstraint.bind(this),
     DropConstraintNode: this.visitDropConstraint.bind(this),
     ForeignKeyConstraintNode: this.visitForeignKeyConstraint.bind(this),
@@ -411,6 +413,10 @@ export class OperationNodeVisitor {
 
   protected visitDropIndex(node: DropIndexNode): void {
     this.visitNode(node.name)
+
+    if (node.table) {
+      this.visitNode(node.table)
+    }
   }
 
   protected visitPrimaryKeyConstraint(node: PrimaryKeyConstraintNode): void {
@@ -489,6 +495,10 @@ export class OperationNodeVisitor {
     if (node.alterColumn) {
       this.visitNode(node.alterColumn)
     }
+
+    if (node.modifyColumn) {
+      this.visitNode(node.modifyColumn)
+    }
   }
 
   protected visitDropColumn(node: DropColumnNode): void {
@@ -501,6 +511,10 @@ export class OperationNodeVisitor {
   }
 
   protected visitAlterColumn(node: AlterColumnNode): void {
+    this.visitNode(node.column)
+  }
+
+  protected visitModifyColumn(node: ModifyColumnNode): void {
     this.visitNode(node.column)
   }
 

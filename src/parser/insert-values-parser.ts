@@ -90,6 +90,6 @@ export function parseInsertValueExpression(
   }
 
   throw new Error(
-    `unsupported value for inserty object ${JSON.stringify(value)}`
+    `unsupported value for insert object ${JSON.stringify(value)}`
   )
 }

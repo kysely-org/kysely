@@ -14,21 +14,6 @@ jobs:
       matrix:
         node-version: [16.x]
 
-    services:
-      postgres:
-        image: postgres
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: kysely_test
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 5432:5432
-
     steps:
       - uses: actions/checkout@v2
 
@@ -43,9 +28,8 @@ jobs:
       - name: Build
         run: npm run build
 
+      - name: Run docker compose
+        run: docker-compose up -d
+
       - name: Run tests
         run: npm test
-        env:
-          POSTGRES_HOST: localhost
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres

@@ -27,14 +27,15 @@ import {
 import { WithNode } from './operation-node/with-node.js'
 import { createQueryId } from './util/query-id.js'
 import { WithSchemaPlugin } from './plugin/with-schema/with-schema-plugin.js'
+import { DialectAdapter } from './index.js'
+import { freeze } from './util/object-utils.js'
+import { createParseContext } from './parser/parse-context.js'
 
 export class QueryCreator<DB> {
-  readonly #executor: QueryExecutor
-  readonly #withNode?: WithNode
+  readonly #props: QueryCreatorProps
 
-  constructor(executor: QueryExecutor, withNode?: WithNode) {
-    this.#executor = executor
-    this.#withNode = withNode
+  constructor(props: QueryCreatorProps) {
+    this.#props = freeze(props)
   }
 
   /**
@@ -155,10 +156,11 @@ export class QueryCreator<DB> {
   selectFrom(from: TableExpressionOrList<any, any>): any {
     return new QueryBuilder({
       queryId: createQueryId(),
-      executor: this.#executor,
+      executor: this.#props.executor,
+      adapter: this.#props.adapter,
       queryNode: SelectQueryNode.create(
-        parseTableExpressionOrList(from),
-        this.#withNode
+        parseTableExpressionOrList(this.#parseContext, from),
+        this.#props.withNode
       ),
     })
   }
@@ -209,8 +211,12 @@ export class QueryCreator<DB> {
   ): QueryBuilder<DB, T, InsertResultTypeTag> {
     return new QueryBuilder({
       queryId: createQueryId(),
-      executor: this.#executor,
-      queryNode: InsertQueryNode.create(parseTable(table), this.#withNode),
+      executor: this.#props.executor,
+      adapter: this.#props.adapter,
+      queryNode: InsertQueryNode.create(
+        parseTable(table),
+        this.#props.withNode
+      ),
     })
   }
 
@@ -233,10 +239,11 @@ export class QueryCreator<DB> {
   ): QueryBuilderWithTable<DB, never, DeleteResultTypeTag, TR> {
     return new QueryBuilder({
       queryId: createQueryId(),
-      executor: this.#executor,
+      executor: this.#props.executor,
+      adapter: this.#props.adapter,
       queryNode: DeleteQueryNode.create(
-        parseTableExpression(table),
-        this.#withNode
+        parseTableExpression(this.#parseContext, table),
+        this.#props.withNode
       ),
     })
   }
@@ -264,10 +271,11 @@ export class QueryCreator<DB> {
   ): QueryBuilderWithTable<DB, never, UpdateResultTypeTag, TR> {
     return new QueryBuilder({
       queryId: createQueryId(),
-      executor: this.#executor,
+      executor: this.#props.executor,
+      adapter: this.#props.adapter,
       queryNode: UpdateQueryNode.create(
-        parseTableExpression(table),
-        this.#withNode
+        parseTableExpression(this.#parseContext, table),
+        this.#props.withNode
       ),
     })
   }
@@ -298,14 +306,14 @@ export class QueryCreator<DB> {
     name: N,
     expression: E
   ): QueryCreatorWithCommonTableExpression<DB, N, E> {
-    const cte = parseCommonTableExpression(name, expression)
+    const cte = parseCommonTableExpression(this.#parseContext, name, expression)
 
-    return new QueryCreator(
-      this.#executor,
-      this.#withNode
-        ? WithNode.cloneWithExpression(this.#withNode, cte)
-        : WithNode.create(cte)
-    )
+    return new QueryCreator({
+      ...this.#props,
+      withNode: this.#props.withNode
+        ? WithNode.cloneWithExpression(this.#props.withNode, cte)
+        : WithNode.create(cte),
+    })
   }
 
   /**
@@ -348,10 +356,12 @@ export class QueryCreator<DB> {
    * ```
    */
   withSchema(schema: string): QueryCreator<DB> {
-    return new QueryCreator(
-      this.#executor.withPluginAtFront(new WithSchemaPlugin(schema)),
-      this.#withNode
-    )
+    return new QueryCreator({
+      ...this.#props,
+      executor: this.#props.executor.withPluginAtFront(
+        new WithSchemaPlugin(schema)
+      ),
+    })
   }
 
   /**
@@ -476,7 +486,17 @@ export class QueryCreator<DB> {
     return new RawBuilder({
       sql,
       params,
-      executor: this.#executor,
+      executor: this.#props.executor,
     })
   }
+
+  get #parseContext() {
+    return createParseContext(this.#props.adapter)
+  }
+}
+
+export interface QueryCreatorProps {
+  readonly adapter: DialectAdapter
+  readonly executor: QueryExecutor
+  readonly withNode?: WithNode
 }

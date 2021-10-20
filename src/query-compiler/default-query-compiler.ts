@@ -73,6 +73,7 @@ import { AddConstraintNode } from '../operation-node/add-constraint-node.js'
 import { DropConstraintNode } from '../operation-node/drop-constraint-node.js'
 import { ForeignKeyConstraintNode } from '../operation-node/foreign-key-constraint-node.js'
 import { ColumnDefinitionNode } from '../operation-node/column-definition-node.js'
+import { ModifyColumnNode } from '../operation-node/modify-column-node.js'
 
 export class DefaultQueryCompiler
   extends OperationNodeVisitor
@@ -92,9 +93,13 @@ export class DefaultQueryCompiler
     this.visitNode(node)
 
     return freeze({
-      sql: this.#sqlFragments.join(''),
+      sql: this.getSql(),
       bindings: this.#bindings,
     })
+  }
+
+  protected getSql(): string {
+    return this.#sqlFragments.join('')
   }
 
   protected override visitSelectQuery(node: SelectQueryNode): void {
@@ -224,7 +229,8 @@ export class DefaultQueryCompiler
       this.append(' ')
     }
 
-    this.append('insert into ')
+    this.append(this.getInsertInto(node))
+    this.append(' ')
     this.visitNode(node.into)
 
     if (node.columns) {
@@ -251,6 +257,10 @@ export class DefaultQueryCompiler
     if (isSubQuery) {
       this.append(')')
     }
+  }
+
+  protected getInsertInto(node: InsertQueryNode): string {
+    return 'insert into'
   }
 
   protected override visitDeleteQuery(node: DeleteQueryNode): void {
@@ -310,9 +320,9 @@ export class DefaultQueryCompiler
   }
 
   protected override visitIdentifier(node: IdentifierNode): void {
-    this.appendLeftIdentifierWrapper()
+    this.append(this.getLeftIdentifierWrapper())
     this.compileUnwrappedIdentifier(node)
-    this.appendRightIdentifierWrapper()
+    this.append(this.getRightIdentifierWrapper())
   }
 
   protected compileUnwrappedIdentifier(node: IdentifierNode): void {
@@ -642,6 +652,11 @@ export class DefaultQueryCompiler
     }
 
     this.visitNode(node.name)
+
+    if (node.table) {
+      this.append(' on ')
+      this.visitNode(node.table)
+    }
   }
 
   protected override visitCreateSchema(node: CreateSchemaNode): void {
@@ -772,6 +787,10 @@ export class DefaultQueryCompiler
     if (node.alterColumn) {
       this.visitNode(node.alterColumn)
     }
+
+    if (node.modifyColumn) {
+      this.visitNode(node.modifyColumn)
+    }
   }
 
   protected override visitAddColumn(node: AddColumnNode): void {
@@ -824,6 +843,11 @@ export class DefaultQueryCompiler
     }
   }
 
+  protected override visitModifyColumn(node: ModifyColumnNode): void {
+    this.append('modify column ')
+    this.visitNode(node.column)
+  }
+
   protected override visitAddConstraint(node: AddConstraintNode): void {
     this.append('add ')
     this.visitNode(node.constraint)
@@ -834,14 +858,6 @@ export class DefaultQueryCompiler
     this.visitNode(node.constraintName)
   }
 
-  protected appendLeftIdentifierWrapper(): void {
-    this.append('"')
-  }
-
-  protected appendRightIdentifierWrapper(): void {
-    this.append('"')
-  }
-
   protected append(str: string): void {
     this.#sqlFragments.push(str)
   }
@@ -849,6 +865,14 @@ export class DefaultQueryCompiler
   protected appendValue(value: PrimitiveValue): void {
     this.addBinding(value)
     this.append(this.getCurrentParameterPlaceholder())
+  }
+
+  protected getLeftIdentifierWrapper(): string {
+    return '"'
+  }
+
+  protected getRightIdentifierWrapper(): string {
+    return '"'
   }
 
   protected getCurrentParameterPlaceholder(): string {

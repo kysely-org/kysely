@@ -7,13 +7,16 @@ import {
   TestContext,
   testSql,
   expect,
+  TEST_INIT_TIMEOUT,
+  NOT_SUPPORTED,
 } from './test-setup.js'
 
 for (const dialect of BUILT_IN_DIALECTS) {
   describe(`${dialect}: with`, () => {
     let ctx: TestContext
 
-    before(async () => {
+    before(async function () {
+      this.timeout(TEST_INIT_TIMEOUT)
       ctx = await initTest(dialect)
     })
 
@@ -69,6 +72,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
       testSql(query, dialect, {
         postgres: {
           sql: 'with "jennifer_and_sylvester" as (select "id", "first_name", "gender" from "person" where "first_name" = $1 or "first_name" = $2), "arnold" as (select * from "jennifer_and_sylvester" where "gender" = $3) select * from "arnold"',
+          bindings: ['Jennifer', 'Sylvester', 'male'],
+        },
+        mysql: {
+          sql: 'with `jennifer_and_sylvester` as (select `id`, `first_name`, `gender` from `person` where `first_name` = ? or `first_name` = ?), `arnold` as (select * from `jennifer_and_sylvester` where `gender` = ?) select * from `arnold`',
           bindings: ['Jennifer', 'Sylvester', 'male'],
         },
       })
@@ -134,6 +141,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
               'Jennifer',
             ],
           },
+          mysql: NOT_SUPPORTED,
         })
 
         const result = await query.execute()

@@ -33,13 +33,19 @@ Kysely, please open an issue as soon as you can't find something you want to use
 
 # Installation
 
-Kysely currently only works on postgres. You can install it using
+Kysely currently only works on PostgreSQL and MySQL. You can install it using
 
 ```
 npm install kysely pg
 ```
 
-MySQL and sqlite support will be added soon. Kysely also has a simple interface
+or
+
+```
+npm install kysely mysql2
+```
+
+More dialects will be added will be added soon. Kysely also has a simple interface
 for [third-party dialects](https://koskimas.github.io/kysely/interfaces/Dialect.html).
 
 # Minimal example

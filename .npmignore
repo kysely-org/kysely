@@ -15,3 +15,4 @@ post-process-docs.js
 tsconfig-base.json
 tsconfig-cjs.json
 tsconfig.json
+docker-compose.yml

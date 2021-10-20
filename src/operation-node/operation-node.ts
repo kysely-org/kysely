@@ -50,6 +50,7 @@ export type OperationNodeKind =
   | 'CreateSchemaNode'
   | 'DropSchemaNode'
   | 'AlterTableNode'
+  | 'ModifyColumnNode'
   | 'DropColumnNode'
   | 'RenameColumnNode'
   | 'AlterColumnNode'

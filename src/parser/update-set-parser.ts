@@ -17,6 +17,7 @@ import {
   isPrimitive,
   PrimitiveValue,
 } from '../util/object-utils.js'
+import { ParseContext } from './parse-context.js'
 
 export type MutationObject<DB, TB extends keyof DB> = {
   [C in keyof DB[TB]]?: MutationValueExpression<DB, TB, DB[TB][C]>
@@ -34,17 +35,19 @@ export type MutationValueExpression<
   | RawBuilderFactory<DB, TB>
 
 export function parseUpdateObject(
+  ctx: ParseContext,
   row: MutationObject<any, any>
 ): ReadonlyArray<ColumnUpdateNode> {
   return Object.entries(row).map(([key, value]) => {
     return ColumnUpdateNode.create(
       ColumnNode.create(key),
-      parseMutationValueExpression(value)
+      parseMutationValueExpression(ctx, value)
     )
   })
 }
 
 export function parseMutationValueExpression(
+  ctx: ParseContext,
   value: MutationValueExpression<any, any, PrimitiveValue>
 ): ValueNode | RawNode | SelectQueryNode {
   if (isPrimitive(value)) {
@@ -56,7 +59,7 @@ export function parseMutationValueExpression(
       return node
     }
   } else if (isFunction(value)) {
-    const node = value(new SubQueryBuilder()).toOperationNode()
+    const node = value(ctx.createSubQueryBuilder()).toOperationNode()
 
     if (!QueryNode.isMutating(node)) {
       return node

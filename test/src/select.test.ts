@@ -1,4 +1,3 @@
-import { RawBuilder } from '../../dist/cjs/index.js'
 import {
   BUILT_IN_DIALECTS,
   clearDatabase,
@@ -8,13 +7,16 @@ import {
   TestContext,
   testSql,
   expect,
+  NOT_SUPPORTED,
+  TEST_INIT_TIMEOUT,
 } from './test-setup.js'
 
 for (const dialect of BUILT_IN_DIALECTS) {
   describe(`${dialect}: select`, () => {
     let ctx: TestContext
 
-    before(async () => {
+    before(async function () {
+      this.timeout(TEST_INIT_TIMEOUT)
       ctx = await initTest(dialect)
     })
 
@@ -66,6 +68,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
           sql: 'select "last_name" from "person" where "first_name" = $1',
           bindings: ['Jennifer'],
         },
+        mysql: {
+          sql: 'select `last_name` from `person` where `first_name` = ?',
+          bindings: ['Jennifer'],
+        },
       })
 
       const persons = await query.execute()
@@ -83,6 +89,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
       testSql(query, dialect, {
         postgres: {
           sql: 'select "last_name" as "ln" from "person" where "first_name" = $1',
+          bindings: ['Jennifer'],
+        },
+        mysql: {
+          sql: 'select `last_name` as `ln` from `person` where `first_name` = ?',
           bindings: ['Jennifer'],
         },
       })
@@ -104,6 +114,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
           sql: 'select "person"."last_name" from "person" where "first_name" = $1',
           bindings: ['Jennifer'],
         },
+        mysql: {
+          sql: 'select `person`.`last_name` from `person` where `first_name` = ?',
+          bindings: ['Jennifer'],
+        },
       })
 
       const persons = await query.execute()
@@ -121,6 +135,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
       testSql(query, dialect, {
         postgres: {
           sql: 'select "person"."last_name" as "ln" from "person" where "first_name" = $1',
+          bindings: ['Jennifer'],
+        },
+        mysql: {
+          sql: 'select `person`.`last_name` as `ln` from `person` where `first_name` = ?',
           bindings: ['Jennifer'],
         },
       })
@@ -148,6 +166,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
           sql: 'select (select "name" from "pet" where "person"."id" = "pet"."owner_id") as "pet_name" from "person" where "first_name" = $1',
           bindings: ['Jennifer'],
         },
+        mysql: {
+          sql: 'select (select `name` from `pet` where `person`.`id` = `pet`.`owner_id`) as `pet_name` from `person` where `first_name` = ?',
+          bindings: ['Jennifer'],
+        },
       })
 
       const persons = await query.execute()
@@ -156,34 +178,39 @@ for (const dialect of BUILT_IN_DIALECTS) {
       expect(persons).to.eql([{ pet_name: 'Catto' }])
     })
 
-    it('should select one field using a raw expression', async () => {
-      const query = ctx.db
-        .selectFrom('person')
-        .select(
-          ctx.db
-            .raw(`concat(??, ' ', cast(? as varchar), ' ', ??)`, [
-              'first_name',
-              'Muriel',
-              'last_name',
-            ])
-            .as('full_name_with_middle_name')
-        )
-        .where('first_name', '=', 'Jennifer')
+    // Raw exrpessions are of course supported on all dialects, but we use an
+    // expression that's only valid on postgres.
+    if (dialect === 'postgres') {
+      it('should select one field using a raw expression', async () => {
+        const query = ctx.db
+          .selectFrom('person')
+          .select(
+            ctx.db
+              .raw(`concat(??, ' ', cast(? as varchar), ' ', ??)`, [
+                'first_name',
+                'Muriel',
+                'last_name',
+              ])
+              .as('full_name_with_middle_name')
+          )
+          .where('first_name', '=', 'Jennifer')
 
-      testSql(query, dialect, {
-        postgres: {
-          sql: `select concat("first_name", ' ', cast($1 as varchar), ' ', "last_name") as "full_name_with_middle_name" from "person" where "first_name" = $2`,
-          bindings: ['Muriel', 'Jennifer'],
-        },
+        testSql(query, dialect, {
+          postgres: {
+            sql: `select concat("first_name", ' ', cast($1 as varchar), ' ', "last_name") as "full_name_with_middle_name" from "person" where "first_name" = $2`,
+            bindings: ['Muriel', 'Jennifer'],
+          },
+          mysql: NOT_SUPPORTED,
+        })
+
+        const persons = await query.execute()
+
+        expect(persons).to.have.length(1)
+        expect(persons).to.eql([
+          { full_name_with_middle_name: 'Jennifer Muriel Aniston' },
+        ])
       })
-
-      const persons = await query.execute()
-
-      expect(persons).to.have.length(1)
-      expect(persons).to.eql([
-        { full_name_with_middle_name: 'Jennifer Muriel Aniston' },
-      ])
-    })
+    }
 
     it('should select multiple fields', async () => {
       const query = ctx.db
@@ -206,6 +233,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
       testSql(query, dialect, {
         postgres: {
           sql: `select "first_name", "last_name" as "ln", "person"."gender", "person"."first_name" as "fn", concat(first_name, ' ', last_name) as "full_name", (select "name" from "pet" where "person"."id" = "owner_id") as "pet_name" from "person" where "first_name" = $1`,
+          bindings: ['Jennifer'],
+        },
+        mysql: {
+          sql: "select `first_name`, `last_name` as `ln`, `person`.`gender`, `person`.`first_name` as `fn`, concat(first_name, ' ', last_name) as `full_name`, (select `name` from `pet` where `person`.`id` = `owner_id`) as `pet_name` from `person` where `first_name` = ?",
           bindings: ['Jennifer'],
         },
       })
@@ -237,6 +268,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
           sql: 'select "last_name", "name" as "pet_name" from "person", "pet" where "owner_id" = "person"."id" and "first_name" = $1',
           bindings: ['Jennifer'],
         },
+        mysql: {
+          sql: 'select `last_name`, `name` as `pet_name` from `person`, `pet` where `owner_id` = `person`.`id` and `first_name` = ?',
+          bindings: ['Jennifer'],
+        },
       })
 
       const persons = await query.execute()
@@ -261,6 +296,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
           sql: 'select "last_name", "species" as "pet_species", "one" from "person", (select "owner_id", "species" from "pet") as "p", (select 1 as one) as "o" where "p"."owner_id" = "person"."id" and "first_name" = $1',
           bindings: ['Jennifer'],
         },
+        mysql: {
+          sql: 'select `last_name`, `species` as `pet_species`, `one` from `person`, (select `owner_id`, `species` from `pet`) as `p`, (select 1 as one) as `o` where `p`.`owner_id` = `person`.`id` and `first_name` = ?',
+          bindings: ['Jennifer'],
+        },
       })
 
       await query.execute()
@@ -277,6 +316,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
       testSql(query, dialect, {
         postgres: {
           sql: 'select "first_name", "pet"."name" as "pet_name", "toy"."name" as "toy_name" from "person" inner join "pet" on "owner_id" = "person"."id" inner join "toy" on "pet_id" = "pet"."id" where "first_name" = $1',
+          bindings: ['Jennifer'],
+        },
+        mysql: {
+          sql: 'select `first_name`, `pet`.`name` as `pet_name`, `toy`.`name` as `toy_name` from `person` inner join `pet` on `owner_id` = `person`.`id` inner join `toy` on `pet_id` = `pet`.`id` where `first_name` = ?',
           bindings: ['Jennifer'],
         },
       })
@@ -301,6 +344,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
           sql: 'select distinct "gender" from "person" order by "gender" asc',
           bindings: [],
         },
+        mysql: {
+          sql: 'select distinct `gender` from `person` order by `gender` asc',
+          bindings: [],
+        },
       })
 
       const persons = await query.execute()
@@ -309,27 +356,31 @@ for (const dialect of BUILT_IN_DIALECTS) {
       expect(persons).to.eql([{ gender: 'female' }, { gender: 'male' }])
     })
 
-    if (dialect === 'postgres') {
-      it('should select a row for update', async () => {
-        const query = ctx.db
-          .selectFrom('person')
-          .select('last_name')
-          .where('first_name', '=', 'Jennifer')
-          .forUpdate()
+    it('should select a row for update', async () => {
+      const query = ctx.db
+        .selectFrom('person')
+        .select('last_name')
+        .where('first_name', '=', 'Jennifer')
+        .forUpdate()
 
-        testSql(query, dialect, {
-          postgres: {
-            sql: 'select "last_name" from "person" where "first_name" = $1 for update',
-            bindings: ['Jennifer'],
-          },
-        })
-
-        const persons = await query.execute()
-
-        expect(persons).to.have.length(1)
-        expect(persons).to.eql([{ last_name: 'Aniston' }])
+      testSql(query, dialect, {
+        postgres: {
+          sql: 'select "last_name" from "person" where "first_name" = $1 for update',
+          bindings: ['Jennifer'],
+        },
+        mysql: {
+          sql: 'select `last_name` from `person` where `first_name` = ? for update',
+          bindings: ['Jennifer'],
+        },
       })
 
+      const persons = await query.execute()
+
+      expect(persons).to.have.length(1)
+      expect(persons).to.eql([{ last_name: 'Aniston' }])
+    })
+
+    if (dialect === 'postgres') {
       it('should select with distinct on', async () => {
         const query = ctx.db
           .selectFrom('person')
@@ -341,6 +392,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
         testSql(query, dialect, {
           postgres: {
             sql: 'select distinct on ("gender") "first_name" from "person" order by "gender" asc, "last_name" asc',
+            bindings: [],
+          },
+          mysql: {
+            sql: 'select distinct on (`gender`) `first_name` from `person` order by `gender` asc, `last_name` asc',
             bindings: [],
           },
         })

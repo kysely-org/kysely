@@ -19,11 +19,13 @@ import {
   SelectExpressionOrList,
 } from '../parser/select-parser.js'
 import {
-  parseFilter,
   ExistsExpression,
   parseExistExpression,
   FilterOperator,
   parseReferenceFilter,
+  parseWhereFilter,
+  parseHavingFilter,
+  parseNotExistExpression,
 } from '../parser/filter-parser.js'
 import {
   InsertObject,
@@ -73,6 +75,9 @@ import {
   parseOnConflictDoNothing,
   parseOnConflictUpdate,
 } from '../parser/on-conflict-parser.js'
+import { DeleteQueryNode, DialectAdapter } from '../index.js'
+import { freeze } from '../util/object-utils.js'
+import { createParseContext } from '../parser/parse-context.js'
 
 /**
  * The main query builder class.
@@ -92,14 +97,10 @@ import {
 export class QueryBuilder<DB, TB extends keyof DB, O = {}>
   implements OperationNodeSource, Compilable
 {
-  readonly #queryId: QueryId
-  readonly #queryNode: QueryNode
-  readonly #executor: QueryExecutor
+  readonly #props: QueryBuilderProps
 
-  constructor(args: QueryBuilderConstructorArgs) {
-    this.#queryId = args.queryId
-    this.#queryNode = args.queryNode
-    this.#executor = args.executor
+  constructor(props: QueryBuilderProps) {
+    this.#props = freeze(props)
   }
 
   /**
@@ -294,15 +295,14 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
   ): QueryBuilder<DB, TB, O>
 
   where(...args: any[]): any {
-    ensureCanHaveWhereClause(this.#queryNode)
+    ensureCanHaveWhereClause(this.#props.queryNode)
 
     return new QueryBuilder({
-      queryId: this.#queryId,
-      executor: this.#executor,
+      ...this.#props,
       queryNode: QueryNode.cloneWithWhere(
-        this.#queryNode,
+        this.#props.queryNode,
         'And',
-        parseFilter('Where', args)
+        parseWhereFilter(this.#parseContext, args)
       ),
     })
   }
@@ -363,15 +363,14 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
     op: FilterOperator,
     rhs: ReferenceExpression<DB, TB>
   ): QueryBuilder<DB, TB, O> {
-    ensureCanHaveWhereClause(this.#queryNode)
+    ensureCanHaveWhereClause(this.#props.queryNode)
 
     return new QueryBuilder({
-      queryId: this.#queryId,
-      executor: this.#executor,
+      ...this.#props,
       queryNode: QueryNode.cloneWithWhere(
-        this.#queryNode,
+        this.#props.queryNode,
         'And',
-        parseReferenceFilter(lhs, op, rhs)
+        parseReferenceFilter(this.#parseContext, lhs, op, rhs)
       ),
     })
   }
@@ -452,15 +451,14 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
   ): QueryBuilder<DB, TB, O>
 
   orWhere(...args: any[]): any {
-    ensureCanHaveWhereClause(this.#queryNode)
+    ensureCanHaveWhereClause(this.#props.queryNode)
 
     return new QueryBuilder({
-      queryId: this.#queryId,
-      executor: this.#executor,
+      ...this.#props,
       queryNode: QueryNode.cloneWithWhere(
-        this.#queryNode,
+        this.#props.queryNode,
         'Or',
-        parseFilter('Where', args)
+        parseWhereFilter(this.#parseContext, args)
       ),
     })
   }
@@ -476,15 +474,14 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
     op: FilterOperator,
     rhs: ReferenceExpression<DB, TB>
   ): QueryBuilder<DB, TB, O> {
-    ensureCanHaveWhereClause(this.#queryNode)
+    ensureCanHaveWhereClause(this.#props.queryNode)
 
     return new QueryBuilder({
-      queryId: this.#queryId,
-      executor: this.#executor,
+      ...this.#props,
       queryNode: QueryNode.cloneWithWhere(
-        this.#queryNode,
+        this.#props.queryNode,
         'Or',
-        parseReferenceFilter(lhs, op, rhs)
+        parseReferenceFilter(this.#parseContext, lhs, op, rhs)
       ),
     })
   }
@@ -549,15 +546,14 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * ```
    */
   whereExists(arg: ExistsExpression<DB, TB>): QueryBuilder<DB, TB, O> {
-    ensureCanHaveWhereClause(this.#queryNode)
+    ensureCanHaveWhereClause(this.#props.queryNode)
 
     return new QueryBuilder({
-      queryId: this.#queryId,
-      executor: this.#executor,
+      ...this.#props,
       queryNode: QueryNode.cloneWithWhere(
-        this.#queryNode,
+        this.#props.queryNode,
         'And',
-        parseExistExpression('exists', arg)
+        parseExistExpression(this.#parseContext, arg)
       ),
     })
   }
@@ -566,15 +562,14 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * Just like {@link QueryBuilder.whereExists | whereExists} but creates a `not exists` clause.
    */
   whereNotExists(arg: ExistsExpression<DB, TB>): QueryBuilder<DB, TB, O> {
-    ensureCanHaveWhereClause(this.#queryNode)
+    ensureCanHaveWhereClause(this.#props.queryNode)
 
     return new QueryBuilder({
-      queryId: this.#queryId,
-      executor: this.#executor,
+      ...this.#props,
       queryNode: QueryNode.cloneWithWhere(
-        this.#queryNode,
+        this.#props.queryNode,
         'And',
-        parseExistExpression('not exists', arg)
+        parseNotExistExpression(this.#parseContext, arg)
       ),
     })
   }
@@ -583,15 +578,14 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * Just like {@link QueryBuilder.whereExists | whereExists} but creates a `or exists` clause.
    */
   orWhereExists(arg: ExistsExpression<DB, TB>): QueryBuilder<DB, TB, O> {
-    ensureCanHaveWhereClause(this.#queryNode)
+    ensureCanHaveWhereClause(this.#props.queryNode)
 
     return new QueryBuilder({
-      queryId: this.#queryId,
-      executor: this.#executor,
+      ...this.#props,
       queryNode: QueryNode.cloneWithWhere(
-        this.#queryNode,
+        this.#props.queryNode,
         'Or',
-        parseExistExpression('exists', arg)
+        parseExistExpression(this.#parseContext, arg)
       ),
     })
   }
@@ -600,15 +594,14 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * Just like {@link QueryBuilder.whereExists | whereExists} but creates a `or not exists` clause.
    */
   orWhereNotExists(arg: ExistsExpression<DB, TB>): QueryBuilder<DB, TB, O> {
-    ensureCanHaveWhereClause(this.#queryNode)
+    ensureCanHaveWhereClause(this.#props.queryNode)
 
     return new QueryBuilder({
-      queryId: this.#queryId,
-      executor: this.#executor,
+      ...this.#props,
       queryNode: QueryNode.cloneWithWhere(
-        this.#queryNode,
+        this.#props.queryNode,
         'Or',
-        parseExistExpression('not exists', arg)
+        parseNotExistExpression(this.#parseContext, arg)
       ),
     })
   }
@@ -628,15 +621,14 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
   ): QueryBuilder<DB, TB, O>
 
   having(...args: any[]): any {
-    ensureCanHaveHavingClause(this.#queryNode)
+    ensureCanHaveHavingClause(this.#props.queryNode)
 
     return new QueryBuilder({
-      queryId: this.#queryId,
-      executor: this.#executor,
+      ...this.#props,
       queryNode: SelectQueryNode.cloneWithHaving(
-        this.#queryNode,
+        this.#props.queryNode,
         'And',
-        parseFilter('Having', args)
+        parseHavingFilter(this.#parseContext, args)
       ),
     })
   }
@@ -650,15 +642,14 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
     op: FilterOperator,
     rhs: ReferenceExpression<DB, TB>
   ): QueryBuilder<DB, TB, O> {
-    ensureCanHaveHavingClause(this.#queryNode)
+    ensureCanHaveHavingClause(this.#props.queryNode)
 
     return new QueryBuilder({
-      queryId: this.#queryId,
-      executor: this.#executor,
+      ...this.#props,
       queryNode: SelectQueryNode.cloneWithHaving(
-        this.#queryNode,
+        this.#props.queryNode,
         'And',
-        parseReferenceFilter(lhs, op, rhs)
+        parseReferenceFilter(this.#parseContext, lhs, op, rhs)
       ),
     })
   }
@@ -678,15 +669,14 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
   ): QueryBuilder<DB, TB, O>
 
   orHaving(...args: any[]): any {
-    ensureCanHaveHavingClause(this.#queryNode)
+    ensureCanHaveHavingClause(this.#props.queryNode)
 
     return new QueryBuilder({
-      queryId: this.#queryId,
-      executor: this.#executor,
+      ...this.#props,
       queryNode: SelectQueryNode.cloneWithHaving(
-        this.#queryNode,
+        this.#props.queryNode,
         'Or',
-        parseFilter('Having', args)
+        parseHavingFilter(this.#parseContext, args)
       ),
     })
   }
@@ -700,15 +690,14 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
     op: FilterOperator,
     rhs: ReferenceExpression<DB, TB>
   ): QueryBuilder<DB, TB, O> {
-    ensureCanHaveHavingClause(this.#queryNode)
+    ensureCanHaveHavingClause(this.#props.queryNode)
 
     return new QueryBuilder({
-      queryId: this.#queryId,
-      executor: this.#executor,
+      ...this.#props,
       queryNode: SelectQueryNode.cloneWithHaving(
-        this.#queryNode,
+        this.#props.queryNode,
         'Or',
-        parseReferenceFilter(lhs, op, rhs)
+        parseReferenceFilter(this.#parseContext, lhs, op, rhs)
       ),
     })
   }
@@ -718,15 +707,14 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * instead of a `where` statement.
    */
   havingExists(arg: ExistsExpression<DB, TB>): QueryBuilder<DB, TB, O> {
-    ensureCanHaveHavingClause(this.#queryNode)
+    ensureCanHaveHavingClause(this.#props.queryNode)
 
     return new QueryBuilder({
-      queryId: this.#queryId,
-      executor: this.#executor,
+      ...this.#props,
       queryNode: SelectQueryNode.cloneWithHaving(
-        this.#queryNode,
+        this.#props.queryNode,
         'And',
-        parseExistExpression('exists', arg)
+        parseExistExpression(this.#parseContext, arg)
       ),
     })
   }
@@ -736,15 +724,14 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * instead of a `where` statement.
    */
   havingNotExist(arg: ExistsExpression<DB, TB>): QueryBuilder<DB, TB, O> {
-    ensureCanHaveHavingClause(this.#queryNode)
+    ensureCanHaveHavingClause(this.#props.queryNode)
 
     return new QueryBuilder({
-      queryId: this.#queryId,
-      executor: this.#executor,
+      ...this.#props,
       queryNode: SelectQueryNode.cloneWithHaving(
-        this.#queryNode,
+        this.#props.queryNode,
         'And',
-        parseExistExpression('not exists', arg)
+        parseNotExistExpression(this.#parseContext, arg)
       ),
     })
   }
@@ -754,15 +741,14 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * instead of a `where` statement.
    */
   orHavingExists(arg: ExistsExpression<DB, TB>): QueryBuilder<DB, TB, O> {
-    ensureCanHaveHavingClause(this.#queryNode)
+    ensureCanHaveHavingClause(this.#props.queryNode)
 
     return new QueryBuilder({
-      queryId: this.#queryId,
-      executor: this.#executor,
+      ...this.#props,
       queryNode: SelectQueryNode.cloneWithHaving(
-        this.#queryNode,
+        this.#props.queryNode,
         'Or',
-        parseExistExpression('exists', arg)
+        parseExistExpression(this.#parseContext, arg)
       ),
     })
   }
@@ -772,15 +758,14 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * instead of a `where` statement.
    */
   orHavingNotExists(arg: ExistsExpression<DB, TB>): QueryBuilder<DB, TB, O> {
-    ensureCanHaveHavingClause(this.#queryNode)
+    ensureCanHaveHavingClause(this.#props.queryNode)
 
     return new QueryBuilder({
-      queryId: this.#queryId,
-      executor: this.#executor,
+      ...this.#props,
       queryNode: SelectQueryNode.cloneWithHaving(
-        this.#queryNode,
+        this.#props.queryNode,
         'Or',
-        parseExistExpression('not exists', arg)
+        parseNotExistExpression(this.#parseContext, arg)
       ),
     })
   }
@@ -966,14 +951,13 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
   ): QueryBuilderWithSelection<DB, TB, O, S>
 
   select(selection: SelectExpressionOrList<DB, TB>): any {
-    ensureCanHaveSelectClause(this.#queryNode)
+    ensureCanHaveSelectClause(this.#props.queryNode)
 
     return new QueryBuilder({
-      queryId: this.#queryId,
-      executor: this.#executor,
+      ...this.#props,
       queryNode: SelectQueryNode.cloneWithSelections(
-        this.#queryNode,
-        parseSelectExpressionOrList(selection)
+        this.#props.queryNode,
+        parseSelectExpressionOrList(this.#parseContext, selection)
       ),
     })
   }
@@ -1013,14 +997,13 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
   ): QueryBuilder<DB, TB, O>
 
   distinctOn(selection: SelectExpressionOrList<DB, TB>): any {
-    ensureCanHaveSelectClause(this.#queryNode)
+    ensureCanHaveSelectClause(this.#props.queryNode)
 
     return new QueryBuilder({
-      queryId: this.#queryId,
-      executor: this.#executor,
+      ...this.#props,
       queryNode: SelectQueryNode.cloneWithDistinctOnSelections(
-        this.#queryNode,
-        parseSelectExpressionOrList(selection)
+        this.#props.queryNode,
+        parseSelectExpressionOrList(this.#parseContext, selection)
       ),
     })
   }
@@ -1043,12 +1026,11 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * ```
    */
   distinct(): QueryBuilder<DB, TB, O> {
-    ensureCanHaveSelectClause(this.#queryNode)
+    ensureCanHaveSelectClause(this.#props.queryNode)
 
     return new QueryBuilder({
-      queryId: this.#queryId,
-      executor: this.#executor,
-      queryNode: SelectQueryNode.cloneWithDistinct(this.#queryNode),
+      ...this.#props,
+      queryNode: SelectQueryNode.cloneWithDistinct(this.#props.queryNode),
     })
   }
 
@@ -1056,13 +1038,12 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * Adds the `for update` option to a select query on supported databases.
    */
   forUpdate(): QueryBuilder<DB, TB, O> {
-    ensureCanHaveSelectClause(this.#queryNode)
+    ensureCanHaveSelectClause(this.#props.queryNode)
 
     return new QueryBuilder({
-      queryId: this.#queryId,
-      executor: this.#executor,
+      ...this.#props,
       queryNode: SelectQueryNode.cloneWithModifier(
-        this.#queryNode,
+        this.#props.queryNode,
         'ForUpdate'
       ),
     })
@@ -1072,12 +1053,14 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * Adds the `for share` option to a select query on supported databases.
    */
   forShare(): QueryBuilder<DB, TB, O> {
-    ensureCanHaveSelectClause(this.#queryNode)
+    ensureCanHaveSelectClause(this.#props.queryNode)
 
     return new QueryBuilder({
-      queryId: this.#queryId,
-      executor: this.#executor,
-      queryNode: SelectQueryNode.cloneWithModifier(this.#queryNode, 'ForShare'),
+      ...this.#props,
+      queryNode: SelectQueryNode.cloneWithModifier(
+        this.#props.queryNode,
+        'ForShare'
+      ),
     })
   }
 
@@ -1085,13 +1068,12 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * Adds the `for key share` option to a select query on supported databases.
    */
   forKeyShare(): QueryBuilder<DB, TB, O> {
-    ensureCanHaveSelectClause(this.#queryNode)
+    ensureCanHaveSelectClause(this.#props.queryNode)
 
     return new QueryBuilder({
-      queryId: this.#queryId,
-      executor: this.#executor,
+      ...this.#props,
       queryNode: SelectQueryNode.cloneWithModifier(
-        this.#queryNode,
+        this.#props.queryNode,
         'ForKeyShare'
       ),
     })
@@ -1101,13 +1083,12 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * Adds the `for no key update` option to a select query on supported databases.
    */
   forNoKeyUpdate(): QueryBuilder<DB, TB, O> {
-    ensureCanHaveSelectClause(this.#queryNode)
+    ensureCanHaveSelectClause(this.#props.queryNode)
 
     return new QueryBuilder({
-      queryId: this.#queryId,
-      executor: this.#executor,
+      ...this.#props,
       queryNode: SelectQueryNode.cloneWithModifier(
-        this.#queryNode,
+        this.#props.queryNode,
         'ForNoKeyUpdate'
       ),
     })
@@ -1117,13 +1098,12 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * Adds the `skip locked` option to a select query on supported databases.
    */
   skipLocked(): QueryBuilder<DB, TB, O> {
-    ensureCanHaveSelectClause(this.#queryNode)
+    ensureCanHaveSelectClause(this.#props.queryNode)
 
     return new QueryBuilder({
-      queryId: this.#queryId,
-      executor: this.#executor,
+      ...this.#props,
       queryNode: SelectQueryNode.cloneWithModifier(
-        this.#queryNode,
+        this.#props.queryNode,
         'SkipLocked'
       ),
     })
@@ -1133,12 +1113,14 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * Adds the `nowait` option to a select query on supported databases.
    */
   noWait(): QueryBuilder<DB, TB, O> {
-    ensureCanHaveSelectClause(this.#queryNode)
+    ensureCanHaveSelectClause(this.#props.queryNode)
 
     return new QueryBuilder({
-      queryId: this.#queryId,
-      executor: this.#executor,
-      queryNode: SelectQueryNode.cloneWithModifier(this.#queryNode, 'NoWait'),
+      ...this.#props,
+      queryNode: SelectQueryNode.cloneWithModifier(
+        this.#props.queryNode,
+        'NoWait'
+      ),
     })
   }
 
@@ -1196,13 +1178,12 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
   selectAll<T extends TB>(): SelectAllQueryBuilder<DB, TB, O, T>
 
   selectAll(table?: any): any {
-    ensureCanHaveSelectClause(this.#queryNode)
+    ensureCanHaveSelectClause(this.#props.queryNode)
 
     return new QueryBuilder({
-      queryId: this.#queryId,
-      executor: this.#executor,
+      ...this.#props,
       queryNode: SelectQueryNode.cloneWithSelections(
-        this.#queryNode,
+        this.#props.queryNode,
         parseSelectAllArgs(table)
       ),
     })
@@ -1332,14 +1313,13 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
   >(table: TE, callback: FN): QueryBuilderWithTable<DB, TB, O, TE>
 
   innerJoin(...args: any): any {
-    ensureCanHaveJoins(this.#queryNode)
+    ensureCanHaveJoins(this.#props.queryNode)
 
     return new QueryBuilder({
-      queryId: this.#queryId,
-      executor: this.#executor,
+      ...this.#props,
       queryNode: QueryNode.cloneWithJoin(
-        this.#queryNode,
-        parseJoinArgs('InnerJoin', args)
+        this.#props.queryNode,
+        parseJoinArgs(this.#parseContext, 'InnerJoin', args)
       ),
     })
   }
@@ -1360,14 +1340,13 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
   >(table: TE, callback: FN): QueryBuilderWithTable<DB, TB, O, TE>
 
   leftJoin(...args: any): any {
-    ensureCanHaveJoins(this.#queryNode)
+    ensureCanHaveJoins(this.#props.queryNode)
 
     return new QueryBuilder({
-      queryId: this.#queryId,
-      executor: this.#executor,
+      ...this.#props,
       queryNode: QueryNode.cloneWithJoin(
-        this.#queryNode,
-        parseJoinArgs('LeftJoin', args)
+        this.#props.queryNode,
+        parseJoinArgs(this.#parseContext, 'LeftJoin', args)
       ),
     })
   }
@@ -1388,14 +1367,13 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
   >(table: TE, callback: FN): QueryBuilderWithTable<DB, TB, O, TE>
 
   rightJoin(...args: any): any {
-    ensureCanHaveJoins(this.#queryNode)
+    ensureCanHaveJoins(this.#props.queryNode)
 
     return new QueryBuilder({
-      queryId: this.#queryId,
-      executor: this.#executor,
+      ...this.#props,
       queryNode: QueryNode.cloneWithJoin(
-        this.#queryNode,
-        parseJoinArgs('RightJoin', args)
+        this.#props.queryNode,
+        parseJoinArgs(this.#parseContext, 'RightJoin', args)
       ),
     })
   }
@@ -1416,14 +1394,13 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
   >(table: TE, callback: FN): QueryBuilderWithTable<DB, TB, O, TE>
 
   fullJoin(...args: any): any {
-    ensureCanHaveJoins(this.#queryNode)
+    ensureCanHaveJoins(this.#props.queryNode)
 
     return new QueryBuilder({
-      queryId: this.#queryId,
-      executor: this.#executor,
+      ...this.#props,
       queryNode: QueryNode.cloneWithJoin(
-        this.#queryNode,
-        parseJoinArgs('FullJoin', args)
+        this.#props.queryNode,
+        parseJoinArgs(this.#parseContext, 'FullJoin', args)
       ),
     })
   }
@@ -1547,13 +1524,12 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
   values(row: InsertObject<DB, TB>[]): QueryBuilder<DB, TB, O>
 
   values(args: InsertObjectOrList<DB, TB>): any {
-    ensureCanHaveInsertValues(this.#queryNode)
+    ensureCanHaveInsertValues(this.#props.queryNode)
 
     return new QueryBuilder({
-      queryId: this.#queryId,
-      executor: this.#executor,
+      ...this.#props,
       queryNode: InsertQueryNode.cloneWithColumnsAndValues(
-        this.#queryNode,
+        this.#props.queryNode,
         ...parseInsertObjectOrList(args)
       ),
     })
@@ -1636,13 +1612,12 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
   onConflictDoNothing(
     target: OnConflictTargetExpression<DB, TB>
   ): QueryBuilder<DB, TB, O> {
-    ensureCanHaveOnConflict(this.#queryNode)
+    ensureCanHaveOnConflict(this.#props.queryNode)
 
     return new QueryBuilder({
-      queryId: this.#queryId,
-      executor: this.#executor,
+      ...this.#props,
       queryNode: InsertQueryNode.cloneWithOnConflict(
-        this.#queryNode,
+        this.#props.queryNode,
         parseOnConflictDoNothing(target)
       ),
     })
@@ -1737,14 +1712,13 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
     target: OnConflictTargetExpression<DB, TB>,
     updates: MutationObject<DB, TB>
   ): QueryBuilder<DB, TB, O> {
-    ensureCanHaveOnConflict(this.#queryNode)
+    ensureCanHaveOnConflict(this.#props.queryNode)
 
     return new QueryBuilder({
-      queryId: this.#queryId,
-      executor: this.#executor,
+      ...this.#props,
       queryNode: InsertQueryNode.cloneWithOnConflict(
-        this.#queryNode,
-        parseOnConflictUpdate(target, updates)
+        this.#props.queryNode,
+        parseOnConflictUpdate(this.#parseContext, target, updates)
       ),
     })
   }
@@ -1832,14 +1806,13 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * ```
    */
   set(row: MutationObject<DB, TB>): QueryBuilder<DB, TB, O> {
-    ensureCanHaveUpdates(this.#queryNode)
+    ensureCanHaveUpdates(this.#props.queryNode)
 
     return new QueryBuilder({
-      queryId: this.#queryId,
-      executor: this.#executor,
+      ...this.#props,
       queryNode: UpdateQueryNode.cloneWithUpdates(
-        this.#queryNode,
-        parseUpdateObject(row)
+        this.#props.queryNode,
+        parseUpdateObject(this.#parseContext, row)
       ),
     })
   }
@@ -1911,14 +1884,13 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
   ): QueryBuilderWithReturning<DB, TB, O, S>
 
   returning(selection: SelectExpressionOrList<DB, TB>): any {
-    ensureCanHaveReturningClause(this.#queryNode)
+    ensureCanHaveReturningClause(this.#props.queryNode)
 
     return new QueryBuilder({
-      queryId: this.#queryId,
-      executor: this.#executor,
+      ...this.#props,
       queryNode: QueryNode.cloneWithReturning(
-        this.#queryNode,
-        parseSelectExpressionOrList(selection)
+        this.#props.queryNode,
+        parseSelectExpressionOrList(this.#parseContext, selection)
       ),
     })
   }
@@ -1928,13 +1900,12 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * that support `returning` such as postgres.
    */
   returningAll(): QueryBuilder<DB, TB, DB[TB]> {
-    ensureCanHaveReturningClause(this.#queryNode)
+    ensureCanHaveReturningClause(this.#props.queryNode)
 
     return new QueryBuilder({
-      queryId: this.#queryId,
-      executor: this.#executor,
+      ...this.#props,
       queryNode: QueryNode.cloneWithReturning(
-        this.#queryNode,
+        this.#props.queryNode,
         parseSelectAllArgs()
       ),
     })
@@ -2030,14 +2001,16 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
     orderBy: OrderByExpression<DB, TB, O>,
     direction: OrderByDirection = 'asc'
   ): QueryBuilder<DB, TB, O> {
-    ensureCanHaveOrderByClause(this.#queryNode)
+    ensureCanHaveOrderByClause(this.#props.queryNode)
 
     return new QueryBuilder({
-      queryId: this.#queryId,
-      executor: this.#executor,
+      ...this.#props,
       queryNode: SelectQueryNode.cloneWithOrderByItem(
-        this.#queryNode,
-        OrderByItemNode.create(parseReferenceExpression(orderBy), direction)
+        this.#props.queryNode,
+        OrderByItemNode.create(
+          parseReferenceExpression(this.#parseContext, orderBy),
+          direction
+        )
       ),
     })
   }
@@ -2147,14 +2120,15 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
   groupBy(orderBy: ReferenceExpression<DB, TB>): QueryBuilder<DB, TB, O>
 
   groupBy(orderBy: any): QueryBuilder<DB, TB, O> {
-    ensureCanHaveGroupByClause(this.#queryNode)
+    ensureCanHaveGroupByClause(this.#props.queryNode)
 
     return new QueryBuilder({
-      queryId: this.#queryId,
-      executor: this.#executor,
+      ...this.#props,
       queryNode: SelectQueryNode.cloneWithGroupByItems(
-        this.#queryNode,
-        parseReferenceExpressionOrList(orderBy).map(GroupByItemNode.create)
+        this.#props.queryNode,
+        parseReferenceExpressionOrList(this.#parseContext, orderBy).map(
+          GroupByItemNode.create
+        )
       ),
     })
   }
@@ -2184,13 +2158,12 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * ```
    */
   limit(limit: number): QueryBuilder<DB, TB, O> {
-    ensureCanHaveLimit(this.#queryNode)
+    ensureCanHaveLimit(this.#props.queryNode)
 
     return new QueryBuilder({
-      queryId: this.#queryId,
-      executor: this.#executor,
+      ...this.#props,
       queryNode: SelectQueryNode.cloneWithLimit(
-        this.#queryNode,
+        this.#props.queryNode,
         LimitNode.create(limit)
       ),
     })
@@ -2211,13 +2184,12 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * ```
    */
   offset(offset: number): QueryBuilder<DB, TB, O> {
-    ensureCanHaveOffset(this.#queryNode)
+    ensureCanHaveOffset(this.#props.queryNode)
 
     return new QueryBuilder({
-      queryId: this.#queryId,
-      executor: this.#executor,
+      ...this.#props,
       queryNode: SelectQueryNode.cloneWithOffset(
-        this.#queryNode,
+        this.#props.queryNode,
         OffsetNode.create(offset)
       ),
     })
@@ -2250,19 +2222,21 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * don't support your use case.
    */
   castTo<T>(): QueryBuilder<DB, TB, T> {
-    return new QueryBuilder({
-      queryId: this.#queryId,
-      executor: this.#executor,
-      queryNode: this.#queryNode,
-    })
+    return new QueryBuilder(this.#props)
   }
 
   toOperationNode(): QueryNode {
-    return this.#executor.transformQuery(this.#queryNode, this.#queryId)
+    return this.#props.executor.transformQuery(
+      this.#props.queryNode,
+      this.#props.queryId
+    )
   }
 
   compile(): CompiledQuery {
-    return this.#executor.compileQuery(this.toOperationNode(), this.#queryId)
+    return this.#props.executor.compileQuery(
+      this.toOperationNode(),
+      this.#props.queryId
+    )
   }
 
   /**
@@ -2271,31 +2245,39 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * Also see the {@link executeTakeFirst} and {@link executeTakeFirstOrThrow} methods.
    */
   async execute(): Promise<ManyResultRowType<O>[]> {
-    const node = this.#executor.transformQuery(this.#queryNode, this.#queryId)
-    const compildQuery = this.#executor.compileQuery(node, this.#queryId)
-
-    const result = await this.#executor.executeQuery<ManyResultRowType<O>>(
-      compildQuery,
-      this.#queryId
+    const node = this.#props.executor.transformQuery(
+      this.#props.queryNode,
+      this.#props.queryId
     )
 
-    if (QueryNode.isMutating(node) && node.returning) {
-      return result.rows ?? []
-    }
+    const compildQuery = this.#props.executor.compileQuery(
+      node,
+      this.#props.queryId
+    )
 
-    if (result.insertedPrimaryKey != null) {
-      return [result.insertedPrimaryKey as ManyResultRowType<O>]
-    }
+    const result = await this.#props.executor.executeQuery<
+      ManyResultRowType<O>
+    >(compildQuery, this.#props.queryId)
 
-    if (result.numUpdatedOrDeletedRows != null) {
-      return [result.numUpdatedOrDeletedRows as ManyResultRowType<O>]
-    }
-
-    if (result.rows) {
+    if (InsertQueryNode.is(node)) {
+      if (this.#props.adapter.supportsReturning && node.returning) {
+        return result.rows
+      } else if (result.insertedPrimaryKey != null) {
+        return [result.insertedPrimaryKey as ManyResultRowType<O>]
+      } else {
+        return []
+      }
+    } else if (UpdateQueryNode.is(node) || DeleteQueryNode.is(node)) {
+      if (this.#props.adapter.supportsReturning && node.returning) {
+        return result.rows
+      } else if (result.numUpdatedOrDeletedRows != null) {
+        return [result.numUpdatedOrDeletedRows as ManyResultRowType<O>]
+      } else {
+        return []
+      }
+    } else {
       return result.rows
     }
-
-    return []
   }
 
   /**
@@ -2326,6 +2308,10 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
 
     return result as NonEmptySingleResultRowType<O>
   }
+
+  get #parseContext() {
+    return createParseContext(this.#props.adapter)
+  }
 }
 
 preventAwait(
@@ -2333,10 +2319,11 @@ preventAwait(
   "don't await QueryBuilder instances directly. To execute the query you need to call `execute` or `executeTakeFirst`."
 )
 
-export interface QueryBuilderConstructorArgs {
-  queryId: QueryId
-  queryNode: QueryNode
-  executor: QueryExecutor
+export interface QueryBuilderProps {
+  readonly queryId: QueryId
+  readonly queryNode: QueryNode
+  readonly executor: QueryExecutor
+  readonly adapter: DialectAdapter
 }
 
 /**

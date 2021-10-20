@@ -20,5 +20,5 @@ export interface QueryResult<O> {
   /**
    * This is defined if the query returned any rows.
    */
-  readonly rows?: O[]
+  readonly rows: O[]
 }

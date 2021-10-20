@@ -1,23 +1,27 @@
+import { DialectAdapter } from '../dialect/dialect-adapter.js'
 import { JoinNode } from '../operation-node/join-node.js'
 import { OperationNodeSource } from '../operation-node/operation-node-source.js'
 import {
   ExistsExpression,
   FilterOperator,
   parseExistExpression,
-  parseFilter,
+  parseNotExistExpression,
+  parseOnFilter,
   parseReferenceFilter,
 } from '../parser/filter-parser.js'
+import { createParseContext } from '../parser/parse-context.js'
 import { ReferenceExpression } from '../parser/reference-parser.js'
 import { ValueExpressionOrList } from '../parser/value-parser.js'
+import { freeze } from '../util/object-utils.js'
 import { preventAwait } from '../util/prevent-await.js'
 
 export class JoinBuilder<DB, TB extends keyof DB>
   implements OperationNodeSource
 {
-  readonly #joinNode: JoinNode
+  readonly #props: JoinBuilderProps
 
-  constructor(joinNode: JoinNode) {
-    this.#joinNode = joinNode
+  constructor(props: JoinBuilderProps) {
+    this.#props = freeze(props)
   }
 
   /**
@@ -37,9 +41,14 @@ export class JoinBuilder<DB, TB extends keyof DB>
   ): JoinBuilder<DB, TB>
 
   on(...args: any[]): JoinBuilder<DB, TB> {
-    return new JoinBuilder(
-      JoinNode.cloneWithOn(this.#joinNode, 'And', parseFilter('On', args))
-    )
+    return new JoinBuilder({
+      ...this.#props,
+      joinNode: JoinNode.cloneWithOn(
+        this.#props.joinNode,
+        'And',
+        parseOnFilter(this.#parseContext, args)
+      ),
+    })
   }
 
   /**
@@ -59,9 +68,14 @@ export class JoinBuilder<DB, TB extends keyof DB>
   ): JoinBuilder<DB, TB>
 
   orOn(...args: any[]): JoinBuilder<DB, TB> {
-    return new JoinBuilder(
-      JoinNode.cloneWithOn(this.#joinNode, 'Or', parseFilter('On', args))
-    )
+    return new JoinBuilder({
+      ...this.#props,
+      joinNode: JoinNode.cloneWithOn(
+        this.#props.joinNode,
+        'Or',
+        parseOnFilter(this.#parseContext, args)
+      ),
+    })
   }
 
   /**
@@ -75,13 +89,14 @@ export class JoinBuilder<DB, TB extends keyof DB>
     op: FilterOperator,
     rhs: ReferenceExpression<DB, TB>
   ): JoinBuilder<DB, TB> {
-    return new JoinBuilder(
-      JoinNode.cloneWithOn(
-        this.#joinNode,
+    return new JoinBuilder({
+      ...this.#props,
+      joinNode: JoinNode.cloneWithOn(
+        this.#props.joinNode,
         'And',
-        parseReferenceFilter(lhs, op, rhs)
-      )
-    )
+        parseReferenceFilter(this.#parseContext, lhs, op, rhs)
+      ),
+    })
   }
 
   /**
@@ -95,13 +110,14 @@ export class JoinBuilder<DB, TB extends keyof DB>
     op: FilterOperator,
     rhs: ReferenceExpression<DB, TB>
   ): JoinBuilder<DB, TB> {
-    return new JoinBuilder(
-      JoinNode.cloneWithOn(
-        this.#joinNode,
+    return new JoinBuilder({
+      ...this.#props,
+      joinNode: JoinNode.cloneWithOn(
+        this.#props.joinNode,
         'Or',
-        parseReferenceFilter(lhs, op, rhs)
-      )
-    )
+        parseReferenceFilter(this.#parseContext, lhs, op, rhs)
+      ),
+    })
   }
 
   /**
@@ -111,13 +127,14 @@ export class JoinBuilder<DB, TB extends keyof DB>
    * See {@link QueryBuilder.whereExists} for documentation and examples.
    */
   onExists(arg: ExistsExpression<DB, TB>): JoinBuilder<DB, TB> {
-    return new JoinBuilder(
-      JoinNode.cloneWithOn(
-        this.#joinNode,
+    return new JoinBuilder({
+      ...this.#props,
+      joinNode: JoinNode.cloneWithOn(
+        this.#props.joinNode,
         'And',
-        parseExistExpression('exists', arg)
-      )
-    )
+        parseExistExpression(this.#parseContext, arg)
+      ),
+    })
   }
 
   /**
@@ -127,13 +144,14 @@ export class JoinBuilder<DB, TB extends keyof DB>
    * See {@link QueryBuilder.whereNotExists} for documentation and examples.
    */
   onNotExists(arg: ExistsExpression<DB, TB>): JoinBuilder<DB, TB> {
-    return new JoinBuilder(
-      JoinNode.cloneWithOn(
-        this.#joinNode,
+    return new JoinBuilder({
+      ...this.#props,
+      joinNode: JoinNode.cloneWithOn(
+        this.#props.joinNode,
         'And',
-        parseExistExpression('not exists', arg)
-      )
-    )
+        parseNotExistExpression(this.#parseContext, arg)
+      ),
+    })
   }
 
   /**
@@ -143,13 +161,14 @@ export class JoinBuilder<DB, TB extends keyof DB>
    * See {@link QueryBuilder.orWhereExists} for documentation and examples.
    */
   orOnExists(arg: ExistsExpression<DB, TB>): JoinBuilder<DB, TB> {
-    return new JoinBuilder(
-      JoinNode.cloneWithOn(
-        this.#joinNode,
+    return new JoinBuilder({
+      ...this.#props,
+      joinNode: JoinNode.cloneWithOn(
+        this.#props.joinNode,
         'Or',
-        parseExistExpression('exists', arg)
-      )
-    )
+        parseExistExpression(this.#parseContext, arg)
+      ),
+    })
   }
 
   /**
@@ -159,17 +178,22 @@ export class JoinBuilder<DB, TB extends keyof DB>
    * See {@link QueryBuilder.orWhereNotExists} for documentation and examples.
    */
   orOnNotExists(arg: ExistsExpression<DB, TB>): JoinBuilder<DB, TB> {
-    return new JoinBuilder(
-      JoinNode.cloneWithOn(
-        this.#joinNode,
+    return new JoinBuilder({
+      ...this.#props,
+      joinNode: JoinNode.cloneWithOn(
+        this.#props.joinNode,
         'Or',
-        parseExistExpression('not exists', arg)
-      )
-    )
+        parseNotExistExpression(this.#parseContext, arg)
+      ),
+    })
   }
 
   toOperationNode(): JoinNode {
-    return this.#joinNode
+    return this.#props.joinNode
+  }
+
+  get #parseContext() {
+    return createParseContext(this.#props.adapter)
   }
 }
 
@@ -177,3 +201,8 @@ preventAwait(
   JoinBuilder,
   "don't await JoinBuilder instances. They are never executed directly and are always just a part of a query."
 )
+
+export interface JoinBuilderProps {
+  readonly joinNode: JoinNode
+  readonly adapter: DialectAdapter
+}

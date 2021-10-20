@@ -8,6 +8,7 @@ import { RenameColumnNode } from './rename-column-node.js'
 import { AlterColumnNode } from './alter-column-node.js'
 import { AddConstraintNode } from './add-constraint-node.js'
 import { DropConstraintNode } from './drop-constraint-node.js'
+import { ModifyColumnNode } from './modify-column-node.js'
 
 export type AlterTableNodeParams = Omit<
   Partial<AlterTableNode>,
@@ -23,6 +24,7 @@ export interface AlterTableNode extends OperationNode {
   readonly addColumn?: AddColumnNode
   readonly dropColumn?: DropColumnNode
   readonly alterColumn?: AlterColumnNode
+  readonly modifyColumn?: ModifyColumnNode
   readonly addConstraint?: AddConstraintNode
   readonly dropConstraint?: DropConstraintNode
 }

@@ -11,7 +11,7 @@ export function getExecutedQueries(): [DialectWrapper, CompiledQuery[]] {
   const wrapper = (dialect: Dialect): Dialect => {
     return {
       createIntrospector: dialect.createIntrospector.bind(dialect),
-      createMigrationAdapter: dialect.createMigrationAdapter.bind(dialect),
+      createAdapter: dialect.createAdapter.bind(dialect),
       createQueryCompiler: dialect.createQueryCompiler.bind(dialect),
       createDriver() {
         const driver = dialect.createDriver()

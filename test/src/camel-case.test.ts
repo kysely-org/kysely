@@ -6,6 +6,7 @@ import {
   TestContext,
   testSql,
   expect,
+  TEST_INIT_TIMEOUT,
 } from './test-setup.js'
 
 for (const dialect of BUILT_IN_DIALECTS) {
@@ -23,7 +24,8 @@ for (const dialect of BUILT_IN_DIALECTS) {
       camelPerson: CamelPerson
     }
 
-    before(async () => {
+    before(async function () {
+      this.timeout(TEST_INIT_TIMEOUT)
       ctx = await initTest(dialect)
 
       camelDb = new Kysely<CamelDatabase>({
@@ -35,8 +37,8 @@ for (const dialect of BUILT_IN_DIALECTS) {
       await camelDb.schema
         .createTable('camelPerson')
         .addColumn('id', 'integer', (col) => col.increments().primaryKey())
-        .addColumn('firstName', 'varchar')
-        .addColumn('lastName', 'varchar')
+        .addColumn('firstName', 'varchar(255)')
+        .addColumn('lastName', 'varchar(255)')
         .execute()
     })
 
@@ -100,6 +102,15 @@ for (const dialect of BUILT_IN_DIALECTS) {
           ],
           bindings: [],
         },
+        mysql: {
+          sql: [
+            'select `camel_person`.`first_name`',
+            'from `camel_person`',
+            'inner join `camel_person` as `camel_person2` on `camel_person2`.`id` = `camel_person`.`id`',
+            'order by `first_name` asc',
+          ],
+          bindings: [],
+        },
       })
 
       const result = await query.execute()
@@ -129,6 +140,15 @@ for (const dialect of BUILT_IN_DIALECTS) {
               `from "camel_person"`,
               `inner join "camel_person" as "camel_person2" on "camel_person2"."id" = "camel_person"."id"`,
               `order by "first_name" asc`,
+            ],
+            bindings: [],
+          },
+          mysql: {
+            sql: [
+              'select `camel_person`.`first_name`',
+              'from `camel_person`',
+              'inner join `camel_person` as `camel_person2` on `camel_person2`.`id` = `camel_person`.`id`',
+              'order by `first_name` asc',
             ],
             bindings: [],
           },

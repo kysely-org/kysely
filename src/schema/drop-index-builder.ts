@@ -5,6 +5,7 @@ import { Compilable } from '../util/compilable.js'
 import { preventAwait } from '../util/prevent-await.js'
 import { QueryExecutor } from '../query-executor/query-executor.js'
 import { QueryId } from '../util/query-id.js'
+import { parseTable } from '../parser/table-parser.js'
 
 export class DropIndexBuilder implements OperationNodeSource, Compilable {
   readonly #queryId: QueryId
@@ -17,14 +18,27 @@ export class DropIndexBuilder implements OperationNodeSource, Compilable {
     this.#executor = args.executor
   }
 
+  /**
+   * Specifies the table the index was created for. This is not needed
+   * in all dialects.
+   */
+  on(table: string): DropIndexBuilder {
+    return new DropIndexBuilder({
+      queryId: this.#queryId,
+      executor: this.#executor,
+      dropIndexNode: DropIndexNode.cloneWith(this.#dropIndexNode, {
+        table: parseTable(table),
+      }),
+    })
+  }
+
   ifExists(): DropIndexBuilder {
     return new DropIndexBuilder({
       queryId: this.#queryId,
       executor: this.#executor,
-      dropIndexNode: DropIndexNode.cloneWithModifier(
-        this.#dropIndexNode,
-        'IfExists'
-      ),
+      dropIndexNode: DropIndexNode.cloneWith(this.#dropIndexNode, {
+        modifier: 'IfExists',
+      }),
     })
   }
 

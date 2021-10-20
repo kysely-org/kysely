@@ -7,13 +7,15 @@ import {
   TestContext,
   testSql,
   expect,
+  TEST_INIT_TIMEOUT,
 } from './test-setup.js'
 
 for (const dialect of BUILT_IN_DIALECTS) {
   describe(`${dialect}: group by`, () => {
     let ctx: TestContext
 
-    before(async () => {
+    before(async function () {
+      this.timeout(TEST_INIT_TIMEOUT)
       ctx = await initTest(dialect)
     })
 
@@ -60,6 +62,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
           sql: 'select "gender", max(first_name) as "max_first_name" from "person" group by "gender" order by "gender" asc',
           bindings: [],
         },
+        mysql: {
+          sql: 'select `gender`, max(first_name) as `max_first_name` from `person` group by `gender` order by `gender` asc',
+          bindings: [],
+        },
       })
 
       const persons = await query.execute()
@@ -89,6 +95,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
           sql: 'select "gender", max(first_name) as "max_first_name" from "person" group by "gender", "id" order by "gender" asc',
           bindings: [],
         },
+        mysql: {
+          sql: 'select `gender`, max(first_name) as `max_first_name` from `person` group by `gender`, `id` order by `gender` asc',
+          bindings: [],
+        },
       })
 
       await query.execute()
@@ -106,6 +116,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
           sql: 'select "gender", max(first_name) as "max_first_name" from "person" group by "person"."gender" order by "gender" asc',
           bindings: [],
         },
+        mysql: {
+          sql: 'select `gender`, max(first_name) as `max_first_name` from `person` group by `person`.`gender` order by `gender` asc',
+          bindings: [],
+        },
       })
 
       await query.execute()
@@ -121,6 +135,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
       testSql(query, dialect, {
         postgres: {
           sql: 'select "gender", max(first_name) as "max_first_name" from "person" group by person.gender order by "gender" asc',
+          bindings: [],
+        },
+        mysql: {
+          sql: 'select `gender`, max(first_name) as `max_first_name` from `person` group by person.gender order by `gender` asc',
           bindings: [],
         },
       })
@@ -147,6 +165,15 @@ for (const dialect of BUILT_IN_DIALECTS) {
             'from "person"',
             'group by (select "pet"."name" from "pet" where "person"."id" = "pet"."owner_id")',
             'order by "max_first_name" asc',
+          ],
+          bindings: [],
+        },
+        mysql: {
+          sql: [
+            'select max(first_name) as `max_first_name`',
+            'from `person`',
+            'group by (select `pet`.`name` from `pet` where `person`.`id` = `pet`.`owner_id`)',
+            'order by `max_first_name` asc',
           ],
           bindings: [],
         },

@@ -7,13 +7,15 @@ import {
   TestContext,
   testSql,
   expect,
+  TEST_INIT_TIMEOUT,
 } from './test-setup.js'
 
 for (const dialect of BUILT_IN_DIALECTS) {
   describe(`${dialect}: join`, () => {
     let ctx: TestContext
 
-    before(async () => {
+    before(async function () {
+      this.timeout(TEST_INIT_TIMEOUT)
       ctx = await initTest(dialect)
     })
 
@@ -60,6 +62,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
       ['rightJoin', 'right join'],
       ['fullJoin', 'full join'],
     ] as const) {
+      if (dialect === 'mysql' && joinType === 'fullJoin') {
+        continue
+      }
+
       it(`should ${joinSql} a table`, async () => {
         const query = ctx.db
           .selectFrom('person')
@@ -70,6 +76,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
         testSql(query, dialect, {
           postgres: {
             sql: `select * from "person" ${joinSql} "pet" on "pet"."owner_id" = "person"."id" order by "person"."first_name" asc`,
+            bindings: [],
+          },
+          mysql: {
+            sql: `select * from \`person\` ${joinSql} \`pet\` on \`pet\`.\`owner_id\` = \`person\`.\`id\` order by \`person\`.\`first_name\` asc`,
             bindings: [],
           },
         })
@@ -120,6 +130,15 @@ for (const dialect of BUILT_IN_DIALECTS) {
             ],
             bindings: [],
           },
+          mysql: {
+            sql: [
+              'select * from `person`',
+              `${joinSql} (select \`owner_id\` as \`oid\`, \`name\` from \`pet\`) as \`p\``,
+              'on `p`.`oid` = `person`.`id`',
+              'order by `person`.`first_name` asc',
+            ],
+            bindings: [],
+          },
         })
 
         const result = await query.execute()
@@ -155,6 +174,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
         testSql(query, dialect, {
           postgres: {
             sql: `select "pet"."name" as "pet_name", "toy"."name" as "toy_name" from "person" ${joinSql} "pet" on "pet"."owner_id" = "person"."id" ${joinSql} "toy" on "toy"."pet_id" = "pet"."id" where "first_name" = $1`,
+            bindings: ['Jennifer'],
+          },
+          mysql: {
+            sql: `select \`pet\`.\`name\` as \`pet_name\`, \`toy\`.\`name\` as \`toy_name\` from \`person\` ${joinSql} \`pet\` on \`pet\`.\`owner_id\` = \`person\`.\`id\` ${joinSql} \`toy\` on \`toy\`.\`pet_id\` = \`pet\`.\`id\` where \`first_name\` = ?`,
             bindings: ['Jennifer'],
           },
         })
@@ -205,6 +228,17 @@ for (const dialect of BUILT_IN_DIALECTS) {
             ],
             bindings: ['Catto', 'Doggo', 'Hammo', 'cat', 'dog', 1, 0],
           },
+          mysql: {
+            sql: [
+              'select * from `person`',
+              `${joinSql} \`pet\``,
+              'on `pet`.`owner_id` = `person`.`id`',
+              'and `pet`.`name` in (?, ?, ?)',
+              "and (`pet`.`species` = ? or `species` = ? or `species` = (select 'hamster' as `hamster` from `pet` limit ? offset ?))",
+              'order by `person`.`first_name` asc',
+            ],
+            bindings: ['Catto', 'Doggo', 'Hammo', 'cat', 'dog', 1, 0],
+          },
         })
 
         await query.execute()
@@ -234,14 +268,22 @@ for (const dialect of BUILT_IN_DIALECTS) {
               postgres: {
                 sql: [
                   `select "pet"."id" from "person"`,
-                  `${joinSql} "pet"`,
-                  `on ${existsSql} (select "id" from "pet" as "p" where "p"."id" = "pet"."id" and "p"."owner_id" = "person"."id")`,
+                  `${joinSql} "pet" on ${existsSql}`,
+                  `(select "id" from "pet" as "p" where "p"."id" = "pet"."id" and "p"."owner_id" = "person"."id")`,
+                ],
+                bindings: [],
+              },
+              mysql: {
+                sql: [
+                  'select `pet`.`id` from `person`',
+                  `${joinSql} \`pet\` on ${existsSql}`,
+                  '(select `id` from `pet` as `p` where `p`.`id` = `pet`.`id` and `p`.`owner_id` = `person`.`id`)',
                 ],
                 bindings: [],
               },
             })
 
-            const result = await query.execute()
+            await query.execute()
           })
         }
       }

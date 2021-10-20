@@ -2,7 +2,7 @@ import { Driver } from '../driver/driver.js'
 import { Kysely } from '../kysely.js'
 import { QueryCompiler } from '../query-compiler/query-compiler.js'
 import { DatabaseIntrospector } from '../introspection/database-introspector.js'
-import { MigrationAdapter } from '../migration/migration-adapter.js'
+import { DialectAdapter } from './dialect-adapter.js'
 
 /**
  * A Dialect is an adapter between Kysely and the underlying database engine.
@@ -23,9 +23,9 @@ export interface Dialect {
   createQueryCompiler(): QueryCompiler
 
   /**
-   * Creates a migration adapter for the dialect.
+   * Creates an adapter for the dialect.
    */
-  createMigrationAdapter(): MigrationAdapter
+  createAdapter(): DialectAdapter
 
   /**
    * Creates a database introspector that can be used to get the database metadata

@@ -5,7 +5,7 @@ import {
 } from '../../driver/database-connection.js'
 import { Driver, TransactionSettings } from '../../driver/driver.js'
 import { CompiledQuery } from '../../query-compiler/compiled-query.js'
-import { freeze, isFunction } from '../../util/object-utils.js'
+import { isFunction } from '../../util/object-utils.js'
 import { PostgresDialectConfig } from './postgres-dialect.js'
 
 const PRIVATE_RELEASE_METHOD = Symbol()
@@ -118,14 +118,16 @@ class PostgresConnection implements DatabaseConnection {
       ...compiledQuery.bindings,
     ])
 
-    return freeze({
-      numUpdatedOrDeletedRows:
-        result.command === 'UPDATE' || result.command === 'DELETE'
-          ? result.rowCount
-          : undefined,
-      insertedPrimaryKey: undefined,
-      rows: result.rows,
-    })
+    if (result.command === 'UPDATE' || result.command === 'DELETE') {
+      return {
+        numUpdatedOrDeletedRows: result.rowCount,
+        rows: result.rows ?? [],
+      }
+    }
+
+    return {
+      rows: result.rows ?? [],
+    }
   }
 
   [PRIVATE_RELEASE_METHOD](): void {

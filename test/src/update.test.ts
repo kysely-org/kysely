@@ -7,13 +7,16 @@ import {
   TestContext,
   testSql,
   expect,
+  TEST_INIT_TIMEOUT,
+  NOT_SUPPORTED,
 } from './test-setup.js'
 
 for (const dialect of BUILT_IN_DIALECTS) {
   describe(`${dialect}: update`, () => {
     let ctx: TestContext
 
-    before(async () => {
+    before(async function () {
+      this.timeout(TEST_INIT_TIMEOUT)
       ctx = await initTest(dialect)
     })
 
@@ -59,6 +62,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
           sql: 'update "person" set "first_name" = $1, "last_name" = $2 where "gender" = $3',
           bindings: ['Foo', 'Barson', 'female'],
         },
+        mysql: {
+          sql: 'update `person` set `first_name` = ?, `last_name` = ? where `gender` = ?',
+          bindings: ['Foo', 'Barson', 'female'],
+        },
       })
 
       const result = await query.executeTakeFirst()
@@ -78,7 +85,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
       ])
     })
 
-    it('should update using a subquery', async () => {
+    it('should update one row using a subquery', async () => {
       const query = ctx.db
         .updateTable('person')
         .set({
@@ -89,16 +96,27 @@ for (const dialect of BUILT_IN_DIALECTS) {
               .select('name'),
         })
         .where('first_name', '=', 'Jennifer')
-        .returning('last_name')
 
       testSql(query, dialect, {
         postgres: {
-          sql: 'update "person" set "last_name" = (select "name" from "pet" where "person"."id" = "owner_id") where "first_name" = $1 returning "last_name"',
+          sql: 'update "person" set "last_name" = (select "name" from "pet" where "person"."id" = "owner_id") where "first_name" = $1',
+          bindings: ['Jennifer'],
+        },
+        mysql: {
+          sql: 'update `person` set `last_name` = (select `name` from `pet` where `person`.`id` = `owner_id`) where `first_name` = ?',
           bindings: ['Jennifer'],
         },
       })
 
-      const person = await query.executeTakeFirstOrThrow()
+      const numUpdated = await query.executeTakeFirst()
+      expect(numUpdated).to.equal(1)
+
+      const person = await ctx.db
+        .selectFrom('person')
+        .selectAll()
+        .where('first_name', '=', 'Jennifer')
+        .executeTakeFirstOrThrow()
+
       expect(person.last_name).to.equal('Catto')
     })
 
@@ -113,6 +131,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
       testSql(query, dialect, {
         postgres: {
           sql: 'update "person" set "last_name" = "first_name" where "first_name" = $1',
+          bindings: ['Jennifer'],
+        },
+        mysql: {
+          sql: 'update `person` set `last_name` = `first_name` where `first_name` = ?',
           bindings: ['Jennifer'],
         },
       })
@@ -133,6 +155,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
             sql: 'update "person" set "last_name" = $1 where "gender" = $2 returning "first_name", "last_name"',
             bindings: ['Barson', 'male'],
           },
+          mysql: NOT_SUPPORTED,
         })
 
         const result = await query.execute()

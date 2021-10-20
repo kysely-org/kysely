@@ -7,6 +7,7 @@ import {
   isReadonlyArray,
   isString,
 } from '../util/object-utils.js'
+import { ParseContext } from './parse-context.js'
 import { parseColumnName } from './reference-parser.js'
 import { MutationObject, parseUpdateObject } from './update-set-parser.js'
 
@@ -27,12 +28,13 @@ export function parseOnConflictDoNothing(
 }
 
 export function parseOnConflictUpdate(
+  ctx: ParseContext,
   target: OnConflictTargetExpression<any, any>,
   updates: MutationObject<any, any>
 ): OnConflictNode {
   return OnConflictNode.create({
     ...parseConflictTarget(target),
-    updates: parseUpdateObject(updates),
+    updates: parseUpdateObject(ctx, updates),
   })
 }
 

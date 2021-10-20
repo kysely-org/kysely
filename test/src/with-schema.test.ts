@@ -4,13 +4,16 @@ import {
   initTest,
   TestContext,
   testSql,
+  NOT_SUPPORTED,
+  TEST_INIT_TIMEOUT,
 } from './test-setup.js'
 
 for (const dialect of ['postgres'] as const) {
   describe(`${dialect}: with schema`, () => {
     let ctx: TestContext
 
-    before(async () => {
+    before(async function () {
+      this.timeout(TEST_INIT_TIMEOUT)
       ctx = await initTest(dialect)
 
       await dropTables()
@@ -60,6 +63,7 @@ for (const dialect of ['postgres'] as const) {
             sql: 'select * from "mammals"."pet"',
             bindings: [],
           },
+          mysql: NOT_SUPPORTED,
         })
 
         await query.execute()
@@ -77,6 +81,7 @@ for (const dialect of ['postgres'] as const) {
             sql: 'select * from "mammals"."pet" as "p" left join "mammals"."pet" on "mammals"."pet"."id" = "p"."id"',
             bindings: [],
           },
+          mysql: NOT_SUPPORTED,
         })
 
         await query.execute()
@@ -94,6 +99,7 @@ for (const dialect of ['postgres'] as const) {
             sql: 'select * from "mammals"."pet" as "p1" left join "mammals"."pet" as "p2" on "p1"."id" = "p2"."id"',
             bindings: [],
           },
+          mysql: NOT_SUPPORTED,
         })
 
         await query.execute()
@@ -110,6 +116,7 @@ for (const dialect of ['postgres'] as const) {
             sql: 'select "p"."name" from "mammals"."pet" as "p"',
             bindings: [],
           },
+          mysql: NOT_SUPPORTED,
         })
 
         await query.execute()
@@ -138,6 +145,7 @@ for (const dialect of ['postgres'] as const) {
             ],
             bindings: [],
           },
+          mysql: NOT_SUPPORTED,
         })
 
         await query.execute()
@@ -167,6 +175,7 @@ for (const dialect of ['postgres'] as const) {
             ],
             bindings: [],
           },
+          mysql: NOT_SUPPORTED,
         })
 
         await query.execute()
@@ -197,6 +206,7 @@ for (const dialect of ['postgres'] as const) {
             sql: 'insert into "mammals"."pet" ("name", "species", "owner_id") values ($1, $2, $3) returning "mammals"."pet"."id"',
             bindings: ['Doggo', 'dog', anyPerson.id],
           },
+          mysql: NOT_SUPPORTED,
         })
       })
     })
@@ -213,6 +223,7 @@ for (const dialect of ['postgres'] as const) {
             sql: 'delete from "mammals"."pet" where "mammals"."pet"."name" = $1',
             bindings: ['Doggo'],
           },
+          mysql: NOT_SUPPORTED,
         })
 
         await query.execute()
@@ -232,6 +243,7 @@ for (const dialect of ['postgres'] as const) {
             sql: 'update "mammals"."pet" set "species" = $1 where "mammals"."pet"."name" = $2',
             bindings: ['cat', 'Doggo'],
           },
+          mysql: NOT_SUPPORTED,
         })
 
         await query.execute()
