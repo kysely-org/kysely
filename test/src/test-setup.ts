@@ -212,7 +212,10 @@ async function connect(config: KyselyConfig): Promise<Kysely<Database>> {
         await db.destroy().catch((error) => error)
       }
 
-      console.log('waiting for database to become available')
+      console.log(
+        'Waiting for the database to become available. Did you remember to run `docker-compose up`?'
+      )
+
       await sleep(1000)
     }
   }

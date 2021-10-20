@@ -36,16 +36,14 @@ Kysely, please open an issue as soon as you can't find something you want to use
 Kysely currently only works on PostgreSQL and MySQL. You can install it using
 
 ```
+# postgres
 npm install kysely pg
-```
 
-or
-
-```
+# mysql
 npm install kysely mysql2
 ```
 
-More dialects will be added will be added soon. Kysely also has a simple interface
+More dialects will be added soon. Kysely also has a simple interface
 for [third-party dialects](https://koskimas.github.io/kysely/interfaces/Dialect.html).
 
 # Minimal example
