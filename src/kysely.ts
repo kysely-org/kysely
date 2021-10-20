@@ -20,7 +20,7 @@ import {
   TRANSACTION_ISOLATION_LEVELS,
 } from './driver/driver.js'
 import { preventAwait } from './util/prevent-await.js'
-import { DialectAdapter } from './index.js'
+import { DialectAdapter } from './dialect/dialect-adapter.js'
 
 /**
  * The main Kysely class.
@@ -310,7 +310,7 @@ export class ConnectionBuilder<DB> {
     this.#props = freeze(props)
   }
 
-  async execute<T>(callback: (trx: Kysely<DB>) => Promise<T>): Promise<T> {
+  async execute<T>(callback: (db: Kysely<DB>) => Promise<T>): Promise<T> {
     const connection = await this.#props.driver.acquireConnection()
     const connectionProvider = new SingleConnectionProvider(connection)
 

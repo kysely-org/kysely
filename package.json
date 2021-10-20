@@ -1,6 +1,6 @@
 {
   "name": "kysely",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "description": "Type safe SQL query builder",
   "repository": {
     "type": "git",

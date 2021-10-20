@@ -94,8 +94,9 @@ export class MysqlDriver implements Driver {
     await connection.executeQuery({ sql: 'rollback', bindings: [] })
   }
 
-  async releaseConnection(connection: MysqlConnection): Promise<void> {
-    connection[PRIVATE_RELEASE_METHOD]()
+  async releaseConnection(connection: DatabaseConnection): Promise<void> {
+    const mysqlConnection = connection as MysqlConnection
+    mysqlConnection[PRIVATE_RELEASE_METHOD]()
   }
 
   async destroy(): Promise<void> {
