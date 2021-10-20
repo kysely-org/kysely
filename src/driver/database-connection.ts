@@ -18,7 +18,8 @@ export interface QueryResult<O> {
   readonly insertedPrimaryKey?: number
 
   /**
-   * This is defined if the query returned any rows.
+   * The rows returned by the query. This is always defined and is
+   * empty if the query returned no rows.
    */
   readonly rows: O[]
 }

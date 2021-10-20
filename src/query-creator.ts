@@ -27,9 +27,9 @@ import {
 import { WithNode } from './operation-node/with-node.js'
 import { createQueryId } from './util/query-id.js'
 import { WithSchemaPlugin } from './plugin/with-schema/with-schema-plugin.js'
-import { DialectAdapter } from './index.js'
 import { freeze } from './util/object-utils.js'
 import { createParseContext } from './parser/parse-context.js'
+import { DialectAdapter } from './dialect/dialect-adapter.js'
 
 export class QueryCreator<DB> {
   readonly #props: QueryCreatorProps

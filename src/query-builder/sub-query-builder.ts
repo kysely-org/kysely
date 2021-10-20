@@ -8,9 +8,9 @@ import {
 import { NoopQueryExecutor } from '../query-executor/noop-query-executor.js'
 import { WithSchemaPlugin } from '../plugin/with-schema/with-schema-plugin.js'
 import { createQueryId } from '../util/query-id.js'
-import { DialectAdapter } from '../index.js'
 import { freeze } from '../util/object-utils.js'
 import { createParseContext } from '../parser/parse-context.js'
+import { DialectAdapter } from '../dialect/dialect-adapter.js'
 
 export class SubQueryBuilder<DB, TB extends keyof DB> {
   readonly #props: SubQueryBuilderProps
@@ -97,6 +97,6 @@ export class SubQueryBuilder<DB, TB extends keyof DB> {
 }
 
 export interface SubQueryBuilderProps {
-  executor: NoopQueryExecutor
-  adapter: DialectAdapter
+  readonly executor: NoopQueryExecutor
+  readonly adapter: DialectAdapter
 }

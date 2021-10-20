@@ -3,12 +3,12 @@ import { Kysely } from '../../kysely.js'
 import { QueryCompiler } from '../../query-compiler/query-compiler.js'
 import { Dialect } from '../dialect.js'
 import { DatabaseIntrospector } from '../../introspection/database-introspector.js'
-import { DatabaseConnection } from '../../index.js'
 import { MysqlDriver } from './mysql-driver.js'
 import { MysqlQueryCompiler } from './mysql-query-compiler.js'
 import { MysqlIntrospector } from './mysql-introspector.js'
 import { DialectAdapter } from '../dialect-adapter.js'
 import { MysqlAdapter } from './mysql-adapter.js'
+import { DatabaseConnection } from '../../driver/database-connection.js'
 
 export class MysqlDialect implements Dialect {
   readonly #config: MysqlDialectConfig

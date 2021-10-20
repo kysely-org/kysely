@@ -75,9 +75,10 @@ import {
   parseOnConflictDoNothing,
   parseOnConflictUpdate,
 } from '../parser/on-conflict-parser.js'
-import { DeleteQueryNode, DialectAdapter } from '../index.js'
 import { freeze } from '../util/object-utils.js'
 import { createParseContext } from '../parser/parse-context.js'
+import { DeleteQueryNode } from '../operation-node/delete-query-node.js'
+import { DialectAdapter } from '../dialect/dialect-adapter.js'
 
 /**
  * The main query builder class.

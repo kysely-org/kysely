@@ -7,7 +7,7 @@ import { Driver, TransactionSettings } from './driver.js'
  * once etc.
  */
 export class RuntimeDriver implements Driver {
-  #driver: Driver
+  readonly #driver: Driver
   #initPromise?: Promise<void>
   #destroyPromise?: Promise<void>
 

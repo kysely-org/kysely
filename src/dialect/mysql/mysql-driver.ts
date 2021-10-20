@@ -77,6 +77,7 @@ export class MysqlDriver implements Driver {
     settings: TransactionSettings
   ): Promise<void> {
     if (settings.isolationLevel) {
+      // On mysql this sets the isolation level of the next transaction.
       await connection.executeQuery({
         sql: `set transaction isolation level ${settings.isolationLevel}`,
         bindings: [],
@@ -190,7 +191,7 @@ class MysqlConnection implements DatabaseConnection {
     })
   }
 
-  [PRIVATE_RELEASE_METHOD]() {
+  [PRIVATE_RELEASE_METHOD](): void {
     this.#rawConnection.release()
   }
 }

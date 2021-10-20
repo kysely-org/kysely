@@ -1,4 +1,3 @@
-import { SubQueryBuilder } from '../index.js'
 import { ColumnNode } from '../operation-node/column-node.js'
 import { ColumnUpdateNode } from '../operation-node/column-update-node.js'
 import { isOperationNodeSource } from '../operation-node/operation-node-source.js'

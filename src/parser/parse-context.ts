@@ -1,10 +1,12 @@
-import { DialectAdapter, NoopQueryExecutor, SelectQueryNode } from '../index.js'
+import { DialectAdapter } from '../dialect/dialect-adapter.js'
 import { JoinNode, JoinType } from '../operation-node/join-node.js'
 import { TableExpressionNode } from '../operation-node/operation-node-utils.js'
+import { SelectQueryNode } from '../operation-node/select-query-node.js'
 import { JoinBuilder } from '../query-builder/join-builder.js'
 import { QueryBuilder } from '../query-builder/query-builder.js'
 import { SubQueryBuilder } from '../query-builder/sub-query-builder.js'
 import { QueryCreator } from '../query-creator.js'
+import { NoopQueryExecutor } from '../query-executor/noop-query-executor.js'
 import { freeze } from '../util/object-utils.js'
 import { createQueryId } from '../util/query-id.js'
 
