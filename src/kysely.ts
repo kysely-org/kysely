@@ -214,7 +214,7 @@ export class Kysely<DB> extends QueryCreator<DB> {
    *   .execute(async (db) => {
    *     // `db` is an instance of `Kysely` that's bound to a single
    *     // database connection. All queries executed through `db` use
-   *     // the same donnection and not the connection pool.
+   *     // the same connection.
    *     await doStuff(db)
    *   })
    * ```
@@ -327,17 +327,17 @@ export class ConnectionBuilder<DB> {
   }
 }
 
+export interface ConnectionBuilderProps extends KyselyProps {}
+
 preventAwait(
   ConnectionBuilder,
   "don't await ConnectionBuilder instances directly. To execute the query you need to call the `execute` method"
 )
 
-export interface ConnectionBuilderProps extends KyselyProps {}
-
 export class TransactionBuilder<DB> {
-  readonly #props: TransactionBuilerProps
+  readonly #props: TransactionBuilderProps
 
-  constructor(props: TransactionBuilerProps) {
+  constructor(props: TransactionBuilderProps) {
     this.#props = props
   }
 
@@ -377,14 +377,14 @@ export class TransactionBuilder<DB> {
   }
 }
 
+export interface TransactionBuilderProps extends KyselyProps {
+  readonly isolationLevel?: IsolationLevel
+}
+
 preventAwait(
   TransactionBuilder,
   "don't await TransactionBuilder instances directly. To execute the transaction you need to call the `execute` method"
 )
-
-export interface TransactionBuilerProps extends KyselyProps {
-  readonly isolationLevel?: IsolationLevel
-}
 
 function validateTransactionSettings(settings: TransactionSettings): void {
   if (
