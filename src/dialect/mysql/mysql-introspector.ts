@@ -37,11 +37,11 @@ export class MysqlIntrospector implements DatabaseIntrospector {
     const rawColumns = await query.execute()
 
     return {
-      tables: this.parseTableMetadata(rawColumns),
+      tables: this.#parseTableMetadata(rawColumns),
     }
   }
 
-  private parseTableMetadata(columns: RawColumnMetadata[]): TableMetadata[] {
+  #parseTableMetadata(columns: RawColumnMetadata[]): TableMetadata[] {
     return columns.reduce<TableMetadata[]>((tables, it) => {
       let table = tables.find((tbl) => tbl.name === it.TABLE_NAME)
 

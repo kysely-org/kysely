@@ -16,7 +16,7 @@ export class SingleConnectionProvider implements ConnectionProvider {
       await this.#runningPromise
     }
 
-    const promise = this.run(runner)
+    const promise = this.#run(runner)
 
     this.#runningPromise = promise
       .then(() => {
@@ -31,7 +31,7 @@ export class SingleConnectionProvider implements ConnectionProvider {
 
   // Run the runner in an async function to make sure it doesn't
   // throw synchronous errors.
-  private async run<T>(
+  async #run<T>(
     runner: (connection: DatabaseConnection) => Promise<T>
   ): Promise<T> {
     return await runner(this.#connection)

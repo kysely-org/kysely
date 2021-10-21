@@ -49,11 +49,11 @@ export class PostgresIntrospector implements DatabaseIntrospector {
     const rawColumns = await query.execute()
 
     return {
-      tables: this.parseTableMetadata(rawColumns),
+      tables: this.#parseTableMetadata(rawColumns),
     }
   }
 
-  private parseTableMetadata(columns: RawColumnMetadata[]): TableMetadata[] {
+  #parseTableMetadata(columns: RawColumnMetadata[]): TableMetadata[] {
     return columns.reduce<TableMetadata[]>((tables, it) => {
       let table = tables.find(
         (tbl) => tbl.name === it.table && tbl.schema === it.schema

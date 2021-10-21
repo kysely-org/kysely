@@ -56,7 +56,7 @@ export interface Driver {
 }
 
 export interface TransactionSettings {
-  isolationLevel?: IsolationLevel
+  readonly isolationLevel?: IsolationLevel
 }
 
 export const TRANSACTION_ISOLATION_LEVELS = [

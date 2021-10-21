@@ -26,49 +26,49 @@ export class WithSchemaTransformer extends OperationNodeTransformer {
   protected override transformSelectQuery(
     node: SelectQueryNode
   ): SelectQueryNode {
-    return this.transformRoot(node, (node) => super.transformSelectQuery(node))
+    return this.#transformRoot(node, (node) => super.transformSelectQuery(node))
   }
 
   protected override transformInsertQuery(
     node: InsertQueryNode
   ): InsertQueryNode {
-    return this.transformRoot(node, (node) => super.transformInsertQuery(node))
+    return this.#transformRoot(node, (node) => super.transformInsertQuery(node))
   }
 
   protected override transformUpdateQuery(
     node: UpdateQueryNode
   ): UpdateQueryNode {
-    return this.transformRoot(node, (node) => super.transformUpdateQuery(node))
+    return this.#transformRoot(node, (node) => super.transformUpdateQuery(node))
   }
 
   protected override transformDeleteQuery(
     node: DeleteQueryNode
   ): DeleteQueryNode {
-    return this.transformRoot(node, (node) => super.transformDeleteQuery(node))
+    return this.#transformRoot(node, (node) => super.transformDeleteQuery(node))
   }
 
   protected override transformCreateTable(
     node: CreateTableNode
   ): CreateTableNode {
-    return this.transformRoot(node, (node) => super.transformCreateTable(node))
+    return this.#transformRoot(node, (node) => super.transformCreateTable(node))
   }
 
   protected override transformDropTable(node: DropTableNode): DropTableNode {
-    return this.transformRoot(node, (node) => super.transformDropTable(node))
+    return this.#transformRoot(node, (node) => super.transformDropTable(node))
   }
 
   protected override transformCreateIndex(
     node: CreateIndexNode
   ): CreateIndexNode {
-    return this.transformRoot(node, (node) => super.transformCreateIndex(node))
+    return this.#transformRoot(node, (node) => super.transformCreateIndex(node))
   }
 
   protected override transformDropIndex(node: DropIndexNode): DropIndexNode {
-    return this.transformRoot(node, (node) => super.transformDropIndex(node))
+    return this.#transformRoot(node, (node) => super.transformDropIndex(node))
   }
 
   protected override transformAlterTable(node: AlterTableNode): AlterTableNode {
-    return this.transformRoot(node, (node) => super.transformAlterTable(node))
+    return this.#transformRoot(node, (node) => super.transformAlterTable(node))
   }
 
   protected override transformTable(node: TableNode): TableNode {
@@ -87,11 +87,11 @@ export class WithSchemaTransformer extends OperationNodeTransformer {
     }
   }
 
-  private transformRoot<T extends RootOperationNode>(
+  #transformRoot<T extends RootOperationNode>(
     node: T,
     transform: (node: T) => T
   ): T {
-    const tables = this.collectTables(node)
+    const tables = this.#collectTables(node)
 
     for (const table of tables) {
       this.#tables.add(table)
@@ -106,47 +106,47 @@ export class WithSchemaTransformer extends OperationNodeTransformer {
     return transformed
   }
 
-  private collectTables(node: RootOperationNode): Set<string> {
+  #collectTables(node: RootOperationNode): Set<string> {
     const tables = new Set<string>()
 
     if ('from' in node && node.from) {
-      this.collectTablesFromTableExpressionNodes(node.from.froms, tables)
+      this.#collectTablesFromTableExpressionNodes(node.from.froms, tables)
     }
 
     if ('into' in node && node.into) {
-      this.collectTablesFromTableExpressionNode(node.into, tables)
+      this.#collectTablesFromTableExpressionNode(node.into, tables)
     }
 
     if ('table' in node && node.table) {
-      this.collectTablesFromTableExpressionNode(node.table, tables)
+      this.#collectTablesFromTableExpressionNode(node.table, tables)
     }
 
     if ('joins' in node && node.joins) {
-      this.collectTablesFromJoins(node.joins, tables)
+      this.#collectTablesFromJoins(node.joins, tables)
     }
 
     return tables
   }
 
-  private collectTablesFromTableExpressionNodes(
+  #collectTablesFromTableExpressionNodes(
     nodes: ReadonlyArray<TableExpressionNode>,
     tables: Set<string>
   ): void {
     for (const node of nodes) {
-      this.collectTablesFromTableExpressionNode(node, tables)
+      this.#collectTablesFromTableExpressionNode(node, tables)
     }
   }
 
-  private collectTablesFromJoins(
+  #collectTablesFromJoins(
     nodes: ReadonlyArray<JoinNode>,
     tables: Set<string>
   ): void {
     for (const node of nodes) {
-      this.collectTablesFromTableExpressionNode(node.table, tables)
+      this.#collectTablesFromTableExpressionNode(node.table, tables)
     }
   }
 
-  private collectTablesFromTableExpressionNode(
+  #collectTablesFromTableExpressionNode(
     node: TableExpressionNode,
     tables: Set<string>
   ): void {

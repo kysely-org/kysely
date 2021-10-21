@@ -8,20 +8,19 @@ A type-safe and autocompletion-friendly typescript SQL query builder for node.js
 
 ![](https://github.com/koskimas/kysely/blob/master/assets/demo.gif)
 
-Kysely's typings only allow you to use tables that are available in the database and refer to
-columns of the tables that are joined to the query. The result type only contains the selected
-columns with correct types and aliases. This allows tools like vscode autocompletion to make your life
-so much easier.
+Kysely's typings make sure you only refer to tables and columns that are visible to the part of the query
+you are writing. The result type only has the selected columns with correct types and aliases. This 
+allows tools like vscode autocompletion to make your life so much easier.
 
 As you can see in the gif above, through the pure magic of modern typescript, Kysely is even able to parse
 the alias given to `pet.name` and add the `pet_name` column to the result row type. Kysely is able to infer
-column names and types from selected subqueries, joined subqueries, `with` statements and pretty much
-anything you can think of. Typescript is always there for you to offer completions and tell what kind
-of query you can build.
+column names, aliases and types from selected subqueries, joined subqueries, `with` statements and pretty
+much anything you can think of. Typescript is always there for you offering completions and making sure
+you build a valid query.
 
 Of course there are cases where things cannot be typed at compile time, and Kysely offers escape
 hatches for these situations. With typescript you can always cast something to `any` if the types
-fail you. with Kysely you can also explicitly tell it to ignore the typings, but the default is always
+fail you. With Kysely you can also explicitly tell it to ignore the typings, but the default is always
 type-safety! See the [DynamicModule](https://koskimas.github.io/kysely/classes/DynamicModule.html#ref)
 for more info.
 
@@ -33,7 +32,7 @@ Kysely, please open an issue as soon as you can't find something you want to use
 
 # Installation
 
-Kysely currently only works on PostgreSQL and MySQL. You can install it using
+Kysely currently works on PostgreSQL and MySQL. You can install it using
 
 ```
 # postgres
@@ -45,6 +44,10 @@ npm install kysely mysql2
 
 More dialects will be added soon. Kysely also has a simple interface
 for [third-party dialects](https://koskimas.github.io/kysely/interfaces/Dialect.html).
+
+3rd party dialects:
+
+ - [AWS Data API](https://github.com/serverless-stack/kysely-data-api)
 
 # Minimal example
 

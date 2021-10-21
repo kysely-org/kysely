@@ -97,6 +97,11 @@ export class AlterTableBuilder {
     })
   }
 
+  /**
+   * Creates an `alter table modify column` query. The `modify column` statement
+   * is only implemeted by MySQL and oracle AFAIK. On other databases you
+   * should use the `alterColumn` method.
+   */
   modifyColumn(
     columnName: string,
     dataType: ColumnDataType | RawBuilder
