@@ -27,6 +27,8 @@ for more info.
 Kysely is still young and some useful features are propably not yet implemented. If you start
 using Kysely and can't find something you'd want to use, please open an issue.
 
+# Table of contents
+
 - [API reference](https://koskimas.github.io/kysely/index.html)
 - [Installation](#installation)
 - [Minimal example](#minimal-example)
