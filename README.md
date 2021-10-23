@@ -24,10 +24,12 @@ fail you. With Kysely you can also explicitly tell it to ignore the typings, but
 type-safety! See the [DynamicModule](https://koskimas.github.io/kysely/classes/DynamicModule.html#ref)
 for more info.
 
-Kysely is still young and some useful methods and modules are not yet implemented. If you start using
-Kysely, please open an issue as soon as you can't find something you want to use.
+Kysely is still young and some useful features are propably not yet implemented. If you start
+using Kysely and can't find something you'd want to use, please open an issue.
 
 - [API reference](https://koskimas.github.io/kysely/index.html)
+- [Installation](#installation)
+- [Minimal example](#minimal-example)
 - [Migrations](#migrations)
 
 # Installation
@@ -43,7 +45,7 @@ npm install kysely mysql2
 ```
 
 More dialects will be added soon. Kysely also has a simple interface
-for [third-party dialects](https://koskimas.github.io/kysely/interfaces/Dialect.html).
+for [3rd party dialects](https://koskimas.github.io/kysely/interfaces/Dialect.html).
 
 3rd party dialects:
 
@@ -76,7 +78,7 @@ interface Movie {
   stars: number
 }
 
-// Keys are table names.
+// Keys of this interface are table names.
 interface Database {
   person: Person
   pet: Pet

@@ -9,7 +9,7 @@ export function userController(router: Router): void {
     const { body } = ctx.request
 
     if (validateCreateAnonymousUserRequest(body)) {
-      const result = await ctx.db.transaction(async (trx) => {
+      const result = await ctx.db.transaction().execute(async (trx) => {
         return userService.createAnonymousUser(trx, body)
       })
 

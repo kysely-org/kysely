@@ -25,7 +25,7 @@ export function signInMethodController(router: Router): void {
 
       if (validatePasswordSignInMethod(body)) {
         try {
-          await ctx.db.transaction(async (trx) => {
+          await ctx.db.transaction().execute(async (trx) => {
             await signInMethodService.addPasswordSignInMethod(
               trx,
               ctx.params.userId,
@@ -64,7 +64,7 @@ export function signInMethodController(router: Router): void {
 
     if (validatePasswordSignInMethod(body)) {
       try {
-        const signedInUser = await ctx.db.transaction(async (trx) => {
+        const signedInUser = await ctx.db.transaction().execute(async (trx) => {
           return signInMethodService.singInUsingPassword(trx, body)
         })
 
