@@ -57,6 +57,7 @@ import { DropConstraintNode } from './drop-constraint-node.js'
 import { ForeignKeyConstraintNode } from './foreign-key-constraint-node.js'
 import { ColumnDefinitionNode } from './column-definition-node.js'
 import { ModifyColumnNode } from './modify-column-node.js'
+import { OnDuplicateKeyNode } from './on-duplicate-key-node.js'
 
 /**
  * Transforms an operation node tree into another one.
@@ -128,6 +129,7 @@ export class OperationNodeTransformer {
     LimitNode: this.transformLimit.bind(this),
     OffsetNode: this.transformOffset.bind(this),
     OnConflictNode: this.transformOnConflict.bind(this),
+    OnDuplicateKeyNode: this.transformOnDuplicateKey.bind(this),
     CreateIndexNode: this.transformCreateIndex.bind(this),
     DropIndexNode: this.transformDropIndex.bind(this),
     ListNode: this.transformList.bind(this),
@@ -309,7 +311,9 @@ export class OperationNodeTransformer {
       values: this.transformNodeList(node.values),
       returning: this.transformNode(node.returning),
       onConflict: this.transformNode(node.onConflict),
+      onDuplicateKey: this.transformNode(node.onDuplicateKey),
       with: this.transformNode(node.with),
+      ignore: node.ignore,
     }
   }
 
@@ -443,6 +447,15 @@ export class OperationNodeTransformer {
       constraint: this.transformNode(node.constraint),
       updates: this.transformNodeList(node.updates),
       doNothing: node.doNothing,
+    }
+  }
+
+  protected transformOnDuplicateKey(
+    node: OnDuplicateKeyNode
+  ): OnDuplicateKeyNode {
+    return {
+      kind: 'OnDuplicateKeyNode',
+      updates: this.transformNodeList(node.updates),
     }
   }
 

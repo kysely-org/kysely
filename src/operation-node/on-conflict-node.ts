@@ -4,7 +4,7 @@ import { ColumnUpdateNode } from './column-update-node.js'
 import { IdentifierNode } from './identifier-node.js'
 import { OperationNode } from './operation-node.js'
 
-export type OnConflictNodeParams = Omit<OnConflictNode, 'kind'>
+export type OnConflictNodeProps = Omit<OnConflictNode, 'kind'>
 
 export interface OnConflictNode extends OperationNode {
   readonly kind: 'OnConflictNode'
@@ -22,10 +22,10 @@ export const OnConflictNode = freeze({
     return node.kind === 'OnConflictNode'
   },
 
-  create(params: OnConflictNodeParams): OnConflictNode {
+  create(props: OnConflictNodeProps): OnConflictNode {
     return freeze({
       kind: 'OnConflictNode',
-      ...params,
+      ...props,
     })
   },
 })

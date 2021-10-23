@@ -7,7 +7,7 @@ import { RawNode } from './raw-node.js'
 import { ReferencesNode } from './references-node.js'
 import { ValueNode } from './value-node.js'
 
-export type ColumnDefinitionNodeParams = Omit<
+export type ColumnDefinitionNodeProps = Omit<
   Partial<ColumnDefinitionNode>,
   'kind'
 >
@@ -48,11 +48,11 @@ export const ColumnDefinitionNode = freeze({
 
   cloneWith(
     node: ColumnDefinitionNode,
-    params: ColumnDefinitionNodeParams
+    props: ColumnDefinitionNodeProps
   ): ColumnDefinitionNode {
     return freeze({
       ...node,
-      ...params,
+      ...props,
     })
   },
 })

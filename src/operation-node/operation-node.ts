@@ -36,6 +36,7 @@ export type OperationNodeKind =
   | 'LimitNode'
   | 'OffsetNode'
   | 'OnConflictNode'
+  | 'OnDuplicateKeyNode'
   | 'CreateIndexNode'
   | 'DropIndexNode'
   | 'ListNode'

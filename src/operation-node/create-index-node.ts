@@ -6,7 +6,7 @@ import { OperationNode } from './operation-node.js'
 import { RawNode } from './raw-node.js'
 import { TableNode } from './table-node.js'
 
-export type CreateIndexNodeParams = Omit<Partial<CreateIndexNode>, 'kind'>
+export type CreateIndexNodeProps = Omit<CreateIndexNode, 'kind' | 'name'>
 export type IndexType = 'btree' | 'hash' | 'gist' | 'gin'
 
 export interface CreateIndexNode extends OperationNode {
@@ -36,11 +36,11 @@ export const CreateIndexNode = freeze({
 
   cloneWith(
     node: CreateIndexNode,
-    params: CreateIndexNodeParams
+    props: CreateIndexNodeProps
   ): CreateIndexNode {
     return freeze({
       ...node,
-      ...params,
+      ...props,
     })
   },
 })

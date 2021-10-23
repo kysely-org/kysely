@@ -327,7 +327,7 @@ export class ConnectionBuilder<DB> {
   }
 }
 
-export interface ConnectionBuilderProps extends KyselyProps {}
+interface ConnectionBuilderProps extends KyselyProps {}
 
 preventAwait(
   ConnectionBuilder,
@@ -377,7 +377,7 @@ export class TransactionBuilder<DB> {
   }
 }
 
-export interface TransactionBuilderProps extends KyselyProps {
+interface TransactionBuilderProps extends KyselyProps {
   readonly isolationLevel?: IsolationLevel
 }
 

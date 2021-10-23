@@ -3,7 +3,7 @@ import { IdentifierNode } from './identifier-node.js'
 import { OperationNode } from './operation-node.js'
 import { TableNode } from './table-node.js'
 
-export type DropIndexNodeParams = Omit<Partial<DropIndexNode>, 'kind' | 'name'>
+export type DropIndexNodeProps = Omit<DropIndexNode, 'kind' | 'name'>
 export type DropIndexNodeModifier = 'IfExists'
 
 export interface DropIndexNode extends OperationNode {
@@ -21,7 +21,7 @@ export const DropIndexNode = freeze({
     return node.kind === 'DropIndexNode'
   },
 
-  create(name: string, params?: DropIndexNodeParams): DropIndexNode {
+  create(name: string, params?: DropIndexNodeProps): DropIndexNode {
     return freeze({
       kind: 'DropIndexNode',
       name: IdentifierNode.create(name),
@@ -31,11 +31,11 @@ export const DropIndexNode = freeze({
 
   cloneWith(
     dropIndex: DropIndexNode,
-    params: DropIndexNodeParams
+    props: DropIndexNodeProps
   ): DropIndexNode {
     return freeze({
       ...dropIndex,
-      ...params,
+      ...props,
     })
   },
 })

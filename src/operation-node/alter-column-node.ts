@@ -5,10 +5,7 @@ import { DataTypeNode } from './data-type-node.js'
 import { ValueNode } from './value-node.js'
 import { RawNode } from './raw-node.js'
 
-export type AlterColumnNodeParams = Omit<
-  Partial<AlterColumnNode>,
-  'kind' | 'column'
->
+export type AlterColumnNodeProps = Omit<AlterColumnNode, 'kind' | 'column'>
 
 export interface AlterColumnNode extends OperationNode {
   readonly kind: 'AlterColumnNode'
@@ -38,11 +35,11 @@ export const AlterColumnNode = freeze({
 
   cloneWith(
     node: AlterColumnNode,
-    params: AlterColumnNodeParams
+    props: AlterColumnNodeProps
   ): AlterColumnNode {
     return freeze({
       ...node,
-      ...params,
+      ...props,
     })
   },
 })

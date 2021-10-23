@@ -79,6 +79,7 @@ import { freeze } from '../util/object-utils.js'
 import { createParseContext } from '../parser/parse-context.js'
 import { DeleteQueryNode } from '../operation-node/delete-query-node.js'
 import { DialectAdapter } from '../dialect/dialect-adapter.js'
+import { OnDuplicateKeyNode } from '../operation-node/on-duplicate-key-node.js'
 
 /**
  * The main query builder class.
@@ -296,7 +297,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
   ): QueryBuilder<DB, TB, O>
 
   where(...args: any[]): any {
-    ensureCanHaveWhereClause(this.#props.queryNode)
+    assertCanHaveWhereClause(this.#props.queryNode)
 
     return new QueryBuilder({
       ...this.#props,
@@ -364,7 +365,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
     op: FilterOperator,
     rhs: ReferenceExpression<DB, TB>
   ): QueryBuilder<DB, TB, O> {
-    ensureCanHaveWhereClause(this.#props.queryNode)
+    assertCanHaveWhereClause(this.#props.queryNode)
 
     return new QueryBuilder({
       ...this.#props,
@@ -452,7 +453,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
   ): QueryBuilder<DB, TB, O>
 
   orWhere(...args: any[]): any {
-    ensureCanHaveWhereClause(this.#props.queryNode)
+    assertCanHaveWhereClause(this.#props.queryNode)
 
     return new QueryBuilder({
       ...this.#props,
@@ -475,7 +476,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
     op: FilterOperator,
     rhs: ReferenceExpression<DB, TB>
   ): QueryBuilder<DB, TB, O> {
-    ensureCanHaveWhereClause(this.#props.queryNode)
+    assertCanHaveWhereClause(this.#props.queryNode)
 
     return new QueryBuilder({
       ...this.#props,
@@ -547,7 +548,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * ```
    */
   whereExists(arg: ExistsExpression<DB, TB>): QueryBuilder<DB, TB, O> {
-    ensureCanHaveWhereClause(this.#props.queryNode)
+    assertCanHaveWhereClause(this.#props.queryNode)
 
     return new QueryBuilder({
       ...this.#props,
@@ -563,7 +564,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * Just like {@link QueryBuilder.whereExists | whereExists} but creates a `not exists` clause.
    */
   whereNotExists(arg: ExistsExpression<DB, TB>): QueryBuilder<DB, TB, O> {
-    ensureCanHaveWhereClause(this.#props.queryNode)
+    assertCanHaveWhereClause(this.#props.queryNode)
 
     return new QueryBuilder({
       ...this.#props,
@@ -579,7 +580,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * Just like {@link QueryBuilder.whereExists | whereExists} but creates a `or exists` clause.
    */
   orWhereExists(arg: ExistsExpression<DB, TB>): QueryBuilder<DB, TB, O> {
-    ensureCanHaveWhereClause(this.#props.queryNode)
+    assertCanHaveWhereClause(this.#props.queryNode)
 
     return new QueryBuilder({
       ...this.#props,
@@ -595,7 +596,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * Just like {@link QueryBuilder.whereExists | whereExists} but creates a `or not exists` clause.
    */
   orWhereNotExists(arg: ExistsExpression<DB, TB>): QueryBuilder<DB, TB, O> {
-    ensureCanHaveWhereClause(this.#props.queryNode)
+    assertCanHaveWhereClause(this.#props.queryNode)
 
     return new QueryBuilder({
       ...this.#props,
@@ -622,7 +623,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
   ): QueryBuilder<DB, TB, O>
 
   having(...args: any[]): any {
-    ensureCanHaveHavingClause(this.#props.queryNode)
+    assertCanHaveHavingClause(this.#props.queryNode)
 
     return new QueryBuilder({
       ...this.#props,
@@ -643,7 +644,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
     op: FilterOperator,
     rhs: ReferenceExpression<DB, TB>
   ): QueryBuilder<DB, TB, O> {
-    ensureCanHaveHavingClause(this.#props.queryNode)
+    assertCanHaveHavingClause(this.#props.queryNode)
 
     return new QueryBuilder({
       ...this.#props,
@@ -670,7 +671,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
   ): QueryBuilder<DB, TB, O>
 
   orHaving(...args: any[]): any {
-    ensureCanHaveHavingClause(this.#props.queryNode)
+    assertCanHaveHavingClause(this.#props.queryNode)
 
     return new QueryBuilder({
       ...this.#props,
@@ -691,7 +692,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
     op: FilterOperator,
     rhs: ReferenceExpression<DB, TB>
   ): QueryBuilder<DB, TB, O> {
-    ensureCanHaveHavingClause(this.#props.queryNode)
+    assertCanHaveHavingClause(this.#props.queryNode)
 
     return new QueryBuilder({
       ...this.#props,
@@ -708,7 +709,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * instead of a `where` statement.
    */
   havingExists(arg: ExistsExpression<DB, TB>): QueryBuilder<DB, TB, O> {
-    ensureCanHaveHavingClause(this.#props.queryNode)
+    assertCanHaveHavingClause(this.#props.queryNode)
 
     return new QueryBuilder({
       ...this.#props,
@@ -725,7 +726,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * instead of a `where` statement.
    */
   havingNotExist(arg: ExistsExpression<DB, TB>): QueryBuilder<DB, TB, O> {
-    ensureCanHaveHavingClause(this.#props.queryNode)
+    assertCanHaveHavingClause(this.#props.queryNode)
 
     return new QueryBuilder({
       ...this.#props,
@@ -742,7 +743,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * instead of a `where` statement.
    */
   orHavingExists(arg: ExistsExpression<DB, TB>): QueryBuilder<DB, TB, O> {
-    ensureCanHaveHavingClause(this.#props.queryNode)
+    assertCanHaveHavingClause(this.#props.queryNode)
 
     return new QueryBuilder({
       ...this.#props,
@@ -759,7 +760,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * instead of a `where` statement.
    */
   orHavingNotExists(arg: ExistsExpression<DB, TB>): QueryBuilder<DB, TB, O> {
-    ensureCanHaveHavingClause(this.#props.queryNode)
+    assertCanHaveHavingClause(this.#props.queryNode)
 
     return new QueryBuilder({
       ...this.#props,
@@ -952,7 +953,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
   ): QueryBuilderWithSelection<DB, TB, O, S>
 
   select(selection: SelectExpressionOrList<DB, TB>): any {
-    ensureCanHaveSelectClause(this.#props.queryNode)
+    assertCanHaveSelectClause(this.#props.queryNode)
 
     return new QueryBuilder({
       ...this.#props,
@@ -998,7 +999,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
   ): QueryBuilder<DB, TB, O>
 
   distinctOn(selection: SelectExpressionOrList<DB, TB>): any {
-    ensureCanHaveSelectClause(this.#props.queryNode)
+    assertCanHaveSelectClause(this.#props.queryNode)
 
     return new QueryBuilder({
       ...this.#props,
@@ -1027,7 +1028,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * ```
    */
   distinct(): QueryBuilder<DB, TB, O> {
-    ensureCanHaveSelectClause(this.#props.queryNode)
+    assertCanHaveSelectClause(this.#props.queryNode)
 
     return new QueryBuilder({
       ...this.#props,
@@ -1039,7 +1040,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * Adds the `for update` option to a select query on supported databases.
    */
   forUpdate(): QueryBuilder<DB, TB, O> {
-    ensureCanHaveSelectClause(this.#props.queryNode)
+    assertCanHaveSelectClause(this.#props.queryNode)
 
     return new QueryBuilder({
       ...this.#props,
@@ -1054,7 +1055,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * Adds the `for share` option to a select query on supported databases.
    */
   forShare(): QueryBuilder<DB, TB, O> {
-    ensureCanHaveSelectClause(this.#props.queryNode)
+    assertCanHaveSelectClause(this.#props.queryNode)
 
     return new QueryBuilder({
       ...this.#props,
@@ -1069,7 +1070,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * Adds the `for key share` option to a select query on supported databases.
    */
   forKeyShare(): QueryBuilder<DB, TB, O> {
-    ensureCanHaveSelectClause(this.#props.queryNode)
+    assertCanHaveSelectClause(this.#props.queryNode)
 
     return new QueryBuilder({
       ...this.#props,
@@ -1084,7 +1085,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * Adds the `for no key update` option to a select query on supported databases.
    */
   forNoKeyUpdate(): QueryBuilder<DB, TB, O> {
-    ensureCanHaveSelectClause(this.#props.queryNode)
+    assertCanHaveSelectClause(this.#props.queryNode)
 
     return new QueryBuilder({
       ...this.#props,
@@ -1099,7 +1100,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * Adds the `skip locked` option to a select query on supported databases.
    */
   skipLocked(): QueryBuilder<DB, TB, O> {
-    ensureCanHaveSelectClause(this.#props.queryNode)
+    assertCanHaveSelectClause(this.#props.queryNode)
 
     return new QueryBuilder({
       ...this.#props,
@@ -1114,7 +1115,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * Adds the `nowait` option to a select query on supported databases.
    */
   noWait(): QueryBuilder<DB, TB, O> {
-    ensureCanHaveSelectClause(this.#props.queryNode)
+    assertCanHaveSelectClause(this.#props.queryNode)
 
     return new QueryBuilder({
       ...this.#props,
@@ -1179,7 +1180,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
   selectAll<T extends TB>(): SelectAllQueryBuilder<DB, TB, O, T>
 
   selectAll(table?: any): any {
-    ensureCanHaveSelectClause(this.#props.queryNode)
+    assertCanHaveSelectClause(this.#props.queryNode)
 
     return new QueryBuilder({
       ...this.#props,
@@ -1314,7 +1315,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
   >(table: TE, callback: FN): QueryBuilderWithTable<DB, TB, O, TE>
 
   innerJoin(...args: any): any {
-    ensureCanHaveJoins(this.#props.queryNode)
+    assertCanHaveJoins(this.#props.queryNode)
 
     return new QueryBuilder({
       ...this.#props,
@@ -1341,7 +1342,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
   >(table: TE, callback: FN): QueryBuilderWithTable<DB, TB, O, TE>
 
   leftJoin(...args: any): any {
-    ensureCanHaveJoins(this.#props.queryNode)
+    assertCanHaveJoins(this.#props.queryNode)
 
     return new QueryBuilder({
       ...this.#props,
@@ -1368,7 +1369,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
   >(table: TE, callback: FN): QueryBuilderWithTable<DB, TB, O, TE>
 
   rightJoin(...args: any): any {
-    ensureCanHaveJoins(this.#props.queryNode)
+    assertCanHaveJoins(this.#props.queryNode)
 
     return new QueryBuilder({
       ...this.#props,
@@ -1395,7 +1396,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
   >(table: TE, callback: FN): QueryBuilderWithTable<DB, TB, O, TE>
 
   fullJoin(...args: any): any {
-    ensureCanHaveJoins(this.#props.queryNode)
+    assertCanHaveJoins(this.#props.queryNode)
 
     return new QueryBuilder({
       ...this.#props,
@@ -1525,14 +1526,15 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
   values(row: InsertObject<DB, TB>[]): QueryBuilder<DB, TB, O>
 
   values(args: InsertObjectOrList<DB, TB>): any {
-    ensureCanHaveInsertValues(this.#props.queryNode)
+    assertCanHaveInsertValues(this.#props.queryNode)
+    const [columns, values] = parseInsertObjectOrList(args)
 
     return new QueryBuilder({
       ...this.#props,
-      queryNode: InsertQueryNode.cloneWithColumnsAndValues(
-        this.#props.queryNode,
-        ...parseInsertObjectOrList(args)
-      ),
+      queryNode: InsertQueryNode.cloneWith(this.#props.queryNode, {
+        columns,
+        values,
+      }),
     })
   }
 
@@ -1546,9 +1548,9 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * database, calling `onConflictDoNothing('name')` will ignore the conflict
    * and do nothing. By default the query would throw.
    *
-   * This method generates different SQL on different dialects. For example
-   * `insert ignore` is used on mysql and `on conflict (columns) do nothing`
-   * on postgres and sqlite.
+   * Only some dialects like postgres and sqlite implement the `on conflict`
+   * statement. On MySQL you should use the {@link ignore} method to achieve
+   * similar results.
    *
    * Also see the {@link QueryBuilder.onConflictUpdate | onConflictUpdate}
    * method if you want to perform an update in case of a conflict (upsert).
@@ -1613,14 +1615,44 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
   onConflictDoNothing(
     target: OnConflictTargetExpression<DB, TB>
   ): QueryBuilder<DB, TB, O> {
-    ensureCanHaveOnConflict(this.#props.queryNode)
+    assertCanHaveOnConflict(this.#props.queryNode)
 
     return new QueryBuilder({
       ...this.#props,
-      queryNode: InsertQueryNode.cloneWithOnConflict(
-        this.#props.queryNode,
-        parseOnConflictDoNothing(target)
-      ),
+      queryNode: InsertQueryNode.cloneWith(this.#props.queryNode, {
+        onConflict: parseOnConflictDoNothing(target),
+      }),
+    })
+  }
+
+  /**
+   * Changes an `insert into` query to an `insert ignore into` query.
+   *
+   * If you use the ignore modifier, ignorable errors that occur while executing the
+   * insert statement are ignored. For example, without ignore, a row that duplicates
+   * an existing unique index or primary key value in the table causes a duplicate-key
+   * error and the statement is aborted. With ignore, the row is discarded and no error
+   * occurs.
+   *
+   * This is only supported on some dialects like MySQL. On most dialects you should
+   * use the {@link onConflictDoNothing} method.
+   *
+   * @example
+   * ```ts
+   * await db.insertInto('person')
+   *   .ignore()
+   *   .values(values)
+   *   .execute()
+   * ```
+   */
+  ignore(): QueryBuilder<DB, TB, O> {
+    assertCanHaveInsertIgnore(this.#props.queryNode)
+
+    return new QueryBuilder({
+      ...this.#props,
+      queryNode: InsertQueryNode.cloneWith(this.#props.queryNode, {
+        ignore: true,
+      }),
     })
   }
 
@@ -1639,9 +1671,9 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * The second argument (updates) can be anything the {@link QueryBuilder.set | set}
    * method accepts.
    *
-   * This method generates different SQL on different dialects. For example
-   * `on duplicate key update` is used on mysql and `on conflict (columns) do update`
-   * on postgres and sqlite.
+   * The `on conflict do update` statement is only implemented by some dialects
+   * like postgres and sqlite. On MySQL you should use the {@link onDuplicateKeyUpdate}
+   * method instead.
    *
    * Also see the {@link QueryBuilder.onConflictDoNothing | onConflictDoNothing}
    * method.
@@ -1713,14 +1745,45 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
     target: OnConflictTargetExpression<DB, TB>,
     updates: MutationObject<DB, TB>
   ): QueryBuilder<DB, TB, O> {
-    ensureCanHaveOnConflict(this.#props.queryNode)
+    assertCanHaveOnConflict(this.#props.queryNode)
 
     return new QueryBuilder({
       ...this.#props,
-      queryNode: InsertQueryNode.cloneWithOnConflict(
-        this.#props.queryNode,
-        parseOnConflictUpdate(this.#parseContext, target, updates)
-      ),
+      queryNode: InsertQueryNode.cloneWith(this.#props.queryNode, {
+        onConflict: parseOnConflictUpdate(this.#parseContext, target, updates),
+      }),
+    })
+  }
+
+  /**
+   * Adds `on duplicate key update` to an insert query.
+   *
+   * If you specify `on duplicate key update`, and a row is inserted that would cause
+   * a duplicate value in a unique index or primary key, an update of the old row occurs.
+   *
+   * This is only implemented by some dialects like MySQL. On most dialects you should
+   * use {@link onConflictUpdate} instead.
+   *
+   * @example
+   * ```ts
+   * await db
+   *   .insertInto('person')
+   *   .values(values)
+   *   .onDuplicateKeyUpdate({ species: 'hamster' })
+   * ```
+   */
+  onDuplicateKeyUpdate(
+    updates: MutationObject<DB, TB>
+  ): QueryBuilder<DB, TB, O> {
+    assertCanHaveOnDuplicateKey(this.#props.queryNode)
+
+    return new QueryBuilder({
+      ...this.#props,
+      queryNode: InsertQueryNode.cloneWith(this.#props.queryNode, {
+        onDuplicateKey: OnDuplicateKeyNode.create(
+          parseUpdateObject(this.#parseContext, updates)
+        ),
+      }),
     })
   }
 
@@ -1807,7 +1870,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * ```
    */
   set(row: MutationObject<DB, TB>): QueryBuilder<DB, TB, O> {
-    ensureCanHaveUpdates(this.#props.queryNode)
+    assertCanHaveUpdates(this.#props.queryNode)
 
     return new QueryBuilder({
       ...this.#props,
@@ -1885,7 +1948,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
   ): QueryBuilderWithReturning<DB, TB, O, S>
 
   returning(selection: SelectExpressionOrList<DB, TB>): any {
-    ensureCanHaveReturningClause(this.#props.queryNode)
+    assertCanHaveReturningClause(this.#props.queryNode)
 
     return new QueryBuilder({
       ...this.#props,
@@ -1901,7 +1964,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * that support `returning` such as postgres.
    */
   returningAll(): QueryBuilder<DB, TB, DB[TB]> {
-    ensureCanHaveReturningClause(this.#props.queryNode)
+    assertCanHaveReturningClause(this.#props.queryNode)
 
     return new QueryBuilder({
       ...this.#props,
@@ -2002,7 +2065,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
     orderBy: OrderByExpression<DB, TB, O>,
     direction: OrderByDirection = 'asc'
   ): QueryBuilder<DB, TB, O> {
-    ensureCanHaveOrderByClause(this.#props.queryNode)
+    assertCanHaveOrderByClause(this.#props.queryNode)
 
     return new QueryBuilder({
       ...this.#props,
@@ -2121,7 +2184,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
   groupBy(orderBy: ReferenceExpression<DB, TB>): QueryBuilder<DB, TB, O>
 
   groupBy(orderBy: any): QueryBuilder<DB, TB, O> {
-    ensureCanHaveGroupByClause(this.#props.queryNode)
+    assertCanHaveGroupByClause(this.#props.queryNode)
 
     return new QueryBuilder({
       ...this.#props,
@@ -2159,7 +2222,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * ```
    */
   limit(limit: number): QueryBuilder<DB, TB, O> {
-    ensureCanHaveLimit(this.#props.queryNode)
+    assertCanHaveLimit(this.#props.queryNode)
 
     return new QueryBuilder({
       ...this.#props,
@@ -2185,7 +2248,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * ```
    */
   offset(offset: number): QueryBuilder<DB, TB, O> {
-    ensureCanHaveOffset(this.#props.queryNode)
+    assertCanHaveOffset(this.#props.queryNode)
 
     return new QueryBuilder({
       ...this.#props,
@@ -2381,7 +2444,7 @@ export class NoResultError extends Error {
   }
 }
 
-function ensureCanHaveWhereClause(
+function assertCanHaveWhereClause(
   node: QueryNode
 ): asserts node is FilterableQueryNode {
   if (!QueryNode.isFilterable(node)) {
@@ -2391,7 +2454,7 @@ function ensureCanHaveWhereClause(
   }
 }
 
-function ensureCanHaveHavingClause(
+function assertCanHaveHavingClause(
   node: QueryNode
 ): asserts node is SelectQueryNode {
   if (!SelectQueryNode.is(node)) {
@@ -2399,7 +2462,7 @@ function ensureCanHaveHavingClause(
   }
 }
 
-function ensureCanHaveSelectClause(
+function assertCanHaveSelectClause(
   node: QueryNode
 ): asserts node is SelectQueryNode {
   if (!SelectQueryNode.is(node)) {
@@ -2407,7 +2470,7 @@ function ensureCanHaveSelectClause(
   }
 }
 
-function ensureCanHaveJoins(
+function assertCanHaveJoins(
   node: QueryNode
 ): asserts node is FilterableQueryNode {
   if (!QueryNode.isFilterable(node)) {
@@ -2415,7 +2478,7 @@ function ensureCanHaveJoins(
   }
 }
 
-function ensureCanHaveInsertValues(
+function assertCanHaveInsertValues(
   node: QueryNode
 ): asserts node is InsertQueryNode {
   if (!InsertQueryNode.is(node)) {
@@ -2423,7 +2486,15 @@ function ensureCanHaveInsertValues(
   }
 }
 
-function ensureCanHaveOnConflict(
+function assertCanHaveInsertIgnore(
+  node: QueryNode
+): asserts node is InsertQueryNode {
+  if (!InsertQueryNode.is(node)) {
+    throw new Error('only an insert query can have the ignore clause')
+  }
+}
+
+function assertCanHaveOnConflict(
   node: QueryNode
 ): asserts node is InsertQueryNode {
   if (!InsertQueryNode.is(node)) {
@@ -2431,7 +2502,15 @@ function ensureCanHaveOnConflict(
   }
 }
 
-function ensureCanHaveUpdates(
+function assertCanHaveOnDuplicateKey(
+  node: QueryNode
+): asserts node is InsertQueryNode {
+  if (!InsertQueryNode.is(node)) {
+    throw new Error('only an insert query can have an on duplicate key clause')
+  }
+}
+
+function assertCanHaveUpdates(
   node: QueryNode
 ): asserts node is UpdateQueryNode {
   if (!UpdateQueryNode.is(node)) {
@@ -2439,7 +2518,7 @@ function ensureCanHaveUpdates(
   }
 }
 
-function ensureCanHaveReturningClause(
+function assertCanHaveReturningClause(
   node: QueryNode
 ): asserts node is MutatingQueryNode {
   if (!QueryNode.isMutating(node)) {
@@ -2449,7 +2528,7 @@ function ensureCanHaveReturningClause(
   }
 }
 
-function ensureCanHaveOrderByClause(
+function assertCanHaveOrderByClause(
   node: QueryNode
 ): asserts node is SelectQueryNode {
   if (!SelectQueryNode.is(node)) {
@@ -2457,7 +2536,7 @@ function ensureCanHaveOrderByClause(
   }
 }
 
-function ensureCanHaveGroupByClause(
+function assertCanHaveGroupByClause(
   node: QueryNode
 ): asserts node is SelectQueryNode {
   if (!SelectQueryNode.is(node)) {
@@ -2465,13 +2544,13 @@ function ensureCanHaveGroupByClause(
   }
 }
 
-function ensureCanHaveLimit(node: QueryNode): asserts node is SelectQueryNode {
+function assertCanHaveLimit(node: QueryNode): asserts node is SelectQueryNode {
   if (!SelectQueryNode.is(node)) {
     throw new Error('only a select query can have a limit')
   }
 }
 
-function ensureCanHaveOffset(node: QueryNode): asserts node is SelectQueryNode {
+function assertCanHaveOffset(node: QueryNode): asserts node is SelectQueryNode {
   if (!SelectQueryNode.is(node)) {
     throw new Error('only a select query can have an offset')
   }

@@ -59,6 +59,7 @@ import { DropConstraintNode } from './drop-constraint-node.js'
 import { ForeignKeyConstraintNode } from './foreign-key-constraint-node.js'
 import { ColumnDefinitionNode } from './column-definition-node.js'
 import { ModifyColumnNode } from './modify-column-node.js'
+import { OnDuplicateKeyNode } from './on-duplicate-key-node.js'
 
 export class OperationNodeVisitor {
   protected readonly nodeStack: OperationNode[] = []
@@ -101,6 +102,7 @@ export class OperationNodeVisitor {
     LimitNode: this.visitLimit.bind(this),
     OffsetNode: this.visitOffset.bind(this),
     OnConflictNode: this.visitOnConflict.bind(this),
+    OnDuplicateKeyNode: this.visitOnDuplicateKey.bind(this),
     CreateIndexNode: this.visitCreateIndex.bind(this),
     DropIndexNode: this.visitDropIndex.bind(this),
     ListNode: this.visitList.bind(this),
@@ -389,6 +391,10 @@ export class OperationNodeVisitor {
     if (node.updates) {
       node.updates.forEach(this.visitNode)
     }
+  }
+
+  protected visitOnDuplicateKey(node: OnDuplicateKeyNode): void {
+    node.updates.forEach(this.visitNode)
   }
 
   protected visitCreateIndex(node: CreateIndexNode): void {

@@ -2,7 +2,12 @@ import * as path from 'path'
 import { promises as fs } from 'fs'
 
 import { Kysely } from '../kysely.js'
-import { getLast, isFunction, isString } from '../util/object-utils.js'
+import {
+  getLast,
+  isFunction,
+  isObject,
+  isString,
+} from '../util/object-utils.js'
 import { DialectAdapter } from '../dialect/dialect-adapter.js'
 
 export const MIGRATION_TABLE = 'kysely_migration'
@@ -41,24 +46,29 @@ export class MigrationModule {
   migrateToLatest(allMigrations: Record<string, Migration>): Promise<void>
 
   async migrateToLatest(
-    migrationsFolderPath: string | Record<string, Migration>
+    migrationsOrFolderPath: Record<string, Migration> | string
   ): Promise<void> {
     await ensureMigrationTablesExists(this.#db)
 
-    if (isString(migrationsFolderPath)) {
-      return this.#migrateToLatest(
-        await readMigrationsFromFolder(migrationsFolderPath)
-      )
-    } else {
-      return this.#migrateToLatest(migrationsFolderPath)
-    }
+    const allMigrations = await this.#getAllMigrations(migrationsOrFolderPath)
+    await this.#migrateToLatest(allMigrations)
   }
 
-  async #migrateToLatest(migrations: Record<string, Migration>): Promise<void> {
+  async #getAllMigrations(
+    migrationsOrFolderPath: Record<string, Migration> | string
+  ): Promise<Record<string, Migration>> {
+    return isString(migrationsOrFolderPath)
+      ? await readMigrationsFromFolder(migrationsOrFolderPath)
+      : migrationsOrFolderPath
+  }
+
+  async #migrateToLatest(
+    allMigrations: Record<string, Migration>
+  ): Promise<void> {
     const run = async (db: Kysely<any>) => {
       try {
         await this.#adapter.acquireMigrationLock(db)
-        await runNewMigrations(db, migrations)
+        await runNewMigrations(db, allMigrations)
       } finally {
         await this.#adapter.releaseMigrationLock(db)
       }
@@ -260,6 +270,6 @@ function ensureMigrationsAreNotCorrupted(
   }
 }
 
-function isMigration(obj: any): obj is Migration {
-  return obj && isFunction(obj.up) && isFunction(obj.down)
+function isMigration(obj: unknown): obj is Migration {
+  return isObject(obj) && isFunction(obj.up) && isFunction(obj.down)
 }

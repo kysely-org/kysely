@@ -10,10 +10,7 @@ import { AddConstraintNode } from './add-constraint-node.js'
 import { DropConstraintNode } from './drop-constraint-node.js'
 import { ModifyColumnNode } from './modify-column-node.js'
 
-export type AlterTableNodeParams = Omit<
-  Partial<AlterTableNode>,
-  'kind' | 'table'
->
+export type AlterTableNodeProps = Omit<AlterTableNode, 'kind' | 'table'>
 
 export interface AlterTableNode extends OperationNode {
   readonly kind: 'AlterTableNode'
@@ -44,13 +41,10 @@ export const AlterTableNode = freeze({
     })
   },
 
-  cloneWith(
-    node: AlterTableNode,
-    params: AlterTableNodeParams
-  ): AlterTableNode {
+  cloneWith(node: AlterTableNode, props: AlterTableNodeProps): AlterTableNode {
     return freeze({
       ...node,
-      ...params,
+      ...props,
     })
   },
 })

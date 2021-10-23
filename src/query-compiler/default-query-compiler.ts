@@ -74,6 +74,7 @@ import { DropConstraintNode } from '../operation-node/drop-constraint-node.js'
 import { ForeignKeyConstraintNode } from '../operation-node/foreign-key-constraint-node.js'
 import { ColumnDefinitionNode } from '../operation-node/column-definition-node.js'
 import { ModifyColumnNode } from '../operation-node/modify-column-node.js'
+import { OnDuplicateKeyNode } from '../operation-node/on-duplicate-key-node.js'
 
 export class DefaultQueryCompiler
   extends OperationNodeVisitor
@@ -229,8 +230,13 @@ export class DefaultQueryCompiler
       this.append(' ')
     }
 
-    this.append(this.getInsertInto(node))
-    this.append(' ')
+    this.append('insert')
+
+    if (node.ignore) {
+      this.append(' ignore')
+    }
+
+    this.append(' into ')
     this.visitNode(node.into)
 
     if (node.columns) {
@@ -249,6 +255,11 @@ export class DefaultQueryCompiler
       this.visitNode(node.onConflict)
     }
 
+    if (node.onDuplicateKey) {
+      this.append(' ')
+      this.visitNode(node.onDuplicateKey)
+    }
+
     if (node.returning) {
       this.append(' ')
       this.visitNode(node.returning)
@@ -257,10 +268,6 @@ export class DefaultQueryCompiler
     if (isSubQuery) {
       this.append(')')
     }
-  }
-
-  protected getInsertInto(node: InsertQueryNode): string {
-    return 'insert into'
   }
 
   protected override visitDeleteQuery(node: DeleteQueryNode): void {
@@ -605,6 +612,11 @@ export class DefaultQueryCompiler
       this.append(' do update set ')
       this.compileList(node.updates)
     }
+  }
+
+  protected override visitOnDuplicateKey(node: OnDuplicateKeyNode): void {
+    this.append('on duplicate key update ')
+    this.compileList(node.updates)
   }
 
   protected override visitCreateIndex(node: CreateIndexNode): void {

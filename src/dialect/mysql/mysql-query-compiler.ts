@@ -1,6 +1,4 @@
 import { ColumnDefinitionNode } from '../../operation-node/column-definition-node.js'
-import { InsertQueryNode } from '../../operation-node/insert-query-node.js'
-import { OnConflictNode } from '../../operation-node/on-conflict-node.js'
 import { DefaultQueryCompiler } from '../../query-compiler/default-query-compiler.js'
 
 export class MysqlQueryCompiler extends DefaultQueryCompiler {
@@ -41,28 +39,8 @@ export class MysqlQueryCompiler extends DefaultQueryCompiler {
     }
   }
 
-  protected override visitOnConflict(node: OnConflictNode): void {
-    if (node.doNothing) {
-      // This is already handled by `getInsertInto`.
-      return
-    }
-
-    if (node.updates) {
-      this.append('on duplicate key update ')
-      this.compileList(node.updates)
-    }
-  }
-
   protected override visitReturning(): void {
     // Do nothing.
-  }
-
-  protected override getInsertInto(node: InsertQueryNode): string {
-    if (node.onConflict?.doNothing) {
-      return 'insert ignore into'
-    } else {
-      return 'insert into'
-    }
   }
 
   protected override getSql(): string {
