@@ -1,20 +1,20 @@
 import { CheckConstraintNode } from '../operation-node/check-constraint-node.js'
-import {
-  isOperationNodeSource,
-  OperationNodeSource,
-} from '../operation-node/operation-node-source.js'
+import { OperationNodeSource } from '../operation-node/operation-node-source.js'
 import { ReferenceNode } from '../operation-node/reference-node.js'
 import {
   OnModifyForeignAction,
   ReferencesNode,
 } from '../operation-node/references-node.js'
 import { SelectAllNode } from '../operation-node/select-all-node.js'
-import { ValueNode } from '../operation-node/value-node.js'
 import { parseStringReference } from '../parser/reference-parser.js'
 import { PrimitiveValue } from '../util/object-utils.js'
 import { preventAwait } from '../util/prevent-await.js'
 import { ColumnDefinitionNode } from '../operation-node/column-definition-node.js'
 import { AnyRawBuilder } from '../query-builder/type-utils.js'
+import {
+  DefaultValueExpression,
+  parseDefaultValueExpression,
+} from '../parser/default-value-parser.js'
 
 export interface ColumnDefinitionBuilderInterface<R> {
   /**
@@ -174,12 +174,10 @@ export class ColumnDefinitionBuilder
     )
   }
 
-  defaultTo(value: PrimitiveValue | AnyRawBuilder): ColumnDefinitionBuilder {
+  defaultTo(value: DefaultValueExpression): ColumnDefinitionBuilder {
     return new ColumnDefinitionBuilder(
       ColumnDefinitionNode.cloneWith(this.#node, {
-        defaultTo: isOperationNodeSource(value)
-          ? value.toOperationNode()
-          : ValueNode.createImmediate(value),
+        defaultTo: parseDefaultValueExpression(value),
       })
     )
   }

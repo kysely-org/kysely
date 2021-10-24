@@ -1,25 +1,21 @@
 import { ColumnDefinitionNode } from '../operation-node/column-definition-node.js'
 import { CreateTableNode } from '../operation-node/create-table-node.js'
-import {
-  ColumnDataType,
-  DataTypeNode,
-} from '../operation-node/data-type-node.js'
-import {
-  isOperationNodeSource,
-  OperationNodeSource,
-} from '../operation-node/operation-node-source.js'
+import { OperationNodeSource } from '../operation-node/operation-node-source.js'
 import { CompiledQuery } from '../query-compiler/compiled-query.js'
 import { Compilable } from '../util/compilable.js'
 import { preventAwait } from '../util/prevent-await.js'
 import { QueryExecutor } from '../query-executor/query-executor.js'
 import { ColumnDefinitionBuilder } from './column-definition-builder.js'
-import { RawBuilder } from '../raw-builder/raw-builder.js'
 import { QueryId } from '../util/query-id.js'
 import { freeze } from '../util/object-utils.js'
 import { ForeignKeyConstraintNode } from '../operation-node/foreign-key-constraint-node.js'
 import { ColumnNode } from '../operation-node/column-node.js'
 import { TableNode } from '../operation-node/table-node.js'
 import { ForeignKeyConstraintBuilder } from './foreign-key-constraint-builder.js'
+import {
+  DataTypeExpression,
+  parseDataTypeExpression,
+} from '../parser/data-type-parser.js'
 
 export class CreateTableBuilder implements OperationNodeSource, Compilable {
   readonly #props: CreateTableBuilderProps
@@ -59,16 +55,11 @@ export class CreateTableBuilder implements OperationNodeSource, Compilable {
    */
   addColumn(
     columnName: string,
-    dataType: ColumnDataType | RawBuilder,
+    dataType: DataTypeExpression,
     build?: ColumnBuilderCallback
   ): CreateTableBuilder {
     let columnBuilder = new ColumnDefinitionBuilder(
-      ColumnDefinitionNode.create(
-        columnName,
-        isOperationNodeSource(dataType)
-          ? dataType.toOperationNode()
-          : DataTypeNode.create(dataType)
-      )
+      ColumnDefinitionNode.create(columnName, parseDataTypeExpression(dataType))
     )
 
     if (build) {
@@ -167,9 +158,9 @@ export class CreateTableBuilder implements OperationNodeSource, Compilable {
    * ```ts
    * addForeignKeyConstraint(
    *   'owner_id_foreign',
-   *   ['owner_id'],
+   *   ['owner_id1', 'owner_id2'],
    *   'person',
-   *   ['id'],
+   *   ['id1', 'id2'],
    *   (cb) => cb.onDelete('cascade')
    * )
    * ```
@@ -181,14 +172,14 @@ export class CreateTableBuilder implements OperationNodeSource, Compilable {
     targetColumns: string[],
     build?: ForeignKeyConstraintBuilderCallback
   ): CreateTableBuilder {
-    let builder = new ForeignKeyConstraintBuilder({
-      constraintNode: ForeignKeyConstraintNode.create(
+    let builder = new ForeignKeyConstraintBuilder(
+      ForeignKeyConstraintNode.create(
         columns.map(ColumnNode.create),
         TableNode.create(targetTable),
         targetColumns.map(ColumnNode.create),
         constraintName
-      ),
-    })
+      )
+    )
 
     if (build) {
       builder = build(builder)

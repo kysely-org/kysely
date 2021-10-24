@@ -12,16 +12,13 @@ import { Compilable } from '../util/compilable.js'
 import { preventAwait } from '../util/prevent-await.js'
 import { QueryExecutor } from '../query-executor/query-executor.js'
 import { QueryId } from '../util/query-id.js'
+import { freeze } from '../util/object-utils.js'
 
 export class CreateIndexBuilder implements OperationNodeSource, Compilable {
-  readonly #queryId: QueryId
-  readonly #createIndexNode: CreateIndexNode
-  readonly #executor: QueryExecutor
+  readonly #props: CreateIndexBuilderProps
 
-  constructor(args: CreateIndexBuilderConstructorArgs) {
-    this.#queryId = args.queryId
-    this.#createIndexNode = args.createIndexNode
-    this.#executor = args.executor
+  constructor(props: CreateIndexBuilderProps) {
+    this.#props = freeze(props)
   }
 
   /**
@@ -29,9 +26,8 @@ export class CreateIndexBuilder implements OperationNodeSource, Compilable {
    */
   unique(): CreateIndexBuilder {
     return new CreateIndexBuilder({
-      queryId: this.#queryId,
-      executor: this.#executor,
-      createIndexNode: CreateIndexNode.cloneWith(this.#createIndexNode, {
+      ...this.#props,
+      createIndexNode: CreateIndexNode.cloneWith(this.#props.createIndexNode, {
         unique: true,
       }),
     })
@@ -42,9 +38,8 @@ export class CreateIndexBuilder implements OperationNodeSource, Compilable {
    */
   on(table: string): CreateIndexBuilder {
     return new CreateIndexBuilder({
-      queryId: this.#queryId,
-      executor: this.#executor,
-      createIndexNode: CreateIndexNode.cloneWith(this.#createIndexNode, {
+      ...this.#props,
+      createIndexNode: CreateIndexNode.cloneWith(this.#props.createIndexNode, {
         table: parseTable(table),
       }),
     })
@@ -57,9 +52,8 @@ export class CreateIndexBuilder implements OperationNodeSource, Compilable {
    */
   column(column: string): CreateIndexBuilder {
     return new CreateIndexBuilder({
-      queryId: this.#queryId,
-      executor: this.#executor,
-      createIndexNode: CreateIndexNode.cloneWith(this.#createIndexNode, {
+      ...this.#props,
+      createIndexNode: CreateIndexNode.cloneWith(this.#props.createIndexNode, {
         expression: parseColumnName(column),
       }),
     })
@@ -72,9 +66,8 @@ export class CreateIndexBuilder implements OperationNodeSource, Compilable {
    */
   columns(columns: string[]): CreateIndexBuilder {
     return new CreateIndexBuilder({
-      queryId: this.#queryId,
-      executor: this.#executor,
-      createIndexNode: CreateIndexNode.cloneWith(this.#createIndexNode, {
+      ...this.#props,
+      createIndexNode: CreateIndexNode.cloneWith(this.#props.createIndexNode, {
         expression: ListNode.create(columns.map(parseColumnName)),
       }),
     })
@@ -94,9 +87,8 @@ export class CreateIndexBuilder implements OperationNodeSource, Compilable {
    */
   expression(expression: string): CreateIndexBuilder {
     return new CreateIndexBuilder({
-      queryId: this.#queryId,
-      executor: this.#executor,
-      createIndexNode: CreateIndexNode.cloneWith(this.#createIndexNode, {
+      ...this.#props,
+      createIndexNode: CreateIndexNode.cloneWith(this.#props.createIndexNode, {
         expression: RawNode.createWithSql(expression),
       }),
     })
@@ -109,24 +101,29 @@ export class CreateIndexBuilder implements OperationNodeSource, Compilable {
   using(indexType: string): CreateIndexBuilder
   using(indexType: string): CreateIndexBuilder {
     return new CreateIndexBuilder({
-      queryId: this.#queryId,
-      executor: this.#executor,
-      createIndexNode: CreateIndexNode.cloneWith(this.#createIndexNode, {
+      ...this.#props,
+      createIndexNode: CreateIndexNode.cloneWith(this.#props.createIndexNode, {
         using: RawNode.createWithSql(indexType),
       }),
     })
   }
 
   toOperationNode(): CreateIndexNode {
-    return this.#executor.transformQuery(this.#createIndexNode, this.#queryId)
+    return this.#props.executor.transformQuery(
+      this.#props.createIndexNode,
+      this.#props.queryId
+    )
   }
 
   compile(): CompiledQuery {
-    return this.#executor.compileQuery(this.toOperationNode(), this.#queryId)
+    return this.#props.executor.compileQuery(
+      this.toOperationNode(),
+      this.#props.queryId
+    )
   }
 
   async execute(): Promise<void> {
-    await this.#executor.executeQuery(this.compile(), this.#queryId)
+    await this.#props.executor.executeQuery(this.compile(), this.#props.queryId)
   }
 }
 
@@ -135,8 +132,8 @@ preventAwait(
   "don't await CreateIndexBuilder instances directly. To execute the query you need to call `execute`"
 )
 
-export interface CreateIndexBuilderConstructorArgs {
-  queryId: QueryId
-  createIndexNode: CreateIndexNode
-  executor: QueryExecutor
+export interface CreateIndexBuilderProps {
+  readonly queryId: QueryId
+  readonly executor: QueryExecutor
+  readonly createIndexNode: CreateIndexNode
 }

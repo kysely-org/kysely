@@ -5,39 +5,41 @@ import { Compilable } from '../util/compilable.js'
 import { preventAwait } from '../util/prevent-await.js'
 import { QueryExecutor } from '../query-executor/query-executor.js'
 import { QueryId } from '../util/query-id.js'
+import { freeze } from '../util/object-utils.js'
 
 export class CreateSchemaBuilder implements OperationNodeSource, Compilable {
-  readonly #queryId: QueryId
-  readonly #createSchemaNode: CreateSchemaNode
-  readonly #executor: QueryExecutor
+  readonly #props: CreateSchemaBuilderProps
 
-  constructor(args: CreateSchemaBuilderConstructorArgs) {
-    this.#queryId = args.queryId
-    this.#createSchemaNode = args.createSchemaNode
-    this.#executor = args.executor
+  constructor(props: CreateSchemaBuilderProps) {
+    this.#props = freeze(props)
   }
 
   ifNotExists(): CreateSchemaBuilder {
     return new CreateSchemaBuilder({
-      queryId: this.#queryId,
-      executor: this.#executor,
+      ...this.#props,
       createSchemaNode: CreateSchemaNode.cloneWithModifier(
-        this.#createSchemaNode,
+        this.#props.createSchemaNode,
         'IfNotExists'
       ),
     })
   }
 
   toOperationNode(): CreateSchemaNode {
-    return this.#executor.transformQuery(this.#createSchemaNode, this.#queryId)
+    return this.#props.executor.transformQuery(
+      this.#props.createSchemaNode,
+      this.#props.queryId
+    )
   }
 
   compile(): CompiledQuery {
-    return this.#executor.compileQuery(this.toOperationNode(), this.#queryId)
+    return this.#props.executor.compileQuery(
+      this.toOperationNode(),
+      this.#props.queryId
+    )
   }
 
   async execute(): Promise<void> {
-    await this.#executor.executeQuery(this.compile(), this.#queryId)
+    await this.#props.executor.executeQuery(this.compile(), this.#props.queryId)
   }
 }
 
@@ -46,8 +48,8 @@ preventAwait(
   "don't await CreateSchemaBuilder instances directly. To execute the query you need to call `execute`"
 )
 
-export interface CreateSchemaBuilderConstructorArgs {
-  queryId: QueryId
-  createSchemaNode: CreateSchemaNode
-  executor: QueryExecutor
+export interface CreateSchemaBuilderProps {
+  readonly queryId: QueryId
+  readonly executor: QueryExecutor
+  readonly createSchemaNode: CreateSchemaNode
 }

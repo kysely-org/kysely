@@ -5,39 +5,41 @@ import { Compilable } from '../util/compilable.js'
 import { preventAwait } from '../util/prevent-await.js'
 import { QueryExecutor } from '../query-executor/query-executor.js'
 import { QueryId } from '../util/query-id.js'
+import { freeze } from '../util/object-utils.js'
 
 export class DropTableBuilder implements OperationNodeSource, Compilable {
-  readonly #queryId: QueryId
-  readonly #dropTableNode: DropTableNode
-  readonly #executor: QueryExecutor
+  readonly #props: DropTableBuilderProps
 
-  constructor(args: DropTableBuilderConstructorArgs) {
-    this.#queryId = args.queryId
-    this.#dropTableNode = args.dropTableNode
-    this.#executor = args.executor
+  constructor(props: DropTableBuilderProps) {
+    this.#props = freeze(props)
   }
 
   ifExists(): DropTableBuilder {
     return new DropTableBuilder({
-      queryId: this.#queryId,
-      executor: this.#executor,
+      ...this.#props,
       dropTableNode: DropTableNode.cloneWithModifier(
-        this.#dropTableNode,
+        this.#props.dropTableNode,
         'IfExists'
       ),
     })
   }
 
   toOperationNode(): DropTableNode {
-    return this.#executor.transformQuery(this.#dropTableNode, this.#queryId)
+    return this.#props.executor.transformQuery(
+      this.#props.dropTableNode,
+      this.#props.queryId
+    )
   }
 
   compile(): CompiledQuery {
-    return this.#executor.compileQuery(this.toOperationNode(), this.#queryId)
+    return this.#props.executor.compileQuery(
+      this.toOperationNode(),
+      this.#props.queryId
+    )
   }
 
   async execute(): Promise<void> {
-    await this.#executor.executeQuery(this.compile(), this.#queryId)
+    await this.#props.executor.executeQuery(this.compile(), this.#props.queryId)
   }
 }
 
@@ -46,8 +48,8 @@ preventAwait(
   "don't await DropTableBuilder instances directly. To execute the query you need to call `execute`"
 )
 
-export interface DropTableBuilderConstructorArgs {
-  queryId: QueryId
-  dropTableNode: DropTableNode
-  executor: QueryExecutor
+export interface DropTableBuilderProps {
+  readonly queryId: QueryId
+  readonly executor: QueryExecutor
+  readonly dropTableNode: DropTableNode
 }

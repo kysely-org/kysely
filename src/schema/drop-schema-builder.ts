@@ -5,39 +5,41 @@ import { Compilable } from '../util/compilable.js'
 import { preventAwait } from '../util/prevent-await.js'
 import { QueryExecutor } from '../query-executor/query-executor.js'
 import { QueryId } from '../util/query-id.js'
+import { freeze } from '../util/object-utils.js'
 
 export class DropSchemaBuilder implements OperationNodeSource, Compilable {
-  readonly #queryId: QueryId
-  readonly #dropSchemaNode: DropSchemaNode
-  readonly #executor: QueryExecutor
+  readonly #props: DropSchemaBuilderProps
 
-  constructor(args: DropSchemaBuilderConstructorArgs) {
-    this.#queryId = args.queryId
-    this.#dropSchemaNode = args.dropSchemaNode
-    this.#executor = args.executor
+  constructor(props: DropSchemaBuilderProps) {
+    this.#props = freeze(props)
   }
 
   ifExists(): DropSchemaBuilder {
     return new DropSchemaBuilder({
-      queryId: this.#queryId,
-      executor: this.#executor,
+      ...this.#props,
       dropSchemaNode: DropSchemaNode.cloneWithModifier(
-        this.#dropSchemaNode,
+        this.#props.dropSchemaNode,
         'IfExists'
       ),
     })
   }
 
   toOperationNode(): DropSchemaNode {
-    return this.#executor.transformQuery(this.#dropSchemaNode, this.#queryId)
+    return this.#props.executor.transformQuery(
+      this.#props.dropSchemaNode,
+      this.#props.queryId
+    )
   }
 
   compile(): CompiledQuery {
-    return this.#executor.compileQuery(this.toOperationNode(), this.#queryId)
+    return this.#props.executor.compileQuery(
+      this.toOperationNode(),
+      this.#props.queryId
+    )
   }
 
   async execute(): Promise<void> {
-    await this.#executor.executeQuery(this.compile(), this.#queryId)
+    await this.#props.executor.executeQuery(this.compile(), this.#props.queryId)
   }
 }
 
@@ -46,8 +48,8 @@ preventAwait(
   "don't await DropSchemaBuilder instances directly. To execute the query you need to call `execute`"
 )
 
-export interface DropSchemaBuilderConstructorArgs {
-  queryId: QueryId
-  dropSchemaNode: DropSchemaNode
-  executor: QueryExecutor
+export interface DropSchemaBuilderProps {
+  readonly queryId: QueryId
+  readonly executor: QueryExecutor
+  readonly dropSchemaNode: DropSchemaNode
 }

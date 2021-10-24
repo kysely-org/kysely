@@ -1,36 +1,42 @@
 import { ForeignKeyConstraintNode } from '../operation-node/foreign-key-constraint-node.js'
 import { OperationNodeSource } from '../operation-node/operation-node-source.js'
 import { OnModifyForeignAction } from '../operation-node/references-node.js'
-import { freeze } from '../util/object-utils.js'
 import { preventAwait } from '../util/prevent-await.js'
 
-export class ForeignKeyConstraintBuilder implements OperationNodeSource {
-  readonly #props: ForeignKeyConstraintBuilderProps
+export interface ForeignKeyConstraintBuilderInterface<R> {
+  onDelete(onDelete: OnModifyForeignAction): R
+  onUpdate(onUpdate: OnModifyForeignAction): R
+}
 
-  constructor(props: ForeignKeyConstraintBuilderProps) {
-    this.#props = freeze(props)
+export class ForeignKeyConstraintBuilder
+  implements
+    ForeignKeyConstraintBuilderInterface<ForeignKeyConstraintBuilder>,
+    OperationNodeSource
+{
+  readonly #node: ForeignKeyConstraintNode
+
+  constructor(node: ForeignKeyConstraintNode) {
+    this.#node = node
   }
 
   onDelete(onDelete: OnModifyForeignAction): ForeignKeyConstraintBuilder {
-    return new ForeignKeyConstraintBuilder({
-      constraintNode: ForeignKeyConstraintNode.cloneWith(
-        this.#props.constraintNode,
-        { onDelete }
-      ),
-    })
+    return new ForeignKeyConstraintBuilder(
+      ForeignKeyConstraintNode.cloneWith(this.#node, {
+        onDelete,
+      })
+    )
   }
 
   onUpdate(onUpdate: OnModifyForeignAction): ForeignKeyConstraintBuilder {
-    return new ForeignKeyConstraintBuilder({
-      constraintNode: ForeignKeyConstraintNode.cloneWith(
-        this.#props.constraintNode,
-        { onUpdate }
-      ),
-    })
+    return new ForeignKeyConstraintBuilder(
+      ForeignKeyConstraintNode.cloneWith(this.#node, {
+        onUpdate,
+      })
+    )
   }
 
   toOperationNode(): ForeignKeyConstraintNode {
-    return this.#props.constraintNode
+    return this.#node
   }
 }
 
@@ -38,7 +44,3 @@ preventAwait(
   ForeignKeyConstraintBuilder,
   "don't await ForeignKeyConstraintBuilder instances directly."
 )
-
-export interface ForeignKeyConstraintBuilderProps {
-  readonly constraintNode: ForeignKeyConstraintNode
-}

@@ -846,6 +846,117 @@ for (const dialect of BUILT_IN_DIALECTS) {
           })
         })
       })
+
+      describe('add unique constraint', () => {
+        it('should add an unique constraint', async () => {
+          const builder = ctx.db.schema
+            .alterTable('test')
+            .addUniqueConstraint('some_constraint', [
+              'varchar_col',
+              'integer_col',
+            ])
+
+          testSql(builder, dialect, {
+            postgres: {
+              sql: 'alter table "test" add constraint "some_constraint" unique ("varchar_col", "integer_col")',
+              bindings: [],
+            },
+            mysql: {
+              sql: 'alter table `test` add constraint `some_constraint` unique (`varchar_col`, `integer_col`)',
+              bindings: [],
+            },
+          })
+
+          await builder.execute()
+        })
+      })
+
+      describe('add check constraint', () => {
+        it('should add a check constraint', async () => {
+          const builder = ctx.db.schema
+            .alterTable('test')
+            .addCheckConstraint('some_constraint', 'integer_col > 0')
+
+          testSql(builder, dialect, {
+            postgres: {
+              sql: 'alter table "test" add constraint "some_constraint" check (integer_col > 0)',
+              bindings: [],
+            },
+            mysql: {
+              sql: 'alter table `test` add constraint `some_constraint` check (integer_col > 0)',
+              bindings: [],
+            },
+          })
+
+          await builder.execute()
+        })
+      })
+
+      describe('add foreign key constraint', () => {
+        it('should add a foreign key constraint', async () => {
+          await ctx.db.schema
+            .createTable('test2')
+            .addColumn('a', 'integer')
+            .addColumn('b', 'varchar(255)')
+            .addUniqueConstraint('unique_a_b', ['a', 'b'])
+            .execute()
+
+          const builder = ctx.db.schema
+            .alterTable('test')
+            .addForeignKeyConstraint(
+              'some_constraint',
+              ['integer_col', 'varchar_col'],
+              'test2',
+              ['a', 'b']
+            )
+
+          testSql(builder, dialect, {
+            postgres: {
+              sql: 'alter table "test" add constraint "some_constraint" foreign key ("integer_col", "varchar_col") references "test2" ("a", "b")',
+              bindings: [],
+            },
+            mysql: {
+              sql: 'alter table `test` add constraint `some_constraint` foreign key (`integer_col`, `varchar_col`) references `test2` (`a`, `b`)',
+              bindings: [],
+            },
+          })
+
+          await builder.execute()
+        })
+
+        it('should add a foreign key constraint with on delete and on update', async () => {
+          await ctx.db.schema
+            .createTable('test2')
+            .addColumn('a', 'integer')
+            .addColumn('b', 'varchar(255)')
+            .addUniqueConstraint('unique_a_b', ['a', 'b'])
+            .execute()
+
+          const builder = ctx.db.schema
+            .alterTable('test')
+            .addForeignKeyConstraint(
+              'some_constraint',
+              ['integer_col', 'varchar_col'],
+              'test2',
+              ['a', 'b']
+            )
+            .onDelete('set null')
+            .onUpdate('cascade')
+
+          testSql(builder, dialect, {
+            postgres: {
+              sql: 'alter table "test" add constraint "some_constraint" foreign key ("integer_col", "varchar_col") references "test2" ("a", "b") on delete set null on update cascade',
+              bindings: [],
+            },
+            mysql: {
+              sql: 'alter table `test` add constraint `some_constraint` foreign key (`integer_col`, `varchar_col`) references `test2` (`a`, `b`) on delete set null on update cascade',
+              bindings: [],
+            },
+          })
+
+          await builder.execute()
+        })
+      })
     })
 
     async function dropTestTables(): Promise<void> {
