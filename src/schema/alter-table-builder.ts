@@ -160,8 +160,8 @@ export class AlterTableBuilder {
     columns: string[],
     targetTable: string,
     targetColumns: string[]
-  ): AlterTableForeignKeyConstraintBuilder {
-    return new AlterTableForeignKeyConstraintBuilder({
+  ): AlterTableAddForeignKeyConstraintBuilder {
+    return new AlterTableAddForeignKeyConstraintBuilder({
       ...this.#props,
       constraintBuilder: new ForeignKeyConstraintBuilder(
         ForeignKeyConstraintNode.create(
@@ -486,22 +486,22 @@ export interface AlterTableModifyColumnBuilderProps
   readonly columnBuilder: ColumnDefinitionBuilder
 }
 
-export class AlterTableForeignKeyConstraintBuilder
+export class AlterTableAddForeignKeyConstraintBuilder
   implements
-    ForeignKeyConstraintBuilderInterface<AlterTableForeignKeyConstraintBuilder>,
+    ForeignKeyConstraintBuilderInterface<AlterTableAddForeignKeyConstraintBuilder>,
     OperationNodeSource,
     Compilable
 {
-  readonly #props: AlterTableForeignKeyConstraintBuilderProps
+  readonly #props: AlterTableAddForeignKeyConstraintBuilderProps
 
-  constructor(props: AlterTableForeignKeyConstraintBuilderProps) {
+  constructor(props: AlterTableAddForeignKeyConstraintBuilderProps) {
     this.#props = freeze(props)
   }
 
   onDelete(
     onDelete: OnModifyForeignAction
-  ): AlterTableForeignKeyConstraintBuilder {
-    return new AlterTableForeignKeyConstraintBuilder({
+  ): AlterTableAddForeignKeyConstraintBuilder {
+    return new AlterTableAddForeignKeyConstraintBuilder({
       ...this.#props,
       constraintBuilder: this.#props.constraintBuilder.onDelete(onDelete),
     })
@@ -509,8 +509,8 @@ export class AlterTableForeignKeyConstraintBuilder
 
   onUpdate(
     onUpdate: OnModifyForeignAction
-  ): AlterTableForeignKeyConstraintBuilder {
-    return new AlterTableForeignKeyConstraintBuilder({
+  ): AlterTableAddForeignKeyConstraintBuilder {
+    return new AlterTableAddForeignKeyConstraintBuilder({
       ...this.#props,
       constraintBuilder: this.#props.constraintBuilder.onUpdate(onUpdate),
     })
@@ -539,7 +539,7 @@ export class AlterTableForeignKeyConstraintBuilder
   }
 }
 
-export interface AlterTableForeignKeyConstraintBuilderProps
+export interface AlterTableAddForeignKeyConstraintBuilderProps
   extends AlterTableBuilderProps {
   readonly constraintBuilder: ForeignKeyConstraintBuilder
 }
@@ -563,6 +563,6 @@ preventAwait(
 )
 
 preventAwait(
-  AlterTableForeignKeyConstraintBuilder,
-  "don't await AlterTableForeignKeyConstraintBuilder instances directly. To execute the query you need to call `execute`"
+  AlterTableAddForeignKeyConstraintBuilder,
+  "don't await AlterTableAddForeignKeyConstraintBuilder instances directly. To execute the query you need to call `execute`"
 )
