@@ -145,14 +145,12 @@ function parseIsFilter(
 }
 
 function parseFilterOperator(op: FilterOperator): OperatorNode | RawNode {
-  if (isOperationNodeSource(op)) {
-    return op.toOperationNode()
-  } else if (isString(op)) {
-    const opString = op.trim().toLowerCase()
-
-    if (OPERATORS.some((it) => it === opString)) {
-      return OperatorNode.create(opString as Operator)
+  if (isString(op)) {
+    if (OPERATORS.includes(op)) {
+      return OperatorNode.create(op)
     }
+  } else if (isOperationNodeSource(op)) {
+    return op.toOperationNode()
   }
 
   throw new Error(

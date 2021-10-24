@@ -118,7 +118,7 @@ export class DefaultQueryCompiler
 
     this.append('select ')
 
-    if (node.distinctOnSelections && !isEmpty(node.distinctOnSelections)) {
+    if (node.distinctOnSelections) {
       this.compileDistinctOn(node.distinctOnSelections)
       this.append(' ')
     }
@@ -499,6 +499,11 @@ export class DefaultQueryCompiler
     if (node.onDelete) {
       this.append(' on delete ')
       this.append(node.onDelete)
+    }
+
+    if (node.onUpdate) {
+      this.append(' on update ')
+      this.append(node.onUpdate)
     }
   }
 

@@ -211,7 +211,7 @@ function parseSelectExpression(
   }
 }
 
-export function parseSelectAllArgs(table?: string | string[]): SelectionNode[] {
+export function parseSelectAll(table?: string | string[]): SelectionNode[] {
   if (!table) {
     return [SelectionNode.createSelectAll()]
   } else if (Array.isArray(table)) {
@@ -221,7 +221,7 @@ export function parseSelectAllArgs(table?: string | string[]): SelectionNode[] {
   }
 }
 
-export function parseSelectAllArg(table: string): SelectionNode {
+function parseSelectAllArg(table: string): SelectionNode {
   if (isString(table)) {
     return SelectionNode.createSelectAllFromTable(table)
   } else {

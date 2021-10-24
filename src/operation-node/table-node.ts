@@ -17,10 +17,10 @@ export const TableNode = freeze({
   },
 
   create(table: string): TableNode {
-    return {
+    return freeze({
       kind: 'TableNode',
       table: IdentifierNode.create(table),
-    }
+    })
   },
 
   createWithSchema(schema: string, table: string): TableNode {

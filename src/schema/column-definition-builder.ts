@@ -4,7 +4,10 @@ import {
   OperationNodeSource,
 } from '../operation-node/operation-node-source.js'
 import { ReferenceNode } from '../operation-node/reference-node.js'
-import { OnDelete, ReferencesNode } from '../operation-node/references-node.js'
+import {
+  OnModifyForeignAction,
+  ReferencesNode,
+} from '../operation-node/references-node.js'
 import { SelectAllNode } from '../operation-node/select-all-node.js'
 import { ValueNode } from '../operation-node/value-node.js'
 import { parseStringReference } from '../parser/reference-parser.js'
@@ -44,7 +47,12 @@ export interface ColumnDefinitionBuilderInterface<R> {
   /**
    * Adds an `on delete` constraint for the foreign key column.
    */
-  onDelete(onDelete: OnDelete): R
+  onDelete(onDelete: OnModifyForeignAction): R
+
+  /**
+   * Adds an `on update` constraint for the foreign key column.
+   */
+  onUpdate(onUpdate: OnModifyForeignAction): R
 
   /**
    * Adds a unique constraint for the column.
@@ -124,7 +132,7 @@ export class ColumnDefinitionBuilder
     )
   }
 
-  onDelete(onDelete: OnDelete): ColumnDefinitionBuilder {
+  onDelete(onDelete: OnModifyForeignAction): ColumnDefinitionBuilder {
     if (!this.#node.references) {
       throw new Error('on delete constraint can only be added for foreign keys')
     }
@@ -134,6 +142,21 @@ export class ColumnDefinitionBuilder
         references: ReferencesNode.cloneWithOnDelete(
           this.#node.references,
           onDelete
+        ),
+      })
+    )
+  }
+
+  onUpdate(onUpdate: OnModifyForeignAction): ColumnDefinitionBuilder {
+    if (!this.#node.references) {
+      throw new Error('on update constraint can only be added for foreign keys')
+    }
+
+    return new ColumnDefinitionBuilder(
+      ColumnDefinitionNode.cloneWith(this.#node, {
+        references: ReferencesNode.cloneWithOnUpdate(
+          this.#node.references,
+          onUpdate
         ),
       })
     )

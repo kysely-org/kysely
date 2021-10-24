@@ -27,15 +27,15 @@ export type JoinCallbackExpression<DB, TB extends keyof DB, F> = (
   >
 ) => JoinBuilder<any, any>
 
-export function parseJoinArgs(
+export function parseJoin(
   ctx: ParseContext,
   joinType: JoinType,
   args: any[]
 ): JoinNode {
-  if (args.length === 2) {
-    return parseCallbackJoin(ctx, joinType, args[0], args[1])
-  } else if (args.length === 3) {
+  if (args.length === 3) {
     return parseSingleOnJoin(ctx, joinType, args[0], args[1], args[2])
+  } else if (args.length === 2) {
+    return parseCallbackJoin(ctx, joinType, args[0], args[1])
   } else {
     throw new Error('not implemented')
   }
@@ -58,11 +58,9 @@ function parseSingleOnJoin(
   lhsColumn: string,
   rhsColumn: string
 ): JoinNode {
-  const tableNode = parseTableExpression(ctx, from)
-
-  return JoinNode.cloneWithOn(
-    JoinNode.create(joinType, tableNode),
-    'And',
+  return JoinNode.createWithOn(
+    joinType,
+    parseTableExpression(ctx, from),
     parseReferenceFilter(ctx, lhsColumn, '=', rhsColumn)
   )
 }

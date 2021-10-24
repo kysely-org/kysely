@@ -3,13 +3,19 @@ import { ColumnNode } from './column-node.js'
 import { TableNode } from './table-node.js'
 import { freeze } from '../util/object-utils.js'
 
-export type OnDelete = 'cascade' | 'set null'
+export type OnModifyForeignAction =
+  | 'no action'
+  | 'restrict'
+  | 'cascade'
+  | 'set null'
+  | 'set default'
 
 export interface ReferencesNode extends OperationNode {
   readonly kind: 'ReferencesNode'
   readonly table: TableNode
   readonly columns: ReadonlyArray<ColumnNode>
-  readonly onDelete?: OnDelete
+  readonly onDelete?: OnModifyForeignAction
+  readonly onUpdate?: OnModifyForeignAction
 }
 
 /**
@@ -30,11 +36,21 @@ export const ReferencesNode = freeze({
 
   cloneWithOnDelete(
     references: ReferencesNode,
-    onDelete: OnDelete
+    onDelete: OnModifyForeignAction
   ): ReferencesNode {
     return freeze({
       ...references,
       onDelete,
+    })
+  },
+
+  cloneWithOnUpdate(
+    references: ReferencesNode,
+    onUpdate: OnModifyForeignAction
+  ): ReferencesNode {
+    return freeze({
+      ...references,
+      onUpdate,
     })
   },
 })

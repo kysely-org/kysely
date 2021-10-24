@@ -12,7 +12,7 @@ import {
   isOperationNodeSource,
   OperationNodeSource,
 } from '../operation-node/operation-node-source.js'
-import { OnDelete } from '../operation-node/references-node.js'
+import { OnModifyForeignAction } from '../operation-node/references-node.js'
 import { RenameColumnNode } from '../operation-node/rename-column-node.js'
 import { TableNode } from '../operation-node/table-node.js'
 import { ValueNode } from '../operation-node/value-node.js'
@@ -253,10 +253,17 @@ export class AlterTableAddColumnBuilder
     })
   }
 
-  onDelete(onDelete: OnDelete): AlterTableAddColumnBuilder {
+  onDelete(onDelete: OnModifyForeignAction): AlterTableAddColumnBuilder {
     return new AlterTableAddColumnBuilder({
       ...this.#props,
       columnBuilder: this.#props.columnBuilder.onDelete(onDelete),
+    })
+  }
+
+  onUpdate(onDelete: OnModifyForeignAction): AlterTableAddColumnBuilder {
+    return new AlterTableAddColumnBuilder({
+      ...this.#props,
+      columnBuilder: this.#props.columnBuilder.onUpdate(onDelete),
     })
   }
 
@@ -346,10 +353,17 @@ export class AlterTableModifyColumnBuilder
     })
   }
 
-  onDelete(onDelete: OnDelete): AlterTableModifyColumnBuilder {
+  onDelete(onDelete: OnModifyForeignAction): AlterTableModifyColumnBuilder {
     return new AlterTableModifyColumnBuilder({
       ...this.#props,
       columnBuilder: this.#props.columnBuilder.onDelete(onDelete),
+    })
+  }
+
+  onUpdate(onUpdate: OnModifyForeignAction): AlterTableModifyColumnBuilder {
+    return new AlterTableModifyColumnBuilder({
+      ...this.#props,
+      columnBuilder: this.#props.columnBuilder.onUpdate(onUpdate),
     })
   }
 

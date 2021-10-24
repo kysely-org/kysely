@@ -35,6 +35,19 @@ export const JoinNode = freeze({
     })
   },
 
+  createWithOn(
+    joinType: JoinType,
+    table: JoinTableNode,
+    on: JoinNodeOnNode
+  ): JoinNode {
+    return freeze({
+      kind: 'JoinNode',
+      joinType,
+      table,
+      on,
+    })
+  },
+
   cloneWithOn(
     joinNode: JoinNode,
     op: 'And' | 'Or',

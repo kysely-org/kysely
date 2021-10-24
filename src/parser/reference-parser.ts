@@ -105,31 +105,35 @@ export function parseReferenceExpression(
   throw new Error(`invalid reference expression ${JSON.stringify(arg)}`)
 }
 
-export function parseStringReference(str: string): ColumnNode | ReferenceNode {
-  if (str.includes('.')) {
-    const parts = str.split('.').map((it) => it.trim())
+export function parseStringReference(ref: string): ColumnNode | ReferenceNode {
+  const COLUMN_SEPARATOR = '.'
+
+  if (ref.includes(COLUMN_SEPARATOR)) {
+    const parts = ref.split(COLUMN_SEPARATOR).map(trim)
 
     if (parts.length === 3) {
       return parseStringReferenceWithTableAndSchema(parts)
     } else if (parts.length === 2) {
       return parseStringReferenceWithTable(parts)
     } else {
-      throw new Error(`invalid column reference ${str}`)
+      throw new Error(`invalid column reference ${ref}`)
     }
   } else {
-    return ColumnNode.create(str)
+    return ColumnNode.create(ref)
   }
 }
 
 export function parseAliasedStringReference(
-  str: string
+  ref: string
 ): ColumnNode | ReferenceNode | AliasNode {
-  if (str.includes(' as ')) {
-    const [tableColumn, alias] = str.split(' as ').map((it) => it.trim())
-    const tableColumnNode = parseStringReference(tableColumn)
-    return AliasNode.create(tableColumnNode, alias)
+  const ALIAS_SEPARATOR = ' as '
+
+  if (ref.includes(ALIAS_SEPARATOR)) {
+    const [columnRef, alias] = ref.split(ALIAS_SEPARATOR).map(trim)
+
+    return AliasNode.create(parseStringReference(columnRef), alias)
   } else {
-    return parseStringReference(str)
+    return parseStringReference(ref)
   }
 }
 
@@ -155,4 +159,8 @@ function parseStringReferenceWithTable(parts: string[]): ReferenceNode {
     TableNode.create(table),
     ColumnNode.create(column)
   )
+}
+
+function trim(str: string): string {
+  return str.trim()
 }

@@ -523,6 +523,7 @@ export class OperationNodeTransformer {
       table: this.transformNode(node.table),
       columns: this.transformNodeList(node.columns),
       onDelete: node.onDelete,
+      onUpdate: node.onUpdate,
     }
   }
 

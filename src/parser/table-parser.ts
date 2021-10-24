@@ -130,21 +130,29 @@ export function parseTableExpression(
 }
 
 export function parseAliasedTable(from: string): TableExpressionNode {
-  const [table, alias] = from.split(' as ').map((it) => it.trim())
+  const ALIAS_SEPARATOR = ' as '
 
-  if (alias) {
+  if (from.includes(ALIAS_SEPARATOR)) {
+    const [table, alias] = from.split(ALIAS_SEPARATOR).map(trim)
+
     return AliasNode.create(parseTable(table), alias)
   } else {
-    return parseTable(table)
+    return parseTable(from)
   }
 }
 
 export function parseTable(from: string): TableNode {
-  if (from.includes('.')) {
-    const [schema, table] = from.split('.').map((it) => it.trim())
+  const SCHEMA_SEPARATOR = '.'
+
+  if (from.includes(SCHEMA_SEPARATOR)) {
+    const [schema, table] = from.split(SCHEMA_SEPARATOR).map(trim)
 
     return TableNode.createWithSchema(schema, table)
   } else {
     return TableNode.create(from)
   }
+}
+
+function trim(str: string): string {
+  return str.trim()
 }

@@ -4,7 +4,7 @@ import { CompiledQuery } from '../query-compiler/compiled-query.js'
 import {
   JoinCallbackExpression,
   JoinReferenceExpression,
-  parseJoinArgs,
+  parseJoin,
 } from '../parser/join-parser.js'
 import {
   TableExpression,
@@ -12,7 +12,7 @@ import {
 } from '../parser/table-parser.js'
 import {
   parseSelectExpressionOrList,
-  parseSelectAllArgs,
+  parseSelectAll,
   SelectExpression,
   QueryBuilderWithSelection,
   SelectAllQueryBuilder,
@@ -1186,7 +1186,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
       ...this.#props,
       queryNode: SelectQueryNode.cloneWithSelections(
         this.#props.queryNode,
-        parseSelectAllArgs(table)
+        parseSelectAll(table)
       ),
     })
   }
@@ -1321,7 +1321,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
       ...this.#props,
       queryNode: QueryNode.cloneWithJoin(
         this.#props.queryNode,
-        parseJoinArgs(this.#props.parseContext, 'InnerJoin', args)
+        parseJoin(this.#props.parseContext, 'InnerJoin', args)
       ),
     })
   }
@@ -1348,7 +1348,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
       ...this.#props,
       queryNode: QueryNode.cloneWithJoin(
         this.#props.queryNode,
-        parseJoinArgs(this.#props.parseContext, 'LeftJoin', args)
+        parseJoin(this.#props.parseContext, 'LeftJoin', args)
       ),
     })
   }
@@ -1375,7 +1375,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
       ...this.#props,
       queryNode: QueryNode.cloneWithJoin(
         this.#props.queryNode,
-        parseJoinArgs(this.#props.parseContext, 'RightJoin', args)
+        parseJoin(this.#props.parseContext, 'RightJoin', args)
       ),
     })
   }
@@ -1402,7 +1402,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
       ...this.#props,
       queryNode: QueryNode.cloneWithJoin(
         this.#props.queryNode,
-        parseJoinArgs(this.#props.parseContext, 'FullJoin', args)
+        parseJoin(this.#props.parseContext, 'FullJoin', args)
       ),
     })
   }
@@ -1974,7 +1974,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
       ...this.#props,
       queryNode: QueryNode.cloneWithReturning(
         this.#props.queryNode,
-        parseSelectAllArgs()
+        parseSelectAll()
       ),
     })
   }

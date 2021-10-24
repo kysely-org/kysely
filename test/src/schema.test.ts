@@ -37,7 +37,11 @@ for (const dialect of BUILT_IN_DIALECTS) {
             .createTable('test')
             .addColumn('a', 'integer', (col) => col.primaryKey().increments())
             .addColumn('b', 'integer', (col) =>
-              col.references('test.a').onDelete('cascade').check('b < a')
+              col
+                .references('test.a')
+                .onDelete('cascade')
+                .onUpdate('restrict')
+                .check('b < a')
             )
             .addColumn('c', 'varchar')
             .addColumn('d', 'varchar(10)')
@@ -63,7 +67,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
               sql: [
                 'create table "test"',
                 '("a" serial primary key,',
-                '"b" integer references "test" ("a") on delete cascade check (b < a),',
+                '"b" integer references "test" ("a") on delete cascade on update restrict check (b < a),',
                 '"c" varchar,',
                 '"d" varchar(10),',
                 '"e" bigint not null unique,',
