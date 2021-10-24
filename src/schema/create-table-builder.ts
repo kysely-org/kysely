@@ -15,16 +15,17 @@ import { QueryExecutor } from '../query-executor/query-executor.js'
 import { ColumnDefinitionBuilder } from './column-definition-builder.js'
 import { RawBuilder } from '../raw-builder/raw-builder.js'
 import { QueryId } from '../util/query-id.js'
+import { freeze } from '../util/object-utils.js'
+import { ForeignKeyConstraintNode } from '../operation-node/foreign-key-constraint-node.js'
+import { ColumnNode } from '../operation-node/column-node.js'
+import { TableNode } from '../operation-node/table-node.js'
+import { ForeignKeyConstraintBuilder } from './foreign-key-constraint-builder.js'
 
 export class CreateTableBuilder implements OperationNodeSource, Compilable {
-  readonly #queryId: QueryId
-  readonly #createTableNode: CreateTableNode
-  readonly #executor: QueryExecutor
+  readonly #props: CreateTableBuilderProps
 
-  constructor(args: CreateTableBuilderConstructorArgs) {
-    this.#queryId = args.queryId
-    this.#createTableNode = args.createTableNode
-    this.#executor = args.executor
+  constructor(props: CreateTableBuilderProps) {
+    this.#props = freeze(props)
   }
 
   /**
@@ -34,10 +35,9 @@ export class CreateTableBuilder implements OperationNodeSource, Compilable {
    */
   ifNotExists(): CreateTableBuilder {
     return new CreateTableBuilder({
-      queryId: this.#queryId,
-      executor: this.#executor,
+      ...this.#props,
       createTableNode: CreateTableNode.cloneWithModifier(
-        this.#createTableNode,
+        this.#props.createTableNode,
         'IfNotExists'
       ),
     })
@@ -76,10 +76,9 @@ export class CreateTableBuilder implements OperationNodeSource, Compilable {
     }
 
     return new CreateTableBuilder({
-      queryId: this.#queryId,
-      executor: this.#executor,
+      ...this.#props,
       createTableNode: CreateTableNode.cloneWithColumn(
-        this.#createTableNode,
+        this.#props.createTableNode,
         columnBuilder.toOperationNode()
       ),
     })
@@ -98,10 +97,9 @@ export class CreateTableBuilder implements OperationNodeSource, Compilable {
     columns: string[]
   ): CreateTableBuilder {
     return new CreateTableBuilder({
-      queryId: this.#queryId,
-      executor: this.#executor,
+      ...this.#props,
       createTableNode: CreateTableNode.cloneWithPrimaryKeyConstraint(
-        this.#createTableNode,
+        this.#props.createTableNode,
         constraintName,
         columns
       ),
@@ -121,10 +119,9 @@ export class CreateTableBuilder implements OperationNodeSource, Compilable {
     columns: string[]
   ): CreateTableBuilder {
     return new CreateTableBuilder({
-      queryId: this.#queryId,
-      executor: this.#executor,
+      ...this.#props,
       createTableNode: CreateTableNode.cloneWithUniqueConstraint(
-        this.#createTableNode,
+        this.#props.createTableNode,
         constraintName,
         columns
       ),
@@ -144,10 +141,9 @@ export class CreateTableBuilder implements OperationNodeSource, Compilable {
     checkExpression: string
   ): CreateTableBuilder {
     return new CreateTableBuilder({
-      queryId: this.#queryId,
-      executor: this.#executor,
+      ...this.#props,
       createTableNode: CreateTableNode.cloneWithCheckConstraint(
-        this.#createTableNode,
+        this.#props.createTableNode,
         constraintName,
         checkExpression
       ),
@@ -166,36 +162,63 @@ export class CreateTableBuilder implements OperationNodeSource, Compilable {
    *   ['id'],
    * )
    * ```
+   *
+   * @example
+   * ```ts
+   * addForeignKeyConstraint(
+   *   'owner_id_foreign',
+   *   ['owner_id'],
+   *   'person',
+   *   ['id'],
+   *   (cb) => cb.onDelete('cascade')
+   * )
+   * ```
    */
   addForeignKeyConstraint(
     constraintName: string,
     columns: string[],
     targetTable: string,
-    targetColumns: string[]
+    targetColumns: string[],
+    build?: ForeignKeyConstraintBuilderCallback
   ): CreateTableBuilder {
+    let builder = new ForeignKeyConstraintBuilder({
+      constraintNode: ForeignKeyConstraintNode.create(
+        columns.map(ColumnNode.create),
+        TableNode.create(targetTable),
+        targetColumns.map(ColumnNode.create),
+        constraintName
+      ),
+    })
+
+    if (build) {
+      builder = build(builder)
+    }
+
     return new CreateTableBuilder({
-      queryId: this.#queryId,
-      executor: this.#executor,
+      ...this.#props,
       createTableNode: CreateTableNode.cloneWithForeignKeyConstraint(
-        this.#createTableNode,
-        constraintName,
-        columns,
-        targetTable,
-        targetColumns
+        this.#props.createTableNode,
+        builder.toOperationNode()
       ),
     })
   }
 
   toOperationNode(): CreateTableNode {
-    return this.#executor.transformQuery(this.#createTableNode, this.#queryId)
+    return this.#props.executor.transformQuery(
+      this.#props.createTableNode,
+      this.#props.queryId
+    )
   }
 
   compile(): CompiledQuery {
-    return this.#executor.compileQuery(this.toOperationNode(), this.#queryId)
+    return this.#props.executor.compileQuery(
+      this.toOperationNode(),
+      this.#props.queryId
+    )
   }
 
   async execute(): Promise<void> {
-    await this.#executor.executeQuery(this.compile(), this.#queryId)
+    await this.#props.executor.executeQuery(this.compile(), this.#props.queryId)
   }
 }
 
@@ -204,12 +227,16 @@ preventAwait(
   "don't await CreateTableBuilder instances directly. To execute the query you need to call `execute`"
 )
 
-export interface CreateTableBuilderConstructorArgs {
-  queryId: QueryId
-  createTableNode: CreateTableNode
-  executor: QueryExecutor
+export interface CreateTableBuilderProps {
+  readonly queryId: QueryId
+  readonly executor: QueryExecutor
+  readonly createTableNode: CreateTableNode
 }
 
 export type ColumnBuilderCallback = (
-  tableBuilder: ColumnDefinitionBuilder
+  builder: ColumnDefinitionBuilder
 ) => ColumnDefinitionBuilder
+
+export type ForeignKeyConstraintBuilderCallback = (
+  builder: ForeignKeyConstraintBuilder
+) => ForeignKeyConstraintBuilder

@@ -747,6 +747,16 @@ export class DefaultQueryCompiler
     this.compileList(node.columns)
     this.append(') ')
     this.visitNode(node.references)
+
+    if (node.onDelete) {
+      this.append(' on delete ')
+      this.append(node.onDelete)
+    }
+
+    if (node.onUpdate) {
+      this.append(' on update ')
+      this.append(node.onUpdate)
+    }
   }
 
   protected override visitList(node: ListNode): void {

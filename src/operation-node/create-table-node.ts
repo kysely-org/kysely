@@ -102,18 +102,8 @@ export const CreateTableNode = freeze({
 
   cloneWithForeignKeyConstraint(
     createTable: CreateTableNode,
-    constraintName: string,
-    sourceColumns: string[],
-    targetTable: string,
-    targetColumns: string[]
+    constraint: ForeignKeyConstraintNode
   ): CreateTableNode {
-    const constraint = ForeignKeyConstraintNode.create(
-      sourceColumns.map(ColumnNode.create),
-      TableNode.create(targetTable),
-      targetColumns.map(ColumnNode.create),
-      constraintName
-    )
-
     return freeze({
       ...createTable,
       constraints: createTable.constraints

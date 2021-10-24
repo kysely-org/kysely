@@ -199,5 +199,5 @@ export class ColumnDefinitionBuilder
 
 preventAwait(
   ColumnDefinitionBuilder,
-  "don't await ColumnBuilder instances directly."
+  "don't await ColumnDefinitionBuilder instances directly."
 )

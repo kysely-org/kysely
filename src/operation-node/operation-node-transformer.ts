@@ -514,6 +514,8 @@ export class OperationNodeTransformer {
       columns: this.transformNodeList(node.columns),
       references: this.transformNode(node.references),
       name: this.transformNode(node.name),
+      onDelete: node.onDelete,
+      onUpdate: node.onUpdate,
     }
   }
 

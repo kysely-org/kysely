@@ -210,7 +210,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
         await builder.execute()
       })
 
-      it('should add a foreignt key constraint', async () => {
+      it('should add a foreign key constraint', async () => {
         await ctx.db.schema
           .createTable('test2')
           .addColumn('c', 'integer')
@@ -234,6 +234,40 @@ for (const dialect of BUILT_IN_DIALECTS) {
           },
           mysql: {
             sql: 'create table `test` (`a` integer, `b` integer, constraint `foreign_key` foreign key (`a`, `b`) references `test2` (`c`, `d`))',
+            bindings: [],
+          },
+        })
+
+        await builder.execute()
+      })
+
+      it('should add a foreign key constraint with on update', async () => {
+        await ctx.db.schema
+          .createTable('test2')
+          .addColumn('c', 'integer')
+          .addColumn('d', 'integer')
+          .addPrimaryKeyConstraint('primary_key', ['c', 'd'])
+          .execute()
+
+        const builder = ctx.db.schema
+          .createTable('test')
+          .addColumn('a', 'integer')
+          .addColumn('b', 'integer')
+          .addForeignKeyConstraint(
+            'foreign_key',
+            ['a', 'b'],
+            'test2',
+            ['c', 'd'],
+            (cb) => cb.onUpdate('cascade')
+          )
+
+        testSql(builder, dialect, {
+          postgres: {
+            sql: 'create table "test" ("a" integer, "b" integer, constraint "foreign_key" foreign key ("a", "b") references "test2" ("c", "d") on update cascade)',
+            bindings: [],
+          },
+          mysql: {
+            sql: 'create table `test` (`a` integer, `b` integer, constraint `foreign_key` foreign key (`a`, `b`) references `test2` (`c`, `d`) on update cascade)',
             bindings: [],
           },
         })
