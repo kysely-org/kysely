@@ -202,7 +202,7 @@ function parseSelectExpression(
     return SelectionNode.create(selection.toOperationNode())
   } else if (isFunction(selection)) {
     return SelectionNode.create(
-      selection(ctx.createSubQueryBuilder()).toOperationNode()
+      selection(ctx.createExpressionBuilder()).toOperationNode()
     )
   } else {
     throw new Error(

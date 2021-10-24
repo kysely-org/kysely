@@ -20,12 +20,12 @@ import {
 } from '../parser/select-parser.js'
 import {
   ExistsExpression,
-  parseExistExpression,
+  parseExistFilter,
   FilterOperator,
   parseReferenceFilter,
   parseWhereFilter,
   parseHavingFilter,
-  parseNotExistExpression,
+  parseNotExistFilter,
 } from '../parser/filter-parser.js'
 import {
   InsertObject,
@@ -76,7 +76,7 @@ import {
   parseOnConflictUpdate,
 } from '../parser/on-conflict-parser.js'
 import { freeze } from '../util/object-utils.js'
-import { createParseContext } from '../parser/parse-context.js'
+import { ParseContext } from '../parser/parse-context.js'
 import { DeleteQueryNode } from '../operation-node/delete-query-node.js'
 import { DialectAdapter } from '../dialect/dialect-adapter.js'
 import { OnDuplicateKeyNode } from '../operation-node/on-duplicate-key-node.js'
@@ -304,7 +304,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
       queryNode: QueryNode.cloneWithWhere(
         this.#props.queryNode,
         'And',
-        parseWhereFilter(this.#parseContext, args)
+        parseWhereFilter(this.#props.parseContext, args)
       ),
     })
   }
@@ -372,7 +372,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
       queryNode: QueryNode.cloneWithWhere(
         this.#props.queryNode,
         'And',
-        parseReferenceFilter(this.#parseContext, lhs, op, rhs)
+        parseReferenceFilter(this.#props.parseContext, lhs, op, rhs)
       ),
     })
   }
@@ -460,7 +460,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
       queryNode: QueryNode.cloneWithWhere(
         this.#props.queryNode,
         'Or',
-        parseWhereFilter(this.#parseContext, args)
+        parseWhereFilter(this.#props.parseContext, args)
       ),
     })
   }
@@ -483,7 +483,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
       queryNode: QueryNode.cloneWithWhere(
         this.#props.queryNode,
         'Or',
-        parseReferenceFilter(this.#parseContext, lhs, op, rhs)
+        parseReferenceFilter(this.#props.parseContext, lhs, op, rhs)
       ),
     })
   }
@@ -555,7 +555,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
       queryNode: QueryNode.cloneWithWhere(
         this.#props.queryNode,
         'And',
-        parseExistExpression(this.#parseContext, arg)
+        parseExistFilter(this.#props.parseContext, arg)
       ),
     })
   }
@@ -571,7 +571,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
       queryNode: QueryNode.cloneWithWhere(
         this.#props.queryNode,
         'And',
-        parseNotExistExpression(this.#parseContext, arg)
+        parseNotExistFilter(this.#props.parseContext, arg)
       ),
     })
   }
@@ -587,7 +587,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
       queryNode: QueryNode.cloneWithWhere(
         this.#props.queryNode,
         'Or',
-        parseExistExpression(this.#parseContext, arg)
+        parseExistFilter(this.#props.parseContext, arg)
       ),
     })
   }
@@ -603,7 +603,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
       queryNode: QueryNode.cloneWithWhere(
         this.#props.queryNode,
         'Or',
-        parseNotExistExpression(this.#parseContext, arg)
+        parseNotExistFilter(this.#props.parseContext, arg)
       ),
     })
   }
@@ -630,7 +630,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
       queryNode: SelectQueryNode.cloneWithHaving(
         this.#props.queryNode,
         'And',
-        parseHavingFilter(this.#parseContext, args)
+        parseHavingFilter(this.#props.parseContext, args)
       ),
     })
   }
@@ -651,7 +651,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
       queryNode: SelectQueryNode.cloneWithHaving(
         this.#props.queryNode,
         'And',
-        parseReferenceFilter(this.#parseContext, lhs, op, rhs)
+        parseReferenceFilter(this.#props.parseContext, lhs, op, rhs)
       ),
     })
   }
@@ -678,7 +678,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
       queryNode: SelectQueryNode.cloneWithHaving(
         this.#props.queryNode,
         'Or',
-        parseHavingFilter(this.#parseContext, args)
+        parseHavingFilter(this.#props.parseContext, args)
       ),
     })
   }
@@ -699,7 +699,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
       queryNode: SelectQueryNode.cloneWithHaving(
         this.#props.queryNode,
         'Or',
-        parseReferenceFilter(this.#parseContext, lhs, op, rhs)
+        parseReferenceFilter(this.#props.parseContext, lhs, op, rhs)
       ),
     })
   }
@@ -716,7 +716,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
       queryNode: SelectQueryNode.cloneWithHaving(
         this.#props.queryNode,
         'And',
-        parseExistExpression(this.#parseContext, arg)
+        parseExistFilter(this.#props.parseContext, arg)
       ),
     })
   }
@@ -733,7 +733,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
       queryNode: SelectQueryNode.cloneWithHaving(
         this.#props.queryNode,
         'And',
-        parseNotExistExpression(this.#parseContext, arg)
+        parseNotExistFilter(this.#props.parseContext, arg)
       ),
     })
   }
@@ -750,7 +750,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
       queryNode: SelectQueryNode.cloneWithHaving(
         this.#props.queryNode,
         'Or',
-        parseExistExpression(this.#parseContext, arg)
+        parseExistFilter(this.#props.parseContext, arg)
       ),
     })
   }
@@ -767,7 +767,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
       queryNode: SelectQueryNode.cloneWithHaving(
         this.#props.queryNode,
         'Or',
-        parseNotExistExpression(this.#parseContext, arg)
+        parseNotExistFilter(this.#props.parseContext, arg)
       ),
     })
   }
@@ -959,7 +959,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
       ...this.#props,
       queryNode: SelectQueryNode.cloneWithSelections(
         this.#props.queryNode,
-        parseSelectExpressionOrList(this.#parseContext, selection)
+        parseSelectExpressionOrList(this.#props.parseContext, selection)
       ),
     })
   }
@@ -1005,7 +1005,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
       ...this.#props,
       queryNode: SelectQueryNode.cloneWithDistinctOnSelections(
         this.#props.queryNode,
-        parseSelectExpressionOrList(this.#parseContext, selection)
+        parseSelectExpressionOrList(this.#props.parseContext, selection)
       ),
     })
   }
@@ -1321,7 +1321,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
       ...this.#props,
       queryNode: QueryNode.cloneWithJoin(
         this.#props.queryNode,
-        parseJoinArgs(this.#parseContext, 'InnerJoin', args)
+        parseJoinArgs(this.#props.parseContext, 'InnerJoin', args)
       ),
     })
   }
@@ -1348,7 +1348,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
       ...this.#props,
       queryNode: QueryNode.cloneWithJoin(
         this.#props.queryNode,
-        parseJoinArgs(this.#parseContext, 'LeftJoin', args)
+        parseJoinArgs(this.#props.parseContext, 'LeftJoin', args)
       ),
     })
   }
@@ -1375,7 +1375,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
       ...this.#props,
       queryNode: QueryNode.cloneWithJoin(
         this.#props.queryNode,
-        parseJoinArgs(this.#parseContext, 'RightJoin', args)
+        parseJoinArgs(this.#props.parseContext, 'RightJoin', args)
       ),
     })
   }
@@ -1402,7 +1402,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
       ...this.#props,
       queryNode: QueryNode.cloneWithJoin(
         this.#props.queryNode,
-        parseJoinArgs(this.#parseContext, 'FullJoin', args)
+        parseJoinArgs(this.#props.parseContext, 'FullJoin', args)
       ),
     })
   }
@@ -1750,7 +1750,11 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
     return new QueryBuilder({
       ...this.#props,
       queryNode: InsertQueryNode.cloneWith(this.#props.queryNode, {
-        onConflict: parseOnConflictUpdate(this.#parseContext, target, updates),
+        onConflict: parseOnConflictUpdate(
+          this.#props.parseContext,
+          target,
+          updates
+        ),
       }),
     })
   }
@@ -1781,7 +1785,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
       ...this.#props,
       queryNode: InsertQueryNode.cloneWith(this.#props.queryNode, {
         onDuplicateKey: OnDuplicateKeyNode.create(
-          parseUpdateObject(this.#parseContext, updates)
+          parseUpdateObject(this.#props.parseContext, updates)
         ),
       }),
     })
@@ -1876,7 +1880,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
       ...this.#props,
       queryNode: UpdateQueryNode.cloneWithUpdates(
         this.#props.queryNode,
-        parseUpdateObject(this.#parseContext, row)
+        parseUpdateObject(this.#props.parseContext, row)
       ),
     })
   }
@@ -1954,7 +1958,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
       ...this.#props,
       queryNode: QueryNode.cloneWithReturning(
         this.#props.queryNode,
-        parseSelectExpressionOrList(this.#parseContext, selection)
+        parseSelectExpressionOrList(this.#props.parseContext, selection)
       ),
     })
   }
@@ -2072,7 +2076,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
       queryNode: SelectQueryNode.cloneWithOrderByItem(
         this.#props.queryNode,
         OrderByItemNode.create(
-          parseReferenceExpression(this.#parseContext, orderBy),
+          parseReferenceExpression(this.#props.parseContext, orderBy),
           direction
         )
       ),
@@ -2190,7 +2194,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
       ...this.#props,
       queryNode: SelectQueryNode.cloneWithGroupByItems(
         this.#props.queryNode,
-        parseReferenceExpressionOrList(this.#parseContext, orderBy).map(
+        parseReferenceExpressionOrList(this.#props.parseContext, orderBy).map(
           GroupByItemNode.create
         )
       ),
@@ -2324,7 +2328,10 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
     >(compildQuery, this.#props.queryId)
 
     if (InsertQueryNode.is(node)) {
-      if (this.#props.adapter.supportsReturning && node.returning) {
+      if (
+        this.#props.parseContext.adapter.supportsReturning &&
+        node.returning
+      ) {
         return result.rows
       } else if (result.insertedPrimaryKey != null) {
         return [result.insertedPrimaryKey as ManyResultRowType<O>]
@@ -2332,7 +2339,10 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
         return []
       }
     } else if (UpdateQueryNode.is(node) || DeleteQueryNode.is(node)) {
-      if (this.#props.adapter.supportsReturning && node.returning) {
+      if (
+        this.#props.parseContext.adapter.supportsReturning &&
+        node.returning
+      ) {
         return result.rows
       } else if (result.numUpdatedOrDeletedRows != null) {
         return [result.numUpdatedOrDeletedRows as ManyResultRowType<O>]
@@ -2372,10 +2382,6 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
 
     return result as NonEmptySingleResultRowType<O>
   }
-
-  get #parseContext() {
-    return createParseContext(this.#props.adapter)
-  }
 }
 
 preventAwait(
@@ -2387,7 +2393,7 @@ export interface QueryBuilderProps {
   readonly queryId: QueryId
   readonly queryNode: QueryNode
   readonly executor: QueryExecutor
-  readonly adapter: DialectAdapter
+  readonly parseContext: ParseContext
 }
 
 /**

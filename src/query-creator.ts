@@ -28,8 +28,7 @@ import { WithNode } from './operation-node/with-node.js'
 import { createQueryId } from './util/query-id.js'
 import { WithSchemaPlugin } from './plugin/with-schema/with-schema-plugin.js'
 import { freeze } from './util/object-utils.js'
-import { createParseContext } from './parser/parse-context.js'
-import { DialectAdapter } from './dialect/dialect-adapter.js'
+import { ParseContext } from './parser/parse-context.js'
 
 export class QueryCreator<DB> {
   readonly #props: QueryCreatorProps
@@ -157,9 +156,9 @@ export class QueryCreator<DB> {
     return new QueryBuilder({
       queryId: createQueryId(),
       executor: this.#props.executor,
-      adapter: this.#props.adapter,
+      parseContext: this.#props.parseContext,
       queryNode: SelectQueryNode.create(
-        parseTableExpressionOrList(this.#parseContext, from),
+        parseTableExpressionOrList(this.#props.parseContext, from),
         this.#props.withNode
       ),
     })
@@ -212,7 +211,7 @@ export class QueryCreator<DB> {
     return new QueryBuilder({
       queryId: createQueryId(),
       executor: this.#props.executor,
-      adapter: this.#props.adapter,
+      parseContext: this.#props.parseContext,
       queryNode: InsertQueryNode.create(
         parseTable(table),
         this.#props.withNode
@@ -240,9 +239,9 @@ export class QueryCreator<DB> {
     return new QueryBuilder({
       queryId: createQueryId(),
       executor: this.#props.executor,
-      adapter: this.#props.adapter,
+      parseContext: this.#props.parseContext,
       queryNode: DeleteQueryNode.create(
-        parseTableExpression(this.#parseContext, table),
+        parseTableExpression(this.#props.parseContext, table),
         this.#props.withNode
       ),
     })
@@ -272,9 +271,9 @@ export class QueryCreator<DB> {
     return new QueryBuilder({
       queryId: createQueryId(),
       executor: this.#props.executor,
-      adapter: this.#props.adapter,
+      parseContext: this.#props.parseContext,
       queryNode: UpdateQueryNode.create(
-        parseTableExpression(this.#parseContext, table),
+        parseTableExpression(this.#props.parseContext, table),
         this.#props.withNode
       ),
     })
@@ -306,7 +305,11 @@ export class QueryCreator<DB> {
     name: N,
     expression: E
   ): QueryCreatorWithCommonTableExpression<DB, N, E> {
-    const cte = parseCommonTableExpression(this.#parseContext, name, expression)
+    const cte = parseCommonTableExpression(
+      this.#props.parseContext,
+      name,
+      expression
+    )
 
     return new QueryCreator({
       ...this.#props,
@@ -489,14 +492,10 @@ export class QueryCreator<DB> {
       executor: this.#props.executor,
     })
   }
-
-  get #parseContext() {
-    return createParseContext(this.#props.adapter)
-  }
 }
 
 export interface QueryCreatorProps {
-  readonly adapter: DialectAdapter
   readonly executor: QueryExecutor
+  readonly parseContext: ParseContext
   readonly withNode?: WithNode
 }

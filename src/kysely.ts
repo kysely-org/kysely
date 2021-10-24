@@ -20,7 +20,7 @@ import {
   TRANSACTION_ISOLATION_LEVELS,
 } from './driver/driver.js'
 import { preventAwait } from './util/prevent-await.js'
-import { DialectAdapter } from './dialect/dialect-adapter.js'
+import { DefaultParseContext, ParseContext } from './parser/parse-context.js'
 
 /**
  * The main Kysely class.
@@ -69,13 +69,15 @@ export class Kysely<DB> extends QueryCreator<DB> {
   constructor(args: KyselyProps)
   constructor(args: KyselyConfig | KyselyProps) {
     if (isKyselyProps(args)) {
-      super({ executor: args.executor, adapter: args.adapter })
+      super({ executor: args.executor, parseContext: args.parseContext })
       this.#props = freeze(args)
     } else {
       const dialect = args.dialect
       const driver = dialect.createDriver()
       const compiler = dialect.createQueryCompiler()
       const adapter = dialect.createAdapter()
+
+      const parseContext = new DefaultParseContext(adapter)
       const runtimeDriver = new RuntimeDriver(driver)
 
       const connectionProvider = new DefaultConnectionProvider(runtimeDriver)
@@ -85,14 +87,14 @@ export class Kysely<DB> extends QueryCreator<DB> {
         args.plugins ?? []
       )
 
-      super({ executor, adapter })
+      super({ executor, parseContext })
 
       this.#props = freeze({
         config: args,
         executor,
-        adapter,
         dialect,
         driver,
+        parseContext,
       })
     }
   }
@@ -108,7 +110,7 @@ export class Kysely<DB> extends QueryCreator<DB> {
    * Returns the {@link MigrationModule} module for managing and running migrations.
    */
   get migration(): MigrationModule {
-    return new MigrationModule(this, this.#props.adapter)
+    return new MigrationModule(this, this.#props.parseContext.adapter)
   }
 
   /**
@@ -284,7 +286,7 @@ export interface KyselyProps {
   readonly driver: Driver
   readonly executor: QueryExecutor
   readonly dialect: Dialect
-  readonly adapter: DialectAdapter
+  readonly parseContext: ParseContext
 }
 
 export function isKyselyProps(obj: unknown): obj is KyselyProps {
@@ -294,7 +296,7 @@ export function isKyselyProps(obj: unknown): obj is KyselyProps {
     isObject(obj.driver) &&
     isObject(obj.executor) &&
     isObject(obj.dialect) &&
-    isObject(obj.adapter)
+    isObject(obj.parseContext)
   )
 }
 

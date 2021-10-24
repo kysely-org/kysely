@@ -47,8 +47,7 @@ function parseCallbackJoin(
   from: TableExpression<any, any>,
   callback: JoinCallbackExpression<any, any, any>
 ): JoinNode {
-  const tableNode = parseTableExpression(ctx, from)
-  const joinBuilder = callback(ctx.createJoinBuilder(joinType, tableNode))
+  const joinBuilder = callback(ctx.createJoinBuilder(joinType, from))
   return joinBuilder.toOperationNode()
 }
 

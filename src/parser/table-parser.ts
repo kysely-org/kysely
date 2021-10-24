@@ -123,7 +123,7 @@ export function parseTableExpression(
   } else if (isOperationNodeSource(table)) {
     return table.toOperationNode()
   } else if (isFunction(table)) {
-    return table(ctx.createSubQueryBuilder()).toOperationNode()
+    return table(ctx.createExpressionBuilder()).toOperationNode()
   } else {
     throw new Error(`invalid table expression ${JSON.stringify(table)}`)
   }

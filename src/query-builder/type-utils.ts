@@ -1,6 +1,6 @@
 import { AliasedRawBuilder, RawBuilder } from '../raw-builder/raw-builder.js'
 import { AliasedQueryBuilder, QueryBuilder } from './query-builder.js'
-import { SubQueryBuilder } from './sub-query-builder.js'
+import { ExpressionBuilder } from './expression-builder.js'
 
 export type ValueType<T> = T[keyof T]
 
@@ -154,19 +154,19 @@ export type AnyRawBuilder = RawBuilder<any>
 export type AnyAliasedRawBuilder = AliasedRawBuilder<any, any>
 
 export type QueryBuilderFactory<DB, TB extends keyof DB> = (
-  qb: SubQueryBuilder<DB, TB>
+  qb: ExpressionBuilder<DB, TB>
 ) => QueryBuilder<any, any, any>
 
 export type AliasedQueryBuilderFactory<DB, TB extends keyof DB> = (
-  qb: SubQueryBuilder<DB, TB>
+  qb: ExpressionBuilder<DB, TB>
 ) => AnyAliasedQueryBuilder
 
 export type RawBuilderFactory<DB, TB extends keyof DB> = (
-  qb: SubQueryBuilder<DB, TB>
+  qb: ExpressionBuilder<DB, TB>
 ) => AnyRawBuilder
 
 export type AliasedRawBuilderFactory<DB, TB extends keyof DB> = (
-  qb: SubQueryBuilder<DB, TB>
+  qb: ExpressionBuilder<DB, TB>
 ) => AnyAliasedRawBuilder
 
 export interface InsertResultTypeTag {

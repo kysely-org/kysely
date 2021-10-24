@@ -95,7 +95,7 @@ export function parseReferenceExpression(
       return node
     }
   } else if (isFunction(arg)) {
-    const node = arg(ctx.createSubQueryBuilder()).toOperationNode()
+    const node = arg(ctx.createExpressionBuilder()).toOperationNode()
 
     if (!QueryNode.isMutating(node)) {
       return node

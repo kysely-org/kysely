@@ -33,7 +33,6 @@ import { JoinNode } from '../operation-node/join-node.js'
 import { FilterExpressionNode } from '../operation-node/operation-node-utils.js'
 import { ValueNode } from '../operation-node/value-node.js'
 import { ParseContext } from './parse-context.js'
-import { parseTableExpression } from './table-parser.js'
 
 export type ExistsExpression<DB, TB extends keyof DB> =
   | AnyQueryBuilder
@@ -50,7 +49,7 @@ export function parseWhereFilter(
   if (args.length === 3) {
     return parseThreeArgFilter(ctx, args[0], args[1], args[2])
   } else if (args.length === 1 && isFunction(args[0])) {
-    return parseWhereGrouper(ctx, args[0])
+    return parseWhereGroup(ctx, args[0])
   } else {
     throw new Error(
       `invalid arguments passed to a where method ${JSON.stringify(args)}`
@@ -65,7 +64,7 @@ export function parseHavingFilter(
   if (args.length === 3) {
     return parseThreeArgFilter(ctx, args[0], args[1], args[2])
   } else if (args.length === 1 && isFunction(args[0])) {
-    return parseHavingGrouper(ctx, args[0])
+    return parseHavingGroup(ctx, args[0])
   } else {
     throw new Error(
       `invalid arguments passed to a having method ${JSON.stringify(args)}`
@@ -80,7 +79,7 @@ export function parseOnFilter(
   if (args.length === 3) {
     return parseThreeArgFilter(ctx, args[0], args[1], args[2])
   } else if (args.length === 1 && isFunction(args[0])) {
-    return parseOnGrouper(ctx, args[0])
+    return parseOnGroup(ctx, args[0])
   } else {
     throw new Error(
       `invalid arguments passed to an on method ${JSON.stringify(args)}`
@@ -101,34 +100,18 @@ export function parseReferenceFilter(
   )
 }
 
-export function parseExistExpression(
+export function parseExistFilter(
   ctx: ParseContext,
   arg: ExistsExpression<any, any>
 ): FilterNode {
-  return doParseExistExpression(ctx, 'exists', arg)
+  return parseExistExpression(ctx, 'exists', arg)
 }
 
-export function parseNotExistExpression(
+export function parseNotExistFilter(
   ctx: ParseContext,
   arg: ExistsExpression<any, any>
 ): FilterNode {
-  return doParseExistExpression(ctx, 'not exists', arg)
-}
-
-function doParseExistExpression(
-  ctx: ParseContext,
-  type: 'exists' | 'not exists',
-  arg: ExistsExpression<any, any>
-): FilterNode {
-  const node = isFunction(arg)
-    ? arg(ctx.createSubQueryBuilder()).toOperationNode()
-    : arg.toOperationNode()
-
-  if (!SelectQueryNode.is(node) && !RawNode.is(node)) {
-    throw new Error('invalid where exists arg')
-  }
-
-  return FilterNode.create(undefined, OperatorNode.create(type), node)
+  return parseExistExpression(ctx, 'not exists', arg)
 }
 
 function parseThreeArgFilter(
@@ -179,46 +162,60 @@ function parseFilterOperator(op: FilterOperator): OperatorNode | RawNode {
   )
 }
 
-function parseWhereGrouper(
+function parseWhereGroup(
   ctx: ParseContext,
-  grouper: (qb: AnyQueryBuilder) => AnyQueryBuilder
+  callback: (qb: AnyQueryBuilder) => AnyQueryBuilder
 ): ParensNode {
-  const query = grouper(ctx.createEmptySelectQuery())
+  const query = callback(ctx.createSelectQueryBuilder([]))
   const queryNode = query.toOperationNode() as SelectQueryNode
 
   if (!queryNode.where) {
-    throw new Error('no where methods called insided a grouper')
+    throw new Error('no `where*` methods called insided a group callback')
   }
 
   return ParensNode.create(queryNode.where.where)
 }
 
-function parseHavingGrouper(
+function parseHavingGroup(
   ctx: ParseContext,
-  grouper: (qb: AnyQueryBuilder) => AnyQueryBuilder
+  callback: (qb: AnyQueryBuilder) => AnyQueryBuilder
 ): ParensNode {
-  const query = grouper(ctx.createEmptySelectQuery())
+  const query = callback(ctx.createSelectQueryBuilder([]))
   const queryNode = query.toOperationNode() as SelectQueryNode
 
   if (!queryNode.having) {
-    throw new Error('no having methods called insided a grouper')
+    throw new Error('no `having*` methods called insided a group callback')
   }
 
   return ParensNode.create(queryNode.having.having)
 }
 
-function parseOnGrouper(
+function parseOnGroup(
   ctx: ParseContext,
-  grouper: (qb: JoinBuilder<any, any>) => JoinBuilder<any, any>
+  callback: (qb: JoinBuilder<any, any>) => JoinBuilder<any, any>
 ): ParensNode {
-  const joinBuilder = grouper(
-    ctx.createJoinBuilder('InnerJoin', parseTableExpression(ctx, 'table'))
-  )
+  const joinBuilder = callback(ctx.createJoinBuilder('InnerJoin', 'table'))
   const joinNode = joinBuilder.toOperationNode() as JoinNode
 
   if (!joinNode.on) {
-    throw new Error('no `on` methods called insided a grouper where')
+    throw new Error('no `on*` methods called insided a group callback')
   }
 
   return ParensNode.create(joinNode.on)
+}
+
+function parseExistExpression(
+  ctx: ParseContext,
+  type: 'exists' | 'not exists',
+  arg: ExistsExpression<any, any>
+): FilterNode {
+  const node = isFunction(arg)
+    ? arg(ctx.createExpressionBuilder()).toOperationNode()
+    : arg.toOperationNode()
+
+  if (!SelectQueryNode.is(node) && !RawNode.is(node)) {
+    throw new Error('invalid where exists arg')
+  }
+
+  return FilterNode.create(undefined, OperatorNode.create(type), node)
 }

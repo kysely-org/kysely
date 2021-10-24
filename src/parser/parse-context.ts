@@ -1,58 +1,100 @@
 import { DialectAdapter } from '../dialect/dialect-adapter.js'
 import { JoinNode, JoinType } from '../operation-node/join-node.js'
-import { TableExpressionNode } from '../operation-node/operation-node-utils.js'
 import { SelectQueryNode } from '../operation-node/select-query-node.js'
 import { JoinBuilder } from '../query-builder/join-builder.js'
 import { QueryBuilder } from '../query-builder/query-builder.js'
-import { SubQueryBuilder } from '../query-builder/sub-query-builder.js'
+import { ExpressionBuilder } from '../query-builder/expression-builder.js'
 import { QueryCreator } from '../query-creator.js'
 import { NoopQueryExecutor } from '../query-executor/noop-query-executor.js'
-import { freeze } from '../util/object-utils.js'
 import { createQueryId } from '../util/query-id.js'
+import {
+  parseTableExpression,
+  parseTableExpressionOrList,
+  TableExpression,
+} from './table-parser.js'
 
+/**
+ * This interface exposes everything the parsers need to be able to parse
+ * method calls into {@link OperationNode} trees.
+ */
 export interface ParseContext {
-  createEmptySelectQuery(): QueryBuilder<any, any>
-  createSubQueryBuilder(): SubQueryBuilder<any, any>
-  createQueryCreator(): QueryCreator<any>
+  readonly adapter: DialectAdapter
+
+  /**
+   * Creates a select query builder with a {@link NoopQueryExecutor}.
+   */
+  createSelectQueryBuilder(
+    tables: ReadonlyArray<TableExpression<any, any>>
+  ): QueryBuilder<any, any>
+
+  /**
+   * Creates an instance of a join builder.
+   */
   createJoinBuilder(
     joinType: JoinType,
-    tableNode: TableExpressionNode
+    table: TableExpression<any, any>
   ): JoinBuilder<any, any>
+
+  /**
+   * Creates an expression builder for building stuff like subqueries.
+   * {@link NoopQueryExecutor} is used as the executor and the queries
+   * built using the returned builder can never be executed.
+   */
+  createExpressionBuilder(): ExpressionBuilder<any, any>
+
+  /**
+   * Creates a query creator with a {@link NoopQueryExecutor}.
+   */
+  createQueryCreator(): QueryCreator<any>
 }
 
-export function createParseContext(adapter: DialectAdapter): ParseContext {
-  return freeze({
-    createEmptySelectQuery(): QueryBuilder<any, any> {
-      return new QueryBuilder({
-        queryId: createQueryId(),
-        executor: new NoopQueryExecutor(),
-        queryNode: SelectQueryNode.create([]),
-        adapter,
-      })
-    },
+export class DefaultParseContext implements ParseContext {
+  readonly #adapter: DialectAdapter
+  readonly #noopExecutor: NoopQueryExecutor
 
-    createSubQueryBuilder(): SubQueryBuilder<any, any> {
-      return new SubQueryBuilder({
-        executor: new NoopQueryExecutor(),
-        adapter,
-      })
-    },
+  constructor(adapter: DialectAdapter) {
+    this.#adapter = adapter
+    this.#noopExecutor = new NoopQueryExecutor()
+  }
 
-    createQueryCreator(): QueryCreator<any> {
-      return new QueryCreator({
-        executor: new NoopQueryExecutor(),
-        adapter,
-      })
-    },
+  get adapter(): DialectAdapter {
+    return this.#adapter
+  }
 
-    createJoinBuilder(
-      joinType: JoinType,
-      tableNode: TableExpressionNode
-    ): JoinBuilder<any, any> {
-      return new JoinBuilder({
-        joinNode: JoinNode.create(joinType, tableNode),
-        adapter,
-      })
-    },
-  })
+  createSelectQueryBuilder(
+    tables: ReadonlyArray<TableExpression<any, any>>
+  ): QueryBuilder<any, any> {
+    return new QueryBuilder({
+      queryId: createQueryId(),
+      executor: this.#noopExecutor,
+      parseContext: this,
+      queryNode: SelectQueryNode.create(
+        parseTableExpressionOrList(this, tables)
+      ),
+    })
+  }
+
+  createJoinBuilder(
+    joinType: JoinType,
+    table: TableExpression<any, any>
+  ): JoinBuilder<any, any> {
+    return new JoinBuilder({
+      joinNode: JoinNode.create(joinType, parseTableExpression(this, table)),
+      parseContext: this,
+    })
+  }
+
+  createExpressionBuilder(): ExpressionBuilder<any, any> {
+    return new ExpressionBuilder({
+      executor: this.#noopExecutor,
+      parseContext: this,
+    })
+  }
+
+  createQueryCreator(): QueryCreator<any> {
+    return new QueryCreator({
+      executor: this.#noopExecutor,
+      parseContext: this,
+    })
+  }
 }

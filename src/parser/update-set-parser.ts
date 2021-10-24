@@ -58,7 +58,7 @@ export function parseMutationValueExpression(
       return node
     }
   } else if (isFunction(value)) {
-    const node = value(ctx.createSubQueryBuilder()).toOperationNode()
+    const node = value(ctx.createExpressionBuilder()).toOperationNode()
 
     if (!QueryNode.isMutating(node)) {
       return node

@@ -1,14 +1,6 @@
 import { Kysely } from '../kysely.js'
 
-/**
- * The `DialectAdapter` encapsulates all differences between dialects outside
- * the `Driver` and `QueryCompiler`.
- *
- * For example, some databases support transactional DDL and therefore we want
- * to run migrations inside a transaction, while other databases don't support
- * it. For that there's a `supportsTransactionalDdl` boolean in this interface.
- */
-export interface DialectAdapter {
+export interface DialectSupports {
   /**
    * Whether or not this dialect supports transactional DDL.
    *
@@ -21,7 +13,17 @@ export interface DialectAdapter {
    * upates and deletes.
    */
   readonly supportsReturning: boolean
+}
 
+/**
+ * The `DialectAdapter` encapsulates all differences between dialects outside
+ * the `Driver` and `QueryCompiler`.
+ *
+ * For example, some databases support transactional DDL and therefore we want
+ * to run migrations inside a transaction, while other databases don't support
+ * it. For that there's a `supportsTransactionalDdl` boolean in this interface.
+ */
+export interface DialectAdapter extends DialectSupports {
   /**
    * This method is used to acquire a lock for the migrations so that
    * it's not possible for two migration processes to run in parallel.

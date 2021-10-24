@@ -29,10 +29,10 @@ using Kysely and can't find something you'd want to use, please open an issue.
 
 # Table of contents
 
-- [API reference](https://koskimas.github.io/kysely/index.html)
 - [Installation](#installation)
 - [Minimal example](#minimal-example)
 - [Migrations](#migrations)
+- [API reference](https://koskimas.github.io/kysely/index.html)
 
 # Installation
 

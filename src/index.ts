@@ -1,10 +1,9 @@
 export * from './kysely.js'
-
 export * from './query-creator.js'
 
 export * from './query-builder/query-builder.js'
 export * from './query-builder/join-builder.js'
-export * from './query-builder/sub-query-builder.js'
+export * from './query-builder/expression-builder.js'
 
 export * from './raw-builder/raw-builder.js'
 
@@ -26,6 +25,7 @@ export * from './schema/column-definition-builder.js'
 export * from './schema/alter-table-builder.js'
 
 export * from './dynamic/dynamic.js'
+
 export * from './driver/driver.js'
 export * from './driver/database-connection.js'
 export * from './driver/connection-provider.js'

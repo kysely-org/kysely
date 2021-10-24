@@ -50,7 +50,7 @@ export function parseValueExpression(
       return node as ValueExpressionNode
     }
   } else if (isFunction(arg)) {
-    const node = arg(ctx.createSubQueryBuilder()).toOperationNode()
+    const node = arg(ctx.createExpressionBuilder()).toOperationNode()
 
     if (!QueryNode.isMutating(node)) {
       return node
