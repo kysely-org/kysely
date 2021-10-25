@@ -98,7 +98,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
             .createTable('test')
             .addColumn('a', 'integer', (col) => col.primaryKey().increments())
             .addColumn('b', 'integer', (col) =>
-              col.references('test.a').onDelete('cascade')
+              col.references('test.a').onDelete('cascade').onUpdate('set null')
             )
             .addColumn('c', 'varchar(255)')
             .addColumn('d', 'bigint', (col) => col.unique().notNull())
@@ -119,7 +119,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
               sql: [
                 'create table `test`',
                 '(`a` integer not null auto_increment primary key,',
-                '`b` integer references `test` (`a`) on delete cascade,',
+                '`b` integer references `test` (`a`) on delete cascade on update set null,',
                 '`c` varchar(255),',
                 '`d` bigint not null unique,',
                 '`e` double precision,',
@@ -143,7 +143,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
         })
       }
 
-      it('should create a table with an unique constraints', async () => {
+      it('should create a table with a unique constraints', async () => {
         const builder = ctx.db.schema
           .createTable('test')
           .addColumn('a', 'varchar(255)')
@@ -189,7 +189,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
         await builder.execute()
       })
 
-      it('should add a composite primary key constraint', async () => {
+      it('should create a table with a composite primary key constraint', async () => {
         const builder = ctx.db.schema
           .createTable('test')
           .addColumn('a', 'integer')
@@ -210,7 +210,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
         await builder.execute()
       })
 
-      it('should add a foreign key constraint', async () => {
+      it('should create a table with a foreign key constraint', async () => {
         await ctx.db.schema
           .createTable('test2')
           .addColumn('c', 'integer')
@@ -241,7 +241,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
         await builder.execute()
       })
 
-      it('should add a foreign key constraint with on update', async () => {
+      it('should create a table with a foreign key constraint that has an `on update` statement', async () => {
         await ctx.db.schema
           .createTable('test2')
           .addColumn('c', 'integer')
@@ -555,25 +555,8 @@ for (const dialect of BUILT_IN_DIALECTS) {
           .execute()
       })
 
-      describe('alter column', () => {
-        if (dialect === 'postgres') {
-          it('should set column data type', async () => {
-            const builder = ctx.db.schema
-              .alterTable('test')
-              .alterColumn('varchar_col')
-              .setDataType('text')
-
-            testSql(builder, dialect, {
-              postgres: {
-                sql: 'alter table "test" alter column "varchar_col" type text',
-                bindings: [],
-              },
-              mysql: NOT_SUPPORTED,
-            })
-
-            await builder.execute()
-          })
-        } else {
+      if (dialect === 'mysql') {
+        describe('modify column', () => {
           it('should set column data type', async () => {
             const builder = ctx.db.schema
               .alterTable('test')
@@ -589,8 +572,61 @@ for (const dialect of BUILT_IN_DIALECTS) {
 
             await builder.execute()
           })
-        }
 
+          it('should add not null constraint for column', async () => {
+            const builder = ctx.db.schema
+              .alterTable('test')
+              .modifyColumn('varchar_col', 'varchar(255)')
+              .notNull()
+
+            testSql(builder, dialect, {
+              mysql: {
+                sql: 'alter table `test` modify column `varchar_col` varchar(255) not null',
+                bindings: [],
+              },
+              postgres: NOT_SUPPORTED,
+            })
+
+            await builder.execute()
+          })
+
+          it('should drop not null constraint for column', async () => {
+            expect(
+              (await getColumnMeta('test.varchar_col')).isNullable
+            ).to.equal(true)
+
+            await ctx.db.schema
+              .alterTable('test')
+              .modifyColumn('varchar_col', 'varchar(255)')
+              .notNull()
+              .execute()
+
+            expect(
+              (await getColumnMeta('test.varchar_col')).isNullable
+            ).to.equal(false)
+
+            const builder = ctx.db.schema
+              .alterTable('test')
+              .modifyColumn('varchar_col', 'varchar(255)')
+
+            testSql(builder, dialect, {
+              mysql: {
+                sql: 'alter table `test` modify column `varchar_col` varchar(255)',
+                bindings: [],
+              },
+              postgres: NOT_SUPPORTED,
+            })
+
+            await builder.execute()
+
+            expect(
+              (await getColumnMeta('test.varchar_col')).isNullable
+            ).to.equal(true)
+          })
+        })
+      }
+
+      describe('alter column', () => {
         it('should set default value', async () => {
           const builder = ctx.db.schema
             .alterTable('test')
@@ -637,7 +673,24 @@ for (const dialect of BUILT_IN_DIALECTS) {
           await builder.execute()
         })
 
-        if (dialect === 'postgres') {
+        if (dialect !== 'mysql') {
+          it('should set column data type', async () => {
+            const builder = ctx.db.schema
+              .alterTable('test')
+              .alterColumn('varchar_col')
+              .setDataType('text')
+
+            testSql(builder, dialect, {
+              postgres: {
+                sql: 'alter table "test" alter column "varchar_col" type text',
+                bindings: [],
+              },
+              mysql: NOT_SUPPORTED,
+            })
+
+            await builder.execute()
+          })
+
           it('should add not null constraint for column', async () => {
             const builder = ctx.db.schema
               .alterTable('test')
@@ -649,34 +702,12 @@ for (const dialect of BUILT_IN_DIALECTS) {
                 sql: 'alter table "test" alter column "varchar_col" set not null',
                 bindings: [],
               },
-              mysql: {
-                sql: 'alter table `test` alter column `varchar_col` set not null',
-                bindings: [],
-              },
+              mysql: NOT_SUPPORTED,
             })
 
             await builder.execute()
           })
-        } else {
-          it('should add not null constraint for column', async () => {
-            const builder = ctx.db.schema
-              .alterTable('test')
-              .modifyColumn('varchar_col', 'varchar(255)')
-              .notNull()
 
-            testSql(builder, dialect, {
-              mysql: {
-                sql: 'alter table `test` modify column `varchar_col` varchar(255) not null',
-                bindings: [],
-              },
-              postgres: NOT_SUPPORTED,
-            })
-
-            await builder.execute()
-          })
-        }
-
-        if (dialect === 'postgres') {
           it('should drop not null constraint for column', async () => {
             await ctx.db.schema
               .alterTable('test')
@@ -698,40 +729,6 @@ for (const dialect of BUILT_IN_DIALECTS) {
             })
 
             await builder.execute()
-          })
-        } else {
-          it('should drop not null constraint for column', async () => {
-            expect(
-              (await getColumnMeta('test.varchar_col')).isNullable
-            ).to.equal(true)
-
-            await ctx.db.schema
-              .alterTable('test')
-              .modifyColumn('varchar_col', 'varchar(255)')
-              .notNull()
-              .execute()
-
-            expect(
-              (await getColumnMeta('test.varchar_col')).isNullable
-            ).to.equal(false)
-
-            const builder = ctx.db.schema
-              .alterTable('test')
-              .modifyColumn('varchar_col', 'varchar(255)')
-
-            testSql(builder, dialect, {
-              mysql: {
-                sql: 'alter table `test` modify column `varchar_col` varchar(255)',
-                bindings: [],
-              },
-              postgres: NOT_SUPPORTED,
-            })
-
-            await builder.execute()
-
-            expect(
-              (await getColumnMeta('test.varchar_col')).isNullable
-            ).to.equal(true)
           })
         }
       })
@@ -848,7 +845,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
       })
 
       describe('add unique constraint', () => {
-        it('should add an unique constraint', async () => {
+        it('should add a unique constraint', async () => {
           const builder = ctx.db.schema
             .alterTable('test')
             .addUniqueConstraint('some_constraint', [

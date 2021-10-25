@@ -93,7 +93,7 @@ export class Kysely<DB> extends QueryCreator<DB> {
         config: args,
         executor,
         dialect,
-        driver,
+        driver: runtimeDriver,
         parseContext,
       })
     }
@@ -340,7 +340,7 @@ export class TransactionBuilder<DB> {
   readonly #props: TransactionBuilderProps
 
   constructor(props: TransactionBuilderProps) {
-    this.#props = props
+    this.#props = freeze(props)
   }
 
   setIsolationLevel(isolationLevel: IsolationLevel): TransactionBuilder<DB> {
