@@ -142,6 +142,29 @@ export async function insertPersons(
   }
 }
 
+export async function insertDefaultDataSet(ctx: TestContext): Promise<void> {
+  await insertPersons(ctx, [
+    {
+      first_name: 'Jennifer',
+      last_name: 'Aniston',
+      gender: 'female',
+      pets: [{ name: 'Catto', species: 'cat' }],
+    },
+    {
+      first_name: 'Arnold',
+      last_name: 'Schwarzenegger',
+      gender: 'male',
+      pets: [{ name: 'Doggo', species: 'dog' }],
+    },
+    {
+      first_name: 'Sylvester',
+      last_name: 'Stallone',
+      gender: 'male',
+      pets: [{ name: 'Hammo', species: 'hamster' }],
+    },
+  ])
+}
+
 export async function clearDatabase(ctx: TestContext): Promise<void> {
   await ctx.db.deleteFrom('toy').execute()
   await ctx.db.deleteFrom('pet').execute()

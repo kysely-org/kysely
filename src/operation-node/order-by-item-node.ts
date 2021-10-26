@@ -1,13 +1,12 @@
 import { freeze } from '../util/object-utils.js'
 import { OperationNode } from './operation-node.js'
 import { ReferenceExpressionNode } from './operation-node-utils.js'
-
-export type OrderByDirection = 'asc' | 'desc'
+import { RawNode } from './raw-node.js'
 
 export interface OrderByItemNode extends OperationNode {
   readonly kind: 'OrderByItemNode'
   readonly orderBy: ReferenceExpressionNode
-  readonly direction: OrderByDirection
+  readonly direction?: RawNode
 }
 
 /**
@@ -20,7 +19,7 @@ export const OrderByItemNode = freeze({
 
   create(
     orderBy: ReferenceExpressionNode,
-    direction: OrderByDirection
+    direction?: RawNode
   ): OrderByItemNode {
     return freeze({
       kind: 'OrderByItemNode',

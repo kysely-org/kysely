@@ -1,12 +1,12 @@
 import { QueryResult } from '../../driver/database-connection.js'
 import { RootOperationNode } from '../../query-compiler/query-compiler.js'
+import { WithSchemaTransformer } from './with-schema-transformer.js'
 import {
   AnyRow,
   KyselyPlugin,
   PluginTransformQueryArgs,
   PluginTransformResultArgs,
 } from '../kysely-plugin.js'
-import { WithSchemaTransformer } from '../../transformers/with-schema-transformer.js'
 
 export class WithSchemaPlugin implements KyselyPlugin {
   readonly #transformer: WithSchemaTransformer

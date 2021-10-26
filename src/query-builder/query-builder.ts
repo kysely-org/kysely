@@ -34,15 +34,11 @@ import {
 } from '../parser/insert-values-parser.js'
 import { QueryBuilderWithReturning } from '../parser/returning-parser.js'
 import {
-  parseReferenceExpression,
   parseReferenceExpressionOrList,
   ReferenceExpression,
 } from '../parser/reference-parser.js'
 import { ValueExpressionOrList } from '../parser/value-parser.js'
-import {
-  OrderByItemNode,
-  OrderByDirection,
-} from '../operation-node/order-by-item-node.js'
+import { OrderByItemNode } from '../operation-node/order-by-item-node.js'
 import { SelectQueryNode } from '../operation-node/select-query-node.js'
 import { InsertQueryNode } from '../operation-node/insert-query-node.js'
 import {
@@ -56,7 +52,12 @@ import {
   NonEmptySingleResultRowType,
   SingleResultRowType,
 } from './type-utils.js'
-import { OrderByExpression } from '../parser/order-by-parser.js'
+import {
+  OrderByDirectionExpression,
+  OrderByExpression,
+  parseOrderByDirectionExpression,
+  parseOrderByExpression,
+} from '../parser/order-by-parser.js'
 import { GroupByItemNode } from '../operation-node/group-by-item-node.js'
 import { UpdateQueryNode } from '../operation-node/update-query-node.js'
 import {
@@ -2067,7 +2068,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    */
   orderBy(
     orderBy: OrderByExpression<DB, TB, O>,
-    direction: OrderByDirection = 'asc'
+    direction?: OrderByDirectionExpression
   ): QueryBuilder<DB, TB, O> {
     assertCanHaveOrderByClause(this.#props.queryNode)
 
@@ -2076,8 +2077,8 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
       queryNode: SelectQueryNode.cloneWithOrderByItem(
         this.#props.queryNode,
         OrderByItemNode.create(
-          parseReferenceExpression(this.#props.parseContext, orderBy),
-          direction
+          parseOrderByExpression(this.#props.parseContext, orderBy),
+          parseOrderByDirectionExpression(direction)
         )
       ),
     })

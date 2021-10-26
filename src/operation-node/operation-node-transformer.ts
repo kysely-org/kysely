@@ -45,7 +45,7 @@ import { CheckConstraintNode } from './check-constraint-node.js'
 import { WithNode } from './with-node.js'
 import { CommonTableExpressionNode } from './common-table-expression-node.js'
 import { HavingNode } from './having-node.js'
-import { freeze } from '../util/object-utils.js'
+import { freeze, isString } from '../util/object-utils.js'
 import { CreateSchemaNode } from './create-schema-node.js'
 import { DropSchemaNode } from './drop-schema-node.js'
 import { AlterTableNode } from './alter-table-node.js'
@@ -388,7 +388,7 @@ export class OperationNodeTransformer {
     return {
       kind: 'OrderByItemNode',
       orderBy: this.transformNode(node.orderBy),
-      direction: node.direction,
+      direction: this.transformNode(node.direction),
     }
   }
 

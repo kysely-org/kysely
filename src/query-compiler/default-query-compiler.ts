@@ -528,8 +528,11 @@ export class DefaultQueryCompiler
 
   protected override visitOrderByItem(node: OrderByItemNode): void {
     this.visitNode(node.orderBy)
-    this.append(' ')
-    this.append(node.direction)
+
+    if (node.direction) {
+      this.append(' ')
+      this.visitNode(node.direction)
+    }
   }
 
   protected override visitGroupBy(node: GroupByNode): void {

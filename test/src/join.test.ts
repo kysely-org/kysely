@@ -75,11 +75,11 @@ for (const dialect of BUILT_IN_DIALECTS) {
 
         testSql(query, dialect, {
           postgres: {
-            sql: `select * from "person" ${joinSql} "pet" on "pet"."owner_id" = "person"."id" order by "person"."first_name" asc`,
+            sql: `select * from "person" ${joinSql} "pet" on "pet"."owner_id" = "person"."id" order by "person"."first_name"`,
             bindings: [],
           },
           mysql: {
-            sql: `select * from \`person\` ${joinSql} \`pet\` on \`pet\`.\`owner_id\` = \`person\`.\`id\` order by \`person\`.\`first_name\` asc`,
+            sql: `select * from \`person\` ${joinSql} \`pet\` on \`pet\`.\`owner_id\` = \`person\`.\`id\` order by \`person\`.\`first_name\``,
             bindings: [],
           },
         })
@@ -126,7 +126,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
               `select * from "person"`,
               `${joinSql} (select "owner_id" as "oid", "name" from "pet") as "p"`,
               `on "p"."oid" = "person"."id"`,
-              `order by "person"."first_name" asc`,
+              `order by "person"."first_name"`,
             ],
             bindings: [],
           },
@@ -135,7 +135,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
               'select * from `person`',
               `${joinSql} (select \`owner_id\` as \`oid\`, \`name\` from \`pet\`) as \`p\``,
               'on `p`.`oid` = `person`.`id`',
-              'order by `person`.`first_name` asc',
+              'order by `person`.`first_name`',
             ],
             bindings: [],
           },
@@ -224,7 +224,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
               `on "pet"."owner_id" = "person"."id"`,
               `and "pet"."name" in ($1, $2, $3)`,
               `and ("pet"."species" = $4 or "species" = $5 or "species" = (select 'hamster' as "hamster" from "pet" limit $6 offset $7))`,
-              `order by "person"."first_name" asc`,
+              `order by "person"."first_name"`,
             ],
             bindings: ['Catto', 'Doggo', 'Hammo', 'cat', 'dog', 1, 0],
           },
@@ -235,7 +235,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
               'on `pet`.`owner_id` = `person`.`id`',
               'and `pet`.`name` in (?, ?, ?)',
               "and (`pet`.`species` = ? or `species` = ? or `species` = (select 'hamster' as `hamster` from `pet` limit ? offset ?))",
-              'order by `person`.`first_name` asc',
+              'order by `person`.`first_name`',
             ],
             bindings: ['Catto', 'Doggo', 'Hammo', 'cat', 'dog', 1, 0],
           },

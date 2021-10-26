@@ -341,11 +341,11 @@ for (const dialect of BUILT_IN_DIALECTS) {
 
       testSql(query, dialect, {
         postgres: {
-          sql: 'select distinct "gender" from "person" order by "gender" asc',
+          sql: 'select distinct "gender" from "person" order by "gender"',
           bindings: [],
         },
         mysql: {
-          sql: 'select distinct `gender` from `person` order by `gender` asc',
+          sql: 'select distinct `gender` from `person` order by `gender`',
           bindings: [],
         },
       })
@@ -391,13 +391,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
 
         testSql(query, dialect, {
           postgres: {
-            sql: 'select distinct on ("gender") "first_name" from "person" order by "gender" asc, "last_name" asc',
+            sql: 'select distinct on ("gender") "first_name" from "person" order by "gender", "last_name"',
             bindings: [],
           },
-          mysql: {
-            sql: 'select distinct on (`gender`) `first_name` from `person` order by `gender` asc, `last_name` asc',
-            bindings: [],
-          },
+          mysql: NOT_SUPPORTED,
         })
 
         const persons = await query.execute()

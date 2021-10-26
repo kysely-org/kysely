@@ -3,11 +3,11 @@ import {
   clearDatabase,
   destroyTest,
   initTest,
-  insertPersons,
   TestContext,
   testSql,
   expect,
   TEST_INIT_TIMEOUT,
+  insertDefaultDataSet,
 } from './test-setup.js'
 
 for (const dialect of BUILT_IN_DIALECTS) {
@@ -20,26 +20,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
     })
 
     beforeEach(async () => {
-      await insertPersons(ctx, [
-        {
-          first_name: 'Jennifer',
-          last_name: 'Aniston',
-          gender: 'female',
-          pets: [{ name: 'Catto', species: 'cat' }],
-        },
-        {
-          first_name: 'Arnold',
-          last_name: 'Schwarzenegger',
-          gender: 'male',
-          pets: [{ name: 'Doggo', species: 'dog' }],
-        },
-        {
-          first_name: 'Sylvester',
-          last_name: 'Stallone',
-          gender: 'male',
-          pets: [{ name: 'Hammo', species: 'hamster' }],
-        },
-      ])
+      await insertDefaultDataSet(ctx)
     })
 
     afterEach(async () => {
@@ -59,11 +40,11 @@ for (const dialect of BUILT_IN_DIALECTS) {
 
       testSql(query, dialect, {
         postgres: {
-          sql: 'select "gender", max(first_name) as "max_first_name" from "person" group by "gender" order by "gender" asc',
+          sql: 'select "gender", max(first_name) as "max_first_name" from "person" group by "gender" order by "gender"',
           bindings: [],
         },
         mysql: {
-          sql: 'select `gender`, max(first_name) as `max_first_name` from `person` group by `gender` order by `gender` asc',
+          sql: 'select `gender`, max(first_name) as `max_first_name` from `person` group by `gender` order by `gender`',
           bindings: [],
         },
       })
@@ -92,11 +73,11 @@ for (const dialect of BUILT_IN_DIALECTS) {
 
       testSql(query, dialect, {
         postgres: {
-          sql: 'select "gender", max(first_name) as "max_first_name" from "person" group by "gender", "id" order by "gender" asc',
+          sql: 'select "gender", max(first_name) as "max_first_name" from "person" group by "gender", "id" order by "gender"',
           bindings: [],
         },
         mysql: {
-          sql: 'select `gender`, max(first_name) as `max_first_name` from `person` group by `gender`, `id` order by `gender` asc',
+          sql: 'select `gender`, max(first_name) as `max_first_name` from `person` group by `gender`, `id` order by `gender`',
           bindings: [],
         },
       })
@@ -109,7 +90,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
         .selectFrom('person')
         .select(['gender', ctx.db.raw('max(first_name)').as('max_first_name')])
         .groupBy('person.gender')
-        .orderBy('gender')
+        .orderBy('gender', 'asc')
 
       testSql(query, dialect, {
         postgres: {
@@ -130,7 +111,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
         .selectFrom('person')
         .select(['gender', ctx.db.raw('max(first_name)').as('max_first_name')])
         .groupBy(ctx.db.raw('person.gender'))
-        .orderBy('gender')
+        .orderBy('gender', 'asc')
 
       testSql(query, dialect, {
         postgres: {
@@ -164,7 +145,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
             'select max(first_name) as "max_first_name"',
             'from "person"',
             'group by (select "pet"."name" from "pet" where "person"."id" = "pet"."owner_id")',
-            'order by "max_first_name" asc',
+            'order by "max_first_name"',
           ],
           bindings: [],
         },
@@ -173,7 +154,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
             'select max(first_name) as `max_first_name`',
             'from `person`',
             'group by (select `pet`.`name` from `pet` where `person`.`id` = `pet`.`owner_id`)',
-            'order by `max_first_name` asc',
+            'order by `max_first_name`',
           ],
           bindings: [],
         },

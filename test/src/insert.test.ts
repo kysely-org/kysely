@@ -4,7 +4,6 @@ import {
   clearDatabase,
   destroyTest,
   initTest,
-  insertPersons,
   TestContext,
   testSql,
   expect,
@@ -12,6 +11,7 @@ import {
   Database,
   NOT_SUPPORTED,
   TEST_INIT_TIMEOUT,
+  insertDefaultDataSet,
 } from './test-setup.js'
 
 for (const dialect of BUILT_IN_DIALECTS) {
@@ -24,26 +24,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
     })
 
     beforeEach(async () => {
-      await insertPersons(ctx, [
-        {
-          first_name: 'Jennifer',
-          last_name: 'Aniston',
-          gender: 'female',
-          pets: [{ name: 'Catto', species: 'cat' }],
-        },
-        {
-          first_name: 'Arnold',
-          last_name: 'Schwarzenegger',
-          gender: 'male',
-          pets: [{ name: 'Doggo', species: 'dog' }],
-        },
-        {
-          first_name: 'Sylvester',
-          last_name: 'Stallone',
-          gender: 'male',
-          pets: [{ name: 'Hammo', species: 'hamster' }],
-        },
-      ])
+      await insertDefaultDataSet(ctx)
     })
 
     afterEach(async () => {
