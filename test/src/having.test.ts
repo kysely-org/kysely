@@ -97,6 +97,44 @@ for (const dialect of BUILT_IN_DIALECTS) {
       ])
     })
 
+    it('should use an aggregate function in a having statement', async () => {
+      const { count } = ctx.db.fn
+
+      const query = ctx.db
+        .selectFrom('person')
+        .innerJoin('pet', 'pet.owner_id', 'person.id')
+        .select(['person.id', count<string>('pet.id').as('num_pets')])
+        .groupBy('person.id')
+        .having(count('pet.id'), '>', 1)
+
+      testSql(query, dialect, {
+        postgres: {
+          sql: [
+            `select "person"."id", count("pet"."id") as "num_pets"`,
+            `from "person"`,
+            `inner join "pet" on "pet"."owner_id" = "person"."id"`,
+            `group by "person"."id"`,
+            `having count("pet"."id") > $1`,
+          ],
+          bindings: [1],
+        },
+        mysql: {
+          sql: [
+            'select `person`.`id`, count(`pet`.`id`) as `num_pets`',
+            'from `person`',
+            'inner join `pet` on `pet`.`owner_id` = `person`.`id`',
+            'group by `person`.`id`',
+            'having count(`pet`.`id`) > ?',
+          ],
+          bindings: [1],
+        },
+      })
+
+      const result = await query.execute()
+      expect(result).to.have.length(2)
+      expect(result).to.containSubset([{ num_pets: '2' }, { num_pets: '2' }])
+    })
+
     it('smoke test for all *having* methods', async () => {
       const query = ctx.db
         .selectFrom('person')

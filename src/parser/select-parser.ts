@@ -18,7 +18,7 @@ import {
   InsertResultTypeTag,
   RowType,
   ValueType,
-} from '../query-builder/type-utils.js'
+} from '../util/type-utils.js'
 import { parseAliasedStringReference } from './reference-parser.js'
 import { DynamicReferenceBuilder } from '../dynamic/dynamic-reference-builder.js'
 import { ParseContext } from './parse-context.js'

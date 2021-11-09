@@ -10,7 +10,7 @@ import {
   AnyRawBuilder,
   QueryBuilderFactory,
   RawBuilderFactory,
-} from '../query-builder/type-utils.js'
+} from '../util/type-utils.js'
 import { QueryNode } from '../operation-node/query-node.js'
 import { ExtractTypeFromReferenceExpression } from './reference-parser.js'
 import { ParseContext } from './parse-context.js'

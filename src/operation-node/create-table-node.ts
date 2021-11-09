@@ -5,7 +5,6 @@ import { TableNode } from './table-node.js'
 import { PrimaryConstraintNode } from './primary-constraint-node.js'
 import { UniqueConstraintNode } from './unique-constraint-node.js'
 import { ForeignKeyConstraintNode } from './foreign-key-constraint-node.js'
-import { ColumnNode } from './column-node.js'
 import { ConstraintNode } from './constraint-node.js'
 import { ColumnDefinitionNode } from './column-definition-node.js'
 

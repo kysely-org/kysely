@@ -10,7 +10,7 @@ import {
   AnyRawBuilder,
   QueryBuilderFactory,
   RawBuilderFactory,
-} from '../query-builder/type-utils.js'
+} from '../util/type-utils.js'
 import {
   isFunction,
   isPrimitive,

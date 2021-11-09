@@ -51,7 +51,7 @@ import {
   ManyResultRowType,
   NonEmptySingleResultRowType,
   SingleResultRowType,
-} from './type-utils.js'
+} from '../util/type-utils.js'
 import {
   OrderByDirectionExpression,
   OrderByExpression,

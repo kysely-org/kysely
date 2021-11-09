@@ -4,7 +4,7 @@ import {
 } from '../operation-node/data-type-node.js'
 import { isOperationNodeSource } from '../operation-node/operation-node-source.js'
 import { RawNode } from '../operation-node/raw-node.js'
-import { AnyRawBuilder } from '../query-builder/type-utils.js'
+import { AnyRawBuilder } from '../util/type-utils.js'
 
 export type DataTypeExpression = ColumnDataType | AnyRawBuilder
 

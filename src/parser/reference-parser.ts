@@ -14,7 +14,7 @@ import {
   RawBuilderFactory,
   RowType,
   ValueType,
-} from '../query-builder/type-utils.js'
+} from '../util/type-utils.js'
 import { DynamicReferenceBuilder } from '../dynamic/dynamic-reference-builder.js'
 import { QueryNode } from '../operation-node/query-node.js'
 import { RawBuilder } from '../raw-builder/raw-builder.js'
@@ -22,8 +22,7 @@ import { QueryBuilder } from '../query-builder/query-builder.js'
 import { ParseContext } from './parse-context.js'
 
 export type ReferenceExpression<DB, TB extends keyof DB> =
-  | AnyColumn<DB, TB>
-  | AnyColumnWithTable<DB, TB>
+  | StringReference<DB, TB>
   | AnyQueryBuilder
   | QueryBuilderFactory<DB, TB>
   | AnyRawBuilder
@@ -33,6 +32,10 @@ export type ReferenceExpression<DB, TB extends keyof DB> =
 export type ReferenceExpressionOrList<DB, TB extends keyof DB> =
   | ReferenceExpression<DB, TB>
   | ReferenceExpression<DB, TB>[]
+
+export type StringReference<DB, TB extends keyof DB> =
+  | AnyColumn<DB, TB>
+  | AnyColumnWithTable<DB, TB>
 
 export type ExtractTypeFromReferenceExpression<
   DB,

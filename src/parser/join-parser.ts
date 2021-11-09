@@ -1,5 +1,5 @@
 import { JoinNode, JoinType } from '../operation-node/join-node.js'
-import { AnyColumn, AnyColumnWithTable } from '../query-builder/type-utils.js'
+import { AnyColumn, AnyColumnWithTable } from '../util/type-utils.js'
 import {
   TableExpression,
   parseTableExpression,

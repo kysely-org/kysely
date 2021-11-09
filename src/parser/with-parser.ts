@@ -3,7 +3,7 @@ import { CommonTableExpressionNode } from '../operation-node/common-table-expres
 import { QueryBuilder } from '../query-builder/query-builder.js'
 import { QueryCreator } from '../query-creator.js'
 import { RawBuilder } from '../raw-builder/raw-builder.js'
-import { AnyRawBuilder } from '../query-builder/type-utils.js'
+import { AnyRawBuilder } from '../util/type-utils.js'
 import { ParseContext } from './parse-context.js'
 
 export type CommonTableExpression<DB> = (

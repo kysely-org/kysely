@@ -1,6 +1,6 @@
 import { ReferenceExpressionNode } from '../operation-node/operation-node-utils.js'
 import { RawNode } from '../operation-node/raw-node.js'
-import { AnyRawBuilder } from '../query-builder/type-utils.js'
+import { AnyRawBuilder } from '../util/type-utils.js'
 import { ParseContext } from './parse-context.js'
 import {
   parseReferenceExpression,

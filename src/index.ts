@@ -127,7 +127,7 @@ export * from './operation-node/order-by-node.js'
 export * from './introspection/database-introspector.js'
 
 export * from './util/compilable.js'
-export { AnyColumn } from './query-builder/type-utils.js'
+export { AnyColumn, UnknownRow as AnyRow } from './util/type-utils.js'
 
 export {
   SelectExpression,

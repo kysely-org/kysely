@@ -1,7 +1,13 @@
 import { AliasedRawBuilder, RawBuilder } from '../raw-builder/raw-builder.js'
-import { AliasedQueryBuilder, QueryBuilder } from './query-builder.js'
-import { ExpressionBuilder } from './expression-builder.js'
+import {
+  AliasedQueryBuilder,
+  QueryBuilder,
+} from '../query-builder/query-builder.js'
+import { ExpressionBuilder } from '../query-builder/expression-builder.js'
 
+/**
+ * Given an object type, extracts the union of all value types.
+ */
 export type ValueType<T> = T[keyof T]
 
 /**
@@ -41,9 +47,9 @@ export type RowType<DB, TB extends keyof DB> = UnionToIntersection<DB[TB]>
  * Evil typescript magic to convert a union type `A | B | C` into an
  * intersection type `A & B & C`.
  */
-export type UnionToIntersection<U> = (
-  U extends any ? (k: U) => void : never
-) extends (k: infer I) => void
+type UnionToIntersection<U> = (U extends any ? (k: U) => void : never) extends (
+  k: infer I
+) => void
   ? I
   : never
 
@@ -150,6 +156,7 @@ export type ArrayItemType<T> = T extends ReadonlyArray<infer I> ? I : never
 
 export type AnyQueryBuilder = QueryBuilder<any, any, any>
 export type AnyAliasedQueryBuilder = AliasedQueryBuilder<any, any, any, any>
+
 export type AnyRawBuilder = RawBuilder<any>
 export type AnyAliasedRawBuilder = AliasedRawBuilder<any, any>
 
@@ -212,3 +219,5 @@ export type NonEmptySingleResultRowType<O> = O extends InsertResultTypeTag
   : O extends UpdateResultTypeTag
   ? number
   : O
+
+export type UnknownRow = Record<string, unknown>

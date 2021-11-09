@@ -24,7 +24,7 @@ import {
   ColumnDefinitionBuilder,
   ColumnDefinitionBuilderInterface,
 } from './column-definition-builder.js'
-import { AnyRawBuilder } from '../query-builder/type-utils.js'
+import { AnyRawBuilder } from '../util/type-utils.js'
 import { QueryId } from '../util/query-id.js'
 import { QueryExecutor } from '../query-executor/query-executor.js'
 import { ModifyColumnNode } from '../operation-node/modify-column-node.js'

@@ -10,7 +10,7 @@ import { parseStringReference } from '../parser/reference-parser.js'
 import { PrimitiveValue } from '../util/object-utils.js'
 import { preventAwait } from '../util/prevent-await.js'
 import { ColumnDefinitionNode } from '../operation-node/column-definition-node.js'
-import { AnyRawBuilder } from '../query-builder/type-utils.js'
+import { AnyRawBuilder } from '../util/type-utils.js'
 import {
   DefaultValueExpression,
   parseDefaultValueExpression,

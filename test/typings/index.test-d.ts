@@ -7,7 +7,7 @@
  * happy, but we can catch it here.
  */
 
-import { Kysely, Transaction } from '.'
+import { Kysely, QueryBuilder, Transaction } from '.'
 import { expectType, expectError } from 'tsd'
 
 interface Person {

@@ -6,8 +6,8 @@ import { MigrationModule } from './migration/migration.js'
 import { QueryExecutor } from './query-executor/query-executor.js'
 import { QueryCreator } from './query-creator.js'
 import { KyselyPlugin } from './plugin/kysely-plugin.js'
-import { GeneratedPlaceholder } from './query-builder/type-utils.js'
-import { generatedPlaceholder } from './util/generated-placeholder.js'
+import { GeneratedPlaceholder } from './util/type-utils.js'
+import { GENERATED_PLACEHOLDER } from './util/generated-placeholder.js'
 import { DefaultQueryExecutor } from './query-executor/default-query-executor.js'
 import { DatabaseIntrospector } from './introspection/database-introspector.js'
 import { freeze, isObject } from './util/object-utils.js'
@@ -21,6 +21,7 @@ import {
 } from './driver/driver.js'
 import { preventAwait } from './util/prevent-await.js'
 import { DefaultParseContext, ParseContext } from './parser/parse-context.js'
+import { FunctionBuilder } from './query-builder/function-builder.js'
 
 /**
  * The main Kysely class.
@@ -154,7 +155,39 @@ export class Kysely<DB> extends QueryCreator<DB> {
    * ```
    */
   get generated(): GeneratedPlaceholder {
-    return generatedPlaceholder
+    return GENERATED_PLACEHOLDER
+  }
+
+  /**
+   * Returns a {@link FunctionBuilder} that can be used to write type safe function
+   * calls.
+   *
+   * ```ts
+   * const { count } = db.fn
+   *
+   * await db.selectFrom('person')
+   *   .innerJoin('pet', 'pet.owner_id', 'person.id')
+   *   .select([
+   *     'person.id',
+   *     count('pet.id').as('pet_count')
+   *   ])
+   *   .groupBy('person.id')
+   *   .having(count('pet.id'), '>', 10)
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (postgresql):
+   *
+   * ```sql
+   * select "person"."id", count("pet"."id") as "pet_count"
+   * from "person"
+   * inner join "pet" on "pet"."owner_id" = "person"."id"
+   * group by "person"."id"
+   * having count("pet"."id") > $1
+   * ```
+   */
+  get fn(): FunctionBuilder<DB, keyof DB> {
+    return new FunctionBuilder({ executor: this.#props.executor })
   }
 
   /**

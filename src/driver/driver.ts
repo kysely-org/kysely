@@ -1,4 +1,4 @@
-import { ArrayItemType } from '../query-builder/type-utils.js'
+import { ArrayItemType } from '../util/type-utils.js'
 import { DatabaseConnection } from './database-connection.js'
 
 /**

@@ -1,6 +1,6 @@
 import { IdentifierNode } from '../operation-node/identifier-node.js'
 import { OnConflictNode } from '../operation-node/on-conflict-node.js'
-import { AnyColumn } from '../query-builder/type-utils.js'
+import { AnyColumn } from '../util/type-utils.js'
 import {
   asReadonlyArray,
   isObject,

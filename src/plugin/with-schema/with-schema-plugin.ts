@@ -2,11 +2,11 @@ import { QueryResult } from '../../driver/database-connection.js'
 import { RootOperationNode } from '../../query-compiler/query-compiler.js'
 import { WithSchemaTransformer } from './with-schema-transformer.js'
 import {
-  AnyRow,
   KyselyPlugin,
   PluginTransformQueryArgs,
   PluginTransformResultArgs,
 } from '../kysely-plugin.js'
+import { UnknownRow } from '../../util/type-utils.js'
 
 export class WithSchemaPlugin implements KyselyPlugin {
   readonly #transformer: WithSchemaTransformer
@@ -21,7 +21,7 @@ export class WithSchemaPlugin implements KyselyPlugin {
 
   async transformResult(
     args: PluginTransformResultArgs
-  ): Promise<QueryResult<AnyRow>> {
+  ): Promise<QueryResult<UnknownRow>> {
     return args.result
   }
 }

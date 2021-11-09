@@ -1,7 +1,7 @@
-import { GeneratedPlaceholder } from '../query-builder/type-utils.js'
+import { GeneratedPlaceholder } from './type-utils.js'
 import { freeze, isObject } from './object-utils.js'
 
-export const generatedPlaceholder: GeneratedPlaceholder = freeze({
+export const GENERATED_PLACEHOLDER: GeneratedPlaceholder = freeze({
   __isGeneratedPlaceholder__: true,
 })
 

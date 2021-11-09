@@ -406,5 +406,33 @@ for (const dialect of BUILT_IN_DIALECTS) {
         ])
       })
     }
+
+    it('should use an aggregate function in a select call', async () => {
+      const { max, min } = ctx.db.fn
+
+      const query = ctx.db
+        .selectFrom('person')
+        .select([
+          max('person.first_name').as('max_first_name'),
+          min('person.first_name').as('min_first_name'),
+        ])
+
+      testSql(query, dialect, {
+        postgres: {
+          sql: 'select max("person"."first_name") as "max_first_name", min("person"."first_name") as "min_first_name" from "person"',
+          bindings: [],
+        },
+        mysql: {
+          sql: 'select max(`person`.`first_name`) as `max_first_name`, min(`person`.`first_name`) as `min_first_name` from `person`',
+          bindings: [],
+        },
+      })
+
+      const { max_first_name, min_first_name } =
+        await query.executeTakeFirstOrThrow()
+
+      expect(min_first_name).to.equal('Arnold')
+      expect(max_first_name).to.equal('Sylvester')
+    })
   })
 }

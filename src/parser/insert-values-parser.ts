@@ -11,7 +11,7 @@ import {
   AnyQueryBuilder,
   AnyRawBuilder,
   GeneratedPlaceholder,
-} from '../query-builder/type-utils.js'
+} from '../util/type-utils.js'
 import { isGeneratedPlaceholder } from '../util/generated-placeholder.js'
 import { isPrimitive, PrimitiveValue } from '../util/object-utils.js'
 

@@ -1,4 +1,4 @@
-import { ArrayItemType } from '../query-builder/type-utils.js'
+import { ArrayItemType } from '../util/type-utils.js'
 import { freeze } from '../util/object-utils.js'
 import { OperationNode } from './operation-node.js'
 

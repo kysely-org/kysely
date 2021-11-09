@@ -3,8 +3,8 @@ import { IdentifierNode } from '../../operation-node/identifier-node.js'
 import { OperationNodeTransformer } from '../../operation-node/operation-node-transformer.js'
 import { RootOperationNode } from '../../query-compiler/query-compiler.js'
 import { isObject } from '../../util/object-utils.js'
+import { UnknownRow } from '../../util/type-utils.js'
 import {
-  AnyRow,
   KyselyPlugin,
   PluginTransformQueryArgs,
   PluginTransformResultArgs,
@@ -122,7 +122,7 @@ export class CamelCasePlugin implements KyselyPlugin {
 
   async transformResult(
     args: PluginTransformResultArgs
-  ): Promise<QueryResult<AnyRow>> {
+  ): Promise<QueryResult<UnknownRow>> {
     if (args.result.rows && Array.isArray(args.result.rows)) {
       return {
         ...args.result,
@@ -133,8 +133,8 @@ export class CamelCasePlugin implements KyselyPlugin {
     return args.result
   }
 
-  protected mapRow(row: AnyRow): AnyRow {
-    return Object.keys(row).reduce<AnyRow>((obj, key) => {
+  protected mapRow(row: UnknownRow): UnknownRow {
+    return Object.keys(row).reduce<UnknownRow>((obj, key) => {
       let value = row[key]
 
       if (Array.isArray(value)) {

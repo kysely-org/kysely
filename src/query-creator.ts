@@ -16,7 +16,7 @@ import {
   InsertResultTypeTag,
   DeleteResultTypeTag,
   UpdateResultTypeTag,
-} from './query-builder/type-utils.js'
+} from './util/type-utils.js'
 import { QueryExecutor } from './query-executor/query-executor.js'
 import { RawBuilder } from './raw-builder/raw-builder.js'
 import {
@@ -487,9 +487,10 @@ export class QueryCreator<DB> {
    */
   raw<T = unknown>(sql: string, params?: any[]): RawBuilder<T> {
     return new RawBuilder({
+      queryId: createQueryId(),
+      executor: this.#props.executor,
       sql,
       params,
-      executor: this.#props.executor,
     })
   }
 }

@@ -3,7 +3,7 @@ import {
   DeleteResultTypeTag,
   InsertResultTypeTag,
   UpdateResultTypeTag,
-} from '../query-builder/type-utils.js'
+} from '../util/type-utils.js'
 import { Selection } from './select-parser.js'
 
 /**

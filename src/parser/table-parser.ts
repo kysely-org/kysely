@@ -9,7 +9,7 @@ import {
   AliasedQueryBuilderFactory,
   AnyAliasedQueryBuilder,
   AnyAliasedRawBuilder,
-} from '../query-builder/type-utils.js'
+} from '../util/type-utils.js'
 import { isOperationNodeSource } from '../operation-node/operation-node-source.js'
 import { AliasedRawBuilder } from '../raw-builder/raw-builder.js'
 import { TableExpressionNode } from '../operation-node/operation-node-utils.js'

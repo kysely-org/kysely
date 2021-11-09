@@ -11,30 +11,37 @@ import { parseStringReference } from '../parser/reference-parser.js'
 import { CompiledQuery } from '../query-compiler/compiled-query.js'
 import { preventAwait } from '../util/prevent-await.js'
 import { QueryExecutor } from '../query-executor/query-executor.js'
-import { createQueryId, QueryId } from '../util/query-id.js'
+import { QueryId } from '../util/query-id.js'
+import { freeze } from '../util/object-utils.js'
 
 export class RawBuilder<O = unknown> implements OperationNodeSource {
-  readonly #queryId: QueryId
-  readonly #sql: string
-  readonly #params?: any[]
-  readonly #executor: QueryExecutor
+  readonly #props: RawBuilderProps
 
-  constructor(args: RawBuilderConstructorArgs) {
-    this.#queryId = createQueryId()
-    this.#sql = args.sql
-    this.#params = args.params
-    this.#executor = args.executor
+  constructor(props: RawBuilderProps) {
+    this.#props = freeze(props)
   }
 
   as<A extends string>(alias: A): AliasedRawBuilder<O, A> {
     return new AliasedRawBuilder(this, alias)
   }
 
+  /**
+   * Change the output type of the raw expression.
+   *
+   * This doesn't produce any SQL. This methods simply returns a copy
+   * of this `RawBuilder` with a new output type.
+   */
+  castTo<T>(): RawBuilder<T> {
+    return new RawBuilder({
+      ...this.#props,
+    })
+  }
+
   toOperationNode(): RawNode {
     const bindingRegex = /(\?\??)/g
 
-    const sql = this.#sql
-    const params = this.#params ?? []
+    const sql = this.#props.sql
+    const params = this.#props.params ?? []
 
     const sqlFragments: string[] = []
     const argNodes: OperationNode[] = []
@@ -64,15 +71,21 @@ export class RawBuilder<O = unknown> implements OperationNodeSource {
     sqlFragments.push(sql.slice(sqlIdx))
 
     const rawNode = RawNode.create(sqlFragments, argNodes)
-    return this.#executor.transformQuery(rawNode, this.#queryId)
+    return this.#props.executor.transformQuery(rawNode, this.#props.queryId)
   }
 
   compile(): CompiledQuery {
-    return this.#executor.compileQuery(this.toOperationNode(), this.#queryId)
+    return this.#props.executor.compileQuery(
+      this.toOperationNode(),
+      this.#props.queryId
+    )
   }
 
   async execute(): Promise<QueryResult<O>> {
-    return this.#executor.executeQuery<O>(this.compile(), this.#queryId)
+    return this.#props.executor.executeQuery<O>(
+      this.compile(),
+      this.#props.queryId
+    )
   }
 }
 
@@ -122,8 +135,9 @@ function parseRawArg(match: string, arg: any): OperationNode {
   }
 }
 
-export interface RawBuilderConstructorArgs {
-  sql: string
-  params?: any
-  executor: QueryExecutor
+export interface RawBuilderProps {
+  readonly queryId: QueryId
+  readonly executor: QueryExecutor
+  readonly sql: string
+  readonly params?: any
 }
