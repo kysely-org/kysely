@@ -15,7 +15,7 @@
     }
   },
   "scripts": {
-    "test:build": "rm -rf test/lib && tsc -p test",
+    "test:build": "rm -rf test/dist && tsc -p test",
     "clean": "rm -rf dist && rm -rf test/dist",
     "test": "npm run clean && npm run build:cjs && npm run test:build && npm run test:integration && npm run test:typings && npm run test:esmimports",
     "test:integration": "mocha --timeout 15000 test/dist/**/*.test.js",

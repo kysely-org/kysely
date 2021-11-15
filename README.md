@@ -31,6 +31,7 @@ using Kysely and can't find something you'd want to use, please open an issue.
 
 - [Installation](#installation)
 - [Minimal example](#minimal-example)
+- [Query examples](#query-examples)
 - [Migrations](#migrations)
 - [API reference](https://koskimas.github.io/kysely/index.html)
 
@@ -108,6 +109,34 @@ async function demo() {
   }
 }
 ```
+
+# Query examples
+
+The [API documentation](https://koskimas.github.io/kysely/index.html) is full of examples.
+
+## Select queries
+
+You can find examples of select queries in the documentation of the 
+[select method](https://koskimas.github.io/kysely/classes/QueryBuilder.html#select) and
+the [where method](https://koskimas.github.io/kysely/classes/QueryBuilder.html#where) 
+among other places.
+
+## Update queries
+
+See the [set method](https://koskimas.github.io/kysely/classes/QueryBuilder.html#set) and the
+[updateTable method](https://koskimas.github.io/kysely/classes/Kysely.html#updateTable)
+documentation.
+
+## Insert queries
+
+See the [values method](https://koskimas.github.io/kysely/classes/QueryBuilder.html#values) and the
+[insertInto method](https://koskimas.github.io/kysely/classes/Kysely.html#insertInto)
+documentation.
+
+## Delete queries
+
+See the [deleteFrom method](https://koskimas.github.io/kysely/classes/Kysely.html#deleteFrom)
+documentation.
 
 # Migrations
 

@@ -179,6 +179,18 @@ async function testSelectSingle(db: Kysely<Database>) {
   const [r11] = await qb.select('id as identifier').execute()
   expectType<{ identifier: number }>(r11)
 
+  // FunctionBuilder call
+  const [r12] = await qb
+    .select(db.fn.max('first_name').as('max_first_name'))
+    .execute()
+  expectType<{ max_first_name: string }>(r12)
+
+  // FunctionBuilder call throug expression builder
+  const [r13] = await qb
+    .select((qb) => qb.fn.max('first_name').as('max_first_name'))
+    .execute()
+  expectType<{ max_first_name: string }>(r13)
+
   expectError(qb.select('not_property'))
   expectError(qb.select('person.not_property'))
   expectError(qb.select('person.not_property as np'))

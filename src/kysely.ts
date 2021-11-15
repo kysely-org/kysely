@@ -74,6 +74,7 @@ export class Kysely<DB> extends QueryCreator<DB> {
       this.#props = freeze(args)
     } else {
       const dialect = args.dialect
+
       const driver = dialect.createDriver()
       const compiler = dialect.createQueryCompiler()
       const adapter = dialect.createAdapter()

@@ -9,7 +9,6 @@ import { MysqlIntrospector } from './mysql-introspector.js'
 import { DialectAdapter } from '../dialect-adapter.js'
 import { MysqlAdapter } from './mysql-adapter.js'
 import { DatabaseConnection } from '../../driver/database-connection.js'
-import { freeze } from '../../util/object-utils.js'
 
 export class MysqlDialect implements Dialect {
   readonly #config: MysqlDialectConfig
