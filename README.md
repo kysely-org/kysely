@@ -49,7 +49,7 @@ npm install kysely mysql2
 More dialects will be added soon. Kysely also has a simple interface
 for [3rd party dialects](https://koskimas.github.io/kysely/interfaces/Dialect.html).
 
-3rd party dialects:
+### 3rd party dialects:
 
  - [AWS Data API](https://github.com/serverless-stack/kysely-data-api)
 
