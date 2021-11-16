@@ -27,6 +27,8 @@ for more info.
 Kysely is still young and some useful features are propably not yet implemented. If you start
 using Kysely and can't find something you'd want to use, please open an issue.
 
+[Here](https://www.jakso.me/blog/kysely-a-type-safe-sql-query-builder-for-typescript)'s an introductory blog post about Kysely.
+
 # Table of contents
 
 - [Installation](#installation)

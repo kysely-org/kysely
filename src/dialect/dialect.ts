@@ -5,7 +5,7 @@ import { DatabaseIntrospector } from '../introspection/database-introspector.js'
 import { DialectAdapter } from './dialect-adapter.js'
 
 /**
- * A Dialect is an adapter between Kysely and the underlying database engine.
+ * A Dialect is the glue between Kysely and the underlying database engine.
  *
  * See the built-in {@link PostgresDialect} as an example of a dialect.
  * Users can implement their own dialects and use them by passing it
