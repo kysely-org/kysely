@@ -2,10 +2,8 @@ import { ArrayItemType } from '../util/type-utils.js'
 import { DatabaseConnection } from './database-connection.js'
 
 /**
- * A Driver is responsible for abstracting away the database engine details.
- *
- * The Driver creates and releases database connections and is also responsible
- * for connection pooling.
+ * A Driver creates and releases {@link DatabaseConnection | database connections}
+ * and is also responsible for connection pooling (if the dialect supports pooling).
  */
 export interface Driver {
   /**

@@ -1,5 +1,10 @@
 import { CompiledQuery } from '../query-compiler/compiled-query.js'
 
+/**
+ * A single connection to the database engine.
+ *
+ * These are created by an instance of {@link Driver}.
+ */
 export interface DatabaseConnection {
   executeQuery<R>(compiledQuery: CompiledQuery): Promise<QueryResult<R>>
 }
