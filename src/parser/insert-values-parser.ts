@@ -23,7 +23,7 @@ export type InsertObjectOrList<DB, TB extends keyof DB> =
   | InsertObject<DB, TB>
   | InsertObject<DB, TB>[]
 
-type InsertValueExpression<T extends PrimitiveValue> =
+type InsertValueExpression<T> =
   | T
   | AnyQueryBuilder
   | AnyRawBuilder

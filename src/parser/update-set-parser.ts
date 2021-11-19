@@ -22,11 +22,7 @@ export type MutationObject<DB, TB extends keyof DB> = {
   [C in keyof DB[TB]]?: MutationValueExpression<DB, TB, DB[TB][C]>
 }
 
-export type MutationValueExpression<
-  DB,
-  TB extends keyof DB,
-  T extends PrimitiveValue
-> =
+export type MutationValueExpression<DB, TB extends keyof DB, T> =
   | T
   | AnyQueryBuilder
   | QueryBuilderFactory<DB, TB>

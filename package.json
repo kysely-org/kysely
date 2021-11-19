@@ -1,6 +1,6 @@
 {
   "name": "kysely",
-  "version": "0.7.8",
+  "version": "0.7.9",
   "description": "Type safe SQL query builder",
   "repository": {
     "type": "git",
@@ -47,6 +47,6 @@
     "prettier": "^2.4.1",
     "tsd": "^0.18.0",
     "typedoc": "^0.22.5",
-    "typescript": "4.4.4"
+    "typescript": "4.5.2"
   }
 }
