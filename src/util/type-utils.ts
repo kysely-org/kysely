@@ -221,3 +221,5 @@ export type NonEmptySingleResultRowType<O> = O extends InsertResultTypeTag
   : O
 
 export type UnknownRow = Record<string, unknown>
+
+export type Nullable<T> = { [P in keyof T]: T[P] | null }

@@ -9,6 +9,7 @@ import {
   AliasedQueryBuilderFactory,
   AnyAliasedQueryBuilder,
   AnyAliasedRawBuilder,
+  Nullable,
 } from '../util/type-utils.js'
 import { isOperationNodeSource } from '../operation-node/operation-node-source.js'
 import { AliasedRawBuilder } from '../raw-builder/raw-builder.js'
@@ -40,10 +41,92 @@ export type QueryBuilderWithTable<
   O
 >
 
-export type TableExpressionDatabaseType<DB, TE> =
-  DB extends ExtractDatabaseTypeFromTableExpression<DB, TE>
-    ? DB
-    : DB & ExtractDatabaseTypeFromTableExpression<DB, TE>
+export type TableExpressionDatabaseType<
+  DB,
+  TE,
+  A extends keyof any = ExtractAliasFromTableExpression<DB, TE>
+> = {
+  [C in keyof DB | A]: C extends A
+    ? ExtractRowTypeFromTableExpression<DB, TE, C>
+    : C extends keyof DB
+    ? DB[C]
+    : never
+}
+
+export type QueryBuilderWithLeftJoin<
+  DB,
+  TB extends keyof DB,
+  O,
+  TE
+> = QueryBuilder<
+  LeftJoinTableExpressionDatabaseType<DB, TE>,
+  TB | ExtractAliasFromTableExpression<DB, TE>,
+  O
+>
+
+export type LeftJoinTableExpressionDatabaseType<
+  DB,
+  TE,
+  A extends keyof any = ExtractAliasFromTableExpression<DB, TE>
+> = {
+  [C in keyof DB | A]: C extends A
+    ? Nullable<ExtractRowTypeFromTableExpression<DB, TE, C>>
+    : C extends keyof DB
+    ? DB[C]
+    : never
+}
+
+export type QueryBuilderWithRightJoin<
+  DB,
+  TB extends keyof DB,
+  O,
+  TE
+> = QueryBuilder<
+  RightJoinTableExpressionDatabaseType<DB, TB, TE>,
+  TB | ExtractAliasFromTableExpression<DB, TE>,
+  O
+>
+
+export type RightJoinTableExpressionDatabaseType<
+  DB,
+  TB extends keyof DB,
+  TE,
+  A extends keyof any = ExtractAliasFromTableExpression<DB, TE>
+> = {
+  [C in keyof DB | A]: C extends A
+    ? ExtractRowTypeFromTableExpression<DB, TE, C>
+    : C extends keyof DB
+    ? C extends TB
+      ? Nullable<DB[C]>
+      : DB[C]
+    : never
+}
+
+export type QueryBuilderWithFullJoin<
+  DB,
+  TB extends keyof DB,
+  O,
+  TE
+> = QueryBuilder<
+  FullJoinTableExpressionDatabaseType<DB, TB, TE>,
+  TB | ExtractAliasFromTableExpression<DB, TE>,
+  O
+>
+
+export type FullJoinTableExpressionDatabaseType<
+  DB,
+  TB extends keyof DB,
+  TE,
+  A extends keyof any = ExtractAliasFromTableExpression<DB, TE>
+> = {
+  [C in keyof DB | A]: C extends A
+    ? Nullable<ExtractRowTypeFromTableExpression<DB, TE, C>>
+    : C extends keyof DB
+    ? C extends TB
+      ? Nullable<DB[C]>
+      : DB[C]
+    : never
+}
 
 export type ExtractAliasFromTableExpression<DB, TE> =
   TE extends `${string} as ${infer TA}`
@@ -59,21 +142,6 @@ export type ExtractAliasFromTableExpression<DB, TE> =
     : TE extends (qb: any) => AliasedRawBuilder<any, infer RA>
     ? RA
     : never
-
-type AnyAliasedTable<
-  DB,
-  TB extends keyof DB,
-  A extends string
-> = TB extends string ? `${TB} as ${A}` : never
-
-type AnyTable<DB> = keyof DB
-
-type ExtractDatabaseTypeFromTableExpression<DB, TE> = {
-  [A in ExtractAliasFromTableExpression<
-    DB,
-    TE
-  >]: ExtractRowTypeFromTableExpression<DB, TE, A>
-}
 
 type ExtractRowTypeFromTableExpression<
   DB,
@@ -102,6 +170,14 @@ type ExtractRowTypeFromTableExpression<
     ? O
     : never
   : never
+
+type AnyAliasedTable<
+  DB,
+  TB extends keyof DB,
+  A extends string
+> = TB extends string ? `${TB} as ${A}` : never
+
+type AnyTable<DB> = keyof DB
 
 export function parseTableExpressionOrList(
   ctx: ParseContext,

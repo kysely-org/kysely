@@ -7,7 +7,7 @@
  * happy, but we can catch it here.
  */
 
-import { Kysely, QueryBuilder, Transaction } from '.'
+import { Kysely, Transaction } from '.'
 import { expectType, expectError } from 'tsd'
 
 interface Person {
@@ -396,6 +396,33 @@ async function testJoin(db: Kysely<Database>) {
 
   expectType<Movie[]>(r4)
 
+  const r5 = await db
+    .selectFrom('person')
+    .leftJoin('pet', 'pet.owner_id', 'person.id')
+    .leftJoin('movie', 'movie.id', 'person.id')
+    .selectAll()
+    .executeTakeFirstOrThrow()
+
+  expectType<Person & Nullable<Pet> & Nullable<Movie>>(r5)
+
+  const r6 = await db
+    .selectFrom('person')
+    .rightJoin('pet', 'pet.owner_id', 'person.id')
+    .rightJoin('movie', 'movie.id', 'person.id')
+    .selectAll()
+    .executeTakeFirstOrThrow()
+
+  expectType<Nullable<Person> & Nullable<Pet> & Movie>(r6)
+
+  const r7 = await db
+    .selectFrom('person')
+    .fullJoin('pet', 'pet.owner_id', 'person.id')
+    .fullJoin('movie', 'movie.id', 'person.id')
+    .selectAll()
+    .executeTakeFirstOrThrow()
+
+  expectType<Nullable<Person> & Nullable<Pet> & Nullable<Movie>>(r7)
+
   // Refer to table that's not joined
   expectError(
     db
@@ -568,3 +595,5 @@ async function testExecuteTakeFirstOrThrow(db: Kysely<Database>) {
 
   expectType<Person>(r1)
 }
+
+export type Nullable<T> = { [P in keyof T]: T[P] | null }

@@ -9,6 +9,9 @@ import {
 import {
   TableExpression,
   QueryBuilderWithTable,
+  QueryBuilderWithLeftJoin,
+  QueryBuilderWithRightJoin,
+  QueryBuilderWithFullJoin,
 } from '../parser/table-parser.js'
 import {
   parseSelectExpressionOrList,
@@ -1335,12 +1338,12 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
     TE extends TableExpression<DB, TB>,
     K1 extends JoinReferenceExpression<DB, TB, TE>,
     K2 extends JoinReferenceExpression<DB, TB, TE>
-  >(table: TE, k1: K1, k2: K2): QueryBuilderWithTable<DB, TB, O, TE>
+  >(table: TE, k1: K1, k2: K2): QueryBuilderWithLeftJoin<DB, TB, O, TE>
 
   leftJoin<
     TE extends TableExpression<DB, TB>,
     FN extends JoinCallbackExpression<DB, TB, TE>
-  >(table: TE, callback: FN): QueryBuilderWithTable<DB, TB, O, TE>
+  >(table: TE, callback: FN): QueryBuilderWithLeftJoin<DB, TB, O, TE>
 
   leftJoin(...args: any): any {
     assertCanHaveJoins(this.#props.queryNode)
@@ -1362,12 +1365,12 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
     TE extends TableExpression<DB, TB>,
     K1 extends JoinReferenceExpression<DB, TB, TE>,
     K2 extends JoinReferenceExpression<DB, TB, TE>
-  >(table: TE, k1: K1, k2: K2): QueryBuilderWithTable<DB, TB, O, TE>
+  >(table: TE, k1: K1, k2: K2): QueryBuilderWithRightJoin<DB, TB, O, TE>
 
   rightJoin<
     TE extends TableExpression<DB, TB>,
     FN extends JoinCallbackExpression<DB, TB, TE>
-  >(table: TE, callback: FN): QueryBuilderWithTable<DB, TB, O, TE>
+  >(table: TE, callback: FN): QueryBuilderWithRightJoin<DB, TB, O, TE>
 
   rightJoin(...args: any): any {
     assertCanHaveJoins(this.#props.queryNode)
@@ -1389,12 +1392,12 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
     TE extends TableExpression<DB, TB>,
     K1 extends JoinReferenceExpression<DB, TB, TE>,
     K2 extends JoinReferenceExpression<DB, TB, TE>
-  >(table: TE, k1: K1, k2: K2): QueryBuilderWithTable<DB, TB, O, TE>
+  >(table: TE, k1: K1, k2: K2): QueryBuilderWithFullJoin<DB, TB, O, TE>
 
   fullJoin<
     TE extends TableExpression<DB, TB>,
     FN extends JoinCallbackExpression<DB, TB, TE>
-  >(table: TE, callback: FN): QueryBuilderWithTable<DB, TB, O, TE>
+  >(table: TE, callback: FN): QueryBuilderWithFullJoin<DB, TB, O, TE>
 
   fullJoin(...args: any): any {
     assertCanHaveJoins(this.#props.queryNode)

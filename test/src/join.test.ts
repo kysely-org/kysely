@@ -56,30 +56,21 @@ for (const dialect of BUILT_IN_DIALECTS) {
       await destroyTest(ctx)
     })
 
-    for (const [joinType, joinSql] of [
-      ['innerJoin', 'inner join'],
-      ['leftJoin', 'left join'],
-      ['rightJoin', 'right join'],
-      ['fullJoin', 'full join'],
-    ] as const) {
-      if (dialect === 'mysql' && joinType === 'fullJoin') {
-        continue
-      }
-
-      it(`should ${joinSql} a table`, async () => {
+    describe('inner join', () => {
+      it(`should inner join a table`, async () => {
         const query = ctx.db
           .selectFrom('person')
-          [joinType]('pet', 'pet.owner_id', 'person.id')
+          .innerJoin('pet', 'pet.owner_id', 'person.id')
           .selectAll()
           .orderBy('person.first_name')
 
         testSql(query, dialect, {
           postgres: {
-            sql: `select * from "person" ${joinSql} "pet" on "pet"."owner_id" = "person"."id" order by "person"."first_name"`,
+            sql: `select * from "person" inner join "pet" on "pet"."owner_id" = "person"."id" order by "person"."first_name"`,
             bindings: [],
           },
           mysql: {
-            sql: `select * from \`person\` ${joinSql} \`pet\` on \`pet\`.\`owner_id\` = \`person\`.\`id\` order by \`person\`.\`first_name\``,
+            sql: `select * from \`person\` inner join \`pet\` on \`pet\`.\`owner_id\` = \`person\`.\`id\` order by \`person\`.\`first_name\``,
             bindings: [],
           },
         })
@@ -106,10 +97,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
         ])
       })
 
-      it(`should ${joinSql} a subquery`, async () => {
+      it(`should inner join a subquery`, async () => {
         const query = ctx.db
           .selectFrom('person')
-          [joinType](
+          .innerJoin(
             ctx.db
               .selectFrom('pet')
               .select(['owner_id as oid', 'name'])
@@ -124,7 +115,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
           postgres: {
             sql: [
               `select * from "person"`,
-              `${joinSql} (select "owner_id" as "oid", "name" from "pet") as "p"`,
+              `inner join (select "owner_id" as "oid", "name" from "pet") as "p"`,
               `on "p"."oid" = "person"."id"`,
               `order by "person"."first_name"`,
             ],
@@ -133,7 +124,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
           mysql: {
             sql: [
               'select * from `person`',
-              `${joinSql} (select \`owner_id\` as \`oid\`, \`name\` from \`pet\`) as \`p\``,
+              `inner join (select \`owner_id\` as \`oid\`, \`name\` from \`pet\`) as \`p\``,
               'on `p`.`oid` = `person`.`id`',
               'order by `person`.`first_name`',
             ],
@@ -163,21 +154,21 @@ for (const dialect of BUILT_IN_DIALECTS) {
         ])
       })
 
-      it(`should ${joinSql} multiple tables`, async () => {
+      it(`should inner join multiple tables`, async () => {
         const query = ctx.db
           .selectFrom('person')
-          [joinType]('pet', 'pet.owner_id', 'person.id')
-          [joinType]('toy', 'toy.pet_id', 'pet.id')
+          .innerJoin('pet', 'pet.owner_id', 'person.id')
+          .innerJoin('toy', 'toy.pet_id', 'pet.id')
           .select(['pet.name as pet_name', 'toy.name as toy_name'])
           .where('first_name', '=', 'Jennifer')
 
         testSql(query, dialect, {
           postgres: {
-            sql: `select "pet"."name" as "pet_name", "toy"."name" as "toy_name" from "person" ${joinSql} "pet" on "pet"."owner_id" = "person"."id" ${joinSql} "toy" on "toy"."pet_id" = "pet"."id" where "first_name" = $1`,
+            sql: `select "pet"."name" as "pet_name", "toy"."name" as "toy_name" from "person" inner join "pet" on "pet"."owner_id" = "person"."id" inner join "toy" on "toy"."pet_id" = "pet"."id" where "first_name" = $1`,
             bindings: ['Jennifer'],
           },
           mysql: {
-            sql: `select \`pet\`.\`name\` as \`pet_name\`, \`toy\`.\`name\` as \`toy_name\` from \`person\` ${joinSql} \`pet\` on \`pet\`.\`owner_id\` = \`person\`.\`id\` ${joinSql} \`toy\` on \`toy\`.\`pet_id\` = \`pet\`.\`id\` where \`first_name\` = ?`,
+            sql: `select \`pet\`.\`name\` as \`pet_name\`, \`toy\`.\`name\` as \`toy_name\` from \`person\` inner join \`pet\` on \`pet\`.\`owner_id\` = \`person\`.\`id\` inner join \`toy\` on \`toy\`.\`pet_id\` = \`pet\`.\`id\` where \`first_name\` = ?`,
             bindings: ['Jennifer'],
           },
         })
@@ -193,10 +184,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
         ])
       })
 
-      it(`should ${joinSql} a table using multiple "on" statements`, async () => {
+      it(`should inner join a table using multiple "on" statements`, async () => {
         const query = ctx.db
           .selectFrom('person')
-          [joinType]('pet', (join) =>
+          .innerJoin('pet', (join) =>
             join
               .onRef('pet.owner_id', '=', 'person.id')
               .on('pet.name', 'in', ['Catto', 'Doggo', 'Hammo'])
@@ -220,7 +211,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
           postgres: {
             sql: [
               `select * from "person"`,
-              `${joinSql} "pet"`,
+              `inner join "pet"`,
               `on "pet"."owner_id" = "person"."id"`,
               `and "pet"."name" in ($1, $2, $3)`,
               `and ("pet"."species" = $4 or "species" = $5 or "species" = (select 'hamster' as "hamster" from "pet" limit $6 offset $7))`,
@@ -231,7 +222,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
           mysql: {
             sql: [
               'select * from `person`',
-              `${joinSql} \`pet\``,
+              'inner join `pet`',
               'on `pet`.`owner_id` = `person`.`id`',
               'and `pet`.`name` in (?, ?, ?)',
               "and (`pet`.`species` = ? or `species` = ? or `species` = (select 'hamster' as `hamster` from `pet` limit ? offset ?))",
@@ -244,49 +235,269 @@ for (const dialect of BUILT_IN_DIALECTS) {
         await query.execute()
       })
 
-      // Can't full join when there's an "on exists" clause.
-      if (joinType !== 'fullJoin') {
-        for (const [existsType, existsSql] of [
-          ['onExists', 'exists'],
-          ['onNotExists', 'not exists'],
-        ] as const) {
-          it(`should ${joinSql} a table using "${existsType}" statements`, async () => {
-            const query = ctx.db
-              .selectFrom('person')
-              [joinType]('pet', (join) =>
-                join[existsType]((qb) =>
-                  qb
-                    .subQuery('pet as p')
-                    .whereRef('p.id', '=', 'pet.id')
-                    .whereRef('p.owner_id', '=', 'person.id')
-                    .select('id')
-                )
+      for (const [existsType, existsSql] of [
+        ['onExists', 'exists'],
+        ['onNotExists', 'not exists'],
+      ] as const) {
+        it(`should inner joina table using "${existsType}" statements`, async () => {
+          const query = ctx.db
+            .selectFrom('person')
+            .innerJoin('pet', (join) =>
+              join[existsType]((qb) =>
+                qb
+                  .subQuery('pet as p')
+                  .whereRef('p.id', '=', 'pet.id')
+                  .whereRef('p.owner_id', '=', 'person.id')
+                  .select('id')
               )
-              .select('pet.id')
+            )
+            .select('pet.id')
 
-            testSql(query, dialect, {
-              postgres: {
-                sql: [
-                  `select "pet"."id" from "person"`,
-                  `${joinSql} "pet" on ${existsSql}`,
-                  `(select "id" from "pet" as "p" where "p"."id" = "pet"."id" and "p"."owner_id" = "person"."id")`,
-                ],
-                bindings: [],
-              },
-              mysql: {
-                sql: [
-                  'select `pet`.`id` from `person`',
-                  `${joinSql} \`pet\` on ${existsSql}`,
-                  '(select `id` from `pet` as `p` where `p`.`id` = `pet`.`id` and `p`.`owner_id` = `person`.`id`)',
-                ],
-                bindings: [],
-              },
-            })
-
-            await query.execute()
+          testSql(query, dialect, {
+            postgres: {
+              sql: [
+                `select "pet"."id" from "person"`,
+                `inner join "pet" on ${existsSql}`,
+                `(select "id" from "pet" as "p" where "p"."id" = "pet"."id" and "p"."owner_id" = "person"."id")`,
+              ],
+              bindings: [],
+            },
+            mysql: {
+              sql: [
+                'select `pet`.`id` from `person`',
+                `inner join \`pet\` on ${existsSql}`,
+                '(select `id` from `pet` as `p` where `p`.`id` = `pet`.`id` and `p`.`owner_id` = `person`.`id`)',
+              ],
+              bindings: [],
+            },
           })
-        }
+
+          await query.execute()
+        })
       }
+    })
+
+    describe('left join', () => {
+      it(`should left join a table`, async () => {
+        const query = ctx.db
+          .selectFrom('person')
+          .leftJoin('pet', 'pet.owner_id', 'person.id')
+          .selectAll()
+          .orderBy('person.first_name')
+
+        testSql(query, dialect, {
+          postgres: {
+            sql: `select * from "person" left join "pet" on "pet"."owner_id" = "person"."id" order by "person"."first_name"`,
+            bindings: [],
+          },
+          mysql: {
+            sql: `select * from \`person\` left join \`pet\` on \`pet\`.\`owner_id\` = \`person\`.\`id\` order by \`person\`.\`first_name\``,
+            bindings: [],
+          },
+        })
+
+        await query.execute()
+      })
+
+      it(`should left join a subquery`, async () => {
+        const query = ctx.db
+          .selectFrom('person')
+          .leftJoin(
+            ctx.db
+              .selectFrom('pet')
+              .select(['owner_id as oid', 'name'])
+              .as('p'),
+            'p.oid',
+            'person.id'
+          )
+          .selectAll()
+          .orderBy('person.first_name')
+
+        testSql(query, dialect, {
+          postgres: {
+            sql: [
+              `select * from "person"`,
+              `left join (select "owner_id" as "oid", "name" from "pet") as "p"`,
+              `on "p"."oid" = "person"."id"`,
+              `order by "person"."first_name"`,
+            ],
+            bindings: [],
+          },
+          mysql: {
+            sql: [
+              'select * from `person`',
+              `left join (select \`owner_id\` as \`oid\`, \`name\` from \`pet\`) as \`p\``,
+              'on `p`.`oid` = `person`.`id`',
+              'order by `person`.`first_name`',
+            ],
+            bindings: [],
+          },
+        })
+
+        await query.execute()
+      })
+
+      it(`should left join multiple tables`, async () => {
+        const query = ctx.db
+          .selectFrom('person')
+          .leftJoin('pet', 'pet.owner_id', 'person.id')
+          .leftJoin('toy', 'toy.pet_id', 'pet.id')
+          .select(['pet.name as pet_name', 'toy.name as toy_name'])
+          .where('first_name', '=', 'Jennifer')
+
+        testSql(query, dialect, {
+          postgres: {
+            sql: `select "pet"."name" as "pet_name", "toy"."name" as "toy_name" from "person" left join "pet" on "pet"."owner_id" = "person"."id" left join "toy" on "toy"."pet_id" = "pet"."id" where "first_name" = $1`,
+            bindings: ['Jennifer'],
+          },
+          mysql: {
+            sql: `select \`pet\`.\`name\` as \`pet_name\`, \`toy\`.\`name\` as \`toy_name\` from \`person\` left join \`pet\` on \`pet\`.\`owner_id\` = \`person\`.\`id\` left join \`toy\` on \`toy\`.\`pet_id\` = \`pet\`.\`id\` where \`first_name\` = ?`,
+            bindings: ['Jennifer'],
+          },
+        })
+
+        await query.execute()
+      })
+
+      it(`should left join a table using multiple "on" statements`, async () => {
+        const query = ctx.db
+          .selectFrom('person')
+          .leftJoin('pet', (join) =>
+            join
+              .onRef('pet.owner_id', '=', 'person.id')
+              .on('pet.name', 'in', ['Catto', 'Doggo', 'Hammo'])
+              .on((join) =>
+                join
+                  .on('pet.species', '=', 'cat')
+                  .orOn('species', '=', 'dog')
+                  .orOn(ctx.db.raw('??', ['species']), '=', (qb) =>
+                    qb
+                      .subQuery('pet')
+                      .select(ctx.db.raw(`'hamster'`).as('hamster'))
+                      .limit(1)
+                      .offset(0)
+                  )
+              )
+          )
+          .selectAll()
+          .orderBy('person.first_name')
+
+        testSql(query, dialect, {
+          postgres: {
+            sql: [
+              `select * from "person"`,
+              `left join "pet"`,
+              `on "pet"."owner_id" = "person"."id"`,
+              `and "pet"."name" in ($1, $2, $3)`,
+              `and ("pet"."species" = $4 or "species" = $5 or "species" = (select 'hamster' as "hamster" from "pet" limit $6 offset $7))`,
+              `order by "person"."first_name"`,
+            ],
+            bindings: ['Catto', 'Doggo', 'Hammo', 'cat', 'dog', 1, 0],
+          },
+          mysql: {
+            sql: [
+              'select * from `person`',
+              'left join `pet`',
+              'on `pet`.`owner_id` = `person`.`id`',
+              'and `pet`.`name` in (?, ?, ?)',
+              "and (`pet`.`species` = ? or `species` = ? or `species` = (select 'hamster' as `hamster` from `pet` limit ? offset ?))",
+              'order by `person`.`first_name`',
+            ],
+            bindings: ['Catto', 'Doggo', 'Hammo', 'cat', 'dog', 1, 0],
+          },
+        })
+
+        await query.execute()
+      })
+
+      for (const [existsType, existsSql] of [
+        ['onExists', 'exists'],
+        ['onNotExists', 'not exists'],
+      ] as const) {
+        it(`should left joina table using "${existsType}" statements`, async () => {
+          const query = ctx.db
+            .selectFrom('person')
+            .leftJoin('pet', (join) =>
+              join[existsType]((qb) =>
+                qb
+                  .subQuery('pet as p')
+                  .whereRef('p.id', '=', 'pet.id')
+                  .whereRef('p.owner_id', '=', 'person.id')
+                  .select('id')
+              )
+            )
+            .select('pet.id')
+
+          testSql(query, dialect, {
+            postgres: {
+              sql: [
+                `select "pet"."id" from "person"`,
+                `left join "pet" on ${existsSql}`,
+                `(select "id" from "pet" as "p" where "p"."id" = "pet"."id" and "p"."owner_id" = "person"."id")`,
+              ],
+              bindings: [],
+            },
+            mysql: {
+              sql: [
+                'select `pet`.`id` from `person`',
+                `left join \`pet\` on ${existsSql}`,
+                '(select `id` from `pet` as `p` where `p`.`id` = `pet`.`id` and `p`.`owner_id` = `person`.`id`)',
+              ],
+              bindings: [],
+            },
+          })
+
+          await query.execute()
+        })
+      }
+    })
+
+    describe('right join', () => {
+      it(`should right join a table`, async () => {
+        const query = ctx.db
+          .selectFrom('person')
+          .rightJoin('pet', 'pet.owner_id', 'person.id')
+          .selectAll()
+          .orderBy('person.first_name')
+
+        testSql(query, dialect, {
+          postgres: {
+            sql: `select * from "person" right join "pet" on "pet"."owner_id" = "person"."id" order by "person"."first_name"`,
+            bindings: [],
+          },
+          mysql: {
+            sql: `select * from \`person\` right join \`pet\` on \`pet\`.\`owner_id\` = \`person\`.\`id\` order by \`person\`.\`first_name\``,
+            bindings: [],
+          },
+        })
+
+        await query.execute()
+      })
+    })
+
+    if (dialect !== 'mysql') {
+      describe('full join', () => {
+        it(`should full join a table`, async () => {
+          const query = ctx.db
+            .selectFrom('person')
+            .fullJoin('pet', 'pet.owner_id', 'person.id')
+            .selectAll()
+            .orderBy('person.first_name')
+
+          testSql(query, dialect, {
+            postgres: {
+              sql: `select * from "person" full join "pet" on "pet"."owner_id" = "person"."id" order by "person"."first_name"`,
+              bindings: [],
+            },
+            mysql: {
+              sql: `select * from \`person\` full join \`pet\` on \`pet\`.\`owner_id\` = \`person\`.\`id\` order by \`person\`.\`first_name\``,
+              bindings: [],
+            },
+          })
+
+          await query.execute()
+        })
+      })
     }
   })
 }
