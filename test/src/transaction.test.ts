@@ -59,29 +59,29 @@ for (const dialect of BUILT_IN_DIALECTS) {
         expect(executedQueries).to.eql([
           {
             sql: 'start transaction isolation level serializable',
-            bindings: [],
+            parameters: [],
           },
           {
             sql: 'insert into "person" ("first_name", "last_name", "gender") values ($1, $2, $3)',
-            bindings: ['Foo', 'Barson', 'male'],
+            parameters: ['Foo', 'Barson', 'male'],
           },
-          { sql: 'commit', bindings: [] },
+          { sql: 'commit', parameters: [] },
         ])
       } else if (dialect === 'mysql') {
         expect(executedQueries).to.eql([
           {
             sql: 'set transaction isolation level serializable',
-            bindings: [],
+            parameters: [],
           },
           {
             sql: 'begin',
-            bindings: [],
+            parameters: [],
           },
           {
             sql: 'insert into `person` (`first_name`, `last_name`, `gender`) values (?, ?, ?)',
-            bindings: ['Foo', 'Barson', 'male'],
+            parameters: ['Foo', 'Barson', 'male'],
           },
-          { sql: 'commit', bindings: [] },
+          { sql: 'commit', parameters: [] },
         ])
       }
     })

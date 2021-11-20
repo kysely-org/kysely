@@ -46,11 +46,11 @@ for (const dialect of BUILT_IN_DIALECTS) {
       testSql(query, dialect, {
         postgres: {
           sql: 'insert into "person" ("first_name", "last_name", "gender") values ($1, $2, $3)',
-          bindings: ['Foo', 'Barson', 'other'],
+          parameters: ['Foo', 'Barson', 'other'],
         },
         mysql: {
           sql: 'insert into `person` (`first_name`, `last_name`, `gender`) values (?, ?, ?)',
-          bindings: ['Foo', 'Barson', 'other'],
+          parameters: ['Foo', 'Barson', 'other'],
         },
       })
 
@@ -81,11 +81,11 @@ for (const dialect of BUILT_IN_DIALECTS) {
       testSql(query, dialect, {
         postgres: {
           sql: `insert into "person" ("first_name", "last_name", "gender") values ((select max(name) as "max_name" from "pet"), concat('Bar', 'son'), $1)`,
-          bindings: ['other'],
+          parameters: ['other'],
         },
         mysql: {
           sql: "insert into `person` (`first_name`, `last_name`, `gender`) values ((select max(name) as `max_name` from `pet`), concat('Bar', 'son'), ?)",
-          bindings: ['other'],
+          parameters: ['other'],
         },
       })
 
@@ -119,7 +119,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
         testSql(query, dialect, {
           mysql: {
             sql: 'insert ignore into `pet` (`name`, `owner_id`, `species`) values (?, ?, ?)',
-            bindings: [
+            parameters: [
               existingPet.name,
               existingPet.owner_id,
               existingPet.species,
@@ -147,7 +147,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
         testSql(query, dialect, {
           postgres: {
             sql: 'insert into "pet" ("name", "owner_id", "species") values ($1, $2, $3) on conflict ("name") do nothing',
-            bindings: [
+            parameters: [
               existingPet.name,
               existingPet.owner_id,
               existingPet.species,
@@ -177,7 +177,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
         testSql(query, dialect, {
           postgres: {
             sql: 'insert into "pet" ("name", "owner_id", "species") values ($1, $2, $3) on conflict on constraint "pet_name_key" do nothing',
-            bindings: [
+            parameters: [
               existingPet.name,
               existingPet.owner_id,
               existingPet.species,
@@ -207,7 +207,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
         testSql(query, dialect, {
           mysql: {
             sql: 'insert into `pet` (`name`, `owner_id`, `species`) values (?, ?, ?) on duplicate key update `species` = ?',
-            bindings: [
+            parameters: [
               existingPet.name,
               existingPet.owner_id,
               existingPet.species,
@@ -246,7 +246,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
         testSql(query, dialect, {
           postgres: {
             sql: 'insert into "pet" ("name", "owner_id", "species") values ($1, $2, $3) on conflict ("name") do update set "species" = $4',
-            bindings: [
+            parameters: [
               existingPet.name,
               existingPet.owner_id,
               existingPet.species,
@@ -291,7 +291,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
         testSql(query, dialect, {
           postgres: {
             sql: 'insert into "pet" ("name", "owner_id", "species") values ($1, $2, $3) on conflict on constraint "pet_name_key" do update set "species" = $4 returning *',
-            bindings: [
+            parameters: [
               existingPet.name,
               existingPet.owner_id,
               existingPet.species,
@@ -331,11 +331,11 @@ for (const dialect of BUILT_IN_DIALECTS) {
         testSql(query, dialect, {
           postgres: {
             sql: 'insert into "person" ("first_name", "last_name", "gender") values ($1, $2, $3), ($4, $5, $6) returning *',
-            bindings: ['Foo', 'Barson', 'other', 'Baz', 'Spam', 'other'],
+            parameters: ['Foo', 'Barson', 'other', 'Baz', 'Spam', 'other'],
           },
           mysql: {
             sql: 'insert into `person` (`first_name`, `last_name`, `gender`) values ($1, $2, $3), ($4, $5, $6) returning *',
-            bindings: ['Foo', 'Barson', 'other', 'Baz', 'Spam', 'other'],
+            parameters: ['Foo', 'Barson', 'other', 'Baz', 'Spam', 'other'],
           },
         })
 

@@ -157,7 +157,7 @@ export class FunctionBuilder<DB, TB extends keyof DB> {
       queryId: createQueryId(),
       executor: this.#props.executor,
       sql: `${fn}(??)`,
-      params: [column],
+      parameters: [column],
     })
   }
 }

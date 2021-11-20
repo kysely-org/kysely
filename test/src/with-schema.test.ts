@@ -61,7 +61,7 @@ for (const dialect of ['postgres'] as const) {
         testSql(query, dialect, {
           postgres: {
             sql: 'select * from "mammals"."pet"',
-            bindings: [],
+            parameters: [],
           },
           mysql: NOT_SUPPORTED,
         })
@@ -79,7 +79,7 @@ for (const dialect of ['postgres'] as const) {
         testSql(query, dialect, {
           postgres: {
             sql: 'select * from "mammals"."pet" as "p" left join "mammals"."pet" on "mammals"."pet"."id" = "p"."id"',
-            bindings: [],
+            parameters: [],
           },
           mysql: NOT_SUPPORTED,
         })
@@ -97,7 +97,7 @@ for (const dialect of ['postgres'] as const) {
         testSql(query, dialect, {
           postgres: {
             sql: 'select * from "mammals"."pet" as "p1" left join "mammals"."pet" as "p2" on "p1"."id" = "p2"."id"',
-            bindings: [],
+            parameters: [],
           },
           mysql: NOT_SUPPORTED,
         })
@@ -114,7 +114,7 @@ for (const dialect of ['postgres'] as const) {
         testSql(query, dialect, {
           postgres: {
             sql: 'select "p"."name" from "mammals"."pet" as "p"',
-            bindings: [],
+            parameters: [],
           },
           mysql: NOT_SUPPORTED,
         })
@@ -143,7 +143,7 @@ for (const dialect of ['postgres'] as const) {
               '(select "name" from "mammals"."pet" as "p" where "p"."id" = "mammals"."pet"."id") as "p_name"',
               'from "mammals"."pet"',
             ],
-            bindings: [],
+            parameters: [],
           },
           mysql: NOT_SUPPORTED,
         })
@@ -173,7 +173,7 @@ for (const dialect of ['postgres'] as const) {
               '(select "first_name" from "public"."person" where "mammals"."pet"."owner_id" = "public"."person"."id") as "owner_first_name"',
               'from "mammals"."pet"',
             ],
-            bindings: [],
+            parameters: [],
           },
           mysql: NOT_SUPPORTED,
         })
@@ -204,7 +204,7 @@ for (const dialect of ['postgres'] as const) {
         testSql(query, dialect, {
           postgres: {
             sql: 'insert into "mammals"."pet" ("name", "species", "owner_id") values ($1, $2, $3) returning "mammals"."pet"."id"',
-            bindings: ['Doggo', 'dog', anyPerson.id],
+            parameters: ['Doggo', 'dog', anyPerson.id],
           },
           mysql: NOT_SUPPORTED,
         })
@@ -221,7 +221,7 @@ for (const dialect of ['postgres'] as const) {
         testSql(query, dialect, {
           postgres: {
             sql: 'delete from "mammals"."pet" where "mammals"."pet"."name" = $1',
-            bindings: ['Doggo'],
+            parameters: ['Doggo'],
           },
           mysql: NOT_SUPPORTED,
         })
@@ -241,7 +241,7 @@ for (const dialect of ['postgres'] as const) {
         testSql(query, dialect, {
           postgres: {
             sql: 'update "mammals"."pet" set "species" = $1 where "mammals"."pet"."name" = $2',
-            bindings: ['cat', 'Doggo'],
+            parameters: ['cat', 'Doggo'],
           },
           mysql: NOT_SUPPORTED,
         })

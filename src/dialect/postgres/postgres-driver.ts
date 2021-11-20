@@ -58,19 +58,19 @@ export class PostgresDriver implements Driver {
     if (settings.isolationLevel) {
       await connection.executeQuery({
         sql: `start transaction isolation level ${settings.isolationLevel}`,
-        bindings: [],
+        parameters: [],
       })
     } else {
-      await connection.executeQuery({ sql: 'begin', bindings: [] })
+      await connection.executeQuery({ sql: 'begin', parameters: [] })
     }
   }
 
   async commitTransaction(connection: DatabaseConnection): Promise<void> {
-    await connection.executeQuery({ sql: 'commit', bindings: [] })
+    await connection.executeQuery({ sql: 'commit', parameters: [] })
   }
 
   async rollbackTransaction(connection: DatabaseConnection): Promise<void> {
-    await connection.executeQuery({ sql: 'rollback', bindings: [] })
+    await connection.executeQuery({ sql: 'rollback', parameters: [] })
   }
 
   async releaseConnection(connection: DatabaseConnection): Promise<void> {
@@ -115,7 +115,7 @@ class PostgresConnection implements DatabaseConnection {
 
   async executeQuery<O>(compiledQuery: CompiledQuery): Promise<QueryResult<O>> {
     const result = await this.#client.query<O>(compiledQuery.sql, [
-      ...compiledQuery.bindings,
+      ...compiledQuery.parameters,
     ])
 
     if (result.command === 'UPDATE' || result.command === 'DELETE') {

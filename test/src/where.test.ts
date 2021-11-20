@@ -41,11 +41,11 @@ for (const dialect of BUILT_IN_DIALECTS) {
         testSql(query, dialect, {
           postgres: {
             sql: 'select * from "person" where "first_name" = $1',
-            bindings: ['Arnold'],
+            parameters: ['Arnold'],
           },
           mysql: {
             sql: 'select * from `person` where `first_name` = ?',
-            bindings: ['Arnold'],
+            parameters: ['Arnold'],
           },
         })
 
@@ -77,11 +77,11 @@ for (const dialect of BUILT_IN_DIALECTS) {
         testSql(query, dialect, {
           postgres: {
             sql: 'select * from "person" where "last_name" is not null',
-            bindings: [],
+            parameters: [],
           },
           mysql: {
             sql: 'select * from `person` where `last_name` is not null',
-            bindings: [],
+            parameters: [],
           },
         })
 
@@ -104,11 +104,11 @@ for (const dialect of BUILT_IN_DIALECTS) {
         testSql(query, dialect, {
           postgres: {
             sql: 'select * from "person" where "last_name" is null',
-            bindings: [],
+            parameters: [],
           },
           mysql: {
             sql: 'select * from `person` where `last_name` is null',
-            bindings: [],
+            parameters: [],
           },
         })
 
@@ -129,11 +129,11 @@ for (const dialect of BUILT_IN_DIALECTS) {
         testSql(query, dialect, {
           postgres: {
             sql: 'select * from "person" where "first_name" = $1',
-            bindings: ['Arnold'],
+            parameters: ['Arnold'],
           },
           mysql: {
             sql: 'select * from `person` where `first_name` = ?',
-            bindings: ['Arnold'],
+            parameters: ['Arnold'],
           },
         })
 
@@ -158,11 +158,11 @@ for (const dialect of BUILT_IN_DIALECTS) {
         testSql(query, dialect, {
           postgres: {
             sql: 'select * from "person" where "person"."first_name" = $1',
-            bindings: ['Arnold'],
+            parameters: ['Arnold'],
           },
           mysql: {
             sql: 'select * from `person` where `person`.`first_name` = ?',
-            bindings: ['Arnold'],
+            parameters: ['Arnold'],
           },
         })
 
@@ -183,11 +183,11 @@ for (const dialect of BUILT_IN_DIALECTS) {
         testSql(query, dialect, {
           postgres: {
             sql: 'select * from "person" where person.first_name = $1',
-            bindings: ['Arnold'],
+            parameters: ['Arnold'],
           },
           mysql: {
             sql: 'select * from `person` where person.first_name = ?',
-            bindings: ['Arnold'],
+            parameters: ['Arnold'],
           },
         })
 
@@ -204,11 +204,11 @@ for (const dialect of BUILT_IN_DIALECTS) {
         testSql(query, dialect, {
           postgres: {
             sql: 'select * from "person" where "person"."first_name" = $1',
-            bindings: ['Arnold'],
+            parameters: ['Arnold'],
           },
           mysql: {
             sql: 'select * from `person` where `person`.`first_name` = ?',
-            bindings: ['Arnold'],
+            parameters: ['Arnold'],
           },
         })
 
@@ -225,11 +225,11 @@ for (const dialect of BUILT_IN_DIALECTS) {
         testSql(query, dialect, {
           postgres: {
             sql: 'select * from "person" where (first_name is null) is false',
-            bindings: [],
+            parameters: [],
           },
           mysql: {
             sql: 'select * from `person` where (first_name is null) is false',
-            bindings: [],
+            parameters: [],
           },
         })
 
@@ -254,11 +254,11 @@ for (const dialect of BUILT_IN_DIALECTS) {
         testSql(query, dialect, {
           postgres: {
             sql: 'select * from "person" where (select "pet"."name" from "pet" where "owner_id" = "person"."id") = $1',
-            bindings: ['Catto'],
+            parameters: ['Catto'],
           },
           mysql: {
             sql: 'select * from `person` where (select `pet`.`name` from `pet` where `owner_id` = `person`.`id`) = ?',
-            bindings: ['Catto'],
+            parameters: ['Catto'],
           },
         })
 
@@ -288,11 +288,11 @@ for (const dialect of BUILT_IN_DIALECTS) {
         testSql(query, dialect, {
           postgres: {
             sql: 'select * from "person" where $1 = (select "pet"."name" from "pet" where "owner_id" = "person"."id")',
-            bindings: ['Catto'],
+            parameters: ['Catto'],
           },
           mysql: {
             sql: 'select * from `person` where ? = (select `pet`.`name` from `pet` where `owner_id` = `person`.`id`)',
-            bindings: ['Catto'],
+            parameters: ['Catto'],
           },
         })
 
@@ -313,11 +313,11 @@ for (const dialect of BUILT_IN_DIALECTS) {
         testSql(query, dialect, {
           postgres: {
             sql: 'select * from "person" where "first_name" = $1',
-            bindings: ['Arnold'],
+            parameters: ['Arnold'],
           },
           mysql: {
             sql: 'select * from `person` where `first_name` = ?',
-            bindings: ['Arnold'],
+            parameters: ['Arnold'],
           },
         })
 
@@ -343,11 +343,11 @@ for (const dialect of BUILT_IN_DIALECTS) {
         testSql(query, dialect, {
           postgres: {
             sql: 'select * from "person" where "first_name" in ($1, $2) order by "first_name" desc',
-            bindings: ['Arnold', 'Jennifer'],
+            parameters: ['Arnold', 'Jennifer'],
           },
           mysql: {
             sql: 'select * from `person` where `first_name` in (?, ?) order by `first_name` desc',
-            bindings: ['Arnold', 'Jennifer'],
+            parameters: ['Arnold', 'Jennifer'],
           },
         })
 
@@ -378,11 +378,11 @@ for (const dialect of BUILT_IN_DIALECTS) {
         testSql(query, dialect, {
           postgres: {
             sql: 'select * from "person" where "first_name" = $1 and "person"."last_name" = $2',
-            bindings: ['Arnold', 'Schwarzenegger'],
+            parameters: ['Arnold', 'Schwarzenegger'],
           },
           mysql: {
             sql: 'select * from `person` where `first_name` = ? and `person`.`last_name` = ?',
-            bindings: ['Arnold', 'Schwarzenegger'],
+            parameters: ['Arnold', 'Schwarzenegger'],
           },
         })
 
@@ -410,11 +410,11 @@ for (const dialect of BUILT_IN_DIALECTS) {
         testSql(query, dialect, {
           postgres: {
             sql: 'select * from "person" where ("first_name" = $1 and "last_name" = $2)',
-            bindings: ['Jennifer', 'Aniston'],
+            parameters: ['Jennifer', 'Aniston'],
           },
           mysql: {
             sql: 'select * from `person` where (`first_name` = ? and `last_name` = ?)',
-            bindings: ['Jennifer', 'Aniston'],
+            parameters: ['Jennifer', 'Aniston'],
           },
         })
 
@@ -441,11 +441,11 @@ for (const dialect of BUILT_IN_DIALECTS) {
         testSql(query, dialect, {
           postgres: {
             sql: 'select * from "person" where "first_name" = $1 or "first_name" = $2',
-            bindings: ['Arnold', 'Jennifer'],
+            parameters: ['Arnold', 'Jennifer'],
           },
           mysql: {
             sql: 'select * from `person` where `first_name` = ? or `first_name` = ?',
-            bindings: ['Arnold', 'Jennifer'],
+            parameters: ['Arnold', 'Jennifer'],
           },
         })
 
@@ -479,11 +479,11 @@ for (const dialect of BUILT_IN_DIALECTS) {
         testSql(query, dialect, {
           postgres: {
             sql: 'select * from "person" where "first_name" = $1 or ("first_name" = $2 and "last_name" = $3)',
-            bindings: ['Arnold', 'Jennifer', 'Aniston'],
+            parameters: ['Arnold', 'Jennifer', 'Aniston'],
           },
           mysql: {
             sql: 'select * from `person` where `first_name` = ? or (`first_name` = ? and `last_name` = ?)',
-            bindings: ['Arnold', 'Jennifer', 'Aniston'],
+            parameters: ['Arnold', 'Jennifer', 'Aniston'],
           },
         })
 
@@ -514,11 +514,11 @@ for (const dialect of BUILT_IN_DIALECTS) {
         testSql(query, dialect, {
           postgres: {
             sql: 'select * from "person", "pet" where "person"."id" = "pet"."id"',
-            bindings: [],
+            parameters: [],
           },
           mysql: {
             sql: 'select * from `person`, `pet` where `person`.`id` = `pet`.`id`',
-            bindings: [],
+            parameters: [],
           },
         })
       })
@@ -538,11 +538,11 @@ for (const dialect of BUILT_IN_DIALECTS) {
         testSql(query, dialect, {
           postgres: {
             sql: 'select * from "person", "pet" where ("person"."id" = "pet"."id" or "person"."first_name" = "pet"."name")',
-            bindings: [],
+            parameters: [],
           },
           mysql: {
             sql: 'select * from `person`, `pet` where (`person`.`id` = `pet`.`id` or `person`.`first_name` = `pet`.`name`)',
-            bindings: [],
+            parameters: [],
           },
         })
       })
@@ -564,11 +564,11 @@ for (const dialect of BUILT_IN_DIALECTS) {
         testSql(query, dialect, {
           postgres: {
             sql: `select * from "person" where exists (select "pet"."id" from "pet" where "pet"."owner_id" = "person"."id" and "pet"."species" = $1)`,
-            bindings: ['dog'],
+            parameters: ['dog'],
           },
           mysql: {
             sql: 'select * from `person` where exists (select `pet`.`id` from `pet` where `pet`.`owner_id` = `person`.`id` and `pet`.`species` = ?)',
-            bindings: ['dog'],
+            parameters: ['dog'],
           },
         })
 
@@ -601,11 +601,11 @@ for (const dialect of BUILT_IN_DIALECTS) {
         testSql(query, dialect, {
           postgres: {
             sql: `select * from "person" where exists (select "pet"."id" from "pet" where "pet"."owner_id" = "person"."id" and "pet"."species" = $1)`,
-            bindings: ['cat'],
+            parameters: ['cat'],
           },
           mysql: {
             sql: 'select * from `person` where exists (select `pet`.`id` from `pet` where `pet`.`owner_id` = `person`.`id` and `pet`.`species` = ?)',
-            bindings: ['cat'],
+            parameters: ['cat'],
           },
         })
 
@@ -641,11 +641,11 @@ for (const dialect of BUILT_IN_DIALECTS) {
         testSql(query, dialect, {
           postgres: {
             sql: `select * from "person" where ("first_name" = $1 or exists (select "pet"."id" from "pet" where "pet"."owner_id" = "person"."id" and "pet"."species" = $2))`,
-            bindings: ['Jennifer', 'hamster'],
+            parameters: ['Jennifer', 'hamster'],
           },
           mysql: {
             sql: 'select * from `person` where (`first_name` = ? or exists (select `pet`.`id` from `pet` where `pet`.`owner_id` = `person`.`id` and `pet`.`species` = ?))',
-            bindings: ['Jennifer', 'hamster'],
+            parameters: ['Jennifer', 'hamster'],
           },
         })
 
@@ -682,11 +682,11 @@ for (const dialect of BUILT_IN_DIALECTS) {
         testSql(query, dialect, {
           postgres: {
             sql: `select * from "person" where not exists (select "pet"."id" from "pet" where "pet"."owner_id" = "person"."id" and "pet"."species" = $1)`,
-            bindings: ['dog'],
+            parameters: ['dog'],
           },
           mysql: {
             sql: 'select * from `person` where not exists (select `pet`.`id` from `pet` where `pet`.`owner_id` = `person`.`id` and `pet`.`species` = ?)',
-            bindings: ['dog'],
+            parameters: ['dog'],
           },
         })
 
@@ -724,11 +724,11 @@ for (const dialect of BUILT_IN_DIALECTS) {
         testSql(query, dialect, {
           postgres: {
             sql: `select * from "person" where "first_name" is null or not exists (select "pet"."id" from "pet" where "pet"."owner_id" = "person"."id" and "pet"."species" = $1)`,
-            bindings: ['hamster'],
+            parameters: ['hamster'],
           },
           mysql: {
             sql: 'select * from `person` where `first_name` is null or not exists (select `pet`.`id` from `pet` where `pet`.`owner_id` = `person`.`id` and `pet`.`species` = ?)',
-            bindings: ['hamster'],
+            parameters: ['hamster'],
           },
         })
 

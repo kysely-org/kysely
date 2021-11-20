@@ -81,21 +81,21 @@ export class DefaultQueryCompiler
   implements QueryCompiler
 {
   #sqlFragments: string[] = []
-  #bindings: any[] = []
+  #parameters: any[] = []
 
-  protected get numBindings(): number {
-    return this.#bindings.length
+  protected get numParameters(): number {
+    return this.#parameters.length
   }
 
   compileQuery(node: RootOperationNode): CompiledQuery {
     this.#sqlFragments = []
-    this.#bindings = []
+    this.#parameters = []
 
     this.visitNode(node)
 
     return freeze({
       sql: this.getSql(),
-      bindings: this.#bindings,
+      parameters: this.#parameters,
     })
   }
 
@@ -893,7 +893,7 @@ export class DefaultQueryCompiler
   }
 
   protected appendValue(value: PrimitiveValue): void {
-    this.addBinding(value)
+    this.addParameter(value)
     this.append(this.getCurrentParameterPlaceholder())
   }
 
@@ -906,11 +906,11 @@ export class DefaultQueryCompiler
   }
 
   protected getCurrentParameterPlaceholder(): string {
-    return '$' + this.numBindings
+    return '$' + this.numParameters
   }
 
-  protected addBinding(binding: any): void {
-    this.#bindings.push(binding)
+  protected addParameter(parameter: any): void {
+    this.#parameters.push(parameter)
   }
 
   protected appendImmediateValue(value: PrimitiveValue): void {

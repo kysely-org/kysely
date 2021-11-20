@@ -80,19 +80,19 @@ export class MysqlDriver implements Driver {
       // On mysql this sets the isolation level of the next transaction.
       await connection.executeQuery({
         sql: `set transaction isolation level ${settings.isolationLevel}`,
-        bindings: [],
+        parameters: [],
       })
     }
 
-    await connection.executeQuery({ sql: 'begin', bindings: [] })
+    await connection.executeQuery({ sql: 'begin', parameters: [] })
   }
 
   async commitTransaction(connection: DatabaseConnection): Promise<void> {
-    await connection.executeQuery({ sql: 'commit', bindings: [] })
+    await connection.executeQuery({ sql: 'commit', parameters: [] })
   }
 
   async rollbackTransaction(connection: DatabaseConnection): Promise<void> {
-    await connection.executeQuery({ sql: 'rollback', bindings: [] })
+    await connection.executeQuery({ sql: 'rollback', parameters: [] })
   }
 
   async releaseConnection(connection: DatabaseConnection): Promise<void> {
@@ -179,7 +179,7 @@ class MysqlConnection implements DatabaseConnection {
     return new Promise((resolve, reject) => {
       this.#rawConnection.query(
         compiledQuery.sql,
-        compiledQuery.bindings,
+        compiledQuery.parameters,
         (err, result) => {
           if (err) {
             reject(err)

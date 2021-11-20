@@ -100,7 +100,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
             `inner join "camel_person" as "camel_person2" on "camel_person2"."id" = "camel_person"."id"`,
             `order by "first_name"`,
           ],
-          bindings: [],
+          parameters: [],
         },
         mysql: {
           sql: [
@@ -109,7 +109,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
             'inner join `camel_person` as `camel_person2` on `camel_person2`.`id` = `camel_person`.`id`',
             'order by `first_name`',
           ],
-          bindings: [],
+          parameters: [],
         },
       })
 
@@ -141,7 +141,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
               `inner join "camel_person" as "camel_person2" on "camel_person2"."id" = "camel_person"."id"`,
               `order by "first_name"`,
             ],
-            bindings: [],
+            parameters: [],
           },
           mysql: {
             sql: [
@@ -150,7 +150,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
               'inner join `camel_person` as `camel_person2` on `camel_person2`.`id` = `camel_person`.`id`',
               'order by `first_name`',
             ],
-            bindings: [],
+            parameters: [],
           },
         })
 

@@ -53,11 +53,11 @@ for (const dialect of BUILT_IN_DIALECTS) {
       testSql(query, dialect, {
         postgres: {
           sql: 'with "jennifer_and_sylvester" as (select "id", "first_name", "gender" from "person" where "first_name" = $1 or "first_name" = $2), "arnold" as (select * from "jennifer_and_sylvester" where "gender" = $3) select * from "arnold"',
-          bindings: ['Jennifer', 'Sylvester', 'male'],
+          parameters: ['Jennifer', 'Sylvester', 'male'],
         },
         mysql: {
           sql: 'with `jennifer_and_sylvester` as (select `id`, `first_name`, `gender` from `person` where `first_name` = ? or `first_name` = ?), `arnold` as (select * from `jennifer_and_sylvester` where `gender` = ?) select * from `arnold`',
-          bindings: ['Jennifer', 'Sylvester', 'male'],
+          parameters: ['Jennifer', 'Sylvester', 'male'],
         },
       })
 
@@ -113,7 +113,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
         testSql(query, dialect, {
           postgres: {
             sql: 'with "deleted_arnold" as (delete from "person" where "first_name" = $1 returning "first_name" as "deleted_first_name"), "inserted_matt" as (insert into "person" ("first_name", "last_name", "gender") values ($2, $3, $4) returning "first_name" as "inserted_first_name"), "updated_jennifer" as (update "person" set "last_name" = $5 where "first_name" = $6 returning "first_name" as "updated_first_name") select * from "deleted_arnold" inner join "inserted_matt" on 1 = 1 inner join "updated_jennifer" on 1 = 1',
-            bindings: [
+            parameters: [
               'Arnold',
               'Matt',
               'Damon',

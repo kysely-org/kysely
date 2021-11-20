@@ -75,7 +75,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
             `group by "first_name"`,
             `having count(pet.id) > $1`,
           ],
-          bindings: [1],
+          parameters: [1],
         },
         mysql: {
           sql: [
@@ -85,7 +85,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
             'group by `first_name`',
             'having count(pet.id) > ?',
           ],
-          bindings: [1],
+          parameters: [1],
         },
       })
 
@@ -116,7 +116,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
             `group by "person"."id"`,
             `having count("pet"."id") > $1`,
           ],
-          bindings: [1],
+          parameters: [1],
         },
         mysql: {
           sql: [
@@ -126,7 +126,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
             'group by `person`.`id`',
             'having count(`pet`.`id`) > ?',
           ],
-          bindings: [1],
+          parameters: [1],
         },
       })
 
@@ -165,7 +165,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
             `or not exists (select "id" from "pet")`,
             'and ("id" = $5 or "id" = $6)',
           ],
-          bindings: [1, 2, 3, 'foo', 1, 2],
+          parameters: [1, 2, 3, 'foo', 1, 2],
         },
         mysql: {
           sql: [
@@ -181,7 +181,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
             'or not exists (select `id` from `pet`)',
             'and (`id` = ? or `id` = ?)',
           ],
-          bindings: [1, 2, 3, 'foo', 1, 2],
+          parameters: [1, 2, 3, 'foo', 1, 2],
         },
       })
     })

@@ -38,11 +38,11 @@ for (const dialect of BUILT_IN_DIALECTS) {
       testSql(query, dialect, {
         postgres: {
           sql: 'delete from "person" where "gender" = $1',
-          bindings: ['female'],
+          parameters: ['female'],
         },
         mysql: {
           sql: 'delete from `person` where `gender` = ?',
-          bindings: ['female'],
+          parameters: ['female'],
         },
       })
 
@@ -91,7 +91,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
         testSql(query, dialect, {
           postgres: {
             sql: 'delete from "person" where "gender" = $1 returning "first_name", "last_name"',
-            bindings: ['male'],
+            parameters: ['male'],
           },
           mysql: NOT_SUPPORTED,
         })

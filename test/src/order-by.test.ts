@@ -41,11 +41,11 @@ for (const dialect of BUILT_IN_DIALECTS) {
       testSql(query, dialect, {
         postgres: {
           sql: 'select * from "person" order by "first_name"',
-          bindings: [],
+          parameters: [],
         },
         mysql: {
           sql: 'select * from `person` order by `first_name`',
-          bindings: [],
+          parameters: [],
         },
       })
 
@@ -69,11 +69,11 @@ for (const dialect of BUILT_IN_DIALECTS) {
       testSql(query, dialect, {
         postgres: {
           sql: 'select * from "person" order by "first_name", "last_name" desc',
-          bindings: [],
+          parameters: [],
         },
         mysql: {
           sql: 'select * from `person` order by `first_name`, `last_name` desc',
-          bindings: [],
+          parameters: [],
         },
       })
 
@@ -89,11 +89,11 @@ for (const dialect of BUILT_IN_DIALECTS) {
       testSql(query, dialect, {
         postgres: {
           sql: 'select "first_name" as "fn" from "person" order by "fn"',
-          bindings: [],
+          parameters: [],
         },
         mysql: {
           sql: 'select `first_name` as `fn` from `person` order by `fn`',
-          bindings: [],
+          parameters: [],
         },
       })
 
@@ -109,11 +109,11 @@ for (const dialect of BUILT_IN_DIALECTS) {
       testSql(query, dialect, {
         postgres: {
           sql: `select * from "person" order by coalesce("first_name", 'foo') asc`,
-          bindings: [],
+          parameters: [],
         },
         mysql: {
           sql: "select * from `person` order by coalesce(`first_name`, 'foo') asc",
-          bindings: [],
+          parameters: [],
         },
       })
 
@@ -130,7 +130,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
         testSql(query, dialect, {
           postgres: {
             sql: 'select * from "person" order by "person"."first_name" nulls last',
-            bindings: [],
+            parameters: [],
           },
           mysql: NOT_SUPPORTED,
         })

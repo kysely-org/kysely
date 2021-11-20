@@ -67,11 +67,11 @@ for (const dialect of BUILT_IN_DIALECTS) {
         testSql(query, dialect, {
           postgres: {
             sql: `select * from "person" inner join "pet" on "pet"."owner_id" = "person"."id" order by "person"."first_name"`,
-            bindings: [],
+            parameters: [],
           },
           mysql: {
             sql: `select * from \`person\` inner join \`pet\` on \`pet\`.\`owner_id\` = \`person\`.\`id\` order by \`person\`.\`first_name\``,
-            bindings: [],
+            parameters: [],
           },
         })
 
@@ -119,7 +119,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
               `on "p"."oid" = "person"."id"`,
               `order by "person"."first_name"`,
             ],
-            bindings: [],
+            parameters: [],
           },
           mysql: {
             sql: [
@@ -128,7 +128,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
               'on `p`.`oid` = `person`.`id`',
               'order by `person`.`first_name`',
             ],
-            bindings: [],
+            parameters: [],
           },
         })
 
@@ -165,11 +165,11 @@ for (const dialect of BUILT_IN_DIALECTS) {
         testSql(query, dialect, {
           postgres: {
             sql: `select "pet"."name" as "pet_name", "toy"."name" as "toy_name" from "person" inner join "pet" on "pet"."owner_id" = "person"."id" inner join "toy" on "toy"."pet_id" = "pet"."id" where "first_name" = $1`,
-            bindings: ['Jennifer'],
+            parameters: ['Jennifer'],
           },
           mysql: {
             sql: `select \`pet\`.\`name\` as \`pet_name\`, \`toy\`.\`name\` as \`toy_name\` from \`person\` inner join \`pet\` on \`pet\`.\`owner_id\` = \`person\`.\`id\` inner join \`toy\` on \`toy\`.\`pet_id\` = \`pet\`.\`id\` where \`first_name\` = ?`,
-            bindings: ['Jennifer'],
+            parameters: ['Jennifer'],
           },
         })
 
@@ -217,7 +217,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
               `and ("pet"."species" = $4 or "species" = $5 or "species" = (select 'hamster' as "hamster" from "pet" limit $6 offset $7))`,
               `order by "person"."first_name"`,
             ],
-            bindings: ['Catto', 'Doggo', 'Hammo', 'cat', 'dog', 1, 0],
+            parameters: ['Catto', 'Doggo', 'Hammo', 'cat', 'dog', 1, 0],
           },
           mysql: {
             sql: [
@@ -228,7 +228,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
               "and (`pet`.`species` = ? or `species` = ? or `species` = (select 'hamster' as `hamster` from `pet` limit ? offset ?))",
               'order by `person`.`first_name`',
             ],
-            bindings: ['Catto', 'Doggo', 'Hammo', 'cat', 'dog', 1, 0],
+            parameters: ['Catto', 'Doggo', 'Hammo', 'cat', 'dog', 1, 0],
           },
         })
 
@@ -260,7 +260,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
                 `inner join "pet" on ${existsSql}`,
                 `(select "id" from "pet" as "p" where "p"."id" = "pet"."id" and "p"."owner_id" = "person"."id")`,
               ],
-              bindings: [],
+              parameters: [],
             },
             mysql: {
               sql: [
@@ -268,7 +268,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
                 `inner join \`pet\` on ${existsSql}`,
                 '(select `id` from `pet` as `p` where `p`.`id` = `pet`.`id` and `p`.`owner_id` = `person`.`id`)',
               ],
-              bindings: [],
+              parameters: [],
             },
           })
 
@@ -288,11 +288,11 @@ for (const dialect of BUILT_IN_DIALECTS) {
         testSql(query, dialect, {
           postgres: {
             sql: `select * from "person" left join "pet" on "pet"."owner_id" = "person"."id" order by "person"."first_name"`,
-            bindings: [],
+            parameters: [],
           },
           mysql: {
             sql: `select * from \`person\` left join \`pet\` on \`pet\`.\`owner_id\` = \`person\`.\`id\` order by \`person\`.\`first_name\``,
-            bindings: [],
+            parameters: [],
           },
         })
 
@@ -321,7 +321,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
               `on "p"."oid" = "person"."id"`,
               `order by "person"."first_name"`,
             ],
-            bindings: [],
+            parameters: [],
           },
           mysql: {
             sql: [
@@ -330,7 +330,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
               'on `p`.`oid` = `person`.`id`',
               'order by `person`.`first_name`',
             ],
-            bindings: [],
+            parameters: [],
           },
         })
 
@@ -348,11 +348,11 @@ for (const dialect of BUILT_IN_DIALECTS) {
         testSql(query, dialect, {
           postgres: {
             sql: `select "pet"."name" as "pet_name", "toy"."name" as "toy_name" from "person" left join "pet" on "pet"."owner_id" = "person"."id" left join "toy" on "toy"."pet_id" = "pet"."id" where "first_name" = $1`,
-            bindings: ['Jennifer'],
+            parameters: ['Jennifer'],
           },
           mysql: {
             sql: `select \`pet\`.\`name\` as \`pet_name\`, \`toy\`.\`name\` as \`toy_name\` from \`person\` left join \`pet\` on \`pet\`.\`owner_id\` = \`person\`.\`id\` left join \`toy\` on \`toy\`.\`pet_id\` = \`pet\`.\`id\` where \`first_name\` = ?`,
-            bindings: ['Jennifer'],
+            parameters: ['Jennifer'],
           },
         })
 
@@ -392,7 +392,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
               `and ("pet"."species" = $4 or "species" = $5 or "species" = (select 'hamster' as "hamster" from "pet" limit $6 offset $7))`,
               `order by "person"."first_name"`,
             ],
-            bindings: ['Catto', 'Doggo', 'Hammo', 'cat', 'dog', 1, 0],
+            parameters: ['Catto', 'Doggo', 'Hammo', 'cat', 'dog', 1, 0],
           },
           mysql: {
             sql: [
@@ -403,7 +403,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
               "and (`pet`.`species` = ? or `species` = ? or `species` = (select 'hamster' as `hamster` from `pet` limit ? offset ?))",
               'order by `person`.`first_name`',
             ],
-            bindings: ['Catto', 'Doggo', 'Hammo', 'cat', 'dog', 1, 0],
+            parameters: ['Catto', 'Doggo', 'Hammo', 'cat', 'dog', 1, 0],
           },
         })
 
@@ -435,7 +435,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
                 `left join "pet" on ${existsSql}`,
                 `(select "id" from "pet" as "p" where "p"."id" = "pet"."id" and "p"."owner_id" = "person"."id")`,
               ],
-              bindings: [],
+              parameters: [],
             },
             mysql: {
               sql: [
@@ -443,7 +443,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
                 `left join \`pet\` on ${existsSql}`,
                 '(select `id` from `pet` as `p` where `p`.`id` = `pet`.`id` and `p`.`owner_id` = `person`.`id`)',
               ],
-              bindings: [],
+              parameters: [],
             },
           })
 
@@ -463,11 +463,11 @@ for (const dialect of BUILT_IN_DIALECTS) {
         testSql(query, dialect, {
           postgres: {
             sql: `select * from "person" right join "pet" on "pet"."owner_id" = "person"."id" order by "person"."first_name"`,
-            bindings: [],
+            parameters: [],
           },
           mysql: {
             sql: `select * from \`person\` right join \`pet\` on \`pet\`.\`owner_id\` = \`person\`.\`id\` order by \`person\`.\`first_name\``,
-            bindings: [],
+            parameters: [],
           },
         })
 
@@ -487,11 +487,11 @@ for (const dialect of BUILT_IN_DIALECTS) {
           testSql(query, dialect, {
             postgres: {
               sql: `select * from "person" full join "pet" on "pet"."owner_id" = "person"."id" order by "person"."first_name"`,
-              bindings: [],
+              parameters: [],
             },
             mysql: {
               sql: `select * from \`person\` full join \`pet\` on \`pet\`.\`owner_id\` = \`person\`.\`id\` order by \`person\`.\`first_name\``,
-              bindings: [],
+              parameters: [],
             },
           })
 

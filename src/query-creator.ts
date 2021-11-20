@@ -386,11 +386,11 @@ export class QueryCreator<DB> {
    * Raw builder instances can be passed to pretty much anywhere: `select`, `where`,
    * `*Join`, `groupBy`, `orderBy` etc. Just try it. If the method accepts it, it works.
    *
-   * @param sql - The raw SQL. Special strings `?` and `??` can be used to provide
-   *    parameter bindings. `?` for values and `??` for identifiers such as column names
+   * @param sql - The raw SQL. Special strings `?` and `??` can be used as parameter
+   *    placeholders. `?` for values and `??` for identifiers such as column names
    *    or `column.table` references.
    *
-   * @param params - The parameters that will be bound to the `?` and `??` bindings in
+   * @param params - The parameters that will be bound to the `?` and `??` placeholders in
    *    the sql string.
    *
    * @example
@@ -428,7 +428,7 @@ export class QueryCreator<DB> {
    *     the output type. In this case you need to use the `castTo` method on the query
    *     to specify a return type for the query.
    *
-   * We could've also used `??` bindings to provide `first_name` and `last_name` like
+   * We could've also used a `??` placeholder to provide `first_name` and `last_name` like
    * this:
    *
    * ```ts
@@ -443,9 +443,9 @@ export class QueryCreator<DB> {
    *
    * But it's often cleaner to just write the column names in the SQL. Again remember to
    * never concatenate column names or any other untrusted user input to the SQL string or you
-   * are going to create an injection vulnerability. All user input should go to the bindings
+   * are going to create an injection vulnerability. All user input should go to the parameters
    * array, never to the SQL string directly. But if the column names or values are trusted
-   * and known at compile time, there is no reason to use bindings.
+   * and known at compile time, there is no reason to use parameters.
    *
    * @example
    * Example of using `raw` in `where`:
@@ -471,7 +471,7 @@ export class QueryCreator<DB> {
    *
    * The function in the above example returns people that are older than the given number of
    * years. The number of years in this example is an untrusted user input, and therefore we use
-   * a `?` binding for it.
+   * a `?` placeholder for it.
    *
    * @example
    * Example of creating a completely raw query from scratch:
@@ -485,12 +485,12 @@ export class QueryCreator<DB> {
    * The result of `execute()` method is always an array. In this case the type of
    * the `persons` variable is `Person[]`.
    */
-  raw<T = unknown>(sql: string, params?: any[]): RawBuilder<T> {
+  raw<T = unknown>(sql: string, parameters?: any[]): RawBuilder<T> {
     return new RawBuilder({
       queryId: createQueryId(),
       executor: this.#props.executor,
       sql,
-      params,
+      parameters,
     })
   }
 }

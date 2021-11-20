@@ -85,7 +85,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
                 '"q" int4,',
                 '"r" int8)',
               ],
-              bindings: [],
+              parameters: [],
             },
             mysql: NOT_SUPPORTED,
           })
@@ -134,7 +134,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
                 '`n` datetime,',
                 '`o` timestamp)',
               ],
-              bindings: [],
+              parameters: [],
             },
             postgres: NOT_SUPPORTED,
           })
@@ -155,11 +155,11 @@ for (const dialect of BUILT_IN_DIALECTS) {
         testSql(builder, dialect, {
           postgres: {
             sql: 'create table "test" ("a" varchar(255), "b" varchar(255), "c" varchar(255), constraint "a_b_unique" unique ("a", "b"), constraint "b_c_unique" unique ("b", "c"))',
-            bindings: [],
+            parameters: [],
           },
           mysql: {
             sql: 'create table `test` (`a` varchar(255), `b` varchar(255), `c` varchar(255), constraint `a_b_unique` unique (`a`, `b`), constraint `b_c_unique` unique (`b`, `c`))',
-            bindings: [],
+            parameters: [],
           },
         })
 
@@ -178,11 +178,11 @@ for (const dialect of BUILT_IN_DIALECTS) {
         testSql(builder, dialect, {
           postgres: {
             sql: 'create table "test" ("a" integer, "b" integer, "c" integer, constraint "check_a" check (a > 1), constraint "check_b" check (b < c))',
-            bindings: [],
+            parameters: [],
           },
           mysql: {
             sql: 'create table `test` (`a` integer, `b` integer, `c` integer, constraint `check_a` check (a > 1), constraint `check_b` check (b < c))',
-            bindings: [],
+            parameters: [],
           },
         })
 
@@ -199,11 +199,11 @@ for (const dialect of BUILT_IN_DIALECTS) {
         testSql(builder, dialect, {
           postgres: {
             sql: 'create table "test" ("a" integer, "b" integer, constraint "primary" primary key ("a", "b"))',
-            bindings: [],
+            parameters: [],
           },
           mysql: {
             sql: 'create table `test` (`a` integer, `b` integer, constraint `primary` primary key (`a`, `b`))',
-            bindings: [],
+            parameters: [],
           },
         })
 
@@ -230,11 +230,11 @@ for (const dialect of BUILT_IN_DIALECTS) {
         testSql(builder, dialect, {
           postgres: {
             sql: 'create table "test" ("a" integer, "b" integer, constraint "foreign_key" foreign key ("a", "b") references "test2" ("c", "d"))',
-            bindings: [],
+            parameters: [],
           },
           mysql: {
             sql: 'create table `test` (`a` integer, `b` integer, constraint `foreign_key` foreign key (`a`, `b`) references `test2` (`c`, `d`))',
-            bindings: [],
+            parameters: [],
           },
         })
 
@@ -264,11 +264,11 @@ for (const dialect of BUILT_IN_DIALECTS) {
         testSql(builder, dialect, {
           postgres: {
             sql: 'create table "test" ("a" integer, "b" integer, constraint "foreign_key" foreign key ("a", "b") references "test2" ("c", "d") on update cascade)',
-            bindings: [],
+            parameters: [],
           },
           mysql: {
             sql: 'create table `test` (`a` integer, `b` integer, constraint `foreign_key` foreign key (`a`, `b`) references `test2` (`c`, `d`) on update cascade)',
-            bindings: [],
+            parameters: [],
           },
         })
 
@@ -284,11 +284,11 @@ for (const dialect of BUILT_IN_DIALECTS) {
         testSql(builder, dialect, {
           postgres: {
             sql: 'create table if not exists "test" ("id" serial primary key)',
-            bindings: [],
+            parameters: [],
           },
           mysql: {
             sql: 'create table if not exists `test` (`id` integer not null auto_increment primary key)',
-            bindings: [],
+            parameters: [],
           },
         })
 
@@ -304,7 +304,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
           testSql(builder, dialect, {
             postgres: {
               sql: 'create table "test" ("a" bigserial primary key)',
-              bindings: [],
+              parameters: [],
             },
             mysql: NOT_SUPPORTED,
           })
@@ -323,7 +323,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
           testSql(builder, dialect, {
             postgres: {
               sql: 'create table "public"."test" ("id" serial primary key, "foreign_key" integer references "public"."test" ("id"))',
-              bindings: [],
+              parameters: [],
             },
             mysql: NOT_SUPPORTED,
           })
@@ -347,11 +347,11 @@ for (const dialect of BUILT_IN_DIALECTS) {
         testSql(builder, dialect, {
           postgres: {
             sql: 'drop table "test"',
-            bindings: [],
+            parameters: [],
           },
           mysql: {
             sql: 'drop table `test`',
-            bindings: [],
+            parameters: [],
           },
         })
 
@@ -364,11 +364,11 @@ for (const dialect of BUILT_IN_DIALECTS) {
         testSql(builder, dialect, {
           postgres: {
             sql: 'drop table if exists "test"',
-            bindings: [],
+            parameters: [],
           },
           mysql: {
             sql: 'drop table if exists `test`',
-            bindings: [],
+            parameters: [],
           },
         })
 
@@ -395,11 +395,11 @@ for (const dialect of BUILT_IN_DIALECTS) {
         testSql(builder, dialect, {
           postgres: {
             sql: 'create index "test_first_name_index" on "test" ("first_name")',
-            bindings: [],
+            parameters: [],
           },
           mysql: {
             sql: 'create index `test_first_name_index` on `test` (`first_name`)',
-            bindings: [],
+            parameters: [],
           },
         })
 
@@ -416,11 +416,11 @@ for (const dialect of BUILT_IN_DIALECTS) {
         testSql(builder, dialect, {
           postgres: {
             sql: 'create unique index "test_first_name_index" on "test" ("first_name")',
-            bindings: [],
+            parameters: [],
           },
           mysql: {
             sql: 'create unique index `test_first_name_index` on `test` (`first_name`)',
-            bindings: [],
+            parameters: [],
           },
         })
 
@@ -438,11 +438,11 @@ for (const dialect of BUILT_IN_DIALECTS) {
           testSql(builder, dialect, {
             postgres: {
               sql: 'create index "test_first_name_index" on "test" using hash ("first_name")',
-              bindings: [],
+              parameters: [],
             },
             mysql: {
               sql: 'create index `test_first_name_index` on `test` using hash (`first_name`)',
-              bindings: [],
+              parameters: [],
             },
           })
 
@@ -459,11 +459,11 @@ for (const dialect of BUILT_IN_DIALECTS) {
         testSql(builder, dialect, {
           postgres: {
             sql: 'create index "test_name_index" on "test" ("first_name", "last_name")',
-            bindings: [],
+            parameters: [],
           },
           mysql: {
             sql: 'create index `test_name_index` on `test` (`first_name`, `last_name`)',
-            bindings: [],
+            parameters: [],
           },
         })
 
@@ -479,11 +479,11 @@ for (const dialect of BUILT_IN_DIALECTS) {
         testSql(builder, dialect, {
           postgres: {
             sql: `create index "test_first_name_index" on "test" ((first_name < 'Sami'))`,
-            bindings: [],
+            parameters: [],
           },
           mysql: {
             sql: "create index `test_first_name_index` on `test` ((first_name < 'Sami'))",
-            bindings: [],
+            parameters: [],
           },
         })
 
@@ -516,11 +516,11 @@ for (const dialect of BUILT_IN_DIALECTS) {
         testSql(builder, dialect, {
           postgres: {
             sql: 'drop index "test_first_name_index"',
-            bindings: [],
+            parameters: [],
           },
           mysql: {
             sql: 'drop index `test_first_name_index` on `test`',
-            bindings: [],
+            parameters: [],
           },
         })
 
@@ -536,7 +536,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
           testSql(builder, dialect, {
             postgres: {
               sql: 'drop index if exists "test_first_name_index"',
-              bindings: [],
+              parameters: [],
             },
             mysql: NOT_SUPPORTED,
           })
@@ -565,7 +565,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
             testSql(builder, dialect, {
               mysql: {
                 sql: 'alter table `test` modify column `varchar_col` text',
-                bindings: [],
+                parameters: [],
               },
               postgres: NOT_SUPPORTED,
             })
@@ -582,7 +582,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
             testSql(builder, dialect, {
               mysql: {
                 sql: 'alter table `test` modify column `varchar_col` varchar(255) not null',
-                bindings: [],
+                parameters: [],
               },
               postgres: NOT_SUPPORTED,
             })
@@ -612,7 +612,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
             testSql(builder, dialect, {
               mysql: {
                 sql: 'alter table `test` modify column `varchar_col` varchar(255)',
-                bindings: [],
+                parameters: [],
               },
               postgres: NOT_SUPPORTED,
             })
@@ -636,11 +636,11 @@ for (const dialect of BUILT_IN_DIALECTS) {
           testSql(builder, dialect, {
             postgres: {
               sql: `alter table "test" alter column "varchar_col" set default 'foo'`,
-              bindings: [],
+              parameters: [],
             },
             mysql: {
               sql: "alter table `test` alter column `varchar_col` set default 'foo'",
-              bindings: [],
+              parameters: [],
             },
           })
 
@@ -662,11 +662,11 @@ for (const dialect of BUILT_IN_DIALECTS) {
           testSql(builder, dialect, {
             postgres: {
               sql: 'alter table "test" alter column "varchar_col" drop default',
-              bindings: [],
+              parameters: [],
             },
             mysql: {
               sql: 'alter table `test` alter column `varchar_col` drop default',
-              bindings: [],
+              parameters: [],
             },
           })
 
@@ -683,7 +683,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
             testSql(builder, dialect, {
               postgres: {
                 sql: 'alter table "test" alter column "varchar_col" type text',
-                bindings: [],
+                parameters: [],
               },
               mysql: NOT_SUPPORTED,
             })
@@ -700,7 +700,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
             testSql(builder, dialect, {
               postgres: {
                 sql: 'alter table "test" alter column "varchar_col" set not null',
-                bindings: [],
+                parameters: [],
               },
               mysql: NOT_SUPPORTED,
             })
@@ -723,7 +723,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
             testSql(builder, dialect, {
               postgres: {
                 sql: 'alter table "test" alter column "varchar_col" drop not null',
-                bindings: [],
+                parameters: [],
               },
               mysql: NOT_SUPPORTED,
             })
@@ -742,11 +742,11 @@ for (const dialect of BUILT_IN_DIALECTS) {
           testSql(builder, dialect, {
             postgres: {
               sql: 'alter table "test" drop column "varchar_col"',
-              bindings: [],
+              parameters: [],
             },
             mysql: {
               sql: 'alter table `test` drop column `varchar_col`',
-              bindings: [],
+              parameters: [],
             },
           })
 
@@ -761,11 +761,11 @@ for (const dialect of BUILT_IN_DIALECTS) {
           testSql(builder, dialect, {
             postgres: {
               sql: 'alter table "test" rename to "test2"',
-              bindings: [],
+              parameters: [],
             },
             mysql: {
               sql: 'alter table `test` rename to `test2`',
-              bindings: [],
+              parameters: [],
             },
           })
 
@@ -781,11 +781,11 @@ for (const dialect of BUILT_IN_DIALECTS) {
             testSql(builder, dialect, {
               postgres: {
                 sql: 'alter table "test" set schema "public"',
-                bindings: [],
+                parameters: [],
               },
               mysql: {
                 sql: 'alter table `test` set schema `public`',
-                bindings: [],
+                parameters: [],
               },
             })
 
@@ -803,11 +803,11 @@ for (const dialect of BUILT_IN_DIALECTS) {
           testSql(builder, dialect, {
             postgres: {
               sql: 'alter table "test" rename column "varchar_col" to "text_col"',
-              bindings: [],
+              parameters: [],
             },
             mysql: {
               sql: 'alter table `test` rename column `varchar_col` to `text_col`',
-              bindings: [],
+              parameters: [],
             },
           })
 
@@ -826,11 +826,11 @@ for (const dialect of BUILT_IN_DIALECTS) {
           testSql(builder, dialect, {
             postgres: {
               sql: 'alter table "test" add column "bool_col" boolean not null unique',
-              bindings: [],
+              parameters: [],
             },
             mysql: {
               sql: 'alter table `test` add column `bool_col` boolean not null unique',
-              bindings: [],
+              parameters: [],
             },
           })
 
@@ -856,11 +856,11 @@ for (const dialect of BUILT_IN_DIALECTS) {
           testSql(builder, dialect, {
             postgres: {
               sql: 'alter table "test" add constraint "some_constraint" unique ("varchar_col", "integer_col")',
-              bindings: [],
+              parameters: [],
             },
             mysql: {
               sql: 'alter table `test` add constraint `some_constraint` unique (`varchar_col`, `integer_col`)',
-              bindings: [],
+              parameters: [],
             },
           })
 
@@ -877,11 +877,11 @@ for (const dialect of BUILT_IN_DIALECTS) {
           testSql(builder, dialect, {
             postgres: {
               sql: 'alter table "test" add constraint "some_constraint" check (integer_col > 0)',
-              bindings: [],
+              parameters: [],
             },
             mysql: {
               sql: 'alter table `test` add constraint `some_constraint` check (integer_col > 0)',
-              bindings: [],
+              parameters: [],
             },
           })
 
@@ -910,11 +910,11 @@ for (const dialect of BUILT_IN_DIALECTS) {
           testSql(builder, dialect, {
             postgres: {
               sql: 'alter table "test" add constraint "some_constraint" foreign key ("integer_col", "varchar_col") references "test2" ("a", "b")',
-              bindings: [],
+              parameters: [],
             },
             mysql: {
               sql: 'alter table `test` add constraint `some_constraint` foreign key (`integer_col`, `varchar_col`) references `test2` (`a`, `b`)',
-              bindings: [],
+              parameters: [],
             },
           })
 
@@ -943,11 +943,11 @@ for (const dialect of BUILT_IN_DIALECTS) {
           testSql(builder, dialect, {
             postgres: {
               sql: 'alter table "test" add constraint "some_constraint" foreign key ("integer_col", "varchar_col") references "test2" ("a", "b") on delete set null on update cascade',
-              bindings: [],
+              parameters: [],
             },
             mysql: {
               sql: 'alter table `test` add constraint `some_constraint` foreign key (`integer_col`, `varchar_col`) references `test2` (`a`, `b`) on delete set null on update cascade',
-              bindings: [],
+              parameters: [],
             },
           })
 

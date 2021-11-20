@@ -38,10 +38,10 @@ export class RawBuilder<O = unknown> implements OperationNodeSource {
   }
 
   toOperationNode(): RawNode {
-    const bindingRegex = /(\?\??)/g
+    const parameterPlaceholderRegex = /(\?\??)/g
 
     const sql = this.#props.sql
-    const params = this.#props.params ?? []
+    const parameters = this.#props.parameters ?? []
 
     const sqlFragments: string[] = []
     const argNodes: OperationNode[] = []
@@ -50,11 +50,13 @@ export class RawBuilder<O = unknown> implements OperationNodeSource {
     let sqlIdx = 0
     let match: RegExpExecArray | null = null
 
-    while ((match = bindingRegex.exec(sql))) {
+    while ((match = parameterPlaceholderRegex.exec(sql))) {
       const str = match[1]
 
-      if (paramIdx >= params.length) {
-        throw new Error(`value not provided for all bindings in string ${sql}`)
+      if (paramIdx >= parameters.length) {
+        throw new Error(
+          `value not provided for all placeholders in string ${sql}`
+        )
       }
 
       if (match.index > 0 && sql[match.index - 1] === '\\') {
@@ -62,7 +64,7 @@ export class RawBuilder<O = unknown> implements OperationNodeSource {
       }
 
       sqlFragments.push(sql.slice(sqlIdx, match.index).replaceAll('\\?', '?'))
-      argNodes.push(parseRawArg(str, params[paramIdx]))
+      argNodes.push(parseRawArg(str, parameters[paramIdx]))
 
       sqlIdx = match.index + str.length
       ++paramIdx
@@ -139,5 +141,5 @@ export interface RawBuilderProps {
   readonly queryId: QueryId
   readonly executor: QueryExecutor
   readonly sql: string
-  readonly params?: any
+  readonly parameters?: any
 }

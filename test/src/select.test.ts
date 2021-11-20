@@ -66,11 +66,11 @@ for (const dialect of BUILT_IN_DIALECTS) {
       testSql(query, dialect, {
         postgres: {
           sql: 'select "last_name" from "person" where "first_name" = $1',
-          bindings: ['Jennifer'],
+          parameters: ['Jennifer'],
         },
         mysql: {
           sql: 'select `last_name` from `person` where `first_name` = ?',
-          bindings: ['Jennifer'],
+          parameters: ['Jennifer'],
         },
       })
 
@@ -89,11 +89,11 @@ for (const dialect of BUILT_IN_DIALECTS) {
       testSql(query, dialect, {
         postgres: {
           sql: 'select "last_name" as "ln" from "person" where "first_name" = $1',
-          bindings: ['Jennifer'],
+          parameters: ['Jennifer'],
         },
         mysql: {
           sql: 'select `last_name` as `ln` from `person` where `first_name` = ?',
-          bindings: ['Jennifer'],
+          parameters: ['Jennifer'],
         },
       })
 
@@ -112,11 +112,11 @@ for (const dialect of BUILT_IN_DIALECTS) {
       testSql(query, dialect, {
         postgres: {
           sql: 'select "person"."last_name" from "person" where "first_name" = $1',
-          bindings: ['Jennifer'],
+          parameters: ['Jennifer'],
         },
         mysql: {
           sql: 'select `person`.`last_name` from `person` where `first_name` = ?',
-          bindings: ['Jennifer'],
+          parameters: ['Jennifer'],
         },
       })
 
@@ -135,11 +135,11 @@ for (const dialect of BUILT_IN_DIALECTS) {
       testSql(query, dialect, {
         postgres: {
           sql: 'select "person"."last_name" as "ln" from "person" where "first_name" = $1',
-          bindings: ['Jennifer'],
+          parameters: ['Jennifer'],
         },
         mysql: {
           sql: 'select `person`.`last_name` as `ln` from `person` where `first_name` = ?',
-          bindings: ['Jennifer'],
+          parameters: ['Jennifer'],
         },
       })
 
@@ -164,11 +164,11 @@ for (const dialect of BUILT_IN_DIALECTS) {
       testSql(query, dialect, {
         postgres: {
           sql: 'select (select "name" from "pet" where "person"."id" = "pet"."owner_id") as "pet_name" from "person" where "first_name" = $1',
-          bindings: ['Jennifer'],
+          parameters: ['Jennifer'],
         },
         mysql: {
           sql: 'select (select `name` from `pet` where `person`.`id` = `pet`.`owner_id`) as `pet_name` from `person` where `first_name` = ?',
-          bindings: ['Jennifer'],
+          parameters: ['Jennifer'],
         },
       })
 
@@ -198,7 +198,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
         testSql(query, dialect, {
           postgres: {
             sql: `select concat("first_name", ' ', cast($1 as varchar), ' ', "last_name") as "full_name_with_middle_name" from "person" where "first_name" = $2`,
-            bindings: ['Muriel', 'Jennifer'],
+            parameters: ['Muriel', 'Jennifer'],
           },
           mysql: NOT_SUPPORTED,
         })
@@ -233,11 +233,11 @@ for (const dialect of BUILT_IN_DIALECTS) {
       testSql(query, dialect, {
         postgres: {
           sql: `select "first_name", "last_name" as "ln", "person"."gender", "person"."first_name" as "fn", concat(first_name, ' ', last_name) as "full_name", (select "name" from "pet" where "person"."id" = "owner_id") as "pet_name" from "person" where "first_name" = $1`,
-          bindings: ['Jennifer'],
+          parameters: ['Jennifer'],
         },
         mysql: {
           sql: "select `first_name`, `last_name` as `ln`, `person`.`gender`, `person`.`first_name` as `fn`, concat(first_name, ' ', last_name) as `full_name`, (select `name` from `pet` where `person`.`id` = `owner_id`) as `pet_name` from `person` where `first_name` = ?",
-          bindings: ['Jennifer'],
+          parameters: ['Jennifer'],
         },
       })
 
@@ -266,11 +266,11 @@ for (const dialect of BUILT_IN_DIALECTS) {
       testSql(query, dialect, {
         postgres: {
           sql: 'select "last_name", "name" as "pet_name" from "person", "pet" where "owner_id" = "person"."id" and "first_name" = $1',
-          bindings: ['Jennifer'],
+          parameters: ['Jennifer'],
         },
         mysql: {
           sql: 'select `last_name`, `name` as `pet_name` from `person`, `pet` where `owner_id` = `person`.`id` and `first_name` = ?',
-          bindings: ['Jennifer'],
+          parameters: ['Jennifer'],
         },
       })
 
@@ -294,11 +294,11 @@ for (const dialect of BUILT_IN_DIALECTS) {
       testSql(query, dialect, {
         postgres: {
           sql: 'select "last_name", "species" as "pet_species", "one" from "person", (select "owner_id", "species" from "pet") as "p", (select 1 as one) as "o" where "p"."owner_id" = "person"."id" and "first_name" = $1',
-          bindings: ['Jennifer'],
+          parameters: ['Jennifer'],
         },
         mysql: {
           sql: 'select `last_name`, `species` as `pet_species`, `one` from `person`, (select `owner_id`, `species` from `pet`) as `p`, (select 1 as one) as `o` where `p`.`owner_id` = `person`.`id` and `first_name` = ?',
-          bindings: ['Jennifer'],
+          parameters: ['Jennifer'],
         },
       })
 
@@ -316,11 +316,11 @@ for (const dialect of BUILT_IN_DIALECTS) {
       testSql(query, dialect, {
         postgres: {
           sql: 'select "first_name", "pet"."name" as "pet_name", "toy"."name" as "toy_name" from "person" inner join "pet" on "owner_id" = "person"."id" inner join "toy" on "pet_id" = "pet"."id" where "first_name" = $1',
-          bindings: ['Jennifer'],
+          parameters: ['Jennifer'],
         },
         mysql: {
           sql: 'select `first_name`, `pet`.`name` as `pet_name`, `toy`.`name` as `toy_name` from `person` inner join `pet` on `owner_id` = `person`.`id` inner join `toy` on `pet_id` = `pet`.`id` where `first_name` = ?',
-          bindings: ['Jennifer'],
+          parameters: ['Jennifer'],
         },
       })
 
@@ -342,11 +342,11 @@ for (const dialect of BUILT_IN_DIALECTS) {
       testSql(query, dialect, {
         postgres: {
           sql: 'select distinct "gender" from "person" order by "gender"',
-          bindings: [],
+          parameters: [],
         },
         mysql: {
           sql: 'select distinct `gender` from `person` order by `gender`',
-          bindings: [],
+          parameters: [],
         },
       })
 
@@ -366,11 +366,11 @@ for (const dialect of BUILT_IN_DIALECTS) {
       testSql(query, dialect, {
         postgres: {
           sql: 'select "last_name" from "person" where "first_name" = $1 for update',
-          bindings: ['Jennifer'],
+          parameters: ['Jennifer'],
         },
         mysql: {
           sql: 'select `last_name` from `person` where `first_name` = ? for update',
-          bindings: ['Jennifer'],
+          parameters: ['Jennifer'],
         },
       })
 
@@ -392,7 +392,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
         testSql(query, dialect, {
           postgres: {
             sql: 'select distinct on ("gender") "first_name" from "person" order by "gender", "last_name"',
-            bindings: [],
+            parameters: [],
           },
           mysql: NOT_SUPPORTED,
         })
@@ -420,11 +420,11 @@ for (const dialect of BUILT_IN_DIALECTS) {
       testSql(query, dialect, {
         postgres: {
           sql: 'select max("person"."first_name") as "max_first_name", min("person"."first_name") as "min_first_name" from "person"',
-          bindings: [],
+          parameters: [],
         },
         mysql: {
           sql: 'select max(`person`.`first_name`) as `max_first_name`, min(`person`.`first_name`) as `min_first_name` from `person`',
-          bindings: [],
+          parameters: [],
         },
       })
 

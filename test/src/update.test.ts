@@ -41,11 +41,11 @@ for (const dialect of BUILT_IN_DIALECTS) {
       testSql(query, dialect, {
         postgres: {
           sql: 'update "person" set "first_name" = $1, "last_name" = $2 where "gender" = $3',
-          bindings: ['Foo', 'Barson', 'female'],
+          parameters: ['Foo', 'Barson', 'female'],
         },
         mysql: {
           sql: 'update `person` set `first_name` = ?, `last_name` = ? where `gender` = ?',
-          bindings: ['Foo', 'Barson', 'female'],
+          parameters: ['Foo', 'Barson', 'female'],
         },
       })
 
@@ -81,11 +81,11 @@ for (const dialect of BUILT_IN_DIALECTS) {
       testSql(query, dialect, {
         postgres: {
           sql: 'update "person" set "last_name" = (select "name" from "pet" where "person"."id" = "owner_id") where "first_name" = $1',
-          bindings: ['Jennifer'],
+          parameters: ['Jennifer'],
         },
         mysql: {
           sql: 'update `person` set `last_name` = (select `name` from `pet` where `person`.`id` = `owner_id`) where `first_name` = ?',
-          bindings: ['Jennifer'],
+          parameters: ['Jennifer'],
         },
       })
 
@@ -112,11 +112,11 @@ for (const dialect of BUILT_IN_DIALECTS) {
       testSql(query, dialect, {
         postgres: {
           sql: 'update "person" set "last_name" = "first_name" where "first_name" = $1',
-          bindings: ['Jennifer'],
+          parameters: ['Jennifer'],
         },
         mysql: {
           sql: 'update `person` set `last_name` = `first_name` where `first_name` = ?',
-          bindings: ['Jennifer'],
+          parameters: ['Jennifer'],
         },
       })
 
@@ -134,7 +134,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
         testSql(query, dialect, {
           postgres: {
             sql: 'update "person" set "last_name" = $1 where "gender" = $2 returning "first_name", "last_name"',
-            bindings: ['Barson', 'male'],
+            parameters: ['Barson', 'male'],
           },
           mysql: NOT_SUPPORTED,
         })

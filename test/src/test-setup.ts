@@ -67,7 +67,7 @@ export const BUILT_IN_DIALECTS: BuiltInDialect[] = ['postgres', 'mysql']
 export const TEST_INIT_TIMEOUT = 5 * 60 * 1000
 // This can be used as a placeholder for testSql when a query is not
 // supported on some dialect.
-export const NOT_SUPPORTED = { sql: '', bindings: [] }
+export const NOT_SUPPORTED = { sql: '', parameters: [] }
 
 const PLUGINS: KyselyPlugin[] = []
 
@@ -174,7 +174,7 @@ export async function clearDatabase(ctx: TestContext): Promise<void> {
 export function testSql(
   query: Compilable,
   dialect: BuiltInDialect,
-  expectedPerDialect: PerDialect<{ sql: string | string[]; bindings: any[] }>
+  expectedPerDialect: PerDialect<{ sql: string | string[]; parameters: any[] }>
 ): void {
   const expected = expectedPerDialect[dialect]
   const expectedSql = Array.isArray(expected.sql)
@@ -183,7 +183,7 @@ export function testSql(
   const sql = query.compile()
 
   chai.expect(expectedSql).to.equal(sql.sql)
-  chai.expect(expected.bindings).to.eql(sql.bindings)
+  chai.expect(expected.parameters).to.eql(sql.parameters)
 }
 
 async function createDatabase(db: Kysely<Database>): Promise<void> {
