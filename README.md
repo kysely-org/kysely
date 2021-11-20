@@ -4,8 +4,7 @@
 # [Kysely](https://koskimas.github.io/kysely/index.html)
 
 A type-safe and autocompletion-friendly typescript SQL query builder for node.js. Inspired by
-[knex](http://knexjs.org/). [Here's](https://www.jakso.me/blog/kysely-a-type-safe-sql-query-builder-for-typescript)
-an introductory blog post for you.
+[knex](http://knexjs.org/). You can find a good introcution to Kysely [Here](https://www.jakso.me/blog/kysely-a-type-safe-sql-query-builder-for-typescript).
 
 ![](https://github.com/koskimas/kysely/blob/master/assets/demo.gif)
 
