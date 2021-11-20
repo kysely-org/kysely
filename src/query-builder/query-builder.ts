@@ -82,7 +82,6 @@ import {
 import { freeze } from '../util/object-utils.js'
 import { ParseContext } from '../parser/parse-context.js'
 import { DeleteQueryNode } from '../operation-node/delete-query-node.js'
-import { DialectAdapter } from '../dialect/dialect-adapter.js'
 import { OnDuplicateKeyNode } from '../operation-node/on-duplicate-key-node.js'
 
 /**

@@ -36,12 +36,12 @@ export type QueryBuilderWithTable<
   O,
   TE
 > = QueryBuilder<
-  TableExpressionDatabaseType<DB, TE>,
+  TableExpressionDatabase<DB, TE>,
   TB | ExtractAliasFromTableExpression<DB, TE>,
   O
 >
 
-export type TableExpressionDatabaseType<
+export type TableExpressionDatabase<
   DB,
   TE,
   A extends keyof any = ExtractAliasFromTableExpression<DB, TE>
@@ -59,12 +59,12 @@ export type QueryBuilderWithLeftJoin<
   O,
   TE
 > = QueryBuilder<
-  LeftJoinTableExpressionDatabaseType<DB, TE>,
+  LeftJoinTableExpressionDatabase<DB, TE>,
   TB | ExtractAliasFromTableExpression<DB, TE>,
   O
 >
 
-export type LeftJoinTableExpressionDatabaseType<
+export type LeftJoinTableExpressionDatabase<
   DB,
   TE,
   A extends keyof any = ExtractAliasFromTableExpression<DB, TE>
@@ -82,12 +82,12 @@ export type QueryBuilderWithRightJoin<
   O,
   TE
 > = QueryBuilder<
-  RightJoinTableExpressionDatabaseType<DB, TB, TE>,
+  RightJoinTableExpressionDatabase<DB, TB, TE>,
   TB | ExtractAliasFromTableExpression<DB, TE>,
   O
 >
 
-export type RightJoinTableExpressionDatabaseType<
+export type RightJoinTableExpressionDatabase<
   DB,
   TB extends keyof DB,
   TE,
@@ -108,12 +108,12 @@ export type QueryBuilderWithFullJoin<
   O,
   TE
 > = QueryBuilder<
-  FullJoinTableExpressionDatabaseType<DB, TB, TE>,
+  FullJoinTableExpressionDatabase<DB, TB, TE>,
   TB | ExtractAliasFromTableExpression<DB, TE>,
   O
 >
 
-export type FullJoinTableExpressionDatabaseType<
+export type FullJoinTableExpressionDatabase<
   DB,
   TB extends keyof DB,
   TE,

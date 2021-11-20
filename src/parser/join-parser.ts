@@ -4,28 +4,32 @@ import {
   TableExpression,
   parseTableExpression,
   ExtractAliasFromTableExpression,
-  TableExpressionDatabaseType,
+  TableExpressionDatabase,
 } from './table-parser.js'
 import { parseReferenceFilter } from './filter-parser.js'
 import { JoinBuilder } from '../query-builder/join-builder.js'
 import { ParseContext } from './parse-context.js'
 
 export type JoinReferenceExpression<DB, TB extends keyof DB, F> =
-  | AnyColumn<
-      TableExpressionDatabaseType<DB, F>,
-      TB | ExtractAliasFromTableExpression<DB, F>
-    >
-  | AnyColumnWithTable<
-      TableExpressionDatabaseType<DB, F>,
-      TB | ExtractAliasFromTableExpression<DB, F>
-    >
+  | AnyJoinColumn<DB, TB, F>
+  | AnyJoinColumnWithTable<DB, TB, F>
 
 export type JoinCallbackExpression<DB, TB extends keyof DB, F> = (
   join: JoinBuilder<
-    TableExpressionDatabaseType<DB, F>,
+    TableExpressionDatabase<DB, F>,
     TB | ExtractAliasFromTableExpression<DB, F>
   >
 ) => JoinBuilder<any, any>
+
+type AnyJoinColumn<DB, TB extends keyof DB, F> = AnyColumn<
+  TableExpressionDatabase<DB, F>,
+  TB | ExtractAliasFromTableExpression<DB, F>
+>
+
+type AnyJoinColumnWithTable<DB, TB extends keyof DB, F> = AnyColumnWithTable<
+  TableExpressionDatabase<DB, F>,
+  TB | ExtractAliasFromTableExpression<DB, F>
+>
 
 export function parseJoin(
   ctx: ParseContext,

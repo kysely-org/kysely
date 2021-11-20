@@ -49,7 +49,6 @@ import { WhereNode } from '../operation-node/where-node.js'
 import { CommonTableExpressionNode } from '../operation-node/common-table-expression-node.js'
 import { WithNode } from '../operation-node/with-node.js'
 import {
-  isEmpty,
   getLast,
   freeze,
   isString,
