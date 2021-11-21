@@ -4,7 +4,8 @@
 # [Kysely](https://koskimas.github.io/kysely/index.html)
 
 A type-safe and autocompletion-friendly typescript SQL query builder for node.js. Inspired by
-[knex](http://knexjs.org/). You can find an introduction to Kysely [here](https://www.jakso.me/blog/kysely-a-type-safe-sql-query-builder-for-typescript).
+[knex](http://knexjs.org/). [Here's](https://www.jakso.me/blog/kysely-a-type-safe-sql-query-builder-for-typescript)
+an introductory blog post for you.
 
 ![](https://github.com/koskimas/kysely/blob/master/assets/demo.gif)
 
@@ -25,7 +26,8 @@ type-safety! See the [DynamicModule](https://koskimas.github.io/kysely/classes/D
 for more info.
 
 Kysely is still young and some useful features are propably not yet implemented. If you start
-using Kysely and can't find something you'd want to use, please open an issue.
+using Kysely and can't find something you'd want to use, please open an issue or join our
+[discord server](https://discord.gg/C9aJ49mCra).
 
 # Table of contents
 
@@ -181,6 +183,14 @@ export async function up(db: Kysely<any>): Promise<void> {
       col.references('person.id').onDelete('cascade')
     )
     .addColumn('species', 'varchar')
+    // Older MySQL versions don't support column-level foreign key
+    // constraint definitions and you need to add them using the table
+    // builder by uncommenting the following:
+    //
+    // .addForeignKeyConstraint(
+    //   'pet_owner_id_fk', ['owner_id'], 'person', ['id'],
+    //   (cb) => cb.onDelete('cascade')
+    // )
     .execute()
 
   await db.schema
