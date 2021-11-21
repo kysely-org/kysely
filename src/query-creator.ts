@@ -38,7 +38,7 @@ export class QueryCreator<DB> {
   }
 
   /**
-   * Creates a `select` query builder against the given table/tables.
+   * Creates a `select` query builder for the given table or tables.
    *
    * The tables passed to this method are built as the query's `from` clause.
    *
@@ -323,6 +323,9 @@ export class QueryCreator<DB> {
    * Sets the schema to be used for all table references that don't explicitly
    * specify a schema.
    *
+   * This only affects the query created through the builder returned from
+   * this method and doesn't modify the `db` instance.
+   *
    * @example
    * ```
    * await db.withSchema('mammals')
@@ -371,10 +374,10 @@ export class QueryCreator<DB> {
    * Provides a way to pass arbitrary SQL into your query and executing completely
    * raw queries.
    *
-   * You can use strings `?` and `??` in the `sql` to bind parameters such as
+   * You can use the strings `?` and `??` in the `sql` to bind parameters such as
    * user input to the SQL. You should never EVER concatenate untrusted user
    * input to the SQL string to avoid injection vulnerabilities. Instead use `?`
-   * in place of the value and pass the actual value in the `params` list. See
+   * in place of a value and pass the actual value in the `parameters` list. See
    * the examples below.
    *
    * You should only use `raw` when there is no other way to get the job done. This is

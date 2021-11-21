@@ -37,10 +37,45 @@ export class SchemaModule {
    * ```ts
    * await db.schema
    *   .createTable('person')
-   *   .addColumn('id', 'int', col => col.primaryKey().increments())
+   *   .addColumn('id', 'integer', col => col.primaryKey().increments())
    *   .addColumn('first_name', 'varchar', col => col.notNull())
    *   .addColumn('last_name', 'varchar', col => col.notNull())
    *   .addColumn('gender', 'varchar')
+   *   .execute()
+   * ```
+   *
+   * @example
+   * This example creates a table with a foreign key. Not all database
+   * engines support column-level foreign key constraint definitions.
+   * For example if you are using MySQL 5.X see the next example after
+   * this one.
+   *
+   * ```ts
+   * await db.schema
+   *   .createTable('pet')
+   *   .addColumn('id', 'integer', col => col.primaryKey().increments())
+   *   .addColumn('owner_id', 'integer', col => col
+   *     .references('person.id')
+   *     .onDelete('cascade')
+   *   )
+   *   .execute()
+   * ```
+   *
+   * @example
+   * This example adds a foreign key constraint for a columns just
+   * like the previous example, but using a table-level statement.
+   * On MySQL 5.X you need to define foreign key constraints like
+   * this:
+   *
+   * ```ts
+   * await db.schema
+   *   .createTable('pet')
+   *   .addColumn('id', 'integer', col => col.primaryKey().increments())
+   *   .addColumn('owner_id', 'integer')
+   *   .addForeignKeyConstraint(
+   *     'pet_owner_id_foreign', ['owner_id'], 'person', ['id'],
+   *     (constraint) => constraint.onDelete('cascade')
+   *   )
    *   .execute()
    * ```
    */

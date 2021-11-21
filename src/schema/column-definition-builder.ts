@@ -22,7 +22,8 @@ export interface ColumnDefinitionBuilderInterface<R> {
    *
    * On some dialects this may change the column type as well. For example
    * on postgres this sets the column type to `serial` no matter what you
-   * have specified before.
+   * have specified before. This is one of the few cases where Kysely does
+   * something "unexpected".
    */
   increments(): R
 
@@ -37,6 +38,10 @@ export interface ColumnDefinitionBuilderInterface<R> {
   /**
    * Adds a foreign key constraint for the column.
    *
+   * If your database engine doesn't support foreign key constraints in the
+   * column definition (like MySQL 5) you need to call the table level
+   * {@link TableBuilder.addForeignKeyConstraint} method instead.
+   *
    * @example
    * ```ts
    * col.references('person.id')
@@ -46,6 +51,11 @@ export interface ColumnDefinitionBuilderInterface<R> {
 
   /**
    * Adds an `on delete` constraint for the foreign key column.
+   *
+   * If your database engine doesn't support foreign key constraints in the
+   * column definition (like MySQL 5) you need to call the table level
+   * {@link TableBuilder.addForeignKeyConstraint} method instead.
+   *
    */
   onDelete(onDelete: OnModifyForeignAction): R
 
@@ -84,7 +94,7 @@ export interface ColumnDefinitionBuilderInterface<R> {
    * ```ts
    * db.schema
    *   .createTable('pet')
-   *   .addColumn('number_of_legs', (col) => col.check('number_of_legs < 5', 'integer'))
+   *   .addColumn('number_of_legs', 'integer', (col) => col.check('number_of_legs < 5'))
    *   .execute()
    * ```
    */
