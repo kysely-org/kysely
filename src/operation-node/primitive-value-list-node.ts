@@ -22,7 +22,7 @@ export const PrimitiveValueListNode = freeze({
   create(values: ReadonlyArray<PrimitiveValue>): PrimitiveValueListNode {
     return freeze({
       kind: 'PrimitiveValueListNode',
-      values: freeze(values),
+      values: freeze([...values]),
     })
   },
 })

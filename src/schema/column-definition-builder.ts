@@ -18,12 +18,11 @@ import {
 
 export interface ColumnDefinitionBuilderInterface<R> {
   /**
-   * Makes the column automatically incrementing.
+   * Adds `auto_increment` or `autoincrement` to the column definition
+   * depending on the dialect.
    *
-   * On some dialects this may change the column type as well. For example
-   * on postgres this sets the column type to `serial` no matter what you
-   * have specified before. This is one of the few cases where Kysely does
-   * something "unexpected".
+   * Some dialects like PostgreSQL don't support this. On PostgreSQL
+   * you can use the `serial` or `bigserial` data type instead.
    */
   increments(): R
 

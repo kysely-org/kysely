@@ -79,7 +79,7 @@ export class SchemaModule {
    *   .execute()
    * ```
    */
-  createTable(table: string): CreateTableBuilder {
+  createTable<TB extends string>(table: TB): CreateTableBuilder<TB, never> {
     return new CreateTableBuilder({
       queryId: createQueryId(),
       executor: this.#executor,

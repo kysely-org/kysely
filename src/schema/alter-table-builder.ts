@@ -42,6 +42,9 @@ import { CheckConstraintNode } from '../operation-node/check-constraint-node.js'
 import { ForeignKeyConstraintNode } from '../operation-node/foreign-key-constraint-node.js'
 import { ColumnNode } from '../operation-node/column-node.js'
 
+/**
+ * This builder can be used to create a `alter table` query.
+ */
 export class AlterTableBuilder {
   readonly #props: AlterTableBuilderProps
 

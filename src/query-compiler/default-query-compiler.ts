@@ -79,7 +79,7 @@ export class DefaultQueryCompiler
   extends OperationNodeVisitor
   implements QueryCompiler
 {
-  #sqlFragments: string[] = []
+  #sql = ''
   #parameters: any[] = []
 
   protected get numParameters(): number {
@@ -87,7 +87,7 @@ export class DefaultQueryCompiler
   }
 
   compileQuery(node: RootOperationNode): CompiledQuery {
-    this.#sqlFragments = []
+    this.#sql = ''
     this.#parameters = []
 
     this.visitNode(node)
@@ -99,7 +99,7 @@ export class DefaultQueryCompiler
   }
 
   protected getSql(): string {
-    return this.#sqlFragments.join('')
+    return this.#sql
   }
 
   protected override visitSelectQuery(node: SelectQueryNode): void {
@@ -445,20 +445,7 @@ export class DefaultQueryCompiler
   protected override visitColumnDefinition(node: ColumnDefinitionNode): void {
     this.visitNode(node.column)
     this.append(' ')
-
-    if (node.isAutoIncrementing) {
-      // Postgres overrides the data type for autoincrementing columns.
-      if (
-        DataTypeNode.is(node.dataType) &&
-        node.dataType.dataType === 'bigint'
-      ) {
-        this.append('bigserial')
-      } else {
-        this.append('serial')
-      }
-    } else {
-      this.visitNode(node.dataType)
-    }
+    this.visitNode(node.dataType)
 
     if (node.defaultTo) {
       this.append(' default ')
@@ -467,6 +454,11 @@ export class DefaultQueryCompiler
 
     if (!node.isNullable) {
       this.append(' not null')
+    }
+
+    if (node.isAutoIncrementing) {
+      this.append(' ')
+      this.append(this.getAutoIncrement())
     }
 
     if (node.isUnique) {
@@ -486,6 +478,10 @@ export class DefaultQueryCompiler
       this.append(' ')
       this.visitNode(node.check)
     }
+  }
+
+  protected getAutoIncrement() {
+    return 'auto_increment'
   }
 
   protected override visitReferences(node: ReferencesNode): void {
@@ -888,7 +884,7 @@ export class DefaultQueryCompiler
   }
 
   protected append(str: string): void {
-    this.#sqlFragments.push(str)
+    this.#sql += str
   }
 
   protected appendValue(value: PrimitiveValue): void {

@@ -7,6 +7,7 @@ import {
   testSql,
   expect,
   TEST_INIT_TIMEOUT,
+  createTableWithId,
 } from './test-setup.js'
 
 for (const dialect of BUILT_IN_DIALECTS) {
@@ -34,9 +35,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
       })
 
       await camelDb.schema.dropTable('camelPerson').ifExists().execute()
-      await camelDb.schema
-        .createTable('camelPerson')
-        .addColumn('id', 'integer', (col) => col.increments().primaryKey())
+      await createTableWithId(camelDb.schema, dialect, 'camelPerson')
         .addColumn('firstName', 'varchar(255)')
         .addColumn('lastName', 'varchar(255)')
         .execute()

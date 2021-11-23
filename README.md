@@ -163,6 +163,45 @@ changes completely. Migrations need to be "frozen in time".
 The migrations can use the [Kysely.schema](https://koskimas.github.io/kysely/classes/SchemaModule.html)
 module to modify the schema. Migrations can also run normal queries to modify the data.
 
+### PostgreSQL migration example
+
+```ts
+import { Kysely } from 'kysely'
+
+export async function up(db: Kysely<any>): Promise<void> {
+  await db.schema
+    .createTable('person')
+    .addColumn('id', 'serial', (col) => col.primaryKey())
+    .addColumn('first_name', 'varchar')
+    .addColumn('last_name', 'varchar')
+    .addColumn('gender', 'varchar(50)')
+    .execute()
+
+  await db.schema
+    .createTable('pet')
+    .addColumn('id', 'serial', (col) => col.primaryKey())
+    .addColumn('name', 'varchar', (col) => col.notNull().unique())
+    .addColumn('owner_id', 'integer', (col) =>
+      col.references('person.id').onDelete('cascade')
+    )
+    .addColumn('species', 'varchar')
+    .execute()
+
+  await db.schema
+    .createIndex('pet_owner_id_index')
+    .on('pet')
+    .column('owner_id')
+    .execute()
+}
+
+export async function down(db: Kysely<any>): Promise<void> {
+  await db.schema.dropTable('pet').execute()
+  await db.schema.dropTable('person').execute()
+}
+```
+
+### MySQL migration example
+
 ```ts
 import { Kysely } from 'kysely'
 
@@ -179,18 +218,12 @@ export async function up(db: Kysely<any>): Promise<void> {
     .createTable('pet')
     .addColumn('id', 'integer', (col) => col.increments().primaryKey())
     .addColumn('name', 'varchar', (col) => col.notNull().unique())
-    .addColumn('owner_id', 'integer', (col) =>
-      col.references('person.id').onDelete('cascade')
-    )
+    .addColumn('owner_id', 'integer')
     .addColumn('species', 'varchar')
-    // Older MySQL versions don't support column-level foreign key
-    // constraint definitions and you need to add them using the table
-    // builder by uncommenting the following:
-    //
-    // .addForeignKeyConstraint(
-    //   'pet_owner_id_fk', ['owner_id'], 'person', ['id'],
-    //   (cb) => cb.onDelete('cascade')
-    // )
+    .addForeignKeyConstraint(
+      'pet_owner_id_fk', ['owner_id'], 'person', ['id'],
+      (cb) => cb.onDelete('cascade')
+    )
     .execute()
 
   await db.schema

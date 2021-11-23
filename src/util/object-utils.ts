@@ -96,3 +96,7 @@ export function asReadonlyArray<T>(
 export function isReadonlyArray(arg: unknown): arg is ReadonlyArray<unknown> {
   return Array.isArray(arg)
 }
+
+export function noop<T>(obj: T): T {
+  return obj
+}

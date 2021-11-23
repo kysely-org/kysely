@@ -6,6 +6,7 @@ import {
   testSql,
   NOT_SUPPORTED,
   TEST_INIT_TIMEOUT,
+  createTableWithId,
 } from './test-setup.js'
 
 for (const dialect of ['postgres'] as const) {
@@ -253,10 +254,13 @@ for (const dialect of ['postgres'] as const) {
     async function createTables(): Promise<void> {
       await ctx.db.schema.createSchema('mammals').ifNotExists().execute()
 
-      await ctx.db.schema
-        .withSchema('mammals')
-        .createTable('pet')
-        .addColumn('id', 'integer', (col) => col.increments().primaryKey())
+      const table = createTableWithId(
+        ctx.db.schema.withSchema('mammals'),
+        dialect,
+        'pet'
+      )
+
+      await table
         .addColumn('name', 'varchar', (col) => col.unique())
         .addColumn('owner_id', 'integer', (col) =>
           col.references('public.person.id').onDelete('cascade')

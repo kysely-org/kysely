@@ -35,7 +35,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
         it('should create a table with all data types', async () => {
           const builder = ctx.db.schema
             .createTable('test')
-            .addColumn('a', 'integer', (col) => col.primaryKey().increments())
+            .addColumn('a', 'serial', (col) => col.primaryKey())
             .addColumn('b', 'integer', (col) =>
               col
                 .references('test.a')
@@ -118,7 +118,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
             mysql: {
               sql: [
                 'create table `test`',
-                '(`a` integer not null auto_increment primary key,',
+                '(`a` integer auto_increment primary key,',
                 '`b` integer references `test` (`a`) on delete cascade on update set null,',
                 '`c` varchar(255),',
                 '`d` bigint not null unique,',
@@ -279,15 +279,15 @@ for (const dialect of BUILT_IN_DIALECTS) {
         const builder = ctx.db.schema
           .createTable('test')
           .ifNotExists()
-          .addColumn('id', 'integer', (col) => col.primaryKey().increments())
+          .addColumn('id', 'integer', (col) => col.primaryKey())
 
         testSql(builder, dialect, {
           postgres: {
-            sql: 'create table if not exists "test" ("id" serial primary key)',
+            sql: 'create table if not exists "test" ("id" integer primary key)',
             parameters: [],
           },
           mysql: {
-            sql: 'create table if not exists `test` (`id` integer not null auto_increment primary key)',
+            sql: 'create table if not exists `test` (`id` integer primary key)',
             parameters: [],
           },
         })
@@ -296,26 +296,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
       })
 
       if (dialect === 'postgres') {
-        it('bigInteger increments key should create a bigserial column', async () => {
-          const builder = ctx.db.schema
-            .createTable('test')
-            .addColumn('a', 'bigint', (col) => col.primaryKey().increments())
-
-          testSql(builder, dialect, {
-            postgres: {
-              sql: 'create table "test" ("a" bigserial primary key)',
-              parameters: [],
-            },
-            mysql: NOT_SUPPORTED,
-          })
-
-          await builder.execute()
-        })
-
         it('should create a table in specific schema', async () => {
           const builder = ctx.db.schema
             .createTable('public.test')
-            .addColumn('id', 'integer', (col) => col.primaryKey().increments())
+            .addColumn('id', 'serial', (col) => col.primaryKey())
             .addColumn('foreign_key', 'integer', (col) =>
               col.references('public.test.id')
             )
@@ -337,7 +321,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
       beforeEach(async () => {
         await ctx.db.schema
           .createTable('test')
-          .addColumn('id', 'bigint', (col) => col.primaryKey().increments())
+          .addColumn('id', 'bigint', (col) => col.primaryKey())
           .execute()
       })
 
@@ -380,7 +364,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
       beforeEach(async () => {
         await ctx.db.schema
           .createTable('test')
-          .addColumn('id', 'bigint', (col) => col.primaryKey().increments())
+          .addColumn('id', 'bigint', (col) => col.primaryKey())
           .addColumn('first_name', 'varchar(255)')
           .addColumn('last_name', 'varchar(255)')
           .execute()
@@ -495,7 +479,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
       beforeEach(async () => {
         await ctx.db.schema
           .createTable('test')
-          .addColumn('id', 'bigint', (col) => col.primaryKey().increments())
+          .addColumn('id', 'bigint', (col) => col.primaryKey())
           .addColumn('first_name', 'varchar(255)')
           .execute()
 

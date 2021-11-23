@@ -7,7 +7,7 @@ import { preventAwait } from '../util/prevent-await.js'
 import { QueryExecutor } from '../query-executor/query-executor.js'
 import { ColumnDefinitionBuilder } from './column-definition-builder.js'
 import { QueryId } from '../util/query-id.js'
-import { freeze } from '../util/object-utils.js'
+import { freeze, noop } from '../util/object-utils.js'
 import { ForeignKeyConstraintNode } from '../operation-node/foreign-key-constraint-node.js'
 import { ColumnNode } from '../operation-node/column-node.js'
 import { TableNode } from '../operation-node/table-node.js'
@@ -17,7 +17,12 @@ import {
   parseDataTypeExpression,
 } from '../parser/data-type-parser.js'
 
-export class CreateTableBuilder implements OperationNodeSource, Compilable {
+/**
+ * This builder can be used to create a `create table` query.
+ */
+export class CreateTableBuilder<TB extends string, C extends string = never>
+  implements OperationNodeSource, Compilable
+{
   readonly #props: CreateTableBuilderProps
 
   constructor(props: CreateTableBuilderProps) {
@@ -29,7 +34,7 @@ export class CreateTableBuilder implements OperationNodeSource, Compilable {
    *
    * If the table already exists, no error is thrown if this method has been called.
    */
-  ifNotExists(): CreateTableBuilder {
+  ifNotExists(): CreateTableBuilder<TB, C> {
     return new CreateTableBuilder({
       ...this.#props,
       createTableNode: CreateTableNode.cloneWithModifier(
@@ -46,25 +51,56 @@ export class CreateTableBuilder implements OperationNodeSource, Compilable {
    * ```ts
    * await db.schema
    *   .createTable('person')
-   *   .addColumn('int', 'id', (col) => col.increments().primary()),
+   *   .addColumn('id', 'integer', (col) => col.increments().primaryKey()),
    *   .addColumn('first_name', 'varchar(50), (col) => col.notNull())
-   *   .addColumn('varchar', 'last_name')
-   *   .addColumn('numeric(8, 2)', 'bank_balance')
+   *   .addColumn('last_name', 'varchar')
+   *   .addColumn('bank_balance', 'numeric(8, 2)')
    *   .addColumn('data', db.raw('customtype'))
+   *   .addColumn('parent_id', 'integer', (col) =>
+   *     col.references('person.id').onDelete('cascade'))
+   *   )
+   * ```
+   *
+   * With this method, it's once again good to remember that Kysely just builds the query
+   * that's as close to the structure of your builder method calls as possible, and doesn't
+   * provide the same API for all databses. For example, some databases like older MySQL
+   * don't support `references` statement in the column definition. Instead foreign key
+   * constraints need to be defined in at the level of the `create table` query. See
+   * the next example:
+   *
+   * @example
+   * ```ts
+   *   .addColumn('parent_id', 'integer')
+   *   .addForeignKeyConstraint(
+   *     'person_parent_id_fk', ['parent_id'], 'person', ['id'],
+   *     (cb) => cb.onDelete('cascade')
+   *   )
+   * ```
+   *
+   * Another good example is that PostgreSQL doesn't support the `auto_increment`
+   * keyword and you need to define an autoincrementing column for example using
+   * `serial`:
+   *
+   * @example
+   * ```ts
+   * await db.schema
+   *   .createTable('person')
+   *   .addColumn('id', 'serial', (col) => col.primaryKey()),
    * ```
    */
-  addColumn(
-    columnName: string,
+  addColumn<CN extends string>(
+    columnName: CN,
     dataType: DataTypeExpression,
-    build?: ColumnBuilderCallback
-  ): CreateTableBuilder {
-    let columnBuilder = new ColumnDefinitionBuilder(
-      ColumnDefinitionNode.create(columnName, parseDataTypeExpression(dataType))
+    build: ColumnBuilderCallback = noop
+  ): CreateTableBuilder<TB, C | CN> {
+    const columnBuilder = build(
+      new ColumnDefinitionBuilder(
+        ColumnDefinitionNode.create(
+          columnName,
+          parseDataTypeExpression(dataType)
+        )
+      )
     )
-
-    if (build) {
-      columnBuilder = build(columnBuilder)
-    }
 
     return new CreateTableBuilder({
       ...this.#props,
@@ -78,6 +114,9 @@ export class CreateTableBuilder implements OperationNodeSource, Compilable {
   /**
    * Adds a primary key constraint for one or more columns.
    *
+   * The constraint name can be anything you want, but it must be unique
+   * across the whole database.
+   *
    * @example
    * ```ts
    * addPrimaryKeyConstraint('primary_key', ['first_name', 'last_name'])
@@ -85,8 +124,8 @@ export class CreateTableBuilder implements OperationNodeSource, Compilable {
    */
   addPrimaryKeyConstraint(
     constraintName: string,
-    columns: string[]
-  ): CreateTableBuilder {
+    columns: C[]
+  ): CreateTableBuilder<TB, C> {
     return new CreateTableBuilder({
       ...this.#props,
       createTableNode: CreateTableNode.cloneWithPrimaryKeyConstraint(
@@ -100,6 +139,9 @@ export class CreateTableBuilder implements OperationNodeSource, Compilable {
   /**
    * Adds a unique constraint for one or more columns.
    *
+   * The constraint name can be anything you want, but it must be unique
+   * across the whole database.
+   *
    * @example
    * ```ts
    * addUniqueConstraint('first_name_last_name_unique', ['first_name', 'last_name'])
@@ -107,8 +149,8 @@ export class CreateTableBuilder implements OperationNodeSource, Compilable {
    */
   addUniqueConstraint(
     constraintName: string,
-    columns: string[]
-  ): CreateTableBuilder {
+    columns: C[]
+  ): CreateTableBuilder<TB, C> {
     return new CreateTableBuilder({
       ...this.#props,
       createTableNode: CreateTableNode.cloneWithUniqueConstraint(
@@ -122,6 +164,9 @@ export class CreateTableBuilder implements OperationNodeSource, Compilable {
   /**
    * Adds a check constraint.
    *
+   * The constraint name can be anything you want, but it must be unique
+   * across the whole database.
+   *
    * @example
    * ```ts
    * addCheckConstraint('check_legs', 'number_of_legs < 5')
@@ -130,7 +175,7 @@ export class CreateTableBuilder implements OperationNodeSource, Compilable {
   addCheckConstraint(
     constraintName: string,
     checkExpression: string
-  ): CreateTableBuilder {
+  ): CreateTableBuilder<TB, C> {
     return new CreateTableBuilder({
       ...this.#props,
       createTableNode: CreateTableNode.cloneWithCheckConstraint(
@@ -143,6 +188,9 @@ export class CreateTableBuilder implements OperationNodeSource, Compilable {
 
   /**
    * Adds a foreign key constraint.
+   *
+   * The constraint name can be anything you want, but it must be unique
+   * across the whole database.
    *
    * @example
    * ```ts
@@ -167,23 +215,21 @@ export class CreateTableBuilder implements OperationNodeSource, Compilable {
    */
   addForeignKeyConstraint(
     constraintName: string,
-    columns: string[],
+    columns: C[],
     targetTable: string,
     targetColumns: string[],
-    build?: ForeignKeyConstraintBuilderCallback
-  ): CreateTableBuilder {
-    let builder = new ForeignKeyConstraintBuilder(
-      ForeignKeyConstraintNode.create(
-        columns.map(ColumnNode.create),
-        TableNode.create(targetTable),
-        targetColumns.map(ColumnNode.create),
-        constraintName
+    build: ForeignKeyConstraintBuilderCallback = noop
+  ): CreateTableBuilder<TB, C> {
+    const builder = build(
+      new ForeignKeyConstraintBuilder(
+        ForeignKeyConstraintNode.create(
+          columns.map(ColumnNode.create),
+          TableNode.create(targetTable),
+          targetColumns.map(ColumnNode.create),
+          constraintName
+        )
       )
     )
-
-    if (build) {
-      builder = build(builder)
-    }
 
     return new CreateTableBuilder({
       ...this.#props,

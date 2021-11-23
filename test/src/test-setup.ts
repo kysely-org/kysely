@@ -16,6 +16,7 @@ import {
   PostgresDialect,
   MysqlDialect,
   Dialect,
+  SchemaModule,
 } from '../../'
 
 export interface Person {
@@ -112,7 +113,7 @@ export async function initTest(
     dialect: wrapDialect(config.dialect),
   })
 
-  await createDatabase(db)
+  await createDatabase(db, dialect)
   return { config, db }
 }
 
@@ -186,20 +187,19 @@ export function testSql(
   chai.expect(expected.parameters).to.eql(sql.parameters)
 }
 
-async function createDatabase(db: Kysely<Database>): Promise<void> {
+async function createDatabase(
+  db: Kysely<Database>,
+  dialect: BuiltInDialect
+): Promise<void> {
   await dropDatabase(db)
 
-  await db.schema
-    .createTable('person')
-    .addColumn('id', 'integer', (col) => col.increments().primaryKey())
+  await createTableWithId(db.schema, dialect, 'person')
     .addColumn('first_name', 'varchar(255)')
     .addColumn('last_name', 'varchar(255)')
     .addColumn('gender', 'varchar(50)', (col) => col.notNull())
     .execute()
 
-  await db.schema
-    .createTable('pet')
-    .addColumn('id', 'integer', (col) => col.increments().primaryKey())
+  await createTableWithId(db.schema, dialect, 'pet')
     .addColumn('name', 'varchar(255)', (col) => col.unique().notNull())
     .addColumn('owner_id', 'integer', (col) =>
       col.references('person.id').onDelete('cascade').notNull()
@@ -207,9 +207,7 @@ async function createDatabase(db: Kysely<Database>): Promise<void> {
     .addColumn('species', 'varchar(50)', (col) => col.notNull())
     .execute()
 
-  await db.schema
-    .createTable('toy')
-    .addColumn('id', 'integer', (col) => col.increments().primaryKey())
+  await createTableWithId(db.schema, dialect, 'toy')
     .addColumn('name', 'varchar(255)', (col) => col.notNull())
     .addColumn('pet_id', 'integer', (col) => col.references('pet.id').notNull())
     .addColumn('price', 'double precision', (col) => col.notNull())
@@ -220,6 +218,22 @@ async function createDatabase(db: Kysely<Database>): Promise<void> {
     .on('pet')
     .column('owner_id')
     .execute()
+}
+
+export function createTableWithId(
+  schema: SchemaModule,
+  dialect: BuiltInDialect,
+  tableName: string
+) {
+  const builder = schema.createTable(tableName)
+
+  if (dialect === 'postgres') {
+    return builder.addColumn('id', 'serial', (col) => col.primaryKey())
+  } else {
+    return builder.addColumn('id', 'integer', (col) =>
+      col.increments().primaryKey()
+    )
+  }
 }
 
 async function connect(config: KyselyConfig): Promise<Kysely<Database>> {
