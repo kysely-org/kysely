@@ -4,7 +4,12 @@ import { isOperationNodeSource } from '../operation-node/operation-node-source.j
 import { ReferenceExpressionNode } from '../operation-node/operation-node-utils.js'
 import { ReferenceNode } from '../operation-node/reference-node.js'
 import { TableNode } from '../operation-node/table-node.js'
-import { isFunction, isString, PrimitiveValue } from '../util/object-utils.js'
+import {
+  isFunction,
+  isReadonlyArray,
+  isString,
+  PrimitiveValue,
+} from '../util/object-utils.js'
 import {
   AnyColumn,
   AnyColumnWithTable,
@@ -31,7 +36,7 @@ export type ReferenceExpression<DB, TB extends keyof DB> =
 
 export type ReferenceExpressionOrList<DB, TB extends keyof DB> =
   | ReferenceExpression<DB, TB>
-  | ReferenceExpression<DB, TB>[]
+  | ReadonlyArray<ReferenceExpression<DB, TB>>
 
 export type StringReference<DB, TB extends keyof DB> =
   | AnyColumn<DB, TB>
@@ -78,7 +83,7 @@ export function parseReferenceExpressionOrList(
   ctx: ParseContext,
   arg: ReferenceExpressionOrList<any, any>
 ): ReferenceExpressionNode[] {
-  if (Array.isArray(arg)) {
+  if (isReadonlyArray(arg)) {
     return arg.map((it) => parseReferenceExpression(ctx, it))
   } else {
     return [parseReferenceExpression(ctx, arg)]

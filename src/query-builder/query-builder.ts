@@ -37,11 +37,10 @@ import {
 } from '../parser/insert-values-parser.js'
 import { QueryBuilderWithReturning } from '../parser/returning-parser.js'
 import {
-  parseReferenceExpressionOrList,
   ReferenceExpression,
+  ReferenceExpressionOrList,
 } from '../parser/reference-parser.js'
 import { ValueExpressionOrList } from '../parser/value-parser.js'
-import { OrderByItemNode } from '../operation-node/order-by-item-node.js'
 import { SelectQueryNode } from '../operation-node/select-query-node.js'
 import { InsertQueryNode } from '../operation-node/insert-query-node.js'
 import {
@@ -58,10 +57,8 @@ import {
 import {
   OrderByDirectionExpression,
   OrderByExpression,
-  parseOrderByDirectionExpression,
-  parseOrderByExpression,
+  parseOrderBy,
 } from '../parser/order-by-parser.js'
-import { GroupByItemNode } from '../operation-node/group-by-item-node.js'
 import { UpdateQueryNode } from '../operation-node/update-query-node.js'
 import {
   MutationObject,
@@ -83,6 +80,7 @@ import { freeze } from '../util/object-utils.js'
 import { ParseContext } from '../parser/parse-context.js'
 import { DeleteQueryNode } from '../operation-node/delete-query-node.js'
 import { OnDuplicateKeyNode } from '../operation-node/on-duplicate-key-node.js'
+import { parseGroupBy } from '../parser/group-by-parser.js'
 
 /**
  * The main query builder class.
@@ -2062,10 +2060,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
       ...this.#props,
       queryNode: SelectQueryNode.cloneWithOrderByItem(
         this.#props.queryNode,
-        OrderByItemNode.create(
-          parseOrderByExpression(this.#props.parseContext, orderBy),
-          parseOrderByDirectionExpression(direction)
-        )
+        parseOrderBy(this.#props.parseContext, orderBy, direction)
       ),
     })
   }
@@ -2174,16 +2169,14 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
 
   groupBy(orderBy: ReferenceExpression<DB, TB>): QueryBuilder<DB, TB, O>
 
-  groupBy(orderBy: any): QueryBuilder<DB, TB, O> {
+  groupBy(orderBy: ReferenceExpressionOrList<DB, TB>): any {
     assertCanHaveGroupByClause(this.#props.queryNode)
 
     return new QueryBuilder({
       ...this.#props,
       queryNode: SelectQueryNode.cloneWithGroupByItems(
         this.#props.queryNode,
-        parseReferenceExpressionOrList(this.#props.parseContext, orderBy).map(
-          GroupByItemNode.create
-        )
+        parseGroupBy(this.#props.parseContext, orderBy)
       ),
     })
   }
@@ -2516,7 +2509,7 @@ function assertCanHaveReturningClause(
 ): asserts node is MutatingQueryNode {
   if (!QueryNode.isMutating(node)) {
     throw new Error(
-      'only an insert, delete and update queries can have a returning clause'
+      'only insert, delete and update queries can have a returning clause'
     )
   }
 }

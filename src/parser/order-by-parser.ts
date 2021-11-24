@@ -1,4 +1,5 @@
 import { ReferenceExpressionNode } from '../operation-node/operation-node-utils.js'
+import { OrderByItemNode } from '../operation-node/order-by-item-node.js'
 import { RawNode } from '../operation-node/raw-node.js'
 import { AnyRawBuilder } from '../util/type-utils.js'
 import { ParseContext } from './parse-context.js'
@@ -15,14 +16,25 @@ export type OrderByExpression<DB, TB extends keyof DB, O> =
 
 export type OrderByDirectionExpression = OrderByDirection | AnyRawBuilder
 
-export function parseOrderByExpression(
+export function parseOrderBy(
+  ctx: ParseContext,
+  orderBy: OrderByExpression<any, any, any>,
+  direction?: OrderByDirectionExpression
+): OrderByItemNode {
+  return OrderByItemNode.create(
+    parseOrderByExpression(ctx, orderBy),
+    parseOrderByDirectionExpression(direction)
+  )
+}
+
+function parseOrderByExpression(
   ctx: ParseContext,
   expr: OrderByExpression<any, any, any>
 ): ReferenceExpressionNode {
   return parseReferenceExpression(ctx, expr)
 }
 
-export function parseOrderByDirectionExpression(
+function parseOrderByDirectionExpression(
   expr?: OrderByDirectionExpression
 ): RawNode | undefined {
   if (!expr) {

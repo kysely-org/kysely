@@ -8,7 +8,7 @@ export type PrimitiveValue =
   | BigInt
 
 export function isEmpty(
-  obj: ArrayLike<any> | string | object | Buffer
+  obj: ArrayLike<unknown> | string | object | Buffer
 ): boolean {
   if (Array.isArray(obj) || isString(obj) || Buffer.isBuffer(obj)) {
     return obj.length === 0
@@ -19,35 +19,35 @@ export function isEmpty(
   return false
 }
 
-export function isString(obj: any): obj is string {
+export function isString(obj: unknown): obj is string {
   return typeof obj === 'string'
 }
 
-export function isNumber(obj: any): obj is number {
+export function isNumber(obj: unknown): obj is number {
   return typeof obj === 'number'
 }
 
-export function isBoolean(obj: any): obj is boolean {
+export function isBoolean(obj: unknown): obj is boolean {
   return typeof obj === 'boolean'
 }
 
-export function isNull(obj: any): obj is null {
+export function isNull(obj: unknown): obj is null {
   return obj === null
 }
 
-export function isDate(obj: any): obj is Date {
+export function isDate(obj: unknown): obj is Date {
   return obj instanceof Date
 }
 
-export function isBuffer(obj: any): obj is Buffer {
+export function isBuffer(obj: unknown): obj is Buffer {
   return Buffer.isBuffer(obj)
 }
 
-export function isBigInt(obj: any): obj is BigInt {
+export function isBigInt(obj: unknown): obj is BigInt {
   return typeof obj === 'bigint'
 }
 
-export function isPrimitive(obj: any): obj is PrimitiveValue {
+export function isPrimitive(obj: unknown): obj is PrimitiveValue {
   return (
     isString(obj) ||
     isNumber(obj) ||
@@ -59,12 +59,12 @@ export function isPrimitive(obj: any): obj is PrimitiveValue {
   )
 }
 
-export function isFunction(obj: any): obj is Function {
+export function isFunction(obj: unknown): obj is Function {
   return typeof obj === 'function'
 }
 
-export function isObject(obj: any): obj is Record<string, any> {
-  return obj && typeof obj === 'object'
+export function isObject(obj: unknown): obj is Record<string, unknown> {
+  return typeof obj === 'object' && obj !== null
 }
 
 export function getLast<T>(arr: ArrayLike<T>): T | undefined {

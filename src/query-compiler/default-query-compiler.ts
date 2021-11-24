@@ -80,7 +80,7 @@ export class DefaultQueryCompiler
   implements QueryCompiler
 {
   #sql = ''
-  #parameters: any[] = []
+  #parameters: unknown[] = []
 
   protected get numParameters(): number {
     return this.#parameters.length
@@ -887,8 +887,8 @@ export class DefaultQueryCompiler
     this.#sql += str
   }
 
-  protected appendValue(value: PrimitiveValue): void {
-    this.addParameter(value)
+  protected appendValue(parameter: unknown): void {
+    this.addParameter(parameter)
     this.append(this.getCurrentParameterPlaceholder())
   }
 
@@ -904,7 +904,7 @@ export class DefaultQueryCompiler
     return '$' + this.numParameters
   }
 
-  protected addParameter(parameter: any): void {
+  protected addParameter(parameter: unknown): void {
     this.#parameters.push(parameter)
   }
 

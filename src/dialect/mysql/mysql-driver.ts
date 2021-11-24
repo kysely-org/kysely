@@ -14,7 +14,12 @@ import {
 
 import { Driver, TransactionSettings } from '../../driver/driver.js'
 import { CompiledQuery } from '../../query-compiler/compiled-query.js'
-import { isFunction, isObject } from '../../util/object-utils.js'
+import {
+  isFunction,
+  isNumber,
+  isObject,
+  isString,
+} from '../../util/object-utils.js'
 import { MysqlDialectConfig } from './mysql-dialect.js'
 
 const PRIVATE_RELEASE_METHOD = Symbol()
@@ -145,12 +150,12 @@ class MysqlConnection implements DatabaseConnection {
     const result = await this.#executeQuery(compiledQuery)
 
     if (isObject(result) && 'insertId' in result && 'affectedRows' in result) {
-      if (result.insertId) {
+      if (isNumber(result.insertId) && result.insertId > 0) {
         return {
           insertedPrimaryKey: result.insertId,
           rows: [],
         }
-      } else {
+      } else if (isNumber(result.affectedRows)) {
         return {
           numUpdatedOrDeletedRows: result.affectedRows,
           rows: [],
