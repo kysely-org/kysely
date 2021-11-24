@@ -30,13 +30,13 @@ export const CreateSchemaNode = freeze({
     })
   },
 
-  cloneWithModifier(
+  cloneWith(
     createSchema: CreateSchemaNode,
-    modifier: CreateSchemaNodeModifier
+    params: CreateSchemaNodeParams
   ): CreateSchemaNode {
     return freeze({
       ...createSchema,
-      modifier,
+      ...params,
     })
   },
 })

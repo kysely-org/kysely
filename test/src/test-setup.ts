@@ -74,7 +74,10 @@ const PLUGINS: KyselyPlugin[] = []
 
 if (process.env.TEST_TRANSFORMER) {
   console.log('running tests with a transformer')
-  PLUGINS.push(createNoopPlugin())
+  // Add a noop transformer using a plugin to make sure that the
+  // OperationNodeTransformer base class is implemented correctly
+  // and all nodes and properties get cloned by default.
+  PLUGINS.push(createNoopTransformerPlugin())
 }
 
 const DB_CONFIGS: PerDialect<KyselyConfig> = {
@@ -307,7 +310,7 @@ function getIdFromInsertResult<T>(result: any): T {
   }
 }
 
-function createNoopPlugin(): KyselyPlugin {
+function createNoopTransformerPlugin(): KyselyPlugin {
   const transformer = new OperationNodeTransformer()
 
   return {

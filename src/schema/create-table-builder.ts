@@ -16,6 +16,9 @@ import {
   DataTypeExpression,
   parseDataTypeExpression,
 } from '../parser/data-type-parser.js'
+import { PrimaryConstraintNode } from '../operation-node/primary-constraint-node.js'
+import { UniqueConstraintNode } from '../operation-node/unique-constraint-node.js'
+import { CheckConstraintNode } from '../operation-node/check-constraint-node.js'
 
 /**
  * This builder can be used to create a `create table` query.
@@ -128,10 +131,9 @@ export class CreateTableBuilder<TB extends string, C extends string = never>
   ): CreateTableBuilder<TB, C> {
     return new CreateTableBuilder({
       ...this.#props,
-      createTableNode: CreateTableNode.cloneWithPrimaryKeyConstraint(
+      createTableNode: CreateTableNode.cloneWithConstraint(
         this.#props.createTableNode,
-        constraintName,
-        columns
+        PrimaryConstraintNode.create(columns, constraintName)
       ),
     })
   }
@@ -153,10 +155,9 @@ export class CreateTableBuilder<TB extends string, C extends string = never>
   ): CreateTableBuilder<TB, C> {
     return new CreateTableBuilder({
       ...this.#props,
-      createTableNode: CreateTableNode.cloneWithUniqueConstraint(
+      createTableNode: CreateTableNode.cloneWithConstraint(
         this.#props.createTableNode,
-        constraintName,
-        columns
+        UniqueConstraintNode.create(columns, constraintName)
       ),
     })
   }
@@ -178,10 +179,9 @@ export class CreateTableBuilder<TB extends string, C extends string = never>
   ): CreateTableBuilder<TB, C> {
     return new CreateTableBuilder({
       ...this.#props,
-      createTableNode: CreateTableNode.cloneWithCheckConstraint(
+      createTableNode: CreateTableNode.cloneWithConstraint(
         this.#props.createTableNode,
-        constraintName,
-        checkExpression
+        CheckConstraintNode.create(checkExpression, constraintName)
       ),
     })
   }
@@ -233,7 +233,7 @@ export class CreateTableBuilder<TB extends string, C extends string = never>
 
     return new CreateTableBuilder({
       ...this.#props,
-      createTableNode: CreateTableNode.cloneWithForeignKeyConstraint(
+      createTableNode: CreateTableNode.cloneWithConstraint(
         this.#props.createTableNode,
         builder.toOperationNode()
       ),

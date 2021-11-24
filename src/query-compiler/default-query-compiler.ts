@@ -930,7 +930,7 @@ const SELECT_MODIFIER_SQL: Record<SelectModifier, string> = {
   ForNoKeyUpdate: 'for no key update',
   ForUpdate: 'for update',
   ForShare: 'for share',
-  NoWait: 'no wait',
+  NoWait: 'nowait',
   SkipLocked: 'skip locked',
 }
 

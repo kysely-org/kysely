@@ -583,11 +583,12 @@ export class OperationNodeTransformer {
       kind: 'AlterTableNode',
       table: this.transformNode(node.table),
       renameTo: this.transformNode(node.renameTo),
-      renameColumn: this.transformNode(node.renameColumn),
       setSchema: this.transformNode(node.setSchema),
+      renameColumn: this.transformNode(node.renameColumn),
       addColumn: this.transformNode(node.addColumn),
       dropColumn: this.transformNode(node.dropColumn),
       alterColumn: this.transformNode(node.alterColumn),
+      modifyColumn: this.transformNode(node.modifyColumn),
       addConstraint: this.transformNode(node.addConstraint),
       dropConstraint: this.transformNode(node.dropConstraint),
     }

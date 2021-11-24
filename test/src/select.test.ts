@@ -405,6 +405,33 @@ for (const dialect of BUILT_IN_DIALECTS) {
           { first_name: 'Arnold' },
         ])
       })
+
+      for (const [methods, sql] of [
+        [['forUpdate'], 'for update'],
+        [['forShare'], 'for share'],
+        [['forNoKeyUpdate'], 'for no key update'],
+        [['forKeyShare'], 'for key share'],
+        [['forUpdate', 'noWait'], 'for update nowait'],
+        [['forUpdate', 'skipLocked'], 'for update skip locked'],
+      ] as const) {
+        it(`should support "${sql}"`, async () => {
+          let query = ctx.db.selectFrom('person').selectAll()
+
+          for (const method of methods) {
+            query = query[method]()
+          }
+
+          testSql(query, dialect, {
+            postgres: {
+              sql: `select * from "person" ${sql}`,
+              parameters: [],
+            },
+            mysql: NOT_SUPPORTED,
+          })
+
+          await query.execute()
+        })
+      }
     }
 
     it('should use an aggregate function in a select call', async () => {

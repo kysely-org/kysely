@@ -1,5 +1,4 @@
 import { freeze } from '../util/object-utils.js'
-import { ColumnNode } from './column-node.js'
 import { ColumnUpdateNode } from './column-update-node.js'
 import { OperationNode } from './operation-node.js'
 
