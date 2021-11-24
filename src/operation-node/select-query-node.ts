@@ -140,13 +140,24 @@ export const SelectQueryNode = freeze({
 
   cloneWithHaving(
     selectNode: SelectQueryNode,
-    op: 'And' | 'Or',
     filter: HavingNodeChild
   ): SelectQueryNode {
     return freeze({
       ...selectNode,
       having: selectNode.having
-        ? HavingNode.cloneWithFilter(selectNode.having, op, filter)
+        ? HavingNode.cloneWithFilter(selectNode.having, 'And', filter)
+        : HavingNode.create(filter),
+    })
+  },
+
+  cloneWithOrHaving(
+    selectNode: SelectQueryNode,
+    filter: HavingNodeChild
+  ): SelectQueryNode {
+    return freeze({
+      ...selectNode,
+      having: selectNode.having
+        ? HavingNode.cloneWithFilter(selectNode.having, 'Or', filter)
         : HavingNode.create(filter),
     })
   },

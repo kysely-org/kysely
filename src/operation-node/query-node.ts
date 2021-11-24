@@ -56,13 +56,24 @@ export const QueryNode = freeze({
 
   cloneWithWhere<T extends FilterableQueryNode>(
     node: T,
-    op: 'And' | 'Or',
     filter: WhereChildNode
   ): T {
     return freeze({
       ...node,
       where: node.where
-        ? WhereNode.cloneWithFilter(node.where, op, filter)
+        ? WhereNode.cloneWithFilter(node.where, 'And', filter)
+        : WhereNode.create(filter),
+    })
+  },
+
+  cloneWithOrWhere<T extends FilterableQueryNode>(
+    node: T,
+    filter: WhereChildNode
+  ): T {
+    return freeze({
+      ...node,
+      where: node.where
+        ? WhereNode.cloneWithFilter(node.where, 'Or', filter)
         : WhereNode.create(filter),
     })
   },

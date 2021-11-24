@@ -4,6 +4,7 @@ import {
   parseTableExpressionOrList,
   TableExpression,
   QueryBuilderWithTable,
+  TableExpressionOrList,
 } from '../parser/table-parser.js'
 import { NoopQueryExecutor } from '../query-executor/noop-query-executor.js'
 import { WithSchemaPlugin } from '../plugin/with-schema/with-schema-plugin.js'
@@ -103,7 +104,7 @@ export class ExpressionBuilder<DB, TB extends keyof DB> {
     from: F
   ): QueryBuilderWithTable<DB, TB, {}, F>
 
-  subQuery(table: any): any {
+  subQuery(table: TableExpressionOrList<DB, TB>): any {
     return new QueryBuilder({
       queryId: createQueryId(),
       executor: this.#props.executor,

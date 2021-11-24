@@ -306,7 +306,6 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
       ...this.#props,
       queryNode: QueryNode.cloneWithWhere(
         this.#props.queryNode,
-        'And',
         parseWhereFilter(this.#props.parseContext, args)
       ),
     })
@@ -374,7 +373,6 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
       ...this.#props,
       queryNode: QueryNode.cloneWithWhere(
         this.#props.queryNode,
-        'And',
         parseReferenceFilter(this.#props.parseContext, lhs, op, rhs)
       ),
     })
@@ -460,9 +458,8 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
 
     return new QueryBuilder({
       ...this.#props,
-      queryNode: QueryNode.cloneWithWhere(
+      queryNode: QueryNode.cloneWithOrWhere(
         this.#props.queryNode,
-        'Or',
         parseWhereFilter(this.#props.parseContext, args)
       ),
     })
@@ -483,9 +480,8 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
 
     return new QueryBuilder({
       ...this.#props,
-      queryNode: QueryNode.cloneWithWhere(
+      queryNode: QueryNode.cloneWithOrWhere(
         this.#props.queryNode,
-        'Or',
         parseReferenceFilter(this.#props.parseContext, lhs, op, rhs)
       ),
     })
@@ -557,7 +553,6 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
       ...this.#props,
       queryNode: QueryNode.cloneWithWhere(
         this.#props.queryNode,
-        'And',
         parseExistFilter(this.#props.parseContext, arg)
       ),
     })
@@ -573,7 +568,6 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
       ...this.#props,
       queryNode: QueryNode.cloneWithWhere(
         this.#props.queryNode,
-        'And',
         parseNotExistFilter(this.#props.parseContext, arg)
       ),
     })
@@ -587,9 +581,8 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
 
     return new QueryBuilder({
       ...this.#props,
-      queryNode: QueryNode.cloneWithWhere(
+      queryNode: QueryNode.cloneWithOrWhere(
         this.#props.queryNode,
-        'Or',
         parseExistFilter(this.#props.parseContext, arg)
       ),
     })
@@ -603,9 +596,8 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
 
     return new QueryBuilder({
       ...this.#props,
-      queryNode: QueryNode.cloneWithWhere(
+      queryNode: QueryNode.cloneWithOrWhere(
         this.#props.queryNode,
-        'Or',
         parseNotExistFilter(this.#props.parseContext, arg)
       ),
     })
@@ -632,7 +624,6 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
       ...this.#props,
       queryNode: SelectQueryNode.cloneWithHaving(
         this.#props.queryNode,
-        'And',
         parseHavingFilter(this.#props.parseContext, args)
       ),
     })
@@ -653,7 +644,6 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
       ...this.#props,
       queryNode: SelectQueryNode.cloneWithHaving(
         this.#props.queryNode,
-        'And',
         parseReferenceFilter(this.#props.parseContext, lhs, op, rhs)
       ),
     })
@@ -678,9 +668,8 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
 
     return new QueryBuilder({
       ...this.#props,
-      queryNode: SelectQueryNode.cloneWithHaving(
+      queryNode: SelectQueryNode.cloneWithOrHaving(
         this.#props.queryNode,
-        'Or',
         parseHavingFilter(this.#props.parseContext, args)
       ),
     })
@@ -699,9 +688,8 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
 
     return new QueryBuilder({
       ...this.#props,
-      queryNode: SelectQueryNode.cloneWithHaving(
+      queryNode: SelectQueryNode.cloneWithOrHaving(
         this.#props.queryNode,
-        'Or',
         parseReferenceFilter(this.#props.parseContext, lhs, op, rhs)
       ),
     })
@@ -718,7 +706,6 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
       ...this.#props,
       queryNode: SelectQueryNode.cloneWithHaving(
         this.#props.queryNode,
-        'And',
         parseExistFilter(this.#props.parseContext, arg)
       ),
     })
@@ -735,7 +722,6 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
       ...this.#props,
       queryNode: SelectQueryNode.cloneWithHaving(
         this.#props.queryNode,
-        'And',
         parseNotExistFilter(this.#props.parseContext, arg)
       ),
     })
@@ -750,9 +736,8 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
 
     return new QueryBuilder({
       ...this.#props,
-      queryNode: SelectQueryNode.cloneWithHaving(
+      queryNode: SelectQueryNode.cloneWithOrHaving(
         this.#props.queryNode,
-        'Or',
         parseExistFilter(this.#props.parseContext, arg)
       ),
     })
@@ -767,9 +752,8 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
 
     return new QueryBuilder({
       ...this.#props,
-      queryNode: SelectQueryNode.cloneWithHaving(
+      queryNode: SelectQueryNode.cloneWithOrHaving(
         this.#props.queryNode,
-        'Or',
         parseNotExistFilter(this.#props.parseContext, arg)
       ),
     })

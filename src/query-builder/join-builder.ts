@@ -44,7 +44,6 @@ export class JoinBuilder<DB, TB extends keyof DB>
       ...this.#props,
       joinNode: JoinNode.cloneWithOn(
         this.#props.joinNode,
-        'And',
         parseOnFilter(this.#props.parseContext, args)
       ),
     })
@@ -69,9 +68,8 @@ export class JoinBuilder<DB, TB extends keyof DB>
   orOn(...args: any[]): JoinBuilder<DB, TB> {
     return new JoinBuilder({
       ...this.#props,
-      joinNode: JoinNode.cloneWithOn(
+      joinNode: JoinNode.cloneWithOrOn(
         this.#props.joinNode,
-        'Or',
         parseOnFilter(this.#props.parseContext, args)
       ),
     })
@@ -92,7 +90,6 @@ export class JoinBuilder<DB, TB extends keyof DB>
       ...this.#props,
       joinNode: JoinNode.cloneWithOn(
         this.#props.joinNode,
-        'And',
         parseReferenceFilter(this.#props.parseContext, lhs, op, rhs)
       ),
     })
@@ -111,9 +108,8 @@ export class JoinBuilder<DB, TB extends keyof DB>
   ): JoinBuilder<DB, TB> {
     return new JoinBuilder({
       ...this.#props,
-      joinNode: JoinNode.cloneWithOn(
+      joinNode: JoinNode.cloneWithOrOn(
         this.#props.joinNode,
-        'Or',
         parseReferenceFilter(this.#props.parseContext, lhs, op, rhs)
       ),
     })
@@ -130,7 +126,6 @@ export class JoinBuilder<DB, TB extends keyof DB>
       ...this.#props,
       joinNode: JoinNode.cloneWithOn(
         this.#props.joinNode,
-        'And',
         parseExistFilter(this.#props.parseContext, arg)
       ),
     })
@@ -147,7 +142,6 @@ export class JoinBuilder<DB, TB extends keyof DB>
       ...this.#props,
       joinNode: JoinNode.cloneWithOn(
         this.#props.joinNode,
-        'And',
         parseNotExistFilter(this.#props.parseContext, arg)
       ),
     })
@@ -162,9 +156,8 @@ export class JoinBuilder<DB, TB extends keyof DB>
   orOnExists(arg: ExistsExpression<DB, TB>): JoinBuilder<DB, TB> {
     return new JoinBuilder({
       ...this.#props,
-      joinNode: JoinNode.cloneWithOn(
+      joinNode: JoinNode.cloneWithOrOn(
         this.#props.joinNode,
-        'Or',
         parseExistFilter(this.#props.parseContext, arg)
       ),
     })
@@ -179,9 +172,8 @@ export class JoinBuilder<DB, TB extends keyof DB>
   orOnNotExists(arg: ExistsExpression<DB, TB>): JoinBuilder<DB, TB> {
     return new JoinBuilder({
       ...this.#props,
-      joinNode: JoinNode.cloneWithOn(
+      joinNode: JoinNode.cloneWithOrOn(
         this.#props.joinNode,
-        'Or',
         parseNotExistFilter(this.#props.parseContext, arg)
       ),
     })
