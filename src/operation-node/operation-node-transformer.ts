@@ -58,6 +58,7 @@ import { ForeignKeyConstraintNode } from './foreign-key-constraint-node.js'
 import { ColumnDefinitionNode } from './column-definition-node.js'
 import { ModifyColumnNode } from './modify-column-node.js'
 import { OnDuplicateKeyNode } from './on-duplicate-key-node.js'
+import { UnionNode } from './union-node.js'
 
 /**
  * Transforms an operation node tree into another one.
@@ -150,6 +151,7 @@ export class OperationNodeTransformer {
     AddConstraintNode: this.transformAddConstraint.bind(this),
     DropConstraintNode: this.transformDropConstraint.bind(this),
     ForeignKeyConstraintNode: this.transformForeignKeyConstraint.bind(this),
+    UnionNode: this.transformUnion.bind(this),
   }
 
   readonly transformNode = <T extends OperationNode | undefined>(
@@ -192,6 +194,7 @@ export class OperationNodeTransformer {
       offset: this.transformNode(node.offset),
       with: this.transformNode(node.with),
       having: this.transformNode(node.having),
+      union: this.transformNodeList(node.union),
     }
   }
 
@@ -516,6 +519,14 @@ export class OperationNodeTransformer {
       name: this.transformNode(node.name),
       onDelete: node.onDelete,
       onUpdate: node.onUpdate,
+    }
+  }
+
+  protected transformUnion(node: UnionNode): UnionNode {
+    return {
+      kind: 'UnionNode',
+      union: this.transformNode(node.union),
+      all: node.all,
     }
   }
 

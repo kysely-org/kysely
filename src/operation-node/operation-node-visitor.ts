@@ -60,8 +60,9 @@ import { ForeignKeyConstraintNode } from './foreign-key-constraint-node.js'
 import { ColumnDefinitionNode } from './column-definition-node.js'
 import { ModifyColumnNode } from './modify-column-node.js'
 import { OnDuplicateKeyNode } from './on-duplicate-key-node.js'
+import { UnionNode } from './union-node.js'
 
-export class OperationNodeVisitor {
+export abstract class OperationNodeVisitor {
   protected readonly nodeStack: OperationNode[] = []
 
   readonly #visitors: Record<OperationNodeKind, Function> = {
@@ -123,6 +124,7 @@ export class OperationNodeVisitor {
     AddConstraintNode: this.visitAddConstraint.bind(this),
     DropConstraintNode: this.visitDropConstraint.bind(this),
     ForeignKeyConstraintNode: this.visitForeignKeyConstraint.bind(this),
+    UnionNode: this.visitUnion.bind(this),
   }
 
   protected readonly visitNode = (node: OperationNode): void => {
@@ -131,425 +133,69 @@ export class OperationNodeVisitor {
     this.nodeStack.pop()
   }
 
-  protected visitSelectQuery(node: SelectQueryNode): void {
-    if (node.with) {
-      this.visitNode(node.with)
-    }
-
-    if (node.distinctOnSelections) {
-      node.distinctOnSelections.forEach(this.visitNode)
-    }
-
-    if (node.selections) {
-      node.selections.forEach(this.visitNode)
-    }
-
-    this.visitNode(node.from)
-
-    if (node.joins) {
-      node.joins.forEach(this.visitNode)
-    }
-
-    if (node.where) {
-      this.visitNode(node.where)
-    }
-
-    if (node.groupBy) {
-      this.visitNode(node.groupBy)
-    }
-
-    if (node.having) {
-      this.visitNode(node.having)
-    }
-
-    if (node.orderBy) {
-      this.visitNode(node.orderBy)
-    }
-
-    if (node.limit) {
-      this.visitNode(node.limit)
-    }
-
-    if (node.offset) {
-      this.visitNode(node.offset)
-    }
-  }
-
-  protected visitSelection(node: SelectionNode): void {
-    this.visitNode(node.selection)
-  }
-
-  protected visitColumn(node: ColumnNode): void {
-    this.visitNode(node.column)
-  }
-
-  protected visitAlias(node: AliasNode): void {
-    this.visitNode(node.node)
-  }
-
-  protected visitTable(node: TableNode): void {
-    if (node.schema) {
-      this.visitNode(node.schema)
-    }
-
-    this.visitNode(node.table)
-  }
-
-  protected visitFrom(node: FromNode): void {
-    node.froms.forEach(this.visitNode)
-  }
-
-  protected visitReference(node: ReferenceNode): void {
-    this.visitNode(node.column)
-    this.visitNode(node.table)
-  }
-
-  protected visitFilter(node: FilterNode): void {
-    if (node.left) {
-      this.visitNode(node.left)
-    }
-
-    this.visitNode(node.op)
-    this.visitNode(node.right)
-  }
-
-  protected visitAnd(node: AndNode): void {
-    this.visitNode(node.left)
-    this.visitNode(node.right)
-  }
-
-  protected visitOr(node: OrNode): void {
-    this.visitNode(node.left)
-    this.visitNode(node.right)
-  }
-
-  protected visitValueList(node: ValueListNode): void {
-    node.values.forEach(this.visitNode)
-  }
-
-  protected visitParens(node: ParensNode): void {
-    this.visitNode(node.node)
-  }
-
-  protected visitJoin(node: JoinNode): void {
-    this.visitNode(node.table)
-
-    if (node.on) {
-      this.visitNode(node.on)
-    }
-  }
-
-  protected visitRaw(node: RawNode): void {
-    node.params.forEach(this.visitNode)
-  }
-
-  protected visitWhere(node: WhereNode): void {
-    this.visitNode(node.where)
-  }
-
-  protected visitInsertQuery(node: InsertQueryNode): void {
-    if (node.with) {
-      this.visitNode(node.with)
-    }
-
-    this.visitNode(node.into)
-
-    if (node.columns) {
-      node.columns.forEach(this.visitNode)
-    }
-
-    if (node.values) {
-      node.values.forEach(this.visitNode)
-    }
-
-    if (node.returning) {
-      this.visitNode(node.returning)
-    }
-  }
-
-  protected visitDeleteQuery(node: DeleteQueryNode): void {
-    if (node.with) {
-      this.visitNode(node.with)
-    }
-
-    this.visitNode(node.from)
-
-    if (node.joins) {
-      node.joins.forEach(this.visitNode)
-    }
-
-    if (node.where) {
-      this.visitNode(node.where)
-    }
-
-    if (node.returning) {
-      this.visitNode(node.returning)
-    }
-  }
-
-  protected visitReturning(node: ReturningNode): void {
-    node.selections.forEach(this.visitNode)
-  }
-
-  protected visitCreateTable(node: CreateTableNode): void {
-    this.visitNode(node.table)
-
-    node.columns.forEach(this.visitNode)
-
-    if (node.constraints) {
-      node.constraints.forEach(this.visitNode)
-    }
-  }
-
-  protected visitAddColumn(node: AddColumnNode): void {
-    this.visitNode(node.column)
-  }
-
-  protected visitColumnDefinition(node: ColumnDefinitionNode): void {
-    this.visitNode(node.column)
-    this.visitNode(node.dataType)
-
-    if (node.defaultTo) {
-      this.visitNode(node.defaultTo)
-    }
-
-    if (node.references) {
-      this.visitNode(node.references)
-    }
-
-    if (node.check) {
-      this.visitNode(node.check)
-    }
-  }
-
-  protected visitDropTable(node: DropTableNode): void {
-    this.visitNode(node.table)
-  }
-
-  protected visitOrderBy(node: OrderByNode): void {
-    node.items.forEach(this.visitNode)
-  }
-
-  protected visitOrderByItem(node: OrderByItemNode): void {
-    this.visitNode(node.orderBy)
-  }
-
-  protected visitGroupBy(node: GroupByNode): void {
-    node.items.forEach(this.visitNode)
-  }
-
-  protected visitGroupByItem(node: GroupByItemNode): void {
-    this.visitNode(node.groupBy)
-  }
-
-  protected visitUpdateQuery(node: UpdateQueryNode): void {
-    if (node.with) {
-      this.visitNode(node.with)
-    }
-
-    this.visitNode(node.table)
-
-    if (node.updates) {
-      node.updates.forEach(this.visitNode)
-    }
-
-    if (node.joins) {
-      node.joins.forEach(this.visitNode)
-    }
-
-    if (node.where) {
-      this.visitNode(node.where)
-    }
-
-    if (node.returning) {
-      this.visitNode(node.returning)
-    }
-  }
-
-  protected visitColumnUpdate(node: ColumnUpdateNode): void {
-    this.visitNode(node.column)
-    this.visitNode(node.value)
-  }
-
-  protected visitLimit(node: LimitNode): void {
-    this.visitNode(node.limit)
-  }
-
-  protected visitOffset(node: OffsetNode): void {
-    this.visitNode(node.offset)
-  }
-
-  protected visitOnConflict(node: OnConflictNode): void {
-    if (node.columns) {
-      node.columns.forEach(this.visitNode)
-    }
-
-    if (node.constraint) {
-      this.visitNode(node.constraint)
-    }
-
-    if (node.updates) {
-      node.updates.forEach(this.visitNode)
-    }
-  }
-
-  protected visitOnDuplicateKey(node: OnDuplicateKeyNode): void {
-    node.updates.forEach(this.visitNode)
-  }
-
-  protected visitCreateIndex(node: CreateIndexNode): void {
-    this.visitNode(node.name)
-
-    if (node.table) {
-      this.visitNode(node.table)
-    }
-
-    if (node.using) {
-      this.visitNode(node.using)
-    }
-
-    if (node.expression) {
-      this.visitNode(node.expression)
-    }
-  }
-
-  protected visitList(node: ListNode): void {
-    node.items.forEach(this.visitNode)
-  }
-
-  protected visitDropIndex(node: DropIndexNode): void {
-    this.visitNode(node.name)
-
-    if (node.table) {
-      this.visitNode(node.table)
-    }
-  }
-
-  protected visitPrimaryKeyConstraint(node: PrimaryKeyConstraintNode): void {
-    if (node.name) {
-      this.visitNode(node.name)
-    }
-
-    node.columns.forEach(this.visitNode)
-  }
-
-  protected visitUniqueConstraint(node: UniqueConstraintNode): void {
-    if (node.name) {
-      this.visitNode(node.name)
-    }
-
-    node.columns.forEach(this.visitNode)
-  }
-
-  protected visitReferences(node: ReferencesNode): void {
-    node.columns.forEach(this.visitNode)
-    this.visitNode(node.table)
-  }
-
-  protected visitCheckConstraint(node: CheckConstraintNode): void {
-    if (node.name) {
-      this.visitNode(node.name)
-    }
-
-    this.visitNode(node.expression)
-  }
-
-  protected visitWith(node: WithNode): void {
-    node.expressions.forEach(this.visitNode)
-  }
-
-  protected visitCommonTableExpression(node: CommonTableExpressionNode): void {
-    this.visitNode(node.name)
-    this.visitNode(node.expression)
-  }
-
-  protected visitHaving(node: HavingNode): void {
-    this.visitNode(node.having)
-  }
-
-  protected visitCreateSchema(node: CreateSchemaNode): void {
-    this.visitNode(node.schema)
-  }
-
-  protected visitDropSchema(node: DropSchemaNode): void {
-    this.visitNode(node.schema)
-  }
-
-  protected visitAlterTable(node: AlterTableNode): void {
-    this.visitNode(node.table)
-
-    if (node.renameTo) {
-      this.visitNode(node.renameTo)
-    }
-
-    if (node.renameColumn) {
-      this.visitNode(node.renameColumn)
-    }
-
-    if (node.setSchema) {
-      this.visitNode(node.setSchema)
-    }
-
-    if (node.addColumn) {
-      this.visitNode(node.addColumn)
-    }
-
-    if (node.dropColumn) {
-      this.visitNode(node.dropColumn)
-    }
-
-    if (node.alterColumn) {
-      this.visitNode(node.alterColumn)
-    }
-
-    if (node.modifyColumn) {
-      this.visitNode(node.modifyColumn)
-    }
-  }
-
-  protected visitDropColumn(node: DropColumnNode): void {
-    this.visitNode(node.column)
-  }
-
-  protected visitRenameColumn(node: RenameColumnNode): void {
-    this.visitNode(node.column)
-    this.visitNode(node.renameTo)
-  }
-
-  protected visitAlterColumn(node: AlterColumnNode): void {
-    this.visitNode(node.column)
-  }
-
-  protected visitModifyColumn(node: ModifyColumnNode): void {
-    this.visitNode(node.column)
-  }
-
-  protected visitAddConstraint(node: AddConstraintNode): void {
-    this.visitNode(node.constraint)
-  }
-
-  protected visitDropConstraint(node: DropConstraintNode): void {
-    this.visitNode(node.constraintName)
-  }
-
-  protected visitForeignKeyConstraint(node: ForeignKeyConstraintNode): void {
-    if (node.name) {
-      this.visitNode(node.name)
-    }
-
-    node.columns.forEach(this.visitNode)
-    this.visitNode(node.references)
-  }
-
-  protected visitDataType(node: DataTypeNode): void {}
-
-  protected visitSelectAll(_: SelectAllNode): void {}
-
-  protected visitIdentifier(_: IdentifierNode): void {}
-
-  protected visitValue(_: ValueNode): void {}
-
-  protected visitPrimitiveValueList(_: PrimitiveValueListNode): void {}
-
-  protected visitOperator(node: OperatorNode) {}
+  protected abstract visitSelectQuery(node: SelectQueryNode): void
+  protected abstract visitSelection(node: SelectionNode): void
+  protected abstract visitColumn(node: ColumnNode): void
+  protected abstract visitAlias(node: AliasNode): void
+  protected abstract visitTable(node: TableNode): void
+  protected abstract visitFrom(node: FromNode): void
+  protected abstract visitReference(node: ReferenceNode): void
+  protected abstract visitFilter(node: FilterNode): void
+  protected abstract visitAnd(node: AndNode): void
+  protected abstract visitOr(node: OrNode): void
+  protected abstract visitValueList(node: ValueListNode): void
+  protected abstract visitParens(node: ParensNode): void
+  protected abstract visitJoin(node: JoinNode): void
+  protected abstract visitRaw(node: RawNode): void
+  protected abstract visitWhere(node: WhereNode): void
+  protected abstract visitInsertQuery(node: InsertQueryNode): void
+  protected abstract visitDeleteQuery(node: DeleteQueryNode): void
+  protected abstract visitReturning(node: ReturningNode): void
+  protected abstract visitCreateTable(node: CreateTableNode): void
+  protected abstract visitAddColumn(node: AddColumnNode): void
+  protected abstract visitColumnDefinition(node: ColumnDefinitionNode): void
+  protected abstract visitDropTable(node: DropTableNode): void
+  protected abstract visitOrderBy(node: OrderByNode): void
+  protected abstract visitOrderByItem(node: OrderByItemNode): void
+  protected abstract visitGroupBy(node: GroupByNode): void
+  protected abstract visitGroupByItem(node: GroupByItemNode): void
+  protected abstract visitUpdateQuery(node: UpdateQueryNode): void
+  protected abstract visitColumnUpdate(node: ColumnUpdateNode): void
+  protected abstract visitLimit(node: LimitNode): void
+  protected abstract visitOffset(node: OffsetNode): void
+  protected abstract visitOnConflict(node: OnConflictNode): void
+  protected abstract visitOnDuplicateKey(node: OnDuplicateKeyNode): void
+  protected abstract visitCreateIndex(node: CreateIndexNode): void
+  protected abstract visitDropIndex(node: DropIndexNode): void
+  protected abstract visitList(node: ListNode): void
+  protected abstract visitPrimaryKeyConstraint(
+    node: PrimaryKeyConstraintNode
+  ): void
+  protected abstract visitUniqueConstraint(node: UniqueConstraintNode): void
+  protected abstract visitReferences(node: ReferencesNode): void
+  protected abstract visitCheckConstraint(node: CheckConstraintNode): void
+  protected abstract visitWith(node: WithNode): void
+  protected abstract visitCommonTableExpression(
+    node: CommonTableExpressionNode
+  ): void
+  protected abstract visitHaving(node: HavingNode): void
+  protected abstract visitCreateSchema(node: CreateSchemaNode): void
+  protected abstract visitDropSchema(node: DropSchemaNode): void
+  protected abstract visitAlterTable(node: AlterTableNode): void
+  protected abstract visitDropColumn(node: DropColumnNode): void
+  protected abstract visitRenameColumn(node: RenameColumnNode): void
+  protected abstract visitAlterColumn(node: AlterColumnNode): void
+  protected abstract visitModifyColumn(node: ModifyColumnNode): void
+  protected abstract visitAddConstraint(node: AddConstraintNode): void
+  protected abstract visitDropConstraint(node: DropConstraintNode): void
+  protected abstract visitForeignKeyConstraint(
+    node: ForeignKeyConstraintNode
+  ): void
+  protected abstract visitUnion(node: UnionNode): void
+  protected abstract visitDataType(node: DataTypeNode): void
+  protected abstract visitSelectAll(_: SelectAllNode): void
+  protected abstract visitIdentifier(_: IdentifierNode): void
+  protected abstract visitValue(_: ValueNode): void
+  protected abstract visitPrimitiveValueList(_: PrimitiveValueListNode): void
+  protected abstract visitOperator(node: OperatorNode): void
 }

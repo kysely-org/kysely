@@ -81,6 +81,7 @@ import { ParseContext } from '../parser/parse-context.js'
 import { DeleteQueryNode } from '../operation-node/delete-query-node.js'
 import { OnDuplicateKeyNode } from '../operation-node/on-duplicate-key-node.js'
 import { parseGroupBy } from '../parser/group-by-parser.js'
+import { parseUnion, UnionExpression } from '../parser/union-parser.js'
 
 /**
  * The main query builder class.
@@ -1508,7 +1509,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    */
   values(row: InsertObject<DB, TB>): QueryBuilder<DB, TB, O>
 
-  values(row: InsertObject<DB, TB>[]): QueryBuilder<DB, TB, O>
+  values(row: ReadonlyArray<InsertObject<DB, TB>>): QueryBuilder<DB, TB, O>
 
   values(args: InsertObjectOrList<DB, TB>): any {
     assertCanHaveInsertValues(this.#props.queryNode)
@@ -2244,6 +2245,56 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
   }
 
   /**
+   * Combines another select query or raw expression to this query using `union`.
+   *
+   * The output row type of the combined query must match `this` query.
+   *
+   * @xample
+   * ```ts
+   * db.selectFrom('person')
+   *   .select(['id', 'first_name as name'])
+   *   .union(db.selectFrom('pet').select(['id', 'name']))
+   *   .orderBy('name')
+   * ```
+   */
+  union(expression: UnionExpression<DB, O>): QueryBuilder<DB, TB, O> {
+    assertCanHaveUnion(this.#props.queryNode)
+
+    return new QueryBuilder({
+      ...this.#props,
+      queryNode: SelectQueryNode.cloneWithUnion(
+        this.#props.queryNode,
+        parseUnion(expression, false)
+      ),
+    })
+  }
+
+  /**
+   * Combines another select query or raw expression to this query using `union all`.
+   *
+   * The output row type of the combined query must match `this` query.
+   *
+   * @xample
+   * ```ts
+   * db.selectFrom('person')
+   *   .select(['id', 'first_name as name'])
+   *   .unionAll(db.selectFrom('pet').select(['id', 'name']))
+   *   .orderBy('name')
+   * ```
+   */
+  unionAll(expression: UnionExpression<DB, O>): QueryBuilder<DB, TB, O> {
+    assertCanHaveUnion(this.#props.queryNode)
+
+    return new QueryBuilder({
+      ...this.#props,
+      queryNode: SelectQueryNode.cloneWithUnion(
+        this.#props.queryNode,
+        parseUnion(expression, true)
+      ),
+    })
+  }
+
+  /**
    * Gives an alias for the query. This method is only useful for sub queries.
    *
    * @example
@@ -2539,5 +2590,11 @@ function assertCanHaveLimit(node: QueryNode): asserts node is SelectQueryNode {
 function assertCanHaveOffset(node: QueryNode): asserts node is SelectQueryNode {
   if (!SelectQueryNode.is(node)) {
     throw new Error('only a select query can have an offset')
+  }
+}
+
+function assertCanHaveUnion(node: QueryNode): asserts node is SelectQueryNode {
+  if (!SelectQueryNode.is(node)) {
+    throw new Error('only a select query can have an union')
   }
 }

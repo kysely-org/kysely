@@ -74,6 +74,8 @@ import { ForeignKeyConstraintNode } from '../operation-node/foreign-key-constrai
 import { ColumnDefinitionNode } from '../operation-node/column-definition-node.js'
 import { ModifyColumnNode } from '../operation-node/modify-column-node.js'
 import { OnDuplicateKeyNode } from '../operation-node/on-duplicate-key-node.js'
+import { ColumnNode } from '../operation-node/column-node.js'
+import { UnionNode } from '../operation-node/union-node.js'
 
 export class DefaultQueryCompiler
   extends OperationNodeVisitor
@@ -94,7 +96,7 @@ export class DefaultQueryCompiler
 
     return freeze({
       sql: this.getSql(),
-      parameters: this.#parameters,
+      parameters: [...this.#parameters],
     })
   }
 
@@ -154,6 +156,11 @@ export class DefaultQueryCompiler
       this.visitNode(node.having)
     }
 
+    if (node.union) {
+      this.append(' ')
+      this.compileList(node.union, ' ')
+    }
+
     if (node.orderBy) {
       this.append(' ')
       this.visitNode(node.orderBy)
@@ -184,6 +191,14 @@ export class DefaultQueryCompiler
   protected override visitFrom(node: FromNode): void {
     this.append('from ')
     this.compileList(node.froms)
+  }
+
+  protected override visitSelection(node: SelectionNode): void {
+    this.visitNode(node.selection)
+  }
+
+  protected override visitColumn(node: ColumnNode): void {
+    this.visitNode(node.column)
   }
 
   protected compileDistinctOn(selections: ReadonlyArray<SelectionNode>): void {
@@ -881,6 +896,16 @@ export class DefaultQueryCompiler
   protected override visitDropConstraint(node: DropConstraintNode): void {
     this.append('drop constraint ')
     this.visitNode(node.constraintName)
+  }
+
+  protected override visitUnion(node: UnionNode): void {
+    this.append('union ')
+
+    if (node.all) {
+      this.append('all ')
+    }
+
+    this.visitNode(node.union)
   }
 
   protected append(str: string): void {

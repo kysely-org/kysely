@@ -57,6 +57,7 @@ export type OperationNodeKind =
   | 'AlterColumnNode'
   | 'AddConstraintNode'
   | 'DropConstraintNode'
+  | 'UnionNode'
 
 export interface OperationNode {
   readonly kind: OperationNodeKind

@@ -24,7 +24,7 @@ export type ValueExpression<DB, TB extends keyof DB, RE> =
 
 export type ValueExpressionOrList<DB, TB extends keyof DB, RE> =
   | ValueExpression<DB, TB, RE>
-  | ValueExpression<DB, TB, RE>[]
+  | ReadonlyArray<ValueExpression<DB, TB, RE>>
 
 export function parseValueExpressionOrList(
   ctx: ParseContext,
