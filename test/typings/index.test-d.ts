@@ -557,7 +557,7 @@ async function testKyselyAndTransactionTypes(db: Kysely<Database>) {
   // Should not be able to assign a Kysely to a Transaction
   expectError((trx = db))
 
-  // Should be able to assign a Transaction to Kysely.
+  // Should be able to assign a Transaction to Kysely
   db = trx
 }
 
@@ -594,6 +594,37 @@ async function testExecuteTakeFirstOrThrow(db: Kysely<Database>) {
     .executeTakeFirstOrThrow()
 
   expectType<Person>(r1)
+}
+
+async function testUnion(db: Kysely<Database>) {
+  // Subquery
+  const r1 = await db
+    .selectFrom('person')
+    .select(['id', 'first_name as name'])
+    .where('id', 'in', [1, 2, 3])
+    .union(db.selectFrom('pet').select('name').select('owner_id as id'))
+    .executeTakeFirstOrThrow()
+
+  expectType<{ id: number; name: string }>(r1)
+
+  // Raw expression
+  const r2 = await db
+    .selectFrom('person')
+    .select(['id', 'first_name as name'])
+    .where('id', 'in', [1, 2, 3])
+    .union(db.raw<{ id: number; name: string }>("(1, 'Sami')"))
+    .executeTakeFirstOrThrow()
+
+  expectType<{ id: number; name: string }>(r2)
+
+  // Unioned expression has a different type
+  expectError(
+    db
+      .selectFrom('person')
+      .select(['id', 'first_name as name'])
+      .where('id', 'in', [1, 2, 3])
+      .union(db.selectFrom('pet').select('name').select('owner_id'))
+  )
 }
 
 export type Nullable<T> = { [P in keyof T]: T[P] | null }

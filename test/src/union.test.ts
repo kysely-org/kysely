@@ -32,7 +32,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
       await destroyTest(ctx)
     })
 
-    it('should combine two select queries using a union', async () => {
+    it('should combine two select queries using union', async () => {
       const query = ctx.db
         .selectFrom('person')
         .select(['id', 'first_name as name'])
@@ -61,7 +61,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
       ])
     })
 
-    it('should combine two select queries using a union all', async () => {
+    it('should combine two select queries using union all', async () => {
       const query = ctx.db
         .selectFrom('person')
         .select(['id', 'first_name as name'])

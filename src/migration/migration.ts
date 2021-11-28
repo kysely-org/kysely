@@ -41,6 +41,38 @@ export class MigrationModule {
    *   path.join(__dirname, 'migrations')
    * )
    * ```
+   *
+   * In the next example, we use a record of migration objects instead of file folder path.
+   * The keys in the object are migration names that can be anything you want. The order of
+   * the migrations is determined based on the alphabetical order of the keys in the record.
+   * This can be useful if you are using a bundler like webpack or esbuild.
+   *
+   * @example
+   * ```ts
+   * await db.migration.migrateToLatest({
+   *   migration1: {
+   *     async up(db: Kysely<any>): Promise<void> {
+   *       ...
+   *     },
+   *
+   *     async down(db: Kysely<any>): Promise<void> {
+   *       ...
+   *     }
+   *   },
+   *
+   *   migration2: {
+   *     async up(db: Kysely<any>): Promise<void> {
+   *       ...
+   *     },
+   *
+   *     async down(db: Kysely<any>): Promise<void> {
+   *       ...
+   *     }
+   *   },
+   *
+   *  ...
+   * })
+   * ```
    */
   migrateToLatest(migrationsFolderPath: string): Promise<void>
   migrateToLatest(allMigrations: Record<string, Migration>): Promise<void>
