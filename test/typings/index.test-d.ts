@@ -627,4 +627,15 @@ async function testUnion(db: Kysely<Database>) {
   )
 }
 
+async function testCall(db: Kysely<Database>) {
+  // Table with alias
+  const [r1] = await db
+    .selectFrom('pet as p')
+    .select('p.species')
+    .call((qb) => qb.select('name'))
+    .execute()
+
+  expectType<{ species: 'dog' | 'cat' } & { name: string }>(r1)
+}
+
 export type Nullable<T> = { [P in keyof T]: T[P] | null }

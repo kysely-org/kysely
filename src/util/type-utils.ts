@@ -178,22 +178,22 @@ export type AliasedRawBuilderFactory<DB, TB extends keyof DB> = (
 
 export interface InsertResultTypeTag {
   /** @internal */
-  __isInsertResultTypeTag__: true
+  readonly __isInsertResultTypeTag__: true
 }
 
 export interface DeleteResultTypeTag {
   /** @internal */
-  __isDeleteResultTypeTag__: true
+  readonly __isDeleteResultTypeTag__: true
 }
 
 export interface UpdateResultTypeTag {
   /** @internal */
-  __isUpdateResultTypeTag__: true
+  readonly __isUpdateResultTypeTag__: true
 }
 
 export interface GeneratedPlaceholder {
   /** @internal */
-  __isGeneratedPlaceholder__: true
+  readonly __isGeneratedPlaceholder__: true
 }
 
 export type ManyResultRowType<O> = O extends InsertResultTypeTag

@@ -1,4 +1,6 @@
-import { DatabaseConnection } from './database-connection.js'
+import { CompiledQuery } from '../query-compiler/compiled-query.js'
+import { Log } from '../util/log.js'
+import { DatabaseConnection, QueryResult } from './database-connection.js'
 import { Driver, TransactionSettings } from './driver.js'
 
 /**
@@ -8,11 +10,15 @@ import { Driver, TransactionSettings } from './driver.js'
  */
 export class RuntimeDriver implements Driver {
   readonly #driver: Driver
+  readonly #log: Log
+
   #initPromise?: Promise<void>
   #destroyPromise?: Promise<void>
+  #connections = new WeakMap<DatabaseConnection, RuntimeConnection>()
 
-  constructor(driver: Driver) {
+  constructor(driver: Driver, log: Log) {
     this.#driver = driver
+    this.#log = log
   }
 
   async init(): Promise<void> {
@@ -28,11 +34,24 @@ export class RuntimeDriver implements Driver {
 
   async acquireConnection(): Promise<DatabaseConnection> {
     await this.init()
-    return this.#driver.acquireConnection()
+
+    const connection = await this.#driver.acquireConnection()
+    let runtimeConnection = this.#connections.get(connection)
+
+    if (!runtimeConnection) {
+      runtimeConnection = new RuntimeConnection(connection, this.#log)
+      this.#connections.set(connection, runtimeConnection)
+    }
+
+    return runtimeConnection
   }
 
-  releaseConnection(connection: DatabaseConnection): Promise<void> {
-    return this.#driver.releaseConnection(connection)
+  async releaseConnection(
+    runtimeConnection: DatabaseConnection
+  ): Promise<void> {
+    if (runtimeConnection instanceof RuntimeConnection) {
+      await this.#driver.releaseConnection(runtimeConnection.connection)
+    }
   }
 
   beginTransaction(
@@ -65,5 +84,38 @@ export class RuntimeDriver implements Driver {
     }
 
     await this.#destroyPromise
+  }
+}
+
+class RuntimeConnection implements DatabaseConnection {
+  readonly #connection: DatabaseConnection
+  readonly #log: Log
+
+  get connection(): DatabaseConnection {
+    return this.#connection
+  }
+
+  constructor(connection: DatabaseConnection, log: Log) {
+    this.#connection = connection
+    this.#log = log
+  }
+
+  async executeQuery<R>(compiledQuery: CompiledQuery): Promise<QueryResult<R>> {
+    const startTime = process.hrtime.bigint()
+
+    try {
+      return await this.#connection.executeQuery<R>(compiledQuery)
+    } finally {
+      this.#log.query((log) => {
+        log(compiledQuery.sql)
+        log(`duration: ${this.#calculateDurationMillis(startTime)}ms`)
+      })
+    }
+  }
+
+  #calculateDurationMillis(startTime: bigint): number {
+    const endTime = process.hrtime.bigint()
+    const durationTensMillis = Number((endTime - startTime) / 1_00_000n)
+    return durationTensMillis / 10
   }
 }

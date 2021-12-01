@@ -13,6 +13,16 @@ import { DialectAdapter } from '../dialect-adapter.js'
 import { PostgresAdapter } from './postgres-adapter.js'
 import { DatabaseConnection } from '../../driver/database-connection.js'
 
+/**
+ * PostgreSQL dialect that uses the [pg](https://node-postgres.com/) library.
+ *
+ * The {@link PostgresDialectConfig | configuration} passed to the constructor
+ * is given as-is to the pg library's [Pool](https://node-postgres.com/api/pool)
+ * constructor. See the following two links for more documentation:
+ *
+ * https://node-postgres.com/api/pool
+ * https://node-postgres.com/api/client
+ */
 export class PostgresDialect implements Dialect {
   readonly #config: PostgresDialectConfig
 
@@ -40,7 +50,7 @@ export class PostgresDialect implements Dialect {
 /**
  * Config for the postgres dialect.
  *
- * This interface is equal to `pg` library's pool config:
+ * This interface is equal to `pg` library's `Pool` config:
  *
  * https://node-postgres.com/api/pool
  * https://node-postgres.com/api/client

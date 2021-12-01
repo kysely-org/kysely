@@ -22,6 +22,7 @@ import {
 import { preventAwait } from './util/prevent-await.js'
 import { DefaultParseContext, ParseContext } from './parser/parse-context.js'
 import { FunctionBuilder } from './query-builder/function-builder.js'
+import { Log, LogLevel } from './util/log.js'
 
 /**
  * The main Kysely class.
@@ -71,7 +72,7 @@ export class Kysely<DB> extends QueryCreator<DB> {
   constructor(args: KyselyConfig | KyselyProps) {
     if (isKyselyProps(args)) {
       super({ executor: args.executor, parseContext: args.parseContext })
-      this.#props = freeze(args)
+      this.#props = freeze({ ...args })
     } else {
       const dialect = args.dialect
 
@@ -79,8 +80,9 @@ export class Kysely<DB> extends QueryCreator<DB> {
       const compiler = dialect.createQueryCompiler()
       const adapter = dialect.createAdapter()
 
+      const log = new Log(args.log ?? [])
       const parseContext = new DefaultParseContext(adapter)
-      const runtimeDriver = new RuntimeDriver(driver)
+      const runtimeDriver = new RuntimeDriver(driver, log)
 
       const connectionProvider = new DefaultConnectionProvider(runtimeDriver)
       const executor = new DefaultQueryExecutor(
@@ -192,15 +194,20 @@ export class Kysely<DB> extends QueryCreator<DB> {
   }
 
   /**
-   * Starts a transaction. If the callback throws the transaction is rolled back,
-   * otherwise it's committed.
+   * Creates a {@link TransactionBuilder} that can be used to run queries inside a transaction.
+   *
+   * The returned {@link TransactionBuilder} can be used to configure the transaction. The
+   * {@link TransactionBuilder.execute} method can then be called to run the transaction.
+   * {@link TransactionBuilder.execute} takes a function that is run inside the
+   * transaction. If the function throws, the transaction is rolled back. Otherwise
+   * the transaction is committed.
+   *
+   * The callback function passed to the {@link TransactionBuilder.execute | execute}
+   * method gets the transaction object as its only argument. The transaction is
+   * of type {@link Transaction} which inherits {@link Kysely}. Any query
+   * started through the transaction object is executed inside the transaction.
    *
    * @example
-   * In the example below if either query fails or `someFunction` throws, both inserts
-   * will be rolled back. Otherwise the transaction will be committed by the time the
-   * `transaction` function returns the output value. The output value of the
-   * `transaction` method is the value returned from the callback.
-   *
    * ```ts
    * const catto = await db.transaction().execute(async (trx) => {
    *   const jennifer = await trx.insertInto('person')
@@ -335,8 +342,20 @@ export function isKyselyProps(obj: unknown): obj is KyselyProps {
 }
 
 export interface KyselyConfig {
-  dialect: Dialect
-  plugins?: KyselyPlugin[]
+  readonly dialect: Dialect
+  readonly plugins?: KyselyPlugin[]
+
+  /**
+   * A list of log levels to log.
+   *
+   * Currently there's only one level: `query` and it's logged using
+   * `console.log`. This will be expanded based on user request later.
+   *
+   * Log levels:
+   *
+   *  - query: Log each query's SQL and duration.
+   */
+  readonly log?: ReadonlyArray<LogLevel>
 }
 
 export class ConnectionBuilder<DB> {

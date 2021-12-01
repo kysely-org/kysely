@@ -14,12 +14,7 @@ import {
 
 import { Driver, TransactionSettings } from '../../driver/driver.js'
 import { CompiledQuery } from '../../query-compiler/compiled-query.js'
-import {
-  isFunction,
-  isNumber,
-  isObject,
-  isString,
-} from '../../util/object-utils.js'
+import { isFunction, isNumber, isObject } from '../../util/object-utils.js'
 import { MysqlDialectConfig } from './mysql-dialect.js'
 
 const PRIVATE_RELEASE_METHOD = Symbol()

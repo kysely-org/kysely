@@ -10,6 +10,13 @@ import { DialectAdapter } from '../dialect-adapter.js'
 import { MysqlAdapter } from './mysql-adapter.js'
 import { DatabaseConnection } from '../../driver/database-connection.js'
 
+/**
+ * MySQL dialect that uses the [mysql2](https://github.com/sidorares/node-mysql2#readme) library.
+ *
+ * The {@link MysqlDialectConfig | configuration} passed to the constructor
+ * is given as-is to the mysql2 library's [createPool](https://github.com/sidorares/node-mysql2#using-connection-pools)
+ * method.
+ */
 export class MysqlDialect implements Dialect {
   readonly #config: MysqlDialectConfig
 
@@ -38,6 +45,8 @@ export class MysqlDialect implements Dialect {
  * Config for the mysql dialect.
  *
  * This interface is equal to `mysql2` library's pool config.
+ *
+ * https://github.com/sidorares/node-mysql2#using-connection-pools
  */
 export interface MysqlDialectConfig {
   /**

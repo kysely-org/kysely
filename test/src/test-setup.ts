@@ -11,7 +11,7 @@ import {
   PluginTransformQueryArgs,
   PluginTransformResultArgs,
   QueryResult,
-  AnyRow,
+  UnknownRow,
   OperationNodeTransformer,
   PostgresDialect,
   MysqlDialect,
@@ -320,7 +320,7 @@ function createNoopTransformerPlugin(): KyselyPlugin {
 
     async transformResult(
       args: PluginTransformResultArgs
-    ): Promise<QueryResult<AnyRow>> {
+    ): Promise<QueryResult<UnknownRow>> {
       return args.result
     },
   }

@@ -2295,6 +2295,44 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
   }
 
   /**
+   * Simply calls the given method passing `this` as the only argument.
+   *
+   * This method can be useful when adding optional method calls:
+   *
+   * @example
+   * ```ts
+   * db.selectFrom('person')
+   *   .selectAll()
+   *   .call((qb) => {
+   *     if (something) {
+   *       return qb.where('something', '=', something)
+   *     } else {
+   *       return qb.where('somethingElse', '=', somethingElse)
+   *     }
+   *   })
+   *   .execute()
+   * ```
+   *
+   * The next example uses a helper funtion `log` to log a query:
+   *
+   * @example
+   * ```ts
+   * function log<T extends AnyQueryBuilder>(qb: T): T {
+   *   console.log(qb.compile())
+   *   return qb
+   * }
+   *
+   * db.selectFrom('person')
+   *   .selectAll()
+   *   .call(log)
+   *   .execute()
+   * ```
+   */
+  call<T>(func: (qb: this) => T): T {
+    return func(this)
+  }
+
+  /**
    * Gives an alias for the query. This method is only useful for sub queries.
    *
    * @example

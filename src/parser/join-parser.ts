@@ -10,25 +10,25 @@ import { parseReferenceFilter } from './filter-parser.js'
 import { JoinBuilder } from '../query-builder/join-builder.js'
 import { ParseContext } from './parse-context.js'
 
-export type JoinReferenceExpression<DB, TB extends keyof DB, F> =
-  | AnyJoinColumn<DB, TB, F>
-  | AnyJoinColumnWithTable<DB, TB, F>
+export type JoinReferenceExpression<DB, TB extends keyof DB, TE> =
+  | AnyJoinColumn<DB, TB, TE>
+  | AnyJoinColumnWithTable<DB, TB, TE>
 
-export type JoinCallbackExpression<DB, TB extends keyof DB, F> = (
+export type JoinCallbackExpression<DB, TB extends keyof DB, TE> = (
   join: JoinBuilder<
-    TableExpressionDatabase<DB, F>,
-    TB | ExtractAliasFromTableExpression<DB, F>
+    TableExpressionDatabase<DB, TE>,
+    TB | ExtractAliasFromTableExpression<DB, TE>
   >
 ) => JoinBuilder<any, any>
 
-type AnyJoinColumn<DB, TB extends keyof DB, F> = AnyColumn<
-  TableExpressionDatabase<DB, F>,
-  TB | ExtractAliasFromTableExpression<DB, F>
+type AnyJoinColumn<DB, TB extends keyof DB, TE> = AnyColumn<
+  TableExpressionDatabase<DB, TE>,
+  TB | ExtractAliasFromTableExpression<DB, TE>
 >
 
-type AnyJoinColumnWithTable<DB, TB extends keyof DB, F> = AnyColumnWithTable<
-  TableExpressionDatabase<DB, F>,
-  TB | ExtractAliasFromTableExpression<DB, F>
+type AnyJoinColumnWithTable<DB, TB extends keyof DB, TE> = AnyColumnWithTable<
+  TableExpressionDatabase<DB, TE>,
+  TB | ExtractAliasFromTableExpression<DB, TE>
 >
 
 export function parseJoin(

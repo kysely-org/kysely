@@ -1,11 +1,15 @@
 const CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
 
 export function randomString(length: number) {
-  let chars: string[] = new Array(length)
+  let chars = ''
 
   for (let i = 0; i < length; ++i) {
-    chars[i] = CHARS[Math.floor(Math.random() * CHARS.length)]
+    chars += randomChar()
   }
 
-  return chars.join('')
+  return chars
+}
+
+function randomChar() {
+  return CHARS[Math.floor(Math.random() * CHARS.length)]
 }
