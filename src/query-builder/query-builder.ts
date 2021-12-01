@@ -2295,7 +2295,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
   }
 
   /**
-   * Simply calls the given method passing `this` as the only argument.
+   * Simply calls the given function passing `this` as the only argument.
    *
    * This method can be useful when adding optional method calls:
    *
