@@ -22,7 +22,7 @@ export interface KyselyPlugin {
    *     return args.node
    *   },
    *
-   *   transformResult(args: PluginTransformResultArgs): QueryResult<AnyRow> {
+   *   transformResult(args: PluginTransformResultArgs): QueryResult<UnknownRow> {
    *     const data = this.data.get(args.queryId)
    *     return args.result
    *   }

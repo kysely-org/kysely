@@ -35,6 +35,13 @@ export class DefaultQueryExecutor extends QueryExecutor {
     })
   }
 
+  withPlugin(plugin: KyselyPlugin): DefaultQueryExecutor {
+    return new DefaultQueryExecutor(this.#compiler, this.#connectionProvider, [
+      ...this.plugins,
+      plugin,
+    ])
+  }
+
   withPluginAtFront(plugin: KyselyPlugin): DefaultQueryExecutor {
     return new DefaultQueryExecutor(this.#compiler, this.#connectionProvider, [
       plugin,

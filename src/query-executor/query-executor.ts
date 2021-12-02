@@ -82,17 +82,23 @@ export abstract class QueryExecutor {
   ): Promise<QueryResult<R>>
 
   /**
-   * Returns a copy of this executor with a plugin added as the
-   * first plugin.
-   */
-  abstract withPluginAtFront(plugin: KyselyPlugin): QueryExecutor
-
-  /**
    * Returns a copy of this executor with a new connection provider.
    */
   abstract withConnectionProvider(
     connectionProvider: ConnectionProvider
   ): QueryExecutor
+
+  /**
+   * Returns a copy of this executor with a plugin added as the
+   * last plugin.
+   */
+  abstract withPlugin(plugin: KyselyPlugin): QueryExecutor
+
+  /**
+   * Returns a copy of this executor with a plugin added as the
+   * first plugin.
+   */
+  abstract withPluginAtFront(plugin: KyselyPlugin): QueryExecutor
 
   /**
    * Returns a copy of this executor without any plugins.

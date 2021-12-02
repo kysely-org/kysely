@@ -267,6 +267,16 @@ export class Kysely<DB> extends QueryCreator<DB> {
   }
 
   /**
+   * Returns a copy of this Kysely instance with the given plugin installed.
+   */
+  withPlugin(plugin: KyselyPlugin): Kysely<DB> {
+    return new Kysely({
+      ...this.#props,
+      executor: this.#props.executor.withPlugin(plugin),
+    })
+  }
+
+  /**
    * Returns a copy of this Kysely instance without any plugins.
    */
   withoutPlugins(): Kysely<DB> {

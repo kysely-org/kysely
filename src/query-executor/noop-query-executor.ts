@@ -21,6 +21,10 @@ export class NoopQueryExecutor extends QueryExecutor {
     throw new Error('this query cannot have a connection provider')
   }
 
+  withPlugin(plugin: KyselyPlugin): NoopQueryExecutor {
+    return new NoopQueryExecutor([...this.plugins, plugin])
+  }
+
   withPluginAtFront(plugin: KyselyPlugin): NoopQueryExecutor {
     return new NoopQueryExecutor([plugin, ...this.plugins])
   }
