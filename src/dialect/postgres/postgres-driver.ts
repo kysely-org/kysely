@@ -25,11 +25,11 @@ export class PostgresDriver implements Driver {
     // installed. As you can see, there IS an import from `pg` at the
     // top level too, but that's only for types. It doesn't get compiled
     // into javascript. You can check the built javascript code.
-    const PoolConstrucor = await importPgPool()
+    const PoolConstructor = await importPgPool()
 
     // Use the `pg` module's own pool. All drivers should use the
     // pool provided by the database library if possible.
-    this.#pool = new PoolConstrucor(this.#config)
+    this.#pool = new PoolConstructor(this.#config)
   }
 
   async acquireConnection(): Promise<DatabaseConnection> {

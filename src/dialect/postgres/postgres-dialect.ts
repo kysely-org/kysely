@@ -153,6 +153,8 @@ export interface PostgresDialectConfig {
 
   /**
    * Called once for each created connection.
+   *
+   * This is a Kysely specific feature and does not come from the `pg` module.
    */
   onCreateConnection?: (connection: DatabaseConnection) => Promise<void>
 
