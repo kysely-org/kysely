@@ -105,17 +105,33 @@ class RuntimeConnection implements DatabaseConnection {
 
     try {
       return await this.#connection.executeQuery<R>(compiledQuery)
+    } catch (error) {
+      this.#logError(error)
+      throw error
     } finally {
-      this.#log.query((log) => {
-        log(compiledQuery.sql)
-        log(`duration: ${this.#calculateDurationMillis(startTime)}ms`)
-      })
+      this.#logQuery(compiledQuery, startTime)
     }
+  }
+
+  #logError(error: unknown): void {
+    this.#log.error(() => ({
+      level: 'error',
+      error,
+    }))
+  }
+
+  #logQuery(compiledQuery: CompiledQuery, startTime: bigint): void {
+    this.#log.query(() => ({
+      level: 'query',
+      sql: compiledQuery.sql,
+      queryDurationMillis: this.#calculateDurationMillis(startTime),
+    }))
   }
 
   #calculateDurationMillis(startTime: bigint): number {
     const endTime = process.hrtime.bigint()
-    const durationTensMillis = Number((endTime - startTime) / 1_00_000n)
-    return durationTensMillis / 10
+    const durationNanos = Number(endTime - startTime)
+
+    return durationNanos / 1_000_000
   }
 }

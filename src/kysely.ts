@@ -358,12 +358,13 @@ export interface KyselyConfig {
   /**
    * A list of log levels to log.
    *
-   * Currently there's only one level: `query` and it's logged using
-   * `console.log`. This will be expanded based on user request later.
+   * Currently there's only two levels: `query` and `error`.
+   * This will be expanded based on user feedback later.
    *
    * Log levels:
    *
-   *  - query: Log each query's SQL and duration.
+   *  - query: Log each query's SQL and duration using console.log
+   *  - error: Log all query errors using console.error
    */
   readonly log?: ReadonlyArray<LogLevel>
 }
