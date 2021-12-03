@@ -153,3 +153,4 @@ export {
   OrderByExpression,
   OrderByDirectionExpression,
 } from './parser/order-by-parser.js'
+export { UnionExpression } from './parser/union-parser.js'
