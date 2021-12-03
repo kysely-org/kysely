@@ -34,6 +34,11 @@ export const OPERATORS = [
   'exists',
   'not exists',
   '&&',
+  '||',
+  '@@',
+  '@@@',
+  '!!',
+  '<->',
 ] as const
 
 export type Operator = ArrayItemType<typeof OPERATORS>
