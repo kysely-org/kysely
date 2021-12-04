@@ -58,6 +58,8 @@ export type OperationNodeKind =
   | 'AddConstraintNode'
   | 'DropConstraintNode'
   | 'UnionNode'
+  | 'CreateViewNode'
+  | 'DropViewNode'
 
 export interface OperationNode {
   readonly kind: OperationNodeKind

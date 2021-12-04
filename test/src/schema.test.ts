@@ -530,6 +530,102 @@ for (const dialect of BUILT_IN_DIALECTS) {
       }
     })
 
+    describe('create view', () => {
+      beforeEach(async () => {
+        await ctx.db.schema.dropView('dogs').ifExists().execute()
+      })
+
+      afterEach(async () => {
+        await ctx.db.schema.dropView('dogs').ifExists().execute()
+      })
+
+      it('should create a view', async () => {
+        const builder = ctx.db.schema
+          .createView('dogs')
+          .as(ctx.db.selectFrom('pet').selectAll().where('species', '=', 'dog'))
+
+        testSql(builder, dialect, {
+          postgres: {
+            sql: `create view "dogs" as (select * from "pet" where "species" = 'dog')`,
+            parameters: [],
+          },
+          mysql: {
+            sql: "create view `dogs` as (select * from `pet` where `species` = 'dog')",
+            parameters: [],
+          },
+        })
+
+        await builder.execute()
+      })
+
+      it('should create or replace a view', async () => {
+        const builder = ctx.db.schema
+          .createView('dogs')
+          .orReplace()
+          .as(ctx.db.selectFrom('pet').selectAll().where('species', '=', 'dog'))
+
+        testSql(builder, dialect, {
+          postgres: {
+            sql: `create or replace view "dogs" as (select * from "pet" where "species" = 'dog')`,
+            parameters: [],
+          },
+          mysql: {
+            sql: "create or replace view `dogs` as (select * from `pet` where `species` = 'dog')",
+            parameters: [],
+          },
+        })
+
+        await builder.execute()
+      })
+    })
+
+    describe('drop view', () => {
+      beforeEach(async () => {
+        await ctx.db.schema
+          .createView('dogs')
+          .as(ctx.db.selectFrom('pet').selectAll().where('species', '=', 'dog'))
+          .execute()
+      })
+
+      afterEach(async () => {
+        await ctx.db.schema.dropView('dogs').ifExists().execute()
+      })
+
+      it('should drop a view', async () => {
+        const builder = ctx.db.schema.dropView('dogs')
+
+        testSql(builder, dialect, {
+          postgres: {
+            sql: `drop view "dogs"`,
+            parameters: [],
+          },
+          mysql: {
+            sql: 'drop view `dogs`',
+            parameters: [],
+          },
+        })
+
+        await builder.execute()
+      })
+
+      it('should drop a view if it exists', async () => {
+        const builder = ctx.db.schema.dropView('dogs').ifExists()
+
+        testSql(builder, dialect, {
+          postgres: {
+            sql: `drop view if exists "dogs"`,
+            parameters: [],
+          },
+          mysql: {
+            sql: 'drop view if exists `dogs`',
+            parameters: [],
+          },
+        })
+
+        await builder.execute()
+      })
+    })
+
     describe('alter table', () => {
       beforeEach(async () => {
         await ctx.db.schema

@@ -76,6 +76,8 @@ import { ModifyColumnNode } from '../operation-node/modify-column-node.js'
 import { OnDuplicateKeyNode } from '../operation-node/on-duplicate-key-node.js'
 import { ColumnNode } from '../operation-node/column-node.js'
 import { UnionNode } from '../operation-node/union-node.js'
+import { CreateViewNode } from '../operation-node/create-view-node.js'
+import { DropViewNode } from '../operation-node/drop-view-node.js'
 
 export class DefaultQueryCompiler
   extends OperationNodeVisitor
@@ -906,6 +908,39 @@ export class DefaultQueryCompiler
     }
 
     this.visitNode(node.union)
+  }
+
+  protected override visitCreateView(node: CreateViewNode): void {
+    this.append('create ')
+
+    if (node.modifier === 'OrReplace') {
+      this.append('or replace ')
+    }
+
+    this.append('view ')
+    this.visitNode(node.name)
+    this.append(' ')
+
+    if (node.columns) {
+      this.append('(')
+      this.compileList(node.columns)
+      this.append(') ')
+    }
+
+    if (node.as) {
+      this.append('as ')
+      this.visitNode(node.as)
+    }
+  }
+
+  protected override visitDropView(node: DropViewNode): void {
+    this.append('drop view ')
+
+    if (node.modifier === 'IfExists') {
+      this.append('if exists ')
+    }
+
+    this.visitNode(node.name)
   }
 
   protected append(str: string): void {

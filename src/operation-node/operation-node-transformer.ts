@@ -59,6 +59,8 @@ import { ColumnDefinitionNode } from './column-definition-node.js'
 import { ModifyColumnNode } from './modify-column-node.js'
 import { OnDuplicateKeyNode } from './on-duplicate-key-node.js'
 import { UnionNode } from './union-node.js'
+import { CreateViewNode } from './create-view-node.js'
+import { DropViewNode } from './drop-view-node.js'
 
 /**
  * Transforms an operation node tree into another one.
@@ -152,6 +154,8 @@ export class OperationNodeTransformer {
     DropConstraintNode: this.transformDropConstraint.bind(this),
     ForeignKeyConstraintNode: this.transformForeignKeyConstraint.bind(this),
     UnionNode: this.transformUnion.bind(this),
+    CreateViewNode: this.transformCreateView.bind(this),
+    DropViewNode: this.transformDropView.bind(this),
   }
 
   readonly transformNode = <T extends OperationNode | undefined>(
@@ -653,6 +657,24 @@ export class OperationNodeTransformer {
     return {
       kind: 'DropConstraintNode',
       constraintName: this.transformNode(node.constraintName),
+    }
+  }
+
+  protected transformCreateView(node: CreateViewNode): CreateViewNode {
+    return {
+      kind: 'CreateViewNode',
+      name: this.transformNode(node.name),
+      modifier: node.modifier,
+      columns: this.transformNodeList(node.columns),
+      as: this.transformNode(node.as),
+    }
+  }
+
+  protected transformDropView(node: DropViewNode): DropViewNode {
+    return {
+      kind: 'DropViewNode',
+      name: this.transformNode(node.name),
+      modifier: node.modifier,
     }
   }
 

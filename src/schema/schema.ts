@@ -16,6 +16,10 @@ import { DropSchemaBuilder } from './drop-schema-builder.js'
 import { DropTableBuilder } from './drop-table-builder.js'
 import { createQueryId } from '../util/query-id.js'
 import { WithSchemaPlugin } from '../plugin/with-schema/with-schema-plugin.js'
+import { CreateViewBuilder } from './create-view-builder.js'
+import { CreateViewNode } from '../operation-node/create-view-node.js'
+import { DropViewBuilder } from './drop-view-builder.js'
+import { DropViewNode } from '../operation-node/drop-view-node.js'
 
 /**
  * Provides methods for building database schema.
@@ -196,6 +200,45 @@ export class SchemaModule {
       queryId: createQueryId(),
       executor: this.#executor,
       alterTableNode: AlterTableNode.create(table),
+    })
+  }
+
+  /**
+   * Create a new view.
+   *
+   * @example
+   * ```ts
+   * await db.schema
+   *   .createView('dogs')
+   *   .orReplace()
+   *   .as(db.selectFrom('pet').selectAll().where('species', '=', 'dog'))
+   *   .execute()
+   * ```
+   */
+  createView(viewName: string): CreateViewBuilder {
+    return new CreateViewBuilder({
+      queryId: createQueryId(),
+      executor: this.#executor,
+      createViewNode: CreateViewNode.create(viewName),
+    })
+  }
+
+  /**
+   * Drop a view.
+   *
+   * @example
+   * ```ts
+   * await db.schema
+   *   .dropView('dogs')
+   *   .ifExists()
+   *   .execute()
+   * ```
+   */
+  dropView(viewName: string): DropViewBuilder {
+    return new DropViewBuilder({
+      queryId: createQueryId(),
+      executor: this.#executor,
+      dropViewNode: DropViewNode.create(viewName),
     })
   }
 

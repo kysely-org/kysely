@@ -61,6 +61,8 @@ import { ColumnDefinitionNode } from './column-definition-node.js'
 import { ModifyColumnNode } from './modify-column-node.js'
 import { OnDuplicateKeyNode } from './on-duplicate-key-node.js'
 import { UnionNode } from './union-node.js'
+import { CreateViewNode } from './create-view-node.js'
+import { DropViewNode } from './drop-view-node.js'
 
 export abstract class OperationNodeVisitor {
   protected readonly nodeStack: OperationNode[] = []
@@ -125,6 +127,8 @@ export abstract class OperationNodeVisitor {
     DropConstraintNode: this.visitDropConstraint.bind(this),
     ForeignKeyConstraintNode: this.visitForeignKeyConstraint.bind(this),
     UnionNode: this.visitUnion.bind(this),
+    CreateViewNode: this.visitCreateView.bind(this),
+    DropViewNode: this.visitDropView.bind(this),
   }
 
   protected readonly visitNode = (node: OperationNode): void => {
@@ -198,4 +202,6 @@ export abstract class OperationNodeVisitor {
   protected abstract visitValue(_: ValueNode): void
   protected abstract visitPrimitiveValueList(_: PrimitiveValueListNode): void
   protected abstract visitOperator(node: OperatorNode): void
+  protected abstract visitCreateView(node: CreateViewNode): void
+  protected abstract visitDropView(node: DropViewNode): void
 }

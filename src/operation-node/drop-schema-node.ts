@@ -31,11 +31,11 @@ export const DropSchemaNode = freeze({
   },
 
   cloneWithModifier(
-    createSchema: DropSchemaNode,
+    dropSchema: DropSchemaNode,
     modifier: DropSchemaNodeModifier
   ): DropSchemaNode {
     return freeze({
-      ...createSchema,
+      ...dropSchema,
       modifier,
     })
   },
