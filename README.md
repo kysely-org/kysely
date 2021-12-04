@@ -67,7 +67,9 @@ import { Kysely, PostgresDialect } from 'kysely'
 interface Person {
   id: number
   first_name: string
-  last_name: string
+  // If the column is nullable in the db, make its type nullable.
+  // Don't use optional properties.
+  last_name: string | null
   gender: 'male' | 'female' | 'other'
 }
 
@@ -172,9 +174,9 @@ export async function up(db: Kysely<any>): Promise<void> {
   await db.schema
     .createTable('person')
     .addColumn('id', 'serial', (col) => col.primaryKey())
-    .addColumn('first_name', 'varchar')
+    .addColumn('first_name', 'varchar', (col) => col.notNull())
     .addColumn('last_name', 'varchar')
-    .addColumn('gender', 'varchar(50)')
+    .addColumn('gender', 'varchar(50)', (col) => col.notNull())
     .execute()
 
   await db.schema
@@ -182,9 +184,9 @@ export async function up(db: Kysely<any>): Promise<void> {
     .addColumn('id', 'serial', (col) => col.primaryKey())
     .addColumn('name', 'varchar', (col) => col.notNull().unique())
     .addColumn('owner_id', 'integer', (col) =>
-      col.references('person.id').onDelete('cascade')
+      col.references('person.id').onDelete('cascade').notNull()
     )
-    .addColumn('species', 'varchar')
+    .addColumn('species', 'varchar', (col) => col.notNull())
     .execute()
 
   await db.schema
@@ -209,17 +211,17 @@ export async function up(db: Kysely<any>): Promise<void> {
   await db.schema
     .createTable('person')
     .addColumn('id', 'integer', (col) => col.increments().primaryKey())
-    .addColumn('first_name', 'varchar')
-    .addColumn('last_name', 'varchar')
-    .addColumn('gender', 'varchar(50)')
+    .addColumn('first_name', 'varchar(255)', (col) => col.notNull())
+    .addColumn('last_name', 'varchar(255)')
+    .addColumn('gender', 'varchar(50)', (col) => col.notNull())
     .execute()
 
   await db.schema
     .createTable('pet')
     .addColumn('id', 'integer', (col) => col.increments().primaryKey())
-    .addColumn('name', 'varchar', (col) => col.notNull().unique())
-    .addColumn('owner_id', 'integer')
-    .addColumn('species', 'varchar')
+    .addColumn('name', 'varchar(255)', (col) => col.notNull().unique())
+    .addColumn('owner_id', 'integer', (col) => col.notNull())
+    .addColumn('species', 'varchar(255)', (col) => col.notNull())
     .addForeignKeyConstraint(
       'pet_owner_id_fk', ['owner_id'], 'person', ['id'],
       (cb) => cb.onDelete('cascade')
