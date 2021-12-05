@@ -2,6 +2,7 @@ import { freeze } from '../util/object-utils.js'
 import { CheckConstraintNode } from './check-constraint-node.js'
 import { ColumnNode } from './column-node.js'
 import { DataTypeNode } from './data-type-node.js'
+import { GeneratedAlwaysAsNode } from './generated-always-as-node.js'
 import { OperationNode } from './operation-node.js'
 import { RawNode } from './raw-node.js'
 import { ReferencesNode } from './references-node.js'
@@ -24,6 +25,7 @@ export interface ColumnDefinitionNode extends OperationNode {
   readonly nullable: boolean
   readonly defaultTo?: ValueNode | RawNode
   readonly check?: CheckConstraintNode
+  readonly generatedAlwaysAs?: GeneratedAlwaysAsNode
 }
 
 /**

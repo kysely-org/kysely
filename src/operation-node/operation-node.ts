@@ -60,6 +60,7 @@ export type OperationNodeKind =
   | 'UnionNode'
   | 'CreateViewNode'
   | 'DropViewNode'
+  | 'GeneratedAlwaysAsNode'
 
 export interface OperationNode {
   readonly kind: OperationNodeKind

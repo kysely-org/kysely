@@ -45,7 +45,7 @@ import { CheckConstraintNode } from './check-constraint-node.js'
 import { WithNode } from './with-node.js'
 import { CommonTableExpressionNode } from './common-table-expression-node.js'
 import { HavingNode } from './having-node.js'
-import { freeze, isString } from '../util/object-utils.js'
+import { freeze } from '../util/object-utils.js'
 import { CreateSchemaNode } from './create-schema-node.js'
 import { DropSchemaNode } from './drop-schema-node.js'
 import { AlterTableNode } from './alter-table-node.js'
@@ -61,6 +61,7 @@ import { OnDuplicateKeyNode } from './on-duplicate-key-node.js'
 import { UnionNode } from './union-node.js'
 import { CreateViewNode } from './create-view-node.js'
 import { DropViewNode } from './drop-view-node.js'
+import { GeneratedAlwaysAsNode } from './generated-always-as-node.js'
 
 /**
  * Transforms an operation node tree into another one.
@@ -156,6 +157,7 @@ export class OperationNodeTransformer {
     UnionNode: this.transformUnion.bind(this),
     CreateViewNode: this.transformCreateView.bind(this),
     DropViewNode: this.transformDropView.bind(this),
+    GeneratedAlwaysAsNode: this.transformGeneratedAlwaysAs.bind(this),
   }
 
   readonly transformNode = <T extends OperationNode | undefined>(
@@ -366,6 +368,7 @@ export class OperationNodeTransformer {
       nullable: node.nullable,
       defaultTo: this.transformNode(node.defaultTo),
       check: this.transformNode(node.check),
+      generatedAlwaysAs: this.transformNode(node.generatedAlwaysAs),
     }
   }
 
@@ -677,6 +680,16 @@ export class OperationNodeTransformer {
       name: this.transformNode(node.name),
       ifExists: node.ifExists,
       materialized: node.materialized,
+    }
+  }
+
+  protected transformGeneratedAlwaysAs(
+    node: GeneratedAlwaysAsNode
+  ): GeneratedAlwaysAsNode {
+    return {
+      kind: 'GeneratedAlwaysAsNode',
+      expression: this.transformNode(node.expression),
+      stored: node.stored,
     }
   }
 

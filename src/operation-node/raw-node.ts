@@ -16,7 +16,7 @@ export const RawNode = freeze({
   },
 
   create(
-    sqlFragments: string[],
+    sqlFragments: ReadonlyArray<string>,
     params: ReadonlyArray<OperationNode>
   ): RawNode {
     return freeze({

@@ -15,6 +15,7 @@ import {
   DefaultValueExpression,
   parseDefaultValueExpression,
 } from '../parser/default-value-parser.js'
+import { GeneratedAlwaysAsNode } from '../operation-node/generated-always-as-node.js'
 
 export interface ColumnDefinitionBuilderInterface<R> {
   /**
@@ -107,6 +108,38 @@ export interface ColumnDefinitionBuilderInterface<R> {
    * ```
    */
   check(sql: string): R
+
+  /**
+   * Makes the column a generated column using a `generated always as` statement.
+   *
+   * @example
+   * ```ts
+   * db.schema
+   *   .createTable('person')
+   *   .addColumn('full_name', 'varchar(255)',
+   *     (col) => col.generatedAlwaysAs("concat(first_name, ' ', last_name)")
+   *   )
+   *   .execute()
+   * ```
+   */
+  generatedAlwaysAs(sql: string): R
+
+  /**
+   * Makes a generated column stored instead of virtual. This method can only
+   * be used with {@link generatedAlwaysAs}
+   *
+   * @example
+   * ```ts
+   * db.schema
+   *   .createTable('person')
+   *   .addColumn('full_name', 'varchar(255)', (col) => col
+   *     .generatedAlwaysAs("concat(first_name, ' ', last_name)")
+   *     .stored()
+   *   )
+   *   .execute()
+   * ```
+   */
+  stored(): R
 }
 
 export class ColumnDefinitionBuilder
@@ -204,6 +237,31 @@ export class ColumnDefinitionBuilder
     return new ColumnDefinitionBuilder(
       ColumnDefinitionNode.cloneWith(this.#node, {
         check: CheckConstraintNode.create(sql),
+      })
+    )
+  }
+
+  generatedAlwaysAs(sql: string): ColumnDefinitionBuilder {
+    return new ColumnDefinitionBuilder(
+      ColumnDefinitionNode.cloneWith(this.#node, {
+        generatedAlwaysAs: GeneratedAlwaysAsNode.create(sql),
+      })
+    )
+  }
+
+  stored(): ColumnDefinitionBuilder {
+    if (!this.#node.generatedAlwaysAs) {
+      throw new Error('stored() can only be called after generatedAlwaysAs')
+    }
+
+    return new ColumnDefinitionBuilder(
+      ColumnDefinitionNode.cloneWith(this.#node, {
+        generatedAlwaysAs: GeneratedAlwaysAsNode.cloneWith(
+          this.#node.generatedAlwaysAs,
+          {
+            stored: true,
+          }
+        ),
       })
     )
   }

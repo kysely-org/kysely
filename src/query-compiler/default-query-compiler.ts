@@ -78,6 +78,7 @@ import { ColumnNode } from '../operation-node/column-node.js'
 import { UnionNode } from '../operation-node/union-node.js'
 import { CreateViewNode } from '../operation-node/create-view-node.js'
 import { DropViewNode } from '../operation-node/drop-view-node.js'
+import { GeneratedAlwaysAsNode } from '../operation-node/generated-always-as-node.js'
 
 export class DefaultQueryCompiler
   extends OperationNodeVisitor
@@ -461,8 +462,14 @@ export class DefaultQueryCompiler
 
   protected override visitColumnDefinition(node: ColumnDefinitionNode): void {
     this.visitNode(node.column)
+
     this.append(' ')
     this.visitNode(node.dataType)
+
+    if (node.generatedAlwaysAs) {
+      this.append(' ')
+      this.visitNode(node.generatedAlwaysAs)
+    }
 
     if (node.defaultTo) {
       this.append(' default ')
@@ -951,6 +958,16 @@ export class DefaultQueryCompiler
     }
 
     this.visitNode(node.name)
+  }
+
+  protected visitGeneratedAlwaysAs(node: GeneratedAlwaysAsNode): void {
+    this.append('generated always as (')
+    this.visitNode(node.expression)
+    this.append(')')
+
+    if (node.stored) {
+      this.append(' stored')
+    }
   }
 
   protected append(str: string): void {

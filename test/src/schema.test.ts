@@ -61,6 +61,9 @@ for (const dialect of BUILT_IN_DIALECTS) {
             .addColumn('p', 'int2')
             .addColumn('q', 'int4')
             .addColumn('r', 'int8')
+            .addColumn('s', 'double precision', (col) =>
+              col.generatedAlwaysAs('f + g').stored().notNull()
+            )
 
           testSql(builder, dialect, {
             postgres: {
@@ -83,7 +86,8 @@ for (const dialect of BUILT_IN_DIALECTS) {
                 '"o" uuid default gen_random_uuid(),',
                 '"p" int2,',
                 '"q" int4,',
-                '"r" int8)',
+                '"r" int8,',
+                '"s" double precision generated always as (f + g) stored not null)',
               ],
               parameters: [],
             },
@@ -115,6 +119,9 @@ for (const dialect of BUILT_IN_DIALECTS) {
             .addColumn('m', 'time')
             .addColumn('n', 'datetime')
             .addColumn('o', 'timestamp')
+            .addColumn('p', 'double precision', (col) =>
+              col.generatedAlwaysAs('e + f').stored().notNull()
+            )
 
           testSql(builder, dialect, {
             mysql: {
@@ -134,7 +141,8 @@ for (const dialect of BUILT_IN_DIALECTS) {
                 '`l` date,',
                 '`m` time,',
                 '`n` datetime,',
-                '`o` timestamp)',
+                '`o` timestamp,',
+                '`p` double precision generated always as (e + f) stored not null)',
               ],
               parameters: [],
             },
