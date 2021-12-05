@@ -188,7 +188,7 @@ export class OperationNodeTransformer {
       from: this.transformNode(node.from),
       selections: this.transformNodeList(node.selections),
       distinctOnSelections: this.transformNodeList(node.distinctOnSelections),
-      isDistinct: node.isDistinct,
+      distinct: node.distinct,
       joins: this.transformNodeList(node.joins),
       groupBy: this.transformNode(node.groupBy),
       orderBy: this.transformNode(node.orderBy),
@@ -348,7 +348,7 @@ export class OperationNodeTransformer {
       table: this.transformNode(node.table),
       columns: this.transformNodeList(node.columns),
       constraints: this.transformNodeList(node.constraints),
-      modifier: node.modifier,
+      ifNotExists: node.ifNotExists,
     }
   }
 
@@ -360,10 +360,10 @@ export class OperationNodeTransformer {
       column: this.transformNode(node.column),
       dataType: this.transformNode(node.dataType),
       references: this.transformNode(node.references),
-      isPrimaryKey: node.isPrimaryKey,
-      isAutoIncrementing: node.isAutoIncrementing,
-      isUnique: node.isUnique,
-      isNullable: node.isNullable,
+      primaryKey: node.primaryKey,
+      autoIncrement: node.autoIncrement,
+      unique: node.unique,
+      nullable: node.nullable,
       defaultTo: this.transformNode(node.defaultTo),
       check: this.transformNode(node.check),
     }
@@ -380,7 +380,7 @@ export class OperationNodeTransformer {
     return {
       kind: 'DropTableNode',
       table: this.transformNode(node.table),
-      modifier: node.modifier,
+      ifExists: node.ifExists,
     }
   }
 
@@ -489,7 +489,7 @@ export class OperationNodeTransformer {
       kind: 'DropIndexNode',
       name: this.transformNode(node.name),
       table: this.transformNode(node.table),
-      modifier: node.modifier,
+      ifExists: node.ifExists,
     }
   }
 
@@ -589,7 +589,7 @@ export class OperationNodeTransformer {
     return {
       kind: 'DropSchemaNode',
       schema: this.transformNode(node.schema),
-      modifier: node.modifier,
+      ifExists: node.ifExists,
     }
   }
 
@@ -664,7 +664,8 @@ export class OperationNodeTransformer {
     return {
       kind: 'CreateViewNode',
       name: this.transformNode(node.name),
-      modifier: node.modifier,
+      orReplace: node.orReplace,
+      materialized: node.materialized,
       columns: this.transformNodeList(node.columns),
       as: this.transformNode(node.as),
     }
@@ -674,7 +675,8 @@ export class OperationNodeTransformer {
     return {
       kind: 'DropViewNode',
       name: this.transformNode(node.name),
-      modifier: node.modifier,
+      ifExists: node.ifExists,
+      materialized: node.materialized,
     }
   }
 

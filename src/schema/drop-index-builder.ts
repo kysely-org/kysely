@@ -32,7 +32,7 @@ export class DropIndexBuilder implements OperationNodeSource, Compilable {
     return new DropIndexBuilder({
       ...this.#props,
       dropIndexNode: DropIndexNode.cloneWith(this.#props.dropIndexNode, {
-        modifier: 'IfExists',
+        ifExists: true,
       }),
     })
   }

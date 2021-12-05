@@ -96,7 +96,9 @@ for (const dialect of BUILT_IN_DIALECTS) {
         it('should create a table with all data types', async () => {
           const builder = ctx.db.schema
             .createTable('test')
-            .addColumn('a', 'integer', (col) => col.primaryKey().increments())
+            .addColumn('a', 'integer', (col) =>
+              col.primaryKey().autoIncrement()
+            )
             .addColumn('b', 'integer', (col) =>
               col.references('test.a').onDelete('cascade').onUpdate('set null')
             )
@@ -531,13 +533,8 @@ for (const dialect of BUILT_IN_DIALECTS) {
     })
 
     describe('create view', () => {
-      beforeEach(async () => {
-        await ctx.db.schema.dropView('dogs').ifExists().execute()
-      })
-
-      afterEach(async () => {
-        await ctx.db.schema.dropView('dogs').ifExists().execute()
-      })
+      beforeEach(cleanup)
+      afterEach(cleanup)
 
       it('should create a view', async () => {
         const builder = ctx.db.schema
@@ -577,6 +574,39 @@ for (const dialect of BUILT_IN_DIALECTS) {
 
         await builder.execute()
       })
+
+      if (dialect === 'postgres') {
+        it('should create a materialized view', async () => {
+          const builder = ctx.db.schema
+            .createView('materialized_dogs')
+            .materialized()
+            .as(
+              ctx.db.selectFrom('pet').selectAll().where('species', '=', 'dog')
+            )
+
+          testSql(builder, dialect, {
+            postgres: {
+              sql: `create materialized view "materialized_dogs" as (select * from "pet" where "species" = 'dog')`,
+              parameters: [],
+            },
+            mysql: NOT_SUPPORTED,
+          })
+
+          await builder.execute()
+        })
+      }
+
+      async function cleanup() {
+        await ctx.db.schema.dropView('dogs').ifExists().execute()
+
+        if (dialect === 'postgres') {
+          await ctx.db.schema
+            .dropView('materialized_dogs')
+            .materialized()
+            .ifExists()
+            .execute()
+        }
+      }
     })
 
     describe('drop view', () => {

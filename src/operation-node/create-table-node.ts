@@ -4,13 +4,11 @@ import { TableNode } from './table-node.js'
 import { ConstraintNode } from './constraint-node.js'
 import { ColumnDefinitionNode } from './column-definition-node.js'
 
-export type CreateTableNodeModifier = 'IfNotExists'
-
 export interface CreateTableNode extends OperationNode {
   readonly kind: 'CreateTableNode'
   readonly table: TableNode
   readonly columns: ReadonlyArray<ColumnDefinitionNode>
-  readonly modifier?: CreateTableNodeModifier
+  readonly ifNotExists?: boolean
   readonly constraints?: ReadonlyArray<ConstraintNode>
 }
 
@@ -40,13 +38,13 @@ export const CreateTableNode = freeze({
     })
   },
 
-  cloneWithModifier(
+  cloneWithIfNotExists(
     createTable: CreateTableNode,
-    modifier: CreateTableNodeModifier
+    ifNotExists: boolean
   ): CreateTableNode {
     return freeze({
       ...createTable,
-      modifier,
+      ifNotExists,
     })
   },
 

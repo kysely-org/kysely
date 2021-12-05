@@ -210,7 +210,7 @@ import { Kysely } from 'kysely'
 export async function up(db: Kysely<any>): Promise<void> {
   await db.schema
     .createTable('person')
-    .addColumn('id', 'integer', (col) => col.increments().primaryKey())
+    .addColumn('id', 'integer', (col) => col.autoIncrement().primaryKey())
     .addColumn('first_name', 'varchar(255)', (col) => col.notNull())
     .addColumn('last_name', 'varchar(255)')
     .addColumn('gender', 'varchar(50)', (col) => col.notNull())
@@ -218,7 +218,7 @@ export async function up(db: Kysely<any>): Promise<void> {
 
   await db.schema
     .createTable('pet')
-    .addColumn('id', 'integer', (col) => col.increments().primaryKey())
+    .addColumn('id', 'integer', (col) => col.autoIncrement().primaryKey())
     .addColumn('name', 'varchar(255)', (col) => col.notNull().unique())
     .addColumn('owner_id', 'integer', (col) => col.notNull())
     .addColumn('species', 'varchar(255)', (col) => col.notNull())

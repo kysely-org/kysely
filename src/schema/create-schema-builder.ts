@@ -19,7 +19,7 @@ export class CreateSchemaBuilder implements OperationNodeSource, Compilable {
       ...this.#props,
       createSchemaNode: CreateSchemaNode.cloneWith(
         this.#props.createSchemaNode,
-        { modifier: 'IfNotExists' }
+        { ifNotExists: true }
       ),
     })
   }

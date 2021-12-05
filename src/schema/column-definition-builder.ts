@@ -24,7 +24,7 @@ export interface ColumnDefinitionBuilderInterface<R> {
    * Some dialects like PostgreSQL don't support this. On PostgreSQL
    * you can use the `serial` or `bigserial` data type instead.
    */
-  increments(): R
+  autoIncrement(): R
 
   /**
    * Makes the column the primary key.
@@ -111,15 +111,15 @@ export class ColumnDefinitionBuilder
     this.#node = node
   }
 
-  increments(): ColumnDefinitionBuilder {
+  autoIncrement(): ColumnDefinitionBuilder {
     return new ColumnDefinitionBuilder(
-      ColumnDefinitionNode.cloneWith(this.#node, { isAutoIncrementing: true })
+      ColumnDefinitionNode.cloneWith(this.#node, { autoIncrement: true })
     )
   }
 
   primaryKey(): ColumnDefinitionBuilder {
     return new ColumnDefinitionBuilder(
-      ColumnDefinitionNode.cloneWith(this.#node, { isPrimaryKey: true })
+      ColumnDefinitionNode.cloneWith(this.#node, { primaryKey: true })
     )
   }
 
@@ -173,13 +173,13 @@ export class ColumnDefinitionBuilder
 
   unique(): ColumnDefinitionBuilder {
     return new ColumnDefinitionBuilder(
-      ColumnDefinitionNode.cloneWith(this.#node, { isUnique: true })
+      ColumnDefinitionNode.cloneWith(this.#node, { unique: true })
     )
   }
 
   notNull(): ColumnDefinitionBuilder {
     return new ColumnDefinitionBuilder(
-      ColumnDefinitionNode.cloneWith(this.#node, { isNullable: false })
+      ColumnDefinitionNode.cloneWith(this.#node, { nullable: false })
     )
   }
 

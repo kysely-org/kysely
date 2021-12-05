@@ -14,13 +14,21 @@ export class DropViewBuilder implements OperationNodeSource, Compilable {
     this.#props = freeze(props)
   }
 
+  materialized(): DropViewBuilder {
+    return new DropViewBuilder({
+      ...this.#props,
+      dropViewNode: DropViewNode.cloneWith(this.#props.dropViewNode, {
+        materialized: true,
+      }),
+    })
+  }
+
   ifExists(): DropViewBuilder {
     return new DropViewBuilder({
       ...this.#props,
-      dropViewNode: DropViewNode.cloneWithModifier(
-        this.#props.dropViewNode,
-        'IfExists'
-      ),
+      dropViewNode: DropViewNode.cloneWith(this.#props.dropViewNode, {
+        ifExists: true,
+      }),
     })
   }
 

@@ -234,7 +234,7 @@ export function createTableWithId(
     return builder.addColumn('id', 'serial', (col) => col.primaryKey())
   } else {
     return builder.addColumn('id', 'integer', (col) =>
-      col.increments().primaryKey()
+      col.autoIncrement().primaryKey()
     )
   }
 }

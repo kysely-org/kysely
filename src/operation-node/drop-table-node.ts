@@ -6,12 +6,10 @@ export type DropTablexNodeParams = Omit<
   Partial<DropTableNode>,
   'kind' | 'table'
 >
-export type DropTableNodeModifier = 'IfExists'
-
 export interface DropTableNode extends OperationNode {
   readonly kind: 'DropTableNode'
   readonly table: TableNode
-  readonly modifier?: DropTableNodeModifier
+  readonly ifExists?: boolean
 }
 
 /**
@@ -30,13 +28,13 @@ export const DropTableNode = freeze({
     })
   },
 
-  cloneWithModifier(
+  cloneWith(
     dropIndex: DropTableNode,
-    modifier: DropTableNodeModifier
+    params: DropTablexNodeParams
   ): DropTableNode {
     return freeze({
       ...dropIndex,
-      modifier,
+      ...params,
     })
   },
 })

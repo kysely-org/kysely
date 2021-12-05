@@ -41,7 +41,7 @@ export class SchemaModule {
    * ```ts
    * await db.schema
    *   .createTable('person')
-   *   .addColumn('id', 'integer', col => col.primaryKey().increments())
+   *   .addColumn('id', 'integer', col => col.primaryKey().autoIncrement())
    *   .addColumn('first_name', 'varchar', col => col.notNull())
    *   .addColumn('last_name', 'varchar', col => col.notNull())
    *   .addColumn('gender', 'varchar')
@@ -57,7 +57,7 @@ export class SchemaModule {
    * ```ts
    * await db.schema
    *   .createTable('pet')
-   *   .addColumn('id', 'integer', col => col.primaryKey().increments())
+   *   .addColumn('id', 'integer', col => col.primaryKey().autoIncrement())
    *   .addColumn('owner_id', 'integer', col => col
    *     .references('person.id')
    *     .onDelete('cascade')
@@ -74,7 +74,7 @@ export class SchemaModule {
    * ```ts
    * await db.schema
    *   .createTable('pet')
-   *   .addColumn('id', 'integer', col => col.primaryKey().increments())
+   *   .addColumn('id', 'integer', col => col.primaryKey().autoIncrement())
    *   .addColumn('owner_id', 'integer')
    *   .addForeignKeyConstraint(
    *     'pet_owner_id_foreign', ['owner_id'], 'person', ['id'],

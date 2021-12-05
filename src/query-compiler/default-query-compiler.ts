@@ -126,7 +126,7 @@ export class DefaultQueryCompiler
       this.append(' ')
     }
 
-    if (node.isDistinct) {
+    if (node.distinct) {
       this.append('distinct')
       this.append(' ')
     }
@@ -449,7 +449,7 @@ export class DefaultQueryCompiler
   protected override visitCreateTable(node: CreateTableNode): void {
     this.append('create table ')
 
-    if (node.modifier === 'IfNotExists') {
+    if (node.ifNotExists) {
       this.append('if not exists ')
     }
 
@@ -469,20 +469,20 @@ export class DefaultQueryCompiler
       this.visitNode(node.defaultTo)
     }
 
-    if (!node.isNullable) {
+    if (!node.nullable) {
       this.append(' not null')
     }
 
-    if (node.isAutoIncrementing) {
+    if (node.autoIncrement) {
       this.append(' ')
       this.append(this.getAutoIncrement())
     }
 
-    if (node.isUnique) {
+    if (node.unique) {
       this.append(' unique')
     }
 
-    if (node.isPrimaryKey) {
+    if (node.primaryKey) {
       this.append(' primary key')
     }
 
@@ -522,7 +522,7 @@ export class DefaultQueryCompiler
   protected override visitDropTable(node: DropTableNode): void {
     this.append('drop table ')
 
-    if (node.modifier === 'IfExists') {
+    if (node.ifExists) {
       this.append('if exists ')
     }
 
@@ -679,7 +679,7 @@ export class DefaultQueryCompiler
   protected override visitDropIndex(node: DropIndexNode): void {
     this.append('drop index ')
 
-    if (node.modifier === 'IfExists') {
+    if (node.ifExists) {
       this.append('if exists ')
     }
 
@@ -694,7 +694,7 @@ export class DefaultQueryCompiler
   protected override visitCreateSchema(node: CreateSchemaNode): void {
     this.append('create schema ')
 
-    if (node.modifier === 'IfNotExists') {
+    if (node.ifNotExists) {
       this.append('if not exists ')
     }
 
@@ -704,7 +704,7 @@ export class DefaultQueryCompiler
   protected override visitDropSchema(node: DropSchemaNode): void {
     this.append('drop schema ')
 
-    if (node.modifier === 'IfExists') {
+    if (node.ifExists) {
       this.append('if exists ')
     }
 
@@ -913,8 +913,12 @@ export class DefaultQueryCompiler
   protected override visitCreateView(node: CreateViewNode): void {
     this.append('create ')
 
-    if (node.modifier === 'OrReplace') {
+    if (node.orReplace) {
       this.append('or replace ')
+    }
+
+    if (node.materialized) {
+      this.append('materialized ')
     }
 
     this.append('view ')
@@ -934,9 +938,15 @@ export class DefaultQueryCompiler
   }
 
   protected override visitDropView(node: DropViewNode): void {
-    this.append('drop view ')
+    this.append('drop ')
 
-    if (node.modifier === 'IfExists') {
+    if (node.materialized) {
+      this.append('materialized ')
+    }
+
+    this.append('view ')
+
+    if (node.ifExists) {
       this.append('if exists ')
     }
 

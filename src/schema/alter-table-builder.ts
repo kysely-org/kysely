@@ -293,10 +293,10 @@ export class AlterTableAddColumnBuilder
     this.#props = freeze(props)
   }
 
-  increments(): AlterTableAddColumnBuilder {
+  autoIncrement(): AlterTableAddColumnBuilder {
     return new AlterTableAddColumnBuilder({
       ...this.#props,
-      columnBuilder: this.#props.columnBuilder.increments(),
+      columnBuilder: this.#props.columnBuilder.autoIncrement(),
     })
   }
 
@@ -396,10 +396,10 @@ export class AlterTableModifyColumnBuilder
     this.#props = freeze(props)
   }
 
-  increments(): AlterTableModifyColumnBuilder {
+  autoIncrement(): AlterTableModifyColumnBuilder {
     return new AlterTableModifyColumnBuilder({
       ...this.#props,
-      columnBuilder: this.#props.columnBuilder.increments(),
+      columnBuilder: this.#props.columnBuilder.autoIncrement(),
     })
   }
 

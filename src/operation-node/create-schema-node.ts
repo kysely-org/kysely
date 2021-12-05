@@ -2,7 +2,6 @@ import { freeze } from '../util/object-utils.js'
 import { IdentifierNode } from './identifier-node.js'
 import { OperationNode } from './operation-node.js'
 
-export type CreateSchemaNodeModifier = 'IfNotExists'
 export type CreateSchemaNodeParams = Omit<
   Partial<CreateSchemaNode>,
   'kind' | 'schema'
@@ -11,7 +10,7 @@ export type CreateSchemaNodeParams = Omit<
 export interface CreateSchemaNode extends OperationNode {
   readonly kind: 'CreateSchemaNode'
   readonly schema: IdentifierNode
-  readonly modifier?: CreateSchemaNodeModifier
+  readonly ifNotExists?: boolean
 }
 
 /**

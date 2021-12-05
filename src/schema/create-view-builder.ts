@@ -29,11 +29,20 @@ export class CreateViewBuilder implements OperationNodeSource, Compilable {
     })
   }
 
+  materialized(): CreateViewBuilder {
+    return new CreateViewBuilder({
+      ...this.#props,
+      createViewNode: CreateViewNode.cloneWith(this.#props.createViewNode, {
+        materialized: true,
+      }),
+    })
+  }
+
   orReplace(): CreateViewBuilder {
     return new CreateViewBuilder({
       ...this.#props,
       createViewNode: CreateViewNode.cloneWith(this.#props.createViewNode, {
-        modifier: 'OrReplace',
+        orReplace: true,
       }),
     })
   }

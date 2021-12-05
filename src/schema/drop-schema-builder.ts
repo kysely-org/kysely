@@ -17,10 +17,9 @@ export class DropSchemaBuilder implements OperationNodeSource, Compilable {
   ifExists(): DropSchemaBuilder {
     return new DropSchemaBuilder({
       ...this.#props,
-      dropSchemaNode: DropSchemaNode.cloneWithModifier(
-        this.#props.dropSchemaNode,
-        'IfExists'
-      ),
+      dropSchemaNode: DropSchemaNode.cloneWith(this.#props.dropSchemaNode, {
+        ifExists: true,
+      }),
     })
   }
 

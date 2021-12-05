@@ -4,13 +4,12 @@ import { OperationNode } from './operation-node.js'
 import { TableNode } from './table-node.js'
 
 export type DropIndexNodeProps = Omit<DropIndexNode, 'kind' | 'name'>
-export type DropIndexNodeModifier = 'IfExists'
 
 export interface DropIndexNode extends OperationNode {
   readonly kind: 'DropIndexNode'
   readonly name: IdentifierNode
   readonly table?: TableNode
-  readonly modifier?: DropIndexNodeModifier
+  readonly ifExists?: boolean
 }
 
 /**

@@ -5,7 +5,6 @@ import { OperationNode } from './operation-node.js'
 import { RawNode } from './raw-node.js'
 import { SelectQueryNode } from './select-query-node.js'
 
-export type CreateViewNodeModifier = 'OrReplace'
 export type CreateViewNodeParams = Omit<
   Partial<CreateViewNode>,
   'kind' | 'name'
@@ -14,7 +13,8 @@ export type CreateViewNodeParams = Omit<
 export interface CreateViewNode extends OperationNode {
   readonly kind: 'CreateViewNode'
   readonly name: IdentifierNode
-  readonly modifier?: CreateViewNodeModifier
+  readonly materialized?: boolean
+  readonly orReplace?: boolean
   readonly columns?: ReadonlyArray<ColumnNode>
   readonly as?: SelectQueryNode | RawNode
 }

@@ -40,9 +40,9 @@ export class CreateTableBuilder<TB extends string, C extends string = never>
   ifNotExists(): CreateTableBuilder<TB, C> {
     return new CreateTableBuilder({
       ...this.#props,
-      createTableNode: CreateTableNode.cloneWithModifier(
+      createTableNode: CreateTableNode.cloneWithIfNotExists(
         this.#props.createTableNode,
-        'IfNotExists'
+        true
       ),
     })
   }
@@ -54,7 +54,7 @@ export class CreateTableBuilder<TB extends string, C extends string = never>
    * ```ts
    * await db.schema
    *   .createTable('person')
-   *   .addColumn('id', 'integer', (col) => col.increments().primaryKey()),
+   *   .addColumn('id', 'integer', (col) => col.autoIncrement().primaryKey()),
    *   .addColumn('first_name', 'varchar(50), (col) => col.notNull())
    *   .addColumn('last_name', 'varchar')
    *   .addColumn('bank_balance', 'numeric(8, 2)')

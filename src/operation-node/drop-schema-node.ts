@@ -2,7 +2,6 @@ import { freeze } from '../util/object-utils.js'
 import { IdentifierNode } from './identifier-node.js'
 import { OperationNode } from './operation-node.js'
 
-export type DropSchemaNodeModifier = 'IfExists'
 export type DropSchemaNodeParams = Omit<
   Partial<DropSchemaNode>,
   'kind' | 'schema'
@@ -11,7 +10,7 @@ export type DropSchemaNodeParams = Omit<
 export interface DropSchemaNode extends OperationNode {
   readonly kind: 'DropSchemaNode'
   readonly schema: IdentifierNode
-  readonly modifier?: DropSchemaNodeModifier
+  readonly ifExists?: boolean
 }
 
 /**
@@ -30,13 +29,13 @@ export const DropSchemaNode = freeze({
     })
   },
 
-  cloneWithModifier(
+  cloneWith(
     dropSchema: DropSchemaNode,
-    modifier: DropSchemaNodeModifier
+    params: DropSchemaNodeParams
   ): DropSchemaNode {
     return freeze({
       ...dropSchema,
-      modifier,
+      ...params,
     })
   },
 })

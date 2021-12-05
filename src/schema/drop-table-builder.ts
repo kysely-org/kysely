@@ -17,10 +17,9 @@ export class DropTableBuilder implements OperationNodeSource, Compilable {
   ifExists(): DropTableBuilder {
     return new DropTableBuilder({
       ...this.#props,
-      dropTableNode: DropTableNode.cloneWithModifier(
-        this.#props.dropTableNode,
-        'IfExists'
-      ),
+      dropTableNode: DropTableNode.cloneWith(this.#props.dropTableNode, {
+        ifExists: true,
+      }),
     })
   }
 

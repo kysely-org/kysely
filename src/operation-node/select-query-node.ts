@@ -28,7 +28,7 @@ export interface SelectQueryNode extends OperationNode {
   readonly from: FromNode
   readonly selections?: ReadonlyArray<SelectionNode>
   readonly distinctOnSelections?: ReadonlyArray<SelectionNode>
-  readonly isDistinct?: boolean
+  readonly distinct?: boolean
   readonly joins?: ReadonlyArray<JoinNode>
   readonly groupBy?: GroupByNode
   readonly orderBy?: OrderByNode
@@ -167,7 +167,7 @@ export const SelectQueryNode = freeze({
   cloneWithDistinct(selectNode: SelectQueryNode): SelectQueryNode {
     return freeze({
       ...selectNode,
-      isDistinct: true,
+      distinct: true,
     })
   },
 

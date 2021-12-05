@@ -18,10 +18,10 @@ export interface ColumnDefinitionNode extends OperationNode {
   readonly column: ColumnNode
   readonly dataType: ColumnDataTypeNode
   readonly references?: ReferencesNode
-  readonly isPrimaryKey: boolean
-  readonly isAutoIncrementing: boolean
-  readonly isUnique: boolean
-  readonly isNullable: boolean
+  readonly primaryKey: boolean
+  readonly autoIncrement: boolean
+  readonly unique: boolean
+  readonly nullable: boolean
   readonly defaultTo?: ValueNode | RawNode
   readonly check?: CheckConstraintNode
 }
@@ -39,10 +39,10 @@ export const ColumnDefinitionNode = freeze({
       kind: 'ColumnDefinitionNode',
       column: ColumnNode.create(column),
       dataType,
-      isPrimaryKey: false,
-      isAutoIncrementing: false,
-      isUnique: false,
-      isNullable: true,
+      primaryKey: false,
+      autoIncrement: false,
+      unique: false,
+      nullable: true,
     })
   },
 
