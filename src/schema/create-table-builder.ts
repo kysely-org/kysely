@@ -55,8 +55,8 @@ export class CreateTableBuilder<TB extends string, C extends string = never>
    * await db.schema
    *   .createTable('person')
    *   .addColumn('id', 'integer', (col) => col.autoIncrement().primaryKey()),
-   *   .addColumn('first_name', 'varchar(50), (col) => col.notNull())
-   *   .addColumn('last_name', 'varchar')
+   *   .addColumn('first_name', 'varchar(50)', (col) => col.notNull())
+   *   .addColumn('last_name', 'varchar(255)')
    *   .addColumn('bank_balance', 'numeric(8, 2)')
    *   .addColumn('data', db.raw('customtype'))
    *   .addColumn('parent_id', 'integer', (col) =>
@@ -65,11 +65,10 @@ export class CreateTableBuilder<TB extends string, C extends string = never>
    * ```
    *
    * With this method, it's once again good to remember that Kysely just builds the query
-   * that's as close to the structure of your builder method calls as possible, and doesn't
-   * provide the same API for all databses. For example, some databases like older MySQL
-   * don't support `references` statement in the column definition. Instead foreign key
-   * constraints need to be defined in at the level of the `create table` query. See
-   * the next example:
+   * and doesn't provide the same API for all databses. For example, some databases like
+   * older MySQL don't support `references` statement in the column definition. Instead
+   * foreign key constraints need to be defined in at the level of the `create table`
+   * query. See the next example:
    *
    * @example
    * ```ts

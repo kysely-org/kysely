@@ -55,11 +55,20 @@ export interface ColumnDefinitionBuilderInterface<R> {
    * column definition (like MySQL 5) you need to call the table level
    * {@link TableBuilder.addForeignKeyConstraint} method instead.
    *
+   * @example
+   * ```ts
+   * col.references('person.id').onDelete('cascade')
+   * ```
    */
   onDelete(onDelete: OnModifyForeignAction): R
 
   /**
    * Adds an `on update` constraint for the foreign key column.
+   *
+   * @example
+   * ```ts
+   * col.references('person.id').onUpdate('cascade')
+   * ```
    */
   onUpdate(onUpdate: OnModifyForeignAction): R
 
