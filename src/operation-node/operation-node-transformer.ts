@@ -62,6 +62,7 @@ import { UnionNode } from './union-node.js'
 import { CreateViewNode } from './create-view-node.js'
 import { DropViewNode } from './drop-view-node.js'
 import { GeneratedAlwaysAsNode } from './generated-always-as-node.js'
+import { DefaultValueNode } from './default-to-node.js'
 
 /**
  * Transforms an operation node tree into another one.
@@ -95,7 +96,7 @@ import { GeneratedAlwaysAsNode } from './generated-always-as-node.js'
 export class OperationNodeTransformer {
   protected readonly nodeStack: OperationNode[] = []
 
-  readonly #transformers: Record<OperationNodeKind, Function> = {
+  readonly #transformers: Record<OperationNodeKind, Function> = freeze({
     AliasNode: this.transformAlias.bind(this),
     ColumnNode: this.transformColumn.bind(this),
     IdentifierNode: this.transformIdentifier.bind(this),
@@ -158,7 +159,8 @@ export class OperationNodeTransformer {
     CreateViewNode: this.transformCreateView.bind(this),
     DropViewNode: this.transformDropView.bind(this),
     GeneratedAlwaysAsNode: this.transformGeneratedAlwaysAs.bind(this),
-  }
+    DefaultValueNode: this.transformDefaultValue.bind(this),
+  })
 
   readonly transformNode = <T extends OperationNode | undefined>(
     node: OperationNode | undefined
@@ -690,6 +692,13 @@ export class OperationNodeTransformer {
       kind: 'GeneratedAlwaysAsNode',
       expression: this.transformNode(node.expression),
       stored: node.stored,
+    }
+  }
+
+  protected transformDefaultValue(node: DefaultValueNode): DefaultValueNode {
+    return {
+      kind: 'DefaultValueNode',
+      defaultValue: this.transformNode(node.defaultValue),
     }
   }
 

@@ -79,6 +79,7 @@ import { UnionNode } from '../operation-node/union-node.js'
 import { CreateViewNode } from '../operation-node/create-view-node.js'
 import { DropViewNode } from '../operation-node/drop-view-node.js'
 import { GeneratedAlwaysAsNode } from '../operation-node/generated-always-as-node.js'
+import { DefaultValueNode } from '../operation-node/default-to-node.js'
 
 export class DefaultQueryCompiler
   extends OperationNodeVisitor
@@ -472,7 +473,7 @@ export class DefaultQueryCompiler
     }
 
     if (node.defaultTo) {
-      this.append(' default ')
+      this.append(' ')
       this.visitNode(node.defaultTo)
     }
 
@@ -960,7 +961,7 @@ export class DefaultQueryCompiler
     this.visitNode(node.name)
   }
 
-  protected visitGeneratedAlwaysAs(node: GeneratedAlwaysAsNode): void {
+  protected override visitGeneratedAlwaysAs(node: GeneratedAlwaysAsNode): void {
     this.append('generated always as (')
     this.visitNode(node.expression)
     this.append(')')
@@ -968,6 +969,11 @@ export class DefaultQueryCompiler
     if (node.stored) {
       this.append(' stored')
     }
+  }
+
+  protected override visitDefaultValue(node: DefaultValueNode): void {
+    this.append('default ')
+    this.visitNode(node.defaultValue)
   }
 
   protected append(str: string): void {

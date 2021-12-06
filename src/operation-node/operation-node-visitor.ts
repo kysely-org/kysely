@@ -64,11 +64,13 @@ import { UnionNode } from './union-node.js'
 import { CreateViewNode } from './create-view-node.js'
 import { DropViewNode } from './drop-view-node.js'
 import { GeneratedAlwaysAsNode } from './generated-always-as-node.js'
+import { DefaultValueNode } from './default-to-node.js'
+import { freeze } from '../util/object-utils.js'
 
 export abstract class OperationNodeVisitor {
   protected readonly nodeStack: OperationNode[] = []
 
-  readonly #visitors: Record<OperationNodeKind, Function> = {
+  readonly #visitors: Record<OperationNodeKind, Function> = freeze({
     AliasNode: this.visitAlias.bind(this),
     ColumnNode: this.visitColumn.bind(this),
     IdentifierNode: this.visitIdentifier.bind(this),
@@ -131,7 +133,8 @@ export abstract class OperationNodeVisitor {
     CreateViewNode: this.visitCreateView.bind(this),
     DropViewNode: this.visitDropView.bind(this),
     GeneratedAlwaysAsNode: this.visitGeneratedAlwaysAs.bind(this),
-  }
+    DefaultValueNode: this.visitDefaultValue.bind(this),
+  })
 
   protected readonly visitNode = (node: OperationNode): void => {
     this.nodeStack.push(node)
@@ -207,4 +210,5 @@ export abstract class OperationNodeVisitor {
   protected abstract visitCreateView(node: CreateViewNode): void
   protected abstract visitDropView(node: DropViewNode): void
   protected abstract visitGeneratedAlwaysAs(node: GeneratedAlwaysAsNode): void
+  protected abstract visitDefaultValue(node: DefaultValueNode): void
 }

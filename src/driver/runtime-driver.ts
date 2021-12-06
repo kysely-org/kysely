@@ -1,5 +1,6 @@
 import { CompiledQuery } from '../query-compiler/compiled-query.js'
 import { Log } from '../util/log.js'
+import { performanceNow } from '../util/performance-now.js'
 import { DatabaseConnection, QueryResult } from './database-connection.js'
 import { Driver, TransactionSettings } from './driver.js'
 
@@ -101,7 +102,7 @@ class RuntimeConnection implements DatabaseConnection {
   }
 
   async executeQuery<R>(compiledQuery: CompiledQuery): Promise<QueryResult<R>> {
-    const startTime = process.hrtime.bigint()
+    const startTime = performanceNow()
 
     try {
       return await this.#connection.executeQuery<R>(compiledQuery)
@@ -120,7 +121,7 @@ class RuntimeConnection implements DatabaseConnection {
     }))
   }
 
-  #logQuery(compiledQuery: CompiledQuery, startTime: bigint): void {
+  #logQuery(compiledQuery: CompiledQuery, startTime: number): void {
     this.#log.query(() => ({
       level: 'query',
       sql: compiledQuery.sql,
@@ -128,10 +129,7 @@ class RuntimeConnection implements DatabaseConnection {
     }))
   }
 
-  #calculateDurationMillis(startTime: bigint): number {
-    const endTime = process.hrtime.bigint()
-    const durationNanos = Number(endTime - startTime)
-
-    return durationNanos / 1_000_000
+  #calculateDurationMillis(startTime: number): number {
+    return performanceNow() - startTime
   }
 }

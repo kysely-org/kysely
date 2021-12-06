@@ -141,5 +141,5 @@ export interface RawBuilderProps {
   readonly queryId: QueryId
   readonly executor: QueryExecutor
   readonly sql: string
-  readonly parameters?: any
+  readonly parameters?: ReadonlyArray<unknown>
 }

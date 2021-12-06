@@ -16,6 +16,7 @@ import {
   parseDefaultValueExpression,
 } from '../parser/default-value-parser.js'
 import { GeneratedAlwaysAsNode } from '../operation-node/generated-always-as-node.js'
+import { DefaultValueNode } from '../operation-node/default-to-node.js'
 
 export interface ColumnDefinitionBuilderInterface<R> {
   /**
@@ -228,7 +229,7 @@ export class ColumnDefinitionBuilder
   defaultTo(value: DefaultValueExpression): ColumnDefinitionBuilder {
     return new ColumnDefinitionBuilder(
       ColumnDefinitionNode.cloneWith(this.#node, {
-        defaultTo: parseDefaultValueExpression(value),
+        defaultTo: DefaultValueNode.create(parseDefaultValueExpression(value)),
       })
     )
   }
