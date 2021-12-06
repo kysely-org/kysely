@@ -1192,11 +1192,8 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    *   .select('person.id', 'pet.name')
    *   .execute()
    *
-   * // The result has all `Person` columns
-   * result[0].first_name
-   *
-   * // The result has all `Pet` columns
-   * result[0].species
+   * result[0].id
+   * result[0].name
    * ```
    *
    * The generated SQL (postgresql):
