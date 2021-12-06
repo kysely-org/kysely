@@ -64,7 +64,7 @@ import { UnionNode } from './union-node.js'
 import { CreateViewNode } from './create-view-node.js'
 import { DropViewNode } from './drop-view-node.js'
 import { GeneratedAlwaysAsNode } from './generated-always-as-node.js'
-import { DefaultValueNode } from './default-to-node.js'
+import { DefaultValueNode } from './default-value-node.js'
 import { freeze } from '../util/object-utils.js'
 
 export abstract class OperationNodeVisitor {

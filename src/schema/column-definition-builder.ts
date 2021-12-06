@@ -16,7 +16,7 @@ import {
   parseDefaultValueExpression,
 } from '../parser/default-value-parser.js'
 import { GeneratedAlwaysAsNode } from '../operation-node/generated-always-as-node.js'
-import { DefaultValueNode } from '../operation-node/default-to-node.js'
+import { DefaultValueNode } from '../operation-node/default-value-node.js'
 
 export interface ColumnDefinitionBuilderInterface<R> {
   /**

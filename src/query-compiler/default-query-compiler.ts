@@ -79,7 +79,7 @@ import { UnionNode } from '../operation-node/union-node.js'
 import { CreateViewNode } from '../operation-node/create-view-node.js'
 import { DropViewNode } from '../operation-node/drop-view-node.js'
 import { GeneratedAlwaysAsNode } from '../operation-node/generated-always-as-node.js'
-import { DefaultValueNode } from '../operation-node/default-to-node.js'
+import { DefaultValueNode } from '../operation-node/default-value-node.js'
 
 export class DefaultQueryCompiler
   extends OperationNodeVisitor
