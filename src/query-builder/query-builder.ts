@@ -960,10 +960,10 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * @example
    * ```ts
    * await db.selectFrom('person')
-   *   .selectAll('person')
-   *   .distinctOn('person.id')
    *   .innerJoin('pet', 'pet.owner_id', 'person.id')
    *   .where('pet.name', '=', 'Doggo')
+   *   .distinctOn('person.id')
+   *   .selectAll('person')
    *   .execute()
    * ```
    *
@@ -1186,8 +1186,10 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * ```ts
    * const result = await db
    *   .selectFrom('person')
-   *   .selectAll()
    *   .innerJoin('pet', 'pet.owner_id', 'person.id')
+   *   // `select` needs to come after the call to `innerJoin` so
+   *   // that you can select from the joined table.
+   *   .select('person.id', 'pet.name')
    *   .execute()
    *
    * // The result has all `Person` columns
@@ -1200,7 +1202,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * The generated SQL (postgresql):
    *
    * ```sql
-   * select *
+   * select "person"."id", "pet"."name"
    * from "person"
    * inner join "pet"
    * on "pet"."owner_id" = "person"."id"
@@ -1211,9 +1213,9 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    *
    * ```ts
    * await db.selectFrom('person')
-   *   .selectAll()
    *   .innerJoin('pet as p', 'p.owner_id', 'person.id')
    *   .where('p.name', '=', 'Doggo')
+   *   .selectAll()
    *   .execute()
    * ```
    *
@@ -1238,13 +1240,13 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    *
    * ```ts
    * await db.selectFrom('person')
-   *   .selectAll()
    *   .innerJoin(
    *     'pet',
    *     (join) => join
    *       .onRef('pet.owner_id', '=', 'person.id')
    *       .on('pet.name', '=', 'Doggo')
    *   )
+   *   .selectAll()
    *   .execute()
    * ```
    *
@@ -1264,7 +1266,6 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    *
    * ```ts
    * await db.selectFrom('person')
-   *   .selectAll()
    *   .innerJoin(
    *     (qb) => qb.subQuery('pet')
    *       .select(['owner_id', 'name'])
@@ -1273,6 +1274,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    *     'doggos.owner_id',
    *     'person.id',
    *   )
+   *   .selectAll()
    *   .execute()
    * ```
    *
