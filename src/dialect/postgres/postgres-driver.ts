@@ -5,7 +5,7 @@ import {
 } from '../../driver/database-connection.js'
 import { Driver, TransactionSettings } from '../../driver/driver.js'
 import { CompiledQuery } from '../../query-compiler/compiled-query.js'
-import { isFunction } from '../../util/object-utils.js'
+import { importNamedFunction } from '../../util/dynamic-import.js'
 import { PostgresDialectConfig } from './postgres-dialect.js'
 
 const PRIVATE_RELEASE_METHOD = Symbol()
@@ -56,21 +56,22 @@ export class PostgresDriver implements Driver {
     settings: TransactionSettings
   ): Promise<void> {
     if (settings.isolationLevel) {
-      await connection.executeQuery({
-        sql: `start transaction isolation level ${settings.isolationLevel}`,
-        parameters: [],
-      })
+      await connection.executeQuery(
+        CompiledQuery.raw(
+          `start transaction isolation level ${settings.isolationLevel}`
+        )
+      )
     } else {
-      await connection.executeQuery({ sql: 'begin', parameters: [] })
+      await connection.executeQuery(CompiledQuery.raw('begin'))
     }
   }
 
   async commitTransaction(connection: DatabaseConnection): Promise<void> {
-    await connection.executeQuery({ sql: 'commit', parameters: [] })
+    await connection.executeQuery(CompiledQuery.raw('commit'))
   }
 
   async rollbackTransaction(connection: DatabaseConnection): Promise<void> {
-    await connection.executeQuery({ sql: 'rollback', parameters: [] })
+    await connection.executeQuery(CompiledQuery.raw('rollback'))
   }
 
   async releaseConnection(connection: DatabaseConnection): Promise<void> {
@@ -89,16 +90,7 @@ export class PostgresDriver implements Driver {
 
 async function importPgPool(): Promise<new (config: PoolConfig) => Pool> {
   try {
-    // For this to work with both esm and cjs modules we need
-    // this hacky crap here.
-    const pg = (await import('pg')) as any
-
-    if (isFunction(pg.Pool)) {
-      return pg.Pool
-    } else {
-      // With esm the imported module doesn't match the typings.
-      return pg.default.Pool
-    }
+    return await importNamedFunction('pg', 'Pool')
   } catch (error) {
     throw new Error(
       'Postgres client not installed. Please run `npm install pg`'
@@ -120,7 +112,7 @@ class PostgresConnection implements DatabaseConnection {
 
     if (result.command === 'UPDATE' || result.command === 'DELETE') {
       return {
-        numUpdatedOrDeletedRows: result.rowCount,
+        numUpdatedOrDeletedRows: BigInt(result.rowCount),
         rows: result.rows ?? [],
       }
     }

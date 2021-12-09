@@ -47,6 +47,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
           sql: 'select `gender`, max(first_name) as `max_first_name` from `person` group by `gender` order by `gender`',
           parameters: [],
         },
+        sqlite: {
+          sql: 'select "gender", max(first_name) as "max_first_name" from "person" group by "gender" order by "gender"',
+          parameters: [],
+        },
       })
 
       const persons = await query.execute()
@@ -80,6 +84,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
           sql: 'select `gender`, max(first_name) as `max_first_name` from `person` group by `gender`, `id` order by `gender`',
           parameters: [],
         },
+        sqlite: {
+          sql: 'select "gender", max(first_name) as "max_first_name" from "person" group by "gender", "id" order by "gender"',
+          parameters: [],
+        },
       })
 
       await query.execute()
@@ -101,6 +109,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
           sql: 'select `gender`, max(first_name) as `max_first_name` from `person` group by `person`.`gender` order by `gender` asc',
           parameters: [],
         },
+        sqlite: {
+          sql: 'select "gender", max(first_name) as "max_first_name" from "person" group by "person"."gender" order by "gender" asc',
+          parameters: [],
+        },
       })
 
       await query.execute()
@@ -120,6 +132,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
         },
         mysql: {
           sql: 'select `gender`, max(first_name) as `max_first_name` from `person` group by person.gender order by `gender` asc',
+          parameters: [],
+        },
+        sqlite: {
+          sql: 'select "gender", max(first_name) as "max_first_name" from "person" group by person.gender order by "gender" asc',
           parameters: [],
         },
       })
@@ -155,6 +171,15 @@ for (const dialect of BUILT_IN_DIALECTS) {
             'from `person`',
             'group by (select `pet`.`name` from `pet` where `person`.`id` = `pet`.`owner_id`)',
             'order by `max_first_name`',
+          ],
+          parameters: [],
+        },
+        sqlite: {
+          sql: [
+            'select max(first_name) as "max_first_name"',
+            'from "person"',
+            'group by (select "pet"."name" from "pet" where "person"."id" = "pet"."owner_id")',
+            'order by "max_first_name"',
           ],
           parameters: [],
         },

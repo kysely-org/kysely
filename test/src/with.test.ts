@@ -59,6 +59,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
           sql: 'with `jennifer_and_sylvester` as (select `id`, `first_name`, `gender` from `person` where `first_name` = ? or `first_name` = ?), `arnold` as (select * from `jennifer_and_sylvester` where `gender` = ?) select * from `arnold`',
           parameters: ['Jennifer', 'Sylvester', 'male'],
         },
+        sqlite: {
+          sql: 'with "jennifer_and_sylvester" as (select "id", "first_name", "gender" from "person" where "first_name" = ? or "first_name" = ?), "arnold" as (select * from "jennifer_and_sylvester" where "gender" = ?) select * from "arnold"',
+          parameters: ['Jennifer', 'Sylvester', 'male'],
+        },
       })
 
       const result = await query.execute()
@@ -74,7 +78,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
       })
     })
 
-    if (dialect === 'postgres') {
+    if (dialect !== 'mysql' && dialect !== 'sqlite') {
       it('should create a with query where CTEs are inserts updates and deletes', async () => {
         const query = ctx.db
           .with('deleted_arnold', (db) =>
@@ -122,6 +126,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
               'Jennifer',
             ],
           },
+          sqlite: NOT_SUPPORTED,
           mysql: NOT_SUPPORTED,
         })
 

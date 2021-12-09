@@ -14,13 +14,13 @@ export interface QueryResult<O> {
    * This is defined for update and delete queries and contains
    * the number of rows the query updated/deleted.
    */
-  readonly numUpdatedOrDeletedRows?: number
+  readonly numUpdatedOrDeletedRows?: bigint
 
   /**
    * This is defined for insert queries on dialects that return
    * the auto incrementing primary key from an insert.
    */
-  readonly insertedPrimaryKey?: number
+  readonly insertId?: bigint
 
   /**
    * The rows returned by the query. This is always defined and is

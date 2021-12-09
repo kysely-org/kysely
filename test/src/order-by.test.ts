@@ -47,6 +47,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
           sql: 'select * from `person` order by `first_name`',
           parameters: [],
         },
+        sqlite: {
+          sql: 'select * from "person" order by "first_name"',
+          parameters: [],
+        },
       })
 
       const persons = await query.execute()
@@ -75,6 +79,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
           sql: 'select * from `person` order by `first_name`, `last_name` desc',
           parameters: [],
         },
+        sqlite: {
+          sql: 'select * from "person" order by "first_name", "last_name" desc',
+          parameters: [],
+        },
       })
 
       await query.execute()
@@ -93,6 +101,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
         },
         mysql: {
           sql: 'select `first_name` as `fn` from `person` order by `fn`',
+          parameters: [],
+        },
+        sqlite: {
+          sql: 'select "first_name" as "fn" from "person" order by "fn"',
           parameters: [],
         },
       })
@@ -115,6 +127,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
           sql: "select * from `person` order by coalesce(`first_name`, 'foo') asc",
           parameters: [],
         },
+        sqlite: {
+          sql: `select * from "person" order by coalesce("first_name", 'foo') asc`,
+          parameters: [],
+        },
       })
 
       await query.execute()
@@ -133,6 +149,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
             parameters: [],
           },
           mysql: NOT_SUPPORTED,
+          sqlite: NOT_SUPPORTED,
         })
 
         await query.execute()

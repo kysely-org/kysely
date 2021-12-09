@@ -72,6 +72,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
           sql: 'select `last_name` from `person` where `first_name` = ?',
           parameters: ['Jennifer'],
         },
+        sqlite: {
+          sql: 'select "last_name" from "person" where "first_name" = ?',
+          parameters: ['Jennifer'],
+        },
       })
 
       const persons = await query.execute()
@@ -93,6 +97,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
         },
         mysql: {
           sql: 'select `last_name` as `ln` from `person` where `first_name` = ?',
+          parameters: ['Jennifer'],
+        },
+        sqlite: {
+          sql: 'select "last_name" as "ln" from "person" where "first_name" = ?',
           parameters: ['Jennifer'],
         },
       })
@@ -118,6 +126,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
           sql: 'select `person`.`last_name` from `person` where `first_name` = ?',
           parameters: ['Jennifer'],
         },
+        sqlite: {
+          sql: 'select "person"."last_name" from "person" where "first_name" = ?',
+          parameters: ['Jennifer'],
+        },
       })
 
       const persons = await query.execute()
@@ -139,6 +151,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
         },
         mysql: {
           sql: 'select `person`.`last_name` as `ln` from `person` where `first_name` = ?',
+          parameters: ['Jennifer'],
+        },
+        sqlite: {
+          sql: 'select "person"."last_name" as "ln" from "person" where "first_name" = ?',
           parameters: ['Jennifer'],
         },
       })
@@ -168,6 +184,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
         },
         mysql: {
           sql: 'select (select `name` from `pet` where `person`.`id` = `pet`.`owner_id`) as `pet_name` from `person` where `first_name` = ?',
+          parameters: ['Jennifer'],
+        },
+        sqlite: {
+          sql: 'select (select "name" from "pet" where "person"."id" = "pet"."owner_id") as "pet_name" from "person" where "first_name" = ?',
           parameters: ['Jennifer'],
         },
       })
@@ -201,6 +221,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
             parameters: ['Muriel', 'Jennifer'],
           },
           mysql: NOT_SUPPORTED,
+          sqlite: NOT_SUPPORTED,
         })
 
         const persons = await query.execute()
@@ -213,6 +234,11 @@ for (const dialect of BUILT_IN_DIALECTS) {
     }
 
     it('should select multiple fields', async () => {
+      const fullName =
+        dialect === 'mysql'
+          ? "concat(first_name, ' ', last_name)"
+          : "first_name || ' ' || last_name"
+
       const query = ctx.db
         .selectFrom('person')
         .select([
@@ -220,7 +246,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
           'last_name as ln',
           'person.gender',
           'person.first_name as fn',
-          ctx.db.raw(`concat(first_name, ' ', last_name)`).as('full_name'),
+          ctx.db.raw(fullName).as('full_name'),
           (qb) =>
             qb
               .subQuery('pet')
@@ -232,11 +258,15 @@ for (const dialect of BUILT_IN_DIALECTS) {
 
       testSql(query, dialect, {
         postgres: {
-          sql: `select "first_name", "last_name" as "ln", "person"."gender", "person"."first_name" as "fn", concat(first_name, ' ', last_name) as "full_name", (select "name" from "pet" where "person"."id" = "owner_id") as "pet_name" from "person" where "first_name" = $1`,
+          sql: `select "first_name", "last_name" as "ln", "person"."gender", "person"."first_name" as "fn", first_name || ' ' || last_name as "full_name", (select "name" from "pet" where "person"."id" = "owner_id") as "pet_name" from "person" where "first_name" = $1`,
           parameters: ['Jennifer'],
         },
         mysql: {
           sql: "select `first_name`, `last_name` as `ln`, `person`.`gender`, `person`.`first_name` as `fn`, concat(first_name, ' ', last_name) as `full_name`, (select `name` from `pet` where `person`.`id` = `owner_id`) as `pet_name` from `person` where `first_name` = ?",
+          parameters: ['Jennifer'],
+        },
+        sqlite: {
+          sql: `select "first_name", "last_name" as "ln", "person"."gender", "person"."first_name" as "fn", first_name || ' ' || last_name as "full_name", (select "name" from "pet" where "person"."id" = "owner_id") as "pet_name" from "person" where "first_name" = ?`,
           parameters: ['Jennifer'],
         },
       })
@@ -272,6 +302,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
           sql: 'select `last_name`, `name` as `pet_name` from `person`, `pet` where `owner_id` = `person`.`id` and `first_name` = ?',
           parameters: ['Jennifer'],
         },
+        sqlite: {
+          sql: 'select "last_name", "name" as "pet_name" from "person", "pet" where "owner_id" = "person"."id" and "first_name" = ?',
+          parameters: ['Jennifer'],
+        },
       })
 
       const persons = await query.execute()
@@ -300,6 +334,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
           sql: 'select `last_name`, `species` as `pet_species`, `one` from `person`, (select `owner_id`, `species` from `pet`) as `p`, (select 1 as one) as `o` where `p`.`owner_id` = `person`.`id` and `first_name` = ?',
           parameters: ['Jennifer'],
         },
+        sqlite: {
+          sql: 'select "last_name", "species" as "pet_species", "one" from "person", (select "owner_id", "species" from "pet") as "p", (select 1 as one) as "o" where "p"."owner_id" = "person"."id" and "first_name" = ?',
+          parameters: ['Jennifer'],
+        },
       })
 
       await query.execute()
@@ -320,6 +358,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
         },
         mysql: {
           sql: 'select `first_name`, `pet`.`name` as `pet_name`, `toy`.`name` as `toy_name` from `person` inner join `pet` on `owner_id` = `person`.`id` inner join `toy` on `pet_id` = `pet`.`id` where `first_name` = ?',
+          parameters: ['Jennifer'],
+        },
+        sqlite: {
+          sql: 'select "first_name", "pet"."name" as "pet_name", "toy"."name" as "toy_name" from "person" inner join "pet" on "owner_id" = "person"."id" inner join "toy" on "pet_id" = "pet"."id" where "first_name" = ?',
           parameters: ['Jennifer'],
         },
       })
@@ -348,6 +390,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
           sql: 'select distinct `gender` from `person` order by `gender`',
           parameters: [],
         },
+        sqlite: {
+          sql: 'select distinct "gender" from "person" order by "gender"',
+          parameters: [],
+        },
       })
 
       const persons = await query.execute()
@@ -356,29 +402,32 @@ for (const dialect of BUILT_IN_DIALECTS) {
       expect(persons).to.eql([{ gender: 'female' }, { gender: 'male' }])
     })
 
-    it('should select a row for update', async () => {
-      const query = ctx.db
-        .selectFrom('person')
-        .select('last_name')
-        .where('first_name', '=', 'Jennifer')
-        .forUpdate()
+    if (dialect !== 'sqlite') {
+      it('should select a row for update', async () => {
+        const query = ctx.db
+          .selectFrom('person')
+          .select('last_name')
+          .where('first_name', '=', 'Jennifer')
+          .forUpdate()
 
-      testSql(query, dialect, {
-        postgres: {
-          sql: 'select "last_name" from "person" where "first_name" = $1 for update',
-          parameters: ['Jennifer'],
-        },
-        mysql: {
-          sql: 'select `last_name` from `person` where `first_name` = ? for update',
-          parameters: ['Jennifer'],
-        },
+        testSql(query, dialect, {
+          postgres: {
+            sql: 'select "last_name" from "person" where "first_name" = $1 for update',
+            parameters: ['Jennifer'],
+          },
+          mysql: {
+            sql: 'select `last_name` from `person` where `first_name` = ? for update',
+            parameters: ['Jennifer'],
+          },
+          sqlite: NOT_SUPPORTED,
+        })
+
+        const persons = await query.execute()
+
+        expect(persons).to.have.length(1)
+        expect(persons).to.eql([{ last_name: 'Aniston' }])
       })
-
-      const persons = await query.execute()
-
-      expect(persons).to.have.length(1)
-      expect(persons).to.eql([{ last_name: 'Aniston' }])
-    })
+    }
 
     if (dialect === 'postgres') {
       it('should select with distinct on', async () => {
@@ -395,6 +444,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
             parameters: [],
           },
           mysql: NOT_SUPPORTED,
+          sqlite: NOT_SUPPORTED,
         })
 
         const persons = await query.execute()
@@ -427,6 +477,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
               parameters: [],
             },
             mysql: NOT_SUPPORTED,
+            sqlite: NOT_SUPPORTED,
           })
 
           await query.execute()
@@ -451,6 +502,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
         },
         mysql: {
           sql: 'select max(`person`.`first_name`) as `max_first_name`, min(`person`.`first_name`) as `min_first_name` from `person`',
+          parameters: [],
+        },
+        sqlite: {
+          sql: 'select max("person"."first_name") as "max_first_name", min("person"."first_name") as "min_first_name" from "person"',
           parameters: [],
         },
       })

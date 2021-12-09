@@ -179,7 +179,7 @@ export class Kysely<DB> extends QueryCreator<DB> {
    *   .execute()
    * ```
    *
-   * The generated SQL (postgresql):
+   * The generated SQL (PostgreSQL):
    *
    * ```sql
    * select "person"."id", count("pet"."id") as "pet_count"
@@ -212,17 +212,19 @@ export class Kysely<DB> extends QueryCreator<DB> {
    * const catto = await db.transaction().execute(async (trx) => {
    *   const jennifer = await trx.insertInto('person')
    *     .values({
+   *       id: db.generated,
    *       first_name: 'Jennifer',
-   *      last_name: 'Aniston',
+   *       last_name: 'Aniston',
    *     })
    *     .returning('id')
-   *     .executeTakeFirst()
+   *     .executeTakeFirstOrThrow()
    *
    *   await someFunction(trx, jennifer)
    *
    *   return await trx.insertInto('pet')
    *     .values({
-   *       user_id: jennifer!.id,
+   *       id: db.generated,
+   *       user_id: jennifer.id,
    *       name: 'Catto',
    *       species: 'cat'
    *     })

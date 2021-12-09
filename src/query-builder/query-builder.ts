@@ -48,12 +48,7 @@ import {
   FilterableQueryNode,
   MutatingQueryNode,
 } from '../operation-node/query-node.js'
-import {
-  AnyColumn,
-  ManyResultRowType,
-  NonEmptySingleResultRowType,
-  SingleResultRowType,
-} from '../util/type-utils.js'
+import { AnyColumn, SingleResultType } from '../util/type-utils.js'
 import {
   OrderByDirectionExpression,
   OrderByExpression,
@@ -82,6 +77,9 @@ import { DeleteQueryNode } from '../operation-node/delete-query-node.js'
 import { OnDuplicateKeyNode } from '../operation-node/on-duplicate-key-node.js'
 import { parseGroupBy } from '../parser/group-by-parser.js'
 import { parseUnion, UnionExpression } from '../parser/union-parser.js'
+import { InsertResult } from './insert-result.js'
+import { UpdateResult } from './update-result.js'
+import { DeleteResult } from './delete-result.js'
 
 /**
  * The main query builder class.
@@ -124,7 +122,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    *   .executeTakeFirst()
    * ```
    *
-   * The generated SQL (postgresql):
+   * The generated SQL (PostgreSQL):
    *
    * ```sql
    * select * from "person" where "id" = $1
@@ -142,7 +140,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    *   .execute()
    * ```
    *
-   * The generated SQL (postgresql):
+   * The generated SQL (PostgreSQL):
    *
    * ```sql
    * select * from "person" where "id" > $1
@@ -189,7 +187,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    *   .execute()
    * ```
    *
-   * The generated SQL (postgresql):
+   * The generated SQL (PostgreSQL):
    *
    * ```sql
    * select *
@@ -215,7 +213,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    *   .execute()
    * ```
    *
-   * The generated SQL (postgresql):
+   * The generated SQL (PostgreSQL):
    *
    * ```sql
    * select * from "person" where "id" in ($1, $2, $3)
@@ -237,7 +235,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    *   .execute()
    * ```
    *
-   * The generated SQL (postgresql):
+   * The generated SQL (PostgreSQL):
    *
    * ```sql
    * select * from "person"
@@ -259,7 +257,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    *   .execute()
    * ```
    *
-   * The generated SQL (postgresql):
+   * The generated SQL (PostgreSQL):
    *
    * ```sql
    * select * from "person" (where "id" = 1 or "id" = 2)
@@ -327,7 +325,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    *   .whereRef('person.first_name', '=', 'pet.name')
    * ```
    *
-   * The generated SQL (postgresql):
+   * The generated SQL (PostgreSQL):
    *
    * ```sql
    * select * from "person", "pet" where "person"."first_name" = "pet"."name"
@@ -350,7 +348,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    *   .execute()
    * ```
    *
-   * The generated SQL (postgresql):
+   * The generated SQL (PostgreSQL):
    *
    * ```sql
    * select "person".*, (
@@ -395,7 +393,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    *   .execute()
    * ```
    *
-   * The generated SQL (postgresql):
+   * The generated SQL (PostgreSQL):
    *
    * ```sql
    * select * from "person" where "id" = 1 or "id" = 2
@@ -415,7 +413,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    *   .execute()
    * ```
    *
-   * The generated SQL (postgresql):
+   * The generated SQL (PostgreSQL):
    *
    * ```sql
    * select * from "person" (where "id" = 1 or "id" = 2)
@@ -436,7 +434,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    *   .execute()
    * ```
    *
-   * The generated SQL (postgresql):
+   * The generated SQL (PostgreSQL):
    *
    * ```sql
    * select * from "person" (where "id" = 1 or "id" = 2)
@@ -507,7 +505,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    *   .execute()
    * ```
    *
-   * The generated SQL (postgresql):
+   * The generated SQL (PostgreSQL):
    *
    * ```sql
    * select * from "person"
@@ -533,7 +531,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    *   )
    * ```
    *
-   * The generated SQL (postgresql):
+   * The generated SQL (PostgreSQL):
    *
    * ```sql
    * select * from "person"
@@ -789,7 +787,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * persons[0].id
    * ```
    *
-   * The generated SQL (postgresql):
+   * The generated SQL (PostgreSQL):
    *
    * ```sql
    * select "id" from "person" where "first_name" = $1
@@ -806,7 +804,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * persons[0].id
    * ```
    *
-   * The generated SQL (postgresql):
+   * The generated SQL (PostgreSQL):
    *
    * ```sql
    * select "person"."id" from "person", "pet"
@@ -824,7 +822,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * persons[0].first_name
    * ```
    *
-   * The generated SQL (postgresql):
+   * The generated SQL (PostgreSQL):
    *
    * ```sql
    * select "person"."id", "first_name" from "person"
@@ -845,7 +843,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * persons[0].ln
    * ```
    *
-   * The generated SQL (postgresql):
+   * The generated SQL (PostgreSQL):
    *
    * ```sql
    * select
@@ -876,7 +874,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * persons[0].full_name
    * ```
    *
-   * The generated SQL (postgresql):
+   * The generated SQL (PostgreSQL):
    *
    * ```sql
    * select
@@ -967,7 +965,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    *   .execute()
    * ```
    *
-   * The generated SQL (postgresql):
+   * The generated SQL (PostgreSQL):
    *
    * ```sql
    * select distinct on ("person"."id") "person".*
@@ -1007,7 +1005,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    *   .execute()
    * ```
    *
-   * The generated SQL (postgresql):
+   * The generated SQL (PostgreSQL):
    *
    * ```sql
    * select distinct "first_name" from "person"
@@ -1123,7 +1121,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    *   .execute()
    * ```
    *
-   * The generated SQL (postgresql):
+   * The generated SQL (PostgreSQL):
    *
    * ```sql
    * select * from "person"
@@ -1137,7 +1135,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    *   .execute()
    * ```
    *
-   * The generated SQL (postgresql):
+   * The generated SQL (PostgreSQL):
    *
    * ```sql
    * select "person".* from "person"
@@ -1151,7 +1149,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    *   .execute()
    * ```
    *
-   * The generated SQL (postgresql):
+   * The generated SQL (PostgreSQL):
    *
    * ```sql
    * select "person".*, "pet".* from "person", "pet"
@@ -1196,7 +1194,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * result[0].name
    * ```
    *
-   * The generated SQL (postgresql):
+   * The generated SQL (PostgreSQL):
    *
    * ```sql
    * select "person"."id", "pet"."name"
@@ -1216,7 +1214,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    *   .execute()
    * ```
    *
-   * The generated SQL (postgresql):
+   * The generated SQL (PostgreSQL):
    *
    * ```sql
    * select *
@@ -1247,7 +1245,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    *   .execute()
    * ```
    *
-   * The generated SQL (postgresql):
+   * The generated SQL (PostgreSQL):
    *
    * ```sql
    * select *
@@ -1275,7 +1273,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    *   .execute()
    * ```
    *
-   * The generated SQL (postgresql):
+   * The generated SQL (PostgreSQL):
    *
    * ```sql
    * select *
@@ -1398,19 +1396,19 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * This method takes an object whose keys are column names and values are
    * values to insert. In addition to the column's type, the values can be
    * {@link Kysely.raw | raw} instances, select queries or the
-   * {@link Kysely.generated} placeholder.
+   * {@link Kysely.generated | generated} placeholder.
    *
-   * You must provide all values defined by the interface for the table you
-   * are inserting into. Values that are generated by the database like autoincrementing
+   * You must provide all values defined by the interface of the table you
+   * are inserting into. Values that are generated by the database like auto incrementing
    * identifiers can be marked with the {@link Kysely.generated} placeholder unless you
    * want to insert a specific value instead of the generated default.
    *
-   * The return value is the primary key of the inserted row BUT on some databases
-   * there is no return value by default. That's the reason for the `number | undefined`
-   * type of the return value. On postgres you need to additionally call `returning` to get
-   * something out of the query. If you know your database engine always returns the primary
-   * key, you can use the {@link QueryBuilder.executeTakeFirstOrThrow | executeTakeFirstOrThrow}
-   * method to execute the query.
+   * The return value of an `insert` query is an instance of {@link InsertResult}. The
+   * {@link InsertResult.insertId | insertId} field holds the auto incremented primary
+   * key if the database returned one.
+   *
+   * On PostgreSQL and some other dialects, you need to call `returning` to get
+   * something out of the query.
    *
    * @example
    * Insert a row into `person`:
@@ -1425,16 +1423,16 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    *   .executeTakeFirstOrThrow()
    * ```
    *
-   * The generated SQL (postgresql):
+   * The generated SQL (PostgreSQL):
    *
    * ```sql
    * insert into "person" ("first_name", "last_name") values ($1, $2)
    * ```
    *
    * @example
-   * On dialects that support it (for example postgres) you can insert multiple
+   * On dialects that support it (for example PostgreSQL) you can insert multiple
    * rows by providing an array. Note that the return value is once again very
-   * dialect-specific. Some databases may only return the id of the *first* inserted
+   * dialect-specific. Some databases may only return the id of the *last* inserted
    * row and some return nothing at all unless you call `returning`.
    *
    * ```ts
@@ -1452,7 +1450,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    *   .execute()
    * ```
    *
-   * The generated SQL (postgresql):
+   * The generated SQL (PostgreSQL):
    *
    * ```sql
    * insert into "person" ("first_name", "last_name") values (($1, $2), ($3, $4))
@@ -1477,7 +1475,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * row.id
    * ```
    *
-   * The generated SQL (postgresql):
+   * The generated SQL (PostgreSQL):
    *
    * ```sql
    * insert into "person" ("first_name", "last_name") values ($1, $2) returning "id"
@@ -1488,7 +1486,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * select queries:
    *
    * ```ts
-   * const maybeId = await db
+   * const result = await db
    *   .insertInto('person')
    *   .values({
    *     id: db.generated,
@@ -1497,9 +1495,11 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    *     age: db.selectFrom('person').select(raw('avg(age)')),
    *   })
    *   .executeTakeFirst()
+   *
+   * console.log(result.insertId)
    * ```
    *
-   * The generated SQL (postgresql):
+   * The generated SQL (PostgreSQL):
    *
    * ```sql
    * insert into "person" ("first_name", "last_name", "age")
@@ -1533,7 +1533,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * database, calling `onConflictDoNothing('name')` will ignore the conflict
    * and do nothing. By default the query would throw.
    *
-   * Only some dialects like postgres and sqlite implement the `on conflict`
+   * Only some dialects like PostgreSQL and SQLite implement the `on conflict`
    * statement. On MySQL you should use the {@link ignore} method to achieve
    * similar results.
    *
@@ -1553,7 +1553,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    *   .execute()
    * ```
    *
-   * The generated SQL (postgresql):
+   * The generated SQL (PostgreSQL):
    *
    * ```sql
    * insert into "pet" ("name", "species")
@@ -1578,7 +1578,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    *   .execute()
    * ```
    *
-   * The generated SQL (postgresql):
+   * The generated SQL (PostgreSQL):
    *
    * ```sql
    * insert into "pet" ("name", "species")
@@ -1657,7 +1657,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * method accepts.
    *
    * The `on conflict do update` statement is only implemented by some dialects
-   * like postgres and sqlite. On MySQL you should use the {@link onDuplicateKeyUpdate}
+   * like PostgreSQL and SQLite. On MySQL you should use the {@link onDuplicateKeyUpdate}
    * method instead.
    *
    * Also see the {@link QueryBuilder.onConflictDoNothing | onConflictDoNothing}
@@ -1676,7 +1676,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    *   .execute()
    * ```
    *
-   * The generated SQL (postgresql):
+   * The generated SQL (PostgreSQL):
    *
    * ```sql
    * insert into "pet" ("name", "species")
@@ -1702,7 +1702,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    *   .execute()
    * ```
    *
-   * The generated SQL (postgresql):
+   * The generated SQL (PostgreSQL):
    *
    * ```sql
    * insert into "pet" ("name", "species")
@@ -1783,15 +1783,15 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * values to update. In addition to the column's type, the values can be `raw`
    * instances or select queries.
    *
-   * The return value is the number of affected rows. You can use the
-   * {@link QueryBuilder.returning | returning} method on supported databases
-   * to get out the updated rows.
+   * The return value of an update query is an instance of {@link UpdateResult}.
+   * You can use the {@link QueryBuilder.returning | returning} method on 
+   * supported databases to get out the updated rows.
    *
    * @example
    * Update a row in `person` table:
    *
    * ```ts
-   * const numAffectedRows = await db
+   * const result = await db
    *   .updateTable('person')
    *   .set({
    *     first_name: 'Jennifer',
@@ -1799,9 +1799,11 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    *   })
    *   .where('id', '=', 1)
    *   .executeTakeFirst()
+   *
+   * console.log(result.numUpdatedRows)
    * ```
    *
-   * The generated SQL (postgresql):
+   * The generated SQL (PostgreSQL):
    *
    * ```sql
    * update "person" set "first_name" = $1, "last_name" = $2 where "id" = $3
@@ -1826,7 +1828,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * row.id
    * ```
    *
-   * The generated SQL (postgresql):
+   * The generated SQL (PostgreSQL):
    *
    * ```sql
    * update "person" set "first_name" = $1, "last_name" = $2 where "id" = $3 returning "id"
@@ -1837,7 +1839,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * select queries:
    *
    * ```ts
-   * const numAffectedRows = await db
+   * const result = await db
    *   .updateTable('person')
    *   .set({
    *     first_name: 'Jennifer',
@@ -1846,9 +1848,11 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    *   })
    *   .where('id', '=', 1)
    *   .executeTakeFirst()
+   *
+   * console.log(result.numUpdatedRows)
    * ```
    *
-   * The generated SQL (postgresql):
+   * The generated SQL (PostgreSQL):
    *
    * ```sql
    * update "person" set
@@ -1873,8 +1877,12 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
   /**
    * Allows you to return data from modified rows.
    *
-   * On supported databases like postgres, this method can be chained to
+   * On supported databases like PostgreSQL, this method can be chained to
    * `insert`, `update` and `delete` queries to return data.
+   *
+   * Note that on SQLite you need to give aliases for the expressions to avoid
+   * [this bug](https://sqlite.org/forum/forumpost/033daf0b32) in SQLite.
+   * For example `.returning('id as id')`.
    *
    * Also see the {@link QueryBuilder.returningAll | returningAll} method.
    *
@@ -1922,6 +1930,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    *     last_name: 'Aniston'
    *   })
    *   .returning([
+   *     'id as id',
    *     raw<string>(`concat(first_name, ' ', last_name)`).as('full_name'),
    *     (qb) => qb.subQuery('pets').select('pet.id').limit(1).as('first_pet_id')
    *   ])
@@ -1950,7 +1959,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
 
   /**
    * Adds a `returning *` to an insert/update/delete query on databases
-   * that support `returning` such as postgres.
+   * that support `returning` such as PostgreSQL.
    */
   returningAll(): QueryBuilder<DB, TB, DB[TB]> {
     assertCanHaveReturningClause(this.#props.queryNode)
@@ -1983,7 +1992,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    *   .execute()
    * ```
    *
-   * The generated SQL (postgresql):
+   * The generated SQL (PostgreSQL):
    *
    * ```sql
    * select "person"."first_name" as "fn"
@@ -2010,7 +2019,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    *   .execute()
    * ```
    *
-   * The generated SQL (postgresql):
+   * The generated SQL (PostgreSQL):
    *
    * ```sql
    * select *
@@ -2042,7 +2051,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * someQuery('fn')
    * ```
    *
-   * The generated SQL (postgresql):
+   * The generated SQL (PostgreSQL):
    *
    * ```sql
    * select "person"."first_name" as "fn"
@@ -2080,7 +2089,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    *   .execute()
    * ```
    *
-   * The generated SQL (postgresql):
+   * The generated SQL (PostgreSQL):
    *
    * ```sql
    * select "first_name", max(id)
@@ -2108,7 +2117,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    *   .execute()
    * ```
    *
-   * The generated SQL (postgresql):
+   * The generated SQL (PostgreSQL):
    *
    * ```sql
    * select "first_name", "last_name", max(id)
@@ -2155,7 +2164,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * someQuery('first_name')
    * ```
    *
-   * The generated SQL (postgresql):
+   * The generated SQL (PostgreSQL):
    *
    * ```sql
    * select "first_name"
@@ -2380,43 +2389,27 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    *
    * Also see the {@link executeTakeFirst} and {@link executeTakeFirstOrThrow} methods.
    */
-  async execute(): Promise<ManyResultRowType<O>[]> {
-    const node = this.#props.executor.transformQuery(
-      this.#props.queryNode,
+  async execute(): Promise<O[]> {
+    const compildQuery = this.compile()
+    const query = compildQuery.query
+
+    const result = await this.#props.executor.executeQuery<O>(
+      compildQuery,
       this.#props.queryId
     )
 
-    const compildQuery = this.#props.executor.compileQuery(
-      node,
-      this.#props.queryId
-    )
-
-    const result = await this.#props.executor.executeQuery<
-      ManyResultRowType<O>
-    >(compildQuery, this.#props.queryId)
-
-    if (InsertQueryNode.is(node)) {
-      if (
-        this.#props.parseContext.adapter.supportsReturning &&
-        node.returning
-      ) {
-        return result.rows
-      } else if (result.insertedPrimaryKey != null) {
-        return [result.insertedPrimaryKey as ManyResultRowType<O>]
-      } else {
-        return []
-      }
-    } else if (UpdateQueryNode.is(node) || DeleteQueryNode.is(node)) {
-      if (
-        this.#props.parseContext.adapter.supportsReturning &&
-        node.returning
-      ) {
-        return result.rows
-      } else if (result.numUpdatedOrDeletedRows != null) {
-        return [result.numUpdatedOrDeletedRows as ManyResultRowType<O>]
-      } else {
-        return []
-      }
+    if (
+      this.#props.parseContext.adapter.supportsReturning &&
+      QueryNode.isMutating(query) &&
+      query.returning
+    ) {
+      return result.rows
+    } else if (InsertQueryNode.is(query)) {
+      return [new InsertResult(result.insertId) as unknown as O]
+    } else if (UpdateQueryNode.is(query)) {
+      return [new UpdateResult(result.numUpdatedOrDeletedRows!) as unknown as O]
+    } else if (DeleteQueryNode.is(query)) {
+      return [new DeleteResult(result.numUpdatedOrDeletedRows!) as unknown as O]
     } else {
       return result.rows
     }
@@ -2426,9 +2419,9 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * Executes the query and returns the first result or undefined if
    * the query returned no result.
    */
-  async executeTakeFirst(): Promise<SingleResultRowType<O>> {
+  async executeTakeFirst(): Promise<SingleResultType<O>> {
     const [result] = await this.execute()
-    return result
+    return result as SingleResultType<O>
   }
 
   /**
@@ -2441,14 +2434,14 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    */
   async executeTakeFirstOrThrow(
     errorConstructor: NoResultErrorConstructor = NoResultError
-  ): Promise<NonEmptySingleResultRowType<O>> {
+  ): Promise<O> {
     const result = await this.executeTakeFirst()
 
     if (result === undefined) {
       throw new errorConstructor(this.toOperationNode())
     }
 
-    return result as NonEmptySingleResultRowType<O>
+    return result as O
   }
 }
 

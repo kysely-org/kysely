@@ -65,6 +65,7 @@ for (const dialect of ['postgres'] as const) {
             parameters: [],
           },
           mysql: NOT_SUPPORTED,
+          sqlite: NOT_SUPPORTED,
         })
 
         await query.execute()
@@ -83,6 +84,7 @@ for (const dialect of ['postgres'] as const) {
             parameters: [],
           },
           mysql: NOT_SUPPORTED,
+          sqlite: NOT_SUPPORTED,
         })
 
         await query.execute()
@@ -101,6 +103,7 @@ for (const dialect of ['postgres'] as const) {
             parameters: [],
           },
           mysql: NOT_SUPPORTED,
+          sqlite: NOT_SUPPORTED,
         })
 
         await query.execute()
@@ -118,6 +121,7 @@ for (const dialect of ['postgres'] as const) {
             parameters: [],
           },
           mysql: NOT_SUPPORTED,
+          sqlite: NOT_SUPPORTED,
         })
 
         await query.execute()
@@ -147,6 +151,7 @@ for (const dialect of ['postgres'] as const) {
             parameters: [],
           },
           mysql: NOT_SUPPORTED,
+          sqlite: NOT_SUPPORTED,
         })
 
         await query.execute()
@@ -177,6 +182,7 @@ for (const dialect of ['postgres'] as const) {
             parameters: [],
           },
           mysql: NOT_SUPPORTED,
+          sqlite: NOT_SUPPORTED,
         })
 
         await query.execute()
@@ -208,6 +214,7 @@ for (const dialect of ['postgres'] as const) {
             parameters: ['Doggo', 'dog', anyPerson.id],
           },
           mysql: NOT_SUPPORTED,
+          sqlite: NOT_SUPPORTED,
         })
       })
     })
@@ -225,6 +232,7 @@ for (const dialect of ['postgres'] as const) {
             parameters: ['Doggo'],
           },
           mysql: NOT_SUPPORTED,
+          sqlite: NOT_SUPPORTED,
         })
 
         await query.execute()
@@ -245,6 +253,7 @@ for (const dialect of ['postgres'] as const) {
             parameters: ['cat', 'Doggo'],
           },
           mysql: NOT_SUPPORTED,
+          sqlite: NOT_SUPPORTED,
         })
 
         await query.execute()

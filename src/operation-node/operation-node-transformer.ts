@@ -63,6 +63,7 @@ import { CreateViewNode } from './create-view-node.js'
 import { DropViewNode } from './drop-view-node.js'
 import { GeneratedAlwaysAsNode } from './generated-always-as-node.js'
 import { DefaultValueNode } from './default-value-node.js'
+import { OnNode } from './on-node.js'
 
 /**
  * Transforms an operation node tree into another one.
@@ -160,6 +161,7 @@ export class OperationNodeTransformer {
     DropViewNode: this.transformDropView.bind(this),
     GeneratedAlwaysAsNode: this.transformGeneratedAlwaysAs.bind(this),
     DefaultValueNode: this.transformDefaultValue.bind(this),
+    OnNode: this.transformOn.bind(this),
   })
 
   readonly transformNode = <T extends OperationNode | undefined>(
@@ -670,6 +672,7 @@ export class OperationNodeTransformer {
       kind: 'CreateViewNode',
       name: this.transformNode(node.name),
       orReplace: node.orReplace,
+      ifNotExists: node.ifNotExists,
       materialized: node.materialized,
       columns: this.transformNodeList(node.columns),
       as: this.transformNode(node.as),
@@ -699,6 +702,13 @@ export class OperationNodeTransformer {
     return {
       kind: 'DefaultValueNode',
       defaultValue: this.transformNode(node.defaultValue),
+    }
+  }
+
+  protected transformOn(node: OnNode): OnNode {
+    return {
+      kind: 'OnNode',
+      on: this.transformNode(node.on),
     }
   }
 

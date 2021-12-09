@@ -116,7 +116,7 @@ export class MigrationModule {
 
 export interface Migration {
   up(db: Kysely<any>): Promise<void>
-  down(db: Kysely<any>): Promise<void>
+  down?(db: Kysely<any>): Promise<void>
 }
 
 async function ensureMigrationTablesExists(db: Kysely<any>): Promise<void> {
@@ -137,7 +137,7 @@ async function ensureMigrationTableExists(db: Kysely<any>): Promise<void> {
         .addColumn('timestamp', 'varchar(255)', (col) => col.notNull())
         .execute()
     } catch (error) {
-      // At least on postgres, `if not exists` doesn't guarantee the `create table`
+      // At least on PostgreSQL, `if not exists` doesn't guarantee the `create table`
       // query doesn't throw if the table already exits. That's why we check if
       // the table exist here and ignore the error if it does.
       if (!(await doesTableExists(db, MIGRATION_TABLE))) {
@@ -157,7 +157,7 @@ async function ensureMigrationLockTableExists(db: Kysely<any>): Promise<void> {
         .addColumn('is_locked', 'integer', (col) => col.notNull().defaultTo(0))
         .execute()
     } catch (error) {
-      // At least on postgres, `if not exists` doesn't guarantee the `create table`
+      // At least on PostgreSQL, `if not exists` doesn't guarantee the `create table`
       // query doesn't throw if the table already exits. That's why we check if
       // the table exist here and ignore the error if it does.
       if (!(await doesTableExists(db, MIGRATION_LOCK_TABLE))) {
@@ -303,5 +303,5 @@ function ensureMigrationsAreNotCorrupted(
 }
 
 function isMigration(obj: unknown): obj is Migration {
-  return isObject(obj) && isFunction(obj.up) && isFunction(obj.down)
+  return isObject(obj) && isFunction(obj.up)
 }

@@ -41,7 +41,7 @@ export class ExpressionBuilder<DB, TB extends keyof DB> {
    *   .execute()
    * ```
    *
-   * The generated SQL (postgresql):
+   * The generated SQL (PostgreSQL):
    *
    * ```sql
    * select "person"."id", count("pet"."id") as "pet_count"
@@ -80,7 +80,7 @@ export class ExpressionBuilder<DB, TB extends keyof DB> {
    * console.log(result[0].owner_name)
    * ```
    *
-   * The generated SQL (postgresql):
+   * The generated SQL (PostgreSQL):
    *
    * ```sql
    * select

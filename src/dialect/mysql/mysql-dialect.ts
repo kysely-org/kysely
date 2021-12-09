@@ -42,7 +42,7 @@ export class MysqlDialect implements Dialect {
 }
 
 /**
- * Config for the mysql dialect.
+ * Config for the MySQL dialect.
  *
  * This interface is equal to `mysql2` library's pool config.
  *
@@ -177,7 +177,7 @@ export interface MysqlDialectConfig {
   trace?: boolean
 
   /**
-   * Allow multiple mysql statements per query. Be careful with this, it exposes you to SQL injection attacks. (Default: false)
+   * Allow multiple MySQL statements per query. Be careful with this, it exposes you to SQL injection attacks. (Default: false)
    */
   multipleStatements?: boolean
 
@@ -236,7 +236,7 @@ export interface MysqlDialectConfig {
   /**
    * Called once for each created connection.
    *
-   * This is a Kysely specific feature and does not come from the `pg` module.
+   * This is a Kysely specific feature and does not come from the `mysql2` module.
    */
   onCreateConnection?: (connection: DatabaseConnection) => Promise<void>
 }

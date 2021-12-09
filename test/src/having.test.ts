@@ -57,7 +57,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
     })
 
     it('should add a having statement', async () => {
-      const petCount = ctx.db.raw<number>('count(pet.id)')
+      const petCount = ctx.db.raw<number | string>('count(pet.id)')
 
       const query = ctx.db
         .selectFrom('person')
@@ -87,14 +87,32 @@ for (const dialect of BUILT_IN_DIALECTS) {
           ],
           parameters: [1],
         },
+        sqlite: {
+          sql: [
+            `select "first_name", count(pet.id) as "num_pets"`,
+            `from "person"`,
+            `inner join "pet" on "pet"."owner_id" = "person"."id"`,
+            `group by "first_name"`,
+            `having count(pet.id) > ?`,
+          ],
+          parameters: [1],
+        },
       })
 
       const result = await query.execute()
       expect(result).to.have.length(2)
-      expect(result).to.containSubset([
-        { first_name: 'Jennifer', num_pets: '2' },
-        { first_name: 'Arnold', num_pets: '2' },
-      ])
+
+      if (dialect === 'sqlite') {
+        expect(result).to.containSubset([
+          { first_name: 'Jennifer', num_pets: 2 },
+          { first_name: 'Arnold', num_pets: 2 },
+        ])
+      } else {
+        expect(result).to.containSubset([
+          { first_name: 'Jennifer', num_pets: '2' },
+          { first_name: 'Arnold', num_pets: '2' },
+        ])
+      }
     })
 
     it('should use an aggregate function in a having statement', async () => {
@@ -103,7 +121,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
       const query = ctx.db
         .selectFrom('person')
         .innerJoin('pet', 'pet.owner_id', 'person.id')
-        .select(['person.id', count<string>('pet.id').as('num_pets')])
+        .select(['person.id', count<string | number>('pet.id').as('num_pets')])
         .groupBy('person.id')
         .having(count('pet.id'), '>', 1)
 
@@ -128,11 +146,26 @@ for (const dialect of BUILT_IN_DIALECTS) {
           ],
           parameters: [1],
         },
+        sqlite: {
+          sql: [
+            `select "person"."id", count("pet"."id") as "num_pets"`,
+            `from "person"`,
+            `inner join "pet" on "pet"."owner_id" = "person"."id"`,
+            `group by "person"."id"`,
+            `having count("pet"."id") > ?`,
+          ],
+          parameters: [1],
+        },
       })
 
       const result = await query.execute()
       expect(result).to.have.length(2)
-      expect(result).to.containSubset([{ num_pets: '2' }, { num_pets: '2' }])
+
+      if (dialect === 'sqlite') {
+        expect(result).to.containSubset([{ num_pets: 2 }, { num_pets: 2 }])
+      } else {
+        expect(result).to.containSubset([{ num_pets: '2' }, { num_pets: '2' }])
+      }
     })
 
     it('smoke test for all *having* methods', async () => {
@@ -180,6 +213,22 @@ for (const dialect of BUILT_IN_DIALECTS) {
             'and not exists (select `id` from `pet`)',
             'or not exists (select `id` from `pet`)',
             'and (`id` = ? or `id` = ?)',
+          ],
+          parameters: [1, 2, 3, 'foo', 1, 2],
+        },
+        sqlite: {
+          sql: [
+            `select * from "person"`,
+            `group by "first_name"`,
+            `having "id" in (?, ?, ?)`,
+            `or "first_name" < ?`,
+            `and "first_name" = "first_name"`,
+            `or "first_name" = "first_name"`,
+            `and exists (select "id" from "pet")`,
+            `or exists (select "id" from "pet")`,
+            `and not exists (select "id" from "pet")`,
+            `or not exists (select "id" from "pet")`,
+            'and ("id" = ? or "id" = ?)',
           ],
           parameters: [1, 2, 3, 'foo', 1, 2],
         },

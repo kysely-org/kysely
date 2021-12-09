@@ -4,6 +4,9 @@ export * from './query-creator.js'
 export * from './query-builder/query-builder.js'
 export * from './query-builder/join-builder.js'
 export * from './query-builder/expression-builder.js'
+export * from './query-builder/insert-result.js'
+export * from './query-builder/delete-result.js'
+export * from './query-builder/update-result.js'
 
 export * from './raw-builder/raw-builder.js'
 
@@ -46,6 +49,12 @@ export * from './dialect/mysql/mysql-query-compiler.js'
 export * from './dialect/mysql/mysql-driver.js'
 export * from './dialect/mysql/mysql-introspector.js'
 export * from './dialect/mysql/mysql-adapter.js'
+
+export * from './dialect/sqlite/sqlite-dialect.js'
+export * from './dialect/sqlite/sqlite-query-compiler.js'
+export * from './dialect/sqlite/sqlite-driver.js'
+export * from './dialect/sqlite/sqlite-introspector.js'
+export * from './dialect/sqlite/sqlite-adapter.js'
 
 export * from './query-compiler/default-query-compiler.js'
 export * from './query-compiler/query-compiler.js'

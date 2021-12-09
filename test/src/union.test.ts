@@ -6,7 +6,6 @@ import {
   TestContext,
   testSql,
   expect,
-  NOT_SUPPORTED,
   TEST_INIT_TIMEOUT,
   insertDefaultDataSet,
 } from './test-setup.js'
@@ -41,11 +40,15 @@ for (const dialect of BUILT_IN_DIALECTS) {
 
       testSql(query, dialect, {
         postgres: {
-          sql: 'select "id", "first_name" as "name" from "person" union (select "id", "name" from "pet") order by "name"',
+          sql: 'select "id", "first_name" as "name" from "person" union select "id", "name" from "pet" order by "name"',
           parameters: [],
         },
         mysql: {
-          sql: 'select `id`, `first_name` as `name` from `person` union (select `id`, `name` from `pet`) order by `name`',
+          sql: 'select `id`, `first_name` as `name` from `person` union select `id`, `name` from `pet` order by `name`',
+          parameters: [],
+        },
+        sqlite: {
+          sql: 'select "id", "first_name" as "name" from "person" union select "id", "name" from "pet" order by "name"',
           parameters: [],
         },
       })
@@ -70,11 +73,15 @@ for (const dialect of BUILT_IN_DIALECTS) {
 
       testSql(query, dialect, {
         postgres: {
-          sql: 'select "id", "first_name" as "name" from "person" union all (select "id", "name" from "pet") order by "name"',
+          sql: 'select "id", "first_name" as "name" from "person" union all select "id", "name" from "pet" order by "name"',
           parameters: [],
         },
         mysql: {
-          sql: 'select `id`, `first_name` as `name` from `person` union all (select `id`, `name` from `pet`) order by `name`',
+          sql: 'select `id`, `first_name` as `name` from `person` union all select `id`, `name` from `pet` order by `name`',
+          parameters: [],
+        },
+        sqlite: {
+          sql: 'select "id", "first_name" as "name" from "person" union all select "id", "name" from "pet" order by "name"',
           parameters: [],
         },
       })

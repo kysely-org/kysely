@@ -8,6 +8,7 @@ import {
   testSql,
   expect,
   TEST_INIT_TIMEOUT,
+  NOT_SUPPORTED,
 } from './test-setup.js'
 
 for (const dialect of BUILT_IN_DIALECTS) {
@@ -73,6 +74,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
             sql: `select * from \`person\` inner join \`pet\` on \`pet\`.\`owner_id\` = \`person\`.\`id\` order by \`person\`.\`first_name\``,
             parameters: [],
           },
+          sqlite: {
+            sql: `select * from "person" inner join "pet" on "pet"."owner_id" = "person"."id" order by "person"."first_name"`,
+            parameters: [],
+          },
         })
 
         const result = await query.execute()
@@ -130,6 +135,15 @@ for (const dialect of BUILT_IN_DIALECTS) {
             ],
             parameters: [],
           },
+          sqlite: {
+            sql: [
+              `select * from "person"`,
+              `inner join (select "owner_id" as "oid", "name" from "pet") as "p"`,
+              `on "p"."oid" = "person"."id"`,
+              `order by "person"."first_name"`,
+            ],
+            parameters: [],
+          },
         })
 
         const result = await query.execute()
@@ -169,6 +183,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
           },
           mysql: {
             sql: `select \`pet\`.\`name\` as \`pet_name\`, \`toy\`.\`name\` as \`toy_name\` from \`person\` inner join \`pet\` on \`pet\`.\`owner_id\` = \`person\`.\`id\` inner join \`toy\` on \`toy\`.\`pet_id\` = \`pet\`.\`id\` where \`first_name\` = ?`,
+            parameters: ['Jennifer'],
+          },
+          sqlite: {
+            sql: `select "pet"."name" as "pet_name", "toy"."name" as "toy_name" from "person" inner join "pet" on "pet"."owner_id" = "person"."id" inner join "toy" on "toy"."pet_id" = "pet"."id" where "first_name" = ?`,
             parameters: ['Jennifer'],
           },
         })
@@ -230,6 +248,17 @@ for (const dialect of BUILT_IN_DIALECTS) {
             ],
             parameters: ['Catto', 'Doggo', 'Hammo', 'cat', 'dog', 1, 0],
           },
+          sqlite: {
+            sql: [
+              `select * from "person"`,
+              `inner join "pet"`,
+              `on "pet"."owner_id" = "person"."id"`,
+              `and "pet"."name" in (?, ?, ?)`,
+              `and ("pet"."species" = ? or "species" = ? or "species" = (select 'hamster' as "hamster" from "pet" limit ? offset ?))`,
+              `order by "person"."first_name"`,
+            ],
+            parameters: ['Catto', 'Doggo', 'Hammo', 'cat', 'dog', 1, 0],
+          },
         })
 
         await query.execute()
@@ -270,6 +299,14 @@ for (const dialect of BUILT_IN_DIALECTS) {
               ],
               parameters: [],
             },
+            sqlite: {
+              sql: [
+                `select "pet"."id" from "person"`,
+                `inner join "pet" on ${existsSql}`,
+                `(select "id" from "pet" as "p" where "p"."id" = "pet"."id" and "p"."owner_id" = "person"."id")`,
+              ],
+              parameters: [],
+            },
           })
 
           await query.execute()
@@ -292,6 +329,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
           },
           mysql: {
             sql: `select * from \`person\` left join \`pet\` on \`pet\`.\`owner_id\` = \`person\`.\`id\` order by \`person\`.\`first_name\``,
+            parameters: [],
+          },
+          sqlite: {
+            sql: `select * from "person" left join "pet" on "pet"."owner_id" = "person"."id" order by "person"."first_name"`,
             parameters: [],
           },
         })
@@ -332,6 +373,15 @@ for (const dialect of BUILT_IN_DIALECTS) {
             ],
             parameters: [],
           },
+          sqlite: {
+            sql: [
+              `select * from "person"`,
+              `left join (select "owner_id" as "oid", "name" from "pet") as "p"`,
+              `on "p"."oid" = "person"."id"`,
+              `order by "person"."first_name"`,
+            ],
+            parameters: [],
+          },
         })
 
         await query.execute()
@@ -352,6 +402,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
           },
           mysql: {
             sql: `select \`pet\`.\`name\` as \`pet_name\`, \`toy\`.\`name\` as \`toy_name\` from \`person\` left join \`pet\` on \`pet\`.\`owner_id\` = \`person\`.\`id\` left join \`toy\` on \`toy\`.\`pet_id\` = \`pet\`.\`id\` where \`first_name\` = ?`,
+            parameters: ['Jennifer'],
+          },
+          sqlite: {
+            sql: `select "pet"."name" as "pet_name", "toy"."name" as "toy_name" from "person" left join "pet" on "pet"."owner_id" = "person"."id" left join "toy" on "toy"."pet_id" = "pet"."id" where "first_name" = ?`,
             parameters: ['Jennifer'],
           },
         })
@@ -405,6 +459,17 @@ for (const dialect of BUILT_IN_DIALECTS) {
             ],
             parameters: ['Catto', 'Doggo', 'Hammo', 'cat', 'dog', 1, 0],
           },
+          sqlite: {
+            sql: [
+              `select * from "person"`,
+              `left join "pet"`,
+              `on "pet"."owner_id" = "person"."id"`,
+              `and "pet"."name" in (?, ?, ?)`,
+              `and ("pet"."species" = ? or "species" = ? or "species" = (select 'hamster' as "hamster" from "pet" limit ? offset ?))`,
+              `order by "person"."first_name"`,
+            ],
+            parameters: ['Catto', 'Doggo', 'Hammo', 'cat', 'dog', 1, 0],
+          },
         })
 
         await query.execute()
@@ -445,6 +510,14 @@ for (const dialect of BUILT_IN_DIALECTS) {
               ],
               parameters: [],
             },
+            sqlite: {
+              sql: [
+                `select "pet"."id" from "person"`,
+                `left join "pet" on ${existsSql}`,
+                `(select "id" from "pet" as "p" where "p"."id" = "pet"."id" and "p"."owner_id" = "person"."id")`,
+              ],
+              parameters: [],
+            },
           })
 
           await query.execute()
@@ -452,30 +525,36 @@ for (const dialect of BUILT_IN_DIALECTS) {
       }
     })
 
-    describe('right join', () => {
-      it(`should right join a table`, async () => {
-        const query = ctx.db
-          .selectFrom('person')
-          .rightJoin('pet', 'pet.owner_id', 'person.id')
-          .selectAll()
-          .orderBy('person.first_name')
+    if (dialect !== 'sqlite') {
+      describe('right join', () => {
+        it(`should right join a table`, async () => {
+          const query = ctx.db
+            .selectFrom('person')
+            .rightJoin('pet', 'pet.owner_id', 'person.id')
+            .selectAll()
+            .orderBy('person.first_name')
 
-        testSql(query, dialect, {
-          postgres: {
-            sql: `select * from "person" right join "pet" on "pet"."owner_id" = "person"."id" order by "person"."first_name"`,
-            parameters: [],
-          },
-          mysql: {
-            sql: `select * from \`person\` right join \`pet\` on \`pet\`.\`owner_id\` = \`person\`.\`id\` order by \`person\`.\`first_name\``,
-            parameters: [],
-          },
+          testSql(query, dialect, {
+            postgres: {
+              sql: `select * from "person" right join "pet" on "pet"."owner_id" = "person"."id" order by "person"."first_name"`,
+              parameters: [],
+            },
+            mysql: {
+              sql: `select * from \`person\` right join \`pet\` on \`pet\`.\`owner_id\` = \`person\`.\`id\` order by \`person\`.\`first_name\``,
+              parameters: [],
+            },
+            sqlite: {
+              sql: `select * from "person" right join "pet" on "pet"."owner_id" = "person"."id" order by "person"."first_name"`,
+              parameters: [],
+            },
+          })
+
+          await query.execute()
         })
-
-        await query.execute()
       })
-    })
+    }
 
-    if (dialect !== 'mysql') {
+    if (dialect === 'postgres') {
       describe('full join', () => {
         it(`should full join a table`, async () => {
           const query = ctx.db
@@ -489,10 +568,8 @@ for (const dialect of BUILT_IN_DIALECTS) {
               sql: `select * from "person" full join "pet" on "pet"."owner_id" = "person"."id" order by "person"."first_name"`,
               parameters: [],
             },
-            mysql: {
-              sql: `select * from \`person\` full join \`pet\` on \`pet\`.\`owner_id\` = \`person\`.\`id\` order by \`person\`.\`first_name\``,
-              parameters: [],
-            },
+            mysql: NOT_SUPPORTED,
+            sqlite: NOT_SUPPORTED,
           })
 
           await query.execute()

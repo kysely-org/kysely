@@ -80,6 +80,7 @@ import { CreateViewNode } from '../operation-node/create-view-node.js'
 import { DropViewNode } from '../operation-node/drop-view-node.js'
 import { GeneratedAlwaysAsNode } from '../operation-node/generated-always-as-node.js'
 import { DefaultValueNode } from '../operation-node/default-value-node.js'
+import { OnNode } from '../operation-node/on-node.js'
 
 export class DefaultQueryCompiler
   extends OperationNodeVisitor
@@ -99,6 +100,7 @@ export class DefaultQueryCompiler
     this.visitNode(node)
 
     return freeze({
+      query: node,
       sql: this.getSql(),
       parameters: [...this.#parameters],
     })
@@ -109,10 +111,12 @@ export class DefaultQueryCompiler
   }
 
   protected override visitSelectQuery(node: SelectQueryNode): void {
-    // This is a sub query if this is not the root node.
-    const isSubQuery = this.nodeStack.length !== 1
+    const wrapInParens =
+      this.nodeStack.length !== 1 &&
+      !CreateViewNode.is(this.parentNode!) &&
+      !UnionNode.is(this.parentNode!)
 
-    if (isSubQuery) {
+    if (wrapInParens) {
       this.append('(')
     }
 
@@ -187,7 +191,7 @@ export class DefaultQueryCompiler
       })
     }
 
-    if (isSubQuery) {
+    if (wrapInParens) {
       this.append(')')
     }
   }
@@ -418,11 +422,16 @@ export class DefaultQueryCompiler
     this.append(JOIN_TYPE_SQL[node.joinType])
     this.append(' ')
     this.visitNode(node.table)
-    this.append(' on ')
 
     if (node.on) {
+      this.append(' ')
       this.visitNode(node.on)
     }
+  }
+
+  protected override visitOn(node: OnNode): void {
+    this.append('on ')
+    this.visitNode(node.on)
   }
 
   protected override visitRaw(node: RawNode): void {
@@ -481,17 +490,17 @@ export class DefaultQueryCompiler
       this.append(' not null')
     }
 
-    if (node.autoIncrement) {
-      this.append(' ')
-      this.append(this.getAutoIncrement())
-    }
-
     if (node.unique) {
       this.append(' unique')
     }
 
     if (node.primaryKey) {
       this.append(' primary key')
+    }
+
+    if (node.autoIncrement) {
+      this.append(' ')
+      this.append(this.getAutoIncrement())
     }
 
     if (node.references) {
@@ -930,6 +939,11 @@ export class DefaultQueryCompiler
     }
 
     this.append('view ')
+
+    if (node.ifNotExists) {
+      this.append('if not exists ')
+    }
+
     this.visitNode(node.name)
     this.append(' ')
 
@@ -1018,18 +1032,18 @@ export class DefaultQueryCompiler
   }
 }
 
-const SELECT_MODIFIER_SQL: Record<SelectModifier, string> = {
+const SELECT_MODIFIER_SQL: Readonly<Record<SelectModifier, string>> = freeze({
   ForKeyShare: 'for key share',
   ForNoKeyUpdate: 'for no key update',
   ForUpdate: 'for update',
   ForShare: 'for share',
   NoWait: 'nowait',
   SkipLocked: 'skip locked',
-}
+})
 
-const JOIN_TYPE_SQL: Record<JoinType, string> = {
+const JOIN_TYPE_SQL: Readonly<Record<JoinType, string>> = freeze({
   InnerJoin: 'inner join',
   LeftJoin: 'left join',
   RightJoin: 'right join',
   FullJoin: 'full join',
-}
+})

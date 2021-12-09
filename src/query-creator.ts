@@ -12,11 +12,6 @@ import {
   TableExpressionOrList,
   TableReference,
 } from './parser/table-parser.js'
-import {
-  InsertResultTypeTag,
-  DeleteResultTypeTag,
-  UpdateResultTypeTag,
-} from './util/type-utils.js'
 import { QueryExecutor } from './query-executor/query-executor.js'
 import { RawBuilder } from './raw-builder/raw-builder.js'
 import {
@@ -29,6 +24,9 @@ import { createQueryId } from './util/query-id.js'
 import { WithSchemaPlugin } from './plugin/with-schema/with-schema-plugin.js'
 import { freeze } from './util/object-utils.js'
 import { ParseContext } from './parser/parse-context.js'
+import { InsertResult } from './query-builder/insert-result.js'
+import { DeleteResult } from './query-builder/delete-result.js'
+import { UpdateResult } from './query-builder/update-result.js'
 
 export class QueryCreator<DB> {
   readonly #props: QueryCreatorProps
@@ -49,7 +47,7 @@ export class QueryCreator<DB> {
    * db.selectFrom('person').selectAll()
    * ```
    *
-   * The generated SQL (postgresql):
+   * The generated SQL (PostgreSQL):
    *
    * ```sql
    * select * from "person"
@@ -66,7 +64,7 @@ export class QueryCreator<DB> {
    * console.log(persons[0].id)
    * ```
    *
-   * The generated SQL (postgresql):
+   * The generated SQL (PostgreSQL):
    *
    * ```sql
    * select "p"."id", "p"."first_name" from "person" as "p"
@@ -85,7 +83,7 @@ export class QueryCreator<DB> {
    * console.log(persons[0].identifier)
    * ```
    *
-   * The generated SQL (postgresql):
+   * The generated SQL (PostgreSQL):
    *
    * ```sql
    * select "p"."identifier",
@@ -107,7 +105,7 @@ export class QueryCreator<DB> {
    * console.log(items[0].one)
    * ```
    *
-   * The generated SQL (postgresql):
+   * The generated SQL (PostgreSQL):
    *
    * ```sql
    * select "q"."one",
@@ -134,7 +132,7 @@ export class QueryCreator<DB> {
    *   .execute()
    * ```
    *
-   * The generated SQL (postgresql):
+   * The generated SQL (PostgreSQL):
    *
    * ```sql
    * select "p".id, "a"."species", "q"."one"
@@ -167,20 +165,17 @@ export class QueryCreator<DB> {
   /**
    * Creates an insert query.
    *
-   * The return value of this query is `number | undefined` because of the differences
-   * between database engines. Most engines (like Mysql) return the auto incrementing
-   * primary key (if it exists), but some (like postgres) return nothing by default.
-   * If you are running a database engine like `Mysql` that always returns the primary
-   * key, you can safely use `!` or the {@link QueryBuilder.castTo | castTo} method
-   * to cast away the `undefined` from the type.
+   * The return value of this query is an instance of {@link InsertResult}. {@link InsertResult}
+   * has the {@link InsertResult.insertId | insertId} field that holds the auto incremented id of
+   * the inserted row if the db returned one.
    *
    * See the {@link QueryBuilder.values | values} method for more info and examples. Also see
    * the {@link QueryBuilder.returning | returning} method for a way to return columns
-   * on supported databases like postgres.
+   * on supported databases like PostgreSQL.
    *
    * @example
    * ```ts
-   * const maybePrimaryKey: number | undefined = await db
+   * const result = await db
    *   .insertInto('person')
    *   .values({
    *     id: db.generated,
@@ -188,10 +183,12 @@ export class QueryCreator<DB> {
    *     last_name: 'Aniston'
    *   })
    *   .executeTakeFirst()
+   *
+   * console.log(result.insertId)
    * ```
    *
    * @example
-   * Some databases like postgres support the `returning` method:
+   * Some databases like PostgreSQL support the `returning` method:
    *
    * ```ts
    * const { id } = await db
@@ -207,7 +204,7 @@ export class QueryCreator<DB> {
    */
   insertInto<T extends keyof DB & string>(
     table: T
-  ): QueryBuilder<DB, T, InsertResultTypeTag> {
+  ): QueryBuilder<DB, T, InsertResult> {
     return new QueryBuilder({
       queryId: createQueryId(),
       executor: this.#props.executor,
@@ -223,19 +220,23 @@ export class QueryCreator<DB> {
    * Creates a delete query.
    *
    * See the {@link QueryBuilder.where} method for examples on how to specify
-   * a where clause for the delete operation .
+   * a where clause for the delete operation.
+   *
+   * The return value of the query is an instance of {@link DeleteResult}.
    *
    * @example
    * ```ts
-   * const numAffectedRows = await db
+   * const result = await db
    *   .deleteFrom('person')
    *   .where('person.id', '=', 1)
    *   .executeTakeFirst()
+   *
+   * console.log(result.numDeletedRows)
    * ```
    */
   deleteFrom<TR extends TableReference<DB>>(
     table: TR
-  ): QueryBuilderWithTable<DB, never, DeleteResultTypeTag, TR> {
+  ): QueryBuilderWithTable<DB, never, DeleteResult, TR> {
     return new QueryBuilder({
       queryId: createQueryId(),
       executor: this.#props.executor,
@@ -256,18 +257,22 @@ export class QueryCreator<DB> {
    * See the {@link QueryBuilder.set} method for examples on how to
    * specify the updates.
    *
+   * The return value of the query is an {@link UpdateResult}.
+   *
    * @example
    * ```ts
-   * const numAffectedRows = await db
+   * const result = await db
    *   .updateTable('person')
    *   .set({ first_name: 'Jennifer' })
    *   .where('person.id', '=', 1)
    *   .executeTakeFirst()
+   *
+   * console.log(result.numUpdatedRows)
    * ```
    */
   updateTable<TR extends TableReference<DB>>(
     table: TR
-  ): QueryBuilderWithTable<DB, never, UpdateResultTypeTag, TR> {
+  ): QueryBuilderWithTable<DB, never, UpdateResult, TR> {
     return new QueryBuilder({
       queryId: createQueryId(),
       executor: this.#props.executor,
@@ -335,7 +340,7 @@ export class QueryCreator<DB> {
    *  .execute()
    * ```
    *
-   * The generated SQL (postgresql):
+   * The generated SQL (PostgreSQL):
    *
    * ```sql
    * select * from "mammals"."pet"
@@ -355,7 +360,7 @@ export class QueryCreator<DB> {
    *  .execute()
    * ```
    *
-   * The generated SQL (postgresql):
+   * The generated SQL (PostgreSQL):
    *
    * ```sql
    * select "p"."name" from "mammals"."pet" as "p"
@@ -408,7 +413,7 @@ export class QueryCreator<DB> {
    * console.log(person.name)
    * ```
    *
-   * The generated SQL (postgresql):
+   * The generated SQL (PostgreSQL):
    *
    * ```sql
    * select concat(first_name, ' ', last_name) as "name"
@@ -466,7 +471,7 @@ export class QueryCreator<DB> {
    * }
    * ```
    *
-   * The generated SQL (postgresql):
+   * The generated SQL (PostgreSQL):
    *
    * ```sql
    * select * from "person" where now() - birth_date > interval $1 year
@@ -480,7 +485,8 @@ export class QueryCreator<DB> {
    * Example of creating a completely raw query from scratch:
    *
    * ```ts
-   * const persons = await db.raw<Person>('select p.* from person p').execute()
+   * const result = await db.raw<Person>('select p.* from person p').execute()
+   * const persons = result.rows
    * ```
    *
    * For a raw query, you need to specify the type of the returned __row__. In

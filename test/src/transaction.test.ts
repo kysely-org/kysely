@@ -1,5 +1,6 @@
 import { CompiledQuery, Transaction } from '../../'
 import { getExecutedQueries } from './utils/get-executed-queries'
+
 import {
   BUILT_IN_DIALECTS,
   clearDatabase,
@@ -37,54 +38,66 @@ for (const dialect of BUILT_IN_DIALECTS) {
       await destroyTest(ctx)
     })
 
-    it('should set the transaction isolation level', async () => {
-      executedQueries.splice(0, executedQueries.length)
+    if (dialect !== 'sqlite') {
+      it('should set the transaction isolation level', async () => {
+        executedQueries.splice(0, executedQueries.length)
 
-      await ctx.db
-        .transaction()
-        .setIsolationLevel('serializable')
-        .execute(async (trx) => {
-          await trx
-            .insertInto('person')
-            .values({
-              id: ctx.db.generated,
-              first_name: 'Foo',
-              last_name: 'Barson',
-              gender: 'male',
-            })
-            .execute()
-        })
+        await ctx.db
+          .transaction()
+          .setIsolationLevel('serializable')
+          .execute(async (trx) => {
+            await trx
+              .insertInto('person')
+              .values({
+                id: ctx.db.generated,
+                first_name: 'Foo',
+                last_name: 'Barson',
+                gender: 'male',
+              })
+              .execute()
+          })
 
-      if (dialect == 'postgres') {
-        expect(executedQueries).to.eql([
-          {
-            sql: 'start transaction isolation level serializable',
-            parameters: [],
-          },
-          {
-            sql: 'insert into "person" ("first_name", "last_name", "gender") values ($1, $2, $3)',
-            parameters: ['Foo', 'Barson', 'male'],
-          },
-          { sql: 'commit', parameters: [] },
-        ])
-      } else if (dialect === 'mysql') {
-        expect(executedQueries).to.eql([
-          {
-            sql: 'set transaction isolation level serializable',
-            parameters: [],
-          },
-          {
-            sql: 'begin',
-            parameters: [],
-          },
-          {
-            sql: 'insert into `person` (`first_name`, `last_name`, `gender`) values (?, ?, ?)',
-            parameters: ['Foo', 'Barson', 'male'],
-          },
-          { sql: 'commit', parameters: [] },
-        ])
-      }
-    })
+        if (dialect == 'postgres') {
+          expect(
+            executedQueries.map((it) => ({
+              sql: it.sql,
+              parameters: it.parameters,
+            }))
+          ).to.eql([
+            {
+              sql: 'start transaction isolation level serializable',
+              parameters: [],
+            },
+            {
+              sql: 'insert into "person" ("first_name", "last_name", "gender") values ($1, $2, $3)',
+              parameters: ['Foo', 'Barson', 'male'],
+            },
+            { sql: 'commit', parameters: [] },
+          ])
+        } else if (dialect === 'mysql') {
+          expect(
+            executedQueries.map((it) => ({
+              sql: it.sql,
+              parameters: it.parameters,
+            }))
+          ).to.eql([
+            {
+              sql: 'set transaction isolation level serializable',
+              parameters: [],
+            },
+            {
+              sql: 'begin',
+              parameters: [],
+            },
+            {
+              sql: 'insert into `person` (`first_name`, `last_name`, `gender`) values (?, ?, ?)',
+              parameters: ['Foo', 'Barson', 'male'],
+            },
+            { sql: 'commit', parameters: [] },
+          ])
+        }
+      })
+    }
 
     it('should run multiple transactions in parallel', async () => {
       const threads = Array.from({ length: 100 }).map((_, index) => ({

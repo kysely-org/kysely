@@ -4,6 +4,9 @@ import {
   QueryBuilder,
 } from '../query-builder/query-builder.js'
 import { ExpressionBuilder } from '../query-builder/expression-builder.js'
+import { InsertResult } from '../query-builder/insert-result.js'
+import { DeleteResult } from '../query-builder/delete-result.js'
+import { UpdateResult } from '../query-builder/update-result.js'
 
 /**
  * Given an object type, extracts the union of all value types.
@@ -176,49 +179,18 @@ export type AliasedRawBuilderFactory<DB, TB extends keyof DB> = (
   qb: ExpressionBuilder<DB, TB>
 ) => AnyAliasedRawBuilder
 
-export interface InsertResultTypeTag {
-  /** @internal */
-  readonly __isInsertResultTypeTag__: true
-}
-
-export interface DeleteResultTypeTag {
-  /** @internal */
-  readonly __isDeleteResultTypeTag__: true
-}
-
-export interface UpdateResultTypeTag {
-  /** @internal */
-  readonly __isUpdateResultTypeTag__: true
-}
-
 export interface GeneratedPlaceholder {
   /** @internal */
   readonly __isGeneratedPlaceholder__: true
 }
 
-export type ManyResultRowType<O> = O extends InsertResultTypeTag
-  ? number | undefined
-  : O extends DeleteResultTypeTag
-  ? number
-  : O extends UpdateResultTypeTag
-  ? number
-  : O
-
-export type SingleResultRowType<O> = O extends InsertResultTypeTag
-  ? number | undefined
-  : O extends DeleteResultTypeTag
-  ? number
-  : O extends UpdateResultTypeTag
-  ? number
+export type SingleResultType<O> = O extends InsertResult
+  ? O
+  : O extends DeleteResult
+  ? O
+  : O extends UpdateResult
+  ? O
   : O | undefined
-
-export type NonEmptySingleResultRowType<O> = O extends InsertResultTypeTag
-  ? number
-  : O extends DeleteResultTypeTag
-  ? number
-  : O extends UpdateResultTypeTag
-  ? number
-  : O
 
 export type UnknownRow = Record<string, unknown>
 

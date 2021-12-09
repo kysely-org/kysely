@@ -2,12 +2,15 @@ import { freeze } from '../util/object-utils.js'
 import { FromNode } from './from-node.js'
 import { GroupByItemNode } from './group-by-item-node.js'
 import { GroupByNode } from './group-by-node.js'
-import { HavingNode, HavingNodeChild } from './having-node.js'
+import { HavingNode } from './having-node.js'
 import { JoinNode } from './join-node.js'
 import { LimitNode } from './limit-node.js'
 import { OffsetNode } from './offset-node.js'
 import { OperationNode } from './operation-node.js'
-import { TableExpressionNode } from './operation-node-utils.js'
+import {
+  FilterExpressionNode,
+  TableExpressionNode,
+} from './operation-node-utils.js'
 import { OrderByItemNode } from './order-by-item-node.js'
 import { OrderByNode } from './order-by-node.js'
 import { SelectionNode } from './selection-node.js'
@@ -142,7 +145,7 @@ export const SelectQueryNode = freeze({
 
   cloneWithHaving(
     selectNode: SelectQueryNode,
-    filter: HavingNodeChild
+    filter: FilterExpressionNode
   ): SelectQueryNode {
     return freeze({
       ...selectNode,
@@ -154,7 +157,7 @@ export const SelectQueryNode = freeze({
 
   cloneWithOrHaving(
     selectNode: SelectQueryNode,
-    filter: HavingNodeChild
+    filter: FilterExpressionNode
   ): SelectQueryNode {
     return freeze({
       ...selectNode,

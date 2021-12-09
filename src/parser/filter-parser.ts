@@ -199,7 +199,7 @@ function parseOnGroup(
     throw new Error('no `on*` methods called insided a group callback')
   }
 
-  return ParensNode.create(joinNode.on)
+  return ParensNode.create(joinNode.on.on)
 }
 
 function parseExistExpression(

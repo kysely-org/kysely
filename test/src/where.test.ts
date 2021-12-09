@@ -47,6 +47,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
             sql: 'select * from `person` where `first_name` = ?',
             parameters: ['Arnold'],
           },
+          sqlite: {
+            sql: 'select * from "person" where "first_name" = ?',
+            parameters: ['Arnold'],
+          },
         })
 
         const persons = await query.execute()
@@ -83,6 +87,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
             sql: 'select * from `person` where `last_name` is not null',
             parameters: [],
           },
+          sqlite: {
+            sql: 'select * from "person" where "last_name" is not null',
+            parameters: [],
+          },
         })
 
         const persons = await query.execute()
@@ -110,6 +118,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
             sql: 'select * from `person` where `last_name` is null',
             parameters: [],
           },
+          sqlite: {
+            sql: 'select * from "person" where "last_name" is null',
+            parameters: [],
+          },
         })
 
         const persons = await query.execute()
@@ -133,6 +145,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
           },
           mysql: {
             sql: 'select * from `person` where `first_name` = ?',
+            parameters: ['Arnold'],
+          },
+          sqlite: {
+            sql: 'select * from "person" where "first_name" = ?',
             parameters: ['Arnold'],
           },
         })
@@ -164,6 +180,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
             sql: 'select * from `person` where `person`.`first_name` = ?',
             parameters: ['Arnold'],
           },
+          sqlite: {
+            sql: 'select * from "person" where "person"."first_name" = ?',
+            parameters: ['Arnold'],
+          },
         })
 
         const person = await query.executeTakeFirst()
@@ -189,6 +209,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
             sql: 'select * from `person` where person.first_name = ?',
             parameters: ['Arnold'],
           },
+          sqlite: {
+            sql: 'select * from "person" where person.first_name = ?',
+            parameters: ['Arnold'],
+          },
         })
 
         const person = await query.executeTakeFirst()
@@ -210,6 +234,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
             sql: 'select * from `person` where `person`.`first_name` = ?',
             parameters: ['Arnold'],
           },
+          sqlite: {
+            sql: 'select * from "person" where "person"."first_name" = ?',
+            parameters: ['Arnold'],
+          },
         })
 
         const person = await query.executeTakeFirst()
@@ -229,6 +257,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
           },
           mysql: {
             sql: 'select * from `person` where (first_name is null) is false',
+            parameters: [],
+          },
+          sqlite: {
+            sql: 'select * from "person" where (first_name is null) is false',
             parameters: [],
           },
         })
@@ -258,6 +290,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
           },
           mysql: {
             sql: 'select * from `person` where (select `pet`.`name` from `pet` where `owner_id` = `person`.`id`) = ?',
+            parameters: ['Catto'],
+          },
+          sqlite: {
+            sql: 'select * from "person" where (select "pet"."name" from "pet" where "owner_id" = "person"."id") = ?',
             parameters: ['Catto'],
           },
         })
@@ -294,6 +330,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
             sql: 'select * from `person` where ? = (select `pet`.`name` from `pet` where `owner_id` = `person`.`id`)',
             parameters: ['Catto'],
           },
+          sqlite: {
+            sql: 'select * from "person" where ? = (select "pet"."name" from "pet" where "owner_id" = "person"."id")',
+            parameters: ['Catto'],
+          },
         })
 
         const person = await query.executeTakeFirst()
@@ -317,6 +357,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
           },
           mysql: {
             sql: 'select * from `person` where `first_name` = ?',
+            parameters: ['Arnold'],
+          },
+          sqlite: {
+            sql: 'select * from "person" where "first_name" = ?',
             parameters: ['Arnold'],
           },
         })
@@ -347,6 +391,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
           },
           mysql: {
             sql: 'select * from `person` where `first_name` in (?, ?) order by `first_name` desc',
+            parameters: ['Arnold', 'Jennifer'],
+          },
+          sqlite: {
+            sql: 'select * from "person" where "first_name" in (?, ?) order by "first_name" desc',
             parameters: ['Arnold', 'Jennifer'],
           },
         })
@@ -384,6 +432,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
             sql: 'select * from `person` where `first_name` = ? and `person`.`last_name` = ?',
             parameters: ['Arnold', 'Schwarzenegger'],
           },
+          sqlite: {
+            sql: 'select * from "person" where "first_name" = ? and "person"."last_name" = ?',
+            parameters: ['Arnold', 'Schwarzenegger'],
+          },
         })
 
         const persons = await query.execute()
@@ -416,6 +468,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
             sql: 'select * from `person` where (`first_name` = ? and `last_name` = ?)',
             parameters: ['Jennifer', 'Aniston'],
           },
+          sqlite: {
+            sql: 'select * from "person" where ("first_name" = ? and "last_name" = ?)',
+            parameters: ['Jennifer', 'Aniston'],
+          },
         })
 
         const persons = await query.execute()
@@ -445,6 +501,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
           },
           mysql: {
             sql: 'select * from `person` where `first_name` = ? or `first_name` = ?',
+            parameters: ['Arnold', 'Jennifer'],
+          },
+          sqlite: {
+            sql: 'select * from "person" where "first_name" = ? or "first_name" = ?',
             parameters: ['Arnold', 'Jennifer'],
           },
         })
@@ -485,6 +545,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
             sql: 'select * from `person` where `first_name` = ? or (`first_name` = ? and `last_name` = ?)',
             parameters: ['Arnold', 'Jennifer', 'Aniston'],
           },
+          sqlite: {
+            sql: 'select * from "person" where "first_name" = ? or ("first_name" = ? and "last_name" = ?)',
+            parameters: ['Arnold', 'Jennifer', 'Aniston'],
+          },
         })
 
         const persons = await query.execute()
@@ -520,6 +584,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
             sql: 'select * from `person`, `pet` where `person`.`id` = `pet`.`id`',
             parameters: [],
           },
+          sqlite: {
+            sql: 'select * from "person", "pet" where "person"."id" = "pet"."id"',
+            parameters: [],
+          },
         })
       })
     })
@@ -542,6 +610,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
           },
           mysql: {
             sql: 'select * from `person`, `pet` where (`person`.`id` = `pet`.`id` or `person`.`first_name` = `pet`.`name`)',
+            parameters: [],
+          },
+          sqlite: {
+            sql: 'select * from "person", "pet" where ("person"."id" = "pet"."id" or "person"."first_name" = "pet"."name")',
             parameters: [],
           },
         })
@@ -568,6 +640,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
           },
           mysql: {
             sql: 'select * from `person` where exists (select `pet`.`id` from `pet` where `pet`.`owner_id` = `person`.`id` and `pet`.`species` = ?)',
+            parameters: ['dog'],
+          },
+          sqlite: {
+            sql: `select * from "person" where exists (select "pet"."id" from "pet" where "pet"."owner_id" = "person"."id" and "pet"."species" = ?)`,
             parameters: ['dog'],
           },
         })
@@ -605,6 +681,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
           },
           mysql: {
             sql: 'select * from `person` where exists (select `pet`.`id` from `pet` where `pet`.`owner_id` = `person`.`id` and `pet`.`species` = ?)',
+            parameters: ['cat'],
+          },
+          sqlite: {
+            sql: `select * from "person" where exists (select "pet"."id" from "pet" where "pet"."owner_id" = "person"."id" and "pet"."species" = ?)`,
             parameters: ['cat'],
           },
         })
@@ -645,6 +725,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
           },
           mysql: {
             sql: 'select * from `person` where (`first_name` = ? or exists (select `pet`.`id` from `pet` where `pet`.`owner_id` = `person`.`id` and `pet`.`species` = ?))',
+            parameters: ['Jennifer', 'hamster'],
+          },
+          sqlite: {
+            sql: `select * from "person" where ("first_name" = ? or exists (select "pet"."id" from "pet" where "pet"."owner_id" = "person"."id" and "pet"."species" = ?))`,
             parameters: ['Jennifer', 'hamster'],
           },
         })
@@ -688,6 +772,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
             sql: 'select * from `person` where not exists (select `pet`.`id` from `pet` where `pet`.`owner_id` = `person`.`id` and `pet`.`species` = ?)',
             parameters: ['dog'],
           },
+          sqlite: {
+            sql: `select * from "person" where not exists (select "pet"."id" from "pet" where "pet"."owner_id" = "person"."id" and "pet"."species" = ?)`,
+            parameters: ['dog'],
+          },
         })
 
         const persons = await query.execute()
@@ -728,6 +816,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
           },
           mysql: {
             sql: 'select * from `person` where `first_name` is null or not exists (select `pet`.`id` from `pet` where `pet`.`owner_id` = `person`.`id` and `pet`.`species` = ?)',
+            parameters: ['hamster'],
+          },
+          sqlite: {
+            sql: `select * from "person" where "first_name" is null or not exists (select "pet"."id" from "pet" where "pet"."owner_id" = "person"."id" and "pet"."species" = ?)`,
             parameters: ['hamster'],
           },
         })

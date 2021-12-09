@@ -1,4 +1,5 @@
-import { Kysely } from '../../'
+import { InsertResult, Kysely } from '../../'
+
 import {
   BUILT_IN_DIALECTS,
   clearDatabase,
@@ -52,14 +53,19 @@ for (const dialect of BUILT_IN_DIALECTS) {
           sql: 'insert into `person` (`first_name`, `last_name`, `gender`) values (?, ?, ?)',
           parameters: ['Foo', 'Barson', 'other'],
         },
+        sqlite: {
+          sql: 'insert into "person" ("first_name", "last_name", "gender") values (?, ?, ?)',
+          parameters: ['Foo', 'Barson', 'other'],
+        },
       })
 
       const result = await query.executeTakeFirst()
+      expect(result).to.be.instanceOf(InsertResult)
 
       if (dialect === 'postgres') {
-        expect(result).to.be.undefined
+        expect(result.insertId).to.equal(undefined)
       } else {
-        expect(result).to.be.a('number')
+        expect(result.insertId).to.be.a('bigint')
       }
 
       expect(await getNewestPerson(ctx.db)).to.eql({
@@ -74,7 +80,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
         first_name: ctx.db
           .selectFrom('pet')
           .select(ctx.db.raw('max(name)').as('max_name')),
-        last_name: ctx.db.raw("concat('Bar', 'son')"),
+        last_name:
+          dialect === 'sqlite'
+            ? ctx.db.raw("'Bar' || 'son'")
+            : ctx.db.raw("concat('Bar', 'son')"),
         gender: 'other',
       })
 
@@ -87,15 +96,14 @@ for (const dialect of BUILT_IN_DIALECTS) {
           sql: "insert into `person` (`first_name`, `last_name`, `gender`) values ((select max(name) as `max_name` from `pet`), concat('Bar', 'son'), ?)",
           parameters: ['other'],
         },
+        sqlite: {
+          sql: `insert into "person" ("first_name", "last_name", "gender") values ((select max(name) as "max_name" from "pet"), 'Bar' || 'son', ?)`,
+          parameters: ['other'],
+        },
       })
 
       const result = await query.executeTakeFirst()
-
-      if (dialect === 'postgres') {
-        expect(result).to.be.undefined
-      } else {
-        expect(result).to.be.a('number')
-      }
+      expect(result).to.be.instanceOf(InsertResult)
 
       expect(await getNewestPerson(ctx.db)).to.eql({
         first_name: 'Hammo',
@@ -126,10 +134,13 @@ for (const dialect of BUILT_IN_DIALECTS) {
             ],
           },
           postgres: NOT_SUPPORTED,
+          sqlite: NOT_SUPPORTED,
         })
 
         const result = await query.executeTakeFirst()
-        expect(result).to.be.undefined
+
+        expect(result).to.be.instanceOf(InsertResult)
+        expect(result.insertId).to.equal(undefined)
       })
     } else {
       it('should insert one row and ignore conflicts using onConflictDoNothing', async () => {
@@ -153,11 +164,26 @@ for (const dialect of BUILT_IN_DIALECTS) {
               existingPet.species,
             ],
           },
+          sqlite: {
+            sql: 'insert into "pet" ("name", "owner_id", "species") values (?, ?, ?) on conflict ("name") do nothing',
+            parameters: [
+              existingPet.name,
+              existingPet.owner_id,
+              existingPet.species,
+            ],
+          },
           mysql: NOT_SUPPORTED,
         })
 
         const result = await query.executeTakeFirst()
-        expect(result).to.be.undefined
+        expect(result).to.be.instanceOf(InsertResult)
+
+        if (dialect === 'sqlite') {
+          // SQLite seems to return the last inserted id even if nothing got inserted.
+          expect(result.insertId! > 0n).to.be.equal(true)
+        } else {
+          expect(result.insertId).to.equal(undefined)
+        }
       })
     }
 
@@ -184,10 +210,12 @@ for (const dialect of BUILT_IN_DIALECTS) {
             ],
           },
           mysql: NOT_SUPPORTED,
+          sqlite: NOT_SUPPORTED,
         })
 
         const result = await query.executeTakeFirst()
-        expect(result).to.be.undefined
+        expect(result).to.be.instanceOf(InsertResult)
+        expect(result.insertId).to.equal(undefined)
       })
     }
 
@@ -215,6 +243,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
             ],
           },
           postgres: NOT_SUPPORTED,
+          sqlite: NOT_SUPPORTED,
         })
 
         await query.execute()
@@ -254,6 +283,15 @@ for (const dialect of BUILT_IN_DIALECTS) {
             ],
           },
           mysql: NOT_SUPPORTED,
+          sqlite: {
+            sql: 'insert into "pet" ("name", "owner_id", "species") values (?, ?, ?) on conflict ("name") do update set "species" = ?',
+            parameters: [
+              existingPet.name,
+              existingPet.owner_id,
+              existingPet.species,
+              'hamster',
+            ],
+          },
         })
 
         await query.execute()
@@ -299,6 +337,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
             ],
           },
           mysql: NOT_SUPPORTED,
+          sqlite: NOT_SUPPORTED,
         })
 
         const result = await query.executeTakeFirst()
@@ -333,10 +372,8 @@ for (const dialect of BUILT_IN_DIALECTS) {
             sql: 'insert into "person" ("first_name", "last_name", "gender") values ($1, $2, $3), ($4, $5, $6) returning *',
             parameters: ['Foo', 'Barson', 'other', 'Baz', 'Spam', 'other'],
           },
-          mysql: {
-            sql: 'insert into `person` (`first_name`, `last_name`, `gender`) values ($1, $2, $3), ($4, $5, $6) returning *',
-            parameters: ['Foo', 'Barson', 'other', 'Baz', 'Spam', 'other'],
-          },
+          mysql: NOT_SUPPORTED,
+          sqlite: NOT_SUPPORTED,
         })
 
         const result = await query.execute()

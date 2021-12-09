@@ -1,15 +1,12 @@
 import { freeze } from '../util/object-utils.js'
 import { AndNode } from './and-node.js'
-import { FilterNode } from './filter-node.js'
+import { FilterExpressionNode } from './operation-node-utils.js'
 import { OperationNode } from './operation-node.js'
 import { OrNode } from './or-node.js'
-import { ParensNode } from './parens-node.js'
-
-export type WhereChildNode = FilterNode | AndNode | OrNode | ParensNode
 
 export interface WhereNode extends OperationNode {
   readonly kind: 'WhereNode'
-  readonly where: WhereChildNode
+  readonly where: FilterExpressionNode
 }
 
 /**
@@ -20,7 +17,7 @@ export const WhereNode = freeze({
     return node.kind === 'WhereNode'
   },
 
-  create(filter: WhereChildNode): WhereNode {
+  create(filter: FilterExpressionNode): WhereNode {
     return freeze({
       kind: 'WhereNode',
       where: filter,
@@ -30,14 +27,14 @@ export const WhereNode = freeze({
   cloneWithFilter(
     whereNode: WhereNode,
     op: 'And' | 'Or',
-    where: WhereChildNode
+    filter: FilterExpressionNode
   ): WhereNode {
     return freeze({
       ...whereNode,
       where:
         op === 'And'
-          ? AndNode.create(whereNode.where, where)
-          : OrNode.create(whereNode.where, where),
+          ? AndNode.create(whereNode.where, filter)
+          : OrNode.create(whereNode.where, filter),
     })
   },
 })

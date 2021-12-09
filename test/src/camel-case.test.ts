@@ -1,4 +1,5 @@
 import { CamelCasePlugin, Kysely } from '../../'
+
 import {
   BUILT_IN_DIALECTS,
   destroyTest,
@@ -69,16 +70,20 @@ for (const dialect of BUILT_IN_DIALECTS) {
       await destroyTest(ctx)
     })
 
-    it('should have created the table and its columns in snake_case', async () => {
-      const result = await ctx.db
-        .raw<any>('select * from camel_person')
-        .execute()
+    // Can't run this test on SQLite because we can't access the same database
+    // from the other Kysely instance.
+    if (dialect !== 'sqlite') {
+      it('should have created the table and its columns in snake_case', async () => {
+        const result = await ctx.db
+          .raw<any>('select * from camel_person')
+          .execute()
 
-      expect(result.rows).to.have.length(2)
-      expect(result.rows![0].id).to.be.a('number')
-      expect(result.rows![0].first_name).to.be.a('string')
-      expect(result.rows![0].last_name).to.be.a('string')
-    })
+        expect(result.rows).to.have.length(2)
+        expect(result.rows[0].id).to.be.a('number')
+        expect(result.rows[0].first_name).to.be.a('string')
+        expect(result.rows[0].last_name).to.be.a('string')
+      })
+    }
 
     it('should convert a select query between camelCase and snake_case', async () => {
       const query = camelDb
@@ -89,7 +94,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
           'camelPerson2.id',
           'camelPerson.id'
         )
-        .orderBy('firstName')
+        .orderBy('camelPerson.firstName')
 
       testSql(query, dialect, {
         postgres: {
@@ -97,7 +102,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
             `select "camel_person"."first_name"`,
             `from "camel_person"`,
             `inner join "camel_person" as "camel_person2" on "camel_person2"."id" = "camel_person"."id"`,
-            `order by "first_name"`,
+            `order by "camel_person"."first_name"`,
           ],
           parameters: [],
         },
@@ -106,7 +111,16 @@ for (const dialect of BUILT_IN_DIALECTS) {
             'select `camel_person`.`first_name`',
             'from `camel_person`',
             'inner join `camel_person` as `camel_person2` on `camel_person2`.`id` = `camel_person`.`id`',
-            'order by `first_name`',
+            'order by `camel_person`.`first_name`',
+          ],
+          parameters: [],
+        },
+        sqlite: {
+          sql: [
+            `select "camel_person"."first_name"`,
+            `from "camel_person"`,
+            `inner join "camel_person" as "camel_person2" on "camel_person2"."id" = "camel_person"."id"`,
+            `order by "camel_person"."first_name"`,
           ],
           parameters: [],
         },
@@ -130,7 +144,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
             'camelPerson2.id',
             'camelPerson.id'
           )
-          .orderBy('firstName')
+          .orderBy('camelPerson.firstName')
 
         testSql(query, dialect, {
           postgres: {
@@ -138,7 +152,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
               `select "camel_person"."first_name"`,
               `from "camel_person"`,
               `inner join "camel_person" as "camel_person2" on "camel_person2"."id" = "camel_person"."id"`,
-              `order by "first_name"`,
+              `order by "camel_person"."first_name"`,
             ],
             parameters: [],
           },
@@ -147,7 +161,16 @@ for (const dialect of BUILT_IN_DIALECTS) {
               'select `camel_person`.`first_name`',
               'from `camel_person`',
               'inner join `camel_person` as `camel_person2` on `camel_person2`.`id` = `camel_person`.`id`',
-              'order by `first_name`',
+              'order by `camel_person`.`first_name`',
+            ],
+            parameters: [],
+          },
+          sqlite: {
+            sql: [
+              `select "camel_person"."first_name"`,
+              `from "camel_person"`,
+              `inner join "camel_person" as "camel_person2" on "camel_person2"."id" = "camel_person"."id"`,
+              `order by "camel_person"."first_name"`,
             ],
             parameters: [],
           },

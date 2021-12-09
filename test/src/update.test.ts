@@ -1,3 +1,5 @@
+import { UpdateResult } from '../../'
+
 import {
   BUILT_IN_DIALECTS,
   clearDatabase,
@@ -47,10 +49,16 @@ for (const dialect of BUILT_IN_DIALECTS) {
           sql: 'update `person` set `first_name` = ?, `last_name` = ? where `gender` = ?',
           parameters: ['Foo', 'Barson', 'female'],
         },
+        sqlite: {
+          sql: 'update "person" set "first_name" = ?, "last_name" = ? where "gender" = ?',
+          parameters: ['Foo', 'Barson', 'female'],
+        },
       })
 
       const result = await query.executeTakeFirst()
-      expect(result).to.equal(1)
+
+      expect(result).to.be.instanceOf(UpdateResult)
+      expect(result.numUpdatedRows).to.equal(1n)
 
       expect(
         await ctx.db
@@ -87,10 +95,16 @@ for (const dialect of BUILT_IN_DIALECTS) {
           sql: 'update `person` set `last_name` = (select `name` from `pet` where `person`.`id` = `owner_id`) where `first_name` = ?',
           parameters: ['Jennifer'],
         },
+        sqlite: {
+          sql: 'update "person" set "last_name" = (select "name" from "pet" where "person"."id" = "owner_id") where "first_name" = ?',
+          parameters: ['Jennifer'],
+        },
       })
 
-      const numUpdated = await query.executeTakeFirst()
-      expect(numUpdated).to.equal(1)
+      const result = await query.executeTakeFirst()
+
+      expect(result).to.be.instanceOf(UpdateResult)
+      expect(result.numUpdatedRows).to.equal(1n)
 
       const person = await ctx.db
         .selectFrom('person')
@@ -118,6 +132,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
           sql: 'update `person` set `last_name` = `first_name` where `first_name` = ?',
           parameters: ['Jennifer'],
         },
+        sqlite: {
+          sql: 'update "person" set "last_name" = "first_name" where "first_name" = ?',
+          parameters: ['Jennifer'],
+        },
       })
 
       await query.execute()
@@ -137,6 +155,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
             parameters: ['Barson', 'male'],
           },
           mysql: NOT_SUPPORTED,
+          sqlite: NOT_SUPPORTED,  
         })
 
         const result = await query.execute()

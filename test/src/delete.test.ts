@@ -1,3 +1,5 @@
+import { DeleteResult } from '../..'
+
 import {
   BUILT_IN_DIALECTS,
   clearDatabase,
@@ -44,10 +46,16 @@ for (const dialect of BUILT_IN_DIALECTS) {
           sql: 'delete from `person` where `gender` = ?',
           parameters: ['female'],
         },
+        sqlite: {
+          sql: 'delete from "person" where "gender" = ?',
+          parameters: ['female'],
+        },
       })
 
       const result = await query.executeTakeFirst()
-      expect(result).to.equal(1)
+
+      expect(result).to.be.instanceOf(DeleteResult)
+      expect(result.numDeletedRows).to.equal(1n)
 
       expect(
         await ctx.db
@@ -69,7 +77,9 @@ for (const dialect of BUILT_IN_DIALECTS) {
         .orWhere('first_name', '=', 'Arnold')
 
       const result = await query.executeTakeFirst()
-      expect(result).to.equal(2)
+
+      expect(result).to.be.instanceOf(DeleteResult)
+      expect(result.numDeletedRows).to.equal(2n)
     })
 
     it('should delete zero rows', async () => {
@@ -78,7 +88,9 @@ for (const dialect of BUILT_IN_DIALECTS) {
         .where('first_name', '=', 'Nobody')
 
       const result = await query.executeTakeFirst()
-      expect(result).to.equal(0)
+
+      expect(result).to.be.instanceOf(DeleteResult)
+      expect(result.numDeletedRows).to.equal(0n)
     })
 
     if (dialect === 'postgres') {
@@ -86,26 +98,24 @@ for (const dialect of BUILT_IN_DIALECTS) {
         const query = ctx.db
           .deleteFrom('person')
           .where('gender', '=', 'male')
-          .returning(['first_name', 'last_name'])
+          .returning(['first_name', 'last_name as last'])
 
         testSql(query, dialect, {
           postgres: {
-            sql: 'delete from "person" where "gender" = $1 returning "first_name", "last_name"',
+            sql: 'delete from "person" where "gender" = $1 returning "first_name", "last_name" as "last"',
             parameters: ['male'],
           },
           mysql: NOT_SUPPORTED,
+          sqlite: NOT_SUPPORTED,
         })
 
         const result = await query.execute()
 
         expect(result).to.have.length(2)
-        expect(Object.keys(result[0]).sort()).to.eql([
-          'first_name',
-          'last_name',
-        ])
+        expect(Object.keys(result[0]).sort()).to.eql(['first_name', 'last'])
         expect(result).to.containSubset([
-          { first_name: 'Arnold', last_name: 'Schwarzenegger' },
-          { first_name: 'Sylvester', last_name: 'Stallone' },
+          { first_name: 'Arnold', last: 'Schwarzenegger' },
+          { first_name: 'Sylvester', last: 'Stallone' },
         ])
       })
     }

@@ -66,9 +66,14 @@ import { DropViewNode } from './drop-view-node.js'
 import { GeneratedAlwaysAsNode } from './generated-always-as-node.js'
 import { DefaultValueNode } from './default-value-node.js'
 import { freeze } from '../util/object-utils.js'
+import { OnNode } from './on-node.js'
 
 export abstract class OperationNodeVisitor {
   protected readonly nodeStack: OperationNode[] = []
+
+  protected get parentNode(): OperationNode | undefined {
+    return this.nodeStack[this.nodeStack.length - 2]
+  }
 
   readonly #visitors: Record<OperationNodeKind, Function> = freeze({
     AliasNode: this.visitAlias.bind(this),
@@ -134,6 +139,7 @@ export abstract class OperationNodeVisitor {
     DropViewNode: this.visitDropView.bind(this),
     GeneratedAlwaysAsNode: this.visitGeneratedAlwaysAs.bind(this),
     DefaultValueNode: this.visitDefaultValue.bind(this),
+    OnNode: this.visitOn.bind(this),
   })
 
   protected readonly visitNode = (node: OperationNode): void => {
@@ -211,4 +217,5 @@ export abstract class OperationNodeVisitor {
   protected abstract visitDropView(node: DropViewNode): void
   protected abstract visitGeneratedAlwaysAs(node: GeneratedAlwaysAsNode): void
   protected abstract visitDefaultValue(node: DefaultValueNode): void
+  protected abstract visitOn(node: OnNode): void
 }

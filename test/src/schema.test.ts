@@ -1,4 +1,5 @@
 import { ColumnMetadata } from '../../'
+
 import {
   BUILT_IN_DIALECTS,
   clearDatabase,
@@ -92,11 +93,12 @@ for (const dialect of BUILT_IN_DIALECTS) {
               parameters: [],
             },
             mysql: NOT_SUPPORTED,
+            sqlite: NOT_SUPPORTED,
           })
 
           await builder.execute()
         })
-      } else {
+      } else if (dialect === 'mysql') {
         it('should create a table with all data types', async () => {
           const builder = ctx.db.schema
             .createTable('test')
@@ -127,7 +129,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
             mysql: {
               sql: [
                 'create table `test`',
-                '(`a` integer auto_increment primary key,',
+                '(`a` integer primary key auto_increment,',
                 '`b` integer references `test` (`a`) on delete cascade on update set null,',
                 '`c` varchar(255),',
                 '`d` bigint not null unique,',
@@ -147,6 +149,69 @@ for (const dialect of BUILT_IN_DIALECTS) {
               parameters: [],
             },
             postgres: NOT_SUPPORTED,
+            sqlite: NOT_SUPPORTED,
+          })
+
+          await builder.execute()
+        })
+      } else {
+        it('should create a table with all data types', async () => {
+          const builder = ctx.db.schema
+            .createTable('test')
+            .addColumn('a', 'serial', (col) => col.primaryKey())
+            .addColumn('b', 'integer', (col) =>
+              col
+                .references('test.a')
+                .onDelete('cascade')
+                .onUpdate('restrict')
+                .check('b < a')
+            )
+            .addColumn('c', 'varchar')
+            .addColumn('d', 'varchar(10)')
+            .addColumn('e', 'bigint', (col) => col.unique().notNull())
+            .addColumn('f', 'double precision')
+            .addColumn('g', 'real')
+            .addColumn('h', 'text')
+            .addColumn('i', ctx.db.raw('varchar(123)'))
+            .addColumn('j', 'numeric(6, 2)')
+            .addColumn('k', 'decimal(8, 4)')
+            .addColumn('l', 'boolean', (col) => col.notNull().defaultTo(false))
+            .addColumn('m', 'date')
+            .addColumn('n', 'timestamptz')
+            .addColumn('o', 'int2')
+            .addColumn('p', 'int4')
+            .addColumn('q', 'int8')
+            .addColumn('r', 'double precision', (col) =>
+              col.generatedAlwaysAs('f + g').stored().notNull()
+            )
+
+          testSql(builder, dialect, {
+            sqlite: {
+              sql: [
+                'create table "test"',
+                '("a" serial primary key,',
+                '"b" integer references "test" ("a") on delete cascade on update restrict check (b < a),',
+                '"c" varchar,',
+                '"d" varchar(10),',
+                '"e" bigint not null unique,',
+                '"f" double precision,',
+                '"g" real,',
+                '"h" text,',
+                '"i" varchar(123),',
+                '"j" numeric(6, 2),',
+                '"k" decimal(8, 4),',
+                '"l" boolean default false not null,',
+                '"m" date,',
+                '"n" timestamptz,',
+                '"o" int2,',
+                '"p" int4,',
+                '"q" int8,',
+                '"r" double precision generated always as (f + g) stored not null)',
+              ],
+              parameters: [],
+            },
+            postgres: NOT_SUPPORTED,
+            mysql: NOT_SUPPORTED,
           })
 
           await builder.execute()
@@ -169,6 +234,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
           },
           mysql: {
             sql: 'create table `test` (`a` varchar(255), `b` varchar(255), `c` varchar(255), constraint `a_b_unique` unique (`a`, `b`), constraint `b_c_unique` unique (`b`, `c`))',
+            parameters: [],
+          },
+          sqlite: {
+            sql: 'create table "test" ("a" varchar(255), "b" varchar(255), "c" varchar(255), constraint "a_b_unique" unique ("a", "b"), constraint "b_c_unique" unique ("b", "c"))',
             parameters: [],
           },
         })
@@ -194,6 +263,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
             sql: 'create table `test` (`a` integer, `b` integer, `c` integer, constraint `check_a` check (a > 1), constraint `check_b` check (b < c))',
             parameters: [],
           },
+          sqlite: {
+            sql: 'create table "test" ("a" integer, "b" integer, "c" integer, constraint "check_a" check (a > 1), constraint "check_b" check (b < c))',
+            parameters: [],
+          },
         })
 
         await builder.execute()
@@ -213,6 +286,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
           },
           mysql: {
             sql: 'create table `test` (`a` integer, `b` integer, constraint `primary` primary key (`a`, `b`))',
+            parameters: [],
+          },
+          sqlite: {
+            sql: 'create table "test" ("a" integer, "b" integer, constraint "primary" primary key ("a", "b"))',
             parameters: [],
           },
         })
@@ -244,6 +321,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
           },
           mysql: {
             sql: 'create table `test` (`a` integer, `b` integer, constraint `foreign_key` foreign key (`a`, `b`) references `test2` (`c`, `d`))',
+            parameters: [],
+          },
+          sqlite: {
+            sql: 'create table "test" ("a" integer, "b" integer, constraint "foreign_key" foreign key ("a", "b") references "test2" ("c", "d"))',
             parameters: [],
           },
         })
@@ -280,6 +361,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
             sql: 'create table `test` (`a` integer, `b` integer, constraint `foreign_key` foreign key (`a`, `b`) references `test2` (`c`, `d`) on update cascade)',
             parameters: [],
           },
+          sqlite: {
+            sql: 'create table "test" ("a" integer, "b" integer, constraint "foreign_key" foreign key ("a", "b") references "test2" ("c", "d") on update cascade)',
+            parameters: [],
+          },
         })
 
         await builder.execute()
@@ -298,6 +383,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
           },
           mysql: {
             sql: 'create table if not exists `test` (`id` integer primary key)',
+            parameters: [],
+          },
+          sqlite: {
+            sql: 'create table if not exists "test" ("id" integer primary key)',
             parameters: [],
           },
         })
@@ -320,6 +409,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
               parameters: [],
             },
             mysql: NOT_SUPPORTED,
+            sqlite: NOT_SUPPORTED,
           })
 
           await builder.execute()
@@ -347,6 +437,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
             sql: 'drop table `test`',
             parameters: [],
           },
+          sqlite: {
+            sql: 'drop table "test"',
+            parameters: [],
+          },
         })
 
         await builder.execute()
@@ -362,6 +456,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
           },
           mysql: {
             sql: 'drop table if exists `test`',
+            parameters: [],
+          },
+          sqlite: {
+            sql: 'drop table if exists "test"',
             parameters: [],
           },
         })
@@ -395,6 +493,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
             sql: 'create index `test_first_name_index` on `test` (`first_name`)',
             parameters: [],
           },
+          sqlite: {
+            sql: 'create index "test_first_name_index" on "test" ("first_name")',
+            parameters: [],
+          },
         })
 
         await builder.execute()
@@ -414,6 +516,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
           },
           mysql: {
             sql: 'create unique index `test_first_name_index` on `test` (`first_name`)',
+            parameters: [],
+          },
+          sqlite: {
+            sql: 'create unique index "test_first_name_index" on "test" ("first_name")',
             parameters: [],
           },
         })
@@ -438,6 +544,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
               sql: 'create index `test_first_name_index` on `test` using hash (`first_name`)',
               parameters: [],
             },
+            sqlite: {
+              sql: 'create index "test_first_name_index" on "test" using hash ("first_name")',
+              parameters: [],
+            },
           })
 
           await builder.execute()
@@ -459,6 +569,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
             sql: 'create index `test_name_index` on `test` (`first_name`, `last_name`)',
             parameters: [],
           },
+          sqlite: {
+            sql: 'create index "test_name_index" on "test" ("first_name", "last_name")',
+            parameters: [],
+          },
         })
 
         await builder.execute()
@@ -477,6 +591,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
           },
           mysql: {
             sql: "create index `test_first_name_index` on `test` ((first_name < 'Sami'))",
+            parameters: [],
+          },
+          sqlite: {
+            sql: `create index "test_first_name_index" on "test" ((first_name < 'Sami'))`,
             parameters: [],
           },
         })
@@ -503,7 +621,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
       it('should drop an index', async () => {
         let builder = ctx.db.schema.dropIndex('test_first_name_index')
 
-        if (dialect !== 'postgres') {
+        if (dialect === 'mysql') {
           builder = builder.on('test')
         }
 
@@ -514,6 +632,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
           },
           mysql: {
             sql: 'drop index `test_first_name_index` on `test`',
+            parameters: [],
+          },
+          sqlite: {
+            sql: 'drop index "test_first_name_index"',
             parameters: [],
           },
         })
@@ -529,6 +651,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
 
           testSql(builder, dialect, {
             postgres: {
+              sql: 'drop index if exists "test_first_name_index"',
+              parameters: [],
+            },
+            sqlite: {
               sql: 'drop index if exists "test_first_name_index"',
               parameters: [],
             },
@@ -551,11 +677,15 @@ for (const dialect of BUILT_IN_DIALECTS) {
 
         testSql(builder, dialect, {
           postgres: {
-            sql: `create view "dogs" as (select * from "pet" where "species" = 'dog')`,
+            sql: `create view "dogs" as select * from "pet" where "species" = 'dog'`,
             parameters: [],
           },
           mysql: {
-            sql: "create view `dogs` as (select * from `pet` where `species` = 'dog')",
+            sql: "create view `dogs` as select * from `pet` where `species` = 'dog'",
+            parameters: [],
+          },
+          sqlite: {
+            sql: `create view "dogs" as select * from "pet" where "species" = 'dog'`,
             parameters: [],
           },
         })
@@ -563,25 +693,52 @@ for (const dialect of BUILT_IN_DIALECTS) {
         await builder.execute()
       })
 
-      it('should create or replace a view', async () => {
-        const builder = ctx.db.schema
-          .createView('dogs')
-          .orReplace()
-          .as(ctx.db.selectFrom('pet').selectAll().where('species', '=', 'dog'))
+      if (dialect !== 'sqlite') {
+        it('should create or replace a view', async () => {
+          const builder = ctx.db.schema
+            .createView('dogs')
+            .orReplace()
+            .as(
+              ctx.db.selectFrom('pet').selectAll().where('species', '=', 'dog')
+            )
 
-        testSql(builder, dialect, {
-          postgres: {
-            sql: `create or replace view "dogs" as (select * from "pet" where "species" = 'dog')`,
-            parameters: [],
-          },
-          mysql: {
-            sql: "create or replace view `dogs` as (select * from `pet` where `species` = 'dog')",
-            parameters: [],
-          },
+          testSql(builder, dialect, {
+            postgres: {
+              sql: `create or replace view "dogs" as select * from "pet" where "species" = 'dog'`,
+              parameters: [],
+            },
+            mysql: {
+              sql: "create or replace view `dogs` as select * from `pet` where `species` = 'dog'",
+              parameters: [],
+            },
+            sqlite: NOT_SUPPORTED,
+          })
+
+          await builder.execute()
         })
+      }
 
-        await builder.execute()
-      })
+      if (dialect === 'sqlite') {
+        it("should create a view if it doesn't exists", async () => {
+          const builder = ctx.db.schema
+            .createView('dogs')
+            .ifNotExists()
+            .as(
+              ctx.db.selectFrom('pet').selectAll().where('species', '=', 'dog')
+            )
+
+          testSql(builder, dialect, {
+            sqlite: {
+              sql: `create view if not exists "dogs" as select * from "pet" where "species" = 'dog'`,
+              parameters: [],
+            },
+            postgres: NOT_SUPPORTED,
+            mysql: NOT_SUPPORTED,
+          })
+
+          await builder.execute()
+        })
+      }
 
       if (dialect === 'postgres') {
         it('should create a materialized view', async () => {
@@ -594,10 +751,11 @@ for (const dialect of BUILT_IN_DIALECTS) {
 
           testSql(builder, dialect, {
             postgres: {
-              sql: `create materialized view "materialized_dogs" as (select * from "pet" where "species" = 'dog')`,
+              sql: `create materialized view "materialized_dogs" as select * from "pet" where "species" = 'dog'`,
               parameters: [],
             },
             mysql: NOT_SUPPORTED,
+            sqlite: NOT_SUPPORTED,
           })
 
           await builder.execute()
@@ -641,6 +799,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
             sql: 'drop view `dogs`',
             parameters: [],
           },
+          sqlite: {
+            sql: `drop view "dogs"`,
+            parameters: [],
+          },
         })
 
         await builder.execute()
@@ -656,6 +818,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
           },
           mysql: {
             sql: 'drop view if exists `dogs`',
+            parameters: [],
+          },
+          sqlite: {
+            sql: `drop view if exists "dogs"`,
             parameters: [],
           },
         })
@@ -686,6 +852,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
                 parameters: [],
               },
               postgres: NOT_SUPPORTED,
+              sqlite: NOT_SUPPORTED,
             })
 
             await builder.execute()
@@ -703,6 +870,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
                 parameters: [],
               },
               postgres: NOT_SUPPORTED,
+              sqlite: NOT_SUPPORTED,
             })
 
             await builder.execute()
@@ -733,6 +901,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
                 parameters: [],
               },
               postgres: NOT_SUPPORTED,
+              sqlite: NOT_SUPPORTED,
             })
 
             await builder.execute()
@@ -744,112 +913,128 @@ for (const dialect of BUILT_IN_DIALECTS) {
         })
       }
 
-      describe('alter column', () => {
-        it('should set default value', async () => {
-          const builder = ctx.db.schema
-            .alterTable('test')
-            .alterColumn('varchar_col')
-            .setDefault('foo')
-
-          testSql(builder, dialect, {
-            postgres: {
-              sql: `alter table "test" alter column "varchar_col" set default 'foo'`,
-              parameters: [],
-            },
-            mysql: {
-              sql: "alter table `test` alter column `varchar_col` set default 'foo'",
-              parameters: [],
-            },
-          })
-
-          await builder.execute()
-        })
-
-        it('should drop default value', async () => {
-          await ctx.db.schema
-            .alterTable('test')
-            .alterColumn('varchar_col')
-            .setDefault('foo')
-            .execute()
-
-          const builder = ctx.db.schema
-            .alterTable('test')
-            .alterColumn('varchar_col')
-            .dropDefault()
-
-          testSql(builder, dialect, {
-            postgres: {
-              sql: 'alter table "test" alter column "varchar_col" drop default',
-              parameters: [],
-            },
-            mysql: {
-              sql: 'alter table `test` alter column `varchar_col` drop default',
-              parameters: [],
-            },
-          })
-
-          await builder.execute()
-        })
-
-        if (dialect !== 'mysql') {
-          it('should set column data type', async () => {
+      if (dialect !== 'sqlite') {
+        describe('alter column', () => {
+          it('should set default value', async () => {
             const builder = ctx.db.schema
               .alterTable('test')
               .alterColumn('varchar_col')
-              .setDataType('text')
+              .setDefault('foo')
 
             testSql(builder, dialect, {
               postgres: {
-                sql: 'alter table "test" alter column "varchar_col" type text',
+                sql: `alter table "test" alter column "varchar_col" set default 'foo'`,
                 parameters: [],
               },
-              mysql: NOT_SUPPORTED,
+              mysql: {
+                sql: "alter table `test` alter column `varchar_col` set default 'foo'",
+                parameters: [],
+              },
+              sqlite: NOT_SUPPORTED,
             })
 
             await builder.execute()
           })
 
-          it('should add not null constraint for column', async () => {
-            const builder = ctx.db.schema
-              .alterTable('test')
-              .alterColumn('varchar_col')
-              .setNotNull()
-
-            testSql(builder, dialect, {
-              postgres: {
-                sql: 'alter table "test" alter column "varchar_col" set not null',
-                parameters: [],
-              },
-              mysql: NOT_SUPPORTED,
-            })
-
-            await builder.execute()
-          })
-
-          it('should drop not null constraint for column', async () => {
+          it('should drop default value', async () => {
             await ctx.db.schema
               .alterTable('test')
               .alterColumn('varchar_col')
-              .setNotNull()
+              .setDefault('foo')
               .execute()
 
             const builder = ctx.db.schema
               .alterTable('test')
               .alterColumn('varchar_col')
-              .dropNotNull()
+              .dropDefault()
 
             testSql(builder, dialect, {
               postgres: {
-                sql: 'alter table "test" alter column "varchar_col" drop not null',
+                sql: 'alter table "test" alter column "varchar_col" drop default',
                 parameters: [],
               },
-              mysql: NOT_SUPPORTED,
+              mysql: {
+                sql: 'alter table `test` alter column `varchar_col` drop default',
+                parameters: [],
+              },
+              sqlite: NOT_SUPPORTED,
             })
 
             await builder.execute()
           })
-        }
-      })
+
+          if (dialect !== 'mysql') {
+            it('should set column data type', async () => {
+              const builder = ctx.db.schema
+                .alterTable('test')
+                .alterColumn('varchar_col')
+                .setDataType('text')
+
+              testSql(builder, dialect, {
+                postgres: {
+                  sql: 'alter table "test" alter column "varchar_col" type text',
+                  parameters: [],
+                },
+                sqlite: {
+                  sql: 'alter table "test" alter column "varchar_col" type text',
+                  parameters: [],
+                },
+                mysql: NOT_SUPPORTED,
+              })
+
+              await builder.execute()
+            })
+
+            it('should add not null constraint for column', async () => {
+              const builder = ctx.db.schema
+                .alterTable('test')
+                .alterColumn('varchar_col')
+                .setNotNull()
+
+              testSql(builder, dialect, {
+                postgres: {
+                  sql: 'alter table "test" alter column "varchar_col" set not null',
+                  parameters: [],
+                },
+                sqlite: {
+                  sql: 'alter table "test" alter column "varchar_col" set not null',
+                  parameters: [],
+                },
+                mysql: NOT_SUPPORTED,
+              })
+
+              await builder.execute()
+            })
+
+            it('should drop not null constraint for column', async () => {
+              await ctx.db.schema
+                .alterTable('test')
+                .alterColumn('varchar_col')
+                .setNotNull()
+                .execute()
+
+              const builder = ctx.db.schema
+                .alterTable('test')
+                .alterColumn('varchar_col')
+                .dropNotNull()
+
+              testSql(builder, dialect, {
+                postgres: {
+                  sql: 'alter table "test" alter column "varchar_col" drop not null',
+                  parameters: [],
+                },
+                sqlite: {
+                  sql: 'alter table "test" alter column "varchar_col" drop not null',
+                  parameters: [],
+                },
+                mysql: NOT_SUPPORTED,
+              })
+
+              await builder.execute()
+            })
+          }
+        })
+      }
 
       describe('drop column', () => {
         it('should drop a column', async () => {
@@ -864,6 +1049,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
             },
             mysql: {
               sql: 'alter table `test` drop column `varchar_col`',
+              parameters: [],
+            },
+            sqlite: {
+              sql: 'alter table "test" drop column "varchar_col"',
               parameters: [],
             },
           })
@@ -885,6 +1074,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
               sql: 'alter table `test` rename to `test2`',
               parameters: [],
             },
+            sqlite: {
+              sql: 'alter table "test" rename to "test2"',
+              parameters: [],
+            },
           })
 
           await builder.execute()
@@ -901,10 +1094,8 @@ for (const dialect of BUILT_IN_DIALECTS) {
                 sql: 'alter table "test" set schema "public"',
                 parameters: [],
               },
-              mysql: {
-                sql: 'alter table `test` set schema `public`',
-                parameters: [],
-              },
+              mysql: NOT_SUPPORTED,
+              sqlite: NOT_SUPPORTED,
             })
 
             await builder.execute()
@@ -927,6 +1118,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
               sql: 'alter table `test` rename column `varchar_col` to `text_col`',
               parameters: [],
             },
+            sqlite: {
+              sql: 'alter table "test" rename column "varchar_col" to "text_col"',
+              parameters: [],
+            },
           })
 
           await builder.execute()
@@ -939,139 +1134,191 @@ for (const dialect of BUILT_IN_DIALECTS) {
             .alterTable('test')
             .addColumn('bool_col', 'boolean')
             .notNull()
-            .unique()
 
           testSql(builder, dialect, {
             postgres: {
-              sql: 'alter table "test" add column "bool_col" boolean not null unique',
+              sql: 'alter table "test" add column "bool_col" boolean not null',
               parameters: [],
             },
             mysql: {
-              sql: 'alter table `test` add column `bool_col` boolean not null unique',
+              sql: 'alter table `test` add column `bool_col` boolean not null',
+              parameters: [],
+            },
+            sqlite: {
+              sql: 'alter table "test" add column "bool_col" boolean not null',
               parameters: [],
             },
           })
 
           await builder.execute()
-
-          expect(await getColumnMeta('test.bool_col')).to.eql({
-            name: 'bool_col',
-            isNullable: false,
-            dataType: dialect === 'postgres' ? 'bool' : 'tinyint',
-          })
         })
+
+        if (dialect !== 'sqlite') {
+          it('should add a unique column', async () => {
+            const builder = ctx.db.schema
+              .alterTable('test')
+              .addColumn('bool_col', 'boolean')
+              .notNull()
+              .unique()
+
+            testSql(builder, dialect, {
+              postgres: {
+                sql: 'alter table "test" add column "bool_col" boolean not null unique',
+                parameters: [],
+              },
+              mysql: {
+                sql: 'alter table `test` add column `bool_col` boolean not null unique',
+                parameters: [],
+              },
+              sqlite: {
+                sql: 'alter table "test" add column "bool_col" boolean not null unique',
+                parameters: [],
+              },
+            })
+
+            await builder.execute()
+
+            expect(await getColumnMeta('test.bool_col')).to.eql({
+              name: 'bool_col',
+              isNullable: false,
+              dataType: dialect === 'postgres' ? 'bool' : 'tinyint',
+            })
+          })
+        }
       })
 
-      describe('add unique constraint', () => {
-        it('should add a unique constraint', async () => {
-          const builder = ctx.db.schema
-            .alterTable('test')
-            .addUniqueConstraint('some_constraint', [
-              'varchar_col',
-              'integer_col',
-            ])
+      if (dialect !== 'sqlite') {
+        describe('add unique constraint', () => {
+          it('should add a unique constraint', async () => {
+            const builder = ctx.db.schema
+              .alterTable('test')
+              .addUniqueConstraint('some_constraint', [
+                'varchar_col',
+                'integer_col',
+              ])
 
-          testSql(builder, dialect, {
-            postgres: {
-              sql: 'alter table "test" add constraint "some_constraint" unique ("varchar_col", "integer_col")',
-              parameters: [],
-            },
-            mysql: {
-              sql: 'alter table `test` add constraint `some_constraint` unique (`varchar_col`, `integer_col`)',
-              parameters: [],
-            },
+            testSql(builder, dialect, {
+              postgres: {
+                sql: 'alter table "test" add constraint "some_constraint" unique ("varchar_col", "integer_col")',
+                parameters: [],
+              },
+              mysql: {
+                sql: 'alter table `test` add constraint `some_constraint` unique (`varchar_col`, `integer_col`)',
+                parameters: [],
+              },
+              sqlite: {
+                sql: 'alter table "test" add constraint "some_constraint" unique ("varchar_col", "integer_col")',
+                parameters: [],
+              },
+            })
+
+            await builder.execute()
+          })
+        })
+      }
+
+      if (dialect !== 'sqlite') {
+        describe('add check constraint', () => {
+          it('should add a check constraint', async () => {
+            const builder = ctx.db.schema
+              .alterTable('test')
+              .addCheckConstraint('some_constraint', 'integer_col > 0')
+
+            testSql(builder, dialect, {
+              postgres: {
+                sql: 'alter table "test" add constraint "some_constraint" check (integer_col > 0)',
+                parameters: [],
+              },
+              mysql: {
+                sql: 'alter table `test` add constraint `some_constraint` check (integer_col > 0)',
+                parameters: [],
+              },
+              sqlite: {
+                sql: 'alter table "test" add constraint "some_constraint" check (integer_col > 0)',
+                parameters: [],
+              },
+            })
+
+            await builder.execute()
+          })
+        })
+      }
+
+      if (dialect !== 'sqlite') {
+        describe('add foreign key constraint', () => {
+          it('should add a foreign key constraint', async () => {
+            await ctx.db.schema
+              .createTable('test2')
+              .addColumn('a', 'integer')
+              .addColumn('b', 'varchar(255)')
+              .addUniqueConstraint('unique_a_b', ['a', 'b'])
+              .execute()
+
+            const builder = ctx.db.schema
+              .alterTable('test')
+              .addForeignKeyConstraint(
+                'some_constraint',
+                ['integer_col', 'varchar_col'],
+                'test2',
+                ['a', 'b']
+              )
+
+            testSql(builder, dialect, {
+              postgres: {
+                sql: 'alter table "test" add constraint "some_constraint" foreign key ("integer_col", "varchar_col") references "test2" ("a", "b")',
+                parameters: [],
+              },
+              mysql: {
+                sql: 'alter table `test` add constraint `some_constraint` foreign key (`integer_col`, `varchar_col`) references `test2` (`a`, `b`)',
+                parameters: [],
+              },
+              sqlite: {
+                sql: 'alter table "test" add constraint "some_constraint" foreign key ("integer_col", "varchar_col") references "test2" ("a", "b")',
+                parameters: [],
+              },
+            })
+
+            await builder.execute()
           })
 
-          await builder.execute()
-        })
-      })
+          it('should add a foreign key constraint with on delete and on update', async () => {
+            await ctx.db.schema
+              .createTable('test2')
+              .addColumn('a', 'integer')
+              .addColumn('b', 'varchar(255)')
+              .addUniqueConstraint('unique_a_b', ['a', 'b'])
+              .execute()
 
-      describe('add check constraint', () => {
-        it('should add a check constraint', async () => {
-          const builder = ctx.db.schema
-            .alterTable('test')
-            .addCheckConstraint('some_constraint', 'integer_col > 0')
+            const builder = ctx.db.schema
+              .alterTable('test')
+              .addForeignKeyConstraint(
+                'some_constraint',
+                ['integer_col', 'varchar_col'],
+                'test2',
+                ['a', 'b']
+              )
+              .onDelete('set null')
+              .onUpdate('cascade')
 
-          testSql(builder, dialect, {
-            postgres: {
-              sql: 'alter table "test" add constraint "some_constraint" check (integer_col > 0)',
-              parameters: [],
-            },
-            mysql: {
-              sql: 'alter table `test` add constraint `some_constraint` check (integer_col > 0)',
-              parameters: [],
-            },
+            testSql(builder, dialect, {
+              postgres: {
+                sql: 'alter table "test" add constraint "some_constraint" foreign key ("integer_col", "varchar_col") references "test2" ("a", "b") on delete set null on update cascade',
+                parameters: [],
+              },
+              mysql: {
+                sql: 'alter table `test` add constraint `some_constraint` foreign key (`integer_col`, `varchar_col`) references `test2` (`a`, `b`) on delete set null on update cascade',
+                parameters: [],
+              },
+              sqlite: {
+                sql: 'alter table "test" add constraint "some_constraint" foreign key ("integer_col", "varchar_col") references "test2" ("a", "b") on delete set null on update cascade',
+                parameters: [],
+              },
+            })
+
+            await builder.execute()
           })
-
-          await builder.execute()
         })
-      })
-
-      describe('add foreign key constraint', () => {
-        it('should add a foreign key constraint', async () => {
-          await ctx.db.schema
-            .createTable('test2')
-            .addColumn('a', 'integer')
-            .addColumn('b', 'varchar(255)')
-            .addUniqueConstraint('unique_a_b', ['a', 'b'])
-            .execute()
-
-          const builder = ctx.db.schema
-            .alterTable('test')
-            .addForeignKeyConstraint(
-              'some_constraint',
-              ['integer_col', 'varchar_col'],
-              'test2',
-              ['a', 'b']
-            )
-
-          testSql(builder, dialect, {
-            postgres: {
-              sql: 'alter table "test" add constraint "some_constraint" foreign key ("integer_col", "varchar_col") references "test2" ("a", "b")',
-              parameters: [],
-            },
-            mysql: {
-              sql: 'alter table `test` add constraint `some_constraint` foreign key (`integer_col`, `varchar_col`) references `test2` (`a`, `b`)',
-              parameters: [],
-            },
-          })
-
-          await builder.execute()
-        })
-
-        it('should add a foreign key constraint with on delete and on update', async () => {
-          await ctx.db.schema
-            .createTable('test2')
-            .addColumn('a', 'integer')
-            .addColumn('b', 'varchar(255)')
-            .addUniqueConstraint('unique_a_b', ['a', 'b'])
-            .execute()
-
-          const builder = ctx.db.schema
-            .alterTable('test')
-            .addForeignKeyConstraint(
-              'some_constraint',
-              ['integer_col', 'varchar_col'],
-              'test2',
-              ['a', 'b']
-            )
-            .onDelete('set null')
-            .onUpdate('cascade')
-
-          testSql(builder, dialect, {
-            postgres: {
-              sql: 'alter table "test" add constraint "some_constraint" foreign key ("integer_col", "varchar_col") references "test2" ("a", "b") on delete set null on update cascade',
-              parameters: [],
-            },
-            mysql: {
-              sql: 'alter table `test` add constraint `some_constraint` foreign key (`integer_col`, `varchar_col`) references `test2` (`a`, `b`) on delete set null on update cascade',
-              parameters: [],
-            },
-          })
-
-          await builder.execute()
-        })
-      })
+      }
     })
 
     async function dropTestTables(): Promise<void> {

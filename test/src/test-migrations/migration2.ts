@@ -8,6 +8,4 @@ export async function up(db: Kysely<any>): Promise<void> {
     .execute()
 }
 
-export async function down(db: Kysely<any>): Promise<void> {
-  await db.schema.dropTable('test2').execute()
-}
+// Down migration is missing on purpose. It's optional.

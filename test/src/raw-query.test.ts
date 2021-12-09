@@ -38,9 +38,12 @@ for (const dialect of BUILT_IN_DIALECTS) {
         )
         .execute()
 
-      expect(result).to.eql({
-        rows: [{ first_name: 'Arnold' }, { first_name: 'Sylvester' }],
-      })
+      expect(result.insertId).to.equal(undefined)
+      expect(result.numUpdatedOrDeletedRows).to.equal(undefined)
+      expect(result.rows).to.eql([
+        { first_name: 'Arnold' },
+        { first_name: 'Sylvester' },
+      ])
     })
 
     it('should run a raw update query', async () => {
@@ -51,10 +54,8 @@ for (const dialect of BUILT_IN_DIALECTS) {
         ])
         .execute()
 
-      expect(result).to.eql({
-        numUpdatedOrDeletedRows: 2,
-        rows: [],
-      })
+      expect(result.numUpdatedOrDeletedRows).to.equal(2n)
+      expect(result.rows).to.eql([])
     })
 
     it('should run a raw delete query', async () => {
@@ -62,10 +63,8 @@ for (const dialect of BUILT_IN_DIALECTS) {
         .raw('delete from person where gender = ?', ['male'])
         .execute()
 
-      expect(result).to.eql({
-        numUpdatedOrDeletedRows: 2,
-        rows: [],
-      })
+      expect(result.numUpdatedOrDeletedRows).to.equal(2n)
+      expect(result.rows).to.eql([])
     })
 
     if (dialect === 'postgres') {
@@ -77,9 +76,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
           )
           .execute()
 
-        expect(result).to.eql({
-          rows: [{ first_name: 'New', last_name: 'Personsson' }],
-        })
+        expect(result.insertId).to.equal(undefined)
+        expect(result.rows).to.eql([
+          { first_name: 'New', last_name: 'Personsson' },
+        ])
       })
     } else {
       it('should run a raw insert query', async () => {
@@ -90,7 +90,8 @@ for (const dialect of BUILT_IN_DIALECTS) {
           )
           .execute()
 
-        expect(result.insertedPrimaryKey).to.be.a('number')
+        expect(result.insertId! > 0n).to.be.equal(true)
+        expect(result.rows).to.eql([])
       })
     }
   })

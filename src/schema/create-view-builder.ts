@@ -38,6 +38,18 @@ export class CreateViewBuilder implements OperationNodeSource, Compilable {
     })
   }
 
+  /**
+   * Only implemented on some dialects like SQLite. On most dialects, use {@link orReplace}.
+   */
+  ifNotExists(): CreateViewBuilder {
+    return new CreateViewBuilder({
+      ...this.#props,
+      createViewNode: CreateViewNode.cloneWith(this.#props.createViewNode, {
+        ifNotExists: true,
+      }),
+    })
+  }
+
   orReplace(): CreateViewBuilder {
     return new CreateViewBuilder({
       ...this.#props,

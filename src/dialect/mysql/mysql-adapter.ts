@@ -19,7 +19,7 @@ export class MysqlAdapter implements DialectAdapter {
     // released when the connection is destroyed (session ends) or when the lock
     // is released using `release_lock`. This way we know that the lock is either
     // released by us after successfull or failed migrations OR it's released by
-    // mysql if the process gets killed for some reason.
+    // MySQL if the process gets killed for some reason.
     await db
       .raw(`select get_lock('${LOCK_ID}', ${LOCK_TIMEOUT_SECONDS})`)
       .execute()

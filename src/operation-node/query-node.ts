@@ -2,12 +2,13 @@ import { InsertQueryNode } from './insert-query-node.js'
 import { SelectQueryNode } from './select-query-node.js'
 import { UpdateQueryNode } from './update-query-node.js'
 import { DeleteQueryNode } from './delete-query-node.js'
-import { WhereNode, WhereChildNode } from './where-node.js'
+import { WhereNode } from './where-node.js'
 import { freeze } from '../util/object-utils.js'
 import { JoinNode } from './join-node.js'
 import { SelectionNode } from './selection-node.js'
 import { ReturningNode } from './returning-node.js'
 import { OperationNode } from './operation-node.js'
+import { FilterExpressionNode } from './operation-node-utils.js'
 
 export type QueryNode =
   | SelectQueryNode
@@ -56,7 +57,7 @@ export const QueryNode = freeze({
 
   cloneWithWhere<T extends FilterableQueryNode>(
     node: T,
-    filter: WhereChildNode
+    filter: FilterExpressionNode
   ): T {
     return freeze({
       ...node,
@@ -68,7 +69,7 @@ export const QueryNode = freeze({
 
   cloneWithOrWhere<T extends FilterableQueryNode>(
     node: T,
-    filter: WhereChildNode
+    filter: FilterExpressionNode
   ): T {
     return freeze({
       ...node,

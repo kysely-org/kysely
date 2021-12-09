@@ -15,7 +15,6 @@ import {
   AnyAliasedRawBuilder,
   AnyColumn,
   AnyColumnWithTable,
-  InsertResultTypeTag,
   RowType,
   ValueType,
 } from '../util/type-utils.js'
@@ -50,11 +49,7 @@ export type QueryBuilderWithSelection<
   TB extends keyof DB,
   O,
   S
-> = QueryBuilder<
-  DB,
-  TB,
-  O extends InsertResultTypeTag ? InsertResultTypeTag : O & Selection<DB, TB, S>
->
+> = QueryBuilder<DB, TB, O & Selection<DB, TB, S>>
 
 /**
  * `selectAll` output query builder type.

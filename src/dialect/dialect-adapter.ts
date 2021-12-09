@@ -27,7 +27,7 @@ export interface DialectAdapter {
    * it's not possible for two migration processes to run in parallel.
    *
    * Most dialects have explicit locks that can be used, like advisory locks
-   * in postgres and the get_lock function in mysql.
+   * in PostgreSQL and the get_lock function in MySQL.
    *
    * If the dialect doesn't have explicit locks the {@link MIGRATION_LOCK_TABLE}
    * created by Kysely can be used instead. {@link MIGRATION_LOCK_TABLE}
@@ -48,7 +48,8 @@ export interface DialectAdapter {
    *
    * If `supportsTransactionalDdl` is `true` then the `db` passed to this method
    * is a transaction inside which the migrations were executed. Otherwise `db`
-   * is a single connection (session) that was used to execute the migrations.
+   * is a single connection (session) that was used to execute the migrations
+   * and the `acquireMigrationLock` call.
    */
   releaseMigrationLock(db: Kysely<any>): Promise<void>
 }

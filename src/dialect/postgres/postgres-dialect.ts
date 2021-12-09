@@ -48,7 +48,7 @@ export class PostgresDialect implements Dialect {
 }
 
 /**
- * Config for the postgres dialect.
+ * Config for the PostgreSQL dialect.
  *
  * This interface is equal to `pg` library's `Pool` config:
  *
@@ -123,7 +123,7 @@ export interface PostgresDialectConfig {
    *
    * Setting `allowExitOnIdle: true` in the config will allow the node event loop to exit
    * as soon as all clients in the pool are idle, even if their socket is still open
-   * to the postgres server.  This can be handy in scripts & tests
+   * to the PostgreSQL server.  This can be handy in scripts & tests
    * where you don't want to wait for your clients to go idle before your process exits.
    */
   allowExitOnIdle?: boolean

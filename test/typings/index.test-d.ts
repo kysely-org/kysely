@@ -7,7 +7,13 @@
  * happy, but we can catch it here.
  */
 
-import { Kysely, Transaction } from '.'
+import {
+  Kysely,
+  Transaction,
+  InsertResult,
+  UpdateResult,
+  DeleteResult,
+} from '.'
 import { expectType, expectError } from 'tsd'
 
 interface Person {
@@ -451,11 +457,18 @@ async function testInsert(db: Kysely<Database>) {
 
   const r1 = await db.insertInto('person').values(person).execute()
 
-  expectType<(number | undefined)[]>(r1)
+  expectType<InsertResult[]>(r1)
 
   const r2 = await db.insertInto('person').values(person).executeTakeFirst()
 
-  expectType<number | undefined>(r2)
+  expectType<InsertResult>(r2)
+
+  const r3 = await db
+    .insertInto('person')
+    .values(person)
+    .executeTakeFirstOrThrow()
+
+  expectType<InsertResult>(r3)
 
   // Non-existent column
   expectError(db.insertInto('person').values({ not_column: 'foo' }))
@@ -531,7 +544,7 @@ async function testUpdate(db: Kysely<Database>) {
     .set({ name: 'Fluffy' })
     .executeTakeFirst()
 
-  expectType<number>(r1)
+  expectType<UpdateResult>(r1)
 
   // Non-existent column
   expectError(
@@ -540,6 +553,11 @@ async function testUpdate(db: Kysely<Database>) {
       .where('p.id', '=', '1')
       .set({ not_a_column: 'Fluffy' })
   )
+}
+
+async function testDelete(db: Kysely<Database>) {
+  const r1 = await db.deleteFrom('pet').where('id', '=', '1').executeTakeFirst()
+  expectType<DeleteResult>(r1)
 }
 
 async function testOrderBy(db: Kysely<Database>) {

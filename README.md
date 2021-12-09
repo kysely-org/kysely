@@ -39,14 +39,17 @@ using Kysely and can't find something you'd want to use, please open an issue or
 
 # Installation
 
-Kysely currently works on PostgreSQL and MySQL. You can install it using
+Kysely currently works on PostgreSQL, MySQL and SQLite. You can install it using
 
 ```
-# postgres
+# PostgreSQL
 npm install kysely pg
 
-# mysql
+# MySQL
 npm install kysely mysql2
+
+# SQLite
+npm install kysely better-sqlite3
 ```
 
 More dialects will be added soon. Kysely also has a simple interface
@@ -94,6 +97,7 @@ interface Database {
 
 // You'd create one of these when you start your app.
 const db = new Kysely<Database>({
+  // Use MysqlDialect for MySQL and SqliteDialect for SQLite.
   dialect: new PostgresDialect({
     host: 'localhost',
     database: 'kysely_test',

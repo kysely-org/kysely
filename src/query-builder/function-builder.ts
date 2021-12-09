@@ -25,7 +25,7 @@ import { createQueryId } from '../util/query-id.js'
  *   .execute()
  * ```
  *
- * The generated SQL (postgresql):
+ * The generated SQL (PostgreSQL):
  *
  * ```sql
  * select "person"."id", count("pet"."id") as "pet_count"
@@ -97,7 +97,7 @@ export class FunctionBuilder<DB, TB extends keyof DB> {
    * Calls the `sum` function for the column given as the argument.
    *
    * If this is used in a `select` statement the type of the selected expression
-   * will be `number | string | BigInt` by default. This is because Kysely can't
+   * will be `number | string | bigint` by default. This is because Kysely can't
    * know the type the db driver outputs. Sometimes the output can be larger than
    * the largest javascript number and a string is returned instead. Most drivers
    * allow you to configure the output type of large numbers and Kysely can't
@@ -115,7 +115,7 @@ export class FunctionBuilder<DB, TB extends keyof DB> {
    * ```
    */
   sum<
-    O extends number | string | BigInt,
+    O extends number | string | bigint,
     C extends StringReference<DB, TB> = any
   >(column: C): RawBuilder<O> {
     return this.#oneArgFunction('sum', column)
@@ -125,7 +125,7 @@ export class FunctionBuilder<DB, TB extends keyof DB> {
    * Calls the `count` function for the column given as the argument.
    *
    * If this is used in a `select` statement the type of the selected expression
-   * will be `number | string | BigInt` by default. This is because Kysely can't
+   * will be `number | string |bigint` by default. This is because Kysely can't
    * know the type the db driver outputs. Sometimes the output can be larger than
    * the largest javascript number and a string is returned instead. Most drivers
    * allow you to configure the output type of large numbers and Kysely can't
@@ -143,7 +143,7 @@ export class FunctionBuilder<DB, TB extends keyof DB> {
    * ```
    */
   count<
-    O extends number | string | BigInt,
+    O extends number | string | bigint,
     C extends StringReference<DB, TB> = any
   >(column: C): RawBuilder<O> {
     return this.#oneArgFunction('count', column)

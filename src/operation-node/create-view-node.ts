@@ -15,6 +15,7 @@ export interface CreateViewNode extends OperationNode {
   readonly name: IdentifierNode
   readonly materialized?: boolean
   readonly orReplace?: boolean
+  readonly ifNotExists?: boolean
   readonly columns?: ReadonlyArray<ColumnNode>
   readonly as?: SelectQueryNode | RawNode
 }

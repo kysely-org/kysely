@@ -14,7 +14,8 @@ import {
 
 import { Driver, TransactionSettings } from '../../driver/driver.js'
 import { CompiledQuery } from '../../query-compiler/compiled-query.js'
-import { isFunction, isNumber, isObject } from '../../util/object-utils.js'
+import { importNamedFunction } from '../../util/dynamic-import.js'
+import { isObject } from '../../util/object-utils.js'
 import { MysqlDialectConfig } from './mysql-dialect.js'
 
 const PRIVATE_RELEASE_METHOD = Symbol()
@@ -77,22 +78,23 @@ export class MysqlDriver implements Driver {
     settings: TransactionSettings
   ): Promise<void> {
     if (settings.isolationLevel) {
-      // On mysql this sets the isolation level of the next transaction.
-      await connection.executeQuery({
-        sql: `set transaction isolation level ${settings.isolationLevel}`,
-        parameters: [],
-      })
+      // On MySQL this sets the isolation level of the next transaction.
+      await connection.executeQuery(
+        CompiledQuery.raw(
+          `set transaction isolation level ${settings.isolationLevel}`
+        )
+      )
     }
 
-    await connection.executeQuery({ sql: 'begin', parameters: [] })
+    await connection.executeQuery(CompiledQuery.raw('begin'))
   }
 
   async commitTransaction(connection: DatabaseConnection): Promise<void> {
-    await connection.executeQuery({ sql: 'commit', parameters: [] })
+    await connection.executeQuery(CompiledQuery.raw('commit'))
   }
 
   async rollbackTransaction(connection: DatabaseConnection): Promise<void> {
-    await connection.executeQuery({ sql: 'rollback', parameters: [] })
+    await connection.executeQuery(CompiledQuery.raw('rollback'))
   }
 
   async releaseConnection(connection: DatabaseConnection): Promise<void> {
@@ -117,19 +119,10 @@ async function importMysqlPoolFactory(): Promise<
   (config: PoolOptions) => Pool
 > {
   try {
-    // For this to work with both esm and cjs modules we need
-    // this hacky crap here.
-    const mysql = (await import('mysql2')) as any
-
-    if (isFunction(mysql.createPool)) {
-      return mysql.createPool
-    } else {
-      // With esm the imported module doesn't match the typings.
-      return mysql.default.createPool
-    }
+    return await importNamedFunction('mysql2', 'createPool')
   } catch (error) {
     throw new Error(
-      'Mysql client not installed. Please run `npm install mysql2`'
+      'MySQL client not installed. Please run `npm install mysql2`'
     )
   }
 }
@@ -144,17 +137,21 @@ class MysqlConnection implements DatabaseConnection {
   async executeQuery<O>(compiledQuery: CompiledQuery): Promise<QueryResult<O>> {
     const result = await this.#executeQuery(compiledQuery)
 
-    if (isObject(result) && 'insertId' in result && 'affectedRows' in result) {
-      if (isNumber(result.insertId) && result.insertId > 0) {
-        return {
-          insertedPrimaryKey: result.insertId,
-          rows: [],
-        }
-      } else if (isNumber(result.affectedRows)) {
-        return {
-          numUpdatedOrDeletedRows: result.affectedRows,
-          rows: [],
-        }
+    if (isOkPacket(result)) {
+      const { insertId, affectedRows } = result
+
+      return {
+        insertId:
+          insertId !== undefined &&
+          insertId !== null &&
+          insertId.toString() !== '0'
+            ? BigInt(insertId)
+            : undefined,
+        numUpdatedOrDeletedRows:
+          affectedRows !== undefined && insertId !== null
+            ? BigInt(affectedRows)
+            : undefined,
+        rows: [],
       }
     } else if (Array.isArray(result)) {
       return {
@@ -194,4 +191,8 @@ class MysqlConnection implements DatabaseConnection {
   [PRIVATE_RELEASE_METHOD](): void {
     this.#rawConnection.release()
   }
+}
+
+function isOkPacket(obj: unknown): obj is OkPacket {
+  return isObject(obj) && 'insertId' in obj && 'affectedRows' in obj
 }

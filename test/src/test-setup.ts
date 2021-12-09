@@ -17,6 +17,8 @@ import {
   MysqlDialect,
   Dialect,
   SchemaModule,
+  InsertResult,
+  SqliteDialect,
 } from '../../'
 
 export interface Person {
@@ -61,10 +63,15 @@ export interface TestContext {
 }
 
 export type DialectWrapper = (dialect: Dialect) => Dialect
-export type BuiltInDialect = 'postgres' | 'mysql'
+export type BuiltInDialect = 'postgres' | 'mysql' | 'sqlite'
 export type PerDialect<T> = Record<BuiltInDialect, T>
 
-export const BUILT_IN_DIALECTS: BuiltInDialect[] = ['postgres', 'mysql']
+export const BUILT_IN_DIALECTS: BuiltInDialect[] = [
+  'postgres',
+  'mysql',
+  'sqlite',
+]
+
 export const TEST_INIT_TIMEOUT = 5 * 60 * 1000
 // This can be used as a placeholder for testSql when a query is not
 // supported on some dialect.
@@ -103,6 +110,12 @@ const DB_CONFIGS: PerDialect<KyselyConfig> = {
     }),
     plugins: PLUGINS,
   },
+  sqlite: {
+    dialect: new SqliteDialect({
+      databasePath: ':memory:',
+    }),
+    plugins: PLUGINS,
+  },
 }
 
 export async function initTest(
@@ -138,7 +151,7 @@ export async function insertPersons(
       .returning('id')
       .executeTakeFirst()
 
-    const personId = getIdFromInsertResult<number>(personRes)
+    const personId = getInsertId(personRes)
 
     for (const insertPet of pets ?? []) {
       await insertPetForPerson(ctx.db, personId, insertPet)
@@ -284,7 +297,7 @@ async function insertPetForPerson(
     .returning('id')
     .executeTakeFirst()
 
-  const petId = getIdFromInsertResult<number>(petRes)
+  const petId = getInsertId(petRes)
 
   for (const toy of toys ?? []) {
     await insertToysForPet(db, petId, toy)
@@ -302,11 +315,11 @@ async function insertToysForPet(
     .executeTakeFirst()
 }
 
-function getIdFromInsertResult<T>(result: any): T {
-  if (typeof result === 'object') {
-    return result.id
+function getInsertId(result: any): number {
+  if (result instanceof InsertResult) {
+    return Number(result.insertId)
   } else {
-    return result
+    return result.id
   }
 }
 
