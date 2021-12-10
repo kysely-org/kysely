@@ -1151,6 +1151,17 @@ for (const dialect of BUILT_IN_DIALECTS) {
           })
 
           await builder.execute()
+
+          expect(await getColumnMeta('test.bool_col')).to.eql({
+            name: 'bool_col',
+            isNullable: false,
+            dataType:
+              dialect === 'postgres'
+                ? 'bool'
+                : dialect === 'sqlite'
+                ? 'boolean'
+                : 'tinyint',
+          })
         })
 
         if (dialect !== 'sqlite') {
