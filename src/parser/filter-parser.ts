@@ -1,5 +1,6 @@
 import { FilterNode } from '../operation-node/filter-node.js'
 import {
+  freeze,
   isBoolean,
   isFunction,
   isNull,
@@ -46,45 +47,21 @@ export function parseWhereFilter(
   ctx: ParseContext,
   args: any[]
 ): FilterExpressionNode {
-  if (args.length === 3) {
-    return parseThreeArgFilter(ctx, args[0], args[1], args[2])
-  } else if (args.length === 1 && isFunction(args[0])) {
-    return parseWhereGroup(ctx, args[0])
-  } else {
-    throw new Error(
-      `invalid arguments passed to a where method ${JSON.stringify(args)}`
-    )
-  }
+  return parseFilter(ctx, 'where', args)
 }
 
 export function parseHavingFilter(
   ctx: ParseContext,
   args: any[]
 ): FilterExpressionNode {
-  if (args.length === 3) {
-    return parseThreeArgFilter(ctx, args[0], args[1], args[2])
-  } else if (args.length === 1 && isFunction(args[0])) {
-    return parseHavingGroup(ctx, args[0])
-  } else {
-    throw new Error(
-      `invalid arguments passed to a having method ${JSON.stringify(args)}`
-    )
-  }
+  return parseFilter(ctx, 'having', args)
 }
 
 export function parseOnFilter(
   ctx: ParseContext,
   args: any[]
 ): FilterExpressionNode {
-  if (args.length === 3) {
-    return parseThreeArgFilter(ctx, args[0], args[1], args[2])
-  } else if (args.length === 1 && isFunction(args[0])) {
-    return parseOnGroup(ctx, args[0])
-  } else {
-    throw new Error(
-      `invalid arguments passed to an on method ${JSON.stringify(args)}`
-    )
-  }
+  return parseFilter(ctx, 'on', args)
 }
 
 export function parseReferenceFilter(
@@ -112,6 +89,32 @@ export function parseNotExistFilter(
   arg: ExistsExpression<any, any>
 ): FilterNode {
   return parseExistExpression(ctx, 'not exists', arg)
+}
+
+export function parseFilter(
+  ctx: ParseContext,
+  type: 'where' | 'having' | 'on',
+  args: any[]
+): FilterExpressionNode {
+  if (args.length === 3) {
+    return parseThreeArgFilter(ctx, args[0], args[1], args[2])
+  } else if (args.length === 1) {
+    const arg = args[0]
+
+    if (isFunction(arg)) {
+      return GROUP_PARSERS[type](ctx, arg)
+    } else if (isOperationNodeSource(arg)) {
+      const node = arg.toOperationNode()
+
+      if (RawNode.is(node)) {
+        return node
+      }
+    }
+  }
+
+  throw new Error(
+    `invalid arguments passed to a '${type}' method: ${JSON.stringify(args)}`
+  )
 }
 
 function parseThreeArgFilter(
@@ -160,48 +163,6 @@ function parseFilterOperator(op: FilterOperator): OperatorNode | RawNode {
   )
 }
 
-function parseWhereGroup(
-  ctx: ParseContext,
-  callback: (qb: AnyQueryBuilder) => AnyQueryBuilder
-): ParensNode {
-  const query = callback(ctx.createSelectQueryBuilder([]))
-  const queryNode = query.toOperationNode() as SelectQueryNode
-
-  if (!queryNode.where) {
-    throw new Error('no `where*` methods called insided a group callback')
-  }
-
-  return ParensNode.create(queryNode.where.where)
-}
-
-function parseHavingGroup(
-  ctx: ParseContext,
-  callback: (qb: AnyQueryBuilder) => AnyQueryBuilder
-): ParensNode {
-  const query = callback(ctx.createSelectQueryBuilder([]))
-  const queryNode = query.toOperationNode() as SelectQueryNode
-
-  if (!queryNode.having) {
-    throw new Error('no `having*` methods called insided a group callback')
-  }
-
-  return ParensNode.create(queryNode.having.having)
-}
-
-function parseOnGroup(
-  ctx: ParseContext,
-  callback: (qb: JoinBuilder<any, any>) => JoinBuilder<any, any>
-): ParensNode {
-  const joinBuilder = callback(ctx.createJoinBuilder('InnerJoin', 'table'))
-  const joinNode = joinBuilder.toOperationNode() as JoinNode
-
-  if (!joinNode.on) {
-    throw new Error('no `on*` methods called insided a group callback')
-  }
-
-  return ParensNode.create(joinNode.on.on)
-}
-
 function parseExistExpression(
   ctx: ParseContext,
   type: 'exists' | 'not exists',
@@ -217,3 +178,47 @@ function parseExistExpression(
 
   return FilterNode.create(undefined, OperatorNode.create(type), node)
 }
+
+const GROUP_PARSERS = freeze({
+  where(
+    ctx: ParseContext,
+    callback: (qb: AnyQueryBuilder) => AnyQueryBuilder
+  ): ParensNode {
+    const query = callback(ctx.createSelectQueryBuilder([]))
+    const queryNode = query.toOperationNode() as SelectQueryNode
+
+    if (!queryNode.where) {
+      throw new Error('no `where` methods called insided a group callback')
+    }
+
+    return ParensNode.create(queryNode.where.where)
+  },
+
+  having(
+    ctx: ParseContext,
+    callback: (qb: AnyQueryBuilder) => AnyQueryBuilder
+  ): ParensNode {
+    const query = callback(ctx.createSelectQueryBuilder([]))
+    const queryNode = query.toOperationNode() as SelectQueryNode
+
+    if (!queryNode.having) {
+      throw new Error('no `having` methods called insided a group callback')
+    }
+
+    return ParensNode.create(queryNode.having.having)
+  },
+
+  on(
+    ctx: ParseContext,
+    callback: (qb: JoinBuilder<any, any>) => JoinBuilder<any, any>
+  ): ParensNode {
+    const joinBuilder = callback(ctx.createJoinBuilder('InnerJoin', 'table'))
+    const joinNode = joinBuilder.toOperationNode() as JoinNode
+
+    if (!joinNode.on) {
+      throw new Error('no `on` methods called insided a group callback')
+    }
+
+    return ParensNode.create(joinNode.on.on)
+  },
+})

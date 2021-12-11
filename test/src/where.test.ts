@@ -484,6 +484,33 @@ for (const dialect of BUILT_IN_DIALECTS) {
           },
         ])
       })
+
+      it('single raw instance', async () => {
+        const query = ctx.db
+          .selectFrom('person')
+          .selectAll()
+          .where(
+            ctx.db.raw('first_name between ? and ?', ['Arnold', 'Jennifer'])
+          )
+          .where(ctx.db.raw('last_name between ? and ?', ['A', 'Z']))
+
+        testSql(query, dialect, {
+          postgres: {
+            sql: 'select * from "person" where first_name between $1 and $2 and last_name between $3 and $4',
+            parameters: ['Arnold', 'Jennifer', 'A', 'Z'],
+          },
+          mysql: {
+            sql: 'select * from `person` where first_name between ? and ? and last_name between ? and ?',
+            parameters: ['Arnold', 'Jennifer', 'A', 'Z'],
+          },
+          sqlite: {
+            sql: 'select * from "person" where first_name between ? and ? and last_name between ? and ?',
+            parameters: ['Arnold', 'Jennifer', 'A', 'Z'],
+          },
+        })
+
+        await query.execute()
+      })
     })
 
     describe('orWhere', () => {
@@ -565,6 +592,36 @@ for (const dialect of BUILT_IN_DIALECTS) {
             gender: 'female',
           },
         ])
+      })
+
+      it('single raw instance', async () => {
+        const query = ctx.db
+          .selectFrom('person')
+          .selectAll()
+          .where((qb) =>
+            qb
+              .where(
+                ctx.db.raw('first_name between ? and ?', ['Arnold', 'Jennifer'])
+              )
+              .orWhere(ctx.db.raw('last_name between ? and ?', ['A', 'Z']))
+          )
+
+        testSql(query, dialect, {
+          postgres: {
+            sql: 'select * from "person" where (first_name between $1 and $2 or last_name between $3 and $4)',
+            parameters: ['Arnold', 'Jennifer', 'A', 'Z'],
+          },
+          mysql: {
+            sql: 'select * from `person` where (first_name between ? and ? or last_name between ? and ?)',
+            parameters: ['Arnold', 'Jennifer', 'A', 'Z'],
+          },
+          sqlite: {
+            sql: 'select * from "person" where (first_name between ? and ? or last_name between ? and ?)',
+            parameters: ['Arnold', 'Jennifer', 'A', 'Z'],
+          },
+        })
+
+        await query.execute()
       })
     })
 

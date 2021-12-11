@@ -11,8 +11,8 @@ export type AliasNodeChild =
   | ColumnNode
   | ReferenceNode
   | TableNode
-  | RawNode
   | SelectQueryNode
+  | RawNode
 
 export interface AliasNode extends OperationNode {
   readonly kind: 'AliasNode'

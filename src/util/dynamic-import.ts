@@ -4,7 +4,7 @@ export async function importFunction<T extends Function>(
   modulePath: string
 ): Promise<T> {
   const module: unknown = await import(modulePath)
-  const errorMessage = `module "${modulePath}" doesn export a function`
+  const errorMessage = `module "${modulePath}" doesn't export a function`
 
   if (isFunction(module)) {
     return module as T

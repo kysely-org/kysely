@@ -159,7 +159,10 @@ export {
   ValueExpressionOrList,
 } from './parser/value-parser.js'
 export { ExistsExpression, FilterOperator } from './parser/filter-parser.js'
-export { TableExpression } from './parser/table-parser.js'
+export {
+  TableExpression,
+  TableExpressionOrList,
+} from './parser/table-parser.js'
 export {
   JoinReferenceExpression,
   JoinCallbackExpression,

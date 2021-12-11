@@ -8,6 +8,7 @@ import {
 import { Driver } from '../../driver/driver.js'
 import { CompiledQuery } from '../../query-compiler/compiled-query.js'
 import { importFunction } from '../../util/dynamic-import.js'
+import { isBoolean, isFunction, isNumber } from '../../util/object-utils.js'
 import { SqliteDialectConfig } from './sqlite-dialect.js'
 
 export class SqliteDriver implements Driver {
@@ -31,19 +32,19 @@ export class SqliteDriver implements Driver {
 
     const options: DatabaseOptions = {}
 
-    if (typeof this.#config.readonly === 'boolean') {
+    if (isBoolean(this.#config.readonly)) {
       options.readonly = this.#config.readonly
     }
 
-    if (typeof this.#config.fileMustExist === 'boolean') {
+    if (isBoolean(this.#config.fileMustExist)) {
       options.fileMustExist = this.#config.fileMustExist
     }
 
-    if (typeof this.#config.timeout === 'number') {
+    if (isNumber(this.#config.timeout)) {
       options.timeout = this.#config.timeout
     }
 
-    if (typeof this.#config.verbose === 'function') {
+    if (isFunction(this.#config.verbose)) {
       options.verbose = this.#config.verbose
     }
 
@@ -56,8 +57,8 @@ export class SqliteDriver implements Driver {
   }
 
   async acquireConnection(): Promise<DatabaseConnection> {
-    // sqlite effectively only has one single connection. We use a mutex
-    // here to wait until the single connection has been released.
+    // SQLite only has one single connection. We use a mutex here to wait
+    // until the single connection has been released.
     await this.#connectionMutex.lock()
     return this.#connection!
   }
@@ -89,7 +90,6 @@ async function importBetterSqlite3Database(): Promise<
   try {
     return await importFunction('better-sqlite3')
   } catch (error) {
-    console.error(error)
     throw new Error(
       'SQLite client not installed. Please run `npm install better-sqlite3`'
     )

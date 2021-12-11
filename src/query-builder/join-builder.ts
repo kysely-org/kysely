@@ -13,6 +13,7 @@ import { ReferenceExpression } from '../parser/reference-parser.js'
 import { ValueExpressionOrList } from '../parser/value-parser.js'
 import { freeze } from '../util/object-utils.js'
 import { preventAwait } from '../util/prevent-await.js'
+import { AnyRawBuilder } from '../util/type-utils.js'
 
 export class JoinBuilder<DB, TB extends keyof DB>
   implements OperationNodeSource
@@ -39,6 +40,8 @@ export class JoinBuilder<DB, TB extends keyof DB>
     grouper: (qb: JoinBuilder<DB, TB>) => JoinBuilder<DB, TB>
   ): JoinBuilder<DB, TB>
 
+  on(raw: AnyRawBuilder): JoinBuilder<DB, TB>
+
   on(...args: any[]): JoinBuilder<DB, TB> {
     return new JoinBuilder({
       ...this.#props,
@@ -64,6 +67,8 @@ export class JoinBuilder<DB, TB extends keyof DB>
   orOn(
     grouper: (qb: JoinBuilder<DB, TB>) => JoinBuilder<DB, TB>
   ): JoinBuilder<DB, TB>
+
+  orOn(raw: AnyRawBuilder): JoinBuilder<DB, TB>
 
   orOn(...args: any[]): JoinBuilder<DB, TB> {
     return new JoinBuilder({

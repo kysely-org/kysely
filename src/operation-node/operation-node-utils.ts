@@ -25,4 +25,9 @@ export type ValueExpressionNode =
   | ReferenceExpressionNode
 
 export type TableExpressionNode = TableNode | AliasNode
-export type FilterExpressionNode = FilterNode | AndNode | OrNode | ParensNode
+export type FilterExpressionNode =
+  | FilterNode
+  | AndNode
+  | OrNode
+  | ParensNode
+  | RawNode

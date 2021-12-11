@@ -48,7 +48,11 @@ import {
   FilterableQueryNode,
   MutatingQueryNode,
 } from '../operation-node/query-node.js'
-import { AnyColumn, SingleResultType } from '../util/type-utils.js'
+import {
+  AnyColumn,
+  AnyRawBuilder,
+  SingleResultType,
+} from '../util/type-utils.js'
 import {
   OrderByDirectionExpression,
   OrderByExpression,
@@ -296,6 +300,8 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
     grouper: (qb: QueryBuilder<DB, TB, O>) => QueryBuilder<DB, TB, O>
   ): QueryBuilder<DB, TB, O>
 
+  where(raw: AnyRawBuilder): QueryBuilder<DB, TB, O>
+
   where(...args: any[]): any {
     assertCanHaveWhereClause(this.#props.queryNode)
 
@@ -449,6 +455,8 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
   orWhere(
     grouper: (qb: QueryBuilder<DB, TB, O>) => QueryBuilder<DB, TB, O>
   ): QueryBuilder<DB, TB, O>
+
+  orWhere(raw: AnyRawBuilder): QueryBuilder<DB, TB, O>
 
   orWhere(...args: any[]): any {
     assertCanHaveWhereClause(this.#props.queryNode)
@@ -614,6 +622,8 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
     grouper: (qb: QueryBuilder<DB, TB, O>) => QueryBuilder<DB, TB, O>
   ): QueryBuilder<DB, TB, O>
 
+  having(raw: AnyRawBuilder): QueryBuilder<DB, TB, O>
+
   having(...args: any[]): any {
     assertCanHaveHavingClause(this.#props.queryNode)
 
@@ -659,6 +669,8 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
   orHaving(
     grouper: (qb: QueryBuilder<DB, TB, O>) => QueryBuilder<DB, TB, O>
   ): QueryBuilder<DB, TB, O>
+
+  orHaving(raw: AnyRawBuilder): QueryBuilder<DB, TB, O>
 
   orHaving(...args: any[]): any {
     assertCanHaveHavingClause(this.#props.queryNode)
@@ -1784,7 +1796,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * instances or select queries.
    *
    * The return value of an update query is an instance of {@link UpdateResult}.
-   * You can use the {@link QueryBuilder.returning | returning} method on 
+   * You can use the {@link QueryBuilder.returning | returning} method on
    * supported databases to get out the updated rows.
    *
    * @example
