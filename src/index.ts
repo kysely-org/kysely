@@ -144,6 +144,7 @@ export * from './operation-node/with-node.js'
 export * from './introspection/database-introspector.js'
 
 export * from './util/compilable.js'
+export * from './util/log.js'
 export { AnyColumn, UnknownRow, AnyQueryBuilder } from './util/type-utils.js'
 
 export {

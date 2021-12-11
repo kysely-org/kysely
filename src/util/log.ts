@@ -1,33 +1,66 @@
-import { freeze } from './object-utils.js'
+import { CompiledQuery } from '../index.js'
+import { freeze, isFunction } from './object-utils.js'
 import { ArrayItemType } from './type-utils.js'
 
-export const LOG_LEVELS = ['query', 'error'] as const
+export const LOG_LEVELS = freeze(['query', 'error'] as const)
+
 export type LogLevel = ArrayItemType<typeof LOG_LEVELS>
 
-export class Log {
-  #levels: Readonly<Record<LogLevel, boolean>>
+export interface QueryLogEvent {
+  readonly level: 'query'
+  readonly query: CompiledQuery
+  readonly queryDurationMillis: number
+}
 
-  constructor(levels: ReadonlyArray<LogLevel>) {
-    this.#levels = freeze({
-      query: levels.includes('query'),
-      error: levels.includes('error'),
-    })
+export interface ErrorLogEvent {
+  readonly level: 'error'
+  readonly error: unknown
+}
+
+export type LogEvent = QueryLogEvent | ErrorLogEvent
+export type LogConfig = ReadonlyArray<LogLevel> | ((event: LogEvent) => void)
+
+export class Log {
+  readonly #levels: Readonly<Record<LogLevel, boolean>>
+  readonly #logger?: (event: LogEvent) => void
+
+  constructor(config: LogConfig) {
+    if (isFunction(config)) {
+      this.#logger = config
+      this.#levels = freeze({
+        query: true,
+        error: true,
+      })
+    } else {
+      this.#levels = freeze({
+        query: config.includes('query'),
+        error: config.includes('error'),
+      })
+    }
   }
 
   query(getEvent: () => QueryLogEvent) {
     if (this.#levels.query) {
-      this.#defaultQuery(getEvent())
+      if (this.#logger) {
+        this.#logger(getEvent())
+      } else {
+        this.#defaultQuery(getEvent())
+      }
     }
   }
 
   error(getEvent: () => ErrorLogEvent) {
     if (this.#levels.error) {
-      this.#defaultError(getEvent())
+      if (this.#logger) {
+        this.#logger(getEvent())
+      } else {
+        this.#defaultError(getEvent())
+      }
     }
   }
 
   #defaultQuery(event: QueryLogEvent) {
-    console.log(`kysely:query: ${event.sql}`)
+    console.log(`kysely:query: ${event.query.sql}`)
     console.log(
       `kysely:query: duration: ${event.queryDurationMillis.toFixed(1)}ms`
     )
@@ -40,17 +73,4 @@ export class Log {
       console.error(`kysely:error: ${event}`)
     }
   }
-}
-
-export type LogEvent = QueryLogEvent | ErrorLogEvent
-
-export interface QueryLogEvent {
-  readonly level: 'query'
-  readonly sql: string
-  readonly queryDurationMillis: number
-}
-
-export interface ErrorLogEvent {
-  readonly level: 'error'
-  readonly error: unknown
 }

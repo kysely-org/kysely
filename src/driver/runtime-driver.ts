@@ -124,7 +124,7 @@ class RuntimeConnection implements DatabaseConnection {
   #logQuery(compiledQuery: CompiledQuery, startTime: number): void {
     this.#log.query(() => ({
       level: 'query',
-      sql: compiledQuery.sql,
+      query: compiledQuery,
       queryDurationMillis: this.#calculateDurationMillis(startTime),
     }))
   }

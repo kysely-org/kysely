@@ -22,7 +22,7 @@ import {
 import { preventAwait } from './util/prevent-await.js'
 import { DefaultParseContext, ParseContext } from './parser/parse-context.js'
 import { FunctionBuilder } from './query-builder/function-builder.js'
-import { Log, LogLevel } from './util/log.js'
+import { Log, LogConfig, LogLevel } from './util/log.js'
 
 /**
  * The main Kysely class.
@@ -358,17 +358,33 @@ export interface KyselyConfig {
   readonly plugins?: KyselyPlugin[]
 
   /**
-   * A list of log levels to log.
+   * A list of log levels to log or a custom logger function.
    *
    * Currently there's only two levels: `query` and `error`.
    * This will be expanded based on user feedback later.
    *
-   * Log levels:
+   * @example
+   * ```ts
+   * const db = new Kysely({
+   *   dialect: new PostgresDialect(postgresConfig),
+   *   log: ['query', 'error']
+   * })
+   * ```
    *
-   *  - query: Log each query's SQL and duration using console.log
-   *  - error: Log all query errors using console.error
+   * @example
+   * ```ts
+   * const db = new Kysely({
+   *   dialect: new PostgresDialect(postgresConfig),
+   *   log(event): void {
+   *     if (event.level === 'query') {
+   *       console.log(event.query.sql)
+   *       console.log(event.query.parameters)
+   *     }
+   *   }
+   * })
+   * ```
    */
-  readonly log?: ReadonlyArray<LogLevel>
+  readonly log?: LogConfig
 }
 
 export class ConnectionBuilder<DB> {
