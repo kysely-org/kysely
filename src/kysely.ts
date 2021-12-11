@@ -365,7 +365,7 @@ export interface KyselyConfig {
    *
    * @example
    * ```ts
-   * const db = new Kysely({
+   * const db = new Kysely<Database>({
    *   dialect: new PostgresDialect(postgresConfig),
    *   log: ['query', 'error']
    * })
@@ -373,7 +373,7 @@ export interface KyselyConfig {
    *
    * @example
    * ```ts
-   * const db = new Kysely({
+   * const db = new Kysely<Database>({
    *   dialect: new PostgresDialect(postgresConfig),
    *   log(event): void {
    *     if (event.level === 'query') {

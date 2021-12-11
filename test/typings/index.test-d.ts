@@ -300,11 +300,16 @@ function testWhere(db: Kysely<Database>) {
   // Schema, table and column
   db.selectFrom('some_schema.movie').where('some_schema.movie.id', '=', '1')
 
-  // Subquery
+  // Subquery in LHS
   db.selectFrom('movie').where(
     (qb) => qb.subQuery('person').select('gender'),
     '=',
     'female'
+  )
+
+  // Subquery in RHS
+  db.selectFrom('movie').where(db.raw('?', ['female']), '=', (qb) =>
+    qb.subQuery('person').select('gender')
   )
 
   // Raw expression
@@ -469,6 +474,19 @@ async function testInsert(db: Kysely<Database>) {
     .executeTakeFirstOrThrow()
 
   expectType<InsertResult>(r3)
+
+  const r4 = await db
+    .with('foo', (db) =>
+      db.selectFrom('person').select('id').where('person.id', '=', 1)
+    )
+    .insertInto('movie')
+    .values({
+      id: db.generated,
+      stars: (eb) => eb.subQuery('foo').select('foo.id'),
+    })
+    .executeTakeFirst()
+
+  expectType<InsertResult>(r4)
 
   // Non-existent column
   expectError(db.insertInto('person').values({ not_column: 'foo' }))

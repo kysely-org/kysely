@@ -78,6 +78,39 @@ for (const dialect of BUILT_IN_DIALECTS) {
       })
     })
 
+    if (dialect !== 'mysql') {
+      it('should create an insert query with common table expressions', async () => {
+        const query = ctx.db
+          .with('jennifer', (db) =>
+            db
+              .selectFrom('person')
+              .where('first_name', '=', 'Jennifer')
+              .select(['id', 'first_name', 'gender'])
+          )
+          .insertInto('pet')
+          .values({
+            id: ctx.db.generated,
+            owner_id: (eb) => eb.subQuery('jennifer').select('id'),
+            name: (eb) => eb.subQuery('jennifer').select('first_name'),
+            species: 'cat',
+          })
+
+        testSql(query, dialect, {
+          postgres: {
+            sql: 'with "jennifer" as (select "id", "first_name", "gender" from "person" where "first_name" = $1) insert into "pet" ("owner_id", "name", "species") values ((select "id" from "jennifer"), (select "first_name" from "jennifer"), $2)',
+            parameters: ['Jennifer', 'cat'],
+          },
+          sqlite: {
+            sql: 'with "jennifer" as (select "id", "first_name", "gender" from "person" where "first_name" = ?) insert into "pet" ("owner_id", "name", "species") values ((select "id" from "jennifer"), (select "first_name" from "jennifer"), ?)',
+            parameters: ['Jennifer', 'cat'],
+          },
+          mysql: NOT_SUPPORTED,
+        })
+
+        await query.execute()
+      })
+    }
+
     if (dialect !== 'mysql' && dialect !== 'sqlite') {
       it('should create a with query where CTEs are inserts updates and deletes', async () => {
         const query = ctx.db

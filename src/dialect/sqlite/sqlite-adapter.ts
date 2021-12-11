@@ -10,10 +10,14 @@ export class SqliteAdapter implements DialectAdapter {
   }
 
   async acquireMigrationLock(): Promise<void> {
-    // Nothing to do here.
+    // SQLite only has one connection that's reserved by the migration system
+    // for the whole time between acquireMigrationLock and releaseMigrationLock.
+    // We don't need to do anything here.
   }
 
   async releaseMigrationLock(): Promise<void> {
-    // Nothing to do here.
+    // SQLite only has one connection that's reserved by the migration system
+    // for the whole time between acquireMigrationLock and releaseMigrationLock.
+    // We don't need to do anything here.
   }
 }

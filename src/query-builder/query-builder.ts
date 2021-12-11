@@ -1517,6 +1517,23 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * insert into "person" ("first_name", "last_name", "age")
    * values ($1, $2 || $3, (select avg(age) from "person"))
    * ```
+   *
+   * @example
+   * You can also use the callback version of subqueries or raw expressions:
+   *
+   * ```ts
+   * db.with('jennifer', (db) => db
+   *   .selectFrom('person')
+   *   .where('first_name', '=', 'Jennifer')
+   *   .select(['id', 'first_name', 'gender'])
+   *   .limit(1)
+   * ).insertInto('pet').values({
+   *   id: db.generated,
+   *   owner_id: (eb) => eb.subQuery('jennifer').select('id'),
+   *   name: (eb) => eb.subQuery('jennifer').select('first_name'),
+   *   species: 'cat',
+   * })
+   * ```
    */
   values(row: InsertObject<DB, TB>): QueryBuilder<DB, TB, O>
 
@@ -1524,7 +1541,10 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
 
   values(args: InsertObjectOrList<DB, TB>): any {
     assertCanHaveInsertValues(this.#props.queryNode)
-    const [columns, values] = parseInsertObjectOrList(args)
+    const [columns, values] = parseInsertObjectOrList(
+      this.#props.parseContext,
+      args
+    )
 
     return new QueryBuilder({
       ...this.#props,

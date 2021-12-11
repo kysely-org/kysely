@@ -11,31 +11,42 @@ import {
   AnyQueryBuilder,
   AnyRawBuilder,
   GeneratedPlaceholder,
+  QueryBuilderFactory,
+  RawBuilderFactory,
 } from '../util/type-utils.js'
 import { isGeneratedPlaceholder } from '../util/generated-placeholder.js'
-import { isPrimitive, PrimitiveValue } from '../util/object-utils.js'
+import {
+  isFunction,
+  isPrimitive,
+  PrimitiveValue,
+} from '../util/object-utils.js'
+import { ParseContext } from './parse-context.js'
 
 export type InsertObject<DB, TB extends keyof DB> = {
-  [C in keyof DB[TB]]: InsertValueExpression<DB[TB][C]>
+  [C in keyof DB[TB]]: InsertValueExpression<DB, TB, DB[TB][C]>
 }
 
 export type InsertObjectOrList<DB, TB extends keyof DB> =
   | InsertObject<DB, TB>
   | ReadonlyArray<InsertObject<DB, TB>>
 
-type InsertValueExpression<T> =
+type InsertValueExpression<DB, TB extends keyof DB, T> =
   | T
   | AnyQueryBuilder
+  | QueryBuilderFactory<DB, TB>
   | AnyRawBuilder
+  | RawBuilderFactory<DB, TB>
   | GeneratedPlaceholder
 
 export function parseInsertObjectOrList(
+  ctx: ParseContext,
   args: InsertObjectOrList<any, any>
 ): [ReadonlyArray<ColumnNode>, ReadonlyArray<InsertValuesNode>] {
-  return parseInsertColumnsAndValues(Array.isArray(args) ? args : [args])
+  return parseInsertColumnsAndValues(ctx, Array.isArray(args) ? args : [args])
 }
 
 function parseInsertColumnsAndValues(
+  ctx: ParseContext,
   rows: InsertObject<any, any>[]
 ): [ReadonlyArray<ColumnNode>, ReadonlyArray<InsertValuesNode>] {
   const columns: string[] = []
@@ -52,9 +63,8 @@ function parseInsertColumnsAndValues(
   }
 
   for (const row of rows) {
-    const rowValues: InsertValueExpression<PrimitiveValue>[] = columns.map(
-      () => null
-    )
+    const rowValues: InsertValueExpression<any, any, PrimitiveValue>[] =
+      columns.map(() => null)
 
     for (const column of Object.keys(row)) {
       const columnIdx = columns.indexOf(column)
@@ -68,7 +78,9 @@ function parseInsertColumnsAndValues(
       values.push(PrimitiveValueListNode.create(rowValues))
     } else {
       values.push(
-        ValueListNode.create(rowValues.map(parseInsertValueExpression))
+        ValueListNode.create(
+          rowValues.map((it) => parseInsertValueExpression(ctx, it))
+        )
       )
     }
   }
@@ -77,12 +89,19 @@ function parseInsertColumnsAndValues(
 }
 
 export function parseInsertValueExpression(
-  value: InsertValueExpression<PrimitiveValue>
+  ctx: ParseContext,
+  value: InsertValueExpression<any, any, PrimitiveValue>
 ): ValueNode | RawNode | SelectQueryNode {
   if (isPrimitive(value)) {
     return ValueNode.create(value)
   } else if (isOperationNodeSource(value)) {
     const node = value.toOperationNode()
+
+    if (!QueryNode.isMutating(node)) {
+      return node
+    }
+  } else if (isFunction(value)) {
+    const node = value(ctx.createExpressionBuilder()).toOperationNode()
 
     if (!QueryNode.isMutating(node)) {
       return node
