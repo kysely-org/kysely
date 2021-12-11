@@ -159,7 +159,12 @@ export {
   ValueExpression,
   ValueExpressionOrList,
 } from './parser/value-parser.js'
-export { ExistsExpression, FilterOperator } from './parser/filter-parser.js'
+export {
+  FilterValueExpression,
+  FilterValueExpressionOrList,
+  ExistsExpression,
+  FilterOperator,
+} from './parser/filter-parser.js'
 export {
   TableExpression,
   TableExpressionOrList,

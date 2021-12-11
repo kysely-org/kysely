@@ -3,6 +3,7 @@ import { OperationNodeSource } from '../operation-node/operation-node-source.js'
 import {
   ExistsExpression,
   FilterOperator,
+  FilterValueExpressionOrList,
   parseExistFilter,
   parseNotExistFilter,
   parseOnFilter,
@@ -10,7 +11,6 @@ import {
 } from '../parser/filter-parser.js'
 import { ParseContext } from '../parser/parse-context.js'
 import { ReferenceExpression } from '../parser/reference-parser.js'
-import { ValueExpressionOrList } from '../parser/value-parser.js'
 import { freeze } from '../util/object-utils.js'
 import { preventAwait } from '../util/prevent-await.js'
 import { AnyRawBuilder } from '../util/type-utils.js'
@@ -33,7 +33,7 @@ export class JoinBuilder<DB, TB extends keyof DB>
   on<RE extends ReferenceExpression<DB, TB>>(
     lhs: RE,
     op: FilterOperator,
-    rhs: ValueExpressionOrList<DB, TB, RE>
+    rhs: FilterValueExpressionOrList<DB, TB, RE>
   ): JoinBuilder<DB, TB>
 
   on(
@@ -61,7 +61,7 @@ export class JoinBuilder<DB, TB extends keyof DB>
   orOn<RE extends ReferenceExpression<DB, TB>>(
     lhs: RE,
     op: FilterOperator,
-    rhs: ValueExpressionOrList<DB, TB, RE>
+    rhs: FilterValueExpressionOrList<DB, TB, RE>
   ): JoinBuilder<DB, TB>
 
   orOn(

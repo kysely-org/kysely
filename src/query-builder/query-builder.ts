@@ -29,6 +29,7 @@ import {
   parseWhereFilter,
   parseHavingFilter,
   parseNotExistFilter,
+  FilterValueExpressionOrList,
 } from '../parser/filter-parser.js'
 import {
   InsertObject,
@@ -40,7 +41,6 @@ import {
   ReferenceExpression,
   ReferenceExpressionOrList,
 } from '../parser/reference-parser.js'
-import { ValueExpressionOrList } from '../parser/value-parser.js'
 import { SelectQueryNode } from '../operation-node/select-query-node.js'
 import { InsertQueryNode } from '../operation-node/insert-query-node.js'
 import {
@@ -293,7 +293,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
   where<RE extends ReferenceExpression<DB, TB>>(
     lhs: RE,
     op: FilterOperator,
-    rhs: ValueExpressionOrList<DB, TB, RE>
+    rhs: FilterValueExpressionOrList<DB, TB, RE>
   ): QueryBuilder<DB, TB, O>
 
   where(
@@ -449,7 +449,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
   orWhere<RE extends ReferenceExpression<DB, TB>>(
     lhs: RE,
     op: FilterOperator,
-    rhs: ValueExpressionOrList<DB, TB, RE>
+    rhs: FilterValueExpressionOrList<DB, TB, RE>
   ): QueryBuilder<DB, TB, O>
 
   orWhere(
@@ -615,7 +615,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
   having<RE extends ReferenceExpression<DB, TB>>(
     lhs: RE,
     op: FilterOperator,
-    rhs: ValueExpressionOrList<DB, TB, RE>
+    rhs: FilterValueExpressionOrList<DB, TB, RE>
   ): QueryBuilder<DB, TB, O>
 
   having(
@@ -663,7 +663,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
   orHaving<RE extends ReferenceExpression<DB, TB>>(
     lhs: RE,
     op: FilterOperator,
-    rhs: ValueExpressionOrList<DB, TB, RE>
+    rhs: FilterValueExpressionOrList<DB, TB, RE>
   ): QueryBuilder<DB, TB, O>
 
   orHaving(

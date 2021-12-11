@@ -6,12 +6,7 @@ import {
   isNull,
   isString,
 } from '../util/object-utils.js'
-import {
-  AnyQueryBuilder,
-  AnyRawBuilder,
-  QueryBuilderFactory,
-  RawBuilderFactory,
-} from '../util/type-utils.js'
+import { AnyQueryBuilder, AnyRawBuilder } from '../util/type-utils.js'
 import { isOperationNodeSource } from '../operation-node/operation-node-source.js'
 import { RawNode } from '../operation-node/raw-node.js'
 import {
@@ -21,25 +16,42 @@ import {
 } from '../operation-node/operator-node.js'
 import { ParensNode } from '../operation-node/parens-node.js'
 import {
+  ExtractTypeFromReferenceExpression,
   parseReferenceExpression,
   ReferenceExpression,
 } from './reference-parser.js'
 import {
   parseValueExpressionOrList,
+  ValueExpression,
   ValueExpressionOrList,
 } from './value-parser.js'
 import { SelectQueryNode } from '../operation-node/select-query-node.js'
 import { JoinBuilder } from '../query-builder/join-builder.js'
-import { JoinNode } from '../operation-node/join-node.js'
 import { FilterExpressionNode } from '../operation-node/operation-node-utils.js'
 import { ValueNode } from '../operation-node/value-node.js'
 import { ParseContext } from './parse-context.js'
 
-export type ExistsExpression<DB, TB extends keyof DB> =
-  | AnyQueryBuilder
-  | QueryBuilderFactory<DB, TB>
-  | AnyRawBuilder
-  | RawBuilderFactory<DB, TB>
+export type FilterValueExpression<
+  DB,
+  TB extends keyof DB,
+  RE
+> = ValueExpression<DB, TB, ExtractTypeFromReferenceExpression<DB, TB, RE>>
+
+export type FilterValueExpressionOrList<
+  DB,
+  TB extends keyof DB,
+  RE
+> = ValueExpressionOrList<
+  DB,
+  TB,
+  ExtractTypeFromReferenceExpression<DB, TB, RE>
+>
+
+export type ExistsExpression<DB, TB extends keyof DB> = ValueExpression<
+  DB,
+  TB,
+  never
+>
 
 export type FilterOperator = Operator | AnyRawBuilder
 
@@ -121,7 +133,7 @@ function parseThreeArgFilter(
   ctx: ParseContext,
   left: ReferenceExpression<any, any>,
   op: FilterOperator,
-  right: ValueExpressionOrList<any, any, any>
+  right: FilterValueExpressionOrList<any, any, any>
 ): FilterNode {
   if ((op === 'is' || op === 'is not') && (isNull(right) || isBoolean(right))) {
     return parseIsFilter(ctx, left, op, right)
@@ -148,10 +160,8 @@ function parseIsFilter(
 }
 
 function parseFilterOperator(op: FilterOperator): OperatorNode | RawNode {
-  if (isString(op)) {
-    if (OPERATORS.includes(op)) {
-      return OperatorNode.create(op)
-    }
+  if (isString(op) && OPERATORS.includes(op)) {
+    return OperatorNode.create(op)
   } else if (isOperationNodeSource(op)) {
     return op.toOperationNode()
   }
@@ -168,15 +178,11 @@ function parseExistExpression(
   type: 'exists' | 'not exists',
   arg: ExistsExpression<any, any>
 ): FilterNode {
-  const node = isFunction(arg)
-    ? arg(ctx.createExpressionBuilder()).toOperationNode()
-    : arg.toOperationNode()
-
-  if (!SelectQueryNode.is(node) && !RawNode.is(node)) {
-    throw new Error('invalid where exists arg')
-  }
-
-  return FilterNode.create(undefined, OperatorNode.create(type), node)
+  return FilterNode.create(
+    undefined,
+    OperatorNode.create(type),
+    parseValueExpressionOrList(ctx, arg)
+  )
 }
 
 const GROUP_PARSERS = freeze({
@@ -213,7 +219,7 @@ const GROUP_PARSERS = freeze({
     callback: (qb: JoinBuilder<any, any>) => JoinBuilder<any, any>
   ): ParensNode {
     const joinBuilder = callback(ctx.createJoinBuilder('InnerJoin', 'table'))
-    const joinNode = joinBuilder.toOperationNode() as JoinNode
+    const joinNode = joinBuilder.toOperationNode()
 
     if (!joinNode.on) {
       throw new Error('no `on` methods called insided a group callback')
