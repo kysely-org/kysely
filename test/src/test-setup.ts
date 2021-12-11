@@ -19,6 +19,7 @@ import {
   SchemaModule,
   InsertResult,
   SqliteDialect,
+  QueryBuilder,
 } from '../../'
 
 export interface Person {
@@ -36,7 +37,7 @@ export interface Pet {
 }
 
 export interface Toy {
-  id: string
+  id: number
   name: string
   price: number
   pet_id: number
@@ -58,6 +59,7 @@ interface PetInsertParams extends Omit<Pet, 'id' | 'owner_id'> {
 }
 
 export interface TestContext {
+  dialect: BuiltInDialect
   config: KyselyConfig
   db: Kysely<Database>
 }
@@ -130,7 +132,7 @@ export async function initTest(
   })
 
   await createDatabase(db, dialect)
-  return { config, db }
+  return { config, db, dialect }
 }
 
 export async function destroyTest(ctx: TestContext): Promise<void> {
@@ -145,16 +147,13 @@ export async function insertPersons(
   for (const insertPerson of insertPersons) {
     const { pets, ...person } = insertPerson
 
-    const personRes = await ctx.db
-      .insertInto('person')
-      .values({ ...person, id: ctx.db.generated })
-      .returning('id')
-      .executeTakeFirst()
-
-    const personId = getInsertId(personRes)
+    const personId = await insert(
+      ctx.dialect,
+      ctx.db.insertInto('person').values({ ...person, id: ctx.db.generated })
+    )
 
     for (const insertPet of pets ?? []) {
-      await insertPetForPerson(ctx.db, personId, insertPet)
+      await insertPetForPerson(ctx, personId, insertPet)
     }
   }
 }
@@ -285,41 +284,45 @@ async function dropDatabase(db: Kysely<Database>): Promise<void> {
 export const expect = chai.expect
 
 async function insertPetForPerson(
-  db: Kysely<Database>,
+  ctx: TestContext,
   personId: number,
   insertPet: PetInsertParams
 ): Promise<void> {
   const { toys, ...pet } = insertPet
 
-  const petRes = await db
-    .insertInto('pet')
-    .values({ ...pet, owner_id: personId, id: db.generated })
-    .returning('id')
-    .executeTakeFirst()
-
-  const petId = getInsertId(petRes)
+  const petId = await insert(
+    ctx.dialect,
+    ctx.db
+      .insertInto('pet')
+      .values({ ...pet, owner_id: personId, id: ctx.db.generated })
+  )
 
   for (const toy of toys ?? []) {
-    await insertToysForPet(db, petId, toy)
+    await insertToysForPet(ctx, petId, toy)
   }
 }
 
 async function insertToysForPet(
-  db: Kysely<Database>,
+  ctx: TestContext,
   petId: number,
   toy: Omit<Toy, 'id' | 'pet_id'>
 ): Promise<void> {
-  await db
+  await ctx.db
     .insertInto('toy')
-    .values({ ...toy, pet_id: petId, id: db.generated })
+    .values({ ...toy, pet_id: petId, id: ctx.db.generated })
     .executeTakeFirst()
 }
 
-function getInsertId(result: any): number {
-  if (result instanceof InsertResult) {
-    return Number(result.insertId)
+async function insert(
+  dialect: BuiltInDialect,
+  qb: QueryBuilder<Database, keyof Database, InsertResult>
+): Promise<number> {
+  if (dialect === 'postgres') {
+    const { id } = await qb.returning('id').executeTakeFirstOrThrow()
+    return id
   } else {
-    return result.id
+    const { insertId } = await qb.executeTakeFirst()
+    return Number(insertId)
   }
 }
 

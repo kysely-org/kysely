@@ -33,7 +33,7 @@ describe.skip(`query builder performance`, () => {
         .selectFrom(['person as p', 'pet'])
         .innerJoin('toy', 'toy.pet_id', 'pet.id')
         .whereRef('p.id', '=', 'pet.owner_id')
-        .where('toy.id', '=', 'foo')
+        .where('toy.id', '=', 1)
         .where('p.id', 'in', [1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
         .whereExists((eb) =>
           eb
