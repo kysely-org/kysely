@@ -20,7 +20,7 @@ async function findPasswordSignInMethod(
 async function insertPasswordSignInMethod(
   db: Kysely<Database>,
   method: PasswordSignInMethodRow
-): Promise<PasswordSignInMethodRow | undefined> {
+): Promise<PasswordSignInMethodRow> {
   await db
     .with('sim', (db) =>
       db
