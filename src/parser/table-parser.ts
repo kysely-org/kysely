@@ -5,7 +5,11 @@ import {
 import { isReadonlyArray, isString } from '../util/object-utils.js'
 import { AliasNode } from '../operation-node/alias-node.js'
 import { TableNode } from '../operation-node/table-node.js'
-import { AnyAliasedRawBuilder, Nullable } from '../util/type-utils.js'
+import {
+  AliasedRawBuilderFactory,
+  AnyAliasedRawBuilder,
+  Nullable,
+} from '../util/type-utils.js'
 import { AliasedRawBuilder } from '../raw-builder/raw-builder.js'
 import { TableExpressionNode } from '../operation-node/operation-node-utils.js'
 import { ParseContext } from './parse-context.js'
@@ -163,6 +167,10 @@ type ExtractRowTypeFromTableExpression<
     ? O
     : never
   : TE extends AliasedRawBuilder<infer O, infer RA>
+  ? RA extends A
+    ? O
+    : never
+  : TE extends (qb: any) => AliasedRawBuilder<infer O, infer RA>
   ? RA extends A
     ? O
     : never

@@ -112,9 +112,9 @@ export class DefaultQueryCompiler
 
   protected override visitSelectQuery(node: SelectQueryNode): void {
     const wrapInParens =
-      this.nodeStack.length !== 1 &&
-      !CreateViewNode.is(this.parentNode!) &&
-      !UnionNode.is(this.parentNode!)
+      this.parentNode !== undefined &&
+      !CreateViewNode.is(this.parentNode) &&
+      !UnionNode.is(this.parentNode)
 
     if (wrapInParens) {
       this.append('(')

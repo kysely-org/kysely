@@ -61,8 +61,8 @@ async function testFromSingle(db: Kysely<Database>) {
 
   // Subquery factory
   const [r4] = await db
-    .selectFrom(() =>
-      db.selectFrom('movie').select('movie.stars as strs').as('m')
+    .selectFrom((eb) =>
+      eb.subQuery('movie').select('movie.stars as strs').as('m')
     )
     .selectAll()
     .execute()
@@ -88,6 +88,32 @@ async function testFromSingle(db: Kysely<Database>) {
     .select('o.one')
     .execute()
   expectType<{ one: 1 }>(r7)
+
+  // Raw expression factory
+  const [r8] = await db
+    .selectFrom(() => db.raw<{ one: 1 }>('(select 1 as one)').as('o'))
+    .select('o.one')
+    .execute()
+  expectType<{ one: 1 }>(r8)
+
+  // Deeply nested subqueries
+  const [r9] = await db
+    .selectFrom((eb) =>
+      eb
+        .subQuery((eb2) =>
+          eb2
+            .subQuery((eb3) =>
+              eb3.subQuery('movie').select('stars as s').as('m1')
+            )
+            .select('m1.s as s2')
+            .as('m2')
+        )
+        .select('m2.s2 as s3')
+        .as('m3')
+    )
+    .selectAll('m3')
+    .execute()
+  expectType<{ s3: number }>(r9)
 
   // Should not be able to select animal columns from person.
   expectError(db.selectFrom('person').select('pet.id'))
