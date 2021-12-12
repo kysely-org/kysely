@@ -142,13 +142,13 @@ export class QueryCreator<DB> {
    *   (select 1 as one) as "q"
    * ```
    */
-  selectFrom<F extends TableExpression<DB, keyof DB>>(
-    from: F[]
-  ): QueryBuilderWithTable<DB, never, {}, F>
+  selectFrom<TE extends TableExpression<DB, keyof DB>>(
+    from: TE[]
+  ): QueryBuilderWithTable<DB, never, {}, TE>
 
-  selectFrom<F extends TableExpression<DB, keyof DB>>(
-    from: F
-  ): QueryBuilderWithTable<DB, never, {}, F>
+  selectFrom<TE extends TableExpression<DB, keyof DB>>(
+    from: TE
+  ): QueryBuilderWithTable<DB, never, {}, TE>
 
   selectFrom(from: TableExpressionOrList<any, any>): any {
     return new QueryBuilder({

@@ -940,13 +940,13 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * persons[0].id
    * ```
    */
-  select<S extends SelectExpression<DB, TB>>(
-    selections: ReadonlyArray<S>
-  ): QueryBuilderWithSelection<DB, TB, O, S>
+  select<SE extends SelectExpression<DB, TB>>(
+    selections: ReadonlyArray<SE>
+  ): QueryBuilderWithSelection<DB, TB, O, SE>
 
-  select<S extends SelectExpression<DB, TB>>(
-    selection: S
-  ): QueryBuilderWithSelection<DB, TB, O, S>
+  select<SE extends SelectExpression<DB, TB>>(
+    selection: SE
+  ): QueryBuilderWithSelection<DB, TB, O, SE>
 
   select(selection: SelectExpressionOrList<DB, TB>): any {
     assertCanHaveSelectClause(this.#props.queryNode)
@@ -986,12 +986,12 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * where "pet"."name" = $1
    * ```
    */
-  distinctOn<S extends SelectExpression<DB, TB>>(
-    selections: ReadonlyArray<S>
+  distinctOn<SE extends SelectExpression<DB, TB>>(
+    selections: ReadonlyArray<SE>
   ): QueryBuilder<DB, TB, O>
 
-  distinctOn<S extends SelectExpression<DB, TB>>(
-    selection: S
+  distinctOn<SE extends SelectExpression<DB, TB>>(
+    selection: SE
   ): QueryBuilder<DB, TB, O>
 
   distinctOn(selection: SelectExpressionOrList<DB, TB>): any {
@@ -1969,13 +1969,13 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    *   .executeTakeFirst()
    * ```
    */
-  returning<S extends SelectExpression<DB, TB>>(
-    selections: ReadonlyArray<S>
-  ): QueryBuilderWithReturning<DB, TB, O, S>
+  returning<SE extends SelectExpression<DB, TB>>(
+    selections: ReadonlyArray<SE>
+  ): QueryBuilderWithReturning<DB, TB, O, SE>
 
-  returning<S extends SelectExpression<DB, TB>>(
-    selection: S
-  ): QueryBuilderWithReturning<DB, TB, O, S>
+  returning<SE extends SelectExpression<DB, TB>>(
+    selection: SE
+  ): QueryBuilderWithReturning<DB, TB, O, SE>
 
   returning(selection: SelectExpressionOrList<DB, TB>): any {
     assertCanHaveReturningClause(this.#props.queryNode)

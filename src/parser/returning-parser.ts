@@ -5,21 +5,21 @@ import { UpdateResult } from '../query-builder/update-result.js'
 import { Selection } from './select-parser.js'
 
 /**
- * `returning` method output query builder type
+ * `returning` method output query builder type.
  */
 export type QueryBuilderWithReturning<
   DB,
   TB extends keyof DB,
   O,
-  S
+  SE
 > = QueryBuilder<
   DB,
   TB,
   O extends InsertResult
-    ? Selection<DB, TB, S>
+    ? Selection<DB, TB, SE>
     : O extends DeleteResult
-    ? Selection<DB, TB, S>
+    ? Selection<DB, TB, SE>
     : O extends UpdateResult
-    ? Selection<DB, TB, S>
-    : O & Selection<DB, TB, S>
+    ? Selection<DB, TB, SE>
+    : O & Selection<DB, TB, SE>
 >

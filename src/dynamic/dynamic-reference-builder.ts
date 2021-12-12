@@ -1,7 +1,11 @@
 import { ColumnNode } from '../operation-node/column-node.js'
-import { OperationNodeSource } from '../operation-node/operation-node-source.js'
+import {
+  isOperationNodeSource,
+  OperationNodeSource,
+} from '../operation-node/operation-node-source.js'
 import { ReferenceNode } from '../operation-node/reference-node.js'
 import { parseStringReference } from '../parser/reference-parser.js'
+import { isObject, isString } from '../util/object-utils.js'
 
 export class DynamicReferenceBuilder<R extends string = never>
   implements OperationNodeSource
@@ -31,4 +35,14 @@ export class DynamicReferenceBuilder<R extends string = never>
   toOperationNode(): ReferenceNode | ColumnNode {
     return parseStringReference(this.#dynamicReference)
   }
+}
+
+export function isDynamicReferenceBuilder(
+  obj: unknown
+): obj is DynamicReferenceBuilder<any> {
+  return (
+    isObject(obj) &&
+    isOperationNodeSource(obj) &&
+    isString(obj.dynamicReference)
+  )
 }

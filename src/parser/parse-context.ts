@@ -23,17 +23,7 @@ export interface ParseContext {
   /**
    * Creates a select query builder with a {@link NoopQueryExecutor}.
    */
-  createSelectQueryBuilder(
-    tables: ReadonlyArray<TableExpression<any, any>>
-  ): QueryBuilder<any, any>
-
-  /**
-   * Creates an instance of a join builder.
-   */
-  createJoinBuilder(
-    joinType: JoinType,
-    table: TableExpression<any, any>
-  ): JoinBuilder<any, any>
+  createSelectQueryBuilder(): QueryBuilder<any, any>
 
   /**
    * Creates an expression builder for building stuff like subqueries.
@@ -46,6 +36,14 @@ export interface ParseContext {
    * Creates a query creator with a {@link NoopQueryExecutor}.
    */
   createQueryCreator(): QueryCreator<any>
+
+  /**
+   * Creates an instance of a join builder.
+   */
+  createJoinBuilder(
+    joinType: JoinType,
+    table: TableExpression<any, any>
+  ): JoinBuilder<any, any>
 }
 
 export class DefaultParseContext implements ParseContext {
@@ -61,26 +59,12 @@ export class DefaultParseContext implements ParseContext {
     return this.#adapter
   }
 
-  createSelectQueryBuilder(
-    tables: ReadonlyArray<TableExpression<any, any>>
-  ): QueryBuilder<any, any> {
+  createSelectQueryBuilder(): QueryBuilder<any, any> {
     return new QueryBuilder({
       queryId: createQueryId(),
       executor: this.#noopExecutor,
       parseContext: this,
-      queryNode: SelectQueryNode.create(
-        parseTableExpressionOrList(this, tables)
-      ),
-    })
-  }
-
-  createJoinBuilder(
-    joinType: JoinType,
-    table: TableExpression<any, any>
-  ): JoinBuilder<any, any> {
-    return new JoinBuilder({
-      joinNode: JoinNode.create(joinType, parseTableExpression(this, table)),
-      parseContext: this,
+      queryNode: SelectQueryNode.create(parseTableExpressionOrList(this, [])),
     })
   }
 
@@ -94,6 +78,16 @@ export class DefaultParseContext implements ParseContext {
   createQueryCreator(): QueryCreator<any> {
     return new QueryCreator({
       executor: this.#noopExecutor,
+      parseContext: this,
+    })
+  }
+
+  createJoinBuilder(
+    joinType: JoinType,
+    table: TableExpression<any, any>
+  ): JoinBuilder<any, any> {
+    return new JoinBuilder({
+      joinNode: JoinNode.create(joinType, parseTableExpression(this, table)),
       parseContext: this,
     })
   }

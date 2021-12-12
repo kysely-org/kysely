@@ -1,11 +1,9 @@
 import { AliasNode } from '../operation-node/alias-node.js'
 import { ColumnNode } from '../operation-node/column-node.js'
-import { isOperationNodeSource } from '../operation-node/operation-node-source.js'
 import { ReferenceExpressionNode } from '../operation-node/operation-node-utils.js'
 import { ReferenceNode } from '../operation-node/reference-node.js'
 import { TableNode } from '../operation-node/table-node.js'
 import {
-  isFunction,
   isReadonlyArray,
   isString,
   PrimitiveValue,
@@ -13,26 +11,25 @@ import {
 import {
   AnyColumn,
   AnyColumnWithTable,
-  AnyQueryBuilder,
-  AnyRawBuilder,
-  QueryBuilderFactory,
-  RawBuilderFactory,
   RowType,
   ValueType,
 } from '../util/type-utils.js'
-import { DynamicReferenceBuilder } from '../dynamic/dynamic-reference-builder.js'
-import { QueryNode } from '../operation-node/query-node.js'
 import { RawBuilder } from '../raw-builder/raw-builder.js'
 import { QueryBuilder } from '../query-builder/query-builder.js'
 import { ParseContext } from './parse-context.js'
+import {
+  parseComplexExpression,
+  ComplexExpression,
+} from './complex-expression.js'
+import {
+  DynamicReferenceBuilder,
+  isDynamicReferenceBuilder,
+} from '../dynamic/dynamic-reference-builder.js'
 
 export type ReferenceExpression<DB, TB extends keyof DB> =
   | StringReference<DB, TB>
-  | AnyQueryBuilder
-  | QueryBuilderFactory<DB, TB>
-  | AnyRawBuilder
-  | RawBuilderFactory<DB, TB>
   | DynamicReferenceBuilder<any>
+  | ComplexExpression<DB, TB>
 
 export type ReferenceExpressionOrList<DB, TB extends keyof DB> =
   | ReferenceExpression<DB, TB>
@@ -61,22 +58,22 @@ export type ExtractTypeFromReferenceExpression<
 type ExtractTypeFromStringReference<
   DB,
   TB extends keyof DB,
-  S extends string,
+  RE extends string,
   R = RowType<DB, TB>
-> = S extends `${infer SC}.${infer T}.${infer C}`
+> = RE extends `${infer SC}.${infer T}.${infer C}`
   ? `${SC}.${T}` extends TB
     ? C extends keyof DB[`${SC}.${T}`]
       ? DB[`${SC}.${T}`][C]
       : never
     : never
-  : S extends `${infer T}.${infer C}`
+  : RE extends `${infer T}.${infer C}`
   ? T extends TB
     ? C extends keyof DB[T]
       ? DB[T][C]
       : never
     : never
-  : S extends keyof R
-  ? R[S]
+  : RE extends keyof R
+  ? R[RE]
   : PrimitiveValue
 
 export function parseReferenceExpressionOrList(
@@ -92,25 +89,15 @@ export function parseReferenceExpressionOrList(
 
 export function parseReferenceExpression(
   ctx: ParseContext,
-  arg: ReferenceExpression<any, any>
+  exp: ReferenceExpression<any, any>
 ): ReferenceExpressionNode {
-  if (isString(arg)) {
-    return parseStringReference(arg)
-  } else if (isOperationNodeSource(arg)) {
-    const node = arg.toOperationNode()
-
-    if (!QueryNode.isMutating(node)) {
-      return node
-    }
-  } else if (isFunction(arg)) {
-    const node = arg(ctx.createExpressionBuilder()).toOperationNode()
-
-    if (!QueryNode.isMutating(node)) {
-      return node
-    }
+  if (isString(exp)) {
+    return parseStringReference(exp)
+  } else if (isDynamicReferenceBuilder(exp)) {
+    return exp.toOperationNode()
   }
 
-  throw new Error(`invalid reference expression ${JSON.stringify(arg)}`)
+  return parseComplexExpression(ctx, exp)
 }
 
 export function parseStringReference(ref: string): ColumnNode | ReferenceNode {

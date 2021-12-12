@@ -89,7 +89,8 @@ type UnionToIntersection<U> = (U extends any ? (k: U) => void : never) extends (
  */
 export type AnyColumn<DB, TB extends keyof DB> = {
   [T in TB]: keyof DB[T]
-}[TB]
+}[TB] &
+  string
 
 /**
  * Given a database type and a union of table names in that db, returns
@@ -165,7 +166,7 @@ export type AnyAliasedRawBuilder = AliasedRawBuilder<any, any>
 
 export type QueryBuilderFactory<DB, TB extends keyof DB> = (
   qb: ExpressionBuilder<DB, TB>
-) => QueryBuilder<any, any, any>
+) => AnyQueryBuilder
 
 export type AliasedQueryBuilderFactory<DB, TB extends keyof DB> = (
   qb: ExpressionBuilder<DB, TB>

@@ -2,24 +2,21 @@ import {
   AliasedQueryBuilder,
   QueryBuilder,
 } from '../query-builder/query-builder.js'
-import { isFunction, isReadonlyArray, isString } from '../util/object-utils.js'
+import { isReadonlyArray, isString } from '../util/object-utils.js'
 import { AliasNode } from '../operation-node/alias-node.js'
 import { TableNode } from '../operation-node/table-node.js'
-import {
-  AliasedQueryBuilderFactory,
-  AnyAliasedQueryBuilder,
-  AnyAliasedRawBuilder,
-  Nullable,
-} from '../util/type-utils.js'
-import { isOperationNodeSource } from '../operation-node/operation-node-source.js'
+import { AnyAliasedRawBuilder, Nullable } from '../util/type-utils.js'
 import { AliasedRawBuilder } from '../raw-builder/raw-builder.js'
 import { TableExpressionNode } from '../operation-node/operation-node-utils.js'
 import { ParseContext } from './parse-context.js'
+import {
+  AliasedComplexExpression,
+  parseAliasedComplexExpression,
+} from './complex-expression.js'
 
 export type TableExpression<DB, TB extends keyof DB> =
   | TableReference<DB>
-  | AnyAliasedQueryBuilder
-  | AliasedQueryBuilderFactory<DB, TB>
+  | AliasedComplexExpression<DB, TB>
 
 export type TableExpressionOrList<DB, TB extends keyof DB> =
   | TableExpression<DB, TB>
@@ -177,7 +174,7 @@ type AnyAliasedTable<
   A extends string
 > = TB extends string ? `${TB} as ${A}` : never
 
-type AnyTable<DB> = keyof DB
+type AnyTable<DB> = keyof DB & string
 
 export function parseTableExpressionOrList(
   ctx: ParseContext,
@@ -196,12 +193,8 @@ export function parseTableExpression(
 ): TableExpressionNode {
   if (isString(table)) {
     return parseAliasedTable(table)
-  } else if (isOperationNodeSource(table)) {
-    return table.toOperationNode()
-  } else if (isFunction(table)) {
-    return table(ctx.createExpressionBuilder()).toOperationNode()
   } else {
-    throw new Error(`invalid table expression ${JSON.stringify(table)}`)
+    return parseAliasedComplexExpression(ctx, table)
   }
 }
 

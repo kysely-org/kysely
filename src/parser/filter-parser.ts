@@ -190,7 +190,7 @@ const GROUP_PARSERS = freeze({
     ctx: ParseContext,
     callback: (qb: AnyQueryBuilder) => AnyQueryBuilder
   ): ParensNode {
-    const query = callback(ctx.createSelectQueryBuilder([]))
+    const query = callback(ctx.createSelectQueryBuilder())
     const queryNode = query.toOperationNode() as SelectQueryNode
 
     if (!queryNode.where) {
@@ -204,7 +204,7 @@ const GROUP_PARSERS = freeze({
     ctx: ParseContext,
     callback: (qb: AnyQueryBuilder) => AnyQueryBuilder
   ): ParensNode {
-    const query = callback(ctx.createSelectQueryBuilder([]))
+    const query = callback(ctx.createSelectQueryBuilder())
     const queryNode = query.toOperationNode() as SelectQueryNode
 
     if (!queryNode.having) {

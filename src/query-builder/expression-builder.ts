@@ -96,13 +96,13 @@ export class ExpressionBuilder<DB, TB extends keyof DB> {
    * that case Kysely typings wouldn't allow you to reference `pet.owner_id`
    * because `pet` is not joined to that query.
    */
-  subQuery<F extends TableExpression<DB, TB>>(
-    from: F[]
-  ): QueryBuilderWithTable<DB, TB, {}, F>
+  subQuery<TE extends TableExpression<DB, TB>>(
+    from: TE[]
+  ): QueryBuilderWithTable<DB, TB, {}, TE>
 
-  subQuery<F extends TableExpression<DB, TB>>(
-    from: F
-  ): QueryBuilderWithTable<DB, TB, {}, F>
+  subQuery<TE extends TableExpression<DB, TB>>(
+    from: TE
+  ): QueryBuilderWithTable<DB, TB, {}, TE>
 
   subQuery(table: TableExpressionOrList<DB, TB>): any {
     return new QueryBuilder({

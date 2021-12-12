@@ -12,7 +12,7 @@ export type OrderByDirection = 'asc' | 'desc'
 
 export type OrderByExpression<DB, TB extends keyof DB, O> =
   | ReferenceExpression<DB, TB>
-  | keyof O
+  | (keyof O & string)
 
 export type OrderByDirectionExpression = OrderByDirection | AnyRawBuilder
 
