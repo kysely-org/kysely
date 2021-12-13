@@ -5,11 +5,7 @@ import {
 import { isReadonlyArray, isString } from '../util/object-utils.js'
 import { AliasNode } from '../operation-node/alias-node.js'
 import { TableNode } from '../operation-node/table-node.js'
-import {
-  AliasedRawBuilderFactory,
-  AnyAliasedRawBuilder,
-  Nullable,
-} from '../util/type-utils.js'
+import { AnyAliasedRawBuilder, Nullable } from '../util/type-utils.js'
 import { AliasedRawBuilder } from '../raw-builder/raw-builder.js'
 import { TableExpressionNode } from '../operation-node/operation-node-utils.js'
 import { ParseContext } from './parse-context.js'
@@ -27,7 +23,7 @@ export type TableExpressionOrList<DB, TB extends keyof DB> =
   | ReadonlyArray<TableExpression<DB, TB>>
 
 export type TableReference<DB> =
-  | AnyAliasedTable<DB, any, any>
+  | AnyAliasedTable<DB>
   | AnyTable<DB>
   | AnyAliasedRawBuilder
 
@@ -176,12 +172,7 @@ type ExtractRowTypeFromTableExpression<
     : never
   : never
 
-type AnyAliasedTable<
-  DB,
-  TB extends keyof DB,
-  A extends string
-> = TB extends string ? `${TB} as ${A}` : never
-
+type AnyAliasedTable<DB> = `${AnyTable<DB>} as ${string}`
 type AnyTable<DB> = keyof DB & string
 
 export function parseTableExpressionOrList(

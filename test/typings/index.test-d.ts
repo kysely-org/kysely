@@ -120,6 +120,9 @@ async function testFromSingle(db: Kysely<Database>) {
 
   // Should not be able to start a query against non-existent table.
   expectError(db.selectFrom('doesnt_exists'))
+
+  // Should not be able to start a query against non-existent aliased table.
+  expectError(db.selectFrom('doesnt_exists as de'))
 }
 
 async function testFromMultiple(db: Kysely<Database>) {
@@ -513,6 +516,9 @@ async function testInsert(db: Kysely<Database>) {
     .executeTakeFirst()
 
   expectType<InsertResult>(r4)
+
+  // Non-existent table
+  expectError(db.insertInto('doesnt_exists'))
 
   // Non-existent column
   expectError(db.insertInto('person').values({ not_column: 'foo' }))
