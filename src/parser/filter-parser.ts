@@ -55,6 +55,8 @@ export type ExistsExpression<DB, TB extends keyof DB> = ValueExpression<
 
 export type FilterOperator = Operator | AnyRawBuilder
 
+type FilterType = 'where' | 'having' | 'on'
+
 export function parseWhereFilter(
   ctx: ParseContext,
   args: any[]
@@ -105,28 +107,16 @@ export function parseNotExistFilter(
 
 export function parseFilter(
   ctx: ParseContext,
-  type: 'where' | 'having' | 'on',
+  type: FilterType,
   args: any[]
 ): FilterExpressionNode {
   if (args.length === 3) {
     return parseThreeArgFilter(ctx, args[0], args[1], args[2])
   } else if (args.length === 1) {
-    const arg = args[0]
-
-    if (isFunction(arg)) {
-      return GROUP_PARSERS[type](ctx, arg)
-    } else if (isOperationNodeSource(arg)) {
-      const node = arg.toOperationNode()
-
-      if (RawNode.is(node)) {
-        return node
-      }
-    }
+    return parseOneArgFilter(ctx, type, args[0])
   }
 
-  throw new Error(
-    `invalid arguments passed to a '${type}' method: ${JSON.stringify(args)}`
-  )
+  throw createFilterError(type, args)
 }
 
 function parseThreeArgFilter(
@@ -182,6 +172,30 @@ function parseExistExpression(
     undefined,
     OperatorNode.create(type),
     parseValueExpressionOrList(ctx, arg)
+  )
+}
+
+function parseOneArgFilter(
+  ctx: ParseContext,
+  type: FilterType,
+  arg: any
+): ParensNode | RawNode {
+  if (isFunction(arg)) {
+    return GROUP_PARSERS[type](ctx, arg)
+  } else if (isOperationNodeSource(arg)) {
+    const node = arg.toOperationNode()
+
+    if (RawNode.is(node)) {
+      return node
+    }
+  }
+
+  throw createFilterError(type, arg)
+}
+
+function createFilterError(type: FilterType, args: any[]): Error {
+  return new Error(
+    `invalid arguments passed to a '${type}' method: ${JSON.stringify(args)}`
   )
 }
 
