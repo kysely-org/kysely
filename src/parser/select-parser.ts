@@ -22,7 +22,7 @@ import { ParseContext } from './parse-context.js'
 import {
   AliasedComplexExpression,
   parseAliasedComplexExpression,
-} from './complex-expression.js'
+} from './complex-expression-parser.js'
 
 export type SelectExpression<DB, TB extends keyof DB> =
   | AnyAliasedColumnWithTable<DB, TB>

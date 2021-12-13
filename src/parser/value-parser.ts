@@ -14,7 +14,7 @@ import { RawNode } from '../operation-node/raw-node.js'
 import {
   parseComplexExpression,
   ComplexExpression,
-} from './complex-expression.js'
+} from './complex-expression-parser.js'
 
 export type ValueExpression<DB, TB extends keyof DB, V> =
   | V

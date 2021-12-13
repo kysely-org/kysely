@@ -20,7 +20,7 @@ import { ParseContext } from './parse-context.js'
 import {
   parseComplexExpression,
   ComplexExpression,
-} from './complex-expression.js'
+} from './complex-expression-parser.js'
 import {
   DynamicReferenceBuilder,
   isDynamicReferenceBuilder,
