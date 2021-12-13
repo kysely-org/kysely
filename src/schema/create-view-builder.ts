@@ -15,17 +15,20 @@ export class CreateViewBuilder implements OperationNodeSource, Compilable {
   readonly #props: CreateViewBuilderProps
 
   constructor(props: CreateViewBuilderProps) {
-    this.#props = freeze({
-      ...props,
-      // The select statement (defined using the `as` method) can't have parameters on some
-      // dialects. We add the `ImmediateValuePlugin` to make all parameters "immediate"
-      // meaning they are interpolated into the SQL instead of added as parameters.
-      //
-      // The values are therefore not escaped at all, which leads to SQL injection
-      // vulnerabilities if user input is passed into the query. However, the use
-      // case where user input is passed into a `create view` statement is a weird
-      // one, and we can pretty safely just ignore it.
-      executor: props.executor.withPlugin(new ImmediateValuePlugin()),
+    this.#props = freeze(props)
+  }
+
+  /**
+   * Adds the "temporary" modifier.
+   *
+   * Use this to create a temporary view.
+   */
+  temporary(): CreateViewBuilder {
+    return new CreateViewBuilder({
+      ...this.#props,
+      createViewNode: CreateViewNode.cloneWith(this.#props.createViewNode, {
+        temporary: true,
+      }),
     })
   }
 
@@ -68,11 +71,22 @@ export class CreateViewBuilder implements OperationNodeSource, Compilable {
     })
   }
 
+  /**
+   * Sets the select query or a `values` statement that creates the view.
+   *
+   * WARNING!
+   * Some dialects don't support parameterized queries in DDL statements and therefore
+   * the query or `raw` expression passed here is interpolated into a single string
+   * opening an SQL injection vulnerability. DO NOT pass unchecked user input into
+   * the query or `raw` expression passed to this method!
+   */
   as(query: AnyQueryBuilder | AnyRawBuilder): CreateViewBuilder {
-    const queryNode = query.toOperationNode()
+    const queryNode = query
+      .withPlugin(new ImmediateValuePlugin())
+      .toOperationNode()
 
     if (QueryNode.isMutating(queryNode)) {
-      throw new Error('only select statements are allowd in views')
+      throw new Error('only select queries are allowd in views')
     }
 
     return new CreateViewBuilder({

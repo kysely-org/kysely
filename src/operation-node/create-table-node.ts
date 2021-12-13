@@ -4,12 +4,18 @@ import { TableNode } from './table-node.js'
 import { ConstraintNode } from './constraint-node.js'
 import { ColumnDefinitionNode } from './column-definition-node.js'
 
+export type CreateTableNodeParams = Omit<
+  CreateTableNode,
+  'kind' | 'table' | 'columns' | 'constraints'
+>
+
 export interface CreateTableNode extends OperationNode {
   readonly kind: 'CreateTableNode'
   readonly table: TableNode
   readonly columns: ReadonlyArray<ColumnDefinitionNode>
-  readonly ifNotExists?: boolean
   readonly constraints?: ReadonlyArray<ConstraintNode>
+  readonly temporary?: boolean
+  readonly ifNotExists?: boolean
 }
 
 /**
@@ -38,16 +44,6 @@ export const CreateTableNode = freeze({
     })
   },
 
-  cloneWithIfNotExists(
-    createTable: CreateTableNode,
-    ifNotExists: boolean
-  ): CreateTableNode {
-    return freeze({
-      ...createTable,
-      ifNotExists,
-    })
-  },
-
   cloneWithConstraint(
     createTable: CreateTableNode,
     constraint: ConstraintNode
@@ -57,6 +53,16 @@ export const CreateTableNode = freeze({
       constraints: createTable.constraints
         ? freeze([...createTable.constraints, constraint])
         : freeze([constraint]),
+    })
+  },
+
+  cloneWith(
+    createTable: CreateTableNode,
+    params: CreateTableNodeParams
+  ): CreateTableNode {
+    return freeze({
+      ...createTable,
+      ...params,
     })
   },
 })

@@ -13,6 +13,7 @@ import { preventAwait } from '../util/prevent-await.js'
 import { QueryExecutor } from '../query-executor/query-executor.js'
 import { QueryId } from '../util/query-id.js'
 import { freeze } from '../util/object-utils.js'
+import { KyselyPlugin } from '../plugin/kysely-plugin.js'
 
 export class RawBuilder<O = unknown> implements OperationNodeSource {
   readonly #props: RawBuilderProps
@@ -34,6 +35,13 @@ export class RawBuilder<O = unknown> implements OperationNodeSource {
   castTo<T>(): RawBuilder<T> {
     return new RawBuilder({
       ...this.#props,
+    })
+  }
+
+  withPlugin(plugin: KyselyPlugin): RawBuilder<O> {
+    return new RawBuilder({
+      ...this.#props,
+      executor: this.#props.executor.withPlugin(plugin),
     })
   }
 

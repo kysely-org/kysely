@@ -458,7 +458,13 @@ export class DefaultQueryCompiler
   }
 
   protected override visitCreateTable(node: CreateTableNode): void {
-    this.append('create table ')
+    this.append('create ')
+
+    if (node.temporary) {
+      this.append('temporary ')
+    }
+
+    this.append('table ')
 
     if (node.ifNotExists) {
       this.append('if not exists ')
@@ -936,6 +942,10 @@ export class DefaultQueryCompiler
 
     if (node.materialized) {
       this.append('materialized ')
+    }
+
+    if (node.temporary) {
+      this.append('temporary ')
     }
 
     this.append('view ')

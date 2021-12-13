@@ -354,6 +354,7 @@ export class OperationNodeTransformer {
       table: this.transformNode(node.table),
       columns: this.transformNodeList(node.columns),
       constraints: this.transformNodeList(node.constraints),
+      temporary: node.temporary,
       ifNotExists: node.ifNotExists,
     }
   }
@@ -671,6 +672,7 @@ export class OperationNodeTransformer {
     return {
       kind: 'CreateViewNode',
       name: this.transformNode(node.name),
+      temporary: node.temporary,
       orReplace: node.orReplace,
       ifNotExists: node.ifNotExists,
       materialized: node.materialized,

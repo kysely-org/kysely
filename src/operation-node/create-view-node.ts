@@ -13,6 +13,7 @@ export type CreateViewNodeParams = Omit<
 export interface CreateViewNode extends OperationNode {
   readonly kind: 'CreateViewNode'
   readonly name: IdentifierNode
+  readonly temporary?: boolean
   readonly materialized?: boolean
   readonly orReplace?: boolean
   readonly ifNotExists?: boolean

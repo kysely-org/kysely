@@ -84,6 +84,7 @@ import { parseUnion, UnionExpression } from '../parser/union-parser.js'
 import { InsertResult } from './insert-result.js'
 import { UpdateResult } from './update-result.js'
 import { DeleteResult } from './delete-result.js'
+import { KyselyPlugin } from '../plugin/kysely-plugin.js'
 
 /**
  * The main query builder class.
@@ -2400,6 +2401,13 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    */
   castTo<T>(): QueryBuilder<DB, TB, T> {
     return new QueryBuilder(this.#props)
+  }
+
+  withPlugin(plugin: KyselyPlugin): QueryBuilder<DB, TB, O> {
+    return new QueryBuilder({
+      ...this.#props,
+      executor: this.#props.executor.withPlugin(plugin),
+    })
   }
 
   toOperationNode(): QueryNode {

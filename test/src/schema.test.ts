@@ -394,6 +394,30 @@ for (const dialect of BUILT_IN_DIALECTS) {
         await builder.execute()
       })
 
+      it('should create a temporary table', async () => {
+        const builder = ctx.db.schema
+          .createTable('test')
+          .temporary()
+          .addColumn('id', 'integer', (col) => col.primaryKey())
+
+        testSql(builder, dialect, {
+          postgres: {
+            sql: 'create temporary table "test" ("id" integer primary key)',
+            parameters: [],
+          },
+          mysql: {
+            sql: 'create temporary table `test` (`id` integer primary key)',
+            parameters: [],
+          },
+          sqlite: {
+            sql: 'create temporary table "test" ("id" integer primary key)',
+            parameters: [],
+          },
+        })
+
+        await builder.execute()
+      })
+
       if (dialect === 'postgres') {
         it('should create a table in specific schema', async () => {
           const builder = ctx.db.schema
@@ -692,6 +716,31 @@ for (const dialect of BUILT_IN_DIALECTS) {
 
         await builder.execute()
       })
+
+      if (dialect !== 'mysql') {
+        it('should create a temporary view', async () => {
+          const builder = ctx.db.schema
+            .createView('dogs')
+            .temporary()
+            .as(
+              ctx.db.selectFrom('pet').selectAll().where('species', '=', 'dog')
+            )
+
+          testSql(builder, dialect, {
+            postgres: {
+              sql: `create temporary view "dogs" as select * from "pet" where "species" = 'dog'`,
+              parameters: [],
+            },
+            sqlite: {
+              sql: `create temporary view "dogs" as select * from "pet" where "species" = 'dog'`,
+              parameters: [],
+            },
+            mysql: NOT_SUPPORTED,
+          })
+
+          await builder.execute()
+        })
+      }
 
       if (dialect !== 'sqlite') {
         it('should create or replace a view', async () => {

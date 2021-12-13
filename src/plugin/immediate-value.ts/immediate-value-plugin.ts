@@ -23,9 +23,9 @@ export class ImmediateValuePlugin implements KyselyPlugin {
     return this.#transformer.transformNode(args.node)
   }
 
-  async transformResult(
+  transformResult(
     args: PluginTransformResultArgs
   ): Promise<QueryResult<UnknownRow>> {
-    return args.result
+    return Promise.resolve(args.result)
   }
 }

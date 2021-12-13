@@ -33,6 +33,20 @@ export class CreateTableBuilder<TB extends string, C extends string = never>
   }
 
   /**
+   * Adds the "temporary" modifier.
+   *
+   * Use this to create a temporary table.
+   */
+  temporary(): CreateTableBuilder<TB, C> {
+    return new CreateTableBuilder({
+      ...this.#props,
+      createTableNode: CreateTableNode.cloneWith(this.#props.createTableNode, {
+        temporary: true,
+      }),
+    })
+  }
+
+  /**
    * Adds the "if not exists" modifier.
    *
    * If the table already exists, no error is thrown if this method has been called.
@@ -40,10 +54,9 @@ export class CreateTableBuilder<TB extends string, C extends string = never>
   ifNotExists(): CreateTableBuilder<TB, C> {
     return new CreateTableBuilder({
       ...this.#props,
-      createTableNode: CreateTableNode.cloneWithIfNotExists(
-        this.#props.createTableNode,
-        true
-      ),
+      createTableNode: CreateTableNode.cloneWith(this.#props.createTableNode, {
+        ifNotExists: true,
+      }),
     })
   }
 
