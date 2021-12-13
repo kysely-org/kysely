@@ -61,7 +61,8 @@ export class ExpressionBuilder<DB, TB extends keyof DB> {
    * The query builder returned by this method is typed in a way that you can refer to
    * all tables of the parent query in addition to the subquery's tables.
    *
-   * @example
+   * ### Examples
+   *
    * This example shows that you can refer to both `pet.owner_id` and `person.id`
    * columns from the subquery. This is needed to be able to create correlated
    * subqueries:

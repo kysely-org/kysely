@@ -35,7 +35,8 @@ export class MigrationModule {
    * list of executed migrations doesn't match the list of possible migrations, and error
    * is thrown.
    *
-   * @example
+   * ### Examples
+   *
    * ```ts
    * await db.migration.migrateToLatest(
    *   path.join(__dirname, 'migrations')
@@ -47,7 +48,6 @@ export class MigrationModule {
    * the migrations is determined based on the alphabetical order of the keys in the record.
    * This can be useful if you are using a bundler like webpack or esbuild.
    *
-   * @example
    * ```ts
    * await db.migration.migrateToLatest({
    *   migration1: {

@@ -22,7 +22,7 @@ import {
 import { preventAwait } from './util/prevent-await.js'
 import { DefaultParseContext, ParseContext } from './parser/parse-context.js'
 import { FunctionBuilder } from './query-builder/function-builder.js'
-import { Log, LogConfig, LogLevel } from './util/log.js'
+import { Log, LogConfig } from './util/log.js'
 
 /**
  * The main Kysely class.
@@ -30,7 +30,8 @@ import { Log, LogConfig, LogLevel } from './util/log.js'
  * You should create one instance of `Kysely` per database using the {@link Kysely}
  * constructor. Each `Kysely` instance maintains it's own connection pool.
  *
- * @example
+ * ### Examples
+ *
  * This example assumes your database has tables `person` and `pet`:
  *
  * ```ts
@@ -138,7 +139,8 @@ export class Kysely<DB> extends QueryCreator<DB> {
    * A value to be used in place of columns that are generated in the database
    * when inserting rows.
    *
-   * @example
+   * ### Examples
+   *
    * In this example the `Person` table has non-null properties `id` and `created_at`
    * which are both automatically genereted by the database. Since their types are
    * `number` and `string` respectively instead of `number | null` and `string | null`
@@ -207,7 +209,8 @@ export class Kysely<DB> extends QueryCreator<DB> {
    * of type {@link Transaction} which inherits {@link Kysely}. Any query
    * started through the transaction object is executed inside the transaction.
    *
-   * @example
+   * ### Examples
+   *
    * ```ts
    * const catto = await db.transaction().execute(async (trx) => {
    *   const jennifer = await trx.insertInto('person')
@@ -233,8 +236,7 @@ export class Kysely<DB> extends QueryCreator<DB> {
    * })
    * ```
    *
-   * @example
-   * Setting the isolation level.
+   * Setting the isolation level:
    *
    * ```ts
    * await db
@@ -252,7 +254,8 @@ export class Kysely<DB> extends QueryCreator<DB> {
   /**
    * Provides a kysely instance bound to a single database connection.
    *
-   * @example
+   * ### Examples
+   *
    * ```ts
    * await db
    *   .connection()
@@ -363,7 +366,8 @@ export interface KyselyConfig {
    * Currently there's only two levels: `query` and `error`.
    * This will be expanded based on user feedback later.
    *
-   * @example
+   * ### Examples
+   *
    * ```ts
    * const db = new Kysely<Database>({
    *   dialect: new PostgresDialect(postgresConfig),
@@ -371,7 +375,6 @@ export interface KyselyConfig {
    * })
    * ```
    *
-   * @example
    * ```ts
    * const db = new Kysely<Database>({
    *   dialect: new PostgresDialect(postgresConfig),

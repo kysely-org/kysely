@@ -21,7 +21,8 @@ export class DynamicModule {
    * `ref` to other methods as well. If the types allow you to pass a `ref`
    * value to some place, it should work.
    *
-   * @example
+   * ### Examples
+   *
    * Filter by a column not know at compile time:
    *
    * ```ts
@@ -39,7 +40,6 @@ export class DynamicModule {
    * someQuery('person.last_name', 'Aniston')
    * ```
    *
-   * @example
    * Order by a column not know at compile time:
    *
    * ```ts
@@ -56,7 +56,6 @@ export class DynamicModule {
    * someQuery('fn')
    * ```
    *
-   * @example
    * In this example we add selections dynamically:
    *
    * ```ts

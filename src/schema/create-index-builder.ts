@@ -76,7 +76,8 @@ export class CreateIndexBuilder implements OperationNodeSource, Compilable {
   /**
    * Specifies an arbitrary expression for the index.
    *
-   * @example
+   * ### Examples
+   *
    * ```ts
    * await db.schema
    *   .createIndex('person_first_name_index')

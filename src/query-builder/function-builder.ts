@@ -10,7 +10,8 @@ import { createQueryId } from '../util/query-id.js'
 /**
  * Helpers for type safe SQL function calls.
  *
- * @example
+ * ### Examples
+ *
  * ```ts
  * const { count } = db.fn
  *

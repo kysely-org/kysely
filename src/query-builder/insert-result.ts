@@ -7,7 +7,8 @@
  * need to use {@link QueryBuilder.returning} or {@link QueryBuilder.returningAll}
  * to get out the inserted id.
  *
- * @example
+ * ### Examples
+ *
  * ```ts
  * const result = await db
  *   .insertInto('person')

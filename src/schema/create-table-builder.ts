@@ -63,7 +63,8 @@ export class CreateTableBuilder<TB extends string, C extends string = never>
   /**
    * Adds a column to the table.
    *
-   * @example
+   * ### Examples
+   *
    * ```ts
    * await db.schema
    *   .createTable('person')
@@ -83,7 +84,6 @@ export class CreateTableBuilder<TB extends string, C extends string = never>
    * foreign key constraints need to be defined in at the level of the `create table`
    * query. See the next example:
    *
-   * @example
    * ```ts
    *   .addColumn('parent_id', 'integer')
    *   .addForeignKeyConstraint(
@@ -96,7 +96,6 @@ export class CreateTableBuilder<TB extends string, C extends string = never>
    * keyword and you need to define an autoincrementing column for example using
    * `serial`:
    *
-   * @example
    * ```ts
    * await db.schema
    *   .createTable('person')
@@ -132,7 +131,8 @@ export class CreateTableBuilder<TB extends string, C extends string = never>
    * The constraint name can be anything you want, but it must be unique
    * across the whole database.
    *
-   * @example
+   * ### Examples
+   *
    * ```ts
    * addPrimaryKeyConstraint('primary_key', ['first_name', 'last_name'])
    * ```
@@ -156,7 +156,8 @@ export class CreateTableBuilder<TB extends string, C extends string = never>
    * The constraint name can be anything you want, but it must be unique
    * across the whole database.
    *
-   * @example
+   * ### Examples
+   *
    * ```ts
    * addUniqueConstraint('first_name_last_name_unique', ['first_name', 'last_name'])
    * ```
@@ -180,7 +181,8 @@ export class CreateTableBuilder<TB extends string, C extends string = never>
    * The constraint name can be anything you want, but it must be unique
    * across the whole database.
    *
-   * @example
+   * ### Examples
+   *
    * ```ts
    * addCheckConstraint('check_legs', 'number_of_legs < 5')
    * ```
@@ -204,7 +206,8 @@ export class CreateTableBuilder<TB extends string, C extends string = never>
    * The constraint name can be anything you want, but it must be unique
    * across the whole database.
    *
-   * @example
+   * ### Examples
+   *
    * ```ts
    * addForeignKeyConstraint(
    *   'owner_id_foreign',
@@ -214,7 +217,8 @@ export class CreateTableBuilder<TB extends string, C extends string = never>
    * )
    * ```
    *
-   * @example
+   * Add constraintfor multiple columns:
+   *
    * ```ts
    * addForeignKeyConstraint(
    *   'owner_id_foreign',

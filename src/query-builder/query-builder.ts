@@ -116,7 +116,8 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * Also see {@link QueryBuilder.whereExists | whereExists}, {@link QueryBuilder.whereRef | whereRef}
    * and {@link QueryBuilder.whereRef | orWhere}.
    *
-   * @example
+   * ### Examples
+   *
    * Find a row by column value:
    *
    * ```ts
@@ -133,7 +134,6 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * select * from "person" where "id" = $1
    * ```
    *
-   * @example
    * Operator can be any supported operator or if the typings don't support it
    * you can always use `db.raw('your operator')`.
    *
@@ -151,7 +151,6 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * select * from "person" where "id" > $1
    * ```
    *
-   * @example
    * The `where` methods don't change the type of the query. You can add
    * conditional `where`s easily by doing something like this:
    *
@@ -171,7 +170,6 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * `returning` methods, which DO change the return type of the
    * query.
    *
-   * @example
    * Both the first and third argument can also be subqueries.
    * A subquery is defined by passing a function and calling
    * the `subQuery` method of the object passed into the
@@ -205,7 +203,6 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * ) = $2
    * ```
    *
-   * @example
    * A `where in` query can be built by using the `in` operator and an array
    * of values. The values in the array can also be subqueries or raw
    * instances.
@@ -224,7 +221,6 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * select * from "person" where "id" in ($1, $2, $3)
    * ```
    *
-   * @example
    * If everything else fails, you can always pass {@link Kysely.raw | raw}
    * as any of the arguments, including the operator:
    *
@@ -247,9 +243,8 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * where coalesce(first_name, last_name) like $1
    * ```
    *
-   * @example
    * If you only pass one function argument to this method, it can be
-   * used to create parentheses around other where clauses:
+   * used to create parentheses around other where statements:
    *
    * ```ts
    * const persons = await db
@@ -268,7 +263,6 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * select * from "person" (where "id" = 1 or "id" = 2)
    * ```
    *
-   * @example
    * In all examples above the columns were known at compile time
    * (except for the `raw` expressions). By default kysely only allows
    * you to refer to columns that exist in the database **and** can be
@@ -323,7 +317,8 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * value by default. `whereRef` treats it as a column reference. This method is
    * expecially useful with joins and correclated subqueries.
    *
-   * @example
+   * ### Examples
+   *
    * Usage with a join:
    *
    * ```ts
@@ -338,7 +333,6 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * select * from "person", "pet" where "person"."first_name" = "pet"."name"
    * ```
    *
-   * @example
    * Usage in a subquery:
    *
    * ```ts
@@ -390,7 +384,8 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * precendence. You can use the one argument version of the `where` method
    * for that. See the examples.
    *
-   * @example
+   * ### Examples
+   *
    * ```ts
    * const persons = await db
    *   .selectFrom('person')
@@ -406,7 +401,6 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * select * from "person" where "id" = 1 or "id" = 2
    * ```
    *
-   * @example
    * Grouping with parentheses:
    *
    * ```ts
@@ -426,7 +420,6 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * select * from "person" (where "id" = 1 or "id" = 2)
    * ```
    *
-   * @example
    * Even the first `where` can be an `orWhere`. This is useful
    * if you are looping through a set of conditions:
    *
@@ -498,7 +491,8 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    *
    * You can either use a subquery or a raw instance.
    *
-   * @example
+   * ### Examples
+   *
    * The query below selets all persons that own a pet named Catto:
    *
    * ```ts
@@ -526,7 +520,6 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * )
    * ```
    *
-   * @example
    * The same query as in the previous example but with using raw:
    *
    * ```ts
@@ -788,7 +781,8 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * To select all columns of the query or specific tables see the
    * {@link QueryBuilder.selectAll | selectAll} method.
    *
-   * @example
+   * ### Examples
+   *
    * Select a single column:
    *
    * ```ts
@@ -806,7 +800,6 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * select "id" from "person" where "first_name" = $1
    * ```
    *
-   * @example
    * Select a single column and specify a table:
    *
    * ```ts
@@ -823,7 +816,6 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * select "person"."id" from "person", "pet"
    * ```
    *
-   * @example
    * Select multiple columns:
    *
    * ```ts
@@ -841,7 +833,6 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * select "person"."id", "first_name" from "person"
    * ```
    *
-   * @example
    * Aliased selections:
    *
    * ```ts
@@ -865,7 +856,6 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * from "person"
    * ```
    *
-   * @example
    * You can also select subqueries and raw expressions. Note that you
    * always need to give a name for the selections using the `as`
    * method:
@@ -904,7 +894,6 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * In case you use `raw` you need to specify the type of the expression
    * (in this example `string`).
    *
-   * @example
    * All the examples above assume you know the column names at compile time.
    * While it's better to build your code like that (that way you also know
    * the types) sometimes it's not possible or you just prefer to write more
@@ -968,7 +957,8 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * See the {@link QueryBuilder.select | select} method's documentation for
    * more examples.
    *
-   * @example
+   * ### Examples
+   *
    * ```ts
    * await db.selectFrom('person')
    *   .innerJoin('pet', 'pet.owner_id', 'person.id')
@@ -1010,7 +1000,8 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
   /**
    * Makes the selection distinct.
    *
-   * @example
+   * ### Examples
+   *
    * ```ts
    * await db.selectFrom('person')
    *   .select('first_name')
@@ -1126,7 +1117,8 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
   /**
    * Adds a `select *` or `select table.*` clause to the query.
    *
-   * @example
+   * ### Examples
+   *
    * ```ts
    * const persons = await db
    *   .selectFrom('person')
@@ -1140,7 +1132,8 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * select * from "person"
    * ```
    *
-   * @example
+   * Select all columns of a table:
+   *
    * ```ts
    * const persons = await db
    *   .selectFrom('person')
@@ -1154,7 +1147,8 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * select "person".* from "person"
    * ```
    *
-   * @example
+   * Select all columns of multiple tables:
+   *
    * ```ts
    * const personsPets = await db
    *   .selectFrom(['person', 'pet'])
@@ -1191,7 +1185,8 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
   /**
    * Joins another table to the query using an inner join.
    *
-   * @example
+   * ### Examples
+   *
    * Simple usage by providing a table name and two columns to join:
    *
    * ```ts
@@ -1216,7 +1211,6 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * on "pet"."owner_id" = "person"."id"
    * ```
    *
-   * @example
    * You can give an alias for the joined table like this:
    *
    * ```ts
@@ -1237,7 +1231,6 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * where "p".name" = $1
    * ```
    *
-   * @example
    * You can provide a function as the second argument to get a join
    * builder for creating more complex joins. The join builder has a
    * bunch of `on*` methods for building the `on` clause of the join.
@@ -1268,7 +1261,6 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * and "pet"."name" = $1
    * ```
    *
-   * @example
    * You can join a subquery by providing a function as the first
    * argument:
    *
@@ -1423,7 +1415,8 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * On PostgreSQL and some other dialects, you need to call `returning` to get
    * something out of the query.
    *
-   * @example
+   * ### Examples
+   *
    * Insert a row into `person`:
    * ```ts
    * const id = await db
@@ -1442,7 +1435,6 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * insert into "person" ("first_name", "last_name") values ($1, $2)
    * ```
    *
-   * @example
    * On dialects that support it (for example PostgreSQL) you can insert multiple
    * rows by providing an array. Note that the return value is once again very
    * dialect-specific. Some databases may only return the id of the *last* inserted
@@ -1469,8 +1461,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * insert into "person" ("first_name", "last_name") values (($1, $2), ($3, $4))
    * ```
    *
-   * @example
-   * On postgresql you need to chain `returning` to the query to get
+   * On PostgreSQL you need to chain `returning` to the query to get
    * the inserted row's columns (or any other expression) as the
    * return value:
    *
@@ -1494,7 +1485,6 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * insert into "person" ("first_name", "last_name") values ($1, $2) returning "id"
    * ```
    *
-   * @example
    * In addition to primitives, the values can also be `raw` expressions or
    * select queries:
    *
@@ -1519,7 +1509,6 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * values ($1, $2 || $3, (select avg(age) from "person"))
    * ```
    *
-   * @example
    * You can also use the callback version of subqueries or raw expressions:
    *
    * ```ts
@@ -1573,7 +1562,8 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * Also see the {@link QueryBuilder.onConflictUpdate | onConflictUpdate}
    * method if you want to perform an update in case of a conflict (upsert).
    *
-   * @example
+   * ### Examples
+   *
    * ```ts
    * await db
    *   .insertInto('pet')
@@ -1594,8 +1584,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * on conflict ("name") do nothing
    * ```
    *
-   * @example
-   * You can provied the name of the constraint instead of a column name
+   * You can provide the name of the constraint instead of a column name
    *
    * ```ts
    * await db
@@ -1655,7 +1644,8 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * This is only supported on some dialects like MySQL. On most dialects you should
    * use the {@link onConflictDoNothing} method.
    *
-   * @example
+   * ### Examples
+   *
    * ```ts
    * await db.insertInto('person')
    *   .ignore()
@@ -1696,7 +1686,8 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * Also see the {@link QueryBuilder.onConflictDoNothing | onConflictDoNothing}
    * method.
    *
-   * @example
+   * ### Examples
+   *
    * ```ts
    * await db
    *   .insertInto('pet')
@@ -1717,7 +1708,6 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * on conflict ("name") do update set "species" = $3
    * ```
    *
-   * @example
    * You can provied the name of the constraint instead of a column name
    *
    * ```ts
@@ -1786,7 +1776,8 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * This is only implemented by some dialects like MySQL. On most dialects you should
    * use {@link onConflictUpdate} instead.
    *
-   * @example
+   * ### Examples
+   *
    * ```ts
    * await db
    *   .insertInto('person')
@@ -1820,7 +1811,8 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * You can use the {@link QueryBuilder.returning | returning} method on
    * supported databases to get out the updated rows.
    *
-   * @example
+   * ### Examples
+   *
    * Update a row in `person` table:
    *
    * ```ts
@@ -1842,8 +1834,7 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * update "person" set "first_name" = $1, "last_name" = $2 where "id" = $3
    * ```
    *
-   * @example
-   * On postgresql you ca chain `returning` to the query to get
+   * On PostgreSQL you ca chain `returning` to the query to get
    * the updated rows' columns (or any other expression) as the
    * return value:
    *
@@ -1867,7 +1858,6 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * update "person" set "first_name" = $1, "last_name" = $2 where "id" = $3 returning "id"
    * ```
    *
-   * @example
    * In addition to primitives, the values can also be `raw` expressions or
    * select queries:
    *
@@ -1919,7 +1909,8 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    *
    * Also see the {@link QueryBuilder.returningAll | returningAll} method.
    *
-   * @example
+   * ### Examples
+   *
    * Return one column:
    *
    * ```ts
@@ -1934,7 +1925,6 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    *   .executeTakeFirst()
    * ```
    *
-   * @example
    * Return multiple columns:
    *
    * ```ts
@@ -1949,7 +1939,6 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    *   .executeTakeFirst()
    * ```
    *
-   * @example
    * Return arbitrary expressions:
    *
    * ```ts
@@ -2015,7 +2004,8 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * The first argument is the expression to order by and the second is the
    * order (`asc` or `desc`).
    *
-   * @example
+   * ### Examples
+   *
    * ```ts
    * await db
    *   .selectFrom('person')
@@ -2033,7 +2023,6 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * order by "id" asc, "fn" desc
    * ```
    *
-   * @example
    * The order by expression can also be a `raw` expression or a subquery
    * in addition to column references:
    *
@@ -2066,7 +2055,6 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    *   concat(first_name, last_name) asc
    * ```
    *
-   * @example
    * `dynamic.ref` can be used to refer to columns not known at
    * compile time:
    *
@@ -2110,7 +2098,8 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
   /**
    * Adds a `group by` clause to the query.
    *
-   * @example
+   * ### Examples
+   *
    * ```ts
    * await db
    *   .selectFrom('person')
@@ -2130,7 +2119,6 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * group by "first_name"
    * ```
    *
-   * @example
    * `groupBy` also accepts an array:
    *
    * ```ts
@@ -2158,7 +2146,6 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    * group by "first_name", "last_name"
    * ```
    *
-   * @example
    * The group by expressions can also be subqueries or
    * raw expressions:
    *
@@ -2179,7 +2166,6 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    *   .execute()
    * ```
    *
-   * @example
    * `dynamic.ref` can be used to refer to columns not known at
    * compile time:
    *
@@ -2226,7 +2212,8 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
   /**
    * Adds a limit clause to the query.
    *
-   * @example
+   * ### Examples
+   *
    * Select the first 10 rows of the result:
    *
    * ```ts
@@ -2236,7 +2223,6 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    *   .limit(10)
    * ```
    *
-   * @example
    * Select rows from index 10 to index 19 of the result:
    *
    * ```ts
@@ -2262,7 +2248,8 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
   /**
    * Adds an offset clause to the query.
    *
-   * @example
+   * ### Examples
+   *
    * Select rows from index 10 to index 19 of the result:
    *
    * ```ts
@@ -2290,7 +2277,8 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    *
    * The output row type of the combined query must match `this` query.
    *
-   * @xample
+   * ### Examples
+   *
    * ```ts
    * db.selectFrom('person')
    *   .select(['id', 'first_name as name'])
@@ -2315,7 +2303,8 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    *
    * The output row type of the combined query must match `this` query.
    *
-   * @xample
+   * ### Examples
+   *
    * ```ts
    * db.selectFrom('person')
    *   .select(['id', 'first_name as name'])
@@ -2340,7 +2329,8 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    *
    * This method can be useful when adding optional method calls:
    *
-   * @example
+   * ### Examples
+   *
    * ```ts
    * db.selectFrom('person')
    *   .selectAll()
@@ -2356,7 +2346,8 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
    *
    * The next example uses a helper funtion `log` to log a query:
    *
-   * @example
+   * ### Examples
+   *
    * ```ts
    * function log<T extends AnyQueryBuilder>(qb: T): T {
    *   console.log(qb.compile())
@@ -2376,7 +2367,8 @@ export class QueryBuilder<DB, TB extends keyof DB, O = {}>
   /**
    * Gives an alias for the query. This method is only useful for sub queries.
    *
-   * @example
+   * ### Examples
+   *
    * ```ts
    * await db.selectFrom('pet')
    *   .selectAll('pet')

@@ -40,7 +40,8 @@ export class QueryCreator<DB> {
    *
    * The tables passed to this method are built as the query's `from` clause.
    *
-   * @example
+   * ### Examples
+   *
    * Create a select query for one table:
    *
    * ```ts
@@ -53,12 +54,11 @@ export class QueryCreator<DB> {
    * select * from "person"
    * ```
    *
-   * @example
    * Create a select query for one table with an alias:
    *
    * ```ts
    * const persons = await db.selectFrom('person as p')
-   *   .select(['p.id', 'p.first_name'])
+   *   .select(['p.id', 'first_name'])
    *   .execute()
    *
    * console.log(persons[0].id)
@@ -67,15 +67,14 @@ export class QueryCreator<DB> {
    * The generated SQL (PostgreSQL):
    *
    * ```sql
-   * select "p"."id", "p"."first_name" from "person" as "p"
+   * select "p"."id", "first_name" from "person" as "p"
    * ```
    *
-   * @example
    * Create a select query from a subquery:
    *
    * ```ts
    * const persons = await db.selectFrom(
-   *     db.selectFrom('person').select('person.id as identifier').as('p')
+   *     (eb) => eb.subQuery('person').select('person.id as identifier').as('p')
    *   )
    *   .select('p.identifier')
    *   .execute()
@@ -92,7 +91,6 @@ export class QueryCreator<DB> {
    * ) as p
    * ```
    *
-   * @example
    * Create a select query from raw sql:
    *
    * ```ts
@@ -118,7 +116,6 @@ export class QueryCreator<DB> {
    * raw segment / query so that Kysely can figure out what columns are
    * available for the query.
    *
-   * @example
    * The `selectFrom` method also accepts an array for multiple tables. All
    * the above examples can also be used in an array.
    *
@@ -173,7 +170,8 @@ export class QueryCreator<DB> {
    * the {@link QueryBuilder.returning | returning} method for a way to return columns
    * on supported databases like PostgreSQL.
    *
-   * @example
+   * ### Examples
+   *
    * ```ts
    * const result = await db
    *   .insertInto('person')
@@ -187,7 +185,6 @@ export class QueryCreator<DB> {
    * console.log(result.insertId)
    * ```
    *
-   * @example
    * Some databases like PostgreSQL support the `returning` method:
    *
    * ```ts
@@ -224,7 +221,8 @@ export class QueryCreator<DB> {
    *
    * The return value of the query is an instance of {@link DeleteResult}.
    *
-   * @example
+   * ### Examples
+   *
    * ```ts
    * const result = await db
    *   .deleteFrom('person')
@@ -259,7 +257,8 @@ export class QueryCreator<DB> {
    *
    * The return value of the query is an {@link UpdateResult}.
    *
-   * @example
+   * ### Examples
+   *
    * ```ts
    * const result = await db
    *   .updateTable('person')
@@ -287,7 +286,8 @@ export class QueryCreator<DB> {
   /**
    * Creates a `with` query (common table expressions).
    *
-   * @example
+   * ### Examples
+   *
    * ```ts
    * await db
    *   .with('jennifers', (db) => db
@@ -331,7 +331,8 @@ export class QueryCreator<DB> {
    * This only affects the query created through the builder returned from
    * this method and doesn't modify the `db` instance.
    *
-   * @example
+   * ### Examples
+   *
    * ```
    * await db.withSchema('mammals')
    *  .selectFrom('pet')
@@ -348,7 +349,6 @@ export class QueryCreator<DB> {
    * on "public"."person"."id" = "mammals"."pet"."owner_id"
    * ```
    *
-   * @example
    * `withSchema` is smart enough to not add schema for aliases,
    * common table expressions or other places where the schema
    * doesn't belong to:
@@ -394,14 +394,8 @@ export class QueryCreator<DB> {
    * Raw builder instances can be passed to pretty much anywhere: `select`, `where`,
    * `*Join`, `groupBy`, `orderBy` etc. Just try it. If the method accepts it, it works.
    *
-   * @param sql - The raw SQL. Special strings `?` and `??` can be used as parameter
-   *    placeholders. `?` for values and `??` for identifiers such as column names
-   *    or `column.table` references.
+   * ### Examples
    *
-   * @param params - The parameters that will be bound to the `?` and `??` placeholders in
-   *    the sql string.
-   *
-   * @example
    * Example of using `raw` in a select statement:
    *
    * ```ts
@@ -455,7 +449,6 @@ export class QueryCreator<DB> {
    * array, never to the SQL string directly. But if the column names or values are trusted
    * and known at compile time, there is no reason to use parameters.
    *
-   * @example
    * Example of using `raw` in `where`:
    *
    * ```ts
@@ -481,7 +474,6 @@ export class QueryCreator<DB> {
    * years. The number of years in this example is an untrusted user input, and therefore we use
    * a `?` placeholder for it.
    *
-   * @example
    * Example of creating a completely raw query from scratch:
    *
    * ```ts
@@ -493,6 +485,13 @@ export class QueryCreator<DB> {
    * this case we know the resulting items will be of type `Person` se specify that.
    * The result of `execute()` method is always an array. In this case the type of
    * the `persons` variable is `Person[]`.
+   *
+   * @param sql - The raw SQL. Special strings `?` and `??` can be used as parameter
+   *    placeholders. `?` for values and `??` for identifiers such as column names
+   *    or `column.table` references.
+   *
+   * @param params - The parameters that will be bound to the `?` and `??` placeholders in
+   *    the sql string.
    */
   raw<T = unknown>(sql: string, parameters?: any[]): RawBuilder<T> {
     return new RawBuilder({

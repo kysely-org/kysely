@@ -34,7 +34,8 @@ export class SchemaModule {
   /**
    * Create a new table.
    *
-   * @example
+   * ### Examples
+   *
    * This example creates a new table with columns `id`, `first_name`,
    * `last_name` and `gender`:
    *
@@ -48,7 +49,6 @@ export class SchemaModule {
    *   .execute()
    * ```
    *
-   * @example
    * This example creates a table with a foreign key. Not all database
    * engines support column-level foreign key constraint definitions.
    * For example if you are using MySQL 5.X see the next example after
@@ -65,7 +65,6 @@ export class SchemaModule {
    *   .execute()
    * ```
    *
-   * @example
    * This example adds a foreign key constraint for a columns just
    * like the previous example, but using a table-level statement.
    * On MySQL 5.X you need to define foreign key constraints like
@@ -94,7 +93,8 @@ export class SchemaModule {
   /**
    * Drop a table.
    *
-   * @example
+   * ### Examples
+   *
    * ```ts
    * await db.schema
    *   .dropTable('person')
@@ -112,7 +112,8 @@ export class SchemaModule {
   /**
    * Create a new index.
    *
-   * @example
+   * ### Examples
+   *
    * ```ts
    * await db.schema
    *   .createIndex('person_full_name_unique_index')
@@ -132,7 +133,8 @@ export class SchemaModule {
   /**
    * Drop an index.
    *
-   * @example
+   * ### Examples
+   *
    * ```ts
    * await db.schema
    *   .dropIndex('person_full_name_unique_index')
@@ -150,7 +152,8 @@ export class SchemaModule {
   /**
    * Create a new schema.
    *
-   * @example
+   * ### Examples
+   *
    * ```ts
    * await db.schema
    *   .createSchema('some_schema')
@@ -168,7 +171,8 @@ export class SchemaModule {
   /**
    * Drop a schema.
    *
-   * @example
+   * ### Examples
+   *
    * ```ts
    * await db.schema
    *   .dropSchema('some_schema')
@@ -186,7 +190,8 @@ export class SchemaModule {
   /**
    * Alter a table.
    *
-   * @example
+   * ### Examples
+   *
    * ```ts
    * await db.schema
    *   .alterTable('person')
@@ -206,7 +211,8 @@ export class SchemaModule {
   /**
    * Create a new view.
    *
-   * @example
+   * ### Examples
+   *
    * ```ts
    * await db.schema
    *   .createView('dogs')
@@ -226,7 +232,8 @@ export class SchemaModule {
   /**
    * Drop a view.
    *
-   * @example
+   * ### Examples
+   *
    * ```ts
    * await db.schema
    *   .dropView('dogs')

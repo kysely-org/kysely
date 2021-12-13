@@ -43,7 +43,8 @@ export interface ColumnDefinitionBuilderInterface<R> {
    * column definition (like MySQL 5) you need to call the table level
    * {@link TableBuilder.addForeignKeyConstraint} method instead.
    *
-   * @example
+   * ### Examples
+   *
    * ```ts
    * col.references('person.id')
    * ```
@@ -57,7 +58,8 @@ export interface ColumnDefinitionBuilderInterface<R> {
    * column definition (like MySQL 5) you need to call the table level
    * {@link TableBuilder.addForeignKeyConstraint} method instead.
    *
-   * @example
+   * ### Examples
+   *
    * ```ts
    * col.references('person.id').onDelete('cascade')
    * ```
@@ -67,7 +69,8 @@ export interface ColumnDefinitionBuilderInterface<R> {
   /**
    * Adds an `on update` constraint for the foreign key column.
    *
-   * @example
+   * ### Examples
+   *
    * ```ts
    * col.references('person.id').onUpdate('cascade')
    * ```
@@ -87,7 +90,8 @@ export interface ColumnDefinitionBuilderInterface<R> {
   /**
    * Adds a default value constraint for the column.
    *
-   * @example
+   * ### Examples
+   *
    * ```ts
    * db.schema
    *   .createTable('pet')
@@ -100,7 +104,8 @@ export interface ColumnDefinitionBuilderInterface<R> {
   /**
    * Adds a check constraint for the column.
    *
-   * @example
+   * ### Examples
+   *
    * ```ts
    * db.schema
    *   .createTable('pet')
@@ -113,7 +118,8 @@ export interface ColumnDefinitionBuilderInterface<R> {
   /**
    * Makes the column a generated column using a `generated always as` statement.
    *
-   * @example
+   * ### Examples
+   *
    * ```ts
    * db.schema
    *   .createTable('person')
@@ -129,7 +135,8 @@ export interface ColumnDefinitionBuilderInterface<R> {
    * Makes a generated column stored instead of virtual. This method can only
    * be used with {@link generatedAlwaysAs}
    *
-   * @example
+   * ### Examples
+   *
    * ```ts
    * db.schema
    *   .createTable('person')
