@@ -18,7 +18,7 @@ import {
 import { GeneratedAlwaysAsNode } from '../operation-node/generated-always-as-node.js'
 import { DefaultValueNode } from '../operation-node/default-value-node.js'
 
-export interface ColumnDefinitionBuilderInterface<R> {
+export interface ColumnDefinitionBuilderInterface {
   /**
    * Adds `auto_increment` or `autoincrement` to the column definition
    * depending on the dialect.
@@ -26,7 +26,7 @@ export interface ColumnDefinitionBuilderInterface<R> {
    * Some dialects like PostgreSQL don't support this. On PostgreSQL
    * you can use the `serial` or `bigserial` data type instead.
    */
-  autoIncrement(): R
+  autoIncrement(): ColumnDefinitionBuilderInterface
 
   /**
    * Makes the column the primary key.
@@ -34,7 +34,7 @@ export interface ColumnDefinitionBuilderInterface<R> {
    * If you want to specify a composite primary key use the
    * {@link TableBuilder.addPrimaryKeyConstraint} method.
    */
-  primaryKey(): R
+  primaryKey(): ColumnDefinitionBuilderInterface
 
   /**
    * Adds a foreign key constraint for the column.
@@ -49,7 +49,7 @@ export interface ColumnDefinitionBuilderInterface<R> {
    * col.references('person.id')
    * ```
    */
-  references(ref: string): R
+  references(ref: string): ColumnDefinitionBuilderInterface
 
   /**
    * Adds an `on delete` constraint for the foreign key column.
@@ -64,7 +64,7 @@ export interface ColumnDefinitionBuilderInterface<R> {
    * col.references('person.id').onDelete('cascade')
    * ```
    */
-  onDelete(onDelete: OnModifyForeignAction): R
+  onDelete(onDelete: OnModifyForeignAction): ColumnDefinitionBuilderInterface
 
   /**
    * Adds an `on update` constraint for the foreign key column.
@@ -75,17 +75,17 @@ export interface ColumnDefinitionBuilderInterface<R> {
    * col.references('person.id').onUpdate('cascade')
    * ```
    */
-  onUpdate(onUpdate: OnModifyForeignAction): R
+  onUpdate(onUpdate: OnModifyForeignAction): ColumnDefinitionBuilderInterface
 
   /**
    * Adds a unique constraint for the column.
    */
-  unique(): R
+  unique(): ColumnDefinitionBuilderInterface
 
   /**
    * Adds a `not null` constraint for the column.
    */
-  notNull(): R
+  notNull(): ColumnDefinitionBuilderInterface
 
   /**
    * Adds a default value constraint for the column.
@@ -99,7 +99,9 @@ export interface ColumnDefinitionBuilderInterface<R> {
    *   .execute()
    * ```
    */
-  defaultTo(value: PrimitiveValue | AnyRawBuilder): R
+  defaultTo(
+    value: PrimitiveValue | AnyRawBuilder
+  ): ColumnDefinitionBuilderInterface
 
   /**
    * Adds a check constraint for the column.
@@ -113,7 +115,7 @@ export interface ColumnDefinitionBuilderInterface<R> {
    *   .execute()
    * ```
    */
-  check(sql: string): R
+  check(sql: string): ColumnDefinitionBuilderInterface
 
   /**
    * Makes the column a generated column using a `generated always as` statement.
@@ -129,7 +131,7 @@ export interface ColumnDefinitionBuilderInterface<R> {
    *   .execute()
    * ```
    */
-  generatedAlwaysAs(sql: string): R
+  generatedAlwaysAs(sql: string): ColumnDefinitionBuilderInterface
 
   /**
    * Makes a generated column stored instead of virtual. This method can only
@@ -147,13 +149,11 @@ export interface ColumnDefinitionBuilderInterface<R> {
    *   .execute()
    * ```
    */
-  stored(): R
+  stored(): ColumnDefinitionBuilderInterface
 }
 
 export class ColumnDefinitionBuilder
-  implements
-    ColumnDefinitionBuilderInterface<ColumnDefinitionBuilder>,
-    OperationNodeSource
+  implements ColumnDefinitionBuilderInterface, OperationNodeSource
 {
   readonly #node: ColumnDefinitionNode
 

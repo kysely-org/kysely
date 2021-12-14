@@ -282,10 +282,7 @@ export class AlterTableExecutor implements OperationNodeSource, Compilable {
 export interface AlterTableExecutorProps extends AlterTableBuilderProps {}
 
 export class AlterTableAddColumnBuilder
-  implements
-    ColumnDefinitionBuilderInterface<AlterTableAddColumnBuilder>,
-    OperationNodeSource,
-    Compilable
+  implements ColumnDefinitionBuilderInterface, OperationNodeSource, Compilable
 {
   readonly #props: AlterTableAddColumnBuilderProps
 
@@ -399,10 +396,7 @@ export interface AlterTableAddColumnBuilderProps
 }
 
 export class AlterTableModifyColumnBuilder
-  implements
-    ColumnDefinitionBuilderInterface<AlterTableModifyColumnBuilder>,
-    OperationNodeSource,
-    Compilable
+  implements ColumnDefinitionBuilderInterface, OperationNodeSource, Compilable
 {
   readonly #props: AlterTableModifyColumnBuilderProps
 
