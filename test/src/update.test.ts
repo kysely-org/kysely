@@ -80,7 +80,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
         .set({
           last_name: (qb) =>
             qb
-              .subQuery('pet')
+              .selectFrom('pet')
               .whereRef('person.id', '=', 'owner_id')
               .select('name'),
         })

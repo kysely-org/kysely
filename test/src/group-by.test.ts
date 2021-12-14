@@ -149,7 +149,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
         .select(ctx.db.raw('max(first_name)').as('max_first_name'))
         .groupBy((qb) =>
           qb
-            .subQuery('pet')
+            .selectFrom('pet')
             .whereRef('person.id', '=', 'pet.owner_id')
             .select('pet.name')
         )

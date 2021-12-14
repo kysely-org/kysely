@@ -97,7 +97,7 @@ export interface JoinInterface<DB, TB extends keyof DB> {
    * ```ts
    * await db.selectFrom('person')
    *   .innerJoin(
-   *     (qb) => qb.subQuery('pet')
+   *     (qb) => qb.selectFrom('pet')
    *       .select(['owner_id', 'name'])
    *       .where('name', '=', 'Doggo')
    *       .as('doggos'),

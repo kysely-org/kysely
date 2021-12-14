@@ -135,7 +135,7 @@ for (const dialect of ['postgres'] as const) {
             'pet.name',
             (qb) =>
               qb
-                .subQuery('pet as p')
+                .selectFrom('pet as p')
                 .select('name')
                 .whereRef('p.id', '=', 'pet.id')
                 .as('p_name'),
@@ -166,7 +166,7 @@ for (const dialect of ['postgres'] as const) {
             (qb) =>
               qb
                 .withSchema('public')
-                .subQuery('person')
+                .selectFrom('person')
                 .select('first_name')
                 .whereRef('pet.owner_id', '=', 'person.id')
                 .as('owner_first_name'),

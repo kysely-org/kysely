@@ -433,7 +433,7 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O = {}>
    * const persons = await db.selectFrom('person')
    *   .select([
    *     (qb) => qb
-   *       .subQuery('pet')
+   *       .selectFrom('pet')
    *       .whereRef('person.id', '=', 'pet.owner_id')
    *       .select('pet.name')
    *       .limit(1)
@@ -910,7 +910,7 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O = {}>
    * await db
    *   .selectFrom('person')
    *   .selectAll()
-   *   .orderBy((qb) => qb.subQuery('pet')
+   *   .orderBy((qb) => qb.selectFrom('pet')
    *     .select('pet.name')
    *     .whereRef('pet.owner_id', '=', 'person.id')
    *     .limit(1)
@@ -1039,7 +1039,7 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O = {}>
    *   ])
    *   .groupBy([
    *     raw('concat(first_name, last_name)'),
-   *     (qb) => qb.subQuery('pet').select('id').limit(1)
+   *     (qb) => qb.selectFrom('pet').select('id').limit(1)
    *   ])
    *   .execute()
    * ```
@@ -1239,7 +1239,7 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O = {}>
    * await db.selectFrom('pet')
    *   .selectAll('pet')
    *   .select(
-   *     (qb) => qb.subQuery('person')
+   *     (qb) => qb.selectFrom('person')
    *       .select('first_name')
    *       .whereRef('pet.owner_id', '=', 'person.id')
    *       .as('owner_first_name')

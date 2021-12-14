@@ -170,7 +170,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
         .selectFrom('person')
         .select((qb) =>
           qb
-            .subQuery('pet')
+            .selectFrom('pet')
             .whereRef('person.id', '=', 'pet.owner_id')
             .select('name')
             .as('pet_name')
@@ -249,7 +249,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
           ctx.db.raw(fullName).as('full_name'),
           (qb) =>
             qb
-              .subQuery('pet')
+              .selectFrom('pet')
               .whereRef('person.id', '=', 'owner_id')
               .select('name')
               .as('pet_name'),

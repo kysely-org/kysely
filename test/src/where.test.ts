@@ -276,7 +276,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
           .where(
             (qb) =>
               qb
-                .subQuery('pet')
+                .selectFrom('pet')
                 .select('pet.name')
                 .whereRef('owner_id', '=', 'person.id'),
             '=',
@@ -316,7 +316,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
           .selectAll()
           .where(ctx.db.raw('?', ['Catto']), '=', (qb) =>
             qb
-              .subQuery('pet')
+              .selectFrom('pet')
               .select('pet.name')
               .whereRef('owner_id', '=', 'person.id')
           )
@@ -684,7 +684,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
           .selectAll()
           .whereExists((qb) =>
             qb
-              .subQuery('pet')
+              .selectFrom('pet')
               .select('pet.id')
               .whereRef('pet.owner_id', '=', 'person.id')
               .where('pet.species', '=', 'dog')
@@ -768,7 +768,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
               .where('first_name', '=', 'Jennifer')
               .orWhereExists((qb) =>
                 qb
-                  .subQuery('pet')
+                  .selectFrom('pet')
                   .select('pet.id')
                   .whereRef('pet.owner_id', '=', 'person.id')
                   .where('pet.species', '=', 'hamster')
@@ -814,7 +814,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
           .selectAll()
           .whereNotExists((qb) =>
             qb
-              .subQuery('pet')
+              .selectFrom('pet')
               .select('pet.id')
               .whereRef('pet.owner_id', '=', 'person.id')
               .where('pet.species', '=', 'dog')
@@ -860,7 +860,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
           .where('first_name', 'is', null)
           .orWhereNotExists((qb) =>
             qb
-              .subQuery('pet')
+              .selectFrom('pet')
               .select('pet.id')
               .whereRef('pet.owner_id', '=', 'person.id')
               .where('pet.species', '=', 'hamster')

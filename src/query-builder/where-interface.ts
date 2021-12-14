@@ -70,7 +70,7 @@ export interface WhereInterface<DB, TB extends keyof DB> {
    *
    * Both the first and third argument can also be subqueries.
    * A subquery is defined by passing a function and calling
-   * the `subQuery` method of the object passed into the
+   * the `selectFrom` method of the object passed into the
    * function:
    *
    * ```ts
@@ -78,7 +78,7 @@ export interface WhereInterface<DB, TB extends keyof DB> {
    *   .selectFrom('person')
    *   .selectAll()
    *   .where(
-   *     (qb) => qb.subQuery('pet')
+   *     (qb) => qb.selectFrom('pet')
    *       .select('pet.name')
    *       .whereRef('pet.owner_id', '=', 'person.id')
    *       .limit(1),
@@ -224,7 +224,7 @@ export interface WhereInterface<DB, TB extends keyof DB> {
    *   .selectFrom('person')
    *   .selectAll('person')
    *   .select((qb) => qb
-   *     .subQuery('pet')
+   *     .selectFrom('pet')
    *     .select('name')
    *     .whereRef('pet.owner_id', '=', 'person.id')
    *     .limit(1)
@@ -350,7 +350,7 @@ export interface WhereInterface<DB, TB extends keyof DB> {
    *   .selectFrom('person')
    *   .selectAll()
    *   .whereExists((qb) => qb
-   *     .subQuery('pet')
+   *     .selectFrom('pet')
    *     .select('pet.id')
    *     .whereRef('person.id', '=', 'pet.owner_id')
    *     .where('pet.name', '=', 'Catto')

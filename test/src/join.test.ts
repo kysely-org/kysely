@@ -215,7 +215,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
                   .orOn('species', '=', 'dog')
                   .orOn(ctx.db.raw('??', ['species']), '=', (qb) =>
                     qb
-                      .subQuery('pet')
+                      .selectFrom('pet')
                       .select(ctx.db.raw(`'hamster'`).as('hamster'))
                       .limit(1)
                       .offset(0)
@@ -274,7 +274,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
             .innerJoin('pet', (join) =>
               join[existsType]((qb) =>
                 qb
-                  .subQuery('pet as p')
+                  .selectFrom('pet as p')
                   .whereRef('p.id', '=', 'pet.id')
                   .whereRef('p.owner_id', '=', 'person.id')
                   .select('id')
@@ -426,7 +426,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
                   .orOn('species', '=', 'dog')
                   .orOn(ctx.db.raw('??', ['species']), '=', (qb) =>
                     qb
-                      .subQuery('pet')
+                      .selectFrom('pet')
                       .select(ctx.db.raw(`'hamster'`).as('hamster'))
                       .limit(1)
                       .offset(0)
@@ -485,7 +485,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
             .leftJoin('pet', (join) =>
               join[existsType]((qb) =>
                 qb
-                  .subQuery('pet as p')
+                  .selectFrom('pet as p')
                   .whereRef('p.id', '=', 'pet.id')
                   .whereRef('p.owner_id', '=', 'person.id')
                   .select('id')

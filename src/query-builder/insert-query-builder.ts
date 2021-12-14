@@ -169,8 +169,8 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    *   .limit(1)
    * ).insertInto('pet').values({
    *   id: db.generated,
-   *   owner_id: (eb) => eb.subQuery('jennifer').select('id'),
-   *   name: (eb) => eb.subQuery('jennifer').select('first_name'),
+   *   owner_id: (eb) => eb.selectFrom('jennifer').select('id'),
+   *   name: (eb) => eb.selectFrom('jennifer').select('first_name'),
    *   species: 'cat',
    * })
    * ```

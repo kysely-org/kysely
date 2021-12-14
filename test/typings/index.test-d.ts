@@ -62,7 +62,7 @@ async function testFromSingle(db: Kysely<Database>) {
   // Subquery factory
   const [r4] = await db
     .selectFrom((eb) =>
-      eb.subQuery('movie').select('movie.stars as strs').as('m')
+      eb.selectFrom('movie').select('movie.stars as strs').as('m')
     )
     .selectAll()
     .execute()
@@ -100,10 +100,10 @@ async function testFromSingle(db: Kysely<Database>) {
   const [r9] = await db
     .selectFrom((eb) =>
       eb
-        .subQuery((eb2) =>
+        .selectFrom((eb2) =>
           eb2
-            .subQuery((eb3) =>
-              eb3.subQuery('movie').select('stars as s').as('m1')
+            .selectFrom((eb3) =>
+              eb3.selectFrom('movie').select('stars as s').as('m1')
             )
             .select('m1.s as s2')
             .as('m2')
@@ -184,7 +184,7 @@ async function testSelectSingle(db: Kysely<Database>) {
   const [r7] = await qb
     .select((qb) =>
       qb
-        .subQuery('movie')
+        .selectFrom('movie')
         .whereRef('movie.id', '=', 'person.id')
         .select('movie.id')
         .as('movie_id')
@@ -237,7 +237,7 @@ async function testSelectMultiple(db: Kysely<Database>) {
       'person',
       (qb) =>
         qb
-          .subQuery('movie')
+          .selectFrom('movie')
           .select(['movie.stars', 'movie.id as movie_id'])
           .as('m'),
     ])
@@ -253,7 +253,7 @@ async function testSelectMultiple(db: Kysely<Database>) {
       'movie_id',
       db.raw<number>('random()').as('rand1'),
       db.raw<number>('random()').as('rand2'),
-      (qb) => qb.subQuery('pet').select('pet.id').as('sub'),
+      (qb) => qb.selectFrom('pet').select('pet.id').as('sub'),
     ])
     .execute()
 
@@ -331,14 +331,14 @@ function testWhere(db: Kysely<Database>) {
 
   // Subquery in LHS
   db.selectFrom('movie').where(
-    (qb) => qb.subQuery('person').select('gender'),
+    (qb) => qb.selectFrom('person').select('gender'),
     '=',
     'female'
   )
 
   // Subquery in RHS
   db.selectFrom('movie').where(db.raw('?', ['female']), '=', (qb) =>
-    qb.subQuery('person').select('gender')
+    qb.selectFrom('person').select('gender')
   )
 
   // Raw expression
@@ -382,7 +382,7 @@ function testWhere(db: Kysely<Database>) {
     db
       .selectFrom('some_schema.movie')
       .where(
-        (qb) => qb.subQuery('person').select('gender'),
+        (qb) => qb.selectFrom('person').select('gender'),
         '=',
         'not_a_gender'
       )
@@ -412,7 +412,7 @@ async function testJoin(db: Kysely<Database>) {
     .innerJoin(
       (qb) =>
         qb
-          .subQuery('movie')
+          .selectFrom('movie')
           .select(['movie.id', 'movie.stars as rating'])
           .as('m'),
       'm.id',
@@ -427,7 +427,7 @@ async function testJoin(db: Kysely<Database>) {
   const r4 = await db
     .selectFrom('person')
     .innerJoin(
-      (qb) => qb.subQuery('movie').selectAll('movie').as('m'),
+      (qb) => qb.selectFrom('movie').selectAll('movie').as('m'),
       (join) => join.onRef('m.id', '=', 'person.id')
     )
     .where('m.stars', '>', 2)
@@ -511,7 +511,7 @@ async function testInsert(db: Kysely<Database>) {
     .insertInto('movie')
     .values({
       id: db.generated,
-      stars: (eb) => eb.subQuery('foo').select('foo.id'),
+      stars: (eb) => eb.selectFrom('foo').select('foo.id'),
     })
     .executeTakeFirst()
 
@@ -571,7 +571,7 @@ async function testReturning(db: Kysely<Database>) {
     .returning([
       'id',
       db.raw<string>(`concat(first_name, ' ', last_name)`).as('full_name'),
-      (qb) => qb.subQuery('pet').select('pet.id').as('sub'),
+      (qb) => qb.selectFrom('pet').select('pet.id').as('sub'),
     ])
     .execute()
 

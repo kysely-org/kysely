@@ -90,8 +90,8 @@ for (const dialect of BUILT_IN_DIALECTS) {
           .insertInto('pet')
           .values({
             id: ctx.db.generated,
-            owner_id: (eb) => eb.subQuery('jennifer').select('id'),
-            name: (eb) => eb.subQuery('jennifer').select('first_name'),
+            owner_id: (eb) => eb.selectFrom('jennifer').select('id'),
+            name: (eb) => eb.selectFrom('jennifer').select('first_name'),
             species: 'cat',
           })
 

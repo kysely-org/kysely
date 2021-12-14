@@ -177,10 +177,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
         .orHaving('first_name', '<', 'foo')
         .havingRef('first_name', '=', 'first_name')
         .orHavingRef('first_name', '=', 'first_name')
-        .havingExists((qb) => qb.subQuery('pet').select('id'))
-        .orHavingExists((qb) => qb.subQuery('pet').select('id'))
-        .havingNotExist((qb) => qb.subQuery('pet').select('id'))
-        .orHavingNotExists((qb) => qb.subQuery('pet').select('id'))
+        .havingExists((qb) => qb.selectFrom('pet').select('id'))
+        .orHavingExists((qb) => qb.selectFrom('pet').select('id'))
+        .havingNotExist((qb) => qb.selectFrom('pet').select('id'))
+        .orHavingNotExists((qb) => qb.selectFrom('pet').select('id'))
         .having((qb) => qb.having('id', '=', 1).orHaving('id', '=', 2))
 
       testSql(query, dialect, {

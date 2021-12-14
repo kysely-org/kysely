@@ -164,7 +164,7 @@ export type AnyAliasedQueryBuilder = AliasedQueryBuilder<any, any, any, any>
 export type AnyRawBuilder = RawBuilder<any>
 export type AnyAliasedRawBuilder = AliasedRawBuilder<any, any>
 
-export type SeletQueryBuilderFactory<DB, TB extends keyof DB> = (
+export type SelectQueryBuilderFactory<DB, TB extends keyof DB> = (
   qb: ExpressionBuilder<DB, TB>
 ) => AnySelectQueryBuilder
 

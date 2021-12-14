@@ -10,14 +10,14 @@ import {
   AnyAliasedRawBuilder,
   AnySelectQueryBuilder,
   AnyRawBuilder,
-  SeletQueryBuilderFactory,
+  SelectQueryBuilderFactory,
   RawBuilderFactory,
 } from '../util/type-utils.js'
 import { ParseContext } from './parse-context.js'
 
 export type ComplexExpression<DB, TB extends keyof DB> =
   | AnySelectQueryBuilder
-  | SeletQueryBuilderFactory<DB, TB>
+  | SelectQueryBuilderFactory<DB, TB>
   | AnyRawBuilder
   | RawBuilderFactory<DB, TB>
 

@@ -72,7 +72,7 @@ export class ExpressionBuilder<DB, TB extends keyof DB> {
    * const result = await db.selectFrom('pet')
    *   .select([
    *     'pet.name',
-   *     (qb) => qb.subQuery('person')
+   *     (qb) => qb.selectFrom('person')
    *       .whereRef('person.id', '=', 'pet.owner_id')
    *       .select('person.first_name')
    *       .as('owner_name')
@@ -94,11 +94,11 @@ export class ExpressionBuilder<DB, TB extends keyof DB> {
    * from "pet"
    * ```
    *
-   * You can use a normal query in place of `(qb) => qb.subQuery(...)` but in
+   * You can use a normal query in place of `(qb) => qb.selectFrom(...)` but in
    * that case Kysely typings wouldn't allow you to reference `pet.owner_id`
    * because `pet` is not joined to that query.
    */
-  subQuery<TE extends TableExpression<DB, TB>>(
+  selectFrom<TE extends TableExpression<DB, TB>>(
     from: TE[]
   ): SelectQueryBuilder<
     TableExpressionDatabase<DB, TE>,
@@ -106,7 +106,7 @@ export class ExpressionBuilder<DB, TB extends keyof DB> {
     {}
   >
 
-  subQuery<TE extends TableExpression<DB, TB>>(
+  selectFrom<TE extends TableExpression<DB, TB>>(
     from: TE
   ): SelectQueryBuilder<
     TableExpressionDatabase<DB, TE>,
@@ -114,7 +114,7 @@ export class ExpressionBuilder<DB, TB extends keyof DB> {
     {}
   >
 
-  subQuery(table: TableExpressionOrList<DB, TB>): any {
+  selectFrom(table: TableExpressionOrList<DB, TB>): any {
     return new SelectQueryBuilder({
       queryId: createQueryId(),
       executor: this.#props.executor,

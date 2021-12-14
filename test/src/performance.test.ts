@@ -37,7 +37,7 @@ describe.skip(`query builder performance`, () => {
         .where('p.id', 'in', [1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
         .whereExists((eb) =>
           eb
-            .subQuery('toy_schema.toy')
+            .selectFrom('toy_schema.toy')
             .whereRef('toy_schema.toy.id', '=', 'toy.id')
         )
         .select([

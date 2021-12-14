@@ -78,7 +78,7 @@ export class QueryCreator<DB> {
    *
    * ```ts
    * const persons = await db.selectFrom(
-   *     (eb) => eb.subQuery('person').select('person.id as identifier').as('p')
+   *     (eb) => eb.selectFrom('person').select('person.id as identifier').as('p')
    *   )
    *   .select('p.identifier')
    *   .execute()

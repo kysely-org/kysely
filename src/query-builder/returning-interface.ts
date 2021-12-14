@@ -59,7 +59,7 @@ export interface ReturningInterface<DB, TB extends keyof DB, O> {
    *   .returning([
    *     'id as id',
    *     raw<string>(`concat(first_name, ' ', last_name)`).as('full_name'),
-   *     (qb) => qb.subQuery('pets').select('pet.id').limit(1).as('first_pet_id')
+   *     (qb) => qb.selectFrom('pets').select('pet.id').limit(1).as('first_pet_id')
    *   ])
    *   .executeTakeFirst()
    * ```
