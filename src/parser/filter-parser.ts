@@ -6,7 +6,7 @@ import {
   isNull,
   isString,
 } from '../util/object-utils.js'
-import { AnyQueryBuilder, AnyRawBuilder } from '../util/type-utils.js'
+import { AnySelectQueryBuilder, AnyRawBuilder } from '../util/type-utils.js'
 import { isOperationNodeSource } from '../operation-node/operation-node-source.js'
 import { RawNode } from '../operation-node/raw-node.js'
 import {
@@ -30,6 +30,7 @@ import { JoinBuilder } from '../query-builder/join-builder.js'
 import { FilterExpressionNode } from '../operation-node/operation-node-utils.js'
 import { ValueNode } from '../operation-node/value-node.js'
 import { ParseContext } from './parse-context.js'
+import { WhereInterface } from '../query-builder/where-interface.js'
 
 export type FilterValueExpression<
   DB,
@@ -52,6 +53,10 @@ export type ExistsExpression<DB, TB extends keyof DB> = ValueExpression<
   TB,
   never
 >
+
+export type WhereGrouper<DB, TB extends keyof DB> = (
+  qb: WhereInterface<DB, TB>
+) => WhereInterface<DB, TB>
 
 export type FilterOperator = Operator | AnyRawBuilder
 
@@ -202,7 +207,7 @@ function createFilterError(type: FilterType, args: any[]): Error {
 const GROUP_PARSERS = freeze({
   where(
     ctx: ParseContext,
-    callback: (qb: AnyQueryBuilder) => AnyQueryBuilder
+    callback: (qb: AnySelectQueryBuilder) => AnySelectQueryBuilder
   ): ParensNode {
     const query = callback(ctx.createSelectQueryBuilder())
     const queryNode = query.toOperationNode() as SelectQueryNode
@@ -216,7 +221,7 @@ const GROUP_PARSERS = freeze({
 
   having(
     ctx: ParseContext,
-    callback: (qb: AnyQueryBuilder) => AnyQueryBuilder
+    callback: (qb: AnySelectQueryBuilder) => AnySelectQueryBuilder
   ): ParensNode {
     const query = callback(ctx.createSelectQueryBuilder())
     const queryNode = query.toOperationNode() as SelectQueryNode

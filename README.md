@@ -72,7 +72,7 @@ interface Person {
   first_name: string
   // If the column is nullable in the db, make its type nullable.
   // Don't use optional properties.
-  last_name: string | null
+  last_name: string | null
   gender: 'male' | 'female' | 'other'
 }
 

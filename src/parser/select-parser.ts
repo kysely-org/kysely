@@ -2,8 +2,8 @@ import { AliasedRawBuilder } from '../raw-builder/raw-builder.js'
 import { isReadonlyArray, isString } from '../util/object-utils.js'
 import {
   AliasedQueryBuilder,
-  QueryBuilder,
-} from '../query-builder/query-builder.js'
+  SelectQueryBuilder,
+} from '../query-builder/select-query-builder.js'
 import { SelectionNode } from '../operation-node/selection-node.js'
 import {
   AnyAliasedColumn,
@@ -45,7 +45,7 @@ export type QueryBuilderWithSelection<
   TB extends keyof DB,
   O,
   SE
-> = QueryBuilder<DB, TB, O & Selection<DB, TB, SE>>
+> = SelectQueryBuilder<DB, TB, O & Selection<DB, TB, SE>>
 
 /**
  * `selectAll` output query builder type.
@@ -55,7 +55,7 @@ export type SelectAllQueryBuilder<
   TB extends keyof DB,
   O,
   S extends keyof DB
-> = QueryBuilder<DB, TB, O & RowType<DB, S>>
+> = SelectQueryBuilder<DB, TB, O & RowType<DB, S>>
 
 export type Selection<DB, TB extends keyof DB, SE> = {
   [A in ExtractAliasFromSelectExpression<SE>]: ExtractTypeFromSelectExpression<

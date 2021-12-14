@@ -25,10 +25,10 @@ export class JoinBuilder<DB, TB extends keyof DB>
   }
 
   /**
-   * Just like {@link QueryBuilder.where} but adds an item to the join's
+   * Just like {@link WhereInterface.where} but adds an item to the join's
    * `on` clause instead.
    *
-   * See {@link QueryBuilder.where} for documentation and examples.
+   * See {@link WhereInterface.where} for documentation and examples.
    */
   on<RE extends ReferenceExpression<DB, TB>>(
     lhs: RE,
@@ -53,10 +53,10 @@ export class JoinBuilder<DB, TB extends keyof DB>
   }
 
   /**
-   * Just like {@link QueryBuilder.orWhere} but adds an item to the join's
+   * Just like {@link WhereInterface.orWhere} but adds an item to the join's
    * `on` clause instead.
    *
-   * See {@link QueryBuilder.orWhere} for documentation and examples.
+   * See {@link WhereInterface.orWhere} for documentation and examples.
    */
   orOn<RE extends ReferenceExpression<DB, TB>>(
     lhs: RE,
@@ -81,10 +81,10 @@ export class JoinBuilder<DB, TB extends keyof DB>
   }
 
   /**
-   * Just like {@link QueryBuilder.whereRef} but adds an item to the join's
+   * Just like {@link WhereInterface.whereRef} but adds an item to the join's
    * `on` clause instead.
    *
-   * See {@link QueryBuilder.whereRef} for documentation and examples.
+   * See {@link WhereInterface.whereRef} for documentation and examples.
    */
   onRef(
     lhs: ReferenceExpression<DB, TB>,
@@ -101,10 +101,10 @@ export class JoinBuilder<DB, TB extends keyof DB>
   }
 
   /**
-   * Just like {@link QueryBuilder.orWhereRef} but adds an item to the join's
+   * Just like {@link WhereInterface.orWhereRef} but adds an item to the join's
    * `on` clause instead.
    *
-   * See {@link QueryBuilder.orWhereRef} for documentation and examples.
+   * See {@link WhereInterface.orWhereRef} for documentation and examples.
    */
   orOnRef(
     lhs: ReferenceExpression<DB, TB>,
@@ -121,10 +121,10 @@ export class JoinBuilder<DB, TB extends keyof DB>
   }
 
   /**
-   * Just like {@link QueryBuilder.whereExists} but adds an item to the join's
+   * Just like {@link WhereInterface.whereExists} but adds an item to the join's
    * `on` clause instead.
    *
-   * See {@link QueryBuilder.whereExists} for documentation and examples.
+   * See {@link WhereInterface.whereExists} for documentation and examples.
    */
   onExists(arg: ExistsExpression<DB, TB>): JoinBuilder<DB, TB> {
     return new JoinBuilder({
@@ -137,10 +137,10 @@ export class JoinBuilder<DB, TB extends keyof DB>
   }
 
   /**
-   * Just like {@link QueryBuilder.whereNotExists} but adds an item to the join's
+   * Just like {@link WhereInterface.whereNotExists} but adds an item to the join's
    * `on` clause instead.
    *
-   * See {@link QueryBuilder.whereNotExists} for documentation and examples.
+   * See {@link WhereInterface.whereNotExists} for documentation and examples.
    */
   onNotExists(arg: ExistsExpression<DB, TB>): JoinBuilder<DB, TB> {
     return new JoinBuilder({
@@ -153,10 +153,10 @@ export class JoinBuilder<DB, TB extends keyof DB>
   }
 
   /**
-   * Just like {@link QueryBuilder.orWhereExists} but adds an item to the join's
+   * Just like {@link WhereInterface.orWhereExists} but adds an item to the join's
    * `on` clause instead.
    *
-   * See {@link QueryBuilder.orWhereExists} for documentation and examples.
+   * See {@link WhereInterface.orWhereExists} for documentation and examples.
    */
   orOnExists(arg: ExistsExpression<DB, TB>): JoinBuilder<DB, TB> {
     return new JoinBuilder({
@@ -169,10 +169,10 @@ export class JoinBuilder<DB, TB extends keyof DB>
   }
 
   /**
-   * Just like {@link QueryBuilder.orWhereNotExists} but adds an item to the join's
+   * Just like {@link WhereInterface.orWhereNotExists} but adds an item to the join's
    * `on` clause instead.
    *
-   * See {@link QueryBuilder.orWhereNotExists} for documentation and examples.
+   * See {@link WhereInterface.orWhereNotExists} for documentation and examples.
    */
   orOnNotExists(arg: ExistsExpression<DB, TB>): JoinBuilder<DB, TB> {
     return new JoinBuilder({

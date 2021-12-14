@@ -2,7 +2,7 @@ import { DialectAdapter } from '../dialect/dialect-adapter.js'
 import { JoinNode, JoinType } from '../operation-node/join-node.js'
 import { SelectQueryNode } from '../operation-node/select-query-node.js'
 import { JoinBuilder } from '../query-builder/join-builder.js'
-import { QueryBuilder } from '../query-builder/query-builder.js'
+import { SelectQueryBuilder } from '../query-builder/select-query-builder.js'
 import { ExpressionBuilder } from '../query-builder/expression-builder.js'
 import { QueryCreator } from '../query-creator.js'
 import { NoopQueryExecutor } from '../query-executor/noop-query-executor.js'
@@ -23,7 +23,7 @@ export interface ParseContext {
   /**
    * Creates a select query builder with a {@link NoopQueryExecutor}.
    */
-  createSelectQueryBuilder(): QueryBuilder<any, any>
+  createSelectQueryBuilder(): SelectQueryBuilder<any, any>
 
   /**
    * Creates an expression builder for building stuff like subqueries.
@@ -59,8 +59,8 @@ export class DefaultParseContext implements ParseContext {
     return this.#adapter
   }
 
-  createSelectQueryBuilder(): QueryBuilder<any, any> {
-    return new QueryBuilder({
+  createSelectQueryBuilder(): SelectQueryBuilder<any, any> {
+    return new SelectQueryBuilder({
       queryId: createQueryId(),
       executor: this.#noopExecutor,
       parseContext: this,

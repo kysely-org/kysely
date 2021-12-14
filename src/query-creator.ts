@@ -1,4 +1,7 @@
-import { QueryBuilder } from './query-builder/query-builder.js'
+import { SelectQueryBuilder } from './query-builder/select-query-builder.js'
+import { InsertQueryBuilder } from './query-builder/insert-query-builder.js'
+import { DeleteQueryBuilder } from './query-builder/delete-query-builder.js'
+import { UpdateQueryBuilder } from './query-builder/update-query-builder.js'
 import { DeleteQueryNode } from './operation-node/delete-query-node.js'
 import { InsertQueryNode } from './operation-node/insert-query-node.js'
 import { SelectQueryNode } from './operation-node/select-query-node.js'
@@ -7,9 +10,10 @@ import {
   parseTable,
   parseTableExpression,
   parseTableExpressionOrList,
-  QueryBuilderWithTable,
   TableExpression,
+  TableExpressionDatabase,
   TableExpressionOrList,
+  TableExpressionTables,
   TableReference,
 } from './parser/table-parser.js'
 import { QueryExecutor } from './query-executor/query-executor.js'
@@ -95,7 +99,7 @@ export class QueryCreator<DB> {
    *
    * ```ts
    * const items = await db.selectFrom(
-   *     db.raw<{ one: number }>('(select 1 as one)').as('q')
+   *     db.raw<{ one: number }>('(select 1 as one)').as('q')
    *   )
    *   .select('q.one')
    *   .execute()
@@ -123,7 +127,7 @@ export class QueryCreator<DB> {
    * const items = await db.selectFrom([
    *     'person as p',
    *     db.selectFrom('pet').select('pet.species').as('a'),
-   *     db.raw<{ one: number }>('(select 1 as one)').as('q')
+   *     db.raw<{ one: number }>('(select 1 as one)').as('q')
    *   ])
    *   .select(['p.id', 'a.species', 'q.one'])
    *   .execute()
@@ -141,14 +145,22 @@ export class QueryCreator<DB> {
    */
   selectFrom<TE extends TableExpression<DB, keyof DB>>(
     from: TE[]
-  ): QueryBuilderWithTable<DB, never, {}, TE>
+  ): SelectQueryBuilder<
+    TableExpressionDatabase<DB, TE>,
+    TableExpressionTables<DB, never, TE>,
+    {}
+  >
 
   selectFrom<TE extends TableExpression<DB, keyof DB>>(
     from: TE
-  ): QueryBuilderWithTable<DB, never, {}, TE>
+  ): SelectQueryBuilder<
+    TableExpressionDatabase<DB, TE>,
+    TableExpressionTables<DB, never, TE>,
+    {}
+  >
 
   selectFrom(from: TableExpressionOrList<any, any>): any {
-    return new QueryBuilder({
+    return new SelectQueryBuilder({
       queryId: createQueryId(),
       executor: this.#props.executor,
       parseContext: this.#props.parseContext,
@@ -163,11 +175,11 @@ export class QueryCreator<DB> {
    * Creates an insert query.
    *
    * The return value of this query is an instance of {@link InsertResult}. {@link InsertResult}
-   * has the {@link InsertResult.insertId | insertId} field that holds the auto incremented id of
+   * has the {@link InsertResult.insertId | insertId} field that holds the auto incremented id of
    * the inserted row if the db returned one.
    *
-   * See the {@link QueryBuilder.values | values} method for more info and examples. Also see
-   * the {@link QueryBuilder.returning | returning} method for a way to return columns
+   * See the {@link InsertQueryBuilder.values | values} method for more info and examples. Also see
+   * the {@link ReturningInterface.returning | returning} method for a way to return columns
    * on supported databases like PostgreSQL.
    *
    * ### Examples
@@ -188,7 +200,7 @@ export class QueryCreator<DB> {
    * Some databases like PostgreSQL support the `returning` method:
    *
    * ```ts
-   * const { id } = await db
+   * const { id } = await db
    *   .insertInto('person')
    *   .values({
    *     id: db.generated,
@@ -201,8 +213,8 @@ export class QueryCreator<DB> {
    */
   insertInto<T extends keyof DB & string>(
     table: T
-  ): QueryBuilder<DB, T, InsertResult> {
-    return new QueryBuilder({
+  ): InsertQueryBuilder<DB, T, InsertResult> {
+    return new InsertQueryBuilder({
       queryId: createQueryId(),
       executor: this.#props.executor,
       parseContext: this.#props.parseContext,
@@ -216,7 +228,7 @@ export class QueryCreator<DB> {
   /**
    * Creates a delete query.
    *
-   * See the {@link QueryBuilder.where} method for examples on how to specify
+   * See the {@link WhereInterface.where} method for examples on how to specify
    * a where clause for the delete operation.
    *
    * The return value of the query is an instance of {@link DeleteResult}.
@@ -234,8 +246,12 @@ export class QueryCreator<DB> {
    */
   deleteFrom<TR extends TableReference<DB>>(
     table: TR
-  ): QueryBuilderWithTable<DB, never, DeleteResult, TR> {
-    return new QueryBuilder({
+  ): DeleteQueryBuilder<
+    TableExpressionDatabase<DB, TR>,
+    TableExpressionTables<DB, never, TR>,
+    DeleteResult
+  > {
+    return new DeleteQueryBuilder({
       queryId: createQueryId(),
       executor: this.#props.executor,
       parseContext: this.#props.parseContext,
@@ -249,10 +265,10 @@ export class QueryCreator<DB> {
   /**
    * Creates an update query.
    *
-   * See the {@link QueryBuilder.where} method for examples on how to specify
+   * See the {@link WhereInterface.where} method for examples on how to specify
    * a where clause for the update operation.
    *
-   * See the {@link QueryBuilder.set} method for examples on how to
+   * See the {@link UpdateQueryBuilder.set} method for examples on how to
    * specify the updates.
    *
    * The return value of the query is an {@link UpdateResult}.
@@ -271,8 +287,12 @@ export class QueryCreator<DB> {
    */
   updateTable<TR extends TableReference<DB>>(
     table: TR
-  ): QueryBuilderWithTable<DB, never, UpdateResult, TR> {
-    return new QueryBuilder({
+  ): UpdateQueryBuilder<
+    TableExpressionDatabase<DB, TR>,
+    TableExpressionTables<DB, never, TR>,
+    UpdateResult
+  > {
+    return new UpdateQueryBuilder({
       queryId: createQueryId(),
       executor: this.#props.executor,
       parseContext: this.#props.parseContext,

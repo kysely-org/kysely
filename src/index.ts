@@ -1,7 +1,14 @@
 export * from './kysely.js'
 export * from './query-creator.js'
 
-export * from './query-builder/query-builder.js'
+export * from './query-builder/where-interface.js'
+export * from './query-builder/join-interface.js'
+export * from './query-builder/returning-interface.js'
+export * from './query-builder/select-query-builder.js'
+export * from './query-builder/insert-query-builder.js'
+export * from './query-builder/update-query-builder.js'
+export * from './query-builder/delete-query-builder.js'
+export * from './query-builder/no-result-error.js'
 export * from './query-builder/join-builder.js'
 export * from './query-builder/expression-builder.js'
 export * from './query-builder/function-builder.js'
@@ -146,7 +153,11 @@ export * from './introspection/database-introspector.js'
 
 export * from './util/compilable.js'
 export * from './util/log.js'
-export { AnyColumn, UnknownRow, AnyQueryBuilder } from './util/type-utils.js'
+export {
+  AnyColumn,
+  UnknownRow,
+  AnySelectQueryBuilder,
+} from './util/type-utils.js'
 
 export {
   SelectExpression,

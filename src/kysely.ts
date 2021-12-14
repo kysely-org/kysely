@@ -45,7 +45,7 @@ import { Log, LogConfig } from './util/log.js'
  *   id: number
  *   owner_id: number
  *   name: string
- *   species 'cat' | 'dog'
+ *   species 'cat' | 'dog'
  * }
  *
  * interface Database {
@@ -143,7 +143,7 @@ export class Kysely<DB> extends QueryCreator<DB> {
    *
    * In this example the `Person` table has non-null properties `id` and `created_at`
    * which are both automatically genereted by the database. Since their types are
-   * `number` and `string` respectively instead of `number | null` and `string | null`
+   * `number` and `string` respectively instead of `number | null` and `string | null`
    * the `values` method requires you to give a value for them. the `generated`
    * placeholder can be used in these cases.
    *
@@ -204,7 +204,7 @@ export class Kysely<DB> extends QueryCreator<DB> {
    * transaction. If the function throws, the transaction is rolled back. Otherwise
    * the transaction is committed.
    *
-   * The callback function passed to the {@link TransactionBuilder.execute | execute}
+   * The callback function passed to the {@link TransactionBuilder.execute | execute}
    * method gets the transaction object as its only argument. The transaction is
    * of type {@link Transaction} which inherits {@link Kysely}. Any query
    * started through the transaction object is executed inside the transaction.

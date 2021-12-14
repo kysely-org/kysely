@@ -4,7 +4,7 @@
  * If the table has an auto incrementing primary key {@link insertId} will hold
  * the generated id on dialects that support it. For example PostgreSQL doesn't
  * return the id by default and {@link insertId} is undefined. On PostgreSQL you
- * need to use {@link QueryBuilder.returning} or {@link QueryBuilder.returningAll}
+ * need to use {@link ReturningInterface.returning} or {@link ReturningInterface.returningAll}
  * to get out the inserted id.
  *
  * ### Examples

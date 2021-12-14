@@ -8,7 +8,7 @@ import { QueryId } from '../util/query-id.js'
 
 /**
  * This class abstracts away the details of how to compile a query into SQL
- * and execute it. Instead of passing around all those details, {@link QueryBuilder}
+ * and execute it. Instead of passing around all those details, {@link SelectQueryBuilder}
  * and other classes that execute queries can just pass around and instance of
  * `QueryExecutor`.
  */

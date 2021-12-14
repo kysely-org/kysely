@@ -1,8 +1,8 @@
 import { AliasedRawBuilder, RawBuilder } from '../raw-builder/raw-builder.js'
 import {
   AliasedQueryBuilder,
-  QueryBuilder,
-} from '../query-builder/query-builder.js'
+  SelectQueryBuilder,
+} from '../query-builder/select-query-builder.js'
 import { ExpressionBuilder } from '../query-builder/expression-builder.js'
 import { InsertResult } from '../query-builder/insert-result.js'
 import { DeleteResult } from '../query-builder/delete-result.js'
@@ -47,7 +47,7 @@ export type ValueType<T> = T[keyof T]
 export type RowType<DB, TB extends keyof DB> = UnionToIntersection<DB[TB]>
 
 /**
- * Evil typescript magic to convert a union type `A | B | C` into an
+ * Evil typescript magic to convert a union type `A | B | C` into an
  * intersection type `A & B & C`.
  */
 type UnionToIntersection<U> = (U extends any ? (k: U) => void : never) extends (
@@ -84,7 +84,7 @@ type UnionToIntersection<U> = (U extends any ? (k: U) => void : never) extends (
  *
  * type Columns = AnyColumn<Database, 'person' | 'pet'>
  *
- * // Columns == 'id' | 'name' | 'species'
+ * // Columns == 'id' | 'name' | 'species'
  * ```
  */
 export type AnyColumn<DB, TB extends keyof DB> = {
@@ -120,7 +120,7 @@ export type AnyColumn<DB, TB extends keyof DB> = {
  *
  * type Columns = AnyColumn<Database, 'person' | 'pet'>
  *
- * // Columns == 'person.id' | 'pet.name' | 'pet.species'
+ * // Columns == 'person.id' | 'pet.name' | 'pet.species'
  * ```
  */
 export type AnyColumnWithTable<DB, TB extends keyof DB> = {
@@ -158,15 +158,15 @@ export type AnyAliasedColumnWithTable<DB, TB extends keyof DB> = {
  */
 export type ArrayItemType<T> = T extends ReadonlyArray<infer I> ? I : never
 
-export type AnyQueryBuilder = QueryBuilder<any, any, any>
+export type AnySelectQueryBuilder = SelectQueryBuilder<any, any, any>
 export type AnyAliasedQueryBuilder = AliasedQueryBuilder<any, any, any, any>
 
 export type AnyRawBuilder = RawBuilder<any>
 export type AnyAliasedRawBuilder = AliasedRawBuilder<any, any>
 
-export type QueryBuilderFactory<DB, TB extends keyof DB> = (
+export type SeletQueryBuilderFactory<DB, TB extends keyof DB> = (
   qb: ExpressionBuilder<DB, TB>
-) => AnyQueryBuilder
+) => AnySelectQueryBuilder
 
 export type AliasedQueryBuilderFactory<DB, TB extends keyof DB> = (
   qb: ExpressionBuilder<DB, TB>

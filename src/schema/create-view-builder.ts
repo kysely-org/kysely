@@ -7,8 +7,7 @@ import { QueryId } from '../util/query-id.js'
 import { freeze } from '../util/object-utils.js'
 import { CreateViewNode } from '../operation-node/create-view-node.js'
 import { parseColumnName } from '../parser/reference-parser.js'
-import { AnyQueryBuilder, QueryNode } from '../index.js'
-import { AnyRawBuilder } from '../util/type-utils.js'
+import { AnyRawBuilder, AnySelectQueryBuilder } from '../util/type-utils.js'
 import { ImmediateValuePlugin } from '../plugin/immediate-value.ts/immediate-value-plugin.js'
 
 export class CreateViewBuilder implements OperationNodeSource, Compilable {
@@ -80,14 +79,10 @@ export class CreateViewBuilder implements OperationNodeSource, Compilable {
    * opening an SQL injection vulnerability. DO NOT pass unchecked user input into
    * the query or `raw` expression passed to this method!
    */
-  as(query: AnyQueryBuilder | AnyRawBuilder): CreateViewBuilder {
+  as(query: AnySelectQueryBuilder | AnyRawBuilder): CreateViewBuilder {
     const queryNode = query
       .withPlugin(new ImmediateValuePlugin())
       .toOperationNode()
-
-    if (QueryNode.isMutating(queryNode)) {
-      throw new Error('only select queries are allowd in views')
-    }
 
     return new CreateViewBuilder({
       ...this.#props,

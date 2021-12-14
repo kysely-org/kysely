@@ -39,22 +39,6 @@ export const QueryNode = freeze({
     )
   },
 
-  isMutating(node: OperationNode): node is MutatingQueryNode {
-    return (
-      DeleteQueryNode.is(node) ||
-      InsertQueryNode.is(node) ||
-      UpdateQueryNode.is(node)
-    )
-  },
-
-  isFilterable(node: OperationNode): node is FilterableQueryNode {
-    return (
-      SelectQueryNode.is(node) ||
-      DeleteQueryNode.is(node) ||
-      UpdateQueryNode.is(node)
-    )
-  },
-
   cloneWithWhere<T extends FilterableQueryNode>(
     node: T,
     filter: FilterExpressionNode

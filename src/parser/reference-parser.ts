@@ -15,7 +15,7 @@ import {
   ValueType,
 } from '../util/type-utils.js'
 import { RawBuilder } from '../raw-builder/raw-builder.js'
-import { QueryBuilder } from '../query-builder/query-builder.js'
+import { SelectQueryBuilder } from '../query-builder/select-query-builder.js'
 import { ParseContext } from './parse-context.js'
 import {
   parseComplexExpression,
@@ -49,9 +49,9 @@ export type ExtractTypeFromReferenceExpression<
   ? O
   : RE extends (qb: any) => RawBuilder<infer O>
   ? O
-  : RE extends QueryBuilder<any, any, infer O>
+  : RE extends SelectQueryBuilder<any, any, infer O>
   ? ValueType<O>
-  : RE extends (qb: any) => QueryBuilder<any, any, infer O>
+  : RE extends (qb: any) => SelectQueryBuilder<any, any, infer O>
   ? ValueType<O>
   : PrimitiveValue
 

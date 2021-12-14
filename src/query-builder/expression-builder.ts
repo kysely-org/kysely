@@ -1,10 +1,11 @@
-import { QueryBuilder } from './query-builder.js'
+import { SelectQueryBuilder } from './select-query-builder.js'
 import { SelectQueryNode } from '../operation-node/select-query-node.js'
 import {
   parseTableExpressionOrList,
   TableExpression,
-  QueryBuilderWithTable,
+  TableExpressionDatabase,
   TableExpressionOrList,
+  TableExpressionTables,
 } from '../parser/table-parser.js'
 import { NoopQueryExecutor } from '../query-executor/noop-query-executor.js'
 import { WithSchemaPlugin } from '../plugin/with-schema/with-schema-plugin.js'
@@ -99,14 +100,22 @@ export class ExpressionBuilder<DB, TB extends keyof DB> {
    */
   subQuery<TE extends TableExpression<DB, TB>>(
     from: TE[]
-  ): QueryBuilderWithTable<DB, TB, {}, TE>
+  ): SelectQueryBuilder<
+    TableExpressionDatabase<DB, TE>,
+    TableExpressionTables<DB, TB, TE>,
+    {}
+  >
 
   subQuery<TE extends TableExpression<DB, TB>>(
     from: TE
-  ): QueryBuilderWithTable<DB, TB, {}, TE>
+  ): SelectQueryBuilder<
+    TableExpressionDatabase<DB, TE>,
+    TableExpressionTables<DB, TB, TE>,
+    {}
+  >
 
   subQuery(table: TableExpressionOrList<DB, TB>): any {
-    return new QueryBuilder({
+    return new SelectQueryBuilder({
       queryId: createQueryId(),
       executor: this.#props.executor,
       parseContext: this.#props.parseContext,

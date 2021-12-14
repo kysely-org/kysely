@@ -7,7 +7,6 @@ import {
   isReadonlyArray,
   PrimitiveValue,
 } from '../util/object-utils.js'
-
 import { ParseContext } from './parse-context.js'
 import { SelectQueryNode } from '../operation-node/select-query-node.js'
 import { RawNode } from '../operation-node/raw-node.js'

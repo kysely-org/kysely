@@ -1,7 +1,4 @@
-import {
-  AliasedQueryBuilder,
-  QueryBuilder,
-} from '../query-builder/query-builder.js'
+import { AliasedQueryBuilder } from '../query-builder/select-query-builder.js'
 import { isReadonlyArray, isString } from '../util/object-utils.js'
 import { AliasNode } from '../operation-node/alias-node.js'
 import { TableNode } from '../operation-node/table-node.js'
@@ -27,17 +24,6 @@ export type TableReference<DB> =
   | AnyTable<DB>
   | AnyAliasedRawBuilder
 
-export type QueryBuilderWithTable<
-  DB,
-  TB extends keyof DB,
-  O,
-  TE
-> = QueryBuilder<
-  TableExpressionDatabase<DB, TE>,
-  TB | ExtractAliasFromTableExpression<DB, TE>,
-  O
->
-
 export type TableExpressionDatabase<
   DB,
   TE,
@@ -50,17 +36,6 @@ export type TableExpressionDatabase<
     : never
 }
 
-export type QueryBuilderWithLeftJoin<
-  DB,
-  TB extends keyof DB,
-  O,
-  TE
-> = QueryBuilder<
-  LeftJoinTableExpressionDatabase<DB, TE>,
-  TB | ExtractAliasFromTableExpression<DB, TE>,
-  O
->
-
 export type LeftJoinTableExpressionDatabase<
   DB,
   TE,
@@ -72,17 +47,6 @@ export type LeftJoinTableExpressionDatabase<
     ? DB[C]
     : never
 }
-
-export type QueryBuilderWithRightJoin<
-  DB,
-  TB extends keyof DB,
-  O,
-  TE
-> = QueryBuilder<
-  RightJoinTableExpressionDatabase<DB, TB, TE>,
-  TB | ExtractAliasFromTableExpression<DB, TE>,
-  O
->
 
 export type RightJoinTableExpressionDatabase<
   DB,
@@ -98,17 +62,6 @@ export type RightJoinTableExpressionDatabase<
       : DB[C]
     : never
 }
-
-export type QueryBuilderWithFullJoin<
-  DB,
-  TB extends keyof DB,
-  O,
-  TE
-> = QueryBuilder<
-  FullJoinTableExpressionDatabase<DB, TB, TE>,
-  TB | ExtractAliasFromTableExpression<DB, TE>,
-  O
->
 
 export type FullJoinTableExpressionDatabase<
   DB,
@@ -139,6 +92,10 @@ export type ExtractAliasFromTableExpression<DB, TE> =
     : TE extends (qb: any) => AliasedRawBuilder<any, infer RA>
     ? RA
     : never
+
+export type TableExpressionTables<DB, TB extends keyof DB, TE> =
+  | TB
+  | ExtractAliasFromTableExpression<DB, TE>
 
 type ExtractRowTypeFromTableExpression<
   DB,

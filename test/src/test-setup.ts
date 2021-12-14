@@ -19,7 +19,7 @@ import {
   SchemaModule,
   InsertResult,
   SqliteDialect,
-  QueryBuilder,
+  InsertQueryBuilder,
 } from '../../'
 
 export interface Person {
@@ -315,7 +315,7 @@ async function insertToysForPet(
 
 async function insert(
   dialect: BuiltInDialect,
-  qb: QueryBuilder<Database, keyof Database, InsertResult>
+  qb: InsertQueryBuilder<Database, keyof Database, InsertResult>
 ): Promise<number> {
   if (dialect === 'postgres') {
     const { id } = await qb.returning('id').executeTakeFirstOrThrow()

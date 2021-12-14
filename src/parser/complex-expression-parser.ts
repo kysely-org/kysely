@@ -1,6 +1,5 @@
 import { AliasNode } from '../index.js'
 import { isOperationNodeSource } from '../operation-node/operation-node-source.js'
-import { QueryNode } from '../operation-node/query-node.js'
 import { RawNode } from '../operation-node/raw-node.js'
 import { SelectQueryNode } from '../operation-node/select-query-node.js'
 import { isFunction } from '../util/object-utils.js'
@@ -9,16 +8,16 @@ import {
   AliasedRawBuilderFactory,
   AnyAliasedQueryBuilder,
   AnyAliasedRawBuilder,
-  AnyQueryBuilder,
+  AnySelectQueryBuilder,
   AnyRawBuilder,
-  QueryBuilderFactory,
+  SeletQueryBuilderFactory,
   RawBuilderFactory,
 } from '../util/type-utils.js'
 import { ParseContext } from './parse-context.js'
 
 export type ComplexExpression<DB, TB extends keyof DB> =
-  | AnyQueryBuilder
-  | QueryBuilderFactory<DB, TB>
+  | AnySelectQueryBuilder
+  | SeletQueryBuilderFactory<DB, TB>
   | AnyRawBuilder
   | RawBuilderFactory<DB, TB>
 
@@ -33,17 +32,9 @@ export function parseComplexExpression(
   exp: ComplexExpression<any, any>
 ): SelectQueryNode | RawNode {
   if (isOperationNodeSource(exp)) {
-    const node = exp.toOperationNode()
-
-    if (!QueryNode.isMutating(node)) {
-      return node
-    }
+    return exp.toOperationNode()
   } else if (isFunction(exp)) {
-    const node = exp(ctx.createExpressionBuilder()).toOperationNode()
-
-    if (!QueryNode.isMutating(node)) {
-      return node
-    }
+    return exp(ctx.createExpressionBuilder()).toOperationNode()
   }
 
   throw new Error(`invalid expression: ${JSON.stringify(exp)}`)
