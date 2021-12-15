@@ -1,5 +1,8 @@
 import { ColumnDefinitionNode } from '../operation-node/column-definition-node.js'
-import { CreateTableNode } from '../operation-node/create-table-node.js'
+import {
+  CreateTableNode,
+  OnCommitAction,
+} from '../operation-node/create-table-node.js'
 import { OperationNodeSource } from '../operation-node/operation-node-source.js'
 import { CompiledQuery } from '../query-compiler/compiled-query.js'
 import { Compilable } from '../util/compilable.js'
@@ -42,6 +45,21 @@ export class CreateTableBuilder<TB extends string, C extends string = never>
       ...this.#props,
       createTableNode: CreateTableNode.cloneWith(this.#props.createTableNode, {
         temporary: true,
+      }),
+    })
+  }
+
+  /**
+   * Adds an "on commit" statement.
+   *
+   * This can be used in conjunction with temporary tables on supported databases
+   * like PostgreSQL.
+   */
+  onCommit(onCommit: OnCommitAction): CreateTableBuilder<TB, C> {
+    return new CreateTableBuilder({
+      ...this.#props,
+      createTableNode: CreateTableNode.cloneWith(this.#props.createTableNode, {
+        onCommit,
       }),
     })
   }

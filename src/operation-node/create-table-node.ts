@@ -4,6 +4,7 @@ import { TableNode } from './table-node.js'
 import { ConstraintNode } from './constraint-node.js'
 import { ColumnDefinitionNode } from './column-definition-node.js'
 
+export type OnCommitAction = 'preserve rows' | 'delete rows' | 'drop'
 export type CreateTableNodeParams = Omit<
   CreateTableNode,
   'kind' | 'table' | 'columns' | 'constraints'
@@ -16,6 +17,7 @@ export interface CreateTableNode extends OperationNode {
   readonly constraints?: ReadonlyArray<ConstraintNode>
   readonly temporary?: boolean
   readonly ifNotExists?: boolean
+  readonly onCommit?: OnCommitAction
 }
 
 /**

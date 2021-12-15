@@ -419,6 +419,27 @@ for (const dialect of BUILT_IN_DIALECTS) {
       })
 
       if (dialect === 'postgres') {
+        it('should create a temporary table witn on commit statement', async () => {
+          const builder = ctx.db.schema
+            .createTable('test')
+            .temporary()
+            .addColumn('id', 'integer', (col) => col.primaryKey())
+            .onCommit('drop')
+
+          testSql(builder, dialect, {
+            postgres: {
+              sql: 'create temporary table "test" ("id" integer primary key) on commit drop',
+              parameters: [],
+            },
+            mysql: NOT_SUPPORTED,
+            sqlite: NOT_SUPPORTED,
+          })
+
+          await builder.execute()
+        })
+      }
+
+      if (dialect === 'postgres') {
         it('should create a table in specific schema', async () => {
           const builder = ctx.db.schema
             .createTable('public.test')

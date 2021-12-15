@@ -481,6 +481,11 @@ export class DefaultQueryCompiler
     this.append(' (')
     this.compileList([...node.columns, ...(node.constraints ?? [])])
     this.append(')')
+
+    if (node.onCommit) {
+      this.append(' on commit ')
+      this.append(node.onCommit)
+    }
   }
 
   protected override visitColumnDefinition(node: ColumnDefinitionNode): void {

@@ -365,6 +365,7 @@ export class OperationNodeTransformer {
       constraints: this.transformNodeList(node.constraints),
       temporary: node.temporary,
       ifNotExists: node.ifNotExists,
+      onCommit: node.onCommit,
     }
   }
 
