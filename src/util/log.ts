@@ -1,4 +1,4 @@
-import { CompiledQuery } from '../index.js'
+import { CompiledQuery } from '../query-compiler/compiled-query.js'
 import { freeze, isFunction } from './object-utils.js'
 import { ArrayItemType } from './type-utils.js'
 

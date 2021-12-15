@@ -45,7 +45,7 @@ import { JoinInterface } from './join-interface.js'
 import { ReturningInterface } from './returning-interface.js'
 import { NoResultError, NoResultErrorConstructor } from './no-result-error.js'
 import { DeleteResult } from './delete-result.js'
-import { DeleteQueryNode } from '../index.js'
+import { DeleteQueryNode } from '../operation-node/delete-query-node.js'
 
 export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
   implements

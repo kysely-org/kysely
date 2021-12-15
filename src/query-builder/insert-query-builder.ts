@@ -35,13 +35,11 @@ import { InsertResult } from './insert-result.js'
 import { KyselyPlugin } from '../plugin/kysely-plugin.js'
 import { ReturningRow } from '../parser/returning-parser.js'
 import { NoResultError, NoResultErrorConstructor } from './no-result-error.js'
-import { ColumnNode } from '../index.js'
-import { ExpressionBuilder } from './expression-builder.js'
 import {
   ComplexExpression,
   parseComplexExpression,
 } from '../parser/complex-expression-parser.js'
-import { parseCommonTableExpression } from '../parser/with-parser.js'
+import { ColumnNode } from '../operation-node/column-node.js'
 
 export class InsertQueryBuilder<DB, TB extends keyof DB, O>
   implements OperationNodeSource, Compilable

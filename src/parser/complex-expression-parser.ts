@@ -1,4 +1,4 @@
-import { AliasNode } from '../index.js'
+import { AliasNode } from '../operation-node/alias-node.js'
 import { isOperationNodeSource } from '../operation-node/operation-node-source.js'
 import { RawNode } from '../operation-node/raw-node.js'
 import { SelectQueryNode } from '../operation-node/select-query-node.js'
