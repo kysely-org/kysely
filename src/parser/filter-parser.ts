@@ -31,6 +31,7 @@ import { FilterExpressionNode } from '../operation-node/operation-node-utils.js'
 import { ValueNode } from '../operation-node/value-node.js'
 import { ParseContext } from './parse-context.js'
 import { WhereInterface } from '../query-builder/where-interface.js'
+import { HavingInterface } from '../query-builder/having-interface.js'
 
 export type FilterValueExpression<
   DB,
@@ -57,6 +58,10 @@ export type ExistsExpression<DB, TB extends keyof DB> = ValueExpression<
 export type WhereGrouper<DB, TB extends keyof DB> = (
   qb: WhereInterface<DB, TB>
 ) => WhereInterface<DB, TB>
+
+export type HavingGrouper<DB, TB extends keyof DB> = (
+  qb: HavingInterface<DB, TB>
+) => HavingInterface<DB, TB>
 
 export type FilterOperator = Operator | AnyRawBuilder
 

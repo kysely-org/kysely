@@ -32,6 +32,7 @@ import {
   parseNotExistFilter,
   FilterValueExpressionOrList,
   WhereGrouper,
+  HavingGrouper,
 } from '../parser/filter-parser.js'
 import {
   ReferenceExpression,
@@ -59,10 +60,12 @@ import { KyselyPlugin } from '../plugin/kysely-plugin.js'
 import { WhereInterface } from './where-interface.js'
 import { JoinInterface } from './join-interface.js'
 import { NoResultError, NoResultErrorConstructor } from './no-result-error.js'
+import { HavingInterface } from './having-interface.js'
 
 export class SelectQueryBuilder<DB, TB extends keyof DB, O>
   implements
     WhereInterface<DB, TB>,
+    HavingInterface<DB, TB>,
     JoinInterface<DB, TB>,
     OperationNodeSource,
     Compilable
@@ -181,21 +184,13 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
     })
   }
 
-  /**
-   * Just like {@link WhereInterface.where | where} but adds a `having` statement
-   * instead of a `where` statement.
-   */
   having<RE extends ReferenceExpression<DB, TB>>(
     lhs: RE,
     op: FilterOperator,
     rhs: FilterValueExpressionOrList<DB, TB, RE>
   ): SelectQueryBuilder<DB, TB, O>
 
-  having(
-    grouper: (
-      qb: SelectQueryBuilder<DB, TB, O>
-    ) => SelectQueryBuilder<DB, TB, O>
-  ): SelectQueryBuilder<DB, TB, O>
+  having(grouper: HavingGrouper<DB, TB>): SelectQueryBuilder<DB, TB, O>
 
   having(raw: AnyRawBuilder): SelectQueryBuilder<DB, TB, O>
 
@@ -209,10 +204,6 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
     })
   }
 
-  /**
-   * Just like {@link WhereInterface.whereRef | whereRef} but adds a `having` statement
-   * instead of a `where` statement.
-   */
   havingRef(
     lhs: ReferenceExpression<DB, TB>,
     op: FilterOperator,
@@ -227,21 +218,13 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
     })
   }
 
-  /**
-   * Just like {@link WhereInterface.orWhere | orWhere} but adds a `having` statement
-   * instead of a `where` statement.
-   */
   orHaving<RE extends ReferenceExpression<DB, TB>>(
     lhs: RE,
     op: FilterOperator,
     rhs: FilterValueExpressionOrList<DB, TB, RE>
   ): SelectQueryBuilder<DB, TB, O>
 
-  orHaving(
-    grouper: (
-      qb: SelectQueryBuilder<DB, TB, O>
-    ) => SelectQueryBuilder<DB, TB, O>
-  ): SelectQueryBuilder<DB, TB, O>
+  orHaving(grouper: HavingGrouper<DB, TB>): SelectQueryBuilder<DB, TB, O>
 
   orHaving(raw: AnyRawBuilder): SelectQueryBuilder<DB, TB, O>
 
@@ -255,10 +238,6 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
     })
   }
 
-  /**
-   * Just like {@link WhereInterface.orWhereRef | orWhereRef} but adds a `having` statement
-   * instead of a `where` statement.
-   */
   orHavingRef(
     lhs: ReferenceExpression<DB, TB>,
     op: FilterOperator,
@@ -273,10 +252,6 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
     })
   }
 
-  /**
-   * Just like {@link WhereInterface.whereExists | whereExists} but adds a `having` statement
-   * instead of a `where` statement.
-   */
   havingExists(arg: ExistsExpression<DB, TB>): SelectQueryBuilder<DB, TB, O> {
     return new SelectQueryBuilder({
       ...this.#props,
@@ -287,10 +262,6 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
     })
   }
 
-  /**
-   * Just like {@link WhereInterface.whereNotExists | whereNotExists} but adds a `having` statement
-   * instead of a `where` statement.
-   */
   havingNotExist(arg: ExistsExpression<DB, TB>): SelectQueryBuilder<DB, TB, O> {
     return new SelectQueryBuilder({
       ...this.#props,
@@ -301,10 +272,6 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
     })
   }
 
-  /**
-   * Just like {@link WhereInterface.orWhereExists | orWhereExists} but adds a `having` statement
-   * instead of a `where` statement.
-   */
   orHavingExists(arg: ExistsExpression<DB, TB>): SelectQueryBuilder<DB, TB, O> {
     return new SelectQueryBuilder({
       ...this.#props,
@@ -315,10 +282,6 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
     })
   }
 
-  /**
-   * Just like {@link WhereInterface.orWhereNotExists | orWhereNotExists} but adds a `having` statement
-   * instead of a `where` statement.
-   */
   orHavingNotExists(
     arg: ExistsExpression<DB, TB>
   ): SelectQueryBuilder<DB, TB, O> {
