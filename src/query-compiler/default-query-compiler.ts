@@ -81,6 +81,7 @@ import { DropViewNode } from '../operation-node/drop-view-node.js'
 import { GeneratedAlwaysAsNode } from '../operation-node/generated-always-as-node.js'
 import { DefaultValueNode } from '../operation-node/default-value-node.js'
 import { OnNode } from '../operation-node/on-node.js'
+import { ValuesNode } from '../operation-node/values-node.js'
 
 export class DefaultQueryCompiler
   extends OperationNodeVisitor
@@ -114,7 +115,8 @@ export class DefaultQueryCompiler
     const wrapInParens =
       this.parentNode !== undefined &&
       !CreateViewNode.is(this.parentNode) &&
-      !UnionNode.is(this.parentNode)
+      !UnionNode.is(this.parentNode) &&
+      !InsertQueryNode.is(this.parentNode)
 
     if (wrapInParens) {
       this.append('(')
@@ -268,8 +270,8 @@ export class DefaultQueryCompiler
     }
 
     if (node.values) {
-      this.append(' values ')
-      this.compileList(node.values)
+      this.append(' ')
+      this.visitNode(node.values)
     }
 
     if (node.onConflict) {
@@ -290,6 +292,11 @@ export class DefaultQueryCompiler
     if (isSubQuery) {
       this.append(')')
     }
+  }
+
+  protected override visitValues(node: ValuesNode): void {
+    this.append('values ')
+    this.compileList(node.values)
   }
 
   protected override visitDeleteQuery(node: DeleteQueryNode): void {

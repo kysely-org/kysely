@@ -111,6 +111,49 @@ for (const dialect of BUILT_IN_DIALECTS) {
       })
     })
 
+    it('should insert the result of a select query', async () => {
+      const query = ctx.db
+        .insertInto('person')
+        .columns(['first_name', 'gender'])
+        .expression((eb) =>
+          eb
+            .selectFrom('pet')
+            .select(['name', ctx.db.raw('?', ['other']).as('gender')])
+        )
+
+      testSql(query, dialect, {
+        postgres: {
+          sql: 'insert into "person" ("first_name", "gender") select "name", $1 as "gender" from "pet"',
+          parameters: ['other'],
+        },
+        mysql: {
+          sql: 'insert into `person` (`first_name`, `gender`) select `name`, ? as `gender` from `pet`',
+          parameters: ['other'],
+        },
+        sqlite: {
+          sql: 'insert into "person" ("first_name", "gender") select "name", ? as "gender" from "pet"',
+          parameters: ['other'],
+        },
+      })
+
+      await query.execute()
+
+      const persons = await ctx.db
+        .selectFrom('person')
+        .select('first_name')
+        .orderBy('first_name')
+        .execute()
+
+      expect(persons.map((it) => it.first_name)).to.eql([
+        'Arnold',
+        'Catto',
+        'Doggo',
+        'Hammo',
+        'Jennifer',
+        'Sylvester',
+      ])
+    })
+
     if (dialect === 'mysql') {
       it('should insert one row and ignore conflicts using insert ignore', async () => {
         const [existingPet] = await ctx.db

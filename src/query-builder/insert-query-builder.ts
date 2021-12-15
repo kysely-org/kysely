@@ -35,6 +35,13 @@ import { InsertResult } from './insert-result.js'
 import { KyselyPlugin } from '../plugin/kysely-plugin.js'
 import { ReturningRow } from '../parser/returning-parser.js'
 import { NoResultError, NoResultErrorConstructor } from './no-result-error.js'
+import { ColumnNode } from '../index.js'
+import { ExpressionBuilder } from './expression-builder.js'
+import {
+  ComplexExpression,
+  parseComplexExpression,
+} from '../parser/complex-expression-parser.js'
+import { parseCommonTableExpression } from '../parser/with-parser.js'
 
 export class InsertQueryBuilder<DB, TB extends keyof DB, O>
   implements OperationNodeSource, Compilable
@@ -64,6 +71,9 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    *
    * On PostgreSQL and some other dialects, you need to call `returning` to get
    * something out of the query.
+   *
+   * Also see the {@link expression} method for inserting the result of a select
+   * query or any other expression.
    *
    * ### Examples
    *
@@ -192,6 +202,68 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
       queryNode: InsertQueryNode.cloneWith(this.#props.queryNode, {
         columns,
         values,
+      }),
+    })
+  }
+
+  /**
+   * Sets the columns to insert.
+   *
+   * The {@link values} method sets both the columns and the values and this method
+   * is not needed. But if you are using the {@link expression} method, you can use
+   * this method to set the columns to insert.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * db.insertInto('person')
+   *   .columns(['first_name'])
+   *   .expression((eb) => eb.selectFrom('pet').select('pet.name'))
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * insert into "person" ("first_name")
+   * select "pet"."name" from "pet"
+   * ```
+   */
+  columns(
+    columns: ReadonlyArray<keyof DB[TB] & string>
+  ): InsertQueryBuilder<DB, TB, O> {
+    return new InsertQueryBuilder({
+      ...this.#props,
+      queryNode: InsertQueryNode.cloneWith(this.#props.queryNode, {
+        columns: freeze(columns.map(ColumnNode.create)),
+      }),
+    })
+  }
+
+  /**
+   * Insert an arbitrary expression. For example the result of a select query.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * db.insertInto('person')
+   *   .columns(['first_name'])
+   *   .expression((eb) => eb.selectFrom('pet').select('pet.name'))
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * insert into "person" ("first_name")
+   * select "pet"."name" from "pet"
+   * ```
+   */
+  expression(
+    expression: ComplexExpression<DB, TB>
+  ): InsertQueryBuilder<DB, TB, O> {
+    return new InsertQueryBuilder({
+      ...this.#props,
+      queryNode: InsertQueryNode.cloneWith(this.#props.queryNode, {
+        values: parseComplexExpression(this.#props.parseContext, expression),
       }),
     })
   }

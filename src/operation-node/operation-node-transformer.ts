@@ -64,6 +64,7 @@ import { DropViewNode } from './drop-view-node.js'
 import { GeneratedAlwaysAsNode } from './generated-always-as-node.js'
 import { DefaultValueNode } from './default-value-node.js'
 import { OnNode } from './on-node.js'
+import { ValuesNode } from './values-node.js'
 
 /**
  * Transforms an operation node tree into another one.
@@ -162,6 +163,7 @@ export class OperationNodeTransformer {
     GeneratedAlwaysAsNode: this.transformGeneratedAlwaysAs.bind(this),
     DefaultValueNode: this.transformDefaultValue.bind(this),
     OnNode: this.transformOn.bind(this),
+    ValuesNode: this.transformValues.bind(this),
   })
 
   readonly transformNode = <T extends OperationNode | undefined>(
@@ -321,12 +323,19 @@ export class OperationNodeTransformer {
       kind: 'InsertQueryNode',
       into: this.transformNode(node.into),
       columns: this.transformNodeList(node.columns),
-      values: this.transformNodeList(node.values),
+      values: this.transformNode(node.values),
       returning: this.transformNode(node.returning),
       onConflict: this.transformNode(node.onConflict),
       onDuplicateKey: this.transformNode(node.onDuplicateKey),
       with: this.transformNode(node.with),
       ignore: node.ignore,
+    }
+  }
+
+  protected transformValues(node: ValuesNode): ValuesNode {
+    return {
+      kind: 'ValuesNode',
+      values: this.transformNodeList(node.values),
     }
   }
 

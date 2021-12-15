@@ -23,7 +23,7 @@ export interface ParseContext {
   /**
    * Creates a select query builder with a {@link NoopQueryExecutor}.
    */
-  createSelectQueryBuilder(): SelectQueryBuilder<any, any>
+  createSelectQueryBuilder(): SelectQueryBuilder<any, any, any>
 
   /**
    * Creates an expression builder for building stuff like subqueries.
@@ -59,7 +59,7 @@ export class DefaultParseContext implements ParseContext {
     return this.#adapter
   }
 
-  createSelectQueryBuilder(): SelectQueryBuilder<any, any> {
+  createSelectQueryBuilder(): SelectQueryBuilder<any, any, any> {
     return new SelectQueryBuilder({
       queryId: createQueryId(),
       executor: this.#noopExecutor,

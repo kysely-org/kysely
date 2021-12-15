@@ -63,6 +63,7 @@ export type OperationNodeKind =
   | 'GeneratedAlwaysAsNode'
   | 'DefaultValueNode'
   | 'OnNode'
+  | 'ValuesNode'
 
 export interface OperationNode {
   readonly kind: OperationNodeKind

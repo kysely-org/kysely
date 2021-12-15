@@ -60,7 +60,7 @@ import { WhereInterface } from './where-interface.js'
 import { JoinInterface } from './join-interface.js'
 import { NoResultError, NoResultErrorConstructor } from './no-result-error.js'
 
-export class SelectQueryBuilder<DB, TB extends keyof DB, O = {}>
+export class SelectQueryBuilder<DB, TB extends keyof DB, O>
   implements
     WhereInterface<DB, TB>,
     JoinInterface<DB, TB>,

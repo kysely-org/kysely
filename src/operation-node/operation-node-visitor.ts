@@ -67,6 +67,7 @@ import { GeneratedAlwaysAsNode } from './generated-always-as-node.js'
 import { DefaultValueNode } from './default-value-node.js'
 import { freeze } from '../util/object-utils.js'
 import { OnNode } from './on-node.js'
+import { ValuesNode } from './values-node.js'
 
 export abstract class OperationNodeVisitor {
   protected readonly nodeStack: OperationNode[] = []
@@ -140,6 +141,7 @@ export abstract class OperationNodeVisitor {
     GeneratedAlwaysAsNode: this.visitGeneratedAlwaysAs.bind(this),
     DefaultValueNode: this.visitDefaultValue.bind(this),
     OnNode: this.visitOn.bind(this),
+    ValuesNode: this.visitValues.bind(this),
   })
 
   protected readonly visitNode = (node: OperationNode): void => {
@@ -218,4 +220,5 @@ export abstract class OperationNodeVisitor {
   protected abstract visitGeneratedAlwaysAs(node: GeneratedAlwaysAsNode): void
   protected abstract visitDefaultValue(node: DefaultValueNode): void
   protected abstract visitOn(node: OnNode): void
+  protected abstract visitValues(node: ValuesNode): void
 }

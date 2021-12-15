@@ -146,6 +146,7 @@ export * from './operation-node/unique-constraint-node.js'
 export * from './operation-node/update-query-node.js'
 export * from './operation-node/value-list-node.js'
 export * from './operation-node/value-node.js'
+export * from './operation-node/values-node.js'
 export * from './operation-node/where-node.js'
 export * from './operation-node/with-node.js'
 

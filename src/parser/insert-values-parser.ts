@@ -1,12 +1,12 @@
 import { ColumnNode } from '../operation-node/column-node.js'
-import { InsertValuesNode } from '../operation-node/insert-query-node.js'
 import { PrimitiveValueListNode } from '../operation-node/primitive-value-list-node.js'
 import { ValueListNode } from '../operation-node/value-list-node.js'
 import { GeneratedPlaceholder } from '../util/type-utils.js'
 import { isGeneratedPlaceholder } from '../util/generated-placeholder.js'
-import { isPrimitive, PrimitiveValue } from '../util/object-utils.js'
+import { freeze, isPrimitive, PrimitiveValue } from '../util/object-utils.js'
 import { ParseContext } from './parse-context.js'
 import { parseValueExpression, ValueExpression } from './value-parser.js'
+import { ValuesNode } from '../operation-node/values-node.js'
 
 export type InsertObject<DB, TB extends keyof DB> = {
   [C in keyof DB[TB]]: InsertValueExpression<DB, TB, DB[TB][C]>
@@ -23,19 +23,19 @@ type InsertValueExpression<DB, TB extends keyof DB, T> =
 export function parseInsertObjectOrList(
   ctx: ParseContext,
   args: InsertObjectOrList<any, any>
-): [ReadonlyArray<ColumnNode>, ReadonlyArray<InsertValuesNode>] {
+): [ReadonlyArray<ColumnNode>, ValuesNode] {
   return parseInsertColumnsAndValues(ctx, Array.isArray(args) ? args : [args])
 }
 
 function parseInsertColumnsAndValues(
   ctx: ParseContext,
   rows: InsertObject<any, any>[]
-): [ReadonlyArray<ColumnNode>, ReadonlyArray<InsertValuesNode>] {
+): [ReadonlyArray<ColumnNode>, ValuesNode] {
   const columns = parseColumnNamesAndIndexes(rows)
 
   return [
-    [...columns.keys()].map(ColumnNode.create),
-    rows.map((row) => parseRowValues(ctx, row, columns)),
+    freeze([...columns.keys()].map(ColumnNode.create)),
+    ValuesNode.create(rows.map((row) => parseRowValues(ctx, row, columns))),
   ]
 }
 
