@@ -311,6 +311,13 @@ export class Kysely<DB> extends QueryCreator<DB> {
 }
 
 export class Transaction<DB> extends Kysely<DB> {
+  readonly #props: KyselyProps
+
+  constructor(props: KyselyProps) {
+    super(props)
+    this.#props = props
+  }
+
   // The return type is `true` instead of `boolean` to make Kysely<DB>
   // unassignable to Transaction<DB> while allowing assignment the
   // other way around.
@@ -330,10 +337,30 @@ export class Transaction<DB> extends Kysely<DB> {
     )
   }
 
+  connection(): ConnectionBuilder<DB> {
+    throw new Error(
+      'calling the connection method for a Transaction is not supported'
+    )
+  }
+
   async destroy(): Promise<void> {
     throw new Error(
       'calling the destroy method for a Transaction is not supported'
     )
+  }
+
+  override withPlugin(plugin: KyselyPlugin): Transaction<DB> {
+    return new Transaction({
+      ...this.#props,
+      executor: this.#props.executor.withPlugin(plugin),
+    })
+  }
+
+  override withoutPlugins(): Transaction<DB> {
+    return new Transaction({
+      ...this.#props,
+      executor: this.#props.executor.withoutPlugins(),
+    })
   }
 }
 
