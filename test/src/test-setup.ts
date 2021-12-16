@@ -15,11 +15,11 @@ import {
   OperationNodeTransformer,
   PostgresDialect,
   MysqlDialect,
-  Dialect,
   SchemaModule,
   InsertResult,
   SqliteDialect,
   InsertQueryBuilder,
+  Logger,
 } from '../../'
 
 export interface Person {
@@ -64,7 +64,6 @@ export interface TestContext {
   db: Kysely<Database>
 }
 
-export type DialectWrapper = (dialect: Dialect) => Dialect
 export type BuiltInDialect = 'postgres' | 'mysql' | 'sqlite'
 export type PerDialect<T> = Record<BuiltInDialect, T>
 
@@ -122,13 +121,13 @@ const DB_CONFIGS: PerDialect<KyselyConfig> = {
 
 export async function initTest(
   dialect: BuiltInDialect,
-  wrapDialect: DialectWrapper = (it) => it
+  log?: Logger
 ): Promise<TestContext> {
   const config = DB_CONFIGS[dialect]
 
   const db = await connect({
     ...config,
-    dialect: wrapDialect(config.dialect),
+    log,
   })
 
   await createDatabase(db, dialect)

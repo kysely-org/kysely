@@ -18,20 +18,24 @@ export interface ErrorLogEvent {
 }
 
 export type LogEvent = QueryLogEvent | ErrorLogEvent
-export type LogConfig = ReadonlyArray<LogLevel> | ((event: LogEvent) => void)
+export type Logger = (event: LogEvent) => void
+export type LogConfig = ReadonlyArray<LogLevel> | Logger
 
 export class Log {
   readonly #levels: Readonly<Record<LogLevel, boolean>>
-  readonly #logger?: (event: LogEvent) => void
+  readonly #logger: Logger
 
   constructor(config: LogConfig) {
     if (isFunction(config)) {
       this.#logger = config
+
       this.#levels = freeze({
         query: true,
         error: true,
       })
     } else {
+      this.#logger = defaultLogger
+
       this.#levels = freeze({
         query: config.includes('query'),
         error: config.includes('error'),
@@ -41,32 +45,24 @@ export class Log {
 
   query(getEvent: () => QueryLogEvent) {
     if (this.#levels.query) {
-      if (this.#logger) {
-        this.#logger(getEvent())
-      } else {
-        this.#defaultQuery(getEvent())
-      }
+      this.#logger(getEvent())
     }
   }
 
   error(getEvent: () => ErrorLogEvent) {
     if (this.#levels.error) {
-      if (this.#logger) {
-        this.#logger(getEvent())
-      } else {
-        this.#defaultError(getEvent())
-      }
+      this.#logger(getEvent())
     }
   }
+}
 
-  #defaultQuery(event: QueryLogEvent) {
+function defaultLogger(event: LogEvent): void {
+  if (event.level === 'query') {
     console.log(`kysely:query: ${event.query.sql}`)
     console.log(
       `kysely:query: duration: ${event.queryDurationMillis.toFixed(1)}ms`
     )
-  }
-
-  #defaultError(event: ErrorLogEvent) {
+  } else if (event.level === 'error') {
     if (event.error instanceof Error) {
       console.error(`kysely:error: ${event.error.stack ?? event.error.message}`)
     } else {

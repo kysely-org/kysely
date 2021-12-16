@@ -1,5 +1,4 @@
 import { CompiledQuery, Transaction } from '../../'
-import { getExecutedQueries } from './utils/get-executed-queries'
 
 import {
   BUILT_IN_DIALECTS,
@@ -16,18 +15,21 @@ import {
 for (const dialect of BUILT_IN_DIALECTS) {
   describe(`${dialect}: transaction`, () => {
     let ctx: TestContext
-    let executedQueries: CompiledQuery[]
+    let executedQueries: CompiledQuery[] = []
 
     before(async function () {
       this.timeout(TEST_INIT_TIMEOUT)
-      const [wrapper, queries] = getExecutedQueries()
 
-      executedQueries = queries
-      ctx = await initTest(dialect, wrapper)
+      ctx = await initTest(dialect, (event) => {
+        if (event.level === 'query') {
+          executedQueries.push(event.query)
+        }
+      })
     })
 
     beforeEach(async () => {
       await insertDefaultDataSet(ctx)
+      executedQueries = []
     })
 
     afterEach(async () => {
@@ -40,8 +42,6 @@ for (const dialect of BUILT_IN_DIALECTS) {
 
     if (dialect !== 'sqlite') {
       it('should set the transaction isolation level', async () => {
-        executedQueries.splice(0, executedQueries.length)
-
         await ctx.db
           .transaction()
           .setIsolationLevel('serializable')
