@@ -146,8 +146,7 @@ export interface JoinInterface<DB, TB extends keyof DB> {
   >
 
   /**
-   * Just like {@link JoinInterface.innerJoin | innerJoin} but adds a left join
-   * instead of an inner join.
+   * Just like {@link innerJoin} but adds a left join nstead of an inner join.
    */
   leftJoin<
     TE extends TableExpression<DB, TB>,
@@ -174,8 +173,7 @@ export interface JoinInterface<DB, TB extends keyof DB> {
   >
 
   /**
-   * Just like {@link JoinInterface.innerJoin | innerJoin} but adds a right join
-   * instead of an inner join.
+   * Just like {@link innerJoin} but adds a right join instead of an inner join.
    */
   rightJoin<
     TE extends TableExpression<DB, TB>,
@@ -202,8 +200,7 @@ export interface JoinInterface<DB, TB extends keyof DB> {
   >
 
   /**
-   * Just like {@link JoinInterface.innerJoin | innerJoin} but adds a full join
-   * instead of an inner join.
+   * Just like {@link innerJoin} but adds a full join instead of an inner join.
    */
   fullJoin<
     TE extends TableExpression<DB, TB>,

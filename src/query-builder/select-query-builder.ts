@@ -1033,17 +1033,17 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    * ```
    */
   groupBy(
-    orderBy: ReadonlyArray<ReferenceExpression<DB, TB>>
+    groupBy: ReadonlyArray<ReferenceExpression<DB, TB>>
   ): SelectQueryBuilder<DB, TB, O>
 
-  groupBy(orderBy: ReferenceExpression<DB, TB>): SelectQueryBuilder<DB, TB, O>
+  groupBy(groupBy: ReferenceExpression<DB, TB>): SelectQueryBuilder<DB, TB, O>
 
-  groupBy(orderBy: ReferenceExpressionOrList<DB, TB>): any {
+  groupBy(groupBy: ReferenceExpressionOrList<DB, TB>): any {
     return new SelectQueryBuilder({
       ...this.#props,
       queryNode: SelectQueryNode.cloneWithGroupByItems(
         this.#props.queryNode,
-        parseGroupBy(this.#props.parseContext, orderBy)
+        parseGroupBy(this.#props.parseContext, groupBy)
       ),
     })
   }

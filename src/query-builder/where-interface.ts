@@ -11,8 +11,7 @@ export interface WhereInterface<DB, TB extends keyof DB> {
   /**
    * Adds a `where` clause to the query.
    *
-   * Also see {@link WhereInterface.whereExists | whereExists}, {@link WhereInterface.whereRef | whereRef}
-   * and {@link WhereInterface.whereRef | orWhere}.
+   * Also see {@link orWhere}, {@link whereExists} and {@link whereRef}.
    *
    * ### Examples
    *
@@ -251,8 +250,7 @@ export interface WhereInterface<DB, TB extends keyof DB> {
   ): WhereInterface<DB, TB>
 
   /**
-   * Adds an `or where` clause to the query. Otherwise works just like
-   * {@link WhereInterface.where | where}.
+   * Adds an `or where` clause to the query. Otherwise works just like {@link where}.
    *
    * It's often necessary to wrap `or where` clauses in parentheses to control
    * precendence. You can use the one argument version of the `where` method
@@ -325,10 +323,9 @@ export interface WhereInterface<DB, TB extends keyof DB> {
   orWhere(raw: AnyRawBuilder): WhereInterface<DB, TB>
 
   /**
-   * Adds an `or where` clause to the query. Otherwise works just like
-   * {@link WhereInterface.whereRef | whereRef}.
+   * Adds an `or where` clause to the query. Otherwise works just like {@link whereRef}.
    *
-   * Also see {@link WhereInterface.orWhere | orWhere} and {@link WhereInterface.where | where}.
+   * Also see {@link orWhere} and {@link where}.
    */
   orWhereRef(
     lhs: ReferenceExpression<DB, TB>,
@@ -398,17 +395,17 @@ export interface WhereInterface<DB, TB extends keyof DB> {
   whereExists(arg: ExistsExpression<DB, TB>): WhereInterface<DB, TB>
 
   /**
-   * Just like {@link WhereInterface.whereExists | whereExists} but creates a `not exists` clause.
+   * Just like {@link whereExists} but creates a `not exists` clause.
    */
   whereNotExists(arg: ExistsExpression<DB, TB>): WhereInterface<DB, TB>
 
   /**
-   * Just like {@link WhereInterface.whereExists | whereExists} but creates a `or exists` clause.
+   * Just like {@link whereExists} but creates a `or exists` clause.
    */
   orWhereExists(arg: ExistsExpression<DB, TB>): WhereInterface<DB, TB>
 
   /**
-   * Just like {@link WhereInterface.whereExists | whereExists} but creates a `or not exists` clause.
+   * Just like {@link whereExists} but creates a `or not exists` clause.
    */
   orWhereNotExists(arg: ExistsExpression<DB, TB>): WhereInterface<DB, TB>
 }

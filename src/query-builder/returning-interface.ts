@@ -12,7 +12,7 @@ export interface ReturningInterface<DB, TB extends keyof DB, O> {
    * [this bug](https://sqlite.org/forum/forumpost/033daf0b32) in SQLite.
    * For example `.returning('id as id')`.
    *
-   * Also see the {@link ReturningInterface.returningAll | returningAll} method.
+   * Also see the {@link returningAll} method.
    *
    * ### Examples
    *
