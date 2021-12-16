@@ -44,7 +44,7 @@ function isDotJsImport(row) {
   return row.endsWith(".js'")
 }
 
-checkDir(path.join(__dirname, 'src'))
+checkDir(path.join(__dirname, '..', 'src'))
 
 if (errorsFound) {
   console.log(' ')
