@@ -1,12 +1,12 @@
 /**
- * This script goes throug all generated type definition files and copies
+ * This script goes through all generated type definition files and copies
  * method documentation from interfaces to the implementing methods IF
  * the implementation doesn't have its own documentation.
  *
  * This is done for convenience: users can cmd-click method names and they
  * always get to the documentation. If we don't do that, users need to
- * cmd-click the method, and then find the correct interface that
- * contains the documentation manually.
+ * cmd-click the method and then manually find the correct interface that
+ * contains the documentation.
  */
 
 const fs = require('fs')

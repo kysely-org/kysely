@@ -1,7 +1,7 @@
 /**
- * Goes through all source files and makes sure imports end with '.js'.
- * If they don't, the ESM version will not work. ESM imports must have
- * the full file name.
+ * This script goes through all source files and makes sure
+ * imports end with '.js'. If they don't, the ESM version will
+ * not work. ESM imports must have the full file name.
  */
 
 const fs = require('fs')

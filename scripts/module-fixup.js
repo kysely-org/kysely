@@ -1,3 +1,9 @@
+/**
+ * Adds a package.json file to both commonjs and ESM distribution
+ * folders with a correct module type. This is needed in order to
+ * be able to export both commonjs and ESM versions.
+ */
+
 const fs = require('fs')
 const path = require('path')
 
