@@ -40,9 +40,10 @@ import {
   parseComplexExpression,
 } from '../parser/complex-expression-parser.js'
 import { ColumnNode } from '../operation-node/column-node.js'
+import { ReturningInterface } from './returning-interface.js'
 
 export class InsertQueryBuilder<DB, TB extends keyof DB, O>
-  implements OperationNodeSource, Compilable
+  implements ReturningInterface<DB, TB, O>, OperationNodeSource, Compilable
 {
   readonly #props: InsertQueryBuilderProps
 
