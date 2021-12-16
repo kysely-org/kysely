@@ -281,8 +281,8 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    * statement. On MySQL you should use the {@link ignore} method to achieve
    * similar results.
    *
-   * Also see the {@link InsertQueryBuilder.onConflictUpdate | onConflictUpdate}
-   * method if you want to perform an update in case of a conflict (upsert).
+   * Also see the {@link onConflictUpdate} method if you want to perform an
+   * update in case of a conflict (upsert).
    *
    * ### Examples
    *
@@ -401,8 +401,7 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    * like PostgreSQL and SQLite. On MySQL you should use the {@link onDuplicateKeyUpdate}
    * method instead.
    *
-   * Also see the {@link InsertQueryBuilder.onConflictDoNothing | onConflictDoNothing}
-   * method.
+   * Also see the {@link onConflictDoNothing} method.
    *
    * ### Examples
    *

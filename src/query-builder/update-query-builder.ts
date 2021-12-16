@@ -325,8 +325,8 @@ export class UpdateQueryBuilder<DB, TB extends keyof DB, O>
    * instances or select queries.
    *
    * The return value of an update query is an instance of {@link UpdateResult}.
-   * You can use the {@link ReturningInterface.returning | returning} method on
-   * supported databases to get out the updated rows.
+   * You can use the {@link returning} method on supported databases to get out
+   * the updated rows.
    *
    * ### Examples
    *

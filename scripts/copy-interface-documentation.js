@@ -197,6 +197,8 @@ function findDocProperty(files, property) {
       return findDocProperty(files, interfaceProperty)
     }
   }
+
+  return undefined
 }
 
 function findObject(files, objectName) {
