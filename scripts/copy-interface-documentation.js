@@ -14,22 +14,32 @@ const path = require('path')
 
 const DIST_PATH = path.join(__dirname, '..', 'dist')
 
+const PROPERTY_REGEX = /^\s+(?:get )?(?:readonly )?(?:abstract )?(\w+)[\(:<]/
+const OBJECT_REGEXES = [
+  /^(?:export )?declare (?:abstract )?class (\w+)/,
+  /^(?:export )?interface (\w+)/,
+]
+const GENERIC_ARGUMENTS_REGEX = /<[\w"'`,{}= ]+>/g
+const JSDOC_START_REGEX = /^\s+\/\*\*/
+const JSDOC_END_REGEX = /^\s+\*\//
+
 function main() {
   for (const distSubDir of ['cjs', 'esm']) {
+    const subDirPath = path.join(DIST_PATH, distSubDir)
     const files = []
 
-    if (!fs.existsSync(path.join(DIST_PATH, distSubDir))) {
+    if (!fs.existsSync(subDirPath)) {
       continue
     }
 
-    forEachFile(path.join(DIST_PATH, distSubDir), (filePath) => {
+    forEachFile(subDirPath, (filePath) => {
       if (filePath.endsWith('.d.ts')) {
         const file = {
           path: filePath,
           lines: readLines(filePath),
         }
 
-        file.objects = findObjects(file)
+        file.objects = parseObjects(file)
 
         if (file.objects.length > 0) {
           files.push(file)
@@ -64,15 +74,11 @@ function readLines(filePath) {
   return data.split('\n')
 }
 
-function findObjects(file) {
-  const OBJECT_REGEXES = [
-    /export declare (?:abstract )?class (\w+)/,
-    /export interface (\w+)/,
-  ]
-
-  const PROPERTY_REGEX = /^\s+(?:get )?(?:readonly )?(?:abstract )?(\w+)[\(:<]/
-  const GENERIC_ARGUMENTS_REGEX = /<[\w, ]+>/g
-
+/**
+ * Parses all object (class, interface) declarations from the given
+ * type declaration file.
+ */
+function parseObjects(file) {
   const objects = []
   let lineIdx = 0
 
@@ -81,16 +87,10 @@ function findObjects(file) {
       const objectMatch = regex.exec(file.lines[lineIdx])
 
       if (objectMatch) {
-        const implements = file.lines[lineIdx]
-          .split('implements')[1]
-          ?.replaceAll(GENERIC_ARGUMENTS_REGEX, '')
-          ?.split(',')
-          ?.map((it) => it.replace('{', '').trim())
-
         const object = {
           name: objectMatch[1],
           lineIdx,
-          implements: implements ?? [],
+          implements: parseImplements(file.lines[lineIdx]),
           properties: [],
         }
 
@@ -101,7 +101,7 @@ function findObjects(file) {
             const property = {
               name: propertyMatch[1],
               lineIdx: lineIdx,
-              doc: getDocumentation(file.lines, lineIdx),
+              doc: parseDocumentation(file.lines, lineIdx),
             }
 
             Object.defineProperty(property, 'object', { value: object })
@@ -109,10 +109,8 @@ function findObjects(file) {
           }
         }
 
-        if (object.properties.length > 0) {
-          Object.defineProperty(object, 'file', { value: file })
-          objects.push(object)
-        }
+        Object.defineProperty(object, 'file', { value: file })
+        objects.push(object)
 
         continue
       }
@@ -124,15 +122,66 @@ function findObjects(file) {
   return objects
 }
 
-function getDocumentation(lines, propertyLineIdx) {
+/**
+ * Given an object declaration line like
+ *
+ *   export class A extends B implements C, D<number> {
+ *
+ * or
+ *
+ *   interface A<T> extends B<T> {
+ *
+ * extracts the names of the extended and implemented objects.
+ * The first example would return ['B', 'C', 'D'] and the second
+ * would return ['B'].
+ */
+function parseImplements(line) {
+  if (!line.endsWith('{')) {
+    console.warn(
+      `skipping object declaration "${line}". Expected it to end with "{"'`
+    )
+    return []
+  }
+
+  // Remove { from the end.
+  line = line.substring(0, line.length - 1)
+
+  // Strip generics. We need to do this in a loop to strip nested generics.
+  while (line.includes('<')) {
+    let strippedLine = line.replaceAll(GENERIC_ARGUMENTS_REGEX, '')
+
+    if (strippedLine === line) {
+      console.warn(`unable to strip generics from "${line}"`)
+      return []
+    }
+
+    line = strippedLine
+  }
+
+  if (line.includes('extends')) {
+    line = line.split('extends')[1].replace('implements', ',')
+  } else if (line.includes('implements')) {
+    line = line.split('implements')[1]
+  } else {
+    return []
+  }
+
+  return line.split(',').map((it) => it.trim())
+}
+
+/**
+ * Given the line index of a property (method, getter) declaration
+ * extracts the jsdoc comment above it if one exists.
+ */
+function parseDocumentation(lines, propertyLineIdx) {
   const doc = []
   let lineIdx = propertyLineIdx - 1
 
-  if (/^\s+\*\//.test(lines[lineIdx])) {
+  if (JSDOC_END_REGEX.test(lines[lineIdx])) {
     doc.push(lines[lineIdx])
     --lineIdx
 
-    while (!/^\s+\/\*\*/.test(lines[lineIdx])) {
+    while (!JSDOC_START_REGEX.test(lines[lineIdx])) {
       doc.push(lines[lineIdx])
       --lineIdx
     }
@@ -169,7 +218,7 @@ function copyDocumentation(files) {
     for (const object of file.objects.slice().reverse()) {
       for (const property of object.properties.slice().reverse()) {
         if (!property.doc) {
-          const docProperty = findDocProperty(files, property)
+          const docProperty = findDocProperty(files, object, property.name)
 
           if (docProperty) {
             file.lines.splice(property.lineIdx, 0, ...docProperty.doc)
@@ -182,19 +231,28 @@ function copyDocumentation(files) {
   }
 }
 
-function findDocProperty(files, property) {
-  for (const interfaceName of property.object.implements) {
+function findDocProperty(files, object, propertyName) {
+  for (const interfaceName of object.implements) {
     const interfaceObject = findObject(files, interfaceName)
+
+    if (!interfaceObject) {
+      continue
+    }
+
     const interfaceProperty = interfaceObject.properties.find(
-      (it) => it.name === property.name
+      (it) => it.name === propertyName
     )
 
-    if (interfaceProperty) {
-      if (interfaceProperty.doc) {
-        return interfaceProperty
-      }
+    if (interfaceProperty?.doc) {
+      return interfaceProperty
+    }
 
-      return findDocProperty(files, interfaceProperty)
+    // Search all parents even if this object didn't have the
+    // proprty. It may be defined and documented in an ancestor.
+    const doc = findDocProperty(files, interfaceObject, propertyName)
+
+    if (doc) {
+      return doc
     }
   }
 
