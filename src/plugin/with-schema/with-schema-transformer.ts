@@ -14,6 +14,7 @@ import { TableExpressionNode } from '../../operation-node/operation-node-utils.j
 import { SelectQueryNode } from '../../operation-node/select-query-node.js'
 import { TableNode } from '../../operation-node/table-node.js'
 import { UpdateQueryNode } from '../../operation-node/update-query-node.js'
+import { WithNode } from '../../operation-node/with-node.js'
 import { RootOperationNode } from '../../query-compiler/query-compiler.js'
 
 export class WithSchemaTransformer extends OperationNodeTransformer {
@@ -135,6 +136,10 @@ export class WithSchemaTransformer extends OperationNodeTransformer {
       this.#collectTablesFromJoins(node.joins, tables)
     }
 
+    if ('with' in node && node.with) {
+      this.#removeCommonTableExpressionTables(node.with, tables)
+    }
+
     return tables
   }
 
@@ -168,6 +173,12 @@ export class WithSchemaTransformer extends OperationNodeTransformer {
 
     if (table && !this.#tables.has(table.table.identifier)) {
       tables.add(table.table.identifier)
+    }
+  }
+
+  #removeCommonTableExpressionTables(node: WithNode, tables: Set<string>) {
+    for (const expr of node.expressions) {
+      tables.delete(expr.name.table.table.identifier)
     }
   }
 }

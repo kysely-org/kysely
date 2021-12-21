@@ -260,6 +260,29 @@ for (const dialect of ['postgres'] as const) {
       })
     })
 
+    describe('with', () => {
+      it('should not add schema for common table expression names', async () => {
+        const query = ctx.db
+          .withSchema('mammals')
+          .with('doggo', (db) =>
+            db.selectFrom('pet').where('pet.name', '=', 'Doggo').selectAll()
+          )
+          .selectFrom('doggo')
+          .selectAll()
+
+        testSql(query, dialect, {
+          postgres: {
+            sql: 'with "doggo" as (select * from "mammals"."pet" where "mammals"."pet"."name" = $1) select * from "doggo"',
+            parameters: ['Doggo'],
+          },
+          mysql: NOT_SUPPORTED,
+          sqlite: NOT_SUPPORTED,
+        })
+
+        await query.execute()
+      })
+    })
+
     async function createTables(): Promise<void> {
       await ctx.db.schema.createSchema('mammals').ifNotExists().execute()
 

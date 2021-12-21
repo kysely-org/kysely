@@ -71,7 +71,7 @@ export class RawBuilder<O = unknown> implements OperationNodeSource {
         continue
       }
 
-      sqlFragments.push(sql.slice(sqlIdx, match.index).replaceAll('\\?', '?'))
+      sqlFragments.push(sql.slice(sqlIdx, match.index).replace(/\\\?/g, '?'))
       argNodes.push(parseRawArg(str, parameters[paramIdx]))
 
       sqlIdx = match.index + str.length

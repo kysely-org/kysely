@@ -47,6 +47,7 @@ import { ReferencesNode } from './references-node.js'
 import { CheckConstraintNode } from './check-constraint-node.js'
 import { WithNode } from './with-node.js'
 import { CommonTableExpressionNode } from './common-table-expression-node.js'
+import { CommonTableExpressionNameNode } from './common-table-expression-name-node.js'
 import { HavingNode } from './having-node.js'
 import { CreateSchemaNode } from './create-schema-node.js'
 import { DropSchemaNode } from './drop-schema-node.js'
@@ -124,6 +125,8 @@ export abstract class OperationNodeVisitor {
     CheckConstraintNode: this.visitCheckConstraint.bind(this),
     WithNode: this.visitWith.bind(this),
     CommonTableExpressionNode: this.visitCommonTableExpression.bind(this),
+    CommonTableExpressionNameNode:
+      this.visitCommonTableExpressionName.bind(this),
     HavingNode: this.visitHaving.bind(this),
     CreateSchemaNode: this.visitCreateSchema.bind(this),
     DropSchemaNode: this.visitDropSchema.bind(this),
@@ -194,6 +197,9 @@ export abstract class OperationNodeVisitor {
   protected abstract visitWith(node: WithNode): void
   protected abstract visitCommonTableExpression(
     node: CommonTableExpressionNode
+  ): void
+  protected abstract visitCommonTableExpressionName(
+    node: CommonTableExpressionNameNode
   ): void
   protected abstract visitHaving(node: HavingNode): void
   protected abstract visitCreateSchema(node: CreateSchemaNode): void

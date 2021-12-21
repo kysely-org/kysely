@@ -22,6 +22,7 @@ import {
   CommonTableExpression,
   parseCommonTableExpression,
   QueryCreatorWithCommonTableExpression,
+  RecursiveCommonTableExpression,
 } from './parser/with-parser.js'
 import { WithNode } from './operation-node/with-node.js'
 import { createQueryId } from './util/query-id.js'
@@ -304,7 +305,7 @@ export class QueryCreator<DB> {
   }
 
   /**
-   * Creates a `with` query (common table expressions).
+   * Creates a `with` query (Common Table Expression).
    *
    * ### Examples
    *
@@ -325,8 +326,26 @@ export class QueryCreator<DB> {
    *   .selectAll()
    *   .execute()
    * ```
+   *
+   * The CTE name can optionally specify column names in addition to
+   * a name. In that case Kysely requires the expression to retun
+   * rows with the same columns.
+   *
+   * ```ts
+   * await db
+   *   .with('jennifers(id, age)', (db) => db
+   *     .selectFrom('person')
+   *     .where('first_name', '=', 'Jennifer')
+   *     // This is ok since we return columns with the same
+   *     // names as specified by `jennifers(id, age)`.
+   *     .select(['id', 'age'])
+   *   )
+   *   .selectFrom('jennifers')
+   *   .selectAll()
+   *   .execute()
+   * ```
    */
-  with<N extends string, E extends CommonTableExpression<DB>>(
+  with<N extends string, E extends CommonTableExpression<DB, N>>(
     name: N,
     expression: E
   ): QueryCreatorWithCommonTableExpression<DB, N, E> {
@@ -341,6 +360,29 @@ export class QueryCreator<DB> {
       withNode: this.#props.withNode
         ? WithNode.cloneWithExpression(this.#props.withNode, cte)
         : WithNode.create(cte),
+    })
+  }
+
+  /**
+   * Creates a recursive `with` query (Common Table Expression).
+   *
+   * See the {@link with} method for examples and more documentation.
+   */
+  withRecursive<
+    N extends string,
+    E extends RecursiveCommonTableExpression<DB, N>
+  >(name: N, expression: E): QueryCreatorWithCommonTableExpression<DB, N, E> {
+    const cte = parseCommonTableExpression(
+      this.#props.parseContext,
+      name,
+      expression
+    )
+
+    return new QueryCreator({
+      ...this.#props,
+      withNode: this.#props.withNode
+        ? WithNode.cloneWithExpression(this.#props.withNode, cte)
+        : WithNode.create(cte, { recursive: true }),
     })
   }
 

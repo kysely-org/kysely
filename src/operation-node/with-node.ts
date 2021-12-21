@@ -2,9 +2,12 @@ import { freeze } from '../util/object-utils.js'
 import { OperationNode } from './operation-node.js'
 import { CommonTableExpressionNode } from './common-table-expression-node.js'
 
+export type WithNodeParams = Omit<WithNode, 'kind' | 'expressions'>
+
 export interface WithNode extends OperationNode {
   readonly kind: 'WithNode'
   readonly expressions: ReadonlyArray<CommonTableExpressionNode>
+  readonly recursive?: boolean
 }
 
 /**
@@ -15,10 +18,14 @@ export const WithNode = freeze({
     return node.kind === 'WithNode'
   },
 
-  create(expression: CommonTableExpressionNode): WithNode {
+  create(
+    expression: CommonTableExpressionNode,
+    params?: WithNodeParams
+  ): WithNode {
     return freeze({
       kind: 'WithNode',
       expressions: freeze([expression]),
+      ...params,
     })
   },
 

@@ -44,6 +44,7 @@ import { ReferencesNode } from './references-node.js'
 import { CheckConstraintNode } from './check-constraint-node.js'
 import { WithNode } from './with-node.js'
 import { CommonTableExpressionNode } from './common-table-expression-node.js'
+import { CommonTableExpressionNameNode } from './common-table-expression-name-node.js'
 import { HavingNode } from './having-node.js'
 import { freeze } from '../util/object-utils.js'
 import { CreateSchemaNode } from './create-schema-node.js'
@@ -146,6 +147,8 @@ export class OperationNodeTransformer {
     CheckConstraintNode: this.transformCheckConstraint.bind(this),
     WithNode: this.transformWith.bind(this),
     CommonTableExpressionNode: this.transformCommonTableExpression.bind(this),
+    CommonTableExpressionNameNode:
+      this.transformCommonTableExpressionName.bind(this),
     HavingNode: this.transformHaving.bind(this),
     CreateSchemaNode: this.transformCreateSchema.bind(this),
     DropSchemaNode: this.transformDropSchema.bind(this),
@@ -576,6 +579,7 @@ export class OperationNodeTransformer {
     return {
       kind: 'WithNode',
       expressions: this.transformNodeList(node.expressions),
+      recursive: node.recursive,
     }
   }
 
@@ -586,6 +590,16 @@ export class OperationNodeTransformer {
       kind: 'CommonTableExpressionNode',
       name: this.transformNode(node.name),
       expression: this.transformNode(node.expression),
+    }
+  }
+
+  protected transformCommonTableExpressionName(
+    node: CommonTableExpressionNameNode
+  ): CommonTableExpressionNameNode {
+    return {
+      kind: 'CommonTableExpressionNameNode',
+      table: this.transformNode(node.table),
+      columns: this.transformNodeList(node.columns),
     }
   }
 

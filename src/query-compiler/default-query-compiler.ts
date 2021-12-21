@@ -82,6 +82,7 @@ import { GeneratedAlwaysAsNode } from '../operation-node/generated-always-as-nod
 import { DefaultValueNode } from '../operation-node/default-value-node.js'
 import { OnNode } from '../operation-node/on-node.js'
 import { ValuesNode } from '../operation-node/values-node.js'
+import { CommonTableExpressionNameNode } from '../operation-node/common-table-expression-name-node.js'
 
 export class DefaultQueryCompiler
   extends OperationNodeVisitor
@@ -815,6 +816,11 @@ export class DefaultQueryCompiler
 
   protected override visitWith(node: WithNode): void {
     this.append('with ')
+
+    if (node.recursive) {
+      this.append('recursive ')
+    }
+
     this.compileList(node.expressions)
   }
 
@@ -824,6 +830,18 @@ export class DefaultQueryCompiler
     this.visitNode(node.name)
     this.append(' as ')
     this.visitNode(node.expression)
+  }
+
+  protected override visitCommonTableExpressionName(
+    node: CommonTableExpressionNameNode
+  ): void {
+    this.visitNode(node.table)
+
+    if (node.columns) {
+      this.append('(')
+      this.compileList(node.columns)
+      this.append(')')
+    }
   }
 
   protected override visitAlterTable(node: AlterTableNode): void {

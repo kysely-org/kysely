@@ -292,6 +292,41 @@ export class Kysely<DB> extends QueryCreator<DB> {
   }
 
   /**
+   * Returns a copy of this Kysely instance with tables added to its
+   * database type.
+   *
+   * This method only modifies the types and doesn't affect any of the
+   * executed queries in any way.
+   *
+   * ### Examples
+   *
+   * The following example adds and uses a temporary table:
+   *
+   * @example
+   * ```ts
+   * await db.schema
+   *   .createTable('temp_table')
+   *   .temporary()
+   *   .addColumn('some_column', 'integer')
+   *   .execute()
+   *
+   * const tempDb = db.withTables<{
+   *   temp_table: {
+   *     some_column: number
+   *   }
+   * }>()
+   *
+   * await tempDb
+   *   .insertInto('temp_table')
+   *   .values({ some_column: 100 })
+   *   .execute()
+   * ```
+   */
+  withTables<T extends Record<string, Record<string, any>>>(): Kysely<DB & T> {
+    return new Kysely({ ...this.#props })
+  }
+
+  /**
    * Releases all resources and disconnects from the database.
    *
    * You need to call this when you are done using the `Kysely` instance.
@@ -361,6 +396,12 @@ export class Transaction<DB> extends Kysely<DB> {
       ...this.#props,
       executor: this.#props.executor.withoutPlugins(),
     })
+  }
+
+  override withTables<
+    T extends Record<string, Record<string, any>>
+  >(): Transaction<DB & T> {
+    return new Transaction({ ...this.#props })
   }
 }
 

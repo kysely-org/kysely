@@ -8,7 +8,8 @@ const ASSET_PATH = path.join(__dirname, '..', 'assets')
 
 // Files to go through and replace ASSET_URL_BASE with FIXED_ASSET_URL_BASE.
 const ASSET_FIX_FILES = [path.join(DOCS_PATH, 'index.html')]
-const ASSET_URL_BASE = 'https://github.com/koskimas/kysely/blob/master/assets'
+const ASSET_URL_BASE =
+  /https:\/\/github.com\/koskimas\/kysely\/blob\/master\/assets/g
 const FIXED_ASSET_URL_BASE = 'assets'
 
 // Copy all assets to doc assets.
@@ -24,7 +25,7 @@ for (const filePath of ASSET_FIX_FILES) {
   const file = fs
     .readFileSync(filePath)
     .toString()
-    .replaceAll(ASSET_URL_BASE, FIXED_ASSET_URL_BASE)
+    .replace(ASSET_URL_BASE, FIXED_ASSET_URL_BASE)
 
   fs.writeFileSync(filePath, file)
 }

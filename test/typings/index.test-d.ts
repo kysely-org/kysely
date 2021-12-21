@@ -652,6 +652,57 @@ async function testWith(db: Kysely<Database>) {
       ln: string | null
     }[]
   >(r1)
+
+  const r2 = await db
+    .with('jennifers(first_name, ln, gender)', (db) =>
+      db
+        .selectFrom('person')
+        .where('first_name', '=', 'Jennifer')
+        .select(['first_name', 'last_name as ln', 'gender'])
+    )
+    .selectFrom('jennifers')
+    .select(['first_name', 'ln'])
+    .execute()
+
+  expectType<
+    {
+      first_name: string
+      ln: string | null
+    }[]
+  >(r2)
+
+  const r3 = await db
+    .withRecursive('jennifers(first_name, ln)', (db) =>
+      db
+        .selectFrom('person')
+        .where('first_name', '=', 'Jennifer')
+        .select(['first_name', 'last_name as ln'])
+        // Recursive CTE can refer to itself.
+        .union(db.selectFrom('jennifers').select(['first_name', 'ln']))
+    )
+    .selectFrom('jennifers')
+    .select(['first_name', 'ln'])
+    .execute()
+
+  expectType<
+    {
+      first_name: string
+      ln: string | null
+    }[]
+  >(r3)
+
+  // Different columns in expression and CTE name.
+  expectError(
+    db
+      .with('jennifers(first_name, last_name, gender)', (db) =>
+        db
+          .selectFrom('person')
+          .where('first_name', '=', 'Jennifer')
+          .select(['first_name', 'last_name'])
+      )
+      .selectFrom('jennifers')
+      .select(['first_name', 'last_name'])
+  )
 }
 
 async function testExecuteTakeFirstOrThrow(db: Kysely<Database>) {

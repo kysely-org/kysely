@@ -1,12 +1,14 @@
 /**
  * This script goes through all generated type definition files and copies
- * method documentation from interfaces to the implementing methods IF
- * the implementation doesn't have its own documentation.
+ * method/property documentation from interfaces to the implementing methods
+ * IF the implementation doesn't have its own documentation.
  *
- * This is done for convenience: users can cmd-click method names and they
- * always get to the documentation. If we don't do that, users need to
- * cmd-click the method and then manually find the correct interface that
- * contains the documentation.
+ * This is done for convenience: users can cmd-click method names and immediately
+ * see the documentation. If we don't do that, users need to cmd-click the method
+ * and then manually find the correct interface that contains the documentation.
+ *
+ * Hovering over a method/property works even without this script, but not all
+ * people are happy reading docs from the small hovering window.
  */
 
 const fs = require('fs')
@@ -148,7 +150,7 @@ function parseImplements(line) {
 
   // Strip generics. We need to do this in a loop to strip nested generics.
   while (line.includes('<')) {
-    let strippedLine = line.replaceAll(GENERIC_ARGUMENTS_REGEX, '')
+    let strippedLine = line.replace(GENERIC_ARGUMENTS_REGEX, '')
 
     if (strippedLine === line) {
       console.warn(`unable to strip generics from "${line}"`)
