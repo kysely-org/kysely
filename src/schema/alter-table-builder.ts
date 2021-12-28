@@ -339,6 +339,13 @@ export class AlterTableAddColumnBuilder
     })
   }
 
+  unsigned(): AlterTableAddColumnBuilder {
+    return new AlterTableAddColumnBuilder({
+      ...this.#props,
+      columnBuilder: this.#props.columnBuilder.unsigned(),
+    })
+  }
+
   defaultTo(value: PrimitiveValue | AnyRawBuilder): AlterTableAddColumnBuilder {
     return new AlterTableAddColumnBuilder({
       ...this.#props,
@@ -450,6 +457,13 @@ export class AlterTableModifyColumnBuilder
     return new AlterTableModifyColumnBuilder({
       ...this.#props,
       columnBuilder: this.#props.columnBuilder.notNull(),
+    })
+  }
+
+  unsigned(): AlterTableModifyColumnBuilder {
+    return new AlterTableModifyColumnBuilder({
+      ...this.#props,
+      columnBuilder: this.#props.columnBuilder.unsigned(),
     })
   }
 

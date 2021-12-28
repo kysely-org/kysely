@@ -88,6 +88,13 @@ export interface ColumnDefinitionBuilderInterface {
   notNull(): ColumnDefinitionBuilderInterface
 
   /**
+   * Adds a `unsigned` modifier for the column.
+   *
+   * This only works on some dialects like MySQL.
+   */
+  unsigned(): ColumnDefinitionBuilderInterface
+
+  /**
    * Adds a default value constraint for the column.
    *
    * ### Examples
@@ -229,7 +236,13 @@ export class ColumnDefinitionBuilder
 
   notNull(): ColumnDefinitionBuilder {
     return new ColumnDefinitionBuilder(
-      ColumnDefinitionNode.cloneWith(this.#node, { nullable: false })
+      ColumnDefinitionNode.cloneWith(this.#node, { notNull: true })
+    )
+  }
+
+  unsigned(): ColumnDefinitionBuilder {
+    return new ColumnDefinitionBuilder(
+      ColumnDefinitionNode.cloneWith(this.#node, { unsigned: true })
     )
   }
 

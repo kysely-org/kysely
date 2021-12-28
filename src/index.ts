@@ -165,6 +165,7 @@ export {
 export {
   SelectExpression,
   SelectExpressionOrList,
+  Selection,
 } from './parser/select-parser.js'
 export {
   ReferenceExpression,

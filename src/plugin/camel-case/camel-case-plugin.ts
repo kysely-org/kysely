@@ -25,8 +25,8 @@ export interface CamelCasePluginOptions {
 
   /**
    * If true, an underscore is added before each digit when converting
-   * camelCase to snake_case. For example `foo1Bar => foo_1_bar` and
-   * `foo_1_bar => foo1Bar`
+   * camelCase to snake_case. For example `foo12Bar => foo_12_bar` and
+   * `foo_12_bar => foo12Bar`
    *
    * Defaults to false.
    */

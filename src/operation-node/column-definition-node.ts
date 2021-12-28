@@ -7,11 +7,10 @@ import { GeneratedAlwaysAsNode } from './generated-always-as-node.js'
 import { OperationNode } from './operation-node.js'
 import { RawNode } from './raw-node.js'
 import { ReferencesNode } from './references-node.js'
-import { ValueNode } from './value-node.js'
 
 export type ColumnDefinitionNodeProps = Omit<
   Partial<ColumnDefinitionNode>,
-  'kind'
+  'kind' | 'dataType'
 >
 export type ColumnDataTypeNode = DataTypeNode | RawNode
 
@@ -20,13 +19,14 @@ export interface ColumnDefinitionNode extends OperationNode {
   readonly column: ColumnNode
   readonly dataType: ColumnDataTypeNode
   readonly references?: ReferencesNode
-  readonly primaryKey: boolean
-  readonly autoIncrement: boolean
-  readonly unique: boolean
-  readonly nullable: boolean
+  readonly primaryKey?: boolean
+  readonly autoIncrement?: boolean
+  readonly unique?: boolean
+  readonly notNull?: boolean
   readonly defaultTo?: DefaultValueNode
   readonly check?: CheckConstraintNode
   readonly generatedAlwaysAs?: GeneratedAlwaysAsNode
+  readonly unsigned?: boolean
 }
 
 /**
@@ -42,10 +42,6 @@ export const ColumnDefinitionNode = freeze({
       kind: 'ColumnDefinitionNode',
       column: ColumnNode.create(column),
       dataType,
-      primaryKey: false,
-      autoIncrement: false,
-      unique: false,
-      nullable: true,
     })
   },
 

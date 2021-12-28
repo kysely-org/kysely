@@ -495,6 +495,10 @@ export class DefaultQueryCompiler
     this.append(' ')
     this.visitNode(node.dataType)
 
+    if (node.unsigned) {
+      this.append(' unsigned')
+    }
+
     if (node.generatedAlwaysAs) {
       this.append(' ')
       this.visitNode(node.generatedAlwaysAs)
@@ -505,7 +509,7 @@ export class DefaultQueryCompiler
       this.visitNode(node.defaultTo)
     }
 
-    if (!node.nullable) {
+    if (node.notNull) {
       this.append(' not null')
     }
 

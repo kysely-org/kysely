@@ -1,6 +1,12 @@
 import * as path from 'path'
 
-import { Migration, MIGRATION_LOCK_TABLE, MIGRATION_TABLE } from '../../'
+import {
+  Migration,
+  MigrationResultSet,
+  MIGRATION_LOCK_TABLE,
+  MIGRATION_TABLE,
+  NO_MIGRATIONS,
+} from '../../'
 
 import {
   BUILT_IN_DIALECTS,
@@ -38,6 +44,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
           'migration2',
         ])
 
+        const { results: results1 } = await ctx.db.migration.migrateToLatest(
+          migrations1
+        )
+
         const [migrations2, executedUpMethods2] = createMigrations([
           'migration1',
           'migration2',
@@ -45,18 +55,31 @@ for (const dialect of BUILT_IN_DIALECTS) {
           'migration4',
         ])
 
-        await ctx.db.migration.migrateToLatest(migrations1)
-        await ctx.db.migration.migrateToLatest(migrations2)
+        const { results: results2 } = await ctx.db.migration.migrateToLatest(
+          migrations2
+        )
+
+        expect(results1).to.eql([
+          { migrationName: 'migration1', direction: 'Up', status: 'Success' },
+          { migrationName: 'migration2', direction: 'Up', status: 'Success' },
+        ])
+
+        expect(results2).to.eql([
+          { migrationName: 'migration3', direction: 'Up', status: 'Success' },
+          { migrationName: 'migration4', direction: 'Up', status: 'Success' },
+        ])
 
         expect(executedUpMethods1).to.eql(['migration1', 'migration2'])
         expect(executedUpMethods2).to.eql(['migration3', 'migration4'])
       })
 
-      it('should throw if a new migration is added before the last executed one', async () => {
+      it('should return an error if a new migration is added before the last executed one', async () => {
         const [migrations1, executedUpMethods1] = createMigrations([
           'migration1',
           'migration3',
         ])
+
+        await ctx.db.migration.migrateToLatest(migrations1)
 
         const [migrations2, executedUpMethods2] = createMigrations([
           'migration1',
@@ -64,27 +87,25 @@ for (const dialect of BUILT_IN_DIALECTS) {
           'migration3',
         ])
 
-        await ctx.db.migration.migrateToLatest(migrations1)
-
-        const error = await ctx.db.migration
-          .migrateToLatest(migrations2)
-          .catch((error) => error)
+        const { error } = await ctx.db.migration.migrateToLatest(migrations2)
 
         expect(error).to.be.an.instanceOf(Error)
-        expect(error.message).to.eql(
-          'corrupted migrations: new migration migration2 comes alphabetically before the last executed migration. New migrations must always have a name that comes alphabetically after the last executed migration.'
+        expect(getMessage(error)).to.eql(
+          'corrupted migrations: expected previously executed migration migration3 to be at index 1 but migration2 was found in its place. New migrations must always have a name that comes alphabetically after the last executed migration.'
         )
 
         expect(executedUpMethods1).to.eql(['migration1', 'migration3'])
         expect(executedUpMethods2).to.eql([])
       })
 
-      it('should throw if a previously executed migration is missing', async () => {
+      it('should return an error if a previously executed migration is missing', async () => {
         const [migrations1, executedUpMethods1] = createMigrations([
           'migration1',
           'migration2',
           'migration3',
         ])
+
+        await ctx.db.migration.migrateToLatest(migrations1)
 
         const [migrations2, executedUpMethods2] = createMigrations([
           'migration2',
@@ -92,14 +113,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
           'migration4',
         ])
 
-        await ctx.db.migration.migrateToLatest(migrations1)
-
-        const error = await ctx.db.migration
-          .migrateToLatest(migrations2)
-          .catch((error) => error)
+        const { error } = await ctx.db.migration.migrateToLatest(migrations2)
 
         expect(error).to.be.an.instanceOf(Error)
-        expect(error.message).to.eql(
+        expect(getMessage(error)).to.eql(
           'corrupted migrations: previously executed migration migration1 is missing'
         )
 
@@ -111,7 +128,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
         expect(executedUpMethods2).to.eql([])
       })
 
-      it('should throw if a the last executed migration is not found', async () => {
+      it('should return an error if a the last executed migration is not found', async () => {
         const [migrations1, executedUpMethods1] = createMigrations([
           'migration1',
           'migration2',
@@ -126,12 +143,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
 
         await ctx.db.migration.migrateToLatest(migrations1)
 
-        const error = await ctx.db.migration
-          .migrateToLatest(migrations2)
-          .catch((error) => error)
+        const { error } = await ctx.db.migration.migrateToLatest(migrations2)
 
         expect(error).to.be.an.instanceOf(Error)
-        expect(error.message).to.eql(
+        expect(getMessage(error)).to.eql(
           'corrupted migrations: previously executed migration migration3 is missing'
         )
 
@@ -143,13 +158,39 @@ for (const dialect of BUILT_IN_DIALECTS) {
         expect(executedUpMethods2).to.eql([])
       })
 
+      it('should return an error if one of the migrations fails', async () => {
+        const [migrations, executedUpMethods] = createMigrations([
+          'migration1',
+          { name: 'migration2', error: 'whoopsydaisy' },
+          'migration3',
+        ])
+
+        const { error, results } = await ctx.db.migration.migrateToLatest(
+          migrations
+        )
+
+        expect(getMessage(error)).to.equal('whoopsydaisy')
+
+        expect(results).to.eql([
+          { migrationName: 'migration1', direction: 'Up', status: 'Success' },
+          { migrationName: 'migration2', direction: 'Up', status: 'Error' },
+          {
+            migrationName: 'migration3',
+            direction: 'Up',
+            status: 'NotExecuted',
+          },
+        ])
+
+        expect(executedUpMethods).to.eql(['migration1'])
+      })
+
       it('should work correctly when run in parallel', async () => {
         const [migrations, executedUpMethods] = createMigrations([
           'migration1',
           'migration2',
         ])
 
-        const promises: Promise<void>[] = []
+        const promises: Promise<MigrationResultSet>[] = []
         for (let i = 0; i < 100; ++i) {
           promises.push(ctx.db.migration.migrateToLatest(migrations))
         }
@@ -186,32 +227,249 @@ for (const dialect of BUILT_IN_DIALECTS) {
       })
     })
 
+    describe('migrateTo', () => {
+      it('should migrate up to a specific migration', async () => {
+        const [migrations1, executedUpMethods1] = createMigrations([
+          'migration1',
+          'migration2',
+          'migration3',
+          'migration4',
+        ])
+
+        const { results: results1 } = await ctx.db.migration.migrateTo(
+          migrations1,
+          'migration2'
+        )
+
+        const [migrations2, executedUpMethods2] = createMigrations([
+          'migration1',
+          'migration2',
+          'migration3',
+          'migration4',
+        ])
+
+        const { results: results2 } = await ctx.db.migration.migrateTo(
+          migrations2,
+          'migration3'
+        )
+
+        expect(results1).to.eql([
+          { migrationName: 'migration1', direction: 'Up', status: 'Success' },
+          { migrationName: 'migration2', direction: 'Up', status: 'Success' },
+        ])
+
+        expect(results2).to.eql([
+          { migrationName: 'migration3', direction: 'Up', status: 'Success' },
+        ])
+
+        expect(executedUpMethods1).to.eql(['migration1', 'migration2'])
+        expect(executedUpMethods2).to.eql(['migration3'])
+      })
+
+      it('should migrate all the way down', async () => {
+        const [migrations, executedUpMethods, executedDownMethods] =
+          createMigrations(['migration1', 'migration2', 'migration3'])
+
+        const { results: results1 } = await ctx.db.migration.migrateToLatest(
+          migrations
+        )
+
+        const { results: results2 } = await ctx.db.migration.migrateTo(
+          migrations,
+          NO_MIGRATIONS
+        )
+
+        expect(results1).to.eql([
+          { migrationName: 'migration1', direction: 'Up', status: 'Success' },
+          { migrationName: 'migration2', direction: 'Up', status: 'Success' },
+          { migrationName: 'migration3', direction: 'Up', status: 'Success' },
+        ])
+
+        expect(results2).to.eql([
+          { migrationName: 'migration3', direction: 'Down', status: 'Success' },
+          { migrationName: 'migration2', direction: 'Down', status: 'Success' },
+          { migrationName: 'migration1', direction: 'Down', status: 'Success' },
+        ])
+
+        expect(executedUpMethods).to.eql([
+          'migration1',
+          'migration2',
+          'migration3',
+        ])
+        expect(executedDownMethods).to.eql([
+          'migration3',
+          'migration2',
+          'migration1',
+        ])
+      })
+
+      it('should migrate down to a specific migration', async () => {
+        const [migrations1, executedUpMethods1] = createMigrations([
+          'migration1',
+          'migration2',
+          'migration3',
+          'migration4',
+        ])
+
+        const { results: results1 } = await ctx.db.migration.migrateTo(
+          migrations1,
+          'migration4'
+        )
+
+        const [migrations2, executedUpMethods2, executedDownMethods2] =
+          createMigrations([
+            'migration1',
+            'migration2',
+            'migration3',
+            'migration4',
+          ])
+
+        const { results: results2 } = await ctx.db.migration.migrateTo(
+          migrations2,
+          'migration2'
+        )
+
+        expect(results1).to.eql([
+          { migrationName: 'migration1', direction: 'Up', status: 'Success' },
+          { migrationName: 'migration2', direction: 'Up', status: 'Success' },
+          { migrationName: 'migration3', direction: 'Up', status: 'Success' },
+          { migrationName: 'migration4', direction: 'Up', status: 'Success' },
+        ])
+
+        expect(results2).to.eql([
+          { migrationName: 'migration4', direction: 'Down', status: 'Success' },
+          { migrationName: 'migration3', direction: 'Down', status: 'Success' },
+        ])
+
+        expect(executedUpMethods1).to.eql([
+          'migration1',
+          'migration2',
+          'migration3',
+          'migration4',
+        ])
+
+        expect(executedUpMethods2).to.eql([])
+        expect(executedDownMethods2).to.eql(['migration4', 'migration3'])
+      })
+    })
+
+    describe('migrateUp', () => {
+      it('should migrate up one step', async () => {
+        const [migrations, executedUpMethods] = createMigrations([
+          'migration1',
+          'migration2',
+        ])
+
+        const { results: results1 } = await ctx.db.migration.migrateUp(
+          migrations
+        )
+
+        expect(results1).to.eql([
+          { migrationName: 'migration1', direction: 'Up', status: 'Success' },
+        ])
+
+        expect(executedUpMethods).to.eql(['migration1'])
+
+        const { results: results2 } = await ctx.db.migration.migrateUp(
+          migrations
+        )
+
+        expect(results2).to.eql([
+          { migrationName: 'migration2', direction: 'Up', status: 'Success' },
+        ])
+
+        expect(executedUpMethods).to.eql(['migration1', 'migration2'])
+
+        const { results: results3 } = await ctx.db.migration.migrateUp(
+          migrations
+        )
+
+        expect(results3).to.eql([])
+        expect(executedUpMethods).to.eql(['migration1', 'migration2'])
+      })
+    })
+
+    describe('migrateDown', () => {
+      it('should migrate down one step', async () => {
+        const [migrations, executedUpMethods, executedDownMethods] =
+          createMigrations([
+            'migration1',
+            'migration2',
+            'migration3',
+            'migration4',
+          ])
+
+        await ctx.db.migration.migrateUp(migrations)
+        await ctx.db.migration.migrateUp(migrations)
+
+        const { results: results1 } = await ctx.db.migration.migrateDown(
+          migrations
+        )
+
+        const { results: results2 } = await ctx.db.migration.migrateDown(
+          migrations
+        )
+
+        const { results: results3 } = await ctx.db.migration.migrateDown(
+          migrations
+        )
+
+        expect(results1).to.eql([
+          { migrationName: 'migration2', direction: 'Down', status: 'Success' },
+        ])
+
+        expect(results2).to.eql([
+          { migrationName: 'migration1', direction: 'Down', status: 'Success' },
+        ])
+
+        expect(results3).to.eql([])
+
+        expect(executedUpMethods).to.eql(['migration1', 'migration2'])
+        expect(executedDownMethods).to.eql(['migration2', 'migration1'])
+      })
+    })
+
     async function deleteMigrationTables(): Promise<void> {
       await ctx.db.schema.dropTable(MIGRATION_TABLE).ifExists().execute()
       await ctx.db.schema.dropTable(MIGRATION_LOCK_TABLE).ifExists().execute()
     }
 
     function createMigrations(
-      migrationNames: string[]
+      migrationConfigs: (string | { name: string; error?: string })[]
     ): [Record<string, Migration>, string[], string[]] {
       const executedUpMethods: string[] = []
       const executedDownMethods: string[] = []
 
-      const migrations = migrationNames.reduce<Record<string, Migration>>(
-        (migrations, name) => ({
-          ...migrations,
-          [name]: {
-            async up(_db): Promise<void> {
-              await sleep(20)
-              executedUpMethods.push(name)
-            },
+      const migrations = migrationConfigs.reduce<Record<string, Migration>>(
+        (migrations, rawConfig) => {
+          const config =
+            typeof rawConfig === 'string' ? { name: rawConfig } : rawConfig
 
-            async down(_db): Promise<void> {
-              await sleep(20)
-              executedDownMethods.push(name)
+          return {
+            ...migrations,
+            [config.name]: {
+              async up(_db): Promise<void> {
+                await sleep(20)
+
+                if (config.error) {
+                  throw new Error(config.error)
+                }
+
+                executedUpMethods.push(config.name)
+              },
+
+              async down(_db): Promise<void> {
+                await sleep(20)
+
+                if (config.error) {
+                  throw new Error(config.error)
+                }
+
+                executedDownMethods.push(config.name)
+              },
             },
-          },
-        }),
+          }
+        },
         {}
       )
 
@@ -227,4 +485,14 @@ for (const dialect of BUILT_IN_DIALECTS) {
       return new Promise((resolve) => setTimeout(resolve, millis))
     }
   })
+}
+
+function getMessage(obj: unknown): string | undefined {
+  if (isObject(obj) && typeof obj.message === 'string') {
+    return obj.message
+  }
+}
+
+function isObject(obj: unknown): obj is Record<string, unknown> {
+  return typeof obj === 'object' && obj !== null
 }

@@ -109,7 +109,9 @@ for (const dialect of BUILT_IN_DIALECTS) {
               col.references('test.a').onDelete('cascade').onUpdate('set null')
             )
             .addColumn('c', 'varchar(255)')
-            .addColumn('d', 'bigint', (col) => col.unique().notNull())
+            .addColumn('d', 'bigint', (col) =>
+              col.unsigned().unique().notNull()
+            )
             .addColumn('e', 'double precision')
             .addColumn('f', 'real')
             .addColumn('g', 'text')
@@ -132,7 +134,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
                 '(`a` integer primary key auto_increment,',
                 '`b` integer references `test` (`a`) on delete cascade on update set null,',
                 '`c` varchar(255),',
-                '`d` bigint not null unique,',
+                '`d` bigint unsigned not null unique,',
                 '`e` double precision,',
                 '`f` real,',
                 '`g` text,',

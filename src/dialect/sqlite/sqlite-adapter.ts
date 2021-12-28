@@ -1,6 +1,6 @@
-import { DialectAdapter } from '../dialect-adapter.js'
+import { DialectAdapterBase } from '../dialect-adapter-base.js'
 
-export class SqliteAdapter implements DialectAdapter {
+export class SqliteAdapter implements DialectAdapterBase {
   get supportsTransactionalDdl(): boolean {
     return false
   }
