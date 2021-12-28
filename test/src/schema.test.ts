@@ -186,6 +186,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
             .addColumn('r', 'double precision', (col) =>
               col.generatedAlwaysAs('f + g').stored().notNull()
             )
+            .addColumn('s', 'blob')
 
           testSql(builder, dialect, {
             sqlite: {
@@ -208,7 +209,8 @@ for (const dialect of BUILT_IN_DIALECTS) {
                 '"o" int2,',
                 '"p" int4,',
                 '"q" int8,',
-                '"r" double precision generated always as (f + g) stored not null)',
+                '"r" double precision generated always as (f + g) stored not null,',
+                '"s" blob)',
               ],
               parameters: [],
             },

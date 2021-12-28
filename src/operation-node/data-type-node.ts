@@ -31,6 +31,7 @@ export type ColumnDataType =
   | 'uuid'
   | 'json'
   | 'jsonb'
+  | 'blob'
 
 export type DataTypeParams = Omit<DataTypeNode, 'kind' | 'dataType'>
 
