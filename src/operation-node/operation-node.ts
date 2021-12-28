@@ -60,7 +60,7 @@ export type OperationNodeKind =
   | 'UnionNode'
   | 'CreateViewNode'
   | 'DropViewNode'
-  | 'GeneratedAlwaysAsNode'
+  | 'GeneratedNode'
   | 'DefaultValueNode'
   | 'OnNode'
   | 'ValuesNode'

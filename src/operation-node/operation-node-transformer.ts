@@ -62,7 +62,7 @@ import { OnDuplicateKeyNode } from './on-duplicate-key-node.js'
 import { UnionNode } from './union-node.js'
 import { CreateViewNode } from './create-view-node.js'
 import { DropViewNode } from './drop-view-node.js'
-import { GeneratedAlwaysAsNode } from './generated-always-as-node.js'
+import { GeneratedNode } from './generated-node.js'
 import { DefaultValueNode } from './default-value-node.js'
 import { OnNode } from './on-node.js'
 import { ValuesNode } from './values-node.js'
@@ -163,7 +163,7 @@ export class OperationNodeTransformer {
     UnionNode: this.transformUnion.bind(this),
     CreateViewNode: this.transformCreateView.bind(this),
     DropViewNode: this.transformDropView.bind(this),
-    GeneratedAlwaysAsNode: this.transformGeneratedAlwaysAs.bind(this),
+    GeneratedNode: this.transformGenerated.bind(this),
     DefaultValueNode: this.transformDefaultValue.bind(this),
     OnNode: this.transformOn.bind(this),
     ValuesNode: this.transformValues.bind(this),
@@ -387,7 +387,7 @@ export class OperationNodeTransformer {
       unsigned: node.unsigned,
       defaultTo: this.transformNode(node.defaultTo),
       check: this.transformNode(node.check),
-      generatedAlwaysAs: this.transformNode(node.generatedAlwaysAs),
+      generated: this.transformNode(node.generated),
     }
   }
 
@@ -715,13 +715,14 @@ export class OperationNodeTransformer {
     }
   }
 
-  protected transformGeneratedAlwaysAs(
-    node: GeneratedAlwaysAsNode
-  ): GeneratedAlwaysAsNode {
+  protected transformGenerated(node: GeneratedNode): GeneratedNode {
     return {
-      kind: 'GeneratedAlwaysAsNode',
-      expression: this.transformNode(node.expression),
+      kind: 'GeneratedNode',
+      byDefault: node.byDefault,
+      always: node.always,
+      identity: node.identity,
       stored: node.stored,
+      expression: this.transformNode(node.expression),
     }
   }
 

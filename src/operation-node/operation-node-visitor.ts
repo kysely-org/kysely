@@ -64,7 +64,7 @@ import { OnDuplicateKeyNode } from './on-duplicate-key-node.js'
 import { UnionNode } from './union-node.js'
 import { CreateViewNode } from './create-view-node.js'
 import { DropViewNode } from './drop-view-node.js'
-import { GeneratedAlwaysAsNode } from './generated-always-as-node.js'
+import { GeneratedNode } from './generated-node.js'
 import { DefaultValueNode } from './default-value-node.js'
 import { freeze } from '../util/object-utils.js'
 import { OnNode } from './on-node.js'
@@ -141,7 +141,7 @@ export abstract class OperationNodeVisitor {
     UnionNode: this.visitUnion.bind(this),
     CreateViewNode: this.visitCreateView.bind(this),
     DropViewNode: this.visitDropView.bind(this),
-    GeneratedAlwaysAsNode: this.visitGeneratedAlwaysAs.bind(this),
+    GeneratedNode: this.visitGenerated.bind(this),
     DefaultValueNode: this.visitDefaultValue.bind(this),
     OnNode: this.visitOn.bind(this),
     ValuesNode: this.visitValues.bind(this),
@@ -223,7 +223,7 @@ export abstract class OperationNodeVisitor {
   protected abstract visitOperator(node: OperatorNode): void
   protected abstract visitCreateView(node: CreateViewNode): void
   protected abstract visitDropView(node: DropViewNode): void
-  protected abstract visitGeneratedAlwaysAs(node: GeneratedAlwaysAsNode): void
+  protected abstract visitGenerated(node: GeneratedNode): void
   protected abstract visitDefaultValue(node: DefaultValueNode): void
   protected abstract visitOn(node: OnNode): void
   protected abstract visitValues(node: ValuesNode): void

@@ -3,7 +3,7 @@ import { CheckConstraintNode } from './check-constraint-node.js'
 import { ColumnNode } from './column-node.js'
 import { DataTypeNode } from './data-type-node.js'
 import { DefaultValueNode } from './default-value-node.js'
-import { GeneratedAlwaysAsNode } from './generated-always-as-node.js'
+import { GeneratedNode } from './generated-node.js'
 import { OperationNode } from './operation-node.js'
 import { RawNode } from './raw-node.js'
 import { ReferencesNode } from './references-node.js'
@@ -25,7 +25,7 @@ export interface ColumnDefinitionNode extends OperationNode {
   readonly notNull?: boolean
   readonly defaultTo?: DefaultValueNode
   readonly check?: CheckConstraintNode
-  readonly generatedAlwaysAs?: GeneratedAlwaysAsNode
+  readonly generated?: GeneratedNode
   readonly unsigned?: boolean
 }
 

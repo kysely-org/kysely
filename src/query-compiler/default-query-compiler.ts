@@ -78,7 +78,7 @@ import { ColumnNode } from '../operation-node/column-node.js'
 import { UnionNode } from '../operation-node/union-node.js'
 import { CreateViewNode } from '../operation-node/create-view-node.js'
 import { DropViewNode } from '../operation-node/drop-view-node.js'
-import { GeneratedAlwaysAsNode } from '../operation-node/generated-always-as-node.js'
+import { GeneratedNode } from '../operation-node/generated-node.js'
 import { DefaultValueNode } from '../operation-node/default-value-node.js'
 import { OnNode } from '../operation-node/on-node.js'
 import { ValuesNode } from '../operation-node/values-node.js'
@@ -499,9 +499,9 @@ export class DefaultQueryCompiler
       this.append(' unsigned')
     }
 
-    if (node.generatedAlwaysAs) {
+    if (node.generated) {
       this.append(' ')
-      this.visitNode(node.generatedAlwaysAs)
+      this.visitNode(node.generated)
     }
 
     if (node.defaultTo) {
@@ -1019,10 +1019,28 @@ export class DefaultQueryCompiler
     this.visitNode(node.name)
   }
 
-  protected override visitGeneratedAlwaysAs(node: GeneratedAlwaysAsNode): void {
-    this.append('generated always as (')
-    this.visitNode(node.expression)
-    this.append(')')
+  protected override visitGenerated(node: GeneratedNode): void {
+    this.append('generated ')
+
+    if (node.always) {
+      this.append('always ')
+    }
+
+    if (node.byDefault) {
+      this.append('by default ')
+    }
+
+    this.append('as ')
+
+    if (node.identity) {
+      this.append('identity')
+    }
+
+    if (node.expression) {
+      this.append('(')
+      this.visitNode(node.expression)
+      this.append(')')
+    }
 
     if (node.stored) {
       this.append(' stored')

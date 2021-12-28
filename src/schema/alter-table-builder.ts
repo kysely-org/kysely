@@ -367,6 +367,20 @@ export class AlterTableAddColumnBuilder
     })
   }
 
+  generatedAlwaysAsIdentity(): AlterTableAddColumnBuilder {
+    return new AlterTableAddColumnBuilder({
+      ...this.#props,
+      columnBuilder: this.#props.columnBuilder.generatedAlwaysAsIdentity(),
+    })
+  }
+
+  generatedByDefaultAsIdentity(): AlterTableAddColumnBuilder {
+    return new AlterTableAddColumnBuilder({
+      ...this.#props,
+      columnBuilder: this.#props.columnBuilder.generatedByDefaultAsIdentity(),
+    })
+  }
+
   stored(): AlterTableAddColumnBuilder {
     return new AlterTableAddColumnBuilder({
       ...this.#props,
@@ -487,6 +501,20 @@ export class AlterTableModifyColumnBuilder
     return new AlterTableModifyColumnBuilder({
       ...this.#props,
       columnBuilder: this.#props.columnBuilder.generatedAlwaysAs(sql),
+    })
+  }
+
+  generatedAlwaysAsIdentity(): AlterTableModifyColumnBuilder {
+    return new AlterTableModifyColumnBuilder({
+      ...this.#props,
+      columnBuilder: this.#props.columnBuilder.generatedAlwaysAsIdentity(),
+    })
+  }
+
+  generatedByDefaultAsIdentity(): AlterTableModifyColumnBuilder {
+    return new AlterTableModifyColumnBuilder({
+      ...this.#props,
+      columnBuilder: this.#props.columnBuilder.generatedByDefaultAsIdentity(),
     })
   }
 
