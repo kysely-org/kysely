@@ -10,6 +10,7 @@ import {
   AnyAliasedColumnWithTable,
   AnyColumn,
   AnyColumnWithTable,
+  ExtractColumnType,
   RowType,
   ValueType,
 } from '../util/type-utils.js'
@@ -126,8 +127,7 @@ type ExtractTypeFromStringSelectExpression<
   DB,
   TB extends keyof DB,
   SE extends string,
-  A extends keyof any,
-  R = RowType<DB, TB>
+  A extends keyof any
 > = SE extends `${infer SC}.${infer T}.${infer C} as ${infer RA}`
   ? RA extends A
     ? `${SC}.${T}` extends TB
@@ -146,8 +146,8 @@ type ExtractTypeFromStringSelectExpression<
     : never
   : SE extends `${infer C} as ${infer RA}`
   ? RA extends A
-    ? C extends keyof R
-      ? R[C]
+    ? C extends AnyColumn<DB, TB>
+      ? ExtractColumnType<DB, TB, C>
       : never
     : never
   : SE extends `${infer SC}.${infer T}.${infer C}`
@@ -167,8 +167,8 @@ type ExtractTypeFromStringSelectExpression<
       : never
     : never
   : SE extends A
-  ? SE extends keyof R
-    ? R[SE]
+  ? SE extends AnyColumn<DB, TB>
+    ? ExtractColumnType<DB, TB, SE>
     : never
   : never
 

@@ -312,9 +312,9 @@ async function insertToysForPet(
     .executeTakeFirst()
 }
 
-async function insert(
+async function insert<TB extends keyof Database>(
   dialect: BuiltInDialect,
-  qb: InsertQueryBuilder<Database, keyof Database, InsertResult>
+  qb: InsertQueryBuilder<Database, TB, InsertResult>
 ): Promise<number> {
   if (dialect === 'postgres') {
     const { id } = await qb.returning('id').executeTakeFirstOrThrow()

@@ -11,7 +11,7 @@ import {
 import {
   AnyColumn,
   AnyColumnWithTable,
-  RowType,
+  ExtractColumnType,
   ValueType,
 } from '../util/type-utils.js'
 import { RawBuilder } from '../raw-builder/raw-builder.js'
@@ -58,8 +58,7 @@ export type ExtractTypeFromReferenceExpression<
 type ExtractTypeFromStringReference<
   DB,
   TB extends keyof DB,
-  RE extends string,
-  R = RowType<DB, TB>
+  RE extends string
 > = RE extends `${infer SC}.${infer T}.${infer C}`
   ? `${SC}.${T}` extends TB
     ? C extends keyof DB[`${SC}.${T}`]
@@ -72,8 +71,8 @@ type ExtractTypeFromStringReference<
       ? DB[T][C]
       : never
     : never
-  : RE extends keyof R
-  ? R[RE]
+  : RE extends AnyColumn<DB, TB>
+  ? ExtractColumnType<DB, TB, RE>
   : PrimitiveValue
 
 export function parseReferenceExpressionOrList(

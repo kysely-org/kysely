@@ -44,17 +44,11 @@ export type ValueType<T> = T[keyof T]
  * // Row == Person & Movie
  * ```
  */
-export type RowType<DB, TB extends keyof DB> = UnionToIntersection<DB[TB]>
-
-/**
- * Evil typescript magic to convert a union type `A | B | C` into an
- * intersection type `A & B & C`.
- */
-type UnionToIntersection<U> = (U extends any ? (k: U) => void : never) extends (
-  k: infer I
-) => void
-  ? I
-  : never
+export type RowType<DB, TB extends keyof DB> = {
+  [C in AnyColumn<DB, TB>]: {
+    [T in TB]: C extends keyof DB[T] ? DB[T][C] : never
+  }[TB]
+}
 
 /**
  * Given a database type and a union of table names in that db, returns
@@ -91,6 +85,13 @@ export type AnyColumn<DB, TB extends keyof DB> = {
   [T in TB]: keyof DB[T]
 }[TB] &
   string
+
+/**
+ * Extracts a column type.
+ */
+export type ExtractColumnType<DB, TB extends keyof DB, C> = {
+  [T in TB]: C extends keyof DB[T] ? DB[T][C] : never
+}[TB]
 
 /**
  * Given a database type and a union of table names in that db, returns

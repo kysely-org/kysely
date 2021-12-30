@@ -18,7 +18,6 @@ import {
   MutationObject,
   parseUpdateObject,
 } from '../parser/update-set-parser.js'
-import { RawBuilder } from '../raw-builder/raw-builder.js'
 import { freeze } from '../util/object-utils.js'
 import { preventAwait } from '../util/prevent-await.js'
 import { AnyColumn, AnyRawBuilder } from '../util/type-utils.js'
@@ -308,7 +307,10 @@ export class OnConflictBuilder<DB, TB extends keyof DB>
    */
   doUpdateSet(
     updates: MutationObject<DB, TB>
-  ): OnConflictUpdateBuilder<DB & Record<'excluded', DB[TB]>, TB | 'excluded'> {
+  ): OnConflictUpdateBuilder<
+    { [K in keyof DB | 'excluded']: K extends keyof DB ? DB[K] : DB[TB] },
+    TB | 'excluded'
+  > {
     return new OnConflictUpdateBuilder({
       ...this.#props,
       onConflictNode: OnConflictNode.cloneWith(this.#props.onConflictNode, {

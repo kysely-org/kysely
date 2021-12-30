@@ -396,7 +396,16 @@ async function testJoin(db: Kysely<Database>) {
     .selectAll()
     .execute()
 
-  expectType<(Person & Movie)[]>(r1)
+  expectType<
+    {
+      id: number | string
+      first_name: string
+      last_name: string | null
+      age: number
+      gender: 'male' | 'female' | 'other'
+      stars: number
+    }[]
+  >(r1)
 
   const r2 = await db
     .selectFrom('person')
@@ -443,7 +452,17 @@ async function testJoin(db: Kysely<Database>) {
     .selectAll()
     .executeTakeFirstOrThrow()
 
-  expectType<Person & Nullable<Pet> & Nullable<Movie>>(r5)
+  expectType<{
+    id: number | string | null
+    first_name: string
+    last_name: string | null
+    age: number
+    gender: 'male' | 'female' | 'other'
+    name: string | null
+    species: 'dog' | 'cat' | null
+    owner_id: number | null
+    stars: number | null
+  }>(r5)
 
   const r6 = await db
     .selectFrom('person')
@@ -452,7 +471,17 @@ async function testJoin(db: Kysely<Database>) {
     .selectAll()
     .executeTakeFirstOrThrow()
 
-  expectType<Nullable<Person> & Nullable<Pet> & Movie>(r6)
+  expectType<{
+    id: number | string | null
+    first_name: string | null
+    last_name: string | null
+    age: number | null
+    gender: 'male' | 'female' | 'other' | null
+    name: string | null
+    species: 'dog' | 'cat' | null
+    owner_id: number | null
+    stars: number
+  }>(r6)
 
   const r7 = await db
     .selectFrom('person')
@@ -461,7 +490,17 @@ async function testJoin(db: Kysely<Database>) {
     .selectAll()
     .executeTakeFirstOrThrow()
 
-  expectType<Nullable<Person> & Nullable<Pet> & Nullable<Movie>>(r7)
+  expectType<{
+    id: number | string | null
+    first_name: string | null
+    last_name: string | null
+    age: number | null
+    gender: 'male' | 'female' | 'other' | null
+    name: string | null
+    species: 'dog' | 'cat' | null
+    owner_id: number | null
+    stars: number | null
+  }>(r7)
 
   // Refer to table that's not joined
   expectError(
