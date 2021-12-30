@@ -96,7 +96,7 @@ export class OnConflictBuilder<DB, TB extends keyof DB>
    * Also see the {@link column}, {@link columns} and {@link constraint}
    * methods for alternative ways to specify the conflict target.
    */
-  expression(expression: RawBuilder<any>): OnConflictBuilder<DB, TB> {
+  expression(expression: AnyRawBuilder): OnConflictBuilder<DB, TB> {
     return new OnConflictBuilder({
       ...this.#props,
       onConflictNode: OnConflictNode.cloneWith(this.#props.onConflictNode, {

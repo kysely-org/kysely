@@ -22,6 +22,7 @@ import {
 import { PrimaryConstraintNode } from '../operation-node/primary-constraint-node.js'
 import { UniqueConstraintNode } from '../operation-node/unique-constraint-node.js'
 import { CheckConstraintNode } from '../operation-node/check-constraint-node.js'
+import { AnyRawBuilder } from '../util/type-utils.js'
 
 /**
  * This builder can be used to create a `create table` query.
@@ -202,18 +203,21 @@ export class CreateTableBuilder<TB extends string, C extends string = never>
    * ### Examples
    *
    * ```ts
-   * addCheckConstraint('check_legs', 'number_of_legs < 5')
+   * addCheckConstraint('check_legs', db.raw('number_of_legs < 5'))
    * ```
    */
   addCheckConstraint(
     constraintName: string,
-    checkExpression: string
+    checkExpression: AnyRawBuilder
   ): CreateTableBuilder<TB, C> {
     return new CreateTableBuilder({
       ...this.#props,
       createTableNode: CreateTableNode.cloneWithConstraint(
         this.#props.createTableNode,
-        CheckConstraintNode.create(checkExpression, constraintName)
+        CheckConstraintNode.create(
+          checkExpression.toOperationNode(),
+          constraintName
+        )
       ),
     })
   }

@@ -6,6 +6,8 @@ import { RawNode } from './raw-node.js'
 export interface OrderByItemNode extends OperationNode {
   readonly kind: 'OrderByItemNode'
   readonly orderBy: ReferenceExpressionNode
+  // TODO(samiko): Do we need an OrderByDirectionNode for consistency?
+  //               This would then be of type `OrderByDirectionNode | RawNode`
   readonly direction?: RawNode
 }
 

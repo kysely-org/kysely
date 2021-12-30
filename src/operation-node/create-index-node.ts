@@ -15,7 +15,8 @@ export interface CreateIndexNode extends OperationNode {
   readonly table?: TableNode
   readonly expression?: ColumnNode | ListNode | RawNode
   readonly unique?: boolean
-  // TODO(samiko): Implemented as a raw node because I'm lazy today.
+  // TODO(samiko): Do we need to add an `IndexTypeNode` for consistency?
+  //               This would then be of type `IndexTypeNode | RawNode`.
   readonly using?: RawNode
 }
 

@@ -118,11 +118,13 @@ export interface ColumnDefinitionBuilderInterface {
    * ```ts
    * db.schema
    *   .createTable('pet')
-   *   .addColumn('number_of_legs', 'integer', (col) => col.check('number_of_legs < 5'))
+   *   .addColumn('number_of_legs', 'integer', (col) =>
+   *     col.check(db.raw('number_of_legs < 5'))
+   *   )
    *   .execute()
    * ```
    */
-  check(sql: string): ColumnDefinitionBuilderInterface
+  check(expression: AnyRawBuilder): ColumnDefinitionBuilderInterface
 
   /**
    * Makes the column a generated column using a `generated always as` statement.
@@ -133,12 +135,12 @@ export interface ColumnDefinitionBuilderInterface {
    * db.schema
    *   .createTable('person')
    *   .addColumn('full_name', 'varchar(255)',
-   *     (col) => col.generatedAlwaysAs("concat(first_name, ' ', last_name)")
+   *     (col) => col.generatedAlwaysAs(db.raw("concat(first_name, ' ', last_name)"))
    *   )
    *   .execute()
    * ```
    */
-  generatedAlwaysAs(sql: string): ColumnDefinitionBuilderInterface
+  generatedAlwaysAs(expression: AnyRawBuilder): ColumnDefinitionBuilderInterface
 
   /**
    * Adds the `generated always as identity` specifier on supported dialects.
@@ -264,18 +266,20 @@ export class ColumnDefinitionBuilder
     )
   }
 
-  check(sql: string): ColumnDefinitionBuilder {
+  check(expression: AnyRawBuilder): ColumnDefinitionBuilder {
     return new ColumnDefinitionBuilder(
       ColumnDefinitionNode.cloneWith(this.#node, {
-        check: CheckConstraintNode.create(sql),
+        check: CheckConstraintNode.create(expression.toOperationNode()),
       })
     )
   }
 
-  generatedAlwaysAs(sql: string): ColumnDefinitionBuilder {
+  generatedAlwaysAs(expression: AnyRawBuilder): ColumnDefinitionBuilder {
     return new ColumnDefinitionBuilder(
       ColumnDefinitionNode.cloneWith(this.#node, {
-        generated: GeneratedNode.createWithExpression(sql),
+        generated: GeneratedNode.createWithExpression(
+          expression.toOperationNode()
+        ),
       })
     )
   }

@@ -17,10 +17,10 @@ export const CheckConstraintNode = freeze({
     return node.kind === 'CheckConstraintNode'
   },
 
-  create(expressionSql: string, constraintName?: string): CheckConstraintNode {
+  create(expression: RawNode, constraintName?: string): CheckConstraintNode {
     return freeze({
       kind: 'CheckConstraintNode',
-      expression: RawNode.createWithSql(expressionSql),
+      expression,
       name: constraintName ? IdentifierNode.create(constraintName) : undefined,
     })
   },

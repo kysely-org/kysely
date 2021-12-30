@@ -28,11 +28,11 @@ export const GeneratedNode = freeze({
     })
   },
 
-  createWithExpression(expression: string): GeneratedNode {
+  createWithExpression(expression: RawNode): GeneratedNode {
     return freeze({
       kind: 'GeneratedNode',
       always: true,
-      expression: RawNode.createWithSql(expression),
+      expression,
     })
   },
 

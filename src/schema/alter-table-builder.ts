@@ -146,13 +146,16 @@ export class AlterTableBuilder {
 
   addCheckConstraint(
     constraintName: string,
-    checkExpression: string
+    checkExpression: AnyRawBuilder
   ): AlterTableExecutor {
     return new AlterTableExecutor({
       ...this.#props,
       alterTableNode: AlterTableNode.cloneWith(this.#props.alterTableNode, {
         addConstraint: AddConstraintNode.create(
-          CheckConstraintNode.create(checkExpression, constraintName)
+          CheckConstraintNode.create(
+            checkExpression.toOperationNode(),
+            constraintName
+          )
         ),
       }),
     })
@@ -353,17 +356,17 @@ export class AlterTableAddColumnBuilder
     })
   }
 
-  check(sql: string): AlterTableAddColumnBuilder {
+  check(expression: AnyRawBuilder): AlterTableAddColumnBuilder {
     return new AlterTableAddColumnBuilder({
       ...this.#props,
-      columnBuilder: this.#props.columnBuilder.check(sql),
+      columnBuilder: this.#props.columnBuilder.check(expression),
     })
   }
 
-  generatedAlwaysAs(sql: string): AlterTableAddColumnBuilder {
+  generatedAlwaysAs(expression: AnyRawBuilder): AlterTableAddColumnBuilder {
     return new AlterTableAddColumnBuilder({
       ...this.#props,
-      columnBuilder: this.#props.columnBuilder.generatedAlwaysAs(sql),
+      columnBuilder: this.#props.columnBuilder.generatedAlwaysAs(expression),
     })
   }
 
@@ -490,17 +493,17 @@ export class AlterTableModifyColumnBuilder
     })
   }
 
-  check(sql: string): AlterTableModifyColumnBuilder {
+  check(expression: AnyRawBuilder): AlterTableModifyColumnBuilder {
     return new AlterTableModifyColumnBuilder({
       ...this.#props,
-      columnBuilder: this.#props.columnBuilder.check(sql),
+      columnBuilder: this.#props.columnBuilder.check(expression),
     })
   }
 
-  generatedAlwaysAs(sql: string): AlterTableModifyColumnBuilder {
+  generatedAlwaysAs(expression: AnyRawBuilder): AlterTableModifyColumnBuilder {
     return new AlterTableModifyColumnBuilder({
       ...this.#props,
-      columnBuilder: this.#props.columnBuilder.generatedAlwaysAs(sql),
+      columnBuilder: this.#props.columnBuilder.generatedAlwaysAs(expression),
     })
   }
 

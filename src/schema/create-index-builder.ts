@@ -13,6 +13,7 @@ import { preventAwait } from '../util/prevent-await.js'
 import { QueryExecutor } from '../query-executor/query-executor.js'
 import { QueryId } from '../util/query-id.js'
 import { freeze } from '../util/object-utils.js'
+import { AnyRawBuilder } from '../util/type-utils.js'
 
 export class CreateIndexBuilder implements OperationNodeSource, Compilable {
   readonly #props: CreateIndexBuilderProps
@@ -82,15 +83,15 @@ export class CreateIndexBuilder implements OperationNodeSource, Compilable {
    * await db.schema
    *   .createIndex('person_first_name_index')
    *   .on('person')
-   *   .expression('first_name COLLATE "fi_FI"')
+   *   .expression(db.raw('first_name COLLATE "fi_FI"'))
    *   .execute()
    * ```
    */
-  expression(expression: string): CreateIndexBuilder {
+  expression(expression: AnyRawBuilder): CreateIndexBuilder {
     return new CreateIndexBuilder({
       ...this.#props,
       createIndexNode: CreateIndexNode.cloneWith(this.#props.createIndexNode, {
-        expression: RawNode.createWithSql(expression),
+        expression: expression.toOperationNode(),
       }),
     })
   }
