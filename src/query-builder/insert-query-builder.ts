@@ -301,7 +301,7 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    * Adds an `on conflict` clause to the query.
    *
    * `on conflict` is only supported by some dialects like PostgreSQL and SQLite. On MySQL
-   * you can use {@link ignore} and {@link onConflict} to achieve similar results.
+   * you can use {@link ignore} and {@link onDuplicateKeyUpdate} to achieve similar results.
    *
    * ### Examples
    *
