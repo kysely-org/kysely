@@ -152,7 +152,7 @@ export * from './operation-node/values-node.js'
 export * from './operation-node/where-node.js'
 export * from './operation-node/with-node.js'
 
-export * from './introspection/database-introspector.js'
+export * from './dialect/database-introspector.js'
 
 export * from './util/compilable.js'
 export * from './util/log.js'

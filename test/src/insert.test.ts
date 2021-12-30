@@ -186,7 +186,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
         expect(result.insertId).to.equal(undefined)
       })
     } else {
-      it('should insert one row and ignore conflicts using onConflictDoNothing', async () => {
+      it('should insert one row and ignore conflicts using `on conflict do nothing`', async () => {
         const [existingPet] = await ctx.db
           .selectFrom('pet')
           .selectAll()
@@ -196,7 +196,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
         const query = ctx.db
           .insertInto('pet')
           .values({ ...existingPet, id: ctx.db.generated })
-          .onConflictDoNothing('name')
+          .onConflict((oc) => oc.column('name').doNothing())
 
         testSql(query, dialect, {
           postgres: {
@@ -231,7 +231,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
     }
 
     if (dialect === 'postgres') {
-      it('should insert one row and ignore conflicts using onConflictDoNothing and a constraint name', async () => {
+      it('should insert one row and ignore conflicts using `on conflict on constraint do nothing`', async () => {
         const [existingPet] = await ctx.db
           .selectFrom('pet')
           .selectAll()
@@ -241,7 +241,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
         const query = ctx.db
           .insertInto('pet')
           .values({ ...existingPet, id: ctx.db.generated })
-          .onConflictDoNothing({ constraint: 'pet_name_key' })
+          .onConflict((oc) => oc.constraint('pet_name_key').doNothing())
 
         testSql(query, dialect, {
           postgres: {
@@ -303,7 +303,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
         })
       })
     } else {
-      it('should update instead of insert on conflict when using onConfictUpdate', async () => {
+      it('should update instead of insert on conflict when using `on conflict do update`', async () => {
         const [existingPet] = await ctx.db
           .selectFrom('pet')
           .selectAll()
@@ -313,7 +313,9 @@ for (const dialect of BUILT_IN_DIALECTS) {
         const query = ctx.db
           .insertInto('pet')
           .values({ ...existingPet, id: ctx.db.generated })
-          .onConflictUpdate('name', { species: 'hamster' })
+          .onConflict((oc) =>
+            oc.columns(['name']).doUpdateSet({ species: 'hamster' })
+          )
 
         testSql(query, dialect, {
           postgres: {
@@ -353,7 +355,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
     }
 
     if (dialect === 'postgres') {
-      it('should update instead of insert on conflict when using onConfictUpdate and a constraint name', async () => {
+      it('should update instead of insert on conflict when using `on conflict on constraint do update`', async () => {
         const [existingPet] = await ctx.db
           .selectFrom('pet')
           .selectAll()
@@ -363,9 +365,8 @@ for (const dialect of BUILT_IN_DIALECTS) {
         const query = ctx.db
           .insertInto('pet')
           .values({ ...existingPet, id: ctx.db.generated })
-          .onConflictUpdate(
-            { constraint: 'pet_name_key' },
-            { species: 'hamster' }
+          .onConflict((oc) =>
+            oc.constraint('pet_name_key').doUpdateSet({ species: 'hamster' })
           )
           .returningAll()
 
@@ -389,6 +390,44 @@ for (const dialect of BUILT_IN_DIALECTS) {
           name: 'Catto',
           species: 'hamster',
         })
+      })
+
+      it('should update instead of insert on conflict when using `on conflict do update where`', async () => {
+        const [existingPet] = await ctx.db
+          .selectFrom('pet')
+          .selectAll()
+          .limit(1)
+          .execute()
+
+        const query = ctx.db
+          .insertInto('pet')
+          .values({ ...existingPet, id: ctx.db.generated })
+          .onConflict((oc) =>
+            oc
+              .column('name')
+              .where('name', '=', 'Catto')
+              .doUpdateSet({ species: 'hamster' })
+              .where('excluded.name', '!=', 'Doggo')
+          )
+          .returningAll()
+
+        testSql(query, dialect, {
+          postgres: {
+            sql: 'insert into "pet" ("name", "owner_id", "species") values ($1, $2, $3) on conflict ("name") where "name" = $4 do update set "species" = $5 where "excluded"."name" != $6 returning *',
+            parameters: [
+              existingPet.name,
+              existingPet.owner_id,
+              existingPet.species,
+              'Catto',
+              'hamster',
+              'Doggo',
+            ],
+          },
+          mysql: NOT_SUPPORTED,
+          sqlite: NOT_SUPPORTED,
+        })
+
+        await query.execute()
       })
 
       it('should insert multiple rows', async () => {

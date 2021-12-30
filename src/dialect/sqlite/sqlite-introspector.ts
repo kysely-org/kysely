@@ -3,7 +3,7 @@ import {
   DatabaseMetadata,
   DatabaseMetadataOptions,
   TableMetadata,
-} from '../../introspection/database-introspector.js'
+} from '../database-introspector.js'
 import { Kysely } from '../../kysely.js'
 import {
   MIGRATION_LOCK_TABLE,

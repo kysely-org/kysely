@@ -659,11 +659,18 @@ export class DefaultQueryCompiler
       this.append(' (')
       this.compileList(node.columns)
       this.append(')')
-    }
-
-    if (node.constraint) {
+    } else if (node.constraint) {
       this.append(' on constraint ')
       this.visitNode(node.constraint)
+    } else if (node.indexExpression) {
+      this.append(' (')
+      this.visitNode(node.indexExpression)
+      this.append(')')
+    }
+
+    if (node.indexWhere) {
+      this.append(' ')
+      this.visitNode(node.indexWhere)
     }
 
     if (node.doNothing === true) {
@@ -671,6 +678,11 @@ export class DefaultQueryCompiler
     } else if (node.updates) {
       this.append(' do update set ')
       this.compileList(node.updates)
+
+      if (node.updateWhere) {
+        this.append(' ')
+        this.visitNode(node.updateWhere)
+      }
     }
   }
 

@@ -474,7 +474,10 @@ export class OperationNodeTransformer {
       kind: 'OnConflictNode',
       columns: this.transformNodeList(node.columns),
       constraint: this.transformNode(node.constraint),
+      indexExpression: this.transformNode(node.indexExpression),
+      indexWhere: this.transformNode(node.indexWhere),
       updates: this.transformNodeList(node.updates),
+      updateWhere: this.transformNode(node.updateWhere),
       doNothing: node.doNothing,
     }
   }

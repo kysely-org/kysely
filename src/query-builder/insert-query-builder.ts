@@ -13,7 +13,7 @@ import {
 } from '../parser/insert-values-parser.js'
 import { InsertQueryNode } from '../operation-node/insert-query-node.js'
 import { QueryNode } from '../operation-node/query-node.js'
-import { AnyColumn, SingleResultType } from '../util/type-utils.js'
+import { SingleResultType } from '../util/type-utils.js'
 import {
   MutationObject,
   parseUpdateObject,
@@ -22,12 +22,6 @@ import { preventAwait } from '../util/prevent-await.js'
 import { Compilable } from '../util/compilable.js'
 import { QueryExecutor } from '../query-executor/query-executor.js'
 import { QueryId } from '../util/query-id.js'
-import {
-  OnConflictConstraintTarget,
-  OnConflictTargetExpression,
-  parseOnConflictDoNothing,
-  parseOnConflictUpdate,
-} from '../parser/on-conflict-parser.js'
 import { freeze } from '../util/object-utils.js'
 import { ParseContext } from '../parser/parse-context.js'
 import { OnDuplicateKeyNode } from '../operation-node/on-duplicate-key-node.js'
@@ -41,6 +35,12 @@ import {
 } from '../parser/complex-expression-parser.js'
 import { ColumnNode } from '../operation-node/column-node.js'
 import { ReturningInterface } from './returning-interface.js'
+import { OnConflictNode } from '../index.js'
+import {
+  OnConflictBuilder,
+  OnConflictDoNothingBuilder,
+  OnConflictUpdateBuilder,
+} from './on-conflict-builder.js'
 
 export class InsertQueryBuilder<DB, TB extends keyof DB, O>
   implements ReturningInterface<DB, TB, O>, OperationNodeSource, Compilable
@@ -268,91 +268,6 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
   }
 
   /**
-   * Ignores the insert if the column or constraint given as the first
-   * argument conflicts with the current rows in the database. The
-   * default behavior without this method call is to throw an error.
-   *
-   * For example if a table has a field `name` that has a unique constraint
-   * and you try to insert a row with a `name` that already exists in the
-   * database, calling `onConflictDoNothing('name')` will ignore the conflict
-   * and do nothing. By default the query would throw.
-   *
-   * Only some dialects like PostgreSQL and SQLite implement the `on conflict`
-   * statement. On MySQL you should use the {@link ignore} method to achieve
-   * similar results.
-   *
-   * Also see the {@link onConflictUpdate} method if you want to perform an
-   * update in case of a conflict (upsert).
-   *
-   * ### Examples
-   *
-   * ```ts
-   * await db
-   *   .insertInto('pet')
-   *   .values({
-   *     id: db.generated,
-   *     name: 'Catto',
-   *     species: 'cat',
-   *   })
-   *   .onConflictDoNothing('name')
-   *   .execute()
-   * ```
-   *
-   * The generated SQL (PostgreSQL):
-   *
-   * ```sql
-   * insert into "pet" ("name", "species")
-   * values ($1, $2)
-   * on conflict ("name") do nothing
-   * ```
-   *
-   * You can provide the name of the constraint instead of a column name
-   *
-   * ```ts
-   * await db
-   *   .insertInto('pet')
-   *   .values({
-   *     id: db.generated,
-   *     name: 'Catto',
-   *     species: 'cat',
-   *   })
-   *   .onConflictDoNothing({
-   *     constraint: 'pet_name_key'
-   *   })
-   *   .execute()
-   * ```
-   *
-   * The generated SQL (PostgreSQL):
-   *
-   * ```sql
-   * insert into "pet" ("name", "species")
-   * values ($1, $2)
-   * on conflict on constraint "pet_name_key"
-   * do nothing
-   * ```
-   */
-  onConflictDoNothing(column: AnyColumn<DB, TB>): InsertQueryBuilder<DB, TB, O>
-
-  onConflictDoNothing(
-    columns: ReadonlyArray<AnyColumn<DB, TB>>
-  ): InsertQueryBuilder<DB, TB, O>
-
-  onConflictDoNothing(
-    constraint: OnConflictConstraintTarget
-  ): InsertQueryBuilder<DB, TB, O>
-
-  onConflictDoNothing(
-    target: OnConflictTargetExpression<DB, TB>
-  ): InsertQueryBuilder<DB, TB, O> {
-    return new InsertQueryBuilder({
-      ...this.#props,
-      queryNode: InsertQueryNode.cloneWith(this.#props.queryNode, {
-        onConflict: parseOnConflictDoNothing(target),
-      }),
-    })
-  }
-
-  /**
    * Changes an `insert into` query to an `insert ignore into` query.
    *
    * If you use the ignore modifier, ignorable errors that occur while executing the
@@ -362,7 +277,7 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    * occurs.
    *
    * This is only supported on some dialects like MySQL. On most dialects you should
-   * use the {@link onConflictDoNothing} method.
+   * use the {@link onConflict} method.
    *
    * ### Examples
    *
@@ -383,25 +298,10 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
   }
 
   /**
-   * Ignores an insert if the column or constraint given as the first
-   * argument conflicts with the current rows in the database and
-   * performs an update on the conflicting row instead. This method
-   * can be used to implement an upsert operation.
+   * Adds an `on conflict` clause to the query.
    *
-   * For example if a table has a field `name` that has a unique constraint
-   * and you try to insert a row with a `name` that already exists in the
-   * database, calling `onConfictUpdate('name', { species: 'hamster' })`
-   * will set the conflicting row's `species` field to value `'hamster'`.
-   * By default the query would throw.
-   *
-   * The second argument (updates) can be anything the {@link UpdateQueryBuilder.set | set}
-   * method accepts.
-   *
-   * The `on conflict do update` statement is only implemented by some dialects
-   * like PostgreSQL and SQLite. On MySQL you should use the {@link onDuplicateKeyUpdate}
-   * method instead.
-   *
-   * Also see the {@link onConflictDoNothing} method.
+   * `on conflict` is only supported by some dialects like PostgreSQL and SQLite. On MySQL
+   * you can use {@link ignore} and {@link onConflict} to achieve similar results.
    *
    * ### Examples
    *
@@ -413,7 +313,10 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    *     name: 'Catto',
    *     species: 'cat',
    *   })
-   *   .onConflictUpdate('name', { species: 'hamster' })
+   *   .onConflict((oc) => oc
+   *     .column('name')
+   *     .doUpdateSet({ species: 'hamster' })
+   *   )
    *   .execute()
    * ```
    *
@@ -422,10 +325,11 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    * ```sql
    * insert into "pet" ("name", "species")
    * values ($1, $2)
-   * on conflict ("name") do update set "species" = $3
+   * on conflict ("name")
+   * do update set "species" = $3
    * ```
    *
-   * You can provied the name of the constraint instead of a column name
+   * You can provide the name of the constraint instead of a column name:
    *
    * ```ts
    * await db
@@ -435,10 +339,11 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    *     name: 'Catto',
    *     species: 'cat',
    *   })
-   *   .onConflictUpdate(
-   *     { constraint: 'pet_name_key' },
-   *     { species: 'hamster' }
+   *   .onConflict((oc) => oc
+   *     .constraint('pet_name_key')
+   *     .doUpdateSet({ species: 'hamster' })
    *   )
+   *   .execute()
    *   .execute()
    * ```
    *
@@ -450,34 +355,101 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    * on conflict on constraint "pet_name_key"
    * do update set "species" = $3
    * ```
+   *
+   * You can also specify an expression as the conflict target in case
+   * the unique index is an expression index:
+   *
+   * ```ts
+   * await db
+   *   .insertInto('pet')
+   *   .values({
+   *     id: db.generated,
+   *     name: 'Catto',
+   *     species: 'cat',
+   *   })
+   *   .onConflict((oc) => oc
+   *     .expression(db.raw('lower(name)'))
+   *     .doUpdateSet({ species: 'hamster' })
+   *   )
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * insert into "pet" ("name", "species")
+   * values ($1, $2)
+   * on conflict (lower(name))
+   * do update set "species" = $3
+   * ```
+   *
+   * You can add a filter for the update statement like this:
+   *
+   * ```ts
+   * await db
+   *   .insertInto('pet')
+   *   .values({
+   *     id: db.generated,
+   *     name: 'Catto',
+   *     species: 'cat',
+   *   })
+   *   .onConflict((oc) => oc
+   *     .column('name')
+   *     .doUpdateSet({ species: 'hamster' })
+   *     .where('excluded.name', '!=', 'Catto'')
+   *   )
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * insert into "pet" ("name", "species")
+   * values ($1, $2)
+   * on conflict ("name")
+   * do update set "species" = $3
+   * where "excluded"."name" != $4
+   * ```
+   *
+   * You can create an `on conflict do nothing` clauses like this:
+   *
+   * ```ts
+   * await db
+   *   .insertInto('pet')
+   *   .values({
+   *     id: db.generated,
+   *     name: 'Catto',
+   *     species: 'cat',
+   *   })
+   *   .onConflict((oc) => oc
+   *     .column('name')
+   *     .doNothing()
+   *   )
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * insert into "pet" ("name", "species")
+   * values ($1, $2)
+   * on conflict ("name") do nothing
+   * ```
    */
-  onConflictUpdate(
-    column: AnyColumn<DB, TB>,
-    updates: MutationObject<DB, TB>
-  ): InsertQueryBuilder<DB, TB, O>
-
-  onConflictUpdate(
-    columns: ReadonlyArray<AnyColumn<DB, TB>>,
-    updates: MutationObject<DB, TB>
-  ): InsertQueryBuilder<DB, TB, O>
-
-  onConflictUpdate(
-    constraint: OnConflictConstraintTarget,
-    updates: MutationObject<DB, TB>
-  ): InsertQueryBuilder<DB, TB, O>
-
-  onConflictUpdate(
-    target: OnConflictTargetExpression<DB, TB>,
-    updates: MutationObject<DB, TB>
+  onConflict(
+    callback: (
+      builder: OnConflictBuilder<DB, TB>
+    ) => OnConflictDoNothingBuilder<DB, TB> | OnConflictUpdateBuilder<DB, TB>
   ): InsertQueryBuilder<DB, TB, O> {
     return new InsertQueryBuilder({
       ...this.#props,
       queryNode: InsertQueryNode.cloneWith(this.#props.queryNode, {
-        onConflict: parseOnConflictUpdate(
-          this.#props.parseContext,
-          target,
-          updates
-        ),
+        onConflict: callback(
+          new OnConflictBuilder({
+            onConflictNode: OnConflictNode.create(),
+            parseContext: this.#props.parseContext,
+          })
+        ).toOperationNode(),
       }),
     })
   }
@@ -489,7 +461,7 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    * a duplicate value in a unique index or primary key, an update of the old row occurs.
    *
    * This is only implemented by some dialects like MySQL. On most dialects you should
-   * use {@link onConflictUpdate} instead.
+   * use {@link onConflict} instead.
    *
    * ### Examples
    *
@@ -553,9 +525,9 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    *   .selectAll()
    *   .call((qb) => {
    *     if (something) {
-   *       return qb.onConflictDoNothing('something')
+   *       return qb.onConflict((oc) => oc.column('something').doNothing())
    *     } else {
-   *       return qb.onConflictDoNothing('something_else')
+   *       return qb.onConflict((oc) => oc.column('something_else').doNothing())
    *     }
    *   })
    *   .execute()
