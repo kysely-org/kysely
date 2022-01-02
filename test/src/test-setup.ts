@@ -20,24 +20,25 @@ import {
   SqliteDialect,
   InsertQueryBuilder,
   Logger,
+  Generated,
 } from '../../'
 
 export interface Person {
-  id: number
+  id: Generated<number>
   first_name: string | null
   last_name: string | null
   gender: 'male' | 'female' | 'other'
 }
 
 export interface Pet {
-  id: number
+  id: Generated<number>
   name: string
   owner_id: number
   species: 'dog' | 'cat' | 'hamster'
 }
 
 export interface Toy {
-  id: number
+  id: Generated<number>
   name: string
   price: number
   pet_id: number
@@ -148,7 +149,7 @@ export async function insertPersons(
 
     const personId = await insert(
       ctx.dialect,
-      ctx.db.insertInto('person').values({ ...person, id: ctx.db.generated })
+      ctx.db.insertInto('person').values({ ...person })
     )
 
     for (const insertPet of pets ?? []) {
@@ -291,9 +292,7 @@ async function insertPetForPerson(
 
   const petId = await insert(
     ctx.dialect,
-    ctx.db
-      .insertInto('pet')
-      .values({ ...pet, owner_id: personId, id: ctx.db.generated })
+    ctx.db.insertInto('pet').values({ ...pet, owner_id: personId })
   )
 
   for (const toy of toys ?? []) {
@@ -308,7 +307,7 @@ async function insertToysForPet(
 ): Promise<void> {
   await ctx.db
     .insertInto('toy')
-    .values({ ...toy, pet_id: petId, id: ctx.db.generated })
+    .values({ ...toy, pet_id: petId })
     .executeTakeFirst()
 }
 

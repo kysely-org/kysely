@@ -257,7 +257,7 @@ export class OnConflictBuilder<DB, TB extends keyof DB>
    * ```ts
    * await db
    *   .insertInto('person')
-   *   .values({ id: db.generated, first_name, pic })
+   *   .values({ first_name, pic })
    *   .onConflict((oc) => oc
    *     .column('pic')
    *     .doNothing()
@@ -289,7 +289,7 @@ export class OnConflictBuilder<DB, TB extends keyof DB>
    * ```ts
    * await db
    *   .insertInto('person')
-   *   .values({ id: db.generated, first_name, pic })
+   *   .values({ first_name, pic })
    *   .onConflict((oc) => oc
    *     .column('pic')
    *     .doUpdateSet({ first_name })

@@ -11,7 +11,6 @@ import {
   AnyColumn,
   AnyColumnWithTable,
   ExtractColumnType,
-  RowType,
   ValueType,
 } from '../util/type-utils.js'
 import { parseAliasedStringReference } from './reference-parser.js'
@@ -24,6 +23,7 @@ import {
   AliasedComplexExpression,
   parseAliasedComplexExpression,
 } from './complex-expression-parser.js'
+import { Selectable, SelectType } from '../util/column-type.js'
 
 export type SelectExpression<DB, TB extends keyof DB> =
   | AnyAliasedColumnWithTable<DB, TB>
@@ -56,14 +56,11 @@ export type SelectAllQueryBuilder<
   TB extends keyof DB,
   O,
   S extends keyof DB
-> = SelectQueryBuilder<DB, TB, O & RowType<DB, S>>
+> = SelectQueryBuilder<DB, TB, O & AllSelection<DB, S>>
 
 export type Selection<DB, TB extends keyof DB, SE> = {
-  [A in ExtractAliasFromSelectExpression<SE>]: ExtractTypeFromSelectExpression<
-    DB,
-    TB,
-    SE,
-    A
+  [A in ExtractAliasFromSelectExpression<SE>]: SelectType<
+    ExtractTypeFromSelectExpression<DB, TB, SE, A>
   >
 }
 
@@ -171,6 +168,12 @@ type ExtractTypeFromStringSelectExpression<
     ? ExtractColumnType<DB, TB, SE>
     : never
   : never
+
+type AllSelection<DB, TB extends keyof DB> = Selectable<{
+  [C in AnyColumn<DB, TB>]: {
+    [T in TB]: C extends keyof DB[T] ? DB[T][C] : never
+  }[TB]
+}>
 
 export function parseSelectExpressionOrList(
   ctx: ParseContext,

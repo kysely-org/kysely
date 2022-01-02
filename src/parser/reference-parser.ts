@@ -25,6 +25,7 @@ import {
   DynamicReferenceBuilder,
   isDynamicReferenceBuilder,
 } from '../dynamic/dynamic-reference-builder.js'
+import { SelectType } from '../util/column-type.js'
 
 export type ReferenceExpression<DB, TB extends keyof DB> =
   | StringReference<DB, TB>
@@ -44,7 +45,7 @@ export type ExtractTypeFromReferenceExpression<
   TB extends keyof DB,
   RE
 > = RE extends string
-  ? ExtractTypeFromStringReference<DB, TB, RE>
+  ? SelectType<ExtractTypeFromStringReference<DB, TB, RE>>
   : RE extends RawBuilder<infer O>
   ? O
   : RE extends (qb: any) => RawBuilder<infer O>

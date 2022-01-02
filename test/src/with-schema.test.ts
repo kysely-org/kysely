@@ -25,7 +25,6 @@ for (const dialect of ['postgres'] as const) {
       const person = await ctx.db
         .insertInto('person')
         .values({
-          id: ctx.db.generated,
           first_name: 'Foo',
           last_name: 'Bar',
           gender: 'other',
@@ -37,7 +36,6 @@ for (const dialect of ['postgres'] as const) {
         .withSchema('mammals')
         .insertInto('pet')
         .values({
-          id: ctx.db.generated,
           name: 'Catto',
           owner_id: person!.id,
           species: 'cat',
@@ -201,7 +199,6 @@ for (const dialect of ['postgres'] as const) {
           .withSchema('mammals')
           .insertInto('pet')
           .values({
-            id: ctx.db.generated,
             name: 'Doggo',
             species: 'dog',
             owner_id: anyPerson.id,

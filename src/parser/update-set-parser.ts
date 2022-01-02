@@ -1,10 +1,11 @@
 import { ColumnNode } from '../operation-node/column-node.js'
 import { ColumnUpdateNode } from '../operation-node/column-update-node.js'
+import { UpdateKeys, UpdateType } from '../util/column-type.js'
 import { ParseContext } from './parse-context.js'
 import { parseValueExpression, ValueExpression } from './value-parser.js'
 
 export type MutationObject<DB, TB extends keyof DB> = {
-  [C in keyof DB[TB]]?: ValueExpression<DB, TB, DB[TB][C]>
+  [C in UpdateKeys<DB[TB]>]?: ValueExpression<DB, TB, UpdateType<DB[TB][C]>>
 }
 
 export function parseUpdateObject(

@@ -49,7 +49,6 @@ for (const dialect of BUILT_IN_DIALECTS) {
             await trx
               .insertInto('person')
               .values({
-                id: ctx.db.generated,
                 first_name: 'Foo',
                 last_name: 'Barson',
                 gender: 'male',
@@ -145,7 +144,6 @@ for (const dialect of BUILT_IN_DIALECTS) {
       await trx
         .insertInto('pet')
         .values({
-          id: ctx.db.generated,
           name: `Pet of ${ownerId}`,
           owner_id: ownerId,
           species: 'cat',
@@ -160,7 +158,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
       await trx
         .insertInto('person')
         .values({
-          id: id ?? ctx.db.generated,
+          id: id,
           first_name: `Person ${id}`,
           last_name: null,
           gender: 'other',

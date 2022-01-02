@@ -6,8 +6,6 @@ import { MigrationModule } from './migration/migration.js'
 import { QueryExecutor } from './query-executor/query-executor.js'
 import { QueryCreator } from './query-creator.js'
 import { KyselyPlugin } from './plugin/kysely-plugin.js'
-import { GeneratedPlaceholder } from './util/type-utils.js'
-import { GENERATED_PLACEHOLDER } from './util/generated-placeholder.js'
 import { DefaultQueryExecutor } from './query-executor/default-query-executor.js'
 import { DatabaseIntrospector } from './dialect/database-introspector.js'
 import { freeze, isObject } from './util/object-utils.js'
@@ -136,34 +134,6 @@ export class Kysely<DB> extends QueryCreator<DB> {
   }
 
   /**
-   * A value to be used in place of columns that are generated in the database
-   * when inserting rows.
-   *
-   * ### Examples
-   *
-   * In this example the `Person` table has non-null properties `id` and `created_at`
-   * which are both automatically genereted by the database. Since their types are
-   * `number` and `string` respectively instead of `number | null` and `string | null`
-   * the `values` method requires you to give a value for them. the `generated`
-   * placeholder can be used in these cases.
-   *
-   * ```ts
-   * await db.insertInto('person')
-   *   .values({
-   *     id: db.generated,
-   *     created_at: db.generated,
-   *     first_name: 'Jennifer',
-   *     last_name: 'Aniston',
-   *     gender: 'female'
-   *   })
-   *   .execute()
-   * ```
-   */
-  get generated(): GeneratedPlaceholder {
-    return GENERATED_PLACEHOLDER
-  }
-
-  /**
    * Returns a {@link FunctionBuilder} that can be used to write type safe function
    * calls.
    *
@@ -215,7 +185,6 @@ export class Kysely<DB> extends QueryCreator<DB> {
    * const catto = await db.transaction().execute(async (trx) => {
    *   const jennifer = await trx.insertInto('person')
    *     .values({
-   *       id: db.generated,
    *       first_name: 'Jennifer',
    *       last_name: 'Aniston',
    *     })
@@ -226,7 +195,6 @@ export class Kysely<DB> extends QueryCreator<DB> {
    *
    *   return await trx.insertInto('pet')
    *     .values({
-   *       id: db.generated,
    *       user_id: jennifer.id,
    *       name: 'Catto',
    *       species: 'cat'

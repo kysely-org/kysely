@@ -14,43 +14,6 @@ import { UpdateResult } from '../query-builder/update-result.js'
 export type ValueType<T> = T[keyof T]
 
 /**
- * Given a database type and a union of table names returns the row type
- * that you would get by selecting all columns from tables TB.
- *
- * Example:
- *
- * ```ts
- * interface Person {
- *   id: number
- * }
- *
- * interface Pet {
- *   name: string
- *   species: 'cat' | 'dog'
- * }
- *
- * interface Movie {
- *   stars: number
- * }
- *
- * interface Database {
- *   person: Person
- *   pet: Pet
- *   movie: Movie
- * }
- *
- * type Row = RowType<Database, 'person' | 'movie'>
- *
- * // Row == Person & Movie
- * ```
- */
-export type RowType<DB, TB extends keyof DB> = {
-  [C in AnyColumn<DB, TB>]: {
-    [T in TB]: C extends keyof DB[T] ? DB[T][C] : never
-  }[TB]
-}
-
-/**
  * Given a database type and a union of table names in that db, returns
  * a union type with all possible column names.
  *
@@ -180,11 +143,6 @@ export type RawBuilderFactory<DB, TB extends keyof DB> = (
 export type AliasedRawBuilderFactory<DB, TB extends keyof DB> = (
   qb: ExpressionBuilder<DB, TB>
 ) => AnyAliasedRawBuilder
-
-export interface GeneratedPlaceholder {
-  /** @internal */
-  readonly __isGeneratedPlaceholder__: true
-}
 
 export type SingleResultType<O> = O extends InsertResult
   ? O

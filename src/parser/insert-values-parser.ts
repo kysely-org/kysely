@@ -1,24 +1,33 @@
 import { ColumnNode } from '../operation-node/column-node.js'
 import { PrimitiveValueListNode } from '../operation-node/primitive-value-list-node.js'
 import { ValueListNode } from '../operation-node/value-list-node.js'
-import { GeneratedPlaceholder } from '../util/type-utils.js'
-import { isGeneratedPlaceholder } from '../util/generated-placeholder.js'
 import { freeze, isPrimitive, PrimitiveValue } from '../util/object-utils.js'
 import { ParseContext } from './parse-context.js'
 import { parseValueExpression, ValueExpression } from './value-parser.js'
 import { ValuesNode } from '../operation-node/values-node.js'
+import {
+  NonNullableInsertKeys,
+  NullableInsertKeys,
+  InsertType,
+} from '../util/column-type.js'
 
 export type InsertObject<DB, TB extends keyof DB> = {
-  [C in keyof DB[TB]]: InsertValueExpression<DB, TB, DB[TB][C]>
+  [C in NonNullableInsertKeys<DB[TB]>]: ValueExpression<
+    DB,
+    TB,
+    InsertType<DB[TB][C]>
+  >
+} & {
+  [C in NullableInsertKeys<DB[TB]>]?: ValueExpression<
+    DB,
+    TB,
+    InsertType<DB[TB][C]>
+  >
 }
 
 export type InsertObjectOrList<DB, TB extends keyof DB> =
   | InsertObject<DB, TB>
   | ReadonlyArray<InsertObject<DB, TB>>
-
-type InsertValueExpression<DB, TB extends keyof DB, T> =
-  | ValueExpression<DB, TB, T>
-  | GeneratedPlaceholder
 
 export function parseInsertObjectOrList(
   ctx: ParseContext,
@@ -48,7 +57,7 @@ function parseColumnNamesAndIndexes(
     const cols = Object.keys(row)
 
     for (const col of cols) {
-      if (!columns.has(col) && !isGeneratedPlaceholder(row[col])) {
+      if (!columns.has(col)) {
         columns.set(col, columns.size)
       }
     }
@@ -72,7 +81,7 @@ function parseRowValues(
     const columnIdx = columns.get(col)
     const value = row[col]
 
-    if (columnIdx !== undefined && !isGeneratedPlaceholder(value)) {
+    if (columnIdx !== undefined) {
       rowValues[columnIdx] = value
     }
   }

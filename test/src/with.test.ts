@@ -187,7 +187,6 @@ for (const dialect of BUILT_IN_DIALECTS) {
           )
           .insertInto('pet')
           .values({
-            id: ctx.db.generated,
             owner_id: (eb) => eb.selectFrom('jennifer').select('id'),
             name: (eb) => eb.selectFrom('jennifer').select('first_name'),
             species: 'cat',
@@ -222,7 +221,6 @@ for (const dialect of BUILT_IN_DIALECTS) {
             db
               .insertInto('person')
               .values({
-                id: ctx.db.generated,
                 first_name: 'Matt',
                 last_name: 'Damon',
                 gender: 'male',

@@ -155,6 +155,7 @@ export * from './operation-node/with-node.js'
 
 export * from './dialect/database-introspector.js'
 
+export * from './util/column-type.js'
 export * from './util/compilable.js'
 export * from './util/log.js'
 export {

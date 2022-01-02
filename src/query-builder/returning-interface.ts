@@ -22,7 +22,6 @@ export interface ReturningInterface<DB, TB extends keyof DB, O> {
    * const { id } = await db
    *   .insertInto('person')
    *   .values({
-   *     id: db.generated,
    *     first_name: 'Jennifer',
    *     last_name: 'Aniston'
    *   })
@@ -36,7 +35,6 @@ export interface ReturningInterface<DB, TB extends keyof DB, O> {
    * const { id, first_name } = await db
    *   .insertInto('person')
    *   .values({
-   *     id: db.generated,
    *     first_name: 'Jennifer',
    *     last_name: 'Aniston'
    *   })
@@ -52,7 +50,6 @@ export interface ReturningInterface<DB, TB extends keyof DB, O> {
    * const { id, full_name, first_pet_id } = await db
    *   .insertInto('person')
    *   .values({
-   *     id: db.generated,
    *     first_name: 'Jennifer',
    *     last_name: 'Aniston'
    *   })

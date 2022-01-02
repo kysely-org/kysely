@@ -1,4 +1,4 @@
-import { CamelCasePlugin, Kysely } from '../../'
+import { CamelCasePlugin, Generated, Kysely } from '../../'
 
 import {
   BUILT_IN_DIALECTS,
@@ -17,7 +17,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
     let camelDb: Kysely<CamelDatabase>
 
     interface CamelPerson {
-      id: number
+      id: Generated<number>
       firstName: string
       lastName: string
     }
@@ -47,12 +47,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
         .insertInto('camelPerson')
         .values([
           {
-            id: ctx.db.generated,
             firstName: 'Jennifer',
             lastName: 'Aniston',
           },
           {
-            id: ctx.db.generated,
             firstName: 'Arnold',
             lastName: 'Schwarzenegger',
           },

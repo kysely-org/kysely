@@ -38,7 +38,6 @@ for (const dialect of BUILT_IN_DIALECTS) {
 
     it('should insert one row', async () => {
       const query = ctx.db.insertInto('person').values({
-        id: ctx.db.generated,
         first_name: 'Foo',
         last_name: 'Barson',
         gender: 'other',
@@ -76,7 +75,6 @@ for (const dialect of BUILT_IN_DIALECTS) {
 
     it('should insert one row with complex values', async () => {
       const query = ctx.db.insertInto('person').values({
-        id: ctx.db.generated,
         first_name: ctx.db
           .selectFrom('pet')
           .select(ctx.db.raw('max(name)').as('max_name')),
@@ -156,16 +154,13 @@ for (const dialect of BUILT_IN_DIALECTS) {
 
     if (dialect === 'mysql') {
       it('should insert one row and ignore conflicts using insert ignore', async () => {
-        const [existingPet] = await ctx.db
+        const [{ id, ...existingPet }] = await ctx.db
           .selectFrom('pet')
           .selectAll()
           .limit(1)
           .execute()
 
-        const query = ctx.db
-          .insertInto('pet')
-          .ignore()
-          .values({ ...existingPet, id: ctx.db.generated })
+        const query = ctx.db.insertInto('pet').ignore().values(existingPet)
 
         testSql(query, dialect, {
           mysql: {
@@ -187,7 +182,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
       })
     } else {
       it('should insert one row and ignore conflicts using `on conflict do nothing`', async () => {
-        const [existingPet] = await ctx.db
+        const [{ id, ...existingPet }] = await ctx.db
           .selectFrom('pet')
           .selectAll()
           .limit(1)
@@ -195,7 +190,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
 
         const query = ctx.db
           .insertInto('pet')
-          .values({ ...existingPet, id: ctx.db.generated })
+          .values(existingPet)
           .onConflict((oc) => oc.column('name').doNothing())
 
         testSql(query, dialect, {
@@ -232,7 +227,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
 
     if (dialect === 'postgres') {
       it('should insert one row and ignore conflicts using `on conflict on constraint do nothing`', async () => {
-        const [existingPet] = await ctx.db
+        const [{ id, ...existingPet }] = await ctx.db
           .selectFrom('pet')
           .selectAll()
           .limit(1)
@@ -240,7 +235,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
 
         const query = ctx.db
           .insertInto('pet')
-          .values({ ...existingPet, id: ctx.db.generated })
+          .values(existingPet)
           .onConflict((oc) => oc.constraint('pet_name_key').doNothing())
 
         testSql(query, dialect, {
@@ -264,7 +259,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
 
     if (dialect === 'mysql') {
       it('should update instead of insert on conflict when using onDuplicateKeyUpdate', async () => {
-        const [existingPet] = await ctx.db
+        const [{ id, ...existingPet }] = await ctx.db
           .selectFrom('pet')
           .selectAll()
           .limit(1)
@@ -272,7 +267,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
 
         const query = ctx.db
           .insertInto('pet')
-          .values({ ...existingPet, id: ctx.db.generated })
+          .values(existingPet)
           .onDuplicateKeyUpdate({ species: 'hamster' })
 
         testSql(query, dialect, {
@@ -294,7 +289,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
         const updatedPet = await ctx.db
           .selectFrom('pet')
           .selectAll()
-          .where('id', '=', existingPet.id)
+          .where('id', '=', id)
           .executeTakeFirstOrThrow()
 
         expect(updatedPet).to.containSubset({
@@ -304,7 +299,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
       })
     } else {
       it('should update instead of insert on conflict when using `on conflict do update`', async () => {
-        const [existingPet] = await ctx.db
+        const [{ id, ...existingPet }] = await ctx.db
           .selectFrom('pet')
           .selectAll()
           .limit(1)
@@ -312,7 +307,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
 
         const query = ctx.db
           .insertInto('pet')
-          .values({ ...existingPet, id: ctx.db.generated })
+          .values(existingPet)
           .onConflict((oc) =>
             oc.columns(['name']).doUpdateSet({ species: 'hamster' })
           )
@@ -344,7 +339,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
         const updatedPet = await ctx.db
           .selectFrom('pet')
           .selectAll()
-          .where('id', '=', existingPet.id)
+          .where('id', '=', id)
           .executeTakeFirstOrThrow()
 
         expect(updatedPet).to.containSubset({
@@ -356,7 +351,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
 
     if (dialect === 'postgres') {
       it('should update instead of insert on conflict when using `on conflict on constraint do update`', async () => {
-        const [existingPet] = await ctx.db
+        const [{ id, ...existingPet }] = await ctx.db
           .selectFrom('pet')
           .selectAll()
           .limit(1)
@@ -364,7 +359,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
 
         const query = ctx.db
           .insertInto('pet')
-          .values({ ...existingPet, id: ctx.db.generated })
+          .values(existingPet)
           .onConflict((oc) =>
             oc.constraint('pet_name_key').doUpdateSet({ species: 'hamster' })
           )
@@ -393,7 +388,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
       })
 
       it('should update instead of insert on conflict when using `on conflict do update where`', async () => {
-        const [existingPet] = await ctx.db
+        const [{ id, ...existingPet }] = await ctx.db
           .selectFrom('pet')
           .selectAll()
           .limit(1)
@@ -401,7 +396,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
 
         const query = ctx.db
           .insertInto('pet')
-          .values({ ...existingPet, id: ctx.db.generated })
+          .values(existingPet)
           .onConflict((oc) =>
             oc
               .column('name')
@@ -435,13 +430,11 @@ for (const dialect of BUILT_IN_DIALECTS) {
           .insertInto('person')
           .values([
             {
-              id: ctx.db.generated,
               first_name: 'Foo',
               last_name: 'Barson',
               gender: 'other',
             },
             {
-              id: ctx.db.generated,
               first_name: 'Baz',
               last_name: 'Spam',
               gender: 'other',
@@ -466,7 +459,6 @@ for (const dialect of BUILT_IN_DIALECTS) {
         const result = await ctx.db
           .insertInto('person')
           .values({
-            id: ctx.db.generated,
             gender: 'other',
             first_name: ctx.db
               .selectFrom('person')
@@ -495,7 +487,6 @@ for (const dialect of BUILT_IN_DIALECTS) {
         const result = await ctx.db
           .insertInto('person')
           .values({
-            id: ctx.db.generated,
             gender: 'other',
             first_name: ctx.db
               .selectFrom('person')
