@@ -41,6 +41,7 @@ import {
   OnConflictUpdateBuilder,
 } from './on-conflict-builder.js'
 import { OnConflictNode } from '../operation-node/on-conflict-node.js'
+import { Selectable } from '../util/column-type.js'
 
 export class InsertQueryBuilder<DB, TB extends keyof DB, O>
   implements ReturningInterface<DB, TB, O>, OperationNodeSource, Compilable
@@ -489,7 +490,7 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
     })
   }
 
-  returningAll(): InsertQueryBuilder<DB, TB, DB[TB]> {
+  returningAll(): InsertQueryBuilder<DB, TB, Selectable<DB[TB]>> {
     return new InsertQueryBuilder({
       ...this.#props,
       queryNode: QueryNode.cloneWithReturning(

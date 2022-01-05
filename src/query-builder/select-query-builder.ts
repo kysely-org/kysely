@@ -682,7 +682,7 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
 
   selectAll<T extends TB>(table: T): SelectAllQueryBuilder<DB, TB, O, T>
 
-  selectAll<T extends TB>(): SelectAllQueryBuilder<DB, TB, O, T>
+  selectAll(): SelectAllQueryBuilder<DB, TB, O, TB>
 
   selectAll(table?: any): any {
     return new SelectQueryBuilder({

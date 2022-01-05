@@ -675,6 +675,17 @@ async function testReturning(db: Kysely<Database>) {
     }[]
   >(r3)
 
+  const r4 = await db
+    .insertInto('movie')
+    .values({ stars: 5 })
+    .returningAll()
+    .executeTakeFirstOrThrow()
+
+  expectType<{
+    id: string
+    stars: number
+  }>(r4)
+
   // Non-existent column
   expectError(db.insertInto('person').values(person).returning('not_column'))
 }

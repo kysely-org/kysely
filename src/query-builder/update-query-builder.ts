@@ -50,6 +50,7 @@ import { WhereInterface } from './where-interface.js'
 import { JoinInterface } from './join-interface.js'
 import { ReturningInterface } from './returning-interface.js'
 import { NoResultError, NoResultErrorConstructor } from './no-result-error.js'
+import { Selectable } from '../util/column-type.js'
 
 export class UpdateQueryBuilder<DB, TB extends keyof DB, O>
   implements
@@ -430,7 +431,7 @@ export class UpdateQueryBuilder<DB, TB extends keyof DB, O>
     })
   }
 
-  returningAll(): UpdateQueryBuilder<DB, TB, DB[TB]> {
+  returningAll(): UpdateQueryBuilder<DB, TB, Selectable<DB[TB]>> {
     return new UpdateQueryBuilder({
       ...this.#props,
       queryNode: QueryNode.cloneWithReturning(

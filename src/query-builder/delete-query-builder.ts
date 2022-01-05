@@ -46,6 +46,7 @@ import { ReturningInterface } from './returning-interface.js'
 import { NoResultError, NoResultErrorConstructor } from './no-result-error.js'
 import { DeleteResult } from './delete-result.js'
 import { DeleteQueryNode } from '../operation-node/delete-query-node.js'
+import { Selectable } from '../util/column-type.js'
 
 export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
   implements
@@ -331,7 +332,7 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
     })
   }
 
-  returningAll(): DeleteQueryBuilder<DB, TB, DB[TB]> {
+  returningAll(): DeleteQueryBuilder<DB, TB, Selectable<DB[TB]>> {
     return new DeleteQueryBuilder({
       ...this.#props,
       queryNode: QueryNode.cloneWithReturning(
