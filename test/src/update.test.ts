@@ -141,6 +141,30 @@ for (const dialect of BUILT_IN_DIALECTS) {
       await query.execute()
     })
 
+    it('undefined values should be ignored', async () => {
+      const query = ctx.db
+        .updateTable('person')
+        .set({ id: undefined, first_name: 'Foo', last_name: 'Barson' })
+        .where('gender', '=', 'female')
+
+      testSql(query, dialect, {
+        postgres: {
+          sql: 'update "person" set "first_name" = $1, "last_name" = $2 where "gender" = $3',
+          parameters: ['Foo', 'Barson', 'female'],
+        },
+        mysql: {
+          sql: 'update `person` set `first_name` = ?, `last_name` = ? where `gender` = ?',
+          parameters: ['Foo', 'Barson', 'female'],
+        },
+        sqlite: {
+          sql: 'update "person" set "first_name" = ?, "last_name" = ? where "gender" = ?',
+          parameters: ['Foo', 'Barson', 'female'],
+        },
+      })
+
+      await query.execute()
+    })
+
     if (dialect === 'postgres') {
       it('should return updated rows when `returning` is used', async () => {
         const query = ctx.db
@@ -155,7 +179,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
             parameters: ['Barson', 'male'],
           },
           mysql: NOT_SUPPORTED,
-          sqlite: NOT_SUPPORTED,  
+          sqlite: NOT_SUPPORTED,
         })
 
         const result = await query.execute()

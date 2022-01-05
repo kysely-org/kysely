@@ -152,6 +152,32 @@ for (const dialect of BUILT_IN_DIALECTS) {
       ])
     })
 
+    it('undefined values should be ignored', async () => {
+      const query = ctx.db.insertInto('person').values({
+        id: undefined,
+        first_name: 'Foo',
+        last_name: 'Barson',
+        gender: 'other',
+      })
+
+      testSql(query, dialect, {
+        postgres: {
+          sql: 'insert into "person" ("first_name", "last_name", "gender") values ($1, $2, $3)',
+          parameters: ['Foo', 'Barson', 'other'],
+        },
+        mysql: {
+          sql: 'insert into `person` (`first_name`, `last_name`, `gender`) values (?, ?, ?)',
+          parameters: ['Foo', 'Barson', 'other'],
+        },
+        sqlite: {
+          sql: 'insert into "person" ("first_name", "last_name", "gender") values (?, ?, ?)',
+          parameters: ['Foo', 'Barson', 'other'],
+        },
+      })
+
+      await query.execute()
+    })
+
     if (dialect === 'mysql') {
       it('should insert one row and ignore conflicts using insert ignore', async () => {
         const [{ id, ...existingPet }] = await ctx.db
@@ -180,7 +206,9 @@ for (const dialect of BUILT_IN_DIALECTS) {
         expect(result).to.be.instanceOf(InsertResult)
         expect(result.insertId).to.equal(undefined)
       })
-    } else {
+    }
+
+    if (dialect !== 'mysql') {
       it('should insert one row and ignore conflicts using `on conflict do nothing`', async () => {
         const [{ id, ...existingPet }] = await ctx.db
           .selectFrom('pet')
@@ -297,7 +325,9 @@ for (const dialect of BUILT_IN_DIALECTS) {
           species: 'hamster',
         })
       })
-    } else {
+    }
+
+    if (dialect !== 'mysql') {
       it('should update instead of insert on conflict when using `on conflict do update`', async () => {
         const [{ id, ...existingPet }] = await ctx.db
           .selectFrom('pet')
