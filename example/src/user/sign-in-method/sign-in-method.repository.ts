@@ -1,6 +1,6 @@
 import { Kysely } from 'kysely'
 import { Database } from '../../database'
-import { PasswordSignInMethodRow } from './password-sign-in-method.row'
+import { PasswordSignInMethodRow } from './password-sign-in-method.table'
 
 async function findPasswordSignInMethod(
   db: Kysely<Database>,

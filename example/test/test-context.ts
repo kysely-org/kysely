@@ -1,11 +1,16 @@
 import * as path from 'path'
+import * as fs from 'fs/promises'
 import axios from 'axios'
-import { Kysely, PostgresDialect } from 'kysely'
+import {
+  FileMigrationProvider,
+  Kysely,
+  Migrator,
+  PostgresDialect,
+} from 'kysely'
 
 import { testConfig } from './test-config'
 import { App } from '../src/app'
 import { Database } from '../src/database'
-import { SignedInUser } from '../src/user/signed-in-user'
 import { User } from '../src/user/user'
 
 export class TestContext {
@@ -36,10 +41,16 @@ export class TestContext {
       dialect: new PostgresDialect(testConfig.database),
     })
 
-    await db.migration.migrateToLatest(
-      path.join(__dirname, '../src/migrations')
-    )
+    const migrator = new Migrator({
+      db,
+      provider: new FileMigrationProvider(
+        fs.readdir,
+        path.join,
+        path.join(__dirname, '../src/migrations')
+      ),
+    })
 
+    await migrator.migrateToLatest()
     await db.destroy()
   }
 

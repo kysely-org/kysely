@@ -1,6 +1,6 @@
 import { Kysely } from 'kysely'
 import { Database } from '../database'
-import { RefreshTokenRow } from './refresh-token.row'
+import { RefreshTokenRow, UpdateableRefreshTokenRow } from './refresh-token.table'
 
 async function insertRefreshToken(
   db: Kysely<Database>,
@@ -9,8 +9,6 @@ async function insertRefreshToken(
   const [refreshToken] = await db
     .insertInto('refresh_token')
     .values({
-      refresh_token_id: db.generated,
-      created_at: db.generated,
       user_id: userId,
       last_refreshed_at: new Date(),
     })
@@ -39,7 +37,7 @@ async function findRefreshToken(
 async function updateRefreshToken(
   db: Kysely<Database>,
   refreshTokenId: string,
-  patch: Pick<RefreshTokenRow, 'last_refreshed_at'>
+  patch: Pick<UpdateableRefreshTokenRow, 'last_refreshed_at'>
 ): Promise<void> {
   await db
     .updateTable('refresh_token')

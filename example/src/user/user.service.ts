@@ -4,7 +4,7 @@ import { Database } from '../database'
 import { SignedInUser } from './signed-in-user'
 import { CreateAnonymousUserRequest, User } from './user'
 import { userRepository } from './user.repository'
-import { UserRow } from './user.row'
+import { UserRow } from './user.table'
 
 async function createAnonymousUser(
   db: Kysely<Database>,

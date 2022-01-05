@@ -1,22 +1,18 @@
 import { Kysely, Transaction } from 'kysely'
 import { Database } from '../database'
-import { UserRow } from './user.row'
+import { InsertableUserRow, UserRow } from './user.table'
 
 async function insertUser(
   db: Kysely<Database>,
-  user: Omit<UserRow, 'user_id' | 'created_at'>
+  user: InsertableUserRow
 ): Promise<UserRow> {
-  const [{ user_id, created_at }] = await db
+  const [insertedUser] = await db
     .insertInto('user')
-    .values({
-      user_id: db.generated,
-      created_at: db.generated,
-      ...user,
-    })
-    .returning(['user_id', 'created_at'])
+    .values(user)
+    .returningAll()
     .execute()
 
-  return { ...user, user_id, created_at }
+  return insertedUser
 }
 
 async function findUserById(
