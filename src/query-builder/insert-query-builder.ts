@@ -35,12 +35,12 @@ import {
 } from '../parser/complex-expression-parser.js'
 import { ColumnNode } from '../operation-node/column-node.js'
 import { ReturningInterface } from './returning-interface.js'
-import { OnConflictNode } from '../index.js'
 import {
   OnConflictBuilder,
   OnConflictDoNothingBuilder,
   OnConflictUpdateBuilder,
 } from './on-conflict-builder.js'
+import { OnConflictNode } from '../operation-node/on-conflict-node.js'
 
 export class InsertQueryBuilder<DB, TB extends keyof DB, O>
   implements ReturningInterface<DB, TB, O>, OperationNodeSource, Compilable

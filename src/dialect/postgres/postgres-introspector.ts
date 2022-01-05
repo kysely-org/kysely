@@ -7,7 +7,7 @@ import {
 import {
   MIGRATION_LOCK_TABLE,
   MIGRATION_TABLE,
-} from '../../migration/migration.js'
+} from '../../migration/migrator.js'
 import { Kysely } from '../../kysely.js'
 import { ColumnDataType } from '../../operation-node/data-type-node.js'
 import { freeze } from '../../util/object-utils.js'

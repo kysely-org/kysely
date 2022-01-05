@@ -8,7 +8,7 @@ import { Kysely } from '../../kysely.js'
 import {
   MIGRATION_LOCK_TABLE,
   MIGRATION_TABLE,
-} from '../../migration/migration.js'
+} from '../../migration/migrator.js'
 import { ColumnDataType } from '../../operation-node/data-type-node.js'
 
 export class SqliteIntrospector implements DatabaseIntrospector {

@@ -97,12 +97,6 @@ interface PersonTable {
   modified_at: ColumnType<Date, string | undefined, never>
 }
 
-// You can extract the select, insert and update interfaces like this
-// if you want (you don't need to):
-type Person = Selectable<PersonTable>
-type InsertablePerson = Insertable<PersonTable>
-type UpdateablePerson = Updateable<PersonTable>
-
 interface PetTable {
   id: Generated<number>
   name: string
@@ -154,6 +148,14 @@ async function demo() {
     person.pet_name
   }
 }
+```
+
+```ts
+// You can extract the select, insert and update interfaces like this
+// if you want (you don't need to):
+type Person = Selectable<PersonTable>
+type InsertablePerson = Insertable<PersonTable>
+type UpdateablePerson = Updateable<PersonTable>
 ```
 
 # Query examples
@@ -286,37 +288,54 @@ export async function down(db: Kysely<any>): Promise<void> {
 You can then use
 
 ```ts
-await db.migration.migrateToLatest(pathToMigrationsFolder)
+const migrator = new Migrator(migratorConfig);
+await migrator.migrateToLatest(pathToMigrationsFolder)
 ```
 
 to run all migrations that have not yet been run. The migrations are executed in alphabetical
-order by their name. See the [migration module](https://koskimas.github.io/kysely/classes/MigrationModule.html) 
+order by their name. See the [Migrator](https://koskimas.github.io/kysely/classes/Migrator.html) 
 documentation for more info.
 
 Kysely doesn't have a CLI for running migrations and probably never will. This is because Kysely's
 migrations are also written in typescript. To run the migrations, you need to first build the
-typescript code into javascript. The CLI would cause confusion over which migrations are being
+typescript code into javascript. A CLI would cause confusion over which migrations are being
 run, the typescript ones or the javascript ones. If we added support for both, the CLI would 
 need to depend on a typescript compiler, which most production environments don't (and shouldn't)
 have. You will probably want to add a simple migration script to your projects like this:
 
 ```ts
-import path from 'path'
+import * as path from 'path'
+import * as fs from 'fs/promises'
 
-// This example assumes you have a file named `database.ts` that
-// creates and exports a `Kysely` instance `db`. You can just
-// as well create a new `Kysely` instance in the function below
-// or do something completely different to obtain an instance
-// of `Kysely`.
-import { db } from './database'
+import {
+  Kysely,
+  Migrator,
+  PostgresDialect,
+  FileMigrationProvider
+} from 'kysely'
 
 async function migrateToLatest() {
-  const { error, results } = await db.migration.migrateToLatest(
-    path.join(__dirname, 'migrations')
-  )
+  const db = new Kysely<Database>({
+    dialect: new PostgresDialect({
+      host: 'localhost',
+      database: 'kysely_test',
+    }),
+  })
 
-  // Destroy the `Kysely` instance to make the script exit faster.
-  await db.destroy()
+  const migrator = new Migrator({
+    db,
+    // The constructor signature of FileMigrationProvider is a
+    // bit weird to keep Kysely independent of node.js or any
+    // other environment.
+    provider: new FileMigrationProvider(
+      fs.readdir,
+      path.join,
+      // Path to the folder that contains all your migrations.
+      'migrations'
+    )
+  })
+
+  const { error, results } = await migrator.migrateToLatest()
 
   results?.forEach((it) => {
     if (it.status === 'Success') {

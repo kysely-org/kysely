@@ -403,6 +403,31 @@ function testWhere(db: Kysely<Database>) {
   )
 }
 
+async function testConditionalJoinWhere(db: Kysely<Database>) {
+  let qb = db.selectFrom('person')
+  let petName: string | undefined = 'catto'
+  let petSpecies: 'cat' | 'dog' | undefined = 'cat'
+
+  if (petName || petSpecies) {
+    let qb2 = qb.innerJoin('pet', 'person.id', 'pet.owner_id')
+
+    if (petName) {
+      qb2 = qb2.where('pet.name', '=', petName)
+    }
+
+    if (petSpecies) {
+      qb2 = qb2.where('pet.species', '=', petSpecies)
+    }
+
+    // This is the actual test. The query builder with `pet`
+    // table joined should still be assignable to the original
+    // query builder.
+    qb = qb2
+  }
+
+  const res = await qb.selectAll('person').execute()
+}
+
 async function testJoin(db: Kysely<Database>) {
   const r1 = await db
     .selectFrom('person')

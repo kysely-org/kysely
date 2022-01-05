@@ -2,7 +2,6 @@ import { Dialect } from './dialect/dialect.js'
 import { SchemaModule } from './schema/schema.js'
 import { DynamicModule } from './dynamic/dynamic.js'
 import { DefaultConnectionProvider } from './driver/default-connection-provider.js'
-import { MigrationModule } from './migration/migration.js'
 import { QueryExecutor } from './query-executor/query-executor.js'
 import { QueryCreator } from './query-creator.js'
 import { KyselyPlugin } from './plugin/kysely-plugin.js'
@@ -21,6 +20,8 @@ import { preventAwait } from './util/prevent-await.js'
 import { DefaultParseContext, ParseContext } from './parser/parse-context.js'
 import { FunctionBuilder } from './query-builder/function-builder.js'
 import { Log, LogConfig } from './util/log.js'
+import { PRIVATE_ADAPTER } from './util/private-symbols.js'
+import { DialectAdapter } from './dialect/dialect-adapter.js'
 
 /**
  * The main Kysely class.
@@ -107,13 +108,6 @@ export class Kysely<DB> extends QueryCreator<DB> {
    */
   get schema(): SchemaModule {
     return new SchemaModule(this.#props.executor)
-  }
-
-  /**
-   * Returns the {@link MigrationModule} module for managing and running migrations.
-   */
-  get migration(): MigrationModule {
-    return new MigrationModule(this, this.#props.parseContext.adapter)
   }
 
   /**
@@ -311,6 +305,14 @@ export class Kysely<DB> extends QueryCreator<DB> {
   get isTransaction(): boolean {
     return false
   }
+
+  /**
+   * @internal
+   * @private
+   */
+  get [PRIVATE_ADAPTER](): DialectAdapter {
+    return this.#props.parseContext.adapter
+  }
 }
 
 export class Transaction<DB> extends Kysely<DB> {
@@ -326,12 +328,6 @@ export class Transaction<DB> extends Kysely<DB> {
   // other way around.
   get isTransaction(): true {
     return true
-  }
-
-  get migration(): MigrationModule {
-    throw new Error(
-      'the migration module is not available for a transaction. Use the main Kysely instance to run migrations'
-    )
   }
 
   transaction(): TransactionBuilder<DB> {

@@ -1,127 +1,96 @@
-import * as path from 'path'
-import { promises as fs } from 'fs'
-
 import { Kysely } from '../kysely.js'
-import {
-  freeze,
-  getLast,
-  isFunction,
-  isObject,
-  isString,
-} from '../util/object-utils.js'
-import { DialectAdapter } from '../dialect/dialect-adapter.js'
+import { freeze, getLast } from '../util/object-utils.js'
+import { PRIVATE_ADAPTER } from '../util/private-symbols.js'
 
 export const MIGRATION_TABLE = 'kysely_migration'
 export const MIGRATION_LOCK_TABLE = 'kysely_migration_lock'
 export const MIGRATION_LOCK_ID = 'migration_lock'
 export const NO_MIGRATIONS: NoMigrations = freeze({ __noMigrations__: true })
 
-export type MigrationsOrFolderPath = Record<string, Migration> | string
-
 export interface Migration {
   up(db: Kysely<any>): Promise<void>
+
+  /**
+   * An optional down method.
+   *
+   * If you don't provide a down method, the migration is skipped when
+   * migrating down.
+   */
   down?(db: Kysely<any>): Promise<void>
 }
 
 /**
- * Type for the NO_MIGRATIONS constant. Never create one of these.
+ * A class for running migrations.
+ *
+ * ### Example
+ *
+ * This example uses the {@link FileMigrationProvider} that reads migrations
+ * files from a single folder. You can easily implement your own
+ * {@link MigrationProvider} if you want to provide migrations some
+ * other way.
+ *
+ * ```ts
+ * const migrator = new Migrator({
+ *   db,
+ *   // The constructor signature of FileMigrationProvider is a
+ *   // bit weird to keep Kysely independent of node.js or any
+ *   // other environment.
+ *   provider: new FileMigrationProvider(
+ *     fs.readdir,
+ *     path.join,
+ *     // Path to the folder that contains all your migrations.
+ *     'migrations'
+ *   )
+ * })
+ * ```
  */
-export interface NoMigrations {
-  readonly __noMigrations__: true
-}
+export class Migrator {
+  readonly #props: MigratorProps
 
-/**
- * All migration methods ({@link MigrationModule.migrateTo | migrateTo},
- * {@link MigrationModule.migrateToLatest | migrateToLatest} etc.) never
- * throw but return this object instead.
- */
-export interface MigrationResultSet {
-  /**
-   * This is defined if something went wrong.
-   *
-   * An error may have occurred in one of the migrations in which case the
-   * {@link results} list contains an item with `status === 'Error'` to
-   * indicate which migration failed.
-   *
-   * An error may also have occurred before Kysely was able to figure out
-   * which migrations should be executed, in which case the {@link results}
-   * list is undefined.
-   */
-  readonly error?: unknown
-
-  /**
-   * {@link MigrationResult} for each individual migration that was supposed
-   * to be executed by the operation.
-   *
-   * If all went well, each result's `status` is `Success`. If some migration
-   * failed, the failed migration's result's `status` is `Error` and all
-   * results after that one have `status` ´NotExecuted`.
-   *
-   * This property can be undefined if an error occurred before Kysely was
-   * able to figure out which migrations should be executed.
-   *
-   * If this list is empty, there were no migrations to execute.
-   */
-  readonly results?: MigrationResult[]
-}
-
-export interface MigrationResult {
-  readonly migrationName: string
-
-  /**
-   * The direction in which this migration was executed.
-   */
-  readonly direction: 'Up' | 'Down'
-
-  /**
-   * The execution status.
-   *
-   *  - `Success` means the migration was successfully executed. Note that
-   *    if any of the later migrations in the {@link MigrationResult.results}
-   *    list failed (have status `Error`) AND the dialect supports transactional
-   *    DDL, even the successfull migrations were rolled back.
-   *
-   *  - `Error` means the migration failed. In this case the
-   *    {@link MigrationResult.error} contains the error.
-   *
-   *  - `NotExecuted` means that the migration was supposed to be executed
-   *    but wasn't because an earlier migration failed.
-   */
-  readonly status: 'Success' | 'Error' | 'NotExecuted'
-}
-
-export class MigrationModule {
-  readonly #db: Kysely<any>
-  readonly #adapter: DialectAdapter
-
-  constructor(db: Kysely<any>, adapter: DialectAdapter) {
-    this.#db = db
-    this.#adapter = adapter
+  constructor(props: MigratorProps) {
+    this.#props = freeze(props)
   }
 
   /**
    * Runs all migrations that have not yet been run.
-   *
-   * The only argument must either be a file path to the folder that contains all migrations
-   * OR an object that contains all migrations (not just the ones that need to be executed).
-   * The keys in the object must be the unique migration names.
    *
    * This method returns a {@link MigrationResultSet} instance and _never_ throws.
    * {@link MigrationResultSet.error} holds the error if something went wrong.
    * {@link MigrationResultSet.results} contains information about which migrations
    * were executed and which failed. See the examples below.
    *
-   * This method goes through all possible migrations (passed as the argument) and runs the
-   * ones whose names are alphabetically after the last migration that has been run. If the
+   * This method goes through all possible migrations provided by the provider and runs the
+   * ones whose names come alphabetically after the last migration that has been run. If the
    * list of executed migrations doesn't match the beginning of the list of possible migrations
    * an error is thrown.
    *
    * ### Examples
    *
    * ```ts
-   * const { error, results } = await db.migration.migrateToLatest(
-   *   path.join(__dirname, 'migrations')
-   * )
+   * import * as path from 'path'
+   * import * as fs from 'fs/promises'
+   *
+   * const db = new Kysely<Database>({
+   *   dialect: new PostgresDialect({
+   *     host: 'localhost',
+   *     database: 'kysely_test',
+   *   }),
+   * })
+   *
+   * const migrator = new Migrator({
+   *   db,
+   *   // The constructor signature of FileMigrationProvider is a
+   *   // bit weird to keep Kysely independent of node.js or any
+   *   // other environment.
+   *   provider: new FileMigrationProvider(
+   *     fs.readdir,
+   *     path.join,
+   *     // Path to the folder that contains all your migrations.
+   *     'migrations'
+   *   )
+   * })
+   *
+   * const { error, results } = await migrator.migrateToLatest()
    *
    * results?.forEach((it) => {
    *   if (it.status === 'Success') {
@@ -136,95 +105,38 @@ export class MigrationModule {
    *   console.error(error)
    * }
    * ```
-   *
-   * In the next example, we use a record of migration objects instead of file folder path.
-   * The keys in the object are migration names that can be anything you want. The order of
-   * the migrations is determined based on the alphabetical order of the keys in the record.
-   * This version of the `migrateToLatest` method can be useful if you are using a bundler
-   * like webpack or esbuild.
-   *
-   * ```ts
-   * await db.migration.migrateToLatest({
-   *   migration1: {
-   *     async up(db: Kysely<any>): Promise<void> {
-   *       ...
-   *     },
-   *
-   *     async down(db: Kysely<any>): Promise<void> {
-   *       ...
-   *     }
-   *   },
-   *
-   *   migration2: {
-   *     async up(db: Kysely<any>): Promise<void> {
-   *       ...
-   *     },
-   *
-   *     async down(db: Kysely<any>): Promise<void> {
-   *       ...
-   *     }
-   *   },
-   *
-   *  ...
-   * })
-   * ```
    */
-  migrateToLatest(migrationsFolderPath: string): Promise<MigrationResultSet>
-  migrateToLatest(
-    allMigrations: Record<string, Migration>
-  ): Promise<MigrationResultSet>
-
-  async migrateToLatest(
-    migrationsOrFolderPath: MigrationsOrFolderPath
-  ): Promise<MigrationResultSet> {
-    return this.#migrate(
-      migrationsOrFolderPath,
-      ({ migrations }) => migrations.length - 1
-    )
+  async migrateToLatest(): Promise<MigrationResultSet> {
+    return this.#migrate(({ migrations }) => migrations.length - 1)
   }
 
   /**
    * Migrate up/down to a specific migration.
    *
-   * Otherwise works just like {@link migrateToLatest}. The first argument
-   * behaves the same, the output is the same etc.
+   * This method returns a {@link MigrationResultSet} instance and _never_ throws.
+   * {@link MigrationResultSet.error} holds the error if something went wrong.
+   * {@link MigrationResultSet.results} contains information about which migrations
+   * were executed and which failed.
    *
    * ### Examples
    *
    * ```ts
-   * await db.migration.migrateTo(
-   *   path.join(__dirname, 'migrations'),
-   *   'some_migration'
-   * )
+   * await migrator.migrateTo('some_migration')
    * ```
    *
    * If you specify the name of the first migration, this method migrates
-   * down to the first migration, but doesn't run the `down` migration for
-   * the first migration. In case you want to migrate down ALL migrations
+   * down to the first migration, but doesn't run the `down` method of
+   * the first migration. In case you want to migrate all the way down,
    * you can use a special constant `NO_MIGRATIONS`:
    *
    * ```ts
-   * await db.migration.migrateTo(
-   *   path.join(__dirname, 'migrations'),
-   *   NO_MIGRATIONS,
-   * )
+   * await migrator.migrateTo(NO_MIGRATIONS)
    * ```
    */
-  migrateTo(
-    migrationsFolderPath: string,
-    targetMigrationName: string | NoMigrations
-  ): Promise<MigrationResultSet>
-
-  migrateTo(
-    allMigrations: Record<string, Migration>,
-    targetMigrationName: string | NoMigrations
-  ): Promise<MigrationResultSet>
-
   async migrateTo(
-    migrationsOrFolderPath: MigrationsOrFolderPath,
     targetMigrationName: string | NoMigrations
   ): Promise<MigrationResultSet> {
-    return this.#migrate(migrationsOrFolderPath, ({ migrations }) => {
+    return this.#migrate(({ migrations }) => {
       if (targetMigrationName === NO_MIGRATIONS) {
         return -1
       }
@@ -244,72 +156,47 @@ export class MigrationModule {
   /**
    * Migrate one step up.
    *
-   * Otherwise works just like {@link migrateToLatest}. The only argument
-   * behaves the same, the output is the same etc.
+   * This method returns a {@link MigrationResultSet} instance and _never_ throws.
+   * {@link MigrationResultSet.error} holds the error if something went wrong.
+   * {@link MigrationResultSet.results} contains information about which migrations
+   * were executed and which failed.
    *
    * ### Examples
    *
    * ```ts
-   * await db.migration.migrateUp(
-   *   path.join(__dirname, 'migrations'),
-   * )
+   * await migrator.migrateUp()
    * ```
    */
-  migrateUp(migrationsFolderPath: string): Promise<MigrationResultSet>
-
-  migrateUp(
-    allMigrations: Record<string, Migration>
-  ): Promise<MigrationResultSet>
-
-  async migrateUp(
-    migrationsOrFolderPath: MigrationsOrFolderPath
-  ): Promise<MigrationResultSet> {
-    return this.#migrate(
-      migrationsOrFolderPath,
-      ({ currentIndex, migrations }) =>
-        Math.min(currentIndex + 1, migrations.length - 1)
+  async migrateUp(): Promise<MigrationResultSet> {
+    return this.#migrate(({ currentIndex, migrations }) =>
+      Math.min(currentIndex + 1, migrations.length - 1)
     )
   }
 
   /**
    * Migrate one step down.
    *
-   * Otherwise works just like {@link migrateToLatest}. The only argument
-   * behaves the same, the output is the same etc.
+   * This method returns a {@link MigrationResultSet} instance and _never_ throws.
+   * {@link MigrationResultSet.error} holds the error if something went wrong.
+   * {@link MigrationResultSet.results} contains information about which migrations
+   * were executed and which failed.
    *
    * ### Examples
    *
    * ```ts
-   * await db.migration.migrateDown(
-   *   path.join(__dirname, 'migrations'),
-   * )
+   * await migrator.migrateDown()
    * ```
    */
-  migrateDown(migrationsFolderPath: string): Promise<MigrationResultSet>
-
-  migrateDown(
-    allMigrations: Record<string, Migration>
-  ): Promise<MigrationResultSet>
-
-  async migrateDown(
-    migrationsOrFolderPath: MigrationsOrFolderPath
-  ): Promise<MigrationResultSet> {
-    return this.#migrate(migrationsOrFolderPath, ({ currentIndex }) =>
-      Math.max(currentIndex - 1, -1)
-    )
+  async migrateDown(): Promise<MigrationResultSet> {
+    return this.#migrate(({ currentIndex }) => Math.max(currentIndex - 1, -1))
   }
 
   async #migrate(
-    migrationsOrFolderPath: MigrationsOrFolderPath,
-    getTargetMigration: (state: MigrationState) => number | undefined
+    getTargetMigrationIndex: (state: MigrationState) => number | undefined
   ): Promise<MigrationResultSet> {
     try {
       await this.#ensureMigrationTablesExists()
-
-      return await this.#runMigrations(
-        migrationsOrFolderPath,
-        getTargetMigration
-      )
+      return await this.#runMigrations(getTargetMigrationIndex)
     } catch (error) {
       if (error instanceof MigrationResultSetError) {
         return error.resultSet
@@ -328,7 +215,7 @@ export class MigrationModule {
   async #ensureMigrationTableExists(): Promise<void> {
     if (!(await this.#doesTableExists(MIGRATION_TABLE))) {
       try {
-        await this.#db.schema
+        await this.#props.db.schema
           .createTable(MIGRATION_TABLE)
           .ifNotExists()
           .addColumn('name', 'varchar(255)', (col) =>
@@ -352,7 +239,7 @@ export class MigrationModule {
   async #ensureMigrationLockTableExists(): Promise<void> {
     if (!(await this.#doesTableExists(MIGRATION_LOCK_TABLE))) {
       try {
-        await this.#db.schema
+        await this.#props.db.schema
           .createTable(MIGRATION_LOCK_TABLE)
           .ifNotExists()
           .addColumn('id', 'varchar(255)', (col) => col.notNull().primaryKey())
@@ -374,7 +261,7 @@ export class MigrationModule {
   async #ensureLockRowExists(): Promise<void> {
     if (!(await this.#doesLockRowExists())) {
       try {
-        await this.#db
+        await this.#props.db
           .insertInto(MIGRATION_LOCK_TABLE)
           .values({ id: MIGRATION_LOCK_ID })
           .execute()
@@ -387,7 +274,7 @@ export class MigrationModule {
   }
 
   async #doesTableExists(tableName: string): Promise<boolean> {
-    const metadata = await this.#db.introspection.getMetadata({
+    const metadata = await this.#props.db.introspection.getMetadata({
       withInternalKyselyTables: true,
     })
 
@@ -395,7 +282,7 @@ export class MigrationModule {
   }
 
   async #doesLockRowExists(): Promise<boolean> {
-    const lockRow = await this.#db
+    const lockRow = await this.#props.db
       .selectFrom(MIGRATION_LOCK_TABLE)
       .where('id', '=', MIGRATION_LOCK_ID)
       .select('id')
@@ -405,20 +292,19 @@ export class MigrationModule {
   }
 
   async #runMigrations(
-    migrationsOrFolderPath: MigrationsOrFolderPath,
-    getTargetMigration: (state: MigrationState) => number | undefined
+    getTargetMigrationIndex: (state: MigrationState) => number | undefined
   ): Promise<MigrationResultSet> {
     const run = async (db: Kysely<any>): Promise<MigrationResultSet> => {
       try {
-        await this.#adapter.acquireMigrationLock(db)
+        await this.#props.db[PRIVATE_ADAPTER].acquireMigrationLock(db)
 
-        const state = await this.#getState(db, migrationsOrFolderPath)
+        const state = await this.#getState(db)
 
         if (state.migrations.length === 0) {
           return { results: [] }
         }
 
-        const targetIndex = getTargetMigration(state)
+        const targetIndex = getTargetMigrationIndex(state)
 
         if (targetIndex === undefined) {
           return { results: [] }
@@ -432,22 +318,19 @@ export class MigrationModule {
 
         return { results: [] }
       } finally {
-        await this.#adapter.releaseMigrationLock(db)
+        await this.#props.db[PRIVATE_ADAPTER].releaseMigrationLock(db)
       }
     }
 
-    if (this.#adapter.supportsTransactionalDdl) {
-      return this.#db.transaction().execute(run)
+    if (this.#props.db[PRIVATE_ADAPTER].supportsTransactionalDdl) {
+      return this.#props.db.transaction().execute(run)
     } else {
-      return this.#db.connection().execute(run)
+      return this.#props.db.connection().execute(run)
     }
   }
 
-  async #getState(
-    db: Kysely<any>,
-    migrationsOrFolderPath: MigrationsOrFolderPath
-  ): Promise<MigrationState> {
-    const migrations = await this.#resolveMigrations(migrationsOrFolderPath)
+  async #getState(db: Kysely<any>): Promise<MigrationState> {
+    const migrations = await this.#resolveMigrations()
     const executedMigrations = await this.#getExecutedMigrations(db)
 
     this.#ensureMigrationsNotCorrupted(migrations, executedMigrations)
@@ -460,12 +343,8 @@ export class MigrationModule {
     })
   }
 
-  async #resolveMigrations(
-    migrationsOrFolderPath: Record<string, Migration> | string
-  ): Promise<ReadonlyArray<NamedMigration>> {
-    const allMigrations = isString(migrationsOrFolderPath)
-      ? await this.#readMigrationsFromFolder(migrationsOrFolderPath)
-      : migrationsOrFolderPath
+  async #resolveMigrations(): Promise<ReadonlyArray<NamedMigration>> {
+    const allMigrations = await this.#props.provider.getMigrations()
 
     return Object.keys(allMigrations)
       .sort()
@@ -473,28 +352,6 @@ export class MigrationModule {
         ...allMigrations[name],
         name,
       }))
-  }
-
-  async #readMigrationsFromFolder(
-    migrationsFolderPath: string
-  ): Promise<Record<string, Migration>> {
-    const files = await fs.readdir(migrationsFolderPath)
-    const migrations: Record<string, Migration> = {}
-
-    for (const file of files) {
-      if (
-        (file.endsWith('.js') || file.endsWith('.ts')) &&
-        !file.endsWith('.d.ts')
-      ) {
-        const migration = await import(path.join(migrationsFolderPath, file))
-
-        if (isMigration(migration)) {
-          migrations[file.substring(0, file.length - 3)] = migration
-        }
-      }
-    }
-
-    return migrations
   }
 
   async #getExecutedMigrations(
@@ -522,7 +379,7 @@ export class MigrationModule {
     }
 
     // Now we know all executed migrations exist in the `migrations` list.
-    // Next we need to make sure that the executed migrations are the first
+    // Next we need to make sure that the executed migratiosns are the first
     // ones in the migration list.
     for (let i = 0; i < executedMigrations.length; ++i) {
       if (migrations[i].name !== executedMigrations[i]) {
@@ -637,6 +494,94 @@ export class MigrationModule {
   }
 }
 
+export interface MigratorProps {
+  readonly db: Kysely<any>
+  readonly provider: MigrationProvider
+}
+
+/**
+ * All migration methods ({@link MigrationModule.migrateTo | migrateTo},
+ * {@link MigrationModule.migrateToLatest | migrateToLatest} etc.) never
+ * throw but return this object instead.
+ */
+export interface MigrationResultSet {
+  /**
+   * This is defined if something went wrong.
+   *
+   * An error may have occurred in one of the migrations in which case the
+   * {@link results} list contains an item with `status === 'Error'` to
+   * indicate which migration failed.
+   *
+   * An error may also have occurred before Kysely was able to figure out
+   * which migrations should be executed, in which case the {@link results}
+   * list is undefined.
+   */
+  readonly error?: unknown
+
+  /**
+   * {@link MigrationResult} for each individual migration that was supposed
+   * to be executed by the operation.
+   *
+   * If all went well, each result's `status` is `Success`. If some migration
+   * failed, the failed migration's result's `status` is `Error` and all
+   * results after that one have `status` ´NotExecuted`.
+   *
+   * This property can be undefined if an error occurred before Kysely was
+   * able to figure out which migrations should be executed.
+   *
+   * If this list is empty, there were no migrations to execute.
+   */
+  readonly results?: MigrationResult[]
+}
+
+export interface MigrationResult {
+  readonly migrationName: string
+
+  /**
+   * The direction in which this migration was executed.
+   */
+  readonly direction: 'Up' | 'Down'
+
+  /**
+   * The execution status.
+   *
+   *  - `Success` means the migration was successfully executed. Note that
+   *    if any of the later migrations in the {@link MigrationResult.results}
+   *    list failed (have status `Error`) AND the dialect supports transactional
+   *    DDL, even the successfull migrations were rolled back.
+   *
+   *  - `Error` means the migration failed. In this case the
+   *    {@link MigrationResult.error} contains the error.
+   *
+   *  - `NotExecuted` means that the migration was supposed to be executed
+   *    but wasn't because an earlier migration failed.
+   */
+  readonly status: 'Success' | 'Error' | 'NotExecuted'
+}
+
+export interface MigrationProvider {
+  /**
+   * Returns all migrations, old and new.
+   *
+   * For example if you have your migrations in a folder as separate files,
+   * you can use the {@link FileMigrationProvider} that implements this
+   * method to return all migrations in a folder.
+   *
+   * The keys of the returned object are migration names and values are the
+   * migrations. The order of the migrations is determined by the alphabetical
+   * order of the migration names. The items in the object don't need to be
+   * sorted, they are sorted by Kysely.
+   */
+  getMigrations(): Promise<Record<string, Migration>>
+}
+
+/**
+ * Type for the {@link NO_MIGRATIONS} constant. Never create one of these.
+ */
+export interface NoMigrations {
+  readonly __noMigrations__: true
+}
+
 interface NamedMigration extends Migration {
   readonly name: string
 }
@@ -660,8 +605,4 @@ class MigrationResultSetError extends Error {
   get resultSet(): MigrationResultSet {
     return this.#resultSet
   }
-}
-
-function isMigration(obj: unknown): obj is Migration {
-  return isObject(obj) && isFunction(obj.up)
 }

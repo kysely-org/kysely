@@ -69,7 +69,8 @@ export * from './dialect/sqlite/sqlite-adapter.js'
 export * from './query-compiler/default-query-compiler.js'
 export * from './query-compiler/query-compiler.js'
 
-export * from './migration/migration.js'
+export * from './migration/migrator.js'
+export * from './migration/file-migration-provider.js'
 
 export * from './dialect/dialect.js'
 export * from './dialect/dialect-adapter.js'
