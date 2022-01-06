@@ -1,5 +1,4 @@
 import * as path from 'path'
-import * as fs from 'fs/promises'
 
 import {
   FileMigrationProvider,
@@ -208,8 +207,6 @@ for (const dialect of BUILT_IN_DIALECTS) {
           const migrator = new Migrator({
             db: ctx.db,
             provider: new FileMigrationProvider(
-              fs.readdir,
-              path.join,
               path.join(__dirname, 'test-migrations')
             ),
           })

@@ -303,9 +303,6 @@ need to depend on a typescript compiler, which most production environments don'
 have. You will probably want to add a simple migration script to your projects like this:
 
 ```ts
-import * as path from 'path'
-import * as fs from 'fs/promises'
-
 import {
   Kysely,
   Migrator,
@@ -323,14 +320,9 @@ async function migrateToLatest() {
 
   const migrator = new Migrator({
     db,
-    // The constructor signature of FileMigrationProvider is a
-    // bit weird to keep Kysely independent of node.js or any
-    // other environment.
     provider: new FileMigrationProvider(
-      fs.readdir,
-      path.join,
       // Path to the folder that contains all your migrations.
-      'migrations'
+      'some/path/to/migrations'
     )
   })
 

@@ -32,14 +32,9 @@ export interface Migration {
  * ```ts
  * const migrator = new Migrator({
  *   db,
- *   // The constructor signature of FileMigrationProvider is a
- *   // bit weird to keep Kysely independent of node.js or any
- *   // other environment.
  *   provider: new FileMigrationProvider(
- *     fs.readdir,
- *     path.join,
  *     // Path to the folder that contains all your migrations.
- *     'migrations'
+ *     'some/path/to/migrations'
  *   )
  * })
  * ```
@@ -67,9 +62,6 @@ export class Migrator {
    * ### Examples
    *
    * ```ts
-   * import * as path from 'path'
-   * import * as fs from 'fs/promises'
-   *
    * const db = new Kysely<Database>({
    *   dialect: new PostgresDialect({
    *     host: 'localhost',
@@ -79,14 +71,9 @@ export class Migrator {
    *
    * const migrator = new Migrator({
    *   db,
-   *   // The constructor signature of FileMigrationProvider is a
-   *   // bit weird to keep Kysely independent of node.js or any
-   *   // other environment.
    *   provider: new FileMigrationProvider(
-   *     fs.readdir,
-   *     path.join,
    *     // Path to the folder that contains all your migrations.
-   *     'migrations'
+   *     'some/path/to/migrations'
    *   )
    * })
    *
