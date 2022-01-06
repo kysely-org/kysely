@@ -1,6 +1,6 @@
 {
   "name": "kysely",
-  "version": "0.15.2",
+  "version": "0.15.3",
   "description": "Type safe SQL query builder",
   "repository": {
     "type": "git",
@@ -15,7 +15,9 @@
     ".": {
       "import": "./dist/esm/index.js",
       "require": "./dist/cjs/index.js"
-    }
+    },
+    "./dist/cjs/index-nodeless.js": "./dist/cjs/index-nodeless.js",
+    "./dist/esm/index-nodeless.js": "./dist/esm/index-nodeless.js"
   },
   "scripts": {
     "test:build": "rm -rf test/dist && tsc -p test",
