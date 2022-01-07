@@ -94,16 +94,16 @@ export class Kysely<DB> extends QueryCreator<DB> {
       )
 
       superProps = { executor, parseContext }
-      props = freeze({
+      props = {
         config: args,
         executor,
         dialect,
         driver: runtimeDriver,
         parseContext,
-      })
+      }
     }
     super(superProps);
-    this.#props = props;
+    this.#props = freeze(props);
   }
 
   /**
