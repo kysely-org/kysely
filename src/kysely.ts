@@ -3,7 +3,7 @@ import { SchemaModule } from './schema/schema.js'
 import { DynamicModule } from './dynamic/dynamic.js'
 import { DefaultConnectionProvider } from './driver/default-connection-provider.js'
 import { QueryExecutor } from './query-executor/query-executor.js'
-import { QueryCreator } from './query-creator.js'
+import { QueryCreator, QueryCreatorProps } from './query-creator.js'
 import { KyselyPlugin } from './plugin/kysely-plugin.js'
 import { DefaultQueryExecutor } from './query-executor/default-query-executor.js'
 import { DatabaseIntrospector } from './dialect/database-introspector.js'
@@ -70,10 +70,11 @@ export class Kysely<DB> extends QueryCreator<DB> {
   constructor(args: KyselyConfig)
   constructor(args: KyselyProps)
   constructor(args: KyselyConfig | KyselyProps) {
-    let _super, _props;
+    let superProps: QueryCreatorProps;
+    let props: KyselyProps;
     if (isKyselyProps(args)) {
-      _super = { executor: args.executor, parseContext: args.parseContext }
-      _props = freeze({ ...args })
+      superProps = { executor: args.executor, parseContext: args.parseContext }
+      props = { ...args }
     } else {
       const dialect = args.dialect
 
@@ -92,8 +93,8 @@ export class Kysely<DB> extends QueryCreator<DB> {
         args.plugins ?? []
       )
 
-      _super = { executor, parseContext }
-      _props = freeze({
+      superProps = { executor, parseContext }
+      props = freeze({
         config: args,
         executor,
         dialect,
@@ -101,8 +102,8 @@ export class Kysely<DB> extends QueryCreator<DB> {
         parseContext,
       })
     }
-    super(_super);
-    this.#props = _props;
+    super(superProps);
+    this.#props = props;
   }
 
   /**
