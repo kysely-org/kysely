@@ -431,7 +431,7 @@ async function testConditionalJoinWhere(db: Kysely<Database>) {
 async function testJoin(db: Kysely<Database>) {
   const r1 = await db
     .selectFrom('person')
-    .innerJoin('movie', 'movie.id', 'person.id')
+    .innerJoin('pet', 'pet.owner_id', 'person.id')
     .selectAll()
     .execute()
 
@@ -444,47 +444,48 @@ async function testJoin(db: Kysely<Database>) {
       gender: 'male' | 'female' | 'other'
       modified_at: Date
 
-      stars: number
+      name: string
+      species: 'cat' | 'dog'
+      owner_id: number
     }[]
   >(r1)
 
   const r2 = await db
     .selectFrom('person')
-    .innerJoin('movie as m', (join) => join.onRef('m.id', '=', 'person.id'))
-    .where('m.stars', '>', 2)
-    .selectAll('m')
+    .innerJoin('pet as p', (join) => join.onRef('p.owner_id', '=', 'person.id'))
+    .where('p.species', 'in', ['cat'])
+    .selectAll('p')
     .execute()
 
-  expectType<{ id: string; stars: number }[]>(r2)
+  expectType<Selectable<Pet>[]>(r2)
+  expectType<
+    { id: string; name: string; species: 'cat' | 'dog'; owner_id: number }[]
+  >(r2)
 
   const r3 = await db
     .selectFrom('person')
     .innerJoin(
-      (qb) =>
-        qb
-          .selectFrom('movie')
-          .select(['movie.id', 'movie.stars as rating'])
-          .as('m'),
-      'm.id',
+      db.selectFrom('pet').select(['pet.id', 'pet.owner_id as owner']).as('p'),
+      'p.owner',
       'person.id'
     )
-    .where('m.rating', '>', 2)
-    .selectAll('m')
+    .where('p.owner', '>', 2)
+    .selectAll('p')
     .execute()
 
-  expectType<{ id: string; rating: number }[]>(r3)
+  expectType<{ id: string; owner: number }[]>(r3)
 
   const r4 = await db
     .selectFrom('person')
     .innerJoin(
-      (qb) => qb.selectFrom('movie').selectAll('movie').as('m'),
-      (join) => join.onRef('m.id', '=', 'person.id')
+      (qb) => qb.selectFrom('pet').selectAll('pet').as('p'),
+      (join) => join.onRef('p.owner_id', '=', 'person.id')
     )
-    .where('m.stars', '>', 2)
-    .selectAll('m')
+    .where('p.owner_id', '>', 2)
+    .selectAll('p')
     .execute()
 
-  expectType<{ id: string; stars: number }[]>(r4)
+  expectType<Selectable<Pet>[]>(r4)
 
   const r5 = await db
     .selectFrom('person')

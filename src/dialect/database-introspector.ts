@@ -5,7 +5,7 @@ import { ColumnDataType } from '../operation-node/data-type-node.js'
  */
 export interface DatabaseIntrospector {
   /**
-   * Get the database metadata such as the names of the tables and columns.
+   * Get the database metadata such as table and column names.
    */
   getMetadata(options?: DatabaseMetadataOptions): Promise<DatabaseMetadata>
 }

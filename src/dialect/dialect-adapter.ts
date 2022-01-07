@@ -24,7 +24,7 @@ export interface DialectAdapter {
 
   /**
    * This method is used to acquire a lock for the migrations so that
-   * it's not possible for two migration processes to run in parallel.
+   * it's not possible for two migration operations to run in parallel.
    *
    * Most dialects have explicit locks that can be used, like advisory locks
    * in PostgreSQL and the get_lock function in MySQL.

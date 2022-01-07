@@ -28,8 +28,8 @@ export interface Dialect {
   createAdapter(): DialectAdapter
 
   /**
-   * Creates a database introspector that can be used to get the database metadata
-   * such as the tables and columns that exist in the database.
+   * Creates a database introspector that can be used to get database metadata
+   * such as the table names and column names of those tables.
    *
    * `db` never has any plugins installed. It's created using
    * {@link Kysely.withoutPlugins}.

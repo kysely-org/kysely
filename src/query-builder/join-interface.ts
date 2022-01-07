@@ -91,13 +91,13 @@ export interface JoinInterface<DB, TB extends keyof DB> {
    * and "pet"."name" = $1
    * ```
    *
-   * You can join a subquery by providing a function as the first
-   * argument:
+   * You can join a subquery by providing a select query (or a callback)
+   * as the first argument:
    *
    * ```ts
    * await db.selectFrom('person')
    *   .innerJoin(
-   *     (qb) => qb.selectFrom('pet')
+   *     qb.selectFrom('pet')
    *       .select(['owner_id', 'name'])
    *       .where('name', '=', 'Doggo')
    *       .as('doggos'),

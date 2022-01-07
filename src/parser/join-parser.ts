@@ -3,8 +3,8 @@ import { AnyColumn, AnyColumnWithTable } from '../util/type-utils.js'
 import {
   TableExpression,
   parseTableExpression,
-  ExtractAliasFromTableExpression,
   TableExpressionDatabase,
+  TableExpressionTables,
 } from './table-parser.js'
 import { parseReferenceFilter } from './filter-parser.js'
 import { JoinBuilder } from '../query-builder/join-builder.js'
@@ -17,18 +17,18 @@ export type JoinReferenceExpression<DB, TB extends keyof DB, TE> =
 export type JoinCallbackExpression<DB, TB extends keyof DB, TE> = (
   join: JoinBuilder<
     TableExpressionDatabase<DB, TE>,
-    TB | ExtractAliasFromTableExpression<DB, TE>
+    TableExpressionTables<DB, TB, TE>
   >
 ) => JoinBuilder<any, any>
 
 type AnyJoinColumn<DB, TB extends keyof DB, TE> = AnyColumn<
   TableExpressionDatabase<DB, TE>,
-  TB | ExtractAliasFromTableExpression<DB, TE>
+  TableExpressionTables<DB, TB, TE>
 >
 
 type AnyJoinColumnWithTable<DB, TB extends keyof DB, TE> = AnyColumnWithTable<
   TableExpressionDatabase<DB, TE>,
-  TB | ExtractAliasFromTableExpression<DB, TE>
+  TableExpressionTables<DB, TB, TE>
 >
 
 export function parseJoin(

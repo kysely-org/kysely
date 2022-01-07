@@ -70,8 +70,9 @@ export class Kysely<DB> extends QueryCreator<DB> {
   constructor(args: KyselyConfig)
   constructor(args: KyselyProps)
   constructor(args: KyselyConfig | KyselyProps) {
-    let superProps: QueryCreatorProps;
-    let props: KyselyProps;
+    let superProps: QueryCreatorProps
+    let props: KyselyProps
+
     if (isKyselyProps(args)) {
       superProps = { executor: args.executor, parseContext: args.parseContext }
       props = { ...args }
@@ -102,8 +103,9 @@ export class Kysely<DB> extends QueryCreator<DB> {
         parseContext,
       }
     }
-    super(superProps);
-    this.#props = freeze(props);
+
+    super(superProps)
+    this.#props = freeze(props)
   }
 
   /**
