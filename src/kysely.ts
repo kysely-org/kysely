@@ -70,9 +70,10 @@ export class Kysely<DB> extends QueryCreator<DB> {
   constructor(args: KyselyConfig)
   constructor(args: KyselyProps)
   constructor(args: KyselyConfig | KyselyProps) {
+    let _super, _props;
     if (isKyselyProps(args)) {
-      super({ executor: args.executor, parseContext: args.parseContext })
-      this.#props = freeze({ ...args })
+      _super = { executor: args.executor, parseContext: args.parseContext }
+      _props = freeze({ ...args })
     } else {
       const dialect = args.dialect
 
@@ -91,9 +92,8 @@ export class Kysely<DB> extends QueryCreator<DB> {
         args.plugins ?? []
       )
 
-      super({ executor, parseContext })
-
-      this.#props = freeze({
+      _super = { executor, parseContext }
+      _props = freeze({
         config: args,
         executor,
         dialect,
@@ -101,6 +101,8 @@ export class Kysely<DB> extends QueryCreator<DB> {
         parseContext,
       })
     }
+    super(_super);
+    this.#props = _props;
   }
 
   /**
