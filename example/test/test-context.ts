@@ -1,5 +1,4 @@
 import * as path from 'path'
-import * as fs from 'fs/promises'
 import axios from 'axios'
 import {
   FileMigrationProvider,
@@ -44,8 +43,6 @@ export class TestContext {
     const migrator = new Migrator({
       db,
       provider: new FileMigrationProvider(
-        fs.readdir,
-        path.join,
         path.join(__dirname, '../src/migrations')
       ),
     })
