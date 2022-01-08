@@ -57,7 +57,7 @@ function readLines(filePath) {
 }
 
 function isLocalImport(row) {
-  return row.includes("from '.")
+  return row.includes("from '.") || row.includes('from ".')
 }
 
 function isDotJsImport(row) {
