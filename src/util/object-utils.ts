@@ -1,16 +1,7 @@
-export type PrimitiveValue =
-  | string
-  | number
-  | boolean
-  | null
-  | Date
-  | Buffer
-  | BigInt
+export type PrimitiveValue = string | number | boolean | null | Date | BigInt
 
-export function isEmpty(
-  obj: ArrayLike<unknown> | string | object | Buffer
-): boolean {
-  if (Array.isArray(obj) || isString(obj) || Buffer.isBuffer(obj)) {
+export function isEmpty(obj: ArrayLike<unknown> | string | object): boolean {
+  if (Array.isArray(obj) || isString(obj)) {
     return obj.length === 0
   } else if (obj) {
     return Object.keys(obj).length === 0
@@ -39,10 +30,6 @@ export function isDate(obj: unknown): obj is Date {
   return obj instanceof Date
 }
 
-export function isBuffer(obj: unknown): obj is Buffer {
-  return Buffer.isBuffer(obj)
-}
-
 export function isBigInt(obj: unknown): obj is BigInt {
   return typeof obj === 'bigint'
 }
@@ -54,7 +41,6 @@ export function isPrimitive(obj: unknown): obj is PrimitiveValue {
     isBoolean(obj) ||
     isNull(obj) ||
     isDate(obj) ||
-    isBuffer(obj) ||
     isBigInt(obj)
   )
 }

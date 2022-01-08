@@ -28,7 +28,7 @@
     "test:esmimports": "node scripts/check-esm-imports.js",
     "prettier": "prettier --write src/**/*.ts test/**/*.ts",
     "build": "npm run clean && npm run build:esm && npm run build:cjs && npm run script:module-fixup && npm run script:copy-interface-doc",
-    "build:esm": "tsc -p tsconfig.json",
+    "build:esm": "tsc -p tsconfig.json && node scripts/add-types-directive.js",
     "build:cjs": "tsc -p tsconfig-cjs.json",
     "docs:build": "typedoc --excludePrivate --excludeInternal --customCss ./docs-theme.css src/index.ts && npm run docs:postprocess",
     "docs:postprocess": "node scripts/post-process-docs.js",
