@@ -10,7 +10,7 @@ export type PrimitiveValue =
 export function isEmpty(
   obj: ArrayLike<unknown> | string | object | Buffer
 ): boolean {
-  if (Array.isArray(obj) || isString(obj) || Buffer.isBuffer(obj)) {
+  if (Array.isArray(obj) || isString(obj) || isBuffer(obj)) {
     return obj.length === 0
   } else if (obj) {
     return Object.keys(obj).length === 0
@@ -39,12 +39,12 @@ export function isDate(obj: unknown): obj is Date {
   return obj instanceof Date
 }
 
-export function isBuffer(obj: unknown): obj is Buffer {
-  return Buffer.isBuffer(obj)
-}
-
 export function isBigInt(obj: unknown): obj is BigInt {
   return typeof obj === 'bigint'
+}
+
+export function isBuffer(obj: unknown): obj is Buffer {
+  return typeof Buffer !== 'undefined' && Buffer.isBuffer(obj)
 }
 
 export function isPrimitive(obj: unknown): obj is PrimitiveValue {
@@ -54,8 +54,8 @@ export function isPrimitive(obj: unknown): obj is PrimitiveValue {
     isBoolean(obj) ||
     isNull(obj) ||
     isDate(obj) ||
-    isBuffer(obj) ||
-    isBigInt(obj)
+    isBigInt(obj) ||
+    isBuffer(obj)
   )
 }
 
