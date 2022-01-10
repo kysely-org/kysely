@@ -1,6 +1,6 @@
 {
   "name": "kysely",
-  "version": "0.16.1",
+  "version": "0.16.3",
   "description": "Type safe SQL query builder",
   "repository": {
     "type": "git",
@@ -28,12 +28,13 @@
     "test:esmimports": "node scripts/check-esm-imports.js",
     "prettier": "prettier --write src/**/*.ts test/**/*.ts",
     "build": "npm run clean && npm run build:esm && npm run build:cjs && npm run script:module-fixup && npm run script:copy-interface-doc",
-    "build:esm": "tsc -p tsconfig.json",
+    "build:esm": "tsc -p tsconfig.json && npm run script:add-deno-type-references",
     "build:cjs": "tsc -p tsconfig-cjs.json",
     "docs:build": "typedoc --excludePrivate --excludeInternal --customCss ./docs-theme.css src/index.ts && npm run docs:postprocess",
     "docs:postprocess": "node scripts/post-process-docs.js",
     "script:module-fixup": "node scripts/module-fixup.js",
     "script:copy-interface-doc": "node scripts/copy-interface-documentation.js",
+    "script:add-deno-type-references": "node scripts/add-deno-type-references.js",
     "prepublishOnly": "npm run build"
   },
   "author": "Sami Koskimäki <sami@jakso.me>",

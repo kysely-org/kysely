@@ -431,14 +431,17 @@ for (const dialect of BUILT_IN_DIALECTS) {
             oc
               .column('name')
               .where('name', '=', 'Catto')
-              .doUpdateSet({ species: 'hamster' })
+              .doUpdateSet({
+                species: 'hamster',
+                name: (eb) => eb.ref('excluded.name'),
+              })
               .where('excluded.name', '!=', 'Doggo')
           )
           .returningAll()
 
         testSql(query, dialect, {
           postgres: {
-            sql: 'insert into "pet" ("name", "owner_id", "species") values ($1, $2, $3) on conflict ("name") where "name" = $4 do update set "species" = $5 where "excluded"."name" != $6 returning *',
+            sql: 'insert into "pet" ("name", "owner_id", "species") values ($1, $2, $3) on conflict ("name") where "name" = $4 do update set "species" = $5, "name" = "excluded"."name" where "excluded"."name" != $6 returning *',
             parameters: [
               existingPet.name,
               existingPet.owner_id,

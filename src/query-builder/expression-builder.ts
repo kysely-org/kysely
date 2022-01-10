@@ -13,6 +13,11 @@ import { createQueryId } from '../util/query-id.js'
 import { freeze } from '../util/object-utils.js'
 import { ParseContext } from '../parser/parse-context.js'
 import { FunctionBuilder } from './function-builder.js'
+import { RawBuilder } from '../index-nodeless.js'
+import {
+  ExtractTypeFromReferenceExpression,
+  StringReference,
+} from '../parser/reference-parser.js'
 
 export class ExpressionBuilder<DB, TB extends keyof DB> {
   readonly #props: ExpressionBuilderProps
@@ -61,6 +66,8 @@ export class ExpressionBuilder<DB, TB extends keyof DB> {
    *
    * The query builder returned by this method is typed in a way that you can refer to
    * all tables of the parent query in addition to the subquery's tables.
+   *
+   * This method accepts all the same inputs as {@link QueryCreator.selectFrom}.
    *
    * ### Examples
    *
@@ -135,6 +142,57 @@ export class ExpressionBuilder<DB, TB extends keyof DB> {
         new WithSchemaPlugin(schema)
       ),
     })
+  }
+
+  /**
+   * See {@link QueryCreator.raw}.
+   */
+  raw<T = unknown>(sql: string, parameters?: unknown[]): RawBuilder<T> {
+    return new RawBuilder({
+      queryId: createQueryId(),
+      executor: this.#props.executor,
+      sql,
+      parameters,
+    })
+  }
+
+  /**
+   * This can be used to reference columns.
+   *
+   * ### Examples
+   *
+   * In the next example we use the `ref` method to reference
+   * columns of the virtual table `excluded` in a type-safe way
+   * to create an upsert operation:
+   *
+   * ```ts
+   * db.insertInto('person')
+   *   .values(person)
+   *   .onConflict(oc => oc
+   *     .column('id')
+   *     .doUpdateSet({
+   *       first_name: (eb) => eb.ref('excluded.first_name'),
+   *       last_name: (eb) => eb.ref('excluded.last_name')
+   *     })
+   *   )
+   * ```
+   *
+   * In the next example we use `ref` in a raw expression. Unless you
+   * want to be as type-safe as possible, this is probably overkill:
+   *
+   * ```ts
+   * db.update('pet').set({
+   *   name: (eb) => eb.raw('concat(?, ?)', [
+   *     eb.ref('pet.name'),
+   *     suffix,
+   *   ])
+   * })
+   * ```
+   */
+  ref<RE extends StringReference<DB, TB>>(
+    reference: RE
+  ): RawBuilder<ExtractTypeFromReferenceExpression<DB, TB, RE>> {
+    return this.raw('??', [reference])
   }
 }
 

@@ -553,7 +553,7 @@ export class QueryCreator<DB> {
    * @param params - The parameters that will be bound to the `?` and `??` placeholders in
    *    the sql string.
    */
-  raw<T = unknown>(sql: string, parameters?: any[]): RawBuilder<T> {
+  raw<T = unknown>(sql: string, parameters?: unknown[]): RawBuilder<T> {
     return new RawBuilder({
       queryId: createQueryId(),
       executor: this.#props.executor,

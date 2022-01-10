@@ -422,6 +422,22 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    * values ($1, $2)
    * on conflict ("name") do nothing
    * ```
+   *
+   * You can refer to the columns of the virtual `excluded` table
+   * in a type-safe way using a callback and the `ref` method of
+   * `ExpressionBuilder`:
+   *
+   * ```ts
+   * db.insertInto('person')
+   *   .values(person)
+   *   .onConflict(oc => oc
+   *     .column('id')
+   *     .doUpdateSet({
+   *       first_name: (eb) => eb.ref('excluded.first_name'),
+   *       last_name: (eb) => eb.ref('excluded.last_name')
+   *     })
+   *   )
+   * ```
    */
   onConflict(
     callback: (

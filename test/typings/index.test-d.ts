@@ -608,6 +608,20 @@ async function testInsert(db: Kysely<Database>) {
 
   expectType<InsertResult>(r4)
 
+  const r5 = await db
+    .insertInto('person')
+    .values(person)
+    .onConflict((oc) =>
+      oc.column('id').doUpdateSet({
+        // Should be able to reference the `excluded` "table"
+        first_name: (eb) => eb.ref('excluded.first_name'),
+        last_name: (eb) => eb.ref('last_name'),
+      })
+    )
+    .executeTakeFirst()
+
+  expectType<InsertResult>(r5)
+
   // Non-existent table
   expectError(db.insertInto('doesnt_exists'))
 
@@ -619,6 +633,18 @@ async function testInsert(db: Kysely<Database>) {
 
   // Explicitly excluded column
   expectError(db.insertInto('person').values({ modified_at: new Date() }))
+
+  // Non-existent column in a `doUpdateSet` call.
+  expectError(
+    db
+      .insertInto('person')
+      .values(person)
+      .onConflict((oc) =>
+        oc.column('id').doUpdateSet({
+          first_name: (eb) => eb.ref('doesnt_exist'),
+        })
+      )
+  )
 }
 
 async function testReturning(db: Kysely<Database>) {

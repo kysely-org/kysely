@@ -306,11 +306,8 @@ export class OnConflictBuilder<DB, TB extends keyof DB>
    * ```
    */
   doUpdateSet(
-    updates: MutationObject<DB, TB>
-  ): OnConflictUpdateBuilder<
-    { [K in keyof DB | 'excluded']: K extends keyof DB ? DB[K] : DB[TB] },
-    TB | 'excluded'
-  > {
+    updates: MutationObject<OnConflictDatabase<DB, TB>, OnConflictTables<TB>>
+  ): OnConflictUpdateBuilder<OnConflictDatabase<DB, TB>, OnConflictTables<TB>> {
     return new OnConflictUpdateBuilder({
       ...this.#props,
       onConflictNode: OnConflictNode.cloneWith(this.#props.onConflictNode, {
@@ -326,6 +323,12 @@ export interface OnConflictBuilderProps {
 }
 
 preventAwait(OnConflictBuilder, "don't await OnConflictBuilder instances.")
+
+export type OnConflictDatabase<DB, TB extends keyof DB> = {
+  [K in keyof DB | 'excluded']: K extends keyof DB ? DB[K] : DB[TB]
+}
+
+export type OnConflictTables<TB> = TB | 'excluded'
 
 export class OnConflictDoNothingBuilder<DB, TB extends keyof DB>
   implements OperationNodeSource
