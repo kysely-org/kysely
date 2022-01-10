@@ -5,8 +5,8 @@ import {
 } from '../../driver/database-connection.js'
 import { Driver, TransactionSettings } from '../../driver/driver.js'
 import { CompiledQuery } from '../../query-compiler/compiled-query.js'
-import { importNamedFunction } from '../../util/dynamic-import.js'
-import { PostgresDialectConfig } from './postgres-dialect.js'
+import { isFunction } from '../../util/object-utils.js'
+import { PostgresDialectConfig } from './postgres-dialect-config.js'
 
 const PRIVATE_RELEASE_METHOD = Symbol()
 
@@ -88,9 +88,20 @@ export class PostgresDriver implements Driver {
   }
 }
 
-async function importPgPool(): Promise<new (config: PoolConfig) => Pool> {
+type PoolConstructor = new (config: PoolConfig) => Pool
+
+async function importPgPool(): Promise<PoolConstructor> {
   try {
-    return await importNamedFunction('pg', 'Pool')
+    // The imported module name must be a string literal to make
+    // some bundlers work. So don't move this code behind a helper
+    // for example.
+    const pgModule: any = await import('pg')
+
+    if (isFunction(pgModule.Pool)) {
+      return pgModule.Pool
+    } else {
+      return pgModule.default.Pool
+    }
   } catch (error) {
     throw new Error(
       'Postgres client not installed. Please run `npm install pg`'

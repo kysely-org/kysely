@@ -7,9 +7,8 @@ import {
 
 import { Driver } from '../../driver/driver.js'
 import { CompiledQuery } from '../../query-compiler/compiled-query.js'
-import { importFunction } from '../../util/dynamic-import.js'
 import { isBoolean, isFunction, isNumber } from '../../util/object-utils.js'
-import { SqliteDialectConfig } from './sqlite-dialect.js'
+import { SqliteDialectConfig } from './sqlite-dialect-config.js'
 
 export class SqliteDriver implements Driver {
   readonly #config: SqliteDialectConfig
@@ -84,11 +83,23 @@ export class SqliteDriver implements Driver {
   }
 }
 
-async function importBetterSqlite3Database(): Promise<
-  new (fileName: string, options: DatabaseOptions) => Database
-> {
+type DatabaseConstructor = new (
+  fileName: string,
+  options: DatabaseOptions
+) => Database
+
+async function importBetterSqlite3Database(): Promise<DatabaseConstructor> {
   try {
-    return await importFunction('better-sqlite3')
+    // The imported module name must be a string literal to make
+    // some bundlers work. So don't move this code behind a helper
+    // for example.
+    const sqliteModule: any = await import('better-sqlite3')
+
+    if (isFunction(sqliteModule)) {
+      return sqliteModule
+    } else {
+      return sqliteModule.default
+    }
   } catch (error) {
     throw new Error(
       'SQLite client not installed. Please run `npm install better-sqlite3`'

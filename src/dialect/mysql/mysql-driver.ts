@@ -14,9 +14,8 @@ import {
 
 import { Driver, TransactionSettings } from '../../driver/driver.js'
 import { CompiledQuery } from '../../query-compiler/compiled-query.js'
-import { importNamedFunction } from '../../util/dynamic-import.js'
-import { isObject } from '../../util/object-utils.js'
-import { MysqlDialectConfig } from './mysql-dialect.js'
+import { isFunction, isObject } from '../../util/object-utils.js'
+import { MysqlDialectConfig } from './mysql-dialect-config.js'
 
 const PRIVATE_RELEASE_METHOD = Symbol()
 
@@ -115,11 +114,20 @@ export class MysqlDriver implements Driver {
   }
 }
 
-async function importMysqlPoolFactory(): Promise<
-  (config: PoolOptions) => Pool
-> {
+type CreatePool = (config: PoolOptions) => Pool
+
+async function importMysqlPoolFactory(): Promise<CreatePool> {
   try {
-    return await importNamedFunction('mysql2', 'createPool')
+    // The imported module name must be a string literal to make
+    // some bundlers work. So don't move this code behind a helper
+    // for example.
+    const mysqlModule: any = await import('mysql2')
+
+    if (isFunction(mysqlModule.createPool)) {
+      return mysqlModule.createPool
+    } else {
+      return mysqlModule.default.createPool
+    }
   } catch (error) {
     throw new Error(
       'MySQL client not installed. Please run `npm install mysql2`'
