@@ -162,19 +162,19 @@ type UpdateablePerson = Updateable<PersonTable>
 ## Select queries
 
 You can find examples of select queries in the documentation of the 
-[select method](https://koskimas.github.io/kysely/classes/QueryBuilder.html#select) and
-the [where method](https://koskimas.github.io/kysely/classes/QueryBuilder.html#where) 
+[select method](https://koskimas.github.io/kysely/classes/SelectQueryBuilder.html#select) and
+the [where method](https://koskimas.github.io/kysely/classes/SelectQueryBuilder.html#where)
 among other places.
 
 ## Update queries
 
-See the [set method](https://koskimas.github.io/kysely/classes/QueryBuilder.html#set) and the
+See the [set method](https://koskimas.github.io/kysely/classes/UpdateQueryBuilder.html#set) and the
 [updateTable method](https://koskimas.github.io/kysely/classes/Kysely.html#updateTable)
 documentation.
 
 ## Insert queries
 
-See the [values method](https://koskimas.github.io/kysely/classes/QueryBuilder.html#values) and the
+See the [values method](https://koskimas.github.io/kysely/classes/InsertQueryBuilder.html#values) and the
 [insertInto method](https://koskimas.github.io/kysely/classes/Kysely.html#insertInto)
 documentation.
 

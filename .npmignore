@@ -8,6 +8,7 @@ src
 test
 .gitignore
 .prettierrc.json
+.prettierignore
 docker-compose.yml
 docs-theme.css
 package-lock.json
