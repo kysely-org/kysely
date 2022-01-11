@@ -487,8 +487,8 @@ export interface MigratorProps {
 }
 
 /**
- * All migration methods ({@link MigrationModule.migrateTo | migrateTo},
- * {@link MigrationModule.migrateToLatest | migrateToLatest} etc.) never
+ * All migration methods ({@link Migrator.migrateTo | migrateTo},
+ * {@link Migrator.migrateToLatest | migrateToLatest} etc.) never
  * throw but return this object instead.
  */
 export interface MigrationResultSet {
