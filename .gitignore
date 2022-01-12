@@ -1,5 +1,5 @@
 dist
-test/dist
+test/browser/bundle.js
 node_modules
 .vscode
 demo.ts

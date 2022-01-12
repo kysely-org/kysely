@@ -47,6 +47,7 @@ export * from './driver/database-connection.js'
 export * from './driver/connection-provider.js'
 export * from './driver/default-connection-provider.js'
 export * from './driver/single-connection-provider.js'
+export * from './driver/dummy-driver.js'
 
 export * from './dialect/dialect.js'
 export * from './dialect/dialect-adapter.js'

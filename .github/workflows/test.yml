@@ -25,11 +25,11 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Build
-        run: npm run build
-
       - name: Run docker compose
         run: docker-compose up -d
 
       - name: Run tests
         run: npm test
+
+      - name: Run browser tests
+        run: npm run test:browser
