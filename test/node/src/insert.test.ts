@@ -1,4 +1,4 @@
-import { InsertResult, Kysely } from '../../'
+import { InsertResult, Kysely } from '../../../'
 
 import {
   BUILT_IN_DIALECTS,

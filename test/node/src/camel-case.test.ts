@@ -1,4 +1,4 @@
-import { CamelCasePlugin, Generated, Kysely } from '../../'
+import { CamelCasePlugin, Generated, Kysely } from '../../../'
 
 import {
   BUILT_IN_DIALECTS,

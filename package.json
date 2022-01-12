@@ -20,10 +20,10 @@
     "./dist/esm/index-nodeless.js": "./dist/esm/index-nodeless.js"
   },
   "scripts": {
-    "test:build": "rm -rf test/dist && tsc -p test",
-    "clean": "rm -rf dist && rm -rf test/dist",
-    "test": "npm run clean && npm run build:cjs && npm run script:copy-interface-doc && npm run test:build && npm run test:integration && npm run test:typings && npm run test:esmimports",
-    "test:integration": "mocha --timeout 15000 test/dist/**/*.test.js",
+    "clean": "rm -rf dist && rm -rf test/node/dist",
+    "test": "npm run clean && npm run build:cjs && npm run script:copy-interface-doc && npm run test:node:build && npm run test:node && npm run test:typings && npm run test:esmimports",
+    "test:node:build": "rm -rf test/node/dist && tsc -p test/node",
+    "test:node": "mocha --timeout 15000 test/node/dist/**/*.test.js",
     "test:typings": "tsd test/typings",
     "test:esmimports": "node scripts/check-esm-imports.js",
     "prettier": "prettier --write src/**/*.ts test/**/*.ts",

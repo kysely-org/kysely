@@ -8,7 +8,7 @@ import {
   MIGRATION_TABLE,
   Migrator,
   NO_MIGRATIONS,
-} from '../../'
+} from '../../../'
 
 import {
   BUILT_IN_DIALECTS,

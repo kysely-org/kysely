@@ -17,6 +17,7 @@ import {
   Selectable,
   ColumnType,
 } from '.'
+
 import { expectType, expectError, expectAssignable } from 'tsd'
 
 interface Person {
@@ -239,6 +240,13 @@ async function testSelectSingle(db: Kysely<Database>) {
     .select((qb) => qb.fn.max('first_name').as('max_first_name'))
     .execute()
   expectType<{ max_first_name: string }>(r13)
+
+  // FunctionBuilder count call
+  const { count } = db.fn
+  const r14 = await qb
+    .select(count<number>('id').as('count'))
+    .executeTakeFirstOrThrow()
+  expectType<{ count: number }>(r14)
 
   expectError(qb.select('not_property'))
   expectError(qb.select('person.not_property'))
@@ -627,6 +635,11 @@ async function testInsert(db: Kysely<Database>) {
 
   // Non-existent column
   expectError(db.insertInto('person').values({ not_column: 'foo' }))
+
+  // Wrong type for a column
+  expectError(
+    db.insertInto('person').values({ first_name: 10, age: 10, gender: 'other' })
+  )
 
   // Missing required columns
   expectError(db.insertInto('person').values({ first_name: 'Jennifer' }))

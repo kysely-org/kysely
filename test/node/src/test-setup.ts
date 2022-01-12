@@ -22,7 +22,7 @@ import {
   InsertQueryBuilder,
   Logger,
   Generated,
-} from '../../'
+} from '../../../'
 
 export interface Person {
   id: Generated<number>

@@ -1,4 +1,4 @@
-import { ColumnMetadata } from '../../'
+import { ColumnMetadata } from '../../../'
 
 import {
   BUILT_IN_DIALECTS,

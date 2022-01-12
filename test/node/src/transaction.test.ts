@@ -1,4 +1,4 @@
-import { CompiledQuery, Transaction } from '../../'
+import { CompiledQuery, Transaction } from '../../../'
 
 import {
   BUILT_IN_DIALECTS,

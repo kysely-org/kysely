@@ -1,4 +1,4 @@
-import { UpdateResult } from '../../'
+import { UpdateResult } from '../../../'
 
 import {
   BUILT_IN_DIALECTS,

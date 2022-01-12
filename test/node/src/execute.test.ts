@@ -1,4 +1,4 @@
-import { NoResultError, QueryNode } from '../../'
+import { NoResultError, QueryNode } from '../../../'
 
 import {
   BUILT_IN_DIALECTS,

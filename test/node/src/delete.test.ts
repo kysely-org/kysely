@@ -1,4 +1,4 @@
-import { DeleteResult } from '../..'
+import { DeleteResult } from '../../../'
 
 import {
   BUILT_IN_DIALECTS,
