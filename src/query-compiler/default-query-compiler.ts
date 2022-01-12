@@ -55,7 +55,6 @@ import {
   isNumber,
   isBoolean,
   isNull,
-  PrimitiveValue,
   isDate,
   isBigInt,
 } from '../util/object-utils.js'
@@ -1089,7 +1088,7 @@ export class DefaultQueryCompiler
     this.#parameters.push(parameter)
   }
 
-  protected appendImmediateValue(value: PrimitiveValue): void {
+  protected appendImmediateValue(value: unknown): void {
     if (isString(value)) {
       this.append(`'${value}'`)
     } else if (isNumber(value) || isBoolean(value)) {

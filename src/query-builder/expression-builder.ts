@@ -13,11 +13,11 @@ import { createQueryId } from '../util/query-id.js'
 import { freeze } from '../util/object-utils.js'
 import { ParseContext } from '../parser/parse-context.js'
 import { FunctionBuilder } from './function-builder.js'
-import { RawBuilder } from '../index-nodeless.js'
 import {
   ExtractTypeFromReferenceExpression,
   StringReference,
 } from '../parser/reference-parser.js'
+import { RawBuilder } from '../raw-builder/raw-builder.js'
 
 export class ExpressionBuilder<DB, TB extends keyof DB> {
   readonly #props: ExpressionBuilderProps

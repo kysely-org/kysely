@@ -7,7 +7,6 @@ import {
 } from '../operation-node/references-node.js'
 import { SelectAllNode } from '../operation-node/select-all-node.js'
 import { parseStringReference } from '../parser/reference-parser.js'
-import { PrimitiveValue } from '../util/object-utils.js'
 import { preventAwait } from '../util/prevent-await.js'
 import { ColumnDefinitionNode } from '../operation-node/column-definition-node.js'
 import { AnyRawBuilder } from '../util/type-utils.js'
@@ -105,10 +104,21 @@ export interface ColumnDefinitionBuilderInterface {
    *   .addColumn('number_of_legs', 'integer', (col) => col.defaultTo(4))
    *   .execute()
    * ```
+   *
+   * Raw expressions are also supported:
+   *
+   * ```ts
+   * db.schema
+   *   .createTable('pet')
+   *   .addColumn(
+   *     'number_of_legs',
+   *     'integer',
+   *     (col) => col.defaultTo(db.raw('any SQL here'))
+   *   )
+   *   .execute()
+   * ```
    */
-  defaultTo(
-    value: PrimitiveValue | AnyRawBuilder
-  ): ColumnDefinitionBuilderInterface
+  defaultTo(value: DefaultValueExpression): ColumnDefinitionBuilderInterface
 
   /**
    * Adds a check constraint for the column.

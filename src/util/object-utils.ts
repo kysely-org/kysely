@@ -1,15 +1,4 @@
-export type PrimitiveValue =
-  | string
-  | number
-  | boolean
-  | null
-  | Date
-  | Buffer
-  | BigInt
-
-export function isEmpty(
-  obj: ArrayLike<unknown> | string | object | Buffer
-): boolean {
+export function isEmpty(obj: ArrayLike<unknown> | string | object): boolean {
   if (Array.isArray(obj) || isString(obj) || isBuffer(obj)) {
     return obj.length === 0
   } else if (obj) {
@@ -43,20 +32,10 @@ export function isBigInt(obj: unknown): obj is BigInt {
   return typeof obj === 'bigint'
 }
 
-export function isBuffer(obj: unknown): obj is Buffer {
+// Don't change the returnd type to `obj is Buffer` to not create a
+// hard dependency to node.
+export function isBuffer(obj: unknown): obj is { length: number } {
   return typeof Buffer !== 'undefined' && Buffer.isBuffer(obj)
-}
-
-export function isPrimitive(obj: unknown): obj is PrimitiveValue {
-  return (
-    isString(obj) ||
-    isNumber(obj) ||
-    isBoolean(obj) ||
-    isNull(obj) ||
-    isDate(obj) ||
-    isBigInt(obj) ||
-    isBuffer(obj)
-  )
 }
 
 export function isFunction(obj: unknown): obj is Function {

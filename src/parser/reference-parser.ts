@@ -3,11 +3,7 @@ import { ColumnNode } from '../operation-node/column-node.js'
 import { ReferenceExpressionNode } from '../operation-node/operation-node-utils.js'
 import { ReferenceNode } from '../operation-node/reference-node.js'
 import { TableNode } from '../operation-node/table-node.js'
-import {
-  isReadonlyArray,
-  isString,
-  PrimitiveValue,
-} from '../util/object-utils.js'
+import { isReadonlyArray, isString } from '../util/object-utils.js'
 import {
   AnyColumn,
   AnyColumnWithTable,
@@ -54,7 +50,7 @@ export type ExtractTypeFromReferenceExpression<
   ? ValueType<O>
   : RE extends (qb: any) => SelectQueryBuilder<any, any, infer O>
   ? ValueType<O>
-  : PrimitiveValue
+  : unknown
 
 type ExtractTypeFromStringReference<
   DB,
@@ -74,7 +70,7 @@ type ExtractTypeFromStringReference<
     : never
   : RE extends AnyColumn<DB, TB>
   ? ExtractColumnType<DB, TB, RE>
-  : PrimitiveValue
+  : unknown
 
 export function parseReferenceExpressionOrList(
   ctx: ParseContext,

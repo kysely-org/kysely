@@ -52,3 +52,9 @@ export function parseAliasedComplexExpression(
 
   throw new Error(`invalid aliased expression: ${JSON.stringify(exp)}`)
 }
+
+export function isComplexExpression(
+  obj: unknown
+): obj is ComplexExpression<any, any> {
+  return isOperationNodeSource(obj) || isFunction(obj)
+}

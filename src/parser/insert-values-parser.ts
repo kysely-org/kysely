@@ -1,7 +1,7 @@
 import { ColumnNode } from '../operation-node/column-node.js'
 import { PrimitiveValueListNode } from '../operation-node/primitive-value-list-node.js'
 import { ValueListNode } from '../operation-node/value-list-node.js'
-import { freeze, isPrimitive, PrimitiveValue } from '../util/object-utils.js'
+import { freeze } from '../util/object-utils.js'
 import { ParseContext } from './parse-context.js'
 import { parseValueExpression, ValueExpression } from './value-parser.js'
 import { ValuesNode } from '../operation-node/values-node.js'
@@ -10,6 +10,7 @@ import {
   NullableInsertKeys,
   InsertType,
 } from '../util/column-type.js'
+import { isComplexExpression } from './complex-expression-parser.js'
 
 export type InsertObject<DB, TB extends keyof DB> = {
   [C in NonNullableInsertKeys<DB[TB]>]: ValueExpression<
@@ -73,7 +74,7 @@ function parseRowValues(
 ): PrimitiveValueListNode | ValueListNode {
   const rowColumns = Object.keys(row)
 
-  const rowValues: ValueExpression<any, any, PrimitiveValue>[] = new Array(
+  const rowValues: ValueExpression<any, any, unknown>[] = new Array(
     columns.size
   ).fill(null)
 
@@ -86,11 +87,11 @@ function parseRowValues(
     }
   }
 
-  if (rowValues.every(isPrimitive)) {
-    return PrimitiveValueListNode.create(rowValues)
+  if (rowValues.some(isComplexExpression)) {
+    return ValueListNode.create(
+      rowValues.map((it) => parseValueExpression(ctx, it))
+    )
   }
 
-  return ValueListNode.create(
-    rowValues.map((it) => parseValueExpression(ctx, it))
-  )
+  return PrimitiveValueListNode.create(rowValues)
 }

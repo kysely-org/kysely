@@ -1,4 +1,4 @@
-import { freeze, PrimitiveValue } from '../util/object-utils.js'
+import { freeze } from '../util/object-utils.js'
 import { OperationNode } from './operation-node.js'
 
 /**
@@ -8,7 +8,7 @@ import { OperationNode } from './operation-node.js'
  */
 export interface PrimitiveValueListNode extends OperationNode {
   readonly kind: 'PrimitiveValueListNode'
-  readonly values: ReadonlyArray<PrimitiveValue>
+  readonly values: ReadonlyArray<unknown>
 }
 
 /**
@@ -19,7 +19,7 @@ export const PrimitiveValueListNode = freeze({
     return node.kind === 'PrimitiveValueListNode'
   },
 
-  create(values: ReadonlyArray<PrimitiveValue>): PrimitiveValueListNode {
+  create(values: ReadonlyArray<unknown>): PrimitiveValueListNode {
     return freeze({
       kind: 'PrimitiveValueListNode',
       values: freeze([...values]),

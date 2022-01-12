@@ -8,17 +8,13 @@ import {
 } from '../operation-node/data-type-node.js'
 import { DropColumnNode } from '../operation-node/drop-column-node.js'
 import { IdentifierNode } from '../operation-node/identifier-node.js'
-import {
-  isOperationNodeSource,
-  OperationNodeSource,
-} from '../operation-node/operation-node-source.js'
+import { OperationNodeSource } from '../operation-node/operation-node-source.js'
 import { OnModifyForeignAction } from '../operation-node/references-node.js'
 import { RenameColumnNode } from '../operation-node/rename-column-node.js'
 import { TableNode } from '../operation-node/table-node.js'
-import { ValueNode } from '../operation-node/value-node.js'
 import { CompiledQuery } from '../query-compiler/compiled-query.js'
 import { Compilable } from '../util/compilable.js'
-import { freeze, PrimitiveValue } from '../util/object-utils.js'
+import { freeze } from '../util/object-utils.js'
 import { preventAwait } from '../util/prevent-await.js'
 import {
   ColumnDefinitionBuilder,
@@ -41,6 +37,10 @@ import { UniqueConstraintNode } from '../operation-node/unique-constraint-node.j
 import { CheckConstraintNode } from '../operation-node/check-constraint-node.js'
 import { ForeignKeyConstraintNode } from '../operation-node/foreign-key-constraint-node.js'
 import { ColumnNode } from '../operation-node/column-node.js'
+import {
+  DefaultValueExpression,
+  parseDefaultValueExpression,
+} from '../parser/default-value-parser.js'
 
 /**
  * This builder can be used to create a `alter table` query.
@@ -205,14 +205,12 @@ export class AlterColumnBuilder {
     })
   }
 
-  setDefault(value: PrimitiveValue | AnyRawBuilder): AlterTableExecutor {
+  setDefault(value: DefaultValueExpression): AlterTableExecutor {
     return new AlterTableExecutor({
       ...this.#props,
       alterTableNode: AlterTableNode.cloneWith(this.#props.alterTableNode, {
         alterColumn: AlterColumnNode.cloneWith(this.#props.alterColumnNode, {
-          setDefault: isOperationNodeSource(value)
-            ? value.toOperationNode()
-            : ValueNode.createImmediate(value),
+          setDefault: parseDefaultValueExpression(value),
         }),
       }),
     })
@@ -349,7 +347,7 @@ export class AlterTableAddColumnBuilder
     })
   }
 
-  defaultTo(value: PrimitiveValue | AnyRawBuilder): AlterTableAddColumnBuilder {
+  defaultTo(value: DefaultValueExpression): AlterTableAddColumnBuilder {
     return new AlterTableAddColumnBuilder({
       ...this.#props,
       columnBuilder: this.#props.columnBuilder.defaultTo(value),
@@ -484,9 +482,7 @@ export class AlterTableModifyColumnBuilder
     })
   }
 
-  defaultTo(
-    value: PrimitiveValue | AnyRawBuilder
-  ): AlterTableModifyColumnBuilder {
+  defaultTo(value: DefaultValueExpression): AlterTableModifyColumnBuilder {
     return new AlterTableModifyColumnBuilder({
       ...this.#props,
       columnBuilder: this.#props.columnBuilder.defaultTo(value),
