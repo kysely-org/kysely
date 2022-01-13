@@ -1,10 +1,37 @@
-import { CompiledQuery } from '../query-compiler/compiled-query.js'
 import { DatabaseConnection, QueryResult } from './database-connection.js'
 import { Driver } from './driver.js'
 
+/**
+ * A driver that does absolutely nothing.
+ *
+ * You can use this to create Kysely instances solely for building queries
+ *
+ * ### Examples
+ *
+ * This example creates a Kysely instance for building postgres queries:
+ *
+ * ```ts
+ * const db = new Kysely<Database>({
+ *   dialect: {
+ *     createAdapter() {
+ *       return new PostgresAdapter()
+ *     },
+ *     createDriver() {
+ *       return new DummyDriver()
+ *     },
+ *     createIntrospector(db: Kysely<any>) {
+ *       return new PostgresIntrospector(db)
+ *     },
+ *     createQueryCompiler() {
+ *       return new PostgresQueryCompiler()
+ *     },
+ *   },
+ * })
+ * ```
+ */
 export class DummyDriver implements Driver {
-  init(): Promise<void> {
-    throw new Error('Method not implemented.')
+  async init(): Promise<void> {
+    // Nothing to do here.
   }
 
   async acquireConnection(): Promise<DatabaseConnection> {
@@ -33,7 +60,7 @@ export class DummyDriver implements Driver {
 }
 
 class DummyConnection implements DatabaseConnection {
-  async executeQuery<R>(compiledQuery: CompiledQuery): Promise<QueryResult<R>> {
+  async executeQuery<R>(): Promise<QueryResult<R>> {
     return {
       rows: [],
     }
