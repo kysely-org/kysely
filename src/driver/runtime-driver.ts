@@ -15,7 +15,7 @@ export class RuntimeDriver implements Driver {
 
   #initPromise?: Promise<void>
   #destroyPromise?: Promise<void>
-  #connections = new WeakMap<DatabaseConnection, RuntimeConnection>()
+  #connections = new WeakSet<DatabaseConnection>()
 
   constructor(driver: Driver, log: Log) {
     this.#driver = driver
@@ -37,22 +37,20 @@ export class RuntimeDriver implements Driver {
     await this.init()
 
     const connection = await this.#driver.acquireConnection()
-    let runtimeConnection = this.#connections.get(connection)
 
-    if (!runtimeConnection) {
-      runtimeConnection = new RuntimeConnection(connection, this.#log)
-      this.#connections.set(connection, runtimeConnection)
+    if (!this.#connections.has(connection)) {
+      if (this.#needsLogging()) {
+        this.#addLogging(connection)
+      }
+
+      this.#connections.add(connection)
     }
 
-    return runtimeConnection
+    return connection
   }
 
-  async releaseConnection(
-    runtimeConnection: DatabaseConnection
-  ): Promise<void> {
-    if (runtimeConnection instanceof RuntimeConnection) {
-      await this.#driver.releaseConnection(runtimeConnection.connection)
-    }
+  async releaseConnection(connection: DatabaseConnection): Promise<void> {
+    await this.#driver.releaseConnection(connection)
   }
 
   beginTransaction(
@@ -86,31 +84,32 @@ export class RuntimeDriver implements Driver {
 
     await this.#destroyPromise
   }
-}
 
-class RuntimeConnection implements DatabaseConnection {
-  readonly #connection: DatabaseConnection
-  readonly #log: Log
-
-  get connection(): DatabaseConnection {
-    return this.#connection
+  #needsLogging(): boolean {
+    return (
+      this.#log.isLevelEnabled('query') || this.#log.isLevelEnabled('error')
+    )
   }
 
-  constructor(connection: DatabaseConnection, log: Log) {
-    this.#connection = connection
-    this.#log = log
-  }
+  // This method monkey patches the database connection's executeQuery method
+  // by adding logging code around it. Monkey patching is not pretty, but it's
+  // the best option in this case.
+  #addLogging(connection: DatabaseConnection): void {
+    const executeQuery = connection.executeQuery
 
-  async executeQuery<R>(compiledQuery: CompiledQuery): Promise<QueryResult<R>> {
-    const startTime = performanceNow()
+    connection.executeQuery = async (
+      compiledQuery
+    ): Promise<QueryResult<any>> => {
+      const startTime = performanceNow()
 
-    try {
-      return await this.#connection.executeQuery<R>(compiledQuery)
-    } catch (error) {
-      this.#logError(error)
-      throw error
-    } finally {
-      this.#logQuery(compiledQuery, startTime)
+      try {
+        return await executeQuery.call(connection, compiledQuery)
+      } catch (error) {
+        this.#logError(error)
+        throw error
+      } finally {
+        this.#logQuery(compiledQuery, startTime)
+      }
     }
   }
 

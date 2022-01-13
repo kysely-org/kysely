@@ -43,6 +43,10 @@ export class Log {
     }
   }
 
+  isLevelEnabled(level: LogLevel): boolean {
+    return this.#levels[level]
+  }
+
   query(getEvent: () => QueryLogEvent) {
     if (this.#levels.query) {
       this.#logger(getEvent())
