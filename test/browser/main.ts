@@ -37,9 +37,9 @@ const db = new Kysely<Database>({
 window.addEventListener('load', () => {
   const sql = db.selectFrom('person').select('id').compile()
 
-  const div = document.createElement('span')
-  div.id = 'result'
-  div.innerHTML = sql.sql
+  const result = document.createElement('span')
+  result.id = 'result'
+  result.innerHTML = sql.sql
 
-  document.body.appendChild(div)
+  document.body.appendChild(result)
 })
