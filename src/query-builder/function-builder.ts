@@ -62,10 +62,10 @@ export class FunctionBuilder<DB, TB extends keyof DB> {
    *   .execute()
    * ```
    */
-  min<C extends StringReference<DB, TB>>(
+  max<C extends StringReference<DB, TB>>(
     column: C
   ): RawBuilder<ExtractTypeFromReferenceExpression<DB, TB, C>> {
-    return this.#oneArgFunction('min', column)
+    return this.#oneArgFunction('max', column)
   }
 
   /**
@@ -82,10 +82,10 @@ export class FunctionBuilder<DB, TB extends keyof DB> {
    * ```
    *
    */
-  max<C extends StringReference<DB, TB>>(
+  min<C extends StringReference<DB, TB>>(
     column: C
   ): RawBuilder<ExtractTypeFromReferenceExpression<DB, TB, C>> {
-    return this.#oneArgFunction('max', column)
+    return this.#oneArgFunction('min', column)
   }
 
   /**
