@@ -1,10 +1,10 @@
 import {
   Kysely,
   Generated,
-  PostgresAdapter,
   DummyDriver,
-  PostgresIntrospector,
-  PostgresQueryCompiler,
+  SqliteAdapter,
+  SqliteIntrospector,
+  SqliteQueryCompiler,
 } from '../../dist/esm/index-nodeless.js'
 
 interface Person {
@@ -20,16 +20,16 @@ interface Database {
 const db = new Kysely<Database>({
   dialect: {
     createAdapter() {
-      return new PostgresAdapter()
+      return new SqliteAdapter()
     },
     createDriver() {
       return new DummyDriver()
     },
     createIntrospector(db: Kysely<any>) {
-      return new PostgresIntrospector(db)
+      return new SqliteIntrospector(db)
     },
     createQueryCompiler() {
-      return new PostgresQueryCompiler()
+      return new SqliteQueryCompiler()
     },
   },
 })
@@ -40,5 +40,6 @@ window.addEventListener('load', () => {
   const div = document.createElement('span')
   div.id = 'result'
   div.innerHTML = sql.sql
+
   document.body.appendChild(div)
 })

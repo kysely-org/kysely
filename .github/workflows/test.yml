@@ -7,7 +7,7 @@ on:
     branches: [master]
 
 jobs:
-  run-tests:
+  run-node-tests:
     runs-on: ubuntu-latest
 
     strategy:
@@ -28,8 +28,26 @@ jobs:
       - name: Run docker compose
         run: docker-compose up -d
 
-      - name: Run tests
+      - name: Run node tests
         run: npm test
 
       - name: Run browser tests
         run: npm run test:browser
+
+  run-deno-tests:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        deno-version: [1.17.x]
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Use Deno Version ${{ matrix.deno-version }}
+        uses: denolib/setup-deno@v2
+        with:
+          deno-version: ${{ matrix.deno-version }}
+
+      - name: Run deno tests
+        run: deno run test/deno/test.ts

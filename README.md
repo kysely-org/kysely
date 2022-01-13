@@ -3,14 +3,15 @@
 
 # [Kysely](https://koskimas.github.io/kysely/index.html)
 
-A type-safe and autocompletion-friendly typescript SQL query builder for node.js. Inspired by
-[knex](http://knexjs.org/).
+A type-safe and autocompletion-friendly typescript SQL query builder. Inspired by [knex](http://knexjs.org/).
+Mainly developed for [node.js](https://nodejs.org/en/) but also runs on [deno](https://deno.land/) and
+in the browser.
 
 ![](https://github.com/koskimas/kysely/blob/master/assets/demo.gif)
 
-Kysely's typings make sure you only refer to tables and columns that are visible to the part of the query
-you are writing. The result type only has the selected columns with correct types and aliases. This 
-allows tools like vscode autocompletion to make your life so much easier.
+Kysely makes sure you only refer to tables and columns that are visible to the part of the query
+you are writing. The result type only has the selected columns with correct types and aliases. As an
+added bonus you get autocompletion for all of that stuff.
 
 As you can see in the gif above, through the pure magic of modern typescript, Kysely is even able to parse
 the alias given to `pet.name` and add the `pet_name` column to the result row type. Kysely is able to infer
@@ -33,6 +34,8 @@ You can find a more thorough introduction [here](https://www.jakso.me/blog/kysel
 - [Minimal example](#minimal-example)
 - [Query examples](#query-examples)
 - [Migrations](#migrations)
+- [Deno](#deno)
+- [Browser](#browser)
 - [API reference](https://koskimas.github.io/kysely/index.html)
 - [Changelog](https://github.com/koskimas/kysely/releases)
 
@@ -349,6 +352,112 @@ migrateToLatest()
 The migration methods use a lock on the database level, and parallel calls are executed serially.
 This means that you can safely call `migrateToLatest` and other migration methods from multiple
 server instances simultaneously and the migrations are guaranteed to only be executed once.
+
+# Deno
+
+Kysely doesn't include drivers for deno, but you can still use Kysely as a query builder
+or implement your own driver:
+
+```ts
+// We use jsdeliver to get Kysely from npm. We also need to
+// import the `dist/esm/index-nodeless.js` file instead of the
+// root which has node dependencies.
+import {
+  DummyDriver,
+  Generated,
+  Kysely,
+  PostgresAdapter,
+  PostgresIntrospector,
+  PostgresQueryCompiler,
+} from 'https://cdn.jsdelivr.net/npm/kysely/dist/esm/index-nodeless.js'
+
+interface Person {
+  id: Generated<number>
+  first_name: string
+  last_name: string | null
+}
+
+interface Database {
+  person: Person
+}
+
+const db = new Kysely<Database>({
+  dialect: {
+    createAdapter() {
+      return new PostgresAdapter()
+    },
+    createDriver() {
+      // This is the only thing you need to implement to be able
+      // to execute the queries too.
+      return new DummyDriver()
+    },
+    createIntrospector(db: Kysely<unknown>) {
+      return new PostgresIntrospector(db)
+    },
+    createQueryCompiler() {
+      return new PostgresQueryCompiler()
+    },
+  },
+})
+
+const query = db.selectFrom('person').select('id')
+const sql = query.compile()
+
+console.log(sql.sql)
+```
+
+# Browser
+
+Kysely also runs in the browser as long as you import the `dist/esm/index-nodeless.js`
+module instead of the root that has node dependencies.
+
+```ts
+import {
+  Kysely,
+  Generated,
+  DummyDriver,
+  SqliteAdapter,
+  SqliteIntrospector,
+  SqliteQueryCompiler,
+} from '../../dist/esm/index-nodeless.js'
+
+interface Person {
+  id: Generated<number>
+  first_name: string
+  last_name: string | null
+}
+
+interface Database {
+  person: Person
+}
+
+const db = new Kysely<Database>({
+  dialect: {
+    createAdapter() {
+      return new SqliteAdapter()
+    },
+    createDriver() {
+      return new DummyDriver()
+    },
+    createIntrospector(db: Kysely<any>) {
+      return new SqliteIntrospector(db)
+    },
+    createQueryCompiler() {
+      return new SqliteQueryCompiler()
+    },
+  },
+})
+
+window.addEventListener('load', () => {
+  const sql = db.selectFrom('person').select('id').compile()
+
+  const div = document.createElement('span')
+  div.id = 'result'
+  div.innerHTML = sql.sql
+
+  document.body.appendChild(div)
+})
+```
 
 # Why not just contribute to knex
 

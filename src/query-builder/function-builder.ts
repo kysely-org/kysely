@@ -11,7 +11,7 @@ import { createQueryId } from '../util/query-id.js'
  * Helpers for type safe SQL function calls.
  *
  * You can always use {@link Kysely.raw} to call functions and build arbitrary
- * expressions. This module has shortcuts for most popular operations.
+ * expressions. This module simply has shortcuts for most common function calls.
  *
  * ### Examples
  *
