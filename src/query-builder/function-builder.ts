@@ -51,6 +51,16 @@ export class FunctionBuilder<DB, TB extends keyof DB> {
 
   /**
    * Calls the `max` function for the column given as the argument.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * const { max } = db.fn
+   *
+   * db.selectFrom('toy')
+   *   .select(max('price').as('max_price'))
+   *   .execute()
+   * ```
    */
   min<C extends StringReference<DB, TB>>(
     column: C
@@ -60,6 +70,17 @@ export class FunctionBuilder<DB, TB extends keyof DB> {
 
   /**
    * Calls the `min` function for the column given as the argument.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * const { min } = db.fn
+   *
+   * db.selectFrom('toy')
+   *   .select(min('price').as('min_price'))
+   *   .execute()
+   * ```
+   *
    */
   max<C extends StringReference<DB, TB>>(
     column: C
@@ -84,7 +105,7 @@ export class FunctionBuilder<DB, TB extends keyof DB> {
    * const { avg } = db.fn
    *
    * db.selectFrom('toy')
-   *   .select(avg<number>('price'))
+   *   .select(avg<number>('price').as('avg_price'))
    *   .execute()
    * ```
    */
@@ -111,7 +132,7 @@ export class FunctionBuilder<DB, TB extends keyof DB> {
    * const { sum } = db.fn
    *
    * db.selectFrom('toy')
-   *   .select(sum<number>('price'))
+   *   .select(sum<number>('price').as('total_price'))
    *   .execute()
    * ```
    */
@@ -139,7 +160,7 @@ export class FunctionBuilder<DB, TB extends keyof DB> {
    * const { count } = db.fn
    *
    * db.selectFrom('toy')
-   *   .select(count<number>('price'))
+   *   .select(count<number>('id').as('num_toys'))
    *   .execute()
    * ```
    */
