@@ -5,7 +5,7 @@ import {
   PostgresAdapter,
   PostgresIntrospector,
   PostgresQueryCompiler,
-} from 'https://cdn.jsdelivr.net/npm/kysely/dist/esm/index-nodeless.js'
+} from '../../dist/esm/index-nodeless.js'
 
 interface Person {
   id: Generated<number>
@@ -42,4 +42,4 @@ if (sql.sql !== 'select "id" from "person"') {
   Deno.exit(1)
 }
 
-console.error('deno test passed')
+console.error('local deno test passed')

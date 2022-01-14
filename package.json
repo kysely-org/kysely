@@ -26,7 +26,7 @@
     "test:node": "mocha --timeout 15000 test/node/dist/**/*.test.js",
     "test:browser:build": "rm -rf test/browser/bundle.js && esbuild test/browser/main.ts --bundle --outfile=test/browser/bundle.js",
     "test:browser": "npm run build && npm run test:browser:build && node test/browser/test.js",
-    "test:deno": "deno run test/deno/test.ts",
+    "test:deno": "npm run build && deno run test/deno/local.test.ts && deno run test/deno/cdn.test.ts",
     "test:typings": "tsd test/typings",
     "test:esmimports": "node scripts/check-esm-imports.js",
     "prettier": "prettier --write src/**/*.ts test/**/*.ts",
