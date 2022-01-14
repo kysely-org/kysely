@@ -3,7 +3,7 @@
     "module": "commonjs",
     "target": "ESNext",
     "declaration": true,
-    "outDir": "./lib",
+    "outDir": "./dist",
     "strict": true,
     "noImplicitAny": true,
   },

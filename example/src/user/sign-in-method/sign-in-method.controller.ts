@@ -1,20 +1,19 @@
-import {
-  authTokenService,
-  RefreshTokenUserIdMismatchError,
-} from '../../authentication/auth-token.service'
-import { authenticationService } from '../../authentication/authentication.service'
-import { validateRefreshToken } from '../../authentication/refresh-token'
-import { Router } from '../../router'
-import { UserNotFoundError } from '../../util/errors'
-import { validatePasswordSignInMethod } from './sign-in-method'
+import * as signInMethodService from './sign-in-method.service'
+import * as authenticationService from '../../authentication/authentication.service'
+import * as authTokenService from '../../authentication/auth-token.service'
+
+import { RefreshTokenUserIdMismatchError } from '../../authentication/auth-token.service'
 import {
   PasswordTooLongError,
   PasswordTooWeakError,
   SignInMethodNotFoundError,
-  signInMethodService,
   UserAlreadyHasSignInMethodError,
   WrongPasswordError,
 } from './sign-in-method.service'
+import { validateRefreshToken } from '../../authentication/refresh-token'
+import { Router } from '../../router'
+import { UserNotFoundError } from '../../util/errors'
+import { validatePasswordSignInMethod } from './sign-in-method'
 
 export function signInMethodController(router: Router): void {
   router.post(

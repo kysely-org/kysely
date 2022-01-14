@@ -1,8 +1,11 @@
 import { Kysely } from 'kysely'
 import { Database } from '../../database'
-import { PasswordSignInMethodRow } from './password-sign-in-method.table'
+import {
+  InsertablePasswordSignInMethodRow,
+  PasswordSignInMethodRow,
+} from './password-sign-in-method.table'
 
-async function findPasswordSignInMethod(
+export async function findPasswordSignInMethod(
   db: Kysely<Database>,
   userId: string
 ): Promise<PasswordSignInMethodRow | undefined> {
@@ -17,9 +20,9 @@ async function findPasswordSignInMethod(
   return method
 }
 
-async function insertPasswordSignInMethod(
+export async function insertPasswordSignInMethod(
   db: Kysely<Database>,
-  method: PasswordSignInMethodRow
+  method: InsertablePasswordSignInMethodRow
 ): Promise<PasswordSignInMethodRow> {
   await db
     .with('sim', (db) =>
@@ -33,8 +36,3 @@ async function insertPasswordSignInMethod(
 
   return method
 }
-
-export const signInMethodRepository = Object.freeze({
-  findPasswordSignInMethod,
-  insertPasswordSignInMethod,
-})

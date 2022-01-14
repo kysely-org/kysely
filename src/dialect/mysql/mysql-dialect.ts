@@ -9,6 +9,7 @@ import { MysqlIntrospector } from './mysql-introspector.js'
 import { DialectAdapter } from '../dialect-adapter.js'
 import { MysqlAdapter } from './mysql-adapter.js'
 import { MysqlDialectConfig } from './mysql-dialect-config.js'
+import { freeze } from '../../util/object-utils.js'
 
 /**
  * MySQL dialect that uses the [mysql2](https://github.com/sidorares/node-mysql2#readme) library.
@@ -21,7 +22,7 @@ export class MysqlDialect implements Dialect {
   readonly #config: MysqlDialectConfig
 
   constructor(config: MysqlDialectConfig) {
-    this.#config = config
+    this.#config = freeze({ ...config })
   }
 
   createDriver(): Driver {

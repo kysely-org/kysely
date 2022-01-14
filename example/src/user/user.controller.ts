@@ -1,8 +1,9 @@
-import { authenticationService } from '../authentication/authentication.service'
+import * as userService from './user.service'
+import * as authenticationService from '../authentication/authentication.service'
+
 import { Router } from '../router'
 import { signInMethodController } from './sign-in-method/sign-in-method.controller'
 import { validateCreateAnonymousUserRequest } from './user'
-import { userService } from './user.service'
 
 export function userController(router: Router): void {
   router.post('/api/v1/user', async (ctx) => {

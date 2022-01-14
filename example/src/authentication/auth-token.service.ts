@@ -1,11 +1,10 @@
 import * as jwt from 'jsonwebtoken'
+import * as refreshTokenRepository from './refresh-token.repository'
 import { Kysely } from 'kysely'
-
 import { config } from '../config'
 import { Database } from '../database'
 import { AuthToken } from './auth-token'
 import { RefreshToken } from './refresh-token'
-import { refreshTokenRepository } from './refresh-token.repository'
 
 export class AuthTokenError extends Error {}
 export class InvalidAuthTokenError extends AuthTokenError {}
@@ -23,7 +22,7 @@ interface RefreshTokenPayload {
   isRefreshToken: true
 }
 
-async function createRefreshToken(
+export async function createRefreshToken(
   db: Kysely<Database>,
   userId: string
 ): Promise<RefreshToken> {
@@ -44,7 +43,7 @@ function signRefreshToken(tokenPayload: RefreshTokenPayload): RefreshToken {
   return { refreshToken: jwt.sign(tokenPayload, config.authTokenSecret) }
 }
 
-async function createAuthToken(
+export async function createAuthToken(
   db: Kysely<Database>,
   refreshToken: RefreshToken
 ): Promise<AuthToken> {
@@ -85,7 +84,7 @@ function signAuthToken(tokenPayload: AuthTokenPayload): AuthToken {
   }
 }
 
-function verifyAuthToken(token: AuthToken): AuthTokenPayload {
+export function verifyAuthToken(token: AuthToken): AuthTokenPayload {
   const payload = verifyToken(token.authToken)
 
   if (
@@ -115,7 +114,7 @@ function verifyToken(token: string): string | jwt.JwtPayload {
   }
 }
 
-async function deleteRefreshToken(
+export async function deleteRefreshToken(
   db: Kysely<Database>,
   userId: string,
   refreshToken: RefreshToken
@@ -131,10 +130,3 @@ async function deleteRefreshToken(
     .where('refresh_token_id', '=', payload.refreshTokenId)
     .execute()
 }
-
-export const authTokenService = Object.freeze({
-  createRefreshToken,
-  createAuthToken,
-  verifyAuthToken,
-  deleteRefreshToken,
-})

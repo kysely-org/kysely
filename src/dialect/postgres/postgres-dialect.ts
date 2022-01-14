@@ -9,6 +9,7 @@ import { PostgresQueryCompiler } from './postgres-query-compiler.js'
 import { DialectAdapter } from '../dialect-adapter.js'
 import { PostgresAdapter } from './postgres-adapter.js'
 import { PostgresDialectConfig } from './postgres-dialect-config.js'
+import { freeze } from '../../util/object-utils.js'
 
 /**
  * PostgreSQL dialect that uses the [pg](https://node-postgres.com/) library.
@@ -24,7 +25,7 @@ export class PostgresDialect implements Dialect {
   readonly #config: PostgresDialectConfig
 
   constructor(config: PostgresDialectConfig) {
-    this.#config = config
+    this.#config = freeze({ ...config })
   }
 
   createDriver(): Driver {

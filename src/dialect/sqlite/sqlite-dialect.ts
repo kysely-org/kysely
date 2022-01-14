@@ -9,6 +9,7 @@ import { SqliteIntrospector } from './sqlite-introspector.js'
 import { DialectAdapter } from '../dialect-adapter.js'
 import { SqliteAdapter } from './sqlite-adapter.js'
 import { SqliteDialectConfig } from './sqlite-dialect-config.js'
+import { freeze } from '../../util/object-utils.js'
 
 /**
  * SQLite dialect that uses the [better-sqlite3](https://github.com/JoshuaWise/better-sqlite3) library.
@@ -21,7 +22,7 @@ export class SqliteDialect implements Dialect {
   readonly #config: SqliteDialectConfig
 
   constructor(config: SqliteDialectConfig) {
-    this.#config = config
+    this.#config = freeze({ ...config })
   }
 
   createDriver(): Driver {

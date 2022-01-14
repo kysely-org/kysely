@@ -4,8 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "rm -rf lib && tsc",
-    "test": "mocha --timeout 5000 -r ts-node/register test/**/*.test.ts"
+    "build": "rm -rf dist && tsc",
+    "test": "mocha --timeout 5000 -r ts-node/register test/**/*.test.ts",
+    "migrate:latest": "node dist/migrate-to-latest.js"
   },
   "author": "Sami Koskimäki <sami@jakso.me>",
   "license": "MIT",
@@ -18,7 +19,7 @@
     "koa-compress": "^5.1.0",
     "koa-json": "^2.0.2",
     "koa-router": "^10.1.1",
-    "kysely": "0.16.0",
+    "kysely": "0.16.6",
     "pg": "^8.7.1"
   },
   "devDependencies": {
@@ -35,6 +36,6 @@
     "chai": "^4.3.4",
     "mocha": "^9.1.3",
     "ts-node": "^10.4.0",
-    "typescript": "^4.5.2"
+    "typescript": "^4.5.4"
   }
 }

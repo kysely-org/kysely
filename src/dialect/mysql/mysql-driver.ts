@@ -6,15 +6,13 @@ import {
   OkPacket,
   ResultSetHeader,
 } from 'mysql2'
-
 import {
   DatabaseConnection,
   QueryResult,
 } from '../../driver/database-connection.js'
-
 import { Driver, TransactionSettings } from '../../driver/driver.js'
 import { CompiledQuery } from '../../query-compiler/compiled-query.js'
-import { isFunction, isObject } from '../../util/object-utils.js'
+import { isFunction, isObject, freeze } from '../../util/object-utils.js'
 import { MysqlDialectConfig } from './mysql-dialect-config.js'
 
 const PRIVATE_RELEASE_METHOD = Symbol()
@@ -25,7 +23,7 @@ export class MysqlDriver implements Driver {
   #pool?: Pool
 
   constructor(config: MysqlDialectConfig) {
-    this.#config = config
+    this.#config = freeze({ ...config })
   }
 
   async init(): Promise<void> {

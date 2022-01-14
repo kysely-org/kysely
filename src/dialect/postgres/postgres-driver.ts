@@ -5,7 +5,7 @@ import {
 } from '../../driver/database-connection.js'
 import { Driver, TransactionSettings } from '../../driver/driver.js'
 import { CompiledQuery } from '../../query-compiler/compiled-query.js'
-import { isFunction } from '../../util/object-utils.js'
+import { isFunction, freeze } from '../../util/object-utils.js'
 import { PostgresDialectConfig } from './postgres-dialect-config.js'
 
 const PRIVATE_RELEASE_METHOD = Symbol()
@@ -16,7 +16,7 @@ export class PostgresDriver implements Driver {
   #pool: Pool | null = null
 
   constructor(config: PostgresDialectConfig) {
-    this.#config = config
+    this.#config = freeze({ ...config })
   }
 
   async init(): Promise<void> {

@@ -1,8 +1,11 @@
 import { Kysely } from 'kysely'
 import { Database } from '../database'
-import { RefreshTokenRow, UpdateableRefreshTokenRow } from './refresh-token.table'
+import {
+  RefreshTokenRow,
+  UpdateableRefreshTokenRow,
+} from './refresh-token.table'
 
-async function insertRefreshToken(
+export async function insertRefreshToken(
   db: Kysely<Database>,
   userId: string
 ): Promise<RefreshTokenRow> {
@@ -18,7 +21,7 @@ async function insertRefreshToken(
   return refreshToken
 }
 
-async function findRefreshToken(
+export async function findRefreshToken(
   db: Kysely<Database>,
   userId: string,
   refreshTokenId: string
@@ -34,7 +37,7 @@ async function findRefreshToken(
   return token
 }
 
-async function updateRefreshToken(
+export async function updateRefreshToken(
   db: Kysely<Database>,
   refreshTokenId: string,
   patch: Pick<UpdateableRefreshTokenRow, 'last_refreshed_at'>
@@ -45,9 +48,3 @@ async function updateRefreshToken(
     .where('refresh_token_id', '=', refreshTokenId)
     .execute()
 }
-
-export const refreshTokenRepository = Object.freeze({
-  insertRefreshToken,
-  findRefreshToken,
-  updateRefreshToken,
-})

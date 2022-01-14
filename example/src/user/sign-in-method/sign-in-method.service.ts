@@ -1,12 +1,13 @@
 import * as crypto from 'crypto'
+import * as signInMethodRepository from './sign-in-method.repository'
+import * as userService from '../user.service'
+import * as authTokenService from '../../authentication/auth-token.service'
+
 import { Transaction } from 'kysely'
-import { authTokenService } from '../../authentication/auth-token.service'
 import { Database } from '../../database'
 import { UserNotFoundError } from '../../util/errors'
 import { SignedInUser } from '../signed-in-user'
-import { userService } from '../user.service'
 import { PasswordSignInMethod } from './sign-in-method'
-import { signInMethodRepository } from './sign-in-method.repository'
 
 export const MIN_PASSWORD_LENGTH = 8
 export const MAX_PASSWORD_LENGTH = 255
@@ -17,7 +18,7 @@ export class WrongPasswordError extends Error {}
 export class PasswordTooWeakError extends Error {}
 export class PasswordTooLongError extends Error {}
 
-async function addPasswordSignInMethod(
+export async function addPasswordSignInMethod(
   trx: Transaction<Database>,
   userId: string,
   method: PasswordSignInMethod
@@ -80,7 +81,7 @@ async function scrypt(secret: string, salt: string): Promise<string> {
   })
 }
 
-async function singInUsingPassword(
+export async function singInUsingPassword(
   trx: Transaction<Database>,
   method: PasswordSignInMethod
 ): Promise<SignedInUser> {
@@ -119,8 +120,3 @@ async function verifyPassword(
 ): Promise<boolean> {
   return verifySecret(password, hash)
 }
-
-export const signInMethodService = Object.freeze({
-  addPasswordSignInMethod,
-  singInUsingPassword,
-})

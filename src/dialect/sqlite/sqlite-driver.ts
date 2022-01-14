@@ -1,13 +1,16 @@
 import { Database, Options as DatabaseOptions } from 'better-sqlite3'
-
 import {
   DatabaseConnection,
   QueryResult,
 } from '../../driver/database-connection.js'
-
 import { Driver } from '../../driver/driver.js'
 import { CompiledQuery } from '../../query-compiler/compiled-query.js'
-import { isBoolean, isFunction, isNumber } from '../../util/object-utils.js'
+import {
+  freeze,
+  isBoolean,
+  isFunction,
+  isNumber,
+} from '../../util/object-utils.js'
 import { SqliteDialectConfig } from './sqlite-dialect-config.js'
 
 export class SqliteDriver implements Driver {
@@ -18,7 +21,7 @@ export class SqliteDriver implements Driver {
   #connection?: DatabaseConnection
 
   constructor(config: SqliteDialectConfig) {
-    this.#config = config
+    this.#config = freeze({ ...config })
   }
 
   async init(): Promise<void> {

@@ -1,13 +1,14 @@
+import * as refreshTokenRepository from './refresh-token.repository'
+import * as authTokenService from './auth-token.service'
+
+import { AuthTokenExpiredError, AuthTokenPayload } from './auth-token.service'
 import { Next } from 'koa'
 import { Context } from '../context'
-import {
-  AuthTokenExpiredError,
-  AuthTokenPayload,
-  authTokenService,
-} from './auth-token.service'
-import { refreshTokenRepository } from './refresh-token.repository'
 
-async function authenticateUser(ctx: Context, next: Next): Promise<void> {
+export async function authenticateUser(
+  ctx: Context,
+  next: Next
+): Promise<void> {
   const { userId } = ctx.params
 
   if (!userId) {
@@ -61,7 +62,3 @@ async function authenticateUser(ctx: Context, next: Next): Promise<void> {
 
   return next()
 }
-
-export const authenticationService = Object.freeze({
-  authenticateUser,
-})
