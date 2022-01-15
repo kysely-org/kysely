@@ -9,19 +9,19 @@ export function userController(router: Router): void {
   router.post('/api/v1/user', async (ctx) => {
     const { body } = ctx.request
 
-    if (validateCreateAnonymousUserRequest(body)) {
-      const result = await ctx.db.transaction().execute(async (trx) => {
-        return userService.createAnonymousUser(trx, body)
-      })
-
-      ctx.status = 201
-      ctx.body = {
-        user: result.user,
-        authToken: result.authToken.authToken,
-        refreshToken: result.refreshToken.refreshToken,
-      }
-    } else {
+    if (!validateCreateAnonymousUserRequest(body)) {
       ctx.throwError(400, 'InvalidUser', 'invalid user')
+    }
+
+    const result = await ctx.db.transaction().execute(async (trx) => {
+      return userService.createAnonymousUser(trx, body)
+    })
+
+    ctx.status = 201
+    ctx.body = {
+      user: result.user,
+      authToken: result.authToken.authToken,
+      refreshToken: result.refreshToken.refreshToken,
     }
   })
 

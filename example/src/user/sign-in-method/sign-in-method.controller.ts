@@ -22,38 +22,37 @@ export function signInMethodController(router: Router): void {
     async (ctx) => {
       const { body } = ctx.request
 
-      if (validatePasswordSignInMethod(body)) {
-        try {
-          await ctx.db.transaction().execute(async (trx) => {
-            await signInMethodService.addPasswordSignInMethod(
-              trx,
-              ctx.params.userId,
-              body
-            )
-          })
-
-          ctx.status = 201
-          ctx.body = { success: true }
-        } catch (error) {
-          if (error instanceof UserNotFoundError) {
-            ctx.throwError(404, 'UserNotFound', 'user not found')
-          } else if (error instanceof PasswordTooWeakError) {
-            ctx.throwError(400, 'PasswordTooWeak', 'password is too weak')
-          } else if (error instanceof PasswordTooLongError) {
-            ctx.throwError(400, 'PasswordTooLong', 'password is too long')
-          } else if (error instanceof UserAlreadyHasSignInMethodError) {
-            ctx.throwError(
-              409,
-              'UserAlreadyHasSignInMethod',
-              'the user already has a sign in method'
-            )
-          }
-
-          throw error
-        }
-      } else {
-        console.log(validatePasswordSignInMethod.errors)
+      if (!validatePasswordSignInMethod(body)) {
         ctx.throwError(400, 'InvalidSignInMethod', 'invalid sign in method')
+      }
+
+      try {
+        await ctx.db.transaction().execute(async (trx) => {
+          await signInMethodService.addPasswordSignInMethod(
+            trx,
+            ctx.params.userId,
+            body
+          )
+        })
+
+        ctx.status = 201
+        ctx.body = { success: true }
+      } catch (error) {
+        if (error instanceof UserNotFoundError) {
+          ctx.throwError(404, 'UserNotFound', 'user not found')
+        } else if (error instanceof PasswordTooWeakError) {
+          ctx.throwError(400, 'PasswordTooWeak', 'password is too weak')
+        } else if (error instanceof PasswordTooLongError) {
+          ctx.throwError(400, 'PasswordTooLong', 'password is too long')
+        } else if (error instanceof UserAlreadyHasSignInMethodError) {
+          ctx.throwError(
+            409,
+            'UserAlreadyHasSignInMethod',
+            'the user already has a sign in method'
+          )
+        }
+
+        throw error
       }
     }
   )
@@ -61,32 +60,32 @@ export function signInMethodController(router: Router): void {
   router.post('/api/v1/user/sign-in', async (ctx) => {
     const { body } = ctx.request
 
-    if (validatePasswordSignInMethod(body)) {
-      try {
-        const signedInUser = await ctx.db.transaction().execute(async (trx) => {
-          return signInMethodService.singInUsingPassword(trx, body)
-        })
-
-        ctx.status = 200
-        ctx.body = {
-          user: signedInUser.user,
-          authToken: signedInUser.authToken.authToken,
-          refreshToken: signedInUser.refreshToken.refreshToken,
-        }
-      } catch (error) {
-        if (
-          error instanceof UserNotFoundError ||
-          error instanceof WrongPasswordError ||
-          error instanceof SignInMethodNotFoundError
-        ) {
-          // Don't leak too much information about why the sign in failed.
-          ctx.throwError(401, 'InvalidCredentials', 'wrong email or password')
-        }
-
-        throw error
-      }
-    } else {
+    if (!validatePasswordSignInMethod(body)) {
       ctx.throwError(400, 'InvalidSignInMethod', 'invalid sign in method')
+    }
+
+    try {
+      const signedInUser = await ctx.db.transaction().execute(async (trx) => {
+        return signInMethodService.singInUsingPassword(trx, body)
+      })
+
+      ctx.status = 200
+      ctx.body = {
+        user: signedInUser.user,
+        authToken: signedInUser.authToken.authToken,
+        refreshToken: signedInUser.refreshToken.refreshToken,
+      }
+    } catch (error) {
+      if (
+        error instanceof UserNotFoundError ||
+        error instanceof WrongPasswordError ||
+        error instanceof SignInMethodNotFoundError
+      ) {
+        // Don't leak too much information about why the sign in failed.
+        ctx.throwError(401, 'InvalidCredentials', 'wrong email or password')
+      }
+
+      throw error
     }
   })
 

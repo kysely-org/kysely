@@ -1,4 +1,3 @@
-import { after } from 'mocha'
 import { expect } from 'chai'
 
 import { TestContext } from '../test-context'
