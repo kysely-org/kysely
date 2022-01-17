@@ -4,6 +4,7 @@ import * as authTokenService from './auth-token.service'
 import { AuthTokenExpiredError, AuthTokenPayload } from './auth-token.service'
 import { Next } from 'koa'
 import { Context } from '../context'
+import { ControllerError } from '../util/errors'
 
 export async function authenticateUser(
   ctx: Context,
@@ -12,7 +13,7 @@ export async function authenticateUser(
   const { userId } = ctx.params
 
   if (!userId) {
-    ctx.throwError(
+    throw new ControllerError(
       400,
       'NoUserIdParameter',
       'no user id parameter found in the route'
@@ -22,7 +23,7 @@ export async function authenticateUser(
   const authorization = ctx.headers['authorization']
 
   if (!authorization || !authorization.startsWith('Bearer ')) {
-    ctx.throwError(
+    throw new ControllerError(
       400,
       'InvalidAuthorizationHeader',
       'missing or invalid Authorization header'
@@ -36,14 +37,18 @@ export async function authenticateUser(
     authTokenPayload = authTokenService.verifyAuthToken({ authToken })
   } catch (error) {
     if (error instanceof AuthTokenExpiredError) {
-      ctx.throwError(401, 'ExpiredAuthToken', 'the auth token has expired')
+      throw new ControllerError(
+        401,
+        'ExpiredAuthToken',
+        'the auth token has expired'
+      )
     }
 
-    ctx.throwError(401, 'InvalidAuthToken', 'invalid auth token')
+    throw new ControllerError(401, 'InvalidAuthToken', 'invalid auth token')
   }
 
   if (userId !== authTokenPayload.userId) {
-    ctx.throwError(403, 'UserMismatch', "wrong user's auth token")
+    throw new ControllerError(403, 'UserMismatch', "wrong user's auth token")
   }
 
   const refreshToken = await refreshTokenRepository.findRefreshToken(
@@ -53,7 +58,7 @@ export async function authenticateUser(
   )
 
   if (!refreshToken) {
-    ctx.throwError(
+    throw new ControllerError(
       404,
       'UserOrRefreshTokenNotFound',
       'either the user or the refresh token has been deleted'

@@ -77,6 +77,32 @@ describe('user tests', () => {
     expect(getRes.data.user).to.eql(res.data.user)
   })
 
+  it('should fail to sign in user with the wrong password', async () => {
+    const { user, authToken } = await ctx.createUser()
+    await createPasswordSignInMethod(user.id, authToken)
+
+    const res = await ctx.request.post(`/api/v1/user/sign-in`, {
+      email: EMAIL,
+      password: 'wrong password',
+    })
+
+    expect(res.status).to.equal(401)
+    expect(res.data).to.eql({
+      error: {
+        code: 'InvalidCredentials',
+        message: 'wrong email or password',
+      },
+    })
+
+    // Only the one refresh token created for the anonymous user should exists.
+    expect(
+      await ctx.db
+        .selectFrom('refresh_token')
+        .select('refresh_token.user_id')
+        .execute()
+    ).to.have.length(1)
+  })
+
   it('should sign out a user', async () => {
     const { user, authToken, refreshToken } = await ctx.createUser()
 

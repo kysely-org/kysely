@@ -11,7 +11,7 @@ in the browser.
 
 Kysely makes sure you only refer to tables and columns that are visible to the part of the query
 you are writing. The result type only has the selected columns with correct types and aliases. As an
-added bonus you get autocompletion for all of that stuff.
+added bonus you get autocompletion for all that stuff.
 
 As you can see in the gif above, through the pure magic of modern typescript, Kysely is even able to parse
 the alias given to `pet.name` and add the `pet_name` column to the result row type. Kysely is able to infer
@@ -344,6 +344,8 @@ async function migrateToLatest() {
     console.error(error)
     process.exit(1)
   }
+
+  await db.destroy()
 }
 
 migrateToLatest()

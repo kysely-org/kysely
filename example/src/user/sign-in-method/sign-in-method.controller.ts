@@ -12,7 +12,7 @@ import {
 } from './sign-in-method.service'
 import { validateRefreshToken } from '../../authentication/refresh-token'
 import { Router } from '../../router'
-import { UserNotFoundError } from '../../util/errors'
+import { ControllerError, UserNotFoundError } from '../../util/errors'
 import { validatePasswordSignInMethod } from './sign-in-method'
 
 export function signInMethodController(router: Router): void {
@@ -23,7 +23,11 @@ export function signInMethodController(router: Router): void {
       const { body } = ctx.request
 
       if (!validatePasswordSignInMethod(body)) {
-        ctx.throwError(400, 'InvalidSignInMethod', 'invalid sign in method')
+        throw new ControllerError(
+          400,
+          'InvalidSignInMethod',
+          'invalid sign in method'
+        )
       }
 
       try {
@@ -39,13 +43,21 @@ export function signInMethodController(router: Router): void {
         ctx.body = { success: true }
       } catch (error) {
         if (error instanceof UserNotFoundError) {
-          ctx.throwError(404, 'UserNotFound', 'user not found')
+          throw new ControllerError(404, 'UserNotFound', 'user not found')
         } else if (error instanceof PasswordTooWeakError) {
-          ctx.throwError(400, 'PasswordTooWeak', 'password is too weak')
+          throw new ControllerError(
+            400,
+            'PasswordTooWeak',
+            'password is too weak'
+          )
         } else if (error instanceof PasswordTooLongError) {
-          ctx.throwError(400, 'PasswordTooLong', 'password is too long')
+          throw new ControllerError(
+            400,
+            'PasswordTooLong',
+            'password is too long'
+          )
         } else if (error instanceof UserAlreadyHasSignInMethodError) {
-          ctx.throwError(
+          throw new ControllerError(
             409,
             'UserAlreadyHasSignInMethod',
             'the user already has a sign in method'
@@ -61,7 +73,11 @@ export function signInMethodController(router: Router): void {
     const { body } = ctx.request
 
     if (!validatePasswordSignInMethod(body)) {
-      ctx.throwError(400, 'InvalidSignInMethod', 'invalid sign in method')
+      throw new ControllerError(
+        400,
+        'InvalidSignInMethod',
+        'invalid sign in method'
+      )
     }
 
     try {
@@ -82,7 +98,11 @@ export function signInMethodController(router: Router): void {
         error instanceof SignInMethodNotFoundError
       ) {
         // Don't leak too much information about why the sign in failed.
-        ctx.throwError(401, 'InvalidCredentials', 'wrong email or password')
+        throw new ControllerError(
+          401,
+          'InvalidCredentials',
+          'wrong email or password'
+        )
       }
 
       throw error
@@ -96,7 +116,7 @@ export function signInMethodController(router: Router): void {
       const { body } = ctx.request
 
       if (!validateRefreshToken(body)) {
-        ctx.throwError(
+        throw new ControllerError(
           400,
           'InvalidRefreshToken',
           'the body must contain a valid refresh token'
@@ -114,14 +134,14 @@ export function signInMethodController(router: Router): void {
         ctx.body = { success: true }
       } catch (error) {
         if (error instanceof RefreshTokenUserIdMismatchError) {
-          ctx.throwError(
+          throw new ControllerError(
             403,
             'RefreshTokenUserIdMismatch',
             "cannot delete another user's refresh token"
           )
-
-          throw error
         }
+
+        throw error
       }
     }
   )

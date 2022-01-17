@@ -4,13 +4,14 @@ import * as authenticationService from '../authentication/authentication.service
 import { Router } from '../router'
 import { signInMethodController } from './sign-in-method/sign-in-method.controller'
 import { validateCreateAnonymousUserRequest } from './user'
+import { ControllerError } from '../util/errors'
 
 export function userController(router: Router): void {
   router.post('/api/v1/user', async (ctx) => {
     const { body } = ctx.request
 
     if (!validateCreateAnonymousUserRequest(body)) {
-      ctx.throwError(400, 'InvalidUser', 'invalid user')
+      throw new ControllerError(400, 'InvalidUser', 'invalid user')
     }
 
     const result = await ctx.db.transaction().execute(async (trx) => {
@@ -33,7 +34,7 @@ export function userController(router: Router): void {
       const user = await userService.findUserById(ctx.db, userId)
 
       if (!user) {
-        ctx.throwError(
+        throw new ControllerError(
           404,
           'UserNotFound',
           `user with id ${userId} was not found`

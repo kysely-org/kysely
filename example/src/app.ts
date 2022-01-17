@@ -85,9 +85,6 @@ export class App {
     next: Koa.Next
   ): Promise<void> => {
     ctx.db = this.#db!
-    ctx.throwError = (status, code, message, data): never => {
-      throw new ControllerError(status, code, message, data)
-    }
     await next()
   }
 }
