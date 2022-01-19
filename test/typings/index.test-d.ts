@@ -900,6 +900,129 @@ async function testCall(db: Kysely<Database>) {
   expectType<{ species: 'dog' | 'cat' } & { name: string }>(r1)
 }
 
+async function testIf(db: Kysely<Database>) {
+  const condition = Math.random() < 0.5
+
+  // Conditional select
+  const [r1] = await db
+    .selectFrom('pet as p')
+    .select('p.species')
+    .if(condition, (qb) => qb.select('name'))
+    .execute()
+
+  expectType<{ species: 'dog' | 'cat' } & { name?: string }>(r1)
+
+  // Conditional returning in delete
+  const [r2] = await db
+    .deleteFrom('person')
+    .if(condition, (qb) => qb.returning('first_name'))
+    .execute()
+
+  expectType<{ first_name?: string }>(r2)
+
+  // Conditional additional returning in delete
+  const [r3] = await db
+    .deleteFrom('person')
+    .returning('first_name')
+    .if(condition, (qb) => qb.returning('last_name'))
+    .execute()
+
+  expectType<{ first_name: string } & { last_name?: string | null }>(r3)
+
+  // Conditional where in delete
+  const [r4] = await db
+    .deleteFrom('person')
+    .if(condition, (qb) => qb.where('id', '=', 1))
+    .execute()
+
+  expectType<DeleteResult>(r4)
+
+  // Conditional where after returning in delete
+  const [r5] = await db
+    .deleteFrom('person')
+    .returning('first_name')
+    .if(condition, (qb) => qb.where('id', '=', 1))
+    .execute()
+
+  expectType<{ first_name: string } & Partial<{}>>(r5)
+
+  // Conditional returning in update
+  const [r6] = await db
+    .updateTable('person')
+    .set({ last_name: 'Foo' })
+    .if(condition, (qb) => qb.returning('first_name'))
+    .execute()
+
+  expectType<{ first_name?: string }>(r6)
+
+  // Conditional additional returning in update
+  const [r7] = await db
+    .updateTable('person')
+    .set({ last_name: 'Foo' })
+    .returning('first_name')
+    .if(condition, (qb) => qb.returning('last_name'))
+    .execute()
+
+  expectType<{ first_name: string } & { last_name?: string | null }>(r7)
+
+  // Conditional where in update
+  const [r8] = await db
+    .updateTable('person')
+    .set({ last_name: 'Foo' })
+    .if(condition, (qb) => qb.where('id', '=', 1))
+    .execute()
+
+  expectType<UpdateResult>(r8)
+
+  // Conditional where after returning in update
+  const [r9] = await db
+    .updateTable('person')
+    .set({ last_name: 'Foo' })
+    .returning('first_name')
+    .if(condition, (qb) => qb.where('id', '=', 1))
+    .execute()
+
+  expectType<{ first_name: string } & Partial<{}>>(r9)
+
+  // Conditional returning in insert
+  const [r10] = await db
+    .insertInto('person')
+    .values({ first_name: 'Foo', last_name: 'Bar', gender: 'other', age: 0 })
+    .if(condition, (qb) => qb.returning('first_name'))
+    .execute()
+
+  expectType<{ first_name?: string }>(r10)
+
+  // Conditional additional returning in insert
+  const [r11] = await db
+    .insertInto('person')
+    .values({ first_name: 'Foo', last_name: 'Bar', gender: 'other', age: 0 })
+    .returning('first_name')
+    .if(condition, (qb) => qb.returning('last_name'))
+    .execute()
+
+  expectType<{ first_name: string } & { last_name?: string | null }>(r11)
+
+  // Conditional ingore in insert
+  const [r12] = await db
+    .insertInto('person')
+    .values({ first_name: 'Foo', last_name: 'Bar', gender: 'other', age: 0 })
+    .if(condition, (qb) => qb.ignore())
+    .execute()
+
+  expectType<InsertResult>(r12)
+
+  // Conditional ignore after returning in insert
+  const [r13] = await db
+    .insertInto('person')
+    .values({ first_name: 'Foo', last_name: 'Bar', gender: 'other', age: 0 })
+    .returning('first_name')
+    .if(condition, (qb) => qb.ignore())
+    .execute()
+
+  expectType<{ first_name: string } & Partial<{}>>(r13)
+}
+
 async function testGenericSelect<T extends keyof Database>(
   db: Kysely<Database>,
   table: T

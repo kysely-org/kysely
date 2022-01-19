@@ -34,22 +34,24 @@ import { DialectAdapter } from './dialect/dialect-adapter.js'
  * This example assumes your database has tables `person` and `pet`:
  *
  * ```ts
- * interface Person {
- *   id: number
+ * import { Kysely, Generated, PostgresDialect } from 'kysely'
+ *
+ * interface PersonTable {
+ *   id: Generated<number>
  *   first_name: string
  *   last_name: string
  * }
  *
- * interface Pet {
- *   id: number
+ * interface PetTable {
+ *   id: Generated<number>
  *   owner_id: number
  *   name: string
  *   species 'cat' | 'dog'
  * }
  *
  * interface Database {
- *   person: Person,
- *   pet: Pet
+ *   person: PersonTable,
+ *   pet: PetTable
  * }
  *
  * const db = new Kysely<Database>({

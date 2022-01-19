@@ -13,7 +13,7 @@ import {
 } from '../parser/insert-values-parser.js'
 import { InsertQueryNode } from '../operation-node/insert-query-node.js'
 import { QueryNode } from '../operation-node/query-node.js'
-import { SingleResultType } from '../util/type-utils.js'
+import { MergePartial, SingleResultType } from '../util/type-utils.js'
 import {
   MutationObject,
   parseUpdateObject,
@@ -519,25 +519,83 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
   /**
    * Simply calls the given function passing `this` as the only argument.
    *
-   * This method can be useful when adding optional method calls:
+   * If you want to conditionally call a method on `this`, see
+   * the {@link if} method.
    *
    * ### Examples
    *
+   * The next example uses a helper funtion `log` to log a query:
+   *
    * ```ts
-   * db.insertInto('person')
-   *   .selectAll()
-   *   .call((qb) => {
-   *     if (something) {
-   *       return qb.onConflict((oc) => oc.column('something').doNothing())
-   *     } else {
-   *       return qb.onConflict((oc) => oc.column('something_else').doNothing())
-   *     }
-   *   })
+   * function log<T extends Compilable>(qb: T): T {
+   *   console.log(qb.compile())
+   *   return qb
+   * }
+   *
+   * db.updateTable('person')
+   *   .set(values)
+   *   .call(log)
    *   .execute()
    * ```
    */
   call<T>(func: (qb: this) => T): T {
     return func(this)
+  }
+
+  /**
+   * Call `func(this)` if `condition` is true.
+   *
+   * This method is especially handy with optional selects. Any `returning` or `returningAll`
+   * method calls add columns as optional fields to the output type when called inside
+   * the `func` callback. This is because we can't know if those selections were actually
+   * made before running the code.
+   *
+   * You can also call any other methods inside the callback.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * async function insertPerson(values: InsertablePerson, returnLastName: boolean) {
+   *   return await db
+   *     .insertInto('person')
+   *     .values(values)
+   *     .returning(['id', 'first_name'])
+   *     .if(returnLastName, (qb) => qb.returning('last_name'))
+   *     .executeTakeFirstOrThrow()
+   * }
+   * ```
+   *
+   * Any selections added inside the `if` callback will be added as optional fields to the
+   * output type since we can't know if the selections were actually made before running
+   * the code. In the example above the return type of the `insertPerson` function is:
+   *
+   * ```ts
+   * {
+   *   id: number
+   *   first_name: string
+   *   last_name?: string
+   * }
+   * ```
+   */
+  if<O2>(
+    condition: boolean,
+    func: (qb: this) => InsertQueryBuilder<DB, TB, O2>
+  ): InsertQueryBuilder<
+    DB,
+    TB,
+    O2 extends InsertResult
+      ? InsertResult
+      : O extends InsertResult
+      ? Partial<O2>
+      : MergePartial<O, O2>
+  > {
+    if (condition) {
+      return func(this) as any
+    }
+
+    return new InsertQueryBuilder({
+      ...this.#props,
+    })
   }
 
   /**

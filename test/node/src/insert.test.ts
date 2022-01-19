@@ -514,6 +514,23 @@ for (const dialect of BUILT_IN_DIALECTS) {
           first_name: 'Sylvester',
           last_name: 'Barson',
         })
+
+        it('conditional returning statement should add optional fields', async () => {
+          const condition = true
+
+          const query = ctx.db
+            .insertInto('person')
+            .values({
+              first_name: 'Foo',
+              last_name: 'Barson',
+              gender: 'other',
+            })
+            .returning('first_name')
+            .if(condition, (qb) => qb.returning('last_name'))
+
+          const result = await query.executeTakeFirstOrThrow()
+          expect(result.last_name).to.equal('Barson')
+        })
       })
 
       it('should return data using `returningAll`', async () => {

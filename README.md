@@ -33,6 +33,7 @@ You can find a more thorough introduction [here](https://www.jakso.me/blog/kysel
 - [Installation](#installation)
 - [Minimal example](#minimal-example)
 - [Query examples](#query-examples)
+- [Recipes](https://github.com/koskimas/kysely/tree/master/recipes)
 - [Migrations](#migrations)
 - [Deno](#deno)
 - [Browser](#browser)
@@ -389,8 +390,8 @@ const db = new Kysely<Database>({
       return new PostgresAdapter()
     },
     createDriver() {
-      // This is the only thing you need to implement to be able
-      // to execute the queries too.
+      // You need a driver to be able to execute queries. In this example
+      // we use the dummy driver that never does anything.
       return new DummyDriver()
     },
     createIntrospector(db: Kysely<unknown>) {
@@ -411,7 +412,8 @@ console.log(sql.sql)
 # Browser
 
 Kysely also runs in the browser as long as you import the `dist/esm/index-nodeless.js`
-module instead of the root that has node dependencies.
+module instead of the root that has node dependencies. You can also import the
+`dist/cjs/index-nodeless.js` file if you are using commonjs modules instead of ESM.
 
 ```ts
 import {

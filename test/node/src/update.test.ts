@@ -194,6 +194,19 @@ for (const dialect of BUILT_IN_DIALECTS) {
           { first_name: 'Sylvester', last_name: 'Barson' },
         ])
       })
+
+      it('conditional returning statement should add optional fields', async () => {
+        const condition = true
+
+        const query = ctx.db
+          .updateTable('person')
+          .set({ last_name: 'Barson' })
+          .returning('first_name')
+          .if(condition, (qb) => qb.returning('last_name'))
+
+        const result = await query.executeTakeFirstOrThrow()
+        expect(result.last_name).to.equal('Barson')
+      })
     }
   })
 }

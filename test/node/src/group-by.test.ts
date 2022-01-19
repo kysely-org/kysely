@@ -187,5 +187,36 @@ for (const dialect of BUILT_IN_DIALECTS) {
 
       await query.execute()
     })
+
+    it('conditional group by', async () => {
+      const filterByPetCount = true
+      const { count } = ctx.db.fn
+
+      // Insert another pet for Arnold.
+      await ctx.db
+        .insertInto('pet')
+        .values({
+          name: 'Doggo 2',
+          species: 'dog',
+          owner_id: ctx.db
+            .selectFrom('person')
+            .select('id')
+            .where('first_name', '=', 'Arnold'),
+        })
+        .execute()
+
+      const result = await ctx.db
+        .selectFrom('person')
+        .select('person.first_name')
+        .if(filterByPetCount, (qb) =>
+          qb
+            .innerJoin('pet', 'pet.owner_id', 'person.id')
+            .having(count('pet.id'), '>', 1)
+            .groupBy('person.first_name')
+        )
+        .execute()
+
+      expect(result).to.eql([{ first_name: 'Arnold' }])
+    })
   })
 }

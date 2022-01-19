@@ -32,7 +32,11 @@ import {
 import { ReturningRow } from '../parser/returning-parser.js'
 import { ReferenceExpression } from '../parser/reference-parser.js'
 import { QueryNode } from '../operation-node/query-node.js'
-import { AnyRawBuilder, SingleResultType } from '../util/type-utils.js'
+import {
+  AnyRawBuilder,
+  MergePartial,
+  SingleResultType,
+} from '../util/type-utils.js'
 import { preventAwait } from '../util/prevent-await.js'
 import { Compilable } from '../util/compilable.js'
 import { QueryExecutor } from '../query-executor/query-executor.js'
@@ -345,24 +349,81 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
   /**
    * Simply calls the given function passing `this` as the only argument.
    *
-   * This method can be useful when adding optional method calls:
+   * If you want to conditionally call a method on `this`, see
+   * the {@link if} method.
    *
    * ### Examples
    *
+   * The next example uses a helper funtion `log` to log a query:
+   *
    * ```ts
+   * function log<T extends Compilable>(qb: T): T {
+   *   console.log(qb.compile())
+   *   return qb
+   * }
+   *
    * db.deleteFrom('person')
-   *   .call((qb) => {
-   *     if (something) {
-   *       return qb.where('something', '=', something)
-   *     } else {
-   *       return qb.where('somethingElse', '=', somethingElse)
-   *     }
-   *   })
+   *   .call(log)
    *   .execute()
    * ```
    */
   call<T>(func: (qb: this) => T): T {
     return func(this)
+  }
+
+  /**
+   * Call `func(this)` if `condition` is true.
+   *
+   * This method is especially handy with optional selects. Any `returning` or `returningAll`
+   * method calls add columns as optional fields to the output type when called inside
+   * the `func` callback. This is because we can't know if those selections were actually
+   * made before running the code.
+   *
+   * You can also call any other methods inside the callback.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * async function deletePerson(returnLastName: boolean) {
+   *   return await db
+   *     .deleteFrom('person')
+   *     .returning(['id', 'first_name'])
+   *     .if(returnLastName, (qb) => qb.returning('last_name'))
+   *     .executeTakeFirstOrThrow()
+   * }
+   * ```
+   *
+   * Any selections added inside the `if` callback will be added as optional fields to the
+   * output type since we can't know if the selections were actually made before running
+   * the code. In the example above the return type of the `deletePerson` function is:
+   *
+   * ```ts
+   * {
+   *   id: number
+   *   first_name: string
+   *   last_name?: string
+   * }
+   * ```
+   */
+  if<O2>(
+    condition: boolean,
+    func: (qb: this) => DeleteQueryBuilder<DB, TB, O2>
+  ): DeleteQueryBuilder<
+    DB,
+    TB,
+    O2 extends DeleteResult
+      ? DeleteResult
+      : O extends DeleteResult
+      ? Partial<O2>
+      : MergePartial<O, O2>
+  > {
+    if (condition) {
+      return func(this) as any
+    }
+
+    return new DeleteQueryBuilder({
+      ...this.#props,
+    })
   }
 
   /**

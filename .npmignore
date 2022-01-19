@@ -3,12 +3,13 @@ assets
 docs
 example
 node_modules
+recipes
 scripts
 src
 test
 .gitignore
-.prettierrc.json
 .prettierignore
+.prettierrc.json
 docker-compose.yml
 docs-theme.css
 package-lock.json
