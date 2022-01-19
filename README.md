@@ -421,7 +421,7 @@ import {
   SqliteAdapter,
   SqliteIntrospector,
   SqliteQueryCompiler,
-} from '../../dist/esm/index-nodeless.js'
+} from 'kysely/dist/esm/index-nodeless.js'
 
 interface Person {
   id: Generated<number>
