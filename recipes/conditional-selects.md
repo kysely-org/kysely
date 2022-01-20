@@ -33,11 +33,11 @@ async function getPerson(id: number, withLastName: boolean) {
 While that _would_ compile, the result type would be `{ first_name: string }`
 without the `last_name` column, which is wrong. What happens is that the type
 of `query` when created is something, let's say `A`. The type of the query
-with `last_name` selection is `B` which extends `A` but also contains the information
+with `last_name` selection is `B` which extends `A` but also contains information
 about the new selection. When you assign an object of type `B` to `query` inside
-the `if` statement, the type gets downcasted to `A`. 
+the `if` statement, the type gets downcasted to `A`.
 
-You can code like this to add conditional with `where`, `groupBy`, `orderBy` etc. 
+You can write code like this to add conditional `where`, `groupBy`, `orderBy` etc.
 statements that don't change the type of the query builder, but it doesn't work
 with `select`, `returning`, `innerJoin` etc. that _do_ change the type of the
 query builder.
