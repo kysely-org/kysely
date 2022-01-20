@@ -35,7 +35,7 @@ without the `last_name` column, which is wrong. What happens is that the type
 of `query` when created is something, let's say `A`. The type of the query
 with `last_name` selection is `B` which extends `A` but also contains information
 about the new selection. When you assign an object of type `B` to `query` inside
-the `if` statement, the type gets downcasted to `A`.
+the `if` statement, the type gets downcast to `A`.
 
 You can write code like this to add conditional `where`, `groupBy`, `orderBy` etc.
 statements that don't change the type of the query builder, but it doesn't work
