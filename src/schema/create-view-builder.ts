@@ -8,7 +8,7 @@ import { freeze } from '../util/object-utils.js'
 import { CreateViewNode } from '../operation-node/create-view-node.js'
 import { parseColumnName } from '../parser/reference-parser.js'
 import { AnyRawBuilder, AnySelectQueryBuilder } from '../util/type-utils.js'
-import { ImmediateValuePlugin } from '../plugin/immediate-value.ts/immediate-value-plugin.js'
+import { ImmediateValuePlugin } from '../plugin/immediate-value/immediate-value-plugin.js'
 
 export class CreateViewBuilder implements OperationNodeSource, Compilable {
   readonly #props: CreateViewBuilderProps

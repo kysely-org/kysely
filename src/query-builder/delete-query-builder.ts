@@ -384,9 +384,10 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
    * ### Examples
    *
    * ```ts
-   * async function deletePerson(returnLastName: boolean) {
+   * async function deletePerson(id: number, returnLastName: boolean) {
    *   return await db
    *     .deleteFrom('person')
+   *     .where('id', '=', id)
    *     .returning(['id', 'first_name'])
    *     .if(returnLastName, (qb) => qb.returning('last_name'))
    *     .executeTakeFirstOrThrow()
@@ -436,6 +437,9 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
     return new DeleteQueryBuilder(this.#props)
   }
 
+  /**
+   * Returns a copy of this DeleteQueryBuilder instance with the given plugin installed.
+   */
   withPlugin(plugin: KyselyPlugin): DeleteQueryBuilder<DB, TB, O> {
     return new DeleteQueryBuilder({
       ...this.#props,

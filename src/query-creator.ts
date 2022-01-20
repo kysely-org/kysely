@@ -227,7 +227,7 @@ export class QueryCreator<DB> {
   /**
    * Creates a delete query.
    *
-   * See the {@link WhereInterface.where} method for examples on how to specify
+   * See the {@link DeleteQueryBuilder.where} method for examples on how to specify
    * a where clause for the delete operation.
    *
    * The return value of the query is an instance of {@link DeleteResult}.
@@ -264,7 +264,7 @@ export class QueryCreator<DB> {
   /**
    * Creates an update query.
    *
-   * See the {@link WhereInterface.where} method for examples on how to specify
+   * See the {@link UpdateQueryBuilder.where} method for examples on how to specify
    * a where clause for the update operation.
    *
    * See the {@link UpdateQueryBuilder.set} method for examples on how to

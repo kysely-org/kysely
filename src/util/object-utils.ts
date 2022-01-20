@@ -79,3 +79,71 @@ export function isReadonlyArray(arg: unknown): arg is ReadonlyArray<unknown> {
 export function noop<T>(obj: T): T {
   return obj
 }
+
+export function compare(obj1: unknown, obj2: unknown): boolean {
+  if (isReadonlyArray(obj1) && isReadonlyArray(obj2)) {
+    return compareArrays(obj1, obj2)
+  } else if (isObject(obj1) && isObject(obj2)) {
+    return compareObjects(obj1, obj2)
+  }
+
+  return obj1 === obj2
+}
+
+function compareArrays(
+  arr1: ReadonlyArray<unknown>,
+  arr2: ReadonlyArray<unknown>
+): boolean {
+  if (arr1.length !== arr2.length) {
+    return false
+  }
+
+  for (let i = 0; i < arr1.length; ++i) {
+    if (!compare(arr1[i], arr2[i])) {
+      return false
+    }
+  }
+
+  return true
+}
+
+function compareObjects(
+  obj1: Record<string, unknown>,
+  obj2: Record<string, unknown>
+): boolean {
+  if (isBuffer(obj1) && isBuffer(obj2)) {
+    return compareBuffers(obj1, obj2)
+  } else if (isDate(obj1) && isDate(obj2)) {
+    return compareDates(obj1, obj2)
+  }
+
+  return compareGenericObjects(obj1, obj2)
+}
+
+function compareBuffers(buf1: unknown, buf2: unknown): boolean {
+  return Buffer.compare(buf1 as any, buf2 as any) === 0
+}
+
+function compareDates(date1: Date, date2: Date) {
+  return date1.getTime() === date2.getTime()
+}
+
+function compareGenericObjects(
+  obj1: Record<string, unknown>,
+  obj2: Record<string, unknown>
+): boolean {
+  const keys1 = Object.keys(obj1)
+  const keys2 = Object.keys(obj2)
+
+  if (keys1.length !== keys2.length) {
+    return false
+  }
+
+  for (const key of keys1) {
+    if (!compare(obj1[key], obj2[key])) {
+      return false
+    }
+  }
+
+  return true
+}

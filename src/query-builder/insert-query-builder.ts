@@ -608,6 +608,9 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
     return new InsertQueryBuilder(this.#props)
   }
 
+  /**
+   * Returns a copy of this InsertQueryBuilder instance with the given plugin installed.
+   */
   withPlugin(plugin: KyselyPlugin): InsertQueryBuilder<DB, TB, O> {
     return new InsertQueryBuilder({
       ...this.#props,

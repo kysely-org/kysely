@@ -1279,6 +1279,9 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
     return new SelectQueryBuilder(this.#props)
   }
 
+  /**
+   * Returns a copy of this SelectQueryBuilder instance with the given plugin installed.
+   */
   withPlugin(plugin: KyselyPlugin): SelectQueryBuilder<DB, TB, O> {
     return new SelectQueryBuilder({
       ...this.#props,

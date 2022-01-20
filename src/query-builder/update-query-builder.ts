@@ -484,10 +484,11 @@ export class UpdateQueryBuilder<DB, TB extends keyof DB, O>
    * ### Examples
    *
    * ```ts
-   * async function updatePerson(updates: UpdateablePerson, returnLastName: boolean) {
+   * async function updatePerson(id: number, updates: UpdateablePerson, returnLastName: boolean) {
    *   return await db
    *     .updateTable('person')
    *     .set(updates)
+   *     .where('id', '=', id)
    *     .returning(['id', 'first_name'])
    *     .if(returnLastName, (qb) => qb.returning('last_name'))
    *     .executeTakeFirstOrThrow()
@@ -537,6 +538,9 @@ export class UpdateQueryBuilder<DB, TB extends keyof DB, O>
     return new UpdateQueryBuilder(this.#props)
   }
 
+  /**
+   * Returns a copy of this UpdateQueryBuilder instance with the given plugin installed.
+   */
   withPlugin(plugin: KyselyPlugin): UpdateQueryBuilder<DB, TB, O> {
     return new UpdateQueryBuilder({
       ...this.#props,
