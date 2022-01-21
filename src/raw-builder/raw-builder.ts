@@ -11,15 +11,21 @@ import { parseStringReference } from '../parser/reference-parser.js'
 import { CompiledQuery } from '../query-compiler/compiled-query.js'
 import { preventAwait } from '../util/prevent-await.js'
 import { QueryExecutor } from '../query-executor/query-executor.js'
-import { QueryId } from '../util/query-id.js'
+import { createQueryId, QueryId } from '../util/query-id.js'
 import { freeze } from '../util/object-utils.js'
 import { KyselyPlugin } from '../plugin/kysely-plugin.js'
+import { NoopQueryExecutor } from '../query-executor/noop-query-executor.js'
 
 export class RawBuilder<O = unknown> implements OperationNodeSource {
-  readonly #props: RawBuilderProps
+  readonly #props: InternalRawBuilderProps
 
   constructor(props: RawBuilderProps) {
-    this.#props = freeze(props)
+    this.#props = freeze({
+      queryId: props.queryId ?? createQueryId(),
+      executor: props.executor ?? new NoopQueryExecutor(),
+      sql: props.sql,
+      parameters: props.parameters,
+    })
   }
 
   as<A extends string>(alias: A): AliasedRawBuilder<O, A> {
@@ -146,8 +152,13 @@ function parseRawArg(match: string, arg: any): OperationNode {
 }
 
 export interface RawBuilderProps {
-  readonly queryId: QueryId
-  readonly executor: QueryExecutor
+  readonly queryId?: QueryId
+  readonly executor?: QueryExecutor
   readonly sql: string
   readonly parameters?: ReadonlyArray<unknown>
+}
+
+interface InternalRawBuilderProps extends RawBuilderProps {
+  readonly queryId: QueryId
+  readonly executor: QueryExecutor
 }

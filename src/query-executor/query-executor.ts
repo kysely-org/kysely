@@ -6,6 +6,8 @@ import { KyselyPlugin } from '../plugin/kysely-plugin.js'
 import { freeze } from '../util/object-utils.js'
 import { QueryId } from '../util/query-id.js'
 
+const NO_PLUGINS: ReadonlyArray<KyselyPlugin> = freeze([])
+
 /**
  * This class abstracts away the details of how to compile a query into SQL
  * and execute it. Instead of passing around all those details, {@link SelectQueryBuilder}
@@ -15,8 +17,8 @@ import { QueryId } from '../util/query-id.js'
 export abstract class QueryExecutor {
   readonly #plugins: ReadonlyArray<KyselyPlugin>
 
-  constructor(plugins: KyselyPlugin[] = []) {
-    this.#plugins = freeze([...plugins])
+  constructor(plugins?: KyselyPlugin[]) {
+    this.#plugins = plugins ?? NO_PLUGINS
   }
 
   get plugins(): ReadonlyArray<KyselyPlugin> {
