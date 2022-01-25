@@ -204,13 +204,23 @@ export async function down(db: Kysely<any>): Promise<void> {
 ```
 
 The `up` function is called when you update your database schema to next version and `down`
-when you go back to previous version. The only argument to the functions is an instance of
-`Kysely<any>`. It is important to use `Kysely<any>` and not `Kysely<YourDatabase>`. Migrations
-should never depend on the current code of your app because they need to work even if the app
-changes completely. Migrations need to be "frozen in time".
+when you go back to previous version. The only argument for the functions is an instance of
+`Kysely<any>`. It's important to use `Kysely<any>` and not `Kysely<YourDatabase>`. Migrations
+should never depend on the current code of your app because they need to work even when the app
+changes. Migrations need to be "frozen in time".
 
 The migrations can use the [Kysely.schema](https://koskimas.github.io/kysely/classes/SchemaModule.html)
 module to modify the schema. Migrations can also run normal queries to modify data.
+
+Execution order of the migrations is the alpabetical order of their names. An excellent way to name your
+migrations is to prefix them with an ISO 8601 date string. A date prefix works well in large teams
+where multiple team members may add migrations at the same time in parallel commits without knowing
+about the other migrations.
+
+You don't need to store your migrations as separate files if you don't want to. You can easily
+implement your own [MigrationProvider](https://koskimas.github.io/kysely/interfaces/MigrationProvider.html)
+and give it to the [Migrator](https://koskimas.github.io/kysely/classes/Migrator.html) class
+when you instantiate one.
 
 ### PostgreSQL migration example
 
@@ -295,9 +305,9 @@ const migrator = new Migrator(migratorConfig);
 await migrator.migrateToLatest(pathToMigrationsFolder)
 ```
 
-to run all migrations that have not yet been run. The migrations are executed in alphabetical
-order by their name. See the [Migrator](https://koskimas.github.io/kysely/classes/Migrator.html) 
-documentation for more info.
+to run all migrations that have not yet been run. See the
+[Migrator](https://koskimas.github.io/kysely/classes/Migrator.html)
+class's documentation for more info.
 
 Kysely doesn't have a CLI for running migrations and probably never will. This is because Kysely's
 migrations are also written in typescript. To run the migrations, you need to first build the
@@ -352,9 +362,11 @@ async function migrateToLatest() {
 migrateToLatest()
 ```
 
-The migration methods use a lock on the database level, and parallel calls are executed serially.
+The migration methods use a lock on the database level and parallel calls are executed serially.
 This means that you can safely call `migrateToLatest` and other migration methods from multiple
-server instances simultaneously and the migrations are guaranteed to only be executed once.
+server instances simultaneously and the migrations are guaranteed to only be executed once. The
+locks are also automatically released if the migration process crashes or the connection to the
+database fails.
 
 # Deno
 

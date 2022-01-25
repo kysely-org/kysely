@@ -40,10 +40,36 @@ export interface Migration {
  * ```
  */
 export class Migrator {
-  readonly #props: MigratorProps
+  readonly #props: InternalMigratorProps
 
   constructor(props: MigratorProps) {
     this.#props = freeze(props)
+  }
+
+  /**
+   * Returns a {@link MigrationInfo} object for each migration.
+   *
+   * The returned array is sorted by migration name.
+   */
+  async getMigrations(): Promise<ReadonlyArray<MigrationInfo>> {
+    const executedMigrations = (await this.#doesTableExists(MIGRATION_TABLE))
+      ? await this.#props.db
+          .selectFrom(MIGRATION_TABLE)
+          .select(['name', 'timestamp'])
+          .execute()
+      : []
+
+    const migrations = await this.#resolveMigrations()
+
+    return migrations.map(({ name, ...migration }) => {
+      const executed = executedMigrations.find((it) => it.name === name)
+
+      return {
+        name,
+        migration,
+        executedAt: executed ? new Date(executed.timestamp) : undefined,
+      }
+    })
   }
 
   /**
@@ -250,7 +276,7 @@ export class Migrator {
       try {
         await this.#props.db
           .insertInto(MIGRATION_LOCK_TABLE)
-          .values({ id: MIGRATION_LOCK_ID })
+          .values({ id: MIGRATION_LOCK_ID, is_locked: 0 })
           .execute()
       } catch (error) {
         if (!(await this.#doesLockRowExists())) {
@@ -281,7 +307,9 @@ export class Migrator {
   async #runMigrations(
     getTargetMigrationIndex: (state: MigrationState) => number | undefined
   ): Promise<MigrationResultSet> {
-    const run = async (db: Kysely<any>): Promise<MigrationResultSet> => {
+    const run = async (
+      db: Kysely<MigrationTables>
+    ): Promise<MigrationResultSet> => {
       try {
         await this.#props.db[PRIVATE_ADAPTER].acquireMigrationLock(db)
 
@@ -316,7 +344,7 @@ export class Migrator {
     }
   }
 
-  async #getState(db: Kysely<any>): Promise<MigrationState> {
+  async #getState(db: Kysely<MigrationTables>): Promise<MigrationState> {
     const migrations = await this.#resolveMigrations()
     const executedMigrations = await this.#getExecutedMigrations(db)
 
@@ -342,7 +370,7 @@ export class Migrator {
   }
 
   async #getExecutedMigrations(
-    db: Kysely<any>
+    db: Kysely<MigrationTables>
   ): Promise<ReadonlyArray<string>> {
     const executedMigrations = await db
       .selectFrom(MIGRATION_TABLE)
@@ -378,7 +406,7 @@ export class Migrator {
   }
 
   async #migrateDown(
-    db: Kysely<any>,
+    db: Kysely<MigrationTables>,
     state: MigrationState,
     targetIndex: number
   ): Promise<MigrationResultSet> {
@@ -429,7 +457,7 @@ export class Migrator {
   }
 
   async #migrateUp(
-    db: Kysely<any>,
+    db: Kysely<MigrationTables>,
     state: MigrationState,
     targetIndex: number
   ): Promise<MigrationResultSet> {
@@ -567,6 +595,41 @@ export interface MigrationProvider {
  */
 export interface NoMigrations {
   readonly __noMigrations__: true
+}
+
+export interface MigrationInfo {
+  /**
+   * Name of the migration.
+   */
+  name: string
+
+  /**
+   * The actual migration.
+   */
+  migration: Migration
+
+  /**
+   * When was the migration executed.
+   *
+   * If this is undefined, the migration hasn't been executed yet.
+   */
+  executedAt?: Date
+}
+
+interface InternalMigratorProps {
+  readonly db: Kysely<MigrationTables>
+  readonly provider: MigrationProvider
+}
+
+interface MigrationTables {
+  [MIGRATION_TABLE]: {
+    name: string
+    timestamp: string
+  }
+  [MIGRATION_LOCK_TABLE]: {
+    id: string
+    is_locked: 0 | 1
+  }
 }
 
 interface NamedMigration extends Migration {

@@ -39,6 +39,36 @@ for (const dialect of BUILT_IN_DIALECTS) {
       await destroyTest(ctx)
     })
 
+    describe('getMigrations', () => {
+      it('should get migrations', async () => {
+        const [migrator] = createMigrations([
+          'migration1',
+          'migration2',
+          'migration3',
+        ])
+
+        const migrations1 = await migrator.getMigrations()
+        expect(migrations1).to.have.length(3)
+        expect(migrations1[0].name).to.equal('migration1')
+        expect(migrations1[0].executedAt).to.equal(undefined)
+        expect(migrations1[1].name).to.equal('migration2')
+        expect(migrations1[1].executedAt).to.equal(undefined)
+        expect(migrations1[2].name).to.equal('migration3')
+        expect(migrations1[2].executedAt).to.equal(undefined)
+
+        await migrator.migrateTo('migration2')
+
+        const migrations2 = await migrator.getMigrations()
+        expect(migrations2).to.have.length(3)
+        expect(migrations2[0].name).to.equal('migration1')
+        expect(migrations2[0].executedAt).to.be.instanceOf(Date)
+        expect(migrations2[1].name).to.equal('migration2')
+        expect(migrations2[1].executedAt).to.be.instanceOf(Date)
+        expect(migrations2[2].name).to.equal('migration3')
+        expect(migrations2[2].executedAt).to.equal(undefined)
+      })
+    })
+
     describe('migrateToLatest', () => {
       it('should run all unexecuted migrations', async () => {
         const [migrator1, executedUpMethods1] = createMigrations([
