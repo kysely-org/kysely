@@ -46,8 +46,6 @@ export interface ReturningInterface<DB, TB extends keyof DB, O> {
    * Return arbitrary expressions:
    *
    * ```ts
-   * const { raw } = db
-   *
    * const { id, full_name, first_pet_id } = await db
    *   .insertInto('person')
    *   .values({
@@ -56,7 +54,7 @@ export interface ReturningInterface<DB, TB extends keyof DB, O> {
    *   })
    *   .returning([
    *     'id as id',
-   *     raw<string>(`concat(first_name, ' ', last_name)`).as('full_name'),
+   *     db.raw<string>(`concat(first_name, ' ', last_name)`).as('full_name'),
    *     (qb) => qb.selectFrom('pets').select('pet.id').limit(1).as('first_pet_id')
    *   ])
    *   .executeTakeFirst()

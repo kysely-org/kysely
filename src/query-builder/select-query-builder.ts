@@ -315,7 +315,10 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    * same as calling `select(['id', 'first_name']).
    *
    * To select all columns of the query or specific tables see the
-   * {@link SelectQueryBuilder.selectAll | selectAll} method.
+   * {@link selectAll} method.
+   *
+   * See the {@link if} method if you are looking for a way to add selections
+   * based on a runtime condition.
    *
    * ### Examples
    *
@@ -967,14 +970,12 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    * `groupBy` also accepts an array:
    *
    * ```ts
-   * const { raw } = db
-   *
    * await db
    *   .selectFrom('person')
    *   .select([
    *     'first_name',
    *     'last_name',
-   *     raw('max(id)').as('max_id')
+   *     db.raw('max(id)').as('max_id')
    *   ])
    *   .groupBy([
    *     'first_name',
@@ -995,17 +996,15 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    * raw expressions:
    *
    * ```ts
-   * const { raw } = db
-   *
    * await db
    *   .selectFrom('person')
    *   .select([
    *     'first_name',
    *     'last_name',
-   *     raw('max(id)').as('max_id')
+   *     db.raw('max(id)').as('max_id')
    *   ])
    *   .groupBy([
-   *     raw('concat(first_name, last_name)'),
+   *     db.raw('concat(first_name, last_name)'),
    *     (qb) => qb.selectFrom('pet').select('id').limit(1)
    *   ])
    *   .execute()
