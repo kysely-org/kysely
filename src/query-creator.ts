@@ -391,14 +391,18 @@ export class QueryCreator<DB> {
    * This only affects the query created through the builder returned from
    * this method and doesn't modify the `db` instance.
    *
+   * See [this recipe](https://github.com/koskimas/kysely/tree/master/recipes/schemas.md)
+   * for a more detailed explanation.
+   *
    * ### Examples
    *
    * ```
-   * await db.withSchema('mammals')
-   *  .selectFrom('pet')
-   *  .selectAll()
-   *  .innerJoin('public.person', 'public.person.id', 'pet.owner_id')
-   *  .execute()
+   * await db
+   *   .withSchema('mammals')
+   *   .selectFrom('pet')
+   *   .selectAll()
+   *   .innerJoin('public.person', 'public.person.id', 'pet.owner_id')
+   *   .execute()
    * ```
    *
    * The generated SQL (PostgreSQL):
@@ -414,10 +418,11 @@ export class QueryCreator<DB> {
    * doesn't belong to:
    *
    * ```
-   * await db.withSchema('mammals')
-   *  .selectFrom('pet as p')
-   *  .select('p.name')
-   *  .execute()
+   * await db
+   *   .withSchema('mammals')
+   *   .selectFrom('pet as p')
+   *   .select('p.name')
+   *   .execute()
    * ```
    *
    * The generated SQL (PostgreSQL):
