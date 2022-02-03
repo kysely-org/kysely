@@ -336,6 +336,39 @@ for (const dialect of BUILT_IN_DIALECTS) {
         await builder.execute()
       })
 
+      if (dialect === 'postgres') {
+        it('should support schemas in foreign key target table', async () => {
+          await ctx.db.schema
+            .createTable('test2')
+            .addColumn('c', 'integer')
+            .addColumn('d', 'integer')
+            .addPrimaryKeyConstraint('primary_key', ['c', 'd'])
+            .execute()
+
+          const builder = ctx.db.schema
+            .createTable('test')
+            .addColumn('a', 'integer')
+            .addColumn('b', 'integer')
+            .addForeignKeyConstraint(
+              'foreign_key',
+              ['a', 'b'],
+              'public.test2',
+              ['c', 'd']
+            )
+
+          testSql(builder, dialect, {
+            postgres: {
+              sql: 'create table "test" ("a" integer, "b" integer, constraint "foreign_key" foreign key ("a", "b") references "public"."test2" ("c", "d"))',
+              parameters: [],
+            },
+            mysql: NOT_SUPPORTED,
+            sqlite: NOT_SUPPORTED,
+          })
+
+          await builder.execute()
+        })
+      }
+
       it('should create a table with a foreign key constraint that has an `on update` statement', async () => {
         await ctx.db.schema
           .createTable('test2')

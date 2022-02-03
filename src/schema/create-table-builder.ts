@@ -13,7 +13,6 @@ import { QueryId } from '../util/query-id.js'
 import { freeze, noop } from '../util/object-utils.js'
 import { ForeignKeyConstraintNode } from '../operation-node/foreign-key-constraint-node.js'
 import { ColumnNode } from '../operation-node/column-node.js'
-import { TableNode } from '../operation-node/table-node.js'
 import { ForeignKeyConstraintBuilder } from './foreign-key-constraint-builder.js'
 import {
   DataTypeExpression,
@@ -23,6 +22,7 @@ import { PrimaryConstraintNode } from '../operation-node/primary-constraint-node
 import { UniqueConstraintNode } from '../operation-node/unique-constraint-node.js'
 import { CheckConstraintNode } from '../operation-node/check-constraint-node.js'
 import { AnyRawBuilder } from '../util/type-utils.js'
+import { parseTable } from '../parser/table-parser.js'
 
 /**
  * This builder can be used to create a `create table` query.
@@ -262,7 +262,7 @@ export class CreateTableBuilder<TB extends string, C extends string = never>
       new ForeignKeyConstraintBuilder(
         ForeignKeyConstraintNode.create(
           columns.map(ColumnNode.create),
-          TableNode.create(targetTable),
+          parseTable(targetTable),
           targetColumns.map(ColumnNode.create),
           constraintName
         )

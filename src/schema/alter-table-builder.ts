@@ -11,7 +11,6 @@ import { IdentifierNode } from '../operation-node/identifier-node.js'
 import { OperationNodeSource } from '../operation-node/operation-node-source.js'
 import { OnModifyForeignAction } from '../operation-node/references-node.js'
 import { RenameColumnNode } from '../operation-node/rename-column-node.js'
-import { TableNode } from '../operation-node/table-node.js'
 import { CompiledQuery } from '../query-compiler/compiled-query.js'
 import { Compilable } from '../util/compilable.js'
 import { freeze } from '../util/object-utils.js'
@@ -41,6 +40,7 @@ import {
   DefaultValueExpression,
   parseDefaultValueExpression,
 } from '../parser/default-value-parser.js'
+import { parseTable } from '../parser/table-parser.js'
 
 /**
  * This builder can be used to create a `alter table` query.
@@ -56,7 +56,7 @@ export class AlterTableBuilder {
     return new AlterTableExecutor({
       ...this.#props,
       alterTableNode: AlterTableNode.cloneWith(this.#props.alterTableNode, {
-        renameTo: TableNode.create(newTableName),
+        renameTo: parseTable(newTableName),
       }),
     })
   }
@@ -172,7 +172,7 @@ export class AlterTableBuilder {
       constraintBuilder: new ForeignKeyConstraintBuilder(
         ForeignKeyConstraintNode.create(
           columns.map(ColumnNode.create),
-          TableNode.create(targetTable),
+          parseTable(targetTable),
           targetColumns.map(ColumnNode.create),
           constraintName
         )

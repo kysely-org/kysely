@@ -114,9 +114,9 @@ export class DefaultQueryCompiler
   protected override visitSelectQuery(node: SelectQueryNode): void {
     const wrapInParens =
       this.parentNode !== undefined &&
+      !InsertQueryNode.is(this.parentNode) &&
       !CreateViewNode.is(this.parentNode) &&
-      !UnionNode.is(this.parentNode) &&
-      !InsertQueryNode.is(this.parentNode)
+      !UnionNode.is(this.parentNode)
 
     if (wrapInParens) {
       this.append('(')
@@ -442,13 +442,15 @@ export class DefaultQueryCompiler
   }
 
   protected override visitRaw(node: RawNode): void {
-    node.sqlFragments.forEach((sql, i) => {
-      this.append(sql)
+    const { sqlFragments, params } = node
 
-      if (node.params.length > i) {
-        this.visitNode(node.params[i])
+    for (let i = 0; i < sqlFragments.length; ++i) {
+      this.append(sqlFragments[i])
+
+      if (params.length > i) {
+        this.visitNode(params[i])
       }
-    })
+    }
   }
 
   protected override visitOperator(node: OperatorNode): void {

@@ -440,13 +440,13 @@ export class ConnectionBuilder<DB> {
     const connection = await this.#props.driver.acquireConnection()
     const connectionProvider = new SingleConnectionProvider(connection)
 
-    const transaction = new Kysely<DB>({
+    const db = new Kysely<DB>({
       ...this.#props,
       executor: this.#props.executor.withConnectionProvider(connectionProvider),
     })
 
     try {
-      return await callback(transaction)
+      return await callback(db)
     } finally {
       await this.#props.driver.releaseConnection(connection)
     }
