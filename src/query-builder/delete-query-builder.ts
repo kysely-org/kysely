@@ -51,6 +51,12 @@ import { NoResultError, NoResultErrorConstructor } from './no-result-error.js'
 import { DeleteResult } from './delete-result.js'
 import { DeleteQueryNode } from '../operation-node/delete-query-node.js'
 import { Selectable } from '../util/column-type.js'
+import { LimitNode } from '../operation-node/limit-node.js'
+import {
+  OrderByDirectionExpression,
+  OrderByExpression,
+  parseOrderBy,
+} from '../parser/order-by-parser.js'
 
 export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
   implements
@@ -342,6 +348,81 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
       queryNode: QueryNode.cloneWithReturning(
         this.#props.queryNode,
         parseSelectAll()
+      ),
+    })
+  }
+
+  /**
+   * Adds an `order by` clause to the query.
+   *
+   * `orderBy` calls are additive. To order by multiple columns, call `orderBy`
+   * multiple times.
+   *
+   * The first argument is the expression to order by and the second is the
+   * order (`asc` or `desc`).
+   *
+   * An `order by` clause in a delete query is only supported by some dialects
+   * like MySQL.
+   *
+   * See {@link SelectQueryBuilder.orderBy} for more examples.
+   *
+   * ### Examples
+   *
+   * Delete 5 oldest items in a table:
+   *
+   * ```ts
+   * await db
+   *   .deleteFrom('pet')
+   *   .orderBy('created_at')
+   *   .limit(5)
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (MySQL):
+   *
+   * ```sql
+   * delete from `pet`
+   * order by `created_at`
+   * limit ?
+   * ```
+   */
+  orderBy(
+    orderBy: OrderByExpression<DB, TB, O>,
+    direction?: OrderByDirectionExpression
+  ): DeleteQueryBuilder<DB, TB, O> {
+    return new DeleteQueryBuilder({
+      ...this.#props,
+      queryNode: DeleteQueryNode.cloneWithOrderByItem(
+        this.#props.queryNode,
+        parseOrderBy(this.#props.parseContext, orderBy, direction)
+      ),
+    })
+  }
+
+  /**
+   * Adds a limit clause to the query.
+   *
+   * A limit clause in a delete query is only supported by some dialects
+   * like MySQL.
+   *
+   * ### Examples
+   *
+   * Delete 5 oldest items in a table:
+   *
+   * ```ts
+   * await db
+   *   .deleteFrom('pet')
+   *   .orderBy('created_at')
+   *   .limit(5)
+   *   .execute()
+   * ```
+   */
+  limit(limit: number): DeleteQueryBuilder<DB, TB, O> {
+    return new DeleteQueryBuilder({
+      ...this.#props,
+      queryNode: DeleteQueryNode.cloneWithLimit(
+        this.#props.queryNode,
+        LimitNode.create(limit)
       ),
     })
   }

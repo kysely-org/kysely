@@ -6,6 +6,9 @@ import { TableExpressionNode } from './operation-node-utils.js'
 import { ReturningNode } from './returning-node.js'
 import { WhereNode } from './where-node.js'
 import { WithNode } from './with-node.js'
+import { LimitNode } from './limit-node.js'
+import { OrderByNode } from './order-by-node.js'
+import { OrderByItemNode } from './order-by-item-node.js'
 
 export interface DeleteQueryNode extends OperationNode {
   readonly kind: 'DeleteQueryNode'
@@ -14,6 +17,8 @@ export interface DeleteQueryNode extends OperationNode {
   readonly where?: WhereNode
   readonly returning?: ReturningNode
   readonly with?: WithNode
+  readonly orderBy?: OrderByNode
+  readonly limit?: LimitNode
 }
 
 /**
@@ -29,6 +34,28 @@ export const DeleteQueryNode = freeze({
       kind: 'DeleteQueryNode',
       from: FromNode.create([fromItem]),
       ...(withNode && { with: withNode }),
+    })
+  },
+
+  cloneWithOrderByItem(
+    deleteNode: DeleteQueryNode,
+    item: OrderByItemNode
+  ): DeleteQueryNode {
+    return freeze({
+      ...deleteNode,
+      orderBy: deleteNode.orderBy
+        ? OrderByNode.cloneWithItem(deleteNode.orderBy, item)
+        : OrderByNode.create(item),
+    })
+  },
+
+  cloneWithLimit(
+    deleteNode: DeleteQueryNode,
+    limit: LimitNode
+  ): DeleteQueryNode {
+    return freeze({
+      ...deleteNode,
+      limit,
     })
   },
 })

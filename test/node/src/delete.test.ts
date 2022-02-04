@@ -93,6 +93,23 @@ for (const dialect of BUILT_IN_DIALECTS) {
       expect(result.numDeletedRows).to.equal(0n)
     })
 
+    if (dialect === 'mysql') {
+      it('should order and limit the deleted rows', async () => {
+        const query = ctx.db.deleteFrom('person').orderBy('first_name').limit(2)
+
+        testSql(query, dialect, {
+          mysql: {
+            sql: 'delete from `person` order by `first_name` limit ?',
+            parameters: [2],
+          },
+          postgres: NOT_SUPPORTED,
+          sqlite: NOT_SUPPORTED,
+        })
+
+        await query.execute()
+      })
+    }
+
     if (dialect === 'postgres') {
       it('should return deleted rows when `returning` is used', async () => {
         const query = ctx.db
