@@ -1,5 +1,8 @@
 import { ConnectionProvider } from '../driver/connection-provider.js'
-import { QueryResult } from '../driver/database-connection.js'
+import {
+  DatabaseConnection,
+  QueryResult,
+} from '../driver/database-connection.js'
 import { CompiledQuery } from '../query-compiler/compiled-query.js'
 import { RootOperationNode } from '../query-compiler/query-compiler.js'
 import { KyselyPlugin } from '../plugin/kysely-plugin.js'
@@ -15,7 +18,7 @@ const NO_PLUGINS: ReadonlyArray<KyselyPlugin> = freeze([])
  * and other classes that execute queries can just pass around and instance of
  * `QueryExecutor`.
  */
-export abstract class QueryExecutor {
+export abstract class QueryExecutor implements ConnectionProvider {
   readonly #plugins: ReadonlyArray<KyselyPlugin>
 
   constructor(plugins?: KyselyPlugin[]) {
@@ -66,6 +69,10 @@ export abstract class QueryExecutor {
     queryId: QueryId
   ): CompiledQuery
 
+  abstract provideConnection<T>(
+    consumer: (connection: DatabaseConnection) => Promise<T>
+  ): Promise<T>
+
   /**
    * Executes a compiled query and runs the result through all plugins'
    * `transformResult` method.
@@ -74,17 +81,11 @@ export abstract class QueryExecutor {
     compiledQuery: CompiledQuery,
     queryId: QueryId
   ): Promise<QueryResult<R>> {
-    const result = await this.executeQueryImpl(compiledQuery, queryId)
-    return this.#transformResult(result, queryId)
+    return await this.provideConnection(async (connection) => {
+      const result = await connection.executeQuery(compiledQuery)
+      return this.#transformResult(result, queryId)
+    })
   }
-
-  /**
-   * Executes a compiled query.
-   */
-  protected abstract executeQueryImpl<R>(
-    compiledQuery: CompiledQuery,
-    queryId: QueryId
-  ): Promise<QueryResult<R>>
 
   /**
    * Returns a copy of this executor with a new connection provider.

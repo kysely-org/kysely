@@ -9,7 +9,7 @@ export class SingleConnectionProvider implements ConnectionProvider {
     this.#connection = connection
   }
 
-  async withConnection<T>(
+  async provideConnection<T>(
     runner: (connection: DatabaseConnection) => Promise<T>
   ): Promise<T> {
     while (this.#runningPromise) {
