@@ -1,4 +1,4 @@
-import { CamelCasePlugin, Generated, Kysely } from '../../../'
+import { CamelCasePlugin, Generated, Kysely, sql } from '../../../'
 
 import {
   BUILT_IN_DIALECTS,
@@ -72,9 +72,9 @@ for (const dialect of BUILT_IN_DIALECTS) {
     // from the other Kysely instance.
     if (dialect !== 'sqlite') {
       it('should have created the table and its columns in snake_case', async () => {
-        const result = await ctx.db
-          .raw<any>('select * from camel_person')
-          .execute()
+        const result = await sql<any>`select * from camel_person`.execute(
+          ctx.db
+        )
 
         expect(result.rows).to.have.length(2)
         expect(result.rows[0].id).to.be.a('number')

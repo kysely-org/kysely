@@ -75,9 +75,9 @@ export class CreateViewBuilder implements OperationNodeSource, Compilable {
    *
    * WARNING!
    * Some dialects don't support parameterized queries in DDL statements and therefore
-   * the query or `raw` expression passed here is interpolated into a single string
-   * opening an SQL injection vulnerability. DO NOT pass unchecked user input into
-   * the query or `raw` expression passed to this method!
+   * the query or raw {@link sql } expression passed here is interpolated into a single
+   * string opening an SQL injection vulnerability. DO NOT pass unchecked user input
+   * into the query or raw expression passed to this method!
    */
   as(query: AnySelectQueryBuilder | AnyRawBuilder): CreateViewBuilder {
     const queryNode = query

@@ -9,7 +9,6 @@ import {
   parseOnFilter,
   parseReferenceFilter,
 } from '../parser/filter-parser.js'
-import { ParseContext } from '../parser/parse-context.js'
 import { ReferenceExpression } from '../parser/reference-parser.js'
 import { freeze } from '../util/object-utils.js'
 import { preventAwait } from '../util/prevent-await.js'
@@ -45,10 +44,7 @@ export class JoinBuilder<DB, TB extends keyof DB>
   on(...args: any[]): JoinBuilder<DB, TB> {
     return new JoinBuilder({
       ...this.#props,
-      joinNode: JoinNode.cloneWithOn(
-        this.#props.joinNode,
-        parseOnFilter(this.#props.parseContext, args)
-      ),
+      joinNode: JoinNode.cloneWithOn(this.#props.joinNode, parseOnFilter(args)),
     })
   }
 
@@ -75,7 +71,7 @@ export class JoinBuilder<DB, TB extends keyof DB>
       ...this.#props,
       joinNode: JoinNode.cloneWithOrOn(
         this.#props.joinNode,
-        parseOnFilter(this.#props.parseContext, args)
+        parseOnFilter(args)
       ),
     })
   }
@@ -95,7 +91,7 @@ export class JoinBuilder<DB, TB extends keyof DB>
       ...this.#props,
       joinNode: JoinNode.cloneWithOn(
         this.#props.joinNode,
-        parseReferenceFilter(this.#props.parseContext, lhs, op, rhs)
+        parseReferenceFilter(lhs, op, rhs)
       ),
     })
   }
@@ -115,7 +111,7 @@ export class JoinBuilder<DB, TB extends keyof DB>
       ...this.#props,
       joinNode: JoinNode.cloneWithOrOn(
         this.#props.joinNode,
-        parseReferenceFilter(this.#props.parseContext, lhs, op, rhs)
+        parseReferenceFilter(lhs, op, rhs)
       ),
     })
   }
@@ -131,7 +127,7 @@ export class JoinBuilder<DB, TB extends keyof DB>
       ...this.#props,
       joinNode: JoinNode.cloneWithOn(
         this.#props.joinNode,
-        parseExistFilter(this.#props.parseContext, arg)
+        parseExistFilter(arg)
       ),
     })
   }
@@ -147,7 +143,7 @@ export class JoinBuilder<DB, TB extends keyof DB>
       ...this.#props,
       joinNode: JoinNode.cloneWithOn(
         this.#props.joinNode,
-        parseNotExistFilter(this.#props.parseContext, arg)
+        parseNotExistFilter(arg)
       ),
     })
   }
@@ -163,7 +159,7 @@ export class JoinBuilder<DB, TB extends keyof DB>
       ...this.#props,
       joinNode: JoinNode.cloneWithOrOn(
         this.#props.joinNode,
-        parseExistFilter(this.#props.parseContext, arg)
+        parseExistFilter(arg)
       ),
     })
   }
@@ -179,7 +175,7 @@ export class JoinBuilder<DB, TB extends keyof DB>
       ...this.#props,
       joinNode: JoinNode.cloneWithOrOn(
         this.#props.joinNode,
-        parseNotExistFilter(this.#props.parseContext, arg)
+        parseNotExistFilter(arg)
       ),
     })
   }
@@ -196,5 +192,4 @@ preventAwait(
 
 export interface JoinBuilderProps {
   readonly joinNode: JoinNode
-  readonly parseContext: ParseContext
 }

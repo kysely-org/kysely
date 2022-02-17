@@ -1,4 +1,5 @@
 import { Kysely } from '../../kysely.js'
+import { sql } from '../../raw-builder/sql.js'
 import { DialectAdapterBase } from '../dialect-adapter-base.js'
 
 const LOCK_ID = 'ea586330-2c93-47c8-908d-981d9d270f9d'
@@ -20,12 +21,12 @@ export class MysqlAdapter extends DialectAdapterBase {
     // is released using `release_lock`. This way we know that the lock is either
     // released by us after successfull or failed migrations OR it's released by
     // MySQL if the process gets killed for some reason.
-    await db
-      .raw(`select get_lock('${LOCK_ID}', ${LOCK_TIMEOUT_SECONDS})`)
-      .execute()
+    await sql`select get_lock(${sql.literal(LOCK_ID)}, ${sql.literal(
+      LOCK_TIMEOUT_SECONDS
+    )})`.execute(db)
   }
 
   async releaseMigrationLock(db: Kysely<any>): Promise<void> {
-    await db.raw(`select release_lock('${LOCK_ID}')`).execute()
+    await sql`select release_lock(${sql.literal(LOCK_ID)})`.execute(db)
   }
 }

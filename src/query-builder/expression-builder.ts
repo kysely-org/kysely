@@ -7,20 +7,20 @@ import {
   TableExpressionOrList,
   TableExpressionTables,
 } from '../parser/table-parser.js'
-import { NoopQueryExecutor } from '../query-executor/noop-query-executor.js'
 import { WithSchemaPlugin } from '../plugin/with-schema/with-schema-plugin.js'
 import { createQueryId } from '../util/query-id.js'
-import { freeze } from '../util/object-utils.js'
-import { ParseContext } from '../parser/parse-context.js'
 import { FunctionBuilder } from './function-builder.js'
 import {
   ExtractTypeFromReferenceExpression,
+  parseStringReference,
   StringReference,
 } from '../parser/reference-parser.js'
 import { RawBuilder } from '../raw-builder/raw-builder.js'
+import { QueryExecutor, RawNode } from '../index-nodeless.js'
+import { freeze } from '../util/object-utils.js'
 
 export class ExpressionBuilder<DB, TB extends keyof DB> {
-  readonly #props: ExpressionBuilderProps
+  #props: ExpressionBuilderProps
 
   constructor(props: ExpressionBuilderProps) {
     this.#props = freeze(props)
@@ -58,7 +58,7 @@ export class ExpressionBuilder<DB, TB extends keyof DB> {
    * ```
    */
   get fn(): FunctionBuilder<DB, TB> {
-    return new FunctionBuilder({ executor: this.#props.executor })
+    return new FunctionBuilder()
   }
 
   /**
@@ -125,10 +125,7 @@ export class ExpressionBuilder<DB, TB extends keyof DB> {
     return new SelectQueryBuilder({
       queryId: createQueryId(),
       executor: this.#props.executor,
-      parseContext: this.#props.parseContext,
-      queryNode: SelectQueryNode.create(
-        parseTableExpressionOrList(this.#props.parseContext, table)
-      ),
+      queryNode: SelectQueryNode.create(parseTableExpressionOrList(table)),
     })
   }
 
@@ -141,18 +138,6 @@ export class ExpressionBuilder<DB, TB extends keyof DB> {
       executor: this.#props.executor.withPluginAtFront(
         new WithSchemaPlugin(schema)
       ),
-    })
-  }
-
-  /**
-   * See {@link QueryCreator.raw}.
-   */
-  raw<T = unknown>(sql: string, parameters?: unknown[]): RawBuilder<T> {
-    return new RawBuilder({
-      queryId: createQueryId(),
-      executor: this.#props.executor,
-      sql,
-      parameters,
     })
   }
 
@@ -177,26 +162,26 @@ export class ExpressionBuilder<DB, TB extends keyof DB> {
    *   )
    * ```
    *
-   * In the next example we use `ref` in a raw expression. Unless you
+   * In the next example we use `ref` in a raw sql expression. Unless you
    * want to be as type-safe as possible, this is probably overkill:
    *
    * ```ts
    * db.update('pet').set({
-   *   name: (eb) => eb.raw('concat(?, ?)', [
-   *     eb.ref('pet.name'),
-   *     suffix,
-   *   ])
+   *   name: (eb) => sql`concat(${eb.ref('pet.name')}, ${suffix})`
    * })
    * ```
    */
   ref<RE extends StringReference<DB, TB>>(
     reference: RE
   ): RawBuilder<ExtractTypeFromReferenceExpression<DB, TB, RE>> {
-    return this.raw('??', [reference])
+    return new RawBuilder({
+      queryId: createQueryId(),
+      plugins: this.#props.executor.plugins,
+      rawNode: RawNode.createWithChild(parseStringReference(reference)),
+    })
   }
 }
 
 export interface ExpressionBuilderProps {
-  readonly executor: NoopQueryExecutor
-  readonly parseContext: ParseContext
+  readonly executor: QueryExecutor
 }

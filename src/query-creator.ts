@@ -17,7 +17,6 @@ import {
   TableReference,
 } from './parser/table-parser.js'
 import { QueryExecutor } from './query-executor/query-executor.js'
-import { RawBuilder } from './raw-builder/raw-builder.js'
 import {
   CommonTableExpression,
   parseCommonTableExpression,
@@ -28,7 +27,6 @@ import { WithNode } from './operation-node/with-node.js'
 import { createQueryId } from './util/query-id.js'
 import { WithSchemaPlugin } from './plugin/with-schema/with-schema-plugin.js'
 import { freeze } from './util/object-utils.js'
-import { ParseContext } from './parser/parse-context.js'
 import { InsertResult } from './query-builder/insert-result.js'
 import { DeleteResult } from './query-builder/delete-result.js'
 import { UpdateResult } from './query-builder/update-result.js'
@@ -99,9 +97,10 @@ export class QueryCreator<DB> {
    * Create a select query from raw sql:
    *
    * ```ts
-   * const items = await db.selectFrom(
-   *     db.raw<{ one: number }>('(select 1 as one)').as('q')
-   *   )
+   * import { sql } from 'kysely'
+   *
+   * const items = await db
+   *   .selectFrom(sql<{ one: number }>`(select 1 as one)`.as('q'))
    *   .select('q.one')
    *   .execute()
    *
@@ -117,18 +116,20 @@ export class QueryCreator<DB> {
    * ) as q
    * ```
    *
-   * When you use `raw` you need to also provide the result type of the
-   * raw segment / query so that Kysely can figure out what columns are
-   * available for the query.
+   * When you use the `sql` tag you need to also provide the result type of the
+   * raw snippet / query so that Kysely can figure out what columns are
+   * available for the rest of the query.
    *
    * The `selectFrom` method also accepts an array for multiple tables. All
    * the above examples can also be used in an array.
    *
    * ```ts
+   * import { sql } from 'kysely'
+   *
    * const items = await db.selectFrom([
    *     'person as p',
    *     db.selectFrom('pet').select('pet.species').as('a'),
-   *     db.raw<{ one: number }>('(select 1 as one)').as('q')
+   *     sql<{ one: number }>`(select 1 as one)`.as('q')
    *   ])
    *   .select(['p.id', 'a.species', 'q.one'])
    *   .execute()
@@ -164,9 +165,8 @@ export class QueryCreator<DB> {
     return new SelectQueryBuilder({
       queryId: createQueryId(),
       executor: this.#props.executor,
-      parseContext: this.#props.parseContext,
       queryNode: SelectQueryNode.create(
-        parseTableExpressionOrList(this.#props.parseContext, from),
+        parseTableExpressionOrList(from),
         this.#props.withNode
       ),
     })
@@ -216,7 +216,6 @@ export class QueryCreator<DB> {
     return new InsertQueryBuilder({
       queryId: createQueryId(),
       executor: this.#props.executor,
-      parseContext: this.#props.parseContext,
       queryNode: InsertQueryNode.create(
         parseTable(table),
         this.#props.withNode
@@ -253,9 +252,8 @@ export class QueryCreator<DB> {
     return new DeleteQueryBuilder({
       queryId: createQueryId(),
       executor: this.#props.executor,
-      parseContext: this.#props.parseContext,
       queryNode: DeleteQueryNode.create(
-        parseTableExpression(this.#props.parseContext, table),
+        parseTableExpression(table),
         this.#props.withNode
       ),
     })
@@ -294,9 +292,8 @@ export class QueryCreator<DB> {
     return new UpdateQueryBuilder({
       queryId: createQueryId(),
       executor: this.#props.executor,
-      parseContext: this.#props.parseContext,
       queryNode: UpdateQueryNode.create(
-        parseTableExpression(this.#props.parseContext, table),
+        parseTableExpression(table),
         this.#props.withNode
       ),
     })
@@ -347,11 +344,7 @@ export class QueryCreator<DB> {
     name: N,
     expression: E
   ): QueryCreatorWithCommonTableExpression<DB, N, E> {
-    const cte = parseCommonTableExpression(
-      this.#props.parseContext,
-      name,
-      expression
-    )
+    const cte = parseCommonTableExpression(name, expression)
 
     return new QueryCreator({
       ...this.#props,
@@ -370,11 +363,7 @@ export class QueryCreator<DB> {
     N extends string,
     E extends RecursiveCommonTableExpression<DB, N>
   >(name: N, expression: E): QueryCreatorWithCommonTableExpression<DB, N, E> {
-    const cte = parseCommonTableExpression(
-      this.#props.parseContext,
-      name,
-      expression
-    )
+    const cte = parseCommonTableExpression(name, expression)
 
     return new QueryCreator({
       ...this.#props,
@@ -439,137 +428,9 @@ export class QueryCreator<DB> {
       ),
     })
   }
-
-  /**
-   * Provides a way to pass arbitrary SQL into your query and executing completely
-   * raw queries.
-   *
-   * You can use the strings `?` and `??` in the `sql` to bind parameters such as
-   * user input to the SQL. You should never EVER concatenate untrusted user
-   * input to the SQL string to avoid injection vulnerabilities. Instead use `?`
-   * in place of a value and pass the actual value in the `parameters` list. See
-   * the examples below.
-   *
-   * You should only use `raw` when there is no other way to get the job done. This is
-   * because Kysely is not able to use type inference when you use raw SQL. For example
-   * Kysely won't be able to automatically provide you with the correct query result
-   * type. However, there are ways to manually provide types when you use `raw` in most
-   * cases. See the examples below.
-   *
-   * Raw builder instances can be passed to pretty much anywhere: `select`, `where`,
-   * `*Join`, `groupBy`, `orderBy` etc. Just try it. If the method accepts it, it works.
-   *
-   * ### Examples
-   *
-   * Example of using `raw` in a select statement:
-   *
-   * ```ts
-   * const [person] = await db.selectFrom('person')
-   *   .select(db.raw<string>('concat(first_name, ' ', last_name)').as('name'))
-   *   .where('id', '=', 1)
-   *   .execute()
-   *
-   * console.log(person.name)
-   * ```
-   *
-   * The generated SQL (PostgreSQL):
-   *
-   * ```sql
-   * select concat(first_name, ' ', last_name) as "name"
-   * from "person" where "id" = 1
-   * ```
-   *
-   * The above example selects computed column `name` by concatenating the first name
-   * and last name together.
-   *
-   * There are couple of things worth noticing:
-   *
-   *   1. You need to provide the output type of your SQL segment for the `raw` method
-   *     so that Kysely knows what type to give for the `name` column. In this case it's
-   *     a `string` since that's the output type of the `concat` function in SQL.
-   *
-   *   2. You need to give an alias for the selection using the `as` method so that
-   *     Kysely is able to add a column to the output type. The alias needs to be
-   *     known at compile time! If you pass a string variable whose value is not known
-   *     at compile time, there is no way for Kysely or typescript to add a column to
-   *     the output type. In this case you need to use the `castTo` method on the query
-   *     to specify a return type for the query.
-   *
-   * We could've also used a `??` placeholder to provide `first_name` and `last_name` like
-   * this:
-   *
-   * ```ts
-   * db.raw<string>('concat(??, ' ', ??)', ['first_name', 'last_name'])
-   * ```
-   *
-   * or this:
-   *
-   * ```ts
-   * db.raw<string>('concat(??, ' ', ??)', ['person.first_name', 'person.last_name'])
-   * ```
-   *
-   * But it's often cleaner to just write the column names in the SQL. Again remember to
-   * never concatenate column names or any other untrusted user input to the SQL string or you
-   * are going to create an injection vulnerability. All user input should go to the parameters
-   * array, never to the SQL string directly. But if the column names or values are trusted
-   * and known at compile time, there is no reason to use parameters.
-   *
-   * Example of using `raw` in `where`:
-   *
-   * ```ts
-   * function getPersonsOlderThan(ageLimit: number) {
-   *   return await db.selectFrom('person')
-   *     .selectAll()
-   *     .where(
-   *       db.raw('now() - birth_date'),
-   *       '>',
-   *       db.raw('interval ? year', [ageLimit.toString()])
-   *     )
-   *     .execute()
-   * }
-   * ```
-   *
-   * The generated SQL (PostgreSQL):
-   *
-   * ```sql
-   * select * from "person" where now() - birth_date > interval $1 year
-   * ```
-   *
-   * The function in the above example returns people that are older than the given number of
-   * years. The number of years in this example is an untrusted user input, and therefore we use
-   * a `?` placeholder for it.
-   *
-   * Example of creating a completely raw query from scratch:
-   *
-   * ```ts
-   * const result = await db.raw<Person>('select p.* from person p').execute()
-   * const persons = result.rows
-   * ```
-   *
-   * For a raw query, you need to specify the type of the returned __row__. In
-   * this case we know the resulting items will be of type `Person` se specify that.
-   * The result of `execute()` method is always an array. In this case the type of
-   * the `persons` variable is `Person[]`.
-   *
-   * @param sql - The raw SQL. Special strings `?` and `??` can be used as parameter
-   *    placeholders. `?` for values and `??` for identifiers such as column names
-   *    or `column.table` references.
-   *
-   * @param params - The parameters that will be bound to the `?` and `??` placeholders in
-   *    the sql string.
-   */
-  raw<T = unknown>(sql: string, parameters?: unknown[]): RawBuilder<T> {
-    return new RawBuilder({
-      queryId: createQueryId(),
-      executor: this.#props.executor,
-      sql,
-      parameters,
-    })
-  }
 }
 
 export interface QueryCreatorProps {
   readonly executor: QueryExecutor
-  readonly parseContext: ParseContext
   readonly withNode?: WithNode
 }

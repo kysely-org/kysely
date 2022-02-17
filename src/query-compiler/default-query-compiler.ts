@@ -452,7 +452,7 @@ export class DefaultQueryCompiler
   }
 
   protected override visitRaw(node: RawNode): void {
-    const { sqlFragments, params } = node
+    const { sqlFragments, parameters: params } = node
 
     for (let i = 0; i < sqlFragments.length; ++i) {
       this.append(sqlFragments[i])

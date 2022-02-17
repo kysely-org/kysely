@@ -42,7 +42,6 @@ import { Compilable } from '../util/compilable.js'
 import { QueryExecutor } from '../query-executor/query-executor.js'
 import { QueryId } from '../util/query-id.js'
 import { freeze } from '../util/object-utils.js'
-import { ParseContext } from '../parser/parse-context.js'
 import { KyselyPlugin } from '../plugin/kysely-plugin.js'
 import { WhereInterface } from './where-interface.js'
 import { JoinInterface } from './join-interface.js'
@@ -86,7 +85,7 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
       ...this.#props,
       queryNode: QueryNode.cloneWithWhere(
         this.#props.queryNode,
-        parseWhereFilter(this.#props.parseContext, args)
+        parseWhereFilter(args)
       ),
     })
   }
@@ -100,7 +99,7 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
       ...this.#props,
       queryNode: QueryNode.cloneWithWhere(
         this.#props.queryNode,
-        parseReferenceFilter(this.#props.parseContext, lhs, op, rhs)
+        parseReferenceFilter(lhs, op, rhs)
       ),
     })
   }
@@ -119,7 +118,7 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
       ...this.#props,
       queryNode: QueryNode.cloneWithOrWhere(
         this.#props.queryNode,
-        parseWhereFilter(this.#props.parseContext, args)
+        parseWhereFilter(args)
       ),
     })
   }
@@ -133,7 +132,7 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
       ...this.#props,
       queryNode: QueryNode.cloneWithOrWhere(
         this.#props.queryNode,
-        parseReferenceFilter(this.#props.parseContext, lhs, op, rhs)
+        parseReferenceFilter(lhs, op, rhs)
       ),
     })
   }
@@ -143,7 +142,7 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
       ...this.#props,
       queryNode: QueryNode.cloneWithWhere(
         this.#props.queryNode,
-        parseExistFilter(this.#props.parseContext, arg)
+        parseExistFilter(arg)
       ),
     })
   }
@@ -153,7 +152,7 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
       ...this.#props,
       queryNode: QueryNode.cloneWithWhere(
         this.#props.queryNode,
-        parseNotExistFilter(this.#props.parseContext, arg)
+        parseNotExistFilter(arg)
       ),
     })
   }
@@ -163,7 +162,7 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
       ...this.#props,
       queryNode: QueryNode.cloneWithOrWhere(
         this.#props.queryNode,
-        parseExistFilter(this.#props.parseContext, arg)
+        parseExistFilter(arg)
       ),
     })
   }
@@ -175,7 +174,7 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
       ...this.#props,
       queryNode: QueryNode.cloneWithOrWhere(
         this.#props.queryNode,
-        parseNotExistFilter(this.#props.parseContext, arg)
+        parseNotExistFilter(arg)
       ),
     })
   }
@@ -211,7 +210,7 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
       ...this.#props,
       queryNode: QueryNode.cloneWithJoin(
         this.#props.queryNode,
-        parseJoin(this.#props.parseContext, 'InnerJoin', args)
+        parseJoin('InnerJoin', args)
       ),
     })
   }
@@ -247,7 +246,7 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
       ...this.#props,
       queryNode: QueryNode.cloneWithJoin(
         this.#props.queryNode,
-        parseJoin(this.#props.parseContext, 'LeftJoin', args)
+        parseJoin('LeftJoin', args)
       ),
     })
   }
@@ -283,7 +282,7 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
       ...this.#props,
       queryNode: QueryNode.cloneWithJoin(
         this.#props.queryNode,
-        parseJoin(this.#props.parseContext, 'RightJoin', args)
+        parseJoin('RightJoin', args)
       ),
     })
   }
@@ -319,7 +318,7 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
       ...this.#props,
       queryNode: QueryNode.cloneWithJoin(
         this.#props.queryNode,
-        parseJoin(this.#props.parseContext, 'FullJoin', args)
+        parseJoin('FullJoin', args)
       ),
     })
   }
@@ -337,7 +336,7 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
       ...this.#props,
       queryNode: QueryNode.cloneWithReturning(
         this.#props.queryNode,
-        parseSelectExpressionOrList(this.#props.parseContext, selection)
+        parseSelectExpressionOrList(selection)
       ),
     })
   }
@@ -394,7 +393,7 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
       ...this.#props,
       queryNode: DeleteQueryNode.cloneWithOrderByItem(
         this.#props.queryNode,
-        parseOrderBy(this.#props.parseContext, orderBy, direction)
+        parseOrderBy(orderBy, direction)
       ),
     })
   }
@@ -556,7 +555,7 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
       this.#props.queryId
     )
 
-    if (this.#props.parseContext.adapter.supportsReturning && query.returning) {
+    if (this.#props.executor.adapter.supportsReturning && query.returning) {
       return result.rows
     } else {
       return [new DeleteResult(result.numUpdatedOrDeletedRows!) as unknown as O]
@@ -602,5 +601,4 @@ export interface DeleteQueryBuilderProps {
   readonly queryId: QueryId
   readonly queryNode: DeleteQueryNode
   readonly executor: QueryExecutor
-  readonly parseContext: ParseContext
 }

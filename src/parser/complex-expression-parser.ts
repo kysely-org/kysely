@@ -1,3 +1,4 @@
+import { RawBuilder } from '../index-nodeless.js'
 import { AliasNode } from '../operation-node/alias-node.js'
 import { isOperationNodeSource } from '../operation-node/operation-node-source.js'
 import { RawNode } from '../operation-node/raw-node.js'
@@ -13,12 +14,12 @@ import {
   SelectQueryBuilderFactory,
   RawBuilderFactory,
 } from '../util/type-utils.js'
-import { ParseContext } from './parse-context.js'
+import { createExpressionBuilder } from './parse-utils.js'
 
-export type ComplexExpression<DB, TB extends keyof DB> =
+export type ComplexExpression<DB, TB extends keyof DB, V = any> =
   | AnySelectQueryBuilder
   | SelectQueryBuilderFactory<DB, TB>
-  | AnyRawBuilder
+  | RawBuilder<V>
   | RawBuilderFactory<DB, TB>
 
 export type AliasedComplexExpression<DB, TB extends keyof DB> =
@@ -28,26 +29,24 @@ export type AliasedComplexExpression<DB, TB extends keyof DB> =
   | AliasedRawBuilderFactory<DB, TB>
 
 export function parseComplexExpression(
-  ctx: ParseContext,
   exp: ComplexExpression<any, any>
 ): SelectQueryNode | RawNode {
   if (isOperationNodeSource(exp)) {
     return exp.toOperationNode()
   } else if (isFunction(exp)) {
-    return exp(ctx.createExpressionBuilder()).toOperationNode()
+    return exp(createExpressionBuilder()).toOperationNode()
   }
 
   throw new Error(`invalid expression: ${JSON.stringify(exp)}`)
 }
 
 export function parseAliasedComplexExpression(
-  ctx: ParseContext,
   exp: AliasedComplexExpression<any, any>
 ): AliasNode {
   if (isOperationNodeSource(exp)) {
     return exp.toOperationNode()
   } else if (isFunction(exp)) {
-    return exp(ctx.createExpressionBuilder()).toOperationNode()
+    return exp(createExpressionBuilder()).toOperationNode()
   }
 
   throw new Error(`invalid aliased expression: ${JSON.stringify(exp)}`)

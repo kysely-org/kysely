@@ -2,7 +2,6 @@ import { ColumnNode } from '../operation-node/column-node.js'
 import { PrimitiveValueListNode } from '../operation-node/primitive-value-list-node.js'
 import { ValueListNode } from '../operation-node/value-list-node.js'
 import { freeze } from '../util/object-utils.js'
-import { ParseContext } from './parse-context.js'
 import { parseValueExpression, ValueExpression } from './value-parser.js'
 import { ValuesNode } from '../operation-node/values-node.js'
 import {
@@ -31,21 +30,19 @@ export type InsertObjectOrList<DB, TB extends keyof DB> =
   | ReadonlyArray<InsertObject<DB, TB>>
 
 export function parseInsertObjectOrList(
-  ctx: ParseContext,
   args: InsertObjectOrList<any, any>
 ): [ReadonlyArray<ColumnNode>, ValuesNode] {
-  return parseInsertColumnsAndValues(ctx, Array.isArray(args) ? args : [args])
+  return parseInsertColumnsAndValues(Array.isArray(args) ? args : [args])
 }
 
 function parseInsertColumnsAndValues(
-  ctx: ParseContext,
   rows: InsertObject<any, any>[]
 ): [ReadonlyArray<ColumnNode>, ValuesNode] {
   const columns = parseColumnNamesAndIndexes(rows)
 
   return [
     freeze([...columns.keys()].map(ColumnNode.create)),
-    ValuesNode.create(rows.map((row) => parseRowValues(ctx, row, columns))),
+    ValuesNode.create(rows.map((row) => parseRowValues(row, columns))),
   ]
 }
 
@@ -68,7 +65,6 @@ function parseColumnNamesAndIndexes(
 }
 
 function parseRowValues(
-  ctx: ParseContext,
   row: InsertObject<any, any>,
   columns: Map<string, number>
 ): PrimitiveValueListNode | ValueListNode {
@@ -88,9 +84,7 @@ function parseRowValues(
   }
 
   if (rowValues.some(isComplexExpression)) {
-    return ValueListNode.create(
-      rowValues.map((it) => parseValueExpression(ctx, it))
-    )
+    return ValueListNode.create(rowValues.map((it) => parseValueExpression(it)))
   }
 
   return PrimitiveValueListNode.create(rowValues)

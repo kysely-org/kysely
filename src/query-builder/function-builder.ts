@@ -1,16 +1,16 @@
+import { RawNode } from '../index-nodeless.js'
 import {
   StringReference,
   ExtractTypeFromReferenceExpression,
+  parseStringReference,
 } from '../parser/reference-parser.js'
-import { QueryExecutor } from '../query-executor/query-executor.js'
 import { RawBuilder } from '../raw-builder/raw-builder.js'
-import { freeze } from '../util/object-utils.js'
 import { createQueryId } from '../util/query-id.js'
 
 /**
  * Helpers for type safe SQL function calls.
  *
- * You can always use {@link Kysely.raw} to call functions and build arbitrary
+ * You can always use the {@link sql} tag to call functions and build arbitrary
  * expressions. This module simply has shortcuts for most common function calls.
  *
  * ### Examples
@@ -40,11 +40,7 @@ import { createQueryId } from '../util/query-id.js'
  * ```
  */
 export class FunctionBuilder<DB, TB extends keyof DB> {
-  readonly #props: FunctionBuilderProps
-
-  constructor(props: FunctionBuilderProps) {
-    this.#props = freeze(props)
-
+  constructor() {
     this.min = this.min.bind(this)
     this.max = this.max.bind(this)
     this.avg = this.avg.bind(this)
@@ -180,13 +176,7 @@ export class FunctionBuilder<DB, TB extends keyof DB> {
   ): RawBuilder<O> {
     return new RawBuilder({
       queryId: createQueryId(),
-      executor: this.#props.executor,
-      sql: `${fn}(??)`,
-      parameters: [column],
+      rawNode: RawNode.create([`${fn}(`, ')'], [parseStringReference(column)]),
     })
   }
-}
-
-export interface FunctionBuilderProps {
-  readonly executor: QueryExecutor
 }

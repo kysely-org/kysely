@@ -47,7 +47,6 @@ import { Compilable } from '../util/compilable.js'
 import { QueryExecutor } from '../query-executor/query-executor.js'
 import { QueryId } from '../util/query-id.js'
 import { freeze } from '../util/object-utils.js'
-import { ParseContext } from '../parser/parse-context.js'
 import { UpdateResult } from './update-result.js'
 import { KyselyPlugin } from '../plugin/kysely-plugin.js'
 import { WhereInterface } from './where-interface.js'
@@ -84,7 +83,7 @@ export class UpdateQueryBuilder<DB, TB extends keyof DB, O>
       ...this.#props,
       queryNode: QueryNode.cloneWithWhere(
         this.#props.queryNode,
-        parseWhereFilter(this.#props.parseContext, args)
+        parseWhereFilter(args)
       ),
     })
   }
@@ -98,7 +97,7 @@ export class UpdateQueryBuilder<DB, TB extends keyof DB, O>
       ...this.#props,
       queryNode: QueryNode.cloneWithWhere(
         this.#props.queryNode,
-        parseReferenceFilter(this.#props.parseContext, lhs, op, rhs)
+        parseReferenceFilter(lhs, op, rhs)
       ),
     })
   }
@@ -117,7 +116,7 @@ export class UpdateQueryBuilder<DB, TB extends keyof DB, O>
       ...this.#props,
       queryNode: QueryNode.cloneWithOrWhere(
         this.#props.queryNode,
-        parseWhereFilter(this.#props.parseContext, args)
+        parseWhereFilter(args)
       ),
     })
   }
@@ -131,7 +130,7 @@ export class UpdateQueryBuilder<DB, TB extends keyof DB, O>
       ...this.#props,
       queryNode: QueryNode.cloneWithOrWhere(
         this.#props.queryNode,
-        parseReferenceFilter(this.#props.parseContext, lhs, op, rhs)
+        parseReferenceFilter(lhs, op, rhs)
       ),
     })
   }
@@ -141,7 +140,7 @@ export class UpdateQueryBuilder<DB, TB extends keyof DB, O>
       ...this.#props,
       queryNode: QueryNode.cloneWithWhere(
         this.#props.queryNode,
-        parseExistFilter(this.#props.parseContext, arg)
+        parseExistFilter(arg)
       ),
     })
   }
@@ -151,7 +150,7 @@ export class UpdateQueryBuilder<DB, TB extends keyof DB, O>
       ...this.#props,
       queryNode: QueryNode.cloneWithWhere(
         this.#props.queryNode,
-        parseNotExistFilter(this.#props.parseContext, arg)
+        parseNotExistFilter(arg)
       ),
     })
   }
@@ -161,7 +160,7 @@ export class UpdateQueryBuilder<DB, TB extends keyof DB, O>
       ...this.#props,
       queryNode: QueryNode.cloneWithOrWhere(
         this.#props.queryNode,
-        parseExistFilter(this.#props.parseContext, arg)
+        parseExistFilter(arg)
       ),
     })
   }
@@ -173,7 +172,7 @@ export class UpdateQueryBuilder<DB, TB extends keyof DB, O>
       ...this.#props,
       queryNode: QueryNode.cloneWithOrWhere(
         this.#props.queryNode,
-        parseNotExistFilter(this.#props.parseContext, arg)
+        parseNotExistFilter(arg)
       ),
     })
   }
@@ -209,7 +208,7 @@ export class UpdateQueryBuilder<DB, TB extends keyof DB, O>
       ...this.#props,
       queryNode: QueryNode.cloneWithJoin(
         this.#props.queryNode,
-        parseJoin(this.#props.parseContext, 'InnerJoin', args)
+        parseJoin('InnerJoin', args)
       ),
     })
   }
@@ -245,7 +244,7 @@ export class UpdateQueryBuilder<DB, TB extends keyof DB, O>
       ...this.#props,
       queryNode: QueryNode.cloneWithJoin(
         this.#props.queryNode,
-        parseJoin(this.#props.parseContext, 'LeftJoin', args)
+        parseJoin('LeftJoin', args)
       ),
     })
   }
@@ -281,7 +280,7 @@ export class UpdateQueryBuilder<DB, TB extends keyof DB, O>
       ...this.#props,
       queryNode: QueryNode.cloneWithJoin(
         this.#props.queryNode,
-        parseJoin(this.#props.parseContext, 'RightJoin', args)
+        parseJoin('RightJoin', args)
       ),
     })
   }
@@ -317,7 +316,7 @@ export class UpdateQueryBuilder<DB, TB extends keyof DB, O>
       ...this.#props,
       queryNode: QueryNode.cloneWithJoin(
         this.#props.queryNode,
-        parseJoin(this.#props.parseContext, 'FullJoin', args)
+        parseJoin('FullJoin', args)
       ),
     })
   }
@@ -326,8 +325,8 @@ export class UpdateQueryBuilder<DB, TB extends keyof DB, O>
    * Sets the values to update for an {@link Kysely.updateTable | update} query.
    *
    * This method takes an object whose keys are column names and values are
-   * values to update. In addition to the column's type, the values can be `raw`
-   * instances or select queries.
+   * values to update. In addition to the column's type, the values can be
+   * raw {@link sql} snippets or select queries.
    *
    * The return value of an update query is an instance of {@link UpdateResult}.
    * You can use the {@link returning} method on supported databases to get out
@@ -380,16 +379,18 @@ export class UpdateQueryBuilder<DB, TB extends keyof DB, O>
    * update "person" set "first_name" = $1, "last_name" = $2 where "id" = $3 returning "id"
    * ```
    *
-   * In addition to primitives, the values can also be `raw` expressions or
+   * In addition to primitives, the values can also be raw sql expressions or
    * select queries:
    *
    * ```ts
+   * import { sql } from 'kysely'
+   *
    * const result = await db
    *   .updateTable('person')
    *   .set({
    *     first_name: 'Jennifer',
-   *     last_name: db.raw('? || ?', ['Ani', 'ston']),
-   *     age: db.selectFrom('person').select(raw('avg(age)')),
+   *     last_name: sql`${'Ani'} || ${'ston'}`,
+   *     age: db.selectFrom('person').select(sql`avg(age)`),
    *   })
    *   .where('id', '=', 1)
    *   .executeTakeFirst()
@@ -412,7 +413,7 @@ export class UpdateQueryBuilder<DB, TB extends keyof DB, O>
       ...this.#props,
       queryNode: UpdateQueryNode.cloneWithUpdates(
         this.#props.queryNode,
-        parseUpdateObject(this.#props.parseContext, row)
+        parseUpdateObject(row)
       ),
     })
   }
@@ -430,7 +431,7 @@ export class UpdateQueryBuilder<DB, TB extends keyof DB, O>
       ...this.#props,
       queryNode: QueryNode.cloneWithReturning(
         this.#props.queryNode,
-        parseSelectExpressionOrList(this.#props.parseContext, selection)
+        parseSelectExpressionOrList(selection)
       ),
     })
   }
@@ -576,7 +577,7 @@ export class UpdateQueryBuilder<DB, TB extends keyof DB, O>
       this.#props.queryId
     )
 
-    if (this.#props.parseContext.adapter.supportsReturning && query.returning) {
+    if (this.#props.executor.adapter.supportsReturning && query.returning) {
       return result.rows
     } else {
       return [new UpdateResult(result.numUpdatedOrDeletedRows!) as unknown as O]
@@ -622,5 +623,4 @@ export interface UpdateQueryBuilderProps {
   readonly queryId: QueryId
   readonly queryNode: UpdateQueryNode
   readonly executor: QueryExecutor
-  readonly parseContext: ParseContext
 }

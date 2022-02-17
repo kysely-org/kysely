@@ -1,3 +1,5 @@
+import { sql } from '../../../'
+
 import {
   BUILT_IN_DIALECTS,
   clearDatabase,
@@ -205,13 +207,11 @@ for (const dialect of BUILT_IN_DIALECTS) {
         const query = ctx.db
           .selectFrom('person')
           .select(
-            ctx.db
-              .raw(`concat(??, ' ', cast(? as varchar), ' ', ??)`, [
-                'first_name',
-                'Muriel',
-                'last_name',
-              ])
-              .as('full_name_with_middle_name')
+            sql`concat(${sql.ref(
+              'first_name'
+            )}, ' ', cast(${'Muriel'} as varchar), ' ', ${sql.ref(
+              'last_name'
+            )})`.as('full_name_with_middle_name')
           )
           .where('first_name', '=', 'Jennifer')
 
@@ -236,8 +236,8 @@ for (const dialect of BUILT_IN_DIALECTS) {
     it('should select multiple fields', async () => {
       const fullName =
         dialect === 'mysql'
-          ? "concat(first_name, ' ', last_name)"
-          : "first_name || ' ' || last_name"
+          ? sql`concat(first_name, ' ', last_name)`
+          : sql`first_name || ' ' || last_name`
 
       const query = ctx.db
         .selectFrom('person')
@@ -246,7 +246,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
           'last_name as ln',
           'person.gender',
           'person.first_name as fn',
-          ctx.db.raw(fullName).as('full_name'),
+          fullName.as('full_name'),
           (qb) =>
             qb
               .selectFrom('pet')
@@ -319,7 +319,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
         .selectFrom([
           'person',
           ctx.db.selectFrom('pet').select(['owner_id', 'species']).as('p'),
-          ctx.db.raw<{ one: number }>('(select 1 as one)').as('o'),
+          sql<{ one: number }>`(select 1 as one)`.as('o'),
         ])
         .select(['last_name', 'species as pet_species', 'one'])
         .whereRef('p.owner_id', '=', 'person.id')

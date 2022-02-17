@@ -85,13 +85,15 @@ export class CreateTableBuilder<TB extends string, C extends string = never>
    * ### Examples
    *
    * ```ts
+   * import { sql } from 'kysely'
+   *
    * await db.schema
    *   .createTable('person')
    *   .addColumn('id', 'integer', (col) => col.autoIncrement().primaryKey()),
    *   .addColumn('first_name', 'varchar(50)', (col) => col.notNull())
    *   .addColumn('last_name', 'varchar(255)')
    *   .addColumn('bank_balance', 'numeric(8, 2)')
-   *   .addColumn('data', db.raw('customtype'))
+   *   .addColumn('data', sql`customtype`)
    *   .addColumn('parent_id', 'integer', (col) =>
    *     col.references('person.id').onDelete('cascade'))
    *   )
@@ -203,7 +205,9 @@ export class CreateTableBuilder<TB extends string, C extends string = never>
    * ### Examples
    *
    * ```ts
-   * addCheckConstraint('check_legs', db.raw('number_of_legs < 5'))
+   * import { sql } from 'kysely'
+   *
+   * addCheckConstraint('check_legs', sql`number_of_legs < 5`)
    * ```
    */
   addCheckConstraint(

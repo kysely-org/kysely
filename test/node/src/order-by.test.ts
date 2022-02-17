@@ -1,3 +1,5 @@
+import { sql } from '../../../'
+
 import {
   BUILT_IN_DIALECTS,
   clearDatabase,
@@ -116,7 +118,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
       const query = ctx.db
         .selectFrom('person')
         .selectAll()
-        .orderBy(ctx.db.raw(`coalesce(??, 'foo')`, ['first_name']), 'asc')
+        .orderBy(sql`coalesce(${sql.ref('first_name')}, 'foo')`, 'asc')
 
       testSql(query, dialect, {
         postgres: {
@@ -141,7 +143,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
         const query = ctx.db
           .selectFrom('person')
           .selectAll()
-          .orderBy('person.first_name', ctx.db.raw('nulls last'))
+          .orderBy('person.first_name', sql`nulls last`)
 
         testSql(query, dialect, {
           postgres: {

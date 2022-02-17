@@ -2,7 +2,6 @@ import { ReferenceExpressionNode } from '../operation-node/operation-node-utils.
 import { OrderByItemNode } from '../operation-node/order-by-item-node.js'
 import { RawNode } from '../operation-node/raw-node.js'
 import { AnyRawBuilder } from '../util/type-utils.js'
-import { ParseContext } from './parse-context.js'
 import {
   parseReferenceExpression,
   ReferenceExpression,
@@ -17,21 +16,19 @@ export type OrderByExpression<DB, TB extends keyof DB, O> =
 export type OrderByDirectionExpression = OrderByDirection | AnyRawBuilder
 
 export function parseOrderBy(
-  ctx: ParseContext,
   orderBy: OrderByExpression<any, any, any>,
   direction?: OrderByDirectionExpression
 ): OrderByItemNode {
   return OrderByItemNode.create(
-    parseOrderByExpression(ctx, orderBy),
+    parseOrderByExpression(orderBy),
     parseOrderByDirectionExpression(direction)
   )
 }
 
 function parseOrderByExpression(
-  ctx: ParseContext,
   expr: OrderByExpression<any, any, any>
 ): ReferenceExpressionNode {
-  return parseReferenceExpression(ctx, expr)
+  return parseReferenceExpression(expr)
 }
 
 function parseOrderByDirectionExpression(

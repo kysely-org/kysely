@@ -1,3 +1,5 @@
+import { sql } from '../../../'
+
 import {
   BUILT_IN_DIALECTS,
   clearDatabase,
@@ -31,12 +33,13 @@ for (const dialect of BUILT_IN_DIALECTS) {
     })
 
     it('should run a raw select query', async () => {
-      const result = await ctx.db
-        .raw<{ first_name: string }>(
-          'select first_name from person where gender = ? order by first_name asc, last_name asc',
-          ['male']
-        )
-        .execute()
+      const gender = 'male'
+
+      const result = await sql<{
+        first_name: string
+      }>`select first_name from person where gender = ${gender} order by first_name asc, last_name asc`.execute(
+        ctx.db
+      )
 
       expect(result.insertId).to.equal(undefined)
       expect(result.numUpdatedOrDeletedRows).to.equal(undefined)
@@ -47,21 +50,23 @@ for (const dialect of BUILT_IN_DIALECTS) {
     })
 
     it('should run a raw update query', async () => {
-      const result = await ctx.db
-        .raw('update person set first_name = ? where gender = ?', [
-          'Updated',
-          'male',
-        ])
-        .execute()
+      const newFirstName = 'Updated'
+      const gender = 'male'
+
+      const result =
+        await sql`update person set first_name = ${newFirstName} where gender = ${gender}`.execute(
+          ctx.db
+        )
 
       expect(result.numUpdatedOrDeletedRows).to.equal(2n)
       expect(result.rows).to.eql([])
     })
 
     it('should run a raw delete query', async () => {
-      const result = await ctx.db
-        .raw('delete from person where gender = ?', ['male'])
-        .execute()
+      const gender = 'male'
+
+      const result =
+        await sql`delete from person where gender = ${gender}`.execute(ctx.db)
 
       expect(result.numUpdatedOrDeletedRows).to.equal(2n)
       expect(result.rows).to.eql([])
@@ -69,12 +74,14 @@ for (const dialect of BUILT_IN_DIALECTS) {
 
     if (dialect === 'postgres') {
       it('should run a raw insert query', async () => {
-        const result = await ctx.db
-          .raw(
-            'insert into person (first_name, last_name, gender) values (?, ?, ?) returning first_name, last_name',
-            ['New', 'Personsson', 'other']
+        const firstName = 'New'
+        const lastName = 'Personsson'
+        const gender = 'other'
+
+        const result =
+          await sql`insert into person (first_name, last_name, gender) values (${firstName}, ${lastName}, ${gender}) returning first_name, last_name`.execute(
+            ctx.db
           )
-          .execute()
 
         expect(result.insertId).to.equal(undefined)
         expect(result.rows).to.eql([
@@ -83,12 +90,14 @@ for (const dialect of BUILT_IN_DIALECTS) {
       })
     } else {
       it('should run a raw insert query', async () => {
-        const result = await ctx.db
-          .raw(
-            'insert into person (first_name, last_name, gender) values (?, ?, ?)',
-            ['New', 'Personsson', 'other']
+        const firstName = 'New'
+        const lastName = 'Personsson'
+        const gender = 'other'
+
+        const result =
+          await sql`insert into person (first_name, last_name, gender) values (${firstName}, ${lastName}, ${gender})`.execute(
+            ctx.db
           )
-          .execute()
 
         expect(result.insertId! > 0n).to.be.equal(true)
         expect(result.rows).to.eql([])

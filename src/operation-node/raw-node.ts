@@ -4,7 +4,7 @@ import { OperationNode } from './operation-node.js'
 export interface RawNode extends OperationNode {
   readonly kind: 'RawNode'
   readonly sqlFragments: ReadonlyArray<string>
-  readonly params: ReadonlyArray<OperationNode>
+  readonly parameters: ReadonlyArray<OperationNode>
 }
 
 /**
@@ -17,16 +17,24 @@ export const RawNode = freeze({
 
   create(
     sqlFragments: ReadonlyArray<string>,
-    params: ReadonlyArray<OperationNode>
+    parameters: ReadonlyArray<OperationNode>
   ): RawNode {
     return freeze({
       kind: 'RawNode',
       sqlFragments: freeze(sqlFragments),
-      params: freeze(params),
+      parameters: freeze(parameters),
     })
   },
 
   createWithSql(sql: string): RawNode {
     return RawNode.create([sql], [])
+  },
+
+  createWithChild(child: OperationNode): RawNode {
+    return RawNode.create(['', ''], [child])
+  },
+
+  createWithChildren(children: ReadonlyArray<OperationNode>): RawNode {
+    return RawNode.create(new Array(children.length + 1).fill(''), children)
   },
 })

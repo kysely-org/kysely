@@ -105,15 +105,17 @@ export interface ColumnDefinitionBuilderInterface {
    *   .execute()
    * ```
    *
-   * Raw expressions are also supported:
+   * Raw {@link sql} expressions are also supported:
    *
    * ```ts
+   * import { sql } from 'kysely'
+   *
    * db.schema
    *   .createTable('pet')
    *   .addColumn(
    *     'number_of_legs',
    *     'integer',
-   *     (col) => col.defaultTo(db.raw('any SQL here'))
+   *     (col) => col.defaultTo(sql`any SQL here`)
    *   )
    *   .execute()
    * ```
@@ -126,10 +128,12 @@ export interface ColumnDefinitionBuilderInterface {
    * ### Examples
    *
    * ```ts
+   * import { sql } from 'kysely'
+   *
    * db.schema
    *   .createTable('pet')
    *   .addColumn('number_of_legs', 'integer', (col) =>
-   *     col.check(db.raw('number_of_legs < 5'))
+   *     col.check(sql`number_of_legs < 5`)
    *   )
    *   .execute()
    * ```
@@ -142,10 +146,12 @@ export interface ColumnDefinitionBuilderInterface {
    * ### Examples
    *
    * ```ts
+   * import { sql } from 'kysely'
+   *
    * db.schema
    *   .createTable('person')
    *   .addColumn('full_name', 'varchar(255)',
-   *     (col) => col.generatedAlwaysAs(db.raw("concat(first_name, ' ', last_name)"))
+   *     (col) => col.generatedAlwaysAs(sql`concat(first_name, ' ', last_name)`)
    *   )
    *   .execute()
    * ```

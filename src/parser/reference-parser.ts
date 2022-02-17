@@ -12,7 +12,6 @@ import {
 } from '../util/type-utils.js'
 import { RawBuilder } from '../raw-builder/raw-builder.js'
 import { SelectQueryBuilder } from '../query-builder/select-query-builder.js'
-import { ParseContext } from './parse-context.js'
 import {
   parseComplexExpression,
   ComplexExpression,
@@ -73,18 +72,16 @@ type ExtractTypeFromStringReference<
   : unknown
 
 export function parseReferenceExpressionOrList(
-  ctx: ParseContext,
   arg: ReferenceExpressionOrList<any, any>
 ): ReferenceExpressionNode[] {
   if (isReadonlyArray(arg)) {
-    return arg.map((it) => parseReferenceExpression(ctx, it))
+    return arg.map((it) => parseReferenceExpression(it))
   } else {
-    return [parseReferenceExpression(ctx, arg)]
+    return [parseReferenceExpression(arg)]
   }
 }
 
 export function parseReferenceExpression(
-  ctx: ParseContext,
   exp: ReferenceExpression<any, any>
 ): ReferenceExpressionNode {
   if (isString(exp)) {
@@ -93,7 +90,7 @@ export function parseReferenceExpression(
     return exp.toOperationNode()
   }
 
-  return parseComplexExpression(ctx, exp)
+  return parseComplexExpression(exp)
 }
 
 export function parseStringReference(ref: string): ColumnNode | ReferenceNode {

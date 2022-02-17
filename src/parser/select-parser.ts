@@ -18,7 +18,6 @@ import {
   DynamicReferenceBuilder,
   isDynamicReferenceBuilder,
 } from '../dynamic/dynamic-reference-builder.js'
-import { ParseContext } from './parse-context.js'
 import {
   AliasedComplexExpression,
   parseAliasedComplexExpression,
@@ -176,18 +175,16 @@ type AllSelection<DB, TB extends keyof DB> = Selectable<{
 }>
 
 export function parseSelectExpressionOrList(
-  ctx: ParseContext,
   selection: SelectExpressionOrList<any, any>
 ): SelectionNode[] {
   if (isReadonlyArray(selection)) {
-    return selection.map((it) => parseSelectExpression(ctx, it))
+    return selection.map((it) => parseSelectExpression(it))
   } else {
-    return [parseSelectExpression(ctx, selection)]
+    return [parseSelectExpression(selection)]
   }
 }
 
 function parseSelectExpression(
-  ctx: ParseContext,
   selection: SelectExpression<any, any>
 ): SelectionNode {
   if (isString(selection)) {
@@ -195,7 +192,7 @@ function parseSelectExpression(
   } else if (isDynamicReferenceBuilder(selection)) {
     return SelectionNode.create(selection.toOperationNode())
   } else {
-    return SelectionNode.create(parseAliasedComplexExpression(ctx, selection))
+    return SelectionNode.create(parseAliasedComplexExpression(selection))
   }
 }
 

@@ -1,6 +1,5 @@
 import { Kysely } from '../kysely.js'
 import { freeze, getLast } from '../util/object-utils.js'
-import { PRIVATE_ADAPTER } from '../util/private-symbols.js'
 
 export const MIGRATION_TABLE = 'kysely_migration'
 export const MIGRATION_LOCK_TABLE = 'kysely_migration_lock'
@@ -307,11 +306,13 @@ export class Migrator {
   async #runMigrations(
     getTargetMigrationIndex: (state: MigrationState) => number | undefined
   ): Promise<MigrationResultSet> {
+    const adapter = this.#props.db.getExecutor().adapter
+
     const run = async (
       db: Kysely<MigrationTables>
     ): Promise<MigrationResultSet> => {
       try {
-        await this.#props.db[PRIVATE_ADAPTER].acquireMigrationLock(db)
+        await adapter.acquireMigrationLock(db)
 
         const state = await this.#getState(db)
 
@@ -333,11 +334,11 @@ export class Migrator {
 
         return { results: [] }
       } finally {
-        await this.#props.db[PRIVATE_ADAPTER].releaseMigrationLock(db)
+        await adapter.releaseMigrationLock(db)
       }
     }
 
-    if (this.#props.db[PRIVATE_ADAPTER].supportsTransactionalDdl) {
+    if (adapter.supportsTransactionalDdl) {
       return this.#props.db.transaction().execute(run)
     } else {
       return this.#props.db.connection().execute(run)

@@ -1,33 +1,54 @@
 import { QueryResult } from '../driver/database-connection.js'
 import { AliasNode } from '../operation-node/alias-node.js'
-import { OperationNode } from '../operation-node/operation-node.js'
-import {
-  isOperationNodeSource,
-  OperationNodeSource,
-} from '../operation-node/operation-node-source.js'
+import { OperationNodeSource } from '../operation-node/operation-node-source.js'
 import { RawNode } from '../operation-node/raw-node.js'
-import { ValueNode } from '../operation-node/value-node.js'
-import { parseStringReference } from '../parser/reference-parser.js'
 import { CompiledQuery } from '../query-compiler/compiled-query.js'
 import { preventAwait } from '../util/prevent-await.js'
 import { QueryExecutor } from '../query-executor/query-executor.js'
-import { createQueryId, QueryId } from '../util/query-id.js'
 import { freeze } from '../util/object-utils.js'
 import { KyselyPlugin } from '../plugin/kysely-plugin.js'
-import { NoopQueryExecutor } from '../query-executor/noop-query-executor.js'
+import { NOOP_QUERY_EXECUTOR } from '../query-executor/noop-query-executor.js'
+import { QueryExecutorProvider } from '../query-executor/query-executor-provider.js'
+import { QueryId } from '../util/query-id.js'
 
+/**
+ * An instance of this class can be used to create raw SQL snippets or queries.
+ *
+ * You shouldn't need to create `RawBuilder` instances directly. Instead you should
+ * use the {@link sql} template tag.
+ */
 export class RawBuilder<O = unknown> implements OperationNodeSource {
-  readonly #props: InternalRawBuilderProps
+  readonly #props: RawBuilderProps
 
   constructor(props: RawBuilderProps) {
-    this.#props = freeze({
-      queryId: props.queryId ?? createQueryId(),
-      executor: props.executor ?? new NoopQueryExecutor(),
-      sql: props.sql,
-      parameters: props.parameters,
-    })
+    this.#props = freeze(props)
   }
 
+  /**
+   * Returns an aliased version of the SQL expression.
+   *
+   * In addition to slapping `as "the_alias"` to the end of the SQL,
+   * this method also provides strict typing:
+   *
+   * ```ts
+   * const result = await db
+   *   .selectFrom('person')
+   *   .select(
+   *     sql<string>`concat(first_name, ' ', last_name)`.as('full_name')
+   *   )
+   *   .executeTakeFirstOrThrow()
+   *
+   * // `full_name: string` field exists in the result type.
+   * console.log(result.full_name)
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```ts
+   * select concat(first_name, ' ', last_name) as "full_name"
+   * from "person"
+   * ```
+   */
   as<A extends string>(alias: A): AliasedRawBuilder<O, A> {
     return new AliasedRawBuilder(this, alias)
   }
@@ -35,71 +56,56 @@ export class RawBuilder<O = unknown> implements OperationNodeSource {
   /**
    * Change the output type of the raw expression.
    *
-   * This doesn't produce any SQL. This methods simply returns a copy
-   * of this `RawBuilder` with a new output type.
+   * This method call doesn't change the SQL in any way. This methods simply
+   * returns a copy of this `RawBuilder` with a new output type.
    */
   castTo<T>(): RawBuilder<T> {
-    return new RawBuilder({
-      ...this.#props,
-    })
+    return new RawBuilder({ ...this.#props })
   }
 
+  /**
+   * Adds a plugin for this SQL snippet.
+   */
   withPlugin(plugin: KyselyPlugin): RawBuilder<O> {
     return new RawBuilder({
       ...this.#props,
-      executor: this.#props.executor.withPlugin(plugin),
+      plugins:
+        this.#props.plugins !== undefined
+          ? freeze([...this.#props.plugins, plugin])
+          : freeze([plugin]),
     })
   }
 
   toOperationNode(): RawNode {
-    const parameterPlaceholderRegex = /(\?\??)/g
+    const executor =
+      this.#props.plugins !== undefined
+        ? NOOP_QUERY_EXECUTOR.withPlugins(this.#props.plugins)
+        : NOOP_QUERY_EXECUTOR
 
-    const sql = this.#props.sql
-    const parameters = this.#props.parameters ?? []
-
-    const sqlFragments: string[] = []
-    const argNodes: OperationNode[] = []
-
-    let paramIdx = 0
-    let sqlIdx = 0
-    let match: RegExpExecArray | null = null
-
-    while ((match = parameterPlaceholderRegex.exec(sql))) {
-      const str = match[1]
-
-      if (paramIdx >= parameters.length) {
-        throw new Error(
-          `value not provided for all placeholders in string ${sql}`
-        )
-      }
-
-      if (match.index > 0 && sql[match.index - 1] === '\\') {
-        continue
-      }
-
-      sqlFragments.push(sql.slice(sqlIdx, match.index).replace(/\\\?/g, '?'))
-      argNodes.push(parseRawArg(str, parameters[paramIdx]))
-
-      sqlIdx = match.index + str.length
-      ++paramIdx
-    }
-
-    sqlFragments.push(sql.slice(sqlIdx))
-
-    const rawNode = RawNode.create(sqlFragments, argNodes)
-    return this.#props.executor.transformQuery(rawNode, this.#props.queryId)
+    return this.#toOperationNode(executor)
   }
 
-  compile(): CompiledQuery {
-    return this.#props.executor.compileQuery(
-      this.toOperationNode(),
+  async execute(
+    executorProvider: QueryExecutorProvider
+  ): Promise<QueryResult<O>> {
+    const executor =
+      this.#props.plugins !== undefined
+        ? executorProvider.getExecutor().withPlugins(this.#props.plugins)
+        : executorProvider.getExecutor()
+
+    return executor.executeQuery<O>(
+      this.#compile(executor),
       this.#props.queryId
     )
   }
 
-  async execute(): Promise<QueryResult<O>> {
-    return this.#props.executor.executeQuery<O>(
-      this.compile(),
+  #toOperationNode(executor: QueryExecutor): RawNode {
+    return executor.transformQuery(this.#props.rawNode, this.#props.queryId)
+  }
+
+  #compile(executor: QueryExecutor): CompiledQuery {
+    return executor.compileQuery(
+      this.#toOperationNode(executor),
       this.#props.queryId
     )
   }
@@ -141,24 +147,8 @@ export class AliasedRawBuilder<O = unknown, A extends string = never>
   }
 }
 
-function parseRawArg(match: string, arg: any): OperationNode {
-  if (isOperationNodeSource(arg)) {
-    return arg.toOperationNode()
-  } else if (match === '??') {
-    return parseStringReference(arg)
-  } else {
-    return ValueNode.create(arg)
-  }
-}
-
 export interface RawBuilderProps {
-  readonly queryId?: QueryId
-  readonly executor?: QueryExecutor
-  readonly sql: string
-  readonly parameters?: ReadonlyArray<unknown>
-}
-
-interface InternalRawBuilderProps extends RawBuilderProps {
   readonly queryId: QueryId
-  readonly executor: QueryExecutor
+  readonly rawNode: RawNode
+  readonly plugins?: ReadonlyArray<KyselyPlugin>
 }

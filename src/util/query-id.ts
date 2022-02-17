@@ -1,4 +1,3 @@
-import { freeze } from './object-utils.js'
 import { randomString } from './random-string.js'
 
 export interface QueryId {
@@ -6,7 +5,17 @@ export interface QueryId {
 }
 
 export function createQueryId(): QueryId {
-  return freeze({
-    queryId: randomString(8),
-  })
+  return new LazyQueryId()
+}
+
+class LazyQueryId implements QueryId {
+  #queryId: string | undefined
+
+  get queryId(): string {
+    if (this.#queryId === undefined) {
+      this.#queryId = randomString(8)
+    }
+
+    return this.#queryId
+  }
 }

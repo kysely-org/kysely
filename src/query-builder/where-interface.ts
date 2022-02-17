@@ -32,7 +32,7 @@ export interface WhereInterface<DB, TB extends keyof DB> {
    * ```
    *
    * Operator can be any supported operator or if the typings don't support it
-   * you can always use `db.raw('your operator')`.
+   * you can always use `sql\`your operator\``.
    *
    * ```ts
    * const persons = await db
@@ -102,7 +102,7 @@ export interface WhereInterface<DB, TB extends keyof DB> {
    *
    * A `where in` query can be built by using the `in` operator and an array
    * of values. The values in the array can also be subqueries or raw
-   * instances.
+   * {@link sql} expressions.
    *
    * ```ts
    * const persons = await db
@@ -118,15 +118,17 @@ export interface WhereInterface<DB, TB extends keyof DB> {
    * select * from "person" where "id" in ($1, $2, $3)
    * ```
    *
-   * If everything else fails, you can always pass {@link Kysely.raw | raw}
+   * If everything else fails, you can always use the {@link sql} tag
    * as any of the arguments, including the operator:
    *
    * ```ts
+   * import { sql } from 'kysely'
+   *
    * const persons = await db
    *   .selectFrom('person')
    *   .selectAll()
    *   .where(
-   *     db.raw('coalesce(first_name, last_name)'),
+   *     sql`coalesce(first_name, last_name)`,
    *     'like',
    *     '%' + name + '%',
    *   )
@@ -161,24 +163,25 @@ export interface WhereInterface<DB, TB extends keyof DB> {
    * ```
    *
    * In all examples above the columns were known at compile time
-   * (except for the `raw` expressions). By default kysely only allows
-   * you to refer to columns that exist in the database **and** can be
-   * referred to in the current query and context.
+   * (except for the raw {@link sql} expressions). By default kysely only
+   * allows you to refer to columns that exist in the database **and**
+   * can be referred to in the current query and context.
    *
    * Sometimes you may want to refer to columns that come from the user
    * input and thus are not available at compile time.
    *
-   * You have two options, `db.raw` or `db.dynamic`. The example below
+   * You have two options, the {@link sql} tag or `db.dynamic`. The example below
    * uses both:
    *
    * ```ts
+   * import { sql } from 'kysely'
    * const { ref } = db.dynamic
    *
    * const persons = await db
    *   .selectFrom('person')
    *   .selectAll()
    *   .where(ref(columnFromUserInput), '=', 1)
-   *   .orWhere(db.raw('??', [columnFromUserInput]), '=', 2)
+   *   .orWhere(sql.id(columnFromUserInput), '=', 2)
    *   .execute()
    * ```
    */
@@ -336,13 +339,14 @@ export interface WhereInterface<DB, TB extends keyof DB> {
   /**
    * Adds a `where exists` clause to the query.
    *
-   * You can either use a subquery or a raw instance.
+   * You can either use a subquery or a raw {@link sql} snippet.
    *
    * ### Examples
    *
    * The query below selets all persons that own a pet named Catto:
    *
    * ```ts
+   * const petName = 'Catto'
    * const persons = await db
    *   .selectFrom('person')
    *   .selectAll()
@@ -350,7 +354,7 @@ export interface WhereInterface<DB, TB extends keyof DB> {
    *     .selectFrom('pet')
    *     .select('pet.id')
    *     .whereRef('person.id', '=', 'pet.owner_id')
-   *     .where('pet.name', '=', 'Catto')
+   *     .where('pet.name', '=', petName)
    *   )
    *   .execute()
    * ```
@@ -367,16 +371,16 @@ export interface WhereInterface<DB, TB extends keyof DB> {
    * )
    * ```
    *
-   * The same query as in the previous example but with using raw:
+   * The same query as in the previous example but with using raw {@link sql}:
    *
    * ```ts
+   * import { sql } from 'kysely'
+   *
+   * const petName = 'Catto'
    * db.selectFrom('person')
    *   .selectAll()
    *   .whereExists(
-   *     db.raw(
-   *       '(select pet.id from pet where person.id = pet.owner_id and pet.name = ?)',
-   *       ['Catto']
-   *     )
+   *     sql`(select pet.id from pet where person.id = pet.owner_id and pet.name = ${petName})`
    *   )
    * ```
    *

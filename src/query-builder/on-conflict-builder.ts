@@ -12,7 +12,6 @@ import {
   parseExistFilter,
   parseNotExistFilter,
 } from '../parser/filter-parser.js'
-import { ParseContext } from '../parser/parse-context.js'
 import { ReferenceExpression } from '../parser/reference-parser.js'
 import {
   MutationObject,
@@ -123,7 +122,7 @@ export class OnConflictBuilder<DB, TB extends keyof DB>
       ...this.#props,
       onConflictNode: OnConflictNode.cloneWithIndexWhere(
         this.#props.onConflictNode,
-        parseWhereFilter(this.#props.parseContext, args)
+        parseWhereFilter(args)
       ),
     })
   }
@@ -142,7 +141,7 @@ export class OnConflictBuilder<DB, TB extends keyof DB>
       ...this.#props,
       onConflictNode: OnConflictNode.cloneWithIndexWhere(
         this.#props.onConflictNode,
-        parseReferenceFilter(this.#props.parseContext, lhs, op, rhs)
+        parseReferenceFilter(lhs, op, rhs)
       ),
     })
   }
@@ -165,7 +164,7 @@ export class OnConflictBuilder<DB, TB extends keyof DB>
       ...this.#props,
       onConflictNode: OnConflictNode.cloneWithIndexOrWhere(
         this.#props.onConflictNode,
-        parseWhereFilter(this.#props.parseContext, args)
+        parseWhereFilter(args)
       ),
     })
   }
@@ -184,7 +183,7 @@ export class OnConflictBuilder<DB, TB extends keyof DB>
       ...this.#props,
       onConflictNode: OnConflictNode.cloneWithIndexOrWhere(
         this.#props.onConflictNode,
-        parseReferenceFilter(this.#props.parseContext, lhs, op, rhs)
+        parseReferenceFilter(lhs, op, rhs)
       ),
     })
   }
@@ -199,7 +198,7 @@ export class OnConflictBuilder<DB, TB extends keyof DB>
       ...this.#props,
       onConflictNode: OnConflictNode.cloneWithIndexWhere(
         this.#props.onConflictNode,
-        parseExistFilter(this.#props.parseContext, arg)
+        parseExistFilter(arg)
       ),
     })
   }
@@ -214,7 +213,7 @@ export class OnConflictBuilder<DB, TB extends keyof DB>
       ...this.#props,
       onConflictNode: OnConflictNode.cloneWithIndexWhere(
         this.#props.onConflictNode,
-        parseNotExistFilter(this.#props.parseContext, arg)
+        parseNotExistFilter(arg)
       ),
     })
   }
@@ -229,7 +228,7 @@ export class OnConflictBuilder<DB, TB extends keyof DB>
       ...this.#props,
       onConflictNode: OnConflictNode.cloneWithIndexOrWhere(
         this.#props.onConflictNode,
-        parseExistFilter(this.#props.parseContext, arg)
+        parseExistFilter(arg)
       ),
     })
   }
@@ -244,7 +243,7 @@ export class OnConflictBuilder<DB, TB extends keyof DB>
       ...this.#props,
       onConflictNode: OnConflictNode.cloneWithIndexOrWhere(
         this.#props.onConflictNode,
-        parseNotExistFilter(this.#props.parseContext, arg)
+        parseNotExistFilter(arg)
       ),
     })
   }
@@ -311,7 +310,7 @@ export class OnConflictBuilder<DB, TB extends keyof DB>
     return new OnConflictUpdateBuilder({
       ...this.#props,
       onConflictNode: OnConflictNode.cloneWith(this.#props.onConflictNode, {
-        updates: parseUpdateObject(this.#props.parseContext, updates),
+        updates: parseUpdateObject(updates),
       }),
     })
   }
@@ -319,7 +318,6 @@ export class OnConflictBuilder<DB, TB extends keyof DB>
 
 export interface OnConflictBuilderProps {
   readonly onConflictNode: OnConflictNode
-  readonly parseContext: ParseContext
 }
 
 preventAwait(OnConflictBuilder, "don't await OnConflictBuilder instances.")
@@ -377,7 +375,7 @@ export class OnConflictUpdateBuilder<DB, TB extends keyof DB>
       ...this.#props,
       onConflictNode: OnConflictNode.cloneWithUpdateWhere(
         this.#props.onConflictNode,
-        parseWhereFilter(this.#props.parseContext, args)
+        parseWhereFilter(args)
       ),
     })
   }
@@ -396,7 +394,7 @@ export class OnConflictUpdateBuilder<DB, TB extends keyof DB>
       ...this.#props,
       onConflictNode: OnConflictNode.cloneWithUpdateWhere(
         this.#props.onConflictNode,
-        parseReferenceFilter(this.#props.parseContext, lhs, op, rhs)
+        parseReferenceFilter(lhs, op, rhs)
       ),
     })
   }
@@ -419,7 +417,7 @@ export class OnConflictUpdateBuilder<DB, TB extends keyof DB>
       ...this.#props,
       onConflictNode: OnConflictNode.cloneWithUpdateOrWhere(
         this.#props.onConflictNode,
-        parseWhereFilter(this.#props.parseContext, args)
+        parseWhereFilter(args)
       ),
     })
   }
@@ -438,7 +436,7 @@ export class OnConflictUpdateBuilder<DB, TB extends keyof DB>
       ...this.#props,
       onConflictNode: OnConflictNode.cloneWithUpdateOrWhere(
         this.#props.onConflictNode,
-        parseReferenceFilter(this.#props.parseContext, lhs, op, rhs)
+        parseReferenceFilter(lhs, op, rhs)
       ),
     })
   }
@@ -453,7 +451,7 @@ export class OnConflictUpdateBuilder<DB, TB extends keyof DB>
       ...this.#props,
       onConflictNode: OnConflictNode.cloneWithUpdateWhere(
         this.#props.onConflictNode,
-        parseExistFilter(this.#props.parseContext, arg)
+        parseExistFilter(arg)
       ),
     })
   }
@@ -470,7 +468,7 @@ export class OnConflictUpdateBuilder<DB, TB extends keyof DB>
       ...this.#props,
       onConflictNode: OnConflictNode.cloneWithUpdateWhere(
         this.#props.onConflictNode,
-        parseNotExistFilter(this.#props.parseContext, arg)
+        parseNotExistFilter(arg)
       ),
     })
   }
@@ -487,7 +485,7 @@ export class OnConflictUpdateBuilder<DB, TB extends keyof DB>
       ...this.#props,
       onConflictNode: OnConflictNode.cloneWithUpdateOrWhere(
         this.#props.onConflictNode,
-        parseExistFilter(this.#props.parseContext, arg)
+        parseExistFilter(arg)
       ),
     })
   }
@@ -504,7 +502,7 @@ export class OnConflictUpdateBuilder<DB, TB extends keyof DB>
       ...this.#props,
       onConflictNode: OnConflictNode.cloneWithUpdateOrWhere(
         this.#props.onConflictNode,
-        parseNotExistFilter(this.#props.parseContext, arg)
+        parseNotExistFilter(arg)
       ),
     })
   }

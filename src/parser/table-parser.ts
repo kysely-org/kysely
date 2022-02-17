@@ -5,7 +5,6 @@ import { TableNode } from '../operation-node/table-node.js'
 import { AnyAliasedRawBuilder, Nullable } from '../util/type-utils.js'
 import { AliasedRawBuilder } from '../raw-builder/raw-builder.js'
 import { TableExpressionNode } from '../operation-node/operation-node-utils.js'
-import { ParseContext } from './parse-context.js'
 import {
   AliasedComplexExpression,
   parseAliasedComplexExpression,
@@ -133,24 +132,22 @@ type AnyAliasedTable<DB> = `${AnyTable<DB>} as ${string}`
 type AnyTable<DB> = keyof DB & string
 
 export function parseTableExpressionOrList(
-  ctx: ParseContext,
   table: TableExpressionOrList<any, any>
 ): TableExpressionNode[] {
   if (isReadonlyArray(table)) {
-    return table.map((it) => parseTableExpression(ctx, it))
+    return table.map((it) => parseTableExpression(it))
   } else {
-    return [parseTableExpression(ctx, table)]
+    return [parseTableExpression(table)]
   }
 }
 
 export function parseTableExpression(
-  ctx: ParseContext,
   table: TableExpression<any, any>
 ): TableExpressionNode {
   if (isString(table)) {
     return parseAliasedTable(table)
   } else {
-    return parseAliasedComplexExpression(ctx, table)
+    return parseAliasedComplexExpression(table)
   }
 }
 

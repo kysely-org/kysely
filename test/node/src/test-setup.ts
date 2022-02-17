@@ -22,6 +22,7 @@ import {
   InsertQueryBuilder,
   Logger,
   Generated,
+  sql,
 } from '../../../'
 
 export interface Person {
@@ -258,7 +259,7 @@ async function connect(config: KyselyConfig): Promise<Kysely<Database>> {
 
     try {
       db = new Kysely<Database>(config)
-      await db.raw('select 1').execute()
+      await sql`select 1`.execute(db)
       return db
     } catch (error) {
       if (db) {

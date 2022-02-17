@@ -23,7 +23,6 @@ import { Compilable } from '../util/compilable.js'
 import { QueryExecutor } from '../query-executor/query-executor.js'
 import { QueryId } from '../util/query-id.js'
 import { freeze } from '../util/object-utils.js'
-import { ParseContext } from '../parser/parse-context.js'
 import { OnDuplicateKeyNode } from '../operation-node/on-duplicate-key-node.js'
 import { InsertResult } from './insert-result.js'
 import { KyselyPlugin } from '../plugin/kysely-plugin.js'
@@ -57,7 +56,7 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    *
    * This method takes an object whose keys are column names and values are
    * values to insert. In addition to the column's type, the values can be
-   * {@link Kysely.raw | raw} instances or select queries.
+   * raw {@link sql} snippets or select queries.
    *
    * You must provide all fields you haven't explicitly marked as nullable
    * or optional using {@link Generated} or {@link ColumnType}.
@@ -138,16 +137,18 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    * insert into "person" ("first_name", "last_name") values ($1, $2) returning "id"
    * ```
    *
-   * In addition to primitives, the values can also be `raw` expressions or
+   * In addition to primitives, the values can also be raw sql expressions or
    * select queries:
    *
    * ```ts
+   * import { sql } from 'kysely'
+   *
    * const result = await db
    *   .insertInto('person')
    *   .values({
    *     first_name: 'Jennifer',
-   *     last_name: db.raw('? || ?', ['Ani', 'ston']),
-   *     age: db.selectFrom('person').select(raw('avg(age)')),
+   *     last_name: sql`${'Ani'} || ${'ston'}`,
+   *     age: db.selectFrom('person').select(sql`avg(age)`),
    *   })
    *   .executeTakeFirst()
    *
@@ -183,10 +184,7 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
   ): InsertQueryBuilder<DB, TB, O>
 
   values(args: InsertObjectOrList<DB, TB>): any {
-    const [columns, values] = parseInsertObjectOrList(
-      this.#props.parseContext,
-      args
-    )
+    const [columns, values] = parseInsertObjectOrList(args)
 
     return new InsertQueryBuilder({
       ...this.#props,
@@ -254,7 +252,7 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
     return new InsertQueryBuilder({
       ...this.#props,
       queryNode: InsertQueryNode.cloneWith(this.#props.queryNode, {
-        values: parseComplexExpression(this.#props.parseContext, expression),
+        values: parseComplexExpression(expression),
       }),
     })
   }
@@ -350,6 +348,8 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    * the unique index is an expression index:
    *
    * ```ts
+   * import { sql } from 'kysely'
+   *
    * await db
    *   .insertInto('pet')
    *   .values({
@@ -357,7 +357,7 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    *     species: 'cat',
    *   })
    *   .onConflict((oc) => oc
-   *     .expression(db.raw('lower(name)'))
+   *     .expression(sql`lower(name)`)
    *     .doUpdateSet({ species: 'hamster' })
    *   )
    *   .execute()
@@ -450,7 +450,6 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
         onConflict: callback(
           new OnConflictBuilder({
             onConflictNode: OnConflictNode.create(),
-            parseContext: this.#props.parseContext,
           })
         ).toOperationNode(),
       }),
@@ -481,9 +480,7 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
     return new InsertQueryBuilder({
       ...this.#props,
       queryNode: InsertQueryNode.cloneWith(this.#props.queryNode, {
-        onDuplicateKey: OnDuplicateKeyNode.create(
-          parseUpdateObject(this.#props.parseContext, updates)
-        ),
+        onDuplicateKey: OnDuplicateKeyNode.create(parseUpdateObject(updates)),
       }),
     })
   }
@@ -501,7 +498,7 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
       ...this.#props,
       queryNode: QueryNode.cloneWithReturning(
         this.#props.queryNode,
-        parseSelectExpressionOrList(this.#props.parseContext, selection)
+        parseSelectExpressionOrList(selection)
       ),
     })
   }
@@ -646,7 +643,7 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
       this.#props.queryId
     )
 
-    if (this.#props.parseContext.adapter.supportsReturning && query.returning) {
+    if (this.#props.executor.adapter.supportsReturning && query.returning) {
       return result.rows
     } else {
       return [new InsertResult(result.insertId) as unknown as O]
@@ -692,5 +689,4 @@ export interface InsertQueryBuilderProps {
   readonly queryId: QueryId
   readonly queryNode: InsertQueryNode
   readonly executor: QueryExecutor
-  readonly parseContext: ParseContext
 }

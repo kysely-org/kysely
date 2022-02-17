@@ -20,8 +20,8 @@ much anything you can think of. Typescript is always there for you offering comp
 you build a valid query.
 
 Of course there are cases where things cannot be typed at compile time, and Kysely offers escape
-hatches for these situations. See the [DynamicModule](https://koskimas.github.io/kysely/classes/DynamicModule.html#ref)
-for more info.
+hatches for these situations. See the [sql template tag](https://koskimas.github.io/kysely/modules.html#sql) 
+and the [DynamicModule](https://koskimas.github.io/kysely/classes/DynamicModule.html#ref) for more info.
 
 If you start using Kysely and can't find something you'd want to use, please open an issue or join our
 [discord server](https://discord.gg/C9aJ49mCra).

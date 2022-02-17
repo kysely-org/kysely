@@ -1,3 +1,5 @@
+import { sql } from '../../../'
+
 import {
   clearDatabase,
   destroyTest,
@@ -42,9 +44,9 @@ describe.skip(`query builder performance`, () => {
         )
         .select([
           'toy.price as price',
-          ctx.db
-            .raw("concat(??, ' ', ??)", ['first_name', 'last_name'])
-            .as('full_name'),
+          sql`concat(${sql.ref('first_name')}, ' ', ${sql.ref(
+            'last_name'
+          )})`.as('full_name'),
         ])
         .compile()
     }

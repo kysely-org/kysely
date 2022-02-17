@@ -1,3 +1,5 @@
+import { sql } from '../../../'
+
 import {
   BUILT_IN_DIALECTS,
   clearDatabase,
@@ -213,10 +215,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
                 join
                   .on('pet.species', '=', 'cat')
                   .orOn('species', '=', 'dog')
-                  .orOn(ctx.db.raw('??', ['species']), '=', (qb) =>
+                  .orOn(sql`${sql.ref('species')}`, '=', (qb) =>
                     qb
                       .selectFrom('pet')
-                      .select(ctx.db.raw(`'hamster'`).as('hamster'))
+                      .select(sql`'hamster'`.as('hamster'))
                       .limit(1)
                       .offset(0)
                   )
@@ -424,10 +426,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
                 join
                   .on('pet.species', '=', 'cat')
                   .orOn('species', '=', 'dog')
-                  .orOn(ctx.db.raw('??', ['species']), '=', (qb) =>
+                  .orOn(sql`${sql.ref('species')}`, '=', (qb) =>
                     qb
                       .selectFrom('pet')
-                      .select(ctx.db.raw(`'hamster'`).as('hamster'))
+                      .select(sql`'hamster'`.as('hamster'))
                       .limit(1)
                       .offset(0)
                   )

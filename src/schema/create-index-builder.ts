@@ -80,10 +80,12 @@ export class CreateIndexBuilder implements OperationNodeSource, Compilable {
    * ### Examples
    *
    * ```ts
+   * import { sql } from 'kysely'
+   *
    * await db.schema
    *   .createIndex('person_first_name_index')
    *   .on('person')
-   *   .expression(db.raw('first_name COLLATE "fi_FI"'))
+   *   .expression(sql`first_name COLLATE "fi_FI"`)
    *   .execute()
    * ```
    */

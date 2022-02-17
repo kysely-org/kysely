@@ -1,3 +1,5 @@
+import { sql } from '../../../'
+
 import {
   BUILT_IN_DIALECTS,
   clearDatabase,
@@ -57,7 +59,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
     })
 
     it('should add a having statement', async () => {
-      const petCount = ctx.db.raw<number | string>('count(pet.id)')
+      const petCount = sql<number | string>`count(pet.id)`
 
       const query = ctx.db
         .selectFrom('person')

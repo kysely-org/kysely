@@ -1,4 +1,4 @@
-import { UpdateResult } from '../../../'
+import { UpdateResult, sql } from '../../../'
 
 import {
   BUILT_IN_DIALECTS,
@@ -119,7 +119,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
       const query = ctx.db
         .updateTable('person')
         .set({
-          last_name: ctx.db.raw('??', ['first_name']),
+          last_name: sql`${sql.ref('first_name')}`,
         })
         .where('first_name', '=', 'Jennifer')
 

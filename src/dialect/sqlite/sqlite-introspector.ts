@@ -10,6 +10,7 @@ import {
   MIGRATION_TABLE,
 } from '../../migration/migrator.js'
 import { ColumnDataType } from '../../operation-node/data-type-node.js'
+import { sql } from '../../raw-builder/sql.js'
 
 export class SqliteIntrospector implements DatabaseIntrospector {
   readonly #db: Kysely<any>
@@ -47,7 +48,7 @@ export class SqliteIntrospector implements DatabaseIntrospector {
     const db = this.#db
 
     const columns = await db
-      .selectFrom(db.raw(`PRAGMA_TABLE_INFO(?)`, [table]).as('table_info'))
+      .selectFrom(sql`PRAGMA_TABLE_INFO(${table})`.as('table_info'))
       .select(['name', 'type', 'notnull'])
       .castTo<{ name: string; type: ColumnDataType; notnull: 0 | 1 }>()
       .execute()

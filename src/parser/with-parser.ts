@@ -6,7 +6,7 @@ import { CommonTableExpressionNode } from '../operation-node/common-table-expres
 import { CommonTableExpressionNameNode } from '../operation-node/common-table-expression-name-node.js'
 import { QueryCreator } from '../query-creator.js'
 import { RawBuilder } from '../raw-builder/raw-builder.js'
-import { ParseContext } from './parse-context.js'
+import { createQueryCreator } from './parse-utils.js'
 
 export type CommonTableExpression<DB, CN extends string> = (
   creator: QueryCreator<DB>
@@ -93,11 +93,10 @@ type ExtractColumnNamesFromColumnList<R extends string> =
     : R
 
 export function parseCommonTableExpression(
-  ctx: ParseContext,
   name: string,
   expression: CommonTableExpression<any, any>
 ): CommonTableExpressionNode {
-  const builder = expression(ctx.createQueryCreator())
+  const builder = expression(createQueryCreator())
 
   return CommonTableExpressionNode.create(
     parseCommonTableExpressionName(name),

@@ -1,4 +1,4 @@
-import { InsertResult, Kysely } from '../../../'
+import { InsertResult, Kysely, sql } from '../../../'
 
 import {
   BUILT_IN_DIALECTS,
@@ -77,11 +77,11 @@ for (const dialect of BUILT_IN_DIALECTS) {
       const query = ctx.db.insertInto('person').values({
         first_name: ctx.db
           .selectFrom('pet')
-          .select(ctx.db.raw('max(name)').as('max_name')),
+          .select(sql`max(name)`.as('max_name')),
         last_name:
           dialect === 'sqlite'
-            ? ctx.db.raw("'Bar' || 'son'")
-            : ctx.db.raw("concat('Bar', 'son')"),
+            ? sql`'Bar' || 'son'`
+            : sql`concat('Bar', 'son')`,
         gender: 'other',
       })
 
@@ -114,9 +114,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
         .insertInto('person')
         .columns(['first_name', 'gender'])
         .expression((eb) =>
-          eb
-            .selectFrom('pet')
-            .select(['name', ctx.db.raw('?', ['other']).as('gender')])
+          eb.selectFrom('pet').select(['name', sql`${'other'}`.as('gender')])
         )
 
       testSql(query, dialect, {
@@ -495,11 +493,8 @@ for (const dialect of BUILT_IN_DIALECTS) {
             gender: 'other',
             first_name: ctx.db
               .selectFrom('person')
-              .select(ctx.db.raw('max(first_name)').as('max_first_name')),
-            last_name: ctx.db.raw(
-              'concat(cast(? as varchar), cast(? as varchar))',
-              ['Bar', 'son']
-            ),
+              .select(sql`max(first_name)`.as('max_first_name')),
+            last_name: sql`concat(cast(${'Bar'} as varchar), cast(${'son'} as varchar))`,
           })
           .returning(['first_name', 'last_name', 'gender'])
           .executeTakeFirst()
@@ -540,11 +535,8 @@ for (const dialect of BUILT_IN_DIALECTS) {
             gender: 'other',
             first_name: ctx.db
               .selectFrom('person')
-              .select(ctx.db.raw('max(first_name)').as('max_first_name')),
-            last_name: ctx.db.raw(
-              'concat(cast(? as varchar), cast(? as varchar))',
-              ['Bar', 'son']
-            ),
+              .select(sql`max(first_name)`.as('max_first_name')),
+            last_name: sql`concat(cast(${'Bar'} as varchar), cast(${'son'} as varchar))`,
           })
           .returningAll()
           .executeTakeFirst()
@@ -572,7 +564,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
       .where(
         'id',
         '=',
-        db.selectFrom('person').select(db.raw('max(id)').as('max_id'))
+        db.selectFrom('person').select(sql`max(id)`.as('max_id'))
       )
       .executeTakeFirst()
   }

@@ -57,7 +57,6 @@ import { Compilable } from '../util/compilable.js'
 import { QueryExecutor } from '../query-executor/query-executor.js'
 import { QueryId } from '../util/query-id.js'
 import { freeze } from '../util/object-utils.js'
-import { ParseContext } from '../parser/parse-context.js'
 import { parseGroupBy } from '../parser/group-by-parser.js'
 import { parseUnion, UnionExpression } from '../parser/union-parser.js'
 import { KyselyPlugin } from '../plugin/kysely-plugin.js'
@@ -94,7 +93,7 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
       ...this.#props,
       queryNode: QueryNode.cloneWithWhere(
         this.#props.queryNode,
-        parseWhereFilter(this.#props.parseContext, args)
+        parseWhereFilter(args)
       ),
     })
   }
@@ -108,7 +107,7 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
       ...this.#props,
       queryNode: QueryNode.cloneWithWhere(
         this.#props.queryNode,
-        parseReferenceFilter(this.#props.parseContext, lhs, op, rhs)
+        parseReferenceFilter(lhs, op, rhs)
       ),
     })
   }
@@ -127,7 +126,7 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
       ...this.#props,
       queryNode: QueryNode.cloneWithOrWhere(
         this.#props.queryNode,
-        parseWhereFilter(this.#props.parseContext, args)
+        parseWhereFilter(args)
       ),
     })
   }
@@ -141,7 +140,7 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
       ...this.#props,
       queryNode: QueryNode.cloneWithOrWhere(
         this.#props.queryNode,
-        parseReferenceFilter(this.#props.parseContext, lhs, op, rhs)
+        parseReferenceFilter(lhs, op, rhs)
       ),
     })
   }
@@ -151,7 +150,7 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
       ...this.#props,
       queryNode: QueryNode.cloneWithWhere(
         this.#props.queryNode,
-        parseExistFilter(this.#props.parseContext, arg)
+        parseExistFilter(arg)
       ),
     })
   }
@@ -161,7 +160,7 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
       ...this.#props,
       queryNode: QueryNode.cloneWithWhere(
         this.#props.queryNode,
-        parseNotExistFilter(this.#props.parseContext, arg)
+        parseNotExistFilter(arg)
       ),
     })
   }
@@ -171,7 +170,7 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
       ...this.#props,
       queryNode: QueryNode.cloneWithOrWhere(
         this.#props.queryNode,
-        parseExistFilter(this.#props.parseContext, arg)
+        parseExistFilter(arg)
       ),
     })
   }
@@ -183,7 +182,7 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
       ...this.#props,
       queryNode: QueryNode.cloneWithOrWhere(
         this.#props.queryNode,
-        parseNotExistFilter(this.#props.parseContext, arg)
+        parseNotExistFilter(arg)
       ),
     })
   }
@@ -203,7 +202,7 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
       ...this.#props,
       queryNode: SelectQueryNode.cloneWithHaving(
         this.#props.queryNode,
-        parseHavingFilter(this.#props.parseContext, args)
+        parseHavingFilter(args)
       ),
     })
   }
@@ -217,7 +216,7 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
       ...this.#props,
       queryNode: SelectQueryNode.cloneWithHaving(
         this.#props.queryNode,
-        parseReferenceFilter(this.#props.parseContext, lhs, op, rhs)
+        parseReferenceFilter(lhs, op, rhs)
       ),
     })
   }
@@ -237,7 +236,7 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
       ...this.#props,
       queryNode: SelectQueryNode.cloneWithOrHaving(
         this.#props.queryNode,
-        parseHavingFilter(this.#props.parseContext, args)
+        parseHavingFilter(args)
       ),
     })
   }
@@ -251,7 +250,7 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
       ...this.#props,
       queryNode: SelectQueryNode.cloneWithOrHaving(
         this.#props.queryNode,
-        parseReferenceFilter(this.#props.parseContext, lhs, op, rhs)
+        parseReferenceFilter(lhs, op, rhs)
       ),
     })
   }
@@ -261,7 +260,7 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
       ...this.#props,
       queryNode: SelectQueryNode.cloneWithHaving(
         this.#props.queryNode,
-        parseExistFilter(this.#props.parseContext, arg)
+        parseExistFilter(arg)
       ),
     })
   }
@@ -271,7 +270,7 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
       ...this.#props,
       queryNode: SelectQueryNode.cloneWithHaving(
         this.#props.queryNode,
-        parseNotExistFilter(this.#props.parseContext, arg)
+        parseNotExistFilter(arg)
       ),
     })
   }
@@ -281,7 +280,7 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
       ...this.#props,
       queryNode: SelectQueryNode.cloneWithOrHaving(
         this.#props.queryNode,
-        parseExistFilter(this.#props.parseContext, arg)
+        parseExistFilter(arg)
       ),
     })
   }
@@ -293,7 +292,7 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
       ...this.#props,
       queryNode: SelectQueryNode.cloneWithOrHaving(
         this.#props.queryNode,
-        parseNotExistFilter(this.#props.parseContext, arg)
+        parseNotExistFilter(arg)
       ),
     })
   }
@@ -308,7 +307,7 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    * Kysely only allows you to select columns and expressions that exist and would
    * produce valid SQL. However, Kysely is not perfect and there may be cases where
    * the type inference doesn't work and you need to override it. You can always
-   * use the {@link Kysely.dynamic | dynamic} module and {@link Kysely.raw | raw}
+   * use the {@link Kysely.dynamic | dynamic} module and the {@link sql} tag
    * to override the types.
    *
    * Select calls are additive. Calling `select('id').select('first_name')` is the
@@ -395,11 +394,13 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    * from "person"
    * ```
    *
-   * You can also select subqueries and raw expressions. Note that you
+   * You can also select subqueries and raw sql expressions. Note that you
    * always need to give a name for the selections using the `as`
    * method:
    *
    * ```ts
+   * import { sql } from 'kysely'
+   *
    * const persons = await db.selectFrom('person')
    *   .select([
    *     (qb) => qb
@@ -408,7 +409,7 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    *       .select('pet.name')
    *       .limit(1)
    *       .as('pet_name')
-   *     db.raw<string>("concat(first_name, ' ', last_name)").as('full_name')
+   *     sql<string>`concat(first_name, ' ', last_name)`.as('full_name')
    *   ])
    *   .execute()
    *
@@ -430,7 +431,7 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    * from "person"
    * ```
    *
-   * In case you use `raw` you need to specify the type of the expression
+   * In case you use the {@link sql} tag you need to specify the type of the expression
    * (in this example `string`).
    *
    * All the examples above assume you know the column names at compile time.
@@ -482,7 +483,7 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
       ...this.#props,
       queryNode: SelectQueryNode.cloneWithSelections(
         this.#props.queryNode,
-        parseSelectExpressionOrList(this.#props.parseContext, selection)
+        parseSelectExpressionOrList(selection)
       ),
     })
   }
@@ -527,7 +528,7 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
       ...this.#props,
       queryNode: SelectQueryNode.cloneWithDistinctOnSelections(
         this.#props.queryNode,
-        parseSelectExpressionOrList(this.#props.parseContext, selection)
+        parseSelectExpressionOrList(selection)
       ),
     })
   }
@@ -732,7 +733,7 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
       ...this.#props,
       queryNode: QueryNode.cloneWithJoin(
         this.#props.queryNode,
-        parseJoin(this.#props.parseContext, 'InnerJoin', args)
+        parseJoin('InnerJoin', args)
       ),
     })
   }
@@ -768,7 +769,7 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
       ...this.#props,
       queryNode: QueryNode.cloneWithJoin(
         this.#props.queryNode,
-        parseJoin(this.#props.parseContext, 'LeftJoin', args)
+        parseJoin('LeftJoin', args)
       ),
     })
   }
@@ -804,7 +805,7 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
       ...this.#props,
       queryNode: QueryNode.cloneWithJoin(
         this.#props.queryNode,
-        parseJoin(this.#props.parseContext, 'RightJoin', args)
+        parseJoin('RightJoin', args)
       ),
     })
   }
@@ -840,7 +841,7 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
       ...this.#props,
       queryNode: QueryNode.cloneWithJoin(
         this.#props.queryNode,
-        parseJoin(this.#props.parseContext, 'FullJoin', args)
+        parseJoin('FullJoin', args)
       ),
     })
   }
@@ -873,10 +874,12 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    * order by "id" asc, "fn" desc
    * ```
    *
-   * The order by expression can also be a `raw` expression or a subquery
+   * The order by expression can also be a raw sql expression or a subquery
    * in addition to column references:
    *
    * ```ts
+   * import { sql } from 'kysely'
+   *
    * await db
    *   .selectFrom('person')
    *   .selectAll()
@@ -886,7 +889,7 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    *     .limit(1)
    *   )
    *   .orderBy(
-   *     db.raw('concat(first_name, last_name)')
+   *     sql`concat(first_name, last_name)`
    *   )
    *   .execute()
    * ```
@@ -938,7 +941,7 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
       ...this.#props,
       queryNode: SelectQueryNode.cloneWithOrderByItem(
         this.#props.queryNode,
-        parseOrderBy(this.#props.parseContext, orderBy, direction)
+        parseOrderBy(orderBy, direction)
       ),
     })
   }
@@ -949,11 +952,13 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    * ### Examples
    *
    * ```ts
+   * import { sql } from 'kysely'
+   *
    * await db
    *   .selectFrom('person')
    *   .select([
    *     'first_name',
-   *     db.raw('max(id)').as('max_id')
+   *     sql`max(id)`.as('max_id')
    *   ])
    *   .groupBy('first_name')
    *   .execute()
@@ -970,12 +975,14 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    * `groupBy` also accepts an array:
    *
    * ```ts
+   * import { sql } from 'kysely'
+   *
    * await db
    *   .selectFrom('person')
    *   .select([
    *     'first_name',
    *     'last_name',
-   *     db.raw('max(id)').as('max_id')
+   *     sql`max(id)`.as('max_id')
    *   ])
    *   .groupBy([
    *     'first_name',
@@ -993,18 +1000,20 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    * ```
    *
    * The group by expressions can also be subqueries or
-   * raw expressions:
+   * raw sql expressions:
    *
    * ```ts
+   * import { sql } from 'kysely'
+   *
    * await db
    *   .selectFrom('person')
    *   .select([
    *     'first_name',
    *     'last_name',
-   *     db.raw('max(id)').as('max_id')
+   *     sql`max(id)`.as('max_id')
    *   ])
    *   .groupBy([
-   *     db.raw('concat(first_name, last_name)'),
+   *     sql`concat(first_name, last_name)`,
    *     (qb) => qb.selectFrom('pet').select('id').limit(1)
    *   ])
    *   .execute()
@@ -1046,7 +1055,7 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
       ...this.#props,
       queryNode: SelectQueryNode.cloneWithGroupByItems(
         this.#props.queryNode,
-        parseGroupBy(this.#props.parseContext, groupBy)
+        parseGroupBy(groupBy)
       ),
     })
   }
@@ -1358,7 +1367,6 @@ export interface SelectQueryBuilderProps {
   readonly queryId: QueryId
   readonly queryNode: SelectQueryNode
   readonly executor: QueryExecutor
-  readonly parseContext: ParseContext
 }
 
 /**

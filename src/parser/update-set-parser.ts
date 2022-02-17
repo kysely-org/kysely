@@ -1,7 +1,6 @@
 import { ColumnNode } from '../operation-node/column-node.js'
 import { ColumnUpdateNode } from '../operation-node/column-update-node.js'
 import { UpdateKeys, UpdateType } from '../util/column-type.js'
-import { ParseContext } from './parse-context.js'
 import { parseValueExpression, ValueExpression } from './value-parser.js'
 
 export type MutationObject<DB, TB extends keyof DB> = {
@@ -9,7 +8,6 @@ export type MutationObject<DB, TB extends keyof DB> = {
 }
 
 export function parseUpdateObject(
-  ctx: ParseContext,
   row: MutationObject<any, any>
 ): ReadonlyArray<ColumnUpdateNode> {
   return Object.entries(row)
@@ -17,7 +15,7 @@ export function parseUpdateObject(
     .map(([key, value]) => {
       return ColumnUpdateNode.create(
         ColumnNode.create(key),
-        parseValueExpression(ctx, value!)
+        parseValueExpression(value!)
       )
     })
 }

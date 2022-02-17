@@ -310,7 +310,7 @@ export class OperationNodeTransformer {
     return {
       kind: 'RawNode',
       sqlFragments: freeze([...node.sqlFragments]),
-      params: this.transformNodeList(node.params),
+      parameters: this.transformNodeList(node.parameters),
     }
   }
 

@@ -17,11 +17,9 @@ import {
   TRANSACTION_ISOLATION_LEVELS,
 } from './driver/driver.js'
 import { preventAwait } from './util/prevent-await.js'
-import { DefaultParseContext, ParseContext } from './parser/parse-context.js'
 import { FunctionBuilder } from './query-builder/function-builder.js'
 import { Log, LogConfig } from './util/log.js'
-import { PRIVATE_ADAPTER } from './util/private-symbols.js'
-import { DialectAdapter } from './dialect/dialect-adapter.js'
+import { QueryExecutorProvider } from './query-executor/query-executor-provider.js'
 
 /**
  * The main Kysely class.
@@ -66,7 +64,10 @@ import { DialectAdapter } from './dialect/dialect-adapter.js'
  *    in the database and values must be interfaces that describe the rows in those
  *    tables. See the examples above.
  */
-export class Kysely<DB> extends QueryCreator<DB> {
+export class Kysely<DB>
+  extends QueryCreator<DB>
+  implements QueryExecutorProvider
+{
   readonly #props: KyselyProps
 
   constructor(args: KyselyConfig)
@@ -76,7 +77,7 @@ export class Kysely<DB> extends QueryCreator<DB> {
     let props: KyselyProps
 
     if (isKyselyProps(args)) {
-      superProps = { executor: args.executor, parseContext: args.parseContext }
+      superProps = { executor: args.executor }
       props = { ...args }
     } else {
       const dialect = args.dialect
@@ -86,23 +87,22 @@ export class Kysely<DB> extends QueryCreator<DB> {
       const adapter = dialect.createAdapter()
 
       const log = new Log(args.log ?? [])
-      const parseContext = new DefaultParseContext(adapter)
       const runtimeDriver = new RuntimeDriver(driver, log)
 
       const connectionProvider = new DefaultConnectionProvider(runtimeDriver)
       const executor = new DefaultQueryExecutor(
         compiler,
+        adapter,
         connectionProvider,
         args.plugins ?? []
       )
 
-      superProps = { executor, parseContext }
+      superProps = { executor }
       props = {
         config: args,
         executor,
         dialect,
         driver: runtimeDriver,
-        parseContext,
       }
     }
 
@@ -163,7 +163,7 @@ export class Kysely<DB> extends QueryCreator<DB> {
    * ```
    */
   get fn(): FunctionBuilder<DB, keyof DB> {
-    return new FunctionBuilder({ executor: this.#props.executor })
+    return new FunctionBuilder()
   }
 
   /**
@@ -317,8 +317,8 @@ export class Kysely<DB> extends QueryCreator<DB> {
    * @internal
    * @private
    */
-  get [PRIVATE_ADAPTER](): DialectAdapter {
-    return this.#props.parseContext.adapter
+  getExecutor(): QueryExecutor {
+    return this.#props.executor
   }
 }
 
@@ -381,7 +381,6 @@ export interface KyselyProps {
   readonly driver: Driver
   readonly executor: QueryExecutor
   readonly dialect: Dialect
-  readonly parseContext: ParseContext
 }
 
 export function isKyselyProps(obj: unknown): obj is KyselyProps {
@@ -390,8 +389,7 @@ export function isKyselyProps(obj: unknown): obj is KyselyProps {
     isObject(obj.config) &&
     isObject(obj.driver) &&
     isObject(obj.executor) &&
-    isObject(obj.dialect) &&
-    isObject(obj.parseContext)
+    isObject(obj.dialect)
   )
 }
 

@@ -1,3 +1,5 @@
+import { sql } from '../../../'
+
 import {
   BUILT_IN_DIALECTS,
   clearDatabase,
@@ -198,7 +200,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
         const query = ctx.db
           .selectFrom('person')
           .selectAll()
-          .where(ctx.db.raw('person.first_name'), '=', 'Arnold')
+          .where(sql`person.first_name`, '=', 'Arnold')
 
         testSql(query, dialect, {
           postgres: {
@@ -223,7 +225,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
         const query = ctx.db
           .selectFrom('person')
           .selectAll()
-          .where(ctx.db.raw('??', ['person.first_name']), '=', 'Arnold')
+          .where(sql`${sql.ref('person.first_name')}`, '=', 'Arnold')
 
         testSql(query, dialect, {
           postgres: {
@@ -248,7 +250,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
         const query = ctx.db
           .selectFrom('person')
           .selectAll()
-          .where(ctx.db.raw('(first_name is null)'), 'is', false)
+          .where(sql`(first_name is null)`, 'is', false)
 
         testSql(query, dialect, {
           postgres: {
@@ -314,7 +316,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
         const query = ctx.db
           .selectFrom('person')
           .selectAll()
-          .where(ctx.db.raw('?', ['Catto']), '=', (qb) =>
+          .where(sql`${'Catto'}`, '=', (qb) =>
             qb
               .selectFrom('pet')
               .select('pet.name')
@@ -348,7 +350,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
         const query = ctx.db
           .selectFrom('person')
           .selectAll()
-          .where('first_name', ctx.db.raw('='), ctx.db.raw('?', ['Arnold']))
+          .where('first_name', sql`=`, sql`${'Arnold'}`)
 
         testSql(query, dialect, {
           postgres: {
@@ -489,10 +491,8 @@ for (const dialect of BUILT_IN_DIALECTS) {
         const query = ctx.db
           .selectFrom('person')
           .selectAll()
-          .where(
-            ctx.db.raw('first_name between ? and ?', ['Arnold', 'Jennifer'])
-          )
-          .where(ctx.db.raw('last_name between ? and ?', ['A', 'Z']))
+          .where(sql`first_name between ${'Arnold'} and ${'Jennifer'}`)
+          .where(sql`last_name between ${'A'} and ${'Z'}`)
 
         testSql(query, dialect, {
           postgres: {
@@ -600,10 +600,8 @@ for (const dialect of BUILT_IN_DIALECTS) {
           .selectAll()
           .where((qb) =>
             qb
-              .where(
-                ctx.db.raw('first_name between ? and ?', ['Arnold', 'Jennifer'])
-              )
-              .orWhere(ctx.db.raw('last_name between ? and ?', ['A', 'Z']))
+              .where(sql`first_name between ${'Arnold'} and ${'Jennifer'}`)
+              .orWhere(sql`last_name between ${'A'} and ${'Z'}`)
           )
 
         testSql(query, dialect, {
@@ -721,14 +719,11 @@ for (const dialect of BUILT_IN_DIALECTS) {
           .selectFrom('person')
           .selectAll()
           .whereExists(
-            ctx.db.raw('(select ?? from ?? where ?? = ?? and ?? = ?)', [
-              'pet.id',
-              'pet',
-              'pet.owner_id',
-              'person.id',
-              'pet.species',
-              'cat',
-            ])
+            sql`(select ${sql.ref('pet.id')} from ${sql.ref(
+              'pet'
+            )} where ${sql.ref('pet.owner_id')} = ${sql.ref(
+              'person.id'
+            )} and ${sql.ref('pet.species')} = ${'cat'})`
           )
 
         testSql(query, dialect, {

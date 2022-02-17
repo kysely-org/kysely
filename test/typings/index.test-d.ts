@@ -16,6 +16,7 @@ import {
   Generated,
   Selectable,
   ColumnType,
+  sql,
 } from '.'
 
 import { expectType, expectError, expectAssignable } from 'tsd'
@@ -99,14 +100,14 @@ async function testFromSingle(db: Kysely<Database>) {
 
   // Raw expression
   const [r7] = await db
-    .selectFrom(db.raw<{ one: 1 }>('(select 1 as one)').as('o'))
+    .selectFrom(sql<{ one: 1 }>`(select 1 as one)`.as('o'))
     .select('o.one')
     .execute()
   expectType<{ one: 1 }>(r7)
 
   // Raw expression factory
   const [r8] = await db
-    .selectFrom(() => db.raw<{ one: 1 }>('(select 1 as one)').as('o'))
+    .selectFrom(() => sql<{ one: 1 }>`(select 1 as one)`.as('o'))
     .select('o.one')
     .execute()
   expectType<{ one: 1 }>(r8)
@@ -177,14 +178,14 @@ async function testSelectSingle(db: Kysely<Database>) {
 
   // Raw selection
   const [r4] = await qb
-    .select(db.raw<boolean>('random() > 0.5').as('rando'))
+    .select(sql<boolean>`random() > 0.5`.as('rando'))
     .execute()
   expectType<{ rando: boolean }>(r4)
 
   // Raw selection with a dynamic alias.
   const alias = 'col_' + Math.round(Math.random() * 1000)
   const [r5] = await qb
-    .select(db.raw('random() > 0.5').as(alias))
+    .select(sql`random() > 0.5`.as(alias))
     .select('first_name')
     .execute()
   expectType<{ first_name: string } & { [key: string]: unknown }>(r5)
@@ -273,8 +274,8 @@ async function testSelectMultiple(db: Kysely<Database>) {
       'p.name as pet_name',
       'm.stars',
       'movie_id',
-      db.raw<number>('random()').as('rand1'),
-      db.raw<number>('random()').as('rand2'),
+      sql<number>`random()`.as('rand1'),
+      sql<number>`random()`.as('rand2'),
       (qb) => qb.selectFrom('pet').select('pet.id').as('sub'),
     ])
     .execute()
@@ -359,20 +360,22 @@ function testWhere(db: Kysely<Database>) {
   )
 
   // Subquery in RHS
-  db.selectFrom('movie').where(db.raw('?', ['female']), '=', (qb) =>
+  db.selectFrom('movie').where(sql`${'female'}`, '=', (qb) =>
     qb.selectFrom('person').select('gender')
   )
 
   // Raw expression
-  db.selectFrom('person').where(db.raw('whatever'), '=', 1)
-  db.selectFrom('person').where(db.raw('whatever'), '=', true)
-  db.selectFrom('person').where(db.raw('whatever'), '=', '1')
+  db.selectFrom('person').where('first_name', '=', sql`'foo'`)
+  db.selectFrom('person').where('first_name', '=', sql<string>`'foo'`)
+  db.selectFrom('person').where(sql`whatever`, '=', 1)
+  db.selectFrom('person').where(sql`whatever`, '=', true)
+  db.selectFrom('person').where(sql`whatever`, '=', '1')
 
   // List value
   db.selectFrom('person').where('gender', 'in', ['female', 'male'])
 
   // Raw operator
-  db.selectFrom('person').where('person.age', db.raw('lol'), 25)
+  db.selectFrom('person').where('person.age', sql`lol`, 25)
 
   // Invalid operator
   expectError(db.selectFrom('person').where('person.age', 'lol', 25))
@@ -409,6 +412,12 @@ function testWhere(db: Kysely<Database>) {
         'not_a_gender'
       )
   )
+
+  // Invalid type for column
+  expectError(db.selectFrom('person').where('first_name', '=', sql<number>`1`))
+
+  // Invalid type for column
+  expectError(db.selectFrom('person').where(sql<string>`first_name`, '=', 1))
 }
 
 async function testConditionalJoinWhere(db: Kysely<Database>) {
@@ -702,7 +711,7 @@ async function testReturning(db: Kysely<Database>) {
     .values(person)
     .returning([
       'id',
-      db.raw<string>(`concat(first_name, ' ', last_name)`).as('full_name'),
+      sql<string>`concat(first_name, ' ', last_name)`.as('full_name'),
       (qb) => qb.selectFrom('pet').select('pet.id').as('sub'),
     ])
     .execute()
@@ -874,7 +883,7 @@ async function testUnion(db: Kysely<Database>) {
     .selectFrom('person')
     .select(['id', 'first_name as name'])
     .where('id', 'in', [1, 2, 3])
-    .union(db.raw<{ id: number; name: string }>("(1, 'Sami')"))
+    .union(sql<{ id: number; name: string }>`(1, 'Sami')`)
     .executeTakeFirstOrThrow()
 
   expectType<{ id: number; name: string }>(r2)

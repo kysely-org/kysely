@@ -1,3 +1,5 @@
+import { sql } from '../../../'
+
 import {
   BUILT_IN_DIALECTS,
   clearDatabase,
@@ -235,12 +237,8 @@ for (const dialect of BUILT_IN_DIALECTS) {
               .returning('first_name as updated_first_name')
           )
           .selectFrom('deleted_arnold')
-          .innerJoin('inserted_matt', (join) =>
-            join.on(ctx.db.raw('1'), '=', ctx.db.raw('1'))
-          )
-          .innerJoin('updated_jennifer', (join) =>
-            join.on(ctx.db.raw('1'), '=', ctx.db.raw('1'))
-          )
+          .innerJoin('inserted_matt', (join) => join.on(sql`1`, '=', sql`1`))
+          .innerJoin('updated_jennifer', (join) => join.on(sql`1`, '=', sql`1`))
           .selectAll()
 
         testSql(query, dialect, {

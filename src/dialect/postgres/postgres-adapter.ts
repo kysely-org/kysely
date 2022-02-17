@@ -1,8 +1,9 @@
 import { Kysely } from '../../kysely.js'
+import { sql } from '../../raw-builder/sql.js'
 import { DialectAdapterBase } from '../dialect-adapter-base.js'
 
 // Random id for our transaction lock.
-const LOCK_ID = '3853314791062309107'
+const LOCK_ID = 3853314791062309107n
 
 export class PostgresAdapter extends DialectAdapterBase {
   get supportsTransactionalDdl(): boolean {
@@ -15,7 +16,7 @@ export class PostgresAdapter extends DialectAdapterBase {
 
   async acquireMigrationLock(db: Kysely<any>): Promise<void> {
     // Acquire a transaction level advisory lock.
-    await db.raw(`select pg_advisory_xact_lock(${LOCK_ID})`).execute()
+    await sql`select pg_advisory_xact_lock(${sql.literal(LOCK_ID)})`.execute(db)
   }
 
   async releaseMigrationLock(): Promise<void> {

@@ -7,20 +7,28 @@ import {
 } from '../query-compiler/query-compiler.js'
 import { KyselyPlugin } from '../plugin/kysely-plugin.js'
 import { QueryExecutor } from './query-executor.js'
+import { DialectAdapter } from '../index-nodeless.js'
 
 export class DefaultQueryExecutor extends QueryExecutor {
   #compiler: QueryCompiler
+  #adapter: DialectAdapter
   #connectionProvider: ConnectionProvider
 
   constructor(
     compiler: QueryCompiler,
+    adapter: DialectAdapter,
     connectionProvider: ConnectionProvider,
     plugins: KyselyPlugin[] = []
   ) {
     super(plugins)
 
     this.#compiler = compiler
+    this.#adapter = adapter
     this.#connectionProvider = connectionProvider
+  }
+
+  get adapter(): DialectAdapter {
+    return this.#adapter
   }
 
   compileQuery(node: RootOperationNode): CompiledQuery {
@@ -35,31 +43,48 @@ export class DefaultQueryExecutor extends QueryExecutor {
     })
   }
 
+  withPlugins(plugins: ReadonlyArray<KyselyPlugin>): DefaultQueryExecutor {
+    return new DefaultQueryExecutor(
+      this.#compiler,
+      this.#adapter,
+      this.#connectionProvider,
+      [...this.plugins, ...plugins]
+    )
+  }
+
   withPlugin(plugin: KyselyPlugin): DefaultQueryExecutor {
-    return new DefaultQueryExecutor(this.#compiler, this.#connectionProvider, [
-      ...this.plugins,
-      plugin,
-    ])
+    return new DefaultQueryExecutor(
+      this.#compiler,
+      this.#adapter,
+      this.#connectionProvider,
+      [...this.plugins, plugin]
+    )
   }
 
   withPluginAtFront(plugin: KyselyPlugin): DefaultQueryExecutor {
-    return new DefaultQueryExecutor(this.#compiler, this.#connectionProvider, [
-      plugin,
-      ...this.plugins,
-    ])
+    return new DefaultQueryExecutor(
+      this.#compiler,
+      this.#adapter,
+      this.#connectionProvider,
+      [plugin, ...this.plugins]
+    )
   }
 
   withConnectionProvider(
     connectionProvider: ConnectionProvider
   ): QueryExecutor {
-    return new DefaultQueryExecutor(this.#compiler, connectionProvider, [
-      ...this.plugins,
-    ])
+    return new DefaultQueryExecutor(
+      this.#compiler,
+      this.#adapter,
+      connectionProvider,
+      [...this.plugins]
+    )
   }
 
   withoutPlugins(): QueryExecutor {
     return new DefaultQueryExecutor(
       this.#compiler,
+      this.#adapter,
       this.#connectionProvider,
       []
     )

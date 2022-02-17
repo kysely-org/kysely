@@ -1,3 +1,5 @@
+import { sql } from '../../../'
+
 import {
   BUILT_IN_DIALECTS,
   clearDatabase,
@@ -34,7 +36,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
     it('group by one column', async () => {
       const query = ctx.db
         .selectFrom('person')
-        .select(['gender', ctx.db.raw('max(first_name)').as('max_first_name')])
+        .select(['gender', sql`max(first_name)`.as('max_first_name')])
         .groupBy('gender')
         .orderBy('gender')
 
@@ -71,7 +73,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
     it('group by two columns', async () => {
       const query = ctx.db
         .selectFrom('person')
-        .select(['gender', ctx.db.raw('max(first_name)').as('max_first_name')])
+        .select(['gender', sql`max(first_name)`.as('max_first_name')])
         .groupBy(['gender', 'id'])
         .orderBy('gender')
 
@@ -96,7 +98,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
     it('group by a reference', async () => {
       const query = ctx.db
         .selectFrom('person')
-        .select(['gender', ctx.db.raw('max(first_name)').as('max_first_name')])
+        .select(['gender', sql`max(first_name)`.as('max_first_name')])
         .groupBy('person.gender')
         .orderBy('gender', 'asc')
 
@@ -121,8 +123,8 @@ for (const dialect of BUILT_IN_DIALECTS) {
     it('group by a raw expression', async () => {
       const query = ctx.db
         .selectFrom('person')
-        .select(['gender', ctx.db.raw('max(first_name)').as('max_first_name')])
-        .groupBy(ctx.db.raw('person.gender'))
+        .select(['gender', sql`max(first_name)`.as('max_first_name')])
+        .groupBy(sql`person.gender`)
         .orderBy('gender', 'asc')
 
       testSql(query, dialect, {
@@ -146,7 +148,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
     it('group by a sub query', async () => {
       const query = ctx.db
         .selectFrom('person')
-        .select(ctx.db.raw('max(first_name)').as('max_first_name'))
+        .select(sql`max(first_name)`.as('max_first_name'))
         .groupBy((qb) =>
           qb
             .selectFrom('pet')

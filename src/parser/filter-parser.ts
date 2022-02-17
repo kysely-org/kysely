@@ -29,9 +29,10 @@ import { SelectQueryNode } from '../operation-node/select-query-node.js'
 import { JoinBuilder } from '../query-builder/join-builder.js'
 import { FilterExpressionNode } from '../operation-node/operation-node-utils.js'
 import { ValueNode } from '../operation-node/value-node.js'
-import { ParseContext } from './parse-context.js'
 import { WhereInterface } from '../query-builder/where-interface.js'
 import { HavingInterface } from '../query-builder/having-interface.js'
+import { createJoinBuilder, createSelectQueryBuilder } from './parse-utils.js'
+import { ComplexExpression } from './complex-expression-parser.js'
 
 export type FilterValueExpression<
   DB,
@@ -49,10 +50,10 @@ export type FilterValueExpressionOrList<
   ExtractTypeFromReferenceExpression<DB, TB, RE>
 >
 
-export type ExistsExpression<DB, TB extends keyof DB> = ValueExpression<
+export type ExistsExpression<DB, TB extends keyof DB> = ComplexExpression<
   DB,
   TB,
-  never
+  any
 >
 
 export type WhereGrouper<DB, TB extends keyof DB> = (
@@ -67,93 +68,76 @@ export type FilterOperator = Operator | AnyRawBuilder
 
 type FilterType = 'where' | 'having' | 'on'
 
-export function parseWhereFilter(
-  ctx: ParseContext,
-  args: any[]
-): FilterExpressionNode {
-  return parseFilter(ctx, 'where', args)
+export function parseWhereFilter(args: any[]): FilterExpressionNode {
+  return parseFilter('where', args)
 }
 
-export function parseHavingFilter(
-  ctx: ParseContext,
-  args: any[]
-): FilterExpressionNode {
-  return parseFilter(ctx, 'having', args)
+export function parseHavingFilter(args: any[]): FilterExpressionNode {
+  return parseFilter('having', args)
 }
 
-export function parseOnFilter(
-  ctx: ParseContext,
-  args: any[]
-): FilterExpressionNode {
-  return parseFilter(ctx, 'on', args)
+export function parseOnFilter(args: any[]): FilterExpressionNode {
+  return parseFilter('on', args)
 }
 
 export function parseReferenceFilter(
-  ctx: ParseContext,
   lhs: ReferenceExpression<any, any>,
   op: FilterOperator,
   rhs: ReferenceExpression<any, any>
 ): FilterNode {
   return FilterNode.create(
-    parseReferenceExpression(ctx, lhs),
+    parseReferenceExpression(lhs),
     parseFilterOperator(op),
-    parseReferenceExpression(ctx, rhs)
+    parseReferenceExpression(rhs)
   )
 }
 
-export function parseExistFilter(
-  ctx: ParseContext,
-  arg: ExistsExpression<any, any>
-): FilterNode {
-  return parseExistExpression(ctx, 'exists', arg)
+export function parseExistFilter(arg: ExistsExpression<any, any>): FilterNode {
+  return parseExistExpression('exists', arg)
 }
 
 export function parseNotExistFilter(
-  ctx: ParseContext,
   arg: ExistsExpression<any, any>
 ): FilterNode {
-  return parseExistExpression(ctx, 'not exists', arg)
+  return parseExistExpression('not exists', arg)
 }
 
 export function parseFilter(
-  ctx: ParseContext,
   type: FilterType,
   args: any[]
 ): FilterExpressionNode {
   if (args.length === 3) {
-    return parseThreeArgFilter(ctx, args[0], args[1], args[2])
+    return parseThreeArgFilter(args[0], args[1], args[2])
   } else if (args.length === 1) {
-    return parseOneArgFilter(ctx, type, args[0])
+    return parseOneArgFilter(type, args[0])
   }
 
   throw createFilterError(type, args)
 }
 
 function parseThreeArgFilter(
-  ctx: ParseContext,
   left: ReferenceExpression<any, any>,
   op: FilterOperator,
   right: FilterValueExpressionOrList<any, any, any>
 ): FilterNode {
   if ((op === 'is' || op === 'is not') && (isNull(right) || isBoolean(right))) {
-    return parseIsFilter(ctx, left, op, right)
+    return parseIsFilter(left, op, right)
   }
 
   return FilterNode.create(
-    parseReferenceExpression(ctx, left),
+    parseReferenceExpression(left),
     parseFilterOperator(op),
-    parseValueExpressionOrList(ctx, right)
+    parseValueExpressionOrList(right)
   )
 }
 
 function parseIsFilter(
-  ctx: ParseContext,
   left: ReferenceExpression<any, any>,
   op: 'is' | 'is not',
   right: null | boolean
 ) {
   return FilterNode.create(
-    parseReferenceExpression(ctx, left),
+    parseReferenceExpression(left),
     parseFilterOperator(op),
     ValueNode.createImmediate(right)
   )
@@ -174,24 +158,19 @@ function parseFilterOperator(op: FilterOperator): OperatorNode | RawNode {
 }
 
 function parseExistExpression(
-  ctx: ParseContext,
   type: 'exists' | 'not exists',
   arg: ExistsExpression<any, any>
 ): FilterNode {
   return FilterNode.create(
     undefined,
     OperatorNode.create(type),
-    parseValueExpressionOrList(ctx, arg)
+    parseValueExpressionOrList(arg)
   )
 }
 
-function parseOneArgFilter(
-  ctx: ParseContext,
-  type: FilterType,
-  arg: any
-): ParensNode | RawNode {
+function parseOneArgFilter(type: FilterType, arg: any): ParensNode | RawNode {
   if (isFunction(arg)) {
-    return GROUP_PARSERS[type](ctx, arg)
+    return GROUP_PARSERS[type](arg)
   } else if (isOperationNodeSource(arg)) {
     const node = arg.toOperationNode()
 
@@ -211,10 +190,9 @@ function createFilterError(type: FilterType, args: any[]): Error {
 
 const GROUP_PARSERS = freeze({
   where(
-    ctx: ParseContext,
     callback: (qb: AnySelectQueryBuilder) => AnySelectQueryBuilder
   ): ParensNode {
-    const query = callback(ctx.createSelectQueryBuilder())
+    const query = callback(createSelectQueryBuilder())
     const queryNode = query.toOperationNode() as SelectQueryNode
 
     if (!queryNode.where) {
@@ -225,10 +203,9 @@ const GROUP_PARSERS = freeze({
   },
 
   having(
-    ctx: ParseContext,
     callback: (qb: AnySelectQueryBuilder) => AnySelectQueryBuilder
   ): ParensNode {
-    const query = callback(ctx.createSelectQueryBuilder())
+    const query = callback(createSelectQueryBuilder())
     const queryNode = query.toOperationNode() as SelectQueryNode
 
     if (!queryNode.having) {
@@ -239,10 +216,9 @@ const GROUP_PARSERS = freeze({
   },
 
   on(
-    ctx: ParseContext,
     callback: (qb: JoinBuilder<any, any>) => JoinBuilder<any, any>
   ): ParensNode {
-    const joinBuilder = callback(ctx.createJoinBuilder('InnerJoin', 'table'))
+    const joinBuilder = callback(createJoinBuilder('InnerJoin', 'table'))
     const joinNode = joinBuilder.toOperationNode()
 
     if (!joinNode.on) {

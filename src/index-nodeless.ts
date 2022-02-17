@@ -19,10 +19,12 @@ export * from './query-builder/update-result.js'
 export * from './query-builder/on-conflict-builder.js'
 
 export * from './raw-builder/raw-builder.js'
+export * from './raw-builder/sql.js'
 
 export * from './query-executor/query-executor.js'
 export * from './query-executor/default-query-executor.js'
 export * from './query-executor/noop-query-executor.js'
+export * from './query-executor/query-executor-provider.js'
 
 export * from './query-compiler/default-query-compiler.js'
 export * from './query-compiler/compiled-query.js'

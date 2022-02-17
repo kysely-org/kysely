@@ -1,4 +1,4 @@
-import { ColumnMetadata } from '../../../'
+import { ColumnMetadata, sql } from '../../../'
 
 import {
   BUILT_IN_DIALECTS,
@@ -42,7 +42,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
                 .references('test.a')
                 .onDelete('cascade')
                 .onUpdate('restrict')
-                .check(ctx.db.raw('b < a'))
+                .check(sql`b < a`)
             )
             .addColumn('c', 'varchar')
             .addColumn('d', 'varchar(10)')
@@ -50,20 +50,23 @@ for (const dialect of BUILT_IN_DIALECTS) {
             .addColumn('f', 'double precision')
             .addColumn('g', 'real')
             .addColumn('h', 'text')
-            .addColumn('i', ctx.db.raw('varchar(123)'))
+            .addColumn('i', sql`varchar(123)`)
             .addColumn('j', 'numeric(6, 2)')
             .addColumn('k', 'decimal(8, 4)')
             .addColumn('l', 'boolean', (col) => col.notNull().defaultTo(false))
             .addColumn('m', 'date')
             .addColumn('n', 'timestamptz')
             .addColumn('o', 'uuid', (col) =>
-              col.defaultTo(ctx.db.raw('gen_random_uuid()'))
+              col.defaultTo(sql`gen_random_uuid()`)
             )
             .addColumn('p', 'int2')
             .addColumn('q', 'int4')
             .addColumn('r', 'int8')
             .addColumn('s', 'double precision', (col) =>
-              col.generatedAlwaysAs(ctx.db.raw('f + g')).stored().notNull()
+              col
+                .generatedAlwaysAs(sql`f + g`)
+                .stored()
+                .notNull()
             )
 
           testSql(builder, dialect, {
@@ -115,7 +118,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
             .addColumn('e', 'double precision')
             .addColumn('f', 'real')
             .addColumn('g', 'text')
-            .addColumn('h', ctx.db.raw('varchar(123)'))
+            .addColumn('h', sql`varchar(123)`)
             .addColumn('i', 'numeric(6, 2)')
             .addColumn('j', 'decimal(8, 4)')
             .addColumn('k', 'boolean', (col) => col.notNull().defaultTo(false))
@@ -124,7 +127,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
             .addColumn('n', 'datetime')
             .addColumn('o', 'timestamp')
             .addColumn('p', 'double precision', (col) =>
-              col.generatedAlwaysAs(ctx.db.raw('e + f')).stored().notNull()
+              col
+                .generatedAlwaysAs(sql`e + f`)
+                .stored()
+                .notNull()
             )
 
           testSql(builder, dialect, {
@@ -166,7 +172,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
                 .references('test.a')
                 .onDelete('cascade')
                 .onUpdate('restrict')
-                .check(ctx.db.raw('b < a'))
+                .check(sql`b < a`)
             )
             .addColumn('c', 'varchar')
             .addColumn('d', 'varchar(10)')
@@ -174,7 +180,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
             .addColumn('f', 'double precision')
             .addColumn('g', 'real')
             .addColumn('h', 'text')
-            .addColumn('i', ctx.db.raw('varchar(123)'))
+            .addColumn('i', sql`varchar(123)`)
             .addColumn('j', 'numeric(6, 2)')
             .addColumn('k', 'decimal(8, 4)')
             .addColumn('l', 'boolean', (col) => col.notNull().defaultTo(false))
@@ -184,7 +190,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
             .addColumn('p', 'int4')
             .addColumn('q', 'int8')
             .addColumn('r', 'double precision', (col) =>
-              col.generatedAlwaysAs(ctx.db.raw('f + g')).stored().notNull()
+              col
+                .generatedAlwaysAs(sql`f + g`)
+                .stored()
+                .notNull()
             )
             .addColumn('s', 'blob')
 
@@ -255,8 +264,8 @@ for (const dialect of BUILT_IN_DIALECTS) {
           .addColumn('a', 'integer')
           .addColumn('b', 'integer')
           .addColumn('c', 'integer')
-          .addCheckConstraint('check_a', ctx.db.raw('a > 1'))
-          .addCheckConstraint('check_b', ctx.db.raw('b < c'))
+          .addCheckConstraint('check_a', sql`a > 1`)
+          .addCheckConstraint('check_b', sql`b < c`)
 
         testSql(builder, dialect, {
           postgres: {
@@ -706,7 +715,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
         const builder = ctx.db.schema
           .createIndex('test_first_name_index')
           .on('test')
-          .expression(ctx.db.raw(`first_name < 'Sami'`))
+          .expression(sql`first_name < 'Sami'`)
 
         testSql(builder, dialect, {
           postgres: {
@@ -1382,10 +1391,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
           it('should add a check constraint', async () => {
             const builder = ctx.db.schema
               .alterTable('test')
-              .addCheckConstraint(
-                'some_constraint',
-                ctx.db.raw('integer_col > 0')
-              )
+              .addCheckConstraint('some_constraint', sql`integer_col > 0`)
 
             testSql(builder, dialect, {
               postgres: {

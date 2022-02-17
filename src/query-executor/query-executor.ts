@@ -5,6 +5,7 @@ import { RootOperationNode } from '../query-compiler/query-compiler.js'
 import { KyselyPlugin } from '../plugin/kysely-plugin.js'
 import { freeze } from '../util/object-utils.js'
 import { QueryId } from '../util/query-id.js'
+import { DialectAdapter } from '../dialect/dialect-adapter.js'
 
 const NO_PLUGINS: ReadonlyArray<KyselyPlugin> = freeze([])
 
@@ -20,6 +21,8 @@ export abstract class QueryExecutor {
   constructor(plugins?: KyselyPlugin[]) {
     this.#plugins = plugins ?? NO_PLUGINS
   }
+
+  abstract get adapter(): DialectAdapter
 
   get plugins(): ReadonlyArray<KyselyPlugin> {
     return this.#plugins
@@ -95,6 +98,12 @@ export abstract class QueryExecutor {
    * last plugin.
    */
   abstract withPlugin(plugin: KyselyPlugin): QueryExecutor
+
+  /**
+   * Returns a copy of this executor with a list of plugins added
+   * as the last plugins.
+   */
+  abstract withPlugins(plugin: ReadonlyArray<KyselyPlugin>): QueryExecutor
 
   /**
    * Returns a copy of this executor with a plugin added as the
