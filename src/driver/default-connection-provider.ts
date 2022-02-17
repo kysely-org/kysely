@@ -9,7 +9,7 @@ export class DefaultConnectionProvider implements ConnectionProvider {
     this.#driver = driver
   }
 
-  async withConnection<T>(
+  async provideConnection<T>(
     runner: (connection: DatabaseConnection) => Promise<T>
   ): Promise<T> {
     const connection = await this.#driver.acquireConnection()

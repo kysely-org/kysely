@@ -1,5 +1,5 @@
 import { ConnectionProvider } from '../driver/connection-provider.js'
-import { QueryResult } from '../driver/database-connection.js'
+import { DatabaseConnection } from '../driver/database-connection.js'
 import { CompiledQuery } from '../query-compiler/compiled-query.js'
 import {
   RootOperationNode,
@@ -35,12 +35,10 @@ export class DefaultQueryExecutor extends QueryExecutor {
     return this.#compiler.compileQuery(node)
   }
 
-  protected async executeQueryImpl<R>(
-    compiledQuery: CompiledQuery
-  ): Promise<QueryResult<R>> {
-    return this.#connectionProvider.withConnection((connection) => {
-      return connection.executeQuery<R>(compiledQuery)
-    })
+  provideConnection<T>(
+    consumer: (connection: DatabaseConnection) => Promise<T>
+  ): Promise<T> {
+    return this.#connectionProvider.provideConnection(consumer)
   }
 
   withPlugins(plugins: ReadonlyArray<KyselyPlugin>): DefaultQueryExecutor {

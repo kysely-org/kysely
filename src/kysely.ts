@@ -435,19 +435,18 @@ export class ConnectionBuilder<DB> {
   }
 
   async execute<T>(callback: (db: Kysely<DB>) => Promise<T>): Promise<T> {
-    const connection = await this.#props.driver.acquireConnection()
-    const connectionProvider = new SingleConnectionProvider(connection)
+    return this.#props.executor.provideConnection(async (connection) => {
+      const executor = this.#props.executor.withConnectionProvider(
+        new SingleConnectionProvider(connection)
+      )
 
-    const db = new Kysely<DB>({
-      ...this.#props,
-      executor: this.#props.executor.withConnectionProvider(connectionProvider),
-    })
+      const db = new Kysely<DB>({
+        ...this.#props,
+        executor,
+      })
 
-    try {
       return await callback(db)
-    } finally {
-      await this.#props.driver.releaseConnection(connection)
-    }
+    })
   }
 }
 
@@ -478,26 +477,27 @@ export class TransactionBuilder<DB> {
 
     validateTransactionSettings(settings)
 
-    const connection = await this.#props.driver.acquireConnection()
-    const connectionProvider = new SingleConnectionProvider(connection)
+    return this.#props.executor.provideConnection(async (connection) => {
+      const executor = this.#props.executor.withConnectionProvider(
+        new SingleConnectionProvider(connection)
+      )
 
-    const transaction = new Transaction<DB>({
-      ...kyselyProps,
-      executor: this.#props.executor.withConnectionProvider(connectionProvider),
+      const transaction = new Transaction<DB>({
+        ...kyselyProps,
+        executor,
+      })
+
+      try {
+        await this.#props.driver.beginTransaction(connection, settings)
+        const result = await callback(transaction)
+        await this.#props.driver.commitTransaction(connection)
+
+        return result
+      } catch (error) {
+        await this.#props.driver.rollbackTransaction(connection)
+        throw error
+      }
     })
-
-    try {
-      await this.#props.driver.beginTransaction(connection, settings)
-      const result = await callback(transaction)
-      await this.#props.driver.commitTransaction(connection)
-
-      return result
-    } catch (error) {
-      await this.#props.driver.rollbackTransaction(connection)
-      throw error
-    } finally {
-      await this.#props.driver.releaseConnection(connection)
-    }
   }
 }
 

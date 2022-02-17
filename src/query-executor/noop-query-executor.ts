@@ -1,4 +1,3 @@
-import { QueryResult } from '../driver/database-connection.js'
 import { CompiledQuery } from '../query-compiler/compiled-query.js'
 import { QueryExecutor } from './query-executor.js'
 import { KyselyPlugin } from '../plugin/kysely-plugin.js'
@@ -18,7 +17,7 @@ export class NoopQueryExecutor extends QueryExecutor {
     throw new Error('this query cannot be compiled to SQL')
   }
 
-  protected async executeQueryImpl<R>(): Promise<QueryResult<R>> {
+  provideConnection<T>(): Promise<T> {
     throw new Error('this query cannot be executed')
   }
 

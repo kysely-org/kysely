@@ -98,6 +98,26 @@ for (const dialect of BUILT_IN_DIALECTS) {
       })
     }
 
+    if (dialect === 'postgres') {
+      it('should be able to start a transaction with a single connection', async () => {
+        const result = await ctx.db.connection().execute((db) => {
+          return db.transaction().execute((trx) => {
+            return trx
+              .insertInto('person')
+              .values({
+                first_name: 'Foo',
+                last_name: 'Barson',
+                gender: 'male',
+              })
+              .returning('first_name')
+              .executeTakeFirstOrThrow()
+          })
+        })
+
+        expect(result.first_name).to.equal('Foo')
+      })
+    }
+
     it('should run multiple transactions in parallel', async () => {
       const threads = Array.from({ length: 100 }).map((_, index) => ({
         id: 1000000 + index + 1,
