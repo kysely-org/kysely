@@ -82,7 +82,7 @@ export type ExtractColumnType<DB, TB extends keyof DB, C> = {
  *   movie: Movie
  * }
  *
- * type Columns = AnyColumn<Database, 'person' | 'pet'>
+ * type Columns = AnyColumnWithTable<Database, 'person' | 'pet'>
  *
  * // Columns == 'person.id' | 'pet.name' | 'pet.species'
  * ```
