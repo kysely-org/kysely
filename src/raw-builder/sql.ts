@@ -300,7 +300,7 @@ export interface Sql {
  * from "person"
  * where birthdate between $1 and $2
  * and "nicknames" @> ARRAY[$3, $4, $5, $6, $7, $8, $9, $10]
- * order by concate(first_name, ' ', last_name)
+ * order by concat(first_name, ' ', last_name)
  * ```
  *
  * SQL snippets can be executed by calling the `execute` method and passing a `Kysely`
