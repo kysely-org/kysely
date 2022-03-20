@@ -32,7 +32,13 @@ export interface WhereInterface<DB, TB extends keyof DB> {
    * ```
    *
    * Operator can be any supported operator or if the typings don't support it
-   * you can always use `sql\`your operator\``.
+   * you can always use
+   *
+   * ```ts
+   * sql`your operator`
+   * ```
+   *
+   * The next example uses the `>` operator:
    *
    * ```ts
    * const persons = await db
@@ -48,8 +54,8 @@ export interface WhereInterface<DB, TB extends keyof DB> {
    * select * from "person" where "id" > $1
    * ```
    *
-   * The `where` methods don't change the type of the query. You can add
-   * conditional `where`s easily by doing something like this:
+   * `where` methods don't change the type of the query. You can add
+   * conditional statements easily by doing something like this:
    *
    * ```ts
    * let query = db
@@ -57,6 +63,8 @@ export interface WhereInterface<DB, TB extends keyof DB> {
    *   .selectAll()
    *
    * if (firstName) {
+   *   // The query builder is immutable. Remember to reassign
+   *   // the result back to the query variable.
    *   query = query.where('first_name', '=', firstName)
    * }
    *
@@ -64,8 +72,7 @@ export interface WhereInterface<DB, TB extends keyof DB> {
    * ```
    *
    * This is true for basically all methods execpt the `select` and
-   * `returning` methods, which DO change the return type of the
-   * query.
+   * `returning`, that __do__ change the return type of the query.
    *
    * Both the first and third argument can also be subqueries.
    * A subquery is defined by passing a function and calling

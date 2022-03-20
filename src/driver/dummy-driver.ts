@@ -28,6 +28,14 @@ import { Driver } from './driver.js'
  *   },
  * })
  * ```
+ *
+ * You can use it to build a query and compile it to SQL but trying to
+ * execute the query will throw an error.
+ *
+ * ```ts
+ * const { sql } = db.selectFrom('person').selectAll().compile()
+ * console.log(sql) // select * from "person"
+ * ```
  */
 export class DummyDriver implements Driver {
   async init(): Promise<void> {

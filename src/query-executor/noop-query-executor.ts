@@ -1,14 +1,14 @@
 import { CompiledQuery } from '../query-compiler/compiled-query.js'
-import { QueryExecutor } from './query-executor.js'
 import { KyselyPlugin } from '../plugin/kysely-plugin.js'
 import { DialectAdapter } from '../dialect/dialect-adapter.js'
+import { QueryExecutorBase } from './query-executor-base.js'
 
 /**
  * A {@link QueryExecutor} subclass that can be used when you don't
  * have a {@link QueryCompiler}, {@link ConnectionProvider} or any
  * other needed things to actually execute queries.
  */
-export class NoopQueryExecutor extends QueryExecutor {
+export class NoopQueryExecutor extends QueryExecutorBase {
   get adapter(): DialectAdapter {
     throw new Error('this query cannot be compiled to SQL')
   }
@@ -21,7 +21,7 @@ export class NoopQueryExecutor extends QueryExecutor {
     throw new Error('this query cannot be executed')
   }
 
-  withConnectionProvider(): QueryExecutor {
+  withConnectionProvider(): NoopQueryExecutor {
     throw new Error('this query cannot have a connection provider')
   }
 
@@ -37,7 +37,7 @@ export class NoopQueryExecutor extends QueryExecutor {
     return new NoopQueryExecutor([plugin, ...this.plugins])
   }
 
-  withoutPlugins(): QueryExecutor {
+  withoutPlugins(): NoopQueryExecutor {
     return new NoopQueryExecutor([])
   }
 }

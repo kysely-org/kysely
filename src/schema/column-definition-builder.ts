@@ -105,7 +105,8 @@ export interface ColumnDefinitionBuilderInterface {
    *   .execute()
    * ```
    *
-   * Raw {@link sql} expressions are also supported:
+   * Values passed to `defaultTo` are interpreted as value literals by default. You can define
+   * an arbitrary SQL expression using the {@link sql} template tag:
    *
    * ```ts
    * import { sql } from 'kysely'

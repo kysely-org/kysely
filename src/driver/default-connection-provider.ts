@@ -10,12 +10,12 @@ export class DefaultConnectionProvider implements ConnectionProvider {
   }
 
   async provideConnection<T>(
-    runner: (connection: DatabaseConnection) => Promise<T>
+    consumer: (connection: DatabaseConnection) => Promise<T>
   ): Promise<T> {
     const connection = await this.#driver.acquireConnection()
 
     try {
-      return await runner(connection)
+      return await consumer(connection)
     } finally {
       await this.#driver.releaseConnection(connection)
     }

@@ -10,13 +10,13 @@ export class SingleConnectionProvider implements ConnectionProvider {
   }
 
   async provideConnection<T>(
-    runner: (connection: DatabaseConnection) => Promise<T>
+    consumer: (connection: DatabaseConnection) => Promise<T>
   ): Promise<T> {
     while (this.#runningPromise) {
       await this.#runningPromise
     }
 
-    const promise = this.#run(runner)
+    const promise = this.#run(consumer)
 
     this.#runningPromise = promise
       .then(() => {

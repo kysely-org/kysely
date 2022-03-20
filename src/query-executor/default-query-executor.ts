@@ -6,10 +6,10 @@ import {
   QueryCompiler,
 } from '../query-compiler/query-compiler.js'
 import { KyselyPlugin } from '../plugin/kysely-plugin.js'
-import { QueryExecutor } from './query-executor.js'
-import { DialectAdapter } from '../index-nodeless.js'
+import { QueryExecutorBase } from './query-executor-base.js'
+import { DialectAdapter } from '../dialect/dialect-adapter.js'
 
-export class DefaultQueryExecutor extends QueryExecutor {
+export class DefaultQueryExecutor extends QueryExecutorBase {
   #compiler: QueryCompiler
   #adapter: DialectAdapter
   #connectionProvider: ConnectionProvider
@@ -70,7 +70,7 @@ export class DefaultQueryExecutor extends QueryExecutor {
 
   withConnectionProvider(
     connectionProvider: ConnectionProvider
-  ): QueryExecutor {
+  ): DefaultQueryExecutor {
     return new DefaultQueryExecutor(
       this.#compiler,
       this.#adapter,
@@ -79,7 +79,7 @@ export class DefaultQueryExecutor extends QueryExecutor {
     )
   }
 
-  withoutPlugins(): QueryExecutor {
+  withoutPlugins(): DefaultQueryExecutor {
     return new DefaultQueryExecutor(
       this.#compiler,
       this.#adapter,

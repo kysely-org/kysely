@@ -332,7 +332,15 @@ export interface Sql {
  *   .select([
  *     'first_name',
  *     'last_name',
- *     (eb) => sql<string>`concat(${eb.ref('first_name')}, ' ', ${eb.ref('last_name')})`.as('full_name')
+ *     (eb) => {
+ *       // The `eb.ref` method is type-safe and only accepts
+ *       // column references that are possible.
+ *       const firstName = eb.ref('first_name')
+ *       const lastName = eb.ref('last_name')
+ *
+ *       const fullName = sql<string>`concat(${firstName}, ' ', ${lastName})`
+ *       return fullName.as('full_name')
+ *     }
  *   ])
  * ```
  *

@@ -1,4 +1,4 @@
-import { RawNode } from '../index-nodeless.js'
+import { RawNode } from '../operation-node/raw-node.js'
 import {
   StringReference,
   ExtractTypeFromReferenceExpression,

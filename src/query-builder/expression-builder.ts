@@ -16,8 +16,9 @@ import {
   StringReference,
 } from '../parser/reference-parser.js'
 import { RawBuilder } from '../raw-builder/raw-builder.js'
-import { QueryExecutor, RawNode } from '../index-nodeless.js'
 import { freeze } from '../util/object-utils.js'
+import { QueryExecutor } from '../query-executor/query-executor.js'
+import { RawNode } from '../operation-node/raw-node.js'
 
 export class ExpressionBuilder<DB, TB extends keyof DB> {
   #props: ExpressionBuilderProps
