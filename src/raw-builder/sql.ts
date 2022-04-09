@@ -239,7 +239,7 @@ export interface Sql {
    *   sql.id('first_name')
    * ]
    *
-   * sql`BEFORE ${sql.array(things, sql`::varchar, `)} AFTER`
+   * sql`BEFORE ${sql.join(things, sql`::varchar, `)} AFTER`
    * ```
    *
    * The generated SQL (PostgreSQL):

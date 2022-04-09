@@ -240,4 +240,25 @@ export interface MysqlSslOptions {
    * You can also connect to a MySQL server without properly providing the appropriate CA to trust. You should not do this.
    */
   rejectUnauthorized?: boolean
+
+  // The following are undocumented options taken from
+  // https://github.com/sidorares/node-mysql2/blob/fce1a49b97b259b3926101fd1128835e0aa0bcc4/index.d.ts#L161
+
+  charsetNumber?: number
+  compress?: boolean
+  authSwitchHandler?: (data: any, callback: () => void) => any
+  connectAttributes?: { [param: string]: any }
+  decimalNumbers?: boolean
+  isServer?: boolean
+  maxPreparedStatements?: number
+  namedPlaceholders?: boolean
+  nestTables?: boolean | string
+  passwordSha1?: string
+  pool?: any
+  stream?: any
+  uri?: string
+  Promise?: any
+  authPlugins?: {
+    [key: string]: any
+  }
 }

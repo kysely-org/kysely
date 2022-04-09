@@ -95,6 +95,13 @@ export class AlterTableBuilder {
     })
   }
 
+  /**
+   * See {@link CreateTableBuilder.addColumn}
+   *
+   * Unlike {@link CreateTableBuilder.addColumn} this method returns the column builder
+   * and doesn't take a callback as the last argument. This is because you can only
+   * add one column per `ALTER TABLE` query.
+   */
   addColumn(
     columnName: string,
     dataType: DataTypeExpression
@@ -130,6 +137,9 @@ export class AlterTableBuilder {
     })
   }
 
+  /**
+   * See {@link CreateTableBuilder.addUniqueConstraint}
+   */
   addUniqueConstraint(
     constraintName: string,
     columns: string[]
@@ -144,6 +154,9 @@ export class AlterTableBuilder {
     })
   }
 
+  /**
+   * See {@link CreateTableBuilder.addCheckConstraint}
+   */
   addCheckConstraint(
     constraintName: string,
     checkExpression: AnyRawBuilder
@@ -161,6 +174,13 @@ export class AlterTableBuilder {
     })
   }
 
+  /**
+   * See {@link CreateTableBuilder.addForeignKeyConstraint}
+   *
+   * Unlike {@link CreateTableBuilder.addForeignKeyConstraint} this method returns
+   * the constraint builder and doesn't take a callback as the last argument. This
+   * is because you can only add one column per `ALTER TABLE` query.
+   */
   addForeignKeyConstraint(
     constraintName: string,
     columns: string[],

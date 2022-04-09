@@ -243,7 +243,7 @@ export class CreateTableBuilder<TB extends string, C extends string = never>
    * )
    * ```
    *
-   * Add constraintfor multiple columns:
+   * Add constraint for multiple columns:
    *
    * ```ts
    * addForeignKeyConstraint(
