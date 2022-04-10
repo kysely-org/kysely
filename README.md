@@ -1,3 +1,5 @@
+[![Stand With Ukraine](https://raw.githubusercontent.com/vshymanskyy/StandWithUkraine/main/banner2-direct.svg)](https://stand-with-ukraine.pp.ua)
+
 [![Discord](https://img.shields.io/discord/890118421587578920)](https://discord.gg/C9aJ49mCra)
 [![Tests](https://github.com/koskimas/kysely/actions/workflows/test.yml/badge.svg)](https://github.com/koskimas/kysely)
 
