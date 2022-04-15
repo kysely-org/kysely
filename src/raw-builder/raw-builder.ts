@@ -1,6 +1,9 @@
 import { QueryResult } from '../driver/database-connection.js'
 import { AliasNode } from '../operation-node/alias-node.js'
-import { OperationNodeSource } from '../operation-node/operation-node-source.js'
+import {
+  isOperationNodeSource,
+  OperationNodeSource,
+} from '../operation-node/operation-node-source.js'
 import { RawNode } from '../operation-node/raw-node.js'
 import { CompiledQuery } from '../query-compiler/compiled-query.js'
 import { preventAwait } from '../util/prevent-await.js'
@@ -10,6 +13,8 @@ import { KyselyPlugin } from '../plugin/kysely-plugin.js'
 import { NOOP_QUERY_EXECUTOR } from '../query-executor/noop-query-executor.js'
 import { QueryExecutorProvider } from '../query-executor/query-executor-provider.js'
 import { QueryId } from '../util/query-id.js'
+import { AnyRawBuilder } from '../util/type-utils.js'
+import { IdentifierNode } from '../operation-node/identifier-node.js'
 
 /**
  * An instance of this class can be used to create raw SQL snippets or queries.
@@ -48,8 +53,38 @@ export class RawBuilder<O = unknown> implements OperationNodeSource {
    * select concat(first_name, ' ', last_name) as "full_name"
    * from "person"
    * ```
+   *
+   * You can also pass in a raw SQL snippet but in that case you must
+   * provide the alias as the only type argument:
+   *
+   * ```ts
+   * const values = sql<{ a: number, b: string }>`(values (1, 'foo'))`
+   *
+   * // The alias is `t(a, b)` which specifies the column names
+   * // in addition to the table name. We must tell kysely that
+   * // columns of the table can be referenced through `t`
+   * // by providing an explicit type argument.
+   * const aliasedValues = values.as<'t'>(sql`t(a, b)`)
+   *
+   * await db
+   *   .insertInto('person')
+   *   .columns(['first_name', 'last_name'])
+   *   .expression(
+   *     db.selectFrom(aliasedValues).select(['t.a', 't.b'])
+   *   )
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```ts
+   * insert into "person" ("first_name", "last_name")
+   * from (values (1, 'foo')) as t(a, b)
+   * select "t"."a", "t"."b"
+   * ```
    */
-  as<A extends string>(alias: A): AliasedRawBuilder<O, A> {
+  as<A extends string>(alias: A): AliasedRawBuilder<O, A>
+  as<A extends string = never>(alias: AnyRawBuilder): AliasedRawBuilder<O, A>
+  as(alias: string | AnyRawBuilder): AliasedRawBuilder<O, string> {
     return new AliasedRawBuilder(this, alias)
   }
 
@@ -123,7 +158,7 @@ export class AliasedRawBuilder<O = unknown, A extends string = never>
   implements OperationNodeSource
 {
   readonly #rawBuilder: RawBuilder<O>
-  readonly #alias: A
+  readonly #alias: A | AnyRawBuilder
 
   /**
    * @private
@@ -133,15 +168,20 @@ export class AliasedRawBuilder<O = unknown, A extends string = never>
    * which causes this type to be equal to AliasedRawBuilder with any A
    * as long as O is the same.
    */
-  protected get alias(): A {
+  protected get alias(): A | AnyRawBuilder {
     return this.#alias
   }
 
   toOperationNode(): AliasNode {
-    return AliasNode.create(this.#rawBuilder.toOperationNode(), this.#alias)
+    return AliasNode.create(
+      this.#rawBuilder.toOperationNode(),
+      isOperationNodeSource(this.#alias)
+        ? this.#alias.toOperationNode()
+        : IdentifierNode.create(this.#alias)
+    )
   }
 
-  constructor(rawBuilder: RawBuilder<O>, alias: A) {
+  constructor(rawBuilder: RawBuilder<O>, alias: A | AnyRawBuilder) {
     this.#rawBuilder = rawBuilder
     this.#alias = alias
   }

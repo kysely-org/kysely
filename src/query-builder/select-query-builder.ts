@@ -64,6 +64,7 @@ import { WhereInterface } from './where-interface.js'
 import { JoinInterface } from './join-interface.js'
 import { NoResultError, NoResultErrorConstructor } from './no-result-error.js'
 import { HavingInterface } from './having-interface.js'
+import { IdentifierNode } from '../operation-node/identifier-node.js'
 
 export class SelectQueryBuilder<DB, TB extends keyof DB, O>
   implements
@@ -1262,7 +1263,7 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    * ### Examples
    *
    * ```ts
-   * await db.selectFrom('pet')
+   * const pets = await db.selectFrom('pet')
    *   .selectAll('pet')
    *   .select(
    *     (qb) => qb.selectFrom('person')
@@ -1271,6 +1272,8 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    *       .as('owner_first_name')
    *   )
    *   .execute()
+   *
+   * pets[0].owner_first_name
    * ```
    */
   as<A extends string>(alias: A): AliasedQueryBuilder<DB, TB, O, A> {
@@ -1400,11 +1403,6 @@ export class AliasedQueryBuilder<
 
   toOperationNode(): AliasNode {
     const node = this.#queryBuilder.toOperationNode()
-
-    if (SelectQueryNode.is(node)) {
-      return AliasNode.create(node, this.#alias)
-    }
-
-    throw new Error('only select queries can be aliased')
+    return AliasNode.create(node, IdentifierNode.create(this.#alias))
   }
 }

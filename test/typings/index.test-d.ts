@@ -131,6 +131,13 @@ async function testFromSingle(db: Kysely<Database>) {
     .execute()
   expectType<{ s3: number }>(r9)
 
+  // Raw expression with raw alias
+  const [r10] = await db
+    .selectFrom(sql<{ one: 1 }>`(select 1 as one)`.as<'o'>(sql`o(one)`))
+    .select('o.one')
+    .execute()
+  expectType<{ one: 1 }>(r10)
+
   // Should not be able to select animal columns from person.
   expectError(db.selectFrom('person').select('pet.id'))
 

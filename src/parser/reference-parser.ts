@@ -21,6 +21,7 @@ import {
   isDynamicReferenceBuilder,
 } from '../dynamic/dynamic-reference-builder.js'
 import { SelectType } from '../util/column-type.js'
+import { IdentifierNode } from '../operation-node/identifier-node.js'
 
 export type ReferenceExpression<DB, TB extends keyof DB> =
   | StringReference<DB, TB>
@@ -119,7 +120,10 @@ export function parseAliasedStringReference(
   if (ref.includes(ALIAS_SEPARATOR)) {
     const [columnRef, alias] = ref.split(ALIAS_SEPARATOR).map(trim)
 
-    return AliasNode.create(parseStringReference(columnRef), alias)
+    return AliasNode.create(
+      parseStringReference(columnRef),
+      IdentifierNode.create(alias)
+    )
   } else {
     return parseStringReference(ref)
   }

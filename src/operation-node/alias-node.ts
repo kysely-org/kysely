@@ -17,7 +17,7 @@ export type AliasNodeChild =
 export interface AliasNode extends OperationNode {
   readonly kind: 'AliasNode'
   readonly node: AliasNodeChild
-  readonly alias: IdentifierNode
+  readonly alias: IdentifierNode | RawNode
 }
 
 /**
@@ -28,11 +28,11 @@ export const AliasNode = freeze({
     return node.kind === 'AliasNode'
   },
 
-  create(node: AliasNodeChild, alias: string): AliasNode {
+  create(node: AliasNodeChild, alias: IdentifierNode | RawNode): AliasNode {
     return freeze({
       kind: 'AliasNode',
       node,
-      alias: IdentifierNode.create(alias),
+      alias,
     })
   },
 })

@@ -9,6 +9,7 @@ import {
   AliasedComplexExpression,
   parseAliasedComplexExpression,
 } from './complex-expression-parser.js'
+import { IdentifierNode } from '../operation-node/identifier-node.js'
 
 export type TableExpression<DB, TB extends keyof DB> =
   | TableReference<DB>
@@ -157,7 +158,7 @@ export function parseAliasedTable(from: string): TableExpressionNode {
   if (from.includes(ALIAS_SEPARATOR)) {
     const [table, alias] = from.split(ALIAS_SEPARATOR).map(trim)
 
-    return AliasNode.create(parseTable(table), alias)
+    return AliasNode.create(parseTable(table), IdentifierNode.create(alias))
   } else {
     return parseTable(from)
   }

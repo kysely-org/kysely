@@ -1,4 +1,4 @@
-import { InsertResult, Kysely, sql } from '../../../'
+import { AliasedRawBuilder, InsertResult, Kysely, sql } from '../../../'
 
 import {
   BUILT_IN_DIALECTS,
@@ -149,6 +149,40 @@ for (const dialect of BUILT_IN_DIALECTS) {
         'Sylvester',
       ])
     })
+
+    if (dialect === 'postgres') {
+      it('should insert the result of a values expression', async () => {
+        const query = ctx.db
+          .insertInto('person')
+          .columns(['first_name', 'gender'])
+          .expression(
+            ctx.db
+              .selectFrom(
+                values(
+                  [
+                    { a: 1, b: 'foo' },
+                    { a: 2, b: 'bar' },
+                  ],
+                  't'
+                )
+              )
+              .select(['t.a', 't.b'])
+          )
+          .returning(['first_name', 'gender'])
+
+        testSql(query, dialect, {
+          postgres: {
+            sql: 'insert into "person" ("first_name", "gender") select "t"."a", "t"."b" from (values ($1, $2), ($3, $4)) as t(a, b) returning "first_name", "gender"',
+            parameters: [1, 'foo', 2, 'bar'],
+          },
+          mysql: NOT_SUPPORTED,
+          sqlite: NOT_SUPPORTED,
+        })
+
+        const res = await query.execute()
+        expect(res).to.have.length(2)
+      })
+    }
 
     it('undefined values should be ignored', async () => {
       const query = ctx.db.insertInto('person').values({
@@ -568,4 +602,20 @@ for (const dialect of BUILT_IN_DIALECTS) {
       )
       .executeTakeFirst()
   }
+}
+
+function values<R extends Record<string, unknown>, A extends string>(
+  records: R[],
+  alias: A
+): AliasedRawBuilder<R, A> {
+  const keys = Object.keys(records[0])
+
+  const values = sql.join(
+    records.map((r) => {
+      const v = sql.join(keys.map((k) => sql`${r[k]}`))
+      return sql`(${v})`
+    })
+  )
+
+  return sql`(values ${values})`.as<A>(sql.raw(`${alias}(${keys.join(', ')})`))
 }
