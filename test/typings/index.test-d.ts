@@ -14,6 +14,7 @@ import {
   UpdateResult,
   DeleteResult,
   Generated,
+  GeneratedAlways,
   Selectable,
   ColumnType,
   sql,
@@ -45,11 +46,17 @@ interface Movie {
   stars: number
 }
 
+interface Book {
+  id: GeneratedAlways<number>
+  name: string;
+}
+
 interface Database {
   person: Person
   pet: Pet
   movie: Movie
   'some_schema.movie': Movie
+  book: Book
 }
 
 async function testFromSingle(db: Kysely<Database>) {
@@ -146,6 +153,9 @@ async function testFromSingle(db: Kysely<Database>) {
 
   // Should not be able to start a query against non-existent aliased table.
   expectError(db.selectFrom('doesnt_exists as de'))
+
+  const [r11] = await db.selectFrom('book').select('id').execute();
+  expectType<{ id: number }>(r11)
 }
 
 async function testFromMultiple(db: Kysely<Database>) {
@@ -674,6 +684,11 @@ async function testInsert(db: Kysely<Database>) {
         })
       )
   )
+
+  // GeneratedAlways column is not allowed to be inserted
+  expectError(db.insertInto('book').values({id: 1, name: 'foo'}))
+
+  db.insertInto('book').values({name: 'bar'})
 }
 
 async function testReturning(db: Kysely<Database>) {
@@ -762,6 +777,11 @@ async function testUpdate(db: Kysely<Database>) {
       .where('p.id', '=', '1')
       .set({ not_a_column: 'Fluffy' })
   )
+
+  // GeneratedAlways column is not allowed to be updated
+  expectError(db.updateTable('book').set({id: 1, name: 'foo'}))
+
+  db.updateTable('book').set({name: 'bar'})
 }
 
 async function testDelete(db: Kysely<Database>) {
