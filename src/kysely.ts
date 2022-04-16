@@ -20,6 +20,7 @@ import { preventAwait } from './util/prevent-await.js'
 import { FunctionBuilder } from './query-builder/function-builder.js'
 import { Log, LogConfig } from './util/log.js'
 import { QueryExecutorProvider } from './query-executor/query-executor-provider.js'
+import { getSqlInstance, Sql } from './raw-builder/sql.js'
 
 /**
  * The main Kysely class.
@@ -66,9 +67,9 @@ import { QueryExecutorProvider } from './query-executor/query-executor-provider.
  */
 export class Kysely<DB>
   extends QueryCreator<DB>
-  implements QueryExecutorProvider
-{
+  implements QueryExecutorProvider {
   readonly #props: KyselyProps
+  readonly #sql: Sql<true>
 
   constructor(args: KyselyConfig)
   constructor(args: KyselyProps)
@@ -108,6 +109,11 @@ export class Kysely<DB>
 
     super(superProps)
     this.#props = freeze(props)
+    this.#sql = getSqlInstance(this.getExecutor())
+  }
+
+  get sql() {
+    return this.#sql;
   }
 
   /**
@@ -450,7 +456,7 @@ export class ConnectionBuilder<DB> {
   }
 }
 
-interface ConnectionBuilderProps extends KyselyProps {}
+interface ConnectionBuilderProps extends KyselyProps { }
 
 preventAwait(
   ConnectionBuilder,

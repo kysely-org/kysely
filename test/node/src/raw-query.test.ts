@@ -103,5 +103,13 @@ for (const dialect of BUILT_IN_DIALECTS) {
         expect(result.rows).to.eql([])
       })
     }
+
+    it('should allow using binded instance', async () => {
+      const result = await ctx.db.sql<{ result: string }>`select 'foo' result`.execute()
+
+      expect(result.insertId).to.equal(undefined)
+      expect(result.numUpdatedOrDeletedRows).to.equal(undefined)
+      expect(result.rows).to.eql([{ result: 'foo' }])
+    })
   })
 }

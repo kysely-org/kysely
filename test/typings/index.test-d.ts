@@ -693,8 +693,8 @@ async function testReturning(db: Kysely<Database>) {
 
   expectType<
     | {
-        id: number
-      }
+      id: number
+    }
     | undefined
   >(r1)
 
@@ -1049,4 +1049,15 @@ async function testGenericSelect<T extends keyof Database>(
 
 async function testGenericUpdate(db: Kysely<Database>, table: 'pet' | 'movie') {
   await db.updateTable(table).set({ id: '123' }).execute()
+}
+
+async function testSql(db: Kysely<Database>) {
+  // Allow calling execute without providing executor on binded instance
+  db.sql`select 1`.execute()
+
+  // Doesn't allow passing executor on binded instance
+  expectError(db.sql`select 1`.execute(db.getExecutor()))
+
+  // Requires executor on non-binded instance
+  expectError(sql`select 1`.execute())
 }

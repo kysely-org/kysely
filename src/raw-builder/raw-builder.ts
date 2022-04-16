@@ -22,11 +22,16 @@ import { IdentifierNode } from '../operation-node/identifier-node.js'
  * You shouldn't need to create `RawBuilder` instances directly. Instead you should
  * use the {@link sql} template tag.
  */
-export class RawBuilder<O = unknown> implements OperationNodeSource {
+export class RawBuilder<O = unknown, B = false> implements OperationNodeSource {
   readonly #props: RawBuilderProps
+  readonly #executor: B extends true ? QueryExecutor : undefined;
 
-  constructor(props: RawBuilderProps) {
+  constructor(
+    props: RawBuilderProps,
+    executor?: (B extends true ? QueryExecutor : undefined)
+  ) {
     this.#props = freeze(props)
+    this.#executor = executor as (B extends true ? QueryExecutor : undefined)
   }
 
   /**
@@ -82,9 +87,9 @@ export class RawBuilder<O = unknown> implements OperationNodeSource {
    * select "t"."a", "t"."b"
    * ```
    */
-  as<A extends string>(alias: A): AliasedRawBuilder<O, A>
-  as<A extends string = never>(alias: AnyRawBuilder): AliasedRawBuilder<O, A>
-  as(alias: string | AnyRawBuilder): AliasedRawBuilder<O, string> {
+  as<A extends string>(alias: A): AliasedRawBuilder<O, A, B>
+  as<A extends string = never>(alias: AnyRawBuilder): AliasedRawBuilder<O, A, B>
+  as(alias: string | AnyRawBuilder): AliasedRawBuilder<O, string, B> {
     return new AliasedRawBuilder(this, alias)
   }
 
@@ -94,21 +99,21 @@ export class RawBuilder<O = unknown> implements OperationNodeSource {
    * This method call doesn't change the SQL in any way. This methods simply
    * returns a copy of this `RawBuilder` with a new output type.
    */
-  castTo<T>(): RawBuilder<T> {
-    return new RawBuilder({ ...this.#props })
+  castTo<T>(): RawBuilder<T, B> {
+    return new RawBuilder({ ...this.#props }, this.#executor)
   }
 
   /**
    * Adds a plugin for this SQL snippet.
    */
-  withPlugin(plugin: KyselyPlugin): RawBuilder<O> {
+  withPlugin(plugin: KyselyPlugin): RawBuilder<O, B> {
     return new RawBuilder({
       ...this.#props,
       plugins:
         this.#props.plugins !== undefined
           ? freeze([...this.#props.plugins, plugin])
           : freeze([plugin]),
-    })
+    }, this.#executor)
   }
 
   toOperationNode(): RawNode {
@@ -121,12 +126,17 @@ export class RawBuilder<O = unknown> implements OperationNodeSource {
   }
 
   async execute(
-    executorProvider: QueryExecutorProvider
+    ...executorProvider: B extends true ? [undefined?] : [QueryExecutorProvider]
   ): Promise<QueryResult<O>> {
-    const executor =
-      this.#props.plugins !== undefined
-        ? executorProvider.getExecutor().withPlugins(this.#props.plugins)
-        : executorProvider.getExecutor()
+    let executor = (executorProvider[0]?.getExecutor()) ?? this.#executor;
+
+    if (executor === undefined) {
+      throw new Error('Unreachable code')
+    }
+
+    if (this.#props.plugins !== undefined) {
+      executor = executor.withPlugins(this.#props.plugins)
+    }
 
     return executor.executeQuery<O>(
       this.#compile(executor),
@@ -154,10 +164,9 @@ preventAwait(
 /**
  * {@link RawBuilder} with an alias. The result of calling {@link RawBuilder.as}.
  */
-export class AliasedRawBuilder<O = unknown, A extends string = never>
-  implements OperationNodeSource
-{
-  readonly #rawBuilder: RawBuilder<O>
+export class AliasedRawBuilder<O = unknown, A extends string = never, B = false>
+  implements OperationNodeSource {
+  readonly #rawBuilder: RawBuilder<O, B>
   readonly #alias: A | AnyRawBuilder
 
   /**
@@ -181,7 +190,7 @@ export class AliasedRawBuilder<O = unknown, A extends string = never>
     )
   }
 
-  constructor(rawBuilder: RawBuilder<O>, alias: A | AnyRawBuilder) {
+  constructor(rawBuilder: RawBuilder<O, B>, alias: A | AnyRawBuilder) {
     this.#rawBuilder = rawBuilder
     this.#alias = alias
   }

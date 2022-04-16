@@ -1,3 +1,4 @@
+import { QueryExecutor } from '../index-nodeless.js'
 import { IdentifierNode } from '../operation-node/identifier-node.js'
 import { OperationNode } from '../operation-node/operation-node.js'
 import { RawNode } from '../operation-node/raw-node.js'
@@ -8,11 +9,11 @@ import { parseValueExpression } from '../parser/value-parser.js'
 import { createQueryId } from '../util/query-id.js'
 import { RawBuilder } from './raw-builder.js'
 
-export interface Sql {
+export interface Sql<B = false> {
   <T = unknown>(
     sqlFragments: TemplateStringsArray,
     ...parameters: unknown[]
-  ): RawBuilder<T>
+  ): RawBuilder<T, B>
 
   /**
    * This can be used to add runtime column references to SQL snippets.
@@ -347,79 +348,90 @@ export interface Sql {
  * don't know if that amount of ceremony is worth the small increase in
  * type-safety though... But it's possible.
  */
-export const sql: Sql = Object.assign(
-  <T = unknown>(
-    sqlFragments: TemplateStringsArray,
-    ...parameters: unknown[]
-  ): RawBuilder<T> => {
-    return new RawBuilder({
-      queryId: createQueryId(),
-      rawNode: RawNode.create(
-        sqlFragments,
-        parameters?.map(parseValueExpression) ?? []
-      ),
-    })
-  },
-  {
-    ref(columnReference: string): RawBuilder<unknown> {
-      return new RawBuilder({
+export const sql: Sql = getSqlInstance()
+
+export function getSqlInstance(): Sql;
+export function getSqlInstance(executor: QueryExecutor): Sql<true>;
+export function getSqlInstance(executor?: QueryExecutor) {
+  return Object.assign(
+    <T = unknown>(
+      sqlFragments: TemplateStringsArray,
+      ...parameters: unknown[]
+    ) => {
+      const props: ConstructorParameters<typeof RawBuilder>[0] = {
         queryId: createQueryId(),
-        rawNode: RawNode.createWithChild(parseStringReference(columnReference)),
-      })
-    },
-
-    table(tableReference: string): RawBuilder<unknown> {
-      return new RawBuilder({
-        queryId: createQueryId(),
-        rawNode: RawNode.createWithChild(parseTable(tableReference)),
-      })
-    },
-
-    id(...ids: string[]): RawBuilder<unknown> {
-      const fragments = new Array<string>(ids.length + 1).fill('.')
-
-      fragments[0] = ''
-      fragments[fragments.length - 1] = ''
-
-      return new RawBuilder({
-        queryId: createQueryId(),
-        rawNode: RawNode.create(fragments, ids.map(IdentifierNode.create)),
-      })
-    },
-
-    literal(value: unknown): RawBuilder<unknown> {
-      return new RawBuilder({
-        queryId: createQueryId(),
-        rawNode: RawNode.createWithChild(ValueNode.createImmediate(value)),
-      })
-    },
-
-    raw(sql: string): RawBuilder<unknown> {
-      return new RawBuilder({
-        queryId: createQueryId(),
-        rawNode: RawNode.createWithSql(sql),
-      })
-    },
-
-    join(
-      array: unknown[],
-      separator: RawBuilder<any> = sql`, `
-    ): RawBuilder<unknown> {
-      const nodes = new Array<OperationNode>(2 * array.length - 1)
-      const sep = separator.toOperationNode()
-
-      for (let i = 0; i < array.length; ++i) {
-        nodes[2 * i] = parseValueExpression(array[i])
-
-        if (i !== array.length - 1) {
-          nodes[2 * i + 1] = sep
-        }
+        rawNode: RawNode.create(
+          sqlFragments,
+          parameters?.map(parseValueExpression) ?? []
+        ),
       }
-
-      return new RawBuilder({
-        queryId: createQueryId(),
-        rawNode: RawNode.createWithChildren(nodes),
-      })
+      if (executor !== undefined) {
+        return new RawBuilder<T, true>(props, executor)
+      } else {
+        return new RawBuilder<T>(props)
+      }
     },
-  }
-)
+    {
+      ref(columnReference: string): RawBuilder<unknown> {
+        return new RawBuilder({
+          queryId: createQueryId(),
+          rawNode: RawNode.createWithChild(parseStringReference(columnReference)),
+        })
+      },
+
+      table(tableReference: string): RawBuilder<unknown> {
+        return new RawBuilder({
+          queryId: createQueryId(),
+          rawNode: RawNode.createWithChild(parseTable(tableReference)),
+        })
+      },
+
+      id(...ids: string[]): RawBuilder<unknown> {
+        const fragments = new Array<string>(ids.length + 1).fill('.')
+
+        fragments[0] = ''
+        fragments[fragments.length - 1] = ''
+
+        return new RawBuilder({
+          queryId: createQueryId(),
+          rawNode: RawNode.create(fragments, ids.map(IdentifierNode.create)),
+        })
+      },
+
+      literal(value: unknown): RawBuilder<unknown> {
+        return new RawBuilder({
+          queryId: createQueryId(),
+          rawNode: RawNode.createWithChild(ValueNode.createImmediate(value)),
+        })
+      },
+
+      raw(sql: string): RawBuilder<unknown> {
+        return new RawBuilder({
+          queryId: createQueryId(),
+          rawNode: RawNode.createWithSql(sql),
+        })
+      },
+
+      join(
+        array: unknown[],
+        separator: RawBuilder<any> = sql`, `
+      ): RawBuilder<unknown> {
+        const nodes = new Array<OperationNode>(2 * array.length - 1)
+        const sep = separator.toOperationNode()
+
+        for (let i = 0; i < array.length; ++i) {
+          nodes[2 * i] = parseValueExpression(array[i])
+
+          if (i !== array.length - 1) {
+            nodes[2 * i + 1] = sep
+          }
+        }
+
+        return new RawBuilder({
+          queryId: createQueryId(),
+          rawNode: RawNode.createWithChildren(nodes),
+        })
+      },
+    }
+  )
+}
