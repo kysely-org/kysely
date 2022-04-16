@@ -287,6 +287,7 @@ export class QueryCreator<DB> {
   ): UpdateQueryBuilder<
     TableExpressionDatabase<DB, TR>,
     TableExpressionTables<DB, never, TR>,
+    TableExpressionTables<DB, never, TR>,
     UpdateResult
   > {
     return new UpdateQueryBuilder({

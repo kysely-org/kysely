@@ -475,7 +475,7 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    * ```
    */
   onDuplicateKeyUpdate(
-    updates: MutationObject<DB, TB>
+    updates: MutationObject<DB, TB, TB>
   ): InsertQueryBuilder<DB, TB, O> {
     return new InsertQueryBuilder({
       ...this.#props,

@@ -8,12 +8,14 @@ import { ReturningNode } from './returning-node.js'
 import { ValueListNode } from './value-list-node.js'
 import { WhereNode } from './where-node.js'
 import { WithNode } from './with-node.js'
+import { FromNode } from './from-node.js'
 
 export type UpdateValuesNode = ValueListNode | PrimitiveValueListNode
 
 export interface UpdateQueryNode extends OperationNode {
   readonly kind: 'UpdateQueryNode'
   readonly table: TableExpressionNode
+  readonly from?: FromNode
   readonly joins?: ReadonlyArray<JoinNode>
   readonly where?: WhereNode
   readonly updates?: ReadonlyArray<ColumnUpdateNode>
@@ -30,11 +32,23 @@ export const UpdateQueryNode = freeze({
   },
 
   create(table: TableExpressionNode, withNode?: WithNode): UpdateQueryNode {
-    return {
+    return freeze({
       kind: 'UpdateQueryNode',
       table,
       ...(withNode && { with: withNode }),
-    }
+    })
+  },
+
+  cloneWithFromItems(
+    updateQuery: UpdateQueryNode,
+    fromItems: ReadonlyArray<TableExpressionNode>
+  ): UpdateQueryNode {
+    return freeze({
+      ...updateQuery,
+      from: updateQuery.from
+        ? FromNode.cloneWithFroms(updateQuery.from, fromItems)
+        : FromNode.create(fromItems),
+    })
   },
 
   cloneWithUpdates(

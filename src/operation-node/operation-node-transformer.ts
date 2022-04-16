@@ -439,6 +439,7 @@ export class OperationNodeTransformer {
     return {
       kind: 'UpdateQueryNode',
       table: this.transformNode(node.table),
+      from: this.transformNode(node.from),
       joins: this.transformNodeList(node.joins),
       where: this.transformNode(node.where),
       updates: this.transformNodeList(node.updates),

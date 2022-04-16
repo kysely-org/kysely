@@ -38,7 +38,7 @@ export type QueryCreatorWithCommonTableExpression<
 type CommonTableExpressionOutput<DB, CN extends string> =
   | SelectQueryBuilder<DB, any, ExtractRowFromCommonTableExpressionName<CN>>
   | InsertQueryBuilder<DB, any, ExtractRowFromCommonTableExpressionName<CN>>
-  | UpdateQueryBuilder<DB, any, ExtractRowFromCommonTableExpressionName<CN>>
+  | UpdateQueryBuilder<DB, any, any, ExtractRowFromCommonTableExpressionName<CN>>
   | DeleteQueryBuilder<DB, any, ExtractRowFromCommonTableExpressionName<CN>>
   | RawBuilder<ExtractRowFromCommonTableExpressionName<CN>>
 
@@ -55,7 +55,7 @@ type ExtractRowFromCommonTableExpression<CTE> = CTE extends (
     ? QO
     : Q extends InsertQueryBuilder<any, any, infer QO>
     ? QO
-    : Q extends UpdateQueryBuilder<any, any, infer QO>
+    : Q extends UpdateQueryBuilder<any, any, any, infer QO>
     ? QO
     : Q extends DeleteQueryBuilder<any, any, infer QO>
     ? QO

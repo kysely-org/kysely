@@ -627,6 +627,11 @@ export class DefaultQueryCompiler
       this.compileList(node.updates)
     }
 
+    if (node.from) {
+      this.append(' ')
+      this.visitNode(node.from)
+    }
+
     if (node.joins) {
       this.append(' ')
       this.compileList(node.joins, ' ')

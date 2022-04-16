@@ -207,6 +207,30 @@ for (const dialect of BUILT_IN_DIALECTS) {
         const result = await query.executeTakeFirstOrThrow()
         expect(result.last_name).to.equal('Barson')
       })
+
+      it('should join a table when `from` is called', async () => {
+        const query = ctx.db
+          .updateTable('person')
+          .from('pet')
+          .set({
+            first_name: (eb) => eb.ref('pet.name'),
+          })
+          .whereRef('pet.owner_id', '=', 'person.id')
+          .where('person.first_name', '=', 'Arnold')
+          .returning('first_name')
+
+        testSql(query, dialect, {
+          postgres: {
+            sql: 'update "person" set "first_name" = "pet"."name" from "pet" where "pet"."owner_id" = "person"."id" and "person"."first_name" = $1 returning "first_name"',
+            parameters: ['Arnold'],
+          },
+          mysql: NOT_SUPPORTED,
+          sqlite: NOT_SUPPORTED,
+        })
+
+        const result = await query.execute()
+        expect(result[0].first_name).to.equal('Doggo')
+      })
     }
   })
 }

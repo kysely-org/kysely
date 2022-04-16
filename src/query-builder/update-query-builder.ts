@@ -12,6 +12,8 @@ import {
   LeftJoinTableExpressionDatabase,
   RightJoinTableExpressionDatabase,
   FullJoinTableExpressionDatabase,
+  parseTableExpressionOrList,
+  TableExpressionOrList,
 } from '../parser/table-parser.js'
 import {
   parseSelectExpressionOrList,
@@ -55,7 +57,7 @@ import { ReturningInterface } from './returning-interface.js'
 import { NoResultError, NoResultErrorConstructor } from './no-result-error.js'
 import { Selectable } from '../util/column-type.js'
 
-export class UpdateQueryBuilder<DB, TB extends keyof DB, O>
+export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
   implements
     WhereInterface<DB, TB>,
     JoinInterface<DB, TB>,
@@ -73,10 +75,10 @@ export class UpdateQueryBuilder<DB, TB extends keyof DB, O>
     lhs: RE,
     op: FilterOperator,
     rhs: FilterValueExpressionOrList<DB, TB, RE>
-  ): UpdateQueryBuilder<DB, TB, O>
+  ): UpdateQueryBuilder<DB, UT, TB, O>
 
-  where(grouper: WhereGrouper<DB, TB>): UpdateQueryBuilder<DB, TB, O>
-  where(raw: AnyRawBuilder): UpdateQueryBuilder<DB, TB, O>
+  where(grouper: WhereGrouper<DB, TB>): UpdateQueryBuilder<DB, UT, TB, O>
+  where(raw: AnyRawBuilder): UpdateQueryBuilder<DB, UT, TB, O>
 
   where(...args: any[]): any {
     return new UpdateQueryBuilder({
@@ -92,7 +94,7 @@ export class UpdateQueryBuilder<DB, TB extends keyof DB, O>
     lhs: ReferenceExpression<DB, TB>,
     op: FilterOperator,
     rhs: ReferenceExpression<DB, TB>
-  ): UpdateQueryBuilder<DB, TB, O> {
+  ): UpdateQueryBuilder<DB, UT, TB, O> {
     return new UpdateQueryBuilder({
       ...this.#props,
       queryNode: QueryNode.cloneWithWhere(
@@ -106,10 +108,10 @@ export class UpdateQueryBuilder<DB, TB extends keyof DB, O>
     lhs: RE,
     op: FilterOperator,
     rhs: FilterValueExpressionOrList<DB, TB, RE>
-  ): UpdateQueryBuilder<DB, TB, O>
+  ): UpdateQueryBuilder<DB, UT, TB, O>
 
-  orWhere(grouper: WhereGrouper<DB, TB>): UpdateQueryBuilder<DB, TB, O>
-  orWhere(raw: AnyRawBuilder): UpdateQueryBuilder<DB, TB, O>
+  orWhere(grouper: WhereGrouper<DB, TB>): UpdateQueryBuilder<DB, UT, TB, O>
+  orWhere(raw: AnyRawBuilder): UpdateQueryBuilder<DB, UT, TB, O>
 
   orWhere(...args: any[]): any {
     return new UpdateQueryBuilder({
@@ -125,7 +127,7 @@ export class UpdateQueryBuilder<DB, TB extends keyof DB, O>
     lhs: ReferenceExpression<DB, TB>,
     op: FilterOperator,
     rhs: ReferenceExpression<DB, TB>
-  ): UpdateQueryBuilder<DB, TB, O> {
+  ): UpdateQueryBuilder<DB, UT, TB, O> {
     return new UpdateQueryBuilder({
       ...this.#props,
       queryNode: QueryNode.cloneWithOrWhere(
@@ -135,7 +137,9 @@ export class UpdateQueryBuilder<DB, TB extends keyof DB, O>
     })
   }
 
-  whereExists(arg: ExistsExpression<DB, TB>): UpdateQueryBuilder<DB, TB, O> {
+  whereExists(
+    arg: ExistsExpression<DB, TB>
+  ): UpdateQueryBuilder<DB, UT, TB, O> {
     return new UpdateQueryBuilder({
       ...this.#props,
       queryNode: QueryNode.cloneWithWhere(
@@ -145,7 +149,9 @@ export class UpdateQueryBuilder<DB, TB extends keyof DB, O>
     })
   }
 
-  whereNotExists(arg: ExistsExpression<DB, TB>): UpdateQueryBuilder<DB, TB, O> {
+  whereNotExists(
+    arg: ExistsExpression<DB, TB>
+  ): UpdateQueryBuilder<DB, UT, TB, O> {
     return new UpdateQueryBuilder({
       ...this.#props,
       queryNode: QueryNode.cloneWithWhere(
@@ -155,7 +161,9 @@ export class UpdateQueryBuilder<DB, TB extends keyof DB, O>
     })
   }
 
-  orWhereExists(arg: ExistsExpression<DB, TB>): UpdateQueryBuilder<DB, TB, O> {
+  orWhereExists(
+    arg: ExistsExpression<DB, TB>
+  ): UpdateQueryBuilder<DB, UT, TB, O> {
     return new UpdateQueryBuilder({
       ...this.#props,
       queryNode: QueryNode.cloneWithOrWhere(
@@ -167,12 +175,67 @@ export class UpdateQueryBuilder<DB, TB extends keyof DB, O>
 
   orWhereNotExists(
     arg: ExistsExpression<DB, TB>
-  ): UpdateQueryBuilder<DB, TB, O> {
+  ): UpdateQueryBuilder<DB, UT, TB, O> {
     return new UpdateQueryBuilder({
       ...this.#props,
       queryNode: QueryNode.cloneWithOrWhere(
         this.#props.queryNode,
         parseNotExistFilter(arg)
+      ),
+    })
+  }
+
+  /**
+   * Adds a from clause to the update query.
+   *
+   * This is supported only on some databases like PostgreSQL.
+   *
+   * The API is the same as {@link QueryCreator.selectFrom}.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * db.updateTable('person')
+   *   .from('pet')
+   *   .set({
+   *     first_name: (eb) => eb.ref('pet.name')
+   *   })
+   *   .whereRef('pet.owner_id', '=', 'person.id')
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * update "person"
+   * set "first_name" = "pet"."name"
+   * from "pet"
+   * where "pet"."owner_id" = "person"."id"
+   * ```
+   */
+  from<TE extends TableExpression<DB, TB>>(
+    table: TE
+  ): UpdateQueryBuilder<
+    TableExpressionDatabase<DB, TE>,
+    UT,
+    TableExpressionTables<DB, TB, TE>,
+    O
+  >
+
+  from<TE extends TableExpression<DB, TB>>(
+    table: TE[]
+  ): UpdateQueryBuilder<
+    TableExpressionDatabase<DB, TE>,
+    UT,
+    TableExpressionTables<DB, TB, TE>,
+    O
+  >
+
+  from(from: TableExpressionOrList<any, any>): any {
+    return new UpdateQueryBuilder({
+      ...this.#props,
+      queryNode: UpdateQueryNode.cloneWithFromItems(
+        this.#props.queryNode,
+        parseTableExpressionOrList(from)
       ),
     })
   }
@@ -187,6 +250,7 @@ export class UpdateQueryBuilder<DB, TB extends keyof DB, O>
     k2: K2
   ): UpdateQueryBuilder<
     TableExpressionDatabase<DB, TE>,
+    UT,
     TableExpressionTables<DB, TB, TE>,
     O
   >
@@ -199,6 +263,7 @@ export class UpdateQueryBuilder<DB, TB extends keyof DB, O>
     callback: FN
   ): UpdateQueryBuilder<
     TableExpressionDatabase<DB, TE>,
+    UT,
     TableExpressionTables<DB, TB, TE>,
     O
   >
@@ -223,6 +288,7 @@ export class UpdateQueryBuilder<DB, TB extends keyof DB, O>
     k2: K2
   ): UpdateQueryBuilder<
     LeftJoinTableExpressionDatabase<DB, TE>,
+    UT,
     TableExpressionTables<DB, TB, TE>,
     O
   >
@@ -235,6 +301,7 @@ export class UpdateQueryBuilder<DB, TB extends keyof DB, O>
     callback: FN
   ): UpdateQueryBuilder<
     LeftJoinTableExpressionDatabase<DB, TE>,
+    UT,
     TableExpressionTables<DB, TB, TE>,
     O
   >
@@ -259,6 +326,7 @@ export class UpdateQueryBuilder<DB, TB extends keyof DB, O>
     k2: K2
   ): UpdateQueryBuilder<
     RightJoinTableExpressionDatabase<DB, TB, TE>,
+    UT,
     TableExpressionTables<DB, TB, TE>,
     O
   >
@@ -271,6 +339,7 @@ export class UpdateQueryBuilder<DB, TB extends keyof DB, O>
     callback: FN
   ): UpdateQueryBuilder<
     RightJoinTableExpressionDatabase<DB, TB, TE>,
+    UT,
     TableExpressionTables<DB, TB, TE>,
     O
   >
@@ -295,6 +364,7 @@ export class UpdateQueryBuilder<DB, TB extends keyof DB, O>
     k2: K2
   ): UpdateQueryBuilder<
     FullJoinTableExpressionDatabase<DB, TB, TE>,
+    UT,
     TableExpressionTables<DB, TB, TE>,
     O
   >
@@ -307,6 +377,7 @@ export class UpdateQueryBuilder<DB, TB extends keyof DB, O>
     callback: FN
   ): UpdateQueryBuilder<
     FullJoinTableExpressionDatabase<DB, TB, TE>,
+    UT,
     TableExpressionTables<DB, TB, TE>,
     O
   >
@@ -408,7 +479,7 @@ export class UpdateQueryBuilder<DB, TB extends keyof DB, O>
    * where "id" = $4
    * ```
    */
-  set(row: MutationObject<DB, TB>): UpdateQueryBuilder<DB, TB, O> {
+  set(row: MutationObject<DB, TB, UT>): UpdateQueryBuilder<DB, UT, TB, O> {
     return new UpdateQueryBuilder({
       ...this.#props,
       queryNode: UpdateQueryNode.cloneWithUpdates(
@@ -420,11 +491,11 @@ export class UpdateQueryBuilder<DB, TB extends keyof DB, O>
 
   returning<SE extends SelectExpression<DB, TB>>(
     selections: ReadonlyArray<SE>
-  ): UpdateQueryBuilder<DB, TB, ReturningRow<DB, TB, O, SE>>
+  ): UpdateQueryBuilder<DB, UT, TB, ReturningRow<DB, TB, O, SE>>
 
   returning<SE extends SelectExpression<DB, TB>>(
     selection: SE
-  ): UpdateQueryBuilder<DB, TB, ReturningRow<DB, TB, O, SE>>
+  ): UpdateQueryBuilder<DB, UT, TB, ReturningRow<DB, TB, O, SE>>
 
   returning(selection: SelectExpressionOrList<DB, TB>): any {
     return new UpdateQueryBuilder({
@@ -436,7 +507,7 @@ export class UpdateQueryBuilder<DB, TB extends keyof DB, O>
     })
   }
 
-  returningAll(): UpdateQueryBuilder<DB, TB, Selectable<DB[TB]>> {
+  returningAll(): UpdateQueryBuilder<DB, UT, TB, Selectable<DB[TB]>> {
     return new UpdateQueryBuilder({
       ...this.#props,
       queryNode: QueryNode.cloneWithReturning(
@@ -510,9 +581,10 @@ export class UpdateQueryBuilder<DB, TB extends keyof DB, O>
    */
   if<O2>(
     condition: boolean,
-    func: (qb: this) => UpdateQueryBuilder<DB, TB, O2>
+    func: (qb: this) => UpdateQueryBuilder<DB, UT, TB, O2>
   ): UpdateQueryBuilder<
     DB,
+    UT,
     TB,
     O2 extends UpdateResult
       ? UpdateResult
@@ -535,14 +607,14 @@ export class UpdateQueryBuilder<DB, TB extends keyof DB, O>
    * You should only use this method as the last resort if the types
    * don't support your use case.
    */
-  castTo<T>(): UpdateQueryBuilder<DB, TB, T> {
+  castTo<T>(): UpdateQueryBuilder<DB, UT, TB, T> {
     return new UpdateQueryBuilder(this.#props)
   }
 
   /**
    * Returns a copy of this UpdateQueryBuilder instance with the given plugin installed.
    */
-  withPlugin(plugin: KyselyPlugin): UpdateQueryBuilder<DB, TB, O> {
+  withPlugin(plugin: KyselyPlugin): UpdateQueryBuilder<DB, UT, TB, O> {
     return new UpdateQueryBuilder({
       ...this.#props,
       executor: this.#props.executor.withPlugin(plugin),

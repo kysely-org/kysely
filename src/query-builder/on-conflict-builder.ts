@@ -305,7 +305,11 @@ export class OnConflictBuilder<DB, TB extends keyof DB>
    * ```
    */
   doUpdateSet(
-    updates: MutationObject<OnConflictDatabase<DB, TB>, OnConflictTables<TB>>
+    updates: MutationObject<
+      OnConflictDatabase<DB, TB>,
+      OnConflictTables<TB>,
+      OnConflictTables<TB>
+    >
   ): OnConflictUpdateBuilder<OnConflictDatabase<DB, TB>, OnConflictTables<TB>> {
     return new OnConflictUpdateBuilder({
       ...this.#props,
