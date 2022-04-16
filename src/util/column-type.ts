@@ -57,6 +57,13 @@ export type ColumnType<
 export type Generated<S> = ColumnType<S, S | undefined, S>
 
 /**
+ * A shortcut for defining columns that are only database-generated
+ * (like postgres GENERATED ALWAYS AS IDENTITY). No insert/update
+ * is allowed.
+ */
+ export type GeneratedAlways<S> = ColumnType<S, never, never>
+
+/**
  * Evaluates to `K` if `T` can be `null` or `undefined`.
  */
 type IfNullable<T, K> = undefined extends T ? K : null extends T ? K : never
