@@ -48,9 +48,11 @@ export type ColumnType<
  * is the same for all selects, inserts and updates but the
  * column is optional for inserts and updates.
  *
- * This is implemented using {@link ColumnType} like this:
+ * The implementation:
  *
  * ```ts
+ * // The update type is `S` instead of `S | undefined` because
+ * // updates are always optional --> no need to specify optionality.
  * type Generated<S> = ColumnType<S, S | undefined, S>
  * ```
  */

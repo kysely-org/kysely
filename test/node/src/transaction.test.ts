@@ -8,7 +8,6 @@ import {
   TestContext,
   expect,
   Database,
-  TEST_INIT_TIMEOUT,
   insertDefaultDataSet,
 } from './test-setup.js'
 
@@ -18,9 +17,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
     let executedQueries: CompiledQuery[] = []
 
     before(async function () {
-      this.timeout(TEST_INIT_TIMEOUT)
-
-      ctx = await initTest(dialect, (event) => {
+      ctx = await initTest(this, dialect, (event) => {
         if (event.level === 'query') {
           executedQueries.push(event.query)
         }

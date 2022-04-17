@@ -7,7 +7,6 @@ import {
   TestContext,
   testSql,
   expect,
-  TEST_INIT_TIMEOUT,
   createTableWithId,
 } from './test-setup.js'
 
@@ -27,8 +26,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
     }
 
     before(async function () {
-      this.timeout(TEST_INIT_TIMEOUT)
-      ctx = await initTest(dialect)
+      ctx = await initTest(this, dialect)
 
       camelDb = new Kysely<CamelDatabase>({
         ...ctx.config,

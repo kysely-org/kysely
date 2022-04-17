@@ -1,12 +1,6 @@
 import { Generated, Kysely, RawBuilder, sql } from '../../../'
 
-import {
-  destroyTest,
-  initTest,
-  TestContext,
-  expect,
-  TEST_INIT_TIMEOUT,
-} from './test-setup.js'
+import { destroyTest, initTest, TestContext, expect } from './test-setup.js'
 
 interface JsonTable {
   id: Generated<number>
@@ -23,8 +17,7 @@ describe(`postgres json tests`, () => {
   let db: Kysely<{ json_table: JsonTable }>
 
   before(async function () {
-    this.timeout(TEST_INIT_TIMEOUT)
-    ctx = await initTest('postgres')
+    ctx = await initTest(this, 'postgres')
 
     await ctx.db.schema
       .createTable('json_table')

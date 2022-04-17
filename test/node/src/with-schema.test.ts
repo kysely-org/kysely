@@ -5,7 +5,6 @@ import {
   TestContext,
   testSql,
   NOT_SUPPORTED,
-  TEST_INIT_TIMEOUT,
   createTableWithId,
 } from './test-setup.js'
 
@@ -14,8 +13,7 @@ for (const dialect of ['postgres'] as const) {
     let ctx: TestContext
 
     before(async function () {
-      this.timeout(TEST_INIT_TIMEOUT)
-      ctx = await initTest(dialect)
+      ctx = await initTest(this, dialect)
 
       await dropTables()
       await createTables()

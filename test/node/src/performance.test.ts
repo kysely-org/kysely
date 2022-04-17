@@ -5,7 +5,6 @@ import {
   destroyTest,
   initTest,
   TestContext,
-  TEST_INIT_TIMEOUT,
   insertDefaultDataSet,
 } from './test-setup.js'
 
@@ -13,8 +12,7 @@ describe.skip(`query builder performance`, () => {
   let ctx: TestContext
 
   before(async function () {
-    this.timeout(TEST_INIT_TIMEOUT)
-    ctx = await initTest('postgres')
+    ctx = await initTest(this, 'postgres')
   })
 
   beforeEach(async () => {

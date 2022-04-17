@@ -76,7 +76,7 @@ export const BUILT_IN_DIALECTS: BuiltInDialect[] = [
   'sqlite',
 ]
 
-export const TEST_INIT_TIMEOUT = 5 * 60 * 1000
+const TEST_INIT_TIMEOUT = 5 * 60 * 1000
 // This can be used as a placeholder for testSql when a query is not
 // supported on some dialect.
 export const NOT_SUPPORTED = { sql: '', parameters: [] }
@@ -123,11 +123,13 @@ const DB_CONFIGS: PerDialect<KyselyConfig> = {
 }
 
 export async function initTest(
+  ctx: Mocha.Context,
   dialect: BuiltInDialect,
   log?: Logger
 ): Promise<TestContext> {
   const config = DB_CONFIGS[dialect]
 
+  ctx.timeout(TEST_INIT_TIMEOUT)
   const db = await connect({
     ...config,
     log,
