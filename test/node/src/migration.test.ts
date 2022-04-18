@@ -4,10 +4,11 @@ import {
   FileMigrationProvider,
   Migration,
   MigrationResultSet,
-  MIGRATION_LOCK_TABLE,
-  MIGRATION_TABLE,
+  DEFAULT_MIGRATION_LOCK_TABLE,
+  DEFAULT_MIGRATION_TABLE,
   Migrator,
   NO_MIGRATIONS,
+  MigratorProps,
 } from '../../../'
 
 import {
@@ -18,6 +19,10 @@ import {
   initTest,
   TestContext,
 } from './test-setup.js'
+
+const CUSTOM_MIGRATION_SCHEMA = 'migrate'
+const CUSTOM_MIGRATION_TABLE = 'custom_migrations'
+const CUSTOM_MIGRATION_LOCK_TABLE = 'custom_migrations_lock'
 
 for (const dialect of BUILT_IN_DIALECTS) {
   describe(`${dialect}: migration`, () => {
@@ -425,13 +430,87 @@ for (const dialect of BUILT_IN_DIALECTS) {
       })
     })
 
+    if (dialect !== 'sqlite') {
+      describe('custom migration tables in a custom schema', () => {
+        it('should create custom migration tables in custom schema', async () => {
+          const [migrator, executedUpMethods] = createMigrations(
+            ['migration1', 'migration2', 'migration3', 'migration4'],
+            {
+              migrationTableName: CUSTOM_MIGRATION_TABLE,
+              migrationLockTableName: CUSTOM_MIGRATION_LOCK_TABLE,
+              migrationTableSchema: CUSTOM_MIGRATION_SCHEMA,
+            }
+          )
+
+          let promises: Promise<MigrationResultSet>[] = []
+          // Run the migration 20 times in parallel to make sure the schema
+          // related code can be run in parallel.
+          for (let i = 0; i < 20; ++i) {
+            promises.push(migrator.migrateTo('migration2'))
+          }
+          const results = await Promise.all(promises)
+          for (const result of results) {
+            expect(result.error).to.equal(undefined)
+          }
+
+          expect(executedUpMethods).to.eql(['migration1', 'migration2'])
+
+          expect(
+            await doesTableExists(
+              CUSTOM_MIGRATION_LOCK_TABLE,
+              CUSTOM_MIGRATION_SCHEMA
+            )
+          ).to.equal(true)
+
+          expect(
+            await doesTableExists(
+              CUSTOM_MIGRATION_LOCK_TABLE,
+              CUSTOM_MIGRATION_SCHEMA
+            )
+          ).to.equal(true)
+
+          expect(await doesTableExists(DEFAULT_MIGRATION_TABLE)).to.equal(false)
+          expect(await doesTableExists(DEFAULT_MIGRATION_LOCK_TABLE)).to.equal(
+            false
+          )
+        })
+      })
+    }
+
     async function deleteMigrationTables(): Promise<void> {
-      await ctx.db.schema.dropTable(MIGRATION_TABLE).ifExists().execute()
-      await ctx.db.schema.dropTable(MIGRATION_LOCK_TABLE).ifExists().execute()
+      if (dialect !== 'sqlite') {
+        await ctx.db.schema
+          .withSchema(CUSTOM_MIGRATION_SCHEMA)
+          .dropTable(CUSTOM_MIGRATION_TABLE)
+          .ifExists()
+          .execute()
+
+        await ctx.db.schema
+          .withSchema(CUSTOM_MIGRATION_SCHEMA)
+          .dropTable(CUSTOM_MIGRATION_LOCK_TABLE)
+          .ifExists()
+          .execute()
+
+        await ctx.db.schema
+          .dropSchema(CUSTOM_MIGRATION_SCHEMA)
+          .ifExists()
+          .execute()
+      }
+
+      await ctx.db.schema
+        .dropTable(DEFAULT_MIGRATION_TABLE)
+        .ifExists()
+        .execute()
+
+      await ctx.db.schema
+        .dropTable(DEFAULT_MIGRATION_LOCK_TABLE)
+        .ifExists()
+        .execute()
     }
 
     function createMigrations(
-      migrationConfigs: (string | { name: string; error?: string })[]
+      migrationConfigs: (string | { name: string; error?: string })[],
+      migratorConfig?: Partial<MigratorProps>
     ): [Migrator, string[], string[]] {
       const executedUpMethods: string[] = []
       const executedDownMethods: string[] = []
@@ -475,15 +554,21 @@ for (const dialect of BUILT_IN_DIALECTS) {
           provider: {
             getMigrations: () => Promise.resolve(migrations),
           },
+          ...migratorConfig,
         }),
         executedUpMethods,
         executedDownMethods,
       ]
     }
 
-    async function doesTableExists(tableName: string): Promise<boolean> {
+    async function doesTableExists(
+      tableName: string,
+      schema?: string
+    ): Promise<boolean> {
       const metadata = await ctx.db.introspection.getMetadata()
-      return !!metadata.tables.find((it) => it.name === tableName)
+      return !!metadata.tables.find(
+        (it) => it.name === tableName && (!schema || it.schema === schema)
+      )
     }
 
     function sleep(millis: number): Promise<void> {

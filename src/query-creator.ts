@@ -30,6 +30,7 @@ import { freeze } from './util/object-utils.js'
 import { InsertResult } from './query-builder/insert-result.js'
 import { DeleteResult } from './query-builder/delete-result.js'
 import { UpdateResult } from './query-builder/update-result.js'
+import { KyselyPlugin } from './plugin/kysely-plugin.js'
 
 export class QueryCreator<DB> {
   readonly #props: QueryCreatorProps
@@ -371,6 +372,26 @@ export class QueryCreator<DB> {
       withNode: this.#props.withNode
         ? WithNode.cloneWithExpression(this.#props.withNode, cte)
         : WithNode.create(cte, { recursive: true }),
+    })
+  }
+
+  /**
+   * Returns a copy of this query creator instance with the given plugin installed.
+   */
+  withPlugin(plugin: KyselyPlugin): QueryCreator<DB> {
+    return new QueryCreator({
+      ...this.#props,
+      executor: this.#props.executor.withPlugin(plugin),
+    })
+  }
+
+  /**
+   * Returns a copy of this query creator instance without any plugins.
+   */
+  withoutPlugins(): QueryCreator<DB> {
+    return new QueryCreator({
+      ...this.#props,
+      executor: this.#props.executor.withoutPlugins(),
     })
   }
 

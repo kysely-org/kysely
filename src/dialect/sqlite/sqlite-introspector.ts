@@ -2,12 +2,13 @@ import {
   DatabaseIntrospector,
   DatabaseMetadata,
   DatabaseMetadataOptions,
+  SchemaMetadata,
   TableMetadata,
 } from '../database-introspector.js'
 import { Kysely } from '../../kysely.js'
 import {
-  MIGRATION_LOCK_TABLE,
-  MIGRATION_TABLE,
+  DEFAULT_MIGRATION_LOCK_TABLE,
+  DEFAULT_MIGRATION_TABLE,
 } from '../../migration/migrator.js'
 import { ColumnDataType } from '../../operation-node/data-type-node.js'
 import { sql } from '../../raw-builder/sql.js'
@@ -19,9 +20,14 @@ export class SqliteIntrospector implements DatabaseIntrospector {
     this.#db = db
   }
 
-  async getMetadata(
+  async getSchemas(): Promise<SchemaMetadata[]> {
+    // Sqlite doesn't support schemas.
+    return []
+  }
+
+  async getTables(
     options: DatabaseMetadataOptions = { withInternalKyselyTables: false }
-  ): Promise<DatabaseMetadata> {
+  ): Promise<TableMetadata[]> {
     let query = this.#db
       .selectFrom('sqlite_schema')
       .where('type', '=', 'table')
@@ -31,16 +37,19 @@ export class SqliteIntrospector implements DatabaseIntrospector {
 
     if (!options.withInternalKyselyTables) {
       query = query
-        .where('name', '!=', MIGRATION_TABLE)
-        .where('name', '!=', MIGRATION_LOCK_TABLE)
+        .where('name', '!=', DEFAULT_MIGRATION_TABLE)
+        .where('name', '!=', DEFAULT_MIGRATION_LOCK_TABLE)
     }
 
     const tables = await query.execute()
+    return Promise.all(tables.map(({ name }) => this.#getTableMetadata(name)))
+  }
 
+  async getMetadata(
+    options?: DatabaseMetadataOptions
+  ): Promise<DatabaseMetadata> {
     return {
-      tables: await Promise.all(
-        tables.map(({ name }) => this.#getTableMetadata(name))
-      ),
+      tables: await this.getTables(options),
     }
   }
 

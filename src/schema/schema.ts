@@ -20,6 +20,7 @@ import { CreateViewBuilder } from './create-view-builder.js'
 import { CreateViewNode } from '../operation-node/create-view-node.js'
 import { DropViewBuilder } from './drop-view-builder.js'
 import { DropViewNode } from '../operation-node/drop-view-node.js'
+import { KyselyPlugin } from '../plugin/kysely-plugin.js'
 
 /**
  * Provides methods for building database schema.
@@ -247,6 +248,20 @@ export class SchemaModule {
       executor: this.#executor,
       dropViewNode: DropViewNode.create(viewName),
     })
+  }
+
+  /**
+   * Returns a copy of this schema module with the given plugin installed.
+   */
+  withPlugin(plugin: KyselyPlugin): SchemaModule {
+    return new SchemaModule(this.#executor.withPlugin(plugin))
+  }
+
+  /**
+   * Returns a copy of this schema module  without any plugins.
+   */
+  withoutPlugins(): SchemaModule {
+    return new SchemaModule(this.#executor.withoutPlugins())
   }
 
   /**

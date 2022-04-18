@@ -5,7 +5,19 @@ import { ColumnDataType } from '../operation-node/data-type-node.js'
  */
 export interface DatabaseIntrospector {
   /**
+   * Get schema metadata.
+   */
+  getSchemas(): Promise<SchemaMetadata[]>
+
+  /**
+   * Get table metadata.
+   */
+  getTables(options?: DatabaseMetadataOptions): Promise<TableMetadata[]>
+
+  /**
    * Get the database metadata such as table and column names.
+   *
+   * @deprecated Use getTables() instead.
    */
   getMetadata(options?: DatabaseMetadataOptions): Promise<DatabaseMetadata>
 }
@@ -16,6 +28,10 @@ export interface DatabaseMetadataOptions {
    * such as the migration tables.
    */
   withInternalKyselyTables: boolean
+}
+
+export interface SchemaMetadata {
+  readonly name: string
 }
 
 export interface DatabaseMetadata {

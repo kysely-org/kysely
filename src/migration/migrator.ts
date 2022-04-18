@@ -1,8 +1,11 @@
+import { KyselyPlugin } from '../index-nodeless.js'
 import { Kysely } from '../kysely.js'
+import { NoopPlugin } from '../plugin/noop-plugin.js'
+import { WithSchemaPlugin } from '../plugin/with-schema/with-schema-plugin.js'
 import { freeze, getLast } from '../util/object-utils.js'
 
-export const MIGRATION_TABLE = 'kysely_migration'
-export const MIGRATION_LOCK_TABLE = 'kysely_migration_lock'
+export const DEFAULT_MIGRATION_TABLE = 'kysely_migration'
+export const DEFAULT_MIGRATION_LOCK_TABLE = 'kysely_migration_lock'
 export const MIGRATION_LOCK_ID = 'migration_lock'
 export const NO_MIGRATIONS: NoMigrations = freeze({ __noMigrations__: true })
 
@@ -39,7 +42,7 @@ export interface Migration {
  * ```
  */
 export class Migrator {
-  readonly #props: InternalMigratorProps
+  readonly #props: MigratorProps
 
   constructor(props: MigratorProps) {
     this.#props = freeze(props)
@@ -51,9 +54,12 @@ export class Migrator {
    * The returned array is sorted by migration name.
    */
   async getMigrations(): Promise<ReadonlyArray<MigrationInfo>> {
-    const executedMigrations = (await this.#doesTableExists(MIGRATION_TABLE))
+    const executedMigrations = (await this.#doesTableExists(
+      this.#migrationTable
+    ))
       ? await this.#props.db
-          .selectFrom(MIGRATION_TABLE)
+          .withPlugin(this.#schemaPlugin)
+          .selectFrom(this.#migrationTable)
           .select(['name', 'timestamp'])
           .execute()
       : []
@@ -218,17 +224,69 @@ export class Migrator {
     }
   }
 
+  get #migrationTableSchema(): string | undefined {
+    return this.#props.migrationTableSchema
+  }
+
+  get #migrationTable(): string {
+    return this.#props.migrationTableName ?? DEFAULT_MIGRATION_TABLE
+  }
+
+  get #migrationLockTable(): string {
+    return this.#props.migrationLockTableName ?? DEFAULT_MIGRATION_LOCK_TABLE
+  }
+
+  get #schemaPlugin(): KyselyPlugin {
+    if (this.#migrationTableSchema) {
+      return new WithSchemaPlugin(this.#migrationTableSchema)
+    }
+
+    return new NoopPlugin()
+  }
+
   async #ensureMigrationTablesExists(): Promise<void> {
+    await this.#ensureMigrationTableSchemaExists()
     await this.#ensureMigrationTableExists()
     await this.#ensureMigrationLockTableExists()
     await this.#ensureLockRowExists()
   }
 
-  async #ensureMigrationTableExists(): Promise<void> {
-    if (!(await this.#doesTableExists(MIGRATION_TABLE))) {
+  async #ensureMigrationTableSchemaExists(): Promise<void> {
+    if (!this.#migrationTableSchema) {
+      // Use default schema. Nothing to do.
+      return
+    }
+
+    if (!(await this.#doesSchemaExists())) {
       try {
         await this.#props.db.schema
-          .createTable(MIGRATION_TABLE)
+          .createSchema(this.#migrationTableSchema)
+          .ifNotExists()
+          .execute()
+      } catch (error) {
+        // At least on PostgreSQL, `if not exists` doesn't guarantee the `create schema`
+        // query doesn't throw if the schema already exits. That's why we check if
+        // the schema exist here and ignore the error if it does.
+        if (!(await this.#doesSchemaExists())) {
+          throw error
+        }
+      }
+    }
+  }
+
+  async #ensureMigrationTableExists(): Promise<void> {
+    if (!(await this.#doesTableExists(this.#migrationTable))) {
+      try {
+        if (this.#migrationTableSchema) {
+          await this.#props.db.schema
+            .createSchema(this.#migrationTableSchema)
+            .ifNotExists()
+            .execute()
+        }
+
+        await this.#props.db.schema
+          .withPlugin(this.#schemaPlugin)
+          .createTable(this.#migrationTable)
           .ifNotExists()
           .addColumn('name', 'varchar(255)', (col) =>
             col.notNull().primaryKey()
@@ -241,7 +299,7 @@ export class Migrator {
         // At least on PostgreSQL, `if not exists` doesn't guarantee the `create table`
         // query doesn't throw if the table already exits. That's why we check if
         // the table exist here and ignore the error if it does.
-        if (!(await this.#doesTableExists(MIGRATION_TABLE))) {
+        if (!(await this.#doesTableExists(this.#migrationTable))) {
           throw error
         }
       }
@@ -249,10 +307,11 @@ export class Migrator {
   }
 
   async #ensureMigrationLockTableExists(): Promise<void> {
-    if (!(await this.#doesTableExists(MIGRATION_LOCK_TABLE))) {
+    if (!(await this.#doesTableExists(this.#migrationLockTable))) {
       try {
         await this.#props.db.schema
-          .createTable(MIGRATION_LOCK_TABLE)
+          .withPlugin(this.#schemaPlugin)
+          .createTable(this.#migrationLockTable)
           .ifNotExists()
           .addColumn('id', 'varchar(255)', (col) => col.notNull().primaryKey())
           .addColumn('is_locked', 'integer', (col) =>
@@ -263,7 +322,7 @@ export class Migrator {
         // At least on PostgreSQL, `if not exists` doesn't guarantee the `create table`
         // query doesn't throw if the table already exits. That's why we check if
         // the table exist here and ignore the error if it does.
-        if (!(await this.#doesTableExists(MIGRATION_LOCK_TABLE))) {
+        if (!(await this.#doesTableExists(this.#migrationLockTable))) {
           throw error
         }
       }
@@ -274,7 +333,8 @@ export class Migrator {
     if (!(await this.#doesLockRowExists())) {
       try {
         await this.#props.db
-          .insertInto(MIGRATION_LOCK_TABLE)
+          .withPlugin(this.#schemaPlugin)
+          .insertInto(this.#migrationLockTable)
           .values({ id: MIGRATION_LOCK_ID, is_locked: 0 })
           .execute()
       } catch (error) {
@@ -285,17 +345,28 @@ export class Migrator {
     }
   }
 
+  async #doesSchemaExists(): Promise<boolean> {
+    const schemas = await this.#props.db.introspection.getSchemas()
+
+    return schemas.some((it) => it.name === this.#migrationTableSchema)
+  }
+
   async #doesTableExists(tableName: string): Promise<boolean> {
-    const metadata = await this.#props.db.introspection.getMetadata({
+    const schema = this.#migrationTableSchema
+
+    const tables = await this.#props.db.introspection.getTables({
       withInternalKyselyTables: true,
     })
 
-    return !!metadata.tables.find((it) => it.name === tableName)
+    return tables.some(
+      (it) => it.name === tableName && (!schema || it.schema === schema)
+    )
   }
 
   async #doesLockRowExists(): Promise<boolean> {
     const lockRow = await this.#props.db
-      .selectFrom(MIGRATION_LOCK_TABLE)
+      .withPlugin(this.#schemaPlugin)
+      .selectFrom(this.#migrationLockTable)
       .where('id', '=', MIGRATION_LOCK_ID)
       .select('id')
       .executeTakeFirst()
@@ -308,9 +379,7 @@ export class Migrator {
   ): Promise<MigrationResultSet> {
     const adapter = this.#props.db.getExecutor().adapter
 
-    const run = async (
-      db: Kysely<MigrationTables>
-    ): Promise<MigrationResultSet> => {
+    const run = async (db: Kysely<any>): Promise<MigrationResultSet> => {
       try {
         await adapter.acquireMigrationLock(db)
 
@@ -345,7 +414,7 @@ export class Migrator {
     }
   }
 
-  async #getState(db: Kysely<MigrationTables>): Promise<MigrationState> {
+  async #getState(db: Kysely<any>): Promise<MigrationState> {
     const migrations = await this.#resolveMigrations()
     const executedMigrations = await this.#getExecutedMigrations(db)
 
@@ -371,10 +440,11 @@ export class Migrator {
   }
 
   async #getExecutedMigrations(
-    db: Kysely<MigrationTables>
+    db: Kysely<any>
   ): Promise<ReadonlyArray<string>> {
     const executedMigrations = await db
-      .selectFrom(MIGRATION_TABLE)
+      .withPlugin(this.#schemaPlugin)
+      .selectFrom(this.#migrationTable)
       .select('name')
       .orderBy('name')
       .execute()
@@ -407,7 +477,7 @@ export class Migrator {
   }
 
   async #migrateDown(
-    db: Kysely<MigrationTables>,
+    db: Kysely<any>,
     state: MigrationState,
     targetIndex: number
   ): Promise<MigrationResultSet> {
@@ -430,7 +500,8 @@ export class Migrator {
         if (migration.down) {
           await migration.down(db)
           await db
-            .deleteFrom(MIGRATION_TABLE)
+            .withPlugin(this.#schemaPlugin)
+            .deleteFrom(this.#migrationTable)
             .where('name', '=', migration.name)
             .execute()
 
@@ -458,7 +529,7 @@ export class Migrator {
   }
 
   async #migrateUp(
-    db: Kysely<MigrationTables>,
+    db: Kysely<any>,
     state: MigrationState,
     targetIndex: number
   ): Promise<MigrationResultSet> {
@@ -480,7 +551,8 @@ export class Migrator {
       try {
         await migration.up(db)
         await db
-          .insertInto(MIGRATION_TABLE)
+          .withPlugin(this.#schemaPlugin)
+          .insertInto(this.#migrationTable)
           .values({
             name: migration.name,
             timestamp: new Date().toISOString(),
@@ -513,6 +585,51 @@ export class Migrator {
 export interface MigratorProps {
   readonly db: Kysely<any>
   readonly provider: MigrationProvider
+
+  /**
+   * The name of the internal migration table. Defaults to `kysely_migration`.
+   *
+   * If you do specify this, you need to ALWAYS use the same value. Kysely doesn't
+   * support changing the table on the fly. If you run the migrator even once with a
+   * table name X and then change the table name to Y, kysely will create a new empty
+   * migration table and attempt to run the migrations again, which will obviously
+   * fail.
+   *
+   * If you do specify this, ALWAYS ALWAYS use the same value from the beginning of
+   * the project, to the end of time or prepare to manually migrate the migration
+   * tables.
+   */
+  readonly migrationTableName?: string
+
+  /**
+   * The name of the internal migration lock table. Defaults to `kysely_migration_lock`.
+   *
+   * If you do specify this, you need to ALWAYS use the same value. Kysely doesn't
+   * support changing the table on the fly. If you run the migrator even once with a
+   * table name X and then change the table name to Y, kysely will create a new empty
+   * lock table.
+   *
+   * If you do specify this, ALWAYS ALWAYS use the same value from the beginning of
+   * the project, to the end of time or prepare to manually migrate the migration
+   * tables.
+   */
+  readonly migrationLockTableName?: string
+
+  /**
+   * The schema of the internal migration tables. Defaults to the default schema
+   * on dialects that support schemas.
+   *
+   * If you do specify this, you need to ALWAYS use the same value. Kysely doesn't
+   * support changing the schema on the fly. If you run the migrator even once with a
+   * schema name X and then change the schema name to Y, kysely will create a new empty
+   * migration tables in the new schema and attempt to run the migrations again, which
+   * will obviously fail.
+   *
+   * If you do specify this, ALWAYS ALWAYS use the same value from the beginning of
+   * the project, to the end of time or prepare to manually migrate the migration
+   * tables.
+   */
+  readonly migrationTableSchema?: string
 }
 
 /**
@@ -615,22 +732,6 @@ export interface MigrationInfo {
    * If this is undefined, the migration hasn't been executed yet.
    */
   executedAt?: Date
-}
-
-interface InternalMigratorProps {
-  readonly db: Kysely<MigrationTables>
-  readonly provider: MigrationProvider
-}
-
-interface MigrationTables {
-  [MIGRATION_TABLE]: {
-    name: string
-    timestamp: string
-  }
-  [MIGRATION_LOCK_TABLE]: {
-    id: string
-    is_locked: 0 | 1
-  }
 }
 
 interface NamedMigration extends Migration {

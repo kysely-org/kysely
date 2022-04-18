@@ -6,7 +6,7 @@ import {
 import { CompiledQuery } from '../query-compiler/compiled-query.js'
 import { RootOperationNode } from '../query-compiler/query-compiler.js'
 import { KyselyPlugin } from '../plugin/kysely-plugin.js'
-import { freeze, isObject, isString } from '../util/object-utils.js'
+import { freeze } from '../util/object-utils.js'
 import { QueryId } from '../util/query-id.js'
 import { DialectAdapter } from '../dialect/dialect-adapter.js'
 import { QueryExecutor } from './query-executor.js'

@@ -243,7 +243,7 @@ export class Kysely<DB>
   /**
    * Returns a copy of this Kysely instance with the given plugin installed.
    */
-  withPlugin(plugin: KyselyPlugin): Kysely<DB> {
+  override withPlugin(plugin: KyselyPlugin): Kysely<DB> {
     return new Kysely({
       ...this.#props,
       executor: this.#props.executor.withPlugin(plugin),
@@ -253,7 +253,7 @@ export class Kysely<DB>
   /**
    * Returns a copy of this Kysely instance without any plugins.
    */
-  withoutPlugins(): Kysely<DB> {
+  override withoutPlugins(): Kysely<DB> {
     return new Kysely({
       ...this.#props,
       executor: this.#props.executor.withoutPlugins(),

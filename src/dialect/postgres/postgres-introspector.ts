@@ -2,11 +2,12 @@ import {
   DatabaseIntrospector,
   DatabaseMetadata,
   DatabaseMetadataOptions,
+  SchemaMetadata,
   TableMetadata,
 } from '../database-introspector.js'
 import {
-  MIGRATION_LOCK_TABLE,
-  MIGRATION_TABLE,
+  DEFAULT_MIGRATION_LOCK_TABLE,
+  DEFAULT_MIGRATION_TABLE,
 } from '../../migration/migrator.js'
 import { Kysely } from '../../kysely.js'
 import { ColumnDataType } from '../../operation-node/data-type-node.js'
@@ -19,9 +20,19 @@ export class PostgresIntrospector implements DatabaseIntrospector {
     this.#db = db
   }
 
-  async getMetadata(
+  async getSchemas(): Promise<SchemaMetadata[]> {
+    let rawSchemas = await this.#db
+      .selectFrom('pg_catalog.pg_namespace')
+      .select('nspname')
+      .castTo<RawSchemaMetadata>()
+      .execute()
+
+    return rawSchemas.map((it) => ({ name: it.nspname }))
+  }
+
+  async getTables(
     options: DatabaseMetadataOptions = { withInternalKyselyTables: false }
-  ): Promise<DatabaseMetadata> {
+  ): Promise<TableMetadata[]> {
     let query = this.#db
       .selectFrom('pg_catalog.pg_attribute as a')
       .innerJoin('pg_catalog.pg_class as c', 'a.attrelid', 'c.oid')
@@ -42,14 +53,19 @@ export class PostgresIntrospector implements DatabaseIntrospector {
 
     if (!options.withInternalKyselyTables) {
       query = query
-        .where('t.tablename', '!=', MIGRATION_TABLE)
-        .where('t.tablename', '!=', MIGRATION_LOCK_TABLE)
+        .where('t.tablename', '!=', DEFAULT_MIGRATION_TABLE)
+        .where('t.tablename', '!=', DEFAULT_MIGRATION_LOCK_TABLE)
     }
 
     const rawColumns = await query.execute()
+    return this.#parseTableMetadata(rawColumns)
+  }
 
+  async getMetadata(
+    options?: DatabaseMetadataOptions
+  ): Promise<DatabaseMetadata> {
     return {
-      tables: this.#parseTableMetadata(rawColumns),
+      tables: await this.getTables(options),
     }
   }
 
@@ -80,6 +96,10 @@ export class PostgresIntrospector implements DatabaseIntrospector {
       return tables
     }, [])
   }
+}
+
+interface RawSchemaMetadata {
+  nspname: string
 }
 
 interface RawColumnMetadata {
