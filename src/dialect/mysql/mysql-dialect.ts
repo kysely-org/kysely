@@ -3,13 +3,12 @@ import { Kysely } from '../../kysely.js'
 import { QueryCompiler } from '../../query-compiler/query-compiler.js'
 import { Dialect } from '../dialect.js'
 import { DatabaseIntrospector } from '../database-introspector.js'
-import { MysqlDriver } from './mysql-driver.js'
+import { MysqlDriver, MysqlPool } from './mysql-driver.js'
 import { MysqlQueryCompiler } from './mysql-query-compiler.js'
 import { MysqlIntrospector } from './mysql-introspector.js'
 import { DialectAdapter } from '../dialect-adapter.js'
 import { MysqlAdapter } from './mysql-adapter.js'
 import { MysqlDialectConfig } from './mysql-dialect-config.js'
-import { freeze } from '../../util/object-utils.js'
 
 /**
  * MySQL dialect that uses the [mysql2](https://github.com/sidorares/node-mysql2#readme) library.
@@ -17,16 +16,23 @@ import { freeze } from '../../util/object-utils.js'
  * The {@link MysqlDialectConfig | configuration} passed to the constructor
  * is given as-is to the mysql2 library's [createPool](https://github.com/sidorares/node-mysql2#using-connection-pools)
  * method.
+ *
+ * You can also provide an existing mysql2 `Pool` instance:
+ *
+ * ```ts
+ * import { createPool } from 'mysql2'
+ * new MysqlDialect(createPool(config))
+ * ```
  */
 export class MysqlDialect implements Dialect {
-  readonly #config: MysqlDialectConfig
+  readonly #configOrPool: MysqlDialectConfig | MysqlPool
 
-  constructor(config: MysqlDialectConfig) {
-    this.#config = freeze({ ...config })
+  constructor(configOrPool: MysqlDialectConfig | MysqlPool) {
+    this.#configOrPool = configOrPool
   }
 
   createDriver(): Driver {
-    return new MysqlDriver(this.#config)
+    return new MysqlDriver(this.#configOrPool)
   }
 
   createQueryCompiler(): QueryCompiler {

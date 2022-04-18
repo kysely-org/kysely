@@ -2,14 +2,13 @@ import { Driver } from '../../driver/driver.js'
 import { Kysely } from '../../kysely.js'
 import { QueryCompiler } from '../../query-compiler/query-compiler.js'
 import { Dialect } from '../dialect.js'
-import { PostgresDriver } from './postgres-driver.js'
+import { PostgresDriver, PostgresPool } from './postgres-driver.js'
 import { DatabaseIntrospector } from '../database-introspector.js'
 import { PostgresIntrospector } from './postgres-introspector.js'
 import { PostgresQueryCompiler } from './postgres-query-compiler.js'
 import { DialectAdapter } from '../dialect-adapter.js'
 import { PostgresAdapter } from './postgres-adapter.js'
 import { PostgresDialectConfig } from './postgres-dialect-config.js'
-import { freeze } from '../../util/object-utils.js'
 
 /**
  * PostgreSQL dialect that uses the [pg](https://node-postgres.com/) library.
@@ -20,16 +19,23 @@ import { freeze } from '../../util/object-utils.js'
  *
  * https://node-postgres.com/api/pool
  * https://node-postgres.com/api/client
+ *
+ * You can also provide an existing pg `Pool` instance:
+ *
+ * ```ts
+ * import { Pool } from 'pg'
+ * new PostgresDialect(new Pool(config))
+ * ```
  */
 export class PostgresDialect implements Dialect {
-  readonly #config: PostgresDialectConfig
+  readonly #configOrPool: PostgresDialectConfig | PostgresPool
 
-  constructor(config: PostgresDialectConfig) {
-    this.#config = freeze({ ...config })
+  constructor(configOrPool: PostgresDialectConfig | PostgresPool) {
+    this.#configOrPool = configOrPool
   }
 
   createDriver(): Driver {
-    return new PostgresDriver(this.#config)
+    return new PostgresDriver(this.#configOrPool)
   }
 
   createQueryCompiler(): QueryCompiler {

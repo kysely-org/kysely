@@ -1,12 +1,4 @@
 import {
-  Pool,
-  PoolOptions,
-  PoolConnection,
-  RowDataPacket,
-  OkPacket,
-  ResultSetHeader,
-} from 'mysql2'
-import {
   DatabaseConnection,
   QueryResult,
 } from '../../driver/database-connection.js'
@@ -19,25 +11,29 @@ import { MysqlDialectConfig } from './mysql-dialect-config.js'
 const PRIVATE_RELEASE_METHOD = Symbol()
 
 export class MysqlDriver implements Driver {
-  readonly #config: MysqlDialectConfig
-  readonly #connections = new WeakMap<PoolConnection, DatabaseConnection>()
-  #pool?: Pool
+  readonly #config?: MysqlDialectConfig
+  readonly #connections = new WeakMap<MysqlPoolConnection, DatabaseConnection>()
+  #pool?: MysqlPool
 
-  constructor(config: MysqlDialectConfig) {
-    this.#config = freeze({ ...config })
+  constructor(configOrPool: MysqlDialectConfig | MysqlPool) {
+    if (isMysqlPool(configOrPool)) {
+      this.#pool = configOrPool
+    } else {
+      this.#config = freeze({ ...configOrPool })
+    }
   }
 
   async init(): Promise<void> {
-    // Import the `mysql2` module here instead at the top of the file
-    // so that this file can be loaded by node without `mysql2` driver
-    // installed. As you can see, there IS an import from `mysql2` at the
-    // top level too, but that's only for types. It doesn't get compiled
-    // into javascript. You can check the built javascript code.
-    const poolFactory = await importMysqlPoolFactory()
+    if (this.#config) {
+      // Import the `mysql2` module here instead at the top of the file
+      // so that this file can be loaded by node without `mysql2` driver
+      // installed.
+      const poolFactory = await importMysqlPoolFactory()
 
-    // Use the `mysql2` module's own pool. All drivers should use the
-    // pool provided by the database library if possible.
-    this.#pool = poolFactory(this.#config)
+      // Use the `mysql2` module's own pool. All drivers should use the
+      // pool provided by the database library if possible.
+      this.#pool = poolFactory(this.#config)
+    }
   }
 
   async acquireConnection(): Promise<DatabaseConnection> {
@@ -51,7 +47,7 @@ export class MysqlDriver implements Driver {
       // The driver must take care of calling `onCreateConnection` when a new
       // connection is created. The `mysql2` module doesn't provide an async hook
       // for the connection creation. We need to call the method explicitly.
-      if (this.#config.onCreateConnection) {
+      if (this.#config?.onCreateConnection) {
         await this.#config.onCreateConnection(connection)
       }
     }
@@ -59,7 +55,7 @@ export class MysqlDriver implements Driver {
     return connection
   }
 
-  async #acquireConnection(): Promise<PoolConnection> {
+  async #acquireConnection(): Promise<MysqlPoolConnection> {
     return new Promise((resolve, reject) => {
       this.#pool!.getConnection(async (err, rawConnection) => {
         if (err) {
@@ -95,9 +91,8 @@ export class MysqlDriver implements Driver {
     await connection.executeQuery(CompiledQuery.raw('rollback'))
   }
 
-  async releaseConnection(connection: DatabaseConnection): Promise<void> {
-    const mysqlConnection = connection as MysqlConnection
-    mysqlConnection[PRIVATE_RELEASE_METHOD]()
+  async releaseConnection(connection: MysqlConnection): Promise<void> {
+    connection[PRIVATE_RELEASE_METHOD]()
   }
 
   async destroy(): Promise<void> {
@@ -113,7 +108,38 @@ export class MysqlDriver implements Driver {
   }
 }
 
-type CreatePool = (config: PoolOptions) => Pool
+export interface MysqlPool {
+  getConnection(
+    callback: (error: unknown, connection: MysqlPoolConnection) => void
+  ): void
+  end(callback: (error: unknown) => void): void
+}
+
+interface MysqlPoolConnection {
+  query(
+    sql: string,
+    parameters: ReadonlyArray<unknown>,
+    callback: (error: unknown, result: MysqlQueryResult) => void
+  ): void
+  release(): void
+}
+
+interface MysqlOkPacket {
+  affectedRows: number
+  insertId: number
+}
+
+type MysqlQueryResult = MysqlOkPacket | Record<string, unknown>[]
+
+type CreatePool = (config: MysqlDialectConfig) => MysqlPool
+
+function isMysqlPool(obj: unknown): obj is MysqlPool {
+  return isObject(obj) && isFunction(obj.getConnection) && isFunction(obj.end)
+}
+
+function isOkPacket(obj: unknown): obj is MysqlOkPacket {
+  return isObject(obj) && 'insertId' in obj && 'affectedRows' in obj
+}
 
 async function importMysqlPoolFactory(): Promise<CreatePool> {
   try {
@@ -135,9 +161,9 @@ async function importMysqlPoolFactory(): Promise<CreatePool> {
 }
 
 class MysqlConnection implements DatabaseConnection {
-  readonly #rawConnection: PoolConnection
+  readonly #rawConnection: MysqlPoolConnection
 
-  constructor(rawConnection: PoolConnection) {
+  constructor(rawConnection: MysqlPoolConnection) {
     this.#rawConnection = rawConnection
   }
 
@@ -175,15 +201,7 @@ class MysqlConnection implements DatabaseConnection {
     }
   }
 
-  #executeQuery(
-    compiledQuery: CompiledQuery
-  ): Promise<
-    | RowDataPacket[][]
-    | RowDataPacket[]
-    | OkPacket
-    | OkPacket[]
-    | ResultSetHeader
-  > {
+  #executeQuery(compiledQuery: CompiledQuery): Promise<MysqlQueryResult> {
     return new Promise((resolve, reject) => {
       this.#rawConnection.query(
         compiledQuery.sql,
@@ -202,8 +220,4 @@ class MysqlConnection implements DatabaseConnection {
   [PRIVATE_RELEASE_METHOD](): void {
     this.#rawConnection.release()
   }
-}
-
-function isOkPacket(obj: unknown): obj is OkPacket {
-  return isObject(obj) && 'insertId' in obj && 'affectedRows' in obj
 }
