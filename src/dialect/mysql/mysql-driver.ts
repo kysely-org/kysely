@@ -13,6 +13,7 @@ import {
 import { Driver, TransactionSettings } from '../../driver/driver.js'
 import { CompiledQuery } from '../../query-compiler/compiled-query.js'
 import { isFunction, isObject, freeze } from '../../util/object-utils.js'
+import { extendStackTrace } from '../../util/stack-trace-utils.js'
 import { MysqlDialectConfig } from './mysql-dialect-config.js'
 
 const PRIVATE_RELEASE_METHOD = Symbol()
@@ -141,32 +142,36 @@ class MysqlConnection implements DatabaseConnection {
   }
 
   async executeQuery<O>(compiledQuery: CompiledQuery): Promise<QueryResult<O>> {
-    const result = await this.#executeQuery(compiledQuery)
+    try {
+      const result = await this.#executeQuery(compiledQuery)
 
-    if (isOkPacket(result)) {
-      const { insertId, affectedRows } = result
+      if (isOkPacket(result)) {
+        const { insertId, affectedRows } = result
+
+        return {
+          insertId:
+            insertId !== undefined &&
+            insertId !== null &&
+            insertId.toString() !== '0'
+              ? BigInt(insertId)
+              : undefined,
+          numUpdatedOrDeletedRows:
+            affectedRows !== undefined && insertId !== null
+              ? BigInt(affectedRows)
+              : undefined,
+          rows: [],
+        }
+      } else if (Array.isArray(result)) {
+        return {
+          rows: result as O[],
+        }
+      }
 
       return {
-        insertId:
-          insertId !== undefined &&
-          insertId !== null &&
-          insertId.toString() !== '0'
-            ? BigInt(insertId)
-            : undefined,
-        numUpdatedOrDeletedRows:
-          affectedRows !== undefined && insertId !== null
-            ? BigInt(affectedRows)
-            : undefined,
         rows: [],
       }
-    } else if (Array.isArray(result)) {
-      return {
-        rows: result as O[],
-      }
-    }
-
-    return {
-      rows: [],
+    } catch (err) {
+      throw extendStackTrace(err, new Error())
     }
   }
 

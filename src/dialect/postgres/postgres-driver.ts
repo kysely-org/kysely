@@ -6,6 +6,7 @@ import {
 import { Driver, TransactionSettings } from '../../driver/driver.js'
 import { CompiledQuery } from '../../query-compiler/compiled-query.js'
 import { isFunction, freeze } from '../../util/object-utils.js'
+import { extendStackTrace } from '../../util/stack-trace-utils.js'
 import { PostgresDialectConfig } from './postgres-dialect-config.js'
 
 const PRIVATE_RELEASE_METHOD = Symbol()
@@ -117,19 +118,23 @@ class PostgresConnection implements DatabaseConnection {
   }
 
   async executeQuery<O>(compiledQuery: CompiledQuery): Promise<QueryResult<O>> {
-    const result = await this.#client.query<O>(compiledQuery.sql, [
-      ...compiledQuery.parameters,
-    ])
+    try {
+      const result = await this.#client.query<O>(compiledQuery.sql, [
+        ...compiledQuery.parameters,
+      ])
 
-    if (result.command === 'UPDATE' || result.command === 'DELETE') {
+      if (result.command === 'UPDATE' || result.command === 'DELETE') {
+        return {
+          numUpdatedOrDeletedRows: BigInt(result.rowCount),
+          rows: result.rows ?? [],
+        }
+      }
+
       return {
-        numUpdatedOrDeletedRows: BigInt(result.rowCount),
         rows: result.rows ?? [],
       }
-    }
-
-    return {
-      rows: result.rows ?? [],
+    } catch (err) {
+      throw extendStackTrace(err, new Error())
     }
   }
 

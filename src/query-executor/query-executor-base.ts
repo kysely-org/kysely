@@ -62,17 +62,10 @@ export abstract class QueryExecutorBase implements QueryExecutor {
     compiledQuery: CompiledQuery,
     queryId: QueryId
   ): Promise<QueryResult<R>> {
-    try {
-      return await this.provideConnection(async (connection) => {
-        const result = await connection.executeQuery(compiledQuery)
-        return this.#transformResult(result, queryId)
-      })
-    } catch (err) {
-      // The async stack trace gets cut because of all the Promise magic
-      // done inside provideConnection etc. Artificially continue the stack
-      // trace from here.
-      throw extendStackTrace(err)
-    }
+    return await this.provideConnection(async (connection) => {
+      const result = await connection.executeQuery(compiledQuery)
+      return this.#transformResult(result, queryId)
+    })
   }
 
   abstract withConnectionProvider(
@@ -94,30 +87,4 @@ export abstract class QueryExecutorBase implements QueryExecutor {
 
     return result
   }
-}
-
-interface StackHolder {
-  stack: string
-}
-
-function isStackHolder(obj: unknown): obj is StackHolder {
-  return isObject(obj) && isString(obj.stack)
-}
-
-function extendStackTrace(err: unknown): unknown {
-  if (isStackHolder(err)) {
-    const stackError = new Error()
-
-    if (!stackError.stack) {
-      return err
-    }
-
-    // Remove the first line that just says `Error`.
-    const stackExtension = stackError.stack.split('\n').slice(1).join('\n')
-
-    err.stack += `\n${stackExtension}`
-    return err
-  }
-
-  return err
 }
