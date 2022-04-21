@@ -1336,7 +1336,7 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    * the query returned no result.
    */
   async executeTakeFirst(): Promise<SingleResultType<O>> {
-    const [result] = await this.execute()
+    const [result] = await this.limit(1).execute()
     return result as SingleResultType<O>
   }
 
