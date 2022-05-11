@@ -1,4 +1,5 @@
 import * as path from 'path'
+import { promises as fs } from 'fs'
 
 import {
   FileMigrationProvider,
@@ -239,9 +240,11 @@ for (const dialect of BUILT_IN_DIALECTS) {
         it('should run migrations from a folder', async () => {
           const migrator = new Migrator({
             db: ctx.db,
-            provider: new FileMigrationProvider(
-              path.join(__dirname, 'test-migrations')
-            ),
+            provider: new FileMigrationProvider({
+              fs,
+              path,
+              migrationFolder: path.join(__dirname, 'test-migrations'),
+            }),
           })
 
           await migrator.migrateToLatest()

@@ -70,6 +70,7 @@ All you need to do is define an interface for each table in the database and pas
 interfaces to the `Kysely` constructor:
 
 ```ts
+import { Pool } from 'pg'
 import {
   Kysely,
   PostgresDialect,
@@ -125,9 +126,11 @@ interface Database {
 const db = new Kysely<Database>({
   // Use MysqlDialect for MySQL and SqliteDialect for SQLite.
   dialect: new PostgresDialect({
-    host: 'localhost',
-    database: 'kysely_test',
-  }),
+    pool: new Pool({
+      host: 'localhost',
+      database: 'kysely_test'
+    })
+  })
 })
 
 async function demo() {
@@ -319,6 +322,9 @@ need to depend on a typescript compiler, which most production environments don'
 have. You will probably want to add a simple migration script to your projects like this:
 
 ```ts
+import * as path from 'path'
+import { Pool } from 'pg'
+import { promises: fs } from 'fs'
 import {
   Kysely,
   Migrator,
@@ -329,17 +335,20 @@ import {
 async function migrateToLatest() {
   const db = new Kysely<Database>({
     dialect: new PostgresDialect({
-      host: 'localhost',
-      database: 'kysely_test',
+      pool: new Pool({
+        host: 'localhost',
+        database: 'kysely_test',
+      })
     }),
   })
 
   const migrator = new Migrator({
     db,
-    provider: new FileMigrationProvider(
-      // Path to the folder that contains all your migrations.
-      'some/path/to/migrations'
-    )
+    provider: new FileMigrationProvider({
+      fs,
+      path,
+      migrationFolder: 'some/path/to/migrations',
+    })
   })
 
   const { error, results } = await migrator.migrateToLatest()
@@ -376,9 +385,7 @@ Kysely doesn't include drivers for deno, but you can still use Kysely as a query
 or implement your own driver:
 
 ```ts
-// We use jsdeliver to get Kysely from npm. We also need to
-// import the `dist/esm/index-nodeless.js` file instead of the
-// root which has node dependencies.
+// We use jsdeliver to get Kysely from npm.
 import {
   DummyDriver,
   Generated,
@@ -386,7 +393,7 @@ import {
   PostgresAdapter,
   PostgresIntrospector,
   PostgresQueryCompiler,
-} from 'https://cdn.jsdelivr.net/npm/kysely/dist/esm/index-nodeless.js'
+} from 'https://cdn.jsdelivr.net/npm/kysely/dist/esm/index.js'
 
 interface Person {
   id: Generated<number>
@@ -425,9 +432,7 @@ console.log(sql.sql)
 
 # Browser
 
-Kysely also runs in the browser as long as you import the `dist/esm/index-nodeless.js`
-module instead of the root that has node dependencies. You can also import the
-`dist/cjs/index-nodeless.js` file if you are using commonjs modules instead of ESM.
+Kysely also runs in the browser:
 
 ```ts
 import {
@@ -437,7 +442,7 @@ import {
   SqliteAdapter,
   SqliteIntrospector,
   SqliteQueryCompiler,
-} from 'kysely/dist/esm/index-nodeless.js'
+} from 'kysely'
 
 interface Person {
   id: Generated<number>

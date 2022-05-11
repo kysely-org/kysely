@@ -5,7 +5,7 @@ import {
   PostgresAdapter,
   PostgresIntrospector,
   PostgresQueryCompiler,
-} from '../../dist/esm/index-nodeless.js'
+} from '../../dist/esm/index.js'
 
 interface Person {
   id: Generated<number>

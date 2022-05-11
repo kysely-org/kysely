@@ -2,31 +2,31 @@ import { isFunction, isObject } from '../util/object-utils.js'
 import { Migration, MigrationProvider } from './migrator.js'
 
 /**
- * Reads all migrations from a folder.
+ * Reads all migrations from a folder in node.js.
  *
  * ### Examples
  *
  * ```ts
- * new FileMigrationProvider(
- *   'path/to/migrations/folder'
- * )
+ * import { promises as fs } from 'fs'
+ * import path from 'path'
+ *
+ * new FileMigrationProvider({
+ *   fs,
+ *   path,
+ *   migrationFolder: 'path/to/migrations/folder'
+ * })
  * ```
  */
 export class FileMigrationProvider implements MigrationProvider {
-  readonly #migrationFolderPath: string
+  readonly #props: FileMigrationProviderProps
 
-  constructor(migrationFolderPath: string) {
-    this.#migrationFolderPath = migrationFolderPath
+  constructor(props: FileMigrationProviderProps) {
+    this.#props = props
   }
 
   async getMigrations(): Promise<Record<string, Migration>> {
-    // Import these dynamically so that we don't have any top level
-    // node dependencies.
-    const fs = await import('fs/promises')
-    const path = await import('path')
-
     const migrations: Record<string, Migration> = {}
-    const files = await fs.readdir(this.#migrationFolderPath)
+    const files = await this.#props.fs.readdir(this.#props.migrationFolder)
 
     for (const fileName of files) {
       if (
@@ -34,7 +34,7 @@ export class FileMigrationProvider implements MigrationProvider {
         !fileName.endsWith('.d.ts')
       ) {
         const migration = await import(
-          path.join(this.#migrationFolderPath, fileName)
+          this.#props.path.join(this.#props.migrationFolder, fileName)
         )
 
         if (isMigration(migration)) {
@@ -49,4 +49,18 @@ export class FileMigrationProvider implements MigrationProvider {
 
 function isMigration(obj: unknown): obj is Migration {
   return isObject(obj) && isFunction(obj.up)
+}
+
+export interface FileMigrationProviderFS {
+  readdir(path: string): Promise<string[]>
+}
+
+export interface FileMigrationProviderPath {
+  join(...path: string[]): string
+}
+
+export interface FileMigrationProviderProps {
+  fs: FileMigrationProviderFS
+  path: FileMigrationProviderPath
+  migrationFolder: string
 }

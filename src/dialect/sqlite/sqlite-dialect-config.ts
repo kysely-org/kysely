@@ -2,43 +2,16 @@ import { DatabaseConnection } from '../../driver/database-connection.js'
 
 /**
  * Config for the SQLite dialect.
- *
- * This interface is equal to `better-sqlite3` library's `Databse` class's constructor parameters.
- *
- * https://github.com/JoshuaWise/better-sqlite3/blob/master/docs/api.md#new-databasepath-options
  */
 export interface SqliteDialectConfig {
   /**
-   * The database file path.
+   * An sqlite Database instance or a function that returns one.
    *
-   * This is passed as the first argument for the [Database](https://github.com/JoshuaWise/better-sqlite3/blob/master/docs/api.md#new-databasepath-options)
-   * class constructor.
+   * If a function is provided, it's called once when the first query is executed.
+   *
+   * https://github.com/JoshuaWise/better-sqlite3/blob/master/docs/api.md#new-databasepath-options
    */
-  databasePath: string
-
-  /**
-   * Open the database connection in readonly mode (default: false)
-   */
-  readonly?: boolean
-
-  /**
-   * If the database does not exist, an Error will be thrown instead of creating a new file.
-   * This option is ignored for in-memory, temporary, or readonly database connections
-   * (default: false)
-   */
-  fileMustExist?: boolean
-
-  /**
-   * The number of milliseconds to wait when executing queries on a locked database,
-   * before throwing a SQLITE_BUSY error (default: 5000)
-   */
-  timeout?: number
-
-  /**
-   * Provide a function that gets called with every SQL string executed by the database connection
-   * (default: null)
-   */
-  verbose?: (sql: string) => void
+  database: SqliteDatabase | (() => Promise<SqliteDatabase>)
 
   /**
    * Called once when the first query is executed.
@@ -46,4 +19,26 @@ export interface SqliteDialectConfig {
    * This is a Kysely specific feature and does not come from the `better-sqlite3` module.
    */
   onCreateConnection?: (connection: DatabaseConnection) => Promise<void>
+}
+
+/**
+ * This interface is the subset of better-sqlite3 driver's `Database` class that
+ * kysely needs.
+ *
+ * We don't use the type from `better-sqlite3` here to not have a dependency to it.
+ *
+ * https://github.com/JoshuaWise/better-sqlite3/blob/master/docs/api.md#new-databasepath-options
+ */
+export interface SqliteDatabase {
+  close(): void
+  prepare(sql: string): SqliteStatement
+}
+
+export interface SqliteStatement {
+  readonly reader: boolean
+  all(parameters: ReadonlyArray<unknown>): unknown[]
+  run(parameters: ReadonlyArray<unknown>): {
+    changes: number | bigint
+    lastInsertRowid: number | bigint
+  }
 }

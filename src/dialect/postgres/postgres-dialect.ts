@@ -2,7 +2,7 @@ import { Driver } from '../../driver/driver.js'
 import { Kysely } from '../../kysely.js'
 import { QueryCompiler } from '../../query-compiler/query-compiler.js'
 import { Dialect } from '../dialect.js'
-import { PostgresDriver, PostgresPool } from './postgres-driver.js'
+import { PostgresDriver } from './postgres-driver.js'
 import { DatabaseIntrospector } from '../database-introspector.js'
 import { PostgresIntrospector } from './postgres-introspector.js'
 import { PostgresQueryCompiler } from './postgres-query-compiler.js'
@@ -13,29 +13,42 @@ import { PostgresDialectConfig } from './postgres-dialect-config.js'
 /**
  * PostgreSQL dialect that uses the [pg](https://node-postgres.com/) library.
  *
- * The {@link PostgresDialectConfig | configuration} passed to the constructor
- * is given as-is to the pg library's [Pool](https://node-postgres.com/api/pool)
- * constructor. See the following two links for more documentation:
- *
- * https://node-postgres.com/api/pool
- * https://node-postgres.com/api/client
- *
- * You can also provide an existing pg `Pool` instance:
+ * The constructor takes an instance of {@link PostgresDialectConfig}.
  *
  * ```ts
  * import { Pool } from 'pg'
- * new PostgresDialect(new Pool(config))
+ *
+ * new PostgresDialect({
+ *   pool: new Pool({
+ *     database: 'some_db',
+ *     host: 'localhost',
+ *   })
+ * })
+ * ```
+ *
+ * If you want the pool to only be created once it's first used, `pool`
+ * can be a function:
+ *
+ * ```ts
+ * import { Pool } from 'pg'
+ *
+ * new PostgresDialect({
+ *   pool: async () => new Pool({
+ *     database: 'some_db',
+ *     host: 'localhost',
+ *   })
+ * })
  * ```
  */
 export class PostgresDialect implements Dialect {
-  readonly #configOrPool: PostgresDialectConfig | PostgresPool
+  readonly #config: PostgresDialectConfig
 
-  constructor(configOrPool: PostgresDialectConfig | PostgresPool) {
-    this.#configOrPool = configOrPool
+  constructor(config: PostgresDialectConfig) {
+    this.#config = config
   }
 
   createDriver(): Driver {
-    return new PostgresDriver(this.#configOrPool)
+    return new PostgresDriver(this.#config)
   }
 
   createQueryCompiler(): QueryCompiler {

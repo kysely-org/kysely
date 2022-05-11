@@ -1,6 +1,6 @@
 {
   "name": "kysely",
-  "version": "0.18.1",
+  "version": "0.19.0",
   "description": "Type safe SQL query builder",
   "repository": {
     "type": "git",
@@ -15,9 +15,7 @@
     ".": {
       "import": "./dist/esm/index.js",
       "require": "./dist/cjs/index.js"
-    },
-    "./dist/cjs/index-nodeless.js": "./dist/cjs/index-nodeless.js",
-    "./dist/esm/index-nodeless.js": "./dist/esm/index-nodeless.js"
+    }
   },
   "scripts": {
     "clean": "rm -rf dist && rm -rf test/node/dist && rm -rf test/browser/bundle.js",
@@ -43,9 +41,6 @@
   },
   "author": "Sami Koskimäki <sami@jakso.me>",
   "license": "MIT",
-  "dependencies": {
-    "@types/node": "^16.11.9"
-  },
   "devDependencies": {
     "@types/better-sqlite3": "^7.5.0",
     "@types/chai": "^4.3.1",

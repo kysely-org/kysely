@@ -1,5 +1,7 @@
 import * as chai from 'chai'
 import * as chaiSubset from 'chai-subset'
+import { Pool } from 'pg'
+import { createPool } from 'mysql2'
 
 chai.use(chaiSubset)
 
@@ -24,6 +26,7 @@ import {
   Generated,
   sql,
 } from '../../../'
+import Database = require('better-sqlite3')
 
 export interface Person {
   id: Generated<number>
@@ -117,17 +120,23 @@ export const DIALECT_CONFIGS = {
 
 const DB_CONFIGS: PerDialect<KyselyConfig> = {
   postgres: {
-    dialect: new PostgresDialect(DIALECT_CONFIGS.postgres),
+    dialect: new PostgresDialect({
+      pool: async () => new Pool(DIALECT_CONFIGS.postgres),
+    }),
     plugins: PLUGINS,
   },
 
   mysql: {
-    dialect: new MysqlDialect(DIALECT_CONFIGS.mysql),
+    dialect: new MysqlDialect({
+      pool: async () => createPool(DIALECT_CONFIGS.mysql),
+    }),
     plugins: PLUGINS,
   },
 
   sqlite: {
-    dialect: new SqliteDialect(DIALECT_CONFIGS.sqlite),
+    dialect: new SqliteDialect({
+      database: async () => new Database(DIALECT_CONFIGS.sqlite.databasePath),
+    }),
     plugins: PLUGINS,
   },
 }

@@ -1,23 +1,17 @@
-import { Database, Options as DatabaseOptions } from 'better-sqlite3'
 import {
   DatabaseConnection,
   QueryResult,
 } from '../../driver/database-connection.js'
 import { Driver } from '../../driver/driver.js'
 import { CompiledQuery } from '../../query-compiler/compiled-query.js'
-import {
-  freeze,
-  isBoolean,
-  isFunction,
-  isNumber,
-} from '../../util/object-utils.js'
-import { SqliteDialectConfig } from './sqlite-dialect-config.js'
+import { freeze, isFunction } from '../../util/object-utils.js'
+import { SqliteDatabase, SqliteDialectConfig } from './sqlite-dialect-config.js'
 
 export class SqliteDriver implements Driver {
   readonly #config: SqliteDialectConfig
   readonly #connectionMutex = new ConnectionMutex()
 
-  #db?: Database
+  #db?: SqliteDatabase
   #connection?: DatabaseConnection
 
   constructor(config: SqliteDialectConfig) {
@@ -25,32 +19,10 @@ export class SqliteDriver implements Driver {
   }
 
   async init(): Promise<void> {
-    // Import the `better-sqlite3` module here instead at the top of the file
-    // so that this file can be loaded by node without `better-sqlite3` driver
-    // installed. As you can see, there IS an import from `better-sqlite3` at
-    // the top level too, but that's only for types. It doesn't get compiled
-    // into javascript. You can check the built javascript code.
-    const DatabaseConstructor = await importBetterSqlite3Database()
+    this.#db = isFunction(this.#config.database)
+      ? await this.#config.database()
+      : this.#config.database
 
-    const options: DatabaseOptions = {}
-
-    if (isBoolean(this.#config.readonly)) {
-      options.readonly = this.#config.readonly
-    }
-
-    if (isBoolean(this.#config.fileMustExist)) {
-      options.fileMustExist = this.#config.fileMustExist
-    }
-
-    if (isNumber(this.#config.timeout)) {
-      options.timeout = this.#config.timeout
-    }
-
-    if (isFunction(this.#config.verbose)) {
-      options.verbose = this.#config.verbose
-    }
-
-    this.#db = new DatabaseConstructor(this.#config.databasePath, options)
     this.#connection = new SqliteConnection(this.#db)
 
     if (this.#config.onCreateConnection) {
@@ -86,34 +58,10 @@ export class SqliteDriver implements Driver {
   }
 }
 
-type DatabaseConstructor = new (
-  fileName: string,
-  options: DatabaseOptions
-) => Database
-
-async function importBetterSqlite3Database(): Promise<DatabaseConstructor> {
-  try {
-    // The imported module name must be a string literal to make
-    // some bundlers work. So don't move this code behind a helper
-    // for example.
-    const sqliteModule: any = await import('better-sqlite3')
-
-    if (isFunction(sqliteModule)) {
-      return sqliteModule
-    } else {
-      return sqliteModule.default
-    }
-  } catch (error) {
-    throw new Error(
-      'SQLite client not installed. Please run `npm install better-sqlite3`'
-    )
-  }
-}
-
 class SqliteConnection implements DatabaseConnection {
-  readonly #db: Database
+  readonly #db: SqliteDatabase
 
-  constructor(db: Database) {
+  constructor(db: SqliteDatabase) {
     this.#db = db
   }
 
@@ -123,7 +71,7 @@ class SqliteConnection implements DatabaseConnection {
 
     if (stmt.reader) {
       return Promise.resolve({
-        rows: stmt.all(parameters),
+        rows: stmt.all(parameters) as O[],
       })
     } else {
       const { changes, lastInsertRowid } = stmt.run(parameters)

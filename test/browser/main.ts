@@ -5,7 +5,7 @@ import {
   SqliteAdapter,
   SqliteIntrospector,
   SqliteQueryCompiler,
-} from '../../dist/esm/index-nodeless.js'
+} from '../..'
 
 interface Person {
   id: Generated<number>

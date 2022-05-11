@@ -6,34 +6,29 @@ import { Driver, TransactionSettings } from '../../driver/driver.js'
 import { CompiledQuery } from '../../query-compiler/compiled-query.js'
 import { isFunction, isObject, freeze } from '../../util/object-utils.js'
 import { extendStackTrace } from '../../util/stack-trace-utils.js'
-import { MysqlDialectConfig } from './mysql-dialect-config.js'
+import {
+  MysqlDialectConfig,
+  MysqlOkPacket,
+  MysqlPool,
+  MysqlPoolConnection,
+  MysqlQueryResult,
+} from './mysql-dialect-config.js'
 
 const PRIVATE_RELEASE_METHOD = Symbol()
 
 export class MysqlDriver implements Driver {
-  readonly #config?: MysqlDialectConfig
+  readonly #config: MysqlDialectConfig
   readonly #connections = new WeakMap<MysqlPoolConnection, DatabaseConnection>()
   #pool?: MysqlPool
 
-  constructor(configOrPool: MysqlDialectConfig | MysqlPool) {
-    if (isMysqlPool(configOrPool)) {
-      this.#pool = configOrPool
-    } else {
-      this.#config = freeze({ ...configOrPool })
-    }
+  constructor(configOrPool: MysqlDialectConfig) {
+    this.#config = freeze({ ...configOrPool })
   }
 
   async init(): Promise<void> {
-    if (this.#config) {
-      // Import the `mysql2` module here instead at the top of the file
-      // so that this file can be loaded by node without `mysql2` driver
-      // installed.
-      const poolFactory = await importMysqlPoolFactory()
-
-      // Use the `mysql2` module's own pool. All drivers should use the
-      // pool provided by the database library if possible.
-      this.#pool = poolFactory(this.#config)
-    }
+    this.#pool = isFunction(this.#config.pool)
+      ? await this.#config.pool()
+      : this.#config.pool
   }
 
   async acquireConnection(): Promise<DatabaseConnection> {
@@ -108,56 +103,8 @@ export class MysqlDriver implements Driver {
   }
 }
 
-export interface MysqlPool {
-  getConnection(
-    callback: (error: unknown, connection: MysqlPoolConnection) => void
-  ): void
-  end(callback: (error: unknown) => void): void
-}
-
-interface MysqlPoolConnection {
-  query(
-    sql: string,
-    parameters: ReadonlyArray<unknown>,
-    callback: (error: unknown, result: MysqlQueryResult) => void
-  ): void
-  release(): void
-}
-
-interface MysqlOkPacket {
-  affectedRows: number
-  insertId: number
-}
-
-type MysqlQueryResult = MysqlOkPacket | Record<string, unknown>[]
-
-type CreatePool = (config: MysqlDialectConfig) => MysqlPool
-
-function isMysqlPool(obj: unknown): obj is MysqlPool {
-  return isObject(obj) && isFunction(obj.getConnection) && isFunction(obj.end)
-}
-
 function isOkPacket(obj: unknown): obj is MysqlOkPacket {
   return isObject(obj) && 'insertId' in obj && 'affectedRows' in obj
-}
-
-async function importMysqlPoolFactory(): Promise<CreatePool> {
-  try {
-    // The imported module name must be a string literal to make
-    // some bundlers work. So don't move this code behind a helper
-    // for example.
-    const mysqlModule: any = await import('mysql2')
-
-    if (isFunction(mysqlModule.createPool)) {
-      return mysqlModule.createPool
-    } else {
-      return mysqlModule.default.createPool
-    }
-  } catch (error) {
-    throw new Error(
-      'MySQL client not installed. Please run `npm install mysql2`'
-    )
-  }
 }
 
 class MysqlConnection implements DatabaseConnection {

@@ -1,5 +1,5 @@
-import { KyselyPlugin } from '../index-nodeless.js'
 import { Kysely } from '../kysely.js'
+import { KyselyPlugin } from '../plugin/kysely-plugin.js'
 import { NoopPlugin } from '../plugin/noop-plugin.js'
 import { WithSchemaPlugin } from '../plugin/with-schema/with-schema-plugin.js'
 import { freeze, getLast } from '../util/object-utils.js'

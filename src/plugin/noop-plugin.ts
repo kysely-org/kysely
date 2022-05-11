@@ -1,6 +1,6 @@
 import { QueryResult } from '../driver/database-connection.js'
-import { UnknownRow } from '../index-nodeless.js'
 import { RootOperationNode } from '../query-compiler/query-compiler.js'
+import { UnknownRow } from '../util/type-utils.js'
 import {
   KyselyPlugin,
   PluginTransformQueryArgs,
