@@ -19,7 +19,7 @@
     "koa-compress": "^5.1.0",
     "koa-json": "^2.0.2",
     "koa-router": "^10.1.1",
-    "kysely": "0.16.6",
+    "kysely": "0.19.0",
     "pg": "^8.7.1"
   },
   "devDependencies": {

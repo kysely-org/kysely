@@ -1,16 +1,19 @@
 import * as path from 'path'
 import axios from 'axios'
+import { promises as fs } from 'fs'
 import {
   FileMigrationProvider,
   Kysely,
   Migrator,
   PostgresDialect,
+  sql,
 } from 'kysely'
 
 import { testConfig } from './test-config'
 import { App } from '../src/app'
 import { Database } from '../src/database'
 import { User } from '../src/user/user'
+import { Pool } from 'pg'
 
 export class TestContext {
   #app?: App
@@ -26,25 +29,31 @@ export class TestContext {
 
   before = async (): Promise<void> => {
     const adminDb = new Kysely<any>({
-      dialect: new PostgresDialect(testConfig.adminDatabase),
+      dialect: new PostgresDialect({
+        pool: new Pool(testConfig.adminDatabase),
+      }),
     })
 
     // Create our test database
     const { database } = testConfig.database
-    await adminDb.raw(`drop database if exists ${database}`).execute()
-    await adminDb.raw(`create database ${database}`).execute()
+    await sql`drop database if exists ${sql.id(database!)}`.execute(adminDb)
+    await sql`create database ${sql.id(database!)}`.execute(adminDb)
     await adminDb.destroy()
 
     // Now connect to the test databse and run the migrations
     const db = new Kysely<any>({
-      dialect: new PostgresDialect(testConfig.database),
+      dialect: new PostgresDialect({
+        pool: new Pool(testConfig.database),
+      }),
     })
 
     const migrator = new Migrator({
       db,
-      provider: new FileMigrationProvider(
-        path.join(__dirname, '../src/migrations')
-      ),
+      provider: new FileMigrationProvider({
+        fs,
+        path,
+        migrationFolder: path.join(__dirname, '../src/migrations'),
+      }),
     })
 
     await migrator.migrateToLatest()

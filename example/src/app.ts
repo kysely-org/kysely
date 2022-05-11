@@ -12,6 +12,7 @@ import { Router } from './router'
 import { userController } from './user/user.controller'
 import { ControllerError } from './util/errors'
 import { isObject } from './util/object'
+import { Pool } from 'pg'
 
 export class App {
   #config: Config
@@ -25,7 +26,9 @@ export class App {
     this.#koa = new Koa()
     this.#router = new Router()
     this.#db = new Kysely<Database>({
-      dialect: new PostgresDialect(this.#config.database),
+      dialect: new PostgresDialect({
+        pool: async () => new Pool(this.#config.database),
+      }),
     })
 
     this.#koa.use(compress())

@@ -1,5 +1,5 @@
 import * as dotenv from 'dotenv'
-import { PostgresDialectConfig } from 'kysely'
+import { ConnectionConfig } from 'pg'
 
 dotenv.config()
 
@@ -7,7 +7,7 @@ export interface Config {
   readonly port: number
   readonly authTokenSecret: string
   readonly authTokenExpiryDuration: string
-  readonly database: PostgresDialectConfig
+  readonly database: ConnectionConfig
 }
 
 export const config: Config = Object.freeze({
@@ -15,7 +15,6 @@ export const config: Config = Object.freeze({
   authTokenSecret: getEnvVariable('AUTH_TOKEN_SECRET'),
   authTokenExpiryDuration: getEnvVariable('AUTH_TOKEN_EXIRY_DURATION'),
   database: Object.freeze({
-    dialect: 'postgres' as const,
     database: getEnvVariable('DATABASE'),
     host: getEnvVariable('DATABASE_HOST'),
     user: getEnvVariable('DATABASE_USER'),

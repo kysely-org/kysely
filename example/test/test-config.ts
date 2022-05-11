@@ -1,8 +1,8 @@
-import { PostgresDialectConfig } from 'kysely'
+import { ConnectionConfig } from 'pg'
 import { Config } from '../src/config'
 
 export interface TestConfig extends Config {
-  readonly adminDatabase: PostgresDialectConfig
+  readonly adminDatabase: ConnectionConfig
 }
 
 export const testConfig: TestConfig = {
@@ -12,9 +12,11 @@ export const testConfig: TestConfig = {
   database: {
     host: 'localhost',
     database: 'kysely_koa_example_test',
+    user: 'postgres',
   },
   adminDatabase: {
     host: 'localhost',
     database: 'postgres',
+    user: 'postgres',
   },
 }

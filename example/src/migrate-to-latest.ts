@@ -1,4 +1,5 @@
 import * as path from 'path'
+import { promises as fs } from 'fs'
 import { Database } from './database'
 import { config } from './config'
 import {
@@ -7,15 +8,22 @@ import {
   PostgresDialect,
   FileMigrationProvider,
 } from 'kysely'
+import { Pool } from 'pg'
 
 async function migrateToLatest() {
   const db = new Kysely<Database>({
-    dialect: new PostgresDialect(config.database),
+    dialect: new PostgresDialect({
+      pool: new Pool(config.database),
+    }),
   })
 
   const migrator = new Migrator({
     db,
-    provider: new FileMigrationProvider(path.join(__dirname, 'migrations')),
+    provider: new FileMigrationProvider({
+      fs,
+      path,
+      migrationFolder: path.join(__dirname, 'migrations'),
+    }),
   })
 
   const { error, results } = await migrator.migrateToLatest()
