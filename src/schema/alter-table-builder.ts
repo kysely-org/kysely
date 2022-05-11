@@ -13,7 +13,7 @@ import { OnModifyForeignAction } from '../operation-node/references-node.js'
 import { RenameColumnNode } from '../operation-node/rename-column-node.js'
 import { CompiledQuery } from '../query-compiler/compiled-query.js'
 import { Compilable } from '../util/compilable.js'
-import { freeze } from '../util/object-utils.js'
+import { freeze, noop } from '../util/object-utils.js'
 import { preventAwait } from '../util/prevent-await.js'
 import {
   ColumnDefinitionBuilder,
@@ -97,24 +97,23 @@ export class AlterTableBuilder {
 
   /**
    * See {@link CreateTableBuilder.addColumn}
-   *
-   * Unlike {@link CreateTableBuilder.addColumn} this method returns the column builder
-   * and doesn't take a callback as the last argument. This is because you can only
-   * add one column per `ALTER TABLE` query.
    */
   addColumn(
     columnName: string,
-    dataType: DataTypeExpression
+    dataType: DataTypeExpression,
+    build: AlterTableAddColumnBuilderCallback = noop
   ): AlterTableAddColumnBuilder {
-    return new AlterTableAddColumnBuilder({
-      ...this.#props,
-      columnBuilder: new ColumnDefinitionBuilder(
-        ColumnDefinitionNode.create(
-          columnName,
-          parseDataTypeExpression(dataType)
-        )
-      ),
-    })
+    return build(
+      new AlterTableAddColumnBuilder({
+        ...this.#props,
+        columnBuilder: new ColumnDefinitionBuilder(
+          ColumnDefinitionNode.create(
+            columnName,
+            parseDataTypeExpression(dataType)
+          )
+        ),
+      })
+    )
   }
 
   /**
@@ -436,6 +435,10 @@ export interface AlterTableAddColumnBuilderProps
   extends AlterTableBuilderProps {
   readonly columnBuilder: ColumnDefinitionBuilder
 }
+
+export type AlterTableAddColumnBuilderCallback = (
+  builder: AlterTableAddColumnBuilder
+) => AlterTableAddColumnBuilder
 
 export class AlterTableModifyColumnBuilder
   implements ColumnDefinitionBuilderInterface, OperationNodeSource, Compilable

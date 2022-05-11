@@ -1320,6 +1320,40 @@ for (const dialect of BUILT_IN_DIALECTS) {
           })
         })
 
+        it('should add a column using a callback', async () => {
+          const builder = ctx.db.schema
+            .alterTable('test')
+            .addColumn('bool_col', 'boolean', (col) => col.notNull())
+
+          testSql(builder, dialect, {
+            postgres: {
+              sql: 'alter table "test" add column "bool_col" boolean not null',
+              parameters: [],
+            },
+            mysql: {
+              sql: 'alter table `test` add column `bool_col` boolean not null',
+              parameters: [],
+            },
+            sqlite: {
+              sql: 'alter table "test" add column "bool_col" boolean not null',
+              parameters: [],
+            },
+          })
+
+          await builder.execute()
+
+          expect(await getColumnMeta('test.bool_col')).to.eql({
+            name: 'bool_col',
+            isNullable: false,
+            dataType:
+              dialect === 'postgres'
+                ? 'bool'
+                : dialect === 'sqlite'
+                ? 'boolean'
+                : 'tinyint',
+          })
+        })
+
         if (dialect !== 'sqlite') {
           it('should add a unique column', async () => {
             const builder = ctx.db.schema
