@@ -628,6 +628,8 @@ export interface MigratorProps {
    * If you do specify this, ALWAYS ALWAYS use the same value from the beginning of
    * the project, to the end of time or prepare to manually migrate the migration
    * tables.
+   *
+   * This only works on postgres.
    */
   readonly migrationTableSchema?: string
 }

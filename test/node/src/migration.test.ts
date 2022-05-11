@@ -433,7 +433,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
       })
     })
 
-    if (dialect !== 'sqlite') {
+    if (dialect === 'postgres') {
       describe('custom migration tables in a custom schema', () => {
         it('should create custom migration tables in custom schema', async () => {
           const [migrator, executedUpMethods] = createMigrations(

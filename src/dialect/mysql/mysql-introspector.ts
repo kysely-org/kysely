@@ -12,6 +12,7 @@ import {
 import { Kysely } from '../../kysely.js'
 import { ColumnDataType } from '../../operation-node/data-type-node.js'
 import { freeze } from '../../util/object-utils.js'
+import { sql } from '../../raw-builder/sql.js'
 
 export class MysqlIntrospector implements DatabaseIntrospector {
   readonly #db: Kysely<any>
@@ -42,12 +43,7 @@ export class MysqlIntrospector implements DatabaseIntrospector {
         'is_nullable',
         'data_type',
       ])
-      .where('table_schema', 'not in', [
-        'information_schema',
-        'performance_schema',
-        'mysql',
-        'sys',
-      ])
+      .where('table_schema', '=', sql`database()`)
       .castTo<RawColumnMetadata>()
 
     if (!options.withInternalKyselyTables) {
