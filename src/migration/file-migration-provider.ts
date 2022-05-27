@@ -34,7 +34,10 @@ export class FileMigrationProvider implements MigrationProvider {
         !fileName.endsWith('.d.ts')
       ) {
         const migration = await import(
-          this.#props.path.join(this.#props.migrationFolder, fileName)
+          /* webpackIgnore: true */ this.#props.path.join(
+            this.#props.migrationFolder,
+            fileName
+          )
         )
 
         if (isMigration(migration)) {

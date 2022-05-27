@@ -11,11 +11,6 @@ export interface Driver {
    *
    * After calling this method the driver should be usable and `acquireConnection` etc.
    * methods should be callable.
-   *
-   * IMPORTANT: The underlying database engine driver (like [pg](https://node-postgres.com/))
-   * should be imported inside this function, not at the top of the driver file! This is
-   * important so that Kysely is usable without installing all database driver libraries
-   * it supports.
    */
   init(): Promise<void>
 
