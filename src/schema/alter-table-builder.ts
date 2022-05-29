@@ -41,6 +41,7 @@ import {
   parseDefaultValueExpression,
 } from '../parser/default-value-parser.js'
 import { parseTable } from '../parser/table-parser.js'
+import { DropConstraintNode } from '../operation-node/drop-constraint-node.js'
 
 /**
  * This builder can be used to create a `alter table` query.
@@ -196,6 +197,15 @@ export class AlterTableBuilder {
           constraintName
         )
       ),
+    })
+  }
+
+  dropConstraint(constraintName: string): AlterTableDropConstraintBuilder {
+    return new AlterTableDropConstraintBuilder({
+      ...this.#props,
+      alterTableNode: AlterTableNode.cloneWith(this.#props.alterTableNode, {
+        dropConstraint: DropConstraintNode.create(constraintName),
+      }),
     })
   }
 }
@@ -633,6 +643,79 @@ export interface AlterTableAddForeignKeyConstraintBuilderProps
   readonly constraintBuilder: ForeignKeyConstraintBuilder
 }
 
+export class AlterTableDropConstraintBuilder
+  implements OperationNodeSource, Compilable
+{
+  readonly #props: AlterTableDropConstraintBuilderProps
+
+  constructor(props: AlterTableDropConstraintBuilderProps) {
+    this.#props = freeze(props)
+  }
+
+  ifExists(): AlterTableDropConstraintBuilder {
+    return new AlterTableDropConstraintBuilder({
+      ...this.#props,
+      alterTableNode: AlterTableNode.cloneWith(this.#props.alterTableNode, {
+        dropConstraint: DropConstraintNode.cloneWith(
+          this.#props.alterTableNode.dropConstraint!,
+          {
+            ifExists: true,
+          }
+        ),
+      }),
+    })
+  }
+
+  cascade(): AlterTableDropConstraintBuilder {
+    return new AlterTableDropConstraintBuilder({
+      ...this.#props,
+      alterTableNode: AlterTableNode.cloneWith(this.#props.alterTableNode, {
+        dropConstraint: DropConstraintNode.cloneWith(
+          this.#props.alterTableNode.dropConstraint!,
+          {
+            modifier: 'cascade',
+          }
+        ),
+      }),
+    })
+  }
+
+  restrict(): AlterTableDropConstraintBuilder {
+    return new AlterTableDropConstraintBuilder({
+      ...this.#props,
+      alterTableNode: AlterTableNode.cloneWith(this.#props.alterTableNode, {
+        dropConstraint: DropConstraintNode.cloneWith(
+          this.#props.alterTableNode.dropConstraint!,
+          {
+            modifier: 'restrict',
+          }
+        ),
+      }),
+    })
+  }
+
+  toOperationNode(): AlterTableNode {
+    return this.#props.executor.transformQuery(
+      this.#props.alterTableNode,
+      this.#props.queryId
+    )
+  }
+
+  compile(): CompiledQuery {
+    return this.#props.executor.compileQuery(
+      this.toOperationNode(),
+      this.#props.queryId
+    )
+  }
+
+  async execute(): Promise<void> {
+    await this.#props.executor.executeQuery(this.compile(), this.#props.queryId)
+  }
+}
+
+export interface AlterTableDropConstraintBuilderProps
+  extends AlterTableBuilderProps {}
+
 preventAwait(AlterTableBuilder, "don't await AlterTableBuilder instances")
 preventAwait(AlterColumnBuilder, "don't await AlterColumnBuilder instances")
 
@@ -654,4 +737,9 @@ preventAwait(
 preventAwait(
   AlterTableAddForeignKeyConstraintBuilder,
   "don't await AlterTableAddForeignKeyConstraintBuilder instances directly. To execute the query you need to call `execute`"
+)
+
+preventAwait(
+  AlterTableDropConstraintBuilder,
+  "don't await AlterTableDropConstraintBuilder instances directly. To execute the query you need to call `execute`"
 )

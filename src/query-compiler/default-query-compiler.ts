@@ -982,7 +982,18 @@ export class DefaultQueryCompiler
 
   protected override visitDropConstraint(node: DropConstraintNode): void {
     this.append('drop constraint ')
+
+    if (node.ifExists) {
+      this.append('if exists ')
+    }
+
     this.visitNode(node.constraintName)
+
+    if (node.modifier === 'cascade') {
+      this.append(' cascade')
+    } else if (node.modifier === 'restrict') {
+      this.append(' restrict')
+    }
   }
 
   protected override visitUnion(node: UnionNode): void {

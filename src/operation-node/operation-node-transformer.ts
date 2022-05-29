@@ -694,6 +694,8 @@ export class OperationNodeTransformer {
     return {
       kind: 'DropConstraintNode',
       constraintName: this.transformNode(node.constraintName),
+      ifExists: node.ifExists,
+      modifier: node.modifier,
     }
   }
 

@@ -1519,6 +1519,46 @@ for (const dialect of BUILT_IN_DIALECTS) {
             await builder.execute()
           })
         })
+
+        describe('drop constraint', () => {
+          it('should drop a foreign key constraint', async () => {
+            await ctx.db.schema.dropTable('test').execute()
+
+            await ctx.db.schema
+              .createTable('test2')
+              .addColumn('id', 'integer', (col) => col.unique())
+              .execute()
+
+            await ctx.db.schema
+              .createTable('test')
+              .addColumn('foreign_key', 'integer')
+              .addForeignKeyConstraint(
+                'foreign_key_constraint',
+                ['foreign_key'],
+                'test2',
+                ['id']
+              )
+              .execute()
+
+            const builder = ctx.db.schema
+              .alterTable('test')
+              .dropConstraint('foreign_key_constraint')
+
+            testSql(builder, dialect, {
+              postgres: {
+                sql: 'alter table "test" drop constraint "foreign_key_constraint"',
+                parameters: [],
+              },
+              mysql: {
+                sql: 'alter table `test` drop constraint `foreign_key_constraint`',
+                parameters: [],
+              },
+              sqlite: NOT_SUPPORTED,
+            })
+
+            await builder.execute()
+          })
+        })
       }
     })
 
