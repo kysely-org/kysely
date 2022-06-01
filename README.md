@@ -95,7 +95,7 @@ interface PersonTable {
   // automatically by Kysely.
   last_name: string | null
 
-  // You can specity a different type for each operation (select, insert and
+  // You can specify a different type for each operation (select, insert and
   // update) using the `ColumnType<SelectType, InsertType, UpdateType>`
   // wrapper. Here we define a column `modified_at` that is selected as
   // a `Date`, can optionally be provided as a `string` in inserts and
