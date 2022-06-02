@@ -30,7 +30,7 @@ export class FileMigrationProvider implements MigrationProvider {
 
     for (const fileName of files) {
       if (
-        (fileName.endsWith('.js') || fileName.endsWith('.ts')) &&
+        (fileName.endsWith('.js') || fileName.endsWith('.ts') || fileName.endsWith('.mjs')) &&
         !fileName.endsWith('.d.ts')
       ) {
         const migration = await import(
