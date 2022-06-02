@@ -324,7 +324,7 @@ have. You will probably want to add a simple migration script to your projects l
 ```ts
 import * as path from 'path'
 import { Pool } from 'pg'
-import { promises: fs } from 'fs'
+import { promises as fs } from 'fs'
 import {
   Kysely,
   Migrator,
