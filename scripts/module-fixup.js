@@ -11,10 +11,10 @@ const DIST_PATH = path.join(__dirname, '..', 'dist')
 
 fs.writeFileSync(
   path.join(DIST_PATH, 'cjs', 'package.json'),
-  JSON.stringify({ type: 'commonjs' })
+  JSON.stringify({ type: 'commonjs', sideEffects: false })
 )
 
 fs.writeFileSync(
   path.join(DIST_PATH, 'esm', 'package.json'),
-  JSON.stringify({ type: 'module' })
+  JSON.stringify({ type: 'module', sideEffects: false })
 )

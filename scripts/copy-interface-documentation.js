@@ -4,7 +4,7 @@
  * IF the implementation doesn't have its own documentation.
  *
  * This is done for convenience: users can cmd-click method names and immediately
- * see the documentation. If we don't do that, users need to cmd-click the method
+ * see the documentation. If we don't do this, users need to cmd-click the method
  * and then manually find the correct interface that contains the documentation.
  *
  * Hovering over a method/property works even without this script, but not all
