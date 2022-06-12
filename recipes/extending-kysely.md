@@ -34,15 +34,14 @@ function values<R extends Record<string, unknown>, A extends string>(
   // Transform the records into a list of lists such as
   // ($1, $2, $3), ($4, $5, $6)
   const values = sql.join(
-    records.map((r) => {
-      const v = sql.join(keys.map((k) => sql`${r[k]}`))
-      return sql`(${v})`
-    })
+    records.map((r) => sql`(${sql.join(keys.map((k) => r[k]))})`)
   )
 
-  // Create a raw alias that specifies the table alias AND
-  // a name for each column in the `values` list.
-  const aliasSql = sql.raw(`${alias}(${keys.join(', ')})`)
+  // Create the alias `v(id, v1, v2)` that specifies the table alias
+  // AND a name for each column.
+  const wrappedAlias = sql.ref(alias)
+  const wrappedColumns = sql.join(keys.map(sql.ref))
+  const aliasSql = sql`${wrappedAlias}(${wrappedColumns})`
 
   // Finally create a single `AliasedRawBuilder` instance of the
   // whole thing. Note that we need to explicitly specify
