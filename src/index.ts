@@ -2,7 +2,6 @@ export * from './kysely.js'
 export * from './query-creator.js'
 
 export * from './query-builder/where-interface.js'
-export * from './query-builder/join-interface.js'
 export * from './query-builder/returning-interface.js'
 export * from './query-builder/having-interface.js'
 export * from './query-builder/select-query-builder.js'
