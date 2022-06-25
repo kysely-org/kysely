@@ -219,7 +219,7 @@ export type JoinInterfaceWithInnerJoin<
   ? JoinInterface<Omit<DB, RA> & Record<RA, RO>, Exclude<TB, RA> | RA>
   : never
 
-type JoinInterfaceWithLeftJoin<
+export type JoinInterfaceWithLeftJoin<
   DB,
   TB extends keyof DB,
   TE extends TableExpression<DB, TB>
