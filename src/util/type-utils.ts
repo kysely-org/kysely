@@ -156,6 +156,8 @@ export type UnknownRow = Record<string, unknown>
 
 export type Nullable<T> = { [P in keyof T]: T[P] | null }
 
+export type NullableValues<T> = { [P in keyof T]: Nullable<T[P]> }
+
 /**
  * Takes all properties from T1 and merges all properties from T2
  * that don't exist in T1 as optional properties.

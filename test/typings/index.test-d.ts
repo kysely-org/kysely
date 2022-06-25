@@ -48,7 +48,7 @@ interface Movie {
 
 interface Book {
   id: GeneratedAlways<number>
-  name: string;
+  name: string
 }
 
 interface Database {
@@ -154,7 +154,7 @@ async function testFromSingle(db: Kysely<Database>) {
   // Should not be able to start a query against non-existent aliased table.
   expectError(db.selectFrom('doesnt_exists as de'))
 
-  const [r11] = await db.selectFrom('book').select('id').execute();
+  const [r11] = await db.selectFrom('book').select('id').execute()
   expectType<{ id: number }>(r11)
 }
 
@@ -587,6 +587,19 @@ async function testJoin(db: Kysely<Database>) {
     stars: number | null
   }>(r7)
 
+  const r8 = await db
+    .updateTable('person')
+    .innerJoin('pet', 'pet.owner_id', 'person.id')
+    .set({ last_name: 'Jennifer' })
+
+  // Refer to table that's not joined
+  expectError(
+    db.selectFrom('person').innerJoin('movie', 'movie.id', 'pet.owner_id')
+  )
+
+  // Refer to column that doesn't exist
+  expectError(db.selectFrom('person').innerJoin('movie', 'foo', 'person.id'))
+
   // Refer to table that's not joined
   expectError(
     db
@@ -686,9 +699,9 @@ async function testInsert(db: Kysely<Database>) {
   )
 
   // GeneratedAlways column is not allowed to be inserted
-  expectError(db.insertInto('book').values({id: 1, name: 'foo'}))
+  expectError(db.insertInto('book').values({ id: 1, name: 'foo' }))
 
-  db.insertInto('book').values({name: 'bar'})
+  db.insertInto('book').values({ name: 'bar' })
 }
 
 async function testReturning(db: Kysely<Database>) {
@@ -779,9 +792,9 @@ async function testUpdate(db: Kysely<Database>) {
   )
 
   // GeneratedAlways column is not allowed to be updated
-  expectError(db.updateTable('book').set({id: 1, name: 'foo'}))
+  expectError(db.updateTable('book').set({ id: 1, name: 'foo' }))
 
-  db.updateTable('book').set({name: 'bar'})
+  db.updateTable('book').set({ name: 'bar' })
 }
 
 async function testDelete(db: Kysely<Database>) {
@@ -1069,4 +1082,66 @@ async function testGenericSelect<T extends keyof Database>(
 
 async function testGenericUpdate(db: Kysely<Database>, table: 'pet' | 'movie') {
   await db.updateTable(table).set({ id: '123' }).execute()
+}
+
+async function testDeepNesting(db: Kysely<Database>) {
+  const r = await db
+    .selectFrom('person')
+    .innerJoin('pet', 'pet.owner_id', 'person.id')
+    .innerJoin('pet', 'pet.owner_id', 'person.id')
+    .innerJoin('pet', 'pet.owner_id', 'person.id')
+    .innerJoin('pet', 'pet.owner_id', 'person.id')
+    .innerJoin('pet', 'pet.owner_id', 'person.id')
+    .innerJoin('pet', 'pet.owner_id', 'person.id')
+    .innerJoin('pet', 'pet.owner_id', 'person.id')
+    .innerJoin('pet', 'pet.owner_id', 'person.id')
+    .innerJoin('pet', 'pet.owner_id', 'person.id')
+    .innerJoin('pet', 'pet.owner_id', 'person.id')
+    .innerJoin('pet', 'pet.owner_id', 'person.id')
+    .innerJoin('pet', 'pet.owner_id', 'person.id')
+    .innerJoin('pet', 'pet.owner_id', 'person.id')
+    .innerJoin('pet', 'pet.owner_id', 'person.id')
+    .innerJoin('pet', 'pet.owner_id', 'person.id')
+    .innerJoin('pet', 'pet.owner_id', 'person.id')
+    .innerJoin('pet', 'pet.owner_id', 'person.id')
+    .innerJoin('pet', 'pet.owner_id', 'person.id')
+    .innerJoin('pet', 'pet.owner_id', 'person.id')
+    .innerJoin('pet', 'pet.owner_id', 'person.id')
+    .innerJoin('pet', 'pet.owner_id', 'person.id')
+    .innerJoin('pet', 'pet.owner_id', 'person.id')
+    .innerJoin('pet', 'pet.owner_id', 'person.id')
+    .innerJoin('pet', 'pet.owner_id', 'person.id')
+    .innerJoin('pet', 'pet.owner_id', 'person.id')
+    .innerJoin('pet', 'pet.owner_id', 'person.id')
+    .innerJoin('pet', 'pet.owner_id', 'person.id')
+    .innerJoin('pet', 'pet.owner_id', 'person.id')
+    .innerJoin('pet', 'pet.owner_id', 'person.id')
+    .innerJoin('pet', 'pet.owner_id', 'person.id')
+    .innerJoin('pet', 'pet.owner_id', 'person.id')
+    .innerJoin('pet', 'pet.owner_id', 'person.id')
+    .innerJoin('pet', 'pet.owner_id', 'person.id')
+    .innerJoin('pet', 'pet.owner_id', 'person.id')
+    .innerJoin('pet', 'pet.owner_id', 'person.id')
+    .innerJoin('pet', 'pet.owner_id', 'person.id')
+    .innerJoin('pet', 'pet.owner_id', 'person.id')
+    .innerJoin('pet', 'pet.owner_id', 'person.id')
+    .innerJoin('pet', 'pet.owner_id', 'person.id')
+    .innerJoin('pet', 'pet.owner_id', 'person.id')
+    .innerJoin('pet', 'pet.owner_id', 'person.id')
+    .innerJoin('pet', 'pet.owner_id', 'person.id')
+    .innerJoin('pet', 'pet.owner_id', 'person.id')
+    .innerJoin('pet', 'pet.owner_id', 'person.id')
+    .innerJoin('pet', 'pet.owner_id', 'person.id')
+    .innerJoin('pet', 'pet.owner_id', 'person.id')
+    .innerJoin('pet', 'pet.owner_id', 'person.id')
+    .innerJoin('pet', 'pet.owner_id', 'person.id')
+    .innerJoin('pet', 'pet.owner_id', 'person.id')
+    .innerJoin('pet', 'pet.owner_id', 'person.id')
+    .innerJoin('pet', 'pet.owner_id', 'person.id')
+    .innerJoin('pet', 'pet.owner_id', 'person.id')
+    .innerJoin('movie', 'movie.id', 'person.id')
+    .select(['age', 'last_name'])
+    .executeTakeFirstOrThrow()
+
+  expectType<{ age: number; last_name: string | null }>(r)
 }

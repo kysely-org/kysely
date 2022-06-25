@@ -6,14 +6,7 @@ import {
   JoinReferenceExpression,
   parseJoin,
 } from '../parser/join-parser.js'
-import {
-  TableExpression,
-  TableExpressionDatabase,
-  TableExpressionTables,
-  LeftJoinTableExpressionDatabase,
-  RightJoinTableExpressionDatabase,
-  FullJoinTableExpressionDatabase,
-} from '../parser/table-parser.js'
+import { TableExpression } from '../parser/table-parser.js'
 import {
   parseSelectExpressionOrList,
   parseSelectAll,
@@ -43,6 +36,8 @@ import { QueryNode } from '../operation-node/query-node.js'
 import {
   AnyRawBuilder,
   MergePartial,
+  Nullable,
+  NullableValues,
   SingleResultType,
 } from '../util/type-utils.js'
 import {
@@ -65,6 +60,7 @@ import { JoinInterface } from './join-interface.js'
 import { NoResultError, NoResultErrorConstructor } from './no-result-error.js'
 import { HavingInterface } from './having-interface.js'
 import { IdentifierNode } from '../operation-node/identifier-node.js'
+import { AliasedRawBuilder } from '../raw-builder/raw-builder.js'
 
 export class SelectQueryBuilder<DB, TB extends keyof DB, O>
   implements
@@ -707,27 +703,12 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
     TE extends TableExpression<DB, TB>,
     K1 extends JoinReferenceExpression<DB, TB, TE>,
     K2 extends JoinReferenceExpression<DB, TB, TE>
-  >(
-    table: TE,
-    k1: K1,
-    k2: K2
-  ): SelectQueryBuilder<
-    TableExpressionDatabase<DB, TE>,
-    TableExpressionTables<DB, TB, TE>,
-    O
-  >
+  >(table: TE, k1: K1, k2: K2): SelectQueryBuilderWithInnerJoin<DB, TB, O, TE>
 
   innerJoin<
     TE extends TableExpression<DB, TB>,
     FN extends JoinCallbackExpression<DB, TB, TE>
-  >(
-    table: TE,
-    callback: FN
-  ): SelectQueryBuilder<
-    TableExpressionDatabase<DB, TE>,
-    TableExpressionTables<DB, TB, TE>,
-    O
-  >
+  >(table: TE, callback: FN): SelectQueryBuilderWithInnerJoin<DB, TB, O, TE>
 
   innerJoin(...args: any): any {
     return new SelectQueryBuilder({
@@ -743,27 +724,12 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
     TE extends TableExpression<DB, TB>,
     K1 extends JoinReferenceExpression<DB, TB, TE>,
     K2 extends JoinReferenceExpression<DB, TB, TE>
-  >(
-    table: TE,
-    k1: K1,
-    k2: K2
-  ): SelectQueryBuilder<
-    LeftJoinTableExpressionDatabase<DB, TE>,
-    TableExpressionTables<DB, TB, TE>,
-    O
-  >
+  >(table: TE, k1: K1, k2: K2): SelectQueryBuilderWithLeftJoin<DB, TB, O, TE>
 
   leftJoin<
     TE extends TableExpression<DB, TB>,
     FN extends JoinCallbackExpression<DB, TB, TE>
-  >(
-    table: TE,
-    callback: FN
-  ): SelectQueryBuilder<
-    LeftJoinTableExpressionDatabase<DB, TE>,
-    TableExpressionTables<DB, TB, TE>,
-    O
-  >
+  >(table: TE, callback: FN): SelectQueryBuilderWithLeftJoin<DB, TB, O, TE>
 
   leftJoin(...args: any): any {
     return new SelectQueryBuilder({
@@ -779,27 +745,12 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
     TE extends TableExpression<DB, TB>,
     K1 extends JoinReferenceExpression<DB, TB, TE>,
     K2 extends JoinReferenceExpression<DB, TB, TE>
-  >(
-    table: TE,
-    k1: K1,
-    k2: K2
-  ): SelectQueryBuilder<
-    RightJoinTableExpressionDatabase<DB, TB, TE>,
-    TableExpressionTables<DB, TB, TE>,
-    O
-  >
+  >(table: TE, k1: K1, k2: K2): SelectQueryBuilderWithRightJoin<DB, TB, O, TE>
 
   rightJoin<
     TE extends TableExpression<DB, TB>,
     FN extends JoinCallbackExpression<DB, TB, TE>
-  >(
-    table: TE,
-    callback: FN
-  ): SelectQueryBuilder<
-    RightJoinTableExpressionDatabase<DB, TB, TE>,
-    TableExpressionTables<DB, TB, TE>,
-    O
-  >
+  >(table: TE, callback: FN): SelectQueryBuilderWithRightJoin<DB, TB, O, TE>
 
   rightJoin(...args: any): any {
     return new SelectQueryBuilder({
@@ -815,27 +766,12 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
     TE extends TableExpression<DB, TB>,
     K1 extends JoinReferenceExpression<DB, TB, TE>,
     K2 extends JoinReferenceExpression<DB, TB, TE>
-  >(
-    table: TE,
-    k1: K1,
-    k2: K2
-  ): SelectQueryBuilder<
-    FullJoinTableExpressionDatabase<DB, TB, TE>,
-    TableExpressionTables<DB, TB, TE>,
-    O
-  >
+  >(table: TE, k1: K1, k2: K2): SelectQueryBuilderWithFullJoin<DB, TB, O, TE>
 
   fullJoin<
     TE extends TableExpression<DB, TB>,
     FN extends JoinCallbackExpression<DB, TB, TE>
-  >(
-    table: TE,
-    callback: FN
-  ): SelectQueryBuilder<
-    FullJoinTableExpressionDatabase<DB, TB, TE>,
-    TableExpressionTables<DB, TB, TE>,
-    O
-  >
+  >(table: TE, callback: FN): SelectQueryBuilderWithFullJoin<DB, TB, O, TE>
 
   fullJoin(...args: any): any {
     return new SelectQueryBuilder({
@@ -1406,3 +1342,171 @@ export class AliasedQueryBuilder<
     return AliasNode.create(node, IdentifierNode.create(this.#alias))
   }
 }
+
+export type SelectQueryBuilderWithInnerJoin<
+  DB,
+  TB extends keyof DB,
+  O,
+  TE extends TableExpression<DB, TB>
+> = TE extends `${infer T} as ${infer A}`
+  ? T extends keyof DB
+    ? SelectQueryBuilder<Omit<DB, A> & Record<A, DB[T]>, Exclude<TB, A> | A, O>
+    : never
+  : TE extends keyof DB
+  ? SelectQueryBuilder<DB, TB | TE, O>
+  : TE extends AliasedQueryBuilder<any, any, infer QO, infer QA>
+  ? SelectQueryBuilder<Omit<DB, QA> & Record<QA, QO>, Exclude<TB, QA> | QA, O>
+  : TE extends (qb: any) => AliasedQueryBuilder<any, any, infer QO, infer QA>
+  ? SelectQueryBuilder<Omit<DB, QA> & Record<QA, QO>, Exclude<TB, QA> | QA, O>
+  : TE extends AliasedRawBuilder<infer RO, infer RA>
+  ? SelectQueryBuilder<Omit<DB, RA> & Record<RA, RO>, Exclude<TB, RA> | RA, O>
+  : TE extends (qb: any) => AliasedRawBuilder<infer RO, infer RA>
+  ? SelectQueryBuilder<Omit<DB, RA> & Record<RA, RO>, Exclude<TB, RA> | RA, O>
+  : never
+
+export type SelectQueryBuilderWithLeftJoin<
+  DB,
+  TB extends keyof DB,
+  O,
+  TE extends TableExpression<DB, TB>
+> = TE extends `${infer T} as ${infer A}`
+  ? T extends keyof DB
+    ? SelectQueryBuilder<
+        Omit<DB, A> & Record<A, Nullable<DB[T]>>,
+        Exclude<TB, A> | A,
+        O
+      >
+    : never
+  : TE extends keyof DB
+  ? SelectQueryBuilder<
+      Omit<DB, TE> & Record<TE, Nullable<DB[TE]>>,
+      Exclude<TB, TE> | TE,
+      O
+    >
+  : TE extends AliasedQueryBuilder<any, any, infer QO, infer QA>
+  ? SelectQueryBuilder<
+      Omit<DB, QA> & Record<QA, Nullable<QO>>,
+      Exclude<TB, QA> | QA,
+      O
+    >
+  : TE extends (qb: any) => AliasedQueryBuilder<any, any, infer QO, infer QA>
+  ? SelectQueryBuilder<
+      Omit<DB, QA> & Record<QA, Nullable<QO>>,
+      Exclude<TB, QA> | QA,
+      O
+    >
+  : TE extends AliasedRawBuilder<infer RO, infer RA>
+  ? SelectQueryBuilder<
+      Omit<DB, RA> & Record<RA, Nullable<RO>>,
+      Exclude<TB, RA> | RA,
+      O
+    >
+  : TE extends (qb: any) => AliasedRawBuilder<infer RO, infer RA>
+  ? SelectQueryBuilder<
+      Omit<DB, RA> & Record<RA, Nullable<RO>>,
+      Exclude<TB, RA> | RA,
+      O
+    >
+  : never
+
+export type SelectQueryBuilderWithRightJoin<
+  DB,
+  TB extends keyof DB,
+  O,
+  TE extends TableExpression<DB, TB>
+> = TE extends `${infer T} as ${infer A}`
+  ? T extends keyof DB
+    ? SelectQueryBuilder<
+        Omit<DB, TB | A> & NullableValues<Pick<DB, TB>> & Record<A, DB[T]>,
+        TB | A,
+        O
+      >
+    : never
+  : TE extends keyof DB
+  ? SelectQueryBuilder<
+      Omit<DB, TB | TE> & NullableValues<Pick<DB, TB>> & Pick<DB, TE>,
+      TB | TE,
+      O
+    >
+  : TE extends AliasedQueryBuilder<any, any, infer QO, infer QA>
+  ? SelectQueryBuilder<
+      Omit<DB, TB | QA> & NullableValues<Pick<DB, TB>> & Record<QA, QO>,
+      TB | QA,
+      O
+    >
+  : TE extends (qb: any) => AliasedQueryBuilder<any, any, infer QO, infer QA>
+  ? SelectQueryBuilder<
+      Omit<DB, TB | QA> & NullableValues<Pick<DB, TB>> & Record<QA, QO>,
+      TB | QA,
+      O
+    >
+  : TE extends AliasedRawBuilder<infer RO, infer RA>
+  ? SelectQueryBuilder<
+      Omit<DB, TB | RA> & NullableValues<Pick<DB, TB>> & Record<RA, RO>,
+      TB | RA,
+      O
+    >
+  : TE extends (qb: any) => AliasedRawBuilder<infer RO, infer RA>
+  ? SelectQueryBuilder<
+      Omit<DB, TB | RA> & NullableValues<Pick<DB, TB>> & Record<RA, RO>,
+      TB | RA,
+      O
+    >
+  : never
+
+export type SelectQueryBuilderWithFullJoin<
+  DB,
+  TB extends keyof DB,
+  O,
+  TE extends TableExpression<DB, TB>
+> = TE extends `${infer T} as ${infer A}`
+  ? T extends keyof DB
+    ? SelectQueryBuilder<
+        Omit<DB, TB | A> &
+          NullableValues<Pick<DB, TB>> &
+          Record<A, Nullable<DB[T]>>,
+        TB | A,
+        O
+      >
+    : never
+  : TE extends keyof DB
+  ? SelectQueryBuilder<
+      Omit<DB, TB | TE> &
+        NullableValues<Pick<DB, TB>> &
+        NullableValues<Pick<DB, TE>>,
+      TB | TE,
+      O
+    >
+  : TE extends AliasedQueryBuilder<any, any, infer QO, infer QA>
+  ? SelectQueryBuilder<
+      Omit<DB, TB | QA> &
+        NullableValues<Pick<DB, TB>> &
+        Record<QA, Nullable<QO>>,
+      TB | QA,
+      O
+    >
+  : TE extends (qb: any) => AliasedQueryBuilder<any, any, infer QO, infer QA>
+  ? SelectQueryBuilder<
+      Omit<DB, TB | QA> &
+        NullableValues<Pick<DB, TB>> &
+        Record<QA, Nullable<QO>>,
+      TB | QA,
+      O
+    >
+  : TE extends AliasedRawBuilder<infer RO, infer RA>
+  ? SelectQueryBuilder<
+      Omit<DB, TB | RA> &
+        NullableValues<Pick<DB, TB>> &
+        Record<RA, Nullable<RO>>,
+      TB | RA,
+      O
+    >
+  : TE extends (qb: any) => AliasedRawBuilder<infer RO, infer RA>
+  ? SelectQueryBuilder<
+      Omit<DB, TB | RA> &
+        NullableValues<Pick<DB, TB>> &
+        Record<RA, Nullable<RO>>,
+      TB | RA,
+      O
+    >
+  : never

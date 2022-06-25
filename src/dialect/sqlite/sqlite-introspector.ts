@@ -57,9 +57,14 @@ export class SqliteIntrospector implements DatabaseIntrospector {
     const db = this.#db
 
     const columns = await db
-      .selectFrom(sql`PRAGMA_TABLE_INFO(${table})`.as('table_info'))
+      .selectFrom(
+        sql<{
+          name: string
+          type: ColumnDataType
+          notnull: 0 | 1
+        }>`PRAGMA_TABLE_INFO(${table})`.as('table_info')
+      )
       .select(['name', 'type', 'notnull'])
-      .castTo<{ name: string; type: ColumnDataType; notnull: 0 | 1 }>()
       .execute()
 
     return {

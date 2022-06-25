@@ -2,14 +2,10 @@ import {
   JoinCallbackExpression,
   JoinReferenceExpression,
 } from '../parser/join-parser.js'
-import {
-  FullJoinTableExpressionDatabase,
-  LeftJoinTableExpressionDatabase,
-  RightJoinTableExpressionDatabase,
-  TableExpression,
-  TableExpressionDatabase,
-  TableExpressionTables,
-} from '../parser/table-parser.js'
+import { TableExpression } from '../parser/table-parser.js'
+import { AliasedRawBuilder } from '../raw-builder/raw-builder.js'
+import { Nullable, NullableValues } from '../util/type-utils.js'
+import { AliasedQueryBuilder } from './select-query-builder.js'
 
 export interface JoinInterface<DB, TB extends keyof DB> {
   /**
@@ -129,10 +125,7 @@ export interface JoinInterface<DB, TB extends keyof DB> {
     table: TE,
     k1: K1,
     k2: K2
-  ): JoinInterface<
-    TableExpressionDatabase<DB, TE>,
-    TableExpressionTables<DB, TB, TE>
-  >
+  ): JoinInterfaceWithInnerJoin<DB, TB, TE>
 
   innerJoin<
     TE extends TableExpression<DB, TB>,
@@ -140,10 +133,7 @@ export interface JoinInterface<DB, TB extends keyof DB> {
   >(
     table: TE,
     callback: FN
-  ): JoinInterface<
-    TableExpressionDatabase<DB, TE>,
-    TableExpressionTables<DB, TB, TE>
-  >
+  ): JoinInterfaceWithInnerJoin<DB, TB, TE>
 
   /**
    * Just like {@link innerJoin} but adds a left join nstead of an inner join.
@@ -156,10 +146,7 @@ export interface JoinInterface<DB, TB extends keyof DB> {
     table: TE,
     k1: K1,
     k2: K2
-  ): JoinInterface<
-    LeftJoinTableExpressionDatabase<DB, TE>,
-    TableExpressionTables<DB, TB, TE>
-  >
+  ): JoinInterfaceWithLeftJoin<DB, TB, TE>
 
   leftJoin<
     TE extends TableExpression<DB, TB>,
@@ -167,10 +154,7 @@ export interface JoinInterface<DB, TB extends keyof DB> {
   >(
     table: TE,
     callback: FN
-  ): JoinInterface<
-    LeftJoinTableExpressionDatabase<DB, TE>,
-    TableExpressionTables<DB, TB, TE>
-  >
+  ): JoinInterfaceWithLeftJoin<DB, TB, TE>
 
   /**
    * Just like {@link innerJoin} but adds a right join instead of an inner join.
@@ -183,10 +167,7 @@ export interface JoinInterface<DB, TB extends keyof DB> {
     table: TE,
     k1: K1,
     k2: K2
-  ): JoinInterface<
-    RightJoinTableExpressionDatabase<DB, TB, TE>,
-    TableExpressionTables<DB, TB, TE>
-  >
+  ): JoinInterfaceWithRightJoin<DB, TB, TE>
 
   rightJoin<
     TE extends TableExpression<DB, TB>,
@@ -194,10 +175,7 @@ export interface JoinInterface<DB, TB extends keyof DB> {
   >(
     table: TE,
     callback: FN
-  ): JoinInterface<
-    RightJoinTableExpressionDatabase<DB, TB, TE>,
-    TableExpressionTables<DB, TB, TE>
-  >
+  ): JoinInterfaceWithRightJoin<DB, TB, TE>
 
   /**
    * Just like {@link innerJoin} but adds a full join instead of an inner join.
@@ -210,10 +188,7 @@ export interface JoinInterface<DB, TB extends keyof DB> {
     table: TE,
     k1: K1,
     k2: K2
-  ): JoinInterface<
-    FullJoinTableExpressionDatabase<DB, TB, TE>,
-    TableExpressionTables<DB, TB, TE>
-  >
+  ): JoinInterfaceWithFullJoin<DB, TB, TE>
 
   fullJoin<
     TE extends TableExpression<DB, TB>,
@@ -221,8 +196,139 @@ export interface JoinInterface<DB, TB extends keyof DB> {
   >(
     table: TE,
     callback: FN
-  ): JoinInterface<
-    FullJoinTableExpressionDatabase<DB, TB, TE>,
-    TableExpressionTables<DB, TB, TE>
-  >
+  ): JoinInterfaceWithFullJoin<DB, TB, TE>
 }
+
+export type JoinInterfaceWithInnerJoin<
+  DB,
+  TB extends keyof DB,
+  TE extends TableExpression<DB, TB>
+> = TE extends `${infer T} as ${infer A}`
+  ? T extends keyof DB
+    ? JoinInterface<Omit<DB, A> & Record<A, DB[T]>, Exclude<TB, A> | A>
+    : never
+  : TE extends keyof DB
+  ? JoinInterface<DB, TB | TE>
+  : TE extends AliasedQueryBuilder<any, any, infer QO, infer QA>
+  ? JoinInterface<Omit<DB, QA> & Record<QA, QO>, Exclude<TB, QA> | QA>
+  : TE extends (qb: any) => AliasedQueryBuilder<any, any, infer QO, infer QA>
+  ? JoinInterface<Omit<DB, QA> & Record<QA, QO>, Exclude<TB, QA> | QA>
+  : TE extends AliasedRawBuilder<infer RO, infer RA>
+  ? JoinInterface<Omit<DB, RA> & Record<RA, RO>, Exclude<TB, RA> | RA>
+  : TE extends (qb: any) => AliasedRawBuilder<infer RO, infer RA>
+  ? JoinInterface<Omit<DB, RA> & Record<RA, RO>, Exclude<TB, RA> | RA>
+  : never
+
+type JoinInterfaceWithLeftJoin<
+  DB,
+  TB extends keyof DB,
+  TE extends TableExpression<DB, TB>
+> = TE extends `${infer T} as ${infer A}`
+  ? T extends keyof DB
+    ? JoinInterface<
+        Omit<DB, A> & Record<A, Nullable<DB[T]>>,
+        Exclude<TB, A> | A
+      >
+    : never
+  : TE extends keyof DB
+  ? JoinInterface<
+      Omit<DB, TE> & Record<TE, Nullable<DB[TE]>>,
+      Exclude<TB, TE> | TE
+    >
+  : TE extends AliasedQueryBuilder<any, any, infer QO, infer QA>
+  ? JoinInterface<Omit<DB, QA> & Record<QA, Nullable<QO>>, Exclude<TB, QA> | QA>
+  : TE extends (qb: any) => AliasedQueryBuilder<any, any, infer QO, infer QA>
+  ? JoinInterface<Omit<DB, QA> & Record<QA, Nullable<QO>>, Exclude<TB, QA> | QA>
+  : TE extends AliasedRawBuilder<infer RO, infer RA>
+  ? JoinInterface<Omit<DB, RA> & Record<RA, Nullable<RO>>, Exclude<TB, RA> | RA>
+  : TE extends (qb: any) => AliasedRawBuilder<infer RO, infer RA>
+  ? JoinInterface<Omit<DB, RA> & Record<RA, Nullable<RO>>, Exclude<TB, RA> | RA>
+  : never
+
+export type JoinInterfaceWithRightJoin<
+  DB,
+  TB extends keyof DB,
+  TE extends TableExpression<DB, TB>
+> = TE extends `${infer T} as ${infer A}`
+  ? T extends keyof DB
+    ? JoinInterface<
+        Omit<DB, TB | A> & NullableValues<Pick<DB, TB>> & Record<A, DB[T]>,
+        TB | A
+      >
+    : never
+  : TE extends keyof DB
+  ? JoinInterface<
+      Omit<DB, TB | TE> & NullableValues<Pick<DB, TB>> & Pick<DB, TE>,
+      TB | TE
+    >
+  : TE extends AliasedQueryBuilder<any, any, infer QO, infer QA>
+  ? JoinInterface<
+      Omit<DB, TB | QA> & NullableValues<Pick<DB, TB>> & Record<QA, QO>,
+      TB | QA
+    >
+  : TE extends (qb: any) => AliasedQueryBuilder<any, any, infer QO, infer QA>
+  ? JoinInterface<
+      Omit<DB, TB | QA> & NullableValues<Pick<DB, TB>> & Record<QA, QO>,
+      TB | QA
+    >
+  : TE extends AliasedRawBuilder<infer RO, infer RA>
+  ? JoinInterface<
+      Omit<DB, TB | RA> & NullableValues<Pick<DB, TB>> & Record<RA, RO>,
+      TB | RA
+    >
+  : TE extends (qb: any) => AliasedRawBuilder<infer RO, infer RA>
+  ? JoinInterface<
+      Omit<DB, TB | RA> & NullableValues<Pick<DB, TB>> & Record<RA, RO>,
+      TB | RA
+    >
+  : never
+
+export type JoinInterfaceWithFullJoin<
+  DB,
+  TB extends keyof DB,
+  TE extends TableExpression<DB, TB>
+> = TE extends `${infer T} as ${infer A}`
+  ? T extends keyof DB
+    ? JoinInterface<
+        Omit<DB, TB | A> &
+          NullableValues<Pick<DB, TB>> &
+          Record<A, Nullable<DB[T]>>,
+        TB | A
+      >
+    : never
+  : TE extends keyof DB
+  ? JoinInterface<
+      Omit<DB, TB | TE> &
+        NullableValues<Pick<DB, TB>> &
+        NullableValues<Pick<DB, TE>>,
+      TB | TE
+    >
+  : TE extends AliasedQueryBuilder<any, any, infer QO, infer QA>
+  ? JoinInterface<
+      Omit<DB, TB | QA> &
+        NullableValues<Pick<DB, TB>> &
+        Record<QA, Nullable<QO>>,
+      TB | QA
+    >
+  : TE extends (qb: any) => AliasedQueryBuilder<any, any, infer QO, infer QA>
+  ? JoinInterface<
+      Omit<DB, TB | QA> &
+        NullableValues<Pick<DB, TB>> &
+        Record<QA, Nullable<QO>>,
+      TB | QA
+    >
+  : TE extends AliasedRawBuilder<infer RO, infer RA>
+  ? JoinInterface<
+      Omit<DB, TB | RA> &
+        NullableValues<Pick<DB, TB>> &
+        Record<RA, Nullable<RO>>,
+      TB | RA
+    >
+  : TE extends (qb: any) => AliasedRawBuilder<infer RO, infer RA>
+  ? JoinInterface<
+      Omit<DB, TB | RA> &
+        NullableValues<Pick<DB, TB>> &
+        Record<RA, Nullable<RO>>,
+      TB | RA
+    >
+  : never

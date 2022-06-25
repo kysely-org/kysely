@@ -1,5 +1,6 @@
 import { IdentifierNode } from '../operation-node/identifier-node.js'
 import { OperationNode } from '../operation-node/operation-node.js'
+import { PrimitiveValueListNode } from '../operation-node/primitive-value-list-node.js'
 import { RawNode } from '../operation-node/raw-node.js'
 import { ValueNode } from '../operation-node/value-node.js'
 import { parseStringReference } from '../parser/reference-parser.js'

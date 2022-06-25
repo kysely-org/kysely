@@ -9,9 +9,6 @@ import {
   TableExpression,
   TableExpressionDatabase,
   TableExpressionTables,
-  LeftJoinTableExpressionDatabase,
-  RightJoinTableExpressionDatabase,
-  FullJoinTableExpressionDatabase,
   parseTableExpressionOrList,
   TableExpressionOrList,
 } from '../parser/table-parser.js'
@@ -37,6 +34,8 @@ import { QueryNode } from '../operation-node/query-node.js'
 import {
   AnyRawBuilder,
   MergePartial,
+  Nullable,
+  NullableValues,
   SingleResultType,
 } from '../util/type-utils.js'
 import { UpdateQueryNode } from '../operation-node/update-query-node.js'
@@ -56,6 +55,8 @@ import { JoinInterface } from './join-interface.js'
 import { ReturningInterface } from './returning-interface.js'
 import { NoResultError, NoResultErrorConstructor } from './no-result-error.js'
 import { Selectable } from '../util/column-type.js'
+import { AliasedQueryBuilder } from './select-query-builder.js'
+import { AliasedRawBuilder } from '../raw-builder/raw-builder.js'
 
 export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
   implements
@@ -248,25 +249,12 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
     table: TE,
     k1: K1,
     k2: K2
-  ): UpdateQueryBuilder<
-    TableExpressionDatabase<DB, TE>,
-    UT,
-    TableExpressionTables<DB, TB, TE>,
-    O
-  >
+  ): UpdateQueryBuilderWithInnerJoin<DB, UT, TB, O, TE>
 
   innerJoin<
     TE extends TableExpression<DB, TB>,
     FN extends JoinCallbackExpression<DB, TB, TE>
-  >(
-    table: TE,
-    callback: FN
-  ): UpdateQueryBuilder<
-    TableExpressionDatabase<DB, TE>,
-    UT,
-    TableExpressionTables<DB, TB, TE>,
-    O
-  >
+  >(table: TE, callback: FN): UpdateQueryBuilderWithInnerJoin<DB, UT, TB, O, TE>
 
   innerJoin(...args: any): any {
     return new UpdateQueryBuilder({
@@ -286,25 +274,12 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
     table: TE,
     k1: K1,
     k2: K2
-  ): UpdateQueryBuilder<
-    LeftJoinTableExpressionDatabase<DB, TE>,
-    UT,
-    TableExpressionTables<DB, TB, TE>,
-    O
-  >
+  ): UpdateQueryBuilderWithLeftJoin<DB, UT, TB, O, TE>
 
   leftJoin<
     TE extends TableExpression<DB, TB>,
     FN extends JoinCallbackExpression<DB, TB, TE>
-  >(
-    table: TE,
-    callback: FN
-  ): UpdateQueryBuilder<
-    LeftJoinTableExpressionDatabase<DB, TE>,
-    UT,
-    TableExpressionTables<DB, TB, TE>,
-    O
-  >
+  >(table: TE, callback: FN): UpdateQueryBuilderWithLeftJoin<DB, UT, TB, O, TE>
 
   leftJoin(...args: any): any {
     return new UpdateQueryBuilder({
@@ -324,25 +299,12 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
     table: TE,
     k1: K1,
     k2: K2
-  ): UpdateQueryBuilder<
-    RightJoinTableExpressionDatabase<DB, TB, TE>,
-    UT,
-    TableExpressionTables<DB, TB, TE>,
-    O
-  >
+  ): UpdateQueryBuilderWithRightJoin<DB, UT, TB, O, TE>
 
   rightJoin<
     TE extends TableExpression<DB, TB>,
     FN extends JoinCallbackExpression<DB, TB, TE>
-  >(
-    table: TE,
-    callback: FN
-  ): UpdateQueryBuilder<
-    RightJoinTableExpressionDatabase<DB, TB, TE>,
-    UT,
-    TableExpressionTables<DB, TB, TE>,
-    O
-  >
+  >(table: TE, callback: FN): UpdateQueryBuilderWithRightJoin<DB, UT, TB, O, TE>
 
   rightJoin(...args: any): any {
     return new UpdateQueryBuilder({
@@ -362,25 +324,12 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
     table: TE,
     k1: K1,
     k2: K2
-  ): UpdateQueryBuilder<
-    FullJoinTableExpressionDatabase<DB, TB, TE>,
-    UT,
-    TableExpressionTables<DB, TB, TE>,
-    O
-  >
+  ): UpdateQueryBuilderWithFullJoin<DB, UT, TB, O, TE>
 
   fullJoin<
     TE extends TableExpression<DB, TB>,
     FN extends JoinCallbackExpression<DB, TB, TE>
-  >(
-    table: TE,
-    callback: FN
-  ): UpdateQueryBuilder<
-    FullJoinTableExpressionDatabase<DB, TB, TE>,
-    UT,
-    TableExpressionTables<DB, TB, TE>,
-    O
-  >
+  >(table: TE, callback: FN): UpdateQueryBuilderWithFullJoin<DB, UT, TB, O, TE>
 
   fullJoin(...args: any): any {
     return new UpdateQueryBuilder({
@@ -696,3 +645,218 @@ export interface UpdateQueryBuilderProps {
   readonly queryNode: UpdateQueryNode
   readonly executor: QueryExecutor
 }
+
+export type UpdateQueryBuilderWithInnerJoin<
+  DB,
+  UT extends keyof DB,
+  TB extends keyof DB,
+  O,
+  TE extends TableExpression<DB, TB>
+> = TE extends `${infer T} as ${infer A}`
+  ? T extends keyof DB
+    ? UpdateQueryBuilder<
+        Omit<DB, A> & Record<A, DB[T]>,
+        Exclude<UT, A>,
+        Exclude<TB, A> | A,
+        O
+      >
+    : never
+  : TE extends keyof DB
+  ? UpdateQueryBuilder<DB, UT, TB | TE, O>
+  : TE extends AliasedQueryBuilder<any, any, infer QO, infer QA>
+  ? UpdateQueryBuilder<
+      Omit<DB, QA> & Record<QA, QO>,
+      Exclude<UT, QA>,
+      Exclude<TB, QA> | QA,
+      O
+    >
+  : TE extends (qb: any) => AliasedQueryBuilder<any, any, infer QO, infer QA>
+  ? UpdateQueryBuilder<
+      Omit<DB, QA> & Record<QA, QO>,
+      Exclude<UT, QA>,
+      Exclude<TB, QA> | QA,
+      O
+    >
+  : TE extends AliasedRawBuilder<infer RO, infer RA>
+  ? UpdateQueryBuilder<
+      Omit<DB, RA> & Record<RA, RO>,
+      Exclude<UT, RA>,
+      Exclude<TB, RA> | RA,
+      O
+    >
+  : TE extends (qb: any) => AliasedRawBuilder<infer RO, infer RA>
+  ? UpdateQueryBuilder<
+      Omit<DB, RA> & Record<RA, RO>,
+      Exclude<UT, RA>,
+      Exclude<TB, RA> | RA,
+      O
+    >
+  : never
+
+export type UpdateQueryBuilderWithLeftJoin<
+  DB,
+  UT extends keyof DB,
+  TB extends keyof DB,
+  O,
+  TE extends TableExpression<DB, TB>
+> = TE extends `${infer T} as ${infer A}`
+  ? T extends keyof DB
+    ? UpdateQueryBuilder<
+        Omit<DB, A> & Record<A, Nullable<DB[T]>>,
+        Exclude<UT, A>,
+        Exclude<TB, A> | A,
+        O
+      >
+    : never
+  : TE extends keyof DB
+  ? UpdateQueryBuilder<
+      Omit<DB, TE> & Record<TE, Nullable<DB[TE]>>,
+      Exclude<UT, TE>,
+      Exclude<TB, TE> | TE,
+      O
+    >
+  : TE extends AliasedQueryBuilder<any, any, infer QO, infer QA>
+  ? UpdateQueryBuilder<
+      Omit<DB, QA> & Record<QA, Nullable<QO>>,
+      Exclude<UT, QA>,
+      Exclude<TB, QA> | QA,
+      O
+    >
+  : TE extends (qb: any) => AliasedQueryBuilder<any, any, infer QO, infer QA>
+  ? UpdateQueryBuilder<
+      Omit<DB, QA> & Record<QA, Nullable<QO>>,
+      Exclude<UT, QA>,
+      Exclude<TB, QA> | QA,
+      O
+    >
+  : TE extends AliasedRawBuilder<infer RO, infer RA>
+  ? UpdateQueryBuilder<
+      Omit<DB, RA> & Record<RA, Nullable<RO>>,
+      Exclude<UT, RA>,
+      Exclude<TB, RA> | RA,
+      O
+    >
+  : TE extends (qb: any) => AliasedRawBuilder<infer RO, infer RA>
+  ? UpdateQueryBuilder<
+      Omit<DB, RA> & Record<RA, Nullable<RO>>,
+      Exclude<UT, RA>,
+      Exclude<TB, RA> | RA,
+      O
+    >
+  : never
+
+export type UpdateQueryBuilderWithRightJoin<
+  DB,
+  UT extends keyof DB,
+  TB extends keyof DB,
+  O,
+  TE extends TableExpression<DB, TB>
+> = TE extends `${infer T} as ${infer A}`
+  ? T extends keyof DB
+    ? UpdateQueryBuilder<
+        Omit<DB, TB | A> & NullableValues<Pick<DB, TB>> & Record<A, DB[T]>,
+        UT & (TB | A | Exclude<keyof DB, TB | A>),
+        TB | A,
+        O
+      >
+    : never
+  : TE extends keyof DB
+  ? UpdateQueryBuilder<
+      Omit<DB, TB | TE> & NullableValues<Pick<DB, TB>> & Pick<DB, TE>,
+      UT & (TB | TE | Exclude<keyof DB, TB | TE>),
+      TB | TE,
+      O
+    >
+  : TE extends AliasedQueryBuilder<any, any, infer QO, infer QA>
+  ? UpdateQueryBuilder<
+      Omit<DB, TB | QA> & NullableValues<Pick<DB, TB>> & Record<QA, QO>,
+      UT & (TB | QA | Exclude<keyof DB, TB | QA>),
+      TB | QA,
+      O
+    >
+  : TE extends (qb: any) => AliasedQueryBuilder<any, any, infer QO, infer QA>
+  ? UpdateQueryBuilder<
+      Omit<DB, TB | QA> & NullableValues<Pick<DB, TB>> & Record<QA, QO>,
+      UT & (TB | QA | Exclude<keyof DB, TB | QA>),
+      TB | QA,
+      O
+    >
+  : TE extends AliasedRawBuilder<infer RO, infer RA>
+  ? UpdateQueryBuilder<
+      Omit<DB, TB | RA> & NullableValues<Pick<DB, TB>> & Record<RA, RO>,
+      UT & (TB | RA | Exclude<keyof DB, TB | RA>),
+      TB | RA,
+      O
+    >
+  : TE extends (qb: any) => AliasedRawBuilder<infer RO, infer RA>
+  ? UpdateQueryBuilder<
+      Omit<DB, TB | RA> & NullableValues<Pick<DB, TB>> & Record<RA, RO>,
+      UT & (TB | RA | Exclude<keyof DB, TB | RA>),
+      TB | RA,
+      O
+    >
+  : never
+
+export type UpdateQueryBuilderWithFullJoin<
+  DB,
+  UT extends keyof DB,
+  TB extends keyof DB,
+  O,
+  TE extends TableExpression<DB, TB>
+> = TE extends `${infer T} as ${infer A}`
+  ? T extends keyof DB
+    ? UpdateQueryBuilder<
+        Omit<DB, TB | A> &
+          NullableValues<Pick<DB, TB>> &
+          Record<A, Nullable<DB[T]>>,
+        UT & (TB | A | Exclude<keyof DB, TB | A>),
+        TB | A,
+        O
+      >
+    : never
+  : TE extends keyof DB
+  ? UpdateQueryBuilder<
+      Omit<DB, TB | TE> &
+        NullableValues<Pick<DB, TB>> &
+        NullableValues<Pick<DB, TE>>,
+      UT & (TB | TE | Exclude<keyof DB, TB | TE>),
+      TB | TE,
+      O
+    >
+  : TE extends AliasedQueryBuilder<any, any, infer QO, infer QA>
+  ? UpdateQueryBuilder<
+      Omit<DB, TB | QA> &
+        NullableValues<Pick<DB, TB>> &
+        Record<QA, Nullable<QO>>,
+      UT & (TB | QA | Exclude<keyof DB, TB | QA>),
+      TB | QA,
+      O
+    >
+  : TE extends (qb: any) => AliasedQueryBuilder<any, any, infer QO, infer QA>
+  ? UpdateQueryBuilder<
+      Omit<DB, TB | QA> &
+        NullableValues<Pick<DB, TB>> &
+        Record<QA, Nullable<QO>>,
+      UT & (TB | QA | Exclude<keyof DB, TB | QA>),
+      TB | QA,
+      O
+    >
+  : TE extends AliasedRawBuilder<infer RO, infer RA>
+  ? UpdateQueryBuilder<
+      Omit<DB, TB | RA> &
+        NullableValues<Pick<DB, TB>> &
+        Record<RA, Nullable<RO>>,
+      UT & (TB | RA | Exclude<keyof DB, TB | RA>),
+      TB | RA,
+      O
+    >
+  : TE extends (qb: any) => AliasedRawBuilder<infer RO, infer RA>
+  ? UpdateQueryBuilder<
+      Omit<DB, TB | RA> &
+        NullableValues<Pick<DB, TB>> &
+        Record<RA, Nullable<RO>>,
+      UT & (TB | RA | Exclude<keyof DB, TB | RA>),
+      TB | RA,
+      O
+    >
+  : never

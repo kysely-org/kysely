@@ -2,7 +2,7 @@ import { AliasedQueryBuilder } from '../query-builder/select-query-builder.js'
 import { isReadonlyArray, isString } from '../util/object-utils.js'
 import { AliasNode } from '../operation-node/alias-node.js'
 import { TableNode } from '../operation-node/table-node.js'
-import { AnyAliasedRawBuilder, Nullable } from '../util/type-utils.js'
+import { AnyAliasedRawBuilder } from '../util/type-utils.js'
 import { AliasedRawBuilder } from '../raw-builder/raw-builder.js'
 import { TableExpressionNode } from '../operation-node/operation-node-utils.js'
 import {
@@ -36,48 +36,6 @@ export type TableExpressionDatabase<
     : never
 }
 
-export type LeftJoinTableExpressionDatabase<
-  DB,
-  TE,
-  A extends keyof any = ExtractAliasFromTableExpression<DB, TE>
-> = {
-  [C in keyof DB | A]: C extends A
-    ? Nullable<ExtractRowTypeFromTableExpression<DB, TE, C>>
-    : C extends keyof DB
-    ? DB[C]
-    : never
-}
-
-export type RightJoinTableExpressionDatabase<
-  DB,
-  TB extends keyof DB,
-  TE,
-  A extends keyof any = ExtractAliasFromTableExpression<DB, TE>
-> = {
-  [C in keyof DB | A]: C extends A
-    ? ExtractRowTypeFromTableExpression<DB, TE, C>
-    : C extends keyof DB
-    ? C extends TB
-      ? Nullable<DB[C]>
-      : DB[C]
-    : never
-}
-
-export type FullJoinTableExpressionDatabase<
-  DB,
-  TB extends keyof DB,
-  TE,
-  A extends keyof any = ExtractAliasFromTableExpression<DB, TE>
-> = {
-  [C in keyof DB | A]: C extends A
-    ? Nullable<ExtractRowTypeFromTableExpression<DB, TE, C>>
-    : C extends keyof DB
-    ? C extends TB
-      ? Nullable<DB[C]>
-      : DB[C]
-    : never
-}
-
 export type ExtractAliasFromTableExpression<DB, TE> =
   TE extends `${string} as ${infer TA}`
     ? TA
@@ -97,7 +55,7 @@ export type TableExpressionTables<DB, TB extends keyof DB, TE> =
   | TB
   | ExtractAliasFromTableExpression<DB, TE>
 
-type ExtractRowTypeFromTableExpression<
+export type ExtractRowTypeFromTableExpression<
   DB,
   TE,
   A extends keyof any
