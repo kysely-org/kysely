@@ -591,6 +591,7 @@ async function testJoin(db: Kysely<Database>) {
     .updateTable('person')
     .innerJoin('pet', 'pet.owner_id', 'person.id')
     .set({ last_name: 'Jennifer' })
+    .where('pet.id', '=', '1')
 
   // Refer to table that's not joined
   expectError(
@@ -1084,64 +1085,118 @@ async function testGenericUpdate(db: Kysely<Database>, table: 'pet' | 'movie') {
   await db.updateTable(table).set({ id: '123' }).execute()
 }
 
-async function testDeepNesting(db: Kysely<Database>) {
-  const r = await db
+async function testManyJoins(db: Kysely<Database>) {
+  // Make things still work if we add a huge amount of joins.
+  const r1 = await db
     .selectFrom('person')
-    .innerJoin('pet', 'pet.owner_id', 'person.id')
-    .innerJoin('pet', 'pet.owner_id', 'person.id')
-    .innerJoin('pet', 'pet.owner_id', 'person.id')
-    .innerJoin('pet', 'pet.owner_id', 'person.id')
-    .innerJoin('pet', 'pet.owner_id', 'person.id')
-    .innerJoin('pet', 'pet.owner_id', 'person.id')
-    .innerJoin('pet', 'pet.owner_id', 'person.id')
-    .innerJoin('pet', 'pet.owner_id', 'person.id')
-    .innerJoin('pet', 'pet.owner_id', 'person.id')
-    .innerJoin('pet', 'pet.owner_id', 'person.id')
-    .innerJoin('pet', 'pet.owner_id', 'person.id')
-    .innerJoin('pet', 'pet.owner_id', 'person.id')
-    .innerJoin('pet', 'pet.owner_id', 'person.id')
-    .innerJoin('pet', 'pet.owner_id', 'person.id')
-    .innerJoin('pet', 'pet.owner_id', 'person.id')
-    .innerJoin('pet', 'pet.owner_id', 'person.id')
-    .innerJoin('pet', 'pet.owner_id', 'person.id')
-    .innerJoin('pet', 'pet.owner_id', 'person.id')
-    .innerJoin('pet', 'pet.owner_id', 'person.id')
-    .innerJoin('pet', 'pet.owner_id', 'person.id')
-    .innerJoin('pet', 'pet.owner_id', 'person.id')
-    .innerJoin('pet', 'pet.owner_id', 'person.id')
-    .innerJoin('pet', 'pet.owner_id', 'person.id')
-    .innerJoin('pet', 'pet.owner_id', 'person.id')
-    .innerJoin('pet', 'pet.owner_id', 'person.id')
-    .innerJoin('pet', 'pet.owner_id', 'person.id')
-    .innerJoin('pet', 'pet.owner_id', 'person.id')
-    .innerJoin('pet', 'pet.owner_id', 'person.id')
-    .innerJoin('pet', 'pet.owner_id', 'person.id')
-    .innerJoin('pet', 'pet.owner_id', 'person.id')
-    .innerJoin('pet', 'pet.owner_id', 'person.id')
-    .innerJoin('pet', 'pet.owner_id', 'person.id')
-    .innerJoin('pet', 'pet.owner_id', 'person.id')
-    .innerJoin('pet', 'pet.owner_id', 'person.id')
-    .innerJoin('pet', 'pet.owner_id', 'person.id')
-    .innerJoin('pet', 'pet.owner_id', 'person.id')
-    .innerJoin('pet', 'pet.owner_id', 'person.id')
-    .innerJoin('pet', 'pet.owner_id', 'person.id')
-    .innerJoin('pet', 'pet.owner_id', 'person.id')
-    .innerJoin('pet', 'pet.owner_id', 'person.id')
-    .innerJoin('pet', 'pet.owner_id', 'person.id')
-    .innerJoin('pet', 'pet.owner_id', 'person.id')
-    .innerJoin('pet', 'pet.owner_id', 'person.id')
-    .innerJoin('pet', 'pet.owner_id', 'person.id')
-    .innerJoin('pet', 'pet.owner_id', 'person.id')
-    .innerJoin('pet', 'pet.owner_id', 'person.id')
-    .innerJoin('pet', 'pet.owner_id', 'person.id')
-    .innerJoin('pet', 'pet.owner_id', 'person.id')
-    .innerJoin('pet', 'pet.owner_id', 'person.id')
-    .innerJoin('pet', 'pet.owner_id', 'person.id')
-    .innerJoin('pet', 'pet.owner_id', 'person.id')
-    .innerJoin('pet', 'pet.owner_id', 'person.id')
-    .innerJoin('movie', 'movie.id', 'person.id')
+    .innerJoin('pet as p1', 'p1.owner_id', 'person.id')
+    .innerJoin('pet as p2', 'p2.owner_id', 'person.id')
+    .innerJoin('pet as p3', 'p3.owner_id', 'person.id')
+    .innerJoin('pet as p4', 'p4.owner_id', 'person.id')
+    .innerJoin('pet as p5', 'p5.owner_id', 'person.id')
+    .innerJoin('pet as p6', 'p6.owner_id', 'person.id')
+    .innerJoin('pet as p7', 'p7.owner_id', 'person.id')
+    .innerJoin('pet as p8', 'p8.owner_id', 'person.id')
+    .innerJoin('pet as p9', 'p9.owner_id', 'person.id')
+    .innerJoin('pet as p10', 'p10.owner_id', 'person.id')
+    .innerJoin('pet as p11', 'p11.owner_id', 'person.id')
+    .innerJoin('pet as p12', 'p12.owner_id', 'person.id')
+    .innerJoin('pet as p13', 'p13.owner_id', 'person.id')
+    .innerJoin('pet as p14', 'p14.owner_id', 'person.id')
+    .innerJoin('pet as p15', 'p15.owner_id', 'person.id')
+    .innerJoin('pet as p16', 'p16.owner_id', 'person.id')
+    .innerJoin('pet as p17', 'p17.owner_id', 'person.id')
+    .innerJoin('pet as p18', 'p18.owner_id', 'person.id')
+    .innerJoin('pet as p19', 'p19.owner_id', 'person.id')
+    .innerJoin('pet as p20', 'p20.owner_id', 'person.id')
     .select(['age', 'last_name'])
     .executeTakeFirstOrThrow()
 
-  expectType<{ age: number; last_name: string | null }>(r)
+  expectType<{ age: number; last_name: string | null }>(r1)
+
+  const r2 = await db
+    .selectFrom('person')
+    .rightJoin('pet as p1', 'p1.owner_id', 'person.id')
+    .rightJoin('pet as p2', 'p2.owner_id', 'person.id')
+    .rightJoin('pet as p3', 'p3.owner_id', 'person.id')
+    .rightJoin('pet as p4', 'p4.owner_id', 'person.id')
+    .rightJoin('pet as p5', 'p5.owner_id', 'person.id')
+    .rightJoin('pet as p6', 'p6.owner_id', 'person.id')
+    .rightJoin('pet as p7', 'p7.owner_id', 'person.id')
+    .rightJoin('pet as p8', 'p8.owner_id', 'person.id')
+    .rightJoin('pet as p9', 'p9.owner_id', 'person.id')
+    .rightJoin('pet as p10', 'p10.owner_id', 'person.id')
+    .rightJoin('pet as p11', 'p11.owner_id', 'person.id')
+    .rightJoin('pet as p12', 'p12.owner_id', 'person.id')
+    .select(['age', 'last_name'])
+    .executeTakeFirstOrThrow()
+
+  expectType<{ age: number | null; last_name: string | null }>(r2)
+
+  const r3 = await db
+    .selectFrom('person')
+    .leftJoin('pet as p1', (join) =>
+      join.onRef('p1.owner_id', '=', 'person.id')
+    )
+    .leftJoin('pet as p2', (join) =>
+      join.onRef('p2.owner_id', '=', 'person.id')
+    )
+    .leftJoin('pet as p3', (join) =>
+      join.onRef('p3.owner_id', '=', 'person.id')
+    )
+    .leftJoin('pet as p4', (join) =>
+      join.onRef('p4.owner_id', '=', 'person.id')
+    )
+    .leftJoin('pet as p5', (join) =>
+      join.onRef('p5.owner_id', '=', 'person.id')
+    )
+    .leftJoin('pet as p6', (join) =>
+      join.onRef('p6.owner_id', '=', 'person.id')
+    )
+    .leftJoin('pet as p7', (join) =>
+      join.onRef('p7.owner_id', '=', 'person.id')
+    )
+    .leftJoin('pet as p8', (join) =>
+      join.onRef('p8.owner_id', '=', 'person.id')
+    )
+    .leftJoin('pet as p9', (join) =>
+      join.onRef('p9.owner_id', '=', 'person.id')
+    )
+    .leftJoin('pet as p10', (join) =>
+      join.onRef('p10.owner_id', '=', 'person.id')
+    )
+    .leftJoin('pet as p11', (join) =>
+      join.onRef('p11.owner_id', '=', 'person.id')
+    )
+    .leftJoin('pet as p12', (join) =>
+      join.onRef('p12.owner_id', '=', 'person.id')
+    )
+    .leftJoin('pet as p13', (join) =>
+      join.onRef('p13.owner_id', '=', 'person.id')
+    )
+    .leftJoin('pet as p14', (join) =>
+      join.onRef('p14.owner_id', '=', 'person.id')
+    )
+    .leftJoin('pet as p15', (join) =>
+      join.onRef('p15.owner_id', '=', 'person.id')
+    )
+    .leftJoin('pet as p16', (join) =>
+      join.onRef('p16.owner_id', '=', 'person.id')
+    )
+    .leftJoin('pet as p17', (join) =>
+      join.onRef('p17.owner_id', '=', 'person.id')
+    )
+    .leftJoin('pet as p18', (join) =>
+      join.onRef('p18.owner_id', '=', 'person.id')
+    )
+    .leftJoin('pet as p19', (join) =>
+      join.onRef('p19.owner_id', '=', 'person.id')
+    )
+    .leftJoin('pet as p20', (join) =>
+      join.onRef('p20.owner_id', '=', 'person.id')
+    )
+    .select(['age', 'last_name'])
+    .executeTakeFirstOrThrow()
+
+  expectType<{ age: number; last_name: string | null }>(r3)
 }

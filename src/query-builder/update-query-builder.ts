@@ -35,7 +35,6 @@ import {
   AnyRawBuilder,
   MergePartial,
   Nullable,
-  NullableValues,
   SingleResultType,
 } from '../util/type-utils.js'
 import { UpdateQueryNode } from '../operation-node/update-query-node.js'
@@ -770,44 +769,35 @@ export type UpdateQueryBuilderWithInnerJoin<
   TE extends TableExpression<DB, TB>
 > = TE extends `${infer T} as ${infer A}`
   ? T extends keyof DB
-    ? UpdateQueryBuilder<
-        Omit<DB, A> & Record<A, DB[T]>,
-        Exclude<UT, A>,
-        Exclude<TB, A> | A,
-        O
-      >
+    ? InnerJoinedBuilder<DB, UT, TB, O, A, DB[T]>
     : never
   : TE extends keyof DB
   ? UpdateQueryBuilder<DB, UT, TB | TE, O>
   : TE extends AliasedQueryBuilder<any, any, infer QO, infer QA>
-  ? UpdateQueryBuilder<
-      Omit<DB, QA> & Record<QA, QO>,
-      Exclude<UT, QA>,
-      Exclude<TB, QA> | QA,
-      O
-    >
+  ? InnerJoinedBuilder<DB, UT, TB, O, QA, QO>
   : TE extends (qb: any) => AliasedQueryBuilder<any, any, infer QO, infer QA>
-  ? UpdateQueryBuilder<
-      Omit<DB, QA> & Record<QA, QO>,
-      Exclude<UT, QA>,
-      Exclude<TB, QA> | QA,
-      O
-    >
+  ? InnerJoinedBuilder<DB, UT, TB, O, QA, QO>
   : TE extends AliasedRawBuilder<infer RO, infer RA>
-  ? UpdateQueryBuilder<
-      Omit<DB, RA> & Record<RA, RO>,
-      Exclude<UT, RA>,
-      Exclude<TB, RA> | RA,
-      O
-    >
+  ? InnerJoinedBuilder<DB, UT, TB, O, RA, RO>
   : TE extends (qb: any) => AliasedRawBuilder<infer RO, infer RA>
-  ? UpdateQueryBuilder<
-      Omit<DB, RA> & Record<RA, RO>,
-      Exclude<UT, RA>,
-      Exclude<TB, RA> | RA,
-      O
-    >
+  ? InnerJoinedBuilder<DB, UT, TB, O, RA, RO>
   : never
+
+type InnerJoinedBuilder<
+  DB,
+  UT extends keyof DB,
+  TB extends keyof DB,
+  O,
+  A extends string,
+  R
+> = A extends keyof DB
+  ? UpdateQueryBuilder<InnerJoinedDB<DB, A, R>, UT, TB | A, O>
+  : // Much faster non-recursive solution for the simple case.
+    UpdateQueryBuilder<DB & Record<A, R>, UT, TB | A, O>
+
+type InnerJoinedDB<DB, A extends string, R> = {
+  [C in keyof DB | A]: C extends A ? R : C extends keyof DB ? DB[C] : never
+}
 
 export type UpdateQueryBuilderWithLeftJoin<
   DB,
@@ -817,49 +807,39 @@ export type UpdateQueryBuilderWithLeftJoin<
   TE extends TableExpression<DB, TB>
 > = TE extends `${infer T} as ${infer A}`
   ? T extends keyof DB
-    ? UpdateQueryBuilder<
-        Omit<DB, A> & Record<A, Nullable<DB[T]>>,
-        Exclude<UT, A>,
-        Exclude<TB, A> | A,
-        O
-      >
+    ? LeftJoinedBuilder<DB, UT, TB, O, A, DB[T]>
     : never
   : TE extends keyof DB
-  ? UpdateQueryBuilder<
-      Omit<DB, TE> & Record<TE, Nullable<DB[TE]>>,
-      Exclude<UT, TE>,
-      Exclude<TB, TE> | TE,
-      O
-    >
+  ? LeftJoinedBuilder<DB, UT, TB, O, TE, DB[TE]>
   : TE extends AliasedQueryBuilder<any, any, infer QO, infer QA>
-  ? UpdateQueryBuilder<
-      Omit<DB, QA> & Record<QA, Nullable<QO>>,
-      Exclude<UT, QA>,
-      Exclude<TB, QA> | QA,
-      O
-    >
+  ? LeftJoinedBuilder<DB, UT, TB, O, QA, QO>
   : TE extends (qb: any) => AliasedQueryBuilder<any, any, infer QO, infer QA>
-  ? UpdateQueryBuilder<
-      Omit<DB, QA> & Record<QA, Nullable<QO>>,
-      Exclude<UT, QA>,
-      Exclude<TB, QA> | QA,
-      O
-    >
+  ? LeftJoinedBuilder<DB, UT, TB, O, QA, QO>
   : TE extends AliasedRawBuilder<infer RO, infer RA>
-  ? UpdateQueryBuilder<
-      Omit<DB, RA> & Record<RA, Nullable<RO>>,
-      Exclude<UT, RA>,
-      Exclude<TB, RA> | RA,
-      O
-    >
+  ? LeftJoinedBuilder<DB, UT, TB, O, RA, RO>
   : TE extends (qb: any) => AliasedRawBuilder<infer RO, infer RA>
-  ? UpdateQueryBuilder<
-      Omit<DB, RA> & Record<RA, Nullable<RO>>,
-      Exclude<UT, RA>,
-      Exclude<TB, RA> | RA,
-      O
-    >
+  ? LeftJoinedBuilder<DB, UT, TB, O, RA, RO>
   : never
+
+type LeftJoinedBuilder<
+  DB,
+  UT extends keyof DB,
+  TB extends keyof DB,
+  O,
+  A extends keyof any,
+  R
+> = A extends keyof DB
+  ? UpdateQueryBuilder<LeftJoinedDB<DB, A, R>, UT, TB | A, O>
+  : // Much faster non-recursive solution for the simple case.
+    UpdateQueryBuilder<DB & Record<A, Nullable<R>>, UT, TB | A, O>
+
+type LeftJoinedDB<DB, A extends keyof any, R> = {
+  [C in keyof DB | A]: C extends A
+    ? Nullable<R>
+    : C extends keyof DB
+    ? DB[C]
+    : never
+}
 
 export type UpdateQueryBuilderWithRightJoin<
   DB,
@@ -869,49 +849,38 @@ export type UpdateQueryBuilderWithRightJoin<
   TE extends TableExpression<DB, TB>
 > = TE extends `${infer T} as ${infer A}`
   ? T extends keyof DB
-    ? UpdateQueryBuilder<
-        Omit<DB, TB | A> & NullableValues<Pick<DB, TB>> & Record<A, DB[T]>,
-        UT & (TB | A | Exclude<keyof DB, TB | A>),
-        TB | A,
-        O
-      >
+    ? RightJoinedBuilder<DB, UT, TB, O, A, DB[T]>
     : never
   : TE extends keyof DB
-  ? UpdateQueryBuilder<
-      Omit<DB, TB | TE> & NullableValues<Pick<DB, TB>> & Pick<DB, TE>,
-      UT & (TB | TE | Exclude<keyof DB, TB | TE>),
-      TB | TE,
-      O
-    >
+  ? RightJoinedBuilder<DB, UT, TB, O, TE, DB[TE]>
   : TE extends AliasedQueryBuilder<any, any, infer QO, infer QA>
-  ? UpdateQueryBuilder<
-      Omit<DB, TB | QA> & NullableValues<Pick<DB, TB>> & Record<QA, QO>,
-      UT & (TB | QA | Exclude<keyof DB, TB | QA>),
-      TB | QA,
-      O
-    >
+  ? RightJoinedBuilder<DB, UT, TB, O, QA, QO>
   : TE extends (qb: any) => AliasedQueryBuilder<any, any, infer QO, infer QA>
-  ? UpdateQueryBuilder<
-      Omit<DB, TB | QA> & NullableValues<Pick<DB, TB>> & Record<QA, QO>,
-      UT & (TB | QA | Exclude<keyof DB, TB | QA>),
-      TB | QA,
-      O
-    >
+  ? RightJoinedBuilder<DB, UT, TB, O, QA, QO>
   : TE extends AliasedRawBuilder<infer RO, infer RA>
-  ? UpdateQueryBuilder<
-      Omit<DB, TB | RA> & NullableValues<Pick<DB, TB>> & Record<RA, RO>,
-      UT & (TB | RA | Exclude<keyof DB, TB | RA>),
-      TB | RA,
-      O
-    >
+  ? RightJoinedBuilder<DB, UT, TB, O, RA, RO>
   : TE extends (qb: any) => AliasedRawBuilder<infer RO, infer RA>
-  ? UpdateQueryBuilder<
-      Omit<DB, TB | RA> & NullableValues<Pick<DB, TB>> & Record<RA, RO>,
-      UT & (TB | RA | Exclude<keyof DB, TB | RA>),
-      TB | RA,
-      O
-    >
+  ? RightJoinedBuilder<DB, UT, TB, O, RA, RO>
   : never
+
+type RightJoinedBuilder<
+  DB,
+  UT extends keyof DB,
+  TB extends keyof DB,
+  O,
+  A extends keyof any,
+  R
+> = UpdateQueryBuilder<RightJoinedDB<DB, TB, A, R>, UT, TB | A, O>
+
+type RightJoinedDB<DB, TB extends keyof DB, A extends keyof any, R> = {
+  [C in keyof DB | A]: C extends A
+    ? R
+    : C extends TB
+    ? Nullable<DB[C]>
+    : C extends keyof DB
+    ? DB[C]
+    : never
+}
 
 export type UpdateQueryBuilderWithFullJoin<
   DB,
@@ -921,58 +890,35 @@ export type UpdateQueryBuilderWithFullJoin<
   TE extends TableExpression<DB, TB>
 > = TE extends `${infer T} as ${infer A}`
   ? T extends keyof DB
-    ? UpdateQueryBuilder<
-        Omit<DB, TB | A> &
-          NullableValues<Pick<DB, TB>> &
-          Record<A, Nullable<DB[T]>>,
-        UT & (TB | A | Exclude<keyof DB, TB | A>),
-        TB | A,
-        O
-      >
+    ? OuterJoinedBuilder<DB, UT, TB, O, A, DB[T]>
     : never
   : TE extends keyof DB
-  ? UpdateQueryBuilder<
-      Omit<DB, TB | TE> &
-        NullableValues<Pick<DB, TB>> &
-        NullableValues<Pick<DB, TE>>,
-      UT & (TB | TE | Exclude<keyof DB, TB | TE>),
-      TB | TE,
-      O
-    >
+  ? OuterJoinedBuilder<DB, UT, TB, O, TE, DB[TE]>
   : TE extends AliasedQueryBuilder<any, any, infer QO, infer QA>
-  ? UpdateQueryBuilder<
-      Omit<DB, TB | QA> &
-        NullableValues<Pick<DB, TB>> &
-        Record<QA, Nullable<QO>>,
-      UT & (TB | QA | Exclude<keyof DB, TB | QA>),
-      TB | QA,
-      O
-    >
+  ? OuterJoinedBuilder<DB, UT, TB, O, QA, QO>
   : TE extends (qb: any) => AliasedQueryBuilder<any, any, infer QO, infer QA>
-  ? UpdateQueryBuilder<
-      Omit<DB, TB | QA> &
-        NullableValues<Pick<DB, TB>> &
-        Record<QA, Nullable<QO>>,
-      UT & (TB | QA | Exclude<keyof DB, TB | QA>),
-      TB | QA,
-      O
-    >
+  ? OuterJoinedBuilder<DB, UT, TB, O, QA, QO>
   : TE extends AliasedRawBuilder<infer RO, infer RA>
-  ? UpdateQueryBuilder<
-      Omit<DB, TB | RA> &
-        NullableValues<Pick<DB, TB>> &
-        Record<RA, Nullable<RO>>,
-      UT & (TB | RA | Exclude<keyof DB, TB | RA>),
-      TB | RA,
-      O
-    >
+  ? OuterJoinedBuilder<DB, UT, TB, O, RA, RO>
   : TE extends (qb: any) => AliasedRawBuilder<infer RO, infer RA>
-  ? UpdateQueryBuilder<
-      Omit<DB, TB | RA> &
-        NullableValues<Pick<DB, TB>> &
-        Record<RA, Nullable<RO>>,
-      UT & (TB | RA | Exclude<keyof DB, TB | RA>),
-      TB | RA,
-      O
-    >
+  ? OuterJoinedBuilder<DB, UT, TB, O, RA, RO>
   : never
+
+type OuterJoinedBuilder<
+  DB,
+  UT extends keyof DB,
+  TB extends keyof DB,
+  O,
+  A extends keyof any,
+  R
+> = UpdateQueryBuilder<OuterJoinedBuilderDB<DB, TB, A, R>, UT, TB | A, O>
+
+type OuterJoinedBuilderDB<DB, TB extends keyof DB, A extends keyof any, R> = {
+  [C in keyof DB | A]: C extends A
+    ? Nullable<R>
+    : C extends TB
+    ? Nullable<DB[C]>
+    : C extends keyof DB
+    ? DB[C]
+    : never
+}
