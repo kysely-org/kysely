@@ -6,7 +6,13 @@ import { OperationNode } from './operation-node.js'
 import { TableNode } from './table-node.js'
 
 export type JoinTableNode = TableNode | AliasNode
-export type JoinType = 'InnerJoin' | 'LeftJoin' | 'RightJoin' | 'FullJoin'
+export type JoinType =
+  | 'InnerJoin'
+  | 'LeftJoin'
+  | 'RightJoin'
+  | 'FullJoin'
+  | 'LateralInnerJoin'
+  | 'LateralLeftJoin'
 
 export interface JoinNode extends OperationNode {
   readonly kind: 'JoinNode'

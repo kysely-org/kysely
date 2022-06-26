@@ -7,8 +7,8 @@ import {
 } from '../parser/join-parser.js'
 import {
   TableExpression,
-  TableExpressionDatabase,
-  TableExpressionTables,
+  From,
+  FromTables,
   parseTableExpressionOrList,
   TableExpressionOrList,
 } from '../parser/table-parser.js'
@@ -212,21 +212,11 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
    */
   from<TE extends TableExpression<DB, TB>>(
     table: TE
-  ): UpdateQueryBuilder<
-    TableExpressionDatabase<DB, TE>,
-    UT,
-    TableExpressionTables<DB, TB, TE>,
-    O
-  >
+  ): UpdateQueryBuilder<From<DB, TE>, UT, FromTables<DB, TB, TE>, O>
 
   from<TE extends TableExpression<DB, TB>>(
     table: TE[]
-  ): UpdateQueryBuilder<
-    TableExpressionDatabase<DB, TE>,
-    UT,
-    TableExpressionTables<DB, TB, TE>,
-    O
-  >
+  ): UpdateQueryBuilder<From<DB, TE>, UT, FromTables<DB, TB, TE>, O>
 
   from(from: TableExpressionOrList<any, any>): any {
     return new UpdateQueryBuilder({

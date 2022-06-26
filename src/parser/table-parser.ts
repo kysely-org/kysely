@@ -24,19 +24,24 @@ export type TableReference<DB> =
   | AnyTable<DB>
   | AnyAliasedRawBuilder
 
-export type TableExpressionDatabase<
-  DB,
-  TE,
-  A extends keyof any = ExtractAliasFromTableExpression<DB, TE>
-> = {
-  [C in keyof DB | A]: C extends A
+export type From<DB, TE> = {
+  [C in
+    | keyof DB
+    | ExtractAliasFromTableExpression<
+        DB,
+        TE
+      >]: C extends ExtractAliasFromTableExpression<DB, TE>
     ? ExtractRowTypeFromTableExpression<DB, TE, C>
     : C extends keyof DB
     ? DB[C]
     : never
 }
 
-export type ExtractAliasFromTableExpression<DB, TE> =
+export type FromTables<DB, TB extends keyof DB, TE> =
+  | TB
+  | ExtractAliasFromTableExpression<DB, TE>
+
+type ExtractAliasFromTableExpression<DB, TE> =
   TE extends `${string} as ${infer TA}`
     ? TA
     : TE extends keyof DB
@@ -51,11 +56,7 @@ export type ExtractAliasFromTableExpression<DB, TE> =
     ? RA
     : never
 
-export type TableExpressionTables<DB, TB extends keyof DB, TE> =
-  | TB
-  | ExtractAliasFromTableExpression<DB, TE>
-
-export type ExtractRowTypeFromTableExpression<
+type ExtractRowTypeFromTableExpression<
   DB,
   TE,
   A extends keyof any

@@ -3,9 +3,9 @@ import { SelectQueryNode } from '../operation-node/select-query-node.js'
 import {
   parseTableExpressionOrList,
   TableExpression,
-  TableExpressionDatabase,
+  From,
   TableExpressionOrList,
-  TableExpressionTables,
+  FromTables,
 } from '../parser/table-parser.js'
 import { WithSchemaPlugin } from '../plugin/with-schema/with-schema-plugin.js'
 import { createQueryId } from '../util/query-id.js'
@@ -108,19 +108,11 @@ export class ExpressionBuilder<DB, TB extends keyof DB> {
    */
   selectFrom<TE extends TableExpression<DB, TB>>(
     from: TE[]
-  ): SelectQueryBuilder<
-    TableExpressionDatabase<DB, TE>,
-    TableExpressionTables<DB, TB, TE>,
-    {}
-  >
+  ): SelectQueryBuilder<From<DB, TE>, FromTables<DB, TB, TE>, {}>
 
   selectFrom<TE extends TableExpression<DB, TB>>(
     from: TE
-  ): SelectQueryBuilder<
-    TableExpressionDatabase<DB, TE>,
-    TableExpressionTables<DB, TB, TE>,
-    {}
-  >
+  ): SelectQueryBuilder<From<DB, TE>, FromTables<DB, TB, TE>, {}>
 
   selectFrom(table: TableExpressionOrList<DB, TB>): any {
     return new SelectQueryBuilder({

@@ -575,6 +575,72 @@ for (const dialect of BUILT_IN_DIALECTS) {
           await query.execute()
         })
       })
+
+      describe('lateral join', () => {
+        it('should join an expression laterally', async () => {
+          const query = ctx.db
+            .selectFrom('person')
+            .innerJoinLateral(
+              (eb) =>
+                eb
+                  .selectFrom('pet')
+                  .select('name')
+                  .whereRef('pet.owner_id', '=', 'person.id')
+                  .as('p'),
+              (join) => join.on(sql`true`)
+            )
+            .select(['first_name', 'p.name'])
+            .orderBy('first_name')
+
+          testSql(query, dialect, {
+            postgres: {
+              sql: `select "first_name", "p"."name" from "person" inner join lateral (select "name" from "pet" where "pet"."owner_id" = "person"."id") as "p" on true order by "first_name"`,
+              parameters: [],
+            },
+            mysql: NOT_SUPPORTED,
+            sqlite: NOT_SUPPORTED,
+          })
+
+          const res = await query.execute()
+          expect(res).to.eql([
+            { first_name: 'Arnold', name: 'Doggo' },
+            { first_name: 'Jennifer', name: 'Catto' },
+            { first_name: 'Sylvester', name: 'Hammo' },
+          ])
+        })
+
+        it('should left join an expression laterally', async () => {
+          const query = ctx.db
+            .selectFrom('person')
+            .leftJoinLateral(
+              (eb) =>
+                eb
+                  .selectFrom('pet')
+                  .select('name')
+                  .whereRef('pet.owner_id', '=', 'person.id')
+                  .as('p'),
+              (join) => join.on(sql`true`)
+            )
+            .select(['first_name', 'p.name'])
+            .orderBy('first_name')
+
+          testSql(query, dialect, {
+            postgres: {
+              sql: `select "first_name", "p"."name" from "person" left join lateral (select "name" from "pet" where "pet"."owner_id" = "person"."id") as "p" on true order by "first_name"`,
+              parameters: [],
+            },
+            mysql: NOT_SUPPORTED,
+            sqlite: NOT_SUPPORTED,
+          })
+
+          const res = await query.execute()
+          expect(res).to.eql([
+            { first_name: 'Arnold', name: 'Doggo' },
+            { first_name: 'Jennifer', name: 'Catto' },
+            { first_name: 'Sylvester', name: 'Hammo' },
+          ])
+        })
+      })
     }
   })
 }

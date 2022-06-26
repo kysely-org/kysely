@@ -899,6 +899,54 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
   }
 
   /**
+   * Just like {@link innerJoin} but adds a lateral join instead of an inner join.
+   */
+  innerJoinLateral<
+    TE extends TableExpression<DB, TB>,
+    K1 extends JoinReferenceExpression<DB, TB, TE>,
+    K2 extends JoinReferenceExpression<DB, TB, TE>
+  >(table: TE, k1: K1, k2: K2): SelectQueryBuilderWithInnerJoin<DB, TB, O, TE>
+
+  innerJoinLateral<
+    TE extends TableExpression<DB, TB>,
+    FN extends JoinCallbackExpression<DB, TB, TE>
+  >(table: TE, callback: FN): SelectQueryBuilderWithInnerJoin<DB, TB, O, TE>
+
+  innerJoinLateral(...args: any): any {
+    return new SelectQueryBuilder({
+      ...this.#props,
+      queryNode: QueryNode.cloneWithJoin(
+        this.#props.queryNode,
+        parseJoin('LateralInnerJoin', args)
+      ),
+    })
+  }
+
+  /**
+   * Just like {@link innerJoin} but adds a lateral left join instead of an inner join.
+   */
+  leftJoinLateral<
+    TE extends TableExpression<DB, TB>,
+    K1 extends JoinReferenceExpression<DB, TB, TE>,
+    K2 extends JoinReferenceExpression<DB, TB, TE>
+  >(table: TE, k1: K1, k2: K2): SelectQueryBuilderWithLeftJoin<DB, TB, O, TE>
+
+  leftJoinLateral<
+    TE extends TableExpression<DB, TB>,
+    FN extends JoinCallbackExpression<DB, TB, TE>
+  >(table: TE, callback: FN): SelectQueryBuilderWithLeftJoin<DB, TB, O, TE>
+
+  leftJoinLateral(...args: any): any {
+    return new SelectQueryBuilder({
+      ...this.#props,
+      queryNode: QueryNode.cloneWithJoin(
+        this.#props.queryNode,
+        parseJoin('LateralLeftJoin', args)
+      ),
+    })
+  }
+
+  /**
    * Adds an `order by` clause to the query.
    *
    * `orderBy` calls are additive. To order by multiple columns, call `orderBy`

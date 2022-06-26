@@ -11,9 +11,9 @@ import {
   parseTableExpression,
   parseTableExpressionOrList,
   TableExpression,
-  TableExpressionDatabase,
+  From,
   TableExpressionOrList,
-  TableExpressionTables,
+  FromTables,
   TableReference,
 } from './parser/table-parser.js'
 import { QueryExecutor } from './query-executor/query-executor.js'
@@ -148,19 +148,11 @@ export class QueryCreator<DB> {
    */
   selectFrom<TE extends TableExpression<DB, keyof DB>>(
     from: TE[]
-  ): SelectQueryBuilder<
-    TableExpressionDatabase<DB, TE>,
-    TableExpressionTables<DB, never, TE>,
-    {}
-  >
+  ): SelectQueryBuilder<From<DB, TE>, FromTables<DB, never, TE>, {}>
 
   selectFrom<TE extends TableExpression<DB, keyof DB>>(
     from: TE
-  ): SelectQueryBuilder<
-    TableExpressionDatabase<DB, TE>,
-    TableExpressionTables<DB, never, TE>,
-    {}
-  >
+  ): SelectQueryBuilder<From<DB, TE>, FromTables<DB, never, TE>, {}>
 
   selectFrom(from: TableExpressionOrList<any, any>): any {
     return new SelectQueryBuilder({
@@ -245,11 +237,7 @@ export class QueryCreator<DB> {
    */
   deleteFrom<TR extends TableReference<DB>>(
     table: TR
-  ): DeleteQueryBuilder<
-    TableExpressionDatabase<DB, TR>,
-    TableExpressionTables<DB, never, TR>,
-    DeleteResult
-  > {
+  ): DeleteQueryBuilder<From<DB, TR>, FromTables<DB, never, TR>, DeleteResult> {
     return new DeleteQueryBuilder({
       queryId: createQueryId(),
       executor: this.#props.executor,
@@ -286,9 +274,9 @@ export class QueryCreator<DB> {
   updateTable<TR extends TableReference<DB>>(
     table: TR
   ): UpdateQueryBuilder<
-    TableExpressionDatabase<DB, TR>,
-    TableExpressionTables<DB, never, TR>,
-    TableExpressionTables<DB, never, TR>,
+    From<DB, TR>,
+    FromTables<DB, never, TR>,
+    FromTables<DB, never, TR>,
     UpdateResult
   > {
     return new UpdateQueryBuilder({
