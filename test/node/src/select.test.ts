@@ -517,26 +517,26 @@ for (const dialect of BUILT_IN_DIALECTS) {
 
     if (dialect === 'mysql') {
       it('should stream results', async () => {
-        const people: unknown[] = []
+        const males: unknown[] = []
 
-        for await (const person of ctx.db
+        const stream = ctx.db
           .selectFrom('person')
-          .where('id', '>=', 2)
-          .selectAll()
-          .stream()) {
-          people.push(person)
+          .select(['first_name', 'last_name', 'gender'])
+          .where('gender', '=', 'male')
+          .stream()
+
+        for await (const male of stream) {
+          males.push(male)
         }
 
-        expect(people).to.have.length(2)
-        expect(people).to.eql([
+        expect(males).to.have.length(2)
+        expect(males).to.eql([
           {
-            id: 2,
             first_name: 'Arnold',
             last_name: 'Schwarzenegger',
             gender: 'male',
           },
           {
-            id: 3,
             first_name: 'Sylvester',
             last_name: 'Stallone',
             gender: 'male',
