@@ -49,7 +49,7 @@ export interface QueryExecutor extends ConnectionProvider {
   /**
    * Executes a compiled query and runs the result through all plugins'
    * `transformResult` method. Results are streamead instead of loaded
-   * in chunks.
+   * at once.
    */
   stream<R>(
     compiledQuery: CompiledQuery,
