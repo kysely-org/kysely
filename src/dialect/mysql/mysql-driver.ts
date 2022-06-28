@@ -4,7 +4,7 @@ import {
 } from '../../driver/database-connection.js'
 import { Driver, TransactionSettings } from '../../driver/driver.js'
 import { CompiledQuery } from '../../query-compiler/compiled-query.js'
-import { freeze, isFunction, isObject } from '../../util/object-utils.js'
+import { isFunction, isObject, freeze } from '../../util/object-utils.js'
 import { extendStackTrace } from '../../util/stack-trace-utils.js'
 import {
   MysqlDialectConfig,
