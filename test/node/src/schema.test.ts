@@ -1382,7 +1382,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
 
           await builder.execute()
 
-          expect(await getColumnMeta('test.bool_col')).to.eql({
+          expect(await getColumnMeta('test.bool_col')).to.containSubset({
             name: 'bool_col',
             isNullable: false,
             dataType:
@@ -1416,7 +1416,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
 
           await builder.execute()
 
-          expect(await getColumnMeta('test.bool_col')).to.eql({
+          expect(await getColumnMeta('test.bool_col')).to.containSubset({
             name: 'bool_col',
             isNullable: false,
             dataType:
@@ -1453,7 +1453,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
 
             await builder.execute()
 
-            expect(await getColumnMeta('test.bool_col')).to.eql({
+            expect(await getColumnMeta('test.bool_col')).to.containSubset({
               name: 'bool_col',
               isNullable: false,
               dataType: dialect === 'postgres' ? 'bool' : 'tinyint',

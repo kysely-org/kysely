@@ -68,7 +68,7 @@ export class SqliteIntrospector implements DatabaseIntrospector {
       ?.split(/[\(\),]/)
       ?.find((it) => it.toLowerCase().includes('autoincrement'))
       ?.split(/\s+/)?.[0]
-      ?.replaceAll(/["`]/g, '')
+      ?.replace(/["`]/g, '')
 
     const columns = await db
       .selectFrom(
