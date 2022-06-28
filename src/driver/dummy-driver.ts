@@ -1,3 +1,4 @@
+import { CompiledQuery } from '../query-compiler/compiled-query.js'
 import { DatabaseConnection, QueryResult } from './database-connection.js'
 import { Driver } from './driver.js'
 
@@ -73,4 +74,6 @@ class DummyConnection implements DatabaseConnection {
       rows: [],
     }
   }
+
+  async *executeQueryStream<R>(): AsyncIterableIterator<QueryResult<R>> {}
 }

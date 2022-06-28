@@ -4,12 +4,12 @@ import {
   BUILT_IN_DIALECTS,
   clearDatabase,
   destroyTest,
+  expect,
   initTest,
   insertPersons,
+  NOT_SUPPORTED,
   TestContext,
   testSql,
-  expect,
-  NOT_SUPPORTED,
 } from './test-setup.js'
 
 for (const dialect of BUILT_IN_DIALECTS) {
@@ -197,6 +197,37 @@ for (const dialect of BUILT_IN_DIALECTS) {
       expect(persons).to.have.length(1)
       expect(persons).to.eql([{ pet_name: 'Catto' }])
     })
+
+    if (dialect === 'mysql') {
+      it.only('tmpppp', async () => {
+        const query = ctx.db
+          .selectFrom('person')
+          .where('id', '>=', 2)
+          .selectAll()
+
+        const people: any[] = []
+
+        for await (const person of query.stream()) {
+          people.push(person)
+        }
+
+        expect(people).to.have.length(2)
+        expect(people).to.eql([
+          {
+            id: 2,
+            first_name: 'Arnold',
+            last_name: 'Schwarzenegger',
+            gender: 'male',
+          },
+          {
+            id: 3,
+            first_name: 'Sylvester',
+            last_name: 'Stallone',
+            gender: 'male',
+          },
+        ])
+      })
+    }
 
     // Raw exrpessions are of course supported on all dialects, but we use an
     // expression that's only valid on postgres.

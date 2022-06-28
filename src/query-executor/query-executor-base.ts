@@ -1,14 +1,14 @@
+import { DialectAdapter } from '../dialect/dialect-adapter.js'
 import { ConnectionProvider } from '../driver/connection-provider.js'
 import {
   DatabaseConnection,
   QueryResult,
 } from '../driver/database-connection.js'
+import { KyselyPlugin } from '../plugin/kysely-plugin.js'
 import { CompiledQuery } from '../query-compiler/compiled-query.js'
 import { RootOperationNode } from '../query-compiler/query-compiler.js'
-import { KyselyPlugin } from '../plugin/kysely-plugin.js'
 import { freeze } from '../util/object-utils.js'
 import { QueryId } from '../util/query-id.js'
-import { DialectAdapter } from '../dialect/dialect-adapter.js'
 import { QueryExecutor } from './query-executor.js'
 
 const NO_PLUGINS: ReadonlyArray<KyselyPlugin> = freeze([])
@@ -66,6 +66,19 @@ export abstract class QueryExecutorBase implements QueryExecutor {
       const result = await connection.executeQuery(compiledQuery)
       return this.#transformResult(result, queryId)
     })
+  }
+
+  async *stream<R>(
+    compiledQuery: CompiledQuery,
+    queryId: QueryId
+  ): AsyncIterableIterator<QueryResult<R>> {
+    const connection = await this.provideConnection(
+      async (connection) => connection
+    )
+
+    for await (const result of connection.executeQueryStream(compiledQuery)) {
+      yield await this.#transformResult(result, queryId)
+    }
   }
 
   abstract withConnectionProvider(

@@ -1,65 +1,65 @@
 import { AliasNode } from '../operation-node/alias-node.js'
+import { IdentifierNode } from '../operation-node/identifier-node.js'
+import { LimitNode } from '../operation-node/limit-node.js'
+import { OffsetNode } from '../operation-node/offset-node.js'
 import { OperationNodeSource } from '../operation-node/operation-node-source.js'
-import { CompiledQuery } from '../query-compiler/compiled-query.js'
+import { QueryNode } from '../operation-node/query-node.js'
+import { SelectModifierNode } from '../operation-node/select-modifier-node.js'
+import { SelectQueryNode } from '../operation-node/select-query-node.js'
+import {
+  ExistsExpression,
+  FilterOperator,
+  FilterValueExpressionOrList,
+  HavingGrouper,
+  parseExistFilter,
+  parseHavingFilter,
+  parseNotExistFilter,
+  parseReferenceFilter,
+  parseWhereFilter,
+  WhereGrouper,
+} from '../parser/filter-parser.js'
+import { parseGroupBy } from '../parser/group-by-parser.js'
 import {
   JoinCallbackExpression,
   JoinReferenceExpression,
   parseJoin,
 } from '../parser/join-parser.js'
-import { TableExpression } from '../parser/table-parser.js'
 import {
-  parseSelectExpressionOrList,
-  parseSelectAll,
-  SelectExpression,
-  QueryBuilderWithSelection,
-  SelectAllQueryBuilder,
-  SelectExpressionOrList,
-} from '../parser/select-parser.js'
-import {
-  ExistsExpression,
-  parseExistFilter,
-  FilterOperator,
-  parseReferenceFilter,
-  parseWhereFilter,
-  parseHavingFilter,
-  parseNotExistFilter,
-  FilterValueExpressionOrList,
-  WhereGrouper,
-  HavingGrouper,
-} from '../parser/filter-parser.js'
+  OrderByDirectionExpression,
+  OrderByExpression,
+  parseOrderBy,
+} from '../parser/order-by-parser.js'
 import {
   ReferenceExpression,
   ReferenceExpressionOrList,
 } from '../parser/reference-parser.js'
-import { SelectQueryNode } from '../operation-node/select-query-node.js'
-import { QueryNode } from '../operation-node/query-node.js'
+import {
+  parseSelectAll,
+  parseSelectExpressionOrList,
+  QueryBuilderWithSelection,
+  SelectAllQueryBuilder,
+  SelectExpression,
+  SelectExpressionOrList,
+} from '../parser/select-parser.js'
+import { TableExpression } from '../parser/table-parser.js'
+import { parseUnion, UnionExpression } from '../parser/union-parser.js'
+import { KyselyPlugin } from '../plugin/kysely-plugin.js'
+import { CompiledQuery } from '../query-compiler/compiled-query.js'
+import { QueryExecutor } from '../query-executor/query-executor.js'
+import { AliasedRawBuilder } from '../raw-builder/raw-builder.js'
+import { Compilable } from '../util/compilable.js'
+import { freeze } from '../util/object-utils.js'
+import { preventAwait } from '../util/prevent-await.js'
+import { QueryId } from '../util/query-id.js'
 import {
   AnyRawBuilder,
   MergePartial,
   Nullable,
   SingleResultType,
 } from '../util/type-utils.js'
-import {
-  OrderByDirectionExpression,
-  OrderByExpression,
-  parseOrderBy,
-} from '../parser/order-by-parser.js'
-import { preventAwait } from '../util/prevent-await.js'
-import { LimitNode } from '../operation-node/limit-node.js'
-import { OffsetNode } from '../operation-node/offset-node.js'
-import { Compilable } from '../util/compilable.js'
-import { QueryExecutor } from '../query-executor/query-executor.js'
-import { QueryId } from '../util/query-id.js'
-import { freeze } from '../util/object-utils.js'
-import { parseGroupBy } from '../parser/group-by-parser.js'
-import { parseUnion, UnionExpression } from '../parser/union-parser.js'
-import { KyselyPlugin } from '../plugin/kysely-plugin.js'
-import { WhereInterface } from './where-interface.js'
-import { NoResultError, NoResultErrorConstructor } from './no-result-error.js'
 import { HavingInterface } from './having-interface.js'
-import { IdentifierNode } from '../operation-node/identifier-node.js'
-import { AliasedRawBuilder } from '../raw-builder/raw-builder.js'
-import { SelectModifierNode } from '../operation-node/select-modifier-node.js'
+import { NoResultError, NoResultErrorConstructor } from './no-result-error.js'
+import { WhereInterface } from './where-interface.js'
 
 export class SelectQueryBuilder<DB, TB extends keyof DB, O>
   implements
@@ -1516,7 +1516,6 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    */
   async execute(): Promise<O[]> {
     const compildQuery = this.compile()
-    const query = compildQuery.query
 
     const result = await this.#props.executor.executeQuery<O>(
       compildQuery,
@@ -1553,6 +1552,22 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
     }
 
     return result as O
+  }
+
+  /**
+   * Executes the query and streams the rows.
+   */
+  async *stream(): AsyncIterableIterator<O> {
+    const compildQuery = this.compile()
+
+    const stream = this.#props.executor.stream<O>(
+      compildQuery,
+      this.#props.queryId
+    )
+
+    for await (const item of stream) {
+      yield* item.rows
+    }
   }
 }
 

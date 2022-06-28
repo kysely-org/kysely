@@ -89,6 +89,10 @@ class SqliteConnection implements DatabaseConnection {
       })
     }
   }
+
+  async *executeQueryStream<R>(): AsyncIterableIterator<QueryResult<R>> {
+    throw new Error('@TODO: sqlite::executeQueryStream')
+  }
 }
 
 class ConnectionMutex {

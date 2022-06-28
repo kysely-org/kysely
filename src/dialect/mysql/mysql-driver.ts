@@ -4,7 +4,7 @@ import {
 } from '../../driver/database-connection.js'
 import { Driver, TransactionSettings } from '../../driver/driver.js'
 import { CompiledQuery } from '../../query-compiler/compiled-query.js'
-import { isFunction, isObject, freeze } from '../../util/object-utils.js'
+import { freeze, isFunction, isObject } from '../../util/object-utils.js'
 import { extendStackTrace } from '../../util/stack-trace-utils.js'
 import {
   MysqlDialectConfig,
@@ -162,6 +162,37 @@ class MysqlConnection implements DatabaseConnection {
         }
       )
     })
+  }
+
+  async *executeQueryStream<O>(
+    compiledQuery: CompiledQuery
+  ): AsyncIterableIterator<QueryResult<O>> {
+    const stream = this.#rawConnection
+      .query(compiledQuery.sql, compiledQuery.parameters)
+      .stream<O>({
+        objectMode: true,
+      })
+
+    try {
+      for await (const row of stream) {
+        yield {
+          rows: [row],
+        }
+      }
+    } catch (ex) {
+      if (
+        ex &&
+        typeof ex === 'object' &&
+        'code' in ex &&
+        // @ts-ignore
+        ex.code === 'ERR_STREAM_PREMATURE_CLOSE'
+      ) {
+        // Most likely because of https://github.com/mysqljs/mysql/blob/master/lib/protocol/sequences/Query.js#L220
+        return
+      }
+
+      throw ex
+    }
   }
 
   [PRIVATE_RELEASE_METHOD](): void {
