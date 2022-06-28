@@ -900,6 +900,21 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
 
   /**
    * Just like {@link innerJoin} but adds a lateral join instead of an inner join.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * db.selectFrom('person')
+   *   .innerJoinLateral(
+   *     (eb) =>
+   *       eb.selectFrom('pet')
+   *         .select('name')
+   *         .whereRef('pet.owner_id', '=', 'person.id')
+   *         .as('p'),
+   *     (join) => join.onTrue()
+   *   )
+   *   .select(['first_name', 'p.name'])
+   *   .orderBy('first_name')
    */
   innerJoinLateral<
     TE extends TableExpression<DB, TB>,
@@ -924,6 +939,21 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
 
   /**
    * Just like {@link innerJoin} but adds a lateral left join instead of an inner join.
+   * ### Examples
+   *
+   * ```ts
+   * db.selectFrom('person')
+   *   .leftJoinLateral(
+   *     (eb) =>
+   *       eb.selectFrom('pet')
+   *         .select('name')
+   *         .whereRef('pet.owner_id', '=', 'person.id')
+   *         .as('p'),
+   *     (join) => join.onTrue()
+   *   )
+   *   .select(['first_name', 'p.name'])
+   *   .orderBy('first_name')
+   * ```
    */
   leftJoinLateral<
     TE extends TableExpression<DB, TB>,

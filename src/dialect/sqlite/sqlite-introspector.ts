@@ -10,7 +10,6 @@ import {
   DEFAULT_MIGRATION_LOCK_TABLE,
   DEFAULT_MIGRATION_TABLE,
 } from '../../migration/migrator.js'
-import { ColumnDataType } from '../../operation-node/data-type-node.js'
 import { sql } from '../../raw-builder/sql.js'
 
 export class SqliteIntrospector implements DatabaseIntrospector {
@@ -56,15 +55,31 @@ export class SqliteIntrospector implements DatabaseIntrospector {
   async #getTableMetadata(table: string): Promise<TableMetadata> {
     const db = this.#db
 
+    // Get the SQL that was used to create the table.
+    const createSql = await db
+      .selectFrom('sqlite_master')
+      .where('name', '=', table)
+      .select('sql')
+      .castTo<{ sql: string | undefined }>()
+      .execute()
+
+    // Try to find the name of the column that has `autoincrement` 🤦
+    const autoIncrementCol = createSql[0]?.sql
+      ?.split(/[\(\),]/)
+      ?.find((it) => it.toLowerCase().includes('autoincrement'))
+      ?.split(/\s+/)?.[0]
+      ?.replaceAll(/["`]/g, '')
+
     const columns = await db
       .selectFrom(
         sql<{
           name: string
-          type: ColumnDataType
+          type: string
           notnull: 0 | 1
-        }>`PRAGMA_TABLE_INFO(${table})`.as('table_info')
+          dflt_value: any
+        }>`pragma_table_info(${table})`.as('table_info')
       )
-      .select(['name', 'type', 'notnull'])
+      .select(['name', 'type', 'notnull', 'dflt_value'])
       .execute()
 
     return {
@@ -73,6 +88,8 @@ export class SqliteIntrospector implements DatabaseIntrospector {
         name: col.name,
         dataType: col.type,
         isNullable: !col.notnull,
+        isAutoIncrementing: col.name === autoIncrementCol,
+        hasDefaultValue: !!col.dflt_value,
       })),
     }
   }

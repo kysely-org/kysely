@@ -568,8 +568,8 @@ for (const dialect of BUILT_IN_DIALECTS) {
       tableName: string,
       schema?: string
     ): Promise<boolean> {
-      const metadata = await ctx.db.introspection.getMetadata()
-      return !!metadata.tables.find(
+      const tables = await ctx.db.introspection.getTables()
+      return !!tables.find(
         (it) => it.name === tableName && (!schema || it.schema === schema)
       )
     }

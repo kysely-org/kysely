@@ -98,6 +98,30 @@ for (const dialect of BUILT_IN_DIALECTS) {
           })
 
           await builder.execute()
+
+          expect(await getColumnMeta('test.a')).to.eql({
+            dataType: 'int4',
+            isAutoIncrementing: true,
+            isNullable: false,
+            hasDefaultValue: true,
+            name: 'a',
+          })
+
+          expect(await getColumnMeta('test.b')).to.eql({
+            dataType: 'int4',
+            isAutoIncrementing: false,
+            isNullable: true,
+            hasDefaultValue: false,
+            name: 'b',
+          })
+
+          expect(await getColumnMeta('test.l')).to.eql({
+            dataType: 'bool',
+            isAutoIncrementing: false,
+            isNullable: false,
+            hasDefaultValue: true,
+            name: 'l',
+          })
         })
       } else if (dialect === 'mysql') {
         it('should create a table with all data types', async () => {
@@ -159,12 +183,38 @@ for (const dialect of BUILT_IN_DIALECTS) {
           })
 
           await builder.execute()
+
+          expect(await getColumnMeta('test.a')).to.eql({
+            dataType: 'int',
+            isAutoIncrementing: true,
+            isNullable: false,
+            hasDefaultValue: false,
+            name: 'a',
+          })
+
+          expect(await getColumnMeta('test.b')).to.eql({
+            dataType: 'int',
+            isAutoIncrementing: false,
+            isNullable: true,
+            hasDefaultValue: false,
+            name: 'b',
+          })
+
+          expect(await getColumnMeta('test.k')).to.eql({
+            dataType: 'tinyint',
+            isAutoIncrementing: false,
+            isNullable: false,
+            hasDefaultValue: true,
+            name: 'k',
+          })
         })
       } else {
         it('should create a table with all data types', async () => {
           const builder = ctx.db.schema
             .createTable('test')
-            .addColumn('a', 'serial', (col) => col.primaryKey())
+            .addColumn('a', 'integer', (col) =>
+              col.primaryKey().autoIncrement().notNull()
+            )
             .addColumn('b', 'integer', (col) =>
               col
                 .references('test.a')
@@ -199,7 +249,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
             sqlite: {
               sql: [
                 'create table "test"',
-                '("a" serial primary key,',
+                '("a" integer not null primary key autoincrement,',
                 '"b" integer references "test" ("a") on delete cascade on update restrict check (b < a),',
                 '"c" varchar,',
                 '"d" varchar(10),',
@@ -226,6 +276,30 @@ for (const dialect of BUILT_IN_DIALECTS) {
           })
 
           await builder.execute()
+
+          expect(await getColumnMeta('test.a')).to.eql({
+            dataType: 'INTEGER',
+            isAutoIncrementing: true,
+            isNullable: false,
+            hasDefaultValue: false,
+            name: 'a',
+          })
+
+          expect(await getColumnMeta('test.b')).to.eql({
+            dataType: 'INTEGER',
+            isAutoIncrementing: false,
+            isNullable: true,
+            hasDefaultValue: false,
+            name: 'b',
+          })
+
+          expect(await getColumnMeta('test.l')).to.eql({
+            dataType: 'boolean',
+            isAutoIncrementing: false,
+            isNullable: false,
+            hasDefaultValue: true,
+            name: 'l',
+          })
         })
       }
 
@@ -1569,8 +1643,8 @@ for (const dialect of BUILT_IN_DIALECTS) {
 
     async function getColumnMeta(ref: string): Promise<ColumnMetadata> {
       const [table, column] = ref.split('.')
-      const meta = await ctx.db.introspection.getMetadata()
-      const tableMeta = meta.tables.find((it) => it.name === table)
+      const tables = await ctx.db.introspection.getTables()
+      const tableMeta = tables.find((it) => it.name === table)
       return tableMeta!.columns.find((it) => it.name === column)!
     }
   })

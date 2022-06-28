@@ -10,8 +10,8 @@ import {
   DEFAULT_MIGRATION_TABLE,
 } from '../../migration/migrator.js'
 import { Kysely } from '../../kysely.js'
-import { ColumnDataType } from '../../operation-node/data-type-node.js'
 import { freeze } from '../../util/object-utils.js'
+import { sql } from '../../raw-builder/sql.js'
 
 export class PostgresIntrospector implements DatabaseIntrospector {
   readonly #db: Kysely<any>
@@ -41,9 +41,19 @@ export class PostgresIntrospector implements DatabaseIntrospector {
       .select([
         'a.attname as column',
         'a.attnotnull as not_null',
+        'a.atthasdef as has_default',
         't.tablename as table',
         't.schemaname as schema',
         'typ.typname as type',
+
+        // Detect if the column is auto incrementing by finding the sequence
+        // that is created for `serial` and `bigserial` columns.
+        this.#db
+          .selectFrom('pg_class')
+          .select(sql`true`.as('auto_incrementing'))
+          .where('relkind', '=', 'S')
+          .where('relname', '=', sql`t.tablename || '_' || a.attname || '_seq'`)
+          .as('auto_incrementing'),
       ])
       .where('t.schemaname', '!~', '^pg_')
       .where('t.schemaname', '!=', 'information_schema')
@@ -90,6 +100,8 @@ export class PostgresIntrospector implements DatabaseIntrospector {
           name: it.column,
           dataType: it.type,
           isNullable: !it.not_null,
+          isAutoIncrementing: !!it.auto_incrementing,
+          hasDefaultValue: it.has_default,
         })
       )
 
@@ -107,5 +119,7 @@ interface RawColumnMetadata {
   table: string
   schema: string
   not_null: boolean
-  type: ColumnDataType
+  has_default: boolean
+  type: string
+  auto_incrementing: boolean | null
 }

@@ -10,7 +10,6 @@ import {
   DEFAULT_MIGRATION_TABLE,
 } from '../../migration/migrator.js'
 import { Kysely } from '../../kysely.js'
-import { ColumnDataType } from '../../operation-node/data-type-node.js'
 import { freeze } from '../../util/object-utils.js'
 import { sql } from '../../raw-builder/sql.js'
 
@@ -38,10 +37,12 @@ export class MysqlIntrospector implements DatabaseIntrospector {
       .selectFrom('information_schema.columns')
       .select([
         'column_name',
+        'column_default',
         'table_name',
         'table_schema',
         'is_nullable',
         'data_type',
+        'extra',
       ])
       .where('table_schema', '=', sql`database()`)
       .castTo<RawColumnMetadata>()
@@ -83,6 +84,8 @@ export class MysqlIntrospector implements DatabaseIntrospector {
           name: it.COLUMN_NAME,
           dataType: it.DATA_TYPE,
           isNullable: it.IS_NULLABLE === 'YES',
+          isAutoIncrementing: it.EXTRA.toLowerCase().includes('auto_increment'),
+          hasDefaultValue: it.COLUMN_DEFAULT !== null,
         })
       )
 
@@ -97,8 +100,10 @@ interface RawSchemaMetadata {
 
 interface RawColumnMetadata {
   COLUMN_NAME: string
+  COLUMN_DEFAULT: any
   TABLE_NAME: string
   TABLE_SCHEMA: string
   IS_NULLABLE: 'YES' | 'NO'
-  DATA_TYPE: ColumnDataType
+  DATA_TYPE: string
+  EXTRA: string
 }

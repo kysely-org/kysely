@@ -587,7 +587,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
                   .select('name')
                   .whereRef('pet.owner_id', '=', 'person.id')
                   .as('p'),
-              (join) => join.on(sql`true`)
+              (join) => join.onTrue()
             )
             .select(['first_name', 'p.name'])
             .orderBy('first_name')
@@ -619,7 +619,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
                   .select('name')
                   .whereRef('pet.owner_id', '=', 'person.id')
                   .as('p'),
-              (join) => join.on(sql`true`)
+              (join) => join.onTrue()
             )
             .select(['first_name', 'p.name'])
             .orderBy('first_name')

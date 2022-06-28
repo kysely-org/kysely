@@ -49,6 +49,16 @@ export interface TableMetadata {
 
 export interface ColumnMetadata {
   readonly name: string
-  readonly dataType: ColumnDataType
+  /**
+   * The data type of the column as reported by the database.
+   *
+   * NOTE: This value is whatever the database engine returns and it will be
+   *       different on different dialects even if you run the same migrations.
+   *       For example `integer` datatype in a migration will produce `int4`
+   *       on PostgreSQL, `INTEGER` on SQLite and `int` on MySQL.
+   */
+  readonly dataType: string
+  readonly isAutoIncrementing: boolean
   readonly isNullable: boolean
+  readonly hasDefaultValue: boolean
 }

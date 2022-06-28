@@ -1,5 +1,6 @@
 import { JoinNode } from '../operation-node/join-node.js'
 import { OperationNodeSource } from '../operation-node/operation-node-source.js'
+import { RawNode } from '../operation-node/raw-node.js'
 import {
   ExistsExpression,
   FilterOperator,
@@ -176,6 +177,19 @@ export class JoinBuilder<DB, TB extends keyof DB>
       joinNode: JoinNode.cloneWithOrOn(
         this.#props.joinNode,
         parseNotExistFilter(arg)
+      ),
+    })
+  }
+
+  /**
+   * Adds `on true`.
+   */
+  onTrue(): JoinBuilder<DB, TB> {
+    return new JoinBuilder({
+      ...this.#props,
+      joinNode: JoinNode.cloneWithOn(
+        this.#props.joinNode,
+        RawNode.createWithSql('true')
       ),
     })
   }
