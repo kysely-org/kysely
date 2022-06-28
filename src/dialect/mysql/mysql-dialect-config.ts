@@ -40,15 +40,12 @@ export interface MysqlPoolConnection {
   query(
     sql: string,
     parameters: ReadonlyArray<unknown>
-  ): {
-    stream: <T>(options: MysqlStreamOptions) => MysqlStream<T>
-  }
+  ): { stream: <T>(options: MysqlStreamOptions) => MysqlStream<T> }
   query(
     sql: string,
     parameters: ReadonlyArray<unknown>,
-    callback?: (error: unknown, result: MysqlQueryResult) => void
+    callback: (error: unknown, result: MysqlQueryResult) => void
   ): void
-
   release(): void
 }
 

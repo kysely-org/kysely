@@ -4,12 +4,12 @@ import {
   BUILT_IN_DIALECTS,
   clearDatabase,
   destroyTest,
-  expect,
   initTest,
   insertPersons,
-  NOT_SUPPORTED,
   TestContext,
   testSql,
+  expect,
+  NOT_SUPPORTED,
 } from './test-setup.js'
 
 for (const dialect of BUILT_IN_DIALECTS) {
