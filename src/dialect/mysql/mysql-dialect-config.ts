@@ -39,10 +39,26 @@ export interface MysqlPool {
 export interface MysqlPoolConnection {
   query(
     sql: string,
+    parameters: ReadonlyArray<unknown>
+  ): {
+    stream: <T>(options: MysqlStreamOptions) => MysqlStream<T>
+  }
+  query(
+    sql: string,
     parameters: ReadonlyArray<unknown>,
-    callback: (error: unknown, result: MysqlQueryResult) => void
+    callback?: (error: unknown, result: MysqlQueryResult) => void
   ): void
+
   release(): void
+}
+
+export interface MysqlStreamOptions {
+  highWaterMark?: number
+  objectMode?: boolean
+}
+
+export interface MysqlStream<T> {
+  [Symbol.asyncIterator](): AsyncIterableIterator<T>
 }
 
 export interface MysqlOkPacket {

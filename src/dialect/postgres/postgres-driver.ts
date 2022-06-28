@@ -112,6 +112,10 @@ class PostgresConnection implements DatabaseConnection {
     }
   }
 
+  async *executeQueryStream<R>(): AsyncIterableIterator<QueryResult<R>> {
+    throw new Error('@TODO: postgres::executeQueryStream')
+  }
+
   [PRIVATE_RELEASE_METHOD](): void {
     this.#client.release()
   }
