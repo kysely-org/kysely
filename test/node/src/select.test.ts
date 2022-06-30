@@ -515,7 +515,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
       expect(max_first_name).to.equal('Sylvester')
     })
 
-    if (dialect === 'mysql') {
+    if (dialect === 'mysql' || dialect === 'postgres') {
       it('should stream results', async () => {
         const males: unknown[] = []
 

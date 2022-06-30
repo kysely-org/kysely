@@ -53,6 +53,10 @@ export interface QueryExecutor extends ConnectionProvider {
    */
   stream<R>(
     compiledQuery: CompiledQuery,
+    /**
+     * How many rows should be pulled from database at once.
+     */
+    chunkSize: number,
     queryId: QueryId
   ): AsyncIterableIterator<QueryResult<R>>
 
