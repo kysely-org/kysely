@@ -54,7 +54,8 @@ export interface QueryExecutor extends ConnectionProvider {
   stream<R>(
     compiledQuery: CompiledQuery,
     /**
-     * How many rows should be pulled from database at once.
+     * How many rows should be pulled from database at once. Supported
+     * only for "postgres" driver.
      */
     chunkSize: number,
     queryId: QueryId
