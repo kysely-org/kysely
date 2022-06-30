@@ -172,7 +172,6 @@ class MysqlConnection implements DatabaseConnection {
       .query(compiledQuery.sql, compiledQuery.parameters)
       .stream<O>({
         objectMode: true,
-        highWaterMark: chunkSize,
       })
 
     try {
