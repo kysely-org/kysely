@@ -7,6 +7,8 @@ import { CompiledQuery } from '../../query-compiler/compiled-query.js'
 import { isFunction, freeze } from '../../util/object-utils.js'
 import { extendStackTrace } from '../../util/stack-trace-utils.js'
 import {
+  PostgresCursor,
+  PostgresCursorConstructor,
   PostgresDialectConfig,
   PostgresPool,
   PostgresPoolClient,
@@ -34,7 +36,9 @@ export class PostgresDriver implements Driver {
     let connection = this.#connections.get(client)
 
     if (!connection) {
-      connection = new PostgresConnection(client)
+      connection = new PostgresConnection(client, {
+        cursorIpl: this.#config.cursorImpl ?? null,
+      })
       this.#connections.set(client, connection)
 
       // The driver must take care of calling `onCreateConnection` when a new
@@ -84,11 +88,17 @@ export class PostgresDriver implements Driver {
   }
 }
 
+interface PostgresConnectionOptions {
+  cursorIpl: PostgresCursorConstructor | null
+}
+
 class PostgresConnection implements DatabaseConnection {
   #client: PostgresPoolClient
+  #options: PostgresConnectionOptions
 
-  constructor(client: PostgresPoolClient) {
+  constructor(client: PostgresPoolClient, options: PostgresConnectionOptions) {
     this.#client = client
+    this.#options = options
   }
 
   async executeQuery<O>(compiledQuery: CompiledQuery): Promise<QueryResult<O>> {
@@ -112,8 +122,38 @@ class PostgresConnection implements DatabaseConnection {
     }
   }
 
-  async *executeQueryStream<R>(): AsyncIterableIterator<QueryResult<R>> {
-    throw new Error('@TODO: postgres::executeQueryStream')
+  async *executeQueryStream<O>(
+    compiledQuery: CompiledQuery,
+    chunkSize: number
+  ): AsyncIterableIterator<QueryResult<O>> {
+    if (!this.#options.cursorIpl) {
+      throw new Error(
+        "'cursorIpl' is not present is postgres dialect config! It's required for streaming for work in postgresql!"
+      )
+    }
+
+    const cursor = this.#client.query(
+      new this.#options.cursorIpl<O>(
+        compiledQuery.sql,
+        compiledQuery.parameters
+      )
+    )
+
+    while (true) {
+      if (cursor.state === 'done') {
+        break
+      }
+
+      if (cursor.state === 'error') {
+        throw cursor._error
+      }
+
+      const rows: O[] = await cursor.read(chunkSize)
+
+      yield {
+        rows,
+      }
+    }
   }
 
   [PRIVATE_RELEASE_METHOD](): void {

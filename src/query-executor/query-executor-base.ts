@@ -71,6 +71,7 @@ export abstract class QueryExecutorBase implements QueryExecutor {
 
   async *stream<R>(
     compiledQuery: CompiledQuery,
+    chunkSize: number,
     queryId: QueryId
   ): AsyncIterableIterator<QueryResult<R>> {
     const connectionDefer = new Deferred<DatabaseConnection>()
@@ -86,7 +87,10 @@ export abstract class QueryExecutorBase implements QueryExecutor {
     const connection = await connectionDefer.promise
 
     try {
-      for await (const result of connection.executeQueryStream(compiledQuery)) {
+      for await (const result of connection.executeQueryStream(
+        compiledQuery,
+        chunkSize
+      )) {
         yield await this.#transformResult(result, queryId)
       }
     } finally {
