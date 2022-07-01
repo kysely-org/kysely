@@ -37,7 +37,7 @@ export class PostgresDriver implements Driver {
 
     if (!connection) {
       connection = new PostgresConnection(client, {
-        cursorIpl: this.#config.cursorImpl ?? null,
+        cursorImpl: this.#config.cursorImpl ?? null,
       })
       this.#connections.set(client, connection)
 
@@ -89,7 +89,7 @@ export class PostgresDriver implements Driver {
 }
 
 interface PostgresConnectionOptions {
-  cursorIpl: PostgresCursorConstructor | null
+  cursorImpl: PostgresCursorConstructor | null
 }
 
 class PostgresConnection implements DatabaseConnection {
@@ -126,14 +126,14 @@ class PostgresConnection implements DatabaseConnection {
     compiledQuery: CompiledQuery,
     chunkSize: number
   ): AsyncIterableIterator<QueryResult<O>> {
-    if (!this.#options.cursorIpl) {
+    if (!this.#options.cursorImpl) {
       throw new Error(
-        "'cursorIpl' is not present is postgres dialect config! It's required for streaming for work in postgresql!"
+        "'cursorImpl' is not present is postgres dialect config! It's required for streaming for work in postgresql!"
       )
     }
 
     const cursor = this.#client.query(
-      new this.#options.cursorIpl<O>(
+      new this.#options.cursorImpl<O>(
         compiledQuery.sql,
         compiledQuery.parameters
       )
