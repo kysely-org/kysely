@@ -128,7 +128,7 @@ class PostgresConnection implements DatabaseConnection {
   ): AsyncIterableIterator<QueryResult<O>> {
     if (!this.#options.cursorImpl) {
       throw new Error(
-        "'cursorImpl' is not present is postgres dialect config! It's required for streaming for work in postgresql!"
+        "'cursorImpl' is not present in your postgres dialect config. It's required to make streaming work in postgres."
       )
     }
 
