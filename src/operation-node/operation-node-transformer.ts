@@ -350,6 +350,8 @@ export class OperationNodeTransformer {
       where: this.transformNode(node.where),
       returning: this.transformNode(node.returning),
       with: this.transformNode(node.with),
+      orderBy:  this.transformNode(node.orderBy),
+      limit: this.transformNode(node.limit),
     }
   }
 
@@ -619,6 +621,7 @@ export class OperationNodeTransformer {
     return {
       kind: 'CreateSchemaNode',
       schema: this.transformNode(node.schema),
+      ifNotExists: node.ifNotExists,
     }
   }
 
