@@ -1,4 +1,5 @@
-import { sql } from '../../../'
+import { Kysely, PostgresDialect, sql } from '../../../'
+import { Pool } from 'pg'
 
 import {
   BUILT_IN_DIALECTS,
@@ -10,6 +11,9 @@ import {
   testSql,
   expect,
   NOT_SUPPORTED,
+  PLUGINS,
+  DIALECT_CONFIGS,
+  Database,
 } from './test-setup.js'
 
 for (const dialect of BUILT_IN_DIALECTS) {
@@ -543,6 +547,31 @@ for (const dialect of BUILT_IN_DIALECTS) {
           },
         ])
       })
+
+      if (dialect === 'postgres') {
+        it('should throw an error if the cursor implementation is not provided for the postgres dialect', async () => {
+          const db = new Kysely<Database>({
+            dialect: new PostgresDialect({
+              pool: async () => new Pool(DIALECT_CONFIGS.postgres),
+            }),
+            plugins: PLUGINS,
+          })
+
+          await expect(
+            (async () => {
+              for await (const _ of db
+                .selectFrom('person')
+                .selectAll()
+                .stream()) {
+              }
+            })()
+          ).to.be.rejectedWith(
+            "'cursorImpl' is not present in your postgres dialect config. It's required to make streaming work in postgres."
+          )
+
+          await db.destroy()
+        })
+      }
     }
 
     it('modifyFront should add arbitrary SQL to the front of the query', async () => {
