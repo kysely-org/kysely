@@ -1,4 +1,5 @@
 import * as chai from 'chai'
+import * as chaiAsPromised from 'chai-as-promised'
 import * as chaiSubset from 'chai-subset'
 import { Pool } from 'pg'
 import { createPool } from 'mysql2'
@@ -6,6 +7,7 @@ import { createPool } from 'mysql2'
 import * as Cursor from 'pg-cursor'
 
 chai.use(chaiSubset)
+chai.use(chaiAsPromised)
 
 import {
   Kysely,
@@ -89,7 +91,7 @@ const TEST_INIT_TIMEOUT = 5 * 60 * 1000
 // supported on some dialect.
 export const NOT_SUPPORTED = { sql: '', parameters: [] }
 
-const PLUGINS: KyselyPlugin[] = []
+export const PLUGINS: KyselyPlugin[] = []
 
 if (process.env.TEST_TRANSFORMER) {
   console.log('running tests with a transformer')
