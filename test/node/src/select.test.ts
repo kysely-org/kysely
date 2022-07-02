@@ -566,7 +566,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
               }
             })()
           ).to.be.rejectedWith(
-            "'cursorImpl' is not present in your postgres dialect config. It's required to make streaming work in postgres."
+            "'cursor' is not present in your postgres dialect config. It's required to make streaming work in postgres."
           )
 
           await db.destroy()

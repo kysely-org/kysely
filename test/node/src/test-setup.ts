@@ -129,7 +129,7 @@ const DB_CONFIGS: PerDialect<KyselyConfig> = {
   postgres: {
     dialect: new PostgresDialect({
       pool: async () => new Pool(DIALECT_CONFIGS.postgres),
-      cursorImpl: Cursor,
+      cursor: Cursor,
     }),
     plugins: PLUGINS,
   },

@@ -38,11 +38,11 @@ export interface PostgresDialectConfig {
    * import * as Cursor from 'pg-cursor'
    *
    * new PostgresDialect({
-   *  cursorImpl: Cursor
+   *  cursor: Cursor
    * })
    * ```
    */
-  cursorImpl?: PostgresCursorConstructor
+  cursor?: PostgresCursorConstructor
 
   /**
    * Called once for each created connection.
