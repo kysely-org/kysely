@@ -37,6 +37,9 @@ jobs:
       - name: Run node tests
         run: npm test
 
+      - name: Run node tests with transformer
+        run: TEST_TRANSFORMER=1 npm test
+
       - name: Run browser tests
         run: npm run test:browser
 
