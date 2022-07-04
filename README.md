@@ -12,14 +12,13 @@ and in the browser.
 ![](https://github.com/koskimas/kysely/blob/master/assets/demo.gif)
 
 Kysely makes sure you only refer to tables and columns that are visible to the part of the query
-you are writing. The result type only has the selected columns with correct types and aliases. As an
+you're writing. The result type only has the selected columns with correct types and aliases. As an
 added bonus you get autocompletion for all that stuff.
 
 As you can see in the gif above, through the pure magic of modern typescript, Kysely is even able to parse
 the alias given to `pet.name` and add the `pet_name` column to the result row type. Kysely is able to infer
 column names, aliases and types from selected subqueries, joined subqueries, `with` statements and pretty
-much anything you can think of. Typescript is always there for you offering completions and making sure
-you build a valid query.
+much anything you can think of.
 
 Of course there are cases where things cannot be typed at compile time, and Kysely offers escape
 hatches for these situations. See the [sql template tag](https://koskimas.github.io/kysely/modules.html#sql) 
