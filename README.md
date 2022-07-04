@@ -5,9 +5,9 @@
 
 # [Kysely](https://koskimas.github.io/kysely/index.html)
 
-A type-safe and autocompletion-friendly typescript SQL query builder. Inspired by [knex](http://knexjs.org/).
-Mainly developed for [node.js](https://nodejs.org/en/) but also runs on [deno](https://deno.land/) and
-in the browser.
+Kysely (pronounce “Key-Seh-Lee”) is a type-safe and autocompletion-friendly typescript SQL query builder. Inspired by
+[knex](http://knexjs.org/). Mainly developed for [node.js](https://nodejs.org/en/) but also runs on [deno](https://deno.land/)
+and in the browser.
 
 ![](https://github.com/koskimas/kysely/blob/master/assets/demo.gif)
 
@@ -34,6 +34,7 @@ You can find a more thorough introduction [here](https://www.jakso.me/blog/kysel
 
 - [Installation](#installation)
 - [Minimal example](#minimal-example)
+- [Generating types](#generating-types)
 - [Query examples](#query-examples)
 - [Recipes](https://github.com/koskimas/kysely/tree/master/recipes)
 - [Migrations](#migrations)
@@ -165,6 +166,11 @@ type Person = Selectable<PersonTable>
 type InsertablePerson = Insertable<PersonTable>
 type UpdateablePerson = Updateable<PersonTable>
 ```
+
+# Generating types
+
+If you want to generate the table types automatically from the database schema please
+check out [this awesome project](https://github.com/RobinBlomberg/kysely-codegen).
 
 # Query examples
 

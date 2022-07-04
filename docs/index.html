@@ -5,9 +5,9 @@
 <a href="#kysely" id="kysely" style="color: inherit; text-decoration: none;">
   <h1><a href="https://koskimas.github.io/kysely/index.html">Kysely</a></h1>
 </a>
-<p>A type-safe and autocompletion-friendly typescript SQL query builder. Inspired by <a href="http://knexjs.org/">knex</a>.
-Mainly developed for <a href="https://nodejs.org/en/">node.js</a> but also runs on <a href="https://deno.land/">deno</a> and
-in the browser.</p>
+<p>Kysely (pronounce “Key-Seh-Lee”) is a type-safe and autocompletion-friendly typescript SQL query builder. Inspired by
+<a href="http://knexjs.org/">knex</a>. Mainly developed for <a href="https://nodejs.org/en/">node.js</a> but also runs on <a href="https://deno.land/">deno</a>
+and in the browser.</p>
 <p><img src="assets/demo.gif" alt=""></p>
 <p>Kysely makes sure you only refer to tables and columns that are visible to the part of the query
 you are writing. The result type only has the selected columns with correct types and aliases. As an
@@ -30,6 +30,7 @@ and the <a href="https://koskimas.github.io/kysely/classes/DynamicModule.html#re
 <ul>
 <li><a href="#installation">Installation</a></li>
 <li><a href="#minimal-example">Minimal example</a></li>
+<li><a href="#generating-types">Generating types</a></li>
 <li><a href="#query-examples">Query examples</a></li>
 <li><a href="https://github.com/koskimas/kysely/tree/master/recipes">Recipes</a></li>
 <li><a href="#migrations">Migrations</a></li>
@@ -64,6 +65,12 @@ interfaces to the <code>Kysely</code> constructor:</p>
 </code></pre>
 <pre><code class="language-ts"><span class="hl-5">// You can extract the select, insert and update interfaces like this</span><br/><span class="hl-5">// if you want (you don&#39;t need to):</span><br/><span class="hl-0">type</span><span class="hl-1"> </span><span class="hl-2">Person</span><span class="hl-1"> = </span><span class="hl-2">Selectable</span><span class="hl-1">&lt;</span><span class="hl-2">PersonTable</span><span class="hl-1">&gt;</span><br/><span class="hl-0">type</span><span class="hl-1"> </span><span class="hl-2">InsertablePerson</span><span class="hl-1"> = </span><span class="hl-2">Insertable</span><span class="hl-1">&lt;</span><span class="hl-2">PersonTable</span><span class="hl-1">&gt;</span><br/><span class="hl-0">type</span><span class="hl-1"> </span><span class="hl-2">UpdateablePerson</span><span class="hl-1"> = </span><span class="hl-2">Updateable</span><span class="hl-1">&lt;</span><span class="hl-2">PersonTable</span><span class="hl-1">&gt;</span>
 </code></pre>
+
+<a href="#generating-types" id="generating-types" style="color: inherit; text-decoration: none;">
+  <h1>Generating types</h1>
+</a>
+<p>If you want to generate the table types automatically from the database schema please
+check out <a href="https://github.com/RobinBlomberg/kysely-codegen">this awesome project</a>.</p>
 
 <a href="#query-examples" id="query-examples" style="color: inherit; text-decoration: none;">
   <h1>Query examples</h1>
