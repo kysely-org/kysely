@@ -1,29 +1,29 @@
 export class Deferred<T> {
-  private readonly _promise: Promise<T>
+  readonly #promise: Promise<T>
 
-  private _resolve?: (value: T | PromiseLike<T>) => void
-  private _reject?: (reason?: any) => void
+  #resolve?: (value: T | PromiseLike<T>) => void
+  #reject?: (reason?: any) => void
 
   constructor() {
-    this._promise = new Promise<T>((resolve, reject) => {
-      this._reject = reject
-      this._resolve = resolve
+    this.#promise = new Promise<T>((resolve, reject) => {
+      this.#reject = reject
+      this.#resolve = resolve
     })
   }
 
   get promise(): Promise<T> {
-    return this._promise
+    return this.#promise
   }
 
   resolve = (value: T | PromiseLike<T>): void => {
-    if (this._resolve) {
-      this._resolve(value)
+    if (this.#resolve) {
+      this.#resolve(value)
     }
   }
 
   reject = (reason?: any): void => {
-    if (this._reject) {
-      this._reject(reason)
+    if (this.#reject) {
+      this.#reject(reason)
     }
   }
 }
