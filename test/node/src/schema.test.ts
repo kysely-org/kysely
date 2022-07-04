@@ -1066,8 +1066,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
         afterEach(cleanup)
 
         it('should create a schema', async () => {
-          const builder = ctx.db.schema
-            .createSchema('pets')
+          const builder = ctx.db.schema.createSchema('pets')
 
           testSql(builder, dialect, {
             postgres: {
@@ -1075,19 +1074,17 @@ for (const dialect of BUILT_IN_DIALECTS) {
               parameters: [],
             },
             mysql: {
-              sql: "create schema `pets`",
+              sql: 'create schema `pets`',
               parameters: [],
             },
-            sqlite: NOT_SUPPORTED
+            sqlite: NOT_SUPPORTED,
           })
 
           await builder.execute()
         })
 
         it('should create a schema if not exists', async () => {
-          const builder = ctx.db.schema
-            .createSchema('pets')
-            .ifNotExists()
+          const builder = ctx.db.schema.createSchema('pets').ifNotExists()
 
           testSql(builder, dialect, {
             postgres: {
@@ -1095,7 +1092,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
               parameters: [],
             },
             mysql: {
-              sql: "create schema if not exists `pets`",
+              sql: 'create schema if not exists `pets`',
               parameters: [],
             },
             sqlite: NOT_SUPPORTED,
@@ -1116,10 +1113,9 @@ for (const dialect of BUILT_IN_DIALECTS) {
         afterEach(cleanup)
 
         it('should create a schema', async () => {
-          await ctx.db.schema.createSchema('pets').execute();
+          await ctx.db.schema.createSchema('pets').execute()
 
-          const builder = ctx.db.schema
-            .dropSchema('pets')
+          const builder = ctx.db.schema.dropSchema('pets')
 
           testSql(builder, dialect, {
             postgres: {
@@ -1127,19 +1123,17 @@ for (const dialect of BUILT_IN_DIALECTS) {
               parameters: [],
             },
             mysql: {
-              sql: "drop schema `pets`",
+              sql: 'drop schema `pets`',
               parameters: [],
             },
-            sqlite: NOT_SUPPORTED
+            sqlite: NOT_SUPPORTED,
           })
 
           await builder.execute()
         })
 
         it('should drop a schema if exists', async () => {
-          const builder = ctx.db.schema
-            .dropSchema('pets')
-            .ifExists()
+          const builder = ctx.db.schema.dropSchema('pets').ifExists()
 
           testSql(builder, dialect, {
             postgres: {
@@ -1147,7 +1141,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
               parameters: [],
             },
             mysql: {
-              sql: "drop schema if exists `pets`",
+              sql: 'drop schema if exists `pets`',
               parameters: [],
             },
             sqlite: NOT_SUPPORTED,
