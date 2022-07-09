@@ -12,7 +12,7 @@ and in the browser.</p>
 <p>Kysely makes sure you only refer to tables and columns that are visible to the part of the query
 you&#39;re writing. The result type only has the selected columns with correct types and aliases. As an
 added bonus you get autocompletion for all that stuff.</p>
-<p>As you can see in the gif above, through the pure magic of modern typescript, Kysely is even able to parse
+<p>As shown in the gif above, through the pure magic of modern typescript, Kysely is even able to parse
 the alias given to <code>pet.name</code> and add the <code>pet_name</code> column to the result row type. Kysely is able to infer
 column names, aliases and types from selected subqueries, joined subqueries, <code>with</code> statements and pretty
 much anything you can think of.</p>
@@ -109,10 +109,10 @@ documentation.</p>
 <p>Migration files should look like this:</p>
 <pre><code class="language-ts"><span class="hl-6">import</span><span class="hl-1"> { </span><span class="hl-3">Kysely</span><span class="hl-1"> } </span><span class="hl-6">from</span><span class="hl-1"> </span><span class="hl-4">&#39;kysely&#39;</span><br/><br/><span class="hl-6">export</span><span class="hl-1"> </span><span class="hl-0">async</span><span class="hl-1"> </span><span class="hl-0">function</span><span class="hl-1"> </span><span class="hl-9">up</span><span class="hl-1">(</span><span class="hl-3">db</span><span class="hl-1">: </span><span class="hl-2">Kysely</span><span class="hl-1">&lt;</span><span class="hl-2">any</span><span class="hl-1">&gt;): </span><span class="hl-2">Promise</span><span class="hl-1">&lt;</span><span class="hl-2">void</span><span class="hl-1">&gt; {</span><br/><span class="hl-1">  </span><span class="hl-5">// Migration code</span><br/><span class="hl-1">}</span><br/><br/><span class="hl-6">export</span><span class="hl-1"> </span><span class="hl-0">async</span><span class="hl-1"> </span><span class="hl-0">function</span><span class="hl-1"> </span><span class="hl-9">down</span><span class="hl-1">(</span><span class="hl-3">db</span><span class="hl-1">: </span><span class="hl-2">Kysely</span><span class="hl-1">&lt;</span><span class="hl-2">any</span><span class="hl-1">&gt;): </span><span class="hl-2">Promise</span><span class="hl-1">&lt;</span><span class="hl-2">void</span><span class="hl-1">&gt; {</span><br/><span class="hl-1">  </span><span class="hl-5">// Migration code</span><br/><span class="hl-1">}</span>
 </code></pre>
-<p>The <code>up</code> function is called when you update your database schema to next version and <code>down</code>
+<p>The <code>up</code> function is called when you update your database schema to the next version and <code>down</code>
 when you go back to previous version. The only argument for the functions is an instance of
-<code>Kysely&lt;any&gt;</code>. It&#39;s important to use <code>Kysely&lt;any&gt;</code> and not <code>Kysely&lt;YourDatabase&gt;</code>. Migrations
-should never depend on the current code of your app because they need to work even when the app
+<code>Kysely&lt;any&gt;</code>. It&#39;s important to use <code>Kysely&lt;any&gt;</code> and not <code>Kysely&lt;YourDatabase&gt;</code>. </p>
+<p>Migrations should never depend on the current code of your app because they need to work even when the app
 changes. Migrations need to be &quot;frozen in time&quot;.</p>
 <p>The migrations can use the <a href="https://koskimas.github.io/kysely/classes/SchemaModule.html">Kysely.schema</a>
 module to modify the schema. Migrations can also run normal queries to modify data.</p>
