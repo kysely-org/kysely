@@ -9,3 +9,7 @@
   margin-top: 10px;
   margin-bottom: 10px;
 }
+
+.tsd-panel-group.tsd-index-group {
+  display: none;
+}
