@@ -70,6 +70,8 @@ import { freeze } from '../util/object-utils.js'
 import { OnNode } from './on-node.js'
 import { ValuesNode } from './values-node.js'
 import { SelectModifierNode } from './select-modifier-node.js'
+import { CreateTypeNode } from './create-type-node.js'
+import { DropTypeNode } from './drop-type-node.js'
 
 export abstract class OperationNodeVisitor {
   protected readonly nodeStack: OperationNode[] = []
@@ -147,6 +149,8 @@ export abstract class OperationNodeVisitor {
     OnNode: this.visitOn.bind(this),
     ValuesNode: this.visitValues.bind(this),
     SelectModifierNode: this.visitSelectModifier.bind(this),
+    CreateTypeNode: this.visitCreateType.bind(this),
+    DropTypeNode: this.visitDropType.bind(this),
   })
 
   protected readonly visitNode = (node: OperationNode): void => {
@@ -230,4 +234,6 @@ export abstract class OperationNodeVisitor {
   protected abstract visitOn(node: OnNode): void
   protected abstract visitValues(node: ValuesNode): void
   protected abstract visitSelectModifier(node: SelectModifierNode): void
+  protected abstract visitCreateType(node: CreateTypeNode): void
+  protected abstract visitDropType(node: DropTypeNode): void
 }

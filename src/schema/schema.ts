@@ -21,6 +21,10 @@ import { CreateViewNode } from '../operation-node/create-view-node.js'
 import { DropViewBuilder } from './drop-view-builder.js'
 import { DropViewNode } from '../operation-node/drop-view-node.js'
 import { KyselyPlugin } from '../plugin/kysely-plugin.js'
+import { CreateTypeBuilder } from './create-type-builder.js'
+import { DropTypeBuilder } from './drop-type-builder.js'
+import { CreateTypeNode } from '../operation-node/create-type-node.js'
+import { DropTypeNode } from '../operation-node/drop-type-node.js'
 
 /**
  * Provides methods for building database schema.
@@ -247,6 +251,50 @@ export class SchemaModule {
       queryId: createQueryId(),
       executor: this.#executor,
       dropViewNode: DropViewNode.create(viewName),
+    })
+  }
+
+  /**
+   * Create a new type.
+   *
+   * Only some dialects like PostgreSQL have user-defined types.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * await db.schema
+   *   .createType('species')
+   *   .asEnum(['dog', 'cat', 'frog'])
+   *   .execute()
+   * ```
+   */
+  createType(viewName: string): CreateTypeBuilder {
+    return new CreateTypeBuilder({
+      queryId: createQueryId(),
+      executor: this.#executor,
+      createTypeNode: CreateTypeNode.create(viewName),
+    })
+  }
+
+  /**
+   * Drop a type.
+   *
+   * Only some dialects like PostgreSQL have user-defined types.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * await db.schema
+   *   .dropType('species')
+   *   .ifExists()
+   *   .execute()
+   * ```
+   */
+  dropType(viewName: string): DropTypeBuilder {
+    return new DropTypeBuilder({
+      queryId: createQueryId(),
+      executor: this.#executor,
+      dropTypeNode: DropTypeNode.create(viewName),
     })
   }
 

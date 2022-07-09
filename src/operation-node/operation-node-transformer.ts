@@ -68,6 +68,8 @@ import { DefaultValueNode } from './default-value-node.js'
 import { OnNode } from './on-node.js'
 import { ValuesNode } from './values-node.js'
 import { SelectModifierNode } from './select-modifier-node.js'
+import { CreateTypeNode } from './create-type-node.js'
+import { DropTypeNode } from './drop-type-node.js'
 
 /**
  * Transforms an operation node tree into another one.
@@ -170,6 +172,8 @@ export class OperationNodeTransformer {
     OnNode: this.transformOn.bind(this),
     ValuesNode: this.transformValues.bind(this),
     SelectModifierNode: this.transformSelectModifier.bind(this),
+    CreateTypeNode: this.transformCreateType.bind(this),
+    DropTypeNode: this.transformDropType.bind(this),
   })
 
   readonly transformNode = <
@@ -770,6 +774,22 @@ export class OperationNodeTransformer {
       kind: 'SelectModifierNode',
       modifier: node.modifier,
       rawModifier: this.transformNode(node.rawModifier),
+    })
+  }
+
+  protected transformCreateType(node: CreateTypeNode): CreateTypeNode {
+    return requireAllProps<CreateTypeNode>({
+      kind: 'CreateTypeNode',
+      name: this.transformNode(node.name),
+      enum: this.transformNode(node.enum),
+    })
+  }
+
+  protected transformDropType(node: DropTypeNode): DropTypeNode {
+    return requireAllProps<DropTypeNode>({
+      kind: 'DropTypeNode',
+      name: this.transformNode(node.name),
+      ifExists: node.ifExists,
     })
   }
 

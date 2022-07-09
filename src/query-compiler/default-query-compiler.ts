@@ -83,6 +83,8 @@ import {
   SelectModifier,
   SelectModifierNode,
 } from '../operation-node/select-modifier-node.js'
+import { CreateTypeNode } from '../operation-node/create-type-node.js'
+import { DropTypeNode } from '../operation-node/drop-type-node.js'
 
 export class DefaultQueryCompiler
   extends OperationNodeVisitor
@@ -1096,6 +1098,26 @@ export class DefaultQueryCompiler
     } else {
       this.append(SELECT_MODIFIER_SQL[node.modifier!])
     }
+  }
+
+  protected override visitCreateType(node: CreateTypeNode): void {
+    this.append('create type ')
+    this.visitNode(node.name)
+
+    if (node.enum) {
+      this.append(' as enum ')
+      this.visitNode(node.enum)
+    }
+  }
+
+  protected override visitDropType(node: DropTypeNode): void {
+    this.append('drop type ')
+
+    if (node.ifExists) {
+      this.append('if exists ')
+    }
+
+    this.visitNode(node.name)
   }
 
   protected append(str: string): void {

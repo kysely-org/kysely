@@ -66,6 +66,8 @@ export type OperationNodeKind =
   | 'ValuesNode'
   | 'CommonTableExpressionNameNode'
   | 'SelectModifierNode'
+  | 'CreateTypeNode'
+  | 'DropTypeNode'
 
 export interface OperationNode {
   readonly kind: OperationNodeKind

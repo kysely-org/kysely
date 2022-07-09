@@ -2,10 +2,12 @@ import { AliasNode } from '../../operation-node/alias-node.js'
 import { AlterTableNode } from '../../operation-node/alter-table-node.js'
 import { CreateIndexNode } from '../../operation-node/create-index-node.js'
 import { CreateTableNode } from '../../operation-node/create-table-node.js'
+import { CreateTypeNode } from '../../operation-node/create-type-node.js'
 import { CreateViewNode } from '../../operation-node/create-view-node.js'
 import { DeleteQueryNode } from '../../operation-node/delete-query-node.js'
 import { DropIndexNode } from '../../operation-node/drop-index-node.js'
 import { DropTableNode } from '../../operation-node/drop-table-node.js'
+import { DropTypeNode } from '../../operation-node/drop-type-node.js'
 import { DropViewNode } from '../../operation-node/drop-view-node.js'
 import { InsertQueryNode } from '../../operation-node/insert-query-node.js'
 import { JoinNode } from '../../operation-node/join-node.js'
@@ -76,6 +78,14 @@ export class WithSchemaTransformer extends OperationNodeTransformer {
 
   protected override transformDropView(node: DropViewNode): DropViewNode {
     return this.#transformRoot(node, (node) => super.transformDropView(node))
+  }
+
+  protected override transformCreateType(node: CreateTypeNode): CreateTypeNode {
+    return this.#transformRoot(node, (node) => super.transformCreateType(node))
+  }
+
+  protected override transformDropType(node: DropTypeNode): DropTypeNode {
+    return this.#transformRoot(node, (node) => super.transformDropType(node))
   }
 
   protected override transformAlterTable(node: AlterTableNode): AlterTableNode {

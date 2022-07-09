@@ -1112,7 +1112,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
         beforeEach(cleanup)
         afterEach(cleanup)
 
-        it('should create a schema', async () => {
+        it('should drop a schema', async () => {
           await ctx.db.schema.createSchema('pets').execute()
 
           const builder = ctx.db.schema.dropSchema('pets')
@@ -1153,6 +1153,77 @@ for (const dialect of BUILT_IN_DIALECTS) {
 
       async function cleanup() {
         await ctx.db.schema.dropSchema('pets').ifExists().execute()
+      }
+    })
+
+    describe('create type', () => {
+      if (dialect === 'postgres') {
+        beforeEach(cleanup)
+        afterEach(cleanup)
+
+        it('should create an enum type', async () => {
+          const builder = ctx.db.schema
+            .createType('species')
+            .asEnum(['cat', 'dog', 'frog'])
+
+          testSql(builder, dialect, {
+            postgres: {
+              sql: `create type "species" as enum ('cat', 'dog', 'frog')`,
+              parameters: [],
+            },
+            mysql: NOT_SUPPORTED,
+            sqlite: NOT_SUPPORTED,
+          })
+
+          await builder.execute()
+        })
+      }
+
+      async function cleanup() {
+        await ctx.db.schema.dropType('species').ifExists().execute()
+      }
+    })
+
+    describe('drop type', () => {
+      if (dialect === 'postgres') {
+        beforeEach(cleanup)
+        afterEach(cleanup)
+
+        it('should drop a type', async () => {
+          await ctx.db.schema.createType('species').execute()
+
+          const builder = ctx.db.schema.dropType('species')
+
+          testSql(builder, dialect, {
+            postgres: {
+              sql: `drop type "species"`,
+              parameters: [],
+            },
+            mysql: NOT_SUPPORTED,
+            sqlite: NOT_SUPPORTED,
+          })
+
+          await builder.execute()
+        })
+
+        it('should drop a type if exists', async () => {
+          const builder = ctx.db.schema.dropType('species').ifExists()
+
+          testSql(builder, dialect, {
+            postgres: {
+              sql: `drop type if exists "species"`,
+              parameters: [],
+            },
+            mysql: NOT_SUPPORTED,
+            sqlite: NOT_SUPPORTED,
+          })
+
+          await builder.execute()
+        })
+      }
+
+      async function cleanup() {
+        await ctx.db.schema.dropType('species').ifExists().execute()
       }
     })
 
