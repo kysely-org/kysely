@@ -17,26 +17,19 @@ import { SelectionNode } from './selection-node.js'
 import { WhereNode } from './where-node.js'
 import { WithNode } from './with-node.js'
 import { UnionNode } from './union-node.js'
-
-export type SelectModifier =
-  | 'ForUpdate'
-  | 'ForNoKeyUpdate'
-  | 'ForShare'
-  | 'ForKeyShare'
-  | 'NoWait'
-  | 'SkipLocked'
+import { SelectModifierNode } from './select-modifier-node.js'
 
 export interface SelectQueryNode extends OperationNode {
   readonly kind: 'SelectQueryNode'
   readonly from: FromNode
   readonly selections?: ReadonlyArray<SelectionNode>
   readonly distinctOnSelections?: ReadonlyArray<SelectionNode>
-  readonly distinct?: boolean
   readonly joins?: ReadonlyArray<JoinNode>
   readonly groupBy?: GroupByNode
   readonly orderBy?: OrderByNode
   readonly where?: WhereNode
-  readonly modifiers?: ReadonlyArray<SelectModifier>
+  readonly frontModifiers?: ReadonlyArray<SelectModifierNode>
+  readonly endModifiers?: ReadonlyArray<SelectModifierNode>
   readonly limit?: LimitNode
   readonly offset?: OffsetNode
   readonly with?: WithNode
@@ -87,14 +80,26 @@ export const SelectQueryNode = freeze({
     })
   },
 
-  cloneWithModifier(
+  cloneWithFrontModifier(
     select: SelectQueryNode,
-    modifier: SelectModifier
+    modifier: SelectModifierNode
   ): SelectQueryNode {
     return freeze({
       ...select,
-      modifiers: select.modifiers
-        ? freeze([...select.modifiers, modifier])
+      frontModifiers: select.frontModifiers
+        ? freeze([...select.frontModifiers, modifier])
+        : freeze([modifier]),
+    })
+  },
+
+  cloneWithEndModifier(
+    select: SelectQueryNode,
+    modifier: SelectModifierNode
+  ): SelectQueryNode {
+    return freeze({
+      ...select,
+      endModifiers: select.endModifiers
+        ? freeze([...select.endModifiers, modifier])
         : freeze([modifier]),
     })
   },
@@ -164,13 +169,6 @@ export const SelectQueryNode = freeze({
       having: selectNode.having
         ? HavingNode.cloneWithFilter(selectNode.having, 'Or', filter)
         : HavingNode.create(filter),
-    })
-  },
-
-  cloneWithDistinct(selectNode: SelectQueryNode): SelectQueryNode {
-    return freeze({
-      ...selectNode,
-      distinct: true,
     })
   },
 

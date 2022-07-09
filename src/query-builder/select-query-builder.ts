@@ -59,6 +59,7 @@ import { NoResultError, NoResultErrorConstructor } from './no-result-error.js'
 import { HavingInterface } from './having-interface.js'
 import { IdentifierNode } from '../operation-node/identifier-node.js'
 import { AliasedRawBuilder } from '../raw-builder/raw-builder.js'
+import { SelectModifierNode } from '../operation-node/select-modifier-node.js'
 
 export class SelectQueryBuilder<DB, TB extends keyof DB, O>
   implements
@@ -528,6 +529,68 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
   }
 
   /**
+   * This can be used to add any additional SQL to the front of the query __after__ the `select` keyword.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * db.selectFrom('person')
+   *   .modifyFront(sql`sql_no_cache`)
+   *   .select('first_name')
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (MySQL):
+   *
+   * ```sql
+   * select sql_no_cache `first_name`
+   * from `person`
+   * ```
+   */
+  modifyFront(modifier: AnyRawBuilder): SelectQueryBuilder<DB, TB, O> {
+    return new SelectQueryBuilder({
+      ...this.#props,
+      queryNode: SelectQueryNode.cloneWithFrontModifier(
+        this.#props.queryNode,
+        SelectModifierNode.createWithRaw(modifier.toOperationNode())
+      ),
+    })
+  }
+
+  /**
+   * This can be used to add any additional SQL to the end of the query.
+   *
+   * Also see {@link forUpdate}, {@link forShare}, {@link forKeyShare}, {@link forNoKeyUpdate}
+   * {@link skipLocked} and  {@link noWait}.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * db.selectFrom('person')
+   *   .select('first_name')
+   *   .modifyEnd(sql`for update`)
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * select "first_name"
+   * from "person"
+   * for update
+   * ```
+   */
+  modifyEnd(modifier: AnyRawBuilder): SelectQueryBuilder<DB, TB, O> {
+    return new SelectQueryBuilder({
+      ...this.#props,
+      queryNode: SelectQueryNode.cloneWithEndModifier(
+        this.#props.queryNode,
+        SelectModifierNode.createWithRaw(modifier.toOperationNode())
+      ),
+    })
+  }
+
+  /**
    * Makes the selection distinct.
    *
    * ### Examples
@@ -548,84 +611,87 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
   distinct(): SelectQueryBuilder<DB, TB, O> {
     return new SelectQueryBuilder({
       ...this.#props,
-      queryNode: SelectQueryNode.cloneWithDistinct(this.#props.queryNode),
+      queryNode: SelectQueryNode.cloneWithFrontModifier(
+        this.#props.queryNode,
+        SelectModifierNode.create('Distinct')
+      ),
     })
   }
 
   /**
-   * Adds the `for update` option to a select query on supported databases.
+   * Adds the `for update` modifier to a select query on supported databases.
    */
   forUpdate(): SelectQueryBuilder<DB, TB, O> {
     return new SelectQueryBuilder({
       ...this.#props,
-      queryNode: SelectQueryNode.cloneWithModifier(
+      queryNode: SelectQueryNode.cloneWithEndModifier(
         this.#props.queryNode,
-        'ForUpdate'
+        SelectModifierNode.create('ForUpdate')
       ),
     })
   }
 
   /**
-   * Adds the `for share` option to a select query on supported databases.
+   * Adds the `for share` modifier to a select query on supported databases.
    */
   forShare(): SelectQueryBuilder<DB, TB, O> {
     return new SelectQueryBuilder({
       ...this.#props,
-      queryNode: SelectQueryNode.cloneWithModifier(
+      queryNode: SelectQueryNode.cloneWithEndModifier(
         this.#props.queryNode,
-        'ForShare'
+        SelectModifierNode.create('ForShare')
       ),
     })
   }
 
   /**
-   * Adds the `for key share` option to a select query on supported databases.
+   * Adds the `for key share` modifier to a select query on supported databases.
    */
   forKeyShare(): SelectQueryBuilder<DB, TB, O> {
     return new SelectQueryBuilder({
       ...this.#props,
-      queryNode: SelectQueryNode.cloneWithModifier(
+      queryNode: SelectQueryNode.cloneWithEndModifier(
         this.#props.queryNode,
-        'ForKeyShare'
+        SelectModifierNode.create('ForKeyShare')
       ),
     })
   }
 
   /**
-   * Adds the `for no key update` option to a select query on supported databases.
+   * Adds the `for no key update` modifier to a select query on supported databases.
    */
   forNoKeyUpdate(): SelectQueryBuilder<DB, TB, O> {
     return new SelectQueryBuilder({
       ...this.#props,
-      queryNode: SelectQueryNode.cloneWithModifier(
+      queryNode: SelectQueryNode.cloneWithEndModifier(
         this.#props.queryNode,
-        'ForNoKeyUpdate'
+        SelectModifierNode.create('ForNoKeyUpdate')
       ),
     })
   }
 
   /**
-   * Adds the `skip locked` option to a select query on supported databases.
+   * Adds the `skip locked` modifier to a select query on supported databases.
    */
   skipLocked(): SelectQueryBuilder<DB, TB, O> {
     return new SelectQueryBuilder({
       ...this.#props,
-      queryNode: SelectQueryNode.cloneWithModifier(
+      queryNode: SelectQueryNode.cloneWithEndModifier(
         this.#props.queryNode,
-        'SkipLocked'
+        SelectModifierNode.create('SkipLocked')
       ),
     })
   }
 
   /**
-   * Adds the `nowait` option to a select query on supported databases.
+   * Adds the `nowait` modifier to a select query on supported databases.
    */
   noWait(): SelectQueryBuilder<DB, TB, O> {
     return new SelectQueryBuilder({
       ...this.#props,
-      queryNode: SelectQueryNode.cloneWithModifier(
+      queryNode: SelectQueryNode.cloneWithEndModifier(
         this.#props.queryNode,
-        'NoWait'
+        SelectModifierNode.create('NoWait')
       ),
     })
   }

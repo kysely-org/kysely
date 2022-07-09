@@ -69,6 +69,7 @@ import { DefaultValueNode } from './default-value-node.js'
 import { freeze } from '../util/object-utils.js'
 import { OnNode } from './on-node.js'
 import { ValuesNode } from './values-node.js'
+import { SelectModifierNode } from './select-modifier-node.js'
 
 export abstract class OperationNodeVisitor {
   protected readonly nodeStack: OperationNode[] = []
@@ -145,6 +146,7 @@ export abstract class OperationNodeVisitor {
     DefaultValueNode: this.visitDefaultValue.bind(this),
     OnNode: this.visitOn.bind(this),
     ValuesNode: this.visitValues.bind(this),
+    SelectModifierNode: this.visitSelectModifier.bind(this),
   })
 
   protected readonly visitNode = (node: OperationNode): void => {
@@ -227,4 +229,5 @@ export abstract class OperationNodeVisitor {
   protected abstract visitDefaultValue(node: DefaultValueNode): void
   protected abstract visitOn(node: OnNode): void
   protected abstract visitValues(node: ValuesNode): void
+  protected abstract visitSelectModifier(node: SelectModifierNode): void
 }

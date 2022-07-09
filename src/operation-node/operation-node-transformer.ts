@@ -47,7 +47,7 @@ import { CommonTableExpressionNode } from './common-table-expression-node.js'
 import { CommonTableExpressionNameNode } from './common-table-expression-name-node.js'
 import { HavingNode } from './having-node.js'
 import { freeze } from '../util/object-utils.js'
-import { checkProps } from '../util/check-props.js'
+import { requireAllProps } from '../util/require-all-props.js'
 import { CreateSchemaNode } from './create-schema-node.js'
 import { DropSchemaNode } from './drop-schema-node.js'
 import { AlterTableNode } from './alter-table-node.js'
@@ -67,6 +67,7 @@ import { GeneratedNode } from './generated-node.js'
 import { DefaultValueNode } from './default-value-node.js'
 import { OnNode } from './on-node.js'
 import { ValuesNode } from './values-node.js'
+import { SelectModifierNode } from './select-modifier-node.js'
 
 /**
  * Transforms an operation node tree into another one.
@@ -168,9 +169,13 @@ export class OperationNodeTransformer {
     DefaultValueNode: this.transformDefaultValue.bind(this),
     OnNode: this.transformOn.bind(this),
     ValuesNode: this.transformValues.bind(this),
+    SelectModifierNode: this.transformSelectModifier.bind(this),
   })
 
-  readonly transformNode = <T extends OperationNode | undefined, U extends T | undefined = T>(
+  readonly transformNode = <
+    T extends OperationNode | undefined,
+    U extends T | undefined = T
+  >(
     node: U
   ): T => {
     if (!node) {
@@ -184,9 +189,17 @@ export class OperationNodeTransformer {
     return freeze(out)
   }
 
-  protected transformNodeList<T extends OperationNode, U extends T = T>(list: readonly U[]): readonly T[];
-  protected transformNodeList<T extends OperationNode, U extends T = T>(list: readonly U[] | undefined): readonly T[] | undefined;
-  protected transformNodeList<T extends OperationNode, U extends T = T>(list: readonly U[] | undefined): readonly T[] | undefined {
+  protected transformNodeList<T extends OperationNode, U extends T = T>(
+    list: readonly U[]
+  ): readonly T[]
+
+  protected transformNodeList<T extends OperationNode, U extends T = T>(
+    list: readonly U[] | undefined
+  ): readonly T[] | undefined
+
+  protected transformNodeList<T extends OperationNode, U extends T = T>(
+    list: readonly U[] | undefined
+  ): readonly T[] | undefined {
     if (!list) {
       return list as unknown as T[]
     }
@@ -195,17 +208,17 @@ export class OperationNodeTransformer {
   }
 
   protected transformSelectQuery(node: SelectQueryNode): SelectQueryNode {
-    return checkProps<SelectQueryNode>({
+    return requireAllProps<SelectQueryNode>({
       kind: 'SelectQueryNode',
       from: this.transformNode(node.from),
       selections: this.transformNodeList(node.selections),
       distinctOnSelections: this.transformNodeList(node.distinctOnSelections),
-      distinct: node.distinct,
       joins: this.transformNodeList(node.joins),
       groupBy: this.transformNode(node.groupBy),
       orderBy: this.transformNode(node.orderBy),
       where: this.transformNode(node.where),
-      modifiers: node.modifiers,
+      frontModifiers: this.transformNodeList(node.frontModifiers),
+      endModifiers: this.transformNodeList(node.endModifiers),
       limit: this.transformNode(node.limit),
       offset: this.transformNode(node.offset),
       with: this.transformNode(node.with),
@@ -215,21 +228,21 @@ export class OperationNodeTransformer {
   }
 
   protected transformSelection(node: SelectionNode): SelectionNode {
-    return checkProps<SelectionNode>({
+    return requireAllProps<SelectionNode>({
       kind: 'SelectionNode',
       selection: this.transformNode(node.selection),
     })
   }
 
   protected transformColumn(node: ColumnNode): ColumnNode {
-    return checkProps<ColumnNode>({
+    return requireAllProps<ColumnNode>({
       kind: 'ColumnNode',
       column: this.transformNode(node.column),
     })
   }
 
   protected transformAlias(node: AliasNode): AliasNode {
-    return checkProps<AliasNode>({
+    return requireAllProps<AliasNode>({
       kind: 'AliasNode',
       node: this.transformNode(node.node),
       alias: this.transformNode(node.alias),
@@ -237,7 +250,7 @@ export class OperationNodeTransformer {
   }
 
   protected transformTable(node: TableNode): TableNode {
-    return checkProps<TableNode>({
+    return requireAllProps<TableNode>({
       kind: 'TableNode',
       schema: this.transformNode(node.schema),
       table: this.transformNode(node.table),
@@ -245,14 +258,14 @@ export class OperationNodeTransformer {
   }
 
   protected transformFrom(node: FromNode): FromNode {
-    return checkProps<FromNode>({
+    return requireAllProps<FromNode>({
       kind: 'FromNode',
       froms: this.transformNodeList(node.froms),
     })
   }
 
   protected transformReference(node: ReferenceNode): ReferenceNode {
-    return checkProps<ReferenceNode>({
+    return requireAllProps<ReferenceNode>({
       kind: 'ReferenceNode',
       table: this.transformNode(node.table),
       column: this.transformNode(node.column),
@@ -260,7 +273,7 @@ export class OperationNodeTransformer {
   }
 
   protected transformFilter(node: FilterNode): FilterNode {
-    return checkProps<FilterNode>({
+    return requireAllProps<FilterNode>({
       kind: 'FilterNode',
       left: this.transformNode(node.left),
       op: this.transformNode(node.op),
@@ -269,7 +282,7 @@ export class OperationNodeTransformer {
   }
 
   protected transformAnd(node: AndNode): AndNode {
-    return checkProps<AndNode>({
+    return requireAllProps<AndNode>({
       kind: 'AndNode',
       left: this.transformNode(node.left),
       right: this.transformNode(node.right),
@@ -277,7 +290,7 @@ export class OperationNodeTransformer {
   }
 
   protected transformOr(node: OrNode): OrNode {
-    return checkProps<OrNode>({
+    return requireAllProps<OrNode>({
       kind: 'OrNode',
       left: this.transformNode(node.left),
       right: this.transformNode(node.right),
@@ -285,21 +298,21 @@ export class OperationNodeTransformer {
   }
 
   protected transformValueList(node: ValueListNode): ValueListNode {
-    return checkProps<ValueListNode>({
+    return requireAllProps<ValueListNode>({
       kind: 'ValueListNode',
       values: this.transformNodeList(node.values),
     })
   }
 
   protected transformParens(node: ParensNode): ParensNode {
-    return checkProps<ParensNode>({
+    return requireAllProps<ParensNode>({
       kind: 'ParensNode',
       node: this.transformNode(node.node),
     })
   }
 
   protected transformJoin(node: JoinNode): JoinNode {
-    return checkProps<JoinNode>({
+    return requireAllProps<JoinNode>({
       kind: 'JoinNode',
       joinType: node.joinType,
       table: this.transformNode(node.table),
@@ -308,7 +321,7 @@ export class OperationNodeTransformer {
   }
 
   protected transformRaw(node: RawNode): RawNode {
-    return checkProps<RawNode>({
+    return requireAllProps<RawNode>({
       kind: 'RawNode',
       sqlFragments: freeze([...node.sqlFragments]),
       parameters: this.transformNodeList(node.parameters),
@@ -316,14 +329,14 @@ export class OperationNodeTransformer {
   }
 
   protected transformWhere(node: WhereNode): WhereNode {
-    return checkProps<WhereNode>({
+    return requireAllProps<WhereNode>({
       kind: 'WhereNode',
       where: this.transformNode(node.where),
     })
   }
 
   protected transformInsertQuery(node: InsertQueryNode): InsertQueryNode {
-    return checkProps<InsertQueryNode>({
+    return requireAllProps<InsertQueryNode>({
       kind: 'InsertQueryNode',
       into: this.transformNode(node.into),
       columns: this.transformNodeList(node.columns),
@@ -337,34 +350,34 @@ export class OperationNodeTransformer {
   }
 
   protected transformValues(node: ValuesNode): ValuesNode {
-    return checkProps<ValuesNode>({
+    return requireAllProps<ValuesNode>({
       kind: 'ValuesNode',
       values: this.transformNodeList(node.values),
     })
   }
 
   protected transformDeleteQuery(node: DeleteQueryNode): DeleteQueryNode {
-    return checkProps<DeleteQueryNode>({
+    return requireAllProps<DeleteQueryNode>({
       kind: 'DeleteQueryNode',
       from: this.transformNode(node.from),
       joins: this.transformNodeList(node.joins),
       where: this.transformNode(node.where),
       returning: this.transformNode(node.returning),
       with: this.transformNode(node.with),
-      orderBy:  this.transformNode(node.orderBy),
+      orderBy: this.transformNode(node.orderBy),
       limit: this.transformNode(node.limit),
     })
   }
 
   protected transformReturning(node: ReturningNode): ReturningNode {
-    return checkProps<ReturningNode>({
+    return requireAllProps<ReturningNode>({
       kind: 'ReturningNode',
       selections: this.transformNodeList(node.selections),
     })
   }
 
   protected transformCreateTable(node: CreateTableNode): CreateTableNode {
-    return checkProps<CreateTableNode>({
+    return requireAllProps<CreateTableNode>({
       kind: 'CreateTableNode',
       table: this.transformNode(node.table),
       columns: this.transformNodeList(node.columns),
@@ -378,7 +391,7 @@ export class OperationNodeTransformer {
   protected transformColumnDefinition(
     node: ColumnDefinitionNode
   ): ColumnDefinitionNode {
-    return checkProps<ColumnDefinitionNode>({
+    return requireAllProps<ColumnDefinitionNode>({
       kind: 'ColumnDefinitionNode',
       column: this.transformNode(node.column),
       dataType: this.transformNode(node.dataType),
@@ -395,14 +408,14 @@ export class OperationNodeTransformer {
   }
 
   protected transformAddColumn(node: AddColumnNode): AddColumnNode {
-    return checkProps<AddColumnNode>({
+    return requireAllProps<AddColumnNode>({
       kind: 'AddColumnNode',
       column: this.transformNode(node.column),
     })
   }
 
   protected transformDropTable(node: DropTableNode): DropTableNode {
-    return checkProps<DropTableNode>({
+    return requireAllProps<DropTableNode>({
       kind: 'DropTableNode',
       table: this.transformNode(node.table),
       ifExists: node.ifExists,
@@ -410,14 +423,14 @@ export class OperationNodeTransformer {
   }
 
   protected transformOrderBy(node: OrderByNode): OrderByNode {
-    return checkProps<OrderByNode>({
+    return requireAllProps<OrderByNode>({
       kind: 'OrderByNode',
       items: this.transformNodeList(node.items),
     })
   }
 
   protected transformOrderByItem(node: OrderByItemNode): OrderByItemNode {
-    return checkProps<OrderByItemNode>({
+    return requireAllProps<OrderByItemNode>({
       kind: 'OrderByItemNode',
       orderBy: this.transformNode(node.orderBy),
       direction: this.transformNode(node.direction),
@@ -425,21 +438,21 @@ export class OperationNodeTransformer {
   }
 
   protected transformGroupBy(node: GroupByNode): GroupByNode {
-    return checkProps<GroupByNode>({
+    return requireAllProps<GroupByNode>({
       kind: 'GroupByNode',
       items: this.transformNodeList(node.items),
     })
   }
 
   protected transformGroupByItem(node: GroupByItemNode): GroupByItemNode {
-    return checkProps<GroupByItemNode>({
+    return requireAllProps<GroupByItemNode>({
       kind: 'GroupByItemNode',
       groupBy: this.transformNode(node.groupBy),
     })
   }
 
   protected transformUpdateQuery(node: UpdateQueryNode): UpdateQueryNode {
-    return checkProps<UpdateQueryNode>({
+    return requireAllProps<UpdateQueryNode>({
       kind: 'UpdateQueryNode',
       table: this.transformNode(node.table),
       from: this.transformNode(node.from),
@@ -452,7 +465,7 @@ export class OperationNodeTransformer {
   }
 
   protected transformColumnUpdate(node: ColumnUpdateNode): ColumnUpdateNode {
-    return checkProps<ColumnUpdateNode>({
+    return requireAllProps<ColumnUpdateNode>({
       kind: 'ColumnUpdateNode',
       column: this.transformNode(node.column),
       value: this.transformNode(node.value),
@@ -460,21 +473,21 @@ export class OperationNodeTransformer {
   }
 
   protected transformLimit(node: LimitNode): LimitNode {
-    return checkProps<LimitNode>({
+    return requireAllProps<LimitNode>({
       kind: 'LimitNode',
       limit: this.transformNode(node.limit),
     })
   }
 
   protected transformOffset(node: OffsetNode): OffsetNode {
-    return checkProps<OffsetNode>({
+    return requireAllProps<OffsetNode>({
       kind: 'OffsetNode',
       offset: this.transformNode(node.offset),
     })
   }
 
   protected transformOnConflict(node: OnConflictNode): OnConflictNode {
-    return checkProps<OnConflictNode>({
+    return requireAllProps<OnConflictNode>({
       kind: 'OnConflictNode',
       columns: this.transformNodeList(node.columns),
       constraint: this.transformNode(node.constraint),
@@ -489,14 +502,14 @@ export class OperationNodeTransformer {
   protected transformOnDuplicateKey(
     node: OnDuplicateKeyNode
   ): OnDuplicateKeyNode {
-    return checkProps<OnDuplicateKeyNode>({
+    return requireAllProps<OnDuplicateKeyNode>({
       kind: 'OnDuplicateKeyNode',
       updates: this.transformNodeList(node.updates),
     })
   }
 
   protected transformCreateIndex(node: CreateIndexNode): CreateIndexNode {
-    return checkProps<CreateIndexNode>({
+    return requireAllProps<CreateIndexNode>({
       kind: 'CreateIndexNode',
       name: this.transformNode(node.name),
       table: this.transformNode(node.table),
@@ -507,14 +520,14 @@ export class OperationNodeTransformer {
   }
 
   protected transformList(node: ListNode): ListNode {
-    return checkProps<ListNode>({
+    return requireAllProps<ListNode>({
       kind: 'ListNode',
       items: this.transformNodeList(node.items),
     })
   }
 
   protected transformDropIndex(node: DropIndexNode): DropIndexNode {
-    return checkProps<DropIndexNode>({
+    return requireAllProps<DropIndexNode>({
       kind: 'DropIndexNode',
       name: this.transformNode(node.name),
       table: this.transformNode(node.table),
@@ -525,7 +538,7 @@ export class OperationNodeTransformer {
   protected transformPrimaryKeyConstraint(
     node: PrimaryKeyConstraintNode
   ): PrimaryKeyConstraintNode {
-    return checkProps<PrimaryKeyConstraintNode>({
+    return requireAllProps<PrimaryKeyConstraintNode>({
       kind: 'PrimaryKeyConstraintNode',
       columns: this.transformNodeList(node.columns),
       name: this.transformNode(node.name),
@@ -535,7 +548,7 @@ export class OperationNodeTransformer {
   protected transformUniqueConstraint(
     node: UniqueConstraintNode
   ): UniqueConstraintNode {
-    return checkProps<UniqueConstraintNode>({
+    return requireAllProps<UniqueConstraintNode>({
       kind: 'UniqueConstraintNode',
       columns: this.transformNodeList(node.columns),
       name: this.transformNode(node.name),
@@ -545,7 +558,7 @@ export class OperationNodeTransformer {
   protected transformForeignKeyConstraint(
     node: ForeignKeyConstraintNode
   ): ForeignKeyConstraintNode {
-    return checkProps<ForeignKeyConstraintNode>({
+    return requireAllProps<ForeignKeyConstraintNode>({
       kind: 'ForeignKeyConstraintNode',
       columns: this.transformNodeList(node.columns),
       references: this.transformNode(node.references),
@@ -556,7 +569,7 @@ export class OperationNodeTransformer {
   }
 
   protected transformUnion(node: UnionNode): UnionNode {
-    return checkProps<UnionNode>({
+    return requireAllProps<UnionNode>({
       kind: 'UnionNode',
       union: this.transformNode(node.union),
       all: node.all,
@@ -564,7 +577,7 @@ export class OperationNodeTransformer {
   }
 
   protected transformReferences(node: ReferencesNode): ReferencesNode {
-    return checkProps<ReferencesNode>({
+    return requireAllProps<ReferencesNode>({
       kind: 'ReferencesNode',
       table: this.transformNode(node.table),
       columns: this.transformNodeList(node.columns),
@@ -576,7 +589,7 @@ export class OperationNodeTransformer {
   protected transformCheckConstraint(
     node: CheckConstraintNode
   ): CheckConstraintNode {
-    return checkProps<CheckConstraintNode>({
+    return requireAllProps<CheckConstraintNode>({
       kind: 'CheckConstraintNode',
       expression: this.transformNode(node.expression),
       name: this.transformNode(node.name),
@@ -584,7 +597,7 @@ export class OperationNodeTransformer {
   }
 
   protected transformWith(node: WithNode): WithNode {
-    return checkProps<WithNode>({
+    return requireAllProps<WithNode>({
       kind: 'WithNode',
       expressions: this.transformNodeList(node.expressions),
       recursive: node.recursive,
@@ -594,7 +607,7 @@ export class OperationNodeTransformer {
   protected transformCommonTableExpression(
     node: CommonTableExpressionNode
   ): CommonTableExpressionNode {
-    return checkProps<CommonTableExpressionNode>({
+    return requireAllProps<CommonTableExpressionNode>({
       kind: 'CommonTableExpressionNode',
       name: this.transformNode(node.name),
       expression: this.transformNode(node.expression),
@@ -604,7 +617,7 @@ export class OperationNodeTransformer {
   protected transformCommonTableExpressionName(
     node: CommonTableExpressionNameNode
   ): CommonTableExpressionNameNode {
-    return checkProps<CommonTableExpressionNameNode>({
+    return requireAllProps<CommonTableExpressionNameNode>({
       kind: 'CommonTableExpressionNameNode',
       table: this.transformNode(node.table),
       columns: this.transformNodeList(node.columns),
@@ -612,14 +625,14 @@ export class OperationNodeTransformer {
   }
 
   protected transformHaving(node: HavingNode): HavingNode {
-    return checkProps<HavingNode>({
+    return requireAllProps<HavingNode>({
       kind: 'HavingNode',
       having: this.transformNode(node.having),
     })
   }
 
   protected transformCreateSchema(node: CreateSchemaNode): CreateSchemaNode {
-    return checkProps<CreateSchemaNode>({
+    return requireAllProps<CreateSchemaNode>({
       kind: 'CreateSchemaNode',
       schema: this.transformNode(node.schema),
       ifNotExists: node.ifNotExists,
@@ -627,7 +640,7 @@ export class OperationNodeTransformer {
   }
 
   protected transformDropSchema(node: DropSchemaNode): DropSchemaNode {
-    return checkProps<DropSchemaNode>({
+    return requireAllProps<DropSchemaNode>({
       kind: 'DropSchemaNode',
       schema: this.transformNode(node.schema),
       ifExists: node.ifExists,
@@ -635,7 +648,7 @@ export class OperationNodeTransformer {
   }
 
   protected transformAlterTable(node: AlterTableNode): AlterTableNode {
-    return checkProps<AlterTableNode>({
+    return requireAllProps<AlterTableNode>({
       kind: 'AlterTableNode',
       table: this.transformNode(node.table),
       renameTo: this.transformNode(node.renameTo),
@@ -651,14 +664,14 @@ export class OperationNodeTransformer {
   }
 
   protected transformDropColumn(node: DropColumnNode): DropColumnNode {
-    return checkProps<DropColumnNode>({
+    return requireAllProps<DropColumnNode>({
       kind: 'DropColumnNode',
       column: this.transformNode(node.column),
     })
   }
 
   protected transformRenameColumn(node: RenameColumnNode): RenameColumnNode {
-    return checkProps<RenameColumnNode>({
+    return requireAllProps<RenameColumnNode>({
       kind: 'RenameColumnNode',
       column: this.transformNode(node.column),
       renameTo: this.transformNode(node.renameTo),
@@ -666,7 +679,7 @@ export class OperationNodeTransformer {
   }
 
   protected transformAlterColumn(node: AlterColumnNode): AlterColumnNode {
-    return checkProps<AlterColumnNode>({
+    return requireAllProps<AlterColumnNode>({
       kind: 'AlterColumnNode',
       column: this.transformNode(node.column),
       dataType: this.transformNode(node.dataType),
@@ -679,14 +692,14 @@ export class OperationNodeTransformer {
   }
 
   protected transformModifyColumn(node: ModifyColumnNode): ModifyColumnNode {
-    return checkProps<ModifyColumnNode>({
+    return requireAllProps<ModifyColumnNode>({
       kind: 'ModifyColumnNode',
       column: this.transformNode(node.column),
     })
   }
 
   protected transformAddConstraint(node: AddConstraintNode): AddConstraintNode {
-    return checkProps<AddConstraintNode>({
+    return requireAllProps<AddConstraintNode>({
       kind: 'AddConstraintNode',
       constraint: this.transformNode(node.constraint),
     })
@@ -695,7 +708,7 @@ export class OperationNodeTransformer {
   protected transformDropConstraint(
     node: DropConstraintNode
   ): DropConstraintNode {
-    return checkProps<DropConstraintNode>({
+    return requireAllProps<DropConstraintNode>({
       kind: 'DropConstraintNode',
       constraintName: this.transformNode(node.constraintName),
       ifExists: node.ifExists,
@@ -704,7 +717,7 @@ export class OperationNodeTransformer {
   }
 
   protected transformCreateView(node: CreateViewNode): CreateViewNode {
-    return checkProps<CreateViewNode>({
+    return requireAllProps<CreateViewNode>({
       kind: 'CreateViewNode',
       name: this.transformNode(node.name),
       temporary: node.temporary,
@@ -717,7 +730,7 @@ export class OperationNodeTransformer {
   }
 
   protected transformDropView(node: DropViewNode): DropViewNode {
-    return checkProps<DropViewNode>({
+    return requireAllProps<DropViewNode>({
       kind: 'DropViewNode',
       name: this.transformNode(node.name),
       ifExists: node.ifExists,
@@ -726,7 +739,7 @@ export class OperationNodeTransformer {
   }
 
   protected transformGenerated(node: GeneratedNode): GeneratedNode {
-    return checkProps<GeneratedNode>({
+    return requireAllProps<GeneratedNode>({
       kind: 'GeneratedNode',
       byDefault: node.byDefault,
       always: node.always,
@@ -737,16 +750,26 @@ export class OperationNodeTransformer {
   }
 
   protected transformDefaultValue(node: DefaultValueNode): DefaultValueNode {
-    return checkProps<DefaultValueNode>({
+    return requireAllProps<DefaultValueNode>({
       kind: 'DefaultValueNode',
       defaultValue: this.transformNode(node.defaultValue),
     })
   }
 
   protected transformOn(node: OnNode): OnNode {
-    return checkProps<OnNode>({
+    return requireAllProps<OnNode>({
       kind: 'OnNode',
       on: this.transformNode(node.on),
+    })
+  }
+
+  protected transformSelectModifier(
+    node: SelectModifierNode
+  ): SelectModifierNode {
+    return requireAllProps<SelectModifierNode>({
+      kind: 'SelectModifierNode',
+      modifier: node.modifier,
+      rawModifier: this.transformNode(node.rawModifier),
     })
   }
 

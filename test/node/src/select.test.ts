@@ -514,5 +514,60 @@ for (const dialect of BUILT_IN_DIALECTS) {
       expect(min_first_name).to.equal('Arnold')
       expect(max_first_name).to.equal('Sylvester')
     })
+
+    it('modifyFront should add arbitrary SQL to the front of the query', async () => {
+      const query = ctx.db
+        .selectFrom('person')
+        .select('gender')
+        .modifyFront(sql`distinct`)
+        .orderBy('gender')
+
+      testSql(query, dialect, {
+        postgres: {
+          sql: 'select distinct "gender" from "person" order by "gender"',
+          parameters: [],
+        },
+        mysql: {
+          sql: 'select distinct `gender` from `person` order by `gender`',
+          parameters: [],
+        },
+        sqlite: {
+          sql: 'select distinct "gender" from "person" order by "gender"',
+          parameters: [],
+        },
+      })
+
+      const persons = await query.execute()
+
+      expect(persons).to.have.length(2)
+      expect(persons).to.eql([{ gender: 'female' }, { gender: 'male' }])
+    })
+
+    if (dialect !== 'sqlite') {
+      it('modifyEnd should add arbitrary SQL to the end of the query', async () => {
+        const query = ctx.db
+          .selectFrom('person')
+          .select('last_name')
+          .where('first_name', '=', 'Jennifer')
+          .modifyEnd(sql`for update`)
+
+        testSql(query, dialect, {
+          postgres: {
+            sql: 'select "last_name" from "person" where "first_name" = $1 for update',
+            parameters: ['Jennifer'],
+          },
+          mysql: {
+            sql: 'select `last_name` from `person` where `first_name` = ? for update',
+            parameters: ['Jennifer'],
+          },
+          sqlite: NOT_SUPPORTED,
+        })
+
+        const persons = await query.execute()
+
+        expect(persons).to.have.length(1)
+        expect(persons).to.eql([{ last_name: 'Aniston' }])
+      })
+    }
   })
 }

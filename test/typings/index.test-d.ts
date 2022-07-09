@@ -18,6 +18,7 @@ import {
   Selectable,
   ColumnType,
   sql,
+  ExpressionBuilder,
 } from '.'
 
 import { expectType, expectError, expectAssignable } from 'tsd'
@@ -1085,8 +1086,27 @@ async function testGenericUpdate(db: Kysely<Database>, table: 'pet' | 'movie') {
   await db.updateTable(table).set({ id: '123' }).execute()
 }
 
+async function testSelectsInVariable(db: Kysely<Database>) {
+  const selects = [
+    'first_name',
+    (eb: ExpressionBuilder<Database, 'person'>) =>
+      eb
+        .selectFrom('pet')
+        .select('name')
+        .whereRef('pet.owner_id', '=', 'person.id')
+        .as('pet_name'),
+  ] as const
+
+  const r1 = await db
+    .selectFrom('person')
+    .select(selects)
+    .executeTakeFirstOrThrow()
+
+  expectType<{ first_name: string; pet_name: string }>(r1)
+}
+
 async function testManyJoins(db: Kysely<Database>) {
-  // Make things still work if we add a huge amount of joins.
+  // Make sure things still work if we add a huge amount of joins.
   const r1 = await db
     .selectFrom('person')
     .innerJoin('pet as p1', 'p1.owner_id', 'person.id')
