@@ -15,7 +15,7 @@ Kysely makes sure you only refer to tables and columns that are visible to the p
 you're writing. The result type only has the selected columns with correct types and aliases. As an
 added bonus you get autocompletion for all that stuff.
 
-As you can see in the gif above, through the pure magic of modern typescript, Kysely is even able to parse
+As shown in the gif above, through the pure magic of modern typescript, Kysely is even able to parse
 the alias given to `pet.name` and add the `pet_name` column to the result row type. Kysely is able to infer
 column names, aliases and types from selected subqueries, joined subqueries, `with` statements and pretty
 much anything you can think of.
@@ -213,10 +213,11 @@ export async function down(db: Kysely<any>): Promise<void> {
 }
 ```
 
-The `up` function is called when you update your database schema to next version and `down`
+The `up` function is called when you update your database schema to the next version and `down`
 when you go back to previous version. The only argument for the functions is an instance of
-`Kysely<any>`. It's important to use `Kysely<any>` and not `Kysely<YourDatabase>`. Migrations
-should never depend on the current code of your app because they need to work even when the app
+`Kysely<any>`. It's important to use `Kysely<any>` and not `Kysely<YourDatabase>`. 
+
+Migrations should never depend on the current code of your app because they need to work even when the app
 changes. Migrations need to be "frozen in time".
 
 The migrations can use the [Kysely.schema](https://koskimas.github.io/kysely/classes/SchemaModule.html)
