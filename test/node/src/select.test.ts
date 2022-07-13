@@ -14,6 +14,7 @@ import {
   PLUGINS,
   DIALECT_CONFIGS,
   Database,
+  POOL_SIZE,
 } from './test-setup.js'
 
 for (const dialect of BUILT_IN_DIALECTS) {
@@ -546,6 +547,16 @@ for (const dialect of BUILT_IN_DIALECTS) {
             gender: 'male',
           },
         ])
+      })
+
+      it('should release connection on premature async iterator stop', async () => {
+        for (let i = 0; i <= POOL_SIZE + 1; i++) {
+          const stream = ctx.db.selectFrom('person').selectAll().stream()
+
+          for await (const _ of stream) {
+            break
+          }
+        }
       })
 
       if (dialect === 'postgres') {
