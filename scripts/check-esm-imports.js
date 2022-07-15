@@ -40,11 +40,11 @@ function readLines(filePath) {
 }
 
 function isLocalImport(row) {
-  return row.includes("from '.") || row.includes('from ".')
+  return row.match(/from ['"]\./)
 }
 
 function isDotJsImport(row) {
-  return row.endsWith(".js'")
+  return row.match(/.js['"][\n\t\s]*$/)
 }
 
 checkDir(path.join(__dirname, '..', 'src'))
