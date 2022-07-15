@@ -40,7 +40,7 @@ export class ReplaceQueryBuilder<DB, TB extends keyof DB, O>
    * You must provide all fields you haven't explicitly marked as nullable
    * or optional using {@link ColumnType}.
    *
-   * The return value of an `replace` query is an instance of {@link InsertResult}. The
+   * The return value of a `replace` query is an instance of {@link InsertResult}. The
    * {@link InsertResult.insertId | insertId} field holds the auto incremented primary
    * key if the database returned one.
    *
@@ -50,10 +50,12 @@ export class ReplaceQueryBuilder<DB, TB extends keyof DB, O>
    * ### Examples
    *
    * Insert/replace a row into `person`:
+   *
    * ```ts
    * const id = await db
    *   .replaceInto('person')
    *   .values({
+   *     id: 123,
    *     first_name: 'Jennifer',
    *     last_name: 'Aniston'
    *   })
@@ -63,7 +65,7 @@ export class ReplaceQueryBuilder<DB, TB extends keyof DB, O>
    * The generated SQL (MySQL):
    *
    * ```sql
-   * replace into `person` (`first_name`, `last_name`) values (?, ?)
+   * replace into `person` (`id`, `first_name`, `last_name`) values (?, ?, ?)
    * ```
    *
    * You can insert/replace multiple rows by providing an array.
@@ -72,9 +74,11 @@ export class ReplaceQueryBuilder<DB, TB extends keyof DB, O>
    * await db
    *   .replaceInto('person')
    *   .values([{
+   *     id: 123,
    *     first_name: 'Jennifer',
    *     last_name: 'Aniston'
    *   }, {
+   *     id: 456,
    *     first_name: 'Arnold',
    *     last_name: 'Schwarzenegger',
    *   }])
@@ -84,7 +88,7 @@ export class ReplaceQueryBuilder<DB, TB extends keyof DB, O>
    * The generated SQL (MySQL):
    *
    * ```sql
-   * replace into `person` (`first_name`, `last_name`) values ((?, ?), (?, ?))
+   * replace into `person` (`id`, `first_name`, `last_name`) values ((?, ?, ?), (?, ?, ?))
    * ```
    *
    * In addition to primitives, the values can also be raw sql expressions or
@@ -96,6 +100,7 @@ export class ReplaceQueryBuilder<DB, TB extends keyof DB, O>
    * const result = await db
    *   .replaceInto('person')
    *   .values({
+   *     id: 123,
    *     first_name: 'Jennifer',
    *     age: db.selectFrom('person').select(sql`avg(age)`),
    *     updated_at: sql`CURRENT_TIMESTAMP()`,
@@ -108,8 +113,8 @@ export class ReplaceQueryBuilder<DB, TB extends keyof DB, O>
    * The generated SQL (MySQL):
    *
    * ```sql
-   * replace into `person` (`first_name`, `age`, `updated_at`)
-   * values (?, (select avg(age) from `person`))
+   * replace into `person` (`id`, `first_name`, `age`, `updated_at`)
+   * values (?, ?, (select avg(age) from `person`), CURRENT_TIMESTAMP())
    * ```
    *
    * You can also use the callback version of subqueries or raw expressions:
@@ -157,8 +162,8 @@ export class ReplaceQueryBuilder<DB, TB extends keyof DB, O>
    *
    * ```ts
    * db.replaceInto('person')
-   *   .columns(['first_name'])
-   *   .expression((eb) => eb.selectFrom('pet').select('pet.name'))
+   *   .columns(['id', 'first_name'])
+   *   .expression((eb) => eb.selectFrom('pet').select(['pet.id', 'pet.name']))
    * ```
    *
    * The generated SQL (MySQL):
