@@ -22,6 +22,7 @@ export interface InsertQueryNode extends OperationNode {
   readonly onDuplicateKey?: OnDuplicateKeyNode
   readonly with?: WithNode
   readonly ignore?: boolean
+  readonly replace?: boolean
 }
 
 /**
