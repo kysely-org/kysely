@@ -36,6 +36,7 @@ describe(`${dialect}: replace`, () => {
 
   it('should insert one row', async () => {
     const query = ctx.db.replaceInto('person').values({
+      id: 15,
       first_name: 'Foo',
       last_name: 'Barson',
       gender: 'other',
@@ -44,8 +45,8 @@ describe(`${dialect}: replace`, () => {
     testSql(query, dialect, {
       postgres: NOT_SUPPORTED,
       mysql: {
-        sql: 'replace into `person` (`first_name`, `last_name`, `gender`) values (?, ?, ?)',
-        parameters: ['Foo', 'Barson', 'other'],
+        sql: 'replace into `person` (`id`, `first_name`, `last_name`, `gender`) values (?, ?, ?, ?)',
+        parameters: [15, 'Foo', 'Barson', 'other'],
       },
       sqlite: NOT_SUPPORTED,
     })
@@ -67,6 +68,7 @@ describe(`${dialect}: replace`, () => {
 
   it('should insert one row with complex values', async () => {
     const query = ctx.db.replaceInto('person').values({
+      id: 2500,
       first_name: ctx.db
         .selectFrom('pet')
         .select(sql`max(name)`.as('max_name')),
@@ -77,8 +79,8 @@ describe(`${dialect}: replace`, () => {
     testSql(query, dialect, {
       postgres: NOT_SUPPORTED,
       mysql: {
-        sql: "replace into `person` (`first_name`, `last_name`, `gender`) values ((select max(name) as `max_name` from `pet`), concat('Bar', 'son'), ?)",
-        parameters: ['other'],
+        sql: "replace into `person` (`id`, `first_name`, `last_name`, `gender`) values (?, (select max(name) as `max_name` from `pet`), concat('Bar', 'son'), ?)",
+        parameters: [2500, 'other'],
       },
       sqlite: NOT_SUPPORTED,
     })
@@ -129,17 +131,16 @@ describe(`${dialect}: replace`, () => {
 
   it('undefined values should be ignored', async () => {
     const query = ctx.db.replaceInto('person').values({
-      id: undefined,
-      first_name: 'Foo',
-      last_name: 'Barson',
-      gender: 'other',
+      id: 12,
+      gender: 'male',
+      middle_name: undefined,
     })
 
     testSql(query, dialect, {
       postgres: NOT_SUPPORTED,
       mysql: {
-        sql: 'replace into `person` (`first_name`, `last_name`, `gender`) values (?, ?, ?)',
-        parameters: ['Foo', 'Barson', 'other'],
+        sql: 'replace into `person` (`id`, `gender`) values (?, ?)',
+        parameters: [12, 'male'],
       },
       sqlite: NOT_SUPPORTED,
     })
