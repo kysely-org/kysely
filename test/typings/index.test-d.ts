@@ -1253,3 +1253,66 @@ async function testManyJoins(db: Kysely<Database>) {
 
   expectType<{ age: number; last_name: string | null }>(r3)
 }
+
+async function testReplace(db: Kysely<Database>) {
+  const person = {
+    first_name: 'Jennifer',
+    last_name: 'Aniston',
+    gender: 'other' as const,
+    age: 30,
+  }
+
+  const r1 = await db.replaceInto('person').values(person).execute()
+
+  expectType<InsertResult[]>(r1)
+
+  const r2 = await db
+    .replaceInto('person')
+    .values({ first_name: 'fname', age: 10, gender: 'other' })
+    .executeTakeFirst()
+
+  expectType<InsertResult>(r2)
+
+  const r3 = await db
+    .replaceInto('person')
+    .values(person)
+    .executeTakeFirstOrThrow()
+
+  expectType<InsertResult>(r3)
+
+  const r4 = await db
+    .with('foo', (db) =>
+      db.selectFrom('person').select('id').where('person.id', '=', 1)
+    )
+    .replaceInto('movie')
+    .values({
+      stars: (eb) => eb.selectFrom('foo').select('foo.id'),
+    })
+    .executeTakeFirst()
+
+  expectType<InsertResult>(r4)
+
+  // Non-existent table
+  expectError(db.replaceInto('doesnt_exists'))
+
+  // Non-existent column
+  expectError(db.replaceInto('person').values({ not_column: 'foo' }))
+
+  // Wrong type for a column
+  expectError(
+    db
+      .replaceInto('person')
+      .values({ first_name: 10, age: 10, gender: 'other' })
+  )
+
+  // Missing required columns
+  expectError(db.replaceInto('person').values({ first_name: 'Jennifer' }))
+
+  // Explicitly excluded column
+  expectError(db.replaceInto('person').values({ modified_at: new Date() }))
+
+  // GeneratedAlways column is not allowed to be inserted
+  expectError(db.replaceInto('book').values({ id: 1, name: 'foo' }))
+
+  db.replaceInto('book').values({ name: 'bar' })
+}
