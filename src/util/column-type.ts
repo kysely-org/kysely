@@ -63,7 +63,7 @@ export type Generated<S> = ColumnType<S, S | undefined, S>
  * (like postgres GENERATED ALWAYS AS IDENTITY). No insert/update
  * is allowed.
  */
- export type GeneratedAlways<S> = ColumnType<S, never, never>
+export type GeneratedAlways<S> = ColumnType<S, never, never>
 
 /**
  * Evaluates to `K` if `T` can be `null` or `undefined`.
@@ -116,6 +116,20 @@ type NonNeverSelectKeys<R> = {
  */
 export type UpdateKeys<R> = {
   [K in keyof R]: IfNotNever<UpdateType<R[K]>, K>
+}[keyof R]
+
+/**
+ * Keys of `R` whose `UpdateType` values can be `null` or `undefined`.
+ */
+export type NullableUpdateKeys<R> = {
+  [K in keyof R]: IfNullable<UpdateType<R[K]>, K>
+}[keyof R]
+
+/**
+ * Keys of `R` whose `UpdateType` values can't be `null` or `undefined`.
+ */
+export type NonNullableUpdateKeys<R> = {
+  [K in keyof R]: IfNotNullable<UpdateType<R[K]>, K>
 }[keyof R]
 
 /**
