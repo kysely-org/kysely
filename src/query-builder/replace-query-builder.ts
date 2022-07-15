@@ -1,7 +1,6 @@
 import { OperationNodeSource } from '../operation-node/operation-node-source.js'
 import { CompiledQuery } from '../query-compiler/compiled-query.js'
 import {
-  InsertObject,
   InsertObjectOrList,
   parseInsertObjectOrList,
 } from '../parser/insert-values-parser.js'
@@ -38,7 +37,7 @@ export class ReplaceQueryBuilder<DB, TB extends keyof DB, O>
    * raw {@link sql} snippets or select queries.
    *
    * You must provide all fields you haven't explicitly marked as nullable
-   * or optional using {@link Generated} or {@link ColumnType}.
+   * or optional using {@link ColumnType}.
    *
    * The return value of an `replace` query is an instance of {@link InsertResult}. The
    * {@link InsertResult.insertId | insertId} field holds the auto incremented primary
@@ -127,14 +126,14 @@ export class ReplaceQueryBuilder<DB, TB extends keyof DB, O>
    * })
    * ```
    */
-  values(row: InsertObject<DB, TB>): ReplaceQueryBuilder<DB, TB, O>
+  values(row: TB): ReplaceQueryBuilder<DB, TB, O>
 
-  values(
-    row: ReadonlyArray<InsertObject<DB, TB>>
-  ): ReplaceQueryBuilder<DB, TB, O>
+  values(row: ReadonlyArray<TB>): ReplaceQueryBuilder<DB, TB, O>
 
-  values(args: InsertObjectOrList<DB, TB>): any {
-    const [columns, values] = parseInsertObjectOrList(args)
+  values(args: TB | ReadonlyArray<TB>): any {
+    const [columns, values] = parseInsertObjectOrList(
+      args as unknown as InsertObjectOrList<DB, TB>
+    )
 
     return new ReplaceQueryBuilder({
       ...this.#props,
@@ -225,8 +224,8 @@ export class ReplaceQueryBuilder<DB, TB extends keyof DB, O>
    *   return qb
    * }
    *
-   * db.updateTable('person')
-   *   .set(values)
+   * db.replaceInto('person')
+   *   .values(values)
    *   .call(log)
    *   .execute()
    * ```
@@ -238,35 +237,20 @@ export class ReplaceQueryBuilder<DB, TB extends keyof DB, O>
   /**
    * Call `func(this)` if `condition` is true.
    *
-   * This method is especially handy with optional selects. Any `returning` or `returningAll`
-   * method calls add columns as optional fields to the output type when called inside
-   * the `func` callback. This is because we can't know if those selections were actually
-   * made before running the code.
-   *
-   * You can also call any other methods inside the callback.
-   *
    * ### Examples
    *
    * ```ts
-   * async function insertPerson(values: InsertablePerson, returnLastName: boolean) {
-   *   return await db
-   *     .insertInto('person')
-   *     .values(values)
-   *     .returning(['id', 'first_name'])
-   *     .if(returnLastName, (qb) => qb.returning('last_name'))
-   *     .executeTakeFirstOrThrow()
+   * function log<T extends Compilable>(qb: T): T {
+   *   console.log(qb.compile())
+   *   return qb
    * }
-   * ```
    *
-   * Any selections added inside the `if` callback will be added as optional fields to the
-   * output type since we can't know if the selections were actually made before running
-   * the code. In the example above the return type of the `insertPerson` function is:
-   *
-   * ```ts
-   * {
-   *   id: number
-   *   first_name: string
-   *   last_name?: string
+   * async function replacePerson(person: Person) {
+   *   return await db
+   *     .replaceInto('person')
+   *     .values(person)
+   *     .if(person.age > 18, log)
+   *     .executeTakeFirstOrThrow()
    * }
    * ```
    */
