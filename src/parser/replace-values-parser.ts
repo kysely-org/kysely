@@ -1,11 +1,32 @@
-import { ColumnNode } from '../operation-node/column-node'
-import { ValuesNode } from '../operation-node/values-node'
-import { UpdateKeys, UpdateType } from '../util/column-type'
-import { InsertObject, parseInsertObjectOrList } from './insert-values-parser'
-import { ValueExpression } from './value-parser'
+import { ColumnNode } from '../operation-node/column-node.js'
+import { ValuesNode } from '../operation-node/values-node.js'
+import {
+  InsertType,
+  NonNullableInsertKeys,
+  NonNullableUpdateKeys,
+  NullableInsertKeys,
+  NullableUpdateKeys,
+  UpdateType,
+} from '../util/column-type.js'
+import { parseInsertObjectOrList } from './insert-values-parser.js'
+import { ValueExpression } from './value-parser.js'
 
-export type ReplaceObject<DB, TB extends keyof DB> = InsertObject<DB, TB> & {
-  [C in UpdateKeys<DB[TB]>]: ValueExpression<DB, TB, UpdateType<DB[TB][C]>>
+export type ReplaceObject<DB, TB extends keyof DB> = {
+  [C in
+    | NonNullableInsertKeys<DB[TB]>
+    | NonNullableUpdateKeys<DB[TB]>]: ValueExpression<
+    DB,
+    TB,
+    InsertType<DB[TB][C]> | UpdateType<DB[TB][C]>
+  >
+} & {
+  [C in
+    | NullableInsertKeys<DB[TB]>
+    | NullableUpdateKeys<DB[TB]>]?: ValueExpression<
+    DB,
+    TB,
+    InsertType<DB[TB][C]> | UpdateType<DB[TB][C]>
+  >
 }
 
 export type ReplaceObjectOrList<DB, TB extends keyof DB> =
