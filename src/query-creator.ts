@@ -1,5 +1,6 @@
 import { SelectQueryBuilder } from './query-builder/select-query-builder.js'
 import { InsertQueryBuilder } from './query-builder/insert-query-builder.js'
+import { ReplaceQueryBuilder } from './query-builder/replace-query-builder.js'
 import { DeleteQueryBuilder } from './query-builder/delete-query-builder.js'
 import { UpdateQueryBuilder } from './query-builder/update-query-builder.js'
 import { DeleteQueryNode } from './operation-node/delete-query-node.js'
@@ -207,6 +208,42 @@ export class QueryCreator<DB> {
     table: T
   ): InsertQueryBuilder<DB, T, InsertResult> {
     return new InsertQueryBuilder({
+      queryId: createQueryId(),
+      executor: this.#props.executor,
+      queryNode: InsertQueryNode.create(
+        parseTable(table),
+        this.#props.withNode
+      ),
+    })
+  }
+
+  /**
+   * Creates a replace query.
+   *
+   * The return value of this query is an instance of {@link InsertResult}. {@link InsertResult}
+   * has the {@link InsertResult.insertId | insertId} field that holds the auto incremented id of
+   * the inserted row if the db returned one.
+   *
+   * See the {@link ReplaceQueryBuilder.values | values} method for more info and examples. Also see
+   *
+   * ### Examples
+   *
+   * ```ts
+   * const result = await db
+   *   .replaceInto('person')
+   *   .values({
+   *     first_name: 'Jennifer',
+   *     last_name: 'Aniston'
+   *   })
+   *   .executeTakeFirst()
+   *
+   * console.log(result.insertId)
+   * ```
+   */
+  replaceInto<T extends keyof DB & string>(
+    table: T
+  ): ReplaceQueryBuilder<DB, T, InsertResult> {
+    return new ReplaceQueryBuilder({
       queryId: createQueryId(),
       executor: this.#props.executor,
       queryNode: InsertQueryNode.create(
