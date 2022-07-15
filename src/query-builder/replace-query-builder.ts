@@ -1,9 +1,5 @@
 import { OperationNodeSource } from '../operation-node/operation-node-source.js'
 import { CompiledQuery } from '../query-compiler/compiled-query.js'
-import {
-  InsertObjectOrList,
-  parseInsertObjectOrList,
-} from '../parser/insert-values-parser.js'
 import { InsertQueryNode } from '../operation-node/insert-query-node.js'
 import { MergePartial, SingleResultType } from '../util/type-utils.js'
 import { preventAwait } from '../util/prevent-await.js'
@@ -19,6 +15,11 @@ import {
   parseComplexExpression,
 } from '../parser/complex-expression-parser.js'
 import { ColumnNode } from '../operation-node/column-node.js'
+import {
+  parseReplaceObjectOrList,
+  ReplaceObject,
+  ReplaceObjectOrList,
+} from '../parser/replace-values-parser.js'
 
 export class ReplaceQueryBuilder<DB, TB extends keyof DB, O>
   implements OperationNodeSource, Compilable
@@ -126,14 +127,14 @@ export class ReplaceQueryBuilder<DB, TB extends keyof DB, O>
    * })
    * ```
    */
-  values(row: TB): ReplaceQueryBuilder<DB, TB, O>
+  values(row: ReplaceObject<DB, TB>): ReplaceQueryBuilder<DB, TB, O>
 
-  values(row: ReadonlyArray<TB>): ReplaceQueryBuilder<DB, TB, O>
+  values(
+    row: ReadonlyArray<ReplaceObject<DB, TB>>
+  ): ReplaceQueryBuilder<DB, TB, O>
 
-  values(args: TB | ReadonlyArray<TB>): any {
-    const [columns, values] = parseInsertObjectOrList(
-      args as unknown as InsertObjectOrList<DB, TB>
-    )
+  values(args: ReplaceObjectOrList<DB, TB>): any {
+    const [columns, values] = parseReplaceObjectOrList(args)
 
     return new ReplaceQueryBuilder({
       ...this.#props,
