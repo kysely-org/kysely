@@ -1223,6 +1223,7 @@ async function testManyJoins(db: Kysely<Database>) {
 
 async function testReplace(db: Kysely<Database>) {
   const person = {
+    id: 10,
     first_name: 'Jennifer',
     last_name: 'Aniston',
     gender: 'other' as const,
@@ -1235,7 +1236,7 @@ async function testReplace(db: Kysely<Database>) {
 
   const r2 = await db
     .replaceInto('person')
-    .values({ first_name: 'fname', age: 10, gender: 'other' })
+    .values({ id: 11, first_name: 'fname', age: 10, gender: 'other' })
     .executeTakeFirst()
 
   expectType<InsertResult>(r2)
@@ -1253,6 +1254,7 @@ async function testReplace(db: Kysely<Database>) {
     )
     .replaceInto('movie')
     .values({
+      id: '123',
       stars: (eb) => eb.selectFrom('foo').select('foo.id'),
     })
     .executeTakeFirst()
