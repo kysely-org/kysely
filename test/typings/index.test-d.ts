@@ -1273,12 +1273,14 @@ async function testReplace(db: Kysely<Database>) {
   )
 
   // Missing required columns
-  expectError(db.replaceInto('person').values({ first_name: 'Jennifer' }))
+  expectError(
+    db.replaceInto('person').values({ id: 1, age: 5, first_name: 'Jennifer' })
+  )
 
   // Explicitly excluded column
   expectError(db.replaceInto('person').values({ modified_at: new Date() }))
 
-  // GeneratedAlways column is not allowed to be inserted
+  // GeneratedAlways column is not allowed to be inserted/replaced
   expectError(db.replaceInto('book').values({ id: 1, name: 'foo' }))
 
   db.replaceInto('book').values({ name: 'bar' })
