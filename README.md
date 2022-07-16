@@ -31,16 +31,24 @@ You can find a more thorough introduction [here](https://www.jakso.me/blog/kysel
 
 # Table of contents
 
+- [Kysely](#kysely)
+- [Table of contents](#table-of-contents)
 - [Installation](#installation)
+    - [3rd party dialects:](#3rd-party-dialects)
 - [Minimal example](#minimal-example)
 - [Generating types](#generating-types)
 - [Query examples](#query-examples)
-- [Recipes](https://github.com/koskimas/kysely/tree/master/recipes)
+  - [Select queries](#select-queries)
+    - [Stream select query results](#stream-select-query-results)
+  - [Update queries](#update-queries)
+  - [Insert queries](#insert-queries)
+  - [Delete queries](#delete-queries)
 - [Migrations](#migrations)
+    - [PostgreSQL migration example](#postgresql-migration-example)
+    - [MySQL migration example](#mysql-migration-example)
 - [Deno](#deno)
 - [Browser](#browser)
-- [API reference](https://koskimas.github.io/kysely/index.html)
-- [Changelog](https://github.com/koskimas/kysely/releases)
+- [Why not just contribute to knex](#why-not-just-contribute-to-knex)
 
 # Installation
 
@@ -179,6 +187,49 @@ You can find examples of select queries in the documentation of the
 [select method](https://koskimas.github.io/kysely/classes/SelectQueryBuilder.html#select) and
 the [where method](https://koskimas.github.io/kysely/classes/SelectQueryBuilder.html#where)
 among other places.
+
+### Stream select query results
+
+*Currently only supported by `postgres` and `mysql` dialects.*
+
+```ts
+import { Pool } from 'pg'
+import Cursor from 'pg-cursor' // or `import * as Cursor from 'pg-cursor'` depending on your tsconfig
+import {
+    Kysely,
+    PostgresDialect,
+} from 'kysely'
+
+const db = new Kysely<Database>({
+    // PostgresDialect requires Cursor dependency
+    dialect: new PostgresDialect({
+        pool: new Pool({
+            host: 'localhost',
+            database: 'kysely_test'
+        }),
+        cursor: Cursor
+    }),
+
+    // MysqlDialect doesn't require any special configuration
+})
+
+async function demo() {
+    for await (const male of db.selectFrom("person")
+        .selectAll()
+        .where("person.gender", "=", "male")
+        .stream()) {
+        console.log(`Hello mr. ${male.first_name}!`)
+
+        if (male.first_name === "John") {
+          break; // at this point no more queries are streamed from the database to the client
+        }
+
+    }
+}
+```
+
+
+
 
 ## Update queries
 
