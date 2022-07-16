@@ -4,6 +4,7 @@ import {
   isBoolean,
   isFunction,
   isNull,
+  isReadonlyArray,
   isString,
 } from '../util/object-utils.js'
 import { AnySelectQueryBuilder, AnyRawBuilder } from '../util/type-utils.js'
@@ -33,6 +34,7 @@ import { WhereInterface } from '../query-builder/where-interface.js'
 import { HavingInterface } from '../query-builder/having-interface.js'
 import { createJoinBuilder, createSelectQueryBuilder } from './parse-utils.js'
 import { ComplexExpression } from './complex-expression-parser.js'
+import { sql } from '../raw-builder/sql.js'
 
 export type FilterValueExpression<
   DB,
@@ -124,6 +126,10 @@ function parseThreeArgFilter(
     return parseIsFilter(left, op, right)
   }
 
+  if ((op === 'between' || op === 'not between') && isReadonlyArray(right)) {
+    return parseBetweenFilter(left, op, right)
+  }
+
   return FilterNode.create(
     parseReferenceExpression(left),
     parseFilterOperator(op),
@@ -140,6 +146,18 @@ function parseIsFilter(
     parseReferenceExpression(left),
     parseFilterOperator(op),
     ValueNode.createImmediate(right)
+  )
+}
+
+function parseBetweenFilter(
+  left: ReferenceExpression<any, any>,
+  op: 'between' | 'not between',
+  right: ReadonlyArray<any>
+) {
+  return FilterNode.create(
+    parseReferenceExpression(left),
+    parseFilterOperator(op),
+    parseValueExpressionOrList(sql`${right[0]} and ${right[1]}`)
   )
 }
 
