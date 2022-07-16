@@ -39,6 +39,8 @@ export const OPERATORS = [
   '@@@',
   '!!',
   '<->',
+  'between',
+  'not between'
 ] as const
 
 export type Operator = ArrayItemType<typeof OPERATORS>
