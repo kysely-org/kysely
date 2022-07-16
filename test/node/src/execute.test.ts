@@ -28,6 +28,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
             { name: 'Catto 1', species: 'cat' },
             { name: 'Catto 2', species: 'cat' },
           ],
+          age: 17,
         },
         {
           first_name: 'Arnold',
@@ -37,12 +38,14 @@ for (const dialect of BUILT_IN_DIALECTS) {
             { name: 'Doggo 1', species: 'dog' },
             { name: 'Doggo 2', species: 'dog' },
           ],
+          age: 45,
         },
         {
           first_name: 'Sylvester',
           last_name: 'Stallone',
           gender: 'male',
           pets: [{ name: 'Hammo 1', species: 'hamster' }],
+          age: 12,
         },
       ])
     })

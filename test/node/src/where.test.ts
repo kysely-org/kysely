@@ -509,6 +509,45 @@ for (const dialect of BUILT_IN_DIALECTS) {
 
         await query.execute()
       })
+
+      it('a `where between` query', async () => {
+        const query = ctx.db
+          .selectFrom('person')
+          .selectAll()
+          .where('age', 'between', [0, 18])
+          .orderBy('first_name', 'desc')
+
+        testSql(query, dialect, {
+          postgres: {
+            sql: 'select * from "person" where "age" between $1 and $2 order by "first_name" desc',
+            parameters: [0, 18],
+          },
+          mysql: {
+            sql: 'select * from `person` where `age` between ? and ? order by `first_name` desc',
+            parameters: [0, 18],
+          },
+          sqlite: {
+            sql: 'select * from "person" where "age" between ? and ? order by "first_name" desc',
+            parameters: [0, 18],
+          },
+        })
+
+        const persons = await query.execute()
+        expect(persons).to.have.length(2)
+        expect(persons[0].first_name).to.equal('Sylvester')
+        expect(persons).to.containSubset([
+          {
+            first_name: 'Sylvester',
+            last_name: 'Stallone',
+            gender: 'male',
+          },
+          {
+            first_name: 'Jennifer',
+            last_name: 'Aniston',
+            gender: 'female',
+          },
+        ])
+      })
     })
 
     describe('orWhere', () => {

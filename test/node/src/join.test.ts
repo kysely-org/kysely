@@ -33,18 +33,21 @@ for (const dialect of BUILT_IN_DIALECTS) {
               toys: [{ name: 'spool', price: 10 }],
             },
           ],
+          age: 17,
         },
         {
           first_name: 'Arnold',
           last_name: 'Schwarzenegger',
           gender: 'male',
           pets: [{ name: 'Doggo', species: 'dog' }],
+          age: 45,
         },
         {
           first_name: 'Sylvester',
           last_name: 'Stallone',
           gender: 'male',
           pets: [{ name: 'Hammo', species: 'hamster' }],
+          age: 12,
         },
       ])
     })

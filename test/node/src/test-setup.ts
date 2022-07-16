@@ -33,6 +33,7 @@ export interface Person {
   first_name: string | null
   last_name: string | null
   gender: 'male' | 'female' | 'other'
+  age: number | null
 }
 
 export interface Pet {
@@ -188,18 +189,21 @@ export async function insertDefaultDataSet(ctx: TestContext): Promise<void> {
       last_name: 'Aniston',
       gender: 'female',
       pets: [{ name: 'Catto', species: 'cat' }],
+      age: 17,
     },
     {
       first_name: 'Arnold',
       last_name: 'Schwarzenegger',
       gender: 'male',
       pets: [{ name: 'Doggo', species: 'dog' }],
+      age: 45,
     },
     {
       first_name: 'Sylvester',
       last_name: 'Stallone',
       gender: 'male',
       pets: [{ name: 'Hammo', species: 'hamster' }],
+      age: 12,
     },
   ])
 }
@@ -235,6 +239,7 @@ async function createDatabase(
     .addColumn('first_name', 'varchar(255)')
     .addColumn('last_name', 'varchar(255)')
     .addColumn('gender', 'varchar(50)', (col) => col.notNull())
+    .addColumn('age', 'integer')
     .execute()
 
   await createTableWithId(db.schema, dialect, 'pet')
