@@ -21,6 +21,15 @@ export class CreateTypeBuilder implements OperationNodeSource, Compilable {
     )
   }
 
+  /**
+   * Creates an anum type.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * db.schema.createType('species').asEnum(['cat', 'dog', 'frog'])
+   * ```
+   */
   asEnum(values: string[]): CreateTypeBuilder {
     return new CreateTypeBuilder({
       ...this.#props,

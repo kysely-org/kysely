@@ -93,17 +93,17 @@ export class CreateTableBuilder<TB extends string, C extends string = never>
    *   .addColumn('first_name', 'varchar(50)', (col) => col.notNull())
    *   .addColumn('last_name', 'varchar(255)')
    *   .addColumn('bank_balance', 'numeric(8, 2)')
-   *   .addColumn('data', sql`customtype`)
+   *   .addColumn('data', sql`some_type`)
    *   .addColumn('parent_id', 'integer', (col) =>
    *     col.references('person.id').onDelete('cascade'))
    *   )
    * ```
    *
-   * With this method, it's once again good to remember that Kysely just builds the query
-   * and doesn't provide the same API for all databses. For example, some databases like
-   * older MySQL don't support `references` statement in the column definition. Instead
-   * foreign key constraints need to be defined in at the level of the `create table`
-   * query. See the next example:
+   * With this method, it's once again good to remember that Kysely just builds the
+   * query and doesn't provide the same API for all databses. For example, some
+   * databases like older MySQL don't support the `references` statement in the
+   * column definition. Instead foreign key constraints need to be defined in the
+   * `create table` query. See the next example:
    *
    * ```ts
    *   .addColumn('parent_id', 'integer')

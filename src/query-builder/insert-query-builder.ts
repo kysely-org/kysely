@@ -75,7 +75,7 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    *
    * Insert a row into `person`:
    * ```ts
-   * const id = await db
+   * const result = await db
    *   .insertInto('person')
    *   .values({
    *     first_name: 'Jennifer',

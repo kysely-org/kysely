@@ -63,6 +63,7 @@ interface Database {
 async function testFromSingle(db: Kysely<Database>) {
   // Single table
   const [r1] = await db.selectFrom('person').selectAll().execute()
+
   expectType<{
     id: number
     first_name: string
@@ -208,13 +209,13 @@ async function testSelectSingle(db: Kysely<Database>) {
     .execute()
   expectType<{ first_name: string } & { [key: string]: unknown }>(r5)
 
-  // Sub query
+  // Subquery
   const [r6] = await qb
     .select(db.selectFrom('movie').select('id').as('movie_id'))
     .execute()
   expectType<{ movie_id: string }>(r6)
 
-  // Sub query factory
+  // Subquery factory
   const [r7] = await qb
     .select((qb) =>
       qb
@@ -254,7 +255,7 @@ async function testSelectSingle(db: Kysely<Database>) {
     .execute()
   expectType<{ max_first_name: string }>(r12)
 
-  // FunctionBuilder call throug expression builder
+  // FunctionBuilder call through expression builder
   const [r13] = await qb
     .select((qb) => qb.fn.max('first_name').as('max_first_name'))
     .execute()
@@ -464,6 +465,7 @@ async function testConditionalJoinWhere(db: Kysely<Database>) {
 }
 
 async function testJoin(db: Kysely<Database>) {
+  // Simple join with two columns
   const r1 = await db
     .selectFrom('person')
     .innerJoin('pet', 'pet.owner_id', 'person.id')
@@ -485,6 +487,7 @@ async function testJoin(db: Kysely<Database>) {
     }[]
   >(r1)
 
+  // Join with an alias using the join builder instead of two columns
   const r2 = await db
     .selectFrom('person')
     .innerJoin('pet as p', (join) => join.onRef('p.owner_id', '=', 'person.id'))
@@ -497,6 +500,7 @@ async function testJoin(db: Kysely<Database>) {
     { id: string; name: string; species: 'cat' | 'dog'; owner_id: number }[]
   >(r2)
 
+  // Join subquery
   const r3 = await db
     .selectFrom('person')
     .innerJoin(
@@ -510,6 +514,7 @@ async function testJoin(db: Kysely<Database>) {
 
   expectType<{ id: string; owner: number }[]>(r3)
 
+  // Join subquery using join builder
   const r4 = await db
     .selectFrom('person')
     .innerJoin(
@@ -522,6 +527,7 @@ async function testJoin(db: Kysely<Database>) {
 
   expectType<Selectable<Pet>[]>(r4)
 
+  // Two left joins
   const r5 = await db
     .selectFrom('person')
     .leftJoin('pet', 'pet.owner_id', 'person.id')
@@ -537,13 +543,16 @@ async function testJoin(db: Kysely<Database>) {
     gender: 'male' | 'female' | 'other'
     modified_at: Date
 
+    // All Pet columns should be nullable because of the left join
     name: string | null
     species: 'dog' | 'cat' | null
     owner_id: number | null
 
+    // All Movie columns should be nullable because of the left join
     stars: number | null
   }>(r5)
 
+  // Two right joins
   const r6 = await db
     .selectFrom('person')
     .rightJoin('pet', 'pet.owner_id', 'person.id')
@@ -552,6 +561,7 @@ async function testJoin(db: Kysely<Database>) {
     .executeTakeFirstOrThrow()
 
   expectType<{
+    // All Person columns should be nullable because of the right join.
     id: number | string | null
     first_name: string | null
     last_name: string | null
@@ -559,13 +569,18 @@ async function testJoin(db: Kysely<Database>) {
     gender: 'male' | 'female' | 'other' | null
     modified_at: Date | null
 
+    // All Pet columns should also be nullable because there's another
+    // right join after the Pet join.
     name: string | null
     species: 'dog' | 'cat' | null
     owner_id: number | null
 
+    // Movie columns should not be nullable because it's the last
+    // right joined table.
     stars: number
   }>(r6)
 
+  // Two full joins.
   const r7 = await db
     .selectFrom('person')
     .fullJoin('pet', 'pet.owner_id', 'person.id')
@@ -573,6 +588,7 @@ async function testJoin(db: Kysely<Database>) {
     .selectAll()
     .executeTakeFirstOrThrow()
 
+  // All columns should be nullable because of the full join
   expectType<{
     id: number | string | null
     first_name: string | null
@@ -588,6 +604,7 @@ async function testJoin(db: Kysely<Database>) {
     stars: number | null
   }>(r7)
 
+  // Update query with a join
   const r8 = await db
     .updateTable('person')
     .innerJoin('pet', 'pet.owner_id', 'person.id')
@@ -627,10 +644,12 @@ async function testInsert(db: Kysely<Database>) {
     age: 30,
   }
 
+  // Insert one row
   const r1 = await db.insertInto('person').values(person).execute()
 
   expectType<InsertResult[]>(r1)
 
+  // Should be able to leave out nullable columns like last_name
   const r2 = await db
     .insertInto('person')
     .values({ first_name: 'fname', age: 10, gender: 'other' })
@@ -638,6 +657,7 @@ async function testInsert(db: Kysely<Database>) {
 
   expectType<InsertResult>(r2)
 
+  // The result type is correct when executeTakeFirstOrThrow is used
   const r3 = await db
     .insertInto('person')
     .values(person)
@@ -645,6 +665,7 @@ async function testInsert(db: Kysely<Database>) {
 
   expectType<InsertResult>(r3)
 
+  // Insert values from a CTE
   const r4 = await db
     .with('foo', (db) =>
       db.selectFrom('person').select('id').where('person.id', '=', 1)
@@ -657,6 +678,7 @@ async function testInsert(db: Kysely<Database>) {
 
   expectType<InsertResult>(r4)
 
+  // Insert with an on conflict statement
   const r5 = await db
     .insertInto('person')
     .values(person)
@@ -809,6 +831,7 @@ async function testOrderBy(db: Kysely<Database>) {
     .selectFrom('person')
     .select(['id', 'person.first_name as fn'])
     .orderBy('first_name', 'desc')
+    // Should be able to reference selections.
     .orderBy('fn')
     .execute()
 }
@@ -1103,6 +1126,16 @@ async function testSelectsInVariable(db: Kysely<Database>) {
     .executeTakeFirstOrThrow()
 
   expectType<{ first_name: string; pet_name: string }>(r1)
+}
+
+async function testUntypedKysely(db: Kysely<any>) {
+  // Kysely instance with `any` DB type still extracts column names.
+  const r1 = await db
+    .selectFrom('foo')
+    .select(['spam', 'bar as baz'])
+    .executeTakeFirstOrThrow()
+
+  expectType<{ spam: any; baz: any }>(r1)
 }
 
 async function testManyJoins(db: Kysely<Database>) {
