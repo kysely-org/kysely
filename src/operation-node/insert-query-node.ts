@@ -33,11 +33,16 @@ export const InsertQueryNode = freeze({
     return node.kind === 'InsertQueryNode'
   },
 
-  create(into: TableNode, withNode?: WithNode): InsertQueryNode {
+  create(
+    into: TableNode,
+    withNode?: WithNode,
+    replace?: boolean
+  ): InsertQueryNode {
     return freeze({
       kind: 'InsertQueryNode',
       into,
       ...(withNode && { with: withNode }),
+      replace,
     })
   },
 
