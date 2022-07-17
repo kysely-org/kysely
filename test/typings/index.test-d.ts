@@ -1276,7 +1276,7 @@ async function testReplace(db: Kysely<Database>) {
 
   // Missing required columns
   expectError(
-    db.replaceInto('person').values({ id: 1, age: 5, first_name: 'Jennifer' })
+    db.replaceInto('person').values({ age: 5, first_name: 'Jennifer' })
   )
 
   // Explicitly excluded column
