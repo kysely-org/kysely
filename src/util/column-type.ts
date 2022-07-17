@@ -119,20 +119,6 @@ export type UpdateKeys<R> = {
 }[keyof R]
 
 /**
- * Keys of `R` whose `UpdateType` values can be `null` or `undefined`.
- */
-export type NullableUpdateKeys<R> = {
-  [K in keyof R]: IfNullable<UpdateType<R[K]>, K>
-}[keyof R]
-
-/**
- * Keys of `R` whose `UpdateType` values can't be `null` or `undefined`.
- */
-export type NonNullableUpdateKeys<R> = {
-  [K in keyof R]: IfNotNullable<UpdateType<R[K]>, K>
-}[keyof R]
-
-/**
  * Given a table interface, extracts the select type from all
  * {@link ColumnType} types.
  *
