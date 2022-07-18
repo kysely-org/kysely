@@ -22,10 +22,15 @@ export type ColumnDataType =
   | 'binary'
   | 'date'
   | 'datetime'
+  | `datetime(${number})`
   | 'time'
+  | `time(${number})`
   | 'timetz'
+  | `timetz(${number})`
   | 'timestamp'
+  | `timestamp(${number})`
   | 'timestamptz'
+  | `timestamptz(${number})`
   | 'serial'
   | 'bigserial'
   | 'uuid'
