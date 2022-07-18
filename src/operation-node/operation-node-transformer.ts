@@ -350,6 +350,7 @@ export class OperationNodeTransformer {
       onDuplicateKey: this.transformNode(node.onDuplicateKey),
       with: this.transformNode(node.with),
       ignore: node.ignore,
+      replace: node.replace,
     })
   }
 

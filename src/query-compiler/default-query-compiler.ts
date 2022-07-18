@@ -255,7 +255,7 @@ export class DefaultQueryCompiler
       this.append(' ')
     }
 
-    this.append('insert')
+    this.append(node.replace ? 'replace' : 'insert')
 
     if (node.ignore) {
       this.append(' ignore')

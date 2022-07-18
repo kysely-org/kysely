@@ -217,6 +217,46 @@ export class QueryCreator<DB> {
   }
 
   /**
+   * Creates a replace query.
+   *
+   * A MySQL-only statement similar to {@link InsertQueryBuilder.onDuplicateKeyUpdate}
+   * that deletes and inserts values on collision instead of updating existing rows.
+   *
+   * The return value of this query is an instance of {@link InsertResult}. {@link InsertResult}
+   * has the {@link InsertResult.insertId | insertId} field that holds the auto incremented id of
+   * the inserted row if the db returned one.
+   *
+   * See the {@link InsertQueryBuilder.values | values} method for more info and examples. Also see
+   *
+   * ### Examples
+   *
+   * ```ts
+   * const result = await db
+   *   .replaceInto('person')
+   *   .values({
+   *     first_name: 'Jennifer',
+   *     last_name: 'Aniston'
+   *   })
+   *   .executeTakeFirst()
+   *
+   * console.log(result.insertId)
+   * ```
+   */
+  replaceInto<T extends keyof DB & string>(
+    table: T
+  ): InsertQueryBuilder<DB, T, InsertResult> {
+    return new InsertQueryBuilder({
+      queryId: createQueryId(),
+      executor: this.#props.executor,
+      queryNode: InsertQueryNode.create(
+        parseTable(table),
+        this.#props.withNode,
+        true
+      ),
+    })
+  }
+
+  /**
    * Creates a delete query.
    *
    * See the {@link DeleteQueryBuilder.where} method for examples on how to specify

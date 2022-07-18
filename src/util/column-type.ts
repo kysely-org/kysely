@@ -63,7 +63,7 @@ export type Generated<S> = ColumnType<S, S | undefined, S>
  * (like postgres GENERATED ALWAYS AS IDENTITY). No insert/update
  * is allowed.
  */
- export type GeneratedAlways<S> = ColumnType<S, never, never>
+export type GeneratedAlways<S> = ColumnType<S, never, never>
 
 /**
  * Evaluates to `K` if `T` can be `null` or `undefined`.
