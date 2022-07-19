@@ -90,7 +90,7 @@ class SqliteConnection implements DatabaseConnection {
     }
   }
 
-  async *executeQueryStream<R>(): AsyncIterableIterator<QueryResult<R>> {
+  async *streamQuery<R>(): AsyncIterableIterator<QueryResult<R>> {
     throw new Error("Sqlite driver doesn't support streaming")
   }
 }

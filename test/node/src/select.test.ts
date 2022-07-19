@@ -583,6 +583,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
           .selectFrom('person')
           .select(['first_name', 'last_name', 'gender'])
           .where('gender', '=', 'male')
+          .orderBy('first_name')
           .stream()
 
         for await (const male of stream) {
@@ -638,33 +639,6 @@ for (const dialect of BUILT_IN_DIALECTS) {
           await db.destroy()
         })
       }
-    }
-
-    if (dialect !== 'sqlite') {
-      it('modifyEnd should add arbitrary SQL to the end of the query', async () => {
-        const query = ctx.db
-          .selectFrom('person')
-          .select('last_name')
-          .where('first_name', '=', 'Jennifer')
-          .modifyEnd(sql`for update`)
-
-        testSql(query, dialect, {
-          postgres: {
-            sql: 'select "last_name" from "person" where "first_name" = $1 for update',
-            parameters: ['Jennifer'],
-          },
-          mysql: {
-            sql: 'select `last_name` from `person` where `first_name` = ? for update',
-            parameters: ['Jennifer'],
-          },
-          sqlite: NOT_SUPPORTED,
-        })
-
-        const persons = await query.execute()
-
-        expect(persons).to.have.length(1)
-        expect(persons).to.eql([{ last_name: 'Aniston' }])
-      })
     }
   })
 }

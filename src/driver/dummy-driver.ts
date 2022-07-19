@@ -74,5 +74,7 @@ class DummyConnection implements DatabaseConnection {
     }
   }
 
-  async *executeQueryStream<R>(): AsyncIterableIterator<QueryResult<R>> {}
+  async *streamQuery<R>(): AsyncIterableIterator<QueryResult<R>> {
+    // Nothing to do here.
+  }
 }

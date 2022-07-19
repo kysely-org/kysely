@@ -122,7 +122,7 @@ class PostgresConnection implements DatabaseConnection {
     }
   }
 
-  async *executeQueryStream<O>(
+  async *streamQuery<O>(
     compiledQuery: CompiledQuery,
     chunkSize: number
   ): AsyncIterableIterator<QueryResult<O>> {

@@ -87,7 +87,7 @@ export abstract class QueryExecutorBase implements QueryExecutor {
     const connection = await connectionDefer.promise
 
     try {
-      for await (const result of connection.executeQueryStream(
+      for await (const result of connection.streamQuery(
         compiledQuery,
         chunkSize
       )) {
