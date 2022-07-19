@@ -640,34 +640,6 @@ for (const dialect of BUILT_IN_DIALECTS) {
       }
     }
 
-    it('modifyFront should add arbitrary SQL to the front of the query', async () => {
-      const query = ctx.db
-        .selectFrom('person')
-        .select('gender')
-        .modifyFront(sql`distinct`)
-        .orderBy('gender')
-
-      testSql(query, dialect, {
-        postgres: {
-          sql: 'select distinct "gender" from "person" order by "gender"',
-          parameters: [],
-        },
-        mysql: {
-          sql: 'select distinct `gender` from `person` order by `gender`',
-          parameters: [],
-        },
-        sqlite: {
-          sql: 'select distinct "gender" from "person" order by "gender"',
-          parameters: [],
-        },
-      })
-
-      const persons = await query.execute()
-
-      expect(persons).to.have.length(2)
-      expect(persons).to.eql([{ gender: 'female' }, { gender: 'male' }])
-    })
-
     if (dialect !== 'sqlite') {
       it('modifyEnd should add arbitrary SQL to the end of the query', async () => {
         const query = ctx.db
