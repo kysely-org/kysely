@@ -24,7 +24,9 @@ they are added and there will be less breaking changes.</p>
 <ul class="tsd-hierarchy">
 <li><a href="DialectAdapterBase.html" class="tsd-signature-type" data-tsd-kind="Class">DialectAdapterBase</a>
 <ul class="tsd-hierarchy">
-<li><span class="target">MysqlAdapter</span></li></ul></li></ul></section>
+<li><span class="target">MysqlAdapter</span></li></ul></li></ul></section><aside class="tsd-sources">
+<ul>
+<li>Defined in <a href="https://github.com/koskimas/kysely/blob/396a5f0d/src/dialect/mysql/mysql-adapter.ts#L8">src/dialect/mysql/mysql-adapter.ts:8</a></li></ul></aside>
 <section class="tsd-panel-group tsd-index-group">
 <section class="tsd-panel tsd-index-panel">
 <details class="tsd-index-content tsd-index-accordion" open><summary class="tsd-accordion-summary tsd-index-summary">
@@ -49,8 +51,7 @@ they are added and there will be less breaking changes.</p>
 <section class="tsd-panel tsd-member tsd-kind-constructor tsd-parent-kind-class tsd-is-inherited"><a id="constructor" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>constructor</span><a href="#constructor" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none" id="icon-anchor-a"></path><path d="M10 14a3.5 3.5 0 0 0 5 0l4 -4a3.5 3.5 0 0 0 -5 -5l-.5 .5" id="icon-anchor-b"></path><path d="M14 10a3.5 3.5 0 0 0 -5 0l-4 4a3.5 3.5 0 0 0 5 5l.5 -.5" id="icon-anchor-c"></path></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-constructor tsd-parent-kind-class tsd-is-inherited">
-<li class="tsd-signature" id="constructor.new_MysqlAdapter">new <wbr/>Mysql<wbr/>Adapter<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="MysqlAdapter.html" class="tsd-signature-type" data-tsd-kind="Class">MysqlAdapter</a></li></ul>
-<ul class="tsd-descriptions">
+<li class="tsd-signature tsd-anchor-link" id="constructor.new_MysqlAdapter">new <wbr/>Mysql<wbr/>Adapter<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="MysqlAdapter.html" class="tsd-signature-type" data-tsd-kind="Class">MysqlAdapter</a><a href="#constructor.new_MysqlAdapter" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></li>
 <li class="tsd-description">
 <h4 class="tsd-returns-title">Returns <a href="MysqlAdapter.html" class="tsd-signature-type" data-tsd-kind="Class">MysqlAdapter</a></h4><aside class="tsd-sources">
 <p>Inherited from <a href="DialectAdapterBase.html">DialectAdapterBase</a>.<a href="DialectAdapterBase.html#constructor">constructor</a></p></aside></li></ul></section></section>
@@ -59,32 +60,33 @@ they are added and there will be less breaking changes.</p>
 <section class="tsd-panel tsd-member tsd-kind-accessor tsd-parent-kind-class"><a id="supportsReturning" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>supports<wbr/>Returning</span><a href="#supportsReturning" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-accessor tsd-parent-kind-class">
-<li class="tsd-signature" id="supportsReturning.supportsReturning-1"><span class="tsd-signature-symbol">get</span> supportsReturning<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span></li></ul>
-<ul class="tsd-descriptions">
+<li class="tsd-signature" id="supportsReturning.supportsReturning-1"><span class="tsd-signature-symbol">get</span> supportsReturning<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span></li>
 <li class="tsd-description">
 <div class="tsd-comment tsd-typography"><p>Whether or not this dialect supports the <code>returning</code> in inserts
 updates and deletes.</p>
 </div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4><aside class="tsd-sources">
-<p>Overrides DialectAdapterBase.supportsReturning</p></aside></li></ul></section>
+<p>Overrides DialectAdapterBase.supportsReturning</p>
+<ul>
+<li>Defined in <a href="https://github.com/koskimas/kysely/blob/396a5f0d/src/dialect/mysql/mysql-adapter.ts#L13">src/dialect/mysql/mysql-adapter.ts:13</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-accessor tsd-parent-kind-class"><a id="supportsTransactionalDdl" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>supports<wbr/>Transactional<wbr/>Ddl</span><a href="#supportsTransactionalDdl" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-accessor tsd-parent-kind-class">
-<li class="tsd-signature" id="supportsTransactionalDdl.supportsTransactionalDdl-1"><span class="tsd-signature-symbol">get</span> supportsTransactionalDdl<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span></li></ul>
-<ul class="tsd-descriptions">
+<li class="tsd-signature" id="supportsTransactionalDdl.supportsTransactionalDdl-1"><span class="tsd-signature-symbol">get</span> supportsTransactionalDdl<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span></li>
 <li class="tsd-description">
 <div class="tsd-comment tsd-typography"><p>Whether or not this dialect supports transactional DDL.</p>
 <p>If this is true, migrations are executed inside a transaction.</p>
 </div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4><aside class="tsd-sources">
-<p>Overrides DialectAdapterBase.supportsTransactionalDdl</p></aside></li></ul></section></section>
+<p>Overrides DialectAdapterBase.supportsTransactionalDdl</p>
+<ul>
+<li>Defined in <a href="https://github.com/koskimas/kysely/blob/396a5f0d/src/dialect/mysql/mysql-adapter.ts#L9">src/dialect/mysql/mysql-adapter.ts:9</a></li></ul></aside></li></ul></section></section>
 <section class="tsd-panel-group tsd-member-group">
 <h2>Methods</h2>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class"><a id="acquireMigrationLock" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>acquire<wbr/>Migration<wbr/>Lock</span><a href="#acquireMigrationLock" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-<li class="tsd-signature" id="acquireMigrationLock.acquireMigrationLock-1">acquire<wbr/>Migration<wbr/>Lock<span class="tsd-signature-symbol">(</span>db<span class="tsd-signature-symbol">: </span><a href="Kysely.html" class="tsd-signature-type" data-tsd-kind="Class">Kysely</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></li></ul>
-<ul class="tsd-descriptions">
+<li class="tsd-signature tsd-anchor-link" id="acquireMigrationLock.acquireMigrationLock-1">acquire<wbr/>Migration<wbr/>Lock<span class="tsd-signature-symbol">(</span>db<span class="tsd-signature-symbol">: </span><a href="Kysely.html" class="tsd-signature-type" data-tsd-kind="Class">Kysely</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span><a href="#acquireMigrationLock.acquireMigrationLock-1" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></li>
 <li class="tsd-description">
 <div class="tsd-comment tsd-typography"><p>This method is used to acquire a lock for the migrations so that
 it&#39;s not possible for two migration operations to run in parallel.</p>
@@ -107,12 +109,13 @@ migrations.</p>
 <li>
 <h5>db: <a href="Kysely.html" class="tsd-signature-type" data-tsd-kind="Class">Kysely</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4><aside class="tsd-sources">
-<p>Overrides <a href="DialectAdapterBase.html">DialectAdapterBase</a>.<a href="DialectAdapterBase.html#acquireMigrationLock">acquireMigrationLock</a></p></aside></li></ul></section>
+<p>Overrides <a href="DialectAdapterBase.html">DialectAdapterBase</a>.<a href="DialectAdapterBase.html#acquireMigrationLock">acquireMigrationLock</a></p>
+<ul>
+<li>Defined in <a href="https://github.com/koskimas/kysely/blob/396a5f0d/src/dialect/mysql/mysql-adapter.ts#L17">src/dialect/mysql/mysql-adapter.ts:17</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class"><a id="releaseMigrationLock" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>release<wbr/>Migration<wbr/>Lock</span><a href="#releaseMigrationLock" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-<li class="tsd-signature" id="releaseMigrationLock.releaseMigrationLock-1">release<wbr/>Migration<wbr/>Lock<span class="tsd-signature-symbol">(</span>db<span class="tsd-signature-symbol">: </span><a href="Kysely.html" class="tsd-signature-type" data-tsd-kind="Class">Kysely</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></li></ul>
-<ul class="tsd-descriptions">
+<li class="tsd-signature tsd-anchor-link" id="releaseMigrationLock.releaseMigrationLock-1">release<wbr/>Migration<wbr/>Lock<span class="tsd-signature-symbol">(</span>db<span class="tsd-signature-symbol">: </span><a href="Kysely.html" class="tsd-signature-type" data-tsd-kind="Class">Kysely</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span><a href="#releaseMigrationLock.releaseMigrationLock-1" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></li>
 <li class="tsd-description">
 <div class="tsd-comment tsd-typography"><p>Releases the migration lock. See <a href="MysqlAdapter.html#acquireMigrationLock">acquireMigrationLock</a>.</p>
 <p>If <code>supportsTransactionalDdl</code> is <code>true</code> then the <code>db</code> passed to this method
@@ -126,7 +129,9 @@ and the <code>acquireMigrationLock</code> call.</p>
 <li>
 <h5>db: <a href="Kysely.html" class="tsd-signature-type" data-tsd-kind="Class">Kysely</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4><aside class="tsd-sources">
-<p>Overrides <a href="DialectAdapterBase.html">DialectAdapterBase</a>.<a href="DialectAdapterBase.html#releaseMigrationLock">releaseMigrationLock</a></p></aside></li></ul></section></section></div>
+<p>Overrides <a href="DialectAdapterBase.html">DialectAdapterBase</a>.<a href="DialectAdapterBase.html#releaseMigrationLock">releaseMigrationLock</a></p>
+<ul>
+<li>Defined in <a href="https://github.com/koskimas/kysely/blob/396a5f0d/src/dialect/mysql/mysql-adapter.ts#L29">src/dialect/mysql/mysql-adapter.ts:29</a></li></ul></aside></li></ul></section></section></div>
 <div class="col-4 col-menu menu-sticky-wrap menu-highlight">
 <div class="tsd-navigation settings">
 <details class="tsd-index-accordion"><summary class="tsd-accordion-summary">
