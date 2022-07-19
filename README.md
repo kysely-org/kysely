@@ -32,7 +32,7 @@ You can find a more thorough introduction [here](https://www.jakso.me/blog/kysel
 # Table of contents
 
 - [Installation](#installation)
-    - [3rd party dialects:](#3rd-party-dialects)
+    - [3rd party dialects](#3rd-party-dialects)
 - [Minimal example](#minimal-example)
 - [Generating types](#generating-types)
 - [Query examples](#query-examples)
