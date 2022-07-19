@@ -1,4 +1,5 @@
-import { sql } from '../../../'
+import { Kysely, PostgresDialect, sql } from '../../../'
+import { Pool } from 'pg'
 
 import {
   BUILT_IN_DIALECTS,
@@ -10,6 +11,10 @@ import {
   testSql,
   expect,
   NOT_SUPPORTED,
+  PLUGINS,
+  DIALECT_CONFIGS,
+  Database,
+  POOL_SIZE,
 } from './test-setup.js'
 
 for (const dialect of BUILT_IN_DIALECTS) {
@@ -568,6 +573,72 @@ for (const dialect of BUILT_IN_DIALECTS) {
         expect(persons).to.have.length(1)
         expect(persons).to.eql([{ last_name: 'Aniston' }])
       })
+    }
+
+    if (dialect === 'mysql' || dialect === 'postgres') {
+      it('should stream results', async () => {
+        const males: unknown[] = []
+
+        const stream = ctx.db
+          .selectFrom('person')
+          .select(['first_name', 'last_name', 'gender'])
+          .where('gender', '=', 'male')
+          .orderBy('first_name')
+          .stream()
+
+        for await (const male of stream) {
+          males.push(male)
+        }
+
+        expect(males).to.have.length(2)
+        expect(males).to.eql([
+          {
+            first_name: 'Arnold',
+            last_name: 'Schwarzenegger',
+            gender: 'male',
+          },
+          {
+            first_name: 'Sylvester',
+            last_name: 'Stallone',
+            gender: 'male',
+          },
+        ])
+      })
+
+      it('should release connection on premature async iterator stop', async () => {
+        for (let i = 0; i <= POOL_SIZE + 1; i++) {
+          const stream = ctx.db.selectFrom('person').selectAll().stream()
+
+          for await (const _ of stream) {
+            break
+          }
+        }
+      })
+
+      if (dialect === 'postgres') {
+        it('should throw an error if the cursor implementation is not provided for the postgres dialect', async () => {
+          const db = new Kysely<Database>({
+            dialect: new PostgresDialect({
+              pool: async () => new Pool(DIALECT_CONFIGS.postgres),
+            }),
+            plugins: PLUGINS,
+          })
+
+          await expect(
+            (async () => {
+              for await (const _ of db
+                .selectFrom('person')
+                .selectAll()
+                .stream()) {
+              }
+            })()
+          ).to.be.rejectedWith(
+            "'cursor' is not present in your postgres dialect config. It's required to make streaming work in postgres."
+          )
+
+          await db.destroy()
+        })
+      }
     }
   })
 }

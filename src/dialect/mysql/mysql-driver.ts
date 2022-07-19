@@ -164,6 +164,38 @@ class MysqlConnection implements DatabaseConnection {
     })
   }
 
+  async *streamQuery<O>(
+    compiledQuery: CompiledQuery,
+    chunkSize: number
+  ): AsyncIterableIterator<QueryResult<O>> {
+    const stream = this.#rawConnection
+      .query(compiledQuery.sql, compiledQuery.parameters)
+      .stream<O>({
+        objectMode: true,
+      })
+
+    try {
+      for await (const row of stream) {
+        yield {
+          rows: [row],
+        }
+      }
+    } catch (ex) {
+      if (
+        ex &&
+        typeof ex === 'object' &&
+        'code' in ex &&
+        // @ts-ignore
+        ex.code === 'ERR_STREAM_PREMATURE_CLOSE'
+      ) {
+        // Most likely because of https://github.com/mysqljs/mysql/blob/master/lib/protocol/sequences/Query.js#L220
+        return
+      }
+
+      throw ex
+    }
+  }
+
   [PRIVATE_RELEASE_METHOD](): void {
     this.#rawConnection.release()
   }

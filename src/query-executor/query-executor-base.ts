@@ -10,6 +10,7 @@ import { freeze } from '../util/object-utils.js'
 import { QueryId } from '../util/query-id.js'
 import { DialectAdapter } from '../dialect/dialect-adapter.js'
 import { QueryExecutor } from './query-executor.js'
+import { Deferred } from '../util/deferred.js'
 
 const NO_PLUGINS: ReadonlyArray<KyselyPlugin> = freeze([])
 
@@ -66,6 +67,35 @@ export abstract class QueryExecutorBase implements QueryExecutor {
       const result = await connection.executeQuery(compiledQuery)
       return this.#transformResult(result, queryId)
     })
+  }
+
+  async *stream<R>(
+    compiledQuery: CompiledQuery,
+    chunkSize: number,
+    queryId: QueryId
+  ): AsyncIterableIterator<QueryResult<R>> {
+    const connectionDefer = new Deferred<DatabaseConnection>()
+    const connectionReleaseDefer = new Deferred<void>()
+
+    this.provideConnection(async (connection) => {
+      connectionDefer.resolve(connection)
+
+      // Lets wait until we don't need connection before returning here (returning releases connection)
+      return await connectionReleaseDefer.promise
+    }).catch((ex) => connectionDefer.reject(ex))
+
+    const connection = await connectionDefer.promise
+
+    try {
+      for await (const result of connection.streamQuery(
+        compiledQuery,
+        chunkSize
+      )) {
+        yield await this.#transformResult(result, queryId)
+      }
+    } finally {
+      connectionReleaseDefer.resolve()
+    }
   }
 
   abstract withConnectionProvider(

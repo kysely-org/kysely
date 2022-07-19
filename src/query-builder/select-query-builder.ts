@@ -1,6 +1,7 @@
 import { AliasNode } from '../operation-node/alias-node.js'
 import { OperationNodeSource } from '../operation-node/operation-node-source.js'
 import { CompiledQuery } from '../query-compiler/compiled-query.js'
+import { SelectModifierNode } from '../operation-node/select-modifier-node.js'
 import {
   JoinCallbackExpression,
   JoinReferenceExpression,
@@ -59,7 +60,6 @@ import { NoResultError, NoResultErrorConstructor } from './no-result-error.js'
 import { HavingInterface } from './having-interface.js'
 import { IdentifierNode } from '../operation-node/identifier-node.js'
 import { AliasedRawBuilder } from '../raw-builder/raw-builder.js'
-import { SelectModifierNode } from '../operation-node/select-modifier-node.js'
 
 export class SelectQueryBuilder<DB, TB extends keyof DB, O>
   implements
@@ -1516,7 +1516,6 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    */
   async execute(): Promise<O[]> {
     const compildQuery = this.compile()
-    const query = compildQuery.query
 
     const result = await this.#props.executor.executeQuery<O>(
       compildQuery,
@@ -1553,6 +1552,46 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
     }
 
     return result as O
+  }
+
+  /**
+   * Executes the query and streams the rows.
+   *
+   * The optional argument `chunkSize` defines how many rows to fetch from the database
+   * at a time. It only affects some dialects like PostgreSQL that support it.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * const stream = db.
+   *   .selectFrom('person')
+   *   .select(['first_name', 'last_name'])
+   *   .where('gender', '=', 'other')
+   *   .stream()
+   *
+   * for await (const person of stream) {
+   *   console.log(person.first_name)
+   *
+   *   if (person.last_name === 'Something') {
+   *     // Breaking or returning before the stream has ended will release
+   *     // the database connection and invalidate the stream.
+   *     break
+   *   }
+   * }
+   * ```
+   */
+  async *stream(chunkSize: number = 100): AsyncIterableIterator<O> {
+    const compildQuery = this.compile()
+
+    const stream = this.#props.executor.stream<O>(
+      compildQuery,
+      chunkSize,
+      this.#props.queryId
+    )
+
+    for await (const item of stream) {
+      yield* item.rows
+    }
   }
 }
 

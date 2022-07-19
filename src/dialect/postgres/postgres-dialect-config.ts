@@ -1,5 +1,22 @@
 import { DatabaseConnection } from '../../driver/database-connection.js'
 
+export type PostgresCursorConstructor = new <T>(
+  sql: string,
+  parameters: readonly unknown[]
+) => PostgresCursor<T>
+export type PostgresCursor<T> =
+  | {
+      state: 'initialized' | 'idle' | 'submitted' | 'busy'
+      read: (rowsCount: number) => Promise<T[]>
+    }
+  | {
+      state: 'done'
+    }
+  | {
+      state: 'error'
+      _error: Error
+    }
+
 /**
  * Config for the PostgreSQL dialect.
  */
@@ -12,6 +29,20 @@ export interface PostgresDialectConfig {
    * https://node-postgres.com/api/pool
    */
   pool: PostgresPool | (() => Promise<PostgresPool>)
+
+  /**
+   * https://github.com/brianc/node-postgres/tree/master/packages/pg-cursor
+   * ```ts
+   * import Cursor from 'pg-cursor'
+   * // or
+   * import * as Cursor from 'pg-cursor'
+   *
+   * new PostgresDialect({
+   *  cursor: Cursor
+   * })
+   * ```
+   */
+  cursor?: PostgresCursorConstructor
 
   /**
    * Called once for each created connection.
@@ -37,6 +68,7 @@ export interface PostgresPoolClient {
     sql: string,
     parameters: ReadonlyArray<unknown>
   ): Promise<PostgresQueryResult<R>>
+  query<R>(cursor: PostgresCursor<R>): PostgresCursor<R>
   release(): void
 }
 
@@ -44,4 +76,10 @@ export interface PostgresQueryResult<R> {
   command: 'UPDATE' | 'DELETE' | 'INSERT' | 'SELECT'
   rowCount: number
   rows: R[]
+}
+
+export interface PostgresStreamOptions {}
+
+export interface PostgresStream<T> {
+  [Symbol.asyncIterator](): AsyncIterableIterator<T>
 }

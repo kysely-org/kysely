@@ -73,4 +73,8 @@ class DummyConnection implements DatabaseConnection {
       rows: [],
     }
   }
+
+  async *streamQuery<R>(): AsyncIterableIterator<QueryResult<R>> {
+    // Nothing to do here.
+  }
 }

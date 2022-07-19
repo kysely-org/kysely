@@ -20,7 +20,9 @@
 <section class="tsd-panel">
 <h4>Implements</h4>
 <ul class="tsd-hierarchy">
-<li><a href="../interfaces/ConnectionProvider.html" class="tsd-signature-type" data-tsd-kind="Interface">ConnectionProvider</a></li></ul></section>
+<li><a href="../interfaces/ConnectionProvider.html" class="tsd-signature-type" data-tsd-kind="Interface">ConnectionProvider</a></li></ul></section><aside class="tsd-sources">
+<ul>
+<li>Defined in <a href="https://github.com/koskimas/kysely/blob/396a5f0d/src/driver/default-connection-provider.ts#L5">src/driver/default-connection-provider.ts:5</a></li></ul></aside>
 <section class="tsd-panel-group tsd-index-group">
 <section class="tsd-panel tsd-index-panel">
 <details class="tsd-index-content tsd-index-accordion" open><summary class="tsd-accordion-summary tsd-index-summary">
@@ -39,22 +41,22 @@
 <section class="tsd-panel tsd-member tsd-kind-constructor tsd-parent-kind-class"><a id="constructor" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>constructor</span><a href="#constructor" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none" id="icon-anchor-a"></path><path d="M10 14a3.5 3.5 0 0 0 5 0l4 -4a3.5 3.5 0 0 0 -5 -5l-.5 .5" id="icon-anchor-b"></path><path d="M14 10a3.5 3.5 0 0 0 -5 0l-4 4a3.5 3.5 0 0 0 5 5l.5 -.5" id="icon-anchor-c"></path></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-constructor tsd-parent-kind-class">
-<li class="tsd-signature" id="constructor.new_DefaultConnectionProvider">new <wbr/>Default<wbr/>Connection<wbr/>Provider<span class="tsd-signature-symbol">(</span>driver<span class="tsd-signature-symbol">: </span><a href="../interfaces/Driver.html" class="tsd-signature-type" data-tsd-kind="Interface">Driver</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="DefaultConnectionProvider.html" class="tsd-signature-type" data-tsd-kind="Class">DefaultConnectionProvider</a></li></ul>
-<ul class="tsd-descriptions">
+<li class="tsd-signature tsd-anchor-link" id="constructor.new_DefaultConnectionProvider">new <wbr/>Default<wbr/>Connection<wbr/>Provider<span class="tsd-signature-symbol">(</span>driver<span class="tsd-signature-symbol">: </span><a href="../interfaces/Driver.html" class="tsd-signature-type" data-tsd-kind="Interface">Driver</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="DefaultConnectionProvider.html" class="tsd-signature-type" data-tsd-kind="Class">DefaultConnectionProvider</a><a href="#constructor.new_DefaultConnectionProvider" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></li>
 <li class="tsd-description">
 <div class="tsd-parameters">
 <h4 class="tsd-parameters-title">Parameters</h4>
 <ul class="tsd-parameter-list">
 <li>
 <h5>driver: <a href="../interfaces/Driver.html" class="tsd-signature-type" data-tsd-kind="Interface">Driver</a></h5></li></ul></div>
-<h4 class="tsd-returns-title">Returns <a href="DefaultConnectionProvider.html" class="tsd-signature-type" data-tsd-kind="Class">DefaultConnectionProvider</a></h4></li></ul></section></section>
+<h4 class="tsd-returns-title">Returns <a href="DefaultConnectionProvider.html" class="tsd-signature-type" data-tsd-kind="Class">DefaultConnectionProvider</a></h4><aside class="tsd-sources">
+<ul>
+<li>Defined in <a href="https://github.com/koskimas/kysely/blob/396a5f0d/src/driver/default-connection-provider.ts#L8">src/driver/default-connection-provider.ts:8</a></li></ul></aside></li></ul></section></section>
 <section class="tsd-panel-group tsd-member-group">
 <h2>Methods</h2>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class"><a id="provideConnection" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>provide<wbr/>Connection</span><a href="#provideConnection" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-<li class="tsd-signature" id="provideConnection.provideConnection-1">provide<wbr/>Connection<span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type" data-tsd-kind="Type parameter">T</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">(</span>consumer<span class="tsd-signature-symbol">: </span><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">(</span>connection<span class="tsd-signature-symbol">: </span><a href="../interfaces/DatabaseConnection.html" class="tsd-signature-type" data-tsd-kind="Interface">DatabaseConnection</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type" data-tsd-kind="Type parameter">T</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type" data-tsd-kind="Type parameter">T</span><span class="tsd-signature-symbol">&gt;</span></li></ul>
-<ul class="tsd-descriptions">
+<li class="tsd-signature tsd-anchor-link" id="provideConnection.provideConnection-1">provide<wbr/>Connection<span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type" data-tsd-kind="Type parameter">T</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">(</span>consumer<span class="tsd-signature-symbol">: </span><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">(</span>connection<span class="tsd-signature-symbol">: </span><a href="../interfaces/DatabaseConnection.html" class="tsd-signature-type" data-tsd-kind="Interface">DatabaseConnection</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type" data-tsd-kind="Type parameter">T</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type" data-tsd-kind="Type parameter">T</span><span class="tsd-signature-symbol">&gt;</span><a href="#provideConnection.provideConnection-1" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></li>
 <li class="tsd-description">
 <div class="tsd-comment tsd-typography"><p>Provides a connection for the callback and takes care of disposing
 the connection after the callback has been run.</p>
@@ -72,8 +74,7 @@ the connection after the callback has been run.</p>
 <ul class="tsd-parameters">
 <li class="tsd-parameter-signature">
 <ul class="tsd-signatures tsd-kind-type-literal">
-<li class="tsd-signature"><span class="tsd-signature-symbol">(</span>connection<span class="tsd-signature-symbol">: </span><a href="../interfaces/DatabaseConnection.html" class="tsd-signature-type" data-tsd-kind="Interface">DatabaseConnection</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type" data-tsd-kind="Type parameter">T</span><span class="tsd-signature-symbol">&gt;</span></li></ul>
-<ul class="tsd-descriptions">
+<li class="tsd-signature"><span class="tsd-signature-symbol">(</span>connection<span class="tsd-signature-symbol">: </span><a href="../interfaces/DatabaseConnection.html" class="tsd-signature-type" data-tsd-kind="Interface">DatabaseConnection</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type" data-tsd-kind="Type parameter">T</span><span class="tsd-signature-symbol">&gt;</span></li>
 <li class="tsd-description">
 <div class="tsd-parameters">
 <h4 class="tsd-parameters-title">Parameters</h4>
@@ -82,7 +83,9 @@ the connection after the callback has been run.</p>
 <h5>connection: <a href="../interfaces/DatabaseConnection.html" class="tsd-signature-type" data-tsd-kind="Interface">DatabaseConnection</a></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type" data-tsd-kind="Type parameter">T</span><span class="tsd-signature-symbol">&gt;</span></h4></li></ul></li></ul></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type" data-tsd-kind="Type parameter">T</span><span class="tsd-signature-symbol">&gt;</span></h4><aside class="tsd-sources">
-<p>Implementation of <a href="../interfaces/ConnectionProvider.html">ConnectionProvider</a>.<a href="../interfaces/ConnectionProvider.html#provideConnection">provideConnection</a></p></aside></li></ul></section></section></div>
+<p>Implementation of <a href="../interfaces/ConnectionProvider.html">ConnectionProvider</a>.<a href="../interfaces/ConnectionProvider.html#provideConnection">provideConnection</a></p>
+<ul>
+<li>Defined in <a href="https://github.com/koskimas/kysely/blob/396a5f0d/src/driver/default-connection-provider.ts#L12">src/driver/default-connection-provider.ts:12</a></li></ul></aside></li></ul></section></section></div>
 <div class="col-4 col-menu menu-sticky-wrap menu-highlight">
 <div class="tsd-navigation settings">
 <details class="tsd-index-accordion"><summary class="tsd-accordion-summary">

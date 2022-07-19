@@ -39,16 +39,30 @@ and the <a href="https://koskimas.github.io/kysely/classes/DynamicModule.html#re
   <h1>Table of contents</h1>
 </a>
 <ul>
-<li><a href="#installation">Installation</a></li>
+<li><a href="#installation">Installation</a><ul>
+<li><a href="#3rd-party-dialects">3rd party dialects:</a></li>
+</ul>
+</li>
 <li><a href="#minimal-example">Minimal example</a></li>
 <li><a href="#generating-types">Generating types</a></li>
-<li><a href="#query-examples">Query examples</a></li>
-<li><a href="https://github.com/koskimas/kysely/tree/master/recipes">Recipes</a></li>
-<li><a href="#migrations">Migrations</a></li>
+<li><a href="#query-examples">Query examples</a><ul>
+<li><a href="#select-queries">Select queries</a><ul>
+<li><a href="#stream-select-query-results">Stream select query results</a></li>
+</ul>
+</li>
+<li><a href="#update-queries">Update queries</a></li>
+<li><a href="#insert-queries">Insert queries</a></li>
+<li><a href="#delete-queries">Delete queries</a></li>
+</ul>
+</li>
+<li><a href="#migrations">Migrations</a><ul>
+<li><a href="#postgresql-migration-example">PostgreSQL migration example</a></li>
+<li><a href="#mysql-migration-example">MySQL migration example</a></li>
+</ul>
+</li>
 <li><a href="#deno">Deno</a></li>
 <li><a href="#browser">Browser</a></li>
-<li><a href="https://koskimas.github.io/kysely/index.html">API reference</a></li>
-<li><a href="https://github.com/koskimas/kysely/releases">Changelog</a></li>
+<li><a href="#why-not-just-contribute-to-knex">Why not just contribute to knex</a></li>
 </ul>
 
 <a href="#installation" id="installation" style="color: inherit; text-decoration: none;">
@@ -94,6 +108,13 @@ check out <a href="https://github.com/RobinBlomberg/kysely-codegen">this awesome
 <a href="https://koskimas.github.io/kysely/classes/SelectQueryBuilder.html#select">select method</a> and
 the <a href="https://koskimas.github.io/kysely/classes/SelectQueryBuilder.html#where">where method</a>
 among other places.</p>
+
+<a href="#stream-select-query-results" id="stream-select-query-results" style="color: inherit; text-decoration: none;">
+  <h3>Stream select query results</h3>
+</a>
+<p><em>Currently only supported by <code>postgres</code> and <code>mysql</code> dialects.</em></p>
+<pre><code class="language-ts"><span class="hl-2">import</span><span class="hl-0"> { </span><span class="hl-1">Pool</span><span class="hl-0"> } </span><span class="hl-2">from</span><span class="hl-0"> </span><span class="hl-3">&#39;pg&#39;</span><br/><span class="hl-6">// or `import * as Cursor from &#39;pg-cursor&#39;` depending on your tsconfig</span><br/><span class="hl-2">import</span><span class="hl-0"> </span><span class="hl-1">Cursor</span><span class="hl-0"> </span><span class="hl-2">from</span><span class="hl-0"> </span><span class="hl-3">&#39;pg-cursor&#39;</span><br/><span class="hl-2">import</span><span class="hl-0"> {</span><br/><span class="hl-0">    </span><span class="hl-1">Kysely</span><span class="hl-0">,</span><br/><span class="hl-0">    </span><span class="hl-1">PostgresDialect</span><span class="hl-0">,</span><br/><span class="hl-0">} </span><span class="hl-2">from</span><span class="hl-0"> </span><span class="hl-3">&#39;kysely&#39;</span><br/><br/><span class="hl-4">const</span><span class="hl-0"> </span><span class="hl-7">db</span><span class="hl-0"> = </span><span class="hl-4">new</span><span class="hl-0"> </span><span class="hl-8">Kysely</span><span class="hl-0">&lt;</span><span class="hl-5">Database</span><span class="hl-0">&gt;({</span><br/><span class="hl-0">    </span><span class="hl-6">// PostgresDialect requires the Cursor dependency</span><br/><span class="hl-0">    </span><span class="hl-1">dialect:</span><span class="hl-0"> </span><span class="hl-4">new</span><span class="hl-0"> </span><span class="hl-8">PostgresDialect</span><span class="hl-0">({</span><br/><span class="hl-0">        </span><span class="hl-1">pool:</span><span class="hl-0"> </span><span class="hl-4">new</span><span class="hl-0"> </span><span class="hl-8">Pool</span><span class="hl-0">({</span><br/><span class="hl-0">            </span><span class="hl-1">host:</span><span class="hl-0"> </span><span class="hl-3">&#39;localhost&#39;</span><span class="hl-0">,</span><br/><span class="hl-0">            </span><span class="hl-1">database:</span><span class="hl-0"> </span><span class="hl-3">&#39;kysely_test&#39;</span><br/><span class="hl-0">        }),</span><br/><span class="hl-0">        </span><span class="hl-1">cursor:</span><span class="hl-0"> </span><span class="hl-1">Cursor</span><br/><span class="hl-0">    }),</span><br/><br/><span class="hl-0">    </span><span class="hl-6">// MysqlDialect doesn&#39;t require any special configuration</span><br/><span class="hl-0">})</span><br/><br/><span class="hl-4">async</span><span class="hl-0"> </span><span class="hl-4">function</span><span class="hl-0"> </span><span class="hl-8">demo</span><span class="hl-0">() {</span><br/><span class="hl-0">    </span><span class="hl-2">for</span><span class="hl-0"> </span><span class="hl-2">await</span><span class="hl-0"> (</span><span class="hl-4">const</span><span class="hl-0"> </span><span class="hl-7">male</span><span class="hl-0"> </span><span class="hl-4">of</span><span class="hl-0"> </span><span class="hl-1">db</span><span class="hl-0">.</span><span class="hl-8">selectFrom</span><span class="hl-0">(</span><span class="hl-3">&quot;person&quot;</span><span class="hl-0">)</span><br/><span class="hl-0">        .</span><span class="hl-8">selectAll</span><span class="hl-0">()</span><br/><span class="hl-0">        .</span><span class="hl-8">where</span><span class="hl-0">(</span><span class="hl-3">&quot;person.gender&quot;</span><span class="hl-0">, </span><span class="hl-3">&quot;=&quot;</span><span class="hl-0">, </span><span class="hl-3">&quot;male&quot;</span><span class="hl-0">)</span><br/><span class="hl-0">        .</span><span class="hl-8">stream</span><span class="hl-0">()) {</span><br/><span class="hl-0">        </span><span class="hl-1">console</span><span class="hl-0">.</span><span class="hl-8">log</span><span class="hl-0">(</span><span class="hl-3">`Hello mr. </span><span class="hl-4">${</span><span class="hl-1">male</span><span class="hl-9">.</span><span class="hl-1">first_name</span><span class="hl-4">}</span><span class="hl-3">!`</span><span class="hl-0">)</span><br/><br/><span class="hl-0">        </span><span class="hl-2">if</span><span class="hl-0"> (</span><span class="hl-1">male</span><span class="hl-0">.</span><span class="hl-1">first_name</span><span class="hl-0"> === </span><span class="hl-3">&quot;John&quot;</span><span class="hl-0">) {</span><br/><span class="hl-0">          </span><span class="hl-6">// After this line the db connection is released and no more </span><br/><span class="hl-0">          </span><span class="hl-6">// rows are streamed from the database to the client</span><br/><span class="hl-0">          </span><span class="hl-2">break</span><span class="hl-0">;</span><br/><span class="hl-0">        }</span><br/><span class="hl-0">    }</span><br/><span class="hl-0">}</span>
+</code></pre>
 
 <a href="#update-queries" id="update-queries" style="color: inherit; text-decoration: none;">
   <h2>Update queries</h2>
@@ -379,6 +400,8 @@ a library for typescript from the ground up produces much better and simpler typ
 <li class="tsd-kind-interface"><a href="interfaces/MysqlOkPacket.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-256-path"></use><use href="#icon-256-text"></use></svg>Mysql<wbr/>Ok<wbr/>Packet</a></li>
 <li class="tsd-kind-interface"><a href="interfaces/MysqlPool.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-256-path"></use><use href="#icon-256-text"></use></svg>Mysql<wbr/>Pool</a></li>
 <li class="tsd-kind-interface"><a href="interfaces/MysqlPoolConnection.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-256-path"></use><use href="#icon-256-text"></use></svg>Mysql<wbr/>Pool<wbr/>Connection</a></li>
+<li class="tsd-kind-interface"><a href="interfaces/MysqlStream.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-256-path"></use><use href="#icon-256-text"></use></svg>Mysql<wbr/>Stream</a></li>
+<li class="tsd-kind-interface"><a href="interfaces/MysqlStreamOptions.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-256-path"></use><use href="#icon-256-text"></use></svg>Mysql<wbr/>Stream<wbr/>Options</a></li>
 <li class="tsd-kind-interface"><a href="interfaces/NoMigrations.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-256-path"></use><use href="#icon-256-text"></use></svg>No<wbr/>Migrations</a></li>
 <li class="tsd-kind-interface"><a href="interfaces/OffsetNode.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-256-path"></use><use href="#icon-256-text"></use></svg>Offset<wbr/>Node</a></li>
 <li class="tsd-kind-interface"><a href="interfaces/OnConflictBuilderProps.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-256-path"></use><use href="#icon-256-text"></use></svg>On<wbr/>Conflict<wbr/>Builder<wbr/>Props</a></li>
@@ -398,6 +421,8 @@ a library for typescript from the ground up produces much better and simpler typ
 <li class="tsd-kind-interface"><a href="interfaces/PostgresPool.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-256-path"></use><use href="#icon-256-text"></use></svg>Postgres<wbr/>Pool</a></li>
 <li class="tsd-kind-interface"><a href="interfaces/PostgresPoolClient.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-256-path"></use><use href="#icon-256-text"></use></svg>Postgres<wbr/>Pool<wbr/>Client</a></li>
 <li class="tsd-kind-interface"><a href="interfaces/PostgresQueryResult.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-256-path"></use><use href="#icon-256-text"></use></svg>Postgres<wbr/>Query<wbr/>Result</a></li>
+<li class="tsd-kind-interface"><a href="interfaces/PostgresStream.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-256-path"></use><use href="#icon-256-text"></use></svg>Postgres<wbr/>Stream</a></li>
+<li class="tsd-kind-interface"><a href="interfaces/PostgresStreamOptions.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-256-path"></use><use href="#icon-256-text"></use></svg>Postgres<wbr/>Stream<wbr/>Options</a></li>
 <li class="tsd-kind-interface"><a href="interfaces/PrimaryKeyConstraintNode.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-256-path"></use><use href="#icon-256-text"></use></svg>Primary<wbr/>Key<wbr/>Constraint<wbr/>Node</a></li>
 <li class="tsd-kind-interface"><a href="interfaces/PrimitiveValueListNode.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-256-path"></use><use href="#icon-256-text"></use></svg>Primitive<wbr/>Value<wbr/>List<wbr/>Node</a></li>
 <li class="tsd-kind-interface"><a href="interfaces/QueryCompiler.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-256-path"></use><use href="#icon-256-text"></use></svg>Query<wbr/>Compiler</a></li>
@@ -505,6 +530,8 @@ a library for typescript from the ground up produces much better and simpler typ
 <li class="tsd-kind-type-alias"><a href="types/Operator.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-4194304-path"></use><use href="#icon-4194304-text"></use></svg>Operator</a></li>
 <li class="tsd-kind-type-alias"><a href="types/OrderByDirectionExpression.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-4194304-path"></use><use href="#icon-4194304-text"></use></svg>Order<wbr/>By<wbr/>Direction<wbr/>Expression</a></li>
 <li class="tsd-kind-type-alias"><a href="types/OrderByExpression.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-4194304-path"></use><use href="#icon-4194304-text"></use></svg>Order<wbr/>By<wbr/>Expression</a></li>
+<li class="tsd-kind-type-alias"><a href="types/PostgresCursor.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-4194304-path"></use><use href="#icon-4194304-text"></use></svg>Postgres<wbr/>Cursor</a></li>
+<li class="tsd-kind-type-alias"><a href="types/PostgresCursorConstructor.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-4194304-path"></use><use href="#icon-4194304-text"></use></svg>Postgres<wbr/>Cursor<wbr/>Constructor</a></li>
 <li class="tsd-kind-type-alias"><a href="types/QueryNode.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-4194304-path"></use><use href="#icon-4194304-text"></use></svg>Query<wbr/>Node</a></li>
 <li class="tsd-kind-type-alias"><a href="types/ReferenceExpression.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-4194304-path"></use><use href="#icon-4194304-text"></use></svg>Reference<wbr/>Expression</a></li>
 <li class="tsd-kind-type-alias"><a href="types/ReferenceExpressionNode.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-4194304-path"></use><use href="#icon-4194304-text"></use></svg>Reference<wbr/>Expression<wbr/>Node</a></li>

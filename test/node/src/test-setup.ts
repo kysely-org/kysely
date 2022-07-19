@@ -1,9 +1,13 @@
 import * as chai from 'chai'
+import * as chaiAsPromised from 'chai-as-promised'
 import * as chaiSubset from 'chai-subset'
 import { Pool } from 'pg'
 import { createPool } from 'mysql2'
+// @ts-ignore
+import * as Cursor from 'pg-cursor'
 
 chai.use(chaiSubset)
+chai.use(chaiAsPromised)
 
 import {
   Kysely,
@@ -87,7 +91,7 @@ const TEST_INIT_TIMEOUT = 5 * 60 * 1000
 // supported on some dialect.
 export const NOT_SUPPORTED = { sql: '', parameters: [] }
 
-const PLUGINS: KyselyPlugin[] = []
+export const PLUGINS: KyselyPlugin[] = []
 
 if (process.env.TEST_TRANSFORMER) {
   console.log('running tests with a transformer')
@@ -97,12 +101,15 @@ if (process.env.TEST_TRANSFORMER) {
   PLUGINS.push(createNoopTransformerPlugin())
 }
 
+export const POOL_SIZE = 20
+
 export const DIALECT_CONFIGS = {
   postgres: {
     database: 'kysely_test',
     host: 'localhost',
     user: 'kysely',
     port: 5434,
+    max: POOL_SIZE,
   },
 
   mysql: {
@@ -114,6 +121,8 @@ export const DIALECT_CONFIGS = {
     // Return big numbers as strings just like pg does.
     supportBigNumbers: true,
     bigNumberStrings: true,
+
+    connectionLimit: POOL_SIZE,
   },
 
   sqlite: {
@@ -125,6 +134,7 @@ const DB_CONFIGS: PerDialect<KyselyConfig> = {
   postgres: {
     dialect: new PostgresDialect({
       pool: async () => new Pool(DIALECT_CONFIGS.postgres),
+      cursor: Cursor,
     }),
     plugins: PLUGINS,
   },

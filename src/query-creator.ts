@@ -226,7 +226,7 @@ export class QueryCreator<DB> {
    * has the {@link InsertResult.insertId | insertId} field that holds the auto incremented id of
    * the inserted row if the db returned one.
    *
-   * See the {@link InsertQueryBuilder.values | values} method for more info and examples. Also see
+   * See the {@link InsertQueryBuilder.values | values} method for more info and examples.
    *
    * ### Examples
    *
