@@ -192,14 +192,15 @@ among other places.
 
 ```ts
 import { Pool } from 'pg'
-import Cursor from 'pg-cursor' // or `import * as Cursor from 'pg-cursor'` depending on your tsconfig
+// or `import * as Cursor from 'pg-cursor'` depending on your tsconfig
+import Cursor from 'pg-cursor'
 import {
     Kysely,
     PostgresDialect,
 } from 'kysely'
 
 const db = new Kysely<Database>({
-    // PostgresDialect requires Cursor dependency
+    // PostgresDialect requires the Cursor dependency
     dialect: new PostgresDialect({
         pool: new Pool({
             host: 'localhost',
@@ -219,15 +220,13 @@ async function demo() {
         console.log(`Hello mr. ${male.first_name}!`)
 
         if (male.first_name === "John") {
-          break; // at this point no more queries are streamed from the database to the client
+          // After this line the db connection is released and no more 
+          // rows are streamed from the database to the client
+          break;
         }
-
     }
 }
 ```
-
-
-
 
 ## Update queries
 
