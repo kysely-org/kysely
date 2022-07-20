@@ -283,6 +283,78 @@ export class CreateTableBuilder<TB extends string, C extends string = never>
     })
   }
 
+  /**
+   * This can be used to add any additional SQL to the front of the query __after__ the `create` keyword.
+   *
+   * Also see {@link temporary}.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * db.schema.createTable('person')
+   *   .modifyFront(sql`global temporary`)
+   *   .addColumn('id', 'integer', col => col => primaryKey())
+   *   .addColumn('first_name', 'varchar(64)', col => col.notNull())
+   *   .addColumn('last_name', 'varchar(64), col => col.notNull())
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (Postgres):
+   *
+   * ```sql
+   * create global temporary table "person" (
+   *   "id" integer primary key,
+   *   "first_name" varchar(64) not null,
+   *   "last_name" varchar(64) not null
+   * )
+   * ```
+   */
+  modifyFront(modifier: AnyRawBuilder): CreateTableBuilder<TB, C> {
+    return new CreateTableBuilder({
+      ...this.#props,
+      createTableNode: CreateTableNode.cloneWithFrontModifier(
+        this.#props.createTableNode,
+        modifier.toOperationNode()
+      ),
+    })
+  }
+
+  /**
+   * This can be used to add any additional SQL to the end of the query.
+   *
+   * Also see {@link onCommit}.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * db.schema.createTable('person')
+   *   .addColumn('id', 'integer', col => col => primaryKey())
+   *   .addColumn('first_name', 'varchar(64)', col => col.notNull())
+   *   .addColumn('last_name', 'varchar(64), col => col.notNull())
+   *   .modifyEnd(sql`collate utf8_unicode_ci`)
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (MySQL):
+   *
+   * ```sql
+   * create table `person` (
+   *   `id` integer primary key,
+   *   `first_name` varchar(64) not null,
+   *   `last_name` varchar(64) not null
+   * ) collate utf8_unicode_ci
+   * ```
+   */
+  modifyEnd(modifier: AnyRawBuilder): CreateTableBuilder<TB, C> {
+    return new CreateTableBuilder({
+      ...this.#props,
+      createTableNode: CreateTableNode.cloneWithEndModifier(
+        this.#props.createTableNode,
+        modifier.toOperationNode()
+      ),
+    })
+  }
+
   toOperationNode(): CreateTableNode {
     return this.#props.executor.transformQuery(
       this.#props.createTableNode,
