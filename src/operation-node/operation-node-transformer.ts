@@ -390,6 +390,8 @@ export class OperationNodeTransformer {
       temporary: node.temporary,
       ifNotExists: node.ifNotExists,
       onCommit: node.onCommit,
+      frontModifiers: node.frontModifiers,
+      endModifiers: node.endModifiers,
     })
   }
 
