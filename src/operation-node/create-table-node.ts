@@ -4,13 +4,19 @@ import { TableNode } from './table-node.js'
 import { ConstraintNode } from './constraint-node.js'
 import { ColumnDefinitionNode } from './column-definition-node.js'
 import { ArrayItemType } from '../util/type-utils.js'
+import { RawNode } from './raw-node.js'
 
 export const ON_COMMIT_ACTIONS = ['preserve rows', 'delete rows', 'drop']
 export type OnCommitAction = ArrayItemType<typeof ON_COMMIT_ACTIONS>
 
 export type CreateTableNodeParams = Omit<
   CreateTableNode,
-  'kind' | 'table' | 'columns' | 'constraints'
+  | 'kind'
+  | 'table'
+  | 'columns'
+  | 'constraints'
+  | 'frontModifiers'
+  | 'endModifiers'
 >
 
 export interface CreateTableNode extends OperationNode {
@@ -21,6 +27,8 @@ export interface CreateTableNode extends OperationNode {
   readonly temporary?: boolean
   readonly ifNotExists?: boolean
   readonly onCommit?: OnCommitAction
+  readonly frontModifiers?: ReadonlyArray<RawNode>
+  readonly endModifiers?: ReadonlyArray<RawNode>
 }
 
 /**
@@ -58,6 +66,30 @@ export const CreateTableNode = freeze({
       constraints: createTable.constraints
         ? freeze([...createTable.constraints, constraint])
         : freeze([constraint]),
+    })
+  },
+
+  cloneWithFrontModifier(
+    createTable: CreateTableNode,
+    modifier: RawNode
+  ): CreateTableNode {
+    return freeze({
+      ...createTable,
+      frontModifiers: createTable.frontModifiers
+        ? freeze([...createTable.frontModifiers, modifier])
+        : freeze([modifier]),
+    })
+  },
+
+  cloneWithEndModifier(
+    createTable: CreateTableNode,
+    modifier: RawNode
+  ): CreateTableNode {
+    return freeze({
+      ...createTable,
+      endModifiers: createTable.endModifiers
+        ? freeze([...createTable.endModifiers, modifier])
+        : freeze([modifier]),
     })
   },
 
