@@ -636,6 +636,114 @@ for (const dialect of BUILT_IN_DIALECTS) {
           await builder.execute()
         })
       }
+
+      if (dialect === 'postgres') {
+        it('should create a global temporary table', async () => {
+          const builder = ctx.db.schema
+            .createTable('test')
+            .modifyFront(sql`global temporary`)
+            .addColumn('id', 'integer', (col) => col.primaryKey())
+            .addColumn('first_name', 'varchar(64)', (col) => col.notNull())
+            .addColumn('last_name', 'varchar(64)', (col) => col.notNull())
+
+          testSql(builder, dialect, {
+            postgres: {
+              sql: [
+                'create global temporary table "test"',
+                '("id" integer primary key,',
+                '"first_name" varchar(64) not null,',
+                '"last_name" varchar(64) not null)',
+              ],
+              parameters: [],
+            },
+            mysql: NOT_SUPPORTED,
+            sqlite: NOT_SUPPORTED,
+          })
+
+          await builder.execute()
+        })
+      }
+
+      if (dialect === 'postgres') {
+        it('should create a table partitioned by country', async () => {
+          const builder = ctx.db.schema
+            .createTable('test')
+            .addColumn('id', 'integer', (col) => col.notNull())
+            .addColumn('nickname', 'varchar(64)', (col) => col.notNull())
+            .addColumn('country', 'varchar(2)', (col) => col.notNull())
+            .addPrimaryKeyConstraint('test_pk', ['id', 'country'])
+            .modifyEnd(sql`partition by hash (${sql.ref('country')})`)
+
+          testSql(builder, dialect, {
+            postgres: {
+              sql: [
+                'create table "test"',
+                '("id" integer not null,',
+                '"nickname" varchar(64) not null,',
+                '"country" varchar(2) not null,',
+                'constraint "test_pk" primary key ("id", "country")) partition by hash ("country")',
+              ],
+              parameters: [],
+            },
+            mysql: NOT_SUPPORTED,
+            sqlite: NOT_SUPPORTED,
+          })
+
+          await builder.execute()
+        })
+      } else if (dialect === 'mysql') {
+        it('should create a table partitioned by country', async () => {
+          const builder = ctx.db.schema
+            .createTable('test')
+            .addColumn('id', 'integer', (col) => col.notNull())
+            .addColumn('nickname', 'varchar(64)', (col) => col.notNull())
+            .addColumn('country', 'varchar(2)', (col) => col.notNull())
+            .addPrimaryKeyConstraint('test_pk', ['id', 'country'])
+            .modifyEnd(sql`partition by key (${sql.ref('country')})`)
+
+          testSql(builder, dialect, {
+            postgres: NOT_SUPPORTED,
+            mysql: {
+              sql: [
+                'create table `test`',
+                '(`id` integer not null,',
+                '`nickname` varchar(64) not null,',
+                '`country` varchar(2) not null,',
+                'constraint `test_pk` primary key (`id`, `country`)) partition by key (`country`)',
+              ],
+              parameters: [],
+            },
+            sqlite: NOT_SUPPORTED,
+          })
+
+          await builder.execute()
+        })
+      } else {
+        it('should create a strict table', async () => {
+          const builder = ctx.db.schema
+            .createTable('test')
+            .addColumn('id', 'integer', (col) => col.primaryKey())
+            .addColumn('nickname', 'text', (col) => col.notNull())
+            .addColumn('country', 'text', (col) => col.notNull())
+            .modifyEnd(sql`strict`)
+
+          testSql(builder, dialect, {
+            postgres: NOT_SUPPORTED,
+            mysql: NOT_SUPPORTED,
+            sqlite: {
+              sql: [
+                'create table "test"',
+                '("id" integer primary key,',
+                '"nickname" text not null,',
+                '"country" text not null) strict',
+              ],
+              parameters: [],
+            },
+          })
+
+          await builder.execute()
+        })
+      }
     })
 
     describe('drop table', () => {
