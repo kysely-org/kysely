@@ -480,6 +480,11 @@ export class DefaultQueryCompiler
   protected override visitCreateTable(node: CreateTableNode): void {
     this.append('create ')
 
+    if (node.frontModifiers) {
+      this.compileList(node.frontModifiers, ' ')
+      this.append(' ')
+    }
+
     if (node.temporary) {
       this.append('temporary ')
     }
@@ -498,6 +503,11 @@ export class DefaultQueryCompiler
     if (node.onCommit) {
       this.append(' on commit ')
       this.append(node.onCommit)
+    }
+
+    if (node.endModifiers) {
+      this.append(' ')
+      this.compileList(node.endModifiers, ' ')
     }
   }
 
