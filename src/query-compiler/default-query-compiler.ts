@@ -373,13 +373,27 @@ export class DefaultQueryCompiler
   }
 
   protected compileUnwrappedIdentifier(node: IdentifierNode): void {
-    this.append(this.getSanitizedIdentifier(node.identifier))
+    this.append(this.sanitizeIdentifier(node.identifier))
   }
 
-  protected getSanitizedIdentifier = (identifier: string): string => {
-    return identifier
-      .replace(this.getLeftIdentifierWrapper(), '')
-      .replace(this.getRightIdentifierWrapper(), '')
+  protected sanitizeIdentifier = (identifier: string): string => {
+    const leftWrapper = this.getLeftIdentifierWrapper()
+    const rightWrapper = this.getRightIdentifierWrapper()
+
+    let sanitizedIdentifier = identifier
+      .split('')
+      .map((char) => {
+        if (char === leftWrapper) {
+          return `${leftWrapper}${leftWrapper}`
+        } else if (char === rightWrapper) {
+          return `${rightWrapper}${rightWrapper}`
+        }
+
+        return char
+      })
+      .join('')
+
+    return sanitizedIdentifier
   }
 
   protected override visitFilter(node: FilterNode): void {
