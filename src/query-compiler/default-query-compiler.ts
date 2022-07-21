@@ -373,7 +373,13 @@ export class DefaultQueryCompiler
   }
 
   protected compileUnwrappedIdentifier(node: IdentifierNode): void {
-    this.append(node.identifier)
+    this.append(this.getSanitizedIdentifier(node.identifier))
+  }
+
+  protected getSanitizedIdentifier = (identifier: string): string => {
+    return identifier
+      .replace(this.getLeftIdentifierWrapper(), '')
+      .replace(this.getRightIdentifierWrapper(), '')
   }
 
   protected override visitFilter(node: FilterNode): void {
