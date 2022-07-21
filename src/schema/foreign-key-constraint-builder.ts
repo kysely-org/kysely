@@ -1,6 +1,7 @@
 import { ForeignKeyConstraintNode } from '../operation-node/foreign-key-constraint-node.js'
 import { OperationNodeSource } from '../operation-node/operation-node-source.js'
 import { OnModifyForeignAction } from '../operation-node/references-node.js'
+import { parseOnModifyForeignAction } from '../parser/on-modify-action-parser.js'
 import { preventAwait } from '../util/prevent-await.js'
 
 export interface ForeignKeyConstraintBuilderInterface<R> {
@@ -22,7 +23,7 @@ export class ForeignKeyConstraintBuilder
   onDelete(onDelete: OnModifyForeignAction): ForeignKeyConstraintBuilder {
     return new ForeignKeyConstraintBuilder(
       ForeignKeyConstraintNode.cloneWith(this.#node, {
-        onDelete,
+        onDelete: parseOnModifyForeignAction(onDelete),
       })
     )
   }
@@ -30,7 +31,7 @@ export class ForeignKeyConstraintBuilder
   onUpdate(onUpdate: OnModifyForeignAction): ForeignKeyConstraintBuilder {
     return new ForeignKeyConstraintBuilder(
       ForeignKeyConstraintNode.cloneWith(this.#node, {
-        onUpdate,
+        onUpdate: parseOnModifyForeignAction(onUpdate),
       })
     )
   }

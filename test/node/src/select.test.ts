@@ -640,5 +640,39 @@ for (const dialect of BUILT_IN_DIALECTS) {
         })
       }
     }
+
+    it.skip('perf', async () => {
+      const ids = Array.from({ length: 100 }).map(() =>
+        Math.round(Math.random() * 1000)
+      )
+
+      function test() {
+        return ctx.db
+          .updateTable('person')
+          .set({
+            first_name: 'foo',
+            last_name: 'bar',
+            id: 100,
+            gender: 'other',
+          })
+          .where('id', 'in', ids)
+          .compile()
+      }
+
+      // Warmup
+      for (let i = 0; i < 1000; ++i) {
+        test()
+      }
+
+      const time = Date.now()
+      const N = 100000
+
+      for (let i = 0; i < N; ++i) {
+        test()
+      }
+
+      const endTime = Date.now()
+      console.log((endTime - time) / N)
+    })
   })
 }

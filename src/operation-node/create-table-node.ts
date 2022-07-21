@@ -3,8 +3,11 @@ import { OperationNode } from './operation-node.js'
 import { TableNode } from './table-node.js'
 import { ConstraintNode } from './constraint-node.js'
 import { ColumnDefinitionNode } from './column-definition-node.js'
+import { ArrayItemType } from '../util/type-utils.js'
 
-export type OnCommitAction = 'preserve rows' | 'delete rows' | 'drop'
+export const ON_COMMIT_ACTIONS = ['preserve rows', 'delete rows', 'drop']
+export type OnCommitAction = ArrayItemType<typeof ON_COMMIT_ACTIONS>
+
 export type CreateTableNodeParams = Omit<
   CreateTableNode,
   'kind' | 'table' | 'columns' | 'constraints'

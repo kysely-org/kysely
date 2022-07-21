@@ -376,26 +376,6 @@ export class DefaultQueryCompiler
     this.append(this.sanitizeIdentifier(node.identifier))
   }
 
-  protected sanitizeIdentifier = (identifier: string): string => {
-    const leftWrapper = this.getLeftIdentifierWrapper()
-    const rightWrapper = this.getRightIdentifierWrapper()
-
-    let sanitizedIdentifier = identifier
-      .split('')
-      .map((char) => {
-        if (char === leftWrapper) {
-          return `${leftWrapper}${leftWrapper}`
-        } else if (char === rightWrapper) {
-          return `${rightWrapper}${rightWrapper}`
-        }
-
-        return char
-      })
-      .join('')
-
-    return sanitizedIdentifier
-  }
-
   protected override visitFilter(node: FilterNode): void {
     if (node.left) {
       this.visitNode(node.left)
@@ -1159,6 +1139,30 @@ export class DefaultQueryCompiler
 
   protected getCurrentParameterPlaceholder(): string {
     return '$' + this.numParameters
+  }
+
+  protected sanitizeIdentifier(identifier: string): string {
+    if (!isString(identifier)) {
+      throw new Error(
+        'a non-string identifier was passed to sanitizeIdentifier.'
+      )
+    }
+
+    const leftWrap = this.getLeftIdentifierWrapper()
+    const rightWrap = this.getRightIdentifierWrapper()
+
+    let sanitized = ''
+    for (const c of identifier) {
+      sanitized += c
+
+      if (c === leftWrap) {
+        sanitized += leftWrap
+      } else if (c === rightWrap) {
+        sanitized += rightWrap
+      }
+    }
+
+    return sanitized
   }
 
   protected addParameter(parameter: unknown): void {
