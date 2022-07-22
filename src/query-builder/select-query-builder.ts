@@ -60,8 +60,8 @@ import { NoResultError, NoResultErrorConstructor } from './no-result-error.js'
 import { HavingInterface } from './having-interface.js'
 import { IdentifierNode } from '../operation-node/identifier-node.js'
 import { AliasedRawBuilder } from '../raw-builder/raw-builder.js'
-import { Explainable } from '../util/explainable.js'
-import { ExplainFormat, ExplainNode } from '../operation-node/explain-node.js'
+import { Explainable, ExplainFormat } from '../util/explainable.js'
+import { ExplainNode } from '../operation-node/explain-node.js'
 
 export class SelectQueryBuilder<DB, TB extends keyof DB, O>
   implements
@@ -1603,30 +1603,27 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    * ```ts
    * const explained = await db
    *  .selectFrom('person')
+   *  .explain('json')
    *  .selectAll()
    *  .where('gender', '=', 'female')
-   *  .explain('json')
-   *
-   * console.log('explained', explained)
+   *  .execute()
    * ```
    *
    * ```sql
    * explain format=json select * from `person` where `gender` = ?
    * ```
    */
-  async explain(format?: ExplainFormat): Promise<any[]>
-  async explain(options?: AnyRawBuilder): Promise<any[]>
-
-  async explain(
-    formatOrOptions?: ExplainFormat | AnyRawBuilder
-  ): Promise<any[]> {
-    return await new SelectQueryBuilder({
+  explain(
+    format?: ExplainFormat,
+    options?: AnyRawBuilder
+  ): SelectQueryBuilder<DB, TB, any> {
+    return new SelectQueryBuilder({
       ...this.#props,
       queryNode: SelectQueryNode.cloneWithExplain(
         this.#props.queryNode,
-        ExplainNode.create(formatOrOptions)
+        ExplainNode.create(format, options)
       ),
-    }).execute()
+    })
   }
 }
 

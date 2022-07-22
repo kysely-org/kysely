@@ -1,15 +1,8 @@
+import { ExplainFormat } from '../util/explainable.js'
 import { freeze } from '../util/object-utils.js'
 import { AnyRawBuilder } from '../util/type-utils.js'
 import { OperationNode } from './operation-node.js'
 import { RawNode } from './raw-node.js'
-
-export type ExplainFormat =
-  | 'text'
-  | 'xml'
-  | 'json'
-  | 'yaml'
-  | 'traditional'
-  | 'tree'
 
 export interface ExplainNode extends OperationNode {
   readonly kind: 'ExplainNode'
@@ -25,14 +18,11 @@ export const ExplainNode = freeze({
     return node.kind === 'ExplainNode'
   },
 
-  create(formatOrOptions?: ExplainFormat | AnyRawBuilder): ExplainNode {
+  create(format?: ExplainFormat, options?: AnyRawBuilder): ExplainNode {
     return freeze({
       kind: 'ExplainNode',
-      format: typeof formatOrOptions === 'string' ? formatOrOptions : undefined,
-      options:
-        typeof formatOrOptions === 'object'
-          ? formatOrOptions.toOperationNode()
-          : undefined,
+      format,
+      options: options !== undefined ? options.toOperationNode() : undefined,
     })
   },
 })
