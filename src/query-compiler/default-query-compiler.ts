@@ -1139,13 +1139,12 @@ export class DefaultQueryCompiler
   protected override visitExplain(node: ExplainNode): void {
     this.append('explain')
 
-    if (node.format) {
-      this.append(` format=${node.format}`)
-    }
-
     if (node.options) {
       this.append(' ')
       this.visitNode(node.options)
+    }
+    if (node.format) {
+      this.append(` format=${node.format}`)
     }
   }
 
