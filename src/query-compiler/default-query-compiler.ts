@@ -1143,6 +1143,7 @@ export class DefaultQueryCompiler
       this.append(' ')
       this.visitNode(node.options)
     }
+
     if (node.format) {
       this.append(` format=${node.format}`)
     }
