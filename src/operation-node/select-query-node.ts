@@ -18,6 +18,7 @@ import { WhereNode } from './where-node.js'
 import { WithNode } from './with-node.js'
 import { UnionNode } from './union-node.js'
 import { SelectModifierNode } from './select-modifier-node.js'
+import { ExplainNode } from './explain-node.js'
 
 export interface SelectQueryNode extends OperationNode {
   readonly kind: 'SelectQueryNode'
@@ -35,6 +36,7 @@ export interface SelectQueryNode extends OperationNode {
   readonly with?: WithNode
   readonly having?: HavingNode
   readonly union?: ReadonlyArray<UnionNode>
+  readonly explain?: ExplainNode
 }
 
 /**
@@ -181,6 +183,16 @@ export const SelectQueryNode = freeze({
       union: selectNode.union
         ? freeze([...selectNode.union, union])
         : freeze([union]),
+    })
+  },
+
+  cloneWithExplain(
+    selectNode: SelectQueryNode,
+    explain: ExplainNode
+  ): SelectQueryNode {
+    return freeze({
+      ...selectNode,
+      explain,
     })
   },
 })
