@@ -373,7 +373,7 @@ export class DefaultQueryCompiler
   }
 
   protected compileUnwrappedIdentifier(node: IdentifierNode): void {
-    this.append(node.identifier)
+    this.append(this.sanitizeIdentifier(node.identifier))
   }
 
   protected override visitFilter(node: FilterNode): void {
@@ -1139,6 +1139,30 @@ export class DefaultQueryCompiler
 
   protected getCurrentParameterPlaceholder(): string {
     return '$' + this.numParameters
+  }
+
+  protected sanitizeIdentifier(identifier: string): string {
+    if (!isString(identifier)) {
+      throw new Error(
+        'a non-string identifier was passed to sanitizeIdentifier.'
+      )
+    }
+
+    const leftWrap = this.getLeftIdentifierWrapper()
+    const rightWrap = this.getRightIdentifierWrapper()
+
+    let sanitized = ''
+    for (const c of identifier) {
+      sanitized += c
+
+      if (c === leftWrap) {
+        sanitized += leftWrap
+      } else if (c === rightWrap) {
+        sanitized += rightWrap
+      }
+    }
+
+    return sanitized
   }
 
   protected addParameter(parameter: unknown): void {

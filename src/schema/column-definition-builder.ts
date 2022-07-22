@@ -16,6 +16,7 @@ import {
 } from '../parser/default-value-parser.js'
 import { GeneratedNode } from '../operation-node/generated-node.js'
 import { DefaultValueNode } from '../operation-node/default-value-node.js'
+import { parseOnModifyForeignAction } from '../parser/on-modify-action-parser.js'
 
 export interface ColumnDefinitionBuilderInterface {
   /**
@@ -236,7 +237,7 @@ export class ColumnDefinitionBuilder
       ColumnDefinitionNode.cloneWith(this.#node, {
         references: ReferencesNode.cloneWithOnDelete(
           this.#node.references,
-          onDelete
+          parseOnModifyForeignAction(onDelete)
         ),
       })
     )
@@ -251,7 +252,7 @@ export class ColumnDefinitionBuilder
       ColumnDefinitionNode.cloneWith(this.#node, {
         references: ReferencesNode.cloneWithOnUpdate(
           this.#node.references,
-          onUpdate
+          parseOnModifyForeignAction(onUpdate)
         ),
       })
     )

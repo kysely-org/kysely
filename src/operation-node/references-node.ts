@@ -2,13 +2,19 @@ import { OperationNode } from './operation-node.js'
 import { ColumnNode } from './column-node.js'
 import { TableNode } from './table-node.js'
 import { freeze } from '../util/object-utils.js'
+import { ArrayItemType } from '../util/type-utils.js'
 
-export type OnModifyForeignAction =
-  | 'no action'
-  | 'restrict'
-  | 'cascade'
-  | 'set null'
-  | 'set default'
+export const ON_MODIFY_FOREIGN_ACTIONS = [
+  'no action',
+  'restrict',
+  'cascade',
+  'set null',
+  'set default',
+] as const
+
+export type OnModifyForeignAction = ArrayItemType<
+  typeof ON_MODIFY_FOREIGN_ACTIONS
+>
 
 export interface ReferencesNode extends OperationNode {
   readonly kind: 'ReferencesNode'

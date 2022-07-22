@@ -23,6 +23,7 @@ import { UniqueConstraintNode } from '../operation-node/unique-constraint-node.j
 import { CheckConstraintNode } from '../operation-node/check-constraint-node.js'
 import { AnyRawBuilder } from '../util/type-utils.js'
 import { parseTable } from '../parser/table-parser.js'
+import { parseOnCommitAction } from '../parser/on-commit-action-parse.js'
 
 /**
  * This builder can be used to create a `create table` query.
@@ -60,7 +61,7 @@ export class CreateTableBuilder<TB extends string, C extends string = never>
     return new CreateTableBuilder({
       ...this.#props,
       createTableNode: CreateTableNode.cloneWith(this.#props.createTableNode, {
-        onCommit,
+        onCommit: parseOnCommitAction(onCommit),
       }),
     })
   }
