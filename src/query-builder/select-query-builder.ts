@@ -60,13 +60,16 @@ import { NoResultError, NoResultErrorConstructor } from './no-result-error.js'
 import { HavingInterface } from './having-interface.js'
 import { IdentifierNode } from '../operation-node/identifier-node.js'
 import { AliasedRawBuilder } from '../raw-builder/raw-builder.js'
+import { Explainable } from '../util/explainable.js'
+import { ExplainFormat, ExplainNode } from '../operation-node/explain-node.js'
 
 export class SelectQueryBuilder<DB, TB extends keyof DB, O>
   implements
     WhereInterface<DB, TB>,
     HavingInterface<DB, TB>,
     OperationNodeSource,
-    Compilable
+    Compilable,
+    Explainable
 {
   readonly #props: SelectQueryBuilderProps
 
@@ -1515,10 +1518,10 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    * Also see the {@link executeTakeFirst} and {@link executeTakeFirstOrThrow} methods.
    */
   async execute(): Promise<O[]> {
-    const compildQuery = this.compile()
+    const compiledQuery = this.compile()
 
     const result = await this.#props.executor.executeQuery<O>(
-      compildQuery,
+      compiledQuery,
       this.#props.queryId
     )
 
@@ -1592,6 +1595,38 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
     for await (const item of stream) {
       yield* item.rows
     }
+  }
+
+  /**
+   * Executes select query as explain statement.
+   *
+   * ```ts
+   * const explained = await db
+   *  .selectFrom('person')
+   *  .selectAll()
+   *  .where('gender', '=', 'female')
+   *  .explain('json')
+   *
+   * console.log('explained', explained)
+   * ```
+   *
+   * ```sql
+   * explain format=json select * from `person` where `gender` = ?
+   * ```
+   */
+  async explain(format?: ExplainFormat): Promise<any[]>
+  async explain(options?: AnyRawBuilder): Promise<any[]>
+
+  async explain(
+    formatOrOptions?: ExplainFormat | AnyRawBuilder
+  ): Promise<any[]> {
+    return await new SelectQueryBuilder({
+      ...this.#props,
+      queryNode: SelectQueryNode.cloneWithExplain(
+        this.#props.queryNode,
+        ExplainNode.create(formatOrOptions)
+      ),
+    }).execute()
   }
 }
 
