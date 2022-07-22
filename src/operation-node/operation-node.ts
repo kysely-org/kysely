@@ -68,6 +68,7 @@ export type OperationNodeKind =
   | 'SelectModifierNode'
   | 'CreateTypeNode'
   | 'DropTypeNode'
+  | 'ExplainNode'
 
 export interface OperationNode {
   readonly kind: OperationNodeKind
