@@ -646,7 +646,7 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
   }
 
   /**
-   * Executes select query as explain statement.
+   * Executes delete query as explain statement.
    *
    * ```ts
    * const explained = await db

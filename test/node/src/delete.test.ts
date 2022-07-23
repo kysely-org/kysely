@@ -156,5 +156,46 @@ for (const dialect of BUILT_IN_DIALECTS) {
         expect(result.last_name).to.equal('Aniston')
       })
     }
+
+    if (dialect === 'mysql' || dialect === 'postgres') {
+      it('should be explainable', async () => {
+        const query = ctx.db
+          .deleteFrom('person')
+          .where('id', '=', 123)
+          .explain('json')
+
+        testSql(query, dialect, {
+          postgres: {
+            sql: 'explain (format json) delete from "person" where "id" = $1',
+            parameters: [123],
+          },
+          mysql: {
+            sql: 'explain format=json delete from `person` where `id` = ?',
+            parameters: [123],
+          },
+          sqlite: NOT_SUPPORTED,
+        })
+
+        await query.execute()
+      })
+    } else {
+      it('should be explainable', async () => {
+        const query = ctx.db
+          .deleteFrom('person')
+          .where('id', '=', 123)
+          .explain()
+
+        testSql(query, dialect, {
+          postgres: NOT_SUPPORTED,
+          mysql: NOT_SUPPORTED,
+          sqlite: {
+            sql: 'explain delete from "person" where "id" = ?',
+            parameters: [123],
+          },
+        })
+
+        await query.execute()
+      })
+    }
   })
 }
