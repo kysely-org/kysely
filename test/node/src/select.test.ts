@@ -641,6 +641,51 @@ for (const dialect of BUILT_IN_DIALECTS) {
       }
     }
 
+    if (dialect === 'mysql' || dialect === 'postgres') {
+      it('should be explainable', async () => {
+        const query = ctx.db
+          .selectFrom('person')
+          .distinct()
+          .select('gender')
+          .orderBy('gender')
+          .explain('json')
+
+        testSql(query, dialect, {
+          postgres: {
+            sql: 'explain (format json) select distinct "gender" from "person" order by "gender"',
+            parameters: [],
+          },
+          mysql: {
+            sql: 'explain format=json select distinct `gender` from `person` order by `gender`',
+            parameters: [],
+          },
+          sqlite: NOT_SUPPORTED,
+        })
+
+        await query.execute()
+      })
+    } else {
+      it('should be explainable', async () => {
+        const query = ctx.db
+          .selectFrom('person')
+          .distinct()
+          .select('gender')
+          .orderBy('gender')
+          .explain()
+
+        testSql(query, dialect, {
+          postgres: NOT_SUPPORTED,
+          mysql: NOT_SUPPORTED,
+          sqlite: {
+            sql: 'explain select distinct "gender" from "person" order by "gender"',
+            parameters: [],
+          },
+        })
+
+        await query.execute()
+      })
+    }
+
     it.skip('perf', async () => {
       const ids = Array.from({ length: 100 }).map(() =>
         Math.round(Math.random() * 1000)
