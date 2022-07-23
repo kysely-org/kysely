@@ -743,7 +743,7 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
   }
 
   /**
-   * Executes update query as explain statement.
+   * Adds `explain` statement before `update` keyword.
    *
    * ```ts
    * const explained = await db
@@ -758,10 +758,10 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
    * explain format=json update `person` set `first_name` = ?, `last_name` = ? where `id` = ?
    * ```
    */
-  explain(
+  explain<ER extends Record<string, any> = Record<string, any>>(
     format?: ExplainFormat,
     options?: AnyRawBuilder
-  ): UpdateQueryBuilder<DB, UT, TB, any> {
+  ): UpdateQueryBuilder<DB, UT, TB, ER> {
     return new UpdateQueryBuilder({
       ...this.#props,
       queryNode: UpdateQueryNode.cloneWithExplain(

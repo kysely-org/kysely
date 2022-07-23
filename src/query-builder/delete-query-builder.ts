@@ -647,7 +647,7 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
   }
 
   /**
-   * Executes delete query as explain statement.
+   * Adds `explain` statement before `delete` keyword.
    *
    * ```ts
    * const explained = await db
@@ -661,10 +661,10 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
    * explain format=json delete from `person` where `id` = ?
    * ```
    */
-  explain(
+  explain<ER extends Record<string, any> = Record<string, any>>(
     format?: ExplainFormat,
     options?: AnyRawBuilder
-  ): DeleteQueryBuilder<DB, TB, any> {
+  ): DeleteQueryBuilder<DB, TB, ER> {
     return new DeleteQueryBuilder({
       ...this.#props,
       queryNode: DeleteQueryNode.cloneWithExplain(

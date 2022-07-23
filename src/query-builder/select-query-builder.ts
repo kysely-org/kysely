@@ -1598,7 +1598,7 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
   }
 
   /**
-   * Executes select query as explain statement.
+   * Adds `explain` statement before `select` keyword.
    *
    * ```ts
    * const explained = await db
@@ -1613,10 +1613,10 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    * explain format=json select * from `person` where `gender` = ?
    * ```
    */
-  explain(
+  explain<ER extends Record<string, any> = Record<string, any>>(
     format?: ExplainFormat,
     options?: AnyRawBuilder
-  ): SelectQueryBuilder<DB, TB, any> {
+  ): SelectQueryBuilder<DB, TB, ER> {
     return new SelectQueryBuilder({
       ...this.#props,
       queryNode: SelectQueryNode.cloneWithExplain(

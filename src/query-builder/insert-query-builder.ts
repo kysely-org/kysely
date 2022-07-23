@@ -690,7 +690,7 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
   }
 
   /**
-   * Executes insert query as explain statement.
+   * Adds `explain` statement before `insert` keyword.
    *
    * ```ts
    * const explained = await db
@@ -704,10 +704,10 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    * explain format=json insert into `person` (`id`, `first_name`, `last_name`) values (?, ?, ?) (?, ?, ?)
    * ```
    */
-  explain(
+  explain<ER extends Record<string, any> = Record<string, any>>(
     format?: ExplainFormat,
     options?: AnyRawBuilder
-  ): InsertQueryBuilder<DB, TB, any> {
+  ): InsertQueryBuilder<DB, TB, ER> {
     return new InsertQueryBuilder({
       ...this.#props,
       queryNode: InsertQueryNode.cloneWith(this.#props.queryNode, {
