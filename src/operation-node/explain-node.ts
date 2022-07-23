@@ -22,7 +22,7 @@ export const ExplainNode = freeze({
     return freeze({
       kind: 'ExplainNode',
       format,
-      options: options !== undefined ? options.toOperationNode() : undefined,
+      options: options?.toOperationNode(),
     })
   },
 })
