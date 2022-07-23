@@ -10,6 +10,7 @@ import {
 import { ExplainTransformer } from './explain-transformer.js'
 
 export interface ExplainPluginOptions {
+  enabled?: boolean
   format?: ExplainFormat
   raw?: AnyRawBuilder
 }

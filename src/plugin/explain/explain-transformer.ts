@@ -39,7 +39,7 @@ export class ExplainTransformer extends OperationNodeTransformer {
       | UpdateQueryNode
       | DeleteQueryNode
   >(node: T): T {
-    if (node.explain) {
+    if (!this.#opt.enabled || node.explain) {
       return node
     }
 
