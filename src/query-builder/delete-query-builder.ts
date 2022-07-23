@@ -51,7 +51,7 @@ import {
 } from '../parser/order-by-parser.js'
 import { AliasedQueryBuilder } from './select-query-builder.js'
 import { AliasedRawBuilder } from '../raw-builder/raw-builder.js'
-import { ExplainFormat } from '../util/explainable.js'
+import { Explainable, ExplainFormat } from '../util/explainable.js'
 import { ExplainNode } from '../operation-node/explain-node.js'
 
 export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
@@ -59,7 +59,8 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
     WhereInterface<DB, TB>,
     ReturningInterface<DB, TB, O>,
     OperationNodeSource,
-    Compilable
+    Compilable,
+    Explainable
 {
   readonly #props: DeleteQueryBuilderProps
 
