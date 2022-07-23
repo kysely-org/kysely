@@ -10,5 +10,8 @@ export type ExplainFormat =
   | 'tree'
 
 export interface Explainable {
-  explain(format?: ExplainFormat, options?: AnyRawBuilder): Compilable
+  explain<O extends Record<string, any> = Record<string, any>>(
+    format?: ExplainFormat,
+    options?: AnyRawBuilder
+  ): Promise<O[]>
 }

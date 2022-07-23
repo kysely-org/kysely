@@ -1598,32 +1598,33 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
   }
 
   /**
-   * Adds `explain` statement before `select` keyword.
+   * Executes query with `explain` statement before `select` keyword.
    *
    * ```ts
    * const explained = await db
    *  .selectFrom('person')
-   *  .explain('json')
-   *  .selectAll()
    *  .where('gender', '=', 'female')
-   *  .execute()
+   *  .selectAll()
+   *  .explain('json')
    * ```
    *
    * ```sql
    * explain format=json select * from `person` where `gender` = ?
    * ```
    */
-  explain<ER extends Record<string, any> = Record<string, any>>(
+  async explain<ER extends Record<string, any> = Record<string, any>>(
     format?: ExplainFormat,
     options?: AnyRawBuilder
-  ): SelectQueryBuilder<DB, TB, ER> {
-    return new SelectQueryBuilder({
+  ): Promise<ER[]> {
+    const builder = new SelectQueryBuilder<DB, TB, ER>({
       ...this.#props,
       queryNode: SelectQueryNode.cloneWithExplain(
         this.#props.queryNode,
         ExplainNode.create(format, options)
       ),
     })
+
+    return await builder.execute()
   }
 }
 

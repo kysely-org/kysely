@@ -647,31 +647,32 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
   }
 
   /**
-   * Adds `explain` statement before `delete` keyword.
+   * Executes query with `explain` statement before `delete` keyword.
    *
    * ```ts
    * const explained = await db
    *  .deleteFrom('person')
-   *  .explain('json')
    *  .where('id', '=', 123)
-   *  .execute()
+   *  .explain('json')
    * ```
    *
    * ```sql
    * explain format=json delete from `person` where `id` = ?
    * ```
    */
-  explain<ER extends Record<string, any> = Record<string, any>>(
+  async explain<ER extends Record<string, any> = Record<string, any>>(
     format?: ExplainFormat,
     options?: AnyRawBuilder
-  ): DeleteQueryBuilder<DB, TB, ER> {
-    return new DeleteQueryBuilder({
+  ): Promise<ER[]> {
+    const builder = new DeleteQueryBuilder<DB, TB, ER>({
       ...this.#props,
       queryNode: DeleteQueryNode.cloneWithExplain(
         this.#props.queryNode,
         ExplainNode.create(format, options)
       ),
     })
+
+    return await builder.execute()
   }
 }
 
