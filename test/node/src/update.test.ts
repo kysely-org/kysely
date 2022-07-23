@@ -230,5 +230,52 @@ for (const dialect of BUILT_IN_DIALECTS) {
         expect(result[0].first_name).to.equal('Doggo')
       })
     }
+
+    if (dialect === 'mysql' || dialect === 'postgres') {
+      it('should be explainable', async () => {
+        const query = ctx.db
+          .updateTable('person')
+          .set({
+            first_name: 'jennifer',
+          })
+          .where('id', '=', 123)
+          .explain('json')
+
+        testSql(query, dialect, {
+          postgres: {
+            sql: 'explain (format json) update "person" set "first_name" = $1 where "id" = $2',
+            parameters: ['jennifer', 123],
+          },
+          mysql: {
+            sql: 'explain format=json update `person` set `first_name` = ? where `id` = ?',
+            parameters: ['jennifer', 123],
+          },
+          sqlite: NOT_SUPPORTED,
+        })
+
+        await query.execute()
+      })
+    } else {
+      it('should be explainable', async () => {
+        const query = ctx.db
+          .updateTable('person')
+          .set({
+            first_name: 'jennifer',
+          })
+          .where('id', '=', 123)
+          .explain()
+
+        testSql(query, dialect, {
+          postgres: NOT_SUPPORTED,
+          mysql: NOT_SUPPORTED,
+          sqlite: {
+            sql: 'explain update "person" set "first_name" = ? where "id" = ?',
+            parameters: ['jennifer', 123],
+          },
+        })
+
+        await query.execute()
+      })
+    }
   })
 }
