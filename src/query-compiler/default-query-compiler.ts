@@ -1139,13 +1139,25 @@ export class DefaultQueryCompiler
   protected override visitExplain(node: ExplainNode): void {
     this.append('explain')
 
-    if (node.options) {
+    if (node.options || node.format) {
       this.append(' ')
-      this.visitNode(node.options)
-    }
+      this.append(this.getLeftExplainOptionsWrapper())
 
-    if (node.format) {
-      this.append(` format=${node.format}`)
+      if (node.options) {
+        this.visitNode(node.options)
+
+        if (node.format) {
+          this.append(this.getExplainOptionsDelimiter())
+        }
+      }
+
+      if (node.format) {
+        this.append('format')
+        this.append(this.getExplainOptionAssignment())
+        this.append(node.format)
+      }
+
+      this.append(this.getRightExplainOptionsWrapper())
     }
   }
 
@@ -1168,6 +1180,22 @@ export class DefaultQueryCompiler
 
   protected getCurrentParameterPlaceholder(): string {
     return '$' + this.numParameters
+  }
+
+  protected getLeftExplainOptionsWrapper(): string {
+    return ''
+  }
+
+  protected getExplainOptionAssignment(): string {
+    return ' '
+  }
+
+  protected getExplainOptionsDelimiter(): string {
+    return ' '
+  }
+
+  protected getRightExplainOptionsWrapper(): string {
+    return ''
   }
 
   protected sanitizeIdentifier(identifier: string): string {
