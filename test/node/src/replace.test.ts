@@ -186,28 +186,6 @@ describe(`${dialect}: replace`, () => {
       species: 'hamster',
     })
   })
-
-  it('should be explainable', async () => {
-    const query = ctx.db
-      .replaceInto('person')
-      .values({
-        first_name: 'jennifer',
-        last_name: 'aniston',
-        gender: 'female',
-      })
-      .explain('json')
-
-    testSql(query, dialect, {
-      postgres: NOT_SUPPORTED,
-      mysql: {
-        sql: 'explain format=json replace into `person` (`first_name`, `last_name`, `gender`) values (?, ?, ?)',
-        parameters: ['jennifer', 'aniston', 'female'],
-      },
-      sqlite: NOT_SUPPORTED,
-    })
-
-    await query.execute()
-  })
 })
 
 async function getNewestPerson(
