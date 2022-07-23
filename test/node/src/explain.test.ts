@@ -1,6 +1,6 @@
 import { expect } from 'chai'
 import { createSandbox, SinonSpy } from 'sinon'
-import { DefaultQueryExecutor, ExplainPlugin } from '../../..'
+import { DefaultQueryExecutor, ExplainPlugin } from '../../../'
 import {
   BUILT_IN_DIALECTS,
   clearDatabase,
