@@ -1,4 +1,4 @@
-import { Kysely, PostgresDialect, SelectQueryBuilder, sql } from '../../../'
+import { Kysely, PostgresDialect, sql } from '../../../'
 import { Pool } from 'pg'
 
 import {
