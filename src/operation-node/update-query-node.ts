@@ -9,6 +9,7 @@ import { ValueListNode } from './value-list-node.js'
 import { WhereNode } from './where-node.js'
 import { WithNode } from './with-node.js'
 import { FromNode } from './from-node.js'
+import { ExplainNode } from './explain-node.js'
 
 export type UpdateValuesNode = ValueListNode | PrimitiveValueListNode
 
@@ -21,6 +22,7 @@ export interface UpdateQueryNode extends OperationNode {
   readonly updates?: ReadonlyArray<ColumnUpdateNode>
   readonly returning?: ReturningNode
   readonly with?: WithNode
+  readonly explain?: ExplainNode
 }
 
 /**
@@ -60,6 +62,16 @@ export const UpdateQueryNode = freeze({
       updates: updateQuery.updates
         ? freeze([...updateQuery.updates, ...updates])
         : updates,
+    })
+  },
+
+  cloneWithExplain(
+    updateQuery: UpdateQueryNode,
+    explain: ExplainNode
+  ): UpdateQueryNode {
+    return freeze({
+      ...updateQuery,
+      explain,
     })
   },
 })

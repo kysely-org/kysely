@@ -473,6 +473,7 @@ export class OperationNodeTransformer {
       updates: this.transformNodeList(node.updates),
       returning: this.transformNode(node.returning),
       with: this.transformNode(node.with),
+      explain: this.transformNode(node.explain),
     })
   }
 
