@@ -309,6 +309,11 @@ export class DefaultQueryCompiler
   protected override visitDeleteQuery(node: DeleteQueryNode): void {
     const isSubQuery = this.nodeStack.find(QueryNode.is) !== node
 
+    if (!isSubQuery && node.explain) {
+      this.visitNode(node.explain)
+      this.append(' ')
+    }
+
     if (isSubQuery) {
       this.append('(')
     }

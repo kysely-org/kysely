@@ -51,6 +51,8 @@ import {
 } from '../parser/order-by-parser.js'
 import { AliasedQueryBuilder } from './select-query-builder.js'
 import { AliasedRawBuilder } from '../raw-builder/raw-builder.js'
+import { ExplainFormat } from '../util/explainable.js'
+import { ExplainNode } from '../operation-node/explain-node.js'
 
 export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
   implements
@@ -641,6 +643,34 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
     }
 
     return result as O
+  }
+
+  /**
+   * Executes select query as explain statement.
+   *
+   * ```ts
+   * const explained = await db
+   *  .deleteFrom('person')
+   *  .explain('json')
+   *  .where('id', '=', 123)
+   *  .execute()
+   * ```
+   *
+   * ```sql
+   * explain format=json delete from `person` where `id` = ?
+   * ```
+   */
+  explain(
+    format?: ExplainFormat,
+    options?: AnyRawBuilder
+  ): DeleteQueryBuilder<DB, TB, any> {
+    return new DeleteQueryBuilder({
+      ...this.#props,
+      queryNode: DeleteQueryNode.cloneWithExplain(
+        this.#props.queryNode,
+        ExplainNode.create(format, options)
+      ),
+    })
   }
 }
 
