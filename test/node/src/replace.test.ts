@@ -207,6 +207,7 @@ describe(`${dialect}: replace`, () => {
     })
 
     await query.execute()
+  })
 })
 
 async function getNewestPerson(
