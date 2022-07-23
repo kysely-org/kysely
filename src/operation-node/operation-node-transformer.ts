@@ -374,6 +374,7 @@ export class OperationNodeTransformer {
       with: this.transformNode(node.with),
       orderBy: this.transformNode(node.orderBy),
       limit: this.transformNode(node.limit),
+      explain: this.transformNode(node.explain),
     })
   }
 
