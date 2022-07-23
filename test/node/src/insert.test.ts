@@ -585,6 +585,55 @@ for (const dialect of BUILT_IN_DIALECTS) {
         })
       })
     }
+
+    if (dialect === 'mysql' || dialect === 'postgres') {
+      it('should be explainable', async () => {
+        const query = ctx.db
+          .insertInto('person')
+          .values({
+            first_name: 'jennifer',
+            last_name: 'aniston',
+            gender: 'female',
+          })
+          .explain('json')
+
+        testSql(query, dialect, {
+          postgres: {
+            sql: 'explain (format json) insert into "person" ("first_name", "last_name", "gender") values ($1, $2, $3)',
+            parameters: ['jennifer', 'aniston', 'female'],
+          },
+          mysql: {
+            sql: 'explain format=json insert into `person` (`first_name`, `last_name`, `gender`) values (?, ?, ?)',
+            parameters: ['jennifer', 'aniston', 'female'],
+          },
+          sqlite: NOT_SUPPORTED,
+        })
+
+        await query.execute()
+      })
+    } else {
+      it('should be explainable', async () => {
+        const query = ctx.db
+          .insertInto('person')
+          .values({
+            first_name: 'jennifer',
+            last_name: 'aniston',
+            gender: 'female',
+          })
+          .explain()
+
+        testSql(query, dialect, {
+          postgres: NOT_SUPPORTED,
+          mysql: NOT_SUPPORTED,
+          sqlite: {
+            sql: 'explain insert into "person" ("first_name", "last_name", "gender") values (?, ?, ?)',
+            parameters: ['jennifer', 'aniston', 'female'],
+          },
+        })
+
+        await query.execute()
+      })
+    }
   })
 
   async function getNewestPerson(
