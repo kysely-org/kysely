@@ -169,6 +169,7 @@ export * from './operation-node/explain-node.js'
 
 export * from './util/column-type.js'
 export * from './util/compilable.js'
+export * from './util/explainable.js'
 export * from './util/log.js'
 export {
   AnyColumn,
