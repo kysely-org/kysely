@@ -22,7 +22,7 @@ import { RootOperationNode } from '../query-compiler/query-compiler.js'
 /**
  * @internal
  */
-export class TableTransformer extends OperationNodeTransformer {
+export class TableTransformerBase extends OperationNodeTransformer {
   readonly #tables = new Set<string>()
 
   protected override transformSelectQuery(

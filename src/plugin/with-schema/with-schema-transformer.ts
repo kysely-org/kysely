@@ -1,7 +1,7 @@
 import { TableNode } from '../../operation-node/table-node.js'
-import { TableTransformer } from '../table-transformer.js'
+import { TableTransformerBase } from '../table-transformer-base.js'
 
-export class WithSchemaTransformer extends TableTransformer {
+export class WithSchemaTransformer extends TableTransformerBase {
   readonly #schema: string
 
   constructor(schema: string) {

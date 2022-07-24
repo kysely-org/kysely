@@ -1,8 +1,8 @@
 import { TableNode } from '../../operation-node/table-node.js'
-import { TableTransformer } from '../table-transformer.js'
+import { TableTransformerBase } from '../table-transformer-base.js'
 import { WithTablePrefixSuffixPluginOptions } from './with-table-prefix-suffix-plugin.js'
 
-export class WithTablePrefixSuffixTransformer extends TableTransformer {
+export class WithTablePrefixSuffixTransformer extends TableTransformerBase {
   readonly #opt: WithTablePrefixSuffixPluginOptions
 
   constructor(opt: WithTablePrefixSuffixPluginOptions) {
