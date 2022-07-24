@@ -21,7 +21,12 @@ import {
   ExpressionBuilder,
 } from '.'
 
-import { expectType, expectError, expectAssignable } from 'tsd'
+import {
+  expectType,
+  expectError,
+  expectAssignable,
+  expectNotAssignable,
+} from 'tsd'
 
 interface Person {
   id: Generated<number>
@@ -1319,4 +1324,117 @@ async function testReplace(db: Kysely<Database>) {
   expectError(db.replaceInto('book').values({ id: 1, name: 'foo' }))
 
   db.replaceInto('book').values({ name: 'bar' })
+}
+
+async function testFunctionBuilder(db: Kysely<Database>) {
+  const { avg, count, max, min, sum } = db.fn
+
+  // most common use-case.. default generics.
+  const r0 = await db
+    .selectFrom('person')
+    .select(avg('age').as('avg_age'))
+    .select(count('age').as('total_people'))
+    .select(max('age').as('max_age'))
+    .select(min('age').as('min_age'))
+    .select(sum('age').as('total_age'))
+    .executeTakeFirstOrThrow()
+
+  expectAssignable<string | number>(r0.avg_age)
+  expectAssignable<string | number | bigint>(r0.total_people)
+  expectAssignable<number>(r0.max_age)
+  expectAssignable<number>(r0.min_age)
+  expectAssignable<string | number | bigint>(r0.total_age)
+
+  // documented case.. passing specific output type.
+  const r1 = await db
+    .selectFrom('person')
+    .select(avg<number>('age').as('avg_age'))
+    .select(count<number>('age').as('total_people'))
+    .select(max('age').as('max_age'))
+    .select(min('age').as('min_age'))
+    .select(sum<number>('age').as('total_age'))
+    .executeTakeFirstOrThrow()
+
+  expectAssignable<number>(r1.avg_age)
+  expectNotAssignable<string | bigint>(r1.avg_age)
+  expectAssignable<number>(r1.total_people)
+  expectNotAssignable<string | bigint>(r1.total_people)
+  expectAssignable<number>(r1.max_age)
+  expectNotAssignable<string | bigint>(r1.max_age)
+  expectAssignable<number>(r1.min_age)
+  expectNotAssignable<string | bigint>(r1.min_age)
+  expectAssignable<number>(r1.total_age)
+  expectNotAssignable<string | bigint>(r1.total_age)
+
+  // no such column cases...
+
+  expectError(
+    db
+      .selectFrom('person')
+      .select(avg('no_such_column').as('avg_age'))
+      .executeTakeFirstOrThrow()
+  )
+
+  expectError(
+    db
+      .selectFrom('person')
+      .select(avg<number>('no_such_column').as('avg_age'))
+      .executeTakeFirstOrThrow()
+  )
+
+  expectError(
+    db
+      .selectFrom('person')
+      .select(count('no_such_column').as('total_people'))
+      .executeTakeFirstOrThrow()
+  )
+
+  expectError(
+    db
+      .selectFrom('person')
+      .select(count<number>('no_such_column').as('total_people'))
+      .executeTakeFirstOrThrow()
+  )
+
+  expectError(
+    db
+      .selectFrom('person')
+      .select(max('no_such_column').as('max_age'))
+      .executeTakeFirstOrThrow()
+  )
+
+  expectError(
+    db
+      .selectFrom('person')
+      .select(max<number>('no_such_column').as('max_age'))
+      .executeTakeFirstOrThrow()
+  )
+
+  expectError(
+    db
+      .selectFrom('person')
+      .select(min('no_such_column').as('min_age'))
+      .executeTakeFirstOrThrow()
+  )
+
+  expectError(
+    db
+      .selectFrom('person')
+      .select(min<number>('no_such_column').as('min_age'))
+      .executeTakeFirstOrThrow()
+  )
+
+  expectError(
+    db
+      .selectFrom('person')
+      .select(sum('no_such_column').as('total_age'))
+      .executeTakeFirstOrThrow()
+  )
+
+  expectError(
+    db
+      .selectFrom('person')
+      .select(sum<number>('no_such_column').as('total_age'))
+      .executeTakeFirstOrThrow()
+  )
 }
