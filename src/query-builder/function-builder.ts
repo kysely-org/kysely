@@ -108,9 +108,10 @@ export class FunctionBuilder<DB, TB extends keyof DB> {
    *   .execute()
    * ```
    */
-  avg<O extends number | string, C extends StringReference<DB, TB> = any>(
-    column: C
-  ): RawBuilder<O> {
+  avg<
+    O extends number | string,
+    C extends StringReference<DB, TB> = StringReference<DB, TB>
+  >(column: C): RawBuilder<O> {
     return this.#oneArgFunction('avg', column)
   }
 
@@ -137,7 +138,7 @@ export class FunctionBuilder<DB, TB extends keyof DB> {
    */
   sum<
     O extends number | string | bigint,
-    C extends StringReference<DB, TB> = any
+    C extends StringReference<DB, TB> = StringReference<DB, TB>
   >(column: C): RawBuilder<O> {
     return this.#oneArgFunction('sum', column)
   }
@@ -165,7 +166,7 @@ export class FunctionBuilder<DB, TB extends keyof DB> {
    */
   count<
     O extends number | string | bigint,
-    C extends StringReference<DB, TB> = any
+    C extends StringReference<DB, TB> = StringReference<DB, TB>
   >(column: C): RawBuilder<O> {
     return this.#oneArgFunction('count', column)
   }
