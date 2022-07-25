@@ -835,7 +835,10 @@ export class OperationNodeTransformer {
   }
 
   protected transformExplain(node: ExplainNode): ExplainNode {
-    // An Object.freezed leaf node. No need to clone.
-    return node
+    return requireAllProps({
+      kind: 'ExplainNode',
+      format: node.format,
+      options: this.transformNode(node.options),
+    })
   }
 }
