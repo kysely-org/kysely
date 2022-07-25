@@ -1,12 +1,13 @@
 import { expect } from 'chai'
 import { createSandbox, SinonSpy } from 'sinon'
-import { DefaultQueryExecutor } from '../../../'
+import { DefaultQueryExecutor, sql } from '../../../'
 import {
   BUILT_IN_DIALECTS,
   clearDatabase,
   destroyTest,
   initTest,
   insertDefaultDataSet,
+  NOT_SUPPORTED,
   TestContext,
 } from './test-setup.js'
 
@@ -103,6 +104,46 @@ for (const dialect of BUILT_IN_DIALECTS) {
         expect(executeQuerySpy.calledOnce).to.be.true
         expect(executeQuerySpy.getCall(0).args[0].sql).to.equal(
           'explain replace into `person` (`id`, `gender`) values (?, ?)'
+        )
+      })
+    }
+
+    if (dialect === 'postgres') {
+      it('should add explain statement before select, with analyze', async () => {
+        await ctx.db
+          .selectFrom('person')
+          .where('id', '=', 123)
+          .selectAll()
+          .explain('json', sql`analyze`)
+
+        expect(executeQuerySpy.calledOnce).to.be.true
+        expect(executeQuerySpy.getCall(0).args[0].sql).to.equal(
+          {
+            postgres:
+              'explain (analyze, format json) select * from "person" where "id" = $1',
+            mysql: NOT_SUPPORTED,
+            sqlite: NOT_SUPPORTED,
+          }[dialect]
+        )
+      })
+    }
+
+    if (dialect === 'mysql') {
+      it('should add explain statement before select, with analyze', async () => {
+        await ctx.db
+          .selectFrom('person')
+          .where('id', '=', 123)
+          .selectAll()
+          .explain('tree', sql`analyze`)
+
+        expect(executeQuerySpy.calledOnce).to.be.true
+        expect(executeQuerySpy.getCall(0).args[0].sql).to.equal(
+          {
+            postgres: NOT_SUPPORTED,
+            mysql:
+              'explain analyze format=tree select * from `person` where `id` = ?',
+            sqlite: NOT_SUPPORTED,
+          }[dialect]
         )
       })
     }
