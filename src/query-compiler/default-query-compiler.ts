@@ -1198,7 +1198,7 @@ export class DefaultQueryCompiler
   }
 
   protected getLeftExplainOptionsWrapper(): string {
-    return ')'
+    return '('
   }
 
   protected getExplainOptionAssignment(): string {
