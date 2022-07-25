@@ -656,6 +656,8 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
    *  .explain('json')
    * ```
    *
+   * The generated SQL (MySQL):
+   *
    * ```sql
    * explain format=json delete from `person` where `id` = ?
    * ```

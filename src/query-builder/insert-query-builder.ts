@@ -699,6 +699,8 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    *  .explain('json')
    * ```
    *
+   * The generated SQL (MySQL):
+   *
    * ```sql
    * explain format=json insert into `person` (`id`, `first_name`, `last_name`) values (?, ?, ?) (?, ?, ?)
    * ```

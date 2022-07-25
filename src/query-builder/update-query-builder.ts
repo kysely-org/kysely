@@ -753,6 +753,8 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
    *  .explain('json')
    * ```
    *
+   * The generated SQL (MySQL):
+   *
    * ```sql
    * explain format=json update `person` set `first_name` = ?, `last_name` = ? where `id` = ?
    * ```
