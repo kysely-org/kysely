@@ -354,7 +354,7 @@ export class OperationNodeTransformer {
       with: this.transformNode(node.with),
       ignore: node.ignore,
       replace: node.replace,
-      explain: node.explain,
+      explain: this.transformNode(node.explain),
     })
   }
 
