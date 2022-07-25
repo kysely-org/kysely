@@ -1198,7 +1198,7 @@ export class DefaultQueryCompiler
   }
 
   protected getLeftExplainOptionsWrapper(): string {
-    return ''
+    return ')'
   }
 
   protected getExplainOptionAssignment(): string {
@@ -1206,11 +1206,11 @@ export class DefaultQueryCompiler
   }
 
   protected getExplainOptionsDelimiter(): string {
-    return ' '
+    return ', '
   }
 
   protected getRightExplainOptionsWrapper(): string {
-    return ''
+    return ')'
   }
 
   protected sanitizeIdentifier(identifier: string): string {

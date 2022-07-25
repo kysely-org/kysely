@@ -5,8 +5,20 @@ export class MysqlQueryCompiler extends DefaultQueryCompiler {
     return '?'
   }
 
+  protected override getLeftExplainOptionsWrapper(): string {
+    return ''
+  }
+
   protected override getExplainOptionAssignment(): string {
     return '='
+  }
+
+  protected override getExplainOptionsDelimiter(): string {
+    return ' '
+  }
+
+  protected override getRightExplainOptionsWrapper(): string {
+    return ''
   }
 
   protected override getLeftIdentifierWrapper(): string {
