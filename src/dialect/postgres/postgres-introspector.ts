@@ -36,7 +36,12 @@ export class PostgresIntrospector implements DatabaseIntrospector {
     let query = this.#db
       .selectFrom('pg_catalog.pg_attribute as a')
       .innerJoin('pg_catalog.pg_class as c', 'a.attrelid', 'c.oid')
-      .innerJoin('pg_catalog.pg_tables as t', 't.tablename', 'c.relname')
+      .innerJoin('pg_catalog.pg_namespace as ns', 'c.relnamespace', 'ns.oid')
+      .innerJoin('pg_catalog.pg_tables as t', (join) =>
+        join
+          .onRef('t.tablename', '=', 'c.relname')
+          .onRef('t.schemaname', '=', 'ns.nspname')
+      )
       .innerJoin('pg_catalog.pg_type as typ', 'a.atttypid', 'typ.oid')
       .select([
         'a.attname as column',
