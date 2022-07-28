@@ -64,6 +64,9 @@ export class PostgresIntrospector implements DatabaseIntrospector {
       .where('t.schemaname', '!=', 'information_schema')
       .where('a.attnum', '>=', 0) // No system columns
       .where('a.attisdropped', '!=', true)
+      .orderBy('t.schemaname')
+      .orderBy('t.tablename')
+      .orderBy('a.attname')
       .castTo<RawColumnMetadata>()
 
     if (!options.withInternalKyselyTables) {
