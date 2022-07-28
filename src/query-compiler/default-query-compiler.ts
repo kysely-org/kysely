@@ -389,6 +389,12 @@ export class DefaultQueryCompiler
   }
 
   protected compileUnwrappedIdentifier(node: IdentifierNode): void {
+    if (!isString(node.identifier)) {
+      throw new Error(
+        'a non-string identifier was passed to compileUnwrappedIdentifier.'
+      )
+    }
+
     this.append(this.sanitizeIdentifier(node.identifier))
   }
 
@@ -1214,12 +1220,6 @@ export class DefaultQueryCompiler
   }
 
   protected sanitizeIdentifier(identifier: string): string {
-    if (!isString(identifier)) {
-      throw new Error(
-        'a non-string identifier was passed to sanitizeIdentifier.'
-      )
-    }
-
     const leftWrap = this.getLeftIdentifierWrapper()
     const rightWrap = this.getRightIdentifierWrapper()
 

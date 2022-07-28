@@ -32,6 +32,7 @@ export class SqliteIntrospector implements DatabaseIntrospector {
       .where('type', '=', 'table')
       .where('name', 'not like', 'sqlite_%')
       .select('name')
+      .orderBy('name')
       .castTo<{ name: string }>()
 
     if (!options.withInternalKyselyTables) {
@@ -80,6 +81,7 @@ export class SqliteIntrospector implements DatabaseIntrospector {
         }>`pragma_table_info(${table})`.as('table_info')
       )
       .select(['name', 'type', 'notnull', 'dflt_value'])
+      .orderBy('name')
       .execute()
 
     return {
