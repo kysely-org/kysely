@@ -85,6 +85,7 @@ import {
 } from '../operation-node/select-modifier-node.js'
 import { CreateTypeNode } from '../operation-node/create-type-node.js'
 import { DropTypeNode } from '../operation-node/drop-type-node.js'
+import { ExplainNode } from '../operation-node/explain-node.js'
 
 export class DefaultQueryCompiler
   extends OperationNodeVisitor
@@ -120,6 +121,11 @@ export class DefaultQueryCompiler
       !InsertQueryNode.is(this.parentNode) &&
       !CreateViewNode.is(this.parentNode) &&
       !UnionNode.is(this.parentNode)
+
+    if (this.parentNode === undefined && node.explain) {
+      this.visitNode(node.explain)
+      this.append(' ')
+    }
 
     if (wrapInParens) {
       this.append('(')
@@ -246,6 +252,11 @@ export class DefaultQueryCompiler
   protected override visitInsertQuery(node: InsertQueryNode): void {
     const isSubQuery = this.nodeStack.find(QueryNode.is) !== node
 
+    if (!isSubQuery && node.explain) {
+      this.visitNode(node.explain)
+      this.append(' ')
+    }
+
     if (isSubQuery) {
       this.append('(')
     }
@@ -302,6 +313,11 @@ export class DefaultQueryCompiler
 
   protected override visitDeleteQuery(node: DeleteQueryNode): void {
     const isSubQuery = this.nodeStack.find(QueryNode.is) !== node
+
+    if (!isSubQuery && node.explain) {
+      this.visitNode(node.explain)
+      this.append(' ')
+    }
 
     if (isSubQuery) {
       this.append('(')
@@ -626,6 +642,11 @@ export class DefaultQueryCompiler
 
   protected override visitUpdateQuery(node: UpdateQueryNode): void {
     const isSubQuery = this.nodeStack.find(QueryNode.is) !== node
+
+    if (!isSubQuery && node.explain) {
+      this.visitNode(node.explain)
+      this.append(' ')
+    }
 
     if (isSubQuery) {
       this.append('(')
@@ -1136,6 +1157,31 @@ export class DefaultQueryCompiler
     this.visitNode(node.name)
   }
 
+  protected override visitExplain(node: ExplainNode): void {
+    this.append('explain')
+
+    if (node.options || node.format) {
+      this.append(' ')
+      this.append(this.getLeftExplainOptionsWrapper())
+
+      if (node.options) {
+        this.visitNode(node.options)
+
+        if (node.format) {
+          this.append(this.getExplainOptionsDelimiter())
+        }
+      }
+
+      if (node.format) {
+        this.append('format')
+        this.append(this.getExplainOptionAssignment())
+        this.append(node.format)
+      }
+
+      this.append(this.getRightExplainOptionsWrapper())
+    }
+  }
+
   protected append(str: string): void {
     this.#sql += str
   }
@@ -1155,6 +1201,22 @@ export class DefaultQueryCompiler
 
   protected getCurrentParameterPlaceholder(): string {
     return '$' + this.numParameters
+  }
+
+  protected getLeftExplainOptionsWrapper(): string {
+    return '('
+  }
+
+  protected getExplainOptionAssignment(): string {
+    return ' '
+  }
+
+  protected getExplainOptionsDelimiter(): string {
+    return ', '
+  }
+
+  protected getRightExplainOptionsWrapper(): string {
+    return ')'
   }
 
   protected sanitizeIdentifier(identifier: string): string {

@@ -51,13 +51,16 @@ import {
 } from '../parser/order-by-parser.js'
 import { AliasedQueryBuilder } from './select-query-builder.js'
 import { AliasedRawBuilder } from '../raw-builder/raw-builder.js'
+import { Explainable, ExplainFormat } from '../util/explainable.js'
+import { ExplainNode } from '../operation-node/explain-node.js'
 
 export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
   implements
     WhereInterface<DB, TB>,
     ReturningInterface<DB, TB, O>,
     OperationNodeSource,
-    Compilable
+    Compilable,
+    Explainable
 {
   readonly #props: DeleteQueryBuilderProps
 
@@ -641,6 +644,37 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
     }
 
     return result as O
+  }
+
+  /**
+   * Executes query with `explain` statement before `delete` keyword.
+   *
+   * ```ts
+   * const explained = await db
+   *  .deleteFrom('person')
+   *  .where('id', '=', 123)
+   *  .explain('json')
+   * ```
+   *
+   * The generated SQL (MySQL):
+   *
+   * ```sql
+   * explain format=json delete from `person` where `id` = ?
+   * ```
+   */
+  async explain<ER extends Record<string, any> = Record<string, any>>(
+    format?: ExplainFormat,
+    options?: AnyRawBuilder
+  ): Promise<ER[]> {
+    const builder = new DeleteQueryBuilder<DB, TB, ER>({
+      ...this.#props,
+      queryNode: DeleteQueryNode.cloneWithExplain(
+        this.#props.queryNode,
+        ExplainNode.create(format, options)
+      ),
+    })
+
+    return await builder.execute()
   }
 }
 

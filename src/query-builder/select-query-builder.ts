@@ -60,13 +60,16 @@ import { NoResultError, NoResultErrorConstructor } from './no-result-error.js'
 import { HavingInterface } from './having-interface.js'
 import { IdentifierNode } from '../operation-node/identifier-node.js'
 import { AliasedRawBuilder } from '../raw-builder/raw-builder.js'
+import { Explainable, ExplainFormat } from '../util/explainable.js'
+import { ExplainNode } from '../operation-node/explain-node.js'
 
 export class SelectQueryBuilder<DB, TB extends keyof DB, O>
   implements
     WhereInterface<DB, TB>,
     HavingInterface<DB, TB>,
     OperationNodeSource,
-    Compilable
+    Compilable,
+    Explainable
 {
   readonly #props: SelectQueryBuilderProps
 
@@ -1515,10 +1518,10 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    * Also see the {@link executeTakeFirst} and {@link executeTakeFirstOrThrow} methods.
    */
   async execute(): Promise<O[]> {
-    const compildQuery = this.compile()
+    const compiledQuery = this.compile()
 
     const result = await this.#props.executor.executeQuery<O>(
-      compildQuery,
+      compiledQuery,
       this.#props.queryId
     )
 
@@ -1592,6 +1595,56 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
     for await (const item of stream) {
       yield* item.rows
     }
+  }
+
+  /**
+   * Executes query with `explain` statement before `select` keyword.
+   *
+   * ```ts
+   * const explained = await db
+   *  .selectFrom('person')
+   *  .where('gender', '=', 'female')
+   *  .selectAll()
+   *  .explain('json')
+   * ```
+   *
+   * The generated SQL (MySQL):
+   *
+   * ```sql
+   * explain format=json select * from `person` where `gender` = ?
+   * ```
+   *
+   * You can also execute `explain analyze` statements.
+   *
+   * ```ts
+   * import { sql } from 'kysely'
+   *
+   * const explained = await db
+   *  .selectFrom('person')
+   *  .where('gender', '=', 'female')
+   *  .selectAll()
+   *  .explain('json', sql`analyze`)
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * explain (analyze, format json) select * from "person" where "gender" = $1
+   * ```
+   */
+  async explain<ER extends Record<string, any> = Record<string, any>>(
+    format?: ExplainFormat,
+    options?: AnyRawBuilder
+  ): Promise<ER[]> {
+    const builder = new SelectQueryBuilder<DB, TB, ER>({
+      ...this.#props,
+      queryNode: SelectQueryNode.cloneWithExplain(
+        this.#props.queryNode,
+        ExplainNode.create(format, options)
+      ),
+    })
+
+    return await builder.execute()
   }
 }
 

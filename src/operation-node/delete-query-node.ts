@@ -9,6 +9,7 @@ import { WithNode } from './with-node.js'
 import { LimitNode } from './limit-node.js'
 import { OrderByNode } from './order-by-node.js'
 import { OrderByItemNode } from './order-by-item-node.js'
+import { ExplainNode } from './explain-node.js'
 
 export interface DeleteQueryNode extends OperationNode {
   readonly kind: 'DeleteQueryNode'
@@ -19,6 +20,7 @@ export interface DeleteQueryNode extends OperationNode {
   readonly with?: WithNode
   readonly orderBy?: OrderByNode
   readonly limit?: LimitNode
+  readonly explain?: ExplainNode
 }
 
 /**
@@ -56,6 +58,16 @@ export const DeleteQueryNode = freeze({
     return freeze({
       ...deleteNode,
       limit,
+    })
+  },
+
+  cloneWithExplain(
+    deleteNode: DeleteQueryNode,
+    explain: ExplainNode
+  ): DeleteQueryNode {
+    return freeze({
+      ...deleteNode,
+      explain,
     })
   },
 })

@@ -164,9 +164,11 @@ export * from './operation-node/value-node.js'
 export * from './operation-node/values-node.js'
 export * from './operation-node/where-node.js'
 export * from './operation-node/with-node.js'
+export * from './operation-node/explain-node.js'
 
 export * from './util/column-type.js'
 export * from './util/compilable.js'
+export * from './util/explainable.js'
 export * from './util/log.js'
 export {
   AnyColumn,
