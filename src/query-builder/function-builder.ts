@@ -1,9 +1,11 @@
 import { RawNode } from '../operation-node/raw-node.js'
+import { FilterValueExpression } from '../parser/filter-parser.js'
 import {
   StringReference,
   ExtractTypeFromReferenceExpression,
   parseStringReference,
 } from '../parser/reference-parser.js'
+import { parseValueExpression } from '../parser/value-parser.js'
 import { RawBuilder } from '../raw-builder/raw-builder.js'
 import { createQueryId } from '../util/query-id.js'
 
@@ -46,6 +48,8 @@ export class FunctionBuilder<DB, TB extends keyof DB> {
     this.avg = this.avg.bind(this)
     this.sum = this.sum.bind(this)
     this.count = this.count.bind(this)
+    this.between = this.between.bind(this)
+    this.notBetween = this.notBetween.bind(this)
   }
 
   /**
@@ -171,6 +175,80 @@ export class FunctionBuilder<DB, TB extends keyof DB> {
     return this.#oneArgFunction('count', column)
   }
 
+  /**
+   * Creates a type-safe `between` operator for the column and lower/bound bounds given as arguments.
+   *
+   * Should only be used in `where` and `having` clauses.
+   *
+   * ```ts
+   * const { between } = db.fn
+   *
+   * const millenials = await db
+   *  .selectFrom('person')
+   *  .where(between('dob', '1981-01-01', '1996-12-31'))
+   *  .selectAll()
+   *  .execute()
+   * ```
+   *
+   * The generated SQL (MySQL):
+   *
+   * ```sql
+   * select * from `person` where `dob` between ? and ?
+   * ```
+   */
+  between<
+    C extends StringReference<DB, TB> = StringReference<DB, TB>,
+    LB extends FilterValueExpression<DB, TB, C> = FilterValueExpression<
+      DB,
+      TB,
+      C
+    >,
+    UB extends FilterValueExpression<DB, TB, C> = FilterValueExpression<
+      DB,
+      TB,
+      C
+    >
+  >(column: C, lowerBound: LB, upperBound: UB): RawBuilder<never> {
+    return this.#betweenFunction(false, column, lowerBound, upperBound)
+  }
+
+  /**
+   * Creates a type-safe `not between` operator for the column and bounds given as arguments.
+   *
+   * Should only be used in `where` and `having` clauses.
+   *
+   * ```ts
+   * const { notBetween } = db.fn
+   *
+   * const notMillenials = await db
+   *  .selectFrom('person')
+   *  .where(notBetween('dob', '1981-01-01', '1996-12-31'))
+   *  .selectAll()
+   *  .execute()
+   * ```
+   *
+   * The generated SQL (MySQL):
+   *
+   * ```sql
+   * select * from `person` where `dob` not between ? and ?
+   * ```
+   */
+  notBetween<
+    C extends StringReference<DB, TB> = StringReference<DB, TB>,
+    LB extends FilterValueExpression<DB, TB, C> = FilterValueExpression<
+      DB,
+      TB,
+      C
+    >,
+    UB extends FilterValueExpression<DB, TB, C> = FilterValueExpression<
+      DB,
+      TB,
+      C
+    >
+  >(column: C, lowerBound: LB, upperBound: UB): RawBuilder<never> {
+    return this.#betweenFunction(true, column, lowerBound, upperBound)
+  }
+
   #oneArgFunction<O>(
     fn: string,
     column: StringReference<DB, TB>
@@ -178,6 +256,37 @@ export class FunctionBuilder<DB, TB extends keyof DB> {
     return new RawBuilder({
       queryId: createQueryId(),
       rawNode: RawNode.create([`${fn}(`, ')'], [parseStringReference(column)]),
+    })
+  }
+
+  #betweenFunction<
+    C extends StringReference<DB, TB> = StringReference<DB, TB>,
+    LB extends FilterValueExpression<DB, TB, C> = FilterValueExpression<
+      DB,
+      TB,
+      C
+    >,
+    UB extends FilterValueExpression<DB, TB, C> = FilterValueExpression<
+      DB,
+      TB,
+      C
+    >
+  >(
+    isNot: boolean,
+    column: C,
+    lowerBound: LB,
+    upperBound: UB
+  ): RawBuilder<never> {
+    return new RawBuilder({
+      queryId: createQueryId(),
+      rawNode: RawNode.create(
+        ['', ` ${isNot ? 'not ' : ''}between `, ' and ', ''],
+        [
+          parseStringReference(column),
+          parseValueExpression(lowerBound),
+          parseValueExpression(upperBound),
+        ]
+      ),
     })
   }
 }
