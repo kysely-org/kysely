@@ -49,7 +49,9 @@ export class FunctionBuilder<DB, TB extends keyof DB> {
     this.sum = this.sum.bind(this)
     this.count = this.count.bind(this)
     this.between = this.between.bind(this)
+    this.betweenSymmetric = this.betweenSymmetric.bind(this)
     this.notBetween = this.notBetween.bind(this)
+    this.notBetweenSymmetric = this.notBetweenSymmetric.bind(this)
   }
 
   /**
@@ -176,7 +178,7 @@ export class FunctionBuilder<DB, TB extends keyof DB> {
   }
 
   /**
-   * Creates a type-safe `between` operator for the column and lower/bound bounds given as arguments.
+   * Creates a type-safe `between` operator for the column and bounds given as arguments.
    *
    * Should only be used in `where` and `having` clauses.
    *
@@ -209,7 +211,50 @@ export class FunctionBuilder<DB, TB extends keyof DB> {
       C
     >
   >(column: C, lowerBound: LB, upperBound: UB): RawBuilder<never> {
-    return this.#betweenFunction(false, column, lowerBound, upperBound)
+    return this.#betweenFunction(
+      { column, lowerBound, upperBound },
+      { not: false, symmetric: false }
+    )
+  }
+
+  /**
+   * Creates a type-safe `between symmetric` operator for the column and bounds given as arguments.
+   *
+   * Should only be used in `where` and `having` clauses.
+   *
+   * ```ts
+   * const { betweenSymmetric } = db.fn
+   *
+   * const millenials = await db
+   *  .selectFrom('person')
+   *  .where(betweenSymmetric('dob', '1996-12-31', '1981-01-01'))
+   *  .selectAll()
+   *  .execute()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * select * from "person" where "dob" between symmetric $1 and $2
+   * ```
+   */
+  betweenSymmetric<
+    C extends StringReference<DB, TB> = StringReference<DB, TB>,
+    LB extends FilterValueExpression<DB, TB, C> = FilterValueExpression<
+      DB,
+      TB,
+      C
+    >,
+    UB extends FilterValueExpression<DB, TB, C> = FilterValueExpression<
+      DB,
+      TB,
+      C
+    >
+  >(column: C, lowerBound: LB, upperBound: UB): RawBuilder<never> {
+    return this.#betweenFunction(
+      { column, lowerBound, upperBound },
+      { not: false, symmetric: true }
+    )
   }
 
   /**
@@ -246,7 +291,50 @@ export class FunctionBuilder<DB, TB extends keyof DB> {
       C
     >
   >(column: C, lowerBound: LB, upperBound: UB): RawBuilder<never> {
-    return this.#betweenFunction(true, column, lowerBound, upperBound)
+    return this.#betweenFunction(
+      { column, lowerBound, upperBound },
+      { not: true, symmetric: false }
+    )
+  }
+
+  /**
+   * Creates a type-safe `not between symmetric` operator for the column and bounds given as arguments.
+   *
+   * Should only be used in `where` and `having` clauses.
+   *
+   * ```ts
+   * const { notBetweenSymmetric } = db.fn
+   *
+   * const notMillenials = await db
+   *  .selectFrom('person')
+   *  .where(notBetweenSymmetric('dob', '1981-01-01', '1996-12-31'))
+   *  .selectAll()
+   *  .execute()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * select * from "person" where "dob" not between symmetric ? and ?
+   * ```
+   */
+  notBetweenSymmetric<
+    C extends StringReference<DB, TB> = StringReference<DB, TB>,
+    LB extends FilterValueExpression<DB, TB, C> = FilterValueExpression<
+      DB,
+      TB,
+      C
+    >,
+    UB extends FilterValueExpression<DB, TB, C> = FilterValueExpression<
+      DB,
+      TB,
+      C
+    >
+  >(column: C, lowerBound: LB, upperBound: UB): RawBuilder<never> {
+    return this.#betweenFunction(
+      { column, lowerBound, upperBound },
+      { not: true, symmetric: true }
+    )
   }
 
   #oneArgFunction<O>(
@@ -272,19 +360,24 @@ export class FunctionBuilder<DB, TB extends keyof DB> {
       C
     >
   >(
-    isNot: boolean,
-    column: C,
-    lowerBound: LB,
-    upperBound: UB
+    args: { column: C; lowerBound: LB; upperBound: UB },
+    options: { not: boolean; symmetric: boolean }
   ): RawBuilder<never> {
     return new RawBuilder({
       queryId: createQueryId(),
       rawNode: RawNode.create(
-        ['', ` ${isNot ? 'not ' : ''}between `, ' and ', ''],
         [
-          parseStringReference(column),
-          parseValueExpression(lowerBound),
-          parseValueExpression(upperBound),
+          '',
+          ` ${options.not ? 'not ' : ''}between${
+            options.symmetric ? ' symmetric' : ''
+          } `,
+          ' and ',
+          '',
+        ],
+        [
+          parseStringReference(args.column),
+          parseValueExpression(args.lowerBound),
+          parseValueExpression(args.upperBound),
         ]
       ),
     })

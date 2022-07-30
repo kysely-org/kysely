@@ -9,6 +9,7 @@ import {
   testSql,
   expect,
   insertDefaultDataSet,
+  NOT_SUPPORTED,
 } from './test-setup.js'
 
 for (const dialect of BUILT_IN_DIALECTS) {
@@ -510,7 +511,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
         await query.execute()
       })
 
-      it('between operator created by fn module.', async () => {
+      it('between predicate created by fn module.', async () => {
         const { between } = ctx.db.fn
 
         const query = ctx.db
@@ -537,7 +538,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
         await query.execute()
       })
 
-      it('not between operator created by fn module.', async () => {
+      it('not between predicate created by fn module.', async () => {
         const { notBetween } = ctx.db.fn
 
         const query = ctx.db
@@ -563,6 +564,50 @@ for (const dialect of BUILT_IN_DIALECTS) {
 
         await query.execute()
       })
+
+      if (dialect === 'postgres') {
+        it('between symmetric predicate created by fn module.', async () => {
+          const { betweenSymmetric } = ctx.db.fn
+
+          const query = ctx.db
+            .selectFrom('person')
+            .selectAll()
+            .where(betweenSymmetric('first_name', 'Arnold', 'Jennifer'))
+            .where(betweenSymmetric('last_name', 'Z', 'A'))
+
+          testSql(query, dialect, {
+            postgres: {
+              sql: 'select * from "person" where "first_name" between symmetric $1 and $2 and "last_name" between symmetric $3 and $4',
+              parameters: ['Arnold', 'Jennifer', 'Z', 'A'],
+            },
+            mysql: NOT_SUPPORTED,
+            sqlite: NOT_SUPPORTED,
+          })
+
+          await query.execute()
+        })
+
+        it('not between symmetric predicate created by fn module.', async () => {
+          const { notBetweenSymmetric } = ctx.db.fn
+
+          const query = ctx.db
+            .selectFrom('person')
+            .selectAll()
+            .where(notBetweenSymmetric('first_name', 'Arnold', 'Jennifer'))
+            .where(notBetweenSymmetric('last_name', 'Z', 'A'))
+
+          testSql(query, dialect, {
+            postgres: {
+              sql: 'select * from "person" where "first_name" not between symmetric $1 and $2 and "last_name" not between symmetric $3 and $4',
+              parameters: ['Arnold', 'Jennifer', 'Z', 'A'],
+            },
+            mysql: NOT_SUPPORTED,
+            sqlite: NOT_SUPPORTED,
+          })
+
+          await query.execute()
+        })
+      }
 
       it('between operator created by fn module with sub-query arguments.', async () => {
         const { between } = ctx.db.fn
@@ -712,7 +757,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
         await query.execute()
       })
 
-      it('between operator created by fn module.', async () => {
+      it('between predicate created by fn module.', async () => {
         const { between } = ctx.db.fn
 
         const query = ctx.db
@@ -739,7 +784,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
         await query.execute()
       })
 
-      it('not between operator created by fn module.', async () => {
+      it('not between predicate created by fn module.', async () => {
         const { notBetween } = ctx.db.fn
 
         const query = ctx.db
@@ -765,6 +810,50 @@ for (const dialect of BUILT_IN_DIALECTS) {
 
         await query.execute()
       })
+
+      if (dialect === 'postgres') {
+        it('between symmetric predicate created by fn module.', async () => {
+          const { betweenSymmetric } = ctx.db.fn
+
+          const query = ctx.db
+            .selectFrom('person')
+            .selectAll()
+            .where(betweenSymmetric('first_name', 'Arnold', 'Jennifer'))
+            .orWhere(betweenSymmetric('last_name', 'Z', 'A'))
+
+          testSql(query, dialect, {
+            postgres: {
+              sql: 'select * from "person" where "first_name" between symmetric $1 and $2 or "last_name" between symmetric $3 and $4',
+              parameters: ['Arnold', 'Jennifer', 'Z', 'A'],
+            },
+            mysql: NOT_SUPPORTED,
+            sqlite: NOT_SUPPORTED,
+          })
+
+          await query.execute()
+        })
+
+        it('not between symmetric predicate created by fn module.', async () => {
+          const { notBetweenSymmetric } = ctx.db.fn
+
+          const query = ctx.db
+            .selectFrom('person')
+            .selectAll()
+            .where(notBetweenSymmetric('first_name', 'Arnold', 'Jennifer'))
+            .orWhere(notBetweenSymmetric('last_name', 'Z', 'A'))
+
+          testSql(query, dialect, {
+            postgres: {
+              sql: 'select * from "person" where "first_name" not between symmetric $1 and $2 or "last_name" not between symmetric $3 and $4',
+              parameters: ['Arnold', 'Jennifer', 'Z', 'A'],
+            },
+            mysql: NOT_SUPPORTED,
+            sqlite: NOT_SUPPORTED,
+          })
+
+          await query.execute()
+        })
+      }
     })
 
     describe('whereRef', () => {
