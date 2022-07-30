@@ -45,6 +45,8 @@ export class MysqlIntrospector implements DatabaseIntrospector {
         'extra',
       ])
       .where('table_schema', '=', sql`database()`)
+      .orderBy('table_name')
+      .orderBy('column_name')
       .castTo<RawColumnMetadata>()
 
     if (!options.withInternalKyselyTables) {

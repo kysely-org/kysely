@@ -55,13 +55,16 @@ import { NoResultError, NoResultErrorConstructor } from './no-result-error.js'
 import { Selectable } from '../util/column-type.js'
 import { AliasedQueryBuilder } from './select-query-builder.js'
 import { AliasedRawBuilder } from '../raw-builder/raw-builder.js'
+import { Explainable, ExplainFormat } from '../util/explainable.js'
+import { ExplainNode } from '../operation-node/explain-node.js'
 
 export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
   implements
     WhereInterface<DB, TB>,
     ReturningInterface<DB, TB, O>,
     OperationNodeSource,
-    Compilable
+    Compilable,
+    Explainable
 {
   readonly #props: UpdateQueryBuilderProps
 
@@ -737,6 +740,38 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
     }
 
     return result as O
+  }
+
+  /**
+   * Executes query with `explain` statement before `update` keyword.
+   *
+   * ```ts
+   * const explained = await db
+   *  .updateTable('person')
+   *  .set(updates)
+   *  .where('id', '=', 123)
+   *  .explain('json')
+   * ```
+   *
+   * The generated SQL (MySQL):
+   *
+   * ```sql
+   * explain format=json update `person` set `first_name` = ?, `last_name` = ? where `id` = ?
+   * ```
+   */
+  async explain<ER extends Record<string, any> = Record<string, any>>(
+    format?: ExplainFormat,
+    options?: AnyRawBuilder
+  ): Promise<ER[]> {
+    const builder = new UpdateQueryBuilder<DB, UT, TB, ER>({
+      ...this.#props,
+      queryNode: UpdateQueryNode.cloneWithExplain(
+        this.#props.queryNode,
+        ExplainNode.create(format, options)
+      ),
+    })
+
+    return await builder.execute()
   }
 }
 

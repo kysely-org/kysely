@@ -70,6 +70,7 @@ import { ValuesNode } from './values-node.js'
 import { SelectModifierNode } from './select-modifier-node.js'
 import { CreateTypeNode } from './create-type-node.js'
 import { DropTypeNode } from './drop-type-node.js'
+import { ExplainNode } from './explain-node.js'
 
 /**
  * Transforms an operation node tree into another one.
@@ -174,6 +175,7 @@ export class OperationNodeTransformer {
     SelectModifierNode: this.transformSelectModifier.bind(this),
     CreateTypeNode: this.transformCreateType.bind(this),
     DropTypeNode: this.transformDropType.bind(this),
+    ExplainNode: this.transformExplain.bind(this),
   })
 
   readonly transformNode = <
@@ -228,6 +230,7 @@ export class OperationNodeTransformer {
       with: this.transformNode(node.with),
       having: this.transformNode(node.having),
       union: this.transformNodeList(node.union),
+      explain: this.transformNode(node.explain),
     })
   }
 
@@ -351,6 +354,7 @@ export class OperationNodeTransformer {
       with: this.transformNode(node.with),
       ignore: node.ignore,
       replace: node.replace,
+      explain: this.transformNode(node.explain),
     })
   }
 
@@ -371,6 +375,7 @@ export class OperationNodeTransformer {
       with: this.transformNode(node.with),
       orderBy: this.transformNode(node.orderBy),
       limit: this.transformNode(node.limit),
+      explain: this.transformNode(node.explain),
     })
   }
 
@@ -468,6 +473,7 @@ export class OperationNodeTransformer {
       updates: this.transformNodeList(node.updates),
       returning: this.transformNode(node.returning),
       with: this.transformNode(node.with),
+      explain: this.transformNode(node.explain),
     })
   }
 
@@ -826,5 +832,13 @@ export class OperationNodeTransformer {
   protected transformOperator(node: OperatorNode): OperatorNode {
     // An Object.freezed leaf node. No need to clone.
     return node
+  }
+
+  protected transformExplain(node: ExplainNode): ExplainNode {
+    return requireAllProps({
+      kind: 'ExplainNode',
+      format: node.format,
+      options: this.transformNode(node.options),
+    })
   }
 }

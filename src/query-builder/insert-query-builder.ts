@@ -13,7 +13,11 @@ import {
 } from '../parser/insert-values-parser.js'
 import { InsertQueryNode } from '../operation-node/insert-query-node.js'
 import { QueryNode } from '../operation-node/query-node.js'
-import { MergePartial, SingleResultType } from '../util/type-utils.js'
+import {
+  AnyRawBuilder,
+  MergePartial,
+  SingleResultType,
+} from '../util/type-utils.js'
 import {
   MutationObject,
   parseUpdateObject,
@@ -41,9 +45,15 @@ import {
 } from './on-conflict-builder.js'
 import { OnConflictNode } from '../operation-node/on-conflict-node.js'
 import { Selectable } from '../util/column-type.js'
+import { Explainable, ExplainFormat } from '../util/explainable.js'
+import { ExplainNode } from '../operation-node/explain-node.js'
 
 export class InsertQueryBuilder<DB, TB extends keyof DB, O>
-  implements ReturningInterface<DB, TB, O>, OperationNodeSource, Compilable
+  implements
+    ReturningInterface<DB, TB, O>,
+    OperationNodeSource,
+    Compilable,
+    Explainable
 {
   readonly #props: InsertQueryBuilderProps
 
@@ -677,6 +687,36 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
     }
 
     return result as O
+  }
+
+  /**
+   * Executes query with `explain` statement before `insert` keyword.
+   *
+   * ```ts
+   * const explained = await db
+   *  .insertInto('person')
+   *  .values(values)
+   *  .explain('json')
+   * ```
+   *
+   * The generated SQL (MySQL):
+   *
+   * ```sql
+   * explain format=json insert into `person` (`id`, `first_name`, `last_name`) values (?, ?, ?) (?, ?, ?)
+   * ```
+   */
+  async explain<ER extends Record<string, any> = Record<string, any>>(
+    format?: ExplainFormat,
+    options?: AnyRawBuilder
+  ): Promise<ER[]> {
+    const builder = new InsertQueryBuilder<DB, TB, ER>({
+      ...this.#props,
+      queryNode: InsertQueryNode.cloneWith(this.#props.queryNode, {
+        explain: ExplainNode.create(format, options),
+      }),
+    })
+
+    return await builder.execute()
   }
 }
 
