@@ -168,6 +168,92 @@ for (const dialect of BUILT_IN_DIALECTS) {
       }
     })
 
+    it('should use a between operator created by fn module.', async () => {
+      const { between } = ctx.db.fn
+
+      const query = ctx.db
+        .selectFrom('person')
+        .select(['first_name', 'last_name'])
+        .groupBy(['first_name', 'last_name'])
+        .having(between('first_name', 'Arnold', 'Jennifer'))
+        .having(between('last_name', 'A', 'Z'))
+
+      testSql(query, dialect, {
+        postgres: {
+          sql: [
+            `select "first_name", "last_name"`,
+            `from "person"`,
+            `group by "first_name", "last_name"`,
+            `having "first_name" between $1 and $2 and "last_name" between $3 and $4`,
+          ],
+          parameters: ['Arnold', 'Jennifer', 'A', 'Z'],
+        },
+        mysql: {
+          sql: [
+            'select `first_name`, `last_name`',
+            'from `person`',
+            'group by `first_name`, `last_name`',
+            'having `first_name` between ? and ? and `last_name` between ? and ?',
+          ],
+          parameters: ['Arnold', 'Jennifer', 'A', 'Z'],
+        },
+        sqlite: {
+          sql: [
+            `select "first_name", "last_name"`,
+            `from "person"`,
+            `group by "first_name", "last_name"`,
+            `having "first_name" between ? and ? and "last_name" between ? and ?`,
+          ],
+          parameters: ['Arnold', 'Jennifer', 'A', 'Z'],
+        },
+      })
+
+      await query.execute()
+    })
+
+    it('should use a not between operator created by fn module.', async () => {
+      const { notBetween } = ctx.db.fn
+
+      const query = ctx.db
+        .selectFrom('person')
+        .select(['first_name', 'last_name'])
+        .groupBy(['first_name', 'last_name'])
+        .having(notBetween('first_name', 'Arnold', 'Jennifer'))
+        .having(notBetween('last_name', 'A', 'Z'))
+
+      testSql(query, dialect, {
+        postgres: {
+          sql: [
+            `select "first_name", "last_name"`,
+            `from "person"`,
+            `group by "first_name", "last_name"`,
+            `having "first_name" not between $1 and $2 and "last_name" not between $3 and $4`,
+          ],
+          parameters: ['Arnold', 'Jennifer', 'A', 'Z'],
+        },
+        mysql: {
+          sql: [
+            'select `first_name`, `last_name`',
+            'from `person`',
+            'group by `first_name`, `last_name`',
+            'having `first_name` not between ? and ? and `last_name` not between ? and ?',
+          ],
+          parameters: ['Arnold', 'Jennifer', 'A', 'Z'],
+        },
+        sqlite: {
+          sql: [
+            `select "first_name", "last_name"`,
+            `from "person"`,
+            `group by "first_name", "last_name"`,
+            `having "first_name" not between ? and ? and "last_name" not between ? and ?`,
+          ],
+          parameters: ['Arnold', 'Jennifer', 'A', 'Z'],
+        },
+      })
+
+      await query.execute()
+    })
+
     it('smoke test for all *having* methods', async () => {
       const query = ctx.db
         .selectFrom('person')

@@ -442,6 +442,40 @@ function testWhere(db: Kysely<Database>) {
 
   // Invalid type for column
   expectError(db.selectFrom('person').where(sql<string>`first_name`, '=', 1))
+
+  // Between operator
+  const { between } = db.fn
+
+  db.selectFrom('person').selectAll().where(between('age', 0, 18))
+  expectError(
+    db
+      .selectFrom('person')
+      .selectAll()
+      .where(between('not_a_real_column', 0, 18))
+  )
+  expectError(
+    db.selectFrom('person').selectAll().where(between('age', '0', 18))
+  )
+  expectError(
+    db.selectFrom('person').selectAll().where(between('age', 0, '18'))
+  )
+
+  // Not between operator
+  const { notBetween } = db.fn
+
+  db.selectFrom('person').selectAll().where(notBetween('age', 0, 18))
+  expectError(
+    db
+      .selectFrom('person')
+      .selectAll()
+      .where(notBetween('not_a_real_column', 0, 18))
+  )
+  expectError(
+    db.selectFrom('person').selectAll().where(notBetween('age', '0', 18))
+  )
+  expectError(
+    db.selectFrom('person').selectAll().where(notBetween('age', 0, '18'))
+  )
 }
 
 async function testConditionalJoinWhere(db: Kysely<Database>) {

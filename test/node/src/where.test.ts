@@ -509,6 +509,98 @@ for (const dialect of BUILT_IN_DIALECTS) {
 
         await query.execute()
       })
+
+      it('between operator created by fn module.', async () => {
+        const { between } = ctx.db.fn
+
+        const query = ctx.db
+          .selectFrom('person')
+          .selectAll()
+          .where(between('first_name', 'Arnold', 'Jennifer'))
+          .where(between('last_name', 'A', 'Z'))
+
+        testSql(query, dialect, {
+          postgres: {
+            sql: 'select * from "person" where "first_name" between $1 and $2 and "last_name" between $3 and $4',
+            parameters: ['Arnold', 'Jennifer', 'A', 'Z'],
+          },
+          mysql: {
+            sql: 'select * from `person` where `first_name` between ? and ? and `last_name` between ? and ?',
+            parameters: ['Arnold', 'Jennifer', 'A', 'Z'],
+          },
+          sqlite: {
+            sql: 'select * from "person" where "first_name" between ? and ? and "last_name" between ? and ?',
+            parameters: ['Arnold', 'Jennifer', 'A', 'Z'],
+          },
+        })
+
+        await query.execute()
+      })
+
+      it('not between operator created by fn module.', async () => {
+        const { notBetween } = ctx.db.fn
+
+        const query = ctx.db
+          .selectFrom('person')
+          .selectAll()
+          .where(notBetween('first_name', 'Arnold', 'Jennifer'))
+          .where(notBetween('last_name', 'A', 'Z'))
+
+        testSql(query, dialect, {
+          postgres: {
+            sql: 'select * from "person" where "first_name" not between $1 and $2 and "last_name" not between $3 and $4',
+            parameters: ['Arnold', 'Jennifer', 'A', 'Z'],
+          },
+          mysql: {
+            sql: 'select * from `person` where `first_name` not between ? and ? and `last_name` not between ? and ?',
+            parameters: ['Arnold', 'Jennifer', 'A', 'Z'],
+          },
+          sqlite: {
+            sql: 'select * from "person" where "first_name" not between ? and ? and "last_name" not between ? and ?',
+            parameters: ['Arnold', 'Jennifer', 'A', 'Z'],
+          },
+        })
+
+        await query.execute()
+      })
+
+      it('between operator created by fn module with sub-query arguments.', async () => {
+        const { between } = ctx.db.fn
+
+        const query = ctx.db
+          .selectFrom('person')
+          .selectAll()
+          .where(
+            between(
+              'first_name',
+              (qb) =>
+                qb
+                  .selectFrom('pet')
+                  .select(qb.fn.min('name').as('min_pet_name')),
+              (qb) =>
+                qb
+                  .selectFrom('pet')
+                  .select(qb.fn.max('name').as('max_pet_name'))
+            )
+          )
+
+        testSql(query, dialect, {
+          postgres: {
+            sql: 'select * from "person" where "first_name" between (select min("name") as "min_pet_name" from "pet") and (select max("name") as "max_pet_name" from "pet")',
+            parameters: [],
+          },
+          mysql: {
+            sql: 'select * from `person` where `first_name` between (select min(`name`) as `min_pet_name` from `pet`) and (select max(`name`) as `max_pet_name` from `pet`)',
+            parameters: [],
+          },
+          sqlite: {
+            sql: 'select * from "person" where "first_name" between (select min("name") as "min_pet_name" from "pet") and (select max("name") as "max_pet_name" from "pet")',
+            parameters: [],
+          },
+        })
+
+        await query.execute()
+      })
     })
 
     describe('orWhere', () => {
@@ -613,6 +705,60 @@ for (const dialect of BUILT_IN_DIALECTS) {
           },
           sqlite: {
             sql: 'select * from "person" where (first_name between ? and ? or last_name between ? and ?)',
+            parameters: ['Arnold', 'Jennifer', 'A', 'Z'],
+          },
+        })
+
+        await query.execute()
+      })
+
+      it('between operator created by fn module.', async () => {
+        const { between } = ctx.db.fn
+
+        const query = ctx.db
+          .selectFrom('person')
+          .selectAll()
+          .where(between('first_name', 'Arnold', 'Jennifer'))
+          .orWhere(between('last_name', 'A', 'Z'))
+
+        testSql(query, dialect, {
+          postgres: {
+            sql: 'select * from "person" where "first_name" between $1 and $2 or "last_name" between $3 and $4',
+            parameters: ['Arnold', 'Jennifer', 'A', 'Z'],
+          },
+          mysql: {
+            sql: 'select * from `person` where `first_name` between ? and ? or `last_name` between ? and ?',
+            parameters: ['Arnold', 'Jennifer', 'A', 'Z'],
+          },
+          sqlite: {
+            sql: 'select * from "person" where "first_name" between ? and ? or "last_name" between ? and ?',
+            parameters: ['Arnold', 'Jennifer', 'A', 'Z'],
+          },
+        })
+
+        await query.execute()
+      })
+
+      it('not between operator created by fn module.', async () => {
+        const { notBetween } = ctx.db.fn
+
+        const query = ctx.db
+          .selectFrom('person')
+          .selectAll()
+          .where(notBetween('first_name', 'Arnold', 'Jennifer'))
+          .orWhere(notBetween('last_name', 'A', 'Z'))
+
+        testSql(query, dialect, {
+          postgres: {
+            sql: 'select * from "person" where "first_name" not between $1 and $2 or "last_name" not between $3 and $4',
+            parameters: ['Arnold', 'Jennifer', 'A', 'Z'],
+          },
+          mysql: {
+            sql: 'select * from `person` where `first_name` not between ? and ? or `last_name` not between ? and ?',
+            parameters: ['Arnold', 'Jennifer', 'A', 'Z'],
+          },
+          sqlite: {
+            sql: 'select * from "person" where "first_name" not between ? and ? or "last_name" not between ? and ?',
             parameters: ['Arnold', 'Jennifer', 'A', 'Z'],
           },
         })
