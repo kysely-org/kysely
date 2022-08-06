@@ -62,6 +62,81 @@ for (const dialect of BUILT_IN_DIALECTS) {
       await destroyTest(ctx)
     })
 
+    it('should select all columns', async () => {
+      const query = ctx.db
+        .selectFrom('person')
+        .selectAll()
+        .where('first_name', '=', 'Jennifer')
+
+      testSql(query, dialect, {
+        postgres: {
+          sql: 'select * from "person" where "first_name" = $1',
+          parameters: ['Jennifer'],
+        },
+        mysql: {
+          sql: 'select * from `person` where `first_name` = ?',
+          parameters: ['Jennifer'],
+        },
+        sqlite: {
+          sql: 'select * from "person" where "first_name" = ?',
+          parameters: ['Jennifer'],
+        },
+      })
+
+      const persons = await query.execute()
+
+      expect(persons).to.have.length(1)
+      expect(persons).to.containSubset([
+        { first_name: 'Jennifer', last_name: 'Aniston', gender: 'female' },
+      ])
+    })
+
+    it('should select all columns of a table', async () => {
+      const query = ctx.db
+        .selectFrom('person')
+        .selectAll('person')
+        .where('first_name', '=', 'Jennifer')
+
+      testSql(query, dialect, {
+        postgres: {
+          sql: 'select "person".* from "person" where "first_name" = $1',
+          parameters: ['Jennifer'],
+        },
+        mysql: {
+          sql: 'select `person`.* from `person` where `first_name` = ?',
+          parameters: ['Jennifer'],
+        },
+        sqlite: {
+          sql: 'select "person".* from "person" where "first_name" = ?',
+          parameters: ['Jennifer'],
+        },
+      })
+
+      const persons = await query.execute()
+
+      expect(persons).to.have.length(1)
+      expect(persons).to.containSubset([
+        { first_name: 'Jennifer', last_name: 'Aniston', gender: 'female' },
+      ])
+    })
+
+    if (dialect === 'postgres') {
+      it('should select all columns of a table with a schema', async () => {
+        const query = ctx.db
+          .selectFrom('toy_schema.toy')
+          .selectAll('toy_schema.toy')
+
+        testSql(query, dialect, {
+          postgres: {
+            sql: 'select "toy_schema"."toy".* from "toy_schema"."toy"',
+            parameters: [],
+          },
+          mysql: NOT_SUPPORTED,
+          sqlite: NOT_SUPPORTED,
+        })
+      })
+    }
+
     it('should select one column', async () => {
       const query = ctx.db
         .selectFrom('person')

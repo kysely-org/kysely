@@ -4,6 +4,7 @@ export type PostgresCursorConstructor = new <T>(
   sql: string,
   parameters: readonly unknown[]
 ) => PostgresCursor<T>
+
 export type PostgresCursor<T> =
   | {
       state: 'initialized' | 'idle' | 'submitted' | 'busy'

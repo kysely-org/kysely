@@ -1,10 +1,10 @@
 import * as chai from 'chai'
 import * as chaiAsPromised from 'chai-as-promised'
 import * as chaiSubset from 'chai-subset'
-import { Pool } from 'pg'
-import { createPool } from 'mysql2'
 // @ts-ignore
 import * as Cursor from 'pg-cursor'
+import { Pool } from 'pg'
+import { createPool } from 'mysql2'
 
 chai.use(chaiSubset)
 chai.use(chaiAsPromised)
