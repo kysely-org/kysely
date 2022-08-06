@@ -37,18 +37,13 @@ export class PostgresIntrospector implements DatabaseIntrospector {
       .selectFrom('pg_catalog.pg_attribute as a')
       .innerJoin('pg_catalog.pg_class as c', 'a.attrelid', 'c.oid')
       .innerJoin('pg_catalog.pg_namespace as ns', 'c.relnamespace', 'ns.oid')
-      .innerJoin('pg_catalog.pg_tables as t', (join) =>
-        join
-          .onRef('t.tablename', '=', 'c.relname')
-          .onRef('t.schemaname', '=', 'ns.nspname')
-      )
       .innerJoin('pg_catalog.pg_type as typ', 'a.atttypid', 'typ.oid')
       .select([
         'a.attname as column',
         'a.attnotnull as not_null',
         'a.atthasdef as has_default',
-        't.tablename as table',
-        't.schemaname as schema',
+        'c.relname as table',
+        'ns.nspname as schema',
         'typ.typname as type',
 
         // Detect if the column is auto incrementing by finding the sequence
@@ -56,23 +51,28 @@ export class PostgresIntrospector implements DatabaseIntrospector {
         this.#db
           .selectFrom('pg_class')
           .select(sql`true`.as('auto_incrementing'))
+          // Make sure the sequence is in the same schema as the table.
+          .whereRef('relnamespace', '=', 'c.relnamespace')
           .where('relkind', '=', 'S')
-          .where('relname', '=', sql`t.tablename || '_' || a.attname || '_seq'`)
+          .where('relname', '=', sql`c.relname || '_' || a.attname || '_seq'`)
           .as('auto_incrementing'),
       ])
-      .where('t.schemaname', '!~', '^pg_')
-      .where('t.schemaname', '!=', 'information_schema')
-      .where('a.attnum', '>=', 0) // No system columns
+      // r == normal table
+      .where('c.relkind', '=', 'r')
+      .where('ns.nspname', '!~', '^pg_')
+      .where('ns.nspname', '!=', 'information_schema')
+      // No system columns
+      .where('a.attnum', '>=', 0)
       .where('a.attisdropped', '!=', true)
-      .orderBy('t.schemaname')
-      .orderBy('t.tablename')
+      .orderBy('ns.nspname')
+      .orderBy('c.relname')
       .orderBy('a.attname')
       .castTo<RawColumnMetadata>()
 
     if (!options.withInternalKyselyTables) {
       query = query
-        .where('t.tablename', '!=', DEFAULT_MIGRATION_TABLE)
-        .where('t.tablename', '!=', DEFAULT_MIGRATION_LOCK_TABLE)
+        .where('c.relname', '!=', DEFAULT_MIGRATION_TABLE)
+        .where('c.relname', '!=', DEFAULT_MIGRATION_LOCK_TABLE)
     }
 
     const rawColumns = await query.execute()
