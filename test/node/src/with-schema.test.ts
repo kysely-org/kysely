@@ -278,6 +278,132 @@ for (const dialect of ['postgres'] as const) {
       })
     })
 
+    describe('create index', () => {
+      afterEach(async () => {
+        await ctx.db.schema
+          .withSchema('mammals')
+          .dropIndex('pet_id_index')
+          .ifExists()
+          .execute()
+      })
+
+      it('should not add schema for created index', async () => {
+        const query = ctx.db.schema
+          .withSchema('mammals')
+          .createIndex('pet_id_index')
+          .column('id')
+          .on('pet')
+
+        testSql(query, dialect, {
+          postgres: {
+            sql: 'create index "pet_id_index" on "mammals"."pet" ("id")',
+            parameters: [],
+          },
+          mysql: NOT_SUPPORTED,
+          sqlite: NOT_SUPPORTED,
+        })
+
+        await query.execute()
+      })
+    })
+
+    describe('drop index', () => {
+      beforeEach(async () => {
+        await ctx.db.schema
+          .withSchema('mammals')
+          .createIndex('pet_id_index')
+          .column('id')
+          .on('pet')
+          .execute()
+      })
+
+      afterEach(async () => {
+        await ctx.db.schema
+          .withSchema('mammals')
+          .dropIndex('pet_id_index')
+          .ifExists()
+          .execute()
+      })
+
+      it('should add schema for dropped index', async () => {
+        const query = ctx.db.schema
+          .withSchema('mammals')
+          .dropIndex('pet_id_index')
+
+        testSql(query, dialect, {
+          postgres: {
+            sql: 'drop index "mammals"."pet_id_index"',
+            parameters: [],
+          },
+          mysql: NOT_SUPPORTED,
+          sqlite: NOT_SUPPORTED,
+        })
+
+        await query.execute()
+      })
+    })
+
+    describe('create view', () => {
+      afterEach(async () => {
+        await ctx.db.schema
+          .withSchema('mammals')
+          .dropView('dogs')
+          .ifExists()
+          .execute()
+      })
+
+      it('should add schema for created view', async () => {
+        const query = ctx.db.schema
+          .withSchema('mammals')
+          .createView('dogs')
+          .as(ctx.db.selectFrom('pet').where('species', '=', 'dog'))
+
+        testSql(query, dialect, {
+          postgres: {
+            sql: `create view "mammals"."dogs" as select from "mammals"."pet" where "species" = 'dog'`,
+            parameters: [],
+          },
+          mysql: NOT_SUPPORTED,
+          sqlite: NOT_SUPPORTED,
+        })
+
+        await query.execute()
+      })
+    })
+
+    describe('drop view', () => {
+      beforeEach(async () => {
+        await ctx.db.schema
+          .withSchema('mammals')
+          .createView('dogs')
+          .as(ctx.db.selectFrom('pet').where('species', '=', 'dog'))
+          .execute()
+      })
+
+      afterEach(async () => {
+        await ctx.db.schema
+          .withSchema('mammals')
+          .dropView('dogs')
+          .ifExists()
+          .execute()
+      })
+
+      it('should add schema for dropped view', async () => {
+        const query = ctx.db.schema.withSchema('mammals').dropView('dogs')
+
+        testSql(query, dialect, {
+          postgres: {
+            sql: `drop view "mammals"."dogs"`,
+            parameters: [],
+          },
+          mysql: NOT_SUPPORTED,
+          sqlite: NOT_SUPPORTED,
+        })
+
+        await query.execute()
+      })
+    })
+
     async function createTables(): Promise<void> {
       await ctx.db.schema.createSchema('mammals').ifNotExists().execute()
 

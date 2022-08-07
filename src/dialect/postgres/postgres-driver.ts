@@ -7,7 +7,6 @@ import { CompiledQuery } from '../../query-compiler/compiled-query.js'
 import { isFunction, freeze } from '../../util/object-utils.js'
 import { extendStackTrace } from '../../util/stack-trace-utils.js'
 import {
-  PostgresCursor,
   PostgresCursorConstructor,
   PostgresDialectConfig,
   PostgresPool,

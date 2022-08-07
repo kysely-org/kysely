@@ -11,6 +11,9 @@ export type IndexType = 'btree' | 'hash' | 'gist' | 'gin'
 
 export interface CreateIndexNode extends OperationNode {
   readonly kind: 'CreateIndexNode'
+  // This isn't and shouldn't be a `SchemableIdentifier`. Postgres doesn't
+  // allow explicit schema for create index query. The schema is always the
+  // same as the target table's schema.
   readonly name: IdentifierNode
   readonly table?: TableNode
   readonly expression?: ColumnNode | ListNode | RawNode

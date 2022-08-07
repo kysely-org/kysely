@@ -73,6 +73,7 @@ import { SelectModifierNode } from './select-modifier-node.js'
 import { CreateTypeNode } from './create-type-node.js'
 import { DropTypeNode } from './drop-type-node.js'
 import { ExplainNode } from './explain-node.js'
+import { SchemableIdentifierNode } from './schemable-identifier-node.js'
 
 export abstract class OperationNodeVisitor {
   protected readonly nodeStack: OperationNode[] = []
@@ -85,6 +86,7 @@ export abstract class OperationNodeVisitor {
     AliasNode: this.visitAlias.bind(this),
     ColumnNode: this.visitColumn.bind(this),
     IdentifierNode: this.visitIdentifier.bind(this),
+    SchemableIdentifierNode: this.visitSchemableIdentifier.bind(this),
     RawNode: this.visitRaw.bind(this),
     ReferenceNode: this.visitReference.bind(this),
     SelectQueryNode: this.visitSelectQuery.bind(this),
@@ -224,10 +226,13 @@ export abstract class OperationNodeVisitor {
   ): void
   protected abstract visitUnion(node: UnionNode): void
   protected abstract visitDataType(node: DataTypeNode): void
-  protected abstract visitSelectAll(_: SelectAllNode): void
-  protected abstract visitIdentifier(_: IdentifierNode): void
-  protected abstract visitValue(_: ValueNode): void
-  protected abstract visitPrimitiveValueList(_: PrimitiveValueListNode): void
+  protected abstract visitSelectAll(node: SelectAllNode): void
+  protected abstract visitIdentifier(node: IdentifierNode): void
+  protected abstract visitSchemableIdentifier(
+    node: SchemableIdentifierNode
+  ): void
+  protected abstract visitValue(node: ValueNode): void
+  protected abstract visitPrimitiveValueList(node: PrimitiveValueListNode): void
   protected abstract visitOperator(node: OperatorNode): void
   protected abstract visitCreateView(node: CreateViewNode): void
   protected abstract visitDropView(node: DropViewNode): void

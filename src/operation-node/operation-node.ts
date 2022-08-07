@@ -1,5 +1,6 @@
 export type OperationNodeKind =
   | 'IdentifierNode'
+  | 'SchemableIdentifierNode'
   | 'RawNode'
   | 'SelectQueryNode'
   | 'SelectionNode'

@@ -1,8 +1,8 @@
 import { freeze } from '../util/object-utils.js'
 import { ColumnNode } from './column-node.js'
-import { IdentifierNode } from './identifier-node.js'
 import { OperationNode } from './operation-node.js'
 import { RawNode } from './raw-node.js'
+import { SchemableIdentifierNode } from './schemable-identifier-node.js'
 import { SelectQueryNode } from './select-query-node.js'
 
 export type CreateViewNodeParams = Omit<
@@ -12,7 +12,7 @@ export type CreateViewNodeParams = Omit<
 
 export interface CreateViewNode extends OperationNode {
   readonly kind: 'CreateViewNode'
-  readonly name: IdentifierNode
+  readonly name: SchemableIdentifierNode
   readonly temporary?: boolean
   readonly materialized?: boolean
   readonly orReplace?: boolean
@@ -32,7 +32,7 @@ export const CreateViewNode = freeze({
   create(name: string): CreateViewNode {
     return freeze({
       kind: 'CreateViewNode',
-      name: IdentifierNode.create(name),
+      name: SchemableIdentifierNode.create(name),
     })
   },
 

@@ -1,6 +1,6 @@
 import { freeze } from '../util/object-utils.js'
-import { IdentifierNode } from './identifier-node.js'
 import { OperationNode } from './operation-node.js'
+import { SchemableIdentifierNode } from './schemable-identifier-node.js'
 import { ValueListNode } from './value-list-node.js'
 import { ValueNode } from './value-node.js'
 
@@ -8,7 +8,7 @@ export type CreateTypeNodeParams = Omit<Partial<CreateTypeNode>, 'kind'>
 
 export interface CreateTypeNode extends OperationNode {
   readonly kind: 'CreateTypeNode'
-  readonly name: IdentifierNode
+  readonly name: SchemableIdentifierNode
   readonly enum?: ValueListNode
 }
 
@@ -23,7 +23,7 @@ export const CreateTypeNode = freeze({
   create(name: string): CreateTypeNode {
     return freeze({
       kind: 'CreateTypeNode',
-      name: IdentifierNode.create(name),
+      name: SchemableIdentifierNode.create(name),
     })
   },
 

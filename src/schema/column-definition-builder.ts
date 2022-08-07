@@ -32,7 +32,7 @@ export interface ColumnDefinitionBuilderInterface {
    * Makes the column the primary key.
    *
    * If you want to specify a composite primary key use the
-   * {@link TableBuilder.addPrimaryKeyConstraint} method.
+   * {@link CreateTableBuilder.addPrimaryKeyConstraint} method.
    */
   primaryKey(): ColumnDefinitionBuilderInterface
 
@@ -41,7 +41,7 @@ export interface ColumnDefinitionBuilderInterface {
    *
    * If your database engine doesn't support foreign key constraints in the
    * column definition (like MySQL 5) you need to call the table level
-   * {@link TableBuilder.addForeignKeyConstraint} method instead.
+   * {@link CreateTableBuilder.addForeignKeyConstraint} method instead.
    *
    * ### Examples
    *
@@ -56,7 +56,7 @@ export interface ColumnDefinitionBuilderInterface {
    *
    * If your database engine doesn't support foreign key constraints in the
    * column definition (like MySQL 5) you need to call the table level
-   * {@link TableBuilder.addForeignKeyConstraint} method instead.
+   * {@link CreateTableBuilder.addForeignKeyConstraint} method instead.
    *
    * ### Examples
    *

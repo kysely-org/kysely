@@ -1,12 +1,12 @@
 import { freeze } from '../util/object-utils.js'
-import { IdentifierNode } from './identifier-node.js'
 import { OperationNode } from './operation-node.js'
+import { SchemableIdentifierNode } from './schemable-identifier-node.js'
 
 export type DropTypeNodeParams = Omit<Partial<DropTypeNode>, 'kind' | 'name'>
 
 export interface DropTypeNode extends OperationNode {
   readonly kind: 'DropTypeNode'
-  readonly name: IdentifierNode
+  readonly name: SchemableIdentifierNode
   readonly ifExists?: boolean
 }
 
@@ -21,7 +21,7 @@ export const DropTypeNode = freeze({
   create(name: string): DropTypeNode {
     return freeze({
       kind: 'DropTypeNode',
-      name: IdentifierNode.create(name),
+      name: SchemableIdentifierNode.create(name),
     })
   },
 
