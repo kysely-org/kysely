@@ -131,24 +131,31 @@ class PostgresConnection implements DatabaseConnection {
       )
     }
 
+    if (!Number.isInteger(chunkSize) || chunkSize <= 0) {
+      throw new Error('chunkSize must be a positive integer')
+    }
+
     const cursor = this.#client.query(
-      new this.#options.cursor<O>(compiledQuery.sql, compiledQuery.parameters)
+      new this.#options.cursor<O>(
+        compiledQuery.sql,
+        compiledQuery.parameters.slice()
+      )
     )
 
-    while (true) {
-      if (cursor.state === 'done') {
-        break
-      }
+    try {
+      while (true) {
+        const rows = await cursor.read(chunkSize)
 
-      if (cursor.state === 'error') {
-        throw cursor._error
-      }
+        if (rows.length === 0) {
+          break
+        }
 
-      const rows: O[] = await cursor.read(chunkSize)
-
-      yield {
-        rows,
+        yield {
+          rows,
+        }
       }
+    } finally {
+      await cursor.close()
     }
   }
 

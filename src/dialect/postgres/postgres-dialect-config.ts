@@ -55,22 +55,14 @@ export interface PostgresPoolClient {
   release(): void
 }
 
-export type PostgresCursor<T> =
-  | {
-      state: 'initialized' | 'idle' | 'submitted' | 'busy'
-      read: (rowsCount: number) => Promise<T[]>
-    }
-  | {
-      state: 'done'
-    }
-  | {
-      state: 'error'
-      _error: Error
-    }
+export interface PostgresCursor<T> {
+  read(rowsCount: number): Promise<T[]>
+  close(): Promise<void>
+}
 
 export type PostgresCursorConstructor = new <T>(
   sql: string,
-  parameters: readonly unknown[]
+  parameters: unknown[]
 ) => PostgresCursor<T>
 
 export interface PostgresQueryResult<R> {
