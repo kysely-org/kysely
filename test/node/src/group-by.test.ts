@@ -68,6 +68,43 @@ for (const dialect of BUILT_IN_DIALECTS) {
       ])
     })
 
+    it('group by selection', async () => {
+      const query = ctx.db
+        .selectFrom('person')
+        .select(['gender as g', sql`max(first_name)`.as('max_first_name')])
+        .groupBy('g')
+        .orderBy('g')
+
+      testSql(query, dialect, {
+        postgres: {
+          sql: 'select "gender" as "g", max(first_name) as "max_first_name" from "person" group by "g" order by "g"',
+          parameters: [],
+        },
+        mysql: {
+          sql: 'select `gender` as `g`, max(first_name) as `max_first_name` from `person` group by `g` order by `g`',
+          parameters: [],
+        },
+        sqlite: {
+          sql: 'select "gender" as "g", max(first_name) as "max_first_name" from "person" group by "g" order by "g"',
+          parameters: [],
+        },
+      })
+
+      const persons = await query.execute()
+
+      expect(persons).to.have.length(2)
+      expect(persons).to.containSubset([
+        {
+          max_first_name: 'Jennifer',
+          g: 'female',
+        },
+        {
+          max_first_name: 'Sylvester',
+          g: 'male',
+        },
+      ])
+    })
+
     it('group by two columns', async () => {
       const query = ctx.db
         .selectFrom('person')

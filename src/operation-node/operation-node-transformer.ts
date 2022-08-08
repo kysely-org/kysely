@@ -93,7 +93,7 @@ import { SchemableIdentifierNode } from './schemable-identifier-node.js'
  *
  *     return {
  *       ...node,
- *       identifier: snakeCase(node.identifier),
+ *       name: snakeCase(node.name),
  *     }
  *   }
  * }

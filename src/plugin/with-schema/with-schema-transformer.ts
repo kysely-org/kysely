@@ -1,4 +1,5 @@
 import { AliasNode } from '../../operation-node/alias-node.js'
+import { IdentifierNode } from '../../operation-node/identifier-node.js'
 import { OperationNodeTransformer } from '../../operation-node/operation-node-transformer.js'
 import { TableExpressionNode } from '../../operation-node/operation-node-utils.js'
 import { OperationNode } from '../../operation-node/operation-node.js'
@@ -72,10 +73,7 @@ export class WithSchemaTransformer extends OperationNodeTransformer {
 
     return {
       ...transformed,
-      schema: freeze({
-        kind: 'IdentifierNode',
-        name: this.#schema,
-      }),
+      schema: IdentifierNode.create(this.#schema),
     }
   }
 

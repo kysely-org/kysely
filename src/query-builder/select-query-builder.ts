@@ -28,10 +28,7 @@ import {
   WhereGrouper,
   HavingGrouper,
 } from '../parser/filter-parser.js'
-import {
-  ReferenceExpression,
-  ReferenceExpressionOrList,
-} from '../parser/reference-parser.js'
+import { ReferenceExpression } from '../parser/reference-parser.js'
 import { SelectQueryNode } from '../operation-node/select-query-node.js'
 import { QueryNode } from '../operation-node/query-node.js'
 import {
@@ -52,7 +49,11 @@ import { Compilable } from '../util/compilable.js'
 import { QueryExecutor } from '../query-executor/query-executor.js'
 import { QueryId } from '../util/query-id.js'
 import { freeze } from '../util/object-utils.js'
-import { parseGroupBy } from '../parser/group-by-parser.js'
+import {
+  GroupByExpression,
+  GroupByExpressionOrList,
+  parseGroupBy,
+} from '../parser/group-by-parser.js'
 import { parseUnion, UnionExpression } from '../parser/union-parser.js'
 import { KyselyPlugin } from '../plugin/kysely-plugin.js'
 import { WhereInterface } from './where-interface.js'
@@ -1244,12 +1245,12 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    * ```
    */
   groupBy(
-    groupBy: ReadonlyArray<ReferenceExpression<DB, TB>>
+    groupBy: ReadonlyArray<GroupByExpression<DB, TB, O>>
   ): SelectQueryBuilder<DB, TB, O>
 
-  groupBy(groupBy: ReferenceExpression<DB, TB>): SelectQueryBuilder<DB, TB, O>
+  groupBy(groupBy: GroupByExpression<DB, TB, O>): SelectQueryBuilder<DB, TB, O>
 
-  groupBy(groupBy: ReferenceExpressionOrList<DB, TB>): any {
+  groupBy(groupBy: GroupByExpressionOrList<DB, TB, O>): any {
     return new SelectQueryBuilder({
       ...this.#props,
       queryNode: SelectQueryNode.cloneWithGroupByItems(
