@@ -36,13 +36,13 @@ export class MysqlIntrospector implements DatabaseIntrospector {
     let query = this.#db
       .selectFrom('information_schema.columns')
       .select([
-        'column_name',
-        'column_default',
-        'table_name',
-        'table_schema',
-        'is_nullable',
-        'data_type',
-        'extra',
+        'COLUMN_NAME',
+        'COLUMN_DEFAULT',
+        'TABLE_NAME',
+        'TABLE_SCHEMA',
+        'IS_NULLABLE',
+        'DATA_TYPE',
+        'EXTRA',
       ])
       .where('table_schema', '=', sql`database()`)
       .orderBy('table_name')
