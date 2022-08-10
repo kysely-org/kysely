@@ -278,6 +278,24 @@ for (const dialect of ['postgres'] as const) {
       })
     })
 
+    describe('create table', () => {
+      it('should add schema for references', async () => {
+        const query = ctx.db.schema
+          .withSchema('mammals')
+          .createTable('foo')
+          .addColumn('bar', 'integer', (col) => col.references('pets.id'))
+
+          testSql(query, dialect, {
+            postgres: {
+              sql: 'create table "mammals"."foo" ("bar" integer references "mammals"."pets" ("id"))',
+              parameters: [],
+            },
+            mysql: NOT_SUPPORTED,
+            sqlite: NOT_SUPPORTED,
+          })
+      })
+    })
+
     describe('create index', () => {
       afterEach(async () => {
         await ctx.db.schema

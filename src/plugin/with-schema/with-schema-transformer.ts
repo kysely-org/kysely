@@ -3,6 +3,7 @@ import { IdentifierNode } from '../../operation-node/identifier-node.js'
 import { OperationNodeTransformer } from '../../operation-node/operation-node-transformer.js'
 import { TableExpressionNode } from '../../operation-node/operation-node-utils.js'
 import { OperationNode } from '../../operation-node/operation-node.js'
+import { ReferencesNode } from '../../operation-node/references-node.js'
 import { SchemableIdentifierNode } from '../../operation-node/schemable-identifier-node.js'
 import { TableNode } from '../../operation-node/table-node.js'
 import { WithNode } from '../../operation-node/with-node.js'
@@ -74,6 +75,22 @@ export class WithSchemaTransformer extends OperationNodeTransformer {
     return {
       ...transformed,
       schema: IdentifierNode.create(this.#schema),
+    }
+  }
+
+  protected transformReferences(node: ReferencesNode): ReferencesNode {
+    const transformed = super.transformReferences(node)
+
+    if (transformed.table.table.schema) {
+      return transformed
+    }
+
+    return {
+      ...transformed,
+      table: TableNode.createWithSchema(
+        this.#schema,
+        transformed.table.table.identifier.name
+      ),
     }
   }
 
