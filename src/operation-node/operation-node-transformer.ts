@@ -71,6 +71,7 @@ import { SelectModifierNode } from './select-modifier-node.js'
 import { CreateTypeNode } from './create-type-node.js'
 import { DropTypeNode } from './drop-type-node.js'
 import { ExplainNode } from './explain-node.js'
+import { SchemableIdentifierNode } from './schemable-identifier-node.js'
 
 /**
  * Transforms an operation node tree into another one.
@@ -92,7 +93,7 @@ import { ExplainNode } from './explain-node.js'
  *
  *     return {
  *       ...node,
- *       identifier: snakeCase(node.identifier),
+ *       name: snakeCase(node.name),
  *     }
  *   }
  * }
@@ -108,6 +109,7 @@ export class OperationNodeTransformer {
     AliasNode: this.transformAlias.bind(this),
     ColumnNode: this.transformColumn.bind(this),
     IdentifierNode: this.transformIdentifier.bind(this),
+    SchemableIdentifierNode: this.transformSchemableIdentifier.bind(this),
     RawNode: this.transformRaw.bind(this),
     ReferenceNode: this.transformReference.bind(this),
     SelectQueryNode: this.transformSelectQuery.bind(this),
@@ -178,39 +180,30 @@ export class OperationNodeTransformer {
     ExplainNode: this.transformExplain.bind(this),
   })
 
-  readonly transformNode = <
-    T extends OperationNode | undefined,
-    U extends T | undefined = T
-  >(
-    node: U
-  ): T => {
+  transformNode<T extends OperationNode | undefined>(node: T): T {
     if (!node) {
-      return undefined as unknown as any
+      return node
     }
 
     this.nodeStack.push(node)
-    const out = this.#transformers[node.kind](node)
+    const out = this.transformNodeImpl(node)
     this.nodeStack.pop()
 
-    return freeze(out)
+    return freeze(out) as T
   }
 
-  protected transformNodeList<T extends OperationNode, U extends T = T>(
-    list: readonly U[]
-  ): readonly T[]
+  protected transformNodeImpl<T extends OperationNode>(node: T): T {
+    return this.#transformers[node.kind](node)
+  }
 
-  protected transformNodeList<T extends OperationNode, U extends T = T>(
-    list: readonly U[] | undefined
-  ): readonly T[] | undefined
-
-  protected transformNodeList<T extends OperationNode, U extends T = T>(
-    list: readonly U[] | undefined
-  ): readonly T[] | undefined {
+  protected transformNodeList<
+    T extends ReadonlyArray<OperationNode> | undefined
+  >(list: T): T {
     if (!list) {
-      return list as unknown as T[]
+      return list
     }
 
-    return freeze(list.map(this.transformNode) as T[])
+    return freeze(list.map((node) => this.transformNode(node))) as T
   }
 
   protected transformSelectQuery(node: SelectQueryNode): SelectQueryNode {
@@ -259,7 +252,6 @@ export class OperationNodeTransformer {
   protected transformTable(node: TableNode): TableNode {
     return requireAllProps<TableNode>({
       kind: 'TableNode',
-      schema: this.transformNode(node.schema),
       table: this.transformNode(node.table),
     })
   }
@@ -802,6 +794,24 @@ export class OperationNodeTransformer {
     })
   }
 
+  protected transformExplain(node: ExplainNode): ExplainNode {
+    return requireAllProps({
+      kind: 'ExplainNode',
+      format: node.format,
+      options: this.transformNode(node.options),
+    })
+  }
+
+  protected transformSchemableIdentifier(
+    node: SchemableIdentifierNode
+  ): SchemableIdentifierNode {
+    return requireAllProps<SchemableIdentifierNode>({
+      kind: 'SchemableIdentifierNode',
+      schema: this.transformNode(node.schema),
+      identifier: this.transformNode(node.identifier),
+    })
+  }
+
   protected transformDataType(node: DataTypeNode): DataTypeNode {
     // An Object.freezed leaf node. No need to clone.
     return node
@@ -832,13 +842,5 @@ export class OperationNodeTransformer {
   protected transformOperator(node: OperatorNode): OperatorNode {
     // An Object.freezed leaf node. No need to clone.
     return node
-  }
-
-  protected transformExplain(node: ExplainNode): ExplainNode {
-    return requireAllProps({
-      kind: 'ExplainNode',
-      format: node.format,
-      options: this.transformNode(node.options),
-    })
   }
 }

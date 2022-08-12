@@ -152,8 +152,8 @@ for (const dialect of BUILT_IN_DIALECTS) {
                 name: 'some_column',
                 dataType: 'int4',
                 isNullable: false,
-                isAutoIncrementing: false,
-                hasDefaultValue: false,
+                isAutoIncrementing: true,
+                hasDefaultValue: true,
               },
             ],
           },
@@ -372,7 +372,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
       await ctx.db.schema.createSchema('some_schema').execute()
       await ctx.db.schema
         .createTable('some_schema.pet')
-        .addColumn('some_column', 'integer', (col) => col.primaryKey())
+        .addColumn('some_column', 'serial', (col) => col.primaryKey())
         .execute()
     }
 

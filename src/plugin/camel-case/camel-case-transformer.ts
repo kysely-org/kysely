@@ -15,7 +15,7 @@ export class SnakeCaseTransformer extends OperationNodeTransformer {
 
     return {
       ...node,
-      identifier: this.#snakeCase(node.identifier),
+      name: this.#snakeCase(node.name),
     }
   }
 }

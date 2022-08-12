@@ -1,11 +1,19 @@
 import { GroupByItemNode } from '../operation-node/group-by-item-node.js'
 import {
   parseReferenceExpressionOrList,
-  ReferenceExpressionOrList,
+  ReferenceExpression,
 } from './reference-parser.js'
 
+export type GroupByExpression<DB, TB extends keyof DB, O> =
+  | ReferenceExpression<DB, TB>
+  | (keyof O & string)
+
+export type GroupByExpressionOrList<DB, TB extends keyof DB, O> =
+  | ReadonlyArray<GroupByExpression<DB, TB, O>>
+  | GroupByExpression<DB, TB, O>
+
 export function parseGroupBy(
-  orderBy: ReferenceExpressionOrList<any, any>
+  orderBy: GroupByExpressionOrList<any, any, any>
 ): GroupByItemNode[] {
   return parseReferenceExpressionOrList(orderBy).map(GroupByItemNode.create)
 }

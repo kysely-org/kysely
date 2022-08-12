@@ -3,7 +3,7 @@ import { OperationNode } from './operation-node.js'
 
 export interface IdentifierNode extends OperationNode {
   readonly kind: 'IdentifierNode'
-  readonly identifier: string
+  readonly name: string
 }
 
 /**
@@ -14,10 +14,10 @@ export const IdentifierNode = freeze({
     return node.kind === 'IdentifierNode'
   },
 
-  create(identifier: string): IdentifierNode {
+  create(name: string): IdentifierNode {
     return freeze({
       kind: 'IdentifierNode',
-      identifier,
+      name,
     })
   },
 })

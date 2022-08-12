@@ -26,10 +26,10 @@ export const ReferenceNode = freeze({
     })
   },
 
-  createSelectAll(table: string): ReferenceNode {
+  createSelectAll(table: TableNode): ReferenceNode {
     return freeze({
       kind: 'ReferenceNode',
-      table: TableNode.create(table),
+      table,
       column: SelectAllNode.create(),
     })
   },

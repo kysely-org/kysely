@@ -23,6 +23,7 @@ import {
   parseAliasedComplexExpression,
 } from './complex-expression-parser.js'
 import { Selectable, SelectType } from '../util/column-type.js'
+import { parseTable } from './table-parser.js'
 
 export type SelectExpression<DB, TB extends keyof DB> =
   | AnyAliasedColumnWithTable<DB, TB>
@@ -208,7 +209,7 @@ export function parseSelectAll(table?: string | string[]): SelectionNode[] {
 
 function parseSelectAllArg(table: string): SelectionNode {
   if (isString(table)) {
-    return SelectionNode.createSelectAllFromTable(table)
+    return SelectionNode.createSelectAllFromTable(parseTable(table))
   }
 
   throw new Error(

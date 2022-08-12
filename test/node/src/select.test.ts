@@ -62,6 +62,81 @@ for (const dialect of BUILT_IN_DIALECTS) {
       await destroyTest(ctx)
     })
 
+    it('should select all columns', async () => {
+      const query = ctx.db
+        .selectFrom('person')
+        .selectAll()
+        .where('first_name', '=', 'Jennifer')
+
+      testSql(query, dialect, {
+        postgres: {
+          sql: 'select * from "person" where "first_name" = $1',
+          parameters: ['Jennifer'],
+        },
+        mysql: {
+          sql: 'select * from `person` where `first_name` = ?',
+          parameters: ['Jennifer'],
+        },
+        sqlite: {
+          sql: 'select * from "person" where "first_name" = ?',
+          parameters: ['Jennifer'],
+        },
+      })
+
+      const persons = await query.execute()
+
+      expect(persons).to.have.length(1)
+      expect(persons).to.containSubset([
+        { first_name: 'Jennifer', last_name: 'Aniston', gender: 'female' },
+      ])
+    })
+
+    it('should select all columns of a table', async () => {
+      const query = ctx.db
+        .selectFrom('person')
+        .selectAll('person')
+        .where('first_name', '=', 'Jennifer')
+
+      testSql(query, dialect, {
+        postgres: {
+          sql: 'select "person".* from "person" where "first_name" = $1',
+          parameters: ['Jennifer'],
+        },
+        mysql: {
+          sql: 'select `person`.* from `person` where `first_name` = ?',
+          parameters: ['Jennifer'],
+        },
+        sqlite: {
+          sql: 'select "person".* from "person" where "first_name" = ?',
+          parameters: ['Jennifer'],
+        },
+      })
+
+      const persons = await query.execute()
+
+      expect(persons).to.have.length(1)
+      expect(persons).to.containSubset([
+        { first_name: 'Jennifer', last_name: 'Aniston', gender: 'female' },
+      ])
+    })
+
+    if (dialect === 'postgres') {
+      it('should select all columns of a table with a schema', async () => {
+        const query = ctx.db
+          .selectFrom('toy_schema.toy')
+          .selectAll('toy_schema.toy')
+
+        testSql(query, dialect, {
+          postgres: {
+            sql: 'select "toy_schema"."toy".* from "toy_schema"."toy"',
+            parameters: [],
+          },
+          mysql: NOT_SUPPORTED,
+          sqlite: NOT_SUPPORTED,
+        })
+      })
+    }
+
     it('should select one column', async () => {
       const query = ctx.db
         .selectFrom('person')
@@ -605,9 +680,50 @@ for (const dialect of BUILT_IN_DIALECTS) {
         ])
       })
 
+      if (dialect === 'postgres') {
+        it('should stream results with a specific chunk size', async () => {
+          const males: unknown[] = []
+
+          const stream = ctx.db
+            .selectFrom('person')
+            .select(['first_name', 'last_name', 'gender'])
+            .where('gender', '=', 'male')
+            .orderBy('first_name')
+            .stream(1)
+
+          for await (const male of stream) {
+            males.push(male)
+          }
+
+          expect(males).to.have.length(2)
+          expect(males).to.eql([
+            {
+              first_name: 'Arnold',
+              last_name: 'Schwarzenegger',
+              gender: 'male',
+            },
+            {
+              first_name: 'Sylvester',
+              last_name: 'Stallone',
+              gender: 'male',
+            },
+          ])
+        })
+      }
+
       it('should release connection on premature async iterator stop', async () => {
         for (let i = 0; i <= POOL_SIZE + 1; i++) {
           const stream = ctx.db.selectFrom('person').selectAll().stream()
+
+          for await (const _ of stream) {
+            break
+          }
+        }
+      })
+
+      it('should release connection on premature async iterator stop when using a specific chunk size', async () => {
+        for (let i = 0; i <= POOL_SIZE + 1; i++) {
+          const stream = ctx.db.selectFrom('person').selectAll().stream(1)
 
           for await (const _ of stream) {
             break

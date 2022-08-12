@@ -86,6 +86,7 @@ import {
 import { CreateTypeNode } from '../operation-node/create-type-node.js'
 import { DropTypeNode } from '../operation-node/drop-type-node.js'
 import { ExplainNode } from '../operation-node/explain-node.js'
+import { SchemableIdentifierNode } from '../operation-node/schemable-identifier-node.js'
 
 export class DefaultQueryCompiler
   extends OperationNodeVisitor
@@ -389,13 +390,13 @@ export class DefaultQueryCompiler
   }
 
   protected compileUnwrappedIdentifier(node: IdentifierNode): void {
-    if (!isString(node.identifier)) {
+    if (!isString(node.name)) {
       throw new Error(
         'a non-string identifier was passed to compileUnwrappedIdentifier.'
       )
     }
 
-    this.append(this.sanitizeIdentifier(node.identifier))
+    this.append(this.sanitizeIdentifier(node.name))
   }
 
   protected override visitFilter(node: FilterNode): void {
@@ -491,12 +492,18 @@ export class DefaultQueryCompiler
   }
 
   protected override visitTable(node: TableNode): void {
+    this.visitNode(node.table)
+  }
+
+  protected override visitSchemableIdentifier(
+    node: SchemableIdentifierNode
+  ): void {
     if (node.schema) {
       this.visitNode(node.schema)
       this.append('.')
     }
 
-    this.visitNode(node.table)
+    this.visitNode(node.identifier)
   }
 
   protected override visitCreateTable(node: CreateTableNode): void {

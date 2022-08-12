@@ -4,6 +4,7 @@ import { ColumnNode } from './column-node.js'
 import { OperationNode } from './operation-node.js'
 import { ReferenceNode } from './reference-node.js'
 import { SelectAllNode } from './select-all-node.js'
+import { TableNode } from './table-node.js'
 
 type SelectionNodeChild = ColumnNode | ReferenceNode | AliasNode | SelectAllNode
 
@@ -34,7 +35,7 @@ export const SelectionNode = freeze({
     })
   },
 
-  createSelectAllFromTable(table: string): SelectionNode {
+  createSelectAllFromTable(table: TableNode): SelectionNode {
     return freeze({
       kind: 'SelectionNode',
       selection: ReferenceNode.createSelectAll(table),

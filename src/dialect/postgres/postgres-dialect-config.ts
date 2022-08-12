@@ -1,22 +1,5 @@
 import { DatabaseConnection } from '../../driver/database-connection.js'
 
-export type PostgresCursorConstructor = new <T>(
-  sql: string,
-  parameters: readonly unknown[]
-) => PostgresCursor<T>
-export type PostgresCursor<T> =
-  | {
-      state: 'initialized' | 'idle' | 'submitted' | 'busy'
-      read: (rowsCount: number) => Promise<T[]>
-    }
-  | {
-      state: 'done'
-    }
-  | {
-      state: 'error'
-      _error: Error
-    }
-
 /**
  * Config for the PostgreSQL dialect.
  */
@@ -72,13 +55,21 @@ export interface PostgresPoolClient {
   release(): void
 }
 
+export interface PostgresCursor<T> {
+  read(rowsCount: number): Promise<T[]>
+  close(): Promise<void>
+}
+
+export type PostgresCursorConstructor = new <T>(
+  sql: string,
+  parameters: unknown[]
+) => PostgresCursor<T>
+
 export interface PostgresQueryResult<R> {
   command: 'UPDATE' | 'DELETE' | 'INSERT' | 'SELECT'
   rowCount: number
   rows: R[]
 }
-
-export interface PostgresStreamOptions {}
 
 export interface PostgresStream<T> {
   [Symbol.asyncIterator](): AsyncIterableIterator<T>

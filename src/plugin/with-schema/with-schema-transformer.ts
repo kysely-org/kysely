@@ -1,179 +1,140 @@
 import { AliasNode } from '../../operation-node/alias-node.js'
-import { AlterTableNode } from '../../operation-node/alter-table-node.js'
-import { CreateIndexNode } from '../../operation-node/create-index-node.js'
-import { CreateTableNode } from '../../operation-node/create-table-node.js'
-import { CreateTypeNode } from '../../operation-node/create-type-node.js'
-import { CreateViewNode } from '../../operation-node/create-view-node.js'
-import { DeleteQueryNode } from '../../operation-node/delete-query-node.js'
-import { DropIndexNode } from '../../operation-node/drop-index-node.js'
-import { DropTableNode } from '../../operation-node/drop-table-node.js'
-import { DropTypeNode } from '../../operation-node/drop-type-node.js'
-import { DropViewNode } from '../../operation-node/drop-view-node.js'
-import { InsertQueryNode } from '../../operation-node/insert-query-node.js'
-import { JoinNode } from '../../operation-node/join-node.js'
+import { IdentifierNode } from '../../operation-node/identifier-node.js'
 import { OperationNodeTransformer } from '../../operation-node/operation-node-transformer.js'
 import { TableExpressionNode } from '../../operation-node/operation-node-utils.js'
-import { SelectQueryNode } from '../../operation-node/select-query-node.js'
+import { OperationNode } from '../../operation-node/operation-node.js'
+import { ReferencesNode } from '../../operation-node/references-node.js'
+import { SchemableIdentifierNode } from '../../operation-node/schemable-identifier-node.js'
 import { TableNode } from '../../operation-node/table-node.js'
-import { UpdateQueryNode } from '../../operation-node/update-query-node.js'
 import { WithNode } from '../../operation-node/with-node.js'
 import { RootOperationNode } from '../../query-compiler/query-compiler.js'
+import { freeze } from '../../util/object-utils.js'
+
+// This object exist only so that we get a type error when a new RootOperationNode
+// is added. If you get a type error here, make sure to add the new root node and
+// handle it correctly in the transformer.
+//
+// DO NOT REFACTOR THIS EVEN IF IT SEEMS USELESS TO YOU!
+const ROOT_OPERATION_NODES: Record<RootOperationNode['kind'], true> = freeze({
+  AlterTableNode: true,
+  CreateIndexNode: true,
+  CreateSchemaNode: true,
+  CreateTableNode: true,
+  CreateTypeNode: true,
+  CreateViewNode: true,
+  DeleteQueryNode: true,
+  DropIndexNode: true,
+  DropSchemaNode: true,
+  DropTableNode: true,
+  DropTypeNode: true,
+  DropViewNode: true,
+  InsertQueryNode: true,
+  RawNode: true,
+  SelectQueryNode: true,
+  UpdateQueryNode: true,
+})
 
 export class WithSchemaTransformer extends OperationNodeTransformer {
   readonly #schema: string
-  readonly #tables = new Set<string>()
+  readonly #schemableIds = new Set<string>()
 
   constructor(schema: string) {
     super()
     this.#schema = schema
   }
 
-  protected override transformSelectQuery(
-    node: SelectQueryNode
-  ): SelectQueryNode {
-    return this.#transformRoot(node, (node) => super.transformSelectQuery(node))
-  }
-
-  protected override transformInsertQuery(
-    node: InsertQueryNode
-  ): InsertQueryNode {
-    return this.#transformRoot(node, (node) => super.transformInsertQuery(node))
-  }
-
-  protected override transformUpdateQuery(
-    node: UpdateQueryNode
-  ): UpdateQueryNode {
-    return this.#transformRoot(node, (node) => super.transformUpdateQuery(node))
-  }
-
-  protected override transformDeleteQuery(
-    node: DeleteQueryNode
-  ): DeleteQueryNode {
-    return this.#transformRoot(node, (node) => super.transformDeleteQuery(node))
-  }
-
-  protected override transformCreateTable(
-    node: CreateTableNode
-  ): CreateTableNode {
-    return this.#transformRoot(node, (node) => super.transformCreateTable(node))
-  }
-
-  protected override transformDropTable(node: DropTableNode): DropTableNode {
-    return this.#transformRoot(node, (node) => super.transformDropTable(node))
-  }
-
-  protected override transformCreateIndex(
-    node: CreateIndexNode
-  ): CreateIndexNode {
-    return this.#transformRoot(node, (node) => super.transformCreateIndex(node))
-  }
-
-  protected override transformDropIndex(node: DropIndexNode): DropIndexNode {
-    return this.#transformRoot(node, (node) => super.transformDropIndex(node))
-  }
-
-  protected override transformCreateView(node: CreateViewNode): CreateViewNode {
-    return this.#transformRoot(node, (node) => super.transformCreateView(node))
-  }
-
-  protected override transformDropView(node: DropViewNode): DropViewNode {
-    return this.#transformRoot(node, (node) => super.transformDropView(node))
-  }
-
-  protected override transformCreateType(node: CreateTypeNode): CreateTypeNode {
-    return this.#transformRoot(node, (node) => super.transformCreateType(node))
-  }
-
-  protected override transformDropType(node: DropTypeNode): DropTypeNode {
-    return this.#transformRoot(node, (node) => super.transformDropType(node))
-  }
-
-  protected override transformAlterTable(node: AlterTableNode): AlterTableNode {
-    return this.#transformRoot(node, (node) => super.transformAlterTable(node))
-  }
-
-  protected override transformTable(node: TableNode): TableNode {
-    const transformed = super.transformTable(node)
-
-    if (transformed.schema || !this.#tables.has(node.table.identifier)) {
-      return transformed
+  protected override transformNodeImpl<T extends OperationNode>(node: T): T {
+    if (!this.#isRootOperationNode(node)) {
+      return super.transformNodeImpl(node)
     }
 
-    return {
-      ...transformed,
-      schema: {
-        kind: 'IdentifierNode',
-        identifier: this.#schema,
-      },
-    }
-  }
-
-  #transformRoot<T extends RootOperationNode>(
-    node: T,
-    transform: (node: T) => T
-  ): T {
-    const tables = this.#collectTables(node)
+    const tables = this.#collectSchemableIds(node)
 
     for (const table of tables) {
-      this.#tables.add(table)
+      this.#schemableIds.add(table)
     }
 
-    const transformed = transform(node)
+    const transformed = super.transformNodeImpl(node)
 
     for (const table of tables) {
-      this.#tables.delete(table)
+      this.#schemableIds.delete(table)
     }
 
     return transformed
   }
 
-  #collectTables(node: RootOperationNode): Set<string> {
-    const tables = new Set<string>()
+  protected override transformSchemableIdentifier(
+    node: SchemableIdentifierNode
+  ): SchemableIdentifierNode {
+    const transformed = super.transformSchemableIdentifier(node)
+
+    if (transformed.schema || !this.#schemableIds.has(node.identifier.name)) {
+      return transformed
+    }
+
+    return {
+      ...transformed,
+      schema: IdentifierNode.create(this.#schema),
+    }
+  }
+
+  protected transformReferences(node: ReferencesNode): ReferencesNode {
+    const transformed = super.transformReferences(node)
+
+    if (transformed.table.table.schema) {
+      return transformed
+    }
+
+    return {
+      ...transformed,
+      table: TableNode.createWithSchema(
+        this.#schema,
+        transformed.table.table.identifier.name
+      ),
+    }
+  }
+
+  #isRootOperationNode(node: OperationNode): node is RootOperationNode {
+    return node.kind in ROOT_OPERATION_NODES
+  }
+
+  #collectSchemableIds(node: RootOperationNode): Set<string> {
+    const schemableIds = new Set<string>()
+
+    if ('name' in node && node.name && SchemableIdentifierNode.is(node.name)) {
+      this.#collectSchemableId(node.name, schemableIds)
+    }
 
     if ('from' in node && node.from) {
-      this.#collectTablesFromTableExpressionNodes(node.from.froms, tables)
+      for (const from of node.from.froms) {
+        this.#collectSchemableIdsFromTableExpr(from, schemableIds)
+      }
     }
 
     if ('into' in node && node.into) {
-      this.#collectTablesFromTableExpressionNode(node.into, tables)
+      this.#collectSchemableIdsFromTableExpr(node.into, schemableIds)
     }
 
     if ('table' in node && node.table) {
-      this.#collectTablesFromTableExpressionNode(node.table, tables)
+      this.#collectSchemableIdsFromTableExpr(node.table, schemableIds)
     }
 
     if ('joins' in node && node.joins) {
-      this.#collectTablesFromJoins(node.joins, tables)
+      for (const join of node.joins) {
+        this.#collectSchemableIdsFromTableExpr(join.table, schemableIds)
+      }
     }
 
     if ('with' in node && node.with) {
-      this.#removeCommonTableExpressionTables(node.with, tables)
+      this.#removeCommonTableExpressionTables(node.with, schemableIds)
     }
 
-    return tables
+    return schemableIds
   }
 
-  #collectTablesFromTableExpressionNodes(
-    nodes: ReadonlyArray<TableExpressionNode>,
-    tables: Set<string>
-  ): void {
-    for (const node of nodes) {
-      this.#collectTablesFromTableExpressionNode(node, tables)
-    }
-  }
-
-  #collectTablesFromJoins(
-    nodes: ReadonlyArray<JoinNode>,
-    tables: Set<string>
-  ): void {
-    for (const node of nodes) {
-      this.#collectTablesFromTableExpressionNode(node.table, tables)
-    }
-  }
-
-  #collectTablesFromTableExpressionNode(
+  #collectSchemableIdsFromTableExpr(
     node: TableExpressionNode,
-    tables: Set<string>
+    schemableIds: Set<string>
   ): void {
     const table = TableNode.is(node)
       ? node
@@ -181,14 +142,26 @@ export class WithSchemaTransformer extends OperationNodeTransformer {
       ? node.node
       : null
 
-    if (table && !this.#tables.has(table.table.identifier)) {
-      tables.add(table.table.identifier)
+    if (table) {
+      this.#collectSchemableId(table.table, schemableIds)
     }
   }
 
-  #removeCommonTableExpressionTables(node: WithNode, tables: Set<string>) {
+  #collectSchemableId(
+    node: SchemableIdentifierNode,
+    schemableIds: Set<string>
+  ): void {
+    if (!this.#schemableIds.has(node.identifier.name)) {
+      schemableIds.add(node.identifier.name)
+    }
+  }
+
+  #removeCommonTableExpressionTables(
+    node: WithNode,
+    schemableIds: Set<string>
+  ) {
     for (const expr of node.expressions) {
-      tables.delete(expr.name.table.table.identifier)
+      schemableIds.delete(expr.name.table.table.identifier.name)
     }
   }
 }
