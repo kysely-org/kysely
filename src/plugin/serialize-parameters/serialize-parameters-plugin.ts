@@ -11,10 +11,14 @@ import { Caster, Serializer } from './serialize-parameters.js'
 
 export interface SerializeParametersPluginOptions {
   /**
-   * TODO: ...
+   * Function responsible for casting of serialized parameters.
+   *
+   * E.g. Postgres `::jsonb` casting of parameters in sql query.
    */
   caster?: Caster
   /**
+   * Function responsible for serialization of parameters.
+   *
    * Defaults to `JSON.stringify` of objects and arrays.
    */
   serializer?: Serializer
@@ -53,6 +57,64 @@ export interface SerializeParametersPluginOptions {
  *     tags: ['celebrity', 'actress'],
  *   }])
  *   .execute()
+ * ```
+ *
+ *
+ * You can also provide a custom serializer function:
+ *
+ * ```ts
+ * const db = new Kysely<Database>({
+ *   dialect: new PostgresDialect({
+ *     database: 'kysel_test',
+ *     host: 'localhost',
+ *   }),
+ *   plugins: [
+ *     new SerializeParametersPlugin({
+ *         serializer: (value) => {
+ *             if (value instanceof Date) {
+ *                 return formatDatetime(value)
+ *             }
+ *
+ *             if (value !== null && typeof value === 'object') {
+ *                 return JSON.stringify(value)
+ *             }
+ *
+ *             return value
+ *         }
+ *     }),
+ *   ],
+ * })
+ * ```
+ *
+ *
+ * Casting serialized parameters is also supported:
+ *
+ * ```ts
+ * const db = new Kysely<Database>({
+ *   dialect: new PostgresDialect({
+ *     database: 'kysel_test',
+ *     host: 'localhost',
+ *   }),
+ *   plugins: [
+ *     new SerializeParametersPlugin({
+ *         caster: (serializedValue) => sql`${serializedValue}::jsonb`
+ *     }),
+ *   ],
+ * })
+ *
+ * await db.insertInto('person')
+ *   .values([{
+ *     firstName: 'Jennifer',
+ *     lastName: 'Aniston',
+ *     tags: ['celebrity', 'actress'],
+ *   }])
+ *   .execute()
+ * ```
+ *
+ * Compiled sql query (Postgres):
+ *
+ * ```sql
+ * insertInto "person" ("firstName", "lastName", "tags") values ($1, $2, $3::jsonb)
  * ```
  */
 export class SerializeParametersPlugin implements KyselyPlugin {
