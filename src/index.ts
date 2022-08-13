@@ -88,6 +88,7 @@ export * from './plugin/kysely-plugin.js'
 export * from './plugin/camel-case/camel-case-plugin.js'
 export * from './plugin/deduplicate-joins/deduplicate-joins-plugin.js'
 export * from './plugin/with-schema/with-schema-plugin.js'
+export * from './plugin/serialize-parameters/serialize-parameters.js'
 export * from './plugin/serialize-parameters/serialize-parameters-plugin.js'
 
 export * from './operation-node/add-column-node.js'

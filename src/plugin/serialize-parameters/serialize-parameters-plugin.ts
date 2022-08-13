@@ -7,9 +7,13 @@ import {
   PluginTransformResultArgs,
 } from '../kysely-plugin.js'
 import { SerializeParametersTransformer } from './serialize-parameters-transformer.js'
-import { Serializer } from './serialize-parameters.js'
+import { Caster, Serializer } from './serialize-parameters.js'
 
 export interface SerializeParametersPluginOptions {
+  /**
+   * TODO: ...
+   */
+  caster?: Caster
   /**
    * Defaults to `JSON.stringify` of objects and arrays.
    */
@@ -56,7 +60,8 @@ export class SerializeParametersPlugin implements KyselyPlugin {
 
   constructor(opt: SerializeParametersPluginOptions = {}) {
     this.#serializeParametersTransformer = new SerializeParametersTransformer(
-      opt.serializer
+      opt.serializer,
+      opt.caster
     )
   }
 
