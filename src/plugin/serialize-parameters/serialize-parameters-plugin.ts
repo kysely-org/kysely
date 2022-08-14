@@ -114,7 +114,7 @@ export interface SerializeParametersPluginOptions {
  * Compiled sql query (Postgres):
  *
  * ```sql
- * insertInto "person" ("firstName", "lastName", "tags") values ($1, $2, $3::jsonb)
+ * insert into "person" ("firstName", "lastName", "tags") values ($1, $2, $3::jsonb)
  * ```
  */
 export class SerializeParametersPlugin implements KyselyPlugin {
