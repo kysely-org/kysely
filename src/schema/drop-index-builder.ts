@@ -37,6 +37,15 @@ export class DropIndexBuilder implements OperationNodeSource, Compilable {
     })
   }
 
+  cascade(): DropIndexBuilder {
+    return new DropIndexBuilder({
+      ...this.#props,
+      dropIndexNode: DropIndexNode.cloneWith(this.#props.dropIndexNode, {
+        cascade: true,
+      }),
+    })
+  }
+
   toOperationNode(): DropIndexNode {
     return this.#props.executor.transformQuery(
       this.#props.dropIndexNode,

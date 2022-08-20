@@ -10,6 +10,7 @@ export interface DropViewNode extends OperationNode {
   readonly name: SchemableIdentifierNode
   readonly ifExists?: boolean
   readonly materialized?: boolean
+  readonly cascade?: boolean
 }
 
 /**

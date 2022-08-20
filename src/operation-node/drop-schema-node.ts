@@ -11,6 +11,7 @@ export interface DropSchemaNode extends OperationNode {
   readonly kind: 'DropSchemaNode'
   readonly schema: IdentifierNode
   readonly ifExists?: boolean
+  readonly cascade?: boolean
 }
 
 /**

@@ -423,6 +423,7 @@ export class OperationNodeTransformer {
       kind: 'DropTableNode',
       table: this.transformNode(node.table),
       ifExists: node.ifExists,
+      cascade: node.cascade,
     })
   }
 
@@ -537,6 +538,7 @@ export class OperationNodeTransformer {
       name: this.transformNode(node.name),
       table: this.transformNode(node.table),
       ifExists: node.ifExists,
+      cascade: node.cascade,
     })
   }
 
@@ -649,6 +651,7 @@ export class OperationNodeTransformer {
       kind: 'DropSchemaNode',
       schema: this.transformNode(node.schema),
       ifExists: node.ifExists,
+      cascade: node.cascade,
     })
   }
 
@@ -740,6 +743,7 @@ export class OperationNodeTransformer {
       name: this.transformNode(node.name),
       ifExists: node.ifExists,
       materialized: node.materialized,
+      cascade: node.cascade,
     })
   }
 

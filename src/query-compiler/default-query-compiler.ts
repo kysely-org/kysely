@@ -618,6 +618,10 @@ export class DefaultQueryCompiler
     }
 
     this.visitNode(node.table)
+
+    if (node.cascade) {
+      this.append(' cascade')
+    }
   }
 
   protected override visitDataType(node: DataTypeNode): void {
@@ -802,6 +806,10 @@ export class DefaultQueryCompiler
       this.append(' on ')
       this.visitNode(node.table)
     }
+
+    if (node.cascade) {
+      this.append(' cascade')
+    }
   }
 
   protected override visitCreateSchema(node: CreateSchemaNode): void {
@@ -822,6 +830,10 @@ export class DefaultQueryCompiler
     }
 
     this.visitNode(node.schema)
+
+    if (node.cascade) {
+      this.append(' cascade')
+    }
   }
 
   protected override visitPrimaryKeyConstraint(
@@ -1101,6 +1113,10 @@ export class DefaultQueryCompiler
     }
 
     this.visitNode(node.name)
+
+    if (node.cascade) {
+      this.append(' cascade')
+    }
   }
 
   protected override visitGenerated(node: GeneratedNode): void {

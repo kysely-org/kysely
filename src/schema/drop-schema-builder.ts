@@ -23,6 +23,15 @@ export class DropSchemaBuilder implements OperationNodeSource, Compilable {
     })
   }
 
+  cascade(): DropSchemaBuilder {
+    return new DropSchemaBuilder({
+      ...this.#props,
+      dropSchemaNode: DropSchemaNode.cloneWith(this.#props.dropSchemaNode, {
+        cascade: true,
+      }),
+    })
+  }
+
   toOperationNode(): DropSchemaNode {
     return this.#props.executor.transformQuery(
       this.#props.dropSchemaNode,
