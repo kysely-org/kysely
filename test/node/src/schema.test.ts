@@ -1,6 +1,7 @@
 import { ColumnMetadata, sql } from '../../../'
 
 import {
+  BuiltInDialect,
   BUILT_IN_DIALECTS,
   clearDatabase,
   destroyTest,
@@ -12,6 +13,7 @@ import {
 } from './test-setup.js'
 
 for (const dialect of BUILT_IN_DIALECTS) {
+  // for (const dialect of ['postgres', 'mysql'] as BuiltInDialect[]) {
   describe(`${dialect}: schema`, () => {
     let ctx: TestContext
 
@@ -795,6 +797,37 @@ for (const dialect of BUILT_IN_DIALECTS) {
 
         await builder.execute()
       })
+      if (dialect !== 'sqlite') {
+        it('should drop a table cascade', async () => {
+          const builder = ctx.db.schema.dropTable('test').cascade()
+          testSql(builder, dialect, {
+            postgres: {
+              sql: 'drop table "test" cascade',
+              parameters: [],
+            },
+            mysql: {
+              sql: 'drop table `test` cascade',
+              parameters: [],
+            },
+            sqlite: NOT_SUPPORTED,
+          })
+        })
+
+        it('should drop a table cascade if it exists', async () => {
+          const builder = ctx.db.schema.dropTable('test').cascade().ifExists()
+          testSql(builder, dialect, {
+            postgres: {
+              sql: 'drop table if exists "test" cascade',
+              parameters: [],
+            },
+            mysql: {
+              sql: 'drop table if exists `test` cascade',
+              parameters: [],
+            },
+            sqlite: NOT_SUPPORTED,
+          })
+        })
+      }
     })
 
     describe('create index', () => {
@@ -993,6 +1026,43 @@ for (const dialect of BUILT_IN_DIALECTS) {
           await builder.execute()
         })
       }
+
+      if (dialect === 'postgres') {
+        it('should drop an index cascade', async () => {
+          let builder = ctx.db.schema
+            .dropIndex('test_first_name_index')
+            .cascade()
+
+          testSql(builder, dialect, {
+            postgres: {
+              sql: 'drop index "test_first_name_index" cascade',
+              parameters: [],
+            },
+            mysql: NOT_SUPPORTED,
+            sqlite: NOT_SUPPORTED,
+          })
+
+          await builder.execute()
+        })
+
+        it('should drop an index cascade if it exists', async () => {
+          let builder = ctx.db.schema
+            .dropIndex('test_first_name_index')
+            .cascade()
+            .ifExists()
+
+          testSql(builder, dialect, {
+            postgres: {
+              sql: 'drop index if exists "test_first_name_index" cascade',
+              parameters: [],
+            },
+            mysql: NOT_SUPPORTED,
+            sqlite: NOT_SUPPORTED,
+          })
+
+          await builder.execute()
+        })
+      }
     })
 
     describe('create view', () => {
@@ -1182,6 +1252,42 @@ for (const dialect of BUILT_IN_DIALECTS) {
 
         await builder.execute()
       })
+      if (dialect !== 'sqlite') {
+        it('should drop a view cascade', async () => {
+          const builder = ctx.db.schema.dropView('dogs').cascade()
+
+          testSql(builder, dialect, {
+            postgres: {
+              sql: `drop view "dogs" cascade`,
+              parameters: [],
+            },
+            mysql: {
+              sql: 'drop view `dogs` cascade',
+              parameters: [],
+            },
+            sqlite: NOT_SUPPORTED,
+          })
+
+          await builder.execute()
+        })
+        it('should drop a view cascade if it exists', async () => {
+          const builder = ctx.db.schema.dropView('dogs').ifExists().cascade()
+
+          testSql(builder, dialect, {
+            postgres: {
+              sql: `drop view if exists "dogs" cascade`,
+              parameters: [],
+            },
+            mysql: {
+              sql: 'drop view if exists `dogs` cascade',
+              parameters: [],
+            },
+            sqlite: NOT_SUPPORTED,
+          })
+
+          await builder.execute()
+        })
+      }
     })
 
     describe('create schema', () => {
@@ -1273,6 +1379,41 @@ for (const dialect of BUILT_IN_DIALECTS) {
 
           await builder.execute()
         })
+        if (dialect === 'postgres') {
+          it('should drop a schema cascade', async () => {
+            await ctx.db.schema.createSchema('pets').execute()
+            const builder = ctx.db.schema.dropSchema('pets').cascade()
+
+            testSql(builder, dialect, {
+              postgres: {
+                sql: `drop schema "pets" cascade`,
+                parameters: [],
+              },
+              mysql: NOT_SUPPORTED,
+              sqlite: NOT_SUPPORTED,
+            })
+
+            await builder.execute()
+          })
+
+          it('should drop a schema cascade if exists', async () => {
+            const builder = ctx.db.schema
+              .dropSchema('pets')
+              .cascade()
+              .ifExists()
+
+            testSql(builder, dialect, {
+              postgres: {
+                sql: `drop schema if exists "pets" cascade`,
+                parameters: [],
+              },
+              mysql: NOT_SUPPORTED,
+              sqlite: NOT_SUPPORTED,
+            })
+
+            await builder.execute()
+          })
+        }
       }
 
       async function cleanup() {
