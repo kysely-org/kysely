@@ -23,6 +23,15 @@ export class DropTableBuilder implements OperationNodeSource, Compilable {
     })
   }
 
+  cascade(): DropTableBuilder {
+    return new DropTableBuilder({
+      ...this.#props,
+      dropTableNode: DropTableNode.cloneWith(this.#props.dropTableNode, {
+        cascade: true,
+      }),
+    })
+  }
+
   toOperationNode(): DropTableNode {
     return this.#props.executor.transformQuery(
       this.#props.dropTableNode,

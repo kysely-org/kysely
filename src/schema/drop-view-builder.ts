@@ -32,6 +32,15 @@ export class DropViewBuilder implements OperationNodeSource, Compilable {
     })
   }
 
+  cascade(): DropViewBuilder {
+    return new DropViewBuilder({
+      ...this.#props,
+      dropViewNode: DropViewNode.cloneWith(this.#props.dropViewNode, {
+        cascade: true,
+      }),
+    })
+  }
+
   toOperationNode(): DropViewNode {
     return this.#props.executor.transformQuery(
       this.#props.dropViewNode,

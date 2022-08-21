@@ -10,6 +10,7 @@ export interface DropTableNode extends OperationNode {
   readonly kind: 'DropTableNode'
   readonly table: TableNode
   readonly ifExists?: boolean
+  readonly cascade?: boolean
 }
 
 /**
