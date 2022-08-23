@@ -487,7 +487,9 @@ for (const dialect of BUILT_IN_DIALECTS) {
 
         await query.execute()
       })
+    }
 
+    if (dialect === 'postgres' || dialect === 'sqlite') {
       it('should insert multiple rows', async () => {
         const query = ctx.db
           .insertInto('person')

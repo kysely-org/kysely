@@ -108,7 +108,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
       })
     }
 
-    if (dialect === 'postgres') {
+    if (dialect === 'postgres' || dialect === 'sqlite') {
       it('should return deleted rows when `returning` is used', async () => {
         const query = ctx.db
           .deleteFrom('person')
@@ -121,7 +121,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
             parameters: ['male'],
           },
           mysql: NOT_SUPPORTED,
-          sqlite: NOT_SUPPORTED,
+          sqlite: {
+            sql: 'delete from "person" where "gender" = ? returning "first_name", "last_name" as "last"',
+            parameters: ['male'],
+          },
         })
 
         const result = await query.execute()
@@ -149,7 +152,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
             parameters: ['female'],
           },
           mysql: NOT_SUPPORTED,
-          sqlite: NOT_SUPPORTED,
+          sqlite: {
+            sql: 'delete from "person" where "gender" = ? returning "first_name", "last_name"',
+            parameters: ['female'],
+          },
         })
 
         const result = await query.executeTakeFirstOrThrow()
