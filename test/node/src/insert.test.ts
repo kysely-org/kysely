@@ -487,7 +487,9 @@ for (const dialect of BUILT_IN_DIALECTS) {
 
         await query.execute()
       })
+    }
 
+    if (dialect === 'postgres' || dialect === 'sqlite') {
       it('should insert multiple rows', async () => {
         const query = ctx.db
           .insertInto('person')
@@ -511,7 +513,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
             parameters: ['Foo', 'Barson', 'other', 'Baz', 'Spam', 'other'],
           },
           mysql: NOT_SUPPORTED,
-          sqlite: NOT_SUPPORTED,
+          sqlite: {
+            sql: 'insert into "person" ("first_name", "last_name", "gender") values (?, ?, ?), (?, ?, ?) returning *',
+            parameters: ['Foo', 'Barson', 'other', 'Baz', 'Spam', 'other'],
+          },
         })
 
         const result = await query.execute()
@@ -519,6 +524,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
       })
 
       it('should return data using `returning`', async () => {
+        
         const result = await ctx.db
           .insertInto('person')
           .values({
@@ -526,7 +532,9 @@ for (const dialect of BUILT_IN_DIALECTS) {
             first_name: ctx.db
               .selectFrom('person')
               .select(sql`max(first_name)`.as('max_first_name')),
-            last_name: sql`concat(cast(${'Bar'} as varchar), cast(${'son'} as varchar))`,
+            last_name: dialect === 'postgres'
+              ? sql`concat(cast(${'Bar'} as varchar), cast(${'son'} as varchar))`
+              : sql`cast(${'Bar'} as varchar) || cast(${'son'} as varchar)`,
           })
           .returning(['first_name', 'last_name', 'gender'])
           .executeTakeFirst()
@@ -568,7 +576,9 @@ for (const dialect of BUILT_IN_DIALECTS) {
             first_name: ctx.db
               .selectFrom('person')
               .select(sql`max(first_name)`.as('max_first_name')),
-            last_name: sql`concat(cast(${'Bar'} as varchar), cast(${'son'} as varchar))`,
+            last_name: dialect === 'postgres'
+              ? sql`concat(cast(${'Bar'} as varchar), cast(${'son'} as varchar))`
+              : sql`cast(${'Bar'} as varchar) || cast(${'son'} as varchar)`,
           })
           .returningAll()
           .executeTakeFirst()

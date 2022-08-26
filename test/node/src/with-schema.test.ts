@@ -209,7 +209,10 @@ for (const dialect of ['postgres'] as const) {
             parameters: ['Doggo', 'dog', anyPerson.id],
           },
           mysql: NOT_SUPPORTED,
-          sqlite: NOT_SUPPORTED,
+          sqlite: {
+            sql: 'insert into "mammals"."pet" ("name", "species", "owner_id") values (?, ?, ?) returning "mammals"."pet"."id"',
+            parameters: ['Doggo', 'dog', anyPerson.id],
+          },
         })
       })
     })

@@ -163,7 +163,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
       await query.execute()
     })
 
-    if (dialect === 'postgres') {
+    if (dialect === 'postgres' || dialect === 'sqlite') {
       it('should return updated rows when `returning` is used', async () => {
         const query = ctx.db
           .updateTable('person')
@@ -177,7 +177,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
             parameters: ['Barson', 'male'],
           },
           mysql: NOT_SUPPORTED,
-          sqlite: NOT_SUPPORTED,
+          sqlite: {
+            sql: 'update "person" set "last_name" = ? where "gender" = ? returning "first_name", "last_name"',
+            parameters: ['Barson', 'male'],
+          },
         })
 
         const result = await query.execute()
@@ -223,7 +226,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
             parameters: ['Arnold'],
           },
           mysql: NOT_SUPPORTED,
-          sqlite: NOT_SUPPORTED,
+          sqlite: {
+            sql: 'update "person" set "first_name" = "pet"."name" from "pet" where "pet"."owner_id" = "person"."id" and "person"."first_name" = ? returning "first_name"',
+            parameters: ['Arnold'],
+          },
         })
 
         const result = await query.execute()

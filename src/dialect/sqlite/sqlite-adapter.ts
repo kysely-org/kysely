@@ -6,7 +6,7 @@ export class SqliteAdapter implements DialectAdapterBase {
   }
 
   get supportsReturning(): boolean {
-    return false
+    return true
   }
 
   async acquireMigrationLock(): Promise<void> {

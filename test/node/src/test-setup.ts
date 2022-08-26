@@ -352,7 +352,7 @@ async function insert<TB extends keyof Database>(
   dialect: BuiltInDialect,
   qb: InsertQueryBuilder<Database, TB, InsertResult>
 ): Promise<number> {
-  if (dialect === 'postgres') {
+  if (dialect === 'postgres' || dialect === 'sqlite') {
     const { id } = await qb.returning('id').executeTakeFirstOrThrow()
     return id
   } else {
