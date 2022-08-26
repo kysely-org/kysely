@@ -208,7 +208,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
       })
     }
 
-    if (dialect !== 'mysql') {
+    if (dialect !== 'mysql' && dialect !== 'sqlite') {
       it('should create a with query where CTEs are inserts updates and deletes', async () => {
         const query = ctx.db
           .with('deleted_arnold', (db) =>
@@ -251,17 +251,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
               'Jennifer',
             ],
           },
-          sqlite: {
-            sql: 'with "deleted_arnold" as (delete from "person" where "first_name" = ? returning "first_name" as "deleted_first_name"), "inserted_matt" as (insert into "person" ("first_name", "last_name", "gender") values (?, ?, ?) returning "first_name" as "inserted_first_name"), "updated_jennifer" as (update "person" set "last_name" = ? where "first_name" = ? returning "first_name" as "updated_first_name") select * from "deleted_arnold" inner join "inserted_matt" on 1 = 1 inner join "updated_jennifer" on 1 = 1',
-            parameters: [
-              'Arnold',
-              'Matt',
-              'Damon',
-              'male',
-              'Lawrence',
-              'Jennifer',
-            ],
-          },
+          sqlite: NOT_SUPPORTED,
           mysql: NOT_SUPPORTED,
         })
 
