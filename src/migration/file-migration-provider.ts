@@ -33,12 +33,14 @@ export class FileMigrationProvider implements MigrationProvider {
         (fileName.endsWith('.js') || fileName.endsWith('.ts') || fileName.endsWith('.mjs')) &&
         !fileName.endsWith('.d.ts')
       ) {
-        const migration = await import(
+        let migration = await import(
           /* webpackIgnore: true */ this.#props.path.join(
             this.#props.migrationFolder,
             fileName
           )
         )
+        // Coerce an esModuleInterop export's `default` prop...
+        migration = migration?.default ?? migration
 
         if (isMigration(migration)) {
           migrations[fileName.substring(0, fileName.length - 3)] = migration
