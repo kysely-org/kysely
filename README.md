@@ -69,6 +69,7 @@ for [3rd party dialects](https://koskimas.github.io/kysely/interfaces/Dialect.ht
 ### 3rd party dialects:
 
  - [AWS Data API](https://github.com/serverless-stack/kysely-data-api)
+ - [PlanetScale Serverless Driver](https://github.com/depot/kysely-planetscale)
 
 # Minimal example
 
