@@ -23,12 +23,12 @@ export const GroupByNode = freeze({
   },
 
   cloneWithItems(
-    orderBy: GroupByNode,
+    groupBy: GroupByNode,
     items: ReadonlyArray<GroupByItemNode>
   ): GroupByNode {
     return freeze({
-      ...orderBy,
-      items: freeze([...orderBy.items, ...items]),
+      ...groupBy,
+      items: freeze([...groupBy.items, ...items]),
     })
   },
 })
