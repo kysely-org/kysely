@@ -1,7 +1,7 @@
 import { ColumnNode } from '../operation-node/column-node.js'
 import { PrimitiveValueListNode } from '../operation-node/primitive-value-list-node.js'
 import { ValueListNode } from '../operation-node/value-list-node.js'
-import { freeze, isObject, isUndefined } from '../util/object-utils.js'
+import { freeze, isUndefined } from '../util/object-utils.js'
 import { parseValueExpression, ValueExpression } from './value-parser.js'
 import { ValuesNode } from '../operation-node/values-node.js'
 import {
@@ -11,7 +11,6 @@ import {
 } from '../util/column-type.js'
 import { isComplexExpression } from './complex-expression-parser.js'
 import { DefaultInsertValueNode } from '../operation-node/default-insert-value-node.js'
-import { OperationNode } from '../operation-node/operation-node.js'
 
 export type InsertObject<DB, TB extends keyof DB> = {
   [C in NonNullableInsertKeys<DB[TB]>]: ValueExpression<

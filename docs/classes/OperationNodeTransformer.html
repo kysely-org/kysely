@@ -23,7 +23,7 @@ something.</p>
 <p>There&#39;s a method for each node type. For example if you&#39;d like to convert
 each identifier (table name, column name, alias etc.) from camelCase to
 snake_case, you&#39;d do something like this:</p>
-<pre><code class="language-ts"><span class="hl-4">class</span><span class="hl-0"> </span><span class="hl-5">CamelCaseTransformer</span><span class="hl-0"> </span><span class="hl-4">extends</span><span class="hl-0"> </span><span class="hl-5">OperationNodeTransformer</span><span class="hl-0"> {</span><br/><span class="hl-0">  </span><span class="hl-8">transformIdentifier</span><span class="hl-0">(</span><span class="hl-1">node</span><span class="hl-0">: </span><span class="hl-5">IdentifierNode</span><span class="hl-0">): </span><span class="hl-5">IdentifierNode</span><span class="hl-0"> {</span><br/><span class="hl-0">    </span><span class="hl-1">node</span><span class="hl-0"> = </span><span class="hl-4">super</span><span class="hl-0">.</span><span class="hl-8">transformIdentifier</span><span class="hl-0">(</span><span class="hl-1">node</span><span class="hl-0">),</span><br/><br/><span class="hl-0">    </span><span class="hl-2">return</span><span class="hl-0"> {</span><br/><span class="hl-0">      ...</span><span class="hl-1">node</span><span class="hl-0">,</span><br/><span class="hl-0">      </span><span class="hl-1">identifier:</span><span class="hl-0"> </span><span class="hl-8">snakeCase</span><span class="hl-0">(</span><span class="hl-1">node</span><span class="hl-0">.</span><span class="hl-1">identifier</span><span class="hl-0">),</span><br/><span class="hl-0">    }</span><br/><span class="hl-0">  }</span><br/><span class="hl-0">}</span><br/><br/><span class="hl-4">const</span><span class="hl-0"> </span><span class="hl-7">transformer</span><span class="hl-0"> = </span><span class="hl-4">new</span><span class="hl-0"> </span><span class="hl-8">CamelCaseTransformer</span><span class="hl-0">()</span><br/><span class="hl-4">const</span><span class="hl-0"> </span><span class="hl-7">tree</span><span class="hl-0"> = </span><span class="hl-1">transformer</span><span class="hl-0">.</span><span class="hl-8">transformNode</span><span class="hl-0">(</span><span class="hl-1">tree</span><span class="hl-0">)</span>
+<pre><code class="language-ts"><span class="hl-4">class</span><span class="hl-0"> </span><span class="hl-5">CamelCaseTransformer</span><span class="hl-0"> </span><span class="hl-4">extends</span><span class="hl-0"> </span><span class="hl-5">OperationNodeTransformer</span><span class="hl-0"> {</span><br/><span class="hl-0">  </span><span class="hl-8">transformIdentifier</span><span class="hl-0">(</span><span class="hl-1">node</span><span class="hl-0">: </span><span class="hl-5">IdentifierNode</span><span class="hl-0">): </span><span class="hl-5">IdentifierNode</span><span class="hl-0"> {</span><br/><span class="hl-0">    </span><span class="hl-1">node</span><span class="hl-0"> = </span><span class="hl-4">super</span><span class="hl-0">.</span><span class="hl-8">transformIdentifier</span><span class="hl-0">(</span><span class="hl-1">node</span><span class="hl-0">),</span><br/><br/><span class="hl-0">    </span><span class="hl-2">return</span><span class="hl-0"> {</span><br/><span class="hl-0">      ...</span><span class="hl-1">node</span><span class="hl-0">,</span><br/><span class="hl-0">      </span><span class="hl-1">name:</span><span class="hl-0"> </span><span class="hl-8">snakeCase</span><span class="hl-0">(</span><span class="hl-1">node</span><span class="hl-0">.</span><span class="hl-1">name</span><span class="hl-0">),</span><br/><span class="hl-0">    }</span><br/><span class="hl-0">  }</span><br/><span class="hl-0">}</span><br/><br/><span class="hl-4">const</span><span class="hl-0"> </span><span class="hl-7">transformer</span><span class="hl-0"> = </span><span class="hl-4">new</span><span class="hl-0"> </span><span class="hl-8">CamelCaseTransformer</span><span class="hl-0">()</span><br/><span class="hl-4">const</span><span class="hl-0"> </span><span class="hl-7">tree</span><span class="hl-0"> = </span><span class="hl-1">transformer</span><span class="hl-0">.</span><span class="hl-8">transformNode</span><span class="hl-0">(</span><span class="hl-1">tree</span><span class="hl-0">)</span>
 </code></pre>
 </div></section>
 <section class="tsd-panel tsd-hierarchy">
@@ -31,7 +31,7 @@ snake_case, you&#39;d do something like this:</p>
 <ul class="tsd-hierarchy">
 <li><span class="target">OperationNodeTransformer</span></li></ul></section><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/koskimas/kysely/blob/00b323dc/src/operation-node/operation-node-transformer.ts#L105">src/operation-node/operation-node-transformer.ts:105</a></li></ul></aside>
+<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cde911a9/src/operation-node/operation-node-transformer.ts#L106">src/operation-node/operation-node-transformer.ts:106</a></li></ul></aside>
 <section class="tsd-panel-group tsd-index-group">
 <section class="tsd-panel tsd-index-panel">
 <details class="tsd-index-content tsd-index-accordion" open><summary class="tsd-accordion-summary tsd-index-summary">
@@ -65,6 +65,7 @@ snake_case, you&#39;d do something like this:</p>
 <a href="OperationNodeTransformer.html#transformCreateType" class="tsd-index-link tsd-kind-method tsd-parent-kind-class tsd-is-protected"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg><span>transform<wbr/>Create<wbr/>Type</span></a>
 <a href="OperationNodeTransformer.html#transformCreateView" class="tsd-index-link tsd-kind-method tsd-parent-kind-class tsd-is-protected"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg><span>transform<wbr/>Create<wbr/>View</span></a>
 <a href="OperationNodeTransformer.html#transformDataType" class="tsd-index-link tsd-kind-method tsd-parent-kind-class tsd-is-protected"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg><span>transform<wbr/>Data<wbr/>Type</span></a>
+<a href="OperationNodeTransformer.html#transformDefaultInsertValue" class="tsd-index-link tsd-kind-method tsd-parent-kind-class tsd-is-protected"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg><span>transform<wbr/>Default<wbr/>Insert<wbr/>Value</span></a>
 <a href="OperationNodeTransformer.html#transformDefaultValue" class="tsd-index-link tsd-kind-method tsd-parent-kind-class tsd-is-protected"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg><span>transform<wbr/>Default<wbr/>Value</span></a>
 <a href="OperationNodeTransformer.html#transformDeleteQuery" class="tsd-index-link tsd-kind-method tsd-parent-kind-class tsd-is-protected"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg><span>transform<wbr/>Delete<wbr/>Query</span></a>
 <a href="OperationNodeTransformer.html#transformDropColumn" class="tsd-index-link tsd-kind-method tsd-parent-kind-class tsd-is-protected"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg><span>transform<wbr/>Drop<wbr/>Column</span></a>
@@ -136,7 +137,7 @@ snake_case, you&#39;d do something like this:</p>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagProtected">Protected</code> <code class="tsd-tag ts-flagReadonly">Readonly</code> <span>node<wbr/>Stack</span><a href="#nodeStack" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">node<wbr/>Stack<span class="tsd-signature-symbol">:</span> <a href="../interfaces/OperationNode.html" class="tsd-signature-type" data-tsd-kind="Interface">OperationNode</a><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol"> = []</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/koskimas/kysely/blob/00b323dc/src/operation-node/operation-node-transformer.ts#L106">src/operation-node/operation-node-transformer.ts:106</a></li></ul></aside></section></section>
+<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cde911a9/src/operation-node/operation-node-transformer.ts#L107">src/operation-node/operation-node-transformer.ts:107</a></li></ul></aside></section></section>
 <section class="tsd-panel-group tsd-member-group">
 <h2>Methods</h2>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-protected"><a id="transformAddColumn" class="tsd-anchor"></a>
@@ -151,7 +152,7 @@ snake_case, you&#39;d do something like this:</p>
 <h5>node: <span class="tsd-signature-type">AddColumnNode</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">AddColumnNode</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/koskimas/kysely/blob/00b323dc/src/operation-node/operation-node-transformer.ts#L414">src/operation-node/operation-node-transformer.ts:414</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cde911a9/src/operation-node/operation-node-transformer.ts#L416">src/operation-node/operation-node-transformer.ts:416</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-protected"><a id="transformAddConstraint" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagProtected">Protected</code> <span>transform<wbr/>Add<wbr/>Constraint</span><a href="#transformAddConstraint" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-protected">
@@ -164,7 +165,7 @@ snake_case, you&#39;d do something like this:</p>
 <h5>node: <span class="tsd-signature-type">AddConstraintNode</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">AddConstraintNode</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/koskimas/kysely/blob/00b323dc/src/operation-node/operation-node-transformer.ts#L706">src/operation-node/operation-node-transformer.ts:706</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cde911a9/src/operation-node/operation-node-transformer.ts#L711">src/operation-node/operation-node-transformer.ts:711</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-protected"><a id="transformAlias" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagProtected">Protected</code> <span>transform<wbr/>Alias</span><a href="#transformAlias" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-protected">
@@ -177,7 +178,7 @@ snake_case, you&#39;d do something like this:</p>
 <h5>node: <span class="tsd-signature-type">AliasNode</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">AliasNode</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/koskimas/kysely/blob/00b323dc/src/operation-node/operation-node-transformer.ts#L244">src/operation-node/operation-node-transformer.ts:244</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cde911a9/src/operation-node/operation-node-transformer.ts#L246">src/operation-node/operation-node-transformer.ts:246</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-protected"><a id="transformAlterColumn" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagProtected">Protected</code> <span>transform<wbr/>Alter<wbr/>Column</span><a href="#transformAlterColumn" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-protected">
@@ -190,7 +191,7 @@ snake_case, you&#39;d do something like this:</p>
 <h5>node: <span class="tsd-signature-type">AlterColumnNode</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">AlterColumnNode</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/koskimas/kysely/blob/00b323dc/src/operation-node/operation-node-transformer.ts#L686">src/operation-node/operation-node-transformer.ts:686</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cde911a9/src/operation-node/operation-node-transformer.ts#L691">src/operation-node/operation-node-transformer.ts:691</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-protected"><a id="transformAlterTable" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagProtected">Protected</code> <span>transform<wbr/>Alter<wbr/>Table</span><a href="#transformAlterTable" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-protected">
@@ -203,7 +204,7 @@ snake_case, you&#39;d do something like this:</p>
 <h5>node: <span class="tsd-signature-type">AlterTableNode</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">AlterTableNode</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/koskimas/kysely/blob/00b323dc/src/operation-node/operation-node-transformer.ts#L655">src/operation-node/operation-node-transformer.ts:655</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cde911a9/src/operation-node/operation-node-transformer.ts#L660">src/operation-node/operation-node-transformer.ts:660</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-protected"><a id="transformAnd" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagProtected">Protected</code> <span>transform<wbr/>And</span><a href="#transformAnd" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-protected">
@@ -216,7 +217,7 @@ snake_case, you&#39;d do something like this:</p>
 <h5>node: <span class="tsd-signature-type">AndNode</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">AndNode</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/koskimas/kysely/blob/00b323dc/src/operation-node/operation-node-transformer.ts#L283">src/operation-node/operation-node-transformer.ts:283</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cde911a9/src/operation-node/operation-node-transformer.ts#L285">src/operation-node/operation-node-transformer.ts:285</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-protected"><a id="transformCheckConstraint" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagProtected">Protected</code> <span>transform<wbr/>Check<wbr/>Constraint</span><a href="#transformCheckConstraint" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-protected">
@@ -229,7 +230,7 @@ snake_case, you&#39;d do something like this:</p>
 <h5>node: <span class="tsd-signature-type">CheckConstraintNode</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">CheckConstraintNode</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/koskimas/kysely/blob/00b323dc/src/operation-node/operation-node-transformer.ts#L594">src/operation-node/operation-node-transformer.ts:594</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cde911a9/src/operation-node/operation-node-transformer.ts#L598">src/operation-node/operation-node-transformer.ts:598</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-protected"><a id="transformColumn" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagProtected">Protected</code> <span>transform<wbr/>Column</span><a href="#transformColumn" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-protected">
@@ -242,7 +243,7 @@ snake_case, you&#39;d do something like this:</p>
 <h5>node: <span class="tsd-signature-type">ColumnNode</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">ColumnNode</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/koskimas/kysely/blob/00b323dc/src/operation-node/operation-node-transformer.ts#L237">src/operation-node/operation-node-transformer.ts:237</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cde911a9/src/operation-node/operation-node-transformer.ts#L239">src/operation-node/operation-node-transformer.ts:239</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-protected"><a id="transformColumnDefinition" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagProtected">Protected</code> <span>transform<wbr/>Column<wbr/>Definition</span><a href="#transformColumnDefinition" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-protected">
@@ -255,7 +256,7 @@ snake_case, you&#39;d do something like this:</p>
 <h5>node: <span class="tsd-signature-type">ColumnDefinitionNode</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">ColumnDefinitionNode</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/koskimas/kysely/blob/00b323dc/src/operation-node/operation-node-transformer.ts#L395">src/operation-node/operation-node-transformer.ts:395</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cde911a9/src/operation-node/operation-node-transformer.ts#L397">src/operation-node/operation-node-transformer.ts:397</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-protected"><a id="transformColumnUpdate" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagProtected">Protected</code> <span>transform<wbr/>Column<wbr/>Update</span><a href="#transformColumnUpdate" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-protected">
@@ -268,7 +269,7 @@ snake_case, you&#39;d do something like this:</p>
 <h5>node: <span class="tsd-signature-type">ColumnUpdateNode</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">ColumnUpdateNode</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/koskimas/kysely/blob/00b323dc/src/operation-node/operation-node-transformer.ts#L472">src/operation-node/operation-node-transformer.ts:472</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cde911a9/src/operation-node/operation-node-transformer.ts#L475">src/operation-node/operation-node-transformer.ts:475</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-protected"><a id="transformCommonTableExpression" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagProtected">Protected</code> <span>transform<wbr/>Common<wbr/>Table<wbr/>Expression</span><a href="#transformCommonTableExpression" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-protected">
@@ -281,7 +282,7 @@ snake_case, you&#39;d do something like this:</p>
 <h5>node: <span class="tsd-signature-type">CommonTableExpressionNode</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">CommonTableExpressionNode</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/koskimas/kysely/blob/00b323dc/src/operation-node/operation-node-transformer.ts#L612">src/operation-node/operation-node-transformer.ts:612</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cde911a9/src/operation-node/operation-node-transformer.ts#L616">src/operation-node/operation-node-transformer.ts:616</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-protected"><a id="transformCommonTableExpressionName" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagProtected">Protected</code> <span>transform<wbr/>Common<wbr/>Table<wbr/>Expression<wbr/>Name</span><a href="#transformCommonTableExpressionName" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-protected">
@@ -294,7 +295,7 @@ snake_case, you&#39;d do something like this:</p>
 <h5>node: <span class="tsd-signature-type">CommonTableExpressionNameNode</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">CommonTableExpressionNameNode</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/koskimas/kysely/blob/00b323dc/src/operation-node/operation-node-transformer.ts#L622">src/operation-node/operation-node-transformer.ts:622</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cde911a9/src/operation-node/operation-node-transformer.ts#L626">src/operation-node/operation-node-transformer.ts:626</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-protected"><a id="transformCreateIndex" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagProtected">Protected</code> <span>transform<wbr/>Create<wbr/>Index</span><a href="#transformCreateIndex" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-protected">
@@ -307,7 +308,7 @@ snake_case, you&#39;d do something like this:</p>
 <h5>node: <span class="tsd-signature-type">CreateIndexNode</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">CreateIndexNode</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/koskimas/kysely/blob/00b323dc/src/operation-node/operation-node-transformer.ts#L516">src/operation-node/operation-node-transformer.ts:516</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cde911a9/src/operation-node/operation-node-transformer.ts#L519">src/operation-node/operation-node-transformer.ts:519</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-protected"><a id="transformCreateSchema" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagProtected">Protected</code> <span>transform<wbr/>Create<wbr/>Schema</span><a href="#transformCreateSchema" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-protected">
@@ -320,7 +321,7 @@ snake_case, you&#39;d do something like this:</p>
 <h5>node: <span class="tsd-signature-type">CreateSchemaNode</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">CreateSchemaNode</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/koskimas/kysely/blob/00b323dc/src/operation-node/operation-node-transformer.ts#L639">src/operation-node/operation-node-transformer.ts:639</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cde911a9/src/operation-node/operation-node-transformer.ts#L643">src/operation-node/operation-node-transformer.ts:643</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-protected"><a id="transformCreateTable" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagProtected">Protected</code> <span>transform<wbr/>Create<wbr/>Table</span><a href="#transformCreateTable" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-protected">
@@ -333,7 +334,7 @@ snake_case, you&#39;d do something like this:</p>
 <h5>node: <span class="tsd-signature-type">CreateTableNode</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">CreateTableNode</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/koskimas/kysely/blob/00b323dc/src/operation-node/operation-node-transformer.ts#L381">src/operation-node/operation-node-transformer.ts:381</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cde911a9/src/operation-node/operation-node-transformer.ts#L383">src/operation-node/operation-node-transformer.ts:383</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-protected"><a id="transformCreateType" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagProtected">Protected</code> <span>transform<wbr/>Create<wbr/>Type</span><a href="#transformCreateType" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-protected">
@@ -346,7 +347,7 @@ snake_case, you&#39;d do something like this:</p>
 <h5>node: <span class="tsd-signature-type">CreateTypeNode</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">CreateTypeNode</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/koskimas/kysely/blob/00b323dc/src/operation-node/operation-node-transformer.ts#L781">src/operation-node/operation-node-transformer.ts:781</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cde911a9/src/operation-node/operation-node-transformer.ts#L787">src/operation-node/operation-node-transformer.ts:787</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-protected"><a id="transformCreateView" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagProtected">Protected</code> <span>transform<wbr/>Create<wbr/>View</span><a href="#transformCreateView" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-protected">
@@ -359,7 +360,7 @@ snake_case, you&#39;d do something like this:</p>
 <h5>node: <span class="tsd-signature-type">CreateViewNode</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">CreateViewNode</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/koskimas/kysely/blob/00b323dc/src/operation-node/operation-node-transformer.ts#L724">src/operation-node/operation-node-transformer.ts:724</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cde911a9/src/operation-node/operation-node-transformer.ts#L729">src/operation-node/operation-node-transformer.ts:729</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-protected"><a id="transformDataType" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagProtected">Protected</code> <span>transform<wbr/>Data<wbr/>Type</span><a href="#transformDataType" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-protected">
@@ -372,7 +373,20 @@ snake_case, you&#39;d do something like this:</p>
 <h5>node: <span class="tsd-signature-type">DataTypeNode</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">DataTypeNode</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/koskimas/kysely/blob/00b323dc/src/operation-node/operation-node-transformer.ts#L815">src/operation-node/operation-node-transformer.ts:815</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cde911a9/src/operation-node/operation-node-transformer.ts#L821">src/operation-node/operation-node-transformer.ts:821</a></li></ul></aside></li></ul></section>
+<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-protected"><a id="transformDefaultInsertValue" class="tsd-anchor"></a>
+<h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagProtected">Protected</code> <span>transform<wbr/>Default<wbr/>Insert<wbr/>Value</span><a href="#transformDefaultInsertValue" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
+<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-protected">
+<li class="tsd-signature tsd-anchor-link" id="transformDefaultInsertValue.transformDefaultInsertValue-1">transform<wbr/>Default<wbr/>Insert<wbr/>Value<span class="tsd-signature-symbol">(</span>node<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">DefaultInsertValueNode</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">DefaultInsertValueNode</span><a href="#transformDefaultInsertValue.transformDefaultInsertValue-1" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></li>
+<li class="tsd-description">
+<div class="tsd-parameters">
+<h4 class="tsd-parameters-title">Parameters</h4>
+<ul class="tsd-parameter-list">
+<li>
+<h5>node: <span class="tsd-signature-type">DefaultInsertValueNode</span></h5></li></ul></div>
+<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">DefaultInsertValueNode</span></h4><aside class="tsd-sources">
+<ul>
+<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cde911a9/src/operation-node/operation-node-transformer.ts#L853">src/operation-node/operation-node-transformer.ts:853</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-protected"><a id="transformDefaultValue" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagProtected">Protected</code> <span>transform<wbr/>Default<wbr/>Value</span><a href="#transformDefaultValue" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-protected">
@@ -385,7 +399,7 @@ snake_case, you&#39;d do something like this:</p>
 <h5>node: <span class="tsd-signature-type">DefaultValueNode</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">DefaultValueNode</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/koskimas/kysely/blob/00b323dc/src/operation-node/operation-node-transformer.ts#L757">src/operation-node/operation-node-transformer.ts:757</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cde911a9/src/operation-node/operation-node-transformer.ts#L763">src/operation-node/operation-node-transformer.ts:763</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-protected"><a id="transformDeleteQuery" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagProtected">Protected</code> <span>transform<wbr/>Delete<wbr/>Query</span><a href="#transformDeleteQuery" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-protected">
@@ -398,7 +412,7 @@ snake_case, you&#39;d do something like this:</p>
 <h5>node: <span class="tsd-signature-type">DeleteQueryNode</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">DeleteQueryNode</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/koskimas/kysely/blob/00b323dc/src/operation-node/operation-node-transformer.ts#L360">src/operation-node/operation-node-transformer.ts:360</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cde911a9/src/operation-node/operation-node-transformer.ts#L362">src/operation-node/operation-node-transformer.ts:362</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-protected"><a id="transformDropColumn" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagProtected">Protected</code> <span>transform<wbr/>Drop<wbr/>Column</span><a href="#transformDropColumn" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-protected">
@@ -411,7 +425,7 @@ snake_case, you&#39;d do something like this:</p>
 <h5>node: <span class="tsd-signature-type">DropColumnNode</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">DropColumnNode</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/koskimas/kysely/blob/00b323dc/src/operation-node/operation-node-transformer.ts#L671">src/operation-node/operation-node-transformer.ts:671</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cde911a9/src/operation-node/operation-node-transformer.ts#L676">src/operation-node/operation-node-transformer.ts:676</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-protected"><a id="transformDropConstraint" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagProtected">Protected</code> <span>transform<wbr/>Drop<wbr/>Constraint</span><a href="#transformDropConstraint" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-protected">
@@ -424,7 +438,7 @@ snake_case, you&#39;d do something like this:</p>
 <h5>node: <span class="tsd-signature-type">DropConstraintNode</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">DropConstraintNode</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/koskimas/kysely/blob/00b323dc/src/operation-node/operation-node-transformer.ts#L713">src/operation-node/operation-node-transformer.ts:713</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cde911a9/src/operation-node/operation-node-transformer.ts#L718">src/operation-node/operation-node-transformer.ts:718</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-protected"><a id="transformDropIndex" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagProtected">Protected</code> <span>transform<wbr/>Drop<wbr/>Index</span><a href="#transformDropIndex" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-protected">
@@ -437,7 +451,7 @@ snake_case, you&#39;d do something like this:</p>
 <h5>node: <span class="tsd-signature-type">DropIndexNode</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">DropIndexNode</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/koskimas/kysely/blob/00b323dc/src/operation-node/operation-node-transformer.ts#L534">src/operation-node/operation-node-transformer.ts:534</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cde911a9/src/operation-node/operation-node-transformer.ts#L537">src/operation-node/operation-node-transformer.ts:537</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-protected"><a id="transformDropSchema" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagProtected">Protected</code> <span>transform<wbr/>Drop<wbr/>Schema</span><a href="#transformDropSchema" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-protected">
@@ -450,7 +464,7 @@ snake_case, you&#39;d do something like this:</p>
 <h5>node: <span class="tsd-signature-type">DropSchemaNode</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">DropSchemaNode</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/koskimas/kysely/blob/00b323dc/src/operation-node/operation-node-transformer.ts#L647">src/operation-node/operation-node-transformer.ts:647</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cde911a9/src/operation-node/operation-node-transformer.ts#L651">src/operation-node/operation-node-transformer.ts:651</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-protected"><a id="transformDropTable" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagProtected">Protected</code> <span>transform<wbr/>Drop<wbr/>Table</span><a href="#transformDropTable" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-protected">
@@ -463,7 +477,7 @@ snake_case, you&#39;d do something like this:</p>
 <h5>node: <span class="tsd-signature-type">DropTableNode</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">DropTableNode</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/koskimas/kysely/blob/00b323dc/src/operation-node/operation-node-transformer.ts#L421">src/operation-node/operation-node-transformer.ts:421</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cde911a9/src/operation-node/operation-node-transformer.ts#L423">src/operation-node/operation-node-transformer.ts:423</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-protected"><a id="transformDropType" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagProtected">Protected</code> <span>transform<wbr/>Drop<wbr/>Type</span><a href="#transformDropType" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-protected">
@@ -476,7 +490,7 @@ snake_case, you&#39;d do something like this:</p>
 <h5>node: <span class="tsd-signature-type">DropTypeNode</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">DropTypeNode</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/koskimas/kysely/blob/00b323dc/src/operation-node/operation-node-transformer.ts#L789">src/operation-node/operation-node-transformer.ts:789</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cde911a9/src/operation-node/operation-node-transformer.ts#L795">src/operation-node/operation-node-transformer.ts:795</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-protected"><a id="transformDropView" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagProtected">Protected</code> <span>transform<wbr/>Drop<wbr/>View</span><a href="#transformDropView" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-protected">
@@ -489,7 +503,7 @@ snake_case, you&#39;d do something like this:</p>
 <h5>node: <span class="tsd-signature-type">DropViewNode</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">DropViewNode</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/koskimas/kysely/blob/00b323dc/src/operation-node/operation-node-transformer.ts#L737">src/operation-node/operation-node-transformer.ts:737</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cde911a9/src/operation-node/operation-node-transformer.ts#L742">src/operation-node/operation-node-transformer.ts:742</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-protected"><a id="transformExplain" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagProtected">Protected</code> <span>transform<wbr/>Explain</span><a href="#transformExplain" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-protected">
@@ -502,7 +516,7 @@ snake_case, you&#39;d do something like this:</p>
 <h5>node: <span class="tsd-signature-type">ExplainNode</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">ExplainNode</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/koskimas/kysely/blob/00b323dc/src/operation-node/operation-node-transformer.ts#L797">src/operation-node/operation-node-transformer.ts:797</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cde911a9/src/operation-node/operation-node-transformer.ts#L803">src/operation-node/operation-node-transformer.ts:803</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-protected"><a id="transformFilter" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagProtected">Protected</code> <span>transform<wbr/>Filter</span><a href="#transformFilter" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-protected">
@@ -515,7 +529,7 @@ snake_case, you&#39;d do something like this:</p>
 <h5>node: <span class="tsd-signature-type">FilterNode</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">FilterNode</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/koskimas/kysely/blob/00b323dc/src/operation-node/operation-node-transformer.ts#L274">src/operation-node/operation-node-transformer.ts:274</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cde911a9/src/operation-node/operation-node-transformer.ts#L276">src/operation-node/operation-node-transformer.ts:276</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-protected"><a id="transformForeignKeyConstraint" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagProtected">Protected</code> <span>transform<wbr/>Foreign<wbr/>Key<wbr/>Constraint</span><a href="#transformForeignKeyConstraint" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-protected">
@@ -528,7 +542,7 @@ snake_case, you&#39;d do something like this:</p>
 <h5>node: <span class="tsd-signature-type">ForeignKeyConstraintNode</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">ForeignKeyConstraintNode</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/koskimas/kysely/blob/00b323dc/src/operation-node/operation-node-transformer.ts#L563">src/operation-node/operation-node-transformer.ts:563</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cde911a9/src/operation-node/operation-node-transformer.ts#L567">src/operation-node/operation-node-transformer.ts:567</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-protected"><a id="transformFrom" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagProtected">Protected</code> <span>transform<wbr/>From</span><a href="#transformFrom" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-protected">
@@ -541,7 +555,7 @@ snake_case, you&#39;d do something like this:</p>
 <h5>node: <span class="tsd-signature-type">FromNode</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">FromNode</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/koskimas/kysely/blob/00b323dc/src/operation-node/operation-node-transformer.ts#L259">src/operation-node/operation-node-transformer.ts:259</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cde911a9/src/operation-node/operation-node-transformer.ts#L261">src/operation-node/operation-node-transformer.ts:261</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-protected"><a id="transformGenerated" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagProtected">Protected</code> <span>transform<wbr/>Generated</span><a href="#transformGenerated" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-protected">
@@ -554,7 +568,7 @@ snake_case, you&#39;d do something like this:</p>
 <h5>node: <span class="tsd-signature-type">GeneratedNode</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">GeneratedNode</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/koskimas/kysely/blob/00b323dc/src/operation-node/operation-node-transformer.ts#L746">src/operation-node/operation-node-transformer.ts:746</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cde911a9/src/operation-node/operation-node-transformer.ts#L752">src/operation-node/operation-node-transformer.ts:752</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-protected"><a id="transformGroupBy" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagProtected">Protected</code> <span>transform<wbr/>Group<wbr/>By</span><a href="#transformGroupBy" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-protected">
@@ -567,7 +581,7 @@ snake_case, you&#39;d do something like this:</p>
 <h5>node: <span class="tsd-signature-type">GroupByNode</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">GroupByNode</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/koskimas/kysely/blob/00b323dc/src/operation-node/operation-node-transformer.ts#L444">src/operation-node/operation-node-transformer.ts:444</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cde911a9/src/operation-node/operation-node-transformer.ts#L447">src/operation-node/operation-node-transformer.ts:447</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-protected"><a id="transformGroupByItem" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagProtected">Protected</code> <span>transform<wbr/>Group<wbr/>By<wbr/>Item</span><a href="#transformGroupByItem" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-protected">
@@ -580,7 +594,7 @@ snake_case, you&#39;d do something like this:</p>
 <h5>node: <span class="tsd-signature-type">GroupByItemNode</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">GroupByItemNode</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/koskimas/kysely/blob/00b323dc/src/operation-node/operation-node-transformer.ts#L451">src/operation-node/operation-node-transformer.ts:451</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cde911a9/src/operation-node/operation-node-transformer.ts#L454">src/operation-node/operation-node-transformer.ts:454</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-protected"><a id="transformHaving" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagProtected">Protected</code> <span>transform<wbr/>Having</span><a href="#transformHaving" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-protected">
@@ -593,7 +607,7 @@ snake_case, you&#39;d do something like this:</p>
 <h5>node: <span class="tsd-signature-type">HavingNode</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">HavingNode</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/koskimas/kysely/blob/00b323dc/src/operation-node/operation-node-transformer.ts#L632">src/operation-node/operation-node-transformer.ts:632</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cde911a9/src/operation-node/operation-node-transformer.ts#L636">src/operation-node/operation-node-transformer.ts:636</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-protected"><a id="transformIdentifier" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagProtected">Protected</code> <span>transform<wbr/>Identifier</span><a href="#transformIdentifier" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-protected">
@@ -606,7 +620,7 @@ snake_case, you&#39;d do something like this:</p>
 <h5>node: <span class="tsd-signature-type">IdentifierNode</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">IdentifierNode</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/koskimas/kysely/blob/00b323dc/src/operation-node/operation-node-transformer.ts#L825">src/operation-node/operation-node-transformer.ts:825</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cde911a9/src/operation-node/operation-node-transformer.ts#L831">src/operation-node/operation-node-transformer.ts:831</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-protected"><a id="transformInsertQuery" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagProtected">Protected</code> <span>transform<wbr/>Insert<wbr/>Query</span><a href="#transformInsertQuery" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-protected">
@@ -619,7 +633,7 @@ snake_case, you&#39;d do something like this:</p>
 <h5>node: <span class="tsd-signature-type">InsertQueryNode</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">InsertQueryNode</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/koskimas/kysely/blob/00b323dc/src/operation-node/operation-node-transformer.ts#L337">src/operation-node/operation-node-transformer.ts:337</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cde911a9/src/operation-node/operation-node-transformer.ts#L339">src/operation-node/operation-node-transformer.ts:339</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-protected"><a id="transformJoin" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagProtected">Protected</code> <span>transform<wbr/>Join</span><a href="#transformJoin" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-protected">
@@ -632,7 +646,7 @@ snake_case, you&#39;d do something like this:</p>
 <h5>node: <span class="tsd-signature-type">JoinNode</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">JoinNode</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/koskimas/kysely/blob/00b323dc/src/operation-node/operation-node-transformer.ts#L313">src/operation-node/operation-node-transformer.ts:313</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cde911a9/src/operation-node/operation-node-transformer.ts#L315">src/operation-node/operation-node-transformer.ts:315</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-protected"><a id="transformLimit" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagProtected">Protected</code> <span>transform<wbr/>Limit</span><a href="#transformLimit" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-protected">
@@ -645,7 +659,7 @@ snake_case, you&#39;d do something like this:</p>
 <h5>node: <span class="tsd-signature-type">LimitNode</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">LimitNode</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/koskimas/kysely/blob/00b323dc/src/operation-node/operation-node-transformer.ts#L480">src/operation-node/operation-node-transformer.ts:480</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cde911a9/src/operation-node/operation-node-transformer.ts#L483">src/operation-node/operation-node-transformer.ts:483</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-protected"><a id="transformList" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagProtected">Protected</code> <span>transform<wbr/>List</span><a href="#transformList" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-protected">
@@ -658,7 +672,7 @@ snake_case, you&#39;d do something like this:</p>
 <h5>node: <span class="tsd-signature-type">ListNode</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">ListNode</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/koskimas/kysely/blob/00b323dc/src/operation-node/operation-node-transformer.ts#L527">src/operation-node/operation-node-transformer.ts:527</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cde911a9/src/operation-node/operation-node-transformer.ts#L530">src/operation-node/operation-node-transformer.ts:530</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-protected"><a id="transformModifyColumn" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagProtected">Protected</code> <span>transform<wbr/>Modify<wbr/>Column</span><a href="#transformModifyColumn" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-protected">
@@ -671,7 +685,7 @@ snake_case, you&#39;d do something like this:</p>
 <h5>node: <span class="tsd-signature-type">ModifyColumnNode</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">ModifyColumnNode</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/koskimas/kysely/blob/00b323dc/src/operation-node/operation-node-transformer.ts#L699">src/operation-node/operation-node-transformer.ts:699</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cde911a9/src/operation-node/operation-node-transformer.ts#L704">src/operation-node/operation-node-transformer.ts:704</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class"><a id="transformNode" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>transform<wbr/>Node</span><a href="#transformNode" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
@@ -689,7 +703,7 @@ snake_case, you&#39;d do something like this:</p>
 <h5>node: <span class="tsd-signature-type" data-tsd-kind="Type parameter">T</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type" data-tsd-kind="Type parameter">T</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/koskimas/kysely/blob/00b323dc/src/operation-node/operation-node-transformer.ts#L183">src/operation-node/operation-node-transformer.ts:183</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cde911a9/src/operation-node/operation-node-transformer.ts#L185">src/operation-node/operation-node-transformer.ts:185</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-protected"><a id="transformNodeImpl" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagProtected">Protected</code> <span>transform<wbr/>Node<wbr/>Impl</span><a href="#transformNodeImpl" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-protected">
@@ -707,7 +721,7 @@ snake_case, you&#39;d do something like this:</p>
 <h5>node: <span class="tsd-signature-type" data-tsd-kind="Type parameter">T</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type" data-tsd-kind="Type parameter">T</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/koskimas/kysely/blob/00b323dc/src/operation-node/operation-node-transformer.ts#L195">src/operation-node/operation-node-transformer.ts:195</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cde911a9/src/operation-node/operation-node-transformer.ts#L197">src/operation-node/operation-node-transformer.ts:197</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-protected"><a id="transformNodeList" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagProtected">Protected</code> <span>transform<wbr/>Node<wbr/>List</span><a href="#transformNodeList" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-protected">
@@ -725,7 +739,7 @@ snake_case, you&#39;d do something like this:</p>
 <h5>list: <span class="tsd-signature-type" data-tsd-kind="Type parameter">T</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type" data-tsd-kind="Type parameter">T</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/koskimas/kysely/blob/00b323dc/src/operation-node/operation-node-transformer.ts#L199">src/operation-node/operation-node-transformer.ts:199</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cde911a9/src/operation-node/operation-node-transformer.ts#L201">src/operation-node/operation-node-transformer.ts:201</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-protected"><a id="transformOffset" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagProtected">Protected</code> <span>transform<wbr/>Offset</span><a href="#transformOffset" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-protected">
@@ -738,7 +752,7 @@ snake_case, you&#39;d do something like this:</p>
 <h5>node: <span class="tsd-signature-type">OffsetNode</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">OffsetNode</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/koskimas/kysely/blob/00b323dc/src/operation-node/operation-node-transformer.ts#L487">src/operation-node/operation-node-transformer.ts:487</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cde911a9/src/operation-node/operation-node-transformer.ts#L490">src/operation-node/operation-node-transformer.ts:490</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-protected"><a id="transformOn" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagProtected">Protected</code> <span>transform<wbr/>On</span><a href="#transformOn" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-protected">
@@ -751,7 +765,7 @@ snake_case, you&#39;d do something like this:</p>
 <h5>node: <span class="tsd-signature-type">OnNode</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">OnNode</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/koskimas/kysely/blob/00b323dc/src/operation-node/operation-node-transformer.ts#L764">src/operation-node/operation-node-transformer.ts:764</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cde911a9/src/operation-node/operation-node-transformer.ts#L770">src/operation-node/operation-node-transformer.ts:770</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-protected"><a id="transformOnConflict" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagProtected">Protected</code> <span>transform<wbr/>On<wbr/>Conflict</span><a href="#transformOnConflict" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-protected">
@@ -764,7 +778,7 @@ snake_case, you&#39;d do something like this:</p>
 <h5>node: <span class="tsd-signature-type">OnConflictNode</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">OnConflictNode</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/koskimas/kysely/blob/00b323dc/src/operation-node/operation-node-transformer.ts#L494">src/operation-node/operation-node-transformer.ts:494</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cde911a9/src/operation-node/operation-node-transformer.ts#L497">src/operation-node/operation-node-transformer.ts:497</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-protected"><a id="transformOnDuplicateKey" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagProtected">Protected</code> <span>transform<wbr/>On<wbr/>Duplicate<wbr/>Key</span><a href="#transformOnDuplicateKey" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-protected">
@@ -777,7 +791,7 @@ snake_case, you&#39;d do something like this:</p>
 <h5>node: <span class="tsd-signature-type">OnDuplicateKeyNode</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">OnDuplicateKeyNode</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/koskimas/kysely/blob/00b323dc/src/operation-node/operation-node-transformer.ts#L507">src/operation-node/operation-node-transformer.ts:507</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cde911a9/src/operation-node/operation-node-transformer.ts#L510">src/operation-node/operation-node-transformer.ts:510</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-protected"><a id="transformOperator" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagProtected">Protected</code> <span>transform<wbr/>Operator</span><a href="#transformOperator" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-protected">
@@ -790,7 +804,7 @@ snake_case, you&#39;d do something like this:</p>
 <h5>node: <span class="tsd-signature-type">OperatorNode</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">OperatorNode</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/koskimas/kysely/blob/00b323dc/src/operation-node/operation-node-transformer.ts#L842">src/operation-node/operation-node-transformer.ts:842</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cde911a9/src/operation-node/operation-node-transformer.ts#L848">src/operation-node/operation-node-transformer.ts:848</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-protected"><a id="transformOr" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagProtected">Protected</code> <span>transform<wbr/>Or</span><a href="#transformOr" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-protected">
@@ -803,7 +817,7 @@ snake_case, you&#39;d do something like this:</p>
 <h5>node: <span class="tsd-signature-type">OrNode</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">OrNode</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/koskimas/kysely/blob/00b323dc/src/operation-node/operation-node-transformer.ts#L291">src/operation-node/operation-node-transformer.ts:291</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cde911a9/src/operation-node/operation-node-transformer.ts#L293">src/operation-node/operation-node-transformer.ts:293</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-protected"><a id="transformOrderBy" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagProtected">Protected</code> <span>transform<wbr/>Order<wbr/>By</span><a href="#transformOrderBy" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-protected">
@@ -816,7 +830,7 @@ snake_case, you&#39;d do something like this:</p>
 <h5>node: <span class="tsd-signature-type">OrderByNode</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">OrderByNode</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/koskimas/kysely/blob/00b323dc/src/operation-node/operation-node-transformer.ts#L429">src/operation-node/operation-node-transformer.ts:429</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cde911a9/src/operation-node/operation-node-transformer.ts#L432">src/operation-node/operation-node-transformer.ts:432</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-protected"><a id="transformOrderByItem" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagProtected">Protected</code> <span>transform<wbr/>Order<wbr/>By<wbr/>Item</span><a href="#transformOrderByItem" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-protected">
@@ -829,7 +843,7 @@ snake_case, you&#39;d do something like this:</p>
 <h5>node: <span class="tsd-signature-type">OrderByItemNode</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">OrderByItemNode</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/koskimas/kysely/blob/00b323dc/src/operation-node/operation-node-transformer.ts#L436">src/operation-node/operation-node-transformer.ts:436</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cde911a9/src/operation-node/operation-node-transformer.ts#L439">src/operation-node/operation-node-transformer.ts:439</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-protected"><a id="transformParens" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagProtected">Protected</code> <span>transform<wbr/>Parens</span><a href="#transformParens" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-protected">
@@ -842,7 +856,7 @@ snake_case, you&#39;d do something like this:</p>
 <h5>node: <span class="tsd-signature-type">ParensNode</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">ParensNode</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/koskimas/kysely/blob/00b323dc/src/operation-node/operation-node-transformer.ts#L306">src/operation-node/operation-node-transformer.ts:306</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cde911a9/src/operation-node/operation-node-transformer.ts#L308">src/operation-node/operation-node-transformer.ts:308</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-protected"><a id="transformPrimaryKeyConstraint" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagProtected">Protected</code> <span>transform<wbr/>Primary<wbr/>Key<wbr/>Constraint</span><a href="#transformPrimaryKeyConstraint" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-protected">
@@ -855,7 +869,7 @@ snake_case, you&#39;d do something like this:</p>
 <h5>node: <a href="../interfaces/PrimaryKeyConstraintNode.html" class="tsd-signature-type" data-tsd-kind="Interface">PrimaryKeyConstraintNode</a></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <a href="../interfaces/PrimaryKeyConstraintNode.html" class="tsd-signature-type" data-tsd-kind="Interface">PrimaryKeyConstraintNode</a></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/koskimas/kysely/blob/00b323dc/src/operation-node/operation-node-transformer.ts#L543">src/operation-node/operation-node-transformer.ts:543</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cde911a9/src/operation-node/operation-node-transformer.ts#L547">src/operation-node/operation-node-transformer.ts:547</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-protected"><a id="transformPrimitiveValueList" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagProtected">Protected</code> <span>transform<wbr/>Primitive<wbr/>Value<wbr/>List</span><a href="#transformPrimitiveValueList" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-protected">
@@ -868,7 +882,7 @@ snake_case, you&#39;d do something like this:</p>
 <h5>node: <span class="tsd-signature-type">PrimitiveValueListNode</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">PrimitiveValueListNode</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/koskimas/kysely/blob/00b323dc/src/operation-node/operation-node-transformer.ts#L835">src/operation-node/operation-node-transformer.ts:835</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cde911a9/src/operation-node/operation-node-transformer.ts#L841">src/operation-node/operation-node-transformer.ts:841</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-protected"><a id="transformRaw" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagProtected">Protected</code> <span>transform<wbr/>Raw</span><a href="#transformRaw" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-protected">
@@ -881,7 +895,7 @@ snake_case, you&#39;d do something like this:</p>
 <h5>node: <span class="tsd-signature-type">RawNode</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">RawNode</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/koskimas/kysely/blob/00b323dc/src/operation-node/operation-node-transformer.ts#L322">src/operation-node/operation-node-transformer.ts:322</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cde911a9/src/operation-node/operation-node-transformer.ts#L324">src/operation-node/operation-node-transformer.ts:324</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-protected"><a id="transformReference" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagProtected">Protected</code> <span>transform<wbr/>Reference</span><a href="#transformReference" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-protected">
@@ -894,7 +908,7 @@ snake_case, you&#39;d do something like this:</p>
 <h5>node: <span class="tsd-signature-type">ReferenceNode</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">ReferenceNode</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/koskimas/kysely/blob/00b323dc/src/operation-node/operation-node-transformer.ts#L266">src/operation-node/operation-node-transformer.ts:266</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cde911a9/src/operation-node/operation-node-transformer.ts#L268">src/operation-node/operation-node-transformer.ts:268</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-protected"><a id="transformReferences" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagProtected">Protected</code> <span>transform<wbr/>References</span><a href="#transformReferences" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-protected">
@@ -907,7 +921,7 @@ snake_case, you&#39;d do something like this:</p>
 <h5>node: <span class="tsd-signature-type">ReferencesNode</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">ReferencesNode</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/koskimas/kysely/blob/00b323dc/src/operation-node/operation-node-transformer.ts#L584">src/operation-node/operation-node-transformer.ts:584</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cde911a9/src/operation-node/operation-node-transformer.ts#L588">src/operation-node/operation-node-transformer.ts:588</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-protected"><a id="transformRenameColumn" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagProtected">Protected</code> <span>transform<wbr/>Rename<wbr/>Column</span><a href="#transformRenameColumn" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-protected">
@@ -920,7 +934,7 @@ snake_case, you&#39;d do something like this:</p>
 <h5>node: <span class="tsd-signature-type">RenameColumnNode</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">RenameColumnNode</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/koskimas/kysely/blob/00b323dc/src/operation-node/operation-node-transformer.ts#L678">src/operation-node/operation-node-transformer.ts:678</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cde911a9/src/operation-node/operation-node-transformer.ts#L683">src/operation-node/operation-node-transformer.ts:683</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-protected"><a id="transformReturning" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagProtected">Protected</code> <span>transform<wbr/>Returning</span><a href="#transformReturning" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-protected">
@@ -933,7 +947,7 @@ snake_case, you&#39;d do something like this:</p>
 <h5>node: <span class="tsd-signature-type">ReturningNode</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">ReturningNode</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/koskimas/kysely/blob/00b323dc/src/operation-node/operation-node-transformer.ts#L374">src/operation-node/operation-node-transformer.ts:374</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cde911a9/src/operation-node/operation-node-transformer.ts#L376">src/operation-node/operation-node-transformer.ts:376</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-protected"><a id="transformSchemableIdentifier" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagProtected">Protected</code> <span>transform<wbr/>Schemable<wbr/>Identifier</span><a href="#transformSchemableIdentifier" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-protected">
@@ -946,7 +960,7 @@ snake_case, you&#39;d do something like this:</p>
 <h5>node: <span class="tsd-signature-type">SchemableIdentifierNode</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">SchemableIdentifierNode</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/koskimas/kysely/blob/00b323dc/src/operation-node/operation-node-transformer.ts#L805">src/operation-node/operation-node-transformer.ts:805</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cde911a9/src/operation-node/operation-node-transformer.ts#L811">src/operation-node/operation-node-transformer.ts:811</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-protected"><a id="transformSelectAll" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagProtected">Protected</code> <span>transform<wbr/>Select<wbr/>All</span><a href="#transformSelectAll" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-protected">
@@ -959,7 +973,7 @@ snake_case, you&#39;d do something like this:</p>
 <h5>node: <span class="tsd-signature-type">SelectAllNode</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">SelectAllNode</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/koskimas/kysely/blob/00b323dc/src/operation-node/operation-node-transformer.ts#L820">src/operation-node/operation-node-transformer.ts:820</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cde911a9/src/operation-node/operation-node-transformer.ts#L826">src/operation-node/operation-node-transformer.ts:826</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-protected"><a id="transformSelectModifier" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagProtected">Protected</code> <span>transform<wbr/>Select<wbr/>Modifier</span><a href="#transformSelectModifier" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-protected">
@@ -972,7 +986,7 @@ snake_case, you&#39;d do something like this:</p>
 <h5>node: <span class="tsd-signature-type">SelectModifierNode</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">SelectModifierNode</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/koskimas/kysely/blob/00b323dc/src/operation-node/operation-node-transformer.ts#L771">src/operation-node/operation-node-transformer.ts:771</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cde911a9/src/operation-node/operation-node-transformer.ts#L777">src/operation-node/operation-node-transformer.ts:777</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-protected"><a id="transformSelectQuery" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagProtected">Protected</code> <span>transform<wbr/>Select<wbr/>Query</span><a href="#transformSelectQuery" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-protected">
@@ -985,7 +999,7 @@ snake_case, you&#39;d do something like this:</p>
 <h5>node: <span class="tsd-signature-type">SelectQueryNode</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">SelectQueryNode</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/koskimas/kysely/blob/00b323dc/src/operation-node/operation-node-transformer.ts#L209">src/operation-node/operation-node-transformer.ts:209</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cde911a9/src/operation-node/operation-node-transformer.ts#L211">src/operation-node/operation-node-transformer.ts:211</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-protected"><a id="transformSelection" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagProtected">Protected</code> <span>transform<wbr/>Selection</span><a href="#transformSelection" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-protected">
@@ -998,7 +1012,7 @@ snake_case, you&#39;d do something like this:</p>
 <h5>node: <span class="tsd-signature-type">SelectionNode</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">SelectionNode</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/koskimas/kysely/blob/00b323dc/src/operation-node/operation-node-transformer.ts#L230">src/operation-node/operation-node-transformer.ts:230</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cde911a9/src/operation-node/operation-node-transformer.ts#L232">src/operation-node/operation-node-transformer.ts:232</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-protected"><a id="transformTable" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagProtected">Protected</code> <span>transform<wbr/>Table</span><a href="#transformTable" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-protected">
@@ -1011,7 +1025,7 @@ snake_case, you&#39;d do something like this:</p>
 <h5>node: <span class="tsd-signature-type">TableNode</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">TableNode</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/koskimas/kysely/blob/00b323dc/src/operation-node/operation-node-transformer.ts#L252">src/operation-node/operation-node-transformer.ts:252</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cde911a9/src/operation-node/operation-node-transformer.ts#L254">src/operation-node/operation-node-transformer.ts:254</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-protected"><a id="transformUnion" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagProtected">Protected</code> <span>transform<wbr/>Union</span><a href="#transformUnion" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-protected">
@@ -1024,7 +1038,7 @@ snake_case, you&#39;d do something like this:</p>
 <h5>node: <span class="tsd-signature-type">UnionNode</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">UnionNode</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/koskimas/kysely/blob/00b323dc/src/operation-node/operation-node-transformer.ts#L576">src/operation-node/operation-node-transformer.ts:576</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cde911a9/src/operation-node/operation-node-transformer.ts#L580">src/operation-node/operation-node-transformer.ts:580</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-protected"><a id="transformUniqueConstraint" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagProtected">Protected</code> <span>transform<wbr/>Unique<wbr/>Constraint</span><a href="#transformUniqueConstraint" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-protected">
@@ -1037,7 +1051,7 @@ snake_case, you&#39;d do something like this:</p>
 <h5>node: <span class="tsd-signature-type">UniqueConstraintNode</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">UniqueConstraintNode</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/koskimas/kysely/blob/00b323dc/src/operation-node/operation-node-transformer.ts#L553">src/operation-node/operation-node-transformer.ts:553</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cde911a9/src/operation-node/operation-node-transformer.ts#L557">src/operation-node/operation-node-transformer.ts:557</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-protected"><a id="transformUpdateQuery" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagProtected">Protected</code> <span>transform<wbr/>Update<wbr/>Query</span><a href="#transformUpdateQuery" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-protected">
@@ -1050,7 +1064,7 @@ snake_case, you&#39;d do something like this:</p>
 <h5>node: <span class="tsd-signature-type">UpdateQueryNode</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">UpdateQueryNode</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/koskimas/kysely/blob/00b323dc/src/operation-node/operation-node-transformer.ts#L458">src/operation-node/operation-node-transformer.ts:458</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cde911a9/src/operation-node/operation-node-transformer.ts#L461">src/operation-node/operation-node-transformer.ts:461</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-protected"><a id="transformValue" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagProtected">Protected</code> <span>transform<wbr/>Value</span><a href="#transformValue" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-protected">
@@ -1063,7 +1077,7 @@ snake_case, you&#39;d do something like this:</p>
 <h5>node: <span class="tsd-signature-type">ValueNode</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">ValueNode</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/koskimas/kysely/blob/00b323dc/src/operation-node/operation-node-transformer.ts#L830">src/operation-node/operation-node-transformer.ts:830</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cde911a9/src/operation-node/operation-node-transformer.ts#L836">src/operation-node/operation-node-transformer.ts:836</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-protected"><a id="transformValueList" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagProtected">Protected</code> <span>transform<wbr/>Value<wbr/>List</span><a href="#transformValueList" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-protected">
@@ -1076,7 +1090,7 @@ snake_case, you&#39;d do something like this:</p>
 <h5>node: <span class="tsd-signature-type">ValueListNode</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">ValueListNode</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/koskimas/kysely/blob/00b323dc/src/operation-node/operation-node-transformer.ts#L299">src/operation-node/operation-node-transformer.ts:299</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cde911a9/src/operation-node/operation-node-transformer.ts#L301">src/operation-node/operation-node-transformer.ts:301</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-protected"><a id="transformValues" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagProtected">Protected</code> <span>transform<wbr/>Values</span><a href="#transformValues" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-protected">
@@ -1089,7 +1103,7 @@ snake_case, you&#39;d do something like this:</p>
 <h5>node: <span class="tsd-signature-type">ValuesNode</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">ValuesNode</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/koskimas/kysely/blob/00b323dc/src/operation-node/operation-node-transformer.ts#L353">src/operation-node/operation-node-transformer.ts:353</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cde911a9/src/operation-node/operation-node-transformer.ts#L355">src/operation-node/operation-node-transformer.ts:355</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-protected"><a id="transformWhere" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagProtected">Protected</code> <span>transform<wbr/>Where</span><a href="#transformWhere" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-protected">
@@ -1102,7 +1116,7 @@ snake_case, you&#39;d do something like this:</p>
 <h5>node: <span class="tsd-signature-type">WhereNode</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">WhereNode</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/koskimas/kysely/blob/00b323dc/src/operation-node/operation-node-transformer.ts#L330">src/operation-node/operation-node-transformer.ts:330</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cde911a9/src/operation-node/operation-node-transformer.ts#L332">src/operation-node/operation-node-transformer.ts:332</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-protected"><a id="transformWith" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagProtected">Protected</code> <span>transform<wbr/>With</span><a href="#transformWith" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-protected">
@@ -1115,7 +1129,7 @@ snake_case, you&#39;d do something like this:</p>
 <h5>node: <span class="tsd-signature-type">WithNode</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">WithNode</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/koskimas/kysely/blob/00b323dc/src/operation-node/operation-node-transformer.ts#L604">src/operation-node/operation-node-transformer.ts:604</a></li></ul></aside></li></ul></section></section></div>
+<li>Defined in <a href="https://github.com/koskimas/kysely/blob/cde911a9/src/operation-node/operation-node-transformer.ts#L608">src/operation-node/operation-node-transformer.ts:608</a></li></ul></aside></li></ul></section></section></div>
 <div class="col-4 col-menu menu-sticky-wrap menu-highlight">
 <div class="tsd-navigation settings">
 <details class="tsd-index-accordion"><summary class="tsd-accordion-summary">
@@ -1160,6 +1174,7 @@ snake_case, you&#39;d do something like this:</p>
 <li class="tsd-kind-method tsd-parent-kind-class tsd-is-protected"><a href="OperationNodeTransformer.html#transformCreateType" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg>transform<wbr/>Create<wbr/>Type</a></li>
 <li class="tsd-kind-method tsd-parent-kind-class tsd-is-protected"><a href="OperationNodeTransformer.html#transformCreateView" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg>transform<wbr/>Create<wbr/>View</a></li>
 <li class="tsd-kind-method tsd-parent-kind-class tsd-is-protected"><a href="OperationNodeTransformer.html#transformDataType" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg>transform<wbr/>Data<wbr/>Type</a></li>
+<li class="tsd-kind-method tsd-parent-kind-class tsd-is-protected"><a href="OperationNodeTransformer.html#transformDefaultInsertValue" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg>transform<wbr/>Default<wbr/>Insert<wbr/>Value</a></li>
 <li class="tsd-kind-method tsd-parent-kind-class tsd-is-protected"><a href="OperationNodeTransformer.html#transformDefaultValue" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg>transform<wbr/>Default<wbr/>Value</a></li>
 <li class="tsd-kind-method tsd-parent-kind-class tsd-is-protected"><a href="OperationNodeTransformer.html#transformDeleteQuery" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg>transform<wbr/>Delete<wbr/>Query</a></li>
 <li class="tsd-kind-method tsd-parent-kind-class tsd-is-protected"><a href="OperationNodeTransformer.html#transformDropColumn" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg>transform<wbr/>Drop<wbr/>Column</a></li>
