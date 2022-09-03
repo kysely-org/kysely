@@ -71,6 +71,10 @@ export type OperationNodeKind =
   | 'DropTypeNode'
   | 'ExplainNode'
   | 'DefaultInsertValueNode'
+  | 'AggregateFunctionNode'
+  | 'OverNode'
+  | 'PartitionByNode'
+  | 'PartitionByItemNode'
 
 export interface OperationNode {
   readonly kind: OperationNodeKind
