@@ -12,6 +12,7 @@ import {
   AnySelectQueryBuilder,
   SelectQueryBuilderFactory,
   RawBuilderFactory,
+  AnyAliasedAggregateFunctionBuilder,
 } from '../util/type-utils.js'
 import { createExpressionBuilder } from './parse-utils.js'
 
@@ -26,6 +27,7 @@ export type AliasedComplexExpression<DB, TB extends keyof DB> =
   | AliasedQueryBuilderFactory<DB, TB>
   | AnyAliasedRawBuilder
   | AliasedRawBuilderFactory<DB, TB>
+  | AnyAliasedAggregateFunctionBuilder
 
 export function parseComplexExpression(
   exp: ComplexExpression<any, any>

@@ -7,6 +7,7 @@ import { ExpressionBuilder } from '../query-builder/expression-builder.js'
 import { InsertResult } from '../query-builder/insert-result.js'
 import { DeleteResult } from '../query-builder/delete-result.js'
 import { UpdateResult } from '../query-builder/update-result.js'
+import { AliasedAggregateFunctionBuilder } from '../query-builder/aggregate-function-builder.js'
 
 /**
  * Given an object type, extracts the union of all value types.
@@ -127,6 +128,9 @@ export type AnyAliasedQueryBuilder = AliasedQueryBuilder<any, any, any, any>
 
 export type AnyRawBuilder = RawBuilder<any>
 export type AnyAliasedRawBuilder = AliasedRawBuilder<any, any>
+
+export type AnyAliasedAggregateFunctionBuilder =
+  AliasedAggregateFunctionBuilder<any, any, any, any>
 
 export type SelectQueryBuilderFactory<DB, TB extends keyof DB> = (
   qb: ExpressionBuilder<DB, TB>
