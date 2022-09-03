@@ -19,7 +19,7 @@ export type ComplexExpression<DB, TB extends keyof DB, V = any> =
   | AnySelectQueryBuilder
   | SelectQueryBuilderFactory<DB, TB>
   | RawBuilder<V>
-  | RawBuilderFactory<DB, TB>
+  | RawBuilderFactory<DB, TB, V>
 
 export type AliasedComplexExpression<DB, TB extends keyof DB> =
   | AnyAliasedQueryBuilder

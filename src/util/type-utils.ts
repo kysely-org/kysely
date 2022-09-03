@@ -136,9 +136,9 @@ export type AliasedQueryBuilderFactory<DB, TB extends keyof DB> = (
   qb: ExpressionBuilder<DB, TB>
 ) => AnyAliasedQueryBuilder
 
-export type RawBuilderFactory<DB, TB extends keyof DB> = (
+export type RawBuilderFactory<DB, TB extends keyof DB, O = any> = (
   qb: ExpressionBuilder<DB, TB>
-) => AnyRawBuilder
+) => RawBuilder<O>
 
 export type AliasedRawBuilderFactory<DB, TB extends keyof DB> = (
   qb: ExpressionBuilder<DB, TB>
