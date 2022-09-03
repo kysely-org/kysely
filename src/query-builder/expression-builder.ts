@@ -9,7 +9,7 @@ import {
 } from '../parser/table-parser.js'
 import { WithSchemaPlugin } from '../plugin/with-schema/with-schema-plugin.js'
 import { createQueryId } from '../util/query-id.js'
-import { FunctionBuilder } from './function-builder.js'
+import { FunctionModule } from './function-module.js'
 import {
   ExtractTypeFromReferenceExpression,
   parseStringReference,
@@ -28,7 +28,7 @@ export class ExpressionBuilder<DB, TB extends keyof DB> {
   }
 
   /**
-   * Returns a {@link FunctionBuilder} that can be used to write type safe function
+   * Returns a {@link FunctionModule} that can be used to write type safe function
    * calls.
    *
    * The difference between this and {@link Kysely.fn} is that this one is more
@@ -58,8 +58,8 @@ export class ExpressionBuilder<DB, TB extends keyof DB> {
    * having count("pet"."id") > $1
    * ```
    */
-  get fn(): FunctionBuilder<DB, TB> {
-    return new FunctionBuilder()
+  get fn(): FunctionModule<DB, TB> {
+    return new FunctionModule()
   }
 
   /**

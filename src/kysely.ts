@@ -17,7 +17,7 @@ import {
   TRANSACTION_ISOLATION_LEVELS,
 } from './driver/driver.js'
 import { preventAwait } from './util/prevent-await.js'
-import { FunctionBuilder } from './query-builder/function-builder.js'
+import { FunctionModule } from './query-builder/function-module.js'
 import { Log, LogConfig } from './util/log.js'
 import { QueryExecutorProvider } from './query-executor/query-executor-provider.js'
 
@@ -135,7 +135,7 @@ export class Kysely<DB>
   }
 
   /**
-   * Returns a {@link FunctionBuilder} that can be used to write type safe function
+   * Returns a {@link FunctionModule} that can be used to write type safe function
    * calls.
    *
    * ```ts
@@ -162,8 +162,8 @@ export class Kysely<DB>
    * having count("pet"."id") > $1
    * ```
    */
-  get fn(): FunctionBuilder<DB, keyof DB> {
-    return new FunctionBuilder()
+  get fn(): FunctionModule<DB, keyof DB> {
+    return new FunctionModule()
   }
 
   /**
