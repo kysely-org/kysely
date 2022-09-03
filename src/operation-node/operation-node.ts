@@ -70,6 +70,7 @@ export type OperationNodeKind =
   | 'CreateTypeNode'
   | 'DropTypeNode'
   | 'ExplainNode'
+  | 'DefaultInsertValueNode'
 
 export interface OperationNode {
   readonly kind: OperationNodeKind

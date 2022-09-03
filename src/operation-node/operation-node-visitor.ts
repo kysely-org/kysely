@@ -74,6 +74,7 @@ import { CreateTypeNode } from './create-type-node.js'
 import { DropTypeNode } from './drop-type-node.js'
 import { ExplainNode } from './explain-node.js'
 import { SchemableIdentifierNode } from './schemable-identifier-node.js'
+import { DefaultInsertValueNode } from './default-insert-value-node.js'
 
 export abstract class OperationNodeVisitor {
   protected readonly nodeStack: OperationNode[] = []
@@ -155,6 +156,7 @@ export abstract class OperationNodeVisitor {
     CreateTypeNode: this.visitCreateType.bind(this),
     DropTypeNode: this.visitDropType.bind(this),
     ExplainNode: this.visitExplain.bind(this),
+    DefaultInsertValueNode: this.visitDefaultInsertValue.bind(this),
   })
 
   protected readonly visitNode = (node: OperationNode): void => {
@@ -244,4 +246,5 @@ export abstract class OperationNodeVisitor {
   protected abstract visitCreateType(node: CreateTypeNode): void
   protected abstract visitDropType(node: DropTypeNode): void
   protected abstract visitExplain(node: ExplainNode): void
+  protected abstract visitDefaultInsertValue(node: DefaultInsertValueNode): void
 }

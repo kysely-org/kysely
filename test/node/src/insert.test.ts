@@ -496,7 +496,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
           .values([
             {
               first_name: 'Foo',
-              last_name: 'Barson',
+              // last_name is missing on purpose
               gender: 'other',
             },
             {
@@ -509,13 +509,13 @@ for (const dialect of BUILT_IN_DIALECTS) {
 
         testSql(query, dialect, {
           postgres: {
-            sql: 'insert into "person" ("first_name", "last_name", "gender") values ($1, $2, $3), ($4, $5, $6) returning *',
-            parameters: ['Foo', 'Barson', 'other', 'Baz', 'Spam', 'other'],
+            sql: 'insert into "person" ("first_name", "gender", "last_name") values ($1, $2, default), ($3, $4, $5) returning *',
+            parameters: ['Foo', 'other', 'Baz', 'other', 'Spam'],
           },
           mysql: NOT_SUPPORTED,
           sqlite: {
-            sql: 'insert into "person" ("first_name", "last_name", "gender") values (?, ?, ?), (?, ?, ?) returning *',
-            parameters: ['Foo', 'Barson', 'other', 'Baz', 'Spam', 'other'],
+            sql: 'insert into "person" ("first_name", "gender", "last_name") values (?, ?, null), (?, ?, ?) returning *',
+            parameters: ['Foo', 'other', 'Baz', 'other', 'Spam'],
           },
         })
 
@@ -524,7 +524,6 @@ for (const dialect of BUILT_IN_DIALECTS) {
       })
 
       it('should return data using `returning`', async () => {
-        
         const result = await ctx.db
           .insertInto('person')
           .values({
@@ -532,9 +531,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
             first_name: ctx.db
               .selectFrom('person')
               .select(sql`max(first_name)`.as('max_first_name')),
-            last_name: dialect === 'postgres'
-              ? sql`concat(cast(${'Bar'} as varchar), cast(${'son'} as varchar))`
-              : sql`cast(${'Bar'} as varchar) || cast(${'son'} as varchar)`,
+            last_name:
+              dialect === 'postgres'
+                ? sql`concat(cast(${'Bar'} as varchar), cast(${'son'} as varchar))`
+                : sql`cast(${'Bar'} as varchar) || cast(${'son'} as varchar)`,
           })
           .returning(['first_name', 'last_name', 'gender'])
           .executeTakeFirst()
@@ -576,9 +576,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
             first_name: ctx.db
               .selectFrom('person')
               .select(sql`max(first_name)`.as('max_first_name')),
-            last_name: dialect === 'postgres'
-              ? sql`concat(cast(${'Bar'} as varchar), cast(${'son'} as varchar))`
-              : sql`cast(${'Bar'} as varchar) || cast(${'son'} as varchar)`,
+            last_name:
+              dialect === 'postgres'
+                ? sql`concat(cast(${'Bar'} as varchar), cast(${'son'} as varchar))`
+                : sql`cast(${'Bar'} as varchar) || cast(${'son'} as varchar)`,
           })
           .returningAll()
           .executeTakeFirst()

@@ -8,6 +8,10 @@ export function isEmpty(obj: ArrayLike<unknown> | string | object): boolean {
   return false
 }
 
+export function isUndefined(obj: unknown): obj is undefined {
+  return obj === undefined
+}
+
 export function isString(obj: unknown): obj is string {
   return typeof obj === 'string'
 }

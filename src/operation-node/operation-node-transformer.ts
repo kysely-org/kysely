@@ -72,6 +72,7 @@ import { CreateTypeNode } from './create-type-node.js'
 import { DropTypeNode } from './drop-type-node.js'
 import { ExplainNode } from './explain-node.js'
 import { SchemableIdentifierNode } from './schemable-identifier-node.js'
+import { DefaultInsertValueNode } from './default-insert-value-node.js'
 
 /**
  * Transforms an operation node tree into another one.
@@ -178,6 +179,7 @@ export class OperationNodeTransformer {
     CreateTypeNode: this.transformCreateType.bind(this),
     DropTypeNode: this.transformDropType.bind(this),
     ExplainNode: this.transformExplain.bind(this),
+    DefaultInsertValueNode: this.transformDefaultInsertValue.bind(this),
   })
 
   transformNode<T extends OperationNode | undefined>(node: T): T {
@@ -844,6 +846,13 @@ export class OperationNodeTransformer {
   }
 
   protected transformOperator(node: OperatorNode): OperatorNode {
+    // An Object.freezed leaf node. No need to clone.
+    return node
+  }
+
+  protected transformDefaultInsertValue(
+    node: DefaultInsertValueNode
+  ): DefaultInsertValueNode {
     // An Object.freezed leaf node. No need to clone.
     return node
   }

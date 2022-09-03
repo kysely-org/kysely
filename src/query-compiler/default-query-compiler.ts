@@ -87,6 +87,7 @@ import { CreateTypeNode } from '../operation-node/create-type-node.js'
 import { DropTypeNode } from '../operation-node/drop-type-node.js'
 import { ExplainNode } from '../operation-node/explain-node.js'
 import { SchemableIdentifierNode } from '../operation-node/schemable-identifier-node.js'
+import { DefaultInsertValueNode } from '../operation-node/default-insert-value-node.js'
 
 export class DefaultQueryCompiler
   extends OperationNodeVisitor
@@ -1203,6 +1204,10 @@ export class DefaultQueryCompiler
 
       this.append(this.getRightExplainOptionsWrapper())
     }
+  }
+
+  protected visitDefaultInsertValue(_: DefaultInsertValueNode): void {
+    this.append('default')
   }
 
   protected append(str: string): void {

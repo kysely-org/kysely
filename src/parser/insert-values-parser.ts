@@ -1,7 +1,7 @@
 import { ColumnNode } from '../operation-node/column-node.js'
 import { PrimitiveValueListNode } from '../operation-node/primitive-value-list-node.js'
 import { ValueListNode } from '../operation-node/value-list-node.js'
-import { freeze } from '../util/object-utils.js'
+import { freeze, isObject, isUndefined } from '../util/object-utils.js'
 import { parseValueExpression, ValueExpression } from './value-parser.js'
 import { ValuesNode } from '../operation-node/values-node.js'
 import {
@@ -10,6 +10,8 @@ import {
   InsertType,
 } from '../util/column-type.js'
 import { isComplexExpression } from './complex-expression-parser.js'
+import { DefaultInsertValueNode } from '../operation-node/default-insert-value-node.js'
+import { OperationNode } from '../operation-node/operation-node.js'
 
 export type InsertObject<DB, TB extends keyof DB> = {
   [C in NonNullableInsertKeys<DB[TB]>]: ValueExpression<
@@ -70,21 +72,36 @@ function parseRowValues(
 ): PrimitiveValueListNode | ValueListNode {
   const rowColumns = Object.keys(row)
 
-  const rowValues: ValueExpression<any, any, unknown>[] = new Array(
-    columns.size
-  ).fill(null)
+  const rowValues: ValueExpression<any, any, unknown>[] = Array.from({
+    length: columns.size,
+  })
+
+  let complexColumn = false
 
   for (const col of rowColumns) {
     const columnIdx = columns.get(col)
-    const value = row[col]
 
     if (columnIdx !== undefined) {
+      const value = row[col]
+
+      if (isComplexExpression(value)) {
+        complexColumn = true
+      }
+
       rowValues[columnIdx] = value
     }
   }
 
-  if (rowValues.some(isComplexExpression)) {
-    return ValueListNode.create(rowValues.map((it) => parseValueExpression(it)))
+  const columnMissing = rowColumns.length < columns.size
+
+  if (columnMissing || complexColumn) {
+    const defaultValue = DefaultInsertValueNode.create()
+
+    return ValueListNode.create(
+      rowValues.map((it) =>
+        isUndefined(it) ? defaultValue : parseValueExpression(it)
+      )
+    )
   }
 
   return PrimitiveValueListNode.create(rowValues)

@@ -166,6 +166,7 @@ export * from './operation-node/values-node.js'
 export * from './operation-node/where-node.js'
 export * from './operation-node/with-node.js'
 export * from './operation-node/explain-node.js'
+export * from './operation-node/default-insert-value-node.js'
 
 export * from './util/column-type.js'
 export * from './util/compilable.js'
