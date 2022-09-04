@@ -72,12 +72,20 @@ export class AliasedAggregateFunctionBuilder<
   readonly #aggregateFunctionBuilder: AggregateFunctionBuilder<DB, TB, O>
   readonly #alias: A
 
+  constructor(
+    aggregateFunctionBuilder: AggregateFunctionBuilder<DB, TB, O>,
+    alias: A
+  ) {
+    this.#aggregateFunctionBuilder = aggregateFunctionBuilder
+    this.#alias = alias
+  }
+
   /**
    * @private
    *
    * This needs to be here just so that the typings work. Without this
    * the generated .d.ts file contains no reference to the type param A
-   * which causes this type to be equal to AliasedRawBuilder with any A
+   * which causes this type to be equal to AliasedAggregateFunctionBuilder with any A
    * as long as O is the same.
    */
   protected get alias(): A {
@@ -89,14 +97,6 @@ export class AliasedAggregateFunctionBuilder<
       this.#aggregateFunctionBuilder.toOperationNode(),
       IdentifierNode.create(this.#alias)
     )
-  }
-
-  constructor(
-    aggregateFunctionBuilder: AggregateFunctionBuilder<DB, TB, O>,
-    alias: A
-  ) {
-    this.#aggregateFunctionBuilder = aggregateFunctionBuilder
-    this.#alias = alias
   }
 }
 
