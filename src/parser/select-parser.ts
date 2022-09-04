@@ -33,6 +33,7 @@ export type SelectExpression<DB, TB extends keyof DB> =
   | AnyColumn<DB, TB>
   | DynamicReferenceBuilder<any>
   | AliasedComplexExpression<DB, TB>
+  | AliasedAggregateFunctionBuilder<DB, TB>
 
 export type SelectExpressionOrList<DB, TB extends keyof DB> =
   | SelectExpression<DB, TB>
@@ -125,10 +126,16 @@ type ExtractTypeFromSelectExpression<
   ? A extends ExtractAliasFromStringSelectExpression<RA>
     ? ExtractTypeFromStringSelectExpression<DB, TB, RA, A> | undefined
     : never
-  : SE extends AliasedAggregateFunctionBuilder<any, any, infer O>
-  ? O
-  : SE extends (qb: any) => AliasedAggregateFunctionBuilder<any, any, infer O>
-  ? O
+  : SE extends AliasedAggregateFunctionBuilder<any, any, infer O, infer FA>
+  ? FA extends A
+    ? O
+    : never
+  : SE extends (
+      qb: any
+    ) => AliasedAggregateFunctionBuilder<any, any, infer O, infer FA>
+  ? FA extends A
+    ? O
+    : never
   : never
 
 type ExtractTypeFromStringSelectExpression<

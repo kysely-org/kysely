@@ -1,4 +1,5 @@
 import { freeze } from '../util/object-utils.js'
+import { AggregateFunctionNode } from './aggregate-function-node.js'
 import { DefaultInsertValueNode } from './default-insert-value-node.js'
 import { OperationNode } from './operation-node.js'
 import { RawNode } from './raw-node.js'
@@ -12,6 +13,7 @@ export type ListNodeItem =
   | DefaultInsertValueNode
   | SelectQueryNode
   | RawNode
+  | AggregateFunctionNode
 
 export interface ValueListNode extends OperationNode {
   readonly kind: 'ValueListNode'

@@ -1,4 +1,5 @@
 import { freeze } from '../util/object-utils.js'
+import { AggregateFunctionNode } from './aggregate-function-node.js'
 import { ColumnNode } from './column-node.js'
 import { ExplainNode } from './explain-node.js'
 import { OnConflictNode } from './on-conflict-node.js'
@@ -17,7 +18,11 @@ export interface InsertQueryNode extends OperationNode {
   readonly kind: 'InsertQueryNode'
   readonly into: TableNode
   readonly columns?: ReadonlyArray<ColumnNode>
-  readonly values?: ValuesNode | SelectQueryNode | RawNode
+  readonly values?:
+    | ValuesNode
+    | SelectQueryNode
+    | RawNode
+    | AggregateFunctionNode
   readonly returning?: ReturningNode
   readonly onConflict?: OnConflictNode
   readonly onDuplicateKey?: OnDuplicateKeyNode

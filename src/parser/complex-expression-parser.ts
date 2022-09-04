@@ -1,7 +1,9 @@
+import { AggregateFunctionNode } from '../operation-node/aggregate-function-node.js'
 import { AliasNode } from '../operation-node/alias-node.js'
 import { isOperationNodeSource } from '../operation-node/operation-node-source.js'
 import { RawNode } from '../operation-node/raw-node.js'
 import { SelectQueryNode } from '../operation-node/select-query-node.js'
+import { AggregateFunctionBuilder } from '../query-builder/aggregate-function-builder.js'
 import { RawBuilder } from '../raw-builder/raw-builder.js'
 import { isFunction } from '../util/object-utils.js'
 import {
@@ -12,6 +14,8 @@ import {
   AnySelectQueryBuilder,
   SelectQueryBuilderFactory,
   RawBuilderFactory,
+  AggregateFunctionBuilderFactory,
+  AliasedAggregateFunctionBuilderFactory,
   AnyAliasedAggregateFunctionBuilder,
 } from '../util/type-utils.js'
 import { createExpressionBuilder } from './parse-utils.js'
@@ -21,6 +25,8 @@ export type ComplexExpression<DB, TB extends keyof DB, V = any> =
   | SelectQueryBuilderFactory<DB, TB>
   | RawBuilder<V>
   | RawBuilderFactory<DB, TB, V>
+  | AggregateFunctionBuilder<DB, TB, V>
+  | AggregateFunctionBuilderFactory<DB, TB, V>
 
 export type AliasedComplexExpression<DB, TB extends keyof DB> =
   | AnyAliasedQueryBuilder
@@ -28,10 +34,11 @@ export type AliasedComplexExpression<DB, TB extends keyof DB> =
   | AnyAliasedRawBuilder
   | AliasedRawBuilderFactory<DB, TB>
   | AnyAliasedAggregateFunctionBuilder
+  | AliasedAggregateFunctionBuilderFactory<DB, TB>
 
 export function parseComplexExpression(
   exp: ComplexExpression<any, any>
-): SelectQueryNode | RawNode {
+): SelectQueryNode | RawNode | AggregateFunctionNode {
   if (isOperationNodeSource(exp)) {
     return exp.toOperationNode()
   } else if (isFunction(exp)) {
