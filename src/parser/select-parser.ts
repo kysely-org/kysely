@@ -79,6 +79,10 @@ type ExtractAliasFromSelectExpression<SE> = SE extends string
   ? ExtractAliasFromStringSelectExpression<RA>
   : SE extends AliasedAggregateFunctionBuilder<any, any, any, infer QA>
   ? QA
+  : SE extends (
+      qb: any
+    ) => AliasedAggregateFunctionBuilder<any, any, any, infer QA>
+  ? QA
   : never
 
 type ExtractAliasFromStringSelectExpression<SE extends string> =
@@ -122,6 +126,8 @@ type ExtractTypeFromSelectExpression<
     ? ExtractTypeFromStringSelectExpression<DB, TB, RA, A> | undefined
     : never
   : SE extends AliasedAggregateFunctionBuilder<any, any, infer O>
+  ? O
+  : SE extends (qb: any) => AliasedAggregateFunctionBuilder<any, any, infer O>
   ? O
   : never
 
