@@ -1,4 +1,3 @@
-import { FunctionModule } from '../../../dist/cjs/index.js'
 import {
   BUILT_IN_DIALECTS,
   destroyTest,
