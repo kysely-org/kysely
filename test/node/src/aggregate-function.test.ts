@@ -19,19 +19,14 @@ for (const dialect of BUILT_IN_DIALECTS) {
       await destroyTest(ctx)
     })
 
-    for (const func of ['avg', 'count', 'max', 'min', 'sum']) {
+    for (const func of ['avg', 'count', 'max', 'min', 'sum'] as const) {
       describe(func, () => {
         it(`should execute a query with ${func}(...) in select clause`, async () => {
           const query = ctx.db
             .selectFrom('person')
             .select([
-              (ctx.db.fn[func as keyof FunctionModule<any, any>] as Function)(
-                'person.id'
-              ).as(func),
-              (qb: any) =>
-                (qb.fn[func as keyof FunctionModule<any, any>] as Function)(
-                  'person.id'
-                ).as(`another_${func}`),
+              (ctx.db.fn[func] as Function)('person.id').as(func),
+              (qb: any) => qb.fn[func]('person.id').as(`another_${func}`),
             ])
 
           testSql(query, dialect, {
@@ -56,17 +51,9 @@ for (const dialect of BUILT_IN_DIALECTS) {
           const query = ctx.db
             .selectFrom('person')
             .select([
-              (ctx.db.fn[func as keyof FunctionModule<any, any>] as Function)(
-                'person.id'
-              )
-                .distinct()
-                .as(func),
+              (ctx.db.fn[func] as Function)('person.id').distinct().as(func),
               (qb: any) =>
-                (qb.fn[func as keyof FunctionModule<any, any>] as Function)(
-                  'person.id'
-                )
-                  .distinct()
-                  .as(`another_${func}`),
+                qb.fn[func]('person.id').distinct().as(`another_${func}`),
             ])
 
           testSql(query, dialect, {
@@ -91,17 +78,9 @@ for (const dialect of BUILT_IN_DIALECTS) {
           const query = ctx.db
             .selectFrom('person')
             .select([
-              (ctx.db.fn[func as keyof FunctionModule<any, any>] as Function)(
-                'person.id'
-              )
-                .over()
-                .as(func),
+              (ctx.db.fn[func] as Function)('person.id').over().as(func),
               (qb: any) =>
-                (qb.fn[func as keyof FunctionModule<any, any>] as Function)(
-                  'person.id'
-                )
-                  .over()
-                  .as(`another_${func}`),
+                qb.fn[func]('person.id').over().as(`another_${func}`),
             ])
 
           testSql(query, dialect, {
@@ -124,15 +103,11 @@ for (const dialect of BUILT_IN_DIALECTS) {
 
         it(`should execute a query with ${func}(...) over(partition by ...) in select clause`, async () => {
           const query = ctx.db.selectFrom('person').select([
-            (ctx.db.fn[func as keyof FunctionModule<any, any>] as Function)(
-              'person.id'
-            )
+            (ctx.db.fn[func] as Function)('person.id')
               .over((ob: any) => ob.partitionBy(['person.first_name']))
               .as(func),
             (qb: any) =>
-              (qb.fn[func as keyof FunctionModule<any, any>] as Function)(
-                'person.id'
-              )
+              qb.fn[func]('person.id')
                 .over((ob: any) => ob.partitionBy(['person.first_name']))
                 .as(`another_${func}`),
           ])
@@ -157,9 +132,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
 
         it(`should execute a query with ${func}(...) over(order by ...) in select clause`, async () => {
           const query = ctx.db.selectFrom('person').select([
-            (ctx.db.fn[func as keyof FunctionModule<any, any>] as Function)(
-              'person.id'
-            )
+            (ctx.db.fn[func] as Function)('person.id')
               .over((ob: any) =>
                 ob
                   .orderBy('person.last_name', 'asc')
@@ -167,9 +140,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
               )
               .as(func),
             (qb: any) =>
-              (qb.fn[func as keyof FunctionModule<any, any>] as Function)(
-                'person.id'
-              )
+              qb.fn[func]('person.id')
                 .over((ob: any) =>
                   ob
                     .orderBy('person.last_name', 'desc')
@@ -198,9 +169,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
 
         it(`should execute a query with ${func}(...) over(partition by ... order by ...) in select clause`, async () => {
           const query = ctx.db.selectFrom('person').select([
-            (ctx.db.fn[func as keyof FunctionModule<any, any>] as Function)(
-              'person.id'
-            )
+            (ctx.db.fn[func] as Function)('person.id')
               .over((ob: any) =>
                 ob
                   .partitionBy(['person.gender'])
@@ -209,9 +178,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
               )
               .as(func),
             (qb: any) =>
-              (qb.fn[func as keyof FunctionModule<any, any>] as Function)(
-                'person.id'
-              )
+              qb.fn[func]('person.id')
                 .over((ob: any) =>
                   ob
                     .partitionBy(['person.gender'])
@@ -244,13 +211,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
             .selectFrom('person')
             .selectAll()
             .groupBy(['person.gender'])
-            .having(
-              (ctx.db.fn[func as keyof FunctionModule<any, any>] as Function)(
-                'person.id'
-              ),
-              '>=',
-              3
-            )
+            .having((ctx.db.fn[func] as Function)('person.id'), '>=', 3)
 
           testSql(query, dialect, {
             postgres: {
@@ -273,12 +234,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
             .selectFrom('person')
             .selectAll()
             .groupBy(['person.gender'])
-            .orderBy(
-              (ctx.db.fn[func as keyof FunctionModule<any, any>] as Function)(
-                'person.id'
-              ),
-              'desc'
-            )
+            .orderBy((ctx.db.fn[func] as Function)('person.id'), 'desc')
 
           testSql(query, dialect, {
             postgres: {
