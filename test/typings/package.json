@@ -1,3 +1,6 @@
 {
-  "types": "index.d.ts"
+  "types": "../../dist/cjs/index.d.ts",
+  "tsd": {
+    "directory": "./"
+  }
 }
