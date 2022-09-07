@@ -17,7 +17,29 @@ export class AggregateFunctionBuilder<DB, TB extends keyof DB, O = unknown>
   }
 
   /**
-   * TODO: ...
+   * Returns an aliased version of the function.
+   *
+   * In addition to slapping `as "the_alias"` to the end of the SQL,
+   * this method also provides strict typing:
+   *
+   * ```ts
+   * const result = await db
+   *   .selectFrom('person')
+   *   .select(
+   *     eb => eb.fn.count<number>('id').as('person_count')
+   *   )
+   *   .executeTakeFirstOrThrow()
+   *
+   * // `person_count: number` field exists in the result type.
+   * console.log(result.person_count)
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * select count("id") as "person_count"
+   * from "person"
+   * ```
    */
   as<A extends string>(
     alias: A
@@ -26,7 +48,23 @@ export class AggregateFunctionBuilder<DB, TB extends keyof DB, O = unknown>
   }
 
   /**
-   * TODO: ...
+   * Adds a distinct clause inside the function.
+   *
+   * ```ts
+   * const result = await db
+   *   .selectFrom('person')
+   *   .select(
+   *     eb => eb.fn.count<number>('first_name').distinct().as('first_name_count')
+   *   )
+   *   .executeTakeFirstOrThrow()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * select count(distinct "first_name") as "first_name_count"
+   * from "person"
+   * ```
    */
   distinct(): AggregateFunctionBuilder<DB, TB, O> {
     return new AggregateFunctionBuilder({
@@ -38,7 +76,44 @@ export class AggregateFunctionBuilder<DB, TB extends keyof DB, O = unknown>
   }
 
   /**
-   * TODO: ...
+   * Adds an over clause (window functions) after the function.
+   *
+   * ```ts
+   * const result = await db
+   *   .selectFrom('person')
+   *   .select(
+   *     eb => eb.fn.avg<number>('age').over().as('average_age')
+   *   )
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * select avg("age") over() as "average_age"
+   * from "person"
+   * ```
+   *
+   * Also supports passing a callback that returns an over builder,
+   * allowing to add partition by and sort by clauses inside over.
+   *
+   * ```ts
+   * const result = await db
+   *   .selectFrom('person')
+   *   .select(
+   *     eb => eb.fn.avg<number>('age').over(
+   *       ob => ob.partitionBy('last_name').orderBy('first_name', 'asc')
+   *     ).as('average_age')
+   *   )
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * select avg("age") over(partition by "last_name" order by "first_name" asc) as "average_age"
+   * from "person"
+   * ```
    */
   over(
     over?: OverBuilderCallback<DB, TB>
@@ -58,6 +133,11 @@ export class AggregateFunctionBuilder<DB, TB extends keyof DB, O = unknown>
     return this.#props.aggregateFunctionNode
   }
 }
+
+preventAwait(
+  AggregateFunctionBuilder,
+  "don't await AggregateFunctionBuilder instances. They are never executed directly and are always just a part of a query."
+)
 
 /**
  * {@link AggregateFunctionBuilder} with an alias. The result of calling {@link AggregateFunctionBuilder.as}.
@@ -102,7 +182,7 @@ export class AliasedAggregateFunctionBuilder<
 
 preventAwait(
   AggregateFunctionBuilder,
-  "don't await AggregateFunctionBuilder instances. They are never executed directly and are always just a part of a query."
+  "don't await AliasedAggregateFunctionBuilder instances. They are never executed directly and are always just a part of a query."
 )
 
 export interface AggregateFunctionBuilderProps {
