@@ -24,7 +24,25 @@ export class OverBuilder<DB, TB extends keyof DB>
   }
 
   /**
-   * TODO: ...
+   * Adds an order by clause item inside the over function.
+   *
+   * ```ts
+   * const result = await db
+   *   .selectFrom('person')
+   *   .select(
+   *     eb => eb.fn.avg<number>('age').over(
+   *       ob => ob.orderBy('first_name', 'asc').orderBy('last_name', 'asc')
+   *     ).as('average_age')
+   *   )
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * select avg("age") over(order by "first_name" asc, "last_name" asc) as "average_age"
+   * from "person"
+   * ```
    */
   orderBy(
     orderBy: StringReference<DB, TB> | DynamicReferenceBuilder<any>,
@@ -39,7 +57,25 @@ export class OverBuilder<DB, TB extends keyof DB>
   }
 
   /**
-   * TODO: ...
+   * Adds partition by clause item/s inside the over function.
+   *
+   * ```ts
+   * const result = await db
+   *   .selectFrom('person')
+   *   .select(
+   *     eb => eb.fn.avg<number>('age').over(
+   *       ob => ob.partitionBy(['last_name', 'first_name'])
+   *     ).as('average_age')
+   *   )
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * select avg("age") over(partition by "last_name", "first_name") as "average_age"
+   * from "person"
+   * ```
    */
   partitionBy(
     partitionBy: ReadonlyArray<PartitionByExpression<DB, TB>>
