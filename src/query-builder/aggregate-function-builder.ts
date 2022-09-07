@@ -180,11 +180,6 @@ export class AliasedAggregateFunctionBuilder<
   }
 }
 
-preventAwait(
-  AggregateFunctionBuilder,
-  "don't await AliasedAggregateFunctionBuilder instances. They are never executed directly and are always just a part of a query."
-)
-
 export interface AggregateFunctionBuilderProps {
   aggregateFunctionNode: AggregateFunctionNode
 }
