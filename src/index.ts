@@ -16,6 +16,7 @@ export * from './query-builder/insert-result.js'
 export * from './query-builder/delete-result.js'
 export * from './query-builder/update-result.js'
 export * from './query-builder/on-conflict-builder.js'
+export * from './query-builder/aggregate-function-builder.js'
 
 export * from './raw-builder/raw-builder.js'
 export * from './raw-builder/sql.js'
@@ -190,6 +191,7 @@ export {
 export {
   ReferenceExpression,
   ReferenceExpressionOrList,
+  StringReference,
 } from './parser/reference-parser.js'
 export {
   ValueExpression,
