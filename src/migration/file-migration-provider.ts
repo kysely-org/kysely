@@ -39,9 +39,12 @@ export class FileMigrationProvider implements MigrationProvider {
             fileName
           )
         )
-
-        if (isMigration(migration)) {
-          migrations[fileName.substring(0, fileName.length - 3)] = migration
+        const migrationKey = fileName.substring(0, fileName.length - 3);
+        // Handle esModuleInterop export's `default` prop...
+        if (isMigration(migration?.default)) {
+          migrations[migrationKey] = migration.default;
+        } else if (isMigration(migration)) {
+          migrations[migrationKey] = migration
         }
       }
     }
