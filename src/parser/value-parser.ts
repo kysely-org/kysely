@@ -10,6 +10,7 @@ import {
   ComplexExpression,
   isComplexExpression,
 } from './complex-expression-parser.js'
+import { AggregateFunctionNode } from '../operation-node/aggregate-function-node.js'
 
 export type ValueExpression<DB, TB extends keyof DB, V> =
   | V
@@ -31,7 +32,7 @@ export function parseValueExpressionOrList(
 
 export function parseValueExpression(
   exp: ValueExpression<any, any, unknown>
-): ValueNode | SelectQueryNode | RawNode {
+): ValueNode | SelectQueryNode | RawNode | AggregateFunctionNode {
   if (isComplexExpression(exp)) {
     return parseComplexExpression(exp)
   }

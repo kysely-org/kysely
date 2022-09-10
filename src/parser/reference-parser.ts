@@ -22,6 +22,7 @@ import {
 } from '../dynamic/dynamic-reference-builder.js'
 import { SelectType } from '../util/column-type.js'
 import { IdentifierNode } from '../operation-node/identifier-node.js'
+import { AggregateFunctionBuilder } from '../query-builder/aggregate-function-builder.js'
 
 export type ReferenceExpression<DB, TB extends keyof DB> =
   | StringReference<DB, TB>
@@ -50,6 +51,10 @@ export type ExtractTypeFromReferenceExpression<
   ? ValueType<O>
   : RE extends (qb: any) => SelectQueryBuilder<any, any, infer O>
   ? ValueType<O>
+  : RE extends AggregateFunctionBuilder<any, any, infer O>
+  ? O
+  : RE extends (qb: any) => AggregateFunctionBuilder<any, any, infer O>
+  ? O
   : unknown
 
 type ExtractTypeFromStringReference<

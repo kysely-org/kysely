@@ -13,7 +13,7 @@ export type GroupByExpressionOrList<DB, TB extends keyof DB, O> =
   | GroupByExpression<DB, TB, O>
 
 export function parseGroupBy(
-  orderBy: GroupByExpressionOrList<any, any, any>
+  groupBy: GroupByExpressionOrList<any, any, any>
 ): GroupByItemNode[] {
-  return parseReferenceExpressionOrList(orderBy).map(GroupByItemNode.create)
+  return parseReferenceExpressionOrList(groupBy).map(GroupByItemNode.create)
 }

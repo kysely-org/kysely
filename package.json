@@ -41,6 +41,9 @@
   },
   "author": "Sami Koskimäki <sami@jakso.me>",
   "license": "MIT",
+  "contributors": [
+    "Igal Klebanov <igalklebanov@gmail.com>"
+  ],
   "devDependencies": {
     "@types/better-sqlite3": "^7.5.0",
     "@types/chai": "^4.3.1",

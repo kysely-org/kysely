@@ -73,6 +73,10 @@ import { DropTypeNode } from './drop-type-node.js'
 import { ExplainNode } from './explain-node.js'
 import { SchemableIdentifierNode } from './schemable-identifier-node.js'
 import { DefaultInsertValueNode } from './default-insert-value-node.js'
+import { AggregateFunctionNode } from './aggregate-function-node.js'
+import { OverNode } from './over-node.js'
+import { PartitionByNode } from './partition-by-node.js'
+import { PartitionByItemNode } from './partition-by-item-node.js'
 
 /**
  * Transforms an operation node tree into another one.
@@ -180,6 +184,10 @@ export class OperationNodeTransformer {
     DropTypeNode: this.transformDropType.bind(this),
     ExplainNode: this.transformExplain.bind(this),
     DefaultInsertValueNode: this.transformDefaultInsertValue.bind(this),
+    AggregateFunctionNode: this.transformAggregateFunction.bind(this),
+    OverNode: this.transformOver.bind(this),
+    PartitionByNode: this.transformPartitionBy.bind(this),
+    PartitionByItemNode: this.transformPartitionByItem.bind(this),
   })
 
   transformNode<T extends OperationNode | undefined>(node: T): T {
@@ -815,6 +823,42 @@ export class OperationNodeTransformer {
       kind: 'SchemableIdentifierNode',
       schema: this.transformNode(node.schema),
       identifier: this.transformNode(node.identifier),
+    })
+  }
+
+  protected transformAggregateFunction(
+    node: AggregateFunctionNode
+  ): AggregateFunctionNode {
+    return requireAllProps({
+      kind: 'AggregateFunctionNode',
+      column: this.transformNode(node.column),
+      distinct: node.distinct,
+      func: node.func,
+      over: this.transformNode(node.over),
+    })
+  }
+
+  protected transformOver(node: OverNode): OverNode {
+    return requireAllProps({
+      kind: 'OverNode',
+      orderBy: this.transformNode(node.orderBy),
+      partitionBy: this.transformNode(node.partitionBy),
+    })
+  }
+
+  protected transformPartitionBy(node: PartitionByNode): PartitionByNode {
+    return requireAllProps({
+      kind: 'PartitionByNode',
+      items: this.transformNodeList(node.items),
+    })
+  }
+
+  protected transformPartitionByItem(
+    node: PartitionByItemNode
+  ): PartitionByItemNode {
+    return requireAllProps({
+      kind: 'PartitionByItemNode',
+      partitionBy: this.transformNode(node.partitionBy),
     })
   }
 

@@ -11,11 +11,12 @@ export * from './query-builder/delete-query-builder.js'
 export * from './query-builder/no-result-error.js'
 export * from './query-builder/join-builder.js'
 export * from './query-builder/expression-builder.js'
-export * from './query-builder/function-builder.js'
+export * from './query-builder/function-module.js'
 export * from './query-builder/insert-result.js'
 export * from './query-builder/delete-result.js'
 export * from './query-builder/update-result.js'
 export * from './query-builder/on-conflict-builder.js'
+export * from './query-builder/aggregate-function-builder.js'
 
 export * from './raw-builder/raw-builder.js'
 export * from './raw-builder/sql.js'
@@ -167,6 +168,10 @@ export * from './operation-node/where-node.js'
 export * from './operation-node/with-node.js'
 export * from './operation-node/explain-node.js'
 export * from './operation-node/default-insert-value-node.js'
+export * from './operation-node/aggregate-function-node.js'
+export * from './operation-node/over-node.js'
+export * from './operation-node/partition-by-node.js'
+export * from './operation-node/partition-by-item-node.js'
 
 export * from './util/column-type.js'
 export * from './util/compilable.js'
@@ -186,6 +191,7 @@ export {
 export {
   ReferenceExpression,
   ReferenceExpressionOrList,
+  StringReference,
 } from './parser/reference-parser.js'
 export {
   ValueExpression,

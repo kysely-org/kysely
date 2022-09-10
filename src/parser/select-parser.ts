@@ -24,6 +24,7 @@ import {
 } from './complex-expression-parser.js'
 import { Selectable, SelectType } from '../util/column-type.js'
 import { parseTable } from './table-parser.js'
+import { AliasedAggregateFunctionBuilder } from '../query-builder/aggregate-function-builder.js'
 
 export type SelectExpression<DB, TB extends keyof DB> =
   | AnyAliasedColumnWithTable<DB, TB>
@@ -32,6 +33,7 @@ export type SelectExpression<DB, TB extends keyof DB> =
   | AnyColumn<DB, TB>
   | DynamicReferenceBuilder<any>
   | AliasedComplexExpression<DB, TB>
+  | AliasedAggregateFunctionBuilder<DB, TB>
 
 export type SelectExpressionOrList<DB, TB extends keyof DB> =
   | SelectExpression<DB, TB>
@@ -76,6 +78,12 @@ type ExtractAliasFromSelectExpression<SE> = SE extends string
   ? QA
   : SE extends DynamicReferenceBuilder<infer RA>
   ? ExtractAliasFromStringSelectExpression<RA>
+  : SE extends AliasedAggregateFunctionBuilder<any, any, any, infer QA>
+  ? QA
+  : SE extends (
+      qb: any
+    ) => AliasedAggregateFunctionBuilder<any, any, any, infer QA>
+  ? QA
   : never
 
 type ExtractAliasFromStringSelectExpression<SE extends string> =
@@ -117,6 +125,16 @@ type ExtractTypeFromSelectExpression<
   : SE extends DynamicReferenceBuilder<infer RA>
   ? A extends ExtractAliasFromStringSelectExpression<RA>
     ? ExtractTypeFromStringSelectExpression<DB, TB, RA, A> | undefined
+    : never
+  : SE extends AliasedAggregateFunctionBuilder<any, any, infer O, infer FA>
+  ? FA extends A
+    ? O
+    : never
+  : SE extends (
+      qb: any
+    ) => AliasedAggregateFunctionBuilder<any, any, infer O, infer FA>
+  ? FA extends A
+    ? O
     : never
   : never
 

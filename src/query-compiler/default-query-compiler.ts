@@ -88,6 +88,10 @@ import { DropTypeNode } from '../operation-node/drop-type-node.js'
 import { ExplainNode } from '../operation-node/explain-node.js'
 import { SchemableIdentifierNode } from '../operation-node/schemable-identifier-node.js'
 import { DefaultInsertValueNode } from '../operation-node/default-insert-value-node.js'
+import { AggregateFunctionNode } from '../operation-node/aggregate-function-node.js'
+import { OverNode } from '../operation-node/over-node.js'
+import { PartitionByNode } from '../operation-node/partition-by-node.js'
+import { PartitionByItemNode } from '../operation-node/partition-by-item-node.js'
 
 export class DefaultQueryCompiler
   extends OperationNodeVisitor
@@ -1208,6 +1212,50 @@ export class DefaultQueryCompiler
 
   protected visitDefaultInsertValue(_: DefaultInsertValueNode): void {
     this.append('default')
+  }
+
+  protected override visitAggregateFunction(node: AggregateFunctionNode): void {
+    this.append(node.func)
+    this.append('(')
+
+    if (node.distinct) {
+      this.append('distinct ')
+    }
+
+    this.visitNode(node.column)
+    this.append(')')
+
+    if (node.over) {
+      this.append(' ')
+      this.visitNode(node.over)
+    }
+  }
+
+  protected override visitOver(node: OverNode): void {
+    this.append('over(')
+
+    if (node.partitionBy) {
+      this.visitNode(node.partitionBy)
+
+      if (node.orderBy) {
+        this.append(' ')
+      }
+    }
+
+    if (node.orderBy) {
+      this.visitNode(node.orderBy)
+    }
+
+    this.append(')')
+  }
+
+  protected override visitPartitionBy(node: PartitionByNode): void {
+    this.append('partition by ')
+    this.compileList(node.items)
+  }
+
+  protected override visitPartitionByItem(node: PartitionByItemNode): void {
+    this.visitNode(node.partitionBy)
   }
 
   protected append(str: string): void {

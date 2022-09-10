@@ -26,7 +26,7 @@ describe(`postgres json tests`, () => {
       .addColumn('data', 'jsonb')
       .execute()
 
-    db = ctx.db
+    db = ctx.db.withTables<{ json_table: JsonTable }>()
   })
 
   afterEach(async () => {

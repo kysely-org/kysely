@@ -1,3 +1,4 @@
+import { AggregateFunctionNode } from './aggregate-function-node.js'
 import { AliasNode } from './alias-node.js'
 import { AndNode } from './and-node.js'
 import { ColumnNode } from './column-node.js'
@@ -17,6 +18,7 @@ export type ReferenceExpressionNode =
   | ReferenceNode
   | SelectQueryNode
   | RawNode
+  | AggregateFunctionNode
 
 export type ValueExpressionNode =
   | ValueNode

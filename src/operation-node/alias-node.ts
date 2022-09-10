@@ -1,4 +1,5 @@
 import { freeze } from '../util/object-utils.js'
+import { AggregateFunctionNode } from './aggregate-function-node.js'
 import { ColumnNode } from './column-node.js'
 import { IdentifierNode } from './identifier-node.js'
 import { OperationNode } from './operation-node.js'
@@ -13,6 +14,7 @@ export type AliasNodeChild =
   | TableNode
   | SelectQueryNode
   | RawNode
+  | AggregateFunctionNode
 
 export interface AliasNode extends OperationNode {
   readonly kind: 'AliasNode'

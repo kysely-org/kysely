@@ -1,11 +1,10 @@
-import { RawNode } from '../operation-node/raw-node.js'
+import { AggregateFunctionNode } from '../operation-node/aggregate-function-node.js'
 import {
   StringReference,
   ExtractTypeFromReferenceExpression,
   parseStringReference,
 } from '../parser/reference-parser.js'
-import { RawBuilder } from '../raw-builder/raw-builder.js'
-import { createQueryId } from '../util/query-id.js'
+import { AggregateFunctionBuilder } from './aggregate-function-builder.js'
 
 /**
  * Helpers for type safe SQL function calls.
@@ -39,52 +38,13 @@ import { createQueryId } from '../util/query-id.js'
  * having count("pet"."id") > $1
  * ```
  */
-export class FunctionBuilder<DB, TB extends keyof DB> {
+export class FunctionModule<DB, TB extends keyof DB> {
   constructor() {
-    this.min = this.min.bind(this)
-    this.max = this.max.bind(this)
     this.avg = this.avg.bind(this)
-    this.sum = this.sum.bind(this)
     this.count = this.count.bind(this)
-  }
-
-  /**
-   * Calls the `max` function for the column given as the argument.
-   *
-   * ### Examples
-   *
-   * ```ts
-   * const { max } = db.fn
-   *
-   * db.selectFrom('toy')
-   *   .select(max('price').as('max_price'))
-   *   .execute()
-   * ```
-   */
-  max<C extends StringReference<DB, TB>>(
-    column: C
-  ): RawBuilder<ExtractTypeFromReferenceExpression<DB, TB, C>> {
-    return this.#oneArgFunction('max', column)
-  }
-
-  /**
-   * Calls the `min` function for the column given as the argument.
-   *
-   * ### Examples
-   *
-   * ```ts
-   * const { min } = db.fn
-   *
-   * db.selectFrom('toy')
-   *   .select(min('price').as('min_price'))
-   *   .execute()
-   * ```
-   *
-   */
-  min<C extends StringReference<DB, TB>>(
-    column: C
-  ): RawBuilder<ExtractTypeFromReferenceExpression<DB, TB, C>> {
-    return this.#oneArgFunction('min', column)
+    this.max = this.max.bind(this)
+    this.min = this.min.bind(this)
+    this.sum = this.sum.bind(this)
   }
 
   /**
@@ -111,8 +71,111 @@ export class FunctionBuilder<DB, TB extends keyof DB> {
   avg<
     O extends number | string,
     C extends StringReference<DB, TB> = StringReference<DB, TB>
-  >(column: C): RawBuilder<O> {
-    return this.#oneArgFunction('avg', column)
+  >(column: C): AggregateFunctionBuilder<DB, TB, O> {
+    return new AggregateFunctionBuilder({
+      aggregateFunctionNode: AggregateFunctionNode.create(
+        'avg',
+        parseStringReference(column)
+      ),
+    })
+  }
+
+  /**
+   * Calls the `count` function for the column given as the argument.
+   *
+   * If this is used in a `select` statement the type of the selected expression
+   * will be `number | string | bigint` by default. This is because Kysely can't
+   * know the type the db driver outputs. Sometimes the output can be larger than
+   * the largest javascript number and a string is returned instead. Most drivers
+   * allow you to configure the output type of large numbers and Kysely can't
+   * know if you've done so.
+   *
+   * You can specify the output type of the expression by providing
+   * the type as the first type argument:
+   *
+   * ```ts
+   * const { count } = db.fn
+   *
+   * db.selectFrom('toy')
+   *   .select(count<number>('id').as('num_toys'))
+   *   .execute()
+   * ```
+   *
+   * You can limit column range:
+   *
+   * ```ts
+   * db.selectFrom('toy')
+   *   .select(qb => qb.fn.count<number>('id').as('num_toys'))
+   *   .execute()
+   * ```
+   */
+  count<
+    O extends number | string | bigint,
+    C extends StringReference<DB, TB> = StringReference<DB, TB>
+  >(column: C): AggregateFunctionBuilder<DB, TB, O> {
+    return new AggregateFunctionBuilder({
+      aggregateFunctionNode: AggregateFunctionNode.create(
+        'count',
+        parseStringReference(column)
+      ),
+    })
+  }
+
+  /**
+   * Calls the `max` function for the column given as the argument.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * const { max } = db.fn
+   *
+   * db.selectFrom('toy')
+   *   .select(max('price').as('max_price'))
+   *   .execute()
+   * ```
+   */
+  max<C extends StringReference<DB, TB>>(
+    column: C
+  ): AggregateFunctionBuilder<
+    DB,
+    TB,
+    ExtractTypeFromReferenceExpression<DB, TB, C>
+  > {
+    return new AggregateFunctionBuilder({
+      aggregateFunctionNode: AggregateFunctionNode.create(
+        'max',
+        parseStringReference(column)
+      ),
+    })
+  }
+
+  /**
+   * Calls the `min` function for the column given as the argument.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * const { min } = db.fn
+   *
+   * db.selectFrom('toy')
+   *   .select(min('price').as('min_price'))
+   *   .execute()
+   * ```
+   *
+   */
+  min<C extends StringReference<DB, TB>>(
+    column: C
+  ): AggregateFunctionBuilder<
+    DB,
+    TB,
+    ExtractTypeFromReferenceExpression<DB, TB, C>
+  > {
+    return new AggregateFunctionBuilder({
+      aggregateFunctionNode: AggregateFunctionNode.create(
+        'min',
+        parseStringReference(column)
+      ),
+    })
   }
 
   /**
@@ -139,45 +202,12 @@ export class FunctionBuilder<DB, TB extends keyof DB> {
   sum<
     O extends number | string | bigint,
     C extends StringReference<DB, TB> = StringReference<DB, TB>
-  >(column: C): RawBuilder<O> {
-    return this.#oneArgFunction('sum', column)
-  }
-
-  /**
-   * Calls the `count` function for the column given as the argument.
-   *
-   * If this is used in a `select` statement the type of the selected expression
-   * will be `number | string |bigint` by default. This is because Kysely can't
-   * know the type the db driver outputs. Sometimes the output can be larger than
-   * the largest javascript number and a string is returned instead. Most drivers
-   * allow you to configure the output type of large numbers and Kysely can't
-   * know if you've done so.
-   *
-   * You can specify the output type of the expression by providing
-   * the type as the first type argument:
-   *
-   * ```ts
-   * const { count } = db.fn
-   *
-   * db.selectFrom('toy')
-   *   .select(count<number>('id').as('num_toys'))
-   *   .execute()
-   * ```
-   */
-  count<
-    O extends number | string | bigint,
-    C extends StringReference<DB, TB> = StringReference<DB, TB>
-  >(column: C): RawBuilder<O> {
-    return this.#oneArgFunction('count', column)
-  }
-
-  #oneArgFunction<O>(
-    fn: string,
-    column: StringReference<DB, TB>
-  ): RawBuilder<O> {
-    return new RawBuilder({
-      queryId: createQueryId(),
-      rawNode: RawNode.create([`${fn}(`, ')'], [parseStringReference(column)]),
+  >(column: C): AggregateFunctionBuilder<DB, TB, O> {
+    return new AggregateFunctionBuilder({
+      aggregateFunctionNode: AggregateFunctionNode.create(
+        'sum',
+        parseStringReference(column)
+      ),
     })
   }
 }
