@@ -857,19 +857,216 @@ const users1 = await kysely
 
 ### 1.1.14. limit
 
-TODO: ...
+knex
+
+```ts
+const users0 = await knex.select('*').from('users').limit(10).offset(30)
+
+const users1 = await knex
+  .select('*')
+  .from('users')
+  .limit(10, { skipBinding: true })
+  .offset(30)
+```
+
+kysely
+
+```ts
+import { Kysely } from 'kysely'
+
+interface Database {
+  users: {}
+}
+
+const kysely = new Kysely<Database>({ /* ... */ })
+
+const users0 = await kysely
+  .selectFrom('users')
+  .selectAll()
+  .limit(10)
+  .offset(30)
+  .execute()
+
+const users1 = await kysely
+  .selectFrom('users')
+  .selectAll()
+  .offset(30)
+  .modifyEnd(sql`limit 10`)
+  .execute()
+```
 
 ### 1.1.15. union
 
-TODO: ...
+knex
+
+```ts
+const users0 = await knex
+  .select('*')
+  .from('users')
+  .whereNull('last_name')
+  .union(function () {
+    this.select('*').from('users').whereNull('first_name')
+  })
+
+const users1 = await knex
+  .select('*')
+  .from('users')
+  .whereNull('last_name')
+  .union([knex.select('*').from('users').whereNull('first_name')])
+
+const users2 = await knex
+  .select('*')
+  .from('users')
+  .whereNull('last_name')
+  .union(
+    knex.raw('select * from users where first_name is null'),
+    knex.raw('select * from users where email is null')
+  )
+```
+
+kysely
+
+```ts
+import { Kysely, sql } from 'kysely'
+
+interface Database {
+  users: {
+    first_name: string | null
+    last_name: string | null
+    email: string | null
+  }
+}
+
+const kysely = new Kysely<Database>({ /* ... */ })
+
+const users0 = await kysely
+  .selectFrom('users')
+  .where('last_name', 'is', null)
+  .selectAll()
+  .union(kysely.selectFrom('users').where('first_name', 'is', null).selectAll())
+  .execute()
+
+const users1 = users0
+
+const users2 = await kysely
+  .selectFrom('users')
+  .where('last_name', 'is', null)
+  .selectAll()
+  .union(
+    sql`select * from ${sql.table('users')} where ${sql.ref(
+      'first_name'
+    )} is null`
+  )
+  .union(
+    sql`select * from ${sql.table('users')} where ${sql.ref('email')} is null`
+  )
+  .execute()
+```
 
 ### 1.1.16. unionAll
 
-TODO: ...
+knex
+
+```ts
+const users0 = await knex
+  .select('*')
+  .from('users')
+  .whereNull('last_name')
+  .unionAll(function () {
+    this.select('*').from('users').whereNull('first_name')
+  })
+
+const users1 = await knex
+  .select('*')
+  .from('users')
+  .whereNull('last_name')
+  .unionAll([knex.select('*').from('users').whereNull('first_name')])
+
+const users2 = await knex
+  .select('*')
+  .from('users')
+  .whereNull('last_name')
+  .unionAll(
+    knex.raw('select * from users where first_name is null'),
+    knex.raw('select * from users where email is null')
+  )
+```
+
+kysely
+
+```ts
+import { Kysely, sql } from 'kysely'
+
+interface Database {
+  users: {
+    first_name: string | null
+    last_name: string | null
+    email: string | null
+  }
+}
+
+const kysely = new Kysely<Database>({ /* ... */ })
+
+const users0 = await kysely
+  .selectFrom('users')
+  .where('last_name', 'is', null)
+  .selectAll()
+  .unionAll(
+    kysely.selectFrom('users').where('first_name', 'is', null).selectAll()
+  )
+  .execute()
+
+const users1 = users0
+
+const users2 = await kysely
+  .selectFrom('users')
+  .where('last_name', 'is', null)
+  .selectAll()
+  .unionAll(
+    sql`select * from ${sql.table('users')} where ${sql.ref(
+      'first_name'
+    )} is null`
+  )
+  .unionAll(
+    sql`select * from ${sql.table('users')} where ${sql.ref('email')} is null`
+  )
+  .execute()
+```
 
 ### 1.1.17. intersect
 
+knex
+
+```ts
+const users0 = await knex
+  .select('*')
+  .from('users')
+  .whereNull('last_name')
+  .intersect(function () {
+    this.select('*').from('users').whereNull('first_name')
+  })
+
+const users1 = await knex
+  .select('*')
+  .from('users')
+  .whereNull('last_name')
+  .intersect([knex.select('*').from('users').whereNull('first_name')])
+
+const users2 = await knex
+  .select('*')
+  .from('users')
+  .whereNull('last_name')
+  .intersect(
+    knex.raw('select * from users where first_name is null'),
+    knex.raw('select * from users where email is null')
+  )
+```
+
+kysely - not built-in
+
+```ts
 TODO: ...
+```
 
 ### 1.1.18. insert
 
