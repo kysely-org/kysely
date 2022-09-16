@@ -16,9 +16,9 @@ import { OrderByNode } from './order-by-node.js'
 import { SelectionNode } from './selection-node.js'
 import { WhereNode } from './where-node.js'
 import { WithNode } from './with-node.js'
-import { UnionNode } from './union-node.js'
 import { SelectModifierNode } from './select-modifier-node.js'
 import { ExplainNode } from './explain-node.js'
+import { SetOperatorNode } from './set-operator-node.js'
 
 export interface SelectQueryNode extends OperationNode {
   readonly kind: 'SelectQueryNode'
@@ -35,8 +35,8 @@ export interface SelectQueryNode extends OperationNode {
   readonly offset?: OffsetNode
   readonly with?: WithNode
   readonly having?: HavingNode
-  readonly union?: ReadonlyArray<UnionNode>
   readonly explain?: ExplainNode
+  readonly setOperators?: ReadonlyArray<SetOperatorNode>
 }
 
 /**
@@ -174,15 +174,15 @@ export const SelectQueryNode = freeze({
     })
   },
 
-  cloneWithUnion(
+  cloneWithSetOperator(
     selectNode: SelectQueryNode,
-    union: UnionNode
+    setOperator: SetOperatorNode
   ): SelectQueryNode {
     return freeze({
       ...selectNode,
-      union: selectNode.union
-        ? freeze([...selectNode.union, union])
-        : freeze([union]),
+      setOperators: selectNode.setOperators
+        ? freeze([...selectNode.setOperators, setOperator])
+        : freeze([setOperator]),
     })
   },
 

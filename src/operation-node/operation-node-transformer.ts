@@ -60,7 +60,6 @@ import { ForeignKeyConstraintNode } from './foreign-key-constraint-node.js'
 import { ColumnDefinitionNode } from './column-definition-node.js'
 import { ModifyColumnNode } from './modify-column-node.js'
 import { OnDuplicateKeyNode } from './on-duplicate-key-node.js'
-import { UnionNode } from './union-node.js'
 import { CreateViewNode } from './create-view-node.js'
 import { DropViewNode } from './drop-view-node.js'
 import { GeneratedNode } from './generated-node.js'
@@ -77,6 +76,7 @@ import { AggregateFunctionNode } from './aggregate-function-node.js'
 import { OverNode } from './over-node.js'
 import { PartitionByNode } from './partition-by-node.js'
 import { PartitionByItemNode } from './partition-by-item-node.js'
+import { SetOperatorNode } from './set-operator-node.js'
 
 /**
  * Transforms an operation node tree into another one.
@@ -172,7 +172,6 @@ export class OperationNodeTransformer {
     AddConstraintNode: this.transformAddConstraint.bind(this),
     DropConstraintNode: this.transformDropConstraint.bind(this),
     ForeignKeyConstraintNode: this.transformForeignKeyConstraint.bind(this),
-    UnionNode: this.transformUnion.bind(this),
     CreateViewNode: this.transformCreateView.bind(this),
     DropViewNode: this.transformDropView.bind(this),
     GeneratedNode: this.transformGenerated.bind(this),
@@ -188,6 +187,7 @@ export class OperationNodeTransformer {
     OverNode: this.transformOver.bind(this),
     PartitionByNode: this.transformPartitionBy.bind(this),
     PartitionByItemNode: this.transformPartitionByItem.bind(this),
+    SetOperatorNode: this.transformSetOperator.bind(this),
   })
 
   transformNode<T extends OperationNode | undefined>(node: T): T {
@@ -232,8 +232,8 @@ export class OperationNodeTransformer {
       offset: this.transformNode(node.offset),
       with: this.transformNode(node.with),
       having: this.transformNode(node.having),
-      union: this.transformNodeList(node.union),
       explain: this.transformNode(node.explain),
+      setOperators: this.transformNodeList(node.setOperators),
     })
   }
 
@@ -585,10 +585,11 @@ export class OperationNodeTransformer {
     })
   }
 
-  protected transformUnion(node: UnionNode): UnionNode {
-    return requireAllProps<UnionNode>({
-      kind: 'UnionNode',
-      union: this.transformNode(node.union),
+  protected transformSetOperator(node: SetOperatorNode): SetOperatorNode {
+    return requireAllProps<SetOperatorNode>({
+      kind: 'SetOperatorNode',
+      operator: node.operator,
+      expression: this.transformNode(node.expression),
       all: node.all,
     })
   }
