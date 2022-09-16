@@ -71,7 +71,6 @@ import { ColumnDefinitionNode } from '../operation-node/column-definition-node.j
 import { ModifyColumnNode } from '../operation-node/modify-column-node.js'
 import { OnDuplicateKeyNode } from '../operation-node/on-duplicate-key-node.js'
 import { ColumnNode } from '../operation-node/column-node.js'
-import { UnionNode } from '../operation-node/union-node.js'
 import { CreateViewNode } from '../operation-node/create-view-node.js'
 import { DropViewNode } from '../operation-node/drop-view-node.js'
 import { GeneratedNode } from '../operation-node/generated-node.js'
@@ -92,6 +91,7 @@ import { AggregateFunctionNode } from '../operation-node/aggregate-function-node
 import { OverNode } from '../operation-node/over-node.js'
 import { PartitionByNode } from '../operation-node/partition-by-node.js'
 import { PartitionByItemNode } from '../operation-node/partition-by-item-node.js'
+import { SetOperatorNode } from '../operation-node/set-operator-node.js'
 
 export class DefaultQueryCompiler
   extends OperationNodeVisitor
@@ -126,7 +126,7 @@ export class DefaultQueryCompiler
       this.parentNode !== undefined &&
       !InsertQueryNode.is(this.parentNode) &&
       !CreateViewNode.is(this.parentNode) &&
-      !UnionNode.is(this.parentNode)
+      !SetOperatorNode.is(this.parentNode)
 
     if (this.parentNode === undefined && node.explain) {
       this.visitNode(node.explain)
@@ -181,9 +181,9 @@ export class DefaultQueryCompiler
       this.visitNode(node.having)
     }
 
-    if (node.union) {
+    if (node.setOperators) {
       this.append(' ')
-      this.compileList(node.union, ' ')
+      this.compileList(node.setOperators, ' ')
     }
 
     if (node.orderBy) {
@@ -1058,14 +1058,15 @@ export class DefaultQueryCompiler
     }
   }
 
-  protected override visitUnion(node: UnionNode): void {
-    this.append('union ')
+  protected override visitSetOperator(node: SetOperatorNode): void {
+    this.append(node.operator)
+    this.append(' ')
 
     if (node.all) {
       this.append('all ')
     }
 
-    this.visitNode(node.union)
+    this.visitNode(node.expression)
   }
 
   protected override visitCreateView(node: CreateViewNode): void {
