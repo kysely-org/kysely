@@ -21,47 +21,44 @@ Every Knex example block is followed by a similar Kysely example block.
     - [1.1.9. withMaterialized](#119-withmaterialized)
     - [1.1.10. withNotMaterialized](#1110-withnotmaterialized)
     - [1.1.11. withSchema](#1111-withschema)
-    - [1.1.12. jsonExtract](#1112-jsonextract)
-    - [1.1.13. jsonSet](#1113-jsonset)
-    - [1.1.14. jsonInsert](#1114-jsoninsert)
-    - [1.1.15. jsonRemove](#1115-jsonremove)
-    - [1.1.16. offset](#1116-offset)
-    - [1.1.17. limit](#1117-limit)
-    - [1.1.18. union](#1118-union)
-    - [1.1.19. unionAll](#1119-unionall)
-    - [1.1.20. intersect](#1120-intersect)
-    - [1.1.21. insert](#1121-insert)
-    - [1.1.22. onConflict](#1122-onconflict)
-    - [1.1.23. upsert](#1123-upsert)
-    - [1.1.24. update](#1124-update)
-    - [1.1.25. del / delete](#1125-del--delete)
-    - [1.1.26. using](#1126-using)
-    - [1.1.27. returning](#1127-returning)
-    - [1.1.28. transacting](#1128-transacting)
-    - [1.1.29. skipLocked](#1129-skiplocked)
-    - [1.1.30. noWait](#1130-nowait)
-    - [1.1.31. count](#1131-count)
-    - [1.1.32. min](#1132-min)
-    - [1.1.33. max](#1133-max)
-    - [1.1.34. sum](#1134-sum)
-    - [1.1.35. avg](#1135-avg)
-    - [1.1.36. increment](#1136-increment)
-    - [1.1.37. decrement](#1137-decrement)
-    - [1.1.38. truncate](#1138-truncate)
-    - [1.1.39. pluck](#1139-pluck)
-    - [1.1.40. first](#1140-first)
-    - [1.1.41. hintComment](#1141-hintcomment)
-    - [1.1.42. clone](#1142-clone)
-    - [1.1.43. denseRank](#1143-denserank)
-    - [1.1.44. rank](#1144-rank)
-    - [1.1.45. rowNumber](#1145-rownumber)
-    - [1.1.46. partitionBy](#1146-partitionby)
-    - [1.1.47. modify](#1147-modify)
-    - [1.1.48. columnInfo](#1148-columninfo)
-    - [1.1.49. debug](#1149-debug)
-    - [1.1.50. connection](#1150-connection)
-    - [1.1.51. options](#1151-options)
-    - [1.1.52. queryContext](#1152-querycontext)
+    - [1.1.12. jsonExtract, jsonSet, jsonInsert, jsonRemove](#1112-jsonextract-jsonset-jsoninsert-jsonremove)
+    - [1.1.13. offset](#1113-offset)
+    - [1.1.14. limit](#1114-limit)
+    - [1.1.15. union](#1115-union)
+    - [1.1.16. unionAll](#1116-unionall)
+    - [1.1.17. intersect](#1117-intersect)
+    - [1.1.18. insert](#1118-insert)
+    - [1.1.19. onConflict](#1119-onconflict)
+    - [1.1.20. upsert](#1120-upsert)
+    - [1.1.21. update](#1121-update)
+    - [1.1.22. del / delete](#1122-del--delete)
+    - [1.1.23. using](#1123-using)
+    - [1.1.24. returning](#1124-returning)
+    - [1.1.25. transacting](#1125-transacting)
+    - [1.1.26. skipLocked](#1126-skiplocked)
+    - [1.1.27. noWait](#1127-nowait)
+    - [1.1.28. count](#1128-count)
+    - [1.1.29. min](#1129-min)
+    - [1.1.30. max](#1130-max)
+    - [1.1.31. sum](#1131-sum)
+    - [1.1.32. avg](#1132-avg)
+    - [1.1.33. increment](#1133-increment)
+    - [1.1.34. decrement](#1134-decrement)
+    - [1.1.35. truncate](#1135-truncate)
+    - [1.1.36. pluck](#1136-pluck)
+    - [1.1.37. first](#1137-first)
+    - [1.1.38. hintComment](#1138-hintcomment)
+    - [1.1.39. clone](#1139-clone)
+    - [1.1.40. denseRank](#1140-denserank)
+    - [1.1.41. rank](#1141-rank)
+    - [1.1.42. rowNumber](#1142-rownumber)
+    - [1.1.43. partitionBy](#1143-partitionby)
+    - [1.1.44. modify](#1144-modify)
+    - [1.1.45. columnInfo](#1145-columninfo)
+    - [1.1.46. debug](#1146-debug)
+    - [1.1.47. connection](#1147-connection)
+    - [1.1.48. options](#1148-options)
+    - [1.1.49. queryContext](#1149-querycontext)
   - [1.2. Where Clauses](#12-where-clauses)
     - [1.2.1. where](#121-where)
     - [1.2.2. whereNot](#122-wherenot)
@@ -148,6 +145,8 @@ const user = await knex<User>('users').where('id', 1).first()
 kysely
 
 ```ts
+import { Kysely } from 'kysely'
+
 interface Database {
   users: {
     id: number
@@ -192,6 +191,8 @@ const users2 = await usersQueryBuilder
 kysely
 
 ```ts
+import { Kysely } from 'kysely'
+
 interface Database {
   users: {
     id: number
@@ -231,6 +232,8 @@ const books1 = await knex.select().from('books').timeout(1000, {
 kysely - not built-in
 
 ```ts
+import { Kysely, SelectQueryBuilder } from 'kysely'
+
 interface Database {
   books: {}
 }
@@ -271,6 +274,8 @@ const books1 = await knex.select().table('books')
 kysely
 
 ```ts
+import { Kysely } from 'kysely'
+
 interface Database {
   books: {
     title: string
@@ -308,6 +313,8 @@ const users2 = await knex
 kysely
 
 ```ts
+import { Kysely } from 'kysely'
+
 interface Database {
   users: {
     id: number
@@ -344,6 +351,8 @@ const results = await knex
 kysely
 
 ```ts
+import { Kysely } from 'kysely'
+
 interface Database {
   t1: {
     column1: number
@@ -388,6 +397,8 @@ const books2 = await knex
 kysely
 
 ```ts
+import { Kysely } from 'kysely'
+
 interface Database {
   books: {
     title: string
@@ -422,6 +433,8 @@ const users = await knex.select('*').from('users')
 kysely
 
 ```ts
+import { Kysely } from 'kysely'
+
 interface Database {
   users: {}
 }
@@ -442,6 +455,8 @@ const users = await knex.select('id').from<User>('users')
 kysely
 
 ```ts
+import { Kysely } from 'kysely'
+
 interface Database {
   users: {
     id: number
@@ -466,7 +481,7 @@ const users = await knex
 kysely
 
 ```ts
-import { sql } from 'kysely'
+import { Kysely, sql } from 'kysely'
 
 interface Database {
   users: {
@@ -519,7 +534,7 @@ const books2 = await knex
 kysely
 
 ```ts
-import { sql } from 'kysely'
+import { Kysely, sql } from 'kysely'
 
 interface Database {
   books: {
@@ -601,6 +616,8 @@ const family = await knex
 kysely
 
 ```ts
+import { Kysely } from 'kysely'
+
 interface Database {
   people: {
     id: number
@@ -682,6 +699,8 @@ const books2 = await knex
 kysely - not built-in
 
 ```ts
+import { Kysely, sql } from 'kysely'
+
 interface Database {
   books: {
     title: string
@@ -743,6 +762,8 @@ const books2 = await knex
 kysely - not built-in
 
 ```ts
+import { Kysely, sql } from 'kysely'
+
 interface Database {
   books: {
     title: string
@@ -773,169 +794,208 @@ const books2 = books0
 
 ### 1.1.11. withSchema
 
-TODO: ...
+knex
 
-### 1.1.12. jsonExtract
+```ts
+const users = await knex.withSchema('public').select('*').from('users')
+```
 
-TODO: ...
+kysely
 
-### 1.1.13. jsonSet
+```ts
+import { Kysely } from 'kysely'
 
-TODO: ...
+interface Database {
+  users: {}
+}
 
-### 1.1.14. jsonInsert
+const kysely = new Kysely<Database>({ /* ... */ })
 
-TODO: ...
+const users = await kysely
+  .withSchema('public')
+  .selectFrom('users')
+  .selectAll()
+  .execute()
+```
 
-### 1.1.15. jsonRemove
+### 1.1.12. jsonExtract, jsonSet, jsonInsert, jsonRemove
 
-TODO: ...
+NOT SUPPORTED
 
-### 1.1.16. offset
+### 1.1.13. offset
 
-TODO: ...
+knex
 
-### 1.1.17. limit
+```ts
+const users0 = await knex.select('*').from('users').offset(10)
 
-TODO: ...
+const users1 = await knex
+  .select('*')
+  .from('users')
+  .offset(10, { skipBinding: true })
+```
 
-### 1.1.18. union
+kysely
 
-TODO: ...
+```ts
+import { Kysely, sql } from 'kysely'
 
-### 1.1.19. unionAll
+interface Database {
+  users: {}
+}
 
-TODO: ...
+const kysely = new Kysely<Database>({ /* ... */ })
 
-### 1.1.20. intersect
+const users0 = await kysely.selectFrom('users').selectAll().offset(10).execute()
 
-TODO: ...
+const users1 = await kysely
+  .selectFrom('users')
+  .selectAll()
+  .modifyEnd(sql`offset 10`)
+  .execute()
+```
 
-### 1.1.21. insert
-
-TODO: ...
-
-### 1.1.22. onConflict
-
-TODO: ...
-
-### 1.1.23. upsert
-
-TODO: ...
-
-### 1.1.24. update
-
-TODO: ...
-
-### 1.1.25. del / delete
-
-TODO: ...
-
-### 1.1.26. using
-
-TODO: ...
-
-### 1.1.27. returning
-
-TODO: ...
-
-### 1.1.28. transacting
+### 1.1.14. limit
 
 TODO: ...
 
-### 1.1.29. skipLocked
+### 1.1.15. union
 
 TODO: ...
 
-### 1.1.30. noWait
+### 1.1.16. unionAll
 
 TODO: ...
 
-### 1.1.31. count
+### 1.1.17. intersect
 
 TODO: ...
 
-### 1.1.32. min
+### 1.1.18. insert
 
 TODO: ...
 
-### 1.1.33. max
+### 1.1.19. onConflict
 
 TODO: ...
 
-### 1.1.34. sum
+### 1.1.20. upsert
 
 TODO: ...
 
-### 1.1.35. avg
+### 1.1.21. update
 
 TODO: ...
 
-### 1.1.36. increment
+### 1.1.22. del / delete
 
 TODO: ...
 
-### 1.1.37. decrement
+### 1.1.23. using
 
 TODO: ...
 
-### 1.1.38. truncate
+### 1.1.24. returning
 
 TODO: ...
 
-### 1.1.39. pluck
+### 1.1.25. transacting
 
 TODO: ...
 
-### 1.1.40. first
+### 1.1.26. skipLocked
 
 TODO: ...
 
-### 1.1.41. hintComment
+### 1.1.27. noWait
 
 TODO: ...
 
-### 1.1.42. clone
+### 1.1.28. count
 
 TODO: ...
 
-### 1.1.43. denseRank
+### 1.1.29. min
 
 TODO: ...
 
-### 1.1.44. rank
+### 1.1.30. max
 
 TODO: ...
 
-### 1.1.45. rowNumber
+### 1.1.31. sum
 
 TODO: ...
 
-### 1.1.46. partitionBy
+### 1.1.32. avg
 
 TODO: ...
 
-### 1.1.47. modify
+### 1.1.33. increment
 
 TODO: ...
 
-### 1.1.48. columnInfo
+### 1.1.34. decrement
 
 TODO: ...
 
-### 1.1.49. debug
+### 1.1.35. truncate
 
 TODO: ...
 
-### 1.1.50. connection
+### 1.1.36. pluck
 
 TODO: ...
 
-### 1.1.51. options
+### 1.1.37. first
 
 TODO: ...
 
-### 1.1.52. queryContext
+### 1.1.38. hintComment
+
+TODO: ...
+
+### 1.1.39. clone
+
+TODO: ...
+
+### 1.1.40. denseRank
+
+TODO: ...
+
+### 1.1.41. rank
+
+TODO: ...
+
+### 1.1.42. rowNumber
+
+TODO: ...
+
+### 1.1.43. partitionBy
+
+TODO: ...
+
+### 1.1.44. modify
+
+TODO: ...
+
+### 1.1.45. columnInfo
+
+TODO: ...
+
+### 1.1.46. debug
+
+TODO: ...
+
+### 1.1.47. connection
+
+TODO: ...
+
+### 1.1.48. options
+
+TODO: ...
+
+### 1.1.49. queryContext
 
 TODO: ...
 
