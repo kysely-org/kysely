@@ -1,9 +1,10 @@
 # Knex to Kysely migration guide <!-- omit in toc -->
 
 This guide aims to make the average developer's journey from Knex to Kysely easier.
-Every Knex example block is followed by a similar Kysely example block.
 
 This guide is arranged like Knex's documentation as of 09.16.2022.
+Every Knex example block is followed by a similar Kysely example block.
+
  
 # Table of Contents <!-- omit in toc -->
 
