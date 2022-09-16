@@ -54,7 +54,6 @@ import {
   GroupByExpressionOrList,
   parseGroupBy,
 } from '../parser/group-by-parser.js'
-import { parseUnion, UnionExpression } from '../parser/union-parser.js'
 import { KyselyPlugin } from '../plugin/kysely-plugin.js'
 import { WhereInterface } from './where-interface.js'
 import { NoResultError, NoResultErrorConstructor } from './no-result-error.js'
@@ -63,6 +62,10 @@ import { IdentifierNode } from '../operation-node/identifier-node.js'
 import { AliasedRawBuilder } from '../raw-builder/raw-builder.js'
 import { Explainable, ExplainFormat } from '../util/explainable.js'
 import { ExplainNode } from '../operation-node/explain-node.js'
+import {
+  parseSetOperator,
+  SetOperatorExpression,
+} from '../parser/set-operator-parser.js'
 
 export class SelectQueryBuilder<DB, TB extends keyof DB, O>
   implements
@@ -1333,12 +1336,14 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    *   .orderBy('name')
    * ```
    */
-  union(expression: UnionExpression<DB, O>): SelectQueryBuilder<DB, TB, O> {
+  union(
+    expression: SetOperatorExpression<DB, O>
+  ): SelectQueryBuilder<DB, TB, O> {
     return new SelectQueryBuilder({
       ...this.#props,
-      queryNode: SelectQueryNode.cloneWithUnion(
+      queryNode: SelectQueryNode.cloneWithSetOperator(
         this.#props.queryNode,
-        parseUnion(expression, false)
+        parseSetOperator('union', expression, false)
       ),
     })
   }
@@ -1357,12 +1362,92 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    *   .orderBy('name')
    * ```
    */
-  unionAll(expression: UnionExpression<DB, O>): SelectQueryBuilder<DB, TB, O> {
+  unionAll(
+    expression: SetOperatorExpression<DB, O>
+  ): SelectQueryBuilder<DB, TB, O> {
     return new SelectQueryBuilder({
       ...this.#props,
-      queryNode: SelectQueryNode.cloneWithUnion(
+      queryNode: SelectQueryNode.cloneWithSetOperator(
         this.#props.queryNode,
-        parseUnion(expression, true)
+        parseSetOperator('union', expression, true)
+      ),
+    })
+  }
+
+  /**
+   * Combines another select query or raw expression to this query using `intersect`.
+   *
+   * The output row type of the combined query must match `this` query.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * db.selectFrom('person')
+   *   .select(['id', 'first_name as name'])
+   *   .intersect(db.selectFrom('pet').select(['id', 'name']))
+   *   .orderBy('name')
+   * ```
+   */
+  intersect(
+    expression: SetOperatorExpression<DB, O>
+  ): SelectQueryBuilder<DB, TB, O> {
+    return new SelectQueryBuilder({
+      ...this.#props,
+      queryNode: SelectQueryNode.cloneWithSetOperator(
+        this.#props.queryNode,
+        parseSetOperator('interect', expression, false)
+      ),
+    })
+  }
+
+  /**
+   * Combines another select query or raw expression to this query using `except`.
+   *
+   * The output row type of the combined query must match `this` query.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * db.selectFrom('person')
+   *   .select(['id', 'first_name as name'])
+   *   .except(db.selectFrom('pet').select(['id', 'name']))
+   *   .orderBy('name')
+   * ```
+   */
+  except(
+    expression: SetOperatorExpression<DB, O>
+  ): SelectQueryBuilder<DB, TB, O> {
+    return new SelectQueryBuilder({
+      ...this.#props,
+      queryNode: SelectQueryNode.cloneWithSetOperator(
+        this.#props.queryNode,
+        parseSetOperator('except', expression, false)
+      ),
+    })
+  }
+
+  /**
+   * Combines another select query or raw expression to this query using `minus`.
+   *
+   * The output row type of the combined query must match `this` query.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * db.selectFrom('person')
+   *   .select(['id', 'first_name as name'])
+   *   .minus(db.selectFrom('pet').select(['id', 'name']))
+   *   .orderBy('name')
+   * ```
+   */
+  minus(
+    expression: SetOperatorExpression<DB, O>
+  ): SelectQueryBuilder<DB, TB, O> {
+    return new SelectQueryBuilder({
+      ...this.#props,
+      queryNode: SelectQueryNode.cloneWithSetOperator(
+        this.#props.queryNode,
+        parseSetOperator('minus', expression, false)
       ),
     })
   }
