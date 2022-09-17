@@ -63,9 +63,9 @@ import { AliasedRawBuilder } from '../raw-builder/raw-builder.js'
 import { Explainable, ExplainFormat } from '../util/explainable.js'
 import { ExplainNode } from '../operation-node/explain-node.js'
 import {
-  parseSetOperator,
-  SetOperatorExpression,
-} from '../parser/set-operator-parser.js'
+  parseSetOperation,
+  SetOperationExpression,
+} from '../parser/set-operation-parser.js'
 
 export class SelectQueryBuilder<DB, TB extends keyof DB, O>
   implements
@@ -1337,13 +1337,13 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    * ```
    */
   union(
-    expression: SetOperatorExpression<DB, O>
+    expression: SetOperationExpression<DB, O>
   ): SelectQueryBuilder<DB, TB, O> {
     return new SelectQueryBuilder({
       ...this.#props,
-      queryNode: SelectQueryNode.cloneWithSetOperator(
+      queryNode: SelectQueryNode.cloneWithSetOperation(
         this.#props.queryNode,
-        parseSetOperator('union', expression, false)
+        parseSetOperation('union', expression, false)
       ),
     })
   }
@@ -1363,13 +1363,13 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    * ```
    */
   unionAll(
-    expression: SetOperatorExpression<DB, O>
+    expression: SetOperationExpression<DB, O>
   ): SelectQueryBuilder<DB, TB, O> {
     return new SelectQueryBuilder({
       ...this.#props,
-      queryNode: SelectQueryNode.cloneWithSetOperator(
+      queryNode: SelectQueryNode.cloneWithSetOperation(
         this.#props.queryNode,
-        parseSetOperator('union', expression, true)
+        parseSetOperation('union', expression, true)
       ),
     })
   }
@@ -1389,13 +1389,13 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    * ```
    */
   intersect(
-    expression: SetOperatorExpression<DB, O>
+    expression: SetOperationExpression<DB, O>
   ): SelectQueryBuilder<DB, TB, O> {
     return new SelectQueryBuilder({
       ...this.#props,
-      queryNode: SelectQueryNode.cloneWithSetOperator(
+      queryNode: SelectQueryNode.cloneWithSetOperation(
         this.#props.queryNode,
-        parseSetOperator('interect', expression, false)
+        parseSetOperation('interect', expression, false)
       ),
     })
   }
@@ -1415,13 +1415,13 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    * ```
    */
   except(
-    expression: SetOperatorExpression<DB, O>
+    expression: SetOperationExpression<DB, O>
   ): SelectQueryBuilder<DB, TB, O> {
     return new SelectQueryBuilder({
       ...this.#props,
-      queryNode: SelectQueryNode.cloneWithSetOperator(
+      queryNode: SelectQueryNode.cloneWithSetOperation(
         this.#props.queryNode,
-        parseSetOperator('except', expression, false)
+        parseSetOperation('except', expression, false)
       ),
     })
   }
@@ -1441,13 +1441,13 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    * ```
    */
   minus(
-    expression: SetOperatorExpression<DB, O>
+    expression: SetOperationExpression<DB, O>
   ): SelectQueryBuilder<DB, TB, O> {
     return new SelectQueryBuilder({
       ...this.#props,
-      queryNode: SelectQueryNode.cloneWithSetOperator(
+      queryNode: SelectQueryNode.cloneWithSetOperation(
         this.#props.queryNode,
-        parseSetOperator('minus', expression, false)
+        parseSetOperation('minus', expression, false)
       ),
     })
   }

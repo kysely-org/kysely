@@ -3,32 +3,32 @@ import { OperationNode } from './operation-node.js'
 import { RawNode } from './raw-node.js'
 import { SelectQueryNode } from './select-query-node.js'
 
-export type SetOperatorExpressionNode = SelectQueryNode | RawNode
+export type SetOperationExpressionNode = SelectQueryNode | RawNode
 
 export type SetOperator = 'union' | 'interect' | 'except' | 'minus'
 
-export interface SetOperatorNode extends OperationNode {
-  kind: 'SetOperatorNode'
+export interface SetOperationNode extends OperationNode {
+  kind: 'SetOperationNode'
   operator: SetOperator
-  expression: SetOperatorExpressionNode
+  expression: SetOperationExpressionNode
   all: boolean
 }
 
 /**
  * @internal
  */
-export const SetOperatorNode = freeze({
-  is(node: OperationNode): node is SetOperatorNode {
-    return node.kind === 'SetOperatorNode'
+export const SetOperationNode = freeze({
+  is(node: OperationNode): node is SetOperationNode {
+    return node.kind === 'SetOperationNode'
   },
 
   create(
     operator: SetOperator,
-    expression: SetOperatorExpressionNode,
+    expression: SetOperationExpressionNode,
     all: boolean
-  ): SetOperatorNode {
+  ): SetOperationNode {
     return freeze({
-      kind: 'SetOperatorNode',
+      kind: 'SetOperationNode',
       operator,
       expression,
       all,

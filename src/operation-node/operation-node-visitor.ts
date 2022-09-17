@@ -78,7 +78,7 @@ import { AggregateFunctionNode } from './aggregate-function-node.js'
 import { OverNode } from './over-node.js'
 import { PartitionByNode } from './partition-by-node.js'
 import { PartitionByItemNode } from './partition-by-item-node.js'
-import { SetOperatorNode } from './set-operator-node.js'
+import { SetOperationNode } from './set-operation-node.js'
 
 export abstract class OperationNodeVisitor {
   protected readonly nodeStack: OperationNode[] = []
@@ -164,7 +164,7 @@ export abstract class OperationNodeVisitor {
     OverNode: this.visitOver.bind(this),
     PartitionByNode: this.visitPartitionBy.bind(this),
     PartitionByItemNode: this.visitPartitionByItem.bind(this),
-    SetOperatorNode: this.visitSetOperator.bind(this),
+    SetOperationNode: this.visitSetOperation.bind(this),
   })
 
   protected readonly visitNode = (node: OperationNode): void => {
@@ -258,5 +258,5 @@ export abstract class OperationNodeVisitor {
   protected abstract visitOver(node: OverNode): void
   protected abstract visitPartitionBy(node: PartitionByNode): void
   protected abstract visitPartitionByItem(node: PartitionByItemNode): void
-  protected abstract visitSetOperator(node: SetOperatorNode): void
+  protected abstract visitSetOperation(node: SetOperationNode): void
 }

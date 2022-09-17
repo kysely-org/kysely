@@ -74,7 +74,7 @@ export type OperationNodeKind =
   | 'OverNode'
   | 'PartitionByNode'
   | 'PartitionByItemNode'
-  | 'SetOperatorNode'
+  | 'SetOperationNode'
 
 export interface OperationNode {
   readonly kind: OperationNodeKind

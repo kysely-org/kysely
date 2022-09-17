@@ -171,7 +171,7 @@ export * from './operation-node/aggregate-function-node.js'
 export * from './operation-node/over-node.js'
 export * from './operation-node/partition-by-node.js'
 export * from './operation-node/partition-by-item-node.js'
-export * from './operation-node/set-operator-node.js'
+export * from './operation-node/set-operation-node.js'
 
 export * from './util/column-type.js'
 export * from './util/compilable.js'
@@ -217,4 +217,4 @@ export {
   OrderByExpression,
   OrderByDirectionExpression,
 } from './parser/order-by-parser.js'
-export { SetOperatorExpression } from './parser/set-operator-parser.js'
+export { SetOperationExpression } from './parser/set-operation-parser.js'

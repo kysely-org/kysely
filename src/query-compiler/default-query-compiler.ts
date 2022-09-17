@@ -91,7 +91,7 @@ import { AggregateFunctionNode } from '../operation-node/aggregate-function-node
 import { OverNode } from '../operation-node/over-node.js'
 import { PartitionByNode } from '../operation-node/partition-by-node.js'
 import { PartitionByItemNode } from '../operation-node/partition-by-item-node.js'
-import { SetOperatorNode } from '../operation-node/set-operator-node.js'
+import { SetOperationNode } from '../operation-node/set-operation-node.js'
 
 export class DefaultQueryCompiler
   extends OperationNodeVisitor
@@ -126,7 +126,7 @@ export class DefaultQueryCompiler
       this.parentNode !== undefined &&
       !InsertQueryNode.is(this.parentNode) &&
       !CreateViewNode.is(this.parentNode) &&
-      !SetOperatorNode.is(this.parentNode)
+      !SetOperationNode.is(this.parentNode)
 
     if (this.parentNode === undefined && node.explain) {
       this.visitNode(node.explain)
@@ -181,9 +181,9 @@ export class DefaultQueryCompiler
       this.visitNode(node.having)
     }
 
-    if (node.setOperators) {
+    if (node.setOperations) {
       this.append(' ')
-      this.compileList(node.setOperators, ' ')
+      this.compileList(node.setOperations, ' ')
     }
 
     if (node.orderBy) {
@@ -1058,7 +1058,7 @@ export class DefaultQueryCompiler
     }
   }
 
-  protected override visitSetOperator(node: SetOperatorNode): void {
+  protected override visitSetOperation(node: SetOperationNode): void {
     this.append(node.operator)
     this.append(' ')
 

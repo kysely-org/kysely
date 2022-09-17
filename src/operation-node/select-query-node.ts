@@ -18,7 +18,7 @@ import { WhereNode } from './where-node.js'
 import { WithNode } from './with-node.js'
 import { SelectModifierNode } from './select-modifier-node.js'
 import { ExplainNode } from './explain-node.js'
-import { SetOperatorNode } from './set-operator-node.js'
+import { SetOperationNode } from './set-operation-node.js'
 
 export interface SelectQueryNode extends OperationNode {
   readonly kind: 'SelectQueryNode'
@@ -36,7 +36,7 @@ export interface SelectQueryNode extends OperationNode {
   readonly with?: WithNode
   readonly having?: HavingNode
   readonly explain?: ExplainNode
-  readonly setOperators?: ReadonlyArray<SetOperatorNode>
+  readonly setOperations?: ReadonlyArray<SetOperationNode>
 }
 
 /**
@@ -174,15 +174,15 @@ export const SelectQueryNode = freeze({
     })
   },
 
-  cloneWithSetOperator(
+  cloneWithSetOperation(
     selectNode: SelectQueryNode,
-    setOperator: SetOperatorNode
+    setOperation: SetOperationNode
   ): SelectQueryNode {
     return freeze({
       ...selectNode,
-      setOperators: selectNode.setOperators
-        ? freeze([...selectNode.setOperators, setOperator])
-        : freeze([setOperator]),
+      setOperations: selectNode.setOperations
+        ? freeze([...selectNode.setOperations, setOperation])
+        : freeze([setOperation]),
     })
   },
 

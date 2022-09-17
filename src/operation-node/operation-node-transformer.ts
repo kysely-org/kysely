@@ -76,7 +76,7 @@ import { AggregateFunctionNode } from './aggregate-function-node.js'
 import { OverNode } from './over-node.js'
 import { PartitionByNode } from './partition-by-node.js'
 import { PartitionByItemNode } from './partition-by-item-node.js'
-import { SetOperatorNode } from './set-operator-node.js'
+import { SetOperationNode } from './set-operation-node.js'
 
 /**
  * Transforms an operation node tree into another one.
@@ -187,7 +187,7 @@ export class OperationNodeTransformer {
     OverNode: this.transformOver.bind(this),
     PartitionByNode: this.transformPartitionBy.bind(this),
     PartitionByItemNode: this.transformPartitionByItem.bind(this),
-    SetOperatorNode: this.transformSetOperator.bind(this),
+    SetOperationNode: this.transformSetOperation.bind(this),
   })
 
   transformNode<T extends OperationNode | undefined>(node: T): T {
@@ -233,7 +233,7 @@ export class OperationNodeTransformer {
       with: this.transformNode(node.with),
       having: this.transformNode(node.having),
       explain: this.transformNode(node.explain),
-      setOperators: this.transformNodeList(node.setOperators),
+      setOperations: this.transformNodeList(node.setOperations),
     })
   }
 
@@ -585,9 +585,9 @@ export class OperationNodeTransformer {
     })
   }
 
-  protected transformSetOperator(node: SetOperatorNode): SetOperatorNode {
-    return requireAllProps<SetOperatorNode>({
-      kind: 'SetOperatorNode',
+  protected transformSetOperation(node: SetOperationNode): SetOperationNode {
+    return requireAllProps<SetOperationNode>({
+      kind: 'SetOperationNode',
       operator: node.operator,
       expression: this.transformNode(node.expression),
       all: node.all,
