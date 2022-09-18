@@ -1462,7 +1462,7 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    * ```ts
    * db.selectFrom('person')
    *   .select(['id', 'first_name as name'])
-   *   .except(db.selectFrom('pet').select(['id', 'name']))
+   *   .exceptAll(db.selectFrom('pet').select(['id', 'name']))
    *   .orderBy('name')
    * ```
    */
