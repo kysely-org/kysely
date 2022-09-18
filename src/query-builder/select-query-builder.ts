@@ -1395,7 +1395,33 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
       ...this.#props,
       queryNode: SelectQueryNode.cloneWithSetOperation(
         this.#props.queryNode,
-        parseSetOperation('interect', expression, false)
+        parseSetOperation('intersect', expression, false)
+      ),
+    })
+  }
+
+  /**
+   * Combines another select query or raw expression to this query using `intersect all`.
+   *
+   * The output row type of the combined query must match `this` query.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * db.selectFrom('person')
+   *   .select(['id', 'first_name as name'])
+   *   .intersectAll(db.selectFrom('pet').select(['id', 'name']))
+   *   .orderBy('name')
+   * ```
+   */
+  intersectAll(
+    expression: SetOperationExpression<DB, O>
+  ): SelectQueryBuilder<DB, TB, O> {
+    return new SelectQueryBuilder({
+      ...this.#props,
+      queryNode: SelectQueryNode.cloneWithSetOperation(
+        this.#props.queryNode,
+        parseSetOperation('intersect', expression, true)
       ),
     })
   }
@@ -1427,7 +1453,7 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
   }
 
   /**
-   * Combines another select query or raw expression to this query using `minus`.
+   * Combines another select query or raw expression to this query using `except all`.
    *
    * The output row type of the combined query must match `this` query.
    *
@@ -1436,18 +1462,18 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    * ```ts
    * db.selectFrom('person')
    *   .select(['id', 'first_name as name'])
-   *   .minus(db.selectFrom('pet').select(['id', 'name']))
+   *   .except(db.selectFrom('pet').select(['id', 'name']))
    *   .orderBy('name')
    * ```
    */
-  minus(
+  exceptAll(
     expression: SetOperationExpression<DB, O>
   ): SelectQueryBuilder<DB, TB, O> {
     return new SelectQueryBuilder({
       ...this.#props,
       queryNode: SelectQueryNode.cloneWithSetOperation(
         this.#props.queryNode,
-        parseSetOperation('minus', expression, false)
+        parseSetOperation('except', expression, true)
       ),
     })
   }

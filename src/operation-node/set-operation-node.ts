@@ -5,7 +5,7 @@ import { SelectQueryNode } from './select-query-node.js'
 
 export type SetOperationExpressionNode = SelectQueryNode | RawNode
 
-export type SetOperator = 'union' | 'interect' | 'except' | 'minus'
+export type SetOperator = 'union' | 'intersect' | 'except'
 
 export interface SetOperationNode extends OperationNode {
   kind: 'SetOperationNode'
