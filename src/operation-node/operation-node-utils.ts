@@ -13,9 +13,10 @@ import { TableNode } from './table-node.js'
 import { ValueListNode } from './value-list-node.js'
 import { ValueNode } from './value-node.js'
 
+export type SimpleReferenceExpressionNode = ColumnNode | ReferenceNode
+
 export type ReferenceExpressionNode =
-  | ColumnNode
-  | ReferenceNode
+  | SimpleReferenceExpressionNode
   | SelectQueryNode
   | RawNode
   | AggregateFunctionNode

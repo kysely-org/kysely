@@ -1,8 +1,9 @@
+import { DynamicReferenceBuilder } from '../dynamic/dynamic-reference-builder.js'
 import { AggregateFunctionNode } from '../operation-node/aggregate-function-node.js'
 import {
-  StringReference,
   ExtractTypeFromReferenceExpression,
-  parseStringReference,
+  SimpleReferenceExpression,
+  parseSimpleReferenceExpression,
 } from '../parser/reference-parser.js'
 import { AggregateFunctionBuilder } from './aggregate-function-builder.js'
 
@@ -70,12 +71,15 @@ export class FunctionModule<DB, TB extends keyof DB> {
    */
   avg<
     O extends number | string,
-    C extends StringReference<DB, TB> = StringReference<DB, TB>
+    C extends SimpleReferenceExpression<DB, TB> = SimpleReferenceExpression<
+      DB,
+      TB
+    >
   >(column: C): AggregateFunctionBuilder<DB, TB, O> {
     return new AggregateFunctionBuilder({
       aggregateFunctionNode: AggregateFunctionNode.create(
         'avg',
-        parseStringReference(column)
+        parseSimpleReferenceExpression(column)
       ),
     })
   }
@@ -111,12 +115,15 @@ export class FunctionModule<DB, TB extends keyof DB> {
    */
   count<
     O extends number | string | bigint,
-    C extends StringReference<DB, TB> = StringReference<DB, TB>
+    C extends SimpleReferenceExpression<DB, TB> = SimpleReferenceExpression<
+      DB,
+      TB
+    >
   >(column: C): AggregateFunctionBuilder<DB, TB, O> {
     return new AggregateFunctionBuilder({
       aggregateFunctionNode: AggregateFunctionNode.create(
         'count',
-        parseStringReference(column)
+        parseSimpleReferenceExpression(column)
       ),
     })
   }
@@ -134,17 +141,20 @@ export class FunctionModule<DB, TB extends keyof DB> {
    *   .execute()
    * ```
    */
-  max<C extends StringReference<DB, TB>>(
+  max<
+    O extends number | string | bigint,
+    C extends SimpleReferenceExpression<DB, TB> = DynamicReferenceBuilder<any>
+  >(
     column: C
   ): AggregateFunctionBuilder<
     DB,
     TB,
-    ExtractTypeFromReferenceExpression<DB, TB, C>
+    ExtractTypeFromReferenceExpression<DB, TB, C, O>
   > {
     return new AggregateFunctionBuilder({
       aggregateFunctionNode: AggregateFunctionNode.create(
         'max',
-        parseStringReference(column)
+        parseSimpleReferenceExpression(column)
       ),
     })
   }
@@ -163,17 +173,20 @@ export class FunctionModule<DB, TB extends keyof DB> {
    * ```
    *
    */
-  min<C extends StringReference<DB, TB>>(
+  min<
+    O extends number | string | bigint,
+    C extends SimpleReferenceExpression<DB, TB> = DynamicReferenceBuilder<any>
+  >(
     column: C
   ): AggregateFunctionBuilder<
     DB,
     TB,
-    ExtractTypeFromReferenceExpression<DB, TB, C>
+    ExtractTypeFromReferenceExpression<DB, TB, C, O>
   > {
     return new AggregateFunctionBuilder({
       aggregateFunctionNode: AggregateFunctionNode.create(
         'min',
-        parseStringReference(column)
+        parseSimpleReferenceExpression(column)
       ),
     })
   }
@@ -201,12 +214,15 @@ export class FunctionModule<DB, TB extends keyof DB> {
    */
   sum<
     O extends number | string | bigint,
-    C extends StringReference<DB, TB> = StringReference<DB, TB>
+    C extends SimpleReferenceExpression<DB, TB> = SimpleReferenceExpression<
+      DB,
+      TB
+    >
   >(column: C): AggregateFunctionBuilder<DB, TB, O> {
     return new AggregateFunctionBuilder({
       aggregateFunctionNode: AggregateFunctionNode.create(
         'sum',
-        parseStringReference(column)
+        parseSimpleReferenceExpression(column)
       ),
     })
   }
