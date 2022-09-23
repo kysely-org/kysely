@@ -199,5 +199,5 @@ export type Insertable<R> = {
  * ```
  */
 export type Updateable<R> = {
-  [K in UpdateKeys<R>]?: UpdateType<R[K]> | undefined
+  [K in UpdateKeys<R>]?: UpdateType<R[K]>
 }
