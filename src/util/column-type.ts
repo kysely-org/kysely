@@ -87,8 +87,16 @@ type IfNotNullable<T, K> = undefined extends T
 type IfNotNever<T, K> = T extends never ? never : K
 
 export type SelectType<T> = T extends ColumnType<infer S, any, any> ? S : T
-export type InsertType<T> = T extends ColumnType<any, infer I, any> ? I : T
-export type UpdateType<T> = T extends ColumnType<any, any, infer U> ? U : T
+export type InsertType<T> = T extends ColumnType<any, infer I, any>
+  ? I
+  : T extends null
+  ? T | undefined
+  : T
+export type UpdateType<T> = T extends ColumnType<any, any, infer U>
+  ? U
+  : T extends null
+  ? T | undefined
+  : T
 
 /**
  * Keys of `R` whose `InsertType` values can be `null` or `undefined`.
@@ -191,5 +199,5 @@ export type Insertable<R> = {
  * ```
  */
 export type Updateable<R> = {
-  [K in UpdateKeys<R>]?: UpdateType<R[K]>
+  [K in UpdateKeys<R>]?: UpdateType<R[K]> | undefined
 }
