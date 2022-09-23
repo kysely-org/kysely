@@ -160,7 +160,7 @@ async function testSelectWithDynamicReference(db: Kysely<Database>) {
     .select(max(dynamicReference).as('max'))
     .select(max<number>(dynamicReference).as('another_max'))
     .select(min(dynamicReference).as('min'))
-    .select(max<string>(dynamicReference).as('another_min'))
+    .select(min<string>(dynamicReference).as('another_min'))
     .select(sum(dynamicReference).as('sum'))
     .select(sum<number>(dynamicReference).as('another_sum'))
     .executeTakeFirstOrThrow()
