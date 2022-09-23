@@ -144,6 +144,45 @@ async function testSelectUnexpectedColumn(db: Kysely<Database>) {
   )
 }
 
+async function testSelectWithDynamicReference(db: Kysely<Database>) {
+  const { avg, count, max, min, sum } = db.fn
+
+  const dynamicColumn = Math.random().toString()
+
+  const dynamicReference = db.dynamic.ref(dynamicColumn)
+
+  const result = await db
+    .selectFrom('person')
+    .select(avg(dynamicReference).as('avg'))
+    .select(avg<number>(dynamicReference).as('another_avg'))
+    .select(count(dynamicReference).as('count'))
+    .select(count<bigint>(dynamicReference).as('another_count'))
+    .select(max(dynamicReference).as('max'))
+    .select(max<number>(dynamicReference).as('another_max'))
+    .select(min(dynamicReference).as('min'))
+    .select(max<string>(dynamicReference).as('another_min'))
+    .select(sum(dynamicReference).as('sum'))
+    .select(sum<number>(dynamicReference).as('another_sum'))
+    .executeTakeFirstOrThrow()
+
+  expectAssignable<string | number>(result.avg)
+  expectNotAssignable<bigint>(result.avg)
+  expectAssignable<number>(result.another_avg)
+  expectNotAssignable<string | bigint>(result.another_avg)
+  expectAssignable<string | number | bigint>(result.count)
+  expectAssignable<bigint>(result.another_count)
+  expectNotAssignable<string | number>(result.another_count)
+  expectAssignable<string | number | bigint>(result.max)
+  expectAssignable<number>(result.another_max)
+  expectNotAssignable<string | bigint>(result.another_max)
+  expectAssignable<string | number | bigint>(result.min)
+  expectAssignable<string>(result.another_min)
+  expectNotAssignable<number | bigint>(result.another_min)
+  expectAssignable<string | number | bigint>(result.sum)
+  expectAssignable<number>(result.another_sum)
+  expectNotAssignable<string | bigint>(result.another_sum)
+}
+
 async function testSelectWithDistinct(db: Kysely<Database>) {
   const { avg, count, max, min, sum } = db.fn
 
