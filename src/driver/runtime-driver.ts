@@ -98,12 +98,13 @@ export class RuntimeDriver implements Driver {
     const executeQuery = connection.executeQuery
 
     connection.executeQuery = async (
-      compiledQuery
+      compiledQuery,
+      queryId
     ): Promise<QueryResult<any>> => {
       const startTime = performanceNow()
 
       try {
-        return await executeQuery.call(connection, compiledQuery)
+        return await executeQuery.call(connection, compiledQuery, queryId)
       } catch (error) {
         this.#logError(error)
         throw error

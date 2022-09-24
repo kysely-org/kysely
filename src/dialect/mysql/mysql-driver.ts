@@ -5,6 +5,7 @@ import {
 import { Driver, TransactionSettings } from '../../driver/driver.js'
 import { CompiledQuery } from '../../query-compiler/compiled-query.js'
 import { isFunction, isObject, freeze } from '../../util/object-utils.js'
+import { createQueryId, QueryId } from '../../util/query-id.js'
 import { extendStackTrace } from '../../util/stack-trace-utils.js'
 import {
   MysqlDialectConfig,
@@ -71,19 +72,23 @@ export class MysqlDriver implements Driver {
       await connection.executeQuery(
         CompiledQuery.raw(
           `set transaction isolation level ${settings.isolationLevel}`
-        )
+        ),
+        createQueryId()
       )
     }
 
-    await connection.executeQuery(CompiledQuery.raw('begin'))
+    await connection.executeQuery(CompiledQuery.raw('begin'), createQueryId())
   }
 
   async commitTransaction(connection: DatabaseConnection): Promise<void> {
-    await connection.executeQuery(CompiledQuery.raw('commit'))
+    await connection.executeQuery(CompiledQuery.raw('commit'), createQueryId())
   }
 
   async rollbackTransaction(connection: DatabaseConnection): Promise<void> {
-    await connection.executeQuery(CompiledQuery.raw('rollback'))
+    await connection.executeQuery(
+      CompiledQuery.raw('rollback'),
+      createQueryId()
+    )
   }
 
   async releaseConnection(connection: MysqlConnection): Promise<void> {
@@ -114,7 +119,10 @@ class MysqlConnection implements DatabaseConnection {
     this.#rawConnection = rawConnection
   }
 
-  async executeQuery<O>(compiledQuery: CompiledQuery): Promise<QueryResult<O>> {
+  async executeQuery<O>(
+    compiledQuery: CompiledQuery,
+    queryId: QueryId
+  ): Promise<QueryResult<O>> {
     try {
       const result = await this.#executeQuery(compiledQuery)
 
@@ -166,6 +174,7 @@ class MysqlConnection implements DatabaseConnection {
 
   async *streamQuery<O>(
     compiledQuery: CompiledQuery,
+    queryId: QueryId,
     chunkSize: number
   ): AsyncIterableIterator<QueryResult<O>> {
     const stream = this.#rawConnection

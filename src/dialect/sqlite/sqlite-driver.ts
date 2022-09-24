@@ -5,6 +5,7 @@ import {
 import { Driver } from '../../driver/driver.js'
 import { CompiledQuery } from '../../query-compiler/compiled-query.js'
 import { freeze, isFunction } from '../../util/object-utils.js'
+import { createQueryId, QueryId } from '../../util/query-id.js'
 import { SqliteDatabase, SqliteDialectConfig } from './sqlite-dialect-config.js'
 
 export class SqliteDriver implements Driver {
@@ -38,15 +39,18 @@ export class SqliteDriver implements Driver {
   }
 
   async beginTransaction(connection: DatabaseConnection): Promise<void> {
-    await connection.executeQuery(CompiledQuery.raw('begin'))
+    await connection.executeQuery(CompiledQuery.raw('begin'), createQueryId())
   }
 
   async commitTransaction(connection: DatabaseConnection): Promise<void> {
-    await connection.executeQuery(CompiledQuery.raw('commit'))
+    await connection.executeQuery(CompiledQuery.raw('commit'), createQueryId())
   }
 
   async rollbackTransaction(connection: DatabaseConnection): Promise<void> {
-    await connection.executeQuery(CompiledQuery.raw('rollback'))
+    await connection.executeQuery(
+      CompiledQuery.raw('rollback'),
+      createQueryId()
+    )
   }
 
   async releaseConnection(): Promise<void> {
@@ -65,7 +69,10 @@ class SqliteConnection implements DatabaseConnection {
     this.#db = db
   }
 
-  executeQuery<O>(compiledQuery: CompiledQuery): Promise<QueryResult<O>> {
+  executeQuery<O>(
+    compiledQuery: CompiledQuery,
+    queryId: QueryId
+  ): Promise<QueryResult<O>> {
     const { sql, parameters } = compiledQuery
     const stmt = this.#db.prepare(sql)
 

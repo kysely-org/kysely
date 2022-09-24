@@ -5,6 +5,7 @@ import {
 import { Driver, TransactionSettings } from '../../driver/driver.js'
 import { CompiledQuery } from '../../query-compiler/compiled-query.js'
 import { isFunction, freeze } from '../../util/object-utils.js'
+import { createQueryId, QueryId } from '../../util/query-id.js'
 import { extendStackTrace } from '../../util/stack-trace-utils.js'
 import {
   PostgresCursorConstructor,
@@ -55,23 +56,29 @@ export class PostgresDriver implements Driver {
     connection: DatabaseConnection,
     settings: TransactionSettings
   ): Promise<void> {
+    const queryId = createQueryId()
+
     if (settings.isolationLevel) {
       await connection.executeQuery(
         CompiledQuery.raw(
           `start transaction isolation level ${settings.isolationLevel}`
-        )
+        ),
+        queryId
       )
     } else {
-      await connection.executeQuery(CompiledQuery.raw('begin'))
+      await connection.executeQuery(CompiledQuery.raw('begin'), queryId)
     }
   }
 
   async commitTransaction(connection: DatabaseConnection): Promise<void> {
-    await connection.executeQuery(CompiledQuery.raw('commit'))
+    await connection.executeQuery(CompiledQuery.raw('commit'), createQueryId())
   }
 
   async rollbackTransaction(connection: DatabaseConnection): Promise<void> {
-    await connection.executeQuery(CompiledQuery.raw('rollback'))
+    await connection.executeQuery(
+      CompiledQuery.raw('rollback'),
+      createQueryId()
+    )
   }
 
   async releaseConnection(connection: PostgresConnection): Promise<void> {
@@ -100,7 +107,10 @@ class PostgresConnection implements DatabaseConnection {
     this.#options = options
   }
 
-  async executeQuery<O>(compiledQuery: CompiledQuery): Promise<QueryResult<O>> {
+  async executeQuery<O>(
+    compiledQuery: CompiledQuery,
+    queryId: QueryId
+  ): Promise<QueryResult<O>> {
     try {
       const result = await this.#client.query<O>(compiledQuery.sql, [
         ...compiledQuery.parameters,
@@ -123,6 +133,7 @@ class PostgresConnection implements DatabaseConnection {
 
   async *streamQuery<O>(
     compiledQuery: CompiledQuery,
+    queryId: QueryId,
     chunkSize: number
   ): AsyncIterableIterator<QueryResult<O>> {
     if (!this.#options.cursor) {

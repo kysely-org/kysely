@@ -64,7 +64,7 @@ export abstract class QueryExecutorBase implements QueryExecutor {
     queryId: QueryId
   ): Promise<QueryResult<R>> {
     return await this.provideConnection(async (connection) => {
-      const result = await connection.executeQuery(compiledQuery)
+      const result = await connection.executeQuery(compiledQuery, queryId)
       return this.#transformResult(result, queryId)
     })
   }
@@ -89,6 +89,7 @@ export abstract class QueryExecutorBase implements QueryExecutor {
     try {
       for await (const result of connection.streamQuery(
         compiledQuery,
+        queryId,
         chunkSize
       )) {
         yield await this.#transformResult(result, queryId)
