@@ -58,7 +58,6 @@ export type OperationNodeKind =
   | 'AlterColumnNode'
   | 'AddConstraintNode'
   | 'DropConstraintNode'
-  | 'UnionNode'
   | 'CreateViewNode'
   | 'DropViewNode'
   | 'GeneratedNode'
@@ -75,6 +74,7 @@ export type OperationNodeKind =
   | 'OverNode'
   | 'PartitionByNode'
   | 'PartitionByItemNode'
+  | 'SetOperationNode'
 
 export interface OperationNode {
   readonly kind: OperationNodeKind
