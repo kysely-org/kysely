@@ -177,7 +177,7 @@ export * from './util/column-type.js'
 export * from './util/compilable.js'
 export * from './util/explainable.js'
 export * from './util/log.js'
-export { QueryId } from './util/query-id'
+export { QueryId } from './util/query-id.js'
 export {
   AnyColumn,
   UnknownRow,
