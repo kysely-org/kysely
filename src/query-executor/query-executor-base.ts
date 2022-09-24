@@ -89,8 +89,8 @@ export abstract class QueryExecutorBase implements QueryExecutor {
     try {
       for await (const result of connection.streamQuery(
         compiledQuery,
-        queryId,
-        chunkSize
+        chunkSize,
+        queryId
       )) {
         yield await this.#transformResult(result, queryId)
       }

@@ -133,8 +133,8 @@ class PostgresConnection implements DatabaseConnection {
 
   async *streamQuery<O>(
     compiledQuery: CompiledQuery,
-    queryId: QueryId,
-    chunkSize: number
+    chunkSize: number,
+    queryId: QueryId
   ): AsyncIterableIterator<QueryResult<O>> {
     if (!this.#options.cursor) {
       throw new Error(

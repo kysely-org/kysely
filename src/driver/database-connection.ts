@@ -13,8 +13,8 @@ export interface DatabaseConnection {
   ): Promise<QueryResult<R>>
   streamQuery<R>(
     compiledQuery: CompiledQuery,
-    queryId: QueryId,
-    chunkSize?: number
+    chunkSize: number | undefined,
+    queryId: QueryId
   ): AsyncIterableIterator<QueryResult<R>>
 }
 

@@ -174,8 +174,8 @@ class MysqlConnection implements DatabaseConnection {
 
   async *streamQuery<O>(
     compiledQuery: CompiledQuery,
-    queryId: QueryId,
-    chunkSize: number
+    chunkSize: number,
+    queryId: QueryId
   ): AsyncIterableIterator<QueryResult<O>> {
     const stream = this.#rawConnection
       .query(compiledQuery.sql, compiledQuery.parameters)
