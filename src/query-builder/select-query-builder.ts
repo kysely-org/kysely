@@ -54,7 +54,6 @@ import {
   GroupByExpressionOrList,
   parseGroupBy,
 } from '../parser/group-by-parser.js'
-import { parseUnion, UnionExpression } from '../parser/union-parser.js'
 import { KyselyPlugin } from '../plugin/kysely-plugin.js'
 import { WhereInterface } from './where-interface.js'
 import { NoResultError, NoResultErrorConstructor } from './no-result-error.js'
@@ -63,6 +62,10 @@ import { IdentifierNode } from '../operation-node/identifier-node.js'
 import { AliasedRawBuilder } from '../raw-builder/raw-builder.js'
 import { Explainable, ExplainFormat } from '../util/explainable.js'
 import { ExplainNode } from '../operation-node/explain-node.js'
+import {
+  parseSetOperation,
+  SetOperationExpression,
+} from '../parser/set-operation-parser.js'
 
 export class SelectQueryBuilder<DB, TB extends keyof DB, O>
   implements
@@ -1333,12 +1336,14 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    *   .orderBy('name')
    * ```
    */
-  union(expression: UnionExpression<DB, O>): SelectQueryBuilder<DB, TB, O> {
+  union(
+    expression: SetOperationExpression<DB, O>
+  ): SelectQueryBuilder<DB, TB, O> {
     return new SelectQueryBuilder({
       ...this.#props,
-      queryNode: SelectQueryNode.cloneWithUnion(
+      queryNode: SelectQueryNode.cloneWithSetOperation(
         this.#props.queryNode,
-        parseUnion(expression, false)
+        parseSetOperation('union', expression, false)
       ),
     })
   }
@@ -1357,12 +1362,118 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    *   .orderBy('name')
    * ```
    */
-  unionAll(expression: UnionExpression<DB, O>): SelectQueryBuilder<DB, TB, O> {
+  unionAll(
+    expression: SetOperationExpression<DB, O>
+  ): SelectQueryBuilder<DB, TB, O> {
     return new SelectQueryBuilder({
       ...this.#props,
-      queryNode: SelectQueryNode.cloneWithUnion(
+      queryNode: SelectQueryNode.cloneWithSetOperation(
         this.#props.queryNode,
-        parseUnion(expression, true)
+        parseSetOperation('union', expression, true)
+      ),
+    })
+  }
+
+  /**
+   * Combines another select query or raw expression to this query using `intersect`.
+   *
+   * The output row type of the combined query must match `this` query.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * db.selectFrom('person')
+   *   .select(['id', 'first_name as name'])
+   *   .intersect(db.selectFrom('pet').select(['id', 'name']))
+   *   .orderBy('name')
+   * ```
+   */
+  intersect(
+    expression: SetOperationExpression<DB, O>
+  ): SelectQueryBuilder<DB, TB, O> {
+    return new SelectQueryBuilder({
+      ...this.#props,
+      queryNode: SelectQueryNode.cloneWithSetOperation(
+        this.#props.queryNode,
+        parseSetOperation('intersect', expression, false)
+      ),
+    })
+  }
+
+  /**
+   * Combines another select query or raw expression to this query using `intersect all`.
+   *
+   * The output row type of the combined query must match `this` query.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * db.selectFrom('person')
+   *   .select(['id', 'first_name as name'])
+   *   .intersectAll(db.selectFrom('pet').select(['id', 'name']))
+   *   .orderBy('name')
+   * ```
+   */
+  intersectAll(
+    expression: SetOperationExpression<DB, O>
+  ): SelectQueryBuilder<DB, TB, O> {
+    return new SelectQueryBuilder({
+      ...this.#props,
+      queryNode: SelectQueryNode.cloneWithSetOperation(
+        this.#props.queryNode,
+        parseSetOperation('intersect', expression, true)
+      ),
+    })
+  }
+
+  /**
+   * Combines another select query or raw expression to this query using `except`.
+   *
+   * The output row type of the combined query must match `this` query.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * db.selectFrom('person')
+   *   .select(['id', 'first_name as name'])
+   *   .except(db.selectFrom('pet').select(['id', 'name']))
+   *   .orderBy('name')
+   * ```
+   */
+  except(
+    expression: SetOperationExpression<DB, O>
+  ): SelectQueryBuilder<DB, TB, O> {
+    return new SelectQueryBuilder({
+      ...this.#props,
+      queryNode: SelectQueryNode.cloneWithSetOperation(
+        this.#props.queryNode,
+        parseSetOperation('except', expression, false)
+      ),
+    })
+  }
+
+  /**
+   * Combines another select query or raw expression to this query using `except all`.
+   *
+   * The output row type of the combined query must match `this` query.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * db.selectFrom('person')
+   *   .select(['id', 'first_name as name'])
+   *   .exceptAll(db.selectFrom('pet').select(['id', 'name']))
+   *   .orderBy('name')
+   * ```
+   */
+  exceptAll(
+    expression: SetOperationExpression<DB, O>
+  ): SelectQueryBuilder<DB, TB, O> {
+    return new SelectQueryBuilder({
+      ...this.#props,
+      queryNode: SelectQueryNode.cloneWithSetOperation(
+        this.#props.queryNode,
+        parseSetOperation('except', expression, true)
       ),
     })
   }

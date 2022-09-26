@@ -61,7 +61,6 @@ import { ForeignKeyConstraintNode } from './foreign-key-constraint-node.js'
 import { ColumnDefinitionNode } from './column-definition-node.js'
 import { ModifyColumnNode } from './modify-column-node.js'
 import { OnDuplicateKeyNode } from './on-duplicate-key-node.js'
-import { UnionNode } from './union-node.js'
 import { CreateViewNode } from './create-view-node.js'
 import { DropViewNode } from './drop-view-node.js'
 import { GeneratedNode } from './generated-node.js'
@@ -79,6 +78,7 @@ import { AggregateFunctionNode } from './aggregate-function-node.js'
 import { OverNode } from './over-node.js'
 import { PartitionByNode } from './partition-by-node.js'
 import { PartitionByItemNode } from './partition-by-item-node.js'
+import { SetOperationNode } from './set-operation-node.js'
 
 export abstract class OperationNodeVisitor {
   protected readonly nodeStack: OperationNode[] = []
@@ -149,7 +149,6 @@ export abstract class OperationNodeVisitor {
     AddConstraintNode: this.visitAddConstraint.bind(this),
     DropConstraintNode: this.visitDropConstraint.bind(this),
     ForeignKeyConstraintNode: this.visitForeignKeyConstraint.bind(this),
-    UnionNode: this.visitUnion.bind(this),
     CreateViewNode: this.visitCreateView.bind(this),
     DropViewNode: this.visitDropView.bind(this),
     GeneratedNode: this.visitGenerated.bind(this),
@@ -165,6 +164,7 @@ export abstract class OperationNodeVisitor {
     OverNode: this.visitOver.bind(this),
     PartitionByNode: this.visitPartitionBy.bind(this),
     PartitionByItemNode: this.visitPartitionByItem.bind(this),
+    SetOperationNode: this.visitSetOperation.bind(this),
   })
 
   protected readonly visitNode = (node: OperationNode): void => {
@@ -234,7 +234,6 @@ export abstract class OperationNodeVisitor {
   protected abstract visitForeignKeyConstraint(
     node: ForeignKeyConstraintNode
   ): void
-  protected abstract visitUnion(node: UnionNode): void
   protected abstract visitDataType(node: DataTypeNode): void
   protected abstract visitSelectAll(node: SelectAllNode): void
   protected abstract visitIdentifier(node: IdentifierNode): void
@@ -259,4 +258,5 @@ export abstract class OperationNodeVisitor {
   protected abstract visitOver(node: OverNode): void
   protected abstract visitPartitionBy(node: PartitionByNode): void
   protected abstract visitPartitionByItem(node: PartitionByItemNode): void
+  protected abstract visitSetOperation(node: SetOperationNode): void
 }

@@ -1,6 +1,3 @@
 {
-  "types": "index.d.ts",
-  "tsd": {
-    "directory": "./"
-  }
+  "types": "index.d.ts"
 }
