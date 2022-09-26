@@ -1,7 +1,7 @@
 import {
   AggregateFunctionBuilder,
   ExpressionBuilder,
-  StringReference,
+  SimpleReferenceExpression,
 } from '../../../'
 import {
   BUILT_IN_DIALECTS,
@@ -281,6 +281,82 @@ for (const dialect of BUILT_IN_DIALECTS) {
             },
           })
         })
+
+        it(`should execute a query with ${funcName}(...) and a dynamic reference in select clause`, async () => {
+          const dynamicReference = ctx.db.dynamic.ref('person.id')
+
+          const query = ctx.db
+            .selectFrom('person')
+            .select([
+              func(dynamicReference).as(funcName),
+              (eb) =>
+                getFuncFromExpressionBuilder(
+                  eb,
+                  funcName
+                )(dynamicReference).as(`another_${funcName}`),
+            ])
+
+          testSql(query, dialect, {
+            postgres: {
+              sql: `select ${funcName}("person"."id") as "${funcName}", ${funcName}("person"."id") as "another_${funcName}" from "person"`,
+              parameters: [],
+            },
+            mysql: {
+              sql: `select ${funcName}(\`person\`.\`id\`) as \`${funcName}\`, ${funcName}(\`person\`.\`id\`) as \`another_${funcName}\` from \`person\``,
+              parameters: [],
+            },
+            sqlite: {
+              sql: `select ${funcName}("person"."id") as "${funcName}", ${funcName}("person"."id") as "another_${funcName}" from "person"`,
+              parameters: [],
+            },
+          })
+        })
+
+        it(`should execute a query with ${funcName}(...) and a dynamic reference in having clause`, async () => {
+          const query = ctx.db
+            .selectFrom('person')
+            .selectAll()
+            .groupBy(['person.gender'])
+            .having(func(ctx.db.dynamic.ref('person.id')), '>=', 3)
+
+          testSql(query, dialect, {
+            postgres: {
+              sql: `select * from "person" group by "person"."gender" having ${funcName}("person"."id") >= $1`,
+              parameters: [3],
+            },
+            mysql: {
+              sql: `select * from \`person\` group by \`person\`.\`gender\` having ${funcName}(\`person\`.\`id\`) >= ?`,
+              parameters: [3],
+            },
+            sqlite: {
+              sql: `select * from "person" group by "person"."gender" having ${funcName}("person"."id") >= ?`,
+              parameters: [3],
+            },
+          })
+        })
+
+        it(`should execute a query with ${funcName}(...) and a dynamic reference in order by clause`, async () => {
+          const query = ctx.db
+            .selectFrom('person')
+            .selectAll()
+            .groupBy(['person.gender'])
+            .orderBy(func(ctx.db.dynamic.ref('person.id')), 'desc')
+
+          testSql(query, dialect, {
+            postgres: {
+              sql: `select * from "person" group by "person"."gender" order by ${funcName}("person"."id") desc`,
+              parameters: [],
+            },
+            mysql: {
+              sql: `select * from \`person\` group by \`person\`.\`gender\` order by ${funcName}(\`person\`.\`id\`) desc`,
+              parameters: [],
+            },
+            sqlite: {
+              sql: `select * from "person" group by "person"."gender" order by ${funcName}("person"."id") desc`,
+              parameters: [],
+            },
+          })
+        })
       })
     }
   })
@@ -302,5 +378,8 @@ function getFuncFromExpressionBuilder<TB extends keyof Database>(
 
 type AggregateFunction<
   TB extends keyof Database,
-  C extends StringReference<Database, TB> = StringReference<Database, TB>
+  C extends SimpleReferenceExpression<Database, TB> = SimpleReferenceExpression<
+    Database,
+    TB
+  >
 > = (column: C) => AggregateFunctionBuilder<Database, TB>
