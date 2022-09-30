@@ -30,11 +30,7 @@ export function parseCoalesce(
 ): RawNode {
   return RawNode.create(
     values.length > 1
-      ? [
-          'coalesce(',
-          ...new Array(values.length - 1).fill(undefined).map(() => ','),
-          ')',
-        ]
+      ? ['coalesce(', ...new Array(values.length - 1).fill(','), ')']
       : ['coalesce(', ')'],
     parseReferenceExpressionOrList(values)
   )
