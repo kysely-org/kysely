@@ -3,31 +3,22 @@ import {
   ReferenceExpression,
 } from './reference-parser.js'
 
-export type Coalesce<
+export type CoalesceReferenceExpressionList<
   DB,
   TB extends keyof DB,
-  Arr extends unknown[],
-  Accumulator = never
-> = Arr extends []
-  ? Accumulator
-  : Arr extends [infer L, ...infer R]
+  RE extends unknown[],
+  O = never
+> = RE extends []
+  ? O
+  : RE extends [infer L, ...infer R]
   ? L extends ReferenceExpression<any, any>
     ? null extends ExtractTypeFromReferenceExpression<DB, TB, L>
-      ? Coalesce<
+      ? CoalesceReferenceExpressionList<
           DB,
           TB,
           R extends ReferenceExpression<any, any>[] ? R : never,
-          Accumulator | ExtractTypeFromReferenceExpression<DB, TB, L>
+          O | ExtractTypeFromReferenceExpression<DB, TB, L>
         >
-      :
-          | Exclude<Accumulator, null>
-          | ExtractTypeFromReferenceExpression<DB, TB, L>
-    : null extends L
-    ? Coalesce<
-        DB,
-        TB,
-        R extends ReferenceExpression<any, any>[] ? R : never,
-        Accumulator | L
-      >
-    : Exclude<Accumulator, null> | L
+      : Exclude<O, null> | ExtractTypeFromReferenceExpression<DB, TB, L>
+    : never
   : never
