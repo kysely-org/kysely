@@ -23,7 +23,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
     })
 
     afterEach(async () => {
-      clearDatabase(ctx)
+      await clearDatabase(ctx)
     })
 
     after(async () => {
