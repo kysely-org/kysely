@@ -1,9 +1,16 @@
 import { AggregateFunctionNode } from '../operation-node/aggregate-function-node.js'
 import {
+  CoalesceReferenceExpressionList,
+  parseCoalesce,
+} from '../parser/coalesce-parser.js'
+import {
   StringReference,
   ExtractTypeFromReferenceExpression,
   parseStringReference,
+  ReferenceExpression,
 } from '../parser/reference-parser.js'
+import { RawBuilder } from '../raw-builder/raw-builder.js'
+import { createQueryId } from '../util/query-id.js'
 import { AggregateFunctionBuilder } from './aggregate-function-builder.js'
 
 /**
@@ -41,6 +48,7 @@ import { AggregateFunctionBuilder } from './aggregate-function-builder.js'
 export class FunctionModule<DB, TB extends keyof DB> {
   constructor() {
     this.avg = this.avg.bind(this)
+    this.coalesce = this.coalesce.bind(this)
     this.count = this.count.bind(this)
     this.max = this.max.bind(this)
     this.min = this.min.bind(this)
@@ -77,6 +85,22 @@ export class FunctionModule<DB, TB extends keyof DB> {
         'avg',
         parseStringReference(column)
       ),
+    })
+  }
+
+  /**
+   * TODO: ...
+   */
+  coalesce<
+    V extends ReferenceExpression<DB, TB>,
+    OV extends ReferenceExpression<DB, TB>[]
+  >(
+    value: V,
+    ...otherValues: OV
+  ): RawBuilder<CoalesceReferenceExpressionList<DB, TB, [V, ...OV]>> {
+    return new RawBuilder({
+      queryId: createQueryId(),
+      rawNode: parseCoalesce([value, ...otherValues]),
     })
   }
 
