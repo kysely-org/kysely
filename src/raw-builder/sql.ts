@@ -1,6 +1,5 @@
 import { IdentifierNode } from '../operation-node/identifier-node.js'
 import { OperationNode } from '../operation-node/operation-node.js'
-import { PrimitiveValueListNode } from '../operation-node/primitive-value-list-node.js'
 import { RawNode } from '../operation-node/raw-node.js'
 import { ValueNode } from '../operation-node/value-node.js'
 import { parseStringReference } from '../parser/reference-parser.js'
@@ -17,13 +16,14 @@ export interface Sql {
    * import { sql } from 'kysely'
    *
    * const id = 123
-   *
    * const snippet = sql<Person[]>`select * from person where id = ${id}`
    * ```
    *
    * Substitutions (the things inside `${}`) are automatically passed to the database
-   * as parameters and are NOT interpolated to the SQL string. There's no need to worry
-   * about SQL injection vulnerabilities.
+   * as parameters and are never interpolated to the SQL string. There's no need to worry
+   * about SQL injection vulnerabilities. Substitutions can be values, other `sql`
+   * expressions, queries and almost anything else Kysely can produce and they get
+   * handled correctly. See the examples below.
    *
    * If you need your substitutions to be interpreted as identifiers, value literals or
    * lists of things, see the {@link Sql.ref}, {@link Sql.table}, {@link Sql.id},
@@ -39,8 +39,7 @@ export interface Sql {
    *   .selectFrom('person')
    *   .select(
    *     // If you use `sql` in a select statement, remember to call the `as`
-   *     // method to give it an alias. Otherwise Kysely is not able to add
-   *     // the column to the result type.
+   *     // method to give it an alias.
    *     sql<string>`concat(first_name, ' ', last_name)`.as('full_name')
    *   )
    *   .where(sql`birthdate between ${date1} and ${date2}`)
@@ -110,6 +109,15 @@ export interface Sql {
     sqlFragments: TemplateStringsArray,
     ...parameters: unknown[]
   ): RawBuilder<T>
+
+  /**
+   * `sql.value(value)` is a shortcut for:
+   *
+   * ```ts
+   * sql`${value}`
+   * ```
+   */
+  value(value: unknown): RawBuilder<unknown>
 
   /**
    * This can be used to add runtime column references to SQL snippets.
@@ -366,6 +374,13 @@ export const sql: Sql = Object.assign(
       return new RawBuilder({
         queryId: createQueryId(),
         rawNode: RawNode.createWithChild(parseStringReference(columnReference)),
+      })
+    },
+
+    value(value: unknown): RawBuilder<unknown> {
+      return new RawBuilder({
+        queryId: createQueryId(),
+        rawNode: RawNode.createWithChild(parseValueExpression(value)),
       })
     },
 

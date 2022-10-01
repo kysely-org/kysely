@@ -21,11 +21,11 @@ column names, aliases and types from selected subqueries, joined subqueries, `wi
 much anything you can think of.
 
 Of course there are cases where things cannot be typed at compile time, and Kysely offers escape
-hatches for these situations. See the [sql template tag](https://koskimas.github.io/kysely/functions/sql-1.html) 
+hatches for these situations. See the [sql template tag](https://koskimas.github.io/kysely/interfaces/Sql.html) 
 and the [DynamicModule](https://koskimas.github.io/kysely/classes/DynamicModule.html#ref) for more info.
 
 If you start using Kysely and can't find something you'd want to use, please open an issue or join our
-[discord server](https://discord.gg/C9aJ49mCra).
+[discord server](https://discord.gg/xyBJ3GwvAm).
 
 You can find a more thorough introduction [here](https://www.jakso.me/blog/kysely-a-type-safe-sql-query-builder-for-typescript).
 
