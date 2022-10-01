@@ -944,7 +944,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
         const builder = ctx.db.schema
           .createIndex('test_first_name_index')
           .on('test')
-          .expression(sql`first_name < 'Sami'`)
+          .expression(sql`(first_name < 'Sami')`)
 
         testSql(builder, dialect, {
           postgres: {
