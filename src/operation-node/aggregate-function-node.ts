@@ -1,5 +1,6 @@
 import { freeze } from '../util/object-utils.js'
 import { ColumnNode } from './column-node.js'
+import { SimpleReferenceExpressionNode } from './operation-node-utils.js'
 import { OperationNode } from './operation-node.js'
 import { OverNode } from './over-node.js'
 import { ReferenceNode } from './reference-node.js'
@@ -9,7 +10,7 @@ type AggregateFunction = 'avg' | 'count' | 'max' | 'min' | 'sum'
 export interface AggregateFunctionNode extends OperationNode {
   readonly kind: 'AggregateFunctionNode'
   readonly func: AggregateFunction
-  readonly column: ColumnNode | ReferenceNode
+  readonly column: SimpleReferenceExpressionNode
   readonly distinct?: boolean
   readonly over?: OverNode
 }
@@ -24,7 +25,7 @@ export const AggregateFunctionNode = freeze({
 
   create(
     aggregateFunction: AggregateFunction,
-    column: ColumnNode | ReferenceNode
+    column: SimpleReferenceExpressionNode
   ): AggregateFunctionNode {
     return freeze({
       kind: 'AggregateFunctionNode',

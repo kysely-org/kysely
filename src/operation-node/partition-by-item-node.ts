@@ -1,11 +1,10 @@
 import { freeze } from '../util/object-utils.js'
-import { ColumnNode } from './column-node.js'
+import { SimpleReferenceExpressionNode } from './operation-node-utils.js'
 import { OperationNode } from './operation-node.js'
-import { ReferenceNode } from './reference-node.js'
 
 export interface PartitionByItemNode extends OperationNode {
   readonly kind: 'PartitionByItemNode'
-  readonly partitionBy: ColumnNode | ReferenceNode
+  readonly partitionBy: SimpleReferenceExpressionNode
 }
 
 /**
@@ -16,7 +15,7 @@ export const PartitionByItemNode = freeze({
     return node.kind === 'PartitionByItemNode'
   },
 
-  create(partitionBy: ColumnNode | ReferenceNode): PartitionByItemNode {
+  create(partitionBy: SimpleReferenceExpressionNode): PartitionByItemNode {
     return freeze({
       kind: 'PartitionByItemNode',
       partitionBy,
