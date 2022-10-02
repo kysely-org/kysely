@@ -24,8 +24,8 @@ Of course there are cases where things cannot be typed at compile time, and Kyse
 hatches for these situations. See the [sql template tag](https://koskimas.github.io/kysely/interfaces/Sql.html) 
 and the [DynamicModule](https://koskimas.github.io/kysely/classes/DynamicModule.html#ref) for more info.
 
-All the API documentation is written in the typing files and you can simply `cmd-click` on the module, class
-or method you're using to get to the documentation. The same documentation is also hosted [here](https://github.com/koskimas/kysely).
+All API documentation is written in the typing files and you can simply `cmd-click` on the module, class
+or method you're using to get to see it. The same documentation is also hosted [here](https://github.com/koskimas/kysely).
 
 If you start using Kysely and can't find something you'd want to use, please open an issue or join our
 [discord server](https://discord.gg/xyBJ3GwvAm).
