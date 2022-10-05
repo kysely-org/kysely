@@ -69,10 +69,11 @@ npm install kysely better-sqlite3
 More dialects will be added soon. Kysely also has a simple interface
 for [3rd party dialects](https://koskimas.github.io/kysely/interfaces/Dialect.html).
 
-### 3rd party dialects:
+### 3rd party dialects
 
  - [AWS Data API](https://github.com/serverless-stack/kysely-data-api)
  - [PlanetScale Serverless Driver](https://github.com/depot/kysely-planetscale)
+ - [SingleStore Data API](https://github.com/igalklebanov/kysely-singlestore)
 
 # Minimal example
 
