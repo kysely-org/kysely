@@ -73,7 +73,7 @@ export class FunctionModule<DB, TB extends keyof DB> {
    * null values in post-execute code, or wrap the function with a coalesce function.
    */
   avg<
-    O extends number | string | null,
+    O extends number | string | null = number | string,
     C extends SimpleReferenceExpression<DB, TB> = SimpleReferenceExpression<
       DB,
       TB
@@ -145,7 +145,7 @@ export class FunctionModule<DB, TB extends keyof DB> {
    * ```
    */
   max<
-    O extends number | string | bigint | null,
+    O extends number | string | bigint | null = number | string | bigint,
     C extends SimpleReferenceExpression<DB, TB> = SimpleReferenceExpression<
       DB,
       TB
@@ -182,7 +182,7 @@ export class FunctionModule<DB, TB extends keyof DB> {
    *
    */
   min<
-    O extends number | string | bigint | null,
+    O extends number | string | bigint | null = number | string | bigint,
     C extends SimpleReferenceExpression<DB, TB> = SimpleReferenceExpression<
       DB,
       TB
@@ -230,7 +230,7 @@ export class FunctionModule<DB, TB extends keyof DB> {
    * null values in post-execute code, or wrap the function with a coalesce function.
    */
   sum<
-    O extends number | string | bigint | null,
+    O extends number | string | bigint | null = number | string | bigint,
     C extends SimpleReferenceExpression<DB, TB> = SimpleReferenceExpression<
       DB,
       TB
