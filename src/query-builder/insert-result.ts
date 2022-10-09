@@ -20,14 +20,14 @@
  */
 export class InsertResult {
   readonly #insertId: bigint | undefined
-  readonly #numAffectedRows: bigint | undefined
+  readonly #numInsertedOrUpdatedRows: bigint | undefined
 
   constructor(
     insertId: bigint | undefined,
-    numAffectedRows: bigint | undefined
+    numInsertedOrUpdatedRows: bigint | undefined
   ) {
     this.#insertId = insertId
-    this.#numAffectedRows = numAffectedRows
+    this.#numInsertedOrUpdatedRows = numInsertedOrUpdatedRows
   }
 
   /**
@@ -40,7 +40,7 @@ export class InsertResult {
   /**
    * Affected rows count.
    */
-  get numAffectedRows(): bigint | undefined {
-    return this.#numAffectedRows
+  get numInsertedOrUpdatedRows(): bigint | undefined {
+    return this.#numInsertedOrUpdatedRows
   }
 }
