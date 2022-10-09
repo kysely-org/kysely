@@ -15,8 +15,8 @@ export interface DatabaseConnection {
 
 export interface QueryResult<O> {
   /**
-   * This is defined for update and delete queries and contains
-   * the number of rows the query updated/deleted.
+   * This is defined for insert, update and delete queries and contains
+   * the number of rows the query inserted/updated/deleted.
    */
   readonly numUpdatedOrDeletedRows?: bigint
 
