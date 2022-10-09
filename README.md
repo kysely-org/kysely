@@ -24,6 +24,9 @@ Of course there are cases where things cannot be typed at compile time, and Kyse
 hatches for these situations. See the [sql template tag](https://koskimas.github.io/kysely/interfaces/Sql.html) 
 and the [DynamicModule](https://koskimas.github.io/kysely/classes/DynamicModule.html#ref) for more info.
 
+All API documentation is written in the typing files and you can simply `cmd-click` on the module, class
+or method you're using to see it. The same documentation is also hosted [here](https://github.com/koskimas/kysely).
+
 If you start using Kysely and can't find something you'd want to use, please open an issue or join our
 [discord server](https://discord.gg/xyBJ3GwvAm).
 
@@ -66,10 +69,11 @@ npm install kysely better-sqlite3
 More dialects will be added soon. Kysely also has a simple interface
 for [3rd party dialects](https://koskimas.github.io/kysely/interfaces/Dialect.html).
 
-### 3rd party dialects:
+### 3rd party dialects
 
  - [AWS Data API](https://github.com/serverless-stack/kysely-data-api)
  - [PlanetScale Serverless Driver](https://github.com/depot/kysely-planetscale)
+ - [SingleStore Data API](https://github.com/igalklebanov/kysely-singlestore)
 
 # Minimal example
 

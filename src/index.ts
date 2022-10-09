@@ -191,6 +191,7 @@ export {
 export {
   ReferenceExpression,
   ReferenceExpressionOrList,
+  SimpleReferenceExpression,
   StringReference,
 } from './parser/reference-parser.js'
 export {
