@@ -653,7 +653,12 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
     if (this.#props.executor.adapter.supportsReturning && query.returning) {
       return result.rows
     } else {
-      return [new InsertResult(result.insertId) as unknown as O]
+      return [
+        new InsertResult(
+          result.insertId,
+          result.numUpdatedOrDeletedRows
+        ) as unknown as O,
+      ]
     }
   }
 
