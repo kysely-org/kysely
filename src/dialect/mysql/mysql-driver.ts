@@ -129,7 +129,7 @@ class MysqlConnection implements DatabaseConnection {
               ? BigInt(insertId)
               : undefined,
           numUpdatedOrDeletedRows:
-            affectedRows !== undefined && insertId !== null
+            affectedRows !== undefined && affectedRows !== null
               ? BigInt(affectedRows)
               : undefined,
           rows: [],
