@@ -35,14 +35,17 @@ export interface QueryExecutor extends ConnectionProvider {
    * the output of {@link transformQuery} into this method but you can
    * compile any query using this method.
    */
-  compileQuery(node: RootOperationNode, queryId: QueryId): CompiledQuery
+  compileQuery<R>(
+    node: RootOperationNode,
+    queryId: QueryId
+  ): CompiledQuery<QueryResult<R>>
 
   /**
    * Executes a compiled query and runs the result through all plugins'
    * `transformResult` method.
    */
   executeQuery<R>(
-    compiledQuery: CompiledQuery,
+    compiledQuery: CompiledQuery<QueryResult<R>>,
     queryId: QueryId
   ): Promise<QueryResult<R>>
 
@@ -52,7 +55,7 @@ export interface QueryExecutor extends ConnectionProvider {
    * at once.
    */
   stream<R>(
-    compiledQuery: CompiledQuery,
+    compiledQuery: CompiledQuery<QueryResult<R>>,
     /**
      * How many rows should be pulled from the database at once. Supported
      * only by the postgres driver.

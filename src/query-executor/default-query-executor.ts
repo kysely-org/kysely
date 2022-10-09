@@ -31,7 +31,7 @@ export class DefaultQueryExecutor extends QueryExecutorBase {
     return this.#adapter
   }
 
-  compileQuery(node: RootOperationNode): CompiledQuery {
+  compileQuery<R>(node: RootOperationNode): CompiledQuery<R> {
     return this.#compiler.compileQuery(node)
   }
 

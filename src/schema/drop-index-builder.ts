@@ -53,7 +53,7 @@ export class DropIndexBuilder implements OperationNodeSource, Compilable {
     )
   }
 
-  compile(): CompiledQuery {
+  compile(): CompiledQuery<any> {
     return this.#props.executor.compileQuery(
       this.toOperationNode(),
       this.#props.queryId

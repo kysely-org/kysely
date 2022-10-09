@@ -114,7 +114,9 @@ class MysqlConnection implements DatabaseConnection {
     this.#rawConnection = rawConnection
   }
 
-  async executeQuery<O>(compiledQuery: CompiledQuery): Promise<QueryResult<O>> {
+  async executeQuery<O>(
+    compiledQuery: CompiledQuery<QueryResult<O>>
+  ): Promise<QueryResult<O>> {
     try {
       const result = await this.#executeQuery(compiledQuery)
 
@@ -148,7 +150,9 @@ class MysqlConnection implements DatabaseConnection {
     }
   }
 
-  #executeQuery(compiledQuery: CompiledQuery): Promise<MysqlQueryResult> {
+  #executeQuery<R>(
+    compiledQuery: CompiledQuery<R>
+  ): Promise<MysqlQueryResult<Record<string, unknown>>> {
     return new Promise((resolve, reject) => {
       this.#rawConnection.query(
         compiledQuery.sql,
@@ -165,7 +169,7 @@ class MysqlConnection implements DatabaseConnection {
   }
 
   async *streamQuery<O>(
-    compiledQuery: CompiledQuery,
+    compiledQuery: CompiledQuery<QueryResult<O>>,
     chunkSize: number
   ): AsyncIterableIterator<QueryResult<O>> {
     const stream = this.#rawConnection

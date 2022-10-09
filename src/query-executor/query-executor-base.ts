@@ -50,17 +50,17 @@ export abstract class QueryExecutorBase implements QueryExecutor {
     return node
   }
 
-  abstract compileQuery(
+  abstract compileQuery<R>(
     node: RootOperationNode,
     queryId: QueryId
-  ): CompiledQuery
+  ): CompiledQuery<QueryResult<R>>
 
   abstract provideConnection<T>(
     consumer: (connection: DatabaseConnection) => Promise<T>
   ): Promise<T>
 
   async executeQuery<R>(
-    compiledQuery: CompiledQuery,
+    compiledQuery: CompiledQuery<QueryResult<R>>,
     queryId: QueryId
   ): Promise<QueryResult<R>> {
     return await this.provideConnection(async (connection) => {
@@ -70,7 +70,7 @@ export abstract class QueryExecutorBase implements QueryExecutor {
   }
 
   async *stream<R>(
-    compiledQuery: CompiledQuery,
+    compiledQuery: CompiledQuery<QueryResult<R>>,
     chunkSize: number,
     queryId: QueryId
   ): AsyncIterableIterator<QueryResult<R>> {

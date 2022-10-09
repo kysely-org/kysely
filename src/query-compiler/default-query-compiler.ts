@@ -104,7 +104,7 @@ export class DefaultQueryCompiler
     return this.#parameters.length
   }
 
-  compileQuery(node: RootOperationNode): CompiledQuery {
+  compileQuery<R>(node: RootOperationNode): CompiledQuery<R> {
     this.#sql = ''
     this.#parameters = []
 

@@ -65,7 +65,9 @@ class SqliteConnection implements DatabaseConnection {
     this.#db = db
   }
 
-  executeQuery<O>(compiledQuery: CompiledQuery): Promise<QueryResult<O>> {
+  executeQuery<O>(
+    compiledQuery: CompiledQuery<QueryResult<O>>
+  ): Promise<QueryResult<O>> {
     const { sql, parameters } = compiledQuery
     const stmt = this.#db.prepare(sql)
 

@@ -53,6 +53,7 @@ import { AliasedQueryBuilder } from './select-query-builder.js'
 import { AliasedRawBuilder } from '../raw-builder/raw-builder.js'
 import { Explainable, ExplainFormat } from '../util/explainable.js'
 import { ExplainNode } from '../operation-node/explain-node.js'
+import { QueryResult } from '../index.js'
 
 export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
   implements
@@ -589,8 +590,8 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
     )
   }
 
-  compile(): CompiledQuery {
-    return this.#props.executor.compileQuery(
+  compile(): CompiledQuery<QueryResult<O>> {
+    return this.#props.executor.compileQuery<O>(
       this.toOperationNode(),
       this.#props.queryId
     )
@@ -605,7 +606,7 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
     const compildQuery = this.compile()
     const query = compildQuery.query as DeleteQueryNode
 
-    const result = await this.#props.executor.executeQuery<O>(
+    const result = await this.#props.executor.executeQuery(
       compildQuery,
       this.#props.queryId
     )

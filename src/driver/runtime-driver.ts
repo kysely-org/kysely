@@ -120,7 +120,7 @@ export class RuntimeDriver implements Driver {
     }))
   }
 
-  #logQuery(compiledQuery: CompiledQuery, startTime: number): void {
+  #logQuery(compiledQuery: CompiledQuery<any>, startTime: number): void {
     this.#log.query(() => ({
       level: 'query',
       query: compiledQuery,

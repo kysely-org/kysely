@@ -362,7 +362,7 @@ export class CreateTableBuilder<TB extends string, C extends string = never>
     )
   }
 
-  compile(): CompiledQuery {
+  compile(): CompiledQuery<any> {
     return this.#props.executor.compileQuery(
       this.toOperationNode(),
       this.#props.queryId

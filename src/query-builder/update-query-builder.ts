@@ -57,6 +57,7 @@ import { AliasedQueryBuilder } from './select-query-builder.js'
 import { AliasedRawBuilder } from '../raw-builder/raw-builder.js'
 import { Explainable, ExplainFormat } from '../util/explainable.js'
 import { ExplainNode } from '../operation-node/explain-node.js'
+import { QueryResult } from '../index.js'
 
 export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
   implements
@@ -685,7 +686,7 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
     )
   }
 
-  compile(): CompiledQuery {
+  compile(): CompiledQuery<QueryResult<O>> {
     return this.#props.executor.compileQuery(
       this.toOperationNode(),
       this.#props.queryId

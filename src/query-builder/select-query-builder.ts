@@ -66,6 +66,7 @@ import {
   parseSetOperation,
   SetOperationExpression,
 } from '../parser/set-operation-parser.js'
+import { QueryResult } from '../index.js'
 
 export class SelectQueryBuilder<DB, TB extends keyof DB, O>
   implements
@@ -1617,7 +1618,7 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
     )
   }
 
-  compile(): CompiledQuery {
+  compile(): CompiledQuery<QueryResult<O>> {
     return this.#props.executor.compileQuery(
       this.toOperationNode(),
       this.#props.queryId

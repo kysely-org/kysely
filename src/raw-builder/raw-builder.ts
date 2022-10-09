@@ -138,7 +138,7 @@ export class RawBuilder<O = unknown> implements OperationNodeSource {
     return executor.transformQuery(this.#props.rawNode, this.#props.queryId)
   }
 
-  #compile(executor: QueryExecutor): CompiledQuery {
+  #compile(executor: QueryExecutor): CompiledQuery<QueryResult<O>> {
     return executor.compileQuery(
       this.#toOperationNode(executor),
       this.#props.queryId

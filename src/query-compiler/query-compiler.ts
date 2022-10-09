@@ -32,5 +32,5 @@ export type RootOperationNode =
  * a `QueryCompiler` compiles a query expressed as a tree of `OperationNodes` into SQL.
  */
 export interface QueryCompiler {
-  compileQuery(node: RootOperationNode): CompiledQuery
+  compileQuery<R>(node: RootOperationNode): CompiledQuery<R>
 }

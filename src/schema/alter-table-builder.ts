@@ -297,7 +297,7 @@ export class AlterTableExecutor implements OperationNodeSource, Compilable {
     )
   }
 
-  compile(): CompiledQuery {
+  compile(): CompiledQuery<any> {
     return this.#props.executor.compileQuery(
       this.toOperationNode(),
       this.#props.queryId
@@ -429,7 +429,7 @@ export class AlterTableAddColumnBuilder
     )
   }
 
-  compile(): CompiledQuery {
+  compile(): CompiledQuery<any> {
     return this.#props.executor.compileQuery(
       this.toOperationNode(),
       this.#props.queryId
@@ -568,7 +568,7 @@ export class AlterTableModifyColumnBuilder
     )
   }
 
-  compile(): CompiledQuery {
+  compile(): CompiledQuery<any> {
     return this.#props.executor.compileQuery(
       this.toOperationNode(),
       this.#props.queryId
@@ -626,7 +626,7 @@ export class AlterTableAddForeignKeyConstraintBuilder
     )
   }
 
-  compile(): CompiledQuery {
+  compile(): CompiledQuery<any> {
     return this.#props.executor.compileQuery(
       this.toOperationNode(),
       this.#props.queryId
@@ -701,7 +701,7 @@ export class AlterTableDropConstraintBuilder
     )
   }
 
-  compile(): CompiledQuery {
+  compile(): CompiledQuery<any> {
     return this.#props.executor.compileQuery(
       this.toOperationNode(),
       this.#props.queryId

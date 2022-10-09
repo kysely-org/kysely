@@ -8,7 +8,7 @@ export type LogLevel = ArrayItemType<typeof LOG_LEVELS>
 
 export interface QueryLogEvent {
   readonly level: 'query'
-  readonly query: CompiledQuery
+  readonly query: CompiledQuery<any>
   readonly queryDurationMillis: number
 }
 

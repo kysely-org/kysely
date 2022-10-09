@@ -100,7 +100,9 @@ class PostgresConnection implements DatabaseConnection {
     this.#options = options
   }
 
-  async executeQuery<O>(compiledQuery: CompiledQuery): Promise<QueryResult<O>> {
+  async executeQuery<O>(
+    compiledQuery: CompiledQuery<QueryResult<O>>
+  ): Promise<QueryResult<O>> {
     try {
       const result = await this.#client.query<O>(compiledQuery.sql, [
         ...compiledQuery.parameters,
@@ -122,7 +124,7 @@ class PostgresConnection implements DatabaseConnection {
   }
 
   async *streamQuery<O>(
-    compiledQuery: CompiledQuery,
+    compiledQuery: CompiledQuery<QueryResult<O>>,
     chunkSize: number
   ): AsyncIterableIterator<QueryResult<O>> {
     if (!this.#options.cursor) {

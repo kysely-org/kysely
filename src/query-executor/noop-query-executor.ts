@@ -13,7 +13,7 @@ export class NoopQueryExecutor extends QueryExecutorBase {
     throw new Error('this query cannot be compiled to SQL')
   }
 
-  compileQuery(): CompiledQuery {
+  compileQuery<R>(): CompiledQuery<R> {
     throw new Error('this query cannot be compiled to SQL')
   }
 

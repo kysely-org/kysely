@@ -44,7 +44,7 @@ export interface MysqlPoolConnection {
   query(
     sql: string,
     parameters: ReadonlyArray<unknown>,
-    callback: (error: unknown, result: MysqlQueryResult) => void
+    callback: (error: unknown, result: MysqlQueryResult<any>) => void
   ): void
   release(): void
 }
@@ -63,4 +63,6 @@ export interface MysqlOkPacket {
   insertId: number
 }
 
-export type MysqlQueryResult = MysqlOkPacket | Record<string, unknown>[]
+export type MysqlQueryResult<R extends Record<string, unknown>> =
+  | MysqlOkPacket
+  | R[]
