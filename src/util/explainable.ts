@@ -1,4 +1,3 @@
-import { Compilable } from './compilable.js'
 import { AnyRawBuilder } from './type-utils.js'
 
 export type ExplainFormat =
