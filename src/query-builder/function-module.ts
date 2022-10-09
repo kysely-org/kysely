@@ -8,6 +8,7 @@ import {
   ExtractTypeFromReferenceExpression,
   SimpleReferenceExpression,
   parseSimpleReferenceExpression,
+  ReferenceExpression,
 } from '../parser/reference-parser.js'
 import { RawBuilder } from '../raw-builder/raw-builder.js'
 import { createQueryId } from '../util/query-id.js'
