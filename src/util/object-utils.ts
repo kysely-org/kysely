@@ -50,7 +50,9 @@ export function isObject(obj: unknown): obj is Record<string, unknown> {
   return typeof obj === 'object' && obj !== null
 }
 
-export function isArrayBufferLike(obj: unknown): obj is ArrayBufferLike {
+export function isArrayBufferOrView(
+  obj: unknown
+): obj is ArrayBuffer | ArrayBufferView {
   return obj instanceof ArrayBuffer || ArrayBuffer.isView(obj)
 }
 
