@@ -50,6 +50,10 @@ export function isObject(obj: unknown): obj is Record<string, unknown> {
   return typeof obj === 'object' && obj !== null
 }
 
+export function isArrayBufferLike(obj: unknown): obj is ArrayBufferLike {
+  return obj instanceof ArrayBuffer || ArrayBuffer.isView(obj)
+}
+
 export function getLast<T>(arr: ArrayLike<T>): T | undefined {
   return arr[arr.length - 1]
 }
