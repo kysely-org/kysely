@@ -1696,10 +1696,10 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    * ```
    */
   async *stream(chunkSize: number = 100): AsyncIterableIterator<O> {
-    const compildQuery = this.compile()
+    const compiledQuery = this.compile()
 
     const stream = this.#props.executor.stream<O>(
-      compildQuery,
+      compiledQuery,
       chunkSize,
       this.#props.queryId
     )
