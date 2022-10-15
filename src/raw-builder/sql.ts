@@ -250,7 +250,7 @@ export interface Sql {
    * select "public"."person"."first_name" from "public"."person"
    * ```
    */
-  id(...ids: string[]): RawBuilder<unknown>
+  id(...ids: readonly string[]): RawBuilder<unknown>
 
   /**
    * This can be used to add literal values to SQL snippets.
@@ -353,7 +353,7 @@ export interface Sql {
    * BEFORE $1::varchar, (1 == 1)::varchar, (select * from "person")::varchar, false::varchar, "first_name" AFTER
    * ```
    */
-  join(array: unknown[], separator?: RawBuilder<any>): RawBuilder<unknown>
+  join(array: readonly unknown[], separator?: RawBuilder<any>): RawBuilder<unknown>
 }
 
 export const sql: Sql = Object.assign(
@@ -391,7 +391,7 @@ export const sql: Sql = Object.assign(
       })
     },
 
-    id(...ids: string[]): RawBuilder<unknown> {
+    id(...ids: readonly string[]): RawBuilder<unknown> {
       const fragments = new Array<string>(ids.length + 1).fill('.')
 
       fragments[0] = ''
@@ -418,7 +418,7 @@ export const sql: Sql = Object.assign(
     },
 
     join(
-      array: unknown[],
+      array: readonly unknown[],
       separator: RawBuilder<any> = sql`, `
     ): RawBuilder<unknown> {
       const nodes = new Array<OperationNode>(2 * array.length - 1)
