@@ -698,11 +698,11 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
    * Also see the {@link executeTakeFirst} and {@link executeTakeFirstOrThrow} methods.
    */
   async execute(): Promise<O[]> {
-    const compildQuery = this.compile()
-    const query = compildQuery.query as UpdateQueryNode
+    const compiledQuery = this.compile()
+    const query = compiledQuery.query as UpdateQueryNode
 
     const result = await this.#props.executor.executeQuery<O>(
-      compildQuery,
+      compiledQuery,
       this.#props.queryId
     )
 
