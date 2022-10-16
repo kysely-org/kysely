@@ -1,3 +1,4 @@
+import { DynamicReferenceBuilder } from '../dynamic/dynamic-reference-builder.js'
 import { AggregateFunctionNode } from '../operation-node/aggregate-function-node.js'
 import {
   CoalesceReferenceExpressionList,
@@ -79,6 +80,14 @@ export class FunctionModule<DB, TB extends keyof DB> {
    *
    * It is highly recommended to include null in the output type union and handle
    * null values in post-execute code, or wrap the function with a coalesce function.
+   *
+   * ```ts
+   * const { avg } = db.fn
+   *
+   * db.selectFrom('toy')
+   *   .select(avg<number | null>('price').as('avg_price'))
+   *   .execute()
+   * ```
    */
   avg<
     O extends number | string | null = number | string,
@@ -198,21 +207,28 @@ export class FunctionModule<DB, TB extends keyof DB> {
    *   .select(max('price').as('max_price'))
    *   .execute()
    * ```
+   *
+   * It is highly recommended to include null in the output type union and handle
+   * null values in post-execute code, or wrap the function with a coalesce function.
+   *
+   * ```ts
+   * const { max } = db.fn
+   *
+   * db.selectFrom('toy')
+   *   .select(max<number | null, 'price'>('price').as('max_price'))
+   *   .execute()
+   * ```
    */
   max<
     O extends number | string | bigint | null = number | string | bigint,
-    C extends SimpleReferenceExpression<DB, TB> = SimpleReferenceExpression<
-      DB,
-      TB
-    >
+    C extends SimpleReferenceExpression<DB, TB> = DynamicReferenceBuilder
   >(
     column: C
   ): AggregateFunctionBuilder<
     DB,
     TB,
-    ExtractTypeFromReferenceExpression<DB, TB, C, O> | null extends O
-      ? null
-      : never
+    | ExtractTypeFromReferenceExpression<DB, TB, C, O>
+    | (null extends O ? null : never)
   > {
     return new AggregateFunctionBuilder({
       aggregateFunctionNode: AggregateFunctionNode.create(
@@ -235,21 +251,27 @@ export class FunctionModule<DB, TB extends keyof DB> {
    *   .execute()
    * ```
    *
+   * It is highly recommended to include null in the output type union and handle
+   * null values in post-execute code, or wrap the function with a coalesce function.
+   *
+   * ```ts
+   * const { min } = db.fn
+   *
+   * db.selectFrom('toy')
+   *   .select(min<number | null, 'price'>('price').as('min_price'))
+   *   .execute()
+   * ```
    */
   min<
     O extends number | string | bigint | null = number | string | bigint,
-    C extends SimpleReferenceExpression<DB, TB> = SimpleReferenceExpression<
-      DB,
-      TB
-    >
+    C extends SimpleReferenceExpression<DB, TB> = DynamicReferenceBuilder
   >(
     column: C
   ): AggregateFunctionBuilder<
     DB,
     TB,
-    ExtractTypeFromReferenceExpression<DB, TB, C, O> | null extends O
-      ? null
-      : never
+    | ExtractTypeFromReferenceExpression<DB, TB, C, O>
+    | (null extends O ? null : never)
   > {
     return new AggregateFunctionBuilder({
       aggregateFunctionNode: AggregateFunctionNode.create(
@@ -283,6 +305,14 @@ export class FunctionModule<DB, TB extends keyof DB> {
    *
    * It is highly recommended to include null in the output type union and handle
    * null values in post-execute code, or wrap the function with a coalesce function.
+   *
+   * ```ts
+   * const { sum } = db.fn
+   *
+   * db.selectFrom('toy')
+   *   .select(sum<number | null>('price').as('total_price'))
+   *   .execute()
+   * ```
    */
   sum<
     O extends number | string | bigint | null = number | string | bigint,
