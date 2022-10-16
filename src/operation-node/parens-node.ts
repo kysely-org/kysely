@@ -1,10 +1,9 @@
 import { OperationNode } from './operation-node.js'
 import { freeze } from '../util/object-utils.js'
-import { FilterExpressionNode } from './operation-node-utils.js'
 
 export interface ParensNode extends OperationNode {
   readonly kind: 'ParensNode'
-  readonly node: FilterExpressionNode
+  readonly node: OperationNode
 }
 
 /**
@@ -15,7 +14,7 @@ export const ParensNode = freeze({
     return node.kind === 'ParensNode'
   },
 
-  create(node: FilterExpressionNode): ParensNode {
+  create(node: OperationNode): ParensNode {
     return freeze({
       kind: 'ParensNode',
       node,

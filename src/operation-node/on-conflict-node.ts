@@ -2,9 +2,7 @@ import { freeze } from '../util/object-utils.js'
 import { ColumnNode } from './column-node.js'
 import { ColumnUpdateNode } from './column-update-node.js'
 import { IdentifierNode } from './identifier-node.js'
-import { FilterExpressionNode } from './operation-node-utils.js'
 import { OperationNode } from './operation-node.js'
-import { RawNode } from './raw-node.js'
 import { WhereNode } from './where-node.js'
 
 export type OnConflictNodeProps = Omit<
@@ -16,7 +14,7 @@ export interface OnConflictNode extends OperationNode {
   readonly kind: 'OnConflictNode'
   readonly columns?: ReadonlyArray<ColumnNode>
   readonly constraint?: IdentifierNode
-  readonly indexExpression?: RawNode
+  readonly indexExpression?: OperationNode
   readonly indexWhere?: WhereNode
   readonly updates?: ReadonlyArray<ColumnUpdateNode>
   readonly updateWhere?: WhereNode
@@ -46,7 +44,7 @@ export const OnConflictNode = freeze({
 
   cloneWithIndexWhere(
     node: OnConflictNode,
-    filter: FilterExpressionNode
+    filter: OperationNode
   ): OnConflictNode {
     return freeze({
       ...node,
@@ -58,7 +56,7 @@ export const OnConflictNode = freeze({
 
   cloneWithIndexOrWhere(
     node: OnConflictNode,
-    filter: FilterExpressionNode
+    filter: OperationNode
   ): OnConflictNode {
     return freeze({
       ...node,
@@ -70,7 +68,7 @@ export const OnConflictNode = freeze({
 
   cloneWithUpdateWhere(
     node: OnConflictNode,
-    filter: FilterExpressionNode
+    filter: OperationNode
   ): OnConflictNode {
     return freeze({
       ...node,
@@ -82,7 +80,7 @@ export const OnConflictNode = freeze({
 
   cloneWithUpdateOrWhere(
     node: OnConflictNode,
-    filter: FilterExpressionNode
+    filter: OperationNode
   ): OnConflictNode {
     return freeze({
       ...node,

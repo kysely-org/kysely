@@ -13,7 +13,7 @@ import { preventAwait } from '../util/prevent-await.js'
 import { QueryExecutor } from '../query-executor/query-executor.js'
 import { QueryId } from '../util/query-id.js'
 import { freeze } from '../util/object-utils.js'
-import { AnyRawBuilder } from '../util/type-utils.js'
+import { Expression } from '../expression/expression.js'
 
 export class CreateIndexBuilder implements OperationNodeSource, Compilable {
   readonly #props: CreateIndexBuilderProps
@@ -89,7 +89,7 @@ export class CreateIndexBuilder implements OperationNodeSource, Compilable {
    *   .execute()
    * ```
    */
-  expression(expression: AnyRawBuilder): CreateIndexBuilder {
+  expression(expression: Expression<any>): CreateIndexBuilder {
     return new CreateIndexBuilder({
       ...this.#props,
       createIndexNode: CreateIndexNode.cloneWith(this.#props.createIndexNode, {

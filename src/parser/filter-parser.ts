@@ -6,7 +6,7 @@ import {
   isNull,
   isString,
 } from '../util/object-utils.js'
-import { AnySelectQueryBuilder, AnyRawBuilder } from '../util/type-utils.js'
+import { AnySelectQueryBuilder } from '../util/type-utils.js'
 import { isOperationNodeSource } from '../operation-node/operation-node-source.js'
 import { RawNode } from '../operation-node/raw-node.js'
 import {
@@ -25,14 +25,14 @@ import {
   ValueExpression,
   ValueExpressionOrList,
 } from './value-parser.js'
-import { SelectQueryNode } from '../operation-node/select-query-node.js'
 import { JoinBuilder } from '../query-builder/join-builder.js'
-import { FilterExpressionNode } from '../operation-node/operation-node-utils.js'
 import { ValueNode } from '../operation-node/value-node.js'
 import { WhereInterface } from '../query-builder/where-interface.js'
 import { HavingInterface } from '../query-builder/having-interface.js'
 import { createJoinBuilder, createSelectQueryBuilder } from './parse-utils.js'
-import { ComplexExpression } from './complex-expression-parser.js'
+import { ExpressionOrFactory } from './expression-parser.js'
+import { OperationNode } from '../operation-node/operation-node.js'
+import { Expression } from '../expression/expression.js'
 
 export type FilterValueExpression<
   DB,
@@ -50,7 +50,7 @@ export type FilterValueExpressionOrList<
   ExtractTypeFromReferenceExpression<DB, TB, RE>
 >
 
-export type ExistsExpression<DB, TB extends keyof DB> = ComplexExpression<
+export type ExistsExpression<DB, TB extends keyof DB> = ExpressionOrFactory<
   DB,
   TB,
   any
@@ -64,19 +64,19 @@ export type HavingGrouper<DB, TB extends keyof DB> = (
   qb: HavingInterface<DB, TB>
 ) => HavingInterface<DB, TB>
 
-export type FilterOperator = Operator | AnyRawBuilder
+export type FilterOperator = Operator | Expression<any>
 
 type FilterType = 'where' | 'having' | 'on'
 
-export function parseWhereFilter(args: any[]): FilterExpressionNode {
+export function parseWhereFilter(args: any[]): OperationNode {
   return parseFilter('where', args)
 }
 
-export function parseHavingFilter(args: any[]): FilterExpressionNode {
+export function parseHavingFilter(args: any[]): OperationNode {
   return parseFilter('having', args)
 }
 
-export function parseOnFilter(args: any[]): FilterExpressionNode {
+export function parseOnFilter(args: any[]): OperationNode {
   return parseFilter('on', args)
 }
 
@@ -102,10 +102,7 @@ export function parseNotExistFilter(
   return parseExistExpression('not exists', arg)
 }
 
-export function parseFilter(
-  type: FilterType,
-  args: any[]
-): FilterExpressionNode {
+export function parseFilter(type: FilterType, args: any[]): OperationNode {
   if (args.length === 3) {
     return parseThreeArgFilter(args[0], args[1], args[2])
   } else if (args.length === 1) {
@@ -143,7 +140,7 @@ function parseIsFilter(
   )
 }
 
-function parseFilterOperator(op: FilterOperator): OperatorNode | RawNode {
+function parseFilterOperator(op: FilterOperator): OperationNode {
   if (isString(op) && OPERATORS.includes(op)) {
     return OperatorNode.create(op)
   } else if (isOperationNodeSource(op)) {
@@ -193,7 +190,7 @@ const GROUP_PARSERS = freeze({
     callback: (qb: AnySelectQueryBuilder) => AnySelectQueryBuilder
   ): ParensNode {
     const query = callback(createSelectQueryBuilder())
-    const queryNode = query.toOperationNode() as SelectQueryNode
+    const queryNode = query.toOperationNode()
 
     if (!queryNode.where) {
       throw new Error('no `where` methods called insided a group callback')
@@ -206,7 +203,7 @@ const GROUP_PARSERS = freeze({
     callback: (qb: AnySelectQueryBuilder) => AnySelectQueryBuilder
   ): ParensNode {
     const query = callback(createSelectQueryBuilder())
-    const queryNode = query.toOperationNode() as SelectQueryNode
+    const queryNode = query.toOperationNode()
 
     if (!queryNode.having) {
       throw new Error('no `having` methods called insided a group callback')

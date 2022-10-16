@@ -21,9 +21,9 @@ import {
 import { PrimaryConstraintNode } from '../operation-node/primary-constraint-node.js'
 import { UniqueConstraintNode } from '../operation-node/unique-constraint-node.js'
 import { CheckConstraintNode } from '../operation-node/check-constraint-node.js'
-import { AnyRawBuilder } from '../util/type-utils.js'
 import { parseTable } from '../parser/table-parser.js'
 import { parseOnCommitAction } from '../parser/on-commit-action-parse.js'
+import { Expression } from '../expression/expression.js'
 
 /**
  * This builder can be used to create a `create table` query.
@@ -213,7 +213,7 @@ export class CreateTableBuilder<TB extends string, C extends string = never>
    */
   addCheckConstraint(
     constraintName: string,
-    checkExpression: AnyRawBuilder
+    checkExpression: Expression<any>
   ): CreateTableBuilder<TB, C> {
     return new CreateTableBuilder({
       ...this.#props,
@@ -309,7 +309,7 @@ export class CreateTableBuilder<TB extends string, C extends string = never>
    * )
    * ```
    */
-  modifyFront(modifier: AnyRawBuilder): CreateTableBuilder<TB, C> {
+  modifyFront(modifier: Expression<any>): CreateTableBuilder<TB, C> {
     return new CreateTableBuilder({
       ...this.#props,
       createTableNode: CreateTableNode.cloneWithFrontModifier(
@@ -345,7 +345,7 @@ export class CreateTableBuilder<TB extends string, C extends string = never>
    * ) collate utf8_unicode_ci
    * ```
    */
-  modifyEnd(modifier: AnyRawBuilder): CreateTableBuilder<TB, C> {
+  modifyEnd(modifier: Expression<any>): CreateTableBuilder<TB, C> {
     return new CreateTableBuilder({
       ...this.#props,
       createTableNode: CreateTableNode.cloneWithEndModifier(

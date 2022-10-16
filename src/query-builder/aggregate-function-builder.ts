@@ -1,19 +1,24 @@
 import { freeze } from '../util/object-utils.js'
 import { AggregateFunctionNode } from '../operation-node/aggregate-function-node.js'
-import { OperationNodeSource } from '../operation-node/operation-node-source.js'
 import { AliasNode } from '../operation-node/alias-node.js'
 import { IdentifierNode } from '../operation-node/identifier-node.js'
 import { preventAwait } from '../util/prevent-await.js'
 import { OverBuilder } from './over-builder.js'
 import { createOverBuilder } from '../parser/parse-utils.js'
+import { AliasedExpression, Expression } from '../expression/expression.js'
 
 export class AggregateFunctionBuilder<DB, TB extends keyof DB, O = unknown>
-  implements OperationNodeSource
+  implements Expression<O>
 {
   readonly #props: AggregateFunctionBuilderProps
 
   constructor(props: AggregateFunctionBuilderProps) {
     this.#props = freeze(props)
+  }
+
+  /** @private */
+  get expressionType(): O | undefined {
+    return undefined
   }
 
   /**
@@ -147,7 +152,7 @@ export class AliasedAggregateFunctionBuilder<
   TB extends keyof DB,
   O = unknown,
   A extends string = never
-> implements OperationNodeSource
+> implements AliasedExpression<O, A>
 {
   readonly #aggregateFunctionBuilder: AggregateFunctionBuilder<DB, TB, O>
   readonly #alias: A
@@ -160,15 +165,13 @@ export class AliasedAggregateFunctionBuilder<
     this.#alias = alias
   }
 
-  /**
-   * @private
-   *
-   * This needs to be here just so that the typings work. Without this
-   * the generated .d.ts file contains no reference to the type param A
-   * which causes this type to be equal to AliasedAggregateFunctionBuilder with any A
-   * as long as O is the same.
-   */
-  protected get alias(): A {
+  /** @private */
+  get expression(): Expression<O> {
+    return this.#aggregateFunctionBuilder
+  }
+
+  /** @private */
+  get alias(): A {
     return this.#alias
   }
 

@@ -3,7 +3,7 @@ import { sql } from '../../raw-builder/sql.js'
 import { DialectAdapterBase } from '../dialect-adapter-base.js'
 
 // Random id for our transaction lock.
-const LOCK_ID = 3853314791062309107n
+const LOCK_ID = BigInt('3853314791062309107')
 
 export class PostgresAdapter extends DialectAdapterBase {
   get supportsTransactionalDdl(): boolean {

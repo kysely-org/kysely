@@ -1,6 +1,5 @@
 import { OperationNode } from './operation-node.js'
 import { freeze } from '../util/object-utils.js'
-import { RawNode } from './raw-node.js'
 
 export type SelectModifier =
   | 'ForUpdate'
@@ -14,7 +13,7 @@ export type SelectModifier =
 export interface SelectModifierNode extends OperationNode {
   readonly kind: 'SelectModifierNode'
   readonly modifier?: SelectModifier
-  readonly rawModifier?: RawNode
+  readonly rawModifier?: OperationNode
 }
 
 /**
@@ -32,7 +31,7 @@ export const SelectModifierNode = freeze({
     })
   },
 
-  createWithRaw(modifier: RawNode): SelectModifierNode {
+  createWithExpression(modifier: OperationNode): SelectModifierNode {
     return freeze({
       kind: 'SelectModifierNode',
       rawModifier: modifier,

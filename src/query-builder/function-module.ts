@@ -1,9 +1,16 @@
 import { AggregateFunctionNode } from '../operation-node/aggregate-function-node.js'
 import {
+  CoalesceReferenceExpressionList,
+  parseCoalesce,
+} from '../parser/coalesce-parser.js'
+import {
   ExtractTypeFromReferenceExpression,
   SimpleReferenceExpression,
   parseSimpleReferenceExpression,
+  ReferenceExpression,
 } from '../parser/reference-parser.js'
+import { RawBuilder } from '../raw-builder/raw-builder.js'
+import { createQueryId } from '../util/query-id.js'
 import { AggregateFunctionBuilder } from './aggregate-function-builder.js'
 
 /**
@@ -41,6 +48,7 @@ import { AggregateFunctionBuilder } from './aggregate-function-builder.js'
 export class FunctionModule<DB, TB extends keyof DB> {
   constructor() {
     this.avg = this.avg.bind(this)
+    this.coalesce = this.coalesce.bind(this)
     this.count = this.count.bind(this)
     this.max = this.max.bind(this)
     this.min = this.min.bind(this)
@@ -84,6 +92,53 @@ export class FunctionModule<DB, TB extends keyof DB> {
         'avg',
         parseSimpleReferenceExpression(column)
       ),
+    })
+  }
+
+  /**
+   * Calls the `coalesce` function for given arguments.
+   *
+   * This function returns the first non-null value from left to right, commonly
+   * used to provide a default scalar for nullable columns or functions.
+   *
+   * ```ts
+   * const { coalesce, max } = db.fn
+   *
+   * db.selectFrom('person')
+   *   .select(coalesce(max('age'), sql<number>`0`).as('max_age'))
+   *   .where('first_name', '=', 'Jennifer')
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (postgres):
+   *
+   * ```sql
+   * select coalesce(max("age"), 0) as "max_age" from "person" where "first_name" = $1
+   * ```
+   *
+   * If this is used in a `select` statement the type of the selected expression
+   * is inferred in the same manner that the function computes. A union of arguments'
+   * types - if a non-nullable argument exists, it stops there (ignoring any further
+   * arguments' types) and exludes null from the final union type.
+   *
+   * Examples:
+   *
+   * `(string | null, number | null)` is inferred as `string | number | null`.
+   *
+   * `(string | null, number, Date | null)` is inferred as `string | number`.
+   *
+   * `(number, string | null)` is inferred as `number`.
+   */
+  coalesce<
+    V extends ReferenceExpression<DB, TB>,
+    OV extends ReferenceExpression<DB, TB>[]
+  >(
+    value: V,
+    ...otherValues: OV
+  ): RawBuilder<CoalesceReferenceExpressionList<DB, TB, [V, ...OV]>> {
+    return new RawBuilder({
+      queryId: createQueryId(),
+      rawNode: parseCoalesce([value, ...otherValues]),
     })
   }
 

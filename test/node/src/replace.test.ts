@@ -71,7 +71,7 @@ describe(`${dialect}: replace`, () => {
       id: 2500,
       first_name: ctx.db
         .selectFrom('pet')
-        .select(sql`max(name)`.as('max_name')),
+        .select(sql<string>`max(name)`.as('max_name')),
       last_name: sql`concat('Bar', 'son')`,
       gender: 'other',
     })
@@ -194,6 +194,10 @@ async function getNewestPerson(
   return await db
     .selectFrom('person')
     .select(['first_name', 'last_name'])
-    .where('id', '=', db.selectFrom('person').select(sql`max(id)`.as('max_id')))
+    .where(
+      'id',
+      '=',
+      db.selectFrom('person').select(sql<number>`max(id)`.as('max_id'))
+    )
     .executeTakeFirst()
 }

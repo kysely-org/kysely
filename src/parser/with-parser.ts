@@ -1,12 +1,11 @@
-import { SelectQueryBuilder } from '../query-builder/select-query-builder.js'
 import { UpdateQueryBuilder } from '../query-builder/update-query-builder.js'
 import { DeleteQueryBuilder } from '../query-builder/delete-query-builder.js'
 import { InsertQueryBuilder } from '../query-builder/insert-query-builder.js'
 import { CommonTableExpressionNode } from '../operation-node/common-table-expression-node.js'
 import { CommonTableExpressionNameNode } from '../operation-node/common-table-expression-name-node.js'
 import { QueryCreator } from '../query-creator.js'
-import { RawBuilder } from '../raw-builder/raw-builder.js'
 import { createQueryCreator } from './parse-utils.js'
+import { Expression } from '../expression/expression.js'
 
 export type CommonTableExpression<DB, CN extends string> = (
   creator: QueryCreator<DB>
@@ -36,11 +35,15 @@ export type QueryCreatorWithCommonTableExpression<
 >
 
 type CommonTableExpressionOutput<DB, CN extends string> =
-  | SelectQueryBuilder<DB, any, ExtractRowFromCommonTableExpressionName<CN>>
+  | Expression<ExtractRowFromCommonTableExpressionName<CN>>
   | InsertQueryBuilder<DB, any, ExtractRowFromCommonTableExpressionName<CN>>
-  | UpdateQueryBuilder<DB, any, any, ExtractRowFromCommonTableExpressionName<CN>>
+  | UpdateQueryBuilder<
+      DB,
+      any,
+      any,
+      ExtractRowFromCommonTableExpressionName<CN>
+    >
   | DeleteQueryBuilder<DB, any, ExtractRowFromCommonTableExpressionName<CN>>
-  | RawBuilder<ExtractRowFromCommonTableExpressionName<CN>>
 
 /**
  * Given a common CommonTableExpression CTE extracts the row type from it.
@@ -51,7 +54,7 @@ type CommonTableExpressionOutput<DB, CN extends string> =
 type ExtractRowFromCommonTableExpression<CTE> = CTE extends (
   creator: QueryCreator<any>
 ) => infer Q
-  ? Q extends SelectQueryBuilder<any, any, infer QO>
+  ? Q extends Expression<infer QO>
     ? QO
     : Q extends InsertQueryBuilder<any, any, infer QO>
     ? QO
@@ -59,8 +62,6 @@ type ExtractRowFromCommonTableExpression<CTE> = CTE extends (
     ? QO
     : Q extends DeleteQueryBuilder<any, any, infer QO>
     ? QO
-    : Q extends RawBuilder<infer RO>
-    ? RO
     : never
   : never
 

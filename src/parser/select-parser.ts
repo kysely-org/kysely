@@ -1,7 +1,6 @@
-import { AliasedRawBuilder } from '../raw-builder/raw-builder.js'
 import { isReadonlyArray, isString } from '../util/object-utils.js'
 import {
-  AliasedQueryBuilder,
+  AliasedSelectQueryBuilder,
   SelectQueryBuilder,
 } from '../query-builder/select-query-builder.js'
 import { SelectionNode } from '../operation-node/selection-node.js'
@@ -19,12 +18,12 @@ import {
   isDynamicReferenceBuilder,
 } from '../dynamic/dynamic-reference-builder.js'
 import {
-  AliasedComplexExpression,
-  parseAliasedComplexExpression,
-} from './complex-expression-parser.js'
+  AliasedExpressionOrFactory,
+  parseAliasedExpression,
+} from './expression-parser.js'
 import { Selectable, SelectType } from '../util/column-type.js'
 import { parseTable } from './table-parser.js'
-import { AliasedAggregateFunctionBuilder } from '../query-builder/aggregate-function-builder.js'
+import { AliasedExpression } from '../expression/expression.js'
 
 export type SelectExpression<DB, TB extends keyof DB> =
   | AnyAliasedColumnWithTable<DB, TB>
@@ -32,8 +31,7 @@ export type SelectExpression<DB, TB extends keyof DB> =
   | AnyColumnWithTable<DB, TB>
   | AnyColumn<DB, TB>
   | DynamicReferenceBuilder<any>
-  | AliasedComplexExpression<DB, TB>
-  | AliasedAggregateFunctionBuilder<DB, TB>
+  | AliasedExpressionOrFactory<DB, TB>
 
 export type SelectExpressionOrList<DB, TB extends keyof DB> =
   | SelectExpression<DB, TB>
@@ -68,22 +66,12 @@ export type Selection<DB, TB extends keyof DB, SE> = {
 
 type ExtractAliasFromSelectExpression<SE> = SE extends string
   ? ExtractAliasFromStringSelectExpression<SE>
-  : SE extends AliasedRawBuilder<any, infer RA>
-  ? RA
-  : SE extends (qb: any) => AliasedRawBuilder<any, infer RA>
-  ? RA
-  : SE extends AliasedQueryBuilder<any, any, any, infer QA>
-  ? QA
-  : SE extends (qb: any) => AliasedQueryBuilder<any, any, any, infer QA>
-  ? QA
+  : SE extends AliasedExpression<any, infer EA>
+  ? EA
+  : SE extends (qb: any) => AliasedExpression<any, infer EA>
+  ? EA
   : SE extends DynamicReferenceBuilder<infer RA>
   ? ExtractAliasFromStringSelectExpression<RA>
-  : SE extends AliasedAggregateFunctionBuilder<any, any, any, infer QA>
-  ? QA
-  : SE extends (
-      qb: any
-    ) => AliasedAggregateFunctionBuilder<any, any, any, infer QA>
-  ? QA
   : never
 
 type ExtractAliasFromStringSelectExpression<SE extends string> =
@@ -106,35 +94,25 @@ type ExtractTypeFromSelectExpression<
   A extends keyof any
 > = SE extends string
   ? ExtractTypeFromStringSelectExpression<DB, TB, SE, A>
-  : SE extends AliasedRawBuilder<infer O, infer RA>
-  ? RA extends A
-    ? O
-    : never
-  : SE extends (qb: any) => AliasedRawBuilder<infer O, infer RA>
-  ? RA extends A
-    ? O
-    : never
-  : SE extends AliasedQueryBuilder<any, any, infer O, infer QA>
+  : SE extends AliasedSelectQueryBuilder<any, any, infer O, infer QA>
   ? QA extends A
     ? ValueType<O>
     : never
-  : SE extends (qb: any) => AliasedQueryBuilder<any, any, infer O, infer QA>
+  : SE extends (qb: any) => AliasedSelectQueryBuilder<any, any, infer O, infer QA>
   ? QA extends A
     ? ValueType<O>
+    : never
+  : SE extends AliasedExpression<infer O, infer EA>
+  ? EA extends A
+    ? O
+    : never
+  : SE extends (qb: any) => AliasedExpression<infer O, infer EA>
+  ? EA extends A
+    ? O
     : never
   : SE extends DynamicReferenceBuilder<infer RA>
   ? A extends ExtractAliasFromStringSelectExpression<RA>
     ? ExtractTypeFromStringSelectExpression<DB, TB, RA, A> | undefined
-    : never
-  : SE extends AliasedAggregateFunctionBuilder<any, any, infer O, infer FA>
-  ? FA extends A
-    ? O
-    : never
-  : SE extends (
-      qb: any
-    ) => AliasedAggregateFunctionBuilder<any, any, infer O, infer FA>
-  ? FA extends A
-    ? O
     : never
   : never
 
@@ -211,7 +189,7 @@ function parseSelectExpression(
   } else if (isDynamicReferenceBuilder(selection)) {
     return SelectionNode.create(selection.toOperationNode())
   } else {
-    return SelectionNode.create(parseAliasedComplexExpression(selection))
+    return SelectionNode.create(parseAliasedExpression(selection))
   }
 }
 

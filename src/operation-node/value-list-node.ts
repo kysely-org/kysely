@@ -1,23 +1,9 @@
 import { freeze } from '../util/object-utils.js'
-import { AggregateFunctionNode } from './aggregate-function-node.js'
-import { DefaultInsertValueNode } from './default-insert-value-node.js'
 import { OperationNode } from './operation-node.js'
-import { RawNode } from './raw-node.js'
-import { ReferenceNode } from './reference-node.js'
-import { SelectQueryNode } from './select-query-node.js'
-import { ValueNode } from './value-node.js'
-
-export type ListNodeItem =
-  | ValueNode
-  | ReferenceNode
-  | DefaultInsertValueNode
-  | SelectQueryNode
-  | RawNode
-  | AggregateFunctionNode
 
 export interface ValueListNode extends OperationNode {
   readonly kind: 'ValueListNode'
-  readonly values: ReadonlyArray<ListNodeItem>
+  readonly values: ReadonlyArray<OperationNode>
 }
 
 /**
@@ -28,7 +14,7 @@ export const ValueListNode = freeze({
     return node.kind === 'ValueListNode'
   },
 
-  create(values: ReadonlyArray<ListNodeItem>): ValueListNode {
+  create(values: ReadonlyArray<OperationNode>): ValueListNode {
     return freeze({
       kind: 'ValueListNode',
       values: freeze(values),

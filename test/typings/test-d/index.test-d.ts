@@ -18,7 +18,7 @@ import {
   ExpressionBuilder,
 } from '..'
 
-import { Book, Database, Movie, Person, Pet } from '../shared'
+import { Database, Person, Pet } from '../shared'
 
 import { expectType, expectError, expectAssignable } from 'tsd'
 
@@ -161,6 +161,7 @@ async function testSelectSingle(db: Kysely<Database>) {
   const [r4] = await qb
     .select(sql<boolean>`random() > 0.5`.as('rando'))
     .execute()
+
   expectType<{ rando: boolean }>(r4)
 
   // Raw selection with a dynamic alias.
@@ -687,7 +688,14 @@ async function testInsert(db: Kysely<Database>) {
   // GeneratedAlways column is not allowed to be inserted
   expectError(db.insertInto('book').values({ id: 1, name: 'foo' }))
 
-  db.insertInto('book').values({ name: 'bar' })
+  // Wrong subquery return value type
+  expectError(
+    db.insertInto('person').values({
+      first_name: 'what',
+      gender: 'male',
+      age: (eb) => eb.selectFrom('pet').select('pet.name')
+    })
+  )
 }
 
 async function testReturning(db: Kysely<Database>) {

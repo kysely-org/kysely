@@ -1,20 +1,17 @@
-import { ValueExpressionNode } from '../operation-node/operation-node-utils.js'
 import { PrimitiveValueListNode } from '../operation-node/primitive-value-list-node.js'
 import { ValueListNode } from '../operation-node/value-list-node.js'
 import { ValueNode } from '../operation-node/value-node.js'
 import { isReadonlyArray } from '../util/object-utils.js'
-import { SelectQueryNode } from '../operation-node/select-query-node.js'
-import { RawNode } from '../operation-node/raw-node.js'
 import {
-  parseComplexExpression,
-  ComplexExpression,
-  isComplexExpression,
-} from './complex-expression-parser.js'
-import { AggregateFunctionNode } from '../operation-node/aggregate-function-node.js'
+  parseExpression,
+  ExpressionOrFactory,
+  isExpressionOrFactory,
+} from './expression-parser.js'
+import { OperationNode } from '../operation-node/operation-node.js'
 
 export type ValueExpression<DB, TB extends keyof DB, V> =
   | V
-  | ComplexExpression<DB, TB, V>
+  | ExpressionOrFactory<DB, TB, V>
 
 export type ValueExpressionOrList<DB, TB extends keyof DB, V> =
   | ValueExpression<DB, TB, V>
@@ -22,7 +19,7 @@ export type ValueExpressionOrList<DB, TB extends keyof DB, V> =
 
 export function parseValueExpressionOrList(
   arg: ValueExpressionOrList<any, any, unknown>
-): ValueExpressionNode {
+): OperationNode {
   if (isReadonlyArray(arg)) {
     return parseValueExpressionList(arg)
   } else {
@@ -32,9 +29,9 @@ export function parseValueExpressionOrList(
 
 export function parseValueExpression(
   exp: ValueExpression<any, any, unknown>
-): ValueNode | SelectQueryNode | RawNode | AggregateFunctionNode {
-  if (isComplexExpression(exp)) {
-    return parseComplexExpression(exp)
+): OperationNode {
+  if (isExpressionOrFactory(exp)) {
+    return parseExpression(exp)
   }
 
   return ValueNode.create(exp)
@@ -43,7 +40,7 @@ export function parseValueExpression(
 function parseValueExpressionList(
   arg: ReadonlyArray<ValueExpression<any, any, unknown>>
 ): PrimitiveValueListNode | ValueListNode {
-  if (arg.some(isComplexExpression)) {
+  if (arg.some(isExpressionOrFactory)) {
     return ValueListNode.create(arg.map((it) => parseValueExpression(it)))
   }
 

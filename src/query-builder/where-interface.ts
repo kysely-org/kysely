@@ -1,3 +1,4 @@
+import { Expression } from '../expression/expression.js'
 import {
   ExistsExpression,
   FilterOperator,
@@ -5,7 +6,6 @@ import {
   WhereGrouper,
 } from '../parser/filter-parser.js'
 import { ReferenceExpression } from '../parser/reference-parser.js'
-import { AnyRawBuilder } from '../util/type-utils.js'
 
 export interface WhereInterface<DB, TB extends keyof DB> {
   /**
@@ -200,7 +200,7 @@ export interface WhereInterface<DB, TB extends keyof DB> {
 
   where(grouper: WhereGrouper<DB, TB>): WhereInterface<DB, TB>
 
-  where(raw: AnyRawBuilder): WhereInterface<DB, TB>
+  where(expression: Expression<any>): WhereInterface<DB, TB>
 
   /**
    * Adds a `where` clause where both sides of the operator are references
@@ -330,7 +330,7 @@ export interface WhereInterface<DB, TB extends keyof DB> {
 
   orWhere(grouper: WhereGrouper<DB, TB>): WhereInterface<DB, TB>
 
-  orWhere(raw: AnyRawBuilder): WhereInterface<DB, TB>
+  orWhere(expression: Expression<any>): WhereInterface<DB, TB>
 
   /**
    * Adds an `or where` clause to the query. Otherwise works just like {@link whereRef}.

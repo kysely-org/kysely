@@ -1,19 +1,11 @@
 import { freeze } from '../util/object-utils.js'
 import { OperationNode } from './operation-node.js'
-import {
-  ReferenceExpressionNode,
-  ValueExpressionNode,
-} from './operation-node-utils.js'
-import { OperatorNode } from './operator-node.js'
-import { RawNode } from './raw-node.js'
-
-export type FilterOperatorNode = OperatorNode | RawNode
 
 export interface FilterNode extends OperationNode {
   readonly kind: 'FilterNode'
-  readonly left?: ReferenceExpressionNode
-  readonly op: OperatorNode | RawNode
-  readonly right: ValueExpressionNode
+  readonly left?: OperationNode
+  readonly op: OperationNode
+  readonly right: OperationNode
 }
 
 /**
@@ -25,9 +17,9 @@ export const FilterNode = freeze({
   },
 
   create(
-    left: ReferenceExpressionNode | undefined,
-    op: OperatorNode | RawNode,
-    right: ValueExpressionNode
+    left: OperationNode | undefined,
+    op: OperationNode,
+    right: OperationNode
   ): FilterNode {
     return freeze({
       kind: 'FilterNode',

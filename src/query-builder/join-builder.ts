@@ -1,3 +1,4 @@
+import { Expression } from '../expression/expression.js'
 import { JoinNode } from '../operation-node/join-node.js'
 import { OperationNodeSource } from '../operation-node/operation-node-source.js'
 import { RawNode } from '../operation-node/raw-node.js'
@@ -13,7 +14,6 @@ import {
 import { ReferenceExpression } from '../parser/reference-parser.js'
 import { freeze } from '../util/object-utils.js'
 import { preventAwait } from '../util/prevent-await.js'
-import { AnyRawBuilder } from '../util/type-utils.js'
 
 export class JoinBuilder<DB, TB extends keyof DB>
   implements OperationNodeSource
@@ -40,7 +40,7 @@ export class JoinBuilder<DB, TB extends keyof DB>
     grouper: (qb: JoinBuilder<DB, TB>) => JoinBuilder<DB, TB>
   ): JoinBuilder<DB, TB>
 
-  on(raw: AnyRawBuilder): JoinBuilder<DB, TB>
+  on(expression: Expression<any>): JoinBuilder<DB, TB>
 
   on(...args: any[]): JoinBuilder<DB, TB> {
     return new JoinBuilder({
@@ -65,7 +65,7 @@ export class JoinBuilder<DB, TB extends keyof DB>
     grouper: (qb: JoinBuilder<DB, TB>) => JoinBuilder<DB, TB>
   ): JoinBuilder<DB, TB>
 
-  orOn(raw: AnyRawBuilder): JoinBuilder<DB, TB>
+  orOn(expression: Expression<any>): JoinBuilder<DB, TB>
 
   orOn(...args: any[]): JoinBuilder<DB, TB> {
     return new JoinBuilder({

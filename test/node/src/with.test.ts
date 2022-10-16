@@ -188,18 +188,18 @@ for (const dialect of BUILT_IN_DIALECTS) {
           .insertInto('pet')
           .values({
             owner_id: (eb) => eb.selectFrom('jennifer').select('id'),
-            name: (eb) => eb.selectFrom('jennifer').select('first_name'),
+            name: 'Catto 2',
             species: 'cat',
           })
 
         testSql(query, dialect, {
           postgres: {
-            sql: 'with "jennifer" as (select "id", "first_name", "gender" from "person" where "first_name" = $1) insert into "pet" ("owner_id", "name", "species") values ((select "id" from "jennifer"), (select "first_name" from "jennifer"), $2)',
-            parameters: ['Jennifer', 'cat'],
+            sql: 'with "jennifer" as (select "id", "first_name", "gender" from "person" where "first_name" = $1) insert into "pet" ("owner_id", "name", "species") values ((select "id" from "jennifer"), $2, $3)',
+            parameters: ['Jennifer', 'Catto 2', 'cat'],
           },
           sqlite: {
-            sql: 'with "jennifer" as (select "id", "first_name", "gender" from "person" where "first_name" = ?) insert into "pet" ("owner_id", "name", "species") values ((select "id" from "jennifer"), (select "first_name" from "jennifer"), ?)',
-            parameters: ['Jennifer', 'cat'],
+            sql: 'with "jennifer" as (select "id", "first_name", "gender" from "person" where "first_name" = ?) insert into "pet" ("owner_id", "name", "species") values ((select "id" from "jennifer"), ?, ?)',
+            parameters: ['Jennifer', 'Catto 2', 'cat'],
           },
           mysql: NOT_SUPPORTED,
         })

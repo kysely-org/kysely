@@ -7,10 +7,6 @@ import { JoinNode } from './join-node.js'
 import { LimitNode } from './limit-node.js'
 import { OffsetNode } from './offset-node.js'
 import { OperationNode } from './operation-node.js'
-import {
-  FilterExpressionNode,
-  TableExpressionNode,
-} from './operation-node-utils.js'
 import { OrderByItemNode } from './order-by-item-node.js'
 import { OrderByNode } from './order-by-node.js'
 import { SelectionNode } from './selection-node.js'
@@ -48,7 +44,7 @@ export const SelectQueryNode = freeze({
   },
 
   create(
-    fromItems: ReadonlyArray<TableExpressionNode>,
+    fromItems: ReadonlyArray<OperationNode>,
     withNode?: WithNode
   ): SelectQueryNode {
     return freeze({
@@ -152,7 +148,7 @@ export const SelectQueryNode = freeze({
 
   cloneWithHaving(
     selectNode: SelectQueryNode,
-    filter: FilterExpressionNode
+    filter: OperationNode
   ): SelectQueryNode {
     return freeze({
       ...selectNode,
@@ -164,7 +160,7 @@ export const SelectQueryNode = freeze({
 
   cloneWithOrHaving(
     selectNode: SelectQueryNode,
-    filter: FilterExpressionNode
+    filter: OperationNode
   ): SelectQueryNode {
     return freeze({
       ...selectNode,

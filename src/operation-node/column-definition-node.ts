@@ -12,12 +12,11 @@ export type ColumnDefinitionNodeProps = Omit<
   Partial<ColumnDefinitionNode>,
   'kind' | 'dataType'
 >
-export type ColumnDataTypeNode = DataTypeNode | RawNode
 
 export interface ColumnDefinitionNode extends OperationNode {
   readonly kind: 'ColumnDefinitionNode'
   readonly column: ColumnNode
-  readonly dataType: ColumnDataTypeNode
+  readonly dataType: OperationNode
   readonly references?: ReferencesNode
   readonly primaryKey?: boolean
   readonly autoIncrement?: boolean
@@ -37,7 +36,7 @@ export const ColumnDefinitionNode = freeze({
     return node.kind === 'ColumnDefinitionNode'
   },
 
-  create(column: string, dataType: ColumnDataTypeNode): ColumnDefinitionNode {
+  create(column: string, dataType: OperationNode): ColumnDefinitionNode {
     return freeze({
       kind: 'ColumnDefinitionNode',
       column: ColumnNode.create(column),

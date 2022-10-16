@@ -1,10 +1,9 @@
 import { freeze } from '../util/object-utils.js'
 import { OperationNode } from './operation-node.js'
-import { ReferenceExpressionNode } from './operation-node-utils.js'
 
 export interface GroupByItemNode extends OperationNode {
   readonly kind: 'GroupByItemNode'
-  readonly groupBy: ReferenceExpressionNode
+  readonly groupBy: OperationNode
 }
 
 /**
@@ -15,7 +14,7 @@ export const GroupByItemNode = freeze({
     return node.kind === 'GroupByItemNode'
   },
 
-  create(groupBy: ReferenceExpressionNode): GroupByItemNode {
+  create(groupBy: OperationNode): GroupByItemNode {
     return freeze({
       kind: 'GroupByItemNode',
       groupBy,
