@@ -1,6 +1,11 @@
 import { QueryResult } from '../../driver/database-connection.js'
 import { RootOperationNode } from '../../query-compiler/query-compiler.js'
-import { isBuffer, isDate, isObject } from '../../util/object-utils.js'
+import {
+  isArrayBufferOrView,
+  isBuffer,
+  isDate,
+  isObject,
+} from '../../util/object-utils.js'
 import { UnknownRow } from '../../util/type-utils.js'
 import {
   KyselyPlugin,
@@ -162,5 +167,7 @@ export class CamelCasePlugin implements KyselyPlugin {
 }
 
 function canMap(obj: unknown): obj is Record<string, unknown> {
-  return isObject(obj) && !isDate(obj) && !isBuffer(obj)
+  return (
+    isObject(obj) && !isDate(obj) && !isBuffer(obj) && !isArrayBufferOrView(obj)
+  )
 }

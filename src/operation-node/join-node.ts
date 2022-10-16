@@ -1,11 +1,9 @@
 import { freeze } from '../util/object-utils.js'
 import { AliasNode } from './alias-node.js'
 import { OnNode } from './on-node.js'
-import { FilterExpressionNode } from './operation-node-utils.js'
 import { OperationNode } from './operation-node.js'
 import { TableNode } from './table-node.js'
 
-export type JoinTableNode = TableNode | AliasNode
 export type JoinType =
   | 'InnerJoin'
   | 'LeftJoin'
@@ -17,7 +15,7 @@ export type JoinType =
 export interface JoinNode extends OperationNode {
   readonly kind: 'JoinNode'
   readonly joinType: JoinType
-  readonly table: JoinTableNode
+  readonly table: OperationNode
   readonly on?: OnNode
 }
 
@@ -29,7 +27,7 @@ export const JoinNode = freeze({
     return node.kind === 'JoinNode'
   },
 
-  create(joinType: JoinType, table: JoinTableNode): JoinNode {
+  create(joinType: JoinType, table: OperationNode): JoinNode {
     return freeze({
       kind: 'JoinNode',
       joinType,
@@ -40,8 +38,8 @@ export const JoinNode = freeze({
 
   createWithOn(
     joinType: JoinType,
-    table: JoinTableNode,
-    on: FilterExpressionNode
+    table: OperationNode,
+    on: OperationNode
   ): JoinNode {
     return freeze({
       kind: 'JoinNode',
@@ -51,7 +49,7 @@ export const JoinNode = freeze({
     })
   },
 
-  cloneWithOn(joinNode: JoinNode, filter: FilterExpressionNode): JoinNode {
+  cloneWithOn(joinNode: JoinNode, filter: OperationNode): JoinNode {
     return freeze({
       ...joinNode,
       on: joinNode.on
@@ -60,7 +58,7 @@ export const JoinNode = freeze({
     })
   },
 
-  cloneWithOrOn(joinNode: JoinNode, filter: FilterExpressionNode): JoinNode {
+  cloneWithOrOn(joinNode: JoinNode, filter: OperationNode): JoinNode {
     return freeze({
       ...joinNode,
       on: joinNode.on

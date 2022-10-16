@@ -19,7 +19,6 @@ import {
   ColumnDefinitionBuilder,
   ColumnDefinitionBuilderInterface,
 } from './column-definition-builder.js'
-import { AnyRawBuilder } from '../util/type-utils.js'
 import { QueryId } from '../util/query-id.js'
 import { QueryExecutor } from '../query-executor/query-executor.js'
 import { ModifyColumnNode } from '../operation-node/modify-column-node.js'
@@ -42,6 +41,7 @@ import {
 } from '../parser/default-value-parser.js'
 import { parseTable } from '../parser/table-parser.js'
 import { DropConstraintNode } from '../operation-node/drop-constraint-node.js'
+import { Expression } from '../expression/expression.js'
 
 /**
  * This builder can be used to create a `alter table` query.
@@ -159,7 +159,7 @@ export class AlterTableBuilder {
    */
   addCheckConstraint(
     constraintName: string,
-    checkExpression: AnyRawBuilder
+    checkExpression: Expression<any>
   ): AlterTableExecutor {
     return new AlterTableExecutor({
       ...this.#props,
@@ -383,14 +383,14 @@ export class AlterTableAddColumnBuilder
     })
   }
 
-  check(expression: AnyRawBuilder): AlterTableAddColumnBuilder {
+  check(expression: Expression<any>): AlterTableAddColumnBuilder {
     return new AlterTableAddColumnBuilder({
       ...this.#props,
       columnBuilder: this.#props.columnBuilder.check(expression),
     })
   }
 
-  generatedAlwaysAs(expression: AnyRawBuilder): AlterTableAddColumnBuilder {
+  generatedAlwaysAs(expression: Expression<any>): AlterTableAddColumnBuilder {
     return new AlterTableAddColumnBuilder({
       ...this.#props,
       columnBuilder: this.#props.columnBuilder.generatedAlwaysAs(expression),
@@ -522,14 +522,16 @@ export class AlterTableModifyColumnBuilder
     })
   }
 
-  check(expression: AnyRawBuilder): AlterTableModifyColumnBuilder {
+  check(expression: Expression<any>): AlterTableModifyColumnBuilder {
     return new AlterTableModifyColumnBuilder({
       ...this.#props,
       columnBuilder: this.#props.columnBuilder.check(expression),
     })
   }
 
-  generatedAlwaysAs(expression: AnyRawBuilder): AlterTableModifyColumnBuilder {
+  generatedAlwaysAs(
+    expression: Expression<any>
+  ): AlterTableModifyColumnBuilder {
     return new AlterTableModifyColumnBuilder({
       ...this.#props,
       columnBuilder: this.#props.columnBuilder.generatedAlwaysAs(expression),

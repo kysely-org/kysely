@@ -1,5 +1,4 @@
 import { freeze } from '../util/object-utils.js'
-import { IdentifierNode } from './identifier-node.js'
 import { OperationNode } from './operation-node.js'
 import { SchemableIdentifierNode } from './schemable-identifier-node.js'
 

@@ -8,7 +8,6 @@ import { JoinNode } from './join-node.js'
 import { SelectionNode } from './selection-node.js'
 import { ReturningNode } from './returning-node.js'
 import { OperationNode } from './operation-node.js'
-import { FilterExpressionNode } from './operation-node-utils.js'
 
 export type QueryNode =
   | SelectQueryNode
@@ -41,7 +40,7 @@ export const QueryNode = freeze({
 
   cloneWithWhere<T extends FilterableQueryNode>(
     node: T,
-    filter: FilterExpressionNode
+    filter: OperationNode
   ): T {
     return freeze({
       ...node,
@@ -53,7 +52,7 @@ export const QueryNode = freeze({
 
   cloneWithOrWhere<T extends FilterableQueryNode>(
     node: T,
-    filter: FilterExpressionNode
+    filter: OperationNode
   ): T {
     return freeze({
       ...node,

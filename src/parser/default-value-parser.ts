@@ -1,13 +1,14 @@
-import { RawNode } from '../operation-node/raw-node.js'
+import { Expression } from '../expression/expression.js'
+import { isOperationNodeSource } from '../operation-node/operation-node-source.js'
+import { OperationNode } from '../operation-node/operation-node.js'
 import { ValueNode } from '../operation-node/value-node.js'
-import { RawBuilder } from '../raw-builder/raw-builder.js'
 
-export type DefaultValueExpression = unknown | RawBuilder
+export type DefaultValueExpression = unknown | Expression<unknown>
 
 export function parseDefaultValueExpression(
   value: DefaultValueExpression
-): ValueNode | RawNode {
-  return value instanceof RawBuilder
+): OperationNode {
+  return isOperationNodeSource(value)
     ? value.toOperationNode()
     : ValueNode.createImmediate(value)
 }

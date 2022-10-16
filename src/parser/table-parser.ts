@@ -1,19 +1,17 @@
-import { AliasedQueryBuilder } from '../query-builder/select-query-builder.js'
 import { isReadonlyArray, isString } from '../util/object-utils.js'
 import { AliasNode } from '../operation-node/alias-node.js'
 import { TableNode } from '../operation-node/table-node.js'
-import { AnyAliasedRawBuilder } from '../util/type-utils.js'
-import { AliasedRawBuilder } from '../raw-builder/raw-builder.js'
-import { TableExpressionNode } from '../operation-node/operation-node-utils.js'
 import {
-  AliasedComplexExpression,
-  parseAliasedComplexExpression,
-} from './complex-expression-parser.js'
+  AliasedExpressionOrFactory,
+  parseAliasedExpression,
+} from './expression-parser.js'
 import { IdentifierNode } from '../operation-node/identifier-node.js'
+import { OperationNode } from '../operation-node/operation-node.js'
+import { AliasedExpression } from '../expression/expression.js'
 
 export type TableExpression<DB, TB extends keyof DB> =
   | TableReference<DB>
-  | AliasedComplexExpression<DB, TB>
+  | AliasedExpressionOrFactory<DB, TB>
 
 export type TableExpressionOrList<DB, TB extends keyof DB> =
   | TableExpression<DB, TB>
@@ -22,7 +20,7 @@ export type TableExpressionOrList<DB, TB extends keyof DB> =
 export type TableReference<DB> =
   | AnyAliasedTable<DB>
   | AnyTable<DB>
-  | AnyAliasedRawBuilder
+  | AliasedExpression<any, any>
 
 export type From<DB, TE> = {
   [C in
@@ -46,14 +44,10 @@ type ExtractAliasFromTableExpression<DB, TE> =
     ? TA
     : TE extends keyof DB
     ? TE
-    : TE extends AliasedQueryBuilder<any, any, any, infer QA>
+    : TE extends AliasedExpression<any, infer QA>
     ? QA
-    : TE extends (qb: any) => AliasedQueryBuilder<any, any, any, infer QA>
+    : TE extends (qb: any) => AliasedExpression<any, infer QA>
     ? QA
-    : TE extends AliasedRawBuilder<any, infer RA>
-    ? RA
-    : TE extends (qb: any) => AliasedRawBuilder<any, infer RA>
-    ? RA
     : never
 
 type ExtractRowTypeFromTableExpression<
@@ -70,20 +64,12 @@ type ExtractRowTypeFromTableExpression<
   ? TE extends keyof DB
     ? DB[TE]
     : never
-  : TE extends AliasedQueryBuilder<any, any, infer O, infer QA>
+  : TE extends AliasedExpression<infer O, infer QA>
   ? QA extends A
     ? O
     : never
-  : TE extends (qb: any) => AliasedQueryBuilder<any, any, infer O, infer QA>
+  : TE extends (qb: any) => AliasedExpression<infer O, infer QA>
   ? QA extends A
-    ? O
-    : never
-  : TE extends AliasedRawBuilder<infer O, infer RA>
-  ? RA extends A
-    ? O
-    : never
-  : TE extends (qb: any) => AliasedRawBuilder<infer O, infer RA>
-  ? RA extends A
     ? O
     : never
   : never
@@ -93,7 +79,7 @@ type AnyTable<DB> = keyof DB & string
 
 export function parseTableExpressionOrList(
   table: TableExpressionOrList<any, any>
-): TableExpressionNode[] {
+): OperationNode[] {
   if (isReadonlyArray(table)) {
     return table.map((it) => parseTableExpression(it))
   } else {
@@ -103,15 +89,15 @@ export function parseTableExpressionOrList(
 
 export function parseTableExpression(
   table: TableExpression<any, any>
-): TableExpressionNode {
+): OperationNode {
   if (isString(table)) {
     return parseAliasedTable(table)
   } else {
-    return parseAliasedComplexExpression(table)
+    return parseAliasedExpression(table)
   }
 }
 
-export function parseAliasedTable(from: string): TableExpressionNode {
+export function parseAliasedTable(from: string): TableNode | AliasNode {
   const ALIAS_SEPARATOR = ' as '
 
   if (from.includes(ALIAS_SEPARATOR)) {

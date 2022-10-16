@@ -75,7 +75,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
       const query = ctx.db.insertInto('person').values({
         first_name: ctx.db
           .selectFrom('pet')
-          .select(sql`max(name)`.as('max_name')),
+          .select(sql<string>`max(name)`.as('max_name')),
         last_name:
           dialect === 'sqlite'
             ? sql`'Bar' || 'son'`
@@ -530,7 +530,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
             gender: 'other',
             first_name: ctx.db
               .selectFrom('person')
-              .select(sql`max(first_name)`.as('max_first_name')),
+              .select(sql<string>`max(first_name)`.as('max_first_name')),
             last_name:
               dialect === 'postgres'
                 ? sql`concat(cast(${'Bar'} as varchar), cast(${'son'} as varchar))`
@@ -575,7 +575,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
             gender: 'other',
             first_name: ctx.db
               .selectFrom('person')
-              .select(sql`max(first_name)`.as('max_first_name')),
+              .select(sql<string>`max(first_name)`.as('max_first_name')),
             last_name:
               dialect === 'postgres'
                 ? sql`concat(cast(${'Bar'} as varchar), cast(${'son'} as varchar))`
@@ -607,7 +607,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
       .where(
         'id',
         '=',
-        db.selectFrom('person').select(sql`max(id)`.as('max_id'))
+        db.selectFrom('person').select(sql<number>`max(id)`.as('max_id'))
       )
       .executeTakeFirst()
   }
@@ -626,5 +626,7 @@ function values<R extends Record<string, unknown>, A extends string>(
     })
   )
 
-  return sql`(values ${values})`.as<A>(sql.raw(`${alias}(${keys.join(', ')})`))
+  return sql<R>`(values ${values})`.as<A>(
+    sql.raw(`${alias}(${keys.join(', ')})`)
+  )
 }

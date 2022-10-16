@@ -1,6 +1,5 @@
 import { freeze } from '../util/object-utils.js'
 import { OperationNode } from './operation-node.js'
-import { RawNode } from './raw-node.js'
 
 export type GeneratedNodeParams = Omit<GeneratedNode, 'kind' | 'expression'>
 
@@ -10,7 +9,7 @@ export interface GeneratedNode extends OperationNode {
   readonly always?: boolean
   readonly identity?: boolean
   readonly stored?: boolean
-  readonly expression?: RawNode
+  readonly expression?: OperationNode
 }
 
 /**
@@ -28,7 +27,7 @@ export const GeneratedNode = freeze({
     })
   },
 
-  createWithExpression(expression: RawNode): GeneratedNode {
+  createWithExpression(expression: OperationNode): GeneratedNode {
     return freeze({
       kind: 'GeneratedNode',
       always: true,

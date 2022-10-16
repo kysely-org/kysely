@@ -1,12 +1,15 @@
 import { freeze } from '../util/object-utils.js'
 import { AliasNode } from './alias-node.js'
-import { ColumnNode } from './column-node.js'
 import { OperationNode } from './operation-node.js'
 import { ReferenceNode } from './reference-node.js'
 import { SelectAllNode } from './select-all-node.js'
+import { SimpleReferenceExpressionNode } from './simple-reference-expression-node.js'
 import { TableNode } from './table-node.js'
 
-type SelectionNodeChild = ColumnNode | ReferenceNode | AliasNode | SelectAllNode
+type SelectionNodeChild =
+  | SimpleReferenceExpressionNode
+  | AliasNode
+  | SelectAllNode
 
 export interface SelectionNode extends OperationNode {
   readonly kind: 'SelectionNode'

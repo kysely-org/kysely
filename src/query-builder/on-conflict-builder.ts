@@ -1,8 +1,9 @@
+import { Expression } from '../expression/expression.js'
 import { ColumnNode } from '../operation-node/column-node.js'
 import { IdentifierNode } from '../operation-node/identifier-node.js'
 import { OnConflictNode } from '../operation-node/on-conflict-node.js'
 import { OperationNodeSource } from '../operation-node/operation-node-source.js'
-import { ComplexExpression } from '../parser/complex-expression-parser.js'
+import { ExpressionOrFactory } from '../parser/expression-parser.js'
 import {
   WhereGrouper,
   parseWhereFilter,
@@ -19,7 +20,7 @@ import {
 } from '../parser/update-set-parser.js'
 import { freeze } from '../util/object-utils.js'
 import { preventAwait } from '../util/prevent-await.js'
-import { AnyColumn, AnyRawBuilder } from '../util/type-utils.js'
+import { AnyColumn } from '../util/type-utils.js'
 import { WhereInterface } from './where-interface.js'
 
 export class OnConflictBuilder<DB, TB extends keyof DB>
@@ -94,7 +95,7 @@ export class OnConflictBuilder<DB, TB extends keyof DB>
    * Also see the {@link column}, {@link columns} and {@link constraint}
    * methods for alternative ways to specify the conflict target.
    */
-  expression(expression: AnyRawBuilder): OnConflictBuilder<DB, TB> {
+  expression(expression: Expression<any>): OnConflictBuilder<DB, TB> {
     return new OnConflictBuilder({
       ...this.#props,
       onConflictNode: OnConflictNode.cloneWith(this.#props.onConflictNode, {
@@ -115,7 +116,7 @@ export class OnConflictBuilder<DB, TB extends keyof DB>
   ): OnConflictBuilder<DB, TB>
 
   where(grouper: WhereGrouper<DB, TB>): OnConflictBuilder<DB, TB>
-  where(raw: AnyRawBuilder): OnConflictBuilder<DB, TB>
+  where(expression: Expression<any>): OnConflictBuilder<DB, TB>
 
   where(...args: any[]): OnConflictBuilder<DB, TB> {
     return new OnConflictBuilder({
@@ -157,7 +158,7 @@ export class OnConflictBuilder<DB, TB extends keyof DB>
     rhs: FilterValueExpressionOrList<DB, TB, RE>
   ): OnConflictBuilder<DB, TB>
   orWhere(grouper: WhereGrouper<DB, TB>): OnConflictBuilder<DB, TB>
-  orWhere(raw: AnyRawBuilder): OnConflictBuilder<DB, TB>
+  orWhere(expression: Expression<any>): OnConflictBuilder<DB, TB>
 
   orWhere(...args: any[]): OnConflictBuilder<DB, TB> {
     return new OnConflictBuilder({
@@ -193,7 +194,9 @@ export class OnConflictBuilder<DB, TB extends keyof DB>
    *
    * See {@link WhereInterface.whereExists} for more info.
    */
-  whereExists(arg: ComplexExpression<DB, TB>): OnConflictBuilder<DB, TB> {
+  whereExists(
+    arg: ExpressionOrFactory<DB, TB, any>
+  ): OnConflictBuilder<DB, TB> {
     return new OnConflictBuilder({
       ...this.#props,
       onConflictNode: OnConflictNode.cloneWithIndexWhere(
@@ -208,7 +211,9 @@ export class OnConflictBuilder<DB, TB extends keyof DB>
    *
    * See {@link WhereInterface.whereNotExists} for more info.
    */
-  whereNotExists(arg: ComplexExpression<DB, TB>): OnConflictBuilder<DB, TB> {
+  whereNotExists(
+    arg: ExpressionOrFactory<DB, TB, any>
+  ): OnConflictBuilder<DB, TB> {
     return new OnConflictBuilder({
       ...this.#props,
       onConflictNode: OnConflictNode.cloneWithIndexWhere(
@@ -223,7 +228,9 @@ export class OnConflictBuilder<DB, TB extends keyof DB>
    *
    * See {@link WhereInterface.orWhereExists} for more info.
    */
-  orWhereExists(arg: ComplexExpression<DB, TB>): OnConflictBuilder<DB, TB> {
+  orWhereExists(
+    arg: ExpressionOrFactory<DB, TB, any>
+  ): OnConflictBuilder<DB, TB> {
     return new OnConflictBuilder({
       ...this.#props,
       onConflictNode: OnConflictNode.cloneWithIndexOrWhere(
@@ -238,7 +245,9 @@ export class OnConflictBuilder<DB, TB extends keyof DB>
    *
    * See {@link WhereInterface.orWhereNotExists} for more info.
    */
-  orWhereNotExists(arg: ComplexExpression<DB, TB>): OnConflictBuilder<DB, TB> {
+  orWhereNotExists(
+    arg: ExpressionOrFactory<DB, TB, any>
+  ): OnConflictBuilder<DB, TB> {
     return new OnConflictBuilder({
       ...this.#props,
       onConflictNode: OnConflictNode.cloneWithIndexOrWhere(
@@ -372,7 +381,7 @@ export class OnConflictUpdateBuilder<DB, TB extends keyof DB>
   ): OnConflictUpdateBuilder<DB, TB>
 
   where(grouper: WhereGrouper<DB, TB>): OnConflictUpdateBuilder<DB, TB>
-  where(raw: AnyRawBuilder): OnConflictUpdateBuilder<DB, TB>
+  where(expression: Expression<any>): OnConflictUpdateBuilder<DB, TB>
 
   where(...args: any[]): OnConflictUpdateBuilder<DB, TB> {
     return new OnConflictUpdateBuilder({
@@ -414,7 +423,7 @@ export class OnConflictUpdateBuilder<DB, TB extends keyof DB>
     rhs: FilterValueExpressionOrList<DB, TB, RE>
   ): OnConflictUpdateBuilder<DB, TB>
   orWhere(grouper: WhereGrouper<DB, TB>): OnConflictUpdateBuilder<DB, TB>
-  orWhere(raw: AnyRawBuilder): OnConflictUpdateBuilder<DB, TB>
+  orWhere(expression: Expression<any>): OnConflictUpdateBuilder<DB, TB>
 
   orWhere(...args: any[]): OnConflictUpdateBuilder<DB, TB> {
     return new OnConflictUpdateBuilder({
@@ -450,7 +459,9 @@ export class OnConflictUpdateBuilder<DB, TB extends keyof DB>
    *
    * See {@link WhereInterface.whereExists} for more info.
    */
-  whereExists(arg: ComplexExpression<DB, TB>): OnConflictUpdateBuilder<DB, TB> {
+  whereExists(
+    arg: ExpressionOrFactory<DB, TB, any>
+  ): OnConflictUpdateBuilder<DB, TB> {
     return new OnConflictUpdateBuilder({
       ...this.#props,
       onConflictNode: OnConflictNode.cloneWithUpdateWhere(
@@ -466,7 +477,7 @@ export class OnConflictUpdateBuilder<DB, TB extends keyof DB>
    * See {@link WhereInterface.whereNotExists} for more info.
    */
   whereNotExists(
-    arg: ComplexExpression<DB, TB>
+    arg: ExpressionOrFactory<DB, TB, any>
   ): OnConflictUpdateBuilder<DB, TB> {
     return new OnConflictUpdateBuilder({
       ...this.#props,
@@ -483,7 +494,7 @@ export class OnConflictUpdateBuilder<DB, TB extends keyof DB>
    * See {@link WhereInterface.orWhereExists} for more info.
    */
   orWhereExists(
-    arg: ComplexExpression<DB, TB>
+    arg: ExpressionOrFactory<DB, TB, any>
   ): OnConflictUpdateBuilder<DB, TB> {
     return new OnConflictUpdateBuilder({
       ...this.#props,
@@ -500,7 +511,7 @@ export class OnConflictUpdateBuilder<DB, TB extends keyof DB>
    * See {@link WhereInterface.orWhereNotExists} for more info.
    */
   orWhereNotExists(
-    arg: ComplexExpression<DB, TB>
+    arg: ExpressionOrFactory<DB, TB, any>
   ): OnConflictUpdateBuilder<DB, TB> {
     return new OnConflictUpdateBuilder({
       ...this.#props,

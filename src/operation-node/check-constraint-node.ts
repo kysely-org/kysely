@@ -1,11 +1,10 @@
 import { OperationNode } from './operation-node.js'
 import { freeze } from '../util/object-utils.js'
-import { RawNode } from './raw-node.js'
 import { IdentifierNode } from './identifier-node.js'
 
 export interface CheckConstraintNode extends OperationNode {
   readonly kind: 'CheckConstraintNode'
-  readonly expression: RawNode
+  readonly expression: OperationNode
   readonly name?: IdentifierNode
 }
 
@@ -17,7 +16,10 @@ export const CheckConstraintNode = freeze({
     return node.kind === 'CheckConstraintNode'
   },
 
-  create(expression: RawNode, constraintName?: string): CheckConstraintNode {
+  create(
+    expression: OperationNode,
+    constraintName?: string
+  ): CheckConstraintNode {
     return freeze({
       kind: 'CheckConstraintNode',
       expression,

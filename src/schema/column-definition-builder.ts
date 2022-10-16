@@ -9,7 +9,6 @@ import { SelectAllNode } from '../operation-node/select-all-node.js'
 import { parseStringReference } from '../parser/reference-parser.js'
 import { preventAwait } from '../util/prevent-await.js'
 import { ColumnDefinitionNode } from '../operation-node/column-definition-node.js'
-import { AnyRawBuilder } from '../util/type-utils.js'
 import {
   DefaultValueExpression,
   parseDefaultValueExpression,
@@ -17,6 +16,7 @@ import {
 import { GeneratedNode } from '../operation-node/generated-node.js'
 import { DefaultValueNode } from '../operation-node/default-value-node.js'
 import { parseOnModifyForeignAction } from '../parser/on-modify-action-parser.js'
+import { Expression } from '../expression/expression.js'
 
 export interface ColumnDefinitionBuilderInterface {
   /**
@@ -140,7 +140,7 @@ export interface ColumnDefinitionBuilderInterface {
    *   .execute()
    * ```
    */
-  check(expression: AnyRawBuilder): ColumnDefinitionBuilderInterface
+  check(expression: Expression<any>): ColumnDefinitionBuilderInterface
 
   /**
    * Makes the column a generated column using a `generated always as` statement.
@@ -158,7 +158,9 @@ export interface ColumnDefinitionBuilderInterface {
    *   .execute()
    * ```
    */
-  generatedAlwaysAs(expression: AnyRawBuilder): ColumnDefinitionBuilderInterface
+  generatedAlwaysAs(
+    expression: Expression<any>
+  ): ColumnDefinitionBuilderInterface
 
   /**
    * Adds the `generated always as identity` specifier on supported dialects.
@@ -284,7 +286,7 @@ export class ColumnDefinitionBuilder
     )
   }
 
-  check(expression: AnyRawBuilder): ColumnDefinitionBuilder {
+  check(expression: Expression<any>): ColumnDefinitionBuilder {
     return new ColumnDefinitionBuilder(
       ColumnDefinitionNode.cloneWith(this.#node, {
         check: CheckConstraintNode.create(expression.toOperationNode()),
@@ -292,7 +294,7 @@ export class ColumnDefinitionBuilder
     )
   }
 
-  generatedAlwaysAs(expression: AnyRawBuilder): ColumnDefinitionBuilder {
+  generatedAlwaysAs(expression: Expression<any>): ColumnDefinitionBuilder {
     return new ColumnDefinitionBuilder(
       ColumnDefinitionNode.cloneWith(this.#node, {
         generated: GeneratedNode.createWithExpression(

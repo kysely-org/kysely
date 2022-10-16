@@ -1,6 +1,8 @@
 export * from './kysely.js'
 export * from './query-creator.js'
 
+export * from './expression/expression.js'
+
 export * from './query-builder/where-interface.js'
 export * from './query-builder/returning-interface.js'
 export * from './query-builder/having-interface.js'
@@ -137,7 +139,6 @@ export * from './operation-node/on-duplicate-key-node.js'
 export * from './operation-node/on-node.js'
 export * from './operation-node/operation-node-source.js'
 export * from './operation-node/operation-node-transformer.js'
-export * from './operation-node/operation-node-utils.js'
 export * from './operation-node/operation-node-visitor.js'
 export * from './operation-node/operation-node.js'
 export * from './operation-node/operator-node.js'
@@ -179,6 +180,9 @@ export * from './util/explainable.js'
 export * from './util/log.js'
 export {
   AnyColumn,
+  AnyColumnWithTable,
+  AnyAliasedColumn,
+  AnyAliasedColumnWithTable,
   UnknownRow,
   AnySelectQueryBuilder,
 } from './util/type-utils.js'
@@ -193,6 +197,8 @@ export {
   ReferenceExpressionOrList,
   SimpleReferenceExpression,
   StringReference,
+  ExtractTypeFromStringReference,
+  ExtractTypeFromReferenceExpression,
 } from './parser/reference-parser.js'
 export {
   ValueExpression,
@@ -218,4 +224,3 @@ export {
   OrderByExpression,
   OrderByDirectionExpression,
 } from './parser/order-by-parser.js'
-export { SetOperationExpression } from './parser/set-operation-parser.js'

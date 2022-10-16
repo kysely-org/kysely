@@ -9,7 +9,7 @@ import {
   NullableInsertKeys,
   InsertType,
 } from '../util/column-type.js'
-import { isComplexExpression } from './complex-expression-parser.js'
+import { isExpressionOrFactory } from './expression-parser.js'
 import { DefaultInsertValueNode } from '../operation-node/default-insert-value-node.js'
 
 export type InsertObject<DB, TB extends keyof DB> = {
@@ -83,7 +83,7 @@ function parseRowValues(
     if (columnIdx !== undefined) {
       const value = row[col]
 
-      if (isComplexExpression(value)) {
+      if (isExpressionOrFactory(value)) {
         complexColumn = true
       }
 

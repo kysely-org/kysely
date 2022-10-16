@@ -1,5 +1,4 @@
-import { Compilable } from './compilable.js'
-import { AnyRawBuilder } from './type-utils.js'
+import { Expression } from '../expression/expression.js'
 
 export type ExplainFormat =
   | 'text'
@@ -12,6 +11,6 @@ export type ExplainFormat =
 export interface Explainable {
   explain<O extends Record<string, any> = Record<string, any>>(
     format?: ExplainFormat,
-    options?: AnyRawBuilder
+    options?: Expression<any>
   ): Promise<O[]>
 }

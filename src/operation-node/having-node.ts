@@ -1,12 +1,11 @@
 import { freeze } from '../util/object-utils.js'
 import { AndNode } from './and-node.js'
-import { FilterExpressionNode } from './operation-node-utils.js'
 import { OperationNode } from './operation-node.js'
 import { OrNode } from './or-node.js'
 
 export interface HavingNode extends OperationNode {
   readonly kind: 'HavingNode'
-  readonly having: FilterExpressionNode
+  readonly having: OperationNode
 }
 
 /**
@@ -17,7 +16,7 @@ export const HavingNode = freeze({
     return node.kind === 'HavingNode'
   },
 
-  create(filter: FilterExpressionNode): HavingNode {
+  create(filter: OperationNode): HavingNode {
     return freeze({
       kind: 'HavingNode',
       having: filter,
@@ -27,7 +26,7 @@ export const HavingNode = freeze({
   cloneWithFilter(
     havingNode: HavingNode,
     op: 'And' | 'Or',
-    filter: FilterExpressionNode
+    filter: OperationNode
   ): HavingNode {
     return freeze({
       ...havingNode,

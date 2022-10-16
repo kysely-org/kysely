@@ -1,9 +1,7 @@
 import { freeze } from '../util/object-utils.js'
-import { ColumnNode } from './column-node.js'
-import { SimpleReferenceExpressionNode } from './operation-node-utils.js'
 import { OperationNode } from './operation-node.js'
 import { OverNode } from './over-node.js'
-import { ReferenceNode } from './reference-node.js'
+import { SimpleReferenceExpressionNode } from './simple-reference-expression-node.js'
 
 type AggregateFunction = 'avg' | 'count' | 'max' | 'min' | 'sum'
 
