@@ -90,6 +90,18 @@ async function testCoalesceMultiple(db: Kysely<Database>) {
     .groupBy(['last_name', 'first_name', 'age'])
     .execute()
   expectType<{ field: string }>(r2)
+
+  // string | null, string -> string
+  const [r3] = await db
+    .selectFrom('person')
+    .select(
+      coalesce(
+        db.fn.max<string | null, 'first_name'>('first_name'),
+        sql<string>`${sql.literal('N/A')}`
+      ).as('max_first_name')
+    )
+    .execute()
+  expectType<{ max_first_name: string }>(r3)
 }
 
 function value<V>(value: V): RawBuilder<V> {
