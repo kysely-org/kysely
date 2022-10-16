@@ -13,11 +13,7 @@ import {
 } from '../parser/insert-values-parser.js'
 import { InsertQueryNode } from '../operation-node/insert-query-node.js'
 import { QueryNode } from '../operation-node/query-node.js'
-import {
-  AnyRawBuilder,
-  MergePartial,
-  SingleResultType,
-} from '../util/type-utils.js'
+import { MergePartial, SingleResultType } from '../util/type-utils.js'
 import {
   MutationObject,
   parseUpdateObject,
@@ -33,9 +29,9 @@ import { KyselyPlugin } from '../plugin/kysely-plugin.js'
 import { ReturningRow } from '../parser/returning-parser.js'
 import { NoResultError, NoResultErrorConstructor } from './no-result-error.js'
 import {
-  ComplexExpression,
-  parseComplexExpression,
-} from '../parser/complex-expression-parser.js'
+  ExpressionOrFactory,
+  parseExpression,
+} from '../parser/expression-parser.js'
 import { ColumnNode } from '../operation-node/column-node.js'
 import { ReturningInterface } from './returning-interface.js'
 import {
@@ -47,6 +43,7 @@ import { OnConflictNode } from '../operation-node/on-conflict-node.js'
 import { Selectable } from '../util/column-type.js'
 import { Explainable, ExplainFormat } from '../util/explainable.js'
 import { ExplainNode } from '../operation-node/explain-node.js'
+import { Expression } from '../expression/expression.js'
 
 export class InsertQueryBuilder<DB, TB extends keyof DB, O>
   implements
@@ -257,12 +254,12 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    * ```
    */
   expression(
-    expression: ComplexExpression<DB, TB>
+    expression: ExpressionOrFactory<DB, TB, any>
   ): InsertQueryBuilder<DB, TB, O> {
     return new InsertQueryBuilder({
       ...this.#props,
       queryNode: InsertQueryNode.cloneWith(this.#props.queryNode, {
-        values: parseComplexExpression(expression),
+        values: parseExpression(expression),
       }),
     })
   }
@@ -707,12 +704,12 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    */
   async explain<ER extends Record<string, any> = Record<string, any>>(
     format?: ExplainFormat,
-    options?: AnyRawBuilder
+    options?: Expression<any>
   ): Promise<ER[]> {
     const builder = new InsertQueryBuilder<DB, TB, ER>({
       ...this.#props,
       queryNode: InsertQueryNode.cloneWith(this.#props.queryNode, {
-        explain: ExplainNode.create(format, options),
+        explain: ExplainNode.create(format, options?.toOperationNode()),
       }),
     })
 

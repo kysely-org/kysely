@@ -31,12 +31,7 @@ import {
 import { ReturningRow } from '../parser/returning-parser.js'
 import { ReferenceExpression } from '../parser/reference-parser.js'
 import { QueryNode } from '../operation-node/query-node.js'
-import {
-  AnyRawBuilder,
-  MergePartial,
-  Nullable,
-  SingleResultType,
-} from '../util/type-utils.js'
+import { MergePartial, Nullable, SingleResultType } from '../util/type-utils.js'
 import { UpdateQueryNode } from '../operation-node/update-query-node.js'
 import {
   MutationObject,
@@ -53,10 +48,9 @@ import { WhereInterface } from './where-interface.js'
 import { ReturningInterface } from './returning-interface.js'
 import { NoResultError, NoResultErrorConstructor } from './no-result-error.js'
 import { Selectable } from '../util/column-type.js'
-import { AliasedQueryBuilder } from './select-query-builder.js'
-import { AliasedRawBuilder } from '../raw-builder/raw-builder.js'
 import { Explainable, ExplainFormat } from '../util/explainable.js'
 import { ExplainNode } from '../operation-node/explain-node.js'
+import { AliasedExpression, Expression } from '../expression/expression.js'
 
 export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
   implements
@@ -79,7 +73,7 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
   ): UpdateQueryBuilder<DB, UT, TB, O>
 
   where(grouper: WhereGrouper<DB, TB>): UpdateQueryBuilder<DB, UT, TB, O>
-  where(raw: AnyRawBuilder): UpdateQueryBuilder<DB, UT, TB, O>
+  where(expression: Expression<any>): UpdateQueryBuilder<DB, UT, TB, O>
 
   where(...args: any[]): any {
     return new UpdateQueryBuilder({
@@ -112,7 +106,7 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
   ): UpdateQueryBuilder<DB, UT, TB, O>
 
   orWhere(grouper: WhereGrouper<DB, TB>): UpdateQueryBuilder<DB, UT, TB, O>
-  orWhere(raw: AnyRawBuilder): UpdateQueryBuilder<DB, UT, TB, O>
+  orWhere(expression: Expression<any>): UpdateQueryBuilder<DB, UT, TB, O>
 
   orWhere(...args: any[]): any {
     return new UpdateQueryBuilder({
@@ -761,13 +755,13 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
    */
   async explain<ER extends Record<string, any> = Record<string, any>>(
     format?: ExplainFormat,
-    options?: AnyRawBuilder
+    options?: Expression<any>
   ): Promise<ER[]> {
     const builder = new UpdateQueryBuilder<DB, UT, TB, ER>({
       ...this.#props,
       queryNode: UpdateQueryNode.cloneWithExplain(
         this.#props.queryNode,
-        ExplainNode.create(format, options)
+        ExplainNode.create(format, options?.toOperationNode())
       ),
     })
 
@@ -798,14 +792,10 @@ export type UpdateQueryBuilderWithInnerJoin<
     : never
   : TE extends keyof DB
   ? UpdateQueryBuilder<DB, UT, TB | TE, O>
-  : TE extends AliasedQueryBuilder<any, any, infer QO, infer QA>
+  : TE extends AliasedExpression<infer QO, infer QA>
   ? InnerJoinedBuilder<DB, UT, TB, O, QA, QO>
-  : TE extends (qb: any) => AliasedQueryBuilder<any, any, infer QO, infer QA>
+  : TE extends (qb: any) => AliasedExpression<infer QO, infer QA>
   ? InnerJoinedBuilder<DB, UT, TB, O, QA, QO>
-  : TE extends AliasedRawBuilder<infer RO, infer RA>
-  ? InnerJoinedBuilder<DB, UT, TB, O, RA, RO>
-  : TE extends (qb: any) => AliasedRawBuilder<infer RO, infer RA>
-  ? InnerJoinedBuilder<DB, UT, TB, O, RA, RO>
   : never
 
 type InnerJoinedBuilder<
@@ -836,14 +826,10 @@ export type UpdateQueryBuilderWithLeftJoin<
     : never
   : TE extends keyof DB
   ? LeftJoinedBuilder<DB, UT, TB, O, TE, DB[TE]>
-  : TE extends AliasedQueryBuilder<any, any, infer QO, infer QA>
+  : TE extends AliasedExpression<infer QO, infer QA>
   ? LeftJoinedBuilder<DB, UT, TB, O, QA, QO>
-  : TE extends (qb: any) => AliasedQueryBuilder<any, any, infer QO, infer QA>
+  : TE extends (qb: any) => AliasedExpression<infer QO, infer QA>
   ? LeftJoinedBuilder<DB, UT, TB, O, QA, QO>
-  : TE extends AliasedRawBuilder<infer RO, infer RA>
-  ? LeftJoinedBuilder<DB, UT, TB, O, RA, RO>
-  : TE extends (qb: any) => AliasedRawBuilder<infer RO, infer RA>
-  ? LeftJoinedBuilder<DB, UT, TB, O, RA, RO>
   : never
 
 type LeftJoinedBuilder<
@@ -878,14 +864,10 @@ export type UpdateQueryBuilderWithRightJoin<
     : never
   : TE extends keyof DB
   ? RightJoinedBuilder<DB, UT, TB, O, TE, DB[TE]>
-  : TE extends AliasedQueryBuilder<any, any, infer QO, infer QA>
+  : TE extends AliasedExpression<infer QO, infer QA>
   ? RightJoinedBuilder<DB, UT, TB, O, QA, QO>
-  : TE extends (qb: any) => AliasedQueryBuilder<any, any, infer QO, infer QA>
+  : TE extends (qb: any) => AliasedExpression<infer QO, infer QA>
   ? RightJoinedBuilder<DB, UT, TB, O, QA, QO>
-  : TE extends AliasedRawBuilder<infer RO, infer RA>
-  ? RightJoinedBuilder<DB, UT, TB, O, RA, RO>
-  : TE extends (qb: any) => AliasedRawBuilder<infer RO, infer RA>
-  ? RightJoinedBuilder<DB, UT, TB, O, RA, RO>
   : never
 
 type RightJoinedBuilder<
@@ -919,14 +901,10 @@ export type UpdateQueryBuilderWithFullJoin<
     : never
   : TE extends keyof DB
   ? OuterJoinedBuilder<DB, UT, TB, O, TE, DB[TE]>
-  : TE extends AliasedQueryBuilder<any, any, infer QO, infer QA>
+  : TE extends AliasedExpression<infer QO, infer QA>
   ? OuterJoinedBuilder<DB, UT, TB, O, QA, QO>
-  : TE extends (qb: any) => AliasedQueryBuilder<any, any, infer QO, infer QA>
+  : TE extends (qb: any) => AliasedExpression<infer QO, infer QA>
   ? OuterJoinedBuilder<DB, UT, TB, O, QA, QO>
-  : TE extends AliasedRawBuilder<infer RO, infer RA>
-  ? OuterJoinedBuilder<DB, UT, TB, O, RA, RO>
-  : TE extends (qb: any) => AliasedRawBuilder<infer RO, infer RA>
-  ? OuterJoinedBuilder<DB, UT, TB, O, RA, RO>
   : never
 
 type OuterJoinedBuilder<

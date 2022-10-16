@@ -1,10 +1,9 @@
-import { ColumnNode } from '../operation-node/column-node.js'
 import {
   isOperationNodeSource,
   OperationNodeSource,
 } from '../operation-node/operation-node-source.js'
-import { ReferenceNode } from '../operation-node/reference-node.js'
-import { parseStringReference } from '../parser/reference-parser.js'
+import { SimpleReferenceExpressionNode } from '../operation-node/simple-reference-expression-node.js'
+import { parseSimpleReferenceExpression } from '../parser/reference-parser.js'
 import { isObject, isString } from '../util/object-utils.js'
 
 export class DynamicReferenceBuilder<R extends string = never>
@@ -32,8 +31,8 @@ export class DynamicReferenceBuilder<R extends string = never>
     this.#dynamicReference = reference
   }
 
-  toOperationNode(): ReferenceNode | ColumnNode {
-    return parseStringReference(this.#dynamicReference)
+  toOperationNode(): SimpleReferenceExpressionNode {
+    return parseSimpleReferenceExpression(this.#dynamicReference)
   }
 }
 

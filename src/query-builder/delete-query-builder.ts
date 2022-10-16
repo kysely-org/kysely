@@ -25,12 +25,7 @@ import {
 import { ReturningRow } from '../parser/returning-parser.js'
 import { ReferenceExpression } from '../parser/reference-parser.js'
 import { QueryNode } from '../operation-node/query-node.js'
-import {
-  AnyRawBuilder,
-  MergePartial,
-  Nullable,
-  SingleResultType,
-} from '../util/type-utils.js'
+import { MergePartial, Nullable, SingleResultType } from '../util/type-utils.js'
 import { preventAwait } from '../util/prevent-await.js'
 import { Compilable } from '../util/compilable.js'
 import { QueryExecutor } from '../query-executor/query-executor.js'
@@ -49,10 +44,9 @@ import {
   OrderByExpression,
   parseOrderBy,
 } from '../parser/order-by-parser.js'
-import { AliasedQueryBuilder } from './select-query-builder.js'
-import { AliasedRawBuilder } from '../raw-builder/raw-builder.js'
 import { Explainable, ExplainFormat } from '../util/explainable.js'
 import { ExplainNode } from '../operation-node/explain-node.js'
+import { AliasedExpression, Expression } from '../expression/expression.js'
 
 export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
   implements
@@ -75,7 +69,7 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
   ): DeleteQueryBuilder<DB, TB, O>
 
   where(grouper: WhereGrouper<DB, TB>): DeleteQueryBuilder<DB, TB, O>
-  where(raw: AnyRawBuilder): DeleteQueryBuilder<DB, TB, O>
+  where(expression: Expression<any>): DeleteQueryBuilder<DB, TB, O>
 
   where(...args: any[]): any {
     return new DeleteQueryBuilder({
@@ -108,7 +102,7 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
   ): DeleteQueryBuilder<DB, TB, O>
 
   orWhere(grouper: WhereGrouper<DB, TB>): DeleteQueryBuilder<DB, TB, O>
-  orWhere(raw: AnyRawBuilder): DeleteQueryBuilder<DB, TB, O>
+  orWhere(expression: Expression<any>): DeleteQueryBuilder<DB, TB, O>
 
   orWhere(...args: any[]): any {
     return new DeleteQueryBuilder({
@@ -664,13 +658,13 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
    */
   async explain<ER extends Record<string, any> = Record<string, any>>(
     format?: ExplainFormat,
-    options?: AnyRawBuilder
+    options?: Expression<any>
   ): Promise<ER[]> {
     const builder = new DeleteQueryBuilder<DB, TB, ER>({
       ...this.#props,
       queryNode: DeleteQueryNode.cloneWithExplain(
         this.#props.queryNode,
-        ExplainNode.create(format, options)
+        ExplainNode.create(format, options?.toOperationNode())
       ),
     })
 
@@ -700,14 +694,10 @@ export type DeleteQueryBuilderWithInnerJoin<
     : never
   : TE extends keyof DB
   ? DeleteQueryBuilder<DB, TB | TE, O>
-  : TE extends AliasedQueryBuilder<any, any, infer QO, infer QA>
+  : TE extends AliasedExpression<infer QO, infer QA>
   ? InnerJoinedBuilder<DB, TB, O, QA, QO>
-  : TE extends (qb: any) => AliasedQueryBuilder<any, any, infer QO, infer QA>
+  : TE extends (qb: any) => AliasedExpression<infer QO, infer QA>
   ? InnerJoinedBuilder<DB, TB, O, QA, QO>
-  : TE extends AliasedRawBuilder<infer RO, infer RA>
-  ? InnerJoinedBuilder<DB, TB, O, RA, RO>
-  : TE extends (qb: any) => AliasedRawBuilder<infer RO, infer RA>
-  ? InnerJoinedBuilder<DB, TB, O, RA, RO>
   : never
 
 type InnerJoinedBuilder<
@@ -736,14 +726,10 @@ export type DeleteQueryBuilderWithLeftJoin<
     : never
   : TE extends keyof DB
   ? LeftJoinedBuilder<DB, TB, O, TE, DB[TE]>
-  : TE extends AliasedQueryBuilder<any, any, infer QO, infer QA>
+  : TE extends AliasedExpression<infer QO, infer QA>
   ? LeftJoinedBuilder<DB, TB, O, QA, QO>
-  : TE extends (qb: any) => AliasedQueryBuilder<any, any, infer QO, infer QA>
+  : TE extends (qb: any) => AliasedExpression<infer QO, infer QA>
   ? LeftJoinedBuilder<DB, TB, O, QA, QO>
-  : TE extends AliasedRawBuilder<infer RO, infer RA>
-  ? LeftJoinedBuilder<DB, TB, O, RA, RO>
-  : TE extends (qb: any) => AliasedRawBuilder<infer RO, infer RA>
-  ? LeftJoinedBuilder<DB, TB, O, RA, RO>
   : never
 
 type LeftJoinedBuilder<
@@ -776,14 +762,10 @@ export type DeleteQueryBuilderWithRightJoin<
     : never
   : TE extends keyof DB
   ? RightJoinedBuilder<DB, TB, O, TE, DB[TE]>
-  : TE extends AliasedQueryBuilder<any, any, infer QO, infer QA>
+  : TE extends AliasedExpression<infer QO, infer QA>
   ? RightJoinedBuilder<DB, TB, O, QA, QO>
-  : TE extends (qb: any) => AliasedQueryBuilder<any, any, infer QO, infer QA>
+  : TE extends (qb: any) => AliasedExpression<infer QO, infer QA>
   ? RightJoinedBuilder<DB, TB, O, QA, QO>
-  : TE extends AliasedRawBuilder<infer RO, infer RA>
-  ? RightJoinedBuilder<DB, TB, O, RA, RO>
-  : TE extends (qb: any) => AliasedRawBuilder<infer RO, infer RA>
-  ? RightJoinedBuilder<DB, TB, O, RA, RO>
   : never
 
 type RightJoinedBuilder<
@@ -815,14 +797,10 @@ export type DeleteQueryBuilderWithFullJoin<
     : never
   : TE extends keyof DB
   ? OuterJoinedBuilder<DB, TB, O, TE, DB[TE]>
-  : TE extends AliasedQueryBuilder<any, any, infer QO, infer QA>
+  : TE extends AliasedExpression<infer QO, infer QA>
   ? OuterJoinedBuilder<DB, TB, O, QA, QO>
-  : TE extends (qb: any) => AliasedQueryBuilder<any, any, infer QO, infer QA>
+  : TE extends (qb: any) => AliasedExpression<infer QO, infer QA>
   ? OuterJoinedBuilder<DB, TB, O, QA, QO>
-  : TE extends AliasedRawBuilder<infer RO, infer RA>
-  ? OuterJoinedBuilder<DB, TB, O, RA, RO>
-  : TE extends (qb: any) => AliasedRawBuilder<infer RO, infer RA>
-  ? OuterJoinedBuilder<DB, TB, O, RA, RO>
   : never
 
 type OuterJoinedBuilder<

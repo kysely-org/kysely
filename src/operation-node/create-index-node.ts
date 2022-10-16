@@ -1,7 +1,5 @@
 import { freeze } from '../util/object-utils.js'
-import { ColumnNode } from './column-node.js'
 import { IdentifierNode } from './identifier-node.js'
-import { ListNode } from './list-node.js'
 import { OperationNode } from './operation-node.js'
 import { RawNode } from './raw-node.js'
 import { TableNode } from './table-node.js'
@@ -16,7 +14,7 @@ export interface CreateIndexNode extends OperationNode {
   // same as the target table's schema.
   readonly name: IdentifierNode
   readonly table?: TableNode
-  readonly expression?: ColumnNode | ListNode | RawNode
+  readonly expression?: OperationNode
   readonly unique?: boolean
   // TODO(samiko): Do we need to add an `IndexTypeNode` for consistency?
   //               This would then be of type `IndexTypeNode | RawNode`.

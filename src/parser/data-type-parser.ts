@@ -1,16 +1,16 @@
+import { Expression } from '../expression/expression.js'
 import {
   ColumnDataType,
   DataTypeNode,
 } from '../operation-node/data-type-node.js'
 import { isOperationNodeSource } from '../operation-node/operation-node-source.js'
-import { RawNode } from '../operation-node/raw-node.js'
-import { AnyRawBuilder } from '../util/type-utils.js'
+import { OperationNode } from '../operation-node/operation-node.js'
 
-export type DataTypeExpression = ColumnDataType | AnyRawBuilder
+export type DataTypeExpression = ColumnDataType | Expression<any>
 
 export function parseDataTypeExpression(
   dataType: DataTypeExpression
-): DataTypeNode | RawNode {
+): OperationNode {
   return isOperationNodeSource(dataType)
     ? dataType.toOperationNode()
     : DataTypeNode.create(dataType)

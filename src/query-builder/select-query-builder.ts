@@ -1,5 +1,4 @@
 import { AliasNode } from '../operation-node/alias-node.js'
-import { OperationNodeSource } from '../operation-node/operation-node-source.js'
 import { CompiledQuery } from '../query-compiler/compiled-query.js'
 import { SelectModifierNode } from '../operation-node/select-modifier-node.js'
 import {
@@ -31,12 +30,7 @@ import {
 import { ReferenceExpression } from '../parser/reference-parser.js'
 import { SelectQueryNode } from '../operation-node/select-query-node.js'
 import { QueryNode } from '../operation-node/query-node.js'
-import {
-  AnyRawBuilder,
-  MergePartial,
-  Nullable,
-  SingleResultType,
-} from '../util/type-utils.js'
+import { MergePartial, Nullable, SingleResultType } from '../util/type-utils.js'
 import {
   OrderByDirectionExpression,
   OrderByExpression,
@@ -59,19 +53,16 @@ import { WhereInterface } from './where-interface.js'
 import { NoResultError, NoResultErrorConstructor } from './no-result-error.js'
 import { HavingInterface } from './having-interface.js'
 import { IdentifierNode } from '../operation-node/identifier-node.js'
-import { AliasedRawBuilder } from '../raw-builder/raw-builder.js'
 import { Explainable, ExplainFormat } from '../util/explainable.js'
 import { ExplainNode } from '../operation-node/explain-node.js'
-import {
-  parseSetOperation,
-  SetOperationExpression,
-} from '../parser/set-operation-parser.js'
+import { parseSetOperation } from '../parser/set-operation-parser.js'
+import { AliasedExpression, Expression } from '../expression/expression.js'
 
 export class SelectQueryBuilder<DB, TB extends keyof DB, O>
   implements
     WhereInterface<DB, TB>,
     HavingInterface<DB, TB>,
-    OperationNodeSource,
+    Expression<O>,
     Compilable,
     Explainable
 {
@@ -81,6 +72,11 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
     this.#props = freeze(props)
   }
 
+  /** @private */
+  get expressionType(): O | undefined {
+    return undefined
+  }
+
   where<RE extends ReferenceExpression<DB, TB>>(
     lhs: RE,
     op: FilterOperator,
@@ -88,7 +84,7 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
   ): SelectQueryBuilder<DB, TB, O>
 
   where(grouper: WhereGrouper<DB, TB>): SelectQueryBuilder<DB, TB, O>
-  where(raw: AnyRawBuilder): SelectQueryBuilder<DB, TB, O>
+  where(expression: Expression<any>): SelectQueryBuilder<DB, TB, O>
 
   where(...args: any[]): any {
     return new SelectQueryBuilder({
@@ -121,7 +117,7 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
   ): SelectQueryBuilder<DB, TB, O>
 
   orWhere(grouper: WhereGrouper<DB, TB>): SelectQueryBuilder<DB, TB, O>
-  orWhere(raw: AnyRawBuilder): SelectQueryBuilder<DB, TB, O>
+  orWhere(expression: Expression<any>): SelectQueryBuilder<DB, TB, O>
 
   orWhere(...args: any[]): any {
     return new SelectQueryBuilder({
@@ -197,7 +193,7 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
 
   having(grouper: HavingGrouper<DB, TB>): SelectQueryBuilder<DB, TB, O>
 
-  having(raw: AnyRawBuilder): SelectQueryBuilder<DB, TB, O>
+  having(expression: Expression<any>): SelectQueryBuilder<DB, TB, O>
 
   having(...args: any[]): any {
     return new SelectQueryBuilder({
@@ -231,7 +227,7 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
 
   orHaving(grouper: HavingGrouper<DB, TB>): SelectQueryBuilder<DB, TB, O>
 
-  orHaving(raw: AnyRawBuilder): SelectQueryBuilder<DB, TB, O>
+  orHaving(expression: Expression<any>): SelectQueryBuilder<DB, TB, O>
 
   orHaving(...args: any[]): any {
     return new SelectQueryBuilder({
@@ -554,12 +550,12 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    * from `person`
    * ```
    */
-  modifyFront(modifier: AnyRawBuilder): SelectQueryBuilder<DB, TB, O> {
+  modifyFront(modifier: Expression<any>): SelectQueryBuilder<DB, TB, O> {
     return new SelectQueryBuilder({
       ...this.#props,
       queryNode: SelectQueryNode.cloneWithFrontModifier(
         this.#props.queryNode,
-        SelectModifierNode.createWithRaw(modifier.toOperationNode())
+        SelectModifierNode.createWithExpression(modifier.toOperationNode())
       ),
     })
   }
@@ -587,12 +583,12 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    * for update
    * ```
    */
-  modifyEnd(modifier: AnyRawBuilder): SelectQueryBuilder<DB, TB, O> {
+  modifyEnd(modifier: Expression<any>): SelectQueryBuilder<DB, TB, O> {
     return new SelectQueryBuilder({
       ...this.#props,
       queryNode: SelectQueryNode.cloneWithEndModifier(
         this.#props.queryNode,
-        SelectModifierNode.createWithRaw(modifier.toOperationNode())
+        SelectModifierNode.createWithExpression(modifier.toOperationNode())
       ),
     })
   }
@@ -1336,9 +1332,7 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    *   .orderBy('name')
    * ```
    */
-  union(
-    expression: SetOperationExpression<DB, O>
-  ): SelectQueryBuilder<DB, TB, O> {
+  union(expression: Expression<O>): SelectQueryBuilder<DB, TB, O> {
     return new SelectQueryBuilder({
       ...this.#props,
       queryNode: SelectQueryNode.cloneWithSetOperation(
@@ -1362,9 +1356,7 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    *   .orderBy('name')
    * ```
    */
-  unionAll(
-    expression: SetOperationExpression<DB, O>
-  ): SelectQueryBuilder<DB, TB, O> {
+  unionAll(expression: Expression<O>): SelectQueryBuilder<DB, TB, O> {
     return new SelectQueryBuilder({
       ...this.#props,
       queryNode: SelectQueryNode.cloneWithSetOperation(
@@ -1388,9 +1380,7 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    *   .orderBy('name')
    * ```
    */
-  intersect(
-    expression: SetOperationExpression<DB, O>
-  ): SelectQueryBuilder<DB, TB, O> {
+  intersect(expression: Expression<O>): SelectQueryBuilder<DB, TB, O> {
     return new SelectQueryBuilder({
       ...this.#props,
       queryNode: SelectQueryNode.cloneWithSetOperation(
@@ -1414,9 +1404,7 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    *   .orderBy('name')
    * ```
    */
-  intersectAll(
-    expression: SetOperationExpression<DB, O>
-  ): SelectQueryBuilder<DB, TB, O> {
+  intersectAll(expression: Expression<O>): SelectQueryBuilder<DB, TB, O> {
     return new SelectQueryBuilder({
       ...this.#props,
       queryNode: SelectQueryNode.cloneWithSetOperation(
@@ -1440,9 +1428,7 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    *   .orderBy('name')
    * ```
    */
-  except(
-    expression: SetOperationExpression<DB, O>
-  ): SelectQueryBuilder<DB, TB, O> {
+  except(expression: Expression<O>): SelectQueryBuilder<DB, TB, O> {
     return new SelectQueryBuilder({
       ...this.#props,
       queryNode: SelectQueryNode.cloneWithSetOperation(
@@ -1466,9 +1452,7 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    *   .orderBy('name')
    * ```
    */
-  exceptAll(
-    expression: SetOperationExpression<DB, O>
-  ): SelectQueryBuilder<DB, TB, O> {
+  exceptAll(expression: Expression<O>): SelectQueryBuilder<DB, TB, O> {
     return new SelectQueryBuilder({
       ...this.#props,
       queryNode: SelectQueryNode.cloneWithSetOperation(
@@ -1586,8 +1570,8 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    * pets[0].owner_first_name
    * ```
    */
-  as<A extends string>(alias: A): AliasedQueryBuilder<DB, TB, O, A> {
-    return new AliasedQueryBuilder(this, alias)
+  as<A extends string>(alias: A): AliasedSelectQueryBuilder<DB, TB, O, A> {
+    return new AliasedSelectQueryBuilder(this, alias)
   }
 
   /**
@@ -1746,13 +1730,13 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    */
   async explain<ER extends Record<string, any> = Record<string, any>>(
     format?: ExplainFormat,
-    options?: AnyRawBuilder
+    options?: Expression<any>
   ): Promise<ER[]> {
     const builder = new SelectQueryBuilder<DB, TB, ER>({
       ...this.#props,
       queryNode: SelectQueryNode.cloneWithExplain(
         this.#props.queryNode,
-        ExplainNode.create(format, options)
+        ExplainNode.create(format, options?.toOperationNode())
       ),
     })
 
@@ -1774,12 +1758,13 @@ export interface SelectQueryBuilderProps {
 /**
  * {@link SelectQueryBuilder} with an alias. The result of calling {@link SelectQueryBuilder.as}.
  */
-export class AliasedQueryBuilder<
+export class AliasedSelectQueryBuilder<
   DB,
   TB extends keyof DB,
   O = undefined,
   A extends string = never
-> {
+> implements AliasedExpression<O, A>
+{
   readonly #queryBuilder: SelectQueryBuilder<DB, TB, O>
   readonly #alias: A
 
@@ -1788,21 +1773,21 @@ export class AliasedQueryBuilder<
     this.#alias = alias
   }
 
-  /**
-   * @private
-   *
-   * This needs to be here just so that the typings work. Without this
-   * the generated .d.ts file contains no reference to the type param A
-   * which causes this type to be equal to AliasedQueryBuilder with any A
-   * as long as D, TB and O are the same.
-   */
-  protected get alias(): A {
+  /** @private */
+  get expression(): Expression<O> {
+    return this.#queryBuilder
+  }
+
+  /** @private */
+  get alias(): A {
     return this.#alias
   }
 
   toOperationNode(): AliasNode {
-    const node = this.#queryBuilder.toOperationNode()
-    return AliasNode.create(node, IdentifierNode.create(this.#alias))
+    return AliasNode.create(
+      this.#queryBuilder.toOperationNode(),
+      IdentifierNode.create(this.#alias)
+    )
   }
 }
 
@@ -1817,14 +1802,10 @@ export type SelectQueryBuilderWithInnerJoin<
     : never
   : TE extends keyof DB
   ? SelectQueryBuilder<DB, TB | TE, O>
-  : TE extends AliasedQueryBuilder<any, any, infer QO, infer QA>
+  : TE extends AliasedExpression<infer QO, infer QA>
   ? InnerJoinedBuilder<DB, TB, O, QA, QO>
-  : TE extends (qb: any) => AliasedQueryBuilder<any, any, infer QO, infer QA>
+  : TE extends (qb: any) => AliasedExpression<infer QO, infer QA>
   ? InnerJoinedBuilder<DB, TB, O, QA, QO>
-  : TE extends AliasedRawBuilder<infer RO, infer RA>
-  ? InnerJoinedBuilder<DB, TB, O, RA, RO>
-  : TE extends (qb: any) => AliasedRawBuilder<infer RO, infer RA>
-  ? InnerJoinedBuilder<DB, TB, O, RA, RO>
   : never
 
 type InnerJoinedBuilder<
@@ -1853,14 +1834,10 @@ export type SelectQueryBuilderWithLeftJoin<
     : never
   : TE extends keyof DB
   ? LeftJoinedBuilder<DB, TB, O, TE, DB[TE]>
-  : TE extends AliasedQueryBuilder<any, any, infer QO, infer QA>
+  : TE extends AliasedExpression<infer QO, infer QA>
   ? LeftJoinedBuilder<DB, TB, O, QA, QO>
-  : TE extends (qb: any) => AliasedQueryBuilder<any, any, infer QO, infer QA>
+  : TE extends (qb: any) => AliasedExpression<infer QO, infer QA>
   ? LeftJoinedBuilder<DB, TB, O, QA, QO>
-  : TE extends AliasedRawBuilder<infer RO, infer RA>
-  ? LeftJoinedBuilder<DB, TB, O, RA, RO>
-  : TE extends (qb: any) => AliasedRawBuilder<infer RO, infer RA>
-  ? LeftJoinedBuilder<DB, TB, O, RA, RO>
   : never
 
 type LeftJoinedBuilder<
@@ -1893,14 +1870,10 @@ export type SelectQueryBuilderWithRightJoin<
     : never
   : TE extends keyof DB
   ? RightJoinedBuilder<DB, TB, O, TE, DB[TE]>
-  : TE extends AliasedQueryBuilder<any, any, infer QO, infer QA>
+  : TE extends AliasedExpression<infer QO, infer QA>
   ? RightJoinedBuilder<DB, TB, O, QA, QO>
-  : TE extends (qb: any) => AliasedQueryBuilder<any, any, infer QO, infer QA>
+  : TE extends (qb: any) => AliasedExpression<infer QO, infer QA>
   ? RightJoinedBuilder<DB, TB, O, QA, QO>
-  : TE extends AliasedRawBuilder<infer RO, infer RA>
-  ? RightJoinedBuilder<DB, TB, O, RA, RO>
-  : TE extends (qb: any) => AliasedRawBuilder<infer RO, infer RA>
-  ? RightJoinedBuilder<DB, TB, O, RA, RO>
   : never
 
 type RightJoinedBuilder<
@@ -1932,14 +1905,10 @@ export type SelectQueryBuilderWithFullJoin<
     : never
   : TE extends keyof DB
   ? OuterJoinedBuilder<DB, TB, O, TE, DB[TE]>
-  : TE extends AliasedQueryBuilder<any, any, infer QO, infer QA>
+  : TE extends AliasedExpression<infer QO, infer QA>
   ? OuterJoinedBuilder<DB, TB, O, QA, QO>
-  : TE extends (qb: any) => AliasedQueryBuilder<any, any, infer QO, infer QA>
+  : TE extends (qb: any) => AliasedExpression<infer QO, infer QA>
   ? OuterJoinedBuilder<DB, TB, O, QA, QO>
-  : TE extends AliasedRawBuilder<infer RO, infer RA>
-  ? OuterJoinedBuilder<DB, TB, O, RA, RO>
-  : TE extends (qb: any) => AliasedRawBuilder<infer RO, infer RA>
-  ? OuterJoinedBuilder<DB, TB, O, RA, RO>
   : never
 
 type OuterJoinedBuilder<

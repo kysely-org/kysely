@@ -4,7 +4,6 @@ import { TableNode } from './table-node.js'
 import { ConstraintNode } from './constraint-node.js'
 import { ColumnDefinitionNode } from './column-definition-node.js'
 import { ArrayItemType } from '../util/type-utils.js'
-import { RawNode } from './raw-node.js'
 
 export const ON_COMMIT_ACTIONS = ['preserve rows', 'delete rows', 'drop']
 export type OnCommitAction = ArrayItemType<typeof ON_COMMIT_ACTIONS>
@@ -27,8 +26,8 @@ export interface CreateTableNode extends OperationNode {
   readonly temporary?: boolean
   readonly ifNotExists?: boolean
   readonly onCommit?: OnCommitAction
-  readonly frontModifiers?: ReadonlyArray<RawNode>
-  readonly endModifiers?: ReadonlyArray<RawNode>
+  readonly frontModifiers?: ReadonlyArray<OperationNode>
+  readonly endModifiers?: ReadonlyArray<OperationNode>
 }
 
 /**
@@ -71,7 +70,7 @@ export const CreateTableNode = freeze({
 
   cloneWithFrontModifier(
     createTable: CreateTableNode,
-    modifier: RawNode
+    modifier: OperationNode
   ): CreateTableNode {
     return freeze({
       ...createTable,
@@ -83,7 +82,7 @@ export const CreateTableNode = freeze({
 
   cloneWithEndModifier(
     createTable: CreateTableNode,
-    modifier: RawNode
+    modifier: OperationNode
   ): CreateTableNode {
     return freeze({
       ...createTable,

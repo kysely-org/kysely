@@ -1,9 +1,5 @@
 import { AliasNode } from '../operation-node/alias-node.js'
 import { ColumnNode } from '../operation-node/column-node.js'
-import {
-  ReferenceExpressionNode,
-  SimpleReferenceExpressionNode,
-} from '../operation-node/operation-node-utils.js'
 import { ReferenceNode } from '../operation-node/reference-node.js'
 import { TableNode } from '../operation-node/table-node.js'
 import { isReadonlyArray, isString } from '../util/object-utils.js'
@@ -13,17 +9,18 @@ import {
   ExtractColumnType,
   ValueType,
 } from '../util/type-utils.js'
-import { RawBuilder } from '../raw-builder/raw-builder.js'
 import { SelectQueryBuilder } from '../query-builder/select-query-builder.js'
 import {
-  parseComplexExpression,
-  ComplexExpression,
-  isComplexExpression,
-} from './complex-expression-parser.js'
+  parseExpression,
+  ExpressionOrFactory,
+  isExpressionOrFactory,
+} from './expression-parser.js'
 import { DynamicReferenceBuilder } from '../dynamic/dynamic-reference-builder.js'
 import { SelectType } from '../util/column-type.js'
 import { IdentifierNode } from '../operation-node/identifier-node.js'
-import { AggregateFunctionBuilder } from '../query-builder/aggregate-function-builder.js'
+import { OperationNode } from '../operation-node/operation-node.js'
+import { Expression } from '../expression/expression.js'
+import { SimpleReferenceExpressionNode } from '../operation-node/simple-reference-expression-node.js'
 
 export type SimpleReferenceExpression<DB, TB extends keyof DB> =
   | StringReference<DB, TB>
@@ -31,7 +28,7 @@ export type SimpleReferenceExpression<DB, TB extends keyof DB> =
 
 export type ReferenceExpression<DB, TB extends keyof DB> =
   | SimpleReferenceExpression<DB, TB>
-  | ComplexExpression<DB, TB>
+  | ExpressionOrFactory<DB, TB, any>
 
 export type ReferenceExpressionOrList<DB, TB extends keyof DB> =
   | ReferenceExpression<DB, TB>
@@ -47,22 +44,18 @@ export type ExtractTypeFromReferenceExpression<
   RE,
   DV = unknown
 > = RE extends string
-  ? SelectType<ExtractTypeFromStringReference<DB, TB, RE, DV>>
-  : RE extends RawBuilder<infer O>
-  ? O
-  : RE extends (qb: any) => RawBuilder<infer O>
-  ? O
+  ? SelectType<ExtractTypeFromStringReference<DB, TB, RE>>
   : RE extends SelectQueryBuilder<any, any, infer O>
   ? ValueType<O>
   : RE extends (qb: any) => SelectQueryBuilder<any, any, infer O>
   ? ValueType<O>
-  : RE extends AggregateFunctionBuilder<any, any, infer O>
+  : RE extends Expression<infer O>
   ? O
-  : RE extends (qb: any) => AggregateFunctionBuilder<any, any, infer O>
+  : RE extends (qb: any) => Expression<infer O>
   ? O
   : DV
 
-type ExtractTypeFromStringReference<
+export type ExtractTypeFromStringReference<
   DB,
   TB extends keyof DB,
   RE extends string,
@@ -95,7 +88,7 @@ export function parseSimpleReferenceExpression(
 
 export function parseReferenceExpressionOrList(
   arg: ReferenceExpressionOrList<any, any>
-): ReferenceExpressionNode[] {
+): OperationNode[] {
   if (isReadonlyArray(arg)) {
     return arg.map((it) => parseReferenceExpression(it))
   } else {
@@ -105,9 +98,9 @@ export function parseReferenceExpressionOrList(
 
 export function parseReferenceExpression(
   exp: ReferenceExpression<any, any>
-): ReferenceExpressionNode {
-  if (isComplexExpression(exp)) {
-    return parseComplexExpression(exp)
+): OperationNode {
+  if (isExpressionOrFactory(exp)) {
+    return parseExpression(exp)
   }
 
   return parseSimpleReferenceExpression(exp)

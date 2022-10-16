@@ -12,7 +12,7 @@ export interface AlterColumnNode extends OperationNode {
   readonly column: ColumnNode
   readonly dataType?: DataTypeNode
   readonly dataTypeExpression?: RawNode
-  readonly setDefault?: ValueNode | RawNode
+  readonly setDefault?: OperationNode
   readonly dropDefault?: true
   readonly setNotNull?: true
   readonly dropNotNull?: true

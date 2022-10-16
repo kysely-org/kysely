@@ -1,3 +1,4 @@
+import { Expression } from '../expression/expression.js'
 import {
   ExistsExpression,
   FilterOperator,
@@ -5,7 +6,6 @@ import {
   HavingGrouper,
 } from '../parser/filter-parser.js'
 import { ReferenceExpression } from '../parser/reference-parser.js'
-import { AnyRawBuilder } from '../util/type-utils.js'
 
 export interface HavingInterface<DB, TB extends keyof DB> {
   /**
@@ -19,7 +19,7 @@ export interface HavingInterface<DB, TB extends keyof DB> {
   ): HavingInterface<DB, TB>
 
   having(grouper: HavingGrouper<DB, TB>): HavingInterface<DB, TB>
-  having(raw: AnyRawBuilder): HavingInterface<DB, TB>
+  having(expression: Expression<any>): HavingInterface<DB, TB>
 
   /**
    * Just like {@link WhereInterface.whereRef | whereRef} but adds a `having` statement
@@ -42,7 +42,7 @@ export interface HavingInterface<DB, TB extends keyof DB> {
   ): HavingInterface<DB, TB>
 
   orHaving(grouper: HavingGrouper<DB, TB>): HavingInterface<DB, TB>
-  orHaving(raw: AnyRawBuilder): HavingInterface<DB, TB>
+  orHaving(expression: Expression<any>): HavingInterface<DB, TB>
 
   /**
    * Just like {@link WhereInterface.orWhereRef | orWhereRef} but adds a `having` statement

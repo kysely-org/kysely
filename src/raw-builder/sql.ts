@@ -114,10 +114,10 @@ export interface Sql {
    * `sql.value(value)` is a shortcut for:
    *
    * ```ts
-   * sql`${value}`
+   * sql<ValueType>`${value}`
    * ```
    */
-  value(value: unknown): RawBuilder<unknown>
+  value<T>(value: T): RawBuilder<T>
 
   /**
    * This can be used to add runtime column references to SQL snippets.
@@ -377,7 +377,7 @@ export const sql: Sql = Object.assign(
       })
     },
 
-    value(value: unknown): RawBuilder<unknown> {
+    value<T>(value: T): RawBuilder<T> {
       return new RawBuilder({
         queryId: createQueryId(),
         rawNode: RawNode.createWithChild(parseValueExpression(value)),

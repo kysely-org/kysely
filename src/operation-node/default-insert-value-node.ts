@@ -1,4 +1,4 @@
-import { freeze, isObject } from '../util/object-utils.js'
+import { freeze } from '../util/object-utils.js'
 import { OperationNode } from './operation-node.js'
 
 export interface DefaultInsertValueNode extends OperationNode {

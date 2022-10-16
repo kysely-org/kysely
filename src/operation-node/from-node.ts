@@ -1,10 +1,9 @@
 import { freeze } from '../util/object-utils.js'
 import { OperationNode } from './operation-node.js'
-import { TableExpressionNode } from './operation-node-utils.js'
 
 export interface FromNode extends OperationNode {
   readonly kind: 'FromNode'
-  readonly froms: ReadonlyArray<TableExpressionNode>
+  readonly froms: ReadonlyArray<OperationNode>
 }
 
 /**
@@ -15,7 +14,7 @@ export const FromNode = freeze({
     return node.kind === 'FromNode'
   },
 
-  create(froms: ReadonlyArray<TableExpressionNode>): FromNode {
+  create(froms: ReadonlyArray<OperationNode>): FromNode {
     return freeze({
       kind: 'FromNode',
       froms: freeze(froms),
@@ -24,7 +23,7 @@ export const FromNode = freeze({
 
   cloneWithFroms(
     from: FromNode,
-    froms: ReadonlyArray<TableExpressionNode>
+    froms: ReadonlyArray<OperationNode>
   ): FromNode {
     return freeze({
       ...from,

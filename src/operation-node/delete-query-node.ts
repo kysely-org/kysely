@@ -2,7 +2,6 @@ import { freeze } from '../util/object-utils.js'
 import { FromNode } from './from-node.js'
 import { JoinNode } from './join-node.js'
 import { OperationNode } from './operation-node.js'
-import { TableExpressionNode } from './operation-node-utils.js'
 import { ReturningNode } from './returning-node.js'
 import { WhereNode } from './where-node.js'
 import { WithNode } from './with-node.js'
@@ -31,7 +30,7 @@ export const DeleteQueryNode = freeze({
     return node.kind === 'DeleteQueryNode'
   },
 
-  create(fromItem: TableExpressionNode, withNode?: WithNode): DeleteQueryNode {
+  create(fromItem: OperationNode, withNode?: WithNode): DeleteQueryNode {
     return freeze({
       kind: 'DeleteQueryNode',
       from: FromNode.create([fromItem]),
