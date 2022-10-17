@@ -60,12 +60,11 @@ export class FunctionModule<DB, TB extends keyof DB> {
    * Calls the `avg` function for the column given as the argument.
    *
    * If this is used in a `select` statement the type of the selected expression
-   * will be `number | string | null` by default. This is because Kysely can't know
-   * the type the db driver outputs. Sometimes the output can be larger than the
-   * largest javascript number and a string is returned instead. Most drivers allow
-   * you to configure the output type of large numbers and Kysely can't know if
-   * you've done so. Sometimes a null is returned, e.g. when row count is 0, and
-   * no `group by` was used.
+   * will be `number | string` by default. This is because Kysely can't know the
+   * type the db driver outputs. Sometimes the output can be larger than the largest
+   * javascript number and a string is returned instead. Most drivers allow you
+   * to configure the output type of large numbers and Kysely can't know if you've
+   * done so.
    *
    * You can specify the output type of the expression by providing the type as
    * the first type argument:
@@ -78,8 +77,10 @@ export class FunctionModule<DB, TB extends keyof DB> {
    *   .execute()
    * ```
    *
-   * It is highly recommended to include null in the output type union and handle
-   * null values in post-execute code, or wrap the function with a coalesce function.
+   * Sometimes a null is returned, e.g. when row count is 0, and no `group by`
+   * was used. It is highly recommended to include null in the output type union
+   * and handle null values in post-execute code, or wrap the function with a `coalesce`
+   * function.
    *
    * ```ts
    * const { avg } = db.fn
@@ -155,7 +156,7 @@ export class FunctionModule<DB, TB extends keyof DB> {
    * Calls the `count` function for the column given as the argument.
    *
    * If this is used in a `select` statement the type of the selected expression
-   * will be `number | string | bigint | null` by default. This is because Kysely
+   * will be `number | string | bigint` by default. This is because Kysely
    * can't know the type the db driver outputs. Sometimes the output can be larger
    * than the largest javascript number and a string is returned instead. Most
    * drivers allow you to configure the output type of large numbers and Kysely
@@ -198,6 +199,9 @@ export class FunctionModule<DB, TB extends keyof DB> {
   /**
    * Calls the `max` function for the column given as the argument.
    *
+   * If this is used in a `select` statement the type of the selected expression
+   * will be the referenced column's type.
+   *
    * ### Examples
    *
    * ```ts
@@ -208,8 +212,10 @@ export class FunctionModule<DB, TB extends keyof DB> {
    *   .execute()
    * ```
    *
-   * It is highly recommended to include null in the output type union and handle
-   * null values in post-execute code, or wrap the function with a coalesce function.
+   * Sometimes a null is returned, e.g. when row count is 0, and no `group by`
+   * was used. It is highly recommended to include null in the output type union
+   * and handle null values in post-execute code, or wrap the function with a `coalesce`
+   * function.
    *
    * ```ts
    * const { max } = db.fn
@@ -241,6 +247,9 @@ export class FunctionModule<DB, TB extends keyof DB> {
   /**
    * Calls the `min` function for the column given as the argument.
    *
+   * If this is used in a `select` statement the type of the selected expression
+   * will be the referenced column's type.
+   *
    * ### Examples
    *
    * ```ts
@@ -251,8 +260,10 @@ export class FunctionModule<DB, TB extends keyof DB> {
    *   .execute()
    * ```
    *
-   * It is highly recommended to include null in the output type union and handle
-   * null values in post-execute code, or wrap the function with a coalesce function.
+   * Sometimes a null is returned, e.g. when row count is 0, and no `group by`
+   * was used. It is highly recommended to include null in the output type union
+   * and handle null values in post-execute code, or wrap the function with a `coalesce`
+   * function.
    *
    * ```ts
    * const { min } = db.fn
@@ -285,12 +296,11 @@ export class FunctionModule<DB, TB extends keyof DB> {
    * Calls the `sum` function for the column given as the argument.
    *
    * If this is used in a `select` statement the type of the selected expression
-   * will be `number | string | bigint | null` by default. This is because Kysely
+   * will be `number | string | bigint` by default. This is because Kysely
    * can't know the type the db driver outputs. Sometimes the output can be larger
    * than the largest javascript number and a string is returned instead. Most
    * drivers allow you to configure the output type of large numbers and Kysely
-   * can't know if you've done so. Sometimes a null is returned, e.g. when row
-   * count is 0, and no `group by` was used.
+   * can't know if you've done so.
    *
    * You can specify the output type of the expression by providing
    * the type as the first type argument:
@@ -303,8 +313,10 @@ export class FunctionModule<DB, TB extends keyof DB> {
    *   .execute()
    * ```
    *
-   * It is highly recommended to include null in the output type union and handle
-   * null values in post-execute code, or wrap the function with a coalesce function.
+   * Sometimes a null is returned, e.g. when row count is 0, and no `group by`
+   * was used. It is highly recommended to include null in the output type union
+   * and handle null values in post-execute code, or wrap the function with a `coalesce`
+   * function.
    *
    * ```ts
    * const { sum } = db.fn
