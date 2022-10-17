@@ -61,13 +61,13 @@ export class FunctionModule<DB, TB extends keyof DB> {
    *
    * If this is used in a `select` statement the type of the selected expression
    * will be `number | string` by default. This is because Kysely can't know the
-   * type the db driver outputs. Sometimes the output can be larger than the
-   * largest javascript number and a string is returned instead. Most drivers
-   * allow you to configure the output type of large numbers and Kysely can't
-   * know if you've done so.
+   * type the db driver outputs. Sometimes the output can be larger than the largest
+   * javascript number and a string is returned instead. Most drivers allow you
+   * to configure the output type of large numbers and Kysely can't know if you've
+   * done so.
    *
-   * You can specify the output type of the expression by providing
-   * the type as the first type argument:
+   * You can specify the output type of the expression by providing the type as
+   * the first type argument:
    *
    * ```ts
    * const { avg } = db.fn
@@ -76,9 +76,22 @@ export class FunctionModule<DB, TB extends keyof DB> {
    *   .select(avg<number>('price').as('avg_price'))
    *   .execute()
    * ```
+   *
+   * Sometimes a null is returned, e.g. when row count is 0, and no `group by`
+   * was used. It is highly recommended to include null in the output type union
+   * and handle null values in post-execute code, or wrap the function with a `coalesce`
+   * function.
+   *
+   * ```ts
+   * const { avg } = db.fn
+   *
+   * db.selectFrom('toy')
+   *   .select(avg<number | null>('price').as('avg_price'))
+   *   .execute()
+   * ```
    */
   avg<
-    O extends number | string,
+    O extends number | string | null = number | string,
     C extends SimpleReferenceExpression<DB, TB> = SimpleReferenceExpression<
       DB,
       TB
@@ -143,11 +156,11 @@ export class FunctionModule<DB, TB extends keyof DB> {
    * Calls the `count` function for the column given as the argument.
    *
    * If this is used in a `select` statement the type of the selected expression
-   * will be `number | string | bigint` by default. This is because Kysely can't
-   * know the type the db driver outputs. Sometimes the output can be larger than
-   * the largest javascript number and a string is returned instead. Most drivers
-   * allow you to configure the output type of large numbers and Kysely can't
-   * know if you've done so.
+   * will be `number | string | bigint` by default. This is because Kysely
+   * can't know the type the db driver outputs. Sometimes the output can be larger
+   * than the largest javascript number and a string is returned instead. Most
+   * drivers allow you to configure the output type of large numbers and Kysely
+   * can't know if you've done so.
    *
    * You can specify the output type of the expression by providing
    * the type as the first type argument:
@@ -186,6 +199,9 @@ export class FunctionModule<DB, TB extends keyof DB> {
   /**
    * Calls the `max` function for the column given as the argument.
    *
+   * If this is used in a `select` statement the type of the selected expression
+   * will be the referenced column's type.
+   *
    * ### Examples
    *
    * ```ts
@@ -195,16 +211,30 @@ export class FunctionModule<DB, TB extends keyof DB> {
    *   .select(max('price').as('max_price'))
    *   .execute()
    * ```
+   *
+   * Sometimes a null is returned, e.g. when row count is 0, and no `group by`
+   * was used. It is highly recommended to include null in the output type union
+   * and handle null values in post-execute code, or wrap the function with a `coalesce`
+   * function.
+   *
+   * ```ts
+   * const { max } = db.fn
+   *
+   * db.selectFrom('toy')
+   *   .select(max<number | null, 'price'>('price').as('max_price'))
+   *   .execute()
+   * ```
    */
   max<
-    O extends number | string | bigint,
-    C extends SimpleReferenceExpression<DB, TB> = DynamicReferenceBuilder<any>
+    O extends number | string | bigint | null = number | string | bigint,
+    C extends SimpleReferenceExpression<DB, TB> = DynamicReferenceBuilder
   >(
     column: C
   ): AggregateFunctionBuilder<
     DB,
     TB,
-    ExtractTypeFromReferenceExpression<DB, TB, C, O>
+    | ExtractTypeFromReferenceExpression<DB, TB, C, O>
+    | (null extends O ? null : never)
   > {
     return new AggregateFunctionBuilder({
       aggregateFunctionNode: AggregateFunctionNode.create(
@@ -217,6 +247,9 @@ export class FunctionModule<DB, TB extends keyof DB> {
   /**
    * Calls the `min` function for the column given as the argument.
    *
+   * If this is used in a `select` statement the type of the selected expression
+   * will be the referenced column's type.
+   *
    * ### Examples
    *
    * ```ts
@@ -227,16 +260,29 @@ export class FunctionModule<DB, TB extends keyof DB> {
    *   .execute()
    * ```
    *
+   * Sometimes a null is returned, e.g. when row count is 0, and no `group by`
+   * was used. It is highly recommended to include null in the output type union
+   * and handle null values in post-execute code, or wrap the function with a `coalesce`
+   * function.
+   *
+   * ```ts
+   * const { min } = db.fn
+   *
+   * db.selectFrom('toy')
+   *   .select(min<number | null, 'price'>('price').as('min_price'))
+   *   .execute()
+   * ```
    */
   min<
-    O extends number | string | bigint,
-    C extends SimpleReferenceExpression<DB, TB> = DynamicReferenceBuilder<any>
+    O extends number | string | bigint | null = number | string | bigint,
+    C extends SimpleReferenceExpression<DB, TB> = DynamicReferenceBuilder
   >(
     column: C
   ): AggregateFunctionBuilder<
     DB,
     TB,
-    ExtractTypeFromReferenceExpression<DB, TB, C, O>
+    | ExtractTypeFromReferenceExpression<DB, TB, C, O>
+    | (null extends O ? null : never)
   > {
     return new AggregateFunctionBuilder({
       aggregateFunctionNode: AggregateFunctionNode.create(
@@ -250,11 +296,11 @@ export class FunctionModule<DB, TB extends keyof DB> {
    * Calls the `sum` function for the column given as the argument.
    *
    * If this is used in a `select` statement the type of the selected expression
-   * will be `number | string | bigint` by default. This is because Kysely can't
-   * know the type the db driver outputs. Sometimes the output can be larger than
-   * the largest javascript number and a string is returned instead. Most drivers
-   * allow you to configure the output type of large numbers and Kysely can't
-   * know if you've done so.
+   * will be `number | string | bigint` by default. This is because Kysely
+   * can't know the type the db driver outputs. Sometimes the output can be larger
+   * than the largest javascript number and a string is returned instead. Most
+   * drivers allow you to configure the output type of large numbers and Kysely
+   * can't know if you've done so.
    *
    * You can specify the output type of the expression by providing
    * the type as the first type argument:
@@ -266,9 +312,22 @@ export class FunctionModule<DB, TB extends keyof DB> {
    *   .select(sum<number>('price').as('total_price'))
    *   .execute()
    * ```
+   *
+   * Sometimes a null is returned, e.g. when row count is 0, and no `group by`
+   * was used. It is highly recommended to include null in the output type union
+   * and handle null values in post-execute code, or wrap the function with a `coalesce`
+   * function.
+   *
+   * ```ts
+   * const { sum } = db.fn
+   *
+   * db.selectFrom('toy')
+   *   .select(sum<number | null>('price').as('total_price'))
+   *   .execute()
+   * ```
    */
   sum<
-    O extends number | string | bigint,
+    O extends number | string | bigint | null = number | string | bigint,
     C extends SimpleReferenceExpression<DB, TB> = SimpleReferenceExpression<
       DB,
       TB
