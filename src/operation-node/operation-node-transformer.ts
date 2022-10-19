@@ -418,6 +418,7 @@ export class OperationNodeTransformer {
       defaultTo: this.transformNode(node.defaultTo),
       check: this.transformNode(node.check),
       generated: this.transformNode(node.generated),
+      frontModifiers: this.transformNodeList(node.frontModifiers),
       endModifiers: this.transformNodeList(node.endModifiers),
     })
   }

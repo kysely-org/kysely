@@ -418,6 +418,13 @@ export class AlterTableAddColumnBuilder
     })
   }
 
+  modifyFront(modifier: Expression<any>): AlterTableAddColumnBuilder {
+    return new AlterTableAddColumnBuilder({
+      ...this.#props,
+      columnBuilder: this.#props.columnBuilder.modifyFront(modifier),
+    })
+  }
+
   modifyEnd(modifier: Expression<any>): AlterTableAddColumnBuilder {
     return new AlterTableAddColumnBuilder({
       ...this.#props,
@@ -563,6 +570,13 @@ export class AlterTableModifyColumnBuilder
     return new AlterTableModifyColumnBuilder({
       ...this.#props,
       columnBuilder: this.#props.columnBuilder.stored(),
+    })
+  }
+
+  modifyFront(modifier: Expression<any>): AlterTableModifyColumnBuilder {
+    return new AlterTableModifyColumnBuilder({
+      ...this.#props,
+      columnBuilder: this.#props.columnBuilder.modifyFront(modifier),
     })
   }
 

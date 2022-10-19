@@ -191,6 +191,29 @@ export interface ColumnDefinitionBuilderInterface {
   stored(): ColumnDefinitionBuilderInterface
 
   /**
+   * This can be used to add any additional SQL right after the column's data type.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * db.schema.createTable('person')
+   *  .addColumn('id', 'integer', col => col.primaryKey())
+   *  .addColumn('first_name', 'varchar(36)', col => col.modifyFront(sql`collate utf8mb4`).notNull())
+   *  .execute()
+   * ```
+   *
+   * The generated SQL (MySQL):
+   *
+   * ```sql
+   * create table `person` (
+   *   `id` integer primary key,
+   *   `first_name` varchar(36) collate utf8mb4 not null
+   * )
+   * ```
+   */
+  modifyFront(modifier: Expression<any>): ColumnDefinitionBuilderInterface
+
+  /**
    * This can be used to add any additional SQL to the end of the column definition.
    *
    * ### Examples
@@ -354,6 +377,15 @@ export class ColumnDefinitionBuilder
           stored: true,
         }),
       })
+    )
+  }
+
+  modifyFront(modifier: Expression<any>): ColumnDefinitionBuilder {
+    return new ColumnDefinitionBuilder(
+      ColumnDefinitionNode.cloneWithFrontModifier(
+        this.#node,
+        modifier.toOperationNode()
+      )
     )
   }
 
