@@ -293,7 +293,7 @@ export class CreateTableBuilder<TB extends string, C extends string = never>
    * ```ts
    * db.schema.createTable('person')
    *   .modifyFront(sql`global temporary`)
-   *   .addColumn('id', 'integer', col => col => primaryKey())
+   *   .addColumn('id', 'integer', col => col.primaryKey())
    *   .addColumn('first_name', 'varchar(64)', col => col.notNull())
    *   .addColumn('last_name', 'varchar(64), col => col.notNull())
    *   .execute()

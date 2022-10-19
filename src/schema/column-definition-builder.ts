@@ -189,6 +189,29 @@ export interface ColumnDefinitionBuilderInterface {
    * ```
    */
   stored(): ColumnDefinitionBuilderInterface
+
+  /**
+   * This can be used to add any additional SQL to the end of the column definition.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * db.schema.createTable('person')
+   *  .addColumn('id', 'integer', col => col.primaryKey())
+   *  .addColumn('age', 'integer', col => col.notNull().modifyEnd(sql`comment ${sql.literal('it is not polite to ask a woman her age')}`))
+   *  .execute()
+   * ```
+   *
+   * The generated SQL (MySQL):
+   *
+   * ```sql
+   * create table `person` (
+   *   `id` integer primary key,
+   *   `age` integer not null comment 'it is not polite to ask a woman her age'
+   * )
+   * ```
+   */
+  modifyEnd(modifier: Expression<any>): ColumnDefinitionBuilderInterface
 }
 
 export class ColumnDefinitionBuilder
@@ -331,6 +354,15 @@ export class ColumnDefinitionBuilder
           stored: true,
         }),
       })
+    )
+  }
+
+  modifyEnd(modifier: Expression<any>): ColumnDefinitionBuilder {
+    return new ColumnDefinitionBuilder(
+      ColumnDefinitionNode.cloneWithEndModifier(
+        this.#node,
+        modifier.toOperationNode()
+      )
     )
   }
 
