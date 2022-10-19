@@ -26,6 +26,7 @@ export interface ColumnDefinitionNode extends OperationNode {
   readonly check?: CheckConstraintNode
   readonly generated?: GeneratedNode
   readonly unsigned?: boolean
+  readonly endModifiers?: ReadonlyArray<OperationNode>
 }
 
 /**
@@ -41,6 +42,18 @@ export const ColumnDefinitionNode = freeze({
       kind: 'ColumnDefinitionNode',
       column: ColumnNode.create(column),
       dataType,
+    })
+  },
+
+  cloneWithEndModifier(
+    node: ColumnDefinitionNode,
+    modifier: OperationNode
+  ): ColumnDefinitionNode {
+    return freeze({
+      ...node,
+      endModifiers: node.endModifiers
+        ? freeze([...node.endModifiers, modifier])
+        : [modifier],
     })
   },
 
