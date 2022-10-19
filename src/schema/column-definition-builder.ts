@@ -198,7 +198,7 @@ export interface ColumnDefinitionBuilderInterface {
    * ```ts
    * db.schema.createTable('person')
    *  .addColumn('id', 'integer', col => col.primaryKey())
-   *  .addColumn('first_name', 'varchar(36)', col => col.modifyFront(sql`collate utf8mb4`).notNull())
+   *  .addColumn('first_name', 'varchar(36)', col => col.modifyFront(sql`collate utf8mb4_general_ci`).notNull())
    *  .execute()
    * ```
    *
@@ -207,7 +207,7 @@ export interface ColumnDefinitionBuilderInterface {
    * ```sql
    * create table `person` (
    *   `id` integer primary key,
-   *   `first_name` varchar(36) collate utf8mb4 not null
+   *   `first_name` varchar(36) collate utf8mb4_general_ci not null
    * )
    * ```
    */
@@ -221,7 +221,7 @@ export interface ColumnDefinitionBuilderInterface {
    * ```ts
    * db.schema.createTable('person')
    *  .addColumn('id', 'integer', col => col.primaryKey())
-   *  .addColumn('age', 'integer', col => col.notNull().modifyEnd(sql`comment ${sql.literal('it is not polite to ask a woman her age')}`))
+   *  .addColumn('age', 'integer', col => col.unsigned().notNull().modifyEnd(sql`comment ${sql.literal('it is not polite to ask a woman her age')}`))
    *  .execute()
    * ```
    *
@@ -230,7 +230,7 @@ export interface ColumnDefinitionBuilderInterface {
    * ```sql
    * create table `person` (
    *   `id` integer primary key,
-   *   `age` integer not null comment 'it is not polite to ask a woman her age'
+   *   `age` integer unsigned not null comment 'it is not polite to ask a woman her age'
    * )
    * ```
    */
