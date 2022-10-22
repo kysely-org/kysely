@@ -234,12 +234,12 @@ export class DefaultQueryCompiler
     nodes: ReadonlyArray<OperationNode>,
     separator = ', '
   ): void {
-    const lastNode = getLast(nodes)
+    const lastIndex = nodes.length - 1
 
-    for (const node of nodes) {
-      this.visitNode(node)
+    for (let i = 0; i <= lastIndex; i++) {
+      this.visitNode(nodes[i])
 
-      if (node !== lastNode) {
+      if (i < lastIndex) {
         this.append(separator)
       }
     }

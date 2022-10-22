@@ -74,6 +74,13 @@ for (const dialect of BUILT_IN_DIALECTS) {
                 isAutoIncrementing: false,
                 hasDefaultValue: false,
               },
+              {
+                name: 'middle_name',
+                dataType: 'varchar',
+                isNullable: true,
+                isAutoIncrementing: false,
+                hasDefaultValue: false,
+              },
             ],
           },
           {
@@ -192,6 +199,13 @@ for (const dialect of BUILT_IN_DIALECTS) {
                 isAutoIncrementing: false,
                 hasDefaultValue: false,
               },
+              {
+                name: 'middle_name',
+                dataType: 'varchar',
+                isNullable: true,
+                isAutoIncrementing: false,
+                hasDefaultValue: false,
+              },
             ],
           },
           {
@@ -291,6 +305,13 @@ for (const dialect of BUILT_IN_DIALECTS) {
               },
               {
                 name: 'last_name',
+                dataType: 'varchar(255)',
+                isNullable: true,
+                isAutoIncrementing: false,
+                hasDefaultValue: false,
+              },
+              {
+                name: 'middle_name',
                 dataType: 'varchar(255)',
                 isNullable: true,
                 isAutoIncrementing: false,

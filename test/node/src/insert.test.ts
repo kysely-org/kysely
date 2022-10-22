@@ -497,11 +497,13 @@ for (const dialect of BUILT_IN_DIALECTS) {
             {
               first_name: 'Foo',
               // last_name is missing on purpose
+              // middle_name is missing on purpose
               gender: 'other',
             },
             {
               first_name: 'Baz',
               last_name: 'Spam',
+              middle_name: 'Bo',
               gender: 'other',
             },
           ])
@@ -509,13 +511,13 @@ for (const dialect of BUILT_IN_DIALECTS) {
 
         testSql(query, dialect, {
           postgres: {
-            sql: 'insert into "person" ("first_name", "gender", "last_name") values ($1, $2, default), ($3, $4, $5) returning *',
-            parameters: ['Foo', 'other', 'Baz', 'other', 'Spam'],
+            sql: 'insert into "person" ("first_name", "gender", "last_name", "middle_name") values ($1, $2, default, default), ($3, $4, $5, $6) returning *',
+            parameters: ['Foo', 'other', 'Baz', 'other', 'Spam', 'Bo'],
           },
           mysql: NOT_SUPPORTED,
           sqlite: {
-            sql: 'insert into "person" ("first_name", "gender", "last_name") values (?, ?, null), (?, ?, ?) returning *',
-            parameters: ['Foo', 'other', 'Baz', 'other', 'Spam'],
+            sql: 'insert into "person" ("first_name", "gender", "last_name", "middle_name") values (?, ?, null, null), (?, ?, ?, ?) returning *',
+            parameters: ['Foo', 'other', 'Baz', 'other', 'Spam', 'Bo'],
           },
         })
 

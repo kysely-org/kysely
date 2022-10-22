@@ -245,6 +245,7 @@ async function createDatabase(
 
   await createTableWithId(db.schema, dialect, 'person')
     .addColumn('first_name', 'varchar(255)')
+    .addColumn('middle_name', 'varchar(255)')
     .addColumn('last_name', 'varchar(255)')
     .addColumn('gender', 'varchar(50)', (col) => col.notNull())
     .execute()
