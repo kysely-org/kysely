@@ -49,7 +49,7 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
   implements
     ReturningInterface<DB, TB, O>,
     OperationNodeSource,
-    Compilable,
+    Compilable<O>,
     Explainable
 {
   readonly #props: InsertQueryBuilderProps
@@ -629,7 +629,7 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
     )
   }
 
-  compile(): CompiledQuery {
+  compile(): CompiledQuery<O> {
     return this.#props.executor.compileQuery(
       this.toOperationNode(),
       this.#props.queryId

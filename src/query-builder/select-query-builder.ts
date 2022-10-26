@@ -63,7 +63,7 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
     WhereInterface<DB, TB>,
     HavingInterface<DB, TB>,
     Expression<O>,
-    Compilable,
+    Compilable<O>,
     Explainable
 {
   readonly #props: SelectQueryBuilderProps
@@ -1601,7 +1601,7 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
     )
   }
 
-  compile(): CompiledQuery {
+  compile(): CompiledQuery<O> {
     return this.#props.executor.compileQuery(
       this.toOperationNode(),
       this.#props.queryId

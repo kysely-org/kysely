@@ -57,7 +57,7 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
     WhereInterface<DB, TB>,
     ReturningInterface<DB, TB, O>,
     OperationNodeSource,
-    Compilable,
+    Compilable<O>,
     Explainable
 {
   readonly #props: UpdateQueryBuilderProps
@@ -679,7 +679,7 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
     )
   }
 
-  compile(): CompiledQuery {
+  compile(): CompiledQuery<O> {
     return this.#props.executor.compileQuery(
       this.toOperationNode(),
       this.#props.queryId
