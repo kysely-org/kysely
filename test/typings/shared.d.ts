@@ -37,8 +37,8 @@ export interface Person {
   modified_at: ColumnType<Date, never, never>
 }
 
-type Equals<T, U> = (<G>() => G extends T ? 1 : 2) extends <G>() => G extends U
-  ? 1
-  : 2
+export type Equals<T, U> = (<G>() => G extends T ? 1 : 2) extends <
+  G
+>() => G extends U ? 1 : 2
   ? true
   : false
