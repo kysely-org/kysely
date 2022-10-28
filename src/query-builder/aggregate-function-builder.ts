@@ -6,6 +6,17 @@ import { preventAwait } from '../util/prevent-await.js'
 import { OverBuilder } from './over-builder.js'
 import { createOverBuilder } from '../parser/parse-utils.js'
 import { AliasedExpression, Expression } from '../expression/expression.js'
+import {
+  ExistsExpression,
+  FilterOperator,
+  FilterValueExpressionOrList,
+  parseExistFilter,
+  parseNotExistFilter,
+  parseReferenceFilter,
+  parseWhereFilter,
+  WhereGrouper,
+} from '../parser/filter-parser.js'
+import { ReferenceExpression } from '../parser/reference-parser.js'
 
 export class AggregateFunctionBuilder<DB, TB extends keyof DB, O = unknown>
   implements Expression<O>
@@ -76,6 +87,144 @@ export class AggregateFunctionBuilder<DB, TB extends keyof DB, O = unknown>
       ...this.#props,
       aggregateFunctionNode: AggregateFunctionNode.cloneWithDistinct(
         this.#props.aggregateFunctionNode
+      ),
+    })
+  }
+
+  /**
+   * // TODO: ...
+   */
+  filter<RE extends ReferenceExpression<DB, TB>>(
+    lhs: RE,
+    op: FilterOperator,
+    rhs: FilterValueExpressionOrList<DB, TB, RE>
+  ): AggregateFunctionBuilder<DB, TB, O>
+
+  filter(grouper: WhereGrouper<DB, TB>): AggregateFunctionBuilder<DB, TB, O>
+  filter(expression: Expression<any>): AggregateFunctionBuilder<DB, TB, O>
+
+  filter(...args: any[]): any {
+    return new AggregateFunctionBuilder({
+      ...this.#props,
+      aggregateFunctionNode: AggregateFunctionNode.cloneWithFilter(
+        this.#props.aggregateFunctionNode,
+        parseWhereFilter(args)
+      ),
+    })
+  }
+
+  /**
+   * TODO: ...
+   */
+  filterExists(
+    arg: ExistsExpression<DB, TB>
+  ): AggregateFunctionBuilder<DB, TB, O> {
+    return new AggregateFunctionBuilder({
+      ...this.#props,
+      aggregateFunctionNode: AggregateFunctionNode.cloneWithFilter(
+        this.#props.aggregateFunctionNode,
+        parseExistFilter(arg)
+      ),
+    })
+  }
+
+  /**
+   * TODO: ...
+   */
+  filterNotExists(
+    arg: ExistsExpression<DB, TB>
+  ): AggregateFunctionBuilder<DB, TB, O> {
+    return new AggregateFunctionBuilder({
+      ...this.#props,
+      aggregateFunctionNode: AggregateFunctionNode.cloneWithFilter(
+        this.#props.aggregateFunctionNode,
+        parseNotExistFilter(arg)
+      ),
+    })
+  }
+
+  /**
+   * TODO: ...
+   */
+  filterRef(
+    lhs: ReferenceExpression<DB, TB>,
+    op: FilterOperator,
+    rhs: ReferenceExpression<DB, TB>
+  ): AggregateFunctionBuilder<DB, TB, O> {
+    return new AggregateFunctionBuilder({
+      ...this.#props,
+      aggregateFunctionNode: AggregateFunctionNode.cloneWithFilter(
+        this.#props.aggregateFunctionNode,
+        parseReferenceFilter(lhs, op, rhs)
+      ),
+    })
+  }
+
+  /**
+   * TODO: ...
+   */
+  orFilter<RE extends ReferenceExpression<DB, TB>>(
+    lhs: RE,
+    op: FilterOperator,
+    rhs: FilterValueExpressionOrList<DB, TB, RE>
+  ): AggregateFunctionBuilder<DB, TB, O>
+
+  orFilter(grouper: WhereGrouper<DB, TB>): AggregateFunctionBuilder<DB, TB, O>
+  orFilter(expression: Expression<any>): AggregateFunctionBuilder<DB, TB, O>
+
+  orFilter(...args: any[]): any {
+    return new AggregateFunctionBuilder({
+      ...this.#props,
+      aggregateFunctionNode: AggregateFunctionNode.cloneWithOrFilter(
+        this.#props.aggregateFunctionNode,
+        parseWhereFilter(args)
+      ),
+    })
+  }
+
+  /**
+   * TODO: ...
+   */
+  orFilterExists(
+    arg: ExistsExpression<DB, TB>
+  ): AggregateFunctionBuilder<DB, TB, O> {
+    return new AggregateFunctionBuilder({
+      ...this.#props,
+      aggregateFunctionNode: AggregateFunctionNode.cloneWithOrFilter(
+        this.#props.aggregateFunctionNode,
+        parseExistFilter(arg)
+      ),
+    })
+  }
+
+  /**
+   * TODO: ...
+   */
+  orFilterNotExists(
+    arg: ExistsExpression<DB, TB>
+  ): AggregateFunctionBuilder<DB, TB, O> {
+    return new AggregateFunctionBuilder({
+      ...this.#props,
+      aggregateFunctionNode: AggregateFunctionNode.cloneWithOrFilter(
+        this.#props.aggregateFunctionNode,
+        parseNotExistFilter(arg)
+      ),
+    })
+  }
+
+  /**
+   * TODO: ...
+   */
+  orFilterRef(
+    lhs: ReferenceExpression<DB, TB>,
+    op: FilterOperator,
+    rhs: ReferenceExpression<DB, TB>
+  ): AggregateFunctionBuilder<DB, TB, O> {
+    return new AggregateFunctionBuilder({
+      ...this.#props,
+      aggregateFunctionNode: AggregateFunctionNode.cloneWithOrFilter(
+        this.#props.aggregateFunctionNode,
+        parseReferenceFilter(lhs, op, rhs)
       ),
     })
   }
