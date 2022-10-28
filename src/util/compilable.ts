@@ -7,6 +7,44 @@ export interface Compilable<O = unknown> {
   compile(): CompiledQuery<O>
 }
 
+/**
+ * A helper type that allows inferring a select/insert/update/delete query's output
+ * type from a query builder or compiled query.
+ *
+ * ### Examples
+ *
+ * Infer a query builder's output type:
+ *
+ * ```ts
+ * import { Infer } from 'kysely'
+ *
+ * const query = db
+ *   .selectFrom('person')
+ *   .innerJoin('pet', 'pet.owner_id', 'person.id')
+ *   .select(['person.first_name', 'pet.name'])
+ *
+ * type QueryResult = Infer<typeof query> // { first_name: string; name: string; }[]
+ * ```
+ *
+ * Infer a compiled query's output type:
+ *
+ * ```ts
+ * import { Infer } from 'kysely'
+ *
+ * const compiledQuery = db
+ *   .insertInto('person')
+ *   .values({
+ *     first_name: 'Foo',
+ *     last_name: 'Barson',
+ *     gender: 'other',
+ *     age: 15,
+ *   })
+ *   .returningAll()
+ *   .compile()
+ *
+ * type QueryResult = Infer<typeof compiledQuery> // Selectable<Person>[]
+ * ```
+ */
 export type Infer<C extends Compilable<any> | CompiledQuery<any>> =
   C extends Compilable<infer O>
     ? ResolveOutput<O>
