@@ -2,7 +2,7 @@ import { DeleteResult } from '../query-builder/delete-result.js'
 import { InsertResult } from '../query-builder/insert-result.js'
 import { UpdateResult } from '../query-builder/update-result.js'
 import { CompiledQuery } from '../query-compiler/compiled-query.js'
-import { Compilable } from './compilable'
+import { Compilable } from './compilable.js'
 
 /**
  * A helper type that allows inferring a select/insert/update/delete query's output
