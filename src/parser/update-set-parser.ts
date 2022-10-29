@@ -4,7 +4,9 @@ import { UpdateKeys, UpdateType } from '../util/column-type.js'
 import { parseValueExpression, ValueExpression } from './value-parser.js'
 
 export type MutationObject<DB, TB extends keyof DB, TM extends keyof DB> = {
-  [C in UpdateKeys<DB[TM]>]?: ValueExpression<DB, TB, UpdateType<DB[TM][C]>>
+  [C in UpdateKeys<DB[TM]>]?:
+    | ValueExpression<DB, TB, UpdateType<DB[TM][C]>>
+    | undefined
 }
 
 export function parseUpdateObject(

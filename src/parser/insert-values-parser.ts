@@ -19,11 +19,9 @@ export type InsertObject<DB, TB extends keyof DB> = {
     InsertType<DB[TB][C]>
   >
 } & {
-  [C in NullableInsertKeys<DB[TB]>]?: ValueExpression<
-    DB,
-    TB,
-    InsertType<DB[TB][C]>
-  >
+  [C in NullableInsertKeys<DB[TB]>]?:
+    | ValueExpression<DB, TB, InsertType<DB[TB][C]>>
+    | undefined
 }
 
 export type InsertObjectOrList<DB, TB extends keyof DB> =
