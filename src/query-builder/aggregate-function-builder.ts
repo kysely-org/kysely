@@ -94,16 +94,18 @@ export class AggregateFunctionBuilder<DB, TB extends keyof DB, O = unknown>
   /**
    * // TODO: ...
    */
-  filter<RE extends ReferenceExpression<DB, TB>>(
+  filterWhere<RE extends ReferenceExpression<DB, TB>>(
     lhs: RE,
     op: FilterOperator,
     rhs: FilterValueExpressionOrList<DB, TB, RE>
   ): AggregateFunctionBuilder<DB, TB, O>
 
-  filter(grouper: WhereGrouper<DB, TB>): AggregateFunctionBuilder<DB, TB, O>
-  filter(expression: Expression<any>): AggregateFunctionBuilder<DB, TB, O>
+  filterWhere(
+    grouper: WhereGrouper<DB, TB>
+  ): AggregateFunctionBuilder<DB, TB, O>
+  filterWhere(expression: Expression<any>): AggregateFunctionBuilder<DB, TB, O>
 
-  filter(...args: any[]): any {
+  filterWhere(...args: any[]): any {
     return new AggregateFunctionBuilder({
       ...this.#props,
       aggregateFunctionNode: AggregateFunctionNode.cloneWithFilter(
@@ -116,7 +118,7 @@ export class AggregateFunctionBuilder<DB, TB extends keyof DB, O = unknown>
   /**
    * TODO: ...
    */
-  filterExists(
+  filterWhereExists(
     arg: ExistsExpression<DB, TB>
   ): AggregateFunctionBuilder<DB, TB, O> {
     return new AggregateFunctionBuilder({
@@ -131,7 +133,7 @@ export class AggregateFunctionBuilder<DB, TB extends keyof DB, O = unknown>
   /**
    * TODO: ...
    */
-  filterNotExists(
+  filterWhereNotExists(
     arg: ExistsExpression<DB, TB>
   ): AggregateFunctionBuilder<DB, TB, O> {
     return new AggregateFunctionBuilder({
@@ -146,7 +148,7 @@ export class AggregateFunctionBuilder<DB, TB extends keyof DB, O = unknown>
   /**
    * TODO: ...
    */
-  filterRef(
+  filterWhereRef(
     lhs: ReferenceExpression<DB, TB>,
     op: FilterOperator,
     rhs: ReferenceExpression<DB, TB>
@@ -163,16 +165,20 @@ export class AggregateFunctionBuilder<DB, TB extends keyof DB, O = unknown>
   /**
    * TODO: ...
    */
-  orFilter<RE extends ReferenceExpression<DB, TB>>(
+  orFilterWhere<RE extends ReferenceExpression<DB, TB>>(
     lhs: RE,
     op: FilterOperator,
     rhs: FilterValueExpressionOrList<DB, TB, RE>
   ): AggregateFunctionBuilder<DB, TB, O>
 
-  orFilter(grouper: WhereGrouper<DB, TB>): AggregateFunctionBuilder<DB, TB, O>
-  orFilter(expression: Expression<any>): AggregateFunctionBuilder<DB, TB, O>
+  orFilterWhere(
+    grouper: WhereGrouper<DB, TB>
+  ): AggregateFunctionBuilder<DB, TB, O>
+  orFilterWhere(
+    expression: Expression<any>
+  ): AggregateFunctionBuilder<DB, TB, O>
 
-  orFilter(...args: any[]): any {
+  orFilterWhere(...args: any[]): any {
     return new AggregateFunctionBuilder({
       ...this.#props,
       aggregateFunctionNode: AggregateFunctionNode.cloneWithOrFilter(
@@ -185,7 +191,7 @@ export class AggregateFunctionBuilder<DB, TB extends keyof DB, O = unknown>
   /**
    * TODO: ...
    */
-  orFilterExists(
+  orFilterWhereExists(
     arg: ExistsExpression<DB, TB>
   ): AggregateFunctionBuilder<DB, TB, O> {
     return new AggregateFunctionBuilder({
@@ -200,7 +206,7 @@ export class AggregateFunctionBuilder<DB, TB extends keyof DB, O = unknown>
   /**
    * TODO: ...
    */
-  orFilterNotExists(
+  orFilterWhereNotExists(
     arg: ExistsExpression<DB, TB>
   ): AggregateFunctionBuilder<DB, TB, O> {
     return new AggregateFunctionBuilder({
@@ -215,7 +221,7 @@ export class AggregateFunctionBuilder<DB, TB extends keyof DB, O = unknown>
   /**
    * TODO: ...
    */
-  orFilterRef(
+  orFilterWhereRef(
     lhs: ReferenceExpression<DB, TB>,
     op: FilterOperator,
     rhs: ReferenceExpression<DB, TB>

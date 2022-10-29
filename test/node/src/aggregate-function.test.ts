@@ -365,11 +365,11 @@ for (const dialect of BUILT_IN_DIALECTS) {
               .selectFrom('person')
               .select([
                 func('person.id')
-                  .filter('person.gender', '=', 'female')
+                  .filterWhere('person.gender', '=', 'female')
                   .as(funcName),
                 (eb) =>
                   getFuncFromExpressionBuilder(eb, funcName)('person.id')
-                    .filter('person.gender', '=', 'female')
+                    .filterWhere('person.gender', '=', 'female')
                     .as(`another_${funcName}`),
               ])
 
@@ -403,13 +403,13 @@ for (const dialect of BUILT_IN_DIALECTS) {
               .selectFrom('person')
               .select([
                 func('person.id')
-                  .filter('person.gender', '=', 'female')
-                  .filter('person.middle_name', 'is not', null)
+                  .filterWhere('person.gender', '=', 'female')
+                  .filterWhere('person.middle_name', 'is not', null)
                   .as(funcName),
                 (eb) =>
                   getFuncFromExpressionBuilder(eb, funcName)('person.id')
-                    .filter('person.gender', '=', 'female')
-                    .filter('person.middle_name', 'is not', null)
+                    .filterWhere('person.gender', '=', 'female')
+                    .filterWhere('person.middle_name', 'is not', null)
                     .as(`another_${funcName}`),
               ])
 
@@ -443,13 +443,13 @@ for (const dialect of BUILT_IN_DIALECTS) {
               .selectFrom('person')
               .select([
                 func('person.id')
-                  .filter('person.gender', '=', 'female')
-                  .orFilter('person.middle_name', 'is not', null)
+                  .filterWhere('person.gender', '=', 'female')
+                  .orFilterWhere('person.middle_name', 'is not', null)
                   .as(funcName),
                 (eb) =>
                   getFuncFromExpressionBuilder(eb, funcName)('person.id')
-                    .filter('person.gender', '=', 'female')
-                    .orFilter('person.middle_name', 'is not', null)
+                    .filterWhere('person.gender', '=', 'female')
+                    .orFilterWhere('person.middle_name', 'is not', null)
                     .as(`another_${funcName}`),
               ])
 
@@ -483,12 +483,12 @@ for (const dialect of BUILT_IN_DIALECTS) {
               .selectFrom('person')
               .select([
                 func('person.id')
-                  .filter('person.gender', '=', 'female')
+                  .filterWhere('person.gender', '=', 'female')
                   .over()
                   .as(funcName),
                 (eb) =>
                   getFuncFromExpressionBuilder(eb, funcName)('person.id')
-                    .filter('person.gender', '=', 'female')
+                    .filterWhere('person.gender', '=', 'female')
                     .over()
                     .as(`another_${funcName}`),
               ])
