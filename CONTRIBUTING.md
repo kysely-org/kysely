@@ -3,7 +3,7 @@ Would love to contribute to Kysely?
 Awesome! We are not very organized yet. We don't have a plan or a roadmap.
 
 Probably the best way to get going is to watch the issue list and comment there if you see something you want to work on. 
-If you start working on something larger, it's a good idea to create WIP PR at an early stage so that we can guide you to the right direction. 
+If you start working on something larger, it's a good idea to create a draft (WIP) PR at an early stage so that we can guide you to the right direction. 
 
 There's quite a few "rules" to keep in mind:
 
