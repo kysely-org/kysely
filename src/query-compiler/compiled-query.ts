@@ -2,7 +2,7 @@ import { RawNode } from '../operation-node/raw-node.js'
 import { freeze } from '../util/object-utils.js'
 import { RootOperationNode } from './query-compiler.js'
 
-export interface CompiledQuery {
+export interface CompiledQuery<O = unknown> {
   readonly query: RootOperationNode
   readonly sql: string
   readonly parameters: ReadonlyArray<unknown>
