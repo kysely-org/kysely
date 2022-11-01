@@ -13,7 +13,7 @@ import { Compilable } from './compilable.js'
  * Infer a query builder's result type:
  *
  * ```ts
- * import { Infer } from 'kysely'
+ * import { InferResult } from 'kysely'
  *
  * const query = db
  *   .selectFrom('person')
@@ -26,7 +26,7 @@ import { Compilable } from './compilable.js'
  * Infer a compiled query's result type:
  *
  * ```ts
- * import { Infer } from 'kysely'
+ * import { InferResult } from 'kysely'
  *
  * const compiledQuery = db
  *   .insertInto('person')
