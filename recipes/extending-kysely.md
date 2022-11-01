@@ -13,7 +13,7 @@ Most of the time you can create your helpers using the [sql template tag](https:
 and the `RawBuilder<T>` and `AliasedRawBuilder<T, A>` class instances it returns, but it's good to first understand how
 the underlying interfaces they implement, `Expression<T>` and `AliasedExpression<T, A>`, work.
 
-## Expression<T>
+## Expression
 
 [`Expression<T>`](https://koskimas.github.io/kysely/interfaces/Expression.html) is a simple interface
 that has a type `T` and a single method `toOperationNode()`. `T` tells Kysely's type system the type of
@@ -131,7 +131,7 @@ async function test(db: Kysely<DB>) {
 }
 ```
 
-## AliasedExpression<T, A>
+## AliasedExpression
 
 While `Expression<T>` holds the type and compilation instructions of an SQL expression,
 [`AliasedExpression<T, A>`](https://koskimas.github.io/kysely/interfaces/AliasedExpression.html)
@@ -153,7 +153,7 @@ import {
   IdentifierNode,
 } from 'kysely'
 
-class JsonValue<T> extends Expression<T> {
+class JsonValue<T> implements Expression<T> {
   // ... Methods from the previous example ...
 
   as<A extends string>(alias: A): AliasedJsonValue<T, A> {
@@ -184,7 +184,7 @@ class AliasedJsonValue<T, A extends string> implements AliasedExpression<T, A> {
 }
 ```
 
-And now we can use our `JsonValue` in `select` statements too with full type safety:
+And now you can use `JsonValue` in `select` statements too with full type safety:
 
 ```ts
 interface DB {
