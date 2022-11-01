@@ -693,9 +693,24 @@ async function testInsert(db: Kysely<Database>) {
     db.insertInto('person').values({
       first_name: 'what',
       gender: 'male',
-      age: (eb) => eb.selectFrom('pet').select('pet.name')
+      age: (eb) => eb.selectFrom('pet').select('pet.name'),
     })
   )
+
+  // Nullable column as undefined
+  const insertObject: {
+    first_name: string
+    last_name: string | undefined
+    age: number
+    gender: 'male' | 'female' | 'other'
+  } = {
+    first_name: 'emily',
+    last_name: 'smith',
+    age: 25,
+    gender: 'female',
+  }
+
+  db.insertInto('person').values(insertObject)
 }
 
 async function testReturning(db: Kysely<Database>) {
@@ -789,6 +804,13 @@ async function testUpdate(db: Kysely<Database>) {
   expectError(db.updateTable('book').set({ id: 1, name: 'foo' }))
 
   db.updateTable('book').set({ name: 'bar' })
+
+  // Nullable column as undefined
+  const mutationObject: { last_name: string | undefined } = {
+    last_name: 'smith',
+  }
+
+  db.updateTable('person').set(mutationObject)
 }
 
 async function testDelete(db: Kysely<Database>) {
