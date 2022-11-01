@@ -17,7 +17,7 @@ the underlying interfaces they implement, `Expression<T>` and `AliasedExpression
 
 [`Expression<T>`](https://koskimas.github.io/kysely/interfaces/Expression.html) is a simple interface
 that has a type `T` and a single method `toOperationNode()`. `T` tells Kysely's type system the type of
-of the expression. `toOperationNode()` returns instructions on what SQL should be produced once the
+the expression. `toOperationNode()` returns instructions on what SQL should be produced once the
 expression is compiled.
 
 Here's an example of a custom expression for `JSON` or `JSONB` values on postgres:
@@ -133,7 +133,7 @@ async function test(db: Kysely<DB>) {
 
 ## AliasedExpression<T, A>
 
-While `Expression<T>` holds the execution result type and compilation instructions of an SQL expression,
+While `Expression<T>` holds the type and compilation instructions of an SQL expression,
 [`AliasedExpression<T, A>`](https://koskimas.github.io/kysely/interfaces/AliasedExpression.html)
 also holds an alias (a name) for that expression. `AliasedExpression<T, A>` can be used in places
 where you need a name for the expression, like in a `SELECT` statement or a `FROM` statement.
