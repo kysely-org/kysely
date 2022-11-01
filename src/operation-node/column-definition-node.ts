@@ -26,6 +26,8 @@ export interface ColumnDefinitionNode extends OperationNode {
   readonly check?: CheckConstraintNode
   readonly generated?: GeneratedNode
   readonly unsigned?: boolean
+  readonly frontModifiers?: ReadonlyArray<OperationNode>
+  readonly endModifiers?: ReadonlyArray<OperationNode>
 }
 
 /**
@@ -41,6 +43,30 @@ export const ColumnDefinitionNode = freeze({
       kind: 'ColumnDefinitionNode',
       column: ColumnNode.create(column),
       dataType,
+    })
+  },
+
+  cloneWithFrontModifier(
+    node: ColumnDefinitionNode,
+    modifier: OperationNode
+  ): ColumnDefinitionNode {
+    return freeze({
+      ...node,
+      frontModifiers: node.frontModifiers
+        ? freeze([...node.frontModifiers, modifier])
+        : [modifier],
+    })
+  },
+
+  cloneWithEndModifier(
+    node: ColumnDefinitionNode,
+    modifier: OperationNode
+  ): ColumnDefinitionNode {
+    return freeze({
+      ...node,
+      endModifiers: node.endModifiers
+        ? freeze([...node.endModifiers, modifier])
+        : [modifier],
     })
   },
 
