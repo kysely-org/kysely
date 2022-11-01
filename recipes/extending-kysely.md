@@ -5,7 +5,8 @@ that feature in a generic way that would work in all use cases would be really d
 In many cases it's better to create little helper functions in your project that suit your use case.
 Kysely makes this really simple.
 
-The Kysely API is designed around two interfaces [`Expression<T>`]() and [`AliasedExpression<T, A>`]().
+The Kysely API is designed around two interfaces [`Expression<T>`](https://koskimas.github.io/kysely/interfaces/Expression.html)
+and [`AliasedExpression<T, A>`](https://koskimas.github.io/kysely/interfaces/AliasedExpression.html).
 Almost every method accepts values that implement these interfaces and most Kysely classes like
 `SelectQueryBuilder` and `RawBuilder<T>` achieve their type magic by implementing them.
 
@@ -15,9 +16,10 @@ the underlying interfaces `Expression<T>` and `AliasedExpression<T, A>` work.
 
 ## Expression<T>
 
-[`Expresssion<T>`]() is a simple interface that has a type `T` and a single method `toOperationNode()`.
-`T` tells Kysely's type system the type of the expression. `toOperationNode()` returns instructions
-on what SQL should be produced once the expression is compiled.
+[`Expresssion<T>`](https://koskimas.github.io/kysely/interfaces/Expression.html) is a simple interface
+that has a type `T` and a single method `toOperationNode()`. `T` tells Kysely's type system the type of
+the expression. `toOperationNode()` returns instructions on what SQL should be produced once the
+expression is compiled.
 
 Here's an example of a custom expression for `JSON` or `JSONB` values on postgres:
 
@@ -137,10 +139,10 @@ async function test(db: Kysely<DB>) {
 ## AliasedExpression<T, A>
 
 While `Expression<T>` holds the type and compilation instructions of an SQL expression,
-`AliasedExpression<T, A>` also holds an alias (a name) for that expression. `AliasedExpression<T, A>`
-can be used in places where you need a name for the expression, like in a `SELECT` statement or
-a `FROM` statement. `AliasedExpression<T, A>` is how kysely is able to infer the name and type of
-result columns.
+[`AliasedExpression<T, A>`](https://koskimas.github.io/kysely/interfaces/AliasedExpression.html)
+also holds an alias (a name) for that expression. `AliasedExpression<T, A>` can be used in places
+where you need a name for the expression, like in a `SELECT` statement or a `FROM` statement.
+`AliasedExpression<T, A>` is how kysely is able to infer the name and type of result columns.
 
 Let's expand the `JsonValue` example from the [previous section](#expression). We'll add an `as`
 method for the `JsonValue` class that can be used to turn an `Expression<T>` into an `AliasedExpression<T, A>`:
