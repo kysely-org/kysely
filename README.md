@@ -75,6 +75,8 @@ for [3rd party dialects](https://koskimas.github.io/kysely/interfaces/Dialect.ht
  - [AWS Data API](https://github.com/serverless-stack/kysely-data-api)
  - [PlanetScale Serverless Driver](https://github.com/depot/kysely-planetscale)
  - [SingleStore Data API](https://github.com/igalklebanov/kysely-singlestore)
+ - [D1](https://github.com/aidenwallis/kysely-d1)
+ - [SurrealDB](https://github.com/igalklebanov/kysely-surrealdb)
 
 # Minimal example
 
