@@ -5,12 +5,12 @@ import { CompiledQuery } from '../query-compiler/compiled-query.js'
 import { Compilable } from './compilable.js'
 
 /**
- * A helper type that allows inferring a select/insert/update/delete query's output
+ * A helper type that allows inferring a select/insert/update/delete query's result
  * type from a query builder or compiled query.
  *
  * ### Examples
  *
- * Infer a query builder's output type:
+ * Infer a query builder's result type:
  *
  * ```ts
  * import { Infer } from 'kysely'
@@ -20,10 +20,10 @@ import { Compilable } from './compilable.js'
  *   .innerJoin('pet', 'pet.owner_id', 'person.id')
  *   .select(['person.first_name', 'pet.name'])
  *
- * type QueryResult = Infer<typeof query> // { first_name: string; name: string; }[]
+ * type QueryResult = InferResult<typeof query> // { first_name: string; name: string; }[]
  * ```
  *
- * Infer a compiled query's output type:
+ * Infer a compiled query's result type:
  *
  * ```ts
  * import { Infer } from 'kysely'
@@ -39,16 +39,16 @@ import { Compilable } from './compilable.js'
  *   .returningAll()
  *   .compile()
  *
- * type QueryResult = Infer<typeof compiledQuery> // Selectable<Person>[]
+ * type QueryResult = InferResult<typeof compiledQuery> // Selectable<Person>[]
  * ```
  */
-export type Infer<C extends Compilable<any> | CompiledQuery<any>> =
+export type InferResult<C extends Compilable<any> | CompiledQuery<any>> =
   C extends Compilable<infer O>
-    ? ResolveOutput<O>
+    ? ResolveResult<O>
     : C extends CompiledQuery<infer O>
-    ? ResolveOutput<O>
+    ? ResolveResult<O>
     : never
 
-type ResolveOutput<O> = O extends InsertResult | UpdateResult | DeleteResult
+type ResolveResult<O> = O extends InsertResult | UpdateResult | DeleteResult
   ? O
   : O[]

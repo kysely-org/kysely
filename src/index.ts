@@ -186,7 +186,7 @@ export {
   UnknownRow,
   AnySelectQueryBuilder,
 } from './util/type-utils.js'
-export * from './util/infer.js'
+export * from './util/infer-result.js'
 
 export {
   SelectExpression,
