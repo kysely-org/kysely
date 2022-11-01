@@ -7,16 +7,15 @@ Kysely makes this really simple.
 
 The Kysely API is designed around two interfaces [`Expression<T>`](https://koskimas.github.io/kysely/interfaces/Expression.html)
 and [`AliasedExpression<T, A>`](https://koskimas.github.io/kysely/interfaces/AliasedExpression.html).
-Almost every method accepts values that implement these interfaces and most Kysely classes like
-`SelectQueryBuilder` and `RawBuilder<T>` achieve their type magic by implementing them.
+Almost every method accepts values that implement these interfaces and most Kysely internals achieve their "type magic" by implementing them.
 
 Most of the time you can create your helpers using the [sql template tag](https://koskimas.github.io/kysely/interfaces/Sql.html)
-and the `RawBuilder<T>` and `AliasedRawBuilder<T, A>` classes it returns but it's good to first understand how
-the underlying interfaces `Expression<T>` and `AliasedExpression<T, A>` work.
+and the `RawBuilder<T>` and `AliasedRawBuilder<T, A>` class instances it returns, but it's good to first understand how
+the underlying interfaces they implement, `Expression<T>` and `AliasedExpression<T, A>`, work.
 
 ## Expression<T>
 
-[`Expresssion<T>`](https://koskimas.github.io/kysely/interfaces/Expression.html) is a simple interface
+[`Expression<T>`](https://koskimas.github.io/kysely/interfaces/Expression.html) is a simple interface
 that has a type `T` and a single method `toOperationNode()`. `T` tells Kysely's type system the type of
 the expression. `toOperationNode()` returns instructions on what SQL should be produced once the
 expression is compiled.
@@ -34,18 +33,14 @@ class JsonValue<T> implements Expression<T> {
   }
 
   // This is a mandatory getter. You must add it and always return `undefined`.
-  // See the `Expression<T>` docs for an explanation.
   get expressionType(): T | undefined {
     return undefined
   }
 
   toOperationNode(): OperationNode {
     const json = JSON.stringify(this.#value)
-    // You can return any `OperationNode` from here, but we won't go into
-    // details what an `OperationNode` is. Most of the time you can use
-    // the `sql` template tag to build the node. And don't worry, we are
-    // not concatenating user input to the SQL. the `sql` template tag
-    // takes care of passing the `json` string as a parameter to the DB.
+    // Most of the time you can use the `sql` template tag to build the returned node. 
+    // The `sql` template tag takes care of passing the `json` string as a parameter, alongside the sql string, to the DB.
     return sql`CAST(${json} AS JSONB)`.toOperationNode()
   }
 }
@@ -86,15 +81,15 @@ async function test(db: Kysely<DB>) {
 }
 ```
 
-Most of the time you don't need to create your own `Expression<T>` objects. You can use the
+Most of the time you don't need to create your own classes that implement the `Expression<T>` interface. You can simply wrap the
 [sql template tag](https://koskimas.github.io/kysely/interfaces/Sql.html) and the `RawBuilder<T>`
-class it returns to build these helpers. `RawBuilder<T>` itself implements the `Expression<T>`
+class instance it returns in a function. `RawBuilder<T>`, like most things in Kysely, implements the `Expression<T>`
 interface.
 
 Our previous example would get simplified into this:
 
 ```ts
-import { Expression, Kysely, OperationNode, RawBuilder, sql } from 'kysely'
+import { Kysely, RawBuilder, sql } from 'kysely'
 
 function json<T>(value: T): RawBuilder<T> {
   return sql`CAST(${JSON.stringify(value)} AS JSONB)`
@@ -346,6 +341,6 @@ db.insertInto('t')
 ## Extending using inheritance
 
 You usually don't want to do this. Because of the complex types, you'll quickly run into problems.
-Even though kysely uses classes, Kysely is not designed from the OOP point of view. Classes are
-used because they are supported natively by typescript. They provide private variables and a nice
+Even though Kysely uses classes, Kysely is not designed from the OOP point of view. Classes are
+used because they are supported natively by Typescript. They provide private variables and a nice
 discoverable API.
