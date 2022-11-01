@@ -44,6 +44,7 @@ You can find a more thorough introduction [here](https://www.jakso.me/blog/kysel
   - [Update queries](#update-queries)
   - [Insert queries](#insert-queries)
   - [Delete queries](#delete-queries)
+- [Recipes](#recipes)
 - [Migrations](#migrations)
     - [PostgreSQL migration example](#postgresql-migration-example)
     - [MySQL migration example](#mysql-migration-example)
@@ -249,6 +250,17 @@ documentation.
 
 See the [deleteFrom method](https://koskimas.github.io/kysely/classes/Kysely.html#deleteFrom)
 documentation.
+
+# Recipes
+
+The [recipes](https://github.com/koskimas/kysely/tree/master/recipes) folder contains a bunch of small tutorials
+or "recipes" for common use cases.
+
+* [Conditional selects](https://github.com/koskimas/kysely/tree/master/recipes/conditional-selects.md)
+* [Deduplicate joins](https://github.com/koskimas/kysely/tree/master/recipes/deduplicate-joins.md)
+* [Extending kysely](https://github.com/koskimas/kysely/tree/master/recipes/extending-kysely.md)
+* [Raw SQL](https://github.com/koskimas/kysely/tree/master/recipes/raw-sql.md)
+* [Schemas](https://github.com/koskimas/kysely/tree/master/recipes/schemas.md)
 
 # Migrations
 
