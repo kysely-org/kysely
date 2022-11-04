@@ -566,8 +566,8 @@ type ReadonlyConnectionBuilder<DB> = Omit<ConnectionBuilder<DB>, 'execute'> & {
 }
 
 type ReadonlyTransactionBuilder<DB> = {
-  execute: <T>(callback: (trx: ReadonlyKysely<DB>) => Promise<T>) => Promise<T>
-  setIsolationLevel: (
+  execute<T>(callback: (trx: ReadonlyKysely<DB>) => Promise<T>): Promise<T>
+  setIsolationLevel(
     isolationLevel: IsolationLevel
-  ) => ReadonlyTransactionBuilder<DB>
+  ): ReadonlyTransactionBuilder<DB>
 }
