@@ -494,7 +494,7 @@ export type ReadonlyQueryCreator<DB> = Pick<QueryCreator<DB>, 'selectFrom'> & {
     expression: E
   ): ReadonlyQueryCreatorWithCommonTableExpression<DB, N, E>
   withoutPlugins(): ReadonlyQueryCreator<DB>
-  WithPlugin(plugin: KyselyPlugin): ReadonlyQueryCreator<DB>
+  withPlugin(plugin: KyselyPlugin): ReadonlyQueryCreator<DB>
   withRecursive<
     N extends string,
     E extends ReadonlyRecursiveCommonTableExpression<DB, N>
