@@ -76,6 +76,7 @@ export class PostgresIntrospector implements DatabaseIntrospector {
     }
 
     const rawColumns = await query.execute()
+
     return this.#parseTableMetadata(rawColumns)
   }
 
@@ -110,6 +111,7 @@ export class PostgresIntrospector implements DatabaseIntrospector {
           isNullable: !it.not_null,
           isAutoIncrementing: !!it.auto_incrementing,
           hasDefaultValue: it.has_default,
+          dataTypeSchema: it.schema,
         })
       )
 

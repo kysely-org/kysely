@@ -59,4 +59,11 @@ export interface ColumnMetadata {
   readonly isAutoIncrementing: boolean
   readonly isNullable: boolean
   readonly hasDefaultValue: boolean
+  /**
+   * The schema this column's data type was created in.
+   *
+   * NOTE: A type with the same name can be created in different schemas in databases
+   *       such as PostgreSQL.
+   */
+  readonly dataTypeSchema?: string
 }
