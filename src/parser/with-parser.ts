@@ -3,7 +3,7 @@ import { DeleteQueryBuilder } from '../query-builder/delete-query-builder.js'
 import { InsertQueryBuilder } from '../query-builder/insert-query-builder.js'
 import { CommonTableExpressionNode } from '../operation-node/common-table-expression-node.js'
 import { CommonTableExpressionNameNode } from '../operation-node/common-table-expression-name-node.js'
-import { QueryCreator } from '../query-creator.js'
+import { QueryCreator, ReadonlyQueryCreator } from '../query-creator.js'
 import { createQueryCreator } from './parse-utils.js'
 import { Expression } from '../expression/expression.js'
 
@@ -92,6 +92,37 @@ type ExtractColumnNamesFromColumnList<R extends string> =
   R extends `${infer C}, ${infer RS}`
     ? C | ExtractColumnNamesFromColumnList<RS>
     : R
+
+export type ReadonlyCommonTableExpression<DB, CN extends string> = (
+  creator: ReadonlyQueryCreator<DB>
+) => ReadonlyCommonTableExpressionOutput<CN>
+
+export type ReadonlyRecursiveCommonTableExpression<DB, CN extends string> = (
+  creator: ReadonlyQueryCreator<
+    DB &
+      // Recursive CTE can select from itself.
+      Record<
+        ExtractTableFromCommonTableExpressionName<CN>,
+        ExtractRowFromCommonTableExpressionName<CN>
+      >
+  >
+) => ReadonlyCommonTableExpressionOutput<CN>
+
+type ReadonlyCommonTableExpressionOutput<N extends string> = Expression<
+  ExtractRowFromCommonTableExpressionName<N>
+>
+
+export type ReadonlyQueryCreatorWithCommonTableExpression<
+  DB,
+  CN extends string,
+  CTE
+> = ReadonlyQueryCreator<
+  DB &
+    Record<
+      ExtractTableFromCommonTableExpressionName<CN>,
+      ExtractRowFromCommonTableExpression<CTE>
+    >
+>
 
 export function parseCommonTableExpression(
   name: string,

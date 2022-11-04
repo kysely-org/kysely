@@ -3,7 +3,11 @@ import { SchemaModule } from './schema/schema.js'
 import { DynamicModule } from './dynamic/dynamic.js'
 import { DefaultConnectionProvider } from './driver/default-connection-provider.js'
 import { QueryExecutor } from './query-executor/query-executor.js'
-import { QueryCreator, QueryCreatorProps } from './query-creator.js'
+import {
+  QueryCreator,
+  QueryCreatorProps,
+  ReadonlyQueryCreator,
+} from './query-creator.js'
 import { KyselyPlugin } from './plugin/kysely-plugin.js'
 import { DefaultQueryExecutor } from './query-executor/default-query-executor.js'
 import { DatabaseIntrospector } from './dialect/database-introspector.js'
@@ -519,4 +523,51 @@ function validateTransactionSettings(settings: TransactionSettings): void {
       `invalid transaction isolation level ${settings.isolationLevel}`
     )
   }
+}
+
+/**
+ * A helper type that allows you to expose a read-only Kysely version to your
+ * service's consumers.
+ *
+ * ### Examples
+ *
+ * ```ts
+ * function getDB(): ReadonlyKysely<Database> {
+ *   return new Kysely({
+ *     // configuration
+ *   }) as any
+ * }
+ *
+ * const db = getDB()
+ *
+ * db.selectFrom('person') // works!
+ * db.deleteFrom('person') // typescript compiler error!
+ * ```
+ */
+export type ReadonlyKysely<DB> = Pick<
+  Kysely<DB>,
+  | 'destroy'
+  | 'dynamic'
+  | 'fn'
+  | 'getExecutor'
+  | 'introspection'
+  | 'isTransaction'
+> &
+  ReadonlyQueryCreator<DB> & {
+    connection(): ReadonlyConnectionBuilder<DB>
+    transaction(): ReadonlyTransactionBuilder<DB>
+    withTables<T extends Record<string, Record<string, any>>>(): ReadonlyKysely<
+      DB & T
+    >
+  }
+
+type ReadonlyConnectionBuilder<DB> = Omit<ConnectionBuilder<DB>, 'execute'> & {
+  execute<T>(db: ReadonlyKysely<DB>): Promise<T>
+}
+
+type ReadonlyTransactionBuilder<DB> = {
+  execute: <T>(callback: (trx: ReadonlyKysely<DB>) => Promise<T>) => Promise<T>
+  setIsolationLevel: (
+    isolationLevel: IsolationLevel
+  ) => ReadonlyTransactionBuilder<DB>
 }
