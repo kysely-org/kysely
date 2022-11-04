@@ -608,9 +608,14 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
 
     if (this.#props.executor.adapter.supportsReturning && query.returning) {
       return result.rows
-    } else {
-      return [new DeleteResult(result.numUpdatedOrDeletedRows!) as unknown as O]
     }
+
+    return [
+      new DeleteResult(
+        // TODO: remove numUpdatedOrDeletedRows.
+        (result.numAffectedRows ?? result.numUpdatedOrDeletedRows)!
+      ) as any,
+    ]
   }
 
   /**

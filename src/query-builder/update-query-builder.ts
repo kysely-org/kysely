@@ -704,9 +704,14 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
 
     if (this.#props.executor.adapter.supportsReturning && query.returning) {
       return result.rows
-    } else {
-      return [new UpdateResult(result.numUpdatedOrDeletedRows!) as unknown as O]
     }
+
+    return [
+      new UpdateResult(
+        // TODO: remove numUpdatedOrDeletedRows.
+        (result.numAffectedRows ?? result.numUpdatedOrDeletedRows)!
+      ) as any,
+    ]
   }
 
   /**
