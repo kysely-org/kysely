@@ -52,6 +52,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
                 isNullable: true,
                 isAutoIncrementing: false,
                 hasDefaultValue: false,
+                dataTypeSchema: 'public',
               },
               {
                 name: 'gender',
@@ -59,6 +60,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
                 isNullable: false,
                 isAutoIncrementing: false,
                 hasDefaultValue: false,
+                dataTypeSchema: 'public',
               },
               {
                 name: 'id',
@@ -66,6 +68,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
                 isNullable: false,
                 isAutoIncrementing: true,
                 hasDefaultValue: true,
+                dataTypeSchema: 'public',
               },
               {
                 name: 'last_name',
@@ -73,6 +76,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
                 isNullable: true,
                 isAutoIncrementing: false,
                 hasDefaultValue: false,
+                dataTypeSchema: 'public',
               },
               {
                 name: 'middle_name',
@@ -80,6 +84,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
                 isNullable: true,
                 isAutoIncrementing: false,
                 hasDefaultValue: false,
+                dataTypeSchema: 'public',
               },
             ],
           },
@@ -93,6 +98,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
                 isNullable: false,
                 isAutoIncrementing: true,
                 hasDefaultValue: true,
+                dataTypeSchema: 'public',
               },
               {
                 name: 'name',
@@ -100,6 +106,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
                 isNullable: false,
                 isAutoIncrementing: false,
                 hasDefaultValue: false,
+                dataTypeSchema: 'public',
               },
               {
                 name: 'owner_id',
@@ -107,6 +114,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
                 isNullable: false,
                 isAutoIncrementing: false,
                 hasDefaultValue: false,
+                dataTypeSchema: 'public',
               },
               {
                 name: 'species',
@@ -114,6 +122,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
                 isNullable: false,
                 isAutoIncrementing: false,
                 hasDefaultValue: false,
+                dataTypeSchema: 'public',
               },
             ],
           },
@@ -127,6 +136,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
                 isNullable: false,
                 isAutoIncrementing: true,
                 hasDefaultValue: true,
+                dataTypeSchema: 'public',
               },
               {
                 name: 'name',
@@ -134,6 +144,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
                 isNullable: false,
                 isAutoIncrementing: false,
                 hasDefaultValue: false,
+                dataTypeSchema: 'public',
               },
               {
                 name: 'pet_id',
@@ -141,6 +152,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
                 isNullable: false,
                 isAutoIncrementing: false,
                 hasDefaultValue: false,
+                dataTypeSchema: 'public',
               },
               {
                 name: 'price',
@@ -148,6 +160,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
                 isNullable: false,
                 isAutoIncrementing: false,
                 hasDefaultValue: false,
+                dataTypeSchema: 'public',
               },
             ],
           },
@@ -161,6 +174,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
                 isNullable: false,
                 isAutoIncrementing: true,
                 hasDefaultValue: true,
+                dataTypeSchema: 'some_schema',
               },
             ],
           },

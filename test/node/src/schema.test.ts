@@ -115,6 +115,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
             isNullable: false,
             hasDefaultValue: true,
             name: 'a',
+            dataTypeSchema: 'public',
           })
 
           expect(await getColumnMeta('test.b')).to.eql({
@@ -123,6 +124,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
             isNullable: true,
             hasDefaultValue: false,
             name: 'b',
+            dataTypeSchema: 'public',
           })
 
           expect(await getColumnMeta('test.l')).to.eql({
@@ -131,6 +133,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
             isNullable: false,
             hasDefaultValue: true,
             name: 'l',
+            dataTypeSchema: 'public',
           })
         })
       } else if (dialect === 'mysql') {
