@@ -553,9 +553,11 @@ export type ReadonlyKysely<DB> = Pick<
   | 'introspection'
   | 'isTransaction'
 > &
-  ReadonlyQueryCreator<DB> & {
+  Omit<ReadonlyQueryCreator<DB>, 'withoutPlugins' | 'withPlugin'> & {
     connection(): ReadonlyConnectionBuilder<DB>
     transaction(): ReadonlyTransactionBuilder<DB>
+    withoutPlugins(): ReadonlyKysely<DB>
+    withPlugin(plugin: KyselyPlugin): ReadonlyKysely<DB>
     withTables<T extends Record<string, Record<string, any>>>(): ReadonlyKysely<
       DB & T
     >
