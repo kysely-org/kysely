@@ -1367,7 +1367,7 @@ export type ReadonlyKysely<DB> = Pick<
     >
   }
 
-type ReadonlyConnectionBuilder<DB> = Omit<ConnectionBuilder<DB>, 'execute'> & {
+type ReadonlyConnectionBuilder<DB> = {
   execute<T>(db: ReadonlyKysely<DB>): Promise<T>
 }
 
