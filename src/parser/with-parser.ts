@@ -2,10 +2,7 @@ import type { UpdateQueryBuilder } from '../query-builder/update-query-builder.j
 import type { DeleteQueryBuilder } from '../query-builder/delete-query-builder.js'
 import type { InsertQueryBuilder } from '../query-builder/insert-query-builder.js'
 import { CommonTableExpressionNameNode } from '../operation-node/common-table-expression-name-node.js'
-import type { QueryCreator } from '../query-creator.js'
-import type { Expression } from '../expression/expression.js'
-import type { ShallowRecord } from '../util/type-utils.js'
-import type { OperationNode } from '../operation-node/operation-node.js'
+import { QueryCreator, ReadonlyQueryCreator } from '../query-creator.js'
 import { createQueryCreator } from './parse-utils.js'
 import { isFunction } from '../util/object-utils.js'
 import {
@@ -96,6 +93,37 @@ type ExtractRowFromCommonTableExpressionName<CN> =
 type ExtractColumnNamesFromColumnList<R> = R extends `${infer C}, ${infer RS}`
   ? C | ExtractColumnNamesFromColumnList<RS>
   : R
+
+export type ReadonlyCommonTableExpression<DB, CN extends string> = (
+  creator: ReadonlyQueryCreator<DB>
+) => ReadonlyCommonTableExpressionOutput<CN>
+
+export type ReadonlyRecursiveCommonTableExpression<DB, CN extends string> = (
+  creator: ReadonlyQueryCreator<
+    DB &
+      // Recursive CTE can select from itself.
+      Record<
+        ExtractTableFromCommonTableExpressionName<CN>,
+        ExtractRowFromCommonTableExpressionName<CN>
+      >
+  >
+) => ReadonlyCommonTableExpressionOutput<CN>
+
+type ReadonlyCommonTableExpressionOutput<N extends string> = Expression<
+  ExtractRowFromCommonTableExpressionName<N>
+>
+
+export type ReadonlyQueryCreatorWithCommonTableExpression<
+  DB,
+  CN extends string,
+  CTE
+> = ReadonlyQueryCreator<
+  DB &
+    Record<
+      ExtractTableFromCommonTableExpressionName<CN>,
+      ExtractRowFromCommonTableExpression<CTE>
+    >
+>
 
 export function parseCommonTableExpression(
   nameOrBuilderCallback: string | CTEBuilderCallback<string>,

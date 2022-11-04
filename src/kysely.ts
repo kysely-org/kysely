@@ -2,9 +2,13 @@ import type { Dialect } from './dialect/dialect.js'
 import { SchemaModule } from './schema/schema.js'
 import { DynamicModule } from './dynamic/dynamic.js'
 import { DefaultConnectionProvider } from './driver/default-connection-provider.js'
-import type { QueryExecutor } from './query-executor/query-executor.js'
-import { QueryCreator, type QueryCreatorProps } from './query-creator.js'
-import type { KyselyPlugin } from './plugin/kysely-plugin.js'
+import { QueryExecutor } from './query-executor/query-executor.js'
+import {
+  QueryCreator,
+  QueryCreatorProps,
+  ReadonlyQueryCreator,
+} from './query-creator.js'
+import { KyselyPlugin } from './plugin/kysely-plugin.js'
 import { DefaultQueryExecutor } from './query-executor/default-query-executor.js'
 import type { DatabaseIntrospector } from './dialect/database-introspector.js'
 import { freeze, isObject, isUndefined } from './util/object-utils.js'
@@ -1325,4 +1329,51 @@ class NotCommittedOrRolledBackAssertingExecutor implements QueryExecutor {
       this.#state,
     )
   }
+}
+
+/**
+ * A helper type that allows you to expose a read-only Kysely version to your
+ * service's consumers.
+ *
+ * ### Examples
+ *
+ * ```ts
+ * function getDB(): ReadonlyKysely<Database> {
+ *   return new Kysely({
+ *     // configuration
+ *   }) as any
+ * }
+ *
+ * const db = getDB()
+ *
+ * db.selectFrom('person') // works!
+ * db.deleteFrom('person') // typescript compiler error!
+ * ```
+ */
+export type ReadonlyKysely<DB> = Pick<
+  Kysely<DB>,
+  | 'destroy'
+  | 'dynamic'
+  | 'fn'
+  | 'getExecutor'
+  | 'introspection'
+  | 'isTransaction'
+> &
+  ReadonlyQueryCreator<DB> & {
+    connection(): ReadonlyConnectionBuilder<DB>
+    transaction(): ReadonlyTransactionBuilder<DB>
+    withTables<T extends Record<string, Record<string, any>>>(): ReadonlyKysely<
+      DB & T
+    >
+  }
+
+type ReadonlyConnectionBuilder<DB> = Omit<ConnectionBuilder<DB>, 'execute'> & {
+  execute<T>(db: ReadonlyKysely<DB>): Promise<T>
+}
+
+type ReadonlyTransactionBuilder<DB> = {
+  execute: <T>(callback: (trx: ReadonlyKysely<DB>) => Promise<T>) => Promise<T>
+  setIsolationLevel: (
+    isolationLevel: IsolationLevel
+  ) => ReadonlyTransactionBuilder<DB>
 }
