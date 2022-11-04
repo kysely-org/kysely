@@ -584,7 +584,6 @@ for (const dialect of BUILT_IN_DIALECTS) {
         .limit(2)
         .execute()
 
-      expect(inserted).to.have.length(2)
       expect(inserted).to.containSubset([
         { first_name: 'Foo', last_name: 'Bar', gender: 'other' },
         { first_name: 'Baz', last_name: 'Spam', gender: 'other' },
