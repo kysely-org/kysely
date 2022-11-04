@@ -14,6 +14,9 @@ import { Deferred } from '../util/deferred.js'
 
 const NO_PLUGINS: ReadonlyArray<KyselyPlugin> = freeze([])
 
+// TODO: remove.
+let warnedOfDeprecation: boolean
+
 export abstract class QueryExecutorBase implements QueryExecutor {
   readonly #plugins: ReadonlyArray<KyselyPlugin>
 
@@ -65,7 +68,13 @@ export abstract class QueryExecutorBase implements QueryExecutor {
   ): Promise<QueryResult<R>> {
     return await this.provideConnection(async (connection) => {
       const result = await connection.executeQuery(compiledQuery)
-      return this.#transformResult(result, queryId)
+
+      const transformedResult = await this.#transformResult(result, queryId)
+
+      // TODO: remove.
+      warnOfDeprecatedDriverOrPlugins(result, transformedResult)
+
+      return transformedResult as any
     })
   }
 
@@ -117,4 +126,28 @@ export abstract class QueryExecutorBase implements QueryExecutor {
 
     return result
   }
+}
+
+// TODO: remove.
+function warnOfDeprecatedDriverOrPlugins(
+  result: QueryResult<unknown>,
+  transformedResult: QueryResult<unknown>
+): void {
+  const { numAffectedRows } = result
+
+  if (
+    warnedOfDeprecation ||
+    (numAffectedRows === undefined &&
+      result.numUpdatedOrDeletedRows === undefined) ||
+    (numAffectedRows !== undefined &&
+      transformedResult.numAffectedRows !== undefined)
+  ) {
+    return
+  }
+
+  warnedOfDeprecation = true
+
+  console.warn(
+    'kysely:warning: outdated driver/plugin detected! QueryResult.numUpdatedOrDeletedRows is deprecated and will be removed in a future release.'
+  )
 }
