@@ -190,6 +190,7 @@ export {
   UnknownRow,
 } from './util/type-utils.js'
 export * from './util/infer-result.js'
+export { logOnce } from './util/log-once.js'
 
 export {
   SelectExpression,
