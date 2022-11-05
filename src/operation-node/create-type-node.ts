@@ -20,10 +20,10 @@ export const CreateTypeNode = freeze({
     return node.kind === 'CreateTypeNode'
   },
 
-  create(name: string): CreateTypeNode {
+  create(name: SchemableIdentifierNode): CreateTypeNode {
     return freeze({
       kind: 'CreateTypeNode',
-      name: SchemableIdentifierNode.create(name),
+      name,
     })
   },
 

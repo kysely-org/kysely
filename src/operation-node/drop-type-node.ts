@@ -18,10 +18,10 @@ export const DropTypeNode = freeze({
     return node.kind === 'DropTypeNode'
   },
 
-  create(name: string): DropTypeNode {
+  create(name: SchemableIdentifierNode): DropTypeNode {
     return freeze({
       kind: 'DropTypeNode',
-      name: SchemableIdentifierNode.create(name),
+      name,
     })
   },
 

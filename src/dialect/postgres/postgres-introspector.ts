@@ -34,10 +34,20 @@ export class PostgresIntrospector implements DatabaseIntrospector {
     options: DatabaseMetadataOptions = { withInternalKyselyTables: false }
   ): Promise<TableMetadata[]> {
     let query = this.#db
+      // column
       .selectFrom('pg_catalog.pg_attribute as a')
+      // table
       .innerJoin('pg_catalog.pg_class as c', 'a.attrelid', 'c.oid')
+      // table schema
       .innerJoin('pg_catalog.pg_namespace as ns', 'c.relnamespace', 'ns.oid')
+      // column data type
       .innerJoin('pg_catalog.pg_type as typ', 'a.atttypid', 'typ.oid')
+      // column data type schema
+      .innerJoin(
+        'pg_catalog.pg_namespace as dtns',
+        'typ.typnamespace',
+        'dtns.oid'
+      )
       .select([
         'a.attname as column',
         'a.attnotnull as not_null',
@@ -45,6 +55,7 @@ export class PostgresIntrospector implements DatabaseIntrospector {
         'c.relname as table',
         'ns.nspname as schema',
         'typ.typname as type',
+        'dtns.nspname as type_schema',
 
         // Detect if the column is auto incrementing by finding the sequence
         // that is created for `serial` and `bigserial` columns.
@@ -107,6 +118,7 @@ export class PostgresIntrospector implements DatabaseIntrospector {
         freeze({
           name: it.column,
           dataType: it.type,
+          dataTypeSchema: it.type_schema,
           isNullable: !it.not_null,
           isAutoIncrementing: !!it.auto_incrementing,
           hasDefaultValue: it.has_default,
@@ -129,5 +141,6 @@ interface RawColumnMetadata {
   not_null: boolean
   has_default: boolean
   type: string
+  type_schema: string
   auto_incrementing: boolean | null
 }

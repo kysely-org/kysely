@@ -47,6 +47,7 @@ export interface TableMetadata {
 
 export interface ColumnMetadata {
   readonly name: string
+
   /**
    * The data type of the column as reported by the database.
    *
@@ -56,6 +57,12 @@ export interface ColumnMetadata {
    *       on PostgreSQL, `INTEGER` on SQLite and `int` on MySQL.
    */
   readonly dataType: string
+
+  /**
+   * The schema this column's data type was created in.
+   */
+  readonly dataTypeSchema?: string
+
   readonly isAutoIncrementing: boolean
   readonly isNullable: boolean
   readonly hasDefaultValue: boolean

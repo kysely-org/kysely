@@ -25,6 +25,7 @@ import { CreateTypeBuilder } from './create-type-builder.js'
 import { DropTypeBuilder } from './drop-type-builder.js'
 import { CreateTypeNode } from '../operation-node/create-type-node.js'
 import { DropTypeNode } from '../operation-node/drop-type-node.js'
+import { parseSchemableIdentifier } from '../parser/identifier-parser.js'
 
 /**
  * Provides methods for building database schema.
@@ -268,11 +269,11 @@ export class SchemaModule {
    *   .execute()
    * ```
    */
-  createType(viewName: string): CreateTypeBuilder {
+  createType(typeName: string): CreateTypeBuilder {
     return new CreateTypeBuilder({
       queryId: createQueryId(),
       executor: this.#executor,
-      createTypeNode: CreateTypeNode.create(viewName),
+      createTypeNode: CreateTypeNode.create(parseSchemableIdentifier(typeName)),
     })
   }
 
@@ -290,11 +291,11 @@ export class SchemaModule {
    *   .execute()
    * ```
    */
-  dropType(viewName: string): DropTypeBuilder {
+  dropType(typeName: string): DropTypeBuilder {
     return new DropTypeBuilder({
       queryId: createQueryId(),
       executor: this.#executor,
-      dropTypeNode: DropTypeNode.create(viewName),
+      dropTypeNode: DropTypeNode.create(parseSchemableIdentifier(typeName)),
     })
   }
 

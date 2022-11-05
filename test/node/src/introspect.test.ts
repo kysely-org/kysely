@@ -1,3 +1,5 @@
+import { sql } from '../../../'
+
 import {
   BUILT_IN_DIALECTS,
   clearDatabase,
@@ -49,6 +51,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
               {
                 name: 'first_name',
                 dataType: 'varchar',
+                dataTypeSchema: 'pg_catalog',
                 isNullable: true,
                 isAutoIncrementing: false,
                 hasDefaultValue: false,
@@ -56,6 +59,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
               {
                 name: 'gender',
                 dataType: 'varchar',
+                dataTypeSchema: 'pg_catalog',
                 isNullable: false,
                 isAutoIncrementing: false,
                 hasDefaultValue: false,
@@ -63,6 +67,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
               {
                 name: 'id',
                 dataType: 'int4',
+                dataTypeSchema: 'pg_catalog',
                 isNullable: false,
                 isAutoIncrementing: true,
                 hasDefaultValue: true,
@@ -70,6 +75,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
               {
                 name: 'last_name',
                 dataType: 'varchar',
+                dataTypeSchema: 'pg_catalog',
                 isNullable: true,
                 isAutoIncrementing: false,
                 hasDefaultValue: false,
@@ -77,6 +83,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
               {
                 name: 'middle_name',
                 dataType: 'varchar',
+                dataTypeSchema: 'pg_catalog',
                 isNullable: true,
                 isAutoIncrementing: false,
                 hasDefaultValue: false,
@@ -90,6 +97,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
               {
                 name: 'id',
                 dataType: 'int4',
+                dataTypeSchema: 'pg_catalog',
                 isNullable: false,
                 isAutoIncrementing: true,
                 hasDefaultValue: true,
@@ -97,6 +105,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
               {
                 name: 'name',
                 dataType: 'varchar',
+                dataTypeSchema: 'pg_catalog',
                 isNullable: false,
                 isAutoIncrementing: false,
                 hasDefaultValue: false,
@@ -104,6 +113,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
               {
                 name: 'owner_id',
                 dataType: 'int4',
+                dataTypeSchema: 'pg_catalog',
                 isNullable: false,
                 isAutoIncrementing: false,
                 hasDefaultValue: false,
@@ -111,6 +121,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
               {
                 name: 'species',
                 dataType: 'varchar',
+                dataTypeSchema: 'pg_catalog',
                 isNullable: false,
                 isAutoIncrementing: false,
                 hasDefaultValue: false,
@@ -124,6 +135,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
               {
                 name: 'id',
                 dataType: 'int4',
+                dataTypeSchema: 'pg_catalog',
                 isNullable: false,
                 isAutoIncrementing: true,
                 hasDefaultValue: true,
@@ -131,6 +143,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
               {
                 name: 'name',
                 dataType: 'varchar',
+                dataTypeSchema: 'pg_catalog',
                 isNullable: false,
                 isAutoIncrementing: false,
                 hasDefaultValue: false,
@@ -138,6 +151,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
               {
                 name: 'pet_id',
                 dataType: 'int4',
+                dataTypeSchema: 'pg_catalog',
                 isNullable: false,
                 isAutoIncrementing: false,
                 hasDefaultValue: false,
@@ -145,6 +159,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
               {
                 name: 'price',
                 dataType: 'float8',
+                dataTypeSchema: 'pg_catalog',
                 isNullable: false,
                 isAutoIncrementing: false,
                 hasDefaultValue: false,
@@ -158,9 +173,18 @@ for (const dialect of BUILT_IN_DIALECTS) {
               {
                 name: 'some_column',
                 dataType: 'int4',
+                dataTypeSchema: 'pg_catalog',
                 isNullable: false,
                 isAutoIncrementing: true,
                 hasDefaultValue: true,
+              },
+              {
+                dataType: 'species',
+                dataTypeSchema: 'dtype_schema',
+                hasDefaultValue: false,
+                isAutoIncrementing: false,
+                isNullable: true,
+                name: 'spcies',
               },
             ],
           },
@@ -391,15 +415,38 @@ for (const dialect of BUILT_IN_DIALECTS) {
 
     async function createSchema() {
       await ctx.db.schema.createSchema('some_schema').execute()
-      await ctx.db.schema
-        .createTable('some_schema.pet')
-        .addColumn('some_column', 'serial', (col) => col.primaryKey())
-        .execute()
+
+      if (dialect === 'postgres') {
+        await ctx.db.schema.createSchema('dtype_schema').execute()
+        await ctx.db.schema
+          .createType('dtype_schema.species')
+          .asEnum(['cat', 'dog', 'frog'])
+          .execute()
+
+        await ctx.db.schema
+          .createTable('some_schema.pet')
+          .addColumn('some_column', 'serial', (col) => col.primaryKey())
+          .addColumn('spcies', sql`dtype_schema.species`)
+          .execute()
+      } else {
+        await ctx.db.schema
+          .createTable('some_schema.pet')
+          .addColumn('some_column', 'serial', (col) => col.primaryKey())
+          .execute()
+      }
     }
 
     async function dropSchema() {
       await ctx.db.schema.dropTable('some_schema.pet').ifExists().execute()
       await ctx.db.schema.dropSchema('some_schema').ifExists().execute()
+
+      if (dialect === 'postgres') {
+        await ctx.db.schema
+          .dropType('dtype_schema.species')
+          .ifExists()
+          .execute()
+        await ctx.db.schema.dropSchema('dtype_schema').ifExists().execute()
+      }
     }
   })
 }
