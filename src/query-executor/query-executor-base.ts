@@ -11,11 +11,9 @@ import { QueryId } from '../util/query-id.js'
 import { DialectAdapter } from '../dialect/dialect-adapter.js'
 import { QueryExecutor } from './query-executor.js'
 import { Deferred } from '../util/deferred.js'
+import { logOnce } from '../util/log-once.js'
 
 const NO_PLUGINS: ReadonlyArray<KyselyPlugin> = freeze([])
-
-// TODO: remove.
-let warnedOfDeprecation: boolean
 
 export abstract class QueryExecutorBase implements QueryExecutor {
   readonly #plugins: ReadonlyArray<KyselyPlugin>
@@ -72,7 +70,7 @@ export abstract class QueryExecutorBase implements QueryExecutor {
       const transformedResult = await this.#transformResult(result, queryId)
 
       // TODO: remove.
-      warnOfDeprecatedDriverOrPlugins(result, transformedResult)
+      warnOfOutdatedDriverOrPlugins(result, transformedResult)
 
       return transformedResult as any
     })
@@ -129,14 +127,13 @@ export abstract class QueryExecutorBase implements QueryExecutor {
 }
 
 // TODO: remove.
-function warnOfDeprecatedDriverOrPlugins(
+function warnOfOutdatedDriverOrPlugins(
   result: QueryResult<unknown>,
   transformedResult: QueryResult<unknown>
 ): void {
   const { numAffectedRows } = result
 
   if (
-    warnedOfDeprecation ||
     (numAffectedRows === undefined &&
       result.numUpdatedOrDeletedRows === undefined) ||
     (numAffectedRows !== undefined &&
@@ -145,9 +142,7 @@ function warnOfDeprecatedDriverOrPlugins(
     return
   }
 
-  warnedOfDeprecation = true
-
-  console.warn(
+  logOnce(
     'kysely:warning: outdated driver/plugin detected! QueryResult.numUpdatedOrDeletedRows is deprecated and will be removed in a future release.'
   )
 }
