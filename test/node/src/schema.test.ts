@@ -111,6 +111,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
 
           expect(await getColumnMeta('test.a')).to.eql({
             dataType: 'int4',
+            dataTypeSchema: 'pg_catalog',
             isAutoIncrementing: true,
             isNullable: false,
             hasDefaultValue: true,
@@ -119,6 +120,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
 
           expect(await getColumnMeta('test.b')).to.eql({
             dataType: 'int4',
+            dataTypeSchema: 'pg_catalog',
             isAutoIncrementing: false,
             isNullable: true,
             hasDefaultValue: false,
@@ -127,6 +129,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
 
           expect(await getColumnMeta('test.l')).to.eql({
             dataType: 'bool',
+            dataTypeSchema: 'pg_catalog',
             isAutoIncrementing: false,
             isNullable: false,
             hasDefaultValue: true,

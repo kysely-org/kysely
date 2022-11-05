@@ -1,4 +1,4 @@
-import { SchemableIdentifierNode } from '../operation-node/schemable-identifier-node'
+import { SchemableIdentifierNode } from '../operation-node/schemable-identifier-node.js'
 
 export function parseSchemableIdentifier(id: string): SchemableIdentifierNode {
   const COLUMN_SEPARATOR = '.'
