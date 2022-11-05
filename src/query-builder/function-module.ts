@@ -9,9 +9,11 @@ import {
   SimpleReferenceExpression,
   parseSimpleReferenceExpression,
   ReferenceExpression,
+  StringReference,
 } from '../parser/reference-parser.js'
 import { RawBuilder } from '../raw-builder/raw-builder.js'
 import { createQueryId } from '../util/query-id.js'
+import { Equals, IsNever } from '../util/type-utils.js'
 import { AggregateFunctionBuilder } from './aggregate-function-builder.js'
 
 /**
@@ -226,16 +228,22 @@ export class FunctionModule<DB, TB extends keyof DB> {
    * ```
    */
   max<
-    O extends number | string | bigint | null = number | string | bigint,
-    C extends SimpleReferenceExpression<DB, TB> = DynamicReferenceBuilder
+    O extends number | string | bigint | null = never,
+    C extends StringReference<DB, TB> = StringReference<DB, TB>
   >(
-    column: C
-  ): AggregateFunctionBuilder<
-    DB,
-    TB,
-    | ExtractTypeFromReferenceExpression<DB, TB, C, O>
-    | (null extends O ? null : never)
-  > {
+    column: OutputBoundStringReference<DB, TB, C, O>
+  ): StringReferenceBoundAggregateFunctionBuilder<DB, TB, C, O>
+
+  max<O extends number | string | bigint | null = number | string | bigint>(
+    column: DynamicReferenceBuilder
+  ): AggregateFunctionBuilder<DB, TB, O>
+
+  max<
+    C extends SimpleReferenceExpression<DB, TB> = SimpleReferenceExpression<
+      DB,
+      TB
+    >
+  >(column: C): any {
     return new AggregateFunctionBuilder({
       aggregateFunctionNode: AggregateFunctionNode.create(
         'max',
@@ -274,16 +282,22 @@ export class FunctionModule<DB, TB extends keyof DB> {
    * ```
    */
   min<
-    O extends number | string | bigint | null = number | string | bigint,
-    C extends SimpleReferenceExpression<DB, TB> = DynamicReferenceBuilder
+    O extends number | string | bigint | null = never,
+    C extends StringReference<DB, TB> = StringReference<DB, TB>
   >(
-    column: C
-  ): AggregateFunctionBuilder<
-    DB,
-    TB,
-    | ExtractTypeFromReferenceExpression<DB, TB, C, O>
-    | (null extends O ? null : never)
-  > {
+    column: OutputBoundStringReference<DB, TB, C, O>
+  ): StringReferenceBoundAggregateFunctionBuilder<DB, TB, C, O>
+
+  min<O extends number | string | bigint | null = number | string | bigint>(
+    column: DynamicReferenceBuilder
+  ): AggregateFunctionBuilder<DB, TB, O>
+
+  min<
+    C extends SimpleReferenceExpression<DB, TB> = SimpleReferenceExpression<
+      DB,
+      TB
+    >
+  >(column: C): any {
     return new AggregateFunctionBuilder({
       aggregateFunctionNode: AggregateFunctionNode.create(
         'min',
@@ -341,3 +355,29 @@ export class FunctionModule<DB, TB extends keyof DB> {
     })
   }
 }
+
+type OutputBoundStringReference<
+  DB,
+  TB extends keyof DB,
+  C extends StringReference<DB, TB>,
+  O
+> = IsNever<O> extends true
+  ? C // output not provided, unbound
+  : Equals<
+      ExtractTypeFromReferenceExpression<DB, TB, C> | null,
+      O | null
+    > extends true
+  ? C
+  : never
+
+type StringReferenceBoundAggregateFunctionBuilder<
+  DB,
+  TB extends keyof DB,
+  C extends StringReference<DB, TB>,
+  O
+> = AggregateFunctionBuilder<
+  DB,
+  TB,
+  | ExtractTypeFromReferenceExpression<DB, TB, C>
+  | (null extends O ? null : never) // output is nullable, but column type might not be nullable.
+>
