@@ -30,8 +30,10 @@ export class FileMigrationProvider implements MigrationProvider {
 
     for (const fileName of files) {
       if (
-        (fileName.endsWith('.js') || fileName.endsWith('.ts') || fileName.endsWith('.mjs')) &&
-        !fileName.endsWith('.d.ts')
+        fileName.endsWith('.js') ||
+        (fileName.endsWith('.ts') && !fileName.endsWith('.d.ts')) ||
+        fileName.endsWith('.mjs') ||
+        (fileName.endsWith('.mts') && !fileName.endsWith('.d.mts'))
       ) {
         const migration = await import(
           /* webpackIgnore: true */ this.#props.path.join(
@@ -39,10 +41,11 @@ export class FileMigrationProvider implements MigrationProvider {
             fileName
           )
         )
-        const migrationKey = fileName.substring(0, fileName.length - 3);
+        const migrationKey = fileName.substring(0, fileName.lastIndexOf('.'))
+
         // Handle esModuleInterop export's `default` prop...
         if (isMigration(migration?.default)) {
-          migrations[migrationKey] = migration.default;
+          migrations[migrationKey] = migration.default
         } else if (isMigration(migration)) {
           migrations[migrationKey] = migration
         }
