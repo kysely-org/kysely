@@ -340,20 +340,24 @@ db.insertInto('t')
 
 ## Extending using inheritance
 
-You usually don't want to do this. Because of the complex types and typescript's limitations when it comes to inheritence and return types, you'll quickly run into problems.
-Even though Kysely uses classes, Kysely is not designed from the OOP point of view. Classes are
-used because they are supported natively by Typescript. They provide private variables and a nice
-discoverable API.
+You usually don't want to do this. Because of the complex types and typescript's limitations 
+when it comes to inheritence and return types, you'll quickly run into problems.
+Even though Kysely uses classes, Kysely is not designed from the OOP point of view. 
+Classes are used because they are supported natively by Typescript. They provide private 
+variables and a nice discoverable API.
 
 ## Extending using module augmentation
 
-You don't want to do this. This method can bypass Typescript's shortcomings when it comes to inheritence and return types, but relies heavily on Kysely's internal structure, which is destined to change without notice between releases. 
+You don't want to do this. This method can bypass Typescript's shortcomings when it comes 
+to inheritence and return types, but relies heavily on Kysely's internal structure, which 
+is destined to change without notice between releases. 
 
 > DISCLAIMER: We do not support this method. Use at your own risk.
 
 You can override and extend Kysely's builder classes via [Typescript module augmentation](https://www.typescriptlang.org/docs/handbook/declaration-merging.html#module-augmentation).
 
-The following example adds an `addIdColumn` method to `CreateTableBuilder`, that helps in adding a postgres uuid primary key column:
+The following example adds an `addIdColumn` method to `CreateTableBuilder`, that helps 
+in adding a postgres uuid primary key column:
 
 ```ts
 declare module "kysely/dist/cjs/schema/create-table-builder" {
@@ -373,7 +377,8 @@ CreateTableBuilder.prototype.addIdColumn = function (
 };
 ```
 
-Now you can use `addIdColumn` seemlessly to create several tables with a uniform primary key definition:
+Now you can use `addIdColumn` seemlessly to create several tables with a uniform 
+primary key definition:
 
 ```ts
 db.schema.createTable('person').addIdColumn().addColumn('name', 'varchar')
