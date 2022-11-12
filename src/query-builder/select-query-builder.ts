@@ -1632,6 +1632,7 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
   /**
    * Call `func(this)` if `condition` is true.
    * If specified, `elseFunc` is called if `condition` is false.
+   *
    * This method is especially handy with optional selects. Any `select` or `selectAll`
    * method calls add columns as optional fields to the output type when called inside
    * the `func` callback. This is because we can't know if those selections were actually
