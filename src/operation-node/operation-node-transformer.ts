@@ -15,7 +15,6 @@ import { RawNode } from './raw-node.js'
 import { SelectQueryNode } from './select-query-node.js'
 import { ValueListNode } from './value-list-node.js'
 import { ValueNode } from './value-node.js'
-import { FilterNode } from './filter-node.js'
 import { OperatorNode } from './operator-node.js'
 import { FromNode } from './from-node.js'
 import { WhereNode } from './where-node.js'
@@ -77,6 +76,8 @@ import { OverNode } from './over-node.js'
 import { PartitionByNode } from './partition-by-node.js'
 import { PartitionByItemNode } from './partition-by-item-node.js'
 import { SetOperationNode } from './set-operation-node.js'
+import { BinaryOperationNode } from './binary-operation-node.js'
+import { UnaryOperationNode } from './unary-operation-node.js'
 
 /**
  * Transforms an operation node tree into another one.
@@ -122,7 +123,6 @@ export class OperationNodeTransformer {
     TableNode: this.transformTable.bind(this),
     FromNode: this.transformFrom.bind(this),
     SelectAllNode: this.transformSelectAll.bind(this),
-    FilterNode: this.transformFilter.bind(this),
     AndNode: this.transformAnd.bind(this),
     OrNode: this.transformOr.bind(this),
     ValueNode: this.transformValue.bind(this),
@@ -188,6 +188,8 @@ export class OperationNodeTransformer {
     PartitionByNode: this.transformPartitionBy.bind(this),
     PartitionByItemNode: this.transformPartitionByItem.bind(this),
     SetOperationNode: this.transformSetOperation.bind(this),
+    BinaryOperationNode: this.transformBinaryOperation.bind(this),
+    UnaryOperationNode: this.transformUnaryOperation.bind(this),
   })
 
   transformNode<T extends OperationNode | undefined>(node: T): T {
@@ -278,15 +280,6 @@ export class OperationNodeTransformer {
       kind: 'ReferenceNode',
       table: this.transformNode(node.table),
       column: this.transformNode(node.column),
-    })
-  }
-
-  protected transformFilter(node: FilterNode): FilterNode {
-    return requireAllProps<FilterNode>({
-      kind: 'FilterNode',
-      left: this.transformNode(node.left),
-      op: this.transformNode(node.op),
-      right: this.transformNode(node.right),
     })
   }
 
@@ -862,6 +855,27 @@ export class OperationNodeTransformer {
     return requireAllProps({
       kind: 'PartitionByItemNode',
       partitionBy: this.transformNode(node.partitionBy),
+    })
+  }
+
+  protected transformBinaryOperation(
+    node: BinaryOperationNode
+  ): BinaryOperationNode {
+    return requireAllProps<BinaryOperationNode>({
+      kind: 'BinaryOperationNode',
+      leftOperand: this.transformNode(node.leftOperand),
+      operation: this.transformNode(node.operation),
+      rightOperand: this.transformNode(node.rightOperand),
+    })
+  }
+
+  protected transformUnaryOperation(
+    node: UnaryOperationNode
+  ): UnaryOperationNode {
+    return requireAllProps<UnaryOperationNode>({
+      kind: 'UnaryOperationNode',
+      operation: this.transformNode(node.operation),
+      operand: this.transformNode(node.operand),
     })
   }
 
