@@ -74,11 +74,7 @@ async function testSelectWithCustomGenerics(db: Kysely<Database>) {
     .select(avg<number | null>('age').as('nullable_avg_age'))
     .select(count<number>('age').as('total_people'))
     .select(max<number | null, 'age'>('age').as('nullable_max_age'))
-    .select(max<string, 'age'>('age').as('lying_max_age'))
-    .select(max<string | null, 'age'>('age').as('nullable_lying_max_age'))
     .select(min<number | null, 'age'>('age').as('nullable_min_age'))
-    .select(min<bigint, 'age'>('age').as('lying_min_age'))
-    .select(min<bigint | null, 'age'>('age').as('nullable_lying_min_age'))
     .select(sum<number>('age').as('total_age'))
     .select(sum<number | null>('age').as('nullable_total_age'))
     .executeTakeFirstOrThrow()
@@ -91,16 +87,8 @@ async function testSelectWithCustomGenerics(db: Kysely<Database>) {
   expectNotAssignable<string | bigint | null>(result.total_people)
   expectAssignable<number | null>(result.nullable_max_age)
   expectNotAssignable<string | bigint>(result.nullable_max_age)
-  expectAssignable<number>(result.lying_max_age)
-  expectNotAssignable<string | bigint | null>(result.lying_max_age)
-  expectAssignable<number | null>(result.nullable_lying_max_age)
-  expectNotAssignable<string | bigint>(result.nullable_lying_max_age)
   expectAssignable<number | null>(result.nullable_min_age)
   expectNotAssignable<string | bigint>(result.nullable_min_age)
-  expectAssignable<number>(result.lying_min_age)
-  expectNotAssignable<string | bigint | null>(result.lying_min_age)
-  expectAssignable<number | null>(result.nullable_lying_min_age)
-  expectNotAssignable<string | bigint>(result.nullable_lying_min_age)
   expectAssignable<number>(result.total_age)
   expectNotAssignable<string | bigint | null>(result.total_age)
   expectAssignable<number | null>(result.nullable_total_age)
@@ -109,14 +97,50 @@ async function testSelectWithCustomGenerics(db: Kysely<Database>) {
   expectError(
     db
       .selectFrom('person')
-      .select(max<number>('age').as('max_no_reference_generic'))
+      .select(max<string>('age').as('max_lie_return_type'))
       .executeTakeFirstOrThrow()
   )
 
   expectError(
     db
       .selectFrom('person')
-      .select(min<number>('age').as('min_no_reference_generic'))
+      .select(max<string, 'age'>('age').as('another_max_lie_return_type'))
+      .executeTakeFirstOrThrow()
+  )
+
+  expectError(
+    db
+      .selectFrom('person')
+      .select(
+        max<number | null>('age').as(
+          'max_explicit_return_type_but_no_string_ref'
+        )
+      )
+      .executeTakeFirstOrThrow()
+  )
+
+  expectError(
+    db
+      .selectFrom('person')
+      .select(min<string>('age').as('min_lie_return_type'))
+      .executeTakeFirstOrThrow()
+  )
+
+  expectError(
+    db
+      .selectFrom('person')
+      .select(min<string, 'age'>('age').as('another_min_lie_return_type'))
+      .executeTakeFirstOrThrow()
+  )
+
+  expectError(
+    db
+      .selectFrom('person')
+      .select(
+        min<number | null>('age').as(
+          'min_explicit_return_type_but_no_string_ref'
+        )
+      )
       .executeTakeFirstOrThrow()
   )
 }
