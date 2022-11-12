@@ -137,7 +137,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
         ])
       })
 
-      it('conditional returning statement should add optional fields', async () => {
+      it('conditional returning statement that evaluates to true should add optional fields', async () => {
         const condition = true
 
         const query = ctx.db
@@ -145,6 +145,31 @@ for (const dialect of BUILT_IN_DIALECTS) {
           .where('gender', '=', 'female')
           .returning('first_name')
           .if(condition, (qb) => qb.returning('last_name'))
+
+        testSql(query, dialect, {
+          postgres: {
+            sql: 'delete from "person" where "gender" = $1 returning "first_name", "last_name"',
+            parameters: ['female'],
+          },
+          mysql: NOT_SUPPORTED,
+          sqlite: {
+            sql: 'delete from "person" where "gender" = ? returning "first_name", "last_name"',
+            parameters: ['female'],
+          },
+        })
+
+        const result = await query.executeTakeFirstOrThrow()
+        expect(result.last_name).to.equal('Aniston')
+      })
+
+      it('conditional returning statement that evaluates to false should add optional fields', async () => {
+        const condition = false
+
+        const query = ctx.db
+          .deleteFrom('person')
+          .where('gender', '=', 'female')
+          .returning('first_name')
+          .if(condition, (qb) => qb , (qb) => qb.returning('last_name'))
 
         testSql(query, dialect, {
           postgres: {
