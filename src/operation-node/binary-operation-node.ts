@@ -4,7 +4,7 @@ import { OperationNode } from './operation-node.js'
 export interface BinaryOperationNode extends OperationNode {
   readonly kind: 'BinaryOperationNode'
   readonly leftOperand: OperationNode
-  readonly operation: OperationNode
+  readonly operator: OperationNode
   readonly rightOperand: OperationNode
 }
 
@@ -18,13 +18,13 @@ export const BinaryOperationNode = freeze({
 
   create(
     leftOperand: OperationNode,
-    operation: OperationNode,
+    operator: OperationNode,
     rightOperand: OperationNode
   ): BinaryOperationNode {
     return freeze({
       kind: 'BinaryOperationNode',
       leftOperand,
-      operation,
+      operator,
       rightOperand,
     })
   },

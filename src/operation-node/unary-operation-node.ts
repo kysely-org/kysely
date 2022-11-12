@@ -3,7 +3,7 @@ import { OperationNode } from './operation-node.js'
 
 export interface UnaryOperationNode extends OperationNode {
   readonly kind: 'UnaryOperationNode'
-  readonly operation: OperationNode
+  readonly operator: OperationNode
   readonly operand: OperationNode
 }
 
@@ -15,10 +15,10 @@ export const UnaryOperationNode = freeze({
     return node.kind === 'UnaryOperationNode'
   },
 
-  create(operation: OperationNode, operand: OperationNode): UnaryOperationNode {
+  create(operator: OperationNode, operand: OperationNode): UnaryOperationNode {
     return freeze({
       kind: 'UnaryOperationNode',
-      operation,
+      operator,
       operand,
     })
   },

@@ -864,7 +864,7 @@ export class OperationNodeTransformer {
     return requireAllProps<BinaryOperationNode>({
       kind: 'BinaryOperationNode',
       leftOperand: this.transformNode(node.leftOperand),
-      operation: this.transformNode(node.operation),
+      operator: this.transformNode(node.operator),
       rightOperand: this.transformNode(node.rightOperand),
     })
   }
@@ -874,7 +874,7 @@ export class OperationNodeTransformer {
   ): UnaryOperationNode {
     return requireAllProps<UnaryOperationNode>({
       kind: 'UnaryOperationNode',
-      operation: this.transformNode(node.operation),
+      operator: this.transformNode(node.operator),
       operand: this.transformNode(node.operand),
     })
   }

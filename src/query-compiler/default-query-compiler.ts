@@ -9,7 +9,6 @@ import { DataTypeNode } from '../operation-node/data-type-node.js'
 import { DeleteQueryNode } from '../operation-node/delete-query-node.js'
 import { DropIndexNode } from '../operation-node/drop-index-node.js'
 import { DropTableNode } from '../operation-node/drop-table-node.js'
-import { FilterNode } from '../operation-node/filter-node.js'
 import { FromNode } from '../operation-node/from-node.js'
 import { GroupByItemNode } from '../operation-node/group-by-item-node.js'
 import { GroupByNode } from '../operation-node/group-by-node.js'
@@ -92,6 +91,8 @@ import { OverNode } from '../operation-node/over-node.js'
 import { PartitionByNode } from '../operation-node/partition-by-node.js'
 import { PartitionByItemNode } from '../operation-node/partition-by-item-node.js'
 import { SetOperationNode } from '../operation-node/set-operation-node.js'
+import { BinaryOperationNode } from '../operation-node/binary-operation-node.js'
+import { UnaryOperationNode } from '../operation-node/unary-operation-node.js'
 
 export class DefaultQueryCompiler
   extends OperationNodeVisitor
@@ -402,17 +403,6 @@ export class DefaultQueryCompiler
     }
 
     this.append(this.sanitizeIdentifier(node.name))
-  }
-
-  protected override visitFilter(node: FilterNode): void {
-    if (node.left) {
-      this.visitNode(node.left)
-      this.append(' ')
-    }
-
-    this.visitNode(node.op)
-    this.append(' ')
-    this.visitNode(node.right)
   }
 
   protected override visitAnd(node: AndNode): void {
@@ -1257,6 +1247,20 @@ export class DefaultQueryCompiler
 
   protected override visitPartitionByItem(node: PartitionByItemNode): void {
     this.visitNode(node.partitionBy)
+  }
+
+  protected override visitBinaryOperation(node: BinaryOperationNode): void {
+    this.visitNode(node.leftOperand)
+    this.append(' ')
+    this.visitNode(node.operator)
+    this.append(' ')
+    this.visitNode(node.rightOperand)
+  }
+
+  protected override visitUnaryOperation(node: UnaryOperationNode): void {
+    this.visitNode(node.operator)
+    this.append(' ')
+    this.visitNode(node.operand)
   }
 
   protected append(str: string): void {
