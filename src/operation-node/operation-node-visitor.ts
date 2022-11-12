@@ -18,7 +18,6 @@ import { RawNode } from './raw-node.js'
 import { SelectQueryNode } from './select-query-node.js'
 import { ValueListNode } from './value-list-node.js'
 import { ValueNode } from './value-node.js'
-import { FilterNode } from './filter-node.js'
 import { OperatorNode } from './operator-node.js'
 import { FromNode } from './from-node.js'
 import { WhereNode } from './where-node.js'
@@ -79,6 +78,8 @@ import { OverNode } from './over-node.js'
 import { PartitionByNode } from './partition-by-node.js'
 import { PartitionByItemNode } from './partition-by-item-node.js'
 import { SetOperationNode } from './set-operation-node.js'
+import { BinaryOperationNode } from './binary-operation-node.js'
+import { UnaryOperationNode } from './unary-operation-node.js'
 
 export abstract class OperationNodeVisitor {
   protected readonly nodeStack: OperationNode[] = []
@@ -99,7 +100,6 @@ export abstract class OperationNodeVisitor {
     TableNode: this.visitTable.bind(this),
     FromNode: this.visitFrom.bind(this),
     SelectAllNode: this.visitSelectAll.bind(this),
-    FilterNode: this.visitFilter.bind(this),
     AndNode: this.visitAnd.bind(this),
     OrNode: this.visitOr.bind(this),
     ValueNode: this.visitValue.bind(this),
@@ -165,6 +165,8 @@ export abstract class OperationNodeVisitor {
     PartitionByNode: this.visitPartitionBy.bind(this),
     PartitionByItemNode: this.visitPartitionByItem.bind(this),
     SetOperationNode: this.visitSetOperation.bind(this),
+    BinaryOperationNode: this.visitBinaryOperation.bind(this),
+    UnaryOperationNode: this.visitUnaryOperation.bind(this),
   })
 
   protected readonly visitNode = (node: OperationNode): void => {
@@ -180,7 +182,6 @@ export abstract class OperationNodeVisitor {
   protected abstract visitTable(node: TableNode): void
   protected abstract visitFrom(node: FromNode): void
   protected abstract visitReference(node: ReferenceNode): void
-  protected abstract visitFilter(node: FilterNode): void
   protected abstract visitAnd(node: AndNode): void
   protected abstract visitOr(node: OrNode): void
   protected abstract visitValueList(node: ValueListNode): void
@@ -259,4 +260,6 @@ export abstract class OperationNodeVisitor {
   protected abstract visitPartitionBy(node: PartitionByNode): void
   protected abstract visitPartitionByItem(node: PartitionByItemNode): void
   protected abstract visitSetOperation(node: SetOperationNode): void
+  protected abstract visitBinaryOperation(node: BinaryOperationNode): void
+  protected abstract visitUnaryOperation(node: UnaryOperationNode): void
 }

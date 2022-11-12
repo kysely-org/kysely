@@ -1,8 +1,7 @@
-import { ArrayItemType } from '../util/type-utils.js'
 import { freeze } from '../util/object-utils.js'
 import { OperationNode } from './operation-node.js'
 
-export const OPERATORS = [
+export const BINARY_OPERATORS = [
   '=',
   '==',
   '!=',
@@ -30,8 +29,6 @@ export const OPERATORS = [
   '~',
   '~*',
   '!~*',
-  'exists',
-  'not exists',
   '&&',
   '||',
   '@@',
@@ -40,7 +37,11 @@ export const OPERATORS = [
   '<->',
 ] as const
 
-export type Operator = ArrayItemType<typeof OPERATORS>
+export const UNARY_OPERATORS = ['exists', 'not exists'] as const
+
+export type BinaryOperator = typeof BINARY_OPERATORS[number]
+export type UnaryOperator = typeof UNARY_OPERATORS[number]
+export type Operator = BinaryOperator | UnaryOperator
 
 export interface OperatorNode extends OperationNode {
   readonly kind: 'OperatorNode'
