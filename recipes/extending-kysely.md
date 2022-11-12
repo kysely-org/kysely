@@ -348,10 +348,6 @@ variables and a nice discoverable API.
 
 ## Extending using module augmentation
 
-You don't want to do this. This method can bypass Typescript's shortcomings when it comes 
-to inheritence and return types, but relies heavily on Kysely's internal structure, which 
-is destined to change without notice between releases. 
-
 > DISCLAIMER: We do not support this method. Use at your own risk.
 
 You can override and extend Kysely's builder classes via [Typescript module augmentation](https://www.typescriptlang.org/docs/handbook/declaration-merging.html#module-augmentation).
