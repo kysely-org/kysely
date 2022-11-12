@@ -23,17 +23,17 @@ export const WhereNode = freeze({
     })
   },
 
-  cloneWithFilter(
+  cloneWithOperation(
     whereNode: WhereNode,
-    op: 'And' | 'Or',
-    filter: OperationNode
+    operator: 'And' | 'Or',
+    operation: OperationNode
   ): WhereNode {
     return freeze({
       ...whereNode,
       where:
-        op === 'And'
-          ? AndNode.create(whereNode.where, filter)
-          : OrNode.create(whereNode.where, filter),
+        operator === 'And'
+          ? AndNode.create(whereNode.where, operation)
+          : OrNode.create(whereNode.where, operation),
     })
   },
 })
