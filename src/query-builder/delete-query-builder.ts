@@ -537,7 +537,8 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
    */
   if<O2>(
     condition: boolean,
-    func: (qb: this) => DeleteQueryBuilder<DB, TB, O2>
+    then: (qb: this) => DeleteQueryBuilder<DB, TB, O2>,
+    otherwise?: (qb: this) => DeleteQueryBuilder<DB, TB, O2>
   ): DeleteQueryBuilder<
     DB,
     TB,
@@ -548,7 +549,11 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
       : MergePartial<O, O2>
   > {
     if (condition) {
-      return func(this) as any
+      return then(this) as any
+    }
+
+    if (otherwise) {
+      return otherwise(this) as any
     }
 
     return new DeleteQueryBuilder({
