@@ -11,8 +11,8 @@ import { isOperationNodeSource } from '../operation-node/operation-node-source.j
 import { RawNode } from '../operation-node/raw-node.js'
 import {
   OperatorNode,
-  BINARY_OPERATORS,
-  BinaryOperator,
+  COMPARISON_OPERATORS,
+  ComparisonOperator,
 } from '../operation-node/operator-node.js'
 import { ParensNode } from '../operation-node/parens-node.js'
 import {
@@ -57,7 +57,7 @@ export type HavingGrouper<DB, TB extends keyof DB> = (
   qb: HavingInterface<DB, TB>
 ) => HavingInterface<DB, TB>
 
-export type BinaryOperatorExpression = BinaryOperator | Expression<any>
+export type BinaryOperatorExpression = ComparisonOperator | Expression<any>
 
 type FilterExpressionType = 'where' | 'having' | 'on'
 
@@ -132,7 +132,7 @@ function parseIs(
 }
 
 function parseOperator(operator: BinaryOperatorExpression): OperationNode {
-  if (isString(operator) && BINARY_OPERATORS.includes(operator)) {
+  if (isString(operator) && COMPARISON_OPERATORS.includes(operator)) {
     return OperatorNode.create(operator)
   } else if (isOperationNodeSource(operator)) {
     return operator.toOperationNode()

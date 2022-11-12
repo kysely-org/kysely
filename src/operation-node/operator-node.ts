@@ -1,7 +1,7 @@
 import { freeze } from '../util/object-utils.js'
 import { OperationNode } from './operation-node.js'
 
-export const BINARY_OPERATORS = [
+export const COMPARISON_OPERATORS = [
   '=',
   '==',
   '!=',
@@ -37,11 +37,11 @@ export const BINARY_OPERATORS = [
   '<->',
 ] as const
 
-export const UNARY_OPERATORS = ['exists', 'not exists'] as const
+export const UNARY_FILTER_OPERATORS = ['exists', 'not exists'] as const
 
-export type BinaryOperator = typeof BINARY_OPERATORS[number]
-export type UnaryOperator = typeof UNARY_OPERATORS[number]
-export type Operator = BinaryOperator | UnaryOperator
+export type ComparisonOperator = typeof COMPARISON_OPERATORS[number]
+export type UnaryFilterOperator = typeof UNARY_FILTER_OPERATORS[number]
+export type Operator = ComparisonOperator | UnaryFilterOperator
 
 export interface OperatorNode extends OperationNode {
   readonly kind: 'OperatorNode'

@@ -1,4 +1,7 @@
-import { OperatorNode, UnaryOperator } from '../operation-node/operator-node.js'
+import {
+  OperatorNode,
+  UnaryFilterOperator,
+} from '../operation-node/operator-node.js'
 import { UnaryOperationNode } from '../operation-node/unary-operation-node.js'
 import { ExpressionOrFactory } from './expression-parser.js'
 import { parseValueExpressionOrList } from './value-parser.js'
@@ -22,7 +25,7 @@ export function parseNotExists(
 }
 
 function parseUnaryOperation(
-  type: UnaryOperator,
+  type: UnaryFilterOperator,
   arg: ExistsExpression<any, any>
 ): UnaryOperationNode {
   return UnaryOperationNode.create(
