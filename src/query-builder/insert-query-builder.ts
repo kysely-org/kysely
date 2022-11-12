@@ -565,7 +565,7 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    *     .insertInto('person')
    *     .values(values)
    *     .returning(['id', 'first_name'])
-   *     .if(returnLastName, (qb) => qb.returning('last_name')
+   *     .if(returnLastName, (qb) => qb.returning('last_name'))
    *     .executeTakeFirstOrThrow()
    * }
    * ```
