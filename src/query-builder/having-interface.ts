@@ -1,11 +1,11 @@
 import { Expression } from '../expression/expression.js'
 import {
-  ExistsExpression,
-  FilterOperator,
-  FilterValueExpressionOrList,
+  BinaryOperatorExpression,
   HavingGrouper,
-} from '../parser/filter-parser.js'
+  OperandValueExpressionOrList,
+} from '../parser/binary-operation-parser.js'
 import { ReferenceExpression } from '../parser/reference-parser.js'
+import { ExistsExpression } from '../parser/unary-operation-parser.js'
 
 export interface HavingInterface<DB, TB extends keyof DB> {
   /**
@@ -14,8 +14,8 @@ export interface HavingInterface<DB, TB extends keyof DB> {
    */
   having<RE extends ReferenceExpression<DB, TB>>(
     lhs: RE,
-    op: FilterOperator,
-    rhs: FilterValueExpressionOrList<DB, TB, RE>
+    op: BinaryOperatorExpression,
+    rhs: OperandValueExpressionOrList<DB, TB, RE>
   ): HavingInterface<DB, TB>
 
   having(grouper: HavingGrouper<DB, TB>): HavingInterface<DB, TB>
@@ -27,7 +27,7 @@ export interface HavingInterface<DB, TB extends keyof DB> {
    */
   havingRef(
     lhs: ReferenceExpression<DB, TB>,
-    op: FilterOperator,
+    op: BinaryOperatorExpression,
     rhs: ReferenceExpression<DB, TB>
   ): HavingInterface<DB, TB>
 
@@ -37,8 +37,8 @@ export interface HavingInterface<DB, TB extends keyof DB> {
    */
   orHaving<RE extends ReferenceExpression<DB, TB>>(
     lhs: RE,
-    op: FilterOperator,
-    rhs: FilterValueExpressionOrList<DB, TB, RE>
+    op: BinaryOperatorExpression,
+    rhs: OperandValueExpressionOrList<DB, TB, RE>
   ): HavingInterface<DB, TB>
 
   orHaving(grouper: HavingGrouper<DB, TB>): HavingInterface<DB, TB>
@@ -50,7 +50,7 @@ export interface HavingInterface<DB, TB extends keyof DB> {
    */
   orHavingRef(
     lhs: ReferenceExpression<DB, TB>,
-    op: FilterOperator,
+    op: BinaryOperatorExpression,
     rhs: ReferenceExpression<DB, TB>
   ): HavingInterface<DB, TB>
 
