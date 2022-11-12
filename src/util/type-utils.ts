@@ -152,3 +152,11 @@ export type Nullable<T> = { [P in keyof T]: T[P] | null }
  * // { name: string, age: number, species?: 'cat' | 'dog' }
  */
 export type MergePartial<T1, T2> = T1 & Partial<Omit<T2, keyof T1>>
+
+export type IsNever<T> = [T] extends [never] ? true : false
+
+export type Equals<T, U> = (<G>() => G extends T ? 1 : 2) extends <
+  G
+>() => G extends U ? 1 : 2
+  ? true
+  : false

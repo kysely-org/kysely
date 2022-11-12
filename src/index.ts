@@ -180,12 +180,13 @@ export * from './util/compilable.js'
 export * from './util/explainable.js'
 export * from './util/log.js'
 export {
-  AnyColumn,
-  AnyColumnWithTable,
   AnyAliasedColumn,
   AnyAliasedColumnWithTable,
-  UnknownRow,
+  AnyColumn,
+  AnyColumnWithTable,
   AnySelectQueryBuilder,
+  Equals,
+  UnknownRow,
 } from './util/type-utils.js'
 export * from './util/infer-result.js'
 
