@@ -552,7 +552,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
           last_name: 'Barson',
         })
 
-        it('conditional returning statement should add optional fields', async () => {
+        it('conditional returning statement that evaluates to true should add optional fields', async () => {
           const condition = true
 
           const query = ctx.db
@@ -564,6 +564,23 @@ for (const dialect of BUILT_IN_DIALECTS) {
             })
             .returning('first_name')
             .if(condition, (qb) => qb.returning('last_name'))
+
+          const result = await query.executeTakeFirstOrThrow()
+          expect(result.last_name).to.equal('Barson')
+        })
+
+        it('conditional returning statement that evaluates to false should add optional fields', async () => {
+          const condition = false
+
+          const query = ctx.db
+            .insertInto('person')
+            .values({
+              first_name: 'Foo',
+              last_name: 'Barson',
+              gender: 'other',
+            })
+            .returning('first_name')
+            .if(condition, (qb) => qb, (qb) => qb.returning('last_name'))
 
           const result = await query.executeTakeFirstOrThrow()
           expect(result.last_name).to.equal('Barson')
