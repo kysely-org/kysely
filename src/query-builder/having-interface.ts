@@ -1,6 +1,6 @@
 import { Expression } from '../expression/expression.js'
 import {
-  BinaryOperatorExpression,
+  ComparisonOperatorExpression,
   HavingGrouper,
   OperandValueExpressionOrList,
 } from '../parser/binary-operation-parser.js'
@@ -14,7 +14,7 @@ export interface HavingInterface<DB, TB extends keyof DB> {
    */
   having<RE extends ReferenceExpression<DB, TB>>(
     lhs: RE,
-    op: BinaryOperatorExpression,
+    op: ComparisonOperatorExpression,
     rhs: OperandValueExpressionOrList<DB, TB, RE>
   ): HavingInterface<DB, TB>
 
@@ -27,7 +27,7 @@ export interface HavingInterface<DB, TB extends keyof DB> {
    */
   havingRef(
     lhs: ReferenceExpression<DB, TB>,
-    op: BinaryOperatorExpression,
+    op: ComparisonOperatorExpression,
     rhs: ReferenceExpression<DB, TB>
   ): HavingInterface<DB, TB>
 
@@ -37,7 +37,7 @@ export interface HavingInterface<DB, TB extends keyof DB> {
    */
   orHaving<RE extends ReferenceExpression<DB, TB>>(
     lhs: RE,
-    op: BinaryOperatorExpression,
+    op: ComparisonOperatorExpression,
     rhs: OperandValueExpressionOrList<DB, TB, RE>
   ): HavingInterface<DB, TB>
 
@@ -50,7 +50,7 @@ export interface HavingInterface<DB, TB extends keyof DB> {
    */
   orHavingRef(
     lhs: ReferenceExpression<DB, TB>,
-    op: BinaryOperatorExpression,
+    op: ComparisonOperatorExpression,
     rhs: ReferenceExpression<DB, TB>
   ): HavingInterface<DB, TB>
 

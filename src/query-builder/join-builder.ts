@@ -3,7 +3,7 @@ import { JoinNode } from '../operation-node/join-node.js'
 import { OperationNodeSource } from '../operation-node/operation-node-source.js'
 import { RawNode } from '../operation-node/raw-node.js'
 import {
-  BinaryOperatorExpression,
+  ComparisonOperatorExpression,
   OperandValueExpressionOrList,
   parseOn,
   parseReferentialBinaryOperation,
@@ -34,7 +34,7 @@ export class JoinBuilder<DB, TB extends keyof DB>
    */
   on<RE extends ReferenceExpression<DB, TB>>(
     lhs: RE,
-    op: BinaryOperatorExpression,
+    op: ComparisonOperatorExpression,
     rhs: OperandValueExpressionOrList<DB, TB, RE>
   ): JoinBuilder<DB, TB>
 
@@ -59,7 +59,7 @@ export class JoinBuilder<DB, TB extends keyof DB>
    */
   orOn<RE extends ReferenceExpression<DB, TB>>(
     lhs: RE,
-    op: BinaryOperatorExpression,
+    op: ComparisonOperatorExpression,
     rhs: OperandValueExpressionOrList<DB, TB, RE>
   ): JoinBuilder<DB, TB>
 
@@ -84,7 +84,7 @@ export class JoinBuilder<DB, TB extends keyof DB>
    */
   onRef(
     lhs: ReferenceExpression<DB, TB>,
-    op: BinaryOperatorExpression,
+    op: ComparisonOperatorExpression,
     rhs: ReferenceExpression<DB, TB>
   ): JoinBuilder<DB, TB> {
     return new JoinBuilder({
@@ -104,7 +104,7 @@ export class JoinBuilder<DB, TB extends keyof DB>
    */
   orOnRef(
     lhs: ReferenceExpression<DB, TB>,
-    op: BinaryOperatorExpression,
+    op: ComparisonOperatorExpression,
     rhs: ReferenceExpression<DB, TB>
   ): JoinBuilder<DB, TB> {
     return new JoinBuilder({

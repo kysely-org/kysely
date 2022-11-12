@@ -1,6 +1,6 @@
 import { Expression } from '../expression/expression.js'
 import {
-  BinaryOperatorExpression,
+  ComparisonOperatorExpression,
   OperandValueExpressionOrList,
   WhereGrouper,
 } from '../parser/binary-operation-parser.js'
@@ -194,7 +194,7 @@ export interface WhereInterface<DB, TB extends keyof DB> {
    */
   where<RE extends ReferenceExpression<DB, TB>>(
     lhs: RE,
-    op: BinaryOperatorExpression,
+    op: ComparisonOperatorExpression,
     rhs: OperandValueExpressionOrList<DB, TB, RE>
   ): WhereInterface<DB, TB>
 
@@ -255,7 +255,7 @@ export interface WhereInterface<DB, TB extends keyof DB> {
    */
   whereRef(
     lhs: ReferenceExpression<DB, TB>,
-    op: BinaryOperatorExpression,
+    op: ComparisonOperatorExpression,
     rhs: ReferenceExpression<DB, TB>
   ): WhereInterface<DB, TB>
 
@@ -324,7 +324,7 @@ export interface WhereInterface<DB, TB extends keyof DB> {
    */
   orWhere<RE extends ReferenceExpression<DB, TB>>(
     lhs: RE,
-    op: BinaryOperatorExpression,
+    op: ComparisonOperatorExpression,
     rhs: OperandValueExpressionOrList<DB, TB, RE>
   ): WhereInterface<DB, TB>
 
@@ -339,7 +339,7 @@ export interface WhereInterface<DB, TB extends keyof DB> {
    */
   orWhereRef(
     lhs: ReferenceExpression<DB, TB>,
-    op: BinaryOperatorExpression,
+    op: ComparisonOperatorExpression,
     rhs: ReferenceExpression<DB, TB>
   ): WhereInterface<DB, TB>
 

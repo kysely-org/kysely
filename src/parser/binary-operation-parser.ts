@@ -57,7 +57,7 @@ export type HavingGrouper<DB, TB extends keyof DB> = (
   qb: HavingInterface<DB, TB>
 ) => HavingInterface<DB, TB>
 
-export type BinaryOperatorExpression = ComparisonOperator | Expression<any>
+export type ComparisonOperatorExpression = ComparisonOperator | Expression<any>
 
 type FilterExpressionType = 'where' | 'having' | 'on'
 
@@ -75,12 +75,12 @@ export function parseOn(args: any[]): OperationNode {
 
 export function parseReferentialBinaryOperation(
   leftOperand: ReferenceExpression<any, any>,
-  operator: BinaryOperatorExpression,
+  operator: ComparisonOperatorExpression,
   rightOperand: ReferenceExpression<any, any>
 ): BinaryOperationNode {
   return BinaryOperationNode.create(
     parseReferenceExpression(leftOperand),
-    parseOperator(operator),
+    parseComparisonOperatorExpression(operator),
     parseReferenceExpression(rightOperand)
   )
 }
@@ -102,7 +102,7 @@ export function parseFilterExpression(
 
 function parseBinaryOperation(
   leftOperand: ReferenceExpression<any, any>,
-  operator: BinaryOperatorExpression,
+  operator: ComparisonOperatorExpression,
   rightOperand: OperandValueExpressionOrList<any, any, any>
 ): BinaryOperationNode {
   if (
@@ -114,7 +114,7 @@ function parseBinaryOperation(
 
   return BinaryOperationNode.create(
     parseReferenceExpression(leftOperand),
-    parseOperator(operator),
+    parseComparisonOperatorExpression(operator),
     parseValueExpressionOrList(rightOperand)
   )
 }
@@ -126,12 +126,14 @@ function parseIs(
 ) {
   return BinaryOperationNode.create(
     parseReferenceExpression(leftOperand),
-    parseOperator(operator),
+    parseComparisonOperatorExpression(operator),
     ValueNode.createImmediate(rightOperand)
   )
 }
 
-function parseOperator(operator: BinaryOperatorExpression): OperationNode {
+function parseComparisonOperatorExpression(
+  operator: ComparisonOperatorExpression
+): OperationNode {
   if (isString(operator) && COMPARISON_OPERATORS.includes(operator)) {
     return OperatorNode.create(operator)
   } else if (isOperationNodeSource(operator)) {

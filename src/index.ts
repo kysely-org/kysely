@@ -221,8 +221,8 @@ export {
   OrderByDirectionExpression,
 } from './parser/order-by-parser.js'
 export {
+  ComparisonOperatorExpression,
   OperandValueExpression,
   OperandValueExpressionOrList,
-  BinaryOperatorExpression,
 } from './parser/binary-operation-parser.js'
 export { ExistsExpression } from './parser/unary-operation-parser.js'

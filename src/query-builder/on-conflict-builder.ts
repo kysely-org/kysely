@@ -4,7 +4,7 @@ import { IdentifierNode } from '../operation-node/identifier-node.js'
 import { OnConflictNode } from '../operation-node/on-conflict-node.js'
 import { OperationNodeSource } from '../operation-node/operation-node-source.js'
 import {
-  BinaryOperatorExpression,
+  ComparisonOperatorExpression,
   OperandValueExpressionOrList,
   parseReferentialBinaryOperation,
   parseWhere,
@@ -113,7 +113,7 @@ export class OnConflictBuilder<DB, TB extends keyof DB>
    */
   where<RE extends ReferenceExpression<DB, TB>>(
     lhs: RE,
-    op: BinaryOperatorExpression,
+    op: ComparisonOperatorExpression,
     rhs: OperandValueExpressionOrList<DB, TB, RE>
   ): OnConflictBuilder<DB, TB>
 
@@ -137,7 +137,7 @@ export class OnConflictBuilder<DB, TB extends keyof DB>
    */
   whereRef(
     lhs: ReferenceExpression<DB, TB>,
-    op: BinaryOperatorExpression,
+    op: ComparisonOperatorExpression,
     rhs: ReferenceExpression<DB, TB>
   ): OnConflictBuilder<DB, TB> {
     return new OnConflictBuilder({
@@ -156,7 +156,7 @@ export class OnConflictBuilder<DB, TB extends keyof DB>
    */
   orWhere<RE extends ReferenceExpression<DB, TB>>(
     lhs: RE,
-    op: BinaryOperatorExpression,
+    op: ComparisonOperatorExpression,
     rhs: OperandValueExpressionOrList<DB, TB, RE>
   ): OnConflictBuilder<DB, TB>
   orWhere(grouper: WhereGrouper<DB, TB>): OnConflictBuilder<DB, TB>
@@ -179,7 +179,7 @@ export class OnConflictBuilder<DB, TB extends keyof DB>
    */
   orWhereRef(
     lhs: ReferenceExpression<DB, TB>,
-    op: BinaryOperatorExpression,
+    op: ComparisonOperatorExpression,
     rhs: ReferenceExpression<DB, TB>
   ): OnConflictBuilder<DB, TB> {
     return new OnConflictBuilder({
@@ -378,7 +378,7 @@ export class OnConflictUpdateBuilder<DB, TB extends keyof DB>
    */
   where<RE extends ReferenceExpression<DB, TB>>(
     lhs: RE,
-    op: BinaryOperatorExpression,
+    op: ComparisonOperatorExpression,
     rhs: OperandValueExpressionOrList<DB, TB, RE>
   ): OnConflictUpdateBuilder<DB, TB>
 
@@ -402,7 +402,7 @@ export class OnConflictUpdateBuilder<DB, TB extends keyof DB>
    */
   whereRef(
     lhs: ReferenceExpression<DB, TB>,
-    op: BinaryOperatorExpression,
+    op: ComparisonOperatorExpression,
     rhs: ReferenceExpression<DB, TB>
   ): OnConflictUpdateBuilder<DB, TB> {
     return new OnConflictUpdateBuilder({
@@ -421,7 +421,7 @@ export class OnConflictUpdateBuilder<DB, TB extends keyof DB>
    */
   orWhere<RE extends ReferenceExpression<DB, TB>>(
     lhs: RE,
-    op: BinaryOperatorExpression,
+    op: ComparisonOperatorExpression,
     rhs: OperandValueExpressionOrList<DB, TB, RE>
   ): OnConflictUpdateBuilder<DB, TB>
   orWhere(grouper: WhereGrouper<DB, TB>): OnConflictUpdateBuilder<DB, TB>
@@ -444,7 +444,7 @@ export class OnConflictUpdateBuilder<DB, TB extends keyof DB>
    */
   orWhereRef(
     lhs: ReferenceExpression<DB, TB>,
-    op: BinaryOperatorExpression,
+    op: ComparisonOperatorExpression,
     rhs: ReferenceExpression<DB, TB>
   ): OnConflictUpdateBuilder<DB, TB> {
     return new OnConflictUpdateBuilder({

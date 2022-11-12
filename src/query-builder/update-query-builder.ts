@@ -42,7 +42,7 @@ import { Explainable, ExplainFormat } from '../util/explainable.js'
 import { ExplainNode } from '../operation-node/explain-node.js'
 import { AliasedExpression, Expression } from '../expression/expression.js'
 import {
-  BinaryOperatorExpression,
+  ComparisonOperatorExpression,
   OperandValueExpressionOrList,
   parseReferentialBinaryOperation,
   parseWhere,
@@ -70,7 +70,7 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
 
   where<RE extends ReferenceExpression<DB, TB>>(
     lhs: RE,
-    op: BinaryOperatorExpression,
+    op: ComparisonOperatorExpression,
     rhs: OperandValueExpressionOrList<DB, TB, RE>
   ): UpdateQueryBuilder<DB, UT, TB, O>
 
@@ -89,7 +89,7 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
 
   whereRef(
     lhs: ReferenceExpression<DB, TB>,
-    op: BinaryOperatorExpression,
+    op: ComparisonOperatorExpression,
     rhs: ReferenceExpression<DB, TB>
   ): UpdateQueryBuilder<DB, UT, TB, O> {
     return new UpdateQueryBuilder({
@@ -103,7 +103,7 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
 
   orWhere<RE extends ReferenceExpression<DB, TB>>(
     lhs: RE,
-    op: BinaryOperatorExpression,
+    op: ComparisonOperatorExpression,
     rhs: OperandValueExpressionOrList<DB, TB, RE>
   ): UpdateQueryBuilder<DB, UT, TB, O>
 
@@ -122,7 +122,7 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
 
   orWhereRef(
     lhs: ReferenceExpression<DB, TB>,
-    op: BinaryOperatorExpression,
+    op: ComparisonOperatorExpression,
     rhs: ReferenceExpression<DB, TB>
   ): UpdateQueryBuilder<DB, UT, TB, O> {
     return new UpdateQueryBuilder({

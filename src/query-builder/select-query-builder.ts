@@ -46,7 +46,7 @@ import { ExplainNode } from '../operation-node/explain-node.js'
 import { parseSetOperation } from '../parser/set-operation-parser.js'
 import { AliasedExpression, Expression } from '../expression/expression.js'
 import {
-  BinaryOperatorExpression,
+  ComparisonOperatorExpression,
   HavingGrouper,
   OperandValueExpressionOrList,
   parseHaving,
@@ -81,7 +81,7 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
 
   where<RE extends ReferenceExpression<DB, TB>>(
     lhs: RE,
-    op: BinaryOperatorExpression,
+    op: ComparisonOperatorExpression,
     rhs: OperandValueExpressionOrList<DB, TB, RE>
   ): SelectQueryBuilder<DB, TB, O>
 
@@ -100,7 +100,7 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
 
   whereRef(
     lhs: ReferenceExpression<DB, TB>,
-    op: BinaryOperatorExpression,
+    op: ComparisonOperatorExpression,
     rhs: ReferenceExpression<DB, TB>
   ): SelectQueryBuilder<DB, TB, O> {
     return new SelectQueryBuilder({
@@ -114,7 +114,7 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
 
   orWhere<RE extends ReferenceExpression<DB, TB>>(
     lhs: RE,
-    op: BinaryOperatorExpression,
+    op: ComparisonOperatorExpression,
     rhs: OperandValueExpressionOrList<DB, TB, RE>
   ): SelectQueryBuilder<DB, TB, O>
 
@@ -133,7 +133,7 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
 
   orWhereRef(
     lhs: ReferenceExpression<DB, TB>,
-    op: BinaryOperatorExpression,
+    op: ComparisonOperatorExpression,
     rhs: ReferenceExpression<DB, TB>
   ): SelectQueryBuilder<DB, TB, O> {
     return new SelectQueryBuilder({
@@ -189,7 +189,7 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
 
   having<RE extends ReferenceExpression<DB, TB>>(
     lhs: RE,
-    op: BinaryOperatorExpression,
+    op: ComparisonOperatorExpression,
     rhs: OperandValueExpressionOrList<DB, TB, RE>
   ): SelectQueryBuilder<DB, TB, O>
 
@@ -209,7 +209,7 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
 
   havingRef(
     lhs: ReferenceExpression<DB, TB>,
-    op: BinaryOperatorExpression,
+    op: ComparisonOperatorExpression,
     rhs: ReferenceExpression<DB, TB>
   ): SelectQueryBuilder<DB, TB, O> {
     return new SelectQueryBuilder({
@@ -223,7 +223,7 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
 
   orHaving<RE extends ReferenceExpression<DB, TB>>(
     lhs: RE,
-    op: BinaryOperatorExpression,
+    op: ComparisonOperatorExpression,
     rhs: OperandValueExpressionOrList<DB, TB, RE>
   ): SelectQueryBuilder<DB, TB, O>
 
@@ -243,7 +243,7 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
 
   orHavingRef(
     lhs: ReferenceExpression<DB, TB>,
-    op: BinaryOperatorExpression,
+    op: ComparisonOperatorExpression,
     rhs: ReferenceExpression<DB, TB>
   ): SelectQueryBuilder<DB, TB, O> {
     return new SelectQueryBuilder({

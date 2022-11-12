@@ -38,7 +38,7 @@ import { Explainable, ExplainFormat } from '../util/explainable.js'
 import { ExplainNode } from '../operation-node/explain-node.js'
 import { AliasedExpression, Expression } from '../expression/expression.js'
 import {
-  BinaryOperatorExpression,
+  ComparisonOperatorExpression,
   OperandValueExpressionOrList,
   parseReferentialBinaryOperation,
   parseWhere,
@@ -66,7 +66,7 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
 
   where<RE extends ReferenceExpression<DB, TB>>(
     lhs: RE,
-    op: BinaryOperatorExpression,
+    op: ComparisonOperatorExpression,
     rhs: OperandValueExpressionOrList<DB, TB, RE>
   ): DeleteQueryBuilder<DB, TB, O>
 
@@ -85,7 +85,7 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
 
   whereRef(
     lhs: ReferenceExpression<DB, TB>,
-    op: BinaryOperatorExpression,
+    op: ComparisonOperatorExpression,
     rhs: ReferenceExpression<DB, TB>
   ): DeleteQueryBuilder<DB, TB, O> {
     return new DeleteQueryBuilder({
@@ -99,7 +99,7 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
 
   orWhere<RE extends ReferenceExpression<DB, TB>>(
     lhs: RE,
-    op: BinaryOperatorExpression,
+    op: ComparisonOperatorExpression,
     rhs: OperandValueExpressionOrList<DB, TB, RE>
   ): DeleteQueryBuilder<DB, TB, O>
 
@@ -118,7 +118,7 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
 
   orWhereRef(
     lhs: ReferenceExpression<DB, TB>,
-    op: BinaryOperatorExpression,
+    op: ComparisonOperatorExpression,
     rhs: ReferenceExpression<DB, TB>
   ): DeleteQueryBuilder<DB, TB, O> {
     return new DeleteQueryBuilder({
