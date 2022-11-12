@@ -303,7 +303,7 @@ when you instantiate one.
 ### PostgreSQL migration example
 
 ```ts
-import { Kysely } from 'kysely'
+import { Kysely, sql } from 'kysely'
 
 export async function up(db: Kysely<any>): Promise<void> {
   await db.schema
@@ -312,6 +312,7 @@ export async function up(db: Kysely<any>): Promise<void> {
     .addColumn('first_name', 'varchar', (col) => col.notNull())
     .addColumn('last_name', 'varchar')
     .addColumn('gender', 'varchar(50)', (col) => col.notNull())
+    .addColumn('created_at', 'timestamp', (col) => col.defaultTo(sql`now()`).notNull())
     .execute()
 
   await db.schema

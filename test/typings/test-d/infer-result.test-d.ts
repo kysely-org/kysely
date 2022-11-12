@@ -2,13 +2,14 @@ import { expectType } from 'tsd'
 
 import {
   DeleteResult,
+  Equals,
   InferResult,
   InsertResult,
   Kysely,
   Selectable,
   UpdateResult,
 } from '..'
-import { Database, Equals, Person, Pet } from '../shared'
+import { Database, Person, Pet } from '../shared'
 
 function testInferResultSelectQuery(db: Kysely<Database>) {
   const query0 = db.selectFrom('person').selectAll()
