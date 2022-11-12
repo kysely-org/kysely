@@ -1490,7 +1490,7 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
 
   /**
    * Call `func(this)` if `condition` is true.
-   *
+   * If specified, `elseFunc` is called if `condition` is false.
    * This method is especially handy with optional selects. Any `select` or `selectAll`
    * method calls add columns as optional fields to the output type when called inside
    * the `func` callback. This is because we can't know if those selections were actually
@@ -1540,15 +1540,15 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    */
   if<O2 extends O>(
     condition: boolean,
-    then: (qb: this) => SelectQueryBuilder<DB, TB, O2>,
-    otherwise?: (qb: this) => SelectQueryBuilder<DB, TB, O2>
+    func: (qb: this) => SelectQueryBuilder<DB, TB, O2>,
+    elseFunc?: (qb: this) => SelectQueryBuilder<DB, TB, O2>
     ): SelectQueryBuilder<DB, TB, MergePartial<O, O2>> {
     if (condition) {
-      return then(this)
+      return func(this)
     }
 
-    if (otherwise) {
-      return otherwise(this)
+    if (elseFunc) {
+      return elseFunc(this)
     }
 
     return new SelectQueryBuilder({

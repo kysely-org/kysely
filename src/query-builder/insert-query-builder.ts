@@ -548,6 +548,7 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
 
   /**
    * Call `func(this)` if `condition` is true.
+   * If specified, `elseFunc` is called if `condition` is false.
    *
    * This method is especially handy with optional selects. Any `returning` or `returningAll`
    * method calls add columns as optional fields to the output type when called inside
@@ -564,7 +565,7 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    *     .insertInto('person')
    *     .values(values)
    *     .returning(['id', 'first_name'])
-   *     .if(returnLastName, (qb) => qb.returning('last_name'))
+   *     .if(returnLastName, (qb) => qb.returning('last_name')
    *     .executeTakeFirstOrThrow()
    * }
    * ```
@@ -583,8 +584,8 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    */
   if<O2>(
     condition: boolean,
-    then: (qb: this) => InsertQueryBuilder<DB, TB, O2>,
-    otherwise?: (qb: this) => InsertQueryBuilder<DB, TB, O2>
+    func: (qb: this) => InsertQueryBuilder<DB, TB, O2>,
+    elseFunc?: (qb: this) => InsertQueryBuilder<DB, TB, O2>
   ): InsertQueryBuilder<
     DB,
     TB,
@@ -595,11 +596,11 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
       : MergePartial<O, O2>
   > {
     if (condition) {
-      return then(this) as any
+      return func(this) as any
     }
 
-    if (otherwise) {
-      return otherwise(this) as any
+    if (elseFunc) {
+      return elseFunc(this) as any
     }
 
     return new InsertQueryBuilder({
