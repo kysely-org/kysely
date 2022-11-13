@@ -40,7 +40,7 @@ import { AliasedExpression, Expression } from '../expression/expression.js'
 import {
   ComparisonOperatorExpression,
   OperandValueExpressionOrList,
-  parseReferentialBinaryOperation,
+  parseReferentialFilter,
   parseWhere,
   WhereGrouper,
 } from '../parser/binary-operation-parser.js'
@@ -92,7 +92,7 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
       ...this.#props,
       queryNode: QueryNode.cloneWithWhere(
         this.#props.queryNode,
-        parseReferentialBinaryOperation(lhs, op, rhs)
+        parseReferentialFilter(lhs, op, rhs)
       ),
     })
   }
@@ -125,7 +125,7 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
       ...this.#props,
       queryNode: QueryNode.cloneWithOrWhere(
         this.#props.queryNode,
-        parseReferentialBinaryOperation(lhs, op, rhs)
+        parseReferentialFilter(lhs, op, rhs)
       ),
     })
   }

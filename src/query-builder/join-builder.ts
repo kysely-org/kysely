@@ -6,7 +6,7 @@ import {
   ComparisonOperatorExpression,
   OperandValueExpressionOrList,
   parseOn,
-  parseReferentialBinaryOperation,
+  parseReferentialFilter,
 } from '../parser/binary-operation-parser.js'
 import { ReferenceExpression } from '../parser/reference-parser.js'
 import {
@@ -91,7 +91,7 @@ export class JoinBuilder<DB, TB extends keyof DB>
       ...this.#props,
       joinNode: JoinNode.cloneWithOn(
         this.#props.joinNode,
-        parseReferentialBinaryOperation(lhs, op, rhs)
+        parseReferentialFilter(lhs, op, rhs)
       ),
     })
   }
@@ -111,7 +111,7 @@ export class JoinBuilder<DB, TB extends keyof DB>
       ...this.#props,
       joinNode: JoinNode.cloneWithOrOn(
         this.#props.joinNode,
-        parseReferentialBinaryOperation(lhs, op, rhs)
+        parseReferentialFilter(lhs, op, rhs)
       ),
     })
   }

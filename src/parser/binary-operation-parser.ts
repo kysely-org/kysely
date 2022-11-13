@@ -73,7 +73,7 @@ export function parseOn(args: any[]): OperationNode {
   return parseFilterExpression('on', args)
 }
 
-export function parseReferentialBinaryOperation(
+export function parseReferentialFilter(
   leftOperand: ReferenceExpression<any, any>,
   operator: ComparisonOperatorExpression,
   rightOperand: ReferenceExpression<any, any>
@@ -90,7 +90,7 @@ export function parseFilterExpression(
   args: any[]
 ): OperationNode {
   if (args.length === 3) {
-    return parseBinaryOperation(args[0], args[1], args[2])
+    return parseFilter(args[0], args[1], args[2])
   }
 
   if (args.length === 1) {
@@ -100,7 +100,7 @@ export function parseFilterExpression(
   throw createFilterExpressionError(type, args)
 }
 
-function parseBinaryOperation(
+function parseFilter(
   leftOperand: ReferenceExpression<any, any>,
   operator: ComparisonOperatorExpression,
   rightOperand: OperandValueExpressionOrList<any, any, any>
