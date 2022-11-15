@@ -161,6 +161,6 @@ export type Equals<T, U> = (<G>() => G extends T ? 1 : 2) extends <
   ? true
   : false
 
-export type PickWith<O, M> = {
-  [K in keyof M]: K extends keyof O ? M[K] : never
+export type PickWith<O, S> = {
+  [K in keyof O]: K extends keyof S ? O[K] : never
 }

@@ -536,7 +536,7 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
    * ```
    */
   set<R extends MutationObject<DB, TB, UT>>(
-    row: PickWith<MutationObject<DB, TB, UT>, R>
+    row: PickWith<R, MutationObject<DB, TB, UT>>
   ): UpdateQueryBuilder<DB, UT, TB, O> {
     return new UpdateQueryBuilder({
       ...this.#props,
