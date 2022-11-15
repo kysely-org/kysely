@@ -78,8 +78,8 @@ for (const dialect of BUILT_IN_DIALECTS) {
           .select(sql<string>`max(name)`.as('max_name')),
         last_name:
           dialect === 'sqlite'
-            ? sql`'Bar' || 'son'`
-            : sql`concat('Bar', 'son')`,
+            ? sql<string>`'Bar' || 'son'`
+            : sql<string>`concat('Bar', 'son')`,
         gender: 'other',
       })
 
@@ -535,8 +535,8 @@ for (const dialect of BUILT_IN_DIALECTS) {
               .select(sql<string>`max(first_name)`.as('max_first_name')),
             last_name:
               dialect === 'postgres'
-                ? sql`concat(cast(${'Bar'} as varchar), cast(${'son'} as varchar))`
-                : sql`cast(${'Bar'} as varchar) || cast(${'son'} as varchar)`,
+                ? sql<string>`concat(cast(${'Bar'} as varchar), cast(${'son'} as varchar))`
+                : sql<string>`cast(${'Bar'} as varchar) || cast(${'son'} as varchar)`,
           })
           .returning(['first_name', 'last_name', 'gender'])
           .executeTakeFirst()
@@ -580,8 +580,8 @@ for (const dialect of BUILT_IN_DIALECTS) {
               .select(sql<string>`max(first_name)`.as('max_first_name')),
             last_name:
               dialect === 'postgres'
-                ? sql`concat(cast(${'Bar'} as varchar), cast(${'son'} as varchar))`
-                : sql`cast(${'Bar'} as varchar) || cast(${'son'} as varchar)`,
+                ? sql<string>`concat(cast(${'Bar'} as varchar), cast(${'son'} as varchar))`
+                : sql<string>`cast(${'Bar'} as varchar) || cast(${'son'} as varchar)`,
           })
           .returningAll()
           .executeTakeFirst()

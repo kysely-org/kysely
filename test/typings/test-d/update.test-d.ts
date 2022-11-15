@@ -34,10 +34,10 @@ async function testUpdate(db: Kysely<Database>) {
   const dinosaurs = ['T-Rex']
 
   // Non-existent column wrapped in spreaded object
-  const badMutationObject = {
-    ...(dinosaurs != null && { dinosaurs: ['hello'] }),
-    first_name: 'John',
-  } as const
-
-  expectError(db.updateTable('person').set(badMutationObject))
+  expectError(
+    db.updateTable('person').set({
+      ...(dinosaurs != null && { dinosaurs }),
+      first_name: 'John',
+    })
+  )
 }

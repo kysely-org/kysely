@@ -13,7 +13,7 @@ import {
 } from '../parser/insert-values-parser.js'
 import { InsertQueryNode } from '../operation-node/insert-query-node.js'
 import { QueryNode } from '../operation-node/query-node.js'
-import { MergePartial, SingleResultType } from '../util/type-utils.js'
+import { MergePartial, PickWith, SingleResultType } from '../util/type-utils.js'
 import {
   MutationObject,
   parseUpdateObject,
@@ -184,13 +184,15 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    * })
    * ```
    */
-  values(row: InsertObject<DB, TB>): InsertQueryBuilder<DB, TB, O>
-
-  values(
-    row: ReadonlyArray<InsertObject<DB, TB>>
+  values<R extends InsertObject<DB, TB>>(
+    row: PickWith<R, InsertObject<DB, TB>>
   ): InsertQueryBuilder<DB, TB, O>
 
-  values(args: InsertObjectOrList<DB, TB>): any {
+  values<R extends ReadonlyArray<InsertObject<DB, TB>>>(
+    row: ReadonlyArray<PickWith<R[number], InsertObject<DB, TB>>>
+  ): InsertQueryBuilder<DB, TB, O>
+
+  values(args: any): any {
     const [columns, values] = parseInsertObjectOrList(args)
 
     return new InsertQueryBuilder({
