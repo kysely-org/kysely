@@ -44,49 +44,49 @@ export const OnConflictNode = freeze({
 
   cloneWithIndexWhere(
     node: OnConflictNode,
-    filter: OperationNode
+    operation: OperationNode
   ): OnConflictNode {
     return freeze({
       ...node,
       indexWhere: node.indexWhere
-        ? WhereNode.cloneWithFilter(node.indexWhere, 'And', filter)
-        : WhereNode.create(filter),
+        ? WhereNode.cloneWithOperation(node.indexWhere, 'And', operation)
+        : WhereNode.create(operation),
     })
   },
 
   cloneWithIndexOrWhere(
     node: OnConflictNode,
-    filter: OperationNode
+    operation: OperationNode
   ): OnConflictNode {
     return freeze({
       ...node,
       indexWhere: node.indexWhere
-        ? WhereNode.cloneWithFilter(node.indexWhere, 'Or', filter)
-        : WhereNode.create(filter),
+        ? WhereNode.cloneWithOperation(node.indexWhere, 'Or', operation)
+        : WhereNode.create(operation),
     })
   },
 
   cloneWithUpdateWhere(
     node: OnConflictNode,
-    filter: OperationNode
+    operation: OperationNode
   ): OnConflictNode {
     return freeze({
       ...node,
       updateWhere: node.updateWhere
-        ? WhereNode.cloneWithFilter(node.updateWhere, 'And', filter)
-        : WhereNode.create(filter),
+        ? WhereNode.cloneWithOperation(node.updateWhere, 'And', operation)
+        : WhereNode.create(operation),
     })
   },
 
   cloneWithUpdateOrWhere(
     node: OnConflictNode,
-    filter: OperationNode
+    operation: OperationNode
   ): OnConflictNode {
     return freeze({
       ...node,
       updateWhere: node.updateWhere
-        ? WhereNode.cloneWithFilter(node.updateWhere, 'Or', filter)
-        : WhereNode.create(filter),
+        ? WhereNode.cloneWithOperation(node.updateWhere, 'Or', operation)
+        : WhereNode.create(operation),
     })
   },
 })

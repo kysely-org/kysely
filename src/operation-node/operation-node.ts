@@ -10,7 +10,6 @@ export type OperationNodeKind =
   | 'AliasNode'
   | 'FromNode'
   | 'SelectAllNode'
-  | 'FilterNode'
   | 'AndNode'
   | 'OrNode'
   | 'ParensNode'
@@ -75,6 +74,8 @@ export type OperationNodeKind =
   | 'PartitionByNode'
   | 'PartitionByItemNode'
   | 'SetOperationNode'
+  | 'BinaryOperationNode'
+  | 'UnaryOperationNode'
 
 export interface OperationNode {
   readonly kind: OperationNodeKind
