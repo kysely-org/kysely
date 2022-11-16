@@ -483,8 +483,8 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    *   .onDuplicateKeyUpdate({ species: 'hamster' })
    * ```
    */
-  onDuplicateKeyUpdate(
-    updates: MutationObject<DB, TB, TB>
+  onDuplicateKeyUpdate<R extends MutationObject<DB, TB, TB>>(
+    updates: PickWith<R, MutationObject<DB, TB, TB>>
   ): InsertQueryBuilder<DB, TB, O> {
     return new InsertQueryBuilder({
       ...this.#props,

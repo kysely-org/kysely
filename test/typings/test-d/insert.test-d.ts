@@ -126,6 +126,23 @@ async function testInsert(db: Kysely<Database>) {
       gender: 'female',
     })
   )
+
+  // Non-existent column wrapped in spreaded object
+  expectError(
+    db
+      .insertInto('person')
+      .values({
+        first_name: 'John',
+        age: 5,
+        gender: 'female',
+      })
+      .onDuplicateKeyUpdate({
+        first_name: 'John',
+        ...(dinosaurs != null && { dinosaurs }),
+        age: 5,
+        gender: 'female',
+      })
+  )
 }
 
 async function testReturning(db: Kysely<Database>) {
