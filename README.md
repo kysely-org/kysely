@@ -563,3 +563,7 @@ in knex. Bringing the type system and the changes to knex would mean very signif
 that aren't possible at this point of the project. Knex was also originally written for javascript and
 the typescript typings were added afterwards. That always leads to compromises in the types. Designing
 a library for typescript from the ground up produces much better and simpler types.
+
+# How to contribute to Kysely
+
+See [CONTRIBUTING.md](./CONTRIBUTING.md).
