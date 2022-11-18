@@ -20,7 +20,7 @@ import {
 } from '../parser/update-set-parser.js'
 import { freeze } from '../util/object-utils.js'
 import { preventAwait } from '../util/prevent-await.js'
-import { AnyColumn } from '../util/type-utils.js'
+import { AnyColumn, PickWith } from '../util/type-utils.js'
 import { WhereInterface } from './where-interface.js'
 
 export class OnConflictBuilder<DB, TB extends keyof DB>
@@ -313,11 +313,20 @@ export class OnConflictBuilder<DB, TB extends keyof DB>
    * do update set "first_name" = $3
    * ```
    */
-  doUpdateSet(
-    updates: MutationObject<
+  doUpdateSet<
+    U extends MutationObject<
       OnConflictDatabase<DB, TB>,
       OnConflictTables<TB>,
       OnConflictTables<TB>
+    >
+  >(
+    updates: PickWith<
+      U,
+      MutationObject<
+        OnConflictDatabase<DB, TB>,
+        OnConflictTables<TB>,
+        OnConflictTables<TB>
+      >
     >
   ): OnConflictUpdateBuilder<OnConflictDatabase<DB, TB>, OnConflictTables<TB>> {
     return new OnConflictUpdateBuilder({

@@ -117,7 +117,7 @@ async function testInsert(db: Kysely<Database>) {
 
   const dinosaurs = ['T-Rex']
 
-  // Non-existent column wrapped in spreaded object
+  // Non-existent column wrapped in spreaded object (values)
   expectError(
     db.insertInto('person').values({
       ...(dinosaurs != null && { dinosaurs }),
@@ -127,7 +127,7 @@ async function testInsert(db: Kysely<Database>) {
     })
   )
 
-  // Non-existent column wrapped in spreaded object
+  // Non-existent column wrapped in spreaded object (onDuplicateKeyUpdate)
   expectError(
     db
       .insertInto('person')
@@ -142,6 +142,25 @@ async function testInsert(db: Kysely<Database>) {
         age: 5,
         gender: 'female',
       })
+  )
+
+  // Non-existent column wrapped in spreaded object (onConflict.doUpdateSet)
+  expectError(
+    db
+      .insertInto('person')
+      .values({
+        first_name: 'John',
+        age: 5,
+        gender: 'female',
+      })
+      .onConflict((ocb) =>
+        ocb.doUpdateSet({
+          first_name: 'John',
+          ...(dinosaurs != null && { dinosaurs }),
+          age: 5,
+          gender: 'female',
+        })
+      )
   )
 }
 
