@@ -117,7 +117,7 @@ async function testInsert(db: Kysely<Database>) {
 
   const dinosaurs = ['T-Rex']
 
-  // Non-existent column wrapped in spreaded object (values)
+  // Non-existent column wrapped in spreaded object (values single)
   expectError(
     db.insertInto('person').values({
       ...(dinosaurs != null && { dinosaurs }),
@@ -126,6 +126,26 @@ async function testInsert(db: Kysely<Database>) {
       gender: 'female',
     })
   )
+
+  // Non-existent column wrapped in spreaded object (values multi)
+  expectError(
+    db.insertInto('person').values([
+      {
+        first_name: 'John',
+        age: 5,
+        gender: 'female',
+      },
+      {
+        first_name: 'Jennifer',
+        age: 15,
+        ...(dinosaurs != null && { dinosaurs }),
+        gender: 'male',
+      },
+    ])
+  )
+
+  // values empty array
+  expectError(db.insertInto('person').values([]))
 
   // Non-existent column wrapped in spreaded object (onDuplicateKeyUpdate)
   expectError(

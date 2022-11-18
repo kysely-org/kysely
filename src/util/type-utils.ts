@@ -161,6 +161,41 @@ export type Equals<T, U> = (<G>() => G extends T ? 1 : 2) extends <
   ? true
   : false
 
+/**
+ * Use to limit a generic object to a shape's keys, and throw ts errors on unexpected
+ * keys.
+ *
+ * Workaround for {@link https://github.com/Microsoft/TypeScript/issues/12936 typescript issue #12936}
+ *
+ * Example:
+ *
+ * ```ts
+ * interface Person {
+ *   name: string
+ * }
+ *
+ * function greet<T extends Person>(
+ *   person: PickWith<T, Person>
+ * ) {}
+ *
+ * greet({}) // ts error.
+ * greet({ age: 15 }) // ts error.
+ * greet({ name: 'Joe' }) // OK!
+ * greet({ name: 15 }) // ts error.
+ * greet({ name: 'Joe', age: 15 }) // ts error.
+ * ```
+ */
 export type PickWith<O, S> = {
   [K in keyof O]: K extends keyof S ? O[K] : never
 }
+
+/**
+ * Same as {@link PickWith}, but for arrays.
+ */
+export type PickListItemsWith<A, S> = A extends []
+  ? A
+  : A extends [infer L, ...infer R]
+  ? [PickWith<L, S>, ...PickListItemsWith<R, S>]
+  : A // I'd put `never` instead, but then it breaks autocomplete. 🤷‍♂️
+
+export type ReadonlyNonEmptyArray<I> = readonly [I, ...I[]]
