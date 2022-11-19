@@ -33,6 +33,14 @@ async function testUpdate(db: Kysely<Database>) {
 
   const dinosaurs = ['T-Rex']
 
+  // Non-existent column
+  expectError(
+    db.updateTable('person').set({
+      dinosaurs,
+      first_name: 'John',
+    })
+  )
+
   // Non-existent column wrapped in spreaded object
   expectError(
     db.updateTable('person').set({
