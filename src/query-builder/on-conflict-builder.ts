@@ -3,17 +3,19 @@ import { ColumnNode } from '../operation-node/column-node.js'
 import { IdentifierNode } from '../operation-node/identifier-node.js'
 import { OnConflictNode } from '../operation-node/on-conflict-node.js'
 import { OperationNodeSource } from '../operation-node/operation-node-source.js'
-import { ExpressionOrFactory } from '../parser/expression-parser.js'
 import {
+  ComparisonOperatorExpression,
+  OperandValueExpressionOrList,
+  parseReferentialFilter,
+  parseWhere,
   WhereGrouper,
-  parseWhereFilter,
-  FilterOperator,
-  FilterValueExpressionOrList,
-  parseReferenceFilter,
-  parseExistFilter,
-  parseNotExistFilter,
-} from '../parser/filter-parser.js'
+} from '../parser/binary-operation-parser.js'
+import { ExpressionOrFactory } from '../parser/expression-parser.js'
 import { ReferenceExpression } from '../parser/reference-parser.js'
+import {
+  parseExists,
+  parseNotExists,
+} from '../parser/unary-operation-parser.js'
 import {
   MutationObject,
   parseUpdateObject,
@@ -111,8 +113,8 @@ export class OnConflictBuilder<DB, TB extends keyof DB>
    */
   where<RE extends ReferenceExpression<DB, TB>>(
     lhs: RE,
-    op: FilterOperator,
-    rhs: FilterValueExpressionOrList<DB, TB, RE>
+    op: ComparisonOperatorExpression,
+    rhs: OperandValueExpressionOrList<DB, TB, RE>
   ): OnConflictBuilder<DB, TB>
 
   where(grouper: WhereGrouper<DB, TB>): OnConflictBuilder<DB, TB>
@@ -123,7 +125,7 @@ export class OnConflictBuilder<DB, TB extends keyof DB>
       ...this.#props,
       onConflictNode: OnConflictNode.cloneWithIndexWhere(
         this.#props.onConflictNode,
-        parseWhereFilter(args)
+        parseWhere(args)
       ),
     })
   }
@@ -135,14 +137,14 @@ export class OnConflictBuilder<DB, TB extends keyof DB>
    */
   whereRef(
     lhs: ReferenceExpression<DB, TB>,
-    op: FilterOperator,
+    op: ComparisonOperatorExpression,
     rhs: ReferenceExpression<DB, TB>
   ): OnConflictBuilder<DB, TB> {
     return new OnConflictBuilder({
       ...this.#props,
       onConflictNode: OnConflictNode.cloneWithIndexWhere(
         this.#props.onConflictNode,
-        parseReferenceFilter(lhs, op, rhs)
+        parseReferentialFilter(lhs, op, rhs)
       ),
     })
   }
@@ -154,8 +156,8 @@ export class OnConflictBuilder<DB, TB extends keyof DB>
    */
   orWhere<RE extends ReferenceExpression<DB, TB>>(
     lhs: RE,
-    op: FilterOperator,
-    rhs: FilterValueExpressionOrList<DB, TB, RE>
+    op: ComparisonOperatorExpression,
+    rhs: OperandValueExpressionOrList<DB, TB, RE>
   ): OnConflictBuilder<DB, TB>
   orWhere(grouper: WhereGrouper<DB, TB>): OnConflictBuilder<DB, TB>
   orWhere(expression: Expression<any>): OnConflictBuilder<DB, TB>
@@ -165,7 +167,7 @@ export class OnConflictBuilder<DB, TB extends keyof DB>
       ...this.#props,
       onConflictNode: OnConflictNode.cloneWithIndexOrWhere(
         this.#props.onConflictNode,
-        parseWhereFilter(args)
+        parseWhere(args)
       ),
     })
   }
@@ -177,14 +179,14 @@ export class OnConflictBuilder<DB, TB extends keyof DB>
    */
   orWhereRef(
     lhs: ReferenceExpression<DB, TB>,
-    op: FilterOperator,
+    op: ComparisonOperatorExpression,
     rhs: ReferenceExpression<DB, TB>
   ): OnConflictBuilder<DB, TB> {
     return new OnConflictBuilder({
       ...this.#props,
       onConflictNode: OnConflictNode.cloneWithIndexOrWhere(
         this.#props.onConflictNode,
-        parseReferenceFilter(lhs, op, rhs)
+        parseReferentialFilter(lhs, op, rhs)
       ),
     })
   }
@@ -201,7 +203,7 @@ export class OnConflictBuilder<DB, TB extends keyof DB>
       ...this.#props,
       onConflictNode: OnConflictNode.cloneWithIndexWhere(
         this.#props.onConflictNode,
-        parseExistFilter(arg)
+        parseExists(arg)
       ),
     })
   }
@@ -218,7 +220,7 @@ export class OnConflictBuilder<DB, TB extends keyof DB>
       ...this.#props,
       onConflictNode: OnConflictNode.cloneWithIndexWhere(
         this.#props.onConflictNode,
-        parseNotExistFilter(arg)
+        parseNotExists(arg)
       ),
     })
   }
@@ -235,7 +237,7 @@ export class OnConflictBuilder<DB, TB extends keyof DB>
       ...this.#props,
       onConflictNode: OnConflictNode.cloneWithIndexOrWhere(
         this.#props.onConflictNode,
-        parseExistFilter(arg)
+        parseExists(arg)
       ),
     })
   }
@@ -252,7 +254,7 @@ export class OnConflictBuilder<DB, TB extends keyof DB>
       ...this.#props,
       onConflictNode: OnConflictNode.cloneWithIndexOrWhere(
         this.#props.onConflictNode,
-        parseNotExistFilter(arg)
+        parseNotExists(arg)
       ),
     })
   }
@@ -385,8 +387,8 @@ export class OnConflictUpdateBuilder<DB, TB extends keyof DB>
    */
   where<RE extends ReferenceExpression<DB, TB>>(
     lhs: RE,
-    op: FilterOperator,
-    rhs: FilterValueExpressionOrList<DB, TB, RE>
+    op: ComparisonOperatorExpression,
+    rhs: OperandValueExpressionOrList<DB, TB, RE>
   ): OnConflictUpdateBuilder<DB, TB>
 
   where(grouper: WhereGrouper<DB, TB>): OnConflictUpdateBuilder<DB, TB>
@@ -397,7 +399,7 @@ export class OnConflictUpdateBuilder<DB, TB extends keyof DB>
       ...this.#props,
       onConflictNode: OnConflictNode.cloneWithUpdateWhere(
         this.#props.onConflictNode,
-        parseWhereFilter(args)
+        parseWhere(args)
       ),
     })
   }
@@ -409,14 +411,14 @@ export class OnConflictUpdateBuilder<DB, TB extends keyof DB>
    */
   whereRef(
     lhs: ReferenceExpression<DB, TB>,
-    op: FilterOperator,
+    op: ComparisonOperatorExpression,
     rhs: ReferenceExpression<DB, TB>
   ): OnConflictUpdateBuilder<DB, TB> {
     return new OnConflictUpdateBuilder({
       ...this.#props,
       onConflictNode: OnConflictNode.cloneWithUpdateWhere(
         this.#props.onConflictNode,
-        parseReferenceFilter(lhs, op, rhs)
+        parseReferentialFilter(lhs, op, rhs)
       ),
     })
   }
@@ -428,8 +430,8 @@ export class OnConflictUpdateBuilder<DB, TB extends keyof DB>
    */
   orWhere<RE extends ReferenceExpression<DB, TB>>(
     lhs: RE,
-    op: FilterOperator,
-    rhs: FilterValueExpressionOrList<DB, TB, RE>
+    op: ComparisonOperatorExpression,
+    rhs: OperandValueExpressionOrList<DB, TB, RE>
   ): OnConflictUpdateBuilder<DB, TB>
   orWhere(grouper: WhereGrouper<DB, TB>): OnConflictUpdateBuilder<DB, TB>
   orWhere(expression: Expression<any>): OnConflictUpdateBuilder<DB, TB>
@@ -439,7 +441,7 @@ export class OnConflictUpdateBuilder<DB, TB extends keyof DB>
       ...this.#props,
       onConflictNode: OnConflictNode.cloneWithUpdateOrWhere(
         this.#props.onConflictNode,
-        parseWhereFilter(args)
+        parseWhere(args)
       ),
     })
   }
@@ -451,14 +453,14 @@ export class OnConflictUpdateBuilder<DB, TB extends keyof DB>
    */
   orWhereRef(
     lhs: ReferenceExpression<DB, TB>,
-    op: FilterOperator,
+    op: ComparisonOperatorExpression,
     rhs: ReferenceExpression<DB, TB>
   ): OnConflictUpdateBuilder<DB, TB> {
     return new OnConflictUpdateBuilder({
       ...this.#props,
       onConflictNode: OnConflictNode.cloneWithUpdateOrWhere(
         this.#props.onConflictNode,
-        parseReferenceFilter(lhs, op, rhs)
+        parseReferentialFilter(lhs, op, rhs)
       ),
     })
   }
@@ -475,7 +477,7 @@ export class OnConflictUpdateBuilder<DB, TB extends keyof DB>
       ...this.#props,
       onConflictNode: OnConflictNode.cloneWithUpdateWhere(
         this.#props.onConflictNode,
-        parseExistFilter(arg)
+        parseExists(arg)
       ),
     })
   }
@@ -492,7 +494,7 @@ export class OnConflictUpdateBuilder<DB, TB extends keyof DB>
       ...this.#props,
       onConflictNode: OnConflictNode.cloneWithUpdateWhere(
         this.#props.onConflictNode,
-        parseNotExistFilter(arg)
+        parseNotExists(arg)
       ),
     })
   }
@@ -509,7 +511,7 @@ export class OnConflictUpdateBuilder<DB, TB extends keyof DB>
       ...this.#props,
       onConflictNode: OnConflictNode.cloneWithUpdateOrWhere(
         this.#props.onConflictNode,
-        parseExistFilter(arg)
+        parseExists(arg)
       ),
     })
   }
@@ -526,7 +528,7 @@ export class OnConflictUpdateBuilder<DB, TB extends keyof DB>
       ...this.#props,
       onConflictNode: OnConflictNode.cloneWithUpdateOrWhere(
         this.#props.onConflictNode,
-        parseNotExistFilter(arg)
+        parseNotExists(arg)
       ),
     })
   }

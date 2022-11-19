@@ -23,17 +23,17 @@ export const HavingNode = freeze({
     })
   },
 
-  cloneWithFilter(
+  cloneWithOperation(
     havingNode: HavingNode,
-    op: 'And' | 'Or',
-    filter: OperationNode
+    operator: 'And' | 'Or',
+    operation: OperationNode
   ): HavingNode {
     return freeze({
       ...havingNode,
       having:
-        op === 'And'
-          ? AndNode.create(havingNode.having, filter)
-          : OrNode.create(havingNode.having, filter),
+        operator === 'And'
+          ? AndNode.create(havingNode.having, operation)
+          : OrNode.create(havingNode.having, operation),
     })
   },
 })

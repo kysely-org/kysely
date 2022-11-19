@@ -49,21 +49,21 @@ export const JoinNode = freeze({
     })
   },
 
-  cloneWithOn(joinNode: JoinNode, filter: OperationNode): JoinNode {
+  cloneWithOn(joinNode: JoinNode, operation: OperationNode): JoinNode {
     return freeze({
       ...joinNode,
       on: joinNode.on
-        ? OnNode.cloneWithFilter(joinNode.on, 'And', filter)
-        : OnNode.create(filter),
+        ? OnNode.cloneWithOperation(joinNode.on, 'And', operation)
+        : OnNode.create(operation),
     })
   },
 
-  cloneWithOrOn(joinNode: JoinNode, filter: OperationNode): JoinNode {
+  cloneWithOrOn(joinNode: JoinNode, operation: OperationNode): JoinNode {
     return freeze({
       ...joinNode,
       on: joinNode.on
-        ? OnNode.cloneWithFilter(joinNode.on, 'Or', filter)
-        : OnNode.create(filter),
+        ? OnNode.cloneWithOperation(joinNode.on, 'Or', operation)
+        : OnNode.create(operation),
     })
   },
 })

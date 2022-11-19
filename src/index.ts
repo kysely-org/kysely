@@ -120,7 +120,6 @@ export * from './operation-node/drop-schema-node.js'
 export * from './operation-node/drop-table-node.js'
 export * from './operation-node/drop-type-node.js'
 export * from './operation-node/drop-view-node.js'
-export * from './operation-node/filter-node.js'
 export * from './operation-node/foreign-key-constraint-node.js'
 export * from './operation-node/from-node.js'
 export * from './operation-node/generated-node.js'
@@ -173,6 +172,8 @@ export * from './operation-node/over-node.js'
 export * from './operation-node/partition-by-node.js'
 export * from './operation-node/partition-by-item-node.js'
 export * from './operation-node/set-operation-node.js'
+export * from './operation-node/binary-operation-node.js'
+export * from './operation-node/unary-operation-node.js'
 
 export * from './util/column-type.js'
 export * from './util/compilable.js'
@@ -207,12 +208,6 @@ export {
   ValueExpressionOrList,
 } from './parser/value-parser.js'
 export {
-  FilterValueExpression,
-  FilterValueExpressionOrList,
-  ExistsExpression,
-  FilterOperator,
-} from './parser/filter-parser.js'
-export {
   TableExpression,
   TableExpressionOrList,
 } from './parser/table-parser.js'
@@ -226,3 +221,9 @@ export {
   OrderByExpression,
   OrderByDirectionExpression,
 } from './parser/order-by-parser.js'
+export {
+  ComparisonOperatorExpression,
+  OperandValueExpression,
+  OperandValueExpressionOrList,
+} from './parser/binary-operation-parser.js'
+export { ExistsExpression } from './parser/unary-operation-parser.js'

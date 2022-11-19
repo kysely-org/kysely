@@ -12,16 +12,6 @@ import {
   SelectExpression,
   SelectExpressionOrList,
 } from '../parser/select-parser.js'
-import {
-  ExistsExpression,
-  parseExistFilter,
-  FilterOperator,
-  parseReferenceFilter,
-  parseWhereFilter,
-  parseNotExistFilter,
-  FilterValueExpressionOrList,
-  WhereGrouper,
-} from '../parser/filter-parser.js'
 import { ReturningRow } from '../parser/returning-parser.js'
 import { ReferenceExpression } from '../parser/reference-parser.js'
 import { QueryNode } from '../operation-node/query-node.js'
@@ -47,6 +37,18 @@ import {
 import { Explainable, ExplainFormat } from '../util/explainable.js'
 import { ExplainNode } from '../operation-node/explain-node.js'
 import { AliasedExpression, Expression } from '../expression/expression.js'
+import {
+  ComparisonOperatorExpression,
+  OperandValueExpressionOrList,
+  parseReferentialFilter,
+  parseWhere,
+  WhereGrouper,
+} from '../parser/binary-operation-parser.js'
+import {
+  ExistsExpression,
+  parseExists,
+  parseNotExists,
+} from '../parser/unary-operation-parser.js'
 
 export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
   implements
@@ -64,8 +66,8 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
 
   where<RE extends ReferenceExpression<DB, TB>>(
     lhs: RE,
-    op: FilterOperator,
-    rhs: FilterValueExpressionOrList<DB, TB, RE>
+    op: ComparisonOperatorExpression,
+    rhs: OperandValueExpressionOrList<DB, TB, RE>
   ): DeleteQueryBuilder<DB, TB, O>
 
   where(grouper: WhereGrouper<DB, TB>): DeleteQueryBuilder<DB, TB, O>
@@ -76,29 +78,29 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
       ...this.#props,
       queryNode: QueryNode.cloneWithWhere(
         this.#props.queryNode,
-        parseWhereFilter(args)
+        parseWhere(args)
       ),
     })
   }
 
   whereRef(
     lhs: ReferenceExpression<DB, TB>,
-    op: FilterOperator,
+    op: ComparisonOperatorExpression,
     rhs: ReferenceExpression<DB, TB>
   ): DeleteQueryBuilder<DB, TB, O> {
     return new DeleteQueryBuilder({
       ...this.#props,
       queryNode: QueryNode.cloneWithWhere(
         this.#props.queryNode,
-        parseReferenceFilter(lhs, op, rhs)
+        parseReferentialFilter(lhs, op, rhs)
       ),
     })
   }
 
   orWhere<RE extends ReferenceExpression<DB, TB>>(
     lhs: RE,
-    op: FilterOperator,
-    rhs: FilterValueExpressionOrList<DB, TB, RE>
+    op: ComparisonOperatorExpression,
+    rhs: OperandValueExpressionOrList<DB, TB, RE>
   ): DeleteQueryBuilder<DB, TB, O>
 
   orWhere(grouper: WhereGrouper<DB, TB>): DeleteQueryBuilder<DB, TB, O>
@@ -109,21 +111,21 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
       ...this.#props,
       queryNode: QueryNode.cloneWithOrWhere(
         this.#props.queryNode,
-        parseWhereFilter(args)
+        parseWhere(args)
       ),
     })
   }
 
   orWhereRef(
     lhs: ReferenceExpression<DB, TB>,
-    op: FilterOperator,
+    op: ComparisonOperatorExpression,
     rhs: ReferenceExpression<DB, TB>
   ): DeleteQueryBuilder<DB, TB, O> {
     return new DeleteQueryBuilder({
       ...this.#props,
       queryNode: QueryNode.cloneWithOrWhere(
         this.#props.queryNode,
-        parseReferenceFilter(lhs, op, rhs)
+        parseReferentialFilter(lhs, op, rhs)
       ),
     })
   }
@@ -133,7 +135,7 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
       ...this.#props,
       queryNode: QueryNode.cloneWithWhere(
         this.#props.queryNode,
-        parseExistFilter(arg)
+        parseExists(arg)
       ),
     })
   }
@@ -143,7 +145,7 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
       ...this.#props,
       queryNode: QueryNode.cloneWithWhere(
         this.#props.queryNode,
-        parseNotExistFilter(arg)
+        parseNotExists(arg)
       ),
     })
   }
@@ -153,7 +155,7 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
       ...this.#props,
       queryNode: QueryNode.cloneWithOrWhere(
         this.#props.queryNode,
-        parseExistFilter(arg)
+        parseExists(arg)
       ),
     })
   }
@@ -165,7 +167,7 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
       ...this.#props,
       queryNode: QueryNode.cloneWithOrWhere(
         this.#props.queryNode,
-        parseNotExistFilter(arg)
+        parseNotExists(arg)
       ),
     })
   }

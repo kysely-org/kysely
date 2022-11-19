@@ -1,11 +1,11 @@
 import { Expression } from '../expression/expression.js'
 import {
-  ExistsExpression,
-  FilterOperator,
-  FilterValueExpressionOrList,
+  ComparisonOperatorExpression,
+  OperandValueExpressionOrList,
   WhereGrouper,
-} from '../parser/filter-parser.js'
+} from '../parser/binary-operation-parser.js'
 import { ReferenceExpression } from '../parser/reference-parser.js'
+import { ExistsExpression } from '../parser/unary-operation-parser.js'
 
 export interface WhereInterface<DB, TB extends keyof DB> {
   /**
@@ -194,8 +194,8 @@ export interface WhereInterface<DB, TB extends keyof DB> {
    */
   where<RE extends ReferenceExpression<DB, TB>>(
     lhs: RE,
-    op: FilterOperator,
-    rhs: FilterValueExpressionOrList<DB, TB, RE>
+    op: ComparisonOperatorExpression,
+    rhs: OperandValueExpressionOrList<DB, TB, RE>
   ): WhereInterface<DB, TB>
 
   where(grouper: WhereGrouper<DB, TB>): WhereInterface<DB, TB>
@@ -255,7 +255,7 @@ export interface WhereInterface<DB, TB extends keyof DB> {
    */
   whereRef(
     lhs: ReferenceExpression<DB, TB>,
-    op: FilterOperator,
+    op: ComparisonOperatorExpression,
     rhs: ReferenceExpression<DB, TB>
   ): WhereInterface<DB, TB>
 
@@ -324,8 +324,8 @@ export interface WhereInterface<DB, TB extends keyof DB> {
    */
   orWhere<RE extends ReferenceExpression<DB, TB>>(
     lhs: RE,
-    op: FilterOperator,
-    rhs: FilterValueExpressionOrList<DB, TB, RE>
+    op: ComparisonOperatorExpression,
+    rhs: OperandValueExpressionOrList<DB, TB, RE>
   ): WhereInterface<DB, TB>
 
   orWhere(grouper: WhereGrouper<DB, TB>): WhereInterface<DB, TB>
@@ -339,7 +339,7 @@ export interface WhereInterface<DB, TB extends keyof DB> {
    */
   orWhereRef(
     lhs: ReferenceExpression<DB, TB>,
-    op: FilterOperator,
+    op: ComparisonOperatorExpression,
     rhs: ReferenceExpression<DB, TB>
   ): WhereInterface<DB, TB>
 
