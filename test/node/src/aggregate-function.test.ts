@@ -16,7 +16,7 @@ import {
 const funcNames = ['avg', 'count', 'max', 'min', 'sum'] as const
 
 for (const dialect of BUILT_IN_DIALECTS) {
-  describe.only(`${dialect}: aggregate functions`, () => {
+  describe(`${dialect}: aggregate functions`, () => {
     let ctx: TestContext
 
     before(async function () {
