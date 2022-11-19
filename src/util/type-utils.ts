@@ -196,6 +196,12 @@ export type PickListItemsWith<A, S> = A extends []
   ? A
   : A extends [infer L, ...infer R]
   ? [PickWith<L, S>, ...PickListItemsWith<R, S>]
-  : A // I'd put `never` instead, but then it breaks autocomplete. 🤷‍♂️
+  : A extends (infer I)[]
+  ? PickWith<I, S>[]
+  : A
 
-export type ReadonlyNonEmptyArray<I> = readonly [I, ...I[]]
+export type ReadonlifyArray<A> = A extends [infer L, ...infer R]
+  ? readonly [L, ...R]
+  : A extends (infer I)[]
+  ? readonly I[]
+  : A

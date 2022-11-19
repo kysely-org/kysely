@@ -16,7 +16,7 @@ import {
   MergePartial,
   PickListItemsWith,
   PickWith,
-  ReadonlyNonEmptyArray,
+  ReadonlifyArray,
   SingleResultType,
 } from '../util/type-utils.js'
 import {
@@ -193,8 +193,8 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
     row: PickWith<R, InsertObject<DB, TB>>
   ): InsertQueryBuilder<DB, TB, O>
 
-  values<R extends ReadonlyNonEmptyArray<InsertObject<DB, TB>>>(
-    rows: PickListItemsWith<R, InsertObject<DB, TB>>
+  values<R extends InsertObject<DB, TB>[]>(
+    rows: ReadonlifyArray<PickListItemsWith<R, InsertObject<DB, TB>>>
   ): InsertQueryBuilder<DB, TB, O>
 
   values(args: any): any {

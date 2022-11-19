@@ -184,9 +184,6 @@ async function testInsert(db: Kysely<Database>) {
     ])
   )
 
-  // values empty array
-  expectError(db.insertInto('person').values([]))
-
   // Non-existent column (onDuplicateKeyUpdate)
   expectError(
     db
