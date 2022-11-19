@@ -6,17 +6,19 @@ import { preventAwait } from '../util/prevent-await.js'
 import { OverBuilder } from './over-builder.js'
 import { createOverBuilder } from '../parser/parse-utils.js'
 import { AliasedExpression, Expression } from '../expression/expression.js'
+import { ReferenceExpression } from '../parser/reference-parser.js'
+import { ComparisonOperator } from '../operation-node/operator-node.js'
+import {
+  OperandValueExpressionOrList,
+  parseReferentialFilter,
+  parseWhere,
+  WhereGrouper,
+} from '../parser/binary-operation-parser.js'
 import {
   ExistsExpression,
-  FilterOperator,
-  FilterValueExpressionOrList,
-  parseExistFilter,
-  parseNotExistFilter,
-  parseReferenceFilter,
-  parseWhereFilter,
-  WhereGrouper,
-} from '../parser/filter-parser.js'
-import { ReferenceExpression } from '../parser/reference-parser.js'
+  parseExists,
+  parseNotExists,
+} from '../parser/unary-operation-parser.js'
 
 export class AggregateFunctionBuilder<DB, TB extends keyof DB, O = unknown>
   implements Expression<O>
@@ -96,8 +98,8 @@ export class AggregateFunctionBuilder<DB, TB extends keyof DB, O = unknown>
    */
   filterWhere<RE extends ReferenceExpression<DB, TB>>(
     lhs: RE,
-    op: FilterOperator,
-    rhs: FilterValueExpressionOrList<DB, TB, RE>
+    op: ComparisonOperator,
+    rhs: OperandValueExpressionOrList<DB, TB, RE>
   ): AggregateFunctionBuilder<DB, TB, O>
 
   filterWhere(
@@ -110,7 +112,7 @@ export class AggregateFunctionBuilder<DB, TB extends keyof DB, O = unknown>
       ...this.#props,
       aggregateFunctionNode: AggregateFunctionNode.cloneWithFilter(
         this.#props.aggregateFunctionNode,
-        parseWhereFilter(args)
+        parseWhere(args)
       ),
     })
   }
@@ -125,7 +127,7 @@ export class AggregateFunctionBuilder<DB, TB extends keyof DB, O = unknown>
       ...this.#props,
       aggregateFunctionNode: AggregateFunctionNode.cloneWithFilter(
         this.#props.aggregateFunctionNode,
-        parseExistFilter(arg)
+        parseExists(arg)
       ),
     })
   }
@@ -140,7 +142,7 @@ export class AggregateFunctionBuilder<DB, TB extends keyof DB, O = unknown>
       ...this.#props,
       aggregateFunctionNode: AggregateFunctionNode.cloneWithFilter(
         this.#props.aggregateFunctionNode,
-        parseNotExistFilter(arg)
+        parseNotExists(arg)
       ),
     })
   }
@@ -150,14 +152,14 @@ export class AggregateFunctionBuilder<DB, TB extends keyof DB, O = unknown>
    */
   filterWhereRef(
     lhs: ReferenceExpression<DB, TB>,
-    op: FilterOperator,
+    op: ComparisonOperator,
     rhs: ReferenceExpression<DB, TB>
   ): AggregateFunctionBuilder<DB, TB, O> {
     return new AggregateFunctionBuilder({
       ...this.#props,
       aggregateFunctionNode: AggregateFunctionNode.cloneWithFilter(
         this.#props.aggregateFunctionNode,
-        parseReferenceFilter(lhs, op, rhs)
+        parseReferentialFilter(lhs, op, rhs)
       ),
     })
   }
@@ -167,8 +169,8 @@ export class AggregateFunctionBuilder<DB, TB extends keyof DB, O = unknown>
    */
   orFilterWhere<RE extends ReferenceExpression<DB, TB>>(
     lhs: RE,
-    op: FilterOperator,
-    rhs: FilterValueExpressionOrList<DB, TB, RE>
+    op: ComparisonOperator,
+    rhs: OperandValueExpressionOrList<DB, TB, RE>
   ): AggregateFunctionBuilder<DB, TB, O>
 
   orFilterWhere(
@@ -183,7 +185,7 @@ export class AggregateFunctionBuilder<DB, TB extends keyof DB, O = unknown>
       ...this.#props,
       aggregateFunctionNode: AggregateFunctionNode.cloneWithOrFilter(
         this.#props.aggregateFunctionNode,
-        parseWhereFilter(args)
+        parseWhere(args)
       ),
     })
   }
@@ -198,7 +200,7 @@ export class AggregateFunctionBuilder<DB, TB extends keyof DB, O = unknown>
       ...this.#props,
       aggregateFunctionNode: AggregateFunctionNode.cloneWithOrFilter(
         this.#props.aggregateFunctionNode,
-        parseExistFilter(arg)
+        parseExists(arg)
       ),
     })
   }
@@ -213,7 +215,7 @@ export class AggregateFunctionBuilder<DB, TB extends keyof DB, O = unknown>
       ...this.#props,
       aggregateFunctionNode: AggregateFunctionNode.cloneWithOrFilter(
         this.#props.aggregateFunctionNode,
-        parseNotExistFilter(arg)
+        parseNotExists(arg)
       ),
     })
   }
@@ -223,14 +225,14 @@ export class AggregateFunctionBuilder<DB, TB extends keyof DB, O = unknown>
    */
   orFilterWhereRef(
     lhs: ReferenceExpression<DB, TB>,
-    op: FilterOperator,
+    op: ComparisonOperator,
     rhs: ReferenceExpression<DB, TB>
   ): AggregateFunctionBuilder<DB, TB, O> {
     return new AggregateFunctionBuilder({
       ...this.#props,
       aggregateFunctionNode: AggregateFunctionNode.cloneWithOrFilter(
         this.#props.aggregateFunctionNode,
-        parseReferenceFilter(lhs, op, rhs)
+        parseReferentialFilter(lhs, op, rhs)
       ),
     })
   }
