@@ -50,7 +50,11 @@ export const AggregateFunctionNode = freeze({
     return freeze({
       ...aggregateFunctionNode,
       filter: aggregateFunctionNode.filter
-        ? WhereNode.cloneWithFilter(aggregateFunctionNode.filter, 'And', filter)
+        ? WhereNode.cloneWithOperation(
+            aggregateFunctionNode.filter,
+            'And',
+            filter
+          )
         : WhereNode.create(filter),
     })
   },
@@ -62,7 +66,11 @@ export const AggregateFunctionNode = freeze({
     return freeze({
       ...aggregateFunctionNode,
       filter: aggregateFunctionNode.filter
-        ? WhereNode.cloneWithFilter(aggregateFunctionNode.filter, 'Or', filter)
+        ? WhereNode.cloneWithOperation(
+            aggregateFunctionNode.filter,
+            'Or',
+            filter
+          )
         : WhereNode.create(filter),
     })
   },
