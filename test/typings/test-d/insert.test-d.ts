@@ -117,6 +117,16 @@ async function testInsert(db: Kysely<Database>) {
 
   const dinosaurs = ['T-Rex']
 
+  // Non-existent column (values single)
+  expectError(
+    db.insertInto('person').values({
+      dinosaurs,
+      first_name: 'John',
+      age: 5,
+      gender: 'female',
+    })
+  )
+
   // Non-existent column wrapped in spreaded object (values single)
   expectError(
     db.insertInto('person').values({
@@ -125,6 +135,36 @@ async function testInsert(db: Kysely<Database>) {
       age: 5,
       gender: 'female',
     })
+  )
+
+  db.insertInto('person').values([
+    {
+      first_name: 'John',
+      age: 5,
+      gender: 'female',
+    },
+    {
+      first_name: 'Jennifer',
+      age: 15,
+      gender: 'male',
+    },
+  ])
+
+  // Non-existent column (values multi)
+  expectError(
+    db.insertInto('person').values([
+      {
+        first_name: 'John',
+        age: 5,
+        gender: 'female',
+      },
+      {
+        first_name: 'Jennifer',
+        age: 15,
+        dinosaurs,
+        gender: 'male',
+      },
+    ])
   )
 
   // Non-existent column wrapped in spreaded object (values multi)
@@ -147,6 +187,23 @@ async function testInsert(db: Kysely<Database>) {
   // values empty array
   expectError(db.insertInto('person').values([]))
 
+  // Non-existent column (onDuplicateKeyUpdate)
+  expectError(
+    db
+      .insertInto('person')
+      .values({
+        first_name: 'John',
+        age: 5,
+        gender: 'female',
+      })
+      .onDuplicateKeyUpdate({
+        first_name: 'John',
+        dinosaurs,
+        age: 5,
+        gender: 'female',
+      })
+  )
+
   // Non-existent column wrapped in spreaded object (onDuplicateKeyUpdate)
   expectError(
     db
@@ -162,6 +219,25 @@ async function testInsert(db: Kysely<Database>) {
         age: 5,
         gender: 'female',
       })
+  )
+
+  // Non-existent column (onConflict.doUpdateSet)
+  expectError(
+    db
+      .insertInto('person')
+      .values({
+        first_name: 'John',
+        age: 5,
+        gender: 'female',
+      })
+      .onConflict((ocb) =>
+        ocb.doUpdateSet({
+          first_name: 'John',
+          dinosaurs,
+          age: 5,
+          gender: 'female',
+        })
+      )
   )
 
   // Non-existent column wrapped in spreaded object (onConflict.doUpdateSet)
