@@ -1,5 +1,5 @@
 import { expectError, expectAssignable, expectNotAssignable } from 'tsd'
-import { Kysely } from '..'
+import { Kysely, sql } from '..'
 import { Database } from '../shared'
 
 async function testSelectWithoutAs(db: Kysely<Database>) {
@@ -278,6 +278,190 @@ async function testSelectWithDistinct(db: Kysely<Database>) {
   expectAssignable<number>(result.min_age)
   expectAssignable<string | number | bigint>(result.total_age)
 }
+
+async function testWithFilterWhere(db: Kysely<Database>) {
+  const { avg, count, max, min, sum } = db.fn
+
+  // Column name
+  db.selectFrom('person')
+    .select(avg('age').filterWhere('gender', '=', 'female').as('avg_age'))
+    .select(count('id').filterWhere('gender', '=', 'female').as('female_count'))
+    .select(max('age').filterWhere('gender', '=', 'female').as('max_age'))
+    .select(min('age').filterWhere('gender', '=', 'female').as('min_age'))
+    .select(sum('age').filterWhere('gender', '=', 'female').as('total_age'))
+
+  // Table and column
+  db.selectFrom('person').select(
+    avg('age').filterWhere('person.gender', '=', 'female').as('avg_age')
+  )
+
+  // Schema, table and column
+  db.selectFrom('some_schema.movie').select(
+    avg('stars').filterWhere('some_schema.movie.stars', '>', 0).as('avg_stars')
+  )
+
+  // Subquery in LHS
+  db.selectFrom('person').select(
+    avg('age')
+      .filterWhere((qb) => qb.selectFrom('movie').select('stars'), '>', 0)
+      .as('avg_age')
+  )
+
+  // Subquery in RHS
+  db.selectFrom('movie').select(
+    avg('stars')
+      .filterWhere(sql`${'female'}`, '=', (qb) =>
+        qb.selectFrom('person').select('gender')
+      )
+      .as('avg_stars')
+  )
+
+  // Raw expression
+  db.selectFrom('person').select(
+    avg('age')
+      .filterWhere('first_name', '=', sql`'foo'`)
+      .filterWhere('first_name', '=', sql<string>`'foo'`)
+      .filterWhere(sql`whatever`, '=', 1)
+      .filterWhere(sql`whatever`, '=', true)
+      .filterWhere(sql`whatever`, '=', '1')
+      .as('avg_age')
+  )
+
+  // List value
+  db.selectFrom('person').select(
+    avg('age').filterWhere('gender', 'in', ['female', 'male']).as('avg_age')
+  )
+
+  // Raw operator
+  db.selectFrom('person').select(
+    avg('age')
+      .filterWhere('person.age', sql`lol`, 25)
+      .as('avg_age')
+  )
+
+  // Invalid operator
+  expectError(
+    db
+      .selectFrom('person')
+      .select(avg('age').filterWhere('person.age', 'lol', 25).as('avg_age'))
+  )
+
+  // Invalid table
+  expectError(
+    db
+      .selectFrom('person')
+      .select((eb) =>
+        eb.fn.avg('age').filterWhere('movie.stars', '=', 25).as('avg_age')
+      )
+  )
+
+  // Invalid column
+  expectError(
+    db
+      .selectFrom('person')
+      .select((eb) =>
+        eb.fn.avg('age').filterWhere('stars', '=', 25).as('avg_age')
+      )
+  )
+
+  // Invalid type for column
+  expectError(
+    db
+      .selectFrom('person')
+      .select(avg('age').filterWhere('first_name', '=', 25).as('avg_age'))
+  )
+
+  // Invalid type for column
+  expectError(
+    db
+      .selectFrom('person')
+      .select(
+        avg('age').filterWhere('gender', '=', 'not_a_gender').as('avg_age')
+      )
+  )
+
+  // Invalid type for column
+  expectError(
+    db
+      .selectFrom('person')
+      .select(
+        avg('age')
+          .filterWhere('gender', 'in', ['female', 'not_a_gender'])
+          .as('avg_age')
+      )
+  )
+
+  // Invalid type for column
+  expectError(
+    db
+      .selectFrom('some_schema.movie')
+      .select(
+        avg('stars').filterWhere('some_schema.movie.id', '=', 1).as('avg_stars')
+      )
+  )
+
+  // Invalid type for column
+  expectError(
+    db.selectFrom('some_schema.movie').select(
+      avg('stars')
+        .filterWhere(
+          (qb) => qb.selectFrom('person').select('gender'),
+          '=',
+          'not_a_gender'
+        )
+        .as('avg_stars')
+    )
+  )
+
+  // Invalid type for column
+  expectError(
+    db.selectFrom('person').select(
+      avg('age')
+        .filterWhere('first_name', '=', sql<number>`1`)
+        .as('avg_age')
+    )
+  )
+
+  // Invalid type for column
+  expectError(
+    db.selectFrom('person').select(
+      avg('age')
+        .filterWhere(sql<string>`first_name`, '=', 1)
+        .as('avg_age')
+    )
+  )
+}
+
+// async function testWithFilterWhereRef(db: Kysely<Database>) {
+//   const { avg, count, max, min, sum } = db.fn
+
+//   const result = await db
+//     .selectFrom('person')
+//     .select(
+//       avg('age').filterWhereRef('first_name', '=', 'last_name').as('avg_age')
+//     )
+//     .select(
+//       count('id')
+//         .filterWhereRef('first_name', '=', 'last_name')
+//         .as('female_count')
+//     )
+//     .select(
+//       max('age').filterWhere('gender', '=', 'female').as('oldest_female_age')
+//     )
+//     .select(
+//       min('age').filterWhere('gender', '=', 'female').as('youngest_female_age')
+//     )
+//     .select(
+//       sum('age').filterWhere('gender', '=', 'female').as('total_female_age')
+//     )
+//     .executeTakeFirstOrThrow()
+
+//   expectAssignable<string | number>(result.average_female_age)
+//   expectAssignable<string | number | bigint>(result.female_count)
+//   expectAssignable<number>(result.oldest_female_age)
+//   expectAssignable<number>(result.youngest_female_age)
+//   expectAssignable<string | number | bigint>(result.total_female_age)
+// }
 
 async function testSelectWithOver(db: Kysely<Database>) {
   const { avg, count, max, min, sum } = db.fn

@@ -7,8 +7,8 @@ import { OverBuilder } from './over-builder.js'
 import { createOverBuilder } from '../parser/parse-utils.js'
 import { AliasedExpression, Expression } from '../expression/expression.js'
 import { ReferenceExpression } from '../parser/reference-parser.js'
-import { ComparisonOperator } from '../operation-node/operator-node.js'
 import {
+  ComparisonOperatorExpression,
   OperandValueExpressionOrList,
   parseReferentialFilter,
   parseWhere,
@@ -98,13 +98,14 @@ export class AggregateFunctionBuilder<DB, TB extends keyof DB, O = unknown>
    */
   filterWhere<RE extends ReferenceExpression<DB, TB>>(
     lhs: RE,
-    op: ComparisonOperator,
+    op: ComparisonOperatorExpression,
     rhs: OperandValueExpressionOrList<DB, TB, RE>
   ): AggregateFunctionBuilder<DB, TB, O>
 
   filterWhere(
     grouper: WhereGrouper<DB, TB>
   ): AggregateFunctionBuilder<DB, TB, O>
+
   filterWhere(expression: Expression<any>): AggregateFunctionBuilder<DB, TB, O>
 
   filterWhere(...args: any[]): any {
@@ -152,7 +153,7 @@ export class AggregateFunctionBuilder<DB, TB extends keyof DB, O = unknown>
    */
   filterWhereRef(
     lhs: ReferenceExpression<DB, TB>,
-    op: ComparisonOperator,
+    op: ComparisonOperatorExpression,
     rhs: ReferenceExpression<DB, TB>
   ): AggregateFunctionBuilder<DB, TB, O> {
     return new AggregateFunctionBuilder({
@@ -169,13 +170,14 @@ export class AggregateFunctionBuilder<DB, TB extends keyof DB, O = unknown>
    */
   orFilterWhere<RE extends ReferenceExpression<DB, TB>>(
     lhs: RE,
-    op: ComparisonOperator,
+    op: ComparisonOperatorExpression,
     rhs: OperandValueExpressionOrList<DB, TB, RE>
   ): AggregateFunctionBuilder<DB, TB, O>
 
   orFilterWhere(
     grouper: WhereGrouper<DB, TB>
   ): AggregateFunctionBuilder<DB, TB, O>
+
   orFilterWhere(
     expression: Expression<any>
   ): AggregateFunctionBuilder<DB, TB, O>
@@ -225,7 +227,7 @@ export class AggregateFunctionBuilder<DB, TB extends keyof DB, O = unknown>
    */
   orFilterWhereRef(
     lhs: ReferenceExpression<DB, TB>,
-    op: ComparisonOperator,
+    op: ComparisonOperatorExpression,
     rhs: ReferenceExpression<DB, TB>
   ): AggregateFunctionBuilder<DB, TB, O> {
     return new AggregateFunctionBuilder({
