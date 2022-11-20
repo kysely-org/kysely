@@ -432,36 +432,147 @@ async function testWithFilterWhere(db: Kysely<Database>) {
   )
 }
 
-// async function testWithFilterWhereRef(db: Kysely<Database>) {
-//   const { avg, count, max, min, sum } = db.fn
+async function testWithFilterWhereRef(db: Kysely<Database>) {
+  const { avg, count, max, min, sum } = db.fn
 
-//   const result = await db
-//     .selectFrom('person')
-//     .select(
-//       avg('age').filterWhereRef('first_name', '=', 'last_name').as('avg_age')
-//     )
-//     .select(
-//       count('id')
-//         .filterWhereRef('first_name', '=', 'last_name')
-//         .as('female_count')
-//     )
-//     .select(
-//       max('age').filterWhere('gender', '=', 'female').as('oldest_female_age')
-//     )
-//     .select(
-//       min('age').filterWhere('gender', '=', 'female').as('youngest_female_age')
-//     )
-//     .select(
-//       sum('age').filterWhere('gender', '=', 'female').as('total_female_age')
-//     )
-//     .executeTakeFirstOrThrow()
+  // Column name
+  db.selectFrom('person')
+    .select(
+      avg('age').filterWhereRef('first_name', '=', 'last_name').as('avg_age')
+    )
+    .select(
+      count('id').filterWhereRef('first_name', '=', 'last_name').as('count')
+    )
+    .select(
+      max('age').filterWhereRef('first_name', '=', 'last_name').as('max_age')
+    )
+    .select(
+      min('age').filterWhereRef('first_name', '=', 'last_name').as('min_age')
+    )
+    .select(
+      sum('age').filterWhereRef('first_name', '=', 'last_name').as('total_age')
+    )
 
-//   expectAssignable<string | number>(result.average_female_age)
-//   expectAssignable<string | number | bigint>(result.female_count)
-//   expectAssignable<number>(result.oldest_female_age)
-//   expectAssignable<number>(result.youngest_female_age)
-//   expectAssignable<string | number | bigint>(result.total_female_age)
-// }
+  // Table and column
+  db.selectFrom('person')
+    .select(
+      avg('age')
+        .filterWhereRef('person.first_name', '=', 'last_name')
+        .as('avg_age')
+    )
+    .select(
+      count('id')
+        .filterWhereRef('first_name', '=', 'person.last_name')
+        .as('count')
+    )
+    .select(
+      max('age')
+        .filterWhereRef('person.first_name', '=', 'person.last_name')
+        .as('max_age')
+    )
+
+  // Schema, table and column
+  db.selectFrom('movie')
+    .select(
+      avg('stars')
+        .filterWhereRef('some_schema.movie.id', '=', 'stars')
+        .as('avg_stars')
+    )
+    .select(
+      count('id')
+        .filterWhereRef('some_schema.movie.id', '=', 'movie.stars')
+        .as('count')
+    )
+    .select(
+      max('stars')
+        .filterWhereRef('some_schema.movie.id', '=', 'some_schema.movie.stars')
+        .as('max_stars')
+    )
+    .select(
+      min('stars')
+        .filterWhereRef('movie.id', '=', 'some_schema.movie.stars')
+        .as('min_stars')
+    )
+    .select(
+      sum('stars')
+        .filterWhereRef('id', '=', 'some_schema.movie.stars')
+        .as('total_stars')
+    )
+
+  // Subquery in LHS
+  db.selectFrom('person').select(
+    avg('age')
+      .filterWhereRef(
+        (qb) => qb.selectFrom('movie').select('stars'),
+        '>',
+        'age'
+      )
+      .as('avg_age')
+  )
+
+  // Subquery in RHS
+  db.selectFrom('person').select(
+    avg('age')
+      .filterWhereRef('age', '>', (qb) =>
+        qb.selectFrom('movie').select('stars')
+      )
+      .as('avg_age')
+  )
+
+  // Raw operator
+  db.selectFrom('person').select(
+    avg('age')
+      .filterWhereRef('first_name', sql`lol`, 'last_name')
+      .as('avg_age')
+  )
+
+  // Invalid operator
+  expectError(
+    db
+      .selectFrom('person')
+      .select(
+        avg('age')
+          .filterWhereRef('first_name', 'lol', 'last_name')
+          .as('avg_age')
+      )
+  )
+
+  // Invalid table LHS
+  expectError(
+    db
+      .selectFrom('person')
+      .select((eb) =>
+        eb.fn.avg('age').filterWhereRef('movie.stars', '>', 'age').as('avg_age')
+      )
+  )
+
+  // Invalid table RHS
+  expectError(
+    db
+      .selectFrom('person')
+      .select((eb) =>
+        eb.fn.avg('age').filterWhereRef('age', '>', 'movie.stars').as('avg_age')
+      )
+  )
+
+  // Invalid column LHS
+  expectError(
+    db
+      .selectFrom('person')
+      .select((eb) =>
+        eb.fn.avg('age').filterWhereRef('stars', '>', 'age').as('avg_age')
+      )
+  )
+
+  // Invalid column RHS
+  expectError(
+    db
+      .selectFrom('person')
+      .select((eb) =>
+        eb.fn.avg('age').filterWhereRef('age', '>', 'stars').as('avg_age')
+      )
+  )
+}
 
 async function testSelectWithOver(db: Kysely<Database>) {
   const { avg, count, max, min, sum } = db.fn
