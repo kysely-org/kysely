@@ -10,18 +10,24 @@ import { AddConstraintNode } from './add-constraint-node.js'
 import { DropConstraintNode } from './drop-constraint-node.js'
 import { ModifyColumnNode } from './modify-column-node.js'
 
-export type AlterTableNodeProps = Omit<AlterTableNode, 'kind' | 'table'>
+export type AlterTableNodeTableProps = Pick<
+  AlterTableNode,
+  'renameTo' | 'setSchema' | 'addConstraint' | 'dropConstraint'
+>
+
+export type AlterTableColumnAlterationNode =
+  | RenameColumnNode
+  | AddColumnNode
+  | DropColumnNode
+  | AlterColumnNode
+  | ModifyColumnNode
 
 export interface AlterTableNode extends OperationNode {
   readonly kind: 'AlterTableNode'
   readonly table: TableNode
   readonly renameTo?: TableNode
   readonly setSchema?: IdentifierNode
-  readonly renameColumn?: RenameColumnNode
-  readonly addColumn?: AddColumnNode
-  readonly dropColumn?: DropColumnNode
-  readonly alterColumn?: AlterColumnNode
-  readonly modifyColumn?: ModifyColumnNode
+  readonly columnAlterations?: ReadonlyArray<AlterTableColumnAlterationNode>
   readonly addConstraint?: AddConstraintNode
   readonly dropConstraint?: DropConstraintNode
 }
@@ -41,10 +47,25 @@ export const AlterTableNode = freeze({
     })
   },
 
-  cloneWith(node: AlterTableNode, props: AlterTableNodeProps): AlterTableNode {
+  cloneWithTableProps(
+    node: AlterTableNode,
+    props: AlterTableNodeTableProps
+  ): AlterTableNode {
     return freeze({
       ...node,
       ...props,
+    })
+  },
+
+  cloneWithColumnAlteration(
+    node: AlterTableNode,
+    columnAlteration: AlterTableColumnAlterationNode
+  ): AlterTableNode {
+    return freeze({
+      ...node,
+      columnAlterations: node.columnAlterations
+        ? [...node.columnAlterations, columnAlteration]
+        : [columnAlteration],
     })
   },
 })
