@@ -1541,6 +1541,109 @@ for (const dialect of BUILT_IN_DIALECTS) {
           .execute()
       })
 
+      describe('add column', () => {
+        it('should add a column', async () => {
+          const builder = ctx.db.schema
+            .alterTable('test')
+            .addColumn('bool_col', 'boolean', (cb) => cb.notNull())
+
+          testSql(builder, dialect, {
+            postgres: {
+              sql: 'alter table "test" add column "bool_col" boolean not null',
+              parameters: [],
+            },
+            mysql: {
+              sql: 'alter table `test` add column `bool_col` boolean not null',
+              parameters: [],
+            },
+            sqlite: {
+              sql: 'alter table "test" add column "bool_col" boolean not null',
+              parameters: [],
+            },
+          })
+
+          await builder.execute()
+
+          expect(await getColumnMeta('test.bool_col')).to.containSubset({
+            name: 'bool_col',
+            isNullable: false,
+            dataType:
+              dialect === 'postgres'
+                ? 'bool'
+                : dialect === 'sqlite'
+                ? 'boolean'
+                : 'tinyint',
+          })
+        })
+
+        if (dialect !== 'sqlite') {
+          it('should add a unique column', async () => {
+            const builder = ctx.db.schema
+              .alterTable('test')
+              .addColumn('bool_col', 'boolean', (cb) => cb.notNull().unique())
+
+            testSql(builder, dialect, {
+              postgres: {
+                sql: 'alter table "test" add column "bool_col" boolean not null unique',
+                parameters: [],
+              },
+              mysql: {
+                sql: 'alter table `test` add column `bool_col` boolean not null unique',
+                parameters: [],
+              },
+              sqlite: {
+                sql: 'alter table "test" add column "bool_col" boolean not null unique',
+                parameters: [],
+              },
+            })
+
+            await builder.execute()
+
+            expect(await getColumnMeta('test.bool_col')).to.containSubset({
+              name: 'bool_col',
+              isNullable: false,
+              dataType: dialect === 'postgres' ? 'bool' : 'tinyint',
+            })
+          })
+
+          it('should add multiple columns', async () => {
+            const builder = ctx.db.schema
+              .alterTable('test')
+              .addColumn('another_col', 'text')
+              .addColumn('yet_another_col', 'integer')
+
+            testSql(builder, dialect, {
+              postgres: {
+                sql: [
+                  'alter table "test"',
+                  'add column "another_col" text,',
+                  'add column "yet_another_col" integer',
+                ],
+                parameters: [],
+              },
+              mysql: {
+                sql: [
+                  'alter table `test`',
+                  'add column `another_col` text,',
+                  'add column `yet_another_col` integer',
+                ],
+                parameters: [],
+              },
+              sqlite: {
+                sql: [
+                  'alter table "test"',
+                  'add column "another_col" text,',
+                  'add column "yet_another_col" integer',
+                ],
+                parameters: [],
+              },
+            })
+
+            await builder.execute()
+          })
+        }
+      })
+
       if (dialect === 'mysql') {
         describe('modify column', () => {
           it('should set column data type', async () => {
@@ -1563,8 +1666,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
           it('should add not null constraint for column', async () => {
             const builder = ctx.db.schema
               .alterTable('test')
-              .modifyColumn('varchar_col', 'varchar(255)')
-              .notNull()
+              .modifyColumn('varchar_col', 'varchar(255)', (cb) => cb.notNull())
 
             testSql(builder, dialect, {
               mysql: {
@@ -1579,14 +1681,9 @@ for (const dialect of BUILT_IN_DIALECTS) {
           })
 
           it('should drop not null constraint for column', async () => {
-            expect(
-              (await getColumnMeta('test.varchar_col')).isNullable
-            ).to.equal(true)
-
             await ctx.db.schema
               .alterTable('test')
-              .modifyColumn('varchar_col', 'varchar(255)')
-              .notNull()
+              .modifyColumn('varchar_col', 'varchar(255)', (cb) => cb.notNull())
               .execute()
 
             expect(
@@ -1612,6 +1709,28 @@ for (const dialect of BUILT_IN_DIALECTS) {
               (await getColumnMeta('test.varchar_col')).isNullable
             ).to.equal(true)
           })
+
+          it('should modify multiple columns', async () => {
+            const builder = ctx.db.schema
+              .alterTable('test')
+              .modifyColumn('varchar_col', 'varchar(255)')
+              .modifyColumn('integer_col', 'bigint')
+
+            testSql(builder, dialect, {
+              mysql: {
+                sql: [
+                  'alter table `test`',
+                  'modify column `varchar_col` varchar(255),',
+                  'modify column `integer_col` bigint',
+                ],
+                parameters: [],
+              },
+              postgres: NOT_SUPPORTED,
+              sqlite: NOT_SUPPORTED,
+            })
+
+            await builder.execute()
+          })
         })
       }
 
@@ -1620,8 +1739,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
           it('should set default value', async () => {
             const builder = ctx.db.schema
               .alterTable('test')
-              .alterColumn('varchar_col')
-              .setDefault('foo')
+              .alterColumn('varchar_col', (ac) => ac.setDefault('foo'))
 
             testSql(builder, dialect, {
               postgres: {
@@ -1639,16 +1757,16 @@ for (const dialect of BUILT_IN_DIALECTS) {
           })
 
           it('should drop default value', async () => {
+            const subject = 'varchar_col'
+
             await ctx.db.schema
               .alterTable('test')
-              .alterColumn('varchar_col')
-              .setDefault('foo')
+              .alterColumn(subject, (ac) => ac.setDefault('foo'))
               .execute()
 
             const builder = ctx.db.schema
               .alterTable('test')
-              .alterColumn('varchar_col')
-              .dropDefault()
+              .alterColumn(subject, (ac) => ac.dropDefault())
 
             testSql(builder, dialect, {
               postgres: {
@@ -1661,7 +1779,6 @@ for (const dialect of BUILT_IN_DIALECTS) {
               },
               sqlite: NOT_SUPPORTED,
             })
-
             await builder.execute()
           })
 
@@ -1669,8 +1786,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
             it('should set column data type', async () => {
               const builder = ctx.db.schema
                 .alterTable('test')
-                .alterColumn('varchar_col')
-                .setDataType('text')
+                .alterColumn('varchar_col', (ac) => ac.setDataType('text'))
 
               testSql(builder, dialect, {
                 postgres: {
@@ -1690,8 +1806,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
             it('should add not null constraint for column', async () => {
               const builder = ctx.db.schema
                 .alterTable('test')
-                .alterColumn('varchar_col')
-                .setNotNull()
+                .alterColumn('varchar_col', (ac) => ac.setNotNull())
 
               testSql(builder, dialect, {
                 postgres: {
@@ -1711,14 +1826,12 @@ for (const dialect of BUILT_IN_DIALECTS) {
             it('should drop not null constraint for column', async () => {
               await ctx.db.schema
                 .alterTable('test')
-                .alterColumn('varchar_col')
-                .setNotNull()
+                .alterColumn('varchar_col', (ac) => ac.setNotNull())
                 .execute()
 
               const builder = ctx.db.schema
                 .alterTable('test')
-                .alterColumn('varchar_col')
-                .dropNotNull()
+                .alterColumn('varchar_col', (ac) => ac.dropNotNull())
 
               testSql(builder, dialect, {
                 postgres: {
@@ -1735,6 +1848,35 @@ for (const dialect of BUILT_IN_DIALECTS) {
               await builder.execute()
             })
           }
+
+          it('should alter multiple columns', async () => {
+            const builder = ctx.db.schema
+              .alterTable('test')
+              .alterColumn('varchar_col', (ac) => ac.setDefault('foo'))
+              .alterColumn('integer_col', (ac) => ac.setDefault(5))
+
+            testSql(builder, dialect, {
+              postgres: {
+                sql: [
+                  `alter table "test"`,
+                  `alter column "varchar_col" set default 'foo',`,
+                  `alter column "integer_col" set default 5`,
+                ],
+                parameters: [],
+              },
+              mysql: {
+                sql: [
+                  'alter table `test`',
+                  "alter column `varchar_col` set default 'foo',",
+                  'alter column `integer_col` set default 5',
+                ],
+                parameters: [],
+              },
+              sqlite: NOT_SUPPORTED,
+            })
+
+            await builder.execute()
+          })
         })
       }
 
@@ -1761,6 +1903,49 @@ for (const dialect of BUILT_IN_DIALECTS) {
 
           await builder.execute()
         })
+
+        if (dialect !== 'sqlite') {
+          it('should drop multiple columns', async () => {
+            await ctx.db.schema
+              .alterTable('test')
+              .addColumn('text_col', 'text')
+              .execute()
+
+            const builder = ctx.db.schema
+              .alterTable('test')
+              .dropColumn('varchar_col')
+              .dropColumn('text_col')
+
+            testSql(builder, dialect, {
+              postgres: {
+                sql: [
+                  'alter table "test"',
+                  'drop column "varchar_col",',
+                  'drop column "text_col"',
+                ],
+                parameters: [],
+              },
+              mysql: {
+                sql: [
+                  'alter table `test`',
+                  'drop column `varchar_col`,',
+                  'drop column `text_col`',
+                ],
+                parameters: [],
+              },
+              sqlite: {
+                sql: [
+                  'alter table "test"',
+                  'drop column "varchar_col",',
+                  'drop column "text_col"',
+                ],
+                parameters: [],
+              },
+            })
+
+            await builder.execute()
+          })
+        }
       })
 
       describe('rename', () => {
@@ -1828,108 +2013,106 @@ for (const dialect of BUILT_IN_DIALECTS) {
 
           await builder.execute()
         })
-      })
 
-      describe('add column', () => {
-        it('should add a column', async () => {
-          const builder = ctx.db.schema
-            .alterTable('test')
-            .addColumn('bool_col', 'boolean')
-            .notNull()
-
-          testSql(builder, dialect, {
-            postgres: {
-              sql: 'alter table "test" add column "bool_col" boolean not null',
-              parameters: [],
-            },
-            mysql: {
-              sql: 'alter table `test` add column `bool_col` boolean not null',
-              parameters: [],
-            },
-            sqlite: {
-              sql: 'alter table "test" add column "bool_col" boolean not null',
-              parameters: [],
-            },
-          })
-
-          await builder.execute()
-
-          expect(await getColumnMeta('test.bool_col')).to.containSubset({
-            name: 'bool_col',
-            isNullable: false,
-            dataType:
-              dialect === 'postgres'
-                ? 'bool'
-                : dialect === 'sqlite'
-                ? 'boolean'
-                : 'tinyint',
-          })
-        })
-
-        it('should add a column using a callback', async () => {
-          const builder = ctx.db.schema
-            .alterTable('test')
-            .addColumn('bool_col', 'boolean', (col) => col.notNull())
-
-          testSql(builder, dialect, {
-            postgres: {
-              sql: 'alter table "test" add column "bool_col" boolean not null',
-              parameters: [],
-            },
-            mysql: {
-              sql: 'alter table `test` add column `bool_col` boolean not null',
-              parameters: [],
-            },
-            sqlite: {
-              sql: 'alter table "test" add column "bool_col" boolean not null',
-              parameters: [],
-            },
-          })
-
-          await builder.execute()
-
-          expect(await getColumnMeta('test.bool_col')).to.containSubset({
-            name: 'bool_col',
-            isNullable: false,
-            dataType:
-              dialect === 'postgres'
-                ? 'bool'
-                : dialect === 'sqlite'
-                ? 'boolean'
-                : 'tinyint',
-          })
-        })
-
-        if (dialect !== 'sqlite') {
-          it('should add a unique column', async () => {
+        if (dialect === 'mysql') {
+          it('should rename multiple columns', async () => {
             const builder = ctx.db.schema
               .alterTable('test')
-              .addColumn('bool_col', 'boolean')
-              .notNull()
-              .unique()
+              .renameColumn('varchar_col', 'text_col')
+              .renameColumn('integer_col', 'number_col')
 
             testSql(builder, dialect, {
               postgres: {
-                sql: 'alter table "test" add column "bool_col" boolean not null unique',
+                sql: [
+                  'alter table "test"',
+                  'rename column "varchar_col" to "text_col",',
+                  'rename column "integer_col" to "number_col"',
+                ],
                 parameters: [],
               },
               mysql: {
-                sql: 'alter table `test` add column `bool_col` boolean not null unique',
+                sql: [
+                  'alter table `test`',
+                  'rename column `varchar_col` to `text_col`,',
+                  'rename column `integer_col` to `number_col`',
+                ],
                 parameters: [],
               },
               sqlite: {
-                sql: 'alter table "test" add column "bool_col" boolean not null unique',
+                sql: [
+                  'alter table "test"',
+                  'rename column "varchar_col" to "text_col",',
+                  'rename column "integer_col" to "number_col"',
+                ],
                 parameters: [],
               },
             })
 
             await builder.execute()
+          })
+        }
+      })
 
-            expect(await getColumnMeta('test.bool_col')).to.containSubset({
-              name: 'bool_col',
-              isNullable: false,
-              dataType: dialect === 'postgres' ? 'bool' : 'tinyint',
+      describe('mixed column alterations', () => {
+        if (dialect === 'postgres') {
+          it('should alter multiple columns in various ways', async () => {
+            const builder = ctx.db.schema
+              .alterTable('test')
+              .addColumn('another_varchar_col', 'varchar(255)')
+              .alterColumn('varchar_col', (ac) => ac.setDefault('foo'))
+              .dropColumn('integer_col')
+
+            testSql(builder, dialect, {
+              postgres: {
+                sql: [
+                  `alter table "test"`,
+                  `add column "another_varchar_col" varchar(255),`,
+                  `alter column "varchar_col" set default 'foo',`,
+                  `drop column "integer_col"`,
+                ],
+                parameters: [],
+              },
+              mysql: NOT_SUPPORTED,
+              sqlite: NOT_SUPPORTED,
             })
+
+            await builder.execute()
+          })
+        }
+
+        if (dialect === 'mysql') {
+          it('should alter multiple columns in various ways', async () => {
+            await ctx.db.schema
+              .alterTable('test')
+              .addColumn('rename_me', 'text')
+              .addColumn('modify_me', 'boolean')
+              .execute()
+
+            const builder = ctx.db.schema
+              .alterTable('test')
+              .addColumn('another_varchar_col', 'varchar(255)')
+              .alterColumn('varchar_col', (ac) => ac.setDefault('foo'))
+              .dropColumn('integer_col')
+              .renameColumn('rename_me', 'text_col')
+              .modifyColumn('modify_me', 'bigint')
+
+            testSql(builder, dialect, {
+              postgres: NOT_SUPPORTED,
+              mysql: {
+                sql: [
+                  'alter table `test`',
+                  'add column `another_varchar_col` varchar(255),',
+                  "alter column `varchar_col` set default 'foo',",
+                  'drop column `integer_col`,',
+                  'rename column `rename_me` to `text_col`,',
+                  'modify column `modify_me` bigint',
+                ],
+                parameters: [],
+              },
+              sqlite: NOT_SUPPORTED,
+            })
+
+            await builder.execute()
           })
         }
       })
