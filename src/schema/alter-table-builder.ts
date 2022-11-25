@@ -2,10 +2,6 @@ import { AddColumnNode } from '../operation-node/add-column-node.js'
 import { AlterColumnNode } from '../operation-node/alter-column-node.js'
 import { AlterTableNode } from '../operation-node/alter-table-node.js'
 import { ColumnDefinitionNode } from '../operation-node/column-definition-node.js'
-import {
-  ColumnDataType,
-  DataTypeNode,
-} from '../operation-node/data-type-node.js'
 import { DropColumnNode } from '../operation-node/drop-column-node.js'
 import { IdentifierNode } from '../operation-node/identifier-node.js'
 import { OperationNodeSource } from '../operation-node/operation-node-source.js'
@@ -17,7 +13,7 @@ import { freeze, noop } from '../util/object-utils.js'
 import { preventAwait } from '../util/prevent-await.js'
 import {
   ColumnDefinitionBuilder,
-  ColumnDefinitionBuilderInterface,
+  ColumnDefinitionBuilderCallback,
 } from './column-definition-builder.js'
 import { QueryId } from '../util/query-id.js'
 import { QueryExecutor } from '../query-executor/query-executor.js'
@@ -35,18 +31,19 @@ import { UniqueConstraintNode } from '../operation-node/unique-constraint-node.j
 import { CheckConstraintNode } from '../operation-node/check-constraint-node.js'
 import { ForeignKeyConstraintNode } from '../operation-node/foreign-key-constraint-node.js'
 import { ColumnNode } from '../operation-node/column-node.js'
-import {
-  DefaultValueExpression,
-  parseDefaultValueExpression,
-} from '../parser/default-value-parser.js'
+import { DefaultValueExpression } from '../parser/default-value-parser.js'
 import { parseTable } from '../parser/table-parser.js'
 import { DropConstraintNode } from '../operation-node/drop-constraint-node.js'
 import { Expression } from '../expression/expression.js'
+import {
+  AlterColumnBuilder,
+  AlterColumnBuilderCallback,
+} from './alter-column-builder.js'
 
 /**
  * This builder can be used to create a `alter table` query.
  */
-export class AlterTableBuilder {
+export class AlterTableBuilder implements ColumnAlteringInterface {
   readonly #props: AlterTableBuilderProps
 
   constructor(props: AlterTableBuilderProps) {
@@ -56,7 +53,7 @@ export class AlterTableBuilder {
   renameTo(newTableName: string): AlterTableExecutor {
     return new AlterTableExecutor({
       ...this.#props,
-      alterTableNode: AlterTableNode.cloneWith(this.#props.alterTableNode, {
+      node: AlterTableNode.cloneWithTableProps(this.#props.node, {
         renameTo: parseTable(newTableName),
       }),
     })
@@ -65,74 +62,94 @@ export class AlterTableBuilder {
   setSchema(newSchema: string): AlterTableExecutor {
     return new AlterTableExecutor({
       ...this.#props,
-      alterTableNode: AlterTableNode.cloneWith(this.#props.alterTableNode, {
+      node: AlterTableNode.cloneWithTableProps(this.#props.node, {
         setSchema: IdentifierNode.create(newSchema),
       }),
     })
   }
 
-  alterColumn(column: string): AlterColumnBuilder {
-    return new AlterColumnBuilder({
+  alterColumn(
+    column: string,
+    alteration: AlterColumnBuilderCallback
+  ): AlterTableColumnAlteringBuilder {
+    const builder = alteration(
+      new AlterColumnBuilder(AlterColumnNode.create(column))
+    )
+
+    return new AlterTableColumnAlteringBuilder({
       ...this.#props,
-      alterColumnNode: AlterColumnNode.create(column),
+      node: AlterTableNode.cloneWithColumnAlteration(
+        this.#props.node,
+        builder.toOperationNode()
+      ),
     })
   }
 
-  dropColumn(column: string): AlterTableExecutor {
-    return new AlterTableExecutor({
+  dropColumn(column: string): AlterTableColumnAlteringBuilder {
+    return new AlterTableColumnAlteringBuilder({
       ...this.#props,
-      alterTableNode: AlterTableNode.cloneWith(this.#props.alterTableNode, {
-        dropColumn: DropColumnNode.create(column),
-      }),
+      node: AlterTableNode.cloneWithColumnAlteration(
+        this.#props.node,
+        DropColumnNode.create(column)
+      ),
     })
   }
 
-  renameColumn(column: string, newColumn: string): AlterTableExecutor {
-    return new AlterTableExecutor({
+  renameColumn(
+    column: string,
+    newColumn: string
+  ): AlterTableColumnAlteringBuilder {
+    return new AlterTableColumnAlteringBuilder({
       ...this.#props,
-      alterTableNode: AlterTableNode.cloneWith(this.#props.alterTableNode, {
-        renameColumn: RenameColumnNode.create(column, newColumn),
-      }),
+      node: AlterTableNode.cloneWithColumnAlteration(
+        this.#props.node,
+        RenameColumnNode.create(column, newColumn)
+      ),
     })
   }
 
-  /**
-   * See {@link CreateTableBuilder.addColumn}
-   */
   addColumn(
     columnName: string,
     dataType: DataTypeExpression,
-    build: AlterTableAddColumnBuilderCallback = noop
-  ): AlterTableAddColumnBuilder {
-    return build(
-      new AlterTableAddColumnBuilder({
-        ...this.#props,
-        columnBuilder: new ColumnDefinitionBuilder(
-          ColumnDefinitionNode.create(
-            columnName,
-            parseDataTypeExpression(dataType)
-          )
-        ),
-      })
-    )
-  }
-
-  /**
-   * Creates an `alter table modify column` query. The `modify column` statement
-   * is only implemeted by MySQL and oracle AFAIK. On other databases you
-   * should use the `alterColumn` method.
-   */
-  modifyColumn(
-    columnName: string,
-    dataType: DataTypeExpression
-  ): AlterTableModifyColumnBuilder {
-    return new AlterTableModifyColumnBuilder({
-      ...this.#props,
-      columnBuilder: new ColumnDefinitionBuilder(
+    build: ColumnDefinitionBuilderCallback = noop
+  ): AlterTableColumnAlteringBuilder {
+    const builder = build(
+      new ColumnDefinitionBuilder(
         ColumnDefinitionNode.create(
           columnName,
           parseDataTypeExpression(dataType)
         )
+      )
+    )
+
+    return new AlterTableColumnAlteringBuilder({
+      ...this.#props,
+      node: AlterTableNode.cloneWithColumnAlteration(
+        this.#props.node,
+        AddColumnNode.create(builder.toOperationNode())
+      ),
+    })
+  }
+
+  modifyColumn(
+    columnName: string,
+    dataType: DataTypeExpression,
+    build: ColumnDefinitionBuilderCallback = noop
+  ): AlterTableColumnAlteringBuilder {
+    const builder = build(
+      new ColumnDefinitionBuilder(
+        ColumnDefinitionNode.create(
+          columnName,
+          parseDataTypeExpression(dataType)
+        )
+      )
+    )
+
+    return new AlterTableColumnAlteringBuilder({
+      ...this.#props,
+      node: AlterTableNode.cloneWithColumnAlteration(
+        this.#props.node,
+        ModifyColumnNode.create(builder.toOperationNode())
       ),
     })
   }
@@ -146,7 +163,7 @@ export class AlterTableBuilder {
   ): AlterTableExecutor {
     return new AlterTableExecutor({
       ...this.#props,
-      alterTableNode: AlterTableNode.cloneWith(this.#props.alterTableNode, {
+      node: AlterTableNode.cloneWithTableProps(this.#props.node, {
         addConstraint: AddConstraintNode.create(
           UniqueConstraintNode.create(columns, constraintName)
         ),
@@ -163,7 +180,7 @@ export class AlterTableBuilder {
   ): AlterTableExecutor {
     return new AlterTableExecutor({
       ...this.#props,
-      alterTableNode: AlterTableNode.cloneWith(this.#props.alterTableNode, {
+      node: AlterTableNode.cloneWithTableProps(this.#props.node, {
         addConstraint: AddConstraintNode.create(
           CheckConstraintNode.create(
             checkExpression.toOperationNode(),
@@ -203,7 +220,7 @@ export class AlterTableBuilder {
   dropConstraint(constraintName: string): AlterTableDropConstraintBuilder {
     return new AlterTableDropConstraintBuilder({
       ...this.#props,
-      alterTableNode: AlterTableNode.cloneWith(this.#props.alterTableNode, {
+      node: AlterTableNode.cloneWithTableProps(this.#props.node, {
         dropConstraint: DropConstraintNode.create(constraintName),
       }),
     })
@@ -212,75 +229,8 @@ export class AlterTableBuilder {
 
 export interface AlterTableBuilderProps {
   readonly queryId: QueryId
-  readonly alterTableNode: AlterTableNode
+  readonly node: AlterTableNode
   readonly executor: QueryExecutor
-}
-
-export class AlterColumnBuilder {
-  readonly #props: AlterColumnBuilderProps
-
-  constructor(props: AlterColumnBuilderProps) {
-    this.#props = freeze(props)
-  }
-
-  setDataType(dataType: ColumnDataType): AlterTableExecutor {
-    return new AlterTableExecutor({
-      ...this.#props,
-      alterTableNode: AlterTableNode.cloneWith(this.#props.alterTableNode, {
-        alterColumn: AlterColumnNode.cloneWith(this.#props.alterColumnNode, {
-          dataType: DataTypeNode.create(dataType),
-        }),
-      }),
-    })
-  }
-
-  setDefault(value: DefaultValueExpression): AlterTableExecutor {
-    return new AlterTableExecutor({
-      ...this.#props,
-      alterTableNode: AlterTableNode.cloneWith(this.#props.alterTableNode, {
-        alterColumn: AlterColumnNode.cloneWith(this.#props.alterColumnNode, {
-          setDefault: parseDefaultValueExpression(value),
-        }),
-      }),
-    })
-  }
-
-  dropDefault(): AlterTableExecutor {
-    return new AlterTableExecutor({
-      ...this.#props,
-      alterTableNode: AlterTableNode.cloneWith(this.#props.alterTableNode, {
-        alterColumn: AlterColumnNode.cloneWith(this.#props.alterColumnNode, {
-          dropDefault: true,
-        }),
-      }),
-    })
-  }
-
-  setNotNull(): AlterTableExecutor {
-    return new AlterTableExecutor({
-      ...this.#props,
-      alterTableNode: AlterTableNode.cloneWith(this.#props.alterTableNode, {
-        alterColumn: AlterColumnNode.cloneWith(this.#props.alterColumnNode, {
-          setNotNull: true,
-        }),
-      }),
-    })
-  }
-
-  dropNotNull(): AlterTableExecutor {
-    return new AlterTableExecutor({
-      ...this.#props,
-      alterTableNode: AlterTableNode.cloneWith(this.#props.alterTableNode, {
-        alterColumn: AlterColumnNode.cloneWith(this.#props.alterColumnNode, {
-          dropNotNull: true,
-        }),
-      }),
-    })
-  }
-}
-
-export interface AlterColumnBuilderProps extends AlterTableBuilderProps {
-  readonly alterColumnNode: AlterColumnNode
 }
 
 export class AlterTableExecutor implements OperationNodeSource, Compilable {
@@ -292,7 +242,7 @@ export class AlterTableExecutor implements OperationNodeSource, Compilable {
 
   toOperationNode(): AlterTableNode {
     return this.#props.executor.transformQuery(
-      this.#props.alterTableNode,
+      this.#props.node,
       this.#props.queryId
     )
   }
@@ -311,141 +261,139 @@ export class AlterTableExecutor implements OperationNodeSource, Compilable {
 
 export interface AlterTableExecutorProps extends AlterTableBuilderProps {}
 
-export class AlterTableAddColumnBuilder
-  implements ColumnDefinitionBuilderInterface, OperationNodeSource, Compilable
+export interface ColumnAlteringInterface {
+  alterColumn(
+    column: string,
+    alteration: AlterColumnBuilderCallback
+  ): ColumnAlteringInterface
+
+  dropColumn(column: string): ColumnAlteringInterface
+
+  renameColumn(column: string, newColumn: string): ColumnAlteringInterface
+
+  /**
+   * See {@link CreateTableBuilder.addColumn}
+   */
+  addColumn(
+    columnName: string,
+    dataType: DataTypeExpression,
+    build?: ColumnDefinitionBuilderCallback
+  ): ColumnAlteringInterface
+
+  /**
+   * Creates an `alter table modify column` query. The `modify column` statement
+   * is only implemeted by MySQL and oracle AFAIK. On other databases you
+   * should use the `alterColumn` method.
+   */
+  modifyColumn(
+    columnName: string,
+    dataType: DataTypeExpression,
+    build: ColumnDefinitionBuilderCallback
+  ): ColumnAlteringInterface
+}
+
+export class AlterTableColumnAlteringBuilder
+  implements ColumnAlteringInterface, OperationNodeSource, Compilable
 {
-  readonly #props: AlterTableAddColumnBuilderProps
+  readonly #props: AlterTableColumnAlteringBuilderProps
 
-  constructor(props: AlterTableAddColumnBuilderProps) {
-    this.#props = freeze(props)
+  constructor(props: AlterTableColumnAlteringBuilderProps) {
+    this.#props = props
   }
 
-  autoIncrement(): AlterTableAddColumnBuilder {
-    return new AlterTableAddColumnBuilder({
+  alterColumn(
+    column: string,
+    alteration: AlterColumnBuilderCallback
+  ): AlterTableColumnAlteringBuilder {
+    const builder = alteration(
+      new AlterColumnBuilder(AlterColumnNode.create(column))
+    )
+
+    return new AlterTableColumnAlteringBuilder({
       ...this.#props,
-      columnBuilder: this.#props.columnBuilder.autoIncrement(),
+      node: AlterTableNode.cloneWithColumnAlteration(
+        this.#props.node,
+        builder.toOperationNode()
+      ),
     })
   }
 
-  primaryKey(): AlterTableAddColumnBuilder {
-    return new AlterTableAddColumnBuilder({
+  dropColumn(column: string): AlterTableColumnAlteringBuilder {
+    return new AlterTableColumnAlteringBuilder({
       ...this.#props,
-      columnBuilder: this.#props.columnBuilder.primaryKey(),
+      node: AlterTableNode.cloneWithColumnAlteration(
+        this.#props.node,
+        DropColumnNode.create(column)
+      ),
     })
   }
 
-  references(ref: string): AlterTableAddColumnBuilder {
-    return new AlterTableAddColumnBuilder({
+  renameColumn(
+    column: string,
+    newColumn: string
+  ): AlterTableColumnAlteringBuilder {
+    return new AlterTableColumnAlteringBuilder({
       ...this.#props,
-      columnBuilder: this.#props.columnBuilder.references(ref),
+      node: AlterTableNode.cloneWithColumnAlteration(
+        this.#props.node,
+        RenameColumnNode.create(column, newColumn)
+      ),
     })
   }
 
-  onDelete(onDelete: OnModifyForeignAction): AlterTableAddColumnBuilder {
-    return new AlterTableAddColumnBuilder({
+  addColumn(
+    columnName: string,
+    dataType: DataTypeExpression,
+    build: ColumnDefinitionBuilderCallback = noop
+  ): AlterTableColumnAlteringBuilder {
+    const builder = build(
+      new ColumnDefinitionBuilder(
+        ColumnDefinitionNode.create(
+          columnName,
+          parseDataTypeExpression(dataType)
+        )
+      )
+    )
+
+    return new AlterTableColumnAlteringBuilder({
       ...this.#props,
-      columnBuilder: this.#props.columnBuilder.onDelete(onDelete),
+      node: AlterTableNode.cloneWithColumnAlteration(
+        this.#props.node,
+        AddColumnNode.create(builder.toOperationNode())
+      ),
     })
   }
 
-  onUpdate(onDelete: OnModifyForeignAction): AlterTableAddColumnBuilder {
-    return new AlterTableAddColumnBuilder({
-      ...this.#props,
-      columnBuilder: this.#props.columnBuilder.onUpdate(onDelete),
-    })
-  }
+  modifyColumn(
+    columnName: string,
+    dataType: DataTypeExpression,
+    build: ColumnDefinitionBuilderCallback = noop
+  ): AlterTableColumnAlteringBuilder {
+    const builder = build(
+      new ColumnDefinitionBuilder(
+        ColumnDefinitionNode.create(
+          columnName,
+          parseDataTypeExpression(dataType)
+        )
+      )
+    )
 
-  unique(): AlterTableAddColumnBuilder {
-    return new AlterTableAddColumnBuilder({
+    return new AlterTableColumnAlteringBuilder({
       ...this.#props,
-      columnBuilder: this.#props.columnBuilder.unique(),
-    })
-  }
-
-  notNull(): AlterTableAddColumnBuilder {
-    return new AlterTableAddColumnBuilder({
-      ...this.#props,
-      columnBuilder: this.#props.columnBuilder.notNull(),
-    })
-  }
-
-  unsigned(): AlterTableAddColumnBuilder {
-    return new AlterTableAddColumnBuilder({
-      ...this.#props,
-      columnBuilder: this.#props.columnBuilder.unsigned(),
-    })
-  }
-
-  defaultTo(value: DefaultValueExpression): AlterTableAddColumnBuilder {
-    return new AlterTableAddColumnBuilder({
-      ...this.#props,
-      columnBuilder: this.#props.columnBuilder.defaultTo(value),
-    })
-  }
-
-  check(expression: Expression<any>): AlterTableAddColumnBuilder {
-    return new AlterTableAddColumnBuilder({
-      ...this.#props,
-      columnBuilder: this.#props.columnBuilder.check(expression),
-    })
-  }
-
-  generatedAlwaysAs(expression: Expression<any>): AlterTableAddColumnBuilder {
-    return new AlterTableAddColumnBuilder({
-      ...this.#props,
-      columnBuilder: this.#props.columnBuilder.generatedAlwaysAs(expression),
-    })
-  }
-
-  generatedAlwaysAsIdentity(): AlterTableAddColumnBuilder {
-    return new AlterTableAddColumnBuilder({
-      ...this.#props,
-      columnBuilder: this.#props.columnBuilder.generatedAlwaysAsIdentity(),
-    })
-  }
-
-  generatedByDefaultAsIdentity(): AlterTableAddColumnBuilder {
-    return new AlterTableAddColumnBuilder({
-      ...this.#props,
-      columnBuilder: this.#props.columnBuilder.generatedByDefaultAsIdentity(),
-    })
-  }
-
-  stored(): AlterTableAddColumnBuilder {
-    return new AlterTableAddColumnBuilder({
-      ...this.#props,
-      columnBuilder: this.#props.columnBuilder.stored(),
-    })
-  }
-
-  modifyFront(modifier: Expression<any>): AlterTableAddColumnBuilder {
-    return new AlterTableAddColumnBuilder({
-      ...this.#props,
-      columnBuilder: this.#props.columnBuilder.modifyFront(modifier),
-    })
-  }
-
-  modifyEnd(modifier: Expression<any>): AlterTableAddColumnBuilder {
-    return new AlterTableAddColumnBuilder({
-      ...this.#props,
-      columnBuilder: this.#props.columnBuilder.modifyEnd(modifier),
+      node: AlterTableNode.cloneWithColumnAlteration(
+        this.#props.node,
+        ModifyColumnNode.create(builder.toOperationNode())
+      ),
     })
   }
 
   toOperationNode(): AlterTableNode {
-    return this.#props.executor.transformQuery(
-      AlterTableNode.cloneWith(this.#props.alterTableNode, {
-        addColumn: AddColumnNode.create(
-          this.#props.columnBuilder.toOperationNode()
-        ),
-      }),
-      this.#props.queryId
-    )
+    return this.#props.node
   }
 
   compile(): CompiledQuery {
     return this.#props.executor.compileQuery(
-      this.toOperationNode(),
+      this.#props.node,
       this.#props.queryId
     )
   }
@@ -455,165 +403,8 @@ export class AlterTableAddColumnBuilder
   }
 }
 
-export interface AlterTableAddColumnBuilderProps
-  extends AlterTableBuilderProps {
-  readonly columnBuilder: ColumnDefinitionBuilder
-}
-
-export type AlterTableAddColumnBuilderCallback = (
-  builder: AlterTableAddColumnBuilder
-) => AlterTableAddColumnBuilder
-
-export class AlterTableModifyColumnBuilder
-  implements ColumnDefinitionBuilderInterface, OperationNodeSource, Compilable
-{
-  readonly #props: AlterTableModifyColumnBuilderProps
-
-  constructor(props: AlterTableModifyColumnBuilderProps) {
-    this.#props = freeze(props)
-  }
-
-  autoIncrement(): AlterTableModifyColumnBuilder {
-    return new AlterTableModifyColumnBuilder({
-      ...this.#props,
-      columnBuilder: this.#props.columnBuilder.autoIncrement(),
-    })
-  }
-
-  primaryKey(): AlterTableModifyColumnBuilder {
-    return new AlterTableModifyColumnBuilder({
-      ...this.#props,
-      columnBuilder: this.#props.columnBuilder.primaryKey(),
-    })
-  }
-
-  references(ref: string): AlterTableModifyColumnBuilder {
-    return new AlterTableModifyColumnBuilder({
-      ...this.#props,
-      columnBuilder: this.#props.columnBuilder.references(ref),
-    })
-  }
-
-  onDelete(onDelete: OnModifyForeignAction): AlterTableModifyColumnBuilder {
-    return new AlterTableModifyColumnBuilder({
-      ...this.#props,
-      columnBuilder: this.#props.columnBuilder.onDelete(onDelete),
-    })
-  }
-
-  onUpdate(onUpdate: OnModifyForeignAction): AlterTableModifyColumnBuilder {
-    return new AlterTableModifyColumnBuilder({
-      ...this.#props,
-      columnBuilder: this.#props.columnBuilder.onUpdate(onUpdate),
-    })
-  }
-
-  unique(): AlterTableModifyColumnBuilder {
-    return new AlterTableModifyColumnBuilder({
-      ...this.#props,
-      columnBuilder: this.#props.columnBuilder.unique(),
-    })
-  }
-
-  notNull(): AlterTableModifyColumnBuilder {
-    return new AlterTableModifyColumnBuilder({
-      ...this.#props,
-      columnBuilder: this.#props.columnBuilder.notNull(),
-    })
-  }
-
-  unsigned(): AlterTableModifyColumnBuilder {
-    return new AlterTableModifyColumnBuilder({
-      ...this.#props,
-      columnBuilder: this.#props.columnBuilder.unsigned(),
-    })
-  }
-
-  defaultTo(value: DefaultValueExpression): AlterTableModifyColumnBuilder {
-    return new AlterTableModifyColumnBuilder({
-      ...this.#props,
-      columnBuilder: this.#props.columnBuilder.defaultTo(value),
-    })
-  }
-
-  check(expression: Expression<any>): AlterTableModifyColumnBuilder {
-    return new AlterTableModifyColumnBuilder({
-      ...this.#props,
-      columnBuilder: this.#props.columnBuilder.check(expression),
-    })
-  }
-
-  generatedAlwaysAs(
-    expression: Expression<any>
-  ): AlterTableModifyColumnBuilder {
-    return new AlterTableModifyColumnBuilder({
-      ...this.#props,
-      columnBuilder: this.#props.columnBuilder.generatedAlwaysAs(expression),
-    })
-  }
-
-  generatedAlwaysAsIdentity(): AlterTableModifyColumnBuilder {
-    return new AlterTableModifyColumnBuilder({
-      ...this.#props,
-      columnBuilder: this.#props.columnBuilder.generatedAlwaysAsIdentity(),
-    })
-  }
-
-  generatedByDefaultAsIdentity(): AlterTableModifyColumnBuilder {
-    return new AlterTableModifyColumnBuilder({
-      ...this.#props,
-      columnBuilder: this.#props.columnBuilder.generatedByDefaultAsIdentity(),
-    })
-  }
-
-  stored(): AlterTableModifyColumnBuilder {
-    return new AlterTableModifyColumnBuilder({
-      ...this.#props,
-      columnBuilder: this.#props.columnBuilder.stored(),
-    })
-  }
-
-  modifyFront(modifier: Expression<any>): AlterTableModifyColumnBuilder {
-    return new AlterTableModifyColumnBuilder({
-      ...this.#props,
-      columnBuilder: this.#props.columnBuilder.modifyFront(modifier),
-    })
-  }
-
-  modifyEnd(modifier: Expression<any>): AlterTableModifyColumnBuilder {
-    return new AlterTableModifyColumnBuilder({
-      ...this.#props,
-      columnBuilder: this.#props.columnBuilder.modifyEnd(modifier),
-    })
-  }
-
-  toOperationNode(): AlterTableNode {
-    return this.#props.executor.transformQuery(
-      AlterTableNode.cloneWith(this.#props.alterTableNode, {
-        modifyColumn: ModifyColumnNode.create(
-          this.#props.columnBuilder.toOperationNode()
-        ),
-      }),
-      this.#props.queryId
-    )
-  }
-
-  compile(): CompiledQuery {
-    return this.#props.executor.compileQuery(
-      this.toOperationNode(),
-      this.#props.queryId
-    )
-  }
-
-  async execute(): Promise<void> {
-    await this.#props.executor.executeQuery(this.compile(), this.#props.queryId)
-  }
-}
-
-export interface AlterTableModifyColumnBuilderProps
-  extends AlterTableBuilderProps {
-  readonly columnBuilder: ColumnDefinitionBuilder
-}
+export interface AlterTableColumnAlteringBuilderProps
+  extends AlterTableBuilderProps {}
 
 export class AlterTableAddForeignKeyConstraintBuilder
   implements
@@ -647,7 +438,7 @@ export class AlterTableAddForeignKeyConstraintBuilder
 
   toOperationNode(): AlterTableNode {
     return this.#props.executor.transformQuery(
-      AlterTableNode.cloneWith(this.#props.alterTableNode, {
+      AlterTableNode.cloneWithTableProps(this.#props.node, {
         addConstraint: AddConstraintNode.create(
           this.#props.constraintBuilder.toOperationNode()
         ),
@@ -685,9 +476,9 @@ export class AlterTableDropConstraintBuilder
   ifExists(): AlterTableDropConstraintBuilder {
     return new AlterTableDropConstraintBuilder({
       ...this.#props,
-      alterTableNode: AlterTableNode.cloneWith(this.#props.alterTableNode, {
+      node: AlterTableNode.cloneWithTableProps(this.#props.node, {
         dropConstraint: DropConstraintNode.cloneWith(
-          this.#props.alterTableNode.dropConstraint!,
+          this.#props.node.dropConstraint!,
           {
             ifExists: true,
           }
@@ -699,9 +490,9 @@ export class AlterTableDropConstraintBuilder
   cascade(): AlterTableDropConstraintBuilder {
     return new AlterTableDropConstraintBuilder({
       ...this.#props,
-      alterTableNode: AlterTableNode.cloneWith(this.#props.alterTableNode, {
+      node: AlterTableNode.cloneWithTableProps(this.#props.node, {
         dropConstraint: DropConstraintNode.cloneWith(
-          this.#props.alterTableNode.dropConstraint!,
+          this.#props.node.dropConstraint!,
           {
             modifier: 'cascade',
           }
@@ -713,9 +504,9 @@ export class AlterTableDropConstraintBuilder
   restrict(): AlterTableDropConstraintBuilder {
     return new AlterTableDropConstraintBuilder({
       ...this.#props,
-      alterTableNode: AlterTableNode.cloneWith(this.#props.alterTableNode, {
+      node: AlterTableNode.cloneWithTableProps(this.#props.node, {
         dropConstraint: DropConstraintNode.cloneWith(
-          this.#props.alterTableNode.dropConstraint!,
+          this.#props.node.dropConstraint!,
           {
             modifier: 'restrict',
           }
@@ -726,7 +517,7 @@ export class AlterTableDropConstraintBuilder
 
   toOperationNode(): AlterTableNode {
     return this.#props.executor.transformQuery(
-      this.#props.alterTableNode,
+      this.#props.node,
       this.#props.queryId
     )
   }
@@ -755,13 +546,8 @@ preventAwait(
 )
 
 preventAwait(
-  AlterTableAddColumnBuilder,
-  "don't await AlterTableAddColumnBuilder instances directly. To execute the query you need to call `execute`"
-)
-
-preventAwait(
-  AlterTableModifyColumnBuilder,
-  "don't await AlterTableModifyColumnBuilder instances directly. To execute the query you need to call `execute`"
+  AlterTableColumnAlteringBuilder,
+  "don't await AlterTableColumnAlteringBuilder instances directly. To execute the query you need to call `execute`"
 )
 
 preventAwait(
