@@ -208,7 +208,7 @@ export interface WhereInterface<DB, TB extends keyof DB> {
    *
    * The normal `where` method treats the right hand side argument as a
    * value by default. `whereRef` treats it as a column reference. This method is
-   * expecially useful with joins and correclated subqueries.
+   * expecially useful with joins and correlated subqueries.
    *
    * ### Examples
    *
@@ -411,12 +411,12 @@ export interface WhereInterface<DB, TB extends keyof DB> {
   whereNotExists(arg: ExistsExpression<DB, TB>): WhereInterface<DB, TB>
 
   /**
-   * Just like {@link whereExists} but creates a `or exists` clause.
+   * Just like {@link whereExists} but creates an `or exists` clause.
    */
   orWhereExists(arg: ExistsExpression<DB, TB>): WhereInterface<DB, TB>
 
   /**
-   * Just like {@link whereExists} but creates a `or not exists` clause.
+   * Just like {@link whereExists} but creates an `or not exists` clause.
    */
   orWhereNotExists(arg: ExistsExpression<DB, TB>): WhereInterface<DB, TB>
 }
