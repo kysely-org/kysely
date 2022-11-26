@@ -6,6 +6,7 @@ import {
 import { AliasNode } from '../operation-node/alias-node.js'
 import { isOperationNodeSource } from '../operation-node/operation-node-source.js'
 import { OperationNode } from '../operation-node/operation-node.js'
+import { SimpleReferenceExpressionNode } from '../operation-node/simple-reference-expression-node.js'
 import { ExpressionBuilder } from '../query-builder/expression-builder.js'
 import { SelectQueryBuilder } from '../query-builder/select-query-builder.js'
 import { isFunction } from '../util/object-utils.js'
@@ -29,11 +30,13 @@ export type AliasedExpressionOrFactory<DB, TB extends keyof DB> =
 
 export function parseExpression(
   exp: ExpressionOrFactory<any, any, any>
-): OperationNode {
+): SimpleReferenceExpressionNode {
   if (isOperationNodeSource(exp)) {
-    return exp.toOperationNode()
+    return exp.toOperationNode() as SimpleReferenceExpressionNode
   } else if (isFunction(exp)) {
-    return exp(createExpressionBuilder()).toOperationNode()
+    return exp(
+      createExpressionBuilder()
+    ).toOperationNode() as SimpleReferenceExpressionNode
   }
 
   throw new Error(`invalid expression: ${JSON.stringify(exp)}`)

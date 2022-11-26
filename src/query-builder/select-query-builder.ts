@@ -15,7 +15,11 @@ import {
   SelectAllQueryBuilder,
   SelectExpressionOrList,
 } from '../parser/select-parser.js'
-import { ReferenceExpression } from '../parser/reference-parser.js'
+import {
+  parseReferenceExpressionOrList,
+  ReferenceExpression,
+  ReferenceExpressionOrList,
+} from '../parser/reference-parser.js'
 import { SelectQueryNode } from '../operation-node/select-query-node.js'
 import { QueryNode } from '../operation-node/query-node.js'
 import { MergePartial, Nullable, SingleResultType } from '../util/type-utils.js'
@@ -515,20 +519,20 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    * where "pet"."name" = $1
    * ```
    */
-  distinctOn<SE extends SelectExpression<DB, TB>>(
-    selections: ReadonlyArray<SE>
+  distinctOn<RE extends ReferenceExpression<DB, TB>>(
+    selections: ReadonlyArray<RE>
   ): SelectQueryBuilder<DB, TB, O>
 
-  distinctOn<SE extends SelectExpression<DB, TB>>(
-    selection: SE
+  distinctOn<RE extends ReferenceExpression<DB, TB>>(
+    selection: RE
   ): SelectQueryBuilder<DB, TB, O>
 
-  distinctOn(selection: SelectExpressionOrList<DB, TB>): any {
+  distinctOn(selection: ReferenceExpressionOrList<DB, TB>): any {
     return new SelectQueryBuilder({
       ...this.#props,
       queryNode: SelectQueryNode.cloneWithDistinctOnSelections(
         this.#props.queryNode,
-        parseSelectExpressionOrList(selection)
+        parseReferenceExpressionOrList(selection)
       ),
     })
   }

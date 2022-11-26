@@ -93,6 +93,7 @@ import { PartitionByItemNode } from '../operation-node/partition-by-item-node.js
 import { SetOperationNode } from '../operation-node/set-operation-node.js'
 import { BinaryOperationNode } from '../operation-node/binary-operation-node.js'
 import { UnaryOperationNode } from '../operation-node/unary-operation-node.js'
+import { SimpleReferenceExpressionNode } from '../operation-node/simple-reference-expression-node.js'
 
 export class DefaultQueryCompiler
   extends OperationNodeVisitor
@@ -225,7 +226,9 @@ export class DefaultQueryCompiler
     this.visitNode(node.column)
   }
 
-  protected compileDistinctOn(selections: ReadonlyArray<SelectionNode>): void {
+  protected compileDistinctOn(
+    selections: ReadonlyArray<SimpleReferenceExpressionNode>
+  ): void {
     this.append('distinct on (')
     this.compileList(selections)
     this.append(')')
