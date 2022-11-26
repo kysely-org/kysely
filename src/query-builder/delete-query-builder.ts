@@ -5,7 +5,13 @@ import {
   JoinReferenceExpression,
   parseJoin,
 } from '../parser/join-parser.js'
-import { TableExpression } from '../parser/table-parser.js'
+import {
+  From,
+  FromTables,
+  parseTableExpressionOrList,
+  TableExpression,
+  TableExpressionOrList,
+} from '../parser/table-parser.js'
 import {
   parseSelectExpressionOrList,
   parseSelectAll,
@@ -168,6 +174,27 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
       queryNode: QueryNode.cloneWithOrWhere(
         this.#props.queryNode,
         parseNotExists(arg)
+      ),
+    })
+  }
+
+  /**
+   * TODO: ...
+   */
+  using<TE extends TableExpression<DB, TB>>(
+    from: TE[]
+  ): DeleteQueryBuilder<From<DB, TE>, FromTables<DB, TB, TE>, O>
+
+  using<TE extends TableExpression<DB, TB>>(
+    from: TE
+  ): DeleteQueryBuilder<From<DB, TE>, FromTables<DB, TB, TE>, O>
+
+  using(from: TableExpressionOrList<any, any>): any {
+    return new DeleteQueryBuilder({
+      ...this.#props,
+      queryNode: DeleteQueryNode.cloneWithUsing(
+        this.#props.queryNode,
+        parseTableExpressionOrList(from)
       ),
     })
   }
