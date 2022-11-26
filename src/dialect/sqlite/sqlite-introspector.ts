@@ -68,7 +68,7 @@ export class SqliteIntrospector implements DatabaseIntrospector {
     const autoIncrementCol = createSql[0]?.sql
       ?.split(/[\(\),]/)
       ?.find((it) => it.toLowerCase().includes('autoincrement'))
-        ?.trimStart()
+      ?.trimStart()
       ?.split(/\s+/)?.[0]
       ?.replace(/["`]/g, '')
 
