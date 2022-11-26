@@ -88,7 +88,7 @@ export function parseSimpleReferenceExpression(
 
 export function parseReferenceExpressionOrList(
   arg: ReferenceExpressionOrList<any, any>
-): OperationNode[] {
+): SimpleReferenceExpressionNode[] {
   if (isReadonlyArray(arg)) {
     return arg.map((it) => parseReferenceExpression(it))
   } else {
@@ -98,7 +98,7 @@ export function parseReferenceExpressionOrList(
 
 export function parseReferenceExpression(
   exp: ReferenceExpression<any, any>
-): OperationNode {
+): SimpleReferenceExpressionNode {
   if (isExpressionOrFactory(exp)) {
     return parseExpression(exp)
   }
