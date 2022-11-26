@@ -94,6 +94,7 @@ import { SetOperationNode } from '../operation-node/set-operation-node.js'
 import { BinaryOperationNode } from '../operation-node/binary-operation-node.js'
 import { UnaryOperationNode } from '../operation-node/unary-operation-node.js'
 import { SimpleReferenceExpressionNode } from '../operation-node/simple-reference-expression-node.js'
+import { UsingNode } from '../operation-node/using-node.js'
 
 export class DefaultQueryCompiler
   extends OperationNodeVisitor
@@ -340,6 +341,11 @@ export class DefaultQueryCompiler
 
     this.append('delete ')
     this.visitNode(node.from)
+
+    if (node.using) {
+      this.append(' ')
+      this.visitNode(node.using)
+    }
 
     if (node.joins) {
       this.append(' ')
@@ -1264,6 +1270,11 @@ export class DefaultQueryCompiler
     this.visitNode(node.operator)
     this.append(' ')
     this.visitNode(node.operand)
+  }
+
+  protected override visitUsing(node: UsingNode): void {
+    this.append('using ')
+    this.compileList(node.froms)
   }
 
   protected append(str: string): void {
