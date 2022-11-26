@@ -12,6 +12,12 @@ import { QueryId } from '../util/query-id.js'
 import { IdentifierNode } from '../operation-node/identifier-node.js'
 import { AliasedExpression, Expression } from '../expression/expression.js'
 import { isOperationNodeSource } from '../operation-node/operation-node-source.js'
+import { SingleResultType } from '../util/type-utils.js'
+import { InsertResult } from '../query-builder/insert-result.js'
+import {
+  NoResultError,
+  NoResultErrorConstructor,
+} from '../query-builder/no-result-error.js'
 
 /**
  * An instance of this class can be used to create raw SQL snippets or queries.
@@ -134,6 +140,39 @@ export class RawBuilder<O> implements Expression<O> {
       this.#compile(executor),
       this.#props.queryId
     )
+  }
+
+  /**
+   * Executes the query and returns the first result row or undefined if the query
+   * returned no rows.
+   */
+  async executeTakeFirstRow(
+    executorProvider: QueryExecutorProvider
+  ): Promise<O | undefined> {
+    const result = await this.execute(executorProvider)
+
+    return result.rows[0]
+  }
+
+  /**
+   * Executes the query and returns the first result row or throws if
+   * the query returned no rows.
+   *
+   * By default an instance of {@link NoResultError} is thrown, but you can
+   * provide a custom error class as the second argument to throw a different
+   * error.
+   */
+  async executeTakeFirstRowOrThrow(
+    executorProvider: QueryExecutorProvider,
+    errorConstructor: NoResultErrorConstructor = NoResultError
+  ): Promise<O> {
+    const result = await this.executeTakeFirstRow(executorProvider)
+
+    if (result === undefined) {
+      throw new errorConstructor(this.toOperationNode())
+    }
+
+    return result
   }
 
   #toOperationNode(executor: QueryExecutor): RawNode {
