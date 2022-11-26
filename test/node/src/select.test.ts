@@ -534,6 +534,30 @@ for (const dialect of BUILT_IN_DIALECTS) {
         ])
       })
 
+      it('should select with distict on that uses a RawBuilder expression', async () => {
+        const query = ctx.db
+          .selectFrom('person')
+          .select(['first_name', 'last_name'])
+          .distinctOn(sql`gender::text`)
+
+        testSql(query, dialect, {
+          postgres: {
+            sql: 'select distinct on (gender::text) "first_name", "last_name" from "person"',
+            parameters: [],
+          },
+          mysql: NOT_SUPPORTED,
+          sqlite: NOT_SUPPORTED,
+        })
+
+        const persons = await query.execute()
+
+        expect(persons).to.have.length(2)
+        expect(persons).to.eql([
+          { first_name: 'Jennifer', last_name: 'Aniston' },
+          { first_name: 'Arnold', last_name: 'Schwarzenegger' },
+        ])
+      })
+
       for (const [methods, sql] of [
         [['forUpdate'], 'for update'],
         [['forShare'], 'for share'],
