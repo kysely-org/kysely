@@ -1,4 +1,4 @@
-import { NoResultError, QueryNode } from '../../../'
+import { NoResultError, QueryNode, RawNode } from '../../../'
 
 import {
   BUILT_IN_DIALECTS,
@@ -72,9 +72,9 @@ for (const dialect of BUILT_IN_DIALECTS) {
 
       it('should throw a custom error if no result is found and a custom error is provided', async () => {
         class MyNotFoundError extends Error {
-          node: QueryNode
+          node: QueryNode | RawNode
 
-          constructor(node: QueryNode) {
+          constructor(node: QueryNode | RawNode) {
             super('custom error')
             this.node = node
           }
