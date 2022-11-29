@@ -355,6 +355,42 @@ export class CreateTableBuilder<TB extends string, C extends string = never>
     })
   }
 
+  /**
+   * Calls the given function passing `this` as the only argument.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * db.schema
+   *   .createTable('test')
+   *   .call((builder) => builder.addColumn('id', 'integer'))
+   *   .execute()
+   * ```
+   *
+   * ```ts
+   * const addDefaultColumns = <T extends string, C extends string = never>(
+   *   builder: CreateTableBuilder<T, C>
+   * ) => {
+   *   return builder
+   *     .addColumn('id', 'integer', (col) => col.notNull())
+   *     .addColumn('created_at', 'date', (col) =>
+   *       col.notNull().defaultTo(sql`now()`)
+   *     )
+   *     .addColumn('updated_at', 'date', (col) =>
+   *       col.notNull().defaultTo(sql`now()`)
+   *     )
+   * }
+   *
+   * db.schema
+   *   .createTable('test')
+   *   .call(addDefaultColumns)
+   *   .execute()
+   * ```
+   */
+  call<T>(func: (qb: this) => T): T {
+    return func(this)
+  }
+
   toOperationNode(): CreateTableNode {
     return this.#props.executor.transformQuery(
       this.#props.createTableNode,
