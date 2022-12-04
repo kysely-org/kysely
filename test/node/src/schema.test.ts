@@ -786,6 +786,46 @@ for (const dialect of BUILT_IN_DIALECTS) {
           await builder.execute()
         })
       }
+
+      it('should create a table calling query builder functions', async () => {
+        const builder = ctx.db.schema
+          .createTable('test')
+          .addColumn('id', 'integer', (col) => col.notNull())
+          .call((builder) =>
+            builder.addColumn('call_me', 'varchar(10)', (col) =>
+              col.defaultTo('maybe')
+            )
+          )
+
+        testSql(builder, dialect, {
+          postgres: {
+            sql: [
+              'create table "test"',
+              '("id" integer not null,',
+              `"call_me" varchar(10) default 'maybe')`,
+            ],
+            parameters: [],
+          },
+          mysql: {
+            sql: [
+              'create table `test`',
+              '(`id` integer not null,',
+              "`call_me` varchar(10) default 'maybe')",
+            ],
+            parameters: [],
+          },
+          sqlite: {
+            sql: [
+              'create table "test"',
+              '("id" integer not null,',
+              `"call_me" varchar(10) default 'maybe')`,
+            ],
+            parameters: [],
+          },
+        })
+
+        await builder.execute()
+      })
     })
 
     describe('drop table', () => {
@@ -2289,6 +2329,31 @@ for (const dialect of BUILT_IN_DIALECTS) {
           })
         })
       }
+
+      it('should alter a table calling query builder functions', async () => {
+        const builder = ctx.db.schema
+          .alterTable('test')
+          .call((builder) =>
+            builder.addColumn('abc', 'integer', (col) => col.defaultTo('42'))
+          )
+
+        testSql(builder, dialect, {
+          postgres: {
+            sql: [`alter table "test" add column "abc" integer default '42'`],
+            parameters: [],
+          },
+          mysql: {
+            sql: ["alter table `test` add column `abc` integer default '42'"],
+            parameters: [],
+          },
+          sqlite: {
+            sql: [`alter table "test" add column "abc" integer default '42'`],
+            parameters: [],
+          },
+        })
+
+        await builder.execute()
+      })
     })
 
     async function dropTestTables(): Promise<void> {
