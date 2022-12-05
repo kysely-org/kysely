@@ -227,7 +227,7 @@ export class DefaultQueryCompiler
   }
 
   protected compileDistinctOn(
-    selections: ReadonlyArray<SimpleReferenceExpressionNode>
+    selections: ReadonlyArray<OperationNode>
   ): void {
     this.append('distinct on (')
     this.compileList(selections)
