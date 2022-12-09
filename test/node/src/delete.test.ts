@@ -1,4 +1,4 @@
-import { DeleteResult } from '../../../'
+import { DeleteResult, sql } from '../../../'
 
 import {
   BUILT_IN_DIALECTS,
@@ -160,6 +160,82 @@ for (const dialect of BUILT_IN_DIALECTS) {
 
         const result = await query.executeTakeFirstOrThrow()
         expect(result.last_name).to.equal('Aniston')
+      })
+    }
+
+    if (dialect === 'postgres') {
+      it('should delete from t1 using t2', async () => {
+        const query = ctx.db
+          .deleteFrom('person')
+          .using('pet')
+          .whereRef('pet.owner_id', '=', 'person.id')
+          .where('pet.species', '=', sql`${'NO_SUCH_SPECIES'}`)
+
+        testSql(query, dialect, {
+          postgres: {
+            sql: [
+              'delete from "person"',
+              'using "pet"',
+              'where "pet"."owner_id" = "person"."id"',
+              'and "pet"."species" = $1',
+            ],
+            parameters: ['NO_SUCH_SPECIES'],
+          },
+          mysql: NOT_SUPPORTED,
+          sqlite: NOT_SUPPORTED,
+        })
+
+        await query.execute()
+      })
+    }
+
+    if (dialect === 'mysql') {
+      it('should delete from t1 using t1 inner join t2', async () => {
+        const query = ctx.db
+          .deleteFrom('person')
+          .using('person')
+          .innerJoin('pet', 'pet.owner_id', 'person.id')
+          .where('pet.species', '=', sql`${'NO_SUCH_SPECIES'}`)
+
+        testSql(query, dialect, {
+          postgres: NOT_SUPPORTED,
+          mysql: {
+            sql: [
+              'delete from `person`',
+              'using `person`',
+              'inner join `pet` on `pet`.`owner_id` = `person`.`id`',
+              'where `pet`.`species` = ?',
+            ],
+            parameters: ['NO_SUCH_SPECIES'],
+          },
+          sqlite: NOT_SUPPORTED,
+        })
+
+        await query.execute()
+      })
+
+      it('should delete from t1 using t1 left join t2', async () => {
+        const query = ctx.db
+          .deleteFrom('person')
+          .using('person')
+          .leftJoin('pet', 'pet.owner_id', 'person.id')
+          .where('pet.species', '=', sql`${'NO_SUCH_SPECIES'}`)
+
+        testSql(query, dialect, {
+          postgres: NOT_SUPPORTED,
+          mysql: {
+            sql: [
+              'delete from `person`',
+              'using `person`',
+              'left join `pet` on `pet`.`owner_id` = `person`.`id`',
+              'where `pet`.`species` = ?',
+            ],
+            parameters: ['NO_SUCH_SPECIES'],
+          },
+          sqlite: NOT_SUPPORTED,
+        })
+
+        await query.execute()
       })
     }
   })
