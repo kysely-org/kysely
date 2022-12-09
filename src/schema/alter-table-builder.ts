@@ -208,6 +208,15 @@ export class AlterTableBuilder {
       }),
     })
   }
+
+  /**
+   * Calls the given function passing `this` as the only argument.
+   *
+   * See {@link CreateTableBuilder.call}
+   */
+  call<T>(func: (qb: this) => T): T {
+    return func(this)
+  }
 }
 
 export interface AlterTableBuilderProps {
