@@ -32,7 +32,7 @@ async function testDelete(db: Kysely<Database>) {
 
   const r5 = await db
     .deleteFrom('person')
-    .using(['person', 'john'])
+    .using(['person', 'pet'])
     .leftJoin('toy', 'toy.pet_id', 'pet.id')
     .where('pet.species', '=', 'cat')
     .orWhere('toy.price', '=', 0)
