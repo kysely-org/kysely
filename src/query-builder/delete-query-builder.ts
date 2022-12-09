@@ -6,8 +6,6 @@ import {
   parseJoin,
 } from '../parser/join-parser.js'
 import {
-  From,
-  FromTables,
   parseTableExpressionOrList,
   TableExpression,
   TableExpressionOrList,
@@ -181,13 +179,13 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
   /**
    * TODO: ...
    */
-  using<TE extends TableExpression<DB, TB>>(
-    from: TE[]
-  ): DeleteQueryBuilder<From<DB, TE>, FromTables<DB, TB, TE>, O>
+  using<TE extends [TableExpression<DB, TB>, ...TableExpression<DB, TB>[]]>(
+    from: TE
+  ): DeleteQueryBuilderWithUsingList<DB, TB, O, TE>
 
   using<TE extends TableExpression<DB, TB>>(
     from: TE
-  ): DeleteQueryBuilder<From<DB, TE>, FromTables<DB, TB, TE>, O>
+  ): DeleteQueryBuilderWithUsingOrInnerJoin<DB, TB, O, TE>
 
   using(from: TableExpressionOrList<any, any>): any {
     return new DeleteQueryBuilder({
@@ -312,12 +310,19 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
     TE extends TableExpression<DB, TB>,
     K1 extends JoinReferenceExpression<DB, TB, TE>,
     K2 extends JoinReferenceExpression<DB, TB, TE>
-  >(table: TE, k1: K1, k2: K2): DeleteQueryBuilderWithInnerJoin<DB, TB, O, TE>
+  >(
+    table: TE,
+    k1: K1,
+    k2: K2
+  ): DeleteQueryBuilderWithUsingOrInnerJoin<DB, TB, O, TE>
 
   innerJoin<
     TE extends TableExpression<DB, TB>,
     FN extends JoinCallbackExpression<DB, TB, TE>
-  >(table: TE, callback: FN): DeleteQueryBuilderWithInnerJoin<DB, TB, O, TE>
+  >(
+    table: TE,
+    callback: FN
+  ): DeleteQueryBuilderWithUsingOrInnerJoin<DB, TB, O, TE>
 
   innerJoin(...args: any): any {
     return new DeleteQueryBuilder({
@@ -712,35 +717,130 @@ export interface DeleteQueryBuilderProps {
   readonly executor: QueryExecutor
 }
 
-export type DeleteQueryBuilderWithInnerJoin<
+export type DeleteQueryBuilderWithUsingList<
+  DB,
+  TB extends keyof DB,
+  O,
+  TE extends TableExpression<DB, TB>[]
+> = TE extends []
+  ? DeleteQueryBuilder<DB, TB, O>
+  : TE extends [infer TEL extends TableExpression<DB, TB>, ...infer TER]
+  ? TEL extends `${infer T} as ${infer A}`
+    ? T extends keyof DB
+      ? TER extends TableExpression<DB, TB>[]
+        ? DeleteQueryBuilderWithUsingListAndAliasedTableExpression<
+            DB,
+            TB,
+            O,
+            TER,
+            A,
+            DB[T]
+          >
+        : never
+      : never
+    : TEL extends keyof DB
+    ? TER extends TableExpression<DB, TB>[]
+      ? DeleteQueryBuilderWithUsingList<DB, TB | TEL, O, TER>
+      : never
+    : TEL extends AliasedExpression<infer QO, infer QA>
+    ? TER extends TableExpression<DB, TB>[]
+      ? DeleteQueryBuilderWithUsingListAndAliasedTableExpression<
+          DB,
+          TB,
+          O,
+          TER,
+          QA,
+          QO
+        >
+      : never
+    : TEL extends (qb: any) => AliasedExpression<infer QO, infer QA>
+    ? TER extends TableExpression<DB, TB>[]
+      ? DeleteQueryBuilderWithUsingListAndAliasedTableExpression<
+          DB,
+          TB,
+          O,
+          TER,
+          QA,
+          QO
+        >
+      : never
+    : never
+  : never
+
+type DeleteQueryBuilderWithUsingListAndAliasedTableExpression<
+  DB,
+  TB extends keyof DB,
+  O,
+  TE extends TableExpression<DB, TB>[],
+  A extends string,
+  R
+> = A extends keyof DB
+  ? TE extends TableExpression<
+      DBWithUsingOrInnerJoinToAliasedTable<DB, A, R>,
+      TB | A
+    >[]
+    ? DeleteQueryBuilderWithUsingList<
+        DBWithUsingOrInnerJoinToAliasedTable<DB, A, R>,
+        TB | A,
+        O,
+        TE
+      >
+    : never
+  : TE extends TableExpression<DB & Record<A, R>, TB | A>[]
+  ? DeleteQueryBuilderWithUsingList<DB & Record<A, R>, TB | A, O, TE>
+  : never
+
+export type DeleteQueryBuilderWithUsingOrInnerJoin<
   DB,
   TB extends keyof DB,
   O,
   TE extends TableExpression<DB, TB>
 > = TE extends `${infer T} as ${infer A}`
   ? T extends keyof DB
-    ? InnerJoinedBuilder<DB, TB, O, A, DB[T]>
+    ? DeleteQueryBuilderWithUsingOrInnerJoinToAliasedTableExpression<
+        DB,
+        TB,
+        O,
+        A,
+        DB[T]
+      >
     : never
   : TE extends keyof DB
   ? DeleteQueryBuilder<DB, TB | TE, O>
   : TE extends AliasedExpression<infer QO, infer QA>
-  ? InnerJoinedBuilder<DB, TB, O, QA, QO>
+  ? DeleteQueryBuilderWithUsingOrInnerJoinToAliasedTableExpression<
+      DB,
+      TB,
+      O,
+      QA,
+      QO
+    >
   : TE extends (qb: any) => AliasedExpression<infer QO, infer QA>
-  ? InnerJoinedBuilder<DB, TB, O, QA, QO>
+  ? DeleteQueryBuilderWithUsingOrInnerJoinToAliasedTableExpression<
+      DB,
+      TB,
+      O,
+      QA,
+      QO
+    >
   : never
 
-type InnerJoinedBuilder<
+type DeleteQueryBuilderWithUsingOrInnerJoinToAliasedTableExpression<
   DB,
   TB extends keyof DB,
   O,
   A extends string,
   R
 > = A extends keyof DB
-  ? DeleteQueryBuilder<InnerJoinedDB<DB, A, R>, TB | A, O>
+  ? DeleteQueryBuilder<
+      DBWithUsingOrInnerJoinToAliasedTable<DB, A, R>,
+      TB | A,
+      O
+    >
   : // Much faster non-recursive solution for the simple case.
     DeleteQueryBuilder<DB & Record<A, R>, TB | A, O>
 
-type InnerJoinedDB<DB, A extends string, R> = {
+type DBWithUsingOrInnerJoinToAliasedTable<DB, A extends string, R> = {
   [C in keyof DB | A]: C extends A ? R : C extends keyof DB ? DB[C] : never
 }
 
