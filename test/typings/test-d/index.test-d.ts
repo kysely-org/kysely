@@ -813,44 +813,6 @@ async function testUpdate(db: Kysely<Database>) {
   db.updateTable('person').set(mutationObject)
 }
 
-async function testDelete(db: Kysely<Database>) {
-  const r1 = await db.deleteFrom('pet').where('id', '=', '1').executeTakeFirst()
-  expectType<DeleteResult>(r1)
-
-  const r2 = await db
-    .deleteFrom('person')
-    .using('pet')
-    .where('pet.species', '=', 'cat')
-    .executeTakeFirstOrThrow()
-  expectType<DeleteResult>(r2)
-
-  const r3 = await db
-    .deleteFrom('person')
-    .using(['pet', 'toy'])
-    .where('pet.species', '=', 'cat')
-    .orWhere('toy.price', '=', 0)
-    .executeTakeFirstOrThrow()
-  expectType<DeleteResult>(r3)
-
-  const r4 = await db
-    .deleteFrom('person')
-    .using(['person', 'pet'])
-    .innerJoin('toy', 'toy.pet_id', 'pet.id')
-    .where('pet.species', '=', 'cat')
-    .orWhere('toy.price', '=', 0)
-    .executeTakeFirstOrThrow()
-  expectType<DeleteResult>(r4)
-
-  const r5 = await db
-    .deleteFrom('person')
-    .using(['person', 'pet'])
-    .leftJoin('toy', 'toy.pet_id', 'pet.id')
-    .where('pet.species', '=', 'cat')
-    .orWhere('toy.price', '=', 0)
-    .executeTakeFirstOrThrow()
-  expectType<DeleteResult>(r5)
-}
-
 async function testOrderBy(db: Kysely<Database>) {
   const r1 = await db
     .selectFrom('person')
