@@ -104,7 +104,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
           sqlite: NOT_SUPPORTED,
         })
 
-        await query.execute()
+        const result = await query.executeTakeFirst()
+
+        expect(result).to.be.instanceOf(DeleteResult)
+        expect(result.numDeletedRows).to.equal(2n)
       })
     }
 

@@ -11,6 +11,7 @@ import { QueryId } from '../util/query-id.js'
 import { DialectAdapter } from '../dialect/dialect-adapter.js'
 import { QueryExecutor } from './query-executor.js'
 import { Deferred } from '../util/deferred.js'
+import { logOnce } from '../util/log-once.js'
 
 const NO_PLUGINS: ReadonlyArray<KyselyPlugin> = freeze([])
 
@@ -65,7 +66,13 @@ export abstract class QueryExecutorBase implements QueryExecutor {
   ): Promise<QueryResult<R>> {
     return await this.provideConnection(async (connection) => {
       const result = await connection.executeQuery(compiledQuery)
-      return this.#transformResult(result, queryId)
+
+      const transformedResult = await this.#transformResult(result, queryId)
+
+      // TODO: remove.
+      warnOfOutdatedDriverOrPlugins(result, transformedResult)
+
+      return transformedResult as any
     })
   }
 
@@ -117,4 +124,25 @@ export abstract class QueryExecutorBase implements QueryExecutor {
 
     return result
   }
+}
+
+// TODO: remove.
+function warnOfOutdatedDriverOrPlugins(
+  result: QueryResult<unknown>,
+  transformedResult: QueryResult<unknown>
+): void {
+  const { numAffectedRows } = result
+
+  if (
+    (numAffectedRows === undefined &&
+      result.numUpdatedOrDeletedRows === undefined) ||
+    (numAffectedRows !== undefined &&
+      transformedResult.numAffectedRows !== undefined)
+  ) {
+    return
+  }
+
+  logOnce(
+    'kysely:warning: outdated driver/plugin detected! QueryResult.numUpdatedOrDeletedRows is deprecated and will be removed in a future release.'
+  )
 }
