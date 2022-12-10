@@ -670,11 +670,7 @@ export class OperationNodeTransformer {
       table: this.transformNode(node.table),
       renameTo: this.transformNode(node.renameTo),
       setSchema: this.transformNode(node.setSchema),
-      renameColumn: this.transformNode(node.renameColumn),
-      addColumn: this.transformNode(node.addColumn),
-      dropColumn: this.transformNode(node.dropColumn),
-      alterColumn: this.transformNode(node.alterColumn),
-      modifyColumn: this.transformNode(node.modifyColumn),
+      columnAlterations: this.transformNodeList(node.columnAlterations),
       addConstraint: this.transformNode(node.addConstraint),
       dropConstraint: this.transformNode(node.dropConstraint),
     })
