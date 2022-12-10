@@ -76,11 +76,13 @@ class SqliteConnection implements DatabaseConnection {
     } else {
       const { changes, lastInsertRowid } = stmt.run(parameters)
 
+      const numAffectedRows =
+        changes !== undefined && changes !== null ? BigInt(changes) : undefined
+
       return Promise.resolve({
-        numUpdatedOrDeletedRows:
-          changes !== undefined && changes !== null
-            ? BigInt(changes)
-            : undefined,
+        // TODO: remove.
+        numUpdatedOrDeletedRows: numAffectedRows,
+        numAffectedRows,
         insertId:
           lastInsertRowid !== undefined && lastInsertRowid !== null
             ? BigInt(lastInsertRowid)
