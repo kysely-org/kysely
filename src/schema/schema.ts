@@ -210,7 +210,7 @@ export class SchemaModule {
     return new AlterTableBuilder({
       queryId: createQueryId(),
       executor: this.#executor,
-      alterTableNode: AlterTableNode.create(table),
+      node: AlterTableNode.create(table),
     })
   }
 

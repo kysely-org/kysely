@@ -113,7 +113,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
       expect(person.last_name).to.equal('Catto')
     })
 
-    it('should update update using a raw expression', async () => {
+    it('should update one row using a raw expression', async () => {
       const query = ctx.db
         .updateTable('person')
         .set({
@@ -136,10 +136,21 @@ for (const dialect of BUILT_IN_DIALECTS) {
         },
       })
 
-      await query.execute()
+      const result = await query.executeTakeFirst()
+
+      expect(result).to.be.instanceOf(UpdateResult)
+      expect(result.numUpdatedRows).to.equal(1n)
+
+      const jennifer = await ctx.db
+        .selectFrom('person')
+        .where('first_name', '=', 'Jennifer')
+        .select('last_name')
+        .executeTakeFirstOrThrow()
+
+      expect(jennifer.last_name).to.equal('Jennifer')
     })
 
-    it('undefined values should be ignored', async () => {
+    it('should update one row while ignoring undefined values', async () => {
       const query = ctx.db
         .updateTable('person')
         .set({ id: undefined, first_name: 'Foo', last_name: 'Barson' })
@@ -160,11 +171,25 @@ for (const dialect of BUILT_IN_DIALECTS) {
         },
       })
 
-      await query.execute()
+      const result = await query.executeTakeFirst()
+
+      expect(result).to.be.instanceOf(UpdateResult)
+      expect(result.numUpdatedRows).to.equal(1n)
+
+      const female = await ctx.db
+        .selectFrom('person')
+        .where('gender', '=', 'female')
+        .select(['first_name', 'last_name'])
+        .executeTakeFirstOrThrow()
+
+      expect(female).to.deep.equal({
+        first_name: 'Foo',
+        last_name: 'Barson',
+      })
     })
 
     if (dialect === 'postgres' || dialect === 'sqlite') {
-      it('should return updated rows when `returning` is used', async () => {
+      it('should update some rows and return updated rows when `returning` is used', async () => {
         const query = ctx.db
           .updateTable('person')
           .set({ last_name: 'Barson' })
@@ -196,7 +221,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
         ])
       })
 
-      it('conditional returning statement should add optional fields', async () => {
+      it('should update all rows, returning some fields of updated rows, and conditionally returning additional fields', async () => {
         const condition = true
 
         const query = ctx.db
@@ -206,10 +231,11 @@ for (const dialect of BUILT_IN_DIALECTS) {
           .if(condition, (qb) => qb.returning('last_name'))
 
         const result = await query.executeTakeFirstOrThrow()
+
         expect(result.last_name).to.equal('Barson')
       })
 
-      it('should join a table when `from` is called', async () => {
+      it('should update some rows and join a table when `from` is called', async () => {
         const query = ctx.db
           .updateTable('person')
           .from('pet')
@@ -233,6 +259,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
         })
 
         const result = await query.execute()
+
         expect(result[0].first_name).to.equal('Doggo')
       })
     }
