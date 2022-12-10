@@ -724,7 +724,7 @@ export type DeleteQueryBuilderWithUsingList<
   TE extends TableExpression<DB, TB>[]
 > = TE extends []
   ? DeleteQueryBuilder<DB, TB, O>
-  : TE extends [infer TEL extends TableExpression<DB, TB>, ...infer TER]
+  : TE extends [infer TEL, ...infer TER]
   ? TEL extends `${infer T} as ${infer A}`
     ? T extends keyof DB
       ? TER extends TableExpression<DB, TB>[]
