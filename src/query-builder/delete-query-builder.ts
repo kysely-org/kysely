@@ -177,22 +177,92 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
   }
 
   /**
-   * TODO: ...
+   * Adds a `using` clause to the query.
+   *
+   * This clause allows adding additional tables to the query for filtering/returning
+   * only. Usually a non-standard syntactic-sugar alternative to a `where` with a sub-query.
+   *
+   * ### Examples:
+   *
+   * ```ts
+   * await db
+   *   .deleteFrom('pet')
+   *   .using('person')
+   *   .whereRef('pet.owner_id', '=', 'person.id')
+   *   .where('person.first_name', '=', 'Bob')
+   *   .executeTakeFirstOrThrow()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * delete from "pet"
+   * using "person"
+   * where "pet"."owner_id" = "person"."id"
+   *   and "person"."first_name" = $1
+   * ```
+   *
+   * On supported databases such as MySQL, this clause allows using joins, but requires at
+   * least one of tables after the `from` clause to be named after the `using`
+   * clause. See also {@link innerJoin}, {@link leftJoin}, {@link rightJoin} and {@link fullJoin}.
+   *
+   * ```ts
+   * await db
+   *   .deleteFrom('pet')
+   *   .using('pet')
+   *   .leftJoin('person', 'person.id', 'pet.owner_id')
+   *   .where('person.first_name', '=', 'Bob')
+   *   .executeTakeFirstOrThrow()
+   * ```
+   *
+   * The generated SQL (MySQL):
+   *
+   * ```sql
+   * delete from `pet`
+   * using `pet`
+   * left join `person` on `person`.`id` = `pet`.`owner_id`
+   * where `person`.`first_name` = ?
+   * ```
+   *
+   * You can also chain multiple invocations of this method, or pass an array to
+   * a single invocation to name multiple tables.
+   *
+   * ```ts
+   * await db
+   *   .deleteFrom('toy')
+   *   .using(['pet', 'person'])
+   *   .whereRef('toy.pet_id', '=', 'pet.id')
+   *   .whereRef('pet.owner_id', '=', 'person.id')
+   *   .where('person.first_name', '=', 'Bob')
+   *   .returning('pet.name')
+   *   .executeTakeFirstOrThrow()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * delete from "toy"
+   * using "pet", "person"
+   * where "toy"."pet_id" = "pet"."id"
+   *   and "pet"."owner_id" = "person"."id"
+   *   and "person"."first_name" = $1
+   * returning "pet"."name"
+   * ```
    */
   using<TE extends [TableExpression<DB, TB>, ...TableExpression<DB, TB>[]]>(
-    from: TE
+    tables: TE
   ): DeleteQueryBuilderWithUsingList<DB, TB, O, TE>
 
   using<TE extends TableExpression<DB, TB>>(
-    from: TE
+    table: TE
   ): DeleteQueryBuilderWithUsingOrInnerJoin<DB, TB, O, TE>
 
-  using(from: TableExpressionOrList<any, any>): any {
+  using(tables: TableExpressionOrList<any, any>): any {
     return new DeleteQueryBuilder({
       ...this.#props,
       queryNode: DeleteQueryNode.cloneWithUsing(
         this.#props.queryNode,
-        parseTableExpressionOrList(from)
+        parseTableExpressionOrList(tables)
       ),
     })
   }
