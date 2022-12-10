@@ -7,6 +7,9 @@
  * need to use {@link ReturningInterface.returning} or {@link ReturningInterface.returningAll}
  * to get out the inserted id.
  *
+ * {@link numInsertedOrUpdatedRows} holds the number of (actually) inserted rows.
+ * On MySQL, updated rows are counted twice when using `on duplicate key update`.
+ *
  * ### Examples
  *
  * ```ts
@@ -20,9 +23,14 @@
  */
 export class InsertResult {
   readonly #insertId: bigint | undefined
+  readonly #numInsertedOrUpdatedRows: bigint | undefined
 
-  constructor(insertId: bigint | undefined) {
+  constructor(
+    insertId: bigint | undefined,
+    numInsertedOrUpdatedRows: bigint | undefined
+  ) {
     this.#insertId = insertId
+    this.#numInsertedOrUpdatedRows = numInsertedOrUpdatedRows
   }
 
   /**
@@ -30,5 +38,12 @@ export class InsertResult {
    */
   get insertId(): bigint | undefined {
     return this.#insertId
+  }
+
+  /**
+   * Affected rows count.
+   */
+  get numInsertedOrUpdatedRows(): bigint | undefined {
+    return this.#numInsertedOrUpdatedRows
   }
 }

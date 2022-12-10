@@ -106,9 +106,17 @@ class PostgresConnection implements DatabaseConnection {
         ...compiledQuery.parameters,
       ])
 
-      if (result.command === 'UPDATE' || result.command === 'DELETE') {
+      if (
+        result.command === 'INSERT' ||
+        result.command === 'UPDATE' ||
+        result.command === 'DELETE'
+      ) {
+        const numAffectedRows = BigInt(result.rowCount)
+
         return {
-          numUpdatedOrDeletedRows: BigInt(result.rowCount),
+          // TODO: remove.
+          numUpdatedOrDeletedRows: numAffectedRows,
+          numAffectedRows,
           rows: result.rows ?? [],
         }
       }

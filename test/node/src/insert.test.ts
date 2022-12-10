@@ -58,9 +58,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
 
       const result = await query.executeTakeFirst()
       expect(result).to.be.instanceOf(InsertResult)
+      expect(result.numInsertedOrUpdatedRows).to.equal(1n)
 
       if (dialect === 'postgres') {
-        expect(result.insertId).to.equal(undefined)
+        expect(result.insertId).to.be.undefined
       } else {
         expect(result.insertId).to.be.a('bigint')
       }
@@ -100,6 +101,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
 
       const result = await query.executeTakeFirst()
       expect(result).to.be.instanceOf(InsertResult)
+      expect(result.numInsertedOrUpdatedRows).to.equal(1n)
 
       expect(await getNewestPerson(ctx.db)).to.eql({
         first_name: 'Hammo',
@@ -130,7 +132,15 @@ for (const dialect of BUILT_IN_DIALECTS) {
         },
       })
 
-      await query.execute()
+      const result = await query.executeTakeFirst()
+      expect(result).to.be.instanceOf(InsertResult)
+
+      const { pet_count } = await ctx.db
+        .selectFrom('pet')
+        .select(sql<string | number | bigint>`count(*)`.as('pet_count'))
+        .executeTakeFirstOrThrow()
+
+      expect(result.numInsertedOrUpdatedRows).to.equal(BigInt(pet_count))
 
       const persons = await ctx.db
         .selectFrom('person')
@@ -177,8 +187,13 @@ for (const dialect of BUILT_IN_DIALECTS) {
           sqlite: NOT_SUPPORTED,
         })
 
-        const res = await query.execute()
-        expect(res).to.have.length(2)
+        const result = await query.execute()
+
+        expect(result).to.have.length(2)
+        expect(result).to.deep.equal([
+          { first_name: '1', gender: 'foo' },
+          { first_name: '2', gender: 'bar' },
+        ])
       })
     }
 
@@ -205,7 +220,16 @@ for (const dialect of BUILT_IN_DIALECTS) {
         },
       })
 
-      await query.execute()
+      const result = await query.executeTakeFirst()
+
+      expect(result).to.be.instanceOf(InsertResult)
+      expect(result.numInsertedOrUpdatedRows).to.equal(1n)
+
+      if (dialect === 'postgres') {
+        expect(result.insertId).to.be.undefined
+      } else {
+        expect(result.insertId).to.be.a('bigint')
+      }
     })
 
     if (dialect === 'mysql') {
@@ -234,7 +258,8 @@ for (const dialect of BUILT_IN_DIALECTS) {
         const result = await query.executeTakeFirst()
 
         expect(result).to.be.instanceOf(InsertResult)
-        expect(result.insertId).to.equal(undefined)
+        expect(result.insertId).to.be.undefined
+        expect(result.numInsertedOrUpdatedRows).to.equal(0n)
       })
     }
 
@@ -272,13 +297,15 @@ for (const dialect of BUILT_IN_DIALECTS) {
         })
 
         const result = await query.executeTakeFirst()
+
         expect(result).to.be.instanceOf(InsertResult)
+        expect(result.numInsertedOrUpdatedRows).to.equal(0n)
 
         if (dialect === 'sqlite') {
           // SQLite seems to return the last inserted id even if nothing got inserted.
           expect(result.insertId! > 0n).to.be.equal(true)
         } else {
-          expect(result.insertId).to.equal(undefined)
+          expect(result.insertId).to.be.undefined
         }
       })
     }
@@ -310,8 +337,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
         })
 
         const result = await query.executeTakeFirst()
+
         expect(result).to.be.instanceOf(InsertResult)
-        expect(result.insertId).to.equal(undefined)
+        expect(result.insertId).to.be.undefined
+        expect(result.numInsertedOrUpdatedRows).to.equal(0n)
       })
     }
 
@@ -342,7 +371,11 @@ for (const dialect of BUILT_IN_DIALECTS) {
           sqlite: NOT_SUPPORTED,
         })
 
-        await query.execute()
+        const result = await query.executeTakeFirst()
+
+        expect(result).to.be.instanceOf(InsertResult)
+        expect(result.insertId).to.equal(BigInt(id))
+        expect(result.numInsertedOrUpdatedRows).to.equal(2n)
 
         const updatedPet = await ctx.db
           .selectFrom('pet')
@@ -394,7 +427,16 @@ for (const dialect of BUILT_IN_DIALECTS) {
           },
         })
 
-        await query.execute()
+        const result = await query.executeTakeFirst()
+
+        expect(result).to.be.instanceOf(InsertResult)
+        expect(result.numInsertedOrUpdatedRows).to.equal(1n)
+
+        if (dialect === 'postgres') {
+          expect(result.insertId).to.be.undefined
+        } else {
+          expect(result.insertId).to.be.a('bigint')
+        }
 
         const updatedPet = await ctx.db
           .selectFrom('pet')
@@ -485,12 +527,71 @@ for (const dialect of BUILT_IN_DIALECTS) {
           sqlite: NOT_SUPPORTED,
         })
 
-        await query.execute()
+        const result = await query.execute()
+
+        expect(result).to.have.length(1)
+        expect(result[0]).to.containSubset({
+          species: 'hamster',
+          name: 'Catto',
+        })
       })
     }
 
+    it('should insert multiple rows', async () => {
+      const query = ctx.db.insertInto('person').values([
+        {
+          first_name: 'Foo',
+          last_name: 'Bar',
+          gender: 'other',
+        },
+        {
+          first_name: 'Baz',
+          last_name: 'Spam',
+          gender: 'other',
+        },
+      ])
+
+      testSql(query, dialect, {
+        postgres: {
+          sql: 'insert into "person" ("first_name", "last_name", "gender") values ($1, $2, $3), ($4, $5, $6)',
+          parameters: ['Foo', 'Bar', 'other', 'Baz', 'Spam', 'other'],
+        },
+        mysql: {
+          sql: 'insert into `person` (`first_name`, `last_name`, `gender`) values (?, ?, ?), (?, ?, ?)',
+          parameters: ['Foo', 'Bar', 'other', 'Baz', 'Spam', 'other'],
+        },
+        sqlite: {
+          sql: 'insert into "person" ("first_name", "last_name", "gender") values (?, ?, ?), (?, ?, ?)',
+          parameters: ['Foo', 'Bar', 'other', 'Baz', 'Spam', 'other'],
+        },
+      })
+
+      const result = await query.executeTakeFirst()
+
+      expect(result).to.be.instanceOf(InsertResult)
+      expect(result.numInsertedOrUpdatedRows).to.equal(2n)
+
+      if (dialect === 'postgres') {
+        expect(result.insertId).to.be.undefined
+      } else {
+        expect(result.insertId).to.be.a('bigint')
+      }
+
+      const inserted = await ctx.db
+        .selectFrom('person')
+        .selectAll()
+        .orderBy('id', 'desc')
+        .limit(2)
+        .execute()
+
+      expect(inserted).to.containSubset([
+        { first_name: 'Foo', last_name: 'Bar', gender: 'other' },
+        { first_name: 'Baz', last_name: 'Spam', gender: 'other' },
+      ])
+    })
+
     if (dialect === 'postgres' || dialect === 'sqlite') {
-      it('should insert multiple rows', async () => {
+      it('should insert multiple rows while falling back to default values in partial rows', async () => {
         const query = ctx.db
           .insertInto('person')
           .values([
@@ -522,10 +623,15 @@ for (const dialect of BUILT_IN_DIALECTS) {
         })
 
         const result = await query.execute()
+
         expect(result).to.have.length(2)
+        expect(result).to.containSubset([
+          { first_name: 'Foo', last_name: null, gender: 'other' },
+          { first_name: 'Baz', last_name: 'Spam', gender: 'other' },
+        ])
       })
 
-      it('should return data using `returning`', async () => {
+      it('should insert a row and return data using `returning`', async () => {
         const result = await ctx.db
           .insertInto('person')
           .values({
@@ -552,7 +658,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
           last_name: 'Barson',
         })
 
-        it('conditional returning statement should add optional fields', async () => {
+        it('should insert a row, returning some fields of inserted row and conditionally returning additional fields', async () => {
           const condition = true
 
           const query = ctx.db
@@ -566,11 +672,12 @@ for (const dialect of BUILT_IN_DIALECTS) {
             .if(condition, (qb) => qb.returning('last_name'))
 
           const result = await query.executeTakeFirstOrThrow()
+
           expect(result.last_name).to.equal('Barson')
         })
       })
 
-      it('should return data using `returningAll`', async () => {
+      it('should insert a row and return data using `returningAll`', async () => {
         const result = await ctx.db
           .insertInto('person')
           .values({
