@@ -954,24 +954,8 @@ export class DefaultQueryCompiler
       this.visitNode(node.dropConstraint)
     }
 
-    if (node.renameColumn) {
-      this.visitNode(node.renameColumn)
-    }
-
-    if (node.addColumn) {
-      this.visitNode(node.addColumn)
-    }
-
-    if (node.dropColumn) {
-      this.visitNode(node.dropColumn)
-    }
-
-    if (node.alterColumn) {
-      this.visitNode(node.alterColumn)
-    }
-
-    if (node.modifyColumn) {
-      this.visitNode(node.modifyColumn)
+    if (node.columnAlterations) {
+      this.compileList(node.columnAlterations)
     }
   }
 

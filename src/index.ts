@@ -45,6 +45,7 @@ export * from './schema/foreign-key-constraint-builder.js'
 export * from './schema/alter-table-builder.js'
 export * from './schema/create-view-builder.js'
 export * from './schema/drop-view-builder.js'
+export * from './schema/alter-column-builder.js'
 
 export * from './dynamic/dynamic.js'
 

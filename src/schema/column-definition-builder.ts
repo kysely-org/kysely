@@ -18,7 +18,13 @@ import { DefaultValueNode } from '../operation-node/default-value-node.js'
 import { parseOnModifyForeignAction } from '../parser/on-modify-action-parser.js'
 import { Expression } from '../expression/expression.js'
 
-export interface ColumnDefinitionBuilderInterface {
+export class ColumnDefinitionBuilder implements OperationNodeSource {
+  readonly #node: ColumnDefinitionNode
+
+  constructor(node: ColumnDefinitionNode) {
+    this.#node = node
+  }
+
   /**
    * Adds `auto_increment` or `autoincrement` to the column definition
    * depending on the dialect.
@@ -26,7 +32,11 @@ export interface ColumnDefinitionBuilderInterface {
    * Some dialects like PostgreSQL don't support this. On PostgreSQL
    * you can use the `serial` or `bigserial` data type instead.
    */
-  autoIncrement(): ColumnDefinitionBuilderInterface
+  autoIncrement(): ColumnDefinitionBuilder {
+    return new ColumnDefinitionBuilder(
+      ColumnDefinitionNode.cloneWith(this.#node, { autoIncrement: true })
+    )
+  }
 
   /**
    * Makes the column the primary key.
@@ -34,7 +44,11 @@ export interface ColumnDefinitionBuilderInterface {
    * If you want to specify a composite primary key use the
    * {@link CreateTableBuilder.addPrimaryKeyConstraint} method.
    */
-  primaryKey(): ColumnDefinitionBuilderInterface
+  primaryKey(): ColumnDefinitionBuilder {
+    return new ColumnDefinitionBuilder(
+      ColumnDefinitionNode.cloneWith(this.#node, { primaryKey: true })
+    )
+  }
 
   /**
    * Adds a foreign key constraint for the column.
@@ -49,7 +63,23 @@ export interface ColumnDefinitionBuilderInterface {
    * col.references('person.id')
    * ```
    */
-  references(ref: string): ColumnDefinitionBuilderInterface
+  references(ref: string): ColumnDefinitionBuilder {
+    const references = parseStringReference(ref)
+
+    if (!ReferenceNode.is(references) || SelectAllNode.is(references.column)) {
+      throw new Error(
+        `invalid call references('${ref}'). The reference must have format table.column or schema.table.column`
+      )
+    }
+
+    return new ColumnDefinitionBuilder(
+      ColumnDefinitionNode.cloneWith(this.#node, {
+        references: ReferencesNode.create(references.table, [
+          references.column,
+        ]),
+      })
+    )
+  }
 
   /**
    * Adds an `on delete` constraint for the foreign key column.
@@ -64,7 +94,20 @@ export interface ColumnDefinitionBuilderInterface {
    * col.references('person.id').onDelete('cascade')
    * ```
    */
-  onDelete(onDelete: OnModifyForeignAction): ColumnDefinitionBuilderInterface
+  onDelete(onDelete: OnModifyForeignAction): ColumnDefinitionBuilder {
+    if (!this.#node.references) {
+      throw new Error('on delete constraint can only be added for foreign keys')
+    }
+
+    return new ColumnDefinitionBuilder(
+      ColumnDefinitionNode.cloneWith(this.#node, {
+        references: ReferencesNode.cloneWithOnDelete(
+          this.#node.references,
+          parseOnModifyForeignAction(onDelete)
+        ),
+      })
+    )
+  }
 
   /**
    * Adds an `on update` constraint for the foreign key column.
@@ -75,24 +118,49 @@ export interface ColumnDefinitionBuilderInterface {
    * col.references('person.id').onUpdate('cascade')
    * ```
    */
-  onUpdate(onUpdate: OnModifyForeignAction): ColumnDefinitionBuilderInterface
+  onUpdate(onUpdate: OnModifyForeignAction): ColumnDefinitionBuilder {
+    if (!this.#node.references) {
+      throw new Error('on update constraint can only be added for foreign keys')
+    }
+
+    return new ColumnDefinitionBuilder(
+      ColumnDefinitionNode.cloneWith(this.#node, {
+        references: ReferencesNode.cloneWithOnUpdate(
+          this.#node.references,
+          parseOnModifyForeignAction(onUpdate)
+        ),
+      })
+    )
+  }
 
   /**
    * Adds a unique constraint for the column.
    */
-  unique(): ColumnDefinitionBuilderInterface
+  unique(): ColumnDefinitionBuilder {
+    return new ColumnDefinitionBuilder(
+      ColumnDefinitionNode.cloneWith(this.#node, { unique: true })
+    )
+  }
 
   /**
    * Adds a `not null` constraint for the column.
    */
-  notNull(): ColumnDefinitionBuilderInterface
+  notNull(): ColumnDefinitionBuilder {
+    return new ColumnDefinitionBuilder(
+      ColumnDefinitionNode.cloneWith(this.#node, { notNull: true })
+    )
+  }
 
   /**
    * Adds a `unsigned` modifier for the column.
    *
    * This only works on some dialects like MySQL.
    */
-  unsigned(): ColumnDefinitionBuilderInterface
+  unsigned(): ColumnDefinitionBuilder {
+    return new ColumnDefinitionBuilder(
+      ColumnDefinitionNode.cloneWith(this.#node, { unsigned: true })
+    )
+  }
 
   /**
    * Adds a default value constraint for the column.
@@ -122,7 +190,13 @@ export interface ColumnDefinitionBuilderInterface {
    *   .execute()
    * ```
    */
-  defaultTo(value: DefaultValueExpression): ColumnDefinitionBuilderInterface
+  defaultTo(value: DefaultValueExpression): ColumnDefinitionBuilder {
+    return new ColumnDefinitionBuilder(
+      ColumnDefinitionNode.cloneWith(this.#node, {
+        defaultTo: DefaultValueNode.create(parseDefaultValueExpression(value)),
+      })
+    )
+  }
 
   /**
    * Adds a check constraint for the column.
@@ -140,7 +214,13 @@ export interface ColumnDefinitionBuilderInterface {
    *   .execute()
    * ```
    */
-  check(expression: Expression<any>): ColumnDefinitionBuilderInterface
+  check(expression: Expression<any>): ColumnDefinitionBuilder {
+    return new ColumnDefinitionBuilder(
+      ColumnDefinitionNode.cloneWith(this.#node, {
+        check: CheckConstraintNode.create(expression.toOperationNode()),
+      })
+    )
+  }
 
   /**
    * Makes the column a generated column using a `generated always as` statement.
@@ -158,19 +238,37 @@ export interface ColumnDefinitionBuilderInterface {
    *   .execute()
    * ```
    */
-  generatedAlwaysAs(
-    expression: Expression<any>
-  ): ColumnDefinitionBuilderInterface
+  generatedAlwaysAs(expression: Expression<any>): ColumnDefinitionBuilder {
+    return new ColumnDefinitionBuilder(
+      ColumnDefinitionNode.cloneWith(this.#node, {
+        generated: GeneratedNode.createWithExpression(
+          expression.toOperationNode()
+        ),
+      })
+    )
+  }
 
   /**
    * Adds the `generated always as identity` specifier on supported dialects.
    */
-  generatedAlwaysAsIdentity(): ColumnDefinitionBuilderInterface
+  generatedAlwaysAsIdentity(): ColumnDefinitionBuilder {
+    return new ColumnDefinitionBuilder(
+      ColumnDefinitionNode.cloneWith(this.#node, {
+        generated: GeneratedNode.create({ identity: true, always: true }),
+      })
+    )
+  }
 
   /**
    * Adds the `generated by default as identity` specifier on supported dialects.
    */
-  generatedByDefaultAsIdentity(): ColumnDefinitionBuilderInterface
+  generatedByDefaultAsIdentity(): ColumnDefinitionBuilder {
+    return new ColumnDefinitionBuilder(
+      ColumnDefinitionNode.cloneWith(this.#node, {
+        generated: GeneratedNode.create({ identity: true, byDefault: true }),
+      })
+    )
+  }
 
   /**
    * Makes a generated column stored instead of virtual. This method can only
@@ -188,7 +286,19 @@ export interface ColumnDefinitionBuilderInterface {
    *   .execute()
    * ```
    */
-  stored(): ColumnDefinitionBuilderInterface
+  stored(): ColumnDefinitionBuilder {
+    if (!this.#node.generated) {
+      throw new Error('stored() can only be called after generatedAlwaysAs')
+    }
+
+    return new ColumnDefinitionBuilder(
+      ColumnDefinitionNode.cloneWith(this.#node, {
+        generated: GeneratedNode.cloneWith(this.#node.generated, {
+          stored: true,
+        }),
+      })
+    )
+  }
 
   /**
    * This can be used to add any additional SQL right after the column's data type.
@@ -211,7 +321,14 @@ export interface ColumnDefinitionBuilderInterface {
    * )
    * ```
    */
-  modifyFront(modifier: Expression<any>): ColumnDefinitionBuilderInterface
+  modifyFront(modifier: Expression<any>): ColumnDefinitionBuilder {
+    return new ColumnDefinitionBuilder(
+      ColumnDefinitionNode.cloneWithFrontModifier(
+        this.#node,
+        modifier.toOperationNode()
+      )
+    )
+  }
 
   /**
    * This can be used to add any additional SQL to the end of the column definition.
@@ -234,161 +351,6 @@ export interface ColumnDefinitionBuilderInterface {
    * )
    * ```
    */
-  modifyEnd(modifier: Expression<any>): ColumnDefinitionBuilderInterface
-}
-
-export class ColumnDefinitionBuilder
-  implements ColumnDefinitionBuilderInterface, OperationNodeSource
-{
-  readonly #node: ColumnDefinitionNode
-
-  constructor(node: ColumnDefinitionNode) {
-    this.#node = node
-  }
-
-  autoIncrement(): ColumnDefinitionBuilder {
-    return new ColumnDefinitionBuilder(
-      ColumnDefinitionNode.cloneWith(this.#node, { autoIncrement: true })
-    )
-  }
-
-  primaryKey(): ColumnDefinitionBuilder {
-    return new ColumnDefinitionBuilder(
-      ColumnDefinitionNode.cloneWith(this.#node, { primaryKey: true })
-    )
-  }
-
-  references(ref: string): ColumnDefinitionBuilder {
-    const references = parseStringReference(ref)
-
-    if (!ReferenceNode.is(references) || SelectAllNode.is(references.column)) {
-      throw new Error(
-        `invalid call references('${ref}'). The reference must have format table.column or schema.table.column`
-      )
-    }
-
-    return new ColumnDefinitionBuilder(
-      ColumnDefinitionNode.cloneWith(this.#node, {
-        references: ReferencesNode.create(references.table, [
-          references.column,
-        ]),
-      })
-    )
-  }
-
-  onDelete(onDelete: OnModifyForeignAction): ColumnDefinitionBuilder {
-    if (!this.#node.references) {
-      throw new Error('on delete constraint can only be added for foreign keys')
-    }
-
-    return new ColumnDefinitionBuilder(
-      ColumnDefinitionNode.cloneWith(this.#node, {
-        references: ReferencesNode.cloneWithOnDelete(
-          this.#node.references,
-          parseOnModifyForeignAction(onDelete)
-        ),
-      })
-    )
-  }
-
-  onUpdate(onUpdate: OnModifyForeignAction): ColumnDefinitionBuilder {
-    if (!this.#node.references) {
-      throw new Error('on update constraint can only be added for foreign keys')
-    }
-
-    return new ColumnDefinitionBuilder(
-      ColumnDefinitionNode.cloneWith(this.#node, {
-        references: ReferencesNode.cloneWithOnUpdate(
-          this.#node.references,
-          parseOnModifyForeignAction(onUpdate)
-        ),
-      })
-    )
-  }
-
-  unique(): ColumnDefinitionBuilder {
-    return new ColumnDefinitionBuilder(
-      ColumnDefinitionNode.cloneWith(this.#node, { unique: true })
-    )
-  }
-
-  notNull(): ColumnDefinitionBuilder {
-    return new ColumnDefinitionBuilder(
-      ColumnDefinitionNode.cloneWith(this.#node, { notNull: true })
-    )
-  }
-
-  unsigned(): ColumnDefinitionBuilder {
-    return new ColumnDefinitionBuilder(
-      ColumnDefinitionNode.cloneWith(this.#node, { unsigned: true })
-    )
-  }
-
-  defaultTo(value: DefaultValueExpression): ColumnDefinitionBuilder {
-    return new ColumnDefinitionBuilder(
-      ColumnDefinitionNode.cloneWith(this.#node, {
-        defaultTo: DefaultValueNode.create(parseDefaultValueExpression(value)),
-      })
-    )
-  }
-
-  check(expression: Expression<any>): ColumnDefinitionBuilder {
-    return new ColumnDefinitionBuilder(
-      ColumnDefinitionNode.cloneWith(this.#node, {
-        check: CheckConstraintNode.create(expression.toOperationNode()),
-      })
-    )
-  }
-
-  generatedAlwaysAs(expression: Expression<any>): ColumnDefinitionBuilder {
-    return new ColumnDefinitionBuilder(
-      ColumnDefinitionNode.cloneWith(this.#node, {
-        generated: GeneratedNode.createWithExpression(
-          expression.toOperationNode()
-        ),
-      })
-    )
-  }
-
-  generatedAlwaysAsIdentity(): ColumnDefinitionBuilder {
-    return new ColumnDefinitionBuilder(
-      ColumnDefinitionNode.cloneWith(this.#node, {
-        generated: GeneratedNode.create({ identity: true, always: true }),
-      })
-    )
-  }
-
-  generatedByDefaultAsIdentity(): ColumnDefinitionBuilder {
-    return new ColumnDefinitionBuilder(
-      ColumnDefinitionNode.cloneWith(this.#node, {
-        generated: GeneratedNode.create({ identity: true, byDefault: true }),
-      })
-    )
-  }
-
-  stored(): ColumnDefinitionBuilder {
-    if (!this.#node.generated) {
-      throw new Error('stored() can only be called after generatedAlwaysAs')
-    }
-
-    return new ColumnDefinitionBuilder(
-      ColumnDefinitionNode.cloneWith(this.#node, {
-        generated: GeneratedNode.cloneWith(this.#node.generated, {
-          stored: true,
-        }),
-      })
-    )
-  }
-
-  modifyFront(modifier: Expression<any>): ColumnDefinitionBuilder {
-    return new ColumnDefinitionBuilder(
-      ColumnDefinitionNode.cloneWithFrontModifier(
-        this.#node,
-        modifier.toOperationNode()
-      )
-    )
-  }
-
   modifyEnd(modifier: Expression<any>): ColumnDefinitionBuilder {
     return new ColumnDefinitionBuilder(
       ColumnDefinitionNode.cloneWithEndModifier(
@@ -407,3 +369,7 @@ preventAwait(
   ColumnDefinitionBuilder,
   "don't await ColumnDefinitionBuilder instances directly."
 )
+
+export type ColumnDefinitionBuilderCallback = (
+  builder: ColumnDefinitionBuilder
+) => ColumnDefinitionBuilder
