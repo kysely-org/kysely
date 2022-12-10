@@ -3,7 +3,7 @@ import { OperationNode } from './operation-node.js'
 
 export interface UsingNode extends OperationNode {
   readonly kind: 'UsingNode'
-  readonly froms: ReadonlyArray<OperationNode>
+  readonly tables: ReadonlyArray<OperationNode>
 }
 
 /**
@@ -14,20 +14,20 @@ export const UsingNode = freeze({
     return node.kind === 'UsingNode'
   },
 
-  create(froms: ReadonlyArray<OperationNode>): UsingNode {
+  create(tables: ReadonlyArray<OperationNode>): UsingNode {
     return freeze({
       kind: 'UsingNode',
-      froms: freeze(froms),
+      tables: freeze(tables),
     })
   },
 
-  cloneWithFroms(
+  cloneWithTables(
     using: UsingNode,
-    froms: ReadonlyArray<OperationNode>
+    tables: ReadonlyArray<OperationNode>
   ): UsingNode {
     return freeze({
       ...using,
-      froms: freeze([...using.froms, ...froms]),
+      tables: freeze([...using.tables, ...tables]),
     })
   },
 })

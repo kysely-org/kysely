@@ -1258,7 +1258,7 @@ export class DefaultQueryCompiler
 
   protected override visitUsing(node: UsingNode): void {
     this.append('using ')
-    this.compileList(node.froms)
+    this.compileList(node.tables)
   }
 
   protected append(str: string): void {

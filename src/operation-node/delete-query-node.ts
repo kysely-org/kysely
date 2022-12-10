@@ -80,7 +80,7 @@ export const DeleteQueryNode = freeze({
       ...deleteNode,
       using:
         deleteNode.using !== undefined
-          ? UsingNode.cloneWithFroms(deleteNode.using, from)
+          ? UsingNode.cloneWithTables(deleteNode.using, from)
           : UsingNode.create(from),
     })
   },

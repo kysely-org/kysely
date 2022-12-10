@@ -881,7 +881,7 @@ export class OperationNodeTransformer {
   protected transformUsing(node: UsingNode): UsingNode {
     return requireAllProps<UsingNode>({
       kind: 'UsingNode',
-      froms: node.froms,
+      tables: node.tables,
     })
   }
 
