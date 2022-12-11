@@ -3,7 +3,6 @@ import {
   ColumnDataType,
   DataTypeNode,
 } from '../operation-node/data-type-node.js'
-import { OperationNode } from '../operation-node/operation-node.js'
 import { OperationNodeSource } from '../operation-node/operation-node-source.js'
 import {
   DefaultValueExpression,

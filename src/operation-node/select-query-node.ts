@@ -15,13 +15,12 @@ import { WithNode } from './with-node.js'
 import { SelectModifierNode } from './select-modifier-node.js'
 import { ExplainNode } from './explain-node.js'
 import { SetOperationNode } from './set-operation-node.js'
-import { SimpleReferenceExpressionNode } from './simple-reference-expression-node.js'
 
 export interface SelectQueryNode extends OperationNode {
   readonly kind: 'SelectQueryNode'
   readonly from: FromNode
   readonly selections?: ReadonlyArray<SelectionNode>
-  readonly distinctOnSelections?: ReadonlyArray<SimpleReferenceExpressionNode>
+  readonly distinctOn?: ReadonlyArray<OperationNode>
   readonly joins?: ReadonlyArray<JoinNode>
   readonly groupBy?: GroupByNode
   readonly orderBy?: OrderByNode
@@ -67,15 +66,15 @@ export const SelectQueryNode = freeze({
     })
   },
 
-  cloneWithDistinctOnSelections(
+  cloneWithDistinctOn(
     select: SelectQueryNode,
-    selections: ReadonlyArray<SimpleReferenceExpressionNode>
+    expressions: ReadonlyArray<OperationNode>
   ): SelectQueryNode {
     return freeze({
       ...select,
-      distinctOnSelections: select.distinctOnSelections
-        ? freeze([...select.distinctOnSelections, ...selections])
-        : freeze(selections),
+      distinctOn: select.distinctOn
+        ? freeze([...select.distinctOn, ...expressions])
+        : freeze(expressions),
     })
   },
 

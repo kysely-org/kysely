@@ -493,11 +493,7 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
   }
 
   /**
-   * Adds `distinct on` selections to the select clause.
-   *
-   * Takes the same inputs as the {@link SelectQueryBuilder.select | select} method.
-   * See the {@link SelectQueryBuilder.select | select} method's documentation for
-   * more examples.
+   * Adds `distinct on` expressions to the select clause.
    *
    * ### Examples
    *
@@ -530,7 +526,7 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
   distinctOn(selection: ReferenceExpressionOrList<DB, TB>): any {
     return new SelectQueryBuilder({
       ...this.#props,
-      queryNode: SelectQueryNode.cloneWithDistinctOnSelections(
+      queryNode: SelectQueryNode.cloneWithDistinctOn(
         this.#props.queryNode,
         parseReferenceExpressionOrList(selection)
       ),
