@@ -74,14 +74,14 @@ export const DeleteQueryNode = freeze({
 
   cloneWithUsing(
     deleteNode: DeleteQueryNode,
-    from: OperationNode[]
+    tables: OperationNode[]
   ): DeleteQueryNode {
     return freeze({
       ...deleteNode,
       using:
         deleteNode.using !== undefined
-          ? UsingNode.cloneWithTables(deleteNode.using, from)
-          : UsingNode.create(from),
+          ? UsingNode.cloneWithTables(deleteNode.using, tables)
+          : UsingNode.create(tables),
     })
   },
 })
