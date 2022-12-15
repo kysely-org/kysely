@@ -202,9 +202,10 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
    *   and "person"."first_name" = $1
    * ```
    *
-   * On supported databases such as MySQL, this clause allows using joins, but requires at
-   * least one of tables after the `from` clause to be named after the `using`
-   * clause. See also {@link innerJoin}, {@link leftJoin}, {@link rightJoin} and {@link fullJoin}.
+   * On supported databases such as MySQL, this clause allows using joins, but requires
+   * at least one of the tables after the `from` clause to be also named after
+   * the `using` clause. See also {@link innerJoin}, {@link leftJoin}, {@link rightJoin}
+   * and {@link fullJoin}.
    *
    * ```ts
    * await db
