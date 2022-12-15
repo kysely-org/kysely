@@ -1,6 +1,12 @@
 import { Generated, Kysely, RawBuilder, sql } from '../../../'
 
-import { destroyTest, initTest, TestContext, expect } from './test-setup.js'
+import {
+  destroyTest,
+  initTest,
+  TestContext,
+  expect,
+  Database,
+} from './test-setup.js'
 
 interface JsonTable {
   id: Generated<number>
@@ -14,7 +20,7 @@ interface JsonTable {
 
 describe(`postgres json tests`, () => {
   let ctx: TestContext
-  let db: Kysely<{ json_table: JsonTable }>
+  let db: Kysely<Database & { json_table: JsonTable }>
 
   before(async function () {
     ctx = await initTest(this, 'postgres')

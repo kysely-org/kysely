@@ -1200,6 +1200,12 @@ export class DefaultQueryCompiler
     this.visitNode(node.column)
     this.append(')')
 
+    if (node.filter) {
+      this.append(' filter(')
+      this.visitNode(node.filter)
+      this.append(')')
+    }
+
     if (node.over) {
       this.append(' ')
       this.visitNode(node.over)

@@ -8,6 +8,7 @@ import {
   Database,
   destroyTest,
   initTest,
+  NOT_SUPPORTED,
   TestContext,
   testSql,
 } from './test-setup.js'
@@ -357,6 +358,166 @@ for (const dialect of BUILT_IN_DIALECTS) {
             },
           })
         })
+
+        if (dialect === 'postgres' || dialect === 'sqlite') {
+          it(`should execute a query with ${funcName}(...) filter(where ...) in select clause`, async () => {
+            const query = ctx.db
+              .selectFrom('person')
+              .select([
+                func('person.id')
+                  .filterWhere('person.gender', '=', 'female')
+                  .as(funcName),
+                (eb) =>
+                  getFuncFromExpressionBuilder(eb, funcName)('person.id')
+                    .filterWhere('person.gender', '=', 'female')
+                    .as(`another_${funcName}`),
+              ])
+
+            testSql(query, dialect, {
+              postgres: {
+                sql: [
+                  `select`,
+                  `${funcName}("person"."id") filter(where "person"."gender" = $1) as "${funcName}",`,
+                  `${funcName}("person"."id") filter(where "person"."gender" = $2) as "another_${funcName}"`,
+                  `from "person"`,
+                ],
+                parameters: ['female', 'female'],
+              },
+              mysql: NOT_SUPPORTED,
+              sqlite: {
+                sql: [
+                  `select`,
+                  `${funcName}("person"."id") filter(where "person"."gender" = ?) as "${funcName}",`,
+                  `${funcName}("person"."id") filter(where "person"."gender" = ?) as "another_${funcName}"`,
+                  `from "person"`,
+                ],
+                parameters: ['female', 'female'],
+              },
+            })
+
+            await query.execute()
+          })
+
+          it(`should execute a query with ${funcName}(...) filter(where ... and ...) in select clause`, async () => {
+            const query = ctx.db
+              .selectFrom('person')
+              .select([
+                func('person.id')
+                  .filterWhere('person.gender', '=', 'female')
+                  .filterWhere('person.middle_name', 'is not', null)
+                  .as(funcName),
+                (eb) =>
+                  getFuncFromExpressionBuilder(eb, funcName)('person.id')
+                    .filterWhere('person.gender', '=', 'female')
+                    .filterWhere('person.middle_name', 'is not', null)
+                    .as(`another_${funcName}`),
+              ])
+
+            testSql(query, dialect, {
+              postgres: {
+                sql: [
+                  `select`,
+                  `${funcName}("person"."id") filter(where "person"."gender" = $1 and "person"."middle_name" is not null) as "${funcName}",`,
+                  `${funcName}("person"."id") filter(where "person"."gender" = $2 and "person"."middle_name" is not null) as "another_${funcName}"`,
+                  `from "person"`,
+                ],
+                parameters: ['female', 'female'],
+              },
+              mysql: NOT_SUPPORTED,
+              sqlite: {
+                sql: [
+                  `select`,
+                  `${funcName}("person"."id") filter(where "person"."gender" = ? and "person"."middle_name" is not null) as "${funcName}",`,
+                  `${funcName}("person"."id") filter(where "person"."gender" = ? and "person"."middle_name" is not null) as "another_${funcName}"`,
+                  `from "person"`,
+                ],
+                parameters: ['female', 'female'],
+              },
+            })
+
+            await query.execute()
+          })
+
+          it(`should execute a query with ${funcName}(...) filter(where ... or ...) in select clause`, async () => {
+            const query = ctx.db
+              .selectFrom('person')
+              .select([
+                func('person.id')
+                  .filterWhere('person.gender', '=', 'female')
+                  .orFilterWhere('person.middle_name', 'is not', null)
+                  .as(funcName),
+                (eb) =>
+                  getFuncFromExpressionBuilder(eb, funcName)('person.id')
+                    .filterWhere('person.gender', '=', 'female')
+                    .orFilterWhere('person.middle_name', 'is not', null)
+                    .as(`another_${funcName}`),
+              ])
+
+            testSql(query, dialect, {
+              postgres: {
+                sql: [
+                  `select`,
+                  `${funcName}("person"."id") filter(where "person"."gender" = $1 or "person"."middle_name" is not null) as "${funcName}",`,
+                  `${funcName}("person"."id") filter(where "person"."gender" = $2 or "person"."middle_name" is not null) as "another_${funcName}"`,
+                  `from "person"`,
+                ],
+                parameters: ['female', 'female'],
+              },
+              mysql: NOT_SUPPORTED,
+              sqlite: {
+                sql: [
+                  `select`,
+                  `${funcName}("person"."id") filter(where "person"."gender" = ? or "person"."middle_name" is not null) as "${funcName}",`,
+                  `${funcName}("person"."id") filter(where "person"."gender" = ? or "person"."middle_name" is not null) as "another_${funcName}"`,
+                  `from "person"`,
+                ],
+                parameters: ['female', 'female'],
+              },
+            })
+
+            await query.execute()
+          })
+
+          it(`should execute a query with ${funcName}(...) filter(where ...) over() in select clause`, async () => {
+            const query = ctx.db
+              .selectFrom('person')
+              .select([
+                func('person.id')
+                  .filterWhere('person.gender', '=', 'female')
+                  .over()
+                  .as(funcName),
+                (eb) =>
+                  getFuncFromExpressionBuilder(eb, funcName)('person.id')
+                    .filterWhere('person.gender', '=', 'female')
+                    .over()
+                    .as(`another_${funcName}`),
+              ])
+
+            testSql(query, dialect, {
+              postgres: {
+                sql: [
+                  `select`,
+                  `${funcName}("person"."id") filter(where "person"."gender" = $1) over() as "${funcName}",`,
+                  `${funcName}("person"."id") filter(where "person"."gender" = $2) over() as "another_${funcName}"`,
+                  `from "person"`,
+                ],
+                parameters: ['female', 'female'],
+              },
+              mysql: NOT_SUPPORTED,
+              sqlite: {
+                sql: [
+                  `select`,
+                  `${funcName}("person"."id") filter(where "person"."gender" = ?) over() as "${funcName}",`,
+                  `${funcName}("person"."id") filter(where "person"."gender" = ?) over() as "another_${funcName}"`,
+                  `from "person"`,
+                ],
+                parameters: ['female', 'female'],
+              },
+            })
+
+            await query.execute()
+          })
+        }
       })
     }
   })
