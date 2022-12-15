@@ -31,7 +31,6 @@ import { UniqueConstraintNode } from '../operation-node/unique-constraint-node.j
 import { CheckConstraintNode } from '../operation-node/check-constraint-node.js'
 import { ForeignKeyConstraintNode } from '../operation-node/foreign-key-constraint-node.js'
 import { ColumnNode } from '../operation-node/column-node.js'
-import { DefaultValueExpression } from '../parser/default-value-parser.js'
 import { parseTable } from '../parser/table-parser.js'
 import { DropConstraintNode } from '../operation-node/drop-constraint-node.js'
 import { Expression } from '../expression/expression.js'

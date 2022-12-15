@@ -1,8 +1,6 @@
 import { DynamicReferenceBuilder } from '../dynamic/dynamic-reference-builder.js'
-import { ColumnNode } from '../operation-node/column-node.js'
-import { GroupByItemNode } from '../operation-node/group-by-item-node.js'
 import { PartitionByItemNode } from '../operation-node/partition-by-item-node.js'
-import { ReferenceNode } from '../operation-node/reference-node.js'
+import { SimpleReferenceExpressionNode } from '../operation-node/simple-reference-expression-node.js'
 import {
   parseReferenceExpressionOrList,
   StringReference,
@@ -20,9 +18,8 @@ export function parsePartitionBy(
   partitionBy: PartitionByExpressionOrList<any, any>
 ): PartitionByItemNode[] {
   return (
-    parseReferenceExpressionOrList(partitionBy) as (
-      | ColumnNode
-      | ReferenceNode
-    )[]
+    parseReferenceExpressionOrList(
+      partitionBy
+    ) as SimpleReferenceExpressionNode[]
   ).map(PartitionByItemNode.create)
 }
