@@ -828,6 +828,7 @@ export class OperationNodeTransformer {
       kind: 'AggregateFunctionNode',
       column: this.transformNode(node.column),
       distinct: node.distinct,
+      filter: this.transformNode(node.filter),
       func: node.func,
       over: this.transformNode(node.over),
     })
