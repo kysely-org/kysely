@@ -1464,9 +1464,10 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
     })
   }
 
-  clearSelect():SelectQueryBuilder<DB, TB, O> {
-    return new SelectQueryBuilder<DB, TB, O>({
+  clearSelect():SelectQueryBuilder<DB, TB, {}> {
+    return new SelectQueryBuilder<DB, TB, {}>({
       ...this.#props,
+      queryNode: SelectQueryNode.cloneWithoutSelections(this.#props.queryNode)
     })
   }
 
