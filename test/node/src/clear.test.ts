@@ -30,7 +30,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
       })
     })
 
-    it('should clear where', function () {
+    it('SelectQueryBuilder should clear where', function () {
       const query = ctx.db
           .selectFrom('person')
           .selectAll()
@@ -47,6 +47,85 @@ for (const dialect of BUILT_IN_DIALECTS) {
         },
         sqlite: {
           sql: `select * from "person"`,
+          parameters: [],
+        },
+      })
+    })
+
+    it('OnConflictBuilder should clear where',function (){
+      const query = ctx.db.insertInto("person").onConflict((b)=>b.where("id","=",3).clearWhere().doNothing())
+      testSql(query,dialect,{
+        postgres: {
+          sql: `insert into "person" on conflict do nothing`,
+          parameters: [],
+        },
+        mysql: {
+          sql: 'insert into `person` on conflict do nothing',
+          parameters: [],
+        },
+        sqlite: {
+          sql: `insert into "person" on conflict do nothing`,
+          parameters: [],
+        },
+      })
+    })
+
+    it('OnConflictUpdateBuilder should clear where',function (){
+      const query = ctx.db.insertInto("person").onConflict((b)=>b.doUpdateSet({gender:"other"}).where("gender","=","male").clearWhere())
+      testSql(query,dialect,{
+        postgres: {
+          sql: `insert into "person" on conflict do update set "gender" = $1`,
+          parameters: ["other"],
+        },
+        mysql: {
+          sql: 'insert into `person` on conflict do update set `gender` = ?',
+          parameters: ["other"],
+        },
+        sqlite: {
+          sql: `insert into "person" on conflict do update set "gender" = ?`,
+          parameters: ["other"],
+        },
+      })
+    })
+
+    it('UpdateQueryBuilder should clear where', function () {
+      const query = ctx.db
+          .updateTable("person")
+          .set({gender:"other"})
+          .where("gender","=","other")
+          .clearWhere()
+      testSql(query, dialect, {
+        postgres: {
+          sql: `update "person" set "gender" = $1`,
+          parameters: ["other"],
+        },
+        mysql: {
+          sql: 'update `person` set `gender` = ?',
+          parameters: ["other"],
+        },
+        sqlite: {
+          sql: `update "person" set "gender" = ?`,
+          parameters: ["other"],
+        },
+      })
+    })
+
+    it('DeleteQueryBuilder should clear where', function () {
+      const query = ctx.db
+          .deleteFrom("person")
+          .where("gender","=","other")
+          .clearWhere()
+      testSql(query, dialect, {
+        postgres: {
+          sql: `delete from "person"`,
+          parameters: [],
+        },
+        mysql: {
+          sql: 'delete from `person`',
+          parameters: [],
+        },
+        sqlite: {
+          sql: `delete from "person"`,
           parameters: [],
         },
       })
