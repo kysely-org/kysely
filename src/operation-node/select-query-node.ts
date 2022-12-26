@@ -200,4 +200,13 @@ export const SelectQueryNode = freeze({
       selections: [],
     })
   },
+
+  cloneWithoutLimit(
+      select: SelectQueryNode,
+  ): SelectQueryNode {
+    return freeze({
+      ...select,
+      limit:undefined,
+    })
+  },
 })
