@@ -1488,6 +1488,7 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
   clearOffset():SelectQueryBuilder<DB, TB, O> {
     return new SelectQueryBuilder<DB, TB, O>({
       ...this.#props,
+      queryNode:SelectQueryNode.cloneWithoutOffset(this.#props.queryNode)
     })
   }
 
