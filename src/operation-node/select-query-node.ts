@@ -209,4 +209,13 @@ export const SelectQueryNode = freeze({
       limit:undefined,
     })
   },
+
+  cloneWithoutOffset(
+      select: SelectQueryNode,
+  ): SelectQueryNode {
+    return freeze({
+      ...select,
+      offset:undefined,
+    })
+  },
 })
