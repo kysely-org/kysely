@@ -1464,6 +1464,39 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
     })
   }
 
+  clearSelect():SelectQueryBuilder<DB, TB, O> {
+    return new SelectQueryBuilder<DB, TB, O>({
+      ...this.#props,
+    })
+  }
+
+  clearWhere():SelectQueryBuilder<DB, TB, O> {
+    return new SelectQueryBuilder<DB, TB, O>({
+      ...this.#props,
+    })
+  }
+
+  clearLimit():SelectQueryBuilder<DB, TB, O> {
+    return new SelectQueryBuilder<DB, TB, O>({
+      ...this.#props,
+    })
+  }
+
+  clearOffset():SelectQueryBuilder<DB, TB, O> {
+    return new SelectQueryBuilder<DB, TB, O>({
+      ...this.#props,
+    })
+  }
+
+  clearOrderBy():SelectQueryBuilder<DB, TB, O> {
+    return new SelectQueryBuilder<DB, TB, O>({
+      ...this.#props,
+    })
+  }
+
+
+
+
   /**
    * Simply calls the given function passing `this` as the only argument.
    *
