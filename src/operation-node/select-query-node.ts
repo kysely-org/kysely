@@ -218,4 +218,13 @@ export const SelectQueryNode = freeze({
       offset:undefined,
     })
   },
+
+  cloneWithoutOrderBy(
+      select: SelectQueryNode,
+  ): SelectQueryNode {
+    return freeze({
+      ...select,
+      orderBy:undefined,
+    })
+  },
 })

@@ -1495,6 +1495,7 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
   clearOrderBy():SelectQueryBuilder<DB, TB, O> {
     return new SelectQueryBuilder<DB, TB, O>({
       ...this.#props,
+      queryNode:SelectQueryNode.cloneWithoutOrderBy(this.#props.queryNode)
     })
   }
 
