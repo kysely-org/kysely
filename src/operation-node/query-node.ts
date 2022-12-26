@@ -80,4 +80,13 @@ export const QueryNode = freeze({
         : ReturningNode.create(selections),
     })
   },
+
+  cloneWithoutWhere<T extends FilterableQueryNode>(
+      node: T,
+  ): T {
+    return freeze({
+      ...node,
+      where: undefined,
+    })
+  }
 })

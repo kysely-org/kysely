@@ -1474,6 +1474,7 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
   clearWhere():SelectQueryBuilder<DB, TB, O> {
     return new SelectQueryBuilder<DB, TB, O>({
       ...this.#props,
+      queryNode: QueryNode.cloneWithoutWhere(this.#props.queryNode,)
     })
   }
 

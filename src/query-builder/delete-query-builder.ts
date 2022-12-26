@@ -172,6 +172,13 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
     })
   }
 
+  clearWhere(): DeleteQueryBuilder<DB, TB,O> {
+    return new DeleteQueryBuilder<DB, TB, O>({
+      ...this.#props,
+      queryNode: QueryNode.cloneWithoutWhere(this.#props.queryNode)
+    })
+  }
+
   /**
    * Joins another table to the query using an inner join.
    *

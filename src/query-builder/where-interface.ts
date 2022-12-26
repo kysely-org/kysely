@@ -419,4 +419,6 @@ export interface WhereInterface<DB, TB extends keyof DB> {
    * Just like {@link whereExists} but creates an `or not exists` clause.
    */
   orWhereNotExists(arg: ExistsExpression<DB, TB>): WhereInterface<DB, TB>
+  
+  clearWhere(): WhereInterface<DB, TB>
 }
