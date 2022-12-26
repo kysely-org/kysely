@@ -191,4 +191,13 @@ export const SelectQueryNode = freeze({
       explain,
     })
   },
+
+  cloneWithoutSelections(
+      select: SelectQueryNode,
+  ): SelectQueryNode {
+    return freeze({
+      ...select,
+      selections: [],
+    })
+  },
 })
