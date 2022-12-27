@@ -1464,6 +1464,24 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
     })
   }
 
+  /**
+   * Clears all select clauses from the query.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * db.selectFrom('person')
+   *   .select(['id', 'first_name'])
+   *   .clearSelect()
+   *   .select(['id','gender'])
+   * ```
+   *
+   * The generated SQL(PostgreSQL):
+   *
+   * ```sql
+   * select "id", "gender" from "person"
+   * ```
+   */
   clearSelect(): SelectQueryBuilder<DB, TB, {}> {
     return new SelectQueryBuilder<DB, TB, {}>({
       ...this.#props,
@@ -1471,6 +1489,24 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
     })
   }
 
+  /**
+   * Clears all where clauses from the query.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * db.selectFrom('person')
+   *   .selectAll()
+   *   .where('id','=',42)
+   *   .clearWhere()
+   * ```
+   *
+   * The generated SQL(PostgreSQL):
+   *
+   * ```sql
+   * select * from "person"
+   * ```
+   */
   clearWhere(): SelectQueryBuilder<DB, TB, O> {
     return new SelectQueryBuilder<DB, TB, O>({
       ...this.#props,
@@ -1478,6 +1514,24 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
     })
   }
 
+  /**
+   * Clears limit clause from the query.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * db.selectFrom('person')
+   *   .selectAll()
+   *   .limit(10)
+   *   .clearLimit()
+   * ```
+   *
+   * The generated SQL(PostgreSQL):
+   *
+   * ```sql
+   * select * from "person"
+   * ```
+   */
   clearLimit(): SelectQueryBuilder<DB, TB, O> {
     return new SelectQueryBuilder<DB, TB, O>({
       ...this.#props,
@@ -1485,6 +1539,25 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
     })
   }
 
+  /**
+   * Clears offset clause from the query.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * db.selectFrom('person')
+   *   .selectAll()
+   *   .limit(10)
+   *   .offset(20)
+   *   .clearOffset()
+   * ```
+   *
+   * The generated SQL(PostgreSQL):
+   *
+   * ```sql
+   * select * from "person" limit 10
+   * ```
+   */
   clearOffset(): SelectQueryBuilder<DB, TB, O> {
     return new SelectQueryBuilder<DB, TB, O>({
       ...this.#props,
@@ -1492,6 +1565,24 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
     })
   }
 
+  /**
+   * Clears all `order by` clauses from the query.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * db.selectFrom('person')
+   *   .selectAll()
+   *   .orderBy('id')
+   *   .clearOrderBy()
+   * ```
+   *
+   * The generated SQL(PostgreSQL):
+   *
+   * ```sql
+   * select * from "person"
+   * ```
+   */
   clearOrderBy(): SelectQueryBuilder<DB, TB, O> {
     return new SelectQueryBuilder<DB, TB, O>({
       ...this.#props,
