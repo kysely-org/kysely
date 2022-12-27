@@ -262,7 +262,9 @@ export class OnConflictBuilder<DB, TB extends keyof DB>
   clearWhere(): OnConflictBuilder<DB, TB> {
     return new OnConflictBuilder<DB, TB>({
       ...this.#props,
-      onConflictNode: OnConflictNode.cloneWithoutIndexWhere(this.#props.onConflictNode),
+      onConflictNode: OnConflictNode.cloneWithoutIndexWhere(
+        this.#props.onConflictNode
+      ),
     })
   }
 
@@ -534,7 +536,9 @@ export class OnConflictUpdateBuilder<DB, TB extends keyof DB>
   clearWhere(): OnConflictUpdateBuilder<DB, TB> {
     return new OnConflictUpdateBuilder({
       ...this.#props,
-      onConflictNode: OnConflictNode.cloneWithoutUpdateWhere(this.#props.onConflictNode),
+      onConflictNode: OnConflictNode.cloneWithoutUpdateWhere(
+        this.#props.onConflictNode
+      ),
     })
   }
 

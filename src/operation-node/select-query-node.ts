@@ -192,39 +192,31 @@ export const SelectQueryNode = freeze({
     })
   },
 
-  cloneWithoutSelections(
-      select: SelectQueryNode,
-  ): SelectQueryNode {
+  cloneWithoutSelections(select: SelectQueryNode): SelectQueryNode {
     return freeze({
       ...select,
       selections: [],
     })
   },
 
-  cloneWithoutLimit(
-      select: SelectQueryNode,
-  ): SelectQueryNode {
+  cloneWithoutLimit(select: SelectQueryNode): SelectQueryNode {
     return freeze({
       ...select,
-      limit:undefined,
+      limit: undefined,
     })
   },
 
-  cloneWithoutOffset(
-      select: SelectQueryNode,
-  ): SelectQueryNode {
+  cloneWithoutOffset(select: SelectQueryNode): SelectQueryNode {
     return freeze({
       ...select,
-      offset:undefined,
+      offset: undefined,
     })
   },
 
-  cloneWithoutOrderBy(
-      select: SelectQueryNode,
-  ): SelectQueryNode {
+  cloneWithoutOrderBy(select: SelectQueryNode): SelectQueryNode {
     return freeze({
       ...select,
-      orderBy:undefined,
+      orderBy: undefined,
     })
   },
 })
