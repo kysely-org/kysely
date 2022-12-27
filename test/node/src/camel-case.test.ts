@@ -185,20 +185,20 @@ for (const dialect of BUILT_IN_DIALECTS) {
       const query = camelDb.schema
         .alterTable('camelPerson')
         .addColumn('middleName', 'text', (col) =>
-          col.references('camelPerson.fistName')
+          col.references('camelPerson.firstName')
         )
 
       testSql(query, dialect, {
         postgres: {
-          sql: 'alter table "camel_person" add column "middle_name" text references "camel_person" ("fist_name")',
+          sql: 'alter table "camel_person" add column "middle_name" text references "camel_person" ("first_name")',
           parameters: [],
         },
         mysql: {
-          sql: 'alter table `camel_person` add column `middle_name` text references `camel_person` (`fist_name`)',
+          sql: 'alter table `camel_person` add column `middle_name` text references `camel_person` (`first_name`)',
           parameters: [],
         },
         sqlite: {
-          sql: 'alter table "camel_person" add column "middle_name" text references "camel_person" ("fist_name")',
+          sql: 'alter table "camel_person" add column "middle_name" text references "camel_person" ("first_name")',
           parameters: [],
         },
       })

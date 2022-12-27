@@ -5,7 +5,6 @@ import { ColumnDefinitionNode } from '../operation-node/column-definition-node.j
 import { DropColumnNode } from '../operation-node/drop-column-node.js'
 import { IdentifierNode } from '../operation-node/identifier-node.js'
 import { OperationNodeSource } from '../operation-node/operation-node-source.js'
-import { OnModifyForeignAction } from '../operation-node/references-node.js'
 import { RenameColumnNode } from '../operation-node/rename-column-node.js'
 import { CompiledQuery } from '../query-compiler/compiled-query.js'
 import { Compilable } from '../util/compilable.js'
@@ -22,10 +21,7 @@ import {
   DataTypeExpression,
   parseDataTypeExpression,
 } from '../parser/data-type-parser.js'
-import {
-  ForeignKeyConstraintBuilder,
-  ForeignKeyConstraintBuilderInterface,
-} from './foreign-key-constraint-builder.js'
+import { ForeignKeyConstraintBuilder } from './foreign-key-constraint-builder.js'
 import { AddConstraintNode } from '../operation-node/add-constraint-node.js'
 import { UniqueConstraintNode } from '../operation-node/unique-constraint-node.js'
 import { CheckConstraintNode } from '../operation-node/check-constraint-node.js'
@@ -38,6 +34,9 @@ import {
   AlterColumnBuilder,
   AlterColumnBuilderCallback,
 } from './alter-column-builder.js'
+import { AlterTableExecutor } from './alter-table-executor.js'
+import { AlterTableAddForeignKeyConstraintBuilder } from './alter-table-add-foreign-key-constraint-builder.js'
+import { AlterTableDropConstraintBuilder } from './alter-table-drop-constraint-builder.js'
 
 /**
  * This builder can be used to create a `alter table` query.
@@ -241,34 +240,6 @@ export interface AlterTableBuilderProps {
   readonly node: AlterTableNode
 }
 
-export class AlterTableExecutor implements OperationNodeSource, Compilable {
-  readonly #props: AlterTableExecutorProps
-
-  constructor(props: AlterTableExecutorProps) {
-    this.#props = freeze(props)
-  }
-
-  toOperationNode(): AlterTableNode {
-    return this.#props.executor.transformQuery(
-      this.#props.node,
-      this.#props.queryId
-    )
-  }
-
-  compile(): CompiledQuery {
-    return this.#props.executor.compileQuery(
-      this.toOperationNode(),
-      this.#props.queryId
-    )
-  }
-
-  async execute(): Promise<void> {
-    await this.#props.executor.executeQuery(this.compile(), this.#props.queryId)
-  }
-}
-
-export interface AlterTableExecutorProps extends AlterTableBuilderProps {}
-
 export interface ColumnAlteringInterface {
   alterColumn(
     column: string,
@@ -417,156 +388,10 @@ export class AlterTableColumnAlteringBuilder
 export interface AlterTableColumnAlteringBuilderProps
   extends AlterTableBuilderProps {}
 
-export class AlterTableAddForeignKeyConstraintBuilder
-  implements
-    ForeignKeyConstraintBuilderInterface<AlterTableAddForeignKeyConstraintBuilder>,
-    OperationNodeSource,
-    Compilable
-{
-  readonly #props: AlterTableAddForeignKeyConstraintBuilderProps
-
-  constructor(props: AlterTableAddForeignKeyConstraintBuilderProps) {
-    this.#props = freeze(props)
-  }
-
-  onDelete(
-    onDelete: OnModifyForeignAction
-  ): AlterTableAddForeignKeyConstraintBuilder {
-    return new AlterTableAddForeignKeyConstraintBuilder({
-      ...this.#props,
-      constraintBuilder: this.#props.constraintBuilder.onDelete(onDelete),
-    })
-  }
-
-  onUpdate(
-    onUpdate: OnModifyForeignAction
-  ): AlterTableAddForeignKeyConstraintBuilder {
-    return new AlterTableAddForeignKeyConstraintBuilder({
-      ...this.#props,
-      constraintBuilder: this.#props.constraintBuilder.onUpdate(onUpdate),
-    })
-  }
-
-  toOperationNode(): AlterTableNode {
-    return this.#props.executor.transformQuery(
-      AlterTableNode.cloneWithTableProps(this.#props.node, {
-        addConstraint: AddConstraintNode.create(
-          this.#props.constraintBuilder.toOperationNode()
-        ),
-      }),
-      this.#props.queryId
-    )
-  }
-
-  compile(): CompiledQuery {
-    return this.#props.executor.compileQuery(
-      this.toOperationNode(),
-      this.#props.queryId
-    )
-  }
-
-  async execute(): Promise<void> {
-    await this.#props.executor.executeQuery(this.compile(), this.#props.queryId)
-  }
-}
-
-export interface AlterTableAddForeignKeyConstraintBuilderProps
-  extends AlterTableBuilderProps {
-  readonly constraintBuilder: ForeignKeyConstraintBuilder
-}
-
-export class AlterTableDropConstraintBuilder
-  implements OperationNodeSource, Compilable
-{
-  readonly #props: AlterTableDropConstraintBuilderProps
-
-  constructor(props: AlterTableDropConstraintBuilderProps) {
-    this.#props = freeze(props)
-  }
-
-  ifExists(): AlterTableDropConstraintBuilder {
-    return new AlterTableDropConstraintBuilder({
-      ...this.#props,
-      node: AlterTableNode.cloneWithTableProps(this.#props.node, {
-        dropConstraint: DropConstraintNode.cloneWith(
-          this.#props.node.dropConstraint!,
-          {
-            ifExists: true,
-          }
-        ),
-      }),
-    })
-  }
-
-  cascade(): AlterTableDropConstraintBuilder {
-    return new AlterTableDropConstraintBuilder({
-      ...this.#props,
-      node: AlterTableNode.cloneWithTableProps(this.#props.node, {
-        dropConstraint: DropConstraintNode.cloneWith(
-          this.#props.node.dropConstraint!,
-          {
-            modifier: 'cascade',
-          }
-        ),
-      }),
-    })
-  }
-
-  restrict(): AlterTableDropConstraintBuilder {
-    return new AlterTableDropConstraintBuilder({
-      ...this.#props,
-      node: AlterTableNode.cloneWithTableProps(this.#props.node, {
-        dropConstraint: DropConstraintNode.cloneWith(
-          this.#props.node.dropConstraint!,
-          {
-            modifier: 'restrict',
-          }
-        ),
-      }),
-    })
-  }
-
-  toOperationNode(): AlterTableNode {
-    return this.#props.executor.transformQuery(
-      this.#props.node,
-      this.#props.queryId
-    )
-  }
-
-  compile(): CompiledQuery {
-    return this.#props.executor.compileQuery(
-      this.toOperationNode(),
-      this.#props.queryId
-    )
-  }
-
-  async execute(): Promise<void> {
-    await this.#props.executor.executeQuery(this.compile(), this.#props.queryId)
-  }
-}
-
-export interface AlterTableDropConstraintBuilderProps
-  extends AlterTableBuilderProps {}
-
 preventAwait(AlterTableBuilder, "don't await AlterTableBuilder instances")
 preventAwait(AlterColumnBuilder, "don't await AlterColumnBuilder instances")
 
 preventAwait(
-  AlterTableExecutor,
-  "don't await AlterTableExecutor instances directly. To execute the query you need to call `execute`"
-)
-
-preventAwait(
   AlterTableColumnAlteringBuilder,
   "don't await AlterTableColumnAlteringBuilder instances directly. To execute the query you need to call `execute`"
-)
-
-preventAwait(
-  AlterTableAddForeignKeyConstraintBuilder,
-  "don't await AlterTableAddForeignKeyConstraintBuilder instances directly. To execute the query you need to call `execute`"
-)
-
-preventAwait(
-  AlterTableDropConstraintBuilder,
-  "don't await AlterTableDropConstraintBuilder instances directly. To execute the query you need to call `execute`"
 )
