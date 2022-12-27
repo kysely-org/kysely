@@ -17,7 +17,7 @@ export class DropViewBuilder implements OperationNodeSource, Compilable {
   materialized(): DropViewBuilder {
     return new DropViewBuilder({
       ...this.#props,
-      dropViewNode: DropViewNode.cloneWith(this.#props.dropViewNode, {
+      node: DropViewNode.cloneWith(this.#props.node, {
         materialized: true,
       }),
     })
@@ -26,7 +26,7 @@ export class DropViewBuilder implements OperationNodeSource, Compilable {
   ifExists(): DropViewBuilder {
     return new DropViewBuilder({
       ...this.#props,
-      dropViewNode: DropViewNode.cloneWith(this.#props.dropViewNode, {
+      node: DropViewNode.cloneWith(this.#props.node, {
         ifExists: true,
       }),
     })
@@ -35,7 +35,7 @@ export class DropViewBuilder implements OperationNodeSource, Compilable {
   cascade(): DropViewBuilder {
     return new DropViewBuilder({
       ...this.#props,
-      dropViewNode: DropViewNode.cloneWith(this.#props.dropViewNode, {
+      node: DropViewNode.cloneWith(this.#props.node, {
         cascade: true,
       }),
     })
@@ -43,7 +43,7 @@ export class DropViewBuilder implements OperationNodeSource, Compilable {
 
   toOperationNode(): DropViewNode {
     return this.#props.executor.transformQuery(
-      this.#props.dropViewNode,
+      this.#props.node,
       this.#props.queryId
     )
   }
@@ -68,5 +68,5 @@ preventAwait(
 export interface DropViewBuilderProps {
   readonly queryId: QueryId
   readonly executor: QueryExecutor
-  readonly dropViewNode: DropViewNode
+  readonly node: DropViewNode
 }

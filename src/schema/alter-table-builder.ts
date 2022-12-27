@@ -237,8 +237,8 @@ export class AlterTableBuilder implements ColumnAlteringInterface {
 
 export interface AlterTableBuilderProps {
   readonly queryId: QueryId
-  readonly node: AlterTableNode
   readonly executor: QueryExecutor
+  readonly node: AlterTableNode
 }
 
 export class AlterTableExecutor implements OperationNodeSource, Compilable {
@@ -306,7 +306,7 @@ export class AlterTableColumnAlteringBuilder
   readonly #props: AlterTableColumnAlteringBuilderProps
 
   constructor(props: AlterTableColumnAlteringBuilderProps) {
-    this.#props = props
+    this.#props = freeze(props)
   }
 
   alterColumn(
@@ -396,12 +396,15 @@ export class AlterTableColumnAlteringBuilder
   }
 
   toOperationNode(): AlterTableNode {
-    return this.#props.node
+    return this.#props.executor.transformQuery(
+      this.#props.node,
+      this.#props.queryId
+    )
   }
 
   compile(): CompiledQuery {
     return this.#props.executor.compileQuery(
-      this.#props.node,
+      this.toOperationNode(),
       this.#props.queryId
     )
   }
