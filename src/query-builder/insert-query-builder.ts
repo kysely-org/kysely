@@ -44,6 +44,7 @@ import { Selectable } from '../util/column-type.js'
 import { Explainable, ExplainFormat } from '../util/explainable.js'
 import { ExplainNode } from '../operation-node/explain-node.js'
 import { Expression } from '../expression/expression.js'
+import { KyselyTypeError } from '../util/type-error.js'
 
 export class InsertQueryBuilder<DB, TB extends keyof DB, O>
   implements
@@ -610,6 +611,53 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    */
   castTo<T>(): InsertQueryBuilder<DB, TB, T> {
     return new InsertQueryBuilder(this.#props)
+  }
+
+  /**
+   * Asserts that query's output row type equals the given type `T`.
+   *
+   * This method can be used to simplify excessively complex types to make typescript happy
+   * and much faster.
+   *
+   * Kysely uses complex type magic to achieve its type safety. This complexity is sometimes too much
+   * for typescript and you get errors like this:
+   *
+   * ```
+   * error TS2589: Type instantiation is excessively deep and possibly infinite.
+   * ```
+   *
+   * In these case you can often use this method to help typescript a little bit. When you use this
+   * method to assert the output type of a query, Kysely can drop the complex output type that
+   * consists of multiple nested helper types and replace it with the simple asserted type.
+   *
+   * Using this method doesn't reduce type safety at all. You have to pass in a type that is
+   * structurally equal to the current type.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * const result = await db
+   *   .with('new_person', (qb) => qb
+   *     .insertInto('person')
+   *     .values(person)
+   *     .returning('id')
+   *     .assertType<{ id: string }>()
+   *   )
+   *   .with('new_pet', (qb) => qb
+   *     .insertInto('pet')
+   *     .values({ owner_id: (eb) => eb.selectFrom('new_person').select('id'), ...pet })
+   *     .returning(['name as pet_name', 'species'])
+   *     .assertType<{ pet_name: string, species: Species }>()
+   *   )
+   *   .selectFrom(['new_person', 'new_pet'])
+   *   .selectAll()
+   *   .executeTakeFirstOrThrow()
+   * ```
+   */
+  assertType<T extends O>(): O extends T
+    ? InsertQueryBuilder<DB, TB, T>
+    : KyselyTypeError<`assertType() call failed: The type passed in is not equal to the output type of the query.`> {
+    return new InsertQueryBuilder(this.#props) as unknown as any
   }
 
   /**
