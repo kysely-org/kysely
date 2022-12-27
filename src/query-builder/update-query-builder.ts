@@ -182,7 +182,7 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
     })
   }
 
-  clearWhere(): UpdateQueryBuilder<DB,UT, TB,O> {
+  clearWhere(): UpdateQueryBuilder<DB, UT, TB, O> {
     return new UpdateQueryBuilder({
       ...this.#props,
       queryNode: QueryNode.cloneWithoutWhere(this.#props.queryNode),
@@ -576,8 +576,6 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
       ),
     })
   }
-
-
 
   /**
    * Simply calls the given function passing `this` as the only argument.

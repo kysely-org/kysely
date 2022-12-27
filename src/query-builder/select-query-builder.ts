@@ -1464,43 +1464,40 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
     })
   }
 
-  clearSelect():SelectQueryBuilder<DB, TB, {}> {
+  clearSelect(): SelectQueryBuilder<DB, TB, {}> {
     return new SelectQueryBuilder<DB, TB, {}>({
       ...this.#props,
-      queryNode: SelectQueryNode.cloneWithoutSelections(this.#props.queryNode)
+      queryNode: SelectQueryNode.cloneWithoutSelections(this.#props.queryNode),
     })
   }
 
-  clearWhere():SelectQueryBuilder<DB, TB, O> {
+  clearWhere(): SelectQueryBuilder<DB, TB, O> {
     return new SelectQueryBuilder<DB, TB, O>({
       ...this.#props,
-      queryNode: QueryNode.cloneWithoutWhere(this.#props.queryNode,)
+      queryNode: QueryNode.cloneWithoutWhere(this.#props.queryNode),
     })
   }
 
-  clearLimit():SelectQueryBuilder<DB, TB, O> {
+  clearLimit(): SelectQueryBuilder<DB, TB, O> {
     return new SelectQueryBuilder<DB, TB, O>({
       ...this.#props,
-      queryNode:SelectQueryNode.cloneWithoutLimit(this.#props.queryNode)
+      queryNode: SelectQueryNode.cloneWithoutLimit(this.#props.queryNode),
     })
   }
 
-  clearOffset():SelectQueryBuilder<DB, TB, O> {
+  clearOffset(): SelectQueryBuilder<DB, TB, O> {
     return new SelectQueryBuilder<DB, TB, O>({
       ...this.#props,
-      queryNode:SelectQueryNode.cloneWithoutOffset(this.#props.queryNode)
+      queryNode: SelectQueryNode.cloneWithoutOffset(this.#props.queryNode),
     })
   }
 
-  clearOrderBy():SelectQueryBuilder<DB, TB, O> {
+  clearOrderBy(): SelectQueryBuilder<DB, TB, O> {
     return new SelectQueryBuilder<DB, TB, O>({
       ...this.#props,
-      queryNode:SelectQueryNode.cloneWithoutOrderBy(this.#props.queryNode)
+      queryNode: SelectQueryNode.cloneWithoutOrderBy(this.#props.queryNode),
     })
   }
-
-
-
 
   /**
    * Simply calls the given function passing `this` as the only argument.

@@ -172,10 +172,10 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
     })
   }
 
-  clearWhere(): DeleteQueryBuilder<DB, TB,O> {
+  clearWhere(): DeleteQueryBuilder<DB, TB, O> {
     return new DeleteQueryBuilder<DB, TB, O>({
       ...this.#props,
-      queryNode: QueryNode.cloneWithoutWhere(this.#props.queryNode)
+      queryNode: QueryNode.cloneWithoutWhere(this.#props.queryNode),
     })
   }
 

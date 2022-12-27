@@ -98,7 +98,9 @@ type ExtractTypeFromSelectExpression<
   ? QA extends A
     ? ValueType<O>
     : never
-  : SE extends (qb: any) => AliasedSelectQueryBuilder<any, any, infer O, infer QA>
+  : SE extends (
+      qb: any
+    ) => AliasedSelectQueryBuilder<any, any, infer O, infer QA>
   ? QA extends A
     ? ValueType<O>
     : never

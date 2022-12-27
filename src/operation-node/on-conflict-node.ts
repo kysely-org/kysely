@@ -90,17 +90,17 @@ export const OnConflictNode = freeze({
     })
   },
 
-  cloneWithoutIndexWhere(node: OnConflictNode):OnConflictNode {
+  cloneWithoutIndexWhere(node: OnConflictNode): OnConflictNode {
     return freeze({
       ...node,
       indexWhere: undefined,
     })
   },
 
-  cloneWithoutUpdateWhere(node: OnConflictNode):OnConflictNode {
+  cloneWithoutUpdateWhere(node: OnConflictNode): OnConflictNode {
     return freeze({
       ...node,
       updateWhere: undefined,
     })
-  }
+  },
 })

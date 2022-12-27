@@ -81,12 +81,10 @@ export const QueryNode = freeze({
     })
   },
 
-  cloneWithoutWhere<T extends FilterableQueryNode>(
-      node: T,
-  ): T {
+  cloneWithoutWhere<T extends FilterableQueryNode>(node: T): T {
     return freeze({
       ...node,
       where: undefined,
     })
-  }
+  },
 })
