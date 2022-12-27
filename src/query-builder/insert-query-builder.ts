@@ -528,7 +528,7 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    *
    * ### Examples
    *
-   * The next example uses a helper funtion `log` to log a query:
+   * The next example uses a helper function `log` to log a query:
    *
    * ```ts
    * function log<T extends Compilable>(qb: T): T {
