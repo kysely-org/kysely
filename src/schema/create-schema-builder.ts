@@ -17,16 +17,13 @@ export class CreateSchemaBuilder implements OperationNodeSource, Compilable {
   ifNotExists(): CreateSchemaBuilder {
     return new CreateSchemaBuilder({
       ...this.#props,
-      createSchemaNode: CreateSchemaNode.cloneWith(
-        this.#props.createSchemaNode,
-        { ifNotExists: true }
-      ),
+      node: CreateSchemaNode.cloneWith(this.#props.node, { ifNotExists: true }),
     })
   }
 
   toOperationNode(): CreateSchemaNode {
     return this.#props.executor.transformQuery(
-      this.#props.createSchemaNode,
+      this.#props.node,
       this.#props.queryId
     )
   }
@@ -51,5 +48,5 @@ preventAwait(
 export interface CreateSchemaBuilderProps {
   readonly queryId: QueryId
   readonly executor: QueryExecutor
-  readonly createSchemaNode: CreateSchemaNode
+  readonly node: CreateSchemaNode
 }

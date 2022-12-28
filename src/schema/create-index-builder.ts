@@ -28,7 +28,7 @@ export class CreateIndexBuilder implements OperationNodeSource, Compilable {
   unique(): CreateIndexBuilder {
     return new CreateIndexBuilder({
       ...this.#props,
-      createIndexNode: CreateIndexNode.cloneWith(this.#props.createIndexNode, {
+      node: CreateIndexNode.cloneWith(this.#props.node, {
         unique: true,
       }),
     })
@@ -40,7 +40,7 @@ export class CreateIndexBuilder implements OperationNodeSource, Compilable {
   on(table: string): CreateIndexBuilder {
     return new CreateIndexBuilder({
       ...this.#props,
-      createIndexNode: CreateIndexNode.cloneWith(this.#props.createIndexNode, {
+      node: CreateIndexNode.cloneWith(this.#props.node, {
         table: parseTable(table),
       }),
     })
@@ -54,7 +54,7 @@ export class CreateIndexBuilder implements OperationNodeSource, Compilable {
   column(column: string): CreateIndexBuilder {
     return new CreateIndexBuilder({
       ...this.#props,
-      createIndexNode: CreateIndexNode.cloneWith(this.#props.createIndexNode, {
+      node: CreateIndexNode.cloneWith(this.#props.node, {
         expression: parseColumnName(column),
       }),
     })
@@ -68,7 +68,7 @@ export class CreateIndexBuilder implements OperationNodeSource, Compilable {
   columns(columns: string[]): CreateIndexBuilder {
     return new CreateIndexBuilder({
       ...this.#props,
-      createIndexNode: CreateIndexNode.cloneWith(this.#props.createIndexNode, {
+      node: CreateIndexNode.cloneWith(this.#props.node, {
         expression: ListNode.create(columns.map(parseColumnName)),
       }),
     })
@@ -92,7 +92,7 @@ export class CreateIndexBuilder implements OperationNodeSource, Compilable {
   expression(expression: Expression<any>): CreateIndexBuilder {
     return new CreateIndexBuilder({
       ...this.#props,
-      createIndexNode: CreateIndexNode.cloneWith(this.#props.createIndexNode, {
+      node: CreateIndexNode.cloneWith(this.#props.node, {
         expression: expression.toOperationNode(),
       }),
     })
@@ -106,7 +106,7 @@ export class CreateIndexBuilder implements OperationNodeSource, Compilable {
   using(indexType: string): CreateIndexBuilder {
     return new CreateIndexBuilder({
       ...this.#props,
-      createIndexNode: CreateIndexNode.cloneWith(this.#props.createIndexNode, {
+      node: CreateIndexNode.cloneWith(this.#props.node, {
         using: RawNode.createWithSql(indexType),
       }),
     })
@@ -114,7 +114,7 @@ export class CreateIndexBuilder implements OperationNodeSource, Compilable {
 
   toOperationNode(): CreateIndexNode {
     return this.#props.executor.transformQuery(
-      this.#props.createIndexNode,
+      this.#props.node,
       this.#props.queryId
     )
   }
@@ -139,5 +139,5 @@ preventAwait(
 export interface CreateIndexBuilderProps {
   readonly queryId: QueryId
   readonly executor: QueryExecutor
-  readonly createIndexNode: CreateIndexNode
+  readonly node: CreateIndexNode
 }
