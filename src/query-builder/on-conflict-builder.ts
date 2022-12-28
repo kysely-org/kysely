@@ -259,6 +259,15 @@ export class OnConflictBuilder<DB, TB extends keyof DB>
     })
   }
 
+  clearWhere(): OnConflictBuilder<DB, TB> {
+    return new OnConflictBuilder<DB, TB>({
+      ...this.#props,
+      onConflictNode: OnConflictNode.cloneWithoutIndexWhere(
+        this.#props.onConflictNode
+      ),
+    })
+  }
+
   /**
    * Adds the "do nothing" conflict action.
    *
@@ -520,6 +529,15 @@ export class OnConflictUpdateBuilder<DB, TB extends keyof DB>
       onConflictNode: OnConflictNode.cloneWithUpdateOrWhere(
         this.#props.onConflictNode,
         parseNotExists(arg)
+      ),
+    })
+  }
+
+  clearWhere(): OnConflictUpdateBuilder<DB, TB> {
+    return new OnConflictUpdateBuilder({
+      ...this.#props,
+      onConflictNode: OnConflictNode.cloneWithoutUpdateWhere(
+        this.#props.onConflictNode
       ),
     })
   }

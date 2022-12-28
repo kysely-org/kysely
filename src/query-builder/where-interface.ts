@@ -419,4 +419,24 @@ export interface WhereInterface<DB, TB extends keyof DB> {
    * Just like {@link whereExists} but creates an `or not exists` clause.
    */
   orWhereNotExists(arg: ExistsExpression<DB, TB>): WhereInterface<DB, TB>
+
+  /**
+   * Clears all where clauses from the query.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * db.selectFrom('person')
+   *   .selectAll()
+   *   .where('id','=',42)
+   *   .clearWhere()
+   * ```
+   *
+   * The generated SQL(PostgreSQL):
+   *
+   * ```sql
+   * select * from "person"
+   * ```
+   */
+  clearWhere(): WhereInterface<DB, TB>
 }

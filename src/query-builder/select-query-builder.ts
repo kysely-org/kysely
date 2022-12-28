@@ -1466,6 +1466,114 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
   }
 
   /**
+   * Clears all select clauses from the query.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * db.selectFrom('person')
+   *   .select(['id', 'first_name'])
+   *   .clearSelect()
+   *   .select(['id','gender'])
+   * ```
+   *
+   * The generated SQL(PostgreSQL):
+   *
+   * ```sql
+   * select "id", "gender" from "person"
+   * ```
+   */
+  clearSelect(): SelectQueryBuilder<DB, TB, {}> {
+    return new SelectQueryBuilder<DB, TB, {}>({
+      ...this.#props,
+      queryNode: SelectQueryNode.cloneWithoutSelections(this.#props.queryNode),
+    })
+  }
+
+  clearWhere(): SelectQueryBuilder<DB, TB, O> {
+    return new SelectQueryBuilder<DB, TB, O>({
+      ...this.#props,
+      queryNode: QueryNode.cloneWithoutWhere(this.#props.queryNode),
+    })
+  }
+
+  /**
+   * Clears limit clause from the query.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * db.selectFrom('person')
+   *   .selectAll()
+   *   .limit(10)
+   *   .clearLimit()
+   * ```
+   *
+   * The generated SQL(PostgreSQL):
+   *
+   * ```sql
+   * select * from "person"
+   * ```
+   */
+  clearLimit(): SelectQueryBuilder<DB, TB, O> {
+    return new SelectQueryBuilder<DB, TB, O>({
+      ...this.#props,
+      queryNode: SelectQueryNode.cloneWithoutLimit(this.#props.queryNode),
+    })
+  }
+
+  /**
+   * Clears offset clause from the query.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * db.selectFrom('person')
+   *   .selectAll()
+   *   .limit(10)
+   *   .offset(20)
+   *   .clearOffset()
+   * ```
+   *
+   * The generated SQL(PostgreSQL):
+   *
+   * ```sql
+   * select * from "person" limit 10
+   * ```
+   */
+  clearOffset(): SelectQueryBuilder<DB, TB, O> {
+    return new SelectQueryBuilder<DB, TB, O>({
+      ...this.#props,
+      queryNode: SelectQueryNode.cloneWithoutOffset(this.#props.queryNode),
+    })
+  }
+
+  /**
+   * Clears all `order by` clauses from the query.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * db.selectFrom('person')
+   *   .selectAll()
+   *   .orderBy('id')
+   *   .clearOrderBy()
+   * ```
+   *
+   * The generated SQL(PostgreSQL):
+   *
+   * ```sql
+   * select * from "person"
+   * ```
+   */
+  clearOrderBy(): SelectQueryBuilder<DB, TB, O> {
+    return new SelectQueryBuilder<DB, TB, O>({
+      ...this.#props,
+      queryNode: SelectQueryNode.cloneWithoutOrderBy(this.#props.queryNode),
+    })
+  }
+
+  /**
    * Simply calls the given function passing `this` as the only argument.
    *
    * If you want to conditionally call a method on `this`, see
