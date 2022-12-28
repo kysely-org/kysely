@@ -1,4 +1,4 @@
-import { BUILT_IN_DIALECTS, initTest, TestContext, testSql } from './test-setup'
+import {BUILT_IN_DIALECTS, destroyTest, initTest, TestContext, testSql} from './test-setup'
 
 for (const dialect of BUILT_IN_DIALECTS) {
   describe(`${dialect} clear`, () => {
@@ -6,6 +6,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
 
     before(async function () {
       ctx = await initTest(this, dialect)
+    })
+
+    after(async ()=>{
+      await destroyTest(ctx)
     })
 
     it('should clear select', () => {
