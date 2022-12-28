@@ -32,10 +32,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
 
     it('SelectQueryBuilder should clear where', function () {
       const query = ctx.db
-          .selectFrom('person')
-          .selectAll()
-          .where("gender","=","other")
-          .clearWhere()
+        .selectFrom('person')
+        .selectAll()
+        .where('gender', '=', 'other')
+        .clearWhere()
       testSql(query, dialect, {
         postgres: {
           sql: `select * from "person"`,
@@ -52,9 +52,11 @@ for (const dialect of BUILT_IN_DIALECTS) {
       })
     })
 
-    it('OnConflictBuilder should clear where',function (){
-      const query = ctx.db.insertInto("person").onConflict((b)=>b.where("id","=",3).clearWhere().doNothing())
-      testSql(query,dialect,{
+    it('OnConflictBuilder should clear where', function () {
+      const query = ctx.db
+        .insertInto('person')
+        .onConflict((b) => b.where('id', '=', 3).clearWhere().doNothing())
+      testSql(query, dialect, {
         postgres: {
           sql: `insert into "person" on conflict do nothing`,
           parameters: [],
@@ -70,51 +72,58 @@ for (const dialect of BUILT_IN_DIALECTS) {
       })
     })
 
-    it('OnConflictUpdateBuilder should clear where',function (){
-      const query = ctx.db.insertInto("person").onConflict((b)=>b.doUpdateSet({gender:"other"}).where("gender","=","male").clearWhere())
-      testSql(query,dialect,{
+    it('OnConflictUpdateBuilder should clear where', function () {
+      const query = ctx.db
+        .insertInto('person')
+        .onConflict((b) =>
+          b
+            .doUpdateSet({ gender: 'other' })
+            .where('gender', '=', 'male')
+            .clearWhere()
+        )
+      testSql(query, dialect, {
         postgres: {
           sql: `insert into "person" on conflict do update set "gender" = $1`,
-          parameters: ["other"],
+          parameters: ['other'],
         },
         mysql: {
           sql: 'insert into `person` on conflict do update set `gender` = ?',
-          parameters: ["other"],
+          parameters: ['other'],
         },
         sqlite: {
           sql: `insert into "person" on conflict do update set "gender" = ?`,
-          parameters: ["other"],
+          parameters: ['other'],
         },
       })
     })
 
     it('UpdateQueryBuilder should clear where', function () {
       const query = ctx.db
-          .updateTable("person")
-          .set({gender:"other"})
-          .where("gender","=","other")
-          .clearWhere()
+        .updateTable('person')
+        .set({ gender: 'other' })
+        .where('gender', '=', 'other')
+        .clearWhere()
       testSql(query, dialect, {
         postgres: {
           sql: `update "person" set "gender" = $1`,
-          parameters: ["other"],
+          parameters: ['other'],
         },
         mysql: {
           sql: 'update `person` set `gender` = ?',
-          parameters: ["other"],
+          parameters: ['other'],
         },
         sqlite: {
           sql: `update "person" set "gender" = ?`,
-          parameters: ["other"],
+          parameters: ['other'],
         },
       })
     })
 
     it('DeleteQueryBuilder should clear where', function () {
       const query = ctx.db
-          .deleteFrom("person")
-          .where("gender","=","other")
-          .clearWhere()
+        .deleteFrom('person')
+        .where('gender', '=', 'other')
+        .clearWhere()
       testSql(query, dialect, {
         postgres: {
           sql: `delete from "person"`,
@@ -133,10 +142,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
 
     it('should clear orderBy', function () {
       const query = ctx.db
-          .selectFrom('person')
-          .selectAll()
-          .orderBy("id")
-          .clearOrderBy()
+        .selectFrom('person')
+        .selectAll()
+        .orderBy('id')
+        .clearOrderBy()
       testSql(query, dialect, {
         postgres: {
           sql: `select * from "person"`,
@@ -153,8 +162,12 @@ for (const dialect of BUILT_IN_DIALECTS) {
       })
     })
 
-    it('should clear limit', function (){
-      const query = ctx.db.selectFrom("person").selectAll().limit(100).clearLimit();
+    it('should clear limit', function () {
+      const query = ctx.db
+        .selectFrom('person')
+        .selectAll()
+        .limit(100)
+        .clearLimit()
       testSql(query, dialect, {
         postgres: {
           sql: `select * from "person"`,
@@ -171,8 +184,13 @@ for (const dialect of BUILT_IN_DIALECTS) {
       })
     })
 
-    it('should clear offset', function (){
-      const query = ctx.db.selectFrom("person").selectAll().limit(1).offset(100).clearOffset();
+    it('should clear offset', function () {
+      const query = ctx.db
+        .selectFrom('person')
+        .selectAll()
+        .limit(1)
+        .offset(100)
+        .clearOffset()
       testSql(query, dialect, {
         postgres: {
           sql: `select * from "person" limit $1`,
