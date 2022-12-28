@@ -49,6 +49,7 @@ import {
   parseExists,
   parseNotExists,
 } from '../parser/unary-operation-parser.js'
+import { KyselyTypeError } from '../util/type-error.js'
 
 export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
   implements
@@ -573,6 +574,53 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
    */
   castTo<T>(): DeleteQueryBuilder<DB, TB, T> {
     return new DeleteQueryBuilder(this.#props)
+  }
+
+  /**
+   * Asserts that query's output row type equals the given type `T`.
+   *
+   * This method can be used to simplify excessively complex types to make typescript happy
+   * and much faster.
+   *
+   * Kysely uses complex type magic to achieve its type safety. This complexity is sometimes too much
+   * for typescript and you get errors like this:
+   *
+   * ```
+   * error TS2589: Type instantiation is excessively deep and possibly infinite.
+   * ```
+   *
+   * In these case you can often use this method to help typescript a little bit. When you use this
+   * method to assert the output type of a query, Kysely can drop the complex output type that
+   * consists of multiple nested helper types and replace it with the simple asserted type.
+   *
+   * Using this method doesn't reduce type safety at all. You have to pass in a type that is
+   * structurally equal to the current type.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * const result = await db
+   *   .with('deleted_person', (qb) => qb
+   *     .deleteFrom('person')
+   *     .where('id', '=', person.id)
+   *     .returning('first_name')
+   *     .assertType<{ first_name: string }>()
+   *   )
+   *   .with('deleted_pet', (qb) => qb
+   *     .deleteFrom('pet')
+   *     .where('owner_id', '=', person.id)
+   *     .returning(['name as pet_name', 'species'])
+   *     .assertType<{ pet_name: string, species: Species }>()
+   *   )
+   *   .selectFrom(['deleted_person', 'deleted_pet'])
+   *   .selectAll()
+   *   .executeTakeFirstOrThrow()
+   * ```
+   */
+  assertType<T extends O>(): O extends T
+    ? DeleteQueryBuilder<DB, TB, T>
+    : KyselyTypeError<`assertType() call failed: The type passed in is not equal to the output type of the query.`> {
+    return new DeleteQueryBuilder(this.#props) as unknown as any
   }
 
   /**
