@@ -37,6 +37,7 @@ You can find a more thorough introduction [here](https://www.jakso.me/blog/kysel
 - [Installation](#installation)
     - [3rd party dialects](#3rd-party-dialects)
 - [Minimal example](#minimal-example)
+- [Playground](#playground)
 - [Generating types](#generating-types)
 - [Query examples](#query-examples)
   - [Select queries](#select-queries)
@@ -179,6 +180,10 @@ type Person = Selectable<PersonTable>
 type InsertablePerson = Insertable<PersonTable>
 type UpdateablePerson = Updateable<PersonTable>
 ```
+
+# Playground
+
+@wirekang has written a [playground for Kysely](https://wirekang.github.io/kysely-playground/#eyJkaWFsZWN0IjoibXlzcWwiLCJ0cyI6ImludGVyZmFjZSBEQiB7XG4gIHVzZXI6IFVzZXJUYWJsZVxufVxuXG5pbnRlcmZhY2UgVXNlclRhYmxlIHtcbiAgaWQ6IEdlbmVyYXRlZDxzdHJpbmc+XG4gIGZpcnN0X25hbWU6IHN0cmluZyB8IG51bGxcbiAgbGFzdF9uYW1lOiBzdHJpbmcgfCBudWxsXG4gIGNyZWF0ZWRfYXQ6IEdlbmVyYXRlZDxEYXRlPlxufVxuXG5yZXN1bHQgPSBreXNlbHlcbiAgLnNlbGVjdEZyb20oXCJ1c2VyXCIpXG4gIC5zZWxlY3RBbGwoKVxuICAub3JkZXJCeShcImNyZWF0ZWRfYXRcIikifQ==). You can use to quickly test stuff out and for creating code examples for your issues, PRs and discord messages.
 
 # Generating types
 
