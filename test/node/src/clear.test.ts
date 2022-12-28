@@ -8,7 +8,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
       ctx = await initTest(this, dialect)
     })
 
-    it('should clear select', function () {
+    it('should clear select', () => {
       const query = ctx.db
         .selectFrom('person')
         .select(['id', 'first_name', 'last_name'])
@@ -30,7 +30,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
       })
     })
 
-    it('SelectQueryBuilder should clear where', function () {
+    it('SelectQueryBuilder should clear where', () => {
       const query = ctx.db
         .selectFrom('person')
         .selectAll()
@@ -52,7 +52,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
       })
     })
 
-    it('OnConflictBuilder should clear where', function () {
+    it('OnConflictBuilder should clear where', () => {
       const query = ctx.db
         .insertInto('person')
         .onConflict((b) => b.where('id', '=', 3).clearWhere().doNothing())
@@ -72,7 +72,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
       })
     })
 
-    it('OnConflictUpdateBuilder should clear where', function () {
+    it('OnConflictUpdateBuilder should clear where', () => {
       const query = ctx.db
         .insertInto('person')
         .onConflict((b) =>
@@ -97,7 +97,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
       })
     })
 
-    it('UpdateQueryBuilder should clear where', function () {
+    it('UpdateQueryBuilder should clear where', () => {
       const query = ctx.db
         .updateTable('person')
         .set({ gender: 'other' })
@@ -119,7 +119,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
       })
     })
 
-    it('DeleteQueryBuilder should clear where', function () {
+    it('DeleteQueryBuilder should clear where', () => {
       const query = ctx.db
         .deleteFrom('person')
         .where('gender', '=', 'other')
@@ -140,7 +140,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
       })
     })
 
-    it('should clear orderBy', function () {
+    it('should clear orderBy', () => {
       const query = ctx.db
         .selectFrom('person')
         .selectAll()
@@ -162,7 +162,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
       })
     })
 
-    it('should clear limit', function () {
+    it('should clear limit', () => {
       const query = ctx.db
         .selectFrom('person')
         .selectAll()
@@ -184,7 +184,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
       })
     })
 
-    it('should clear offset', function () {
+    it('should clear offset', () => {
       const query = ctx.db
         .selectFrom('person')
         .selectAll()
