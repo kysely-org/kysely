@@ -1,4 +1,10 @@
-import {BUILT_IN_DIALECTS, destroyTest, initTest, TestContext, testSql} from './test-setup'
+import {
+  BUILT_IN_DIALECTS,
+  destroyTest,
+  initTest,
+  TestContext,
+  testSql,
+} from './test-setup'
 
 for (const dialect of BUILT_IN_DIALECTS) {
   describe(`${dialect} clear`, () => {
@@ -8,7 +14,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
       ctx = await initTest(this, dialect)
     })
 
-    after(async ()=>{
+    after(async () => {
       await destroyTest(ctx)
     })
 
@@ -18,6 +24,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
         .select(['id', 'first_name', 'last_name'])
         .clearSelect()
         .select(['id'])
+
       testSql(query, dialect, {
         postgres: {
           sql: `select "id" from "person"`,
@@ -40,6 +47,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
         .selectAll()
         .where('gender', '=', 'other')
         .clearWhere()
+
       testSql(query, dialect, {
         postgres: {
           sql: `select * from "person"`,
@@ -60,6 +68,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
       const query = ctx.db
         .insertInto('person')
         .onConflict((b) => b.where('id', '=', 3).clearWhere().doNothing())
+
       testSql(query, dialect, {
         postgres: {
           sql: `insert into "person" on conflict do nothing`,
@@ -85,6 +94,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
             .where('gender', '=', 'male')
             .clearWhere()
         )
+
       testSql(query, dialect, {
         postgres: {
           sql: `insert into "person" on conflict do update set "gender" = $1`,
@@ -107,6 +117,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
         .set({ gender: 'other' })
         .where('gender', '=', 'other')
         .clearWhere()
+
       testSql(query, dialect, {
         postgres: {
           sql: `update "person" set "gender" = $1`,
@@ -128,6 +139,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
         .deleteFrom('person')
         .where('gender', '=', 'other')
         .clearWhere()
+
       testSql(query, dialect, {
         postgres: {
           sql: `delete from "person"`,
@@ -150,6 +162,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
         .selectAll()
         .orderBy('id')
         .clearOrderBy()
+
       testSql(query, dialect, {
         postgres: {
           sql: `select * from "person"`,
@@ -172,6 +185,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
         .selectAll()
         .limit(100)
         .clearLimit()
+
       testSql(query, dialect, {
         postgres: {
           sql: `select * from "person"`,
@@ -195,6 +209,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
         .limit(1)
         .offset(100)
         .clearOffset()
+
       testSql(query, dialect, {
         postgres: {
           sql: `select * from "person" limit $1`,
