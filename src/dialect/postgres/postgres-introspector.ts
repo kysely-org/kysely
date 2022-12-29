@@ -77,7 +77,7 @@ export class PostgresIntrospector implements DatabaseIntrospector {
       .where('a.attisdropped', '!=', true)
       .orderBy('ns.nspname')
       .orderBy('c.relname')
-      .orderBy('a.attname')
+      .orderBy('a.attnum')
       .castTo<RawColumnMetadata>()
 
     if (!options.withInternalKyselyTables) {

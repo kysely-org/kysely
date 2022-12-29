@@ -82,7 +82,7 @@ export class SqliteIntrospector implements DatabaseIntrospector {
         }>`pragma_table_info(${table})`.as('table_info')
       )
       .select(['name', 'type', 'notnull', 'dflt_value'])
-      .orderBy('name')
+      .orderBy('cid')
       .execute()
 
     return {
