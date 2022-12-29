@@ -13,11 +13,11 @@ async function testClearSelect(db: Kysely<Database>) {
   expectType<{ id: number }>(r1)
 
   const r2 = await db
-      .selectFrom('person')
-      .selectAll()
-      .clearSelect()
-      .select('age')
-      .executeTakeFirstOrThrow()
+    .selectFrom('person')
+    .selectAll()
+    .clearSelect()
+    .select('age')
+    .executeTakeFirstOrThrow()
 
   expectType<{ age: number }>(r2)
 }
