@@ -46,6 +46,7 @@ or method you&#39;re using to see it. The same documentation is also hosted <a h
 </ul>
 </li>
 <li><a href="#minimal-example">Minimal example</a></li>
+<li><a href="#playground">Playground</a></li>
 <li><a href="#generating-types">Generating types</a></li>
 <li><a href="#query-examples">Query examples</a><ul>
 <li><a href="#select-queries">Select queries</a><ul>
@@ -97,6 +98,11 @@ interfaces to the <code>Kysely</code> constructor:</p>
 </code></pre>
 <pre><code class="language-ts"><span class="hl-6">// You can extract the select, insert and update interfaces like this</span><br/><span class="hl-6">// if you want (you don&#39;t need to):</span><br/><span class="hl-4">type</span><span class="hl-0"> </span><span class="hl-5">Person</span><span class="hl-0"> = </span><span class="hl-5">Selectable</span><span class="hl-0">&lt;</span><span class="hl-5">PersonTable</span><span class="hl-0">&gt;</span><br/><span class="hl-4">type</span><span class="hl-0"> </span><span class="hl-5">InsertablePerson</span><span class="hl-0"> = </span><span class="hl-5">Insertable</span><span class="hl-0">&lt;</span><span class="hl-5">PersonTable</span><span class="hl-0">&gt;</span><br/><span class="hl-4">type</span><span class="hl-0"> </span><span class="hl-5">UpdateablePerson</span><span class="hl-0"> = </span><span class="hl-5">Updateable</span><span class="hl-0">&lt;</span><span class="hl-5">PersonTable</span><span class="hl-0">&gt;</span>
 </code></pre>
+
+<a href="#playground" id="playground" style="color: inherit; text-decoration: none;">
+  <h1>Playground</h1>
+</a>
+<p><a href="https://github.com/wirekang">@wirekang</a> has created a <a href="https://wirekang.github.io/kysely-playground/#eyJkaWFsZWN0IjoibXlzcWwiLCJ0cyI6ImludGVyZmFjZSBEQiB7XG4gIHVzZXI6IFVzZXJUYWJsZVxufVxuXG5pbnRlcmZhY2UgVXNlclRhYmxlIHtcbiAgaWQ6IEdlbmVyYXRlZDxzdHJpbmc+XG4gIGZpcnN0X25hbWU6IHN0cmluZyB8IG51bGxcbiAgbGFzdF9uYW1lOiBzdHJpbmcgfCBudWxsXG4gIGNyZWF0ZWRfYXQ6IEdlbmVyYXRlZDxEYXRlPlxufVxuXG5yZXN1bHQgPSBreXNlbHlcbiAgLnNlbGVjdEZyb20oXCJ1c2VyXCIpXG4gIC5zZWxlY3RBbGwoKVxuICAub3JkZXJCeShcImNyZWF0ZWRfYXRcIikifQ==">playground for Kysely</a>. You can use to quickly test stuff out and for creating code examples for your issues, PRs and discord messages.</p>
 
 <a href="#generating-types" id="generating-types" style="color: inherit; text-decoration: none;">
   <h1>Generating types</h1>
