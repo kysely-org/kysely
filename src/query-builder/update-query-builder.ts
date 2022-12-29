@@ -183,6 +183,13 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
     })
   }
 
+  clearWhere(): UpdateQueryBuilder<DB, UT, TB, O> {
+    return new UpdateQueryBuilder({
+      ...this.#props,
+      queryNode: QueryNode.cloneWithoutWhere(this.#props.queryNode),
+    })
+  }
+
   /**
    * Adds a from clause to the update query.
    *
