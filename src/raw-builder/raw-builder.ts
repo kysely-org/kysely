@@ -96,8 +96,15 @@ export class RawBuilder<O> implements Expression<O> {
    * This method call doesn't change the SQL in any way. This methods simply
    * returns a copy of this `RawBuilder` with a new output type.
    */
-  castTo<T>(): RawBuilder<T> {
+  $castTo<T>(): RawBuilder<T> {
     return new RawBuilder({ ...this.#props })
+  }
+
+  /**
+   * @deprecated Use `$castTo` instead.
+   */
+  castTo<T>(): RawBuilder<T> {
+    return this.$castTo<T>()
   }
 
   /**
@@ -152,7 +159,7 @@ export function isRawBuilder(obj: unknown): obj is RawBuilder<unknown> {
   return (
     isObject(obj) &&
     isFunction(obj.as) &&
-    isFunction(obj.castTo) &&
+    isFunction(obj.$castTo) &&
     isFunction(obj.withPlugin) &&
     isFunction(obj.toOperationNode) &&
     isFunction(obj.execute)

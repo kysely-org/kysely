@@ -579,7 +579,7 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
    * Simply calls the given function passing `this` as the only argument.
    *
    * If you want to conditionally call a method on `this`, see
-   * the {@link if} method.
+   * the {@link $if} method.
    *
    * ### Examples
    *
@@ -593,12 +593,19 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
    *
    * db.updateTable('person')
    *   .set(values)
-   *   .call(log)
+   *   .$call(log)
    *   .execute()
    * ```
    */
-  call<T>(func: (qb: this) => T): T {
+  $call<T>(func: (qb: this) => T): T {
     return func(this)
+  }
+
+  /**
+   * @deprecated Use `$call` instead
+   */
+  call<T>(func: (qb: this) => T): T {
+    return this.$call(func)
   }
 
   /**
@@ -620,7 +627,7 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
    *     .set(updates)
    *     .where('id', '=', id)
    *     .returning(['id', 'first_name'])
-   *     .if(returnLastName, (qb) => qb.returning('last_name'))
+   *     .$if(returnLastName, (qb) => qb.returning('last_name'))
    *     .executeTakeFirstOrThrow()
    * }
    * ```
@@ -637,7 +644,7 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
    * }
    * ```
    */
-  if<O2>(
+  $if<O2>(
     condition: boolean,
     func: (qb: this) => UpdateQueryBuilder<DB, UT, TB, O2>
   ): UpdateQueryBuilder<
@@ -660,13 +667,39 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
   }
 
   /**
+   * @deprecated Use `$if` instead
+   */
+  if<O2>(
+    condition: boolean,
+    func: (qb: this) => UpdateQueryBuilder<DB, UT, TB, O2>
+  ): UpdateQueryBuilder<
+    DB,
+    UT,
+    TB,
+    O2 extends UpdateResult
+      ? UpdateResult
+      : O extends UpdateResult
+      ? Partial<O2>
+      : MergePartial<O, O2>
+  > {
+    return this.$if(condition, func)
+  }
+
+  /**
    * Change the output type of the query.
    *
    * You should only use this method as the last resort if the types
    * don't support your use case.
    */
-  castTo<T>(): UpdateQueryBuilder<DB, UT, TB, T> {
+  $castTo<T>(): UpdateQueryBuilder<DB, UT, TB, T> {
     return new UpdateQueryBuilder(this.#props)
+  }
+
+  /**
+   * @deprecated Use `$castTo` instead.
+   */
+  castTo<T>(): UpdateQueryBuilder<DB, UT, TB, T> {
+    return this.$castTo<T>()
   }
 
   /**
@@ -698,19 +731,28 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
    *     .set(person)
    *     .where('id', '=', person.id)
    *     .returning('first_name')
-   *     .assertType<{ first_name: string }>()
+   *     .$assertType<{ first_name: string }>()
    *   )
    *   .with('updated_pet', (qb) => qb
    *     .updateTable('pet')
    *     .set(pet)
    *     .where('owner_id', '=', person.id)
    *     .returning(['name as pet_name', 'species'])
-   *     .assertType<{ pet_name: string, species: Species }>()
+   *     .$assertType<{ pet_name: string, species: Species }>()
    *   )
    *   .selectFrom(['updated_person', 'updated_pet'])
    *   .selectAll()
    *   .executeTakeFirstOrThrow()
    * ```
+   */
+  $assertType<T extends O>(): O extends T
+    ? UpdateQueryBuilder<DB, UT, TB, T>
+    : KyselyTypeError<`$assertType() call failed: The type passed in is not equal to the output type of the query.`> {
+    return new UpdateQueryBuilder(this.#props) as unknown as any
+  }
+
+  /**
+   * @deprecated Use `$assertType` instead.
    */
   assertType<T extends O>(): O extends T
     ? UpdateQueryBuilder<DB, UT, TB, T>

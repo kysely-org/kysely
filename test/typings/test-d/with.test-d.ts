@@ -84,43 +84,43 @@ async function testManyWith(db: Kysely<Database>) {
       eb
         .selectFrom('person')
         .select('first_name as fn1')
-        .assertType<{ fn1: string }>()
+        .$assertType<{ fn1: string }>()
     )
     .with('w2', (eb) =>
       eb
         .selectFrom('person')
         .select('first_name as fn2')
-        .assertType<{ fn2: string }>()
+        .$assertType<{ fn2: string }>()
     )
     .with('w3', (eb) =>
       eb
         .selectFrom('person')
         .select('first_name as fn3')
-        .assertType<{ fn3: string }>()
+        .$assertType<{ fn3: string }>()
     )
     .with('w4', (eb) =>
       eb
         .selectFrom('person')
         .select('first_name as fn4')
-        .assertType<{ fn4: string }>()
+        .$assertType<{ fn4: string }>()
     )
     .with('w5', (eb) =>
       eb
         .selectFrom('person')
         .select('first_name as fn5')
-        .assertType<{ fn5: string }>()
+        .$assertType<{ fn5: string }>()
     )
     .with('w6', (eb) =>
       eb
         .selectFrom('person')
         .select('first_name as fn6')
-        .assertType<{ fn6: string }>()
+        .$assertType<{ fn6: string }>()
     )
     .with('w7', (qb) =>
       qb
         .selectFrom('person')
         .select('first_name as fn7')
-        .assertType<{ fn7: string }>()
+        .$assertType<{ fn7: string }>()
     )
     .with('w8', (qb) => qb.selectFrom('person').select('first_name as fn8'))
     .with('w9', (qb) => qb.selectFrom('person').select('first_name as fn9'))

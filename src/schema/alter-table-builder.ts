@@ -227,10 +227,17 @@ export class AlterTableBuilder implements ColumnAlteringInterface {
   /**
    * Calls the given function passing `this` as the only argument.
    *
-   * See {@link CreateTableBuilder.call}
+   * See {@link CreateTableBuilder.$call}
+   */
+  $call<T>(func: (qb: this) => T): T {
+    return func(this)
+  }
+
+  /**
+   * @deprecated Use `$call` instead
    */
   call<T>(func: (qb: this) => T): T {
-    return func(this)
+    return this.$call(func)
   }
 }
 

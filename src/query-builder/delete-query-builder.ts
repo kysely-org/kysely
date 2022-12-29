@@ -489,7 +489,7 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
    * Simply calls the given function passing `this` as the only argument.
    *
    * If you want to conditionally call a method on `this`, see
-   * the {@link if} method.
+   * the {@link $if} method.
    *
    * ### Examples
    *
@@ -502,12 +502,19 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
    * }
    *
    * db.deleteFrom('person')
-   *   .call(log)
+   *   .$call(log)
    *   .execute()
    * ```
    */
-  call<T>(func: (qb: this) => T): T {
+  $call<T>(func: (qb: this) => T): T {
     return func(this)
+  }
+
+  /**
+   * @deprecated Use `$call` instead
+   */
+  call<T>(func: (qb: this) => T): T {
+    return this.$call(func)
   }
 
   /**
@@ -528,7 +535,7 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
    *     .deleteFrom('person')
    *     .where('id', '=', id)
    *     .returning(['id', 'first_name'])
-   *     .if(returnLastName, (qb) => qb.returning('last_name'))
+   *     .$if(returnLastName, (qb) => qb.returning('last_name'))
    *     .executeTakeFirstOrThrow()
    * }
    * ```
@@ -545,7 +552,7 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
    * }
    * ```
    */
-  if<O2>(
+  $if<O2>(
     condition: boolean,
     func: (qb: this) => DeleteQueryBuilder<DB, TB, O2>
   ): DeleteQueryBuilder<
@@ -567,13 +574,38 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
   }
 
   /**
+   * @deprecated Use `$if` instead
+   */
+  if<O2>(
+    condition: boolean,
+    func: (qb: this) => DeleteQueryBuilder<DB, TB, O2>
+  ): DeleteQueryBuilder<
+    DB,
+    TB,
+    O2 extends DeleteResult
+      ? DeleteResult
+      : O extends DeleteResult
+      ? Partial<O2>
+      : MergePartial<O, O2>
+  > {
+    return this.$if(condition, func)
+  }
+
+  /**
    * Change the output type of the query.
    *
    * You should only use this method as the last resort if the types
    * don't support your use case.
    */
-  castTo<T>(): DeleteQueryBuilder<DB, TB, T> {
+  $castTo<T>(): DeleteQueryBuilder<DB, TB, T> {
     return new DeleteQueryBuilder(this.#props)
+  }
+
+  /**
+   * @deprecated Use `$castTo` instead.
+   */
+  castTo<T>(): DeleteQueryBuilder<DB, TB, T> {
+    return this.$castTo<T>()
   }
 
   /**
@@ -604,18 +636,27 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
    *     .deleteFrom('person')
    *     .where('id', '=', person.id)
    *     .returning('first_name')
-   *     .assertType<{ first_name: string }>()
+   *     .$assertType<{ first_name: string }>()
    *   )
    *   .with('deleted_pet', (qb) => qb
    *     .deleteFrom('pet')
    *     .where('owner_id', '=', person.id)
    *     .returning(['name as pet_name', 'species'])
-   *     .assertType<{ pet_name: string, species: Species }>()
+   *     .$assertType<{ pet_name: string, species: Species }>()
    *   )
    *   .selectFrom(['deleted_person', 'deleted_pet'])
    *   .selectAll()
    *   .executeTakeFirstOrThrow()
    * ```
+   */
+  $assertType<T extends O>(): O extends T
+    ? DeleteQueryBuilder<DB, TB, T>
+    : KyselyTypeError<`$assertType() call failed: The type passed in is not equal to the output type of the query.`> {
+    return new DeleteQueryBuilder(this.#props) as unknown as any
+  }
+
+  /**
+   * @deprecated Use `$assertType` instead.
    */
   assertType<T extends O>(): O extends T
     ? DeleteQueryBuilder<DB, TB, T>

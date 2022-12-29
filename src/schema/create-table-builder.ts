@@ -363,7 +363,7 @@ export class CreateTableBuilder<TB extends string, C extends string = never>
    * ```ts
    * db.schema
    *   .createTable('test')
-   *   .call((builder) => builder.addColumn('id', 'integer'))
+   *   .$call((builder) => builder.addColumn('id', 'integer'))
    *   .execute()
    * ```
    *
@@ -383,12 +383,19 @@ export class CreateTableBuilder<TB extends string, C extends string = never>
    *
    * db.schema
    *   .createTable('test')
-   *   .call(addDefaultColumns)
+   *   .$call(addDefaultColumns)
    *   .execute()
    * ```
    */
-  call<T>(func: (qb: this) => T): T {
+  $call<T>(func: (qb: this) => T): T {
     return func(this)
+  }
+
+  /**
+   * @deprecated Use `$call` instead
+   */
+  call<T>(func: (qb: this) => T): T {
+    return this.$call(func)
   }
 
   toOperationNode(): CreateTableNode {

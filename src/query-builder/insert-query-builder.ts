@@ -14,10 +14,7 @@ import {
 import { InsertQueryNode } from '../operation-node/insert-query-node.js'
 import { QueryNode } from '../operation-node/query-node.js'
 import { MergePartial, SingleResultType } from '../util/type-utils.js'
-import {
-  UpdateObject,
-  parseUpdateObject,
-} from '../parser/update-set-parser.js'
+import { UpdateObject, parseUpdateObject } from '../parser/update-set-parser.js'
 import { preventAwait } from '../util/prevent-await.js'
 import { Compilable } from '../util/compilable.js'
 import { QueryExecutor } from '../query-executor/query-executor.js'
@@ -525,7 +522,7 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    * Simply calls the given function passing `this` as the only argument.
    *
    * If you want to conditionally call a method on `this`, see
-   * the {@link if} method.
+   * the {@link $if} method.
    *
    * ### Examples
    *
@@ -539,12 +536,19 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    *
    * db.updateTable('person')
    *   .set(values)
-   *   .call(log)
+   *   .$call(log)
    *   .execute()
    * ```
    */
-  call<T>(func: (qb: this) => T): T {
+  $call<T>(func: (qb: this) => T): T {
     return func(this)
+  }
+
+  /**
+   * @deprecated Use `$call` instead
+   */
+  call<T>(func: (qb: this) => T): T {
+    return this.$call(func)
   }
 
   /**
@@ -565,7 +569,7 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    *     .insertInto('person')
    *     .values(values)
    *     .returning(['id', 'first_name'])
-   *     .if(returnLastName, (qb) => qb.returning('last_name'))
+   *     .$if(returnLastName, (qb) => qb.returning('last_name'))
    *     .executeTakeFirstOrThrow()
    * }
    * ```
@@ -582,7 +586,7 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    * }
    * ```
    */
-  if<O2>(
+  $if<O2>(
     condition: boolean,
     func: (qb: this) => InsertQueryBuilder<DB, TB, O2>
   ): InsertQueryBuilder<
@@ -604,13 +608,38 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
   }
 
   /**
+   * @deprecated Use `$if` instead
+   */
+  if<O2>(
+    condition: boolean,
+    func: (qb: this) => InsertQueryBuilder<DB, TB, O2>
+  ): InsertQueryBuilder<
+    DB,
+    TB,
+    O2 extends InsertResult
+      ? InsertResult
+      : O extends InsertResult
+      ? Partial<O2>
+      : MergePartial<O, O2>
+  > {
+    return this.$if(condition, func)
+  }
+
+  /**
    * Change the output type of the query.
    *
    * You should only use this method as the last resort if the types
    * don't support your use case.
    */
-  castTo<T>(): InsertQueryBuilder<DB, TB, T> {
+  $castTo<T>(): InsertQueryBuilder<DB, TB, T> {
     return new InsertQueryBuilder(this.#props)
+  }
+
+  /**
+   * @deprecated Use `$castTo` instead.
+   */
+  castTo<T>(): InsertQueryBuilder<DB, TB, T> {
+    return this.$castTo<T>()
   }
 
   /**
@@ -641,18 +670,27 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    *     .insertInto('person')
    *     .values(person)
    *     .returning('id')
-   *     .assertType<{ id: string }>()
+   *     .$assertType<{ id: string }>()
    *   )
    *   .with('new_pet', (qb) => qb
    *     .insertInto('pet')
    *     .values({ owner_id: (eb) => eb.selectFrom('new_person').select('id'), ...pet })
    *     .returning(['name as pet_name', 'species'])
-   *     .assertType<{ pet_name: string, species: Species }>()
+   *     .$assertType<{ pet_name: string, species: Species }>()
    *   )
    *   .selectFrom(['new_person', 'new_pet'])
    *   .selectAll()
    *   .executeTakeFirstOrThrow()
    * ```
+   */
+  $assertType<T extends O>(): O extends T
+    ? InsertQueryBuilder<DB, TB, T>
+    : KyselyTypeError<`$assertType() call failed: The type passed in is not equal to the output type of the query.`> {
+    return new InsertQueryBuilder(this.#props) as unknown as any
+  }
+
+  /**
+   * @deprecated Use `$assertType` instead.
    */
   assertType<T extends O>(): O extends T
     ? InsertQueryBuilder<DB, TB, T>

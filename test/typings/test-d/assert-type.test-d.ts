@@ -6,7 +6,7 @@ async function testAssertType(db: Kysely<Database>) {
   const r1 = await db
     .selectFrom('person')
     .select('first_name as fn')
-    .assertType<{ fn: string }>()
+    .$assertType<{ fn: string }>()
     .executeTakeFirstOrThrow()
 
   expectType<{ fn: string }>(r1)
@@ -14,7 +14,7 @@ async function testAssertType(db: Kysely<Database>) {
   const r2 = await db
     .updateTable('person')
     .returning('first_name as fn')
-    .assertType<{ fn: string }>()
+    .$assertType<{ fn: string }>()
     .executeTakeFirstOrThrow()
 
   expectType<{ fn: string }>(r2)
@@ -23,7 +23,7 @@ async function testAssertType(db: Kysely<Database>) {
     .insertInto('person')
     .values({ first_name: 'foo', age: 54, gender: 'other' })
     .returning('first_name as fn')
-    .assertType<{ fn: string }>()
+    .$assertType<{ fn: string }>()
     .executeTakeFirstOrThrow()
 
   expectType<{ fn: string }>(r3)
@@ -31,7 +31,7 @@ async function testAssertType(db: Kysely<Database>) {
   const r4 = await db
     .deleteFrom('person')
     .returning('first_name as fn')
-    .assertType<{ fn: string }>()
+    .$assertType<{ fn: string }>()
     .executeTakeFirstOrThrow()
 
   expectType<{ fn: string }>(r4)
@@ -40,7 +40,7 @@ async function testAssertType(db: Kysely<Database>) {
     db
       .selectFrom('person')
       .select('first_name as fn')
-      .assertType<{ wrong: string }>()
+      .$assertType<{ wrong: string }>()
       .execute()
   )
 
@@ -48,7 +48,7 @@ async function testAssertType(db: Kysely<Database>) {
     db
       .selectFrom('person')
       .select('first_name as fn')
-      .assertType<{ fn: string; extra: number }>()
+      .$assertType<{ fn: string; extra: number }>()
       .execute()
   )
 }

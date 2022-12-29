@@ -321,7 +321,7 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    * To select all columns of the query or specific tables see the
    * {@link selectAll} method.
    *
-   * See the {@link if} method if you are looking for a way to add selections
+   * See the {@link $if} method if you are looking for a way to add selections
    * based on a runtime condition.
    *
    * ### Examples
@@ -1466,6 +1466,29 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
   }
 
   /**
+   * Gives an alias for the query. This method is only useful for sub queries.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * const pets = await db.selectFrom('pet')
+   *   .selectAll('pet')
+   *   .select(
+   *     (qb) => qb.selectFrom('person')
+   *       .select('first_name')
+   *       .whereRef('pet.owner_id', '=', 'person.id')
+   *       .as('owner_first_name')
+   *   )
+   *   .execute()
+   *
+   * pets[0].owner_first_name
+   * ```
+   */
+  as<A extends string>(alias: A): AliasedSelectQueryBuilder<DB, TB, O, A> {
+    return new AliasedSelectQueryBuilder(this, alias)
+  }
+
+  /**
    * Clears all select clauses from the query.
    *
    * ### Examples
@@ -1577,7 +1600,7 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    * Simply calls the given function passing `this` as the only argument.
    *
    * If you want to conditionally call a method on `this`, see
-   * the {@link if} method.
+   * the {@link $if} method.
    *
    * ### Examples
    *
@@ -1591,12 +1614,19 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    *
    * db.selectFrom('person')
    *   .selectAll()
-   *   .call(log)
+   *   .$call(log)
    *   .execute()
    * ```
    */
-  call<T>(func: (qb: this) => T): T {
+  $call<T>(func: (qb: this) => T): T {
     return func(this)
+  }
+
+  /**
+   * @deprecated Use `$call` instead
+   */
+  call<T>(func: (qb: this) => T): T {
+    return this.$call(func)
   }
 
   /**
@@ -1616,7 +1646,7 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    *   return await db
    *     .selectFrom('person')
    *     .select(['id', 'first_name'])
-   *     .if(withLastName, (qb) => qb.select('last_name'))
+   *     .$if(withLastName, (qb) => qb.select('last_name'))
    *     .where('id', '=', id)
    *     .executeTakeFirstOrThrow()
    * }
@@ -1641,15 +1671,15 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    *
    * db.selectFrom('person')
    *   .select('person.id')
-   *   .if(filterByFirstName, (qb) => qb.where('first_name', '=', firstName))
-   *   .if(filterByPetCount, (qb) => qb
+   *   .$if(filterByFirstName, (qb) => qb.where('first_name', '=', firstName))
+   *   .$if(filterByPetCount, (qb) => qb
    *     .innerJoin('pet', 'pet.owner_id', 'person.id')
    *     .having(count('pet.id'), '>', petCountLimit)
    *     .groupBy('person.id')
    *   )
    * ```
    */
-  if<O2 extends O>(
+  $if<O2 extends O>(
     condition: boolean,
     func: (qb: this) => SelectQueryBuilder<DB, TB, O2>
   ): SelectQueryBuilder<DB, TB, MergePartial<O, O2>> {
@@ -1663,26 +1693,13 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
   }
 
   /**
-   * Gives an alias for the query. This method is only useful for sub queries.
-   *
-   * ### Examples
-   *
-   * ```ts
-   * const pets = await db.selectFrom('pet')
-   *   .selectAll('pet')
-   *   .select(
-   *     (qb) => qb.selectFrom('person')
-   *       .select('first_name')
-   *       .whereRef('pet.owner_id', '=', 'person.id')
-   *       .as('owner_first_name')
-   *   )
-   *   .execute()
-   *
-   * pets[0].owner_first_name
-   * ```
+   * @deprecated Use `$if` instead
    */
-  as<A extends string>(alias: A): AliasedSelectQueryBuilder<DB, TB, O, A> {
-    return new AliasedSelectQueryBuilder(this, alias)
+  if<O2 extends O>(
+    condition: boolean,
+    func: (qb: this) => SelectQueryBuilder<DB, TB, O2>
+  ): SelectQueryBuilder<DB, TB, MergePartial<O, O2>> {
+    return this.$if(condition, func)
   }
 
   /**
@@ -1691,8 +1708,15 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    * You should only use this method as the last resort if the types
    * don't support your use case.
    */
-  castTo<T>(): SelectQueryBuilder<DB, TB, T> {
+  $castTo<T>(): SelectQueryBuilder<DB, TB, T> {
     return new SelectQueryBuilder(this.#props)
+  }
+
+  /**
+   * @deprecated Use `$castTo` instead.
+   */
+  castTo<T>(): SelectQueryBuilder<DB, TB, T> {
+    return this.$castTo<T>()
   }
 
   /**
@@ -1722,17 +1746,26 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    *   .with('first_and_last', (qb) => qb
    *     .selectFrom('person')
    *     .select(['first_name', 'last_name'])
-   *     .assertType<{ first_name: string, last_name: string }>()
+   *     .$assertType<{ first_name: string, last_name: string }>()
    *   )
    *   .with('age', (qb) => qb
    *     .selectFrom('person')
    *     .select('age')
-   *     .assertType<{ age: number }>()
+   *     .$assertType<{ age: number }>()
    *   )
    *   .selectFrom(['first_and_last', 'age'])
    *   .selectAll()
    *   .executeTakeFirstOrThrow()
    * ```
+   */
+  $assertType<T extends O>(): O extends T
+    ? SelectQueryBuilder<DB, TB, T>
+    : KyselyTypeError<`$assertType() call failed: The type passed in is not equal to the output type of the query.`> {
+    return new SelectQueryBuilder(this.#props) as unknown as any
+  }
+
+  /**
+   * @deprecated Use `$assertType` instead.
    */
   assertType<T extends O>(): O extends T
     ? SelectQueryBuilder<DB, TB, T>
