@@ -1,5 +1,4 @@
 import { sql } from '../../../'
-
 import {
   BUILT_IN_DIALECTS,
   clearDatabase,
@@ -49,22 +48,6 @@ for (const dialect of BUILT_IN_DIALECTS) {
             schema: 'public',
             columns: [
               {
-                name: 'first_name',
-                dataType: 'varchar',
-                dataTypeSchema: 'pg_catalog',
-                isNullable: true,
-                isAutoIncrementing: false,
-                hasDefaultValue: false,
-              },
-              {
-                name: 'gender',
-                dataType: 'varchar',
-                dataTypeSchema: 'pg_catalog',
-                isNullable: false,
-                isAutoIncrementing: false,
-                hasDefaultValue: false,
-              },
-              {
                 name: 'id',
                 dataType: 'int4',
                 dataTypeSchema: 'pg_catalog',
@@ -73,7 +56,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
                 hasDefaultValue: true,
               },
               {
-                name: 'last_name',
+                name: 'first_name',
                 dataType: 'varchar',
                 dataTypeSchema: 'pg_catalog',
                 isNullable: true,
@@ -85,6 +68,23 @@ for (const dialect of BUILT_IN_DIALECTS) {
                 dataType: 'varchar',
                 dataTypeSchema: 'pg_catalog',
                 isNullable: true,
+                isAutoIncrementing: false,
+                hasDefaultValue: false,
+              },
+
+              {
+                name: 'last_name',
+                dataType: 'varchar',
+                dataTypeSchema: 'pg_catalog',
+                isNullable: true,
+                isAutoIncrementing: false,
+                hasDefaultValue: false,
+              },
+              {
+                name: 'gender',
+                dataType: 'varchar',
+                dataTypeSchema: 'pg_catalog',
+                isNullable: false,
                 isAutoIncrementing: false,
                 hasDefaultValue: false,
               },
@@ -196,20 +196,6 @@ for (const dialect of BUILT_IN_DIALECTS) {
             schema: 'kysely_test',
             columns: [
               {
-                name: 'first_name',
-                dataType: 'varchar',
-                isNullable: true,
-                isAutoIncrementing: false,
-                hasDefaultValue: false,
-              },
-              {
-                name: 'gender',
-                dataType: 'varchar',
-                isNullable: false,
-                isAutoIncrementing: false,
-                hasDefaultValue: false,
-              },
-              {
                 name: 'id',
                 dataType: 'int',
                 isNullable: false,
@@ -217,7 +203,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
                 hasDefaultValue: false,
               },
               {
-                name: 'last_name',
+                name: 'first_name',
                 dataType: 'varchar',
                 isNullable: true,
                 isAutoIncrementing: false,
@@ -227,6 +213,21 @@ for (const dialect of BUILT_IN_DIALECTS) {
                 name: 'middle_name',
                 dataType: 'varchar',
                 isNullable: true,
+                isAutoIncrementing: false,
+                hasDefaultValue: false,
+              },
+              {
+                name: 'last_name',
+                dataType: 'varchar',
+                isNullable: true,
+                isAutoIncrementing: false,
+                hasDefaultValue: false,
+              },
+
+              {
+                name: 'gender',
+                dataType: 'varchar',
+                isNullable: false,
                 isAutoIncrementing: false,
                 hasDefaultValue: false,
               },
@@ -307,20 +308,6 @@ for (const dialect of BUILT_IN_DIALECTS) {
             name: 'person',
             columns: [
               {
-                name: 'first_name',
-                dataType: 'varchar(255)',
-                isNullable: true,
-                isAutoIncrementing: false,
-                hasDefaultValue: false,
-              },
-              {
-                name: 'gender',
-                dataType: 'varchar(50)',
-                isNullable: false,
-                isAutoIncrementing: false,
-                hasDefaultValue: false,
-              },
-              {
                 name: 'id',
                 dataType: 'INTEGER',
                 isNullable: true,
@@ -328,7 +315,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
                 hasDefaultValue: false,
               },
               {
-                name: 'last_name',
+                name: 'first_name',
                 dataType: 'varchar(255)',
                 isNullable: true,
                 isAutoIncrementing: false,
@@ -338,6 +325,21 @@ for (const dialect of BUILT_IN_DIALECTS) {
                 name: 'middle_name',
                 dataType: 'varchar(255)',
                 isNullable: true,
+                isAutoIncrementing: false,
+                hasDefaultValue: false,
+              },
+              {
+                name: 'last_name',
+                dataType: 'varchar(255)',
+                isNullable: true,
+                isAutoIncrementing: false,
+                hasDefaultValue: false,
+              },
+
+              {
+                name: 'gender',
+                dataType: 'varchar(50)',
+                isNullable: false,
                 isAutoIncrementing: false,
                 hasDefaultValue: false,
               },
