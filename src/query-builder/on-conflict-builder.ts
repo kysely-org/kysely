@@ -17,7 +17,7 @@ import {
   parseNotExists,
 } from '../parser/unary-operation-parser.js'
 import {
-  MutationObject,
+  UpdateObject,
   parseUpdateObject,
 } from '../parser/update-set-parser.js'
 import { freeze } from '../util/object-utils.js'
@@ -325,7 +325,7 @@ export class OnConflictBuilder<DB, TB extends keyof DB>
    * ```
    */
   doUpdateSet(
-    updates: MutationObject<
+    updates: UpdateObject<
       OnConflictDatabase<DB, TB>,
       OnConflictTables<TB>,
       OnConflictTables<TB>

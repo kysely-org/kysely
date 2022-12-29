@@ -15,7 +15,7 @@ import { InsertQueryNode } from '../operation-node/insert-query-node.js'
 import { QueryNode } from '../operation-node/query-node.js'
 import { MergePartial, SingleResultType } from '../util/type-utils.js'
 import {
-  MutationObject,
+  UpdateObject,
   parseUpdateObject,
 } from '../parser/update-set-parser.js'
 import { preventAwait } from '../util/prevent-await.js'
@@ -483,7 +483,7 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    * ```
    */
   onDuplicateKeyUpdate(
-    updates: MutationObject<DB, TB, TB>
+    updates: UpdateObject<DB, TB, TB>
   ): InsertQueryBuilder<DB, TB, O> {
     return new InsertQueryBuilder({
       ...this.#props,

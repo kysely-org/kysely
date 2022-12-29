@@ -23,10 +23,7 @@ import { ReferenceExpression } from '../parser/reference-parser.js'
 import { QueryNode } from '../operation-node/query-node.js'
 import { MergePartial, Nullable, SingleResultType } from '../util/type-utils.js'
 import { UpdateQueryNode } from '../operation-node/update-query-node.js'
-import {
-  MutationObject,
-  parseUpdateObject,
-} from '../parser/update-set-parser.js'
+import { UpdateObject, parseUpdateObject } from '../parser/update-set-parser.js'
 import { preventAwait } from '../util/prevent-await.js'
 import { Compilable } from '../util/compilable.js'
 import { QueryExecutor } from '../query-executor/query-executor.js'
@@ -540,7 +537,7 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
    * where "id" = $4
    * ```
    */
-  set(row: MutationObject<DB, TB, UT>): UpdateQueryBuilder<DB, UT, TB, O> {
+  set(row: UpdateObject<DB, TB, UT>): UpdateQueryBuilder<DB, UT, TB, O> {
     return new UpdateQueryBuilder({
       ...this.#props,
       queryNode: UpdateQueryNode.cloneWithUpdates(
