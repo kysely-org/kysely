@@ -213,8 +213,8 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
    * ```
    *
    * On supported databases such as MySQL, this clause allows using joins, but requires
-   * at least one of the tables after the `from` clause to be also named after
-   * the `using` clause. See also {@link innerJoin}, {@link leftJoin}, {@link rightJoin}
+   * at least one of the tables after the `from` keyword to be also named after
+   * the `using` keyword. See also {@link innerJoin}, {@link leftJoin}, {@link rightJoin}
    * and {@link fullJoin}.
    *
    * ```ts
