@@ -288,7 +288,8 @@ export class FunctionModule<DB, TB extends keyof DB> {
   /**
    * Calls the `count` function with `*` or `table.*` as argument.
    *
-   * When called with `*` as argument, this sql function counts the number of rows.
+   * When called with `*` as argument, this sql function counts the number of rows,
+   * nulls included.
    *
    * For counting rows with non-null values in a given column (`count(column)`),
    * see {@link count}.
