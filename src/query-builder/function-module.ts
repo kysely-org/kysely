@@ -63,8 +63,29 @@ export class FunctionModule<DB, TB extends keyof DB> {
   /**
    * Calls the `avg` function for the column given as the argument.
    *
-   * If this is used in a `select` statement the type of the selected expression
-   * will be `number | string` by default. This is because Kysely can't know the
+   * This sql function calculates the average value for a given column.
+   *
+   * For additional functionality such as distinct, filtering and
+   * window functions, refer to {@link AggregateFunctionBuilder}.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * const { avg } = db.fn
+   *
+   * db.selectFrom('toy')
+   *   .select(avg('price').as('avg_price'))
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * select avg("price") as "avg_price" from "toy"
+   * ```
+   *
+   * If this function is used in a `select` statement, the type of the selected
+   * expression will be `number | string` by default. This is because Kysely can't know the
    * type the db driver outputs. Sometimes the output can be larger than the largest
    * javascript number and a string is returned instead. Most drivers allow you
    * to configure the output type of large numbers and Kysely can't know if you've
@@ -112,36 +133,55 @@ export class FunctionModule<DB, TB extends keyof DB> {
   /**
    * Calls the `coalesce` function for given arguments.
    *
-   * This function returns the first non-null value from left to right, commonly
+   * This sql function returns the first non-null value from left to right, commonly
    * used to provide a default scalar for nullable columns or functions.
    *
-   * ```ts
-   * const { coalesce, max } = db.fn
-   *
-   * db.selectFrom('person')
-   *   .select(coalesce(max('age'), sql<number>`0`).as('max_age'))
-   *   .where('first_name', '=', 'Jennifer')
-   *   .execute()
-   * ```
-   *
-   * The generated SQL (postgres):
-   *
-   * ```sql
-   * select coalesce(max("age"), 0) as "max_age" from "person" where "first_name" = $1
-   * ```
-   *
-   * If this is used in a `select` statement the type of the selected expression
-   * is inferred in the same manner that the function computes. A union of arguments'
-   * types - if a non-nullable argument exists, it stops there (ignoring any further
-   * arguments' types) and exludes null from the final union type.
-   *
-   * Examples:
+   * If this function is used in a `select` statement the type of the selected
+   * expression is inferred in the same manner that the sql function computes.
+   * A union of arguments' types - if a non-nullable argument exists, it stops
+   * there (ignoring any further arguments' types) and exludes null from the final
+   * union type.
    *
    * `(string | null, number | null)` is inferred as `string | number | null`.
    *
    * `(string | null, number, Date | null)` is inferred as `string | number`.
    *
    * `(number, string | null)` is inferred as `number`.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * const { coalesce } = db.fn
+   *
+   * db.selectFrom('participant')
+   *   .select(coalesce('nickname', sql<string>`'<anonymous>'`).as('nickname'))
+   *   .where('room_id', '=', roomId)
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * select coalesce("nickname", '<anonymous>') as "nickname"
+   * from "participant" where "room_id" = $1
+   * ```
+   *
+   * You can combine this function with other helpers in this module:
+   *
+   * ```ts
+   * const { avg, coalesce } = db.fn
+   *
+   * db.selectFrom('person')
+   *   .select(coalesce(avg<number | null>('age'), sql<number>`0`).as('avg_age'))
+   *   .where('first_name', '=', 'Jennifer')
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * select coalesce(avg("age"), 0) as "avg_age" from "person" where "first_name" = $1
+   * ```
    */
   coalesce<
     V extends ReferenceExpression<DB, TB>,
@@ -157,7 +197,7 @@ export class FunctionModule<DB, TB extends keyof DB> {
   }
 
   /**
-   * Calls the `count` function with a column as argument.
+   * Calls the `count` function for the column given as the argument.
    *
    * When called with a column as argument, this sql function counts the number of rows where there
    * is a non-null value in that column.
@@ -183,11 +223,11 @@ export class FunctionModule<DB, TB extends keyof DB> {
    * select count("id") as "num_toys" from "toy"
    * ```
    *
-   * If this function is used in a `select` statement the type of the selected expression
-   * will be `number | string | bigint` by default. This is because Kysely
-   * can't know the type the db driver outputs. Sometimes the output can be larger
-   * than the largest javascript number and a string is returned instead. Most
-   * drivers allow you to configure the output type of large numbers and Kysely
+   * If this function is used in a `select` statement, the type of the selected
+   * expression will be `number | string | bigint` by default. This is because
+   * Kysely can't know the type the db driver outputs. Sometimes the output can
+   * be larger than the largest javascript number and a string is returned instead.
+   * Most drivers allow you to configure the output type of large numbers and Kysely
    * can't know if you've done so.
    *
    * You can specify the output type of the expression by providing
