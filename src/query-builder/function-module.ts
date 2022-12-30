@@ -65,8 +65,9 @@ export class FunctionModule<DB, TB extends keyof DB> {
    *
    * This sql function calculates the average value for a given column.
    *
-   * For additional functionality such as distinct, filtering and
-   * window functions, refer to {@link AggregateFunctionBuilder}.
+   * For additional functionality such as distinct, filtering and window functions,
+   * refer to {@link AggregateFunctionBuilder}. An instance of this builder is
+   * returned when calling this function.
    *
    * ### Examples
    *
@@ -223,8 +224,9 @@ export class FunctionModule<DB, TB extends keyof DB> {
    *
    * For counting all rows nulls included (`count(*)`), see {@link countAll}.
    *
-   * For additional functionality such as distinct, filtering and
-   * window functions, refer to {@link AggregateFunctionBuilder}.
+   * For additional functionality such as distinct, filtering and window functions,
+   * refer to {@link AggregateFunctionBuilder}. An instance of this builder is
+   * returned when calling this function.
    *
    * ### Examples
    *
@@ -292,7 +294,8 @@ export class FunctionModule<DB, TB extends keyof DB> {
    * see {@link count}.
    *
    * For additional functionality such as filtering and window functions, refer
-   * to {@link AggregateFunctionBuilder}.
+   * to {@link AggregateFunctionBuilder}. An instance of this builder is returned
+   * when calling this function.
    *
    * ### Examples
    *
@@ -380,8 +383,9 @@ export class FunctionModule<DB, TB extends keyof DB> {
    *
    * This sql function calculates the maximum value for a given column.
    *
-   * For additional functionality such as distinct, filtering and
-   * window functions, refer to {@link AggregateFunctionBuilder}.
+   * For additional functionality such as distinct, filtering and window functions,
+   * refer to {@link AggregateFunctionBuilder}. An instance of this builder is
+   * returned when calling this function.
    *
    * If this function is used in a `select` statement, the type of the selected
    * expression will be the referenced column's type. This is because the result
@@ -454,8 +458,9 @@ export class FunctionModule<DB, TB extends keyof DB> {
    *
    * This sql function calculates the minimum value for a given column.
    *
-   * For additional functionality such as distinct, filtering and
-   * window functions, refer to {@link AggregateFunctionBuilder}.
+   * For additional functionality such as distinct, filtering and window functions,
+   * refer to {@link AggregateFunctionBuilder}. An instance of this builder is
+   * returned when calling this function.
    *
    * If this function is used in a `select` statement, the type of the selected
    * expression will be the referenced column's type. This is because the result
@@ -528,8 +533,9 @@ export class FunctionModule<DB, TB extends keyof DB> {
    *
    * This sql function sums the values of a given column.
    *
-   * For additional functionality such as distinct, filtering and
-   * window functions, refer to {@link AggregateFunctionBuilder}.
+   * For additional functionality such as distinct, filtering and window functions,
+   * refer to {@link AggregateFunctionBuilder}. An instance of this builder is
+   * returned when calling this function.
    *
    * ### Examples
    *
