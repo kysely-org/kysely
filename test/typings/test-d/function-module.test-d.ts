@@ -217,7 +217,7 @@ async function testSelectUnexpectedColumn(db: Kysely<Database>) {
   expectError(
     db
       .selectFrom('person')
-      .select(count<number>('no_such_table').as('total_all_people'))
+      .select(countAll<number>('no_such_table').as('total_all_people'))
       .executeTakeFirstOrThrow()
   )
 
