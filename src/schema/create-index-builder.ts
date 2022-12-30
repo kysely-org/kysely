@@ -23,6 +23,20 @@ export class CreateIndexBuilder implements OperationNodeSource, Compilable {
   }
 
   /**
+   * Adds the "if not exists" modifier.
+   *
+   * If the index already exists, no error is thrown if this method has been called.
+   */
+  ifNotExists(): CreateIndexBuilder {
+    return new CreateIndexBuilder({
+      ...this.#props,
+      node: CreateIndexNode.cloneWith(this.#props.node, {
+        ifNotExists: true,
+      }),
+    })
+  }
+
+  /**
    * Makes the index unique.
    */
   unique(): CreateIndexBuilder {

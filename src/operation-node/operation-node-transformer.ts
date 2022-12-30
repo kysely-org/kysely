@@ -527,6 +527,7 @@ export class OperationNodeTransformer {
       expression: this.transformNode(node.expression),
       unique: node.unique,
       using: this.transformNode(node.using),
+      ifNotExists: node.ifNotExists,
     })
   }
 

@@ -769,6 +769,11 @@ export class DefaultQueryCompiler
     }
 
     this.append('index ')
+
+    if (node.ifNotExists) {
+      this.append('if not exists ')
+    }
+
     this.visitNode(node.name)
 
     if (node.table) {
