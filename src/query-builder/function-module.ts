@@ -84,6 +84,14 @@ export class FunctionModule<DB, TB extends keyof DB> {
    * select avg("price") as "avg_price" from "toy"
    * ```
    *
+   * You can limit column range to only columns participating in current query:
+   *
+   * ```ts
+   * db.selectFrom('toy')
+   *   .select(qb => qb.fn.avg('price').as('avg_price'))
+   *   .execute()
+   * ```
+   *
    * If this function is used in a `select` statement, the type of the selected
    * expression will be `number | string` by default. This is because Kysely can't know the
    * type the db driver outputs. Sometimes the output can be larger than the largest
@@ -104,7 +112,7 @@ export class FunctionModule<DB, TB extends keyof DB> {
    *
    * Sometimes a null is returned, e.g. when row count is 0, and no `group by`
    * was used. It is highly recommended to include null in the output type union
-   * and handle null values in post-execute code, or wrap the function with a `coalesce`
+   * and handle null values in post-execute code, or wrap the function with a {@link coalesce}
    * function.
    *
    * ```ts
@@ -164,6 +172,17 @@ export class FunctionModule<DB, TB extends keyof DB> {
    * ```sql
    * select coalesce("nickname", '<anonymous>') as "nickname"
    * from "participant" where "room_id" = $1
+   * ```
+   *
+   * You can limit column range to only columns participating in current query:
+   *
+   * ```ts
+   * db.selectFrom('participant')
+   *   .select(qb =>
+   *     qb.fn.coalesce('nickname', sql<string>`'<anonymous>'`).as('nickname')
+   *   )
+   *   .where('room_id', '=', roomId)
+   *   .execute()
    * ```
    *
    * You can combine this function with other helpers in this module:
@@ -359,8 +378,14 @@ export class FunctionModule<DB, TB extends keyof DB> {
   /**
    * Calls the `max` function for the column given as the argument.
    *
-   * If this is used in a `select` statement the type of the selected expression
-   * will be the referenced column's type.
+   * This sql function calculates the maximum value for a given column.
+   *
+   * For additional functionality such as distinct, filtering and
+   * window functions, refer to {@link AggregateFunctionBuilder}.
+   *
+   * If this function is used in a `select` statement, the type of the selected
+   * expression will be the referenced column's type. This is because the result
+   * is within the column's value range.
    *
    * ### Examples
    *
@@ -372,9 +397,23 @@ export class FunctionModule<DB, TB extends keyof DB> {
    *   .execute()
    * ```
    *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * select max("price") as "max_price" from "toy"
+   * ```
+   *
+   * You can limit column range to only columns participating in current query:
+   *
+   * ```ts
+   * db.selectFrom('toy')
+   *   .select(qb => qb.fn.max('price').as('max_price'))
+   *   .execute()
+   * ```
+   *
    * Sometimes a null is returned, e.g. when row count is 0, and no `group by`
    * was used. It is highly recommended to include null in the output type union
-   * and handle null values in post-execute code, or wrap the function with a `coalesce`
+   * and handle null values in post-execute code, or wrap the function with a {@link coalesce}
    * function.
    *
    * ```ts
@@ -413,8 +452,14 @@ export class FunctionModule<DB, TB extends keyof DB> {
   /**
    * Calls the `min` function for the column given as the argument.
    *
-   * If this is used in a `select` statement the type of the selected expression
-   * will be the referenced column's type.
+   * This sql function calculates the minimum value for a given column.
+   *
+   * For additional functionality such as distinct, filtering and
+   * window functions, refer to {@link AggregateFunctionBuilder}.
+   *
+   * If this function is used in a `select` statement, the type of the selected
+   * expression will be the referenced column's type. This is because the result
+   * is within the column's value range.
    *
    * ### Examples
    *
@@ -426,16 +471,30 @@ export class FunctionModule<DB, TB extends keyof DB> {
    *   .execute()
    * ```
    *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * select min("price") as "min_price" from "toy"
+   * ```
+   *
+   * You can limit column range to only columns participating in current query:
+   *
+   * ```ts
+   * db.selectFrom('toy')
+   *   .select(qb => qb.fn.min('price').as('min_price'))
+   *   .execute()
+   * ```
+   *
    * Sometimes a null is returned, e.g. when row count is 0, and no `group by`
    * was used. It is highly recommended to include null in the output type union
-   * and handle null values in post-execute code, or wrap the function with a `coalesce`
+   * and handle null values in post-execute code, or wrap the function with a {@link coalesce}
    * function.
    *
    * ```ts
    * const { min } = db.fn
    *
    * db.selectFrom('toy')
-   *   .select(min<number | null, 'price'>('price').as('min_price'))
+   *   .select(min<number | null, 'price'>('price').as('max_price'))
    *   .execute()
    * ```
    */
@@ -467,15 +526,44 @@ export class FunctionModule<DB, TB extends keyof DB> {
   /**
    * Calls the `sum` function for the column given as the argument.
    *
-   * If this is used in a `select` statement the type of the selected expression
-   * will be `number | string | bigint` by default. This is because Kysely
-   * can't know the type the db driver outputs. Sometimes the output can be larger
-   * than the largest javascript number and a string is returned instead. Most
-   * drivers allow you to configure the output type of large numbers and Kysely
-   * can't know if you've done so.
+   * This sql function sums the values of a given column.
    *
-   * You can specify the output type of the expression by providing
-   * the type as the first type argument:
+   * For additional functionality such as distinct, filtering and
+   * window functions, refer to {@link AggregateFunctionBuilder}.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * const { sum } = db.fn
+   *
+   * db.selectFrom('toy')
+   *   .select(sum('price').as('total_price'))
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * select sum("price") as "total_price" from "toy"
+   * ```
+   *
+   * You can limit column range to only columns participating in current query:
+   *
+   * ```ts
+   * db.selectFrom('toy')
+   *   .select(qb => qb.fn.sum('price').as('total_price'))
+   *   .execute()
+   * ```
+   *
+   * If this function is used in a `select` statement, the type of the selected
+   * expression will be `number | string` by default. This is because Kysely can't know the
+   * type the db driver outputs. Sometimes the output can be larger than the largest
+   * javascript number and a string is returned instead. Most drivers allow you
+   * to configure the output type of large numbers and Kysely can't know if you've
+   * done so.
+   *
+   * You can specify the output type of the expression by providing the type as
+   * the first type argument:
    *
    * ```ts
    * const { sum } = db.fn
@@ -487,7 +575,7 @@ export class FunctionModule<DB, TB extends keyof DB> {
    *
    * Sometimes a null is returned, e.g. when row count is 0, and no `group by`
    * was used. It is highly recommended to include null in the output type union
-   * and handle null values in post-execute code, or wrap the function with a `coalesce`
+   * and handle null values in post-execute code, or wrap the function with a {@link coalesce}
    * function.
    *
    * ```ts
