@@ -827,7 +827,7 @@ export class OperationNodeTransformer {
   ): AggregateFunctionNode {
     return requireAllProps({
       kind: 'AggregateFunctionNode',
-      column: this.transformNode(node.column),
+      aggregated: this.transformNode(node.aggregated),
       distinct: node.distinct,
       filter: this.transformNode(node.filter),
       func: node.func,

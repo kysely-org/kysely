@@ -1207,7 +1207,7 @@ export class DefaultQueryCompiler
       this.append('distinct ')
     }
 
-    this.visitNode(node.column)
+    this.visitNode(node.aggregated)
     this.append(')')
 
     if (node.filter) {

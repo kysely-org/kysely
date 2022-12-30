@@ -11,6 +11,7 @@ import {
   ReferenceExpression,
   StringReference,
 } from '../parser/reference-parser.js'
+import { parseSelectAll } from '../parser/select-parser.js'
 import { RawBuilder } from '../raw-builder/raw-builder.js'
 import { createQueryId } from '../util/query-id.js'
 import { Equals, IsNever } from '../util/type-utils.js'
@@ -53,6 +54,7 @@ export class FunctionModule<DB, TB extends keyof DB> {
     this.avg = this.avg.bind(this)
     this.coalesce = this.coalesce.bind(this)
     this.count = this.count.bind(this)
+    this.countAll = this.countAll.bind(this)
     this.max = this.max.bind(this)
     this.min = this.min.bind(this)
     this.sum = this.sum.bind(this)
@@ -194,6 +196,28 @@ export class FunctionModule<DB, TB extends keyof DB> {
       aggregateFunctionNode: AggregateFunctionNode.create(
         'count',
         parseSimpleReferenceExpression(column)
+      ),
+    })
+  }
+
+  /**
+   * TODO: ...
+   */
+  countAll<O extends number | string | bigint, T extends TB = TB>(
+    table: T
+  ): AggregateFunctionBuilder<DB, TB, O>
+
+  countAll<O extends number | string | bigint>(): AggregateFunctionBuilder<
+    DB,
+    TB,
+    O
+  >
+
+  countAll(table?: any): any {
+    return new AggregateFunctionBuilder({
+      aggregateFunctionNode: AggregateFunctionNode.create(
+        'count',
+        parseSelectAll(table)[0].selection as any
       ),
     })
   }
