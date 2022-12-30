@@ -157,9 +157,33 @@ export class FunctionModule<DB, TB extends keyof DB> {
   }
 
   /**
-   * Calls the `count` function for the column given as the argument.
+   * Calls the `count` function with a column as argument.
    *
-   * If this is used in a `select` statement the type of the selected expression
+   * When called with a column as argument, this sql function counts the number of rows where there
+   * is a non-null value in that column.
+   *
+   * For counting all rows nulls included (`count(*)`), see {@link countAll}.
+   *
+   * For additional functionality such as distinct, filtering and
+   * window functions, refer to {@link AggregateFunctionBuilder}.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * const { count } = db.fn
+   *
+   * db.selectFrom('toy')
+   *   .select(count('id').as('num_toys'))
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * select count("id") as "num_toys" from "toy"
+   * ```
+   *
+   * If this function is used in a `select` statement the type of the selected expression
    * will be `number | string | bigint` by default. This is because Kysely
    * can't know the type the db driver outputs. Sometimes the output can be larger
    * than the largest javascript number and a string is returned instead. Most
@@ -177,11 +201,11 @@ export class FunctionModule<DB, TB extends keyof DB> {
    *   .execute()
    * ```
    *
-   * You can limit column range:
+   * You can limit column range to only columns participating in current query:
    *
    * ```ts
    * db.selectFrom('toy')
-   *   .select(qb => qb.fn.count<number>('id').as('num_toys'))
+   *   .select(qb => qb.fn.count('id').as('num_toys'))
    *   .execute()
    * ```
    */
@@ -201,7 +225,77 @@ export class FunctionModule<DB, TB extends keyof DB> {
   }
 
   /**
-   * TODO: ...
+   * Calls the `count` function with `*` or `table.*` as argument.
+   *
+   * When called with `*` as argument, this sql function counts the number of rows.
+   *
+   * For counting rows with non-null values in a given column (`count(column)`),
+   * see {@link count}.
+   *
+   * For additional functionality such as distinct, filtering and
+   * window functions, refer to {@link AggregateFunctionBuilder}.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * const { count } = db.fn
+   *
+   * db.selectFrom('toy')
+   *   .select(countAll().as('num_toys'))
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * select count(*) as "num_toys" from "toy"
+   * ```
+   *
+   * If this is used in a `select` statement the type of the selected expression
+   * will be `number | string | bigint` by default. This is because Kysely
+   * can't know the type the db driver outputs. Sometimes the output can be larger
+   * than the largest javascript number and a string is returned instead. Most
+   * drivers allow you to configure the output type of large numbers and Kysely
+   * can't know if you've done so.
+   *
+   * You can specify the output type of the expression by providing
+   * the type as the first type argument:
+   *
+   * ```ts
+   * const { countAll } = db.fn
+   *
+   * db.selectFrom('toy')
+   *   .select(countAll<number>().as('num_toys'))
+   *   .execute()
+   * ```
+   *
+   * Some databases, such as PostgreSQL, support scoping the function to a specific
+   * table:
+   *
+   * ```ts
+   * const { countAll } = db.fn
+   *
+   * db.selectFrom('toy')
+   *   .innerJoin('pet', 'pet.id', 'toy.pet_id')
+   *   .select(countAll('toy').as('num_toys'))
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * select count("toy".*) as "num_toys"
+   * from "toy" inner join "pet" on "pet"."id" = "toy"."pet_id"
+   * ```
+   *
+   * You can limit table range to only tables participating in current query:
+   *
+   * ```ts
+   * db.selectFrom('toy')
+   *   .innerJoin('pet', 'pet.id', 'toy.pet_id')
+   *   .select(qb => qb.fn.countAll('toy').as('num_toys'))
+   *   .execute()
+   * ```
    */
   countAll<O extends number | string | bigint, T extends TB = TB>(
     table: T
