@@ -291,8 +291,8 @@ export class FunctionModule<DB, TB extends keyof DB> {
    * For counting rows with non-null values in a given column (`count(column)`),
    * see {@link count}.
    *
-   * For additional functionality such as distinct, filtering and
-   * window functions, refer to {@link AggregateFunctionBuilder}.
+   * For additional functionality such as filtering and window functions, refer
+   * to {@link AggregateFunctionBuilder}.
    *
    * ### Examples
    *
