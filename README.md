@@ -207,37 +207,34 @@ among other places.
 import { Pool } from 'pg'
 // or `import * as Cursor from 'pg-cursor'` depending on your tsconfig
 import Cursor from 'pg-cursor'
-import {
-    Kysely,
-    PostgresDialect,
-} from 'kysely'
+import { Kysely, PostgresDialect } from 'kysely'
 
 const db = new Kysely<Database>({
-    // PostgresDialect requires the Cursor dependency
-    dialect: new PostgresDialect({
-        pool: new Pool({
-            host: 'localhost',
-            database: 'kysely_test'
-        }),
-        cursor: Cursor
+  // PostgresDialect requires the Cursor dependency
+  dialect: new PostgresDialect({
+    pool: new Pool({
+      host: 'localhost',
+      database: 'kysely_test'
     }),
-
-    // MysqlDialect doesn't require any special configuration
+    cursor: Cursor
+  }),
+  // MysqlDialect doesn't require any special configuration
 })
 
 async function demo() {
-    for await (const male of db.selectFrom("person")
-        .selectAll()
-        .where("person.gender", "=", "male")
-        .stream()) {
-        console.log(`Hello mr. ${male.first_name}!`)
+  for await (const adult of db.selectFrom('person')
+    .selectAll()
+    .where('age', '>', 18)
+    .stream()
+  ) {
+    console.log(`Hello ${adult.first_name}!`)
 
-        if (male.first_name === "John") {
-          // After this line the db connection is released and no more 
-          // rows are streamed from the database to the client
-          break;
-        }
+    if (adult.first_name === 'John') {
+      // After this line the db connection is released and no more
+      // rows are streamed from the database to the client
+      break;
     }
+  }
 }
 ```
 
@@ -268,6 +265,7 @@ or "recipes" for common use cases.
 * [Extending kysely](https://github.com/koskimas/kysely/tree/master/recipes/extending-kysely.md)
 * [Raw SQL](https://github.com/koskimas/kysely/tree/master/recipes/raw-sql.md)
 * [Schemas](https://github.com/koskimas/kysely/tree/master/recipes/schemas.md)
+* [Dealing with the `Type instantiation is excessively deep and possibly infinite` error](https://github.com/koskimas/kysely/tree/master/recipes/excessively-deep-types.md)
 
 # Migrations
 
