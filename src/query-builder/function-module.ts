@@ -494,7 +494,7 @@ export class FunctionModule<DB, TB extends keyof DB> {
    * const { min } = db.fn
    *
    * db.selectFrom('toy')
-   *   .select(min<number | null, 'price'>('price').as('max_price'))
+   *   .select(min<number | null, 'price'>('price').as('min_price'))
    *   .execute()
    * ```
    */
