@@ -45,7 +45,7 @@ export class CreateTableBuilder<TB extends string, C extends string = never>
   temporary(): CreateTableBuilder<TB, C> {
     return new CreateTableBuilder({
       ...this.#props,
-      createTableNode: CreateTableNode.cloneWith(this.#props.createTableNode, {
+      node: CreateTableNode.cloneWith(this.#props.node, {
         temporary: true,
       }),
     })
@@ -60,7 +60,7 @@ export class CreateTableBuilder<TB extends string, C extends string = never>
   onCommit(onCommit: OnCommitAction): CreateTableBuilder<TB, C> {
     return new CreateTableBuilder({
       ...this.#props,
-      createTableNode: CreateTableNode.cloneWith(this.#props.createTableNode, {
+      node: CreateTableNode.cloneWith(this.#props.node, {
         onCommit: parseOnCommitAction(onCommit),
       }),
     })
@@ -74,7 +74,7 @@ export class CreateTableBuilder<TB extends string, C extends string = never>
   ifNotExists(): CreateTableBuilder<TB, C> {
     return new CreateTableBuilder({
       ...this.#props,
-      createTableNode: CreateTableNode.cloneWith(this.#props.createTableNode, {
+      node: CreateTableNode.cloneWith(this.#props.node, {
         ifNotExists: true,
       }),
     })
@@ -140,8 +140,8 @@ export class CreateTableBuilder<TB extends string, C extends string = never>
 
     return new CreateTableBuilder({
       ...this.#props,
-      createTableNode: CreateTableNode.cloneWithColumn(
-        this.#props.createTableNode,
+      node: CreateTableNode.cloneWithColumn(
+        this.#props.node,
         columnBuilder.toOperationNode()
       ),
     })
@@ -165,8 +165,8 @@ export class CreateTableBuilder<TB extends string, C extends string = never>
   ): CreateTableBuilder<TB, C> {
     return new CreateTableBuilder({
       ...this.#props,
-      createTableNode: CreateTableNode.cloneWithConstraint(
-        this.#props.createTableNode,
+      node: CreateTableNode.cloneWithConstraint(
+        this.#props.node,
         PrimaryConstraintNode.create(columns, constraintName)
       ),
     })
@@ -190,8 +190,8 @@ export class CreateTableBuilder<TB extends string, C extends string = never>
   ): CreateTableBuilder<TB, C> {
     return new CreateTableBuilder({
       ...this.#props,
-      createTableNode: CreateTableNode.cloneWithConstraint(
-        this.#props.createTableNode,
+      node: CreateTableNode.cloneWithConstraint(
+        this.#props.node,
         UniqueConstraintNode.create(columns, constraintName)
       ),
     })
@@ -217,8 +217,8 @@ export class CreateTableBuilder<TB extends string, C extends string = never>
   ): CreateTableBuilder<TB, C> {
     return new CreateTableBuilder({
       ...this.#props,
-      createTableNode: CreateTableNode.cloneWithConstraint(
-        this.#props.createTableNode,
+      node: CreateTableNode.cloneWithConstraint(
+        this.#props.node,
         CheckConstraintNode.create(
           checkExpression.toOperationNode(),
           constraintName
@@ -276,8 +276,8 @@ export class CreateTableBuilder<TB extends string, C extends string = never>
 
     return new CreateTableBuilder({
       ...this.#props,
-      createTableNode: CreateTableNode.cloneWithConstraint(
-        this.#props.createTableNode,
+      node: CreateTableNode.cloneWithConstraint(
+        this.#props.node,
         builder.toOperationNode()
       ),
     })
@@ -312,8 +312,8 @@ export class CreateTableBuilder<TB extends string, C extends string = never>
   modifyFront(modifier: Expression<any>): CreateTableBuilder<TB, C> {
     return new CreateTableBuilder({
       ...this.#props,
-      createTableNode: CreateTableNode.cloneWithFrontModifier(
-        this.#props.createTableNode,
+      node: CreateTableNode.cloneWithFrontModifier(
+        this.#props.node,
         modifier.toOperationNode()
       ),
     })
@@ -348,8 +348,8 @@ export class CreateTableBuilder<TB extends string, C extends string = never>
   modifyEnd(modifier: Expression<any>): CreateTableBuilder<TB, C> {
     return new CreateTableBuilder({
       ...this.#props,
-      createTableNode: CreateTableNode.cloneWithEndModifier(
-        this.#props.createTableNode,
+      node: CreateTableNode.cloneWithEndModifier(
+        this.#props.node,
         modifier.toOperationNode()
       ),
     })
@@ -363,7 +363,7 @@ export class CreateTableBuilder<TB extends string, C extends string = never>
    * ```ts
    * db.schema
    *   .createTable('test')
-   *   .call((builder) => builder.addColumn('id', 'integer'))
+   *   .$call((builder) => builder.addColumn('id', 'integer'))
    *   .execute()
    * ```
    *
@@ -383,17 +383,24 @@ export class CreateTableBuilder<TB extends string, C extends string = never>
    *
    * db.schema
    *   .createTable('test')
-   *   .call(addDefaultColumns)
+   *   .$call(addDefaultColumns)
    *   .execute()
    * ```
    */
-  call<T>(func: (qb: this) => T): T {
+  $call<T>(func: (qb: this) => T): T {
     return func(this)
+  }
+
+  /**
+   * @deprecated Use `$call` instead
+   */
+  call<T>(func: (qb: this) => T): T {
+    return this.$call(func)
   }
 
   toOperationNode(): CreateTableNode {
     return this.#props.executor.transformQuery(
-      this.#props.createTableNode,
+      this.#props.node,
       this.#props.queryId
     )
   }
@@ -418,7 +425,7 @@ preventAwait(
 export interface CreateTableBuilderProps {
   readonly queryId: QueryId
   readonly executor: QueryExecutor
-  readonly createTableNode: CreateTableNode
+  readonly node: CreateTableNode
 }
 
 export type ColumnBuilderCallback = (

@@ -117,8 +117,14 @@ export type AnyAliasedColumnWithTable<DB, TB extends keyof DB> = {
  */
 export type ArrayItemType<T> = T extends ReadonlyArray<infer I> ? I : never
 
+/**
+ * Any select query builder.
+ */
 export type AnySelectQueryBuilder = SelectQueryBuilder<any, any, any>
 
+/**
+ * Given a query output type `O` evaluates to the output type of a `executeTakeFirst` call.
+ */
 export type SingleResultType<O> = O extends InsertResult
   ? O
   : O extends DeleteResult
@@ -127,8 +133,14 @@ export type SingleResultType<O> = O extends InsertResult
   ? O
   : O | undefined
 
+/**
+ * Represents a database row whose column names and their types are unknown.
+ */
 export type UnknownRow = Record<string, unknown>
 
+/**
+ * Makes all properties of object type `T` nullable.
+ */
 export type Nullable<T> = { [P in keyof T]: T[P] | null }
 
 /**
@@ -153,8 +165,14 @@ export type Nullable<T> = { [P in keyof T]: T[P] | null }
  */
 export type MergePartial<T1, T2> = T1 & Partial<Omit<T2, keyof T1>>
 
+/**
+ * Evaluates to `true` if `T` is `never`.
+ */
 export type IsNever<T> = [T] extends [never] ? true : false
 
+/**
+ * Evaluates to `true` if the types `T` and `U` are equal.
+ */
 export type Equals<T, U> = (<G>() => G extends T ? 1 : 2) extends <
   G
 >() => G extends U ? 1 : 2

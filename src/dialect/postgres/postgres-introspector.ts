@@ -24,7 +24,7 @@ export class PostgresIntrospector implements DatabaseIntrospector {
     let rawSchemas = await this.#db
       .selectFrom('pg_catalog.pg_namespace')
       .select('nspname')
-      .castTo<RawSchemaMetadata>()
+      .$castTo<RawSchemaMetadata>()
       .execute()
 
     return rawSchemas.map((it) => ({ name: it.nspname }))
@@ -77,8 +77,8 @@ export class PostgresIntrospector implements DatabaseIntrospector {
       .where('a.attisdropped', '!=', true)
       .orderBy('ns.nspname')
       .orderBy('c.relname')
-      .orderBy('a.attname')
-      .castTo<RawColumnMetadata>()
+      .orderBy('a.attnum')
+      .$castTo<RawColumnMetadata>()
 
     if (!options.withInternalKyselyTables) {
       query = query

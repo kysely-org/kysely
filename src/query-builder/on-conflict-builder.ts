@@ -17,7 +17,7 @@ import {
   parseNotExists,
 } from '../parser/unary-operation-parser.js'
 import {
-  MutationObject,
+  UpdateObject,
   parseUpdateObject,
 } from '../parser/update-set-parser.js'
 import { freeze } from '../util/object-utils.js'
@@ -259,6 +259,15 @@ export class OnConflictBuilder<DB, TB extends keyof DB>
     })
   }
 
+  clearWhere(): OnConflictBuilder<DB, TB> {
+    return new OnConflictBuilder<DB, TB>({
+      ...this.#props,
+      onConflictNode: OnConflictNode.cloneWithoutIndexWhere(
+        this.#props.onConflictNode
+      ),
+    })
+  }
+
   /**
    * Adds the "do nothing" conflict action.
    *
@@ -316,7 +325,7 @@ export class OnConflictBuilder<DB, TB extends keyof DB>
    * ```
    */
   doUpdateSet(
-    updates: MutationObject<
+    updates: UpdateObject<
       OnConflictDatabase<DB, TB>,
       OnConflictTables<TB>,
       OnConflictTables<TB>
@@ -520,6 +529,15 @@ export class OnConflictUpdateBuilder<DB, TB extends keyof DB>
       onConflictNode: OnConflictNode.cloneWithUpdateOrWhere(
         this.#props.onConflictNode,
         parseNotExists(arg)
+      ),
+    })
+  }
+
+  clearWhere(): OnConflictUpdateBuilder<DB, TB> {
+    return new OnConflictUpdateBuilder({
+      ...this.#props,
+      onConflictNode: OnConflictNode.cloneWithoutUpdateWhere(
+        this.#props.onConflictNode
       ),
     })
   }

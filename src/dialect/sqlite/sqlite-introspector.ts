@@ -33,7 +33,7 @@ export class SqliteIntrospector implements DatabaseIntrospector {
       .where('name', 'not like', 'sqlite_%')
       .select('name')
       .orderBy('name')
-      .castTo<{ name: string }>()
+      .$castTo<{ name: string }>()
 
     if (!options.withInternalKyselyTables) {
       query = query
@@ -61,7 +61,7 @@ export class SqliteIntrospector implements DatabaseIntrospector {
       .selectFrom('sqlite_master')
       .where('name', '=', table)
       .select('sql')
-      .castTo<{ sql: string | undefined }>()
+      .$castTo<{ sql: string | undefined }>()
       .execute()
 
     // Try to find the name of the column that has `autoincrement` 🤦
@@ -82,7 +82,7 @@ export class SqliteIntrospector implements DatabaseIntrospector {
         }>`pragma_table_info(${table})`.as('table_info')
       )
       .select(['name', 'type', 'notnull', 'dflt_value'])
-      .orderBy('name')
+      .orderBy('cid')
       .execute()
 
     return {

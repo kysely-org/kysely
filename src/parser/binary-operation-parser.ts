@@ -46,7 +46,7 @@ export type OperandValueExpressionOrList<
 > = ValueExpressionOrList<
   DB,
   TB,
-  ExtractTypeFromReferenceExpression<DB, TB, RE>
+  ExtractTypeFromReferenceExpression<DB, TB, RE> | null
 >
 
 export type WhereGrouper<DB, TB extends keyof DB> = (

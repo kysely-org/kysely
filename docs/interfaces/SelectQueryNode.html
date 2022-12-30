@@ -20,8 +20,8 @@
 <ul class="tsd-hierarchy">
 <li><span class="target">SelectQueryNode</span></li></ul></li></ul></section><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/koskimas/kysely/blob/b72ccc58/src/operation-node/select-query-node.ts#L23">src/operation-node/select-query-node.ts:23</a></li>
-<li>Defined in <a href="https://github.com/koskimas/kysely/blob/b72ccc58/src/operation-node/select-query-node.ts#L45">src/operation-node/select-query-node.ts:45</a></li></ul></aside>
+<li>Defined in <a href="https://github.com/koskimas/kysely/blob/efa083e9/src/operation-node/select-query-node.ts#L19">src/operation-node/select-query-node.ts:19</a></li>
+<li>Defined in <a href="https://github.com/koskimas/kysely/blob/efa083e9/src/operation-node/select-query-node.ts#L41">src/operation-node/select-query-node.ts:41</a></li></ul></aside>
 <section class="tsd-panel-group tsd-index-group">
 <section class="tsd-panel tsd-index-panel">
 <details class="tsd-index-content tsd-index-accordion" open><summary class="tsd-accordion-summary tsd-index-summary">
@@ -29,7 +29,7 @@
 <div class="tsd-accordion-details">
 <section class="tsd-index-section">
 <h3 class="tsd-index-heading">Properties</h3>
-<div class="tsd-index-list"><a href="SelectQueryNode.html#distinctOnSelections" class="tsd-index-link tsd-kind-property tsd-parent-kind-interface"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><rect fill="var(--color-icon-background)" stroke="#FF984D" stroke-width="1.5" x="1" y="1" width="22" height="22" rx="12" id="icon-1024-path"></rect><path d="M9.354 16V7.24H12.174C12.99 7.24 13.638 7.476 14.118 7.948C14.606 8.412 14.85 9.036 14.85 9.82C14.85 10.604 14.606 11.232 14.118 11.704C13.638 12.168 12.99 12.4 12.174 12.4H10.434V16H9.354ZM10.434 11.428H12.174C12.646 11.428 13.022 11.284 13.302 10.996C13.59 10.7 13.734 10.308 13.734 9.82C13.734 9.324 13.59 8.932 13.302 8.644C13.022 8.356 12.646 8.212 12.174 8.212H10.434V11.428Z" fill="var(--color-text)" id="icon-1024-text"></path></svg><span>distinct<wbr/>On<wbr/>Selections?</span></a>
+<div class="tsd-index-list"><a href="SelectQueryNode.html#distinctOn" class="tsd-index-link tsd-kind-property tsd-parent-kind-interface"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><rect fill="var(--color-icon-background)" stroke="#FF984D" stroke-width="1.5" x="1" y="1" width="22" height="22" rx="12" id="icon-1024-path"></rect><path d="M9.354 16V7.24H12.174C12.99 7.24 13.638 7.476 14.118 7.948C14.606 8.412 14.85 9.036 14.85 9.82C14.85 10.604 14.606 11.232 14.118 11.704C13.638 12.168 12.99 12.4 12.174 12.4H10.434V16H9.354ZM10.434 11.428H12.174C12.646 11.428 13.022 11.284 13.302 10.996C13.59 10.7 13.734 10.308 13.734 9.82C13.734 9.324 13.59 8.932 13.302 8.644C13.022 8.356 12.646 8.212 12.174 8.212H10.434V11.428Z" fill="var(--color-text)" id="icon-1024-text"></path></svg><span>distinct<wbr/>On?</span></a>
 <a href="SelectQueryNode.html#endModifiers" class="tsd-index-link tsd-kind-property tsd-parent-kind-interface"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg><span>end<wbr/>Modifiers?</span></a>
 <a href="SelectQueryNode.html#explain" class="tsd-index-link tsd-kind-property tsd-parent-kind-interface"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg><span>explain?</span></a>
 <a href="SelectQueryNode.html#from" class="tsd-index-link tsd-kind-property tsd-parent-kind-interface"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg><span>from</span></a>
@@ -48,87 +48,87 @@
 </div></section></div></details></section></section>
 <section class="tsd-panel-group tsd-member-group">
 <h2>Properties</h2>
-<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface"><a id="distinctOnSelections" class="tsd-anchor"></a>
-<h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagOptional">Optional</code> <code class="tsd-tag ts-flagReadonly">Readonly</code> <span>distinct<wbr/>On<wbr/>Selections</span><a href="#distinctOnSelections" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none" id="icon-anchor-a"></path><path d="M10 14a3.5 3.5 0 0 0 5 0l4 -4a3.5 3.5 0 0 0 -5 -5l-.5 .5" id="icon-anchor-b"></path><path d="M14 10a3.5 3.5 0 0 0 -5 0l-4 4a3.5 3.5 0 0 0 5 5l.5 -.5" id="icon-anchor-c"></path></svg></a></h3>
-<div class="tsd-signature">distinct<wbr/>On<wbr/>Selections<span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-symbol">readonly </span><span class="tsd-signature-type">SelectionNode</span><span class="tsd-signature-symbol">[]</span></div><aside class="tsd-sources">
+<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface"><a id="distinctOn" class="tsd-anchor"></a>
+<h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagOptional">Optional</code> <code class="tsd-tag ts-flagReadonly">Readonly</code> <span>distinct<wbr/>On</span><a href="#distinctOn" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none" id="icon-anchor-a"></path><path d="M10 14a3.5 3.5 0 0 0 5 0l4 -4a3.5 3.5 0 0 0 -5 -5l-.5 .5" id="icon-anchor-b"></path><path d="M14 10a3.5 3.5 0 0 0 -5 0l-4 4a3.5 3.5 0 0 0 5 5l.5 -.5" id="icon-anchor-c"></path></svg></a></h3>
+<div class="tsd-signature">distinct<wbr/>On<span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-symbol">readonly </span><a href="OperationNode.html" class="tsd-signature-type" data-tsd-kind="Interface">OperationNode</a><span class="tsd-signature-symbol">[]</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/koskimas/kysely/blob/b72ccc58/src/operation-node/select-query-node.ts#L27">src/operation-node/select-query-node.ts:27</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/koskimas/kysely/blob/efa083e9/src/operation-node/select-query-node.ts#L23">src/operation-node/select-query-node.ts:23</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface"><a id="endModifiers" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagOptional">Optional</code> <code class="tsd-tag ts-flagReadonly">Readonly</code> <span>end<wbr/>Modifiers</span><a href="#endModifiers" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">end<wbr/>Modifiers<span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-symbol">readonly </span><span class="tsd-signature-type">SelectModifierNode</span><span class="tsd-signature-symbol">[]</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/koskimas/kysely/blob/b72ccc58/src/operation-node/select-query-node.ts#L33">src/operation-node/select-query-node.ts:33</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/koskimas/kysely/blob/efa083e9/src/operation-node/select-query-node.ts#L29">src/operation-node/select-query-node.ts:29</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface"><a id="explain" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagOptional">Optional</code> <code class="tsd-tag ts-flagReadonly">Readonly</code> <span>explain</span><a href="#explain" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">explain<span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">ExplainNode</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/koskimas/kysely/blob/b72ccc58/src/operation-node/select-query-node.ts#L38">src/operation-node/select-query-node.ts:38</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/koskimas/kysely/blob/efa083e9/src/operation-node/select-query-node.ts#L34">src/operation-node/select-query-node.ts:34</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface"><a id="from" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagReadonly">Readonly</code> <span>from</span><a href="#from" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">from<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">FromNode</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/koskimas/kysely/blob/b72ccc58/src/operation-node/select-query-node.ts#L25">src/operation-node/select-query-node.ts:25</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/koskimas/kysely/blob/efa083e9/src/operation-node/select-query-node.ts#L21">src/operation-node/select-query-node.ts:21</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface"><a id="frontModifiers" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagOptional">Optional</code> <code class="tsd-tag ts-flagReadonly">Readonly</code> <span>front<wbr/>Modifiers</span><a href="#frontModifiers" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">front<wbr/>Modifiers<span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-symbol">readonly </span><span class="tsd-signature-type">SelectModifierNode</span><span class="tsd-signature-symbol">[]</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/koskimas/kysely/blob/b72ccc58/src/operation-node/select-query-node.ts#L32">src/operation-node/select-query-node.ts:32</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/koskimas/kysely/blob/efa083e9/src/operation-node/select-query-node.ts#L28">src/operation-node/select-query-node.ts:28</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface"><a id="groupBy" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagOptional">Optional</code> <code class="tsd-tag ts-flagReadonly">Readonly</code> <span>group<wbr/>By</span><a href="#groupBy" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">group<wbr/>By<span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">GroupByNode</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/koskimas/kysely/blob/b72ccc58/src/operation-node/select-query-node.ts#L29">src/operation-node/select-query-node.ts:29</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/koskimas/kysely/blob/efa083e9/src/operation-node/select-query-node.ts#L25">src/operation-node/select-query-node.ts:25</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface"><a id="having" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagOptional">Optional</code> <code class="tsd-tag ts-flagReadonly">Readonly</code> <span>having</span><a href="#having" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">having<span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">HavingNode</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/koskimas/kysely/blob/b72ccc58/src/operation-node/select-query-node.ts#L37">src/operation-node/select-query-node.ts:37</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/koskimas/kysely/blob/efa083e9/src/operation-node/select-query-node.ts#L33">src/operation-node/select-query-node.ts:33</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface"><a id="joins" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagOptional">Optional</code> <code class="tsd-tag ts-flagReadonly">Readonly</code> <span>joins</span><a href="#joins" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">joins<span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-symbol">readonly </span><span class="tsd-signature-type">JoinNode</span><span class="tsd-signature-symbol">[]</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/koskimas/kysely/blob/b72ccc58/src/operation-node/select-query-node.ts#L28">src/operation-node/select-query-node.ts:28</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/koskimas/kysely/blob/efa083e9/src/operation-node/select-query-node.ts#L24">src/operation-node/select-query-node.ts:24</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface"><a id="kind" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagReadonly">Readonly</code> <span>kind</span><a href="#kind" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">kind<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">&quot;SelectQueryNode&quot;</span></div><aside class="tsd-sources">
 <p>Overrides <a href="OperationNode.html">OperationNode</a>.<a href="OperationNode.html#kind">kind</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/koskimas/kysely/blob/b72ccc58/src/operation-node/select-query-node.ts#L24">src/operation-node/select-query-node.ts:24</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/koskimas/kysely/blob/efa083e9/src/operation-node/select-query-node.ts#L20">src/operation-node/select-query-node.ts:20</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface"><a id="limit" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagOptional">Optional</code> <code class="tsd-tag ts-flagReadonly">Readonly</code> <span>limit</span><a href="#limit" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">limit<span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">LimitNode</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/koskimas/kysely/blob/b72ccc58/src/operation-node/select-query-node.ts#L34">src/operation-node/select-query-node.ts:34</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/koskimas/kysely/blob/efa083e9/src/operation-node/select-query-node.ts#L30">src/operation-node/select-query-node.ts:30</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface"><a id="offset" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagOptional">Optional</code> <code class="tsd-tag ts-flagReadonly">Readonly</code> <span>offset</span><a href="#offset" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">offset<span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">OffsetNode</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/koskimas/kysely/blob/b72ccc58/src/operation-node/select-query-node.ts#L35">src/operation-node/select-query-node.ts:35</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/koskimas/kysely/blob/efa083e9/src/operation-node/select-query-node.ts#L31">src/operation-node/select-query-node.ts:31</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface"><a id="orderBy" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagOptional">Optional</code> <code class="tsd-tag ts-flagReadonly">Readonly</code> <span>order<wbr/>By</span><a href="#orderBy" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">order<wbr/>By<span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">OrderByNode</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/koskimas/kysely/blob/b72ccc58/src/operation-node/select-query-node.ts#L30">src/operation-node/select-query-node.ts:30</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/koskimas/kysely/blob/efa083e9/src/operation-node/select-query-node.ts#L26">src/operation-node/select-query-node.ts:26</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface"><a id="selections" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagOptional">Optional</code> <code class="tsd-tag ts-flagReadonly">Readonly</code> <span>selections</span><a href="#selections" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">selections<span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-symbol">readonly </span><span class="tsd-signature-type">SelectionNode</span><span class="tsd-signature-symbol">[]</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/koskimas/kysely/blob/b72ccc58/src/operation-node/select-query-node.ts#L26">src/operation-node/select-query-node.ts:26</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/koskimas/kysely/blob/efa083e9/src/operation-node/select-query-node.ts#L22">src/operation-node/select-query-node.ts:22</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface"><a id="setOperations" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagOptional">Optional</code> <code class="tsd-tag ts-flagReadonly">Readonly</code> <span>set<wbr/>Operations</span><a href="#setOperations" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">set<wbr/>Operations<span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-symbol">readonly </span><span class="tsd-signature-type">SetOperationNode</span><span class="tsd-signature-symbol">[]</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/koskimas/kysely/blob/b72ccc58/src/operation-node/select-query-node.ts#L39">src/operation-node/select-query-node.ts:39</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/koskimas/kysely/blob/efa083e9/src/operation-node/select-query-node.ts#L35">src/operation-node/select-query-node.ts:35</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface"><a id="where" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagOptional">Optional</code> <code class="tsd-tag ts-flagReadonly">Readonly</code> <span>where</span><a href="#where" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">where<span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">WhereNode</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/koskimas/kysely/blob/b72ccc58/src/operation-node/select-query-node.ts#L31">src/operation-node/select-query-node.ts:31</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/koskimas/kysely/blob/efa083e9/src/operation-node/select-query-node.ts#L27">src/operation-node/select-query-node.ts:27</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface"><a id="with" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagOptional">Optional</code> <code class="tsd-tag ts-flagReadonly">Readonly</code> <span>with</span><a href="#with" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">with<span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">WithNode</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/koskimas/kysely/blob/b72ccc58/src/operation-node/select-query-node.ts#L36">src/operation-node/select-query-node.ts:36</a></li></ul></aside></section></section></div>
+<li>Defined in <a href="https://github.com/koskimas/kysely/blob/efa083e9/src/operation-node/select-query-node.ts#L32">src/operation-node/select-query-node.ts:32</a></li></ul></aside></section></section></div>
 <div class="col-4 col-menu menu-sticky-wrap menu-highlight">
 <div class="tsd-navigation settings">
 <details class="tsd-index-accordion"><summary class="tsd-accordion-summary">
@@ -153,7 +153,7 @@
 <ul>
 <li class="current tsd-kind-interface"><a href="SelectQueryNode.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><rect fill="var(--color-icon-background)" stroke="var(--color-ts-interface)" stroke-width="1.5" x="1" y="1" width="22" height="22" rx="6" id="icon-256-path"></rect><path d="M9.51 16V15.016H11.298V8.224H9.51V7.24H14.19V8.224H12.402V15.016H14.19V16H9.51Z" fill="var(--color-text)" id="icon-256-text"></path></svg><span>Select<wbr/>Query<wbr/>Node</span></a>
 <ul>
-<li class="tsd-kind-property tsd-parent-kind-interface"><a href="SelectQueryNode.html#distinctOnSelections" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg>distinct<wbr/>On<wbr/>Selections?</a></li>
+<li class="tsd-kind-property tsd-parent-kind-interface"><a href="SelectQueryNode.html#distinctOn" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg>distinct<wbr/>On?</a></li>
 <li class="tsd-kind-property tsd-parent-kind-interface"><a href="SelectQueryNode.html#endModifiers" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg>end<wbr/>Modifiers?</a></li>
 <li class="tsd-kind-property tsd-parent-kind-interface"><a href="SelectQueryNode.html#explain" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg>explain?</a></li>
 <li class="tsd-kind-property tsd-parent-kind-interface"><a href="SelectQueryNode.html#from" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg>from</a></li>

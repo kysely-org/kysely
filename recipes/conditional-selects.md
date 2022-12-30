@@ -68,7 +68,7 @@ conditions the amount of code explodes if you want to keep things type-safe. You
 to create a separate branch for every possible combination of selections or otherwise
 the types won't be correct.
 
-This is where the [if](https://koskimas.github.io/kysely/classes/SelectQueryBuilder.html#if)
+This is where the [$if](https://koskimas.github.io/kysely/classes/SelectQueryBuilder.html#_if)
 method can help you:
 
 ```ts
@@ -77,7 +77,7 @@ async function getPerson(id: number, withLastName: boolean) {
   return await db
     .selectFrom('person')
     .select('first_name')
-    .if(withLastName, (qb) => qb.select('last_name'))
+    .$if(withLastName, (qb) => qb.select('last_name'))
     .where('id', '=', id)
     .executeTakeFirstOrThrow()
 }

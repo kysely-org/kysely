@@ -24,7 +24,7 @@ export class MysqlIntrospector implements DatabaseIntrospector {
     let rawSchemas = await this.#db
       .selectFrom('information_schema.schemata')
       .select('schema_name')
-      .castTo<RawSchemaMetadata>()
+      .$castTo<RawSchemaMetadata>()
       .execute()
 
     return rawSchemas.map((it) => ({ name: it.SCHEMA_NAME }))
@@ -46,8 +46,8 @@ export class MysqlIntrospector implements DatabaseIntrospector {
       ])
       .where('table_schema', '=', sql`database()`)
       .orderBy('table_name')
-      .orderBy('column_name')
-      .castTo<RawColumnMetadata>()
+      .orderBy('ordinal_position')
+      .$castTo<RawColumnMetadata>()
 
     if (!options.withInternalKyselyTables) {
       query = query

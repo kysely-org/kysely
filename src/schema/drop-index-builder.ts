@@ -22,7 +22,7 @@ export class DropIndexBuilder implements OperationNodeSource, Compilable {
   on(table: string): DropIndexBuilder {
     return new DropIndexBuilder({
       ...this.#props,
-      dropIndexNode: DropIndexNode.cloneWith(this.#props.dropIndexNode, {
+      node: DropIndexNode.cloneWith(this.#props.node, {
         table: parseTable(table),
       }),
     })
@@ -31,7 +31,7 @@ export class DropIndexBuilder implements OperationNodeSource, Compilable {
   ifExists(): DropIndexBuilder {
     return new DropIndexBuilder({
       ...this.#props,
-      dropIndexNode: DropIndexNode.cloneWith(this.#props.dropIndexNode, {
+      node: DropIndexNode.cloneWith(this.#props.node, {
         ifExists: true,
       }),
     })
@@ -40,7 +40,7 @@ export class DropIndexBuilder implements OperationNodeSource, Compilable {
   cascade(): DropIndexBuilder {
     return new DropIndexBuilder({
       ...this.#props,
-      dropIndexNode: DropIndexNode.cloneWith(this.#props.dropIndexNode, {
+      node: DropIndexNode.cloneWith(this.#props.node, {
         cascade: true,
       }),
     })
@@ -48,7 +48,7 @@ export class DropIndexBuilder implements OperationNodeSource, Compilable {
 
   toOperationNode(): DropIndexNode {
     return this.#props.executor.transformQuery(
-      this.#props.dropIndexNode,
+      this.#props.node,
       this.#props.queryId
     )
   }
@@ -73,5 +73,5 @@ preventAwait(
 export interface DropIndexBuilderProps {
   readonly queryId: QueryId
   readonly executor: QueryExecutor
-  readonly dropIndexNode: DropIndexNode
+  readonly node: DropIndexNode
 }

@@ -37,6 +37,7 @@ You can find a more thorough introduction [here](https://www.jakso.me/blog/kysel
 - [Installation](#installation)
     - [3rd party dialects](#3rd-party-dialects)
 - [Minimal example](#minimal-example)
+- [Playground](#playground)
 - [Generating types](#generating-types)
 - [Query examples](#query-examples)
   - [Select queries](#select-queries)
@@ -180,6 +181,10 @@ type InsertablePerson = Insertable<PersonTable>
 type UpdateablePerson = Updateable<PersonTable>
 ```
 
+# Playground
+
+[@wirekang](https://github.com/wirekang) has created a [playground for Kysely](https://wirekang.github.io/kysely-playground/#eyJkaWFsZWN0IjoibXlzcWwiLCJ0cyI6ImludGVyZmFjZSBEQiB7XG4gIHVzZXI6IFVzZXJUYWJsZVxufVxuXG5pbnRlcmZhY2UgVXNlclRhYmxlIHtcbiAgaWQ6IEdlbmVyYXRlZDxzdHJpbmc+XG4gIGZpcnN0X25hbWU6IHN0cmluZyB8IG51bGxcbiAgbGFzdF9uYW1lOiBzdHJpbmcgfCBudWxsXG4gIGNyZWF0ZWRfYXQ6IEdlbmVyYXRlZDxEYXRlPlxufVxuXG5yZXN1bHQgPSBreXNlbHlcbiAgLnNlbGVjdEZyb20oXCJ1c2VyXCIpXG4gIC5zZWxlY3RBbGwoKVxuICAub3JkZXJCeShcImNyZWF0ZWRfYXRcIikifQ==). You can use to quickly test stuff out and for creating code examples for your issues, PRs and discord messages.
+
 # Generating types
 
 If you want to generate the table types automatically from the database schema please
@@ -202,37 +207,34 @@ among other places.
 import { Pool } from 'pg'
 // or `import * as Cursor from 'pg-cursor'` depending on your tsconfig
 import Cursor from 'pg-cursor'
-import {
-    Kysely,
-    PostgresDialect,
-} from 'kysely'
+import { Kysely, PostgresDialect } from 'kysely'
 
 const db = new Kysely<Database>({
-    // PostgresDialect requires the Cursor dependency
-    dialect: new PostgresDialect({
-        pool: new Pool({
-            host: 'localhost',
-            database: 'kysely_test'
-        }),
-        cursor: Cursor
+  // PostgresDialect requires the Cursor dependency
+  dialect: new PostgresDialect({
+    pool: new Pool({
+      host: 'localhost',
+      database: 'kysely_test'
     }),
-
-    // MysqlDialect doesn't require any special configuration
+    cursor: Cursor
+  }),
+  // MysqlDialect doesn't require any special configuration
 })
 
 async function demo() {
-    for await (const male of db.selectFrom("person")
-        .selectAll()
-        .where("person.gender", "=", "male")
-        .stream()) {
-        console.log(`Hello mr. ${male.first_name}!`)
+  for await (const adult of db.selectFrom('person')
+    .selectAll()
+    .where('age', '>', 18)
+    .stream()
+  ) {
+    console.log(`Hello ${adult.first_name}!`)
 
-        if (male.first_name === "John") {
-          // After this line the db connection is released and no more 
-          // rows are streamed from the database to the client
-          break;
-        }
+    if (adult.first_name === 'John') {
+      // After this line the db connection is released and no more
+      // rows are streamed from the database to the client
+      break;
     }
+  }
 }
 ```
 
@@ -263,6 +265,7 @@ or "recipes" for common use cases.
 * [Extending kysely](https://github.com/koskimas/kysely/tree/master/recipes/extending-kysely.md)
 * [Raw SQL](https://github.com/koskimas/kysely/tree/master/recipes/raw-sql.md)
 * [Schemas](https://github.com/koskimas/kysely/tree/master/recipes/schemas.md)
+* [Dealing with the `Type instantiation is excessively deep and possibly infinite` error](https://github.com/koskimas/kysely/tree/master/recipes/excessively-deep-types.md)
 
 # Migrations
 
