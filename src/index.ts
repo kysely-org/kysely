@@ -175,6 +175,7 @@ export * from './operation-node/partition-by-item-node.js'
 export * from './operation-node/set-operation-node.js'
 export * from './operation-node/binary-operation-node.js'
 export * from './operation-node/unary-operation-node.js'
+export * from './operation-node/using-node.js'
 
 export * from './util/column-type.js'
 export * from './util/compilable.js'

@@ -76,6 +76,7 @@ export type OperationNodeKind =
   | 'SetOperationNode'
   | 'BinaryOperationNode'
   | 'UnaryOperationNode'
+  | 'UsingNode'
 
 export interface OperationNode {
   readonly kind: OperationNodeKind

@@ -5,7 +5,13 @@ import {
   JoinReferenceExpression,
   parseJoin,
 } from '../parser/join-parser.js'
-import { TableExpression } from '../parser/table-parser.js'
+import {
+  From,
+  FromTables,
+  parseTableExpressionOrList,
+  TableExpression,
+  TableExpressionOrList,
+} from '../parser/table-parser.js'
 import {
   parseSelectExpressionOrList,
   parseSelectAll,
@@ -177,6 +183,98 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
     return new DeleteQueryBuilder<DB, TB, O>({
       ...this.#props,
       queryNode: QueryNode.cloneWithoutWhere(this.#props.queryNode),
+    })
+  }
+
+  /**
+   * Adds a `using` clause to the query.
+   *
+   * This clause allows adding additional tables to the query for filtering/returning
+   * only. Usually a non-standard syntactic-sugar alternative to a `where` with a sub-query.
+   *
+   * ### Examples:
+   *
+   * ```ts
+   * await db
+   *   .deleteFrom('pet')
+   *   .using('person')
+   *   .whereRef('pet.owner_id', '=', 'person.id')
+   *   .where('person.first_name', '=', 'Bob')
+   *   .executeTakeFirstOrThrow()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * delete from "pet"
+   * using "person"
+   * where "pet"."owner_id" = "person"."id"
+   *   and "person"."first_name" = $1
+   * ```
+   *
+   * On supported databases such as MySQL, this clause allows using joins, but requires
+   * at least one of the tables after the `from` keyword to be also named after
+   * the `using` keyword. See also {@link innerJoin}, {@link leftJoin}, {@link rightJoin}
+   * and {@link fullJoin}.
+   *
+   * ```ts
+   * await db
+   *   .deleteFrom('pet')
+   *   .using('pet')
+   *   .leftJoin('person', 'person.id', 'pet.owner_id')
+   *   .where('person.first_name', '=', 'Bob')
+   *   .executeTakeFirstOrThrow()
+   * ```
+   *
+   * The generated SQL (MySQL):
+   *
+   * ```sql
+   * delete from `pet`
+   * using `pet`
+   * left join `person` on `person`.`id` = `pet`.`owner_id`
+   * where `person`.`first_name` = ?
+   * ```
+   *
+   * You can also chain multiple invocations of this method, or pass an array to
+   * a single invocation to name multiple tables.
+   *
+   * ```ts
+   * await db
+   *   .deleteFrom('toy')
+   *   .using(['pet', 'person'])
+   *   .whereRef('toy.pet_id', '=', 'pet.id')
+   *   .whereRef('pet.owner_id', '=', 'person.id')
+   *   .where('person.first_name', '=', 'Bob')
+   *   .returning('pet.name')
+   *   .executeTakeFirstOrThrow()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * delete from "toy"
+   * using "pet", "person"
+   * where "toy"."pet_id" = "pet"."id"
+   *   and "pet"."owner_id" = "person"."id"
+   *   and "person"."first_name" = $1
+   * returning "pet"."name"
+   * ```
+   */
+  using<TE extends TableExpression<DB, keyof DB>>(
+    tables: TE[]
+  ): DeleteQueryBuilder<From<DB, TE>, FromTables<DB, TB, TE>, O>
+
+  using<TE extends TableExpression<DB, keyof DB>>(
+    table: TE
+  ): DeleteQueryBuilder<From<DB, TE>, FromTables<DB, TB, TE>, O>
+
+  using(tables: TableExpressionOrList<any, any>): any {
+    return new DeleteQueryBuilder({
+      ...this.#props,
+      queryNode: DeleteQueryNode.cloneWithUsing(
+        this.#props.queryNode,
+        parseTableExpressionOrList(tables)
+      ),
     })
   }
 

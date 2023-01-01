@@ -80,6 +80,7 @@ import { PartitionByItemNode } from './partition-by-item-node.js'
 import { SetOperationNode } from './set-operation-node.js'
 import { BinaryOperationNode } from './binary-operation-node.js'
 import { UnaryOperationNode } from './unary-operation-node.js'
+import { UsingNode } from './using-node.js'
 
 export abstract class OperationNodeVisitor {
   protected readonly nodeStack: OperationNode[] = []
@@ -167,6 +168,7 @@ export abstract class OperationNodeVisitor {
     SetOperationNode: this.visitSetOperation.bind(this),
     BinaryOperationNode: this.visitBinaryOperation.bind(this),
     UnaryOperationNode: this.visitUnaryOperation.bind(this),
+    UsingNode: this.visitUsing.bind(this),
   })
 
   protected readonly visitNode = (node: OperationNode): void => {
@@ -262,4 +264,5 @@ export abstract class OperationNodeVisitor {
   protected abstract visitSetOperation(node: SetOperationNode): void
   protected abstract visitBinaryOperation(node: BinaryOperationNode): void
   protected abstract visitUnaryOperation(node: UnaryOperationNode): void
+  protected abstract visitUsing(node: UsingNode): void
 }

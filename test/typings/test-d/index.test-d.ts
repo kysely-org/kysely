@@ -563,11 +563,6 @@ async function testUpdate(db: Kysely<Database>) {
   db.updateTable('person').set(mutationObject)
 }
 
-async function testDelete(db: Kysely<Database>) {
-  const r1 = await db.deleteFrom('pet').where('id', '=', '1').executeTakeFirst()
-  expectType<DeleteResult>(r1)
-}
-
 async function testOrderBy(db: Kysely<Database>) {
   const r1 = await db
     .selectFrom('person')

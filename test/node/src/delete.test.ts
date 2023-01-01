@@ -1,4 +1,4 @@
-import { DeleteResult } from '../../../'
+import { DeleteResult, sql } from '../../../'
 
 import {
   BUILT_IN_DIALECTS,
@@ -163,6 +163,234 @@ for (const dialect of BUILT_IN_DIALECTS) {
 
         const result = await query.executeTakeFirstOrThrow()
         expect(result.last_name).to.equal('Aniston')
+      })
+    }
+
+    if (dialect === 'postgres') {
+      it('should delete from t1 using t2', async () => {
+        const query = ctx.db
+          .deleteFrom('person')
+          .using('pet')
+          .whereRef('pet.owner_id', '=', 'person.id')
+          .where('pet.species', '=', sql`${'NO_SUCH_SPECIES'}`)
+
+        testSql(query, dialect, {
+          postgres: {
+            sql: [
+              'delete from "person"',
+              'using "pet"',
+              'where "pet"."owner_id" = "person"."id"',
+              'and "pet"."species" = $1',
+            ],
+            parameters: ['NO_SUCH_SPECIES'],
+          },
+          mysql: NOT_SUPPORTED,
+          sqlite: NOT_SUPPORTED,
+        })
+
+        await query.execute()
+      })
+
+      it('should delete from t1 using t2, t3', async () => {
+        const query = ctx.db
+          .deleteFrom('person')
+          .using(['pet', 'toy'])
+          .whereRef('pet.owner_id', '=', 'person.id')
+          .whereRef('toy.pet_id', '=', 'pet.id')
+          .where('toy.price', '=', 0)
+
+        testSql(query, dialect, {
+          postgres: {
+            sql: [
+              'delete from "person"',
+              'using "pet", "toy"',
+              'where "pet"."owner_id" = "person"."id"',
+              'and "toy"."pet_id" = "pet"."id"',
+              'and "toy"."price" = $1',
+            ],
+            parameters: [0],
+          },
+          mysql: NOT_SUPPORTED,
+          sqlite: NOT_SUPPORTED,
+        })
+
+        await query.execute()
+      })
+
+      it('should delete from t1 using t2, t3 returning t2.column', async () => {
+        const query = ctx.db
+          .deleteFrom('toy')
+          .using(['pet', 'person'])
+          .whereRef('toy.pet_id', '=', 'pet.id')
+          .whereRef('pet.owner_id', '=', 'person.id')
+          .where('person.first_name', '=', 'Bob')
+          .returning('pet.name')
+
+        testSql(query, dialect, {
+          postgres: {
+            sql: [
+              'delete from "toy"',
+              'using "pet", "person"',
+              'where "toy"."pet_id" = "pet"."id"',
+              'and "pet"."owner_id" = "person"."id"',
+              'and "person"."first_name" = $1',
+              'returning "pet"."name"',
+            ],
+            parameters: ['Bob'],
+          },
+          mysql: NOT_SUPPORTED,
+          sqlite: NOT_SUPPORTED,
+        })
+
+        await query.execute()
+      })
+    }
+
+    if (dialect === 'mysql') {
+      it('should delete from t1 using t1 inner join t2', async () => {
+        const query = ctx.db
+          .deleteFrom('person')
+          .using('person')
+          .innerJoin('pet', 'pet.owner_id', 'person.id')
+          .where('pet.species', '=', sql`${'NO_SUCH_SPECIES'}`)
+
+        testSql(query, dialect, {
+          postgres: NOT_SUPPORTED,
+          mysql: {
+            sql: [
+              'delete from `person`',
+              'using `person`',
+              'inner join `pet` on `pet`.`owner_id` = `person`.`id`',
+              'where `pet`.`species` = ?',
+            ],
+            parameters: ['NO_SUCH_SPECIES'],
+          },
+          sqlite: NOT_SUPPORTED,
+        })
+
+        await query.execute()
+      })
+
+      it('should delete from t1 using t1 left join t2', async () => {
+        const query = ctx.db
+          .deleteFrom('person')
+          .using('person')
+          .leftJoin('pet', 'pet.owner_id', 'person.id')
+          .where('pet.species', '=', sql`${'NO_SUCH_SPECIES'}`)
+
+        testSql(query, dialect, {
+          postgres: NOT_SUPPORTED,
+          mysql: {
+            sql: [
+              'delete from `person`',
+              'using `person`',
+              'left join `pet` on `pet`.`owner_id` = `person`.`id`',
+              'where `pet`.`species` = ?',
+            ],
+            parameters: ['NO_SUCH_SPECIES'],
+          },
+          sqlite: NOT_SUPPORTED,
+        })
+
+        await query.execute()
+      })
+
+      it('should delete from t1 using t1 inner join t2 left join t3', async () => {
+        const query = ctx.db
+          .deleteFrom('person')
+          .using('person')
+          .innerJoin('pet', 'pet.owner_id', 'person.id')
+          .leftJoin('toy', 'toy.pet_id', 'pet.id')
+          .where('pet.species', '=', sql`${'NO_SUCH_SPECIES'}`)
+          .orWhere('toy.price', '=', 0)
+
+        testSql(query, dialect, {
+          postgres: NOT_SUPPORTED,
+          mysql: {
+            sql: [
+              'delete from `person`',
+              'using `person`',
+              'inner join `pet` on `pet`.`owner_id` = `person`.`id`',
+              'left join `toy` on `toy`.`pet_id` = `pet`.`id`',
+              'where `pet`.`species` = ?',
+              'or `toy`.`price` = ?',
+            ],
+            parameters: ['NO_SUCH_SPECIES', 0],
+          },
+          sqlite: NOT_SUPPORTED,
+        })
+
+        await query.execute()
+      })
+
+      it('should delete from t1 using t1, t2', async () => {
+        const query = ctx.db
+          .deleteFrom('person')
+          .using(['person', 'pet'])
+          .where('pet.species', '=', sql`${'NO_SUCH_SPECIES'}`)
+
+        testSql(query, dialect, {
+          postgres: NOT_SUPPORTED,
+          mysql: {
+            sql: [
+              'delete from `person`',
+              'using `person`, `pet`',
+              'where `pet`.`species` = ?',
+            ],
+            parameters: ['NO_SUCH_SPECIES'],
+          },
+          sqlite: NOT_SUPPORTED,
+        })
+
+        await query.execute()
+      })
+
+      it('should delete from t1 using t1, t2 inner join t3', async () => {
+        const query = ctx.db
+          .deleteFrom('person')
+          .using(['person', 'pet'])
+          .innerJoin('toy', 'toy.pet_id', 'pet.id')
+          .where('toy.price', '=', 0)
+
+        testSql(query, dialect, {
+          postgres: NOT_SUPPORTED,
+          mysql: {
+            sql: [
+              'delete from `person`',
+              'using `person`, `pet`',
+              'inner join `toy` on `toy`.`pet_id` = `pet`.`id`',
+              'where `toy`.`price` = ?',
+            ],
+            parameters: [0],
+          },
+          sqlite: NOT_SUPPORTED,
+        })
+
+        await query.execute()
+      })
+
+      it('should delete from t1 using t1, t2 left join t3', async () => {
+        const query = ctx.db
+          .deleteFrom('person')
+          .using(['person', 'pet'])
+          .leftJoin('toy', 'toy.pet_id', 'pet.id')
+          .where('toy.price', '=', 0)
+
+        testSql(query, dialect, {
+          postgres: NOT_SUPPORTED,
+          mysql: {
+            sql: [
+              'delete from `person`',
+              'using `person`, `pet`',
+              'left join `toy` on `toy`.`pet_id` = `pet`.`id`',
+              'where `toy`.`price` = ?',
+            ],
+            parameters: [0],
+          },
+          sqlite: NOT_SUPPORTED,
+        })
+
+        await query.execute()
       })
     }
   })
