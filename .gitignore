@@ -2,4 +2,5 @@ dist
 test/browser/bundle.js
 node_modules
 .vscode
+.idea
 demo.ts
