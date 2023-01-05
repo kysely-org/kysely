@@ -34,7 +34,7 @@ import { OffsetNode } from '../operation-node/offset-node.js'
 import { Compilable } from '../util/compilable.js'
 import { QueryExecutor } from '../query-executor/query-executor.js'
 import { QueryId } from '../util/query-id.js'
-import { freeze } from '../util/object-utils.js'
+import { freeze, isBoolean, isFunction } from '../util/object-utils.js'
 import {
   GroupByExpression,
   GroupByExpressionOrList,
@@ -1678,13 +1678,33 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    *     .groupBy('person.id')
    *   )
    * ```
+   *
+   * If you provide a function as an argument to condition, you can
+   * get the result of the function as the second parameter in
+   * the callback:
+   *
+   * ```ts
+   * db.selectFrom('person')
+   *   .$if(
+   *      () => params.name,
+   *      (qb, name) => qb.where('first_name', '=', name)
+   *   )
+   *
+   * In the example above, `params.name` has type `string?`, but `name` has type of `string`.
    */
-  $if<O2 extends O>(
-    condition: boolean,
-    func: (qb: this) => SelectQueryBuilder<DB, TB, O2>
+  $if<O2 extends O, T>(
+    condition: boolean | (() => T | undefined),
+    func: (qb: this, value: T | never) => SelectQueryBuilder<DB, TB, O2>
   ): SelectQueryBuilder<DB, TB, MergePartial<O, O2>> {
-    if (condition) {
-      return func(this)
+    if (isBoolean(condition) && condition) {
+      return func(this, undefined as never)
+    }
+
+    if (isFunction(condition)) {
+      const value = condition()
+      if (value) {
+        return func(this, value)
+      }
     }
 
     return new SelectQueryBuilder({

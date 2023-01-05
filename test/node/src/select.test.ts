@@ -814,5 +814,28 @@ for (const dialect of BUILT_IN_DIALECTS) {
       const endTime = Date.now()
       console.log((endTime - time) / N)
     })
+
+    it('should accept a conditional function for $.if', async () => {
+      const params: {
+        name?: string
+      } = {}
+
+      params.name = 'Jennifer'
+
+      const query = ctx.db
+        .selectFrom('person')
+        .$if(
+          () => params.name,
+          (qb, val) => qb.where('first_name', '=', val)
+        )
+        .selectAll('person')
+
+      const persons = await query.execute()
+
+      expect(persons).to.have.length(1)
+      expect(persons).to.containSubset([
+        { first_name: 'Jennifer', last_name: 'Aniston', gender: 'female' },
+      ])
+    })
   })
 }
