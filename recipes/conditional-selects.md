@@ -86,3 +86,16 @@ async function getPerson(id: number, withLastName: boolean) {
 Any selections added inside the `if` callback will be added as optional fields to the
 output type since we can't know if the selections were actually made before running
 the code.
+
+If you have a value that could potentially be falsy, you can provide a function as an argument to [$if](https://koskimas.github.io/kysely/classes/SelectQueryBuilder.html#_if). You can then get the truthy value back as the second parameter in the callback.
+
+```ts
+async function getPerson(id: number, lastName?: string) {
+  // ✅ The return type is { first_name: string, last_name?: string }
+  return await db
+    .selectFrom('person')
+    .select('first_name')
+    .$if(() => lastName, (qb, name) => qb.where('last_name', '=', name))
+    .executeTakeFirstOrThrow()
+}
+```
