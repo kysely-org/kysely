@@ -8,7 +8,7 @@ export interface DatabaseIntrospector {
   getSchemas(): Promise<SchemaMetadata[]>
 
   /**
-   * Get table metadata.
+   * Get tables and views metadata.
    */
   getTables(options?: DatabaseMetadataOptions): Promise<TableMetadata[]>
 
@@ -34,7 +34,8 @@ export interface SchemaMetadata {
 
 export interface DatabaseMetadata {
   /**
-   * The tables found in the database.
+   * The tables and views found in the database.
+*  * The propery isView can be used to tell them apart.
    */
   readonly tables: TableMetadata[]
 }
