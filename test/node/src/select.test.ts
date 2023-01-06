@@ -815,12 +815,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
       console.log((endTime - time) / N)
     })
 
-    it('should accept a conditional function for $.if', async () => {
+    it('should accept a conditional function for $if', async () => {
       const params: {
         name?: string
-      } = {}
-
-      params.name = 'Jennifer'
+      } = { name: 'Jennifer' }
 
       const query = ctx.db
         .selectFrom('person')

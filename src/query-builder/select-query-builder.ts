@@ -34,7 +34,7 @@ import { OffsetNode } from '../operation-node/offset-node.js'
 import { Compilable } from '../util/compilable.js'
 import { QueryExecutor } from '../query-executor/query-executor.js'
 import { QueryId } from '../util/query-id.js'
-import { freeze, isBoolean, isFunction } from '../util/object-utils.js'
+import { freeze, isFunction } from '../util/object-utils.js'
 import {
   GroupByExpression,
   GroupByExpressionOrList,
@@ -1692,19 +1692,13 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    *
    * In the example above, `params.name` has type `string?`, but `name` has type of `string`.
    */
-  $if<O2 extends O, T>(
-    condition: boolean | (() => T | undefined),
-    func: (qb: this, value: T | never) => SelectQueryBuilder<DB, TB, O2>
+  $if<O2 extends O, C>(
+    condition: C | (() => C | undefined | null),
+    func: (qb: this, value: C | never) => SelectQueryBuilder<DB, TB, O2>
   ): SelectQueryBuilder<DB, TB, MergePartial<O, O2>> {
-    if (isBoolean(condition) && condition) {
-      return func(this, undefined as never)
-    }
-
-    if (isFunction(condition)) {
-      const value = condition()
-      if (value) {
-        return func(this, value)
-      }
+    const value = isFunction(condition) ? condition() : condition
+    if (value) {
+      func(this, value)
     }
 
     return new SelectQueryBuilder({
