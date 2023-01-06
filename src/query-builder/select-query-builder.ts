@@ -1,4 +1,3 @@
-import { Falsy } from './../util/type-utils'
 import { AliasNode } from '../operation-node/alias-node.js'
 import { CompiledQuery } from '../query-compiler/compiled-query.js'
 import { SelectModifierNode } from '../operation-node/select-modifier-node.js'
@@ -23,7 +22,12 @@ import {
 } from '../parser/reference-parser.js'
 import { SelectQueryNode } from '../operation-node/select-query-node.js'
 import { QueryNode } from '../operation-node/query-node.js'
-import { MergePartial, Nullable, SingleResultType } from '../util/type-utils.js'
+import {
+  MergePartial,
+  Nullable,
+  SingleResultType,
+  Falsy,
+} from '../util/type-utils.js'
 import {
   OrderByDirectionExpression,
   OrderByExpression,
