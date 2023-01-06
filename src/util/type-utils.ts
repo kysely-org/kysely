@@ -178,3 +178,8 @@ export type Equals<T, U> = (<G>() => G extends T ? 1 : 2) extends <
 >() => G extends U ? 1 : 2
   ? true
   : false
+
+/**
+ * Anything that evaluates to false in a control statement
+ */
+export type Falsy = '' | 0 | false | null | undefined

@@ -1,3 +1,4 @@
+import { Falsy } from './../util/type-utils'
 import { AliasNode } from '../operation-node/alias-node.js'
 import { CompiledQuery } from '../query-compiler/compiled-query.js'
 import { SelectModifierNode } from '../operation-node/select-modifier-node.js'
@@ -1693,12 +1694,12 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    * In the example above, `params.name` has type `string?`, but `name` has type of `string`.
    */
   $if<O2 extends O, C>(
-    condition: C | (() => C | undefined | null),
-    func: (qb: this, value: C | never) => SelectQueryBuilder<DB, TB, O2>
+    condition: C | (() => C),
+    func: (qb: this, value: Exclude<C, Falsy>) => SelectQueryBuilder<DB, TB, O2>
   ): SelectQueryBuilder<DB, TB, MergePartial<O, O2>> {
     const value = isFunction(condition) ? condition() : condition
     if (value) {
-      return func(this, value)
+      return func(this, value as Exclude<C, Falsy>)
     }
 
     return new SelectQueryBuilder({
