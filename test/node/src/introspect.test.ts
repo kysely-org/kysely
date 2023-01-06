@@ -16,7 +16,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
     before(async function () {
       ctx = await initTest(this, dialect)
 
-      if (dialect === 'postgres') {
+      if (dialect === 'postgres' || dialect === 'cockroach') {
         await dropSchema()
         await createSchema()
       }
@@ -31,7 +31,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
     })
 
     after(async () => {
-      if (dialect === 'postgres') {
+      if (dialect === 'postgres' || dialect === 'cockroach') {
         await dropSchema()
       }
 
@@ -41,7 +41,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
     it('should get table metadata', async () => {
       const meta = await ctx.db.introspection.getTables()
 
-      if (dialect === 'postgres') {
+      if (dialect === 'postgres' || dialect === 'cockroach') {
         expect(meta).to.eql([
           {
             name: 'person',
@@ -418,7 +418,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
     async function createSchema() {
       await ctx.db.schema.createSchema('some_schema').execute()
 
-      if (dialect === 'postgres') {
+      if (dialect === 'postgres' || dialect === 'cockroach') {
         await ctx.db.schema.createSchema('dtype_schema').execute()
         await ctx.db.schema
           .createType('dtype_schema.species')
@@ -442,7 +442,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
       await ctx.db.schema.dropTable('some_schema.pet').ifExists().execute()
       await ctx.db.schema.dropSchema('some_schema').ifExists().execute()
 
-      if (dialect === 'postgres') {
+      if (dialect === 'postgres' || dialect === 'cockroach') {
         await ctx.db.schema
           .dropType('dtype_schema.species')
           .ifExists()

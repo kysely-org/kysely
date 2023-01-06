@@ -381,7 +381,7 @@ export class Migrator {
 
     const run = async (db: Kysely<any>): Promise<MigrationResultSet> => {
       try {
-        await adapter.acquireMigrationLock(db)
+        await adapter.acquireMigrationLock(db, this.#schemaPlugin, this.#migrationLockTable)
 
         const state = await this.#getState(db)
 
@@ -403,7 +403,7 @@ export class Migrator {
 
         return { results: [] }
       } finally {
-        await adapter.releaseMigrationLock(db)
+        await adapter.releaseMigrationLock(db, this.#schemaPlugin, this.#migrationLockTable)
       }
     }
 

@@ -30,7 +30,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
       await destroyTest(ctx)
     })
 
-    if (dialect === 'postgres' || dialect === 'mysql') {
+    if (dialect === 'postgres' || dialect === 'cockroach' || dialect === 'mysql') {
       it('should coalesce a single item', async () => {
         const { coalesce } = ctx.db.fn
 

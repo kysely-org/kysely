@@ -95,7 +95,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
       })
     }
 
-    if (dialect === 'postgres') {
+    if (dialect === 'postgres' || dialect === 'cockroach') {
       it('should be able to start a transaction with a single connection', async () => {
         const result = await ctx.db.connection().execute((db) => {
           return db.transaction().execute((trx) => {

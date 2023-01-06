@@ -70,7 +70,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
       expect(result.rows).to.eql([])
     })
 
-    if (dialect === 'postgres') {
+    if (dialect === 'postgres' || dialect === 'cockroach') {
       it('should run a raw insert query', async () => {
         const firstName = 'New'
         const lastName = 'Personsson'

@@ -60,7 +60,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
       expect(result).to.be.instanceOf(InsertResult)
       expect(result.numInsertedOrUpdatedRows).to.equal(1n)
 
-      if (dialect === 'postgres') {
+      if (dialect === 'postgres' || dialect === 'cockroach') {
         expect(result.insertId).to.be.undefined
       } else {
         expect(result.insertId).to.be.a('bigint')
@@ -158,7 +158,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
       ])
     })
 
-    if (dialect === 'postgres') {
+    if (dialect === 'postgres' || dialect === 'cockroach') {
       it('should insert the result of a values expression', async () => {
         const query = ctx.db
           .insertInto('person')
@@ -225,7 +225,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
       expect(result).to.be.instanceOf(InsertResult)
       expect(result.numInsertedOrUpdatedRows).to.equal(1n)
 
-      if (dialect === 'postgres') {
+      if (dialect === 'postgres' || dialect === 'cockroach') {
         expect(result.insertId).to.be.undefined
       } else {
         expect(result.insertId).to.be.a('bigint')
@@ -310,7 +310,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
       })
     }
 
-    if (dialect === 'postgres') {
+    if (dialect === 'postgres' || dialect === 'cockroach') {
       it('should insert one row and ignore conflicts using `on conflict on constraint do nothing`', async () => {
         const [{ id, ...existingPet }] = await ctx.db
           .selectFrom('pet')
@@ -432,7 +432,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
         expect(result).to.be.instanceOf(InsertResult)
         expect(result.numInsertedOrUpdatedRows).to.equal(1n)
 
-        if (dialect === 'postgres') {
+        if (dialect === 'postgres' || dialect === 'cockroach') {
           expect(result.insertId).to.be.undefined
         } else {
           expect(result.insertId).to.be.a('bigint')
@@ -451,7 +451,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
       })
     }
 
-    if (dialect === 'postgres') {
+    if (dialect === 'postgres' || dialect === 'cockroach') {
       it('should update instead of insert on conflict when using `on conflict on constraint do update`', async () => {
         const [{ id, ...existingPet }] = await ctx.db
           .selectFrom('pet')
@@ -571,7 +571,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
       expect(result).to.be.instanceOf(InsertResult)
       expect(result.numInsertedOrUpdatedRows).to.equal(2n)
 
-      if (dialect === 'postgres') {
+      if (dialect === 'postgres' || dialect === 'cockroach') {
         expect(result.insertId).to.be.undefined
       } else {
         expect(result.insertId).to.be.a('bigint')
@@ -590,7 +590,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
       ])
     })
 
-    if (dialect === 'postgres' || dialect === 'sqlite') {
+    if (dialect === 'postgres' || dialect === 'cockroach' || dialect === 'sqlite') {
       it('should insert multiple rows while falling back to default values in partial rows', async () => {
         const query = ctx.db
           .insertInto('person')
@@ -640,7 +640,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
               .selectFrom('person')
               .select(sql<string>`max(first_name)`.as('max_first_name')),
             last_name:
-              dialect === 'postgres'
+              dialect === 'postgres' || dialect === 'cockroach'
                 ? sql`concat(cast(${'Bar'} as varchar), cast(${'son'} as varchar))`
                 : sql`cast(${'Bar'} as varchar) || cast(${'son'} as varchar)`,
           })
@@ -686,7 +686,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
               .selectFrom('person')
               .select(sql<string>`max(first_name)`.as('max_first_name')),
             last_name:
-              dialect === 'postgres'
+              dialect === 'postgres' || dialect === 'cockroach'
                 ? sql`concat(cast(${'Bar'} as varchar), cast(${'son'} as varchar))`
                 : sql`cast(${'Bar'} as varchar) || cast(${'son'} as varchar)`,
           })

@@ -155,7 +155,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
       await query.execute()
     })
 
-    if (dialect === 'postgres') {
+    if (dialect === 'postgres' || dialect === 'cockroach') {
       it('sql.ref should support schemas and table names', async () => {
         const query = ctx.db
           .selectFrom('person')
@@ -202,7 +202,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
       await query.execute()
     })
 
-    if (dialect === 'postgres') {
+    if (dialect === 'postgres' || dialect === 'cockroach') {
       it('sql.table should support schemas', async () => {
         const query = ctx.db
           .selectFrom(sql`${sql.table('public.person')}`.as('person'))
@@ -247,7 +247,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
       await query.execute()
     })
 
-    if (dialect === 'postgres') {
+    if (dialect === 'postgres' || dialect === 'cockroach') {
       it('second argument of sql.join should specify the separator', async () => {
         const names = ['Jennifer', 'Arnold', 'Sylvester']
 

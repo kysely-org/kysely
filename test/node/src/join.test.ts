@@ -554,7 +554,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
       })
     }
 
-    if (dialect === 'postgres') {
+    if (dialect === 'postgres' || dialect === 'cockroach') {
       describe('full join', () => {
         it(`should full join a table`, async () => {
           const query = ctx.db

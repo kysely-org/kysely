@@ -45,6 +45,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
       expect(executeQuerySpy.getCall(0).args[0].sql).to.equal(
         {
           postgres: 'explain select * from "person" limit $1',
+          cockroach: 'explain select * from "person" limit $1',
           mysql: 'explain select * from `person` limit ?',
           sqlite: 'explain select * from "person" limit ?',
         }[dialect]
@@ -58,6 +59,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
       expect(executeQuerySpy.getCall(0).args[0].sql).to.equal(
         {
           postgres: 'explain insert into "person" ("gender") values ($1)',
+          cockroach: 'explain insert into "person" ("gender") values ($1)',
           mysql: 'explain insert into `person` (`gender`) values (?)',
           sqlite: 'explain insert into "person" ("gender") values (?)',
         }[dialect]
@@ -75,6 +77,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
       expect(executeQuerySpy.getCall(0).args[0].sql).to.equal(
         {
           postgres: 'explain update "person" set "gender" = $1 where "id" = $2',
+          cockroach: 'explain update "person" set "gender" = $1 where "id" = $2',
           mysql: 'explain update `person` set `gender` = ? where `id` = ?',
           sqlite: 'explain update "person" set "gender" = ? where "id" = ?',
         }[dialect]
@@ -88,6 +91,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
       expect(executeQuerySpy.getCall(0).args[0].sql).to.equal(
         {
           postgres: 'explain delete from "person" where "id" = $1',
+          cockroach: 'explain delete from "person" where "id" = $1',
           mysql: 'explain delete from `person` where `id` = ?',
           sqlite: 'explain delete from "person" where "id" = ?',
         }[dialect]
@@ -108,7 +112,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
       })
     }
 
-    if (dialect === 'postgres') {
+    if (dialect === 'postgres' || dialect === 'cockroach') {
       it('should add explain statement before select, with analyze', async () => {
         await ctx.db
           .selectFrom('person')
@@ -120,6 +124,8 @@ for (const dialect of BUILT_IN_DIALECTS) {
         expect(executeQuerySpy.getCall(0).args[0].sql).to.equal(
           {
             postgres:
+              'explain (analyze, format json) select * from "person" where "id" = $1',
+            cockroach:
               'explain (analyze, format json) select * from "person" where "id" = $1',
             mysql: NOT_SUPPORTED,
             sqlite: NOT_SUPPORTED,

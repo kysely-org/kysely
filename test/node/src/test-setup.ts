@@ -20,6 +20,7 @@ import {
   UnknownRow,
   OperationNodeTransformer,
   PostgresDialect,
+  CockroachDialect,
   MysqlDialect,
   SchemaModule,
   InsertResult,
@@ -76,13 +77,14 @@ export interface TestContext {
   db: Kysely<Database>
 }
 
-export type BuiltInDialect = 'postgres' | 'mysql' | 'sqlite'
+export type BuiltInDialect = 'postgres' | 'mysql' | 'sqlite' | 'cockroach'
 export type PerDialect<T> = Record<BuiltInDialect, T>
 
 export const BUILT_IN_DIALECTS: BuiltInDialect[] = [
   'postgres',
   'mysql',
   'sqlite',
+  'cockroach',
 ]
 
 const TEST_INIT_TIMEOUT = 5 * 60 * 1000
@@ -127,6 +129,14 @@ export const DIALECT_CONFIGS = {
   sqlite: {
     databasePath: ':memory:',
   },
+
+  cockroach: {
+    database: 'kysely_test',
+    host: 'localhost',
+    user: 'kysely',
+    port: 26257,
+    max: POOL_SIZE,
+  },
 }
 
 const DB_CONFIGS: PerDialect<KyselyConfig> = {
@@ -148,6 +158,14 @@ const DB_CONFIGS: PerDialect<KyselyConfig> = {
   sqlite: {
     dialect: new SqliteDialect({
       database: async () => new Database(DIALECT_CONFIGS.sqlite.databasePath),
+    }),
+    plugins: PLUGINS,
+  },
+
+  cockroach: {
+    dialect: new CockroachDialect({
+      pool: async () => new Pool(DIALECT_CONFIGS.postgres),
+      cursor: Cursor,
     }),
     plugins: PLUGINS,
   },
@@ -222,12 +240,15 @@ export async function clearDatabase(ctx: TestContext): Promise<void> {
   await ctx.db.deleteFrom('person').execute()
 }
 
+type PartialExcept<T, K extends keyof T> = Partial<Pick<T, K>> & Omit<T, K>
+
 export function testSql(
   query: Compilable,
   dialect: BuiltInDialect,
-  expectedPerDialect: PerDialect<{ sql: string | string[]; parameters: any[] }>
+  expectedPerDialect: PartialExcept<PerDialect<{ sql: string | string[]; parameters: any[] }>, "cockroach">
 ): void {
-  const expected = expectedPerDialect[dialect]
+  // If there is no CockroachDB specific version, assume it behaves the same as PostgreSQL
+  const expected = dialect === "cockroach" ? expectedPerDialect[dialect] ?? expectedPerDialect["postgres"] : expectedPerDialect[dialect]
   const expectedSql = Array.isArray(expected.sql)
     ? expected.sql.map((it) => it.trim()).join(' ')
     : expected.sql
@@ -278,7 +299,7 @@ export function createTableWithId(
 ) {
   const builder = schema.createTable(tableName)
 
-  if (dialect === 'postgres') {
+  if (dialect === 'postgres' || dialect === 'cockroach') {
     return builder.addColumn('id', 'serial', (col) => col.primaryKey())
   } else {
     return builder.addColumn('id', 'integer', (col) =>
@@ -353,7 +374,7 @@ async function insert<TB extends keyof Database>(
   dialect: BuiltInDialect,
   qb: InsertQueryBuilder<Database, TB, InsertResult>
 ): Promise<number> {
-  if (dialect === 'postgres' || dialect === 'sqlite') {
+  if (dialect === 'postgres' || dialect === 'cockroach' || dialect === 'sqlite') {
     const { id } = await qb.returning('id').executeTakeFirstOrThrow()
     return id
   } else {

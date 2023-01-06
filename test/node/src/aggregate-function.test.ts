@@ -359,7 +359,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
           })
         })
 
-        if (dialect === 'postgres' || dialect === 'sqlite') {
+        if (dialect === 'postgres' || dialect === 'cockroach' || dialect === 'sqlite') {
           it(`should execute a query with ${funcName}(...) filter(where ...) in select clause`, async () => {
             const query = ctx.db
               .selectFrom('person')

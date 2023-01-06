@@ -18,3 +18,11 @@ services:
       POSTGRES_HOST_AUTH_METHOD: trust
     ports:
       - '5434:5432'
+  cockroachdb:
+    image: cockroachdb/cockroach
+    command: start-single-node --insecure
+    environment:
+      COCKROACH_DATABASE: kysely_test
+      COCKROACH_USER: kysely
+    ports:
+      - '26257:26257'

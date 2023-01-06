@@ -1,4 +1,5 @@
 import { Kysely } from '../kysely.js'
+import { KyselyPlugin } from '../plugin/kysely-plugin.js'
 import { DialectAdapter } from './dialect-adapter.js'
 
 /**
@@ -16,6 +17,6 @@ export abstract class DialectAdapterBase implements DialectAdapter {
     return false
   }
 
-  abstract acquireMigrationLock(db: Kysely<any>): Promise<void>
-  abstract releaseMigrationLock(db: Kysely<any>): Promise<void>
+  abstract acquireMigrationLock(db: Kysely<any>, schemaPlugin: KyselyPlugin, migrationLockTable: string): Promise<void>
+  abstract releaseMigrationLock(db: Kysely<any>, schemaPlugin: KyselyPlugin, migrationLockTable: string): Promise<void>
 }

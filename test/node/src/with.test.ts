@@ -107,7 +107,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
       await query.execute()
     })
 
-    if (dialect === 'postgres') {
+    if (dialect === 'postgres' || dialect === 'cockroach') {
       it('recursive common table expressions can refer to themselves', async () => {
         await ctx.db.transaction().execute(async (trx) => {
           // Create a temporary table that gets dropped when the transaction ends.

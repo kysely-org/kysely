@@ -122,7 +122,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
       await query.execute()
     })
 
-    if (dialect === 'postgres' || dialect === 'sqlite') {
+    if (dialect === 'postgres' || dialect === 'cockroach' || dialect === 'sqlite') {
       it('should combine two select queries using intersect', async () => {
         const query = ctx.db
           .selectFrom('person')
@@ -193,7 +193,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
       })
     }
 
-    if (dialect === 'postgres') {
+    if (dialect === 'postgres' || dialect === 'cockroach') {
       it('should combine two select queries using intersect all', async () => {
         const query = ctx.db
           .selectFrom('person')

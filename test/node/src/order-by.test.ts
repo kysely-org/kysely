@@ -136,7 +136,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
       await query.execute()
     })
 
-    if (dialect === 'postgres') {
+    if (dialect === 'postgres' || dialect === 'cockroach') {
       it('order by raw expression in direction', async () => {
         const query = ctx.db
           .selectFrom('person')

@@ -120,7 +120,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
       ])
     })
 
-    if (dialect === 'postgres') {
+    if (dialect === 'postgres' || dialect === 'cockroach') {
       it('should select all columns of a table with a schema', async () => {
         const query = ctx.db
           .selectFrom('toy_schema.toy')
@@ -280,7 +280,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
 
     // Raw exrpessions are of course supported on all dialects, but we use an
     // expression that's only valid on postgres.
-    if (dialect === 'postgres') {
+    if (dialect === 'postgres' || dialect === 'cockroach') {
       it('should select one field using a raw expression', async () => {
         const query = ctx.db
           .selectFrom('person')
@@ -507,7 +507,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
       })
     }
 
-    if (dialect === 'postgres') {
+    if (dialect === 'postgres' || dialect === 'cockroach') {
       it('should select with distinct on', async () => {
         const query = ctx.db
           .selectFrom('person')
@@ -674,7 +674,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
       })
     }
 
-    if (dialect === 'mysql' || dialect === 'postgres') {
+    if (dialect === 'mysql' || dialect === 'postgres' || dialect === 'cockroach') {
       it('should stream results', async () => {
         const males: unknown[] = []
 
@@ -704,7 +704,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
         ])
       })
 
-      if (dialect === 'postgres') {
+      if (dialect === 'postgres' || dialect === 'cockroach') {
         it('should stream results with a specific chunk size', async () => {
           const males: unknown[] = []
 
@@ -755,7 +755,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
         }
       })
 
-      if (dialect === 'postgres') {
+      if (dialect === 'postgres' || dialect === 'cockroach') {
         it('should throw an error if the cursor implementation is not provided for the postgres dialect', async () => {
           const db = new Kysely<Database>({
             dialect: new PostgresDialect({

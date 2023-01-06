@@ -32,7 +32,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
     })
 
     describe('create table', () => {
-      if (dialect === 'postgres') {
+      if (dialect === 'postgres' || dialect === 'cockroach') {
         it('should create a table with all data types', async () => {
           const builder = ctx.db.schema
             .createTable('test')
@@ -438,7 +438,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
         await builder.execute()
       })
 
-      if (dialect === 'postgres') {
+      if (dialect === 'postgres' || dialect === 'cockroach') {
         it('should support schemas in foreign key target table', async () => {
           await ctx.db.schema
             .createTable('test2')
@@ -557,7 +557,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
         await builder.execute()
       })
 
-      if (dialect === 'postgres') {
+      if (dialect === 'postgres' || dialect === 'cockroach') {
         it('should create a temporary table witn on commit statement', async () => {
           const builder = ctx.db.schema
             .createTable('test')
@@ -578,7 +578,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
         })
       }
 
-      if (dialect === 'postgres') {
+      if (dialect === 'postgres' || dialect === 'cockroach') {
         it('should create a table in specific schema', async () => {
           const builder = ctx.db.schema
             .createTable('public.test')
@@ -600,7 +600,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
         })
       }
 
-      if (dialect === 'postgres') {
+      if (dialect === 'postgres' || dialect === 'cockroach') {
         it('should create a table with generated identity', async () => {
           const builder = ctx.db.schema
             .createTable('test')
@@ -621,7 +621,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
         })
       }
 
-      if (dialect === 'postgres') {
+      if (dialect === 'postgres' || dialect === 'cockroach') {
         it('should create a table with generated identity (by default)', async () => {
           const builder = ctx.db.schema
             .createTable('test')
@@ -642,7 +642,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
         })
       }
 
-      if (dialect === 'postgres') {
+      if (dialect === 'postgres' || dialect === 'cockroach') {
         it('should create a global temporary table', async () => {
           const builder = ctx.db.schema
             .createTable('test')
@@ -669,7 +669,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
         })
       }
 
-      if (dialect === 'postgres') {
+      if (dialect === 'postgres' || dialect === 'cockroach') {
         it('should create a table partitioned by country', async () => {
           const builder = ctx.db.schema
             .createTable('test')
@@ -999,7 +999,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
         await builder.execute()
       })
 
-      if (dialect === 'postgres') {
+      if (dialect === 'postgres' || dialect === 'cockroach') {
         it('should create an index with a type', async () => {
           const builder = ctx.db.schema
             .createIndex('test_first_name_index')
@@ -1137,7 +1137,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
         })
       }
 
-      if (dialect === 'postgres') {
+      if (dialect === 'postgres' || dialect === 'cockroach') {
         it('should drop an index cascade', async () => {
           let builder = ctx.db.schema
             .dropIndex('test_first_name_index')
@@ -1274,7 +1274,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
         })
       }
 
-      if (dialect === 'postgres') {
+      if (dialect === 'postgres' || dialect === 'cockroach') {
         it('should create a materialized view', async () => {
           const builder = ctx.db.schema
             .createView('materialized_dogs')
@@ -1299,7 +1299,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
       async function cleanup() {
         await ctx.db.schema.dropView('dogs').ifExists().execute()
 
-        if (dialect === 'postgres') {
+        if (dialect === 'postgres' || dialect === 'cockroach') {
           await ctx.db.schema
             .dropView('materialized_dogs')
             .materialized()
@@ -1401,7 +1401,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
     })
 
     describe('create schema', () => {
-      if (dialect === 'postgres' || dialect === 'mysql') {
+      if (dialect === 'postgres' || dialect === 'cockroach' || dialect === 'mysql') {
         beforeEach(cleanup)
         afterEach(cleanup)
 
@@ -1448,7 +1448,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
     })
 
     describe('drop schema', () => {
-      if (dialect === 'postgres' || dialect === 'mysql') {
+      if (dialect === 'postgres' || dialect === 'cockroach' || dialect === 'mysql') {
         beforeEach(cleanup)
         afterEach(cleanup)
 
@@ -1489,7 +1489,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
 
           await builder.execute()
         })
-        if (dialect === 'postgres') {
+        if (dialect === 'postgres' || dialect === 'cockroach') {
           it('should drop a schema cascade', async () => {
             await ctx.db.schema.createSchema('pets').execute()
             const builder = ctx.db.schema.dropSchema('pets').cascade()
@@ -1532,7 +1532,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
     })
 
     describe('create type', () => {
-      if (dialect === 'postgres') {
+      if (dialect === 'postgres' || dialect === 'cockroach') {
         beforeEach(cleanup)
         afterEach(cleanup)
 
@@ -1560,7 +1560,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
     })
 
     describe('drop type', () => {
-      if (dialect === 'postgres') {
+      if (dialect === 'postgres' || dialect === 'cockroach') {
         beforeEach(cleanup)
         afterEach(cleanup)
 
@@ -1638,7 +1638,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
             name: 'bool_col',
             isNullable: false,
             dataType:
-              dialect === 'postgres'
+              dialect === 'postgres' || dialect === 'cockroach'
                 ? 'bool'
                 : dialect === 'sqlite'
                 ? 'boolean'
@@ -1672,7 +1672,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
             expect(await getColumnMeta('test.bool_col')).to.containSubset({
               name: 'bool_col',
               isNullable: false,
-              dataType: dialect === 'postgres' ? 'bool' : 'tinyint',
+              dataType: dialect === 'postgres' || dialect === 'cockroach' ? 'bool' : 'tinyint',
             })
           })
 
@@ -2041,7 +2041,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
         })
       })
 
-      if (dialect === 'postgres') {
+      if (dialect === 'postgres' || dialect === 'cockroach') {
         describe('set schema', () => {
           it('should rename a table', async () => {
             const builder = ctx.db.schema.alterTable('test').setSchema('public')
@@ -2124,7 +2124,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
       })
 
       describe('mixed column alterations', () => {
-        if (dialect === 'postgres') {
+        if (dialect === 'postgres' || dialect === 'cockroach') {
           it('should alter multiple columns in various ways', async () => {
             const builder = ctx.db.schema
               .alterTable('test')

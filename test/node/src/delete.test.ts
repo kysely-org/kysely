@@ -111,7 +111,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
       })
     }
 
-    if (dialect === 'postgres' || dialect === 'sqlite') {
+    if (dialect === 'postgres' || dialect === 'cockroach' || dialect === 'sqlite') {
       it('should return deleted rows when `returning` is used', async () => {
         const query = ctx.db
           .deleteFrom('person')
@@ -166,7 +166,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
       })
     }
 
-    if (dialect === 'postgres') {
+    if (dialect === 'postgres' || dialect === 'cockroach') {
       it('should delete from t1 using t2', async () => {
         const query = ctx.db
           .deleteFrom('person')

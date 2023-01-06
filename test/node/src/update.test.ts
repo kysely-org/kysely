@@ -188,7 +188,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
       })
     })
 
-    if (dialect === 'postgres' || dialect === 'sqlite') {
+    if (dialect === 'postgres' || dialect === 'cockroach' || dialect === 'sqlite') {
       it('should update some rows and return updated rows when `returning` is used', async () => {
         const query = ctx.db
           .updateTable('person')
