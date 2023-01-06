@@ -591,15 +591,15 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    * the callback:
    *
    * ```ts
-   * async function insertPerson(id: number, column?: string) {
+   * async function insertPerson(id: number, returnColumn?: string) {
    *   return await db
    *     .insertInto('person')
-   *     .$if(() => column, (qb, col) => qb.returning(col))
+   *     .$if(() => returnColumn, (qb, column) => qb.returning(column))
    *     .executeTakeFirstOrThrow()
    * }
    * ```
    *
-   * In the example above, `column` has type `string?`, but `col` has type of `string`.
+   * In the example above, `returnColumn` has type `string?`, but `column` has type of `string`.
    */
   $if<O2, C>(
     condition: C | (() => C),

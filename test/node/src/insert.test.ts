@@ -678,9 +678,9 @@ for (const dialect of BUILT_IN_DIALECTS) {
 
         it('should insert a row, returning some fields of inserted row and conditionally return a nullable dynamic field', async () => {
           const params: {
-            column?: 'last_name'
+            returnColumn?: 'last_name'
           } = {
-            column: 'last_name',
+            returnColumn: 'last_name',
           }
 
           const query = ctx.db
@@ -692,8 +692,8 @@ for (const dialect of BUILT_IN_DIALECTS) {
             })
             .returning('first_name')
             .$if(
-              () => params.column,
-              (qb, col) => qb.returning(col)
+              () => params.returnColumn,
+              (qb, column) => qb.returning(column)
             )
 
           const result = await query.executeTakeFirstOrThrow()
