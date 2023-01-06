@@ -392,6 +392,36 @@ for (const dialect of BUILT_IN_DIALECTS) {
 
         await query.execute()
       })
+
+      it('should accept a conditional function for $if', async () => {
+        const params: {
+          gender?: 'female'
+        } = {
+          gender: 'female',
+        }
+
+        const query = ctx.db.deleteFrom('person').$if(
+          () => params.gender,
+          (qb, gender) => qb.where('gender', '=', gender)
+        )
+
+        const result = await query.executeTakeFirst()
+
+        expect(result).to.be.instanceOf(DeleteResult)
+        expect(result.numDeletedRows).to.equal(1n)
+
+        expect(
+          await ctx.db
+            .selectFrom('person')
+            .select(['first_name', 'last_name', 'gender'])
+            .orderBy('first_name')
+            .orderBy('last_name')
+            .execute()
+        ).to.eql([
+          { first_name: 'Arnold', last_name: 'Schwarzenegger', gender: 'male' },
+          { first_name: 'Sylvester', last_name: 'Stallone', gender: 'male' },
+        ])
+      })
     }
   })
 }

@@ -1694,6 +1694,7 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    *      () => params.name,
    *      (qb, name) => qb.where('first_name', '=', name)
    *   )
+   * ```
    *
    * In the example above, `params.name` has type `string?`, but `name` has type of `string`.
    */

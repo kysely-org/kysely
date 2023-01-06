@@ -21,12 +21,17 @@ import {
 import { ReturningRow } from '../parser/returning-parser.js'
 import { ReferenceExpression } from '../parser/reference-parser.js'
 import { QueryNode } from '../operation-node/query-node.js'
-import { MergePartial, Nullable, SingleResultType } from '../util/type-utils.js'
+import {
+  MergePartial,
+  Nullable,
+  SingleResultType,
+  Falsy,
+} from '../util/type-utils.js'
 import { preventAwait } from '../util/prevent-await.js'
 import { Compilable } from '../util/compilable.js'
 import { QueryExecutor } from '../query-executor/query-executor.js'
 import { QueryId } from '../util/query-id.js'
-import { freeze } from '../util/object-utils.js'
+import { freeze, isFunction } from '../util/object-utils.js'
 import { KyselyPlugin } from '../plugin/kysely-plugin.js'
 import { WhereInterface } from './where-interface.js'
 import { ReturningInterface } from './returning-interface.js'
@@ -616,7 +621,7 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
   }
 
   /**
-   * Call `func(this)` if `condition` is true.
+   * Call `func(this, value)` if `condition` is a truthy value.
    *
    * This method is especially handy with optional selects. Any `returning` or `returningAll`
    * method calls add columns as optional fields to the output type when called inside
@@ -649,10 +654,25 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
    *   last_name?: string
    * }
    * ```
+   *
+   * If you provide a function as an argument to condition, you can
+   * get the result of the function as the second parameter in
+   * the callback:
+   *
+   * ```ts
+   * async function deletePerson(id: number, lastName?: string) {
+   *   return await db
+   *     .deleteFrom('person')
+   *     .$if(() => lastName, (qb, name) => qb.where('last_name', '=', name))
+   *     .executeTakeFirstOrThrow()
+   * }
+   * ```
+   *
+   * In the example above, `lastName` has type `string?`, but `name` has type of `string`.
    */
-  $if<O2>(
-    condition: boolean,
-    func: (qb: this) => DeleteQueryBuilder<DB, TB, O2>
+  $if<O2, C>(
+    condition: C | (() => C),
+    func: (qb: this, value: Exclude<C, Falsy>) => DeleteQueryBuilder<DB, TB, O2>
   ): DeleteQueryBuilder<
     DB,
     TB,
@@ -662,8 +682,9 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
       ? Partial<O2>
       : MergePartial<O, O2>
   > {
-    if (condition) {
-      return func(this) as any
+    const value = isFunction(condition) ? condition() : condition
+    if (value) {
+      return func(this, value as Exclude<C, Falsy>) as any
     }
 
     return new DeleteQueryBuilder({
