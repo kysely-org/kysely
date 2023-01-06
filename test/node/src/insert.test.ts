@@ -675,6 +675,31 @@ for (const dialect of BUILT_IN_DIALECTS) {
 
           expect(result.last_name).to.equal('Barson')
         })
+
+        it('should insert a row, returning some fields of inserted row and conditionally return a nullable dynamic field', async () => {
+          const params: {
+            column?: 'last_name'
+          } = {
+            column: 'last_name',
+          }
+
+          const query = ctx.db
+            .insertInto('person')
+            .values({
+              first_name: 'Foo',
+              last_name: 'Barson',
+              gender: 'other',
+            })
+            .returning('first_name')
+            .$if(
+              () => params.column,
+              (qb, col) => qb.returning(col)
+            )
+
+          const result = await query.executeTakeFirstOrThrow()
+
+          expect(result.last_name).to.equal('Barson')
+        })
       })
 
       it('should insert a row and return data using `returningAll`', async () => {
@@ -701,6 +726,44 @@ for (const dialect of BUILT_IN_DIALECTS) {
 
         expect(await getNewestPerson(ctx.db)).to.eql({
           first_name: 'Sylvester',
+          last_name: 'Barson',
+        })
+      })
+
+      it('should insert one row', async () => {
+        const query = ctx.db.insertInto('person').values({
+          first_name: 'Foo',
+          last_name: 'Barson',
+          gender: 'other',
+        })
+
+        testSql(query, dialect, {
+          postgres: {
+            sql: 'insert into "person" ("first_name", "last_name", "gender") values ($1, $2, $3)',
+            parameters: ['Foo', 'Barson', 'other'],
+          },
+          mysql: {
+            sql: 'insert into `person` (`first_name`, `last_name`, `gender`) values (?, ?, ?)',
+            parameters: ['Foo', 'Barson', 'other'],
+          },
+          sqlite: {
+            sql: 'insert into "person" ("first_name", "last_name", "gender") values (?, ?, ?)',
+            parameters: ['Foo', 'Barson', 'other'],
+          },
+        })
+
+        const result = await query.executeTakeFirst()
+        expect(result).to.be.instanceOf(InsertResult)
+        expect(result.numInsertedOrUpdatedRows).to.equal(1n)
+
+        if (dialect === 'postgres') {
+          expect(result.insertId).to.be.undefined
+        } else {
+          expect(result.insertId).to.be.a('bigint')
+        }
+
+        expect(await getNewestPerson(ctx.db)).to.eql({
+          first_name: 'Foo',
           last_name: 'Barson',
         })
       })

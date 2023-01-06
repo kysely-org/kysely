@@ -13,13 +13,13 @@ import {
 } from '../parser/insert-values-parser.js'
 import { InsertQueryNode } from '../operation-node/insert-query-node.js'
 import { QueryNode } from '../operation-node/query-node.js'
-import { MergePartial, SingleResultType } from '../util/type-utils.js'
+import { Falsy, MergePartial, SingleResultType } from '../util/type-utils.js'
 import { UpdateObject, parseUpdateObject } from '../parser/update-set-parser.js'
 import { preventAwait } from '../util/prevent-await.js'
 import { Compilable } from '../util/compilable.js'
 import { QueryExecutor } from '../query-executor/query-executor.js'
 import { QueryId } from '../util/query-id.js'
-import { freeze } from '../util/object-utils.js'
+import { freeze, isFunction } from '../util/object-utils.js'
 import { OnDuplicateKeyNode } from '../operation-node/on-duplicate-key-node.js'
 import { InsertResult } from './insert-result.js'
 import { KyselyPlugin } from '../plugin/kysely-plugin.js'
@@ -552,7 +552,7 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
   }
 
   /**
-   * Call `func(this)` if `condition` is true.
+   * Call `func(this, value)` if `condition` is a truthy value.
    *
    * This method is especially handy with optional selects. Any `returning` or `returningAll`
    * method calls add columns as optional fields to the output type when called inside
@@ -585,10 +585,25 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    *   last_name?: string
    * }
    * ```
+   *
+   * If you provide a function as an argument to condition, you can
+   * get the result of the function as the second parameter in
+   * the callback:
+   *
+   * ```ts
+   * async function insertPerson(id: number, column?: string) {
+   *   return await db
+   *     .insertInto('person')
+   *     .$if(() => column, (qb, col) => qb.returning(col))
+   *     .executeTakeFirstOrThrow()
+   * }
+   * ```
+   *
+   * In the example above, `column` has type `string?`, but `col` has type of `string`.
    */
-  $if<O2>(
-    condition: boolean,
-    func: (qb: this) => InsertQueryBuilder<DB, TB, O2>
+  $if<O2, C>(
+    condition: C | (() => C),
+    func: (qb: this, value: Exclude<C, Falsy>) => InsertQueryBuilder<DB, TB, O2>
   ): InsertQueryBuilder<
     DB,
     TB,
@@ -598,8 +613,9 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
       ? Partial<O2>
       : MergePartial<O, O2>
   > {
+    const value = isFunction(condition) ? condition() : condition
     if (condition) {
-      return func(this) as any
+      return func(this, value as Exclude<C, Falsy>) as any
     }
 
     return new InsertQueryBuilder({
