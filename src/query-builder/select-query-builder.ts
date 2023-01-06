@@ -1698,7 +1698,7 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
   ): SelectQueryBuilder<DB, TB, MergePartial<O, O2>> {
     const value = isFunction(condition) ? condition() : condition
     if (value) {
-      func(this, value)
+      return func(this, value)
     }
 
     return new SelectQueryBuilder({
