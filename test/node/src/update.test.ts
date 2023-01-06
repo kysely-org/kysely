@@ -235,6 +235,27 @@ for (const dialect of BUILT_IN_DIALECTS) {
         expect(result.last_name).to.equal('Barson')
       })
 
+      it('should update all rows, conditionally return a dynamic field', async () => {
+        const params: {
+          returnColumn?: 'last_name'
+        } = {
+          returnColumn: 'last_name',
+        }
+
+        const query = ctx.db
+          .updateTable('person')
+          .set({ last_name: 'Barson' })
+          .returning('first_name')
+          .$if(
+            () => params.returnColumn,
+            (qb, column) => qb.returning(column)
+          )
+
+        const result = await query.executeTakeFirstOrThrow()
+
+        expect(result.last_name).to.equal('Barson')
+      })
+
       it('should update some rows and join a table when `from` is called', async () => {
         const query = ctx.db
           .updateTable('person')

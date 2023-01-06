@@ -21,14 +21,19 @@ import {
 import { ReturningRow } from '../parser/returning-parser.js'
 import { ReferenceExpression } from '../parser/reference-parser.js'
 import { QueryNode } from '../operation-node/query-node.js'
-import { MergePartial, Nullable, SingleResultType } from '../util/type-utils.js'
+import {
+  Falsy,
+  MergePartial,
+  Nullable,
+  SingleResultType,
+} from '../util/type-utils.js'
 import { UpdateQueryNode } from '../operation-node/update-query-node.js'
 import { UpdateObject, parseUpdateObject } from '../parser/update-set-parser.js'
 import { preventAwait } from '../util/prevent-await.js'
 import { Compilable } from '../util/compilable.js'
 import { QueryExecutor } from '../query-executor/query-executor.js'
 import { QueryId } from '../util/query-id.js'
-import { freeze } from '../util/object-utils.js'
+import { freeze, isFunction } from '../util/object-utils.js'
 import { UpdateResult } from './update-result.js'
 import { KyselyPlugin } from '../plugin/kysely-plugin.js'
 import { WhereInterface } from './where-interface.js'
@@ -609,7 +614,7 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
   }
 
   /**
-   * Call `func(this)` if `condition` is true.
+   * Call `func(this, value)` if `condition` is a truthy value.
    *
    * This method is especially handy with optional selects. Any `returning` or `returningAll`
    * method calls add columns as optional fields to the output type when called inside
@@ -643,10 +648,30 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
    *   last_name?: string
    * }
    * ```
+   *
+   * If you provide a function as an argument to condition, you can
+   * get the result of the function as the second parameter in
+   * the callback:
+   *
+   * ```ts
+   * async function updatePerson(id: number, updates: UpdateablePerson, returnColumn?: 'last_name') {
+   *   return await db
+   *     .updateTable('person')
+   *     .set(updates)
+   *     .where('id', '=', id)
+   *     .$if(() => returnColumn, (qb, column) => qb.returning(column))
+   *     .executeTakeFirstOrThrow()
+   * }
+   * ```
+   *
+   * In the example above, `returnColumn` has type `"last_name" | undefined`, but `column` has type of `"last_name"`.
    */
-  $if<O2>(
-    condition: boolean,
-    func: (qb: this) => UpdateQueryBuilder<DB, UT, TB, O2>
+  $if<O2, C>(
+    condition: C | (() => C),
+    func: (
+      qb: this,
+      value: Exclude<C, Falsy>
+    ) => UpdateQueryBuilder<DB, UT, TB, O2>
   ): UpdateQueryBuilder<
     DB,
     UT,
@@ -657,8 +682,9 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
       ? Partial<O2>
       : MergePartial<O, O2>
   > {
-    if (condition) {
-      return func(this) as any
+    const value = isFunction(condition) ? condition() : condition
+    if (value) {
+      return func(this, value as Exclude<C, Falsy>) as any
     }
 
     return new UpdateQueryBuilder({
