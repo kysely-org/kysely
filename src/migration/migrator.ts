@@ -32,12 +32,17 @@ export interface Migration {
  * other way.
  *
  * ```ts
+ * import { promises as fs } from 'fs'
+ * import path from 'path'
+ *
  * const migrator = new Migrator({
  *   db,
- *   provider: new FileMigrationProvider(
+ *   provider: new FileMigrationProvider({
+ *     fs,
+ *     path,
  *     // Path to the folder that contains all your migrations.
- *     'some/path/to/migrations'
- *   )
+ *     migrationFolder: 'some/path/to/migrations'
+ *   })
  * })
  * ```
  */
