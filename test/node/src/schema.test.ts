@@ -1,7 +1,6 @@
 import { ColumnMetadata, sql } from '../../../'
 
 import {
-  BuiltInDialect,
   BUILT_IN_DIALECTS,
   clearDatabase,
   destroyTest,

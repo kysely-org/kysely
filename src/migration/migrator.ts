@@ -1,3 +1,4 @@
+import { MigrationLockOptions } from '../dialect/dialect-adapter.js'
 import { Kysely } from '../kysely.js'
 import { KyselyPlugin } from '../plugin/kysely-plugin.js'
 import { NoopPlugin } from '../plugin/noop-plugin.js'
@@ -384,9 +385,16 @@ export class Migrator {
   ): Promise<MigrationResultSet> {
     const adapter = this.#props.db.getExecutor().adapter
 
+    const lockOptions: MigrationLockOptions = freeze({
+      lockTable:
+        this.#props.migrationLockTableName ?? DEFAULT_MIGRATION_LOCK_TABLE,
+      lockRowId: MIGRATION_LOCK_ID,
+      lockTableSchema: this.#props.migrationTableSchema,
+    })
+
     const run = async (db: Kysely<any>): Promise<MigrationResultSet> => {
       try {
-        await adapter.acquireMigrationLock(db)
+        await adapter.acquireMigrationLock(db, lockOptions)
 
         const state = await this.#getState(db)
 
@@ -408,7 +416,7 @@ export class Migrator {
 
         return { results: [] }
       } finally {
-        await adapter.releaseMigrationLock(db)
+        await adapter.releaseMigrationLock(db, lockOptions)
       }
     }
 
