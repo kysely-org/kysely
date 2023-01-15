@@ -35,24 +35,30 @@ export class MysqlIntrospector implements DatabaseIntrospector {
   ): Promise<TableMetadata[]> {
     let query = this.#db
       .selectFrom('information_schema.columns')
+      .innerJoin("information_schema.tables", 
+        (b) => b.onRef("columns.TABLE_CATALOG", "=", "tables.TABLE_CATALOG")
+                .onRef("columns.TABLE_SCHEMA", "=", "tables.TABLE_SCHEMA")
+                .onRef("columns.TABLE_NAME", "=", "tables.TABLE_NAME")
+      )
       .select([
-        'COLUMN_NAME',
-        'COLUMN_DEFAULT',
-        'TABLE_NAME',
-        'TABLE_SCHEMA',
-        'IS_NULLABLE',
-        'DATA_TYPE',
-        'EXTRA',
+        'columns.COLUMN_NAME',
+        'columns.COLUMN_DEFAULT',
+        'columns.TABLE_NAME',
+        'columns.TABLE_SCHEMA',
+        'tables.TABLE_TYPE',
+        'columns.IS_NULLABLE',
+        'columns.DATA_TYPE',
+        'columns.EXTRA',
       ])
-      .where('table_schema', '=', sql`database()`)
-      .orderBy('table_name')
-      .orderBy('ordinal_position')
+      .where('columns.table_schema', '=', sql`database()`)
+      .orderBy('columns.table_name')
+      .orderBy('columns.ordinal_position')
       .$castTo<RawColumnMetadata>()
 
     if (!options.withInternalKyselyTables) {
       query = query
-        .where('table_name', '!=', DEFAULT_MIGRATION_TABLE)
-        .where('table_name', '!=', DEFAULT_MIGRATION_LOCK_TABLE)
+        .where('columns.table_name' as string, '!=', DEFAULT_MIGRATION_TABLE)
+        .where('columns.table_name' as string, '!=', DEFAULT_MIGRATION_LOCK_TABLE)
     }
 
     const rawColumns = await query.execute()
@@ -74,6 +80,7 @@ export class MysqlIntrospector implements DatabaseIntrospector {
       if (!table) {
         table = freeze({
           name: it.TABLE_NAME,
+          isView: it.TABLE_TYPE === "VIEW",
           schema: it.TABLE_SCHEMA,
           columns: [],
         })
@@ -105,6 +112,7 @@ interface RawColumnMetadata {
   COLUMN_DEFAULT: any
   TABLE_NAME: string
   TABLE_SCHEMA: string
+  TABLE_TYPE: string
   IS_NULLABLE: 'YES' | 'NO'
   DATA_TYPE: string
   EXTRA: string
