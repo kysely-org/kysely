@@ -183,7 +183,7 @@ type UpdateablePerson = Updateable<PersonTable>
 
 # Playground
 
-[@wirekang](https://github.com/wirekang) has created a [playground for Kysely](https://wirekang.github.io/kysely-playground/#eyJkaWFsZWN0IjoibXlzcWwiLCJ0cyI6ImludGVyZmFjZSBEQiB7XG4gIHVzZXI6IFVzZXJUYWJsZVxufVxuXG5pbnRlcmZhY2UgVXNlclRhYmxlIHtcbiAgaWQ6IEdlbmVyYXRlZDxzdHJpbmc+XG4gIGZpcnN0X25hbWU6IHN0cmluZyB8IG51bGxcbiAgbGFzdF9uYW1lOiBzdHJpbmcgfCBudWxsXG4gIGNyZWF0ZWRfYXQ6IEdlbmVyYXRlZDxEYXRlPlxufVxuXG5yZXN1bHQgPSBreXNlbHlcbiAgLnNlbGVjdEZyb20oXCJ1c2VyXCIpXG4gIC5zZWxlY3RBbGwoKVxuICAub3JkZXJCeShcImNyZWF0ZWRfYXRcIikifQ==). You can use to quickly test stuff out and for creating code examples for your issues, PRs and discord messages.
+[@wirekang](https://github.com/wirekang) has created a [playground for Kysely](https://wirekang.github.io/kysely-playground/?p=f&i=-NLp3n_P5fyeQKMQda8n). You can use to quickly test stuff out and for creating code examples for your issues, PRs and discord messages.
 
 # Generating types
 
