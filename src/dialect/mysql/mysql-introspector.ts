@@ -34,11 +34,12 @@ export class MysqlIntrospector implements DatabaseIntrospector {
     options: DatabaseMetadataOptions = { withInternalKyselyTables: false }
   ): Promise<TableMetadata[]> {
     let query = this.#db
-      .selectFrom('information_schema.columns')
-      .innerJoin("information_schema.tables", 
-        (b) => b.onRef("columns.TABLE_CATALOG", "=", "tables.TABLE_CATALOG")
-                .onRef("columns.TABLE_SCHEMA", "=", "tables.TABLE_SCHEMA")
-                .onRef("columns.TABLE_NAME", "=", "tables.TABLE_NAME")
+      .selectFrom('information_schema.columns as columns')
+      .innerJoin('information_schema.tables as tables', (b) =>
+        b
+          .onRef('columns.TABLE_CATALOG', '=', 'tables.TABLE_CATALOG')
+          .onRef('columns.TABLE_SCHEMA', '=', 'tables.TABLE_SCHEMA')
+          .onRef('columns.TABLE_NAME', '=', 'tables.TABLE_NAME')
       )
       .select([
         'columns.COLUMN_NAME',
@@ -50,15 +51,15 @@ export class MysqlIntrospector implements DatabaseIntrospector {
         'columns.DATA_TYPE',
         'columns.EXTRA',
       ])
-      .where('columns.table_schema', '=', sql`database()`)
-      .orderBy('columns.table_name')
-      .orderBy('columns.ordinal_position')
+      .where('columns.TABLE_SCHEMA', '=', sql`database()`)
+      .orderBy('columns.TABLE_NAME')
+      .orderBy('columns.ORDINAL_POSITION')
       .$castTo<RawColumnMetadata>()
 
     if (!options.withInternalKyselyTables) {
       query = query
-        .where('columns.table_name' as string, '!=', DEFAULT_MIGRATION_TABLE)
-        .where('columns.table_name' as string, '!=', DEFAULT_MIGRATION_LOCK_TABLE)
+        .where('columns.TABLE_NAME', '!=', DEFAULT_MIGRATION_TABLE)
+        .where('columns.TABLE_NAME', '!=', DEFAULT_MIGRATION_LOCK_TABLE)
     }
 
     const rawColumns = await query.execute()
@@ -80,7 +81,7 @@ export class MysqlIntrospector implements DatabaseIntrospector {
       if (!table) {
         table = freeze({
           name: it.TABLE_NAME,
-          isView: it.TABLE_TYPE === "VIEW",
+          isView: it.TABLE_TYPE === 'VIEW',
           schema: it.TABLE_SCHEMA,
           columns: [],
         })

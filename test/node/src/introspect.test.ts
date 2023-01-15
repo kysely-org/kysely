@@ -338,9 +338,9 @@ for (const dialect of BUILT_IN_DIALECTS) {
                 isAutoIncrementing: false,
                 isNullable: false,
                 name: 'name',
-              }
-            ]
-          }
+              },
+            ],
+          },
         ])
       } else if (dialect === 'sqlite') {
         expect(meta).to.eql([
@@ -464,15 +464,18 @@ for (const dialect of BUILT_IN_DIALECTS) {
                 isAutoIncrementing: false,
                 isNullable: true,
                 name: 'name',
-              }
-            ]
-          }
+              },
+            ],
+          },
         ])
       }
     })
 
     async function createView() {
-      ctx.db.schema.createView('toy_names').as(ctx.db.selectFrom('toy').select('name')).execute()
+      ctx.db.schema
+        .createView('toy_names')
+        .as(ctx.db.selectFrom('toy').select('name'))
+        .execute()
     }
 
     async function dropView() {

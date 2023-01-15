@@ -108,7 +108,7 @@ export class PostgresIntrospector implements DatabaseIntrospector {
       if (!table) {
         table = freeze({
           name: it.table,
-          isView: it.table_type === "v",
+          isView: it.table_type === 'v',
           schema: it.schema,
           columns: [],
         })

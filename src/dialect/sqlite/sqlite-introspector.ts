@@ -61,7 +61,7 @@ export class SqliteIntrospector implements DatabaseIntrospector {
       .selectFrom('sqlite_master')
       .where('name', '=', table)
       .select(['sql', 'type'])
-      .$castTo<{ sql: string | undefined, type: string }>()
+      .$castTo<{ sql: string | undefined; type: string }>()
       .executeTakeFirstOrThrow()
 
     // Try to find the name of the column that has `autoincrement` 🤦
@@ -87,7 +87,7 @@ export class SqliteIntrospector implements DatabaseIntrospector {
 
     return {
       name: table,
-      isView: tableDefinition.type === "view",
+      isView: tableDefinition.type === 'view',
       columns: columns.map((col) => ({
         name: col.name,
         dataType: col.type,
