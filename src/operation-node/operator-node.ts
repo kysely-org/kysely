@@ -16,6 +16,7 @@ export const COMPARISON_OPERATORS = [
   'is not',
   'like',
   'not like',
+  'match',
   'ilike',
   'not ilike',
   '@>',

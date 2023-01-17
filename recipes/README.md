@@ -6,3 +6,4 @@
 * [Raw SQL](https://github.com/koskimas/kysely/tree/master/recipes/raw-sql.md)
 * [Schemas](https://github.com/koskimas/kysely/tree/master/recipes/schemas.md)
 * [Dealing with the `Type instantiation is excessively deep and possibly infinite` error](https://github.com/koskimas/kysely/tree/master/recipes/excessively-deep-types.md)
+* [Introspecting relation metadata](https://github.com/koskimas/kysely/tree/master/recipes/introspecting-relation-metadata.md)

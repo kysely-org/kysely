@@ -29,19 +29,48 @@ export interface DialectAdapter {
    * Most dialects have explicit locks that can be used, like advisory locks
    * in PostgreSQL and the get_lock function in MySQL.
    *
-   * If the dialect doesn't have explicit locks the {@link MIGRATION_LOCK_TABLE}
-   * created by Kysely can be used instead. {@link MIGRATION_LOCK_TABLE}
-   * has two columns `id` and `is_locked` and there's only one row in the
-   * table whose id is {@link MIGRATION_LOCK_ID}. `is_locked` is an integer.
-   * Kysely takes care of creating the lock table and inserting the one single
-   * row to it before this method is executed.
+   * If the dialect doesn't have explicit locks the {@link MigrationLockOptions.lockTable}
+   * created by Kysely can be used instead. You can access it through the `options` object.
+   * The lock table has two columns `id` and `is_locked` and there's only one row in the table
+   * whose id is {@link MigrationLockOptions.lockRowId}. `is_locked` is an integer. Kysely
+   * takes care of creating the lock table and inserting the one single row to it before this
+   * method is executed. If the dialect supports schemas and the user has specified a custom
+   * schema in their migration settings, the options object also contains the schema name in
+   * {@link MigrationLockOptions.lockTableSchema}.
+   *
+   * Here's an example of how you might implement this method for a dialect that doesn't
+   * have explicit locks but supports `FOR UPDATE` row locks and transactional DDL:
+   *
+   * ```ts
+   * {
+   *   async acquireMigrationLock(db, options): Promise<void> {
+   *     const queryDb = options.lockTableSchema
+   *       ? db.withSchema(options.lockTableSchema)
+   *       : db
+   *
+   *     // Since our imaginary dialect supports transactional DDL and has
+   *     // row locks, we can simply take a row lock here and it will guarantee
+   *     // all subsequent calls to this method from other transactions will
+   *     // wait until this transaction finishes.
+   *     await queryDb
+   *       .selectFrom(options.lockTable)
+   *       .selectAll()
+   *       .where('id', '=', options.lockRowId)
+   *       .forUpdate()
+   *       .execute()
+   *   }
+   * }
+   * ```
    *
    * If `supportsTransactionalDdl` is `true` then the `db` passed to this method
    * is a transaction inside which the migrations will be executed. Otherwise
    * `db` is a single connection (session) that will be used to execute the
    * migrations.
    */
-  acquireMigrationLock(db: Kysely<any>): Promise<void>
+  acquireMigrationLock(
+    db: Kysely<any>,
+    options: MigrationLockOptions
+  ): Promise<void>
 
   /**
    * Releases the migration lock. See {@link acquireMigrationLock}.
@@ -51,5 +80,27 @@ export interface DialectAdapter {
    * is a single connection (session) that was used to execute the migrations
    * and the `acquireMigrationLock` call.
    */
-  releaseMigrationLock(db: Kysely<any>): Promise<void>
+  releaseMigrationLock(
+    db: Kysely<any>,
+    options: MigrationLockOptions
+  ): Promise<void>
+}
+
+export interface MigrationLockOptions {
+  /**
+   * The name of the migration lock table.
+   */
+  readonly lockTable: string
+
+  /**
+   * The id of the only row in the migration lock table.
+   */
+  readonly lockRowId: string
+
+  /**
+   * The schema in which the migration lock table lives. This is only
+   * defined if the user has specified a custom schema in the migration
+   * settings.
+   */
+  readonly lockTableSchema?: string
 }

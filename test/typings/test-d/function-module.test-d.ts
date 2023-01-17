@@ -3,7 +3,7 @@ import { Kysely, sql } from '..'
 import { Database } from '../shared'
 
 async function testSelectWithoutAs(db: Kysely<Database>) {
-  const { avg, count, max, min, sum } = db.fn
+  const { avg, count, countAll, max, min, sum } = db.fn
 
   expectError(
     db.selectFrom('person').select(avg('age')).executeTakeFirstOrThrow()
@@ -25,6 +25,25 @@ async function testSelectWithoutAs(db: Kysely<Database>) {
   )
 
   expectError(
+    db.selectFrom('person').select(countAll()).executeTakeFirstOrThrow()
+  )
+
+  expectError(
+    db.selectFrom('person').select(countAll<number>()).executeTakeFirstOrThrow()
+  )
+
+  expectError(
+    db.selectFrom('person').select(countAll('person')).executeTakeFirstOrThrow()
+  )
+
+  expectError(
+    db
+      .selectFrom('person')
+      .select(countAll<number>('person'))
+      .executeTakeFirstOrThrow()
+  )
+
+  expectError(
     db.selectFrom('person').select(max('age')).executeTakeFirstOrThrow()
   )
 
@@ -42,12 +61,14 @@ async function testSelectWithoutAs(db: Kysely<Database>) {
 }
 
 async function testSelectWithDefaultGenerics(db: Kysely<Database>) {
-  const { avg, count, max, min, sum } = db.fn
+  const { avg, count, countAll, max, min, sum } = db.fn
 
   const result = await db
     .selectFrom('person')
     .select(avg('age').as('avg_age'))
     .select(count('age').as('total_people'))
+    .select(countAll().as('total_all'))
+    .select(countAll('person').as('total_all_people'))
     .select(max('age').as('max_age'))
     .select(min('age').as('min_age'))
     .select(sum('age').as('total_age'))
@@ -57,6 +78,10 @@ async function testSelectWithDefaultGenerics(db: Kysely<Database>) {
   expectNotAssignable<null>(result.avg_age)
   expectAssignable<string | number | bigint>(result.total_people)
   expectNotAssignable<null>(result.total_people)
+  expectAssignable<string | number | bigint>(result.total_all)
+  expectNotAssignable<null>(result.total_all)
+  expectAssignable<string | number | bigint>(result.total_all_people)
+  expectNotAssignable<null>(result.total_all_people)
   expectAssignable<number>(result.max_age)
   expectNotAssignable<string | bigint | null>(result.max_age)
   expectAssignable<number>(result.min_age)
@@ -66,13 +91,15 @@ async function testSelectWithDefaultGenerics(db: Kysely<Database>) {
 }
 
 async function testSelectWithCustomGenerics(db: Kysely<Database>) {
-  const { avg, count, max, min, sum } = db.fn
+  const { avg, count, countAll, max, min, sum } = db.fn
 
   const result = await db
     .selectFrom('person')
     .select(avg<number>('age').as('avg_age'))
     .select(avg<number | null>('age').as('nullable_avg_age'))
     .select(count<number>('age').as('total_people'))
+    .select(countAll<number>().as('total_all'))
+    .select(countAll<number>('person').as('total_all_people'))
     .select(max<number | null, 'age'>('age').as('nullable_max_age'))
     .select(min<number | null, 'age'>('age').as('nullable_min_age'))
     .select(sum<number>('age').as('total_age'))
@@ -85,6 +112,10 @@ async function testSelectWithCustomGenerics(db: Kysely<Database>) {
   expectNotAssignable<string | bigint>(result.nullable_avg_age)
   expectAssignable<number>(result.total_people)
   expectNotAssignable<string | bigint | null>(result.total_people)
+  expectAssignable<number>(result.total_all)
+  expectNotAssignable<string | bigint | null>(result.total_all)
+  expectAssignable<number>(result.total_all_people)
+  expectNotAssignable<string | bigint | null>(result.total_all_people)
   expectAssignable<number | null>(result.nullable_max_age)
   expectNotAssignable<string | bigint>(result.nullable_max_age)
   expectAssignable<number | null>(result.nullable_min_age)
@@ -146,7 +177,7 @@ async function testSelectWithCustomGenerics(db: Kysely<Database>) {
 }
 
 async function testSelectUnexpectedColumn(db: Kysely<Database>) {
-  const { avg, count, max, min, sum } = db.fn
+  const { avg, count, countAll, max, min, sum } = db.fn
 
   expectError(
     db
@@ -173,6 +204,20 @@ async function testSelectUnexpectedColumn(db: Kysely<Database>) {
     db
       .selectFrom('person')
       .select(count<number>('no_such_column').as('total_people'))
+      .executeTakeFirstOrThrow()
+  )
+
+  expectError(
+    db
+      .selectFrom('person')
+      .select(countAll('no_such_table').as('total_all_people'))
+      .executeTakeFirstOrThrow()
+  )
+
+  expectError(
+    db
+      .selectFrom('person')
+      .select(countAll<number>('no_such_table').as('total_all_people'))
       .executeTakeFirstOrThrow()
   )
 

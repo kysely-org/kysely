@@ -20,6 +20,8 @@ for (const dialect of BUILT_IN_DIALECTS) {
         await dropSchema()
         await createSchema()
       }
+
+      await createView()
     })
 
     beforeEach(async () => {
@@ -31,6 +33,8 @@ for (const dialect of BUILT_IN_DIALECTS) {
     })
 
     after(async () => {
+      await dropView()
+
       if (dialect === 'postgres') {
         await dropSchema()
       }
@@ -45,6 +49,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
         expect(meta).to.eql([
           {
             name: 'person',
+            isView: false,
             schema: 'public',
             columns: [
               {
@@ -92,6 +97,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
           },
           {
             name: 'pet',
+            isView: false,
             schema: 'public',
             columns: [
               {
@@ -130,6 +136,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
           },
           {
             name: 'toy',
+            isView: false,
             schema: 'public',
             columns: [
               {
@@ -167,7 +174,23 @@ for (const dialect of BUILT_IN_DIALECTS) {
             ],
           },
           {
+            name: 'toy_names',
+            isView: true,
+            schema: 'public',
+            columns: [
+              {
+                name: 'name',
+                dataType: 'varchar',
+                dataTypeSchema: 'pg_catalog',
+                isNullable: true,
+                isAutoIncrementing: false,
+                hasDefaultValue: false,
+              },
+            ],
+          },
+          {
             name: 'pet',
+            isView: false,
             schema: 'some_schema',
             columns: [
               {
@@ -193,6 +216,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
         expect(meta).to.eql([
           {
             name: 'person',
+            isView: false,
             schema: 'kysely_test',
             columns: [
               {
@@ -235,6 +259,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
           },
           {
             name: 'pet',
+            isView: false,
             schema: 'kysely_test',
             columns: [
               {
@@ -269,6 +294,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
           },
           {
             name: 'toy',
+            isView: false,
             schema: 'kysely_test',
             columns: [
               {
@@ -301,11 +327,26 @@ for (const dialect of BUILT_IN_DIALECTS) {
               },
             ],
           },
+          {
+            name: 'toy_names',
+            isView: true,
+            schema: 'kysely_test',
+            columns: [
+              {
+                dataType: 'varchar',
+                hasDefaultValue: false,
+                isAutoIncrementing: false,
+                isNullable: false,
+                name: 'name',
+              },
+            ],
+          },
         ])
       } else if (dialect === 'sqlite') {
         expect(meta).to.eql([
           {
             name: 'person',
+            isView: false,
             columns: [
               {
                 name: 'id',
@@ -347,6 +388,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
           },
           {
             name: 'pet',
+            isView: false,
             columns: [
               {
                 name: 'id',
@@ -380,6 +422,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
           },
           {
             name: 'toy',
+            isView: false,
             columns: [
               {
                 name: 'id',
@@ -411,9 +454,33 @@ for (const dialect of BUILT_IN_DIALECTS) {
               },
             ],
           },
+          {
+            name: 'toy_names',
+            isView: true,
+            columns: [
+              {
+                dataType: 'varchar(255)',
+                hasDefaultValue: false,
+                isAutoIncrementing: false,
+                isNullable: true,
+                name: 'name',
+              },
+            ],
+          },
         ])
       }
     })
+
+    async function createView() {
+      ctx.db.schema
+        .createView('toy_names')
+        .as(ctx.db.selectFrom('toy').select('name'))
+        .execute()
+    }
+
+    async function dropView() {
+      ctx.db.schema.dropView('toy_names').ifExists().execute()
+    }
 
     async function createSchema() {
       await ctx.db.schema.createSchema('some_schema').execute()

@@ -45,7 +45,6 @@ import { WhereNode } from '../operation-node/where-node.js'
 import { CommonTableExpressionNode } from '../operation-node/common-table-expression-node.js'
 import { WithNode } from '../operation-node/with-node.js'
 import {
-  getLast,
   freeze,
   isString,
   isNumber,
@@ -1208,7 +1207,7 @@ export class DefaultQueryCompiler
       this.append('distinct ')
     }
 
-    this.visitNode(node.column)
+    this.visitNode(node.aggregated)
     this.append(')')
 
     if (node.filter) {

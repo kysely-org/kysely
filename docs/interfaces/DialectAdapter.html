@@ -29,7 +29,7 @@ it. For that there&#39;s a <code>supportsTransactionalDdl</code> boolean in this
 <ul class="tsd-hierarchy">
 <li><a href="../classes/DialectAdapterBase.html" class="tsd-signature-type" data-tsd-kind="Class">DialectAdapterBase</a></li></ul></section><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/koskimas/kysely/blob/efa083e9/src/dialect/dialect-adapter.ts#L11">src/dialect/dialect-adapter.ts:11</a></li></ul></aside>
+<li>Defined in <a href="https://github.com/koskimas/kysely/blob/fbcf3e38/src/dialect/dialect-adapter.ts#L11">src/dialect/dialect-adapter.ts:11</a></li></ul></aside>
 <section class="tsd-panel-group tsd-index-group">
 <section class="tsd-panel tsd-index-panel">
 <details class="tsd-index-content tsd-index-accordion" open><summary class="tsd-accordion-summary tsd-index-summary">
@@ -54,7 +54,7 @@ it. For that there&#39;s a <code>supportsTransactionalDdl</code> boolean in this
 updates and deletes.</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/koskimas/kysely/blob/efa083e9/src/dialect/dialect-adapter.ts#L23">src/dialect/dialect-adapter.ts:23</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/koskimas/kysely/blob/fbcf3e38/src/dialect/dialect-adapter.ts#L23">src/dialect/dialect-adapter.ts:23</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface"><a id="supportsTransactionalDdl" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagReadonly">Readonly</code> <span>supports<wbr/>Transactional<wbr/>Ddl</span><a href="#supportsTransactionalDdl" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">supports<wbr/>Transactional<wbr/>Ddl<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span></div>
@@ -62,24 +62,30 @@ updates and deletes.</p>
 <p>If this is true, migrations are executed inside a transaction.</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/koskimas/kysely/blob/efa083e9/src/dialect/dialect-adapter.ts#L17">src/dialect/dialect-adapter.ts:17</a></li></ul></aside></section></section>
+<li>Defined in <a href="https://github.com/koskimas/kysely/blob/fbcf3e38/src/dialect/dialect-adapter.ts#L17">src/dialect/dialect-adapter.ts:17</a></li></ul></aside></section></section>
 <section class="tsd-panel-group tsd-member-group">
 <h2>Methods</h2>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface"><a id="acquireMigrationLock" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>acquire<wbr/>Migration<wbr/>Lock</span><a href="#acquireMigrationLock" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
-<li class="tsd-signature tsd-anchor-link" id="acquireMigrationLock.acquireMigrationLock-1">acquire<wbr/>Migration<wbr/>Lock<span class="tsd-signature-symbol">(</span>db<span class="tsd-signature-symbol">: </span><a href="../classes/Kysely.html" class="tsd-signature-type" data-tsd-kind="Class">Kysely</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span><a href="#acquireMigrationLock.acquireMigrationLock-1" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></li>
+<li class="tsd-signature tsd-anchor-link" id="acquireMigrationLock.acquireMigrationLock-1">acquire<wbr/>Migration<wbr/>Lock<span class="tsd-signature-symbol">(</span>db<span class="tsd-signature-symbol">: </span><a href="../classes/Kysely.html" class="tsd-signature-type" data-tsd-kind="Class">Kysely</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span>, options<span class="tsd-signature-symbol">: </span><a href="MigrationLockOptions.html" class="tsd-signature-type" data-tsd-kind="Interface">MigrationLockOptions</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span><a href="#acquireMigrationLock.acquireMigrationLock-1" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></li>
 <li class="tsd-description">
 <div class="tsd-comment tsd-typography"><p>This method is used to acquire a lock for the migrations so that
 it&#39;s not possible for two migration operations to run in parallel.</p>
 <p>Most dialects have explicit locks that can be used, like advisory locks
 in PostgreSQL and the get_lock function in MySQL.</p>
-<p>If the dialect doesn&#39;t have explicit locks the MIGRATION_LOCK_TABLE
-created by Kysely can be used instead. MIGRATION_LOCK_TABLE
-has two columns <code>id</code> and <code>is_locked</code> and there&#39;s only one row in the
-table whose id is <a href="../variables/MIGRATION_LOCK_ID.html">MIGRATION_LOCK_ID</a>. <code>is_locked</code> is an integer.
-Kysely takes care of creating the lock table and inserting the one single
-row to it before this method is executed.</p>
+<p>If the dialect doesn&#39;t have explicit locks the <a href="MigrationLockOptions.html#lockTable">lockTable</a>
+created by Kysely can be used instead. You can access it through the <code>options</code> object.
+The lock table has two columns <code>id</code> and <code>is_locked</code> and there&#39;s only one row in the table
+whose id is <a href="MigrationLockOptions.html#lockRowId">lockRowId</a>. <code>is_locked</code> is an integer. Kysely
+takes care of creating the lock table and inserting the one single row to it before this
+method is executed. If the dialect supports schemas and the user has specified a custom
+schema in their migration settings, the options object also contains the schema name in
+<a href="MigrationLockOptions.html#lockTableSchema">lockTableSchema</a>.</p>
+<p>Here&#39;s an example of how you might implement this method for a dialect that doesn&#39;t
+have explicit locks but supports <code>FOR UPDATE</code> row locks and transactional DDL:</p>
+<pre><code class="language-ts"><span class="hl-0">{</span><br/><span class="hl-0">  </span><span class="hl-1">async</span><span class="hl-0"> </span><span class="hl-8">acquireMigrationLock</span><span class="hl-0">(</span><span class="hl-1">db</span><span class="hl-0">, </span><span class="hl-1">options</span><span class="hl-0">): </span><span class="hl-5">Promise</span><span class="hl-0">&lt;</span><span class="hl-4">void</span><span class="hl-0">&gt; {</span><br/><span class="hl-0">    const </span><span class="hl-1">queryDb</span><span class="hl-0"> = </span><span class="hl-1">options</span><span class="hl-0">.</span><span class="hl-1">lockTableSchema</span><br/><span class="hl-0">      ? db.withSchema(options.lockTableSchema)</span><br/><span class="hl-0">      </span><span class="hl-1">:</span><span class="hl-0"> </span><span class="hl-1">db</span><br/><br/><span class="hl-0">    </span><span class="hl-6">// Since our imaginary dialect supports transactional DDL and has</span><br/><span class="hl-0">    </span><span class="hl-6">// row locks, we can simply take a row lock here and it will guarantee</span><br/><span class="hl-0">    </span><span class="hl-6">// all subsequent calls to this method from other transactions will</span><br/><span class="hl-0">    </span><span class="hl-6">// wait until this transaction finishes.</span><br/><span class="hl-0">    </span><span class="hl-2">await</span><span class="hl-0"> </span><span class="hl-1">queryDb</span><br/><span class="hl-0">      .</span><span class="hl-8">selectFrom</span><span class="hl-0">(</span><span class="hl-1">options</span><span class="hl-0">.</span><span class="hl-1">lockTable</span><span class="hl-0">)</span><br/><span class="hl-0">      .</span><span class="hl-8">selectAll</span><span class="hl-0">()</span><br/><span class="hl-0">      .</span><span class="hl-8">where</span><span class="hl-0">(</span><span class="hl-3">&#39;id&#39;</span><span class="hl-0">, </span><span class="hl-3">&#39;=&#39;</span><span class="hl-0">, </span><span class="hl-1">options</span><span class="hl-0">.</span><span class="hl-1">lockRowId</span><span class="hl-0">)</span><br/><span class="hl-0">      .</span><span class="hl-8">forUpdate</span><span class="hl-0">()</span><br/><span class="hl-0">      .</span><span class="hl-8">execute</span><span class="hl-0">()</span><br/><span class="hl-0">  }</span><br/><span class="hl-0">}</span>
+</code></pre>
 <p>If <code>supportsTransactionalDdl</code> is <code>true</code> then the <code>db</code> passed to this method
 is a transaction inside which the migrations will be executed. Otherwise
 <code>db</code> is a single connection (session) that will be used to execute the
@@ -89,14 +95,16 @@ migrations.</p>
 <h4 class="tsd-parameters-title">Parameters</h4>
 <ul class="tsd-parameter-list">
 <li>
-<h5>db: <a href="../classes/Kysely.html" class="tsd-signature-type" data-tsd-kind="Class">Kysely</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span></h5></li></ul></div>
+<h5>db: <a href="../classes/Kysely.html" class="tsd-signature-type" data-tsd-kind="Class">Kysely</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span></h5></li>
+<li>
+<h5>options: <a href="MigrationLockOptions.html" class="tsd-signature-type" data-tsd-kind="Interface">MigrationLockOptions</a></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/koskimas/kysely/blob/efa083e9/src/dialect/dialect-adapter.ts#L44">src/dialect/dialect-adapter.ts:44</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/koskimas/kysely/blob/fbcf3e38/src/dialect/dialect-adapter.ts#L70">src/dialect/dialect-adapter.ts:70</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface"><a id="releaseMigrationLock" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>release<wbr/>Migration<wbr/>Lock</span><a href="#releaseMigrationLock" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
-<li class="tsd-signature tsd-anchor-link" id="releaseMigrationLock.releaseMigrationLock-1">release<wbr/>Migration<wbr/>Lock<span class="tsd-signature-symbol">(</span>db<span class="tsd-signature-symbol">: </span><a href="../classes/Kysely.html" class="tsd-signature-type" data-tsd-kind="Class">Kysely</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span><a href="#releaseMigrationLock.releaseMigrationLock-1" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></li>
+<li class="tsd-signature tsd-anchor-link" id="releaseMigrationLock.releaseMigrationLock-1">release<wbr/>Migration<wbr/>Lock<span class="tsd-signature-symbol">(</span>db<span class="tsd-signature-symbol">: </span><a href="../classes/Kysely.html" class="tsd-signature-type" data-tsd-kind="Class">Kysely</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span>, options<span class="tsd-signature-symbol">: </span><a href="MigrationLockOptions.html" class="tsd-signature-type" data-tsd-kind="Interface">MigrationLockOptions</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span><a href="#releaseMigrationLock.releaseMigrationLock-1" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></li>
 <li class="tsd-description">
 <div class="tsd-comment tsd-typography"><p>Releases the migration lock. See <a href="DialectAdapter.html#acquireMigrationLock">acquireMigrationLock</a>.</p>
 <p>If <code>supportsTransactionalDdl</code> is <code>true</code> then the <code>db</code> passed to this method
@@ -108,10 +116,12 @@ and the <code>acquireMigrationLock</code> call.</p>
 <h4 class="tsd-parameters-title">Parameters</h4>
 <ul class="tsd-parameter-list">
 <li>
-<h5>db: <a href="../classes/Kysely.html" class="tsd-signature-type" data-tsd-kind="Class">Kysely</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span></h5></li></ul></div>
+<h5>db: <a href="../classes/Kysely.html" class="tsd-signature-type" data-tsd-kind="Class">Kysely</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span></h5></li>
+<li>
+<h5>options: <a href="MigrationLockOptions.html" class="tsd-signature-type" data-tsd-kind="Interface">MigrationLockOptions</a></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/koskimas/kysely/blob/efa083e9/src/dialect/dialect-adapter.ts#L54">src/dialect/dialect-adapter.ts:54</a></li></ul></aside></li></ul></section></section></div>
+<li>Defined in <a href="https://github.com/koskimas/kysely/blob/fbcf3e38/src/dialect/dialect-adapter.ts#L83">src/dialect/dialect-adapter.ts:83</a></li></ul></aside></li></ul></section></section></div>
 <div class="col-4 col-menu menu-sticky-wrap menu-highlight">
 <div class="tsd-navigation settings">
 <details class="tsd-index-accordion"><summary class="tsd-accordion-summary">
