@@ -316,7 +316,7 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    * to override the types.
    *
    * Select calls are additive. Calling `select('id').select('first_name')` is the
-   * same as calling `select(['id', 'first_name']).
+   * same as calling `select(['id', 'first_name'])`.
    *
    * To select all columns of the query or specific tables see the
    * {@link selectAll} method.
@@ -987,6 +987,7 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    *   )
    *   .select(['first_name', 'p.name'])
    *   .orderBy('first_name')
+   * ```
    */
   innerJoinLateral<
     TE extends TableExpression<DB, TB>,
