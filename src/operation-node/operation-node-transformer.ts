@@ -713,7 +713,7 @@ export class OperationNodeTransformer {
   }
 
   protected transformAddConstraint(node: AddConstraintNode): AddConstraintNode {
-    return requireAllProps({
+    return requireAllProps<AddConstraintNode>({
       kind: 'AddConstraintNode',
       constraint: this.transformNode(node.constraint),
     })
