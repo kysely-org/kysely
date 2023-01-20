@@ -5,6 +5,7 @@ import { ConstraintNode } from './constraint-node.js'
 export interface AddConstraintNode extends OperationNode {
   readonly kind: 'AddConstraintNode'
   readonly constraint: ConstraintNode
+  readonly deferred?: boolean
 }
 
 /**
@@ -15,10 +16,11 @@ export const AddConstraintNode = freeze({
     return node.kind === 'AddConstraintNode'
   },
 
-  create(constraint: ConstraintNode): AddConstraintNode {
+  create(constraint: ConstraintNode, deferred?: boolean): AddConstraintNode {
     return freeze({
       kind: 'AddConstraintNode',
       constraint,
+      deferred
     })
   },
 })

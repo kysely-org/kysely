@@ -2240,6 +2240,30 @@ for (const dialect of BUILT_IN_DIALECTS) {
 
             await builder.execute()
           })
+
+          it('should add an initially deferred check constraint', async () => {
+            const builder = ctx.db.schema
+              .alterTable('test')
+              .addCheckConstraint('some_constraint', sql`integer_col > 0`)
+              .deferred()
+
+            testSql(builder, dialect, {
+              postgres: {
+                sql: 'alter table "test" add constraint "some_constraint" check (integer_col > 0) deferrable initially deferred',
+                parameters: [],
+              },
+              mysql: {
+                sql: 'alter table `test` add constraint `some_constraint` check (integer_col > 0)',
+                parameters: [],
+              },
+              sqlite: {
+                sql: 'alter table "test" add constraint "some_constraint" check (integer_col > 0)',
+                parameters: [],
+              },
+            })
+
+            await builder.execute()
+          })
         })
       }
 
