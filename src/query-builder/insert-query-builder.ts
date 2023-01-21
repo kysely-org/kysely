@@ -589,7 +589,6 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
   $if<O2>(
     condition: boolean,
     then: (qb: this) => InsertQueryBuilder<DB, TB, O2>,
-    otherwise?: (qb: this) => InsertQueryBuilder<DB, TB, O2>
   ): InsertQueryBuilder<
     DB,
     TB,
@@ -601,10 +600,6 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
   > {
     if (condition) {
       return then(this) as any
-    }
-
-    if (otherwise) {
-      return otherwise(this) as any
     }
 
     return new InsertQueryBuilder({
