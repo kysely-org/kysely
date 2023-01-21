@@ -12,6 +12,8 @@ export interface DropConstraintNode extends OperationNode {
   readonly constraintName: IdentifierNode
   readonly ifExists?: boolean
   readonly modifier?: 'cascade' | 'restrict'
+  readonly deferrableModifier?: 'deferrable' | 'not deferrable'
+  readonly initiallyModifier?: 'initially immediate' | 'initially deferred'
 }
 
 /**

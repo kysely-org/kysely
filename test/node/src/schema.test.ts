@@ -2323,6 +2323,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
               .onDelete('set null')
               .onUpdate('cascade')
 
+
             testSql(builder, dialect, {
               postgres: {
                 sql: 'alter table "test" add constraint "some_constraint" foreign key ("integer_col", "varchar_col") references "test2" ("a", "b") on delete set null on update cascade',
@@ -2369,6 +2370,45 @@ for (const dialect of BUILT_IN_DIALECTS) {
             testSql(builder, dialect, {
               postgres: {
                 sql: 'alter table "test" drop constraint "foreign_key_constraint"',
+                parameters: [],
+              },
+              mysql: {
+                sql: 'alter table `test` drop constraint `foreign_key_constraint`',
+                parameters: [],
+              },
+              sqlite: NOT_SUPPORTED,
+            })
+
+            await builder.execute()
+          })
+
+          it('should drop a constraint with deferred', async () => {
+            await ctx.db.schema.dropTable('test').execute()
+
+            await ctx.db.schema
+              .createTable('test2')
+              .addColumn('id', 'integer', (col) => col.unique())
+              .execute()
+
+            await ctx.db.schema
+              .createTable('test')
+              .addColumn('foreign_key', 'integer')
+              .addForeignKeyConstraint(
+                'foreign_key_constraint',
+                ['foreign_key'],
+                'test2',
+                ['id']
+              )
+              .execute()
+
+            const builder = ctx.db.schema
+              .alterTable('test')
+              .dropConstraint('foreign_key_constraint')
+              .cascade()
+
+            testSql(builder, dialect, {
+              postgres: {
+                sql: 'alter table "test" drop constraint "foreign_key_constraint" deferrable initially deferred',
                 parameters: [],
               },
               mysql: {

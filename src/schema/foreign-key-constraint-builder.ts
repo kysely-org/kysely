@@ -36,6 +36,38 @@ export class ForeignKeyConstraintBuilder
     )
   }
 
+  deferrable(): ForeignKeyConstraintBuilder {
+    return new ForeignKeyConstraintBuilder(
+      ForeignKeyConstraintNode.cloneWith(this.#node, {
+        deferrableModifier: 'deferrable',
+      })
+    )
+  }
+
+  notDeferrable(): ForeignKeyConstraintBuilder {
+    return new ForeignKeyConstraintBuilder(
+      ForeignKeyConstraintNode.cloneWith(this.#node, {
+        deferrableModifier: 'not deferrable',
+      })
+    )
+  }
+
+  initiallyImmediate(): ForeignKeyConstraintBuilder {
+    return new ForeignKeyConstraintBuilder(
+      ForeignKeyConstraintNode.cloneWith(this.#node, {
+        initiallyModifier: 'initially immediate',
+      })
+    )
+  }
+
+  initiallyDeferred(): ForeignKeyConstraintBuilder {
+    return new ForeignKeyConstraintBuilder(
+      ForeignKeyConstraintNode.cloneWith(this.#node, {
+        initiallyModifier: 'initially deferred',
+      })
+    )
+  }
+
   toOperationNode(): ForeignKeyConstraintNode {
     return this.#node
   }

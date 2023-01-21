@@ -6,6 +6,8 @@ export interface CheckConstraintNode extends OperationNode {
   readonly kind: 'CheckConstraintNode'
   readonly expression: OperationNode
   readonly name?: IdentifierNode
+  readonly deferrableModifier?: 'deferrable' | 'not deferrable'
+  readonly initiallyModifier?: 'initially immediate' | 'initially deferred'
 }
 
 /**

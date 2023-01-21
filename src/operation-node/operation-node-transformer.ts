@@ -558,6 +558,8 @@ export class OperationNodeTransformer {
       kind: 'PrimaryKeyConstraintNode',
       columns: this.transformNodeList(node.columns),
       name: this.transformNode(node.name),
+      initiallyModifier: node.initiallyModifier,
+      deferrableModifier: node.deferrableModifier,
     })
   }
 
@@ -568,6 +570,8 @@ export class OperationNodeTransformer {
       kind: 'UniqueConstraintNode',
       columns: this.transformNodeList(node.columns),
       name: this.transformNode(node.name),
+      deferrableModifier: node.deferrableModifier,
+      initiallyModifier: node.initiallyModifier,
     })
   }
 
@@ -581,6 +585,8 @@ export class OperationNodeTransformer {
       name: this.transformNode(node.name),
       onDelete: node.onDelete,
       onUpdate: node.onUpdate,
+      deferrableModifier: node.deferrableModifier,
+      initiallyModifier: node.initiallyModifier,
     })
   }
 
@@ -610,6 +616,8 @@ export class OperationNodeTransformer {
       kind: 'CheckConstraintNode',
       expression: this.transformNode(node.expression),
       name: this.transformNode(node.name),
+      deferrableModifier: node.deferrableModifier,
+      initiallyModifier: node.initiallyModifier,
     })
   }
 
@@ -727,6 +735,8 @@ export class OperationNodeTransformer {
       constraintName: this.transformNode(node.constraintName),
       ifExists: node.ifExists,
       modifier: node.modifier,
+      initiallyModifier: node.initiallyModifier,
+      deferrableModifier: node.deferrableModifier,
     })
   }
 

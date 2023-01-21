@@ -7,6 +7,8 @@ export interface PrimaryKeyConstraintNode extends OperationNode {
   readonly kind: 'PrimaryKeyConstraintNode'
   readonly columns: ReadonlyArray<ColumnNode>
   readonly name?: IdentifierNode
+  readonly deferrableModifier?: 'deferrable' | 'not deferrable'
+  readonly initiallyModifier?: 'initially immediate' | 'initially deferred'
 }
 
 /**

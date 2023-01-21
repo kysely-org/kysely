@@ -853,7 +853,20 @@ export class DefaultQueryCompiler
     this.append('primary key (')
     this.compileList(node.columns)
     this.append(')')
+
+    if (node.deferrableModifier === 'deferrable') {
+      this.append(' deferrable')
+    } else if (node.deferrableModifier === 'not deferrable') {
+      this.append(' not deferrable')
+    }
+
+    if (node.initiallyModifier === 'initially immediate') {
+      this.append(' initially immediate')
+    } else if (node.initiallyModifier === 'initially deferred') {
+      this.append(' initially deferred')
+    }
   }
+
 
   protected override visitUniqueConstraint(node: UniqueConstraintNode): void {
     if (node.name) {
@@ -865,6 +878,18 @@ export class DefaultQueryCompiler
     this.append('unique (')
     this.compileList(node.columns)
     this.append(')')
+
+    if (node.deferrableModifier === 'deferrable') {
+      this.append(' deferrable')
+    } else if (node.deferrableModifier === 'not deferrable') {
+      this.append(' not deferrable')
+    }
+
+    if (node.initiallyModifier === 'initially immediate') {
+      this.append(' initially immediate')
+    } else if (node.initiallyModifier === 'initially deferred') {
+      this.append(' initially deferred')
+    }
   }
 
   protected override visitCheckConstraint(node: CheckConstraintNode): void {
@@ -877,6 +902,18 @@ export class DefaultQueryCompiler
     this.append('check (')
     this.visitNode(node.expression)
     this.append(')')
+
+    if (node.deferrableModifier === 'deferrable') {
+      this.append(' deferrable')
+    } else if (node.deferrableModifier === 'not deferrable') {
+      this.append(' not deferrable')
+    }
+
+    if (node.initiallyModifier === 'initially immediate') {
+      this.append(' initially immediate')
+    } else if (node.initiallyModifier === 'initially deferred') {
+      this.append(' initially deferred')
+    }
   }
 
   protected override visitForeignKeyConstraint(
@@ -902,7 +939,20 @@ export class DefaultQueryCompiler
       this.append(' on update ')
       this.append(node.onUpdate)
     }
+
+    if (node.deferrableModifier === 'deferrable') {
+      this.append(' deferrable')
+    } else if (node.deferrableModifier === 'not deferrable') {
+      this.append(' not deferrable')
+    }
+
+    if (node.initiallyModifier === 'initially deferred') {
+      this.append(' initially deferred')
+    } else if (node.initiallyModifier === 'initially immediate') {
+      this.append(' initially immediate')
+    }
   }
+
 
   protected override visitList(node: ListNode): void {
     this.compileList(node.items)
@@ -1039,6 +1089,12 @@ export class DefaultQueryCompiler
       this.append(' cascade')
     } else if (node.modifier === 'restrict') {
       this.append(' restrict')
+    }
+
+    if(node.deferrableModifier === 'deferrable'){
+      this.append(' deferrable')
+    } else if(node.deferrableModifier === 'not deferrable'){
+      this.append(' not deferrable')
     }
   }
 

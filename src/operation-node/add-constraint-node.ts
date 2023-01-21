@@ -5,7 +5,6 @@ import { ConstraintNode } from './constraint-node.js'
 export interface AddConstraintNode extends OperationNode {
   readonly kind: 'AddConstraintNode'
   readonly constraint: ConstraintNode
-  readonly deferred?: boolean
 }
 
 /**

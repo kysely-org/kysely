@@ -45,6 +45,62 @@ export class AlterTableDropConstraintBuilder
     })
   }
 
+  deferrable(): AlterTableDropConstraintBuilder {
+    return new AlterTableDropConstraintBuilder({
+      ...this.#props,
+      node: AlterTableNode.cloneWithTableProps(this.#props.node, {
+        dropConstraint: DropConstraintNode.cloneWith(
+          this.#props.node.dropConstraint!,
+          {
+            deferrableModifier: 'deferrable',
+          }
+        ),
+      }),
+    })
+  }
+
+  notDeferrable(): AlterTableDropConstraintBuilder {
+    return new AlterTableDropConstraintBuilder({
+      ...this.#props,
+      node: AlterTableNode.cloneWithTableProps(this.#props.node, {
+        dropConstraint: DropConstraintNode.cloneWith(
+          this.#props.node.dropConstraint!,
+          {
+            deferrableModifier: 'not deferrable',
+          }
+        ),
+      }),
+    })
+  }
+
+  initiallyImmediate(): AlterTableDropConstraintBuilder {
+    return new AlterTableDropConstraintBuilder({
+      ...this.#props,
+      node: AlterTableNode.cloneWithTableProps(this.#props.node, {
+        dropConstraint: DropConstraintNode.cloneWith(
+          this.#props.node.dropConstraint!,
+          {
+            initiallyModifier: 'initially immediate',
+          }
+        ),
+      }),
+    })
+  }
+
+  initiallyDeferred(): AlterTableDropConstraintBuilder {
+    return new AlterTableDropConstraintBuilder({
+      ...this.#props,
+      node: AlterTableNode.cloneWithTableProps(this.#props.node, {
+        dropConstraint: DropConstraintNode.cloneWith(
+          this.#props.node.dropConstraint!,
+          {
+            initiallyModifier: 'initially deferred',
+          }
+        ),
+      }),
+    })
+  }
+
   restrict(): AlterTableDropConstraintBuilder {
     return new AlterTableDropConstraintBuilder({
       ...this.#props,
