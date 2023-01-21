@@ -588,7 +588,7 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    */
   $if<O2>(
     condition: boolean,
-    then: (qb: this) => InsertQueryBuilder<DB, TB, O2>,
+    func: (qb: this) => InsertQueryBuilder<DB, TB, O2>
   ): InsertQueryBuilder<
     DB,
     TB,
@@ -599,7 +599,7 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
       : MergePartial<O, O2>
   > {
     if (condition) {
-      return then(this) as any
+      return func(this) as any
     }
 
     return new InsertQueryBuilder({
