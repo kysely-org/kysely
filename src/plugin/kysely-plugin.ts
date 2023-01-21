@@ -43,6 +43,8 @@ export interface KyselyPlugin {
   transformResult(
     args: PluginTransformResultArgs
   ): Promise<QueryResult<UnknownRow>>
+
+  [property: string | number | symbol]: any
 }
 
 export interface PluginTransformQueryArgs {
