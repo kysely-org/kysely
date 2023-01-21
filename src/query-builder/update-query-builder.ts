@@ -610,7 +610,6 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
 
   /**
    * Call `func(this)` if `condition` is true.
-   * If specified, `elseFunc` is called if `condition` is false.
    *
    * This method is especially handy with optional selects. Any `returning` or `returningAll`
    * method calls add columns as optional fields to the output type when called inside
@@ -648,7 +647,6 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
   $if<O2>(
     condition: boolean,
     then: (qb: this) => UpdateQueryBuilder<DB, UT, TB, O2>,
-    elseFunc?: (qb: this) => UpdateQueryBuilder<DB, UT, TB, O2>
   ): UpdateQueryBuilder<
     DB,
     UT,
@@ -661,10 +659,6 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
   > {
     if (condition) {
       return then(this) as any
-    }
-
-    if (elseFunc) {
-      return elseFunc(this) as any
     }
 
     return new UpdateQueryBuilder({

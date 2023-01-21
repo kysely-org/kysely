@@ -1631,7 +1631,6 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
 
   /**
    * Call `func(this)` if `condition` is true.
-   * If specified, `elseFunc` is called if `condition` is false.
    *
    * This method is especially handy with optional selects. Any `select` or `selectAll`
    * method calls add columns as optional fields to the output type when called inside
@@ -1683,14 +1682,9 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
   $if<O2 extends O>(
     condition: boolean,
     func: (qb: this) => SelectQueryBuilder<DB, TB, O2>,
-    elseFunc?: (qb: this) => SelectQueryBuilder<DB, TB, O2>
     ): SelectQueryBuilder<DB, TB, MergePartial<O, O2>> {
     if (condition) {
       return func(this)
-    }
-
-    if (elseFunc) {
-      return elseFunc(this)
     }
 
     return new SelectQueryBuilder({
