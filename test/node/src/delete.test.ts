@@ -140,7 +140,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
         ])
       })
 
-      it('conditional returning statement that evaluates to true should add optional fields', async () => {
+      it('conditional returning statement should add optional fields', async () => {
         const condition = true
 
         const query = ctx.db
