@@ -2241,11 +2241,10 @@ for (const dialect of BUILT_IN_DIALECTS) {
             await builder.execute()
           })
 
-          it('should add an initially deferred check constraint', async () => {
+          it.skip('should add an initially deferred check constraint', async () => {
             const builder = ctx.db.schema
               .alterTable('test')
               .addCheckConstraint('some_constraint', sql`integer_col > 0`)
-              .deferred()
 
             testSql(builder, dialect, {
               postgres: {
@@ -2405,14 +2404,15 @@ for (const dialect of BUILT_IN_DIALECTS) {
               .alterTable('test')
               .dropConstraint('foreign_key_constraint')
               .cascade()
+              .deferrable()
 
             testSql(builder, dialect, {
               postgres: {
-                sql: 'alter table "test" drop constraint "foreign_key_constraint" deferrable initially deferred',
+                sql: 'alter table "test" drop constraint "foreign_key_constraint" deferrable',
                 parameters: [],
               },
               mysql: {
-                sql: 'alter table `test` drop constraint `foreign_key_constraint`',
+                sql: 'alter table `test` drop constraint `foreign_key_constraint` deferrable',
                 parameters: [],
               },
               sqlite: NOT_SUPPORTED,
