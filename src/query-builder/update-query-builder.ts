@@ -646,7 +646,7 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
    */
   $if<O2>(
     condition: boolean,
-    func: (qb: this) => UpdateQueryBuilder<DB, UT, TB, O2>,
+    func: (qb: this) => UpdateQueryBuilder<DB, UT, TB, O2>
   ): UpdateQueryBuilder<
     DB,
     UT,
@@ -671,7 +671,7 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
    */
   if<O2>(
     condition: boolean,
-    then: (qb: this) => UpdateQueryBuilder<DB, UT, TB, O2>
+    func: (qb: this) => UpdateQueryBuilder<DB, UT, TB, O2>
   ): UpdateQueryBuilder<
     DB,
     UT,
@@ -682,7 +682,7 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
       ? Partial<O2>
       : MergePartial<O, O2>
   > {
-    return this.$if(condition, then)
+    return this.$if(condition, func)
   }
 
   /**
