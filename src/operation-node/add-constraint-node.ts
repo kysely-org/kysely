@@ -15,11 +15,10 @@ export const AddConstraintNode = freeze({
     return node.kind === 'AddConstraintNode'
   },
 
-  create(constraint: ConstraintNode, deferred?: boolean): AddConstraintNode {
+  create(constraint: ConstraintNode): AddConstraintNode {
     return freeze({
       kind: 'AddConstraintNode',
       constraint,
-      deferred
     })
   },
 })
