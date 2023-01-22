@@ -319,9 +319,9 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    * same as calling `select(['id', 'first_name']).
    *
    * To select all columns of the query or specific tables see the
-   * {@link selectAll} method.
+   * {@link SelectQueryBuilder.selectAll} method.
    *
-   * See the {@link $if} method if you are looking for a way to add selections
+   * See the {@link SelectQueryBuilder.$if} method if you are looking for a way to add selections
    * based on a runtime condition.
    *
    * ### Examples
@@ -436,7 +436,7 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    * from "person"
    * ```
    *
-   * In case you use the {@link sql} tag you need to specify the type of the expression
+   * In case you use the {@link Sql} tag you need to specify the type of the expression
    * (in this example `string`).
    *
    * All the examples above assume you know the column names at compile time.
@@ -987,6 +987,7 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    *   )
    *   .select(['first_name', 'p.name'])
    *   .orderBy('first_name')
+   * ```
    */
   innerJoinLateral<
     TE extends TableExpression<DB, TB>,
