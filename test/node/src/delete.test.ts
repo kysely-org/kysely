@@ -392,6 +392,30 @@ for (const dialect of BUILT_IN_DIALECTS) {
 
         await query.execute()
       })
+
+      it('should delete from t1, t2 using t1 inner join t2', async () => {
+        const query = ctx.db
+          .deleteFrom(['person', 'pet'])
+          .using('person')
+          .innerJoin('pet', 'pet.owner_id', 'person.id')
+          .where('person.id', '=', 911)
+
+        testSql(query, dialect, {
+          postgres: NOT_SUPPORTED,
+          mysql: {
+            sql: [
+              'delete from `person`, `pet`',
+              'using `person`',
+              'inner join `pet` on `pet`.`owner_id` = `person`.`id`',
+              'where `person`.`id` = ?',
+            ],
+            parameters: [911],
+          },
+          sqlite: NOT_SUPPORTED,
+        })
+
+        await query.execute()
+      })
     }
   })
 }
