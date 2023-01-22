@@ -32,10 +32,10 @@ export const DeleteQueryNode = freeze({
     return node.kind === 'DeleteQueryNode'
   },
 
-  create(fromItem: OperationNode, withNode?: WithNode): DeleteQueryNode {
+  create(fromItems: OperationNode[], withNode?: WithNode): DeleteQueryNode {
     return freeze({
       kind: 'DeleteQueryNode',
-      from: FromNode.create([fromItem]),
+      from: FromNode.create(fromItems),
       ...(withNode && { with: withNode }),
     })
   },
