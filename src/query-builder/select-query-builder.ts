@@ -853,7 +853,7 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    * ```ts
    * await db.selectFrom('person')
    *   .innerJoin(
-   *     qb.selectFrom('pet')
+   *     db.selectFrom('pet')
    *       .select(['owner_id', 'name'])
    *       .where('name', '=', 'Doggo')
    *       .as('doggos'),

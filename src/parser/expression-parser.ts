@@ -1,6 +1,7 @@
 import {
   AliasedExpression,
   Expression,
+  isAliasedExpression,
   isExpression,
 } from '../expression/expression.js'
 import { AliasNode } from '../operation-node/alias-node.js'
@@ -54,5 +55,5 @@ export function parseAliasedExpression(
 export function isExpressionOrFactory(
   obj: unknown
 ): obj is ExpressionOrFactory<any, any, any> {
-  return isExpression(obj) || isFunction(obj)
+  return isExpression(obj) || isAliasedExpression(obj) || isFunction(obj)
 }
