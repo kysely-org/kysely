@@ -289,15 +289,19 @@ export class QueryCreator<DB> {
    * ```ts
    * const result = await db
    *   .deleteFrom(['person', 'pet'])
+   *   .using('person')
+   *   .innerJoin('pet', 'pet.owner_id', '=', 'person.id')
    *   .where('person.id', '=', 1)
-   *   .orWhere('pet.owner_id', '=', 1)
    *   .executeTakeFirst()
    * ```
    *
    * The generated SQL (MySQL):
    *
    * ```sql
-   * delete from `person`, `pet` where `person`.`id` = ? or `pet`.`owner_id` = ?
+   * delete from `person`, `pet`
+   * using `person`
+   * inner join `pet` on `pet`.`owner_id` = `person`.`id`
+   * where `person`.`id` = ?
    * ```
    */
   deleteFrom<TR extends TableReference<DB>>(
