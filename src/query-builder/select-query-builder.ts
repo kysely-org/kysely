@@ -1680,7 +1680,7 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    * ```
    */
   $if<O2 extends O>(
-    condition: boolean,
+    condition: any,
     func: (qb: this) => SelectQueryBuilder<DB, TB, O2>
   ): SelectQueryBuilder<DB, TB, MergePartial<O, O2>> {
     if (condition) {
