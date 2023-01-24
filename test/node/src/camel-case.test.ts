@@ -1,4 +1,4 @@
-import { CamelCasePlugin, Generated, Kysely, sql } from '../../../'
+import { CamelCasePlugin, Generated, Kysely, RawBuilder, sql } from '../../../'
 
 import {
   BUILT_IN_DIALECTS,
@@ -19,6 +19,9 @@ for (const dialect of BUILT_IN_DIALECTS) {
       id: Generated<number>
       firstName: string
       lastName: string
+      preferences: {
+        disable_emails: boolean
+      }
     }
 
     interface CamelDatabase {
@@ -37,6 +40,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
       await createTableWithId(camelDb.schema, dialect, 'camelPerson')
         .addColumn('firstName', 'varchar(255)')
         .addColumn('lastName', 'varchar(255)')
+        .addColumn('preferences', 'json')
         .execute()
     })
 
@@ -47,10 +51,12 @@ for (const dialect of BUILT_IN_DIALECTS) {
           {
             firstName: 'Jennifer',
             lastName: 'Aniston',
+            preferences: json({ disable_emails: true }),
           },
           {
             firstName: 'Arnold',
             lastName: 'Schwarzenegger',
+            preferences: json({ disable_emails: true }),
           },
         ])
         .execute()
@@ -203,5 +209,26 @@ for (const dialect of BUILT_IN_DIALECTS) {
         },
       })
     })
+
+    it('should respect maintainNestedObjectKeys', async () => {
+      const data = await camelDb
+        .withoutPlugins()
+        .withPlugin(new CamelCasePlugin({ maintainNestedObjectKeys: true }))
+        .selectFrom('camelPerson')
+        .selectAll()
+        .executeTakeFirstOrThrow()
+
+      if (dialect === 'sqlite') {
+        data.preferences = JSON.parse(data.preferences.toString())
+      }
+
+      expect(data.preferences).to.eql({
+        disable_emails: true,
+      })
+    })
   })
+}
+
+function json<T>(obj: T): RawBuilder<T> {
+  return sql`${JSON.stringify(obj)}`
 }
