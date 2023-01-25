@@ -38,4 +38,20 @@ async function testDelete(db: Kysely<Database>) {
     .orWhere('toy.price', '=', 0)
     .executeTakeFirstOrThrow()
   expectType<DeleteResult>(r5)
+
+  const r6 = await db
+    .deleteFrom(['person', 'pet'])
+    .using('person')
+    .innerJoin('pet', 'pet.owner_id', 'person.id')
+    .where('person.id', '=', 1)
+    .executeTakeFirstOrThrow()
+  expectType<DeleteResult>(r6)
+
+  const r7 = await db
+    .deleteFrom(['person', 'pet'])
+    .using('person')
+    .leftJoin('pet', 'pet.owner_id', 'person.id')
+    .where('person.id', '=', 1)
+    .executeTakeFirstOrThrow()
+  expectType<DeleteResult>(r7)
 }
