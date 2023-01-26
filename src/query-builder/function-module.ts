@@ -301,7 +301,7 @@ export class FunctionModule<DB, TB extends keyof DB> {
    * ### Examples
    *
    * ```ts
-   * const { count } = db.fn
+   * const { countAll } = db.fn
    *
    * db.selectFrom('toy')
    *   .select(countAll().as('num_toys'))
