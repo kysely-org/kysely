@@ -100,4 +100,4 @@ const results = await db.getExecutor().executeQuery(compiledQuery, {
 ```
 
 The `QueryResult` object returned by `.executeQuery()` contains the query results' 
-rows, insertId and number of affected rows (is applicable).
+rows, insertId and number of affected rows (if applicable).
