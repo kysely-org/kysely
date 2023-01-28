@@ -1,4 +1,4 @@
-# Split build, compile and execute
+# Splitting build, compile and execute code
 
 Kysley is primarily a type-safe sql query builder.
 
