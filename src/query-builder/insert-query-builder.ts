@@ -337,7 +337,6 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    *     .doUpdateSet({ species: 'hamster' })
    *   )
    *   .execute()
-   *   .execute()
    * ```
    *
    * The generated SQL (PostgreSQL):
