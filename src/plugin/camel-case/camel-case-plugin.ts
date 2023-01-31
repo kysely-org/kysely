@@ -45,6 +45,13 @@ export interface CamelCasePluginOptions {
    * Defaults to false.
    */
   underscoreBetweenUppercaseLetters?: boolean
+
+  /**
+   * If true, nested object's keys will not be converted to camel case.
+   *
+   * Defaults to false.
+   */
+  maintainNestedObjectKeys?: boolean
 }
 
 /**
@@ -116,7 +123,7 @@ export class CamelCasePlugin implements KyselyPlugin {
   readonly #snakeCase: StringMapper
   readonly #snakeCaseTransformer: SnakeCaseTransformer
 
-  constructor(opt: CamelCasePluginOptions = {}) {
+  constructor(readonly opt: CamelCasePluginOptions = {}) {
     this.#camelCase = createCamelCaseMapper(opt)
     this.#snakeCase = createSnakeCaseMapper(opt)
 
@@ -147,8 +154,8 @@ export class CamelCasePlugin implements KyselyPlugin {
       let value = row[key]
 
       if (Array.isArray(value)) {
-        value = value.map((it) => (canMap(it) ? this.mapRow(it) : it))
-      } else if (canMap(value)) {
+        value = value.map((it) => (canMap(it, this.opt) ? this.mapRow(it) : it))
+      } else if (canMap(value, this.opt)) {
         value = this.mapRow(value)
       }
 
@@ -166,8 +173,15 @@ export class CamelCasePlugin implements KyselyPlugin {
   }
 }
 
-function canMap(obj: unknown): obj is Record<string, unknown> {
+function canMap(
+  obj: unknown,
+  opt: CamelCasePluginOptions
+): obj is Record<string, unknown> {
   return (
-    isObject(obj) && !isDate(obj) && !isBuffer(obj) && !isArrayBufferOrView(obj)
+    isObject(obj) &&
+    !isDate(obj) &&
+    !isBuffer(obj) &&
+    !isArrayBufferOrView(obj) &&
+    !opt?.maintainNestedObjectKeys
   )
 }
