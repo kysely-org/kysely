@@ -125,7 +125,7 @@ const config = {
               },
               {
                 label: 'Examples',
-                to: '/docs/examples',
+                to: '/docs/category/examples',
               },
               {
                 label: 'Generating types',
