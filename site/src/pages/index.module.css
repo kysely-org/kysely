@@ -24,10 +24,15 @@
   );
 }
 
-@media screen and (max-width: 996px) {
-  .heroBanner {
-    padding: 2rem;
-  }
+.heroTitle {
+  font-size: 140px;
+  color: var(--sky12);
+}
+
+.heroSubtitle {
+  font-size: 40px;
+  color: var(--sky12);
+  line-height: 1.2;
 }
 
 .buttons {

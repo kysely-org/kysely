@@ -7,7 +7,7 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula')
 /** @type {import('@docusaurus/types').Config} */
 const config = {
   title: 'Kysely',
-  tagline: 'A type-safe typescript SQL query builder',
+  tagline: 'The type-safe SQL query builder for TypeScript',
   url: 'https://your-docusaurus-test-site.com',
   baseUrl: '/',
   onBrokenLinks: 'throw',
@@ -104,8 +104,32 @@ const config = {
 
             items: [
               {
-                label: 'Tutorial',
+                label: 'Introduction',
                 to: '/docs/intro',
+              },
+              {
+                label: 'Getting started',
+                to: '/docs/installation',
+              },
+              {
+                label: 'Getting started',
+                to: '/docs/installation',
+              },
+              {
+                label: 'Playground',
+                to: '/docs/playground',
+              },
+              {
+                label: 'Migrations',
+                to: '/docs/migrations',
+              },
+              {
+                label: 'Examples',
+                to: '/docs/examples',
+              },
+              {
+                label: 'Generating types',
+                to: '/docs/generating-types',
               },
             ],
           },
@@ -113,13 +137,14 @@ const config = {
             title: 'Community',
             items: [
               {
-                label: 'Stack Overflow',
-                href: 'https://stackoverflow.com/questions/tagged/kysely',
-              },
-              {
                 label: 'Discord',
                 href: 'https://discord.gg/xyBJ3GwvAm',
               },
+              {
+                label: 'Stack Overflow',
+                href: 'https://stackoverflow.com/questions/tagged/kysely',
+              },
+
               // Restore once we have a twitter account
               // {
               //   label: 'Twitter',
