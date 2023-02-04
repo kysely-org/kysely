@@ -244,6 +244,180 @@ for (const dialect of BUILT_IN_DIALECTS) {
 
         await query.execute()
       })
+
+      it('should delete from t1 returning *', async () => {
+        const query = ctx.db
+          .deleteFrom('pet')
+          .where('pet.species', '=', 'cat')
+          .returningAll()
+
+        testSql(query, dialect, {
+          postgres: {
+            sql: [
+              'delete from "pet"',
+              'where "pet"."species" = $1',
+              'returning *',
+            ],
+            parameters: ['cat'],
+          },
+          mysql: NOT_SUPPORTED,
+          sqlite: NOT_SUPPORTED,
+        })
+
+        await query.execute()
+      })
+
+      it('should delete from t1 using t2, t3 returning *', async () => {
+        const query = ctx.db
+          .deleteFrom('toy')
+          .using(['pet', 'person'])
+          .whereRef('toy.pet_id', '=', 'pet.id')
+          .whereRef('pet.owner_id', '=', 'person.id')
+          .where('person.first_name', '=', 'Zoro')
+          .returningAll()
+
+        testSql(query, dialect, {
+          postgres: {
+            sql: [
+              'delete from "toy"',
+              'using "pet", "person"',
+              'where "toy"."pet_id" = "pet"."id"',
+              'and "pet"."owner_id" = "person"."id"',
+              'and "person"."first_name" = $1',
+              'returning *',
+            ],
+            parameters: ['Zoro'],
+          },
+          mysql: NOT_SUPPORTED,
+          sqlite: NOT_SUPPORTED,
+        })
+
+        await query.execute()
+      })
+
+      it('should delete from t1 using t2, t3 returning t1.*, t2.*', async () => {
+        const query = ctx.db
+          .deleteFrom('toy')
+          .using(['pet', 'person'])
+          .whereRef('toy.pet_id', '=', 'pet.id')
+          .whereRef('pet.owner_id', '=', 'person.id')
+          .where('person.first_name', '=', 'Luffy')
+          .returningAll(['toy', 'pet'])
+
+        testSql(query, dialect, {
+          postgres: {
+            sql: [
+              'delete from "toy"',
+              'using "pet", "person"',
+              'where "toy"."pet_id" = "pet"."id"',
+              'and "pet"."owner_id" = "person"."id"',
+              'and "person"."first_name" = $1',
+              'returning "toy".*, "pet".*',
+            ],
+            parameters: ['Luffy'],
+          },
+          mysql: NOT_SUPPORTED,
+          sqlite: NOT_SUPPORTED,
+        })
+
+        await query.execute()
+      })
+
+      it('should delete from t1 using t2, t3 returning t2.*', async () => {
+        const query = ctx.db
+          .deleteFrom('toy')
+          .using(['pet', 'person'])
+          .whereRef('toy.pet_id', '=', 'pet.id')
+          .whereRef('pet.owner_id', '=', 'person.id')
+          .where('person.first_name', '=', 'Itachi')
+          .returningAll('pet')
+
+        testSql(query, dialect, {
+          postgres: {
+            sql: [
+              'delete from "toy"',
+              'using "pet", "person"',
+              'where "toy"."pet_id" = "pet"."id"',
+              'and "pet"."owner_id" = "person"."id"',
+              'and "person"."first_name" = $1',
+              'returning "pet".*',
+            ],
+            parameters: ['Itachi'],
+          },
+          mysql: NOT_SUPPORTED,
+          sqlite: NOT_SUPPORTED,
+        })
+
+        await query.execute()
+      })
+
+      it('should delete from t1 returning t1.*', async () => {
+        const query = ctx.db
+          .deleteFrom('person')
+          .where('gender', '=', 'male')
+          .returningAll('person')
+
+        testSql(query, dialect, {
+          postgres: {
+            sql: [
+              'delete from "person"',
+              'where "gender" = $1',
+              'returning "person".*',
+            ],
+            parameters: ['male'],
+          },
+          mysql: NOT_SUPPORTED,
+          sqlite: NOT_SUPPORTED,
+        })
+
+        await query.execute()
+      })
+
+      it('should delete from t1 returning *', async () => {
+        const query = ctx.db
+          .deleteFrom('person')
+          .where('gender', '=', 'male')
+          .returningAll()
+
+        testSql(query, dialect, {
+          postgres: {
+            sql: ['delete from "person"', 'where "gender" = $1', 'returning *'],
+            parameters: ['male'],
+          },
+          mysql: NOT_SUPPORTED,
+          sqlite: NOT_SUPPORTED,
+        })
+
+        await query.execute()
+      })
+
+      it('should delete from t1 using t2, t3 returning *', async () => {
+        const query = ctx.db
+          .deleteFrom('toy')
+          .using(['pet', 'person'])
+          .whereRef('toy.pet_id', '=', 'pet.id')
+          .whereRef('pet.owner_id', '=', 'person.id')
+          .where('person.first_name', '=', 'Bob')
+          .returningAll()
+
+        testSql(query, dialect, {
+          postgres: {
+            sql: [
+              'delete from "toy"',
+              'using "pet", "person"',
+              'where "toy"."pet_id" = "pet"."id"',
+              'and "pet"."owner_id" = "person"."id"',
+              'and "person"."first_name" = $1',
+              'returning *',
+            ],
+            parameters: ['Bob'],
+          },
+          mysql: NOT_SUPPORTED,
+          sqlite: NOT_SUPPORTED,
+        })
+
+        await query.execute()
+      })
     }
 
     if (dialect === 'mysql') {

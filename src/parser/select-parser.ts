@@ -167,7 +167,7 @@ type ExtractTypeFromStringSelectExpression<
     : never
   : never
 
-type AllSelection<DB, TB extends keyof DB> = Selectable<{
+export type AllSelection<DB, TB extends keyof DB> = Selectable<{
   [C in AnyColumn<DB, TB>]: {
     [T in TB]: C extends keyof DB[T] ? DB[T][C] : never
   }[TB]

@@ -1,6 +1,6 @@
 import { expectError, expectType } from 'tsd'
-import { Kysely, DeleteResult } from '..'
-import { Database } from '../shared'
+import { Kysely, DeleteResult, Selectable } from '..'
+import { Database, Person, Pet } from '../shared'
 
 async function testDelete(db: Kysely<Database>) {
   const r1 = await db.deleteFrom('pet').where('id', '=', '1').executeTakeFirst()
@@ -79,4 +79,108 @@ async function testDelete(db: Kysely<Database>) {
       .using('pet')
       .leftJoin('person', 'NO_SUCH_COLUMN', 'pet.owner_id')
   )
+
+  const r8 = await db
+    .deleteFrom('person')
+    .using(['person', 'pet'])
+    .leftJoin('toy', 'toy.pet_id', 'pet.id')
+    .where('pet.species', '=', 'cat')
+    .orWhere('toy.price', '=', 0)
+    .returningAll('person')
+    .execute()
+  expectType<Selectable<Person>[]>(r8)
+
+  const r9 = await db
+    .deleteFrom('pet')
+    .where('pet.species', '=', 'cat')
+    .returningAll('pet')
+    .execute()
+  expectType<Selectable<Pet>[]>(r9)
+
+  const r10 = await db
+    .deleteFrom('person')
+    .using(['person', 'pet'])
+    .leftJoin('toy', 'toy.pet_id', 'pet.id')
+    .where('pet.species', '=', 'cat')
+    .orWhere('toy.price', '=', 0)
+    .returningAll(['pet', 'toy', 'person'])
+    .execute()
+  expectType<
+    {
+      id: number | string | null
+      first_name: string
+      last_name: string | null
+      age: number
+      gender: 'male' | 'female' | 'other'
+      modified_at: Date
+
+      name: string
+      owner_id: number
+      species: 'dog' | 'cat'
+
+      price: number | null
+      pet_id: string | null
+    }[]
+  >(r10)
+
+  const r11 = await db
+    .deleteFrom('person')
+    .innerJoin('pet', 'pet.owner_id', 'person.id')
+    .where('pet.species', '=', 'dog')
+    .returningAll(['person', 'pet'])
+    .execute()
+  expectType<
+    {
+      id: number | string
+      first_name: string
+      last_name: string | null
+      age: number
+      gender: 'male' | 'female' | 'other'
+      modified_at: Date
+
+      name: string
+      owner_id: number
+      species: 'dog' | 'cat'
+    }[]
+  >(r11)
+
+  const r12 = await db
+    .deleteFrom('pet')
+    .where('pet.species', '=', 'cat')
+    .returningAll(['pet'])
+    .execute()
+  expectType<Selectable<Pet>[]>(r12)
+
+  const r13 = await db
+    .deleteFrom('pet')
+    .where('pet.species', '=', 'dog')
+    .returningAll()
+    .execute()
+  expectType<Selectable<Pet>[]>(r13)
+
+  const r14 = await db
+    .deleteFrom('person')
+    .using(['person', 'pet'])
+    .leftJoin('toy', 'toy.pet_id', 'pet.id')
+    .where('pet.species', '=', 'cat')
+    .orWhere('toy.price', '=', 0)
+    .returningAll()
+    .execute()
+  expectType<
+    {
+      id: number | string | null
+      first_name: string
+      last_name: string | null
+      age: number
+      gender: 'male' | 'female' | 'other'
+      modified_at: Date
+
+      name: string
+      owner_id: number
+      species: 'dog' | 'cat'
+
+      price: number | null
+      pet_id: string | null
+    }[]
+  >(r14)
 }

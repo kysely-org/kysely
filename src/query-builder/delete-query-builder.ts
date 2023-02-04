@@ -18,7 +18,7 @@ import {
   SelectExpression,
   SelectExpressionOrList,
 } from '../parser/select-parser.js'
-import { ReturningRow } from '../parser/returning-parser.js'
+import { ReturningAllRow, ReturningRow } from '../parser/returning-parser.js'
 import { ReferenceExpression } from '../parser/reference-parser.js'
 import { QueryNode } from '../operation-node/query-node.js'
 import { MergePartial, Nullable, SingleResultType } from '../util/type-utils.js'
@@ -33,7 +33,6 @@ import { ReturningInterface } from './returning-interface.js'
 import { NoResultError, NoResultErrorConstructor } from './no-result-error.js'
 import { DeleteResult } from './delete-result.js'
 import { DeleteQueryNode } from '../operation-node/delete-query-node.js'
-import { Selectable } from '../util/column-type.js'
 import { LimitNode } from '../operation-node/limit-node.js'
 import {
   OrderByDirectionExpression,
@@ -498,12 +497,22 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
     })
   }
 
-  returningAll(): DeleteQueryBuilder<DB, TB, Selectable<DB[TB]>> {
+  returningAll<T extends TB>(
+    tables: ReadonlyArray<T>
+  ): DeleteQueryBuilder<DB, TB, ReturningAllRow<DB, T, O>>
+
+  returningAll<T extends TB>(
+    table: T
+  ): DeleteQueryBuilder<DB, TB, ReturningAllRow<DB, T, O>>
+
+  returningAll(): DeleteQueryBuilder<DB, TB, ReturningAllRow<DB, TB, O>>
+
+  returningAll(table?: any): any {
     return new DeleteQueryBuilder({
       ...this.#props,
       queryNode: QueryNode.cloneWithReturning(
         this.#props.queryNode,
-        parseSelectAll()
+        parseSelectAll(table)
       ),
     })
   }
