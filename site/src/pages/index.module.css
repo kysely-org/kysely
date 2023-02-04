@@ -9,28 +9,30 @@
   position: relative;
   overflow: hidden;
   min-height: calc(100vh - var(--ifm-navbar-height));
-  background-image: linear-gradient(
+  background: linear-gradient(
     45deg,
-    hsl(193deg 97% 70%) 0%,
-    hsl(196deg 100% 66%) 21%,
-    hsl(199deg 100% 63%) 30%,
-    hsl(203deg 100% 63%) 39%,
-    hsl(209deg 100% 65%) 46%,
-    hsl(217deg 93% 68%) 54%,
-    hsl(230deg 80% 70%) 61%,
-    hsl(251deg 65% 68%) 69%,
-    hsl(272deg 54% 60%) 79%,
-    hsl(292deg 45% 51%) 100%
+    hsl(0deg 0% 99%) 0%,
+    hsl(180deg 14% 99%) 11%,
+    hsl(180deg 25% 98%) 22%,
+    hsl(200deg 33% 98%) 33%,
+    hsl(195deg 40% 98%) 44%,
+    hsl(200deg 60% 98%) 56%,
+    hsl(197deg 64% 98%) 67%,
+    hsl(192deg 83% 98%) 78%,
+    hsl(191deg 85% 97%) 89%,
+    hsl(193deg 100% 97%) 100%
   );
 }
 
 .heroTitle {
-  font-size: 140px;
+  font-size: 127px;
+  font-weight: 300;
   color: var(--sky12);
 }
 
 .heroSubtitle {
-  font-size: 40px;
+  font-size: 30px;
+  font-weight: 300;
   color: var(--sky12);
   line-height: 1.2;
 }

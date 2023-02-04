@@ -6,6 +6,7 @@ import Layout from '@theme/Layout'
 import HomepageFeatures from '@site/src/components/HomepageFeatures'
 
 import styles from './index.module.css'
+import { gray } from '@radix-ui/colors'
 
 function HomepageHeader() {
   const { siteConfig } = useDocusaurusContext()
@@ -14,11 +15,12 @@ function HomepageHeader() {
       <div
         className="container"
         style={{
-          maxWidth: 485,
           textAlign: 'left',
+          display: 'grid',
+          gridTemplateColumns: '1fr 1fr',
         }}
       >
-        <div>
+        <div style={{ maxWidth: 340 }}>
           <h1 className={styles.heroTitle}>{siteConfig.title}</h1>
           <p className={styles.heroSubtitle}>{siteConfig.tagline}</p>
         </div>
@@ -60,22 +62,22 @@ export default function Home(): JSX.Element {
             border: 0,
             marginBottom: -12,
             overflow: 'hidden',
-            padding: 80,
-            background: '#151515',
+            padding: 40,
+
             display: 'grid',
             placeItems: 'center',
           }}
         >
           <iframe
-            src="https://codesandbox.io/embed/kysely-demo-9l099t?fontsize=14&hidenavigation=1&module=%2Fsrc%2Fplayground.ts&theme=dark&codemirror=0&hidenavigation=1&view=split&highlights=6,7,8,9"
+            src="https://stackblitz.com/edit/react-ts-pppzf5?embed=1&file=playground.ts&hideExplorer=1&hideNavigation=1&theme=dark"
             style={{
               marginTop: -10,
               width: '100%',
               height: '100%',
-              border: `8px solid #151515`,
+              border: `1px solid ${gray.gray11}`,
               overflow: 'hidden',
               padding: 0,
-              background: '#151515',
+              background: gray.gray12,
               borderRadius: 8,
             }}
             title="kysely-demo"

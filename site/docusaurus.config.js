@@ -51,6 +51,7 @@ const config = {
             require.resolve('./src/css/custom.css'),
             // import css from radix-ui
             require.resolve('@radix-ui/colors/sky.css'),
+            require.resolve('@radix-ui/colors/gray.css'),
           ],
         },
       }),
@@ -91,6 +92,11 @@ const config = {
           {
             href: 'https://github.com/koskimas/kysely',
             label: 'GitHub',
+            position: 'right',
+          },
+          {
+            href: 'https://koskimas.github.io/kysely/',
+            label: 'API docs',
             position: 'right',
           },
         ],
@@ -158,6 +164,10 @@ const config = {
               {
                 label: 'GitHub',
                 href: 'https://github.com/koskimas/kysely',
+              },
+              {
+                label: 'API docs',
+                href: 'https://koskimas.github.io/kysely/',
               },
             ],
           },
