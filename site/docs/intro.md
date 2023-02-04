@@ -2,46 +2,22 @@
 sidebar_position: 1
 ---
 
-# Tutorial Intro
+# Introduction
 
-Let's discover **Docusaurus in less than 5 minutes**.
+Kysely (pronounce “Key-Seh-Lee”) is a type-safe and autocompletion-friendly typescript SQL query builder. Inspired by knex. Mainly developed for node.js but also runs on deno and in the browser.
 
-## Getting Started
+![image](https://github.com/koskimas/kysely/raw/master/assets/demo.gif)
 
-Get started by **creating a new site**.
+Kysely makes sure you only refer to tables and columns that are visible to the part of the query you're writing. The result type only has the selected columns with correct types and aliases. As an added bonus you get autocompletion for all that stuff.
 
-Or **try Docusaurus immediately** with **[docusaurus.new](https://docusaurus.new)**.
+As shown above, through the magic of typescript, Kysely is able to parse the alias given to `pet.name` and add the `pet_name` column to the result row type. Kysely is able to infer column names, aliases and types from selected subqueries, joined subqueries, `with` statements and pretty much anything you can think of.
 
-### What you'll need
+Of course there are cases where things cannot be typed at compile time, and Kysely offers escape hatches for these situations. See the sql template tag and the `DynamicModule` for more info.
 
-- [Node.js](https://nodejs.org/en/download/) version 16.14 or above:
-  - When installing Node.js, you are recommended to check all checkboxes related to dependencies.
+All API documentation is written in the typing files and you can simply cmd-click on the module, class or method you're using to see it. The same documentation is also hosted here.
 
-## Generate a new site
+## Looking for help?
 
-Generate a new Docusaurus site using the **classic template**.
+If you start using Kysely and can't find something you'd want to use, please [open an issue](https://github.com/koskimas/kysely/issues) or [join our discord server](https://discord.gg/xyBJ3GwvAm).
 
-The classic template will automatically be added to your project after you run the command:
-
-```bash
-npm init docusaurus@latest my-website classic
-```
-
-You can type this command into Command Prompt, Powershell, Terminal, or any other integrated terminal of your code editor.
-
-The command also installs all necessary dependencies you need to run Docusaurus.
-
-## Start your site
-
-Run the development server:
-
-```bash
-cd my-website
-npm run start
-```
-
-The `cd` command changes the directory you're working with. In order to work with your newly created Docusaurus site, you'll need to navigate the terminal there.
-
-The `npm run start` command builds your website locally and serves it through a development server, ready for you to view at http://localhost:3000/.
-
-Open `docs/intro.md` (this page) and edit some lines: the site **reloads automatically** and displays your changes.
+You can find a more thorough introduction here.

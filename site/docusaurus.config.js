@@ -76,15 +76,14 @@ const config = {
             type: 'doc',
             docId: 'intro',
             position: 'left',
-            label: 'Tutorials',
+            label: 'Docs',
           },
           {
             type: 'doc',
-            docId: 'intro',
+            docId: 'installation',
             position: 'left',
-            label: 'Examples',
+            label: 'Getting started',
           },
-          // { to: '/blog', label: 'Blog', position: 'left' },
           {
             href: 'https://github.com/koskimas/kysely',
             label: 'GitHub',

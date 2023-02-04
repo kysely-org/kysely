@@ -20,7 +20,7 @@ function HomepageHeader() {
           position: 'absolute',
           bottom: 0,
           left: 'calc(50% - 20px)',
-          color: 'white',
+          color: 'black',
           width: 40,
           fontSize: 24,
           textAlign: 'center',
