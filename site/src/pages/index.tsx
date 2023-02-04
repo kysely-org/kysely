@@ -42,38 +42,39 @@ export default function Home(): JSX.Element {
       <HomepageHeader />
       <main>
         <HomepageFeatures />
-      </main>
 
-      <div
-        style={{
-          width: '100%',
-          height: `calc(100vh - var(--ifm-navbar-height))`,
-          border: 0,
-          marginBottom: -12,
-          overflow: 'hidden',
-          padding: 80,
-          background: '#151515',
-          display: 'grid',
-          placeItems: 'center',
-        }}
-      >
-        <iframe
-          src="https://codesandbox.io/embed/kysely-demo-9l099t?fontsize=14&hidenavigation=1&module=%2Fsrc%2Fplayground.ts&theme=dark&codemirror=0&hidenavigation=1&view=split&highlights=6,7,8,9"
+        <section
           style={{
-            marginTop: -10,
+            marginTop: 20,
             width: '100%',
-            height: '100%',
-            border: `8px solid #151515`,
+            height: `calc(100vh - var(--ifm-navbar-height))`,
+            border: 0,
+            marginBottom: -12,
             overflow: 'hidden',
-            padding: 0,
+            padding: 80,
             background: '#151515',
-            borderRadius: 8,
+            display: 'grid',
+            placeItems: 'center',
           }}
-          title="kysely-demo"
-          allow="accelerometer; ambient-light-sensor; camera; encrypted-media; geolocation; gyroscope; hid; microphone; midi; payment; usb; vr; xr-spatial-tracking"
-          sandbox="allow-forms allow-modals allow-popups allow-presentation allow-same-origin allow-scripts"
-        />
-      </div>
+        >
+          <iframe
+            src="https://codesandbox.io/embed/kysely-demo-9l099t?fontsize=14&hidenavigation=1&module=%2Fsrc%2Fplayground.ts&theme=dark&codemirror=0&hidenavigation=1&view=split&highlights=6,7,8,9"
+            style={{
+              marginTop: -10,
+              width: '100%',
+              height: '100%',
+              border: `8px solid #151515`,
+              overflow: 'hidden',
+              padding: 0,
+              background: '#151515',
+              borderRadius: 8,
+            }}
+            title="kysely-demo"
+            allow="accelerometer; ambient-light-sensor; camera; encrypted-media; geolocation; gyroscope; hid; microphone; midi; payment; usb; vr; xr-spatial-tracking"
+            sandbox="allow-forms allow-modals allow-popups allow-presentation allow-same-origin allow-scripts"
+          />
+        </section>
+      </main>
     </Layout>
   )
 }

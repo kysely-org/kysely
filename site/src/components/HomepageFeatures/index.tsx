@@ -9,65 +9,47 @@ type FeatureItem = {
 
 const FeatureList: FeatureItem[] = [
   {
-    title: 'Type-safe SQL',
+    title: 'Type-safe SQL queries',
 
     description: (
       <>
-        Kysely let's you write type-safe SQL queries. 
+        Kysely let's you write type-safe SQL queries. This eliminates entire
+        classes of errors and let's you sleep pacefully at night.
       </>
     ),
   },
   {
-    title: 'Embrace SQL',
+    title: 'Multi-dialect support',
 
-    description: <></>,
+    description: (
+      <>
+        MySQL, PostgreSQL or Sqlite? We've got you covered. There's also a
+        growing ecosystem of dialects.
+      </>
+    ),
+  },
+  {
+    title: 'Not an ORM',
+
+    description: (
+      <>
+        Kysely is a very light abstraction layer over SQL. We help you build
+        queries safely, we don't try to abstract away over SQL. This makes it
+        easier to reason about performance.
+      </>
+    ),
   },
   {
     title: 'Runs on every environment',
 
-    description: (
-      <>
-        Extend or customize your website layout by reusing React. Docusaurus can
-        be extended while reusing the same header and footer.
-      </>
-    ),
-  },
-  {
-    title: 'Runs on every environment',
-
-    description: (
-      <>
-        Extend or customize your website layout by reusing React. Docusaurus can
-        be extended while reusing the same header and footer.
-      </>
-    ),
-  },
-  {
-    title: 'Not on ORM',
-
-    description: (
-      <>
-        Extend or customize your website layout by reusing React. Docusaurus can
-        be extended while reusing the same header and footer.
-      </>
-    ),
-  },
-  {
-    title: 'Emb',
-
-    description: (
-      <>
-        Extend or customize your website layout by reusing React. Docusaurus can
-        be extended while reusing the same header and footer.
-      </>
-    ),
+    description: <>Kysely runs on node.js, deno and the browser.</>,
   },
 ]
 
 function Feature({ title, description }: FeatureItem) {
   return (
-    <div className={clsx('col col--4')}>
-      <div className="text--center padding-horiz--md">
+    <div className={clsx('col col--6')} style={{ padding: 10 }}>
+      <div className="padding-horiz--md">
         <h3>{title}</h3>
         <p>{description}</p>
       </div>
@@ -78,7 +60,7 @@ function Feature({ title, description }: FeatureItem) {
 export default function HomepageFeatures(): JSX.Element {
   return (
     <section className={styles.features}>
-      <div className="container">
+      <div style={{ zIndex: 2 }} className="container">
         <div className="row">
           {FeatureList.map((props, idx) => (
             <Feature key={idx} {...props} />

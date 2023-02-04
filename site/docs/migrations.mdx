@@ -138,3 +138,7 @@ migrateToLatest()
 ```
 
 The migration methods use a lock on the database level and parallel calls are executed serially. This means that you can safely call migrateToLatest and other migration methods from multiple server instances simultaneously and the migrations are guaranteed to only be executed once. The locks are also automatically released if the migration process crashes or the connection to the database fails.
+
+## Reference documentation
+
+[Migrator](https://koskimas.github.io/kysely/classes/Migrator.html)
