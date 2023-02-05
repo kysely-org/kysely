@@ -20,11 +20,21 @@ function HomepageHeader() {
           gridTemplateColumns: '1fr 1fr',
         }}
       >
-        <div style={{ maxWidth: 340 }}>
+        <div
+          style={{ maxWidth: 340, display: 'flex', flexDirection: 'column' }}
+        >
           <h1 className={styles.heroTitle}>{siteConfig.title}</h1>
           <p className={styles.heroSubtitle}>
-            The <b>type-safe</b> SQL query builder for TypeScript
+            The type-safe SQL query builder for TypeScript
           </p>
+          <span style={{ display: 'flex', flexDirection: 'row', gap: 8 }}>
+            <button className="button button--block button--md button-active button--primary">
+              Getting started
+            </button>
+            <button className="button button--block button--md button-active button--secondary">
+              View on Github
+            </button>
+          </span>
         </div>
         <div></div>
       </div>
