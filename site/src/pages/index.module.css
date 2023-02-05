@@ -24,6 +24,23 @@
   );
 }
 
+.bouncyArrow {
+  transform: translateX(-50%);
+  animation: bounce 4s infinite;
+}
+
+@keyframes bounce {
+  0% {
+    transform: translateX(-50%) translateY(0);
+  }
+  50% {
+    transform: translateX(-50%) translateY(-10px);
+  }
+  100% {
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
 .heroTitle {
   font-size: 127px;
   font-weight: 300;

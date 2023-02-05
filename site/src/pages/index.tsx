@@ -22,11 +22,14 @@ function HomepageHeader() {
       >
         <div style={{ maxWidth: 340 }}>
           <h1 className={styles.heroTitle}>{siteConfig.title}</h1>
-          <p className={styles.heroSubtitle}>{siteConfig.tagline}</p>
+          <p className={styles.heroSubtitle}>
+            The <b>type-safe</b> SQL query builder for TypeScript
+          </p>
         </div>
         <div></div>
       </div>
       <span
+        className={styles.bouncyArrow}
         style={{
           position: 'absolute',
           bottom: 0,

@@ -20,6 +20,17 @@ const FeatureList: FeatureItem[] = [
     ),
   },
   {
+    title: 'Simple',
+
+    description: (
+      <>
+        Kysely is a light abstraction layer over SQL. This makes it easy to
+        reason about performance, and reduces the amount of concepts you need to
+        learn to be proficient with the library.
+      </>
+    ),
+  },
+  {
     title: 'Autocompletion',
 
     description: (
@@ -39,17 +50,7 @@ const FeatureList: FeatureItem[] = [
       </>
     ),
   },
-  {
-    title: 'Not an ORM',
 
-    description: (
-      <>
-        Kysely is a light abstraction layer over SQL. This makes it easy to
-        reason about performance, and reduces the amount of concepts you need to
-        learn to be proficient with the library.
-      </>
-    ),
-  },
   {
     title: 'Runs on every javascript environment',
 
