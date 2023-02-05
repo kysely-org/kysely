@@ -52,6 +52,7 @@ const config = {
             // import css from radix-ui
             require.resolve('@radix-ui/colors/sky.css'),
             require.resolve('@radix-ui/colors/gray.css'),
+            require.resolve('@radix-ui/colors/blue.css'),
           ],
         },
       }),

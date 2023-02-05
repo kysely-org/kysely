@@ -64,14 +64,19 @@ export default function Home(): JSX.Element {
             overflow: 'hidden',
             padding: 40,
 
-            display: 'grid',
-            placeItems: 'center',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
           }}
         >
+          <h1>Try it out for yourself!</h1>
+          <p>
+            Modify the query on the left and view the generated SQL on the
+            right.
+          </p>
           <iframe
             src="https://stackblitz.com/edit/react-ts-pppzf5?embed=1&file=playground.ts&hideExplorer=1&hideNavigation=1&theme=dark"
             style={{
-              marginTop: -10,
               width: '100%',
               height: '100%',
               border: `1px solid ${gray.gray11}`,
