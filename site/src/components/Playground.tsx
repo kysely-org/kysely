@@ -14,7 +14,7 @@ export function Playground({
     <iframe
       style={{
         width: '100%',
-        minHeight: '400px',
+        minHeight: '600px',
         border: `1px solid ${gray.gray11}`,
         padding: 4,
         borderRadius: 8,
@@ -126,4 +126,65 @@ result = kysely
   .updateTable('user')
   .set({age:10})
   .where('id','=','1')
+`
+
+export const exampleInsert = `
+interface DB {
+  user: UserTable
+}
+
+interface UserTable {
+  id: Generated<string>
+  first_name: string | null
+  last_name: string | null
+  created_at: Generated<Date>
+  age: number
+}
+
+result = kysely
+  .insertInto('user')
+  .values([
+  {
+    first_name: 'Bob',
+    last_name: 'Dilan',
+    age: 5,
+  },
+  {
+    first_name: 'Jimi',
+    last_name: 'Hendrix',
+    age: 5,
+  },
+])
+`
+
+export const exampleLeftOuterJoin = `
+interface DB {
+  user: UserTable
+  pet: PetTable
+}
+
+interface UserTable {
+  id: Generated<string>
+  name: string | null
+}
+
+interface PetTable {
+  id: Generated<string>
+  name: string | null
+  owner_id: string
+}
+
+result = kysely
+  .selectFrom('pet')
+  .innerJoin(
+    'user', 
+    'pet.owner_id', 
+    'user.id'
+  )
+  .select([
+    'pet.id as petId', 
+    'pet.name as petName', 
+    'user.name as userName'
+])
+
 `
