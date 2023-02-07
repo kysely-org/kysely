@@ -54,7 +54,12 @@ const FeatureList: FeatureItem[] = [
   {
     title: 'Runs on every javascript environment',
 
-    description: <>Kysely runs on node.js, Deno and the browser.</>,
+    description: (
+      <>
+        Kysely runs on node.js, Deno and the browser.{' '}
+        <a href="/docs/category/other-runtimes">Learn more.</a>
+      </>
+    ),
   },
   {
     title: 'Serverless & the edge',
@@ -82,7 +87,7 @@ function Feature({ title, description }: FeatureItem) {
   )
 }
 
-export default function HomepageFeatures(): JSX.Element {
+export function SectionFeatures(): JSX.Element {
   return (
     <section className={styles.features}>
       <div className="container">

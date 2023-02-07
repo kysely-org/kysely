@@ -3,7 +3,7 @@ import clsx from 'clsx'
 import Link from '@docusaurus/Link'
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext'
 import Layout from '@theme/Layout'
-import HomepageFeatures from '@site/src/components/HomepageFeatures'
+import { SectionFeatures } from '@site/src/components/SectionFeatures'
 
 import styles from './index.module.css'
 import { gray } from '@radix-ui/colors'
@@ -11,48 +11,60 @@ import { gray } from '@radix-ui/colors'
 function HomepageHeader() {
   const { siteConfig } = useDocusaurusContext()
   return (
-    <header className={clsx('hero hero--primary', styles.heroBanner)}>
-      <div
-        className="container"
-        style={{
-          textAlign: 'left',
-          display: 'grid',
-          gridTemplateColumns: '1fr 1fr',
-        }}
-      >
+    <div className={styles.dottedBackground}>
+      <header className={clsx('hero hero--primary', styles.heroBanner)}>
         <div
-          style={{ maxWidth: 340, display: 'flex', flexDirection: 'column' }}
+          className="container"
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '32px',
+          }}
         >
-          <h1 className={styles.heroTitle}>{siteConfig.title}</h1>
-          <p className={styles.heroSubtitle}>
-            The type-safe SQL query builder for TypeScript
-          </p>
-          <span style={{ display: 'flex', flexDirection: 'row', gap: 8 }}>
-            <button className="button button--block button--md button-active button--primary">
-              Getting started
-            </button>
-            <button className="button button--block button--md button-active button--secondary">
-              View on Github
-            </button>
-          </span>
+          <div
+            style={{ maxWidth: 340, display: 'flex', flexDirection: 'column' }}
+          >
+            <h1 className={styles.heroTitle}>{siteConfig.title}</h1>
+            <p className={styles.heroSubtitle}>
+              The type-safe SQL query builder for TypeScript
+            </p>
+            <span style={{ display: 'flex', flexDirection: 'row', gap: 8 }}>
+              <button className="button button--block button--md button-active button--primary">
+                Getting started
+              </button>
+              <button className="button button--block button--md button-active button--secondary">
+                View on Github
+              </button>
+            </span>
+          </div>
+          <div>
+            <img
+              style={{
+                borderRadius: 12,
+                boxShadow: 'var(--shadow-elevation-medium)',
+              }}
+              src="https://github.com/koskimas/kysely/raw/master/assets/demo.gif"
+            />
+          </div>
         </div>
-        <div></div>
-      </div>
-      <span
-        className={styles.bouncyArrow}
-        style={{
-          position: 'absolute',
-          bottom: 0,
-          left: 'calc(50% - 20px)',
-          color: 'black',
-          width: 40,
-          fontSize: 24,
-          textAlign: 'center',
-        }}
-      >
-        ↓
-      </span>
-    </header>
+        <span
+          className={styles.bouncyArrow}
+          style={{
+            position: 'absolute',
+            bottom: 0,
+            left: 'calc(50% - 20px)',
+            color: 'black',
+            width: 40,
+            fontSize: 24,
+            textAlign: 'center',
+          }}
+        >
+          ↓
+        </span>
+      </header>
+    </div>
   )
 }
 
@@ -65,43 +77,43 @@ export default function Home(): JSX.Element {
     >
       <HomepageHeader />
       <main>
-        <HomepageFeatures />
+        <SectionFeatures />
 
-        <section
-          style={{
-            marginTop: 20,
-            width: '100%',
-            height: `calc(100vh - var(--ifm-navbar-height))`,
-            border: 0,
-            marginBottom: -12,
-            overflow: 'hidden',
-            padding: 40,
-
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-          }}
-        >
-          <h1>Try it out for yourself!</h1>
-          <p>
-            Modify the query on the left and view the generated SQL on the
-            right.
-          </p>
-          <iframe
-            src="https://stackblitz.com/edit/react-ts-pppzf5?embed=1&file=playground.ts&hideExplorer=1&hideNavigation=1&theme=dark"
+        <section className="container">
+          <div
             style={{
+              marginTop: 20,
               width: '100%',
-              height: '100%',
-              border: `1px solid ${gray.gray11}`,
+              height: `calc(100vh - var(--ifm-navbar-height))`,
+              border: 0,
               overflow: 'hidden',
-              padding: 0,
-              background: gray.gray12,
-              borderRadius: 8,
+              padding: '40px 0',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
             }}
-            title="kysely-demo"
-            allow="accelerometer; ambient-light-sensor; camera; encrypted-media; geolocation; gyroscope; hid; microphone; midi; payment; usb; vr; xr-spatial-tracking"
-            sandbox="allow-forms allow-modals allow-popups allow-presentation allow-same-origin allow-scripts"
-          />
+          >
+            <h1>Try it out for yourself!</h1>
+            <p>
+              Modify the query on the left and view the generated SQL on the
+              right.
+            </p>
+            <iframe
+              src="https://stackblitz.com/edit/react-ts-pppzf5?embed=1&file=playground.ts&hideExplorer=1&hideNavigation=1&theme=dark"
+              style={{
+                width: '100%',
+                height: '100%',
+                border: `1px solid ${gray.gray11}`,
+                overflow: 'hidden',
+                padding: 0,
+                background: gray.gray12,
+                borderRadius: 8,
+              }}
+              title="kysely-demo"
+              allow="accelerometer; ambient-light-sensor; camera; encrypted-media; geolocation; gyroscope; hid; microphone; midi; payment; usb; vr; xr-spatial-tracking"
+              sandbox="allow-forms allow-modals allow-popups allow-presentation allow-same-origin allow-scripts"
+            />
+          </div>
         </section>
       </main>
     </Layout>
