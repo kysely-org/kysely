@@ -11,60 +11,69 @@ import { gray } from '@radix-ui/colors'
 function HomepageHeader() {
   const { siteConfig } = useDocusaurusContext()
   return (
-    <div className={styles.dottedBackground}>
-      <header className={clsx('hero hero--primary', styles.heroBanner)}>
+    <header className={clsx('hero', styles.heroBanner)}>
+      <div className={styles.wave} />
+      <div className={styles.wave} />
+      <div className={styles.wave} />
+      <div
+        className="container"
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '32px',
+          zIndex: 1,
+        }}
+      >
         <div
-          className="container"
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '32px',
-          }}
+          style={{ maxWidth: 340, display: 'flex', flexDirection: 'column' }}
         >
-          <div
-            style={{ maxWidth: 340, display: 'flex', flexDirection: 'column' }}
-          >
-            <h1 className={styles.heroTitle}>{siteConfig.title}</h1>
-            <p className={styles.heroSubtitle}>
-              The type-safe SQL query builder for TypeScript
-            </p>
-            <span style={{ display: 'flex', flexDirection: 'row', gap: 8 }}>
-              <button className="button button--block button--md button-active button--primary">
-                Getting started
-              </button>
-              <button className="button button--block button--md button-active button--secondary">
-                View on Github
-              </button>
-            </span>
-          </div>
-          <div>
-            <img
-              style={{
-                borderRadius: 12,
-                boxShadow: 'var(--shadow-elevation-medium)',
-              }}
-              src="https://github.com/koskimas/kysely/raw/master/assets/demo.gif"
-            />
-          </div>
+          <h1 className={styles.heroTitle}>{siteConfig.title}</h1>
+          <p className={styles.heroSubtitle}>
+            The type-safe SQL query builder for TypeScript
+          </p>
+          <span style={{ display: 'flex', flexDirection: 'row', gap: 8 }}>
+            <a
+              href="/docs/installation"
+              className="button button--block button--md button-active button--primary"
+            >
+              Getting started
+            </a>
+            <a
+              href="https://github.com/koskimas/kysely"
+              className="button button--block button--md button-active button--secondary"
+            >
+              View on Github
+            </a>
+          </span>
         </div>
-        <span
-          className={styles.bouncyArrow}
-          style={{
-            position: 'absolute',
-            bottom: 0,
-            left: 'calc(50% - 20px)',
-            color: 'black',
-            width: 40,
-            fontSize: 24,
-            textAlign: 'center',
-          }}
-        >
-          ↓
-        </span>
-      </header>
-    </div>
+        <div>
+          <img
+            style={{
+              borderRadius: 12,
+              boxShadow: 'var(--shadow-elevation-medium)',
+            }}
+            src="https://github.com/koskimas/kysely/raw/master/assets/demo.gif"
+          />
+        </div>
+      </div>
+
+      <span
+        className={styles.bouncyArrow}
+        style={{
+          position: 'absolute',
+          bottom: 0,
+          left: 'calc(50% - 20px)',
+          color: 'black',
+          width: 40,
+          fontSize: 24,
+          textAlign: 'center',
+        }}
+      >
+        ↓
+      </span>
+    </header>
   )
 }
 
@@ -75,7 +84,9 @@ export default function Home(): JSX.Element {
       title={`Hello from ${siteConfig.title}`}
       description="Description will go into a meta tag in <head />"
     >
-      <HomepageHeader />
+      <div className={styles.siteWrapper}>
+        <HomepageHeader />
+      </div>
       <main>
         <SectionFeatures />
 

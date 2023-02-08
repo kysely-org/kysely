@@ -1,27 +1,21 @@
-/**
- * CSS files with the .module.css suffix will be treated as CSS modules
- * and scoped locally.
- */
-
 .heroBanner {
   padding: 4rem 0;
   text-align: center;
   position: relative;
   overflow: hidden;
   min-height: calc(100vh - var(--ifm-navbar-height));
+
+  position: relative;
   background: linear-gradient(
-    45deg,
-    hsl(0deg 0% 99%) 0%,
-    hsl(180deg 14% 99%) 11%,
-    hsl(180deg 25% 98%) 22%,
-    hsl(200deg 33% 98%) 33%,
-    hsl(195deg 40% 98%) 44%,
-    hsl(200deg 60% 98%) 56%,
-    hsl(197deg 64% 98%) 67%,
-    hsl(192deg 83% 98%) 78%,
-    hsl(191deg 85% 97%) 89%,
-    hsl(193deg 100% 97%) 100%
+    315deg,
+    var(--blue7) 3%,
+    var(--sky7) 38%,
+    var(--yellow7) 68%,
+    var(--green7) 98%
   );
+  animation: gradient 95s ease infinite;
+  background-size: 400% 400%;
+  background-attachment: fixed;
 }
 
 .bouncyArrow {
@@ -58,4 +52,63 @@
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+@keyframes gradient {
+  0% {
+    background-position: 0% 0%;
+  }
+  50% {
+    background-position: 100% 100%;
+  }
+  100% {
+    background-position: 0% 0%;
+  }
+}
+
+.wave {
+  background: rgb(255 255 255 / 25%);
+  border-radius: 1000% 1000% 0 0;
+  position: absolute;
+  width: 200%;
+  height: 100vh;
+  animation: wave 800s -300s linear infinite;
+  transform: translate3d(0, 0, 0);
+  opacity: 0.8;
+  bottom: 0;
+  left: 0;
+}
+
+.wave:nth-of-type(2) {
+  bottom: -1.25em;
+  animation: wave 1440s linear reverse infinite;
+  opacity: 0.8;
+}
+
+.wave:nth-of-type(3) {
+  bottom: -2.5em;
+  animation: wave 1600s -600s reverse infinite;
+  opacity: 0.9;
+}
+
+@keyframes wave {
+  2% {
+    transform: translateX(1);
+  }
+
+  25% {
+    transform: translateX(-25%);
+  }
+
+  50% {
+    transform: translateX(-50%);
+  }
+
+  75% {
+    transform: translateX(-25%);
+  }
+
+  100% {
+    transform: translateX(1);
+  }
 }
