@@ -27,10 +27,10 @@ function HomepageHeader() {
         }}
       >
         <div
-          style={{ maxWidth: 340, display: 'flex', flexDirection: 'column' }}
+          style={{ display: 'flex', flexDirection: 'column' }}
         >
           <h1 className={styles.heroTitle}>{siteConfig.title}</h1>
-          <p className={styles.heroSubtitle}>
+          <p className={styles.heroSubtitle} >
             The type-safe SQL query builder for TypeScript
           </p>
           <span style={{ display: 'flex', flexDirection: 'row', gap: 8 }}>
