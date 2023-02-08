@@ -46,7 +46,7 @@
   font-weight: 300;
   color: var(--sky12);
   line-height: 1.2;
-  max-width: 340;
+  max-width: 340px;
 }
 
 .buttons {
