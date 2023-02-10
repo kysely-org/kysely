@@ -210,6 +210,28 @@ for (const dialect of BUILT_IN_DIALECTS) {
       })
     })
 
+    it('should convert delete from table using query between camelCase and snake_case', async () => {
+      const query = camelDb
+        .deleteFrom('camelPerson as c')
+        .using('camelPerson')
+        .where('camelPerson.firstName', '=', 'Arnold')
+
+      testSql(query, dialect, {
+        postgres: {
+          sql: `delete from "camel_person" as "c" using "camel_person" where "camel_person"."first_name" = $1`,
+          parameters: ['Arnold'],
+        },
+        mysql: {
+          sql: 'delete from `camel_person` as `c` using `camel_person` where `camel_person`.`first_name` = ?',
+          parameters: ['Arnold'],
+        },
+        sqlite: {
+          sql: `delete from "camel_person" as "c" using "camel_person" where "camel_person"."first_name" = ?`,
+          parameters: ['Arnold'],
+        },
+      })
+    })
+
     it('should respect maintainNestedObjectKeys', async () => {
       const data = await camelDb
         .withoutPlugins()
