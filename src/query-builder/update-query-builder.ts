@@ -824,7 +824,7 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
    * the query returned no result.
    *
    * By default an instance of {@link NoResultError} is thrown, but you can
-   * provide a custom error class as the only argument to throw a different
+   * provide a custom error class, or object as the only argument to throw a different
    * error.
    */
   async executeTakeFirstOrThrow(
