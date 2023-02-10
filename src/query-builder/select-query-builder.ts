@@ -34,7 +34,7 @@ import { OffsetNode } from '../operation-node/offset-node.js'
 import { Compilable } from '../util/compilable.js'
 import { QueryExecutor } from '../query-executor/query-executor.js'
 import { QueryId } from '../util/query-id.js'
-import { freeze } from '../util/object-utils.js'
+import { freeze, isFunction } from '../util/object-utils.js'
 import {
   GroupByExpression,
   GroupByExpressionOrList,
@@ -1832,12 +1832,16 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    * error.
    */
   async executeTakeFirstOrThrow(
-    errorConstructor: NoResultErrorConstructor = NoResultError
+    errorConstructor: NoResultErrorConstructor | Error = NoResultError
   ): Promise<O> {
     const result = await this.executeTakeFirst()
 
     if (result === undefined) {
-      throw new errorConstructor(this.toOperationNode())
+      const error = isFunction(errorConstructor)
+        ? new errorConstructor(this.toOperationNode())
+        : errorConstructor
+
+      throw error
     }
 
     return result as O

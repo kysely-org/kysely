@@ -70,7 +70,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
         }
       })
 
-      it('should throw a custom error if no result is found and a custom error is provided', async () => {
+      it('should throw a custom error constructor if no result is found and a custom error is provided', async () => {
         class MyNotFoundError extends Error {
           node: QueryNode
 
@@ -94,6 +94,21 @@ for (const dialect of BUILT_IN_DIALECTS) {
           if (error instanceof MyNotFoundError) {
             expect(error.node.kind).to.equal('SelectQueryNode')
           }
+        }
+      })
+
+      it('should throw a custom error object if no result is found and a custom error is provided', async () => {
+        const message = 'my custom error'
+        const error = new Error(message)
+
+        try {
+          await ctx.db
+            .selectFrom('person')
+            .selectAll('person')
+            .where('id', '=', 99999999)
+            .executeTakeFirstOrThrow(error)
+        } catch (error: any) {
+          expect(error.message).to.equal(message)
         }
       })
     })

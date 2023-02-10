@@ -19,7 +19,7 @@ import { preventAwait } from '../util/prevent-await.js'
 import { Compilable } from '../util/compilable.js'
 import { QueryExecutor } from '../query-executor/query-executor.js'
 import { QueryId } from '../util/query-id.js'
-import { freeze } from '../util/object-utils.js'
+import { freeze, isFunction } from '../util/object-utils.js'
 import { OnDuplicateKeyNode } from '../operation-node/on-duplicate-key-node.js'
 import { InsertResult } from './insert-result.js'
 import { KyselyPlugin } from '../plugin/kysely-plugin.js'
@@ -766,12 +766,15 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    * error.
    */
   async executeTakeFirstOrThrow(
-    errorConstructor: NoResultErrorConstructor = NoResultError
+    errorConstructor: NoResultErrorConstructor | Error = NoResultError
   ): Promise<O> {
     const result = await this.executeTakeFirst()
 
     if (result === undefined) {
-      throw new errorConstructor(this.toOperationNode())
+      const error = isFunction(errorConstructor)
+        ? new errorConstructor(this.toOperationNode())
+        : errorConstructor
+      throw error
     }
 
     return result as O
