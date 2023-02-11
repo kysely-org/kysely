@@ -4,7 +4,7 @@ import { gray } from '@radix-ui/colors'
 export function Playground({
   ts,
   kyselyVersion = '0.23.3',
-  dialect = 'pg',
+  dialect = 'postgres',
 }: PlaygroundProps) {
   const params = new URLSearchParams()
   params.set('p', 'h')
@@ -27,7 +27,7 @@ export function Playground({
 
 interface PlaygroundProps {
   kyselyVersion?: '0.23.3'
-  dialect?: 'pg'
+  dialect?: 'postgres'
   ts: string
 }
 
