@@ -900,6 +900,34 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
 
   /**
    * Just like {@link innerJoin} but adds a left join instead of an inner join.
+   *
+   * ### Examples
+   *
+   * Simple usage:
+   *
+   * ```ts
+   * await db
+   *   .selectFrom('person')
+   *   .leftJoin('address')
+   *   .on('person.address_id', 'address.id')
+   *   .execute();
+   * ```
+   *
+   * A subquery for more complex join:
+   *
+   * ```ts
+   * await db
+   *   .selectFrom('person')
+   *   .leftJoin(
+   *     (qb) =>
+   *       qb
+   *         .selectFrom('address')
+   *         .select(['address.id', 'address.street', 'address.city'])
+   *         .as('address'),
+   *     (join) => join.onRef('address.id', '=', 'person.address_id'),
+   *   )
+   *   .selectAll()
+   *   .execute();
    */
   leftJoin<
     TE extends TableExpression<DB, TB>,
