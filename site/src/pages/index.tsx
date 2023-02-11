@@ -120,7 +120,7 @@ export default function Home(): JSX.Element {
                 style={{ width: '220px' }}
                 className="button button--primary button--lg"
               >
-                View examples
+                Jump right in
               </a>
             </span>
           </div>
