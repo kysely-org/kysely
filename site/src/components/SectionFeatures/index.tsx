@@ -15,12 +15,12 @@ const FeatureList: FeatureItem[] = [
     description: (
       <>
         Kysely let's you write type-safe SQL queries. This eliminates entire
-        classes of errors and let's you sleep pacefully at night.
+        classes of errors and let's you sleep peacefully at night.
       </>
     ),
   },
   {
-    title: 'Simple',
+    title: 'No magic, just SQL',
 
     description: (
       <>
@@ -31,7 +31,7 @@ const FeatureList: FeatureItem[] = [
     ),
   },
   {
-    title: 'Autocompletion',
+    title: 'Great autocompletion',
 
     description: (
       <>
@@ -45,34 +45,27 @@ const FeatureList: FeatureItem[] = [
 
     description: (
       <>
-        MySQL, PostgreSQL or Sqlite? We've got you covered. There's also a
-        growing ecosystem of dialects.
+        PostgreSQL, MySQL, or SQLite? We've got you covered. There's also a
+        growing ecosystem of dialects, like{' '}
+        <a href="https://github.com/depot/kysely-planetscale">PlanetScale</a>.
+        <a href="/docs/category/dialects">Learn more.</a>
       </>
     ),
   },
 
   {
-    title: 'Runs on every javascript environment',
+    title: 'Runs on every environment',
 
     description: (
       <>
-        Kysely runs on node.js, Deno and the browser.{' '}
-        <a href="/docs/category/other-runtimes">Learn more.</a>
+        Kysely runs on node.js, the browser, serverless and edge environments,
+        even on Deno! <a href="/docs/category/other-runtimes">Learn more.</a>
       </>
     ),
   },
   {
-    title: 'Serverless & the edge',
-    description: (
-      <>
-        Kysely works in serverless and edge environments, even on Deno! It also
-        has support for using the PlanetScale database driver using{' '}
-        <a href="https://github.com/depot/kysely-planetscale">
-          kysely-planetscale
-        </a>
-        .
-      </>
-    ),
+    title: 'Extensible core',
+    description: <></>,
   },
 ]
 
