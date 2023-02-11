@@ -36,7 +36,7 @@ const FeatureList: FeatureItem[] = [
     description: (
       <>
         By exposing your database schema to the TypeScript compiler, you get
-        autocompletion on column names, field names, etc.
+        autocompletion on table names, column names, aliases, etc.
       </>
     ),
   },
@@ -46,9 +46,8 @@ const FeatureList: FeatureItem[] = [
     description: (
       <>
         PostgreSQL, MySQL, or SQLite? We've got you covered. There's also a
-        growing ecosystem of dialects, like{' '}
-        <a href="https://github.com/depot/kysely-planetscale">PlanetScale</a>.
-        <a href="/docs/category/dialects">Learn more.</a>
+        growing ecosystem of 3rd party dialects, including PlanetScale, D3,
+        SurrealDB, and more. <a href="/docs/dialects">Learn more.</a>
       </>
     ),
   },
@@ -65,7 +64,12 @@ const FeatureList: FeatureItem[] = [
   },
   {
     title: 'Extensible core',
-    description: <></>,
+    description: (
+      <>
+        Kysely comes with a plugin system that lets you extend the core with
+        your own functionality. <a href="/docs/plugins">Learn more.</a>
+      </>
+    ),
   },
 ]
 

@@ -89,12 +89,7 @@ const config = {
             position: 'left',
             label: 'Docs',
           },
-          {
-            type: 'doc',
-            docId: 'installation',
-            position: 'left',
-            label: 'Getting started',
-          },
+
           {
             href: 'https://github.com/koskimas/kysely',
             label: 'GitHub',

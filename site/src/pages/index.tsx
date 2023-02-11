@@ -91,16 +91,25 @@ export default function Home(): JSX.Element {
 
         <SectionPlayground />
 
-        <section>
+        <section
+          style={{
+            display: 'grid',
+            placeItems: 'center',
+            minHeight: '100vh',
+            background: `radial-gradient(circle, var(--blue12) 0%, #171717 40%)`,
+          }}
+        >
           <div
             style={{
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
               padding: '128px 0',
+              maxWidth: 460,
+              textAlign: 'center',
             }}
           >
-            <h1>Looking for examples?</h1>
+            <h1>Looking for code examples?</h1>
             <p>
               From finding a single record to complex joins, our docs have
               examples to get you started quickly.
@@ -112,13 +121,6 @@ export default function Home(): JSX.Element {
                 className="button button--primary button--lg"
               >
                 View examples
-              </a>
-              <a
-                href="/docs/intro"
-                style={{ width: '220px' }}
-                className="button button--secondary button--lg"
-              >
-                View docs
               </a>
             </span>
           </div>
@@ -180,10 +182,17 @@ function TweetQuote({
 
 function SectionTweets() {
   return (
-    <section>
+    <section
+      style={{
+        display: 'grid',
+        placeItems: 'center',
+        minHeight: '100vh',
+        background: `radial-gradient(circle, var(--sky12) 0%, #171717 50%)`,
+      }}
+    >
       <div className="container" style={{ textAlign: 'center' }}>
         <h1>What the internet is saying</h1>
-        <p>Developers are loving Kysely's simplicity and power.</p>
+        <p>Developers are loving Kysely for it's simplicity and power.</p>
         <div
           style={{
             display: 'flex',
