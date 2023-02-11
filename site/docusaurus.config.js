@@ -154,14 +154,12 @@ const config = {
                 href: 'https://discord.gg/xyBJ3GwvAm',
               },
               {
-                label: 'Stack Overflow',
-                href: 'https://stackoverflow.com/questions/tagged/kysely',
+                label: 'Twitter',
+                href: 'https://twitter.com/kysely_',
               },
-
-              // Restore once we have a twitter account
               // {
-              //   label: 'Twitter',
-              //   href: 'https://twitter.com/docusaurus',
+              //   label: 'Stack Overflow',
+              //   href: 'https://stackoverflow.com/questions/tagged/kysely',
               // },
             ],
           },
@@ -179,7 +177,7 @@ const config = {
             ],
           },
         ],
-        copyright: `Copyright © ${new Date().getFullYear()}`,
+        //copyright: `Copyright © ${new Date().getFullYear()}`,
       },
       prism: {
         theme: lightCodeTheme,
