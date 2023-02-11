@@ -913,7 +913,7 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    *   .execute();
    * ```
    *
-   * A subquery for more complex join:
+   * A subquery for a more complex join:
    *
    * ```ts
    * await db
