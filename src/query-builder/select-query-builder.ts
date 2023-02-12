@@ -928,6 +928,7 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    *   )
    *   .selectAll()
    *   .execute();
+   * ```
    */
   leftJoin<
     TE extends TableExpression<DB, TB>,
