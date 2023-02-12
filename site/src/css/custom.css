@@ -39,18 +39,18 @@
 }
 
 .footer--dark {
-  background: linear-gradient(
-    45deg,
-    hsl(211deg 100% 15%) 0%,
-    hsl(209deg 100% 15%) 11%,
-    hsl(208deg 100% 15%) 22%,
-    hsl(205deg 100% 14%) 33%,
-    hsl(203deg 100% 14%) 44%,
-    hsl(202deg 100% 14%) 56%,
-    hsl(201deg 100% 14%) 67%,
-    hsl(198deg 100% 13%) 78%,
-    hsl(196deg 100% 13%) 89%,
-    hsl(195deg 100% 13%) 100%
+  background-image: linear-gradient(
+    180deg,
+    hsl(0deg 0% 9%) 0%,
+    hsl(227deg 10% 10%) 40%,
+    hsl(226deg 19% 11%) 58%,
+    hsl(224deg 28% 12%) 69%,
+    hsl(222deg 36% 13%) 77%,
+    hsl(220deg 45% 14%) 83%,
+    hsl(219deg 54% 15%) 89%,
+    hsl(216deg 65% 15%) 93%,
+    hsl(214deg 80% 15%) 97%,
+    hsl(211deg 100% 15%) 100%
   );
 }
 
