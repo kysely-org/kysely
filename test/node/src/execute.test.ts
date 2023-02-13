@@ -106,7 +106,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
             .selectFrom('person')
             .selectAll('person')
             .where('id', '=', 99999999)
-            .executeTakeFirstOrThrow(error)
+            .executeTakeFirstOrThrow(() => error)
         } catch (error: any) {
           expect(error.message).to.equal(message)
         }
