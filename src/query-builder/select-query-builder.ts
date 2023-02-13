@@ -909,7 +909,7 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    * await db
    *   .selectFrom('person')
    *   .leftJoin('address')
-   *   .on('person.address_id', 'address.id')
+   *   .leftJoin('address', 'person.address_id', 'address.id')
    *   .execute();
    * ```
    *
