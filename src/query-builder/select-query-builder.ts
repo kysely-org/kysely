@@ -34,7 +34,7 @@ import { OffsetNode } from '../operation-node/offset-node.js'
 import { Compilable } from '../util/compilable.js'
 import { QueryExecutor } from '../query-executor/query-executor.js'
 import { QueryId } from '../util/query-id.js'
-import { freeze, isFunction } from '../util/object-utils.js'
+import { freeze } from '../util/object-utils.js'
 import {
   GroupByExpression,
   GroupByExpressionOrList,
@@ -42,7 +42,11 @@ import {
 } from '../parser/group-by-parser.js'
 import { KyselyPlugin } from '../plugin/kysely-plugin.js'
 import { WhereInterface } from './where-interface.js'
-import { NoResultError, NoResultErrorConstructor } from './no-result-error.js'
+import {
+  isNoResultErrorConstructor,
+  NoResultError,
+  NoResultErrorConstructor,
+} from './no-result-error.js'
 import { HavingInterface } from './having-interface.js'
 import { IdentifierNode } from '../operation-node/identifier-node.js'
 import { Explainable, ExplainFormat } from '../util/explainable.js'
@@ -1828,18 +1832,20 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    * the query returned no result.
    *
    * By default an instance of {@link NoResultError} is thrown, but you can
-   * provide a custom error class, or object as the only argument to throw a different
+   * provide a custom error class, or callback to throw a different
    * error.
    */
   async executeTakeFirstOrThrow(
-    errorConstructor: NoResultErrorConstructor | Error = NoResultError
+    errorConstructor:
+      | NoResultErrorConstructor
+      | ((node: QueryNode) => Error) = NoResultError
   ): Promise<O> {
     const result = await this.executeTakeFirst()
 
     if (result === undefined) {
-      const error = isFunction(errorConstructor)
+      const error = isNoResultErrorConstructor(errorConstructor)
         ? new errorConstructor(this.toOperationNode())
-        : errorConstructor
+        : errorConstructor(this.toOperationNode())
 
       throw error
     }
