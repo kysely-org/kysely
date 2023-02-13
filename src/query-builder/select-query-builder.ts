@@ -908,7 +908,6 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    * ```ts
    * await db
    *   .selectFrom('person')
-   *   .leftJoin('address')
    *   .leftJoin('address', 'person.address_id', 'address.id')
    *   .execute();
    * ```
