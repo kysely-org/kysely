@@ -5,7 +5,7 @@ title: 'Getting started'
 
 # Getting started
 
-Kysely currently works on PostgreSQL, MySQL and SQLite. You can install by running:
+Kysely has built-in support for PostgreSQL, MySQL and SQLite. To install it run:
 
 ```bash
 # PostgreSQL

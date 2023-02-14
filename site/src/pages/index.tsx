@@ -33,13 +33,13 @@ function HomepageHeader() {
           <span style={{ display: 'flex', flexDirection: 'row', gap: 8 }}>
             <a
               href="/docs/installation"
-              className="button button--block button--md button-active button--primary"
+              className="button button--primary button--md"
             >
               Getting started
             </a>
             <a
               href="https://github.com/koskimas/kysely"
-              className="button button--block button--md button-active button--secondary"
+              className="button button--secondary button--md"
             >
               View on Github
             </a>
@@ -57,7 +57,6 @@ function HomepageHeader() {
       </div>
 
       <span
-        className={styles.bouncyArrow}
         style={{
           position: 'absolute',
           bottom: 0,
@@ -77,10 +76,7 @@ function HomepageHeader() {
 export default function Home(): JSX.Element {
   const { siteConfig } = useDocusaurusContext()
   return (
-    <Layout
-      title={`Hello from ${siteConfig.title}`}
-      description="Description will go into a meta tag in <head />"
-    >
+    <Layout title={siteConfig.title}>
       <div className={styles.siteWrapper}>
         <HomepageHeader />
       </div>

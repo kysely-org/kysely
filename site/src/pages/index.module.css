@@ -8,19 +8,14 @@
   position: relative;
   background: linear-gradient(
     315deg,
-    var(--blue7) 3%,
+    var(--gray7) 3%,
     var(--sky7) 38%,
-    var(--yellow7) 68%,
-    var(--green7) 98%
+    var(--blue7) 68%,
+    var(--gray7) 98%
   );
   animation: gradient 95s ease infinite;
   background-size: 400% 400%;
   background-attachment: fixed;
-}
-
-.bouncyArrow {
-  transform: translateX(-50%);
-  animation: bounce 4s infinite;
 }
 
 @keyframes bounce {

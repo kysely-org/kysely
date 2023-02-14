@@ -1,6 +1,6 @@
 # Dialects
 
-A Dialect is the glue between Kysely and the underlying database engine. Check the [API docs](https://koskimas.github.io/kysely/interfaces/Dialect.html) to learn how to build your own.
+A dialect is the glue between Kysely and the underlying database engine. Check the [API docs](https://koskimas.github.io/kysely/interfaces/Dialect.html) to learn how to build your own.
 
 ## Built-in dialects
 
@@ -16,3 +16,4 @@ A Dialect is the glue between Kysely and the underlying database engine. Check t
 | D1                         | https://github.com/aidenwallis/kysely-d1            |
 | SurrealDB                  | https://github.com/igalklebanov/kysely-surrealdb    |
 | AWS RDS support for kysely | https://github.com/serverless-stack/kysely-data-api |
+| SingleStore                | https://github.com/igalklebanov/kysely-singlestore  |

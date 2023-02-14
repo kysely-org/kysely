@@ -16,7 +16,7 @@ const db = new Kysely<Database>({
 
 ### Camel case plugin
 
-A plugin that converts snake_case identifiers in the database into camelCase in the javascript side. [Learn more](https://koskimas.github.io/kysely/classes/CamelCasePlugin.html).
+A plugin that converts snake_case identifiers in the database into camelCase in the JavaScript side. [Learn more](https://koskimas.github.io/kysely/classes/CamelCasePlugin.html).
 
 ### Deduplicate joins plugin
 

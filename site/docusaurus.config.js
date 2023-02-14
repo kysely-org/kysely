@@ -33,19 +33,15 @@ const config = {
       /** @type {import('@docusaurus/preset-classic').Options} */
       ({
         gtag: {
-          trackingID: 'G-999X9XX9XX',
+          trackingID: 'G-DWKJ0RXL1F',
           anonymizeIP: true,
         },
         docs: {
           sidebarPath: require.resolve('./sidebars.js'),
-          // Please change this to your repo.
-          // Remove this to remove the "edit this page" links.
           editUrl: 'https://github.com/koskimas/kysely/tree/master/site',
         },
         blog: {
           showReadingTime: true,
-          // Please change this to your repo.
-          // Remove this to remove the "edit this page" links.
           editUrl:
             'https://github.com/facebook/docusaurus/tree/main/packages/create-docusaurus/templates/shared/',
         },
@@ -151,10 +147,6 @@ const config = {
                 label: 'Twitter',
                 href: 'https://twitter.com/kysely_',
               },
-              // {
-              //   label: 'Stack Overflow',
-              //   href: 'https://stackoverflow.com/questions/tagged/kysely',
-              // },
             ],
           },
           {
@@ -171,7 +163,6 @@ const config = {
             ],
           },
         ],
-        //copyright: `Copyright © ${new Date().getFullYear()}`,
       },
       prism: {
         theme: lightCodeTheme,
