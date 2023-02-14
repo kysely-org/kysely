@@ -185,7 +185,7 @@ function SectionTweets() {
         display: 'grid',
         placeItems: 'center',
         minHeight: '100vh',
-        background: `radial-gradient(circle, var(--sky12) 0%, #171717 50%)`,
+        background: `radial-gradient(circle, var(--sky12) 0%, #171717 40%)`,
       }}
     >
       <div className="container" style={{ textAlign: 'center' }}>
