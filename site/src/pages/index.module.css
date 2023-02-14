@@ -8,10 +8,10 @@
   position: relative;
   background: linear-gradient(
     315deg,
-    var(--gray7) 3%,
-    var(--sky7) 38%,
-    var(--blue7) 68%,
-    var(--gray7) 98%
+    var(--sky7) 3%,
+    var(--blue7) 38%,
+    var(--sky7) 68%,
+    var(--blue7) 98%
   );
   animation: gradient 95s ease infinite;
   background-size: 400% 400%;
@@ -63,48 +63,62 @@
 }
 
 .wave {
-  background: rgb(255 255 255 / 25%);
-  border-radius: 1000% 1000% 0 0;
+  /* pause the animation */
+  animation-play-state: paused;
+  background: rgb(255 255 255 / 10%);
+  border-radius: 1000%;
   position: absolute;
-  width: 200%;
-  height: 100vh;
-  animation: wave 800s -300s linear infinite;
+  width: 400vw;
+  height: 400vh;
+  animation: wave 200s 0s linear infinite;
   transform: translate3d(0, 0, 0);
   opacity: 0.8;
-  bottom: 0;
-  left: 0;
+  top: 20vh;
+  left: 20vw;
 }
 
 .wave:nth-of-type(2) {
-  bottom: -1.25em;
-  animation: wave 1440s linear reverse infinite;
-  opacity: 0.8;
+  top: 0vh;
+  left: 0vw;
+  animation-duration: 190s;
 }
 
 .wave:nth-of-type(3) {
-  bottom: -2.5em;
-  animation: wave 1600s -600s reverse infinite;
-  opacity: 0.9;
+  top: -20vh;
+  left: -20vw;
+  animation-duration: 180s;
+}
+
+.wave:nth-of-type(4) {
+  top: -40vh;
+  left: -40vw;
+  animation-duration: 170s;
+}
+
+.wave:nth-of-type(5) {
+  top: -60vh;
+  left: -60vw;
+  animation-duration: 160s;
 }
 
 @keyframes wave {
   2% {
-    transform: translateX(1);
+    transform: translateX(0%);
   }
 
   25% {
-    transform: translateX(-25%);
+    transform: translateX(-10%);
   }
 
   50% {
-    transform: translateX(-50%);
+    transform: translateX(0%);
   }
 
   75% {
-    transform: translateX(-25%);
+    transform: translateX(10%);
   }
 
   100% {
-    transform: translateX(1);
+    transform: translateX(0%);
   }
 }

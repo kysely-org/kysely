@@ -14,6 +14,8 @@ function HomepageHeader() {
       <div className={styles.wave} />
       <div className={styles.wave} />
       <div className={styles.wave} />
+      <div className={styles.wave} />
+      <div className={styles.wave} />
       <div
         className="container"
         style={{
