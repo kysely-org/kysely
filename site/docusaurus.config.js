@@ -75,7 +75,7 @@ const config = {
         style: 'dark',
         title: 'Kysely',
         logo: {
-          alt: 'My Site Logo',
+          alt: 'Kysely Logo',
           src: 'img/logo.svg',
         },
         items: [
@@ -114,10 +114,7 @@ const config = {
                 label: 'Getting started',
                 to: '/docs/installation',
               },
-              {
-                label: 'Getting started',
-                to: '/docs/installation',
-              },
+
               {
                 label: 'Playground',
                 to: '/docs/playground',
@@ -126,14 +123,20 @@ const config = {
                 label: 'Migrations',
                 to: '/docs/migrations',
               },
-              {
-                label: 'Examples',
-                to: '/docs/category/examples',
-              },
+
               {
                 label: 'Generating types',
                 to: '/docs/generating-types',
               },
+            ],
+          },
+          {
+            title: 'Examples',
+            items: [
+              { label: 'SELECT', to: '/docs/category/select' },
+              { label: 'UPDATE', to: '/docs/category/update' },
+              { label: 'DELETE', to: '/docs/category/delete' },
+              { label: 'INSERT', to: '/docs/category/insert' },
             ],
           },
           {
