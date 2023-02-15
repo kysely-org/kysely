@@ -22,6 +22,10 @@ export type TableReference<DB> =
   | AnyTable<DB>
   | AliasedExpression<any, any>
 
+export type TableReferenceOrList<DB> =
+  | TableReference<DB>
+  | ReadonlyArray<TableReference<DB>>
+
 export type From<DB, TE> = {
   [C in
     | keyof DB
