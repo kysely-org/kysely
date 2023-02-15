@@ -511,7 +511,7 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
    *   .execute()
    * ```
    *
-   * The genrated SQL (PostgreSQL)
+   * The generated SQL (PostgreSQL)
    *
    * ```sql
    * delete from "pet" returning *
@@ -542,6 +542,7 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
    * ```
    *
    * Return all columns from a single table.
+   *
    * ```ts
    * const result = ctx.db
    *   .deleteFrom('toy')
