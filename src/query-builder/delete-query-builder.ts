@@ -497,6 +497,97 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
     })
   }
 
+  /**
+   * Adds `returning *` or `returning table.*` clause to the query.
+   *
+   * ### Examples
+   *
+   * Return all columns.
+   *
+   * ```ts
+   * const pets = await db
+   *   .deleteFrom('pet')
+   *   .returningAll()
+   *   .execute()
+   * ```
+   *
+   * The genrated SQL (PostgreSQL)
+   *
+   * ```sql
+   * delete from "pet" returning *
+   * ```
+   *
+   * Return all columns from all tables
+   *
+   * ```ts
+   * const result = ctx.db
+   *   .deleteFrom('toy')
+   *   .using(['pet', 'person'])
+   *   .whereRef('toy.pet_id', '=', 'pet.id')
+   *   .whereRef('pet.owner_id', '=', 'person.id')
+   *   .where('person.first_name', '=', 'Zoro')
+   *   .returningAll()
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (PostgreSQL)
+   *
+   * ```sql
+   * delete from "toy"
+   * using "pet", "person"
+   * where "toy"."pet_id" = "pet"."id"
+   * and "pet"."owner_id" = "person"."id"
+   * and "person"."first_name" = $1
+   * returning *
+   * ```
+   *
+   * Return all columns from a single table.
+   * ```ts
+   * const result = ctx.db
+   *   .deleteFrom('toy')
+   *   .using(['pet', 'person'])
+   *   .whereRef('toy.pet_id', '=', 'pet.id')
+   *   .whereRef('pet.owner_id', '=', 'person.id')
+   *   .where('person.first_name', '=', 'Itachi')
+   *   .returningAll('pet')
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (PostgreSQL)
+   *
+   * ```sql
+   * delete from "toy"
+   * using "pet", "person"
+   * where "toy"."pet_id" = "pet"."id"
+   * and "pet"."owner_id" = "person"."id"
+   * and "person"."first_name" = $1
+   * returning "pet".*
+   * ```
+   *
+   * Return all columns from multiple tables.
+   *
+   * ```ts
+   * const result = ctx.db
+   *   .deleteFrom('toy')
+   *   .using(['pet', 'person'])
+   *   .whereRef('toy.pet_id', '=', 'pet.id')
+   *   .whereRef('pet.owner_id', '=', 'person.id')
+   *   .where('person.first_name', '=', 'Luffy')
+   *   .returningAll(['toy', 'pet'])
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (PostgreSQL)
+   *
+   * ```sql
+   * delete from "toy"
+   * using "pet", "person"
+   * where "toy"."pet_id" = "pet"."id"
+   * and "pet"."owner_id" = "person"."id"
+   * and "person"."first_name" = $1
+   * returning "toy".*, "pet".*
+   * ```
+   */
   returningAll<T extends TB>(
     tables: ReadonlyArray<T>
   ): DeleteQueryBuilder<DB, TB, ReturningAllRow<DB, T, O>>
