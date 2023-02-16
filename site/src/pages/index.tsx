@@ -10,7 +10,7 @@ import { gray } from '@radix-ui/colors'
 function HomepageHeader() {
   const { siteConfig } = useDocusaurusContext()
   return (
-    <header className={clsx('hero', styles.heroBanner)}>
+    <header className={clsx('hero', styles.heroBanner, 'dark-theme')}>
       <div className={styles.wave} />
       <div className={styles.wave} />
       <div className={styles.wave} />
@@ -30,18 +30,24 @@ function HomepageHeader() {
         <div style={{ display: 'flex', flexDirection: 'column' }}>
           <h1 className={styles.heroTitle}>{siteConfig.title}</h1>
           <p className={styles.heroSubtitle}>
-            The type-safe SQL query builder for TypeScript
+            The type-safe SQL <br />
+            query builder for TypeScript
           </p>
           <span style={{ display: 'flex', flexDirection: 'row', gap: 8 }}>
             <a
               href="/docs/installation"
-              className="button button--primary button--md"
+              className="button button--primary button--md button--block"
+              style={{
+                background: 'var(--gray12)',
+                color: 'var(--gray1)',
+                borderColor: 'var(--gray12)',
+              }}
             >
               Getting started
             </a>
             <a
               href="https://github.com/koskimas/kysely"
-              className="button button--secondary button--md"
+              className="button button--secondary button--md button--block"
             >
               View on Github
             </a>
