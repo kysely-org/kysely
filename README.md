@@ -78,6 +78,7 @@ for [3rd party dialects](https://koskimas.github.io/kysely/interfaces/Dialect.ht
  - [SingleStore Data API](https://github.com/igalklebanov/kysely-singlestore)
  - [D1](https://github.com/aidenwallis/kysely-d1)
  - [SurrealDB](https://github.com/igalklebanov/kysely-surrealdb)
+ - [sqld](https://github.com/libsql/kysely-libsql)
 
 # Minimal example
 
