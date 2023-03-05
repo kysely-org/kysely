@@ -7,7 +7,7 @@
     "url": "git://github.com/koskimas/kysely.git"
   },
   "engines": {
-    "node": ">=14.0.0"
+    "node": "^14.14.0 || >=15.0.1"
   },
   "main": "dist/cjs/index.js",
   "module": "dist/esm/index.js",
