@@ -1,6 +1,6 @@
 # Splitting build, compile and execute code
 
-Kysley is primarily a type-safe sql query builder.
+Kysely is primarily a type-safe sql query builder.
 
 It also does query execution, migrations, etc. in order to align with Knex's "batteries 
 included" approach.
