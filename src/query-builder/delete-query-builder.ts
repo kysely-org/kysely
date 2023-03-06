@@ -807,7 +807,7 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
     return [
       new DeleteResult(
         // TODO: remove numUpdatedOrDeletedRows.
-        (result.numAffectedRows ?? result.numUpdatedOrDeletedRows)!
+        result.numAffectedRows ?? result.numUpdatedOrDeletedRows ?? 0n
       ) as any,
     ]
   }
