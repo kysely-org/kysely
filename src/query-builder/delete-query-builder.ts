@@ -21,7 +21,12 @@ import {
 import { ReturningAllRow, ReturningRow } from '../parser/returning-parser.js'
 import { ReferenceExpression } from '../parser/reference-parser.js'
 import { QueryNode } from '../operation-node/query-node.js'
-import { MergePartial, Nullable, SingleResultType } from '../util/type-utils.js'
+import {
+  MergePartial,
+  Nullable,
+  SimplifyResult,
+  SimplifySingleResult,
+} from '../util/type-utils.js'
 import { preventAwait } from '../util/prevent-await.js'
 import { Compilable } from '../util/compilable.js'
 import { QueryExecutor } from '../query-executor/query-executor.js'
@@ -880,7 +885,7 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
     )
   }
 
-  compile(): CompiledQuery<O> {
+  compile(): CompiledQuery<SimplifyResult<O>> {
     return this.#props.executor.compileQuery(
       this.toOperationNode(),
       this.#props.queryId
@@ -892,7 +897,7 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
    *
    * Also see the {@link executeTakeFirst} and {@link executeTakeFirstOrThrow} methods.
    */
-  async execute(): Promise<O[]> {
+  async execute(): Promise<SimplifyResult<O>[]> {
     const compiledQuery = this.compile()
     const query = compiledQuery.query as DeleteQueryNode
 
@@ -902,13 +907,13 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
     )
 
     if (this.#props.executor.adapter.supportsReturning && query.returning) {
-      return result.rows
+      return result.rows as any
     }
 
     return [
       new DeleteResult(
         // TODO: remove numUpdatedOrDeletedRows.
-        (result.numAffectedRows ?? result.numUpdatedOrDeletedRows)!
+        result.numAffectedRows ?? result.numUpdatedOrDeletedRows ?? 0n
       ) as any,
     ]
   }
@@ -917,9 +922,9 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
    * Executes the query and returns the first result or undefined if
    * the query returned no result.
    */
-  async executeTakeFirst(): Promise<SingleResultType<O>> {
+  async executeTakeFirst(): Promise<SimplifySingleResult<O>> {
     const [result] = await this.execute()
-    return result as SingleResultType<O>
+    return result as SimplifySingleResult<O>
   }
 
   /**
@@ -932,14 +937,14 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
    */
   async executeTakeFirstOrThrow(
     errorConstructor: NoResultErrorConstructor = NoResultError
-  ): Promise<O> {
+  ): Promise<SimplifyResult<O>> {
     const result = await this.executeTakeFirst()
 
     if (result === undefined) {
       throw new errorConstructor(this.toOperationNode())
     }
 
-    return result as O
+    return result as SimplifyResult<O>
   }
 
   /**
