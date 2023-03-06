@@ -170,7 +170,7 @@ async function testSelectSingle(db: Kysely<Database>) {
     .select(sql`random() > 0.5`.as(alias))
     .select('first_name')
     .execute()
-  expectType<{ first_name: string } & { [key: string]: unknown }>(r5)
+  expectType<{ first_name: string; [key: string]: unknown }>(r5)
 
   // Subquery
   const [r6] = await qb
@@ -677,7 +677,7 @@ async function testCall(db: Kysely<Database>) {
     .call((qb) => qb.select('name'))
     .execute()
 
-  expectType<{ species: 'dog' | 'cat' } & { name: string }>(r1)
+  expectType<{ species: 'dog' | 'cat'; name: string }>(r1)
 }
 
 async function testIf(db: Kysely<Database>) {
@@ -690,7 +690,7 @@ async function testIf(db: Kysely<Database>) {
     .if(condition, (qb) => qb.select('name'))
     .execute()
 
-  expectType<{ species: 'dog' | 'cat' } & { name?: string }>(r1)
+  expectType<{ species: 'dog' | 'cat'; name?: string }>(r1)
 
   // Conditional returning in delete
   const [r2] = await db
@@ -707,7 +707,7 @@ async function testIf(db: Kysely<Database>) {
     .if(condition, (qb) => qb.returning('last_name'))
     .execute()
 
-  expectType<{ first_name: string } & { last_name?: string | null }>(r3)
+  expectType<{ first_name: string; last_name?: string | null }>(r3)
 
   // Conditional where in delete
   const [r4] = await db
@@ -724,7 +724,7 @@ async function testIf(db: Kysely<Database>) {
     .if(condition, (qb) => qb.where('id', '=', 1))
     .execute()
 
-  expectType<{ first_name: string } & Partial<{}>>(r5)
+  expectType<{ first_name: string }>(r5)
 
   // Conditional returning in update
   const [r6] = await db
@@ -743,7 +743,7 @@ async function testIf(db: Kysely<Database>) {
     .if(condition, (qb) => qb.returning('last_name'))
     .execute()
 
-  expectType<{ first_name: string } & { last_name?: string | null }>(r7)
+  expectType<{ first_name: string; last_name?: string | null }>(r7)
 
   // Conditional where in update
   const [r8] = await db
@@ -762,7 +762,7 @@ async function testIf(db: Kysely<Database>) {
     .if(condition, (qb) => qb.where('id', '=', 1))
     .execute()
 
-  expectType<{ first_name: string } & Partial<{}>>(r9)
+  expectType<{ first_name: string }>(r9)
 
   // Conditional returning in insert
   const [r10] = await db
@@ -781,7 +781,7 @@ async function testIf(db: Kysely<Database>) {
     .if(condition, (qb) => qb.returning('last_name'))
     .execute()
 
-  expectType<{ first_name: string } & { last_name?: string | null }>(r11)
+  expectType<{ first_name: string; last_name?: string | null }>(r11)
 
   // Conditional ingore in insert
   const [r12] = await db
@@ -800,7 +800,7 @@ async function testIf(db: Kysely<Database>) {
     .if(condition, (qb) => qb.ignore())
     .execute()
 
-  expectType<{ first_name: string } & Partial<{}>>(r13)
+  expectType<{ first_name: string }>(r13)
 }
 
 async function testGenericSelect<T extends keyof Database>(
