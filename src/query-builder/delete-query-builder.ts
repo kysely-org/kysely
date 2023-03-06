@@ -18,7 +18,7 @@ import {
   SelectExpression,
   SelectExpressionOrList,
 } from '../parser/select-parser.js'
-import { ReturningRow } from '../parser/returning-parser.js'
+import { ReturningAllRow, ReturningRow } from '../parser/returning-parser.js'
 import { ReferenceExpression } from '../parser/reference-parser.js'
 import { QueryNode } from '../operation-node/query-node.js'
 import {
@@ -38,7 +38,6 @@ import { ReturningInterface } from './returning-interface.js'
 import { NoResultError, NoResultErrorConstructor } from './no-result-error.js'
 import { DeleteResult } from './delete-result.js'
 import { DeleteQueryNode } from '../operation-node/delete-query-node.js'
-import { Selectable } from '../util/column-type.js'
 import { LimitNode } from '../operation-node/limit-node.js'
 import {
   OrderByDirectionExpression,
@@ -503,12 +502,114 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
     })
   }
 
-  returningAll(): DeleteQueryBuilder<DB, TB, Selectable<DB[TB]>> {
+  /**
+   * Adds `returning *` or `returning table.*` clause to the query.
+   *
+   * ### Examples
+   *
+   * Return all columns.
+   *
+   * ```ts
+   * const pets = await db
+   *   .deleteFrom('pet')
+   *   .returningAll()
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (PostgreSQL)
+   *
+   * ```sql
+   * delete from "pet" returning *
+   * ```
+   *
+   * Return all columns from all tables
+   *
+   * ```ts
+   * const result = ctx.db
+   *   .deleteFrom('toy')
+   *   .using(['pet', 'person'])
+   *   .whereRef('toy.pet_id', '=', 'pet.id')
+   *   .whereRef('pet.owner_id', '=', 'person.id')
+   *   .where('person.first_name', '=', 'Zoro')
+   *   .returningAll()
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (PostgreSQL)
+   *
+   * ```sql
+   * delete from "toy"
+   * using "pet", "person"
+   * where "toy"."pet_id" = "pet"."id"
+   * and "pet"."owner_id" = "person"."id"
+   * and "person"."first_name" = $1
+   * returning *
+   * ```
+   *
+   * Return all columns from a single table.
+   *
+   * ```ts
+   * const result = ctx.db
+   *   .deleteFrom('toy')
+   *   .using(['pet', 'person'])
+   *   .whereRef('toy.pet_id', '=', 'pet.id')
+   *   .whereRef('pet.owner_id', '=', 'person.id')
+   *   .where('person.first_name', '=', 'Itachi')
+   *   .returningAll('pet')
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (PostgreSQL)
+   *
+   * ```sql
+   * delete from "toy"
+   * using "pet", "person"
+   * where "toy"."pet_id" = "pet"."id"
+   * and "pet"."owner_id" = "person"."id"
+   * and "person"."first_name" = $1
+   * returning "pet".*
+   * ```
+   *
+   * Return all columns from multiple tables.
+   *
+   * ```ts
+   * const result = ctx.db
+   *   .deleteFrom('toy')
+   *   .using(['pet', 'person'])
+   *   .whereRef('toy.pet_id', '=', 'pet.id')
+   *   .whereRef('pet.owner_id', '=', 'person.id')
+   *   .where('person.first_name', '=', 'Luffy')
+   *   .returningAll(['toy', 'pet'])
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (PostgreSQL)
+   *
+   * ```sql
+   * delete from "toy"
+   * using "pet", "person"
+   * where "toy"."pet_id" = "pet"."id"
+   * and "pet"."owner_id" = "person"."id"
+   * and "person"."first_name" = $1
+   * returning "toy".*, "pet".*
+   * ```
+   */
+  returningAll<T extends TB>(
+    tables: ReadonlyArray<T>
+  ): DeleteQueryBuilder<DB, TB, ReturningAllRow<DB, T, O>>
+
+  returningAll<T extends TB>(
+    table: T
+  ): DeleteQueryBuilder<DB, TB, ReturningAllRow<DB, T, O>>
+
+  returningAll(): DeleteQueryBuilder<DB, TB, ReturningAllRow<DB, TB, O>>
+
+  returningAll(table?: any): any {
     return new DeleteQueryBuilder({
       ...this.#props,
       queryNode: QueryNode.cloneWithReturning(
         this.#props.queryNode,
-        parseSelectAll()
+        parseSelectAll(table)
       ),
     })
   }
