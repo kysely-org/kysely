@@ -13,7 +13,11 @@ import {
 } from '../parser/insert-values-parser.js'
 import { InsertQueryNode } from '../operation-node/insert-query-node.js'
 import { QueryNode } from '../operation-node/query-node.js'
-import { MergePartial, SingleResultType } from '../util/type-utils.js'
+import {
+  MergePartial,
+  SimplifyResult,
+  SimplifySingleResult,
+} from '../util/type-utils.js'
 import { UpdateObject, parseUpdateObject } from '../parser/update-set-parser.js'
 import { preventAwait } from '../util/prevent-await.js'
 import { Compilable } from '../util/compilable.js'
@@ -730,7 +734,7 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    *
    * Also see the {@link executeTakeFirst} and {@link executeTakeFirstOrThrow} methods.
    */
-  async execute(): Promise<O[]> {
+  async execute(): Promise<SimplifyResult<O>[]> {
     const compiledQuery = this.compile()
     const query = compiledQuery.query as InsertQueryNode
 
@@ -740,7 +744,7 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
     )
 
     if (this.#props.executor.adapter.supportsReturning && query.returning) {
-      return result.rows
+      return result.rows as any
     }
 
     return [
@@ -756,9 +760,9 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    * Executes the query and returns the first result or undefined if
    * the query returned no result.
    */
-  async executeTakeFirst(): Promise<SingleResultType<O>> {
+  async executeTakeFirst(): Promise<SimplifySingleResult<O>> {
     const [result] = await this.execute()
-    return result as SingleResultType<O>
+    return result as SimplifySingleResult<O>
   }
 
   /**
@@ -773,7 +777,7 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
     errorConstructor:
       | NoResultErrorConstructor
       | ((node: QueryNode) => Error) = NoResultError
-  ): Promise<O> {
+  ): Promise<SimplifyResult<O>>  {
     const result = await this.executeTakeFirst()
 
     if (result === undefined) {
@@ -784,7 +788,7 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
       throw error
     }
 
-    return result as O
+    return result as SimplifyResult<O>
   }
 
   /**

@@ -15,6 +15,7 @@ import {
   TableExpressionOrList,
   FromTables,
   TableReference,
+  TableReferenceOrList,
 } from './parser/table-parser.js'
 import { QueryExecutor } from './query-executor/query-executor.js'
 import {
@@ -266,6 +267,8 @@ export class QueryCreator<DB> {
    *
    * ### Examples
    *
+   * Deleting person with id 1:
+   *
    * ```ts
    * const result = await db
    *   .deleteFrom('person')
@@ -274,15 +277,47 @@ export class QueryCreator<DB> {
    *
    * console.log(result.numDeletedRows)
    * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * delete from "person" where "person"."id" = $1
+   * ```
+   *
+   * Some databases such as MySQL support deleting from multiple tables:
+   *
+   * ```ts
+   * const result = await db
+   *   .deleteFrom(['person', 'pet'])
+   *   .using('person')
+   *   .innerJoin('pet', 'pet.owner_id', '=', 'person.id')
+   *   .where('person.id', '=', 1)
+   *   .executeTakeFirst()
+   * ```
+   *
+   * The generated SQL (MySQL):
+   *
+   * ```sql
+   * delete from `person`, `pet`
+   * using `person`
+   * inner join `pet` on `pet`.`owner_id` = `person`.`id`
+   * where `person`.`id` = ?
+   * ```
    */
   deleteFrom<TR extends TableReference<DB>>(
+    tables: TR[]
+  ): DeleteQueryBuilder<From<DB, TR>, FromTables<DB, never, TR>, DeleteResult>
+
+  deleteFrom<TR extends TableReference<DB>>(
     table: TR
-  ): DeleteQueryBuilder<From<DB, TR>, FromTables<DB, never, TR>, DeleteResult> {
+  ): DeleteQueryBuilder<From<DB, TR>, FromTables<DB, never, TR>, DeleteResult>
+
+  deleteFrom(tables: TableReferenceOrList<DB>): any {
     return new DeleteQueryBuilder({
       queryId: createQueryId(),
       executor: this.#props.executor,
       queryNode: DeleteQueryNode.create(
-        parseTableExpression(table),
+        parseTableExpressionOrList(tables),
         this.#props.withNode
       ),
     })

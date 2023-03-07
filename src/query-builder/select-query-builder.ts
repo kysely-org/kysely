@@ -22,7 +22,12 @@ import {
 } from '../parser/reference-parser.js'
 import { SelectQueryNode } from '../operation-node/select-query-node.js'
 import { QueryNode } from '../operation-node/query-node.js'
-import { MergePartial, Nullable, SingleResultType } from '../util/type-utils.js'
+import {
+  MergePartial,
+  Nullable,
+  Simplify,
+  SimplifySingleResult,
+} from '../util/type-utils.js'
 import {
   OrderByDirectionExpression,
   OrderByExpression,
@@ -1795,7 +1800,7 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
     )
   }
 
-  compile(): CompiledQuery<O> {
+  compile(): CompiledQuery<Simplify<O>> {
     return this.#props.executor.compileQuery(
       this.toOperationNode(),
       this.#props.queryId
@@ -1807,7 +1812,7 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    *
    * Also see the {@link executeTakeFirst} and {@link executeTakeFirstOrThrow} methods.
    */
-  async execute(): Promise<O[]> {
+  async execute(): Promise<Simplify<O>[]> {
     const compiledQuery = this.compile()
 
     const result = await this.#props.executor.executeQuery<O>(
@@ -1822,9 +1827,9 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    * Executes the query and returns the first result or undefined if
    * the query returned no result.
    */
-  async executeTakeFirst(): Promise<SingleResultType<O>> {
+  async executeTakeFirst(): Promise<SimplifySingleResult<O>> {
     const [result] = await this.execute()
-    return result as SingleResultType<O>
+    return result as SimplifySingleResult<O>
   }
 
   /**
@@ -1839,7 +1844,7 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
     errorConstructor:
       | NoResultErrorConstructor
       | ((node: QueryNode) => Error) = NoResultError
-  ): Promise<O> {
+  ): Promise<Simplify<O>>  {
     const result = await this.executeTakeFirst()
 
     if (result === undefined) {

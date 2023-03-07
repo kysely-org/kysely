@@ -122,16 +122,23 @@ export type ArrayItemType<T> = T extends ReadonlyArray<infer I> ? I : never
  */
 export type AnySelectQueryBuilder = SelectQueryBuilder<any, any, any>
 
-/**
- * Given a query output type `O` evaluates to the output type of a `executeTakeFirst` call.
- */
-export type SingleResultType<O> = O extends InsertResult
+export type SimplifySingleResult<O> = O extends InsertResult
   ? O
   : O extends DeleteResult
   ? O
   : O extends UpdateResult
   ? O
-  : O | undefined
+  : Simplify<O> | undefined
+
+export type SimplifyResult<O> = O extends InsertResult
+  ? O
+  : O extends DeleteResult
+  ? O
+  : O extends UpdateResult
+  ? O
+  : Simplify<O>
+
+export type Simplify<T> = { [K in keyof T]: T[K] } & {}
 
 /**
  * Represents a database row whose column names and their types are unknown.
