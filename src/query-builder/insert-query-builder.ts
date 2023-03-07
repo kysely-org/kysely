@@ -28,7 +28,11 @@ import { OnDuplicateKeyNode } from '../operation-node/on-duplicate-key-node.js'
 import { InsertResult } from './insert-result.js'
 import { KyselyPlugin } from '../plugin/kysely-plugin.js'
 import { ReturningRow } from '../parser/returning-parser.js'
-import { NoResultError, NoResultErrorConstructor } from './no-result-error.js'
+import {
+  isNoResultErrorConstructor,
+  NoResultError,
+  NoResultErrorConstructor,
+} from './no-result-error.js'
 import {
   ExpressionOrFactory,
   parseExpression,
@@ -766,16 +770,22 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    * the query returned no result.
    *
    * By default an instance of {@link NoResultError} is thrown, but you can
-   * provide a custom error class as the only argument to throw a different
+   * provide a custom error class, or callback as the only argument to throw a different
    * error.
    */
   async executeTakeFirstOrThrow(
-    errorConstructor: NoResultErrorConstructor = NoResultError
-  ): Promise<SimplifyResult<O>> {
+    errorConstructor:
+      | NoResultErrorConstructor
+      | ((node: QueryNode) => Error) = NoResultError
+  ): Promise<SimplifyResult<O>>  {
     const result = await this.executeTakeFirst()
 
     if (result === undefined) {
-      throw new errorConstructor(this.toOperationNode())
+      const error = isNoResultErrorConstructor(errorConstructor)
+        ? new errorConstructor(this.toOperationNode())
+        : errorConstructor(this.toOperationNode())
+
+      throw error
     }
 
     return result as SimplifyResult<O>

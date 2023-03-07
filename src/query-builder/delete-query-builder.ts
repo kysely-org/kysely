@@ -35,7 +35,11 @@ import { freeze } from '../util/object-utils.js'
 import { KyselyPlugin } from '../plugin/kysely-plugin.js'
 import { WhereInterface } from './where-interface.js'
 import { ReturningInterface } from './returning-interface.js'
-import { NoResultError, NoResultErrorConstructor } from './no-result-error.js'
+import {
+  isNoResultErrorConstructor,
+  NoResultError,
+  NoResultErrorConstructor,
+} from './no-result-error.js'
 import { DeleteResult } from './delete-result.js'
 import { DeleteQueryNode } from '../operation-node/delete-query-node.js'
 import { LimitNode } from '../operation-node/limit-node.js'
@@ -932,16 +936,22 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
    * the query returned no result.
    *
    * By default an instance of {@link NoResultError} is thrown, but you can
-   * provide a custom error class as the only argument to throw a different
+   * provide a custom error class, or callback as the only argument to throw a different
    * error.
    */
   async executeTakeFirstOrThrow(
-    errorConstructor: NoResultErrorConstructor = NoResultError
+    errorConstructor:
+      | NoResultErrorConstructor
+      | ((node: QueryNode) => Error) = NoResultError
   ): Promise<SimplifyResult<O>> {
     const result = await this.executeTakeFirst()
 
     if (result === undefined) {
-      throw new errorConstructor(this.toOperationNode())
+      const error = isNoResultErrorConstructor(errorConstructor)
+        ? new errorConstructor(this.toOperationNode())
+        : errorConstructor(this.toOperationNode())
+
+      throw error
     }
 
     return result as SimplifyResult<O>
