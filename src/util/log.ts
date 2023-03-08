@@ -15,6 +15,8 @@ export interface QueryLogEvent {
 export interface ErrorLogEvent {
   readonly level: 'error'
   readonly error: unknown
+  readonly query: CompiledQuery
+  readonly queryDurationMillis: number
 }
 
 export type LogEvent = QueryLogEvent | ErrorLogEvent
