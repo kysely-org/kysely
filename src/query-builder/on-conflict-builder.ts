@@ -16,10 +16,7 @@ import {
   parseExists,
   parseNotExists,
 } from '../parser/unary-operation-parser.js'
-import {
-  UpdateObject,
-  parseUpdateObject,
-} from '../parser/update-set-parser.js'
+import { UpdateObject, parseUpdateObject } from '../parser/update-set-parser.js'
 import { freeze } from '../util/object-utils.js'
 import { preventAwait } from '../util/prevent-await.js'
 import { AnyColumn } from '../util/type-utils.js'
@@ -338,6 +335,14 @@ export class OnConflictBuilder<DB, TB extends keyof DB>
       }),
     })
   }
+
+  /**
+   * Simply calls the provided function passing `this` as the only argument. `$call` returns
+   * what the provided function returns.
+   */
+  $call<T>(func: (qb: this) => T): T {
+    return func(this)
+  }
 }
 
 export interface OnConflictBuilderProps {
@@ -540,6 +545,14 @@ export class OnConflictUpdateBuilder<DB, TB extends keyof DB>
         this.#props.onConflictNode
       ),
     })
+  }
+
+  /**
+   * Simply calls the provided function passing `this` as the only argument. `$call` returns
+   * what the provided function returns.
+   */
+  $call<T>(func: (qb: this) => T): T {
+    return func(this)
   }
 
   toOperationNode(): OnConflictNode {

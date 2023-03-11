@@ -694,7 +694,8 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
   }
 
   /**
-   * Simply calls the given function passing `this` as the only argument.
+   * Simply calls the provided function passing `this` as the only argument. `$call` returns
+   * what the provided function returns.
    *
    * If you want to conditionally call a method on `this`, see
    * the {@link $if} method.

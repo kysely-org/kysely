@@ -1607,7 +1607,8 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
   }
 
   /**
-   * Simply calls the given function passing `this` as the only argument.
+   * Simply calls the provided function passing `this` as the only argument. `$call` returns
+   * what the provided function returns.
    *
    * If you want to conditionally call a method on `this`, see
    * the {@link $if} method.
@@ -1642,10 +1643,27 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
   /**
    * Call `func(this)` if `condition` is true.
    *
-   * This method is especially handy with optional selects. Any `select` or `selectAll`
-   * method calls add columns as optional fields to the output type when called inside
-   * the `func` callback. This is because we can't know if those selections were actually
-   * made before running the code.
+   * NOTE: This method has an impact on typescript performance and it should only be used
+   * when necessary. Remember that you can call most methods like `where` conditionally
+   * like this:
+   *
+   * ```ts
+   * let query = db.selectFrom('person').selectAll()
+   *
+   * if (firstName) {
+   *   query = query.where('first_name', '=', firstName)
+   * }
+   *
+   * if (lastName) {
+   *   query = query.where('last_name', '=', lastName)
+   * }
+   *
+   * const result = await query.execute()
+   * ```
+   *
+   * This method is mainly useful with optional selects. Any `select` or `selectAll`
+   * method called inside the callback add optional fields to the result type. This is
+   * because we can't know if those selections were actually made before running the code.
    *
    * Also see [this recipe](https://github.com/koskimas/kysely/tree/master/recipes/conditional-selects.md)
    *
