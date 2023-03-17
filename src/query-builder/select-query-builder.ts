@@ -1862,7 +1862,7 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
     errorConstructor:
       | NoResultErrorConstructor
       | ((node: QueryNode) => Error) = NoResultError
-  ): Promise<Simplify<O>>  {
+  ): Promise<Simplify<O>> {
     const result = await this.executeTakeFirst()
 
     if (result === undefined) {

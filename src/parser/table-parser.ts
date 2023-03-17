@@ -43,16 +43,19 @@ export type FromTables<DB, TB extends keyof DB, TE> =
   | TB
   | ExtractAliasFromTableExpression<DB, TE>
 
-type ExtractAliasFromTableExpression<DB, TE> =
-  TE extends `${string} as ${infer TA}`
-    ? TA
-    : TE extends keyof DB
-    ? TE
-    : TE extends AliasedExpression<any, infer QA>
-    ? QA
-    : TE extends (qb: any) => AliasedExpression<any, infer QA>
-    ? QA
-    : never
+export type ExtractTableAlias<DB, TE> = TE extends `${string} as ${infer TA}`
+  ? TA
+  : TE extends keyof DB
+  ? TE
+  : never
+
+type ExtractAliasFromTableExpression<DB, TE> = TE extends string
+  ? ExtractTableAlias<DB, TE>
+  : TE extends AliasedExpression<any, infer QA>
+  ? QA
+  : TE extends (qb: any) => AliasedExpression<any, infer QA>
+  ? QA
+  : never
 
 type ExtractRowTypeFromTableExpression<
   DB,

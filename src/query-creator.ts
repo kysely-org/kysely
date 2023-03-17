@@ -16,6 +16,7 @@ import {
   FromTables,
   TableReference,
   TableReferenceOrList,
+  ExtractTableAlias,
 } from './parser/table-parser.js'
 import { QueryExecutor } from './query-executor/query-executor.js'
 import {
@@ -147,9 +148,17 @@ export class QueryCreator<DB> {
    *   (select 1 as one) as "q"
    * ```
    */
+  selectFrom<TE extends keyof DB>(
+    from: TE[]
+  ): SelectQueryBuilder<DB, ExtractTableAlias<DB, TE>, {}>
+
   selectFrom<TE extends TableExpression<DB, keyof DB>>(
     from: TE[]
   ): SelectQueryBuilder<From<DB, TE>, FromTables<DB, never, TE>, {}>
+
+  selectFrom<TE extends keyof DB>(
+    from: TE
+  ): SelectQueryBuilder<DB, ExtractTableAlias<DB, TE>, {}>
 
   selectFrom<TE extends TableExpression<DB, keyof DB>>(
     from: TE
