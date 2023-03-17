@@ -73,6 +73,7 @@ import {
   parseNotExists,
 } from '../parser/unary-operation-parser.js'
 import { KyselyTypeError } from '../util/type-error.js'
+import { Selectable } from '../util/column-type.js'
 
 export class SelectQueryBuilder<DB, TB extends keyof DB, O>
   implements
@@ -763,7 +764,9 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
     table: ReadonlyArray<T>
   ): SelectAllQueryBuilder<DB, TB, O, T>
 
-  selectAll<T extends TB>(table: T): SelectAllQueryBuilder<DB, TB, O, T>
+  selectAll<T extends TB>(
+    table: T
+  ): SelectQueryBuilder<DB, TB, Selectable<DB[T]>>
 
   selectAll(): SelectAllQueryBuilder<DB, TB, O, TB>
 
