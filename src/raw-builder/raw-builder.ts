@@ -121,26 +121,33 @@ export class RawBuilder<O> implements Expression<O> {
   }
 
   toOperationNode(): RawNode {
-    const executor =
-      this.#props.plugins !== undefined
-        ? NOOP_QUERY_EXECUTOR.withPlugins(this.#props.plugins)
-        : NOOP_QUERY_EXECUTOR
+    return this.#toOperationNode(this.#getExecutor())
+  }
 
-    return this.#toOperationNode(executor)
+  compile(executorProvider: QueryExecutorProvider): CompiledQuery<O> {
+    return this.#compile(this.#getExecutor(executorProvider))
   }
 
   async execute(
     executorProvider: QueryExecutorProvider
   ): Promise<QueryResult<O>> {
-    const executor =
-      this.#props.plugins !== undefined
-        ? executorProvider.getExecutor().withPlugins(this.#props.plugins)
-        : executorProvider.getExecutor()
+    const executor = this.#getExecutor(executorProvider)
 
     return executor.executeQuery<O>(
       this.#compile(executor),
       this.#props.queryId
     )
+  }
+
+  #getExecutor(executorProvider?: QueryExecutorProvider): QueryExecutor {
+    const executor =
+      executorProvider !== undefined
+        ? executorProvider.getExecutor()
+        : NOOP_QUERY_EXECUTOR
+
+    return this.#props.plugins !== undefined
+      ? executor.withPlugins(this.#props.plugins)
+      : executor
   }
 
   #toOperationNode(executor: QueryExecutor): RawNode {
