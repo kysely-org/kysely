@@ -86,17 +86,13 @@ The `CompiledQuery` object returned by `.compile()` can be executed
 via "hot" Kysely instances (real drivers in use):
 
 ```ts
-import { randomUUID } from 'node:crypto'
-
 const compiledQuery = db
   .selectFrom('person')
   .select('first_name')
   .where('id', '=', id)
   .compile()
 
-const results = await db.getExecutor().executeQuery(compiledQuery, {
-  queryId: randomUUID(),
-})
+const results = await db.executeQuery(compiledQuery)
 ```
 
 The `QueryResult` object returned by `.executeQuery()` contains the query results' 
