@@ -1,5 +1,10 @@
-import { NoResultError, QueryNode } from '../../../'
-
+import { createSandbox, SinonSpy } from 'sinon'
+import {
+  CompiledQuery,
+  NoResultError,
+  QueryExecutor,
+  QueryNode,
+} from '../../../'
 import {
   BUILT_IN_DIALECTS,
   clearDatabase,
@@ -110,6 +115,46 @@ for (const dialect of BUILT_IN_DIALECTS) {
         } catch (error: any) {
           expect(error.message).to.equal(message)
         }
+      })
+    })
+
+    describe('Kysely.executeQuery', () => {
+      const sandbox = createSandbox()
+      let executorSpy: SinonSpy<
+        Parameters<QueryExecutor['executeQuery']>,
+        ReturnType<QueryExecutor['executeQuery']>
+      >
+
+      beforeEach(() => {
+        executorSpy = sandbox.spy(
+          ctx.db.getExecutor() as QueryExecutor,
+          'executeQuery'
+        )
+      })
+
+      afterEach(() => {
+        sandbox.restore()
+      })
+
+      it('should execute a compiled query', async () => {
+        const compiledQuery = CompiledQuery.raw('select 1 as count')
+
+        const results = await ctx.db.executeQuery(compiledQuery)
+
+        expect(executorSpy.calledOnce).to.be.true
+        expect(executorSpy.firstCall.firstArg).to.equal(compiledQuery)
+        expect(results).to.equal(await executorSpy.firstCall.returnValue)
+      })
+
+      it('should compile and execute a query builder', async () => {
+        const query = ctx.db.selectFrom('person').selectAll()
+        const compiledQuery = query.compile()
+
+        const results = await ctx.db.executeQuery(query)
+
+        expect(executorSpy.calledOnce).to.be.true
+        expect(executorSpy.firstCall.firstArg).to.deep.equal(compiledQuery)
+        expect(results).to.equal(await executorSpy.firstCall.returnValue)
       })
     })
   })
