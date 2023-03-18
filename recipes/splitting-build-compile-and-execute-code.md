@@ -59,6 +59,16 @@ for compilation.
 This output alone can be used with any database driver that understands the sql 
 dialect used (PostgreSQL in this example).
 
+Raw queries can be compiled as well:
+
+```ts
+import { Selectable, sql } from 'kysely'
+
+const compiledQuery = sql<Selectable<Person>>`select * from person where id = ${id}`.compile(db)
+
+console.log(compiledQuery) // { sql: 'select * from person where id = $1', parameters: [1], query: { ... } }
+```
+
 ## Infer result type
 
 Kysely supports inferring a (compiled) query's result type even when detached from 

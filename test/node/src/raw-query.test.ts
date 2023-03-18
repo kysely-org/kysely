@@ -8,6 +8,7 @@ import {
   TestContext,
   expect,
   insertDefaultDataSet,
+  testSql,
 } from './test-setup.js'
 
 for (const dialect of BUILT_IN_DIALECTS) {
@@ -101,5 +102,26 @@ for (const dialect of BUILT_IN_DIALECTS) {
         expect(result.rows).to.eql([])
       })
     }
+
+    it('should compile a raw select query', async () => {
+      const gender = 'male'
+
+      const query = sql`select first_name from person where gender = ${gender} order by first_name asc, last_name asc`
+
+      testSql({ compile: () => query.compile(ctx.db) }, dialect, {
+        postgres: {
+          sql: 'select first_name from person where gender = $1 order by first_name asc, last_name asc',
+          parameters: [gender],
+        },
+        mysql: {
+          sql: 'select first_name from person where gender = ? order by first_name asc, last_name asc',
+          parameters: [gender],
+        },
+        sqlite: {
+          sql: 'select first_name from person where gender = ? order by first_name asc, last_name asc',
+          parameters: [gender],
+        },
+      })
+    })
   })
 }
