@@ -6,9 +6,12 @@ import {
   testSql,
   NOT_SUPPORTED,
   createTableWithId,
+  DIALECTS,
 } from './test-setup.js'
 
-for (const dialect of ['postgres'] as const) {
+if (DIALECTS.includes('postgres')) {
+  const dialect = 'postgres' as const
+
   describe(`${dialect}: with schema`, () => {
     let ctx: TestContext
 

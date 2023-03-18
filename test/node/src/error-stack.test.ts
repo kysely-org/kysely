@@ -2,14 +2,14 @@ import { AssertionError } from 'chai'
 import { sql } from '../../../'
 
 import {
-  BUILT_IN_DIALECTS,
+  DIALECTS,
   destroyTest,
   initTest,
   TestContext,
   expect,
 } from './test-setup.js'
 
-for (const dialect of BUILT_IN_DIALECTS) {
+for (const dialect of DIALECTS) {
   describe(`${dialect}: error stack`, () => {
     let ctx: TestContext
 

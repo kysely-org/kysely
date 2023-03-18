@@ -1,7 +1,7 @@
 import { CamelCasePlugin, Generated, Kysely, RawBuilder, sql } from '../../../'
 
 import {
-  BUILT_IN_DIALECTS,
+  DIALECTS,
   destroyTest,
   initTest,
   TestContext,
@@ -10,7 +10,7 @@ import {
   createTableWithId,
 } from './test-setup.js'
 
-for (const dialect of BUILT_IN_DIALECTS) {
+for (const dialect of DIALECTS) {
   describe(`${dialect}: camel case test`, () => {
     let ctx: TestContext
     let camelDb: Kysely<CamelDatabase>

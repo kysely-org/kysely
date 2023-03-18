@@ -1,12 +1,12 @@
 import {
-  BUILT_IN_DIALECTS,
+  DIALECTS,
   destroyTest,
   initTest,
   TestContext,
   testSql,
 } from './test-setup'
 
-for (const dialect of BUILT_IN_DIALECTS) {
+for (const dialect of DIALECTS) {
   describe(`${dialect} clear`, () => {
     let ctx: TestContext
 

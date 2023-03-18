@@ -79,11 +79,9 @@ export interface TestContext {
 export type BuiltInDialect = 'postgres' | 'mysql' | 'sqlite'
 export type PerDialect<T> = Record<BuiltInDialect, T>
 
-export const BUILT_IN_DIALECTS: BuiltInDialect[] = [
-  'postgres',
-  'mysql',
-  'sqlite',
-]
+export const DIALECTS: BuiltInDialect[] = (
+  ['postgres', 'mysql', 'sqlite'] as const
+).filter((d) => !process.env.DIALECT || d === process.env.DIALECT)
 
 const TEST_INIT_TIMEOUT = 5 * 60 * 1000
 // This can be used as a placeholder for testSql when a query is not

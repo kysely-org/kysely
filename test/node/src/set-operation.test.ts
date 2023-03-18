@@ -1,5 +1,5 @@
 import {
-  BUILT_IN_DIALECTS,
+  DIALECTS,
   clearDatabase,
   destroyTest,
   initTest,
@@ -10,7 +10,7 @@ import {
   NOT_SUPPORTED,
 } from './test-setup.js'
 
-for (const dialect of BUILT_IN_DIALECTS) {
+for (const dialect of DIALECTS) {
   describe(`${dialect}: set operations`, () => {
     let ctx: TestContext
 

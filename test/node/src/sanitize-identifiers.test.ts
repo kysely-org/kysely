@@ -1,7 +1,7 @@
 import { Updateable } from '../../../dist/cjs'
 
 import {
-  BUILT_IN_DIALECTS,
+  DIALECTS,
   destroyTest,
   initTest,
   TestContext,
@@ -9,7 +9,7 @@ import {
   testSql,
 } from './test-setup.js'
 
-for (const dialect of BUILT_IN_DIALECTS) {
+for (const dialect of DIALECTS) {
   describe(`${dialect}: sanitize identifiers`, () => {
     let ctx: TestContext
 

@@ -4,7 +4,7 @@ import {
   SimpleReferenceExpression,
 } from '../../../'
 import {
-  BUILT_IN_DIALECTS,
+  DIALECTS,
   Database,
   destroyTest,
   initTest,
@@ -15,7 +15,7 @@ import {
 
 const funcNames = ['avg', 'count', 'max', 'min', 'sum'] as const
 
-for (const dialect of BUILT_IN_DIALECTS) {
+for (const dialect of DIALECTS) {
   describe(`${dialect}: aggregate functions`, () => {
     let ctx: TestContext
 

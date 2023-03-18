@@ -2,7 +2,7 @@ import { expect } from 'chai'
 import { createSandbox, SinonSpy } from 'sinon'
 import { DefaultQueryExecutor, sql } from '../../../'
 import {
-  BUILT_IN_DIALECTS,
+  DIALECTS,
   clearDatabase,
   destroyTest,
   initTest,
@@ -11,7 +11,7 @@ import {
   TestContext,
 } from './test-setup.js'
 
-for (const dialect of BUILT_IN_DIALECTS) {
+for (const dialect of DIALECTS) {
   describe(`${dialect}: explain test`, () => {
     let ctx: TestContext
     const sandbox = createSandbox()

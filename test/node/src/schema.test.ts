@@ -1,7 +1,7 @@
 import { ColumnMetadata, sql } from '../../../'
 
 import {
-  BUILT_IN_DIALECTS,
+  DIALECTS,
   clearDatabase,
   destroyTest,
   expect,
@@ -11,8 +11,7 @@ import {
   testSql,
 } from './test-setup.js'
 
-for (const dialect of BUILT_IN_DIALECTS) {
-  // for (const dialect of ['postgres', 'mysql'] as BuiltInDialect[]) {
+for (const dialect of DIALECTS) {
   describe(`${dialect}: schema`, () => {
     let ctx: TestContext
 

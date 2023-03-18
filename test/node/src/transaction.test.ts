@@ -1,7 +1,7 @@
 import { CompiledQuery, Transaction } from '../../../'
 
 import {
-  BUILT_IN_DIALECTS,
+  DIALECTS,
   clearDatabase,
   destroyTest,
   initTest,
@@ -11,7 +11,7 @@ import {
   insertDefaultDataSet,
 } from './test-setup.js'
 
-for (const dialect of BUILT_IN_DIALECTS) {
+for (const dialect of DIALECTS) {
   describe(`${dialect}: transaction`, () => {
     let ctx: TestContext
     let executedQueries: CompiledQuery[] = []

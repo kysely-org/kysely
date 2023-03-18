@@ -6,6 +6,9 @@ import {
   TestContext,
   expect,
   Database,
+  insertDefaultDataSet,
+  clearDatabase,
+  DIALECTS,
 } from './test-setup.js'
 
 interface JsonTable {
@@ -18,55 +21,67 @@ interface JsonTable {
   }
 }
 
-describe(`postgres json tests`, () => {
-  let ctx: TestContext
-  let db: Kysely<Database & { json_table: JsonTable }>
+if (DIALECTS.includes('postgres')) {
+  const dialect = 'postgres' as const
 
-  before(async function () {
-    ctx = await initTest(this, 'postgres')
+  describe(`postgres json tests`, () => {
+    let ctx: TestContext
+    let db: Kysely<Database & { json_table: JsonTable }>
 
-    await ctx.db.schema
-      .createTable('json_table')
-      .ifNotExists()
-      .addColumn('id', 'serial', (col) => col.primaryKey())
-      .addColumn('data', 'jsonb')
-      .execute()
+    before(async function () {
+      ctx = await initTest(this, dialect)
 
-    db = ctx.db.withTables<{ json_table: JsonTable }>()
-  })
+      await ctx.db.schema
+        .createTable('json_table')
+        .ifNotExists()
+        .addColumn('id', 'serial', (col) => col.primaryKey())
+        .addColumn('data', 'jsonb')
+        .execute()
 
-  afterEach(async () => {
-    await db.deleteFrom('json_table').execute()
-  })
+      db = ctx.db.withTables<{ json_table: JsonTable }>()
+    })
 
-  after(async () => {
-    await ctx.db.schema.dropTable('json_table').ifExists().execute()
-    await destroyTest(ctx)
-  })
+    beforeEach(async () => {
+      await insertDefaultDataSet(ctx)
+    })
 
-  it('should insert a row with a json value', async () => {
-    const result = await db
-      .insertInto('json_table')
-      .values({
-        data: json({
-          number_field: 1,
-          nested: {
-            string_field: 'a',
-          },
-        }),
+    afterEach(async () => {
+      await clearDatabase(ctx)
+    })
+
+    afterEach(async () => {
+      await db.deleteFrom('json_table').execute()
+    })
+
+    after(async () => {
+      await ctx.db.schema.dropTable('json_table').ifExists().execute()
+      await destroyTest(ctx)
+    })
+
+    it('should insert a row with a json value', async () => {
+      const result = await db
+        .insertInto('json_table')
+        .values({
+          data: toJson({
+            number_field: 1,
+            nested: {
+              string_field: 'a',
+            },
+          }),
+        })
+        .returning('data')
+        .executeTakeFirstOrThrow()
+
+      expect(result.data).to.eql({
+        number_field: 1,
+        nested: {
+          string_field: 'a',
+        },
       })
-      .returning('data')
-      .executeTakeFirstOrThrow()
-
-    expect(result.data).to.eql({
-      number_field: 1,
-      nested: {
-        string_field: 'a',
-      },
     })
   })
-})
 
-function json<T>(obj: T): RawBuilder<T> {
-  return sql`${JSON.stringify(obj)}`
+  function toJson<T>(obj: T): RawBuilder<T> {
+    return sql`${JSON.stringify(obj)}`
+  }
 }
