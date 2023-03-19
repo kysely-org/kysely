@@ -778,7 +778,7 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
     errorConstructor:
       | NoResultErrorConstructor
       | ((node: QueryNode) => Error) = NoResultError
-  ): Promise<SimplifyResult<O>>  {
+  ): Promise<SimplifyResult<O>> {
     const result = await this.executeTakeFirst()
 
     if (result === undefined) {

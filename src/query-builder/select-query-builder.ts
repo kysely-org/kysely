@@ -313,10 +313,10 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
   }
 
   /**
-   * Adds a select clause to the query.
+   * Adds a select statement to the query.
    *
    * When a column (or any expression) is selected, Kysely adds its type to the return
-   * type of the query. Kysely is smart enough to parse the column names and types even
+   * type of the query. Kysely is smart enough to parse the column names and types
    * from aliased columns, subqueries, raw expressions etc.
    *
    * Kysely only allows you to select columns and expressions that exist and would
@@ -339,7 +339,8 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    * Select a single column:
    *
    * ```ts
-   * const persons = await db.selectFrom('person')
+   * const persons = await db
+   *   .selectFrom('person')
    *   .select('id')
    *   .where('first_name', '=', 'Arnold')
    *   .execute()
@@ -356,7 +357,8 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    * Select a single column and specify a table:
    *
    * ```ts
-   * const persons = await db.selectFrom(['person', 'pet'])
+   * const persons = await db
+   *   .selectFrom(['person', 'pet'])
    *   .select('person.id')
    *   .execute()
    *
@@ -372,7 +374,8 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    * Select multiple columns:
    *
    * ```ts
-   * const persons = await db.selectFrom('person')
+   * const persons = await db
+   *   .selectFrom('person')
    *   .select(['person.id', 'first_name'])
    *   .execute()
    *
@@ -389,7 +392,8 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    * Aliased selections:
    *
    * ```ts
-   * const persons = await db.selectFrom('person')
+   * const persons = await db
+   *   .selectFrom('person')
    *   .select([
    *     'person.first_name as fn',
    *     'person.last_name as ln'
@@ -467,7 +471,8 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    * // You can use `keyof Person` if any column of an interface is allowed.
    * type PossibleColumns = 'last_name' | 'first_name' | 'birth_date'
    *
-   * const spersons = await db.selectFrom('person')
+   * const spersons = await db
+   *   .selectFrom('person')
    *   .select([
    *     ref<PossibleColumns>(columnFromUserInput)
    *     'id'

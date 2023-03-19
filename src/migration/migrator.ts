@@ -712,8 +712,11 @@ export interface MigrationProvider {
    * Returns all migrations, old and new.
    *
    * For example if you have your migrations in a folder as separate files,
-   * you can use the {@link FileMigrationProvider} that implements this
-   * method to return all migrations in a folder.
+   * you can implement this method to return all migration in that folder
+   * as {@link Migration} objects.
+   *
+   * Kysely already has a built-in {@link FileMigrationProvider} for node.js
+   * that does exactly that.
    *
    * The keys of the returned object are migration names and values are the
    * migrations. The order of the migrations is determined by the alphabetical

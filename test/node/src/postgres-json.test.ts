@@ -1,4 +1,9 @@
 import { Generated, Kysely, RawBuilder, sql } from '../../../'
+import {
+  rowsToJsonb,
+  rowToJsonb,
+  jsonbBuildObject,
+} from '../../../helpers/postgres'
 
 import {
   destroyTest,
@@ -78,6 +83,77 @@ if (DIALECTS.includes('postgres')) {
           string_field: 'a',
         },
       })
+    })
+
+    it('should select subqueries as nested jsonb objects', async () => {
+      const query = db.selectFrom('person').select([
+        'person.first_name',
+
+        // Nest all person's pets.
+        (eb) =>
+          rowsToJsonb(
+            eb
+              .selectFrom('pet')
+              .select(['name', 'species'])
+              .whereRef('owner_id', '=', 'person.id')
+              .orderBy('pet.name')
+          ).as('pets'),
+
+        // Nest the first found dog the person owns. Only select specific fields
+        // and store it under a `doggo` field.
+        (eb) =>
+          rowToJsonb(
+            eb
+              .selectFrom('pet')
+              .select('name as doggo_name')
+              .whereRef('owner_id', '=', 'person.id')
+              .where('species', '=', 'dog')
+              .orderBy('name')
+              .limit(1)
+          ).as('doggo'),
+
+        // Nest an object that holds the person's formatted name.
+        (eb) =>
+          jsonbBuildObject({
+            first: eb.ref('first_name'),
+            last: eb.ref('last_name'),
+            full: sql<string>`first_name || ' ' || last_name`,
+          }).as('name'),
+      ])
+
+      const res = await query.execute()
+      expect(res).to.eql([
+        {
+          first_name: 'Jennifer',
+          pets: [{ name: 'Catto', species: 'cat' }],
+          doggo: null,
+          name: {
+            last: 'Aniston',
+            first: 'Jennifer',
+            full: 'Jennifer Aniston',
+          },
+        },
+        {
+          first_name: 'Arnold',
+          pets: [{ name: 'Doggo', species: 'dog' }],
+          doggo: { doggo_name: 'Doggo' },
+          name: {
+            last: 'Schwarzenegger',
+            first: 'Arnold',
+            full: 'Arnold Schwarzenegger',
+          },
+        },
+        {
+          first_name: 'Sylvester',
+          pets: [{ name: 'Hammo', species: 'hamster' }],
+          doggo: null,
+          name: {
+            last: 'Stallone',
+            first: 'Sylvester',
+            full: 'Sylvester Stallone',
+          },
+        },
+      ])
     })
   })
 

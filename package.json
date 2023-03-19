@@ -14,11 +14,17 @@
   "exports": {
     ".": {
       "import": "./dist/esm/index.js",
-      "require": "./dist/cjs/index.js"
+      "require": "./dist/cjs/index.js",
+      "default": "./dist/cjs/index.js"
+    },
+    "./helpers/postgres": {
+      "import": "./dist/esm/helpers/postgres.js",
+      "require": "./dist/cjs/helpers/postgres.js",
+      "default": "./dist/cjs/helpers/postgres.js"
     }
   },
   "scripts": {
-    "clean": "rm -rf dist & rm -rf test/node/dist & rm -rf test/browser/bundle.js",
+    "clean": "rm -rf dist & rm -rf test/node/dist & rm -rf test/browser/bundle.js & rm -rf helpers",
     "test": "npm run build && npm run test:node:build && concurrently -n node,typings \"npm run test:node\" \"npm run test:typings\" \"npm run test:esmimports\"",
     "test:node:build": "tsc -p test/node",
     "test:node": "concurrently -n postgres,mysql,sqlite \"npm run test:node:postgres\" \"npm run test:node:mysql\" \"npm run test:node:sqlite\"",
