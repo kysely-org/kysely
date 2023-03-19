@@ -1,4 +1,10 @@
-import { jsonbBuildObject, Kysely, rowsToJsonb, rowToJsonb, sql } from '..'
+import {
+  jsonbBuildObject,
+  Kysely,
+  jsonArrayFrom,
+  jsonObjectFrom,
+  sql,
+} from '..'
 import { Database } from '../shared'
 import { expectType } from 'tsd'
 
@@ -8,7 +14,7 @@ async function testPostgresJsonb(db: Kysely<Database>) {
 
     // Nest all person's pets.
     (eb) =>
-      rowsToJsonb(
+      jsonArrayFrom(
         eb
           .selectFrom('pet')
           .select(['name', 'species'])
@@ -19,7 +25,7 @@ async function testPostgresJsonb(db: Kysely<Database>) {
     // Nest the first found dog the person owns. Only select specific fields
     // and store it under a `doggo` field.
     (eb) =>
-      rowToJsonb(
+      jsonObjectFrom(
         eb
           .selectFrom('pet')
           .select('name as doggo_name')

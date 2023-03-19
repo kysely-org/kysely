@@ -17,7 +17,7 @@ import { Simplify } from '../util/type-utils.js'
  *   .selectFrom('person')
  *   .select([
  *     'id',
- *     eb => rowsToJsonb(
+ *     eb => jsonArrayFrom(
  *       eb.selectFrom('pet')
  *         .select(['pet.id as pet_id', 'pet.name'])
  *         .where('pet.owner_id', '=', 'person.id')
@@ -45,7 +45,9 @@ import { Simplify } from '../util/type-utils.js'
  * from "person"
  * ```
  */
-export function rowsToJsonb<O>(expr: Expression<O>): RawBuilder<Simplify<O>[]> {
+export function jsonArrayFrom<O>(
+  expr: Expression<O>
+): RawBuilder<Simplify<O>[]> {
   return sql`(select coalesce(jsonb_agg(agg), '[]') from ${expr} as agg)`
 }
 
@@ -65,7 +67,7 @@ export function rowsToJsonb<O>(expr: Expression<O>): RawBuilder<Simplify<O>[]> {
  *   .selectFrom('person')
  *   .select([
  *     'id',
- *     eb => rowToJsonb(
+ *     eb => jsonObjectFrom(
  *       eb.selectFrom('pet')
  *         .select(['pet.id as pet_id', 'pet.name'])
  *         .where('pet.owner_id', '=', 'person.id')
@@ -93,7 +95,9 @@ export function rowsToJsonb<O>(expr: Expression<O>): RawBuilder<Simplify<O>[]> {
  * from "person"
  * ```
  */
-export function rowToJsonb<O>(expr: Expression<O>): RawBuilder<Simplify<O>> {
+export function jsonObjectFrom<O>(
+  expr: Expression<O>
+): RawBuilder<Simplify<O>> {
   return sql`(select to_jsonb(obj) from ${expr} as obj)`
 }
 

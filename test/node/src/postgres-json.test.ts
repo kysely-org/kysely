@@ -1,7 +1,7 @@
 import { Generated, Kysely, RawBuilder, sql } from '../../../'
 import {
-  rowsToJsonb,
-  rowToJsonb,
+  jsonArrayFrom,
+  jsonObjectFrom,
   jsonbBuildObject,
 } from '../../../helpers/postgres'
 
@@ -91,7 +91,7 @@ if (DIALECTS.includes('postgres')) {
 
         // Nest all person's pets.
         (eb) =>
-          rowsToJsonb(
+          jsonArrayFrom(
             eb
               .selectFrom('pet')
               .select(['name', 'species'])
@@ -102,7 +102,7 @@ if (DIALECTS.includes('postgres')) {
         // Nest the first found dog the person owns. Only select specific fields
         // and store it under a `doggo` field.
         (eb) =>
-          rowToJsonb(
+          jsonObjectFrom(
             eb
               .selectFrom('pet')
               .select('name as doggo_name')
