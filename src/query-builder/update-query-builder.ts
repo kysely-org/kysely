@@ -21,12 +21,14 @@ import {
 import { ReturningRow } from '../parser/returning-parser.js'
 import { ReferenceExpression } from '../parser/reference-parser.js'
 import { QueryNode } from '../operation-node/query-node.js'
-import { MergePartial, Nullable, SingleResultType } from '../util/type-utils.js'
-import { UpdateQueryNode } from '../operation-node/update-query-node.js'
 import {
-  MutationObject,
-  parseUpdateObject,
-} from '../parser/update-set-parser.js'
+  MergePartial,
+  Nullable,
+  SimplifyResult,
+  SimplifySingleResult,
+} from '../util/type-utils.js'
+import { UpdateQueryNode } from '../operation-node/update-query-node.js'
+import { UpdateObject, parseUpdateObject } from '../parser/update-set-parser.js'
 import { preventAwait } from '../util/prevent-await.js'
 import { Compilable } from '../util/compilable.js'
 import { QueryExecutor } from '../query-executor/query-executor.js'
@@ -36,7 +38,11 @@ import { UpdateResult } from './update-result.js'
 import { KyselyPlugin } from '../plugin/kysely-plugin.js'
 import { WhereInterface } from './where-interface.js'
 import { ReturningInterface } from './returning-interface.js'
-import { NoResultError, NoResultErrorConstructor } from './no-result-error.js'
+import {
+  isNoResultErrorConstructor,
+  NoResultError,
+  NoResultErrorConstructor,
+} from './no-result-error.js'
 import { Selectable } from '../util/column-type.js'
 import { Explainable, ExplainFormat } from '../util/explainable.js'
 import { ExplainNode } from '../operation-node/explain-node.js'
@@ -53,6 +59,7 @@ import {
   parseExists,
   parseNotExists,
 } from '../parser/unary-operation-parser.js'
+import { KyselyTypeError } from '../util/type-error.js'
 
 export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
   implements
@@ -179,6 +186,13 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
         this.#props.queryNode,
         parseNotExists(arg)
       ),
+    })
+  }
+
+  clearWhere(): UpdateQueryBuilder<DB, UT, TB, O> {
+    return new UpdateQueryBuilder({
+      ...this.#props,
+      queryNode: QueryNode.cloneWithoutWhere(this.#props.queryNode),
     })
   }
 
@@ -532,7 +546,7 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
    * where "id" = $4
    * ```
    */
-  set(row: MutationObject<DB, TB, UT>): UpdateQueryBuilder<DB, UT, TB, O> {
+  set(row: UpdateObject<DB, TB, UT>): UpdateQueryBuilder<DB, UT, TB, O> {
     return new UpdateQueryBuilder({
       ...this.#props,
       queryNode: UpdateQueryNode.cloneWithUpdates(
@@ -571,14 +585,15 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
   }
 
   /**
-   * Simply calls the given function passing `this` as the only argument.
+   * Simply calls the provided function passing `this` as the only argument. `$call` returns
+   * what the provided function returns.
    *
    * If you want to conditionally call a method on `this`, see
-   * the {@link if} method.
+   * the {@link $if} method.
    *
    * ### Examples
    *
-   * The next example uses a helper funtion `log` to log a query:
+   * The next example uses a helper function `log` to log a query:
    *
    * ```ts
    * function log<T extends Compilable>(qb: T): T {
@@ -588,12 +603,19 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
    *
    * db.updateTable('person')
    *   .set(values)
-   *   .call(log)
+   *   .$call(log)
    *   .execute()
    * ```
    */
-  call<T>(func: (qb: this) => T): T {
+  $call<T>(func: (qb: this) => T): T {
     return func(this)
+  }
+
+  /**
+   * @deprecated Use `$call` instead
+   */
+  call<T>(func: (qb: this) => T): T {
+    return this.$call(func)
   }
 
   /**
@@ -615,7 +637,7 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
    *     .set(updates)
    *     .where('id', '=', id)
    *     .returning(['id', 'first_name'])
-   *     .if(returnLastName, (qb) => qb.returning('last_name'))
+   *     .$if(returnLastName, (qb) => qb.returning('last_name'))
    *     .executeTakeFirstOrThrow()
    * }
    * ```
@@ -632,7 +654,7 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
    * }
    * ```
    */
-  if<O2>(
+  $if<O2>(
     condition: boolean,
     func: (qb: this) => UpdateQueryBuilder<DB, UT, TB, O2>
   ): UpdateQueryBuilder<
@@ -655,13 +677,97 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
   }
 
   /**
+   * @deprecated Use `$if` instead
+   */
+  if<O2>(
+    condition: boolean,
+    func: (qb: this) => UpdateQueryBuilder<DB, UT, TB, O2>
+  ): UpdateQueryBuilder<
+    DB,
+    UT,
+    TB,
+    O2 extends UpdateResult
+      ? UpdateResult
+      : O extends UpdateResult
+      ? Partial<O2>
+      : MergePartial<O, O2>
+  > {
+    return this.$if(condition, func)
+  }
+
+  /**
    * Change the output type of the query.
    *
    * You should only use this method as the last resort if the types
    * don't support your use case.
    */
-  castTo<T>(): UpdateQueryBuilder<DB, UT, TB, T> {
+  $castTo<T>(): UpdateQueryBuilder<DB, UT, TB, T> {
     return new UpdateQueryBuilder(this.#props)
+  }
+
+  /**
+   * @deprecated Use `$castTo` instead.
+   */
+  castTo<T>(): UpdateQueryBuilder<DB, UT, TB, T> {
+    return this.$castTo<T>()
+  }
+
+  /**
+   * Asserts that query's output row type equals the given type `T`.
+   *
+   * This method can be used to simplify excessively complex types to make typescript happy
+   * and much faster.
+   *
+   * Kysely uses complex type magic to achieve its type safety. This complexity is sometimes too much
+   * for typescript and you get errors like this:
+   *
+   * ```
+   * error TS2589: Type instantiation is excessively deep and possibly infinite.
+   * ```
+   *
+   * In these case you can often use this method to help typescript a little bit. When you use this
+   * method to assert the output type of a query, Kysely can drop the complex output type that
+   * consists of multiple nested helper types and replace it with the simple asserted type.
+   *
+   * Using this method doesn't reduce type safety at all. You have to pass in a type that is
+   * structurally equal to the current type.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * const result = await db
+   *   .with('updated_person', (qb) => qb
+   *     .updateTable('person')
+   *     .set(person)
+   *     .where('id', '=', person.id)
+   *     .returning('first_name')
+   *     .$assertType<{ first_name: string }>()
+   *   )
+   *   .with('updated_pet', (qb) => qb
+   *     .updateTable('pet')
+   *     .set(pet)
+   *     .where('owner_id', '=', person.id)
+   *     .returning(['name as pet_name', 'species'])
+   *     .$assertType<{ pet_name: string, species: Species }>()
+   *   )
+   *   .selectFrom(['updated_person', 'updated_pet'])
+   *   .selectAll()
+   *   .executeTakeFirstOrThrow()
+   * ```
+   */
+  $assertType<T extends O>(): O extends T
+    ? UpdateQueryBuilder<DB, UT, TB, T>
+    : KyselyTypeError<`$assertType() call failed: The type passed in is not equal to the output type of the query.`> {
+    return new UpdateQueryBuilder(this.#props) as unknown as any
+  }
+
+  /**
+   * @deprecated Use `$assertType` instead.
+   */
+  assertType<T extends O>(): O extends T
+    ? UpdateQueryBuilder<DB, UT, TB, T>
+    : KyselyTypeError<`assertType() call failed: The type passed in is not equal to the output type of the query.`> {
+    return new UpdateQueryBuilder(this.#props) as unknown as any
   }
 
   /**
@@ -681,7 +787,7 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
     )
   }
 
-  compile(): CompiledQuery<O> {
+  compile(): CompiledQuery<SimplifyResult<O>> {
     return this.#props.executor.compileQuery(
       this.toOperationNode(),
       this.#props.queryId
@@ -693,7 +799,7 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
    *
    * Also see the {@link executeTakeFirst} and {@link executeTakeFirstOrThrow} methods.
    */
-  async execute(): Promise<O[]> {
+  async execute(): Promise<SimplifyResult<O>[]> {
     const compiledQuery = this.compile()
     const query = compiledQuery.query as UpdateQueryNode
 
@@ -703,13 +809,13 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
     )
 
     if (this.#props.executor.adapter.supportsReturning && query.returning) {
-      return result.rows
+      return result.rows as any
     }
 
     return [
       new UpdateResult(
         // TODO: remove numUpdatedOrDeletedRows.
-        (result.numAffectedRows ?? result.numUpdatedOrDeletedRows)!
+        result.numAffectedRows ?? result.numUpdatedOrDeletedRows ?? 0n
       ) as any,
     ]
   }
@@ -718,9 +824,9 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
    * Executes the query and returns the first result or undefined if
    * the query returned no result.
    */
-  async executeTakeFirst(): Promise<SingleResultType<O>> {
+  async executeTakeFirst(): Promise<SimplifySingleResult<O>> {
     const [result] = await this.execute()
-    return result as SingleResultType<O>
+    return result as SimplifySingleResult<O>
   }
 
   /**
@@ -728,19 +834,25 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
    * the query returned no result.
    *
    * By default an instance of {@link NoResultError} is thrown, but you can
-   * provide a custom error class as the only argument to throw a different
+   * provide a custom error class, or callback as the only argument to throw a different
    * error.
    */
   async executeTakeFirstOrThrow(
-    errorConstructor: NoResultErrorConstructor = NoResultError
-  ): Promise<O> {
+    errorConstructor:
+      | NoResultErrorConstructor
+      | ((node: QueryNode) => Error) = NoResultError
+  ): Promise<SimplifyResult<O>> {
     const result = await this.executeTakeFirst()
 
     if (result === undefined) {
-      throw new errorConstructor(this.toOperationNode())
+      const error = isNoResultErrorConstructor(errorConstructor)
+        ? new errorConstructor(this.toOperationNode())
+        : errorConstructor(this.toOperationNode())
+
+      throw error
     }
 
-    return result as O
+    return result as SimplifyResult<O>
   }
 
   /**

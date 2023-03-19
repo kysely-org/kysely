@@ -6,9 +6,12 @@ import {
   testSql,
   NOT_SUPPORTED,
   createTableWithId,
+  DIALECTS,
 } from './test-setup.js'
 
-for (const dialect of ['postgres'] as const) {
+if (DIALECTS.includes('postgres')) {
+  const dialect = 'postgres' as const
+
   describe(`${dialect}: with schema`, () => {
     let ctx: TestContext
 
@@ -288,14 +291,14 @@ for (const dialect of ['postgres'] as const) {
           .createTable('foo')
           .addColumn('bar', 'integer', (col) => col.references('pets.id'))
 
-          testSql(query, dialect, {
-            postgres: {
-              sql: 'create table "mammals"."foo" ("bar" integer references "mammals"."pets" ("id"))',
-              parameters: [],
-            },
-            mysql: NOT_SUPPORTED,
-            sqlite: NOT_SUPPORTED,
-          })
+        testSql(query, dialect, {
+          postgres: {
+            sql: 'create table "mammals"."foo" ("bar" integer references "mammals"."pets" ("id"))',
+            parameters: [],
+          },
+          mysql: NOT_SUPPORTED,
+          sqlite: NOT_SUPPORTED,
+        })
       })
     })
 

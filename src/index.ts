@@ -175,6 +175,7 @@ export * from './operation-node/partition-by-item-node.js'
 export * from './operation-node/set-operation-node.js'
 export * from './operation-node/binary-operation-node.js'
 export * from './operation-node/unary-operation-node.js'
+export * from './operation-node/using-node.js'
 
 export * from './util/column-type.js'
 export * from './util/compilable.js'
@@ -188,6 +189,7 @@ export {
   AnySelectQueryBuilder,
   Equals,
   UnknownRow,
+  Simplify,
 } from './util/type-utils.js'
 export { QueryId } from './util/query-id.js'
 export * from './util/infer-result.js'
@@ -219,7 +221,7 @@ export {
   JoinCallbackExpression,
 } from './parser/join-parser.js'
 export { InsertObject } from './parser/insert-values-parser.js'
-export { MutationObject } from './parser/update-set-parser.js'
+export { UpdateObject } from './parser/update-set-parser.js'
 export {
   OrderByExpression,
   OrderByDirectionExpression,

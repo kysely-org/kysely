@@ -96,8 +96,15 @@ export class RawBuilder<O> implements Expression<O> {
    * This method call doesn't change the SQL in any way. This methods simply
    * returns a copy of this `RawBuilder` with a new output type.
    */
-  castTo<T>(): RawBuilder<T> {
+  $castTo<T>(): RawBuilder<T> {
     return new RawBuilder({ ...this.#props })
+  }
+
+  /**
+   * @deprecated Use `$castTo` instead.
+   */
+  castTo<T>(): RawBuilder<T> {
+    return this.$castTo<T>()
   }
 
   /**
@@ -114,26 +121,33 @@ export class RawBuilder<O> implements Expression<O> {
   }
 
   toOperationNode(): RawNode {
-    const executor =
-      this.#props.plugins !== undefined
-        ? NOOP_QUERY_EXECUTOR.withPlugins(this.#props.plugins)
-        : NOOP_QUERY_EXECUTOR
+    return this.#toOperationNode(this.#getExecutor())
+  }
 
-    return this.#toOperationNode(executor)
+  compile(executorProvider: QueryExecutorProvider): CompiledQuery<O> {
+    return this.#compile(this.#getExecutor(executorProvider))
   }
 
   async execute(
     executorProvider: QueryExecutorProvider
   ): Promise<QueryResult<O>> {
-    const executor =
-      this.#props.plugins !== undefined
-        ? executorProvider.getExecutor().withPlugins(this.#props.plugins)
-        : executorProvider.getExecutor()
+    const executor = this.#getExecutor(executorProvider)
 
     return executor.executeQuery<O>(
       this.#compile(executor),
       this.#props.queryId
     )
+  }
+
+  #getExecutor(executorProvider?: QueryExecutorProvider): QueryExecutor {
+    const executor =
+      executorProvider !== undefined
+        ? executorProvider.getExecutor()
+        : NOOP_QUERY_EXECUTOR
+
+    return this.#props.plugins !== undefined
+      ? executor.withPlugins(this.#props.plugins)
+      : executor
   }
 
   #toOperationNode(executor: QueryExecutor): RawNode {
@@ -152,7 +166,7 @@ export function isRawBuilder(obj: unknown): obj is RawBuilder<unknown> {
   return (
     isObject(obj) &&
     isFunction(obj.as) &&
-    isFunction(obj.castTo) &&
+    isFunction(obj.$castTo) &&
     isFunction(obj.withPlugin) &&
     isFunction(obj.toOperationNode) &&
     isFunction(obj.execute)

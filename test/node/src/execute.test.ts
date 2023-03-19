@@ -1,7 +1,12 @@
-import { NoResultError, QueryNode } from '../../../'
-
+import { createSandbox, SinonSpy } from 'sinon'
 import {
-  BUILT_IN_DIALECTS,
+  CompiledQuery,
+  NoResultError,
+  QueryExecutor,
+  QueryNode,
+} from '../../../'
+import {
+  DIALECTS,
   clearDatabase,
   destroyTest,
   initTest,
@@ -10,7 +15,7 @@ import {
   expect,
 } from './test-setup.js'
 
-for (const dialect of BUILT_IN_DIALECTS) {
+for (const dialect of DIALECTS) {
   describe(`${dialect}: execute`, () => {
     let ctx: TestContext
 
@@ -70,7 +75,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
         }
       })
 
-      it('should throw a custom error if no result is found and a custom error is provided', async () => {
+      it('should throw a custom error constructor if no result is found and a custom error is provided', async () => {
         class MyNotFoundError extends Error {
           node: QueryNode
 
@@ -95,6 +100,61 @@ for (const dialect of BUILT_IN_DIALECTS) {
             expect(error.node.kind).to.equal('SelectQueryNode')
           }
         }
+      })
+
+      it('should throw a custom error object if no result is found and a custom error is provided', async () => {
+        const message = 'my custom error'
+        const error = new Error(message)
+
+        try {
+          await ctx.db
+            .selectFrom('person')
+            .selectAll('person')
+            .where('id', '=', 99999999)
+            .executeTakeFirstOrThrow(() => error)
+        } catch (error: any) {
+          expect(error.message).to.equal(message)
+        }
+      })
+    })
+
+    describe('Kysely.executeQuery', () => {
+      const sandbox = createSandbox()
+      let executorSpy: SinonSpy<
+        Parameters<QueryExecutor['executeQuery']>,
+        ReturnType<QueryExecutor['executeQuery']>
+      >
+
+      beforeEach(() => {
+        executorSpy = sandbox.spy(
+          ctx.db.getExecutor() as QueryExecutor,
+          'executeQuery'
+        )
+      })
+
+      afterEach(() => {
+        sandbox.restore()
+      })
+
+      it('should execute a compiled query', async () => {
+        const compiledQuery = CompiledQuery.raw('select 1 as count')
+
+        const results = await ctx.db.executeQuery(compiledQuery)
+
+        expect(executorSpy.calledOnce).to.be.true
+        expect(executorSpy.firstCall.firstArg).to.equal(compiledQuery)
+        expect(results).to.equal(await executorSpy.firstCall.returnValue)
+      })
+
+      it('should compile and execute a query builder', async () => {
+        const query = ctx.db.selectFrom('person').selectAll()
+        const compiledQuery = query.compile()
+
+        const results = await ctx.db.executeQuery(query)
+
+        expect(executorSpy.calledOnce).to.be.true
+        expect(executorSpy.firstCall.firstArg).to.deep.equal(compiledQuery)
+        expect(results).to.equal(await executorSpy.firstCall.returnValue)
       })
     })
   })

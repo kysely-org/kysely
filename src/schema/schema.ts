@@ -92,7 +92,7 @@ export class SchemaModule {
     return new CreateTableBuilder({
       queryId: createQueryId(),
       executor: this.#executor,
-      createTableNode: CreateTableNode.create(parseTable(table)),
+      node: CreateTableNode.create(parseTable(table)),
     })
   }
 
@@ -111,7 +111,7 @@ export class SchemaModule {
     return new DropTableBuilder({
       queryId: createQueryId(),
       executor: this.#executor,
-      dropTableNode: DropTableNode.create(parseTable(table)),
+      node: DropTableNode.create(parseTable(table)),
     })
   }
 
@@ -132,7 +132,7 @@ export class SchemaModule {
     return new CreateIndexBuilder({
       queryId: createQueryId(),
       executor: this.#executor,
-      createIndexNode: CreateIndexNode.create(indexName),
+      node: CreateIndexNode.create(indexName),
     })
   }
 
@@ -151,7 +151,7 @@ export class SchemaModule {
     return new DropIndexBuilder({
       queryId: createQueryId(),
       executor: this.#executor,
-      dropIndexNode: DropIndexNode.create(indexName),
+      node: DropIndexNode.create(indexName),
     })
   }
 
@@ -170,7 +170,7 @@ export class SchemaModule {
     return new CreateSchemaBuilder({
       queryId: createQueryId(),
       executor: this.#executor,
-      createSchemaNode: CreateSchemaNode.create(schema),
+      node: CreateSchemaNode.create(schema),
     })
   }
 
@@ -189,7 +189,7 @@ export class SchemaModule {
     return new DropSchemaBuilder({
       queryId: createQueryId(),
       executor: this.#executor,
-      dropSchemaNode: DropSchemaNode.create(schema),
+      node: DropSchemaNode.create(schema),
     })
   }
 
@@ -231,7 +231,7 @@ export class SchemaModule {
     return new CreateViewBuilder({
       queryId: createQueryId(),
       executor: this.#executor,
-      createViewNode: CreateViewNode.create(viewName),
+      node: CreateViewNode.create(viewName),
     })
   }
 
@@ -251,7 +251,7 @@ export class SchemaModule {
     return new DropViewBuilder({
       queryId: createQueryId(),
       executor: this.#executor,
-      dropViewNode: DropViewNode.create(viewName),
+      node: DropViewNode.create(viewName),
     })
   }
 
@@ -273,7 +273,7 @@ export class SchemaModule {
     return new CreateTypeBuilder({
       queryId: createQueryId(),
       executor: this.#executor,
-      createTypeNode: CreateTypeNode.create(parseSchemableIdentifier(typeName)),
+      node: CreateTypeNode.create(parseSchemableIdentifier(typeName)),
     })
   }
 
@@ -295,7 +295,7 @@ export class SchemaModule {
     return new DropTypeBuilder({
       queryId: createQueryId(),
       executor: this.#executor,
-      dropTypeNode: DropTypeNode.create(parseSchemableIdentifier(typeName)),
+      node: DropTypeNode.create(parseSchemableIdentifier(typeName)),
     })
   }
 

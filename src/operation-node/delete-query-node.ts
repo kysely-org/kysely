@@ -9,10 +9,12 @@ import { LimitNode } from './limit-node.js'
 import { OrderByNode } from './order-by-node.js'
 import { OrderByItemNode } from './order-by-item-node.js'
 import { ExplainNode } from './explain-node.js'
+import { UsingNode } from './using-node.js'
 
 export interface DeleteQueryNode extends OperationNode {
   readonly kind: 'DeleteQueryNode'
   readonly from: FromNode
+  readonly using?: UsingNode
   readonly joins?: ReadonlyArray<JoinNode>
   readonly where?: WhereNode
   readonly returning?: ReturningNode
@@ -30,10 +32,10 @@ export const DeleteQueryNode = freeze({
     return node.kind === 'DeleteQueryNode'
   },
 
-  create(fromItem: OperationNode, withNode?: WithNode): DeleteQueryNode {
+  create(fromItems: OperationNode[], withNode?: WithNode): DeleteQueryNode {
     return freeze({
       kind: 'DeleteQueryNode',
-      from: FromNode.create([fromItem]),
+      from: FromNode.create(fromItems),
       ...(withNode && { with: withNode }),
     })
   },
@@ -67,6 +69,19 @@ export const DeleteQueryNode = freeze({
     return freeze({
       ...deleteNode,
       explain,
+    })
+  },
+
+  cloneWithUsing(
+    deleteNode: DeleteQueryNode,
+    tables: OperationNode[]
+  ): DeleteQueryNode {
+    return freeze({
+      ...deleteNode,
+      using:
+        deleteNode.using !== undefined
+          ? UsingNode.cloneWithTables(deleteNode.using, tables)
+          : UsingNode.create(tables),
     })
   },
 })

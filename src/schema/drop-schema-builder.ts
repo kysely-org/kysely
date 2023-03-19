@@ -17,7 +17,7 @@ export class DropSchemaBuilder implements OperationNodeSource, Compilable {
   ifExists(): DropSchemaBuilder {
     return new DropSchemaBuilder({
       ...this.#props,
-      dropSchemaNode: DropSchemaNode.cloneWith(this.#props.dropSchemaNode, {
+      node: DropSchemaNode.cloneWith(this.#props.node, {
         ifExists: true,
       }),
     })
@@ -26,15 +26,23 @@ export class DropSchemaBuilder implements OperationNodeSource, Compilable {
   cascade(): DropSchemaBuilder {
     return new DropSchemaBuilder({
       ...this.#props,
-      dropSchemaNode: DropSchemaNode.cloneWith(this.#props.dropSchemaNode, {
+      node: DropSchemaNode.cloneWith(this.#props.node, {
         cascade: true,
       }),
     })
   }
 
+  /**
+   * Simply calls the provided function passing `this` as the only argument. `$call` returns
+   * what the provided function returns.
+   */
+  $call<T>(func: (qb: this) => T): T {
+    return func(this)
+  }
+
   toOperationNode(): DropSchemaNode {
     return this.#props.executor.transformQuery(
-      this.#props.dropSchemaNode,
+      this.#props.node,
       this.#props.queryId
     )
   }
@@ -59,5 +67,5 @@ preventAwait(
 export interface DropSchemaBuilderProps {
   readonly queryId: QueryId
   readonly executor: QueryExecutor
-  readonly dropSchemaNode: DropSchemaNode
+  readonly node: DropSchemaNode
 }

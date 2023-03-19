@@ -1,12 +1,12 @@
 import {
   AliasedExpression,
   Expression,
+  isAliasedExpression,
   isExpression,
 } from '../expression/expression.js'
 import { AliasNode } from '../operation-node/alias-node.js'
 import { isOperationNodeSource } from '../operation-node/operation-node-source.js'
 import { OperationNode } from '../operation-node/operation-node.js'
-import { SimpleReferenceExpressionNode } from '../operation-node/simple-reference-expression-node.js'
 import { ExpressionBuilder } from '../query-builder/expression-builder.js'
 import { SelectQueryBuilder } from '../query-builder/select-query-builder.js'
 import { isFunction } from '../util/object-utils.js'
@@ -30,13 +30,11 @@ export type AliasedExpressionOrFactory<DB, TB extends keyof DB> =
 
 export function parseExpression(
   exp: ExpressionOrFactory<any, any, any>
-): SimpleReferenceExpressionNode {
+): OperationNode {
   if (isOperationNodeSource(exp)) {
-    return exp.toOperationNode() as SimpleReferenceExpressionNode
+    return exp.toOperationNode()
   } else if (isFunction(exp)) {
-    return exp(
-      createExpressionBuilder()
-    ).toOperationNode() as SimpleReferenceExpressionNode
+    return exp(createExpressionBuilder()).toOperationNode()
   }
 
   throw new Error(`invalid expression: ${JSON.stringify(exp)}`)
@@ -57,5 +55,5 @@ export function parseAliasedExpression(
 export function isExpressionOrFactory(
   obj: unknown
 ): obj is ExpressionOrFactory<any, any, any> {
-  return isExpression(obj) || isFunction(obj)
+  return isExpression(obj) || isAliasedExpression(obj) || isFunction(obj)
 }

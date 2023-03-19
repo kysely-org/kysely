@@ -8,11 +8,11 @@ async function getPerson(id: number, withPetName: boolean, withPetSpecies: boole
   return await db
     .selectFrom('person')
     .selectAll('person')
-    .if(withPetName, (qb) => qb
+    .$if(withPetName, (qb) => qb
       .innerJoin('pet', 'pet.owner_id', 'person.id')
       .select('pet.name as pet_name')
     )
-    .if(withPetSpecies, (qb) => qb
+    .$if(withPetSpecies, (qb) => qb
       .innerJoin('pet', 'pet.owner_id', 'person.id')
       .select('pet.species as pet_species')
     )
@@ -49,11 +49,11 @@ async function getPerson(id: number, withPetName: boolean, withPetSpecies: boole
     .withPlugin(new DeduplicateJoinsPlugin())
     .selectFrom('person')
     .selectAll('person')
-    .if(withPetName, (qb) => qb
+    .$if(withPetName, (qb) => qb
       .innerJoin('pet', 'pet.owner_id', 'person.id')
       .select('pet.name as pet_name')
     )
-    .if(withPetSpecies, (qb) => qb
+    .$if(withPetSpecies, (qb) => qb
       .innerJoin('pet', 'pet.owner_id', 'person.id')
       .select('pet.species as pet_species')
     )

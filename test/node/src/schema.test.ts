@@ -1,8 +1,7 @@
 import { ColumnMetadata, sql } from '../../../'
 
 import {
-  BuiltInDialect,
-  BUILT_IN_DIALECTS,
+  DIALECTS,
   clearDatabase,
   destroyTest,
   expect,
@@ -12,8 +11,7 @@ import {
   testSql,
 } from './test-setup.js'
 
-for (const dialect of BUILT_IN_DIALECTS) {
-  // for (const dialect of ['postgres', 'mysql'] as BuiltInDialect[]) {
+for (const dialect of DIALECTS) {
   describe(`${dialect}: schema`, () => {
     let ctx: TestContext
 
@@ -943,6 +941,36 @@ for (const dialect of BUILT_IN_DIALECTS) {
 
         await builder.execute()
       })
+
+      if (dialect !== 'mysql') {
+        it('should create an index if not exists', async () => {
+          await ctx.db.schema
+            .createIndex('test_first_name_index')
+            .on('test')
+            .column('first_name')
+            .execute()
+
+          const builder = ctx.db.schema
+            .createIndex('test_first_name_index')
+            .ifNotExists()
+            .on('test')
+            .column('first_name')
+
+          testSql(builder, dialect, {
+            postgres: {
+              sql: 'create index if not exists "test_first_name_index" on "test" ("first_name")',
+              parameters: [],
+            },
+            sqlite: {
+              sql: 'create index if not exists "test_first_name_index" on "test" ("first_name")',
+              parameters: [],
+            },
+            mysql: NOT_SUPPORTED,
+          })
+
+          await builder.execute()
+        })
+      }
 
       it('should create a unique index', async () => {
         const builder = ctx.db.schema

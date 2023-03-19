@@ -78,6 +78,7 @@ import { PartitionByItemNode } from './partition-by-item-node.js'
 import { SetOperationNode } from './set-operation-node.js'
 import { BinaryOperationNode } from './binary-operation-node.js'
 import { UnaryOperationNode } from './unary-operation-node.js'
+import { UsingNode } from './using-node.js'
 
 /**
  * Transforms an operation node tree into another one.
@@ -190,6 +191,7 @@ export class OperationNodeTransformer {
     SetOperationNode: this.transformSetOperation.bind(this),
     BinaryOperationNode: this.transformBinaryOperation.bind(this),
     UnaryOperationNode: this.transformUnaryOperation.bind(this),
+    UsingNode: this.transformUsing.bind(this),
   })
 
   transformNode<T extends OperationNode | undefined>(node: T): T {
@@ -223,7 +225,7 @@ export class OperationNodeTransformer {
       kind: 'SelectQueryNode',
       from: this.transformNode(node.from),
       selections: this.transformNodeList(node.selections),
-      distinctOnSelections: this.transformNodeList(node.distinctOnSelections),
+      distinctOn: this.transformNodeList(node.distinctOn),
       joins: this.transformNodeList(node.joins),
       groupBy: this.transformNode(node.groupBy),
       orderBy: this.transformNode(node.orderBy),
@@ -364,6 +366,7 @@ export class OperationNodeTransformer {
     return requireAllProps<DeleteQueryNode>({
       kind: 'DeleteQueryNode',
       from: this.transformNode(node.from),
+      using: this.transformNode(node.using),
       joins: this.transformNodeList(node.joins),
       where: this.transformNode(node.where),
       returning: this.transformNode(node.returning),
@@ -527,6 +530,7 @@ export class OperationNodeTransformer {
       expression: this.transformNode(node.expression),
       unique: node.unique,
       using: this.transformNode(node.using),
+      ifNotExists: node.ifNotExists,
     })
   }
 
@@ -823,8 +827,9 @@ export class OperationNodeTransformer {
   ): AggregateFunctionNode {
     return requireAllProps({
       kind: 'AggregateFunctionNode',
-      column: this.transformNode(node.column),
+      aggregated: this.transformNode(node.aggregated),
       distinct: node.distinct,
+      filter: this.transformNode(node.filter),
       func: node.func,
       over: this.transformNode(node.over),
     })
@@ -872,6 +877,13 @@ export class OperationNodeTransformer {
       kind: 'UnaryOperationNode',
       operator: this.transformNode(node.operator),
       operand: this.transformNode(node.operand),
+    })
+  }
+
+  protected transformUsing(node: UsingNode): UsingNode {
+    return requireAllProps<UsingNode>({
+      kind: 'UsingNode',
+      tables: this.transformNodeList(node.tables),
     })
   }
 

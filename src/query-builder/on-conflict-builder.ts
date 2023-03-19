@@ -16,10 +16,7 @@ import {
   parseExists,
   parseNotExists,
 } from '../parser/unary-operation-parser.js'
-import {
-  MutationObject,
-  parseUpdateObject,
-} from '../parser/update-set-parser.js'
+import { UpdateObject, parseUpdateObject } from '../parser/update-set-parser.js'
 import { freeze } from '../util/object-utils.js'
 import { preventAwait } from '../util/prevent-await.js'
 import { AnyColumn } from '../util/type-utils.js'
@@ -259,6 +256,15 @@ export class OnConflictBuilder<DB, TB extends keyof DB>
     })
   }
 
+  clearWhere(): OnConflictBuilder<DB, TB> {
+    return new OnConflictBuilder<DB, TB>({
+      ...this.#props,
+      onConflictNode: OnConflictNode.cloneWithoutIndexWhere(
+        this.#props.onConflictNode
+      ),
+    })
+  }
+
   /**
    * Adds the "do nothing" conflict action.
    *
@@ -316,7 +322,7 @@ export class OnConflictBuilder<DB, TB extends keyof DB>
    * ```
    */
   doUpdateSet(
-    updates: MutationObject<
+    updates: UpdateObject<
       OnConflictDatabase<DB, TB>,
       OnConflictTables<TB>,
       OnConflictTables<TB>
@@ -328,6 +334,14 @@ export class OnConflictBuilder<DB, TB extends keyof DB>
         updates: parseUpdateObject(updates),
       }),
     })
+  }
+
+  /**
+   * Simply calls the provided function passing `this` as the only argument. `$call` returns
+   * what the provided function returns.
+   */
+  $call<T>(func: (qb: this) => T): T {
+    return func(this)
   }
 }
 
@@ -522,6 +536,23 @@ export class OnConflictUpdateBuilder<DB, TB extends keyof DB>
         parseNotExists(arg)
       ),
     })
+  }
+
+  clearWhere(): OnConflictUpdateBuilder<DB, TB> {
+    return new OnConflictUpdateBuilder({
+      ...this.#props,
+      onConflictNode: OnConflictNode.cloneWithoutUpdateWhere(
+        this.#props.onConflictNode
+      ),
+    })
+  }
+
+  /**
+   * Simply calls the provided function passing `this` as the only argument. `$call` returns
+   * what the provided function returns.
+   */
+  $call<T>(func: (qb: this) => T): T {
+    return func(this)
   }
 
   toOperationNode(): OnConflictNode {

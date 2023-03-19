@@ -24,7 +24,7 @@ export class PostgresIntrospector implements DatabaseIntrospector {
     let rawSchemas = await this.#db
       .selectFrom('pg_catalog.pg_namespace')
       .select('nspname')
-      .castTo<RawSchemaMetadata>()
+      .$castTo<RawSchemaMetadata>()
       .execute()
 
     return rawSchemas.map((it) => ({ name: it.nspname }))
@@ -53,6 +53,7 @@ export class PostgresIntrospector implements DatabaseIntrospector {
         'a.attnotnull as not_null',
         'a.atthasdef as has_default',
         'c.relname as table',
+        'c.relkind as table_type',
         'ns.nspname as schema',
         'typ.typname as type',
         'dtns.nspname as type_schema',
@@ -69,7 +70,7 @@ export class PostgresIntrospector implements DatabaseIntrospector {
           .as('auto_incrementing'),
       ])
       // r == normal table
-      .where('c.relkind', '=', 'r')
+      .where('c.relkind', 'in', ['r', 'v'])
       .where('ns.nspname', '!~', '^pg_')
       .where('ns.nspname', '!=', 'information_schema')
       // No system columns
@@ -77,8 +78,8 @@ export class PostgresIntrospector implements DatabaseIntrospector {
       .where('a.attisdropped', '!=', true)
       .orderBy('ns.nspname')
       .orderBy('c.relname')
-      .orderBy('a.attname')
-      .castTo<RawColumnMetadata>()
+      .orderBy('a.attnum')
+      .$castTo<RawColumnMetadata>()
 
     if (!options.withInternalKyselyTables) {
       query = query
@@ -107,6 +108,7 @@ export class PostgresIntrospector implements DatabaseIntrospector {
       if (!table) {
         table = freeze({
           name: it.table,
+          isView: it.table_type === 'v',
           schema: it.schema,
           columns: [],
         })
@@ -137,6 +139,7 @@ interface RawSchemaMetadata {
 interface RawColumnMetadata {
   column: string
   table: string
+  table_type: string
   schema: string
   not_null: boolean
   has_default: boolean

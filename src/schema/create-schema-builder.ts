@@ -17,16 +17,21 @@ export class CreateSchemaBuilder implements OperationNodeSource, Compilable {
   ifNotExists(): CreateSchemaBuilder {
     return new CreateSchemaBuilder({
       ...this.#props,
-      createSchemaNode: CreateSchemaNode.cloneWith(
-        this.#props.createSchemaNode,
-        { ifNotExists: true }
-      ),
+      node: CreateSchemaNode.cloneWith(this.#props.node, { ifNotExists: true }),
     })
+  }
+
+  /**
+   * Simply calls the provided function passing `this` as the only argument. `$call` returns
+   * what the provided function returns.
+   */
+  $call<T>(func: (qb: this) => T): T {
+    return func(this)
   }
 
   toOperationNode(): CreateSchemaNode {
     return this.#props.executor.transformQuery(
-      this.#props.createSchemaNode,
+      this.#props.node,
       this.#props.queryId
     )
   }
@@ -51,5 +56,5 @@ preventAwait(
 export interface CreateSchemaBuilderProps {
   readonly queryId: QueryId
   readonly executor: QueryExecutor
-  readonly createSchemaNode: CreateSchemaNode
+  readonly node: CreateSchemaNode
 }

@@ -1,15 +1,18 @@
 import { freeze } from '../util/object-utils.js'
 import { OperationNode } from './operation-node.js'
 import { OverNode } from './over-node.js'
+import { SelectAllNode } from './select-all-node.js'
 import { SimpleReferenceExpressionNode } from './simple-reference-expression-node.js'
+import { WhereNode } from './where-node.js'
 
 type AggregateFunction = 'avg' | 'count' | 'max' | 'min' | 'sum'
 
 export interface AggregateFunctionNode extends OperationNode {
   readonly kind: 'AggregateFunctionNode'
   readonly func: AggregateFunction
-  readonly column: SimpleReferenceExpressionNode
+  readonly aggregated: SimpleReferenceExpressionNode | SelectAllNode
   readonly distinct?: boolean
+  readonly filter?: WhereNode
   readonly over?: OverNode
 }
 
@@ -23,12 +26,12 @@ export const AggregateFunctionNode = freeze({
 
   create(
     aggregateFunction: AggregateFunction,
-    column: SimpleReferenceExpressionNode
+    aggregated: SimpleReferenceExpressionNode | SelectAllNode
   ): AggregateFunctionNode {
     return freeze({
       kind: 'AggregateFunctionNode',
       func: aggregateFunction,
-      column,
+      aggregated,
     })
   },
 
@@ -38,6 +41,38 @@ export const AggregateFunctionNode = freeze({
     return freeze({
       ...aggregateFunctionNode,
       distinct: true,
+    })
+  },
+
+  cloneWithFilter(
+    aggregateFunctionNode: AggregateFunctionNode,
+    filter: OperationNode
+  ): AggregateFunctionNode {
+    return freeze({
+      ...aggregateFunctionNode,
+      filter: aggregateFunctionNode.filter
+        ? WhereNode.cloneWithOperation(
+            aggregateFunctionNode.filter,
+            'And',
+            filter
+          )
+        : WhereNode.create(filter),
+    })
+  },
+
+  cloneWithOrFilter(
+    aggregateFunctionNode: AggregateFunctionNode,
+    filter: OperationNode
+  ): AggregateFunctionNode {
+    return freeze({
+      ...aggregateFunctionNode,
+      filter: aggregateFunctionNode.filter
+        ? WhereNode.cloneWithOperation(
+            aggregateFunctionNode.filter,
+            'Or',
+            filter
+          )
+        : WhereNode.create(filter),
     })
   },
 

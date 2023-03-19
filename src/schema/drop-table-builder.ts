@@ -17,7 +17,7 @@ export class DropTableBuilder implements OperationNodeSource, Compilable {
   ifExists(): DropTableBuilder {
     return new DropTableBuilder({
       ...this.#props,
-      dropTableNode: DropTableNode.cloneWith(this.#props.dropTableNode, {
+      node: DropTableNode.cloneWith(this.#props.node, {
         ifExists: true,
       }),
     })
@@ -26,15 +26,23 @@ export class DropTableBuilder implements OperationNodeSource, Compilable {
   cascade(): DropTableBuilder {
     return new DropTableBuilder({
       ...this.#props,
-      dropTableNode: DropTableNode.cloneWith(this.#props.dropTableNode, {
+      node: DropTableNode.cloneWith(this.#props.node, {
         cascade: true,
       }),
     })
   }
 
+  /**
+   * Simply calls the provided function passing `this` as the only argument. `$call` returns
+   * what the provided function returns.
+   */
+  $call<T>(func: (qb: this) => T): T {
+    return func(this)
+  }
+
   toOperationNode(): DropTableNode {
     return this.#props.executor.transformQuery(
-      this.#props.dropTableNode,
+      this.#props.node,
       this.#props.queryId
     )
   }
@@ -59,5 +67,5 @@ preventAwait(
 export interface DropTableBuilderProps {
   readonly queryId: QueryId
   readonly executor: QueryExecutor
-  readonly dropTableNode: DropTableNode
+  readonly node: DropTableNode
 }

@@ -17,15 +17,23 @@ export class DropTypeBuilder implements OperationNodeSource, Compilable {
   ifExists(): DropTypeBuilder {
     return new DropTypeBuilder({
       ...this.#props,
-      dropTypeNode: DropTypeNode.cloneWith(this.#props.dropTypeNode, {
+      node: DropTypeNode.cloneWith(this.#props.node, {
         ifExists: true,
       }),
     })
   }
 
+  /**
+   * Simply calls the provided function passing `this` as the only argument. `$call` returns
+   * what the provided function returns.
+   */
+  $call<T>(func: (qb: this) => T): T {
+    return func(this)
+  }
+
   toOperationNode(): DropTypeNode {
     return this.#props.executor.transformQuery(
-      this.#props.dropTypeNode,
+      this.#props.node,
       this.#props.queryId
     )
   }
@@ -50,5 +58,5 @@ preventAwait(
 export interface DropTypeBuilderProps {
   readonly queryId: QueryId
   readonly executor: QueryExecutor
-  readonly dropTypeNode: DropTypeNode
+  readonly node: DropTypeNode
 }

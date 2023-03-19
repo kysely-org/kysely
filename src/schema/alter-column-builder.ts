@@ -3,7 +3,6 @@ import {
   ColumnDataType,
   DataTypeNode,
 } from '../operation-node/data-type-node.js'
-import { OperationNode } from '../operation-node/operation-node.js'
 import { OperationNodeSource } from '../operation-node/operation-node-source.js'
 import {
   DefaultValueExpression,
@@ -55,6 +54,14 @@ export class AlterColumnBuilder {
         dropNotNull: true,
       })
     )
+  }
+
+  /**
+   * Simply calls the provided function passing `this` as the only argument. `$call` returns
+   * what the provided function returns.
+   */
+  $call<T>(func: (qb: this) => T): T {
+    return func(this)
   }
 }
 

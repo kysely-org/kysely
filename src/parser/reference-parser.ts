@@ -22,6 +22,10 @@ import { OperationNode } from '../operation-node/operation-node.js'
 import { Expression } from '../expression/expression.js'
 import { SimpleReferenceExpressionNode } from '../operation-node/simple-reference-expression-node.js'
 
+export type StringReference<DB, TB extends keyof DB> =
+  | AnyColumn<DB, TB>
+  | AnyColumnWithTable<DB, TB>
+
 export type SimpleReferenceExpression<DB, TB extends keyof DB> =
   | StringReference<DB, TB>
   | DynamicReferenceBuilder<any>
@@ -33,10 +37,6 @@ export type ReferenceExpression<DB, TB extends keyof DB> =
 export type ReferenceExpressionOrList<DB, TB extends keyof DB> =
   | ReferenceExpression<DB, TB>
   | ReadonlyArray<ReferenceExpression<DB, TB>>
-
-export type StringReference<DB, TB extends keyof DB> =
-  | AnyColumn<DB, TB>
-  | AnyColumnWithTable<DB, TB>
 
 export type ExtractTypeFromReferenceExpression<
   DB,
@@ -88,7 +88,7 @@ export function parseSimpleReferenceExpression(
 
 export function parseReferenceExpressionOrList(
   arg: ReferenceExpressionOrList<any, any>
-): SimpleReferenceExpressionNode[] {
+): OperationNode[] {
   if (isReadonlyArray(arg)) {
     return arg.map((it) => parseReferenceExpression(it))
   } else {
@@ -98,7 +98,7 @@ export function parseReferenceExpressionOrList(
 
 export function parseReferenceExpression(
   exp: ReferenceExpression<any, any>
-): SimpleReferenceExpressionNode {
+): OperationNode {
   if (isExpressionOrFactory(exp)) {
     return parseExpression(exp)
   }

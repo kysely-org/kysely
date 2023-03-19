@@ -13,7 +13,7 @@ import {
 } from '../../../'
 
 import {
-  BUILT_IN_DIALECTS,
+  DIALECTS,
   clearDatabase,
   destroyTest,
   expect,
@@ -25,7 +25,7 @@ const CUSTOM_MIGRATION_SCHEMA = 'migrate'
 const CUSTOM_MIGRATION_TABLE = 'custom_migrations'
 const CUSTOM_MIGRATION_LOCK_TABLE = 'custom_migrations_lock'
 
-for (const dialect of BUILT_IN_DIALECTS) {
+for (const dialect of DIALECTS) {
   describe(`${dialect}: migration`, () => {
     let ctx: TestContext
 

@@ -22,7 +22,12 @@ import {
 } from '../parser/reference-parser.js'
 import { SelectQueryNode } from '../operation-node/select-query-node.js'
 import { QueryNode } from '../operation-node/query-node.js'
-import { MergePartial, Nullable, SingleResultType } from '../util/type-utils.js'
+import {
+  MergePartial,
+  Nullable,
+  Simplify,
+  SimplifySingleResult,
+} from '../util/type-utils.js'
 import {
   OrderByDirectionExpression,
   OrderByExpression,
@@ -42,7 +47,11 @@ import {
 } from '../parser/group-by-parser.js'
 import { KyselyPlugin } from '../plugin/kysely-plugin.js'
 import { WhereInterface } from './where-interface.js'
-import { NoResultError, NoResultErrorConstructor } from './no-result-error.js'
+import {
+  isNoResultErrorConstructor,
+  NoResultError,
+  NoResultErrorConstructor,
+} from './no-result-error.js'
 import { HavingInterface } from './having-interface.js'
 import { IdentifierNode } from '../operation-node/identifier-node.js'
 import { Explainable, ExplainFormat } from '../util/explainable.js'
@@ -63,6 +72,8 @@ import {
   parseExists,
   parseNotExists,
 } from '../parser/unary-operation-parser.js'
+import { KyselyTypeError } from '../util/type-error.js'
+import { Selectable } from '../util/column-type.js'
 
 export class SelectQueryBuilder<DB, TB extends keyof DB, O>
   implements
@@ -302,10 +313,10 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
   }
 
   /**
-   * Adds a select clause to the query.
+   * Adds a select statement to the query.
    *
    * When a column (or any expression) is selected, Kysely adds its type to the return
-   * type of the query. Kysely is smart enough to parse the column names and types even
+   * type of the query. Kysely is smart enough to parse the column names and types
    * from aliased columns, subqueries, raw expressions etc.
    *
    * Kysely only allows you to select columns and expressions that exist and would
@@ -315,12 +326,12 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    * to override the types.
    *
    * Select calls are additive. Calling `select('id').select('first_name')` is the
-   * same as calling `select(['id', 'first_name']).
+   * same as calling `select(['id', 'first_name'])`.
    *
    * To select all columns of the query or specific tables see the
    * {@link selectAll} method.
    *
-   * See the {@link if} method if you are looking for a way to add selections
+   * See the {@link $if} method if you are looking for a way to add selections
    * based on a runtime condition.
    *
    * ### Examples
@@ -328,7 +339,8 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    * Select a single column:
    *
    * ```ts
-   * const persons = await db.selectFrom('person')
+   * const persons = await db
+   *   .selectFrom('person')
    *   .select('id')
    *   .where('first_name', '=', 'Arnold')
    *   .execute()
@@ -345,7 +357,8 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    * Select a single column and specify a table:
    *
    * ```ts
-   * const persons = await db.selectFrom(['person', 'pet'])
+   * const persons = await db
+   *   .selectFrom(['person', 'pet'])
    *   .select('person.id')
    *   .execute()
    *
@@ -361,7 +374,8 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    * Select multiple columns:
    *
    * ```ts
-   * const persons = await db.selectFrom('person')
+   * const persons = await db
+   *   .selectFrom('person')
    *   .select(['person.id', 'first_name'])
    *   .execute()
    *
@@ -378,7 +392,8 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    * Aliased selections:
    *
    * ```ts
-   * const persons = await db.selectFrom('person')
+   * const persons = await db
+   *   .selectFrom('person')
    *   .select([
    *     'person.first_name as fn',
    *     'person.last_name as ln'
@@ -456,7 +471,8 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    * // You can use `keyof Person` if any column of an interface is allowed.
    * type PossibleColumns = 'last_name' | 'first_name' | 'birth_date'
    *
-   * const spersons = await db.selectFrom('person')
+   * const spersons = await db
+   *   .selectFrom('person')
    *   .select([
    *     ref<PossibleColumns>(columnFromUserInput)
    *     'id'
@@ -493,11 +509,7 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
   }
 
   /**
-   * Adds `distinct on` selections to the select clause.
-   *
-   * Takes the same inputs as the {@link SelectQueryBuilder.select | select} method.
-   * See the {@link SelectQueryBuilder.select | select} method's documentation for
-   * more examples.
+   * Adds `distinct on` expressions to the select clause.
    *
    * ### Examples
    *
@@ -530,7 +542,7 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
   distinctOn(selection: ReferenceExpressionOrList<DB, TB>): any {
     return new SelectQueryBuilder({
       ...this.#props,
-      queryNode: SelectQueryNode.cloneWithDistinctOnSelections(
+      queryNode: SelectQueryNode.cloneWithDistinctOn(
         this.#props.queryNode,
         parseReferenceExpressionOrList(selection)
       ),
@@ -757,7 +769,9 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
     table: ReadonlyArray<T>
   ): SelectAllQueryBuilder<DB, TB, O, T>
 
-  selectAll<T extends TB>(table: T): SelectAllQueryBuilder<DB, TB, O, T>
+  selectAll<T extends TB>(
+    table: T
+  ): SelectQueryBuilder<DB, TB, Selectable<DB[T]>>
 
   selectAll(): SelectAllQueryBuilder<DB, TB, O, TB>
 
@@ -856,7 +870,7 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    * ```ts
    * await db.selectFrom('person')
    *   .innerJoin(
-   *     qb.selectFrom('pet')
+   *     db.selectFrom('pet')
    *       .select(['owner_id', 'name'])
    *       .where('name', '=', 'Doggo')
    *       .as('doggos'),
@@ -990,6 +1004,7 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    *   )
    *   .select(['first_name', 'p.name'])
    *   .orderBy('first_name')
+   * ```
    */
   innerJoinLateral<
     TE extends TableExpression<DB, TB>,
@@ -1469,14 +1484,146 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
   }
 
   /**
-   * Simply calls the given function passing `this` as the only argument.
-   *
-   * If you want to conditionally call a method on `this`, see
-   * the {@link if} method.
+   * Gives an alias for the query. This method is only useful for sub queries.
    *
    * ### Examples
    *
-   * The next example uses a helper funtion `log` to log a query:
+   * ```ts
+   * const pets = await db.selectFrom('pet')
+   *   .selectAll('pet')
+   *   .select(
+   *     (qb) => qb.selectFrom('person')
+   *       .select('first_name')
+   *       .whereRef('pet.owner_id', '=', 'person.id')
+   *       .as('owner_first_name')
+   *   )
+   *   .execute()
+   *
+   * pets[0].owner_first_name
+   * ```
+   */
+  as<A extends string>(alias: A): AliasedSelectQueryBuilder<DB, TB, O, A> {
+    return new AliasedSelectQueryBuilder(this, alias)
+  }
+
+  /**
+   * Clears all select clauses from the query.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * db.selectFrom('person')
+   *   .select(['id', 'first_name'])
+   *   .clearSelect()
+   *   .select(['id','gender'])
+   * ```
+   *
+   * The generated SQL(PostgreSQL):
+   *
+   * ```sql
+   * select "id", "gender" from "person"
+   * ```
+   */
+  clearSelect(): SelectQueryBuilder<DB, TB, {}> {
+    return new SelectQueryBuilder<DB, TB, {}>({
+      ...this.#props,
+      queryNode: SelectQueryNode.cloneWithoutSelections(this.#props.queryNode),
+    })
+  }
+
+  clearWhere(): SelectQueryBuilder<DB, TB, O> {
+    return new SelectQueryBuilder<DB, TB, O>({
+      ...this.#props,
+      queryNode: QueryNode.cloneWithoutWhere(this.#props.queryNode),
+    })
+  }
+
+  /**
+   * Clears limit clause from the query.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * db.selectFrom('person')
+   *   .selectAll()
+   *   .limit(10)
+   *   .clearLimit()
+   * ```
+   *
+   * The generated SQL(PostgreSQL):
+   *
+   * ```sql
+   * select * from "person"
+   * ```
+   */
+  clearLimit(): SelectQueryBuilder<DB, TB, O> {
+    return new SelectQueryBuilder<DB, TB, O>({
+      ...this.#props,
+      queryNode: SelectQueryNode.cloneWithoutLimit(this.#props.queryNode),
+    })
+  }
+
+  /**
+   * Clears offset clause from the query.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * db.selectFrom('person')
+   *   .selectAll()
+   *   .limit(10)
+   *   .offset(20)
+   *   .clearOffset()
+   * ```
+   *
+   * The generated SQL(PostgreSQL):
+   *
+   * ```sql
+   * select * from "person" limit 10
+   * ```
+   */
+  clearOffset(): SelectQueryBuilder<DB, TB, O> {
+    return new SelectQueryBuilder<DB, TB, O>({
+      ...this.#props,
+      queryNode: SelectQueryNode.cloneWithoutOffset(this.#props.queryNode),
+    })
+  }
+
+  /**
+   * Clears all `order by` clauses from the query.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * db.selectFrom('person')
+   *   .selectAll()
+   *   .orderBy('id')
+   *   .clearOrderBy()
+   * ```
+   *
+   * The generated SQL(PostgreSQL):
+   *
+   * ```sql
+   * select * from "person"
+   * ```
+   */
+  clearOrderBy(): SelectQueryBuilder<DB, TB, O> {
+    return new SelectQueryBuilder<DB, TB, O>({
+      ...this.#props,
+      queryNode: SelectQueryNode.cloneWithoutOrderBy(this.#props.queryNode),
+    })
+  }
+
+  /**
+   * Simply calls the provided function passing `this` as the only argument. `$call` returns
+   * what the provided function returns.
+   *
+   * If you want to conditionally call a method on `this`, see
+   * the {@link $if} method.
+   *
+   * ### Examples
+   *
+   * The next example uses a helper function `log` to log a query:
    *
    * ```ts
    * function log<T extends Compilable>(qb: T): T {
@@ -1486,21 +1633,45 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    *
    * db.selectFrom('person')
    *   .selectAll()
-   *   .call(log)
+   *   .$call(log)
    *   .execute()
    * ```
    */
-  call<T>(func: (qb: this) => T): T {
+  $call<T>(func: (qb: this) => T): T {
     return func(this)
+  }
+
+  /**
+   * @deprecated Use `$call` instead
+   */
+  call<T>(func: (qb: this) => T): T {
+    return this.$call(func)
   }
 
   /**
    * Call `func(this)` if `condition` is true.
    *
-   * This method is especially handy with optional selects. Any `select` or `selectAll`
-   * method calls add columns as optional fields to the output type when called inside
-   * the `func` callback. This is because we can't know if those selections were actually
-   * made before running the code.
+   * NOTE: This method has an impact on typescript performance and it should only be used
+   * when necessary. Remember that you can call most methods like `where` conditionally
+   * like this:
+   *
+   * ```ts
+   * let query = db.selectFrom('person').selectAll()
+   *
+   * if (firstName) {
+   *   query = query.where('first_name', '=', firstName)
+   * }
+   *
+   * if (lastName) {
+   *   query = query.where('last_name', '=', lastName)
+   * }
+   *
+   * const result = await query.execute()
+   * ```
+   *
+   * This method is mainly useful with optional selects. Any `select` or `selectAll`
+   * method called inside the callback add optional fields to the result type. This is
+   * because we can't know if those selections were actually made before running the code.
    *
    * Also see [this recipe](https://github.com/koskimas/kysely/tree/master/recipes/conditional-selects.md)
    *
@@ -1511,7 +1682,7 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    *   return await db
    *     .selectFrom('person')
    *     .select(['id', 'first_name'])
-   *     .if(withLastName, (qb) => qb.select('last_name'))
+   *     .$if(withLastName, (qb) => qb.select('last_name'))
    *     .where('id', '=', id)
    *     .executeTakeFirstOrThrow()
    * }
@@ -1536,15 +1707,15 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    *
    * db.selectFrom('person')
    *   .select('person.id')
-   *   .if(filterByFirstName, (qb) => qb.where('first_name', '=', firstName))
-   *   .if(filterByPetCount, (qb) => qb
+   *   .$if(filterByFirstName, (qb) => qb.where('first_name', '=', firstName))
+   *   .$if(filterByPetCount, (qb) => qb
    *     .innerJoin('pet', 'pet.owner_id', 'person.id')
    *     .having(count('pet.id'), '>', petCountLimit)
    *     .groupBy('person.id')
    *   )
    * ```
    */
-  if<O2 extends O>(
+  $if<O2 extends O>(
     condition: boolean,
     func: (qb: this) => SelectQueryBuilder<DB, TB, O2>
   ): SelectQueryBuilder<DB, TB, MergePartial<O, O2>> {
@@ -1558,26 +1729,13 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
   }
 
   /**
-   * Gives an alias for the query. This method is only useful for sub queries.
-   *
-   * ### Examples
-   *
-   * ```ts
-   * const pets = await db.selectFrom('pet')
-   *   .selectAll('pet')
-   *   .select(
-   *     (qb) => qb.selectFrom('person')
-   *       .select('first_name')
-   *       .whereRef('pet.owner_id', '=', 'person.id')
-   *       .as('owner_first_name')
-   *   )
-   *   .execute()
-   *
-   * pets[0].owner_first_name
-   * ```
+   * @deprecated Use `$if` instead
    */
-  as<A extends string>(alias: A): AliasedSelectQueryBuilder<DB, TB, O, A> {
-    return new AliasedSelectQueryBuilder(this, alias)
+  if<O2 extends O>(
+    condition: boolean,
+    func: (qb: this) => SelectQueryBuilder<DB, TB, O2>
+  ): SelectQueryBuilder<DB, TB, MergePartial<O, O2>> {
+    return this.$if(condition, func)
   }
 
   /**
@@ -1586,8 +1744,69 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    * You should only use this method as the last resort if the types
    * don't support your use case.
    */
-  castTo<T>(): SelectQueryBuilder<DB, TB, T> {
+  $castTo<T>(): SelectQueryBuilder<DB, TB, T> {
     return new SelectQueryBuilder(this.#props)
+  }
+
+  /**
+   * @deprecated Use `$castTo` instead.
+   */
+  castTo<T>(): SelectQueryBuilder<DB, TB, T> {
+    return this.$castTo<T>()
+  }
+
+  /**
+   * Asserts that query's output row type equals the given type `T`.
+   *
+   * This method can be used to simplify excessively complex types to make typescript happy
+   * and much faster.
+   *
+   * Kysely uses complex type magic to achieve its type safety. This complexity is sometimes too much
+   * for typescript and you get errors like this:
+   *
+   * ```
+   * error TS2589: Type instantiation is excessively deep and possibly infinite.
+   * ```
+   *
+   * In these case you can often use this method to help typescript a little bit. When you use this
+   * method to assert the output type of a query, Kysely can drop the complex output type that
+   * consists of multiple nested helper types and replace it with the simple asserted type.
+   *
+   * Using this method doesn't reduce type safety at all. You have to pass in a type that is
+   * structurally equal to the current type.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * const result = await db
+   *   .with('first_and_last', (qb) => qb
+   *     .selectFrom('person')
+   *     .select(['first_name', 'last_name'])
+   *     .$assertType<{ first_name: string, last_name: string }>()
+   *   )
+   *   .with('age', (qb) => qb
+   *     .selectFrom('person')
+   *     .select('age')
+   *     .$assertType<{ age: number }>()
+   *   )
+   *   .selectFrom(['first_and_last', 'age'])
+   *   .selectAll()
+   *   .executeTakeFirstOrThrow()
+   * ```
+   */
+  $assertType<T extends O>(): O extends T
+    ? SelectQueryBuilder<DB, TB, T>
+    : KyselyTypeError<`$assertType() call failed: The type passed in is not equal to the output type of the query.`> {
+    return new SelectQueryBuilder(this.#props) as unknown as any
+  }
+
+  /**
+   * @deprecated Use `$assertType` instead.
+   */
+  assertType<T extends O>(): O extends T
+    ? SelectQueryBuilder<DB, TB, T>
+    : KyselyTypeError<`assertType() call failed: The type passed in is not equal to the output type of the query.`> {
+    return new SelectQueryBuilder(this.#props) as unknown as any
   }
 
   /**
@@ -1607,7 +1826,7 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
     )
   }
 
-  compile(): CompiledQuery<O> {
+  compile(): CompiledQuery<Simplify<O>> {
     return this.#props.executor.compileQuery(
       this.toOperationNode(),
       this.#props.queryId
@@ -1619,7 +1838,7 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    *
    * Also see the {@link executeTakeFirst} and {@link executeTakeFirstOrThrow} methods.
    */
-  async execute(): Promise<O[]> {
+  async execute(): Promise<Simplify<O>[]> {
     const compiledQuery = this.compile()
 
     const result = await this.#props.executor.executeQuery<O>(
@@ -1634,9 +1853,9 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    * Executes the query and returns the first result or undefined if
    * the query returned no result.
    */
-  async executeTakeFirst(): Promise<SingleResultType<O>> {
+  async executeTakeFirst(): Promise<SimplifySingleResult<O>> {
     const [result] = await this.execute()
-    return result as SingleResultType<O>
+    return result as SimplifySingleResult<O>
   }
 
   /**
@@ -1644,16 +1863,22 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    * the query returned no result.
    *
    * By default an instance of {@link NoResultError} is thrown, but you can
-   * provide a custom error class as the only argument to throw a different
+   * provide a custom error class, or callback to throw a different
    * error.
    */
   async executeTakeFirstOrThrow(
-    errorConstructor: NoResultErrorConstructor = NoResultError
-  ): Promise<O> {
+    errorConstructor:
+      | NoResultErrorConstructor
+      | ((node: QueryNode) => Error) = NoResultError
+  ): Promise<Simplify<O>> {
     const result = await this.executeTakeFirst()
 
     if (result === undefined) {
-      throw new errorConstructor(this.toOperationNode())
+      const error = isNoResultErrorConstructor(errorConstructor)
+        ? new errorConstructor(this.toOperationNode())
+        : errorConstructor(this.toOperationNode())
+
+      throw error
     }
 
     return result as O

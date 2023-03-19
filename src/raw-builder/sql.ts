@@ -353,7 +353,10 @@ export interface Sql {
    * BEFORE $1::varchar, (1 == 1)::varchar, (select * from "person")::varchar, false::varchar, "first_name" AFTER
    * ```
    */
-  join(array: readonly unknown[], separator?: RawBuilder<any>): RawBuilder<unknown>
+  join(
+    array: readonly unknown[],
+    separator?: RawBuilder<any>
+  ): RawBuilder<unknown>
 }
 
 export const sql: Sql = Object.assign(

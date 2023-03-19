@@ -20,6 +20,10 @@ import { preventAwait } from './util/prevent-await.js'
 import { FunctionModule } from './query-builder/function-module.js'
 import { Log, LogConfig } from './util/log.js'
 import { QueryExecutorProvider } from './query-executor/query-executor-provider.js'
+import { QueryResult } from './driver/database-connection.js'
+import { CompiledQuery } from './query-compiler/compiled-query.js'
+import { createQueryId, QueryId } from './util/query-id.js'
+import { Compilable, isCompilable } from './util/compilable.js'
 
 /**
  * The main Kysely class.
@@ -319,6 +323,20 @@ export class Kysely<DB>
    */
   getExecutor(): QueryExecutor {
     return this.#props.executor
+  }
+
+  /**
+   * Executes a given compiled query or query builder.
+   *
+   * See {@link https://github.com/koskimas/kysely/blob/master/recipes/splitting-build-compile-and-execute-code.md#execute-compiled-queries splitting build, compile and execute code recipe} for more information.
+   */
+  executeQuery<R>(
+    query: CompiledQuery<R> | Compilable<R>,
+    queryId: QueryId = createQueryId()
+  ): Promise<QueryResult<R>> {
+    const compiledQuery = isCompilable(query) ? query.compile() : query
+
+    return this.getExecutor().executeQuery(compiledQuery, queryId)
   }
 }
 

@@ -45,7 +45,6 @@ import { WhereNode } from '../operation-node/where-node.js'
 import { CommonTableExpressionNode } from '../operation-node/common-table-expression-node.js'
 import { WithNode } from '../operation-node/with-node.js'
 import {
-  getLast,
   freeze,
   isString,
   isNumber,
@@ -94,7 +93,7 @@ import { SetOperationNode } from '../operation-node/set-operation-node.js'
 import { QueryId } from '../util/query-id.js'
 import { BinaryOperationNode } from '../operation-node/binary-operation-node.js'
 import { UnaryOperationNode } from '../operation-node/unary-operation-node.js'
-import { SimpleReferenceExpressionNode } from '../operation-node/simple-reference-expression-node.js'
+import { UsingNode } from '../operation-node/using-node.js'
 
 export class DefaultQueryCompiler
   extends OperationNodeVisitor
@@ -148,8 +147,8 @@ export class DefaultQueryCompiler
 
     this.append('select ')
 
-    if (node.distinctOnSelections) {
-      this.compileDistinctOn(node.distinctOnSelections)
+    if (node.distinctOn) {
+      this.compileDistinctOn(node.distinctOn)
       this.append(' ')
     }
 
@@ -228,11 +227,9 @@ export class DefaultQueryCompiler
     this.visitNode(node.column)
   }
 
-  protected compileDistinctOn(
-    selections: ReadonlyArray<SimpleReferenceExpressionNode>
-  ): void {
+  protected compileDistinctOn(expressions: ReadonlyArray<OperationNode>): void {
     this.append('distinct on (')
-    this.compileList(selections)
+    this.compileList(expressions)
     this.append(')')
   }
 
@@ -342,6 +339,11 @@ export class DefaultQueryCompiler
 
     this.append('delete ')
     this.visitNode(node.from)
+
+    if (node.using) {
+      this.append(' ')
+      this.visitNode(node.using)
+    }
 
     if (node.joins) {
       this.append(' ')
@@ -774,6 +776,11 @@ export class DefaultQueryCompiler
     }
 
     this.append('index ')
+
+    if (node.ifNotExists) {
+      this.append('if not exists ')
+    }
+
     this.visitNode(node.name)
 
     if (node.table) {
@@ -1202,8 +1209,14 @@ export class DefaultQueryCompiler
       this.append('distinct ')
     }
 
-    this.visitNode(node.column)
+    this.visitNode(node.aggregated)
     this.append(')')
+
+    if (node.filter) {
+      this.append(' filter(')
+      this.visitNode(node.filter)
+      this.append(')')
+    }
 
     if (node.over) {
       this.append(' ')
@@ -1250,6 +1263,11 @@ export class DefaultQueryCompiler
     this.visitNode(node.operator)
     this.append(' ')
     this.visitNode(node.operand)
+  }
+
+  protected override visitUsing(node: UsingNode): void {
+    this.append('using ')
+    this.compileList(node.tables)
   }
 
   protected append(str: string): void {

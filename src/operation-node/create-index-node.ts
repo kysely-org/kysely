@@ -19,6 +19,7 @@ export interface CreateIndexNode extends OperationNode {
   // TODO(samiko): Do we need to add an `IndexTypeNode` for consistency?
   //               This would then be of type `IndexTypeNode | RawNode`.
   readonly using?: RawNode
+  readonly ifNotExists?: boolean
 }
 
 /**

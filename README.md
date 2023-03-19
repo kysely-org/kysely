@@ -37,6 +37,7 @@ You can find a more thorough introduction [here](https://www.jakso.me/blog/kysel
 - [Installation](#installation)
     - [3rd party dialects](#3rd-party-dialects)
 - [Minimal example](#minimal-example)
+- [Playground](#playground)
 - [Generating types](#generating-types)
 - [Query examples](#query-examples)
   - [Select queries](#select-queries)
@@ -77,6 +78,8 @@ for [3rd party dialects](https://koskimas.github.io/kysely/interfaces/Dialect.ht
  - [SingleStore Data API](https://github.com/igalklebanov/kysely-singlestore)
  - [D1](https://github.com/aidenwallis/kysely-d1)
  - [SurrealDB](https://github.com/igalklebanov/kysely-surrealdb)
+ - [sqld](https://github.com/libsql/kysely-libsql)
+ - [Neon](https://github.com/seveibar/kysely-neon)
 
 # Minimal example
 
@@ -180,10 +183,27 @@ type InsertablePerson = Insertable<PersonTable>
 type UpdateablePerson = Updateable<PersonTable>
 ```
 
+# Playground
+
+[@wirekang](https://github.com/wirekang) has created a [playground for Kysely](https://wirekang.github.io/kysely-playground/?p=f&i=-NLp3n_P5fyeQKMQda8n). You can use to quickly test stuff out and for creating code examples for your issues, PRs and discord messages.
+
 # Generating types
 
-If you want to generate the table types automatically from the database schema please
-check out [this awesome project](https://github.com/RobinBlomberg/kysely-codegen).
+To work with Kysely, you're required to provide a database schema type definition to the Kysely constructor.
+
+In many cases, defining your database schema definitions manually is good enough.
+
+However, when building production applications, its best to stay aligned with the 
+database schema, by automatically generating the database schema type definitions.
+
+There are several ways to do this using 3rd party libraries:
+
+- [kysely-codegen](https://github.com/RobinBlomberg/kysely-codegen) - This library 
+generates Kysely database schema type definitions by connecting to and introspecting 
+your database. This library works with all built-in dialects.
+
+- [prisma-kysely](https://github.com/valtyr/prisma-kysely) - This library generates 
+Kysely database schema type definitions from your existing Prisma schemas.
 
 # Query examples
 
@@ -202,37 +222,34 @@ among other places.
 import { Pool } from 'pg'
 // or `import * as Cursor from 'pg-cursor'` depending on your tsconfig
 import Cursor from 'pg-cursor'
-import {
-    Kysely,
-    PostgresDialect,
-} from 'kysely'
+import { Kysely, PostgresDialect } from 'kysely'
 
 const db = new Kysely<Database>({
-    // PostgresDialect requires the Cursor dependency
-    dialect: new PostgresDialect({
-        pool: new Pool({
-            host: 'localhost',
-            database: 'kysely_test'
-        }),
-        cursor: Cursor
+  // PostgresDialect requires the Cursor dependency
+  dialect: new PostgresDialect({
+    pool: new Pool({
+      host: 'localhost',
+      database: 'kysely_test'
     }),
-
-    // MysqlDialect doesn't require any special configuration
+    cursor: Cursor
+  }),
+  // MysqlDialect doesn't require any special configuration
 })
 
 async function demo() {
-    for await (const male of db.selectFrom("person")
-        .selectAll()
-        .where("person.gender", "=", "male")
-        .stream()) {
-        console.log(`Hello mr. ${male.first_name}!`)
+  for await (const adult of db.selectFrom('person')
+    .selectAll()
+    .where('age', '>', 18)
+    .stream()
+  ) {
+    console.log(`Hello ${adult.first_name}!`)
 
-        if (male.first_name === "John") {
-          // After this line the db connection is released and no more 
-          // rows are streamed from the database to the client
-          break;
-        }
+    if (adult.first_name === 'John') {
+      // After this line the db connection is released and no more
+      // rows are streamed from the database to the client
+      break;
     }
+  }
 }
 ```
 
@@ -259,10 +276,13 @@ The [recipes](https://github.com/koskimas/kysely/tree/master/recipes) folder con
 or "recipes" for common use cases.
 
 * [Conditional selects](https://github.com/koskimas/kysely/tree/master/recipes/conditional-selects.md)
+* [Dealing with the `Type instantiation is excessively deep and possibly infinite` error](https://github.com/koskimas/kysely/tree/master/recipes/excessively-deep-types.md)
 * [Deduplicate joins](https://github.com/koskimas/kysely/tree/master/recipes/deduplicate-joins.md)
 * [Extending kysely](https://github.com/koskimas/kysely/tree/master/recipes/extending-kysely.md)
+* [Introspecting relation metadata](https://github.com/koskimas/kysely/tree/master/recipes/introspecting-relation-metadata.md)
 * [Raw SQL](https://github.com/koskimas/kysely/tree/master/recipes/raw-sql.md)
 * [Schemas](https://github.com/koskimas/kysely/tree/master/recipes/schemas.md)
+* [Splitting build, compile and execute code](https://github.com/koskimas/kysely/tree/master/recipes/splitting-build-compile-and-execute-code.md)
 
 # Migrations
 

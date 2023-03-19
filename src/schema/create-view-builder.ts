@@ -26,7 +26,7 @@ export class CreateViewBuilder implements OperationNodeSource, Compilable {
   temporary(): CreateViewBuilder {
     return new CreateViewBuilder({
       ...this.#props,
-      createViewNode: CreateViewNode.cloneWith(this.#props.createViewNode, {
+      node: CreateViewNode.cloneWith(this.#props.node, {
         temporary: true,
       }),
     })
@@ -35,7 +35,7 @@ export class CreateViewBuilder implements OperationNodeSource, Compilable {
   materialized(): CreateViewBuilder {
     return new CreateViewBuilder({
       ...this.#props,
-      createViewNode: CreateViewNode.cloneWith(this.#props.createViewNode, {
+      node: CreateViewNode.cloneWith(this.#props.node, {
         materialized: true,
       }),
     })
@@ -47,7 +47,7 @@ export class CreateViewBuilder implements OperationNodeSource, Compilable {
   ifNotExists(): CreateViewBuilder {
     return new CreateViewBuilder({
       ...this.#props,
-      createViewNode: CreateViewNode.cloneWith(this.#props.createViewNode, {
+      node: CreateViewNode.cloneWith(this.#props.node, {
         ifNotExists: true,
       }),
     })
@@ -56,7 +56,7 @@ export class CreateViewBuilder implements OperationNodeSource, Compilable {
   orReplace(): CreateViewBuilder {
     return new CreateViewBuilder({
       ...this.#props,
-      createViewNode: CreateViewNode.cloneWith(this.#props.createViewNode, {
+      node: CreateViewNode.cloneWith(this.#props.node, {
         orReplace: true,
       }),
     })
@@ -65,7 +65,7 @@ export class CreateViewBuilder implements OperationNodeSource, Compilable {
   columns(columns: string[]): CreateViewBuilder {
     return new CreateViewBuilder({
       ...this.#props,
-      createViewNode: CreateViewNode.cloneWith(this.#props.createViewNode, {
+      node: CreateViewNode.cloneWith(this.#props.node, {
         columns: columns.map(parseColumnName),
       }),
     })
@@ -87,15 +87,23 @@ export class CreateViewBuilder implements OperationNodeSource, Compilable {
 
     return new CreateViewBuilder({
       ...this.#props,
-      createViewNode: CreateViewNode.cloneWith(this.#props.createViewNode, {
+      node: CreateViewNode.cloneWith(this.#props.node, {
         as: queryNode,
       }),
     })
   }
 
+  /**
+   * Simply calls the provided function passing `this` as the only argument. `$call` returns
+   * what the provided function returns.
+   */
+  $call<T>(func: (qb: this) => T): T {
+    return func(this)
+  }
+
   toOperationNode(): CreateViewNode {
     return this.#props.executor.transformQuery(
-      this.#props.createViewNode,
+      this.#props.node,
       this.#props.queryId
     )
   }
@@ -120,5 +128,5 @@ preventAwait(
 export interface CreateViewBuilderProps {
   readonly queryId: QueryId
   readonly executor: QueryExecutor
-  readonly createViewNode: CreateViewNode
+  readonly node: CreateViewNode
 }

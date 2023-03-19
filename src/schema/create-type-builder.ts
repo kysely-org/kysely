@@ -16,7 +16,7 @@ export class CreateTypeBuilder implements OperationNodeSource, Compilable {
 
   toOperationNode(): CreateTypeNode {
     return this.#props.executor.transformQuery(
-      this.#props.createTypeNode,
+      this.#props.node,
       this.#props.queryId
     )
   }
@@ -33,11 +33,16 @@ export class CreateTypeBuilder implements OperationNodeSource, Compilable {
   asEnum(values: string[]): CreateTypeBuilder {
     return new CreateTypeBuilder({
       ...this.#props,
-      createTypeNode: CreateTypeNode.cloneWithEnum(
-        this.#props.createTypeNode,
-        values
-      ),
+      node: CreateTypeNode.cloneWithEnum(this.#props.node, values),
     })
+  }
+
+  /**
+   * Simply calls the provided function passing `this` as the only argument. `$call` returns
+   * what the provided function returns.
+   */
+  $call<T>(func: (qb: this) => T): T {
+    return func(this)
   }
 
   compile(): CompiledQuery {
@@ -60,5 +65,5 @@ preventAwait(
 export interface CreateTypeBuilderProps {
   readonly queryId: QueryId
   readonly executor: QueryExecutor
-  readonly createTypeNode: CreateTypeNode
+  readonly node: CreateTypeNode
 }

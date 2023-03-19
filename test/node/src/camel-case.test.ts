@@ -1,7 +1,7 @@
-import { CamelCasePlugin, Generated, Kysely, sql } from '../../../'
+import { CamelCasePlugin, Generated, Kysely, RawBuilder, sql } from '../../../'
 
 import {
-  BUILT_IN_DIALECTS,
+  DIALECTS,
   destroyTest,
   initTest,
   TestContext,
@@ -10,7 +10,7 @@ import {
   createTableWithId,
 } from './test-setup.js'
 
-for (const dialect of BUILT_IN_DIALECTS) {
+for (const dialect of DIALECTS) {
   describe(`${dialect}: camel case test`, () => {
     let ctx: TestContext
     let camelDb: Kysely<CamelDatabase>
@@ -19,6 +19,9 @@ for (const dialect of BUILT_IN_DIALECTS) {
       id: Generated<number>
       firstName: string
       lastName: string
+      preferences: {
+        disable_emails: boolean
+      }
     }
 
     interface CamelDatabase {
@@ -37,6 +40,7 @@ for (const dialect of BUILT_IN_DIALECTS) {
       await createTableWithId(camelDb.schema, dialect, 'camelPerson')
         .addColumn('firstName', 'varchar(255)')
         .addColumn('lastName', 'varchar(255)')
+        .addColumn('preferences', 'json')
         .execute()
     })
 
@@ -47,10 +51,12 @@ for (const dialect of BUILT_IN_DIALECTS) {
           {
             firstName: 'Jennifer',
             lastName: 'Aniston',
+            preferences: json({ disable_emails: true }),
           },
           {
             firstName: 'Arnold',
             lastName: 'Schwarzenegger',
+            preferences: json({ disable_emails: true }),
           },
         ])
         .execute()
@@ -180,5 +186,71 @@ for (const dialect of BUILT_IN_DIALECTS) {
         ])
       })
     })
+
+    it('should convert alter table query between camelCase and snake_case', async () => {
+      const query = camelDb.schema
+        .alterTable('camelPerson')
+        .addColumn('middleName', 'text', (col) =>
+          col.references('camelPerson.firstName')
+        )
+
+      testSql(query, dialect, {
+        postgres: {
+          sql: 'alter table "camel_person" add column "middle_name" text references "camel_person" ("first_name")',
+          parameters: [],
+        },
+        mysql: {
+          sql: 'alter table `camel_person` add column `middle_name` text references `camel_person` (`first_name`)',
+          parameters: [],
+        },
+        sqlite: {
+          sql: 'alter table "camel_person" add column "middle_name" text references "camel_person" ("first_name")',
+          parameters: [],
+        },
+      })
+    })
+
+    it('should convert delete from table using query between camelCase and snake_case', async () => {
+      const query = camelDb
+        .deleteFrom('camelPerson as c')
+        .using('camelPerson')
+        .where('camelPerson.firstName', '=', 'Arnold')
+
+      testSql(query, dialect, {
+        postgres: {
+          sql: `delete from "camel_person" as "c" using "camel_person" where "camel_person"."first_name" = $1`,
+          parameters: ['Arnold'],
+        },
+        mysql: {
+          sql: 'delete from `camel_person` as `c` using `camel_person` where `camel_person`.`first_name` = ?',
+          parameters: ['Arnold'],
+        },
+        sqlite: {
+          sql: `delete from "camel_person" as "c" using "camel_person" where "camel_person"."first_name" = ?`,
+          parameters: ['Arnold'],
+        },
+      })
+    })
+
+    it('should respect maintainNestedObjectKeys', async () => {
+      const data = await camelDb
+        .withoutPlugins()
+        .withPlugin(new CamelCasePlugin({ maintainNestedObjectKeys: true }))
+        .selectFrom('camelPerson')
+        .selectAll()
+        .executeTakeFirstOrThrow()
+
+      if (dialect === 'sqlite') {
+        data.preferences = JSON.parse(data.preferences.toString())
+      }
+
+      expect(data.preferences).to.eql({
+        disable_emails: true,
+      })
+    })
   })
+}
+
+function json<T>(obj: T): RawBuilder<T> {
+  return sql`${JSON.stringify(obj)}`
 }

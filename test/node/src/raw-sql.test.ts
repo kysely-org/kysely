@@ -1,7 +1,7 @@
 import { sql } from '../../../'
 
 import {
-  BUILT_IN_DIALECTS,
+  DIALECTS,
   clearDatabase,
   destroyTest,
   initTest,
@@ -9,9 +9,10 @@ import {
   insertDefaultDataSet,
   testSql,
   NOT_SUPPORTED,
+  expect,
 } from './test-setup.js'
 
-for (const dialect of BUILT_IN_DIALECTS) {
+for (const dialect of DIALECTS) {
   describe(`${dialect}: raw sql`, () => {
     let ctx: TestContext
 
@@ -268,5 +269,29 @@ for (const dialect of BUILT_IN_DIALECTS) {
         await query.execute()
       })
     }
+
+    it('raw sql kitchen sink', async () => {
+      const result = await sql`insert into ${sql.table('toy')} (${sql.join([
+        sql.ref('name'),
+        sql.ref('pet_id'),
+        sql.ref('price'),
+      ])}) select ${sql.join([
+        sql.literal('Wheel').as('name'),
+        sql.ref('id'),
+        sql.literal(9.99).as('price'),
+      ])} from ${sql.table('pet')} where ${sql.ref(
+        'name'
+      )} = ${'Hammo'}`.execute(ctx.db)
+
+      const wheel = await ctx.db
+        .selectFrom('toy')
+        .where('name', '=', 'Wheel')
+        .selectAll()
+        .executeTakeFirstOrThrow()
+
+      expect(wheel.name).to.equal('Wheel')
+      expect(wheel.pet_id).to.be.a('number')
+      expect(wheel.price).to.equal(9.99)
+    })
   })
 }

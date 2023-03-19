@@ -33,6 +33,7 @@ import { freeze } from '../../util/object-utils.js'
  * new SqliteDialect({
  *   database: async () => new Database('db.sqlite')
  * })
+ * ```
  */
 export class SqliteDialect implements Dialect {
   readonly #config: SqliteDialectConfig

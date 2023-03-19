@@ -13,3 +13,9 @@ export class NoResultError extends Error {
     this.node = node
   }
 }
+
+export function isNoResultErrorConstructor(
+  fn: NoResultErrorConstructor | ((node: QueryNode) => Error)
+): fn is NoResultErrorConstructor {
+  return Object.prototype.hasOwnProperty.call(fn, 'prototype')
+}

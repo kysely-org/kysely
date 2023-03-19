@@ -7,6 +7,12 @@ export interface Pet {
   species: 'dog' | 'cat'
 }
 
+export interface Toy {
+  id: Generated<string>
+  price: number
+  pet_id: string
+}
+
 export interface Movie {
   id: Generated<string>
   stars: number
@@ -23,6 +29,7 @@ export interface Database {
   movie: Movie
   'some_schema.movie': Movie
   book: Book
+  toy: Toy
 }
 
 export interface Person {

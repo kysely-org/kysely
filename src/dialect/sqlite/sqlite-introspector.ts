@@ -29,11 +29,11 @@ export class SqliteIntrospector implements DatabaseIntrospector {
   ): Promise<TableMetadata[]> {
     let query = this.#db
       .selectFrom('sqlite_schema')
-      .where('type', '=', 'table')
+      .where('type', 'in', ['table', 'view'])
       .where('name', 'not like', 'sqlite_%')
       .select('name')
       .orderBy('name')
-      .castTo<{ name: string }>()
+      .$castTo<{ name: string }>()
 
     if (!options.withInternalKyselyTables) {
       query = query
@@ -57,15 +57,15 @@ export class SqliteIntrospector implements DatabaseIntrospector {
     const db = this.#db
 
     // Get the SQL that was used to create the table.
-    const createSql = await db
+    const tableDefinition = await db
       .selectFrom('sqlite_master')
       .where('name', '=', table)
-      .select('sql')
-      .castTo<{ sql: string | undefined }>()
-      .execute()
+      .select(['sql', 'type'])
+      .$castTo<{ sql: string | undefined; type: string }>()
+      .executeTakeFirstOrThrow()
 
     // Try to find the name of the column that has `autoincrement` 🤦
-    const autoIncrementCol = createSql[0]?.sql
+    const autoIncrementCol = tableDefinition.sql
       ?.split(/[\(\),]/)
       ?.find((it) => it.toLowerCase().includes('autoincrement'))
       ?.trimStart()
@@ -82,11 +82,12 @@ export class SqliteIntrospector implements DatabaseIntrospector {
         }>`pragma_table_info(${table})`.as('table_info')
       )
       .select(['name', 'type', 'notnull', 'dflt_value'])
-      .orderBy('name')
+      .orderBy('cid')
       .execute()
 
     return {
       name: table,
+      isView: tableDefinition.type === 'view',
       columns: columns.map((col) => ({
         name: col.name,
         dataType: col.type,

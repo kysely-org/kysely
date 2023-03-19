@@ -7,7 +7,8 @@ Kysely makes this really simple.
 
 The Kysely API is designed around two interfaces [`Expression<T>`](https://koskimas.github.io/kysely/interfaces/Expression.html)
 and [`AliasedExpression<T, A>`](https://koskimas.github.io/kysely/interfaces/AliasedExpression.html).
-Almost every method accepts values that implement these interfaces and most Kysely internals achieve their "type magic" by implementing them.
+Almost every method accepts values that implement these interfaces and most Kysely internals achieve
+their "type magic" by implementing them.
 
 Most of the time you can create your helpers using the [sql template tag](https://koskimas.github.io/kysely/interfaces/Sql.html)
 and the `RawBuilder<T>` and `AliasedRawBuilder<T, A>` class instances it returns, but it's good to first understand how
@@ -33,6 +34,7 @@ class JsonValue<T> implements Expression<T> {
   }
 
   // This is a mandatory getter. You must add it and always return `undefined`.
+  // The return type must always be `T | undefined`.
   get expressionType(): T | undefined {
     return undefined
   }
@@ -81,10 +83,10 @@ async function test(db: Kysely<DB>) {
 }
 ```
 
-Most of the time you don't need to create your own classes that implement the `Expression<T>` interface. You can simply wrap the
-[sql template tag](https://koskimas.github.io/kysely/interfaces/Sql.html) and the `RawBuilder<T>`
-class instance it returns in a function. `RawBuilder<T>`, like most things in Kysely, implements the `Expression<T>`
-interface.
+Most of the time you don't need to create your own classes that implement the `Expression<T>` interface.
+You can simply wrap the [sql template tag](https://koskimas.github.io/kysely/interfaces/Sql.html) and
+the `RawBuilder<T>` class instance it returns in a function. `RawBuilder<T>`, like most things in Kysely,
+implements the `Expression<T>` interface.
 
 Our previous example would get simplified into this:
 
