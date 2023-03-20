@@ -16,7 +16,7 @@ import { freeze } from '../util/object-utils.js'
 import { Expression } from '../expression/expression.js'
 import {
   ComparisonOperatorExpression,
-  parseWhere,
+  parseWhereWithParametersAsLiterals,
 } from '../parser/binary-operation-parser.js'
 import { DynamicReferenceBuilder } from '../dynamic/dynamic-reference-builder.js'
 import { QueryNode } from '../operation-node/query-node.js'
@@ -149,7 +149,10 @@ export class CreateIndexBuilder<C = never>
   where(...args: any[]): any {
     return new CreateIndexBuilder({
       ...this.#props,
-      node: QueryNode.cloneWithWhere(this.#props.node as any, parseWhere(args)),
+      node: QueryNode.cloneWithWhere(
+        this.#props.node as any,
+        parseWhereWithParametersAsLiterals(args)
+      ),
     })
   }
 
@@ -168,7 +171,7 @@ export class CreateIndexBuilder<C = never>
       ...this.#props,
       node: QueryNode.cloneWithOrWhere(
         this.#props.node as any,
-        parseWhere(args)
+        parseWhereWithParametersAsLiterals(args)
       ),
     })
   }
@@ -214,7 +217,7 @@ export interface CreateIndexBuilderProps {
 // WhereInterface but without database schema type definition generics, just available column names.
 export interface CreateIndexWhereInterface<C> {
   where(
-    lhs: C | DynamicReferenceBuilder<any> | Expression<any>,
+    lhs: C | Expression<any>,
     op: ComparisonOperatorExpression,
     rhs: unknown
   ): CreateIndexBuilder<C>
@@ -224,7 +227,7 @@ export interface CreateIndexWhereInterface<C> {
   where(expression: Expression<any>): CreateIndexBuilder<C>
 
   orWhere(
-    lhs: C | DynamicReferenceBuilder<any> | Expression<any>,
+    lhs: C | Expression<any>,
     op: ComparisonOperatorExpression,
     rhs: unknown
   ): CreateIndexBuilder<C>
