@@ -1080,7 +1080,7 @@ for (const dialect of DIALECTS) {
             .on('test')
             .columns(['first_name', 'last_name'])
             .where('first_name', '=', 'Igal')
-            .orWhere('age', '>=', 18)
+            .orWhere(sql.ref('age'), '>=', 18)
 
           testSql(builder, dialect, {
             postgres: {

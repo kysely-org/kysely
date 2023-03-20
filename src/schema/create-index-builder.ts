@@ -18,7 +18,6 @@ import {
   ComparisonOperatorExpression,
   parseWhereWithParametersAsLiterals,
 } from '../parser/binary-operation-parser.js'
-import { DynamicReferenceBuilder } from '../dynamic/dynamic-reference-builder.js'
 import { QueryNode } from '../operation-node/query-node.js'
 
 export class CreateIndexBuilder<C = never>
@@ -87,9 +86,7 @@ export class CreateIndexBuilder<C = never>
    *
    * Also see the `expression` for specifying an arbitrary expression.
    */
-  columns<CL extends string[]>(
-    columns: CL
-  ): CreateIndexBuilder<C | CL[number]> {
+  columns<CL extends string>(columns: CL[]): CreateIndexBuilder<C | CL> {
     return new CreateIndexBuilder({
       ...this.#props,
       node: CreateIndexNode.cloneWith(this.#props.node, {
@@ -136,6 +133,39 @@ export class CreateIndexBuilder<C = never>
     })
   }
 
+  /**
+   * Adds a where clause to the query. This Effectively turns the index partial.
+   *
+   * Also see {@link orWhere}
+   *
+   * ### Examples
+   *
+   * ```ts
+   * import { sql } from 'kysely'
+   *
+   * await db.schema
+   *    .createIndex('orders_unbilled_index')
+   *    .on('orders')
+   *    .column('order_nr')
+   *    .where(sql.ref('billed'), 'is not', true)
+   *    .where('order_nr', 'like', '123%')
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * create index "orders_unbilled_index" on "orders" ("order_nr") where "billed" is not true and "order_nr" like '123%'
+   * ```
+   *
+   * Column names specified in {@link column} or {@link columns} are known at compile-time
+   * and can be referred to in the current query and context.
+   *
+   * Sometimes you may want to refer to columns that exist in the table but are not
+   * part of the current index. In that case you can refer to them using {@link sql}
+   * expressions.
+   *
+   * Parameters are always sent as literals due to database restrictions.
+   */
   where(
     lhs: C | Expression<any>,
     op: ComparisonOperatorExpression,
@@ -156,6 +186,28 @@ export class CreateIndexBuilder<C = never>
     })
   }
 
+  /**
+   * Adds an `or where` clause to the query. Otherwise works just like {@link where}.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * import { sql } from 'kysely'
+   *
+   * await db.schema
+   *    .createIndex('orders_unbilled_index')
+   *    .on('orders')
+   *    .column('order_nr')
+   *    .where(sql.ref('billed'), 'is not', true)
+   *    .orWhere('order_nr', 'like', '123%')
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * create index "orders_unbilled_index" on "orders" ("order_nr") where "billed" is not true or "order_nr" like '123%'
+   * ```
+   */
   orWhere(
     lhs: C | Expression<any>,
     op: ComparisonOperatorExpression,
