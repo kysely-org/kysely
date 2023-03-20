@@ -137,7 +137,7 @@ export class CreateIndexBuilder<C = never>
   }
 
   where(
-    lhs: C | DynamicReferenceBuilder<any> | Expression<any>,
+    lhs: C | Expression<any>,
     op: ComparisonOperatorExpression,
     rhs: unknown
   ): CreateIndexBuilder<C>
@@ -157,7 +157,7 @@ export class CreateIndexBuilder<C = never>
   }
 
   orWhere(
-    lhs: C | DynamicReferenceBuilder<any> | Expression<any>,
+    lhs: C | Expression<any>,
     op: ComparisonOperatorExpression,
     rhs: unknown
   ): CreateIndexBuilder<C>
