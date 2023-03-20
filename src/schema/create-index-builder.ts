@@ -14,8 +14,16 @@ import { QueryExecutor } from '../query-executor/query-executor.js'
 import { QueryId } from '../util/query-id.js'
 import { freeze } from '../util/object-utils.js'
 import { Expression } from '../expression/expression.js'
+import {
+  ComparisonOperatorExpression,
+  parseWhere,
+} from '../parser/binary-operation-parser.js'
+import { DynamicReferenceBuilder } from '../dynamic/dynamic-reference-builder.js'
+import { QueryNode } from '../operation-node/query-node.js'
 
-export class CreateIndexBuilder implements OperationNodeSource, Compilable {
+export class CreateIndexBuilder<C = never>
+  implements OperationNodeSource, Compilable, CreateIndexWhereInterface<C>
+{
   readonly #props: CreateIndexBuilderProps
 
   constructor(props: CreateIndexBuilderProps) {
@@ -27,7 +35,7 @@ export class CreateIndexBuilder implements OperationNodeSource, Compilable {
    *
    * If the index already exists, no error is thrown if this method has been called.
    */
-  ifNotExists(): CreateIndexBuilder {
+  ifNotExists(): CreateIndexBuilder<C> {
     return new CreateIndexBuilder({
       ...this.#props,
       node: CreateIndexNode.cloneWith(this.#props.node, {
@@ -39,7 +47,7 @@ export class CreateIndexBuilder implements OperationNodeSource, Compilable {
   /**
    * Makes the index unique.
    */
-  unique(): CreateIndexBuilder {
+  unique(): CreateIndexBuilder<C> {
     return new CreateIndexBuilder({
       ...this.#props,
       node: CreateIndexNode.cloneWith(this.#props.node, {
@@ -51,7 +59,7 @@ export class CreateIndexBuilder implements OperationNodeSource, Compilable {
   /**
    * Specifies the table for the index.
    */
-  on(table: string): CreateIndexBuilder {
+  on(table: string): CreateIndexBuilder<C> {
     return new CreateIndexBuilder({
       ...this.#props,
       node: CreateIndexNode.cloneWith(this.#props.node, {
@@ -65,7 +73,7 @@ export class CreateIndexBuilder implements OperationNodeSource, Compilable {
    *
    * Also see the `expression` for specifying an arbitrary expression.
    */
-  column(column: string): CreateIndexBuilder {
+  column<CL extends string>(column: CL): CreateIndexBuilder<C | CL> {
     return new CreateIndexBuilder({
       ...this.#props,
       node: CreateIndexNode.cloneWith(this.#props.node, {
@@ -79,7 +87,9 @@ export class CreateIndexBuilder implements OperationNodeSource, Compilable {
    *
    * Also see the `expression` for specifying an arbitrary expression.
    */
-  columns(columns: string[]): CreateIndexBuilder {
+  columns<CL extends string[]>(
+    columns: CL
+  ): CreateIndexBuilder<C | CL[number]> {
     return new CreateIndexBuilder({
       ...this.#props,
       node: CreateIndexNode.cloneWith(this.#props.node, {
@@ -103,7 +113,7 @@ export class CreateIndexBuilder implements OperationNodeSource, Compilable {
    *   .execute()
    * ```
    */
-  expression(expression: Expression<any>): CreateIndexBuilder {
+  expression(expression: Expression<any>): CreateIndexBuilder<C> {
     return new CreateIndexBuilder({
       ...this.#props,
       node: CreateIndexNode.cloneWith(this.#props.node, {
@@ -115,14 +125,51 @@ export class CreateIndexBuilder implements OperationNodeSource, Compilable {
   /**
    * Specifies the index type.
    */
-  using(indexType: IndexType): CreateIndexBuilder
-  using(indexType: string): CreateIndexBuilder
-  using(indexType: string): CreateIndexBuilder {
+  using(indexType: IndexType): CreateIndexBuilder<C>
+  using(indexType: string): CreateIndexBuilder<C>
+  using(indexType: string): CreateIndexBuilder<C> {
     return new CreateIndexBuilder({
       ...this.#props,
       node: CreateIndexNode.cloneWith(this.#props.node, {
         using: RawNode.createWithSql(indexType),
       }),
+    })
+  }
+
+  where(
+    lhs: C | DynamicReferenceBuilder<any> | Expression<any>,
+    op: ComparisonOperatorExpression,
+    rhs: unknown
+  ): CreateIndexBuilder<C>
+  where(
+    grouper: (qb: CreateIndexWhereInterface<C>) => CreateIndexWhereInterface<C>
+  ): CreateIndexBuilder<C>
+  where(expression: Expression<any>): CreateIndexBuilder<C>
+
+  where(...args: any[]): any {
+    return new CreateIndexBuilder({
+      ...this.#props,
+      node: QueryNode.cloneWithWhere(this.#props.node as any, parseWhere(args)),
+    })
+  }
+
+  orWhere(
+    lhs: C | DynamicReferenceBuilder<any> | Expression<any>,
+    op: ComparisonOperatorExpression,
+    rhs: unknown
+  ): CreateIndexBuilder<C>
+  orWhere(
+    grouper: (qb: CreateIndexWhereInterface<C>) => CreateIndexWhereInterface<C>
+  ): CreateIndexBuilder<C>
+  orWhere(expression: Expression<any>): CreateIndexBuilder<C>
+
+  orWhere(...args: any[]): any {
+    return new CreateIndexBuilder({
+      ...this.#props,
+      node: QueryNode.cloneWithOrWhere(
+        this.#props.node as any,
+        parseWhere(args)
+      ),
     })
   }
 
@@ -162,4 +209,27 @@ export interface CreateIndexBuilderProps {
   readonly queryId: QueryId
   readonly executor: QueryExecutor
   readonly node: CreateIndexNode
+}
+
+// WhereInterface but without database schema type definition generics, just available column names.
+export interface CreateIndexWhereInterface<C> {
+  where(
+    lhs: C | DynamicReferenceBuilder<any> | Expression<any>,
+    op: ComparisonOperatorExpression,
+    rhs: unknown
+  ): CreateIndexBuilder<C>
+  where(
+    grouper: (qb: CreateIndexWhereInterface<C>) => CreateIndexWhereInterface<C>
+  ): CreateIndexBuilder<C>
+  where(expression: Expression<any>): CreateIndexBuilder<C>
+
+  orWhere(
+    lhs: C | DynamicReferenceBuilder<any> | Expression<any>,
+    op: ComparisonOperatorExpression,
+    rhs: unknown
+  ): CreateIndexBuilder<C>
+  orWhere(
+    grouper: (qb: CreateIndexWhereInterface<C>) => CreateIndexWhereInterface<C>
+  ): CreateIndexBuilder<C>
+  orWhere(expression: Expression<any>): CreateIndexBuilder<C>
 }

@@ -796,6 +796,11 @@ export class DefaultQueryCompiler
       this.visitNode(node.expression)
       this.append(')')
     }
+
+    if (node.where) {
+      this.append(' ')
+      this.visitNode(node.where)
+    }
   }
 
   protected override visitDropIndex(node: DropIndexNode): void {
