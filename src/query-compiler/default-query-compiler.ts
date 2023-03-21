@@ -791,9 +791,9 @@ export class DefaultQueryCompiler
       this.visitNode(node.using)
     }
 
-    if (node.expression) {
+    if (node.columns) {
       this.append(' (')
-      this.visitNode(node.expression)
+      this.compileList(node.columns)
       this.append(')')
     }
   }

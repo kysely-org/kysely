@@ -527,7 +527,7 @@ export class OperationNodeTransformer {
       kind: 'CreateIndexNode',
       name: this.transformNode(node.name),
       table: this.transformNode(node.table),
-      expression: this.transformNode(node.expression),
+      columns: this.transformNodeList(node.columns),
       unique: node.unique,
       using: this.transformNode(node.using),
       ifNotExists: node.ifNotExists,

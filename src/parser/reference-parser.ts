@@ -21,6 +21,7 @@ import { IdentifierNode } from '../operation-node/identifier-node.js'
 import { OperationNode } from '../operation-node/operation-node.js'
 import { Expression } from '../expression/expression.js'
 import { SimpleReferenceExpressionNode } from '../operation-node/simple-reference-expression-node.js'
+import { OrderByDirection, parseOrderBy } from './order-by-parser.js'
 
 export type StringReference<DB, TB extends keyof DB> =
   | AnyColumn<DB, TB>
@@ -75,6 +76,20 @@ export type ExtractTypeFromStringReference<
   : RE extends AnyColumn<DB, TB>
   ? ExtractColumnType<DB, TB, RE>
   : DV
+
+export type OrderedColumnName<C extends string> =
+  C extends `${string} ${infer O}`
+    ? O extends OrderByDirection
+      ? C
+      : never
+    : C
+
+export type ExtractColumnNameFromOrderedColumnName<C extends string> =
+  C extends `${infer CL} ${infer O}`
+    ? O extends OrderByDirection
+      ? CL
+      : never
+    : C
 
 export function parseSimpleReferenceExpression(
   exp: SimpleReferenceExpression<any, any>
@@ -145,6 +160,18 @@ export function parseAliasedStringReference(
 
 export function parseColumnName(column: AnyColumn<any, any>): ColumnNode {
   return ColumnNode.create(column as string)
+}
+
+export function parseOrderedColumnName(column: string): OperationNode {
+  const ORDER_SEPARATOR = ' '
+
+  if (column.includes(ORDER_SEPARATOR)) {
+    const [columnName, order] = column.split(ORDER_SEPARATOR).map(trim)
+
+    return parseOrderBy(columnName, order as any)
+  } else {
+    return parseColumnName(column as any)
+  }
 }
 
 function parseStringReferenceWithTableAndSchema(
