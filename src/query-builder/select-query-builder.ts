@@ -8,12 +8,12 @@ import {
 } from '../parser/join-parser.js'
 import { TableExpression } from '../parser/table-parser.js'
 import {
-  parseSelectExpressionOrList,
+  parseSelectArg,
   parseSelectAll,
   SelectExpression,
-  QueryBuilderWithSelection,
-  SelectAllQueryBuilder,
-  SelectExpressionOrList,
+  Selection,
+  SelectArg,
+  AllSelection,
 } from '../parser/select-parser.js'
 import {
   parseReferenceExpressionOrList,
@@ -40,11 +40,7 @@ import { Compilable } from '../util/compilable.js'
 import { QueryExecutor } from '../query-executor/query-executor.js'
 import { QueryId } from '../util/query-id.js'
 import { freeze } from '../util/object-utils.js'
-import {
-  GroupByExpression,
-  GroupByExpressionOrList,
-  parseGroupBy,
-} from '../parser/group-by-parser.js'
+import { GroupByArg, parseGroupBy } from '../parser/group-by-parser.js'
 import { KyselyPlugin } from '../plugin/kysely-plugin.js'
 import { WhereInterface } from './where-interface.js'
 import {
@@ -74,6 +70,7 @@ import {
 } from '../parser/unary-operation-parser.js'
 import { KyselyTypeError } from '../util/type-error.js'
 import { Selectable } from '../util/column-type.js'
+import { ExpressionBuilder } from './expression-builder.js'
 
 export class SelectQueryBuilder<DB, TB extends keyof DB, O>
   implements
@@ -413,21 +410,20 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    * from "person"
    * ```
    *
-   * You can also select subqueries and raw sql expressions. Note that you
-   * always need to give a name for the selections using the `as`
+   * You can also select arbitrary expression including subqueries and raw sql snippets.
+   * Note that you always need to give a name for the selections using the {@link as}
    * method:
    *
    * ```ts
    * import { sql } from 'kysely'
    *
    * const persons = await db.selectFrom('person')
-   *   .select([
-   *     (qb) => qb
-   *       .selectFrom('pet')
+   *   .select((eb) => [
+   *     eb.selectFrom('pet')
    *       .whereRef('person.id', '=', 'pet.owner_id')
    *       .select('pet.name')
    *       .limit(1)
-   *       .as('pet_name')
+   *       .as('pet_name'),
    *     sql<string>`concat(first_name, ' ', last_name)`.as('full_name')
    *   ])
    *   .execute()
@@ -491,19 +487,13 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    * ```
    */
   select<SE extends SelectExpression<DB, TB>>(
-    selections: ReadonlyArray<SE>
-  ): QueryBuilderWithSelection<DB, TB, O, SE>
-
-  select<SE extends SelectExpression<DB, TB>>(
-    selection: SE
-  ): QueryBuilderWithSelection<DB, TB, O, SE>
-
-  select(selection: SelectExpressionOrList<DB, TB>): any {
+    selection: SelectArg<DB, TB, SE>
+  ): SelectQueryBuilder<DB, TB, O & Selection<DB, TB, SE>> {
     return new SelectQueryBuilder({
       ...this.#props,
       queryNode: SelectQueryNode.cloneWithSelections(
         this.#props.queryNode,
-        parseSelectExpressionOrList(selection)
+        parseSelectArg(selection)
       ),
     })
   }
@@ -767,13 +757,13 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    */
   selectAll<T extends TB>(
     table: ReadonlyArray<T>
-  ): SelectAllQueryBuilder<DB, TB, O, T>
+  ): SelectQueryBuilder<DB, TB, O & AllSelection<DB, T>>
 
   selectAll<T extends TB>(
     table: T
   ): SelectQueryBuilder<DB, TB, Selectable<DB[T]>>
 
-  selectAll(): SelectAllQueryBuilder<DB, TB, O, TB>
+  selectAll(): SelectQueryBuilder<DB, TB, O & AllSelection<DB, TB>>
 
   selectAll(table?: any): any {
     return new SelectQueryBuilder({
@@ -1103,7 +1093,7 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    * await db
    *   .selectFrom('person')
    *   .selectAll()
-   *   .orderBy((qb) => qb.selectFrom('pet')
+   *   .orderBy((eb) => eb.selectFrom('pet')
    *     .select('pet.name')
    *     .whereRef('pet.owner_id', '=', 'person.id')
    *     .limit(1)
@@ -1264,13 +1254,7 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    * group by "first_name"
    * ```
    */
-  groupBy(
-    groupBy: ReadonlyArray<GroupByExpression<DB, TB, O>>
-  ): SelectQueryBuilder<DB, TB, O>
-
-  groupBy(groupBy: GroupByExpression<DB, TB, O>): SelectQueryBuilder<DB, TB, O>
-
-  groupBy(groupBy: GroupByExpressionOrList<DB, TB, O>): any {
+  groupBy(groupBy: GroupByArg<DB, TB, O>): SelectQueryBuilder<DB, TB, O> {
     return new SelectQueryBuilder({
       ...this.#props,
       queryNode: SelectQueryNode.cloneWithGroupByItems(
@@ -1515,7 +1499,7 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    * db.selectFrom('person')
    *   .select(['id', 'first_name'])
    *   .clearSelect()
-   *   .select(['id','gender'])
+   *   .select(['id', 'gender'])
    * ```
    *
    * The generated SQL(PostgreSQL):

@@ -15,9 +15,9 @@ import { Simplify } from '../util/type-utils.js'
  * ```ts
  * const result = await db
  *   .selectFrom('person')
- *   .select([
+ *   .select((eb) => [
  *     'id',
- *     eb => jsonArrayFrom(
+ *     jsonArrayFrom(
  *       eb.selectFrom('pet')
  *         .select(['pet.id as pet_id', 'pet.name'])
  *         .where('pet.owner_id', '=', 'person.id')
@@ -65,9 +65,9 @@ export function jsonArrayFrom<O>(
  * ```ts
  * const result = await db
  *   .selectFrom('person')
- *   .select([
+ *   .select((eb) => [
  *     'id',
- *     eb => jsonObjectFrom(
+ *     jsonObjectFrom(
  *       eb.selectFrom('pet')
  *         .select(['pet.id as pet_id', 'pet.name'])
  *         .where('pet.owner_id', '=', 'person.id')
@@ -113,9 +113,9 @@ export function jsonObjectFrom<O>(
  * ```ts
  * const result = await db
  *   .selectFrom('person')
- *   .select([
+ *   .select((eb) => [
  *     'id',
- *     eb => jsonbBuildObject({
+ *     jsonbBuildObject({
  *       first: eb.ref('first_name'),
  *       last: eb.ref('last_name'),
  *       full: sql<string>`first_name || ' ' || last_name`

@@ -13,10 +13,10 @@ import {
   TableExpressionOrList,
 } from '../parser/table-parser.js'
 import {
-  parseSelectExpressionOrList,
+  parseSelectArg,
   parseSelectAll,
   SelectExpression,
-  SelectExpressionOrList,
+  SelectArg,
 } from '../parser/select-parser.js'
 import { ReturningRow } from '../parser/returning-parser.js'
 import { ReferenceExpression } from '../parser/reference-parser.js'
@@ -28,7 +28,12 @@ import {
   SimplifySingleResult,
 } from '../util/type-utils.js'
 import { UpdateQueryNode } from '../operation-node/update-query-node.js'
-import { UpdateObject, parseUpdateObject } from '../parser/update-set-parser.js'
+import {
+  parseUpdateExpression,
+  UpdateExpression,
+  UpdateObject,
+  UpdateObjectFactory,
+} from '../parser/update-set-parser.js'
 import { preventAwait } from '../util/prevent-await.js'
 import { Compilable } from '../util/compilable.js'
 import { QueryExecutor } from '../query-executor/query-executor.js'
@@ -208,9 +213,9 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
    * ```ts
    * db.updateTable('person')
    *   .from('pet')
-   *   .set({
-   *     first_name: (eb) => eb.ref('pet.name')
-   *   })
+   *   .set((eb) => ({
+   *     first_name: eb.ref('pet.name')
+   *   }))
    *   .whereRef('pet.owner_id', '=', 'person.id')
    * ```
    *
@@ -254,7 +259,7 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
    *   .innerJoin('pet', 'pet.owner_id', 'person.id')
    *   // `select` needs to come after the call to `innerJoin` so
    *   // that you can select from the joined table.
-   *   .select('person.id', 'pet.name')
+   *   .select(['person.id', 'pet.name'])
    *   .execute()
    *
    * result[0].id
@@ -464,7 +469,11 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
    *
    * This method takes an object whose keys are column names and values are
    * values to update. In addition to the column's type, the values can be
-   * raw {@link sql} snippets or select queries.
+   * any expressions such as raw {@link sql} snippets or select queries.
+   *
+   * This method also accepts a callback that returns the update object. The
+   * callback takes an instance of `{@link ExpressionBuilder} as its only argument.
+   * The expression builder can be used to create arbitrary update expressions.
    *
    * The return value of an update query is an instance of {@link UpdateResult}.
    * You can use the {@link returning} method on supported databases to get out
@@ -517,19 +526,20 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
    * update "person" set "first_name" = $1, "last_name" = $2 where "id" = $3 returning "id"
    * ```
    *
-   * In addition to primitives, the values can also be raw sql expressions or
-   * select queries:
+   * In addition to primitives, the values can arbitrary expressions including
+   * raw `sql` snippets or subqueries:
    *
    * ```ts
    * import { sql } from 'kysely'
    *
    * const result = await db
    *   .updateTable('person')
-   *   .set({
+   *   .set(({ selectFrom, ref, fn }) => ({
    *     first_name: 'Jennifer',
+   *     middle_name: ref('first_name'),
+   *     age: selectFrom('person').select(fn.avg('age')),
    *     last_name: sql`${'Ani'} || ${'ston'}`,
-   *     age: db.selectFrom('person').select(sql`avg(age)`),
-   *   })
+   *   }))
    *   .where('id', '=', 1)
    *   .executeTakeFirst()
    *
@@ -541,35 +551,36 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
    * ```sql
    * update "person" set
    * "first_name" = $1,
-   * "last_name" = $2 || $3,
-   * "age" = (select avg(age) from "person")
+   * "middle_name" = "first_name",
+   * "age" = (select avg(age) from "person"),
+   * "last_name" = $2 || $3
    * where "id" = $4
    * ```
    */
-  set(row: UpdateObject<DB, TB, UT>): UpdateQueryBuilder<DB, UT, TB, O> {
+  set(update: UpdateObject<DB, TB, UT>): UpdateQueryBuilder<DB, UT, TB, O>
+
+  set(
+    update: UpdateObjectFactory<DB, TB, UT>
+  ): UpdateQueryBuilder<DB, UT, TB, O>
+
+  set(update: UpdateExpression<DB, TB, UT>): UpdateQueryBuilder<DB, UT, TB, O> {
     return new UpdateQueryBuilder({
       ...this.#props,
       queryNode: UpdateQueryNode.cloneWithUpdates(
         this.#props.queryNode,
-        parseUpdateObject(row)
+        parseUpdateExpression(update)
       ),
     })
   }
 
   returning<SE extends SelectExpression<DB, TB>>(
-    selections: ReadonlyArray<SE>
-  ): UpdateQueryBuilder<DB, UT, TB, ReturningRow<DB, TB, O, SE>>
-
-  returning<SE extends SelectExpression<DB, TB>>(
-    selection: SE
-  ): UpdateQueryBuilder<DB, UT, TB, ReturningRow<DB, TB, O, SE>>
-
-  returning(selection: SelectExpressionOrList<DB, TB>): any {
+    selection: SelectArg<DB, TB, SE>
+  ): UpdateQueryBuilder<DB, UT, TB, ReturningRow<DB, TB, O, SE>> {
     return new UpdateQueryBuilder({
       ...this.#props,
       queryNode: QueryNode.cloneWithReturning(
         this.#props.queryNode,
-        parseSelectExpressionOrList(selection)
+        parseSelectArg(selection)
       ),
     })
   }
