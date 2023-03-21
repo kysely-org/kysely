@@ -815,7 +815,7 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
     return [
       new UpdateResult(
         // TODO: remove numUpdatedOrDeletedRows.
-        result.numAffectedRows ?? result.numUpdatedOrDeletedRows ?? 0n
+        result.numAffectedRows ?? result.numUpdatedOrDeletedRows ?? BigInt(0)
       ) as any,
     ]
   }
