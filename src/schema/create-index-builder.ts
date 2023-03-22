@@ -180,7 +180,7 @@ export class CreateIndexBuilder<C = never>
     return new CreateIndexBuilder({
       ...this.#props,
       node: QueryNode.cloneWithWhere(
-        this.#props.node as any,
+        this.#props.node,
         parseWhereWithImmediateParameters(args)
       ),
     })
