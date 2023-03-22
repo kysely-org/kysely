@@ -14,8 +14,15 @@ import { QueryExecutor } from '../query-executor/query-executor.js'
 import { QueryId } from '../util/query-id.js'
 import { freeze } from '../util/object-utils.js'
 import { Expression } from '../expression/expression.js'
+import {
+  ComparisonOperatorExpression,
+  parseWhereWithImmediateParameters,
+} from '../parser/binary-operation-parser.js'
+import { QueryNode } from '../operation-node/query-node.js'
 
-export class CreateIndexBuilder implements OperationNodeSource, Compilable {
+export class CreateIndexBuilder<C = never>
+  implements OperationNodeSource, Compilable, CreateIndexWhereInterface<C>
+{
   readonly #props: CreateIndexBuilderProps
 
   constructor(props: CreateIndexBuilderProps) {
@@ -27,7 +34,7 @@ export class CreateIndexBuilder implements OperationNodeSource, Compilable {
    *
    * If the index already exists, no error is thrown if this method has been called.
    */
-  ifNotExists(): CreateIndexBuilder {
+  ifNotExists(): CreateIndexBuilder<C> {
     return new CreateIndexBuilder({
       ...this.#props,
       node: CreateIndexNode.cloneWith(this.#props.node, {
@@ -39,7 +46,7 @@ export class CreateIndexBuilder implements OperationNodeSource, Compilable {
   /**
    * Makes the index unique.
    */
-  unique(): CreateIndexBuilder {
+  unique(): CreateIndexBuilder<C> {
     return new CreateIndexBuilder({
       ...this.#props,
       node: CreateIndexNode.cloneWith(this.#props.node, {
@@ -51,7 +58,7 @@ export class CreateIndexBuilder implements OperationNodeSource, Compilable {
   /**
    * Specifies the table for the index.
    */
-  on(table: string): CreateIndexBuilder {
+  on(table: string): CreateIndexBuilder<C> {
     return new CreateIndexBuilder({
       ...this.#props,
       node: CreateIndexNode.cloneWith(this.#props.node, {
@@ -65,7 +72,7 @@ export class CreateIndexBuilder implements OperationNodeSource, Compilable {
    *
    * Also see the `expression` for specifying an arbitrary expression.
    */
-  column(column: string): CreateIndexBuilder {
+  column<CL extends string>(column: CL): CreateIndexBuilder<C | CL> {
     return new CreateIndexBuilder({
       ...this.#props,
       node: CreateIndexNode.cloneWith(this.#props.node, {
@@ -79,7 +86,7 @@ export class CreateIndexBuilder implements OperationNodeSource, Compilable {
    *
    * Also see the `expression` for specifying an arbitrary expression.
    */
-  columns(columns: string[]): CreateIndexBuilder {
+  columns<CL extends string>(columns: CL[]): CreateIndexBuilder<C | CL> {
     return new CreateIndexBuilder({
       ...this.#props,
       node: CreateIndexNode.cloneWith(this.#props.node, {
@@ -103,7 +110,7 @@ export class CreateIndexBuilder implements OperationNodeSource, Compilable {
    *   .execute()
    * ```
    */
-  expression(expression: Expression<any>): CreateIndexBuilder {
+  expression(expression: Expression<any>): CreateIndexBuilder<C> {
     return new CreateIndexBuilder({
       ...this.#props,
       node: CreateIndexNode.cloneWith(this.#props.node, {
@@ -115,14 +122,109 @@ export class CreateIndexBuilder implements OperationNodeSource, Compilable {
   /**
    * Specifies the index type.
    */
-  using(indexType: IndexType): CreateIndexBuilder
-  using(indexType: string): CreateIndexBuilder
-  using(indexType: string): CreateIndexBuilder {
+  using(indexType: IndexType): CreateIndexBuilder<C>
+  using(indexType: string): CreateIndexBuilder<C>
+  using(indexType: string): CreateIndexBuilder<C> {
     return new CreateIndexBuilder({
       ...this.#props,
       node: CreateIndexNode.cloneWith(this.#props.node, {
         using: RawNode.createWithSql(indexType),
       }),
+    })
+  }
+
+  /**
+   * Adds a where clause to the query. This Effectively turns the index partial.
+   *
+   * Also see {@link orWhere}
+   *
+   * ### Examples
+   *
+   * ```ts
+   * import { sql } from 'kysely'
+   *
+   * await db.schema
+   *    .createIndex('orders_unbilled_index')
+   *    .on('orders')
+   *    .column('order_nr')
+   *    .where(sql.ref('billed'), 'is not', true)
+   *    .where('order_nr', 'like', '123%')
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * create index "orders_unbilled_index" on "orders" ("order_nr") where "billed" is not true and "order_nr" like '123%'
+   * ```
+   *
+   * Column names specified in {@link column} or {@link columns} are known at compile-time
+   * and can be referred to in the current query and context.
+   *
+   * Sometimes you may want to refer to columns that exist in the table but are not
+   * part of the current index. In that case you can refer to them using {@link sql}
+   * expressions.
+   *
+   * Parameters are always sent as literals due to database restrictions.
+   */
+  where(
+    lhs: C | Expression<any>,
+    op: ComparisonOperatorExpression,
+    rhs: unknown
+  ): CreateIndexBuilder<C>
+  where(
+    grouper: (qb: CreateIndexWhereInterface<C>) => CreateIndexWhereInterface<C>
+  ): CreateIndexBuilder<C>
+  where(expression: Expression<any>): CreateIndexBuilder<C>
+
+  where(...args: any[]): any {
+    return new CreateIndexBuilder({
+      ...this.#props,
+      node: QueryNode.cloneWithWhere(
+        this.#props.node,
+        parseWhereWithImmediateParameters(args)
+      ),
+    })
+  }
+
+  /**
+   * Adds an `or where` clause to the query. Otherwise works just like {@link where}.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * import { sql } from 'kysely'
+   *
+   * await db.schema
+   *    .createIndex('orders_unbilled_index')
+   *    .on('orders')
+   *    .column('order_nr')
+   *    .where(sql.ref('billed'), 'is not', true)
+   *    .orWhere('order_nr', 'like', '123%')
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * create index "orders_unbilled_index" on "orders" ("order_nr") where "billed" is not true or "order_nr" like '123%'
+   * ```
+   */
+  orWhere(
+    lhs: C | Expression<any>,
+    op: ComparisonOperatorExpression,
+    rhs: unknown
+  ): CreateIndexBuilder<C>
+  orWhere(
+    grouper: (qb: CreateIndexWhereInterface<C>) => CreateIndexWhereInterface<C>
+  ): CreateIndexBuilder<C>
+  orWhere(expression: Expression<any>): CreateIndexBuilder<C>
+
+  orWhere(...args: any[]): any {
+    return new CreateIndexBuilder({
+      ...this.#props,
+      node: QueryNode.cloneWithOrWhere(
+        this.#props.node as any,
+        parseWhereWithImmediateParameters(args)
+      ),
     })
   }
 
@@ -162,4 +264,27 @@ export interface CreateIndexBuilderProps {
   readonly queryId: QueryId
   readonly executor: QueryExecutor
   readonly node: CreateIndexNode
+}
+
+// WhereInterface but without database schema type definition generics, just available column names.
+export interface CreateIndexWhereInterface<C> {
+  where(
+    lhs: C | Expression<any>,
+    op: ComparisonOperatorExpression,
+    rhs: unknown
+  ): CreateIndexBuilder<C>
+  where(
+    grouper: (qb: CreateIndexWhereInterface<C>) => CreateIndexWhereInterface<C>
+  ): CreateIndexBuilder<C>
+  where(expression: Expression<any>): CreateIndexBuilder<C>
+
+  orWhere(
+    lhs: C | Expression<any>,
+    op: ComparisonOperatorExpression,
+    rhs: unknown
+  ): CreateIndexBuilder<C>
+  orWhere(
+    grouper: (qb: CreateIndexWhereInterface<C>) => CreateIndexWhereInterface<C>
+  ): CreateIndexBuilder<C>
+  orWhere(expression: Expression<any>): CreateIndexBuilder<C>
 }

@@ -11,19 +11,15 @@ import { OperationNode } from './operation-node.js'
 
 export type QueryNode =
   | SelectQueryNode
-  | DeleteQueryNode
   | InsertQueryNode
   | UpdateQueryNode
-
-export type MutatingQueryNode =
   | DeleteQueryNode
-  | InsertQueryNode
-  | UpdateQueryNode
 
-export type FilterableQueryNode =
-  | SelectQueryNode
-  | DeleteQueryNode
-  | UpdateQueryNode
+export type HasJoins = { joins?: ReadonlyArray<JoinNode> }
+
+export type HasWhere = { where?: WhereNode }
+
+export type HasReturning = { returning?: ReturningNode }
 
 /**
  * @internal
@@ -31,17 +27,14 @@ export type FilterableQueryNode =
 export const QueryNode = freeze({
   is(node: OperationNode): node is QueryNode {
     return (
-      DeleteQueryNode.is(node) ||
+      SelectQueryNode.is(node) ||
       InsertQueryNode.is(node) ||
       UpdateQueryNode.is(node) ||
-      SelectQueryNode.is(node)
+      DeleteQueryNode.is(node)
     )
   },
 
-  cloneWithWhere<T extends FilterableQueryNode>(
-    node: T,
-    operation: OperationNode
-  ): T {
+  cloneWithWhere<T extends HasWhere>(node: T, operation: OperationNode): T {
     return freeze({
       ...node,
       where: node.where
@@ -50,10 +43,7 @@ export const QueryNode = freeze({
     })
   },
 
-  cloneWithOrWhere<T extends FilterableQueryNode>(
-    node: T,
-    operation: OperationNode
-  ): T {
+  cloneWithOrWhere<T extends HasWhere>(node: T, operation: OperationNode): T {
     return freeze({
       ...node,
       where: node.where
@@ -62,14 +52,14 @@ export const QueryNode = freeze({
     })
   },
 
-  cloneWithJoin<T extends FilterableQueryNode>(node: T, join: JoinNode): T {
+  cloneWithJoin<T extends HasJoins>(node: T, join: JoinNode): T {
     return freeze({
       ...node,
       joins: node.joins ? freeze([...node.joins, join]) : freeze([join]),
     })
   },
 
-  cloneWithReturning<T extends MutatingQueryNode>(
+  cloneWithReturning<T extends HasReturning>(
     node: T,
     selections: ReadonlyArray<SelectionNode>
   ): T {
@@ -81,7 +71,7 @@ export const QueryNode = freeze({
     })
   },
 
-  cloneWithoutWhere<T extends FilterableQueryNode>(node: T): T {
+  cloneWithoutWhere<T extends HasWhere>(node: T): T {
     return freeze({
       ...node,
       where: undefined,

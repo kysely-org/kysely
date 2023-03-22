@@ -915,6 +915,7 @@ for (const dialect of DIALECTS) {
           .addColumn('id', 'bigint', (col) => col.primaryKey())
           .addColumn('first_name', 'varchar(255)')
           .addColumn('last_name', 'varchar(255)')
+          .addColumn('age', 'integer')
           .execute()
       })
 
@@ -1071,6 +1072,31 @@ for (const dialect of DIALECTS) {
 
         await builder.execute()
       })
+
+      if (dialect !== 'mysql') {
+        it('should create a partial index', async () => {
+          const builder = ctx.db.schema
+            .createIndex('test_partial_index')
+            .on('test')
+            .columns(['first_name', 'last_name'])
+            .where('first_name', '=', 'Igal')
+            .orWhere(sql.ref('age'), '>=', 18)
+
+          testSql(builder, dialect, {
+            postgres: {
+              sql: `create index "test_partial_index" on "test" ("first_name", "last_name") where "first_name" = 'Igal' or "age" >= 18`,
+              parameters: [],
+            },
+            mysql: NOT_SUPPORTED,
+            sqlite: {
+              sql: `create index "test_partial_index" on "test" ("first_name", "last_name") where "first_name" = 'Igal' or "age" >= 18`,
+              parameters: [],
+            },
+          })
+
+          await builder.execute()
+        })
+      }
     })
 
     describe('drop index', () => {
