@@ -531,6 +531,7 @@ export class OperationNodeTransformer {
       unique: node.unique,
       using: this.transformNode(node.using),
       ifNotExists: node.ifNotExists,
+      where: this.transformNode(node.where),
     })
   }
 

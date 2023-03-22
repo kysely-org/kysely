@@ -100,10 +100,18 @@ export function parseFilterExpression(
   throw createFilterExpressionError(type, args)
 }
 
+export function parseWhereWithImmediateParameters(args: any[]): OperationNode {
+  if (args.length === 3) {
+    args = [args[0], args[1], ValueNode.createImmediate(args[2])]
+  }
+
+  return parseWhere(args)
+}
+
 function parseFilter(
   leftOperand: ReferenceExpression<any, any>,
   operator: ComparisonOperatorExpression,
-  rightOperand: OperandValueExpressionOrList<any, any, any>
+  rightOperand: OperandValueExpressionOrList<any, any, any> | ValueNode
 ): BinaryOperationNode {
   if (
     (operator === 'is' || operator === 'is not') &&
@@ -115,7 +123,9 @@ function parseFilter(
   return BinaryOperationNode.create(
     parseReferenceExpression(leftOperand),
     parseComparisonOperatorExpression(operator),
-    parseValueExpressionOrList(rightOperand)
+    ValueNode.is(rightOperand)
+      ? rightOperand
+      : parseValueExpressionOrList(rightOperand)
   )
 }
 
