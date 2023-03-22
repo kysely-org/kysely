@@ -32,7 +32,6 @@ import { HavingInterface } from '../query-builder/having-interface.js'
 import { createJoinBuilder, createSelectQueryBuilder } from './parse-utils.js'
 import { OperationNode } from '../operation-node/operation-node.js'
 import { Expression } from '../expression/expression.js'
-import { sql } from '../raw-builder/sql.js'
 
 export type OperandValueExpression<
   DB,
@@ -101,9 +100,9 @@ export function parseFilterExpression(
   throw createFilterExpressionError(type, args)
 }
 
-export function parseWhereWithParametersAsLiterals(args: any[]): OperationNode {
+export function parseWhereWithImmediateParameters(args: any[]): OperationNode {
   if (args.length === 3) {
-    args = [args[0], args[1], sql.literal(args[2])]
+    args = [args[0], args[1], ValueNode.createImmediate(args[2])]
   }
 
   return parseWhere(args)
@@ -112,7 +111,7 @@ export function parseWhereWithParametersAsLiterals(args: any[]): OperationNode {
 function parseFilter(
   leftOperand: ReferenceExpression<any, any>,
   operator: ComparisonOperatorExpression,
-  rightOperand: OperandValueExpressionOrList<any, any, any>
+  rightOperand: OperandValueExpressionOrList<any, any, any> | ValueNode
 ): BinaryOperationNode {
   if (
     (operator === 'is' || operator === 'is not') &&
@@ -124,7 +123,9 @@ function parseFilter(
   return BinaryOperationNode.create(
     parseReferenceExpression(leftOperand),
     parseComparisonOperatorExpression(operator),
-    parseValueExpressionOrList(rightOperand)
+    ValueNode.is(rightOperand)
+      ? rightOperand
+      : parseValueExpressionOrList(rightOperand)
   )
 }
 

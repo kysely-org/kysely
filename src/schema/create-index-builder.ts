@@ -16,7 +16,7 @@ import { freeze } from '../util/object-utils.js'
 import { Expression } from '../expression/expression.js'
 import {
   ComparisonOperatorExpression,
-  parseWhereWithParametersAsLiterals,
+  parseWhereWithImmediateParameters,
 } from '../parser/binary-operation-parser.js'
 import { QueryNode } from '../operation-node/query-node.js'
 
@@ -181,7 +181,7 @@ export class CreateIndexBuilder<C = never>
       ...this.#props,
       node: QueryNode.cloneWithWhere(
         this.#props.node as any,
-        parseWhereWithParametersAsLiterals(args)
+        parseWhereWithImmediateParameters(args)
       ),
     })
   }
@@ -223,7 +223,7 @@ export class CreateIndexBuilder<C = never>
       ...this.#props,
       node: QueryNode.cloneWithOrWhere(
         this.#props.node as any,
-        parseWhereWithParametersAsLiterals(args)
+        parseWhereWithImmediateParameters(args)
       ),
     })
   }
