@@ -74,6 +74,7 @@ import {
 } from '../parser/unary-operation-parser.js'
 import { KyselyTypeError } from '../util/type-error.js'
 import { Selectable } from '../util/column-type.js'
+import { Streamable } from '../util/streamable.js'
 
 export class SelectQueryBuilder<DB, TB extends keyof DB, O>
   implements
@@ -81,7 +82,8 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
     HavingInterface<DB, TB>,
     Expression<O>,
     Compilable<O>,
-    Explainable
+    Explainable,
+    Streamable<O>
 {
   readonly #props: SelectQueryBuilderProps
 
@@ -1884,32 +1886,6 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
     return result as O
   }
 
-  /**
-   * Executes the query and streams the rows.
-   *
-   * The optional argument `chunkSize` defines how many rows to fetch from the database
-   * at a time. It only affects some dialects like PostgreSQL that support it.
-   *
-   * ### Examples
-   *
-   * ```ts
-   * const stream = db.
-   *   .selectFrom('person')
-   *   .select(['first_name', 'last_name'])
-   *   .where('gender', '=', 'other')
-   *   .stream()
-   *
-   * for await (const person of stream) {
-   *   console.log(person.first_name)
-   *
-   *   if (person.last_name === 'Something') {
-   *     // Breaking or returning before the stream has ended will release
-   *     // the database connection and invalidate the stream.
-   *     break
-   *   }
-   * }
-   * ```
-   */
   async *stream(chunkSize: number = 100): AsyncIterableIterator<O> {
     const compiledQuery = this.compile()
 
