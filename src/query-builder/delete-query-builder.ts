@@ -64,6 +64,7 @@ import {
   parseNotExists,
 } from '../parser/unary-operation-parser.js'
 import { KyselyTypeError } from '../util/type-error.js'
+import { Streamable } from '../util/streamable.js'
 
 export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
   implements
@@ -71,7 +72,8 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
     ReturningInterface<DB, TB, O>,
     OperationNodeSource,
     Compilable<O>,
-    Explainable
+    Explainable,
+    Streamable<O>
 {
   readonly #props: DeleteQueryBuilderProps
 
@@ -956,6 +958,20 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
     }
 
     return result as SimplifyResult<O>
+  }
+
+  async *stream(chunkSize: number = 100): AsyncIterableIterator<O> {
+    const compiledQuery = this.compile()
+
+    const stream = this.#props.executor.stream<O>(
+      compiledQuery,
+      chunkSize,
+      this.#props.queryId
+    )
+
+    for await (const item of stream) {
+      yield* item.rows
+    }
   }
 
   /**

@@ -50,13 +50,15 @@ import { Explainable, ExplainFormat } from '../util/explainable.js'
 import { ExplainNode } from '../operation-node/explain-node.js'
 import { Expression } from '../expression/expression.js'
 import { KyselyTypeError } from '../util/type-error.js'
+import { Streamable } from '../util/streamable.js'
 
 export class InsertQueryBuilder<DB, TB extends keyof DB, O>
   implements
     ReturningInterface<DB, TB, O>,
     OperationNodeSource,
     Compilable<O>,
-    Explainable
+    Explainable,
+    Streamable<O>
 {
   readonly #props: InsertQueryBuilderProps
 
@@ -790,6 +792,20 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
     }
 
     return result as SimplifyResult<O>
+  }
+
+  async *stream(chunkSize: number = 100): AsyncIterableIterator<O> {
+    const compiledQuery = this.compile()
+
+    const stream = this.#props.executor.stream<O>(
+      compiledQuery,
+      chunkSize,
+      this.#props.queryId
+    )
+
+    for await (const item of stream) {
+      yield* item.rows
+    }
   }
 
   /**
