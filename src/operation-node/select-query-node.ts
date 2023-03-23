@@ -182,16 +182,6 @@ export const SelectQueryNode = freeze({
     })
   },
 
-  cloneWithExplain(
-    selectNode: SelectQueryNode,
-    explain: ExplainNode
-  ): SelectQueryNode {
-    return freeze({
-      ...selectNode,
-      explain,
-    })
-  },
-
   cloneWithoutSelections(select: SelectQueryNode): SelectQueryNode {
     return freeze({
       ...select,

@@ -1908,50 +1908,16 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
     }
   }
 
-  /**
-   * Executes query with `explain` statement before `select` keyword.
-   *
-   * ```ts
-   * const explained = await db
-   *  .selectFrom('person')
-   *  .where('gender', '=', 'female')
-   *  .selectAll()
-   *  .explain('json')
-   * ```
-   *
-   * The generated SQL (MySQL):
-   *
-   * ```sql
-   * explain format=json select * from `person` where `gender` = ?
-   * ```
-   *
-   * You can also execute `explain analyze` statements.
-   *
-   * ```ts
-   * import { sql } from 'kysely'
-   *
-   * const explained = await db
-   *  .selectFrom('person')
-   *  .where('gender', '=', 'female')
-   *  .selectAll()
-   *  .explain('json', sql`analyze`)
-   * ```
-   *
-   * The generated SQL (PostgreSQL):
-   *
-   * ```sql
-   * explain (analyze, format json) select * from "person" where "gender" = $1
-   * ```
-   */
   async explain<ER extends Record<string, any> = Record<string, any>>(
     format?: ExplainFormat,
     options?: Expression<any>
   ): Promise<ER[]> {
     const builder = new SelectQueryBuilder<DB, TB, ER>({
       ...this.#props,
-      queryNode: SelectQueryNode.cloneWithExplain(
+      queryNode: QueryNode.cloneWithExplain(
         this.#props.queryNode,
-        ExplainNode.create(format, options?.toOperationNode())
+        format,
+        options
       ),
     })
 

@@ -62,16 +62,6 @@ export const DeleteQueryNode = freeze({
     })
   },
 
-  cloneWithExplain(
-    deleteNode: DeleteQueryNode,
-    explain: ExplainNode
-  ): DeleteQueryNode {
-    return freeze({
-      ...deleteNode,
-      explain,
-    })
-  },
-
   cloneWithUsing(
     deleteNode: DeleteQueryNode,
     tables: OperationNode[]

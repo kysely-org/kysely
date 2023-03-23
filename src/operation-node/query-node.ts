@@ -8,6 +8,9 @@ import { JoinNode } from './join-node.js'
 import { SelectionNode } from './selection-node.js'
 import { ReturningNode } from './returning-node.js'
 import { OperationNode } from './operation-node.js'
+import { ExplainNode } from './explain-node.js'
+import { ExplainFormat } from '../util/explainable.js'
+import { Expression } from '../expression/expression.js'
 
 export type QueryNode =
   | SelectQueryNode
@@ -20,6 +23,8 @@ export type HasJoins = { joins?: ReadonlyArray<JoinNode> }
 export type HasWhere = { where?: WhereNode }
 
 export type HasReturning = { returning?: ReturningNode }
+
+export type HasExplain = { explain?: ExplainNode }
 
 /**
  * @internal
@@ -75,6 +80,17 @@ export const QueryNode = freeze({
     return freeze({
       ...node,
       where: undefined,
+    })
+  },
+
+  cloneWithExplain<T extends HasExplain>(
+    node: T,
+    format: ExplainFormat | undefined,
+    options: Expression<any> | undefined
+  ): T {
+    return freeze({
+      ...node,
+      explain: ExplainNode.create(format, options?.toOperationNode()),
     })
   },
 })
