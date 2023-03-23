@@ -705,6 +705,38 @@ for (const dialect of DIALECTS) {
         })
       })
     }
+
+    if (dialect === 'postgres') {
+      it('should insert multiple rows and stream returned results', async () => {
+        const values = [
+          {
+            first_name: 'Moses',
+            last_name: 'Malone',
+            gender: 'male',
+          },
+          {
+            first_name: 'Erykah',
+            last_name: 'Badu',
+            gender: 'female',
+          },
+        ] as const
+
+        const stream = ctx.db
+          .insertInto('person')
+          .values(values)
+          .returning(['first_name', 'last_name', 'gender'])
+          .stream()
+
+        const people = []
+
+        for await (const person of stream) {
+          people.push(person)
+        }
+
+        expect(people).to.have.length(values.length)
+        expect(people).to.eql(values)
+      })
+    }
   })
 
   async function getNewestPerson(
