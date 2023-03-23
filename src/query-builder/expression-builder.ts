@@ -6,6 +6,9 @@ import {
   From,
   TableExpressionOrList,
   FromTables,
+  ExtractTableAlias,
+  AnyAliasedTable,
+  PickTableWithAlias,
 } from '../parser/table-parser.js'
 import { WithSchemaPlugin } from '../plugin/with-schema/with-schema-plugin.js'
 import { createQueryId } from '../util/query-id.js'
@@ -39,9 +42,9 @@ export class ExpressionBuilder<DB, TB extends keyof DB> {
    * ```ts
    * await db.selectFrom('person')
    *   .innerJoin('pet', 'pet.owner_id', 'person.id')
-   *   .select([
+   *   .select((eb) => [
    *     'person.id',
-   *     (qb) => qb.fn.count('pet.id').as('pet_count')
+   *     eb.fn.count('pet.id').as('pet_count')
    *   ])
    *   .groupBy('person.id')
    *   .having(count('pet.id'), '>', 10)
@@ -78,9 +81,9 @@ export class ExpressionBuilder<DB, TB extends keyof DB> {
    *
    * ```ts
    * const result = await db.selectFrom('pet')
-   *   .select([
+   *   .select((eb) => [
    *     'pet.name',
-   *     (qb) => qb.selectFrom('person')
+   *     eb.selectFrom('person')
    *       .whereRef('person.id', '=', 'pet.owner_id')
    *       .select('person.first_name')
    *       .as('owner_name')
@@ -106,9 +109,25 @@ export class ExpressionBuilder<DB, TB extends keyof DB> {
    * that case Kysely typings wouldn't allow you to reference `pet.owner_id`
    * because `pet` is not joined to that query.
    */
+  selectFrom<TE extends keyof DB & string>(
+    from: TE[]
+  ): SelectQueryBuilder<DB, TB | ExtractTableAlias<DB, TE>, {}>
+
   selectFrom<TE extends TableExpression<DB, TB>>(
     from: TE[]
   ): SelectQueryBuilder<From<DB, TE>, FromTables<DB, TB, TE>, {}>
+
+  selectFrom<TE extends keyof DB & string>(
+    from: TE
+  ): SelectQueryBuilder<DB, TB | ExtractTableAlias<DB, TE>, {}>
+
+  selectFrom<TE extends AnyAliasedTable<DB>>(
+    from: TE
+  ): SelectQueryBuilder<
+    DB & PickTableWithAlias<DB, TE>,
+    TB | ExtractTableAlias<DB, TE>,
+    {}
+  >
 
   selectFrom<TE extends TableExpression<DB, TB>>(
     from: TE

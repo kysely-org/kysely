@@ -16,7 +16,10 @@ import {
   parseExists,
   parseNotExists,
 } from '../parser/unary-operation-parser.js'
-import { UpdateObject, parseUpdateObject } from '../parser/update-set-parser.js'
+import {
+  UpdateExpression,
+  parseUpdateExpression,
+} from '../parser/update-set-parser.js'
 import { freeze } from '../util/object-utils.js'
 import { preventAwait } from '../util/prevent-await.js'
 import { AnyColumn } from '../util/type-utils.js'
@@ -322,7 +325,7 @@ export class OnConflictBuilder<DB, TB extends keyof DB>
    * ```
    */
   doUpdateSet(
-    updates: UpdateObject<
+    update: UpdateExpression<
       OnConflictDatabase<DB, TB>,
       OnConflictTables<TB>,
       OnConflictTables<TB>
@@ -331,7 +334,7 @@ export class OnConflictBuilder<DB, TB extends keyof DB>
     return new OnConflictUpdateBuilder({
       ...this.#props,
       onConflictNode: OnConflictNode.cloneWith(this.#props.onConflictNode, {
-        updates: parseUpdateObject(updates),
+        updates: parseUpdateExpression(update),
       }),
     })
   }

@@ -183,4 +183,11 @@ async function testDelete(db: Kysely<Database>) {
       pet_id: string | null
     }[]
   >(r14)
+
+  const r15 = await db
+    .deleteFrom('person as p')
+    .where('p.first_name', '=', 'Jennifer')
+    .returning('p.id')
+    .executeTakeFirstOrThrow()
+  expectType<{ id: number }>(r15)
 }

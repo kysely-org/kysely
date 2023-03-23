@@ -110,18 +110,8 @@ async function testManyWith(db: Kysely<Database>) {
         .select('first_name as fn5')
         .$assertType<{ fn5: string }>()
     )
-    .with('w6', (eb) =>
-      eb
-        .selectFrom('person')
-        .select('first_name as fn6')
-        .$assertType<{ fn6: string }>()
-    )
-    .with('w7', (qb) =>
-      qb
-        .selectFrom('person')
-        .select('first_name as fn7')
-        .$assertType<{ fn7: string }>()
-    )
+    .with('w6', (eb) => eb.selectFrom('person').select('first_name as fn6'))
+    .with('w7', (qb) => qb.selectFrom('person').select('first_name as fn7'))
     .with('w8', (qb) => qb.selectFrom('person').select('first_name as fn8'))
     .with('w9', (qb) => qb.selectFrom('person').select('first_name as fn9'))
     .with('w10', (qb) => qb.selectFrom('person').select('first_name as fn10'))

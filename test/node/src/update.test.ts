@@ -72,16 +72,55 @@ for (const dialect of DIALECTS) {
       ])
     })
 
+    it('should update one row with table alias', async () => {
+      const query = ctx.db
+        .updateTable('person as p')
+        .set({ first_name: 'Foo', last_name: 'Barson' })
+        .where('p.gender', '=', 'female')
+
+      testSql(query, dialect, {
+        postgres: {
+          sql: 'update "person" as "p" set "first_name" = $1, "last_name" = $2 where "p"."gender" = $3',
+          parameters: ['Foo', 'Barson', 'female'],
+        },
+        mysql: {
+          sql: 'update `person` as `p` set `first_name` = ?, `last_name` = ? where `p`.`gender` = ?',
+          parameters: ['Foo', 'Barson', 'female'],
+        },
+        sqlite: {
+          sql: 'update "person" as "p" set "first_name" = ?, "last_name" = ? where "p"."gender" = ?',
+          parameters: ['Foo', 'Barson', 'female'],
+        },
+      })
+
+      const result = await query.executeTakeFirst()
+
+      expect(result).to.be.instanceOf(UpdateResult)
+      expect(result.numUpdatedRows).to.equal(1n)
+
+      expect(
+        await ctx.db
+          .selectFrom('person')
+          .select(['first_name', 'last_name', 'gender'])
+          .orderBy('first_name')
+          .orderBy('last_name')
+          .execute()
+      ).to.eql([
+        { first_name: 'Arnold', last_name: 'Schwarzenegger', gender: 'male' },
+        { first_name: 'Foo', last_name: 'Barson', gender: 'female' },
+        { first_name: 'Sylvester', last_name: 'Stallone', gender: 'male' },
+      ])
+    })
+
     it('should update one row using a subquery', async () => {
       const query = ctx.db
         .updateTable('person')
-        .set({
-          last_name: (qb) =>
-            qb
-              .selectFrom('pet')
-              .whereRef('person.id', '=', 'owner_id')
-              .select('name'),
-        })
+        .set((eb) => ({
+          last_name: eb
+            .selectFrom('pet')
+            .select('name')
+            .whereRef('person.id', '=', 'owner_id'),
+        }))
         .where('first_name', '=', 'Jennifer')
 
       testSql(query, dialect, {

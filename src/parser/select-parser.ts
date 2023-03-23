@@ -1,8 +1,5 @@
-import { isReadonlyArray, isString } from '../util/object-utils.js'
-import {
-  AliasedSelectQueryBuilder,
-  SelectQueryBuilder,
-} from '../query-builder/select-query-builder.js'
+import { isFunction, isReadonlyArray, isString } from '../util/object-utils.js'
+import { AliasedSelectQueryBuilder } from '../query-builder/select-query-builder.js'
 import { SelectionNode } from '../operation-node/selection-node.js'
 import {
   AnyAliasedColumn,
@@ -24,6 +21,8 @@ import {
 import { Selectable, SelectType } from '../util/column-type.js'
 import { parseTable } from './table-parser.js'
 import { AliasedExpression } from '../expression/expression.js'
+import { ExpressionBuilder } from '../query-builder/expression-builder.js'
+import { createExpressionBuilder } from './parse-utils.js'
 
 export type SelectExpression<DB, TB extends keyof DB> =
   | AnyAliasedColumnWithTable<DB, TB>
@@ -33,30 +32,14 @@ export type SelectExpression<DB, TB extends keyof DB> =
   | DynamicReferenceBuilder<any>
   | AliasedExpressionOrFactory<DB, TB>
 
-export type SelectExpressionOrList<DB, TB extends keyof DB> =
-  | SelectExpression<DB, TB>
-  | ReadonlyArray<SelectExpression<DB, TB>>
-
-/**
- * Given a selection expression returns a query builder type that
- * has the selection.
- */
-export type QueryBuilderWithSelection<
+export type SelectArg<
   DB,
   TB extends keyof DB,
-  O,
-  SE
-> = SelectQueryBuilder<DB, TB, O & Selection<DB, TB, SE>>
-
-/**
- * `selectAll` output query builder type.
- */
-export type SelectAllQueryBuilder<
-  DB,
-  TB extends keyof DB,
-  O,
-  S extends keyof DB
-> = SelectQueryBuilder<DB, TB, O & AllSelection<DB, S>>
+  SE extends SelectExpression<DB, TB>
+> =
+  | SE
+  | ReadonlyArray<SE>
+  | ((eb: ExpressionBuilder<DB, TB>) => ReadonlyArray<SE>)
 
 export type Selection<DB, TB extends keyof DB, SE> = {
   [A in ExtractAliasFromSelectExpression<SE>]: SelectType<
@@ -173,10 +156,12 @@ export type AllSelection<DB, TB extends keyof DB> = Selectable<{
   }[TB]
 }>
 
-export function parseSelectExpressionOrList(
-  selection: SelectExpressionOrList<any, any>
+export function parseSelectArg(
+  selection: SelectArg<any, any, SelectExpression<any, any>>
 ): SelectionNode[] {
-  if (isReadonlyArray(selection)) {
+  if (isFunction(selection)) {
+    return parseSelectArg(selection(createExpressionBuilder()))
+  } else if (isReadonlyArray(selection)) {
     return selection.map((it) => parseSelectExpression(it))
   } else {
     return [parseSelectExpression(selection)]

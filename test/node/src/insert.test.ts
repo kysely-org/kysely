@@ -109,6 +109,40 @@ for (const dialect of DIALECTS) {
       })
     })
 
+    it.skip('should insert one row with expressions', async () => {
+      const query = ctx.db.insertInto('person').values(({ selectFrom }) => ({
+        first_name: selectFrom('pet')
+          .select('name')
+          .where('species', '=', 'dog')
+          .limit(1),
+        gender: 'female',
+      }))
+
+      testSql(query, dialect, {
+        postgres: {
+          sql: `insert into "person" ("first_name", "gender") values ((select "first_name" from "person" where "last_name" = $1 limit $2), $3)`,
+          parameters: ['Aniston', 1, 'female'],
+        },
+        mysql: {
+          sql: 'insert into `person` (`first_name`, `gender`) values ((select `first_name` from `person` where `last_name` = ? limit ?), ?)',
+          parameters: ['Aniston', 1, 'female'],
+        },
+        sqlite: {
+          sql: `insert into "person" ("first_name", "gender") values ((select "first_name" from "person" where "last_name" = ? limit ?), ?)`,
+          parameters: ['Aniston', 1, 'female'],
+        },
+      })
+
+      const result = await query.executeTakeFirst()
+      expect(result).to.be.instanceOf(InsertResult)
+      expect(result.numInsertedOrUpdatedRows).to.equal(1n)
+
+      expect(await getNewestPerson(ctx.db)).to.eql({
+        first_name: 'Jennifer',
+        last_name: null,
+      })
+    })
+
     it('should insert the result of a select query', async () => {
       const query = ctx.db
         .insertInto('person')

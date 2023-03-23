@@ -109,22 +109,19 @@ export class AggregateFunctionBuilder<DB, TB extends keyof DB, O = unknown>
    * ```ts
    * const result = await db
    *   .selectFrom('person')
-   *   .select([
-   *     (eb) =>
-   *       eb.fn
-   *         .count<number>('id')
-   *         .filterWhere('gender', '=', 'female')
-   *         .as('female_count'),
-   *     (eb) =>
-   *       eb.fn
-   *         .count<number>('id')
-   *         .filterWhere('gender', '=', 'male')
-   *         .as('male_count'),
-   *     (eb) =>
-   *       eb.fn
-   *         .count<number>('id')
-   *         .filterWhere('gender', '=', 'other')
-   *         .as('other_count'),
+   *   .select((eb) => [
+   *     eb.fn
+   *       .count<number>('id')
+   *       .filterWhere('gender', '=', 'female')
+   *       .as('female_count'),
+   *     eb.fn
+   *       .count<number>('id')
+   *       .filterWhere('gender', '=', 'male')
+   *       .as('male_count'),
+   *     eb.fn
+   *       .count<number>('id')
+   *       .filterWhere('gender', '=', 'other')
+   *       .as('other_count'),
    *   ])
    *   .executeTakeFirstOrThrow()
    * ```
@@ -173,18 +170,17 @@ export class AggregateFunctionBuilder<DB, TB extends keyof DB, O = unknown>
    * ```ts
    * const result = await db
    *   .selectFrom('person')
-   *   .select([
-   *     (eb) =>
-   *       eb.fn
-   *         .count<number>('person.id')
-   *         .filterWhereExists((qb) =>
-   *           qb
-   *             .selectFrom('pet')
-   *             .select('pet.id')
-   *             .whereRef('pet.owner_id', '=', 'person.id')
-   *         )
-   *         .as('pet_owner_count'),
-   *     (eb) => eb.fn.count<number>('person.id').as('total_count'),
+   *   .select((eb) => [
+   *     eb.fn
+   *       .count<number>('person.id')
+   *       .filterWhereExists((qb) =>
+   *         qb
+   *           .selectFrom('pet')
+   *           .select('pet.id')
+   *           .whereRef('pet.owner_id', '=', 'person.id')
+   *       )
+   *       .as('pet_owner_count'),
+   *     eb.fn.count<number>('person.id').as('total_count'),
    *   ])
    *   .executeTakeFirstOrThrow()
    * ```
@@ -242,13 +238,12 @@ export class AggregateFunctionBuilder<DB, TB extends keyof DB, O = unknown>
    * ```ts
    * const result = await db
    *   .selectFrom('person')
-   *   .select([
-   *     (eb) =>
-   *       eb.fn
-   *         .count<number>('id')
-   *         .filterWhereRef('first_name', '=', 'last_name')
-   *         .as('repeat_name_count'),
-   *     (eb) => eb.fn.count<number>('id').as('total_count'),
+   *   .select((eb) => [
+   *     eb.fn
+   *       .count<number>('id')
+   *       .filterWhereRef('first_name', '=', 'last_name')
+   *       .as('repeat_name_count'),
+   *     eb.fn.count<number>('id').as('total_count'),
    *   ])
    *   .executeTakeFirstOrThrow()
    * ```
