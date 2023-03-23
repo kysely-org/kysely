@@ -13,10 +13,10 @@ import {
   TableExpressionOrList,
 } from '../parser/table-parser.js'
 import {
-  parseSelectExpressionOrList,
+  parseSelectArg,
   parseSelectAll,
   SelectExpression,
-  SelectExpressionOrList,
+  SelectArg,
 } from '../parser/select-parser.js'
 import { ReturningAllRow, ReturningRow } from '../parser/returning-parser.js'
 import { ReferenceExpression } from '../parser/reference-parser.js'
@@ -491,19 +491,13 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
   }
 
   returning<SE extends SelectExpression<DB, TB>>(
-    selections: ReadonlyArray<SE>
-  ): DeleteQueryBuilder<DB, TB, ReturningRow<DB, TB, O, SE>>
-
-  returning<SE extends SelectExpression<DB, TB>>(
-    selection: SE
-  ): DeleteQueryBuilder<DB, TB, ReturningRow<DB, TB, O, SE>>
-
-  returning(selection: SelectExpressionOrList<DB, TB>): any {
+    selection: SelectArg<DB, TB, SE>
+  ): DeleteQueryBuilder<DB, TB, ReturningRow<DB, TB, O, SE>> {
     return new DeleteQueryBuilder({
       ...this.#props,
       queryNode: QueryNode.cloneWithReturning(
         this.#props.queryNode,
-        parseSelectExpressionOrList(selection)
+        parseSelectArg(selection)
       ),
     })
   }

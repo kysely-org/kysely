@@ -336,7 +336,7 @@ export class Kysely<DB>
   ): Promise<QueryResult<R>> {
     const compiledQuery = isCompilable(query) ? query.compile() : query
 
-    return this.getExecutor().executeQuery(compiledQuery, queryId)
+    return this.getExecutor().executeQuery<R>(compiledQuery, queryId)
   }
 }
 

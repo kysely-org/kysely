@@ -232,7 +232,7 @@ export interface WhereInterface<DB, TB extends keyof DB> {
    * const persons = await db
    *   .selectFrom('person')
    *   .selectAll('person')
-   *   .select((qb) => qb
+   *   .select((eb) => eb
    *     .selectFrom('pet')
    *     .select('name')
    *     .whereRef('pet.owner_id', '=', 'person.id')

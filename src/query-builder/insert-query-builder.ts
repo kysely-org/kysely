@@ -1,15 +1,16 @@
 import { OperationNodeSource } from '../operation-node/operation-node-source.js'
 import { CompiledQuery } from '../query-compiler/compiled-query.js'
 import {
-  parseSelectExpressionOrList,
+  parseSelectArg,
   parseSelectAll,
   SelectExpression,
-  SelectExpressionOrList,
+  SelectArg,
 } from '../parser/select-parser.js'
 import {
-  InsertObject,
+  InsertExpression,
   InsertObjectOrList,
-  parseInsertObjectOrList,
+  InsertObjectOrListFactory,
+  parseInsertExpression,
 } from '../parser/insert-values-parser.js'
 import { InsertQueryNode } from '../operation-node/insert-query-node.js'
 import { QueryNode } from '../operation-node/query-node.js'
@@ -18,7 +19,10 @@ import {
   SimplifyResult,
   SimplifySingleResult,
 } from '../util/type-utils.js'
-import { UpdateObject, parseUpdateObject } from '../parser/update-set-parser.js'
+import {
+  UpdateExpression,
+  parseUpdateExpression,
+} from '../parser/update-set-parser.js'
 import { preventAwait } from '../util/prevent-await.js'
 import { Compilable } from '../util/compilable.js'
 import { QueryExecutor } from '../query-executor/query-executor.js'
@@ -160,11 +164,12 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    *
    * const result = await db
    *   .insertInto('person')
-   *   .values({
+   *   .values((eb) => ({
    *     first_name: 'Jennifer',
    *     last_name: sql`${'Ani'} || ${'ston'}`,
-   *     age: db.selectFrom('person').select(sql`avg(age)`),
-   *   })
+   *     middle_name: eb.ref('first_name'),
+   *     age: eb.selectFrom('person').select(sql`avg(age)`),
+   *   }))
    *   .executeTakeFirst()
    *
    * console.log(result.insertId)
@@ -185,21 +190,21 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    *   .where('first_name', '=', 'Jennifer')
    *   .select(['id', 'first_name', 'gender'])
    *   .limit(1)
-   * ).insertInto('pet').values({
-   *   owner_id: (eb) => eb.selectFrom('jennifer').select('id'),
-   *   name: (eb) => eb.selectFrom('jennifer').select('first_name'),
+   * ).insertInto('pet').values((eb) => ({
+   *   owner_id: eb.selectFrom('jennifer').select('id'),
+   *   name: eb.selectFrom('jennifer').select('first_name'),
    *   species: 'cat',
-   * })
+   * }))
    * ```
    */
-  values(row: InsertObject<DB, TB>): InsertQueryBuilder<DB, TB, O>
+  values(insert: InsertObjectOrList<DB, TB>): InsertQueryBuilder<DB, TB, O>
 
   values(
-    row: ReadonlyArray<InsertObject<DB, TB>>
+    insert: InsertObjectOrListFactory<DB, TB>
   ): InsertQueryBuilder<DB, TB, O>
 
-  values(args: InsertObjectOrList<DB, TB>): any {
-    const [columns, values] = parseInsertObjectOrList(args)
+  values(insert: InsertExpression<DB, TB>): InsertQueryBuilder<DB, TB, O> {
+    const [columns, values] = parseInsertExpression(insert)
 
     return new InsertQueryBuilder({
       ...this.#props,
@@ -489,30 +494,26 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    * ```
    */
   onDuplicateKeyUpdate(
-    updates: UpdateObject<DB, TB, TB>
+    update: UpdateExpression<DB, TB, TB>
   ): InsertQueryBuilder<DB, TB, O> {
     return new InsertQueryBuilder({
       ...this.#props,
       queryNode: InsertQueryNode.cloneWith(this.#props.queryNode, {
-        onDuplicateKey: OnDuplicateKeyNode.create(parseUpdateObject(updates)),
+        onDuplicateKey: OnDuplicateKeyNode.create(
+          parseUpdateExpression(update)
+        ),
       }),
     })
   }
 
   returning<SE extends SelectExpression<DB, TB>>(
-    selections: ReadonlyArray<SE>
-  ): InsertQueryBuilder<DB, TB, ReturningRow<DB, TB, O, SE>>
-
-  returning<SE extends SelectExpression<DB, TB>>(
-    selection: SE
-  ): InsertQueryBuilder<DB, TB, ReturningRow<DB, TB, O, SE>>
-
-  returning(selection: SelectExpressionOrList<DB, TB>): any {
+    selection: SelectArg<DB, TB, SE>
+  ): InsertQueryBuilder<DB, TB, ReturningRow<DB, TB, O, SE>> {
     return new InsertQueryBuilder({
       ...this.#props,
       queryNode: QueryNode.cloneWithReturning(
         this.#props.queryNode,
-        parseSelectExpressionOrList(selection)
+        parseSelectArg(selection)
       ),
     })
   }
@@ -684,7 +685,7 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    *   )
    *   .with('new_pet', (qb) => qb
    *     .insertInto('pet')
-   *     .values({ owner_id: (eb) => eb.selectFrom('new_person').select('id'), ...pet })
+   *     .values((eb) => ({ owner_id: eb.selectFrom('new_person').select('id'), ...pet }))
    *     .returning(['name as pet_name', 'species'])
    *     .$assertType<{ pet_name: string, species: Species }>()
    *   )

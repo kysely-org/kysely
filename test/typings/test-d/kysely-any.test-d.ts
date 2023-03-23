@@ -1,4 +1,4 @@
-import { Kysely } from '..'
+import { DeleteResult, Kysely, UpdateResult } from '..'
 import { expectType } from 'tsd'
 
 async function testKyselyAnySelects(db: Kysely<any>) {
@@ -48,4 +48,55 @@ async function testKyselyAnySelects(db: Kysely<any>) {
       fux: never
     }[]
   >(r5)
+}
+
+async function testKyselyAnyUpdates(db: Kysely<any>) {
+  const r1 = await db
+    .updateTable('foo')
+    .set({ bar: 'baz', spam: 1 })
+    .where('foo.eggs', '=', 1)
+    .orWhere('eggs', '=', 2)
+    .executeTakeFirstOrThrow()
+  expectType<UpdateResult>(r1)
+
+  const r2 = await db
+    .updateTable('foo as f')
+    .set({ bar: 'baz', spam: 1 })
+    .where('f.eggs', '=', 1)
+    .orWhere('eggs', '=', 2)
+    .executeTakeFirstOrThrow()
+  expectType<UpdateResult>(r2)
+
+  const r3 = await db
+    .updateTable('foo')
+    .set({ bar: 'baz', spam: 1 })
+    .where('foo.eggs', '=', 1)
+    .orWhere('eggs', '=', 2)
+    .returning(['a', 'b'])
+    .executeTakeFirstOrThrow()
+  expectType<{ a: any; b: any }>(r3)
+}
+
+async function testKyselyAnyDeletes(db: Kysely<any>) {
+  const r1 = await db
+    .deleteFrom('foo')
+    .where('foo.eggs', '=', 1)
+    .orWhere('eggs', '=', 2)
+    .executeTakeFirstOrThrow()
+  expectType<DeleteResult>(r1)
+
+  const r2 = await db
+    .deleteFrom('foo as f')
+    .where('f.eggs', '=', 1)
+    .orWhere('eggs', '=', 2)
+    .executeTakeFirstOrThrow()
+  expectType<DeleteResult>(r2)
+
+  const r3 = await db
+    .deleteFrom('foo')
+    .where('foo.eggs', '=', 1)
+    .orWhere('eggs', '=', 2)
+    .returning(['a', 'b'])
+    .executeTakeFirstOrThrow()
+  expectType<{ a: any; b: any }>(r3)
 }

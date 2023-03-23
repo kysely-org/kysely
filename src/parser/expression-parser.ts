@@ -18,15 +18,25 @@ export type ExpressionOrFactory<DB, TB extends keyof DB, V> =
   // `Record<string, V>` output type, even though `SelectQueryBuilder`
   // is also an `Expression`.
   | SelectQueryBuilder<any, any, Record<string, V>>
-  | ((
-      eb: ExpressionBuilder<DB, TB>
-    ) => SelectQueryBuilder<any, any, Record<string, V>>)
+  | SelectQueryBuilderFactory<DB, TB, Record<string, V>>
   | Expression<V>
-  | ((eb: ExpressionBuilder<DB, TB>) => Expression<V>)
+  | ExpressionFactory<DB, TB, V>
 
 export type AliasedExpressionOrFactory<DB, TB extends keyof DB> =
   | AliasedExpression<any, any>
-  | ((qb: ExpressionBuilder<DB, TB>) => AliasedExpression<any, any>)
+  | AliasedExpressionFactory<DB, TB>
+
+type SelectQueryBuilderFactory<DB, TB extends keyof DB, V> = (
+  eb: ExpressionBuilder<DB, TB>
+) => SelectQueryBuilder<any, any, V>
+
+type ExpressionFactory<DB, TB extends keyof DB, V> = (
+  eb: ExpressionBuilder<DB, TB>
+) => Expression<V>
+
+type AliasedExpressionFactory<DB, TB extends keyof DB> = (
+  eb: ExpressionBuilder<DB, TB>
+) => AliasedExpression<any, any>
 
 export function parseExpression(
   exp: ExpressionOrFactory<any, any, any>

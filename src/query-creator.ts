@@ -17,6 +17,8 @@ import {
   TableReference,
   TableReferenceOrList,
   ExtractTableAlias,
+  AnyAliasedTable,
+  PickTableWithAlias,
 } from './parser/table-parser.js'
 import { QueryExecutor } from './query-executor/query-executor.js'
 import {
@@ -148,7 +150,7 @@ export class QueryCreator<DB> {
    *   (select 1 as one) as "q"
    * ```
    */
-  selectFrom<TE extends keyof DB>(
+  selectFrom<TE extends keyof DB & string>(
     from: TE[]
   ): SelectQueryBuilder<DB, ExtractTableAlias<DB, TE>, {}>
 
@@ -156,9 +158,17 @@ export class QueryCreator<DB> {
     from: TE[]
   ): SelectQueryBuilder<From<DB, TE>, FromTables<DB, never, TE>, {}>
 
-  selectFrom<TE extends keyof DB>(
+  selectFrom<TE extends keyof DB & string>(
     from: TE
   ): SelectQueryBuilder<DB, ExtractTableAlias<DB, TE>, {}>
+
+  selectFrom<TE extends AnyAliasedTable<DB>>(
+    from: TE
+  ): SelectQueryBuilder<
+    DB & PickTableWithAlias<DB, TE>,
+    ExtractTableAlias<DB, TE>,
+    {}
+  >
 
   selectFrom<TE extends TableExpression<DB, keyof DB>>(
     from: TE
@@ -313,9 +323,17 @@ export class QueryCreator<DB> {
    * where `person`.`id` = ?
    * ```
    */
+  deleteFrom<TR extends keyof DB & string>(
+    from: TR[]
+  ): DeleteQueryBuilder<DB, ExtractTableAlias<DB, TR>, DeleteResult>
+
   deleteFrom<TR extends TableReference<DB>>(
     tables: TR[]
   ): DeleteQueryBuilder<From<DB, TR>, FromTables<DB, never, TR>, DeleteResult>
+
+  deleteFrom<TR extends keyof DB & string>(
+    from: TR
+  ): DeleteQueryBuilder<DB, ExtractTableAlias<DB, TR>, DeleteResult>
 
   deleteFrom<TR extends TableReference<DB>>(
     table: TR
@@ -355,6 +373,24 @@ export class QueryCreator<DB> {
    * console.log(result.numUpdatedRows)
    * ```
    */
+  updateTable<TR extends keyof DB & string>(
+    table: TR
+  ): UpdateQueryBuilder<
+    DB,
+    ExtractTableAlias<DB, TR>,
+    ExtractTableAlias<DB, TR>,
+    UpdateResult
+  >
+
+  updateTable<TR extends AnyAliasedTable<DB>>(
+    table: TR
+  ): UpdateQueryBuilder<
+    DB & PickTableWithAlias<DB, TR>,
+    ExtractTableAlias<DB, TR>,
+    ExtractTableAlias<DB, TR>,
+    UpdateResult
+  >
+
   updateTable<TR extends TableReference<DB>>(
     table: TR
   ): UpdateQueryBuilder<
@@ -362,7 +398,9 @@ export class QueryCreator<DB> {
     FromTables<DB, never, TR>,
     FromTables<DB, never, TR>,
     UpdateResult
-  > {
+  >
+
+  updateTable<TR extends TableReference<DB>>(table: TR): any {
     return new UpdateQueryBuilder({
       queryId: createQueryId(),
       executor: this.#props.executor,
