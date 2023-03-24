@@ -23,6 +23,7 @@ import { ReferenceExpression } from '../parser/reference-parser.js'
 import { QueryNode } from '../operation-node/query-node.js'
 import {
   MergePartial,
+  NarrowPartial,
   Nullable,
   SimplifyResult,
   SimplifySingleResult,
@@ -721,6 +722,54 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
    */
   castTo<T>(): UpdateQueryBuilder<DB, UT, TB, T> {
     return this.$castTo<T>()
+  }
+
+  /**
+   * Narrows (parts of) the output type of the query.
+   *
+   * Kysely tries to be as type-safe as possible, but in some cases we have to make
+   * compromises for better maintainability and compilation performance. At present,
+   * Kysely doesn't narrow the output type of the query based on {@link set} input
+   * when using {@link where} and/or {@link returning} or {@link returningAll}.
+   *
+   * This utility method is very useful for these situations, as it removes unncessary
+   * runtime assertion/guard code. Its input type is limited to the output type
+   * of the query, so you can't add a column that doesn't exist, or change a column's
+   * type to something that doesn't exist in its union type.
+   *
+   * ### Examples
+   *
+   * Turn this code:
+   *
+   * ```ts
+   * const person = await db.updateTable('person')
+   *   .set({ deletedAt: now })
+   *   .where('id', '=', id)
+   *   .where('nullable_column', 'is not', null)
+   *   .returningAll()
+   *   .executeTakeFirstOrThrow()
+   *
+   * if (person.nullable_column) {
+   *   functionThatExpectsPersonWithNonNullValue(person)
+   * }
+   * ```
+   *
+   * Into this:
+   *
+   * ```ts
+   * const person = await db.updateTable('person')
+   *   .set({ deletedAt: now })
+   *   .where('id', '=', id)
+   *   .where('nullable_column', 'is not', null)
+   *   .returningAll()
+   *   .$narrowType<{ deletedAt: Date; nullable_column: string }>()
+   *   .executeTakeFirstOrThrow()
+   *
+   * functionThatExpectsPersonWithNonNullValue(person)
+   * ```
+   */
+  $narrowType<T>(): UpdateQueryBuilder<DB, UT, TB, NarrowPartial<O, T>> {
+    return new UpdateQueryBuilder(this.#props)
   }
 
   /**

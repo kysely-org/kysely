@@ -1746,39 +1746,41 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    * Kysely tries to be as type-safe as possible, but in some cases we have to make
    * compromises for better maintainability and compilation performance. At present,
    * Kysely doesn't narrow the output type of the query when using {@link where}, {@link having}
-   * or {@link JoinBuilder#on}.
+   * or {@link JoinQueryBuilder.on}.
    *
    * This utility method is very useful for these situations, as it removes unncessary
-   * runtime assertion code.
+   * runtime assertion/guard code. Its input type is limited to the output type
+   * of the query, so you can't add a column that doesn't exist, or change a column's
+   * type to something that doesn't exist in its union type.
    *
    * ### Examples
    *
    * Turn this code:
    *
    * ```ts
-   * const { nullable_column } = await db.selectFrom('person')
+   * const person = await db.selectFrom('person')
    *   .where('nullable_column', 'is not', null)
-   *   .select('nullable_column')
+   *   .selectAll()
    *   .executeTakeFirstOrThrow()
    *
-   * if (nullable_column) {
-   *   nullable_column.trim()
+   * if (person.nullable_column) {
+   *   functionThatExpectsPersonWithNonNullValue(person)
    * }
    * ```
    *
    * Into this:
    *
    * ```ts
-   * const { nullable_column } = await db.selectFrom('person')
+   * const person = await db.selectFrom('person')
    *   .where('nullable_column', 'is not', null)
-   *   .select('nullable_column')
-   *   .$narrowTo<{ nullable_column: string }>()
+   *   .selectAll()
+   *   .$narrowType<{ nullable_column: string }>()
    *   .executeTakeFirstOrThrow()
    *
-   * nullable_column.trim()
+   * functionThatExpectsPersonWithNonNullValue(person)
    * ```
    */
-  $narrowTo<T>(): SelectQueryBuilder<DB, TB, NarrowPartial<O, T>> {
+  $narrowType<T>(): SelectQueryBuilder<DB, TB, NarrowPartial<O, T>> {
     return new SelectQueryBuilder(this.#props)
   }
 
