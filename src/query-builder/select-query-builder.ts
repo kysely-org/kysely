@@ -24,6 +24,7 @@ import { SelectQueryNode } from '../operation-node/select-query-node.js'
 import { QueryNode } from '../operation-node/query-node.js'
 import {
   MergePartial,
+  NarrowPartial,
   Nullable,
   Simplify,
   SimplifySingleResult,
@@ -1737,6 +1738,48 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    */
   castTo<T>(): SelectQueryBuilder<DB, TB, T> {
     return this.$castTo<T>()
+  }
+
+  /**
+   * Narrows (parts of) the output type of the query.
+   *
+   * Kysely tries to be as type-safe as possible, but in some cases we have to make
+   * compromises for better maintainability and compilation performance. At present,
+   * Kysely doesn't narrow the output type of the query when using {@link where}, {@link having}
+   * or {@link JoinBuilder#on}.
+   *
+   * This utility method is very useful for these situations, as it removes unncessary
+   * runtime assertion code.
+   *
+   * ### Examples
+   *
+   * Turn this code:
+   *
+   * ```ts
+   * const { nullable_column } = await db.selectFrom('person')
+   *   .where('nullable_column', 'is not', null)
+   *   .select('nullable_column')
+   *   .executeTakeFirstOrThrow()
+   *
+   * if (nullable_column) {
+   *   nullable_column.trim()
+   * }
+   * ```
+   *
+   * Into this:
+   *
+   * ```ts
+   * const { nullable_column } = await db.selectFrom('person')
+   *   .where('nullable_column', 'is not', null)
+   *   .select('nullable_column')
+   *   .$narrowTo<{ nullable_column: string }>()
+   *   .executeTakeFirstOrThrow()
+   *
+   * nullable_column.trim()
+   * ```
+   */
+  $narrowTo<T>(): SelectQueryBuilder<DB, TB, NarrowPartial<O, T>> {
+    return new SelectQueryBuilder(this.#props)
   }
 
   /**
