@@ -1272,7 +1272,7 @@ export class DefaultQueryCompiler
     this.visitNode(node.operand)
   }
 
-  private isMinusOperator(node: OperationNode): node is OperatorNode {
+  protected isMinusOperator(node: OperationNode): node is OperatorNode {
     return OperatorNode.is(node) && node.operator === '-'
   }
 
