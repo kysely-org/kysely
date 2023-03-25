@@ -1264,8 +1264,16 @@ export class DefaultQueryCompiler
 
   protected override visitUnaryOperation(node: UnaryOperationNode): void {
     this.visitNode(node.operator)
-    this.append(' ')
+
+    if (!this.isMinusOperator(node.operator)) {
+      this.append(' ')
+    }
+
     this.visitNode(node.operand)
+  }
+
+  private isMinusOperator(node: OperationNode): node is OperatorNode {
+    return OperatorNode.is(node) && node.operator === '-'
   }
 
   protected override visitUsing(node: UsingNode): void {

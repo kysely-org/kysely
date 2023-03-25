@@ -99,7 +99,7 @@ export interface AliasedExpression<T, A extends string>
   /**
    * Returns the alias.
    */
-  get alias(): A
+  get alias(): A | Expression<unknown>
 
   /**
    * Creates the OperationNode that describes how to compile this expression into SQL.

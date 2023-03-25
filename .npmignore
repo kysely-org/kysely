@@ -5,6 +5,7 @@ example
 node_modules
 recipes
 scripts
+site
 src
 test
 .gitignore

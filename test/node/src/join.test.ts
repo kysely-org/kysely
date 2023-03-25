@@ -202,6 +202,70 @@ for (const dialect of DIALECTS) {
         ])
       })
 
+      it('should inner join a table using a complex `on` expression', async () => {
+        const query = ctx.db
+          .selectFrom('person')
+          .innerJoin('pet', (join) =>
+            join
+              .onRef('pet.owner_id', '=', 'person.id')
+              .on('pet.name', 'in', ['Catto', 'Doggo', 'Hammo'])
+              .on(({ or, cmp, ref, selectFrom }) =>
+                or([
+                  cmp('pet.species', '=', 'cat'),
+                  cmp('species', '=', 'dog'),
+                  cmp(
+                    ref('species'),
+                    '=',
+                    selectFrom('pet')
+                      .select(sql<'hamster'>`'hamster'`.as('hamster'))
+                      .limit(1)
+                      .offset(0)
+                  ),
+                ])
+              )
+          )
+          .selectAll()
+          .orderBy('person.first_name')
+
+        testSql(query, dialect, {
+          postgres: {
+            sql: [
+              `select * from "person"`,
+              `inner join "pet"`,
+              `on "pet"."owner_id" = "person"."id"`,
+              `and "pet"."name" in ($1, $2, $3)`,
+              `and ("pet"."species" = $4 or "species" = $5 or "species" = (select 'hamster' as "hamster" from "pet" limit $6 offset $7))`,
+              `order by "person"."first_name"`,
+            ],
+            parameters: ['Catto', 'Doggo', 'Hammo', 'cat', 'dog', 1, 0],
+          },
+          mysql: {
+            sql: [
+              'select * from `person`',
+              'inner join `pet`',
+              'on `pet`.`owner_id` = `person`.`id`',
+              'and `pet`.`name` in (?, ?, ?)',
+              "and (`pet`.`species` = ? or `species` = ? or `species` = (select 'hamster' as `hamster` from `pet` limit ? offset ?))",
+              'order by `person`.`first_name`',
+            ],
+            parameters: ['Catto', 'Doggo', 'Hammo', 'cat', 'dog', 1, 0],
+          },
+          sqlite: {
+            sql: [
+              `select * from "person"`,
+              `inner join "pet"`,
+              `on "pet"."owner_id" = "person"."id"`,
+              `and "pet"."name" in (?, ?, ?)`,
+              `and ("pet"."species" = ? or "species" = ? or "species" = (select 'hamster' as "hamster" from "pet" limit ? offset ?))`,
+              `order by "person"."first_name"`,
+            ],
+            parameters: ['Catto', 'Doggo', 'Hammo', 'cat', 'dog', 1, 0],
+          },
+        })
+
+        await query.execute()
+      })
+
       it(`should inner join a table using multiple "on" statements`, async () => {
         const query = ctx.db
           .selectFrom('person')

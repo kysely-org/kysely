@@ -9,3 +9,7 @@ export class DeleteResult {
     return this.#numDeletedRows
   }
 }
+
+Object.defineProperty(DeleteResult.prototype, 'numDeletedRows', {
+  enumerable: true,
+})
