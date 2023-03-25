@@ -207,8 +207,10 @@ function SectionTweets() {
         >
           <TweetQuote
             authorName={'Dax Raad'}
-            authorTitle={'@SST_dev contributor'}
-            avatar={'https://avatars1.githubusercontent.com/u/977348?s=460&v=4'}
+            authorTitle={'@SST_dev core team'}
+            avatar={
+              'https://pbs.twimg.com/profile_images/1602333093485891584/mmVqjFNI_400x400.jpg'
+            }
             tweetLink={
               'https://twitter.com/thdxr/status/1623136475914043392?ref_src=twsrc%5Etfw'
             }
