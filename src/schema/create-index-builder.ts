@@ -19,7 +19,7 @@ import {
   parseWhere,
 } from '../parser/binary-operation-parser.js'
 import { QueryNode } from '../operation-node/query-node.js'
-import { ExpressionBuilder } from '../query-builder/expression-builder.js'
+import { ExpressionBuilder } from '../expression/expression-builder.js'
 import { SqlBool } from '../util/type-utils.js'
 import { ImmediateValueTransformer } from '../plugin/immediate-value/immediate-value-transformer.js'
 

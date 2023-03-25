@@ -6,7 +6,7 @@ import {
 import { ReferenceExpression } from '../parser/reference-parser.js'
 import { ExistsExpression } from '../parser/unary-operation-parser.js'
 import { SqlBool } from '../util/type-utils.js'
-import { ExpressionBuilder } from './expression-builder.js'
+import { ExpressionBuilder } from '../expression/expression-builder.js'
 import { WhereExpressionBuilder } from './deprecated-where-expression-builder.js'
 
 export interface WhereInterface<DB, TB extends keyof DB> {

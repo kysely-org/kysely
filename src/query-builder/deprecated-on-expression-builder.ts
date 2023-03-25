@@ -6,7 +6,7 @@ import {
 } from '../parser/binary-operation-parser.js'
 import { ReferenceExpression } from '../parser/reference-parser.js'
 import { ExistsExpression } from '../parser/unary-operation-parser.js'
-import { ExpressionBuilder } from './expression-builder.js'
+import { ExpressionBuilder } from '../expression/expression-builder.js'
 
 /**
  * Temporary transitional wrapper type that contains the old `OnGrouper` methods

@@ -21,8 +21,10 @@ import {
 import { Selectable, SelectType } from '../util/column-type.js'
 import { parseTable } from './table-parser.js'
 import { AliasedExpression } from '../expression/expression.js'
-import { ExpressionBuilder } from '../query-builder/expression-builder.js'
-import { createExpressionBuilder } from './parse-utils.js'
+import {
+  expressionBuilder,
+  ExpressionBuilder,
+} from '../expression/expression-builder.js'
 
 export type SelectExpression<DB, TB extends keyof DB> =
   | AnyAliasedColumnWithTable<DB, TB>
@@ -160,7 +162,7 @@ export function parseSelectArg(
   selection: SelectArg<any, any, SelectExpression<any, any>>
 ): SelectionNode[] {
   if (isFunction(selection)) {
-    return parseSelectArg(selection(createExpressionBuilder()))
+    return parseSelectArg(selection(expressionBuilder()))
   } else if (isReadonlyArray(selection)) {
     return selection.map((it) => parseSelectExpression(it))
   } else {

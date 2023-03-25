@@ -1,4 +1,4 @@
-import { SelectQueryBuilder } from './select-query-builder.js'
+import { SelectQueryBuilder } from '../query-builder/select-query-builder.js'
 import { SelectQueryNode } from '../operation-node/select-query-node.js'
 import {
   parseTableExpressionOrList,
@@ -12,7 +12,7 @@ import {
 } from '../parser/table-parser.js'
 import { WithSchemaPlugin } from '../plugin/with-schema/with-schema-plugin.js'
 import { createQueryId } from '../util/query-id.js'
-import { FunctionModule } from './function-module.js'
+import { FunctionModule } from '../query-builder/function-module.js'
 import {
   ExtractTypeFromReferenceExpression,
   parseStringReference,
@@ -28,11 +28,11 @@ import {
   OperandValueExpressionOrList,
   parseValueBinaryOperation,
 } from '../parser/binary-operation-parser.js'
-import { Expression } from '../expression/expression.js'
+import { Expression } from './expression.js'
 import { AndNode } from '../operation-node/and-node.js'
 import { OrNode } from '../operation-node/or-node.js'
 import { ParensNode } from '../operation-node/parens-node.js'
-import { ExpressionWrapper } from '../expression/expression-wrapper.js'
+import { ExpressionWrapper } from './expression-wrapper.js'
 import {
   ComparisonOperator,
   UnaryOperator,
@@ -44,6 +44,7 @@ import {
   ExtractTypeFromValueExpressionOrList,
   parseValueExpressionOrList,
 } from '../parser/value-parser.js'
+import { NOOP_QUERY_EXECUTOR } from '../query-executor/noop-query-executor.js'
 
 export interface ExpressionBuilder<DB, TB extends keyof DB> {
   /**
@@ -638,4 +639,19 @@ export class ExpressionBuilderImpl<DB, TB extends keyof DB>
 
 export interface ExpressionBuilderProps {
   readonly executor: QueryExecutor
+}
+
+export function expressionBuilder<DB, TB extends keyof DB>(
+  _: SelectQueryBuilder<DB, TB, any>
+): ExpressionBuilder<DB, TB>
+
+export function expressionBuilder<DB, TB extends keyof DB>(): ExpressionBuilder<
+  DB,
+  TB
+>
+
+export function expressionBuilder(_?: unknown): ExpressionBuilder<any, any> {
+  return new ExpressionBuilderImpl({
+    executor: NOOP_QUERY_EXECUTOR,
+  })
 }

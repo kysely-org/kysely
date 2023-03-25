@@ -33,16 +33,13 @@ import { JoinBuilder } from '../query-builder/join-builder.js'
 import { ValueNode } from '../operation-node/value-node.js'
 import { WhereExpressionFactory } from '../query-builder/where-interface.js'
 import { HavingExpressionFactory } from '../query-builder/having-interface.js'
-import {
-  createExpressionBuilder,
-  createJoinBuilder,
-  createSelectQueryBuilder,
-} from './parse-utils.js'
+import { createJoinBuilder, createSelectQueryBuilder } from './parse-utils.js'
 import { OperationNode } from '../operation-node/operation-node.js'
 import { Expression } from '../expression/expression.js'
 import { bindAllMethods } from '../util/bind.js'
 import { SelectQueryNode } from '../operation-node/select-query-node.js'
 import { JoinNode } from '../operation-node/join-node.js'
+import { expressionBuilder } from '../expression/expression-builder.js'
 
 export type OperandValueExpression<
   DB,
@@ -223,7 +220,7 @@ const CALLBACK_PARSERS = freeze({
     const whereBuilder = createSelectQueryBuilder()
     bindAllMethods(whereBuilder)
 
-    const exprBuilder = createExpressionBuilder()
+    const exprBuilder = expressionBuilder()
 
     const res = callback({ ...whereBuilder, ...exprBuilder } as any)
     const node = res.toOperationNode()
@@ -244,7 +241,7 @@ const CALLBACK_PARSERS = freeze({
     const havingBuilder = createSelectQueryBuilder()
     bindAllMethods(havingBuilder)
 
-    const exprBuilder = createExpressionBuilder()
+    const exprBuilder = expressionBuilder()
 
     const res = callback({ ...havingBuilder, ...exprBuilder } as any)
     const node = res.toOperationNode()
@@ -267,7 +264,7 @@ const CALLBACK_PARSERS = freeze({
     const onBuilder = createJoinBuilder('InnerJoin', 'table')
     bindAllMethods(onBuilder)
 
-    const exprBuilder = createExpressionBuilder()
+    const exprBuilder = expressionBuilder()
 
     const res = callback({ ...onBuilder, ...exprBuilder } as any)
     const node = res.toOperationNode()
