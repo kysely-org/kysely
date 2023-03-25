@@ -329,7 +329,7 @@ export class OnConflictBuilder<DB, TB extends keyof DB>
    * ```ts
    * db.insertInto('person')
    *   .values(person)
-   *   .onConflict(oc => oc
+   *   .onConflict((oc) => oc
    *     .column('id')
    *     .doUpdateSet((eb) => ({
    *       first_name: eb.ref('excluded.first_name'),
