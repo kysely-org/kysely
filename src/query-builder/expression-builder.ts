@@ -235,11 +235,11 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    * ```ts
    * db.selectFrom('person')
    *   .selectAll('person')
-   *   .where(({ cmp, or }) => or(
+   *   .where(({ cmp, or }) => or([
    *     cmp('first_name', '=', 'Jennifer'),
    *     cmp('fist_name', '=', 'Arnold'),
    *     cmp('fist_name', '=', 'Sylvester')
-   *   ))
+   *   ]))
    * ```
    *
    * The generated SQL (PostgreSQL):
