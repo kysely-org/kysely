@@ -4,17 +4,23 @@ When building dynamic queries, you sometimes end up in situations where the same
 could be added twice. Consider this query:
 
 ```ts
-async function getPerson(id: number, withPetName: boolean, withPetSpecies: boolean) {
+async function getPerson(
+  id: number,
+  withPetName: boolean,
+  withPetSpecies: boolean
+) {
   return await db
     .selectFrom('person')
     .selectAll('person')
-    .$if(withPetName, (qb) => qb
-      .innerJoin('pet', 'pet.owner_id', 'person.id')
-      .select('pet.name as pet_name')
+    .$if(withPetName, (qb) =>
+      qb
+        .innerJoin('pet', 'pet.owner_id', 'person.id')
+        .select('pet.name as pet_name')
     )
-    .$if(withPetSpecies, (qb) => qb
-      .innerJoin('pet', 'pet.owner_id', 'person.id')
-      .select('pet.species as pet_species')
+    .$if(withPetSpecies, (qb) =>
+      qb
+        .innerJoin('pet', 'pet.owner_id', 'person.id')
+        .select('pet.species as pet_species')
     )
     .where('person.id', '=', id)
     .executeTakeFirst()
@@ -28,34 +34,38 @@ the `pet` table to be joined, but we don't want to add an unnecessary join if bo
 But if both `withPetName` and `withPetSpecies` are `true`, we end up with two identical
 joins which will cause an error in the database.
 
-To prevent the error from happening, you can install the 
+To prevent the error from happening, you can install the
 [DeduplicateJoinsPlugin](https://koskimas.github.io/kysely/classes/DeduplicateJoinsPlugin.html).
 You can either install it globally by providing it in the configuration:
 
 ```ts
 const db = new Kysely<Database>({
   dialect,
-  plugins: [
-    new DeduplicateJoinsPlugin(),
-  ]
+  plugins: [new DeduplicateJoinsPlugin()],
 })
 ```
 
 or you can use it when needed:
 
 ```ts
-async function getPerson(id: number, withPetName: boolean, withPetSpecies: boolean) {
+async function getPerson(
+  id: number,
+  withPetName: boolean,
+  withPetSpecies: boolean
+) {
   return await db
     .withPlugin(new DeduplicateJoinsPlugin())
     .selectFrom('person')
     .selectAll('person')
-    .$if(withPetName, (qb) => qb
-      .innerJoin('pet', 'pet.owner_id', 'person.id')
-      .select('pet.name as pet_name')
+    .$if(withPetName, (qb) =>
+      qb
+        .innerJoin('pet', 'pet.owner_id', 'person.id')
+        .select('pet.name as pet_name')
     )
-    .$if(withPetSpecies, (qb) => qb
-      .innerJoin('pet', 'pet.owner_id', 'person.id')
-      .select('pet.species as pet_species')
+    .$if(withPetSpecies, (qb) =>
+      qb
+        .innerJoin('pet', 'pet.owner_id', 'person.id')
+        .select('pet.species as pet_species')
     )
     .where('person.id', '=', id)
     .executeTakeFirst()
@@ -70,4 +80,3 @@ don't need this deduplication (most people).
 
 See [this recipe](https://github.com/koskimas/kysely/tree/master/recipes/conditional-selects.md)
 if you are wondering why we are using the `if` method.
-

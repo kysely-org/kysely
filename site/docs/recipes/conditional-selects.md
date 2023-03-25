@@ -4,27 +4,22 @@ Sometimes you may want to select some fields based on a runtime condition.
 Something like this:
 
 ```ts
-async function getPerson(id: number, withLastName: boolean) {
-
-}
+async function getPerson(id: number, withLastName: boolean) {}
 ```
 
-If `withLastName` is true the person object is returned with a `last_name` 
-property, otherwise without it. 
+If `withLastName` is true the person object is returned with a `last_name`
+property, otherwise without it.
 
 Your first thought can be to simply do this:
 
 ```ts
 async function getPerson(id: number, withLastName: boolean) {
-  let query = db
-    .selectFrom('person')
-    .select('first_name'  )
-    .where('id', '=', id)
+  let query = db.selectFrom('person').select('first_name').where('id', '=', id)
 
   if (withLastName) {
     query = query.select('last_name')
   }
-  
+
   // ❌ Wrong return type { first_name: string }
   return await query.executeTakeFirstOrThrow()
 }
@@ -53,18 +48,16 @@ async function getPerson(id: number, withLastName: boolean) {
 
   if (withLastName) {
     // ✅ The return type is { first_name: string, last_name: string }
-    return await query
-      .select('last_name')
-      .executeTakeFirstOrThrow()
+    return await query.select('last_name').executeTakeFirstOrThrow()
   }
-  
+
   // ✅ The return type is { first_name: string }
   return await query.executeTakeFirstOrThrow()
 }
 ```
 
 This works fine when you have one single condition. As soon as you have two or more
-conditions the amount of code explodes if you want to keep things type-safe. You need 
+conditions the amount of code explodes if you want to keep things type-safe. You need
 to create a separate branch for every possible combination of selections or otherwise
 the types won't be correct.
 
