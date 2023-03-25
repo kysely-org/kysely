@@ -85,8 +85,8 @@ export class RawBuilder<O> implements Expression<O> {
    * ```
    */
   as<A extends string>(alias: A): AliasedRawBuilder<O, A>
-  as<A extends string = never>(alias: Expression<any>): AliasedRawBuilder<O, A>
-  as(alias: string | Expression<any>): AliasedRawBuilder<O, string> {
+  as<A extends string>(alias: Expression<any>): AliasedRawBuilder<O, A>
+  as(alias: string | Expression<unknown>): AliasedRawBuilder<O, string> {
     return new AliasedRawBuilder(this, alias)
   }
 
@@ -185,9 +185,9 @@ export class AliasedRawBuilder<O = unknown, A extends string = never>
   implements AliasedExpression<O, A>
 {
   readonly #rawBuilder: RawBuilder<O>
-  readonly #alias: A | Expression<any>
+  readonly #alias: A | Expression<unknown>
 
-  constructor(rawBuilder: RawBuilder<O>, alias: A | Expression<any>) {
+  constructor(rawBuilder: RawBuilder<O>, alias: A | Expression<unknown>) {
     this.#rawBuilder = rawBuilder
     this.#alias = alias
   }
@@ -198,8 +198,8 @@ export class AliasedRawBuilder<O = unknown, A extends string = never>
   }
 
   /** @private */
-  get alias(): A {
-    return this.#alias as A
+  get alias(): A | Expression<unknown> {
+    return this.#alias
   }
 
   toOperationNode(): AliasNode {

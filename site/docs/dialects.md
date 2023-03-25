@@ -17,3 +17,6 @@ A dialect is the glue between Kysely and the underlying database engine. Check t
 | SurrealDB                  | https://github.com/igalklebanov/kysely-surrealdb    |
 | AWS RDS support for kysely | https://github.com/serverless-stack/kysely-data-api |
 | SingleStore                | https://github.com/igalklebanov/kysely-singlestore  |
+| sqld                       | https://github.com/libsql/kysely-libsql             |
+| Neon                       | https://github.com/seveibar/kysely-neon             |
+| AWS S3 Select              | https://github.com/igalklebanov/kysely-s3-select    |

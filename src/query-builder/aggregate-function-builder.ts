@@ -10,15 +10,15 @@ import { ReferenceExpression } from '../parser/reference-parser.js'
 import {
   ComparisonOperatorExpression,
   OperandValueExpressionOrList,
-  parseReferentialFilter,
+  parseReferentialComparison,
   parseWhere,
-  WhereGrouper,
 } from '../parser/binary-operation-parser.js'
 import {
   ExistsExpression,
   parseExists,
   parseNotExists,
 } from '../parser/unary-operation-parser.js'
+import { WhereExpressionFactory } from './where-interface.js'
 
 export class AggregateFunctionBuilder<DB, TB extends keyof DB, O = unknown>
   implements Expression<O>
@@ -143,7 +143,7 @@ export class AggregateFunctionBuilder<DB, TB extends keyof DB, O = unknown>
   ): AggregateFunctionBuilder<DB, TB, O>
 
   filterWhere(
-    grouper: WhereGrouper<DB, TB>
+    factory: WhereExpressionFactory<DB, TB>
   ): AggregateFunctionBuilder<DB, TB, O>
 
   filterWhere(expression: Expression<any>): AggregateFunctionBuilder<DB, TB, O>
@@ -159,43 +159,7 @@ export class AggregateFunctionBuilder<DB, TB extends keyof DB, O = unknown>
   }
 
   /**
-   * Adds a `filter` clause with a nested `where exists` clause after the function.
-   *
-   * Similar to {@link WhereInterface}'s `whereExists` method.
-   *
-   * ### Examples
-   *
-   * Count pet owners versus general public:
-   *
-   * ```ts
-   * const result = await db
-   *   .selectFrom('person')
-   *   .select((eb) => [
-   *     eb.fn
-   *       .count<number>('person.id')
-   *       .filterWhereExists((qb) =>
-   *         qb
-   *           .selectFrom('pet')
-   *           .select('pet.id')
-   *           .whereRef('pet.owner_id', '=', 'person.id')
-   *       )
-   *       .as('pet_owner_count'),
-   *     eb.fn.count<number>('person.id').as('total_count'),
-   *   ])
-   *   .executeTakeFirstOrThrow()
-   * ```
-   *
-   * The generated SQL (PostgreSQL):
-   *
-   * ```sql
-   * select count("person"."id") filter(where exists (
-   *   select "pet"."id"
-   *   from "pet"
-   *   where "pet"."owner_id" = "person"."id"
-   * )) as "pet_ower_count",
-   *   count("person"."id") as "total_count"
-   * from "person"
-   * ```
+   * @deprecated Follow [these](https://github.com/koskimas/kysely/releases/tag/0.24.0) instructions to migrate
    */
   filterWhereExists(
     arg: ExistsExpression<DB, TB>
@@ -210,8 +174,7 @@ export class AggregateFunctionBuilder<DB, TB extends keyof DB, O = unknown>
   }
 
   /**
-   * Just like {@link filterWhereExists} but creates a `not exists` clause inside
-   * the `filter` clause.
+   * @deprecated Follow [these](https://github.com/koskimas/kysely/releases/tag/0.24.0) instructions to migrate
    */
   filterWhereNotExists(
     arg: ExistsExpression<DB, TB>
@@ -266,45 +229,13 @@ export class AggregateFunctionBuilder<DB, TB extends keyof DB, O = unknown>
       ...this.#props,
       aggregateFunctionNode: AggregateFunctionNode.cloneWithFilter(
         this.#props.aggregateFunctionNode,
-        parseReferentialFilter(lhs, op, rhs)
+        parseReferentialComparison(lhs, op, rhs)
       ),
     })
   }
 
   /**
-   * Adds a `filter` clause with a nested `or where` clause after the function.
-   * Otherwise works just like {@link filterWhere}.
-   *
-   * Similar to {@link WhereInterface}'s `orWhere` method.
-   *
-   * ### Examples
-   *
-   * For some reason you're tasked with counting adults (18+) or people called
-   * "Bob" versus general public:
-   *
-   * ```ts
-   * const result = await db
-   *   .selectFrom('person')
-   *   .select([
-   *     (eb) =>
-   *       eb.fn
-   *         .count<number>('id')
-   *         .filterWhere('age', '>=', '18')
-   *         .orFilterWhere('first_name', '=', 'Bob')
-   *         .as('adult_or_bob_count'),
-   *     (eb) => eb.fn.count<number>('id').as('total_count'),
-   *   ])
-   *   .executeTakeFirstOrThrow()
-   * ```
-   *
-   * The generated SQL (PostgreSQL):
-   *
-   * ```sql
-   * select
-   *   count("id") filter(where "age" >= $1 or "first_name" = $2) as "adult_or_bob_count",
-   *   count("id") as "total_count"
-   * from "person"
-   * ```
+   * @deprecated Follow [these](https://github.com/koskimas/kysely/releases/tag/0.24.0) instructions to migrate
    */
   orFilterWhere<RE extends ReferenceExpression<DB, TB>>(
     lhs: RE,
@@ -312,14 +243,23 @@ export class AggregateFunctionBuilder<DB, TB extends keyof DB, O = unknown>
     rhs: OperandValueExpressionOrList<DB, TB, RE>
   ): AggregateFunctionBuilder<DB, TB, O>
 
+  /**
+   * @deprecated Follow [these](https://github.com/koskimas/kysely/releases/tag/0.24.0) instructions to migrate
+   */
   orFilterWhere(
-    grouper: WhereGrouper<DB, TB>
+    factory: WhereExpressionFactory<DB, TB>
   ): AggregateFunctionBuilder<DB, TB, O>
 
+  /**
+   * @deprecated Follow [these](https://github.com/koskimas/kysely/releases/tag/0.24.0) instructions to migrate
+   */
   orFilterWhere(
     expression: Expression<any>
   ): AggregateFunctionBuilder<DB, TB, O>
 
+  /**
+   * @deprecated Follow [these](https://github.com/koskimas/kysely/releases/tag/0.24.0) instructions to migrate
+   */
   orFilterWhere(...args: any[]): any {
     return new AggregateFunctionBuilder({
       ...this.#props,
@@ -331,10 +271,7 @@ export class AggregateFunctionBuilder<DB, TB extends keyof DB, O = unknown>
   }
 
   /**
-   * Just like {@link filterWhereExists} but creates an `or exists` clause inside
-   * the `filter` clause.
-   *
-   * Similar to {@link WhereInterface}'s `orWhereExists` method.
+   * @deprecated Follow [these](https://github.com/koskimas/kysely/releases/tag/0.24.0) instructions to migrate
    */
   orFilterWhereExists(
     arg: ExistsExpression<DB, TB>
@@ -349,10 +286,7 @@ export class AggregateFunctionBuilder<DB, TB extends keyof DB, O = unknown>
   }
 
   /**
-   * Just like {@link filterWhereExists} but creates an `or not exists` clause inside
-   * the `filter` clause.
-   *
-   * Similar to {@link WhereInterface}'s `orWhereNotExists` method.
+   * @deprecated Follow [these](https://github.com/koskimas/kysely/releases/tag/0.24.0) instructions to migrate
    */
   orFilterWhereNotExists(
     arg: ExistsExpression<DB, TB>
@@ -367,12 +301,7 @@ export class AggregateFunctionBuilder<DB, TB extends keyof DB, O = unknown>
   }
 
   /**
-   * Adds an `or where` clause inside the `filter` clause. Otherwise works just
-   * like {@link filterWhereRef}.
-   *
-   * Also see {@link orFilterWhere} and {@link filterWhere}.
-   *
-   * Similar to {@link WhereInterface}'s `orWhereRef` method.
+   * @deprecated Follow [these](https://github.com/koskimas/kysely/releases/tag/0.24.0) instructions to migrate
    */
   orFilterWhereRef(
     lhs: ReferenceExpression<DB, TB>,
@@ -383,7 +312,7 @@ export class AggregateFunctionBuilder<DB, TB extends keyof DB, O = unknown>
       ...this.#props,
       aggregateFunctionNode: AggregateFunctionNode.cloneWithOrFilter(
         this.#props.aggregateFunctionNode,
-        parseReferentialFilter(lhs, op, rhs)
+        parseReferentialComparison(lhs, op, rhs)
       ),
     })
   }

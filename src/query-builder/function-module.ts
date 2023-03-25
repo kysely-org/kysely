@@ -13,6 +13,7 @@ import {
 } from '../parser/reference-parser.js'
 import { parseSelectAll } from '../parser/select-parser.js'
 import { RawBuilder } from '../raw-builder/raw-builder.js'
+import { bindAllMethods } from '../util/bind.js'
 import { createQueryId } from '../util/query-id.js'
 import { Equals, IsNever } from '../util/type-utils.js'
 import { AggregateFunctionBuilder } from './aggregate-function-builder.js'
@@ -51,13 +52,7 @@ import { AggregateFunctionBuilder } from './aggregate-function-builder.js'
  */
 export class FunctionModule<DB, TB extends keyof DB> {
   constructor() {
-    this.avg = this.avg.bind(this)
-    this.coalesce = this.coalesce.bind(this)
-    this.count = this.count.bind(this)
-    this.countAll = this.countAll.bind(this)
-    this.max = this.max.bind(this)
-    this.min = this.min.bind(this)
-    this.sum = this.sum.bind(this)
+    bindAllMethods(this)
   }
 
   /**
