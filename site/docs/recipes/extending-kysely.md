@@ -34,14 +34,14 @@ class JsonValue<T> implements Expression<T> {
   }
 
   // This is a mandatory getter. You must add it and always return `undefined`.
-  // The return type must always be `T | undefined`.
-  get expressionType(): T | undefined {
+  // The return type must always be `T | undefined`.
+  get expressionType(): T | undefined {
     return undefined
   }
 
   toOperationNode(): OperationNode {
     const json = JSON.stringify(this.#value)
-    // Most of the time you can use the `sql` template tag to build the returned node. 
+    // Most of the time you can use the `sql` template tag to build the returned node.
     // The `sql` template tag takes care of passing the `json` string as a parameter, alongside the sql string, to the DB.
     return sql`CAST(${json} AS JSONB)`.toOperationNode()
   }
@@ -181,7 +181,10 @@ class AliasedJsonValue<T, A extends string> implements AliasedExpression<T, A> {
   }
 
   toOperationNode(): AliasNode {
-    return AliasNode.create(this.#expression.toOperationNode(), IdentifierNode.create(this.#alias))
+    return AliasNode.create(
+      this.#expression.toOperationNode(),
+      IdentifierNode.create(this.#alias)
+    )
   }
 }
 ```
@@ -201,10 +204,7 @@ interface DB {
 async function test(db: Kysely<DB>) {
   const result = await db
     .selectFrom('person')
-    .select([
-      new JsonValue({ someValue: 42 }).as('some_object'),
-      'address'
-    ])
+    .select([new JsonValue({ someValue: 42 }).as('some_object'), 'address'])
     .where(
       'address',
       '@>',
@@ -240,10 +240,7 @@ interface DB {
 async function test(db: Kysely<DB>) {
   const result = await db
     .selectFrom('person')
-    .select([
-      json({ someValue: 42 }).as('some_object'),
-      'address'
-    ])
+    .select([json({ someValue: 42 }).as('some_object'), 'address'])
     .where(
       'address',
       '@>',
@@ -317,15 +314,18 @@ This is how you could now create our query using the `values` helper:
 
 ```ts
 // This could come as an input from somewhere.
-const records = [{
-  id: 1,
-  v1: 'foo',
-  v2: 'bar'
-}, {
-  id: 2,
-  v1: 'baz',
-  v2: 'spam'
-}]
+const records = [
+  {
+    id: 1,
+    v1: 'foo',
+    v2: 'bar',
+  },
+  {
+    id: 2,
+    v1: 'baz',
+    v2: 'spam',
+  },
+]
 
 db.insertInto('t')
   .columns(['t1', 't2'])
@@ -334,7 +334,8 @@ db.insertInto('t')
     // from the records and you can refer to them through the table
     // alias `v`. This works because Kysely is able to parse the
     // AliasedRawBuilder<T, A> type.
-    db.selectFrom(values(records, 'v'))
+    db
+      .selectFrom(values(records, 'v'))
       .innerJoin('j', 'v.id', 'j.vid')
       .select(['v.v1', 'j.j2'])
   )
@@ -342,10 +343,11 @@ db.insertInto('t')
 
 ## Extending using inheritance
 
-You usually don't want to do this. Because of the complex types and typescript's limitations 
-when it comes to inheritence and return types, you'll quickly run into problems.
-Even though Kysely uses classes, Kysely is not designed from the OOP point of view. 
-Classes are used because they are supported natively by Typescript. They provide private 
+You usually don't want to do this because of the complexity of the types and TypeScript's limitations
+when it comes to inheritence and return types.
+You'll quickly run into problems.
+Even though Kysely uses classes, it is not designed from the OOP point of view.
+Classes are used because they are supported natively by TypeScript. They provide private
 variables and a nice discoverable API.
 
 ## Extending using module augmentation
@@ -354,28 +356,28 @@ variables and a nice discoverable API.
 
 You can override and extend Kysely's builder classes via [Typescript module augmentation](https://www.typescriptlang.org/docs/handbook/declaration-merging.html#module-augmentation).
 
-The following example adds an `addIdColumn` method to `CreateTableBuilder`, that helps 
+The following example adds an `addIdColumn` method to `CreateTableBuilder`, that helps
 in adding a postgres uuid primary key column:
 
 ```ts
-declare module "kysely/dist/cjs/schema/create-table-builder" {
+declare module 'kysely/dist/cjs/schema/create-table-builder' {
   interface CreateTableBuilder<TB extends string, C extends string = never> {
-    addIdColumn<CN extends string = "id">(
+    addIdColumn<CN extends string = 'id'>(
       col?: CN
-    ): CreateTableBuilder<TB, C | CN>;
+    ): CreateTableBuilder<TB, C | CN>
   }
 }
 CreateTableBuilder.prototype.addIdColumn = function (
   this: CreateTableBuilder<any, any>,
   col?: string
 ) {
-  return this.addColumn(col || "id", "uuid", (col) =>
+  return this.addColumn(col || 'id', 'uuid', (col) =>
     col.primaryKey().defaultTo(sql`gen_random_uuid()`)
-  );
-};
+  )
+}
 ```
 
-Now you can use `addIdColumn` seemlessly to create several tables with a uniform 
+Now you can use `addIdColumn` seemlessly to create several tables with a uniform
 primary key definition:
 
 ```ts

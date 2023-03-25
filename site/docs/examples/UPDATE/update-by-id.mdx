@@ -1,0 +1,14 @@
+---
+title: 'Delete a record by ID'
+---
+
+# Update a record by ID
+
+Notice that when updating we use `updateTable` instead of `selectFrom`, and the `.set` goes before the `.where`, just like it does in regular SQL.
+
+import {
+  Playground,
+  exampleUpdateById,
+} from '../../../src/components/Playground'
+
+<Playground ts={exampleUpdateById} />

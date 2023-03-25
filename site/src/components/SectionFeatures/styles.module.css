@@ -1,0 +1,9 @@
+.features {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  background: transparent;
+  position: relative;
+  min-height: 80vh;
+  padding: 64px 0;
+}

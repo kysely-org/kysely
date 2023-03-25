@@ -8,7 +8,7 @@ There are two common ways to use schemas:
 1. To group a logical set of tables under the same "namespace". For example
    all tables directly related to users could live under a `user` schema.
 
-2. To have a separate namespaced copy of a set of tables for each 
+2. To have a separate namespaced copy of a set of tables for each
    tenant in a multitenant application.
 
 Kysely offers tools for both of these cases.
@@ -20,10 +20,10 @@ like this:
 
 ```ts
 interface Database {
-  'user.user': UserTable,
-  'user.user_permission': UserPermissionTable,
-  'user.permission': PermissionTable,
-  pet: PetTable,
+  'user.user': UserTable
+  'user.user_permission': UserPermissionTable
+  'user.permission': PermissionTable
+  pet: PetTable
 }
 ```
 
@@ -71,16 +71,16 @@ database schema to be able to refer to the `public.permission` table:
 ```ts
 interface Database {
   // Add your tenant tables without any schema:
-  user: UserTable,
-  user_permission: UserPermissionTable,
+  user: UserTable
+  user_permission: UserPermissionTable
 
   // Add schemas and tables you need to explicitly reference like this:
-  'public.permission': PermissionTable,
+  'public.permission': PermissionTable
 
   // You can also have other shared tables with or without schemas here.
   // But keep in mind that if you want to refer to them from a `withSchema`
   // query, you need the table name with the schema name.
-  pet: PetTable,
+  pet: PetTable
 }
 ```
 
