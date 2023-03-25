@@ -1088,12 +1088,12 @@ for (const dialect of DIALECTS) {
 
           testSql(builder, dialect, {
             postgres: {
-              sql: `create index "test_partial_index" on "test" ("first_name", "last_name") where "first_name" = 'Igal' or "age" >= 18`,
+              sql: `create index "test_partial_index" on "test" ("first_name", "last_name") where ("first_name" = 'Igal' or "age" >= 18)`,
               parameters: [],
             },
             mysql: NOT_SUPPORTED,
             sqlite: {
-              sql: `create index "test_partial_index" on "test" ("first_name", "last_name") where "first_name" = 'Igal' or "age" >= 18`,
+              sql: `create index "test_partial_index" on "test" ("first_name", "last_name") where ("first_name" = 'Igal' or "age" >= 18)`,
               parameters: [],
             },
           })
