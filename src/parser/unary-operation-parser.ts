@@ -25,8 +25,8 @@ export function parseNotExists(
 }
 
 export function parseUnaryOperation(
-  type: UnaryOperator,
-  arg: ReferenceExpression<any, any>
+  operator: UnaryOperator,
+  operand: ReferenceExpression<any, any>
 ): UnaryOperationNode {
   return UnaryOperationNode.create(
     OperatorNode.create(type),
