@@ -62,7 +62,7 @@ export interface WhereInterface<DB, TB extends keyof DB> {
    * ```
    *
    * Both the first and third argument can also be arbitrary expressions like
-   * subqueries. An exrpression can defined by passing a function and calling
+   * subqueries. An expression can defined by passing a function and calling
    * the methods of the {@link ExpressionBuilder} passed to the callback:
    *
    * ```ts
