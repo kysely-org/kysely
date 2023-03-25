@@ -229,7 +229,7 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    *
    * ### Examples
    *
-   * In this example we use `cmp` to create an `WHERE expr1 OR expr2 OR expr3`
+   * In this example we use `cmp` to create a `WHERE expr1 OR expr2 OR expr3`
    * statement:
    *
    * ```ts
