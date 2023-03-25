@@ -80,6 +80,7 @@ for [3rd party dialects](https://koskimas.github.io/kysely/interfaces/Dialect.ht
  - [SurrealDB](https://github.com/igalklebanov/kysely-surrealdb)
  - [sqld](https://github.com/libsql/kysely-libsql)
  - [Neon](https://github.com/seveibar/kysely-neon)
+ - [AWS S3 Select](https://github.com/igalklebanov/kysely-s3-select)
 
 # Minimal example
 

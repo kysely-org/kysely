@@ -1,7 +1,12 @@
 import { ColumnNode } from '../operation-node/column-node.js'
 import { PrimitiveValueListNode } from '../operation-node/primitive-value-list-node.js'
 import { ValueListNode } from '../operation-node/value-list-node.js'
-import { freeze, isUndefined } from '../util/object-utils.js'
+import {
+  freeze,
+  isFunction,
+  isReadonlyArray,
+  isUndefined,
+} from '../util/object-utils.js'
 import { parseValueExpression, ValueExpression } from './value-parser.js'
 import { ValuesNode } from '../operation-node/values-node.js'
 import {
@@ -11,6 +16,8 @@ import {
 } from '../util/column-type.js'
 import { isExpressionOrFactory } from './expression-parser.js'
 import { DefaultInsertValueNode } from '../operation-node/default-insert-value-node.js'
+import { ExpressionBuilder } from '../query-builder/expression-builder.js'
+import { createExpressionBuilder } from './parse-utils.js'
 
 export type InsertObject<DB, TB extends keyof DB> = {
   [C in NonNullableInsertKeys<DB[TB]>]: ValueExpression<
@@ -28,14 +35,27 @@ export type InsertObjectOrList<DB, TB extends keyof DB> =
   | InsertObject<DB, TB>
   | ReadonlyArray<InsertObject<DB, TB>>
 
-export function parseInsertObjectOrList(
-  args: InsertObjectOrList<any, any>
+export type InsertObjectOrListFactory<DB, TB extends keyof DB> = (
+  eb: ExpressionBuilder<DB, TB>
+) => InsertObjectOrList<DB, TB>
+
+export type InsertExpression<DB, TB extends keyof DB> =
+  | InsertObjectOrList<DB, TB>
+  | InsertObjectOrListFactory<DB, TB>
+
+export function parseInsertExpression(
+  arg: InsertExpression<any, any>
 ): [ReadonlyArray<ColumnNode>, ValuesNode] {
-  return parseInsertColumnsAndValues(Array.isArray(args) ? args : [args])
+  const objectOrList = isFunction(arg) ? arg(createExpressionBuilder()) : arg
+  const list = isReadonlyArray(objectOrList)
+    ? objectOrList
+    : freeze([objectOrList])
+
+  return parseInsertColumnsAndValues(list)
 }
 
 function parseInsertColumnsAndValues(
-  rows: InsertObject<any, any>[]
+  rows: ReadonlyArray<InsertObject<any, any>>
 ): [ReadonlyArray<ColumnNode>, ValuesNode] {
   const columns = parseColumnNamesAndIndexes(rows)
 
@@ -46,7 +66,7 @@ function parseInsertColumnsAndValues(
 }
 
 function parseColumnNamesAndIndexes(
-  rows: InsertObject<any, any>[]
+  rows: ReadonlyArray<InsertObject<any, any>>
 ): Map<string, number> {
   const columns = new Map<string, number>()
 

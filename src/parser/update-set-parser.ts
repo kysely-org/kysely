@@ -1,6 +1,9 @@
 import { ColumnNode } from '../operation-node/column-node.js'
 import { ColumnUpdateNode } from '../operation-node/column-update-node.js'
+import { ExpressionBuilder } from '../query-builder/expression-builder.js'
 import { UpdateKeys, UpdateType } from '../util/column-type.js'
+import { isFunction } from '../util/object-utils.js'
+import { createExpressionBuilder } from './parse-utils.js'
 import { parseValueExpression, ValueExpression } from './value-parser.js'
 
 export type UpdateObject<DB, TB extends keyof DB, UT extends keyof DB = TB> = {
@@ -9,10 +12,26 @@ export type UpdateObject<DB, TB extends keyof DB, UT extends keyof DB = TB> = {
     | undefined
 }
 
-export function parseUpdateObject(
-  update: UpdateObject<any, any, any>
+export type UpdateObjectFactory<
+  DB,
+  TB extends keyof DB,
+  UT extends keyof DB
+> = (eb: ExpressionBuilder<DB, TB>) => UpdateObject<DB, TB, UT>
+
+export type UpdateExpression<
+  DB,
+  TB extends keyof DB,
+  UT extends keyof DB = TB
+> = UpdateObject<DB, TB, UT> | UpdateObjectFactory<DB, TB, UT>
+
+export function parseUpdateExpression(
+  update: UpdateExpression<any, any, any>
 ): ReadonlyArray<ColumnUpdateNode> {
-  return Object.entries(update)
+  const updateObj = isFunction(update)
+    ? update(createExpressionBuilder())
+    : update
+
+  return Object.entries(updateObj)
     .filter(([_, value]) => value !== undefined)
     .map(([key, value]) => {
       return ColumnUpdateNode.create(

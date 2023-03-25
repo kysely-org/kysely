@@ -89,7 +89,7 @@ export class FunctionModule<DB, TB extends keyof DB> {
    *
    * ```ts
    * db.selectFrom('toy')
-   *   .select(qb => qb.fn.avg('price').as('avg_price'))
+   *   .select((eb) => eb.fn.avg('price').as('avg_price'))
    *   .execute()
    * ```
    *
@@ -179,8 +179,8 @@ export class FunctionModule<DB, TB extends keyof DB> {
    *
    * ```ts
    * db.selectFrom('participant')
-   *   .select(qb =>
-   *     qb.fn.coalesce('nickname', sql<string>`'<anonymous>'`).as('nickname')
+   *   .select((eb) =>
+   *     eb.fn.coalesce('nickname', sql<string>`'<anonymous>'`).as('nickname')
    *   )
    *   .where('room_id', '=', roomId)
    *   .execute()
@@ -266,7 +266,7 @@ export class FunctionModule<DB, TB extends keyof DB> {
    *
    * ```ts
    * db.selectFrom('toy')
-   *   .select(qb => qb.fn.count('id').as('num_toys'))
+   *   .select((eb) => eb.fn.count('id').as('num_toys'))
    *   .execute()
    * ```
    */
@@ -356,7 +356,7 @@ export class FunctionModule<DB, TB extends keyof DB> {
    * ```ts
    * db.selectFrom('toy')
    *   .innerJoin('pet', 'pet.id', 'toy.pet_id')
-   *   .select(qb => qb.fn.countAll('toy').as('num_toys'))
+   *   .select((eb) => eb.fn.countAll('toy').as('num_toys'))
    *   .execute()
    * ```
    */
@@ -412,7 +412,7 @@ export class FunctionModule<DB, TB extends keyof DB> {
    *
    * ```ts
    * db.selectFrom('toy')
-   *   .select(qb => qb.fn.max('price').as('max_price'))
+   *   .select((eb) => eb.fn.max('price').as('max_price'))
    *   .execute()
    * ```
    *
@@ -487,7 +487,7 @@ export class FunctionModule<DB, TB extends keyof DB> {
    *
    * ```ts
    * db.selectFrom('toy')
-   *   .select(qb => qb.fn.min('price').as('min_price'))
+   *   .select((eb) => eb.fn.min('price').as('min_price'))
    *   .execute()
    * ```
    *
@@ -558,7 +558,7 @@ export class FunctionModule<DB, TB extends keyof DB> {
    *
    * ```ts
    * db.selectFrom('toy')
-   *   .select(qb => qb.fn.sum('price').as('total_price'))
+   *   .select((eb) => eb.fn.sum('price').as('total_price'))
    *   .execute()
    * ```
    *

@@ -196,7 +196,7 @@ export { logOnce } from './util/log-once.js'
 
 export {
   SelectExpression,
-  SelectExpressionOrList,
+  SelectArg,
   Selection,
 } from './parser/select-parser.js'
 export {

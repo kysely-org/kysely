@@ -10,7 +10,8 @@ import { OperationNode } from '../operation-node/operation-node.js'
 import { AliasedExpression } from '../expression/expression.js'
 
 export type TableExpression<DB, TB extends keyof DB> =
-  | TableReference<DB>
+  | AnyAliasedTable<DB>
+  | AnyTable<DB>
   | AliasedExpressionOrFactory<DB, TB>
 
 export type TableExpressionOrList<DB, TB extends keyof DB> =
@@ -21,6 +22,8 @@ export type TableReference<DB> =
   | AnyAliasedTable<DB>
   | AnyTable<DB>
   | AliasedExpression<any, any>
+
+export type AnyAliasedTable<DB> = `${AnyTable<DB>} as ${string}`
 
 export type TableReferenceOrList<DB> =
   | TableReference<DB>
@@ -47,6 +50,15 @@ export type ExtractTableAlias<DB, TE> = TE extends `${string} as ${infer TA}`
   ? TA
   : TE extends keyof DB
   ? TE
+  : never
+
+export type PickTableWithAlias<
+  DB,
+  T extends AnyAliasedTable<DB>
+> = T extends `${infer TB} as ${infer A}`
+  ? TB extends keyof DB
+    ? Record<A, DB[TB]>
+    : never
   : never
 
 type ExtractAliasFromTableExpression<DB, TE> = TE extends string
@@ -81,7 +93,6 @@ type ExtractRowTypeFromTableExpression<
     : never
   : never
 
-type AnyAliasedTable<DB> = `${AnyTable<DB>} as ${string}`
 type AnyTable<DB> = keyof DB & string
 
 export function parseTableExpressionOrList(

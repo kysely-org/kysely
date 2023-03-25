@@ -22,9 +22,9 @@ export function parseValueExpressionOrList(
 ): OperationNode {
   if (isReadonlyArray(arg)) {
     return parseValueExpressionList(arg)
-  } else {
-    return parseValueExpression(arg)
   }
+
+  return parseValueExpression(arg)
 }
 
 export function parseValueExpression(
