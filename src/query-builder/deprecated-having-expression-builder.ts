@@ -8,9 +8,11 @@ import { ReferenceExpression } from '../parser/reference-parser.js'
 import { ExistsExpression } from '../parser/unary-operation-parser.js'
 import { ExpressionBuilder } from './expression-builder.js'
 
-// Temporary transitional wrapper type that contains the old `HavingGrouper` methods
-// and the new `ExpressionBuilder` interface. One we remove the deprecated methods,
-// this interface can be ditched in favor of just `ExpressionBuilder`.
+/**
+ * Temporary transitional wrapper type that contains the old `HavingGrouper` methods
+ * and the new `ExpressionBuilder` interface. One we remove the deprecated methods,
+ * this interface can be ditched in favor of just `ExpressionBuilder`.
+ */
 export interface HavingExpressionBuilder<DB, TB extends keyof DB>
   extends ExpressionBuilder<DB, TB> {
   /**
