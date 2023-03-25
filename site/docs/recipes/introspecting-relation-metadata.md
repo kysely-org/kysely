@@ -5,8 +5,8 @@ Extracting metadata about tables and views from your database schema in runtime 
 The example below uses a PostgreSQL connection to print information about all tables and views found in the database schema:
 
 ```ts
-import { Kysely, PostgresDialect } from 'kysely';
-import { Pool } from 'pg';
+import { Kysely, PostgresDialect } from 'kysely'
+import { Pool } from 'pg'
 
 async function logDatabaseSchema() {
   const db = new Kysely({
@@ -15,8 +15,8 @@ async function logDatabaseSchema() {
         connectionString: process.env.DATABASE_URL,
       }),
     }),
-  });
-  
+  })
+
   const tables = await db().introspection.getTables()
   //        ^?  TableMetadata[]
 

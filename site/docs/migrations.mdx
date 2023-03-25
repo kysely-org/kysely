@@ -1,0 +1,144 @@
+---
+sidebar_position: 4
+---
+
+# Migrations
+
+Migration files should look like this:
+
+```ts
+import { Kysely } from 'kysely'
+
+export async function up(db: Kysely<any>): Promise<void> {
+  // Migration code
+}
+
+export async function down(db: Kysely<any>): Promise<void> {
+  // Migration code
+}
+```
+
+The up function is called when you update your database schema to the next version and down when you go back to previous version. The only argument for the functions is an instance of `Kysely<any>`. It's important to use ` Kysely<any>` and not `Kysely<YourDatabase>`.
+
+Migrations should never depend on the current code of your app because they need to work even when the app changes. Migrations need to be "frozen in time".
+
+Migrations can use the `Kysely.schema` module to modify the schema. Migrations can also run normal queries to modify data.
+
+## Execution order
+
+Execution order of the migrations is the alpabetical order of their names. An excellent way to name your migrations is to prefix them with an ISO 8601 date string. A date prefix works well in large teams where multiple team members may add migrations at the same time in parallel commits without knowing about the other migrations.
+
+## Single file vs multiple file migrations
+
+You don't need to store your migrations as separate files if you don't want to. You can easily implement your own MigrationProvider and give it to the Migrator class when you instantiate one.
+
+## PostgreSQL migration example
+
+```ts
+import { Kysely, sql } from 'kysely'
+
+export async function up(db: Kysely<any>): Promise<void> {
+  await db.schema
+    .createTable('person')
+    .addColumn('id', 'serial', (col) => col.primaryKey())
+    .addColumn('first_name', 'varchar', (col) => col.notNull())
+    .addColumn('last_name', 'varchar')
+    .addColumn('gender', 'varchar(50)', (col) => col.notNull())
+    .addColumn('created_at', 'timestamp', (col) =>
+      col.defaultTo(sql`now()`).notNull()
+    )
+    .execute()
+
+  await db.schema
+    .createTable('pet')
+    .addColumn('id', 'serial', (col) => col.primaryKey())
+    .addColumn('name', 'varchar', (col) => col.notNull().unique())
+    .addColumn('owner_id', 'integer', (col) =>
+      col.references('person.id').onDelete('cascade').notNull()
+    )
+    .addColumn('species', 'varchar', (col) => col.notNull())
+    .execute()
+
+  await db.schema
+    .createIndex('pet_owner_id_index')
+    .on('pet')
+    .column('owner_id')
+    .execute()
+}
+
+export async function down(db: Kysely<any>): Promise<void> {
+  await db.schema.dropTable('pet').execute()
+  await db.schema.dropTable('person').execute()
+}
+```
+
+## Running migrations
+
+You can then use
+
+```ts
+const migrator = new Migrator(migratorConfig)
+await migrator.migrateToLatest(pathToMigrationsFolder)
+```
+
+to run all migrations that have not yet been run. See the Migrator class's documentation for more info.
+
+Kysely doesn't have a CLI for running migrations and probably never will. This is because Kysely's migrations are also written in TypeScript. To run the migrations, you need to first build the TypeScript code into JavaScript. A CLI would cause confusion over which migrations are being run, the TypeScript ones or the JavaScript ones. If we added support for both, the CLI would need to depend on a TypeScript compiler, which most production environments don't (and shouldn't) have. You will probably want to add a simple migration script to your projects like this:
+
+```ts
+import * as path from 'path'
+import { Pool } from 'pg'
+import { promises as fs } from 'fs'
+import {
+  Kysely,
+  Migrator,
+  PostgresDialect,
+  FileMigrationProvider,
+} from 'kysely'
+
+async function migrateToLatest() {
+  const db = new Kysely<Database>({
+    dialect: new PostgresDialect({
+      pool: new Pool({
+        host: 'localhost',
+        database: 'kysely_test',
+      }),
+    }),
+  })
+
+  const migrator = new Migrator({
+    db,
+    provider: new FileMigrationProvider({
+      fs,
+      path,
+      migrationFolder: 'some/path/to/migrations',
+    }),
+  })
+
+  const { error, results } = await migrator.migrateToLatest()
+
+  results?.forEach((it) => {
+    if (it.status === 'Success') {
+      console.log(`migration "${it.migrationName}" was executed successfully`)
+    } else if (it.status === 'Error') {
+      console.error(`failed to execute migration "${it.migrationName}"`)
+    }
+  })
+
+  if (error) {
+    console.error('failed to migrate')
+    console.error(error)
+    process.exit(1)
+  }
+
+  await db.destroy()
+}
+
+migrateToLatest()
+```
+
+The migration methods use a lock on the database level and parallel calls are executed serially. This means that you can safely call migrateToLatest and other migration methods from multiple server instances simultaneously and the migrations are guaranteed to only be executed once. The locks are also automatically released if the migration process crashes or the connection to the database fails.
+
+## Reference documentation
+
+[Migrator](https://koskimas.github.io/kysely/classes/Migrator.html)
