@@ -36,7 +36,6 @@ import { HavingExpressionFactory } from '../query-builder/having-interface.js'
 import { createJoinBuilder, createSelectQueryBuilder } from './parse-utils.js'
 import { OperationNode } from '../operation-node/operation-node.js'
 import { Expression } from '../expression/expression.js'
-import { bindAllMethods } from '../util/bind.js'
 import { SelectQueryNode } from '../operation-node/select-query-node.js'
 import { JoinNode } from '../operation-node/join-node.js'
 import { expressionBuilder } from '../expression/expression-builder.js'
@@ -218,11 +217,9 @@ const CALLBACK_PARSERS = freeze({
   where(callback: WhereExpressionFactory<any, any>): OperationNode {
     // TODO: Remove this once the grouper overload is removed.
     const whereBuilder = createSelectQueryBuilder()
-    bindAllMethods(whereBuilder)
-
     const exprBuilder = expressionBuilder()
 
-    const res = callback({ ...whereBuilder, ...exprBuilder } as any)
+    const res = callback(Object.assign(whereBuilder, exprBuilder) as any)
     const node = res.toOperationNode()
 
     if (SelectQueryNode.is(node)) {
@@ -239,11 +236,9 @@ const CALLBACK_PARSERS = freeze({
   having(callback: HavingExpressionFactory<any, any>): OperationNode {
     // TODO: Remove this once the grouper overload is removed.
     const havingBuilder = createSelectQueryBuilder()
-    bindAllMethods(havingBuilder)
-
     const exprBuilder = expressionBuilder()
 
-    const res = callback({ ...havingBuilder, ...exprBuilder } as any)
+    const res = callback(Object.assign(havingBuilder, exprBuilder) as any)
     const node = res.toOperationNode()
 
     if (SelectQueryNode.is(node)) {
@@ -262,11 +257,9 @@ const CALLBACK_PARSERS = freeze({
   ): OperationNode {
     // TODO: Remove this once the grouper overload is removed.
     const onBuilder = createJoinBuilder('InnerJoin', 'table')
-    bindAllMethods(onBuilder)
-
     const exprBuilder = expressionBuilder()
 
-    const res = callback({ ...onBuilder, ...exprBuilder } as any)
+    const res = callback(Object.assign(onBuilder, exprBuilder) as any)
     const node = res.toOperationNode()
 
     if (JoinNode.is(node)) {

@@ -12,14 +12,16 @@ import {
 } from '../parser/table-parser.js'
 import { WithSchemaPlugin } from '../plugin/with-schema/with-schema-plugin.js'
 import { createQueryId } from '../util/query-id.js'
-import { FunctionModule } from '../query-builder/function-module.js'
+import {
+  createFunctionModule,
+  FunctionModule,
+} from '../query-builder/function-module.js'
 import {
   ExtractTypeFromReferenceExpression,
   parseStringReference,
   ReferenceExpression,
   StringReference,
 } from '../parser/reference-parser.js'
-import { freeze } from '../util/object-utils.js'
 import { QueryExecutor } from '../query-executor/query-executor.js'
 import {
   BinaryOperatorExpression,
@@ -38,7 +40,6 @@ import {
   UnaryOperator,
 } from '../operation-node/operator-node.js'
 import { SqlBool } from '../util/type-utils.js'
-import { bindAllMethods } from '../util/bind.js'
 import { parseUnaryOperation } from '../parser/unary-operation-parser.js'
 import {
   ExtractTypeFromValueExpressionOrList,
@@ -490,155 +491,124 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
   withSchema(schema: string): ExpressionBuilder<DB, TB>
 }
 
-export class ExpressionBuilderImpl<DB, TB extends keyof DB>
-  implements ExpressionBuilder<DB, TB>
-{
-  #props: ExpressionBuilderProps
-
-  constructor(props: ExpressionBuilderProps) {
-    this.#props = freeze(props)
-    bindAllMethods(this)
-  }
-
-  get fn(): FunctionModule<DB, TB> {
-    return new FunctionModule()
-  }
-
-  selectFrom<TE extends keyof DB & string>(
-    from: TE[]
-  ): SelectQueryBuilder<DB, TB | ExtractTableAlias<DB, TE>, {}>
-
-  selectFrom<TE extends TableExpression<DB, TB>>(
-    from: TE[]
-  ): SelectQueryBuilder<From<DB, TE>, FromTables<DB, TB, TE>, {}>
-
-  selectFrom<TE extends keyof DB & string>(
-    from: TE
-  ): SelectQueryBuilder<DB, TB | ExtractTableAlias<DB, TE>, {}>
-
-  selectFrom<TE extends AnyAliasedTable<DB>>(
-    from: TE
-  ): SelectQueryBuilder<
-    DB & PickTableWithAlias<DB, TE>,
-    TB | ExtractTableAlias<DB, TE>,
-    {}
-  >
-
-  selectFrom<TE extends TableExpression<DB, TB>>(
-    from: TE
-  ): SelectQueryBuilder<From<DB, TE>, FromTables<DB, TB, TE>, {}>
-
-  selectFrom(table: TableExpressionOrList<DB, TB>): any {
-    return new SelectQueryBuilder({
-      queryId: createQueryId(),
-      executor: this.#props.executor,
-      queryNode: SelectQueryNode.create(parseTableExpressionOrList(table)),
-    })
-  }
-
-  ref<RE extends StringReference<DB, TB>>(
-    reference: RE
-  ): ExpressionWrapper<ExtractTypeFromReferenceExpression<DB, TB, RE>> {
-    return new ExpressionWrapper(parseStringReference(reference))
-  }
-
-  val<VE>(
-    value: VE
-  ): ExpressionWrapper<ExtractTypeFromValueExpressionOrList<VE>> {
-    return new ExpressionWrapper(parseValueExpressionOrList(value))
-  }
-
-  cmp<
-    O extends SqlBool = SqlBool,
-    RE extends ReferenceExpression<DB, TB> = ReferenceExpression<DB, TB>
-  >(
-    lhs: RE,
-    op: ComparisonOperatorExpression,
-    rhs: OperandValueExpressionOrList<DB, TB, RE>
-  ): ExpressionWrapper<O> {
-    return new ExpressionWrapper(parseValueBinaryOperation(lhs, op, rhs))
-  }
-
-  bin<
-    RE extends ReferenceExpression<DB, TB>,
-    OP extends BinaryOperatorExpression
-  >(
-    lhs: RE,
-    op: OP,
-    rhs: OperandValueExpression<DB, TB, RE>
-  ): ExpressionWrapper<
-    OP extends ComparisonOperator
-      ? SqlBool
-      : ExtractTypeFromReferenceExpression<DB, TB, RE>
-  > {
-    return new ExpressionWrapper(parseValueBinaryOperation(lhs, op, rhs))
-  }
-
-  unary<RE extends ReferenceExpression<DB, TB>>(
+export function createExpressionBuilder<DB, TB extends keyof DB>(
+  executor: QueryExecutor = NOOP_QUERY_EXECUTOR
+): ExpressionBuilder<DB, TB> {
+  function unary<RE extends ReferenceExpression<DB, TB>>(
     op: UnaryOperator,
     expr: RE
   ): ExpressionWrapper<ExtractTypeFromReferenceExpression<DB, TB, RE>> {
     return new ExpressionWrapper(parseUnaryOperation(op, expr))
   }
 
-  not<RE extends ReferenceExpression<DB, TB>>(
-    expr: RE
-  ): ExpressionWrapper<ExtractTypeFromReferenceExpression<DB, TB, RE>> {
-    return this.unary('not', expr)
+  return {
+    get fn(): FunctionModule<DB, TB> {
+      return createFunctionModule()
+    },
+
+    selectFrom(table: TableExpressionOrList<DB, TB>): any {
+      return new SelectQueryBuilder({
+        queryId: createQueryId(),
+        executor: executor,
+        queryNode: SelectQueryNode.create(parseTableExpressionOrList(table)),
+      })
+    },
+
+    ref<RE extends StringReference<DB, TB>>(
+      reference: RE
+    ): ExpressionWrapper<ExtractTypeFromReferenceExpression<DB, TB, RE>> {
+      return new ExpressionWrapper(parseStringReference(reference))
+    },
+
+    val<VE>(
+      value: VE
+    ): ExpressionWrapper<ExtractTypeFromValueExpressionOrList<VE>> {
+      return new ExpressionWrapper(parseValueExpressionOrList(value))
+    },
+
+    cmp<
+      O extends SqlBool = SqlBool,
+      RE extends ReferenceExpression<DB, TB> = ReferenceExpression<DB, TB>
+    >(
+      lhs: RE,
+      op: ComparisonOperatorExpression,
+      rhs: OperandValueExpressionOrList<DB, TB, RE>
+    ): ExpressionWrapper<O> {
+      return new ExpressionWrapper(parseValueBinaryOperation(lhs, op, rhs))
+    },
+
+    bin<
+      RE extends ReferenceExpression<DB, TB>,
+      OP extends BinaryOperatorExpression
+    >(
+      lhs: RE,
+      op: OP,
+      rhs: OperandValueExpression<DB, TB, RE>
+    ): ExpressionWrapper<
+      OP extends ComparisonOperator
+        ? SqlBool
+        : ExtractTypeFromReferenceExpression<DB, TB, RE>
+    > {
+      return new ExpressionWrapper(parseValueBinaryOperation(lhs, op, rhs))
+    },
+
+    unary,
+
+    not<RE extends ReferenceExpression<DB, TB>>(
+      expr: RE
+    ): ExpressionWrapper<ExtractTypeFromReferenceExpression<DB, TB, RE>> {
+      return unary('not', expr)
+    },
+
+    exists<RE extends ReferenceExpression<DB, TB>>(
+      expr: RE
+    ): ExpressionWrapper<SqlBool> {
+      return unary('exists', expr)
+    },
+
+    neg<RE extends ReferenceExpression<DB, TB>>(
+      expr: RE
+    ): ExpressionWrapper<ExtractTypeFromReferenceExpression<DB, TB, RE>> {
+      return unary('-', expr)
+    },
+
+    and([expr1, expr2, ...rest]: [
+      Expression<SqlBool>,
+      Expression<SqlBool>,
+      ...ReadonlyArray<Expression<SqlBool>>
+    ]): ExpressionWrapper<SqlBool> {
+      let node = AndNode.create(
+        expr1.toOperationNode(),
+        expr2.toOperationNode()
+      )
+
+      for (const ex of rest) {
+        node = AndNode.create(node, ex.toOperationNode())
+      }
+
+      return new ExpressionWrapper(ParensNode.create(node))
+    },
+
+    or([expr1, expr2, ...rest]: [
+      Expression<SqlBool>,
+      Expression<SqlBool>,
+      ...ReadonlyArray<Expression<SqlBool>>
+    ]): ExpressionWrapper<SqlBool> {
+      let node = OrNode.create(expr1.toOperationNode(), expr2.toOperationNode())
+
+      for (const ex of rest) {
+        node = OrNode.create(node, ex.toOperationNode())
+      }
+
+      return new ExpressionWrapper(ParensNode.create(node))
+    },
+
+    withSchema(schema: string): ExpressionBuilder<DB, TB> {
+      return createExpressionBuilder(
+        executor.withPluginAtFront(new WithSchemaPlugin(schema))
+      )
+    },
   }
-
-  exists<RE extends ReferenceExpression<DB, TB>>(
-    expr: RE
-  ): ExpressionWrapper<SqlBool> {
-    return this.unary('exists', expr)
-  }
-
-  neg<RE extends ReferenceExpression<DB, TB>>(
-    expr: RE
-  ): ExpressionWrapper<ExtractTypeFromReferenceExpression<DB, TB, RE>> {
-    return this.unary('-', expr)
-  }
-
-  and([expr1, expr2, ...rest]: [
-    Expression<SqlBool>,
-    Expression<SqlBool>,
-    ...ReadonlyArray<Expression<SqlBool>>
-  ]): ExpressionWrapper<SqlBool> {
-    let node = AndNode.create(expr1.toOperationNode(), expr2.toOperationNode())
-
-    for (const ex of rest) {
-      node = AndNode.create(node, ex.toOperationNode())
-    }
-
-    return new ExpressionWrapper(ParensNode.create(node))
-  }
-
-  or([expr1, expr2, ...rest]: [
-    Expression<SqlBool>,
-    Expression<SqlBool>,
-    ...ReadonlyArray<Expression<SqlBool>>
-  ]): ExpressionWrapper<SqlBool> {
-    let node = OrNode.create(expr1.toOperationNode(), expr2.toOperationNode())
-
-    for (const ex of rest) {
-      node = OrNode.create(node, ex.toOperationNode())
-    }
-
-    return new ExpressionWrapper(ParensNode.create(node))
-  }
-
-  withSchema(schema: string): ExpressionBuilder<DB, TB> {
-    return new ExpressionBuilderImpl({
-      ...this.#props,
-      executor: this.#props.executor.withPluginAtFront(
-        new WithSchemaPlugin(schema)
-      ),
-    })
-  }
-}
-
-export interface ExpressionBuilderProps {
-  readonly executor: QueryExecutor
 }
 
 export function expressionBuilder<DB, TB extends keyof DB>(
@@ -650,8 +620,8 @@ export function expressionBuilder<DB, TB extends keyof DB>(): ExpressionBuilder<
   TB
 >
 
-export function expressionBuilder(_?: unknown): ExpressionBuilder<any, any> {
-  return new ExpressionBuilderImpl({
-    executor: NOOP_QUERY_EXECUTOR,
-  })
+export function expressionBuilder<DB, TB extends keyof DB>(
+  _?: unknown
+): ExpressionBuilder<DB, TB> {
+  return createExpressionBuilder()
 }

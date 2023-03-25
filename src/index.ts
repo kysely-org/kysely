@@ -2,7 +2,10 @@ export * from './kysely.js'
 export * from './query-creator.js'
 
 export * from './expression/expression.js'
-export * from './expression/expression-builder.js'
+export {
+  ExpressionBuilder,
+  expressionBuilder,
+} from './expression/expression-builder.js'
 
 export * from './query-builder/where-interface.js'
 export * from './query-builder/returning-interface.js'
