@@ -30,8 +30,6 @@ export const COMPARISON_OPERATORS = [
   '~',
   '~*',
   '!~*',
-  '&&',
-  '||',
   '@@',
   '@@@',
   '!!',
@@ -55,11 +53,12 @@ export const ARITHMETIC_OPERATORS = [
 export const BINARY_OPERATORS = [
   ...COMPARISON_OPERATORS,
   ...ARITHMETIC_OPERATORS,
+  '&&',
+  '||',
 ] as const
 
 export const UNARY_FILTER_OPERATORS = ['exists', 'not exists'] as const
 export const UNARY_OPERATORS = ['not', '-', ...UNARY_FILTER_OPERATORS] as const
-
 export const OPERATORS = [...BINARY_OPERATORS, ...UNARY_OPERATORS] as const
 
 export type ComparisonOperator = typeof COMPARISON_OPERATORS[number]
