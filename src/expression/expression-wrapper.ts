@@ -5,7 +5,7 @@ import { OperationNode } from '../operation-node/operation-node.js'
 import { AliasedExpression, Expression } from './expression.js'
 
 export class ExpressionWrapper<T> implements Expression<T> {
-  #node: OperationNode
+  readonly #node: OperationNode
 
   constructor(node: OperationNode) {
     this.#node = node
