@@ -26,7 +26,7 @@ import {
   ComparisonOperatorExpression,
   OperandValueExpression,
   OperandValueExpressionOrList,
-  parseBinaryOperation,
+  parseValueBinaryOperation,
 } from '../parser/binary-operation-parser.js'
 import { Expression } from '../expression/expression.js'
 import { AndNode } from '../operation-node/and-node.js'
@@ -548,7 +548,7 @@ export class ExpressionBuilderImpl<DB, TB extends keyof DB>
     op: ComparisonOperatorExpression,
     rhs: OperandValueExpressionOrList<DB, TB, RE>
   ): ExpressionWrapper<O> {
-    return new ExpressionWrapper(parseBinaryOperation(lhs, op, rhs))
+    return new ExpressionWrapper(parseValueBinaryOperation(lhs, op, rhs))
   }
 
   bin<RE extends ReferenceExpression<DB, TB>>(
@@ -556,7 +556,7 @@ export class ExpressionBuilderImpl<DB, TB extends keyof DB>
     op: Exclude<BinaryOperatorExpression, ComparisonOperator>,
     rhs: OperandValueExpression<DB, TB, RE>
   ): ExpressionWrapper<ExtractTypeFromReferenceExpression<DB, TB, RE>> {
-    return new ExpressionWrapper(parseBinaryOperation(lhs, op, rhs))
+    return new ExpressionWrapper(parseValueBinaryOperation(lhs, op, rhs))
   }
 
   unary<RE extends ReferenceExpression<DB, TB>>(

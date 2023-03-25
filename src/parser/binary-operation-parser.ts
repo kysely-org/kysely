@@ -15,7 +15,6 @@ import {
   BinaryOperator,
   Operator,
   isComparisonOperator,
-  isArithmeticOperator,
   isBinaryOperator,
   OPERATORS,
 } from '../operation-node/operator-node.js'
@@ -74,28 +73,52 @@ export type ArithmeticOperatorExpression =
 
 type FilterExpressionType = 'where' | 'having' | 'on'
 
-export function parseBinaryOperation(
+export function parseValueBinaryOperation(
   leftOperand: ReferenceExpression<any, any>,
   operator: BinaryOperatorExpression,
   rightOperand: OperandValueExpressionOrList<any, any, any>
 ): BinaryOperationNode {
-  if (isBinaryOperator(operator) || isOperationNodeSource(operator)) {
-    return parseBinaryOperationImpl(leftOperand, operator, rightOperand, false)
+  if (!isBinaryOperator(operator) && !isOperationNodeSource(operator)) {
+    throw new Error(`invalid binary operator ${JSON.stringify(operator)}`)
   }
 
-  throw new Error(`invalid binary operator ${JSON.stringify(operator)}`)
+  if (isIsComparison(operator, rightOperand)) {
+    return parseIs(leftOperand, operator, rightOperand)
+  }
+
+  return BinaryOperationNode.create(
+    parseReferenceExpression(leftOperand),
+    parseOperator(operator),
+    parseValueExpressionOrList(rightOperand)
+  )
 }
 
-export function parseComparison(
+export function parseReferentialBinaryOperation(
+  leftOperand: ReferenceExpression<any, any>,
+  operator: BinaryOperatorExpression,
+  rightOperand: OperandValueExpressionOrList<any, any, any>
+): BinaryOperationNode {
+  if (!isBinaryOperator(operator) && !isOperationNodeSource(operator)) {
+    throw new Error(`invalid binary operator ${JSON.stringify(operator)}`)
+  }
+
+  return BinaryOperationNode.create(
+    parseReferenceExpression(leftOperand),
+    parseOperator(operator),
+    parseReferenceExpression(rightOperand)
+  )
+}
+
+export function parseValueComparison(
   leftOperand: ReferenceExpression<any, any>,
   operator: ComparisonOperatorExpression,
   rightOperand: OperandValueExpressionOrList<any, any, any>
 ): BinaryOperationNode {
-  if (isComparisonOperator(operator) || isOperationNodeSource(operator)) {
-    return parseBinaryOperationImpl(leftOperand, operator, rightOperand, false)
+  if (!isComparisonOperator(operator) && !isOperationNodeSource(operator)) {
+    throw new Error(`invalid comparison operator ${JSON.stringify(operator)}`)
   }
 
-  throw new Error(`invalid comparison operator ${JSON.stringify(operator)}`)
+  return parseValueBinaryOperation(leftOperand, operator, rightOperand)
 }
 
 export function parseReferentialComparison(
@@ -103,23 +126,11 @@ export function parseReferentialComparison(
   operator: ComparisonOperatorExpression,
   rightOperand: ReferenceExpression<any, any>
 ): BinaryOperationNode {
-  if (isComparisonOperator(operator) || isOperationNodeSource(operator)) {
-    return parseBinaryOperationImpl(leftOperand, operator, rightOperand, true)
+  if (!isComparisonOperator(operator) && !isOperationNodeSource(operator)) {
+    throw new Error(`invalid comparison operator ${JSON.stringify(operator)}`)
   }
 
-  throw new Error(`invalid comparison operator ${JSON.stringify(operator)}`)
-}
-
-export function parseArithmeticOperation(
-  leftOperand: ReferenceExpression<any, any>,
-  operator: ArithmeticOperatorExpression,
-  rightOperand: OperandValueExpression<any, any, any>
-): BinaryOperationNode {
-  if (isArithmeticOperator(operator) || isOperationNodeSource(operator)) {
-    return parseBinaryOperationImpl(leftOperand, operator, rightOperand, false)
-  }
-
-  throw new Error(`invalid arithmetic operator ${JSON.stringify(operator)}`)
+  return parseReferentialBinaryOperation(leftOperand, operator, rightOperand)
 }
 
 export function parseWhere(args: any[]): OperationNode {
@@ -136,7 +147,7 @@ export function parseOn(args: any[]): OperationNode {
 
 function parseFilter(type: FilterExpressionType, args: any[]): OperationNode {
   if (args.length === 3) {
-    return parseComparison(args[0], args[1], args[2])
+    return parseValueComparison(args[0], args[1], args[2])
   }
 
   if (args.length === 1) {
@@ -144,25 +155,6 @@ function parseFilter(type: FilterExpressionType, args: any[]): OperationNode {
   }
 
   throw createFilterExpressionError(type, args)
-}
-
-function parseBinaryOperationImpl(
-  leftOperand: ReferenceExpression<any, any>,
-  operator: BinaryOperatorExpression,
-  rightOperand: OperandValueExpressionOrList<any, any, any>,
-  referential: boolean
-): BinaryOperationNode {
-  if (!referential && isIsComparison(operator, rightOperand)) {
-    return parseIs(leftOperand, operator, rightOperand)
-  }
-
-  return BinaryOperationNode.create(
-    parseReferenceExpression(leftOperand),
-    parseOperator(operator),
-    referential
-      ? parseReferenceExpression(rightOperand)
-      : parseValueExpressionOrList(rightOperand)
-  )
 }
 
 function isIsComparison(
