@@ -16,6 +16,31 @@ export class ExpressionWrapper<T> implements Expression<T> {
     return undefined
   }
 
+  /**
+   * Returns an aliased version of the expression.
+   *
+   * In addition to slapping `as "the_alias"` to the end of the SQL,
+   * this method also provides strict typing:
+   *
+   * ```ts
+   * const result = await db
+   *   .selectFrom('person')
+   *   .select(eb =>
+   *     eb.cmp('first_name', '=', 'Jennifer').as('is_jennifer')
+   *   )
+   *   .executeTakeFirstOrThrow()
+   *
+   * // `is_jennifer: SqlBool` field exists in the result type.
+   * console.log(result.is_jennifer)
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```ts
+   * select "first_name" = $1 as "is_jennifer"
+   * from "person"
+   * ```
+   */
   as<A extends string>(alias: A): AliasedExpression<T, A>
   as<A extends string>(alias: Expression<unknown>): AliasedExpression<T, A>
   as(alias: string | Expression<any>): AliasedExpression<T, string> {
