@@ -331,11 +331,18 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    * where "id" = $1
    * ```
    */
-  bin<RE extends ReferenceExpression<DB, TB>>(
+  bin<
+    RE extends ReferenceExpression<DB, TB>,
+    OP extends BinaryOperatorExpression
+  >(
     lhs: RE,
-    op: Exclude<BinaryOperatorExpression, ComparisonOperator>,
+    op: OP,
     rhs: OperandValueExpression<DB, TB, RE>
-  ): ExpressionWrapper<ExtractTypeFromReferenceExpression<DB, TB, RE>>
+  ): ExpressionWrapper<
+    OP extends ComparisonOperator
+      ? SqlBool
+      : ExtractTypeFromReferenceExpression<DB, TB, RE>
+  >
 
   /**
    * Creates a unary operation.
@@ -551,11 +558,18 @@ export class ExpressionBuilderImpl<DB, TB extends keyof DB>
     return new ExpressionWrapper(parseValueBinaryOperation(lhs, op, rhs))
   }
 
-  bin<RE extends ReferenceExpression<DB, TB>>(
+  bin<
+    RE extends ReferenceExpression<DB, TB>,
+    OP extends BinaryOperatorExpression
+  >(
     lhs: RE,
-    op: Exclude<BinaryOperatorExpression, ComparisonOperator>,
+    op: OP,
     rhs: OperandValueExpression<DB, TB, RE>
-  ): ExpressionWrapper<ExtractTypeFromReferenceExpression<DB, TB, RE>> {
+  ): ExpressionWrapper<
+    OP extends ComparisonOperator
+      ? SqlBool
+      : ExtractTypeFromReferenceExpression<DB, TB, RE>
+  > {
     return new ExpressionWrapper(parseValueBinaryOperation(lhs, op, rhs))
   }
 
