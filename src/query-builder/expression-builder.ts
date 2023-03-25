@@ -158,7 +158,7 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    * ```ts
    * db.selectFrom('person')
    *   .selectAll('person')
-   *   .where(({ or, cmp, ref}) => or([
+   *   .where(({ or, cmp, ref }) => or([
    *     cmp('first_name', '=', ref('last_name')),
    *     cmp('first_name', '=', ref('middle_name'))
    *   ]))
