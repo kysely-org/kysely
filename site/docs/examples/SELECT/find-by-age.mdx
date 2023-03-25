@@ -1,0 +1,16 @@
+---
+sidebar_position: 2
+title: 'Find all records matching a condition'
+---
+
+# Find all records
+
+In this example we're using `.where` to find all users whose age is > 18.
+Notice the use of `.selectAll` which translates to `SELECT * FROM` in SQL.
+
+import {
+  Playground,
+  exampleFindAllByAge,
+} from '../../../src/components/Playground'
+
+<Playground ts={exampleFindAllByAge} />

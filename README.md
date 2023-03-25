@@ -273,17 +273,17 @@ documentation.
 
 # Recipes
 
-The [recipes](https://github.com/koskimas/kysely/tree/master/recipes) folder contains a bunch of small tutorials
+The [recipes](https://github.com/koskimas/kysely/tree/master/site/docs/recipes/) folder contains a bunch of small tutorials
 or "recipes" for common use cases.
 
-* [Conditional selects](https://github.com/koskimas/kysely/tree/master/recipes/conditional-selects.md)
-* [Dealing with the `Type instantiation is excessively deep and possibly infinite` error](https://github.com/koskimas/kysely/tree/master/recipes/excessively-deep-types.md)
-* [Deduplicate joins](https://github.com/koskimas/kysely/tree/master/recipes/deduplicate-joins.md)
-* [Extending kysely](https://github.com/koskimas/kysely/tree/master/recipes/extending-kysely.md)
-* [Introspecting relation metadata](https://github.com/koskimas/kysely/tree/master/recipes/introspecting-relation-metadata.md)
-* [Raw SQL](https://github.com/koskimas/kysely/tree/master/recipes/raw-sql.md)
-* [Schemas](https://github.com/koskimas/kysely/tree/master/recipes/schemas.md)
-* [Splitting build, compile and execute code](https://github.com/koskimas/kysely/tree/master/recipes/splitting-build-compile-and-execute-code.md)
+* [Conditional selects](https://github.com/koskimas/kysely/tree/master/site/docs/recipes/conditional-selects.md)
+* [Dealing with the `Type instantiation is excessively deep and possibly infinite` error](https://github.com/koskimas/kysely/tree/master/site/docs/recipes/excessively-deep-types.md)
+* [Deduplicate joins](https://github.com/koskimas/kysely/tree/master/site/docs/recipes/deduplicate-joins.md)
+* [Extending kysely](https://github.com/koskimas/kysely/tree/master/site/docs/recipes/extending-kysely.md)
+* [Introspecting relation metadata](https://github.com/koskimas/kysely/tree/master/site/docs/recipes/introspecting-relation-metadata.md)
+* [Raw SQL](https://github.com/koskimas/kysely/tree/master/site/docs/recipes/raw-sql.md)
+* [Schemas](https://github.com/koskimas/kysely/tree/master/site/docs/recipes/schemas.md)
+* [Splitting build, compile and execute code](https://github.com/koskimas/kysely/tree/master/site/docs/recipes/splitting-build-compile-and-execute-code.md)
 
 # Migrations
 
