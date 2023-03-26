@@ -47,6 +47,16 @@ export class ExpressionWrapper<T> implements Expression<T> {
     return new AliasedExpressionWrapper(this, alias)
   }
 
+  /**
+   * Change the output type of the raw expression.
+   *
+   * This method call doesn't change the SQL in any way. This methods simply
+   * returns a copy of this `ExpressionWrapper` with a new output type.
+   */
+  $castTo<T>(): ExpressionWrapper<T> {
+    return new ExpressionWrapper(this.#node)
+  }
+
   toOperationNode(): OperationNode {
     return this.#node
   }
@@ -55,8 +65,8 @@ export class ExpressionWrapper<T> implements Expression<T> {
 export class AliasedExpressionWrapper<T, A extends string>
   implements AliasedExpression<T, A>
 {
-  #expr: Expression<T>
-  #alias: A | Expression<unknown>
+  readonly #expr: Expression<T>
+  readonly #alias: A | Expression<unknown>
 
   constructor(expr: Expression<T>, alias: A | Expression<unknown>) {
     this.#expr = expr
