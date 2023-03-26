@@ -111,7 +111,7 @@ export interface Sql {
   ): RawBuilder<T>
 
   /**
-   * `sql.value(value)` is a shortcut for:
+   * `sql.val(value)` is a shortcut for:
    *
    * ```ts
    * sql<ValueType>`${value}`
