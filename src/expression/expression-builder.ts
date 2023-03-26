@@ -223,6 +223,35 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
   ): ExpressionWrapper<ExtractTypeFromValueExpressionOrList<VE>>
 
   /**
+   * This can be used to add literal values to SQL snippets.
+   *
+   * WARNING! Using this with unchecked inputs WILL lead to SQL injection
+   * vulnerabilities. The input is not checked or escaped by Kysely in any way.
+   * You almost always want to use normal substitutions that get sent to the
+   * db as parameters.
+   *
+   * ```ts
+   * const firstName = 'first_name'
+   *
+   * db.selectFrom('dela')
+   *   .where(({ cmp, literal, ref }) => cmp(literal(3), '=', ref('magic_number')))
+   *   .selectAll()
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * select * from "dela" where 3 = "magic_number"
+   * ```
+   *
+   * As you can see from the example above, the value was added directly to
+   * the SQL string instead of as a parameter. Only use this function when
+   * something can't be sent as a parameter.
+   */
+  literal<V>(value: V): ExpressionWrapper<V>
+
+  /**
    * Creates a binary comparison operation.
    *
    * This function returns an {@link Expression} and can be used pretty much anywhere.
@@ -517,6 +546,10 @@ export function createExpressionBuilder<DB, TB extends keyof DB>(
       value: VE
     ): ExpressionWrapper<ExtractTypeFromValueExpressionOrList<VE>> {
       return new ExpressionWrapper(parseValueExpressionOrList(value))
+    },
+
+    literal<V>(value: V): ExpressionWrapper<V> {
+      return new ExpressionWrapper(ValueNode.createImmediate(value))
     },
 
     cmp<
