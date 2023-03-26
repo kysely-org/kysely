@@ -42,13 +42,13 @@ import { QueryId } from '../util/query-id.js'
 import { freeze } from '../util/object-utils.js'
 import { GroupByArg, parseGroupBy } from '../parser/group-by-parser.js'
 import { KyselyPlugin } from '../plugin/kysely-plugin.js'
-import { WhereInterface } from './where-interface.js'
+import { WhereExpressionFactory, WhereInterface } from './where-interface.js'
 import {
   isNoResultErrorConstructor,
   NoResultError,
   NoResultErrorConstructor,
 } from './no-result-error.js'
-import { HavingInterface } from './having-interface.js'
+import { HavingExpressionFactory, HavingInterface } from './having-interface.js'
 import { IdentifierNode } from '../operation-node/identifier-node.js'
 import { Explainable, ExplainFormat } from '../util/explainable.js'
 import { ExplainNode } from '../operation-node/explain-node.js'
@@ -56,12 +56,10 @@ import { parseSetOperation } from '../parser/set-operation-parser.js'
 import { AliasedExpression, Expression } from '../expression/expression.js'
 import {
   ComparisonOperatorExpression,
-  HavingGrouper,
   OperandValueExpressionOrList,
   parseHaving,
-  parseReferentialFilter,
+  parseReferentialComparison,
   parseWhere,
-  WhereGrouper,
 } from '../parser/binary-operation-parser.js'
 import {
   ExistsExpression,
@@ -70,7 +68,6 @@ import {
 } from '../parser/unary-operation-parser.js'
 import { KyselyTypeError } from '../util/type-error.js'
 import { Selectable } from '../util/column-type.js'
-import { ExpressionBuilder } from './expression-builder.js'
 
 export class SelectQueryBuilder<DB, TB extends keyof DB, O>
   implements
@@ -97,7 +94,8 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
     rhs: OperandValueExpressionOrList<DB, TB, RE>
   ): SelectQueryBuilder<DB, TB, O>
 
-  where(grouper: WhereGrouper<DB, TB>): SelectQueryBuilder<DB, TB, O>
+  where(factory: WhereExpressionFactory<DB, TB>): SelectQueryBuilder<DB, TB, O>
+
   where(expression: Expression<any>): SelectQueryBuilder<DB, TB, O>
 
   where(...args: any[]): any {
@@ -119,7 +117,7 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
       ...this.#props,
       queryNode: QueryNode.cloneWithWhere(
         this.#props.queryNode,
-        parseReferentialFilter(lhs, op, rhs)
+        parseReferentialComparison(lhs, op, rhs)
       ),
     })
   }
@@ -130,7 +128,10 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
     rhs: OperandValueExpressionOrList<DB, TB, RE>
   ): SelectQueryBuilder<DB, TB, O>
 
-  orWhere(grouper: WhereGrouper<DB, TB>): SelectQueryBuilder<DB, TB, O>
+  orWhere(
+    factory: WhereExpressionFactory<DB, TB>
+  ): SelectQueryBuilder<DB, TB, O>
+
   orWhere(expression: Expression<any>): SelectQueryBuilder<DB, TB, O>
 
   orWhere(...args: any[]): any {
@@ -152,7 +153,7 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
       ...this.#props,
       queryNode: QueryNode.cloneWithOrWhere(
         this.#props.queryNode,
-        parseReferentialFilter(lhs, op, rhs)
+        parseReferentialComparison(lhs, op, rhs)
       ),
     })
   }
@@ -205,7 +206,9 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
     rhs: OperandValueExpressionOrList<DB, TB, RE>
   ): SelectQueryBuilder<DB, TB, O>
 
-  having(grouper: HavingGrouper<DB, TB>): SelectQueryBuilder<DB, TB, O>
+  having(
+    factory: HavingExpressionFactory<DB, TB>
+  ): SelectQueryBuilder<DB, TB, O>
 
   having(expression: Expression<any>): SelectQueryBuilder<DB, TB, O>
 
@@ -228,7 +231,7 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
       ...this.#props,
       queryNode: SelectQueryNode.cloneWithHaving(
         this.#props.queryNode,
-        parseReferentialFilter(lhs, op, rhs)
+        parseReferentialComparison(lhs, op, rhs)
       ),
     })
   }
@@ -239,7 +242,9 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
     rhs: OperandValueExpressionOrList<DB, TB, RE>
   ): SelectQueryBuilder<DB, TB, O>
 
-  orHaving(grouper: HavingGrouper<DB, TB>): SelectQueryBuilder<DB, TB, O>
+  orHaving(
+    factory: HavingExpressionFactory<DB, TB>
+  ): SelectQueryBuilder<DB, TB, O>
 
   orHaving(expression: Expression<any>): SelectQueryBuilder<DB, TB, O>
 
@@ -262,7 +267,7 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
       ...this.#props,
       queryNode: SelectQueryNode.cloneWithOrHaving(
         this.#props.queryNode,
-        parseReferentialFilter(lhs, op, rhs)
+        parseReferentialComparison(lhs, op, rhs)
       ),
     })
   }
@@ -277,7 +282,22 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
     })
   }
 
+  /**
+   * @deprecated Use {@link havingNotExists} instead.
+   */
   havingNotExist(arg: ExistsExpression<DB, TB>): SelectQueryBuilder<DB, TB, O> {
+    return new SelectQueryBuilder({
+      ...this.#props,
+      queryNode: SelectQueryNode.cloneWithHaving(
+        this.#props.queryNode,
+        parseNotExists(arg)
+      ),
+    })
+  }
+
+  havingNotExists(
+    arg: ExistsExpression<DB, TB>
+  ): SelectQueryBuilder<DB, TB, O> {
     return new SelectQueryBuilder({
       ...this.#props,
       queryNode: SelectQueryNode.cloneWithHaving(
@@ -313,7 +333,7 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    * Adds a select statement to the query.
    *
    * When a column (or any expression) is selected, Kysely adds its type to the return
-   * type of the query. Kysely is smart enough to parse the column names and types
+   * type of the query. Kysely is smart enough to parse the selection names and types
    * from aliased columns, subqueries, raw expressions etc.
    *
    * Kysely only allows you to select columns and expressions that exist and would
@@ -411,24 +431,34 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    * ```
    *
    * You can also select arbitrary expression including subqueries and raw sql snippets.
-   * Note that you always need to give a name for the selections using the {@link as}
-   * method:
+   * When you do that, you need to give a name for the selections using the {@link as} method:
    *
    * ```ts
    * import { sql } from 'kysely'
    *
    * const persons = await db.selectFrom('person')
-   *   .select((eb) => [
-   *     eb.selectFrom('pet')
+   *   .select(({ selectFrom, or, cmp }) => [
+   *     // Select a correlated subquery
+   *     selectFrom('pet')
    *       .whereRef('person.id', '=', 'pet.owner_id')
    *       .select('pet.name')
+   *       .orderBy('pet.name')
    *       .limit(1)
-   *       .as('pet_name'),
+   *       .as('first_pet_name'),
+   *
+   *     // Build and select an expression using the expression builder
+   *     or([
+   *       cmp('first_name', '=', 'Jennifer'),
+   *       cmp('first_name', '=', 'Arnold')
+   *     ]).as('is_jennifer_or_arnold'),
+   *
+   *     // Select a raw sql expression
    *     sql<string>`concat(first_name, ' ', last_name)`.as('full_name')
    *   ])
    *   .execute()
    *
-   * persons[0].pet_name
+   * persons[0].first_pet_name
+   * persons[0].is_jennifer_or_arnold
    * persons[0].full_name
    * ```
    *
@@ -440,9 +470,11 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    *     select "pet"."name"
    *     from "pet"
    *     where "person"."id" = "pet"."owner_id"
+   *     order by "pet"."name"
    *     limit $1
    *   ) as "pet_name",
-   *   concat(first_name, ' ', last_name) as full_name
+   *   ("first_name" = $2 or "first_name" = $3) as "jennifer_or_arnold",
+   *   concat(first_name, ' ', last_name) as "full_name"
    * from "person"
    * ```
    *
@@ -1657,7 +1689,7 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    * method called inside the callback add optional fields to the result type. This is
    * because we can't know if those selections were actually made before running the code.
    *
-   * Also see [this recipe](https://github.com/koskimas/kysely/tree/master/recipes/conditional-selects.md)
+   * Also see [this recipe](https://github.com/koskimas/kysely/tree/master/site/docs/recipes/conditional-selects.md)
    *
    * ### Examples
    *

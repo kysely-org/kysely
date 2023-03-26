@@ -16,8 +16,10 @@ import {
 } from '../util/column-type.js'
 import { isExpressionOrFactory } from './expression-parser.js'
 import { DefaultInsertValueNode } from '../operation-node/default-insert-value-node.js'
-import { ExpressionBuilder } from '../query-builder/expression-builder.js'
-import { createExpressionBuilder } from './parse-utils.js'
+import {
+  expressionBuilder,
+  ExpressionBuilder,
+} from '../expression/expression-builder.js'
 
 export type InsertObject<DB, TB extends keyof DB> = {
   [C in NonNullableInsertKeys<DB[TB]>]: ValueExpression<
@@ -46,7 +48,7 @@ export type InsertExpression<DB, TB extends keyof DB> =
 export function parseInsertExpression(
   arg: InsertExpression<any, any>
 ): [ReadonlyArray<ColumnNode>, ValuesNode] {
-  const objectOrList = isFunction(arg) ? arg(createExpressionBuilder()) : arg
+  const objectOrList = isFunction(arg) ? arg(expressionBuilder()) : arg
   const list = isReadonlyArray(objectOrList)
     ? objectOrList
     : freeze([objectOrList])

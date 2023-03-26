@@ -2,60 +2,46 @@ import { Expression } from '../expression/expression.js'
 import {
   ComparisonOperatorExpression,
   OperandValueExpressionOrList,
-  WhereGrouper,
 } from '../parser/binary-operation-parser.js'
 import { ReferenceExpression } from '../parser/reference-parser.js'
 import { ExistsExpression } from '../parser/unary-operation-parser.js'
+import { SqlBool } from '../util/type-utils.js'
+import { ExpressionBuilder } from '../expression/expression-builder.js'
+import { WhereExpressionBuilder } from './deprecated-where-expression-builder.js'
 
 export interface WhereInterface<DB, TB extends keyof DB> {
   /**
-   * Adds a `where` clause to the query.
+   * Adds a `where` expression to the query.
    *
-   * Also see {@link orWhere}, {@link whereExists} and {@link whereRef}.
+   * Calling this method multiple times will combine the expressions using `and`.
+   *
+   * Also see {@link whereRef}
    *
    * ### Examples
-   *
-   * Find a row by column value:
    *
    * ```ts
    * const person = await db
    *   .selectFrom('person')
    *   .selectAll()
-   *   .where('id', '=', 100)
+   *   .where('first_name', '=', 'Jennifer')
+   *   .where('age', '>', 40)
    *   .executeTakeFirst()
    * ```
    *
    * The generated SQL (PostgreSQL):
    *
    * ```sql
-   * select * from "person" where "id" = $1
+   * select * from "person" where "first_name" = $1 and "age" > $2
    * ```
    *
    * Operator can be any supported operator or if the typings don't support it
-   * you can always use
+   * you can always use:
    *
    * ```ts
    * sql`your operator`
    * ```
    *
-   * The next example uses the `>` operator:
-   *
-   * ```ts
-   * const persons = await db
-   *   .selectFrom('person')
-   *   .selectAll()
-   *   .where('id', '>', 100)
-   *   .execute()
-   * ```
-   *
-   * The generated SQL (PostgreSQL):
-   *
-   * ```sql
-   * select * from "person" where "id" > $1
-   * ```
-   *
-   * `where` methods don't change the type of the query. You can add
-   * conditional statements easily by doing something like this:
+   * You can add expressions conditionally like this:
    *
    * ```ts
    * let query = db
@@ -68,16 +54,16 @@ export interface WhereInterface<DB, TB extends keyof DB> {
    *   query = query.where('first_name', '=', firstName)
    * }
    *
+   * if (lastName) {
+   *   query = query.where('last_name', '=', lastName)
+   * }
+   *
    * const persons = await query.execute()
    * ```
    *
-   * This is true for basically all methods execpt the `select` and
-   * `returning`, that __do__ change the return type of the query.
-   *
-   * Both the first and third argument can also be subqueries.
-   * A subquery is defined by passing a function and calling
-   * the `selectFrom` method of the object passed into the
-   * function:
+   * Both the first and third argument can also be arbitrary expressions like
+   * subqueries. An expression can defined by passing a function and calling
+   * the methods of the {@link ExpressionBuilder} passed to the callback:
    *
    * ```ts
    * const persons = await db
@@ -108,8 +94,7 @@ export interface WhereInterface<DB, TB extends keyof DB> {
    * ```
    *
    * A `where in` query can be built by using the `in` operator and an array
-   * of values. The values in the array can also be subqueries or raw
-   * {@link sql} expressions.
+   * of values. The values in the array can also be expressions:
    *
    * ```ts
    * const persons = await db
@@ -123,6 +108,40 @@ export interface WhereInterface<DB, TB extends keyof DB> {
    *
    * ```sql
    * select * from "person" where "id" in ($1, $2, $3)
+   * ```
+   *
+   * For complex `where` expressions you can pass in a single callback and
+   * use the {@link ExpressionBuilder} to build your expression:
+   *
+   * ```ts
+   * const persons = await db
+   *   .selectFrom('person')
+   *   .selectAll('person')
+   *   .where(({ cmp, or, and, not, exists, selectFrom, val }) => and([
+   *     or([
+   *       cmp('first_name', '=', firstName),
+   *       cmp('age', '<', maxAge)
+   *     ]),
+   *     not(exists(
+   *       selectFrom('pet').select('pet.id').whereRef('pet.owner_id', '=', 'person.id')
+   *     ))
+   *   ]))
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * select "person".*
+   * from "person"
+   * where (
+   *   (
+   *     "first_name" = $1
+   *     or "age" < $2
+   *   )
+   *   and not exists (
+   *     select "pet"."id" from "pet" where "pet"."owner_id" = "person"."id"
+   *   )
+   * )
    * ```
    *
    * If everything else fails, you can always use the {@link sql} tag
@@ -149,26 +168,6 @@ export interface WhereInterface<DB, TB extends keyof DB> {
    * where coalesce(first_name, last_name) like $1
    * ```
    *
-   * If you only pass one function argument to this method, it can be
-   * used to create parentheses around other where statements:
-   *
-   * ```ts
-   * const persons = await db
-   *   .selectFrom('person')
-   *   .selectAll()
-   *   .where((qb) => qb
-   *     .where('id', '=', 1)
-   *     .orWhere('id', '=', 2)
-   *   )
-   *   .execute()
-   * ```
-   *
-   * The generated SQL (PostgreSQL):
-   *
-   * ```sql
-   * select * from "person" (where "id" = 1 or "id" = 2)
-   * ```
-   *
    * In all examples above the columns were known at compile time
    * (except for the raw {@link sql} expressions). By default kysely only
    * allows you to refer to columns that exist in the database **and**
@@ -188,7 +187,7 @@ export interface WhereInterface<DB, TB extends keyof DB> {
    *   .selectFrom('person')
    *   .selectAll()
    *   .where(ref(columnFromUserInput), '=', 1)
-   *   .orWhere(sql.id(columnFromUserInput), '=', 2)
+   *   .where(sql.id(columnFromUserInput), '=', 2)
    *   .execute()
    * ```
    */
@@ -198,7 +197,7 @@ export interface WhereInterface<DB, TB extends keyof DB> {
     rhs: OperandValueExpressionOrList<DB, TB, RE>
   ): WhereInterface<DB, TB>
 
-  where(grouper: WhereGrouper<DB, TB>): WhereInterface<DB, TB>
+  where(factory: WhereExpressionFactory<DB, TB>): WhereInterface<DB, TB>
 
   where(expression: Expression<any>): WhereInterface<DB, TB>
 
@@ -260,67 +259,7 @@ export interface WhereInterface<DB, TB extends keyof DB> {
   ): WhereInterface<DB, TB>
 
   /**
-   * Adds an `or where` clause to the query. Otherwise works just like {@link where}.
-   *
-   * It's often necessary to wrap `or where` clauses in parentheses to control
-   * precendence. You can use the one argument version of the `where` method
-   * for that. See the examples.
-   *
-   * ### Examples
-   *
-   * ```ts
-   * const persons = await db
-   *   .selectFrom('person')
-   *   .selectAll()
-   *   .where('id', '=', 1)
-   *   .orWhere('id', '=', 2)
-   *   .execute()
-   * ```
-   *
-   * The generated SQL (PostgreSQL):
-   *
-   * ```sql
-   * select * from "person" where "id" = 1 or "id" = 2
-   * ```
-   *
-   * Grouping with parentheses:
-   *
-   * ```ts
-   * const persons = await db
-   *   .selectFrom('person')
-   *   .selectAll()
-   *   .where((qb) => qb
-   *     .where('id', '=', 1)
-   *     .orWhere('id', '=', 2)
-   *   )
-   *   .execute()
-   * ```
-   *
-   * The generated SQL (PostgreSQL):
-   *
-   * ```sql
-   * select * from "person" (where "id" = 1 or "id" = 2)
-   * ```
-   *
-   * Even the first `where` can be an `orWhere`. This is useful
-   * if you are looping through a set of conditions:
-   *
-   * ```ts
-   * const persons = await db
-   *   .selectFrom('person')
-   *   .selectAll()
-   *   .where((qb) => qb
-   *     .orWhere('id', '=', 1)
-   *     .orWhere('id', '=', 2)
-   *   )
-   *   .execute()
-   * ```
-   *
-   * The generated SQL (PostgreSQL):
-   *
-   * ```sql
-   * select * from "person" (where "id" = 1 or "id" = 2)
-   * ```
+   * @deprecated Follow [these](https://github.com/koskimas/kysely/releases/tag/0.24.0) instructions to migrate
    */
   orWhere<RE extends ReferenceExpression<DB, TB>>(
     lhs: RE,
@@ -328,14 +267,18 @@ export interface WhereInterface<DB, TB extends keyof DB> {
     rhs: OperandValueExpressionOrList<DB, TB, RE>
   ): WhereInterface<DB, TB>
 
-  orWhere(grouper: WhereGrouper<DB, TB>): WhereInterface<DB, TB>
+  /**
+   * @deprecated Follow [these](https://github.com/koskimas/kysely/releases/tag/0.24.0) instructions to migrate
+   */
+  orWhere(factory: WhereExpressionFactory<DB, TB>): WhereInterface<DB, TB>
 
+  /**
+   * @deprecated Follow [these](https://github.com/koskimas/kysely/releases/tag/0.24.0) instructions to migrate
+   */
   orWhere(expression: Expression<any>): WhereInterface<DB, TB>
 
   /**
-   * Adds an `or where` clause to the query. Otherwise works just like {@link whereRef}.
-   *
-   * Also see {@link orWhere} and {@link where}.
+   * @deprecated Follow [these](https://github.com/koskimas/kysely/releases/tag/0.24.0) instructions to migrate
    */
   orWhereRef(
     lhs: ReferenceExpression<DB, TB>,
@@ -344,84 +287,27 @@ export interface WhereInterface<DB, TB extends keyof DB> {
   ): WhereInterface<DB, TB>
 
   /**
-   * Adds a `where exists` clause to the query.
-   *
-   * You can either use a subquery or a raw {@link sql} snippet.
-   *
-   * ### Examples
-   *
-   * The query below selets all persons that own a pet named Catto:
-   *
-   * ```ts
-   * const petName = 'Catto'
-   * const persons = await db
-   *   .selectFrom('person')
-   *   .selectAll()
-   *   .whereExists((qb) => qb
-   *     .selectFrom('pet')
-   *     .select('pet.id')
-   *     .whereRef('person.id', '=', 'pet.owner_id')
-   *     .where('pet.name', '=', petName)
-   *   )
-   *   .execute()
-   * ```
-   *
-   * The generated SQL (PostgreSQL):
-   *
-   * ```sql
-   * select * from "person"
-   * where exists (
-   *   select "pet"."id"
-   *   from "pet"
-   *   where "person"."id" = "pet"."owner_id"
-   *   and "pet"."name" = $1
-   * )
-   * ```
-   *
-   * The same query as in the previous example but with using raw {@link sql}:
-   *
-   * ```ts
-   * import { sql } from 'kysely'
-   *
-   * const petName = 'Catto'
-   * db.selectFrom('person')
-   *   .selectAll()
-   *   .whereExists(
-   *     sql`(select pet.id from pet where person.id = pet.owner_id and pet.name = ${petName})`
-   *   )
-   * ```
-   *
-   * The generated SQL (PostgreSQL):
-   *
-   * ```sql
-   * select * from "person"
-   * where exists (
-   *   select pet.id
-   *   from pet
-   *   where person.id = pet.owner_id
-   *   and pet.name = $1
-   * )
-   * ```
+   * @deprecated Follow [these](https://github.com/koskimas/kysely/releases/tag/0.24.0) instructions to migrate
    */
   whereExists(arg: ExistsExpression<DB, TB>): WhereInterface<DB, TB>
 
   /**
-   * Just like {@link whereExists} but creates a `not exists` clause.
+   * @deprecated Follow [these](https://github.com/koskimas/kysely/releases/tag/0.24.0) instructions to migrate
    */
   whereNotExists(arg: ExistsExpression<DB, TB>): WhereInterface<DB, TB>
 
   /**
-   * Just like {@link whereExists} but creates an `or exists` clause.
+   * @deprecated Follow [these](https://github.com/koskimas/kysely/releases/tag/0.24.0) instructions to migrate
    */
   orWhereExists(arg: ExistsExpression<DB, TB>): WhereInterface<DB, TB>
 
   /**
-   * Just like {@link whereExists} but creates an `or not exists` clause.
+   * @deprecated Follow [these](https://github.com/koskimas/kysely/releases/tag/0.24.0) instructions to migrate
    */
   orWhereNotExists(arg: ExistsExpression<DB, TB>): WhereInterface<DB, TB>
 
   /**
-   * Clears all where clauses from the query.
+   * Clears all where expressions from the query.
    *
    * ### Examples
    *
@@ -440,3 +326,7 @@ export interface WhereInterface<DB, TB extends keyof DB> {
    */
   clearWhere(): WhereInterface<DB, TB>
 }
+
+export type WhereExpressionFactory<DB, TB extends keyof DB> = (
+  eb: WhereExpressionBuilder<DB, TB>
+) => Expression<SqlBool> | WhereExpressionBuilder<DB, TB>

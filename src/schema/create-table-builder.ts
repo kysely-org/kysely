@@ -94,7 +94,9 @@ export class CreateTableBuilder<TB extends string, C extends string = never>
    *   .addColumn('first_name', 'varchar(50)', (col) => col.notNull())
    *   .addColumn('last_name', 'varchar(255)')
    *   .addColumn('bank_balance', 'numeric(8, 2)')
-   *   .addColumn('data', sql`some_type`)
+   *   // You can specify any data type using the `sql` tag if the types
+   *   // don't include it.
+   *   .addColumn('data', sql`any_type_here`)
    *   .addColumn('parent_id', 'integer', (col) =>
    *     col.references('person.id').onDelete('cascade'))
    *   )
