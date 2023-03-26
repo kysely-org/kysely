@@ -117,7 +117,12 @@ export interface Sql {
    * sql<ValueType>`${value}`
    * ```
    */
-  value<T>(value: T): RawBuilder<T>
+  val<V>(value: V): RawBuilder<V>
+
+  /**
+   * @deprecated Use {@link Sql.val} instead.
+   */
+  value<V>(value: V): RawBuilder<V>
 
   /**
    * This can be used to add runtime column references to SQL snippets.
@@ -169,7 +174,7 @@ export interface Sql {
    * select "public"."person"."first_name" from person
    * ```
    */
-  ref(columnReference: string): RawBuilder<unknown>
+  ref<R = unknown>(columnReference: string): RawBuilder<R>
 
   /**
    * This can be used to add runtime table references to SQL snippets.
@@ -276,7 +281,7 @@ export interface Sql {
    * the SQL string instead of as a parameter. Only use this function when
    * something can't be sent as a parameter.
    */
-  literal(value: unknown): RawBuilder<unknown>
+  literal<V>(value: V): RawBuilder<V>
 
   /**
    * This can be used to add arbitrary runtime SQL to SQL snippets.
@@ -300,7 +305,7 @@ export interface Sql {
    * doesn't assume the inputs are values. The input to this function
    * can be any sql and it's simply glued to the parent string as-is.
    */
-  raw(anySql: string): RawBuilder<unknown>
+  raw<R = unknown>(anySql: string): RawBuilder<R>
 
   /**
    * This can be used to add lists of things to SQL snippets.
@@ -373,14 +378,14 @@ export const sql: Sql = Object.assign(
     })
   },
   {
-    ref(columnReference: string): RawBuilder<unknown> {
+    ref<R = unknown>(columnReference: string): RawBuilder<R> {
       return new RawBuilder({
         queryId: createQueryId(),
         rawNode: RawNode.createWithChild(parseStringReference(columnReference)),
       })
     },
 
-    value<T>(value: T): RawBuilder<T> {
+    value<V>(value: V): RawBuilder<V> {
       return new RawBuilder({
         queryId: createQueryId(),
         rawNode: RawNode.createWithChild(parseValueExpression(value)),
@@ -406,14 +411,14 @@ export const sql: Sql = Object.assign(
       })
     },
 
-    literal(value: unknown): RawBuilder<unknown> {
+    literal<V>(value: V): RawBuilder<V> {
       return new RawBuilder({
         queryId: createQueryId(),
         rawNode: RawNode.createWithChild(ValueNode.createImmediate(value)),
       })
     },
 
-    raw(sql: string): RawBuilder<unknown> {
+    raw<R = unknown>(sql: string): RawBuilder<R> {
       return new RawBuilder({
         queryId: createQueryId(),
         rawNode: RawNode.createWithSql(sql),
