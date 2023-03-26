@@ -19,7 +19,7 @@ async function testCoalesceSingle(db: Kysely<Database>) {
 
   const [r2] = await db
     .selectFrom('person')
-    .select(coalesce(db.dynamic.ref('age')).castTo<number>().as('age'))
+    .select(coalesce(db.dynamic.ref('age')).$castTo<number>().as('age'))
     .execute()
   expectType<{ age: number }>(r2)
 

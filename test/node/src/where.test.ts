@@ -453,25 +453,25 @@ for (const dialect of DIALECTS) {
         const query = ctx.db
           .selectFrom('person')
           .selectAll()
-          .where(({ and, cmp }) =>
+          .where(({ and, cmp, fn }) =>
             and([
               cmp('first_name', '=', 'Jennifer'),
-              cmp('last_name', '=', 'Aniston'),
+              cmp(fn('upper', ['last_name']), '=', 'ANISTON'),
             ])
           )
 
         testSql(query, dialect, {
           postgres: {
-            sql: 'select * from "person" where ("first_name" = $1 and "last_name" = $2)',
-            parameters: ['Jennifer', 'Aniston'],
+            sql: 'select * from "person" where ("first_name" = $1 and upper("last_name") = $2)',
+            parameters: ['Jennifer', 'ANISTON'],
           },
           mysql: {
-            sql: 'select * from `person` where (`first_name` = ? and `last_name` = ?)',
-            parameters: ['Jennifer', 'Aniston'],
+            sql: 'select * from `person` where (`first_name` = ? and upper(`last_name`) = ?)',
+            parameters: ['Jennifer', 'ANISTON'],
           },
           sqlite: {
-            sql: 'select * from "person" where ("first_name" = ? and "last_name" = ?)',
-            parameters: ['Jennifer', 'Aniston'],
+            sql: 'select * from "person" where ("first_name" = ? and upper("last_name") = ?)',
+            parameters: ['Jennifer', 'ANISTON'],
           },
         })
 
