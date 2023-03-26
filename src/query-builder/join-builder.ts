@@ -6,7 +6,7 @@ import {
   ComparisonOperatorExpression,
   OperandValueExpressionOrList,
   parseOn,
-  parseReferentialFilter,
+  parseReferentialComparison,
 } from '../parser/binary-operation-parser.js'
 import { ReferenceExpression } from '../parser/reference-parser.js'
 import {
@@ -16,6 +16,8 @@ import {
 } from '../parser/unary-operation-parser.js'
 import { freeze } from '../util/object-utils.js'
 import { preventAwait } from '../util/prevent-await.js'
+import { SqlBool } from '../util/type-utils.js'
+import { OnExpressionBuilder } from './deprecated-on-expression-builder.js'
 
 export class JoinBuilder<DB, TB extends keyof DB>
   implements OperationNodeSource
@@ -38,10 +40,7 @@ export class JoinBuilder<DB, TB extends keyof DB>
     rhs: OperandValueExpressionOrList<DB, TB, RE>
   ): JoinBuilder<DB, TB>
 
-  on(
-    grouper: (qb: JoinBuilder<DB, TB>) => JoinBuilder<DB, TB>
-  ): JoinBuilder<DB, TB>
-
+  on(factory: OnExpressionFactory<DB, TB>): JoinBuilder<DB, TB>
   on(expression: Expression<any>): JoinBuilder<DB, TB>
 
   on(...args: any[]): JoinBuilder<DB, TB> {
@@ -52,10 +51,7 @@ export class JoinBuilder<DB, TB extends keyof DB>
   }
 
   /**
-   * Just like {@link WhereInterface.orWhere} but adds an item to the join's
-   * `on` clause instead.
-   *
-   * See {@link WhereInterface.orWhere} for documentation and examples.
+   * @deprecated Follow [these](https://github.com/koskimas/kysely/releases/tag/0.24.0) instructions to migrate
    */
   orOn<RE extends ReferenceExpression<DB, TB>>(
     lhs: RE,
@@ -63,12 +59,19 @@ export class JoinBuilder<DB, TB extends keyof DB>
     rhs: OperandValueExpressionOrList<DB, TB, RE>
   ): JoinBuilder<DB, TB>
 
-  orOn(
-    grouper: (qb: JoinBuilder<DB, TB>) => JoinBuilder<DB, TB>
-  ): JoinBuilder<DB, TB>
+  /**
+   * @deprecated Follow [these](https://github.com/koskimas/kysely/releases/tag/0.24.0) instructions to migrate
+   */
+  orOn(factory: OnExpressionFactory<DB, TB>): JoinBuilder<DB, TB>
 
+  /**
+   * @deprecated Follow [these](https://github.com/koskimas/kysely/releases/tag/0.24.0) instructions to migrate
+   */
   orOn(expression: Expression<any>): JoinBuilder<DB, TB>
 
+  /**
+   * @deprecated Follow [these](https://github.com/koskimas/kysely/releases/tag/0.24.0) instructions to migrate
+   */
   orOn(...args: any[]): JoinBuilder<DB, TB> {
     return new JoinBuilder({
       ...this.#props,
@@ -91,16 +94,13 @@ export class JoinBuilder<DB, TB extends keyof DB>
       ...this.#props,
       joinNode: JoinNode.cloneWithOn(
         this.#props.joinNode,
-        parseReferentialFilter(lhs, op, rhs)
+        parseReferentialComparison(lhs, op, rhs)
       ),
     })
   }
 
   /**
-   * Just like {@link WhereInterface.orWhereRef} but adds an item to the join's
-   * `on` clause instead.
-   *
-   * See {@link WhereInterface.orWhereRef} for documentation and examples.
+   * @deprecated Follow [these](https://github.com/koskimas/kysely/releases/tag/0.24.0) instructions to migrate
    */
   orOnRef(
     lhs: ReferenceExpression<DB, TB>,
@@ -111,16 +111,13 @@ export class JoinBuilder<DB, TB extends keyof DB>
       ...this.#props,
       joinNode: JoinNode.cloneWithOrOn(
         this.#props.joinNode,
-        parseReferentialFilter(lhs, op, rhs)
+        parseReferentialComparison(lhs, op, rhs)
       ),
     })
   }
 
   /**
-   * Just like {@link WhereInterface.whereExists} but adds an item to the join's
-   * `on` clause instead.
-   *
-   * See {@link WhereInterface.whereExists} for documentation and examples.
+   * @deprecated Follow [these](https://github.com/koskimas/kysely/releases/tag/0.24.0) instructions to migrate
    */
   onExists(arg: ExistsExpression<DB, TB>): JoinBuilder<DB, TB> {
     return new JoinBuilder({
@@ -130,10 +127,7 @@ export class JoinBuilder<DB, TB extends keyof DB>
   }
 
   /**
-   * Just like {@link WhereInterface.whereNotExists} but adds an item to the join's
-   * `on` clause instead.
-   *
-   * See {@link WhereInterface.whereNotExists} for documentation and examples.
+   * @deprecated Follow [these](https://github.com/koskimas/kysely/releases/tag/0.24.0) instructions to migrate
    */
   onNotExists(arg: ExistsExpression<DB, TB>): JoinBuilder<DB, TB> {
     return new JoinBuilder({
@@ -143,10 +137,7 @@ export class JoinBuilder<DB, TB extends keyof DB>
   }
 
   /**
-   * Just like {@link WhereInterface.orWhereExists} but adds an item to the join's
-   * `on` clause instead.
-   *
-   * See {@link WhereInterface.orWhereExists} for documentation and examples.
+   * @deprecated Follow [these](https://github.com/koskimas/kysely/releases/tag/0.24.0) instructions to migrate
    */
   orOnExists(arg: ExistsExpression<DB, TB>): JoinBuilder<DB, TB> {
     return new JoinBuilder({
@@ -156,10 +147,7 @@ export class JoinBuilder<DB, TB extends keyof DB>
   }
 
   /**
-   * Just like {@link WhereInterface.orWhereNotExists} but adds an item to the join's
-   * `on` clause instead.
-   *
-   * See {@link WhereInterface.orWhereNotExists} for documentation and examples.
+   * @deprecated Follow [these](https://github.com/koskimas/kysely/releases/tag/0.24.0) instructions to migrate
    */
   orOnNotExists(arg: ExistsExpression<DB, TB>): JoinBuilder<DB, TB> {
     return new JoinBuilder({
@@ -205,3 +193,7 @@ preventAwait(
 export interface JoinBuilderProps {
   readonly joinNode: JoinNode
 }
+
+type OnExpressionFactory<DB, TB extends keyof DB> = (
+  eb: OnExpressionBuilder<DB, TB>
+) => Expression<SqlBool> | OnExpressionBuilder<DB, TB>

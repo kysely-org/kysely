@@ -19,12 +19,15 @@ import { freeze } from '../util/object-utils.js'
 import { Expression } from '../expression/expression.js'
 import {
   ComparisonOperatorExpression,
-  parseWhereWithImmediateParameters,
+  parseWhere,
 } from '../parser/binary-operation-parser.js'
 import { QueryNode } from '../operation-node/query-node.js'
+import { ExpressionBuilder } from '../expression/expression-builder.js'
+import { SqlBool } from '../util/type-utils.js'
+import { ImmediateValueTransformer } from '../plugin/immediate-value/immediate-value-transformer.js'
 
 export class CreateIndexBuilder<C = never>
-  implements OperationNodeSource, Compilable, CreateIndexWhereInterface<C>
+  implements OperationNodeSource, Compilable
 {
   readonly #props: CreateIndexBuilderProps
 
@@ -185,8 +188,6 @@ export class CreateIndexBuilder<C = never>
   /**
    * Adds a where clause to the query. This Effectively turns the index partial.
    *
-   * Also see {@link orWhere}
-   *
    * ### Examples
    *
    * ```ts
@@ -220,59 +221,23 @@ export class CreateIndexBuilder<C = never>
     op: ComparisonOperatorExpression,
     rhs: unknown
   ): CreateIndexBuilder<C>
+
   where(
-    grouper: (qb: CreateIndexWhereInterface<C>) => CreateIndexWhereInterface<C>
+    factory: (
+      qb: ExpressionBuilder<Record<string, Record<C & string, any>>, string>
+    ) => Expression<SqlBool>
   ): CreateIndexBuilder<C>
+
   where(expression: Expression<any>): CreateIndexBuilder<C>
 
   where(...args: any[]): any {
+    const transformer = new ImmediateValueTransformer()
+
     return new CreateIndexBuilder({
       ...this.#props,
       node: QueryNode.cloneWithWhere(
         this.#props.node,
-        parseWhereWithImmediateParameters(args)
-      ),
-    })
-  }
-
-  /**
-   * Adds an `or where` clause to the query. Otherwise works just like {@link where}.
-   *
-   * ### Examples
-   *
-   * ```ts
-   * import { sql } from 'kysely'
-   *
-   * await db.schema
-   *    .createIndex('orders_unbilled_index')
-   *    .on('orders')
-   *    .column('order_nr')
-   *    .where(sql.ref('billed'), 'is not', true)
-   *    .orWhere('order_nr', 'like', '123%')
-   * ```
-   *
-   * The generated SQL (PostgreSQL):
-   *
-   * ```sql
-   * create index "orders_unbilled_index" on "orders" ("order_nr") where "billed" is not true or "order_nr" like '123%'
-   * ```
-   */
-  orWhere(
-    lhs: C | Expression<any>,
-    op: ComparisonOperatorExpression,
-    rhs: unknown
-  ): CreateIndexBuilder<C>
-  orWhere(
-    grouper: (qb: CreateIndexWhereInterface<C>) => CreateIndexWhereInterface<C>
-  ): CreateIndexBuilder<C>
-  orWhere(expression: Expression<any>): CreateIndexBuilder<C>
-
-  orWhere(...args: any[]): any {
-    return new CreateIndexBuilder({
-      ...this.#props,
-      node: QueryNode.cloneWithOrWhere(
-        this.#props.node as any,
-        parseWhereWithImmediateParameters(args)
+        transformer.transformNode(parseWhere(args))
       ),
     })
   }
@@ -313,27 +278,4 @@ export interface CreateIndexBuilderProps {
   readonly queryId: QueryId
   readonly executor: QueryExecutor
   readonly node: CreateIndexNode
-}
-
-// WhereInterface but without database schema type definition generics, just available column names.
-export interface CreateIndexWhereInterface<C> {
-  where(
-    lhs: C | Expression<any>,
-    op: ComparisonOperatorExpression,
-    rhs: unknown
-  ): CreateIndexBuilder<C>
-  where(
-    grouper: (qb: CreateIndexWhereInterface<C>) => CreateIndexWhereInterface<C>
-  ): CreateIndexBuilder<C>
-  where(expression: Expression<any>): CreateIndexBuilder<C>
-
-  orWhere(
-    lhs: C | Expression<any>,
-    op: ComparisonOperatorExpression,
-    rhs: unknown
-  ): CreateIndexBuilder<C>
-  orWhere(
-    grouper: (qb: CreateIndexWhereInterface<C>) => CreateIndexWhereInterface<C>
-  ): CreateIndexBuilder<C>
-  orWhere(expression: Expression<any>): CreateIndexBuilder<C>
 }

@@ -7,7 +7,7 @@ too much for TypeScript and you get errors like this:
 error TS2589: Type instantiation is excessively deep and possibly infinite.
 ```
 
-In these case you can often use the [$assertType](https://koskimas.github.io/kysely/classes/SelectQueryBuilder.html#_assertType)
+In these case you can often use the [$assertType](https://kysely-org.github.io/kysely/classes/SelectQueryBuilder.html#_assertType)
 method to help TypeScript a little bit. When you use this method to assert the output type of a query, Kysely can drop the
 complex output type that consists of multiple nested helper types and replace it with the simple asserted type.
 

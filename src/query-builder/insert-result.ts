@@ -47,3 +47,7 @@ export class InsertResult {
     return this.#numInsertedOrUpdatedRows
   }
 }
+
+for (const property of ['insertId', 'numInsertedOrUpdatedRows']) {
+  Object.defineProperty(InsertResult.prototype, property, { enumerable: true })
+}

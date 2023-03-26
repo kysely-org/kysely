@@ -449,6 +449,43 @@ for (const dialect of DIALECTS) {
         ])
       })
 
+      it('single function argument should provide an expression builder', async () => {
+        const query = ctx.db
+          .selectFrom('person')
+          .selectAll()
+          .where(({ and, cmp }) =>
+            and([
+              cmp('first_name', '=', 'Jennifer'),
+              cmp('last_name', '=', 'Aniston'),
+            ])
+          )
+
+        testSql(query, dialect, {
+          postgres: {
+            sql: 'select * from "person" where ("first_name" = $1 and "last_name" = $2)',
+            parameters: ['Jennifer', 'Aniston'],
+          },
+          mysql: {
+            sql: 'select * from `person` where (`first_name` = ? and `last_name` = ?)',
+            parameters: ['Jennifer', 'Aniston'],
+          },
+          sqlite: {
+            sql: 'select * from "person" where ("first_name" = ? and "last_name" = ?)',
+            parameters: ['Jennifer', 'Aniston'],
+          },
+        })
+
+        const persons = await query.execute()
+        expect(persons).to.have.length(1)
+        expect(persons).to.containSubset([
+          {
+            first_name: 'Jennifer',
+            last_name: 'Aniston',
+            gender: 'female',
+          },
+        ])
+      })
+
       it('single function argument should create a group', async () => {
         const query = ctx.db
           .selectFrom('person')

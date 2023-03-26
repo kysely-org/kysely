@@ -17,7 +17,10 @@ import {
   TRANSACTION_ISOLATION_LEVELS,
 } from './driver/driver.js'
 import { preventAwait } from './util/prevent-await.js'
-import { FunctionModule } from './query-builder/function-module.js'
+import {
+  createFunctionModule,
+  FunctionModule,
+} from './query-builder/function-module.js'
 import { Log, LogConfig } from './util/log.js'
 import { QueryExecutorProvider } from './query-executor/query-executor-provider.js'
 import { QueryResult } from './driver/database-connection.js'
@@ -167,7 +170,7 @@ export class Kysely<DB>
    * ```
    */
   get fn(): FunctionModule<DB, keyof DB> {
-    return new FunctionModule()
+    return createFunctionModule()
   }
 
   /**
@@ -328,7 +331,7 @@ export class Kysely<DB>
   /**
    * Executes a given compiled query or query builder.
    *
-   * See {@link https://github.com/koskimas/kysely/blob/master/recipes/splitting-build-compile-and-execute-code.md#execute-compiled-queries splitting build, compile and execute code recipe} for more information.
+   * See {@link https://github.com/koskimas/kysely/blob/master/site/docs/recipes/splitting-build-compile-and-execute-code.md#execute-compiled-queries splitting build, compile and execute code recipe} for more information.
    */
   executeQuery<R>(
     query: CompiledQuery<R> | Compilable<R>,

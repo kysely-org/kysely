@@ -38,7 +38,7 @@ const config = {
         },
         docs: {
           sidebarPath: require.resolve('./sidebars.js'),
-          editUrl: 'https://github.com/koskimas/kysely/tree/master/site',
+          editUrl: 'https://github.com/kysely-org/kysely/tree/master/site',
         },
         blog: {
           showReadingTime: true,
@@ -87,12 +87,12 @@ const config = {
           },
 
           {
-            href: 'https://github.com/koskimas/kysely',
+            href: 'https://github.com/kysely-org/kysely',
             label: 'GitHub',
             position: 'right',
           },
           {
-            href: 'https://koskimas.github.io/kysely/',
+            href: 'https://kysely-org.github.io/kysely/',
             label: 'API docs',
             position: 'right',
           },
@@ -157,11 +157,11 @@ const config = {
             items: [
               {
                 label: 'GitHub',
-                href: 'https://github.com/koskimas/kysely',
+                href: 'https://github.com/kysely-org/kysely',
               },
               {
                 label: 'API docs',
-                href: 'https://koskimas.github.io/kysely/',
+                href: 'https://kysely-org.github.io/kysely/',
               },
             ],
           },

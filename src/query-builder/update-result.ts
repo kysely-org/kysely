@@ -9,3 +9,7 @@ export class UpdateResult {
     return this.#numUpdatedRows
   }
 }
+
+Object.defineProperty(UpdateResult.prototype, 'numUpdatedRows', {
+  enumerable: true,
+})
