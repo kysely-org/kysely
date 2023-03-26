@@ -385,11 +385,15 @@ export const sql: Sql = Object.assign(
       })
     },
 
-    value<V>(value: V): RawBuilder<V> {
+    val<V>(value: V): RawBuilder<V> {
       return new RawBuilder({
         queryId: createQueryId(),
         rawNode: RawNode.createWithChild(parseValueExpression(value)),
       })
+    },
+
+    value<V>(value: V): RawBuilder<V> {
+      return this.val(value)
     },
 
     table(tableReference: string): RawBuilder<unknown> {
