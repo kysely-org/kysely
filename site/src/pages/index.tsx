@@ -46,7 +46,7 @@ function HomepageHeader() {
               Getting started
             </a>
             <a
-              href="https://github.com/koskimas/kysely"
+              href="https://github.com/kysely-org/kysely"
               className="button button--secondary button--md button--block"
             >
               View on Github
@@ -59,7 +59,7 @@ function HomepageHeader() {
               borderRadius: 12,
               boxShadow: 'var(--shadow-elevation-medium)',
             }}
-            src="https://github.com/koskimas/kysely/raw/master/assets/demo.gif"
+            src="https://github.com/kysely-org/kysely/raw/master/assets/demo.gif"
           />
         </div>
       </div>
@@ -235,7 +235,7 @@ function SectionTweets() {
             avatar={
               'https://pbs.twimg.com/profile_images/1468372517538701316/HnQ_WZVg_400x400.jpg'
             }
-            text="😂 I don’t actually like prisma that much, i prefer https://github.com/koskimas/kysely, not an orm though."
+            text="😂 I don’t actually like prisma that much, i prefer https://github.com/kysely-org/kysely, not an orm though."
             tweetLink={
               'https://twitter.com/ngriffin_uk/status/1599891725404676096'
             }

@@ -24,4 +24,4 @@ async function logDatabaseSchema() {
 }
 ```
 
-For more information check the docs for details on the interfaces [DatabaseIntrospector](https://koskimas.github.io/kysely/interfaces/DatabaseIntrospector.html) and [TableMetadata](https://koskimas.github.io/kysely/interfaces/TableMetadata.html).
+For more information check the docs for details on the interfaces [DatabaseIntrospector](https://kysely-org.github.io/kysely/interfaces/DatabaseIntrospector.html) and [TableMetadata](https://kysely-org.github.io/kysely/interfaces/TableMetadata.html).
