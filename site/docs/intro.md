@@ -12,7 +12,7 @@ Kysely makes sure you only refer to tables and columns that are visible to the p
 
 As shown above, through the magic of TypeScript, Kysely is able to parse the alias given to `pet.name` and add the `pet_name` column to the result row type. Kysely is able to infer column names, aliases and types from selected subqueries, joined subqueries, `with` statements and pretty much anything you can think of.
 
-Of course there are cases where things cannot be typed at compile time, and Kysely offers escape hatches for these situations. See the sql template tag and the [DynamicModule](https://kysely-org.github.io/kysely/classes/DynamicModule.html) for more info.
+Of course there are cases where things cannot be typed at compile time, and Kysely offers escape hatches for these situations. See the [sql](https://kysely-org.github.io/kysely/interfaces/Sql.html) template tag and the [DynamicModule](https://kysely-org.github.io/kysely/classes/DynamicModule.html) for more info.
 
 All API documentation is written in the typing files and you can simply cmd-click on the module, class or method you're using to see it. The same documentation is also hosted [here](https://kysely-org.github.io/kysely).
 
