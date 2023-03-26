@@ -81,6 +81,7 @@ import { SetOperationNode } from './set-operation-node.js'
 import { BinaryOperationNode } from './binary-operation-node.js'
 import { UnaryOperationNode } from './unary-operation-node.js'
 import { UsingNode } from './using-node.js'
+import { FunctionNode } from './function-node.js'
 
 export abstract class OperationNodeVisitor {
   protected readonly nodeStack: OperationNode[] = []
@@ -169,6 +170,7 @@ export abstract class OperationNodeVisitor {
     BinaryOperationNode: this.visitBinaryOperation.bind(this),
     UnaryOperationNode: this.visitUnaryOperation.bind(this),
     UsingNode: this.visitUsing.bind(this),
+    FunctionNode: this.visitFunction.bind(this),
   })
 
   protected readonly visitNode = (node: OperationNode): void => {
@@ -265,4 +267,5 @@ export abstract class OperationNodeVisitor {
   protected abstract visitBinaryOperation(node: BinaryOperationNode): void
   protected abstract visitUnaryOperation(node: UnaryOperationNode): void
   protected abstract visitUsing(node: UsingNode): void
+  protected abstract visitFunction(node: FunctionNode): void
 }

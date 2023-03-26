@@ -1,7 +1,5 @@
-import { RawNode } from '../operation-node/raw-node.js'
 import {
   ExtractTypeFromReferenceExpression,
-  parseReferenceExpressionOrList,
   ReferenceExpression,
 } from './reference-parser.js'
 
@@ -24,14 +22,3 @@ export type CoalesceReferenceExpressionList<
       : Exclude<O, null> | ExtractTypeFromReferenceExpression<DB, TB, L>
     : never
   : never
-
-export function parseCoalesce(
-  values: ReferenceExpression<any, any>[]
-): RawNode {
-  return RawNode.create(
-    values.length > 1
-      ? ['coalesce(', ...new Array(values.length - 1).fill(', '), ')']
-      : ['coalesce(', ')'],
-    parseReferenceExpressionOrList(values)
-  )
-}

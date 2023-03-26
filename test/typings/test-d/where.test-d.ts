@@ -1,4 +1,4 @@
-import { Kysely, sql } from '..'
+import { Expression, Kysely, sql } from '..'
 import { Database } from '../shared'
 import { expectError } from 'tsd'
 
@@ -25,28 +25,50 @@ function testWhere(db: Kysely<Database>) {
   // Nullable LHS with reference
   db.selectFrom('person').whereRef('last_name', '=', 'first_name')
 
+  // Expression builder callback
+  db.selectFrom('movie').where(
+    (eb) => eb.selectFrom('person').select('gender'),
+    '=',
+    'female'
+  )
+
   // Subquery in LHS
   db.selectFrom('movie').where(
-    (qb) => qb.selectFrom('person').select('gender'),
+    (eb) => eb.selectFrom('person').select('gender'),
     '=',
     'female'
   )
 
   // Nullable subquery in LHS
-  db.selectFrom('movie').where(
-    (qb) => qb.selectFrom('person').select('last_name'),
-    '=',
-    'female'
+  db.selectFrom('movie').where(({ or, cmp, and }) =>
+    or([cmp('id', '=', '1'), and([cmp('stars', '>', 2), cmp('stars', '<', 5)])])
   )
 
+  const firstName = 'Jennifer'
+  const lastName = 'Aniston'
+  // Dynamic `and` list in expression builder
+  db.selectFrom('person').where(({ cmp, and }) => {
+    const exprs: Expression<boolean>[] = []
+
+    if (firstName) {
+      exprs.push(cmp('first_name', '=', firstName))
+    }
+
+    if (lastName) {
+      exprs.push(cmp('last_name', '=', lastName))
+    }
+
+    return and(exprs)
+  })
+
   // Subquery in RHS
-  db.selectFrom('movie').where(sql`${'female'}`, '=', (qb) =>
-    qb.selectFrom('person').select('gender')
+  db.selectFrom('movie').where(sql<string>`${'female'}`, '=', (eb) =>
+    eb.selectFrom('person').select('gender')
   )
 
   // Nullable subquery in RHS
-  db.selectFrom('person').where('first_name', 'in', (qb) =>
-    qb.selectFrom('person').select('last_name')
+  db.selectFrom('person').where('first_name', 'in', (eb) =>
+    eb.selectFrom('person').select('last_name')
   )
 
   // Raw expression
