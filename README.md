@@ -3,7 +3,7 @@
 [![Discord](https://img.shields.io/discord/890118421587578920)](https://discord.gg/xyBJ3GwvAm)
 [![Tests](https://github.com/koskimas/kysely/actions/workflows/test.yml/badge.svg)](https://github.com/koskimas/kysely)
 
-# [Kysely](https://koskimas.github.io/kysely/index.html)
+# [Kysely](https://kysely-org.github.io/kysely/index.html)
 
 Kysely (pronounce “Key-Seh-Lee”) is a type-safe and autocompletion-friendly typescript SQL query builder. Inspired by
 [knex](http://knexjs.org/). Mainly developed for [node.js](https://nodejs.org/en/) but also runs on [deno](https://deno.land/)
@@ -21,8 +21,8 @@ column names, aliases and types from selected subqueries, joined subqueries, `wi
 much anything you can think of.
 
 Of course there are cases where things cannot be typed at compile time, and Kysely offers escape
-hatches for these situations. See the [sql template tag](https://koskimas.github.io/kysely/interfaces/Sql.html) 
-and the [DynamicModule](https://koskimas.github.io/kysely/classes/DynamicModule.html#ref) for more info.
+hatches for these situations. See the [sql template tag](https://kysely-org.github.io/kysely/interfaces/Sql.html) 
+and the [DynamicModule](https://kysely-org.github.io/kysely/classes/DynamicModule.html#ref) for more info.
 
 All API documentation is written in the typing files and you can simply `cmd-click` on the module, class
 or method you're using to see it. The same documentation is also hosted [here](https://github.com/koskimas/kysely).
@@ -69,7 +69,7 @@ npm install kysely better-sqlite3
 ```
 
 More dialects will be added soon. Kysely also has a simple interface
-for [3rd party dialects](https://koskimas.github.io/kysely/interfaces/Dialect.html).
+for [3rd party dialects](https://kysely-org.github.io/kysely/interfaces/Dialect.html).
 
 ### 3rd party dialects
 
@@ -211,8 +211,8 @@ Kysely database schema type definitions from your existing Prisma schemas.
 ## Select queries
 
 You can find examples of select queries in the documentation of the 
-[select method](https://koskimas.github.io/kysely/classes/SelectQueryBuilder.html#select) and
-the [where method](https://koskimas.github.io/kysely/classes/SelectQueryBuilder.html#where)
+[select method](https://kysely-org.github.io/kysely/classes/SelectQueryBuilder.html#select) and
+the [where method](https://kysely-org.github.io/kysely/classes/SelectQueryBuilder.html#where)
 among other places.
 
 ### Stream select query results
@@ -256,19 +256,19 @@ async function demo() {
 
 ## Update queries
 
-See the [set method](https://koskimas.github.io/kysely/classes/UpdateQueryBuilder.html#set) and the
-[updateTable method](https://koskimas.github.io/kysely/classes/Kysely.html#updateTable)
+See the [set method](https://kysely-org.github.io/kysely/classes/UpdateQueryBuilder.html#set) and the
+[updateTable method](https://kysely-org.github.io/kysely/classes/Kysely.html#updateTable)
 documentation.
 
 ## Insert queries
 
-See the [values method](https://koskimas.github.io/kysely/classes/InsertQueryBuilder.html#values) and the
-[insertInto method](https://koskimas.github.io/kysely/classes/Kysely.html#insertInto)
+See the [values method](https://kysely-org.github.io/kysely/classes/InsertQueryBuilder.html#values) and the
+[insertInto method](https://kysely-org.github.io/kysely/classes/Kysely.html#insertInto)
 documentation.
 
 ## Delete queries
 
-See the [deleteFrom method](https://koskimas.github.io/kysely/classes/Kysely.html#deleteFrom)
+See the [deleteFrom method](https://kysely-org.github.io/kysely/classes/Kysely.html#deleteFrom)
 documentation.
 
 # Recipes
@@ -308,7 +308,7 @@ when you go back to previous version. The only argument for the functions is an 
 Migrations should never depend on the current code of your app because they need to work even when the app
 changes. Migrations need to be "frozen in time".
 
-The migrations can use the [Kysely.schema](https://koskimas.github.io/kysely/classes/SchemaModule.html)
+The migrations can use the [Kysely.schema](https://kysely-org.github.io/kysely/classes/SchemaModule.html)
 module to modify the schema. Migrations can also run normal queries to modify data.
 
 Execution order of the migrations is the alpabetical order of their names. An excellent way to name your
@@ -317,8 +317,8 @@ where multiple team members may add migrations at the same time in parallel comm
 about the other migrations.
 
 You don't need to store your migrations as separate files if you don't want to. You can easily
-implement your own [MigrationProvider](https://koskimas.github.io/kysely/interfaces/MigrationProvider.html)
-and give it to the [Migrator](https://koskimas.github.io/kysely/classes/Migrator.html) class
+implement your own [MigrationProvider](https://kysely-org.github.io/kysely/interfaces/MigrationProvider.html)
+and give it to the [Migrator](https://kysely-org.github.io/kysely/classes/Migrator.html) class
 when you instantiate one.
 
 ### PostgreSQL migration example
@@ -406,7 +406,7 @@ await migrator.migrateToLatest(pathToMigrationsFolder)
 ```
 
 to run all migrations that have not yet been run. See the
-[Migrator](https://koskimas.github.io/kysely/classes/Migrator.html)
+[Migrator](https://kysely-org.github.io/kysely/classes/Migrator.html)
 class's documentation for more info.
 
 Kysely doesn't have a CLI for running migrations and probably never will. This is because Kysely's

@@ -194,3 +194,5 @@ export type NarrowPartial<S, T> = {
       : KyselyTypeError<`$narrowType() call failed: passed type does not exist in '${K}'s type union`>
     : S[K]
 }
+
+export type SqlBool = boolean | 0 | 1

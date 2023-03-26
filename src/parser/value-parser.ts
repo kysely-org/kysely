@@ -8,6 +8,8 @@ import {
   isExpressionOrFactory,
 } from './expression-parser.js'
 import { OperationNode } from '../operation-node/operation-node.js'
+import { Expression } from '../expression/expression.js'
+import { SelectQueryBuilder } from '../query-builder/select-query-builder.js'
 
 export type ValueExpression<DB, TB extends keyof DB, V> =
   | V
@@ -16,6 +18,22 @@ export type ValueExpression<DB, TB extends keyof DB, V> =
 export type ValueExpressionOrList<DB, TB extends keyof DB, V> =
   | ValueExpression<DB, TB, V>
   | ReadonlyArray<ValueExpression<DB, TB, V>>
+
+export type ExtractTypeFromValueExpressionOrList<VE> = VE extends ReadonlyArray<
+  infer AV
+>
+  ? ExtractTypeFromValueExpression<AV>
+  : ExtractTypeFromValueExpression<VE>
+
+type ExtractTypeFromValueExpression<VE> = VE extends SelectQueryBuilder<
+  any,
+  any,
+  Record<string, infer SV>
+>
+  ? SV
+  : VE extends Expression<infer V>
+  ? V
+  : VE
 
 export function parseValueExpressionOrList(
   arg: ValueExpressionOrList<any, any, unknown>

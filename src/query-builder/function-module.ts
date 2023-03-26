@@ -49,17 +49,7 @@ import { AggregateFunctionBuilder } from './aggregate-function-builder.js'
  * having count("pet"."id") > $1
  * ```
  */
-export class FunctionModule<DB, TB extends keyof DB> {
-  constructor() {
-    this.avg = this.avg.bind(this)
-    this.coalesce = this.coalesce.bind(this)
-    this.count = this.count.bind(this)
-    this.countAll = this.countAll.bind(this)
-    this.max = this.max.bind(this)
-    this.min = this.min.bind(this)
-    this.sum = this.sum.bind(this)
-  }
-
+export interface FunctionModule<DB, TB extends keyof DB> {
   /**
    * Calls the `avg` function for the column given as the argument.
    *
@@ -130,14 +120,9 @@ export class FunctionModule<DB, TB extends keyof DB> {
       DB,
       TB
     >
-  >(column: C): AggregateFunctionBuilder<DB, TB, O> {
-    return new AggregateFunctionBuilder({
-      aggregateFunctionNode: AggregateFunctionNode.create(
-        'avg',
-        parseSimpleReferenceExpression(column)
-      ),
-    })
-  }
+  >(
+    column: C
+  ): AggregateFunctionBuilder<DB, TB, O>
 
   /**
    * Calls the `coalesce` function for given arguments.
@@ -209,12 +194,7 @@ export class FunctionModule<DB, TB extends keyof DB> {
   >(
     value: V,
     ...otherValues: OV
-  ): RawBuilder<CoalesceReferenceExpressionList<DB, TB, [V, ...OV]>> {
-    return new RawBuilder({
-      queryId: createQueryId(),
-      rawNode: parseCoalesce([value, ...otherValues]),
-    })
-  }
+  ): RawBuilder<CoalesceReferenceExpressionList<DB, TB, [V, ...OV]>>
 
   /**
    * Calls the `count` function for the column given as the argument.
@@ -276,14 +256,9 @@ export class FunctionModule<DB, TB extends keyof DB> {
       DB,
       TB
     >
-  >(column: C): AggregateFunctionBuilder<DB, TB, O> {
-    return new AggregateFunctionBuilder({
-      aggregateFunctionNode: AggregateFunctionNode.create(
-        'count',
-        parseSimpleReferenceExpression(column)
-      ),
-    })
-  }
+  >(
+    column: C
+  ): AggregateFunctionBuilder<DB, TB, O>
 
   /**
    * Calls the `count` function with `*` or `table.*` as argument.
@@ -370,15 +345,6 @@ export class FunctionModule<DB, TB extends keyof DB> {
     O
   >
 
-  countAll(table?: any): any {
-    return new AggregateFunctionBuilder({
-      aggregateFunctionNode: AggregateFunctionNode.create(
-        'count',
-        parseSelectAll(table)[0].selection as any
-      ),
-    })
-  }
-
   /**
    * Calls the `max` function for the column given as the argument.
    *
@@ -440,20 +406,6 @@ export class FunctionModule<DB, TB extends keyof DB> {
     column: DynamicReferenceBuilder
   ): AggregateFunctionBuilder<DB, TB, O>
 
-  max<
-    C extends SimpleReferenceExpression<DB, TB> = SimpleReferenceExpression<
-      DB,
-      TB
-    >
-  >(column: C): any {
-    return new AggregateFunctionBuilder({
-      aggregateFunctionNode: AggregateFunctionNode.create(
-        'max',
-        parseSimpleReferenceExpression(column)
-      ),
-    })
-  }
-
   /**
    * Calls the `min` function for the column given as the argument.
    *
@@ -514,20 +466,6 @@ export class FunctionModule<DB, TB extends keyof DB> {
   min<O extends number | string | bigint | null = number | string | bigint>(
     column: DynamicReferenceBuilder
   ): AggregateFunctionBuilder<DB, TB, O>
-
-  min<
-    C extends SimpleReferenceExpression<DB, TB> = SimpleReferenceExpression<
-      DB,
-      TB
-    >
-  >(column: C): any {
-    return new AggregateFunctionBuilder({
-      aggregateFunctionNode: AggregateFunctionNode.create(
-        'min',
-        parseSimpleReferenceExpression(column)
-      ),
-    })
-  }
 
   /**
    * Calls the `sum` function for the column given as the argument.
@@ -599,13 +537,107 @@ export class FunctionModule<DB, TB extends keyof DB> {
       DB,
       TB
     >
-  >(column: C): AggregateFunctionBuilder<DB, TB, O> {
-    return new AggregateFunctionBuilder({
-      aggregateFunctionNode: AggregateFunctionNode.create(
-        'sum',
-        parseSimpleReferenceExpression(column)
-      ),
-    })
+  >(
+    column: C
+  ): AggregateFunctionBuilder<DB, TB, O>
+}
+
+export function createFunctionModule<DB, TB extends keyof DB>() {
+  return {
+    avg<
+      O extends number | string | null = number | string,
+      C extends SimpleReferenceExpression<DB, TB> = SimpleReferenceExpression<
+        DB,
+        TB
+      >
+    >(column: C): AggregateFunctionBuilder<DB, TB, O> {
+      return new AggregateFunctionBuilder({
+        aggregateFunctionNode: AggregateFunctionNode.create(
+          'avg',
+          parseSimpleReferenceExpression(column)
+        ),
+      })
+    },
+
+    coalesce<
+      V extends ReferenceExpression<DB, TB>,
+      OV extends ReferenceExpression<DB, TB>[]
+    >(
+      value: V,
+      ...otherValues: OV
+    ): RawBuilder<CoalesceReferenceExpressionList<DB, TB, [V, ...OV]>> {
+      return new RawBuilder({
+        queryId: createQueryId(),
+        rawNode: parseCoalesce([value, ...otherValues]),
+      })
+    },
+
+    count<
+      O extends number | string | bigint,
+      C extends SimpleReferenceExpression<DB, TB> = SimpleReferenceExpression<
+        DB,
+        TB
+      >
+    >(column: C): AggregateFunctionBuilder<DB, TB, O> {
+      return new AggregateFunctionBuilder({
+        aggregateFunctionNode: AggregateFunctionNode.create(
+          'count',
+          parseSimpleReferenceExpression(column)
+        ),
+      })
+    },
+
+    countAll(table?: any): any {
+      return new AggregateFunctionBuilder({
+        aggregateFunctionNode: AggregateFunctionNode.create(
+          'count',
+          parseSelectAll(table)[0].selection as any
+        ),
+      })
+    },
+
+    max<
+      C extends SimpleReferenceExpression<DB, TB> = SimpleReferenceExpression<
+        DB,
+        TB
+      >
+    >(column: C): any {
+      return new AggregateFunctionBuilder({
+        aggregateFunctionNode: AggregateFunctionNode.create(
+          'max',
+          parseSimpleReferenceExpression(column)
+        ),
+      })
+    },
+
+    min<
+      C extends SimpleReferenceExpression<DB, TB> = SimpleReferenceExpression<
+        DB,
+        TB
+      >
+    >(column: C): any {
+      return new AggregateFunctionBuilder({
+        aggregateFunctionNode: AggregateFunctionNode.create(
+          'min',
+          parseSimpleReferenceExpression(column)
+        ),
+      })
+    },
+
+    sum<
+      O extends number | string | bigint | null = number | string | bigint,
+      C extends SimpleReferenceExpression<DB, TB> = SimpleReferenceExpression<
+        DB,
+        TB
+      >
+    >(column: C): AggregateFunctionBuilder<DB, TB, O> {
+      return new AggregateFunctionBuilder({
+        aggregateFunctionNode: AggregateFunctionNode.create(
+          'sum',
+          parseSimpleReferenceExpression(column)
+        ),
+      })
+    },
   }
 }
 

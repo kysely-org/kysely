@@ -15,11 +15,9 @@ export type QueryNode =
   | UpdateQueryNode
   | DeleteQueryNode
 
-export type HasJoins = { joins?: ReadonlyArray<JoinNode> }
-
-export type HasWhere = { where?: WhereNode }
-
-export type HasReturning = { returning?: ReturningNode }
+type HasJoins = { joins?: ReadonlyArray<JoinNode> }
+type HasWhere = { where?: WhereNode }
+type HasReturning = { returning?: ReturningNode }
 
 /**
  * @internal
