@@ -46,6 +46,7 @@ import {
   parseValueExpressionOrList,
 } from '../parser/value-parser.js'
 import { NOOP_QUERY_EXECUTOR } from '../query-executor/noop-query-executor.js'
+import { ValueNode } from '../operation-node/value-node.js'
 
 export interface ExpressionBuilder<DB, TB extends keyof DB> {
   /**
@@ -440,11 +441,7 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    * and "first_name" = $3
    * ```
    */
-  and([expr1, expr2, ...rest]: [
-    Expression<SqlBool>,
-    Expression<SqlBool>,
-    ...ReadonlyArray<Expression<SqlBool>>
-  ]): ExpressionWrapper<SqlBool>
+  and(expres: ReadonlyArray<Expression<SqlBool>>): ExpressionWrapper<SqlBool>
 
   /**
    * Combines two or more comparison expressions using the logical `or` operator.
@@ -477,11 +474,7 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    * or "first_name" = $3
    * ```
    */
-  or([expr1, expr2, ...rest]: [
-    Expression<SqlBool>,
-    Expression<SqlBool>,
-    ...ReadonlyArray<Expression<SqlBool>>
-  ]): ExpressionWrapper<SqlBool>
+  or(expres: ReadonlyArray<Expression<SqlBool>>): ExpressionWrapper<SqlBool>
 
   /**
    * See {@link QueryCreator.withSchema}
@@ -572,32 +565,39 @@ export function createExpressionBuilder<DB, TB extends keyof DB>(
       return unary('-', expr)
     },
 
-    and([expr1, expr2, ...rest]: [
-      Expression<SqlBool>,
-      Expression<SqlBool>,
-      ...ReadonlyArray<Expression<SqlBool>>
-    ]): ExpressionWrapper<SqlBool> {
+    and(exprs: ReadonlyArray<Expression<SqlBool>>): ExpressionWrapper<SqlBool> {
+      if (exprs.length === 0) {
+        return new ExpressionWrapper(ValueNode.createImmediate(true))
+      } else if (exprs.length === 1) {
+        return new ExpressionWrapper(exprs[0].toOperationNode())
+      }
+
       let node = AndNode.create(
-        expr1.toOperationNode(),
-        expr2.toOperationNode()
+        exprs[0].toOperationNode(),
+        exprs[1].toOperationNode()
       )
 
-      for (const ex of rest) {
-        node = AndNode.create(node, ex.toOperationNode())
+      for (let i = 2; i < exprs.length; ++i) {
+        node = AndNode.create(node, exprs[i].toOperationNode())
       }
 
       return new ExpressionWrapper(ParensNode.create(node))
     },
 
-    or([expr1, expr2, ...rest]: [
-      Expression<SqlBool>,
-      Expression<SqlBool>,
-      ...ReadonlyArray<Expression<SqlBool>>
-    ]): ExpressionWrapper<SqlBool> {
-      let node = OrNode.create(expr1.toOperationNode(), expr2.toOperationNode())
+    or(exprs: ReadonlyArray<Expression<SqlBool>>): ExpressionWrapper<SqlBool> {
+      if (exprs.length === 0) {
+        return new ExpressionWrapper(ValueNode.createImmediate(false))
+      } else if (exprs.length === 1) {
+        return new ExpressionWrapper(exprs[0].toOperationNode())
+      }
 
-      for (const ex of rest) {
-        node = OrNode.create(node, ex.toOperationNode())
+      let node = OrNode.create(
+        exprs[0].toOperationNode(),
+        exprs[1].toOperationNode()
+      )
+
+      for (let i = 2; i < exprs.length; ++i) {
+        node = OrNode.create(node, exprs[i].toOperationNode())
       }
 
       return new ExpressionWrapper(ParensNode.create(node))
