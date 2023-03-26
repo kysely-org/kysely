@@ -153,6 +153,39 @@ for (const dialect of DIALECTS) {
       expect(person.last_name).to.equal('Catto')
     })
 
+    if (dialect === 'postgres') {
+      it('should update one row using an expression', async () => {
+        const query = ctx.db
+          .updateTable('person')
+          .set((eb) => ({
+            first_name: eb.bin('first_name', `||`, '2'),
+          }))
+          .where('first_name', '=', 'Jennifer')
+
+        testSql(query, dialect, {
+          postgres: {
+            sql: 'update "person" set "first_name" = "first_name" || $1 where "first_name" = $2',
+            parameters: ['2', 'Jennifer'],
+          },
+          mysql: NOT_SUPPORTED,
+          sqlite: NOT_SUPPORTED,
+        })
+
+        const result = await query.executeTakeFirst()
+
+        expect(result).to.be.instanceOf(UpdateResult)
+        expect(result.numUpdatedRows).to.equal(1n)
+
+        const jennifer = await ctx.db
+          .selectFrom('person')
+          .where('first_name', '=', 'Jennifer2')
+          .select('first_name')
+          .executeTakeFirstOrThrow()
+
+        expect(jennifer.first_name).to.equal('Jennifer2')
+      })
+    }
+
     it('should update one row using a raw expression', async () => {
       const query = ctx.db
         .updateTable('person')

@@ -2,6 +2,10 @@ export * from './kysely.js'
 export * from './query-creator.js'
 
 export * from './expression/expression.js'
+export {
+  ExpressionBuilder,
+  expressionBuilder,
+} from './expression/expression-builder.js'
 
 export * from './query-builder/where-interface.js'
 export * from './query-builder/returning-interface.js'
@@ -12,7 +16,6 @@ export * from './query-builder/update-query-builder.js'
 export * from './query-builder/delete-query-builder.js'
 export * from './query-builder/no-result-error.js'
 export * from './query-builder/join-builder.js'
-export * from './query-builder/expression-builder.js'
 export * from './query-builder/function-module.js'
 export * from './query-builder/insert-result.js'
 export * from './query-builder/delete-result.js'

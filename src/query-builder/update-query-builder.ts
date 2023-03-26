@@ -41,7 +41,7 @@ import { QueryId } from '../util/query-id.js'
 import { freeze } from '../util/object-utils.js'
 import { UpdateResult } from './update-result.js'
 import { KyselyPlugin } from '../plugin/kysely-plugin.js'
-import { WhereInterface } from './where-interface.js'
+import { WhereExpressionFactory, WhereInterface } from './where-interface.js'
 import { ReturningInterface } from './returning-interface.js'
 import {
   isNoResultErrorConstructor,
@@ -55,9 +55,8 @@ import { AliasedExpression, Expression } from '../expression/expression.js'
 import {
   ComparisonOperatorExpression,
   OperandValueExpressionOrList,
-  parseReferentialFilter,
+  parseReferentialComparison,
   parseWhere,
-  WhereGrouper,
 } from '../parser/binary-operation-parser.js'
 import {
   ExistsExpression,
@@ -88,7 +87,10 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
     rhs: OperandValueExpressionOrList<DB, TB, RE>
   ): UpdateQueryBuilder<DB, UT, TB, O>
 
-  where(grouper: WhereGrouper<DB, TB>): UpdateQueryBuilder<DB, UT, TB, O>
+  where(
+    factory: WhereExpressionFactory<DB, TB>
+  ): UpdateQueryBuilder<DB, UT, TB, O>
+
   where(expression: Expression<any>): UpdateQueryBuilder<DB, UT, TB, O>
 
   where(...args: any[]): any {
@@ -110,7 +112,7 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
       ...this.#props,
       queryNode: QueryNode.cloneWithWhere(
         this.#props.queryNode,
-        parseReferentialFilter(lhs, op, rhs)
+        parseReferentialComparison(lhs, op, rhs)
       ),
     })
   }
@@ -121,7 +123,10 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
     rhs: OperandValueExpressionOrList<DB, TB, RE>
   ): UpdateQueryBuilder<DB, UT, TB, O>
 
-  orWhere(grouper: WhereGrouper<DB, TB>): UpdateQueryBuilder<DB, UT, TB, O>
+  orWhere(
+    factory: WhereExpressionFactory<DB, TB>
+  ): UpdateQueryBuilder<DB, UT, TB, O>
+
   orWhere(expression: Expression<any>): UpdateQueryBuilder<DB, UT, TB, O>
 
   orWhere(...args: any[]): any {
@@ -143,7 +148,7 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
       ...this.#props,
       queryNode: QueryNode.cloneWithOrWhere(
         this.#props.queryNode,
-        parseReferentialFilter(lhs, op, rhs)
+        parseReferentialComparison(lhs, op, rhs)
       ),
     })
   }

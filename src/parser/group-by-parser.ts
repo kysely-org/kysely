@@ -1,7 +1,9 @@
 import { GroupByItemNode } from '../operation-node/group-by-item-node.js'
-import { ExpressionBuilder } from '../query-builder/expression-builder.js'
+import {
+  expressionBuilder,
+  ExpressionBuilder,
+} from '../expression/expression-builder.js'
 import { isFunction } from '../util/object-utils.js'
-import { createExpressionBuilder } from './parse-utils.js'
 import {
   parseReferenceExpressionOrList,
   ReferenceExpression,
@@ -21,6 +23,6 @@ export type GroupByArg<DB, TB extends keyof DB, O> =
 export function parseGroupBy(
   groupBy: GroupByArg<any, any, any>
 ): GroupByItemNode[] {
-  groupBy = isFunction(groupBy) ? groupBy(createExpressionBuilder()) : groupBy
+  groupBy = isFunction(groupBy) ? groupBy(expressionBuilder()) : groupBy
   return parseReferenceExpressionOrList(groupBy).map(GroupByItemNode.create)
 }

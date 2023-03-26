@@ -182,6 +182,7 @@ for (const dialect of DIALECTS) {
         .havingNotExist((qb) => qb.selectFrom('pet').select('id'))
         .orHavingNotExists((qb) => qb.selectFrom('pet').select('id'))
         .having((qb) => qb.having('id', '=', 1).orHaving('id', '=', 2))
+        .having(({ or, cmp }) => or([cmp('id', '=', 1), cmp('id', '=', 2)]))
 
       testSql(query, dialect, {
         postgres: {
@@ -197,8 +198,9 @@ for (const dialect of DIALECTS) {
             `and not exists (select "id" from "pet")`,
             `or not exists (select "id" from "pet")`,
             'and ("id" = $5 or "id" = $6)',
+            'and ("id" = $7 or "id" = $8)',
           ],
-          parameters: [1, 2, 3, 'foo', 1, 2],
+          parameters: [1, 2, 3, 'foo', 1, 2, 1, 2],
         },
         mysql: {
           sql: [
@@ -213,8 +215,9 @@ for (const dialect of DIALECTS) {
             'and not exists (select `id` from `pet`)',
             'or not exists (select `id` from `pet`)',
             'and (`id` = ? or `id` = ?)',
+            'and (`id` = ? or `id` = ?)',
           ],
-          parameters: [1, 2, 3, 'foo', 1, 2],
+          parameters: [1, 2, 3, 'foo', 1, 2, 1, 2],
         },
         sqlite: {
           sql: [
@@ -229,8 +232,9 @@ for (const dialect of DIALECTS) {
             `and not exists (select "id" from "pet")`,
             `or not exists (select "id" from "pet")`,
             'and ("id" = ? or "id" = ?)',
+            'and ("id" = ? or "id" = ?)',
           ],
-          parameters: [1, 2, 3, 'foo', 1, 2],
+          parameters: [1, 2, 3, 'foo', 1, 2, 1, 2],
         },
       })
     })
