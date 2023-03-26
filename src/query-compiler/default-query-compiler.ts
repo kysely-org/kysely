@@ -93,6 +93,7 @@ import { SetOperationNode } from '../operation-node/set-operation-node.js'
 import { BinaryOperationNode } from '../operation-node/binary-operation-node.js'
 import { UnaryOperationNode } from '../operation-node/unary-operation-node.js'
 import { UsingNode } from '../operation-node/using-node.js'
+import { FunctionNode } from '../operation-node/function-node.js'
 
 export class DefaultQueryCompiler
   extends OperationNodeVisitor
@@ -1279,6 +1280,13 @@ export class DefaultQueryCompiler
   protected override visitUsing(node: UsingNode): void {
     this.append('using ')
     this.compileList(node.tables)
+  }
+
+  protected override visitFunction(node: FunctionNode): void {
+    this.append(node.func)
+    this.append('(')
+    this.compileList(node.arguments)
+    this.append(')')
   }
 
   protected append(str: string): void {

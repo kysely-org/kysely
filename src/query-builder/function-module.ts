@@ -1,19 +1,17 @@
 import { DynamicReferenceBuilder } from '../dynamic/dynamic-reference-builder.js'
+import { ExpressionWrapper } from '../expression/expression-wrapper.js'
 import { AggregateFunctionNode } from '../operation-node/aggregate-function-node.js'
-import {
-  CoalesceReferenceExpressionList,
-  parseCoalesce,
-} from '../parser/coalesce-parser.js'
+import { FunctionNode } from '../operation-node/function-node.js'
+import { CoalesceReferenceExpressionList } from '../parser/coalesce-parser.js'
 import {
   ExtractTypeFromReferenceExpression,
   SimpleReferenceExpression,
   parseSimpleReferenceExpression,
   ReferenceExpression,
   StringReference,
+  parseReferenceExpressionOrList,
 } from '../parser/reference-parser.js'
 import { parseSelectAll } from '../parser/select-parser.js'
-import { RawBuilder } from '../raw-builder/raw-builder.js'
-import { createQueryId } from '../util/query-id.js'
 import { Equals, IsNever } from '../util/type-utils.js'
 import { AggregateFunctionBuilder } from './aggregate-function-builder.js'
 
@@ -50,6 +48,38 @@ import { AggregateFunctionBuilder } from './aggregate-function-builder.js'
  * ```
  */
 export interface FunctionModule<DB, TB extends keyof DB> {
+  /**
+   * Creates a function call.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * db.selectFrom('person')
+   *   .selectAll('person')
+   *   .where(db.fn('upper', ['first_name']), '=', 'JENNIFER')
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * select "person".*
+   * from "person"
+   * where upper("first_name") = $1
+   * ```
+   *
+   * If you prefer readability over type-safety, you can always use raw `sql`:
+   *
+   * ```ts
+   * db.selectFrom('person')
+   *   .selectAll('person')
+   *   .where(sql`upper(first_name)`, '=', 'JENNIFER')
+   * ```
+   */
+  <T>(
+    name: string,
+    args: ReadonlyArray<ReferenceExpression<DB, TB>>
+  ): ExpressionWrapper<T>
+
   /**
    * Calls the `avg` function for the column given as the argument.
    *
@@ -194,7 +224,7 @@ export interface FunctionModule<DB, TB extends keyof DB> {
   >(
     value: V,
     ...otherValues: OV
-  ): RawBuilder<CoalesceReferenceExpressionList<DB, TB, [V, ...OV]>>
+  ): ExpressionWrapper<CoalesceReferenceExpressionList<DB, TB, [V, ...OV]>>
 
   /**
    * Calls the `count` function for the column given as the argument.
@@ -542,8 +572,20 @@ export interface FunctionModule<DB, TB extends keyof DB> {
   ): AggregateFunctionBuilder<DB, TB, O>
 }
 
-export function createFunctionModule<DB, TB extends keyof DB>() {
-  return {
+export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
+  DB,
+  TB
+> {
+  const fn = <T>(
+    name: string,
+    args: ReadonlyArray<ReferenceExpression<DB, TB>>
+  ): ExpressionWrapper<T> => {
+    return new ExpressionWrapper(
+      FunctionNode.create(name, parseReferenceExpressionOrList(args))
+    )
+  }
+
+  return Object.assign(fn, {
     avg<
       O extends number | string | null = number | string,
       C extends SimpleReferenceExpression<DB, TB> = SimpleReferenceExpression<
@@ -565,11 +607,8 @@ export function createFunctionModule<DB, TB extends keyof DB>() {
     >(
       value: V,
       ...otherValues: OV
-    ): RawBuilder<CoalesceReferenceExpressionList<DB, TB, [V, ...OV]>> {
-      return new RawBuilder({
-        queryId: createQueryId(),
-        rawNode: parseCoalesce([value, ...otherValues]),
-      })
+    ): ExpressionWrapper<CoalesceReferenceExpressionList<DB, TB, [V, ...OV]>> {
+      return fn('coalesce', [value, ...otherValues])
     },
 
     count<
@@ -587,11 +626,11 @@ export function createFunctionModule<DB, TB extends keyof DB>() {
       })
     },
 
-    countAll(table?: any): any {
+    countAll(table?: string): any {
       return new AggregateFunctionBuilder({
         aggregateFunctionNode: AggregateFunctionNode.create(
           'count',
-          parseSelectAll(table)[0].selection as any
+          parseSelectAll(table)[0]
         ),
       })
     },
@@ -638,7 +677,7 @@ export function createFunctionModule<DB, TB extends keyof DB>() {
         ),
       })
     },
-  }
+  })
 }
 
 type OutputBoundStringReference<
