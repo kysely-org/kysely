@@ -1,6 +1,6 @@
-import { expectAssignable, expectNotAssignable } from 'tsd'
+import { expectAssignable, expectNotAssignable, expectType } from 'tsd'
 
-import { Expression, Kysely } from '..'
+import { Expression, ExpressionBuilder, Kysely, SqlBool } from '..'
 import { Database } from '../shared'
 
 function testExpression(db: Kysely<Database>) {
@@ -18,4 +18,8 @@ function testExpression(db: Kysely<Database>) {
   expectNotAssignable<Expression<{ age: number }>>(
     db.selectFrom('person').select('first_name')
   )
+
+  const eb: ExpressionBuilder<Database, 'person'> = undefined!
+
+  expectAssignable<Expression<SqlBool>>(eb.cmp(eb.bin('age', '+', 1), '>', 0))
 }
