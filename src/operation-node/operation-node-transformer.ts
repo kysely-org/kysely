@@ -79,6 +79,7 @@ import { SetOperationNode } from './set-operation-node.js'
 import { BinaryOperationNode } from './binary-operation-node.js'
 import { UnaryOperationNode } from './unary-operation-node.js'
 import { UsingNode } from './using-node.js'
+import { FunctionNode } from './function-node.js'
 
 /**
  * Transforms an operation node tree into another one.
@@ -192,6 +193,7 @@ export class OperationNodeTransformer {
     BinaryOperationNode: this.transformBinaryOperation.bind(this),
     UnaryOperationNode: this.transformUnaryOperation.bind(this),
     UsingNode: this.transformUsing.bind(this),
+    FunctionNode: this.transformFunction.bind(this),
   })
 
   transformNode<T extends OperationNode | undefined>(node: T): T {
@@ -885,6 +887,14 @@ export class OperationNodeTransformer {
     return requireAllProps<UsingNode>({
       kind: 'UsingNode',
       tables: this.transformNodeList(node.tables),
+    })
+  }
+
+  protected transformFunction(node: FunctionNode): FunctionNode {
+    return requireAllProps<FunctionNode>({
+      kind: 'FunctionNode',
+      func: node.func,
+      arguments: this.transformNodeList(node.arguments),
     })
   }
 
