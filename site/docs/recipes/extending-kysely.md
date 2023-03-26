@@ -5,18 +5,18 @@ that feature in a generic way that would work in all use cases would be really d
 In many cases it's better to create little helper functions in your project that suit your use case.
 Kysely makes this really simple.
 
-The Kysely API is designed around two interfaces [`Expression<T>`](https://koskimas.github.io/kysely/interfaces/Expression.html)
-and [`AliasedExpression<T, A>`](https://koskimas.github.io/kysely/interfaces/AliasedExpression.html).
+The Kysely API is designed around two interfaces [`Expression<T>`](https://kysely-org.github.io/kysely/interfaces/Expression.html)
+and [`AliasedExpression<T, A>`](https://kysely-org.github.io/kysely/interfaces/AliasedExpression.html).
 Almost every method accepts values that implement these interfaces and most Kysely internals achieve
 their "type magic" by implementing them.
 
-Most of the time you can create your helpers using the [sql template tag](https://koskimas.github.io/kysely/interfaces/Sql.html)
+Most of the time you can create your helpers using the [sql template tag](https://kysely-org.github.io/kysely/interfaces/Sql.html)
 and the `RawBuilder<T>` and `AliasedRawBuilder<T, A>` class instances it returns, but it's good to first understand how
 the underlying interfaces they implement, `Expression<T>` and `AliasedExpression<T, A>`, work.
 
 ## Expression
 
-[`Expression<T>`](https://koskimas.github.io/kysely/interfaces/Expression.html) is a simple interface
+[`Expression<T>`](https://kysely-org.github.io/kysely/interfaces/Expression.html) is a simple interface
 that has a type `T` and a single method `toOperationNode()`. `T` tells Kysely's type system the type of
 the expression. `toOperationNode()` returns instructions on what SQL should be produced once the
 expression is compiled.
@@ -84,7 +84,7 @@ async function test(db: Kysely<DB>) {
 ```
 
 Most of the time you don't need to create your own classes that implement the `Expression<T>` interface.
-You can simply wrap the [sql template tag](https://koskimas.github.io/kysely/interfaces/Sql.html) and
+You can simply wrap the [sql template tag](https://kysely-org.github.io/kysely/interfaces/Sql.html) and
 the `RawBuilder<T>` class instance it returns in a function. `RawBuilder<T>`, like most things in Kysely,
 implements the `Expression<T>` interface.
 
@@ -136,7 +136,7 @@ async function test(db: Kysely<DB>) {
 ## AliasedExpression
 
 While `Expression<T>` holds the type and compilation instructions of an SQL expression,
-[`AliasedExpression<T, A>`](https://koskimas.github.io/kysely/interfaces/AliasedExpression.html)
+[`AliasedExpression<T, A>`](https://kysely-org.github.io/kysely/interfaces/AliasedExpression.html)
 also holds an alias (a name) for that expression. `AliasedExpression<T, A>` can be used in places
 where you need a name for the expression, like in a `SELECT` statement or a `FROM` statement.
 `AliasedExpression<T, A>` is how kysely is able to infer the name and type of result columns.
@@ -302,7 +302,7 @@ function values<R extends Record<string, unknown>, A extends string>(
 ```
 
 There's a lot going on in this function, but it's all documented in the
-[sql template tag's documentation.](https://koskimas.github.io/kysely/interfaces/Sql.html)
+[sql template tag's documentation.](https://kysely-org.github.io/kysely/interfaces/Sql.html)
 
 Most of the time a helper like this would return either an instance of `RawBuilder` or
 `AliasedRawBuilder` and you'd create an instance using the `sql` template tag. You'd return a
