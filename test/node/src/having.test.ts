@@ -182,7 +182,7 @@ for (const dialect of DIALECTS) {
         .havingNotExist((qb) => qb.selectFrom('pet').select('id'))
         .orHavingNotExists((qb) => qb.selectFrom('pet').select('id'))
         .having((qb) => qb.having('id', '=', 1).orHaving('id', '=', 2))
-        .having(({ or, cmp }) => or([cmp('id', '=', 1), cmp('id', '=', 2)]))
+        .having(({ or, cmpr }) => or([cmpr('id', '=', 1), cmpr('id', '=', 2)]))
 
       testSql(query, dialect, {
         postgres: {

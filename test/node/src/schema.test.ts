@@ -1079,10 +1079,10 @@ for (const dialect of DIALECTS) {
             .createIndex('test_partial_index')
             .on('test')
             .columns(['first_name', 'last_name'])
-            .where((eb) =>
-              eb.or([
-                eb.cmp('first_name', '=', 'Igal'),
-                eb.cmp(sql.ref('age'), '>=', 18),
+            .where(({ or, cmpr }) =>
+              or([
+                cmpr('first_name', '=', 'Igal'),
+                cmpr(sql.ref('age'), '>=', 18),
               ])
             )
 

@@ -157,7 +157,7 @@ for (const dialect of DIALECTS) {
         const query = ctx.db
           .updateTable('person')
           .set((eb) => ({
-            first_name: eb.bin('first_name', `||`, '2'),
+            first_name: eb.bxp('first_name', `||`, '2'),
           }))
           .where('first_name', '=', 'Jennifer')
 
