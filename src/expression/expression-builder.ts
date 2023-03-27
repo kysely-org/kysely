@@ -155,15 +155,15 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    *
    * ### Examples
    *
-   * By default the third argument of {@link bin} and {@link cmp} is a value.
+   * By default the third argument of {@link bxp} and {@link cmpr} is a value.
    * This function can be used to pass in a column reference instead:
    *
    * ```ts
    * db.selectFrom('person')
    *   .selectAll('person')
-   *   .where(({ or, cmp, ref }) => or([
-   *     cmp('first_name', '=', ref('last_name')),
-   *     cmp('first_name', '=', ref('middle_name'))
+   *   .where(({ or, cmpr, ref }) => or([
+   *     cmpr('first_name', '=', ref('last_name')),
+   *     cmpr('first_name', '=', ref('middle_name'))
    *   ]))
    * ```
    *
@@ -176,9 +176,9 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    *   .values(person)
    *   .onConflict((oc) => oc
    *     .column('id')
-   *     .doUpdateSet((eb) => ({
-   *       first_name: eb.ref('excluded.first_name'),
-   *       last_name: eb.ref('excluded.last_name')
+   *     .doUpdateSet(({ ref }) => ({
+   *       first_name: ref('excluded.first_name'),
+   *       last_name: ref('excluded.last_name')
    *     }))
    *   )
    * ```
@@ -205,11 +205,11 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    *
    * ### Examples
    *
-   * The {@link cmp} function takes a reference by default as the first argument `val` could
+   * The {@link cmpr} function takes a reference by default as the first argument. `val` could
    * be used to pass in a value instead:
    *
    * ```ts
-   * cmp(val(38), '=', ref('age'))
+   * cmpr(val(38), '=', ref('age'))
    * ```
    *
    * The generated SQL (PostgreSQL):
@@ -223,25 +223,25 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
   ): ExpressionWrapper<ExtractTypeFromValueExpressionOrList<VE>>
 
   /**
-   * Creates a binary comparison operation.
+   * Creates a binary comparison expression.
    *
    * This function returns an {@link Expression} and can be used pretty much anywhere.
    * See the examples for a couple of possible use cases.
    *
-   * @see {@link bin}
+   * @see {@link bxp}
    *
    * ### Examples
    *
-   * In this example we use `cmp` to create a `WHERE expr1 OR expr2 OR expr3`
+   * In this example we use `cmpr` and {@link or} to create a `WHERE expr1 OR expr2 OR expr3`
    * statement:
    *
    * ```ts
    * db.selectFrom('person')
    *   .selectAll('person')
-   *   .where(({ cmp, or }) => or([
-   *     cmp('first_name', '=', 'Jennifer'),
-   *     cmp('fist_name', '=', 'Arnold'),
-   *     cmp('fist_name', '=', 'Sylvester')
+   *   .where(({ or, cmpr }) => or([
+   *     cmpr('first_name', '=', 'Jennifer'),
+   *     cmpr('fist_name', '=', 'Arnold'),
+   *     cmpr('fist_name', '=', 'Sylvester')
    *   ]))
    * ```
    *
@@ -261,9 +261,9 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    * ```ts
    * db.selectFrom('person')
    *   .selectAll('person')
-   *   .where(({ or, cmp, ref}) => or([
-   *     cmp('first_name', '=', ref('last_name')),
-   *     cmp('first_name', '=', ref('middle_name'))
+   *   .where(({ or, cmpr, ref }) => or([
+   *     cmpr('first_name', '=', ref('last_name')),
+   *     cmpr('first_name', '=', ref('middle_name'))
    *   ]))
    * ```
    *
@@ -276,7 +276,7 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    * or "first_name" = "middle_name"
    * ```
    */
-  cmp<
+  cmpr<
     O extends SqlBool = SqlBool,
     RE extends ReferenceExpression<DB, TB> = ReferenceExpression<DB, TB>
   >(
@@ -286,23 +286,21 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
   ): ExpressionWrapper<O>
 
   /**
-   * Creates a binary operation.
+   * Creates a binary expression.
    *
-   * See {@link cmp} for creating comparison operations.
+   * See {@link cmpr} for creating binary comparison operations.
    *
    * This function returns an {@link Expression} and can be used pretty much anywhere.
    * See the examples for a couple of possible use cases.
    *
-   * @see {@link cmp}
-   *
    * ### Examples
    *
-   * In the following example `bin` is used to increment an integer column:
+   * In the following example `bxp` is used to increment an integer column:
    *
    * ```ts
    * db.updateTable('person')
    *   .set((eb) => ({
-   *     age: eb.bin('age', '+', 1)
+   *     age: eb.bxp('age', '+', 1)
    *   }))
    *   .where('id', '=', id)
    * ```
@@ -321,7 +319,7 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    * ```ts
    * db.updateTable('person')
    *   .set((eb) => ({
-   *     age: eb.bin('age', '+', ref('age'))
+   *     age: eb.bxp('age', '+', eb.ref('age'))
    *   }))
    *   .where('id', '=', id)
    * ```
@@ -334,7 +332,7 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    * where "id" = $1
    * ```
    */
-  bin<
+  bxp<
     RE extends ReferenceExpression<DB, TB>,
     OP extends BinaryOperatorExpression
   >(
@@ -348,12 +346,12 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
   >
 
   /**
-   * Creates a unary operation.
+   * Creates an unary expression.
    *
    * This function returns an {@link Expression} and can be used pretty much anywhere.
    * See the examples for a couple of possible use cases.
    *
-   * @see {@link not}, {@link exists} and {@link neg}
+   * @see {@link not}, {@link exists} and {@link neg}.
    *
    * ### Examples
    *
@@ -411,23 +409,23 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
   ): ExpressionWrapper<ExtractTypeFromReferenceExpression<DB, TB, RE>>
 
   /**
-   * Combines two or more comparison expressions using the logical `and` operator.
+   * Combines two or more expressions using the logical `and` operator.
    *
    * This function returns an {@link Expression} and can be used pretty much anywhere.
    * See the examples for a couple of possible use cases.
    *
    * ### Examples
    *
-   * In this example we use `and` with `cmp` to create an `WHERE expr1 AND expr2 AND expr3`
+   * In this example we use `and` with {@link cmpr} to create a `WHERE expr1 AND expr2 AND expr3`
    * statement:
    *
    * ```ts
    * db.selectFrom('person')
    *   .selectAll('person')
-   *   .where(({ cmp, and }) => and([
-   *     cmp('first_name', '=', 'Jennifer'),
-   *     cmp('fist_name', '=', 'Arnold'),
-   *     cmp('fist_name', '=', 'Sylvester')
+   *   .where(({ and, cmpr }) => and([
+   *     cmpr('first_name', '=', 'Jennifer'),
+   *     cmpr('fist_name', '=', 'Arnold'),
+   *     cmpr('fist_name', '=', 'Sylvester')
    *   ]))
    * ```
    *
@@ -444,23 +442,23 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
   and(expres: ReadonlyArray<Expression<SqlBool>>): ExpressionWrapper<SqlBool>
 
   /**
-   * Combines two or more comparison expressions using the logical `or` operator.
+   * Combines two or more expressions using the logical `or` operator.
    *
    * This function returns an {@link Expression} and can be used pretty much anywhere.
    * See the examples for a couple of possible use cases.
    *
    * ### Examples
    *
-   * In this example we use `or` with `cmp` to create an `WHERE expr1 OR expr2 OR expr3`
+   * In this example we use `or` with {@link cmpr} to create a `WHERE expr1 OR expr2 OR expr3`
    * statement:
    *
    * ```ts
    * db.selectFrom('person')
    *   .selectAll('person')
-   *   .where(({ cmp, and }) => or([
-   *     cmp('first_name', '=', 'Jennifer'),
-   *     cmp('fist_name', '=', 'Arnold'),
-   *     cmp('fist_name', '=', 'Sylvester')
+   *   .where(({ or, cmpr }) => or([
+   *     cmpr('first_name', '=', 'Jennifer'),
+   *     cmpr('fist_name', '=', 'Arnold'),
+   *     cmpr('fist_name', '=', 'Sylvester')
    *   ]))
    * ```
    *
@@ -519,7 +517,7 @@ export function createExpressionBuilder<DB, TB extends keyof DB>(
       return new ExpressionWrapper(parseValueExpressionOrList(value))
     },
 
-    cmp<
+    cmpr<
       O extends SqlBool = SqlBool,
       RE extends ReferenceExpression<DB, TB> = ReferenceExpression<DB, TB>
     >(
@@ -530,7 +528,7 @@ export function createExpressionBuilder<DB, TB extends keyof DB>(
       return new ExpressionWrapper(parseValueBinaryOperation(lhs, op, rhs))
     },
 
-    bin<
+    bxp<
       RE extends ReferenceExpression<DB, TB>,
       OP extends BinaryOperatorExpression
     >(

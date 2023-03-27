@@ -338,7 +338,7 @@ export class ColumnDefinitionBuilder implements OperationNodeSource {
    * ```ts
    * db.schema.createTable('person')
    *  .addColumn('id', 'integer', col => col.primaryKey())
-   *  .addColumn('age', 'integer', col => col.unsigned().notNull().modifyEnd(sql`comment ${sql.literal('it is not polite to ask a woman her age')}`))
+   *  .addColumn('age', 'integer', col => col.unsigned().notNull().modifyEnd(sql`comment ${sql.lit('it is not polite to ask a woman her age')}`))
    *  .execute()
    * ```
    *

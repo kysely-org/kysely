@@ -26,7 +26,7 @@ export class ExpressionWrapper<T> implements Expression<T> {
    * const result = await db
    *   .selectFrom('person')
    *   .select(eb =>
-   *     eb.cmp('first_name', '=', 'Jennifer').as('is_jennifer')
+   *     eb.cmpr('first_name', '=', 'Jennifer').as('is_jennifer')
    *   )
    *   .executeTakeFirstOrThrow()
    *
