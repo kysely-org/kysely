@@ -21,8 +21,7 @@ export type QueryNode =
 type HasJoins = { joins?: ReadonlyArray<JoinNode> }
 type HasWhere = { where?: WhereNode }
 type HasReturning = { returning?: ReturningNode }
-
-export type HasExplain = { explain?: ExplainNode }
+type HasExplain = { explain?: ExplainNode }
 
 /**
  * @internal
