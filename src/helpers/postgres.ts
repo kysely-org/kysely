@@ -148,6 +148,6 @@ export function jsonbBuildObject<O extends Record<string, Expression<unknown>>>(
   }>
 > {
   return sql`jsonb_build_object(${sql.join(
-    Object.keys(obj).flatMap((k) => [sql.literal(k), obj[k]])
+    Object.keys(obj).flatMap((k) => [sql.lit(k), obj[k]])
   )})`
 }

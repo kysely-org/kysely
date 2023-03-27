@@ -453,10 +453,10 @@ for (const dialect of DIALECTS) {
         const query = ctx.db
           .selectFrom('person')
           .selectAll()
-          .where(({ and, cmp, fn }) =>
+          .where(({ and, cmpr, fn }) =>
             and([
-              cmp('first_name', '=', 'Jennifer'),
-              cmp(fn('upper', ['last_name']), '=', 'ANISTON'),
+              cmpr('first_name', '=', 'Jennifer'),
+              cmpr(fn('upper', ['last_name']), '=', 'ANISTON'),
             ])
           )
 
