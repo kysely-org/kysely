@@ -40,22 +40,25 @@ function testWhere(db: Kysely<Database>) {
   )
 
   // Nullable subquery in LHS
-  db.selectFrom('movie').where(({ or, cmp, and }) =>
-    or([cmp('id', '=', '1'), and([cmp('stars', '>', 2), cmp('stars', '<', 5)])])
+  db.selectFrom('movie').where(({ or, cmpr, and }) =>
+    or([
+      cmpr('id', '=', '1'),
+      and([cmpr('stars', '>', 2), cmpr('stars', '<', 5)]),
+    ])
   )
 
   const firstName = 'Jennifer'
   const lastName = 'Aniston'
   // Dynamic `and` list in expression builder
-  db.selectFrom('person').where(({ cmp, and }) => {
+  db.selectFrom('person').where(({ cmpr, and }) => {
     const exprs: Expression<boolean>[] = []
 
     if (firstName) {
-      exprs.push(cmp('first_name', '=', firstName))
+      exprs.push(cmpr('first_name', '=', firstName))
     }
 
     if (lastName) {
-      exprs.push(cmp('last_name', '=', lastName))
+      exprs.push(cmpr('last_name', '=', lastName))
     }
 
     return and(exprs)
