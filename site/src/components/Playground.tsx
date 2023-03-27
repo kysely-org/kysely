@@ -3,7 +3,7 @@ import { gray } from '@radix-ui/colors'
 
 export function Playground({
   ts,
-  kyselyVersion = '0.23.3',
+  kyselyVersion = '0.23.5',
   dialect = 'postgres',
 }: PlaygroundProps) {
   const params = new URLSearchParams()
@@ -20,13 +20,14 @@ export function Playground({
         borderRadius: 8,
         background: gray.gray12,
       }}
+      allow="clipboard-write"
       src={`https://wirekang.github.io/kysely-playground/?${params.toString()}`}
     />
   )
 }
 
 interface PlaygroundProps {
-  kyselyVersion?: '0.23.3'
+  kyselyVersion?: '0.23.5'
   dialect?: 'postgres'
   ts: string
 }
