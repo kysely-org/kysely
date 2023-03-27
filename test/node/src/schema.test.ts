@@ -761,7 +761,7 @@ for (const dialect of DIALECTS) {
                 .unsigned()
                 .notNull()
                 .modifyEnd(
-                  sql`comment ${sql.literal(
+                  sql`comment ${sql.lit(
                     'it is not polite to ask a woman her age'
                   )}`
                 )

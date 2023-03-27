@@ -234,7 +234,7 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    * const firstName = 'first_name'
    *
    * db.selectFrom('dela')
-   *   .where(({ cmp, literal, ref }) => cmp(literal(3), '=', ref('magic_number')))
+   *   .where(({ cmp, lit, ref }) => cmp(lit(3), '=', ref('magic_number')))
    *   .selectAll()
    *   .execute()
    * ```
@@ -249,7 +249,7 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    * the SQL string instead of as a parameter. Only use this function when
    * something can't be sent as a parameter.
    */
-  literal<V>(value: V): ExpressionWrapper<V>
+  lit<V>(value: V): ExpressionWrapper<V>
 
   /**
    * Creates a binary comparison operation.
@@ -548,7 +548,7 @@ export function createExpressionBuilder<DB, TB extends keyof DB>(
       return new ExpressionWrapper(parseValueExpressionOrList(value))
     },
 
-    literal<V>(value: V): ExpressionWrapper<V> {
+    lit<V>(value: V): ExpressionWrapper<V> {
       return new ExpressionWrapper(ValueNode.createImmediate(value))
     },
 

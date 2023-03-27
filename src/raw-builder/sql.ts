@@ -27,7 +27,7 @@ export interface Sql {
    *
    * If you need your substitutions to be interpreted as identifiers, value literals or
    * lists of things, see the {@link Sql.ref}, {@link Sql.table}, {@link Sql.id},
-   * {@link Sql.literal}, {@link Sql.raw} and {@link Sql.join} functions.
+   * {@link Sql.lit}, {@link Sql.raw} and {@link Sql.join} functions.
    *
    * You can pass sql snippets returned by the `sql` tag pretty much anywhere. Whenever
    * something can't be done using the Kysely API, you should be able to drop down to
@@ -268,7 +268,7 @@ export interface Sql {
    * ```ts
    * const firstName = 'first_name'
    *
-   * sql`select * from person where first_name = ${sql.literal(firstName)}`
+   * sql`select * from person where first_name = ${sql.lit(firstName)}`
    * ```
    *
    * The generated SQL (PostgreSQL):
@@ -280,6 +280,11 @@ export interface Sql {
    * As you can see from the example above, the value was added directly to
    * the SQL string instead of as a parameter. Only use this function when
    * something can't be sent as a parameter.
+   */
+  lit<V>(value: V): RawBuilder<V>
+
+  /**
+   * @deprecated Use {@link lit} instead.
    */
   literal<V>(value: V): RawBuilder<V>
 
@@ -301,7 +306,7 @@ export interface Sql {
    * select * from person where first_name = 'first_name'
    * ```
    *
-   * Note that the difference to `sql.literal` is that this function
+   * Note that the difference to `sql.lit` is that this function
    * doesn't assume the inputs are values. The input to this function
    * can be any sql and it's simply glued to the parent string as-is.
    */
@@ -345,7 +350,7 @@ export interface Sql {
    *   123,
    *   sql`(1 == 1)`,
    *   db.selectFrom('person').selectAll(),
-   *   sql.literal(false),
+   *   sql.lit(false),
    *   sql.id('first_name')
    * ]
    *
@@ -415,11 +420,15 @@ export const sql: Sql = Object.assign(
       })
     },
 
-    literal<V>(value: V): RawBuilder<V> {
+    lit<V>(value: V): RawBuilder<V> {
       return new RawBuilder({
         queryId: createQueryId(),
         rawNode: RawNode.createWithChild(ValueNode.createImmediate(value)),
       })
+    },
+
+    literal<V>(value: V): RawBuilder<V> {
+      return this.lit(value)
     },
 
     raw<R = unknown>(sql: string): RawBuilder<R> {
