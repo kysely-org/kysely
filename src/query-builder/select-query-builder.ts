@@ -69,7 +69,6 @@ import {
 import { KyselyTypeError } from '../util/type-error.js'
 import { Selectable } from '../util/column-type.js'
 import { Streamable } from '../util/streamable.js'
-import { ExpressionBuilder } from './expression-builder.js'
 
 export class SelectQueryBuilder<DB, TB extends keyof DB, O>
   implements
