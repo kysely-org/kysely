@@ -956,7 +956,7 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
 
     return result as SimplifyResult<O>
   }
-  
+
   async *stream(chunkSize: number = 100): AsyncIterableIterator<O> {
     const compiledQuery = this.compile()
 
