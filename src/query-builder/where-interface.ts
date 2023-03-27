@@ -117,10 +117,10 @@ export interface WhereInterface<DB, TB extends keyof DB> {
    * const persons = await db
    *   .selectFrom('person')
    *   .selectAll('person')
-   *   .where(({ cmp, or, and, not, exists, selectFrom, val }) => and([
+   *   .where(({ cmpr, or, and, not, exists, selectFrom, val }) => and([
    *     or([
-   *       cmp('first_name', '=', firstName),
-   *       cmp('age', '<', maxAge)
+   *       cmpr('first_name', '=', firstName),
+   *       cmpr('age', '<', maxAge)
    *     ]),
    *     not(exists(
    *       selectFrom('pet').select('pet.id').whereRef('pet.owner_id', '=', 'person.id')

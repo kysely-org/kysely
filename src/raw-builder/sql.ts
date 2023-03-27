@@ -27,7 +27,7 @@ export interface Sql {
    *
    * If you need your substitutions to be interpreted as identifiers, value literals or
    * lists of things, see the {@link Sql.ref}, {@link Sql.table}, {@link Sql.id},
-   * {@link Sql.literal}, {@link Sql.raw} and {@link Sql.join} functions.
+   * {@link Sql.lit}, {@link Sql.raw} and {@link Sql.join} functions.
    *
    * You can pass sql snippets returned by the `sql` tag pretty much anywhere. Whenever
    * something can't be done using the Kysely API, you should be able to drop down to
@@ -111,13 +111,18 @@ export interface Sql {
   ): RawBuilder<T>
 
   /**
-   * `sql.value(value)` is a shortcut for:
+   * `sql.val(value)` is a shortcut for:
    *
    * ```ts
    * sql<ValueType>`${value}`
    * ```
    */
-  value<T>(value: T): RawBuilder<T>
+  val<V>(value: V): RawBuilder<V>
+
+  /**
+   * @deprecated Use {@link Sql.val} instead.
+   */
+  value<V>(value: V): RawBuilder<V>
 
   /**
    * This can be used to add runtime column references to SQL snippets.
@@ -169,7 +174,7 @@ export interface Sql {
    * select "public"."person"."first_name" from person
    * ```
    */
-  ref(columnReference: string): RawBuilder<unknown>
+  ref<R = unknown>(columnReference: string): RawBuilder<R>
 
   /**
    * This can be used to add runtime table references to SQL snippets.
@@ -263,7 +268,7 @@ export interface Sql {
    * ```ts
    * const firstName = 'first_name'
    *
-   * sql`select * from person where first_name = ${sql.literal(firstName)}`
+   * sql`select * from person where first_name = ${sql.lit(firstName)}`
    * ```
    *
    * The generated SQL (PostgreSQL):
@@ -276,7 +281,12 @@ export interface Sql {
    * the SQL string instead of as a parameter. Only use this function when
    * something can't be sent as a parameter.
    */
-  literal(value: unknown): RawBuilder<unknown>
+  lit<V>(value: V): RawBuilder<V>
+
+  /**
+   * @deprecated Use {@link lit} instead.
+   */
+  literal<V>(value: V): RawBuilder<V>
 
   /**
    * This can be used to add arbitrary runtime SQL to SQL snippets.
@@ -296,11 +306,11 @@ export interface Sql {
    * select * from person where first_name = 'first_name'
    * ```
    *
-   * Note that the difference to `sql.literal` is that this function
+   * Note that the difference to `sql.lit` is that this function
    * doesn't assume the inputs are values. The input to this function
    * can be any sql and it's simply glued to the parent string as-is.
    */
-  raw(anySql: string): RawBuilder<unknown>
+  raw<R = unknown>(anySql: string): RawBuilder<R>
 
   /**
    * This can be used to add lists of things to SQL snippets.
@@ -340,7 +350,7 @@ export interface Sql {
    *   123,
    *   sql`(1 == 1)`,
    *   db.selectFrom('person').selectAll(),
-   *   sql.literal(false),
+   *   sql.lit(false),
    *   sql.id('first_name')
    * ]
    *
@@ -373,18 +383,22 @@ export const sql: Sql = Object.assign(
     })
   },
   {
-    ref(columnReference: string): RawBuilder<unknown> {
+    ref<R = unknown>(columnReference: string): RawBuilder<R> {
       return new RawBuilder({
         queryId: createQueryId(),
         rawNode: RawNode.createWithChild(parseStringReference(columnReference)),
       })
     },
 
-    value<T>(value: T): RawBuilder<T> {
+    val<V>(value: V): RawBuilder<V> {
       return new RawBuilder({
         queryId: createQueryId(),
         rawNode: RawNode.createWithChild(parseValueExpression(value)),
       })
+    },
+
+    value<V>(value: V): RawBuilder<V> {
+      return this.val(value)
     },
 
     table(tableReference: string): RawBuilder<unknown> {
@@ -406,14 +420,18 @@ export const sql: Sql = Object.assign(
       })
     },
 
-    literal(value: unknown): RawBuilder<unknown> {
+    lit<V>(value: V): RawBuilder<V> {
       return new RawBuilder({
         queryId: createQueryId(),
         rawNode: RawNode.createWithChild(ValueNode.createImmediate(value)),
       })
     },
 
-    raw(sql: string): RawBuilder<unknown> {
+    literal<V>(value: V): RawBuilder<V> {
+      return this.lit(value)
+    },
+
+    raw<R = unknown>(sql: string): RawBuilder<R> {
       return new RawBuilder({
         queryId: createQueryId(),
         rawNode: RawNode.createWithSql(sql),

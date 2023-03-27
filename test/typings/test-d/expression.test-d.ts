@@ -22,7 +22,7 @@ function testExpression(db: Kysely<Database>) {
   const eb: ExpressionBuilder<Database, 'person'> = undefined!
 
   // Binary operation in a comparison operation
-  expectAssignable<Expression<SqlBool>>(eb.cmp(eb.bin('age', '+', 1), '>', 0))
+  expectAssignable<Expression<SqlBool>>(eb.cmpr(eb.bxp('age', '+', 1), '>', 0))
 
   // A custom function call
   expectAssignable<Expression<string>>(eb.fn<string>('upper', ['first_name']))
