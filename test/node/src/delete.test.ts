@@ -10,6 +10,7 @@ import {
   expect,
   NOT_SUPPORTED,
   insertDefaultDataSet,
+  DEFAULT_DATA_SET,
 } from './test-setup.js'
 
 for (const dialect of DIALECTS) {
@@ -769,6 +770,30 @@ for (const dialect of DIALECTS) {
         })
 
         await query.execute()
+      })
+    }
+
+    if (dialect === 'postgres') {
+      it('should delete all rows and stream returned results', async () => {
+        const stream = ctx.db
+          .deleteFrom('person')
+          .returning(['first_name', 'last_name', 'gender'])
+          .stream()
+
+        const people = []
+
+        for await (const person of stream) {
+          people.push(person)
+        }
+
+        expect(people).to.have.length(DEFAULT_DATA_SET.length)
+        expect(people).to.eql(
+          DEFAULT_DATA_SET.map(({ first_name, last_name, gender }) => ({
+            first_name,
+            last_name,
+            gender,
+          }))
+        )
       })
     }
   })
