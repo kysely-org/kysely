@@ -20,6 +20,7 @@ export function Playground({
         borderRadius: 8,
         background: gray.gray12,
       }}
+      allow="clipboard-write"
       src={`https://wirekang.github.io/kysely-playground/?${params.toString()}`}
     />
   )
