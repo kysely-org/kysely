@@ -60,9 +60,7 @@ for (const dialect of DIALECTS) {
       const query = ctx.db
         .selectFrom('person')
         .selectAll()
-        .where(
-          sql`first_name between ${sql.literal('A')} and ${sql.literal('B')}`
-        )
+        .where(sql`first_name between ${sql.lit('A')} and ${sql.lit('B')}`)
 
       testSql(query, dialect, {
         postgres: {
@@ -276,9 +274,9 @@ for (const dialect of DIALECTS) {
         sql.ref('pet_id'),
         sql.ref('price'),
       ])}) select ${sql.join([
-        sql.literal('Wheel').as('name'),
+        sql.lit('Wheel').as('name'),
         sql.ref('id'),
-        sql.literal(9.99).as('price'),
+        sql.lit(9.99).as('price'),
       ])} from ${sql.table('pet')} where ${sql.ref(
         'name'
       )} = ${'Hammo'}`.execute(ctx.db)

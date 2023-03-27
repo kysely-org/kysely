@@ -97,7 +97,7 @@ async function testCoalesceMultiple(db: Kysely<Database>) {
     .select(
       coalesce(
         db.fn.max<string | null, 'first_name'>('first_name'),
-        sql<string>`${sql.literal('N/A')}`
+        sql<string>`${sql.lit('N/A')}`
       ).as('max_first_name')
     )
     .execute()
