@@ -1,6 +1,6 @@
 # Expressions
 
-An [`Expression<T>`](https://kysely-org.github.io/kysely/interfaces/Expression.html) is the basic type-safe query building block in Kysely. Pretty much all methods accepts expressions as inputs. Most internal classes like [SelectQueryBuilder](https://kysely-org.github.io/kysely/classes/SelectQueryBuilder.html) and [RawBuilder](https://kysely-org.github.io/kysely/classes/RawBuilder.html) (the return value of the [sql tag](https://kysely-org.github.io/kysely/functions/sql-1.html)) are expressions themselves.
+An [`Expression<T>`](https://kysely-org.github.io/kysely/interfaces/Expression.html) is the basic type-safe query building block in Kysely. Pretty much all methods accept expressions as inputs. Most internal classes like [SelectQueryBuilder](https://kysely-org.github.io/kysely/classes/SelectQueryBuilder.html) and [RawBuilder](https://kysely-org.github.io/kysely/classes/RawBuilder.html) (the return value of the [sql tag](https://kysely-org.github.io/kysely/functions/sql-1.html)) are expressions themselves.
 
 `Expression<T>` represents an arbitrary SQL expression like a binary expression `a + b` or a function call `func(arg1, arg2, ...)` or it can be any combination of those no matter how complex. `T` is the output type of the expression.
 
