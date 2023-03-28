@@ -114,7 +114,8 @@ qb = qb.where(eb.not(eb.exists(
 
 ## Creating reusable helpers
 
-The expression builder can be used to create reusable helper functions. Let's say we have a complex `where` expression we want to reuse in multiple queries:
+The expression builder can be used to create reusable helper functions. 
+Let's say we have a complex `where` expression we want to reuse in multiple queries:
 
 ```ts
 function hasDogNamed(name: string): Expression<boolean> {
