@@ -170,7 +170,9 @@ With this helper, you get a type error when trying to use it in contexts that do
 
 ## Conditional expressions
 
-In the following, we'll only cover `where` expressions. The same logic applies `having`, `on`, `orderBy`, `groupBy` etc. but not to `select`. If you want to add conditional selections, see [this recipe](https://www.kysely.dev/docs/recipes/conditional-selects).
+In the following, we'll only cover `where` expressions. The same logic applies to `having`, `on`, `orderBy`, `groupBy` etc. 
+
+> This section should not be confused with conditional selections in `select` clauses, which is a whole 'nother topic we discuss in [this recipe](https://www.kysely.dev/docs/recipes/conditional-selects).
 
 The most basic and common case for adding conditional `where` expressions is having a set of optional filters you want to combine using `and`. Since the `where`, `having` and other filter functions are additive, most of the time this is enough:
 
