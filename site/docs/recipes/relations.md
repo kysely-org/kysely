@@ -19,7 +19,7 @@ Let's start with some raw SQL, and then see how we can write the query using Kys
 
 In the following query, we fetch a list of people (from "person" table) and for each person, we nest the person's pets, and mother, into the returned objects:
 
-```ts
+```sql
 SELECT
   person.*,
 
