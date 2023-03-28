@@ -1,6 +1,15 @@
 # Relations
 
-Kysely is just a query builder and doesn't have the concept of relations. Kysely builds the SQL you tell it to and nothing more. This doesn't mean there's no way to nest related rows in your queries. You just have to do it with the tools SQL and the dialect provide. In this recipe we show one way to do that on PostgreSQL.
+<h3>
+Kysely IS NOT an ORM. Kysely DOES NOT have the concept of relations.
+Kysely IS a query builder. Kysely DOES build the SQL you tell it to, nothing more, nothing less.
+</h3>
+
+Phew, glad we got that out the way..
+
+All that was said above doesn't mean there's no way to nest related rows in your queries. 
+You just have to do it with the tools SQL and the underlying dialect (e.g. PostgreSQL) you're using provide. 
+In this recipe we show one way to do that when using the PostgreSQL built-in dialect.
 
 ## PostgreSQL `jsonb` data type and functions
 
