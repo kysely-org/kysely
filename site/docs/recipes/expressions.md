@@ -140,7 +140,7 @@ const doggoPersons = await db
   .execute()
 ```
 
-The above helper is not very type-safe. The fillowing code would compile, but fail at runtime:
+The above helper is not very type-safe. The following code would compile, but fail at runtime:
 
 ```ts
 const bigFatFailure = await db
