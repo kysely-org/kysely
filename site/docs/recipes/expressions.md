@@ -144,7 +144,7 @@ The above helper is not very type-safe. The following code would compile, but fa
 
 ```ts
 const bigFatFailure = await db
-  .selectFrom('movie')
+  .selectFrom('movie') // <-- "person" table is not in context!
   .selectAll('movie')
   .where(hasDogNamed('Doggo'))
   .execute()
