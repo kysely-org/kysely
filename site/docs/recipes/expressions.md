@@ -84,7 +84,7 @@ In the above query we used the expression builder in `select` and `where` method
 
 All expressions are composable. You can pass expressions as arguments of any expression. All query builder methods in Kysely accept expressions and expression builder callbacks. All expression builder methods offer auto-completions and type-safety just like methods on the query builders.
 
-You might be wondering why you need to use a callback to get the expression builder? Why not just create an instance using a global function? The reason is that when you use a callback, kysely is able to infer the context correctly and the expression builder methods only autocomplete and accept columns and tables that are available in the context. In other words using a callback provides more type-safety.
+You might be wondering, "why do I need to use a callback to get the expression builder?". "Why not just create an instance using a global function?". The reason is that when you use a callback, Kysely is able to infer the context correctly. The expression builder's methods only auto-complete and accept column and table names that are available in the context. In other words, using a callback provides more type-safety!
 
 There's also a global function `expressionBuilder` you can use to create expression builders:
 
