@@ -166,7 +166,7 @@ function hasDogNamed(name: string){
 }
 ```
 
-With this helper, you get a type error when trying to use it in a context where the `person` table isn't joined to the query.
+With this helper, you get a type error when trying to use it in contexts that don't include the "person" table.
 
 ## Conditional expressions
 
