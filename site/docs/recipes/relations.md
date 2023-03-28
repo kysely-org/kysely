@@ -58,7 +58,7 @@ FROM
   person
 ```
 
-Simple right 😅. Yeah, not so much. But it does provide 100% control over the queries and a really good performance as long as you have indices for `pet.owner_id` and `person.mother_id`.
+Simple right 😅. Yeah, not so much. But it does provide 100% control over the queries and a really good performance as long as you have indices (or indexes, we don't judge) for "pet.owner_id" and "person.mother_id".
 
 Fortunately we can improve and simplify this a lot using Kysely. First let's define a couple of helpers:
 
