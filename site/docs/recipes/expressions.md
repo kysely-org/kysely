@@ -101,7 +101,7 @@ let qb = query
   .selectFrom('person')
   .innerJoin('movie as m', 'm.director_id', 'person.id')
 
-// You can also provide a query builder instance and the types are inferred automatically.
+// You can also provide a query builder instance and the context is inferred automatically.
 // Type of `eb` is `ExpressionBuilder<DB & { m: Movie }, 'person' | 'm'>`
 const eb = expressionBuilder(qb)
 
