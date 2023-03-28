@@ -17,7 +17,7 @@ PostgreSQL has rich JSON support through its `json` and `jsonb` data types and f
 
 Let's start with some raw SQL, and then see how we can write the query using Kysely in a nice type-safe way.
 
-In the following query, we fetch a list of persons and for each person, we nest the person's pets and the person's mother into the returned objects:
+In the following query, we fetch a list of people (from "person" table) and for each person, we nest the person's pets, and mother, into the returned objects:
 
 ```ts
 SELECT
