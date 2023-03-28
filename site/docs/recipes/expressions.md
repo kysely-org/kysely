@@ -130,7 +130,7 @@ function hasDogNamed(name: string): Expression<boolean> {
 }
 ```
 
-This helper can now be used in any query that has the `person` table joined:
+This helper can now be used in any query, and would work just fine if "person" table is in context:
 
 ```ts
 const doggoPersons = await db
