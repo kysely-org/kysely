@@ -174,7 +174,8 @@ In the following, we'll only cover `where` expressions. The same logic applies t
 
 > This section should not be confused with conditional selections in `select` clauses, which is a whole 'nother topic we discuss in [this recipe](https://www.kysely.dev/docs/recipes/conditional-selects).
 
-The most basic and common case for adding conditional `where` expressions is having a set of optional filters you want to combine using `and`. Since the `where`, `having` and other filter functions are additive, most of the time this is enough:
+Having a set of optional filters you want to combine using `and`, is the most basic and common use case of conditional `where` expressions.
+Since the `where`, `having` and other filter functions are additive, most of the time this is enough:
 
 ```ts
 let query = db
