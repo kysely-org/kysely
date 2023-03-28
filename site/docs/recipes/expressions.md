@@ -213,4 +213,4 @@ const persons = await db
   })
 ```
 
-Using the latter design, you can build expressions of any complexity using conditions.
+Using the latter design, you can build conditional expressions of any complexity.
