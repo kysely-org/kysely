@@ -68,6 +68,15 @@ const config = {
         disableSwitch: true,
         respectPrefersColorScheme: false,
       },
+
+      algolia: {
+        appId: 'MDKJWTIJFR',
+        // Public API key, safe to expose. See https://docusaurus.io/docs/search#using-algolia-docsearch
+        apiKey: 'ebee59ab1b71803be5983f6dbfeea352',
+        indexName: 'kysely',
+        contextualSearch: true,
+      },
+
       docs: {
         sidebar: { hideable: true, autoCollapseCategories: true },
       },
