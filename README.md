@@ -276,6 +276,7 @@ documentation.
 The [recipes](https://github.com/koskimas/kysely/tree/master/site/docs/recipes/) folder contains a bunch of small tutorials
 or "recipes" for common use cases.
 
+* [Expressions](https://github.com/koskimas/kysely/tree/master/site/docs/recipes/expressions.md)
 * [Conditional selects](https://github.com/koskimas/kysely/tree/master/site/docs/recipes/conditional-selects.md)
 * [Dealing with the `Type instantiation is excessively deep and possibly infinite` error](https://github.com/koskimas/kysely/tree/master/site/docs/recipes/excessively-deep-types.md)
 * [Deduplicate joins](https://github.com/koskimas/kysely/tree/master/site/docs/recipes/deduplicate-joins.md)
