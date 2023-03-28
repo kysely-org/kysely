@@ -13,7 +13,7 @@ In this recipe we show one way to do that when using the PostgreSQL built-in dia
 
 ## PostgreSQL `jsonb` data type and functions
 
-PostgreSQL has a rich JSON support through its `json` and `jsonb` data types and functions. The node PostgreSQL driver `pg` automatically parses returned `json` and `jsonb` columns as objects. With the combination of these two things, we can write some super efficient queries with nested relations.
+PostgreSQL has rich JSON support through its `json` and `jsonb` data types and functions. `pg`, the node PostgreSQL driver, automatically parses returned `json` and `jsonb` columns as json objects. With the combination of these two things, we can write some super efficient queries with nested relations.
 
 Let's start with the raw SQL and then see how we can write the query using Kysely in a nice type-safe way.
 
