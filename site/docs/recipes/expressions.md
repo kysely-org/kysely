@@ -153,7 +153,7 @@ const bigFatFailure = await db
 We can write a more type-safe version of the helper like this:
 
 ```ts
-function hasDogNamed(name: string){
+function hasDogNamed(name: string) {
   return (eb: ExpressionBuilder<DB, 'person'>) => {
     return eb.exists(
       eb.selectFrom('pet')
