@@ -67,7 +67,7 @@ export function jsonObjectFrom<O>(
 }
 ```
 
-These helpers are included in kysely and you can import them from the `helpers` package like this:
+These helpers are included in Kysely and you can import them from the `helpers` module like this:
 
 ```ts
 import { jsonArrayFrom, jsonObjectFrom } from 'kysely/helpers/postgres'
