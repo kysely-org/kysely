@@ -20,7 +20,6 @@ import {
   expressionBuilder,
   ExpressionBuilder,
 } from '../expression/expression-builder.js'
-import { OperationNode } from '../operation-node/operation-node.js'
 
 export type InsertObject<DB, TB extends keyof DB> = {
   [C in NonNullableInsertKeys<DB[TB]>]: ValueExpression<
