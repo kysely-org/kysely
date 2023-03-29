@@ -625,7 +625,7 @@ for (const dialect of DIALECTS) {
     })
 
     if (dialect === 'postgres' || dialect === 'sqlite') {
-      it('should insert multiple rows while falling back to default values in partial rows', async () => {
+      it('should insert multiple rows while falling back to default values in partial rows - missing columns', async () => {
         const query = ctx.db
           .insertInto('person')
           .values([
@@ -660,8 +660,118 @@ for (const dialect of DIALECTS) {
 
         expect(result).to.have.length(2)
         expect(result).to.containSubset([
-          { first_name: 'Foo', last_name: null, gender: 'other' },
-          { first_name: 'Baz', last_name: 'Spam', gender: 'other' },
+          {
+            first_name: 'Foo',
+            last_name: null,
+            middle_name: null,
+            gender: 'other',
+          },
+          {
+            first_name: 'Baz',
+            last_name: 'Spam',
+            middle_name: 'Bo',
+            gender: 'other',
+          },
+        ])
+      })
+
+      it('should insert multiple rows while falling back to default values in partial rows - undefined columns', async () => {
+        const query = ctx.db
+          .insertInto('person')
+          .values([
+            {
+              first_name: 'Foo',
+              last_name: 'Spam',
+              middle_name: 'Bo',
+              gender: 'other',
+            },
+            {
+              first_name: 'Baz',
+              last_name: undefined,
+              middle_name: undefined,
+              gender: 'other',
+            },
+          ])
+          .returningAll()
+
+        testSql(query, dialect, {
+          postgres: {
+            sql: 'insert into "person" ("first_name", "last_name", "middle_name", "gender") values ($1, $2, $3, $4), ($5, default, default, $6) returning *',
+            parameters: ['Foo', 'Spam', 'Bo', 'other', 'Baz', 'other'],
+          },
+          mysql: NOT_SUPPORTED,
+          sqlite: {
+            sql: 'insert into "person" ("first_name", "last_name", "middle_name", "gender") values (?, ?, ?, ?), (?, null, null, ?) returning *',
+            parameters: ['Foo', 'Spam', 'Bo', 'other', 'Baz', 'other'],
+          },
+        })
+
+        const result = await query.execute()
+
+        expect(result).to.have.length(2)
+        expect(result).to.containSubset([
+          {
+            first_name: 'Foo',
+            last_name: 'Spam',
+            middle_name: 'Bo',
+            gender: 'other',
+          },
+          {
+            first_name: 'Baz',
+            last_name: null,
+            middle_name: null,
+            gender: 'other',
+          },
+        ])
+      })
+
+      it('should insert multiple rows while falling back to default values in partial rows - undefined/missing columns', async () => {
+        const query = ctx.db
+          .insertInto('person')
+          .values([
+            {
+              first_name: 'Foo',
+              // last_name missing on purpose
+              middle_name: 'Bo',
+              gender: 'other',
+            },
+            {
+              first_name: 'Baz',
+              last_name: 'Spam',
+              middle_name: undefined,
+              gender: 'other',
+            },
+          ])
+          .returningAll()
+
+        testSql(query, dialect, {
+          postgres: {
+            sql: 'insert into "person" ("first_name", "middle_name", "gender", "last_name") values ($1, $2, $3, default), ($4, default, $5, $6) returning *',
+            parameters: ['Foo', 'Bo', 'other', 'Baz', 'other', 'Spam'],
+          },
+          mysql: NOT_SUPPORTED,
+          sqlite: {
+            sql: 'insert into "person" ("first_name", "middle_name", "gender", "last_name") values (?, ?, ?, null), (?, null, ?, ?) returning *',
+            parameters: ['Foo', 'Bo', 'other', 'Baz', 'other', 'Spam'],
+          },
+        })
+
+        const result = await query.execute()
+
+        expect(result).to.have.length(2)
+        expect(result).to.containSubset([
+          {
+            first_name: 'Foo',
+            last_name: null,
+            middle_name: 'Bo',
+            gender: 'other',
+          },
+          {
+            first_name: 'Baz',
+            last_name: 'Spam',
+            middle_name: null,
+            gender: 'other',
+          },
         ])
       })
 

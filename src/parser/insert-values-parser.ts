@@ -92,12 +92,11 @@ function parseRowValues(
 ): PrimitiveValueListNode | ValueListNode {
   const rowColumns = Object.keys(row)
 
-  const rowValues: OperationNode[] = Array.from({
+  const rowValues = Array.from({
     length: columns.size,
   })
 
-  let defaultValueNode: DefaultInsertValueNode | undefined = undefined
-  let hasComplexColumns = false
+  let hasUndefinedOrComplexColumns = false
 
   for (const col of rowColumns) {
     const columnIdx = columns.get(col)
@@ -108,24 +107,25 @@ function parseRowValues(
 
     const value = row[col]
 
-    if (isUndefined(value)) {
-      defaultValueNode ??= DefaultInsertValueNode.create()
-      rowValues[columnIdx] = defaultValueNode
-      continue
+    if (isUndefined(value) || isExpressionOrFactory(value)) {
+      hasUndefinedOrComplexColumns = true
     }
 
-    if (isExpressionOrFactory(value)) {
-      hasComplexColumns = true
-    }
-
-    rowValues[columnIdx] = parseValueExpression(value)
+    rowValues[columnIdx] = value
   }
 
   const hasMissingColumns = rowColumns.length < columns.size
-  const hasUndefinedColumns = defaultValueNode !== undefined
 
-  if (hasMissingColumns || hasUndefinedColumns || hasComplexColumns) {
-    return ValueListNode.create(rowValues)
+  if (hasMissingColumns || hasUndefinedOrComplexColumns) {
+    let defaultValueNode: DefaultInsertValueNode
+
+    return ValueListNode.create(
+      rowValues.map((value) =>
+        isUndefined(value)
+          ? (defaultValueNode ??= DefaultInsertValueNode.create())
+          : parseValueExpression(value)
+      )
+    )
   }
 
   return PrimitiveValueListNode.create(rowValues)
