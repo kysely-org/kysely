@@ -52,7 +52,6 @@ import {
 import { OnConflictNode } from '../operation-node/on-conflict-node.js'
 import { Selectable } from '../util/column-type.js'
 import { Explainable, ExplainFormat } from '../util/explainable.js'
-import { ExplainNode } from '../operation-node/explain-node.js'
 import { Expression } from '../expression/expression.js'
 import { KyselyTypeError } from '../util/type-error.js'
 import { Streamable } from '../util/streamable.js'

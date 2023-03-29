@@ -282,6 +282,7 @@ or "recipes" for common use cases.
 * [Extending kysely](https://github.com/koskimas/kysely/tree/master/site/docs/recipes/extending-kysely.md)
 * [Introspecting relation metadata](https://github.com/koskimas/kysely/tree/master/site/docs/recipes/introspecting-relation-metadata.md)
 * [Raw SQL](https://github.com/koskimas/kysely/tree/master/site/docs/recipes/raw-sql.md)
+* [Relations](https://github.com/koskimas/kysely/tree/master/site/docs/recipes/relations.md)
 * [Schemas](https://github.com/koskimas/kysely/tree/master/site/docs/recipes/schemas.md)
 * [Splitting build, compile and execute code](https://github.com/koskimas/kysely/tree/master/site/docs/recipes/splitting-build-compile-and-execute-code.md)
 

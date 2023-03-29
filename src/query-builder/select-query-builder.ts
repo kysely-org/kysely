@@ -52,7 +52,6 @@ import {
 import { HavingExpressionFactory, HavingInterface } from './having-interface.js'
 import { IdentifierNode } from '../operation-node/identifier-node.js'
 import { Explainable, ExplainFormat } from '../util/explainable.js'
-import { ExplainNode } from '../operation-node/explain-node.js'
 import { parseSetOperation } from '../parser/set-operation-parser.js'
 import { AliasedExpression, Expression } from '../expression/expression.js'
 import {
