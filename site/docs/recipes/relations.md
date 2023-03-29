@@ -23,7 +23,7 @@ In the following query, we fetch a list of people (from "person" table) and for 
 SELECT
   person.*,
 
-  // Select person's pets as a jsonb array
+  -- Select person's pets as a jsonb array
   (
     SELECT 
       COALESCE(JSONB_AGG(pets), '[]')
@@ -40,7 +40,7 @@ SELECT
     ) pets
   ) pets,
 
-  // Select person's mother as a jsonb object
+  -- Select person's mother as a jsonb object
   (
     SELECT 
       TO_JSONB(mother)
