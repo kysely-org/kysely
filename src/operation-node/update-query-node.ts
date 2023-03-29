@@ -63,14 +63,4 @@ export const UpdateQueryNode = freeze({
         : updates,
     })
   },
-
-  cloneWithExplain(
-    updateQuery: UpdateQueryNode,
-    explain: ExplainNode
-  ): UpdateQueryNode {
-    return freeze({
-      ...updateQuery,
-      explain,
-    })
-  },
 })
