@@ -116,14 +116,11 @@ function parseRowValues(
   const hasMissingColumns = rowColumns.length < columns.size
 
   if (hasMissingColumns || hasUndefinedOrComplexColumns) {
-    let defaultValueNode: DefaultInsertValueNode
+    const defaultValue = DefaultInsertValueNode.create()
 
     return ValueListNode.create(
-      rowValues.map((value) =>
-        isUndefined(value)
-          ? (defaultValueNode =
-              defaultValueNode || DefaultInsertValueNode.create())
-          : parseValueExpression(value)
+      rowValues.map((it) =>
+        isUndefined(it) ? defaultValue : parseValueExpression(it)
       )
     )
   }
