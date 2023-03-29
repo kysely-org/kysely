@@ -91,29 +91,31 @@ function parseRowValues(
 ): PrimitiveValueListNode | ValueListNode {
   const rowColumns = Object.keys(row)
 
-  const rowValues: ValueExpression<any, any, unknown>[] = Array.from({
+  const rowValues = Array.from({
     length: columns.size,
   })
 
-  let complexColumn = false
+  let hasUndefinedOrComplexColumns = false
 
   for (const col of rowColumns) {
     const columnIdx = columns.get(col)
 
-    if (columnIdx !== undefined) {
-      const value = row[col]
-
-      if (isExpressionOrFactory(value)) {
-        complexColumn = true
-      }
-
-      rowValues[columnIdx] = value
+    if (isUndefined(columnIdx)) {
+      continue
     }
+
+    const value = row[col]
+
+    if (isUndefined(value) || isExpressionOrFactory(value)) {
+      hasUndefinedOrComplexColumns = true
+    }
+
+    rowValues[columnIdx] = value
   }
 
-  const columnMissing = rowColumns.length < columns.size
+  const hasMissingColumns = rowColumns.length < columns.size
 
-  if (columnMissing || complexColumn) {
+  if (hasMissingColumns || hasUndefinedOrComplexColumns) {
     const defaultValue = DefaultInsertValueNode.create()
 
     return ValueListNode.create(

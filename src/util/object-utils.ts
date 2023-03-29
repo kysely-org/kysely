@@ -9,7 +9,7 @@ export function isEmpty(obj: ArrayLike<unknown> | string | object): boolean {
 }
 
 export function isUndefined(obj: unknown): obj is undefined {
-  return obj === undefined
+  return typeof obj === 'undefined' || obj === undefined
 }
 
 export function isString(obj: unknown): obj is string {
