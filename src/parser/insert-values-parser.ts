@@ -122,7 +122,8 @@ function parseRowValues(
     return ValueListNode.create(
       rowValues.map((value) =>
         isUndefined(value)
-          ? (defaultValueNode ??= DefaultInsertValueNode.create())
+          ? (defaultValueNode =
+              defaultValueNode || DefaultInsertValueNode.create())
           : parseValueExpression(value)
       )
     )
