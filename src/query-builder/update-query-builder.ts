@@ -936,32 +936,16 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
     }
   }
 
-  /**
-   * Executes query with `explain` statement before `update` keyword.
-   *
-   * ```ts
-   * const explained = await db
-   *  .updateTable('person')
-   *  .set(updates)
-   *  .where('id', '=', 123)
-   *  .explain('json')
-   * ```
-   *
-   * The generated SQL (MySQL):
-   *
-   * ```sql
-   * explain format=json update `person` set `first_name` = ?, `last_name` = ? where `id` = ?
-   * ```
-   */
   async explain<ER extends Record<string, any> = Record<string, any>>(
     format?: ExplainFormat,
     options?: Expression<any>
   ): Promise<ER[]> {
     const builder = new UpdateQueryBuilder<DB, UT, TB, ER>({
       ...this.#props,
-      queryNode: UpdateQueryNode.cloneWithExplain(
+      queryNode: QueryNode.cloneWithExplain(
         this.#props.queryNode,
-        ExplainNode.create(format, options?.toOperationNode())
+        format,
+        options
       ),
     })
 

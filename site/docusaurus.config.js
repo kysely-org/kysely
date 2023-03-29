@@ -8,7 +8,7 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula')
 const config = {
   title: 'Kysely',
   tagline: 'The type-safe SQL query builder for TypeScript',
-  url: 'https://your-docusaurus-test-site.com',
+  url: 'https://kysely.dev',
   baseUrl: '/',
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
@@ -16,7 +16,7 @@ const config = {
 
   // GitHub pages deployment config.
   // If you aren't using GitHub pages, you don't need these.
-  organizationName: 'facebook', // Usually your GitHub org/user name.
+  organizationName: 'kysely-org', // Usually your GitHub org/user name.
   projectName: 'kysely', // Usually your repo name.
 
   // Even if you don't use internalization, you can use this field to set useful
@@ -68,6 +68,15 @@ const config = {
         disableSwitch: true,
         respectPrefersColorScheme: false,
       },
+
+      algolia: {
+        appId: 'MDKJWTIJFR',
+        // Public API key, safe to expose. See https://docusaurus.io/docs/search#using-algolia-docsearch
+        apiKey: 'ebee59ab1b71803be5983f6dbfeea352',
+        indexName: 'kysely',
+        contextualSearch: true,
+      },
+
       docs: {
         sidebar: { hideable: true, autoCollapseCategories: true },
       },
@@ -165,6 +174,14 @@ const config = {
               },
             ],
           },
+          {
+            title: 'Sponsors',
+            items: [
+              {
+                html: `<a href="https://vercel.com/?utm_source=kysely&utm_campaign=oss"><img src="/img/powered-by-vercel.svg" alt="Powered by Vercel" /></a>`,
+              }
+            ]
+          }
         ],
       },
       prism: {
