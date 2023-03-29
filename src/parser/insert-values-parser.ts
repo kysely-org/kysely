@@ -20,6 +20,7 @@ import {
   expressionBuilder,
   ExpressionBuilder,
 } from '../expression/expression-builder.js'
+import { OperationNode } from '../operation-node/operation-node.js'
 
 export type InsertObject<DB, TB extends keyof DB> = {
   [C in NonNullableInsertKeys<DB[TB]>]: ValueExpression<
@@ -91,36 +92,40 @@ function parseRowValues(
 ): PrimitiveValueListNode | ValueListNode {
   const rowColumns = Object.keys(row)
 
-  const rowValues: ValueExpression<any, any, unknown>[] = Array.from({
+  const rowValues: OperationNode[] = Array.from({
     length: columns.size,
   })
 
-  let complexColumn = false
+  let defaultValueNode: DefaultInsertValueNode | undefined = undefined
+  let hasComplexColumns = false
 
   for (const col of rowColumns) {
     const columnIdx = columns.get(col)
 
-    if (columnIdx !== undefined) {
-      const value = row[col]
-
-      if (isExpressionOrFactory(value)) {
-        complexColumn = true
-      }
-
-      rowValues[columnIdx] = value
+    if (isUndefined(columnIdx)) {
+      continue
     }
+
+    const value = row[col]
+
+    if (isUndefined(value)) {
+      defaultValueNode ??= DefaultInsertValueNode.create()
+      rowValues[columnIdx] = defaultValueNode
+      continue
+    }
+
+    if (isExpressionOrFactory(value)) {
+      hasComplexColumns = true
+    }
+
+    rowValues[columnIdx] = parseValueExpression(value)
   }
 
-  const columnMissing = rowColumns.length < columns.size
+  const hasMissingColumns = rowColumns.length < columns.size
+  const hasUndefinedColumns = defaultValueNode !== undefined
 
-  if (columnMissing || complexColumn) {
-    const defaultValue = DefaultInsertValueNode.create()
-
-    return ValueListNode.create(
-      rowValues.map((it) =>
-        isUndefined(it) ? defaultValue : parseValueExpression(it)
-      )
-    )
+  if (hasMissingColumns || hasUndefinedColumns || hasComplexColumns) {
+    return ValueListNode.create(rowValues)
   }
 
   return PrimitiveValueListNode.create(rowValues)
