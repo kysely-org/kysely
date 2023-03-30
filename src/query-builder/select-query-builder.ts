@@ -51,7 +51,6 @@ import {
 import { HavingExpressionFactory, HavingInterface } from './having-interface.js'
 import { IdentifierNode } from '../operation-node/identifier-node.js'
 import { Explainable, ExplainFormat } from '../util/explainable.js'
-import { ExplainNode } from '../operation-node/explain-node.js'
 import { parseSetOperation } from '../parser/set-operation-parser.js'
 import { AliasedExpression, Expression } from '../expression/expression.js'
 import {
@@ -68,6 +67,7 @@ import {
 } from '../parser/unary-operation-parser.js'
 import { KyselyTypeError } from '../util/type-error.js'
 import { Selectable } from '../util/column-type.js'
+import { Streamable } from '../util/streamable.js'
 
 export class SelectQueryBuilder<DB, TB extends keyof DB, O>
   implements
@@ -75,7 +75,8 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
     HavingInterface<DB, TB>,
     Expression<O>,
     Compilable<O>,
-    Explainable
+    Explainable,
+    Streamable<O>
 {
   readonly #props: SelectQueryBuilderProps
 
@@ -437,7 +438,7 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    * import { sql } from 'kysely'
    *
    * const persons = await db.selectFrom('person')
-   *   .select(({ selectFrom, or, cmp }) => [
+   *   .select(({ selectFrom, or, cmpr }) => [
    *     // Select a correlated subquery
    *     selectFrom('pet')
    *       .whereRef('person.id', '=', 'pet.owner_id')
@@ -448,8 +449,8 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    *
    *     // Build and select an expression using the expression builder
    *     or([
-   *       cmp('first_name', '=', 'Jennifer'),
-   *       cmp('first_name', '=', 'Arnold')
+   *       cmpr('first_name', '=', 'Jennifer'),
+   *       cmpr('first_name', '=', 'Arnold')
    *     ]).as('is_jennifer_or_arnold'),
    *
    *     // Select a raw sql expression
@@ -1900,32 +1901,6 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
     return result as O
   }
 
-  /**
-   * Executes the query and streams the rows.
-   *
-   * The optional argument `chunkSize` defines how many rows to fetch from the database
-   * at a time. It only affects some dialects like PostgreSQL that support it.
-   *
-   * ### Examples
-   *
-   * ```ts
-   * const stream = db.
-   *   .selectFrom('person')
-   *   .select(['first_name', 'last_name'])
-   *   .where('gender', '=', 'other')
-   *   .stream()
-   *
-   * for await (const person of stream) {
-   *   console.log(person.first_name)
-   *
-   *   if (person.last_name === 'Something') {
-   *     // Breaking or returning before the stream has ended will release
-   *     // the database connection and invalidate the stream.
-   *     break
-   *   }
-   * }
-   * ```
-   */
   async *stream(chunkSize: number = 100): AsyncIterableIterator<O> {
     const compiledQuery = this.compile()
 
@@ -1940,50 +1915,16 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
     }
   }
 
-  /**
-   * Executes query with `explain` statement before `select` keyword.
-   *
-   * ```ts
-   * const explained = await db
-   *  .selectFrom('person')
-   *  .where('gender', '=', 'female')
-   *  .selectAll()
-   *  .explain('json')
-   * ```
-   *
-   * The generated SQL (MySQL):
-   *
-   * ```sql
-   * explain format=json select * from `person` where `gender` = ?
-   * ```
-   *
-   * You can also execute `explain analyze` statements.
-   *
-   * ```ts
-   * import { sql } from 'kysely'
-   *
-   * const explained = await db
-   *  .selectFrom('person')
-   *  .where('gender', '=', 'female')
-   *  .selectAll()
-   *  .explain('json', sql`analyze`)
-   * ```
-   *
-   * The generated SQL (PostgreSQL):
-   *
-   * ```sql
-   * explain (analyze, format json) select * from "person" where "gender" = $1
-   * ```
-   */
   async explain<ER extends Record<string, any> = Record<string, any>>(
     format?: ExplainFormat,
     options?: Expression<any>
   ): Promise<ER[]> {
     const builder = new SelectQueryBuilder<DB, TB, ER>({
       ...this.#props,
-      queryNode: SelectQueryNode.cloneWithExplain(
+      queryNode: QueryNode.cloneWithExplain(
         this.#props.queryNode,
-        ExplainNode.create(format, options?.toOperationNode())
+        format,
+        options
       ),
     })
 

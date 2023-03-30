@@ -10,6 +10,7 @@ import {
   expect,
   NOT_SUPPORTED,
   insertDefaultDataSet,
+  DEFAULT_DATA_SET,
 } from './test-setup.js'
 
 for (const dialect of DIALECTS) {
@@ -157,7 +158,7 @@ for (const dialect of DIALECTS) {
         const query = ctx.db
           .updateTable('person')
           .set((eb) => ({
-            first_name: eb.bin('first_name', `||`, '2'),
+            first_name: eb.bxp('first_name', `||`, '2'),
           }))
           .where('first_name', '=', 'Jennifer')
 
@@ -333,6 +334,31 @@ for (const dialect of DIALECTS) {
         const result = await query.execute()
 
         expect(result[0].first_name).to.equal('Doggo')
+      })
+    }
+
+    if (dialect === 'postgres') {
+      it('should update multiple rows and stream returned results', async () => {
+        const stream = ctx.db
+          .updateTable('person')
+          .set({ last_name: 'Nobody' })
+          .returning(['first_name', 'last_name', 'gender'])
+          .stream()
+
+        const people = []
+
+        for await (const person of stream) {
+          people.push(person)
+        }
+
+        expect(people).to.have.length(DEFAULT_DATA_SET.length)
+        expect(people).to.eql(
+          DEFAULT_DATA_SET.map(({ first_name, gender }) => ({
+            first_name,
+            last_name: 'Nobody',
+            gender,
+          }))
+        )
       })
     }
   })

@@ -1,10 +1,4 @@
-import {
-  jsonbBuildObject,
-  Kysely,
-  jsonArrayFrom,
-  jsonObjectFrom,
-  sql,
-} from '..'
+import { jsonBuildObject, Kysely, jsonArrayFrom, jsonObjectFrom, sql } from '..'
 import { Database } from '../shared'
 import { expectType } from 'tsd'
 
@@ -37,7 +31,7 @@ async function testPostgresJsonb(db: Kysely<Database>) {
 
     // Nest an object that holds the person's formatted name.
     (eb) =>
-      jsonbBuildObject({
+      jsonBuildObject({
         first: eb.ref('first_name'),
         last: eb.ref('last_name'),
         full: sql<string>`first_name || ' ' || last_name`,

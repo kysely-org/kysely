@@ -16,7 +16,7 @@ export class PostgresAdapter extends DialectAdapterBase {
 
   async acquireMigrationLock(db: Kysely<any>): Promise<void> {
     // Acquire a transaction level advisory lock.
-    await sql`select pg_advisory_xact_lock(${sql.literal(LOCK_ID)})`.execute(db)
+    await sql`select pg_advisory_xact_lock(${sql.lit(LOCK_ID)})`.execute(db)
   }
 
   async releaseMigrationLock(): Promise<void> {

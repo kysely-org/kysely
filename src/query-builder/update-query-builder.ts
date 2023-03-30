@@ -50,7 +50,6 @@ import {
 } from './no-result-error.js'
 import { Selectable } from '../util/column-type.js'
 import { Explainable, ExplainFormat } from '../util/explainable.js'
-import { ExplainNode } from '../operation-node/explain-node.js'
 import { AliasedExpression, Expression } from '../expression/expression.js'
 import {
   ComparisonOperatorExpression,
@@ -64,6 +63,7 @@ import {
   parseNotExists,
 } from '../parser/unary-operation-parser.js'
 import { KyselyTypeError } from '../util/type-error.js'
+import { Streamable } from '../util/streamable.js'
 
 export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
   implements
@@ -71,7 +71,8 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
     ReturningInterface<DB, TB, O>,
     OperationNodeSource,
     Compilable<O>,
-    Explainable
+    Explainable,
+    Streamable<O>
 {
   readonly #props: UpdateQueryBuilderProps
 
@@ -477,7 +478,7 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
    * any expressions such as raw {@link sql} snippets or select queries.
    *
    * This method also accepts a callback that returns the update object. The
-   * callback takes an instance of `{@link ExpressionBuilder} as its only argument.
+   * callback takes an instance of {@link ExpressionBuilder} as its only argument.
    * The expression builder can be used to create arbitrary update expressions.
    *
    * The return value of an update query is an instance of {@link UpdateResult}.
@@ -871,32 +872,30 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
     return result as SimplifyResult<O>
   }
 
-  /**
-   * Executes query with `explain` statement before `update` keyword.
-   *
-   * ```ts
-   * const explained = await db
-   *  .updateTable('person')
-   *  .set(updates)
-   *  .where('id', '=', 123)
-   *  .explain('json')
-   * ```
-   *
-   * The generated SQL (MySQL):
-   *
-   * ```sql
-   * explain format=json update `person` set `first_name` = ?, `last_name` = ? where `id` = ?
-   * ```
-   */
+  async *stream(chunkSize: number = 100): AsyncIterableIterator<O> {
+    const compiledQuery = this.compile()
+
+    const stream = this.#props.executor.stream<O>(
+      compiledQuery,
+      chunkSize,
+      this.#props.queryId
+    )
+
+    for await (const item of stream) {
+      yield* item.rows
+    }
+  }
+
   async explain<ER extends Record<string, any> = Record<string, any>>(
     format?: ExplainFormat,
     options?: Expression<any>
   ): Promise<ER[]> {
     const builder = new UpdateQueryBuilder<DB, UT, TB, ER>({
       ...this.#props,
-      queryNode: UpdateQueryNode.cloneWithExplain(
+      queryNode: QueryNode.cloneWithExplain(
         this.#props.queryNode,
-        ExplainNode.create(format, options?.toOperationNode())
+        format,
+        options
       ),
     })
 

@@ -209,11 +209,11 @@ for (const dialect of DIALECTS) {
             join
               .onRef('pet.owner_id', '=', 'person.id')
               .on('pet.name', 'in', ['Catto', 'Doggo', 'Hammo'])
-              .on(({ or, cmp, ref, selectFrom }) =>
+              .on(({ or, cmpr, ref, selectFrom }) =>
                 or([
-                  cmp('pet.species', '=', 'cat'),
-                  cmp('species', '=', 'dog'),
-                  cmp(
+                  cmpr('pet.species', '=', 'cat'),
+                  cmpr('species', '=', 'dog'),
+                  cmpr(
                     ref('species'),
                     '=',
                     selectFrom('pet')

@@ -51,16 +51,17 @@ import {
 import { OnConflictNode } from '../operation-node/on-conflict-node.js'
 import { Selectable } from '../util/column-type.js'
 import { Explainable, ExplainFormat } from '../util/explainable.js'
-import { ExplainNode } from '../operation-node/explain-node.js'
 import { Expression } from '../expression/expression.js'
 import { KyselyTypeError } from '../util/type-error.js'
+import { Streamable } from '../util/streamable.js'
 
 export class InsertQueryBuilder<DB, TB extends keyof DB, O>
   implements
     ReturningInterface<DB, TB, O>,
     OperationNodeSource,
     Compilable<O>,
-    Explainable
+    Explainable,
+    Streamable<O>
 {
   readonly #props: InsertQueryBuilderProps
 
@@ -793,31 +794,31 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
     return result as SimplifyResult<O>
   }
 
-  /**
-   * Executes query with `explain` statement before `insert` keyword.
-   *
-   * ```ts
-   * const explained = await db
-   *  .insertInto('person')
-   *  .values(values)
-   *  .explain('json')
-   * ```
-   *
-   * The generated SQL (MySQL):
-   *
-   * ```sql
-   * explain format=json insert into `person` (`id`, `first_name`, `last_name`) values (?, ?, ?) (?, ?, ?)
-   * ```
-   */
+  async *stream(chunkSize: number = 100): AsyncIterableIterator<O> {
+    const compiledQuery = this.compile()
+
+    const stream = this.#props.executor.stream<O>(
+      compiledQuery,
+      chunkSize,
+      this.#props.queryId
+    )
+
+    for await (const item of stream) {
+      yield* item.rows
+    }
+  }
+
   async explain<ER extends Record<string, any> = Record<string, any>>(
     format?: ExplainFormat,
     options?: Expression<any>
   ): Promise<ER[]> {
     const builder = new InsertQueryBuilder<DB, TB, ER>({
       ...this.#props,
-      queryNode: InsertQueryNode.cloneWith(this.#props.queryNode, {
-        explain: ExplainNode.create(format, options?.toOperationNode()),
-      }),
+      queryNode: QueryNode.cloneWithExplain(
+        this.#props.queryNode,
+        format,
+        options
+      ),
     })
 
     return await builder.execute()

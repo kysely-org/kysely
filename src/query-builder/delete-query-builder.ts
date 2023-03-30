@@ -49,7 +49,6 @@ import {
   parseOrderBy,
 } from '../parser/order-by-parser.js'
 import { Explainable, ExplainFormat } from '../util/explainable.js'
-import { ExplainNode } from '../operation-node/explain-node.js'
 import { AliasedExpression, Expression } from '../expression/expression.js'
 import {
   ComparisonOperatorExpression,
@@ -63,6 +62,7 @@ import {
   parseNotExists,
 } from '../parser/unary-operation-parser.js'
 import { KyselyTypeError } from '../util/type-error.js'
+import { Streamable } from '../util/streamable.js'
 
 export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
   implements
@@ -70,7 +70,8 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
     ReturningInterface<DB, TB, O>,
     OperationNodeSource,
     Compilable<O>,
-    Explainable
+    Explainable,
+    Streamable<O>
 {
   readonly #props: DeleteQueryBuilderProps
 
@@ -955,31 +956,30 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
     return result as SimplifyResult<O>
   }
 
-  /**
-   * Executes query with `explain` statement before `delete` keyword.
-   *
-   * ```ts
-   * const explained = await db
-   *  .deleteFrom('person')
-   *  .where('id', '=', 123)
-   *  .explain('json')
-   * ```
-   *
-   * The generated SQL (MySQL):
-   *
-   * ```sql
-   * explain format=json delete from `person` where `id` = ?
-   * ```
-   */
+  async *stream(chunkSize: number = 100): AsyncIterableIterator<O> {
+    const compiledQuery = this.compile()
+
+    const stream = this.#props.executor.stream<O>(
+      compiledQuery,
+      chunkSize,
+      this.#props.queryId
+    )
+
+    for await (const item of stream) {
+      yield* item.rows
+    }
+  }
+
   async explain<ER extends Record<string, any> = Record<string, any>>(
     format?: ExplainFormat,
     options?: Expression<any>
   ): Promise<ER[]> {
     const builder = new DeleteQueryBuilder<DB, TB, ER>({
       ...this.#props,
-      queryNode: DeleteQueryNode.cloneWithExplain(
+      queryNode: QueryNode.cloneWithExplain(
         this.#props.queryNode,
-        ExplainNode.create(format, options?.toOperationNode())
+        format,
+        options
       ),
     })
 

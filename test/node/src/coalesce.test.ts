@@ -205,7 +205,7 @@ for (const dialect of DIALECTS) {
               'first_name',
               ctx.db.dynamic.ref('last_name'),
               ctx.db.fn.max('last_name'),
-              sql.literal('(N/A)')
+              sql.lit('(N/A)')
             )
             .as('name'),
         ])
