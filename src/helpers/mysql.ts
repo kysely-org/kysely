@@ -10,7 +10,7 @@ import { sql } from '../raw-builder/sql.js'
 import { Simplify } from '../util/type-utils.js'
 
 /**
- * A MySQL helper for aggregating a subquery (or other expression) into a JSON array.
+ * A MySQL helper for aggregating a subquery into a JSON array.
  *
  * NOTE: This helper is only guaranteed to fully work with the built-in `MysqlDialect`.
  * While the produced SQL is compatibe with all MySQL databases, some 3rd party dialects
@@ -63,7 +63,7 @@ export function jsonArrayFrom<O>(
 }
 
 /**
- * A MySQL helper for turning a subquery (or other expression) into a JSON object.
+ * A MySQL helper for turning a subquery into a JSON object.
  *
  * The subquery must only return one row.
  *
