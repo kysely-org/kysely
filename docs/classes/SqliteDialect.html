@@ -1,11 +1,13 @@
 <!DOCTYPE html><html class="default" lang="en"><head><meta charSet="utf-8"/><meta http-equiv="x-ua-compatible" content="IE=edge"/><title>SqliteDialect | kysely</title><meta name="description" content="Documentation for kysely"/><meta name="viewport" content="width=device-width, initial-scale=1"/><link rel="stylesheet" href="../assets/style.css"/><link rel="stylesheet" href="../assets/highlight.css"/><link rel="stylesheet" href="../assets/custom.css"/><script async src="../assets/search.js" id="search-script"></script></head><body><script>document.documentElement.dataset.theme = localStorage.getItem("tsd-theme") || "os"</script><header class="tsd-page-toolbar">
 <div class="tsd-toolbar-contents container">
 <div class="table-cell" id="tsd-search" data-base="..">
-<div class="field"><label for="tsd-search-field" class="tsd-widget search no-caption"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M15.7824 13.833L12.6666 10.7177C12.5259 10.5771 12.3353 10.499 12.1353 10.499H11.6259C12.4884 9.39596 13.001 8.00859 13.001 6.49937C13.001 2.90909 10.0914 0 6.50048 0C2.90959 0 0 2.90909 0 6.49937C0 10.0896 2.90959 12.9987 6.50048 12.9987C8.00996 12.9987 9.39756 12.4863 10.5008 11.6239V12.1332C10.5008 12.3332 10.5789 12.5238 10.7195 12.6644L13.8354 15.7797C14.1292 16.0734 14.6042 16.0734 14.8948 15.7797L15.7793 14.8954C16.0731 14.6017 16.0731 14.1267 15.7824 13.833ZM6.50048 10.499C4.29094 10.499 2.50018 8.71165 2.50018 6.49937C2.50018 4.29021 4.28781 2.49976 6.50048 2.49976C8.71001 2.49976 10.5008 4.28708 10.5008 6.49937C10.5008 8.70852 8.71314 10.499 6.50048 10.499Z" fill="var(--color-text)"></path></svg></label><input type="text" id="tsd-search-field" aria-label="Search"/></div>
+<div class="field"><label for="tsd-search-field" class="tsd-widget tsd-toolbar-icon search no-caption"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M15.7824 13.833L12.6666 10.7177C12.5259 10.5771 12.3353 10.499 12.1353 10.499H11.6259C12.4884 9.39596 13.001 8.00859 13.001 6.49937C13.001 2.90909 10.0914 0 6.50048 0C2.90959 0 0 2.90909 0 6.49937C0 10.0896 2.90959 12.9987 6.50048 12.9987C8.00996 12.9987 9.39756 12.4863 10.5008 11.6239V12.1332C10.5008 12.3332 10.5789 12.5238 10.7195 12.6644L13.8354 15.7797C14.1292 16.0734 14.6042 16.0734 14.8948 15.7797L15.7793 14.8954C16.0731 14.6017 16.0731 14.1267 15.7824 13.833ZM6.50048 10.499C4.29094 10.499 2.50018 8.71165 2.50018 6.49937C2.50018 4.29021 4.28781 2.49976 6.50048 2.49976C8.71001 2.49976 10.5008 4.28708 10.5008 6.49937C10.5008 8.70852 8.71314 10.499 6.50048 10.499Z" fill="var(--color-text)"></path></svg></label><input type="text" id="tsd-search-field" aria-label="Search"/></div>
+<div class="field">
+<div id="tsd-toolbar-links"></div></div>
 <ul class="results">
 <li class="state loading">Preparing search index...</li>
 <li class="state failure">The search index is not available</li></ul><a href="../index.html" class="title">kysely</a></div>
-<div class="table-cell" id="tsd-widgets"><a href="#" class="tsd-widget menu no-caption" data-toggle="menu" aria-label="Menu"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="3" width="14" height="2" fill="var(--color-text)"></rect><rect x="1" y="7" width="14" height="2" fill="var(--color-text)"></rect><rect x="1" y="11" width="14" height="2" fill="var(--color-text)"></rect></svg></a></div></div></header>
+<div class="table-cell" id="tsd-widgets"><a href="#" class="tsd-widget tsd-toolbar-icon menu no-caption" data-toggle="menu" aria-label="Menu"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="3" width="14" height="2" fill="var(--color-text)"></rect><rect x="1" y="7" width="14" height="2" fill="var(--color-text)"></rect><rect x="1" y="11" width="14" height="2" fill="var(--color-text)"></rect></svg></a></div></div></header>
 <div class="container container-main">
 <div class="col-8 col-content">
 <div class="tsd-page-title">
@@ -20,11 +22,8 @@
 </code></pre>
 <p>If you want the pool to only be created once it&#39;s first used, <code>database</code>
 can be a function:</p>
-<p>```ts
-import Database from &#39;better-sqlite3&#39;</p>
-<p>new SqliteDialect({
-  database: async () =&gt; new Database(&#39;db.sqlite&#39;)
-})</p>
+<pre><code class="language-ts"><span class="hl-2">import</span><span class="hl-0"> </span><span class="hl-1">Database</span><span class="hl-0"> </span><span class="hl-2">from</span><span class="hl-0"> </span><span class="hl-3">&#39;better-sqlite3&#39;</span><br/><br/><span class="hl-4">new</span><span class="hl-0"> </span><span class="hl-8">SqliteDialect</span><span class="hl-0">({</span><br/><span class="hl-0">  </span><span class="hl-8">database</span><span class="hl-1">:</span><span class="hl-0"> </span><span class="hl-4">async</span><span class="hl-0"> () </span><span class="hl-4">=&gt;</span><span class="hl-0"> </span><span class="hl-4">new</span><span class="hl-0"> </span><span class="hl-8">Database</span><span class="hl-0">(</span><span class="hl-3">&#39;db.sqlite&#39;</span><span class="hl-0">)</span><br/><span class="hl-0">})</span>
+</code></pre>
 </div></section>
 <section class="tsd-panel tsd-hierarchy">
 <h4>Hierarchy</h4>
@@ -35,7 +34,7 @@ import Database from &#39;better-sqlite3&#39;</p>
 <ul class="tsd-hierarchy">
 <li><a href="../interfaces/Dialect.html" class="tsd-signature-type" data-tsd-kind="Interface">Dialect</a></li></ul></section><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/koskimas/kysely/blob/a8e28d9e/src/dialect/sqlite/sqlite-dialect.ts#L37">src/dialect/sqlite/sqlite-dialect.ts:37</a></li></ul></aside>
+<li>Defined in <a href="https://github.com/koskimas/kysely/blob/501ea488/src/dialect/sqlite/sqlite-dialect.ts#L38">src/dialect/sqlite/sqlite-dialect.ts:38</a></li></ul></aside>
 <section class="tsd-panel-group tsd-index-group">
 <section class="tsd-panel tsd-index-panel">
 <details class="tsd-index-content tsd-index-accordion" open><summary class="tsd-accordion-summary tsd-index-summary">
@@ -66,7 +65,7 @@ import Database from &#39;better-sqlite3&#39;</p>
 <h5>config: <a href="../interfaces/SqliteDialectConfig.html" class="tsd-signature-type" data-tsd-kind="Interface">SqliteDialectConfig</a></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <a href="SqliteDialect.html" class="tsd-signature-type" data-tsd-kind="Class">SqliteDialect</a></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/koskimas/kysely/blob/a8e28d9e/src/dialect/sqlite/sqlite-dialect.ts#L40">src/dialect/sqlite/sqlite-dialect.ts:40</a></li></ul></aside></li></ul></section></section>
+<li>Defined in <a href="https://github.com/koskimas/kysely/blob/501ea488/src/dialect/sqlite/sqlite-dialect.ts#L41">src/dialect/sqlite/sqlite-dialect.ts:41</a></li></ul></aside></li></ul></section></section>
 <section class="tsd-panel-group tsd-member-group">
 <h2>Methods</h2>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class"><a id="createAdapter" class="tsd-anchor"></a>
@@ -79,7 +78,7 @@ import Database from &#39;better-sqlite3&#39;</p>
 <h4 class="tsd-returns-title">Returns <a href="../interfaces/DialectAdapter.html" class="tsd-signature-type" data-tsd-kind="Interface">DialectAdapter</a></h4><aside class="tsd-sources">
 <p>Implementation of <a href="../interfaces/Dialect.html">Dialect</a>.<a href="../interfaces/Dialect.html#createAdapter">createAdapter</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/koskimas/kysely/blob/a8e28d9e/src/dialect/sqlite/sqlite-dialect.ts#L52">src/dialect/sqlite/sqlite-dialect.ts:52</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/koskimas/kysely/blob/501ea488/src/dialect/sqlite/sqlite-dialect.ts#L53">src/dialect/sqlite/sqlite-dialect.ts:53</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class"><a id="createDriver" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>create<wbr/>Driver</span><a href="#createDriver" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
@@ -90,7 +89,7 @@ import Database from &#39;better-sqlite3&#39;</p>
 <h4 class="tsd-returns-title">Returns <a href="../interfaces/Driver.html" class="tsd-signature-type" data-tsd-kind="Interface">Driver</a></h4><aside class="tsd-sources">
 <p>Implementation of <a href="../interfaces/Dialect.html">Dialect</a>.<a href="../interfaces/Dialect.html#createDriver">createDriver</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/koskimas/kysely/blob/a8e28d9e/src/dialect/sqlite/sqlite-dialect.ts#L44">src/dialect/sqlite/sqlite-dialect.ts:44</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/koskimas/kysely/blob/501ea488/src/dialect/sqlite/sqlite-dialect.ts#L45">src/dialect/sqlite/sqlite-dialect.ts:45</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class"><a id="createIntrospector" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>create<wbr/>Introspector</span><a href="#createIntrospector" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
@@ -109,7 +108,7 @@ such as the table names and column names of those tables.</p>
 <h4 class="tsd-returns-title">Returns <a href="../interfaces/DatabaseIntrospector.html" class="tsd-signature-type" data-tsd-kind="Interface">DatabaseIntrospector</a></h4><aside class="tsd-sources">
 <p>Implementation of <a href="../interfaces/Dialect.html">Dialect</a>.<a href="../interfaces/Dialect.html#createIntrospector">createIntrospector</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/koskimas/kysely/blob/a8e28d9e/src/dialect/sqlite/sqlite-dialect.ts#L56">src/dialect/sqlite/sqlite-dialect.ts:56</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/koskimas/kysely/blob/501ea488/src/dialect/sqlite/sqlite-dialect.ts#L57">src/dialect/sqlite/sqlite-dialect.ts:57</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class"><a id="createQueryCompiler" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>create<wbr/>Query<wbr/>Compiler</span><a href="#createQueryCompiler" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
@@ -120,7 +119,7 @@ such as the table names and column names of those tables.</p>
 <h4 class="tsd-returns-title">Returns <a href="../interfaces/QueryCompiler.html" class="tsd-signature-type" data-tsd-kind="Interface">QueryCompiler</a></h4><aside class="tsd-sources">
 <p>Implementation of <a href="../interfaces/Dialect.html">Dialect</a>.<a href="../interfaces/Dialect.html#createQueryCompiler">createQueryCompiler</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/koskimas/kysely/blob/a8e28d9e/src/dialect/sqlite/sqlite-dialect.ts#L48">src/dialect/sqlite/sqlite-dialect.ts:48</a></li></ul></aside></li></ul></section></section></div>
+<li>Defined in <a href="https://github.com/koskimas/kysely/blob/501ea488/src/dialect/sqlite/sqlite-dialect.ts#L49">src/dialect/sqlite/sqlite-dialect.ts:49</a></li></ul></aside></li></ul></section></section></div>
 <div class="col-4 col-menu menu-sticky-wrap menu-highlight">
 <div class="tsd-navigation settings">
 <details class="tsd-index-accordion"><summary class="tsd-accordion-summary">
