@@ -3,12 +3,12 @@ import { gray } from '@radix-ui/colors'
 
 export function Playground({
   ts,
-  kyselyVersion = '0.23.5',
+  kyselyVersion,
   dialect = 'postgres',
 }: PlaygroundProps) {
   const params = new URLSearchParams()
   params.set('p', 'h')
-  params.set('i', btoa(JSON.stringify({ ts, kyselyVersion, dialect })))
+  params.set('i', btoa(JSON.stringify({ ts:ts.trim(), kyselyVersion, dialect })))
 
   return (
     <iframe
@@ -27,7 +27,7 @@ export function Playground({
 }
 
 interface PlaygroundProps {
-  kyselyVersion?: '0.23.5'
+  kyselyVersion?: string
   dialect?: 'postgres'
   ts: string
 }

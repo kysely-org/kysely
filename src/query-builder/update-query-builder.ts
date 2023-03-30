@@ -479,7 +479,7 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
    * any expressions such as raw {@link sql} snippets or select queries.
    *
    * This method also accepts a callback that returns the update object. The
-   * callback takes an instance of `{@link ExpressionBuilder} as its only argument.
+   * callback takes an instance of {@link ExpressionBuilder} as its only argument.
    * The expression builder can be used to create arbitrary update expressions.
    *
    * The return value of an update query is an instance of {@link UpdateResult}.

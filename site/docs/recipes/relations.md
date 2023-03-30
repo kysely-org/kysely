@@ -8,14 +8,14 @@ Kysely IS a query builder. Kysely DOES build the SQL you tell it to, nothing mor
 Phew, glad we got that out the way..
 
 All that was said above doesn't mean there's no way to nest related rows in your queries. 
-You just have to do it with the tools SQL and the underlying dialect (e.g. PostgreSQL) you're using provide. 
-In this recipe we show one way to do that when using the PostgreSQL built-in dialect.
+You just have to do it with the tools SQL and the underlying dialect (e.g. PostgreSQL or MySQL) you're using provide. 
+In this recipe we show one way to do that when using the built-in PostgreSQL and MySQL dialects.
 
-## PostgreSQL `jsonb` data type and functions
+## The `json` data type and functions
 
-PostgreSQL has rich JSON support through its `json` and `jsonb` data types and functions. `pg`, the node PostgreSQL driver, automatically parses returned `json` and `jsonb` columns as json objects. With the combination of these two things, we can write some super efficient queries with nested relations.
+Both PostgreSQL and MySQL have rich JSON support through their `json` data types and functions. `pg` and `mysql2`, the node drivers, automatically parse returned `json` columns as json objects. With the combination of these two things, we can write some super efficient queries with nested relations.
 
-Let's start with some raw SQL, and then see how we can write the query using Kysely in a nice type-safe way.
+Let's start with some raw postgres SQL, and then see how we can write the query using Kysely in a nice type-safe way.
 
 In the following query, we fetch a list of people (from "person" table) and for each person, we nest the person's pets, and mother, into the returned objects:
 
@@ -23,10 +23,10 @@ In the following query, we fetch a list of people (from "person" table) and for 
 SELECT
   person.*,
 
-  -- Select person's pets as a jsonb array
+  -- Select person's pets as a json array
   (
     SELECT 
-      COALESCE(JSONB_AGG(pets), '[]')
+      COALESCE(JSON_AGG(pets), '[]')
     FROM
     (
       SELECT 
@@ -40,14 +40,14 @@ SELECT
     ) pets
   ) pets,
 
-  -- Select person's mother as a jsonb object
+  -- Select person's mother as a json object
   (
     SELECT 
-      TO_JSONB(mother)
+      TO_JSON(mother)
     FROM
     (
       SELECT 
-        mother.*
+        mother.id, mother.first_name
       FROM
         person as mother
       WHERE 
@@ -66,13 +66,13 @@ Fortunately we can improve and simplify this a lot using Kysely. First let's def
 function jsonArrayFrom<O>(
   expr: Expression<O>
 ): RawBuilder<Simplify<O>[]> {
-  return sql`(select coalesce(jsonb_agg(agg), '[]') from ${expr} as agg)`
+  return sql`(select coalesce(json_agg(agg), '[]') from ${expr} as agg)`
 }
 
 export function jsonObjectFrom<O>(
   expr: Expression<O>
 ): RawBuilder<Simplify<O>> {
-  return sql`(select to_jsonb(obj) from ${expr} as obj)`
+  return sql`(select to_json(obj) from ${expr} as obj)`
 }
 ```
 
@@ -80,6 +80,12 @@ These helpers are included in Kysely and you can import them from the `helpers` 
 
 ```ts
 import { jsonArrayFrom, jsonObjectFrom } from 'kysely/helpers/postgres'
+```
+
+For MySQL the helpers are slightly different but you can use them the same way. You can import them like this:
+
+```ts
+import { jsonArrayFrom, jsonObjectFrom } from 'kysely/helpers/mysql'
 ```
 
 With these helpers, our example query already becomes a little more bearable to look at:
@@ -100,13 +106,13 @@ const persons = await db
     // mother
     jsonObjectFrom(
       eb.selectFrom('person as mother')
-        .selectAll('mother')
+        .select(['mother.id', 'mother.first_name'])
         .whereRef('mother.id', '=', 'person.mother_id')
     ).as('mother')
   ])
 
 console.log(persons[0].pets[0].name)
-console.log(persons[0].mother.last_name)
+console.log(persons[0].mother.first_name)
 ```
 
 That's better right? If you need to do this over and over in your codebase, you can create some helpers like these:
@@ -124,7 +130,7 @@ function withPets(eb: ExpressionBuilder<DB, 'person'>) {
 function withMom(eb: ExpressionBuilder<DB, 'person'>) {
   return jsonObjectFrom(
     eb.selectFrom('person as mother')
-      .selectAll('mother')
+      .select(['mother.id', 'mother.first_name'])
       .whereRef('mother.id', '=', 'person.mother_id')
   ).as('mother')
 }
@@ -142,5 +148,5 @@ const persons = await db
   ])
 
 console.log(persons[0].pets[0].name)
-console.log(persons[0].mother.last_name)
+console.log(persons[0].mother.first_name)
 ```
