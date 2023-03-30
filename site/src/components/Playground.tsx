@@ -8,7 +8,7 @@ export function Playground({
 }: PlaygroundProps) {
   const params = new URLSearchParams()
   params.set('p', 'h')
-  params.set('i', btoa(JSON.stringify({ ts, kyselyVersion, dialect })))
+  params.set('i', btoa(JSON.stringify({ ts:ts.trim(), kyselyVersion, dialect })))
 
   return (
     <iframe
