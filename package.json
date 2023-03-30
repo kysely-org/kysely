@@ -60,6 +60,7 @@
     "@types/chai-as-promised": "^7.1.5",
     "@types/chai-subset": "^1.3.3",
     "@types/mocha": "^9.1.1",
+    "@types/node": "^18.15.11",
     "@types/pg": "^8.6.5",
     "@types/pg-cursor": "^2.7.0",
     "@types/sinon": "^10.0.13",
