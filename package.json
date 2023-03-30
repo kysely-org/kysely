@@ -21,6 +21,11 @@
       "import": "./dist/esm/helpers/postgres.js",
       "require": "./dist/cjs/helpers/postgres.js",
       "default": "./dist/cjs/helpers/postgres.js"
+    },
+    "./helpers/mysql": {
+      "import": "./dist/esm/helpers/mysql.js",
+      "require": "./dist/cjs/helpers/mysql.js",
+      "default": "./dist/cjs/helpers/mysql.js"
     }
   },
   "scripts": {
