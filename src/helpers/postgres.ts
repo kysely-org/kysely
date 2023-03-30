@@ -35,7 +35,7 @@ import { Simplify } from '../util/type-utils.js'
  *
  * ```sql
  * select "id", (
- *   select coalesce(jsonb_agg(agg), '[]') from (
+ *   select coalesce(json_agg(agg), '[]') from (
  *     select "pet"."id" as "pet_id", "pet"."name"
  *     from "pet"
  *     where "pet"."owner_id" = "person"."id"
@@ -48,11 +48,11 @@ import { Simplify } from '../util/type-utils.js'
 export function jsonArrayFrom<O>(
   expr: Expression<O>
 ): RawBuilder<Simplify<O>[]> {
-  return sql`(select coalesce(jsonb_agg(agg), '[]') from ${expr} as agg)`
+  return sql`(select coalesce(json_agg(agg), '[]') from ${expr} as agg)`
 }
 
 /**
- * A postgres helper for turning a subquery (or other expression) into a JSONB object.
+ * A postgres helper for turning a subquery (or other expression) into a JSON object.
  *
  * The subquery must only return one row.
  *
@@ -85,7 +85,7 @@ export function jsonArrayFrom<O>(
  *
  * ```sql
  * select "id", (
- *   select to_jsonb(obj) from (
+ *   select to_json(obj) from (
  *     select "pet"."id" as "pet_id", "pet"."name"
  *     from "pet"
  *     where "pet"."owner_id" = "person"."id"
@@ -98,11 +98,11 @@ export function jsonArrayFrom<O>(
 export function jsonObjectFrom<O>(
   expr: Expression<O>
 ): RawBuilder<Simplify<O>> {
-  return sql`(select to_jsonb(obj) from ${expr} as obj)`
+  return sql`(select to_json(obj) from ${expr} as obj)`
 }
 
 /**
- * The PostgreSQL `jsonb_build_object` function.
+ * The PostgreSQL `json_build_object` function.
  *
  * NOTE: This helper is only guaranteed to fully work with the built-in `PostgresDialect`.
  * While the produced SQL is compatibe with all PostgreSQL databases, some 3rd party dialects
@@ -115,7 +115,7 @@ export function jsonObjectFrom<O>(
  *   .selectFrom('person')
  *   .select((eb) => [
  *     'id',
- *     jsonbBuildObject({
+ *     jsonBuildObject({
  *       first: eb.ref('first_name'),
  *       last: eb.ref('last_name'),
  *       full: sql<string>`first_name || ' ' || last_name`
@@ -132,7 +132,7 @@ export function jsonObjectFrom<O>(
  * The generated SQL (PostgreSQL):
  *
  * ```sql
- * select "id", jsonb_build_object(
+ * select "id", json_build_object(
  *   'first', first_name,
  *   'last', last_name,
  *   'full', first_name || ' ' || last_name
@@ -140,14 +140,14 @@ export function jsonObjectFrom<O>(
  * from "person"
  * ```
  */
-export function jsonbBuildObject<O extends Record<string, Expression<unknown>>>(
+export function jsonBuildObject<O extends Record<string, Expression<unknown>>>(
   obj: O
 ): RawBuilder<
   Simplify<{
     [K in keyof O]: O[K] extends Expression<infer V> ? V : never
   }>
 > {
-  return sql`jsonb_build_object(${sql.join(
+  return sql`json_build_object(${sql.join(
     Object.keys(obj).flatMap((k) => [sql.lit(k), obj[k]])
   )})`
 }

@@ -1,6 +1,6 @@
 {
   "name": "kysely",
-  "version": "0.24.0",
+  "version": "0.24.1",
   "description": "Type safe SQL query builder",
   "repository": {
     "type": "git",
@@ -21,6 +21,11 @@
       "import": "./dist/esm/helpers/postgres.js",
       "require": "./dist/cjs/helpers/postgres.js",
       "default": "./dist/cjs/helpers/postgres.js"
+    },
+    "./helpers/mysql": {
+      "import": "./dist/esm/helpers/mysql.js",
+      "require": "./dist/cjs/helpers/mysql.js",
+      "default": "./dist/cjs/helpers/mysql.js"
     }
   },
   "scripts": {
