@@ -13,7 +13,7 @@ complex output type that consists of multiple nested helper types and replace it
 
 Using this method doesn't reduce type safety at all. You have to pass in a type that is structurally equal to the current type.
 
-For example having more than six `with` statements in a query can lead to the `TS2589` error:
+For example having more than 8 `with` statements in a query can lead to the `TS2589` error:
 
 ```ts
 const res = await db
@@ -24,7 +24,9 @@ const res = await db
   .with('w5', (qb) => qb.selectFrom('person').select('first_name as fn5'))
   .with('w6', (qb) => qb.selectFrom('person').select('first_name as fn6'))
   .with('w7', (qb) => qb.selectFrom('person').select('first_name as fn7'))
-  .selectFrom(['w1', 'w2', 'w3', 'w4', 'w5', 'w6', 'w7'])
+  .with('w8', (qb) => qb.selectFrom('person').select('first_name as fn8'))
+  .with('w9', (qb) => qb.selectFrom('person').select('first_name as fn9'))
+  .selectFrom(['w1', 'w2', 'w3', 'w4', 'w5', 'w6', 'w7', 'w8', 'w9'])
   .selectAll()
   .executeTakeFirstOrThrow()
 ```
@@ -39,19 +41,32 @@ const res = await db
   .with('w4', (qb) => qb.selectFrom('person').select('first_name as fn4'))
   .with('w5', (qb) => qb.selectFrom('person').select('first_name as fn5'))
   .with('w6', (qb) => qb.selectFrom('person').select('first_name as fn6'))
-  .with('w7', (qb) =>
+  .with('w7', (qb) => qb.selectFrom('person').select('first_name as fn7'))
+  .with('w8', (qb) =>
     qb
       .selectFrom('person')
-      .select('first_name as fn7')
-      .$assertType<{ fn7: string }>()
+      .select('first_name as fn8')
+      .$assertType<{ fn8: string }>()
   )
-  .selectFrom(['w1', 'w2', 'w3', 'w4', 'w5', 'w6', 'w7'])
+  .with('w9', (qb) =>
+    qb
+      .selectFrom('person')
+      .select('first_name as fn9')
+      .$assertType<{ fn9: string }>()
+  )
+  .selectFrom(['w1', 'w2', 'w3', 'w4', 'w5', 'w6', 'w7', 'w8', 'w9'])
   .selectAll()
   .executeTakeFirstOrThrow()
 ```
 
 The type you provide for `$assertType` must be structurally equal to the return type of the subquery. Therefore no type safety is lost.
 
-I know what you're thinking: can't this be done automatically? No, unfortunately it can't. There's no way to do this using current
-TypeScript features. Typescript drags along all the parts the type is built with. Even though it could simplify the type into
-a simple object, it doesn't. We need to explictly tell it to do that using the `$assertType` method.
+I know what you're thinking: "can't this be done automatically?" No, unfortunately it can't. There's no way to do this using current TypeScript features. Typescript drags along all the parts the type is built with. Even though it could simplify the type into a simple object, it doesn't. We need to explictly tell it to do that.
+
+"But there's this `Simplify` helper I've seen and it does exactly what you need". You mean this one:
+
+```ts
+export type Simplify<T> = { [K in keyof T]: T[K] } & {}
+```
+
+While that does simplify the type when you hover over it in your IDE, it doesn't actually drop the complex type underneath. You can try this yourself with the example above.
