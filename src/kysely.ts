@@ -7,7 +7,7 @@ import { QueryCreator, QueryCreatorProps } from './query-creator.js'
 import { KyselyPlugin } from './plugin/kysely-plugin.js'
 import { DefaultQueryExecutor } from './query-executor/default-query-executor.js'
 import { DatabaseIntrospector } from './dialect/database-introspector.js'
-import { freeze, isObject } from './util/object-utils.js'
+import { freeze, isObject, isUndefined } from './util/object-utils.js'
 import { RuntimeDriver } from './driver/runtime-driver.js'
 import { SingleConnectionProvider } from './driver/single-connection-provider.js'
 import {
@@ -27,6 +27,10 @@ import { QueryResult } from './driver/database-connection.js'
 import { CompiledQuery } from './query-compiler/compiled-query.js'
 import { createQueryId, QueryId } from './util/query-id.js'
 import { Compilable, isCompilable } from './util/compilable.js'
+import { CaseBuilder } from './query-builder/case-builder.js'
+import { CaseNode } from './operation-node/case-node.js'
+import { parseExpression } from './parser/expression-parser.js'
+import { Expression } from './expression/expression.js'
 
 /**
  * The main Kysely class.
@@ -139,6 +143,23 @@ export class Kysely<DB>
    */
   get introspection(): DatabaseIntrospector {
     return this.#props.dialect.createIntrospector(this.withoutPlugins())
+  }
+
+  /**
+   * Creates a `case` statement/operator.
+   *
+   * See {@link ExpressionBuilder.case} for more information.
+   */
+  case(): CaseBuilder<DB, keyof DB>
+
+  case<V>(value: Expression<V>): CaseBuilder<DB, keyof DB, V>
+
+  case<V>(value?: Expression<V>): any {
+    return new CaseBuilder({
+      node: CaseNode.create(
+        isUndefined(value) ? undefined : parseExpression(value)
+      ),
+    })
   }
 
   /**
