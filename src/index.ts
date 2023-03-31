@@ -22,6 +22,7 @@ export * from './query-builder/delete-result.js'
 export * from './query-builder/update-result.js'
 export * from './query-builder/on-conflict-builder.js'
 export * from './query-builder/aggregate-function-builder.js'
+export * from './query-builder/case-builder.js'
 
 export * from './raw-builder/raw-builder.js'
 export * from './raw-builder/sql.js'
