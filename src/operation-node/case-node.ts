@@ -38,7 +38,7 @@ export const CaseNode = freeze({
       when: caseNode.when
         ? [
             ...caseNode.when.slice(0, -1),
-            WhenNode.cloneWithThen(
+            WhenNode.cloneWithResult(
               caseNode.when[caseNode.when.length - 1],
               then
             ),

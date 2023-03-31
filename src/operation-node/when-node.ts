@@ -4,7 +4,7 @@ import { OperationNode } from './operation-node.js'
 export interface WhenNode extends OperationNode {
   readonly kind: 'WhenNode'
   readonly condition: OperationNode
-  readonly then?: OperationNode
+  readonly result?: OperationNode
 }
 
 /**
@@ -22,10 +22,10 @@ export const WhenNode = freeze({
     })
   },
 
-  cloneWithThen(whenNode: WhenNode, then: OperationNode): WhenNode {
+  cloneWithResult(whenNode: WhenNode, result: OperationNode): WhenNode {
     return freeze({
       ...whenNode,
-      then,
+      result,
     })
   },
 })
