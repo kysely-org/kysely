@@ -78,6 +78,8 @@ export type OperationNodeKind =
   | 'UnaryOperationNode'
   | 'UsingNode'
   | 'FunctionNode'
+  | 'CaseNode'
+  | 'WhenNode'
 
 export interface OperationNode {
   readonly kind: OperationNodeKind
