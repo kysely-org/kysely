@@ -330,18 +330,19 @@ for (const dialect of DIALECTS) {
           .addColumn('c', 'varchar(255)')
           .addUniqueConstraint('a_b_unique', ['a', 'b'])
           .addUniqueConstraint('b_c_unique', ['b', 'c'])
+          .addUniqueConstraint(['a', 'c'])
 
         testSql(builder, dialect, {
           postgres: {
-            sql: 'create table "test" ("a" varchar(255), "b" varchar(255), "c" varchar(255), constraint "a_b_unique" unique ("a", "b"), constraint "b_c_unique" unique ("b", "c"))',
+            sql: 'create table "test" ("a" varchar(255), "b" varchar(255), "c" varchar(255), constraint "a_b_unique" unique ("a", "b"), constraint "b_c_unique" unique ("b", "c"), unique ("a", "c"))',
             parameters: [],
           },
           mysql: {
-            sql: 'create table `test` (`a` varchar(255), `b` varchar(255), `c` varchar(255), constraint `a_b_unique` unique (`a`, `b`), constraint `b_c_unique` unique (`b`, `c`))',
+            sql: 'create table `test` (`a` varchar(255), `b` varchar(255), `c` varchar(255), constraint `a_b_unique` unique (`a`, `b`), constraint `b_c_unique` unique (`b`, `c`), unique (`a`, `c`))',
             parameters: [],
           },
           sqlite: {
-            sql: 'create table "test" ("a" varchar(255), "b" varchar(255), "c" varchar(255), constraint "a_b_unique" unique ("a", "b"), constraint "b_c_unique" unique ("b", "c"))',
+            sql: 'create table "test" ("a" varchar(255), "b" varchar(255), "c" varchar(255), constraint "a_b_unique" unique ("a", "b"), constraint "b_c_unique" unique ("b", "c"), unique ("a", "c"))',
             parameters: [],
           },
         })
@@ -357,18 +358,19 @@ for (const dialect of DIALECTS) {
           .addColumn('c', 'integer')
           .addCheckConstraint('check_a', sql`a > 1`)
           .addCheckConstraint('check_b', sql`b < c`)
+          .addCheckConstraint(sql`a < c`)
 
         testSql(builder, dialect, {
           postgres: {
-            sql: 'create table "test" ("a" integer, "b" integer, "c" integer, constraint "check_a" check (a > 1), constraint "check_b" check (b < c))',
+            sql: 'create table "test" ("a" integer, "b" integer, "c" integer, constraint "check_a" check (a > 1), constraint "check_b" check (b < c), check (a < c))',
             parameters: [],
           },
           mysql: {
-            sql: 'create table `test` (`a` integer, `b` integer, `c` integer, constraint `check_a` check (a > 1), constraint `check_b` check (b < c))',
+            sql: 'create table `test` (`a` integer, `b` integer, `c` integer, constraint `check_a` check (a > 1), constraint `check_b` check (b < c), check (a < c))',
             parameters: [],
           },
           sqlite: {
-            sql: 'create table "test" ("a" integer, "b" integer, "c" integer, constraint "check_a" check (a > 1), constraint "check_b" check (b < c))',
+            sql: 'create table "test" ("a" integer, "b" integer, "c" integer, constraint "check_a" check (a > 1), constraint "check_b" check (b < c), check (a < c))',
             parameters: [],
           },
         })
@@ -417,18 +419,19 @@ for (const dialect of DIALECTS) {
             'c',
             'd',
           ])
+          .addForeignKeyConstraint(['a', 'b'], 'test2', ['c', 'd'])
 
         testSql(builder, dialect, {
           postgres: {
-            sql: 'create table "test" ("a" integer, "b" integer, constraint "foreign_key" foreign key ("a", "b") references "test2" ("c", "d"))',
+            sql: 'create table "test" ("a" integer, "b" integer, constraint "foreign_key" foreign key ("a", "b") references "test2" ("c", "d"), foreign key ("a", "b") references "test2" ("c", "d"))',
             parameters: [],
           },
           mysql: {
-            sql: 'create table `test` (`a` integer, `b` integer, constraint `foreign_key` foreign key (`a`, `b`) references `test2` (`c`, `d`))',
+            sql: 'create table `test` (`a` integer, `b` integer, constraint `foreign_key` foreign key (`a`, `b`) references `test2` (`c`, `d`), foreign key (`a`, `b`) references `test2` (`c`, `d`))',
             parameters: [],
           },
           sqlite: {
-            sql: 'create table "test" ("a" integer, "b" integer, constraint "foreign_key" foreign key ("a", "b") references "test2" ("c", "d"))',
+            sql: 'create table "test" ("a" integer, "b" integer, constraint "foreign_key" foreign key ("a", "b") references "test2" ("c", "d"), foreign key ("a", "b") references "test2" ("c", "d"))',
             parameters: [],
           },
         })
@@ -455,10 +458,11 @@ for (const dialect of DIALECTS) {
               'public.test2',
               ['c', 'd']
             )
+            .addForeignKeyConstraint(['a', 'b'], 'public.test2', ['c', 'd'])
 
           testSql(builder, dialect, {
             postgres: {
-              sql: 'create table "test" ("a" integer, "b" integer, constraint "foreign_key" foreign key ("a", "b") references "public"."test2" ("c", "d"))',
+              sql: 'create table "test" ("a" integer, "b" integer, constraint "foreign_key" foreign key ("a", "b") references "public"."test2" ("c", "d"), foreign key ("a", "b") references "public"."test2" ("c", "d"))',
               parameters: [],
             },
             mysql: NOT_SUPPORTED,
@@ -488,18 +492,24 @@ for (const dialect of DIALECTS) {
             ['c', 'd'],
             (cb) => cb.onUpdate('cascade')
           )
+          .addForeignKeyConstraint(
+            ['a', 'b'],
+            'test2',
+            ['c', 'd'],
+            (cb) => cb.onUpdate('cascade')
+          )
 
         testSql(builder, dialect, {
           postgres: {
-            sql: 'create table "test" ("a" integer, "b" integer, constraint "foreign_key" foreign key ("a", "b") references "test2" ("c", "d") on update cascade)',
+            sql: 'create table "test" ("a" integer, "b" integer, constraint "foreign_key" foreign key ("a", "b") references "test2" ("c", "d") on update cascade, foreign key ("a", "b") references "test2" ("c", "d") on update cascade)',
             parameters: [],
           },
           mysql: {
-            sql: 'create table `test` (`a` integer, `b` integer, constraint `foreign_key` foreign key (`a`, `b`) references `test2` (`c`, `d`) on update cascade)',
+            sql: 'create table `test` (`a` integer, `b` integer, constraint `foreign_key` foreign key (`a`, `b`) references `test2` (`c`, `d`) on update cascade, foreign key (`a`, `b`) references `test2` (`c`, `d`) on update cascade)',
             parameters: [],
           },
           sqlite: {
-            sql: 'create table "test" ("a" integer, "b" integer, constraint "foreign_key" foreign key ("a", "b") references "test2" ("c", "d") on update cascade)',
+            sql: 'create table "test" ("a" integer, "b" integer, constraint "foreign_key" foreign key ("a", "b") references "test2" ("c", "d") on update cascade, foreign key ("a", "b") references "test2" ("c", "d") on update cascade)',
             parameters: [],
           },
         })
@@ -2302,6 +2312,40 @@ for (const dialect of DIALECTS) {
               },
               sqlite: {
                 sql: 'alter table "test" add constraint "some_constraint" foreign key ("integer_col", "varchar_col") references "test2" ("a", "b")',
+                parameters: [],
+              },
+            })
+
+            await builder.execute()
+          })
+
+          it('should add an unnamed foreign key constraint', async () => {
+            await ctx.db.schema
+              .createTable('test2')
+              .addColumn('a', 'integer')
+              .addColumn('b', 'varchar(255)')
+              .addUniqueConstraint('unique_a_b', ['a', 'b'])
+              .execute()
+
+            const builder = ctx.db.schema
+              .alterTable('test')
+              .addForeignKeyConstraint(
+                ['integer_col', 'varchar_col'],
+                'test2',
+                ['a', 'b']
+              )
+
+            testSql(builder, dialect, {
+              postgres: {
+                sql: 'alter table "test" add foreign key ("integer_col", "varchar_col") references "test2" ("a", "b")',
+                parameters: [],
+              },
+              mysql: {
+                sql: 'alter table `test` add foreign key (`integer_col`, `varchar_col`) references `test2` (`a`, `b`)',
+                parameters: [],
+              },
+              sqlite: {
+                sql: 'alter table "test" add foreign key ("integer_col", "varchar_col") references "test2" ("a", "b")',
                 parameters: [],
               },
             })

@@ -155,10 +155,16 @@ export class AlterTableBuilder implements ColumnAlteringInterface {
   /**
    * See {@link CreateTableBuilder.addUniqueConstraint}
    */
+  addUniqueConstraint(columns: string[]): AlterTableExecutor
   addUniqueConstraint(
     constraintName: string,
     columns: string[]
+  ): AlterTableExecutor
+  addUniqueConstraint(
+    ...args: [string[]] | [string, string[]]
   ): AlterTableExecutor {
+    const constraintName = args.length === 1 ? undefined : args[0]
+    const columns = args.length === 1 ? args[0] : args[1]
     return new AlterTableExecutor({
       ...this.#props,
       node: AlterTableNode.cloneWithTableProps(this.#props.node, {
@@ -173,9 +179,17 @@ export class AlterTableBuilder implements ColumnAlteringInterface {
    * See {@link CreateTableBuilder.addCheckConstraint}
    */
   addCheckConstraint(
+    checkExpression: Expression<any>
+  ): AlterTableExecutor
+  addCheckConstraint(
     constraintName: string,
     checkExpression: Expression<any>
+  ): AlterTableExecutor
+  addCheckConstraint(
+    ...args: [string, Expression<any>] | [Expression<any>]
   ): AlterTableExecutor {
+    const constraintName = args.length === 1 ? undefined : args[0]
+    const checkExpression = args.length === 1 ? args[0] : args[1]
     return new AlterTableExecutor({
       ...this.#props,
       node: AlterTableNode.cloneWithTableProps(this.#props.node, {
@@ -201,7 +215,19 @@ export class AlterTableBuilder implements ColumnAlteringInterface {
     columns: string[],
     targetTable: string,
     targetColumns: string[]
+  ): AlterTableAddForeignKeyConstraintBuilder
+  addForeignKeyConstraint(
+    columns: string[],
+    targetTable: string,
+    targetColumns: string[]
+  ): AlterTableAddForeignKeyConstraintBuilder
+  addForeignKeyConstraint(
+    ...args: [string, string[], string, string[]] | [string[], string, string[]]
   ): AlterTableAddForeignKeyConstraintBuilder {
+    const constraintName = args.length === 4 ? args[0] : undefined
+    const columns = args.length === 4 ? args[1] : args[0]
+    const targetTable = args.length === 4 ? args[2] : args[1]
+    const targetColumns = args.length === 4 ? args[3] : args[2]
     return new AlterTableAddForeignKeyConstraintBuilder({
       ...this.#props,
       constraintBuilder: new ForeignKeyConstraintBuilder(

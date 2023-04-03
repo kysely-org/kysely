@@ -161,10 +161,16 @@ export class CreateTableBuilder<TB extends string, C extends string = never>
    * addPrimaryKeyConstraint('primary_key', ['first_name', 'last_name'])
    * ```
    */
+  addPrimaryKeyConstraint(columns: C[]): CreateTableBuilder<TB, C>
   addPrimaryKeyConstraint(
     constraintName: string,
     columns: C[]
+  ): CreateTableBuilder<TB, C>
+  addPrimaryKeyConstraint(
+    ...args: [C[]] | [string, C[]]
   ): CreateTableBuilder<TB, C> {
+    const constraintName = args.length === 1 ? undefined : args[0]
+    const columns = args.length === 1 ? args[0] : args[1]
     return new CreateTableBuilder({
       ...this.#props,
       node: CreateTableNode.cloneWithConstraint(
@@ -186,10 +192,16 @@ export class CreateTableBuilder<TB extends string, C extends string = never>
    * addUniqueConstraint('first_name_last_name_unique', ['first_name', 'last_name'])
    * ```
    */
+  addUniqueConstraint(columns: C[]): CreateTableBuilder<TB, C>
   addUniqueConstraint(
     constraintName: string,
     columns: C[]
+  ): CreateTableBuilder<TB, C>
+  addUniqueConstraint(
+    ...args: [C[]] | [string, C[]]
   ): CreateTableBuilder<TB, C> {
+    const constraintName = args.length === 1 ? undefined : args[0]
+    const columns = args.length === 1 ? args[0] : args[1]
     return new CreateTableBuilder({
       ...this.#props,
       node: CreateTableNode.cloneWithConstraint(
@@ -214,9 +226,17 @@ export class CreateTableBuilder<TB extends string, C extends string = never>
    * ```
    */
   addCheckConstraint(
+    checkExpression: Expression<any>
+  ): CreateTableBuilder<TB, C>
+  addCheckConstraint(
     constraintName: string,
     checkExpression: Expression<any>
+  ): CreateTableBuilder<TB, C>
+  addCheckConstraint(
+    ...args: [Expression<any>] | [string, Expression<any>]
   ): CreateTableBuilder<TB, C> {
+    const constraintName = args.length === 1 ? undefined : args[0]
+    const checkExpression = args.length === 1 ? args[0] : args[1]
     return new CreateTableBuilder({
       ...this.#props,
       node: CreateTableNode.cloneWithConstraint(
@@ -263,8 +283,22 @@ export class CreateTableBuilder<TB extends string, C extends string = never>
     columns: C[],
     targetTable: string,
     targetColumns: string[],
-    build: ForeignKeyConstraintBuilderCallback = noop
-  ): CreateTableBuilder<TB, C> {
+    build?: ForeignKeyConstraintBuilderCallback
+  ): CreateTableBuilder<TB, C>
+  addForeignKeyConstraint(
+    columns: C[],
+    targetTable: string,
+    targetColumns: string[],
+    build?: ForeignKeyConstraintBuilderCallback
+  ): CreateTableBuilder<TB, C>
+  addForeignKeyConstraint(...args: any[]): CreateTableBuilder<TB, C> {
+    const constraintName = typeof args[0] === 'string' ? args[0] : undefined
+    const columns: C[] = typeof args[0] === 'string' ? args[1] : args[0]
+    const targetTable: string = typeof args[0] === 'string' ? args[2] : args[1]
+    const targetColumns: string[] =
+      typeof args[0] === 'string' ? args[3] : args[2]
+    const build: ForeignKeyConstraintBuilderCallback =
+      (typeof args[0] === 'string' ? args[4] : args[3]) ?? noop
     const builder = build(
       new ForeignKeyConstraintBuilder(
         ForeignKeyConstraintNode.create(
