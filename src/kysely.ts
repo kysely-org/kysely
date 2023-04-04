@@ -31,6 +31,7 @@ import { CaseBuilder } from './query-builder/case-builder.js'
 import { CaseNode } from './operation-node/case-node.js'
 import { parseExpression } from './parser/expression-parser.js'
 import { Expression } from './expression/expression.js'
+import { WithSchemaPlugin } from './plugin/with-schema/with-schema-plugin.js'
 
 /**
  * The main Kysely class.
@@ -289,6 +290,18 @@ export class Kysely<DB>
   }
 
   /**
+   * @override
+   */
+  withSchema(schema: string): Kysely<DB> {
+    return new Kysely({
+      ...this.#props,
+      executor: this.#props.executor.withPluginAtFront(
+        new WithSchemaPlugin(schema)
+      ),
+    })
+  }
+
+  /**
    * Returns a copy of this Kysely instance with tables added to its
    * database type.
    *
@@ -408,6 +421,18 @@ export class Transaction<DB> extends Kysely<DB> {
     return new Transaction({
       ...this.#props,
       executor: this.#props.executor.withoutPlugins(),
+    })
+  }
+
+  /**
+   * @override
+   */
+  withSchema(schema: string): Transaction<DB> {
+    return new Transaction({
+      ...this.#props,
+      executor: this.#props.executor.withPluginAtFront(
+        new WithSchemaPlugin(schema)
+      ),
     })
   }
 
