@@ -159,7 +159,7 @@ export function parseAliasedStringReference(
 }
 
 export function parseColumnName(column: AnyColumn<any, any>): ColumnNode {
-  return ColumnNode.create(column as string)
+  return ColumnNode.create(column)
 }
 
 export function parseOrderedColumnName(column: string): OperationNode {

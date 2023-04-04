@@ -27,6 +27,7 @@ import { QueryResult } from './driver/database-connection.js'
 import { CompiledQuery } from './query-compiler/compiled-query.js'
 import { createQueryId, QueryId } from './util/query-id.js'
 import { Compilable, isCompilable } from './util/compilable.js'
+import { WithSchemaPlugin } from './plugin/with-schema/with-schema-plugin.js'
 
 /**
  * The main Kysely class.
@@ -268,6 +269,18 @@ export class Kysely<DB>
   }
 
   /**
+   * @override
+   */
+  withSchema(schema: string): Kysely<DB> {
+    return new Kysely({
+      ...this.#props,
+      executor: this.#props.executor.withPluginAtFront(
+        new WithSchemaPlugin(schema)
+      ),
+    })
+  }
+
+  /**
    * Returns a copy of this Kysely instance with tables added to its
    * database type.
    *
@@ -387,6 +400,18 @@ export class Transaction<DB> extends Kysely<DB> {
     return new Transaction({
       ...this.#props,
       executor: this.#props.executor.withoutPlugins(),
+    })
+  }
+
+  /**
+   * @override
+   */
+  withSchema(schema: string): Transaction<DB> {
+    return new Transaction({
+      ...this.#props,
+      executor: this.#props.executor.withPluginAtFront(
+        new WithSchemaPlugin(schema)
+      ),
     })
   }
 
