@@ -8,7 +8,7 @@ Kysely IS a query builder. Kysely DOES build the SQL you tell it to, nothing mor
 Phew, glad we got that out the way..
 
 All that was said above doesn't mean there's no way to nest related rows in your queries. 
-You just have to do it with the tools SQL and the underlying dialect (e.g. PostgreSQL or MySQL) you're using provide. 
+You just have to do it with the tools SQL and the underlying dialect (e.g. PostgreSQL or MySQL) provide.
 In this recipe we show one way to do that when using the built-in PostgreSQL and MySQL dialects.
 
 ## The `json` data type and functions
@@ -58,7 +58,7 @@ FROM
   person
 ```
 
-Simple right 😅. Yeah, not so much. But it does provide 100% control over the queries and a really good performance as long as you have indices (or indexes, we don't judge) for "pet.owner_id" and "person.mother_id".
+Simple right 😅. Yeah, not so much. But it does provide full control over the queries and a really good performance as long as you have indices (or indexes, we don't judge) for "pet.owner_id" and "person.mother_id".
 
 Fortunately we can improve and simplify this a lot using Kysely. First let's define a couple of helpers:
 
@@ -82,7 +82,7 @@ These helpers are included in Kysely and you can import them from the `helpers` 
 import { jsonArrayFrom, jsonObjectFrom } from 'kysely/helpers/postgres'
 ```
 
-For MySQL the helpers are slightly different but you can use them the same way. You can import them like this:
+MySQL versions of the helpers are slightly different but you can use them the same way. You can import them like this:
 
 ```ts
 import { jsonArrayFrom, jsonObjectFrom } from 'kysely/helpers/mysql'

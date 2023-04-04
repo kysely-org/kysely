@@ -541,10 +541,10 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
    *
    * const result = await db
    *   .updateTable('person')
-   *   .set(({ selectFrom, ref, fn }) => ({
-   *     first_name: 'Jennifer',
+   *   .set(({ selectFrom, ref, fn, bxp }) => ({
+   *     first_name: selectFrom('person').select('first_name').limit(1),
    *     middle_name: ref('first_name'),
-   *     age: selectFrom('person').select(fn.avg('age')),
+   *     age: bxp('age', '+', 1),
    *     last_name: sql`${'Ani'} || ${'ston'}`,
    *   }))
    *   .where('id', '=', 1)
@@ -557,11 +557,11 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
    *
    * ```sql
    * update "person" set
-   * "first_name" = $1,
+   * "first_name" = (select "first_name" from "person" limit $1),
    * "middle_name" = "first_name",
-   * "age" = (select avg(age) from "person"),
-   * "last_name" = $2 || $3
-   * where "id" = $4
+   * "age" = "age" + $2,
+   * "last_name" = $3 || $4
+   * where "id" = $5
    * ```
    */
   set(update: UpdateObject<DB, TB, UT>): UpdateQueryBuilder<DB, UT, TB, O>
