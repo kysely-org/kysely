@@ -35,10 +35,12 @@ import { WhereExpressionFactory } from '../query-builder/where-interface.js'
 import { HavingExpressionFactory } from '../query-builder/having-interface.js'
 import { createJoinBuilder, createSelectQueryBuilder } from './parse-utils.js'
 import { OperationNode } from '../operation-node/operation-node.js'
-import { Expression } from '../expression/expression.js'
+import { Expression, isExpression } from '../expression/expression.js'
 import { SelectQueryNode } from '../operation-node/select-query-node.js'
 import { JoinNode } from '../operation-node/join-node.js'
 import { expressionBuilder } from '../expression/expression-builder.js'
+import { UnaryOperationNode } from '../operation-node/unary-operation-node.js'
+import { CaseNode } from '../operation-node/case-node.js'
 
 export type OperandValueExpression<
   DB,
@@ -67,7 +69,7 @@ export type ArithmeticOperatorExpression =
   | ArithmeticOperator
   | Expression<unknown>
 
-type FilterExpressionType = 'where' | 'having' | 'on'
+type FilterExpressionType = 'where' | 'having' | 'on' | 'when'
 
 export function parseValueBinaryOperation(
   leftOperand: ReferenceExpression<any, any>,
@@ -141,6 +143,10 @@ export function parseOn(args: any[]): OperationNode {
   return parseFilter('on', args)
 }
 
+export function parseWhen(args: any[]): OperationNode {
+  return parseFilter('when', args)
+}
+
 function parseFilter(type: FilterExpressionType, args: any[]): OperationNode {
   if (args.length === 3) {
     return parseValueComparison(args[0], args[1], args[2])
@@ -192,13 +198,25 @@ function parseOneArgFilterExpression(
   arg: any
 ): OperationNode {
   if (isFunction(arg)) {
+    if (type === 'when') {
+      throw new Error(`when method doesn't accept a callback as an argument`)
+    }
+
     return CALLBACK_PARSERS[type](arg)
   } else if (isOperationNodeSource(arg)) {
     const node = arg.toOperationNode()
 
-    if (RawNode.is(node)) {
+    if (
+      RawNode.is(node) ||
+      BinaryOperationNode.is(node) ||
+      UnaryOperationNode.is(node) ||
+      ParensNode.is(node) ||
+      CaseNode.is(node)
+    ) {
       return node
     }
+  } else if (type === 'when') {
+    return ValueNode.create(arg)
   }
 
   throw createFilterExpressionError(type, arg)
