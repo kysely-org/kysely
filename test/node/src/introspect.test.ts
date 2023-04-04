@@ -93,6 +93,14 @@ for (const dialect of DIALECTS) {
                 isAutoIncrementing: false,
                 hasDefaultValue: false,
               },
+              {
+                name: 'marital_status',
+                dataType: 'varchar',
+                dataTypeSchema: 'pg_catalog',
+                isNullable: true,
+                isAutoIncrementing: false,
+                hasDefaultValue: false,
+              },
             ],
           },
           {
@@ -255,6 +263,13 @@ for (const dialect of DIALECTS) {
                 isAutoIncrementing: false,
                 hasDefaultValue: false,
               },
+              {
+                name: 'marital_status',
+                dataType: 'varchar',
+                isNullable: true,
+                isAutoIncrementing: false,
+                hasDefaultValue: false,
+              },
             ],
           },
           {
@@ -381,6 +396,13 @@ for (const dialect of DIALECTS) {
                 name: 'gender',
                 dataType: 'varchar(50)',
                 isNullable: false,
+                isAutoIncrementing: false,
+                hasDefaultValue: false,
+              },
+              {
+                name: 'marital_status',
+                dataType: 'varchar(50)',
+                isNullable: true,
                 isAutoIncrementing: false,
                 hasDefaultValue: false,
               },

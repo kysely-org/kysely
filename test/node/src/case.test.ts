@@ -33,26 +33,21 @@ for (const dialect of DIALECTS) {
       const query = ctx.db
         .selectFrom('person')
         .select((eb) =>
-          eb
-            .case()
-            .when(eb.cmpr('gender', '=', 'male'))
-            .then(sql.lit('Mr.'))
-            .end()
-            .as('title')
+          eb.case().when('gender', '=', 'male').then('Mr.').end().as('title')
         )
 
       testSql(query, dialect, {
         postgres: {
-          sql: `select case when "gender" = $1 then 'Mr.' end as "title" from "person"`,
-          parameters: ['male'],
+          sql: `select case when "gender" = $1 then $2 end as "title" from "person"`,
+          parameters: ['male', 'Mr.'],
         },
         mysql: {
-          sql: "select case when `gender` = ? then 'Mr.' end as `title` from `person`",
-          parameters: ['male'],
+          sql: 'select case when `gender` = ? then ? end as `title` from `person`',
+          parameters: ['male', 'Mr.'],
         },
         sqlite: {
-          sql: `select case when "gender" = ? then 'Mr.' end as "title" from "person"`,
-          parameters: ['male'],
+          sql: `select case when "gender" = ? then ? end as "title" from "person"`,
+          parameters: ['male', 'Mr.'],
         },
       })
 
@@ -63,26 +58,21 @@ for (const dialect of DIALECTS) {
       const query = ctx.db
         .selectFrom('person')
         .select((eb) =>
-          eb
-            .case('gender')
-            .when(sql.lit('male'))
-            .then(sql.lit('Mr.'))
-            .end()
-            .as('title')
+          eb.case('gender').when('male').then('Mr.').end().as('title')
         )
 
       testSql(query, dialect, {
         postgres: {
-          sql: `select case "gender" when 'male' then 'Mr.' end as "title" from "person"`,
-          parameters: [],
+          sql: `select case "gender" when $1 then $2 end as "title" from "person"`,
+          parameters: ['male', 'Mr.'],
         },
         mysql: {
-          sql: "select case `gender` when 'male' then 'Mr.' end as `title` from `person`",
-          parameters: [],
+          sql: 'select case `gender` when ? then ? end as `title` from `person`',
+          parameters: ['male', 'Mr.'],
         },
         sqlite: {
-          sql: `select case "gender" when 'male' then 'Mr.' end as "title" from "person"`,
-          parameters: [],
+          sql: `select case "gender" when ? then ? end as "title" from "person"`,
+          parameters: ['male', 'Mr.'],
         },
       })
 
@@ -171,6 +161,114 @@ for (const dialect of DIALECTS) {
             `end as "title" from "person"`,
           ],
           parameters: [],
+        },
+      })
+
+      await query.execute()
+    })
+
+    it('should execute a query with a case...when...then...when...then...else...end operator', async () => {
+      const query = ctx.db
+        .selectFrom('person')
+        .select((eb) =>
+          eb
+            .case()
+            .when('gender', '=', 'male')
+            .then('Mr.')
+            .when('gender', '=', 'female')
+            .then('Mrs.')
+            .else(null)
+            .end()
+            .as('title')
+        )
+
+      testSql(query, dialect, {
+        postgres: {
+          sql: [
+            `select case when "gender" = $1 then $2`,
+            `when "gender" = $3 then $4`,
+            `else $5 end as "title" from "person"`,
+          ],
+          parameters: ['male', 'Mr.', 'female', 'Mrs.', null],
+        },
+        mysql: {
+          sql: [
+            'select case when `gender` = ? then ?',
+            'when `gender` = ? then ?',
+            'else ? end as `title` from `person`',
+          ],
+          parameters: ['male', 'Mr.', 'female', 'Mrs.', null],
+        },
+        sqlite: {
+          sql: [
+            `select case when "gender" = ? then ?`,
+            `when "gender" = ? then ?`,
+            `else ? end as "title" from "person"`,
+          ],
+          parameters: ['male', 'Mr.', 'female', 'Mrs.', null],
+        },
+      })
+
+      await query.execute()
+    })
+
+    it('should execute a query with a case...value...when...then...when...then...(case...when...then...else...end)...end operator', async () => {
+      const query = ctx.db.selectFrom('person').select((eb) =>
+        eb
+          .case('gender')
+          .when('male')
+          .then('Mr.')
+          .when('female')
+          .then(
+            eb
+              .case()
+              .when(
+                eb.or([
+                  eb.cmpr('marital_status', '=', 'single'),
+                  eb.cmpr('marital_status', 'is', null),
+                ])
+              )
+              .then('Ms.')
+              .else('Mrs.')
+              .end()
+          )
+          .end()
+          .as('title')
+      )
+
+      testSql(query, dialect, {
+        postgres: {
+          sql: [
+            'select case "gender" when $1 then $2',
+            'when $3 then',
+            'case when ("marital_status" = $4 or',
+            '"marital_status" is null) then $5',
+            'else $6 end',
+            'end as "title" from "person"',
+          ],
+          parameters: ['male', 'Mr.', 'female', 'single', 'Ms.', 'Mrs.'],
+        },
+        mysql: {
+          sql: [
+            'select case `gender` when ? then ?',
+            'when ? then',
+            'case when (`marital_status` = ? or',
+            '`marital_status` is null) then ?',
+            'else ? end',
+            'end as `title` from `person`',
+          ],
+          parameters: ['male', 'Mr.', 'female', 'single', 'Ms.', 'Mrs.'],
+        },
+        sqlite: {
+          sql: [
+            'select case "gender" when ? then ?',
+            'when ? then',
+            'case when ("marital_status" = ? or',
+            '"marital_status" is null) then ?',
+            'else ? end',
+            'end as "title" from "person"',
+          ],
+          parameters: ['male', 'Mr.', 'female', 'single', 'Ms.', 'Mrs.'],
         },
       })
 
