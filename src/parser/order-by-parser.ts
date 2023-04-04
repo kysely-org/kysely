@@ -9,6 +9,10 @@ import {
 
 export type OrderByDirection = 'asc' | 'desc'
 
+export function isOrderByDirection(thing: unknown): thing is OrderByDirection {
+  return thing === 'asc' || thing === 'desc'
+}
+
 export type OrderByExpression<DB, TB extends keyof DB, O> =
   | ReferenceExpression<DB, TB>
   | (keyof O & string)

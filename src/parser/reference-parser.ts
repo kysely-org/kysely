@@ -21,7 +21,11 @@ import { IdentifierNode } from '../operation-node/identifier-node.js'
 import { OperationNode } from '../operation-node/operation-node.js'
 import { Expression } from '../expression/expression.js'
 import { SimpleReferenceExpressionNode } from '../operation-node/simple-reference-expression-node.js'
-import { OrderByDirection, parseOrderBy } from './order-by-parser.js'
+import {
+  OrderByDirection,
+  isOrderByDirection,
+  parseOrderBy,
+} from './order-by-parser.js'
 
 export type StringReference<DB, TB extends keyof DB> =
   | AnyColumn<DB, TB>
@@ -168,9 +172,15 @@ export function parseOrderedColumnName(column: string): OperationNode {
   if (column.includes(ORDER_SEPARATOR)) {
     const [columnName, order] = column.split(ORDER_SEPARATOR).map(trim)
 
-    return parseOrderBy(columnName, order as any)
+    if (!isOrderByDirection(order)) {
+      throw new Error(
+        `invalid order direction "${order}" next to "${columnName}"`
+      )
+    }
+
+    return parseOrderBy(columnName, order)
   } else {
-    return parseColumnName(column as any)
+    return parseColumnName(column)
   }
 }
 
