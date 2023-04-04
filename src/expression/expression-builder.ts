@@ -169,18 +169,18 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    *   .selectFrom('person')
    *   .where('id', '=', '123')
    *   .select((eb) => [
-   *     'first_name',
+   *     eb.fn.coalesce('last_name', 'first_name').as('name'),
    *     eb
    *       .case()
-   *       .when(eb.cmpr('gender', '=', 'male'))
-   *       .then(sql.lit('Mr.'))
-   *       .when(eb.cmpr('gender', '=', 'female'))
+   *       .when('gender', '=', 'male')
+   *       .then('Mr.')
+   *       .when('gender', '=', 'female')
    *       .then(
    *         eb
    *           .case('martialStatus')
-   *           .when(sql.lit('single'))
-   *           .then(sql.lit('Ms.'))
-   *           .else(sql.lit('Mrs.'))
+   *           .when('single')
+   *           .then('Ms.')
+   *           .else('Mrs.')
    *           .end()
    *       )
    *       .end()
@@ -192,17 +192,18 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    * The generated SQL (PostgreSQL):
    *
    * ```sql
-   * select "first_name",
+   * select
+   *   coalesce("last_name", "first_name") as "name",
    *   case
-   *     when "gender" = $1 then 'Mr.'
-   *     when "gender" = $2 then
+   *     when "gender" = $1 then $2
+   *     when "gender" = $3 then
    *       case "martialStatus"
-   *         when 'single' then 'Ms.'
-   *         else 'Mrs.'
+   *         when $4 then $5
+   *         else $6
    *       end
    *   end as "title"
    * from "person"
-   * where "id" = $3
+   * where "id" = $7
    * ```
    */
   case(): CaseBuilder<DB, TB>
