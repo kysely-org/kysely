@@ -28,7 +28,7 @@ export const CaseNode = freeze({
   cloneWithWhen(caseNode: CaseNode, when: WhenNode): CaseNode {
     return freeze({
       ...caseNode,
-      when: caseNode.when ? [...caseNode.when, when] : [when],
+      when: freeze(caseNode.when ? [...caseNode.when, when] : [when]),
     })
   },
 
@@ -36,13 +36,13 @@ export const CaseNode = freeze({
     return freeze({
       ...caseNode,
       when: caseNode.when
-        ? [
+        ? freeze([
             ...caseNode.when.slice(0, -1),
             WhenNode.cloneWithResult(
               caseNode.when[caseNode.when.length - 1],
               then
             ),
-          ]
+          ])
         : undefined,
     })
   },
