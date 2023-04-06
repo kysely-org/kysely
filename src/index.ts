@@ -6,6 +6,7 @@ export {
   ExpressionBuilder,
   expressionBuilder,
 } from './expression/expression-builder.js'
+export * from './expression/expression-wrapper.js'
 
 export * from './query-builder/where-interface.js'
 export * from './query-builder/returning-interface.js'

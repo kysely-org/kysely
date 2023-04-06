@@ -18,6 +18,7 @@ async function testJoin(db: Kysely<Database>) {
       age: number
       gender: 'male' | 'female' | 'other'
       modified_at: Date
+      marital_status: 'single' | 'married' | 'divorced' | 'widowed' | null
 
       name: string
       species: 'cat' | 'dog'
@@ -80,6 +81,7 @@ async function testJoin(db: Kysely<Database>) {
     age: number
     gender: 'male' | 'female' | 'other'
     modified_at: Date
+    marital_status: 'single' | 'married' | 'divorced' | 'widowed' | null
 
     // All Pet columns should be nullable because of the left join
     name: string | null
@@ -106,6 +108,7 @@ async function testJoin(db: Kysely<Database>) {
     age: number | null
     gender: 'male' | 'female' | 'other' | null
     modified_at: Date | null
+    marital_status: 'single' | 'married' | 'divorced' | 'widowed' | null
 
     // All Pet columns should also be nullable because there's another
     // right join after the Pet join.
@@ -134,6 +137,7 @@ async function testJoin(db: Kysely<Database>) {
     age: number | null
     gender: 'male' | 'female' | 'other' | null
     modified_at: Date | null
+    marital_status: 'single' | 'married' | 'divorced' | 'widowed' | null
 
     name: string | null
     species: 'dog' | 'cat' | null
