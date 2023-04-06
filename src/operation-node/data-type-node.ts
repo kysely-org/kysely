@@ -4,6 +4,7 @@ import { OperationNode } from './operation-node.js'
 export type ColumnDataType =
   | 'varchar'
   | `varchar(${number})`
+  | `char(${number})`
   | 'text'
   | 'integer'
   | 'int2'
