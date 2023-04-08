@@ -71,6 +71,8 @@ for (const dialect of DIALECTS) {
               col.notNull().defaultTo(sql`current_timestamp`)
             )
             .addColumn('v', 'timestamptz(6)')
+            .addColumn('w', 'char(4)')
+            .addColumn('x', 'char')
 
           testSql(builder, dialect, {
             postgres: {
@@ -97,7 +99,9 @@ for (const dialect of DIALECTS) {
                 '"s" double precision generated always as (f + g) stored not null,',
                 '"t" time(6),',
                 '"u" timestamp(6) default current_timestamp not null,',
-                '"v" timestamptz(6))',
+                '"v" timestamptz(6),',
+                '"w" char(4),',
+                '"x" char)'
               ],
               parameters: [],
             },
@@ -170,6 +174,8 @@ for (const dialect of DIALECTS) {
             .addColumn('s', 'timestamp(6)', (col) =>
               col.notNull().defaultTo(sql`current_timestamp(6)`)
             )
+            .addColumn('t', 'char(4)')
+            .addColumn('u', 'char')
 
           testSql(builder, dialect, {
             mysql: {
@@ -193,7 +199,9 @@ for (const dialect of DIALECTS) {
                 '`p` double precision generated always as (e + f) stored not null,',
                 '`q` time(6),',
                 '`r` datetime(6),',
-                '`s` timestamp(6) default current_timestamp(6) not null)',
+                '`s` timestamp(6) default current_timestamp(6) not null,',
+                '`t` char(4),',
+                '`u` char)'
               ],
               parameters: [],
             },
