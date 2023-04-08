@@ -591,18 +591,20 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
     )
   }
 
+  const agg = <O>(
+    name: string,
+    args?: ReadonlyArray<ReferenceExpression<DB, TB>>
+  ): AggregateFunctionBuilder<DB, TB, O> => {
+    return new AggregateFunctionBuilder({
+      aggregateFunctionNode: AggregateFunctionNode.create(
+        name,
+        args ? parseReferenceExpressionOrList(args) : undefined
+      ),
+    })
+  }
+
   return Object.assign(fn, {
-    agg<O>(
-      name: string,
-      args?: ReadonlyArray<ReferenceExpression<DB, TB>>
-    ): AggregateFunctionBuilder<DB, TB, O> {
-      return new AggregateFunctionBuilder({
-        aggregateFunctionNode: AggregateFunctionNode.create(
-          name,
-          args ? parseReferenceExpressionOrList(args) : undefined
-        ),
-      })
-    },
+    agg,
 
     avg<
       O extends number | string | null = number | string,
@@ -611,12 +613,7 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
         TB
       >
     >(column: C): AggregateFunctionBuilder<DB, TB, O> {
-      return new AggregateFunctionBuilder({
-        aggregateFunctionNode: AggregateFunctionNode.create(
-          'avg',
-          parseSimpleReferenceExpression(column)
-        ),
-      })
+      return agg('avg', [column])
     },
 
     coalesce<
@@ -636,19 +633,14 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
         TB
       >
     >(column: C): AggregateFunctionBuilder<DB, TB, O> {
-      return new AggregateFunctionBuilder({
-        aggregateFunctionNode: AggregateFunctionNode.create(
-          'count',
-          parseSimpleReferenceExpression(column)
-        ),
-      })
+      return agg('count', [column])
     },
 
     countAll(table?: string): any {
       return new AggregateFunctionBuilder({
         aggregateFunctionNode: AggregateFunctionNode.create(
           'count',
-          parseSelectAll(table)[0]
+          parseSelectAll(table)
         ),
       })
     },
@@ -659,12 +651,7 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
         TB
       >
     >(column: C): any {
-      return new AggregateFunctionBuilder({
-        aggregateFunctionNode: AggregateFunctionNode.create(
-          'max',
-          parseSimpleReferenceExpression(column)
-        ),
-      })
+      return agg('max', [column])
     },
 
     min<
@@ -673,12 +660,7 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
         TB
       >
     >(column: C): any {
-      return new AggregateFunctionBuilder({
-        aggregateFunctionNode: AggregateFunctionNode.create(
-          'min',
-          parseSimpleReferenceExpression(column)
-        ),
-      })
+      return agg('min', [column])
     },
 
     sum<
@@ -688,12 +670,7 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
         TB
       >
     >(column: C): AggregateFunctionBuilder<DB, TB, O> {
-      return new AggregateFunctionBuilder({
-        aggregateFunctionNode: AggregateFunctionNode.create(
-          'sum',
-          parseSimpleReferenceExpression(column)
-        ),
-      })
+      return agg('sum', [column])
     },
   })
 }
