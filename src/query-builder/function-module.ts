@@ -52,6 +52,8 @@ export interface FunctionModule<DB, TB extends keyof DB> {
   /**
    * Creates a function call.
    *
+   * To create an aggregate function call, use {@link FunctionModule.agg}.
+   *
    * ### Examples
    *
    * ```ts
@@ -81,6 +83,34 @@ export interface FunctionModule<DB, TB extends keyof DB> {
     args: ReadonlyArray<ReferenceExpression<DB, TB>>
   ): ExpressionWrapper<T>
 
+  /**
+   * Creates an aggregate function call.
+   *
+   * This is a specialized version of the `fn` method, that returns an {@link AggregateFunctionBuilder}
+   * instance. A builder that allows you to chain additional methods such as `distinct`,
+   * `filterWhere` and `over`.
+   *
+   * See {@link avg}, {@link count}, {@link countAll}, {@link max}, {@link min}, {@link sum}
+   * shortcuts of common aggregate functions.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * db.selectFrom('person')
+   *   .select(({ fn }) => [
+   *     fn.agg('rank').over().as('rank'),
+   *     fn.agg('group_concat', ['first_name']).distinct().as('first_names')
+   *   ])
+   * ```
+   *
+   * The generated SQL (MySQL):
+   *
+   * ```sql
+   * select rank() over() as "rank",
+   *   group_concat(distinct "first_name") as "first_names"
+   * from "person"
+   * ```
+   */
   agg<O>(
     name: string,
     args?: ReadonlyArray<ReferenceExpression<DB, TB>>
