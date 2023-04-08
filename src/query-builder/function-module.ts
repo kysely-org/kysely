@@ -98,8 +98,8 @@ export interface FunctionModule<DB, TB extends keyof DB> {
    * ```ts
    * db.selectFrom('person')
    *   .select(({ fn }) => [
-   *     fn.agg('rank').over().as('rank'),
-   *     fn.agg('group_concat', ['first_name']).distinct().as('first_names')
+   *     fn.agg<number>('rank').over().as('rank'),
+   *     fn.agg<string>('group_concat', ['first_name']).distinct().as('first_names')
    *   ])
    * ```
    *
