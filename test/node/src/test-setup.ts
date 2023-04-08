@@ -4,6 +4,7 @@ import * as chaiSubset from 'chai-subset'
 import * as Cursor from 'pg-cursor'
 import { Pool } from 'pg'
 import { createPool } from 'mysql2'
+import * as Database from 'better-sqlite3'
 
 chai.use(chaiSubset)
 chai.use(chaiAsPromised)
@@ -31,7 +32,6 @@ import {
   ColumnType,
   InsertObject,
 } from '../../../'
-import Database = require('better-sqlite3')
 
 export interface Person {
   id: Generated<number>

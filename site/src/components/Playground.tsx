@@ -1,20 +1,20 @@
-import * as React from 'react'
-import { gray } from '@radix-ui/colors'
+import * as React from "react"
+import { gray } from "@radix-ui/colors"
 
 export function Playground({
   ts,
   kyselyVersion,
-  dialect = 'postgres',
+  dialect = "postgres",
 }: PlaygroundProps) {
   const params = new URLSearchParams()
-  params.set('p', 'h')
-  params.set('i', btoa(JSON.stringify({ ts:ts.trim(), kyselyVersion, dialect })))
+  params.set("p", "h")
+  params.set("i", btoa(JSON.stringify({ ts: ts.trim(), kyselyVersion, dialect })))
 
   return (
     <iframe
       style={{
-        width: '100%',
-        minHeight: '600px',
+        width: "100%",
+        minHeight: "600px",
         border: `1px solid ${gray.gray11}`,
         padding: 4,
         borderRadius: 8,
@@ -28,164 +28,101 @@ export function Playground({
 
 interface PlaygroundProps {
   kyselyVersion?: string
-  dialect?: 'postgres'
+  dialect?: "postgres"
   ts: string
 }
 
-export const exampleFindMultipleById = `
-interface DB {
-  user: UserTable
-}
+export function createExample(example: string): string {
+  return `
+${exampleSetup}
 
-interface UserTable {
-  id: Generated<string>
-  first_name: string | null
-  last_name: string | null
-  created_at: Generated<Date>
-}
-
-result = kysely
-  .selectFrom("user")
-  .selectAll()
-  .where("id", "in", ["1", "2", "3"])
+result = ${example}
 `
+}
 
-export const exampleFindById = `
+export const exampleSetup = `
 interface DB {
-  user: UserTable
-}
-
-interface UserTable {
-  id: Generated<string>
-  first_name: string | null
-  last_name: string | null
-  created_at: Generated<Date>
-}
-
-result = kysely
-  .selectFrom("user")
-  .selectAll()
-  .where("id", "=", "1")
-`
-
-export const exampleFindAllByAge = `
-interface DB {
-  user: UserTable
-}
-
-interface UserTable {
-  id: Generated<string>
-  first_name: string | null
-  last_name: string | null
-  created_at: Generated<Date>
-  age: number
-}
-
-result = kysely
-  .selectFrom("user")
-  .selectAll()
-  .where("age", ">", 18)
-  .orderBy("age", "desc")
-`
-
-export const exampleDeleteById = `
-
-interface DB {
-  user: UserTable
-}
-
-interface UserTable {
-  id: Generated<string>
-  first_name: string | null
-  last_name: string | null
-  created_at: Generated<Date>
-  age: number
-}
-
-result = kysely
-  .deleteFrom('user')
-  .where('id','=','1')
-
-`
-
-export const exampleUpdateById = `
-
-
-interface DB {
-  user: UserTable
-}
-
-interface UserTable {
-  id: Generated<string>
-  first_name: string | null
-  last_name: string | null
-  created_at: Generated<Date>
-  age: number
-}
-
-result = kysely
-  .updateTable('user')
-  .set({age:10})
-  .where('id','=','1')
-`
-
-export const exampleInsert = `
-interface DB {
-  user: UserTable
-}
-
-interface UserTable {
-  id: Generated<string>
-  first_name: string | null
-  last_name: string | null
-  created_at: Generated<Date>
-  age: number
-}
-
-result = kysely
-  .insertInto('user')
-  .values([
-  {
-    first_name: 'Bob',
-    last_name: 'Dilan',
-    age: 5,
-  },
-  {
-    first_name: 'Jimi',
-    last_name: 'Hendrix',
-    age: 5,
-  },
-])
-`
-
-export const exampleLeftOuterJoin = `
-interface DB {
-  user: UserTable
+  person: PersonTable
   pet: PetTable
 }
 
-interface UserTable {
+interface PersonTable {
   id: Generated<string>
-  name: string | null
+  first_name: string
+  last_name: string | null
+  created_at: Generated<Date>
+  age: number
 }
 
 interface PetTable {
   id: Generated<string>
-  name: string | null
+  name: string
   owner_id: string
-}
+  species: 'cat' | 'dog'
+}`
 
-result = kysely
+export const exampleFindMultipleById = `db
+  .selectFrom('person')
+  .selectAll()
+  .where('id', 'in', ['1', '2', '3'])
+`
+
+export const exampleFindById = `db
+  .selectFrom('person')
+  .selectAll()
+  .where('id', '=', '1')
+`
+
+export const exampleFindAllByAge = `db
+  .selectFrom('person')
+  .selectAll()
+  .where('age', '>', 18)
+  .orderBy('age', 'desc')
+`
+
+export const exampleFindBySubquery = `db
+  .selectFrom('person')
+  .selectAll()
+  .where('id', 'in', ['1', '2', '3'])
+`
+
+export const exampleDeleteById = `db
+  .deleteFrom('person')
+  .where('id', '=', '1')
+`
+
+export const exampleUpdateById = `db
+  .updateTable('person')
+  .set({ age: 10 })
+  .where('id', '=', '1')
+`
+
+export const exampleInsert = `db
+  .insertInto('person')
+  .values([
+    {
+      first_name: 'Bob',
+      last_name: 'Dylan',
+      age: 5,
+    },
+    {
+      first_name: 'Jimi',
+      last_name: 'Hendrix',
+      age: 5,
+    }
+  ])
+`
+
+export const exampleLeftOuterJoin = `db
   .selectFrom('pet')
   .innerJoin(
-    'user', 
-    'pet.owner_id', 
-    'user.id'
+    'person',
+    'pet.owner_id',
+    'person.id'
   )
   .select([
-    'pet.id as petId', 
-    'pet.name as petName', 
-    'user.name as userName'
-])
-
+    'pet.id as petId',
+    'pet.name as petName',
+    'person.first_name as personName'
+  ])
 `
