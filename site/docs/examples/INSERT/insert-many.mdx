@@ -4,8 +4,12 @@ title: 'Insert one or many records'
 
 # Insert one or many records
 
-import { Playground, exampleInsert } from '../../../src/components/Playground'
+import {
+  Playground,
+  createExample,
+  exampleInsert
+} from '../../../src/components/Playground'
 
 To insert records use `.insertInto(table).values(values)`. You can insert one or many records at once.
 
-<Playground ts={exampleInsert} />
+<Playground ts={createExample(exampleInsert)} />
