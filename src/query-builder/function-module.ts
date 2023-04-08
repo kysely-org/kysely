@@ -1,5 +1,6 @@
 import { DynamicReferenceBuilder } from '../dynamic/dynamic-reference-builder.js'
 import { ExpressionWrapper } from '../expression/expression-wrapper.js'
+import { Expression } from '../expression/expression.js'
 import { AggregateFunctionNode } from '../operation-node/aggregate-function-node.js'
 import { FunctionNode } from '../operation-node/function-node.js'
 import { CoalesceReferenceExpressionList } from '../parser/coalesce-parser.js'
@@ -79,6 +80,11 @@ export interface FunctionModule<DB, TB extends keyof DB> {
     name: string,
     args: ReadonlyArray<ReferenceExpression<DB, TB>>
   ): ExpressionWrapper<T>
+
+  agg<O>(
+    name: string,
+    args?: ReadonlyArray<ReferenceExpression<DB, TB>>
+  ): AggregateFunctionBuilder<DB, TB, O>
 
   /**
    * Calls the `avg` function for the column given as the argument.
@@ -586,6 +592,18 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
   }
 
   return Object.assign(fn, {
+    agg<O>(
+      name: string,
+      args?: ReadonlyArray<ReferenceExpression<DB, TB>>
+    ): AggregateFunctionBuilder<DB, TB, O> {
+      return new AggregateFunctionBuilder({
+        aggregateFunctionNode: AggregateFunctionNode.create(
+          name,
+          args ? parseReferenceExpressionOrList(args) : undefined
+        ),
+      })
+    },
+
     avg<
       O extends number | string | null = number | string,
       C extends SimpleReferenceExpression<DB, TB> = SimpleReferenceExpression<
