@@ -71,6 +71,8 @@ for (const dialect of DIALECTS) {
               col.notNull().defaultTo(sql`current_timestamp`)
             )
             .addColumn('v', 'timestamptz(6)')
+            .addColumn('w', 'char(4)')
+            .addColumn('x', 'char')
 
           testSql(builder, dialect, {
             postgres: {
@@ -97,7 +99,9 @@ for (const dialect of DIALECTS) {
                 '"s" double precision generated always as (f + g) stored not null,',
                 '"t" time(6),',
                 '"u" timestamp(6) default current_timestamp not null,',
-                '"v" timestamptz(6))',
+                '"v" timestamptz(6),',
+                '"w" char(4),',
+                '"x" char)'
               ],
               parameters: [],
             },
@@ -170,6 +174,8 @@ for (const dialect of DIALECTS) {
             .addColumn('s', 'timestamp(6)', (col) =>
               col.notNull().defaultTo(sql`current_timestamp(6)`)
             )
+            .addColumn('t', 'char(4)')
+            .addColumn('u', 'char')
 
           testSql(builder, dialect, {
             mysql: {
@@ -193,7 +199,9 @@ for (const dialect of DIALECTS) {
                 '`p` double precision generated always as (e + f) stored not null,',
                 '`q` time(6),',
                 '`r` datetime(6),',
-                '`s` timestamp(6) default current_timestamp(6) not null)',
+                '`s` timestamp(6) default current_timestamp(6) not null,',
+                '`t` char(4),',
+                '`u` char)'
               ],
               parameters: [],
             },
@@ -1073,6 +1081,54 @@ for (const dialect of DIALECTS) {
         await builder.execute()
       })
 
+      it('should create a sorted index, single column', async () => {
+        const builder = ctx.db.schema
+          .createIndex('test_descending_first_name_index')
+          .on('test')
+          .column('first_name desc')
+
+        testSql(builder, dialect, {
+          postgres: {
+            sql: 'create index "test_descending_first_name_index" on "test" ("first_name" desc)',
+            parameters: [],
+          },
+          mysql: {
+            sql: 'create index `test_descending_first_name_index` on `test` (`first_name` desc)',
+            parameters: [],
+          },
+          sqlite: {
+            sql: 'create index "test_descending_first_name_index" on "test" ("first_name" desc)',
+            parameters: [],
+          },
+        })
+
+        await builder.execute()
+      })
+
+      it('should create a sorted index, multi-column', async () => {
+        const builder = ctx.db.schema
+          .createIndex('test_first_name_descending_last_name_index')
+          .on('test')
+          .columns(['first_name', 'last_name desc'])
+
+        testSql(builder, dialect, {
+          postgres: {
+            sql: 'create index "test_first_name_descending_last_name_index" on "test" ("first_name", "last_name" desc)',
+            parameters: [],
+          },
+          mysql: {
+            sql: 'create index `test_first_name_descending_last_name_index` on `test` (`first_name`, `last_name` desc)',
+            parameters: [],
+          },
+          sqlite: {
+            sql: 'create index "test_first_name_descending_last_name_index" on "test" ("first_name", "last_name" desc)',
+            parameters: [],
+          },
+        })
+
+        await builder.execute()
+      })
+      
       if (dialect !== 'mysql') {
         it('should create a partial index', async () => {
           const builder = ctx.db.schema

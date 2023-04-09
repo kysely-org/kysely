@@ -1,5 +1,5 @@
 ---
-title: 'Delete a record by ID'
+title: 'Update a record by ID'
 ---
 
 # Update a record by ID
@@ -8,7 +8,8 @@ Notice that when updating we use `updateTable` instead of `selectFrom`, and the 
 
 import {
   Playground,
+  createExample,
   exampleUpdateById,
 } from '../../../src/components/Playground'
 
-<Playground ts={exampleUpdateById} />
+<Playground ts={createExample(exampleUpdateById)} />

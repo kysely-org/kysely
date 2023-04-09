@@ -15,7 +15,7 @@ export interface CreateIndexNode extends OperationNode {
   // same as the target table's schema.
   readonly name: IdentifierNode
   readonly table?: TableNode
-  readonly expression?: OperationNode
+  readonly columns?: OperationNode[]
   readonly unique?: boolean
   // TODO(samiko): Do we need to add an `IndexTypeNode` for consistency?
   //               This would then be of type `IndexTypeNode | RawNode`.
@@ -46,6 +46,16 @@ export const CreateIndexNode = freeze({
     return freeze({
       ...node,
       ...props,
+    })
+  },
+
+  cloneWithColumns(
+    node: CreateIndexNode,
+    columns: OperationNode[]
+  ): CreateIndexNode {
+    return freeze({
+      ...node,
+      columns: [...(node.columns || []), ...columns],
     })
   },
 })

@@ -111,7 +111,8 @@ async function migrateToLatest() {
     provider: new FileMigrationProvider({
       fs,
       path,
-      migrationFolder: 'some/path/to/migrations',
+      // This needs to be an absolute path.
+      migrationFolder: path.join(__dirname, 'some/path/to/migrations'),
     }),
   })
 
