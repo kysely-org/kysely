@@ -1081,6 +1081,54 @@ for (const dialect of DIALECTS) {
         await builder.execute()
       })
 
+      it('should create a sorted index, single column', async () => {
+        const builder = ctx.db.schema
+          .createIndex('test_descending_first_name_index')
+          .on('test')
+          .column('first_name desc')
+
+        testSql(builder, dialect, {
+          postgres: {
+            sql: 'create index "test_descending_first_name_index" on "test" ("first_name" desc)',
+            parameters: [],
+          },
+          mysql: {
+            sql: 'create index `test_descending_first_name_index` on `test` (`first_name` desc)',
+            parameters: [],
+          },
+          sqlite: {
+            sql: 'create index "test_descending_first_name_index" on "test" ("first_name" desc)',
+            parameters: [],
+          },
+        })
+
+        await builder.execute()
+      })
+
+      it('should create a sorted index, multi-column', async () => {
+        const builder = ctx.db.schema
+          .createIndex('test_first_name_descending_last_name_index')
+          .on('test')
+          .columns(['first_name', 'last_name desc'])
+
+        testSql(builder, dialect, {
+          postgres: {
+            sql: 'create index "test_first_name_descending_last_name_index" on "test" ("first_name", "last_name" desc)',
+            parameters: [],
+          },
+          mysql: {
+            sql: 'create index `test_first_name_descending_last_name_index` on `test` (`first_name`, `last_name` desc)',
+            parameters: [],
+          },
+          sqlite: {
+            sql: 'create index "test_first_name_descending_last_name_index" on "test" ("first_name", "last_name" desc)',
+            parameters: [],
+          },
+        })
+
+        await builder.execute()
+      })
+      
       if (dialect !== 'mysql') {
         it('should create a partial index', async () => {
           const builder = ctx.db.schema
