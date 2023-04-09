@@ -2,6 +2,7 @@ import { SelectQueryBuilder } from '../query-builder/select-query-builder.js'
 import { InsertResult } from '../query-builder/insert-result.js'
 import { DeleteResult } from '../query-builder/delete-result.js'
 import { UpdateResult } from '../query-builder/update-result.js'
+import { KyselyTypeError } from './type-error.js'
 
 /**
  * Given an object type, extracts the union of all value types.
@@ -185,5 +186,13 @@ export type Equals<T, U> = (<G>() => G extends T ? 1 : 2) extends <
 >() => G extends U ? 1 : 2
   ? true
   : false
+
+export type NarrowPartial<S, T> = {
+  [K in keyof S & string]: K extends keyof T
+    ? T[K] extends S[K]
+      ? T[K]
+      : KyselyTypeError<`$narrowType() call failed: passed type does not exist in '${K}'s type union`>
+    : S[K]
+}
 
 export type SqlBool = boolean | 0 | 1
