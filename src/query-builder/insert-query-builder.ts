@@ -16,6 +16,7 @@ import { InsertQueryNode } from '../operation-node/insert-query-node.js'
 import { QueryNode } from '../operation-node/query-node.js'
 import {
   MergePartial,
+  NarrowPartial,
   SimplifyResult,
   SimplifySingleResult,
 } from '../util/type-utils.js'
@@ -650,6 +651,50 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    */
   castTo<T>(): InsertQueryBuilder<DB, TB, T> {
     return this.$castTo<T>()
+  }
+
+  /**
+   * Narrows (parts of) the output type of the query.
+   *
+   * Kysely tries to be as type-safe as possible, but in some cases we have to make
+   * compromises for better maintainability and compilation performance. At present,
+   * Kysely doesn't narrow the output type of the query based on {@link values} input
+   * when using {@link returning} or {@link returningAll}.
+   *
+   * This utility method is very useful for these situations, as it removes unncessary
+   * runtime assertion/guard code. Its input type is limited to the output type
+   * of the query, so you can't add a column that doesn't exist, or change a column's
+   * type to something that doesn't exist in its union type.
+   *
+   * ### Examples
+   *
+   * Turn this code:
+   *
+   * ```ts
+   * const person = await db.insertInto('person')
+   *   .values({ ...inputPerson, nullable_column: 'hell yeah!' })
+   *   .returningAll()
+   *   .executeTakeFirstOrThrow()
+   *
+   * if (nullable_column) {
+   *   functionThatExpectsPersonWithNonNullValue(person)
+   * }
+   * ```
+   *
+   * Into this:
+   *
+   * ```ts
+   * const person = await db.insertInto('person')
+   *   .values({ ...inputPerson, nullable_column: 'hell yeah!' })
+   *   .returningAll()
+   *   .$narrowType<{ nullable_column: string }>()
+   *   .executeTakeFirstOrThrow()
+   *
+   * functionThatExpectsPersonWithNonNullValue(person)
+   * ```
+   */
+  $narrowType<T>(): InsertQueryBuilder<DB, TB, NarrowPartial<O, T>> {
+    return new InsertQueryBuilder(this.#props)
   }
 
   /**
