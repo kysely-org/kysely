@@ -3,6 +3,6 @@
   "position": 1,
   "link": {
     "type": "generated-index",
-    "description": "Short and simple examples of how to use the select operator."
+    "description": "Short and simple examples of how to write select queries."
   }
 }
