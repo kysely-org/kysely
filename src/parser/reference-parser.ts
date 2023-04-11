@@ -7,7 +7,6 @@ import {
   AnyColumn,
   AnyColumnWithTable,
   ExtractColumnType,
-  ValueType,
 } from '../util/type-utils.js'
 import { SelectQueryBuilder } from '../query-builder/select-query-builder.js'
 import {
@@ -51,9 +50,9 @@ export type ExtractTypeFromReferenceExpression<
 > = RE extends string
   ? SelectType<ExtractTypeFromStringReference<DB, TB, RE>>
   : RE extends SelectQueryBuilder<any, any, infer O>
-  ? ValueType<O>
+  ? O[keyof O] | null
   : RE extends (qb: any) => SelectQueryBuilder<any, any, infer O>
-  ? ValueType<O>
+  ? O[keyof O] | null
   : RE extends Expression<infer O>
   ? O
   : RE extends (qb: any) => Expression<infer O>

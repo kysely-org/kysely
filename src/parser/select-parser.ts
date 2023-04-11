@@ -7,7 +7,6 @@ import {
   AnyColumn,
   AnyColumnWithTable,
   ExtractColumnType,
-  ValueType,
 } from '../util/type-utils.js'
 import { parseAliasedStringReference } from './reference-parser.js'
 import {
@@ -81,13 +80,13 @@ type ExtractTypeFromSelectExpression<
   ? ExtractTypeFromStringSelectExpression<DB, TB, SE, A>
   : SE extends AliasedSelectQueryBuilder<any, any, infer O, infer QA>
   ? QA extends A
-    ? ValueType<O>
+    ? O[keyof O] | null
     : never
   : SE extends (
       qb: any
     ) => AliasedSelectQueryBuilder<any, any, infer O, infer QA>
   ? QA extends A
-    ? ValueType<O>
+    ? O[keyof O] | null
     : never
   : SE extends AliasedExpression<infer O, infer EA>
   ? EA extends A

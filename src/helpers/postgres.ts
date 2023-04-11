@@ -97,7 +97,7 @@ export function jsonArrayFrom<O>(
  */
 export function jsonObjectFrom<O>(
   expr: Expression<O>
-): RawBuilder<Simplify<O>> {
+): RawBuilder<Simplify<O> | null> {
   return sql`(select to_json(obj) from ${expr} as obj)`
 }
 

@@ -111,7 +111,7 @@ export function jsonArrayFrom<O>(
  */
 export function jsonObjectFrom<O>(
   expr: SelectQueryBuilder<any, any, O>
-): RawBuilder<Simplify<O>> {
+): RawBuilder<Simplify<O> | null> {
   return sql`(select json_object(${sql.join(
     getJsonObjectArgs(expr.toOperationNode(), 'obj')
   )}) from ${expr} as obj)`

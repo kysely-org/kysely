@@ -211,7 +211,7 @@ async function testReturning(db: Kysely<Database>) {
     {
       id: number
       full_name: string
-      sub: string
+      sub: string | null
     }[]
   >(r3)
 
@@ -528,7 +528,7 @@ async function testSelectsInVariable(db: Kysely<Database>) {
     .select(selects)
     .executeTakeFirstOrThrow()
 
-  expectType<{ first_name: string; pet_name: string }>(r1)
+  expectType<{ first_name: string; pet_name: string | null }>(r1)
 }
 
 async function testUntypedKysely(db: Kysely<any>) {

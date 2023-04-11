@@ -36,7 +36,7 @@ async function testSelectSingle(db: Kysely<Database>) {
   const [r6] = await qb
     .select(db.selectFrom('movie').select('id').as('movie_id'))
     .execute()
-  expectType<{ movie_id: string }>(r6)
+  expectType<{ movie_id: string | null }>(r6)
 
   // Subquery factory
   const [r7] = await qb
@@ -48,7 +48,7 @@ async function testSelectSingle(db: Kysely<Database>) {
         .as('movie_id')
     )
     .execute()
-  expectType<{ movie_id: string }>(r7)
+  expectType<{ movie_id: string | null }>(r7)
 
   // Aliased table
   const [r8] = await db.selectFrom('pet as p').select('p.name').execute()
@@ -131,7 +131,7 @@ async function testSelectMultiple(db: Kysely<Database>) {
     movie_id: string
     rand1: number
     rand2: number
-    sub: string
+    sub: string | null
   }>(r1)
 
   expectError(qb.select(['person.id', 'notColumn']))
