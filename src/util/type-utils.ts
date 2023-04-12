@@ -5,11 +5,6 @@ import { UpdateResult } from '../query-builder/update-result.js'
 import { KyselyTypeError } from './type-error.js'
 
 /**
- * Given an object type, extracts the union of all value types.
- */
-export type ValueType<T> = T[keyof T]
-
-/**
  * Given a database type and a union of table names in that db, returns
  * a union type with all possible column names.
  *

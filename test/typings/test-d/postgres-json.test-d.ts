@@ -44,7 +44,7 @@ async function testPostgresJsonb(db: Kysely<Database>) {
     {
       first_name: string
       pets: { name: string; species: 'dog' | 'cat' }[]
-      doggo: { doggo_name: string }
+      doggo: { doggo_name: string } | null
       name: { first: string; last: string | null; full: string }
     }[]
   >(r1)
