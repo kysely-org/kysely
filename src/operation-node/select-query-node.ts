@@ -102,15 +102,15 @@ export const SelectQueryNode = freeze({
     })
   },
 
-  cloneWithOrderByItem(
+  cloneWithOrderByItems(
     selectNode: SelectQueryNode,
-    item: OrderByItemNode
+    items: ReadonlyArray<OrderByItemNode>
   ): SelectQueryNode {
     return freeze({
       ...selectNode,
       orderBy: selectNode.orderBy
-        ? OrderByNode.cloneWithItem(selectNode.orderBy, item)
-        : OrderByNode.create(item),
+        ? OrderByNode.cloneWithItems(selectNode.orderBy, items)
+        : OrderByNode.create(items),
     })
   },
 

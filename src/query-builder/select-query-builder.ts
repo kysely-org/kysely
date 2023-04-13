@@ -32,6 +32,8 @@ import {
 import {
   OrderByDirectionExpression,
   OrderByExpression,
+  DirectedOrderByStringReference,
+  UndirectedOrderByExpression,
   parseOrderBy,
 } from '../parser/order-by-parser.js'
 import { preventAwait } from '../util/prevent-await.js'
@@ -1093,13 +1095,27 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
   /**
    * Adds an `order by` clause to the query.
    *
-   * `orderBy` calls are additive. To order by multiple columns, call `orderBy`
-   * multiple times.
+   * `orderBy` calls are additive. Meaning, additional `orderBy` calls append to
+   * the existing order by clause.
    *
-   * The first argument is the expression to order by and the second is the
-   * order (`asc` or `desc`).
+   * In a single call you can add a single column/expression or multiple columns/expressions.
+   *
+   * Single column/expression calls can have 1-2 arguments. The first argument is
+   * the expression to order by (optionally including the direction) while the second
+   * optional argument is the direction (`asc` or `desc`).
    *
    * ### Examples
+   *
+   * Single column/expression per call:
+   *
+   * ```ts
+   * await db
+   *   .selectFrom('person')
+   *   .select('person.first_name as fn')
+   *   .orderBy('id')
+   *   .orderBy('fn desc')
+   *   .execute()
+   * ```
    *
    * ```ts
    * await db
@@ -1116,6 +1132,16 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    * select "person"."first_name" as "fn"
    * from "person"
    * order by "id" asc, "fn" desc
+   * ```
+   *
+   * Multiple columns/expressions per call:
+   *
+   * ```ts
+   * await db
+   *   .selectFrom('person')
+   *   .select('person.first_name as fn')
+   *   .orderBy(['id', 'fn desc'])
+   *   .execute()
    * ```
    *
    * The order by expression can also be a raw sql expression or a subquery
@@ -1178,14 +1204,24 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    * ```
    */
   orderBy(
-    orderBy: OrderByExpression<DB, TB, O>,
+    orderBy: UndirectedOrderByExpression<DB, TB, O>,
     direction?: OrderByDirectionExpression
-  ): SelectQueryBuilder<DB, TB, O> {
+  ): SelectQueryBuilder<DB, TB, O>
+
+  orderBy(
+    ref: DirectedOrderByStringReference<DB, TB, O>
+  ): SelectQueryBuilder<DB, TB, O>
+
+  orderBy(
+    refs: ReadonlyArray<OrderByExpression<DB, TB, O>>
+  ): SelectQueryBuilder<DB, TB, O>
+
+  orderBy(...args: any[]): SelectQueryBuilder<DB, TB, O> {
     return new SelectQueryBuilder({
       ...this.#props,
-      queryNode: SelectQueryNode.cloneWithOrderByItem(
+      queryNode: SelectQueryNode.cloneWithOrderByItems(
         this.#props.queryNode,
-        parseOrderBy(orderBy, direction)
+        parseOrderBy(args)
       ),
     })
   }

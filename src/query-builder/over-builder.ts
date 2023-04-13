@@ -49,9 +49,9 @@ export class OverBuilder<DB, TB extends keyof DB>
     direction?: OrderByDirectionExpression
   ): OverBuilder<DB, TB> {
     return new OverBuilder({
-      overNode: OverNode.cloneWithOrderByItem(
+      overNode: OverNode.cloneWithOrderByItems(
         this.#props.overNode,
-        parseOrderBy(orderBy, direction)
+        parseOrderBy([orderBy, direction])
       ),
     })
   }

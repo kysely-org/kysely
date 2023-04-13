@@ -25,12 +25,15 @@ export const OverNode = freeze({
     })
   },
 
-  cloneWithOrderByItem(overNode: OverNode, item: OrderByItemNode): OverNode {
+  cloneWithOrderByItems(
+    overNode: OverNode,
+    items: ReadonlyArray<OrderByItemNode>
+  ): OverNode {
     return freeze({
       ...overNode,
       orderBy: overNode.orderBy
-        ? OrderByNode.cloneWithItem(overNode.orderBy, item)
-        : OrderByNode.create(item),
+        ? OrderByNode.cloneWithItems(overNode.orderBy, items)
+        : OrderByNode.create(items),
     })
   },
 

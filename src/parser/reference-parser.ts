@@ -177,7 +177,7 @@ export function parseOrderedColumnName(column: string): OperationNode {
       )
     }
 
-    return parseOrderBy(columnName, order)
+    return parseOrderBy([columnName, order])[0]
   } else {
     return parseColumnName(column)
   }
