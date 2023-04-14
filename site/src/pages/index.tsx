@@ -218,7 +218,7 @@ function SectionTweets() {
           />
 
           <TweetQuote
-            authorName={'@yusukebe'}
+            authorName={'Yusuke Wada'}
             authorTitle={'Creator of @honojs'}
             avatar={
               'https://pbs.twimg.com/profile_images/15300142/profile_childfood_400x400.jpg'
@@ -230,12 +230,48 @@ function SectionTweets() {
           />
 
           <TweetQuote
+            authorName={'Gal Schlezinger'}
+            authorTitle={'Software Developer @ Vercel, Creator of fnm'}
+            avatar={
+              'https://pbs.twimg.com/profile_images/1200413867437936640/SnCiBgrR_400x400.jpg'
+            }
+            text={'Kysely is 🐐'}
+            tweetLink={'https://twitter.com/galstar/status/1645452990147436546'}
+          />
+
+          <TweetQuote
+            authorName={'Theo Browne'}
+            authorTitle={'CEO @ Ping Labs, tech influencer'}
+            avatar={
+              'https://pbs.twimg.com/profile_images/1605762947686375425/lsoGWWty_400x400.jpg'
+            }
+            tweetLink={'https://twitter.com/t3dotgg/status/1632949634728599552'}
+            text={
+              "Planetscale's DatabaseJS combined with Kysely or @DrizzleOrm is pretty dope to stay on edge"
+            }
+          />
+
+          <TweetQuote
+            authorName={'Johan Eliasson'}
+            authorTitle={'Indiehacker & engineer, Ex-CEO @ Nhost'}
+            avatar={
+              'https://pbs.twimg.com/profile_images/1447184004558557193/agXMdsqe_400x400.jpg'
+            }
+            tweetLink={
+              'https://twitter.com/elitasson/status/1642090379066449920'
+            }
+            text={
+              "Instead of Prisma, I'm testing Kysely, Kysely Codegen, and Atlas. Works great."
+            }
+          />
+
+          <TweetQuote
             authorName={'Nicholas Griffin'}
-            authorTitle={'Senior Engineer at the BBC'}
+            authorTitle={'Senior Engineer @ the BBC'}
             avatar={
               'https://pbs.twimg.com/profile_images/1468372517538701316/HnQ_WZVg_400x400.jpg'
             }
-            text="😂 I don’t actually like prisma that much, i prefer https://github.com/kysely-org/kysely, not an orm though."
+            text="😂 I don\'t actually like prisma that much, i prefer https://github.com/kysely-org/kysely, not an orm though."
             tweetLink={
               'https://twitter.com/ngriffin_uk/status/1599891725404676096'
             }
@@ -243,7 +279,7 @@ function SectionTweets() {
 
           <TweetQuote
             authorName={'Sam Cook'}
-            authorTitle={'Software engineer @trygamma'}
+            authorTitle={'Software engineer @ trygamma'}
             avatar={
               'https://pbs.twimg.com/profile_images/1612150047956672516/BGkIKXdI_400x400.jpg'
             }
@@ -284,9 +320,9 @@ It's so stupidly simple! [...]
           <TweetQuote
             authorName="Sock, the dev 🧦"
             authorTitle="@sockthedev"
-            text="YES! Completed the initial version of this. Finally. Huge shoutout to Kysely for making this way less painful than it should have been. The BEST TypeScript based SQL query builder. ♥️"
-            tweetLink="https://twitter.com/sockthedev/status/1599814152771760128"
             avatar="https://pbs.twimg.com/profile_images/1569584517161324544/po3hKnjN_400x400.jpg"
+            tweetLink="https://twitter.com/sockthedev/status/1599814152771760128"
+            text="YES! Completed the initial version of this. Finally. Huge shoutout to Kysely for making this way less painful than it should have been. The BEST TypeScript based SQL query builder. ♥️"
           />
         </div>
       </div>
