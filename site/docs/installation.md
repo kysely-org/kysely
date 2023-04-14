@@ -22,11 +22,15 @@ Kysely also has a simple interface for 3rd party dialects.
 
 ## 3rd party dialects
 
-- [AWS Data API](https://github.com/serverless-stack/kysely-data-api)
-- [PlanetScale Serverless Driver](https://github.com/depot/kysely-planetscale)
-- [SingleStore Data API](https://github.com/igalklebanov/kysely-singlestore)
-- [D1](https://github.com/aidenwallis/kysely-d1)
-- [SurrealDB](https://github.com/igalklebanov/kysely-surrealdb)
+ - [PlanetScale Serverless Driver](https://github.com/depot/kysely-planetscale)
+ - [Cloudflare D1](https://github.com/aidenwallis/kysely-d1)
+ - [AWS RDS Data API](https://github.com/serverless-stack/kysely-data-api)
+ - [SurrealDB](https://github.com/igalklebanov/kysely-surrealdb)
+ - [Neon](https://github.com/seveibar/kysely-neon)
+ - [AWS S3 Select](https://github.com/igalklebanov/kysely-s3-select)
+ - [libSQL/sqld](https://github.com/libsql/kysely-libsql)
+ - [SingleStore Data API](https://github.com/igalklebanov/kysely-singlestore)
+ - [Postgres.js](https://github.com/igalklebanov/kysely-postgres-js)
 
 ## Minimal example
 
