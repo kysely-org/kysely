@@ -105,20 +105,20 @@ export class RuntimeDriver implements Driver {
       try {
         return await executeQuery.call(connection, compiledQuery)
       } catch (error) {
-        this.#logError(error, compiledQuery, startTime)
+        await this.#logError(error, compiledQuery, startTime)
         throw error
       } finally {
-        this.#logQuery(compiledQuery, startTime)
+        await this.#logQuery(compiledQuery, startTime)
       }
     }
   }
 
-  #logError(
+  async #logError(
     error: unknown,
     compiledQuery: CompiledQuery,
     startTime: number
-  ): void {
-    this.#log.error(() => ({
+  ): Promise<void> {
+    await this.#log.error(() => ({
       level: 'error',
       error,
       query: compiledQuery,
@@ -126,8 +126,11 @@ export class RuntimeDriver implements Driver {
     }))
   }
 
-  #logQuery(compiledQuery: CompiledQuery, startTime: number): void {
-    this.#log.query(() => ({
+  async #logQuery(
+    compiledQuery: CompiledQuery,
+    startTime: number
+  ): Promise<void> {
+    await this.#log.query(() => ({
       level: 'query',
       query: compiledQuery,
       queryDurationMillis: this.#calculateDurationMillis(startTime),
