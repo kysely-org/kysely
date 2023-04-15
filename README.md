@@ -592,6 +592,6 @@ a library for typescript from the ground up produces much better and simpler typ
 
 See [CONTRIBUTING.md](./CONTRIBUTING.md).
 
-# Sponsors
-
-<a href="https://vercel.com/?utm_source=kysely&utm_campaign=oss"><img src="https://kysely.dev/img/powered-by-vercel.svg" alt="Powered by Vercel" /></a>
+<a href="https://vercel.com/?utm_source=kysely&utm_campaign=oss" style="display: block; text-align: center;">
+    <img src="https://kysely.dev/img/powered-by-vercel.svg" alt="Powered by Vercel" />
+</a>
