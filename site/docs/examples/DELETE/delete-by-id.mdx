@@ -8,8 +8,8 @@ Notice that when deleting we use `deleteFrom` instead of `selectFrom`.
 
 import {
   Playground,
-  createExample,
+  exampleSetup,
   exampleDeleteById,
 } from '../../../src/components/Playground'
 
-<Playground ts={createExample(exampleDeleteById)} />
+<Playground code={exampleDeleteById} setupCode={exampleSetup} />

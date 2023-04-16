@@ -2,13 +2,20 @@ import * as React from "react"
 import { gray } from "@radix-ui/colors"
 
 export function Playground({
-  ts,
+  code,
+  setupCode,
   kyselyVersion,
   dialect = "postgres",
 }: PlaygroundProps) {
   const params = new URLSearchParams()
-  params.set("p", "h")
-  params.set("i", btoa(JSON.stringify({ ts: ts.trim(), kyselyVersion, dialect })))
+  params.set("p", "j")
+  params.set("i", JSON.stringify({
+    q: code.trim(),
+    s: setupCode.trim(),
+    v: kyselyVersion,
+    d: dialect,
+    c: false
+  }))
 
   return (
     <iframe
@@ -29,75 +36,79 @@ export function Playground({
 interface PlaygroundProps {
   kyselyVersion?: string
   dialect?: "postgres"
-  ts: string
-}
-
-export function createExample(example: string): string {
-  return `
-${exampleSetup}
-
-result = ${example}
-`
+  code: string
+  setupCode: string,
 }
 
 export const exampleSetup = `
-interface DB {
-  person: PersonTable
-  pet: PetTable
+import { Generated } from 'kysely'
+
+declare global {
+  interface DB {
+    person: PersonTable
+    pet: PetTable
+  }
+
+  interface PersonTable {
+    id: Generated<string>
+    first_name: string
+    last_name: string | null
+    created_at: Generated<Date>
+    age: number
+  }
+
+  interface PetTable {
+    id: Generated<string>
+    name: string
+    owner_id: string
+    species: 'cat' | 'dog'
+  }
 }
+`
 
-interface PersonTable {
-  id: Generated<string>
-  first_name: string
-  last_name: string | null
-  created_at: Generated<Date>
-  age: number
-}
-
-interface PetTable {
-  id: Generated<string>
-  name: string
-  owner_id: string
-  species: 'cat' | 'dog'
-}`
-
-export const exampleFindMultipleById = `db
+export const exampleFindMultipleById = `const res = await db
   .selectFrom('person')
   .selectAll()
   .where('id', 'in', ['1', '2', '3'])
+  .execute()
 `
 
-export const exampleFindById = `db
+export const exampleFindById = `const res = await db
   .selectFrom('person')
   .selectAll()
   .where('id', '=', '1')
+  .execute()
 `
 
-export const exampleFindAllByAge = `db
+export const exampleFindAllByAge = `const res = await db
   .selectFrom('person')
   .selectAll()
   .where('age', '>', 18)
   .orderBy('age', 'desc')
+  .execute()
 `
 
-export const exampleFindBySubquery = `db
+export const exampleFindBySubquery = `const res = await db
   .selectFrom('person')
   .selectAll()
   .where('id', 'in', ['1', '2', '3'])
+  .execute()
 `
 
-export const exampleDeleteById = `db
+export const exampleDeleteById = `const res = await db
   .deleteFrom('person')
   .where('id', '=', '1')
+  .execute()
 `
 
-export const exampleUpdateById = `db
+export const exampleUpdateById = `const res = await db
   .updateTable('person')
   .set({ age: 10 })
   .where('id', '=', '1')
+  .execute()
 `
 
-export const exampleInsert = `db
+export const exampleInsert = `const res = await db
   .insertInto('person')
   .values([
     {
@@ -111,9 +122,10 @@ export const exampleInsert = `db
       age: 5,
     }
   ])
+  .execute()
 `
 
-export const exampleLeftOuterJoin = `db
+export const exampleInnerJoin = `const res = await db
   .selectFrom('pet')
   .innerJoin(
     'person',
@@ -125,4 +137,5 @@ export const exampleLeftOuterJoin = `db
     'pet.name as petName',
     'person.first_name as personName'
   ])
+  .execute()
 `
