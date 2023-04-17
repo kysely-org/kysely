@@ -588,10 +588,18 @@ that aren't possible at this point of the project. Knex was also originally writ
 the typescript typings were added afterwards. That always leads to compromises in the types. Designing
 a library for typescript from the ground up produces much better and simpler types.
 
-# How to contribute to Kysely
+# Contributors
 
-See [CONTRIBUTING.md](./CONTRIBUTING.md).
+<p align="center">
+    <a href="https://github.com/kysely-org/kysely/graphs/contributors">
+        <img src="https://contrib.rocks/image?repo=kysely-org/kysely" />
+    </a>
+    </br>
+    <span>Want to contribute? Check out our <a href="./CONTRIBUTING.md" >contribution guidelines</a>.</span>
+</p>
 
-# Sponsors
-
-<a href="https://vercel.com/?utm_source=kysely&utm_campaign=oss"><img src="https://kysely.dev/img/powered-by-vercel.svg" alt="Powered by Vercel" /></a>
+<p align="center">
+    <a href="https://vercel.com/?utm_source=kysely&utm_campaign=oss">
+        <img src="https://kysely.dev/img/powered-by-vercel.svg" alt="Powered by Vercel" />
+    </a>
+</p>

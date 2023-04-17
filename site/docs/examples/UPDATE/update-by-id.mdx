@@ -8,8 +8,8 @@ Notice that when updating we use `updateTable` instead of `selectFrom`, and the 
 
 import {
   Playground,
-  createExample,
+  exampleSetup,
   exampleUpdateById,
 } from '../../../src/components/Playground'
 
-<Playground ts={createExample(exampleUpdateById)} />
+<Playground code={exampleUpdateById} setupCode={exampleSetup} />

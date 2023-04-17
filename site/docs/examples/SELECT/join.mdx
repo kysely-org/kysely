@@ -3,14 +3,14 @@ sidebar_position: 1
 title: 'JOIN example'
 ---
 
-import {
-  Playground,
-  createExample,
-  exampleLeftOuterJoin,
-} from '../../../src/components/Playground'
-
 # JOIN example
 
 We support several types of JOINs. In this example we're doing a `leftJoin`.
 
-<Playground ts={createExample(exampleLeftOuterJoin)} />
+import {
+  Playground,
+  exampleSetup,
+  exampleInnerJoin,
+} from '../../../src/components/Playground'
+
+<Playground code={exampleInnerJoin} setupCode={exampleSetup} />

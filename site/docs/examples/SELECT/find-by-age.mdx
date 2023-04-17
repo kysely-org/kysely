@@ -10,8 +10,8 @@ Notice the use of `.selectAll` which translates to `SELECT * FROM` in SQL.
 
 import {
   Playground,
-  createExample,
+  exampleSetup,
   exampleFindAllByAge,
 } from '../../../src/components/Playground'
 
-<Playground ts={createExample(exampleFindAllByAge)} />
+<Playground code={exampleFindAllByAge} setupCode={exampleSetup} />
