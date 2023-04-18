@@ -37,6 +37,7 @@ export class FileMigrationProvider implements MigrationProvider {
       ) {
         const migration = await import(
           /* webpackIgnore: true */ this.#props.path.join(
+            "file://",
             this.#props.migrationFolder,
             fileName
           )
