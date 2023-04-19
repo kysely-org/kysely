@@ -27,6 +27,11 @@ export interface QueryResult<O> {
   readonly numAffectedRows?: bigint
 
   /**
+   * A MySQL-only field contains the number of rows the query changed.
+   */
+  readonly numChangedRows?: bigint
+
+  /**
    * This is defined for insert queries on dialects that return
    * the auto incrementing primary key from an insert.
    */
