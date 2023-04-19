@@ -35,7 +35,7 @@ export interface SchemaMetadata {
 export interface DatabaseMetadata {
   /**
    * The tables and views found in the database.
-*  * The propery isView can be used to tell them apart.
+   *  * The propery isView can be used to tell them apart.
    */
   readonly tables: TableMetadata[]
 }
