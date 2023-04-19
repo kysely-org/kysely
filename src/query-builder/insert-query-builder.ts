@@ -33,11 +33,7 @@ import { OnDuplicateKeyNode } from '../operation-node/on-duplicate-key-node.js'
 import { InsertResult } from './insert-result.js'
 import { KyselyPlugin } from '../plugin/kysely-plugin.js'
 import { ReturningRow } from '../parser/returning-parser.js'
-import {
-  isNoResultErrorConstructor,
-  NoResultError,
-  NoResultErrorConstructor,
-} from './no-result-error.js'
+import { NoResultError } from './no-result-error.js'
 import {
   ExpressionOrFactory,
   parseExpression,
@@ -55,6 +51,10 @@ import { Explainable, ExplainFormat } from '../util/explainable.js'
 import { Expression } from '../expression/expression.js'
 import { KyselyTypeError } from '../util/type-error.js'
 import { Streamable } from '../util/streamable.js'
+import {
+  createQueryNodeError,
+  QueryNodeErrorConstructor,
+} from './query-node-error.js'
 
 export class InsertQueryBuilder<DB, TB extends keyof DB, O>
   implements
@@ -817,23 +817,19 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    * Executes the query and returns the first result or throws if
    * the query returned no result.
    *
-   * By default an instance of {@link NoResultError} is thrown, but you can
-   * provide a custom error class, or callback as the only argument to throw a different
-   * error.
+   * By default, an instance of {@link KyselyConfig.noResultErrorConstructor} is thrown,
+   * but you can provide a custom error class or function to throw a different error.
    */
   async executeTakeFirstOrThrow(
-    errorConstructor:
-      | NoResultErrorConstructor
-      | ((node: QueryNode) => Error) = NoResultError
+    errorConstructor?: QueryNodeErrorConstructor
   ): Promise<SimplifyResult<O>> {
     const result = await this.executeTakeFirst()
 
     if (result === undefined) {
-      const error = isNoResultErrorConstructor(errorConstructor)
-        ? new errorConstructor(this.toOperationNode())
-        : errorConstructor(this.toOperationNode())
-
-      throw error
+      throw createQueryNodeError(
+        errorConstructor ?? this.#props.noResultErrorConstructor,
+        this.toOperationNode()
+      )
     }
 
     return result as SimplifyResult<O>
@@ -879,4 +875,5 @@ export interface InsertQueryBuilderProps {
   readonly queryId: QueryId
   readonly queryNode: InsertQueryNode
   readonly executor: QueryExecutor
+  readonly noResultErrorConstructor: QueryNodeErrorConstructor
 }

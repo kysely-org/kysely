@@ -36,11 +36,7 @@ import { freeze } from '../util/object-utils.js'
 import { KyselyPlugin } from '../plugin/kysely-plugin.js'
 import { WhereExpressionFactory, WhereInterface } from './where-interface.js'
 import { ReturningInterface } from './returning-interface.js'
-import {
-  isNoResultErrorConstructor,
-  NoResultError,
-  NoResultErrorConstructor,
-} from './no-result-error.js'
+import { NoResultError } from './no-result-error.js'
 import { DeleteResult } from './delete-result.js'
 import { DeleteQueryNode } from '../operation-node/delete-query-node.js'
 import { LimitNode } from '../operation-node/limit-node.js'
@@ -64,6 +60,10 @@ import {
 } from '../parser/unary-operation-parser.js'
 import { KyselyTypeError } from '../util/type-error.js'
 import { Streamable } from '../util/streamable.js'
+import {
+  createQueryNodeError,
+  QueryNodeErrorConstructor,
+} from './query-node-error.js'
 
 export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
   implements
@@ -980,23 +980,19 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
    * Executes the query and returns the first result or throws if
    * the query returned no result.
    *
-   * By default an instance of {@link NoResultError} is thrown, but you can
-   * provide a custom error class, or callback as the only argument to throw a different
-   * error.
+   * By default, an instance of {@link KyselyConfig.noResultErrorConstructor} is thrown,
+   * but you can provide a custom error class or function to throw a different error.
    */
   async executeTakeFirstOrThrow(
-    errorConstructor:
-      | NoResultErrorConstructor
-      | ((node: QueryNode) => Error) = NoResultError
+    errorConstructor?: QueryNodeErrorConstructor
   ): Promise<SimplifyResult<O>> {
     const result = await this.executeTakeFirst()
 
     if (result === undefined) {
-      const error = isNoResultErrorConstructor(errorConstructor)
-        ? new errorConstructor(this.toOperationNode())
-        : errorConstructor(this.toOperationNode())
-
-      throw error
+      throw createQueryNodeError(
+        errorConstructor ?? this.#props.noResultErrorConstructor,
+        this.toOperationNode()
+      )
     }
 
     return result as SimplifyResult<O>
@@ -1042,6 +1038,7 @@ export interface DeleteQueryBuilderProps {
   readonly queryId: QueryId
   readonly queryNode: DeleteQueryNode
   readonly executor: QueryExecutor
+  readonly noResultErrorConstructor: QueryNodeErrorConstructor
 }
 
 export type DeleteQueryBuilderWithInnerJoin<

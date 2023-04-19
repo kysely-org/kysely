@@ -28,6 +28,8 @@ import { CompiledQuery } from './query-compiler/compiled-query.js'
 import { createQueryId, QueryId } from './util/query-id.js'
 import { Compilable, isCompilable } from './util/compilable.js'
 import { WithSchemaPlugin } from './plugin/with-schema/with-schema-plugin.js'
+import { QueryNodeErrorConstructor } from './query-builder/query-node-error.js'
+import { NoResultError } from './query-builder/no-result-error.js'
 
 /**
  * The main Kysely class.
@@ -85,7 +87,11 @@ export class Kysely<DB>
     let props: KyselyProps
 
     if (isKyselyProps(args)) {
-      superProps = { executor: args.executor }
+      superProps = {
+        executor: args.executor,
+        noResultErrorConstructor:
+          args.config.noResultErrorConstructor ?? NoResultError,
+      }
       props = { ...args }
     } else {
       const dialect = args.dialect
@@ -105,7 +111,11 @@ export class Kysely<DB>
         args.plugins ?? []
       )
 
-      superProps = { executor }
+      superProps = {
+        executor,
+        noResultErrorConstructor:
+          args.noResultErrorConstructor ?? NoResultError,
+      }
       props = {
         config: args,
         executor,
@@ -471,6 +481,13 @@ export interface KyselyConfig {
    * ```
    */
   readonly log?: LogConfig
+
+  /**
+   *
+   * Error class or factory function for when {@link executeTakeFirstOrThrow} throws an error.
+   * Default is {@link NoResultError}.
+   */
+  readonly noResultErrorConstructor?: QueryNodeErrorConstructor
 }
 
 export class ConnectionBuilder<DB> {

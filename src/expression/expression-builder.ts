@@ -47,6 +47,7 @@ import {
 } from '../parser/value-parser.js'
 import { NOOP_QUERY_EXECUTOR } from '../query-executor/noop-query-executor.js'
 import { ValueNode } from '../operation-node/value-node.js'
+import { NoResultError } from '../query-builder/no-result-error.js'
 
 export interface ExpressionBuilder<DB, TB extends keyof DB> {
   /**
@@ -502,6 +503,7 @@ export function createExpressionBuilder<DB, TB extends keyof DB>(
         queryId: createQueryId(),
         executor: executor,
         queryNode: SelectQueryNode.create(parseTableExpressionOrList(table)),
+        noResultErrorConstructor: NoResultError,
       })
     },
 

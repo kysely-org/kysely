@@ -35,6 +35,7 @@ import { InsertResult } from './query-builder/insert-result.js'
 import { DeleteResult } from './query-builder/delete-result.js'
 import { UpdateResult } from './query-builder/update-result.js'
 import { KyselyPlugin } from './plugin/kysely-plugin.js'
+import { QueryNodeErrorConstructor } from './query-builder/query-node-error.js'
 
 export class QueryCreator<DB> {
   readonly #props: QueryCreatorProps
@@ -182,6 +183,7 @@ export class QueryCreator<DB> {
         parseTableExpressionOrList(from),
         this.#props.withNode
       ),
+      noResultErrorConstructor: this.#props.noResultErrorConstructor,
     })
   }
 
@@ -233,6 +235,7 @@ export class QueryCreator<DB> {
         parseTable(table),
         this.#props.withNode
       ),
+      noResultErrorConstructor: this.#props.noResultErrorConstructor,
     })
   }
 
@@ -273,6 +276,7 @@ export class QueryCreator<DB> {
         this.#props.withNode,
         true
       ),
+      noResultErrorConstructor: this.#props.noResultErrorConstructor,
     })
   }
 
@@ -347,6 +351,7 @@ export class QueryCreator<DB> {
         parseTableExpressionOrList(tables),
         this.#props.withNode
       ),
+      noResultErrorConstructor: this.#props.noResultErrorConstructor,
     })
   }
 
@@ -408,6 +413,7 @@ export class QueryCreator<DB> {
         parseTableExpression(table),
         this.#props.withNode
       ),
+      noResultErrorConstructor: this.#props.noResultErrorConstructor,
     })
   }
 
@@ -565,4 +571,5 @@ export class QueryCreator<DB> {
 export interface QueryCreatorProps {
   readonly executor: QueryExecutor
   readonly withNode?: WithNode
+  readonly noResultErrorConstructor: QueryNodeErrorConstructor
 }

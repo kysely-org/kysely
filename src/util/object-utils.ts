@@ -157,3 +157,9 @@ function compareGenericObjects(
 
   return true
 }
+
+export function isClass(obj: unknown): obj is new (...args: any[]) => any {
+  return (
+    isFunction(obj) && Object.prototype.hasOwnProperty.call(obj, 'prototype')
+  )
+}

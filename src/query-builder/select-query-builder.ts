@@ -44,11 +44,7 @@ import { freeze } from '../util/object-utils.js'
 import { GroupByArg, parseGroupBy } from '../parser/group-by-parser.js'
 import { KyselyPlugin } from '../plugin/kysely-plugin.js'
 import { WhereExpressionFactory, WhereInterface } from './where-interface.js'
-import {
-  isNoResultErrorConstructor,
-  NoResultError,
-  NoResultErrorConstructor,
-} from './no-result-error.js'
+import { NoResultError } from './no-result-error.js'
 import { HavingExpressionFactory, HavingInterface } from './having-interface.js'
 import { IdentifierNode } from '../operation-node/identifier-node.js'
 import { Explainable, ExplainFormat } from '../util/explainable.js'
@@ -69,6 +65,10 @@ import {
 import { KyselyTypeError } from '../util/type-error.js'
 import { Selectable } from '../util/column-type.js'
 import { Streamable } from '../util/streamable.js'
+import {
+  createQueryNodeError,
+  QueryNodeErrorConstructor,
+} from './query-node-error.js'
 
 export class SelectQueryBuilder<DB, TB extends keyof DB, O>
   implements
@@ -1924,23 +1924,19 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    * Executes the query and returns the first result or throws if
    * the query returned no result.
    *
-   * By default an instance of {@link NoResultError} is thrown, but you can
-   * provide a custom error class, or callback to throw a different
-   * error.
+   * By default, an instance of {@link KyselyConfig.noResultErrorConstructor} is thrown,
+   * but you can provide a custom error class or function to throw a different error.
    */
   async executeTakeFirstOrThrow(
-    errorConstructor:
-      | NoResultErrorConstructor
-      | ((node: QueryNode) => Error) = NoResultError
+    errorConstructor?: QueryNodeErrorConstructor
   ): Promise<Simplify<O>> {
     const result = await this.executeTakeFirst()
 
     if (result === undefined) {
-      const error = isNoResultErrorConstructor(errorConstructor)
-        ? new errorConstructor(this.toOperationNode())
-        : errorConstructor(this.toOperationNode())
-
-      throw error
+      throw createQueryNodeError(
+        errorConstructor ?? this.#props.noResultErrorConstructor,
+        this.toOperationNode()
+      )
     }
 
     return result as O
@@ -1986,6 +1982,7 @@ export interface SelectQueryBuilderProps {
   readonly queryId: QueryId
   readonly queryNode: SelectQueryNode
   readonly executor: QueryExecutor
+  readonly noResultErrorConstructor: QueryNodeErrorConstructor
 }
 
 /**

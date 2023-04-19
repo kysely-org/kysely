@@ -12,18 +12,21 @@ import {
   parseTableExpressionOrList,
   TableExpression,
 } from './table-parser.js'
+import { NoResultError } from '../query-builder/no-result-error.js'
 
 export function createSelectQueryBuilder(): SelectQueryBuilder<any, any, any> {
   return new SelectQueryBuilder({
     queryId: createQueryId(),
     executor: NOOP_QUERY_EXECUTOR,
     queryNode: SelectQueryNode.create(parseTableExpressionOrList([])),
+    noResultErrorConstructor: NoResultError,
   })
 }
 
 export function createQueryCreator(): QueryCreator<any> {
   return new QueryCreator({
     executor: NOOP_QUERY_EXECUTOR,
+    noResultErrorConstructor: NoResultError,
   })
 }
 

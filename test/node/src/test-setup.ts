@@ -31,6 +31,7 @@ import {
   sql,
   ColumnType,
   InsertObject,
+  QueryNode,
 } from '../../../'
 
 export interface Person {
@@ -127,6 +128,12 @@ export const DIALECT_CONFIGS = {
   },
 }
 
+export class TestNoResultError extends Error {
+  constructor(readonly node: QueryNode) {
+    super()
+  }
+}
+
 const DB_CONFIGS: PerDialect<KyselyConfig> = {
   postgres: {
     dialect: new PostgresDialect({
@@ -134,6 +141,7 @@ const DB_CONFIGS: PerDialect<KyselyConfig> = {
       cursor: Cursor,
     }),
     plugins: PLUGINS,
+    noResultErrorConstructor: TestNoResultError,
   },
 
   mysql: {
@@ -141,6 +149,7 @@ const DB_CONFIGS: PerDialect<KyselyConfig> = {
       pool: async () => createPool(DIALECT_CONFIGS.mysql),
     }),
     plugins: PLUGINS,
+    noResultErrorConstructor: (node) => new TestNoResultError(node),
   },
 
   sqlite: {
@@ -148,6 +157,7 @@ const DB_CONFIGS: PerDialect<KyselyConfig> = {
       database: async () => new Database(DIALECT_CONFIGS.sqlite.databasePath),
     }),
     plugins: PLUGINS,
+    noResultErrorConstructor: TestNoResultError,
   },
 }
 

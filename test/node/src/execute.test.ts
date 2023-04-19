@@ -1,10 +1,5 @@
 import { createSandbox, SinonSpy } from 'sinon'
-import {
-  CompiledQuery,
-  NoResultError,
-  QueryExecutor,
-  QueryNode,
-} from '../../../'
+import { CompiledQuery, QueryExecutor, QueryNode } from '../../../'
 import {
   DIALECTS,
   clearDatabase,
@@ -13,6 +8,7 @@ import {
   insertPersons,
   TestContext,
   expect,
+  TestNoResultError,
 } from './test-setup.js'
 
 for (const dialect of DIALECTS) {
@@ -71,17 +67,17 @@ for (const dialect of DIALECTS) {
 
           throw new Error('should not get here')
         } catch (error) {
-          expect(error instanceof NoResultError).to.equal(true)
+          expect(error).to.instanceOf(TestNoResultError)
+          if (error instanceof TestNoResultError) {
+            expect(error.node.kind).to.equal('SelectQueryNode')
+          }
         }
       })
 
-      it('should throw a custom error constructor if no result is found and a custom error is provided', async () => {
+      it('should throw a custom error if no result is found and a custom error class is provided', async () => {
         class MyNotFoundError extends Error {
-          node: QueryNode
-
-          constructor(node: QueryNode) {
+          constructor(readonly node: QueryNode) {
             super('custom error')
-            this.node = node
           }
         }
 
@@ -94,26 +90,34 @@ for (const dialect of DIALECTS) {
 
           throw new Error('should not get here')
         } catch (error) {
-          expect(error instanceof MyNotFoundError).to.equal(true)
-
+          expect(error).to.instanceOf(MyNotFoundError)
           if (error instanceof MyNotFoundError) {
             expect(error.node.kind).to.equal('SelectQueryNode')
           }
         }
       })
 
-      it('should throw a custom error object if no result is found and a custom error is provided', async () => {
+      it('should throw a custom error if no result is found and a custom error factory function is provided', async () => {
         const message = 'my custom error'
-        const error = new Error(message)
+        class MyNotFoundError extends Error {
+          constructor(readonly node: QueryNode) {
+            super(message)
+          }
+        }
+        const cb = (node: QueryNode) => new MyNotFoundError(node)
 
         try {
           await ctx.db
             .selectFrom('person')
             .selectAll('person')
             .where('id', '=', 99999999)
-            .executeTakeFirstOrThrow(() => error)
+            .executeTakeFirstOrThrow(cb)
         } catch (error: any) {
-          expect(error.message).to.equal(message)
+          expect(error).to.instanceOf(MyNotFoundError)
+          if (error instanceof MyNotFoundError) {
+            expect(error.message).to.equal(message)
+            expect(error.node.kind).to.equal('SelectQueryNode')
+          }
         }
       })
     })
