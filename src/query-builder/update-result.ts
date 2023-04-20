@@ -1,4 +1,4 @@
-import { setEnumerableProperties } from '../util/object-utils.js'
+import { makePropertiesEnumerable } from '../util/object-utils.js'
 
 export class UpdateResult {
   readonly #numUpdatedRows: bigint
@@ -21,4 +21,4 @@ export class UpdateResult {
   }
 }
 
-setEnumerableProperties(UpdateResult, 'numUpdatedRows', 'numChangedRows')
+makePropertiesEnumerable(UpdateResult, 'numUpdatedRows', 'numChangedRows')

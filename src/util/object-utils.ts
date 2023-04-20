@@ -160,7 +160,7 @@ function compareGenericObjects(
   return true
 }
 
-export function setEnumerableProperties<T>(
+export function makePropertiesEnumerable<T>(
   clazz: Type<T>,
   ...properties: (keyof T)[]
 ) {

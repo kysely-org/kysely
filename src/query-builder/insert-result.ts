@@ -1,4 +1,4 @@
-import { setEnumerableProperties } from '../util/object-utils.js'
+import { makePropertiesEnumerable } from '../util/object-utils.js'
 
 /**
  * The result of an insert query.
@@ -50,4 +50,4 @@ export class InsertResult {
   }
 }
 
-setEnumerableProperties(InsertResult, 'insertId', 'numInsertedOrUpdatedRows')
+makePropertiesEnumerable(InsertResult, 'insertId', 'numInsertedOrUpdatedRows')
