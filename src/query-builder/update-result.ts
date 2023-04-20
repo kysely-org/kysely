@@ -14,7 +14,7 @@ export class UpdateResult {
   }
 
   /**
-   * MySQL-only
+   * This is only supported by some dialects like MySQL.
    */
   get numChangedRows(): bigint {
     return this.#numChangedRows

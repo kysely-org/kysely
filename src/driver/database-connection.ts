@@ -27,7 +27,8 @@ export interface QueryResult<O> {
   readonly numAffectedRows?: bigint
 
   /**
-   * A MySQL-only field contains the number of rows the query changed.
+   * This is defined for update queries and contains the number of rows
+   * the query changed.
    */
   readonly numChangedRows?: bigint
 
