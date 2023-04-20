@@ -2,9 +2,9 @@ import { makePropertiesEnumerable } from '../util/object-utils.js'
 
 export class UpdateResult {
   readonly #numUpdatedRows: bigint
-  readonly #numChangedRows: bigint
+  readonly #numChangedRows?: bigint
 
-  constructor(numUpdatedRows: bigint, numChangedRows: bigint) {
+  constructor(numUpdatedRows: bigint, numChangedRows: bigint | undefined) {
     this.#numUpdatedRows = numUpdatedRows
     this.#numChangedRows = numChangedRows
   }
@@ -16,7 +16,7 @@ export class UpdateResult {
   /**
    * This is only supported by some dialects like MySQL.
    */
-  get numChangedRows(): bigint {
+  get numChangedRows(): bigint | undefined {
     return this.#numChangedRows
   }
 }
