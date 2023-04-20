@@ -1,4 +1,4 @@
-import { Type } from './type-utils.js'
+import { Constructor } from './type-utils.js'
 
 export function isEmpty(obj: ArrayLike<unknown> | string | object): boolean {
   if (Array.isArray(obj) || isString(obj) || isBuffer(obj)) {
@@ -161,7 +161,7 @@ function compareGenericObjects(
 }
 
 export function makePropertiesEnumerable<T>(
-  clazz: Type<T>,
+  clazz: Constructor<T>,
   ...properties: (keyof T)[]
 ) {
   properties.forEach((property) => {
