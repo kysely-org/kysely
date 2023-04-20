@@ -61,7 +61,7 @@ for (const dialect of DIALECTS) {
       if (dialect === 'mysql') {
         expect(result.numChangedRows).to.equal(1n)
       } else {
-        expect(result.numChangedRows).to.equal(0n)
+        expect(result.numChangedRows).to.undefined
       }
 
       expect(
@@ -106,7 +106,7 @@ for (const dialect of DIALECTS) {
       if (dialect === 'mysql') {
         expect(result.numChangedRows).to.equal(1n)
       } else {
-        expect(result.numChangedRows).to.equal(0n)
+        expect(result.numChangedRows).to.undefined
       }
 
       expect(
@@ -156,7 +156,7 @@ for (const dialect of DIALECTS) {
       if (dialect === 'mysql') {
         expect(result.numChangedRows).to.equal(1n)
       } else {
-        expect(result.numChangedRows).to.equal(0n)
+        expect(result.numChangedRows).to.undefined
       }
 
       const person = await ctx.db
@@ -190,7 +190,7 @@ for (const dialect of DIALECTS) {
 
         expect(result).to.be.instanceOf(UpdateResult)
         expect(result.numUpdatedRows).to.equal(1n)
-        expect(result.numChangedRows).to.equal(0n)
+        expect(result.numChangedRows).to.undefined
 
         const jennifer = await ctx.db
           .selectFrom('person')
@@ -232,7 +232,7 @@ for (const dialect of DIALECTS) {
       if (dialect === 'mysql') {
         expect(result.numChangedRows).to.equal(1n)
       } else {
-        expect(result.numChangedRows).to.equal(0n)
+        expect(result.numChangedRows).to.undefined
       }
 
       const jennifer = await ctx.db
@@ -272,7 +272,7 @@ for (const dialect of DIALECTS) {
       if (dialect === 'mysql') {
         expect(result.numChangedRows).to.equal(1n)
       } else {
-        expect(result.numChangedRows).to.equal(0n)
+        expect(result.numChangedRows).to.undefined
       }
 
       const female = await ctx.db
