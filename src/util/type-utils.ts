@@ -191,3 +191,7 @@ export type NarrowPartial<S, T> = {
 }
 
 export type SqlBool = boolean | 0 | 1
+
+export interface Type<T> extends Function {
+  new (...args: any[]): T
+}

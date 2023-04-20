@@ -1,3 +1,5 @@
+import { setEnumerableProperties } from '../util/object-utils.js'
+
 export class UpdateResult {
   readonly #numUpdatedRows: bigint
   readonly #numChangedRows: bigint
@@ -19,6 +21,4 @@ export class UpdateResult {
   }
 }
 
-for (const property of ['numUpdatedRows', 'numChangedRows']) {
-  Object.defineProperty(UpdateResult.prototype, property, { enumerable: true })
-}
+setEnumerableProperties(UpdateResult, 'numUpdatedRows', 'numChangedRows')

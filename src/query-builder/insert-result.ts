@@ -1,3 +1,5 @@
+import { setEnumerableProperties } from '../util/object-utils.js'
+
 /**
  * The result of an insert query.
  *
@@ -48,6 +50,4 @@ export class InsertResult {
   }
 }
 
-for (const property of ['insertId', 'numInsertedOrUpdatedRows']) {
-  Object.defineProperty(InsertResult.prototype, property, { enumerable: true })
-}
+setEnumerableProperties(InsertResult, 'insertId', 'numInsertedOrUpdatedRows')

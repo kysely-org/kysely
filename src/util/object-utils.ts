@@ -1,3 +1,5 @@
+import { Type } from './type-utils.js'
+
 export function isEmpty(obj: ArrayLike<unknown> | string | object): boolean {
   if (Array.isArray(obj) || isString(obj) || isBuffer(obj)) {
     return obj.length === 0
@@ -156,4 +158,13 @@ function compareGenericObjects(
   }
 
   return true
+}
+
+export function setEnumerableProperties<T>(
+  clazz: Type<T>,
+  ...properties: (keyof T)[]
+) {
+  properties.forEach((property) => {
+    Object.defineProperty(clazz.prototype, property, { enumerable: true })
+  })
 }
