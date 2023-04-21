@@ -29,7 +29,7 @@ export function Playground({
         background: gray.gray12,
       }}
       allow="clipboard-write"
-      src={`https://wirekang.github.io/kysely-playground/?${params.toString()}`}
+      src={`https://kyse.link/?${params.toString()}`}
     />
   )
 }
