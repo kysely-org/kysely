@@ -187,7 +187,7 @@ type UpdateablePerson = Updateable<PersonTable>
 
 # Playground
 
-[@wirekang](https://github.com/wirekang) has created a [playground for Kysely](https://wirekang.github.io/kysely-playground/?p=f&i=-NLp3n_P5fyeQKMQda8n). You can use to quickly test stuff out and for creating code examples for your issues, PRs and discord messages.
+[@wirekang](https://github.com/wirekang) has created a [playground for Kysely](https://kyse.link). You can use to quickly test stuff out and for creating code examples for your issues, PRs and discord messages.
 
 # Generating types
 
