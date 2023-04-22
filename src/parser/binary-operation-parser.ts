@@ -17,6 +17,7 @@ import {
   isComparisonOperator,
   isBinaryOperator,
   OPERATORS,
+  JSONOperator,
 } from '../operation-node/operator-node.js'
 import { ParensNode } from '../operation-node/parens-node.js'
 import {
@@ -66,6 +67,42 @@ export type ComparisonOperatorExpression =
 export type ArithmeticOperatorExpression =
   | ArithmeticOperator
   | Expression<unknown>
+
+export type JSONOperandReferenceExpression<
+  DB,
+  TB extends keyof DB,
+  RE,
+  TRE extends ExtractTypeFromReferenceExpression<
+    DB,
+    TB,
+    RE
+  > = ExtractTypeFromReferenceExpression<DB, TB, RE>
+> = TRE extends Array<any>
+  ? number
+  : TRE extends object
+  ? keyof Exclude<TRE, undefined | null>
+  : never
+
+export type ExtractTypeFromJSONOperation<
+  DB,
+  TB extends keyof DB,
+  RE extends ReferenceExpression<DB, TB>,
+  OP extends JSONOperator,
+  SRE extends JSONOperandReferenceExpression<DB, TB, RE>,
+  TRE extends ExtractTypeFromReferenceExpression<
+    DB,
+    TB,
+    RE
+  > = ExtractTypeFromReferenceExpression<DB, TB, RE>
+> = OP extends '->>'
+  ? unknown
+  : undefined extends TRE
+  ? null | Exclude<Exclude<TRE, null | undefined>[SRE], undefined>
+  : null extends TRE
+  ? null | Exclude<Exclude<TRE, null | undefined>[SRE], undefined>
+  : undefined extends TRE[SRE]
+  ? null | Exclude<TRE[SRE], undefined>
+  : TRE[SRE]
 
 type FilterExpressionType = 'where' | 'having' | 'on'
 
