@@ -89,20 +89,22 @@ export type ExtractTypeFromJSONOperation<
   RE extends ReferenceExpression<DB, TB>,
   OP extends JSONOperator,
   SRE extends JSONOperandReferenceExpression<DB, TB, RE>,
-  TRE extends ExtractTypeFromReferenceExpression<
+  RET extends ExtractTypeFromReferenceExpression<
     DB,
     TB,
     RE
   > = ExtractTypeFromReferenceExpression<DB, TB, RE>
-> = OP extends '->>'
+> = OP extends '->>' // we've got no way to tell the unwrapped type.
   ? unknown
-  : undefined extends TRE
-  ? null | Exclude<Exclude<TRE, null | undefined>[SRE], undefined>
-  : null extends TRE
-  ? null | Exclude<Exclude<TRE, null | undefined>[SRE], undefined>
-  : undefined extends TRE[SRE]
-  ? null | Exclude<TRE[SRE], undefined>
-  : TRE[SRE]
+  : undefined extends RET
+  ? null | Exclude<Exclude<RET, null | undefined>[SRE], undefined>
+  : null extends RET
+  ? null | Exclude<Exclude<RET, null | undefined>[SRE], undefined>
+  : RET extends Array<any> // we've got no way to tell if array[index] is in db or not
+  ? null | Exclude<RET[SRE], undefined>
+  : undefined extends RET[SRE]
+  ? null | Exclude<RET[SRE], undefined>
+  : RET[SRE]
 
 type FilterExpressionType = 'where' | 'having' | 'on'
 

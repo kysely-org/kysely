@@ -26,6 +26,8 @@ import { QueryExecutor } from '../query-executor/query-executor.js'
 import {
   BinaryOperatorExpression,
   ComparisonOperatorExpression,
+  ExtractTypeFromJSONOperation,
+  JSONOperandReferenceExpression,
   OperandValueExpression,
   OperandValueExpressionOrList,
   parseValueBinaryOperation,
@@ -37,6 +39,7 @@ import { ParensNode } from '../operation-node/parens-node.js'
 import { ExpressionWrapper } from './expression-wrapper.js'
 import {
   ComparisonOperator,
+  JSONOperator,
   UnaryOperator,
 } from '../operation-node/operator-node.js'
 import { SqlBool } from '../util/type-utils.js'
@@ -286,9 +289,67 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
   ): ExpressionWrapper<O>
 
   /**
+   * Creates a JSON traversal expression.
+   *
+   * This function returns an {@link Expression} and can be used pretty much anywhere.
+   * See the examples for a couple of possible use cases.
+   *
+   * `>>` operator variants (e.g. `->>`) result in `unknown` type. Kysely cannot
+   * know the type of the unwrapped value. Use {@link ExpressionWrapper.$castTo}
+   * to assign a proper type.
+   *
+   * JSON array traversal, or optional/nullable data traversal, result in nullable
+   * values (e.g. `string | null`). Use {@link SelectQueryBuilder.$narrowType}
+   * to narrow the type.
+   *
+   * ### Examples
+   *
+   * Shallow JSON traversal of `{ "name": { "first": string }, "roles": string[] }`:
+   *
+   * ```ts
+   * db.selectFrom('person')
+   *   .select(({ jxp }) => [
+   *     jxp('name', '->', 'first').as('first_name'),
+   *     jxp('roles', '->', 0).as('primary_role')
+   *   ])
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * select "name"->'first' as "first_name" from "person"
+   * ```
+   *
+   * Deep JSON traversal of `{ "roles": { "title": string }[] }`:
+   *
+   * ```ts
+   * db.selectFrom('person')
+   *   .select(({ jxp }) =>
+   *     jxp(jxp('roles', '->', 0), '->', 'title').as('primary_role')
+   *   )
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * select "roles"->0->'title' as "primary_role" from "person"
+   * ```
+   */
+  jxp<
+    RE extends ReferenceExpression<DB, TB>,
+    OP extends JSONOperator,
+    SRE extends JSONOperandReferenceExpression<DB, TB, RE>
+  >(
+    lhs: RE,
+    op: OP,
+    rhs: SRE
+  ): ExpressionWrapper<ExtractTypeFromJSONOperation<DB, TB, RE, OP, SRE>>
+
+  /**
    * Creates a binary expression.
    *
    * See {@link cmpr} for creating binary comparison operations.
+   * See {@link jxp} for creating JSON traversal operations.
    *
    * This function returns an {@link Expression} and can be used pretty much anywhere.
    * See the examples for a couple of possible use cases.
@@ -526,6 +587,18 @@ export function createExpressionBuilder<DB, TB extends keyof DB>(
       rhs: OperandValueExpressionOrList<DB, TB, RE>
     ): ExpressionWrapper<O> {
       return new ExpressionWrapper(parseValueBinaryOperation(lhs, op, rhs))
+    },
+
+    jxp<
+      RE extends ReferenceExpression<DB, TB>,
+      OP extends JSONOperator,
+      SRE extends JSONOperandReferenceExpression<DB, TB, RE>
+    >(
+      lhs: RE,
+      op: OP,
+      rhs: SRE
+    ): ExpressionWrapper<ExtractTypeFromJSONOperation<DB, TB, RE, OP, SRE>> {
+      throw new Error('unimplemented!')
     },
 
     bxp<
