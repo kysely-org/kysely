@@ -26,8 +26,6 @@ import { QueryExecutor } from '../query-executor/query-executor.js'
 import {
   BinaryOperatorExpression,
   ComparisonOperatorExpression,
-  ExtractTypeFromJSONOperation,
-  JSONOperandReferenceExpression,
   OperandValueExpression,
   OperandValueExpressionOrList,
   parseValueBinaryOperation,
@@ -50,6 +48,10 @@ import {
 } from '../parser/value-parser.js'
 import { NOOP_QUERY_EXECUTOR } from '../query-executor/noop-query-executor.js'
 import { ValueNode } from '../operation-node/value-node.js'
+import {
+  ExtractTypeFromJSONOperation,
+  JSONPathOperandExpression,
+} from '../parser/json-operation-parser.js'
 
 export interface ExpressionBuilder<DB, TB extends keyof DB> {
   /**
@@ -338,7 +340,7 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
   jxp<
     RE extends ReferenceExpression<DB, TB>,
     OP extends JSONOperator,
-    SRE extends JSONOperandReferenceExpression<DB, TB, RE>
+    SRE extends JSONPathOperandExpression<DB, TB, RE>
   >(
     lhs: RE,
     op: OP,
@@ -592,7 +594,7 @@ export function createExpressionBuilder<DB, TB extends keyof DB>(
     jxp<
       RE extends ReferenceExpression<DB, TB>,
       OP extends JSONOperator,
-      SRE extends JSONOperandReferenceExpression<DB, TB, RE>
+      SRE extends JSONPathOperandExpression<DB, TB, RE>
     >(
       lhs: RE,
       op: OP,
