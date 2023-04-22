@@ -236,3 +236,7 @@ export {
   OperandValueExpressionOrList,
 } from './parser/binary-operation-parser.js'
 export { ExistsExpression } from './parser/unary-operation-parser.js'
+export {
+  ExtractTypeFromJSONOperation,
+  JSONPathOperandExpression,
+} from './parser/json-operation-parser.js'
