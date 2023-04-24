@@ -594,12 +594,12 @@ export function createExpressionBuilder<DB, TB extends keyof DB>(
     jxp<
       RE extends ReferenceExpression<DB, TB>,
       OP extends JSONOperator,
-      SRE extends JSONPathOperandExpression<DB, TB, RE>
+      JP extends JSONPathOperandExpression<DB, TB, RE>
     >(
       lhs: RE,
       op: OP,
-      rhs: SRE
-    ): ExpressionWrapper<ExtractTypeFromJSONOperation<DB, TB, RE, OP, SRE>> {
+      rhs: JP
+    ): ExpressionWrapper<ExtractTypeFromJSONOperation<DB, TB, RE, OP, JP>> {
       throw new Error('unimplemented!')
     },
 

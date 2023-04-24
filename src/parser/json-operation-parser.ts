@@ -4,13 +4,10 @@ export type JSONPathOperandExpression<
   DB,
   TB extends keyof DB,
   RE
-> = ExtractTypeFromReferenceExpression<DB, TB, RE> extends Array<any>
+> = Array<any> extends ExtractTypeFromReferenceExpression<DB, TB, RE>
   ? number
-  : ExtractTypeFromReferenceExpression<DB, TB, RE> extends object
-  ? keyof Exclude<
-      ExtractTypeFromReferenceExpression<DB, TB, RE>,
-      null | undefined
-    >
+  : ExtractTypeFromReferenceExpression<DB, TB, RE> & {} extends object
+  ? keyof NonNullable<ExtractTypeFromReferenceExpression<DB, TB, RE>>
   : never
 
 export type ExtractTypeFromJSONOperation<
@@ -18,25 +15,31 @@ export type ExtractTypeFromJSONOperation<
   TB extends keyof DB,
   RE,
   OP,
-  JP extends keyof ExtractTypeFromReferenceExpression<DB, TB, RE>
+  JP
 > = OP extends '->>'
   ? unknown
   : undefined extends ExtractTypeFromReferenceExpression<DB, TB, RE>
-  ? null | Exclude<
-      Exclude<
-        ExtractTypeFromReferenceExpression<DB, TB, RE>,
-        null | undefined
-      >[JP],
-      undefined
-    >
+  ?
+      | null
+      | (JP extends keyof NonNullable<
+          ExtractTypeFromReferenceExpression<DB, TB, RE>
+        >
+          ? NonNullable<
+              NonNullable<ExtractTypeFromReferenceExpression<DB, TB, RE>>[JP]
+            >
+          : never)
   : null extends ExtractTypeFromReferenceExpression<DB, TB, RE>
-  ? null | Exclude<
-      Exclude<ExtractTypeFromReferenceExpression<DB, TB, RE>, null>[JP],
-      undefined
-    >
-  : undefined extends ExtractTypeFromReferenceExpression<DB, TB, RE>[JP]
-  ? null | Exclude<
-      ExtractTypeFromReferenceExpression<DB, TB, RE>[JP],
-      undefined
-    >
-  : ExtractTypeFromReferenceExpression<DB, TB, RE>[JP]
+  ?
+      | null
+      | (JP extends keyof NonNullable<
+          ExtractTypeFromReferenceExpression<DB, TB, RE>
+        >
+          ? NonNullable<
+              NonNullable<ExtractTypeFromReferenceExpression<DB, TB, RE>>[JP]
+            >
+          : never)
+  : JP extends keyof ExtractTypeFromReferenceExpression<DB, TB, RE>
+  ? undefined extends ExtractTypeFromReferenceExpression<DB, TB, RE>[JP]
+    ? null | NonNullable<ExtractTypeFromReferenceExpression<DB, TB, RE>[JP]>
+    : ExtractTypeFromReferenceExpression<DB, TB, RE>[JP]
+  : null
