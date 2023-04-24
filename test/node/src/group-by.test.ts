@@ -245,7 +245,7 @@ for (const dialect of DIALECTS) {
       const result = await ctx.db
         .selectFrom('person')
         .select('person.first_name')
-        .if(filterByPetCount, (qb) =>
+        .$if(filterByPetCount, (qb) =>
           qb
             .innerJoin('pet', 'pet.owner_id', 'person.id')
             .having(count('pet.id'), '>', 1)

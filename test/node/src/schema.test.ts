@@ -797,7 +797,7 @@ for (const dialect of DIALECTS) {
         const builder = ctx.db.schema
           .createTable('test')
           .addColumn('id', 'integer', (col) => col.notNull())
-          .call((builder) =>
+          .$call((builder) =>
             builder.addColumn('call_me', 'varchar(10)', (col) =>
               col.defaultTo('maybe')
             )
@@ -2447,7 +2447,7 @@ for (const dialect of DIALECTS) {
       it('should alter a table calling query builder functions', async () => {
         const builder = ctx.db.schema
           .alterTable('test')
-          .call((builder) =>
+          .$call((builder) =>
             builder.addColumn('abc', 'integer', (col) => col.defaultTo('42'))
           )
 

@@ -371,7 +371,7 @@ async function testCall(db: Kysely<Database>) {
   const [r1] = await db
     .selectFrom('pet as p')
     .select('p.species')
-    .call((qb) => qb.select('name'))
+    .$call((qb) => qb.select('name'))
     .execute()
 
   expectType<{ species: 'dog' | 'cat'; name: string }>(r1)
@@ -384,7 +384,7 @@ async function testIf(db: Kysely<Database>) {
   const [r1] = await db
     .selectFrom('pet as p')
     .select('p.species')
-    .if(condition, (qb) => qb.select('name'))
+    .$if(condition, (qb) => qb.select('name'))
     .execute()
 
   expectType<{ species: 'dog' | 'cat'; name?: string }>(r1)
@@ -392,7 +392,7 @@ async function testIf(db: Kysely<Database>) {
   // Conditional returning in delete
   const [r2] = await db
     .deleteFrom('person')
-    .if(condition, (qb) => qb.returning('first_name'))
+    .$if(condition, (qb) => qb.returning('first_name'))
     .execute()
 
   expectType<{ first_name?: string }>(r2)
@@ -401,7 +401,7 @@ async function testIf(db: Kysely<Database>) {
   const [r3] = await db
     .deleteFrom('person')
     .returning('first_name')
-    .if(condition, (qb) => qb.returning('last_name'))
+    .$if(condition, (qb) => qb.returning('last_name'))
     .execute()
 
   expectType<{ first_name: string; last_name?: string | null }>(r3)
@@ -409,7 +409,7 @@ async function testIf(db: Kysely<Database>) {
   // Conditional where in delete
   const [r4] = await db
     .deleteFrom('person')
-    .if(condition, (qb) => qb.where('id', '=', 1))
+    .$if(condition, (qb) => qb.where('id', '=', 1))
     .execute()
 
   expectType<DeleteResult>(r4)
@@ -418,7 +418,7 @@ async function testIf(db: Kysely<Database>) {
   const [r5] = await db
     .deleteFrom('person')
     .returning('first_name')
-    .if(condition, (qb) => qb.where('id', '=', 1))
+    .$if(condition, (qb) => qb.where('id', '=', 1))
     .execute()
 
   expectType<{ first_name: string }>(r5)
@@ -427,7 +427,7 @@ async function testIf(db: Kysely<Database>) {
   const [r6] = await db
     .updateTable('person')
     .set({ last_name: 'Foo' })
-    .if(condition, (qb) => qb.returning('first_name'))
+    .$if(condition, (qb) => qb.returning('first_name'))
     .execute()
 
   expectType<{ first_name?: string }>(r6)
@@ -437,7 +437,7 @@ async function testIf(db: Kysely<Database>) {
     .updateTable('person')
     .set({ last_name: 'Foo' })
     .returning('first_name')
-    .if(condition, (qb) => qb.returning('last_name'))
+    .$if(condition, (qb) => qb.returning('last_name'))
     .execute()
 
   expectType<{ first_name: string; last_name?: string | null }>(r7)
@@ -446,7 +446,7 @@ async function testIf(db: Kysely<Database>) {
   const [r8] = await db
     .updateTable('person')
     .set({ last_name: 'Foo' })
-    .if(condition, (qb) => qb.where('id', '=', 1))
+    .$if(condition, (qb) => qb.where('id', '=', 1))
     .execute()
 
   expectType<UpdateResult>(r8)
@@ -456,7 +456,7 @@ async function testIf(db: Kysely<Database>) {
     .updateTable('person')
     .set({ last_name: 'Foo' })
     .returning('first_name')
-    .if(condition, (qb) => qb.where('id', '=', 1))
+    .$if(condition, (qb) => qb.where('id', '=', 1))
     .execute()
 
   expectType<{ first_name: string }>(r9)
@@ -465,7 +465,7 @@ async function testIf(db: Kysely<Database>) {
   const [r10] = await db
     .insertInto('person')
     .values({ first_name: 'Foo', last_name: 'Bar', gender: 'other', age: 0 })
-    .if(condition, (qb) => qb.returning('first_name'))
+    .$if(condition, (qb) => qb.returning('first_name'))
     .execute()
 
   expectType<{ first_name?: string }>(r10)
@@ -475,7 +475,7 @@ async function testIf(db: Kysely<Database>) {
     .insertInto('person')
     .values({ first_name: 'Foo', last_name: 'Bar', gender: 'other', age: 0 })
     .returning('first_name')
-    .if(condition, (qb) => qb.returning('last_name'))
+    .$if(condition, (qb) => qb.returning('last_name'))
     .execute()
 
   expectType<{ first_name: string; last_name?: string | null }>(r11)
@@ -484,7 +484,7 @@ async function testIf(db: Kysely<Database>) {
   const [r12] = await db
     .insertInto('person')
     .values({ first_name: 'Foo', last_name: 'Bar', gender: 'other', age: 0 })
-    .if(condition, (qb) => qb.ignore())
+    .$if(condition, (qb) => qb.ignore())
     .execute()
 
   expectType<InsertResult>(r12)
@@ -494,7 +494,7 @@ async function testIf(db: Kysely<Database>) {
     .insertInto('person')
     .values({ first_name: 'Foo', last_name: 'Bar', gender: 'other', age: 0 })
     .returning('first_name')
-    .if(condition, (qb) => qb.ignore())
+    .$if(condition, (qb) => qb.ignore())
     .execute()
 
   expectType<{ first_name: string }>(r13)
