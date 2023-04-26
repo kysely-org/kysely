@@ -148,7 +148,7 @@ for (const dialect of DIALECTS) {
           .deleteFrom('person')
           .where('gender', '=', 'female')
           .returning('first_name')
-          .if(condition, (qb) => qb.returning('last_name'))
+          .$if(condition, (qb) => qb.returning('last_name'))
 
         testSql(query, dialect, {
           postgres: {

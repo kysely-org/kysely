@@ -229,7 +229,7 @@ export class Kysely<DB>
    *       name: 'Catto',
    *       species: 'cat'
    *     })
-   *     .returning('*')
+   *     .returningAll()
    *     .executeTakeFirst()
    * })
    * ```
