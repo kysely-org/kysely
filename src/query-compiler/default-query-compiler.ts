@@ -96,6 +96,7 @@ import { UsingNode } from '../operation-node/using-node.js'
 import { FunctionNode } from '../operation-node/function-node.js'
 import { JSONPathNode } from '../operation-node/json-path-node.js'
 import { JSONPathLegNode } from '../operation-node/json-path-leg-node.js'
+import { JSONTraversalOperationNode } from '../operation-node/json-traversal-operation-node.js'
 
 export class DefaultQueryCompiler
   extends OperationNodeVisitor
@@ -1309,6 +1310,14 @@ export class DefaultQueryCompiler
     if (node.type === 'ArrayLocation') {
       this.append(']')
     }
+  }
+
+  protected override visitJSONTraversalOperation(
+    node: JSONTraversalOperationNode
+  ): void {
+    this.visitNode(node.leftOperand)
+    this.visitNode(node.operator)
+    this.visitNode(node.rightOperand)
   }
 
   protected append(str: string): void {

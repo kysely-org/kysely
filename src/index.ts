@@ -180,6 +180,9 @@ export * from './operation-node/set-operation-node.js'
 export * from './operation-node/binary-operation-node.js'
 export * from './operation-node/unary-operation-node.js'
 export * from './operation-node/using-node.js'
+export * from './operation-node/json-path-leg-node.js'
+export * from './operation-node/json-path-node.js'
+export * from './operation-node/json-traversal-operation-node.js'
 
 export * from './util/column-type.js'
 export * from './util/compilable.js'
@@ -237,3 +240,7 @@ export {
   OperandValueExpressionOrList,
 } from './parser/binary-operation-parser.js'
 export { ExistsExpression } from './parser/unary-operation-parser.js'
+export {
+  JSONPathBuilderOrFactory,
+  JSONPathExpression,
+} from './parser/json-parser.js'

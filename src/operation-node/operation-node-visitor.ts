@@ -84,6 +84,7 @@ import { UsingNode } from './using-node.js'
 import { FunctionNode } from './function-node.js'
 import { JSONPathNode } from './json-path-node.js'
 import { JSONPathLegNode } from './json-path-leg-node.js'
+import { JSONTraversalOperationNode } from './json-traversal-operation-node.js'
 
 export abstract class OperationNodeVisitor {
   protected readonly nodeStack: OperationNode[] = []
@@ -175,6 +176,7 @@ export abstract class OperationNodeVisitor {
     FunctionNode: this.visitFunction.bind(this),
     JSONPathNode: this.visitJSONPath.bind(this),
     JSONPathLegNode: this.visitJSONPathLeg.bind(this),
+    JSONTraversalOperationNode: this.visitJSONTraversalOperation.bind(this),
   })
 
   protected readonly visitNode = (node: OperationNode): void => {
@@ -274,4 +276,7 @@ export abstract class OperationNodeVisitor {
   protected abstract visitFunction(node: FunctionNode): void
   protected abstract visitJSONPath(node: JSONPathNode): void
   protected abstract visitJSONPathLeg(node: JSONPathLegNode): void
+  protected abstract visitJSONTraversalOperation(
+    node: JSONTraversalOperationNode
+  ): void
 }

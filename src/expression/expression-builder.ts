@@ -49,9 +49,9 @@ import {
 import { NOOP_QUERY_EXECUTOR } from '../query-executor/noop-query-executor.js'
 import { ValueNode } from '../operation-node/value-node.js'
 import {
-  ExtractTypeFromJSONOperation,
-  JSONPathOperandExpression,
-} from '../parser/json-operation-parser.js'
+  JSONPathExpression,
+  parseJSONTraversalOperation,
+} from '../parser/json-parser.js'
 
 export interface ExpressionBuilder<DB, TB extends keyof DB> {
   /**
@@ -296,56 +296,56 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    * This function returns an {@link Expression} and can be used pretty much anywhere.
    * See the examples for a couple of possible use cases.
    *
-   * `>>` operator variants (e.g. `->>`) result in `unknown` type. Kysely cannot
-   * know the type of the unwrapped value. Use {@link ExpressionWrapper.$castTo}
-   * to assign a proper type.
-   *
    * JSON array traversal, or optional/nullable data traversal, result in nullable
    * values (e.g. `string | null`). Use {@link SelectQueryBuilder.$narrowType}
    * to narrow the type.
    *
    * ### Examples
    *
-   * Shallow JSON traversal of `{ "name": { "first": string }, "roles": string[] }`:
+   * Shallow JSON traversal of `{ "name": { "first": string }, "roles": string[] }`
+   * using JSON path syntax:
    *
    * ```ts
    * db.selectFrom('person')
    *   .select(({ jxp }) => [
-   *     jxp('name', '->', 'first').as('first_name'),
-   *     jxp('roles', '->', 0).as('primary_role')
+   *     jxp('name', '->>', (pb) => pb.key('first')).as('first_name'),
+   *     jxp('roles', '->>', (pb) => pb.at(0)).as('primary_role')
    *   ])
    * ```
    *
-   * The generated SQL (PostgreSQL):
+   * The generated SQL (MySQL):
    *
    * ```sql
-   * select "name"->'first' as "first_name" from "person"
+   * select `name`->>'$.first' as `first_name`,
+   *   `roles`->>'$[0]' as `primary_role`
+   * from `person`
    * ```
    *
-   * Deep JSON traversal of `{ "roles": { "title": string }[] }`:
+   * Deep JSON traversal of `{ "roles": { "title": string }[] }` using JSON path
+   * syntax:
    *
    * ```ts
    * db.selectFrom('person')
    *   .select(({ jxp }) =>
-   *     jxp(jxp('roles', '->', 0), '->', 'title').as('primary_role')
+   *     jxp('roles', '->>', (pb) => pb.at(-1).key('title')).as('oldest_role')
    *   )
    * ```
    *
-   * The generated SQL (PostgreSQL):
+   * The generated SQL (MySQL):
    *
    * ```sql
-   * select "roles"->0->'title' as "primary_role" from "person"
+   * select `roles`->>'$[-1].title' as `primary_role` from `person`
    * ```
    */
   jxp<
-    RE extends ReferenceExpression<DB, TB>,
-    OP extends JSONOperator,
-    SRE extends JSONPathOperandExpression<DB, TB, RE>
+    O,
+    RE extends ReferenceExpression<DB, TB> = ReferenceExpression<DB, TB>,
+    OP extends JSONOperator = JSONOperator
   >(
     lhs: RE,
     op: OP,
-    rhs: SRE
-  ): ExpressionWrapper<ExtractTypeFromJSONOperation<DB, TB, RE, OP, SRE>>
+    rhs: JSONPathExpression<ExtractTypeFromReferenceExpression<DB, TB, RE>, O>
+  ): ExpressionWrapper<O>
 
   /**
    * Creates a binary expression.
@@ -592,15 +592,15 @@ export function createExpressionBuilder<DB, TB extends keyof DB>(
     },
 
     jxp<
-      RE extends ReferenceExpression<DB, TB>,
-      OP extends JSONOperator,
-      JP extends JSONPathOperandExpression<DB, TB, RE>
+      O,
+      RE extends ReferenceExpression<DB, TB> = ReferenceExpression<DB, TB>,
+      OP extends JSONOperator = JSONOperator
     >(
       lhs: RE,
       op: OP,
-      rhs: JP
-    ): ExpressionWrapper<ExtractTypeFromJSONOperation<DB, TB, RE, OP, JP>> {
-      throw new Error('unimplemented!')
+      rhs: JSONPathExpression<ExtractTypeFromReferenceExpression<DB, TB, RE>, O>
+    ): ExpressionWrapper<O> {
+      return new ExpressionWrapper(parseJSONTraversalOperation(lhs, op, rhs))
     },
 
     bxp<

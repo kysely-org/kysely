@@ -50,7 +50,7 @@ export const ARITHMETIC_OPERATORS = [
   '>>',
 ] as const
 
-export const JSON_OPERATORS = ['->'] as const
+export const JSON_OPERATORS = ['->>'] as const
 
 export const BINARY_OPERATORS = [
   ...COMPARISON_OPERATORS,

@@ -82,6 +82,7 @@ import { UsingNode } from './using-node.js'
 import { FunctionNode } from './function-node.js'
 import { JSONPathNode } from './json-path-node.js'
 import { JSONPathLegNode } from './json-path-leg-node.js'
+import { JSONTraversalOperationNode } from './json-traversal-operation-node.js'
 
 /**
  * Transforms an operation node tree into another one.
@@ -198,6 +199,7 @@ export class OperationNodeTransformer {
     FunctionNode: this.transformFunction.bind(this),
     JSONPathNode: this.transformJSONPath.bind(this),
     JSONPathLegNode: this.transformJSONPathLeg.bind(this),
+    JSONTraversalOperationNode: this.transformJSONTraversalOperation.bind(this),
   })
 
   transformNode<T extends OperationNode | undefined>(node: T): T {
@@ -914,6 +916,17 @@ export class OperationNodeTransformer {
       kind: 'JSONPathLegNode',
       type: node.type,
       value: this.transformNode(node.value),
+    })
+  }
+
+  protected transformJSONTraversalOperation(
+    node: JSONTraversalOperationNode
+  ): JSONTraversalOperationNode {
+    return requireAllProps<JSONTraversalOperationNode>({
+      kind: 'JSONTraversalOperationNode',
+      leftOperand: this.transformNode(node.leftOperand),
+      operator: this.transformNode(node.operator),
+      rightOperand: this.transformNode(node.rightOperand),
     })
   }
 
