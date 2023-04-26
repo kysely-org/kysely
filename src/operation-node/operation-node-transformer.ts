@@ -80,6 +80,8 @@ import { BinaryOperationNode } from './binary-operation-node.js'
 import { UnaryOperationNode } from './unary-operation-node.js'
 import { UsingNode } from './using-node.js'
 import { FunctionNode } from './function-node.js'
+import { JSONPathNode } from './json-path-node.js'
+import { JSONPathLegNode } from './json-path-leg-node.js'
 
 /**
  * Transforms an operation node tree into another one.
@@ -194,6 +196,8 @@ export class OperationNodeTransformer {
     UnaryOperationNode: this.transformUnaryOperation.bind(this),
     UsingNode: this.transformUsing.bind(this),
     FunctionNode: this.transformFunction.bind(this),
+    JSONPathNode: this.transformJSONPath.bind(this),
+    JSONPathLegNode: this.transformJSONPathLeg.bind(this),
   })
 
   transformNode<T extends OperationNode | undefined>(node: T): T {
@@ -895,6 +899,21 @@ export class OperationNodeTransformer {
       kind: 'FunctionNode',
       func: node.func,
       arguments: this.transformNodeList(node.arguments),
+    })
+  }
+
+  protected transformJSONPath(node: JSONPathNode): JSONPathNode {
+    return requireAllProps<JSONPathNode>({
+      kind: 'JSONPathNode',
+      pathLegs: this.transformNodeList(node.pathLegs),
+    })
+  }
+
+  protected transformJSONPathLeg(node: JSONPathLegNode): JSONPathLegNode {
+    return requireAllProps<JSONPathLegNode>({
+      kind: 'JSONPathLegNode',
+      type: node.type,
+      value: this.transformNode(node.value),
     })
   }
 

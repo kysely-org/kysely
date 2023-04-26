@@ -94,6 +94,8 @@ import { BinaryOperationNode } from '../operation-node/binary-operation-node.js'
 import { UnaryOperationNode } from '../operation-node/unary-operation-node.js'
 import { UsingNode } from '../operation-node/using-node.js'
 import { FunctionNode } from '../operation-node/function-node.js'
+import { JSONPathNode } from '../operation-node/json-path-node.js'
+import { JSONPathLegNode } from '../operation-node/json-path-leg-node.js'
 
 export class DefaultQueryCompiler
   extends OperationNodeVisitor
@@ -1287,6 +1289,26 @@ export class DefaultQueryCompiler
     this.append('(')
     this.compileList(node.arguments)
     this.append(')')
+  }
+
+  protected override visitJSONPath(node: JSONPathNode): void {
+    this.append("'$")
+
+    for (const pathLeg of node.pathLegs) {
+      this.visitJSONPathLeg(pathLeg)
+    }
+
+    this.append("'")
+  }
+
+  protected override visitJSONPathLeg(node: JSONPathLegNode): void {
+    this.append(node.type === 'ArrayLocation' ? '[' : '.')
+
+    this.visitNode(node.value)
+
+    if (node.type === 'ArrayLocation') {
+      this.append(']')
+    }
   }
 
   protected append(str: string): void {

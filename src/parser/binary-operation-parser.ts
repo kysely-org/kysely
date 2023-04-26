@@ -17,7 +17,6 @@ import {
   isComparisonOperator,
   isBinaryOperator,
   OPERATORS,
-  JSONOperator,
 } from '../operation-node/operator-node.js'
 import { ParensNode } from '../operation-node/parens-node.js'
 import {

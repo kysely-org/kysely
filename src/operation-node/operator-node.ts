@@ -50,24 +50,22 @@ export const ARITHMETIC_OPERATORS = [
   '>>',
 ] as const
 
-export const JSON_OPERATORS = [
-  '->',
-  '->>',
-  // '#>',
-  // '#>>'
-] as const
+export const JSON_OPERATORS = ['->'] as const
 
 export const BINARY_OPERATORS = [
   ...COMPARISON_OPERATORS,
   ...ARITHMETIC_OPERATORS,
-  ...JSON_OPERATORS,
   '&&',
   '||',
 ] as const
 
 export const UNARY_FILTER_OPERATORS = ['exists', 'not exists'] as const
 export const UNARY_OPERATORS = ['not', '-', ...UNARY_FILTER_OPERATORS] as const
-export const OPERATORS = [...BINARY_OPERATORS, ...UNARY_OPERATORS] as const
+export const OPERATORS = [
+  ...BINARY_OPERATORS,
+  ...JSON_OPERATORS,
+  ...UNARY_OPERATORS,
+] as const
 
 export type ComparisonOperator = typeof COMPARISON_OPERATORS[number]
 export type ArithmeticOperator = typeof ARITHMETIC_OPERATORS[number]

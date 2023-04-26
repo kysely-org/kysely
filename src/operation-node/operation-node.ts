@@ -78,6 +78,8 @@ export type OperationNodeKind =
   | 'UnaryOperationNode'
   | 'UsingNode'
   | 'FunctionNode'
+  | 'JSONPathNode'
+  | 'JSONPathLegNode'
 
 export interface OperationNode {
   readonly kind: OperationNodeKind
