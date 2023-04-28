@@ -3,10 +3,11 @@ import { gray } from "@radix-ui/colors"
 
 export function Playground({
   code,
-  setupCode,
+  setupCode = exampleSetup,
   kyselyVersion,
   dialect = "postgres",
 }: PlaygroundProps) {
+  console.log("code", code)
   const params = new URLSearchParams()
   params.set("p", "j")
   params.set("i", JSON.stringify({
@@ -28,7 +29,7 @@ export function Playground({
         background: gray.gray12,
       }}
       allow="clipboard-write"
-      src={`https://wirekang.github.io/kysely-playground/?${params.toString()}`}
+      src={`https://kyse.link/?${params.toString()}`}
     />
   )
 }
@@ -37,7 +38,7 @@ interface PlaygroundProps {
   kyselyVersion?: string
   dialect?: "postgres"
   code: string
-  setupCode: string,
+  setupCode?: string,
 }
 
 export const exampleSetup = `

@@ -327,7 +327,7 @@ for (const dialect of DIALECTS) {
           .updateTable('person')
           .set({ last_name: 'Barson' })
           .returning('first_name')
-          .if(condition, (qb) => qb.returning('last_name'))
+          .$if(condition, (qb) => qb.returning('last_name'))
 
         const result = await query.executeTakeFirstOrThrow()
 

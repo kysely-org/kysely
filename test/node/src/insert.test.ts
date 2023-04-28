@@ -765,7 +765,7 @@ for (const dialect of DIALECTS) {
               gender: 'other',
             })
             .returning('first_name')
-            .if(condition, (qb) => qb.returning('last_name'))
+            .$if(condition, (qb) => qb.returning('last_name'))
 
           const result = await query.executeTakeFirstOrThrow()
 
