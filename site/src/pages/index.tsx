@@ -264,6 +264,18 @@ function SectionTweets() {
               "Instead of Prisma, I'm testing Kysely, Kysely Codegen, and Atlas. Works great."
             }
           />
+          
+          <TweetQuote
+            authorName={'Mehul Mohan'}
+            authorTitle={'CEO @ codedamn'}
+            avatar={
+              'https://pbs.twimg.com/profile_images/1418658538688155648/CREA-CYu_400x400.jpg'
+            }
+            text="We went with query builder because we did not have more time to waste on ORMs. ORMs might be great but we have the technical capability to pull off just using a query builder. However, we type safety and sanitization for DX and security was a must - hence kysely."
+            tweetLink={
+              'https://twitter.com/mehulmpt/status/1650480912759685120'
+            }
+          />
 
           <TweetQuote
             authorName={'Nicholas Griffin'}
