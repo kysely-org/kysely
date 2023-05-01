@@ -255,7 +255,7 @@ function SectionTweets() {
             authorName={'Johan Eliasson'}
             authorTitle={'Indiehacker & engineer, Ex-CEO @ Nhost'}
             avatar={
-              'https://pbs.twimg.com/profile_images/1447184004558557193/agXMdsqe_400x400.jpg'
+              'https://pbs.twimg.com/profile_images/1647139874682675200/-uwyeCXB_400x400.jpg'
             }
             tweetLink={
               'https://twitter.com/elitasson/status/1642090379066449920'
@@ -305,7 +305,7 @@ function SectionTweets() {
             authorName={'Sam Cook'}
             authorTitle={'Software engineer @ trygamma'}
             avatar={
-              'https://pbs.twimg.com/profile_images/1612150047956672516/BGkIKXdI_400x400.jpg'
+              'https://pbs.twimg.com/profile_images/1649060154569117696/LAfX0qRG_400x400.jpg'
             }
             tweetLink={
               'https://twitter.com/sjc5_/status/1623210443874639873?ref_src=twsrc%5Etfw'
