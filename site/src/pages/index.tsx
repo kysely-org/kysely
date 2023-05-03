@@ -255,7 +255,7 @@ function SectionTweets() {
             authorName={'Johan Eliasson'}
             authorTitle={'Indiehacker & engineer, Ex-CEO @ Nhost'}
             avatar={
-              'https://pbs.twimg.com/profile_images/1447184004558557193/agXMdsqe_400x400.jpg'
+              'https://pbs.twimg.com/profile_images/1647139874682675200/-uwyeCXB_400x400.jpg'
             }
             tweetLink={
               'https://twitter.com/elitasson/status/1642090379066449920'
@@ -276,6 +276,18 @@ function SectionTweets() {
               'https://twitter.com/mehulmpt/status/1650480912759685120'
             }
           />
+          
+          <TweetQuote
+            authorName={'Alberto Gimeno'}
+            authorTitle={'Software Engineer @ Railway'}
+            avatar={
+              'https://pbs.twimg.com/profile_images/1614373062022922241/zUKUXrKP_400x400.jpg'
+            }
+            tweetLink={'https://twitter.com/gimenete/status/1653121152854765569'}
+            text={
+              "I'm a happy @kysely_ user. It's great to see that the code I'm writing now can work with serverless postgresql now!"
+            }
+          />
 
           <TweetQuote
             authorName={'Nicholas Griffin'}
@@ -293,12 +305,24 @@ function SectionTweets() {
             authorName={'Sam Cook'}
             authorTitle={'Software engineer @ trygamma'}
             avatar={
-              'https://pbs.twimg.com/profile_images/1612150047956672516/BGkIKXdI_400x400.jpg'
+              'https://pbs.twimg.com/profile_images/1649060154569117696/LAfX0qRG_400x400.jpg'
             }
             tweetLink={
               'https://twitter.com/sjc5_/status/1623210443874639873?ref_src=twsrc%5Etfw'
             }
             text={'Kysely is amazing.'}
+          />
+          
+          <TweetQuote
+            authorName={'Gannon Hall'}
+            authorTitle={'Product & dev, ex-Google'}
+            avatar={
+              'https://pbs.twimg.com/profile_images/1603091670072819712/EArb-OH4_400x400.jpg'
+            }
+            tweetLink={
+              'https://twitter.com/gannonh/status/1653109305368018944'
+            }
+            text={'Vercel just announced native postgres support and published Prisma and Kysely templates. I like the DX of Prisma and the type safety of Kysely so I use both via prisma-kysley.'}
           />
 
           <TweetQuote
