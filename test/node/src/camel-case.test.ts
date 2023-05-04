@@ -1,4 +1,11 @@
-import { CamelCasePlugin, Generated, Kysely, RawBuilder, sql } from '../../../'
+import {
+  CamelCasePlugin,
+  Generated,
+  Kysely,
+  RawBuilder,
+  SchemaModule,
+  sql,
+} from '../../../'
 
 import {
   DIALECTS,
@@ -34,6 +41,7 @@ for (const dialect of DIALECTS) {
       camelDb = new Kysely<CamelDatabase>({
         ...ctx.config,
         plugins: [new CamelCasePlugin()],
+        SchemaModule,
       })
 
       await camelDb.schema.dropTable('camelPerson').ifExists().execute()

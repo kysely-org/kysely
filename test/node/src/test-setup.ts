@@ -127,7 +127,7 @@ export const DIALECT_CONFIGS = {
   },
 }
 
-const DB_CONFIGS: PerDialect<KyselyConfig> = {
+export const DB_CONFIGS: PerDialect<KyselyConfig> = {
   postgres: {
     dialect: new PostgresDialect({
       pool: async () => new Pool(DIALECT_CONFIGS.postgres),
@@ -162,6 +162,7 @@ export async function initTest(
   const db = await connect({
     ...config,
     log,
+    SchemaModule,
   })
 
   await createDatabase(db, dialect)
