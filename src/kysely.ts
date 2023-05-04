@@ -1,5 +1,5 @@
 import { Dialect } from './dialect/dialect.js'
-import { SchemaModule } from './schema/schema.js'
+import type { SchemaModule } from './schema/schema.js'
 import { DynamicModule } from './dynamic/dynamic.js'
 import { DefaultConnectionProvider } from './driver/default-connection-provider.js'
 import { QueryExecutor } from './query-executor/query-executor.js'
@@ -120,8 +120,19 @@ export class Kysely<DB>
 
   /**
    * Returns the {@link SchemaModule} module for building database schema.
+   *
+   * @throws if {@link SchemaModule} was not provided when instantiating Kysely.
+   * See {@link KyselyConfig} for more information.
    */
   get schema(): SchemaModule {
+    const { SchemaModule } = this.#props.config
+
+    if (!SchemaModule) {
+      throw new Error(
+        'Schema module is not available. You must provide it when instantiating Kysely in order to use it.'
+      )
+    }
+
     return new SchemaModule(this.#props.executor)
   }
 
@@ -442,6 +453,28 @@ export function isKyselyProps(obj: unknown): obj is KyselyProps {
 export interface KyselyConfig {
   readonly dialect: Dialect
   readonly plugins?: KyselyPlugin[]
+
+  /**
+   * Kysely optionally supports DDL (Data Definition Language) SQL queries. To
+   * enable DDL queries, you need to provide the {@link SchemaModule} class when
+   * creating the Kysely instance.
+   *
+   * ```ts
+   * import { PostgresDialect, Kysely, SchemaModule } from 'kysely'
+   *
+   * const db = new Kysely<Database>({
+   *   dialect: new PostgresDialect(postgresConfig),
+   *   SchemaModule,
+   * })
+   *
+   * db.schema
+   *   .createTable('users')
+   *   .addColumn('id', 'serial', (cb) => cb.primaryKey())
+   *   .addColumn('name', 'varchar(255)', (cb) => cb.notNull())
+   *   .execute()
+   * ```
+   */
+  readonly SchemaModule?: typeof SchemaModule
 
   /**
    * A list of log levels to log or a custom logger function.
