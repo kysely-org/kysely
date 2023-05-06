@@ -13,7 +13,7 @@ import {
   parseReferenceExpressionOrList,
 } from '../parser/reference-parser.js'
 import { parseSelectAll } from '../parser/select-parser.js'
-import { Equals, IsNever } from '../util/type-utils.js'
+import { Equals, IsAny } from '../util/type-utils.js'
 import { AggregateFunctionBuilder } from './aggregate-function-builder.js'
 
 /**
@@ -462,7 +462,7 @@ export interface FunctionModule<DB, TB extends keyof DB> {
    * ```
    */
   max<
-    O extends number | string | bigint | null = never,
+    O extends number | string | bigint | null = any,
     C extends StringReference<DB, TB> = StringReference<DB, TB>
   >(
     column: OutputBoundStringReference<DB, TB, C, O>
@@ -523,7 +523,7 @@ export interface FunctionModule<DB, TB extends keyof DB> {
    * ```
    */
   min<
-    O extends number | string | bigint | null = never,
+    O extends number | string | bigint | null = any,
     C extends StringReference<DB, TB> = StringReference<DB, TB>
   >(
     column: OutputBoundStringReference<DB, TB, C, O>
@@ -710,7 +710,7 @@ type OutputBoundStringReference<
   TB extends keyof DB,
   C extends StringReference<DB, TB>,
   O
-> = IsNever<O> extends true
+> = IsAny<O> extends true
   ? C // output not provided, unbound
   : Equals<
       ExtractTypeFromReferenceExpression<DB, TB, C> | null,
@@ -728,5 +728,5 @@ type StringReferenceBoundAggregateFunctionBuilder<
   DB,
   TB,
   | ExtractTypeFromReferenceExpression<DB, TB, C>
-  | (null extends O ? null : never) // output is nullable, but column type might not be nullable.
+  | (IsAny<O> extends true ? never : null extends O ? null : never) // output is nullable, but column type might not be nullable.
 >
