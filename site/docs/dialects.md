@@ -23,3 +23,4 @@ A dialect is the glue between Kysely and the underlying database engine. Check t
 | libSQL/sqld | https://github.com/libsql/kysely-libsql |
 | SingleStore Data API | https://github.com/igalklebanov/kysely-singlestore |
 | Postgres.js | https://github.com/igalklebanov/kysely-postgres-js |
+| Fetch driver | https://github.com/andersgee/kysely-fetch-driver |
