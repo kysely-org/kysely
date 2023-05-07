@@ -82,6 +82,7 @@ for [3rd party dialects](https://kysely-org.github.io/kysely/interfaces/Dialect.
  - [libSQL/sqld](https://github.com/libsql/kysely-libsql)
  - [SingleStore Data API](https://github.com/igalklebanov/kysely-singlestore)
  - [Postgres.js](https://github.com/igalklebanov/kysely-postgres-js)
+ - [Fetch driver](https://github.com/andersgee/kysely-fetch-driver)
 
 # Minimal example
 
