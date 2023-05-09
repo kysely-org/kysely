@@ -2446,6 +2446,41 @@ for (const dialect of DIALECTS) {
         })
       }
 
+      if (dialect !== 'sqlite') {
+        describe('parse schema name', () => {
+          beforeEach(cleanup)
+          afterEach(cleanup)
+
+          it('should parse the schema from table name', async () => {
+            await ctx.db.schema.createSchema('test_schema').ifNotExists().execute()
+            await ctx.db.schema.createTable('test_schema.test').addColumn('id', 'serial').execute();
+
+            const builder = ctx.db.schema
+              .alterTable('test_schema.test')
+              .addColumn('second_column', 'text')
+
+            testSql(builder, dialect, {
+              postgres: {
+                sql: `alter table "test_schema"."test" add column "second_column" text`,
+                parameters: [],
+              },
+              mysql: {
+                sql: "alter table `test_schema`.`test` add column `second_column` text",
+                parameters: [],
+              },
+              sqlite: NOT_SUPPORTED,
+            })
+
+            await builder.execute()
+          })
+
+          async function cleanup() {
+            await ctx.db.schema.dropTable('test_schema.test').ifExists().execute()
+            await ctx.db.schema.dropSchema('test_schema').ifExists().execute()
+          }
+        })
+      }
+
       it('should alter a table calling query builder functions', async () => {
         const builder = ctx.db.schema
           .alterTable('test')
