@@ -101,7 +101,7 @@ for (const dialect of DIALECTS) {
                 '"u" timestamp(6) default current_timestamp not null,',
                 '"v" timestamptz(6),',
                 '"w" char(4),',
-                '"x" char)',
+                '"x" char)'
               ],
               parameters: [],
             },
@@ -176,6 +176,7 @@ for (const dialect of DIALECTS) {
             )
             .addColumn('t', 'char(4)')
             .addColumn('u', 'char')
+            .addColumn('v', 'binary(16)')
 
           testSql(builder, dialect, {
             mysql: {
@@ -201,7 +202,8 @@ for (const dialect of DIALECTS) {
                 '`r` datetime(6),',
                 '`s` timestamp(6) default current_timestamp(6) not null,',
                 '`t` char(4),',
-                '`u` char)',
+                '`u` char,',
+                '`v` binary(16))'
               ],
               parameters: [],
             },
@@ -1128,7 +1130,7 @@ for (const dialect of DIALECTS) {
 
         await builder.execute()
       })
-
+      
       if (dialect !== 'mysql') {
         it('should create a partial index', async () => {
           const builder = ctx.db.schema
