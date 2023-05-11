@@ -6,6 +6,7 @@ import { CommonTableExpressionNameNode } from '../operation-node/common-table-ex
 import { QueryCreator } from '../query-creator.js'
 import { createQueryCreator } from './parse-utils.js'
 import { Expression } from '../expression/expression.js'
+import { DrainOuterGeneric, ShallowRecord } from '../util/type-utils.js'
 
 export type CommonTableExpression<DB, CN extends string> = (
   creator: QueryCreator<DB>
@@ -15,7 +16,7 @@ export type RecursiveCommonTableExpression<DB, CN extends string> = (
   creator: QueryCreator<
     DB &
       // Recursive CTE can select from itself.
-      Record<
+      ShallowRecord<
         ExtractTableFromCommonTableExpressionName<CN>,
         ExtractRowFromCommonTableExpressionName<CN>
       >
@@ -26,12 +27,14 @@ export type QueryCreatorWithCommonTableExpression<
   DB,
   CN extends string,
   CTE
-> = QueryCreator<
-  DB &
-    Record<
-      ExtractTableFromCommonTableExpressionName<CN>,
-      ExtractRowFromCommonTableExpression<CTE>
-    >
+> = DrainOuterGeneric<
+  QueryCreator<
+    DB &
+      ShallowRecord<
+        ExtractTableFromCommonTableExpressionName<CN>,
+        ExtractRowFromCommonTableExpression<CTE>
+      >
+  >
 >
 
 type CommonTableExpressionOutput<DB, CN extends string> =
@@ -83,7 +86,7 @@ type ExtractTableFromCommonTableExpressionName<CN extends string> =
 type ExtractRowFromCommonTableExpressionName<CN extends string> =
   CN extends `${string}(${infer CL})`
     ? { [C in ExtractColumnNamesFromColumnList<CL>]: any }
-    : Record<string, any>
+    : ShallowRecord<string, any>
 
 /**
  * Parses a string like 'id, first_name' into a type 'id' | 'first_name'

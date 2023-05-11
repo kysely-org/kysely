@@ -22,9 +22,11 @@ import { ReturningAllRow, ReturningRow } from '../parser/returning-parser.js'
 import { ReferenceExpression } from '../parser/reference-parser.js'
 import { QueryNode } from '../operation-node/query-node.js'
 import {
+  DrainOuterGeneric,
   MergePartial,
   NarrowPartial,
   Nullable,
+  ShallowRecord,
   SimplifyResult,
   SimplifySingleResult,
 } from '../util/type-utils.js'
@@ -1070,11 +1072,11 @@ type InnerJoinedBuilder<
 > = A extends keyof DB
   ? DeleteQueryBuilder<InnerJoinedDB<DB, A, R>, TB | A, O>
   : // Much faster non-recursive solution for the simple case.
-    DeleteQueryBuilder<DB & Record<A, R>, TB | A, O>
+    DeleteQueryBuilder<DB & ShallowRecord<A, R>, TB | A, O>
 
-type InnerJoinedDB<DB, A extends string, R> = {
+type InnerJoinedDB<DB, A extends string, R> = DrainOuterGeneric<{
   [C in keyof DB | A]: C extends A ? R : C extends keyof DB ? DB[C] : never
-}
+}>
 
 export type DeleteQueryBuilderWithLeftJoin<
   DB,
@@ -1102,15 +1104,15 @@ type LeftJoinedBuilder<
 > = A extends keyof DB
   ? DeleteQueryBuilder<LeftJoinedDB<DB, A, R>, TB | A, O>
   : // Much faster non-recursive solution for the simple case.
-    DeleteQueryBuilder<DB & Record<A, Nullable<R>>, TB | A, O>
+    DeleteQueryBuilder<DB & ShallowRecord<A, Nullable<R>>, TB | A, O>
 
-type LeftJoinedDB<DB, A extends keyof any, R> = {
+type LeftJoinedDB<DB, A extends keyof any, R> = DrainOuterGeneric<{
   [C in keyof DB | A]: C extends A
     ? Nullable<R>
     : C extends keyof DB
     ? DB[C]
     : never
-}
+}>
 
 export type DeleteQueryBuilderWithRightJoin<
   DB,
@@ -1137,7 +1139,12 @@ type RightJoinedBuilder<
   R
 > = DeleteQueryBuilder<RightJoinedDB<DB, TB, A, R>, TB | A, O>
 
-type RightJoinedDB<DB, TB extends keyof DB, A extends keyof any, R> = {
+type RightJoinedDB<
+  DB,
+  TB extends keyof DB,
+  A extends keyof any,
+  R
+> = DrainOuterGeneric<{
   [C in keyof DB | A]: C extends A
     ? R
     : C extends TB
@@ -1145,7 +1152,7 @@ type RightJoinedDB<DB, TB extends keyof DB, A extends keyof any, R> = {
     : C extends keyof DB
     ? DB[C]
     : never
-}
+}>
 
 export type DeleteQueryBuilderWithFullJoin<
   DB,
@@ -1172,7 +1179,12 @@ type OuterJoinedBuilder<
   R
 > = DeleteQueryBuilder<OuterJoinedBuilderDB<DB, TB, A, R>, TB | A, O>
 
-type OuterJoinedBuilderDB<DB, TB extends keyof DB, A extends keyof any, R> = {
+type OuterJoinedBuilderDB<
+  DB,
+  TB extends keyof DB,
+  A extends keyof any,
+  R
+> = DrainOuterGeneric<{
   [C in keyof DB | A]: C extends A
     ? Nullable<R>
     : C extends TB
@@ -1180,4 +1192,4 @@ type OuterJoinedBuilderDB<DB, TB extends keyof DB, A extends keyof any, R> = {
     : C extends keyof DB
     ? DB[C]
     : never
-}
+}>

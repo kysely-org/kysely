@@ -8,6 +8,7 @@ import {
 import { IdentifierNode } from '../operation-node/identifier-node.js'
 import { OperationNode } from '../operation-node/operation-node.js'
 import { AliasedExpression } from '../expression/expression.js'
+import { DrainOuterGeneric, ShallowRecord } from '../util/type-utils.js'
 
 export type TableExpression<DB, TB extends keyof DB> =
   | AnyAliasedTable<DB>
@@ -29,7 +30,7 @@ export type TableReferenceOrList<DB> =
   | TableReference<DB>
   | ReadonlyArray<TableReference<DB>>
 
-export type From<DB, TE> = {
+export type From<DB, TE> = DrainOuterGeneric<{
   [C in
     | keyof DB
     | ExtractAliasFromTableExpression<
@@ -40,11 +41,11 @@ export type From<DB, TE> = {
     : C extends keyof DB
     ? DB[C]
     : never
-}
+}>
 
-export type FromTables<DB, TB extends keyof DB, TE> =
-  | TB
-  | ExtractAliasFromTableExpression<DB, TE>
+export type FromTables<DB, TB extends keyof DB, TE> = DrainOuterGeneric<
+  TB | ExtractAliasFromTableExpression<DB, TE>
+>
 
 export type ExtractTableAlias<DB, TE> = TE extends `${string} as ${infer TA}`
   ? TA
@@ -57,7 +58,7 @@ export type PickTableWithAlias<
   T extends AnyAliasedTable<DB>
 > = T extends `${infer TB} as ${infer A}`
   ? TB extends keyof DB
-    ? Record<A, DB[TB]>
+    ? ShallowRecord<A, DB[TB]>
     : never
   : never
 

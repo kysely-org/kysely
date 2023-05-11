@@ -80,36 +80,11 @@ async function testWith(db: Kysely<Database>) {
 
 async function testManyWith(db: Kysely<Database>) {
   const res = await db
-    .with('w1', (eb) =>
-      eb
-        .selectFrom('person')
-        .select('first_name as fn1')
-        .$assertType<{ fn1: string }>()
-    )
-    .with('w2', (eb) =>
-      eb
-        .selectFrom('person')
-        .select('first_name as fn2')
-        .$assertType<{ fn2: string }>()
-    )
-    .with('w3', (eb) =>
-      eb
-        .selectFrom('person')
-        .select('first_name as fn3')
-        .$assertType<{ fn3: string }>()
-    )
-    .with('w4', (eb) =>
-      eb
-        .selectFrom('person')
-        .select('first_name as fn4')
-        .$assertType<{ fn4: string }>()
-    )
-    .with('w5', (eb) =>
-      eb
-        .selectFrom('person')
-        .select('first_name as fn5')
-        .$assertType<{ fn5: string }>()
-    )
+    .with('w1', (eb) => eb.selectFrom('person').select('first_name as fn1'))
+    .with('w2', (eb) => eb.selectFrom('person').select('first_name as fn2'))
+    .with('w3', (eb) => eb.selectFrom('person').select('first_name as fn3'))
+    .with('w4', (eb) => eb.selectFrom('person').select('first_name as fn4'))
+    .with('w5', (eb) => eb.selectFrom('person').select('first_name as fn5'))
     .with('w6', (eb) => eb.selectFrom('person').select('first_name as fn6'))
     .with('w7', (qb) => qb.selectFrom('person').select('first_name as fn7'))
     .with('w8', (qb) => qb.selectFrom('person').select('first_name as fn8'))
@@ -131,6 +106,10 @@ async function testManyWith(db: Kysely<Database>) {
     ])
     .selectAll()
     .executeTakeFirstOrThrow()
+
+  type IsAny<T> = 0 extends 1 & T ? true : false
+  type ResIsAny = IsAny<typeof res>
+  expectType<ResIsAny>(false)
 
   expectType<{
     fn1: string
