@@ -7,6 +7,7 @@
 [![Pull Requests](https://img.shields.io/github/issues-pr-closed/kysely-org/kysely?label=PRs&logo=github&style=flat)](https://github.com/kysely-org/kysely/pulls?q=is%3Apr+is%3Aopen+sort%3Aupdated-desc)
 [![Vulnerabilities](https://img.shields.io/snyk/vulnerabilities/github/kysely-org/kysely?style=flat&logo=snyk)](https://snyk.io/advisor/npm-package/kysely)
 [![Downloads](https://img.shields.io/npm/dw/kysely?logo=npm)](https://www.npmjs.com/package/kysely)
+[![Bundle Size](https://img.shields.io/bundlephobia/minzip/kysely?label=bundle&logo=npm)](https://bundlephobia.com/package/kysely)
 [![Social](https://img.shields.io/twitter/follow/kysely_?style=social)](https://twitter.com/kysely_)
 
 # [Kysely](https://kysely-org.github.io/kysely/index.html)
