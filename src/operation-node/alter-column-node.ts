@@ -1,8 +1,6 @@
 import { OperationNode } from './operation-node.js'
 import { freeze } from '../util/object-utils.js'
 import { ColumnNode } from './column-node.js'
-import { DataTypeNode } from './data-type-node.js'
-import { ValueNode } from './value-node.js'
 import { RawNode } from './raw-node.js'
 
 export type AlterColumnNodeProps = Omit<AlterColumnNode, 'kind' | 'column'>
@@ -26,20 +24,11 @@ export const AlterColumnNode = freeze({
     return node.kind === 'AlterColumnNode'
   },
 
-  create(column: string): AlterColumnNode {
+  create<T extends keyof AlterColumnNode>(column: string, prop: T, value: Required<AlterColumnNode>[T]): AlterColumnNode {
     return freeze({
       kind: 'AlterColumnNode',
       column: ColumnNode.create(column),
-    })
-  },
-
-  cloneWith(
-    node: AlterColumnNode,
-    props: AlterColumnNodeProps
-  ): AlterColumnNode {
-    return freeze({
-      ...node,
-      ...props,
+      [prop]: value
     })
   },
 })
