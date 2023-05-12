@@ -1130,7 +1130,7 @@ for (const dialect of DIALECTS) {
 
         await builder.execute()
       })
-      
+
       if (dialect !== 'mysql') {
         it('should create a partial index', async () => {
           const builder = ctx.db.schema
@@ -1943,6 +1943,26 @@ for (const dialect of DIALECTS) {
               const builder = ctx.db.schema
                 .alterTable('test')
                 .alterColumn('varchar_col', (ac) => ac.setDataType('text'))
+
+              testSql(builder, dialect, {
+                postgres: {
+                  sql: 'alter table "test" alter column "varchar_col" type text',
+                  parameters: [],
+                },
+                sqlite: {
+                  sql: 'alter table "test" alter column "varchar_col" type text',
+                  parameters: [],
+                },
+                mysql: NOT_SUPPORTED,
+              })
+
+              await builder.execute()
+            })
+
+            it('should set column data type from expression', async () => {
+              const builder = ctx.db.schema
+                .alterTable('test')
+                .alterColumn('varchar_col', (ac) => ac.setDataType(sql`text`))
 
               testSql(builder, dialect, {
                 postgres: {
