@@ -1,9 +1,9 @@
 import { AlterColumnNode } from '../operation-node/alter-column-node.js'
-import {
-  ColumnDataType,
-  DataTypeNode,
-} from '../operation-node/data-type-node.js'
 import { OperationNodeSource } from '../operation-node/operation-node-source.js'
+import {
+  DataTypeExpression,
+  parseDataTypeExpression,
+} from '../parser/data-type-parser.js'
 import {
   DefaultValueExpression,
   parseDefaultValueExpression,
@@ -16,10 +16,10 @@ export class AlterColumnBuilder {
     this.alterColumnNode = alterColumnNode
   }
 
-  setDataType(dataType: ColumnDataType): AlteredColumnBuilder {
+  setDataType(dataType: DataTypeExpression): AlteredColumnBuilder {
     return new AlteredColumnBuilder(
       AlterColumnNode.cloneWith(this.alterColumnNode, {
-        dataType: DataTypeNode.create(dataType),
+        dataType: parseDataTypeExpression(dataType),
       })
     )
   }
