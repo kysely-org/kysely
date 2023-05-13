@@ -40,10 +40,10 @@ export const AlterTableNode = freeze({
     return node.kind === 'AlterTableNode'
   },
 
-  create(table: string): AlterTableNode {
+  create(table: TableNode): AlterTableNode {
     return freeze({
       kind: 'AlterTableNode',
-      table: TableNode.create(table),
+      table,
     })
   },
 
