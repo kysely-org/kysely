@@ -13,6 +13,7 @@ async function testFromSingle(db: Kysely<Database>) {
     age: number
     gender: 'male' | 'female' | 'other'
     modified_at: Date
+    marital_status: 'single' | 'married' | 'divorced' | 'widowed' | null
   }>(r1)
 
   // Table with alias

@@ -10,7 +10,7 @@ export type AlterColumnNodeProps = Omit<AlterColumnNode, 'kind' | 'column'>
 export interface AlterColumnNode extends OperationNode {
   readonly kind: 'AlterColumnNode'
   readonly column: ColumnNode
-  readonly dataType?: DataTypeNode
+  readonly dataType?: OperationNode
   readonly dataTypeExpression?: RawNode
   readonly setDefault?: OperationNode
   readonly dropDefault?: true

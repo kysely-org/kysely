@@ -965,3 +965,62 @@ async function testSelectWithOverAndOrderByUnexpectedColumns(
       .executeTakeFirst()
   )
 }
+
+async function testSelectAsCustomFunctionArgument(db: Kysely<Database>) {
+  await db
+    .selectFrom('person')
+    .select(({ fn }) => [
+      fn('round', [fn.avg('age')]).as('avg_age'),
+      fn('round', [fn.count('age')]).as('total_people'),
+      fn('round', [fn.countAll()]).as('total_all_people'),
+      fn('round', [fn.max('age')]).as('max_age'),
+      fn('round', [fn.min('age')]).as('min_age'),
+      fn('round', [fn.sum('age')]).as('total_age'),
+    ])
+    .executeTakeFirstOrThrow()
+
+  expectError(
+    await db
+      .selectFrom('person')
+      .select(({ fn }) => [
+        fn('round', [fn.avg('NO_SUCH_COLUMN')]).as('avg_age'),
+      ])
+      .executeTakeFirstOrThrow()
+  )
+
+  expectError(
+    await db
+      .selectFrom('person')
+      .select(({ fn }) => [
+        fn('round', [fn.count('NO_SUCH_COLUMN')]).as('avg_age'),
+      ])
+      .executeTakeFirstOrThrow()
+  )
+
+  expectError(
+    await db
+      .selectFrom('person')
+      .select(({ fn }) => [
+        fn('round', [fn.max('NO_SUCH_COLUMN')]).as('avg_age'),
+      ])
+      .executeTakeFirstOrThrow()
+  )
+
+  expectError(
+    await db
+      .selectFrom('person')
+      .select(({ fn }) => [
+        fn('round', [fn.min('NO_SUCH_COLUMN')]).as('avg_age'),
+      ])
+      .executeTakeFirstOrThrow()
+  )
+
+  expectError(
+    await db
+      .selectFrom('person')
+      .select(({ fn }) => [
+        fn('round', [fn.sum('NO_SUCH_COLUMN')]).as('avg_age'),
+      ])
+      .executeTakeFirstOrThrow()
+  )
+}

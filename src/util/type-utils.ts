@@ -174,6 +174,11 @@ export type MergePartial<T1, T2> = T1 & Partial<Omit<T2, keyof T1>>
 export type IsNever<T> = [T] extends [never] ? true : false
 
 /**
+ * Evaluates to `true` if `T` is `any`.
+ */
+export type IsAny<T> = 0 extends T & 1 ? true : false
+
+/**
  * Evaluates to `true` if the types `T` and `U` are equal.
  */
 export type Equals<T, U> = (<G>() => G extends T ? 1 : 2) extends <

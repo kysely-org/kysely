@@ -80,6 +80,8 @@ import { BinaryOperationNode } from './binary-operation-node.js'
 import { UnaryOperationNode } from './unary-operation-node.js'
 import { UsingNode } from './using-node.js'
 import { FunctionNode } from './function-node.js'
+import { CaseNode } from './case-node.js'
+import { WhenNode } from './when-node.js'
 import { JSONPathNode } from './json-path-node.js'
 import { JSONPathLegNode } from './json-path-leg-node.js'
 import { JSONTraversalOperationNode } from './json-traversal-operation-node.js'
@@ -197,6 +199,8 @@ export class OperationNodeTransformer {
     UnaryOperationNode: this.transformUnaryOperation.bind(this),
     UsingNode: this.transformUsing.bind(this),
     FunctionNode: this.transformFunction.bind(this),
+    CaseNode: this.transformCase.bind(this),
+    WhenNode: this.transformWhen.bind(this),
     JSONPathNode: this.transformJSONPath.bind(this),
     JSONPathLegNode: this.transformJSONPathLeg.bind(this),
     JSONTraversalOperationNode: this.transformJSONTraversalOperation.bind(this),
@@ -836,7 +840,7 @@ export class OperationNodeTransformer {
   ): AggregateFunctionNode {
     return requireAllProps({
       kind: 'AggregateFunctionNode',
-      aggregated: this.transformNode(node.aggregated),
+      aggregated: this.transformNodeList(node.aggregated),
       distinct: node.distinct,
       filter: this.transformNode(node.filter),
       func: node.func,
@@ -904,6 +908,24 @@ export class OperationNodeTransformer {
     })
   }
 
+  protected transformCase(node: CaseNode): CaseNode {
+    return requireAllProps<CaseNode>({
+      kind: 'CaseNode',
+      value: this.transformNode(node.value),
+      when: this.transformNodeList(node.when),
+      else: this.transformNode(node.else),
+      isStatement: node.isStatement,
+    })
+  }
+
+  protected transformWhen(node: WhenNode): WhenNode {
+    return requireAllProps<WhenNode>({
+      kind: 'WhenNode',
+      condition: this.transformNode(node.condition),
+      result: this.transformNode(node.result),
+    })
+  }
+
   protected transformJSONPath(node: JSONPathNode): JSONPathNode {
     return requireAllProps<JSONPathNode>({
       kind: 'JSONPathNode',
@@ -927,7 +949,6 @@ export class OperationNodeTransformer {
       leftOperand: this.transformNode(node.leftOperand),
       operator: this.transformNode(node.operator),
       rightOperand: this.transformNode(node.rightOperand),
-    })
   }
 
   protected transformDataType(node: DataTypeNode): DataTypeNode {

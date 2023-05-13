@@ -22,6 +22,7 @@ export type ColumnDataType =
   | 'numeric'
   | `numeric(${number}, ${number})`
   | 'binary'
+  | `binary(${number})`
   | 'date'
   | 'datetime'
   | `datetime(${number})`

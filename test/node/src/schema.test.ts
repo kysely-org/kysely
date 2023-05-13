@@ -176,6 +176,7 @@ for (const dialect of DIALECTS) {
             )
             .addColumn('t', 'char(4)')
             .addColumn('u', 'char')
+            .addColumn('v', 'binary(16)')
 
           testSql(builder, dialect, {
             mysql: {
@@ -201,7 +202,8 @@ for (const dialect of DIALECTS) {
                 '`r` datetime(6),',
                 '`s` timestamp(6) default current_timestamp(6) not null,',
                 '`t` char(4),',
-                '`u` char)'
+                '`u` char,',
+                '`v` binary(16))'
               ],
               parameters: [],
             },
@@ -1128,7 +1130,7 @@ for (const dialect of DIALECTS) {
 
         await builder.execute()
       })
-      
+
       if (dialect !== 'mysql') {
         it('should create a partial index', async () => {
           const builder = ctx.db.schema
@@ -1957,6 +1959,26 @@ for (const dialect of DIALECTS) {
               await builder.execute()
             })
 
+            it('should set column data type from expression', async () => {
+              const builder = ctx.db.schema
+                .alterTable('test')
+                .alterColumn('varchar_col', (ac) => ac.setDataType(sql`text`))
+
+              testSql(builder, dialect, {
+                postgres: {
+                  sql: 'alter table "test" alter column "varchar_col" type text',
+                  parameters: [],
+                },
+                sqlite: {
+                  sql: 'alter table "test" alter column "varchar_col" type text',
+                  parameters: [],
+                },
+                mysql: NOT_SUPPORTED,
+              })
+
+              await builder.execute()
+            })
+
             it('should add not null constraint for column', async () => {
               const builder = ctx.db.schema
                 .alterTable('test')
@@ -2441,6 +2463,41 @@ for (const dialect of DIALECTS) {
 
             await builder.execute()
           })
+        })
+      }
+
+      if (dialect !== 'sqlite') {
+        describe('parse schema name', () => {
+          beforeEach(cleanup)
+          afterEach(cleanup)
+
+          it('should parse the schema from table name', async () => {
+            await ctx.db.schema.createSchema('test_schema').ifNotExists().execute()
+            await ctx.db.schema.createTable('test_schema.test').addColumn('id', 'serial').execute();
+
+            const builder = ctx.db.schema
+              .alterTable('test_schema.test')
+              .addColumn('second_column', 'text')
+
+            testSql(builder, dialect, {
+              postgres: {
+                sql: `alter table "test_schema"."test" add column "second_column" text`,
+                parameters: [],
+              },
+              mysql: {
+                sql: "alter table `test_schema`.`test` add column `second_column` text",
+                parameters: [],
+              },
+              sqlite: NOT_SUPPORTED,
+            })
+
+            await builder.execute()
+          })
+
+          async function cleanup() {
+            await ctx.db.schema.dropTable('test_schema.test').ifExists().execute()
+            await ctx.db.schema.dropSchema('test_schema').ifExists().execute()
+          }
         })
       }
 

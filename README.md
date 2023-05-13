@@ -1,7 +1,14 @@
 [![Stand With Ukraine](https://raw.githubusercontent.com/vshymanskyy/StandWithUkraine/main/banner2-direct.svg)](https://stand-with-ukraine.pp.ua)
 
-[![Discord](https://img.shields.io/discord/890118421587578920)](https://discord.gg/xyBJ3GwvAm)
+[![Discord](https://img.shields.io/discord/890118421587578920?logo=discord&style=flat)](https://discord.gg/xyBJ3GwvAm)
 [![Tests](https://github.com/koskimas/kysely/actions/workflows/test.yml/badge.svg)](https://github.com/koskimas/kysely)
+[![License](https://img.shields.io/github/license/kysely-org/kysely?style=flat)](https://github.com/kysely-org/kysely/blob/master/LICENSE)
+[![Issues](https://img.shields.io/github/issues-closed/kysely-org/kysely?logo=github)](https://github.com/kysely-org/kysely/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated-desc)
+[![Pull Requests](https://img.shields.io/github/issues-pr-closed/kysely-org/kysely?label=PRs&logo=github&style=flat)](https://github.com/kysely-org/kysely/pulls?q=is%3Apr+is%3Aopen+sort%3Aupdated-desc)
+[![Vulnerabilities](https://img.shields.io/snyk/vulnerabilities/github/kysely-org/kysely?style=flat&logo=snyk)](https://snyk.io/advisor/npm-package/kysely)
+[![Downloads](https://img.shields.io/npm/dw/kysely?logo=npm)](https://www.npmjs.com/package/kysely)
+[![Bundle Size](https://img.shields.io/bundlephobia/minzip/kysely?label=size&logo=npm)](https://bundlephobia.com/package/kysely)
+[![Social](https://img.shields.io/twitter/follow/kysely_?style=social)](https://twitter.com/kysely_)
 
 # [Kysely](https://kysely-org.github.io/kysely/index.html)
 
@@ -82,6 +89,7 @@ for [3rd party dialects](https://kysely-org.github.io/kysely/interfaces/Dialect.
  - [libSQL/sqld](https://github.com/libsql/kysely-libsql)
  - [SingleStore Data API](https://github.com/igalklebanov/kysely-singlestore)
  - [Postgres.js](https://github.com/igalklebanov/kysely-postgres-js)
+ - [Fetch driver](https://github.com/andersgee/kysely-fetch-driver)
 
 # Minimal example
 

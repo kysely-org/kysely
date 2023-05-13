@@ -2,6 +2,7 @@ import {
   AggregateFunctionBuilder,
   ExpressionBuilder,
   SimpleReferenceExpression,
+  sql,
 } from '../../../'
 import {
   DIALECTS,
@@ -886,6 +887,63 @@ for (const dialect of DIALECTS) {
         }
       })
     }
+
+    it('should execute "dynamic" aggregate functions', async () => {
+      const query = ctx.db
+        .selectFrom('person')
+        .select([
+          ctx.db.fn.agg('rank').over().as('rank'),
+          (eb) => eb.fn.agg('rank').over().as('another_rank'),
+        ])
+        .$if(dialect === 'postgres', (qb) =>
+          qb.select((eb) =>
+            eb.fn
+              .agg('string_agg', ['first_name', sql.lit(',')])
+              .distinct()
+              .as('first_names')
+          )
+        )
+        .$if(dialect === 'mysql' || dialect === 'sqlite', (qb) =>
+          qb.select((eb) =>
+            eb.fn
+              .agg('group_concat', ['first_name'])
+              .distinct()
+              .as('first_names')
+          )
+        )
+
+      testSql(query, dialect, {
+        postgres: {
+          sql: [
+            'select rank() over() as "rank",',
+            'rank() over() as "another_rank",',
+            `string_agg(distinct "first_name", ',') as "first_names"`,
+            'from "person"',
+          ],
+          parameters: [],
+        },
+        mysql: {
+          sql: [
+            'select rank() over() as `rank`,',
+            'rank() over() as `another_rank`,',
+            'group_concat(distinct `first_name`) as `first_names`',
+            'from `person`',
+          ],
+          parameters: [],
+        },
+        sqlite: {
+          sql: [
+            'select rank() over() as "rank",',
+            'rank() over() as "another_rank",',
+            'group_concat(distinct "first_name") as "first_names"',
+            'from "person"',
+          ],
+          parameters: [],
+        },
+      })
+
+      await query.execute()
+    })
   })
 }
 

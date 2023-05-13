@@ -94,6 +94,8 @@ import { BinaryOperationNode } from '../operation-node/binary-operation-node.js'
 import { UnaryOperationNode } from '../operation-node/unary-operation-node.js'
 import { UsingNode } from '../operation-node/using-node.js'
 import { FunctionNode } from '../operation-node/function-node.js'
+import { CaseNode } from '../operation-node/case-node.js'
+import { WhenNode } from '../operation-node/when-node.js'
 import { JSONPathNode } from '../operation-node/json-path-node.js'
 import { JSONPathLegNode } from '../operation-node/json-path-leg-node.js'
 import { JSONTraversalOperationNode } from '../operation-node/json-traversal-operation-node.js'
@@ -1216,7 +1218,7 @@ export class DefaultQueryCompiler
       this.append('distinct ')
     }
 
-    this.visitNode(node.aggregated)
+    this.compileList(node.aggregated)
     this.append(')')
 
     if (node.filter) {
@@ -1291,7 +1293,43 @@ export class DefaultQueryCompiler
     this.compileList(node.arguments)
     this.append(')')
   }
+      
+  protected override visitCase(node: CaseNode): void {
+    this.append('case')
 
+    if (node.value) {
+      this.append(' ')
+      this.visitNode(node.value)
+    }
+
+    if (node.when) {
+      this.append(' ')
+      this.compileList(node.when, ' ')
+    }
+
+    if (node.else) {
+      this.append(' else ')
+      this.visitNode(node.else)
+    }
+
+    this.append(' end')
+
+    if (node.isStatement) {
+      this.append(' case')
+    }
+  }
+
+  protected override visitWhen(node: WhenNode): void {
+    this.append('when ')
+
+    this.visitNode(node.condition)
+
+    if (node.result) {
+      this.append(' then ')
+      this.visitNode(node.result)
+    }
+  }
+  
   protected override visitJSONPath(node: JSONPathNode): void {
     this.append("'$")
 
