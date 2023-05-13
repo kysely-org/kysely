@@ -18,8 +18,10 @@ import {
 } from '../query-builder/function-module.js'
 import {
   ExtractTypeFromReferenceExpression,
+  parseReferenceExpression,
   parseStringReference,
   ReferenceExpression,
+  SimpleReferenceExpression,
   StringReference,
 } from '../parser/reference-parser.js'
 import { QueryExecutor } from '../query-executor/query-executor.js'
@@ -47,6 +49,9 @@ import {
 } from '../parser/value-parser.js'
 import { NOOP_QUERY_EXECUTOR } from '../query-executor/noop-query-executor.js'
 import { ValueNode } from '../operation-node/value-node.js'
+import { CaseBuilder } from '../query-builder/case-builder.js'
+import { CaseNode } from '../operation-node/case-node.js'
+import { isUndefined } from '../util/object-utils.js'
 
 export interface ExpressionBuilder<DB, TB extends keyof DB> {
   /**
@@ -149,6 +154,65 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
   selectFrom<TE extends TableExpression<DB, TB>>(
     from: TE
   ): SelectQueryBuilder<From<DB, TE>, FromTables<DB, TB, TE>, {}>
+
+  /**
+   * Creates a `case` statement/operator.
+   *
+   * ### Examples
+   *
+   * Kitchen sink example with 2 flavors of `case` operator:
+   *
+   * ```ts
+   * import { sql } from 'kysely'
+   *
+   * const { title, name } = await db
+   *   .selectFrom('person')
+   *   .where('id', '=', '123')
+   *   .select((eb) => [
+   *     eb.fn.coalesce('last_name', 'first_name').as('name'),
+   *     eb
+   *       .case()
+   *       .when('gender', '=', 'male')
+   *       .then('Mr.')
+   *       .when('gender', '=', 'female')
+   *       .then(
+   *         eb
+   *           .case('martialStatus')
+   *           .when('single')
+   *           .then('Ms.')
+   *           .else('Mrs.')
+   *           .end()
+   *       )
+   *       .end()
+   *       .as('title'),
+   *   ])
+   *   .executeTakeFirstOrThrow()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * select
+   *   coalesce("last_name", "first_name") as "name",
+   *   case
+   *     when "gender" = $1 then $2
+   *     when "gender" = $3 then
+   *       case "martialStatus"
+   *         when $4 then $5
+   *         else $6
+   *       end
+   *   end as "title"
+   * from "person"
+   * where "id" = $7
+   * ```
+   */
+  case(): CaseBuilder<DB, TB>
+
+  case<C extends SimpleReferenceExpression<DB, TB>>(
+    column: C
+  ): CaseBuilder<DB, TB, ExtractTypeFromReferenceExpression<DB, TB, C>>
+
+  case<O>(expression: Expression<O>): CaseBuilder<DB, TB, O>
 
   /**
    * This can be used to reference columns.
@@ -502,6 +566,18 @@ export function createExpressionBuilder<DB, TB extends keyof DB>(
         queryId: createQueryId(),
         executor: executor,
         queryNode: SelectQueryNode.create(parseTableExpressionOrList(table)),
+      })
+    },
+
+    case<RE extends ReferenceExpression<DB, TB>>(
+      reference?: RE
+    ): CaseBuilder<DB, TB, ExtractTypeFromReferenceExpression<DB, TB, RE>> {
+      return new CaseBuilder({
+        node: CaseNode.create(
+          isUndefined(reference)
+            ? undefined
+            : parseReferenceExpression(reference)
+        ),
       })
     },
 
