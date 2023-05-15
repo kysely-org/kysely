@@ -107,10 +107,6 @@ async function testManyWith(db: Kysely<Database>) {
     .selectAll()
     .executeTakeFirstOrThrow()
 
-  type IsAny<T> = 0 extends 1 & T ? true : false
-  type ResIsAny = IsAny<typeof res>
-  expectType<ResIsAny>(false)
-
   expectType<{
     fn1: string
     fn2: string

@@ -1,4 +1,4 @@
-import { DrainOuterGeneric } from './type-utils'
+import { DrainOuterGeneric } from './type-utils.js'
 
 /**
  * This type can be used to specify a different type for
