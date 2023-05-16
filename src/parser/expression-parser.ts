@@ -13,14 +13,15 @@ import {
 } from '../expression/expression-builder.js'
 import { SelectQueryBuilder } from '../query-builder/select-query-builder.js'
 import { isFunction } from '../util/object-utils.js'
+import { ShallowRecord } from '../util/type-utils.js'
 
 export type ExpressionOrFactory<DB, TB extends keyof DB, V> =
   // SQL treats a subquery with a single selection as a scalar. That's
   // why we need to explicitly allow `SelectQueryBuilder` here with a
-  // `Record<string, V>` output type, even though `SelectQueryBuilder`
+  // `ShallowRecord<string, V>` output type, even though `SelectQueryBuilder`
   // is also an `Expression`.
-  | SelectQueryBuilder<any, any, Record<string, V>>
-  | SelectQueryBuilderFactory<DB, TB, Record<string, V>>
+  | SelectQueryBuilder<any, any, ShallowRecord<string, V>>
+  | SelectQueryBuilderFactory<DB, TB, ShallowRecord<string, V>>
   | Expression<V>
   | ExpressionFactory<DB, TB, V>
 
