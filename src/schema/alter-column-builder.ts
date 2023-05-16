@@ -10,39 +10,39 @@ import {
 } from '../parser/default-value-parser.js'
 
 export class AlterColumnBuilder {
-  protected column: string
+  readonly #column: string
 
   constructor(column: string) {
-    this.column = column
+    this.#column = column
   }
 
   setDataType(dataType: DataTypeExpression): AlteredColumnBuilder {
     return new AlteredColumnBuilder(
-      AlterColumnNode.create(this.column, 'dataType', parseDataTypeExpression(dataType))
+      AlterColumnNode.create(this.#column, 'dataType', parseDataTypeExpression(dataType))
     )
   }
 
   setDefault(value: DefaultValueExpression): AlteredColumnBuilder {
     return new AlteredColumnBuilder(
-      AlterColumnNode.create(this.column, 'setDefault', parseDefaultValueExpression(value))
+      AlterColumnNode.create(this.#column, 'setDefault', parseDefaultValueExpression(value))
     )
   }
 
   dropDefault(): AlteredColumnBuilder {
     return new AlteredColumnBuilder(
-      AlterColumnNode.create(this.column, 'dropDefault', true)
+      AlterColumnNode.create(this.#column, 'dropDefault', true)
     )
   }
 
   setNotNull(): AlteredColumnBuilder {
     return new AlteredColumnBuilder(
-      AlterColumnNode.create(this.column, 'setNotNull', true)
+      AlterColumnNode.create(this.#column, 'setNotNull', true)
     )
   }
 
   dropNotNull(): AlteredColumnBuilder {
     return new AlteredColumnBuilder(
-      AlterColumnNode.create(this.column, 'dropNotNull', true)
+      AlterColumnNode.create(this.#column, 'dropNotNull', true)
     )
   }
 
@@ -56,9 +56,7 @@ export class AlterColumnBuilder {
 }
 
 /**
- * Allows us to force consumers to do something, anything, when altering a column,
- * and also disallows chaining more methods on AlterColumnBuilder, because
- * SQL syntax for chaining ALTER COLUMN operations would be not WYSIWYG
+ * Allows us to force consumers to do exactly one alteration to a column.
  *
  * Basically, deny the following:
  *
@@ -74,14 +72,14 @@ export class AlterColumnBuilder {
  */
 export class AlteredColumnBuilder implements OperationNodeSource
 {
-  protected readonly alterColumnNode: AlterColumnNode
+  readonly #alterColumnNode: AlterColumnNode
 
   constructor(alterColumnNode: AlterColumnNode) {
-    this.alterColumnNode = alterColumnNode
+    this.#alterColumnNode = alterColumnNode
   }
 
   toOperationNode(): AlterColumnNode {
-    return this.alterColumnNode
+    return this.#alterColumnNode
   }
 }
 
