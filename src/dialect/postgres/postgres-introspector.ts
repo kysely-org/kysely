@@ -73,7 +73,7 @@ export class PostgresIntrospector implements DatabaseIntrospector {
       .where(({ cmpr, or }) => or([
         cmpr('c.relkind', '=', 'r'),
         cmpr('c.relkind', '=', 'v'),
-      ])
+      ]))
       .where('ns.nspname', '!~', '^pg_')
       .where('ns.nspname', '!=', 'information_schema')
       // No system columns
