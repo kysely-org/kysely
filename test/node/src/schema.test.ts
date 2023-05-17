@@ -1,4 +1,4 @@
-import { ColumnMetadata, sql } from '../../../'
+import { ColumnMetadata, Kysely, sql } from '../../../'
 
 import {
   DIALECTS,
@@ -9,6 +9,7 @@ import {
   NOT_SUPPORTED,
   TestContext,
   testSql,
+  DB_CONFIGS,
 } from './test-setup.js'
 
 for (const dialect of DIALECTS) {
@@ -27,6 +28,12 @@ for (const dialect of DIALECTS) {
 
     after(async () => {
       await destroyTest(ctx)
+    })
+
+    it('should throw an error when module is not provided in the config', () => {
+      expect(() => {
+        new Kysely({ ...DB_CONFIGS[dialect] }).schema
+      }).to.throw()
     })
 
     describe('create table', () => {
@@ -101,7 +108,7 @@ for (const dialect of DIALECTS) {
                 '"u" timestamp(6) default current_timestamp not null,',
                 '"v" timestamptz(6),',
                 '"w" char(4),',
-                '"x" char)'
+                '"x" char)',
               ],
               parameters: [],
             },

@@ -435,7 +435,8 @@ import {
   Kysely,
   Migrator,
   PostgresDialect,
-  FileMigrationProvider
+  FileMigrationProvider,
+  SchemaModule,
 } from 'kysely'
 
 async function migrateToLatest() {
@@ -446,6 +447,7 @@ async function migrateToLatest() {
         database: 'kysely_test',
       })
     }),
+    SchemaModule,
   })
 
   const migrator = new Migrator({
