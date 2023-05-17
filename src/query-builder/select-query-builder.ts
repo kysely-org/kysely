@@ -23,9 +23,11 @@ import {
 import { SelectQueryNode } from '../operation-node/select-query-node.js'
 import { QueryNode } from '../operation-node/query-node.js'
 import {
+  DrainOuterGeneric,
   MergePartial,
   NarrowPartial,
   Nullable,
+  ShallowRecord,
   Simplify,
   SimplifySingleResult,
 } from '../util/type-utils.js'
@@ -2050,11 +2052,11 @@ type InnerJoinedBuilder<
 > = A extends keyof DB
   ? SelectQueryBuilder<InnerJoinedDB<DB, A, R>, TB | A, O>
   : // Much faster non-recursive solution for the simple case.
-    SelectQueryBuilder<DB & Record<A, R>, TB | A, O>
+    SelectQueryBuilder<DB & ShallowRecord<A, R>, TB | A, O>
 
-type InnerJoinedDB<DB, A extends string, R> = {
+type InnerJoinedDB<DB, A extends string, R> = DrainOuterGeneric<{
   [C in keyof DB | A]: C extends A ? R : C extends keyof DB ? DB[C] : never
-}
+}>
 
 export type SelectQueryBuilderWithLeftJoin<
   DB,
@@ -2082,15 +2084,15 @@ type LeftJoinedBuilder<
 > = A extends keyof DB
   ? SelectQueryBuilder<LeftJoinedDB<DB, A, R>, TB | A, O>
   : // Much faster non-recursive solution for the simple case.
-    SelectQueryBuilder<DB & Record<A, Nullable<R>>, TB | A, O>
+    SelectQueryBuilder<DB & ShallowRecord<A, Nullable<R>>, TB | A, O>
 
-type LeftJoinedDB<DB, A extends keyof any, R> = {
+type LeftJoinedDB<DB, A extends keyof any, R> = DrainOuterGeneric<{
   [C in keyof DB | A]: C extends A
     ? Nullable<R>
     : C extends keyof DB
     ? DB[C]
     : never
-}
+}>
 
 export type SelectQueryBuilderWithRightJoin<
   DB,
@@ -2117,7 +2119,12 @@ type RightJoinedBuilder<
   R
 > = SelectQueryBuilder<RightJoinedDB<DB, TB, A, R>, TB | A, O>
 
-type RightJoinedDB<DB, TB extends keyof DB, A extends keyof any, R> = {
+type RightJoinedDB<
+  DB,
+  TB extends keyof DB,
+  A extends keyof any,
+  R
+> = DrainOuterGeneric<{
   [C in keyof DB | A]: C extends A
     ? R
     : C extends TB
@@ -2125,7 +2132,7 @@ type RightJoinedDB<DB, TB extends keyof DB, A extends keyof any, R> = {
     : C extends keyof DB
     ? DB[C]
     : never
-}
+}>
 
 export type SelectQueryBuilderWithFullJoin<
   DB,
@@ -2152,7 +2159,12 @@ type OuterJoinedBuilder<
   R
 > = SelectQueryBuilder<OuterJoinedBuilderDB<DB, TB, A, R>, TB | A, O>
 
-type OuterJoinedBuilderDB<DB, TB extends keyof DB, A extends keyof any, R> = {
+type OuterJoinedBuilderDB<
+  DB,
+  TB extends keyof DB,
+  A extends keyof any,
+  R
+> = DrainOuterGeneric<{
   [C in keyof DB | A]: C extends A
     ? Nullable<R>
     : C extends TB
@@ -2160,4 +2172,4 @@ type OuterJoinedBuilderDB<DB, TB extends keyof DB, A extends keyof any, R> = {
     : C extends keyof DB
     ? DB[C]
     : never
-}
+}>
