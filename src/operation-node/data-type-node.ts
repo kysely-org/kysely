@@ -23,6 +23,7 @@ export type ColumnDataType =
   | `numeric(${number}, ${number})`
   | 'binary'
   | `binary(${number})`
+  | 'bytea'
   | 'date'
   | 'datetime'
   | `datetime(${number})`

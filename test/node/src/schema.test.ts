@@ -73,6 +73,7 @@ for (const dialect of DIALECTS) {
             .addColumn('v', 'timestamptz(6)')
             .addColumn('w', 'char(4)')
             .addColumn('x', 'char')
+            .addColumn('y', 'bytea')
 
           testSql(builder, dialect, {
             postgres: {
@@ -101,7 +102,8 @@ for (const dialect of DIALECTS) {
                 '"u" timestamp(6) default current_timestamp not null,',
                 '"v" timestamptz(6),',
                 '"w" char(4),',
-                '"x" char)'
+                '"x" char,',
+                '"y" bytea)'
               ],
               parameters: [],
             },
