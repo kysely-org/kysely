@@ -52,6 +52,7 @@ You can find a more thorough introduction [here](https://www.jakso.me/blog/kysel
   - [Update queries](#update-queries)
   - [Insert queries](#insert-queries)
   - [Delete queries](#delete-queries)
+- [Enums](#enums)
 - [Recipes](#recipes)
 - [Migrations](#migrations)
     - [PostgreSQL migration example](#postgresql-migration-example)
@@ -279,6 +280,12 @@ documentation.
 
 See the [deleteFrom method](https://kysely-org.github.io/kysely/classes/Kysely.html#deleteFrom)
 documentation.
+
+# Enums
+
+```ts
+await db.schema.createType("enum_example").asEnum(["option1", "option2"]).execute();
+```
 
 # Recipes
 
