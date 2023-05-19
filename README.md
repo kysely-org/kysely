@@ -285,6 +285,8 @@ documentation.
 
 ```ts
 await db.schema.createType("enum_example").asEnum(["option1", "option2"]).execute();
+
+.addColumn("my_enum", sql`enum_example`)
 ```
 
 # Recipes
