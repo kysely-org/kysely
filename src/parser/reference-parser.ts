@@ -129,19 +129,21 @@ export function parseStringReference(
 ): SimpleReferenceExpressionNode {
   const COLUMN_SEPARATOR = '.'
 
-  if (ref.includes(COLUMN_SEPARATOR)) {
-    const parts = ref.split(COLUMN_SEPARATOR).map(trim)
-
-    if (parts.length === 3) {
-      return parseStringReferenceWithTableAndSchema(parts)
-    } else if (parts.length === 2) {
-      return parseStringReferenceWithTable(parts)
-    } else {
-      throw new Error(`invalid column reference ${ref}`)
-    }
-  } else {
-    return ColumnNode.create(ref)
+  if (!ref.includes(COLUMN_SEPARATOR)) {
+    return ReferenceNode.create(ColumnNode.create(ref))
   }
+
+  const parts = ref.split(COLUMN_SEPARATOR).map(trim)
+
+  if (parts.length === 3) {
+    return parseStringReferenceWithTableAndSchema(parts)
+  }
+
+  if (parts.length === 2) {
+    return parseStringReferenceWithTable(parts)
+  }
+
+  throw new Error(`invalid column reference ${ref}`)
 }
 
 export function parseAliasedStringReference(
@@ -189,8 +191,8 @@ function parseStringReferenceWithTableAndSchema(
   const [schema, table, column] = parts
 
   return ReferenceNode.create(
-    TableNode.createWithSchema(schema, table),
-    ColumnNode.create(column)
+    ColumnNode.create(column),
+    TableNode.createWithSchema(schema, table)
   )
 }
 
@@ -198,8 +200,8 @@ function parseStringReferenceWithTable(parts: string[]): ReferenceNode {
   const [table, column] = parts
 
   return ReferenceNode.create(
-    TableNode.create(table),
-    ColumnNode.create(column)
+    ColumnNode.create(column),
+    TableNode.create(table)
   )
 }
 
