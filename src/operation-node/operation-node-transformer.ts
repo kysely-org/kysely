@@ -292,8 +292,9 @@ export class OperationNodeTransformer {
   protected transformReference(node: ReferenceNode): ReferenceNode {
     return requireAllProps<ReferenceNode>({
       kind: 'ReferenceNode',
-      table: this.transformNode(node.table),
       column: this.transformNode(node.column),
+      table: this.transformNode(node.table),
+      jsonPath: this.transformNode(node.jsonPath),
     })
   }
 
@@ -929,6 +930,7 @@ export class OperationNodeTransformer {
   protected transformJSONPath(node: JSONPathNode): JSONPathNode {
     return requireAllProps<JSONPathNode>({
       kind: 'JSONPathNode',
+      operator: node.operator,
       pathLegs: this.transformNodeList(node.pathLegs),
     })
   }
@@ -936,6 +938,7 @@ export class OperationNodeTransformer {
   protected transformJSONPathLeg(node: JSONPathLegNode): JSONPathLegNode {
     return requireAllProps<JSONPathLegNode>({
       kind: 'JSONPathLegNode',
+      operator: node.operator,
       type: node.type,
       value: this.transformNode(node.value),
     })
@@ -949,6 +952,7 @@ export class OperationNodeTransformer {
       leftOperand: this.transformNode(node.leftOperand),
       operator: this.transformNode(node.operator),
       rightOperand: this.transformNode(node.rightOperand),
+    })
   }
 
   protected transformDataType(node: DataTypeNode): DataTypeNode {
