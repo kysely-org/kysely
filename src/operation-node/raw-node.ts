@@ -1,5 +1,6 @@
 import { freeze } from '../util/object-utils.js'
 import { OperationNode } from './operation-node.js'
+import { ValueNode } from './value-node.js'
 
 export interface RawNode extends OperationNode {
   readonly kind: 'RawNode'
@@ -26,8 +27,8 @@ export const RawNode = freeze({
     })
   },
 
-  createWithSql(sql: string): RawNode {
-    return RawNode.create([sql], [])
+  createWithSql(sql: string, ...parameters: unknown[]): RawNode {
+    return RawNode.create([sql], parameters.map(ValueNode.create))
   },
 
   createWithChild(child: OperationNode): RawNode {

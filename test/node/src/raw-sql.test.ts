@@ -268,6 +268,14 @@ for (const dialect of DIALECTS) {
       })
     }
 
+    it('sql.raw should accept parameters', async () => {
+      if (dialect === 'postgres') {
+          const query = sql.raw('select * from "person" where "public"."person"."first_name" between $1 and $2', 'A', 'B').compile(ctx.db);
+          expect(query.sql).to.equal('select * from "person" where "public"."person"."first_name" between $1 and $2');
+          expect(query.parameters).to.deep.equal(['A', 'B']);
+      }
+    });
+
     it('raw sql kitchen sink', async () => {
       const result = await sql`insert into ${sql.table('toy')} (${sql.join([
         sql.ref('name'),

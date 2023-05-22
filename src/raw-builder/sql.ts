@@ -310,7 +310,7 @@ export interface Sql {
    * doesn't assume the inputs are values. The input to this function
    * can be any sql and it's simply glued to the parent string as-is.
    */
-  raw<R = unknown>(anySql: string): RawBuilder<R>
+  raw<R = unknown>(anySql: string, ...parameters: unknown[]): RawBuilder<R>
 
   /**
    * This can be used to add lists of things to SQL snippets.
@@ -431,10 +431,10 @@ export const sql: Sql = Object.assign(
       return this.lit(value)
     },
 
-    raw<R = unknown>(sql: string): RawBuilder<R> {
+    raw<R = unknown>(sql: string, ...parameters: unknown[]): RawBuilder<R> {
       return new RawBuilder({
         queryId: createQueryId(),
-        rawNode: RawNode.createWithSql(sql),
+        rawNode: RawNode.createWithSql(sql, ...parameters),
       })
     },
 
