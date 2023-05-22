@@ -1,15 +1,24 @@
+import { Expression } from '../expression/expression.js'
 import { JSONPathLegNode } from '../operation-node/json-path-leg-node.js'
 import { JSONPathNode } from '../operation-node/json-path-node.js'
+import { OperationNode } from '../operation-node/operation-node.js'
 import { RawNode } from '../operation-node/raw-node.js'
 import { ReferenceNode } from '../operation-node/reference-node.js'
 import { freeze } from '../util/object-utils.js'
 import { JSONTraversable } from './json-traversable-interface.js'
 
-export class JSONPathBuilder<S, O = S> implements JSONTraversable<S, O> {
+export class JSONPathBuilder<S, O = S>
+  implements JSONTraversable<S, O>, Expression<O>
+{
   readonly #props: JSONPathBuilderProps
 
   constructor(props: JSONPathBuilderProps) {
     this.#props = freeze({ ...props })
+  }
+
+  /** @private */
+  get expressionType(): O | undefined {
+    return undefined
   }
 
   at<I extends any[] extends O ? keyof NonNullable<O> & number : never>(
@@ -64,8 +73,18 @@ export class JSONPathBuilder<S, O = S> implements JSONTraversable<S, O> {
         : JSONPathNode.cloneWithLeg(this.#props.node, legNode),
     })
   }
+
+  toOperationNode(): OperationNode {
+    return this.#props.node
+  }
 }
 
 interface JSONPathBuilderProps {
   node: ReferenceNode | JSONPathNode
+}
+
+export function createJSONPathBuilder<S, O = S>(
+  node: ReferenceNode | JSONPathNode
+): JSONPathBuilder<S, O> {
+  return new JSONPathBuilder({ node })
 }
