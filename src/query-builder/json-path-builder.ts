@@ -1,44 +1,27 @@
-import { Expression } from '../expression/expression.js'
-import { JSONPathLegNode } from '../operation-node/json-path-leg-node.js'
-import { JSONPathNode } from '../operation-node/json-path-node.js'
-import { OperationNode } from '../operation-node/operation-node.js'
-import { RawNode } from '../operation-node/raw-node.js'
+import { AliasedExpression, Expression } from '../expression/expression.js'
+import { AliasNode } from '../operation-node/alias-node.js'
+import { IdentifierNode } from '../operation-node/identifier-node.js'
 import {
-  ExtractTypeFromReferenceExpression,
-  StringReference,
-} from '../parser/reference-parser.js'
-import { freeze } from '../util/object-utils.js'
+  JSONPathLegNode,
+  JSONPathLegType,
+} from '../operation-node/json-path-leg-node.js'
+import { JSONPathNode } from '../operation-node/json-path-node.js'
+import { JSONPathReferenceNode } from '../operation-node/json-path-reference-node.js'
+import { isOperationNodeSource } from '../operation-node/operation-node-source.js'
+import { OperationNode } from '../operation-node/operation-node.js'
+import { ReferenceNode } from '../operation-node/reference-node.js'
+import { ValueNode } from '../operation-node/value-node.js'
 
-export class JSONPathBuilder<DB, TB extends keyof DB> {
-  /**
-   * Sets the JSON path scope (also known as $, or the root document).
-   *
-   * TODO: ...
-   */
-  $<S extends StringReference<DB, TB>>(
-    scope: S
-  ): BoundJSONPathBuilder<ExtractTypeFromReferenceExpression<DB, TB, S>> {
-    return createBoundJSONPathBuilder(scope)
-  }
-}
+export class JSONPathBuilder<S, O = S> {
+  readonly #node: ReferenceNode | JSONPathNode
 
-export class BoundJSONPathBuilder<S, O = S> implements Expression<O> {
-  readonly #props: BoundJSONPathBuilderProps
-
-  constructor(props: BoundJSONPathBuilderProps) {
-    this.#props = freeze({ ...props })
+  constructor(node: ReferenceNode | JSONPathNode) {
+    this.#node = node
   }
 
-  get expressionType(): O | undefined {
-    return undefined
-  }
-
-  /**
-   * TODO: ...
-   */
   at<I extends any[] extends O ? keyof NonNullable<O> & number : never>(
     index: I
-  ): BoundJSONPathBuilder<
+  ): TraversedJSONPathBuilder<
     S,
     undefined extends O
       ? null | NonNullable<NonNullable<O>[I]>
@@ -46,20 +29,9 @@ export class BoundJSONPathBuilder<S, O = S> implements Expression<O> {
       ? null | NonNullable<NonNullable<O>[I]>
       : NonNullable<O>[I]
   > {
-    return new BoundJSONPathBuilder({
-      node: JSONPathNode.cloneWithLeg(
-        this.#props.node,
-        JSONPathLegNode.create(
-          'ArrayLocation',
-          RawNode.createWithSql(`${index}`)
-        )
-      ),
-    })
+    return this.#createBuilderWithPathLeg('ArrayLocation', index)
   }
 
-  /**
-   * TODO: ...
-   */
   key<
     K extends any[] extends O
       ? never
@@ -68,7 +40,7 @@ export class BoundJSONPathBuilder<S, O = S> implements Expression<O> {
       : never
   >(
     key: K
-  ): BoundJSONPathBuilder<
+  ): TraversedJSONPathBuilder<
     S,
     undefined extends O
       ? null | NonNullable<NonNullable<O>[K]>
@@ -76,31 +48,124 @@ export class BoundJSONPathBuilder<S, O = S> implements Expression<O> {
       ? null | NonNullable<NonNullable<O>[K]>
       : NonNullable<O>[K]
   > {
-    return new BoundJSONPathBuilder({
-      node: JSONPathNode.cloneWithLeg(
-        this.#props.node,
-        JSONPathLegNode.create('Member', RawNode.createWithSql(key))
-      ),
-    })
+    return this.#createBuilderWithPathLeg('Member', key)
+  }
+
+  #createBuilderWithPathLeg(
+    legType: JSONPathLegType,
+    value: string | number
+  ): TraversedJSONPathBuilder<any, any> {
+    const legNode = JSONPathLegNode.create(
+      legType,
+      ValueNode.createImmediate(value)
+    )
+
+    return new TraversedJSONPathBuilder(
+      ReferenceNode.is(this.#node)
+        ? ReferenceNode.cloneWithJSONPath(
+            this.#node,
+            JSONPathReferenceNode.clone(
+              this.#node.jsonPath!,
+              JSONPathNode.cloneWithLeg(this.#node.jsonPath!.jsonPath, legNode)
+            )
+          )
+        : JSONPathNode.cloneWithLeg(this.#node, legNode)
+    )
+  }
+}
+
+export class TraversedJSONPathBuilder<S, O>
+  extends JSONPathBuilder<S, O>
+  implements Expression<O>
+{
+  readonly #node: ReferenceNode | JSONPathNode
+
+  constructor(node: ReferenceNode | JSONPathNode) {
+    super(node)
+    this.#node = node
+  }
+
+  /** @private */
+  get expressionType(): O | undefined {
+    return undefined
+  }
+
+  /**
+   * Returns an aliased version of the expression.
+   *
+   * In addition to slapping `as "the_alias"` to the end of the SQL,
+   * this method also provides strict typing:
+   *
+   * ```ts
+   * const result = await db
+   *   .selectFrom('person')
+   *   .select(eb =>
+   *     eb.cmpr('first_name', '=', 'Jennifer').as('is_jennifer')
+   *   )
+   *   .executeTakeFirstOrThrow()
+   *
+   * // `is_jennifer: SqlBool` field exists in the result type.
+   * console.log(result.is_jennifer)
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```ts
+   * select "first_name" = $1 as "is_jennifer"
+   * from "person"
+   * ```
+   */
+  as<A extends string>(alias: A): AliasedExpression<O, A>
+  as<A extends string>(alias: Expression<unknown>): AliasedExpression<O, A>
+  as(alias: string | Expression<any>): AliasedExpression<O, string> {
+    return new AliasedJSONPathBuilder(this, alias)
+  }
+
+  /**
+   * Change the output type of the json path.
+   *
+   * This method call doesn't change the SQL in any way. This methods simply
+   * returns a copy of this `JSONPathBuilder` with a new output type.
+   */
+  $castTo<T>(): JSONPathBuilder<T> {
+    return new JSONPathBuilder(this.#node)
   }
 
   toOperationNode(): OperationNode {
-    return this.#props.node
+    return this.#node
   }
 }
 
-interface BoundJSONPathBuilderProps {
-  node: JSONPathNode
-}
+export class AliasedJSONPathBuilder<O, A extends string>
+  implements AliasedExpression<O, A>
+{
+  readonly #jsonPath: TraversedJSONPathBuilder<any, O>
+  readonly #alias: A | Expression<unknown>
 
-export function createBoundJSONPathBuilder<
-  DB,
-  TB extends keyof DB,
-  S extends StringReference<DB, TB>
->(
-  scope?: S
-): BoundJSONPathBuilder<ExtractTypeFromReferenceExpression<DB, TB, S>> {
-  return new BoundJSONPathBuilder({
-    node: JSONPathNode.create(),
-  })
+  constructor(
+    jsonPath: TraversedJSONPathBuilder<any, O>,
+    alias: A | Expression<unknown>
+  ) {
+    this.#jsonPath = jsonPath
+    this.#alias = alias
+  }
+
+  /** @private */
+  get expression(): Expression<O> {
+    return this.#jsonPath
+  }
+
+  /** @private */
+  get alias(): A | Expression<unknown> {
+    return this.#alias
+  }
+
+  toOperationNode(): AliasNode {
+    return AliasNode.create(
+      this.#jsonPath.toOperationNode(),
+      isOperationNodeSource(this.#alias)
+        ? this.#alias.toOperationNode()
+        : IdentifierNode.create(this.#alias)
+    )
+  }
 }

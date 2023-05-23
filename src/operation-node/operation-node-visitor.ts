@@ -86,7 +86,7 @@ import { WhenNode } from './when-node.js'
 import { CaseNode } from './case-node.js'
 import { JSONPathNode } from './json-path-node.js'
 import { JSONPathLegNode } from './json-path-leg-node.js'
-import { JSONTraversalOperationNode } from './json-traversal-operation-node.js'
+import { JSONPathReferenceNode } from './json-path-reference-node.js'
 
 export abstract class OperationNodeVisitor {
   protected readonly nodeStack: OperationNode[] = []
@@ -180,7 +180,7 @@ export abstract class OperationNodeVisitor {
     WhenNode: this.visitWhen.bind(this),
     JSONPathNode: this.visitJSONPath.bind(this),
     JSONPathLegNode: this.visitJSONPathLeg.bind(this),
-    JSONTraversalOperationNode: this.visitJSONTraversalOperation.bind(this),
+    JSONPathReferenceNode: this.visitJSONPathReference.bind(this),
   })
 
   protected readonly visitNode = (node: OperationNode): void => {
@@ -282,7 +282,5 @@ export abstract class OperationNodeVisitor {
   protected abstract visitWhen(node: WhenNode): void
   protected abstract visitJSONPath(node: JSONPathNode): void
   protected abstract visitJSONPathLeg(node: JSONPathLegNode): void
-  protected abstract visitJSONTraversalOperation(
-    node: JSONTraversalOperationNode
-  ): void
+  protected abstract visitJSONPathReference(node: JSONPathReferenceNode): void
 }

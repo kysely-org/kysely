@@ -25,6 +25,9 @@ import {
   isOrderByDirection,
   parseOrderBy,
 } from './order-by-parser.js'
+import { JSONOperator } from '../operation-node/operator-node.js'
+import { JSONPathNode } from '../operation-node/json-path-node.js'
+import { JSONPathReferenceNode } from '../operation-node/json-path-reference-node.js'
 
 export type StringReference<DB, TB extends keyof DB> =
   | AnyColumn<DB, TB>
@@ -95,10 +98,11 @@ export type ExtractColumnNameFromOrderedColumnName<C extends string> =
     : C
 
 export function parseSimpleReferenceExpression(
-  exp: SimpleReferenceExpression<any, any>
+  exp: SimpleReferenceExpression<any, any>,
+  op?: JSONOperator
 ): SimpleReferenceExpressionNode {
   if (isString(exp)) {
-    return parseStringReference(exp)
+    return parseStringReference(exp, op)
   }
 
   return exp.toOperationNode()
@@ -125,23 +129,30 @@ export function parseReferenceExpression(
 }
 
 export function parseStringReference(
-  ref: string
-): SimpleReferenceExpressionNode {
+  ref: string,
+  op?: JSONOperator
+): ReferenceNode {
   const COLUMN_SEPARATOR = '.'
 
-  if (ref.includes(COLUMN_SEPARATOR)) {
-    const parts = ref.split(COLUMN_SEPARATOR).map(trim)
-
-    if (parts.length === 3) {
-      return parseStringReferenceWithTableAndSchema(parts)
-    } else if (parts.length === 2) {
-      return parseStringReferenceWithTable(parts)
-    } else {
-      throw new Error(`invalid column reference ${ref}`)
-    }
-  } else {
-    return ColumnNode.create(ref)
+  if (!ref.includes(COLUMN_SEPARATOR)) {
+    return ReferenceNode.create(
+      ColumnNode.create(ref),
+      undefined,
+      op ? JSONPathReferenceNode.create(op, JSONPathNode.create()) : undefined
+    )
   }
+
+  const parts = ref.split(COLUMN_SEPARATOR).map(trim)
+
+  if (parts.length === 3) {
+    return parseStringReferenceWithTableAndSchema(parts, op)
+  }
+
+  if (parts.length === 2) {
+    return parseStringReferenceWithTable(parts, op)
+  }
+
+  throw new Error(`invalid column reference ${ref}`)
 }
 
 export function parseAliasedStringReference(
@@ -184,22 +195,28 @@ export function parseOrderedColumnName(column: string): OperationNode {
 }
 
 function parseStringReferenceWithTableAndSchema(
-  parts: string[]
+  parts: string[],
+  op?: JSONOperator
 ): ReferenceNode {
   const [schema, table, column] = parts
 
   return ReferenceNode.create(
+    ColumnNode.create(column),
     TableNode.createWithSchema(schema, table),
-    ColumnNode.create(column)
+    op ? JSONPathReferenceNode.create(op, JSONPathNode.create()) : undefined
   )
 }
 
-function parseStringReferenceWithTable(parts: string[]): ReferenceNode {
+function parseStringReferenceWithTable(
+  parts: string[],
+  op?: JSONOperator
+): ReferenceNode {
   const [table, column] = parts
 
   return ReferenceNode.create(
+    ColumnNode.create(column),
     TableNode.create(table),
-    ColumnNode.create(column)
+    op ? JSONPathReferenceNode.create(op, JSONPathNode.create()) : undefined
   )
 }
 

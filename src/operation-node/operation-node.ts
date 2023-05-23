@@ -82,7 +82,7 @@ export type OperationNodeKind =
   | 'WhenNode'
   | 'JSONPathNode'
   | 'JSONPathLegNode'
-  | 'JSONTraversalOperationNode'
+  | 'JSONPathReferenceNode'
 
 export interface OperationNode {
   readonly kind: OperationNodeKind

@@ -84,7 +84,7 @@ import { CaseNode } from './case-node.js'
 import { WhenNode } from './when-node.js'
 import { JSONPathNode } from './json-path-node.js'
 import { JSONPathLegNode } from './json-path-leg-node.js'
-import { JSONTraversalOperationNode } from './json-traversal-operation-node.js'
+import { JSONPathReferenceNode } from './json-path-reference-node.js'
 
 /**
  * Transforms an operation node tree into another one.
@@ -203,7 +203,7 @@ export class OperationNodeTransformer {
     WhenNode: this.transformWhen.bind(this),
     JSONPathNode: this.transformJSONPath.bind(this),
     JSONPathLegNode: this.transformJSONPathLeg.bind(this),
-    JSONTraversalOperationNode: this.transformJSONTraversalOperation.bind(this),
+    JSONPathReferenceNode: this.transformJSONPathReference.bind(this),
   })
 
   transformNode<T extends OperationNode | undefined>(node: T): T {
@@ -292,8 +292,9 @@ export class OperationNodeTransformer {
   protected transformReference(node: ReferenceNode): ReferenceNode {
     return requireAllProps<ReferenceNode>({
       kind: 'ReferenceNode',
-      table: this.transformNode(node.table),
       column: this.transformNode(node.column),
+      table: this.transformNode(node.table),
+      jsonPath: this.transformNode(node.jsonPath),
     })
   }
 
@@ -926,6 +927,16 @@ export class OperationNodeTransformer {
     })
   }
 
+  protected transformJSONPathReference(
+    node: JSONPathReferenceNode
+  ): JSONPathReferenceNode {
+    return requireAllProps<JSONPathReferenceNode>({
+      kind: 'JSONPathReferenceNode',
+      jsonPath: this.transformNode(node.jsonPath),
+      operator: node.operator,
+    })
+  }
+
   protected transformJSONPath(node: JSONPathNode): JSONPathNode {
     return requireAllProps<JSONPathNode>({
       kind: 'JSONPathNode',
@@ -939,16 +950,6 @@ export class OperationNodeTransformer {
       type: node.type,
       value: this.transformNode(node.value),
     })
-  }
-
-  protected transformJSONTraversalOperation(
-    node: JSONTraversalOperationNode
-  ): JSONTraversalOperationNode {
-    return requireAllProps<JSONTraversalOperationNode>({
-      kind: 'JSONTraversalOperationNode',
-      leftOperand: this.transformNode(node.leftOperand),
-      operator: this.transformNode(node.operator),
-      rightOperand: this.transformNode(node.rightOperand),
   }
 
   protected transformDataType(node: DataTypeNode): DataTypeNode {
