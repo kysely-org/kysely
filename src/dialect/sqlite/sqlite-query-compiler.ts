@@ -40,6 +40,6 @@ export class SqliteQueryCompiler extends DefaultQueryCompiler {
 
   protected override visitJSONPathReference(node: JSONPathReferenceNode): void {
     this.append(node.operator)
-    this.visitJSONPath(node)
+    this.visitJSONPath(node.jsonPath)
   }
 }
