@@ -1,12 +1,10 @@
 import { freeze } from '../util/object-utils.js'
 import { OperationNode } from './operation-node.js'
-import { JSONOperator } from './operator-node.js'
 
 export type JSONPathLegType = 'Member' | 'ArrayLocation'
 
 export interface JSONPathLegNode extends OperationNode {
   readonly kind: 'JSONPathLegNode'
-  readonly operator?: JSONOperator
   readonly type: JSONPathLegType
   readonly value: OperationNode
 }

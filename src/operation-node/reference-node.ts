@@ -3,13 +3,13 @@ import { ColumnNode } from './column-node.js'
 import { TableNode } from './table-node.js'
 import { SelectAllNode } from './select-all-node.js'
 import { freeze } from '../util/object-utils.js'
-import { JSONPathNode } from './json-path-node.js'
+import { JSONPathReferenceNode } from './json-path-reference-node.js'
 
 export interface ReferenceNode extends OperationNode {
   readonly kind: 'ReferenceNode'
   readonly column: ColumnNode | SelectAllNode
   readonly table?: TableNode
-  readonly jsonPath?: JSONPathNode
+  readonly jsonPath?: JSONPathReferenceNode
 }
 
 /**
@@ -20,11 +20,16 @@ export const ReferenceNode = freeze({
     return node.kind === 'ReferenceNode'
   },
 
-  create(column: ColumnNode, table?: TableNode): ReferenceNode {
+  create(
+    column: ColumnNode,
+    table?: TableNode,
+    jsonPath?: JSONPathReferenceNode
+  ): ReferenceNode {
     return freeze({
       kind: 'ReferenceNode',
       table,
       column,
+      jsonPath,
     })
   },
 
@@ -38,7 +43,7 @@ export const ReferenceNode = freeze({
 
   cloneWithJSONPath(
     reference: ReferenceNode,
-    jsonPath: JSONPathNode
+    jsonPath: JSONPathReferenceNode
   ): ReferenceNode {
     return freeze({
       ...reference,
