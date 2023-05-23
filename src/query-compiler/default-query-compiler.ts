@@ -98,7 +98,7 @@ import { CaseNode } from '../operation-node/case-node.js'
 import { WhenNode } from '../operation-node/when-node.js'
 import { JSONPathNode } from '../operation-node/json-path-node.js'
 import { JSONPathLegNode } from '../operation-node/json-path-leg-node.js'
-import { JSONTraversalOperationNode } from '../operation-node/json-traversal-operation-node.js'
+import { JSONPathReferenceNode } from '../operation-node/json-path-reference-node.js'
 
 export class DefaultQueryCompiler
   extends OperationNodeVisitor
@@ -391,9 +391,16 @@ export class DefaultQueryCompiler
   }
 
   protected override visitReference(node: ReferenceNode): void {
-    this.visitNode(node.table)
-    this.append('.')
+    if (node.table) {
+      this.visitNode(node.table)
+      this.append('.')
+    }
+
     this.visitNode(node.column)
+
+    if (node.jsonPath) {
+      this.visitNode(node.jsonPath)
+    }
   }
 
   protected override visitSelectAll(_: SelectAllNode): void {
@@ -1293,7 +1300,7 @@ export class DefaultQueryCompiler
     this.compileList(node.arguments)
     this.append(')')
   }
-      
+
   protected override visitCase(node: CaseNode): void {
     this.append('case')
 
@@ -1329,7 +1336,14 @@ export class DefaultQueryCompiler
       this.visitNode(node.result)
     }
   }
-  
+
+  protected override visitJSONPathReference(node: JSONPathReferenceNode): void {
+    for (const pathLeg of node.jsonPath.pathLegs) {
+      this.append(node.operator)
+      this.visitNode(pathLeg.value)
+    }
+  }
+
   protected override visitJSONPath(node: JSONPathNode): void {
     this.append("'$")
 
@@ -1348,14 +1362,6 @@ export class DefaultQueryCompiler
     if (node.type === 'ArrayLocation') {
       this.append(']')
     }
-  }
-
-  protected override visitJSONTraversalOperation(
-    node: JSONTraversalOperationNode
-  ): void {
-    this.visitNode(node.leftOperand)
-    this.visitNode(node.operator)
-    this.visitNode(node.rightOperand)
   }
 
   protected append(str: string): void {
