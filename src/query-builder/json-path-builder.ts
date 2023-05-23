@@ -1,29 +1,27 @@
-import { Expression } from '../expression/expression.js'
-import { JSONPathLegNode } from '../operation-node/json-path-leg-node.js'
+import { AliasedExpression, Expression } from '../expression/expression.js'
+import { AliasNode } from '../operation-node/alias-node.js'
+import { IdentifierNode } from '../operation-node/identifier-node.js'
+import {
+  JSONPathLegNode,
+  JSONPathLegType,
+} from '../operation-node/json-path-leg-node.js'
 import { JSONPathNode } from '../operation-node/json-path-node.js'
+import { JSONPathReferenceNode } from '../operation-node/json-path-reference-node.js'
+import { isOperationNodeSource } from '../operation-node/operation-node-source.js'
 import { OperationNode } from '../operation-node/operation-node.js'
-import { RawNode } from '../operation-node/raw-node.js'
 import { ReferenceNode } from '../operation-node/reference-node.js'
-import { freeze } from '../util/object-utils.js'
-import { JSONTraversable } from './json-traversable-interface.js'
+import { ValueNode } from '../operation-node/value-node.js'
 
-export class JSONPathBuilder<S, O = S>
-  implements JSONTraversable<S, O>, Expression<O>
-{
-  readonly #props: JSONPathBuilderProps
+export class JSONPathBuilder<S, O = S> {
+  readonly #node: ReferenceNode | JSONPathNode
 
-  constructor(props: JSONPathBuilderProps) {
-    this.#props = freeze({ ...props })
-  }
-
-  /** @private */
-  get expressionType(): O | undefined {
-    return undefined
+  constructor(node: ReferenceNode | JSONPathNode) {
+    this.#node = node
   }
 
   at<I extends any[] extends O ? keyof NonNullable<O> & number : never>(
     index: I
-  ): JSONPathBuilder<
+  ): TraversedJSONPathBuilder<
     S,
     undefined extends O
       ? null | NonNullable<NonNullable<O>[I]>
@@ -31,19 +29,7 @@ export class JSONPathBuilder<S, O = S>
       ? null | NonNullable<NonNullable<O>[I]>
       : NonNullable<O>[I]
   > {
-    const legNode = JSONPathLegNode.create(
-      'ArrayLocation',
-      RawNode.createWithSql(`${index}`)
-    )
-
-    return new JSONPathBuilder({
-      node: ReferenceNode.is(this.#props.node)
-        ? ReferenceNode.cloneWithJSONPath(
-            this.#props.node,
-            JSONPathNode.cloneWithLeg(this.#props.node.jsonPath!, legNode)
-          )
-        : JSONPathNode.cloneWithLeg(this.#props.node, legNode),
-    })
+    return this.#createBuilderWithPathLeg('ArrayLocation', index)
   }
 
   key<
@@ -54,7 +40,7 @@ export class JSONPathBuilder<S, O = S>
       : never
   >(
     key: K
-  ): JSONPathBuilder<
+  ): TraversedJSONPathBuilder<
     S,
     undefined extends O
       ? null | NonNullable<NonNullable<O>[K]>
@@ -62,29 +48,124 @@ export class JSONPathBuilder<S, O = S>
       ? null | NonNullable<NonNullable<O>[K]>
       : NonNullable<O>[K]
   > {
-    const legNode = JSONPathLegNode.create('Member', RawNode.createWithSql(key))
+    return this.#createBuilderWithPathLeg('Member', key)
+  }
 
-    return new JSONPathBuilder({
-      node: ReferenceNode.is(this.#props.node)
+  #createBuilderWithPathLeg(
+    legType: JSONPathLegType,
+    value: string | number
+  ): TraversedJSONPathBuilder<any, any> {
+    const legNode = JSONPathLegNode.create(
+      legType,
+      ValueNode.createImmediate(value)
+    )
+
+    return new TraversedJSONPathBuilder(
+      ReferenceNode.is(this.#node)
         ? ReferenceNode.cloneWithJSONPath(
-            this.#props.node,
-            JSONPathNode.cloneWithLeg(this.#props.node.jsonPath!, legNode)
+            this.#node,
+            JSONPathReferenceNode.clone(
+              this.#node.jsonPath!,
+              JSONPathNode.cloneWithLeg(this.#node.jsonPath!.jsonPath, legNode)
+            )
           )
-        : JSONPathNode.cloneWithLeg(this.#props.node, legNode),
-    })
+        : JSONPathNode.cloneWithLeg(this.#node, legNode)
+    )
+  }
+}
+
+export class TraversedJSONPathBuilder<S, O>
+  extends JSONPathBuilder<S, O>
+  implements Expression<O>
+{
+  readonly #node: ReferenceNode | JSONPathNode
+
+  constructor(node: ReferenceNode | JSONPathNode) {
+    super(node)
+    this.#node = node
+  }
+
+  /** @private */
+  get expressionType(): O | undefined {
+    return undefined
+  }
+
+  /**
+   * Returns an aliased version of the expression.
+   *
+   * In addition to slapping `as "the_alias"` to the end of the SQL,
+   * this method also provides strict typing:
+   *
+   * ```ts
+   * const result = await db
+   *   .selectFrom('person')
+   *   .select(eb =>
+   *     eb.cmpr('first_name', '=', 'Jennifer').as('is_jennifer')
+   *   )
+   *   .executeTakeFirstOrThrow()
+   *
+   * // `is_jennifer: SqlBool` field exists in the result type.
+   * console.log(result.is_jennifer)
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```ts
+   * select "first_name" = $1 as "is_jennifer"
+   * from "person"
+   * ```
+   */
+  as<A extends string>(alias: A): AliasedExpression<O, A>
+  as<A extends string>(alias: Expression<unknown>): AliasedExpression<O, A>
+  as(alias: string | Expression<any>): AliasedExpression<O, string> {
+    return new AliasedJSONPathBuilder(this, alias)
+  }
+
+  /**
+   * Change the output type of the json path.
+   *
+   * This method call doesn't change the SQL in any way. This methods simply
+   * returns a copy of this `JSONPathBuilder` with a new output type.
+   */
+  $castTo<T>(): JSONPathBuilder<T> {
+    return new JSONPathBuilder(this.#node)
   }
 
   toOperationNode(): OperationNode {
-    return this.#props.node
+    return this.#node
   }
 }
 
-interface JSONPathBuilderProps {
-  node: ReferenceNode | JSONPathNode
-}
+export class AliasedJSONPathBuilder<O, A extends string>
+  implements AliasedExpression<O, A>
+{
+  readonly #jsonPath: TraversedJSONPathBuilder<any, O>
+  readonly #alias: A | Expression<unknown>
 
-export function createJSONPathBuilder<S, O = S>(
-  node: ReferenceNode | JSONPathNode
-): JSONPathBuilder<S, O> {
-  return new JSONPathBuilder({ node })
+  constructor(
+    jsonPath: TraversedJSONPathBuilder<any, O>,
+    alias: A | Expression<unknown>
+  ) {
+    this.#jsonPath = jsonPath
+    this.#alias = alias
+  }
+
+  /** @private */
+  get expression(): Expression<O> {
+    return this.#jsonPath
+  }
+
+  /** @private */
+  get alias(): A | Expression<unknown> {
+    return this.#alias
+  }
+
+  toOperationNode(): AliasNode {
+    return AliasNode.create(
+      this.#jsonPath.toOperationNode(),
+      isOperationNodeSource(this.#alias)
+        ? this.#alias.toOperationNode()
+        : IdentifierNode.create(this.#alias)
+    )
+  }
 }

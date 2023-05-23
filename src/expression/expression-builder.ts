@@ -18,6 +18,7 @@ import {
 } from '../query-builder/function-module.js'
 import {
   ExtractTypeFromReferenceExpression,
+  ExtractTypeFromStringReference,
   parseReferenceExpression,
   parseStringReference,
   ReferenceExpression,
@@ -53,10 +54,7 @@ import { ValueNode } from '../operation-node/value-node.js'
 import { CaseBuilder } from '../query-builder/case-builder.js'
 import { CaseNode } from '../operation-node/case-node.js'
 import { isUndefined } from '../util/object-utils.js'
-import {
-  JSONPathExpression,
-  parseJSONTraversalOperation,
-} from '../parser/json-parser.js'
+import { JSONPathBuilder } from '../query-builder/json-path-builder.js'
 
 export interface ExpressionBuilder<DB, TB extends keyof DB> {
   /**
@@ -263,7 +261,12 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    */
   ref<RE extends StringReference<DB, TB>>(
     reference: RE
-  ): ExpressionWrapper<ExtractTypeFromReferenceExpression<DB, TB, RE>>
+  ): ExpressionWrapper<ExtractTypeFromStringReference<DB, TB, RE>>
+
+  ref<RE extends StringReference<DB, TB>>(
+    reference: RE,
+    op: JSONOperator
+  ): JSONPathBuilder<ExtractTypeFromStringReference<DB, TB, RE>>
 
   /**
    * Returns a value expression.
@@ -352,63 +355,6 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
     lhs: RE,
     op: ComparisonOperatorExpression,
     rhs: OperandValueExpressionOrList<DB, TB, RE>
-  ): ExpressionWrapper<O>
-
-  /**
-   * Creates a JSON traversal expression.
-   *
-   * This function returns an {@link Expression} and can be used pretty much anywhere.
-   * See the examples for a couple of possible use cases.
-   *
-   * JSON array traversal, or optional/nullable data traversal, result in nullable
-   * values (e.g. `string | null`). Use {@link SelectQueryBuilder.$narrowType}
-   * to narrow the type.
-   *
-   * ### Examples
-   *
-   * Shallow JSON traversal of `{ "name": { "first": string }, "roles": string[] }`
-   * using JSON path syntax:
-   *
-   * ```ts
-   * db.selectFrom('person')
-   *   .select(({ jxp }) => [
-   *     jxp('name', '->>', (pb) => pb.key('first')).as('first_name'),
-   *     jxp('roles', '->>', (pb) => pb.at(0)).as('primary_role')
-   *   ])
-   * ```
-   *
-   * The generated SQL (MySQL):
-   *
-   * ```sql
-   * select `name`->>'$.first' as `first_name`,
-   *   `roles`->>'$[0]' as `primary_role`
-   * from `person`
-   * ```
-   *
-   * Deep JSON traversal of `{ "roles": { "title": string }[] }` using JSON path
-   * syntax:
-   *
-   * ```ts
-   * db.selectFrom('person')
-   *   .select(({ jxp }) =>
-   *     jxp('roles', '->>', (pb) => pb.at(-1).key('title')).as('oldest_role')
-   *   )
-   * ```
-   *
-   * The generated SQL (MySQL):
-   *
-   * ```sql
-   * select `roles`->>'$[-1].title' as `primary_role` from `person`
-   * ```
-   */
-  jxp<
-    O,
-    RE extends ReferenceExpression<DB, TB> = ReferenceExpression<DB, TB>,
-    OP extends JSONOperator = JSONOperator
-  >(
-    lhs: RE,
-    op: OP,
-    rhs: JSONPathExpression<ExtractTypeFromReferenceExpression<DB, TB, RE>, O>
   ): ExpressionWrapper<O>
 
   /**
@@ -645,9 +591,16 @@ export function createExpressionBuilder<DB, TB extends keyof DB>(
     },
 
     ref<RE extends StringReference<DB, TB>>(
-      reference: RE
-    ): ExpressionWrapper<ExtractTypeFromReferenceExpression<DB, TB, RE>> {
-      return new ExpressionWrapper(parseStringReference(reference))
+      reference: RE,
+      op?: JSONOperator
+    ): any {
+      const node = parseStringReference(reference, op)
+
+      if (isUndefined(op)) {
+        return new ExpressionWrapper(node)
+      }
+
+      return new JSONPathBuilder(node)
     },
 
     val<VE>(
@@ -665,18 +618,6 @@ export function createExpressionBuilder<DB, TB extends keyof DB>(
       rhs: OperandValueExpressionOrList<DB, TB, RE>
     ): ExpressionWrapper<O> {
       return new ExpressionWrapper(parseValueBinaryOperation(lhs, op, rhs))
-    },
-
-    jxp<
-      O,
-      RE extends ReferenceExpression<DB, TB> = ReferenceExpression<DB, TB>,
-      OP extends JSONOperator = JSONOperator
-    >(
-      lhs: RE,
-      op: OP,
-      rhs: JSONPathExpression<ExtractTypeFromReferenceExpression<DB, TB, RE>, O>
-    ): ExpressionWrapper<O> {
-      return new ExpressionWrapper(parseJSONTraversalOperation(lhs, op, rhs))
     },
 
     bxp<
