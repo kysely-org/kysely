@@ -66,7 +66,7 @@ export class ColumnDefinitionBuilder implements OperationNodeSource {
   references(ref: string): ColumnDefinitionBuilder {
     const references = parseStringReference(ref)
 
-    if (!ReferenceNode.is(references) || SelectAllNode.is(references.column)) {
+    if (!references.table || SelectAllNode.is(references.column)) {
       throw new Error(
         `invalid call references('${ref}'). The reference must have format table.column or schema.table.column`
       )
