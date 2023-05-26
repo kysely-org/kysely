@@ -76,7 +76,7 @@
     "concurrently": "^7.6.0",
     "esbuild": "^0.14.47",
     "mocha": "^10.0.0",
-    "mysql2": "^2.3.3",
+    "mysql2": "^3.3.2",
     "pg": "^8.7.3",
     "pg-cursor": "^2.7.3",
     "playwright": "^1.22.2",
