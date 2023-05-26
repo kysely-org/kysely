@@ -91,6 +91,13 @@ async function testManyWith(db: Kysely<Database>) {
     .with('w9', (qb) => qb.selectFrom('person').select('first_name as fn9'))
     .with('w10', (qb) => qb.selectFrom('person').select('first_name as fn10'))
     .with('w11', (qb) => qb.selectFrom('person').select('first_name as fn11'))
+    .with('w12', (qb) => qb.selectFrom('person').select('first_name as fn12'))
+    .with('w13', (qb) => qb.selectFrom('person').select('first_name as fn13'))
+    .with('w14', (qb) => qb.selectFrom('person').select('first_name as fn14'))
+    .with('w15', (qb) => qb.selectFrom('person').select('first_name as fn15'))
+    .with('w16', (qb) => qb.selectFrom('person').select('first_name as fn16'))
+    //.with('w17', (qb) => qb.selectFrom('person').select('first_name as fn17'))
+    //.with('w18', (qb) => qb.selectFrom('person').select('first_name as fn18'))
     .selectFrom([
       'w1',
       'w2',
@@ -103,6 +110,13 @@ async function testManyWith(db: Kysely<Database>) {
       'w9',
       'w10',
       'w11',
+      'w12',
+      'w13',
+      'w14',
+      'w15',
+      'w16',
+      //'w17',
+      //'w18',
     ])
     .selectAll()
     .executeTakeFirstOrThrow()
@@ -119,5 +133,12 @@ async function testManyWith(db: Kysely<Database>) {
     fn9: string
     fn10: string
     fn11: string
+    fn12: string
+    fn13: string
+    fn14: string
+    fn15: string
+    fn16: string
+    //fn17: string
+    //fn18: string
   }>(res)
 }

@@ -6,7 +6,7 @@ import { CommonTableExpressionNameNode } from '../operation-node/common-table-ex
 import { QueryCreator } from '../query-creator.js'
 import { createQueryCreator } from './parse-utils.js'
 import { Expression } from '../expression/expression.js'
-import { DrainOuterGeneric, ShallowRecord } from '../util/type-utils.js'
+import { ShallowRecord } from '../util/type-utils.js'
 
 export type CommonTableExpression<DB, CN extends string> = (
   creator: QueryCreator<DB>
@@ -27,14 +27,12 @@ export type QueryCreatorWithCommonTableExpression<
   DB,
   CN extends string,
   CTE
-> = DrainOuterGeneric<
-  QueryCreator<
-    DB &
-      ShallowRecord<
-        ExtractTableFromCommonTableExpressionName<CN>,
-        ExtractRowFromCommonTableExpression<CTE>
-      >
-  >
+> = QueryCreator<
+  DB &
+    ShallowRecord<
+      ExtractTableFromCommonTableExpressionName<CN>,
+      ExtractRowFromCommonTableExpression<CTE>
+    >
 >
 
 type CommonTableExpressionOutput<DB, CN extends string> =

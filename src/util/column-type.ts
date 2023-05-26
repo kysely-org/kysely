@@ -109,11 +109,9 @@ export type NonNullableInsertKeys<R> = {
 /**
  * Keys of `R` whose `SelectType` values are not `never`
  */
-type NonNeverSelectKeys<R> = DrainOuterGeneric<
-  {
-    [K in keyof R]: IfNotNever<SelectType<R[K]>, K>
-  }[keyof R]
->
+type NonNeverSelectKeys<R> = {
+  [K in keyof R]: IfNotNever<SelectType<R[K]>, K>
+}[keyof R]
 
 /**
  * Keys of `R` whose `UpdateType` values are not `never`

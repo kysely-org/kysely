@@ -12,6 +12,7 @@ async function testJoin(db: Kysely<Database>) {
 
   expectType<
     {
+      // Person columns
       id: number | string
       first_name: string
       last_name: string | null
@@ -20,6 +21,7 @@ async function testJoin(db: Kysely<Database>) {
       modified_at: Date
       marital_status: 'single' | 'married' | 'divorced' | 'widowed' | null
 
+      // Pet columns.
       name: string
       species: 'cat' | 'dog'
       owner_id: number
@@ -220,7 +222,14 @@ async function testManyJoins(db: Kysely<Database>) {
     .rightJoin('pet as p9', 'p9.owner_id', 'person.id')
     .rightJoin('pet as p10', 'p10.owner_id', 'person.id')
     .rightJoin('pet as p11', 'p11.owner_id', 'person.id')
-    .rightJoin('pet as p12', 'p12.owner_id', 'person.id')
+    .rightJoin('pet as p13', 'p13.owner_id', 'person.id')
+    .rightJoin('pet as p14', 'p14.owner_id', 'person.id')
+    .rightJoin('pet as p15', 'p15.owner_id', 'person.id')
+    .rightJoin('pet as p16', 'p16.owner_id', 'person.id')
+    .rightJoin('pet as p17', 'p17.owner_id', 'person.id')
+    .rightJoin('pet as p18', 'p18.owner_id', 'person.id')
+    .rightJoin('pet as p19', 'p19.owner_id', 'person.id')
+    .rightJoin('pet as p20', 'p20.owner_id', 'person.id')
     .select(['age', 'last_name'])
     .executeTakeFirstOrThrow()
 
