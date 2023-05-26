@@ -152,13 +152,11 @@ type ExtractTypeFromStringSelectExpression<
     : never
   : never
 
-export type AllSelection<DB, TB extends keyof DB> = DrainOuterGeneric<
-  Selectable<{
-    [C in AnyColumn<DB, TB>]: {
-      [T in TB]: C extends keyof DB[T] ? DB[T][C] : never
-    }[TB]
-  }>
->
+export type AllSelection<DB, TB extends keyof DB> = Selectable<{
+  [C in AnyColumn<DB, TB>]: {
+    [T in TB]: C extends keyof DB[T] ? DB[T][C] : never
+  }[TB]
+}>
 
 export function parseSelectArg(
   selection: SelectArg<any, any, SelectExpression<any, any>>

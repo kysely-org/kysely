@@ -24,7 +24,6 @@ import { SelectQueryNode } from '../operation-node/select-query-node.js'
 import { QueryNode } from '../operation-node/query-node.js'
 import {
   DrainOuterGeneric,
-  MergePartial,
   NarrowPartial,
   Nullable,
   ShallowRecord,
@@ -1735,10 +1734,10 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    *   )
    * ```
    */
-  $if<O2 extends O>(
+  $if<O2>(
     condition: boolean,
-    func: (qb: this) => SelectQueryBuilder<DB, TB, O2>
-  ): SelectQueryBuilder<DB, TB, MergePartial<O, O2>> {
+    func: (qb: this) => SelectQueryBuilder<DB, TB, O & O2>
+  ): SelectQueryBuilder<DB, TB, O & Partial<O2>> {
     if (condition) {
       return func(this)
     }
@@ -1751,10 +1750,10 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
   /**
    * @deprecated Use `$if` instead
    */
-  if<O2 extends O>(
+  if<O2>(
     condition: boolean,
-    func: (qb: this) => SelectQueryBuilder<DB, TB, O2>
-  ): SelectQueryBuilder<DB, TB, MergePartial<O, O2>> {
+    func: (qb: this) => SelectQueryBuilder<DB, TB, O & O2>
+  ): SelectQueryBuilder<DB, TB, O & Partial<O2>> {
     return this.$if(condition, func)
   }
 

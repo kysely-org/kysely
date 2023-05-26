@@ -15,7 +15,6 @@ import {
 import { InsertQueryNode } from '../operation-node/insert-query-node.js'
 import { QueryNode } from '../operation-node/query-node.js'
 import {
-  MergePartial,
   NarrowPartial,
   SimplifyResult,
   SimplifySingleResult,
@@ -600,22 +599,18 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
   $if<O2>(
     condition: boolean,
     func: (qb: this) => InsertQueryBuilder<DB, TB, O2>
-  ): InsertQueryBuilder<
-    DB,
-    TB,
-    O2 extends InsertResult
-      ? InsertResult
-      : O extends InsertResult
-      ? Partial<O2>
-      : MergePartial<O, O2>
-  > {
+  ): O2 extends InsertResult
+    ? InsertQueryBuilder<DB, TB, InsertResult>
+    : O2 extends O & infer E
+    ? InsertQueryBuilder<DB, TB, O & Partial<E>>
+    : InsertQueryBuilder<DB, TB, Partial<O2>> {
     if (condition) {
       return func(this) as any
     }
 
     return new InsertQueryBuilder({
       ...this.#props,
-    })
+    }) as any
   }
 
   /**
@@ -624,16 +619,18 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
   if<O2>(
     condition: boolean,
     func: (qb: this) => InsertQueryBuilder<DB, TB, O2>
-  ): InsertQueryBuilder<
-    DB,
-    TB,
-    O2 extends InsertResult
-      ? InsertResult
-      : O extends InsertResult
-      ? Partial<O2>
-      : MergePartial<O, O2>
-  > {
-    return this.$if(condition, func)
+  ): O2 extends InsertResult
+    ? InsertQueryBuilder<DB, TB, InsertResult>
+    : O2 extends O & infer E
+    ? InsertQueryBuilder<DB, TB, O & Partial<E>>
+    : InsertQueryBuilder<DB, TB, Partial<O2>> {
+    if (condition) {
+      return func(this) as any
+    }
+
+    return new InsertQueryBuilder({
+      ...this.#props,
+    }) as any
   }
 
   /**
