@@ -183,3 +183,54 @@ async function testSelectDynamic(db: Kysely<Database>) {
     doesnt_exist: never | undefined
   }>(r4)
 }
+
+async function testIf(db: Kysely<Database>) {
+  const r = await db
+    .selectFrom('person')
+    .select('id')
+    .$if(Math.random() < 0.5, (qb) => qb.select('first_name as f1'))
+    .$if(Math.random() < 0.5, (qb) => qb.select('first_name as f2'))
+    .$if(Math.random() < 0.5, (qb) => qb.select('first_name as f3'))
+    .$if(Math.random() < 0.5, (qb) => qb.select('first_name as f4'))
+    .$if(Math.random() < 0.5, (qb) => qb.select('first_name as f5'))
+    .$if(Math.random() < 0.5, (qb) => qb.select('first_name as f6'))
+    .$if(Math.random() < 0.5, (qb) => qb.select('first_name as f7'))
+    .$if(Math.random() < 0.5, (qb) => qb.select('first_name as f8'))
+    .$if(Math.random() < 0.5, (qb) => qb.select('first_name as f9'))
+    .$if(Math.random() < 0.5, (qb) => qb.select('first_name as f10'))
+    .$if(Math.random() < 0.5, (qb) => qb.select('first_name as f11'))
+    .$if(Math.random() < 0.5, (qb) => qb.select('first_name as f12'))
+    .$if(Math.random() < 0.5, (qb) => qb.select('first_name as f13'))
+    .$if(Math.random() < 0.5, (qb) => qb.select('first_name as f14'))
+    .$if(Math.random() < 0.5, (qb) => qb.select('first_name as f15'))
+    .$if(Math.random() < 0.5, (qb) => qb.select('first_name as f16'))
+    .$if(Math.random() < 0.5, (qb) => qb.select('first_name as f17'))
+    .$if(Math.random() < 0.5, (qb) => qb.select('first_name as f18'))
+    .$if(Math.random() < 0.5, (qb) => qb.select('first_name as f19'))
+    .$if(Math.random() < 0.5, (qb) => qb.select('first_name as f20'))
+    .executeTakeFirstOrThrow()
+
+  expectType<{
+    id: number
+    f1?: string
+    f2?: string
+    f3?: string
+    f4?: string
+    f5?: string
+    f6?: string
+    f7?: string
+    f8?: string
+    f9?: string
+    f10?: string
+    f11?: string
+    f12?: string
+    f13?: string
+    f14?: string
+    f15?: string
+    f16?: string
+    f17?: string
+    f18?: string
+    f19?: string
+    f20?: string
+  }>(r)
+}
