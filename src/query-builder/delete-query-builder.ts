@@ -23,7 +23,6 @@ import { ReferenceExpression } from '../parser/reference-parser.js'
 import { QueryNode } from '../operation-node/query-node.js'
 import {
   DrainOuterGeneric,
-  MergePartial,
   NarrowPartial,
   Nullable,
   ShallowRecord,
@@ -765,22 +764,18 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
   $if<O2>(
     condition: boolean,
     func: (qb: this) => DeleteQueryBuilder<DB, TB, O2>
-  ): DeleteQueryBuilder<
-    DB,
-    TB,
-    O2 extends DeleteResult
-      ? DeleteResult
-      : O extends DeleteResult
-      ? Partial<O2>
-      : MergePartial<O, O2>
-  > {
+  ): O2 extends DeleteResult
+    ? DeleteQueryBuilder<DB, TB, DeleteResult>
+    : O2 extends O & infer E
+    ? DeleteQueryBuilder<DB, TB, O & Partial<E>>
+    : DeleteQueryBuilder<DB, TB, Partial<O2>> {
     if (condition) {
       return func(this) as any
     }
 
     return new DeleteQueryBuilder({
       ...this.#props,
-    })
+    }) as any
   }
 
   /**
@@ -789,15 +784,11 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
   if<O2>(
     condition: boolean,
     func: (qb: this) => DeleteQueryBuilder<DB, TB, O2>
-  ): DeleteQueryBuilder<
-    DB,
-    TB,
-    O2 extends DeleteResult
-      ? DeleteResult
-      : O extends DeleteResult
-      ? Partial<O2>
-      : MergePartial<O, O2>
-  > {
+  ): O2 extends DeleteResult
+    ? DeleteQueryBuilder<DB, TB, DeleteResult>
+    : O2 extends O & infer E
+    ? DeleteQueryBuilder<DB, TB, O & Partial<E>>
+    : DeleteQueryBuilder<DB, TB, Partial<O2>> {
     return this.$if(condition, func)
   }
 

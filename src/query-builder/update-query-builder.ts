@@ -23,7 +23,6 @@ import { ReferenceExpression } from '../parser/reference-parser.js'
 import { QueryNode } from '../operation-node/query-node.js'
 import {
   DrainOuterGeneric,
-  MergePartial,
   NarrowPartial,
   Nullable,
   ShallowRecord,
@@ -677,23 +676,18 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
   $if<O2>(
     condition: boolean,
     func: (qb: this) => UpdateQueryBuilder<DB, UT, TB, O2>
-  ): UpdateQueryBuilder<
-    DB,
-    UT,
-    TB,
-    O2 extends UpdateResult
-      ? UpdateResult
-      : O extends UpdateResult
-      ? Partial<O2>
-      : MergePartial<O, O2>
-  > {
+  ): O2 extends UpdateResult
+    ? UpdateQueryBuilder<DB, UT, TB, UpdateResult>
+    : O2 extends O & infer E
+    ? UpdateQueryBuilder<DB, UT, TB, O & Partial<E>>
+    : UpdateQueryBuilder<DB, UT, TB, Partial<O2>> {
     if (condition) {
       return func(this) as any
     }
 
     return new UpdateQueryBuilder({
       ...this.#props,
-    })
+    }) as any
   }
 
   /**
@@ -702,16 +696,11 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
   if<O2>(
     condition: boolean,
     func: (qb: this) => UpdateQueryBuilder<DB, UT, TB, O2>
-  ): UpdateQueryBuilder<
-    DB,
-    UT,
-    TB,
-    O2 extends UpdateResult
-      ? UpdateResult
-      : O extends UpdateResult
-      ? Partial<O2>
-      : MergePartial<O, O2>
-  > {
+  ): O2 extends UpdateResult
+    ? UpdateQueryBuilder<DB, UT, TB, UpdateResult>
+    : O2 extends O & infer E
+    ? UpdateQueryBuilder<DB, UT, TB, O & Partial<E>>
+    : UpdateQueryBuilder<DB, UT, TB, Partial<O2>> {
     return this.$if(condition, func)
   }
 

@@ -1,13 +1,11 @@
 import { DynamicReferenceBuilder } from '../dynamic/dynamic-reference-builder.js'
 import { ExpressionWrapper } from '../expression/expression-wrapper.js'
-import { Expression } from '../expression/expression.js'
 import { AggregateFunctionNode } from '../operation-node/aggregate-function-node.js'
 import { FunctionNode } from '../operation-node/function-node.js'
 import { CoalesceReferenceExpressionList } from '../parser/coalesce-parser.js'
 import {
   ExtractTypeFromReferenceExpression,
   SimpleReferenceExpression,
-  parseSimpleReferenceExpression,
   ReferenceExpression,
   StringReference,
   parseReferenceExpressionOrList,
