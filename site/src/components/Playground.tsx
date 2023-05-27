@@ -130,13 +130,15 @@ const persons = await db
     'JENNIFER'
   )
   // Alternatively you can use the single callback version.
-  .where(({ or, cmpr, fn }) => or([
-    cmpr(fn('upper', ['first_name']), '=', 'JENNIFER'),
-    cmpr(fn('upper', ['last_name']), '=', 'ANISTON')
-  ]))
+  .where(({ cmpr, fn }) =>
+    cmpr(fn('upper', ['first_name']), '=', 'JENNIFER')
+  )
   // Or you can simply use raw SQL if you prefer readability
   // over type-safety.
   .where(sql\`upper(first_name)\`, '=', 'JENNIFER')
+  // You can even stick the whole condition to an SQL
+  // snippet if you prefer
+  .where(sql\`upper(first_name) = \${'JENNIFER'}\`)
   .execute()
 `
 
