@@ -84,6 +84,7 @@ import { UsingNode } from './using-node.js'
 import { FunctionNode } from './function-node.js'
 import { WhenNode } from './when-node.js'
 import { CaseNode } from './case-node.js'
+import { AddIndexNode } from './add-index-node.js'
 
 export abstract class OperationNodeVisitor {
   protected readonly nodeStack: OperationNode[] = []
@@ -132,6 +133,7 @@ export abstract class OperationNodeVisitor {
     OnConflictNode: this.visitOnConflict.bind(this),
     OnDuplicateKeyNode: this.visitOnDuplicateKey.bind(this),
     CreateIndexNode: this.visitCreateIndex.bind(this),
+    AddIndexNode: this.visitAddIndex.bind(this),
     DropIndexNode: this.visitDropIndex.bind(this),
     ListNode: this.visitList.bind(this),
     PrimaryKeyConstraintNode: this.visitPrimaryKeyConstraint.bind(this),
@@ -215,6 +217,7 @@ export abstract class OperationNodeVisitor {
   protected abstract visitOnConflict(node: OnConflictNode): void
   protected abstract visitOnDuplicateKey(node: OnDuplicateKeyNode): void
   protected abstract visitCreateIndex(node: CreateIndexNode): void
+  protected abstract visitAddIndex(node: AddIndexNode): void
   protected abstract visitDropIndex(node: DropIndexNode): void
   protected abstract visitList(node: ListNode): void
   protected abstract visitPrimaryKeyConstraint(
