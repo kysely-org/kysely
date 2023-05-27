@@ -37,6 +37,10 @@ import {
 import { AlterTableExecutor } from './alter-table-executor.js'
 import { AlterTableAddForeignKeyConstraintBuilder } from './alter-table-add-foreign-key-constraint-builder.js'
 import { AlterTableDropConstraintBuilder } from './alter-table-drop-constraint-builder.js'
+import { DropIndexNode } from '../operation-node/drop-index-node.js'
+import { AddIndexBuilder } from './add-index-builder.js'
+import { AddIndexNode } from '../operation-node/add-index-node.js'
+import { AlterTableAddIndexBuilder } from './alter-table-add-index-builder.js'
 
 /**
  * This builder can be used to create a `alter table` query.
@@ -220,6 +224,25 @@ export class AlterTableBuilder implements ColumnAlteringInterface {
       ...this.#props,
       node: AlterTableNode.cloneWithTableProps(this.#props.node, {
         dropConstraint: DropConstraintNode.create(constraintName),
+      }),
+    })
+  }
+
+  addIndex(indexName: string): AlterTableAddIndexBuilder {
+    return new AlterTableAddIndexBuilder({
+      ...this.#props,
+      indexBuilder: new AddIndexBuilder({
+        ...this.#props,
+        node: AddIndexNode.create({ name: IdentifierNode.create(indexName) }),
+      }),
+    })
+  }
+
+  dropIndex(indexName: string): AlterTableExecutor {
+    return new AlterTableExecutor({
+      ...this.#props,
+      node: AlterTableNode.cloneWithTableProps(this.#props.node, {
+        dropIndex: DropIndexNode.create(indexName),
       }),
     })
   }
