@@ -89,6 +89,31 @@ export const exampleSelectAllColumnsOfATable = `const pets = await db
   .execute()
 `
 
+export const exampleComplexSelections = `import { sql } from 'kysely'
+
+const persons = await db
+  .selectFrom('person')
+  .select(({ selectFrom, fn, val }) => [
+    // Select the result of a subquery
+    selectFrom('pet')
+      .whereRef('person.id', '=', 'pet.owner_id')
+      .select('name')
+      .limit(1)
+      .as('pet_name'),
+
+    // Select a raw SQL expression
+    sql<number>\`age - 18\`.as('adult_years'),
+
+    // Select an output of a function call
+    fn<string>('concat', [
+      'first_name',
+      val(' '),
+      'last_name'
+    ]).as('full_name')
+  ])
+  .execute()
+`
+
 export const exampleFilterById = `const person = await db
   .selectFrom('person')
   .select(['id', 'first_name'])
