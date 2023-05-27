@@ -126,7 +126,7 @@ if (firstName) {
 }
 
 if (lastName) {
-  query = query.where('first_name', '=', lastName)
+  query = query.where('last_name', '=', lastName)
 }
 
 const persons = await query.execute()
