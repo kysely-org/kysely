@@ -1,8 +1,8 @@
 ---
-title: 'Find all records matching a condition'
+title: 'Find records matching a condition'
 ---
 
-# Find all records
+# Find records matching a condition
 
 In this example we're using `.where` to find all users whose age is > 18.
 Notice the use of `.selectAll` which translates to `SELECT * FROM` in SQL.
@@ -10,7 +10,7 @@ Notice the use of `.selectAll` which translates to `SELECT * FROM` in SQL.
 import {
   Playground,
   exampleSetup,
-  exampleFindAllByAge,
+  exampleFindRecordsMatchingACondition,
 } from '../../../src/components/Playground'
 
-<Playground code={exampleFindAllByAge} setupCode={exampleSetup} />
+<Playground code={exampleFindRecordsMatchingACondition} setupCode={exampleSetup} />

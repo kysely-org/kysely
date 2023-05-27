@@ -67,14 +67,14 @@ declare global {
 }
 `
 
-export const exampleFindById = `const person = await db
+export const exampleFindARecordById = `const person = await db
   .selectFrom('person')
   .select(['id', 'first_name'])
   .where('id', '=', '1')
   .executeTakeFirst()
 `
 
-export const exampleFindAllByAge = `const res = await db
+export const exampleFindRecordsMatchingACondition = `const persons = await db
   .selectFrom('person')
   .selectAll()
   .where('age', '>', 18)
@@ -82,47 +82,21 @@ export const exampleFindAllByAge = `const res = await db
   .execute()
 `
 
-export const exampleFindMultipleById = `const res = await db
+export const exampleFindMultipleRecordsById = `const persons = await db
   .selectFrom('person')
   .selectAll()
   .where('id', 'in', ['1', '2', '3'])
   .execute()
 `
 
-export const exampleFindBySubquery = `const res = await db
+export const exampleFindBySubquery = `const persons = await db
   .selectFrom('person')
   .selectAll()
-  .where('id', 'in', ['1', '2', '3'])
-  .execute()
-`
-
-export const exampleDeleteById = `const res = await db
-  .deleteFrom('person')
-  .where('id', '=', '1')
-  .execute()
-`
-
-export const exampleUpdateById = `const res = await db
-  .updateTable('person')
-  .set({ age: 10 })
-  .where('id', '=', '1')
-  .execute()
-`
-
-export const exampleInsert = `const res = await db
-  .insertInto('person')
-  .values([
-    {
-      first_name: 'Bob',
-      last_name: 'Dylan',
-      age: 5,
-    },
-    {
-      first_name: 'Jimi',
-      last_name: 'Hendrix',
-      age: 5,
-    }
-  ])
+  .where('id', 'in', (eb) => eb
+    .selectFrom('pet')
+    .select('owner_id')
+    .where('species', '=', 'dog')
+  )
   .execute()
 `
 
@@ -157,7 +131,7 @@ export const exampleComplexJoin = `const res = await db
   .execute()
 `
 
-export const exampleJoinSubquery = `const res = await db
+export const exampleJoinASubquery = `const res = await db
   .selectFrom('pet')
   .innerJoin(
     (eb) => eb
@@ -172,5 +146,35 @@ export const exampleJoinSubquery = `const res = await db
     'pet.name as pet_name',
     'p.last_name as person_last_name'
   ])
+  .execute()
+`
+
+export const exampleInsert = `const res = await db
+  .insertInto('person')
+  .values([
+    {
+      first_name: 'Bob',
+      last_name: 'Dylan',
+      age: 5,
+    },
+    {
+      first_name: 'Jimi',
+      last_name: 'Hendrix',
+      age: 5,
+    }
+  ])
+  .execute()
+`
+
+export const exampleUpdateById = `const res = await db
+  .updateTable('person')
+  .set({ age: 10 })
+  .where('id', '=', '1')
+  .execute()
+`
+
+export const exampleDeleteById = `const res = await db
+  .deleteFrom('person')
+  .where('id', '=', '1')
   .execute()
 `
