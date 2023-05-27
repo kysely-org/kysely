@@ -67,18 +67,11 @@ declare global {
 }
 `
 
-export const exampleFindMultipleById = `const res = await db
+export const exampleFindById = `const person = await db
   .selectFrom('person')
-  .selectAll()
-  .where('id', 'in', ['1', '2', '3'])
-  .execute()
-`
-
-export const exampleFindById = `const res = await db
-  .selectFrom('person')
-  .selectAll()
+  .select(['id', 'first_name'])
   .where('id', '=', '1')
-  .execute()
+  .executeTakeFirst()
 `
 
 export const exampleFindAllByAge = `const res = await db
@@ -86,6 +79,13 @@ export const exampleFindAllByAge = `const res = await db
   .selectAll()
   .where('age', '>', 18)
   .orderBy('age', 'desc')
+  .execute()
+`
+
+export const exampleFindMultipleById = `const res = await db
+  .selectFrom('person')
+  .selectAll()
+  .where('id', 'in', ['1', '2', '3'])
   .execute()
 `
 
@@ -126,7 +126,7 @@ export const exampleInsert = `const res = await db
   .execute()
 `
 
-export const exampleInnerJoin = `const res = await db
+export const exampleSimpleJoin = `const res = await db
   .selectFrom('pet')
   .innerJoin(
     'person',
@@ -134,9 +134,43 @@ export const exampleInnerJoin = `const res = await db
     'person.id'
   )
   .select([
-    'pet.id as petId',
-    'pet.name as petName',
-    'person.first_name as personName'
+    'pet.id as pet_id',
+    'pet.name as pet_name',
+    'person.first_name as person_name'
+  ])
+  .execute()
+`
+
+export const exampleComplexJoin = `const res = await db
+  .selectFrom('pet')
+  .leftJoin(
+    'person as adult_owner',
+    (join) => join
+      .onRef('pet.owner_id', '=', 'adult_owner.id')
+      .on('adult_owner.age', '>', 18),
+  )
+  .select([
+    'pet.id as pet_id',
+    'pet.name as pet_name',
+    'adult_owner.last_name as owner_first_name'
+  ])
+  .execute()
+`
+
+export const exampleJoinSubquery = `const res = await db
+  .selectFrom('pet')
+  .innerJoin(
+    (eb) => eb
+      .selectFrom('person')
+      .select(['id', 'last_name'])
+      .where('first_name', '=', 'Jennifer')
+      .as('p'),
+    (join) => join.onRef('pet.owner_id', '=', 'p.id'),
+  )
+  .select([
+    'pet.id as pet_id',
+    'pet.name as pet_name',
+    'p.last_name as person_last_name'
   ])
   .execute()
 `
