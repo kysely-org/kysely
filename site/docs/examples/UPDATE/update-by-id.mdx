@@ -1,10 +1,14 @@
 ---
-title: 'Update a record by ID'
+title: 'Update a record by id'
 ---
 
-# Update a record by ID
+# Update a record by id
 
-Notice that when updating we use `updateTable` instead of `selectFrom`, and the `.set` goes before the `.where`, just like it does in regular SQL.
+Notice that when updating we use `updateTable` instead of `selectFrom`, and `.set` 
+goes before the `.where`, just like it does in regular SQL. 
+
+The `where` method works the same way as with `selectFrom`. See the [SELECT](/docs/category/select) section 
+for examples on how to work with the `where` method.
 
 import {
   Playground,

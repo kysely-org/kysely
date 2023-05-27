@@ -117,6 +117,29 @@ export const exampleFindRecordsBySubquery = `const persons = await db
   .execute()
 `
 
+export const exampleFunctionCallInAWhereCondition = `import { sql } from 'kysely'
+
+const persons = await db
+  .selectFrom('person')
+  .selectAll()
+  // Both the first and the last argument of the where
+  // method can be callbacks.
+  .where(
+    (eb) => eb.fn('upper', ['first_name']), 
+    '=', 
+    'JENNIFER'
+  )
+  // Alternatively you can use the single callback version.
+  .where(({ or, cmpr, fn }) => or([
+    cmpr(fn('upper', ['first_name']), '=', 'JENNIFER'),
+    cmpr(fn('upper', ['last_name']), '=', 'ANISTON')
+  ]))
+  // Or you can simply use raw SQL if you prefer readability
+  // over type-safety.
+  .where(sql\`upper(first_name)\`, '=', 'JENNIFER')
+  .execute()
+`
+
 export const exampleSimpleJoin = `const res = await db
   .selectFrom('pet')
   .innerJoin(
