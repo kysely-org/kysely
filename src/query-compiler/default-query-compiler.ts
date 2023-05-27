@@ -96,6 +96,7 @@ import { UsingNode } from '../operation-node/using-node.js'
 import { FunctionNode } from '../operation-node/function-node.js'
 import { CaseNode } from '../operation-node/case-node.js'
 import { WhenNode } from '../operation-node/when-node.js'
+import { AddIndexNode } from '../operation-node/add-index-node.js'
 
 export class DefaultQueryCompiler
   extends OperationNodeVisitor
@@ -806,6 +807,29 @@ export class DefaultQueryCompiler
     }
   }
 
+  protected override visitAddIndex(node: AddIndexNode): void {
+    this.append('add ')
+
+    if (node.unique) {
+      this.append('unique ')
+    }
+
+    this.append('index ')
+
+    this.visitNode(node.name)
+
+    if (node.columns) {
+      this.append(' (')
+      this.compileList(node.columns)
+      this.append(')')
+    }
+
+    if (node.using) {
+      this.append(' using ')
+      this.visitNode(node.using)
+    }
+  }
+
   protected override visitDropIndex(node: DropIndexNode): void {
     this.append('drop index ')
 
@@ -971,6 +995,14 @@ export class DefaultQueryCompiler
 
     if (node.columnAlterations) {
       this.compileList(node.columnAlterations)
+    }
+
+    if (node.addIndex) {
+      this.visitNode(node.addIndex)
+    }
+
+    if (node.dropIndex) {
+      this.visitNode(node.dropIndex)
     }
   }
 
