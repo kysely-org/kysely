@@ -7,7 +7,6 @@ export function Playground({
   kyselyVersion,
   dialect = "postgres",
 }: PlaygroundProps) {
-  console.log("code", code)
   const params = new URLSearchParams()
   params.set("p", "j")
   params.set("i", JSON.stringify({
@@ -67,7 +66,7 @@ declare global {
 }
 `
 
-export const exampleSelectColumns = `const persons = await db
+export const exampleSelectIndividualColumns = `const persons = await db
   .selectFrom('person')
   .select(['id', 'first_name as first'])
   .execute()
