@@ -38,6 +38,7 @@ export type OperationNodeKind =
   | 'OnConflictNode'
   | 'OnDuplicateKeyNode'
   | 'CreateIndexNode'
+  | 'AddIndexNode'
   | 'DropIndexNode'
   | 'ListNode'
   | 'ReferencesNode'
