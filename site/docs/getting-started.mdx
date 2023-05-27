@@ -3,7 +3,67 @@ sidebar_position: 2
 title: 'Getting started'
 ---
 
+import Tabs from '@theme/Tabs'
+import TabItem from '@theme/TabItem'
+import CodeBlock from '@theme/CodeBlock'
+
 # Getting started
+
+## Installation
+
+<Tabs>
+  <TabItem value="npm" label="NPM" default>
+    <p>
+      NPM is the default package manager for Node.js, and to where Kysely is published.
+      <br/>
+      Your project is using NPM if it has a <code>package-lock.json</code> file in its root folder.
+      <br/><br/>
+      Run the following command in your terminal:
+    </p>
+    <br/>
+    <CodeBlock language="bash" title="terminal">npm install kysely</CodeBlock>
+  </TabItem>
+  <TabItem value="pnpm" label="PNPM">
+    <p>
+      PNPM is a fast, disk space efficient package manager for Node.js.
+      <br/>
+      Your project is using PNPM if it has a <code>pnpm-lock.yaml</code> file in its root folder.
+      <br/><br/>
+      Run the following command in your terminal:
+    </p> 
+    <br/>
+    <CodeBlock language="bash" title="terminal">pnpm install kysely</CodeBlock>
+  </TabItem>
+  <TabItem value="yarn" label="Yarn">
+    <p>
+      Yarn is a fast, reliable and secure dependency manager for Node.js.
+      <br/>
+      Your project is using Yarn if it has a <code>yarn.lock</code> file in its root folder.
+      <br/><br/>
+      Run the following command in your terminal:
+    </p>
+    <br/>
+    <CodeBlock language="bash" title="terminal">yarn add kysely</CodeBlock>
+  </TabItem>
+  <TabItem value="deno" label="Deno">
+    <p>
+      Deno is a secure runtime for JavaScript and TypeScript.
+      <br/><br/>
+      To install Kysely, create a <code>deno.json</code> file in your project root and add the following:
+    </p>
+    <br/>
+    <CodeBlock language="json" title="deno.json">
+      {JSON.stringify({ imports: { kysely: 'https://esm.sh/kysely@0.25.0' } }, null, 2)}
+    </CodeBlock>
+
+  </TabItem>
+</Tabs>
+
+Kysely needs two things:
+
+- A TypeScript [interface](https://www.typescriptlang.org/docs/handbook/2/objects.html) with table names as keys and table schema interfaces as values. This is how Kysely knows your database. Find out more at ["Generating types"](https://kysely.dev/docs/generating-types).
+
+- A dialect. This is how Kysely can compile and execute SQL that's suitable for your database. Find out more at ["Dialects"](https://kysely.dev/docs/dialects).
 
 Kysely has built-in support for PostgreSQL, MySQL and SQLite. To install it run:
 
@@ -17,21 +77,6 @@ npm install kysely mysql2
 # SQLite
 npm install kysely better-sqlite3
 ```
-
-Kysely also has a simple interface for 3rd party dialects.
-
-## 3rd party dialects
-
- - [PlanetScale Serverless Driver](https://github.com/depot/kysely-planetscale)
- - [Cloudflare D1](https://github.com/aidenwallis/kysely-d1)
- - [AWS RDS Data API](https://github.com/serverless-stack/kysely-data-api)
- - [SurrealDB](https://github.com/igalklebanov/kysely-surrealdb)
- - [Neon](https://github.com/seveibar/kysely-neon)
- - [AWS S3 Select](https://github.com/igalklebanov/kysely-s3-select)
- - [libSQL/sqld](https://github.com/libsql/kysely-libsql)
- - [SingleStore Data API](https://github.com/igalklebanov/kysely-singlestore)
- - [Postgres.js](https://github.com/igalklebanov/kysely-postgres-js)
- - [Fetch driver](https://github.com/andersgee/kysely-fetch-driver)
 
 ## Minimal example
 
