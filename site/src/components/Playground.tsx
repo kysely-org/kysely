@@ -77,19 +77,36 @@ export const exampleFindARecordById = `const person = await db
 export const exampleFindRecordsMatchingACondition = `const persons = await db
   .selectFrom('person')
   .selectAll()
-  .where('age', '>', 18)
+  .where('age', '>=', 18)
+  .where('age', '<=', 60)
   .orderBy('age', 'desc')
   .execute()
 `
 
-export const exampleFindMultipleRecordsById = `const persons = await db
+export const exampleFindRecordsMatchingAnOrCondition = `const persons = await db
+  .selectFrom('person')
+  .selectAll()
+  .where(({ and, or, cmpr }) => and([
+    or([
+      cmpr('first_name', '=', 'Jennifer'),
+      cmpr('first_name', '=', 'Sylvester')
+    ]),
+    or([
+      cmpr('last_name', '=', 'Aniston'),
+      cmpr('last_name', '=', 'Stallone')
+    ])
+  ]))
+  .execute()
+`
+
+export const exampleFindRecordsById = `const persons = await db
   .selectFrom('person')
   .selectAll()
   .where('id', 'in', ['1', '2', '3'])
   .execute()
 `
 
-export const exampleFindBySubquery = `const persons = await db
+export const exampleFindRecordsBySubquery = `const persons = await db
   .selectFrom('person')
   .selectAll()
   .where('id', 'in', (eb) => eb
