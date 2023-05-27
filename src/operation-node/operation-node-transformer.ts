@@ -82,6 +82,7 @@ import { UsingNode } from './using-node.js'
 import { FunctionNode } from './function-node.js'
 import { CaseNode } from './case-node.js'
 import { WhenNode } from './when-node.js'
+import { AddIndexNode } from './add-index-node.js'
 
 /**
  * Transforms an operation node tree into another one.
@@ -155,6 +156,7 @@ export class OperationNodeTransformer {
     OnConflictNode: this.transformOnConflict.bind(this),
     OnDuplicateKeyNode: this.transformOnDuplicateKey.bind(this),
     CreateIndexNode: this.transformCreateIndex.bind(this),
+    AddIndexNode: this.transformAddIndex.bind(this),
     DropIndexNode: this.transformDropIndex.bind(this),
     ListNode: this.transformList.bind(this),
     PrimaryKeyConstraintNode: this.transformPrimaryKeyConstraint.bind(this),
@@ -541,6 +543,17 @@ export class OperationNodeTransformer {
     })
   }
 
+  protected transformAddIndex(node: AddIndexNode): AddIndexNode {
+    return requireAllProps<AddIndexNode>({
+      kind: 'AddIndexNode',
+      name: this.transformNode(node.name),
+      columns: this.transformNodeList(node.columns),
+      unique: node.unique,
+      using: this.transformNode(node.using),
+      ifNotExists: node.ifNotExists,
+    })
+  }
+
   protected transformList(node: ListNode): ListNode {
     return requireAllProps<ListNode>({
       kind: 'ListNode',
@@ -681,6 +694,8 @@ export class OperationNodeTransformer {
       columnAlterations: this.transformNodeList(node.columnAlterations),
       addConstraint: this.transformNode(node.addConstraint),
       dropConstraint: this.transformNode(node.dropConstraint),
+      addIndex: this.transformNode(node.addIndex),
+      dropIndex: this.transformNode(node.dropIndex),
     })
   }
 
