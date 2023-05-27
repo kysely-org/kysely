@@ -67,6 +67,29 @@ declare global {
 }
 `
 
+export const exampleSelectColumns = `const persons = await db
+  .selectFrom('person')
+  .select(['id', 'first_name as first'])
+  .execute()
+`
+
+export const exampleSelectAllColumns = `const persons = await db
+  .selectFrom('person')
+  .selectAll()
+  .execute()
+`
+
+export const exampleSelectAllColumnsOfATable = `const pets = await db
+  .selectFrom(['person as owner', 'pet'])
+  // Select all columns of the pet table.
+  .selectAll('pet')
+  // Also select the pet's owner's last name.
+  .select('owner.last_name as owner_last_name')
+  .whereRef('owner.id', '=', 'pet.owner_id')
+  .where('owner.first_name', '=', 'Jennifer')
+  .execute()
+`
+
 export const exampleFilterById = `const person = await db
   .selectFrom('person')
   .select(['id', 'first_name'])
@@ -81,6 +104,32 @@ export const exampleFilterBySimpleCondition = `const persons = await db
   .where('age', '<=', 60)
   .orderBy('age', 'desc')
   .execute()
+`
+
+export const exampleFilterByOptionalConditions = `const firstName = Math.random() < 0.5 
+  ? 'Jennifer'
+  : undefined
+
+const lastName = Math.random() < 0.5 
+  ? 'Aniston' 
+  : undefined
+
+let query = db
+  .selectFrom('person')
+  .selectAll()
+  .orderBy('age', 'desc')
+
+if (firstName) {
+  // The query builder is immutable. Remember to always
+  // reassign the result of method calls.
+  query = query.where('first_name', '=', firstName)
+}
+
+if (lastName) {
+  query = query.where('first_name', '=', lastName)
+}
+
+const persons = await query.execute()
 `
 
 export const exampleFilterByOrCondition = `const persons = await db
