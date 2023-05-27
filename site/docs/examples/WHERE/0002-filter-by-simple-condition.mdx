@@ -1,0 +1,16 @@
+---
+title: 'Filter by simple condition'
+---
+
+# Filter by simple condition
+
+In this example we're using `.where` to find all persons aged between 18 and 60. 
+As you can see, multiple calls to `where` get connected by `AND`.
+
+import {
+  Playground,
+  exampleSetup,
+  exampleFilterBySimpleCondition,
+} from '../../../src/components/Playground'
+
+<Playground code={exampleFilterBySimpleCondition} setupCode={exampleSetup} />

@@ -1,8 +1,8 @@
 ---
-title: 'Find records matching an OR condition'
+title: 'Filter by OR condition'
 ---
 
-# Find records matching an `OR` condition
+# Filter by `OR` condition
 
 In this example we build a more complex `WHERE` statement that uses both `AND` and `OR`.
 We use the `and` method of the [ExpressionBuilder](https://kysely-org.github.io/kysely/interfaces/ExpressionBuilder.html) 
@@ -11,7 +11,7 @@ here but we could've split this into two `where` calls just as well.
 import {
   Playground,
   exampleSetup,
-  exampleFindRecordsMatchingAnOrCondition
+  exampleFilterByOrCondition
 } from '../../../src/components/Playground'
 
-<Playground code={exampleFindRecordsMatchingAnOrCondition} setupCode={exampleSetup} />
+<Playground code={exampleFilterByOrCondition} setupCode={exampleSetup} />

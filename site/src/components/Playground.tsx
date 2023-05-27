@@ -67,14 +67,14 @@ declare global {
 }
 `
 
-export const exampleFindARecordById = `const person = await db
+export const exampleFilterById = `const person = await db
   .selectFrom('person')
   .select(['id', 'first_name'])
   .where('id', '=', '1')
   .executeTakeFirst()
 `
 
-export const exampleFindRecordsMatchingACondition = `const persons = await db
+export const exampleFilterBySimpleCondition = `const persons = await db
   .selectFrom('person')
   .selectAll()
   .where('age', '>=', 18)
@@ -83,7 +83,7 @@ export const exampleFindRecordsMatchingACondition = `const persons = await db
   .execute()
 `
 
-export const exampleFindRecordsMatchingAnOrCondition = `const persons = await db
+export const exampleFilterByOrCondition = `const persons = await db
   .selectFrom('person')
   .selectAll()
   .where(({ and, or, cmpr }) => and([
@@ -99,14 +99,14 @@ export const exampleFindRecordsMatchingAnOrCondition = `const persons = await db
   .execute()
 `
 
-export const exampleFindRecordsById = `const persons = await db
+export const exampleFilterByList = `const persons = await db
   .selectFrom('person')
   .selectAll()
   .where('id', 'in', ['1', '2', '3'])
   .execute()
 `
 
-export const exampleFindRecordsBySubquery = `const persons = await db
+export const exampleFilterBySubquery = `const persons = await db
   .selectFrom('person')
   .selectAll()
   .where('id', 'in', (eb) => eb
@@ -117,7 +117,7 @@ export const exampleFindRecordsBySubquery = `const persons = await db
   .execute()
 `
 
-export const exampleFunctionCallInAWhereCondition = `import { sql } from 'kysely'
+export const exampleFunctionCallsInAWhereStatement = `import { sql } from 'kysely'
 
 const persons = await db
   .selectFrom('person')
