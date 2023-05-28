@@ -1,0 +1,18 @@
+---
+title: 'Aggregate functions'
+---
+
+# Aggregate functions
+
+The [fn](https://kysely-org.github.io/kysely/interfaces/FunctionModule.html) property of the
+[ExpressionBuilder](https://kysely-org.github.io/kysely/interfaces/ExpressionBuilder.html)
+has shortcuts to the most common aggregate functions like `count` and `sum`. You can call
+an arbitrary aggregate function using ghe `agg` method.
+
+import {
+  Playground,
+  exampleSetup,
+  exampleAggregateFunctions
+} from '../../../src/components/Playground'
+
+<Playground code={exampleAggregateFunctions} setupCode={exampleSetup} />

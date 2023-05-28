@@ -114,6 +114,19 @@ const persons = await db
   .execute()
 `
 
+export const exampleAggregateFunctions = `const result = await db
+  .selectFrom('pet')
+  .select(({ fn }) => [
+    fn.count('id').as('num_pets'),
+
+    // If there's no shortcut for the aggregate function
+    // you can use \`agg\`.
+    fn.agg<string[]>('array_agg', ['name']).as('names')
+  ])
+  .groupBy('species')
+  .execute()
+`
+
 export const exampleFilterById = `const person = await db
   .selectFrom('person')
   .select(['id', 'first_name'])
