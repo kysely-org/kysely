@@ -30,9 +30,6 @@ export class AddIndexBuilder<C = never>
     this.#props = freeze(props)
   }
 
-  /**
-   * Makes the index unique.
-   */
   unique(): AddIndexBuilder<C> {
     return new AddIndexBuilder({
       ...this.#props,
@@ -42,29 +39,6 @@ export class AddIndexBuilder<C = never>
     })
   }
 
-  /**
-   * Adds a column to the index.
-   *
-   * Also see {@link columns} for adding multiple columns at once or {@link expression}
-   * for specifying an arbitrary expression.
-   *
-   * ### Examples
-   *
-   * ```ts
-   * await db.schema
-   *         .alterTable('person')
-   *         .createIndex('person_first_name_and_age_index')
-   *         .column('first_name')
-   *         .column('age desc')
-   *         .execute()
-   * ```
-   *
-   * The generated SQL (MySQL):
-   *
-   * ```sql
-   * alter table `person` add index `person_first_name_and_age_index` (`first_name`, `age` desc)
-   * ```
-   */
   column<CL extends string>(
     column: OrderedColumnName<CL>
   ): AddIndexBuilder<C | ExtractColumnNameFromOrderedColumnName<CL>> {
@@ -76,28 +50,6 @@ export class AddIndexBuilder<C = never>
     })
   }
 
-  /**
-   * Specifies a list of columns for the index.
-   *
-   * Also see {@link column} for adding a single column or {@link expression} for
-   * specifying an arbitrary expression.
-   *
-   * ### Examples
-   *
-   * ```ts
-   * await db.schema
-   *         .alterTable('person')
-   *         .addIndex('person_first_name_and_age_index')
-   *         .columns(['first_name', 'age desc'])
-   *         .execute()
-   * ```
-   *
-   * The generated SQL (MySQL):
-   *
-   * ```sql
-   * alter table `person` add index `person_first_name_and_age_index` (`first_name`, `age` desc)
-   * ```
-   */
   columns<CL extends string>(
     columns: OrderedColumnName<CL>[]
   ): AddIndexBuilder<C | ExtractColumnNameFromOrderedColumnName<CL>> {
@@ -110,27 +62,6 @@ export class AddIndexBuilder<C = never>
     })
   }
 
-  /**
-   * Specifies an arbitrary expression for the index.
-   *
-   * ### Examples
-   *
-   * ```ts
-   * import { sql } from 'kysely'
-   *
-   * await db.schema
-   *   .alterTable('person')
-   *   .addIndex('person_first_name_index')
-   *   .expression(sql`(first_name < 'Sami')`)
-   *   .execute()
-   * ```
-   *
-   * The generated SQL (MySQL):
-   *
-   * ```sql
-   * alter table `person` add index `person_first_name_index` ((first_name < 'Sami'))
-   * ```
-   */
   expression(expression: Expression<any>): AddIndexBuilder<C> {
     return new AddIndexBuilder({
       ...this.#props,
@@ -140,9 +71,6 @@ export class AddIndexBuilder<C = never>
     })
   }
 
-  /**
-   * Specifies the index type.
-   */
   using(indexType: IndexType): AddIndexBuilder<C>
   using(indexType: string): AddIndexBuilder<C>
   using(indexType: string): AddIndexBuilder<C> {
