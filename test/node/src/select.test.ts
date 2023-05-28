@@ -278,6 +278,73 @@ for (const dialect of DIALECTS) {
       expect(persons).to.eql([{ pet_name: 'Catto' }])
     })
 
+    it('should select the count of jennifers using count', async () => {
+      const query = ctx.db
+        .selectFrom('person')
+        .select((eb) =>
+          eb.fn
+            .count(eb.case().when('first_name', '=', 'Jennifer').then(1).end())
+            .as('num_jennifers')
+        )
+
+      testSql(query, dialect, {
+        postgres: {
+          sql: 'select count(case when "first_name" = $1 then $2 end) as "num_jennifers" from "person"',
+          parameters: ['Jennifer', 1],
+        },
+        mysql: {
+          sql: 'select count(case when `first_name` = ? then ? end) as `num_jennifers` from `person`',
+          parameters: ['Jennifer', 1],
+        },
+        sqlite: {
+          sql: 'select count(case when "first_name" = ? then ? end) as "num_jennifers" from "person"',
+          parameters: ['Jennifer', 1],
+        },
+      })
+
+      const counts = await query.execute()
+
+      expect(counts).to.have.length(1)
+      if (dialect === 'postgres' || dialect === 'mysql') {
+        expect(counts[0]).to.eql({ num_jennifers: '1' })
+      } else {
+        expect(counts[0]).to.eql({ num_jennifers: 1 })
+      }
+    })
+
+    if (dialect === 'postgres') {
+      it('should select the count of jennifers using sum', async () => {
+        const query = ctx.db
+          .selectFrom('person')
+          .select((eb) =>
+            eb.fn
+              .sum(
+                eb
+                  .case()
+                  .when('first_name', '=', 'Jennifer')
+                  .then(sql.lit(1))
+                  .else(sql.lit(0))
+                  .end()
+              )
+              .as('num_jennifers')
+          )
+
+        testSql(query, dialect, {
+          postgres: {
+            sql: 'select sum(case when "first_name" = $1 then 1 else 0 end) as "num_jennifers" from "person"',
+            parameters: ['Jennifer'],
+          },
+          mysql: NOT_SUPPORTED,
+          sqlite: NOT_SUPPORTED,
+        })
+
+        const counts = await query.execute()
+
+        expect(counts).to.have.length(1)
+        expect(counts[0]).to.eql({ num_jennifers: '1' })
+      })
+    }
+
     // Raw exrpessions are of course supported on all dialects, but we use an
     // expression that's only valid on postgres.
     if (dialect === 'postgres') {
