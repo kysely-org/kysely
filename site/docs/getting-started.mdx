@@ -6,15 +6,20 @@ title: 'Getting started'
 import Tabs from '@theme/Tabs'
 import TabItem from '@theme/TabItem'
 import CodeBlock from '@theme/CodeBlock'
+import Admonition from '@theme/Admonition'
+import Link from '@docusaurus/Link'
 
 # Getting started
 
 ## Installation
 
-<Tabs>
-  <TabItem value="npm" label="NPM" default>
+Kysely can be installed using any of the following package managers:
+
+<Tabs groupId="package-manager">
+  <TabItem value="npm" label="NPM">
     <p>
-      NPM is the default package manager for Node.js, and to where Kysely is
+      <Link to="https://npmjs.com">NPM</Link> is the default package manager for{' '}
+      <Link to="https://nodejs.org">Node.js</Link>, and to where Kysely is
       published.
       <br />
       Your project is using NPM if it has a <code>package-lock.json</code> file
@@ -23,14 +28,22 @@ import CodeBlock from '@theme/CodeBlock'
       <br />
       Run the following command in your terminal:
     </p>
-    <br />
     <CodeBlock language="bash" title="terminal">
       npm install kysely
     </CodeBlock>
+    <Admonition type="tip" title="Avoid multiple kysely installations">
+      It is recommended to use <Link to="https://pnpm.io">PNPM</Link> for its
+      out-of-the-box dependency deduplication, as it eliminates the risk of
+      having multiple Kysely instances in your <code>node_modules</code> folder.
+      A situation that's known to cause some headaches when using Kysely in
+      combination with dependant packages (e.g.{' '}
+      <Link to="https://sst.dev">SST</Link>).
+    </Admonition>
   </TabItem>
   <TabItem value="pnpm" label="PNPM">
     <p>
-      PNPM is a fast, disk space efficient package manager for Node.js.
+      <Link to="https://pnpm.io">PNPM</Link> is a fast, disk space efficient
+      package manager for <Link to="https://nodejs.org">Node.js</Link>.
       <br />
       Your project is using PNPM if it has a <code>pnpm-lock.yaml</code> file in
       its root folder.
@@ -38,14 +51,14 @@ import CodeBlock from '@theme/CodeBlock'
       <br />
       Run the following command in your terminal:
     </p>
-    <br />
     <CodeBlock language="bash" title="terminal">
       pnpm install kysely
     </CodeBlock>
   </TabItem>
   <TabItem value="yarn" label="Yarn">
     <p>
-      Yarn is a fast, reliable and secure dependency manager for Node.js.
+      <Link to="https://yarnpkg.com">Yarn</Link> is a fast, reliable and secure
+      dependency manager for <Link to="https://nodejs.org">Node.js</Link>.
       <br />
       Your project is using Yarn if it has a <code>yarn.lock</code> file in its
       root folder.
@@ -53,20 +66,22 @@ import CodeBlock from '@theme/CodeBlock'
       <br />
       Run the following command in your terminal:
     </p>
-    <br />
     <CodeBlock language="bash" title="terminal">
       yarn add kysely
     </CodeBlock>
   </TabItem>
   <TabItem value="deno" label="Deno">
     <p>
-      Deno is a secure runtime for JavaScript and TypeScript.
+      <Link to="https://deno.com/runtime">Deno</Link> is a secure runtime for{' '}
+      <Link to="https://developer.mozilla.org/en-US/docs/Web/JavaScript">
+        JavaScript
+      </Link>{' '}
+      and <Link to="https://www.typescriptlang.org">TypeScript</Link>.
       <br />
       <br />
       To install Kysely, create a <code>deno.json</code> file in your project root
       and add the following:
     </p>
-    <br />
     <CodeBlock language="json" title="deno.json">
       {JSON.stringify(
         { imports: { kysely: 'https://esm.sh/kysely@0.25.0' } },
@@ -74,15 +89,13 @@ import CodeBlock from '@theme/CodeBlock'
         2
       )}
     </CodeBlock>
+    <Admonition type="caution" title="Deno support">
+      Kysely has no built-in Deno dialects. You can BYOD ("bring your own
+      dialect") or use a community dialect. As such, this tutorial does not
+      include any Deno examples.
+    </Admonition>
   </TabItem>
 </Tabs>
-
-:::tip
-
-It is recommended to use PNPM for its dependency deduplication, as it eliminates the
-risk of having multiple Kysely instances in your <code>node_modules</code> folder.
-
-:::
 
 ## Types
 
@@ -156,10 +169,10 @@ any many community dialects to choose from. Find out more at ["Dialects"](https:
 A <code>Dialect</code> implementation usually requires a database driver library
 as a peer dependency. Let's install it using the same command from before:
 
-<Tabs>
+<Tabs groupId="database">
   <TabItem value="postgresql" label="PostgreSQL" default>
-    <Tabs>
-      <TabItem value="npm" label="NPM" default>
+    <Tabs groupId="package-manager">
+      <TabItem value="npm" label="NPM">
         <CodeBlock language="bash" title="terminal">
           npm install pg
         </CodeBlock>
@@ -177,8 +190,8 @@ as a peer dependency. Let's install it using the same command from before:
     </Tabs>
   </TabItem>
   <TabItem value="mysql" label="MySQL">
-    <Tabs>
-      <TabItem value="npm" label="NPM" default>
+    <Tabs groupId="package-manager">
+      <TabItem value="npm" label="NPM">
         <CodeBlock language="bash" title="terminal">
           npm install mysql2
         </CodeBlock>
@@ -196,8 +209,8 @@ as a peer dependency. Let's install it using the same command from before:
     </Tabs>
   </TabItem>
   <TabItem value="sqlite" label="SQLite">
-    <Tabs>
-      <TabItem value="npm" label="NPM" default>
+    <Tabs groupId="package-manager">
+      <TabItem value="npm" label="NPM">
         <CodeBlock language="bash" title="terminal">
           npm install better-sqlite3
         </CodeBlock>
