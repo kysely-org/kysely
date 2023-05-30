@@ -1,0 +1,92 @@
+import Tabs from '@theme/Tabs'
+import TabItem from '@theme/TabItem'
+import Link from '@docusaurus/Link'
+import CodeBlock from '@theme/CodeBlock'
+import Admonition from '@theme/Admonition'
+import packageJson from '../../../package.json'
+
+Kysely can be installed using any of the following package managers:
+
+<Tabs queryString="package-manager">
+  <TabItem value="npm" label="NPM" default>
+    <p>
+      <Link to="https://npmjs.com">NPM</Link> is the default package manager for{' '}
+      <Link to="https://nodejs.org">Node.js</Link>, and to where Kysely is
+      published.
+      <br />
+      Your project is using NPM if it has a <code>package-lock.json</code> file
+      in its root folder.
+      <br />
+      <br />
+      <strong>Run the following command in your terminal:</strong>
+    </p>
+    <CodeBlock language="bash" title="terminal">
+      npm install kysely
+    </CodeBlock>
+    <Admonition type="tip" title="one project, many kysely installations issue">
+      It is recommended to use <Link to="https://pnpm.io">PNPM</Link> for its
+      out-of-the-box dependency deduplication, as it eliminates the risk of
+      having multiple Kysely instances in your <code>node_modules</code> folder.
+      A situation that's known to cause some headaches when using Kysely in
+      combination with dependant packages (e.g.{' '}
+      <Link to="https://sst.dev">SST</Link>).
+    </Admonition>
+  </TabItem>
+  <TabItem value="pnpm" label="PNPM">
+    <p>
+      <Link to="https://pnpm.io">PNPM</Link> is a fast, disk space efficient
+      package manager for <Link to="https://nodejs.org">Node.js</Link>.
+      <br />
+      Your project is using PNPM if it has a <code>pnpm-lock.yaml</code> file in
+      its root folder.
+      <br />
+      <br />
+      <strong>Run the following command in your terminal:</strong>
+    </p>
+    <CodeBlock language="bash" title="terminal">
+      pnpm install kysely
+    </CodeBlock>
+  </TabItem>
+  <TabItem value="yarn" label="Yarn">
+    <p>
+      <Link to="https://yarnpkg.com">Yarn</Link> is a fast, reliable and secure
+      dependency manager for <Link to="https://nodejs.org">Node.js</Link>.
+      <br />
+      Your project is using Yarn if it has a <code>yarn.lock</code> file in its
+      root folder.
+      <br />
+      <br />
+      <strong>Run the following command in your terminal:</strong>
+    </p>
+    <CodeBlock language="bash" title="terminal">
+      yarn add kysely
+    </CodeBlock>
+  </TabItem>
+  <TabItem value="deno" label="Deno">
+    <p>
+      <Link to="https://deno.com/runtime">Deno</Link> is a secure runtime for{' '}
+      <Link to="https://developer.mozilla.org/en-US/docs/Web/JavaScript">
+        JavaScript
+      </Link>{' '}
+      and <Link to="https://www.typescriptlang.org">TypeScript</Link>.
+      <br />
+      <br />
+      <strong>Add the following to your </strong>
+      <code>deno.json</code> <strong>file:</strong>
+    </p>
+    <CodeBlock language="json" title="deno.json">
+      {JSON.stringify(
+        {
+          imports: { kysely: `https://esm.sh/kysely@${packageJson.version}` },
+        },
+        null,
+        2
+      )}
+    </CodeBlock>
+    <Admonition type="caution" title="Deno support limitations">
+      Kysely has no built-in Deno <Link to="#dialects">dialects</Link>. You can
+      implement your own or use a community dialect. This tutorial does not
+      include any Deno specific code examples.
+    </Admonition>
+  </TabItem>
+</Tabs>
