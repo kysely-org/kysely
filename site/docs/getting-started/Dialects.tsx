@@ -5,6 +5,7 @@ import Tabs from '@theme/Tabs'
 import TabItem from '@theme/TabItem'
 import CodeBlock from '@theme/CodeBlock'
 import Admonition from '@theme/Admonition'
+import type { Dialect } from './types'
 
 export interface DialectsProps {
   packageManager: PackageManager
@@ -22,7 +23,7 @@ const packageManagerToInstallCommand: Record<
 }
 
 interface BuiltInDialect {
-  value: string
+  value: Dialect
   label: string
   driverNPMPackage: string
   driverDocsURL: string
