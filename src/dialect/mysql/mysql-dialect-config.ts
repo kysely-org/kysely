@@ -1,5 +1,4 @@
 import { DatabaseConnection } from '../../driver/database-connection.js'
-import { ShallowRecord } from '../../util/type-utils.js'
 
 /**
  * Config for the MySQL dialect.
@@ -64,4 +63,4 @@ export interface MysqlOkPacket {
   insertId: number
 }
 
-export type MysqlQueryResult = MysqlOkPacket | ShallowRecord<string, unknown>[]
+export type MysqlQueryResult = MysqlOkPacket | Record<string, unknown>[]

@@ -180,10 +180,7 @@ export interface FunctionModule<DB, TB extends keyof DB> {
    */
   avg<
     O extends number | string | null = number | string,
-    C extends SimpleReferenceExpression<DB, TB> = SimpleReferenceExpression<
-      DB,
-      TB
-    >
+    C extends ReferenceExpression<DB, TB> = ReferenceExpression<DB, TB>
   >(
     column: C
   ): AggregateFunctionBuilder<DB, TB, O>
@@ -316,10 +313,7 @@ export interface FunctionModule<DB, TB extends keyof DB> {
    */
   count<
     O extends number | string | bigint,
-    C extends SimpleReferenceExpression<DB, TB> = SimpleReferenceExpression<
-      DB,
-      TB
-    >
+    C extends ReferenceExpression<DB, TB> = ReferenceExpression<DB, TB>
   >(
     column: C
   ): AggregateFunctionBuilder<DB, TB, O>
@@ -597,10 +591,7 @@ export interface FunctionModule<DB, TB extends keyof DB> {
    */
   sum<
     O extends number | string | bigint | null = number | string | bigint,
-    C extends SimpleReferenceExpression<DB, TB> = SimpleReferenceExpression<
-      DB,
-      TB
-    >
+    C extends ReferenceExpression<DB, TB> = ReferenceExpression<DB, TB>
   >(
     column: C
   ): AggregateFunctionBuilder<DB, TB, O>
@@ -636,10 +627,7 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
 
     avg<
       O extends number | string | null = number | string,
-      C extends SimpleReferenceExpression<DB, TB> = SimpleReferenceExpression<
-        DB,
-        TB
-      >
+      C extends ReferenceExpression<DB, TB> = ReferenceExpression<DB, TB>
     >(column: C): AggregateFunctionBuilder<DB, TB, O> {
       return agg('avg', [column])
     },
@@ -656,10 +644,7 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
 
     count<
       O extends number | string | bigint,
-      C extends SimpleReferenceExpression<DB, TB> = SimpleReferenceExpression<
-        DB,
-        TB
-      >
+      C extends ReferenceExpression<DB, TB> = ReferenceExpression<DB, TB>
     >(column: C): AggregateFunctionBuilder<DB, TB, O> {
       return agg('count', [column])
     },
@@ -693,10 +678,7 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
 
     sum<
       O extends number | string | bigint | null = number | string | bigint,
-      C extends SimpleReferenceExpression<DB, TB> = SimpleReferenceExpression<
-        DB,
-        TB
-      >
+      C extends ReferenceExpression<DB, TB> = ReferenceExpression<DB, TB>
     >(column: C): AggregateFunctionBuilder<DB, TB, O> {
       return agg('sum', [column])
     },

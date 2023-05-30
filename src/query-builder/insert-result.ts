@@ -22,32 +22,21 @@
  * ```
  */
 export class InsertResult {
-  readonly #insertId: bigint | undefined
-  readonly #numInsertedOrUpdatedRows: bigint | undefined
+  /**
+   * The auto incrementing primary key
+   */
+  readonly insertId: bigint | undefined
+
+  /**
+   * Affected rows count.
+   */
+  readonly numInsertedOrUpdatedRows: bigint | undefined
 
   constructor(
     insertId: bigint | undefined,
     numInsertedOrUpdatedRows: bigint | undefined
   ) {
-    this.#insertId = insertId
-    this.#numInsertedOrUpdatedRows = numInsertedOrUpdatedRows
+    this.insertId = insertId
+    this.numInsertedOrUpdatedRows = numInsertedOrUpdatedRows
   }
-
-  /**
-   * The auto incrementing primary key
-   */
-  get insertId(): bigint | undefined {
-    return this.#insertId
-  }
-
-  /**
-   * Affected rows count.
-   */
-  get numInsertedOrUpdatedRows(): bigint | undefined {
-    return this.#numInsertedOrUpdatedRows
-  }
-}
-
-for (const property of ['insertId', 'numInsertedOrUpdatedRows']) {
-  Object.defineProperty(InsertResult.prototype, property, { enumerable: true })
 }

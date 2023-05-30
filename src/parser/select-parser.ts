@@ -6,7 +6,6 @@ import {
   AnyAliasedColumnWithTable,
   AnyColumn,
   AnyColumnWithTable,
-  DrainOuterGeneric,
   ExtractColumnType,
 } from '../util/type-utils.js'
 import { parseAliasedStringReference } from './reference-parser.js'
@@ -43,11 +42,11 @@ export type SelectArg<
   | ReadonlyArray<SE>
   | ((eb: ExpressionBuilder<DB, TB>) => ReadonlyArray<SE>)
 
-export type Selection<DB, TB extends keyof DB, SE> = DrainOuterGeneric<{
+export type Selection<DB, TB extends keyof DB, SE> = {
   [A in ExtractAliasFromSelectExpression<SE>]: SelectType<
     ExtractTypeFromSelectExpression<DB, TB, SE, A>
   >
-}>
+}
 
 type ExtractAliasFromSelectExpression<SE> = SE extends string
   ? ExtractAliasFromStringSelectExpression<SE>

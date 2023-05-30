@@ -114,6 +114,19 @@ const persons = await db
   .execute()
 `
 
+export const exampleAggregateFunctions = `const result = await db
+  .selectFrom('pet')
+  .select(({ fn }) => [
+    fn.count('id').as('num_pets'),
+
+    // If there's no shortcut for the aggregate function
+    // you can use \`agg\`.
+    fn.agg<string[]>('array_agg', ['name']).as('names')
+  ])
+  .groupBy('species')
+  .execute()
+`
+
 export const exampleFilterById = `const person = await db
   .selectFrom('person')
   .select(['id', 'first_name'])
@@ -264,21 +277,48 @@ export const exampleJoinASubquery = `const res = await db
   .execute()
 `
 
-export const exampleInsert = `const res = await db
+export const exampleInsertSingleRecord = `const res = await db
   .insertInto('person')
-  .values([
-    {
-      first_name: 'Bob',
-      last_name: 'Dylan',
-      age: 5,
-    },
-    {
-      first_name: 'Jimi',
-      last_name: 'Hendrix',
-      age: 5,
-    }
-  ])
-  .execute()
+  .values({
+    first_name: 'Bob',
+    last_name: 'Dylan',
+    age: 5,
+  })
+  .executeTakeFirst()
+`
+
+export const exampleInsertMultipleRecords = `const res = await db
+  .insertInto('person')
+  .values([{
+    first_name: 'Bob',
+    last_name: 'Dylan',
+    age: 5,
+  }, {
+    first_name: 'Jimi',
+    last_name: 'Hendrix',
+    age: 5,
+  }])
+  .executeTakeFirst()
+`
+
+export const exampleInsertComplexExpressions = `import { sql } from 'kysely'
+
+const res = await db
+  .insertInto('person')
+  .values(({ selectFrom, fn, val}) => ({
+    // Get first name using a subquery
+    first_name: selectFrom('person as p2')
+      .where('p2.last_name', '=', 'Aniston')
+      .select('first_name')
+      .limit(1),
+
+    // Use raw SQL to define the last name
+    last_name: sql\`'Ani' || 'ston'\`,
+
+    // Use a function call
+    age: fn('round', [sql\`10 * \${fn('random', [])}\`])
+  }))
+  .executeTakeFirst()
 `
 
 export const exampleUpdateById = `const res = await db
