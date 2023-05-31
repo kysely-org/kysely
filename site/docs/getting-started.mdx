@@ -27,6 +27,7 @@ import { Instantiation } from './getting-started/Instantiation'
       packageManager={new URLSearchParams(document.location.search).get(
         'package-manager'
       )}
+      packageManagersURL="#installation"
     />
   )}
 </BrowserOnly>
@@ -37,6 +38,7 @@ import { Instantiation } from './getting-started/Instantiation'
   {() => (
     <Instantiation
       dialect={new URLSearchParams(document.location.search).get('dialect')}
+      dialectsURL="#dialects"
     />
   )}
 </BrowserOnly>

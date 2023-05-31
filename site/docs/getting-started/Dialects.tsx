@@ -9,6 +9,7 @@ import type { Dialect } from './types'
 
 export interface DialectsProps {
   packageManager: PackageManager
+  packageManagersURL: string
 }
 
 export type PackageManager = 'npm' | 'pnpm' | 'yarn' | 'deno'
@@ -73,8 +74,10 @@ export function Dialects(props: DialectsProps) {
         library as a peer dependency. Let's install it using the same package
         manager command from before:
       </p>
+      {/* @ts-ignore For some odd reason, Tabs doesn't accept children in this file. */}
       <Tabs queryString="dialect">
         {builtInDialects.map(({ driverNPMPackage, ...dialect }) => (
+          // @ts-ignore For some odd reason, TabItem doesn't accept children in this file.
           <TabItem key={dialect.value} {...dialect}>
             <p>
               Kysely's built-in {dialect.label} dialect uses the "
@@ -92,7 +95,9 @@ export function Dialects(props: DialectsProps) {
         ))}
       </Tabs>
       <p style={{ display: 'flex', justifyContent: 'end' }}>
-        <Link to="#installation">I use a different package manager</Link>
+        <Link to={props.packageManagersURL}>
+          I use a different package manager
+        </Link>
       </p>
       <Admonition type="info" title="Driverless">
         Kysely can also work in compile-only mode that doesn't require a

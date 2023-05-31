@@ -5,6 +5,7 @@ import type { Dialect } from './types'
 
 export interface InstantiationProps {
   dialect: Dialect
+  dialectsURL: string
 }
 
 const dialectSpecificCodeSnippets: Record<Dialect, string> = {
@@ -61,7 +62,7 @@ export const db = new Kysely<Database>({
 })`}
       </CodeBlock>
       <p style={{ display: 'flex', justifyContent: 'end' }}>
-        <Link to="#dialects">I use a different database</Link>
+        <Link to={props.dialectsURL}>I use a different database</Link>
       </p>
     </>
   )
