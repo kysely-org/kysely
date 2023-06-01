@@ -1,12 +1,7 @@
 import React from 'react'
 import Link from '@docusaurus/Link'
 import CodeBlock from '@theme/CodeBlock'
-import type { Dialect } from './types'
-
-export interface InstantiationProps {
-  dialect: Dialect
-  dialectsURL: string
-}
+import type { Dialect, PropsWithDialect } from './types'
 
 const dialectSpecificCodeSnippets: Record<Dialect, string> = {
   postgresql: `import { Pool } from 'pg'
@@ -42,7 +37,7 @@ const dialect = new SQLiteDialect({
 })`,
 }
 
-export function Instantiation(props: InstantiationProps) {
+export function Instantiation(props: PropsWithDialect) {
   const dialectSpecificCodeSnippet =
     dialectSpecificCodeSnippets[props.dialect] ||
     dialectSpecificCodeSnippets.postgresql

@@ -65,12 +65,10 @@ export function Dialects(props: DialectsProps) {
         understand your database's SQL specification and how to communicate with
         it. This requires a <code>Dialect</code> implementation.
         <br />
+        <br />
         There are 3 built-in Node.js dialects for PostgreSQL, MySQL and SQLite.
-        <br />
         Additionally, the community has implemented several dialects to choose
-        from.
-        <br />
-        Find out more at <Link to="/docs/dialects">"Dialects"</Link>.
+        from. Find out more at <Link to="/docs/dialects">"Dialects"</Link>.
       </p>
       <Heading as="h3">Driver installation</Heading>
       <p>
