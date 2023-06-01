@@ -1,12 +1,9 @@
-<p>
-  For Kysely's type-safety and autocompletion to work, it needs to know your
-  database structure. This requires a TypeScript <code>Database</code>{' '}
-  interface, that contains table names as keys and table schema interfaces as
-  values.
-  <br />
-  <br />
-  <strong>Let's define our first database interface:</strong>
-</p>
+For Kysely's type-safety and autocompletion to work, it needs to know your
+database structure. This requires a TypeScript <code>Database</code>
+interface, that contains table names as keys and table schema interfaces as
+values.
+
+**Let's define our first database interface:**
 
 ```ts title="database.ts"
 import { ColumnType, Generated } from 'kysely'
@@ -14,7 +11,6 @@ import { ColumnType, Generated } from 'kysely'
 export interface Database {
   person: PersonTable
   pet: PetTable
-  movie: MovieTable
 }
 
 export interface PersonTable {
@@ -33,10 +29,10 @@ export interface PersonTable {
 
   // You can specify a different type for each operation (select, insert and
   // update) using the `ColumnType<SelectType, InsertType, UpdateType>`
-  // wrapper. Here we define a column `modified_at` that is selected as
+  // wrapper. Here we define a column `created_at` that is selected as
   // a `Date`, can optionally be provided as a `string` in inserts and
   // can never be updated:
-  modified_at: ColumnType<Date, string | undefined, never>
+  created_at: ColumnType<Date, string | undefined, never>
 }
 
 export interface PetTable {
@@ -44,11 +40,6 @@ export interface PetTable {
   name: string
   owner_id: number
   species: 'dog' | 'cat'
-}
-
-export interface MovieTable {
-  id: Generated<string>
-  stars: number
 }
 ```
 
