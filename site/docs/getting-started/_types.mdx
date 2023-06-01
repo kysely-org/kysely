@@ -24,7 +24,7 @@ export interface PersonTable {
   id: Generated<number>
 
   first_name: string
-  gender: 'male' | 'female' | 'other'
+  gender: 'man' | 'woman' | 'other'
 
   // If the column is nullable in the database, make its type nullable.
   // Don't use optional properties. Optionality is always determined
@@ -52,7 +52,7 @@ export interface MovieTable {
 }
 ```
 
-:::tip title="Codegen"
+:::tip Codegen
 
 For production apps, it is recommended to automatically generate your <code>Database</code>
 interface by introspecting your production database or Prisma schemas. Find out more at
