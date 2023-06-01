@@ -8,6 +8,7 @@ import Installation from './getting-started/_installation.mdx'
 import Types from './getting-started/_types.mdx'
 import { Dialects } from './getting-started/Dialects'
 import { Instantiation } from './getting-started/Instantiation'
+import { Migrations } from './getting-started/Migrations'
 
 # Getting started
 
@@ -37,6 +38,17 @@ import { Instantiation } from './getting-started/Instantiation'
 <BrowserOnly fallback={<div>Loading...</div>}>
   {() => (
     <Instantiation
+      dialect={new URLSearchParams(document.location.search).get('dialect')}
+      dialectsURL="#dialects"
+    />
+  )}
+</BrowserOnly>
+
+## Migrations
+
+<BrowserOnly fallback={<div>Loading...</div>}>
+  {() => (
+    <Migrations
       dialect={new URLSearchParams(document.location.search).get('dialect')}
       dialectsURL="#dialects"
     />
