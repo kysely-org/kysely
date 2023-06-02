@@ -14,7 +14,7 @@
 
 Kysely (pronounce “Key-Seh-Lee”) is a type-safe and autocompletion-friendly typescript SQL query builder. Inspired by
 [knex](http://knexjs.org/). Mainly developed for [node.js](https://nodejs.org/en/) but also runs on [deno](https://deno.land/)
-and in the browser.
+, [bun](https://bun.sh/) and in the browser.
 
 ![](https://github.com/koskimas/kysely/blob/master/assets/demo.gif)
 
