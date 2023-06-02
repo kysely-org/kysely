@@ -487,19 +487,26 @@ database fails.
 
 # Deno
 
-Kysely doesn't include drivers for deno, but you can still use Kysely as a query builder
-or implement your own driver:
+Kysely's PostgreSQL and MySQL dialects work in deno. For SQLite you need to use a community dialect or implement your own using a Deno compatible SQLite driver.
+
+To install Kysely, add it to your `deno.json` file:
+
+```json
+{
+  "imports": {
+    "kysely": "npm:kysely@^0.25.0",
+    "mysql": "npm:mysql@^3.3.3", // if you're using the MySQL dialect
+    "pg": "npm:pg@^8.11.0", // if you're using the PostgreSQL dialect
+    "pg-pool": "npm:pg-pool@^3.6.0", // if you're using the PostgreSQL dialect
+  }
+}
+```
+
+Then run this example with `--allow-env --allow-read --allow-net`:
 
 ```ts
-// We use jsdeliver to get Kysely from npm.
-import {
-  DummyDriver,
-  Generated,
-  Kysely,
-  PostgresAdapter,
-  PostgresIntrospector,
-  PostgresQueryCompiler,
-} from 'https://cdn.jsdelivr.net/npm/kysely/dist/esm/index.js'
+import { Generated, Kysely, PostgresDialect } from 'kysely'
+import Pool from 'pg-pool'
 
 interface Person {
   id: Generated<number>
@@ -512,28 +519,17 @@ interface Database {
 }
 
 const db = new Kysely<Database>({
-  dialect: {
-    createAdapter() {
-      return new PostgresAdapter()
-    },
-    createDriver() {
-      // You need a driver to be able to execute queries. In this example
-      // we use the dummy driver that never does anything.
-      return new DummyDriver()
-    },
-    createIntrospector(db: Kysely<unknown>) {
-      return new PostgresIntrospector(db)
-    },
-    createQueryCompiler() {
-      return new PostgresQueryCompiler()
-    },
-  },
+  dialect: new PostgresDialect({
+    pool: new Pool({
+      database: 'kysely_test',
+      host: 'localhost',
+      user: 'user',
+      port: 5434,
+    })
+  })
 })
 
-const query = db.selectFrom('person').select('id')
-const sql = query.compile()
-
-console.log(sql.sql)
+await db.selectFrom('person').select('id').execute()
 ```
 
 # Browser
