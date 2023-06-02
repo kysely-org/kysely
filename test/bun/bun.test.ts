@@ -46,7 +46,7 @@ if (
   dbs
     .map((db) => db.selectFrom('person').select('id').compile().sql)
     .some(
-      (sql) => !sql.match(/^select ["`]id["`] from ["`]person["`]$/) === null
+      (sql) => sql.match(/^select ["`]id["`] from ["`]person["`]$/) === null
     )
 ) {
   console.error('bun test failed')
