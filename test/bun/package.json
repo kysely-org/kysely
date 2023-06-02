@@ -1,0 +1,12 @@
+{
+  "name": "kysely-bun-test",
+  "private": true,
+  "scripts": {
+    "test": "bun bun.test.ts"
+  },
+  "dependencies": {
+    "kysely": "^0.25.0",
+    "mysql2": "^3.3.3",
+    "pg": "^8.11.0"
+  }
+}
