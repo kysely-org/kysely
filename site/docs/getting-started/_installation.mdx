@@ -63,12 +63,15 @@ Kysely can be installed using any of the following package managers:
       and <Link to="https://www.typescriptlang.org">TypeScript</Link>.
       <br />
       <br />
-      <strong>Add the following to your </strong>
-      <code>deno.json</code> <strong>file:</strong>
+      <strong>Your </strong>
+      <code>deno.json</code>
+      <strong>
+        's "imports" field should include the following dependency:
+      </strong>
     </p>
     <CodeBlock language="json" title="deno.json">
       {JSON.stringify(
-        { imports: { kysely: `npm:kysely@${packageJson.version}` } },
+        { imports: { kysely: `npm:kysely@^${packageJson.version}` } },
         null,
         2
       )}
