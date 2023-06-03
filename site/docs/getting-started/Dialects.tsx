@@ -197,7 +197,7 @@ function UnsupportedDriver(props: UnsupportedDriverProps) {
     <Admonition type="danger" title="Driver unsupported">
       Kysely's built-in {dialect} dialect does not work in{' '}
       {titleCasedPackageManager} because the driver library it uses, "
-      {props.driverNPMPackage}", doesn't. Please use a community {dialect}{' '}
+      {props.driverNPMPackage}", doesn't. You have to use a community {dialect}{' '}
       dialect that works in {titleCasedPackageManager}, or implement your own.
     </Admonition>
   )
