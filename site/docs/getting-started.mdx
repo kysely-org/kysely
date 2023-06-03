@@ -40,6 +40,10 @@ import { Migrations } from './getting-started/Migrations'
     <Instantiation
       dialect={new URLSearchParams(document.location.search).get('dialect')}
       dialectsURL="#dialects"
+      packageManager={new URLSearchParams(document.location.search).get(
+        'package-manager'
+      )}
+      packageManagersURL="#installation"
     />
   )}
 </BrowserOnly>
