@@ -1,7 +1,7 @@
 import React from 'react'
 import Link from '@docusaurus/Link'
 import CodeBlock from '@theme/CodeBlock'
-import type { Dialect, PropsWithDialect } from './types'
+import type { Dialect, PropsWithDialect } from './shared'
 
 const dialectSpecificCodeSnippets: Record<
   Dialect,
