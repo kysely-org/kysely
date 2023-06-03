@@ -184,7 +184,7 @@ interface UnsupportedDriverProps {
 }
 
 function UnsupportedDriver(props: UnsupportedDriverProps) {
-  const { packageManager } = props
+  const { dialect, packageManager } = props
 
   const titleCasedPackageManager = `${packageManager[0].toUpperCase()}${packageManager.substring(
     1
@@ -192,10 +192,10 @@ function UnsupportedDriver(props: UnsupportedDriverProps) {
 
   return (
     <Admonition type="danger" title="Driver unsupported">
-      Kysely's built-in {props.dialect} dialect does not work in{' '}
+      Kysely's built-in {dialect} dialect does not work in{' '}
       {titleCasedPackageManager} because the driver library it uses, "
-      {props.driverNPMPackage}", doesn't. Please use a community SQLite dialect
-      that works in {titleCasedPackageManager}, or implement your own.
+      {props.driverNPMPackage}", doesn't. Please use a community {dialect}{' '}
+      dialect that works in {titleCasedPackageManager}, or implement your own.
     </Admonition>
   )
 }
