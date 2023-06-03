@@ -1,7 +1,7 @@
 export type Dialect = 'postgresql' | 'mysql' | 'sqlite'
 
 export type PropsWithDialect<P = {}> = P & {
-  dialect: Dialect
+  dialect: Dialect | undefined
   dialectsURL: string
 }
 
@@ -21,4 +21,8 @@ export function isDialectSupported(
   packageManager: PackageManager
 ): boolean {
   return !PACKAGE_MANAGER_UNSUPPORTED_DIALECTS[packageManager].includes(dialect)
+}
+
+export function titlecase(str: string): string {
+  return `${str[0].toUpperCase()}${str.substring(1)}`
 }

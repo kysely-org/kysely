@@ -6,7 +6,12 @@ import TabItem from '@theme/TabItem'
 import CodeBlock from '@theme/CodeBlock'
 import Admonition from '@theme/Admonition'
 import packageJson from '../../package.json'
-import { Dialect, PackageManager, isDialectSupported } from './shared'
+import {
+  Dialect,
+  PackageManager,
+  isDialectSupported,
+  titlecase,
+} from './shared'
 
 export interface DialectsProps {
   packageManager: PackageManager | undefined
@@ -186,9 +191,7 @@ interface UnsupportedDriverProps {
 function UnsupportedDriver(props: UnsupportedDriverProps) {
   const { dialect, packageManager } = props
 
-  const titleCasedPackageManager = `${packageManager[0].toUpperCase()}${packageManager.substring(
-    1
-  )}`
+  const titleCasedPackageManager = titlecase(packageManager)
 
   return (
     <Admonition type="danger" title="Driver unsupported">
