@@ -23,14 +23,6 @@ Kysely can be installed using any of the following package managers:
     <CodeBlock language="bash" title="terminal">
       npm install kysely
     </CodeBlock>
-    <Admonition type="tip" title="one project, many kysely installations issue">
-      It is recommended to use <Link to="https://pnpm.io">PNPM</Link> for its
-      out-of-the-box dependency deduplication, as it eliminates the risk of
-      having multiple Kysely instances in your <code>node_modules</code> folder.
-      A situation that's known to cause some headaches when using Kysely in
-      combination with dependant packages (e.g.{' '}
-      <Link to="https://sst.dev">SST</Link>).
-    </Admonition>
   </TabItem>
   <TabItem value="pnpm" label="PNPM">
     <p>
@@ -76,17 +68,23 @@ Kysely can be installed using any of the following package managers:
     </p>
     <CodeBlock language="json" title="deno.json">
       {JSON.stringify(
-        {
-          imports: { kysely: `https://esm.sh/kysely@${packageJson.version}` },
-        },
+        { imports: { kysely: `npm:kysely@${packageJson.version}` } },
         null,
         2
       )}
     </CodeBlock>
-    <Admonition type="caution" title="Deno support limitations">
-      Kysely has no built-in Deno <Link to="#dialects">dialects</Link>. You can
-      implement your own or use a community dialect. This tutorial does not
-      include any Deno specific code examples.
-    </Admonition>
+  </TabItem>
+  <TabItem value="bun" label="Bun">
+    <p>
+      <Link to="https://bun.sh">Bun</Link> is a new JavaScript runtime built for
+      speed, with a native bundler, transpiler, test runner, and npm-compatible
+      package manager baked-in.
+      <br />
+      <br />
+      <strong>Run the following command in your terminal:</strong>
+    </p>
+    <CodeBlock language="bash" title="terminal">
+      bun install kysely
+    </CodeBlock>
   </TabItem>
 </Tabs>
