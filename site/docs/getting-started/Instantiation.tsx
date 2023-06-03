@@ -1,10 +1,21 @@
-import React from 'react'
+import React, { ReactNode } from 'react'
 import Link from '@docusaurus/Link'
 import CodeBlock from '@theme/CodeBlock'
-import type { Dialect, PropsWithDialect } from './types'
+import {
+  Dialect,
+  PackageManager,
+  PropsWithDialect,
+  isDialectSupported,
+  titlecase,
+} from './shared'
 
-const dialectSpecificCodeSnippets: Record<Dialect, string> = {
-  postgresql: `import { Pool } from 'pg'
+const dialectSpecificCodeSnippets: Record<
+  Dialect,
+  (packageManager: PackageManager) => string | ReactNode
+> = {
+  postgresql: (packageManager) => `import { Pool } from '${
+    packageManager === 'deno' ? 'pg-pool' : 'pg'
+  }'
 import { Kysely, PostgresDialect } from 'kysely'
 
 const dialect = new PostgresDialect({
@@ -16,7 +27,8 @@ const dialect = new PostgresDialect({
     max: 10,
   })
 })`,
-  mysql: `import { createPool } from 'mysql2' // do not use 'mysql2/promises'!
+  mysql:
+    () => `import { createPool } from 'mysql2' // do not use 'mysql2/promises'!
 import { Kysely, MySQLDialect } from 'kysely'
 
 const dialect = new MySQLDialect({
@@ -29,24 +41,38 @@ const dialect = new MySQLDialect({
     connectionLimit: 10,
   })
 })`,
-  sqlite: `import * as SQLite from 'better-sqlite3'
-import {Kysely, SQLiteDialect} from 'kysely'
+  sqlite: (packageManager) =>
+    isDialectSupported('sqlite', packageManager)
+      ? `import * as SQLite from 'better-sqlite3'
+import { Kysely, SQLiteDialect } from 'kysely'
 
 const dialect = new SQLiteDialect({
   database: new SQLite(':memory:'),
-})`,
+})`
+      : `/* Kysely doesn't support SQLite + ${titlecase(
+          packageManager
+        )}. Import a community dialect that does here. */
+import { Kysely } from 'kysely'
+
+const dialect = /* instantiate the dialect here */`,
 }
 
-export function Instantiation(props: PropsWithDialect) {
-  const dialectSpecificCodeSnippet =
-    dialectSpecificCodeSnippets[props.dialect] ||
-    dialectSpecificCodeSnippets.postgresql
+export function Instantiation(
+  props: PropsWithDialect<{
+    packageManager: PackageManager | undefined
+    packageManagersURL: string
+  }>
+) {
+  const dialect = props.dialect || 'postgresql'
+  const packageManager = props.packageManager || 'npm'
+
+  const dialectSpecificCodeSnippet = dialectSpecificCodeSnippets[dialect]
 
   return (
     <>
       <CodeBlock language="ts" title="kysely.ts">
         {`import { Database } from './database.ts' // this is the Database interface we defined earlier
-${dialectSpecificCodeSnippet}
+${dialectSpecificCodeSnippet(packageManager)}
 
 // Database interface is passed to Kysely's constructor, and from now on, Kysely 
 // knows your database structure.
@@ -56,7 +82,10 @@ export const db = new Kysely<Database>({
   dialect,
 })`}
       </CodeBlock>
-      <p style={{ display: 'flex', justifyContent: 'end' }}>
+      <p style={{ display: 'flex', gap: '25px', justifyContent: 'end' }}>
+        <Link to={props.packageManagersURL}>
+          I use a different package manager
+        </Link>
         <Link to={props.dialectsURL}>I use a different database</Link>
       </p>
     </>
