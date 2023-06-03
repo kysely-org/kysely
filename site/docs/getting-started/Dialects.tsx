@@ -1,26 +1,74 @@
-import React from 'react'
+import React, { ReactNode } from 'react'
 import Link from '@docusaurus/Link'
 import Heading from '@theme/Heading'
 import Tabs from '@theme/Tabs'
 import TabItem from '@theme/TabItem'
 import CodeBlock from '@theme/CodeBlock'
 import Admonition from '@theme/Admonition'
-import type { Dialect } from './types'
+import packageJson from '../../package.json'
+import { Dialect, PackageManager, isDialectSupported } from './shared'
 
 export interface DialectsProps {
-  packageManager: PackageManager
+  packageManager: PackageManager | undefined
   packageManagersURL: string
 }
 
-export type PackageManager = 'npm' | 'pnpm' | 'yarn' | 'deno'
+interface CommandDetails {
+  content: (driverNPMPackage: string) => string | ReactNode
+  intro?: string | ReactNode
+  language: string
+  title: string
+}
 
-const packageManagerToInstallCommand: Record<
-  Exclude<PackageManager, 'deno'>,
-  string
-> = {
-  npm: 'npm install',
-  pnpm: 'pnpm install',
-  yarn: 'yarn add',
+const packageManagerToInstallCommand: Record<PackageManager, CommandDetails> = {
+  npm: {
+    content: (pkg) => `npm install ${pkg}`,
+    language: 'bash',
+    title: 'terminal',
+  },
+  pnpm: {
+    content: (pkg) => `pnpm install ${pkg}`,
+    language: 'bash',
+    title: 'terminal',
+  },
+  yarn: {
+    content: (pkg) => `yarn add ${pkg}`,
+    language: 'bash',
+    title: 'terminal',
+  },
+  deno: {
+    content: (pkg) => (
+      <>
+        {JSON.stringify(
+          {
+            imports: {
+              kysely: `npm:kysely@^${packageJson.version}`,
+              [pkg]: `npm:${pkg}`,
+              [`${pkg}-pool`]: pkg === 'pg' ? 'npm:pg-pool' : undefined,
+            },
+          },
+          undefined,
+          2
+        )}
+      </>
+    ),
+    intro: (
+      <>
+        <strong>Your </strong>
+        <code>deno.json</code>
+        <strong>
+          's "imports" field should include the following dependencies:
+        </strong>
+      </>
+    ),
+    language: 'json',
+    title: 'deno.json',
+  },
+  bun: {
+    content: (pkg) => `bun install ${pkg}`,
+    language: 'bash',
+    title: 'terminal',
+  },
 }
 
 interface BuiltInDialect {
@@ -54,9 +102,9 @@ const builtInDialects: BuiltInDialect[] = [
 ]
 
 export function Dialects(props: DialectsProps) {
-  const installationCommand =
-    packageManagerToInstallCommand[props.packageManager] ||
-    packageManagerToInstallCommand.npm
+  const packageManager = props.packageManager || 'npm'
+
+  const installationCommand = packageManagerToInstallCommand[packageManager]
 
   return (
     <>
@@ -78,21 +126,37 @@ export function Dialects(props: DialectsProps) {
       </p>
       {/* @ts-ignore For some odd reason, Tabs doesn't accept children in this file. */}
       <Tabs queryString="dialect">
-        {builtInDialects.map(({ driverNPMPackage, ...dialect }) => (
+        {builtInDialects.map(({ driverNPMPackage, value, ...dialect }) => (
           // @ts-ignore For some odd reason, TabItem doesn't accept children in this file.
-          <TabItem key={dialect.value} {...dialect}>
-            <p>
-              Kysely's built-in {dialect.label} dialect uses the "
-              {driverNPMPackage}" driver library under the hood. Please refer to
-              its <Link to={dialect.driverDocsURL}>official documentation</Link>{' '}
-              for configuration options.
-              <br />
-              <br />
-              <strong>Run the following command in your terminal:</strong>
-            </p>
-            <CodeBlock language="bash" title="terminal">
-              {installationCommand} {driverNPMPackage}
-            </CodeBlock>
+          <TabItem value={value} {...dialect}>
+            {!isDialectSupported(value, packageManager) ? (
+              <UnsupportedDriver
+                dialect={dialect.label}
+                driverNPMPackage={driverNPMPackage}
+                packageManager={packageManager}
+              />
+            ) : (
+              <>
+                <p>
+                  Kysely's built-in {dialect.label} dialect uses the "
+                  {driverNPMPackage}" driver library under the hood. Please
+                  refer to its{' '}
+                  <Link to={dialect.driverDocsURL}>official documentation</Link>{' '}
+                  for configuration options.
+                  <br />
+                  <br />
+                  {installationCommand.intro || (
+                    <strong>Run the following command in your terminal:</strong>
+                  )}
+                </p>
+                <CodeBlock
+                  language={installationCommand.language}
+                  title={installationCommand.title}
+                >
+                  {installationCommand.content(driverNPMPackage)}
+                </CodeBlock>
+              </>
+            )}
           </TabItem>
         ))}
       </Tabs>
@@ -110,5 +174,28 @@ export function Dialects(props: DialectsProps) {
         .
       </Admonition>
     </>
+  )
+}
+
+interface UnsupportedDriverProps {
+  dialect: string
+  driverNPMPackage: string
+  packageManager: PackageManager
+}
+
+function UnsupportedDriver(props: UnsupportedDriverProps) {
+  const { packageManager } = props
+
+  const titleCasedPackageManager = `${packageManager[0].toUpperCase()}${packageManager.substring(
+    1
+  )}`
+
+  return (
+    <Admonition type="danger" title="Driver unsupported">
+      Kysely's built-in {props.dialect} dialect does not work in{' '}
+      {titleCasedPackageManager} because the driver library it uses, "
+      {props.driverNPMPackage}", doesn't. Please use a community SQLite dialect
+      that works in {titleCasedPackageManager}, or implement your own.
+    </Admonition>
   )
 }
