@@ -51,7 +51,7 @@ const dialect = new SQLiteDialect({
 })`
       : `/* Kysely doesn't support SQLite + ${titlecase(
           packageManager
-        )}. Import a community dialect that does here. */
+        )} out of the box. Import a community dialect that does here. */
 import { Kysely } from 'kysely'
 
 const dialect = /* instantiate the dialect here */`,
@@ -70,8 +70,8 @@ export function Instantiation(
 
   return (
     <>
-      <CodeBlock language="ts" title="kysely.ts">
-        {`import { Database } from './database.ts' // this is the Database interface we defined earlier
+      <CodeBlock language="ts" title="src/database.ts" showLineNumbers>
+        {`import { Database } from './types.ts' // this is the Database interface we defined earlier
 ${dialectSpecificCodeSnippet(packageManager)}
 
 // Database interface is passed to Kysely's constructor, and from now on, Kysely 
