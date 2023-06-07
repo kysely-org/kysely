@@ -816,7 +816,9 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    *
    * ### Examples
    *
-   * Simple usage by providing a table name and two columns to join:
+   * <!-- siteExample("join", "Simple inner join", 10) -->
+   *
+   * Simple inner joins can be done by providing a table name and two columns to join:
    *
    * ```ts
    * const result = await db
@@ -824,21 +826,20 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    *   .innerJoin('pet', 'pet.owner_id', 'person.id')
    *   // `select` needs to come after the call to `innerJoin` so
    *   // that you can select from the joined table.
-   *   .select('person.id', 'pet.name')
+   *   .select(['person.id', 'pet.name as pet_name'])
    *   .execute()
-   *
-   * result[0].id
-   * result[0].name
    * ```
    *
    * The generated SQL (PostgreSQL):
    *
    * ```sql
-   * select "person"."id", "pet"."name"
+   * select "person"."id", "pet"."name" as "pet_name"
    * from "person"
    * inner join "pet"
    * on "pet"."owner_id" = "person"."id"
    * ```
+   *
+   * <!-- siteExample("join", "Aliased inner join", 20) -->
    *
    * You can give an alias for the joined table like this:
    *
@@ -860,13 +861,15 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    * where "p".name" = $1
    * ```
    *
+   * <!-- siteExample("join", "Complex join", 30) -->
+   *
    * You can provide a function as the second argument to get a join
    * builder for creating more complex joins. The join builder has a
    * bunch of `on*` methods for building the `on` clause of the join.
    * There's basically an equivalent for every `where` method
-   * (`on`, `onRef`, `onExists` etc.). You can do all the same things
-   * with the `on` method that you can with the corresponding `where`
-   * method. See the `where` method documentation for more examples.
+   * (`on`, `onRef` etc.). You can do all the same things with the
+   * `on` method that you can with the corresponding `where` method.
+   * See the `where` method documentation for more examples.
    *
    * ```ts
    * await db.selectFrom('person')
@@ -890,34 +893,36 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    * and "pet"."name" = $1
    * ```
    *
-   * You can join a subquery by providing a select query (or a callback)
-   * as the first argument:
+   * <!-- siteExample("join", "Subquery join", 40) -->
+   *
+   * You can join a subquery by providing two callbacks:
    *
    * ```ts
-   * await db.selectFrom('person')
+   * const result = await db.selectFrom('person')
    *   .innerJoin(
-   *     db.selectFrom('pet')
-   *       .select(['owner_id', 'name'])
+   *     (eb) => eb
+   *       .selectFrom('pet')
+   *       .select(['owner_id as owner', 'name'])
    *       .where('name', '=', 'Doggo')
    *       .as('doggos'),
-   *     'doggos.owner_id',
-   *     'person.id',
+   *     (join) => join
+   *       .onRef('doggos.owner', '=', 'person.id'),
    *   )
-   *   .selectAll()
+   *   .selectAll('doggos')
    *   .execute()
    * ```
    *
    * The generated SQL (PostgreSQL):
    *
    * ```sql
-   * select *
+   * select "doggos".*
    * from "person"
    * inner join (
-   *   select "owner_id", "name"
+   *   select "owner_id" as "owner", "name"
    *   from "pet"
    *   where "name" = $1
    * ) as "doggos"
-   * on "doggos"."owner_id" = "person"."id"
+   * on "doggos"."owner" = "person"."id"
    * ```
    */
   innerJoin<
