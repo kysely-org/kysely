@@ -356,6 +356,8 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    *
    * ### Examples
    *
+   * <!-- siteExample("select", "A single column", 10) -->
+   *
    * Select a single column:
    *
    * ```ts
@@ -364,8 +366,6 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    *   .select('id')
    *   .where('first_name', '=', 'Arnold')
    *   .execute()
-   *
-   * persons[0].id
    * ```
    *
    * The generated SQL (PostgreSQL):
@@ -374,6 +374,8 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    * select "id" from "person" where "first_name" = $1
    * ```
    *
+   * <!-- siteExample("select", "A single colum with table", 20) -->
+   *
    * Select a single column and specify a table:
    *
    * ```ts
@@ -381,8 +383,6 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    *   .selectFrom(['person', 'pet'])
    *   .select('person.id')
    *   .execute()
-   *
-   * persons[0].id
    * ```
    *
    * The generated SQL (PostgreSQL):
@@ -391,6 +391,8 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    * select "person"."id" from "person", "pet"
    * ```
    *
+   * <!-- siteExample("select", "Multiple columns", 30) -->
+   *
    * Select multiple columns:
    *
    * ```ts
@@ -398,9 +400,6 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    *   .selectFrom('person')
    *   .select(['person.id', 'first_name'])
    *   .execute()
-   *
-   * persons[0].id
-   * persons[0].first_name
    * ```
    *
    * The generated SQL (PostgreSQL):
@@ -409,35 +408,36 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    * select "person"."id", "first_name" from "person"
    * ```
    *
+   * <!-- siteExample("select", "Aliases", 40) -->
+   *
    * Aliased selections:
    *
    * ```ts
    * const persons = await db
    *   .selectFrom('person')
    *   .select([
-   *     'person.first_name as fn',
+   *     'first_name as fn',
    *     'person.last_name as ln'
    *   ])
    *   .execute()
-   *
-   * persons[0].fn
-   * persons[0].ln
    * ```
    *
    * The generated SQL (PostgreSQL):
    *
    * ```sql
    * select
-   *   "person"."first_name" as "fn",
+   *   "first_name" as "fn",
    *   "person"."last_name" as "ln"
    * from "person"
    * ```
    *
+   * <!-- siteExample("select", "Complex selections", 50) -->
+   *
    * You can also select arbitrary expression including subqueries and raw sql snippets.
-   * When you do that, you need to give a name for the selections using the {@link as} method:
+   * When you do that, you need to give a name for the selections using the `as` method:
    *
    * ```ts
-   * import { sql } from 'kysely'
+   * import { sql } from 'kysely'
    *
    * const persons = await db.selectFrom('person')
    *   .select(({ selectFrom, or, cmpr }) => [
@@ -449,7 +449,8 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    *       .limit(1)
    *       .as('first_pet_name'),
    *
-   *     // Build and select an expression using the expression builder
+   *     // Build and select an expression using
+   *     // the expression builder
    *     or([
    *       cmpr('first_name', '=', 'Jennifer'),
    *       cmpr('first_name', '=', 'Arnold')
@@ -459,10 +460,6 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    *     sql<string>`concat(first_name, ' ', last_name)`.as('full_name')
    *   ])
    *   .execute()
-   *
-   * persons[0].first_pet_name
-   * persons[0].is_jennifer_or_arnold
-   * persons[0].full_name
    * ```
    *
    * The generated SQL (PostgreSQL):

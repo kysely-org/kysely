@@ -91,15 +91,19 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    *
    * ### Examples
    *
-   * Insert a row into `person`:
+   * <!-- siteExample("insert", "Single row", 10) -->
+   *
+   * Insert a single row:
+   *
    * ```ts
    * const result = await db
    *   .insertInto('person')
    *   .values({
    *     first_name: 'Jennifer',
-   *     last_name: 'Aniston'
+   *     last_name: 'Aniston',
+   *     age: 40
    *   })
-   *   .executeTakeFirstOrThrow()
+   *   .executeTakeFirst()
    * ```
    *
    * The generated SQL (PostgreSQL):
