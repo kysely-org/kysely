@@ -45,7 +45,25 @@ export interface WhereInterface<DB, TB extends keyof DB> {
    * sql`your operator`
    * ```
    *
-   * <!-- siteExample("where", "Conditional where calls", 20) -->
+   * <!-- siteExample("where", "Find many", 20) -->
+   *
+   * Find multiple items using a list of identifiers:
+   *
+   * ```ts
+   * const persons = await db
+   *   .selectFrom('person')
+   *   .selectAll()
+   *   .where('id', 'in', ['1', '2', '3'])
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * select * from "person" where "id" in ($1, $2, $3)
+   * ```
+   *
+   * <!-- siteExample("where", "Conditional where calls", 30) -->
    *
    * You can add expressions conditionally like this:
    *
@@ -119,7 +137,7 @@ export interface WhereInterface<DB, TB extends keyof DB> {
    * select * from "person" where "id" in ($1, $2, $3)
    * ```
    *
-   * <!-- siteExample("where", "Complex where clause", 30) -->
+   * <!-- siteExample("where", "Complex where clause", 40) -->
    *
    * For complex `where` expressions you can pass in a single callback and
    * use the `ExpressionBuilder` to build your expression:
