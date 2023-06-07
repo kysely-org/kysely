@@ -110,6 +110,7 @@ const persons = await db
         .whereRef('mother.id', '=', 'person.mother_id')
     ).as('mother')
   ])
+  .execute()
 
 console.log(persons[0].pets[0].name)
 console.log(persons[0].mother.first_name)
@@ -146,6 +147,7 @@ const persons = await db
     withPets(eb),
     withMom(eb)
   ])
+  .execute()
 
 console.log(persons[0].pets[0].name)
 console.log(persons[0].mother.first_name)
