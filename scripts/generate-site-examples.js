@@ -46,15 +46,15 @@ function main() {
       state.line = lines[l]
       state.lineIndex = l + 1
 
-      if (state.inCodeBlock) {
-        if (isCodeBlockEnd(state)) {
-          writeSiteExample(state)
-          exitExample(state)
-        } else {
-          addCodeLine(state)
-        }
-      } else if (state.inExample) {
-        if (isCodeBlockStart(state)) {
+      if (state.inExample) {
+        if (state.inCodeBlock) {
+          if (isCodeBlockEnd(state)) {
+            writeSiteExample(state)
+            exitExample(state)
+          } else {
+            addCodeLine(state)
+          }
+        } else if (isCodeBlockStart(state)) {
           enterCodeBlock(state)
         } else {
           addCommentLine(state)
