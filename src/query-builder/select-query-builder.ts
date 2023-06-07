@@ -535,8 +535,10 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    *
    * ### Examples
    *
+   * <!-- siteExample("select", "Distinct on", 80) -->
+   *
    * ```ts
-   * await db.selectFrom('person')
+   * const persons = await db.selectFrom('person')
    *   .innerJoin('pet', 'pet.owner_id', 'person.id')
    *   .where('pet.name', '=', 'Doggo')
    *   .distinctOn('person.id')
@@ -636,10 +638,12 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
   /**
    * Makes the selection distinct.
    *
+   * <!-- siteExample("select", "Distinct", 70) -->
+   *
    * ### Examples
    *
    * ```ts
-   * await db.selectFrom('person')
+   * const persons = await db.selectFrom('person')
    *   .select('first_name')
    *   .distinct()
    *   .execute()

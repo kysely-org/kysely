@@ -19,6 +19,10 @@ export interface WhereInterface<DB, TB extends keyof DB> {
    *
    * ### Examples
    *
+   * <!-- siteExample("where", "Simple where clause", 10) -->
+   *
+   * `where` method calls are combined with `AND`:
+   *
    * ```ts
    * const person = await db
    *   .selectFrom('person')
@@ -41,9 +45,14 @@ export interface WhereInterface<DB, TB extends keyof DB> {
    * sql`your operator`
    * ```
    *
+   * <!-- siteExample("where", "Conditional where calls", 20) -->
+   *
    * You can add expressions conditionally like this:
    *
    * ```ts
+   * const firstName: string | undefined = 'Jennifer'
+   * const lastName: string | undefined = 'Aniston'
+   *
    * let query = db
    *   .selectFrom('person')
    *   .selectAll()
@@ -110,22 +119,30 @@ export interface WhereInterface<DB, TB extends keyof DB> {
    * select * from "person" where "id" in ($1, $2, $3)
    * ```
    *
+   * <!-- siteExample("where", "Complex where clause", 30) -->
+   *
    * For complex `where` expressions you can pass in a single callback and
-   * use the {@link ExpressionBuilder} to build your expression:
+   * use the `ExpressionBuilder` to build your expression:
    *
    * ```ts
+   * const firstName = 'Jennifer'
+   * const maxAge = 60
+   *
    * const persons = await db
    *   .selectFrom('person')
    *   .selectAll('person')
-   *   .where(({ cmpr, or, and, not, exists, selectFrom, val }) => and([
+   *   .where(({ cmpr, or, and, not, exists, selectFrom }) => and([
    *     or([
    *       cmpr('first_name', '=', firstName),
    *       cmpr('age', '<', maxAge)
    *     ]),
    *     not(exists(
-   *       selectFrom('pet').select('pet.id').whereRef('pet.owner_id', '=', 'person.id')
+   *       selectFrom('pet')
+   *         .select('pet.id')
+   *         .whereRef('pet.owner_id', '=', 'person.id')
    *     ))
    *   ]))
+   *   .execute()
    * ```
    *
    * The generated SQL (PostgreSQL):

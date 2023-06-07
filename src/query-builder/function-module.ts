@@ -22,24 +22,36 @@ import { AggregateFunctionBuilder } from './aggregate-function-builder.js'
  *
  * ### Examples
  *
- * ```ts
- * const { count } = db.fn
+ * <!-- siteExample("select", "Function calls", 60) -->
  *
- * await db.selectFrom('person')
+ * This example uses the `fn` module to select some aggregates:
+ *
+ * ```ts
+ * const result = await db.selectFrom('person')
  *   .innerJoin('pet', 'pet.owner_id', 'person.id')
- *   .select([
+ *   .select(({ fn }) => [
  *     'person.id',
- *     count('pet.id').as('pet_count')
+ *
+ *     // The `fn` module contains the most common
+ *     // functions.
+ *     fn.count<number>('pet.id').as('pet_count'),
+ *
+ *     // You can call any function using the
+ *     // `agg` method
+ *     fn.agg<string[]>('array_agg', ['pet.name']).as('pet_names')
  *   ])
  *   .groupBy('person.id')
- *   .having(count('pet.id'), '>', 10)
+ *   .having((eb) => eb.fn.count('pet.id'), '>', 10)
  *   .execute()
  * ```
  *
  * The generated SQL (PostgreSQL):
  *
  * ```sql
- * select "person"."id", count("pet"."id") as "pet_count"
+ * select
+ *   "person"."id",
+ *   count("pet"."id") as "pet_count",
+ *   array_agg("pet"."name") as "pet_names"
  * from "person"
  * inner join "pet" on "pet"."owner_id" = "person"."id"
  * group by "person"."id"
