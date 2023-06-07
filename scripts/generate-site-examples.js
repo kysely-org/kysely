@@ -12,11 +12,13 @@ const _ = require('lodash')
 
 const ESM_PATH = path.join(__dirname, '..', 'dist', 'esm')
 const SITE_EXAMPLE_PATH = path.join(__dirname, '..', 'site', 'docs', 'examples')
+
 const SITE_EXAMPLE_START_REGEX = /<!--\s*siteExample\(/
 const SITE_EXAMPLE_ANNOTATION_REGEX =
   /<!--\s*siteExample\("([^"]+)",\s*"([^"]+)",\s*(\d+)\s*\)\s*-->/
 
-const CODE_BLOCK_START_OR_END = /\*\s*```/
+const CODE_BLOCK_START_REGEX = /\*\s*```/
+const CODE_BLOCK_END_REGEX = /\*\s*```/
 const COMMENT_LINE_REGEX = /\*\s*(.*)/
 const CODE_LINE_REGEX = /\*(.*)/
 
@@ -29,74 +31,37 @@ function main() {
     }
 
     const lines = readLines(filePath)
-    let annotation = null
-    let inExample = false
-    let inCodeBlock = false
-    let commentLines = []
-    let codeLines = []
+    const state = {
+      filePath,
+      line: null,
+      lineIndex: 0,
+      annotation: null,
+      inExample: false,
+      inCodeBlock: false,
+      commentLines: [],
+      codeLines: [],
+    }
 
     for (let l = 0; l < lines.length; ++l) {
-      const line = lines[l]
-      const fileLine = l + 1
+      state.line = lines[l]
+      state.lineIndex = l + 1
 
-      if (inExample) {
-        if (inCodeBlock) {
-          if (CODE_BLOCK_START_OR_END.test(line)) {
-            writeSiteExample({
-              category: annotation[1],
-              name: annotation[2],
-              priority: annotation[3],
-              code: trimEmptyLines(codeLines).join('\n'),
-              comment: trimEmptyLines(commentLines).join('\n'),
-            })
-
-            annotation = null
-            inExample = false
-            inCodeBlock = false
-            commentLines = []
-            codeLines = []
-          } else {
-            const code = CODE_LINE_REGEX.exec(line)
-
-            if (!code) {
-              console.error(
-                `found invalid code block in a site example in ${filePath}:${fileLine}`
-              )
-              process.exit(1)
-            }
-
-            codeLines.push(code[1])
-          }
-        } else if (CODE_BLOCK_START_OR_END.test(line)) {
-          inCodeBlock = true
+      if (state.inCodeBlock) {
+        if (isCodeBlockEnd(state)) {
+          writeSiteExample(state)
+          exitExample(state)
         } else {
-          const comment = COMMENT_LINE_REGEX.exec(line)
-
-          if (!comment) {
-            console.error(
-              `found invalid comment in a site example in ${filePath}:${fileLine}`
-            )
-            process.exit(1)
-          }
-
-          commentLines.push(comment[1])
+          addCodeLine(state)
         }
+      } else if (state.inExample) {
+        if (isCodeBlockStart(state)) {
+          enterCodeBlock(state)
+        } else {
+          addCommentLine(state)
+        }
+      } else if (isExampleStart(state)) {
+        enterExample(state)
       }
-
-      if (!SITE_EXAMPLE_START_REGEX.test(line)) {
-        continue
-      }
-
-      annotation = SITE_EXAMPLE_ANNOTATION_REGEX.exec(line)
-
-      if (!annotation) {
-        console.error(
-          `found invalid site example annotation in ${filePath}:${fileLine}`
-        )
-        process.exit(1)
-      }
-
-      inExample = true
     }
   })
 }
@@ -122,7 +87,15 @@ function readLines(filePath) {
   return data.split('\n')
 }
 
-function writeSiteExample({ name, category, priority, comment, code }) {
+function isCodeBlockEnd(state) {
+  return CODE_BLOCK_END_REGEX.test(state.line)
+}
+
+function writeSiteExample(state) {
+  const [, category, name, priority] = state.annotation
+  const code = trimEmptyLines(state.codeLines).join('\n')
+  const comment = trimEmptyLines(state.commentLines).join('\n')
+
   const fileName = `${priority.padStart(4, '0')}-${_.kebabCase(name)}`
   const filePath = path.join(
     SITE_EXAMPLE_PATH,
@@ -155,12 +128,75 @@ function writeSiteExample({ name, category, priority, comment, code }) {
     <Playground code={${_.camelCase(name)}} setupCode={exampleSetup} />
   `)
 
-  const exampleFile = [exampleFileBegin, comment, '', exampleFileEnd].join(
-    '\n'
-  )
+  const exampleFile =
+    comment.trim().length === 0
+      ? [exampleFileBegin, exampleFileEnd].join('\n')
+      : [exampleFileBegin, comment, '', exampleFileEnd].join('\n')
 
   fs.writeFileSync(filePath + '.js', codeFile)
   fs.writeFileSync(filePath + '.mdx', exampleFile)
+}
+
+function exitExample(state) {
+  state.annotation = null
+  state.inExample = false
+  state.inCodeBlock = false
+  state.commentLines = []
+  state.codeLines = []
+}
+
+function addCodeLine(state) {
+  const code = CODE_LINE_REGEX.exec(state.line)
+
+  if (!code) {
+    console.error(
+      `found invalid code block in a site example in ${state.filePath}:${state.lineIndex}`
+    )
+
+    process.exit(1)
+  }
+
+  state.codeLines.push(code[1])
+}
+
+function isCodeBlockStart(state) {
+  return CODE_BLOCK_START_REGEX.test(state.line)
+}
+
+function enterCodeBlock(state) {
+  state.inCodeBlock = true
+}
+
+function addCommentLine(state) {
+  const comment = COMMENT_LINE_REGEX.exec(state.line)
+
+  if (!comment) {
+    console.error(
+      `found invalid comment in a site example in ${state.filePath}:${state.lineIndex}`
+    )
+
+    process.exit(1)
+  }
+
+  state.commentLines.push(comment[1])
+}
+
+function isExampleStart(state) {
+  return SITE_EXAMPLE_START_REGEX.test(state.line)
+}
+
+function enterExample(state) {
+  state.annotation = SITE_EXAMPLE_ANNOTATION_REGEX.exec(state.line)
+
+  if (!state.annotation) {
+    console.error(
+      `found invalid site example annotation in ${state.filePath}:${state.lineIndex}`
+    )
+
+    process.exit(1)
+  }
+
+  state.inExample = true
 }
 
 function deindent(str) {
@@ -186,11 +222,11 @@ function deindent(str) {
 }
 
 function trimEmptyLines(lines) {
-  while (lines[0].trim().length === 0) {
+  while (lines.length && lines[0].trim().length === 0) {
     lines = lines.slice(1)
   }
 
-  while (lines[lines.length - 1].trim().length === 0) {
+  while (lines.length && lines[lines.length - 1].trim().length === 0) {
     lines = lines.slice(0, lines.length - 1)
   }
 
