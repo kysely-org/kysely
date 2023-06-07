@@ -1,0 +1,21 @@
+---
+title: 'Returning data'
+---
+
+# Returning data
+
+On supported dialects like PostgreSQL you need to chain `returning` to the query to get
+the inserted row's columns (or any other expression) as the return value. `returning`
+works just like `select`. Refer to `select` method's examples and documentation for
+more info.
+
+import {
+  Playground,
+  exampleSetup,
+} from '../../../src/components/Playground'
+
+import {
+  returningData
+} from './0030-returning-data'
+
+<Playground code={returningData} setupCode={exampleSetup} />

@@ -45,7 +45,7 @@ export interface WhereInterface<DB, TB extends keyof DB> {
    * sql`your operator`
    * ```
    *
-   * <!-- siteExample("where", "Find many", 20) -->
+   * <!-- siteExample("where", "Where in", 20) -->
    *
    * Find multiple items using a list of identifiers:
    *

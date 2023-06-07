@@ -105,7 +105,7 @@ function writeSiteExample(state) {
 
   const codeFile = `export const ${_.camelCase(name)} = \`${deindent(
     code
-  ).replaceAll('`', '\\`')}\``
+  ).replaceAll('`', '\\`').replaceAll('${', '\\${')}\``
 
   const exampleFileBegin = deindent(`
     ---

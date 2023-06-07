@@ -1,0 +1,20 @@
+---
+title: 'Complex values'
+---
+
+# Complex values
+
+In addition to primitives, the values can also be arbitrary expressions.
+You can build the expressions by using a callback and calling the methods
+on the expression builder passed to it:
+
+import {
+  Playground,
+  exampleSetup,
+} from '../../../src/components/Playground'
+
+import {
+  complexValues
+} from './0040-complex-values'
+
+<Playground code={complexValues} setupCode={exampleSetup} />
