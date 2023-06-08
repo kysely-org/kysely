@@ -63,7 +63,40 @@ export interface WhereInterface<DB, TB extends keyof DB> {
    * select * from "person" where "id" in ($1, $2, $3)
    * ```
    *
-   * <!-- siteExample("where", "Conditional where calls", 30) -->
+   * <!-- siteExample("where", "OR where", 30) -->
+   *
+   * To combine conditions using `OR`, you can use the expression builder:
+   *
+   * ```ts
+   * const persons = await db
+   *   .selectFrom('person')
+   *   .selectAll()
+   *   .where(({ or, and, cmpr }) => or([
+   *     and([
+   *       cmpr('first_name', '=', 'Jennifer'),
+   *       cmpr('last_name', '=', 'Aniston')
+   *     ]),
+   *     and([
+   *       cmpr('first_name', '=', 'Sylvester'),
+   *       cmpr('last_name', '=', 'Stallone')
+   *     ])
+   *   ]))
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * select *
+   * from "person"
+   * where (
+   *   ("first_name" = $1 AND "last_name" = $2)
+   *   OR
+   *   ("first_name" = $3 AND "last_name" = $4)
+   * )
+   * ```
+   *
+   * <!-- siteExample("where", "Conditional where calls", 40) -->
    *
    * You can add expressions conditionally like this:
    *
@@ -137,7 +170,7 @@ export interface WhereInterface<DB, TB extends keyof DB> {
    * select * from "person" where "id" in ($1, $2, $3)
    * ```
    *
-   * <!-- siteExample("where", "Complex where clause", 40) -->
+   * <!-- siteExample("where", "Complex where clause", 50) -->
    *
    * For complex `where` expressions you can pass in a single callback and
    * use the `ExpressionBuilder` to build your expression:

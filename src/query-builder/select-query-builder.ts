@@ -374,7 +374,7 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    * select "id" from "person" where "first_name" = $1
    * ```
    *
-   * <!-- siteExample("select", "A single colum with table", 20) -->
+   * <!-- siteExample("select", "Column with a table", 20) -->
    *
    * Select a single column and specify a table:
    *
@@ -410,7 +410,7 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    *
    * <!-- siteExample("select", "Aliases", 40) -->
    *
-   * Aliased selections:
+   * You can provide an alias for the selections by appending `as the_alias` to the selection.
    *
    * ```ts
    * const persons = await db
@@ -433,7 +433,7 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    *
    * <!-- siteExample("select", "Complex selections", 50) -->
    *
-   * You can also select arbitrary expression including subqueries and raw sql snippets.
+   * You can select arbitrary expression including subqueries and raw sql snippets.
    * When you do that, you need to give a name for the selections using the `as` method:
    *
    * ```ts
@@ -748,6 +748,10 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    *
    * ### Examples
    *
+   * <!-- siteExample("select", "All columns", 90) -->
+   *
+   * The `selectAll` method generates `SELECT *`:
+   *
    * ```ts
    * const persons = await db
    *   .selectFrom('person')
@@ -760,6 +764,8 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    * ```sql
    * select * from "person"
    * ```
+   *
+   * <!-- siteExample("select", "All columns of a table", 100) -->
    *
    * Select all columns of a table:
    *
