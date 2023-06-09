@@ -12,9 +12,9 @@ const postgresqlCodeSnippet = `export async function insertPerson(person: Insert
 }
 
 export async function deletePersonById(id: Person['id']) {
-return await db.deleteFrom('person').where('id', '=', id)
-  .returningAll()
-  .executeTakeFirst()
+  return await db.deleteFrom('person').where('id', '=', id)
+    .returningAll()
+    .executeTakeFirst()
 }`
 
 const dialectSpecificCodeSnippets: Record<Dialect, string> = {

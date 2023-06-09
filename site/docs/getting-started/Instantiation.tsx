@@ -83,9 +83,9 @@ export function Instantiation(
         <strong>Let's create a Kysely instance</strong>{
           dialectClassName ? 
             <>
-              <strong> using the </strong>
+              <strong> using the built-in </strong>
               <code>{dialectClassName}</code>
-              <strong> dialect:</strong>
+              <strong> dialect</strong>
             </> 
             : <strong> assuming a compatible community dialect exists</strong>
         }
@@ -114,8 +114,13 @@ export const db = new Kysely<Database>({
         Most dialects use a connection pool internally, or no connections 
         at all, so there's no need to create a new instance for each request.
       </Admonition>
+      <Admonition type="caution" title="keeping secrets">
+        Use a secrets manager, environment variables (DO NOT commit `.env` files 
+        to your repository), or a similar solution, to avoid hardcoding database 
+        credentials in your code.
+      </Admonition>
       <Admonition type="info" title="kill it with fire">
-        When needed, you can dispose the Kysely instance, release resources and close all connections by invoking 
+        When needed, you can dispose of the Kysely instance, release resources and close all connections by invoking 
         the <code>db.destroy()</code> function.
       </Admonition>
     </>
