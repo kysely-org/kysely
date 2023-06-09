@@ -23,6 +23,12 @@ export function isDialectSupported(
   return !PACKAGE_MANAGER_UNSUPPORTED_DIALECTS[packageManager].includes(dialect)
 }
 
+export const DRIVER_NPM_PACKAGE_NAMES: Record<Dialect, string> = {
+  postgresql: 'pg',
+  mysql: 'mysql2',
+  sqlite: 'better-sqlite3',
+}
+
 export function titlecase(str: string): string {
   return `${str[0].toUpperCase()}${str.substring(1)}`
 }

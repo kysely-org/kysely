@@ -7,6 +7,7 @@ import CodeBlock from '@theme/CodeBlock'
 import Admonition from '@theme/Admonition'
 import packageJson from '../../package.json'
 import {
+  DRIVER_NPM_PACKAGE_NAMES,
   Dialect,
   PackageManager,
   isDialectSupported,
@@ -87,20 +88,20 @@ const builtInDialects: BuiltInDialect[] = [
   {
     value: 'postgresql',
     label: 'PostgreSQL',
-    driverNPMPackage: 'pg',
+    driverNPMPackage: DRIVER_NPM_PACKAGE_NAMES.postgresql,
     driverDocsURL: 'https://node-postgres.com/',
   },
   {
     value: 'mysql',
     label: 'MySQL',
-    driverNPMPackage: 'mysql2',
+    driverNPMPackage: DRIVER_NPM_PACKAGE_NAMES.mysql,
     driverDocsURL:
       'https://github.com/sidorares/node-mysql2/tree/master/documentation',
   },
   {
     value: 'sqlite',
     label: 'SQLite',
-    driverNPMPackage: 'better-sqlite3',
+    driverNPMPackage: DRIVER_NPM_PACKAGE_NAMES.sqlite,
     driverDocsURL:
       'https://github.com/WiseLibs/better-sqlite3/blob/master/docs/api.md',
   },
