@@ -1,17 +1,20 @@
-import React, { ReactNode } from 'react'
-import Link from '@docusaurus/Link'
-import Heading from '@theme/Heading'
-import Tabs from '@theme/Tabs'
-import TabItem from '@theme/TabItem'
-import CodeBlock from '@theme/CodeBlock'
+import React from 'react'
 import Admonition from '@theme/Admonition'
-import packageJson from '../../package.json'
+import CodeBlock from '@theme/CodeBlock'
+import Heading from '@theme/Heading'
+import Link from '@docusaurus/Link'
+import TabItem from '@theme/TabItem'
+import Tabs from '@theme/Tabs'
+import { IUseADifferentPackageManager } from './IUseADifferentPackageManager'
 import {
   DRIVER_NPM_PACKAGE_NAMES,
-  Dialect,
-  PackageManager,
+  getBashCommand,
+  getDenoCommand,
   isDialectSupported,
+  PRETTY_DIALECT_NAMES,
   titlecase,
+  type Dialect,
+  type PackageManager,
 } from './shared'
 
 export interface DialectsProps {
@@ -19,89 +22,23 @@ export interface DialectsProps {
   packageManagersURL: string
 }
 
-interface CommandDetails {
-  content: (driverNPMPackage: string) => string | ReactNode
-  intro?: string | ReactNode
-  language: string
-  title: string
-}
-
-const packageManagerToInstallCommand: Record<PackageManager, CommandDetails> = {
-  npm: {
-    content: (pkg) => `npm install ${pkg}`,
-    language: 'bash',
-    title: 'terminal',
-  },
-  pnpm: {
-    content: (pkg) => `pnpm install ${pkg}`,
-    language: 'bash',
-    title: 'terminal',
-  },
-  yarn: {
-    content: (pkg) => `yarn add ${pkg}`,
-    language: 'bash',
-    title: 'terminal',
-  },
-  deno: {
-    content: (pkg) => (
-      <>
-        {JSON.stringify(
-          {
-            imports: {
-              kysely: `npm:kysely@^${packageJson.version}`,
-              [pkg]: `npm:${pkg}`,
-              [`${pkg}-pool`]: pkg === 'pg' ? 'npm:pg-pool' : undefined,
-            },
-          },
-          undefined,
-          2
-        )}
-      </>
-    ),
-    intro: (
-      <>
-        <strong>Your </strong>
-        <code>deno.json</code>
-        <strong>
-          's "imports" field should include the following dependencies:
-        </strong>
-      </>
-    ),
-    language: 'json',
-    title: 'deno.json',
-  },
-  bun: {
-    content: (pkg) => `bun install ${pkg}`,
-    language: 'bash',
-    title: 'terminal',
-  },
-}
-
 interface BuiltInDialect {
   value: Dialect
-  label: string
-  driverNPMPackage: string
   driverDocsURL: string
 }
 
 const builtInDialects: BuiltInDialect[] = [
   {
     value: 'postgresql',
-    label: 'PostgreSQL',
-    driverNPMPackage: DRIVER_NPM_PACKAGE_NAMES.postgresql,
     driverDocsURL: 'https://node-postgres.com/',
   },
   {
     value: 'mysql',
-    label: 'MySQL',
-    driverNPMPackage: DRIVER_NPM_PACKAGE_NAMES.mysql,
     driverDocsURL:
       'https://github.com/sidorares/node-mysql2/tree/master/documentation',
   },
   {
     value: 'sqlite',
-    label: 'SQLite',
-    driverNPMPackage: DRIVER_NPM_PACKAGE_NAMES.sqlite,
     driverDocsURL:
       'https://github.com/WiseLibs/better-sqlite3/blob/master/docs/api.md',
   },
@@ -109,8 +46,6 @@ const builtInDialects: BuiltInDialect[] = [
 
 export function Dialects(props: DialectsProps) {
   const packageManager = props.packageManager || 'npm'
-
-  const installationCommand = packageManagerToInstallCommand[packageManager]
 
   return (
     <>
@@ -132,45 +67,45 @@ export function Dialects(props: DialectsProps) {
       </p>
       {/* @ts-ignore For some odd reason, Tabs doesn't accept children in this file. */}
       <Tabs queryString="dialect">
-        {builtInDialects.map(({ driverNPMPackage, value, ...dialect }) => (
+        {builtInDialects.map(({ driverDocsURL, value }) => {
+          const driverNPMPackage = DRIVER_NPM_PACKAGE_NAMES[value]
+          const prettyDialectName = PRETTY_DIALECT_NAMES[value]
+          const installationCommand = packageManager === 'deno' ? getDenoCommand({
+            [driverNPMPackage]: `npm:${driverNPMPackage}`,
+            [`${driverNPMPackage}-pool`]: driverNPMPackage === 'pg' ? 'npm:pg-pool' : undefined,
+          }) : getBashCommand(packageManager, driverNPMPackage)
+
           // @ts-ignore For some odd reason, TabItem doesn't accept children in this file.
-          <TabItem value={value} {...dialect}>
+          return <TabItem key={value} value={value} label={prettyDialectName}>
             {!isDialectSupported(value, packageManager) ? (
               <UnsupportedDriver
-                dialect={dialect.label}
+                dialect={prettyDialectName}
                 driverNPMPackage={driverNPMPackage}
                 packageManager={packageManager}
               />
             ) : (
               <>
                 <p>
-                  Kysely's built-in {dialect.label} dialect uses the "
-                  {driverNPMPackage}" driver library under the hood. Please
-                  refer to its{' '}
-                  <Link to={dialect.driverDocsURL}>official documentation</Link>{' '}
-                  for configuration options.
+                  Kysely's built-in {prettyDialectName} dialect uses the "{driverNPMPackage}"
+                  {' '}driver library under the hood. Please refer to its{' '}
+                  <Link to={driverDocsURL}>official documentation</Link>{' '} for 
+                  configuration options.
                   <br />
                   <br />
-                  {installationCommand.intro || (
-                    <strong>Run the following command in your terminal:</strong>
-                  )}
+                  {installationCommand.intro}
                 </p>
                 <CodeBlock
                   language={installationCommand.language}
                   title={installationCommand.title}
                 >
-                  {installationCommand.content(driverNPMPackage)}
+                  {installationCommand.content}
                 </CodeBlock>
               </>
             )}
           </TabItem>
-        ))}
+    })}
       </Tabs>
-      <p style={{ display: 'flex', justifyContent: 'end' }}>
-        <Link to={props.packageManagersURL}>
-          I use a different package manager
-        </Link>
-      </p>
+      <IUseADifferentPackageManager {...props} />
       <Admonition type="info" title="Driverless">
         Kysely can also work in compile-only mode that doesn't require a
         database driver. Find out more at{' '}
