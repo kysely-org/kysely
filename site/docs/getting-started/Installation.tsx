@@ -3,26 +3,13 @@ import CodeBlock from '@theme/CodeBlock'
 import Link from '@docusaurus/Link'
 import Tabs from '@theme/Tabs'
 import TabItem from '@theme/TabItem'
-import packageJson from '../../package.json'
-import { PRETTY_PACKAGE_MANAGER_NAMES, type PackageManager } from './shared'
+import { getBashCommand, getDenoCommand, PRETTY_PACKAGE_MANAGER_NAMES, type Command, type PackageManager } from './shared'
 
 interface PackageManagerDetails {
   value: PackageManager
   description: ReactNode
-  command: {
-    intro: ReactNode
-    language: string
-    title: string
-    content: ReactNode
-  }
+  command: Command
 }
-
-const getBashCommand = (contentPrefix: string) => ({
-  intro: 'Run the following command in your terminal:',
-  language: 'bash',
-  title: 'terminal',
-  content: `${contentPrefix} kysely`
-})
 
 const JavaScriptLink = () => <Link to="https://developer.mozilla.org/en-US/docs/Web/JavaScript">JavaScript</Link>
 const NodeJSLink = () => <Link to="https://nodejs.org">Node.js</Link>
@@ -40,7 +27,7 @@ const packageManagers: PackageManagerDetails[] = [
         {' '}<code>package-lock.json</code> file in its root folder.
       </>
     ),
-    command: getBashCommand('npm install')
+    command: getBashCommand('npm', 'kysely')
   },
   {
     value: 'pnpm',
@@ -54,7 +41,7 @@ const packageManagers: PackageManagerDetails[] = [
         a <code>pnpm-lock.yaml</code> file in its root folder.
       </>
     ),
-    command: getBashCommand('pnpm install')
+    command: getBashCommand('pnpm', 'kysely')
   },
   {
     value: 'yarn',
@@ -68,7 +55,7 @@ const packageManagers: PackageManagerDetails[] = [
         a <code>yarn.lock</code> file in its root folder.
       </>
     ),
-    command: getBashCommand('yarn add')
+    command: getBashCommand('yarn', 'kysely')
   },
   {
     value: 'deno',
@@ -79,21 +66,7 @@ const packageManagers: PackageManagerDetails[] = [
         .
       </>
     ),
-    command: {
-      intro: <>
-        <strong>Your root </strong><code>deno.json</code>
-        <strong>
-          's "imports" field should include the following dependency:
-        </strong>
-      </>,
-      language: 'json',
-      title: 'deno.json',
-      content: JSON.stringify(
-        { imports: { kysely: `npm:kysely@^${packageJson.version}` } },
-        null,
-        2
-      )
-    }
+    command: getDenoCommand(),
   },
   {
     value: 'bun',
@@ -105,7 +78,7 @@ const packageManagers: PackageManagerDetails[] = [
         -compatible package manager baked-in.
       </>
     ),
-    command: getBashCommand('bun install')
+    command: getBashCommand('bun', 'kysely')
   }
 ]
 
