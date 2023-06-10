@@ -1,17 +1,18 @@
 import React from 'react'
-import CodeBlock from '@theme/CodeBlock'
 import Admonition from '@theme/Admonition'
+import CodeBlock from '@theme/CodeBlock'
 import Link from '@docusaurus/Link'
+import { IUseADifferentDatabase } from './IUseADifferentDatabase'
 import type { Dialect, PropsWithDialect } from './shared'
 
-const postgresqlCodeSnippet = `export async function insertPerson(person: Insertable<PersonTable>) {
+const postgresqlCodeSnippet = `export async function createPerson(person: Insertable<PersonTable>) {
   return await db.insertInto('person')
     .values(person)
     .returningAll()
     .executeTakeFirstOrThrow()
 }
 
-export async function deletePersonById(id: Person['id']) {
+export async function deletePerson(id: Person['id']) {
   return await db.deleteFrom('person').where('id', '=', id)
     .returningAll()
     .executeTakeFirst()
@@ -19,7 +20,7 @@ export async function deletePersonById(id: Person['id']) {
 
 const dialectSpecificCodeSnippets: Record<Dialect, string> = {
   postgresql: postgresqlCodeSnippet,
-  mysql: `export async function insertPerson(person: Insertable<PersonTable>) {
+  mysql: `export async function createPerson(person: Insertable<PersonTable>) {
   const { insertId } = await db.insertInto('person')
     .values(person)
     .executeTakeFirstOrThrow()
@@ -27,7 +28,7 @@ const dialectSpecificCodeSnippets: Record<Dialect, string> = {
   return await findPersonById(insertId)
 }
 
-export async function deletePersonById(id: Person['id']) {
+export async function deletePerson(id: Person['id']) {
   const person = await findPersonById(id)
 
   if (person) {
@@ -49,7 +50,7 @@ export function Querying(props: PropsWithDialect) {
       <p>
         <strong>Let's implement the person repository:</strong>
       </p>
-      <CodeBlock language="ts" title="src/PersonRepository.ts" showLineNumbers>
+      <CodeBlock language="ts" title="src/PersonRepository.ts">
         {`import { Insertable, Selectable, Updateable } from 'kysely'
 import { db } from './database'
 import { PersonTable } from './types'
@@ -99,9 +100,7 @@ export async function updatePerson(id: Person['id'], updateWith: Updateable<Pers
 
 ${dialectSpecificCodeSnippet}`}
       </CodeBlock>
-      <p style={{display: 'flex', justifyContent: 'end' }}>
-        <Link to={props.dialectsURL}>I use a different database</Link>
-      </p>
+      <IUseADifferentDatabase {...props} />
       <Admonition type='info' title="But wait, there's more!">
         This is a simplified example with basic CRUD operations. Kysely supports 
         many more SQL features including: joins, subqueries, complex boolean logic, 
