@@ -59,6 +59,7 @@ declare global {
     name: string
     owner_id: string
     species: 'cat' | 'dog'
+    is_favorite: boolean
   }
 }
 `
