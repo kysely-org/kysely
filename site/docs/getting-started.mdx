@@ -9,6 +9,7 @@ import Types from './getting-started/_types.mdx'
 import { Dialects } from './getting-started/Dialects'
 import { Instantiation } from './getting-started/Instantiation'
 import { Querying } from './getting-started/Querying'
+import { Summary } from './getting-started/Summary'
 
 # Getting started
 
@@ -53,6 +54,17 @@ import { Querying } from './getting-started/Querying'
 <BrowserOnly fallback={<div>Loading...</div>}>
   {() => (
     <Querying
+      dialect={new URLSearchParams(document.location.search).get('dialect')}
+      dialectsURL="#dialects"
+    />
+  )}
+</BrowserOnly>
+
+## Summary
+
+<BrowserOnly fallback={<div>Loading...</div>}>
+  {() => (
+    <Summary
       dialect={new URLSearchParams(document.location.search).get('dialect')}
       dialectsURL="#dialects"
     />
