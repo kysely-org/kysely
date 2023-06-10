@@ -101,14 +101,14 @@ export async function updatePerson(id: Person['id'], updateWith: Updateable<Pers
 ${dialectSpecificCodeSnippet}`}
       </CodeBlock>
       <IUseADifferentDatabase {...props} />
-      <Admonition type='info' title="But wait, there's more!">
-        This is a simplified example with basic CRUD operations. Kysely supports 
-        many more SQL features including: joins, subqueries, complex boolean logic, 
-        set operations, CTEs, functions (aggregate and window functions included), 
-        raw SQL, transactions, DDL queries, etc.
-        <br/>
+      <Admonition type="info" title="But wait, there's more!">
+        This is a simplified example with basic CRUD operations. Kysely supports
+        many more SQL features including: joins, subqueries, complex boolean
+        logic, set operations, CTEs, functions (aggregate and window functions
+        included), raw SQL, transactions, DDL queries, etc.
+        <br />
         Find out more at <Link to="/docs/category/examples">Examples</Link>.
       </Admonition>
     </>
-  ) 
+  )
 }

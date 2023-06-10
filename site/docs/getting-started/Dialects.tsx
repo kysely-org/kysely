@@ -70,40 +70,47 @@ export function Dialects(props: DialectsProps) {
         {builtInDialects.map(({ driverDocsURL, value }) => {
           const driverNPMPackage = DRIVER_NPM_PACKAGE_NAMES[value]
           const prettyDialectName = PRETTY_DIALECT_NAMES[value]
-          const installationCommand = packageManager === 'deno' ? getDenoCommand({
-            [driverNPMPackage]: `npm:${driverNPMPackage}`,
-            [`${driverNPMPackage}-pool`]: driverNPMPackage === 'pg' ? 'npm:pg-pool' : undefined,
-          }) : getBashCommand(packageManager, driverNPMPackage)
+          const installationCommand =
+            packageManager === 'deno'
+              ? getDenoCommand({
+                  [driverNPMPackage]: `npm:${driverNPMPackage}`,
+                  [`${driverNPMPackage}-pool`]:
+                    driverNPMPackage === 'pg' ? 'npm:pg-pool' : undefined,
+                })
+              : getBashCommand(packageManager, driverNPMPackage)
 
           // @ts-ignore For some odd reason, TabItem doesn't accept children in this file.
-          return <TabItem key={value} value={value} label={prettyDialectName}>
-            {!isDialectSupported(value, packageManager) ? (
-              <UnsupportedDriver
-                dialect={prettyDialectName}
-                driverNPMPackage={driverNPMPackage}
-                packageManager={packageManager}
-              />
-            ) : (
-              <>
-                <p>
-                  Kysely's built-in {prettyDialectName} dialect uses the "{driverNPMPackage}"
-                  {' '}driver library under the hood. Please refer to its{' '}
-                  <Link to={driverDocsURL}>official documentation</Link>{' '} for 
-                  configuration options.
-                  <br />
-                  <br />
-                  {installationCommand.intro}
-                </p>
-                <CodeBlock
-                  language={installationCommand.language}
-                  title={installationCommand.title}
-                >
-                  {installationCommand.content}
-                </CodeBlock>
-              </>
-            )}
-          </TabItem>
-    })}
+          return (
+            <TabItem key={value} value={value} label={prettyDialectName}>
+              {!isDialectSupported(value, packageManager) ? (
+                <UnsupportedDriver
+                  dialect={prettyDialectName}
+                  driverNPMPackage={driverNPMPackage}
+                  packageManager={packageManager}
+                />
+              ) : (
+                <>
+                  <p>
+                    Kysely's built-in {prettyDialectName} dialect uses the "
+                    {driverNPMPackage}" driver library under the hood. Please
+                    refer to its{' '}
+                    <Link to={driverDocsURL}>official documentation</Link> for
+                    configuration options.
+                    <br />
+                    <br />
+                    {installationCommand.intro}
+                  </p>
+                  <CodeBlock
+                    language={installationCommand.language}
+                    title={installationCommand.title}
+                  >
+                    {installationCommand.content}
+                  </CodeBlock>
+                </>
+              )}
+            </TabItem>
+          )
+        })}
       </Tabs>
       <IUseADifferentPackageManager {...props} />
       <Admonition type="info" title="Driverless">

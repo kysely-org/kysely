@@ -7,10 +7,17 @@ export interface IUseADifferentPackageManagerProps {
   packageManagersURL: string
 }
 
-export function IUseADifferentPackageManager(props: IUseADifferentPackageManagerProps) {
-  const packageManagerName = PRETTY_PACKAGE_MANAGER_NAMES[props.packageManager || 'npm']
+export function IUseADifferentPackageManager(
+  props: IUseADifferentPackageManagerProps
+) {
+  const packageManagerName =
+    PRETTY_PACKAGE_MANAGER_NAMES[props.packageManager || 'npm']
 
-  return <p style={{display: 'flex', justifyContent: 'end' }}>
-    <Link to={props.packageManagersURL}>I use a different package manager (not {packageManagerName})</Link>
-  </p>
+  return (
+    <p style={{ display: 'flex', justifyContent: 'end' }}>
+      <Link to={props.packageManagersURL}>
+        I use a different package manager (not {packageManagerName})
+      </Link>
+    </p>
+  )
 }

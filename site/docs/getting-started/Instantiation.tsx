@@ -60,10 +60,14 @@ import { Kysely } from 'kysely'
 const dialect = /* instantiate the dialect here */`,
 }
 
-const dialectClassNames: Record<Dialect, (packageManager: PackageManager) => string | null> = {
+const dialectClassNames: Record<
+  Dialect,
+  (packageManager: PackageManager) => string | null
+> = {
   postgresql: () => 'PostgresDialect',
   mysql: () => 'MysqlDialect',
-  sqlite: (packageManager) => isDialectSupported('sqlite', packageManager) ? 'SQLiteDialect' : null,
+  sqlite: (packageManager) =>
+    isDialectSupported('sqlite', packageManager) ? 'SQLiteDialect' : null,
 }
 
 export function Instantiation(
@@ -75,24 +79,26 @@ export function Instantiation(
   const dialect = props.dialect || 'postgresql'
   const packageManager = props.packageManager || 'npm'
 
-  const dialectSpecificCodeSnippet = dialectSpecificCodeSnippets[dialect](packageManager)
+  const dialectSpecificCodeSnippet =
+    dialectSpecificCodeSnippets[dialect](packageManager)
   const dialectClassName = dialectClassNames[dialect](packageManager)
 
   return (
     <>
       <p>
-        <strong>Let's create a Kysely instance</strong>{
-          dialectClassName ? 
-            <>
-              <strong> using the built-in </strong>
-              <code>{dialectClassName}</code>
-              <strong> dialect</strong>
-            </> 
-            : <strong> assuming a compatible community dialect exists</strong>
-        }
+        <strong>Let's create a Kysely instance</strong>
+        {dialectClassName ? (
+          <>
+            <strong> using the built-in </strong>
+            <code>{dialectClassName}</code>
+            <strong> dialect</strong>
+          </>
+        ) : (
+          <strong> assuming a compatible community dialect exists</strong>
+        )}
         <strong>:</strong>
       </p>
-      <CodeBlock language="ts" title="src/database.ts" >
+      <CodeBlock language="ts" title="src/database.ts">
         {`import { Database } from './types.ts' // this is the Database interface we defined earlier
 ${dialectSpecificCodeSnippet}
 
@@ -109,18 +115,20 @@ export const db = new Kysely<Database>({
         <IUseADifferentDatabase {...props} />
       </p>
       <Admonition type="tip" title="Singleton">
-        In most cases, you should only create a single Kysely instance per database.
-        Most dialects use a connection pool internally, or no connections 
-        at all, so there's no need to create a new instance for each request.
+        In most cases, you should only create a single Kysely instance per
+        database. Most dialects use a connection pool internally, or no
+        connections at all, so there's no need to create a new instance for each
+        request.
       </Admonition>
       <Admonition type="caution" title="keeping secrets">
-        Use a secrets manager, environment variables (DO NOT commit `.env` files 
-        to your repository), or a similar solution, to avoid hardcoding database 
+        Use a secrets manager, environment variables (DO NOT commit `.env` files
+        to your repository), or a similar solution, to avoid hardcoding database
         credentials in your code.
       </Admonition>
       <Admonition type="info" title="kill it with fire">
-        When needed, you can dispose of the Kysely instance, release resources and close all connections by invoking 
-        the <code>db.destroy()</code> function.
+        When needed, you can dispose of the Kysely instance, release resources
+        and close all connections by invoking the <code>db.destroy()</code>{' '}
+        function.
       </Admonition>
     </>
   )
