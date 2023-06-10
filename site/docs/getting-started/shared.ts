@@ -29,6 +29,12 @@ export const DRIVER_NPM_PACKAGE_NAMES: Record<Dialect, string> = {
   sqlite: 'better-sqlite3',
 }
 
+export const PRETTY_DIALECT_NAMES: Record<Dialect, string> = {
+  postgresql: 'PostgreSQL',
+  mysql: 'MySQL',
+  sqlite: 'SQLite',
+}
+
 export const PRETTY_PACKAGE_MANAGER_NAMES: Record<PackageManager, string> = {
   npm: 'npm',
   pnpm: 'pnpm',
