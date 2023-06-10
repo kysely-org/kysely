@@ -10,7 +10,7 @@
 [![Bundle Size](https://img.shields.io/bundlephobia/minzip/kysely?label=size&logo=npm)](https://bundlephobia.com/package/kysely)
 [![Social](https://img.shields.io/twitter/follow/kysely_?style=social)](https://twitter.com/kysely_)
 
-# [Kysely](https://kysely-org.github.io/kysely/index.html)
+# [Kysely](https://kysely.dev)
 
 Kysely (pronounce “Key-Seh-Lee”) is a type-safe and autocompletion-friendly typescript SQL query builder. Inspired by
 [knex](http://knexjs.org/). Mainly developed for [node.js](https://nodejs.org/en/) but also runs on [deno](https://deno.land/)

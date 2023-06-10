@@ -1,10 +1,18 @@
 ---
-title: 'All columns of a table'
+title: 'Nested array'
 ---
 
-# All columns of a table
+# Nested array
 
-Select all columns of a table:
+While kysely is not an ORM and it doesn't have the concept of relations, we do provide
+helpers for fetching nested objects and arrays in a single query. In this example we
+use the `jsonArrayFrom` helper to fetch person's pets along with the person's id.
+
+Please keep in mind that the helpers under the `kysely/helpers` folder, including
+`jsonArrayFrom`, are not guaranteed to work with third party dialects. In order for
+them to work, the dialect must automatically parse the `json` data type into
+javascript JSON values like objects and arrays. Some dialects might simply return
+the data as a JSON string.
 
 import {
   Playground,
@@ -12,11 +20,11 @@ import {
 } from '../../../src/components/Playground'
 
 import {
-  allColumnsOfATable
-} from './0100-all-columns-of-a-table'
+  nestedArray
+} from './0110-nested-array'
 
 <div style={{ marginBottom: '1em' }}>
-  <Playground code={allColumnsOfATable} setupCode={exampleSetup} />
+  <Playground code={nestedArray} setupCode={exampleSetup} />
 </div>
 
 :::info More examples

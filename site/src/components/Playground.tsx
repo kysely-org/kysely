@@ -23,12 +23,9 @@ export function Playground({
   return (
     <iframe
       style={{
-        width: '100%',
-        minHeight: '600px',
-        border: `1px solid ${gray.gray11}`,
-        padding: 4,
-        borderRadius: 8,
-        background: gray.gray12,
+        width: "100%",
+        minHeight: "600px",
+        borderRadius: 7,
       }}
       allow="clipboard-write"
       src={`https://kyse.link/?${params.toString()}`}
@@ -65,6 +62,7 @@ declare global {
     name: string
     owner_id: string
     species: 'cat' | 'dog'
+    is_favorite: boolean
   }
 }
 `
