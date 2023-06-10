@@ -29,6 +29,14 @@ export const DRIVER_NPM_PACKAGE_NAMES: Record<Dialect, string> = {
   sqlite: 'better-sqlite3',
 }
 
+export const PRETTY_PACKAGE_MANAGER_NAMES: Record<PackageManager, string> = {
+  npm: 'npm',
+  pnpm: 'pnpm',
+  yarn: 'Yarn',
+  deno: 'Deno',
+  bun: 'Bun',
+}
+
 export function titlecase(str: string): string {
   return `${str[0].toUpperCase()}${str.substring(1)}`
 }
