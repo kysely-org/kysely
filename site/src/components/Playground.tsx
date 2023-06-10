@@ -23,8 +23,8 @@ export function Playground({
   return (
     <iframe
       style={{
-        width: "100%",
-        minHeight: "600px",
+        width: '100%',
+        minHeight: '600px',
         borderRadius: 7,
       }}
       allow="clipboard-write"

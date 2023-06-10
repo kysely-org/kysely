@@ -79,8 +79,8 @@ export function Dialects(props: DialectsProps) {
                 })
               : getBashCommand(packageManager, driverNPMPackage)
 
-          // @ts-ignore For some odd reason, TabItem doesn't accept children in this file.
           return (
+            // @ts-ignore For some odd reason, TabItem doesn't accept children in this file.
             <TabItem key={value} value={value} label={prettyDialectName}>
               {!isDialectSupported(value, packageManager) ? (
                 <UnsupportedDriver
@@ -96,9 +96,9 @@ export function Dialects(props: DialectsProps) {
                     refer to its{' '}
                     <Link to={driverDocsURL}>official documentation</Link> for
                     configuration options.
-                    <br />
-                    <br />
-                    {installationCommand.intro}
+                  </p>
+                  <p>
+                    <strong>{installationCommand.intro}</strong>
                   </p>
                   <CodeBlock
                     language={installationCommand.language}
