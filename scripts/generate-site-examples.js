@@ -22,6 +22,61 @@ const CODE_BLOCK_END_REGEX = /\*\s*```/
 const COMMENT_LINE_REGEX = /\*\s*(.*)/
 const CODE_LINE_REGEX = /\*(.*)/
 
+const moreExamplesByCategory = {
+  select: {
+    'select method':
+      'https://kysely-org.github.io/kysely/classes/SelectQueryBuilder.html#select',
+    'selectAll method':
+      'https://kysely-org.github.io/kysely/classes/SelectQueryBuilder.html#selectAll',
+    'selectFrom method':
+      'https://kysely-org.github.io/kysely/classes/Kysely.html#selectFrom',
+  },
+  where: {
+    'where method':
+      'https://kysely-org.github.io/kysely/classes/SelectQueryBuilder.html#where',
+    'whereRef method':
+      'https://kysely-org.github.io/kysely/classes/SelectQueryBuilder.html#whereRef',
+  },
+  join: {
+    'innerJoin method':
+      'https://kysely-org.github.io/kysely/classes/SelectQueryBuilder.html#innerJoin',
+    'leftJoin method':
+      'https://kysely-org.github.io/kysely/classes/SelectQueryBuilder.html#leftJoin',
+    'rightJoin method':
+      'https://kysely-org.github.io/kysely/classes/SelectQueryBuilder.html#rightJoin',
+    'fullJoin method':
+      'https://kysely-org.github.io/kysely/classes/SelectQueryBuilder.html#fullJoin',
+  },
+  insert: {
+    'values method':
+      'https://kysely-org.github.io/kysely/classes/InsertQueryBuilder.html#values',
+    'onConflict method':
+      'https://kysely-org.github.io/kysely/classes/InsertQueryBuilder.html#onConflict',
+    'returning method':
+      'https://kysely-org.github.io/kysely/classes/InsertQueryBuilder.html#returning',
+    'insertInto method':
+      'https://kysely-org.github.io/kysely/classes/Kysely.html#insertInto',
+  },
+  update: {
+    'set method':
+      'https://kysely-org.github.io/kysely/classes/UpdateQueryBuilder.html#set',
+    'returning method':
+      'https://kysely-org.github.io/kysely/classes/UpdateQueryBuilder.html#returning',
+    'updateTable method':
+      'https://kysely-org.github.io/kysely/classes/Kysely.html#updateTable',
+  },
+  delete: {
+    'deleteFrom method':
+      'https://kysely-org.github.io/kysely/classes/Kysely.html#deleteFrom',
+    'returning method':
+      'https://kysely-org.github.io/kysely/classes/DeleteQueryBuilder.html#returning',
+  },
+  transactions: {
+    'transaction method':
+      'https://kysely-org.github.io/kysely/classes/Kysely.html#transaction',
+  },
+}
+
 function main() {
   deleteAllExamples()
 
@@ -95,46 +150,79 @@ function writeSiteExample(state) {
   const [, category, name, priority] = state.annotation
   const code = trimEmptyLines(state.codeLines).join('\n')
   const comment = trimEmptyLines(state.commentLines).join('\n')
+  const codeVariable = _.camelCase(name)
 
   const fileName = `${priority.padStart(4, '0')}-${_.kebabCase(name)}`
-  const filePath = path.join(
-    SITE_EXAMPLE_PATH,
-    category.toUpperCase(),
-    fileName
+  const filePath = path.join(SITE_EXAMPLE_PATH, category, fileName)
+
+  const codeFile = `export const ${codeVariable} = \`${deindent(code)
+    .replaceAll('`', '\\`')
+    .replaceAll('${', '\\${')}\``
+
+  const parts = [
+    deindent(`
+      ---
+      title: '${name}'
+      ---
+
+      # ${name}
+    `),
+  ]
+
+  if (comment?.trim()) {
+    parts.push(comment, '')
+  }
+
+  parts.push(
+    deindent(`
+      import {
+        Playground,
+        exampleSetup,
+      } from '../../../src/components/Playground'
+
+      import {
+        ${codeVariable}
+      } from './${fileName}'
+
+      <div style={{ marginBottom: '1em' }}>
+        <Playground code={${codeVariable}} setupCode={exampleSetup} />
+      </div>
+    `)
   )
 
-  const codeFile = `export const ${_.camelCase(name)} = \`${deindent(
-    code
-  ).replaceAll('`', '\\`').replaceAll('${', '\\${')}\``
+  const moreExamples = buildMoreExamplesMarkdown(category)
+  if (moreExamples?.trim()) {
+    parts.push(moreExamples)
+  }
 
-  const exampleFileBegin = deindent(`
-    ---
-    title: '${name}'
-    ---
-
-    # ${name}
-  `)
-
-  const exampleFileEnd = deindent(`
-    import {
-      Playground,
-      exampleSetup,
-    } from '../../../src/components/Playground'
-
-    import {
-      ${_.camelCase(name)}
-    } from './${fileName}'
-
-    <Playground code={${_.camelCase(name)}} setupCode={exampleSetup} />
-  `)
-
-  const exampleFile =
-    comment.trim().length === 0
-      ? [exampleFileBegin, exampleFileEnd].join('\n')
-      : [exampleFileBegin, comment, '', exampleFileEnd].join('\n')
+  const exampleFile = parts.join('\n')
 
   fs.writeFileSync(filePath + '.js', codeFile)
   fs.writeFileSync(filePath + '.mdx', exampleFile)
+}
+
+function buildMoreExamplesMarkdown(category) {
+  const links = moreExamplesByCategory[category]
+  if (!links) {
+    return undefined
+  }
+
+  const lines = [
+    ':::info More examples',
+    'The API documentation is packed with examples. The API docs are hosted [here](https://kysely-org.github.io/kysely/)',
+    'but you can access the same documentation by hovering over functions/methods/classes in your IDE. The examples are always',
+    'just one hover away!',
+    '',
+    'For example, check out these sections:',
+  ]
+
+  for (const linkName of Object.keys(links)) {
+    lines.push(` - [${linkName}](${links[linkName]})`)
+  }
+
+  lines.push(':::')
+
+  return lines.join('\n')
 }
 
 function exitExample(state) {

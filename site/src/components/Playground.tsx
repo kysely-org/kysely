@@ -22,10 +22,7 @@ export function Playground({
       style={{
         width: "100%",
         minHeight: "600px",
-        border: `1px solid ${gray.gray11}`,
-        padding: 4,
-        borderRadius: 8,
-        background: gray.gray12,
+        borderRadius: 7,
       }}
       allow="clipboard-write"
       src={`https://kyse.link/?${params.toString()}`}
