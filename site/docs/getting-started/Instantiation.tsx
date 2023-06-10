@@ -1,12 +1,13 @@
-import React, { ReactNode } from 'react'
-import Link from '@docusaurus/Link'
-import CodeBlock from '@theme/CodeBlock'
+import React, { type ReactNode } from 'react'
 import Admonition from '@theme/Admonition'
+import CodeBlock from '@theme/CodeBlock'
+import { IUseADifferentDatabase } from './IUseADifferentDatabase'
+import { IUseADifferentPackageManager } from './IUseADifferentPackageManager'
 import {
   DRIVER_NPM_PACKAGE_NAMES,
-  Dialect,
-  PackageManager,
-  PropsWithDialect,
+  type Dialect,
+  type PackageManager,
+  type PropsWithDialect,
   isDialectSupported,
   titlecase,
 } from './shared'
@@ -104,10 +105,8 @@ export const db = new Kysely<Database>({
 })`}
       </CodeBlock>
       <p style={{ display: 'flex', gap: '25px', justifyContent: 'end' }}>
-        <Link to={props.packageManagersURL}>
-          I use a different package manager
-        </Link>
-        <Link to={props.dialectsURL}>I use a different database</Link>
+        <IUseADifferentPackageManager {...props} />
+        <IUseADifferentDatabase {...props} />
       </p>
       <Admonition type="tip" title="Singleton">
         In most cases, you should only create a single Kysely instance per database.
