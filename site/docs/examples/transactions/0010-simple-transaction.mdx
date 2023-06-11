@@ -1,0 +1,31 @@
+---
+title: 'Simple transaction'
+---
+
+# Simple transaction
+
+This example inserts two rows in a transaction. If an error is thrown inside
+the callback passed to the `execute` method, the transaction is rolled back.
+Otherwise it's committed.
+
+import {
+  Playground,
+  exampleSetup,
+} from '../../../src/components/Playground'
+
+import {
+  simpleTransaction
+} from './0010-simple-transaction'
+
+<div style={{ marginBottom: '1em' }}>
+  <Playground code={simpleTransaction} setupCode={exampleSetup} />
+</div>
+
+:::info More examples
+The API documentation is packed with examples. The API docs are hosted [here](https://kysely-org.github.io/kysely/)
+but you can access the same documentation by hovering over functions/methods/classes in your IDE. The examples are always
+just one hover away!
+
+For example, check out these sections:
+ - [transaction method](https://kysely-org.github.io/kysely/classes/Kysely.html#transaction)
+:::

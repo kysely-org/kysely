@@ -1,0 +1,31 @@
+---
+title: 'Complex where clause'
+---
+
+# Complex where clause
+
+For complex `where` expressions you can pass in a single callback and
+use the `ExpressionBuilder` to build your expression:
+
+import {
+  Playground,
+  exampleSetup,
+} from '../../../src/components/Playground'
+
+import {
+  complexWhereClause
+} from './0050-complex-where-clause'
+
+<div style={{ marginBottom: '1em' }}>
+  <Playground code={complexWhereClause} setupCode={exampleSetup} />
+</div>
+
+:::info More examples
+The API documentation is packed with examples. The API docs are hosted [here](https://kysely-org.github.io/kysely/)
+but you can access the same documentation by hovering over functions/methods/classes in your IDE. The examples are always
+just one hover away!
+
+For example, check out these sections:
+ - [where method](https://kysely-org.github.io/kysely/classes/SelectQueryBuilder.html#where)
+ - [whereRef method](https://kysely-org.github.io/kysely/classes/SelectQueryBuilder.html#whereRef)
+:::
