@@ -3,6 +3,7 @@ import clsx from 'clsx'
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext'
 import Layout from '@theme/Layout'
 import { SectionFeatures } from '@site/src/components/SectionFeatures'
+import D1Logo from '../../static/img/d1.svg'
 
 import styles from './index.module.css'
 import { gray } from '@radix-ui/colors'
@@ -84,6 +85,8 @@ export default function Home(): JSX.Element {
       </div>
       <main>
         <SectionFeatures />
+
+        <SectionDatabases />
 
         <SectionQuotes />
 
@@ -522,6 +525,218 @@ function SectionPlayground() {
           allow="accelerometer; ambient-light-sensor; camera; encrypted-media; geolocation; gyroscope; hid; microphone; midi; payment; usb; vr; xr-spatial-tracking"
           sandbox="allow-forms allow-modals allow-popups allow-presentation allow-same-origin allow-scripts"
         />
+      </div>
+    </section>
+  )
+}
+
+function SectionDatabases() {
+  return (
+    <section
+      style={{
+        display: 'grid',
+        placeItems: 'center',
+        minHeight: '100vh',
+        background: `radial-gradient(circle, var(--sky12) 0%, #171717 40%)`,
+      }}
+    >
+      <div className="container" style={{ textAlign: 'center' }}>
+        <h1>It's all about the base</h1>
+        <p>Kysely can communicate with these databases.</p>
+        <div
+          style={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            justifyContent: 'center',
+            gap: 4,
+          }}
+        >
+          {[
+            {
+              name: 'PostgreSQL',
+              logoURL:
+                'https://cdn.iconscout.com/icon/free/png-256/free-postgresql-10-1175121.png',
+              support: ['core', 'community'],
+            },
+            {
+              name: 'MySQL',
+              logoURL:
+                'https://cdn.iconscout.com/icon/free/png-256/free-mysql-3521596-2945040.png?f=webp',
+              support: ['core'],
+            },
+            {
+              name: 'SQLite',
+              logoURL:
+                'https://api.nuget.org/v3-flatcontainer/sqlite.redist/3.8.4.2/icon',
+              support: ['core', 'community'],
+            },
+            {
+              name: 'AWS Aurora Serverless V1 Data API',
+              logoURL:
+                'https://lumigo.io/wp-content/uploads/2020/07/Amazon-Aurora@4x.png',
+              support: ['community'],
+            },
+            {
+              name: 'CockroachDB',
+              logoURL:
+                'https://qualified-production.s3.us-east-1.amazonaws.com/uploads/7e951840cd536c6bd529af6e5cc2c139b485f0ca0970710d2de7319682b82e11.png',
+              support: ['core-ish', 'community'],
+            },
+            {
+              name: 'SingleStore',
+              logoURL:
+                'https://images.credly.com/images/a3fd97f1-8f44-40d9-bbb7-980d1b0e7a04/blob.png',
+              support: ['core', 'community'],
+            },
+            {
+              name: 'Cloudflare D1',
+              logo: (
+                <div
+                  style={{
+                    display: 'flex',
+                    color: '#F38020',
+                    fill: '#F38020',
+                    maxWidth: '100%',
+                    maxHeight: '100%',
+                  }}
+                >
+                  <D1Logo />
+                </div>
+              ),
+              support: ['community'],
+            },
+            {
+              name: 'Vercel Postgres',
+              logoURL:
+                'https://vercel.com/_next/image?url=https%3A%2F%2Fimages.ctfassets.net%2Fe5382hct74si%2F1Q2R6J8jCobcgN0aPQku1H%2Fefb8f5a0cbe20c764db07cbb3e421f9c%2FDevice_Desktop__Theme_Dark__Type_Postgres.png&w=828&q=75&dpl=dpl_ZdcX8s834EPaer2gDhLUeWFVG47v',
+              support: ['core', 'community'],
+            },
+            {
+              name: 'MariaDB',
+              logoURL:
+                'https://gitlab.com/uploads/-/system/project/avatar/17486242/d8cef0f8-8a8f-4d8f-8efb-e6d40560fc82-mariadb.png',
+              support: ['core-ish'],
+            },
+            {
+              name: 'Supabase',
+              logoURL:
+                'https://loopgate.netlify.app/_next/image?url=%2Fimages%2Fmarquee%2Flogos%2Fsupabase.png&w=256&q=100',
+              support: ['core', 'community'],
+            },
+            {
+              name: 'PlanetScale',
+              logoURL:
+                'https://res.cloudinary.com/crunchbase-production/image/upload/c_lpad,h_256,w_256,f_auto,q_auto:eco,dpr_1/iidhf24ewhnqtjgrrfbp',
+              support: ['core', 'community'],
+            },
+            {
+              name: 'Neon',
+              logoURL: 'https://neon.tech/favicon/favicon-256x256.png',
+              support: ['core', 'community'],
+            },
+            {
+              name: 'Turso',
+              logoURL:
+                'https://miro.medium.com/v2/resize:fit:1080/1*HAWSb-VkjEPt2cyXl029eQ.png',
+              support: ['community'],
+            },
+            {
+              name: 'SurrealDB',
+              logoURL:
+                'https://surrealdb.com/static/img/home/logo@2x-1b3865ba0026de3b8308ecc3b5ef777d.png',
+              support: ['community'],
+            },
+            {
+              name: 'libSQL',
+              logoURL: 'https://libsql.org/images/favicon/apple-touch-icon.png',
+              support: ['community'],
+            },
+            {
+              name: 'YDB',
+              logoURL:
+                'https://avatars.githubusercontent.com/u/88314308?s=200&v=4',
+              support: ['community'],
+            },
+            {
+              name: 'AWS S3 Select',
+              logoURL:
+                'https://res.cloudinary.com/hy4kyit2a/f_auto,fl_lossy,q_70/learn/modules/core-aws-services/store-and-retrieve-data-with-aws/images/d5d6add0a50dac23693532aec644c5a6_116-bb-1-a-4-0-a-0-d-46-b-2-863-f-1-d-8-a-362-a-3-c-12.png',
+              support: ['community'],
+            },
+          ].map((db) => (
+            <div
+              style={{
+                position: 'relative',
+                flex: '0 1 100px',
+                maxWidth: '100px',
+                maxHeight: '144px',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'flex-start',
+                gap: 8,
+                background: 'var(--gray12)',
+                padding: 16,
+                borderRadius: 8,
+                textDecoration: 'none',
+              }}
+            >
+              <div
+                style={{
+                  display: 'flex',
+                  flex: '1',
+                  height: '100%',
+                  flexDirection: 'column',
+                  justifyContent: 'space-around',
+                }}
+              >
+                {db.logoURL ? (
+                  <img
+                    src={db.logoURL}
+                    style={{
+                      color: '#F38020',
+                      fill: '#F38020',
+                      maxWidth: '100%',
+                      maxHeight: '100%',
+                    }}
+                  />
+                ) : (
+                  db.logo
+                )}
+                <span style={{ height: '100%' }}></span>
+                <span style={{ fontSize: '11px' }}>{db.name}</span>
+                <span style={{ fontSize: '9px' }}>
+                  {db.support.map((mode) => (
+                    <span
+                      style={{
+                        color: {
+                          core: 'lightgreen',
+                          'core-ish': 'orange',
+                          community: 'cyan',
+                        }[mode],
+                      }}
+                    >
+                      ✓
+                    </span>
+                  ))}
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'row',
+            justifyContent: 'center',
+            marginTop: '30px',
+            gap: '30px',
+            fontSize: '12px',
+          }}
+        >
+          <span style={{ color: 'lightgreen' }}>✓ core dialect</span>
+          <span style={{ color: 'orange' }}>✓ core dialect /w caveats</span>
+          <span style={{ color: 'cyan' }}>✓ community dialect</span>
+        </div>
       </div>
     </section>
   )
