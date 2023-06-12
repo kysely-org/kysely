@@ -106,7 +106,3 @@ export function getDenoCommand(
     title: 'deno.json',
   }
 }
-
-export function titlecase(str: string): string {
-  return `${str[0].toUpperCase()}${str.substring(1)}`
-}

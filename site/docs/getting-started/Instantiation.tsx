@@ -5,11 +5,11 @@ import { IUseADifferentDatabase } from './IUseADifferentDatabase'
 import { IUseADifferentPackageManager } from './IUseADifferentPackageManager'
 import {
   DRIVER_NPM_PACKAGE_NAMES,
+  isDialectSupported,
+  PRETTY_PACKAGE_MANAGER_NAMES,
   type Dialect,
   type PackageManager,
   type PropsWithDialect,
-  isDialectSupported,
-  titlecase,
 } from './shared'
 
 const dialectSpecificCodeSnippets: Record<
@@ -52,9 +52,9 @@ import { Kysely, SQLiteDialect } from 'kysely'
 const dialect = new SQLiteDialect({
   database: new SQLite(':memory:'),
 })`
-      : `/* Kysely doesn't support SQLite + ${titlecase(
-          packageManager
-        )} out of the box. Import a community dialect that does here. */
+      : `/* Kysely doesn't support SQLite + ${
+          PRETTY_PACKAGE_MANAGER_NAMES[packageManager || 'npm']
+        } out of the box. Import a community dialect that does here. */
 import { Kysely } from 'kysely'
 
 const dialect = /* instantiate the dialect here */`,
