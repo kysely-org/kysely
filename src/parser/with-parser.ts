@@ -6,6 +6,7 @@ import { CommonTableExpressionNameNode } from '../operation-node/common-table-ex
 import { QueryCreator } from '../query-creator.js'
 import { createQueryCreator } from './parse-utils.js'
 import { Expression } from '../expression/expression.js'
+import { ShallowRecord } from '../util/type-utils.js'
 
 export type CommonTableExpression<DB, CN extends string> = (
   creator: QueryCreator<DB>
@@ -13,12 +14,10 @@ export type CommonTableExpression<DB, CN extends string> = (
 
 export type RecursiveCommonTableExpression<DB, CN extends string> = (
   creator: QueryCreator<
-    DB &
+    DB & {
       // Recursive CTE can select from itself.
-      Record<
-        ExtractTableFromCommonTableExpressionName<CN>,
-        ExtractRowFromCommonTableExpressionName<CN>
-      >
+      [K in ExtractTableFromCommonTableExpressionName<CN>]: ExtractRowFromCommonTableExpressionName<CN>
+    }
   >
 ) => CommonTableExpressionOutput<DB, CN>
 
@@ -27,11 +26,9 @@ export type QueryCreatorWithCommonTableExpression<
   CN extends string,
   CTE
 > = QueryCreator<
-  DB &
-    Record<
-      ExtractTableFromCommonTableExpressionName<CN>,
-      ExtractRowFromCommonTableExpression<CTE>
-    >
+  DB & {
+    [K in ExtractTableFromCommonTableExpressionName<CN>]: ExtractRowFromCommonTableExpression<CTE>
+  }
 >
 
 type CommonTableExpressionOutput<DB, CN extends string> =
@@ -83,7 +80,7 @@ type ExtractTableFromCommonTableExpressionName<CN extends string> =
 type ExtractRowFromCommonTableExpressionName<CN extends string> =
   CN extends `${string}(${infer CL})`
     ? { [C in ExtractColumnNamesFromColumnList<CL>]: any }
-    : Record<string, any>
+    : ShallowRecord<string, any>
 
 /**
  * Parses a string like 'id, first_name' into a type 'id' | 'first_name'

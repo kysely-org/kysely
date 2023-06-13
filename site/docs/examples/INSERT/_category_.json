@@ -1,8 +1,8 @@
 {
-  "label": "INSERT",
-  "position": 2,
+  "label": "Insert",
+  "position": 4,
   "link": {
     "type": "generated-index",
-    "description": "Short and simple examples of how to insert records."
+    "description": "Short and simple examples of how to write insert queries."
   }
 }

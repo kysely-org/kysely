@@ -6,13 +6,12 @@ import { CoalesceReferenceExpressionList } from '../parser/coalesce-parser.js'
 import {
   ExtractTypeFromReferenceExpression,
   SimpleReferenceExpression,
-  parseSimpleReferenceExpression,
   ReferenceExpression,
   StringReference,
   parseReferenceExpressionOrList,
 } from '../parser/reference-parser.js'
 import { parseSelectAll } from '../parser/select-parser.js'
-import { Equals, IsNever } from '../util/type-utils.js'
+import { Equals, IsAny } from '../util/type-utils.js'
 import { AggregateFunctionBuilder } from './aggregate-function-builder.js'
 
 /**
@@ -23,24 +22,36 @@ import { AggregateFunctionBuilder } from './aggregate-function-builder.js'
  *
  * ### Examples
  *
- * ```ts
- * const { count } = db.fn
+ * <!-- siteExample("select", "Function calls", 60) -->
  *
- * await db.selectFrom('person')
+ * This example uses the `fn` module to select some aggregates:
+ *
+ * ```ts
+ * const result = await db.selectFrom('person')
  *   .innerJoin('pet', 'pet.owner_id', 'person.id')
- *   .select([
+ *   .select(({ fn }) => [
  *     'person.id',
- *     count('pet.id').as('pet_count')
+ *
+ *     // The `fn` module contains the most common
+ *     // functions.
+ *     fn.count<number>('pet.id').as('pet_count'),
+ *
+ *     // You can call any function using the
+ *     // `agg` method
+ *     fn.agg<string[]>('array_agg', ['pet.name']).as('pet_names')
  *   ])
  *   .groupBy('person.id')
- *   .having(count('pet.id'), '>', 10)
+ *   .having((eb) => eb.fn.count('pet.id'), '>', 10)
  *   .execute()
  * ```
  *
  * The generated SQL (PostgreSQL):
  *
  * ```sql
- * select "person"."id", count("pet"."id") as "pet_count"
+ * select
+ *   "person"."id",
+ *   count("pet"."id") as "pet_count",
+ *   array_agg("pet"."name") as "pet_names"
  * from "person"
  * inner join "pet" on "pet"."owner_id" = "person"."id"
  * group by "person"."id"
@@ -50,6 +61,8 @@ import { AggregateFunctionBuilder } from './aggregate-function-builder.js'
 export interface FunctionModule<DB, TB extends keyof DB> {
   /**
    * Creates a function call.
+   *
+   * To create an aggregate function call, use {@link FunctionModule.agg}.
    *
    * ### Examples
    *
@@ -79,6 +92,39 @@ export interface FunctionModule<DB, TB extends keyof DB> {
     name: string,
     args: ReadonlyArray<ReferenceExpression<DB, TB>>
   ): ExpressionWrapper<T>
+
+  /**
+   * Creates an aggregate function call.
+   *
+   * This is a specialized version of the `fn` method, that returns an {@link AggregateFunctionBuilder}
+   * instance. A builder that allows you to chain additional methods such as `distinct`,
+   * `filterWhere` and `over`.
+   *
+   * See {@link avg}, {@link count}, {@link countAll}, {@link max}, {@link min}, {@link sum}
+   * shortcuts of common aggregate functions.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * db.selectFrom('person')
+   *   .select(({ fn }) => [
+   *     fn.agg<number>('rank').over().as('rank'),
+   *     fn.agg<string>('group_concat', ['first_name']).distinct().as('first_names')
+   *   ])
+   * ```
+   *
+   * The generated SQL (MySQL):
+   *
+   * ```sql
+   * select rank() over() as "rank",
+   *   group_concat(distinct "first_name") as "first_names"
+   * from "person"
+   * ```
+   */
+  agg<O>(
+    name: string,
+    args?: ReadonlyArray<ReferenceExpression<DB, TB>>
+  ): AggregateFunctionBuilder<DB, TB, O>
 
   /**
    * Calls the `avg` function for the column given as the argument.
@@ -146,10 +192,7 @@ export interface FunctionModule<DB, TB extends keyof DB> {
    */
   avg<
     O extends number | string | null = number | string,
-    C extends SimpleReferenceExpression<DB, TB> = SimpleReferenceExpression<
-      DB,
-      TB
-    >
+    C extends ReferenceExpression<DB, TB> = ReferenceExpression<DB, TB>
   >(
     column: C
   ): AggregateFunctionBuilder<DB, TB, O>
@@ -282,10 +325,7 @@ export interface FunctionModule<DB, TB extends keyof DB> {
    */
   count<
     O extends number | string | bigint,
-    C extends SimpleReferenceExpression<DB, TB> = SimpleReferenceExpression<
-      DB,
-      TB
-    >
+    C extends ReferenceExpression<DB, TB> = ReferenceExpression<DB, TB>
   >(
     column: C
   ): AggregateFunctionBuilder<DB, TB, O>
@@ -426,7 +466,7 @@ export interface FunctionModule<DB, TB extends keyof DB> {
    * ```
    */
   max<
-    O extends number | string | bigint | null = never,
+    O extends number | string | bigint | null = any,
     C extends StringReference<DB, TB> = StringReference<DB, TB>
   >(
     column: OutputBoundStringReference<DB, TB, C, O>
@@ -487,7 +527,7 @@ export interface FunctionModule<DB, TB extends keyof DB> {
    * ```
    */
   min<
-    O extends number | string | bigint | null = never,
+    O extends number | string | bigint | null = any,
     C extends StringReference<DB, TB> = StringReference<DB, TB>
   >(
     column: OutputBoundStringReference<DB, TB, C, O>
@@ -563,10 +603,7 @@ export interface FunctionModule<DB, TB extends keyof DB> {
    */
   sum<
     O extends number | string | bigint | null = number | string | bigint,
-    C extends SimpleReferenceExpression<DB, TB> = SimpleReferenceExpression<
-      DB,
-      TB
-    >
+    C extends ReferenceExpression<DB, TB> = ReferenceExpression<DB, TB>
   >(
     column: C
   ): AggregateFunctionBuilder<DB, TB, O>
@@ -585,20 +622,26 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
     )
   }
 
+  const agg = <O>(
+    name: string,
+    args?: ReadonlyArray<ReferenceExpression<DB, TB>>
+  ): AggregateFunctionBuilder<DB, TB, O> => {
+    return new AggregateFunctionBuilder({
+      aggregateFunctionNode: AggregateFunctionNode.create(
+        name,
+        args ? parseReferenceExpressionOrList(args) : undefined
+      ),
+    })
+  }
+
   return Object.assign(fn, {
+    agg,
+
     avg<
       O extends number | string | null = number | string,
-      C extends SimpleReferenceExpression<DB, TB> = SimpleReferenceExpression<
-        DB,
-        TB
-      >
+      C extends ReferenceExpression<DB, TB> = ReferenceExpression<DB, TB>
     >(column: C): AggregateFunctionBuilder<DB, TB, O> {
-      return new AggregateFunctionBuilder({
-        aggregateFunctionNode: AggregateFunctionNode.create(
-          'avg',
-          parseSimpleReferenceExpression(column)
-        ),
-      })
+      return agg('avg', [column])
     },
 
     coalesce<
@@ -613,24 +656,16 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
 
     count<
       O extends number | string | bigint,
-      C extends SimpleReferenceExpression<DB, TB> = SimpleReferenceExpression<
-        DB,
-        TB
-      >
+      C extends ReferenceExpression<DB, TB> = ReferenceExpression<DB, TB>
     >(column: C): AggregateFunctionBuilder<DB, TB, O> {
-      return new AggregateFunctionBuilder({
-        aggregateFunctionNode: AggregateFunctionNode.create(
-          'count',
-          parseSimpleReferenceExpression(column)
-        ),
-      })
+      return agg('count', [column])
     },
 
     countAll(table?: string): any {
       return new AggregateFunctionBuilder({
         aggregateFunctionNode: AggregateFunctionNode.create(
           'count',
-          parseSelectAll(table)[0]
+          parseSelectAll(table)
         ),
       })
     },
@@ -641,12 +676,7 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
         TB
       >
     >(column: C): any {
-      return new AggregateFunctionBuilder({
-        aggregateFunctionNode: AggregateFunctionNode.create(
-          'max',
-          parseSimpleReferenceExpression(column)
-        ),
-      })
+      return agg('max', [column])
     },
 
     min<
@@ -655,27 +685,14 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
         TB
       >
     >(column: C): any {
-      return new AggregateFunctionBuilder({
-        aggregateFunctionNode: AggregateFunctionNode.create(
-          'min',
-          parseSimpleReferenceExpression(column)
-        ),
-      })
+      return agg('min', [column])
     },
 
     sum<
       O extends number | string | bigint | null = number | string | bigint,
-      C extends SimpleReferenceExpression<DB, TB> = SimpleReferenceExpression<
-        DB,
-        TB
-      >
+      C extends ReferenceExpression<DB, TB> = ReferenceExpression<DB, TB>
     >(column: C): AggregateFunctionBuilder<DB, TB, O> {
-      return new AggregateFunctionBuilder({
-        aggregateFunctionNode: AggregateFunctionNode.create(
-          'sum',
-          parseSimpleReferenceExpression(column)
-        ),
-      })
+      return agg('sum', [column])
     },
   })
 }
@@ -685,7 +702,7 @@ type OutputBoundStringReference<
   TB extends keyof DB,
   C extends StringReference<DB, TB>,
   O
-> = IsNever<O> extends true
+> = IsAny<O> extends true
   ? C // output not provided, unbound
   : Equals<
       ExtractTypeFromReferenceExpression<DB, TB, C> | null,
@@ -703,5 +720,5 @@ type StringReferenceBoundAggregateFunctionBuilder<
   DB,
   TB,
   | ExtractTypeFromReferenceExpression<DB, TB, C>
-  | (null extends O ? null : never) // output is nullable, but column type might not be nullable.
+  | (IsAny<O> extends true ? never : null extends O ? null : never) // output is nullable, but column type might not be nullable.
 >

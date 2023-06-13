@@ -80,6 +80,8 @@ import { BinaryOperationNode } from './binary-operation-node.js'
 import { UnaryOperationNode } from './unary-operation-node.js'
 import { UsingNode } from './using-node.js'
 import { FunctionNode } from './function-node.js'
+import { CaseNode } from './case-node.js'
+import { WhenNode } from './when-node.js'
 
 /**
  * Transforms an operation node tree into another one.
@@ -194,6 +196,8 @@ export class OperationNodeTransformer {
     UnaryOperationNode: this.transformUnaryOperation.bind(this),
     UsingNode: this.transformUsing.bind(this),
     FunctionNode: this.transformFunction.bind(this),
+    CaseNode: this.transformCase.bind(this),
+    WhenNode: this.transformWhen.bind(this),
   })
 
   transformNode<T extends OperationNode | undefined>(node: T): T {
@@ -830,7 +834,7 @@ export class OperationNodeTransformer {
   ): AggregateFunctionNode {
     return requireAllProps({
       kind: 'AggregateFunctionNode',
-      aggregated: this.transformNode(node.aggregated),
+      aggregated: this.transformNodeList(node.aggregated),
       distinct: node.distinct,
       filter: this.transformNode(node.filter),
       func: node.func,
@@ -895,6 +899,24 @@ export class OperationNodeTransformer {
       kind: 'FunctionNode',
       func: node.func,
       arguments: this.transformNodeList(node.arguments),
+    })
+  }
+
+  protected transformCase(node: CaseNode): CaseNode {
+    return requireAllProps<CaseNode>({
+      kind: 'CaseNode',
+      value: this.transformNode(node.value),
+      when: this.transformNodeList(node.when),
+      else: this.transformNode(node.else),
+      isStatement: node.isStatement,
+    })
+  }
+
+  protected transformWhen(node: WhenNode): WhenNode {
+    return requireAllProps<WhenNode>({
+      kind: 'WhenNode',
+      condition: this.transformNode(node.condition),
+      result: this.transformNode(node.result),
     })
   }
 

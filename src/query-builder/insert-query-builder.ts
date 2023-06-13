@@ -15,7 +15,6 @@ import {
 import { InsertQueryNode } from '../operation-node/insert-query-node.js'
 import { QueryNode } from '../operation-node/query-node.js'
 import {
-  MergePartial,
   NarrowPartial,
   SimplifyResult,
   SimplifySingleResult,
@@ -92,22 +91,30 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    *
    * ### Examples
    *
-   * Insert a row into `person`:
+   * <!-- siteExample("insert", "Single row", 10) -->
+   *
+   * Insert a single row:
+   *
    * ```ts
    * const result = await db
    *   .insertInto('person')
    *   .values({
    *     first_name: 'Jennifer',
-   *     last_name: 'Aniston'
+   *     last_name: 'Aniston',
+   *     age: 40
    *   })
-   *   .executeTakeFirstOrThrow()
+   *   .executeTakeFirst()
+   *
+   * console.log(result.insertId)
    * ```
    *
    * The generated SQL (PostgreSQL):
    *
    * ```sql
-   * insert into "person" ("first_name", "last_name") values ($1, $2)
+   * insert into "person" ("first_name", "last_name", "age") values ($1, $2, $3)
    * ```
+   *
+   * <!-- siteExample("insert", "Multiple rows", 20) -->
    *
    * On dialects that support it (for example PostgreSQL) you can insert multiple
    * rows by providing an array. Note that the return value is once again very
@@ -119,10 +126,12 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    *   .insertInto('person')
    *   .values([{
    *     first_name: 'Jennifer',
-   *     last_name: 'Aniston'
+   *     last_name: 'Aniston',
+   *     age: 40,
    *   }, {
    *     first_name: 'Arnold',
    *     last_name: 'Schwarzenegger',
+   *     age: 70,
    *   }])
    *   .execute()
    * ```
@@ -130,56 +139,61 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    * The generated SQL (PostgreSQL):
    *
    * ```sql
-   * insert into "person" ("first_name", "last_name") values (($1, $2), ($3, $4))
+   * insert into "person" ("first_name", "last_name", "age") values (($1, $2, $3), ($4, $5, $6))
    * ```
    *
-   * On PostgreSQL you need to chain `returning` to the query to get
-   * the inserted row's columns (or any other expression) as the
-   * return value:
+   * <!-- siteExample("insert", "Returning data", 30) -->
+   *
+   * On supported dialects like PostgreSQL you need to chain `returning` to the query to get
+   * the inserted row's columns (or any other expression) as the return value. `returning`
+   * works just like `select`. Refer to `select` method's examples and documentation for
+   * more info.
    *
    * ```ts
-   * const row = await db
+   * const result = await db
    *   .insertInto('person')
    *   .values({
    *     first_name: 'Jennifer',
-   *     last_name: 'Aniston'
+   *     last_name: 'Aniston',
+   *     age: 40,
    *   })
-   *   .returning('id')
+   *   .returning(['id', 'first_name as name'])
    *   .executeTakeFirstOrThrow()
-   *
-   * row.id
    * ```
    *
    * The generated SQL (PostgreSQL):
    *
    * ```sql
-   * insert into "person" ("first_name", "last_name") values ($1, $2) returning "id"
+   * insert into "person" ("first_name", "last_name", "age") values ($1, $2, $3) returning "id", "first_name" as "name"
    * ```
    *
-   * In addition to primitives, the values can also be raw sql expressions or
-   * select queries:
+   * <!-- siteExample("insert", "Complex values", 40) -->
+   *
+   * In addition to primitives, the values can also be arbitrary expressions.
+   * You can build the expressions by using a callback and calling the methods
+   * on the expression builder passed to it:
    *
    * ```ts
    * import { sql } from 'kysely'
    *
    * const result = await db
    *   .insertInto('person')
-   *   .values((eb) => ({
+   *   .values(({ ref, selectFrom, fn }) => ({
    *     first_name: 'Jennifer',
    *     last_name: sql`${'Ani'} || ${'ston'}`,
-   *     middle_name: eb.ref('first_name'),
-   *     age: eb.selectFrom('person').select(sql`avg(age)`),
+   *     middle_name: ref('first_name'),
+   *     age: selectFrom('person')
+   *       .select(fn.avg<number>('age')
+   *       .as('avg_age')),
    *   }))
    *   .executeTakeFirst()
-   *
-   * console.log(result.insertId)
    * ```
    *
    * The generated SQL (PostgreSQL):
    *
    * ```sql
    * insert into "person" ("first_name", "last_name", "age")
-   * values ($1, $2 || $3, (select avg(age) from "person"))
+   * values ($1, $2 || $3, (select avg("age") as "avg_age" from "person"))
    * ```
    *
    * You can also use the callback version of subqueries or raw expressions:
@@ -600,22 +614,18 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
   $if<O2>(
     condition: boolean,
     func: (qb: this) => InsertQueryBuilder<DB, TB, O2>
-  ): InsertQueryBuilder<
-    DB,
-    TB,
-    O2 extends InsertResult
-      ? InsertResult
-      : O extends InsertResult
-      ? Partial<O2>
-      : MergePartial<O, O2>
-  > {
+  ): O2 extends InsertResult
+    ? InsertQueryBuilder<DB, TB, InsertResult>
+    : O2 extends O & infer E
+    ? InsertQueryBuilder<DB, TB, O & Partial<E>>
+    : InsertQueryBuilder<DB, TB, Partial<O2>> {
     if (condition) {
       return func(this) as any
     }
 
     return new InsertQueryBuilder({
       ...this.#props,
-    })
+    }) as any
   }
 
   /**
@@ -624,16 +634,18 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
   if<O2>(
     condition: boolean,
     func: (qb: this) => InsertQueryBuilder<DB, TB, O2>
-  ): InsertQueryBuilder<
-    DB,
-    TB,
-    O2 extends InsertResult
-      ? InsertResult
-      : O extends InsertResult
-      ? Partial<O2>
-      : MergePartial<O, O2>
-  > {
-    return this.$if(condition, func)
+  ): O2 extends InsertResult
+    ? InsertQueryBuilder<DB, TB, InsertResult>
+    : O2 extends O & infer E
+    ? InsertQueryBuilder<DB, TB, O & Partial<E>>
+    : InsertQueryBuilder<DB, TB, Partial<O2>> {
+    if (condition) {
+      return func(this) as any
+    }
+
+    return new InsertQueryBuilder({
+      ...this.#props,
+    }) as any
   }
 
   /**

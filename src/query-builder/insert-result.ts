@@ -1,5 +1,3 @@
-import { makePropertiesEnumerable } from '../util/object-utils.js'
-
 /**
  * The result of an insert query.
  *
@@ -24,30 +22,21 @@ import { makePropertiesEnumerable } from '../util/object-utils.js'
  * ```
  */
 export class InsertResult {
-  readonly #insertId: bigint | undefined
-  readonly #numInsertedOrUpdatedRows: bigint | undefined
+  /**
+   * The auto incrementing primary key
+   */
+  readonly insertId: bigint | undefined
+
+  /**
+   * Affected rows count.
+   */
+  readonly numInsertedOrUpdatedRows: bigint | undefined
 
   constructor(
     insertId: bigint | undefined,
     numInsertedOrUpdatedRows: bigint | undefined
   ) {
-    this.#insertId = insertId
-    this.#numInsertedOrUpdatedRows = numInsertedOrUpdatedRows
-  }
-
-  /**
-   * The auto incrementing primary key
-   */
-  get insertId(): bigint | undefined {
-    return this.#insertId
-  }
-
-  /**
-   * Affected rows count.
-   */
-  get numInsertedOrUpdatedRows(): bigint | undefined {
-    return this.#numInsertedOrUpdatedRows
+    this.insertId = insertId
+    this.numInsertedOrUpdatedRows = numInsertedOrUpdatedRows
   }
 }
-
-makePropertiesEnumerable(InsertResult, 'insertId', 'numInsertedOrUpdatedRows')

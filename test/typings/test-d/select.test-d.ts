@@ -1,4 +1,4 @@
-import { Kysely, sql } from '..'
+import { Expression, Kysely, RawBuilder, Simplify, sql } from '..'
 import { Database } from '../shared'
 import { expectType, expectError } from 'tsd'
 
@@ -182,4 +182,172 @@ async function testSelectDynamic(db: Kysely<Database>) {
     name: string | undefined
     doesnt_exist: never | undefined
   }>(r4)
+}
+
+async function testIf(db: Kysely<Database>) {
+  const r = await db
+    .selectFrom('person')
+    .select('id')
+    .$if(Math.random() < 0.5, (qb) => qb.select('first_name as f1'))
+    .$if(Math.random() < 0.5, (qb) => qb.select('first_name as f2'))
+    .$if(Math.random() < 0.5, (qb) => qb.select('first_name as f3'))
+    .$if(Math.random() < 0.5, (qb) => qb.select('first_name as f4'))
+    .$if(Math.random() < 0.5, (qb) => qb.select('first_name as f5'))
+    .$if(Math.random() < 0.5, (qb) => qb.select('first_name as f6'))
+    .$if(Math.random() < 0.5, (qb) => qb.select('first_name as f7'))
+    .$if(Math.random() < 0.5, (qb) => qb.select('first_name as f8'))
+    .$if(Math.random() < 0.5, (qb) => qb.select('first_name as f9'))
+    .$if(Math.random() < 0.5, (qb) => qb.select('first_name as f10'))
+    .$if(Math.random() < 0.5, (qb) => qb.select('first_name as f11'))
+    .$if(Math.random() < 0.5, (qb) => qb.select('first_name as f12'))
+    .$if(Math.random() < 0.5, (qb) => qb.select('first_name as f13'))
+    .$if(Math.random() < 0.5, (qb) => qb.select('first_name as f14'))
+    .$if(Math.random() < 0.5, (qb) => qb.select('first_name as f15'))
+    .$if(Math.random() < 0.5, (qb) => qb.select('first_name as f16'))
+    .$if(Math.random() < 0.5, (qb) => qb.select('first_name as f17'))
+    .$if(Math.random() < 0.5, (qb) => qb.select('first_name as f18'))
+    .$if(Math.random() < 0.5, (qb) => qb.select('first_name as f19'))
+    .$if(Math.random() < 0.5, (qb) => qb.select('first_name as f20'))
+    .executeTakeFirstOrThrow()
+
+  expectType<{
+    id: number
+    f1?: string
+    f2?: string
+    f3?: string
+    f4?: string
+    f5?: string
+    f6?: string
+    f7?: string
+    f8?: string
+    f9?: string
+    f10?: string
+    f11?: string
+    f12?: string
+    f13?: string
+    f14?: string
+    f15?: string
+    f16?: string
+    f17?: string
+    f18?: string
+    f19?: string
+    f20?: string
+  }>(r)
+}
+
+async function testManyNestedSubqueries(db: Kysely<Database>) {
+  const r = await db
+    .selectFrom('person as p1')
+    .select((eb1) => [
+      'p1.id',
+      jsonArrayFrom(
+        eb1
+          .selectFrom('pet as pet1')
+          .whereRef('pet1.owner_id', '=', 'p1.id')
+          .select((eb2) => [
+            'pet1.id',
+            jsonObjectFrom(
+              eb2
+                .selectFrom('person as p2')
+                .whereRef('p2.id', '=', 'pet1.owner_id')
+                .select((eb3) => [
+                  'p2.id',
+                  jsonArrayFrom(
+                    eb3
+                      .selectFrom('pet as pet2')
+                      .whereRef('pet2.owner_id', '=', 'p2.id')
+                      .select((eb4) => [
+                        'pet2.id',
+                        jsonObjectFrom(
+                          eb4
+                            .selectFrom('person as p3')
+                            .whereRef('p3.id', '=', 'pet2.owner_id')
+                            .select((eb5) => [
+                              'p3.id',
+                              jsonArrayFrom(
+                                eb5
+                                  .selectFrom('pet as pet3')
+                                  .whereRef('pet3.owner_id', '=', 'p3.id')
+                                  .select((eb6) => [
+                                    'pet3.id',
+                                    jsonObjectFrom(
+                                      eb6
+                                        .selectFrom('person as p4')
+                                        .whereRef('p4.id', '=', 'pet3.owner_id')
+                                        .select((eb7) => [
+                                          'p4.id',
+                                          jsonArrayFrom(
+                                            eb7
+                                              .selectFrom('pet as pet4')
+                                              .whereRef(
+                                                'pet4.owner_id',
+                                                '=',
+                                                'p4.id'
+                                              )
+                                              .select((eb8) => [
+                                                'pet4.id',
+                                                jsonObjectFrom(
+                                                  eb8
+                                                    .selectFrom('person as p5')
+                                                    .whereRef(
+                                                      'p5.id',
+                                                      '=',
+                                                      'pet4.owner_id'
+                                                    )
+                                                    .select('p5.id')
+                                                ).as('owner'),
+                                              ])
+                                          ).as('pets'),
+                                        ])
+                                    ).as('owner'),
+                                  ])
+                              ).as('pets'),
+                            ])
+                        ).as('owner'),
+                      ])
+                  ).as('pets'),
+                ])
+            ).as('owner'),
+          ])
+      ).as('pets'),
+    ])
+    .executeTakeFirstOrThrow()
+
+  expectType<{
+    id: number
+    pets: {
+      id: string
+      owner: {
+        id: number
+        pets: {
+          id: string
+          owner: {
+            id: number
+            pets: {
+              id: string
+              owner: {
+                id: number
+                pets: {
+                  id: string
+                  owner: { id: number } | null
+                }[]
+              } | null
+            }[]
+          } | null
+        }[]
+      } | null
+    }[]
+  }>(r)
+}
+
+export function jsonArrayFrom<O>(
+  expr: Expression<O>
+): RawBuilder<Simplify<O>[]> {
+  return sql`(select coalesce(json_agg(agg), '[]') from ${expr} as agg)`
+}
+
+export function jsonObjectFrom<O>(
+  expr: Expression<O>
+): RawBuilder<Simplify<O> | null> {
+  return sql`(select to_json(obj) from ${expr} as obj)`
 }

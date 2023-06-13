@@ -7,7 +7,7 @@ import { QueryCreator, QueryCreatorProps } from './query-creator.js'
 import { KyselyPlugin } from './plugin/kysely-plugin.js'
 import { DefaultQueryExecutor } from './query-executor/default-query-executor.js'
 import { DatabaseIntrospector } from './dialect/database-introspector.js'
-import { freeze, isObject } from './util/object-utils.js'
+import { freeze, isObject, isUndefined } from './util/object-utils.js'
 import { RuntimeDriver } from './driver/runtime-driver.js'
 import { SingleConnectionProvider } from './driver/single-connection-provider.js'
 import {
@@ -27,6 +27,10 @@ import { QueryResult } from './driver/database-connection.js'
 import { CompiledQuery } from './query-compiler/compiled-query.js'
 import { createQueryId, QueryId } from './util/query-id.js'
 import { Compilable, isCompilable } from './util/compilable.js'
+import { CaseBuilder } from './query-builder/case-builder.js'
+import { CaseNode } from './operation-node/case-node.js'
+import { parseExpression } from './parser/expression-parser.js'
+import { Expression } from './expression/expression.js'
 import { WithSchemaPlugin } from './plugin/with-schema/with-schema-plugin.js'
 
 /**
@@ -143,6 +147,23 @@ export class Kysely<DB>
   }
 
   /**
+   * Creates a `case` statement/operator.
+   *
+   * See {@link ExpressionBuilder.case} for more information.
+   */
+  case(): CaseBuilder<DB, keyof DB>
+
+  case<V>(value: Expression<V>): CaseBuilder<DB, keyof DB, V>
+
+  case<V>(value?: Expression<V>): any {
+    return new CaseBuilder({
+      node: CaseNode.create(
+        isUndefined(value) ? undefined : parseExpression(value)
+      ),
+    })
+  }
+
+  /**
    * Returns a {@link FunctionModule} that can be used to write type safe function
    * calls.
    *
@@ -190,21 +211,26 @@ export class Kysely<DB>
    *
    * ### Examples
    *
+   * <!-- siteExample("transactions", "Simple transaction", 10) -->
+   *
+   * This example inserts two rows in a transaction. If an error is thrown inside
+   * the callback passed to the `execute` method, the transaction is rolled back.
+   * Otherwise it's committed.
+   *
    * ```ts
    * const catto = await db.transaction().execute(async (trx) => {
    *   const jennifer = await trx.insertInto('person')
    *     .values({
    *       first_name: 'Jennifer',
    *       last_name: 'Aniston',
+   *       age: 40,
    *     })
    *     .returning('id')
    *     .executeTakeFirstOrThrow()
    *
-   *   await someFunction(trx, jennifer)
-   *
    *   return await trx.insertInto('pet')
    *     .values({
-   *       user_id: jennifer.id,
+   *       owner_id: jennifer.id,
    *       name: 'Catto',
    *       species: 'cat'
    *     })

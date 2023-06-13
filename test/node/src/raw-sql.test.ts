@@ -1,4 +1,4 @@
-import { sql } from '../../../'
+import { sql, CompiledQuery } from '../../../'
 
 import {
   DIALECTS,
@@ -265,6 +265,18 @@ for (const dialect of DIALECTS) {
         })
 
         await query.execute()
+      })
+    }
+
+    if (dialect === 'postgres') {
+      it('CompiledQuery should support raw query with parameters', async () => {
+        const query = CompiledQuery.raw(
+          'select * from "person" where "public"."person"."first_name" between $1 and $2',
+          ['A', 'B']
+        )
+        expect(query.sql).to.equal('select * from "person" where "public"."person"."first_name" between $1 and $2');
+        expect(query.parameters).to.deep.equal(['A', 'B']);
+        await ctx.db.executeQuery(query)
       })
     }
 

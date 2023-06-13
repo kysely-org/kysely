@@ -1,0 +1,32 @@
+---
+title: 'Subquery join'
+---
+
+# Subquery join
+
+You can join a subquery by providing two callbacks:
+
+import {
+  Playground,
+  exampleSetup,
+} from '../../../src/components/Playground'
+
+import {
+  subqueryJoin
+} from './0040-subquery-join'
+
+<div style={{ marginBottom: '1em' }}>
+  <Playground code={subqueryJoin} setupCode={exampleSetup} />
+</div>
+
+:::info More examples
+The API documentation is packed with examples. The API docs are hosted [here](https://kysely-org.github.io/kysely/)
+but you can access the same documentation by hovering over functions/methods/classes in your IDE. The examples are always
+just one hover away!
+
+For example, check out these sections:
+ - [innerJoin method](https://kysely-org.github.io/kysely/classes/SelectQueryBuilder.html#innerJoin)
+ - [leftJoin method](https://kysely-org.github.io/kysely/classes/SelectQueryBuilder.html#leftJoin)
+ - [rightJoin method](https://kysely-org.github.io/kysely/classes/SelectQueryBuilder.html#rightJoin)
+ - [fullJoin method](https://kysely-org.github.io/kysely/classes/SelectQueryBuilder.html#fullJoin)
+:::

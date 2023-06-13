@@ -6,13 +6,23 @@ import { Simplify } from '../util/type-utils.js'
 /**
  * A postgres helper for aggregating a subquery (or other expression) into a JSONB array.
  *
- * NOTE: This helper is only guaranteed to fully work with the built-in `PostgresDialect`.
- * While the produced SQL is compatibe with all PostgreSQL databases, some 3rd party dialects
- * may not parse the nested results into arrays.
- *
  * ### Examples
  *
+ * <!-- siteExample("select", "Nested array", 110) -->
+ *
+ * While kysely is not an ORM and it doesn't have the concept of relations, we do provide
+ * helpers for fetching nested objects and arrays in a single query. In this example we
+ * use the `jsonArrayFrom` helper to fetch person's pets along with the person's id.
+ *
+ * Please keep in mind that the helpers under the `kysely/helpers` folder, including
+ * `jsonArrayFrom`, are not guaranteed to work with third party dialects. In order for
+ * them to work, the dialect must automatically parse the `json` data type into
+ * javascript JSON values like objects and arrays. Some dialects might simply return
+ * the data as a JSON string.
+ *
  * ```ts
+ * import { jsonArrayFrom } from 'kysely/helpers/postgres'
+ *
  * const result = await db
  *   .selectFrom('person')
  *   .select((eb) => [
@@ -20,15 +30,11 @@ import { Simplify } from '../util/type-utils.js'
  *     jsonArrayFrom(
  *       eb.selectFrom('pet')
  *         .select(['pet.id as pet_id', 'pet.name'])
- *         .where('pet.owner_id', '=', 'person.id')
+ *         .whereRef('pet.owner_id', '=', 'person.id')
  *         .orderBy('pet.name')
  *     ).as('pets')
  *   ])
  *   .execute()
- *
- * result[0].id
- * result[0].pets[0].pet_id
- * result[0].pets[0].name
  * ```
  *
  * The generated SQL (PostgreSQL):
@@ -56,13 +62,23 @@ export function jsonArrayFrom<O>(
  *
  * The subquery must only return one row.
  *
- * NOTE: This helper is only guaranteed to fully work with the built-in `PostgresDialect`.
- * While the produced SQL is compatibe with all PostgreSQL databases, some 3rd party dialects
- * may not parse the nested results into objects.
- *
  * ### Examples
  *
+ * <!-- siteExample("select", "Nested object", 120) -->
+ *
+ * While kysely is not an ORM and it doesn't have the concept of relations, we do provide
+ * helpers for fetching nested objects and arrays in a single query. In this example we
+ * use the `jsonObjectFrom` helper to fetch person's favorite pet along with the person's id.
+ *
+ * Please keep in mind that the helpers under the `kysely/helpers` folder, including
+ * `jsonObjectFrom`, are not guaranteed to work with third party dialects. In order for
+ * them to work, the dialect must automatically parse the `json` data type into
+ * javascript JSON values like objects and arrays. Some dialects might simply return
+ * the data as a JSON string.
+ *
  * ```ts
+ * import { jsonObjectFrom } from 'kysely/helpers/postgres'
+ *
  * const result = await db
  *   .selectFrom('person')
  *   .select((eb) => [
@@ -70,15 +86,11 @@ export function jsonArrayFrom<O>(
  *     jsonObjectFrom(
  *       eb.selectFrom('pet')
  *         .select(['pet.id as pet_id', 'pet.name'])
- *         .where('pet.owner_id', '=', 'person.id')
+ *         .whereRef('pet.owner_id', '=', 'person.id')
  *         .where('pet.is_favorite', '=', true)
  *     ).as('favorite_pet')
  *   ])
  *   .execute()
- *
- * result[0].id
- * result[0].favorite_pet.pet_id
- * result[0].favorite_pet.name
  * ```
  *
  * The generated SQL (PostgreSQL):

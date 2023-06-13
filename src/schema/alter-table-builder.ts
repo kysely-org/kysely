@@ -71,7 +71,7 @@ export class AlterTableBuilder implements ColumnAlteringInterface {
     alteration: AlterColumnBuilderCallback
   ): AlterTableColumnAlteringBuilder {
     const builder = alteration(
-      new AlterColumnBuilder(AlterColumnNode.create(column))
+      new AlterColumnBuilder(column)
     )
 
     return new AlterTableColumnAlteringBuilder({
@@ -292,7 +292,7 @@ export class AlterTableColumnAlteringBuilder
     alteration: AlterColumnBuilderCallback
   ): AlterTableColumnAlteringBuilder {
     const builder = alteration(
-      new AlterColumnBuilder(AlterColumnNode.create(column))
+      new AlterColumnBuilder(column)
     )
 
     return new AlterTableColumnAlteringBuilder({

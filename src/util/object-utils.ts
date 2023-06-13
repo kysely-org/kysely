@@ -1,4 +1,4 @@
-import { Constructor } from './type-utils.js'
+import { ShallowRecord } from './type-utils.js'
 
 export function isEmpty(obj: ArrayLike<unknown> | string | object): boolean {
   if (Array.isArray(obj) || isString(obj) || isBuffer(obj)) {
@@ -48,7 +48,7 @@ export function isFunction(obj: unknown): obj is Function {
   return typeof obj === 'function'
 }
 
-export function isObject(obj: unknown): obj is Record<string, unknown> {
+export function isObject(obj: unknown): obj is ShallowRecord<string, unknown> {
   return typeof obj === 'object' && obj !== null
 }
 
@@ -158,13 +158,4 @@ function compareGenericObjects(
   }
 
   return true
-}
-
-export function makePropertiesEnumerable<T>(
-  clazz: Constructor<T>,
-  ...properties: (keyof T)[]
-) {
-  properties.forEach((property) => {
-    Object.defineProperty(clazz.prototype, property, { enumerable: true })
-  })
 }
