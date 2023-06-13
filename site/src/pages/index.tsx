@@ -36,7 +36,7 @@ function HomepageHeader() {
           </p>
           <span style={{ display: 'flex', flexDirection: 'row', gap: 8 }}>
             <a
-              href="/docs/installation"
+              href="/docs/getting-started"
               className="button button--primary button--md button--block"
               style={{
                 background: 'var(--gray12)',
