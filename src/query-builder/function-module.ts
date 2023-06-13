@@ -22,24 +22,36 @@ import { AggregateFunctionBuilder } from './aggregate-function-builder.js'
  *
  * ### Examples
  *
- * ```ts
- * const { count } = db.fn
+ * <!-- siteExample("select", "Function calls", 60) -->
  *
- * await db.selectFrom('person')
+ * This example uses the `fn` module to select some aggregates:
+ *
+ * ```ts
+ * const result = await db.selectFrom('person')
  *   .innerJoin('pet', 'pet.owner_id', 'person.id')
- *   .select([
+ *   .select(({ fn }) => [
  *     'person.id',
- *     count('pet.id').as('pet_count')
+ *
+ *     // The `fn` module contains the most common
+ *     // functions.
+ *     fn.count<number>('pet.id').as('pet_count'),
+ *
+ *     // You can call any function using the
+ *     // `agg` method
+ *     fn.agg<string[]>('array_agg', ['pet.name']).as('pet_names')
  *   ])
  *   .groupBy('person.id')
- *   .having(count('pet.id'), '>', 10)
+ *   .having((eb) => eb.fn.count('pet.id'), '>', 10)
  *   .execute()
  * ```
  *
  * The generated SQL (PostgreSQL):
  *
  * ```sql
- * select "person"."id", count("pet"."id") as "pet_count"
+ * select
+ *   "person"."id",
+ *   count("pet"."id") as "pet_count",
+ *   array_agg("pet"."name") as "pet_names"
  * from "person"
  * inner join "pet" on "pet"."owner_id" = "person"."id"
  * group by "person"."id"
@@ -180,10 +192,7 @@ export interface FunctionModule<DB, TB extends keyof DB> {
    */
   avg<
     O extends number | string | null = number | string,
-    C extends SimpleReferenceExpression<DB, TB> = SimpleReferenceExpression<
-      DB,
-      TB
-    >
+    C extends ReferenceExpression<DB, TB> = ReferenceExpression<DB, TB>
   >(
     column: C
   ): AggregateFunctionBuilder<DB, TB, O>
@@ -316,10 +325,7 @@ export interface FunctionModule<DB, TB extends keyof DB> {
    */
   count<
     O extends number | string | bigint,
-    C extends SimpleReferenceExpression<DB, TB> = SimpleReferenceExpression<
-      DB,
-      TB
-    >
+    C extends ReferenceExpression<DB, TB> = ReferenceExpression<DB, TB>
   >(
     column: C
   ): AggregateFunctionBuilder<DB, TB, O>
@@ -597,10 +603,7 @@ export interface FunctionModule<DB, TB extends keyof DB> {
    */
   sum<
     O extends number | string | bigint | null = number | string | bigint,
-    C extends SimpleReferenceExpression<DB, TB> = SimpleReferenceExpression<
-      DB,
-      TB
-    >
+    C extends ReferenceExpression<DB, TB> = ReferenceExpression<DB, TB>
   >(
     column: C
   ): AggregateFunctionBuilder<DB, TB, O>
@@ -636,10 +639,7 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
 
     avg<
       O extends number | string | null = number | string,
-      C extends SimpleReferenceExpression<DB, TB> = SimpleReferenceExpression<
-        DB,
-        TB
-      >
+      C extends ReferenceExpression<DB, TB> = ReferenceExpression<DB, TB>
     >(column: C): AggregateFunctionBuilder<DB, TB, O> {
       return agg('avg', [column])
     },
@@ -656,10 +656,7 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
 
     count<
       O extends number | string | bigint,
-      C extends SimpleReferenceExpression<DB, TB> = SimpleReferenceExpression<
-        DB,
-        TB
-      >
+      C extends ReferenceExpression<DB, TB> = ReferenceExpression<DB, TB>
     >(column: C): AggregateFunctionBuilder<DB, TB, O> {
       return agg('count', [column])
     },
@@ -693,10 +690,7 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
 
     sum<
       O extends number | string | bigint | null = number | string | bigint,
-      C extends SimpleReferenceExpression<DB, TB> = SimpleReferenceExpression<
-        DB,
-        TB
-      >
+      C extends ReferenceExpression<DB, TB> = ReferenceExpression<DB, TB>
     >(column: C): AggregateFunctionBuilder<DB, TB, O> {
       return agg('sum', [column])
     },

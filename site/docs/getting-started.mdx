@@ -1,0 +1,72 @@
+---
+sidebar_position: 2
+title: 'Getting started'
+---
+
+import BrowserOnly from '@docusaurus/BrowserOnly'
+import { Installation } from './getting-started/Installation'
+import Types from './getting-started/_types.mdx'
+import { Dialects } from './getting-started/Dialects'
+import { Instantiation } from './getting-started/Instantiation'
+import { Querying } from './getting-started/Querying'
+import { Summary } from './getting-started/Summary'
+
+# Getting started
+
+## Installation
+
+<Installation />
+
+## Types
+
+<Types />
+
+## Dialects
+
+<BrowserOnly fallback={<div>Loading...</div>}>
+  {() => (
+    <Dialects
+      packageManager={new URLSearchParams(document.location.search).get(
+        'package-manager'
+      )}
+      packageManagersURL="#installation"
+    />
+  )}
+</BrowserOnly>
+
+## Instantiation
+
+<BrowserOnly fallback={<div>Loading...</div>}>
+  {() => (
+    <Instantiation
+      dialect={new URLSearchParams(document.location.search).get('dialect')}
+      dialectsURL="#dialects"
+      packageManager={new URLSearchParams(document.location.search).get(
+        'package-manager'
+      )}
+      packageManagersURL="#installation"
+    />
+  )}
+</BrowserOnly>
+
+## Querying
+
+<BrowserOnly fallback={<div>Loading...</div>}>
+  {() => (
+    <Querying
+      dialect={new URLSearchParams(document.location.search).get('dialect')}
+      dialectsURL="#dialects"
+    />
+  )}
+</BrowserOnly>
+
+## Summary
+
+<BrowserOnly fallback={<div>Loading...</div>}>
+  {() => (
+    <Summary
+      dialect={new URLSearchParams(document.location.search).get('dialect')}
+      dialectsURL="#dialects"
+    />
+  )}
+</BrowserOnly>

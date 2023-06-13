@@ -35,7 +35,7 @@ function HomepageHeader() {
           </p>
           <span style={{ display: 'flex', flexDirection: 'row', gap: 8 }}>
             <a
-              href="/docs/installation"
+              href="/docs/getting-started"
               className="button button--primary button--md button--block"
               style={{
                 background: 'var(--gray12)',
@@ -264,7 +264,7 @@ function SectionTweets() {
               "Instead of Prisma, I'm testing Kysely, Kysely Codegen, and Atlas. Works great."
             }
           />
-          
+
           <TweetQuote
             authorName={'Mehul Mohan'}
             authorTitle={'CEO @ codedamn'}
@@ -276,14 +276,16 @@ function SectionTweets() {
               'https://twitter.com/mehulmpt/status/1650480912759685120'
             }
           />
-          
+
           <TweetQuote
             authorName={'Alberto Gimeno'}
             authorTitle={'Software Engineer @ Railway'}
             avatar={
               'https://pbs.twimg.com/profile_images/1614373062022922241/zUKUXrKP_400x400.jpg'
             }
-            tweetLink={'https://twitter.com/gimenete/status/1653121152854765569'}
+            tweetLink={
+              'https://twitter.com/gimenete/status/1653121152854765569'
+            }
             text={
               "I'm a happy @kysely_ user. It's great to see that the code I'm writing now can work with serverless postgresql now!"
             }
@@ -312,17 +314,17 @@ function SectionTweets() {
             }
             text={'Kysely is amazing.'}
           />
-          
+
           <TweetQuote
             authorName={'Gannon Hall'}
             authorTitle={'Product & dev, ex-Google'}
             avatar={
               'https://pbs.twimg.com/profile_images/1603091670072819712/EArb-OH4_400x400.jpg'
             }
-            tweetLink={
-              'https://twitter.com/gannonh/status/1653109305368018944'
+            tweetLink={'https://twitter.com/gannonh/status/1653109305368018944'}
+            text={
+              'Vercel just announced native postgres support and published Prisma and Kysely templates. I like the DX of Prisma and the type safety of Kysely so I use both via prisma-kysley.'
             }
-            text={'Vercel just announced native postgres support and published Prisma and Kysely templates. I like the DX of Prisma and the type safety of Kysely so I use both via prisma-kysley.'}
           />
 
           <TweetQuote

@@ -1,5 +1,3 @@
-import { DrainOuterGeneric } from './type-utils.js'
-
 /**
  * This type can be used to specify a different type for
  * select, insert and update operations.
@@ -141,9 +139,9 @@ export type UpdateKeys<R> = {
  * // }
  * ```
  */
-export type Selectable<R> = DrainOuterGeneric<{
+export type Selectable<R> = {
   [K in NonNeverSelectKeys<R>]: SelectType<R[K]>
-}>
+}
 
 /**
  * Given a table interface, extracts the insert type from all

@@ -14,12 +14,10 @@ export type CommonTableExpression<DB, CN extends string> = (
 
 export type RecursiveCommonTableExpression<DB, CN extends string> = (
   creator: QueryCreator<
-    DB &
+    DB & {
       // Recursive CTE can select from itself.
-      ShallowRecord<
-        ExtractTableFromCommonTableExpressionName<CN>,
-        ExtractRowFromCommonTableExpressionName<CN>
-      >
+      [K in ExtractTableFromCommonTableExpressionName<CN>]: ExtractRowFromCommonTableExpressionName<CN>
+    }
   >
 ) => CommonTableExpressionOutput<DB, CN>
 
@@ -28,11 +26,9 @@ export type QueryCreatorWithCommonTableExpression<
   CN extends string,
   CTE
 > = QueryCreator<
-  DB &
-    ShallowRecord<
-      ExtractTableFromCommonTableExpressionName<CN>,
-      ExtractRowFromCommonTableExpression<CTE>
-    >
+  DB & {
+    [K in ExtractTableFromCommonTableExpressionName<CN>]: ExtractRowFromCommonTableExpression<CTE>
+  }
 >
 
 type CommonTableExpressionOutput<DB, CN extends string> =

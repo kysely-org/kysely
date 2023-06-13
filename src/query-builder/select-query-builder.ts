@@ -356,6 +356,8 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    *
    * ### Examples
    *
+   * <!-- siteExample("select", "A single column", 10) -->
+   *
    * Select a single column:
    *
    * ```ts
@@ -364,8 +366,6 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    *   .select('id')
    *   .where('first_name', '=', 'Arnold')
    *   .execute()
-   *
-   * persons[0].id
    * ```
    *
    * The generated SQL (PostgreSQL):
@@ -374,6 +374,8 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    * select "id" from "person" where "first_name" = $1
    * ```
    *
+   * <!-- siteExample("select", "Column with a table", 20) -->
+   *
    * Select a single column and specify a table:
    *
    * ```ts
@@ -381,8 +383,6 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    *   .selectFrom(['person', 'pet'])
    *   .select('person.id')
    *   .execute()
-   *
-   * persons[0].id
    * ```
    *
    * The generated SQL (PostgreSQL):
@@ -391,6 +391,8 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    * select "person"."id" from "person", "pet"
    * ```
    *
+   * <!-- siteExample("select", "Multiple columns", 30) -->
+   *
    * Select multiple columns:
    *
    * ```ts
@@ -398,9 +400,6 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    *   .selectFrom('person')
    *   .select(['person.id', 'first_name'])
    *   .execute()
-   *
-   * persons[0].id
-   * persons[0].first_name
    * ```
    *
    * The generated SQL (PostgreSQL):
@@ -409,35 +408,36 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    * select "person"."id", "first_name" from "person"
    * ```
    *
-   * Aliased selections:
+   * <!-- siteExample("select", "Aliases", 40) -->
+   *
+   * You can provide an alias for the selections by appending `as the_alias` to the selection.
    *
    * ```ts
    * const persons = await db
    *   .selectFrom('person')
    *   .select([
-   *     'person.first_name as fn',
+   *     'first_name as fn',
    *     'person.last_name as ln'
    *   ])
    *   .execute()
-   *
-   * persons[0].fn
-   * persons[0].ln
    * ```
    *
    * The generated SQL (PostgreSQL):
    *
    * ```sql
    * select
-   *   "person"."first_name" as "fn",
+   *   "first_name" as "fn",
    *   "person"."last_name" as "ln"
    * from "person"
    * ```
    *
-   * You can also select arbitrary expression including subqueries and raw sql snippets.
-   * When you do that, you need to give a name for the selections using the {@link as} method:
+   * <!-- siteExample("select", "Complex selections", 50) -->
+   *
+   * You can select arbitrary expression including subqueries and raw sql snippets.
+   * When you do that, you need to give a name for the selections using the `as` method:
    *
    * ```ts
-   * import { sql } from 'kysely'
+   * import { sql } from 'kysely'
    *
    * const persons = await db.selectFrom('person')
    *   .select(({ selectFrom, or, cmpr }) => [
@@ -449,7 +449,8 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    *       .limit(1)
    *       .as('first_pet_name'),
    *
-   *     // Build and select an expression using the expression builder
+   *     // Build and select an expression using
+   *     // the expression builder
    *     or([
    *       cmpr('first_name', '=', 'Jennifer'),
    *       cmpr('first_name', '=', 'Arnold')
@@ -459,10 +460,6 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    *     sql<string>`concat(first_name, ' ', last_name)`.as('full_name')
    *   ])
    *   .execute()
-   *
-   * persons[0].first_pet_name
-   * persons[0].is_jennifer_or_arnold
-   * persons[0].full_name
    * ```
    *
    * The generated SQL (PostgreSQL):
@@ -538,8 +535,10 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    *
    * ### Examples
    *
+   * <!-- siteExample("select", "Distinct on", 80) -->
+   *
    * ```ts
-   * await db.selectFrom('person')
+   * const persons = await db.selectFrom('person')
    *   .innerJoin('pet', 'pet.owner_id', 'person.id')
    *   .where('pet.name', '=', 'Doggo')
    *   .distinctOn('person.id')
@@ -639,10 +638,12 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
   /**
    * Makes the selection distinct.
    *
+   * <!-- siteExample("select", "Distinct", 70) -->
+   *
    * ### Examples
    *
    * ```ts
-   * await db.selectFrom('person')
+   * const persons = await db.selectFrom('person')
    *   .select('first_name')
    *   .distinct()
    *   .execute()
@@ -747,6 +748,10 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    *
    * ### Examples
    *
+   * <!-- siteExample("select", "All columns", 90) -->
+   *
+   * The `selectAll` method generates `SELECT *`:
+   *
    * ```ts
    * const persons = await db
    *   .selectFrom('person')
@@ -759,6 +764,8 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    * ```sql
    * select * from "person"
    * ```
+   *
+   * <!-- siteExample("select", "All columns of a table", 100) -->
    *
    * Select all columns of a table:
    *
@@ -815,7 +822,9 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    *
    * ### Examples
    *
-   * Simple usage by providing a table name and two columns to join:
+   * <!-- siteExample("join", "Simple inner join", 10) -->
+   *
+   * Simple inner joins can be done by providing a table name and two columns to join:
    *
    * ```ts
    * const result = await db
@@ -823,21 +832,20 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    *   .innerJoin('pet', 'pet.owner_id', 'person.id')
    *   // `select` needs to come after the call to `innerJoin` so
    *   // that you can select from the joined table.
-   *   .select('person.id', 'pet.name')
+   *   .select(['person.id', 'pet.name as pet_name'])
    *   .execute()
-   *
-   * result[0].id
-   * result[0].name
    * ```
    *
    * The generated SQL (PostgreSQL):
    *
    * ```sql
-   * select "person"."id", "pet"."name"
+   * select "person"."id", "pet"."name" as "pet_name"
    * from "person"
    * inner join "pet"
    * on "pet"."owner_id" = "person"."id"
    * ```
+   *
+   * <!-- siteExample("join", "Aliased inner join", 20) -->
    *
    * You can give an alias for the joined table like this:
    *
@@ -859,13 +867,15 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    * where "p".name" = $1
    * ```
    *
+   * <!-- siteExample("join", "Complex join", 30) -->
+   *
    * You can provide a function as the second argument to get a join
    * builder for creating more complex joins. The join builder has a
    * bunch of `on*` methods for building the `on` clause of the join.
    * There's basically an equivalent for every `where` method
-   * (`on`, `onRef`, `onExists` etc.). You can do all the same things
-   * with the `on` method that you can with the corresponding `where`
-   * method. See the `where` method documentation for more examples.
+   * (`on`, `onRef` etc.). You can do all the same things with the
+   * `on` method that you can with the corresponding `where` method.
+   * See the `where` method documentation for more examples.
    *
    * ```ts
    * await db.selectFrom('person')
@@ -889,34 +899,36 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    * and "pet"."name" = $1
    * ```
    *
-   * You can join a subquery by providing a select query (or a callback)
-   * as the first argument:
+   * <!-- siteExample("join", "Subquery join", 40) -->
+   *
+   * You can join a subquery by providing two callbacks:
    *
    * ```ts
-   * await db.selectFrom('person')
+   * const result = await db.selectFrom('person')
    *   .innerJoin(
-   *     db.selectFrom('pet')
-   *       .select(['owner_id', 'name'])
+   *     (eb) => eb
+   *       .selectFrom('pet')
+   *       .select(['owner_id as owner', 'name'])
    *       .where('name', '=', 'Doggo')
    *       .as('doggos'),
-   *     'doggos.owner_id',
-   *     'person.id',
+   *     (join) => join
+   *       .onRef('doggos.owner', '=', 'person.id'),
    *   )
-   *   .selectAll()
+   *   .selectAll('doggos')
    *   .execute()
    * ```
    *
    * The generated SQL (PostgreSQL):
    *
    * ```sql
-   * select *
+   * select "doggos".*
    * from "person"
    * inner join (
-   *   select "owner_id", "name"
+   *   select "owner_id" as "owner", "name"
    *   from "pet"
    *   where "name" = $1
    * ) as "doggos"
-   * on "doggos"."owner_id" = "person"."id"
+   * on "doggos"."owner" = "person"."id"
    * ```
    */
   innerJoin<

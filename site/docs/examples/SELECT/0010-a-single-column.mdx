@@ -1,0 +1,31 @@
+---
+title: 'A single column'
+---
+
+# A single column
+
+Select a single column:
+
+import {
+  Playground,
+  exampleSetup,
+} from '../../../src/components/Playground'
+
+import {
+  aSingleColumn
+} from './0010-a-single-column'
+
+<div style={{ marginBottom: '1em' }}>
+  <Playground code={aSingleColumn} setupCode={exampleSetup} />
+</div>
+
+:::info More examples
+The API documentation is packed with examples. The API docs are hosted [here](https://kysely-org.github.io/kysely/)
+but you can access the same documentation by hovering over functions/methods/classes in your IDE. The examples are always
+just one hover away!
+
+For example, check out these sections:
+ - [select method](https://kysely-org.github.io/kysely/classes/SelectQueryBuilder.html#select)
+ - [selectAll method](https://kysely-org.github.io/kysely/classes/SelectQueryBuilder.html#selectAll)
+ - [selectFrom method](https://kysely-org.github.io/kysely/classes/Kysely.html#selectFrom)
+:::

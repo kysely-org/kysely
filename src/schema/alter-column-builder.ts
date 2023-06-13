@@ -10,49 +10,39 @@ import {
 } from '../parser/default-value-parser.js'
 
 export class AlterColumnBuilder {
-  protected readonly alterColumnNode: AlterColumnNode
+  readonly #column: string
 
-  constructor(alterColumnNode: AlterColumnNode) {
-    this.alterColumnNode = alterColumnNode
+  constructor(column: string) {
+    this.#column = column
   }
 
   setDataType(dataType: DataTypeExpression): AlteredColumnBuilder {
     return new AlteredColumnBuilder(
-      AlterColumnNode.cloneWith(this.alterColumnNode, {
-        dataType: parseDataTypeExpression(dataType),
-      })
+      AlterColumnNode.create(this.#column, 'dataType', parseDataTypeExpression(dataType))
     )
   }
 
   setDefault(value: DefaultValueExpression): AlteredColumnBuilder {
     return new AlteredColumnBuilder(
-      AlterColumnNode.cloneWith(this.alterColumnNode, {
-        setDefault: parseDefaultValueExpression(value),
-      })
+      AlterColumnNode.create(this.#column, 'setDefault', parseDefaultValueExpression(value))
     )
   }
 
   dropDefault(): AlteredColumnBuilder {
     return new AlteredColumnBuilder(
-      AlterColumnNode.cloneWith(this.alterColumnNode, {
-        dropDefault: true,
-      })
+      AlterColumnNode.create(this.#column, 'dropDefault', true)
     )
   }
 
   setNotNull(): AlteredColumnBuilder {
     return new AlteredColumnBuilder(
-      AlterColumnNode.cloneWith(this.alterColumnNode, {
-        setNotNull: true,
-      })
+      AlterColumnNode.create(this.#column, 'setNotNull', true)
     )
   }
 
   dropNotNull(): AlteredColumnBuilder {
     return new AlteredColumnBuilder(
-      AlterColumnNode.cloneWith(this.alterColumnNode, {
-        dropNotNull: true,
-      })
+      AlterColumnNode.create(this.#column, 'dropNotNull', true)
     )
   }
 
@@ -66,22 +56,30 @@ export class AlterColumnBuilder {
 }
 
 /**
- * Allows us to force consumers to do something, anything, when altering a column.
+ * Allows us to force consumers to do exactly one alteration to a column.
  *
  * Basically, deny the following:
  *
  * ```ts
  * db.schema.alterTable('person').alterColumn('age', (ac) => ac)
  * ```
+ * 
+ * ```ts
+ * db.schema.alterTable('person').alterColumn('age', (ac) => ac.dropNotNull().setNotNull())
+ * ```
  *
  * Which would now throw a compilation error, instead of a runtime error.
  */
-export class AlteredColumnBuilder
-  extends AlterColumnBuilder
-  implements OperationNodeSource
+export class AlteredColumnBuilder implements OperationNodeSource
 {
+  readonly #alterColumnNode: AlterColumnNode
+
+  constructor(alterColumnNode: AlterColumnNode) {
+    this.#alterColumnNode = alterColumnNode
+  }
+
   toOperationNode(): AlterColumnNode {
-    return this.alterColumnNode
+    return this.#alterColumnNode
   }
 }
 
