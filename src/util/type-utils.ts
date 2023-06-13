@@ -136,7 +136,7 @@ export type SimplifyResult<O> = O extends InsertResult
   ? O
   : Simplify<O>
 
-export type Simplify<T> = { [K in keyof T]: T[K] } & {}
+export type Simplify<T> = DrainOuterGeneric<{ [K in keyof T]: T[K] } & {}>
 
 /**
  * Represents a database row whose column names and their types are unknown.
