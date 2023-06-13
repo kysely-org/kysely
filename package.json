@@ -53,6 +53,7 @@
     "script:module-fixup": "node scripts/module-fixup.js",
     "script:copy-interface-doc": "node scripts/copy-interface-documentation.js",
     "script:add-deno-type-references": "node scripts/add-deno-type-references.js",
+    "script:align-site-version": "node scripts/align-site-version.js",
     "prepublishOnly": "npm run build"
   },
   "author": "Sami Koskimäki <sami@jakso.me>",

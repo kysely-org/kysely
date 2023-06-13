@@ -1,27 +1,30 @@
-import * as React from "react"
-import { gray } from "@radix-ui/colors"
+import * as React from 'react'
+import { gray } from '@radix-ui/colors'
 
 export function Playground({
   code,
   setupCode = exampleSetup,
   kyselyVersion,
-  dialect = "postgres",
+  dialect = 'postgres',
 }: PlaygroundProps) {
   const params = new URLSearchParams()
-  params.set("p", "j")
-  params.set("i", JSON.stringify({
-    q: code.trim(),
-    s: setupCode.trim(),
-    v: kyselyVersion,
-    d: dialect,
-    c: false
-  }))
+  params.set('p', 'j')
+  params.set(
+    'i',
+    JSON.stringify({
+      q: code.trim(),
+      s: setupCode.trim(),
+      v: kyselyVersion,
+      d: dialect,
+      c: false,
+    })
+  )
 
   return (
     <iframe
       style={{
-        width: "100%",
-        minHeight: "600px",
+        width: '100%',
+        minHeight: '600px',
         borderRadius: 7,
       }}
       allow="clipboard-write"
@@ -32,9 +35,9 @@ export function Playground({
 
 interface PlaygroundProps {
   kyselyVersion?: string
-  dialect?: "postgres"
+  dialect?: 'postgres'
   code: string
-  setupCode?: string,
+  setupCode?: string
 }
 
 export const exampleSetup = `
