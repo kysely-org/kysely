@@ -6,7 +6,7 @@ values.
 **Let's define our first database interface:**
 
 ```ts title="src/types.ts"
-import { ColumnType, Generated } from 'kysely'
+import { ColumnType, Generated, Insertable, Selectable, Updatable } from 'kysely'
 
 export interface Database {
   person: PersonTable
@@ -35,12 +35,23 @@ export interface PersonTable {
   created_at: ColumnType<Date, string | undefined, never>
 }
 
+// You should not use the table schema interfaces directly. Instead, you should
+// use the `Selectable`, `Insertable` and `Updateable` wrappers. These wrappers
+// make sure that the correct types are used in each operation.
+export type Person = Selectable<Person>
+export type NewPerson = Insertable<Person>
+export type EditedPerson = Updateable<Person>
+
 export interface PetTable {
   id: Generated<number>
   name: string
   owner_id: number
   species: 'dog' | 'cat'
 }
+
+export type Pet = Selectable<Pet>
+export type NewPet = Insertable<Pet>
+export type EditedPet = Updateable<Pet>
 ```
 
 :::tip Codegen

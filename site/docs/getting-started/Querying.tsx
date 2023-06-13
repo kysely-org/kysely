@@ -5,7 +5,7 @@ import Link from '@docusaurus/Link'
 import { IUseADifferentDatabase } from './IUseADifferentDatabase'
 import type { Dialect, PropsWithDialect } from './shared'
 
-const postgresqlCodeSnippet = `export async function createPerson(person: Insertable<PersonTable>) {
+const postgresqlCodeSnippet = `export async function createPerson(person: NewPerson) {
   return await db.insertInto('person')
     .values(person)
     .returningAll()
@@ -20,7 +20,7 @@ export async function deletePerson(id: Person['id']) {
 
 const dialectSpecificCodeSnippets: Record<Dialect, string> = {
   postgresql: postgresqlCodeSnippet,
-  mysql: `export async function createPerson(person: Insertable<PersonTable>) {
+  mysql: `export async function createPerson(person: NewPerson) {
   const { insertId } = await db.insertInto('person')
     .values(person)
     .executeTakeFirstOrThrow()
@@ -51,11 +51,8 @@ export function Querying(props: PropsWithDialect) {
         <strong>Let's implement the person repository:</strong>
       </p>
       <CodeBlock language="ts" title="src/PersonRepository.ts">
-        {`import { Insertable, Selectable, Updateable } from 'kysely'
-import { db } from './database'
-import { PersonTable } from './types'
-
-export type Person = Selectable<PersonTable>
+        {`import { db } from './database'
+import { EditedPerson, Person, NewPerson } from './types'
 
 export async function findPersonById(id: Person['id']) {
   return await db.selectFrom('person')
@@ -94,7 +91,7 @@ export async function findPeople(criteria: Partial<Person>) {
   return await query.selectAll().execute()
 }
 
-export async function updatePerson(id: Person['id'], updateWith: Updateable<PersonTable>) {
+export async function updatePerson(id: Person['id'], updateWith: EditedPerson) {
   await db.updateTable('person').set(updateWith).where('id', '=', id).execute()
 }
 
