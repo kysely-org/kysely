@@ -612,6 +612,11 @@ function SectionDatabases() {
               support: ['core', 'community'],
             },
             {
+              name: 'YugabyteDB',
+              logoURL: 'https://asset.brandfetch.io/idit3zjFwX/id7hZjM0Ny.png',
+              support: ['core-ish', 'community'],
+            },
+            {
               name: 'MariaDB',
               logoURL:
                 'https://gitlab.com/uploads/-/system/project/avatar/17486242/d8cef0f8-8a8f-4d8f-8efb-e6d40560fc82-mariadb.png',
@@ -628,6 +633,12 @@ function SectionDatabases() {
               logoURL:
                 'https://res.cloudinary.com/crunchbase-production/image/upload/c_lpad,h_256,w_256,f_auto,q_auto:eco,dpr_1/iidhf24ewhnqtjgrrfbp',
               support: ['core', 'community'],
+            },
+            {
+              name: 'Materialize',
+              logoURL:
+                'https://assets.website-files.com/5d1126db676120bb4fe43762/63fd16d23c1e9bab4c1dc1e9_1367180373062805804ab5fa48e5e22cd908bd2c-250x250.png',
+              support: ['core-ish', 'community'],
             },
             {
               name: 'Neon',
