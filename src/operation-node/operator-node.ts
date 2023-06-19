@@ -50,7 +50,7 @@ export const ARITHMETIC_OPERATORS = [
   '>>',
 ] as const
 
-export const JSON_OPERATORS = ['->>'] as const
+export const JSON_OPERATORS = ['->>', '->>$'] as const
 
 export const BINARY_OPERATORS = [
   ...COMPARISON_OPERATORS,
@@ -67,13 +67,13 @@ export const OPERATORS = [
   ...UNARY_OPERATORS,
 ] as const
 
-export type ComparisonOperator = typeof COMPARISON_OPERATORS[number]
-export type ArithmeticOperator = typeof ARITHMETIC_OPERATORS[number]
-export type JSONOperator = typeof JSON_OPERATORS[number]
-export type BinaryOperator = typeof BINARY_OPERATORS[number]
-export type UnaryOperator = typeof UNARY_OPERATORS[number]
-export type UnaryFilterOperator = typeof UNARY_FILTER_OPERATORS[number]
-export type Operator = typeof OPERATORS[number]
+export type ComparisonOperator = (typeof COMPARISON_OPERATORS)[number]
+export type ArithmeticOperator = (typeof ARITHMETIC_OPERATORS)[number]
+export type JSONOperator = (typeof JSON_OPERATORS)[number]
+export type BinaryOperator = (typeof BINARY_OPERATORS)[number]
+export type UnaryOperator = (typeof UNARY_OPERATORS)[number]
+export type UnaryFilterOperator = (typeof UNARY_FILTER_OPERATORS)[number]
+export type Operator = (typeof OPERATORS)[number]
 
 export interface OperatorNode extends OperationNode {
   readonly kind: 'OperatorNode'

@@ -1,4 +1,3 @@
-import { JSONPathReferenceNode } from '../../operation-node/json-path-reference-node.js'
 import { DefaultQueryCompiler } from '../../query-compiler/default-query-compiler.js'
 
 const ID_WRAP_REGEX = /`/g
@@ -34,10 +33,5 @@ export class MysqlQueryCompiler extends DefaultQueryCompiler {
 
   protected override sanitizeIdentifier(identifier: string): string {
     return identifier.replace(ID_WRAP_REGEX, '``')
-  }
-
-  protected override visitJSONPathReference(node: JSONPathReferenceNode): void {
-    this.append(node.operator)
-    this.visitJSONPath(node.jsonPath)
   }
 }

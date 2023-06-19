@@ -3,9 +3,12 @@ import { JSONPathNode } from './json-path-node.js'
 import { OperationNode } from './operation-node.js'
 import { JSONOperator } from './operator-node.js'
 
+type JSONOperatorNo$ = Exclude<JSONOperator, '->>$'>
+
 export interface JSONPathReferenceNode extends OperationNode {
   readonly kind: 'JSONPathReferenceNode'
-  readonly operator: JSONOperator
+  readonly operator: JSONOperatorNo$
+  readonly is$: boolean
   readonly jsonPath: JSONPathNode
 }
 
@@ -21,9 +24,12 @@ export const JSONPathReferenceNode = freeze({
     operator: JSONOperator,
     jsonPath: JSONPathNode
   ): JSONPathReferenceNode {
+    const is$ = operator.endsWith('$')
+
     return freeze({
       kind: 'JSONPathReferenceNode',
-      operator,
+      operator: (is$ ? operator.slice(0, -1) : operator) as JSONOperatorNo$,
+      is$,
       jsonPath,
     })
   },

@@ -1,5 +1,4 @@
 import { DefaultInsertValueNode } from '../../operation-node/default-insert-value-node.js'
-import { JSONPathReferenceNode } from '../../operation-node/json-path-reference-node.js'
 import { DefaultQueryCompiler } from '../../query-compiler/default-query-compiler.js'
 
 const ID_WRAP_REGEX = /"/g
@@ -36,10 +35,5 @@ export class SqliteQueryCompiler extends DefaultQueryCompiler {
   protected override visitDefaultInsertValue(_: DefaultInsertValueNode): void {
     // sqlite doesn't support the `default` keyword in inserts.
     this.append('null')
-  }
-
-  protected override visitJSONPathReference(node: JSONPathReferenceNode): void {
-    this.append(node.operator)
-    this.visitJSONPath(node.jsonPath)
   }
 }

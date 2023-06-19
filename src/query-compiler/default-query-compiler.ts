@@ -1338,9 +1338,14 @@ export class DefaultQueryCompiler
   }
 
   protected override visitJSONPathReference(node: JSONPathReferenceNode): void {
-    for (const pathLeg of node.jsonPath.pathLegs) {
+    if (node.is$) {
       this.append(node.operator)
-      this.visitNode(pathLeg.value)
+      this.visitNode(node.jsonPath)
+    } else {
+      for (const pathLeg of node.jsonPath.pathLegs) {
+        this.append(node.operator)
+        this.visitNode(pathLeg.value)
+      }
     }
   }
 
@@ -1348,7 +1353,7 @@ export class DefaultQueryCompiler
     this.append("'$")
 
     for (const pathLeg of node.pathLegs) {
-      this.visitJSONPathLeg(pathLeg)
+      this.visitNode(pathLeg)
     }
 
     this.append("'")
