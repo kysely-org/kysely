@@ -12,7 +12,8 @@ export const simpleTransaction = `const catto = await db.transaction().execute(a
     .values({
       owner_id: jennifer.id,
       name: 'Catto',
-      species: 'cat'
+      species: 'cat',
+      is_favorite: false,
     })
     .returningAll()
     .executeTakeFirst()
