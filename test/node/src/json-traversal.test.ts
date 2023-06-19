@@ -46,7 +46,7 @@ for (const dialect of DIALECTS) {
         const query = ctx.db
           .selectFrom('person_metadata')
           .select((eb) =>
-            eb.jxp('website', '->>', (pb) => pb.key('url')).as('website_url')
+            eb.ref('website', '->>$').key('url').as('website_url')
           )
 
         testSql(query, dialect, {
@@ -70,12 +70,10 @@ for (const dialect of DIALECTS) {
         ])
       })
 
-      it('should execute a query with column->>$[0] in select clause', async () => {
+      it('should execute a query with column->>$[index] in select clause', async () => {
         const query = ctx.db
           .selectFrom('person_metadata')
-          .select((eb) =>
-            eb.jxp('nicknames', '->>', (pb) => pb.at(0)).as('nickname')
-          )
+          .select((eb) => eb.ref('nicknames', '->>$').at(0).as('nickname'))
 
         testSql(query, dialect, {
           postgres: NOT_SUPPORTED,

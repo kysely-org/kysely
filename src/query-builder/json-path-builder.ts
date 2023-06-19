@@ -9,8 +9,10 @@ import { JSONPathNode } from '../operation-node/json-path-node.js'
 import { JSONPathReferenceNode } from '../operation-node/json-path-reference-node.js'
 import { isOperationNodeSource } from '../operation-node/operation-node-source.js'
 import { OperationNode } from '../operation-node/operation-node.js'
+import { RawNode } from '../operation-node/raw-node.js'
 import { ReferenceNode } from '../operation-node/reference-node.js'
 import { ValueNode } from '../operation-node/value-node.js'
+import { ColumnType } from '../util/column-type.js'
 
 export class JSONPathBuilder<S, O = S> {
   readonly #node: ReferenceNode | JSONPathNode
@@ -19,11 +21,29 @@ export class JSONPathBuilder<S, O = S> {
     this.#node = node
   }
 
-  at<I extends any[] extends O ? keyof NonNullable<O> & number : never>(
+  at<
+    I extends any[] extends O
+      ? keyof NonNullable<O> & number
+      : O extends ColumnType<infer SO>
+      ? any[] extends SO
+        ? keyof NonNullable<SO> & number
+        : never
+      : never
+  >(
     index: I
   ): TraversedJSONPathBuilder<
     S,
-    undefined extends O
+    O extends ColumnType<infer SO>
+    ? I extends keyof NonNullable<SO> ?
+      any[] extends SO
+        ? undefined extends SO
+          ? null | NonNullable<NonNullable<SO>[I]>
+          : null extends SO
+          ? null | NonNullable<NonNullable<SO>[I]>
+          : NonNullable<SO>[I]
+      : never
+      : never
+    : undefined extends O
       ? null | NonNullable<NonNullable<O>[I]>
       : null extends O
       ? null | NonNullable<NonNullable<O>[I]>
@@ -35,18 +55,36 @@ export class JSONPathBuilder<S, O = S> {
   key<
     K extends any[] extends O
       ? never
-      : NonNullable<O> extends object
-      ? keyof NonNullable<O> & string
+      : // ColumnType is an `object` actually, so must catch it before `object`
+      O extends ColumnType<infer SO>
+      ? any[] extends SO
+        ? never
+        : SO extends object
+        ? keyof SO & string
+        : never
+      : O extends object
+      ? keyof O & string
       : never
   >(
     key: K
   ): TraversedJSONPathBuilder<
     S,
-    undefined extends O
-      ? null | NonNullable<NonNullable<O>[K]>
-      : null extends O
-      ? null | NonNullable<NonNullable<O>[K]>
-      : NonNullable<O>[K]
+    O extends ColumnType<infer SO>
+      ? // for some odd reason, ts thinks `SO` is `string | SO`.
+        K extends keyof Exclude<NonNullable<SO>, string>
+        ? undefined extends SO
+          ? null | NonNullable<Exclude<NonNullable<SO>, string>[K]>
+          : null extends SO
+          ? null | NonNullable<Exclude<NonNullable<SO>, string>[K]>
+          : Exclude<NonNullable<SO>, string>[K]
+        : never
+      : undefined extends O
+      ? K extends keyof NonNullable<O>
+        ? null | NonNullable<NonNullable<O>[K]>
+        : null extends O
+        ? null | NonNullable<NonNullable<O>[K]>
+        : NonNullable<O>[K]
+      : never
   > {
     return this.#createBuilderWithPathLeg('Member', key)
   }
@@ -57,7 +95,7 @@ export class JSONPathBuilder<S, O = S> {
   ): TraversedJSONPathBuilder<any, any> {
     const legNode = JSONPathLegNode.create(
       legType,
-      ValueNode.createImmediate(value)
+      RawNode.createWithSql(String(value))
     )
 
     return new TraversedJSONPathBuilder(

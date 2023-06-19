@@ -934,6 +934,7 @@ export class OperationNodeTransformer {
       kind: 'JSONPathReferenceNode',
       jsonPath: this.transformNode(node.jsonPath),
       operator: node.operator,
+      is$: node.is$,
     })
   }
 
