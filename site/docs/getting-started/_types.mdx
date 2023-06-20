@@ -38,9 +38,9 @@ export interface PersonTable {
 // You should not use the table schema interfaces directly. Instead, you should
 // use the `Selectable`, `Insertable` and `Updateable` wrappers. These wrappers
 // make sure that the correct types are used in each operation.
-export type Person = Selectable<Person>
-export type NewPerson = Insertable<Person>
-export type EditedPerson = Updateable<Person>
+export type Person = Selectable<PersonTable>
+export type NewPerson = Insertable<PersonTable>
+export type EditedPerson = Updateable<PersonTable>
 
 export interface PetTable {
   id: Generated<number>
@@ -49,9 +49,9 @@ export interface PetTable {
   species: 'dog' | 'cat'
 }
 
-export type Pet = Selectable<Pet>
-export type NewPet = Insertable<Pet>
-export type EditedPet = Updateable<Pet>
+export type Pet = Selectable<PetTable>
+export type NewPet = Insertable<PetTable>
+export type EditedPet = Updateable<PetTable>
 ```
 
 :::tip Codegen
