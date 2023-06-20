@@ -148,7 +148,7 @@ for (const dialect of DIALECTS) {
         .insertInto('person')
         .columns(['first_name', 'gender'])
         .expression((eb) =>
-          eb.selectFrom('pet').select(['name', sql`${'other'}`.as('gender')])
+          eb.selectFrom('pet').select(['name', eb.val('other').as('gender')])
         )
 
       testSql(query, dialect, {

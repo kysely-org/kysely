@@ -28,7 +28,7 @@ export class SqliteIntrospector implements DatabaseIntrospector {
     options: DatabaseMetadataOptions = { withInternalKyselyTables: false }
   ): Promise<TableMetadata[]> {
     let query = this.#db
-      .selectFrom('sqlite_schema')
+      .selectFrom('sqlite_master')
       .where('type', 'in', ['table', 'view'])
       .where('name', 'not like', 'sqlite_%')
       .select('name')
