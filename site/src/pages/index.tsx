@@ -218,14 +218,16 @@ function SectionTweets() {
           />
 
           <TweetQuote
-            authorName={'Yusuke Wada'}
-            authorTitle={'Creator of @honojs'}
+            authorName={'Harminder Virk'}
+            authorTitle={'Creator of AdonisJS'}
             avatar={
-              'https://pbs.twimg.com/profile_images/15300142/profile_childfood_400x400.jpg'
+              'https://pbs.twimg.com/profile_images/1398931824110280708/uint2k0c_400x400.jpg'
             }
-            text="Kysely is great. D1 will be great. This is great."
             tweetLink={
-              'https://twitter.com/yusukebe/status/1581775103167066112'
+              'https://twitter.com/AmanVirk1/status/1666636685583568897'
+            }
+            text={
+              'Kysely is great. Keeping an eye on it to see how it evolves in coming months'
             }
           />
 
@@ -237,6 +239,18 @@ function SectionTweets() {
             }
             text={'Kysely is 🐐'}
             tweetLink={'https://twitter.com/galstar/status/1645452990147436546'}
+          />
+
+          <TweetQuote
+            authorName={'Yusuke Wada'}
+            authorTitle={'Creator of @honojs'}
+            avatar={
+              'https://pbs.twimg.com/profile_images/15300142/profile_childfood_400x400.jpg'
+            }
+            text="Kysely is great. D1 will be great. This is great."
+            tweetLink={
+              'https://twitter.com/yusukebe/status/1581775103167066112'
+            }
           />
 
           <TweetQuote
@@ -323,7 +337,7 @@ function SectionTweets() {
             }
             tweetLink={'https://twitter.com/gannonh/status/1653109305368018944'}
             text={
-              'Vercel just announced native postgres support and published Prisma and Kysely templates. I like the DX of Prisma and the type safety of Kysely so I use both via prisma-kysley.'
+              'Vercel just announced native postgres support and published Prisma and Kysely templates. I like the DX of Prisma and the type safety of Kysely so I use both via prisma-kysely.'
             }
           />
 
