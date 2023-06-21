@@ -11,8 +11,6 @@ import { isOperationNodeSource } from '../operation-node/operation-node-source.j
 import { OperationNode } from '../operation-node/operation-node.js'
 import { RawNode } from '../operation-node/raw-node.js'
 import { ReferenceNode } from '../operation-node/reference-node.js'
-import { ValueNode } from '../operation-node/value-node.js'
-import { ColumnType } from '../util/column-type.js'
 
 export class JSONPathBuilder<S, O = S> {
   readonly #node: ReferenceNode | JSONPathNode
@@ -38,19 +36,17 @@ export class JSONPathBuilder<S, O = S> {
     K extends any[] extends O
       ? never
       : O extends object
-      ? keyof O & string
+      ? keyof NonNullable<O> & string
       : never
   >(
     key: K
   ): TraversedJSONPathBuilder<
     S,
     undefined extends O
-      ? K extends keyof NonNullable<O>
-        ? null | NonNullable<NonNullable<O>[K]>
-        : null extends O
-        ? null | NonNullable<NonNullable<O>[K]>
-        : NonNullable<O>[K]
-      : never
+      ? null | NonNullable<NonNullable<O>[K]>
+      : null extends O
+      ? null | NonNullable<NonNullable<O>[K]>
+      : NonNullable<O>[K]
   > {
     return this.#createBuilderWithPathLeg('Member', key)
   }

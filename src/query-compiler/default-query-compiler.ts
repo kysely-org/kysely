@@ -1344,7 +1344,18 @@ export class DefaultQueryCompiler
     } else {
       for (const pathLeg of node.jsonPath.pathLegs) {
         this.append(node.operator)
+
+        const isMember = pathLeg.type === 'Member'
+
+        if (isMember) {
+          this.append("'")
+        }
+
         this.visitNode(pathLeg.value)
+
+        if (isMember) {
+          this.append("'")
+        }
       }
     }
   }
@@ -1360,11 +1371,13 @@ export class DefaultQueryCompiler
   }
 
   protected override visitJSONPathLeg(node: JSONPathLegNode): void {
-    this.append(node.type === 'ArrayLocation' ? '[' : '.')
+    const isArrayLocation = node.type === 'ArrayLocation'
+
+    this.append(isArrayLocation ? '[' : '.')
 
     this.visitNode(node.value)
 
-    if (node.type === 'ArrayLocation') {
+    if (isArrayLocation) {
       this.append(']')
     }
   }

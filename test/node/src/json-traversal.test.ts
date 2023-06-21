@@ -70,7 +70,7 @@ for (const dialect of DIALECTS) {
         ])
       })
 
-      it('should execute a query with column->>$[index] in select clause', async () => {
+      it('should execute a query with column->>$[0] in select clause', async () => {
         const query = ctx.db
           .selectFrom('person_metadata')
           .select((eb) => eb.ref('nicknames', '->>$').at(0).as('nickname'))
@@ -84,6 +84,60 @@ for (const dialect of DIALECTS) {
           sqlite: {
             parameters: [],
             sql: `select "nicknames"->>'$[0]' as "nickname" from "person_metadata"`,
+          },
+        })
+
+        const results = await query.execute()
+
+        expect(results).to.containSubset([
+          { nickname: 'J.A.' },
+          { nickname: 'A.S.' },
+          { nickname: 'S.S.' },
+        ])
+      })
+    }
+
+    if (dialect !== 'mysql') {
+      it('should execute a query with column->>key in select clause', async () => {
+        const query = ctx.db
+          .selectFrom('person_metadata')
+          .select((eb) => eb.ref('website', '->>').key('url').as('website_url'))
+
+        testSql(query, dialect, {
+          postgres: {
+            parameters: [],
+            sql: `select "website"->>'url' as "website_url" from "person_metadata"`,
+          },
+          mysql: NOT_SUPPORTED,
+          sqlite: {
+            parameters: [],
+            sql: `select "website"->>'url' as "website_url" from "person_metadata"`,
+          },
+        })
+
+        const results = await query.execute()
+
+        expect(results).to.containSubset([
+          { website_url: 'https://www.jenniferaniston.com' },
+          { website_url: 'https://www.arnoldschwarzenegger.com' },
+          { website_url: 'https://www.sylvesterstallone.com' },
+        ])
+      })
+
+      it('should execute a query with column->>0 in select clause', async () => {
+        const query = ctx.db
+          .selectFrom('person_metadata')
+          .select((eb) => eb.ref('nicknames', '->>').at(0).as('nickname'))
+
+        testSql(query, dialect, {
+          postgres: {
+            parameters: [],
+            sql: `select "nicknames"->>0 as "nickname" from "person_metadata"`,
+          },
+          mysql: NOT_SUPPORTED,
+          sqlite: {
+            parameters: [],
+            sql: `select "nicknames"->>0 as "nickname" from "person_metadata"`,
           },
         })
 
