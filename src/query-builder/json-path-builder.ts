@@ -21,29 +21,11 @@ export class JSONPathBuilder<S, O = S> {
     this.#node = node
   }
 
-  at<
-    I extends any[] extends O
-      ? keyof NonNullable<O> & number
-      : O extends ColumnType<infer SO>
-      ? any[] extends SO
-        ? keyof NonNullable<SO> & number
-        : never
-      : never
-  >(
+  at<I extends any[] extends O ? keyof NonNullable<O> & number : never>(
     index: I
   ): TraversedJSONPathBuilder<
     S,
-    O extends ColumnType<infer SO>
-    ? I extends keyof NonNullable<SO> ?
-      any[] extends SO
-        ? undefined extends SO
-          ? null | NonNullable<NonNullable<SO>[I]>
-          : null extends SO
-          ? null | NonNullable<NonNullable<SO>[I]>
-          : NonNullable<SO>[I]
-      : never
-      : never
-    : undefined extends O
+    undefined extends O
       ? null | NonNullable<NonNullable<O>[I]>
       : null extends O
       ? null | NonNullable<NonNullable<O>[I]>
@@ -55,13 +37,6 @@ export class JSONPathBuilder<S, O = S> {
   key<
     K extends any[] extends O
       ? never
-      : // ColumnType is an `object` actually, so must catch it before `object`
-      O extends ColumnType<infer SO>
-      ? any[] extends SO
-        ? never
-        : SO extends object
-        ? keyof SO & string
-        : never
       : O extends object
       ? keyof O & string
       : never
@@ -69,16 +44,7 @@ export class JSONPathBuilder<S, O = S> {
     key: K
   ): TraversedJSONPathBuilder<
     S,
-    O extends ColumnType<infer SO>
-      ? // for some odd reason, ts thinks `SO` is `string | SO`.
-        K extends keyof Exclude<NonNullable<SO>, string>
-        ? undefined extends SO
-          ? null | NonNullable<Exclude<NonNullable<SO>, string>[K]>
-          : null extends SO
-          ? null | NonNullable<Exclude<NonNullable<SO>, string>[K]>
-          : Exclude<NonNullable<SO>, string>[K]
-        : never
-      : undefined extends O
+    undefined extends O
       ? K extends keyof NonNullable<O>
         ? null | NonNullable<NonNullable<O>[K]>
         : null extends O

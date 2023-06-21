@@ -18,7 +18,6 @@ import {
 } from '../query-builder/function-module.js'
 import {
   ExtractTypeFromReferenceExpression,
-  ExtractTypeFromStringReference,
   parseReferenceExpression,
   parseStringReference,
   ReferenceExpression,
@@ -261,12 +260,12 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    */
   ref<RE extends StringReference<DB, TB>>(
     reference: RE
-  ): ExpressionWrapper<ExtractTypeFromStringReference<DB, TB, RE>>
+  ): ExpressionWrapper<ExtractTypeFromReferenceExpression<DB, TB, RE>>
 
   ref<RE extends StringReference<DB, TB>>(
     reference: RE,
     op: JSONOperator
-  ): JSONPathBuilder<ExtractTypeFromStringReference<DB, TB, RE>>
+  ): JSONPathBuilder<ExtractTypeFromReferenceExpression<DB, TB, RE>>
 
   /**
    * Returns a value expression.
