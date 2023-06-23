@@ -19,16 +19,12 @@ export class JSONPathBuilder<S, O = S> {
     this.#node = node
   }
 
-  at<I extends any[] extends O ? keyof NonNullable<O> & number : never>(
-    index: I
-  ): TraversedJSONPathBuilder<
-    S,
-    undefined extends O
-      ? null | NonNullable<NonNullable<O>[I]>
-      : null extends O
-      ? null | NonNullable<NonNullable<O>[I]>
-      : NonNullable<O>[I]
-  > {
+  at<
+    I extends any[] extends O ? number | `#-${number}` : never,
+    O2 = null | NonNullable<NonNullable<O>[keyof NonNullable<O> & number]>
+  >(
+    index: `${I}` extends `-${any}` | `${any}.${any}` | `#--${any}` ? never : I
+  ): TraversedJSONPathBuilder<S, O2> {
     return this.#createBuilderWithPathLeg('ArrayLocation', index)
   }
 
@@ -37,17 +33,13 @@ export class JSONPathBuilder<S, O = S> {
       ? never
       : O extends object
       ? keyof NonNullable<O> & string
-      : never
-  >(
-    key: K
-  ): TraversedJSONPathBuilder<
-    S,
-    undefined extends O
+      : never,
+    O2 = undefined extends O
       ? null | NonNullable<NonNullable<O>[K]>
       : null extends O
       ? null | NonNullable<NonNullable<O>[K]>
       : NonNullable<O>[K]
-  > {
+  >(key: K): TraversedJSONPathBuilder<S, O2> {
     return this.#createBuilderWithPathLeg('Member', key)
   }
 
