@@ -1,4 +1,5 @@
 import {
+  ColumnDefinitionBuilder,
   ColumnType,
   KyselyPlugin,
   PluginTransformQueryArgs,
@@ -95,6 +96,176 @@ for (const dialect of DIALECTS) {
           { nickname: 'S.S.' },
         ])
       })
+
+      it('should execute a query with column->>$.key.key in select clause', async () => {
+        const query = ctx.db
+          .selectFrom('person_metadata')
+          .select((eb) =>
+            eb.ref('profile', '->>$').key('auth').key('roles').as('roles')
+          )
+
+        testSql(query, dialect, {
+          postgres: NOT_SUPPORTED,
+          mysql: {
+            parameters: [],
+            sql: "select `profile`->>'$.auth.roles' as `roles` from `person_metadata`",
+          },
+          sqlite: {
+            parameters: [],
+            sql: `select "profile"->>'$.auth.roles' as "roles" from "person_metadata"`,
+          },
+        })
+
+        const results = await query.execute()
+
+        expect(results).to.containSubset([
+          { roles: ['contributor', 'moderator'] },
+          { roles: ['contributor', 'moderator'] },
+          { roles: ['contributor', 'moderator'] },
+        ])
+      })
+
+      it('should execute a query with column->>$.key[0] in select clause', async () => {
+        const query = ctx.db
+          .selectFrom('person_metadata')
+          .select((eb) =>
+            eb.ref('profile', '->>$').key('tags').at(0).as('main_tag')
+          )
+
+        testSql(query, dialect, {
+          postgres: NOT_SUPPORTED,
+          mysql: {
+            parameters: [],
+            sql: "select `profile`->>'$.tags[0]' as `main_tag` from `person_metadata`",
+          },
+          sqlite: {
+            parameters: [],
+            sql: `select "profile"->>'$.tags[0]' as "main_tag" from "person_metadata"`,
+          },
+        })
+
+        const results = await query.execute()
+
+        expect(results).to.containSubset([
+          { main_tag: 'awesome' },
+          { main_tag: 'awesome' },
+          { main_tag: 'awesome' },
+        ])
+      })
+
+      it('should execute a query with column->>$[0].key in select clause', async () => {
+        const query = ctx.db
+          .selectFrom('person_metadata')
+          .select((eb) =>
+            eb
+              .ref('experience', '->>$')
+              .at(0)
+              .key('establishment')
+              .as('establishment')
+          )
+
+        testSql(query, dialect, {
+          postgres: NOT_SUPPORTED,
+          mysql: {
+            parameters: [],
+            sql: "select `experience`->>'$[0].establishment' as `establishment` from `person_metadata`",
+          },
+          sqlite: {
+            parameters: [],
+            sql: `select "experience"->>'$[0].establishment' as "establishment" from "person_metadata"`,
+          },
+        })
+
+        const results = await query.execute()
+
+        expect(results).to.containSubset([
+          { establishment: 'The University of Life' },
+          { establishment: 'The University of Life' },
+          { establishment: 'The University of Life' },
+        ])
+      })
+
+      it('should execute a query with column->>$[0][0] in select clause', async () => {
+        const query = ctx.db
+          .selectFrom('person_metadata')
+          .select((eb) =>
+            eb.ref('schedule', '->>$').at(0).at(0).as('january_1st_schedule')
+          )
+
+        testSql(query, dialect, {
+          postgres: NOT_SUPPORTED,
+          mysql: {
+            parameters: [],
+            sql: "select `schedule`->>'$[0][0]' as `january_1st_schedule` from `person_metadata`",
+          },
+          sqlite: {
+            parameters: [],
+            sql: `select "schedule"->>'$[0][0]' as "january_1st_schedule" from "person_metadata"`,
+          },
+        })
+
+        const results = await query.execute()
+
+        expect(results).to.containSubset([
+          { january_1st_schedule: [{ name: 'Gym', time: '12:15' }] },
+          { january_1st_schedule: [{ name: 'Gym', time: '12:15' }] },
+          { january_1st_schedule: [{ name: 'Gym', time: '12:15' }] },
+        ])
+      })
+
+      if (dialect === 'mysql') {
+        it('should execute a query with column->>$[last] in select clause', async () => {
+          const query = ctx.db
+            .selectFrom('person_metadata')
+            .select((eb) =>
+              eb.ref('nicknames', '->>$').at('last').as('nickname')
+            )
+
+          testSql(query, dialect, {
+            postgres: NOT_SUPPORTED,
+            mysql: {
+              parameters: [],
+              sql: "select `nicknames`->>'$[last]' as `nickname` from `person_metadata`",
+            },
+            sqlite: NOT_SUPPORTED,
+          })
+
+          const results = await query.execute()
+
+          expect(results).to.containSubset([
+            { nickname: 'Aniston the Magnificent' },
+            { nickname: 'Schwarzenegger the Magnificent' },
+            { nickname: 'Stallone the Magnificent' },
+          ])
+        })
+      }
+
+      if (dialect === 'sqlite') {
+        it('should execute a query with column->>$[#-1] in select clause', async () => {
+          const query = ctx.db
+            .selectFrom('person_metadata')
+            .select((eb) =>
+              eb.ref('nicknames', '->>$').at('#-1').as('nickname')
+            )
+
+          testSql(query, dialect, {
+            postgres: NOT_SUPPORTED,
+            mysql: NOT_SUPPORTED,
+            sqlite: {
+              parameters: [],
+              sql: `select "nicknames"->>'$[#-1]' as "nickname" from "person_metadata"`,
+            },
+          })
+
+          const results = await query.execute()
+
+          expect(results).to.containSubset([
+            { nickname: 'Aniston the Magnificent' },
+            { nickname: 'Schwarzenegger the Magnificent' },
+            { nickname: 'Stallone the Magnificent' },
+          ])
+        })
+      }
     }
 
     if (dialect !== 'mysql') {
@@ -149,6 +320,150 @@ for (const dialect of DIALECTS) {
           { nickname: 'S.S.' },
         ])
       })
+
+      it('should execute a query with column->key->>key in select clause', async () => {
+        const query = ctx.db
+          .selectFrom('person_metadata')
+          .select((eb) =>
+            eb.ref('profile', '->>').key('auth').key('roles').as('roles')
+          )
+
+        testSql(query, dialect, {
+          postgres: {
+            parameters: [],
+            sql: `select "profile"->'auth'->>'roles' as "roles" from "person_metadata"`,
+          },
+          mysql: NOT_SUPPORTED,
+          sqlite: {
+            parameters: [],
+            sql: `select "profile"->'auth'->>'roles' as "roles" from "person_metadata"`,
+          },
+        })
+
+        const results = await query.execute()
+
+        expect(results).to.containSubset([
+          { roles: ['contributor', 'moderator'] },
+          { roles: ['contributor', 'moderator'] },
+          { roles: ['contributor', 'moderator'] },
+        ])
+      })
+
+      it('should execute a query with column->key->>0 in select clause', async () => {
+        const query = ctx.db
+          .selectFrom('person_metadata')
+          .select((eb) =>
+            eb.ref('profile', '->>').key('tags').at(0).as('main_tag')
+          )
+
+        testSql(query, dialect, {
+          postgres: {
+            parameters: [],
+            sql: `select "profile"->'tags'->>0 as "main_tag" from "person_metadata"`,
+          },
+          mysql: NOT_SUPPORTED,
+          sqlite: {
+            parameters: [],
+            sql: `select "profile"->'tags'->>0 as "main_tag" from "person_metadata"`,
+          },
+        })
+
+        const results = await query.execute()
+
+        expect(results).to.containSubset([
+          { main_tag: 'awesome' },
+          { main_tag: 'awesome' },
+          { main_tag: 'awesome' },
+        ])
+      })
+
+      it('should execute a query with column->0->>key in select clause', async () => {
+        const query = ctx.db
+          .selectFrom('person_metadata')
+          .select((eb) =>
+            eb
+              .ref('experience', '->>')
+              .at(0)
+              .key('establishment')
+              .as('establishment')
+          )
+
+        testSql(query, dialect, {
+          postgres: {
+            parameters: [],
+            sql: `select "experience"->0->>'establishment' as "establishment" from "person_metadata"`,
+          },
+          mysql: NOT_SUPPORTED,
+          sqlite: {
+            parameters: [],
+            sql: `select "experience"->0->>'establishment' as "establishment" from "person_metadata"`,
+          },
+        })
+
+        const results = await query.execute()
+
+        expect(results).to.containSubset([
+          { establishment: 'The University of Life' },
+          { establishment: 'The University of Life' },
+          { establishment: 'The University of Life' },
+        ])
+      })
+
+      it('should execute a query with column->0->>0 in select clause', async () => {
+        const query = ctx.db
+          .selectFrom('person_metadata')
+          .select((eb) =>
+            eb.ref('schedule', '->>').at(0).at(0).as('january_1st_schedule')
+          )
+
+        testSql(query, dialect, {
+          postgres: {
+            parameters: [],
+            sql: `select "schedule"->0->>0 as "january_1st_schedule" from "person_metadata"`,
+          },
+          mysql: NOT_SUPPORTED,
+          sqlite: {
+            parameters: [],
+            sql: `select "schedule"->0->>0 as "january_1st_schedule" from "person_metadata"`,
+          },
+        })
+
+        const results = await query.execute()
+
+        expect(results).to.containSubset([
+          { january_1st_schedule: [{ name: 'Gym', time: '12:15' }] },
+          { january_1st_schedule: [{ name: 'Gym', time: '12:15' }] },
+          { january_1st_schedule: [{ name: 'Gym', time: '12:15' }] },
+        ])
+      })
+
+      if (dialect === 'postgres') {
+        it('should execute a query with column->>-1 in select clause', async () => {
+          const query = ctx.db
+            .selectFrom('person_metadata')
+            .select((eb) => eb.ref('nicknames', '->>').at(-1).as('nickname'))
+
+          testSql(query, dialect, {
+            postgres: {
+              parameters: [],
+              sql: `select "nicknames"->>-1 as "nickname" from "person_metadata"`,
+            },
+            mysql: NOT_SUPPORTED,
+            sqlite: {
+              parameters: [],
+              sql: `select "nicknames"->>-1 as "nickname" from "person_metadata"`,
+            },
+          })
+
+          const results = await query.execute()
+
+          expect(results).to.containSubset([
+            { nickname: 'Aniston the Magnificent' },
+            { nickname: 'Schwarzenegger the Magnificent' },
+            { nickname: 'Stallone the Magnificent' },
+          ])
+        })
+      }
     }
   })
 }
@@ -165,6 +480,29 @@ async function initJSONTest<D extends BuiltInDialect>(
         person_id: number
         website: ColumnType<{ url: string }, string, string>
         nicknames: ColumnType<string[], string, string>
+        profile: ColumnType<
+          {
+            auth: {
+              roles: string[]
+              last_login?: { device: string }
+            }
+            tags: string[]
+          },
+          string,
+          string
+        >
+        experience: ColumnType<
+          {
+            establishment: string
+          }[],
+          string,
+          string
+        >
+        schedule: ColumnType<
+          { name: string; time: string }[][][],
+          string,
+          string
+        >
       }
     }>()
     .withPlugin(
@@ -203,17 +541,19 @@ async function initJSONTest<D extends BuiltInDialect>(
       })()
     )
 
+  const jsonColumnDataType = resolveJSONColumnDataType(dialect)
+  const notNull = (cb: ColumnDefinitionBuilder) => cb.notNull()
+
   await db.schema
     .createTable('person_metadata')
     .addColumn('person_id', 'integer', (cb) =>
       cb.primaryKey().references('person.id')
     )
-    .addColumn('website', resolveJSONColumnDataType(dialect), (cb) =>
-      cb.notNull()
-    )
-    .addColumn('nicknames', resolveJSONColumnDataType(dialect), (cb) =>
-      cb.notNull()
-    )
+    .addColumn('website', jsonColumnDataType, notNull)
+    .addColumn('nicknames', jsonColumnDataType, notNull)
+    .addColumn('profile', jsonColumnDataType, notNull)
+    .addColumn('experience', jsonColumnDataType, notNull)
+    .addColumn('schedule', jsonColumnDataType, notNull)
     .execute()
 
   return { ...testContext, db }
@@ -253,6 +593,21 @@ async function insertDefaultJSONDataSet(ctx: TestContext) {
             `${person.first_name} the Great`,
             `${person.last_name} the Magnificent`,
           ]),
+          profile: JSON.stringify({
+            tags: ['awesome'],
+            auth: {
+              roles: ['contributor', 'moderator'],
+              last_login: {
+                device: 'android',
+              },
+            },
+          }),
+          experience: JSON.stringify([
+            {
+              establishment: 'The University of Life',
+            },
+          ]),
+          schedule: JSON.stringify([[[{ name: 'Gym', time: '12:15' }]]]),
         }))
     )
     .execute()
