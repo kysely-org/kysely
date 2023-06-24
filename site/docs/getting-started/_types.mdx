@@ -59,5 +59,6 @@ export type EditedPet = Updateable<PetTable>
 For production apps, it is recommended to automatically generate your <code>Database</code>
 interface by introspecting your production database or Prisma schemas. Find out more at
 ["Generating types"](https://kysely.dev/docs/generating-types).
+Consider that automatic code generation could lead to different naming and structure of this file, for example the Database interface could be named DB and placed at the bottom.
 
 :::
