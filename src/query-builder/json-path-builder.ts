@@ -20,10 +20,10 @@ export class JSONPathBuilder<S, O = S> {
   }
 
   at<
-    I extends any[] extends O ? number | `#-${number}` : never,
+    I extends any[] extends O ? number | 'last' | `#-${number}` : never,
     O2 = null | NonNullable<NonNullable<O>[keyof NonNullable<O> & number]>
   >(
-    index: `${I}` extends `-${any}` | `${any}.${any}` | `#--${any}` ? never : I
+    index: `${I}` extends `${any}.${any}` | `#--${any}` ? never : I
   ): TraversedJSONPathBuilder<S, O2> {
     return this.#createBuilderWithPathLeg('ArrayLocation', index)
   }

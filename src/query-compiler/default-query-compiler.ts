@@ -1342,8 +1342,10 @@ export class DefaultQueryCompiler
       this.append(node.operator)
       this.visitNode(node.jsonPath)
     } else {
-      for (const pathLeg of node.jsonPath.pathLegs) {
-        this.append(node.operator)
+      const lastLeg = node.jsonPath.pathLegs.length - 1
+
+      for (const [index, pathLeg] of node.jsonPath.pathLegs.entries()) {
+        this.append(index === lastLeg ? node.operator : '->')
 
         const isMember = pathLeg.type === 'Member'
 
