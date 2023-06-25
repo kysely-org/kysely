@@ -1,4 +1,4 @@
-import { expectType } from 'tsd'
+import { expectError, expectType } from 'tsd'
 import { Kysely } from '..'
 import { Database } from '../shared'
 
@@ -70,4 +70,29 @@ async function testJSONTraversal(db: Kysely<Database>) {
     .execute()
 
   expectType<{ nickname: string | null }>(r8)
+
+  // missing operator
+
+  expectError(
+    db
+      .selectFrom('person_metadata')
+      .select((eb) => eb.ref('experience').at(0).as('alias'))
+  )
+
+  expectError(
+    db
+      .selectFrom('person_metadata')
+      .select((eb) => eb.ref('website').key('url').as('alias'))
+  )
+
+  // invalid operator
+
+  expectError(
+    db
+      .selectFrom('person_metadata')
+      .select((eb) =>
+        eb.ref('website', 'NO_SUCH_OPERATOR').key('url').as('alias')
+      )
+      .execute()
+  )
 }
