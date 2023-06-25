@@ -24,7 +24,7 @@ async function testJSONTraversal(db: Kysely<Database>) {
     )
     .execute()
 
-  expectType<{ roles: string[] | null }>(r3)
+  expectType<{ roles: string[] }>(r3)
 
   const [r4] = await db
     .selectFrom('person_metadata')
