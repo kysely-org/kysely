@@ -69,10 +69,5 @@ export interface PersonMetadata {
     string,
     string
   >
-  schedule: ColumnType<
-    { name: string; time: string }[][][],
-    string,
-    string
-  >
-}
+  schedule: ColumnType<{ name: string; time: string }[][][], string, string>
 }
