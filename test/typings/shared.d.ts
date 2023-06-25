@@ -30,6 +30,7 @@ export interface Database {
   'some_schema.movie': Movie
   book: Book
   toy: Toy
+  person_metadata: PersonMetadata
 }
 
 export interface Person {
@@ -43,4 +44,35 @@ export interface Person {
   // we never want the user to be able to insert or
   // update.
   modified_at: ColumnType<Date, never, never>
+}
+
+export interface PersonMetadata {
+  id: Generated<number>
+  person_id: number
+  website: ColumnType<{ url: string }, string, string>
+  nicknames: ColumnType<string[], string, string>
+  profile: ColumnType<
+    {
+      auth: {
+        roles: string[]
+        last_login?: { device: string }
+      }
+      tags: string[]
+    },
+    string,
+    string
+  >
+  experience: ColumnType<
+    {
+      establishment: string
+    }[],
+    string,
+    string
+  >
+  schedule: ColumnType<
+    { name: string; time: string }[][][],
+    string,
+    string
+  >
+}
 }
