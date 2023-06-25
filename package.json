@@ -4,7 +4,7 @@
   "description": "Type safe SQL query builder",
   "repository": {
     "type": "git",
-    "url": "git://github.com/koskimas/kysely.git"
+    "url": "git://github.com/kysely-org/kysely.git"
   },
   "engines": {
     "node": ">=14.0.0"
