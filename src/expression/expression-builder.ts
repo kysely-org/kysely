@@ -217,7 +217,11 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
   case<O>(expression: Expression<O>): CaseBuilder<DB, TB, O>
 
   /**
-   * This can be used to reference columns.
+   * This method can be used to reference columns within the query's context. For
+   * a non-type-safe version of this method see {@link sql}'s version.
+   *
+   * Additionally, this method can be used to reference nested JSON properties or
+   * array elements. See {@link JSONPathBuilder} for more information.
    *
    * ### Examples
    *
@@ -233,9 +237,8 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    *   ]))
    * ```
    *
-   * In the next example we use the `ref` method to reference
-   * columns of the virtual table `excluded` in a type-safe way
-   * to create an upsert operation:
+   * In the next example we use the `ref` method to reference columns of the virtual
+   * table `excluded` in a type-safe way to create an upsert operation:
    *
    * ```ts
    * db.insertInto('person')
@@ -249,13 +252,49 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    *   )
    * ```
    *
-   * In the next example we use `ref` in a raw sql expression. Unless you
-   * want to be as type-safe as possible, this is probably overkill:
+   * In the next example we use `ref` in a raw sql expression. Unless you want
+   * to be as type-safe as possible, this is probably overkill:
    *
    * ```ts
    * db.update('pet').set((eb) => ({
    *   name: sql`concat(${eb.ref('pet.name')}, ${suffix})`
    * }))
+   * ```
+   *
+   * In the next example we use `ref` to reference a nested JSON property:
+   *
+   * ```ts
+   * db.selectFrom('person')
+   *   .where(({ cmpr, ref }) => cmpr(
+   *     ref('address', '->>').key('state').key('abbr'),
+   *     '=',
+   *     'CA'
+   *   ))
+   *   .selectAll()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * select * from "person" where "address"->'state'->>'abbr' = $1
+   * ```
+   *
+   * You can also compile to a JSON path expression by using the `->>$` operator:
+   *
+   * ```ts
+   * db.selectFrom('person')
+   *   .select(({ ref }) =>
+   *     ref('experience', '->>$')
+   *       .at('last')
+   *       .key('title')
+   *       .as('current_job')
+   *   )
+   * ```
+   *
+   * The generated SQL (MySQL):
+   *
+   * ```sql
+   * select `experience`->>'$[last].title' as `current_job` from `person`
    * ```
    */
   ref<RE extends StringReference<DB, TB>>(
