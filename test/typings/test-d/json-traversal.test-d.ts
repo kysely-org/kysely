@@ -95,4 +95,87 @@ async function testJSONTraversal(db: Kysely<Database>) {
       )
       .execute()
   )
+
+  // use `key` on non-object
+
+  expectError(
+    db
+      .selectFrom('person_metadata')
+      .select((eb) => eb.ref('nicknames', '->>$').key('url').as('alias'))
+      .execute()
+  )
+
+  expectError(
+    db
+      .selectFrom('person_metadata')
+      .select((eb) => [
+        eb.ref('website', '->>').key('url').key('length').as('alias'),
+        eb.ref('schedule', '->>').key('length').as('alias2'),
+      ])
+      .execute()
+  )
+
+  // use `at` on non-array
+
+  expectError(
+    db
+      .selectFrom('person_metadata')
+      .select((eb) => eb.ref('website', '->>$').at(0).as('alias'))
+      .execute()
+  )
+
+  expectError(
+    db
+      .selectFrom('person_metadata')
+      .select((eb) => eb.ref('experience', '->>').at(0).at(-1).as('alias'))
+      .execute()
+  )
+
+  // bad key
+
+  expectError(
+    db
+      .selectFrom('person_metadata')
+      .select((eb) =>
+        eb.ref('website', '->>$').key('NO_SUCH_FIELD').as('alias')
+      )
+      .execute()
+  )
+
+  // bad index
+
+  expectError(
+    db
+      .selectFrom('person_metadata')
+      .select((eb) => eb.ref('nicknames', '->>$').at('0').as('alias'))
+      .execute()
+  )
+
+  expectError(
+    db
+      .selectFrom('person_metadata')
+      .select((eb) => eb.ref('nicknames', '->>$').at(0.5).as('alias'))
+      .execute()
+  )
+
+  expectError(
+    db
+      .selectFrom('person_metadata')
+      .select((eb) => eb.ref('nicknames', '->>$').at('#--1').as('alias'))
+      .execute()
+  )
+
+  expectError(
+    db
+      .selectFrom('person_metadata')
+      .select((eb) => eb.ref('nicknames', '->>$').at('#-1.5').as('alias'))
+      .execute()
+  )
+
+  expectError(
+    db
+      .selectFrom('person_metadata')
+      .select((eb) => eb.ref('nicknames', '->>$').at('last ').as('alias'))
+      .execute()
+  )
 }
