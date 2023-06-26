@@ -6,17 +6,13 @@ title: 'Single row'
 
 Delete a single row:
 
-import {
-  Playground,
-  exampleSetup,
-} from '../../../src/components/Playground'
+import { Playground, exampleSetup } from '../../../src/components/Playground'
+import { CodeExample } from '../../../src/components/CodeExample'
 
-import {
-  singleRow
-} from './0010-single-row'
+import example from '!raw-loader!./0010-single-row.example.ts'
 
 <div style={{ marginBottom: '1em' }}>
-  <Playground code={singleRow} setupCode={exampleSetup} />
+  <CodeExample example={example} />
 </div>
 
 :::info More examples
@@ -25,6 +21,7 @@ but you can access the same documentation by hovering over functions/methods/cla
 just one hover away!
 
 For example, check out these sections:
- - [deleteFrom method](https://kysely-org.github.io/kysely/classes/Kysely.html#deleteFrom)
- - [returning method](https://kysely-org.github.io/kysely/classes/DeleteQueryBuilder.html#returning)
-:::
+
+- [deleteFrom method](https://kysely-org.github.io/kysely/classes/Kysely.html#deleteFrom)
+- [returning method](https://kysely-org.github.io/kysely/classes/DeleteQueryBuilder.html#returning)
+  :::
