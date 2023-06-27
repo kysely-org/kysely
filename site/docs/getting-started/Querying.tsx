@@ -12,7 +12,7 @@ const postgresqlCodeSnippet = `export async function createPerson(person: NewPer
     .executeTakeFirstOrThrow()
 }
 
-export async function deletePerson(id: Person['id']) {
+export async function deletePerson(id: number) {
   return await db.deleteFrom('person').where('id', '=', id)
     .returningAll()
     .executeTakeFirst()
@@ -28,7 +28,7 @@ const dialectSpecificCodeSnippets: Record<Dialect, string> = {
   return await findPersonById(insertId)
 }
 
-export async function deletePerson(id: Person['id']) {
+export async function deletePerson(id: number) {
   const person = await findPersonById(id)
 
   if (person) {
