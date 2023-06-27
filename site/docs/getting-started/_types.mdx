@@ -40,7 +40,7 @@ export interface PersonTable {
 // make sure that the correct types are used in each operation.
 export type Person = Selectable<PersonTable>
 export type NewPerson = Insertable<PersonTable>
-export type EditedPerson = Updateable<PersonTable>
+export type PersonUpdate = Updateable<PersonTable>
 
 export interface PetTable {
   id: Generated<number>
@@ -51,7 +51,7 @@ export interface PetTable {
 
 export type Pet = Selectable<PetTable>
 export type NewPet = Insertable<PetTable>
-export type EditedPet = Updateable<PetTable>
+export type PetUpdate = Updateable<PetTable>
 ```
 
 :::tip Codegen
