@@ -58,8 +58,10 @@ function HomepageHeader() {
             style={{
               borderRadius: 12,
               boxShadow: 'var(--shadow-elevation-medium)',
+              width: 800,
+              height: 592,
             }}
-            src="https://github.com/kysely-org/kysely/raw/master/assets/demo.gif"
+            src="/img/demo.gif"
           />
         </div>
       </div>
@@ -208,9 +210,7 @@ function SectionTweets() {
           <TweetQuote
             authorName={'Dax Raad'}
             authorTitle={'@SST_dev core team'}
-            avatar={
-              'https://pbs.twimg.com/profile_images/1602333093485891584/mmVqjFNI_400x400.jpg'
-            }
+            avatar={'/img/avatars/daxraad.jpeg'}
             tweetLink={
               'https://twitter.com/thdxr/status/1623136475914043392?ref_src=twsrc%5Etfw'
             }
@@ -220,9 +220,7 @@ function SectionTweets() {
           <TweetQuote
             authorName={'Harminder Virk'}
             authorTitle={'Creator of AdonisJS'}
-            avatar={
-              'https://pbs.twimg.com/profile_images/1398931824110280708/uint2k0c_400x400.jpg'
-            }
+            avatar={'/img/avatars/harminder.jpeg'}
             tweetLink={
               'https://twitter.com/AmanVirk1/status/1666636685583568897'
             }
@@ -233,10 +231,8 @@ function SectionTweets() {
 
           <TweetQuote
             authorName={'Gal Schlezinger'}
-            authorTitle={'Software Developer @ Vercel, Creator of fnm'}
-            avatar={
-              'https://pbs.twimg.com/profile_images/1200413867437936640/SnCiBgrR_400x400.jpg'
-            }
+            authorTitle={'Software Developer @ Vercel'}
+            avatar={'/img/avatars/gal.jpeg'}
             text={'Kysely is 🐐'}
             tweetLink={'https://twitter.com/galstar/status/1645452990147436546'}
           />
@@ -244,9 +240,7 @@ function SectionTweets() {
           <TweetQuote
             authorName={'Yusuke Wada'}
             authorTitle={'Creator of @honojs'}
-            avatar={
-              'https://pbs.twimg.com/profile_images/15300142/profile_childfood_400x400.jpg'
-            }
+            avatar={'/img/avatars/yusuke.jpeg'}
             text="Kysely is great. D1 will be great. This is great."
             tweetLink={
               'https://twitter.com/yusukebe/status/1581775103167066112'
@@ -256,9 +250,7 @@ function SectionTweets() {
           <TweetQuote
             authorName={'Theo Browne'}
             authorTitle={'CEO @ Ping Labs, tech influencer'}
-            avatar={
-              'https://pbs.twimg.com/profile_images/1605762947686375425/lsoGWWty_400x400.jpg'
-            }
+            avatar={'/img/avatars/theo.jpeg'}
             tweetLink={'https://twitter.com/t3dotgg/status/1632949634728599552'}
             text={
               "Planetscale's DatabaseJS combined with Kysely or @DrizzleOrm is pretty dope to stay on edge"
@@ -268,9 +260,7 @@ function SectionTweets() {
           <TweetQuote
             authorName={'Johan Eliasson'}
             authorTitle={'Indiehacker & engineer, Ex-CEO @ Nhost'}
-            avatar={
-              'https://pbs.twimg.com/profile_images/1647139874682675200/-uwyeCXB_400x400.jpg'
-            }
+            avatar={'/img/avatars/johan.jpeg'}
             tweetLink={
               'https://twitter.com/elitasson/status/1642090379066449920'
             }
@@ -282,9 +272,7 @@ function SectionTweets() {
           <TweetQuote
             authorName={'Mehul Mohan'}
             authorTitle={'CEO @ codedamn'}
-            avatar={
-              'https://pbs.twimg.com/profile_images/1418658538688155648/CREA-CYu_400x400.jpg'
-            }
+            avatar={'/img/avatars/mehul.jpeg'}
             text="We went with query builder because we did not have more time to waste on ORMs. ORMs might be great but we have the technical capability to pull off just using a query builder. However, we type safety and sanitization for DX and security was a must - hence kysely."
             tweetLink={
               'https://twitter.com/mehulmpt/status/1650480912759685120'
@@ -294,9 +282,7 @@ function SectionTweets() {
           <TweetQuote
             authorName={'Alberto Gimeno'}
             authorTitle={'Software Engineer @ Railway'}
-            avatar={
-              'https://pbs.twimg.com/profile_images/1614373062022922241/zUKUXrKP_400x400.jpg'
-            }
+            avatar={'/img/avatars/alberto.jpeg'}
             tweetLink={
               'https://twitter.com/gimenete/status/1653121152854765569'
             }
@@ -308,9 +294,7 @@ function SectionTweets() {
           <TweetQuote
             authorName={'Nicholas Griffin'}
             authorTitle={'Senior Engineer @ the BBC'}
-            avatar={
-              'https://pbs.twimg.com/profile_images/1468372517538701316/HnQ_WZVg_400x400.jpg'
-            }
+            avatar={'/img/avatars/nicholas.jpeg'}
             text="😂 I don\'t actually like prisma that much, i prefer https://github.com/kysely-org/kysely, not an orm though."
             tweetLink={
               'https://twitter.com/ngriffin_uk/status/1599891725404676096'
@@ -320,9 +304,7 @@ function SectionTweets() {
           <TweetQuote
             authorName={'Sam Cook'}
             authorTitle={'Software engineer @ trygamma'}
-            avatar={
-              'https://pbs.twimg.com/profile_images/1649060154569117696/LAfX0qRG_400x400.jpg'
-            }
+            avatar={'/img/avatars/samcook.jpeg'}
             tweetLink={
               'https://twitter.com/sjc5_/status/1623210443874639873?ref_src=twsrc%5Etfw'
             }
@@ -332,9 +314,7 @@ function SectionTweets() {
           <TweetQuote
             authorName={'Gannon Hall'}
             authorTitle={'Product & dev, ex-Google'}
-            avatar={
-              'https://pbs.twimg.com/profile_images/1603091670072819712/EArb-OH4_400x400.jpg'
-            }
+            avatar={'/img/avatars/gannon.jpeg'}
             tweetLink={'https://twitter.com/gannonh/status/1653109305368018944'}
             text={
               'Vercel just announced native postgres support and published Prisma and Kysely templates. I like the DX of Prisma and the type safety of Kysely so I use both via prisma-kysely.'
@@ -344,9 +324,7 @@ function SectionTweets() {
           <TweetQuote
             authorName={'@CodeMonument'}
             authorTitle="CodeMonument"
-            avatar={
-              'https://pbs.twimg.com/profile_images/1600267282411839489/sVc4DQth_400x400.jpg'
-            }
+            avatar={'/img/avatars/codemonument.jpeg'}
             tweetLink={
               'https://twitter.com/CodeMonument/status/1571637269424996354'
             }
@@ -360,9 +338,7 @@ It's so stupidly simple! [...]
           <TweetQuote
             authorName={'sommelier de garrafada'}
             authorTitle="@solinvictvs"
-            avatar={
-              'https://pbs.twimg.com/profile_images/1380006186209181696/AGXROT4g_400x400.jpg'
-            }
+            avatar={'/img/avatars/sommelier.jpeg'}
             tweetLink={
               'https://twitter.com/solinvictvs/status/1615549659115655169'
             }
@@ -372,7 +348,7 @@ It's so stupidly simple! [...]
           <TweetQuote
             authorName="Sock, the dev 🧦"
             authorTitle="@sockthedev"
-            avatar="https://pbs.twimg.com/profile_images/1569584517161324544/po3hKnjN_400x400.jpg"
+            avatar={'/img/avatars/sock.jpeg'}
             tweetLink="https://twitter.com/sockthedev/status/1599814152771760128"
             text="YES! Completed the initial version of this. Finally. Huge shoutout to Kysely for making this way less painful than it should have been. The BEST TypeScript based SQL query builder. ♥️"
           />
