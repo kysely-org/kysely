@@ -52,9 +52,9 @@ export function Querying(props: PropsWithDialect) {
       </p>
       <CodeBlock language="ts" title="src/PersonRepository.ts">
         {`import { db } from './database'
-import { EditedPerson, Person, NewPerson } from './types'
+import { PersonUpdate, Person, NewPerson } from './types'
 
-export async function findPersonById(id: Person['id']) {
+export async function findPersonById(id: number) {
   return await db.selectFrom('person')
     .where('id', '=', id)
     .selectAll()
@@ -91,7 +91,7 @@ export async function findPeople(criteria: Partial<Person>) {
   return await query.selectAll().execute()
 }
 
-export async function updatePerson(id: Person['id'], updateWith: EditedPerson) {
+export async function updatePerson(id: number, updateWith: PersonUpdate) {
   await db.updateTable('person').set(updateWith).where('id', '=', id).execute()
 }
 
