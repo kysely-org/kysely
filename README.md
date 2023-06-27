@@ -40,8 +40,8 @@ If you start using Kysely and can't find something you'd want to use, please ope
 # Getting started
 
 Please visit our documentation site [kysely.dev](https://kysely.dev) to get started. We also have a comprehensive
-API documentation that's hosted [here](https://kysely-org.github.io/kysely/) but you can access the same
-documentation in your IDE by hovering over a class/method/property/whatever you want more info and examples on.
+API documentation hosted [here](https://kysely-org.github.io/kysely/) but you can access the same
+documentation in your IDE by hovering over a class/method/property/whatever.
 
 # Contributors
 
