@@ -6,6 +6,7 @@ import { SectionFeatures } from '@site/src/components/SectionFeatures'
 
 import styles from './index.module.css'
 import { gray } from '@radix-ui/colors'
+import { DemoVideo } from '../components/DemoVideo'
 
 function HomepageHeader() {
   const { siteConfig } = useDocusaurusContext()
@@ -54,15 +55,7 @@ function HomepageHeader() {
           </span>
         </div>
         <div>
-          <img
-            style={{
-              borderRadius: 12,
-              boxShadow: 'var(--shadow-elevation-medium)',
-              width: 800,
-              height: 592,
-            }}
-            src="/img/demo.gif"
-          />
+          <DemoVideo />
         </div>
       </div>
 
@@ -167,7 +160,7 @@ function TweetQuote({
     >
       <TwitterIcon />
       <div style={{ display: 'flex', gap: 8 }}>
-        <img className="avatar__photo" src={avatar} />
+        <IdealImage className="avatar__photo" src={avatar} />
         <div
           style={{
             display: 'flex',
@@ -210,14 +203,14 @@ function SectionTweets() {
           <TweetQuote
             authorName={'Dax Raad'}
             authorTitle={'@SST_dev core team'}
-            avatar={'/img/avatars/daxraad.jpeg'}
+            avatar={require('@site/static/img/avatars/daxraad.jpg').default}
             tweetLink={
               'https://twitter.com/thdxr/status/1623136475914043392?ref_src=twsrc%5Etfw'
             }
             text={"Kysely is the best written TS codebase I've ever seen"}
           />
 
-          <TweetQuote
+          {/* <TweetQuote
             authorName={'Harminder Virk'}
             authorTitle={'Creator of AdonisJS'}
             avatar={'/img/avatars/harminder.jpeg'}
@@ -351,7 +344,7 @@ It's so stupidly simple! [...]
             avatar={'/img/avatars/sock.jpeg'}
             tweetLink="https://twitter.com/sockthedev/status/1599814152771760128"
             text="YES! Completed the initial version of this. Finally. Huge shoutout to Kysely for making this way less painful than it should have been. The BEST TypeScript based SQL query builder. ♥️"
-          />
+          /> */}
         </div>
       </div>
     </section>
