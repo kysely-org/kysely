@@ -175,6 +175,9 @@ function writeSiteExample(state) {
 
   parts.push(
     deindent(`
+      // THIS IS AN AUTO GENERATED FILE.
+      // CHANGES TO THIS FILE WILL BE LOST
+      // SEE: /scripts/generate-site-examples.js
       import {
         Playground,
         exampleSetup,
