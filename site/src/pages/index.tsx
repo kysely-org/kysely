@@ -160,7 +160,7 @@ function TweetQuote({
     >
       <TwitterIcon />
       <div style={{ display: 'flex', gap: 8 }}>
-        <IdealImage className="avatar__photo" src={avatar} />
+        <img className="avatar__photo" src={avatar} />
         <div
           style={{
             display: 'flex',
