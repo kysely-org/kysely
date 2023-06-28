@@ -203,7 +203,7 @@ function SectionTweets() {
           <TweetQuote
             authorName={'Dax Raad'}
             authorTitle={'@SST_dev core team'}
-            avatar={require('@site/static/img/avatars/daxraad.jpg').default}
+            avatar={'/img/avatars/daxraad.jpeg'}
             tweetLink={
               'https://twitter.com/thdxr/status/1623136475914043392?ref_src=twsrc%5Etfw'
             }
