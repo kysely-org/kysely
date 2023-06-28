@@ -160,7 +160,11 @@ function TweetQuote({
     >
       <TwitterIcon />
       <div style={{ display: 'flex', gap: 8 }}>
-        <img className="avatar__photo" src={avatar} />
+        <img
+          className="avatar__photo"
+          alt={`${authorName}'s avatar picture`}
+          src={avatar}
+        />
         <div
           style={{
             display: 'flex',
@@ -210,7 +214,7 @@ function SectionTweets() {
             text={"Kysely is the best written TS codebase I've ever seen"}
           />
 
-          {/* <TweetQuote
+          <TweetQuote
             authorName={'Harminder Virk'}
             authorTitle={'Creator of AdonisJS'}
             avatar={'/img/avatars/harminder.jpeg'}
@@ -344,7 +348,7 @@ It's so stupidly simple! [...]
             avatar={'/img/avatars/sock.jpeg'}
             tweetLink="https://twitter.com/sockthedev/status/1599814152771760128"
             text="YES! Completed the initial version of this. Finally. Huge shoutout to Kysely for making this way less painful than it should have been. The BEST TypeScript based SQL query builder. ♥️"
-          /> */}
+          />
         </div>
       </div>
     </section>
