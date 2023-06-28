@@ -26,7 +26,7 @@ export class JSONPathBuilder<S, O = S> {
    * resulting type is always nullable. If you're sure the element exists, you
    * should use {@link SelectQueryBuilder.$assertType} to narrow the type safely.
    *
-   * See also {@link key} to access fields in JSON objects.
+   * See also {@link key} to access properties of JSON objects.
    *
    * ### Examples
    *
@@ -93,7 +93,7 @@ export class JSONPathBuilder<S, O = S> {
   }
 
   /**
-   * Access a field of a JSON object.
+   * Access a property of a JSON object.
    *
    * If a field is optional, the resulting type will be nullable.
    *
