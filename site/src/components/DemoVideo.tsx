@@ -10,8 +10,11 @@ export function DemoVideo() {
         height: 592,
       }}
       autoPlay
+      muted
+      playsInline
       loop
-      src="/demo.mp4"
-    />
+    >
+      <source src="/demo.mp4" type="video/mp4" />
+    </video>
   )
 }
