@@ -32,25 +32,24 @@ for (const dialect of DIALECTS) {
       const query = ctx.db
         .selectFrom('person')
         .selectAll('person')
-        .where(
-          ({ and, or, cmpr, bxp, fn, exists, not, ref, val, selectFrom }) =>
-            and([
-              or([
-                not(cmpr('first_name', '=', 'Jennifer')),
-                cmpr(bxp('id', '+', 1), '>', 10),
-                cmpr(ref('id'), 'in', val([10, 20, 30])),
-                or([cmpr(fn('upper', ['first_name']), '=', 'SYLVESTER')]),
-                // Empty or
-                or([]),
-              ]),
-              exists(
-                selectFrom('pet')
-                  .select('pet.id')
-                  .whereRef('pet.owner_id', '=', 'person.id')
-              ),
-              // Empty and
-              and([]),
-            ])
+        .where(({ and, or, eb, fn, exists, not, ref, val, selectFrom }) =>
+          and([
+            or([
+              not(eb('first_name', '=', 'Jennifer')),
+              eb(eb('id', '+', 1), '>', 10),
+              eb(ref('id'), 'in', val([10, 20, 30])),
+              or([eb(fn('upper', ['first_name']), '=', 'SYLVESTER')]),
+              // Empty or
+              or([]),
+            ]),
+            exists(
+              selectFrom('pet')
+                .select('pet.id')
+                .whereRef('pet.owner_id', '=', 'person.id')
+            ),
+            // Empty and
+            and([]),
+          ])
         )
 
       testSql(query, dialect, {

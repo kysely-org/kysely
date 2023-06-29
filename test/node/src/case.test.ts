@@ -85,9 +85,9 @@ for (const dialect of DIALECTS) {
         .select((eb) =>
           eb
             .case()
-            .when(eb.cmpr('gender', '=', 'male'))
+            .when(eb('gender', '=', 'male'))
             .then(sql.lit('Mr.'))
-            .when(eb.cmpr('gender', '=', 'female'))
+            .when(eb('gender', '=', 'female'))
             .then(sql.lit('Mrs.'))
             .end()
             .as('title')
@@ -224,8 +224,8 @@ for (const dialect of DIALECTS) {
               .case()
               .when(
                 eb.or([
-                  eb.cmpr('marital_status', '=', 'single'),
-                  eb.cmpr('marital_status', 'is', null),
+                  eb('marital_status', '=', 'single'),
+                  eb('marital_status', 'is', null),
                 ])
               )
               .then('Ms.')

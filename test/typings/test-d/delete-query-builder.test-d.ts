@@ -17,7 +17,6 @@ async function testDelete(db: Kysely<Database>) {
     .deleteFrom('person')
     .using(['pet', 'toy'])
     .where('pet.species', '=', 'cat')
-    .orWhere('toy.price', '=', 0)
     .executeTakeFirstOrThrow()
   expectType<DeleteResult>(r3)
 
@@ -26,7 +25,6 @@ async function testDelete(db: Kysely<Database>) {
     .using(['person', 'pet'])
     .innerJoin('toy', 'toy.pet_id', 'pet.id')
     .where('pet.species', '=', 'cat')
-    .orWhere('toy.price', '=', 0)
     .executeTakeFirstOrThrow()
   expectType<DeleteResult>(r4)
 
@@ -35,7 +33,6 @@ async function testDelete(db: Kysely<Database>) {
     .using(['person', 'pet'])
     .leftJoin('toy', 'toy.pet_id', 'pet.id')
     .where('pet.species', '=', 'cat')
-    .orWhere('toy.price', '=', 0)
     .executeTakeFirstOrThrow()
   expectType<DeleteResult>(r5)
 
@@ -84,8 +81,9 @@ async function testDelete(db: Kysely<Database>) {
     .deleteFrom('person')
     .using(['person', 'pet'])
     .leftJoin('toy', 'toy.pet_id', 'pet.id')
-    .where('pet.species', '=', 'cat')
-    .orWhere('toy.price', '=', 0)
+    .where((eb) =>
+      eb.or([eb('pet.species', '=', 'cat'), eb('toy.price', '=', 0)])
+    )
     .returningAll('person')
     .execute()
   expectType<Selectable<Person>[]>(r8)
@@ -102,7 +100,6 @@ async function testDelete(db: Kysely<Database>) {
     .using(['person', 'pet'])
     .leftJoin('toy', 'toy.pet_id', 'pet.id')
     .where('pet.species', '=', 'cat')
-    .orWhere('toy.price', '=', 0)
     .returningAll(['pet', 'toy', 'person'])
     .execute()
   expectType<
@@ -165,7 +162,6 @@ async function testDelete(db: Kysely<Database>) {
     .using(['person', 'pet'])
     .leftJoin('toy', 'toy.pet_id', 'pet.id')
     .where('pet.species', '=', 'cat')
-    .orWhere('toy.price', '=', 0)
     .returningAll()
     .execute()
   expectType<

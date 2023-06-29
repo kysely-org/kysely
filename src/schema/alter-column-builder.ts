@@ -18,13 +18,21 @@ export class AlterColumnBuilder {
 
   setDataType(dataType: DataTypeExpression): AlteredColumnBuilder {
     return new AlteredColumnBuilder(
-      AlterColumnNode.create(this.#column, 'dataType', parseDataTypeExpression(dataType))
+      AlterColumnNode.create(
+        this.#column,
+        'dataType',
+        parseDataTypeExpression(dataType)
+      )
     )
   }
 
   setDefault(value: DefaultValueExpression): AlteredColumnBuilder {
     return new AlteredColumnBuilder(
-      AlterColumnNode.create(this.#column, 'setDefault', parseDefaultValueExpression(value))
+      AlterColumnNode.create(
+        this.#column,
+        'setDefault',
+        parseDefaultValueExpression(value)
+      )
     )
   }
 
@@ -63,15 +71,14 @@ export class AlterColumnBuilder {
  * ```ts
  * db.schema.alterTable('person').alterColumn('age', (ac) => ac)
  * ```
- * 
+ *
  * ```ts
  * db.schema.alterTable('person').alterColumn('age', (ac) => ac.dropNotNull().setNotNull())
  * ```
  *
  * Which would now throw a compilation error, instead of a runtime error.
  */
-export class AlteredColumnBuilder implements OperationNodeSource
-{
+export class AlteredColumnBuilder implements OperationNodeSource {
   readonly #alterColumnNode: AlterColumnNode
 
   constructor(alterColumnNode: AlterColumnNode) {

@@ -55,14 +55,9 @@ import { AliasedExpression, Expression } from '../expression/expression.js'
 import {
   ComparisonOperatorExpression,
   OperandValueExpressionOrList,
+  parseFilter,
   parseReferentialComparison,
-  parseWhere,
 } from '../parser/binary-operation-parser.js'
-import {
-  ExistsExpression,
-  parseExists,
-  parseNotExists,
-} from '../parser/unary-operation-parser.js'
 import { KyselyTypeError } from '../util/type-error.js'
 import { Streamable } from '../util/streamable.js'
 
@@ -88,7 +83,6 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
   ): DeleteQueryBuilder<DB, TB, O>
 
   where(factory: WhereExpressionFactory<DB, TB>): DeleteQueryBuilder<DB, TB, O>
-
   where(expression: Expression<any>): DeleteQueryBuilder<DB, TB, O>
 
   where(...args: any[]): any {
@@ -96,7 +90,7 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
       ...this.#props,
       queryNode: QueryNode.cloneWithWhere(
         this.#props.queryNode,
-        parseWhere(args)
+        parseFilter(args)
       ),
     })
   }
@@ -111,84 +105,6 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
       queryNode: QueryNode.cloneWithWhere(
         this.#props.queryNode,
         parseReferentialComparison(lhs, op, rhs)
-      ),
-    })
-  }
-
-  orWhere<RE extends ReferenceExpression<DB, TB>>(
-    lhs: RE,
-    op: ComparisonOperatorExpression,
-    rhs: OperandValueExpressionOrList<DB, TB, RE>
-  ): DeleteQueryBuilder<DB, TB, O>
-
-  orWhere(
-    factory: WhereExpressionFactory<DB, TB>
-  ): DeleteQueryBuilder<DB, TB, O>
-
-  orWhere(expression: Expression<any>): DeleteQueryBuilder<DB, TB, O>
-
-  orWhere(...args: any[]): any {
-    return new DeleteQueryBuilder({
-      ...this.#props,
-      queryNode: QueryNode.cloneWithOrWhere(
-        this.#props.queryNode,
-        parseWhere(args)
-      ),
-    })
-  }
-
-  orWhereRef(
-    lhs: ReferenceExpression<DB, TB>,
-    op: ComparisonOperatorExpression,
-    rhs: ReferenceExpression<DB, TB>
-  ): DeleteQueryBuilder<DB, TB, O> {
-    return new DeleteQueryBuilder({
-      ...this.#props,
-      queryNode: QueryNode.cloneWithOrWhere(
-        this.#props.queryNode,
-        parseReferentialComparison(lhs, op, rhs)
-      ),
-    })
-  }
-
-  whereExists(arg: ExistsExpression<DB, TB>): DeleteQueryBuilder<DB, TB, O> {
-    return new DeleteQueryBuilder({
-      ...this.#props,
-      queryNode: QueryNode.cloneWithWhere(
-        this.#props.queryNode,
-        parseExists(arg)
-      ),
-    })
-  }
-
-  whereNotExists(arg: ExistsExpression<DB, TB>): DeleteQueryBuilder<DB, TB, O> {
-    return new DeleteQueryBuilder({
-      ...this.#props,
-      queryNode: QueryNode.cloneWithWhere(
-        this.#props.queryNode,
-        parseNotExists(arg)
-      ),
-    })
-  }
-
-  orWhereExists(arg: ExistsExpression<DB, TB>): DeleteQueryBuilder<DB, TB, O> {
-    return new DeleteQueryBuilder({
-      ...this.#props,
-      queryNode: QueryNode.cloneWithOrWhere(
-        this.#props.queryNode,
-        parseExists(arg)
-      ),
-    })
-  }
-
-  orWhereNotExists(
-    arg: ExistsExpression<DB, TB>
-  ): DeleteQueryBuilder<DB, TB, O> {
-    return new DeleteQueryBuilder({
-      ...this.#props,
-      queryNode: QueryNode.cloneWithOrWhere(
-        this.#props.queryNode,
-        parseNotExists(arg)
       ),
     })
   }
@@ -720,13 +636,6 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
   }
 
   /**
-   * @deprecated Use `$call` instead
-   */
-  call<T>(func: (qb: this) => T): T {
-    return this.$call(func)
-  }
-
-  /**
    * Call `func(this)` if `condition` is true.
    *
    * This method is especially handy with optional selects. Any `returning` or `returningAll`
@@ -779,20 +688,6 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
   }
 
   /**
-   * @deprecated Use `$if` instead
-   */
-  if<O2>(
-    condition: boolean,
-    func: (qb: this) => DeleteQueryBuilder<DB, TB, O2>
-  ): O2 extends DeleteResult
-    ? DeleteQueryBuilder<DB, TB, DeleteResult>
-    : O2 extends O & infer E
-    ? DeleteQueryBuilder<DB, TB, O & Partial<E>>
-    : DeleteQueryBuilder<DB, TB, Partial<O2>> {
-    return this.$if(condition, func)
-  }
-
-  /**
    * Change the output type of the query.
    *
    * You should only use this method as the last resort if the types
@@ -800,13 +695,6 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
    */
   $castTo<T>(): DeleteQueryBuilder<DB, TB, T> {
     return new DeleteQueryBuilder(this.#props)
-  }
-
-  /**
-   * @deprecated Use `$castTo` instead.
-   */
-  castTo<T>(): DeleteQueryBuilder<DB, TB, T> {
-    return this.$castTo<T>()
   }
 
   /**
@@ -898,15 +786,6 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
   $assertType<T extends O>(): O extends T
     ? DeleteQueryBuilder<DB, TB, T>
     : KyselyTypeError<`$assertType() call failed: The type passed in is not equal to the output type of the query.`> {
-    return new DeleteQueryBuilder(this.#props) as unknown as any
-  }
-
-  /**
-   * @deprecated Use `$assertType` instead.
-   */
-  assertType<T extends O>(): O extends T
-    ? DeleteQueryBuilder<DB, TB, T>
-    : KyselyTypeError<`assertType() call failed: The type passed in is not equal to the output type of the query.`> {
     return new DeleteQueryBuilder(this.#props) as unknown as any
   }
 

@@ -209,11 +209,11 @@ for (const dialect of DIALECTS) {
             join
               .onRef('pet.owner_id', '=', 'person.id')
               .on('pet.name', 'in', ['Catto', 'Doggo', 'Hammo'])
-              .on(({ or, cmpr, ref, selectFrom }) =>
+              .on(({ or, eb, ref, selectFrom }) =>
                 or([
-                  cmpr('pet.species', '=', 'cat'),
-                  cmpr('species', '=', 'dog'),
-                  cmpr(
+                  eb('pet.species', '=', 'cat'),
+                  eb('species', '=', 'dog'),
+                  eb(
                     ref('species'),
                     '=',
                     selectFrom('pet')
@@ -273,17 +273,20 @@ for (const dialect of DIALECTS) {
             join
               .onRef('pet.owner_id', '=', 'person.id')
               .on('pet.name', 'in', ['Catto', 'Doggo', 'Hammo'])
-              .on((join) =>
-                join
-                  .on('pet.species', '=', 'cat')
-                  .orOn('species', '=', 'dog')
-                  .orOn(sql`${sql.ref('species')}`, '=', (qb) =>
-                    qb
+              .on((eb) =>
+                eb.or([
+                  eb('pet.species', '=', 'cat'),
+                  eb('species', '=', 'dog'),
+                  eb(
+                    sql`${sql.ref('species')}`,
+                    '=',
+                    eb
                       .selectFrom('pet')
                       .select(sql`'hamster'`.as('hamster'))
                       .limit(1)
                       .offset(0)
-                  )
+                  ),
+                ])
               )
           )
           .selectAll()
@@ -328,54 +331,50 @@ for (const dialect of DIALECTS) {
         await query.execute()
       })
 
-      for (const [existsType, existsSql] of [
-        ['onExists', 'exists'],
-        ['onNotExists', 'not exists'],
-      ] as const) {
-        it(`should inner joina table using "${existsType}" statements`, async () => {
-          const query = ctx.db
-            .selectFrom('person')
-            .innerJoin('pet', (join) =>
-              join[existsType]((qb) =>
-                qb
-                  .selectFrom('pet as p')
+      it(`should inner join a table using "exists" statements`, async () => {
+        const query = ctx.db
+          .selectFrom('person')
+          .innerJoin('pet', (join) =>
+            join.on(({ exists, selectFrom }) =>
+              exists(
+                selectFrom('pet as p')
                   .whereRef('p.id', '=', 'pet.id')
                   .whereRef('p.owner_id', '=', 'person.id')
                   .select('id')
               )
             )
-            .select('pet.id')
+          )
+          .select('pet.id')
 
-          testSql(query, dialect, {
-            postgres: {
-              sql: [
-                `select "pet"."id" from "person"`,
-                `inner join "pet" on ${existsSql}`,
-                `(select "id" from "pet" as "p" where "p"."id" = "pet"."id" and "p"."owner_id" = "person"."id")`,
-              ],
-              parameters: [],
-            },
-            mysql: {
-              sql: [
-                'select `pet`.`id` from `person`',
-                `inner join \`pet\` on ${existsSql}`,
-                '(select `id` from `pet` as `p` where `p`.`id` = `pet`.`id` and `p`.`owner_id` = `person`.`id`)',
-              ],
-              parameters: [],
-            },
-            sqlite: {
-              sql: [
-                `select "pet"."id" from "person"`,
-                `inner join "pet" on ${existsSql}`,
-                `(select "id" from "pet" as "p" where "p"."id" = "pet"."id" and "p"."owner_id" = "person"."id")`,
-              ],
-              parameters: [],
-            },
-          })
-
-          await query.execute()
+        testSql(query, dialect, {
+          postgres: {
+            sql: [
+              `select "pet"."id" from "person"`,
+              `inner join "pet" on exists`,
+              `(select "id" from "pet" as "p" where "p"."id" = "pet"."id" and "p"."owner_id" = "person"."id")`,
+            ],
+            parameters: [],
+          },
+          mysql: {
+            sql: [
+              'select `pet`.`id` from `person`',
+              `inner join \`pet\` on exists`,
+              '(select `id` from `pet` as `p` where `p`.`id` = `pet`.`id` and `p`.`owner_id` = `person`.`id`)',
+            ],
+            parameters: [],
+          },
+          sqlite: {
+            sql: [
+              `select "pet"."id" from "person"`,
+              `inner join "pet" on exists`,
+              `(select "id" from "pet" as "p" where "p"."id" = "pet"."id" and "p"."owner_id" = "person"."id")`,
+            ],
+            parameters: [],
+          },
         })
-      }
+
+        await query.execute()
+      })
     })
 
     describe('left join', () => {
@@ -484,17 +483,20 @@ for (const dialect of DIALECTS) {
             join
               .onRef('pet.owner_id', '=', 'person.id')
               .on('pet.name', 'in', ['Catto', 'Doggo', 'Hammo'])
-              .on((join) =>
-                join
-                  .on('pet.species', '=', 'cat')
-                  .orOn('species', '=', 'dog')
-                  .orOn(sql`${sql.ref('species')}`, '=', (qb) =>
-                    qb
+              .on(({ or, eb }) =>
+                or([
+                  eb('pet.species', '=', 'cat'),
+                  eb('species', '=', 'dog'),
+                  eb(
+                    sql`${sql.ref('species')}`,
+                    '=',
+                    eb
                       .selectFrom('pet')
                       .select(sql`'hamster'`.as('hamster'))
                       .limit(1)
                       .offset(0)
-                  )
+                  ),
+                ])
               )
           )
           .selectAll()
@@ -539,54 +541,40 @@ for (const dialect of DIALECTS) {
         await query.execute()
       })
 
-      for (const [existsType, existsSql] of [
-        ['onExists', 'exists'],
-        ['onNotExists', 'not exists'],
-      ] as const) {
-        it(`should left joina table using "${existsType}" statements`, async () => {
-          const query = ctx.db
-            .selectFrom('person')
-            .leftJoin('pet', (join) =>
-              join[existsType]((qb) =>
-                qb
-                  .selectFrom('pet as p')
-                  .whereRef('p.id', '=', 'pet.id')
-                  .whereRef('p.owner_id', '=', 'person.id')
-                  .select('id')
+      it(`should left join a table using "not exists" statements`, async () => {
+        const query = ctx.db
+          .selectFrom('person')
+          .leftJoin('pet', (join) =>
+            join.on(({ not, exists, selectFrom }) =>
+              not(
+                exists(
+                  selectFrom('pet as p')
+                    .whereRef('p.id', '=', 'pet.id')
+                    .whereRef('p.owner_id', '=', 'person.id')
+                    .select('id')
+                )
               )
             )
-            .select('pet.id')
+          )
+          .select('pet.id')
 
-          testSql(query, dialect, {
-            postgres: {
-              sql: [
-                `select "pet"."id" from "person"`,
-                `left join "pet" on ${existsSql}`,
-                `(select "id" from "pet" as "p" where "p"."id" = "pet"."id" and "p"."owner_id" = "person"."id")`,
-              ],
-              parameters: [],
-            },
-            mysql: {
-              sql: [
-                'select `pet`.`id` from `person`',
-                `left join \`pet\` on ${existsSql}`,
-                '(select `id` from `pet` as `p` where `p`.`id` = `pet`.`id` and `p`.`owner_id` = `person`.`id`)',
-              ],
-              parameters: [],
-            },
-            sqlite: {
-              sql: [
-                `select "pet"."id" from "person"`,
-                `left join "pet" on ${existsSql}`,
-                `(select "id" from "pet" as "p" where "p"."id" = "pet"."id" and "p"."owner_id" = "person"."id")`,
-              ],
-              parameters: [],
-            },
-          })
-
-          await query.execute()
+        testSql(query, dialect, {
+          postgres: {
+            sql: `select "pet"."id" from "person" left join "pet" on not exists (select "id" from "pet" as "p" where "p"."id" = "pet"."id" and "p"."owner_id" = "person"."id")`,
+            parameters: [],
+          },
+          mysql: {
+            sql: 'select `pet`.`id` from `person` left join `pet` on not exists (select `id` from `pet` as `p` where `p`.`id` = `pet`.`id` and `p`.`owner_id` = `person`.`id`)',
+            parameters: [],
+          },
+          sqlite: {
+            sql: `select "pet"."id" from "person" left join "pet" on not exists (select "id" from "pet" as "p" where "p"."id" = "pet"."id" and "p"."owner_id" = "person"."id")`,
+            parameters: [],
+          },
         })
-      }
+
+        await query.execute()
+      })
     })
 
     if (dialect !== 'sqlite') {

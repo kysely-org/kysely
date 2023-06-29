@@ -4,10 +4,8 @@ import {
   OperandValueExpressionOrList,
 } from '../parser/binary-operation-parser.js'
 import { ReferenceExpression } from '../parser/reference-parser.js'
-import { ExistsExpression } from '../parser/unary-operation-parser.js'
 import { SqlBool } from '../util/type-utils.js'
 import { ExpressionBuilder } from '../expression/expression-builder.js'
-import { WhereExpressionBuilder } from './deprecated-where-expression-builder.js'
 
 export interface WhereInterface<DB, TB extends keyof DB> {
   /**
@@ -266,7 +264,6 @@ export interface WhereInterface<DB, TB extends keyof DB> {
   ): WhereInterface<DB, TB>
 
   where(factory: WhereExpressionFactory<DB, TB>): WhereInterface<DB, TB>
-
   where(expression: Expression<any>): WhereInterface<DB, TB>
 
   /**
@@ -327,54 +324,6 @@ export interface WhereInterface<DB, TB extends keyof DB> {
   ): WhereInterface<DB, TB>
 
   /**
-   * @deprecated Follow [these](https://github.com/koskimas/kysely/releases/tag/0.24.0) instructions to migrate
-   */
-  orWhere<RE extends ReferenceExpression<DB, TB>>(
-    lhs: RE,
-    op: ComparisonOperatorExpression,
-    rhs: OperandValueExpressionOrList<DB, TB, RE>
-  ): WhereInterface<DB, TB>
-
-  /**
-   * @deprecated Follow [these](https://github.com/koskimas/kysely/releases/tag/0.24.0) instructions to migrate
-   */
-  orWhere(factory: WhereExpressionFactory<DB, TB>): WhereInterface<DB, TB>
-
-  /**
-   * @deprecated Follow [these](https://github.com/koskimas/kysely/releases/tag/0.24.0) instructions to migrate
-   */
-  orWhere(expression: Expression<any>): WhereInterface<DB, TB>
-
-  /**
-   * @deprecated Follow [these](https://github.com/koskimas/kysely/releases/tag/0.24.0) instructions to migrate
-   */
-  orWhereRef(
-    lhs: ReferenceExpression<DB, TB>,
-    op: ComparisonOperatorExpression,
-    rhs: ReferenceExpression<DB, TB>
-  ): WhereInterface<DB, TB>
-
-  /**
-   * @deprecated Follow [these](https://github.com/koskimas/kysely/releases/tag/0.24.0) instructions to migrate
-   */
-  whereExists(arg: ExistsExpression<DB, TB>): WhereInterface<DB, TB>
-
-  /**
-   * @deprecated Follow [these](https://github.com/koskimas/kysely/releases/tag/0.24.0) instructions to migrate
-   */
-  whereNotExists(arg: ExistsExpression<DB, TB>): WhereInterface<DB, TB>
-
-  /**
-   * @deprecated Follow [these](https://github.com/koskimas/kysely/releases/tag/0.24.0) instructions to migrate
-   */
-  orWhereExists(arg: ExistsExpression<DB, TB>): WhereInterface<DB, TB>
-
-  /**
-   * @deprecated Follow [these](https://github.com/koskimas/kysely/releases/tag/0.24.0) instructions to migrate
-   */
-  orWhereNotExists(arg: ExistsExpression<DB, TB>): WhereInterface<DB, TB>
-
-  /**
    * Clears all where expressions from the query.
    *
    * ### Examples
@@ -396,5 +345,5 @@ export interface WhereInterface<DB, TB extends keyof DB> {
 }
 
 export type WhereExpressionFactory<DB, TB extends keyof DB> = (
-  eb: WhereExpressionBuilder<DB, TB>
-) => Expression<SqlBool> | WhereExpressionBuilder<DB, TB>
+  eb: ExpressionBuilder<DB, TB>
+) => Expression<SqlBool>

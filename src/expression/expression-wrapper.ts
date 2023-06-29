@@ -26,7 +26,7 @@ export class ExpressionWrapper<T> implements Expression<T> {
    * const result = await db
    *   .selectFrom('person')
    *   .select((eb) =>
-   *     eb.cmpr('first_name', '=', 'Jennifer').as('is_jennifer')
+   *     eb('first_name', '=', 'Jennifer').as('is_jennifer')
    *   )
    *   .executeTakeFirstOrThrow()
    *
@@ -48,7 +48,7 @@ export class ExpressionWrapper<T> implements Expression<T> {
   }
 
   /**
-   * Change the output type of the raw expression.
+   * Change the output type of the expression.
    *
    * This method call doesn't change the SQL in any way. This methods simply
    * returns a copy of this `ExpressionWrapper` with a new output type.

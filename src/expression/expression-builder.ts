@@ -55,6 +55,66 @@ import { isUndefined } from '../util/object-utils.js'
 
 export interface ExpressionBuilder<DB, TB extends keyof DB> {
   /**
+   * Creates a binary expression.
+   *
+   * This function returns an {@link Expression} and can be used pretty much anywhere.
+   * See the examples for a couple of possible use cases.
+   *
+   * ### Examples
+   *
+   * In the following example `eb` is used to increment an integer column:
+   *
+   * ```ts
+   * db.updateTable('person')
+   *   .set((eb) => ({
+   *     age: eb('age', '+', 1)
+   *   }))
+   *   .where('id', '=', id)
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * update "person"
+   * set "age" = "age" + $1
+   * where "id" = $2
+   * ```
+   *
+   * By default the third argument is a value. {@link ref} can be used to
+   * pass in a column reference instead:
+   *
+   * ```ts
+   * db.updateTable('person')
+   *   .set((eb) => ({
+   *     age: eb('age', '+', eb.ref('age'))
+   *   }))
+   *   .where('id', '=', id)
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * update "person"
+   * set "age" = "age" + "age"
+   * where "id" = $1
+   * ```
+   */
+  <RE extends ReferenceExpression<DB, TB>, OP extends BinaryOperatorExpression>(
+    lhs: RE,
+    op: OP,
+    rhs: OperandValueExpressionOrList<DB, TB, RE>
+  ): ExpressionWrapper<
+    OP extends ComparisonOperator
+      ? SqlBool
+      : ExtractTypeFromReferenceExpression<DB, TB, RE>
+  >
+
+  /**
+   * Returns a copy of `this` expression builder.
+   */
+  eb: ExpressionBuilder<DB, TB>
+
+  /**
    * Returns a {@link FunctionModule} that can be used to write type safe function
    * calls.
    *
@@ -219,15 +279,15 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    *
    * ### Examples
    *
-   * By default the third argument of {@link bxp} and {@link cmpr} is a value.
+   * By default the third argument of binary expressions is a value.
    * This function can be used to pass in a column reference instead:
    *
    * ```ts
    * db.selectFrom('person')
    *   .selectAll('person')
-   *   .where(({ or, cmpr, ref }) => or([
-   *     cmpr('first_name', '=', ref('last_name')),
-   *     cmpr('first_name', '=', ref('middle_name'))
+   *   .where((eb) => eb.or([
+   *     eb('first_name', '=', eb.ref('last_name')),
+   *     eb('first_name', '=', eb.ref('middle_name'))
    *   ]))
    * ```
    *
@@ -269,11 +329,11 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    *
    * ### Examples
    *
-   * The {@link cmpr} function takes a reference by default as the first argument. `val` could
+   * Binary expressions take a reference by default as the first argument. `val` could
    * be used to pass in a value instead:
    *
    * ```ts
-   * cmpr(val(38), '=', ref('age'))
+   * eb(val(38), '=', ref('age'))
    * ```
    *
    * The generated SQL (PostgreSQL):
@@ -287,57 +347,18 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
   ): ExpressionWrapper<ExtractTypeFromValueExpressionOrList<VE>>
 
   /**
-   * Creates a binary comparison expression.
+   * @deprecated Use the expression builder as a function instead.
    *
-   * This function returns an {@link Expression} and can be used pretty much anywhere.
-   * See the examples for a couple of possible use cases.
-   *
-   * @see {@link bxp}
-   *
-   * ### Examples
-   *
-   * In this example we use `cmpr` and {@link or} to create a `WHERE expr1 OR expr2 OR expr3`
-   * statement:
+   * Before:
    *
    * ```ts
-   * db.selectFrom('person')
-   *   .selectAll('person')
-   *   .where(({ or, cmpr }) => or([
-   *     cmpr('first_name', '=', 'Jennifer'),
-   *     cmpr('fist_name', '=', 'Arnold'),
-   *     cmpr('fist_name', '=', 'Sylvester')
-   *   ]))
+   * where((eb) => eb.cmpr('first_name', '=', 'Jennifer'))
    * ```
    *
-   * The generated SQL (PostgreSQL):
-   *
-   * ```sql
-   * select "person".*
-   * from "person"
-   * where "first_name" = $1
-   * or "first_name" = $2
-   * or "first_name" = $3
-   * ```
-   *
-   * By default the third argument is a value. {@link ref} can be used to
-   * pass in a column reference instead:
+   * After:
    *
    * ```ts
-   * db.selectFrom('person')
-   *   .selectAll('person')
-   *   .where(({ or, cmpr, ref }) => or([
-   *     cmpr('first_name', '=', ref('last_name')),
-   *     cmpr('first_name', '=', ref('middle_name'))
-   *   ]))
-   * ```
-   *
-   * The generated SQL (PostgreSQL):
-   *
-   * ```sql
-   * select "person".*
-   * from "person"
-   * where "first_name" = "last_name"
-   * or "first_name" = "middle_name"
+   * where((eb) => eb('first_name', '=', 'Jennifer'))
    * ```
    */
   cmpr<
@@ -350,50 +371,22 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
   ): ExpressionWrapper<O>
 
   /**
-   * Creates a binary expression.
+   * @deprecated Use the expression builder as a function instead.
    *
-   * See {@link cmpr} for creating binary comparison operations.
-   *
-   * This function returns an {@link Expression} and can be used pretty much anywhere.
-   * See the examples for a couple of possible use cases.
-   *
-   * ### Examples
-   *
-   * In the following example `bxp` is used to increment an integer column:
+   * Before:
    *
    * ```ts
-   * db.updateTable('person')
-   *   .set((eb) => ({
-   *     age: eb.bxp('age', '+', 1)
-   *   }))
-   *   .where('id', '=', id)
+   * set((eb) => ({
+   *   age: eb.bxp('age', '+', 10)
+   * }))
    * ```
    *
-   * The generated SQL (PostgreSQL):
-   *
-   * ```sql
-   * update "person"
-   * set "age" = "age" + $1
-   * where "id" = $2
-   * ```
-   *
-   * By default the third argument is a value. {@link ref} can be used to
-   * pass in a column reference instead:
+   * After:
    *
    * ```ts
-   * db.updateTable('person')
-   *   .set((eb) => ({
-   *     age: eb.bxp('age', '+', eb.ref('age'))
-   *   }))
-   *   .where('id', '=', id)
-   * ```
-   *
-   * The generated SQL (PostgreSQL):
-   *
-   * ```sql
-   * update "person"
-   * set "age" = "age" + "age"
-   * where "id" = $1
+   * set((eb) => ({
+   *   age: eb('age', '+', 10)
+   * }))
    * ```
    */
   bxp<
@@ -480,16 +473,16 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    *
    * ### Examples
    *
-   * In this example we use `and` with {@link cmpr} to create a `WHERE expr1 AND expr2 AND expr3`
+   * In this example we use `and` to create a `WHERE expr1 AND expr2 AND expr3`
    * statement:
    *
    * ```ts
    * db.selectFrom('person')
    *   .selectAll('person')
-   *   .where(({ and, cmpr }) => and([
-   *     cmpr('first_name', '=', 'Jennifer'),
-   *     cmpr('fist_name', '=', 'Arnold'),
-   *     cmpr('fist_name', '=', 'Sylvester')
+   *   .where((eb) => eb.and([
+   *     eb('first_name', '=', 'Jennifer'),
+   *     eb('fist_name', '=', 'Arnold'),
+   *     eb('fist_name', '=', 'Sylvester')
    *   ]))
    * ```
    *
@@ -513,16 +506,16 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    *
    * ### Examples
    *
-   * In this example we use `or` with {@link cmpr} to create a `WHERE expr1 OR expr2 OR expr3`
+   * In this example we use `or` to create a `WHERE expr1 OR expr2 OR expr3`
    * statement:
    *
    * ```ts
    * db.selectFrom('person')
    *   .selectAll('person')
-   *   .where(({ or, cmpr }) => or([
-   *     cmpr('first_name', '=', 'Jennifer'),
-   *     cmpr('fist_name', '=', 'Arnold'),
-   *     cmpr('fist_name', '=', 'Sylvester')
+   *   .where((eb) => or([
+   *     eb('first_name', '=', 'Jennifer'),
+   *     eb('fist_name', '=', 'Arnold'),
+   *     eb('fist_name', '=', 'Sylvester')
    *   ]))
    * ```
    *
@@ -549,6 +542,21 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
 export function createExpressionBuilder<DB, TB extends keyof DB>(
   executor: QueryExecutor = NOOP_QUERY_EXECUTOR
 ): ExpressionBuilder<DB, TB> {
+  function binary<
+    RE extends ReferenceExpression<DB, TB>,
+    OP extends BinaryOperatorExpression
+  >(
+    lhs: RE,
+    op: OP,
+    rhs: OperandValueExpressionOrList<DB, TB, RE>
+  ): ExpressionWrapper<
+    OP extends ComparisonOperator
+      ? SqlBool
+      : ExtractTypeFromReferenceExpression<DB, TB, RE>
+  > {
+    return new ExpressionWrapper(parseValueBinaryOperation(lhs, op, rhs))
+  }
+
   function unary<RE extends ReferenceExpression<DB, TB>>(
     op: UnaryOperator,
     expr: RE
@@ -556,10 +564,9 @@ export function createExpressionBuilder<DB, TB extends keyof DB>(
     return new ExpressionWrapper(parseUnaryOperation(op, expr))
   }
 
-  return {
-    get fn(): FunctionModule<DB, TB> {
-      return createFunctionModule()
-    },
+  const eb = Object.assign(binary, {
+    fn: undefined! as FunctionModule<DB, TB>,
+    eb: undefined! as ExpressionBuilder<DB, TB>,
 
     selectFrom(table: TableExpressionOrList<DB, TB>): any {
       return new SelectQueryBuilder({
@@ -593,6 +600,7 @@ export function createExpressionBuilder<DB, TB extends keyof DB>(
       return new ExpressionWrapper(parseValueExpressionOrList(value))
     },
 
+    // @deprecated
     cmpr<
       O extends SqlBool = SqlBool,
       RE extends ReferenceExpression<DB, TB> = ReferenceExpression<DB, TB>
@@ -604,6 +612,7 @@ export function createExpressionBuilder<DB, TB extends keyof DB>(
       return new ExpressionWrapper(parseValueBinaryOperation(lhs, op, rhs))
     },
 
+    // @deprecated
     bxp<
       RE extends ReferenceExpression<DB, TB>,
       OP extends BinaryOperatorExpression
@@ -682,7 +691,12 @@ export function createExpressionBuilder<DB, TB extends keyof DB>(
         executor.withPluginAtFront(new WithSchemaPlugin(schema))
       )
     },
-  }
+  })
+
+  eb.fn = createFunctionModule()
+  eb.eb = eb
+
+  return eb
 }
 
 export function expressionBuilder<DB, TB extends keyof DB>(

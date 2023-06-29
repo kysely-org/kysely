@@ -57,13 +57,8 @@ import {
   ComparisonOperatorExpression,
   OperandValueExpressionOrList,
   parseReferentialComparison,
-  parseWhere,
+  parseFilter,
 } from '../parser/binary-operation-parser.js'
-import {
-  ExistsExpression,
-  parseExists,
-  parseNotExists,
-} from '../parser/unary-operation-parser.js'
 import { KyselyTypeError } from '../util/type-error.js'
 import { Streamable } from '../util/streamable.js'
 
@@ -99,7 +94,7 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
       ...this.#props,
       queryNode: QueryNode.cloneWithWhere(
         this.#props.queryNode,
-        parseWhere(args)
+        parseFilter(args)
       ),
     })
   }
@@ -114,90 +109,6 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
       queryNode: QueryNode.cloneWithWhere(
         this.#props.queryNode,
         parseReferentialComparison(lhs, op, rhs)
-      ),
-    })
-  }
-
-  orWhere<RE extends ReferenceExpression<DB, TB>>(
-    lhs: RE,
-    op: ComparisonOperatorExpression,
-    rhs: OperandValueExpressionOrList<DB, TB, RE>
-  ): UpdateQueryBuilder<DB, UT, TB, O>
-
-  orWhere(
-    factory: WhereExpressionFactory<DB, TB>
-  ): UpdateQueryBuilder<DB, UT, TB, O>
-
-  orWhere(expression: Expression<any>): UpdateQueryBuilder<DB, UT, TB, O>
-
-  orWhere(...args: any[]): any {
-    return new UpdateQueryBuilder({
-      ...this.#props,
-      queryNode: QueryNode.cloneWithOrWhere(
-        this.#props.queryNode,
-        parseWhere(args)
-      ),
-    })
-  }
-
-  orWhereRef(
-    lhs: ReferenceExpression<DB, TB>,
-    op: ComparisonOperatorExpression,
-    rhs: ReferenceExpression<DB, TB>
-  ): UpdateQueryBuilder<DB, UT, TB, O> {
-    return new UpdateQueryBuilder({
-      ...this.#props,
-      queryNode: QueryNode.cloneWithOrWhere(
-        this.#props.queryNode,
-        parseReferentialComparison(lhs, op, rhs)
-      ),
-    })
-  }
-
-  whereExists(
-    arg: ExistsExpression<DB, TB>
-  ): UpdateQueryBuilder<DB, UT, TB, O> {
-    return new UpdateQueryBuilder({
-      ...this.#props,
-      queryNode: QueryNode.cloneWithWhere(
-        this.#props.queryNode,
-        parseExists(arg)
-      ),
-    })
-  }
-
-  whereNotExists(
-    arg: ExistsExpression<DB, TB>
-  ): UpdateQueryBuilder<DB, UT, TB, O> {
-    return new UpdateQueryBuilder({
-      ...this.#props,
-      queryNode: QueryNode.cloneWithWhere(
-        this.#props.queryNode,
-        parseNotExists(arg)
-      ),
-    })
-  }
-
-  orWhereExists(
-    arg: ExistsExpression<DB, TB>
-  ): UpdateQueryBuilder<DB, UT, TB, O> {
-    return new UpdateQueryBuilder({
-      ...this.#props,
-      queryNode: QueryNode.cloneWithOrWhere(
-        this.#props.queryNode,
-        parseExists(arg)
-      ),
-    })
-  }
-
-  orWhereNotExists(
-    arg: ExistsExpression<DB, TB>
-  ): UpdateQueryBuilder<DB, UT, TB, O> {
-    return new UpdateQueryBuilder({
-      ...this.#props,
-      queryNode: QueryNode.cloneWithOrWhere(
-        this.#props.queryNode,
-        parseNotExists(arg)
       ),
     })
   }
@@ -544,10 +455,10 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
    *
    * const result = await db
    *   .updateTable('person')
-   *   .set(({ selectFrom, ref, fn, bxp }) => ({
+   *   .set(({ selectFrom, ref, fn, eb }) => ({
    *     first_name: selectFrom('person').select('first_name').limit(1),
    *     middle_name: ref('first_name'),
-   *     age: bxp('age', '+', 1),
+   *     age: eb('age', '+', 1),
    *     last_name: sql`${'Ani'} || ${'ston'}`,
    *   }))
    *   .where('id', '=', 1)
@@ -633,13 +544,6 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
   }
 
   /**
-   * @deprecated Use `$call` instead
-   */
-  call<T>(func: (qb: this) => T): T {
-    return this.$call(func)
-  }
-
-  /**
    * Call `func(this)` if `condition` is true.
    *
    * This method is especially handy with optional selects. Any `returning` or `returningAll`
@@ -693,20 +597,6 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
   }
 
   /**
-   * @deprecated Use `$if` instead
-   */
-  if<O2>(
-    condition: boolean,
-    func: (qb: this) => UpdateQueryBuilder<DB, UT, TB, O2>
-  ): O2 extends UpdateResult
-    ? UpdateQueryBuilder<DB, UT, TB, UpdateResult>
-    : O2 extends O & infer E
-    ? UpdateQueryBuilder<DB, UT, TB, O & Partial<E>>
-    : UpdateQueryBuilder<DB, UT, TB, Partial<O2>> {
-    return this.$if(condition, func)
-  }
-
-  /**
    * Change the output type of the query.
    *
    * You should only use this method as the last resort if the types
@@ -714,13 +604,6 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
    */
   $castTo<T>(): UpdateQueryBuilder<DB, UT, TB, T> {
     return new UpdateQueryBuilder(this.#props)
-  }
-
-  /**
-   * @deprecated Use `$castTo` instead.
-   */
-  castTo<T>(): UpdateQueryBuilder<DB, UT, TB, T> {
-    return this.$castTo<T>()
   }
 
   /**
@@ -817,15 +700,6 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
   $assertType<T extends O>(): O extends T
     ? UpdateQueryBuilder<DB, UT, TB, T>
     : KyselyTypeError<`$assertType() call failed: The type passed in is not equal to the output type of the query.`> {
-    return new UpdateQueryBuilder(this.#props) as unknown as any
-  }
-
-  /**
-   * @deprecated Use `$assertType` instead.
-   */
-  assertType<T extends O>(): O extends T
-    ? UpdateQueryBuilder<DB, UT, TB, T>
-    : KyselyTypeError<`assertType() call failed: The type passed in is not equal to the output type of the query.`> {
     return new UpdateQueryBuilder(this.#props) as unknown as any
   }
 

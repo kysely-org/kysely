@@ -21,52 +21,52 @@ function testExpression(db: Kysely<Database>) {
 
 function testExpressionBuilder(eb: ExpressionBuilder<Database, 'person'>) {
   // Binary expression
-  expectAssignable<Expression<number>>(eb.bxp('age', '+', 1))
+  expectAssignable<Expression<number>>(eb('age', '+', 1))
 
   // `not` expression
-  expectAssignable<Expression<SqlBool>>(eb.not(eb.cmpr('age', '>', 10)))
+  expectAssignable<Expression<SqlBool>>(eb.not(eb('age', '>', 10)))
 
   // `and` expression with one item
   expectAssignable<Expression<SqlBool>>(
-    eb.and([eb.cmpr('first_name', '=', 'Jennifer')])
+    eb.and([eb('first_name', '=', 'Jennifer')])
   )
 
   // `and` expression with two items
   expectAssignable<Expression<SqlBool>>(
     eb.and([
-      eb.cmpr('first_name', '=', 'Jennifer'),
-      eb.not(eb.cmpr('last_name', '=', 'Aniston')),
+      eb('first_name', '=', 'Jennifer'),
+      eb.not(eb('last_name', '=', 'Aniston')),
     ])
   )
 
   // `or` expression with one item
   expectAssignable<Expression<SqlBool>>(
-    eb.or([eb.cmpr('first_name', '=', 'Jennifer')])
+    eb.or([eb('first_name', '=', 'Jennifer')])
   )
 
   // `or` expression with two items
   expectAssignable<Expression<SqlBool>>(
     eb.or([
-      eb.cmpr('first_name', '=', 'Jennifer'),
-      eb.not(eb.cmpr('last_name', '=', 'Aniston')),
+      eb('first_name', '=', 'Jennifer'),
+      eb.not(eb('last_name', '=', 'Aniston')),
     ])
   )
 
   // `neg` expression
-  expectAssignable<Expression<number>>(eb.neg(eb.bxp('age', '+', 10)))
+  expectAssignable<Expression<number>>(eb.neg(eb('age', '+', 10)))
 
   // Binary expression in a comparison expression
-  expectAssignable<Expression<SqlBool>>(eb.cmpr(eb.bxp('age', '+', 1), '>', 0))
+  expectAssignable<Expression<SqlBool>>(eb(eb('age', '+', 1), '>', 0))
 
   // A custom function call
   expectAssignable<Expression<string>>(eb.fn<string>('upper', ['first_name']))
 
-  expectError(eb.cmpr('not_a_person_column'), '=', 'Jennifer')
-  expectError(eb.bxp('not_a_person_column'), '=', 'Jennifer')
+  expectError(eb('not_a_person_column', '=', 'Jennifer'))
+  expectError(eb('not_a_person_column', '=', 'Jennifer'))
 
   expectError(eb.and([eb.val('not booleanish'), eb.val(true)]))
-  expectError(eb.and([eb.bxp('age', '+', 1), eb.val(true)]))
+  expectError(eb.and([eb('age', '+', 1), eb.val(true)]))
 
   expectError(eb.or([eb.val('not booleanish'), eb.val(true)]))
-  expectError(eb.or([eb.bxp('age', '+', 1), eb.val(true)]))
+  expectError(eb.or([eb('age', '+', 1), eb.val(true)]))
 }

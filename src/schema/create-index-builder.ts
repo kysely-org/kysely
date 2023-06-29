@@ -19,7 +19,7 @@ import { freeze } from '../util/object-utils.js'
 import { Expression } from '../expression/expression.js'
 import {
   ComparisonOperatorExpression,
-  parseWhere,
+  parseFilter,
 } from '../parser/binary-operation-parser.js'
 import { QueryNode } from '../operation-node/query-node.js'
 import { ExpressionBuilder } from '../expression/expression-builder.js'
@@ -240,7 +240,7 @@ export class CreateIndexBuilder<C = never>
       ...this.#props,
       node: QueryNode.cloneWithWhere(
         this.#props.node,
-        transformer.transformNode(parseWhere(args))
+        transformer.transformNode(parseFilter(args))
       ),
     })
   }
