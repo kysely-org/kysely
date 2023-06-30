@@ -1,12 +1,8 @@
 import {
   ColumnDefinitionBuilder,
   ColumnType,
-  KyselyPlugin,
-  PluginTransformQueryArgs,
-  PluginTransformResultArgs,
-  QueryResult,
-  RootOperationNode,
-  UnknownRow,
+  ParseJSONResultsPlugin,
+  SqlBool,
 } from '../../..'
 import {
   BuiltInDialect,
@@ -43,427 +39,574 @@ for (const dialect of DIALECTS) {
     })
 
     if (dialect !== 'postgres') {
-      it('should execute a query with column->>$.key in select clause', async () => {
-        const query = ctx.db
-          .selectFrom('person_metadata')
-          .select((eb) =>
-            eb.ref('website', '->>$').key('url').as('website_url')
-          )
+      describe('JSON Path syntax ($)', () => {
+        const jsonOperator = dialect === 'mysql' ? '->$' : '->>$'
 
-        testSql(query, dialect, {
-          postgres: NOT_SUPPORTED,
-          mysql: {
-            parameters: [],
-            sql: "select `website`->>'$.url' as `website_url` from `person_metadata`",
-          },
-          sqlite: {
-            parameters: [],
-            sql: `select "website"->>'$.url' as "website_url" from "person_metadata"`,
-          },
-        })
-
-        const results = await query.execute()
-
-        expect(results).to.containSubset([
-          { website_url: 'https://www.jenniferaniston.com' },
-          { website_url: 'https://www.arnoldschwarzenegger.com' },
-          { website_url: 'https://www.sylvesterstallone.com' },
-        ])
-      })
-
-      it('should execute a query with column->>$[0] in select clause', async () => {
-        const query = ctx.db
-          .selectFrom('person_metadata')
-          .select((eb) => eb.ref('nicknames', '->>$').at(0).as('nickname'))
-
-        testSql(query, dialect, {
-          postgres: NOT_SUPPORTED,
-          mysql: {
-            parameters: [],
-            sql: "select `nicknames`->>'$[0]' as `nickname` from `person_metadata`",
-          },
-          sqlite: {
-            parameters: [],
-            sql: `select "nicknames"->>'$[0]' as "nickname" from "person_metadata"`,
-          },
-        })
-
-        const results = await query.execute()
-
-        expect(results).to.containSubset([
-          { nickname: 'J.A.' },
-          { nickname: 'A.S.' },
-          { nickname: 'S.S.' },
-        ])
-      })
-
-      it('should execute a query with column->>$.key.key in select clause', async () => {
-        const query = ctx.db
-          .selectFrom('person_metadata')
-          .select((eb) =>
-            eb.ref('profile', '->>$').key('auth').key('roles').as('roles')
-          )
-
-        testSql(query, dialect, {
-          postgres: NOT_SUPPORTED,
-          mysql: {
-            parameters: [],
-            sql: "select `profile`->>'$.auth.roles' as `roles` from `person_metadata`",
-          },
-          sqlite: {
-            parameters: [],
-            sql: `select "profile"->>'$.auth.roles' as "roles" from "person_metadata"`,
-          },
-        })
-
-        const results = await query.execute()
-
-        expect(results).to.containSubset([
-          { roles: ['contributor', 'moderator'] },
-          { roles: ['contributor', 'moderator'] },
-          { roles: ['contributor', 'moderator'] },
-        ])
-      })
-
-      it('should execute a query with column->>$.key[0] in select clause', async () => {
-        const query = ctx.db
-          .selectFrom('person_metadata')
-          .select((eb) =>
-            eb.ref('profile', '->>$').key('tags').at(0).as('main_tag')
-          )
-
-        testSql(query, dialect, {
-          postgres: NOT_SUPPORTED,
-          mysql: {
-            parameters: [],
-            sql: "select `profile`->>'$.tags[0]' as `main_tag` from `person_metadata`",
-          },
-          sqlite: {
-            parameters: [],
-            sql: `select "profile"->>'$.tags[0]' as "main_tag" from "person_metadata"`,
-          },
-        })
-
-        const results = await query.execute()
-
-        expect(results).to.containSubset([
-          { main_tag: 'awesome' },
-          { main_tag: 'awesome' },
-          { main_tag: 'awesome' },
-        ])
-      })
-
-      it('should execute a query with column->>$[0].key in select clause', async () => {
-        const query = ctx.db
-          .selectFrom('person_metadata')
-          .select((eb) =>
-            eb
-              .ref('experience', '->>$')
-              .at(0)
-              .key('establishment')
-              .as('establishment')
-          )
-
-        testSql(query, dialect, {
-          postgres: NOT_SUPPORTED,
-          mysql: {
-            parameters: [],
-            sql: "select `experience`->>'$[0].establishment' as `establishment` from `person_metadata`",
-          },
-          sqlite: {
-            parameters: [],
-            sql: `select "experience"->>'$[0].establishment' as "establishment" from "person_metadata"`,
-          },
-        })
-
-        const results = await query.execute()
-
-        expect(results).to.containSubset([
-          { establishment: 'The University of Life' },
-          { establishment: 'The University of Life' },
-          { establishment: 'The University of Life' },
-        ])
-      })
-
-      it('should execute a query with column->>$[0][0] in select clause', async () => {
-        const query = ctx.db
-          .selectFrom('person_metadata')
-          .select((eb) =>
-            eb.ref('schedule', '->>$').at(0).at(0).as('january_1st_schedule')
-          )
-
-        testSql(query, dialect, {
-          postgres: NOT_SUPPORTED,
-          mysql: {
-            parameters: [],
-            sql: "select `schedule`->>'$[0][0]' as `january_1st_schedule` from `person_metadata`",
-          },
-          sqlite: {
-            parameters: [],
-            sql: `select "schedule"->>'$[0][0]' as "january_1st_schedule" from "person_metadata"`,
-          },
-        })
-
-        const results = await query.execute()
-
-        expect(results).to.containSubset([
-          { january_1st_schedule: [{ name: 'Gym', time: '12:15' }] },
-          { january_1st_schedule: [{ name: 'Gym', time: '12:15' }] },
-          { january_1st_schedule: [{ name: 'Gym', time: '12:15' }] },
-        ])
-      })
-
-      if (dialect === 'mysql') {
-        it('should execute a query with column->>$[last] in select clause', async () => {
+        it(`should execute a query with column${jsonOperator}.key in select clause`, async () => {
           const query = ctx.db
             .selectFrom('person_metadata')
             .select((eb) =>
-              eb.ref('nicknames', '->>$').at('last').as('nickname')
+              eb.ref('website', jsonOperator).key('url').as('website_url')
             )
 
           testSql(query, dialect, {
             postgres: NOT_SUPPORTED,
             mysql: {
               parameters: [],
-              sql: "select `nicknames`->>'$[last]' as `nickname` from `person_metadata`",
+              sql: "select `website`->'$.url' as `website_url` from `person_metadata`",
             },
-            sqlite: NOT_SUPPORTED,
+            sqlite: {
+              parameters: [],
+              sql: `select "website"->>'$.url' as "website_url" from "person_metadata"`,
+            },
           })
 
           const results = await query.execute()
 
           expect(results).to.containSubset([
-            { nickname: 'Aniston the Magnificent' },
-            { nickname: 'Schwarzenegger the Magnificent' },
-            { nickname: 'Stallone the Magnificent' },
+            { website_url: 'https://www.jenniferaniston.com' },
+            { website_url: 'https://www.arnoldschwarzenegger.com' },
+            { website_url: 'https://www.sylvesterstallone.com' },
           ])
         })
-      }
 
-      if (dialect === 'sqlite') {
-        it('should execute a query with column->>$[#-1] in select clause', async () => {
+        it(`should execute a query with column${jsonOperator}[0] in select clause`, async () => {
           const query = ctx.db
             .selectFrom('person_metadata')
             .select((eb) =>
-              eb.ref('nicknames', '->>$').at('#-1').as('nickname')
+              eb.ref('nicknames', jsonOperator).at(0).as('nickname')
             )
 
           testSql(query, dialect, {
             postgres: NOT_SUPPORTED,
-            mysql: NOT_SUPPORTED,
+            mysql: {
+              parameters: [],
+              sql: "select `nicknames`->'$[0]' as `nickname` from `person_metadata`",
+            },
             sqlite: {
               parameters: [],
-              sql: `select "nicknames"->>'$[#-1]' as "nickname" from "person_metadata"`,
+              sql: `select "nicknames"->>'$[0]' as "nickname" from "person_metadata"`,
             },
           })
 
           const results = await query.execute()
 
           expect(results).to.containSubset([
-            { nickname: 'Aniston the Magnificent' },
-            { nickname: 'Schwarzenegger the Magnificent' },
-            { nickname: 'Stallone the Magnificent' },
+            { nickname: 'J.A.' },
+            { nickname: 'A.S.' },
+            { nickname: 'S.S.' },
           ])
         })
-      }
+
+        it(`should execute a query with column${jsonOperator}.key.key in select clause`, async () => {
+          const query = ctx.db
+            .selectFrom('person_metadata')
+            .select((eb) =>
+              eb
+                .ref('profile', jsonOperator)
+                .key('auth')
+                .key('roles')
+                .as('roles')
+            )
+
+          testSql(query, dialect, {
+            postgres: NOT_SUPPORTED,
+            mysql: {
+              parameters: [],
+              sql: "select `profile`->'$.auth.roles' as `roles` from `person_metadata`",
+            },
+            sqlite: {
+              parameters: [],
+              sql: `select "profile"->>'$.auth.roles' as "roles" from "person_metadata"`,
+            },
+          })
+
+          const results = await query.execute()
+
+          expect(results).to.containSubset([
+            { roles: ['contributor', 'moderator'] },
+            { roles: ['contributor', 'moderator'] },
+            { roles: ['contributor', 'moderator'] },
+          ])
+        })
+
+        it(`should execute a query with column${jsonOperator}.key[0] in select clause`, async () => {
+          const query = ctx.db
+            .selectFrom('person_metadata')
+            .select((eb) =>
+              eb.ref('profile', jsonOperator).key('tags').at(0).as('main_tag')
+            )
+
+          testSql(query, dialect, {
+            postgres: NOT_SUPPORTED,
+            mysql: {
+              parameters: [],
+              sql: "select `profile`->'$.tags[0]' as `main_tag` from `person_metadata`",
+            },
+            sqlite: {
+              parameters: [],
+              sql: `select "profile"->>'$.tags[0]' as "main_tag" from "person_metadata"`,
+            },
+          })
+
+          const results = await query.execute()
+
+          expect(results).to.containSubset([
+            { main_tag: 'awesome' },
+            { main_tag: 'awesome' },
+            { main_tag: 'awesome' },
+          ])
+        })
+
+        it(`should execute a query with column${jsonOperator}[0].key in select clause`, async () => {
+          const query = ctx.db
+            .selectFrom('person_metadata')
+            .select((eb) =>
+              eb
+                .ref('experience', jsonOperator)
+                .at(0)
+                .key('establishment')
+                .as('establishment')
+            )
+
+          testSql(query, dialect, {
+            postgres: NOT_SUPPORTED,
+            mysql: {
+              parameters: [],
+              sql: "select `experience`->'$[0].establishment' as `establishment` from `person_metadata`",
+            },
+            sqlite: {
+              parameters: [],
+              sql: `select "experience"->>'$[0].establishment' as "establishment" from "person_metadata"`,
+            },
+          })
+
+          const results = await query.execute()
+
+          expect(results).to.containSubset([
+            { establishment: 'The University of Life' },
+            { establishment: 'The University of Life' },
+            { establishment: 'The University of Life' },
+          ])
+        })
+
+        it(`should execute a query with column${jsonOperator}[0][0] in select clause`, async () => {
+          const query = ctx.db
+            .selectFrom('person_metadata')
+            .select((eb) =>
+              eb
+                .ref('schedule', jsonOperator)
+                .at(0)
+                .at(0)
+                .as('january_1st_schedule')
+            )
+
+          testSql(query, dialect, {
+            postgres: NOT_SUPPORTED,
+            mysql: {
+              parameters: [],
+              sql: "select `schedule`->'$[0][0]' as `january_1st_schedule` from `person_metadata`",
+            },
+            sqlite: {
+              parameters: [],
+              sql: `select "schedule"->>'$[0][0]' as "january_1st_schedule" from "person_metadata"`,
+            },
+          })
+
+          const results = await query.execute()
+
+          expect(results).to.containSubset([
+            { january_1st_schedule: [{ name: 'Gym', time: '12:15' }] },
+            { january_1st_schedule: [{ name: 'Gym', time: '12:15' }] },
+            { january_1st_schedule: [{ name: 'Gym', time: '12:15' }] },
+          ])
+        })
+
+        if (dialect === 'mysql') {
+          it('should execute a query with column->$[last] in select clause', async () => {
+            const query = ctx.db
+              .selectFrom('person_metadata')
+              .select((eb) =>
+                eb.ref('nicknames', '->$').at('last').as('nickname')
+              )
+
+            testSql(query, dialect, {
+              postgres: NOT_SUPPORTED,
+              mysql: {
+                parameters: [],
+                sql: "select `nicknames`->'$[last]' as `nickname` from `person_metadata`",
+              },
+              sqlite: NOT_SUPPORTED,
+            })
+
+            const results = await query.execute()
+
+            expect(results).to.containSubset([
+              { nickname: 'Aniston the Magnificent' },
+              { nickname: 'Schwarzenegger the Magnificent' },
+              { nickname: 'Stallone the Magnificent' },
+            ])
+          })
+        }
+
+        if (dialect === 'sqlite') {
+          it('should execute a query with column->>$[#-1] in select clause', async () => {
+            const query = ctx.db
+              .selectFrom('person_metadata')
+              .select((eb) =>
+                eb.ref('nicknames', '->>$').at('#-1').as('nickname')
+              )
+
+            testSql(query, dialect, {
+              postgres: NOT_SUPPORTED,
+              mysql: NOT_SUPPORTED,
+              sqlite: {
+                parameters: [],
+                sql: `select "nicknames"->>'$[#-1]' as "nickname" from "person_metadata"`,
+              },
+            })
+
+            const results = await query.execute()
+
+            expect(results).to.containSubset([
+              { nickname: 'Aniston the Magnificent' },
+              { nickname: 'Schwarzenegger the Magnificent' },
+              { nickname: 'Stallone the Magnificent' },
+            ])
+          })
+        }
+
+        const expectedBooleanValue = dialect === 'mysql' ? true : 1
+
+        it(`should execute a query with column${jsonOperator} in select clause with non-string properties`, async () => {
+          const query = ctx.db
+            .selectFrom('person_metadata')
+            .select((eb) => [
+              eb
+                .ref('profile', jsonOperator)
+                .key('auth')
+                .key('is_verified')
+                .as('is_verified'),
+              eb
+                .ref('profile', jsonOperator)
+                .key('auth')
+                .key('login_count')
+                .as('login_count'),
+              eb.ref('profile', jsonOperator).key('avatar').as('avatar'),
+            ])
+
+          const results = await query.execute()
+
+          expect(results).to.containSubset([
+            {
+              is_verified: expectedBooleanValue,
+              login_count: 12,
+              avatar: null,
+            },
+          ])
+        })
+
+        it(`should execute a query with column${jsonOperator}.key.key in where clause`, async () => {
+          const query = ctx.db
+            .selectFrom('person_metadata')
+            .where((eb) =>
+              eb.cmpr(
+                eb.ref('profile', jsonOperator).key('auth').key('login_count'),
+                '=',
+                12
+              )
+            )
+            .selectAll()
+
+          testSql(query, dialect, {
+            postgres: NOT_SUPPORTED,
+            mysql: {
+              parameters: [12],
+              sql: "select * from `person_metadata` where `profile`->'$.auth.login_count' = ?",
+            },
+            sqlite: {
+              parameters: [12],
+              sql: `select * from "person_metadata" where "profile"->>'$.auth.login_count' = ?`,
+            },
+          })
+
+          const results = await query.execute()
+
+          expect(results).to.have.length(1)
+          expect(results[0].profile.auth.login_count).to.equal(12)
+        })
+      })
     }
 
     if (dialect !== 'mysql') {
-      it('should execute a query with column->>key in select clause', async () => {
-        const query = ctx.db
-          .selectFrom('person_metadata')
-          .select((eb) => eb.ref('website', '->>').key('url').as('website_url'))
+      describe('PostgreSQL-style syntax (->->->>)', () => {
+        const jsonOperator = dialect === 'postgres' ? '->' : '->>'
 
-        testSql(query, dialect, {
-          postgres: {
-            parameters: [],
-            sql: `select "website"->>'url' as "website_url" from "person_metadata"`,
-          },
-          mysql: NOT_SUPPORTED,
-          sqlite: {
-            parameters: [],
-            sql: `select "website"->>'url' as "website_url" from "person_metadata"`,
-          },
-        })
-
-        const results = await query.execute()
-
-        expect(results).to.containSubset([
-          { website_url: 'https://www.jenniferaniston.com' },
-          { website_url: 'https://www.arnoldschwarzenegger.com' },
-          { website_url: 'https://www.sylvesterstallone.com' },
-        ])
-      })
-
-      it('should execute a query with column->>0 in select clause', async () => {
-        const query = ctx.db
-          .selectFrom('person_metadata')
-          .select((eb) => eb.ref('nicknames', '->>').at(0).as('nickname'))
-
-        testSql(query, dialect, {
-          postgres: {
-            parameters: [],
-            sql: `select "nicknames"->>0 as "nickname" from "person_metadata"`,
-          },
-          mysql: NOT_SUPPORTED,
-          sqlite: {
-            parameters: [],
-            sql: `select "nicknames"->>0 as "nickname" from "person_metadata"`,
-          },
-        })
-
-        const results = await query.execute()
-
-        expect(results).to.containSubset([
-          { nickname: 'J.A.' },
-          { nickname: 'A.S.' },
-          { nickname: 'S.S.' },
-        ])
-      })
-
-      it('should execute a query with column->key->>key in select clause', async () => {
-        const query = ctx.db
-          .selectFrom('person_metadata')
-          .select((eb) =>
-            eb.ref('profile', '->>').key('auth').key('roles').as('roles')
-          )
-
-        testSql(query, dialect, {
-          postgres: {
-            parameters: [],
-            sql: `select "profile"->'auth'->>'roles' as "roles" from "person_metadata"`,
-          },
-          mysql: NOT_SUPPORTED,
-          sqlite: {
-            parameters: [],
-            sql: `select "profile"->'auth'->>'roles' as "roles" from "person_metadata"`,
-          },
-        })
-
-        const results = await query.execute()
-
-        expect(results).to.containSubset([
-          { roles: ['contributor', 'moderator'] },
-          { roles: ['contributor', 'moderator'] },
-          { roles: ['contributor', 'moderator'] },
-        ])
-      })
-
-      it('should execute a query with column->key->>0 in select clause', async () => {
-        const query = ctx.db
-          .selectFrom('person_metadata')
-          .select((eb) =>
-            eb.ref('profile', '->>').key('tags').at(0).as('main_tag')
-          )
-
-        testSql(query, dialect, {
-          postgres: {
-            parameters: [],
-            sql: `select "profile"->'tags'->>0 as "main_tag" from "person_metadata"`,
-          },
-          mysql: NOT_SUPPORTED,
-          sqlite: {
-            parameters: [],
-            sql: `select "profile"->'tags'->>0 as "main_tag" from "person_metadata"`,
-          },
-        })
-
-        const results = await query.execute()
-
-        expect(results).to.containSubset([
-          { main_tag: 'awesome' },
-          { main_tag: 'awesome' },
-          { main_tag: 'awesome' },
-        ])
-      })
-
-      it('should execute a query with column->0->>key in select clause', async () => {
-        const query = ctx.db
-          .selectFrom('person_metadata')
-          .select((eb) =>
-            eb
-              .ref('experience', '->>')
-              .at(0)
-              .key('establishment')
-              .as('establishment')
-          )
-
-        testSql(query, dialect, {
-          postgres: {
-            parameters: [],
-            sql: `select "experience"->0->>'establishment' as "establishment" from "person_metadata"`,
-          },
-          mysql: NOT_SUPPORTED,
-          sqlite: {
-            parameters: [],
-            sql: `select "experience"->0->>'establishment' as "establishment" from "person_metadata"`,
-          },
-        })
-
-        const results = await query.execute()
-
-        expect(results).to.containSubset([
-          { establishment: 'The University of Life' },
-          { establishment: 'The University of Life' },
-          { establishment: 'The University of Life' },
-        ])
-      })
-
-      it('should execute a query with column->0->>0 in select clause', async () => {
-        const query = ctx.db
-          .selectFrom('person_metadata')
-          .select((eb) =>
-            eb.ref('schedule', '->>').at(0).at(0).as('january_1st_schedule')
-          )
-
-        testSql(query, dialect, {
-          postgres: {
-            parameters: [],
-            sql: `select "schedule"->0->>0 as "january_1st_schedule" from "person_metadata"`,
-          },
-          mysql: NOT_SUPPORTED,
-          sqlite: {
-            parameters: [],
-            sql: `select "schedule"->0->>0 as "january_1st_schedule" from "person_metadata"`,
-          },
-        })
-
-        const results = await query.execute()
-
-        expect(results).to.containSubset([
-          { january_1st_schedule: [{ name: 'Gym', time: '12:15' }] },
-          { january_1st_schedule: [{ name: 'Gym', time: '12:15' }] },
-          { january_1st_schedule: [{ name: 'Gym', time: '12:15' }] },
-        ])
-      })
-
-      if (dialect === 'postgres') {
-        it('should execute a query with column->>-1 in select clause', async () => {
+        it(`should execute a query with column${jsonOperator}key in select clause`, async () => {
           const query = ctx.db
             .selectFrom('person_metadata')
-            .select((eb) => eb.ref('nicknames', '->>').at(-1).as('nickname'))
+            .select((eb) =>
+              eb.ref('website', jsonOperator).key('url').as('website_url')
+            )
 
           testSql(query, dialect, {
             postgres: {
               parameters: [],
-              sql: `select "nicknames"->>-1 as "nickname" from "person_metadata"`,
+              sql: `select "website"->'url' as "website_url" from "person_metadata"`,
             },
             mysql: NOT_SUPPORTED,
             sqlite: {
               parameters: [],
-              sql: `select "nicknames"->>-1 as "nickname" from "person_metadata"`,
+              sql: `select "website"->>'url' as "website_url" from "person_metadata"`,
             },
           })
 
           const results = await query.execute()
 
           expect(results).to.containSubset([
-            { nickname: 'Aniston the Magnificent' },
-            { nickname: 'Schwarzenegger the Magnificent' },
-            { nickname: 'Stallone the Magnificent' },
+            { website_url: 'https://www.jenniferaniston.com' },
+            { website_url: 'https://www.arnoldschwarzenegger.com' },
+            { website_url: 'https://www.sylvesterstallone.com' },
           ])
         })
-      }
+
+        it(`should execute a query with column${jsonOperator}0 in select clause`, async () => {
+          const query = ctx.db
+            .selectFrom('person_metadata')
+            .select((eb) =>
+              eb.ref('nicknames', jsonOperator).at(0).as('nickname')
+            )
+
+          testSql(query, dialect, {
+            postgres: {
+              parameters: [],
+              sql: `select "nicknames"->0 as "nickname" from "person_metadata"`,
+            },
+            mysql: NOT_SUPPORTED,
+            sqlite: {
+              parameters: [],
+              sql: `select "nicknames"->>0 as "nickname" from "person_metadata"`,
+            },
+          })
+
+          const results = await query.execute()
+
+          expect(results).to.containSubset([
+            { nickname: 'J.A.' },
+            { nickname: 'A.S.' },
+            { nickname: 'S.S.' },
+          ])
+        })
+
+        it(`should execute a query with column->key${jsonOperator}key in select clause`, async () => {
+          const query = ctx.db
+            .selectFrom('person_metadata')
+            .select((eb) =>
+              eb
+                .ref('profile', jsonOperator)
+                .key('auth')
+                .key('roles')
+                .as('roles')
+            )
+
+          testSql(query, dialect, {
+            postgres: {
+              parameters: [],
+              sql: `select "profile"->'auth'->'roles' as "roles" from "person_metadata"`,
+            },
+            mysql: NOT_SUPPORTED,
+            sqlite: {
+              parameters: [],
+              sql: `select "profile"->'auth'->>'roles' as "roles" from "person_metadata"`,
+            },
+          })
+
+          const results = await query.execute()
+
+          expect(results).to.containSubset([
+            { roles: ['contributor', 'moderator'] },
+            { roles: ['contributor', 'moderator'] },
+            { roles: ['contributor', 'moderator'] },
+          ])
+        })
+
+        it(`should execute a query with column->key${jsonOperator}0 in select clause`, async () => {
+          const query = ctx.db
+            .selectFrom('person_metadata')
+            .select((eb) =>
+              eb.ref('profile', jsonOperator).key('tags').at(0).as('main_tag')
+            )
+
+          testSql(query, dialect, {
+            postgres: {
+              parameters: [],
+              sql: `select "profile"->'tags'->0 as "main_tag" from "person_metadata"`,
+            },
+            mysql: NOT_SUPPORTED,
+            sqlite: {
+              parameters: [],
+              sql: `select "profile"->'tags'->>0 as "main_tag" from "person_metadata"`,
+            },
+          })
+
+          const results = await query.execute()
+
+          expect(results).to.containSubset([
+            { main_tag: 'awesome' },
+            { main_tag: 'awesome' },
+            { main_tag: 'awesome' },
+          ])
+        })
+
+        it(`should execute a query with column->0${jsonOperator}key in select clause`, async () => {
+          const query = ctx.db
+            .selectFrom('person_metadata')
+            .select((eb) =>
+              eb
+                .ref('experience', jsonOperator)
+                .at(0)
+                .key('establishment')
+                .as('establishment')
+            )
+
+          testSql(query, dialect, {
+            postgres: {
+              parameters: [],
+              sql: `select "experience"->0->'establishment' as "establishment" from "person_metadata"`,
+            },
+            mysql: NOT_SUPPORTED,
+            sqlite: {
+              parameters: [],
+              sql: `select "experience"->0->>'establishment' as "establishment" from "person_metadata"`,
+            },
+          })
+
+          const results = await query.execute()
+
+          expect(results).to.containSubset([
+            { establishment: 'The University of Life' },
+            { establishment: 'The University of Life' },
+            { establishment: 'The University of Life' },
+          ])
+        })
+
+        it(`should execute a query with column->0${jsonOperator}0 in select clause`, async () => {
+          const query = ctx.db
+            .selectFrom('person_metadata')
+            .select((eb) =>
+              eb
+                .ref('schedule', jsonOperator)
+                .at(0)
+                .at(0)
+                .as('january_1st_schedule')
+            )
+
+          testSql(query, dialect, {
+            postgres: {
+              parameters: [],
+              sql: `select "schedule"->0->0 as "january_1st_schedule" from "person_metadata"`,
+            },
+            mysql: NOT_SUPPORTED,
+            sqlite: {
+              parameters: [],
+              sql: `select "schedule"->0->>0 as "january_1st_schedule" from "person_metadata"`,
+            },
+          })
+
+          const results = await query.execute()
+
+          expect(results).to.containSubset([
+            { january_1st_schedule: [{ name: 'Gym', time: '12:15' }] },
+            { january_1st_schedule: [{ name: 'Gym', time: '12:15' }] },
+            { january_1st_schedule: [{ name: 'Gym', time: '12:15' }] },
+          ])
+        })
+
+        if (dialect === 'postgres') {
+          it('should execute a query with column->-1 in select clause', async () => {
+            const query = ctx.db
+              .selectFrom('person_metadata')
+              .select((eb) => eb.ref('nicknames', '->').at(-1).as('nickname'))
+
+            testSql(query, dialect, {
+              postgres: {
+                parameters: [],
+                sql: `select "nicknames"->-1 as "nickname" from "person_metadata"`,
+              },
+              mysql: NOT_SUPPORTED,
+              sqlite: NOT_SUPPORTED,
+            })
+
+            const results = await query.execute()
+
+            expect(results).to.containSubset([
+              { nickname: 'Aniston the Magnificent' },
+              { nickname: 'Schwarzenegger the Magnificent' },
+              { nickname: 'Stallone the Magnificent' },
+            ])
+          })
+        }
+
+        const expectedBooleanValue = dialect === 'postgres' ? true : 1
+
+        it(`should execute a query with column${jsonOperator} in select clause with non-string properties`, async () => {
+          const query = ctx.db
+            .selectFrom('person_metadata')
+            .select((eb) => [
+              eb
+                .ref('profile', jsonOperator)
+                .key('auth')
+                .key('is_verified')
+                .as('is_verified'),
+              eb
+                .ref('profile', jsonOperator)
+                .key('auth')
+                .key('login_count')
+                .as('login_count'),
+              eb.ref('profile', jsonOperator).key('avatar').as('avatar'),
+            ])
+
+          const results = await query.execute()
+
+          expect(results).to.containSubset([
+            {
+              is_verified: expectedBooleanValue,
+              login_count: 12,
+              avatar: null,
+            },
+          ])
+        })
+
+        it(`should execute a query with column->key${jsonOperator}key in where clause`, async () => {
+          const query = ctx.db
+            .selectFrom('person_metadata')
+            .where((eb) =>
+              eb.cmpr(
+                eb.ref('profile', jsonOperator).key('auth').key('login_count'),
+                '=',
+                12
+              )
+            )
+            .selectAll()
+
+          testSql(query, dialect, {
+            postgres: {
+              parameters: [12],
+              sql: `select * from "person_metadata" where "profile"->'auth'->'login_count' = $1`,
+            },
+            mysql: NOT_SUPPORTED,
+            sqlite: {
+              parameters: [12],
+              sql: `select * from "person_metadata" where "profile"->'auth'->>'login_count' = ?`,
+            },
+          })
+
+          const results = await query.execute()
+
+          expect(results).to.have.length(1)
+          expect(results[0].profile.auth.login_count).to.equal(12)
+        })
+      })
     }
   })
 }
@@ -474,72 +617,39 @@ async function initJSONTest<D extends BuiltInDialect>(
 ) {
   const testContext = await initTest(ctx, dialect)
 
-  const db = testContext.db
-    .withTables<{
-      person_metadata: {
-        person_id: number
-        website: ColumnType<{ url: string }, string, string>
-        nicknames: ColumnType<string[], string, string>
-        profile: ColumnType<
-          {
-            auth: {
-              roles: string[]
-              last_login?: { device: string }
-            }
-            tags: string[]
-          },
-          string,
-          string
-        >
-        experience: ColumnType<
-          {
-            establishment: string
-          }[],
-          string,
-          string
-        >
-        schedule: ColumnType<
-          { name: string; time: string }[][][],
-          string,
-          string
-        >
-      }
-    }>()
-    .withPlugin(
-      new (class implements KyselyPlugin {
-        transformQuery(args: PluginTransformQueryArgs): RootOperationNode {
-          return args.node
-        }
-        async transformResult(
-          args: PluginTransformResultArgs
-        ): Promise<QueryResult<UnknownRow>> {
-          if (Array.isArray(args.result.rows)) {
-            return {
-              ...args.result,
-              rows: args.result.rows.map((row) =>
-                Object.keys(row).reduce<UnknownRow>((obj, key) => {
-                  let value = row[key]
-
-                  if (
-                    typeof value === 'string' &&
-                    value.match(/^[\[\{]/) != null
-                  ) {
-                    try {
-                      value = JSON.parse(value)
-                    } catch (err) {}
-                  }
-
-                  obj[key] = value
-                  return obj
-                }, {})
-              ),
-            }
+  let db = testContext.db.withTables<{
+    person_metadata: {
+      person_id: number
+      website: ColumnType<{ url: string }, string, string>
+      nicknames: ColumnType<string[], string, string>
+      profile: ColumnType<
+        {
+          auth: {
+            roles: string[]
+            last_login?: { device: string }
+            is_verified: SqlBool
+            login_count: number
           }
+          avatar: string | null
+          tags: string[]
+        },
+        string,
+        string
+      >
+      experience: ColumnType<
+        {
+          establishment: string
+        }[],
+        string,
+        string
+      >
+      schedule: ColumnType<{ name: string; time: string }[][][], string, string>
+    }
+  }>()
 
-          return args.result
-        }
-      })()
-    )
+  if (dialect === 'sqlite') {
+    db = db.withPlugin(new ParseJSONResultsPlugin())
+  }
 
   const jsonColumnDataType = resolveJSONColumnDataType(dialect)
   const notNull = (cb: ColumnDefinitionBuilder) => cb.notNull()
@@ -583,7 +693,7 @@ async function insertDefaultJSONDataSet(ctx: TestContext) {
     .values(
       people
         .filter((person) => person.first_name && person.last_name)
-        .map((person) => ({
+        .map((person, index) => ({
           person_id: person.id,
           website: JSON.stringify({
             url: `https://www.${person.first_name!.toLowerCase()}${person.last_name!.toLowerCase()}.com`,
@@ -600,7 +710,10 @@ async function insertDefaultJSONDataSet(ctx: TestContext) {
               last_login: {
                 device: 'android',
               },
+              login_count: 12 + index,
+              is_verified: true,
             },
+            avatar: null,
           }),
           experience: JSON.stringify([
             {
