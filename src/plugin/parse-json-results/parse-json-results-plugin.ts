@@ -28,10 +28,6 @@ export class ParseJSONResultsPlugin implements KyselyPlugin {
 
 function parseRow(row: UnknownRow): UnknownRow {
   return Object.entries(row).reduce<UnknownRow>((row, [key, value]) => {
-    if (key === 'jnuary_1st_schedule') {
-      console.log('value', value)
-    }
-
     if (isString(value) && value.match(/^[\[\{]/) != null) {
       try {
         value = JSON.parse(value)
