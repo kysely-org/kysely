@@ -78,7 +78,7 @@ import { WithSchemaPlugin } from './plugin/with-schema/with-schema-plugin.js'
  */
 export class Kysely<DB>
   extends QueryCreator<DB>
-  implements QueryExecutorProvider
+  implements QueryExecutorProvider, AsyncDisposable
 {
   readonly #props: KyselyProps
 
@@ -380,6 +380,10 @@ export class Kysely<DB>
     const compiledQuery = isCompilable(query) ? query.compile() : query
 
     return this.getExecutor().executeQuery<R>(compiledQuery, queryId)
+  }
+
+  async [Symbol.asyncDispose]() {
+    await this.destroy()
   }
 }
 
