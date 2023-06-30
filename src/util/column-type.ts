@@ -66,6 +66,16 @@ export type Generated<S> = ColumnType<S, S | undefined, S>
 export type GeneratedAlways<S> = ColumnType<S, never, never>
 
 /**
+ * A shortcut for defining JSON columns, which are by default inserted/updated
+ * as stringified JSON strings.
+ */
+export type JSONColumnType<
+  SelectType extends object | null,
+  InsertType = string,
+  UpdateType = string
+> = ColumnType<SelectType, InsertType, UpdateType>
+
+/**
  * Evaluates to `K` if `T` can be `null` or `undefined`.
  */
 type IfNullable<T, K> = undefined extends T ? K : null extends T ? K : never

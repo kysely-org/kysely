@@ -1,6 +1,6 @@
 import {
   ColumnDefinitionBuilder,
-  ColumnType,
+  JSONColumnType,
   ParseJSONResultsPlugin,
   SqlBool,
 } from '../../..'
@@ -620,30 +620,24 @@ async function initJSONTest<D extends BuiltInDialect>(
   let db = testContext.db.withTables<{
     person_metadata: {
       person_id: number
-      website: ColumnType<{ url: string }, string, string>
-      nicknames: ColumnType<string[], string, string>
-      profile: ColumnType<
-        {
-          auth: {
-            roles: string[]
-            last_login?: { device: string }
-            is_verified: SqlBool
-            login_count: number
-          }
-          avatar: string | null
-          tags: string[]
-        },
-        string,
-        string
-      >
-      experience: ColumnType<
+      website: JSONColumnType<{ url: string }>
+      nicknames: JSONColumnType<string[]>
+      profile: JSONColumnType<{
+        auth: {
+          roles: string[]
+          last_login?: { device: string }
+          is_verified: SqlBool
+          login_count: number
+        }
+        avatar: string | null
+        tags: string[]
+      }>
+      experience: JSONColumnType<
         {
           establishment: string
-        }[],
-        string,
-        string
+        }[]
       >
-      schedule: ColumnType<{ name: string; time: string }[][][], string, string>
+      schedule: JSONColumnType<{ name: string; time: string }[][][]>
     }
   }>()
 
