@@ -32,34 +32,34 @@ export class JSONPathBuilder<S, O = S> {
    *
    * ```ts
    * db.selectFrom('person').select(eb =>
-   *   eb.ref('nicknames', '->>').at(0).as('primary_nickname')
+   *   eb.ref('nicknames', '->').at(0).as('primary_nickname')
    * )
    *
    * The generated SQL (PostgreSQL):
    *
    * ```sql
-   * select "nicknames"->>0 as "primary_nickname" from "person"
+   * select "nicknames"->0 as "primary_nickname" from "person"
    *```
    *
    * Combined with {@link key}:
    *
    * ```ts
    * db.selectFrom('person').select(eb =>
-   *   eb.ref('experience', '->>').at(0).key('role').as('first_role')
+   *   eb.ref('experience', '->').at(0).key('role').as('first_role')
    * )
    * ```
    *
    * The generated SQL (PostgreSQL):
    *
    * ```sql
-   * select "experience"->>0->'role' as "first_role" from "person"
+   * select "experience"->0->'role' as "first_role" from "person"
    * ```
    *
    * You can use `'last'` to access the last element of the array in MySQL:
    *
    * ```ts
    * db.selectFrom('person').select(eb =>
-   *   eb.ref('nicknames', '->>$').at('last').as('last_nickname')
+   *   eb.ref('nicknames', '->$').at('last').as('last_nickname')
    * )
    * ```
    *
@@ -80,7 +80,7 @@ export class JSONPathBuilder<S, O = S> {
    * The generated SQL (SQLite):
    *
    * ```sql
-   * select "nicknames"->'$[#-1]' as `last_nickname` from `person`
+   * select "nicknames"->>'$[#-1]' as `last_nickname` from `person`
    * ```
    */
   at<
@@ -103,7 +103,7 @@ export class JSONPathBuilder<S, O = S> {
    *
    * ```ts
    * db.selectFrom('person').select(eb =>
-   *   eb.ref('address', '->>').key('city').as('city')
+   *   eb.ref('address', '->').key('city').as('city')
    * )
    * ```
    *
@@ -117,7 +117,7 @@ export class JSONPathBuilder<S, O = S> {
    *
    * ```ts
    * db.selectFrom('person').select(eb =>
-   *   eb.ref('profile', '->>$').key('website').key('url').as('website_url')
+   *   eb.ref('profile', '->$').key('website').key('url').as('website_url')
    * )
    * ```
    *
@@ -131,7 +131,7 @@ export class JSONPathBuilder<S, O = S> {
    *
    * ```ts
    * db.selectFrom('person').select(eb =>
-   *   eb.ref('profile', '->>').key('addresses').at(0).key('city').as('city')
+   *   eb.ref('profile', '->').key('addresses').at(0).key('city').as('city')
    * )
    * ```
    *

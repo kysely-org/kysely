@@ -266,7 +266,7 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    * ```ts
    * db.selectFrom('person')
    *   .where(({ cmpr, ref }) => cmpr(
-   *     ref('address', '->>').key('state').key('abbr'),
+   *     ref('address', '->').key('state').key('abbr'),
    *     '=',
    *     'CA'
    *   ))
@@ -276,15 +276,15 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    * The generated SQL (PostgreSQL):
    *
    * ```sql
-   * select * from "person" where "address"->'state'->>'abbr' = $1
+   * select * from "person" where "address"->'state'->'abbr' = $1
    * ```
    *
-   * You can also compile to a JSON path expression by using the `->>$` operator:
+   * You can also compile to a JSON path expression by using the `->$`or `->>$` operator:
    *
    * ```ts
    * db.selectFrom('person')
    *   .select(({ ref }) =>
-   *     ref('experience', '->>$')
+   *     ref('experience', '->$')
    *       .at('last')
    *       .key('title')
    *       .as('current_job')
@@ -294,7 +294,7 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    * The generated SQL (MySQL):
    *
    * ```sql
-   * select `experience`->>'$[last].title' as `current_job` from `person`
+   * select `experience`->'$[last].title' as `current_job` from `person`
    * ```
    */
   ref<RE extends StringReference<DB, TB>>(
