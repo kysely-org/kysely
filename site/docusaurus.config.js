@@ -86,6 +86,8 @@ const config = {
         logo: {
           alt: 'Kysely Logo',
           src: 'img/logo.svg',
+          width: 32,
+          height: 32,
         },
         items: [
           {
@@ -121,7 +123,7 @@ const config = {
               },
               {
                 label: 'Getting started',
-                to: '/docs/installation',
+                to: '/docs/getting-started',
               },
 
               {
@@ -178,10 +180,10 @@ const config = {
             title: 'Sponsors',
             items: [
               {
-                html: `<a href="https://vercel.com/?utm_source=kysely&utm_campaign=oss"><img src="/img/powered-by-vercel.svg" alt="Powered by Vercel" /></a>`,
-              }
-            ]
-          }
+                html: `<a href="https://vercel.com/?utm_source=kysely&utm_campaign=oss"><img src="/img/powered-by-vercel.svg" style="width: 214px; height: 44px" alt="Powered by Vercel" /></a>`,
+              },
+            ],
+          },
         ],
       },
       prism: {
