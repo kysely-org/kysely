@@ -6,7 +6,7 @@ values.
 **Let's define our first database interface:**
 
 ```ts title="src/types.ts"
-import { ColumnType, Generated, Insertable, Selectable, Updatable } from 'kysely'
+import { ColumnType, Generated, Insertable, Selectable, Updateable } from 'kysely'
 
 export interface Database {
   person: PersonTable
@@ -40,7 +40,7 @@ export interface PersonTable {
 // make sure that the correct types are used in each operation.
 export type Person = Selectable<PersonTable>
 export type NewPerson = Insertable<PersonTable>
-export type EditedPerson = Updateable<PersonTable>
+export type PersonUpdate = Updateable<PersonTable>
 
 export interface PetTable {
   id: Generated<number>
@@ -51,13 +51,13 @@ export interface PetTable {
 
 export type Pet = Selectable<PetTable>
 export type NewPet = Insertable<PetTable>
-export type EditedPet = Updateable<PetTable>
+export type PetUpdate = Updateable<PetTable>
 ```
 
 :::tip Codegen
 
 For production apps, it is recommended to automatically generate your <code>Database</code>
-interface by introspecting your production database or Prisma schemas. Find out more at
-["Generating types"](https://kysely.dev/docs/generating-types).
+interface by introspecting your production database or Prisma schemas. Generated types
+might differ in naming convention, internal order, etc. Find out more at ["Generating types"](https://kysely.dev/docs/generating-types).
 
 :::

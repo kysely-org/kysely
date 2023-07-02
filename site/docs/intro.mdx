@@ -2,11 +2,13 @@
 sidebar_position: 1
 ---
 
+import { DemoVideo } from '@site/src/components/DemoVideo'
+
 # Introduction
 
 Kysely (pronounced “Key-Seh-Lee”) is a type-safe and autocompletion-friendly TypeScript SQL query builder. Inspired by Knex. Mainly developed for Node.js but also runs on Deno and in the browser.
 
-![image](https://github.com/kysely-org/kysely/raw/master/assets/demo.gif)
+<DemoVideo />
 
 Kysely makes sure you only refer to tables and columns that are visible to the part of the query you're writing. The result type only has the selected columns with correct types and aliases. As an added bonus you get autocompletion for all that stuff.
 
