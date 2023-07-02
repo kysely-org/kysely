@@ -25,6 +25,9 @@ import {
   CommonTableExpression,
   parseCommonTableExpression,
   QueryCreatorWithCommonTableExpression,
+  ReadonlyCommonTableExpression,
+  ReadonlyQueryCreatorWithCommonTableExpression,
+  ReadonlyRecursiveCommonTableExpression,
   RecursiveCommonTableExpression,
 } from './parser/with-parser.js'
 import { WithNode } from './operation-node/with-node.js'
@@ -567,4 +570,21 @@ export class QueryCreator<DB> {
 export interface QueryCreatorProps {
   readonly executor: QueryExecutor
   readonly withNode?: WithNode
+}
+
+export type ReadonlyQueryCreator<DB> = Pick<QueryCreator<DB>, 'selectFrom'> & {
+  with<N extends string, E extends ReadonlyCommonTableExpression<DB, N>>(
+    name: N,
+    expression: E
+  ): ReadonlyQueryCreatorWithCommonTableExpression<DB, N, E>
+  withoutPlugins(): ReadonlyQueryCreator<DB>
+  withPlugin(plugin: KyselyPlugin): ReadonlyQueryCreator<DB>
+  withRecursive<
+    N extends string,
+    E extends ReadonlyRecursiveCommonTableExpression<DB, N>
+  >(
+    name: N,
+    expression: E
+  ): ReadonlyQueryCreatorWithCommonTableExpression<DB, N, E>
+  withSchema(schema: string): ReadonlyQueryCreator<DB>
 }
