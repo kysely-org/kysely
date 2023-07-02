@@ -5,6 +5,9 @@
   padding-bottom: 74%; /* this is 592 / 800 = 0.74 converted to percentage */
   position: relative;
   overflow: hidden;
+  background: #1d1d1d;
+  border-radius: 12px;
+  box-shadow: var(--shadow-elevation-medium);
 }
 
 .videoContainer video {
@@ -13,6 +16,4 @@
   left: 0;
   width: 100%;
   height: 100%;
-  border-radius: 12;
-  box-shadow: var(--shadow-elevation-medium);
 }
