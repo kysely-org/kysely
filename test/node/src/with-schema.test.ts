@@ -282,6 +282,31 @@ if (DIALECTS.includes('postgres')) {
 
         await query.execute()
       })
+
+      it('should not add schema for common table expression names in subqueries', async () => {
+        const query = ctx.db
+          .withSchema('mammals')
+          .with('doggo', (qb) =>
+            qb.selectFrom('pet').where('name', '=', 'Doggo').select('pet.id')
+          )
+          .selectFrom('pet')
+          .select((eb) => [
+            'pet.id',
+            eb.selectFrom('doggo').select('id').as('doggo_id'),
+          ])
+          .selectAll()
+
+        testSql(query, dialect, {
+          postgres: {
+            sql: 'with "doggo" as (select "mammals"."pet"."id" from "mammals"."pet" where "name" = $1) select "mammals"."pet"."id", (select "id" from "doggo") as "doggo_id", * from "mammals"."pet"',
+            parameters: ['Doggo'],
+          },
+          mysql: NOT_SUPPORTED,
+          sqlite: NOT_SUPPORTED,
+        })
+
+        await query.execute()
+      })
     })
 
     describe('create table', () => {

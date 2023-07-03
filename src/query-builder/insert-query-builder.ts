@@ -267,17 +267,29 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    *
    * ### Examples
    *
+   * <!-- siteExample("insert", "Insert subquery", 50) -->
+   *
+   * You can create an `INSERT INTO SELECT FROM` query using the `expression` method:
+   *
    * ```ts
-   * db.insertInto('person')
-   *   .columns(['first_name'])
-   *   .expression((eb) => eb.selectFrom('pet').select('pet.name'))
+   * const result = await db.insertInto('person')
+   *   .columns(['first_name', 'last_name', 'age'])
+   *   .expression((eb) => eb
+   *     .selectFrom('pet')
+   *     .select((eb) => [
+   *       'pet.name',
+   *       eb.val('Petson').as('last_name'),
+   *       eb.val(7).as('age'),
+   *     ])
+   *   )
+   *   .execute()
    * ```
    *
    * The generated SQL (PostgreSQL):
    *
    * ```sql
-   * insert into "person" ("first_name")
-   * select "pet"."name" from "pet"
+   * insert into "person" ("first_name", "last_name", "age")
+   * select "pet"."name", $1 as "first_name", $2 as "last_name" from "pet"
    * ```
    */
   expression(
