@@ -73,7 +73,7 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    *     eb.fn.count('pet.id').as('pet_count')
    *   ])
    *   .groupBy('person.id')
-   *   .having(count('pet.id'), '>', 10)
+   *   .having((eb) => eb.fn.count('pet.id'), '>', 10)
    *   .execute()
    * ```
    *
