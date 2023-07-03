@@ -34,6 +34,7 @@ export const COMPARISON_OPERATORS = [
   '@@@',
   '!!',
   '<->',
+  'regexp'
 ] as const
 
 export const ARITHMETIC_OPERATORS = [

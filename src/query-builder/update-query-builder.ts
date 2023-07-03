@@ -489,6 +489,8 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
    *
    * ### Examples
    *
+   * <!-- siteExample("update", "Single row", 10) -->
+   *
    * Update a row in `person` table:
    *
    * ```ts
@@ -498,7 +500,7 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
    *     first_name: 'Jennifer',
    *     last_name: 'Aniston'
    *   })
-   *   .where('id', '=', 1)
+   *   .where('id', '=', '1')
    *   .executeTakeFirst()
    *
    * console.log(result.numUpdatedRows)

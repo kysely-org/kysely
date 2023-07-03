@@ -286,12 +286,14 @@ export class QueryCreator<DB> {
    *
    * ### Examples
    *
-   * Deleting person with id 1:
+   * <!-- siteExample("delete", "Single row", 10) -->
+   *
+   * Delete a single row:
    *
    * ```ts
    * const result = await db
    *   .deleteFrom('person')
-   *   .where('person.id', '=', 1)
+   *   .where('person.id', '=', '1')
    *   .executeTakeFirst()
    *
    * console.log(result.numDeletedRows)

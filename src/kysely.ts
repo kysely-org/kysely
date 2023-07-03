@@ -209,23 +209,29 @@ export class Kysely<DB>
    *
    * ### Examples
    *
+   * <!-- siteExample("transactions", "Simple transaction", 10) -->
+   *
+   * This example inserts two rows in a transaction. If an error is thrown inside
+   * the callback passed to the `execute` method, the transaction is rolled back.
+   * Otherwise it's committed.
+   *
    * ```ts
    * const catto = await db.transaction().execute(async (trx) => {
    *   const jennifer = await trx.insertInto('person')
    *     .values({
    *       first_name: 'Jennifer',
    *       last_name: 'Aniston',
+   *       age: 40,
    *     })
    *     .returning('id')
    *     .executeTakeFirstOrThrow()
    *
-   *   await someFunction(trx, jennifer)
-   *
    *   return await trx.insertInto('pet')
    *     .values({
-   *       user_id: jennifer.id,
+   *       owner_id: jennifer.id,
    *       name: 'Catto',
-   *       species: 'cat'
+   *       species: 'cat',
+   *       is_favorite: false,
    *     })
    *     .returningAll()
    *     .executeTakeFirst()
