@@ -201,8 +201,7 @@ export class SchemaModule {
    * ```ts
    * await db.schema
    *   .alterTable('person')
-   *   .alterColumn('first_name')
-   *   .setDataType('text')
+   *   .alterColumn('first_name', (ac) => ac.setDataType('text'))
    *   .execute()
    * ```
    */
