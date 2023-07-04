@@ -1734,14 +1734,12 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    * You can also call any other methods inside the callback:
    *
    * ```ts
-   * const { count } = db.fn
-   *
    * db.selectFrom('person')
    *   .select('person.id')
    *   .$if(filterByFirstName, (qb) => qb.where('first_name', '=', firstName))
    *   .$if(filterByPetCount, (qb) => qb
    *     .innerJoin('pet', 'pet.owner_id', 'person.id')
-   *     .having(count('pet.id'), '>', petCountLimit)
+   *     .having((eb) => eb.fn.count('pet.id'), '>', petCountLimit)
    *     .groupBy('person.id')
    *   )
    * ```
