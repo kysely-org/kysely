@@ -6,7 +6,8 @@ The example below uses a PostgreSQL connection to print information about all ta
 
 ```ts
 import { Kysely, PostgresDialect } from 'kysely'
-import { Pool } from 'pg'
+import pg from 'pg'
+const { Pool } = pg
 
 async function logDatabaseSchema() {
   const db = new Kysely({
@@ -17,11 +18,13 @@ async function logDatabaseSchema() {
     }),
   })
 
-  const tables = await db().introspection.getTables()
+  const tables = await db.introspection.getTables()
   //        ^?  TableMetadata[]
 
   console.log({ tables })
 }
+
+logDatabaseSchema()
 ```
 
 For more information check the docs for details on the interfaces [DatabaseIntrospector](https://kysely-org.github.io/kysely/interfaces/DatabaseIntrospector.html) and [TableMetadata](https://kysely-org.github.io/kysely/interfaces/TableMetadata.html).
