@@ -54,9 +54,8 @@ function HomepageHeader() {
             </a>
           </span>
         </div>
-        <div>
-          <DemoVideo />
-        </div>
+
+        <DemoVideo />
       </div>
 
       <span
