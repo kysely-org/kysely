@@ -1,6 +1,12 @@
-import { expectAssignable, expectNotAssignable, expectError } from 'tsd'
+import {
+  expectAssignable,
+  expectNotAssignable,
+  expectError,
+  expectType,
+} from 'tsd'
 import { Expression, ExpressionBuilder, Kysely, SqlBool } from '..'
 import { Database } from '../shared'
+import { KyselyTypeError } from '../../../dist/cjs/util/type-error'
 
 function testExpression(db: Kysely<Database>) {
   const e1: Expression<number> = undefined!
@@ -51,6 +57,36 @@ function testExpressionBuilder(eb: ExpressionBuilder<Database, 'person'>) {
       eb.not(eb('last_name', '=', 'Aniston')),
     ])
   )
+
+  // `or` chain with three items
+  expectAssignable<Expression<SqlBool>>(
+    eb('first_name', '=', 'Jennifer')
+      .or(eb.not(eb('last_name', '=', 'Aniston')))
+      .or('age', '>', 23)
+  )
+
+  // `and` chain with three items
+  expectAssignable<Expression<SqlBool>>(
+    eb('first_name', '=', 'Jennifer')
+      .and(eb.not(eb('last_name', '=', 'Aniston')))
+      .and('age', '>', 23)
+  )
+
+  // nested `and` and `or` chains.
+  expectAssignable<Expression<SqlBool>>(
+    eb.and([
+      eb('age', '=', 1).or('age', '=', 2),
+      eb('first_name', '=', 'Jennifer').or('first_name', '=', 'Arnold'),
+    ])
+  )
+
+  expectType<
+    KyselyTypeError<'or() method can only be called on boolean expressions'>
+  >(eb('age', '+', 1).or('age', '=', 1))
+
+  expectType<
+    KyselyTypeError<'and() method can only be called on boolean expressions'>
+  >(eb('age', '+', 1).and('age', '=', 1))
 
   // `neg` expression
   expectAssignable<Expression<number>>(eb.neg(eb('age', '+', 10)))

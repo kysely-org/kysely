@@ -31,6 +31,7 @@ import {
   OperandValueExpression,
   OperandValueExpressionOrList,
   parseValueBinaryOperation,
+  parseValueBinaryOperationOrExpression,
 } from '../parser/binary-operation-parser.js'
 import { Expression } from './expression.js'
 import { AndNode } from '../operation-node/and-node.js'
@@ -104,6 +105,8 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
     op: OP,
     rhs: OperandValueExpressionOrList<DB, TB, RE>
   ): ExpressionWrapper<
+    DB,
+    TB,
     OP extends ComparisonOperator
       ? SqlBool
       : ExtractTypeFromReferenceExpression<DB, TB, RE>
@@ -318,7 +321,7 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    */
   ref<RE extends StringReference<DB, TB>>(
     reference: RE
-  ): ExpressionWrapper<ExtractTypeFromReferenceExpression<DB, TB, RE>>
+  ): ExpressionWrapper<DB, TB, ExtractTypeFromReferenceExpression<DB, TB, RE>>
 
   /**
    * Returns a value expression.
@@ -344,7 +347,7 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    */
   val<VE>(
     value: VE
-  ): ExpressionWrapper<ExtractTypeFromValueExpressionOrList<VE>>
+  ): ExpressionWrapper<DB, TB, ExtractTypeFromValueExpressionOrList<VE>>
 
   /**
    * @deprecated Use the expression builder as a function instead.
@@ -360,6 +363,12 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    * ```ts
    * where((eb) => eb('first_name', '=', 'Jennifer'))
    * ```
+   *
+   * or
+   *
+   * ```ts
+   * where(({ eb }) => eb('first_name', '=', 'Jennifer'))
+   * ```
    */
   cmpr<
     O extends SqlBool = SqlBool,
@@ -368,7 +377,7 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
     lhs: RE,
     op: ComparisonOperatorExpression,
     rhs: OperandValueExpressionOrList<DB, TB, RE>
-  ): ExpressionWrapper<O>
+  ): ExpressionWrapper<DB, TB, O>
 
   /**
    * @deprecated Use the expression builder as a function instead.
@@ -388,6 +397,14 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    *   age: eb('age', '+', 10)
    * }))
    * ```
+   *
+   * or
+   *
+   * ```ts
+   * set(({ eb }) => ({
+   *   age: eb('age', '+', 10)
+   * }))
+   * ```
    */
   bxp<
     RE extends ReferenceExpression<DB, TB>,
@@ -397,6 +414,8 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
     op: OP,
     rhs: OperandValueExpression<DB, TB, RE>
   ): ExpressionWrapper<
+    DB,
+    TB,
     OP extends ComparisonOperator
       ? SqlBool
       : ExtractTypeFromReferenceExpression<DB, TB, RE>
@@ -430,7 +449,7 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
   unary<RE extends ReferenceExpression<DB, TB>>(
     op: UnaryOperator,
     expr: RE
-  ): ExpressionWrapper<ExtractTypeFromReferenceExpression<DB, TB, RE>>
+  ): ExpressionWrapper<DB, TB, ExtractTypeFromReferenceExpression<DB, TB, RE>>
 
   /**
    * Creates a `not` operation.
@@ -441,7 +460,7 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    */
   not<RE extends ReferenceExpression<DB, TB>>(
     expr: RE
-  ): ExpressionWrapper<ExtractTypeFromReferenceExpression<DB, TB, RE>>
+  ): ExpressionWrapper<DB, TB, ExtractTypeFromReferenceExpression<DB, TB, RE>>
 
   /**
    * Creates an `exists` operation.
@@ -452,7 +471,7 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    */
   exists<RE extends ReferenceExpression<DB, TB>>(
     expr: RE
-  ): ExpressionWrapper<SqlBool>
+  ): ExpressionWrapper<DB, TB, SqlBool>
 
   /**
    * Creates a negation operation.
@@ -463,7 +482,7 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    */
   neg<RE extends ReferenceExpression<DB, TB>>(
     expr: RE
-  ): ExpressionWrapper<ExtractTypeFromReferenceExpression<DB, TB, RE>>
+  ): ExpressionWrapper<DB, TB, ExtractTypeFromReferenceExpression<DB, TB, RE>>
 
   /**
    * Combines two or more expressions using the logical `and` operator.
@@ -496,7 +515,9 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    * and "first_name" = $3
    * ```
    */
-  and(expres: ReadonlyArray<Expression<SqlBool>>): ExpressionWrapper<SqlBool>
+  and(
+    exprs: ReadonlyArray<Expression<SqlBool>>
+  ): ExpressionWrapper<DB, TB, SqlBool>
 
   /**
    * Combines two or more expressions using the logical `or` operator.
@@ -529,7 +550,65 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    * or "first_name" = $3
    * ```
    */
-  or(expres: ReadonlyArray<Expression<SqlBool>>): ExpressionWrapper<SqlBool>
+  or(
+    exprs: ReadonlyArray<Expression<SqlBool>>
+  ): ExpressionWrapper<DB, TB, SqlBool>
+
+  /**
+   * Wraps the expression in parentheses.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * db.selectFrom('person')
+   *   .selectAll('person')
+   *   .where((eb) => eb(eb.parens('age', '+', 1), '/', 100), '<', 0.1))
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * select "person".*
+   * from "person"
+   * where ("age" + $1) / $2 < $3
+   * ```
+   *
+   * You can also pass in any expression as the only argument:
+   *
+   * ```ts
+   * db.selectFrom('person')
+   *   .selectAll('person')
+   *   .where((eb) => parens(
+   *     eb('age', '=', 1).or('age', '=', 2))
+   *   ).and(
+   *     eb('first_name', '=', 'Jennifer').or('first_name', '=', 'Arnold')
+   *   ))
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * select "person".*
+   * from "person"
+   * where ("age" = $1 or "age" = $2) and ("first_name" = $3 or "first_name" = $4)
+   * ```
+   */
+  parens<
+    RE extends ReferenceExpression<DB, TB>,
+    OP extends BinaryOperatorExpression
+  >(
+    lhs: RE,
+    op: OP,
+    rhs: OperandValueExpressionOrList<DB, TB, RE>
+  ): ExpressionWrapper<
+    DB,
+    TB,
+    OP extends ComparisonOperator
+      ? SqlBool
+      : ExtractTypeFromReferenceExpression<DB, TB, RE>
+  >
+
+  parens<T>(expr: Expression<T>): ExpressionWrapper<DB, TB, T>
 
   /**
    * See {@link QueryCreator.withSchema}
@@ -550,6 +629,8 @@ export function createExpressionBuilder<DB, TB extends keyof DB>(
     op: OP,
     rhs: OperandValueExpressionOrList<DB, TB, RE>
   ): ExpressionWrapper<
+    DB,
+    TB,
     OP extends ComparisonOperator
       ? SqlBool
       : ExtractTypeFromReferenceExpression<DB, TB, RE>
@@ -560,7 +641,7 @@ export function createExpressionBuilder<DB, TB extends keyof DB>(
   function unary<RE extends ReferenceExpression<DB, TB>>(
     op: UnaryOperator,
     expr: RE
-  ): ExpressionWrapper<ExtractTypeFromReferenceExpression<DB, TB, RE>> {
+  ): ExpressionWrapper<DB, TB, ExtractTypeFromReferenceExpression<DB, TB, RE>> {
     return new ExpressionWrapper(parseUnaryOperation(op, expr))
   }
 
@@ -590,13 +671,17 @@ export function createExpressionBuilder<DB, TB extends keyof DB>(
 
     ref<RE extends StringReference<DB, TB>>(
       reference: RE
-    ): ExpressionWrapper<ExtractTypeFromReferenceExpression<DB, TB, RE>> {
+    ): ExpressionWrapper<
+      DB,
+      TB,
+      ExtractTypeFromReferenceExpression<DB, TB, RE>
+    > {
       return new ExpressionWrapper(parseStringReference(reference))
     },
 
     val<VE>(
       value: VE
-    ): ExpressionWrapper<ExtractTypeFromValueExpressionOrList<VE>> {
+    ): ExpressionWrapper<DB, TB, ExtractTypeFromValueExpressionOrList<VE>> {
       return new ExpressionWrapper(parseValueExpressionOrList(value))
     },
 
@@ -608,7 +693,7 @@ export function createExpressionBuilder<DB, TB extends keyof DB>(
       lhs: RE,
       op: ComparisonOperatorExpression,
       rhs: OperandValueExpressionOrList<DB, TB, RE>
-    ): ExpressionWrapper<O> {
+    ): ExpressionWrapper<DB, TB, O> {
       return new ExpressionWrapper(parseValueBinaryOperation(lhs, op, rhs))
     },
 
@@ -621,6 +706,8 @@ export function createExpressionBuilder<DB, TB extends keyof DB>(
       op: OP,
       rhs: OperandValueExpression<DB, TB, RE>
     ): ExpressionWrapper<
+      DB,
+      TB,
       OP extends ComparisonOperator
         ? SqlBool
         : ExtractTypeFromReferenceExpression<DB, TB, RE>
@@ -632,23 +719,33 @@ export function createExpressionBuilder<DB, TB extends keyof DB>(
 
     not<RE extends ReferenceExpression<DB, TB>>(
       expr: RE
-    ): ExpressionWrapper<ExtractTypeFromReferenceExpression<DB, TB, RE>> {
+    ): ExpressionWrapper<
+      DB,
+      TB,
+      ExtractTypeFromReferenceExpression<DB, TB, RE>
+    > {
       return unary('not', expr)
     },
 
     exists<RE extends ReferenceExpression<DB, TB>>(
       expr: RE
-    ): ExpressionWrapper<SqlBool> {
+    ): ExpressionWrapper<DB, TB, SqlBool> {
       return unary('exists', expr)
     },
 
     neg<RE extends ReferenceExpression<DB, TB>>(
       expr: RE
-    ): ExpressionWrapper<ExtractTypeFromReferenceExpression<DB, TB, RE>> {
+    ): ExpressionWrapper<
+      DB,
+      TB,
+      ExtractTypeFromReferenceExpression<DB, TB, RE>
+    > {
       return unary('-', expr)
     },
 
-    and(exprs: ReadonlyArray<Expression<SqlBool>>): ExpressionWrapper<SqlBool> {
+    and(
+      exprs: ReadonlyArray<Expression<SqlBool>>
+    ): ExpressionWrapper<DB, TB, SqlBool> {
       if (exprs.length === 0) {
         return new ExpressionWrapper(ValueNode.createImmediate(true))
       } else if (exprs.length === 1) {
@@ -667,7 +764,9 @@ export function createExpressionBuilder<DB, TB extends keyof DB>(
       return new ExpressionWrapper(ParensNode.create(node))
     },
 
-    or(exprs: ReadonlyArray<Expression<SqlBool>>): ExpressionWrapper<SqlBool> {
+    or(
+      exprs: ReadonlyArray<Expression<SqlBool>>
+    ): ExpressionWrapper<DB, TB, SqlBool> {
       if (exprs.length === 0) {
         return new ExpressionWrapper(ValueNode.createImmediate(false))
       } else if (exprs.length === 1) {
@@ -684,6 +783,17 @@ export function createExpressionBuilder<DB, TB extends keyof DB>(
       }
 
       return new ExpressionWrapper(ParensNode.create(node))
+    },
+
+    parens(...args: any[]) {
+      const node = parseValueBinaryOperationOrExpression(args)
+
+      if (ParensNode.is(node)) {
+        // No double wrapping.
+        return new ExpressionWrapper(node)
+      } else {
+        return new ExpressionWrapper(ParensNode.create(node))
+      }
     },
 
     withSchema(schema: string): ExpressionBuilder<DB, TB> {

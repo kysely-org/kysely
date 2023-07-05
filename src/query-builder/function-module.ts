@@ -91,7 +91,7 @@ export interface FunctionModule<DB, TB extends keyof DB> {
   <T>(
     name: string,
     args: ReadonlyArray<ReferenceExpression<DB, TB>>
-  ): ExpressionWrapper<T>
+  ): ExpressionWrapper<DB, TB, T>
 
   /**
    * Creates an aggregate function call.
@@ -257,7 +257,11 @@ export interface FunctionModule<DB, TB extends keyof DB> {
   >(
     value: V,
     ...otherValues: OV
-  ): ExpressionWrapper<CoalesceReferenceExpressionList<DB, TB, [V, ...OV]>>
+  ): ExpressionWrapper<
+    DB,
+    TB,
+    CoalesceReferenceExpressionList<DB, TB, [V, ...OV]>
+  >
 
   /**
    * Calls the `count` function for the column given as the argument.
@@ -582,7 +586,7 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
   const fn = <T>(
     name: string,
     args: ReadonlyArray<ReferenceExpression<DB, TB>>
-  ): ExpressionWrapper<T> => {
+  ): ExpressionWrapper<DB, TB, T> => {
     return new ExpressionWrapper(
       FunctionNode.create(name, parseReferenceExpressionOrList(args))
     )
@@ -616,7 +620,11 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
     >(
       value: V,
       ...otherValues: OV
-    ): ExpressionWrapper<CoalesceReferenceExpressionList<DB, TB, [V, ...OV]>> {
+    ): ExpressionWrapper<
+      DB,
+      TB,
+      CoalesceReferenceExpressionList<DB, TB, [V, ...OV]>
+    > {
       return fn('coalesce', [value, ...otherValues])
     },
 
