@@ -141,7 +141,7 @@ export class ExpressionWrapper<DB, TB extends keyof DB, T>
   }
 
   /**
-   * Joins `this` and another expression using `AND`.
+   * Combines `this` and another expression using `AND`.
    *
    * Also see {@link ExpressionBuilder.and}
    *
