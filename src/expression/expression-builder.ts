@@ -399,7 +399,6 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    * Creates a binary expression.
    *
    * See {@link cmpr} for creating binary comparison operations.
-   * See {@link jxp} for creating JSON traversal operations.
    *
    * This function returns an {@link Expression} and can be used pretty much anywhere.
    * See the examples for a couple of possible use cases.
