@@ -58,6 +58,11 @@ for (const dialect of DIALECTS) {
 
       expect(result).to.be.instanceOf(UpdateResult)
       expect(result.numUpdatedRows).to.equal(1n)
+      if (dialect === 'mysql') {
+        expect(result.numChangedRows).to.equal(1n)
+      } else {
+        expect(result.numChangedRows).to.undefined
+      }
 
       expect(
         await ctx.db
@@ -98,6 +103,11 @@ for (const dialect of DIALECTS) {
 
       expect(result).to.be.instanceOf(UpdateResult)
       expect(result.numUpdatedRows).to.equal(1n)
+      if (dialect === 'mysql') {
+        expect(result.numChangedRows).to.equal(1n)
+      } else {
+        expect(result.numChangedRows).to.undefined
+      }
 
       expect(
         await ctx.db
@@ -143,6 +153,11 @@ for (const dialect of DIALECTS) {
 
       expect(result).to.be.instanceOf(UpdateResult)
       expect(result.numUpdatedRows).to.equal(1n)
+      if (dialect === 'mysql') {
+        expect(result.numChangedRows).to.equal(1n)
+      } else {
+        expect(result.numChangedRows).to.undefined
+      }
 
       const person = await ctx.db
         .selectFrom('person')
@@ -175,6 +190,7 @@ for (const dialect of DIALECTS) {
 
         expect(result).to.be.instanceOf(UpdateResult)
         expect(result.numUpdatedRows).to.equal(1n)
+        expect(result.numChangedRows).to.undefined
 
         const jennifer = await ctx.db
           .selectFrom('person')
@@ -213,6 +229,11 @@ for (const dialect of DIALECTS) {
 
       expect(result).to.be.instanceOf(UpdateResult)
       expect(result.numUpdatedRows).to.equal(1n)
+      if (dialect === 'mysql') {
+        expect(result.numChangedRows).to.equal(1n)
+      } else {
+        expect(result.numChangedRows).to.undefined
+      }
 
       const jennifer = await ctx.db
         .selectFrom('person')
@@ -248,6 +269,11 @@ for (const dialect of DIALECTS) {
 
       expect(result).to.be.instanceOf(UpdateResult)
       expect(result.numUpdatedRows).to.equal(1n)
+      if (dialect === 'mysql') {
+        expect(result.numChangedRows).to.equal(1n)
+      } else {
+        expect(result.numChangedRows).to.undefined
+      }
 
       const female = await ctx.db
         .selectFrom('person')
@@ -359,6 +385,23 @@ for (const dialect of DIALECTS) {
             gender,
           }))
         )
+      })
+    }
+
+    if (dialect === 'mysql') {
+      it('should update but not change the row', async () => {
+        const query = ctx.db
+          .updateTable('person')
+          .set({
+            first_name: 'Jennifer',
+          })
+          .where('first_name', '=', 'Jennifer')
+
+        await query.execute()
+        const result = await query.executeTakeFirst()
+        expect(result).instanceOf(UpdateResult)
+        expect(result.numUpdatedRows).to.equal(1n)
+        expect(result.numChangedRows).to.equal(0n)
       })
     }
   })

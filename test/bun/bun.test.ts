@@ -1,6 +1,12 @@
-import { Generated, Kysely, MysqlDialect, PostgresDialect, sql } from 'kysely'
 import { createPool } from 'mysql2'
-import Pool from 'pg-pool'
+import { Pool } from 'pg'
+import {
+  Generated,
+  Kysely,
+  PostgresDialect,
+  MysqlDialect,
+  sql,
+} from '../../dist/esm/index.js'
 
 interface Person {
   id: Generated<number>
@@ -39,16 +45,18 @@ const dbs = [
 if (
   dbs
     .map((db) => db.selectFrom('person').select('id').compile().sql)
-    .some((sql) => sql.match(/^select ["`]id["`] from ["`]person["`]$/) == null)
+    .some(
+      (sql) => sql.match(/^select ["`]id["`] from ["`]person["`]$/) === null
+    )
 ) {
-  console.error('CDN deno test failed')
-  Deno.exit(1)
+  console.error('bun test failed')
+  process.exit(1)
 }
 
 const query = sql`select 1`
 
 await Promise.all(dbs.map((db) => query.execute(db)))
 
-console.error('CDN deno test passed')
+console.log('bun test passed')
 
 await Promise.all(dbs.map((db) => db.destroy()))
