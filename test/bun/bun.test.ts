@@ -57,6 +57,6 @@ const query = sql`select 1`
 
 await Promise.all(dbs.map((db) => query.execute(db)))
 
-console.error('bun test passed')
+console.log('bun test passed')
 
 await Promise.all(dbs.map((db) => db.destroy()))
