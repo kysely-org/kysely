@@ -3,7 +3,7 @@ import { JSONPathNode } from './json-path-node.js'
 import { OperationNode } from './operation-node.js'
 import { JSONOperator } from './operator-node.js'
 
-type JSONOperatorNo$ = Exclude<JSONOperator, '->>$'>
+type JSONOperatorNo$ = Exclude<JSONOperator, `${string}$`>
 
 export interface JSONPathReferenceNode extends OperationNode {
   readonly kind: 'JSONPathReferenceNode'
