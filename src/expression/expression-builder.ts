@@ -113,7 +113,27 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
   >
 
   /**
-   * Returns a copy of `this` expression builder.
+   * Returns a copy of `this` expression builder, for destructuring purposes.
+   * 
+   * ### Examples
+   *
+   * ```ts
+   * db.selectFrom('person')
+   *   .where(({ eb, exists, selectFrom }) =>
+   *     eb('first_name', '=', 'Jennifer').and(
+   *       exists(selectFrom('pet').whereRef('owner_id', '=', 'person.id').select('pet.id'))
+   *     )
+   *   )
+   *   .selectAll()
+   * ```
+   * 
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * select * from "person" where "first_name" = $1 and exists (
+   *   select "pet.id" from "pet" where "owner_id" = "person.id"
+   * )
+   * ```
    */
   eb: ExpressionBuilder<DB, TB>
 
