@@ -54,9 +54,8 @@ function HomepageHeader() {
             </a>
           </span>
         </div>
-        <div>
-          <DemoVideo />
-        </div>
+
+        <DemoVideo />
       </div>
 
       <span
@@ -283,6 +282,18 @@ function SectionTweets() {
             text="I don't actually like prisma that much, I prefer Kysely, not an ORM though."
             tweetLink={
               'https://twitter.com/ngriffin_uk/status/1599891725404676096'
+            }
+          />
+
+          <TweetQuote
+            authorName={'Ross Coundon'}
+            authorTitle={'leadent digital CTO'}
+            avatar={'/img/avatars/ross.jpeg'}
+            text={
+              "I particularly like Kysely here, it's a type-safe query builder and as such doesn't enforce the specifics of an ORM on you, therefore I feel, in the medium-to-long term, it'll save you the time and effort of working around ORM-specific and enforced structures/approaches"
+            }
+            tweetLink={
+              'https://twitter.com/rcoundon/status/1676244054109978624'
             }
           />
 

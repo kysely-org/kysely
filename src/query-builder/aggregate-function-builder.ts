@@ -44,7 +44,7 @@ export class AggregateFunctionBuilder<DB, TB extends keyof DB, O = unknown>
    * const result = await db
    *   .selectFrom('person')
    *   .select(
-   *     eb => eb.fn.count<number>('id').as('person_count')
+   *     (eb) => eb.fn.count<number>('id').as('person_count')
    *   )
    *   .executeTakeFirstOrThrow()
    *
@@ -326,7 +326,7 @@ export class AggregateFunctionBuilder<DB, TB extends keyof DB, O = unknown>
    * const result = await db
    *   .selectFrom('person')
    *   .select(
-   *     eb => eb.fn.avg<number>('age').over().as('average_age')
+   *     (eb) => eb.fn.avg<number>('age').over().as('average_age')
    *   )
    *   .execute()
    * ```
@@ -345,7 +345,7 @@ export class AggregateFunctionBuilder<DB, TB extends keyof DB, O = unknown>
    * const result = await db
    *   .selectFrom('person')
    *   .select(
-   *     eb => eb.fn.avg<number>('age').over(
+   *     (eb) => eb.fn.avg<number>('age').over(
    *       ob => ob.partitionBy('last_name').orderBy('first_name', 'asc')
    *     ).as('average_age')
    *   )
