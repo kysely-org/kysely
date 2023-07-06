@@ -13,8 +13,8 @@ jobs:
     strategy:
       matrix:
         node-version: [16.x, 18.x, 20.x]
-        deno-version: [1.19.x]
         bun-version: [0.6.x]
+        deno-version: [1.34.x]
 
     steps:
       - uses: actions/checkout@v3

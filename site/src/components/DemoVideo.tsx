@@ -1,20 +1,12 @@
 import React from 'react'
+import styles from './DemoVideo.module.css'
 
 export function DemoVideo() {
   return (
-    <video
-      style={{
-        borderRadius: 12,
-        boxShadow: 'var(--shadow-elevation-medium)',
-        width: 800,
-        height: 592,
-      }}
-      autoPlay
-      muted
-      playsInline
-      loop
-    >
-      <source src="/demo.mp4" type="video/mp4" />
-    </video>
+    <div className={styles.videoContainer}>
+      <video autoPlay muted playsInline loop>
+        <source src="/demo.mp4" type="video/mp4" />
+      </video>
+    </div>
   )
 }
