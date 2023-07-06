@@ -278,11 +278,11 @@ for (const dialect of DIALECTS) {
                   eb('pet.species', '=', 'cat'),
                   eb('species', '=', 'dog'),
                   eb(
-                    sql`${sql.ref('species')}`,
+                    eb.ref('species'),
                     '=',
                     eb
                       .selectFrom('pet')
-                      .select(sql`'hamster'`.as('hamster'))
+                      .select(sql<'hamster'>`'hamster'`.as('hamster'))
                       .limit(1)
                       .offset(0)
                   ),
