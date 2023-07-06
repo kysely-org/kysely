@@ -13,9 +13,9 @@ import { RawNode } from '../operation-node/raw-node.js'
 import { ReferenceNode } from '../operation-node/reference-node.js'
 
 export class JSONPathBuilder<S, O = S> {
-  readonly #node: ReferenceNode | JSONPathNode
+  readonly #node: ReferenceNode
 
-  constructor(node: ReferenceNode | JSONPathNode) {
+  constructor(node: ReferenceNode) {
     this.#node = node
   }
 
@@ -166,15 +166,13 @@ export class JSONPathBuilder<S, O = S> {
     )
 
     return new TraversedJSONPathBuilder(
-      ReferenceNode.is(this.#node)
-        ? ReferenceNode.cloneWithJSONPath(
-            this.#node,
-            JSONPathReferenceNode.clone(
-              this.#node.jsonPath!,
-              JSONPathNode.cloneWithLeg(this.#node.jsonPath!.jsonPath, legNode)
-            )
-          )
-        : JSONPathNode.cloneWithLeg(this.#node, legNode)
+      ReferenceNode.cloneWithJSONPath(
+        this.#node,
+        JSONPathReferenceNode.clone(
+          this.#node.jsonPath!,
+          JSONPathNode.cloneWithLeg(this.#node.jsonPath!.jsonPath, legNode)
+        )
+      )
     )
   }
 }
@@ -183,9 +181,9 @@ export class TraversedJSONPathBuilder<S, O>
   extends JSONPathBuilder<S, O>
   implements Expression<O>
 {
-  readonly #node: ReferenceNode | JSONPathNode
+  readonly #node: ReferenceNode
 
-  constructor(node: ReferenceNode | JSONPathNode) {
+  constructor(node: ReferenceNode) {
     super(node)
     this.#node = node
   }
