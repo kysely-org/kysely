@@ -187,6 +187,7 @@ export * from './operation-node/unary-operation-node.js'
 export * from './operation-node/using-node.js'
 export * from './operation-node/json-path-leg-node.js'
 export * from './operation-node/json-path-node.js'
+export * from './operation-node/json-path-reference-node.js'
 
 export * from './util/column-type.js'
 export * from './util/compilable.js'
