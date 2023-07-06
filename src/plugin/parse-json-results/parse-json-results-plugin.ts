@@ -31,7 +31,9 @@ function parseRow(row: UnknownRow): UnknownRow {
     if (isString(value) && value.match(/^[\[\{]/) != null) {
       try {
         value = JSON.parse(value)
-      } catch (err) {}
+      } catch (err) {
+        // this catch block is intentionally empty.
+      }
     }
 
     row[key] = value
