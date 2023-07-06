@@ -168,7 +168,7 @@ export class ExpressionWrapper<DB, TB extends keyof DB, T>
    * )
    * ```
    *
-   * You can also pass any expression as a the only argument to
+   * You can also pass any expression as the only argument to
    * this method:
    *
    * ```ts
