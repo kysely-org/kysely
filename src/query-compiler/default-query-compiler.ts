@@ -96,9 +96,10 @@ import { UsingNode } from '../operation-node/using-node.js'
 import { FunctionNode } from '../operation-node/function-node.js'
 import { CaseNode } from '../operation-node/case-node.js'
 import { WhenNode } from '../operation-node/when-node.js'
+import { JSONReferenceNode } from '../operation-node/json-reference-node.js'
 import { JSONPathNode } from '../operation-node/json-path-node.js'
 import { JSONPathLegNode } from '../operation-node/json-path-leg-node.js'
-import { JSONPathReferenceNode } from '../operation-node/json-path-reference-node.js'
+import { JSONOperatorChainNode } from '../operation-node/json-operator-chain-node.js'
 
 export class DefaultQueryCompiler
   extends OperationNodeVisitor
@@ -397,10 +398,6 @@ export class DefaultQueryCompiler
     }
 
     this.visitNode(node.column)
-
-    if (node.jsonPath) {
-      this.visitNode(node.jsonPath)
-    }
   }
 
   protected override visitSelectAll(_: SelectAllNode): void {
@@ -1337,32 +1334,16 @@ export class DefaultQueryCompiler
     }
   }
 
-  protected override visitJSONPathReference(node: JSONPathReferenceNode): void {
-    if (node.is$) {
-      this.append(node.operator)
-      this.visitNode(node.jsonPath)
-    } else {
-      const lastLeg = node.jsonPath.pathLegs.length - 1
-
-      for (const [index, pathLeg] of node.jsonPath.pathLegs.entries()) {
-        this.append(index === lastLeg ? node.operator : '->')
-
-        const isMember = pathLeg.type === 'Member'
-
-        if (isMember) {
-          this.append("'")
-        }
-
-        this.visitNode(pathLeg.value)
-
-        if (isMember) {
-          this.append("'")
-        }
-      }
-    }
+  protected override visitJSONReference(node: JSONReferenceNode): void {
+    this.visitNode(node.reference)
+    this.visitNode(node.traversal)
   }
 
   protected override visitJSONPath(node: JSONPathNode): void {
+    if (node.inOperator) {
+      this.visitNode(node.inOperator)
+    }
+
     this.append("'$")
 
     for (const pathLeg of node.pathLegs) {
@@ -1377,10 +1358,22 @@ export class DefaultQueryCompiler
 
     this.append(isArrayLocation ? '[' : '.')
 
-    this.visitNode(node.value)
+    this.append(String(node.value))
 
     if (isArrayLocation) {
       this.append(']')
+    }
+  }
+
+  protected override visitJSONOperatorChain(node: JSONOperatorChainNode): void {
+    for (let i = 0, len = node.values.length; i < len; i++) {
+      if (i === len - 1) {
+        this.visitNode(node.operator)
+      } else {
+        this.append('->')
+      }
+
+      this.visitNode(node.values[i])
     }
   }
 

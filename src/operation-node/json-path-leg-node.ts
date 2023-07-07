@@ -6,7 +6,7 @@ export type JSONPathLegType = 'Member' | 'ArrayLocation'
 export interface JSONPathLegNode extends OperationNode {
   readonly kind: 'JSONPathLegNode'
   readonly type: JSONPathLegType
-  readonly value: OperationNode
+  readonly value: string | number
 }
 
 /**
@@ -17,7 +17,7 @@ export const JSONPathLegNode = freeze({
     return node.kind === 'JSONPathLegNode'
   },
 
-  create(type: JSONPathLegType, value: OperationNode): JSONPathLegNode {
+  create(type: JSONPathLegType, value: string | number): JSONPathLegNode {
     return freeze({
       kind: 'JSONPathLegNode',
       type,

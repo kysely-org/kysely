@@ -1,21 +1,21 @@
 import { AliasedExpression, Expression } from '../expression/expression.js'
 import { AliasNode } from '../operation-node/alias-node.js'
 import { IdentifierNode } from '../operation-node/identifier-node.js'
+import { JSONOperatorChainNode } from '../operation-node/json-operator-chain-node.js'
 import {
   JSONPathLegNode,
   JSONPathLegType,
 } from '../operation-node/json-path-leg-node.js'
 import { JSONPathNode } from '../operation-node/json-path-node.js'
-import { JSONPathReferenceNode } from '../operation-node/json-path-reference-node.js'
+import { JSONReferenceNode } from '../operation-node/json-reference-node.js'
 import { isOperationNodeSource } from '../operation-node/operation-node-source.js'
 import { OperationNode } from '../operation-node/operation-node.js'
-import { RawNode } from '../operation-node/raw-node.js'
-import { ReferenceNode } from '../operation-node/reference-node.js'
+import { ValueNode } from '../operation-node/value-node.js'
 
 export class JSONPathBuilder<S, O = S> {
-  readonly #node: ReferenceNode
+  readonly #node: JSONReferenceNode
 
-  constructor(node: ReferenceNode) {
+  constructor(node: JSONReferenceNode) {
     this.#node = node
   }
 
@@ -160,18 +160,18 @@ export class JSONPathBuilder<S, O = S> {
     legType: JSONPathLegType,
     value: string | number
   ): TraversedJSONPathBuilder<any, any> {
-    const legNode = JSONPathLegNode.create(
-      legType,
-      RawNode.createWithSql(String(value))
-    )
-
     return new TraversedJSONPathBuilder(
-      ReferenceNode.cloneWithJSONPath(
+      JSONReferenceNode.cloneWithTraversal(
         this.#node,
-        JSONPathReferenceNode.clone(
-          this.#node.jsonPath!,
-          JSONPathNode.cloneWithLeg(this.#node.jsonPath!.jsonPath, legNode)
-        )
+        JSONPathNode.is(this.#node.traversal)
+          ? JSONPathNode.cloneWithLeg(
+              this.#node.traversal,
+              JSONPathLegNode.create(legType, value)
+            )
+          : JSONOperatorChainNode.cloneWithValue(
+              this.#node.traversal,
+              ValueNode.createImmediate(value)
+            )
       )
     )
   }
@@ -181,9 +181,9 @@ export class TraversedJSONPathBuilder<S, O>
   extends JSONPathBuilder<S, O>
   implements Expression<O>
 {
-  readonly #node: ReferenceNode
+  readonly #node: JSONReferenceNode
 
-  constructor(node: ReferenceNode) {
+  constructor(node: JSONReferenceNode) {
     super(node)
     this.#node = node
   }

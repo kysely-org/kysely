@@ -1,9 +1,11 @@
 import { freeze } from '../util/object-utils.js'
 import { JSONPathLegNode } from './json-path-leg-node.js'
 import { OperationNode } from './operation-node.js'
+import { OperatorNode } from './operator-node.js'
 
 export interface JSONPathNode extends OperationNode {
   readonly kind: 'JSONPathNode'
+  readonly inOperator?: OperatorNode
   readonly pathLegs: ReadonlyArray<JSONPathLegNode>
 }
 
@@ -15,9 +17,10 @@ export const JSONPathNode = freeze({
     return node.kind === 'JSONPathNode'
   },
 
-  create(): JSONPathNode {
+  create(inOperator?: OperatorNode): JSONPathNode {
     return freeze({
       kind: 'JSONPathNode',
+      inOperator,
       pathLegs: freeze([]),
     })
   },

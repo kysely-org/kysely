@@ -18,6 +18,7 @@ import {
 } from '../query-builder/function-module.js'
 import {
   ExtractTypeFromReferenceExpression,
+  parseJSONReference,
   parseReferenceExpression,
   parseStringReference,
   ReferenceExpression,
@@ -39,7 +40,7 @@ import { ParensNode } from '../operation-node/parens-node.js'
 import { ExpressionWrapper } from './expression-wrapper.js'
 import {
   ComparisonOperator,
-  JSONOperator,
+  JSONOperatorWith$,
   UnaryOperator,
 } from '../operation-node/operator-node.js'
 import { SqlBool } from '../util/type-utils.js'
@@ -303,7 +304,7 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
 
   ref<RE extends StringReference<DB, TB>>(
     reference: RE,
-    op: JSONOperator
+    op: JSONOperatorWith$
   ): JSONPathBuilder<ExtractTypeFromReferenceExpression<DB, TB, RE>>
 
   /**
@@ -629,15 +630,13 @@ export function createExpressionBuilder<DB, TB extends keyof DB>(
 
     ref<RE extends StringReference<DB, TB>>(
       reference: RE,
-      op?: JSONOperator
+      op?: JSONOperatorWith$
     ): any {
-      const node = parseStringReference(reference, op)
-
       if (isUndefined(op)) {
-        return new ExpressionWrapper(node)
+        return new ExpressionWrapper(parseStringReference(reference))
       }
 
-      return new JSONPathBuilder(node)
+      return new JSONPathBuilder(parseJSONReference(reference, op))
     },
 
     val<VE>(
