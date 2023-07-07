@@ -70,7 +70,7 @@ export class DynamicModule {
    *
    * const [person] = await db.selectFrom('person')
    *   .select([
-   *     ref<PossibleColumns>(columnFromUserInput), 
+   *     ref<PossibleColumns>(columnFromUserInput),
    *     'id'
    *   ])
    *   .execute()

@@ -25,6 +25,14 @@ import {
   isOrderByDirection,
   parseOrderBy,
 } from './order-by-parser.js'
+import {
+  JSONOperatorWith$,
+  OperatorNode,
+  isJSONOperator,
+} from '../operation-node/operator-node.js'
+import { JSONReferenceNode } from '../operation-node/json-reference-node.js'
+import { JSONOperatorChainNode } from '../operation-node/json-operator-chain-node.js'
+import { JSONPathNode } from '../operation-node/json-path-node.js'
 
 export type StringReference<DB, TB extends keyof DB> =
   | AnyColumn<DB, TB>
@@ -124,24 +132,49 @@ export function parseReferenceExpression(
   return parseSimpleReferenceExpression(exp)
 }
 
-export function parseStringReference(
-  ref: string
-): SimpleReferenceExpressionNode {
+export function parseJSONReference(
+  ref: string,
+  op: JSONOperatorWith$
+): JSONReferenceNode {
+  const referenceNode = parseStringReference(ref)
+
+  if (isJSONOperator(op)) {
+    return JSONReferenceNode.create(
+      referenceNode,
+      JSONOperatorChainNode.create(OperatorNode.create(op))
+    )
+  }
+
+  const opWithoutLastChar = op.slice(0, -1)
+
+  if (isJSONOperator(opWithoutLastChar)) {
+    return JSONReferenceNode.create(
+      referenceNode,
+      JSONPathNode.create(OperatorNode.create(opWithoutLastChar))
+    )
+  }
+
+  throw new Error(`Invalid JSON operator: ${op}`)
+}
+
+export function parseStringReference(ref: string): ReferenceNode {
   const COLUMN_SEPARATOR = '.'
 
-  if (ref.includes(COLUMN_SEPARATOR)) {
-    const parts = ref.split(COLUMN_SEPARATOR).map(trim)
-
-    if (parts.length === 3) {
-      return parseStringReferenceWithTableAndSchema(parts)
-    } else if (parts.length === 2) {
-      return parseStringReferenceWithTable(parts)
-    } else {
-      throw new Error(`invalid column reference ${ref}`)
-    }
-  } else {
-    return ColumnNode.create(ref)
+  if (!ref.includes(COLUMN_SEPARATOR)) {
+    return ReferenceNode.create(ColumnNode.create(ref))
   }
+
+  const parts = ref.split(COLUMN_SEPARATOR).map(trim)
+
+  if (parts.length === 3) {
+    return parseStringReferenceWithTableAndSchema(parts)
+  }
+
+  if (parts.length === 2) {
+    return parseStringReferenceWithTable(parts)
+  }
+
+  throw new Error(`invalid column reference ${ref}`)
 }
 
 export function parseAliasedStringReference(
@@ -189,8 +222,8 @@ function parseStringReferenceWithTableAndSchema(
   const [schema, table, column] = parts
 
   return ReferenceNode.create(
-    TableNode.createWithSchema(schema, table),
-    ColumnNode.create(column)
+    ColumnNode.create(column),
+    TableNode.createWithSchema(schema, table)
   )
 }
 
@@ -198,8 +231,8 @@ function parseStringReferenceWithTable(parts: string[]): ReferenceNode {
   const [table, column] = parts
 
   return ReferenceNode.create(
-    TableNode.create(table),
-    ColumnNode.create(column)
+    ColumnNode.create(column),
+    TableNode.create(table)
   )
 }
 

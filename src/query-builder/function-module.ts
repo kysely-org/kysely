@@ -91,7 +91,7 @@ export interface FunctionModule<DB, TB extends keyof DB> {
   <T>(
     name: string,
     args: ReadonlyArray<ReferenceExpression<DB, TB>>
-  ): ExpressionWrapper<T>
+  ): ExpressionWrapper<DB, TB, T>
 
   /**
    * Creates an aggregate function call.
@@ -138,10 +138,8 @@ export interface FunctionModule<DB, TB extends keyof DB> {
    * ### Examples
    *
    * ```ts
-   * const { avg } = db.fn
-   *
    * db.selectFrom('toy')
-   *   .select(avg('price').as('avg_price'))
+   *   .select((eb) => eb.fn.avg('price').as('avg_price'))
    *   .execute()
    * ```
    *
@@ -170,10 +168,8 @@ export interface FunctionModule<DB, TB extends keyof DB> {
    * the first type argument:
    *
    * ```ts
-   * const { avg } = db.fn
-   *
    * db.selectFrom('toy')
-   *   .select(avg<number>('price').as('avg_price'))
+   *   .select((eb) => eb.fn.avg<number>('price').as('avg_price'))
    *   .execute()
    * ```
    *
@@ -183,10 +179,8 @@ export interface FunctionModule<DB, TB extends keyof DB> {
    * function.
    *
    * ```ts
-   * const { avg } = db.fn
-   *
    * db.selectFrom('toy')
-   *   .select(avg<number | null>('price').as('avg_price'))
+   *   .select((eb) => eb.fn.avg<number | null>('price').as('avg_price'))
    *   .execute()
    * ```
    */
@@ -218,10 +212,8 @@ export interface FunctionModule<DB, TB extends keyof DB> {
    * ### Examples
    *
    * ```ts
-   * const { coalesce } = db.fn
-   *
    * db.selectFrom('participant')
-   *   .select(coalesce('nickname', sql<string>`'<anonymous>'`).as('nickname'))
+   *   .select((eb) => eb.fn.coalesce('nickname', sql<string>`'<anonymous>'`).as('nickname'))
    *   .where('room_id', '=', roomId)
    *   .execute()
    * ```
@@ -247,10 +239,8 @@ export interface FunctionModule<DB, TB extends keyof DB> {
    * You can combine this function with other helpers in this module:
    *
    * ```ts
-   * const { avg, coalesce } = db.fn
-   *
    * db.selectFrom('person')
-   *   .select(coalesce(avg<number | null>('age'), sql<number>`0`).as('avg_age'))
+   *   .select((eb) => eb.fn.coalesce(eb.fn.avg<number | null>('age'), sql<number>`0`).as('avg_age'))
    *   .where('first_name', '=', 'Jennifer')
    *   .execute()
    * ```
@@ -267,7 +257,11 @@ export interface FunctionModule<DB, TB extends keyof DB> {
   >(
     value: V,
     ...otherValues: OV
-  ): ExpressionWrapper<CoalesceReferenceExpressionList<DB, TB, [V, ...OV]>>
+  ): ExpressionWrapper<
+    DB,
+    TB,
+    CoalesceReferenceExpressionList<DB, TB, [V, ...OV]>
+  >
 
   /**
    * Calls the `count` function for the column given as the argument.
@@ -284,10 +278,8 @@ export interface FunctionModule<DB, TB extends keyof DB> {
    * ### Examples
    *
    * ```ts
-   * const { count } = db.fn
-   *
    * db.selectFrom('toy')
-   *   .select(count('id').as('num_toys'))
+   *   .select((eb) => eb.fn.count('id').as('num_toys'))
    *   .execute()
    * ```
    *
@@ -308,10 +300,8 @@ export interface FunctionModule<DB, TB extends keyof DB> {
    * the type as the first type argument:
    *
    * ```ts
-   * const { count } = db.fn
-   *
    * db.selectFrom('toy')
-   *   .select(count<number>('id').as('num_toys'))
+   *   .select((eb) => eb.fn.count<number>('id').as('num_toys'))
    *   .execute()
    * ```
    *
@@ -346,10 +336,8 @@ export interface FunctionModule<DB, TB extends keyof DB> {
    * ### Examples
    *
    * ```ts
-   * const { countAll } = db.fn
-   *
    * db.selectFrom('toy')
-   *   .select(countAll().as('num_toys'))
+   *   .select((eb) => eb.fn.countAll().as('num_toys'))
    *   .execute()
    * ```
    *
@@ -370,10 +358,8 @@ export interface FunctionModule<DB, TB extends keyof DB> {
    * the type as the first type argument:
    *
    * ```ts
-   * const { countAll } = db.fn
-   *
    * db.selectFrom('toy')
-   *   .select(countAll<number>().as('num_toys'))
+   *   .select((eb) => eb.fn.countAll<number>().as('num_toys'))
    *   .execute()
    * ```
    *
@@ -381,11 +367,9 @@ export interface FunctionModule<DB, TB extends keyof DB> {
    * table:
    *
    * ```ts
-   * const { countAll } = db.fn
-   *
    * db.selectFrom('toy')
    *   .innerJoin('pet', 'pet.id', 'toy.pet_id')
-   *   .select(countAll('toy').as('num_toys'))
+   *   .select((eb) => eb.fn.countAll('toy').as('num_toys'))
    *   .execute()
    * ```
    *
@@ -431,10 +415,8 @@ export interface FunctionModule<DB, TB extends keyof DB> {
    * ### Examples
    *
    * ```ts
-   * const { max } = db.fn
-   *
    * db.selectFrom('toy')
-   *   .select(max('price').as('max_price'))
+   *   .select((eb) => eb.fn.max('price').as('max_price'))
    *   .execute()
    * ```
    *
@@ -458,10 +440,8 @@ export interface FunctionModule<DB, TB extends keyof DB> {
    * function.
    *
    * ```ts
-   * const { max } = db.fn
-   *
    * db.selectFrom('toy')
-   *   .select(max<number | null, 'price'>('price').as('max_price'))
+   *   .select((eb) => eb.fn.max<number | null, 'price'>('price').as('max_price'))
    *   .execute()
    * ```
    */
@@ -492,10 +472,8 @@ export interface FunctionModule<DB, TB extends keyof DB> {
    * ### Examples
    *
    * ```ts
-   * const { min } = db.fn
-   *
    * db.selectFrom('toy')
-   *   .select(min('price').as('min_price'))
+   *   .select((eb) => eb.fn.min('price').as('min_price'))
    *   .execute()
    * ```
    *
@@ -519,10 +497,8 @@ export interface FunctionModule<DB, TB extends keyof DB> {
    * function.
    *
    * ```ts
-   * const { min } = db.fn
-   *
    * db.selectFrom('toy')
-   *   .select(min<number | null, 'price'>('price').as('min_price'))
+   *   .select((eb) => eb.fn.min<number | null, 'price'>('price').as('min_price'))
    *   .execute()
    * ```
    */
@@ -549,10 +525,8 @@ export interface FunctionModule<DB, TB extends keyof DB> {
    * ### Examples
    *
    * ```ts
-   * const { sum } = db.fn
-   *
    * db.selectFrom('toy')
-   *   .select(sum('price').as('total_price'))
+   *   .select((eb) => eb.fn.sum('price').as('total_price'))
    *   .execute()
    * ```
    *
@@ -581,10 +555,8 @@ export interface FunctionModule<DB, TB extends keyof DB> {
    * the first type argument:
    *
    * ```ts
-   * const { sum } = db.fn
-   *
    * db.selectFrom('toy')
-   *   .select(sum<number>('price').as('total_price'))
+   *   .select((eb) => eb.fn.sum<number>('price').as('total_price'))
    *   .execute()
    * ```
    *
@@ -594,10 +566,8 @@ export interface FunctionModule<DB, TB extends keyof DB> {
    * function.
    *
    * ```ts
-   * const { sum } = db.fn
-   *
    * db.selectFrom('toy')
-   *   .select(sum<number | null>('price').as('total_price'))
+   *   .select((eb) => eb.fn.sum<number | null>('price').as('total_price'))
    *   .execute()
    * ```
    */
@@ -616,7 +586,7 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
   const fn = <T>(
     name: string,
     args: ReadonlyArray<ReferenceExpression<DB, TB>>
-  ): ExpressionWrapper<T> => {
+  ): ExpressionWrapper<DB, TB, T> => {
     return new ExpressionWrapper(
       FunctionNode.create(name, parseReferenceExpressionOrList(args))
     )
@@ -650,7 +620,11 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
     >(
       value: V,
       ...otherValues: OV
-    ): ExpressionWrapper<CoalesceReferenceExpressionList<DB, TB, [V, ...OV]>> {
+    ): ExpressionWrapper<
+      DB,
+      TB,
+      CoalesceReferenceExpressionList<DB, TB, [V, ...OV]>
+    > {
       return fn('coalesce', [value, ...otherValues])
     },
 

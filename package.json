@@ -1,6 +1,6 @@
 {
   "name": "kysely",
-  "version": "0.25.0",
+  "version": "0.26.0",
   "description": "Type safe SQL query builder",
   "repository": {
     "type": "git",
@@ -36,10 +36,11 @@
     "test:node:postgres": "DIALECT=postgres npm run test:node:run",
     "test:node:mysql": "DIALECT=mysql npm run test:node:run",
     "test:node:sqlite": "DIALECT=sqlite npm run test:node:run",
-    "test:node:run": "mocha --timeout 15000 test/node/dist/**/*.test.js",
+    "test:node:run": "mocha --reporter min --timeout 15000 test/node/dist/**/*.test.js",
     "test:browser:build": "rm -rf test/browser/bundle.js && esbuild test/browser/main.ts --bundle --outfile=test/browser/bundle.js",
     "test:browser": "npm run build && npm run test:browser:build && node test/browser/test.js",
-    "test:deno": "npm run build && deno run test/deno/local.test.ts && deno run test/deno/cdn.test.ts",
+    "test:bun": "npm run build && cd test/bun && bun install && bun run test",
+    "test:deno": "npm run build && deno run --allow-env --allow-read --allow-net test/deno/local.test.ts && deno run --allow-env --allow-read --allow-net test/deno/cdn.test.ts",
     "test:typings": "tsd test/typings",
     "test:esmimports": "node scripts/check-esm-imports.js",
     "test:esbuild": "esbuild --bundle --platform=node --external:pg-native dist/esm/index.js --outfile=/dev/null",

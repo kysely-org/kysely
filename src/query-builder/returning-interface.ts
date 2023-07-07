@@ -54,7 +54,7 @@ export interface ReturningInterface<DB, TB extends keyof DB, O> {
    *     first_name: 'Jennifer',
    *     last_name: 'Aniston'
    *   })
-   *   .returning(eb => [
+   *   .returning((eb) => [
    *     'id as id',
    *     sql<string>`concat(first_name, ' ', last_name)`.as('full_name'),
    *     eb.selectFrom('pets').select('pet.id').limit(1).as('first_pet_id')

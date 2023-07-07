@@ -11,13 +11,8 @@ import {
   ComparisonOperatorExpression,
   OperandValueExpressionOrList,
   parseReferentialComparison,
-  parseWhere,
+  parseFilter,
 } from '../parser/binary-operation-parser.js'
-import {
-  ExistsExpression,
-  parseExists,
-  parseNotExists,
-} from '../parser/unary-operation-parser.js'
 import { WhereExpressionFactory } from './where-interface.js'
 
 export class AggregateFunctionBuilder<DB, TB extends keyof DB, O = unknown>
@@ -44,7 +39,7 @@ export class AggregateFunctionBuilder<DB, TB extends keyof DB, O = unknown>
    * const result = await db
    *   .selectFrom('person')
    *   .select(
-   *     eb => eb.fn.count<number>('id').as('person_count')
+   *     (eb) => eb.fn.count<number>('id').as('person_count')
    *   )
    *   .executeTakeFirstOrThrow()
    *
@@ -100,7 +95,7 @@ export class AggregateFunctionBuilder<DB, TB extends keyof DB, O = unknown>
    *
    * Similar to {@link WhereInterface}'s `where` method.
    *
-   * Also see {@link orFilterWhere}, {@link filterWhereExists} and {@link filterWhereRef}.
+   * Also see {@link filterWhereRef}.
    *
    * ### Examples
    *
@@ -153,37 +148,7 @@ export class AggregateFunctionBuilder<DB, TB extends keyof DB, O = unknown>
       ...this.#props,
       aggregateFunctionNode: AggregateFunctionNode.cloneWithFilter(
         this.#props.aggregateFunctionNode,
-        parseWhere(args)
-      ),
-    })
-  }
-
-  /**
-   * @deprecated Follow [these](https://github.com/koskimas/kysely/releases/tag/0.24.0) instructions to migrate
-   */
-  filterWhereExists(
-    arg: ExistsExpression<DB, TB>
-  ): AggregateFunctionBuilder<DB, TB, O> {
-    return new AggregateFunctionBuilder({
-      ...this.#props,
-      aggregateFunctionNode: AggregateFunctionNode.cloneWithFilter(
-        this.#props.aggregateFunctionNode,
-        parseExists(arg)
-      ),
-    })
-  }
-
-  /**
-   * @deprecated Follow [these](https://github.com/koskimas/kysely/releases/tag/0.24.0) instructions to migrate
-   */
-  filterWhereNotExists(
-    arg: ExistsExpression<DB, TB>
-  ): AggregateFunctionBuilder<DB, TB, O> {
-    return new AggregateFunctionBuilder({
-      ...this.#props,
-      aggregateFunctionNode: AggregateFunctionNode.cloneWithFilter(
-        this.#props.aggregateFunctionNode,
-        parseNotExists(arg)
+        parseFilter(args)
       ),
     })
   }
@@ -235,89 +200,6 @@ export class AggregateFunctionBuilder<DB, TB extends keyof DB, O = unknown>
   }
 
   /**
-   * @deprecated Follow [these](https://github.com/koskimas/kysely/releases/tag/0.24.0) instructions to migrate
-   */
-  orFilterWhere<RE extends ReferenceExpression<DB, TB>>(
-    lhs: RE,
-    op: ComparisonOperatorExpression,
-    rhs: OperandValueExpressionOrList<DB, TB, RE>
-  ): AggregateFunctionBuilder<DB, TB, O>
-
-  /**
-   * @deprecated Follow [these](https://github.com/koskimas/kysely/releases/tag/0.24.0) instructions to migrate
-   */
-  orFilterWhere(
-    factory: WhereExpressionFactory<DB, TB>
-  ): AggregateFunctionBuilder<DB, TB, O>
-
-  /**
-   * @deprecated Follow [these](https://github.com/koskimas/kysely/releases/tag/0.24.0) instructions to migrate
-   */
-  orFilterWhere(
-    expression: Expression<any>
-  ): AggregateFunctionBuilder<DB, TB, O>
-
-  /**
-   * @deprecated Follow [these](https://github.com/koskimas/kysely/releases/tag/0.24.0) instructions to migrate
-   */
-  orFilterWhere(...args: any[]): any {
-    return new AggregateFunctionBuilder({
-      ...this.#props,
-      aggregateFunctionNode: AggregateFunctionNode.cloneWithOrFilter(
-        this.#props.aggregateFunctionNode,
-        parseWhere(args)
-      ),
-    })
-  }
-
-  /**
-   * @deprecated Follow [these](https://github.com/koskimas/kysely/releases/tag/0.24.0) instructions to migrate
-   */
-  orFilterWhereExists(
-    arg: ExistsExpression<DB, TB>
-  ): AggregateFunctionBuilder<DB, TB, O> {
-    return new AggregateFunctionBuilder({
-      ...this.#props,
-      aggregateFunctionNode: AggregateFunctionNode.cloneWithOrFilter(
-        this.#props.aggregateFunctionNode,
-        parseExists(arg)
-      ),
-    })
-  }
-
-  /**
-   * @deprecated Follow [these](https://github.com/koskimas/kysely/releases/tag/0.24.0) instructions to migrate
-   */
-  orFilterWhereNotExists(
-    arg: ExistsExpression<DB, TB>
-  ): AggregateFunctionBuilder<DB, TB, O> {
-    return new AggregateFunctionBuilder({
-      ...this.#props,
-      aggregateFunctionNode: AggregateFunctionNode.cloneWithOrFilter(
-        this.#props.aggregateFunctionNode,
-        parseNotExists(arg)
-      ),
-    })
-  }
-
-  /**
-   * @deprecated Follow [these](https://github.com/koskimas/kysely/releases/tag/0.24.0) instructions to migrate
-   */
-  orFilterWhereRef(
-    lhs: ReferenceExpression<DB, TB>,
-    op: ComparisonOperatorExpression,
-    rhs: ReferenceExpression<DB, TB>
-  ): AggregateFunctionBuilder<DB, TB, O> {
-    return new AggregateFunctionBuilder({
-      ...this.#props,
-      aggregateFunctionNode: AggregateFunctionNode.cloneWithOrFilter(
-        this.#props.aggregateFunctionNode,
-        parseReferentialComparison(lhs, op, rhs)
-      ),
-    })
-  }
-
-  /**
    * Adds an `over` clause (window functions) after the function.
    *
    * ### Examples
@@ -326,7 +208,7 @@ export class AggregateFunctionBuilder<DB, TB extends keyof DB, O = unknown>
    * const result = await db
    *   .selectFrom('person')
    *   .select(
-   *     eb => eb.fn.avg<number>('age').over().as('average_age')
+   *     (eb) => eb.fn.avg<number>('age').over().as('average_age')
    *   )
    *   .execute()
    * ```
@@ -345,7 +227,7 @@ export class AggregateFunctionBuilder<DB, TB extends keyof DB, O = unknown>
    * const result = await db
    *   .selectFrom('person')
    *   .select(
-   *     eb => eb.fn.avg<number>('age').over(
+   *     (eb) => eb.fn.avg<number>('age').over(
    *       ob => ob.partitionBy('last_name').orderBy('first_name', 'asc')
    *     ).as('average_age')
    *   )

@@ -58,15 +58,9 @@ import { AliasedExpression, Expression } from '../expression/expression.js'
 import {
   ComparisonOperatorExpression,
   OperandValueExpressionOrList,
-  parseHaving,
+  parseFilter,
   parseReferentialComparison,
-  parseWhere,
 } from '../parser/binary-operation-parser.js'
-import {
-  ExistsExpression,
-  parseExists,
-  parseNotExists,
-} from '../parser/unary-operation-parser.js'
 import { KyselyTypeError } from '../util/type-error.js'
 import { Selectable } from '../util/column-type.js'
 import { Streamable } from '../util/streamable.js'
@@ -98,7 +92,6 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
   ): SelectQueryBuilder<DB, TB, O>
 
   where(factory: WhereExpressionFactory<DB, TB>): SelectQueryBuilder<DB, TB, O>
-
   where(expression: Expression<any>): SelectQueryBuilder<DB, TB, O>
 
   where(...args: any[]): any {
@@ -106,7 +99,7 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
       ...this.#props,
       queryNode: QueryNode.cloneWithWhere(
         this.#props.queryNode,
-        parseWhere(args)
+        parseFilter(args)
       ),
     })
   }
@@ -121,84 +114,6 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
       queryNode: QueryNode.cloneWithWhere(
         this.#props.queryNode,
         parseReferentialComparison(lhs, op, rhs)
-      ),
-    })
-  }
-
-  orWhere<RE extends ReferenceExpression<DB, TB>>(
-    lhs: RE,
-    op: ComparisonOperatorExpression,
-    rhs: OperandValueExpressionOrList<DB, TB, RE>
-  ): SelectQueryBuilder<DB, TB, O>
-
-  orWhere(
-    factory: WhereExpressionFactory<DB, TB>
-  ): SelectQueryBuilder<DB, TB, O>
-
-  orWhere(expression: Expression<any>): SelectQueryBuilder<DB, TB, O>
-
-  orWhere(...args: any[]): any {
-    return new SelectQueryBuilder({
-      ...this.#props,
-      queryNode: QueryNode.cloneWithOrWhere(
-        this.#props.queryNode,
-        parseWhere(args)
-      ),
-    })
-  }
-
-  orWhereRef(
-    lhs: ReferenceExpression<DB, TB>,
-    op: ComparisonOperatorExpression,
-    rhs: ReferenceExpression<DB, TB>
-  ): SelectQueryBuilder<DB, TB, O> {
-    return new SelectQueryBuilder({
-      ...this.#props,
-      queryNode: QueryNode.cloneWithOrWhere(
-        this.#props.queryNode,
-        parseReferentialComparison(lhs, op, rhs)
-      ),
-    })
-  }
-
-  whereExists(arg: ExistsExpression<DB, TB>): SelectQueryBuilder<DB, TB, O> {
-    return new SelectQueryBuilder({
-      ...this.#props,
-      queryNode: QueryNode.cloneWithWhere(
-        this.#props.queryNode,
-        parseExists(arg)
-      ),
-    })
-  }
-
-  whereNotExists(arg: ExistsExpression<DB, TB>): SelectQueryBuilder<DB, TB, O> {
-    return new SelectQueryBuilder({
-      ...this.#props,
-      queryNode: QueryNode.cloneWithWhere(
-        this.#props.queryNode,
-        parseNotExists(arg)
-      ),
-    })
-  }
-
-  orWhereExists(arg: ExistsExpression<DB, TB>): SelectQueryBuilder<DB, TB, O> {
-    return new SelectQueryBuilder({
-      ...this.#props,
-      queryNode: QueryNode.cloneWithOrWhere(
-        this.#props.queryNode,
-        parseExists(arg)
-      ),
-    })
-  }
-
-  orWhereNotExists(
-    arg: ExistsExpression<DB, TB>
-  ): SelectQueryBuilder<DB, TB, O> {
-    return new SelectQueryBuilder({
-      ...this.#props,
-      queryNode: QueryNode.cloneWithOrWhere(
-        this.#props.queryNode,
-        parseNotExists(arg)
       ),
     })
   }
@@ -220,7 +135,7 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
       ...this.#props,
       queryNode: SelectQueryNode.cloneWithHaving(
         this.#props.queryNode,
-        parseHaving(args)
+        parseFilter(args)
       ),
     })
   }
@@ -235,99 +150,6 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
       queryNode: SelectQueryNode.cloneWithHaving(
         this.#props.queryNode,
         parseReferentialComparison(lhs, op, rhs)
-      ),
-    })
-  }
-
-  orHaving<RE extends ReferenceExpression<DB, TB>>(
-    lhs: RE,
-    op: ComparisonOperatorExpression,
-    rhs: OperandValueExpressionOrList<DB, TB, RE>
-  ): SelectQueryBuilder<DB, TB, O>
-
-  orHaving(
-    factory: HavingExpressionFactory<DB, TB>
-  ): SelectQueryBuilder<DB, TB, O>
-
-  orHaving(expression: Expression<any>): SelectQueryBuilder<DB, TB, O>
-
-  orHaving(...args: any[]): any {
-    return new SelectQueryBuilder({
-      ...this.#props,
-      queryNode: SelectQueryNode.cloneWithOrHaving(
-        this.#props.queryNode,
-        parseHaving(args)
-      ),
-    })
-  }
-
-  orHavingRef(
-    lhs: ReferenceExpression<DB, TB>,
-    op: ComparisonOperatorExpression,
-    rhs: ReferenceExpression<DB, TB>
-  ): SelectQueryBuilder<DB, TB, O> {
-    return new SelectQueryBuilder({
-      ...this.#props,
-      queryNode: SelectQueryNode.cloneWithOrHaving(
-        this.#props.queryNode,
-        parseReferentialComparison(lhs, op, rhs)
-      ),
-    })
-  }
-
-  havingExists(arg: ExistsExpression<DB, TB>): SelectQueryBuilder<DB, TB, O> {
-    return new SelectQueryBuilder({
-      ...this.#props,
-      queryNode: SelectQueryNode.cloneWithHaving(
-        this.#props.queryNode,
-        parseExists(arg)
-      ),
-    })
-  }
-
-  /**
-   * @deprecated Use {@link havingNotExists} instead.
-   */
-  havingNotExist(arg: ExistsExpression<DB, TB>): SelectQueryBuilder<DB, TB, O> {
-    return new SelectQueryBuilder({
-      ...this.#props,
-      queryNode: SelectQueryNode.cloneWithHaving(
-        this.#props.queryNode,
-        parseNotExists(arg)
-      ),
-    })
-  }
-
-  havingNotExists(
-    arg: ExistsExpression<DB, TB>
-  ): SelectQueryBuilder<DB, TB, O> {
-    return new SelectQueryBuilder({
-      ...this.#props,
-      queryNode: SelectQueryNode.cloneWithHaving(
-        this.#props.queryNode,
-        parseNotExists(arg)
-      ),
-    })
-  }
-
-  orHavingExists(arg: ExistsExpression<DB, TB>): SelectQueryBuilder<DB, TB, O> {
-    return new SelectQueryBuilder({
-      ...this.#props,
-      queryNode: SelectQueryNode.cloneWithOrHaving(
-        this.#props.queryNode,
-        parseExists(arg)
-      ),
-    })
-  }
-
-  orHavingNotExists(
-    arg: ExistsExpression<DB, TB>
-  ): SelectQueryBuilder<DB, TB, O> {
-    return new SelectQueryBuilder({
-      ...this.#props,
-      queryNode: SelectQueryNode.cloneWithOrHaving(
-        this.#props.queryNode,
-        parseNotExists(arg)
       ),
     })
   }
@@ -1673,13 +1495,6 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
   }
 
   /**
-   * @deprecated Use `$call` instead
-   */
-  call<T>(func: (qb: this) => T): T {
-    return this.$call(func)
-  }
-
-  /**
    * Call `func(this)` if `condition` is true.
    *
    * NOTE: This method has an impact on typescript performance and it should only be used
@@ -1734,14 +1549,12 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    * You can also call any other methods inside the callback:
    *
    * ```ts
-   * const { count } = db.fn
-   *
    * db.selectFrom('person')
    *   .select('person.id')
    *   .$if(filterByFirstName, (qb) => qb.where('first_name', '=', firstName))
    *   .$if(filterByPetCount, (qb) => qb
    *     .innerJoin('pet', 'pet.owner_id', 'person.id')
-   *     .having(count('pet.id'), '>', petCountLimit)
+   *     .having((eb) => eb.fn.count('pet.id'), '>', petCountLimit)
    *     .groupBy('person.id')
    *   )
    * ```
@@ -1760,16 +1573,6 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
   }
 
   /**
-   * @deprecated Use `$if` instead
-   */
-  if<O2>(
-    condition: boolean,
-    func: (qb: this) => SelectQueryBuilder<DB, TB, O & O2>
-  ): SelectQueryBuilder<DB, TB, O & Partial<O2>> {
-    return this.$if(condition, func)
-  }
-
-  /**
    * Change the output type of the query.
    *
    * You should only use this method as the last resort if the types
@@ -1777,13 +1580,6 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    */
   $castTo<T>(): SelectQueryBuilder<DB, TB, T> {
     return new SelectQueryBuilder(this.#props)
-  }
-
-  /**
-   * @deprecated Use `$castTo` instead.
-   */
-  castTo<T>(): SelectQueryBuilder<DB, TB, T> {
-    return this.$castTo<T>()
   }
 
   /**
@@ -1872,15 +1668,6 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
   $assertType<T extends O>(): O extends T
     ? SelectQueryBuilder<DB, TB, T>
     : KyselyTypeError<`$assertType() call failed: The type passed in is not equal to the output type of the query.`> {
-    return new SelectQueryBuilder(this.#props) as unknown as any
-  }
-
-  /**
-   * @deprecated Use `$assertType` instead.
-   */
-  assertType<T extends O>(): O extends T
-    ? SelectQueryBuilder<DB, TB, T>
-    : KyselyTypeError<`assertType() call failed: The type passed in is not equal to the output type of the query.`> {
     return new SelectQueryBuilder(this.#props) as unknown as any
   }
 

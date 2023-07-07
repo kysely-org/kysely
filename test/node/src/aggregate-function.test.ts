@@ -638,32 +638,38 @@ for (const dialect of DIALECTS) {
           })
 
           it(`should execute a query with ${funcName}(column) filter(where ... or ...) in select clause`, async () => {
-            const query = ctx.db
-              .selectFrom('person')
-              .select([
-                func('person.id')
-                  .filterWhere('person.gender', '=', 'female')
-                  .orFilterWhere('person.middle_name', 'is not', null)
-                  .as(funcName),
-                (eb) =>
-                  getAggregateFunctionFromExpressionBuilder(
-                    eb,
-                    funcName
-                  )('person.id')
-                    .filterWhere('person.gender', '=', 'female')
-                    .orFilterWhere('person.middle_name', 'is not', null)
-                    .as(`another_${funcName}`),
-              ])
+            const query = ctx.db.selectFrom('person').select([
+              func('person.id')
+                .filterWhere(({ or, eb }) =>
+                  or([
+                    eb('person.gender', '=', 'female'),
+                    eb('person.middle_name', 'is not', null),
+                  ])
+                )
+                .as(funcName),
+              (eb) =>
+                getAggregateFunctionFromExpressionBuilder(
+                  eb,
+                  funcName
+                )('person.id')
+                  .filterWhere((eb) =>
+                    eb.or([
+                      eb('person.gender', '=', 'female'),
+                      eb('person.middle_name', 'is not', null),
+                    ])
+                  )
+                  .as(`another_${funcName}`),
+            ])
 
             testSql(query, dialect, {
               postgres: {
                 sql: [
                   `select ${funcName}("person"."id")`,
-                  `filter(where "person"."gender" = $1`,
-                  `or "person"."middle_name" is not null) as "${funcName}",`,
+                  `filter(where ("person"."gender" = $1`,
+                  `or "person"."middle_name" is not null)) as "${funcName}",`,
                   `${funcName}("person"."id")`,
-                  `filter(where "person"."gender" = $2`,
-                  `or "person"."middle_name" is not null) as "another_${funcName}"`,
+                  `filter(where ("person"."gender" = $2`,
+                  `or "person"."middle_name" is not null)) as "another_${funcName}"`,
                   `from "person"`,
                 ],
                 parameters: ['female', 'female'],
@@ -672,11 +678,11 @@ for (const dialect of DIALECTS) {
               sqlite: {
                 sql: [
                   `select ${funcName}("person"."id")`,
-                  `filter(where "person"."gender" = ?`,
-                  `or "person"."middle_name" is not null) as "${funcName}",`,
+                  `filter(where ("person"."gender" = ?`,
+                  `or "person"."middle_name" is not null)) as "${funcName}",`,
                   `${funcName}("person"."id")`,
-                  `filter(where "person"."gender" = ?`,
-                  `or "person"."middle_name" is not null) as "another_${funcName}"`,
+                  `filter(where ("person"."gender" = ?`,
+                  `or "person"."middle_name" is not null)) as "another_${funcName}"`,
                   `from "person"`,
                 ],
                 parameters: ['female', 'female'],
@@ -949,14 +955,14 @@ for (const dialect of DIALECTS) {
 
 function getAggregateFunctionFromTestContext<TB extends keyof Database>(
   ctx: TestContext,
-  funcName: typeof funcNames[number]
+  funcName: (typeof funcNames)[number]
 ): AggregateFunction<TB> {
   return ctx.db.fn[funcName] as any
 }
 
 function getAggregateFunctionFromExpressionBuilder<TB extends keyof Database>(
   eb: ExpressionBuilder<Database, TB>,
-  funcName: typeof funcNames[number]
+  funcName: (typeof funcNames)[number]
 ): AggregateFunction<TB> {
   return eb.fn[funcName] as any
 }

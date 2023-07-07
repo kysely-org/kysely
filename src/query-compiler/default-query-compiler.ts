@@ -96,6 +96,10 @@ import { UsingNode } from '../operation-node/using-node.js'
 import { FunctionNode } from '../operation-node/function-node.js'
 import { CaseNode } from '../operation-node/case-node.js'
 import { WhenNode } from '../operation-node/when-node.js'
+import { JSONReferenceNode } from '../operation-node/json-reference-node.js'
+import { JSONPathNode } from '../operation-node/json-path-node.js'
+import { JSONPathLegNode } from '../operation-node/json-path-leg-node.js'
+import { JSONOperatorChainNode } from '../operation-node/json-operator-chain-node.js'
 
 export class DefaultQueryCompiler
   extends OperationNodeVisitor
@@ -388,8 +392,11 @@ export class DefaultQueryCompiler
   }
 
   protected override visitReference(node: ReferenceNode): void {
-    this.visitNode(node.table)
-    this.append('.')
+    if (node.table) {
+      this.visitNode(node.table)
+      this.append('.')
+    }
+
     this.visitNode(node.column)
   }
 
@@ -1324,6 +1331,49 @@ export class DefaultQueryCompiler
     if (node.result) {
       this.append(' then ')
       this.visitNode(node.result)
+    }
+  }
+
+  protected override visitJSONReference(node: JSONReferenceNode): void {
+    this.visitNode(node.reference)
+    this.visitNode(node.traversal)
+  }
+
+  protected override visitJSONPath(node: JSONPathNode): void {
+    if (node.inOperator) {
+      this.visitNode(node.inOperator)
+    }
+
+    this.append("'$")
+
+    for (const pathLeg of node.pathLegs) {
+      this.visitNode(pathLeg)
+    }
+
+    this.append("'")
+  }
+
+  protected override visitJSONPathLeg(node: JSONPathLegNode): void {
+    const isArrayLocation = node.type === 'ArrayLocation'
+
+    this.append(isArrayLocation ? '[' : '.')
+
+    this.append(String(node.value))
+
+    if (isArrayLocation) {
+      this.append(']')
+    }
+  }
+
+  protected override visitJSONOperatorChain(node: JSONOperatorChainNode): void {
+    for (let i = 0, len = node.values.length; i < len; i++) {
+      if (i === len - 1) {
+        this.visitNode(node.operator)
+      } else {
+        this.append('->')
+      }
+
+      this.visitNode(node.values[i])
     }
   }
 

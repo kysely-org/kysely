@@ -27,6 +27,13 @@ export interface QueryResult<O> {
   readonly numAffectedRows?: bigint
 
   /**
+   * This is defined for update queries and contains the number of rows
+   * the query changed.
+   * This is optional and only provided by some drivers like node-mysql2.
+   */
+  readonly numChangedRows?: bigint
+
+  /**
    * This is defined for insert queries on dialects that return
    * the auto incrementing primary key from an insert.
    */

@@ -158,18 +158,6 @@ export const SelectQueryNode = freeze({
     })
   },
 
-  cloneWithOrHaving(
-    selectNode: SelectQueryNode,
-    operation: OperationNode
-  ): SelectQueryNode {
-    return freeze({
-      ...selectNode,
-      having: selectNode.having
-        ? HavingNode.cloneWithOperation(selectNode.having, 'Or', operation)
-        : HavingNode.create(operation),
-    })
-  },
-
   cloneWithSetOperation(
     selectNode: SelectQueryNode,
     setOperation: SetOperationNode

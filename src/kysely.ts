@@ -168,16 +168,14 @@ export class Kysely<DB>
    * calls.
    *
    * ```ts
-   * const { count } = db.fn
-   *
    * await db.selectFrom('person')
    *   .innerJoin('pet', 'pet.owner_id', 'person.id')
-   *   .select([
+   *   .select((eb) => [
    *     'person.id',
-   *     count('pet.id').as('pet_count')
+   *     eb.fn.count('pet.id').as('pet_count')
    *   ])
    *   .groupBy('person.id')
-   *   .having(count('pet.id'), '>', 10)
+   *   .having((eb) => eb.fn.count('pet.id'), '>', 10)
    *   .execute()
    * ```
    *

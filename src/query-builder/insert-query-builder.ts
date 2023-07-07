@@ -45,7 +45,9 @@ import { ColumnNode } from '../operation-node/column-node.js'
 import { ReturningInterface } from './returning-interface.js'
 import {
   OnConflictBuilder,
+  OnConflictDatabase,
   OnConflictDoNothingBuilder,
+  OnConflictTables,
   OnConflictUpdateBuilder,
 } from './on-conflict-builder.js'
 import { OnConflictNode } from '../operation-node/on-conflict-node.js'
@@ -487,7 +489,12 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
   onConflict(
     callback: (
       builder: OnConflictBuilder<DB, TB>
-    ) => OnConflictDoNothingBuilder<DB, TB> | OnConflictUpdateBuilder<DB, TB>
+    ) =>
+      | OnConflictUpdateBuilder<
+          OnConflictDatabase<DB, TB>,
+          OnConflictTables<TB>
+        >
+      | OnConflictDoNothingBuilder<DB, TB>
   ): InsertQueryBuilder<DB, TB, O> {
     return new InsertQueryBuilder({
       ...this.#props,
@@ -582,13 +589,6 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
   }
 
   /**
-   * @deprecated Use `$call` instead
-   */
-  call<T>(func: (qb: this) => T): T {
-    return this.$call(func)
-  }
-
-  /**
    * Call `func(this)` if `condition` is true.
    *
    * This method is especially handy with optional selects. Any `returning` or `returningAll`
@@ -641,26 +641,6 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
   }
 
   /**
-   * @deprecated Use `$if` instead
-   */
-  if<O2>(
-    condition: boolean,
-    func: (qb: this) => InsertQueryBuilder<DB, TB, O2>
-  ): O2 extends InsertResult
-    ? InsertQueryBuilder<DB, TB, InsertResult>
-    : O2 extends O & infer E
-    ? InsertQueryBuilder<DB, TB, O & Partial<E>>
-    : InsertQueryBuilder<DB, TB, Partial<O2>> {
-    if (condition) {
-      return func(this) as any
-    }
-
-    return new InsertQueryBuilder({
-      ...this.#props,
-    }) as any
-  }
-
-  /**
    * Change the output type of the query.
    *
    * You should only use this method as the last resort if the types
@@ -668,13 +648,6 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    */
   $castTo<T>(): InsertQueryBuilder<DB, TB, T> {
     return new InsertQueryBuilder(this.#props)
-  }
-
-  /**
-   * @deprecated Use `$castTo` instead.
-   */
-  castTo<T>(): InsertQueryBuilder<DB, TB, T> {
-    return this.$castTo<T>()
   }
 
   /**
@@ -765,15 +738,6 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
   $assertType<T extends O>(): O extends T
     ? InsertQueryBuilder<DB, TB, T>
     : KyselyTypeError<`$assertType() call failed: The type passed in is not equal to the output type of the query.`> {
-    return new InsertQueryBuilder(this.#props) as unknown as any
-  }
-
-  /**
-   * @deprecated Use `$assertType` instead.
-   */
-  assertType<T extends O>(): O extends T
-    ? InsertQueryBuilder<DB, TB, T>
-    : KyselyTypeError<`assertType() call failed: The type passed in is not equal to the output type of the query.`> {
     return new InsertQueryBuilder(this.#props) as unknown as any
   }
 
