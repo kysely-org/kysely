@@ -18,6 +18,7 @@ import {
 } from '../query-builder/function-module.js'
 import {
   ExtractTypeFromReferenceExpression,
+  parseJSONReference,
   parseReferenceExpression,
   parseStringReference,
   ReferenceExpression,
@@ -40,6 +41,7 @@ import { ParensNode } from '../operation-node/parens-node.js'
 import { ExpressionWrapper } from './expression-wrapper.js'
 import {
   ComparisonOperator,
+  JSONOperatorWith$,
   UnaryOperator,
 } from '../operation-node/operator-node.js'
 import { SqlBool } from '../util/type-utils.js'
@@ -53,6 +55,7 @@ import { ValueNode } from '../operation-node/value-node.js'
 import { CaseBuilder } from '../query-builder/case-builder.js'
 import { CaseNode } from '../operation-node/case-node.js'
 import { isUndefined } from '../util/object-utils.js'
+import { JSONPathBuilder } from '../query-builder/json-path-builder.js'
 
 export interface ExpressionBuilder<DB, TB extends keyof DB> {
   /**
@@ -298,7 +301,11 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
   case<O>(expression: Expression<O>): CaseBuilder<DB, TB, O>
 
   /**
-   * This can be used to reference columns.
+   * This method can be used to reference columns within the query's context. For
+   * a non-type-safe version of this method see {@link sql}'s version.
+   *
+   * Additionally, this method can be used to reference nested JSON properties or
+   * array elements. See {@link JSONPathBuilder} for more information.
    *
    * ### Examples
    *
@@ -314,9 +321,8 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    *   ]))
    * ```
    *
-   * In the next example we use the `ref` method to reference
-   * columns of the virtual table `excluded` in a type-safe way
-   * to create an upsert operation:
+   * In the next example we use the `ref` method to reference columns of the virtual
+   * table `excluded` in a type-safe way to create an upsert operation:
    *
    * ```ts
    * db.insertInto('person')
@@ -330,18 +336,59 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    *   )
    * ```
    *
-   * In the next example we use `ref` in a raw sql expression. Unless you
-   * want to be as type-safe as possible, this is probably overkill:
+   * In the next example we use `ref` in a raw sql expression. Unless you want
+   * to be as type-safe as possible, this is probably overkill:
    *
    * ```ts
    * db.update('pet').set((eb) => ({
    *   name: sql`concat(${eb.ref('pet.name')}, ${suffix})`
    * }))
    * ```
+   *
+   * In the next example we use `ref` to reference a nested JSON property:
+   *
+   * ```ts
+   * db.selectFrom('person')
+   *   .where(({ cmpr, ref }) => cmpr(
+   *     ref('address', '->').key('state').key('abbr'),
+   *     '=',
+   *     'CA'
+   *   ))
+   *   .selectAll()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * select * from "person" where "address"->'state'->'abbr' = $1
+   * ```
+   *
+   * You can also compile to a JSON path expression by using the `->$`or `->>$` operator:
+   *
+   * ```ts
+   * db.selectFrom('person')
+   *   .select(({ ref }) =>
+   *     ref('experience', '->$')
+   *       .at('last')
+   *       .key('title')
+   *       .as('current_job')
+   *   )
+   * ```
+   *
+   * The generated SQL (MySQL):
+   *
+   * ```sql
+   * select `experience`->'$[last].title' as `current_job` from `person`
+   * ```
    */
   ref<RE extends StringReference<DB, TB>>(
     reference: RE
   ): ExpressionWrapper<DB, TB, ExtractTypeFromReferenceExpression<DB, TB, RE>>
+
+  ref<RE extends StringReference<DB, TB>>(
+    reference: RE,
+    op: JSONOperatorWith$
+  ): JSONPathBuilder<ExtractTypeFromReferenceExpression<DB, TB, RE>>
 
   /**
    * Returns a value expression.
@@ -690,13 +737,14 @@ export function createExpressionBuilder<DB, TB extends keyof DB>(
     },
 
     ref<RE extends StringReference<DB, TB>>(
-      reference: RE
-    ): ExpressionWrapper<
-      DB,
-      TB,
-      ExtractTypeFromReferenceExpression<DB, TB, RE>
-    > {
-      return new ExpressionWrapper(parseStringReference(reference))
+      reference: RE,
+      op?: JSONOperatorWith$
+    ): any {
+      if (isUndefined(op)) {
+        return new ExpressionWrapper(parseStringReference(reference))
+      }
+
+      return new JSONPathBuilder(parseJSONReference(reference, op))
     },
 
     val<VE>(
