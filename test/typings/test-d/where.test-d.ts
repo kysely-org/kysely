@@ -1,4 +1,4 @@
-import { Expression, Kysely, sql } from '..'
+import { Expression, Kysely, SqlBool, sql } from '..'
 import { Database } from '../shared'
 import { expectError } from 'tsd'
 
@@ -40,28 +40,28 @@ function testWhere(db: Kysely<Database>) {
   )
 
   // Nullable subquery in LHS
-  db.selectFrom('movie').where(({ or, cmpr, and }) =>
-    or([
-      cmpr('id', '=', '1'),
-      and([cmpr('stars', '>', 2), cmpr('stars', '<', 5)]),
+  db.selectFrom('movie').where((eb) =>
+    eb.or([
+      eb('id', '=', '1'),
+      eb.and([eb('stars', '>', 2), eb('stars', '<', 5)]),
     ])
   )
 
   const firstName = 'Jennifer'
   const lastName = 'Aniston'
   // Dynamic `and` list in expression builder
-  db.selectFrom('person').where(({ cmpr, and }) => {
-    const exprs: Expression<boolean>[] = []
+  db.selectFrom('person').where((eb) => {
+    const exprs: Expression<SqlBool>[] = []
 
     if (firstName) {
-      exprs.push(cmpr('first_name', '=', firstName))
+      exprs.push(eb('first_name', '=', firstName))
     }
 
     if (lastName) {
-      exprs.push(cmpr('last_name', '=', lastName))
+      exprs.push(eb('last_name', '=', lastName))
     }
 
-    return and(exprs)
+    return eb.and(exprs)
   })
 
   // Subquery in RHS

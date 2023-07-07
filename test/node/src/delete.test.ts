@@ -72,8 +72,12 @@ for (const dialect of DIALECTS) {
     it('should delete two rows', async () => {
       const query = ctx.db
         .deleteFrom('person')
-        .where('first_name', '=', 'Jennifer')
-        .orWhere('first_name', '=', 'Arnold')
+        .where((eb) =>
+          eb.or([
+            eb('first_name', '=', 'Jennifer'),
+            eb('first_name', '=', 'Arnold'),
+          ])
+        )
 
       const result = await query.executeTakeFirst()
 
@@ -476,20 +480,17 @@ for (const dialect of DIALECTS) {
           .using('person')
           .innerJoin('pet', 'pet.owner_id', 'person.id')
           .leftJoin('toy', 'toy.pet_id', 'pet.id')
-          .where('pet.species', '=', sql`${'NO_SUCH_SPECIES'}`)
-          .orWhere('toy.price', '=', 0)
+          .where(({ eb, or }) =>
+            or([
+              eb('pet.species', '=', sql`${'NO_SUCH_SPECIES'}`),
+              eb('toy.price', '=', 0),
+            ])
+          )
 
         testSql(query, dialect, {
           postgres: NOT_SUPPORTED,
           mysql: {
-            sql: [
-              'delete from `person`',
-              'using `person`',
-              'inner join `pet` on `pet`.`owner_id` = `person`.`id`',
-              'left join `toy` on `toy`.`pet_id` = `pet`.`id`',
-              'where `pet`.`species` = ?',
-              'or `toy`.`price` = ?',
-            ],
+            sql: 'delete from `person` using `person` inner join `pet` on `pet`.`owner_id` = `person`.`id` left join `toy` on `toy`.`pet_id` = `pet`.`id` where (`pet`.`species` = ? or `toy`.`price` = ?)',
             parameters: ['NO_SUCH_SPECIES', 0],
           },
           sqlite: NOT_SUPPORTED,

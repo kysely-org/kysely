@@ -103,7 +103,7 @@ for (const dialect of DIALECTS) {
                 '"v" timestamptz(6),',
                 '"w" char(4),',
                 '"x" char,',
-                '"y" bytea)'
+                '"y" bytea)',
               ],
               parameters: [],
             },
@@ -205,7 +205,7 @@ for (const dialect of DIALECTS) {
                 '`s` timestamp(6) default current_timestamp(6) not null,',
                 '`t` char(4),',
                 '`u` char,',
-                '`v` binary(16))'
+                '`v` binary(16))',
               ],
               parameters: [],
             },
@@ -1139,10 +1139,10 @@ for (const dialect of DIALECTS) {
             .createIndex('test_partial_index')
             .on('test')
             .columns(['first_name', 'last_name'])
-            .where(({ or, cmpr }) =>
-              or([
-                cmpr('first_name', '=', 'Igal'),
-                cmpr(sql.ref('age'), '>=', 18),
+            .where((eb) =>
+              eb.or([
+                eb('first_name', '=', 'Igal'),
+                eb(sql.ref('age'), '>=', 18),
               ])
             )
 
@@ -2474,8 +2474,14 @@ for (const dialect of DIALECTS) {
           afterEach(cleanup)
 
           it('should parse the schema from table name', async () => {
-            await ctx.db.schema.createSchema('test_schema').ifNotExists().execute()
-            await ctx.db.schema.createTable('test_schema.test').addColumn('id', 'serial').execute();
+            await ctx.db.schema
+              .createSchema('test_schema')
+              .ifNotExists()
+              .execute()
+            await ctx.db.schema
+              .createTable('test_schema.test')
+              .addColumn('id', 'serial')
+              .execute()
 
             const builder = ctx.db.schema
               .alterTable('test_schema.test')
@@ -2487,7 +2493,7 @@ for (const dialect of DIALECTS) {
                 parameters: [],
               },
               mysql: {
-                sql: "alter table `test_schema`.`test` add column `second_column` text",
+                sql: 'alter table `test_schema`.`test` add column `second_column` text',
                 parameters: [],
               },
               sqlite: NOT_SUPPORTED,
@@ -2497,7 +2503,10 @@ for (const dialect of DIALECTS) {
           })
 
           async function cleanup() {
-            await ctx.db.schema.dropTable('test_schema.test').ifExists().execute()
+            await ctx.db.schema
+              .dropTable('test_schema.test')
+              .ifExists()
+              .execute()
             await ctx.db.schema.dropSchema('test_schema').ifExists().execute()
           }
         })
