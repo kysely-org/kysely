@@ -7,7 +7,7 @@ import { WhenNode } from '../operation-node/when-node.js'
 import {
   ComparisonOperatorExpression,
   OperandValueExpressionOrList,
-  parseWhen,
+  parseFilter,
 } from '../parser/binary-operation-parser.js'
 import { parseValueExpression } from '../parser/value-parser.js'
 import { KyselyTypeError } from '../util/type-error.js'
@@ -40,7 +40,7 @@ export class CaseBuilder<DB, TB extends keyof DB, W = unknown, O = never>
       ...this.#props,
       node: CaseNode.cloneWithWhen(
         this.#props.node,
-        WhenNode.create(parseWhen(args))
+        WhenNode.create(parseFilter(args))
       ),
     })
   }
@@ -78,7 +78,7 @@ export class CaseThenBuilder<DB, TB extends keyof DB, W, O> {
 }
 
 export class CaseWhenBuilder<DB, TB extends keyof DB, W, O>
-  implements Whenable<DB, TB, W, O>, Endable<O | null>
+  implements Whenable<DB, TB, W, O>, Endable<DB, TB, O | null>
 {
   readonly #props: CaseBuilderProps
 
@@ -93,7 +93,9 @@ export class CaseWhenBuilder<DB, TB extends keyof DB, W, O>
     op: ComparisonOperatorExpression,
     rhs: OperandValueExpressionOrList<DB, TB, RE>
   ): CaseThenBuilder<DB, TB, W, O>
+
   when(expression: Expression<W>): CaseThenBuilder<DB, TB, W, O>
+
   when(
     value: unknown extends W
       ? KyselyTypeError<'when(value) is only supported when using case(value)'>
@@ -105,7 +107,7 @@ export class CaseWhenBuilder<DB, TB extends keyof DB, W, O>
       ...this.#props,
       node: CaseNode.cloneWithWhen(
         this.#props.node,
-        WhenNode.create(parseWhen(args))
+        WhenNode.create(parseFilter(args))
       ),
     })
   }
@@ -115,8 +117,8 @@ export class CaseWhenBuilder<DB, TB extends keyof DB, W, O>
    *
    * An `else` call must be followed by an {@link Endable.end} or {@link Endable.endCase} call.
    */
-  else<O2>(expression: Expression<O2>): CaseEndBuilder<O | O2>
-  else<V>(value: V): CaseEndBuilder<O | V>
+  else<O2>(expression: Expression<O2>): CaseEndBuilder<DB, TB, O | O2>
+  else<V>(value: V): CaseEndBuilder<DB, TB, O | V>
 
   else(valueExpression: any): any {
     return new CaseEndBuilder({
@@ -127,33 +129,35 @@ export class CaseWhenBuilder<DB, TB extends keyof DB, W, O>
     })
   }
 
-  end(): ExpressionWrapper<O | null> {
+  end(): ExpressionWrapper<DB, TB, O | null> {
     return new ExpressionWrapper(
       CaseNode.cloneWith(this.#props.node, { isStatement: false })
     )
   }
 
-  endCase(): ExpressionWrapper<O | null> {
+  endCase(): ExpressionWrapper<DB, TB, O | null> {
     return new ExpressionWrapper(
       CaseNode.cloneWith(this.#props.node, { isStatement: true })
     )
   }
 }
 
-export class CaseEndBuilder<O> implements Endable<O> {
+export class CaseEndBuilder<DB, TB extends keyof DB, O>
+  implements Endable<DB, TB, O>
+{
   readonly #props: CaseBuilderProps
 
   constructor(props: CaseBuilderProps) {
     this.#props = freeze(props)
   }
 
-  end(): ExpressionWrapper<O> {
+  end(): ExpressionWrapper<DB, TB, O> {
     return new ExpressionWrapper(
       CaseNode.cloneWith(this.#props.node, { isStatement: false })
     )
   }
 
-  endCase(): ExpressionWrapper<O> {
+  endCase(): ExpressionWrapper<DB, TB, O> {
     return new ExpressionWrapper(
       CaseNode.cloneWith(this.#props.node, { isStatement: true })
     )
@@ -183,14 +187,14 @@ interface Whenable<DB, TB extends keyof DB, W, O> {
   ): CaseThenBuilder<DB, TB, W, O>
 }
 
-interface Endable<O> {
+interface Endable<DB, TB extends keyof DB, O> {
   /**
    * Adds an `end` keyword to the case operator.
    *
    * `case` operators can only be used as part of a query.
    * For a `case` statement used as part of a stored program, use {@link endCase} instead.
    */
-  end(): ExpressionWrapper<O>
+  end(): ExpressionWrapper<DB, TB, O>
 
   /**
    * Adds `end case` keywords to the case statement.
@@ -198,5 +202,5 @@ interface Endable<O> {
    * `case` statements can only be used for flow control in stored programs.
    * For a `case` operator used as part of a query, use {@link end} instead.
    */
-  endCase(): ExpressionWrapper<O>
+  endCase(): ExpressionWrapper<DB, TB, O>
 }

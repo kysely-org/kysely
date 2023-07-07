@@ -45,15 +45,6 @@ export const QueryNode = freeze({
     })
   },
 
-  cloneWithOrWhere<T extends HasWhere>(node: T, operation: OperationNode): T {
-    return freeze({
-      ...node,
-      where: node.where
-        ? WhereNode.cloneWithOperation(node.where, 'Or', operation)
-        : WhereNode.create(operation),
-    })
-  },
-
   cloneWithJoin<T extends HasJoins>(node: T, join: JoinNode): T {
     return freeze({
       ...node,

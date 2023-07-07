@@ -62,12 +62,12 @@ export const UNARY_FILTER_OPERATORS = ['exists', 'not exists'] as const
 export const UNARY_OPERATORS = ['not', '-', ...UNARY_FILTER_OPERATORS] as const
 export const OPERATORS = [...BINARY_OPERATORS, ...UNARY_OPERATORS] as const
 
-export type ComparisonOperator = typeof COMPARISON_OPERATORS[number]
-export type ArithmeticOperator = typeof ARITHMETIC_OPERATORS[number]
-export type BinaryOperator = typeof BINARY_OPERATORS[number]
-export type UnaryOperator = typeof UNARY_OPERATORS[number]
-export type UnaryFilterOperator = typeof UNARY_FILTER_OPERATORS[number]
-export type Operator = typeof OPERATORS[number]
+export type ComparisonOperator = (typeof COMPARISON_OPERATORS)[number]
+export type ArithmeticOperator = (typeof ARITHMETIC_OPERATORS)[number]
+export type BinaryOperator = (typeof BINARY_OPERATORS)[number]
+export type UnaryOperator = (typeof UNARY_OPERATORS)[number]
+export type UnaryFilterOperator = (typeof UNARY_FILTER_OPERATORS)[number]
+export type Operator = (typeof OPERATORS)[number]
 
 export interface OperatorNode extends OperationNode {
   readonly kind: 'OperatorNode'

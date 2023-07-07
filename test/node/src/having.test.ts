@@ -173,68 +173,27 @@ for (const dialect of DIALECTS) {
         .selectFrom('person')
         .selectAll()
         .groupBy('first_name')
-        .having('id', 'in', [1, 2, 3])
-        .orHaving('first_name', '<', 'foo')
+        .having((eb) =>
+          eb.or([
+            eb('id', 'in', [1, 2, 3]),
+            eb('first_name', '<', 'foo'),
+            eb('first_name', '=', eb.ref('first_name')),
+          ])
+        )
         .havingRef('first_name', '=', 'first_name')
-        .orHavingRef('first_name', '=', 'first_name')
-        .havingExists((qb) => qb.selectFrom('pet').select('id'))
-        .orHavingExists((qb) => qb.selectFrom('pet').select('id'))
-        .havingNotExist((qb) => qb.selectFrom('pet').select('id'))
-        .orHavingNotExists((qb) => qb.selectFrom('pet').select('id'))
-        .having((qb) => qb.having('id', '=', 1).orHaving('id', '=', 2))
-        .having(({ or, cmpr }) => or([cmpr('id', '=', 1), cmpr('id', '=', 2)]))
-
+        .having((eb) => eb.not(eb.exists(eb.selectFrom('pet').select('id'))))
       testSql(query, dialect, {
         postgres: {
-          sql: [
-            `select * from "person"`,
-            `group by "first_name"`,
-            `having "id" in ($1, $2, $3)`,
-            `or "first_name" < $4`,
-            `and "first_name" = "first_name"`,
-            `or "first_name" = "first_name"`,
-            `and exists (select "id" from "pet")`,
-            `or exists (select "id" from "pet")`,
-            `and not exists (select "id" from "pet")`,
-            `or not exists (select "id" from "pet")`,
-            'and ("id" = $5 or "id" = $6)',
-            'and ("id" = $7 or "id" = $8)',
-          ],
-          parameters: [1, 2, 3, 'foo', 1, 2, 1, 2],
+          sql: `select * from "person" group by "first_name" having ("id" in ($1, $2, $3) or "first_name" < $4 or "first_name" = "first_name") and "first_name" = "first_name" and not exists (select "id" from "pet")`,
+          parameters: [1, 2, 3, 'foo'],
         },
         mysql: {
-          sql: [
-            'select * from `person`',
-            'group by `first_name`',
-            'having `id` in (?, ?, ?)',
-            'or `first_name` < ?',
-            'and `first_name` = `first_name`',
-            'or `first_name` = `first_name`',
-            'and exists (select `id` from `pet`)',
-            'or exists (select `id` from `pet`)',
-            'and not exists (select `id` from `pet`)',
-            'or not exists (select `id` from `pet`)',
-            'and (`id` = ? or `id` = ?)',
-            'and (`id` = ? or `id` = ?)',
-          ],
-          parameters: [1, 2, 3, 'foo', 1, 2, 1, 2],
+          sql: 'select * from `person` group by `first_name` having (`id` in (?, ?, ?) or `first_name` < ? or `first_name` = `first_name`) and `first_name` = `first_name` and not exists (select `id` from `pet`)',
+          parameters: [1, 2, 3, 'foo'],
         },
         sqlite: {
-          sql: [
-            `select * from "person"`,
-            `group by "first_name"`,
-            `having "id" in (?, ?, ?)`,
-            `or "first_name" < ?`,
-            `and "first_name" = "first_name"`,
-            `or "first_name" = "first_name"`,
-            `and exists (select "id" from "pet")`,
-            `or exists (select "id" from "pet")`,
-            `and not exists (select "id" from "pet")`,
-            `or not exists (select "id" from "pet")`,
-            'and ("id" = ? or "id" = ?)',
-            'and ("id" = ? or "id" = ?)',
-          ],
-          parameters: [1, 2, 3, 'foo', 1, 2, 1, 2],
+          sql: `select * from "person" group by "first_name" having ("id" in (?, ?, ?) or "first_name" < ? or "first_name" = "first_name") and "first_name" = "first_name" and not exists (select "id" from "pet")`,
+          parameters: [1, 2, 3, 'foo'],
         },
       })
     })

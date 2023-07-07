@@ -4,7 +4,7 @@ import { Database } from '../shared'
 
 async function testCase(eb: ExpressionBuilder<Database, 'person'>) {
   // case...when...then...when...then...end
-  expectType<ExpressionWrapper<string | number | null>>(
+  expectType<ExpressionWrapper<Database, 'person', string | number | null>>(
     eb
       .case()
       .when('gender', '=', 'male')
@@ -15,7 +15,7 @@ async function testCase(eb: ExpressionBuilder<Database, 'person'>) {
   )
 
   // case...when...then...when...then...end (as const)
-  expectType<ExpressionWrapper<'Mr.' | 12 | null>>(
+  expectType<ExpressionWrapper<Database, 'person', 'Mr.' | 12 | null>>(
     eb
       .case()
       .when('gender', '=', 'male')
@@ -26,7 +26,7 @@ async function testCase(eb: ExpressionBuilder<Database, 'person'>) {
   )
 
   // case...when...then...when...then...else...end
-  expectType<ExpressionWrapper<string | number | boolean>>(
+  expectType<ExpressionWrapper<Database, 'person', string | number | boolean>>(
     eb
       .case()
       .when('gender', '=', 'male')
@@ -38,7 +38,7 @@ async function testCase(eb: ExpressionBuilder<Database, 'person'>) {
   )
 
   // case...when...then...when...then...else...end (as const)
-  expectType<ExpressionWrapper<'Mr.' | 12 | true>>(
+  expectType<ExpressionWrapper<Database, 'person', 'Mr.' | 12 | true>>(
     eb
       .case()
       .when('gender', '=', 'male')
@@ -50,7 +50,7 @@ async function testCase(eb: ExpressionBuilder<Database, 'person'>) {
   )
 
   // nested case
-  expectType<ExpressionWrapper<'Mr.' | 'Ms.' | 'Mrs.' | null>>(
+  expectType<ExpressionWrapper<Database, 'person', 'Mr.' | 'Ms.' | 'Mrs.' | null>>(
     eb
       .case()
       .when('gender', '=', 'male')
@@ -68,7 +68,7 @@ async function testCase(eb: ExpressionBuilder<Database, 'person'>) {
   )
 
   // references
-  expectType<ExpressionWrapper<string | number>>(
+  expectType<ExpressionWrapper<Database, 'person', string | number>>(
     eb
       .case()
       .when('gender', '=', 'male')
@@ -78,7 +78,7 @@ async function testCase(eb: ExpressionBuilder<Database, 'person'>) {
   )
 
   // expressions
-  expectType<ExpressionWrapper<`Mr. ${string}` | null>>(
+  expectType<ExpressionWrapper<Database, 'person', `Mr. ${string}` | null>>(
     eb
       .case()
       .when('gender', '=', 'male')
@@ -102,12 +102,12 @@ async function testCase(eb: ExpressionBuilder<Database, 'person'>) {
 
 function testCaseValue(eb: ExpressionBuilder<Database, 'person'>) {
   // case...value...when...then...when...then...end
-  expectType<ExpressionWrapper<string | number | null>>(
+  expectType<ExpressionWrapper<Database, 'person', string | number | null>>(
     eb.case('gender').when('male').then('Mr.').when('female').then(12).end()
   )
 
   // case...value...when...then...when...then...else...end
-  expectType<ExpressionWrapper<string | number | boolean>>(
+  expectType<ExpressionWrapper<Database, 'person', string | number | boolean>>(
     eb
       .case('gender')
       .when('male')
@@ -119,7 +119,7 @@ function testCaseValue(eb: ExpressionBuilder<Database, 'person'>) {
   )
 
   // nested case
-  expectType<ExpressionWrapper<'Mr.' | 'Ms.' | 'Mrs.' | null>>(
+  expectType<ExpressionWrapper<Database, 'person', 'Mr.' | 'Ms.' | 'Mrs.' | null>>(
     eb
       .case('gender')
       .when('male')
