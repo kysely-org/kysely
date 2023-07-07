@@ -45,7 +45,9 @@ import { ColumnNode } from '../operation-node/column-node.js'
 import { ReturningInterface } from './returning-interface.js'
 import {
   OnConflictBuilder,
+  OnConflictDatabase,
   OnConflictDoNothingBuilder,
+  OnConflictTables,
   OnConflictUpdateBuilder,
 } from './on-conflict-builder.js'
 import { OnConflictNode } from '../operation-node/on-conflict-node.js'
@@ -487,7 +489,12 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
   onConflict(
     callback: (
       builder: OnConflictBuilder<DB, TB>
-    ) => OnConflictDoNothingBuilder<DB, TB> | OnConflictUpdateBuilder<DB, TB>
+    ) =>
+      | OnConflictUpdateBuilder<
+          OnConflictDatabase<DB, TB>,
+          OnConflictTables<TB>
+        >
+      | OnConflictDoNothingBuilder
   ): InsertQueryBuilder<DB, TB, O> {
     return new InsertQueryBuilder({
       ...this.#props,

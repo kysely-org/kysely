@@ -289,7 +289,7 @@ export class OnConflictBuilder<DB, TB extends keyof DB>
    * on conflict ("pic") do nothing
    * ```
    */
-  doNothing(): OnConflictDoNothingBuilder<DB, TB> {
+  doNothing(): OnConflictDoNothingBuilder {
     return new OnConflictDoNothingBuilder({
       ...this.#props,
       onConflictNode: OnConflictNode.cloneWith(this.#props.onConflictNode, {
@@ -374,9 +374,7 @@ export type OnConflictDatabase<DB, TB extends keyof DB> = {
 
 export type OnConflictTables<TB> = TB | 'excluded'
 
-export class OnConflictDoNothingBuilder<DB, TB extends keyof DB>
-  implements OperationNodeSource
-{
+export class OnConflictDoNothingBuilder implements OperationNodeSource {
   readonly #props: OnConflictBuilderProps
 
   constructor(props: OnConflictBuilderProps) {
