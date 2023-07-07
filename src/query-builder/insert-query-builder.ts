@@ -494,7 +494,7 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
           OnConflictDatabase<DB, TB>,
           OnConflictTables<TB>
         >
-      | OnConflictDoNothingBuilder
+      | OnConflictDoNothingBuilder<DB, TB>
   ): InsertQueryBuilder<DB, TB, O> {
     return new InsertQueryBuilder({
       ...this.#props,
