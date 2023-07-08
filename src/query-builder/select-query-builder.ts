@@ -625,7 +625,7 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
 
   selectAll<T extends TB>(
     table: T
-  ): SelectQueryBuilder<DB, TB, Selectable<DB[T]>>
+  ): SelectQueryBuilder<DB, TB, O & Selectable<DB[T]>>
 
   selectAll(): SelectQueryBuilder<DB, TB, O & AllSelection<DB, TB>>
 
