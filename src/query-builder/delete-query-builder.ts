@@ -672,7 +672,7 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
    */
   $if<O2>(
     condition: boolean,
-    func: (qb: this) => DeleteQueryBuilder<DB, TB, O2>
+    func: (qb: this) => DeleteQueryBuilder<any, any, O2>
   ): O2 extends DeleteResult
     ? DeleteQueryBuilder<DB, TB, DeleteResult>
     : O2 extends O & infer E

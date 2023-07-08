@@ -581,7 +581,7 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
    */
   $if<O2>(
     condition: boolean,
-    func: (qb: this) => UpdateQueryBuilder<DB, UT, TB, O2>
+    func: (qb: this) => UpdateQueryBuilder<any, any, any, O2>
   ): O2 extends UpdateResult
     ? UpdateQueryBuilder<DB, UT, TB, UpdateResult>
     : O2 extends O & infer E

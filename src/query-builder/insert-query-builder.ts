@@ -625,7 +625,7 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    */
   $if<O2>(
     condition: boolean,
-    func: (qb: this) => InsertQueryBuilder<DB, TB, O2>
+    func: (qb: this) => InsertQueryBuilder<any, any, O2>
   ): O2 extends InsertResult
     ? InsertQueryBuilder<DB, TB, InsertResult>
     : O2 extends O & infer E
