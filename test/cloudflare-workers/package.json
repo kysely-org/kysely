@@ -2,11 +2,9 @@
   "name": "kysely-cloudflare-workers-test",
   "private": true,
   "scripts": {
-    "start": "wrangler dev --experimental-local",
-    "test": "tsx ./cloudflare-workers.test.ts"
+    "start": "wrangler dev --experimental-local"
   },
   "devDependencies": {
-    "hono": "^3.2.7",
     "tsx": "^3.12.7",
     "wrangler": "^3.1.2"
   }

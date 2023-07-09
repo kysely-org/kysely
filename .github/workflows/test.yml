@@ -59,6 +59,6 @@ jobs:
         run: npm run test:esbuild
 
       - name: Run cloudflare workers test
-        if: ${{ matrix.node-version }} != '16.x'
+        if: ${{ matrix.node-version != '16.x' }}
         run: |
-          cd test/cloudflare-works && npm start && npm test
+          cd ./test/cloudflare-workers && npm start && npm test

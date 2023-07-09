@@ -1,7 +1,5 @@
-import { createPool } from 'mysql2'
 import { Pool } from 'pg'
-import { Hono } from 'hono'
-import { Generated, Kysely, MysqlDialect, PostgresDialect, sql } from '../..'
+import { Generated, Kysely, PostgresDialect, sql } from '../..'
 
 interface Person {
   id: Generated<number>
@@ -35,16 +33,6 @@ if (
   process.exit(1)
 }
 
-const app = new Hono()
-
-const query = sql`select 1`
-
-app.get('/pg', async (c) => {
-  const {
-    rows: [row],
-  } = await query.execute(db)
-
-  return c.json(row)
-})
-
-export default app
+;(async () => {
+  await sql`select 1`.execute(db)
+})()
