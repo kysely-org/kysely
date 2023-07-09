@@ -1,0 +1,5 @@
+compatibility_date = "2023-05-15"
+main = "./api.ts"
+name = "kysely-cloudflare-workers-test"
+node_compat = true
+workers_dev = true

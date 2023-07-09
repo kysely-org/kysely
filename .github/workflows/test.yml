@@ -57,3 +57,9 @@ jobs:
 
       - name: Run esbuild test
         run: npm run test:esbuild
+
+      - name: Run cloudflare workers test
+        uses: cloudflare/wrangler-action@2.0.0
+        with:
+          command: cd test/cloudflare-workers && npm start
+          postCommand: npm run test:cloudflare-workers
