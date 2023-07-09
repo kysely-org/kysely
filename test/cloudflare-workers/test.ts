@@ -1,5 +1,5 @@
 import { Pool } from 'pg'
-import { Generated, Kysely, PostgresDialect, sql } from '../..'
+import { Generated, Kysely, PostgresDialect, sql } from '../../dist/cjs'
 
 interface Person {
   id: Generated<number>
@@ -35,4 +35,6 @@ if (
 
 ;(async () => {
   await sql`select 1`.execute(db)
+
+  process.exit(0)
 })()
