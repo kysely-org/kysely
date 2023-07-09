@@ -27,14 +27,14 @@ const person = await db
       .limit(1)
       .as('pet_name'),
       
-    // Select a boolean expression. `cmpr` stands for `compare`.
-    eb.cmpr('first_name', '=', 'Jennifer').as('is_jennifer')
+    // Select a boolean expression..
+    eb('first_name', '=', 'Jennifer').as('is_jennifer')
   ])
   // You can also destructure the expression builder like this
-  .where(({ and, or, cmpr, not, exists, selectFrom }) => or([
+  .where(({ and, or, eb, not, exists, selectFrom }) => or([
     and([
-      cmpr('first_name', '=', firstName),
-      cmpr('last_name', '=', lastName)
+      eb('first_name', '=', firstName),
+      eb('last_name', '=', lastName)
     ]),
     not(exists(
       selectFrom('pet')
@@ -202,18 +202,18 @@ The same query can be built using the expression builder like this:
 const persons = await db
   .selectFrom('person')
   .selectAll('person')
-  .where(({ cmpr, and }) => {
+  .where((eb) => {
     const filters: Expression<boolean>[] = []
 
     if (firstName) {
-      filters.push(cmpr('first_name', '=', firstName))
+      filters.push(eb('first_name', '=', firstName))
     }
 
     if (lastName) {
-      filters.push(cmpr('last_name', '=', lastName))
+      filters.push(eb('last_name', '=', lastName))
     }
     
-    return and(filters)
+    return eb.and(filters)
   })
 ```
 
