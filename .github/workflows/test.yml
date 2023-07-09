@@ -60,10 +60,5 @@ jobs:
 
       - name: Run cloudflare workers test
         if: ${{ matrix.node-version }} != '16.x'
-        uses: cloudflare/wrangler-action@2.0.0
-        with:
-          command: cd test/cloudflare-workers && wrangler dev --experimental-local
-          postCommands: npm run test:cloudflare-workers
-          environment:
-            required: false
-            default: 'dev'
+        run: |
+          cd test/cloudflare-works && npm start && npm test
