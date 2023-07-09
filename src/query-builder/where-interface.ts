@@ -63,22 +63,24 @@ export interface WhereInterface<DB, TB extends keyof DB> {
    *
    * <!-- siteExample("where", "OR where", 30) -->
    *
-   * To combine conditions using `OR`, you can use the expression builder:
+   * To combine conditions using `OR`, you can use the expression builder.
+   * There are two ways to create `OR` expressions. Both are shown in this
+   * example:
    *
    * ```ts
    * const persons = await db
    *   .selectFrom('person')
    *   .selectAll()
-   *   .where(({ or, and, cmpr }) => or([
-   *     and([
-   *       cmpr('first_name', '=', 'Jennifer'),
-   *       cmpr('last_name', '=', 'Aniston')
-   *     ]),
-   *     and([
-   *       cmpr('first_name', '=', 'Sylvester'),
-   *       cmpr('last_name', '=', 'Stallone')
-   *     ])
+   *   // 1. Using the `or` method on the expression builder:
+   *   .where((eb) => eb.or([
+   *     eb('first_name', '=', 'Jennifer'),
+   *     eb('first_name', '=', 'Sylvester')
    *   ]))
+   *   // 2. Chaining expressions using the `or` method on the
+   *   // created expressions:
+   *   .where((eb) =>
+   *     eb('last_name', '=', 'Aniston').or('last_name', '=', 'Stallone')
+   *   )
    *   .execute()
    * ```
    *
@@ -88,9 +90,9 @@ export interface WhereInterface<DB, TB extends keyof DB> {
    * select *
    * from "person"
    * where (
-   *   ("first_name" = $1 AND "last_name" = $2)
-   *   OR
-   *   ("first_name" = $3 AND "last_name" = $4)
+   *   ("first_name" = $1 or "first_name" = $2)
+   *   and
+   *   ("last_name" = $3 or "last_name" = $4)
    * )
    * ```
    *
@@ -180,10 +182,10 @@ export interface WhereInterface<DB, TB extends keyof DB> {
    * const persons = await db
    *   .selectFrom('person')
    *   .selectAll('person')
-   *   .where(({ cmpr, or, and, not, exists, selectFrom }) => and([
+   *   .where(({ eb, or, and, not, exists, selectFrom }) => and([
    *     or([
-   *       cmpr('first_name', '=', firstName),
-   *       cmpr('age', '<', maxAge)
+   *       eb('first_name', '=', firstName),
+   *       eb('age', '<', maxAge)
    *     ]),
    *     not(exists(
    *       selectFrom('pet')

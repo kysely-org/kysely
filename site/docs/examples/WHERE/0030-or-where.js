@@ -1,14 +1,14 @@
 export const orWhere = `const persons = await db
   .selectFrom('person')
   .selectAll()
-  .where(({ or, and, cmpr }) => or([
-    and([
-      cmpr('first_name', '=', 'Jennifer'),
-      cmpr('last_name', '=', 'Aniston')
-    ]),
-    and([
-      cmpr('first_name', '=', 'Sylvester'),
-      cmpr('last_name', '=', 'Stallone')
-    ])
+  // 1. Using the \`or\` method on the expression builder:
+  .where((eb) => eb.or([
+    eb('first_name', '=', 'Jennifer'),
+    eb('first_name', '=', 'Sylvester')
   ]))
+  // 2. Chaining expressions using the \`or\` method on the
+  // created expressions:
+  .where((eb) =>
+    eb('last_name', '=', 'Aniston').or('last_name', '=', 'Stallone')
+  )
   .execute()`
