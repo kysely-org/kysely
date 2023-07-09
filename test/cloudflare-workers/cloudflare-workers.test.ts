@@ -1,4 +1,3 @@
-//
 ;(async () => {
   const result = await fetch('http://localhost:8787/pg')
 
