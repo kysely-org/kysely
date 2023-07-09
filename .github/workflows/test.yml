@@ -59,5 +59,4 @@ jobs:
         run: npm run test:esbuild
 
       - name: Run cloudflare workers test
-        run: |
-          cd ./test/cloudflare-workers && npm ci && npm start && npm test
+        run: npm run test:cloudflare-workers
