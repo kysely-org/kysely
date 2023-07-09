@@ -56,7 +56,7 @@ import { WithSchemaPlugin } from './plugin/with-schema/with-schema-plugin.js'
  *   id: Generated<number>
  *   owner_id: number
  *   name: string
- *   species 'cat' | 'dog'
+ *   species: 'cat' | 'dog'
  * }
  *
  * interface Database {
