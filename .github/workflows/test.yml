@@ -60,4 +60,4 @@ jobs:
 
       - name: Run cloudflare workers test
         run: |
-          cd ./test/cloudflare-workers && npm start && npm test
+          cd ./test/cloudflare-workers && npm ci && npm start && npm test
