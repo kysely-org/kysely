@@ -64,4 +64,6 @@ jobs:
         with:
           command: cd test/cloudflare-workers && wrangler dev --experimental-local
           postCommands: npm run test:cloudflare-workers
-          required: false
+          environment:
+            required: false
+            default: 'dev'
