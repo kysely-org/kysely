@@ -262,7 +262,7 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    * import { sql } from 'kysely'
    *
    * const persons = await db.selectFrom('person')
-   *   .select(({ selectFrom, or, cmpr }) => [
+   *   .select(({ eb, selectFrom, or }) => [
    *     // Select a correlated subquery
    *     selectFrom('pet')
    *       .whereRef('person.id', '=', 'pet.owner_id')
@@ -274,8 +274,8 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    *     // Build and select an expression using
    *     // the expression builder
    *     or([
-   *       cmpr('first_name', '=', 'Jennifer'),
-   *       cmpr('first_name', '=', 'Arnold')
+   *       eb('first_name', '=', 'Jennifer'),
+   *       eb('first_name', '=', 'Arnold')
    *     ]).as('is_jennifer_or_arnold'),
    *
    *     // Select a raw sql expression

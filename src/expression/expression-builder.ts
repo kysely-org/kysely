@@ -349,7 +349,7 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    *
    * ```ts
    * db.selectFrom('person')
-   *   .where(({ cmpr, ref }) => cmpr(
+   *   .where(({ eb, ref }) => eb(
    *     ref('address', '->').key('state').key('abbr'),
    *     '=',
    *     'CA'
