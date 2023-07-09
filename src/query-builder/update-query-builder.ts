@@ -423,7 +423,38 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
    * update "person" set "first_name" = $1, "last_name" = $2 where "id" = $3
    * ```
    *
-   * On PostgreSQL you ca chain `returning` to the query to get
+   * <!-- siteExample("update", "Complex values", 20) -->
+   *
+   * As always, you can provide a callback to the `set` method to get access
+   * to an expression builder:
+   *
+   * ```ts
+   * const result = await db
+   *   .updateTable('person')
+   *   .set((eb) => ({
+   *     age: eb('age', '+', 1),
+   *     first_name: eb.selectFrom('pet').select('name').limit(1),
+   *     last_name: 'updated',
+   *   }))
+   *   .where('id', '=', '1')
+   *   .executeTakeFirst()
+   *
+   * console.log(result.numUpdatedRows)
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * update "person"
+   * set
+   *   "first_name" = (select "name" from "pet" limit $1),
+   *   "age" = "age" + $2,
+   *   "last_name" = $3
+   * where
+   *   "id" = $4
+   * ```
+   *
+   * On PostgreSQL you can chain `returning` to the query to get
    * the updated rows' columns (or any other expression) as the
    * return value:
    *
@@ -581,7 +612,7 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
    */
   $if<O2>(
     condition: boolean,
-    func: (qb: this) => UpdateQueryBuilder<DB, UT, TB, O2>
+    func: (qb: this) => UpdateQueryBuilder<any, any, any, O2>
   ): O2 extends UpdateResult
     ? UpdateQueryBuilder<DB, UT, TB, UpdateResult>
     : O2 extends O & infer E

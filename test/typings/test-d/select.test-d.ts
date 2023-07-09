@@ -1,5 +1,5 @@
-import { Expression, Kysely, RawBuilder, Simplify, sql } from '..'
-import { Database } from '../shared'
+import { Expression, Kysely, RawBuilder, Selectable, Simplify, sql } from '..'
+import { Database, Person, Pet } from '../shared'
 import { expectType, expectError } from 'tsd'
 
 async function testSelectSingle(db: Kysely<Database>) {
@@ -94,6 +94,71 @@ async function testSelectSingle(db: Kysely<Database>) {
   expectError(qb.select('not_property'))
   expectError(qb.select('person.not_property'))
   expectError(qb.select('person.not_property as np'))
+}
+
+async function testSelectAll(db: Kysely<Database>) {
+  // Select all when there's only one table to select from
+  const r1 = await db.selectFrom('person').selectAll().executeTakeFirstOrThrow()
+
+  expectType<Selectable<Person>>(r1)
+
+  // Select all when there's two tables to select from
+  const r2 = await db
+    .selectFrom(['person', 'pet'])
+    .selectAll()
+    .executeTakeFirstOrThrow()
+
+  expectType<{
+    id: string | number
+    name: string
+    first_name: string
+    last_name: string | null
+    age: number
+    gender: 'other' | 'male' | 'female'
+    marital_status: 'single' | 'married' | 'divorced' | 'widowed' | null
+    modified_at: Date
+    owner_id: number
+    species: 'dog' | 'cat'
+  }>(r2)
+
+  // Select all from a single table when there are two tables to select from
+  const r3 = await db
+    .selectFrom(['person', 'pet'])
+    .selectAll('person')
+    .executeTakeFirstOrThrow()
+
+  expectType<Selectable<Person>>(r3)
+
+  // Two selectAll('table') calls should accumulate selections.
+  const [r4] = await db
+    .selectFrom([
+      db.selectFrom('person').select('id as person_id').as('per'),
+      db.selectFrom('pet').select('id as pet_id').as('pet'),
+    ])
+    .selectAll('per')
+    .selectAll('pet')
+    .execute()
+
+  expectType<{ person_id: number; pet_id: string }>(r4)
+
+  // Select all from two tables when there's two tables to select from
+  const r5 = await db
+    .selectFrom(['person', 'pet'])
+    .selectAll(['person', 'pet'])
+    .executeTakeFirstOrThrow()
+
+  expectType<{
+    id: string | number
+    name: string
+    first_name: string
+    last_name: string | null
+    age: number
+    gender: 'other' | 'male' | 'female'
+    marital_status: 'single' | 'married' | 'divorced' | 'widowed' | null
+    modified_at: Date
+    owner_id: number
+    species: 'dog' | 'cat'
+  }>(r5)
 }
 
 async function testSelectMultiple(db: Kysely<Database>) {

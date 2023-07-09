@@ -262,7 +262,7 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    * import { sql } from 'kysely'
    *
    * const persons = await db.selectFrom('person')
-   *   .select(({ selectFrom, or, cmpr }) => [
+   *   .select(({ eb, selectFrom, or }) => [
    *     // Select a correlated subquery
    *     selectFrom('pet')
    *       .whereRef('person.id', '=', 'pet.owner_id')
@@ -274,8 +274,8 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    *     // Build and select an expression using
    *     // the expression builder
    *     or([
-   *       cmpr('first_name', '=', 'Jennifer'),
-   *       cmpr('first_name', '=', 'Arnold')
+   *       eb('first_name', '=', 'Jennifer'),
+   *       eb('first_name', '=', 'Arnold')
    *     ]).as('is_jennifer_or_arnold'),
    *
    *     // Select a raw sql expression
@@ -625,7 +625,7 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
 
   selectAll<T extends TB>(
     table: T
-  ): SelectQueryBuilder<DB, TB, Selectable<DB[T]>>
+  ): SelectQueryBuilder<DB, TB, O & Selectable<DB[T]>>
 
   selectAll(): SelectQueryBuilder<DB, TB, O & AllSelection<DB, TB>>
 
@@ -1561,7 +1561,7 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    */
   $if<O2>(
     condition: boolean,
-    func: (qb: this) => SelectQueryBuilder<DB, TB, O & O2>
+    func: (qb: this) => SelectQueryBuilder<any, any, O & O2>
   ): SelectQueryBuilder<DB, TB, O & Partial<O2>> {
     if (condition) {
       return func(this)

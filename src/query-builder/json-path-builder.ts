@@ -203,7 +203,7 @@ export class TraversedJSONPathBuilder<S, O>
    * const result = await db
    *   .selectFrom('person')
    *   .select(eb =>
-   *     eb.cmpr('first_name', '=', 'Jennifer').as('is_jennifer')
+   *     eb('first_name', '=', 'Jennifer').as('is_jennifer')
    *   )
    *   .executeTakeFirstOrThrow()
    *
