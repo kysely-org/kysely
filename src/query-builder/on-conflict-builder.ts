@@ -6,8 +6,8 @@ import { OperationNodeSource } from '../operation-node/operation-node-source.js'
 import {
   ComparisonOperatorExpression,
   OperandValueExpressionOrList,
-  parseFilter,
-  parseReferentialComparison,
+  parseValueBinaryOperationOrExpression,
+  parseReferentialBinaryOperation,
 } from '../parser/binary-operation-parser.js'
 import { ReferenceExpression } from '../parser/reference-parser.js'
 import {
@@ -119,7 +119,7 @@ export class OnConflictBuilder<DB, TB extends keyof DB>
       ...this.#props,
       onConflictNode: OnConflictNode.cloneWithIndexWhere(
         this.#props.onConflictNode,
-        parseFilter(args)
+        parseValueBinaryOperationOrExpression(args)
       ),
     })
   }
@@ -138,7 +138,7 @@ export class OnConflictBuilder<DB, TB extends keyof DB>
       ...this.#props,
       onConflictNode: OnConflictNode.cloneWithIndexWhere(
         this.#props.onConflictNode,
-        parseReferentialComparison(lhs, op, rhs)
+        parseReferentialBinaryOperation(lhs, op, rhs)
       ),
     })
   }
@@ -310,7 +310,7 @@ export class OnConflictUpdateBuilder<DB, TB extends keyof DB>
       ...this.#props,
       onConflictNode: OnConflictNode.cloneWithUpdateWhere(
         this.#props.onConflictNode,
-        parseFilter(args)
+        parseValueBinaryOperationOrExpression(args)
       ),
     })
   }
@@ -329,7 +329,7 @@ export class OnConflictUpdateBuilder<DB, TB extends keyof DB>
       ...this.#props,
       onConflictNode: OnConflictNode.cloneWithUpdateWhere(
         this.#props.onConflictNode,
-        parseReferentialComparison(lhs, op, rhs)
+        parseReferentialBinaryOperation(lhs, op, rhs)
       ),
     })
   }
