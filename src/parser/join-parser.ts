@@ -6,7 +6,7 @@ import {
   From,
   FromTables,
 } from './table-parser.js'
-import { parseReferentialComparison } from './binary-operation-parser.js'
+import { parseReferentialBinaryOperation } from './binary-operation-parser.js'
 import { JoinBuilder } from '../query-builder/join-builder.js'
 import { createJoinBuilder } from './parse-utils.js'
 
@@ -56,6 +56,6 @@ function parseSingleOnJoin(
   return JoinNode.createWithOn(
     joinType,
     parseTableExpression(from),
-    parseReferentialComparison(lhsColumn, '=', rhsColumn)
+    parseReferentialBinaryOperation(lhsColumn, '=', rhsColumn)
   )
 }

@@ -6,8 +6,8 @@ import { RawNode } from '../operation-node/raw-node.js'
 import {
   ComparisonOperatorExpression,
   OperandValueExpressionOrList,
-  parseFilter,
-  parseReferentialComparison,
+  parseValueBinaryOperationOrExpression,
+  parseReferentialBinaryOperation,
 } from '../parser/binary-operation-parser.js'
 import { ReferenceExpression } from '../parser/reference-parser.js'
 import { freeze } from '../util/object-utils.js'
@@ -41,7 +41,10 @@ export class JoinBuilder<DB, TB extends keyof DB>
   on(...args: any[]): JoinBuilder<DB, TB> {
     return new JoinBuilder({
       ...this.#props,
-      joinNode: JoinNode.cloneWithOn(this.#props.joinNode, parseFilter(args)),
+      joinNode: JoinNode.cloneWithOn(
+        this.#props.joinNode,
+        parseValueBinaryOperationOrExpression(args)
+      ),
     })
   }
 
@@ -60,7 +63,7 @@ export class JoinBuilder<DB, TB extends keyof DB>
       ...this.#props,
       joinNode: JoinNode.cloneWithOn(
         this.#props.joinNode,
-        parseReferentialComparison(lhs, op, rhs)
+        parseReferentialBinaryOperation(lhs, op, rhs)
       ),
     })
   }

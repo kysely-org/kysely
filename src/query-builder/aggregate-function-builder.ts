@@ -10,8 +10,8 @@ import { ReferenceExpression } from '../parser/reference-parser.js'
 import {
   ComparisonOperatorExpression,
   OperandValueExpressionOrList,
-  parseReferentialComparison,
-  parseFilter,
+  parseReferentialBinaryOperation,
+  parseValueBinaryOperationOrExpression,
 } from '../parser/binary-operation-parser.js'
 import { WhereExpressionFactory } from './where-interface.js'
 
@@ -148,7 +148,7 @@ export class AggregateFunctionBuilder<DB, TB extends keyof DB, O = unknown>
       ...this.#props,
       aggregateFunctionNode: AggregateFunctionNode.cloneWithFilter(
         this.#props.aggregateFunctionNode,
-        parseFilter(args)
+        parseValueBinaryOperationOrExpression(args)
       ),
     })
   }
@@ -194,7 +194,7 @@ export class AggregateFunctionBuilder<DB, TB extends keyof DB, O = unknown>
       ...this.#props,
       aggregateFunctionNode: AggregateFunctionNode.cloneWithFilter(
         this.#props.aggregateFunctionNode,
-        parseReferentialComparison(lhs, op, rhs)
+        parseReferentialBinaryOperation(lhs, op, rhs)
       ),
     })
   }

@@ -50,7 +50,9 @@ async function testCase(eb: ExpressionBuilder<Database, 'person'>) {
   )
 
   // nested case
-  expectType<ExpressionWrapper<Database, 'person', 'Mr.' | 'Ms.' | 'Mrs.' | null>>(
+  expectType<
+    ExpressionWrapper<Database, 'person', 'Mr.' | 'Ms.' | 'Mrs.' | null>
+  >(
     eb
       .case()
       .when('gender', '=', 'male')
@@ -119,7 +121,9 @@ function testCaseValue(eb: ExpressionBuilder<Database, 'person'>) {
   )
 
   // nested case
-  expectType<ExpressionWrapper<Database, 'person', 'Mr.' | 'Ms.' | 'Mrs.' | null>>(
+  expectType<
+    ExpressionWrapper<Database, 'person', 'Mr.' | 'Ms.' | 'Mrs.' | null>
+  >(
     eb
       .case('gender')
       .when('male')

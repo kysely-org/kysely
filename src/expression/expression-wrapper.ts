@@ -8,7 +8,7 @@ import { ParensNode } from '../operation-node/parens-node.js'
 import {
   ComparisonOperatorExpression,
   OperandValueExpressionOrList,
-  parseFilter,
+  parseValueBinaryOperationOrExpression,
 } from '../parser/binary-operation-parser.js'
 import { ReferenceExpression } from '../parser/reference-parser.js'
 import { KyselyTypeError } from '../util/type-error.js'
@@ -137,7 +137,9 @@ export class ExpressionWrapper<DB, TB extends keyof DB, T>
     : KyselyTypeError<'or() method can only be called on boolean expressions'>
 
   or(...args: any[]): any {
-    return new OrWrapper(OrNode.create(this.#node, parseFilter(args)))
+    return new OrWrapper(
+      OrNode.create(this.#node, parseValueBinaryOperationOrExpression(args))
+    )
   }
 
   /**
@@ -215,7 +217,9 @@ export class ExpressionWrapper<DB, TB extends keyof DB, T>
     : KyselyTypeError<'and() method can only be called on boolean expressions'>
 
   and(...args: any[]): any {
-    return new AndWrapper(AndNode.create(this.#node, parseFilter(args)))
+    return new AndWrapper(
+      AndNode.create(this.#node, parseValueBinaryOperationOrExpression(args))
+    )
   }
 
   /**
@@ -327,7 +331,9 @@ export class OrWrapper<DB, TB extends keyof DB, T extends SqlBool>
   or(expression: Expression<SqlBool>): OrWrapper<DB, TB, T>
 
   or(...args: any[]): any {
-    return new OrWrapper(OrNode.create(this.#node, parseFilter(args)))
+    return new OrWrapper(
+      OrNode.create(this.#node, parseValueBinaryOperationOrExpression(args))
+    )
   }
 
   /**
@@ -408,7 +414,9 @@ export class AndWrapper<DB, TB extends keyof DB, T extends SqlBool>
   and(expression: Expression<SqlBool>): AndWrapper<DB, TB, T>
 
   and(...args: any[]): any {
-    return new AndWrapper(AndNode.create(this.#node, parseFilter(args)))
+    return new AndWrapper(
+      AndNode.create(this.#node, parseValueBinaryOperationOrExpression(args))
+    )
   }
 
   /**

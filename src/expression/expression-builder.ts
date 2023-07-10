@@ -117,7 +117,7 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
 
   /**
    * Returns a copy of `this` expression builder, for destructuring purposes.
-   * 
+   *
    * ### Examples
    *
    * ```ts
@@ -129,7 +129,7 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    *   )
    *   .selectAll()
    * ```
-   * 
+   *
    * The generated SQL (PostgreSQL):
    *
    * ```sql

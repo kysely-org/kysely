@@ -7,7 +7,7 @@ import { WhenNode } from '../operation-node/when-node.js'
 import {
   ComparisonOperatorExpression,
   OperandValueExpressionOrList,
-  parseFilter,
+  parseValueBinaryOperationOrExpression,
 } from '../parser/binary-operation-parser.js'
 import { parseValueExpression } from '../parser/value-parser.js'
 import { KyselyTypeError } from '../util/type-error.js'
@@ -40,7 +40,7 @@ export class CaseBuilder<DB, TB extends keyof DB, W = unknown, O = never>
       ...this.#props,
       node: CaseNode.cloneWithWhen(
         this.#props.node,
-        WhenNode.create(parseFilter(args))
+        WhenNode.create(parseValueBinaryOperationOrExpression(args))
       ),
     })
   }
@@ -107,7 +107,7 @@ export class CaseWhenBuilder<DB, TB extends keyof DB, W, O>
       ...this.#props,
       node: CaseNode.cloneWithWhen(
         this.#props.node,
-        WhenNode.create(parseFilter(args))
+        WhenNode.create(parseValueBinaryOperationOrExpression(args))
       ),
     })
   }
