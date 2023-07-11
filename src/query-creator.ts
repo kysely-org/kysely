@@ -23,9 +23,9 @@ import {
 import { QueryExecutor } from './query-executor/query-executor.js'
 import {
   CommonTableExpression,
-  parseCommonTableExpression,
   QueryCreatorWithCommonTableExpression,
   RecursiveCommonTableExpression,
+  parseCommonTableExpression,
 } from './parser/with-parser.js'
 import { WithNode } from './operation-node/with-node.js'
 import { createQueryId } from './util/query-id.js'
@@ -35,6 +35,7 @@ import { InsertResult } from './query-builder/insert-result.js'
 import { DeleteResult } from './query-builder/delete-result.js'
 import { UpdateResult } from './query-builder/update-result.js'
 import { KyselyPlugin } from './plugin/kysely-plugin.js'
+import { CTEBuilderCallback } from './query-builder/cte-builder.js'
 
 export class QueryCreator<DB> {
   readonly #props: QueryCreatorProps
@@ -455,10 +456,10 @@ export class QueryCreator<DB> {
    * ```
    */
   with<N extends string, E extends CommonTableExpression<DB, N>>(
-    name: N,
+    nameOrBuilder: N | CTEBuilderCallback<N>,
     expression: E
   ): QueryCreatorWithCommonTableExpression<DB, N, E> {
-    const cte = parseCommonTableExpression(name, expression)
+    const cte = parseCommonTableExpression(nameOrBuilder, expression)
 
     return new QueryCreator({
       ...this.#props,
@@ -476,8 +477,11 @@ export class QueryCreator<DB> {
   withRecursive<
     N extends string,
     E extends RecursiveCommonTableExpression<DB, N>
-  >(name: N, expression: E): QueryCreatorWithCommonTableExpression<DB, N, E> {
-    const cte = parseCommonTableExpression(name, expression)
+  >(
+    nameOrBuilder: N | CTEBuilderCallback<N>,
+    expression: E
+  ): QueryCreatorWithCommonTableExpression<DB, N, E> {
+    const cte = parseCommonTableExpression(nameOrBuilder, expression)
 
     return new QueryCreator({
       ...this.#props,
