@@ -67,7 +67,7 @@ async function testWith(db: Kysely<Database>) {
   // Using CTE builder.
   const r4 = await db
     .with(
-      (cte) => cte('jennifers').asMaterialized(),
+      (cte) => cte('jennifers').materialized(),
       (db) =>
         db
           .selectFrom('person')
@@ -102,7 +102,7 @@ async function testWith(db: Kysely<Database>) {
   expectError(
     db
       .with(
-        (cte) => cte('jennifers').asMaterialized(),
+        (cte) => cte('jennifers').materialized(),
         (db) =>
           db
             .selectFrom('person')

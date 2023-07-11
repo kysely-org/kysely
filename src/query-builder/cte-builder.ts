@@ -10,7 +10,7 @@ export class CTEBuilder<N extends string> implements OperationNodeSource {
     this.#props = freeze(props)
   }
 
-  asMaterialized(): CTEBuilder<N> {
+  materialized(): CTEBuilder<N> {
     return new CTEBuilder({
       ...this.#props,
       node: CommonTableExpressionNode.cloneWith(this.#props.node, {
@@ -19,7 +19,7 @@ export class CTEBuilder<N extends string> implements OperationNodeSource {
     })
   }
 
-  asNotMaterialized(): CTEBuilder<N> {
+  notMaterialized(): CTEBuilder<N> {
     return new CTEBuilder({
       ...this.#props,
       node: CommonTableExpressionNode.cloneWith(this.#props.node, {

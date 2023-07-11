@@ -182,7 +182,7 @@ for (const dialect of DIALECTS) {
       it('should create a CTE with `as materialized`', async () => {
         const query = ctx.db
           .with(
-            (cte) => cte('person_name').asMaterialized(),
+            (cte) => cte('person_name').materialized(),
             (qb) => qb.selectFrom('person').select('first_name')
           )
           .selectFrom('person_name')
@@ -209,7 +209,7 @@ for (const dialect of DIALECTS) {
       it('should create a CTE with `as not materialized`', async () => {
         const query = ctx.db
           .with(
-            (cte) => cte('person_name').asNotMaterialized(),
+            (cte) => cte('person_name').notMaterialized(),
             (qb) => qb.selectFrom('person').select('first_name')
           )
           .selectFrom('person_name')
