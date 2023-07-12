@@ -43,8 +43,7 @@ function parseCallbackJoin(
   from: TableExpression<any, any>,
   callback: JoinCallbackExpression<any, any, any>
 ): JoinNode {
-  const joinBuilder = callback(createJoinBuilder(joinType, from))
-  return joinBuilder.toOperationNode()
+  return callback(createJoinBuilder(joinType, from)).toOperationNode()
 }
 
 function parseSingleOnJoin(

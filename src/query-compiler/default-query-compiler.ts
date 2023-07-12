@@ -938,6 +938,15 @@ export class DefaultQueryCompiler
   ): void {
     this.visitNode(node.name)
     this.append(' as ')
+
+    if (isBoolean(node.materialized)) {
+      if (!node.materialized) {
+        this.append('not ')
+      }
+      
+      this.append('materialized ')
+    }
+
     this.visitNode(node.expression)
   }
 

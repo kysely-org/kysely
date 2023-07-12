@@ -642,6 +642,7 @@ export class OperationNodeTransformer {
     return requireAllProps<CommonTableExpressionNode>({
       kind: 'CommonTableExpressionNode',
       name: this.transformNode(node.name),
+      materialized: node.materialized,
       expression: this.transformNode(node.expression),
     })
   }
