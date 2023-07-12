@@ -454,6 +454,23 @@ export class QueryCreator<DB> {
    *   .selectAll()
    *   .execute()
    * ```
+   *
+   * The first argument can also be a callback. The callback is passed
+   * a `CTEBuilder` instance that can be used to configure the CTE:
+   *
+   * ```ts
+   * await db
+   *   .with(
+   *     (cte) => cte('jennifers').materialized(),
+   *     (db) => db
+   *       .selectFrom('person')
+   *       .where('first_name', '=', 'Jennifer')
+   *       .select(['id', 'age'])
+   *   )
+   *   .selectFrom('jennifers')
+   *   .selectAll()
+   *   .execute()
+   * ```
    */
   with<N extends string, E extends CommonTableExpression<DB, N>>(
     nameOrBuilder: N | CTEBuilderCallback<N>,
@@ -471,6 +488,11 @@ export class QueryCreator<DB> {
 
   /**
    * Creates a recursive `with` query (Common Table Expression).
+   *
+   * Note that recursiveness is a property of the whole `with` statement.
+   * You cannot have recursive and non-recursive CTEs in a same `with` statement.
+   * Therefore the recursiveness is determined by the **first** `with` or
+   * `withRecusive` call you make.
    *
    * See the {@link with} method for examples and more documentation.
    */

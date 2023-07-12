@@ -10,6 +10,9 @@ export class CTEBuilder<N extends string> implements OperationNodeSource {
     this.#props = freeze(props)
   }
 
+  /**
+   * Makes the common table expression materialized.
+   */
   materialized(): CTEBuilder<N> {
     return new CTEBuilder({
       ...this.#props,
@@ -19,6 +22,9 @@ export class CTEBuilder<N extends string> implements OperationNodeSource {
     })
   }
 
+  /**
+   * Makes the common table expression not materialized.
+   */
   notMaterialized(): CTEBuilder<N> {
     return new CTEBuilder({
       ...this.#props,
