@@ -1247,7 +1247,8 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    *   .orderBy('name')
    * ```
    *
-   * You can provide a callback to get an expression builder:
+   * You can provide a callback to get an expression builder.
+   * In the following example, this allows us to wrap the query in parentheses:
    *
    * ```ts
    * db.selectFrom('person')
