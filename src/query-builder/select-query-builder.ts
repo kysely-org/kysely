@@ -1216,7 +1216,7 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    * db.selectFrom('person')
    *   .select(['id', 'first_name as name'])
    *   .union((eb) => eb.parens(
-   *     db.selectFrom('pet').select(['id', 'name'])
+   *     eb.selectFrom('pet').select(['id', 'name'])
    *   ))
    *   .orderBy('name')
    * ```
@@ -1254,7 +1254,7 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    * db.selectFrom('person')
    *   .select(['id', 'first_name as name'])
    *   .unionAll((eb) => eb.parens(
-   *     db.selectFrom('pet').select(['id', 'name'])
+   *     eb.selectFrom('pet').select(['id', 'name'])
    *   ))
    *   .orderBy('name')
    * ```
@@ -1292,7 +1292,7 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    * db.selectFrom('person')
    *   .select(['id', 'first_name as name'])
    *   .intersect((eb) => eb.parens(
-   *     db.selectFrom('pet').select(['id', 'name'])
+   *     eb.selectFrom('pet').select(['id', 'name'])
    *   ))
    *   .orderBy('name')
    * ```
@@ -1330,7 +1330,7 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    * db.selectFrom('person')
    *   .select(['id', 'first_name as name'])
    *   .intersectAll((eb) => eb.parens(
-   *     db.selectFrom('pet').select(['id', 'name'])
+   *     eb.selectFrom('pet').select(['id', 'name'])
    *   ))
    *   .orderBy('name')
    * ```
@@ -1368,7 +1368,7 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    * db.selectFrom('person')
    *   .select(['id', 'first_name as name'])
    *   .except((eb) => eb.parens(
-   *     db.selectFrom('pet').select(['id', 'name'])
+   *     eb.selectFrom('pet').select(['id', 'name'])
    *   ))
    *   .orderBy('name')
    * ```
@@ -1406,7 +1406,7 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    * db.selectFrom('person')
    *   .select(['id', 'first_name as name'])
    *   .exceptAll((eb) => eb.parens(
-   *     db.selectFrom('pet').select(['id', 'name'])
+   *     eb.selectFrom('pet').select(['id', 'name'])
    *   ))
    *   .orderBy('name')
    * ```
