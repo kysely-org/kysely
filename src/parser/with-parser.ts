@@ -1,12 +1,15 @@
 import { UpdateQueryBuilder } from '../query-builder/update-query-builder.js'
 import { DeleteQueryBuilder } from '../query-builder/delete-query-builder.js'
 import { InsertQueryBuilder } from '../query-builder/insert-query-builder.js'
-import { CommonTableExpressionNode } from '../operation-node/common-table-expression-node.js'
 import { CommonTableExpressionNameNode } from '../operation-node/common-table-expression-name-node.js'
 import { QueryCreator } from '../query-creator.js'
-import { createQueryCreator } from './parse-utils.js'
 import { Expression } from '../expression/expression.js'
 import { ShallowRecord } from '../util/type-utils.js'
+import { OperationNode } from '../operation-node/operation-node.js'
+import { createQueryCreator } from './parse-utils.js'
+import { isFunction } from '../util/object-utils.js'
+import { CTEBuilder, CTEBuilderCallback } from '../query-builder/cte-builder.js'
+import { CommonTableExpressionNode } from '../operation-node/common-table-expression-node.js'
 
 export type CommonTableExpression<DB, CN extends string> = (
   creator: QueryCreator<DB>
@@ -91,15 +94,32 @@ type ExtractColumnNamesFromColumnList<R extends string> =
     : R
 
 export function parseCommonTableExpression(
-  name: string,
-  expression: CommonTableExpression<any, any>
+  nameOrBuilderCallback: string | CTEBuilderCallback<string>,
+  expression: CommonTableExpression<any, string>
 ): CommonTableExpressionNode {
-  const builder = expression(createQueryCreator())
+  const expressionNode = expression(createQueryCreator()).toOperationNode()
+
+  if (isFunction(nameOrBuilderCallback)) {
+    return nameOrBuilderCallback(
+      cteBuilderFactory(expressionNode)
+    ).toOperationNode()
+  }
 
   return CommonTableExpressionNode.create(
-    parseCommonTableExpressionName(name),
-    builder.toOperationNode()
+    parseCommonTableExpressionName(nameOrBuilderCallback),
+    expressionNode
   )
+}
+
+function cteBuilderFactory(expressionNode: OperationNode) {
+  return (name: string) => {
+    return new CTEBuilder({
+      node: CommonTableExpressionNode.create(
+        parseCommonTableExpressionName(name),
+        expressionNode
+      ),
+    })
+  }
 }
 
 function parseCommonTableExpressionName(
@@ -107,7 +127,6 @@ function parseCommonTableExpressionName(
 ): CommonTableExpressionNameNode {
   if (name.includes('(')) {
     const parts = name.split(/[\(\)]/)
-
     const table = parts[0]
     const columns = parts[1].split(',').map((it) => it.trim())
 
