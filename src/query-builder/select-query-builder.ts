@@ -53,7 +53,10 @@ import {
 import { HavingExpressionFactory, HavingInterface } from './having-interface.js'
 import { IdentifierNode } from '../operation-node/identifier-node.js'
 import { Explainable, ExplainFormat } from '../util/explainable.js'
-import { parseSetOperation } from '../parser/set-operation-parser.js'
+import {
+  SetOperandExpression,
+  parseSetOperation,
+} from '../parser/set-operation-parser.js'
 import { AliasedExpression, Expression } from '../expression/expression.js'
 import {
   ComparisonOperatorExpression,
@@ -1205,8 +1208,22 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    *   .union(db.selectFrom('pet').select(['id', 'name']))
    *   .orderBy('name')
    * ```
+   *
+   * You can provide a callback to get an expression builder.
+   * In the following example, this allows us to wrap the query in parentheses:
+   *
+   * ```ts
+   * db.selectFrom('person')
+   *   .select(['id', 'first_name as name'])
+   *   .union((eb) => eb.parens(
+   *     eb.selectFrom('pet').select(['id', 'name'])
+   *   ))
+   *   .orderBy('name')
+   * ```
    */
-  union(expression: Expression<O>): SelectQueryBuilder<DB, TB, O> {
+  union(
+    expression: SetOperandExpression<DB, O>
+  ): SelectQueryBuilder<DB, TB, O> {
     return new SelectQueryBuilder({
       ...this.#props,
       queryNode: SelectQueryNode.cloneWithSetOperation(
@@ -1229,8 +1246,22 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    *   .unionAll(db.selectFrom('pet').select(['id', 'name']))
    *   .orderBy('name')
    * ```
+   *
+   * You can provide a callback to get an expression builder.
+   * In the following example, this allows us to wrap the query in parentheses:
+   *
+   * ```ts
+   * db.selectFrom('person')
+   *   .select(['id', 'first_name as name'])
+   *   .unionAll((eb) => eb.parens(
+   *     eb.selectFrom('pet').select(['id', 'name'])
+   *   ))
+   *   .orderBy('name')
+   * ```
    */
-  unionAll(expression: Expression<O>): SelectQueryBuilder<DB, TB, O> {
+  unionAll(
+    expression: SetOperandExpression<DB, O>
+  ): SelectQueryBuilder<DB, TB, O> {
     return new SelectQueryBuilder({
       ...this.#props,
       queryNode: SelectQueryNode.cloneWithSetOperation(
@@ -1253,8 +1284,22 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    *   .intersect(db.selectFrom('pet').select(['id', 'name']))
    *   .orderBy('name')
    * ```
+   *
+   * You can provide a callback to get an expression builder.
+   * In the following example, this allows us to wrap the query in parentheses:
+   *
+   * ```ts
+   * db.selectFrom('person')
+   *   .select(['id', 'first_name as name'])
+   *   .intersect((eb) => eb.parens(
+   *     eb.selectFrom('pet').select(['id', 'name'])
+   *   ))
+   *   .orderBy('name')
+   * ```
    */
-  intersect(expression: Expression<O>): SelectQueryBuilder<DB, TB, O> {
+  intersect(
+    expression: SetOperandExpression<DB, O>
+  ): SelectQueryBuilder<DB, TB, O> {
     return new SelectQueryBuilder({
       ...this.#props,
       queryNode: SelectQueryNode.cloneWithSetOperation(
@@ -1277,8 +1322,22 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    *   .intersectAll(db.selectFrom('pet').select(['id', 'name']))
    *   .orderBy('name')
    * ```
+   *
+   * You can provide a callback to get an expression builder.
+   * In the following example, this allows us to wrap the query in parentheses:
+   *
+   * ```ts
+   * db.selectFrom('person')
+   *   .select(['id', 'first_name as name'])
+   *   .intersectAll((eb) => eb.parens(
+   *     eb.selectFrom('pet').select(['id', 'name'])
+   *   ))
+   *   .orderBy('name')
+   * ```
    */
-  intersectAll(expression: Expression<O>): SelectQueryBuilder<DB, TB, O> {
+  intersectAll(
+    expression: SetOperandExpression<DB, O>
+  ): SelectQueryBuilder<DB, TB, O> {
     return new SelectQueryBuilder({
       ...this.#props,
       queryNode: SelectQueryNode.cloneWithSetOperation(
@@ -1301,8 +1360,22 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    *   .except(db.selectFrom('pet').select(['id', 'name']))
    *   .orderBy('name')
    * ```
+   *
+   * You can provide a callback to get an expression builder.
+   * In the following example, this allows us to wrap the query in parentheses:
+   *
+   * ```ts
+   * db.selectFrom('person')
+   *   .select(['id', 'first_name as name'])
+   *   .except((eb) => eb.parens(
+   *     eb.selectFrom('pet').select(['id', 'name'])
+   *   ))
+   *   .orderBy('name')
+   * ```
    */
-  except(expression: Expression<O>): SelectQueryBuilder<DB, TB, O> {
+  except(
+    expression: SetOperandExpression<DB, O>
+  ): SelectQueryBuilder<DB, TB, O> {
     return new SelectQueryBuilder({
       ...this.#props,
       queryNode: SelectQueryNode.cloneWithSetOperation(
@@ -1325,8 +1398,22 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    *   .exceptAll(db.selectFrom('pet').select(['id', 'name']))
    *   .orderBy('name')
    * ```
+   *
+   * You can provide a callback to get an expression builder.
+   * In the following example, this allows us to wrap the query in parentheses:
+   *
+   * ```ts
+   * db.selectFrom('person')
+   *   .select(['id', 'first_name as name'])
+   *   .exceptAll((eb) => eb.parens(
+   *     eb.selectFrom('pet').select(['id', 'name'])
+   *   ))
+   *   .orderBy('name')
+   * ```
    */
-  exceptAll(expression: Expression<O>): SelectQueryBuilder<DB, TB, O> {
+  exceptAll(
+    expression: SetOperandExpression<DB, O>
+  ): SelectQueryBuilder<DB, TB, O> {
     return new SelectQueryBuilder({
       ...this.#props,
       queryNode: SelectQueryNode.cloneWithSetOperation(

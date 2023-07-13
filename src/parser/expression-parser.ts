@@ -29,13 +29,13 @@ export type AliasedExpressionOrFactory<DB, TB extends keyof DB> =
   | AliasedExpression<any, any>
   | AliasedExpressionFactory<DB, TB>
 
+export type ExpressionFactory<DB, TB extends keyof DB, V> = (
+  eb: ExpressionBuilder<DB, TB>
+) => Expression<V>
+
 type SelectQueryBuilderFactory<DB, TB extends keyof DB, V> = (
   eb: ExpressionBuilder<DB, TB>
 ) => SelectQueryBuilder<any, any, V>
-
-type ExpressionFactory<DB, TB extends keyof DB, V> = (
-  eb: ExpressionBuilder<DB, TB>
-) => Expression<V>
 
 type AliasedExpressionFactory<DB, TB extends keyof DB> = (
   eb: ExpressionBuilder<DB, TB>
