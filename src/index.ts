@@ -244,5 +244,6 @@ export {
   ComparisonOperatorExpression,
   OperandValueExpression,
   OperandValueExpressionOrList,
+  FilterObject,
 } from './parser/binary-operation-parser.js'
 export { ExistsExpression } from './parser/unary-operation-parser.js'

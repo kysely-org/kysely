@@ -178,6 +178,60 @@ for (const dialect of DIALECTS) {
           ])
         })
       })
+
+      it('should create a CTE with `as materialized`', async () => {
+        const query = ctx.db
+          .with(
+            (cte) => cte('person_name').materialized(),
+            (qb) => qb.selectFrom('person').select('first_name')
+          )
+          .selectFrom('person_name')
+          .select('person_name.first_name')
+          .orderBy('first_name')
+
+        testSql(query, dialect, {
+          postgres: {
+            sql: 'with "person_name" as materialized (select "first_name" from "person") select "person_name"."first_name" from "person_name" order by "first_name"',
+            parameters: [],
+          },
+          mysql: NOT_SUPPORTED,
+          sqlite: NOT_SUPPORTED,
+        })
+
+        const result = await query.execute()
+        expect(result).to.eql([
+          { first_name: 'Arnold' },
+          { first_name: 'Jennifer' },
+          { first_name: 'Sylvester' },
+        ])
+      })
+
+      it('should create a CTE with `as not materialized`', async () => {
+        const query = ctx.db
+          .with(
+            (cte) => cte('person_name').notMaterialized(),
+            (qb) => qb.selectFrom('person').select('first_name')
+          )
+          .selectFrom('person_name')
+          .select('person_name.first_name')
+          .orderBy('first_name')
+
+        testSql(query, dialect, {
+          postgres: {
+            sql: 'with "person_name" as not materialized (select "first_name" from "person") select "person_name"."first_name" from "person_name" order by "first_name"',
+            parameters: [],
+          },
+          mysql: NOT_SUPPORTED,
+          sqlite: NOT_SUPPORTED,
+        })
+
+        const result = await query.execute()
+        expect(result).to.eql([
+          { first_name: 'Arnold' },
+          { first_name: 'Jennifer' },
+          { first_name: 'Sylvester' },
+        ])
+      })
     }
 
     if (dialect !== 'mysql') {

@@ -64,6 +64,27 @@ async function testWith(db: Kysely<Database>) {
     }[]
   >(r3)
 
+  // Using CTE builder.
+  const r4 = await db
+    .with(
+      (cte) => cte('jennifers').materialized(),
+      (db) =>
+        db
+          .selectFrom('person')
+          .where('first_name', '=', 'Jennifer')
+          .select(['first_name', 'last_name as ln', 'gender'])
+    )
+    .selectFrom('jennifers')
+    .select(['first_name', 'ln'])
+    .execute()
+
+  expectType<
+    {
+      first_name: string
+      ln: string | null
+    }[]
+  >(r4)
+
   // Different columns in expression and CTE name.
   expectError(
     db
@@ -75,6 +96,22 @@ async function testWith(db: Kysely<Database>) {
       )
       .selectFrom('jennifers')
       .select(['first_name', 'last_name'])
+  )
+
+  // Unknown CTE name when using the CTE builder.
+  expectError(
+    db
+      .with(
+        (cte) => cte('jennifers').materialized(),
+        (db) =>
+          db
+            .selectFrom('person')
+            .where('first_name', '=', 'Jennifer')
+            .select(['first_name', 'last_name as ln', 'gender'])
+      )
+      .selectFrom('lollifers')
+      .select(['first_name', 'ln'])
+      .execute()
   )
 }
 

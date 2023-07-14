@@ -132,6 +132,7 @@ export class DefaultQueryCompiler
   protected override visitSelectQuery(node: SelectQueryNode): void {
     const wrapInParens =
       this.parentNode !== undefined &&
+      !ParensNode.is(this.parentNode) &&
       !InsertQueryNode.is(this.parentNode) &&
       !CreateViewNode.is(this.parentNode) &&
       !SetOperationNode.is(this.parentNode)
@@ -938,6 +939,15 @@ export class DefaultQueryCompiler
   ): void {
     this.visitNode(node.name)
     this.append(' as ')
+
+    if (isBoolean(node.materialized)) {
+      if (!node.materialized) {
+        this.append('not ')
+      }
+      
+      this.append('materialized ')
+    }
+
     this.visitNode(node.expression)
   }
 

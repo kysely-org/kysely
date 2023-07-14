@@ -61,12 +61,19 @@ for (const dialect of DIALECTS) {
               // Should not produce double parens
               parens(eb('id', '=', 1).or('id', '=', 2)),
               eb(parens('id', '+', 1), '>', 10),
+              // Object and
+              eb.and({ first_name: 'Jennifer', last_name: 'Aniston' }),
+              // Object or
+              eb.or({
+                first_name: eb.ref('last_name'),
+                last_name: eb.ref('first_name'),
+              }),
             ])
         )
 
       testSql(query, dialect, {
         postgres: {
-          sql: 'select "person".* from "person" where ((not "first_name" = $1 or "id" + $2 > $3 or "id" in ($4, $5, $6) or upper("first_name") = $7 or false) and exists (select "pet"."id" from "pet" where "pet"."owner_id" = "person"."id") and true and ("id" = $8 or "id" = $9 or "id" = $10 or "id" = $11) and ("id" = $12 and "first_name" = $13 and "last_name" = $14 and "marital_status" = $15) and ("id" = $16 or "id" = $17) and ("id" + $18) > $19)',
+          sql: 'select "person".* from "person" where ((not "first_name" = $1 or "id" + $2 > $3 or "id" in ($4, $5, $6) or upper("first_name") = $7 or false) and exists (select "pet"."id" from "pet" where "pet"."owner_id" = "person"."id") and true and ("id" = $8 or "id" = $9 or "id" = $10 or "id" = $11) and ("id" = $12 and "first_name" = $13 and "last_name" = $14 and "marital_status" = $15) and ("id" = $16 or "id" = $17) and ("id" + $18) > $19 and ("first_name" = $20 and "last_name" = $21) and ("first_name" = "last_name" or "last_name" = "first_name"))',
           parameters: [
             'Jennifer',
             1,
@@ -87,10 +94,12 @@ for (const dialect of DIALECTS) {
             2,
             1,
             10,
+            'Jennifer',
+            'Aniston',
           ],
         },
         mysql: {
-          sql: 'select `person`.* from `person` where ((not `first_name` = ? or `id` + ? > ? or `id` in (?, ?, ?) or upper(`first_name`) = ? or false) and exists (select `pet`.`id` from `pet` where `pet`.`owner_id` = `person`.`id`) and true and (`id` = ? or `id` = ? or `id` = ? or `id` = ?) and (`id` = ? and `first_name` = ? and `last_name` = ? and `marital_status` = ?) and (`id` = ? or `id` = ?) and (`id` + ?) > ?)',
+          sql: 'select `person`.* from `person` where ((not `first_name` = ? or `id` + ? > ? or `id` in (?, ?, ?) or upper(`first_name`) = ? or false) and exists (select `pet`.`id` from `pet` where `pet`.`owner_id` = `person`.`id`) and true and (`id` = ? or `id` = ? or `id` = ? or `id` = ?) and (`id` = ? and `first_name` = ? and `last_name` = ? and `marital_status` = ?) and (`id` = ? or `id` = ?) and (`id` + ?) > ? and (`first_name` = ? and `last_name` = ?) and (`first_name` = `last_name` or `last_name` = `first_name`))',
           parameters: [
             'Jennifer',
             1,
@@ -111,10 +120,12 @@ for (const dialect of DIALECTS) {
             2,
             1,
             10,
+            'Jennifer',
+            'Aniston',
           ],
         },
         sqlite: {
-          sql: 'select "person".* from "person" where ((not "first_name" = ? or "id" + ? > ? or "id" in (?, ?, ?) or upper("first_name") = ? or false) and exists (select "pet"."id" from "pet" where "pet"."owner_id" = "person"."id") and true and ("id" = ? or "id" = ? or "id" = ? or "id" = ?) and ("id" = ? and "first_name" = ? and "last_name" = ? and "marital_status" = ?) and ("id" = ? or "id" = ?) and ("id" + ?) > ?)',
+          sql: 'select "person".* from "person" where ((not "first_name" = ? or "id" + ? > ? or "id" in (?, ?, ?) or upper("first_name") = ? or false) and exists (select "pet"."id" from "pet" where "pet"."owner_id" = "person"."id") and true and ("id" = ? or "id" = ? or "id" = ? or "id" = ?) and ("id" = ? and "first_name" = ? and "last_name" = ? and "marital_status" = ?) and ("id" = ? or "id" = ?) and ("id" + ?) > ? and ("first_name" = ? and "last_name" = ?) and ("first_name" = "last_name" or "last_name" = "first_name"))',
           parameters: [
             'Jennifer',
             1,
@@ -135,6 +146,8 @@ for (const dialect of DIALECTS) {
             2,
             1,
             10,
+            'Jennifer',
+            'Aniston',
           ],
         },
       })

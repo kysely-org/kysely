@@ -29,14 +29,15 @@ import { QueryExecutor } from '../query-executor/query-executor.js'
 import {
   BinaryOperatorExpression,
   ComparisonOperatorExpression,
+  FilterObject,
   OperandValueExpression,
   OperandValueExpressionOrList,
+  parseFilterList,
+  parseFilterObject,
   parseValueBinaryOperation,
   parseValueBinaryOperationOrExpression,
 } from '../parser/binary-operation-parser.js'
 import { Expression } from './expression.js'
-import { AndNode } from '../operation-node/and-node.js'
-import { OrNode } from '../operation-node/or-node.js'
 import { ParensNode } from '../operation-node/parens-node.js'
 import { ExpressionWrapper } from './expression-wrapper.js'
 import {
@@ -51,10 +52,9 @@ import {
   parseValueExpressionOrList,
 } from '../parser/value-parser.js'
 import { NOOP_QUERY_EXECUTOR } from '../query-executor/noop-query-executor.js'
-import { ValueNode } from '../operation-node/value-node.js'
 import { CaseBuilder } from '../query-builder/case-builder.js'
 import { CaseNode } from '../operation-node/case-node.js'
-import { isUndefined } from '../util/object-utils.js'
+import { isReadonlyArray, isUndefined } from '../util/object-utils.js'
 import { JSONPathBuilder } from '../query-builder/json-path-builder.js'
 
 export interface ExpressionBuilder<DB, TB extends keyof DB> {
@@ -577,14 +577,41 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    * ```sql
    * select "person".*
    * from "person"
-   * where "first_name" = $1
-   * and "first_name" = $2
-   * and "first_name" = $3
+   * where (
+   *   "first_name" = $1
+   *   and "first_name" = $2
+   *   and "first_name" = $3
+   * )
+   * ```
+   *
+   * Optionally you can use the simpler object notation if you only need
+   * equality comparisons:
+   *
+   * ```ts
+   * db.selectFrom('person')
+   *   .selectAll('person')
+   *   .where((eb) => eb.and({
+   *     first_name: 'Jennifer',
+   *     last_name: 'Aniston'
+   *   }))
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * select "person".*
+   * from "person"
+   * where (
+   *   "first_name" = $1
+   *   and "last_name" = $2
+   * )
    * ```
    */
   and(
     exprs: ReadonlyArray<Expression<SqlBool>>
   ): ExpressionWrapper<DB, TB, SqlBool>
+
+  and(exprs: Readonly<FilterObject<DB, TB>>): ExpressionWrapper<DB, TB, SqlBool>
 
   /**
    * Combines two or more expressions using the logical `or` operator.
@@ -600,7 +627,7 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    * ```ts
    * db.selectFrom('person')
    *   .selectAll('person')
-   *   .where((eb) => or([
+   *   .where((eb) => eb.or([
    *     eb('first_name', '=', 'Jennifer'),
    *     eb('fist_name', '=', 'Arnold'),
    *     eb('fist_name', '=', 'Sylvester')
@@ -612,14 +639,41 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    * ```sql
    * select "person".*
    * from "person"
-   * where "first_name" = $1
-   * or "first_name" = $2
-   * or "first_name" = $3
+   * where (
+   *   "first_name" = $1
+   *   or "first_name" = $2
+   *   or "first_name" = $3
+   * )
+   * ```
+   *
+   * Optionally you can use the simpler object notation if you only need
+   * equality comparisons:
+   *
+   * ```ts
+   * db.selectFrom('person')
+   *   .selectAll('person')
+   *   .where((eb) => eb.or({
+   *     first_name: 'Jennifer',
+   *     last_name: 'Aniston'
+   *   }))
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * select "person".*
+   * from "person"
+   * where (
+   *   "first_name" = $1
+   *   or "last_name" = $2
+   * )
    * ```
    */
   or(
     exprs: ReadonlyArray<Expression<SqlBool>>
   ): ExpressionWrapper<DB, TB, SqlBool>
+
+  or(exprs: Readonly<FilterObject<DB, TB>>): ExpressionWrapper<DB, TB, SqlBool>
 
   /**
    * Wraps the expression in parentheses.
@@ -812,45 +866,23 @@ export function createExpressionBuilder<DB, TB extends keyof DB>(
     },
 
     and(
-      exprs: ReadonlyArray<Expression<SqlBool>>
+      exprs: ReadonlyArray<Expression<SqlBool>> | Readonly<FilterObject<DB, TB>>
     ): ExpressionWrapper<DB, TB, SqlBool> {
-      if (exprs.length === 0) {
-        return new ExpressionWrapper(ValueNode.createImmediate(true))
-      } else if (exprs.length === 1) {
-        return new ExpressionWrapper(exprs[0].toOperationNode())
+      if (isReadonlyArray(exprs)) {
+        return new ExpressionWrapper(parseFilterList(exprs, 'and'))
       }
 
-      let node = AndNode.create(
-        exprs[0].toOperationNode(),
-        exprs[1].toOperationNode()
-      )
-
-      for (let i = 2; i < exprs.length; ++i) {
-        node = AndNode.create(node, exprs[i].toOperationNode())
-      }
-
-      return new ExpressionWrapper(ParensNode.create(node))
+      return new ExpressionWrapper(parseFilterObject(exprs, 'and'))
     },
 
     or(
-      exprs: ReadonlyArray<Expression<SqlBool>>
+      exprs: ReadonlyArray<Expression<SqlBool>> | Readonly<FilterObject<DB, TB>>
     ): ExpressionWrapper<DB, TB, SqlBool> {
-      if (exprs.length === 0) {
-        return new ExpressionWrapper(ValueNode.createImmediate(false))
-      } else if (exprs.length === 1) {
-        return new ExpressionWrapper(exprs[0].toOperationNode())
+      if (isReadonlyArray(exprs)) {
+        return new ExpressionWrapper(parseFilterList(exprs, 'or'))
       }
 
-      let node = OrNode.create(
-        exprs[0].toOperationNode(),
-        exprs[1].toOperationNode()
-      )
-
-      for (let i = 2; i < exprs.length; ++i) {
-        node = OrNode.create(node, exprs[i].toOperationNode())
-      }
-
-      return new ExpressionWrapper(ParensNode.create(node))
+      return new ExpressionWrapper(parseFilterObject(exprs, 'or'))
     },
 
     parens(...args: any[]) {

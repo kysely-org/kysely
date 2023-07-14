@@ -69,4 +69,6 @@ export interface PersonMetadata {
     }[]
   >
   schedule: JSONColumnType<{ name: string; time: string }[][][]>
+  record: JSONColumnType<Record<string, string>>
+  array: JSONColumnType<Array<string>>
 }

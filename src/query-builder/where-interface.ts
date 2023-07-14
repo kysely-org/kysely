@@ -61,7 +61,34 @@ export interface WhereInterface<DB, TB extends keyof DB> {
    * select * from "person" where "id" in ($1, $2, $3)
    * ```
    *
-   * <!-- siteExample("where", "OR where", 30) -->
+   * <!-- siteExample("where", "Object filter", 30) -->
+   *
+   * You can use the `and` function to create a simple equality
+   * filter using an object
+   *
+   * ```ts
+   * const persons = await db
+   *   .selectFrom('person')
+   *   .selectAll()
+   *   .where((eb) => eb.and({
+   *     first_name: 'Jennifer',
+   *     last_name: eb.ref('first_name')
+   *   }))
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * select *
+   * from "person"
+   * where (
+   *   "first_name" = $1
+   *   and "last_name" = "first_name"
+   * )
+   * ```
+   *
+   * <!-- siteExample("where", "OR where", 40) -->
    *
    * To combine conditions using `OR`, you can use the expression builder.
    * There are two ways to create `OR` expressions. Both are shown in this
@@ -96,7 +123,7 @@ export interface WhereInterface<DB, TB extends keyof DB> {
    * )
    * ```
    *
-   * <!-- siteExample("where", "Conditional where calls", 40) -->
+   * <!-- siteExample("where", "Conditional where calls", 50) -->
    *
    * You can add expressions conditionally like this:
    *
@@ -191,7 +218,7 @@ export interface WhereInterface<DB, TB extends keyof DB> {
    * select * from "person" where "id" in ($1, $2, $3)
    * ```
    *
-   * <!-- siteExample("where", "Complex where clause", 50) -->
+   * <!-- siteExample("where", "Complex where clause", 60) -->
    *
    * For complex `where` expressions you can pass in a single callback and
    * use the `ExpressionBuilder` to build your expression:

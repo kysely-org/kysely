@@ -71,6 +71,20 @@ async function testJSONTraversal(db: Kysely<Database>) {
 
   expectType<{ nickname: string | null }>(r8)
 
+  const [r9] = await db
+    .selectFrom('person_metadata')
+    .select((eb) => eb.ref('record', '->').key('i_dunno_man').as('whatever'))
+    .execute()
+
+  expectType<{ whatever: string | null }>(r9)
+
+  const [r10] = await db
+    .selectFrom('person_metadata')
+    .select((eb) => eb.ref('array', '->').at(0).as('whenever'))
+    .execute()
+
+  expectType<{ whenever: string | null }>(r10)
+
   // missing operator
 
   expectError(

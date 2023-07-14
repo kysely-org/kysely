@@ -47,9 +47,9 @@ const dialect = new MysqlDialect({
   sqlite: (packageManager) =>
     isDialectSupported('sqlite', packageManager)
       ? `import * as SQLite from '${DRIVER_NPM_PACKAGE_NAMES.sqlite}'
-import { Kysely, SQLiteDialect } from 'kysely'
+import { Kysely, SqliteDialect } from 'kysely'
 
-const dialect = new SQLiteDialect({
+const dialect = new SqliteDialect({
   database: new SQLite(':memory:'),
 })`
       : `/* Kysely doesn't support SQLite + ${
@@ -67,7 +67,7 @@ const dialectClassNames: Record<
   postgresql: () => 'PostgresDialect',
   mysql: () => 'MysqlDialect',
   sqlite: (packageManager) =>
-    isDialectSupported('sqlite', packageManager) ? 'SQLiteDialect' : null,
+    isDialectSupported('sqlite', packageManager) ? 'SqliteDialect' : null,
 }
 
 export function Instantiation(

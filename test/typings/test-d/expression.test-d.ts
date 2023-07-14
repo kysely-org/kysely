@@ -80,6 +80,22 @@ function testExpressionBuilder(eb: ExpressionBuilder<Database, 'person'>) {
     ])
   )
 
+  expectAssignable<Expression<SqlBool>>(
+    eb.and({
+      'person.age': 10,
+      first_name: 'Jennifer',
+      last_name: eb.ref('first_name'),
+    })
+  )
+
+  expectAssignable<Expression<SqlBool>>(
+    eb.or({
+      'person.age': 10,
+      first_name: 'Jennifer',
+      last_name: eb.ref('first_name'),
+    })
+  )
+
   expectType<
     KyselyTypeError<'or() method can only be called on boolean expressions'>
   >(eb('age', '+', 1).or('age', '=', 1))
@@ -105,4 +121,10 @@ function testExpressionBuilder(eb: ExpressionBuilder<Database, 'person'>) {
 
   expectError(eb.or([eb.val('not booleanish'), eb.val(true)]))
   expectError(eb.or([eb('age', '+', 1), eb.val(true)]))
+
+  expectError(eb.and({ unknown_column: 'Jennifer' }))
+  expectError(eb.and({ age: 'wrong type' }))
+
+  expectError(eb.or({ unknown_column: 'Jennifer' }))
+  expectError(eb.or({ age: 'wrong type' }))
 }

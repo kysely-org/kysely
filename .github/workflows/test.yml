@@ -57,3 +57,6 @@ jobs:
 
       - name: Run esbuild test
         run: npm run test:esbuild
+
+      - name: Run cloudflare workers test
+        run: npm run test:cloudflare-workers
