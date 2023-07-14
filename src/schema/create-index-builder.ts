@@ -231,7 +231,7 @@ export class CreateIndexBuilder<C = never>
     ) => Expression<SqlBool>
   ): CreateIndexBuilder<C>
 
-  where(expression: Expression<any>): CreateIndexBuilder<C>
+  where(expression: Expression<SqlBool>): CreateIndexBuilder<C>
 
   where(...args: any[]): any {
     const transformer = new ImmediateValueTransformer()

@@ -29,6 +29,7 @@ import {
   ShallowRecord,
   Simplify,
   SimplifySingleResult,
+  SqlBool,
 } from '../util/type-utils.js'
 import {
   OrderByDirectionExpression,
@@ -44,13 +45,13 @@ import { QueryId } from '../util/query-id.js'
 import { freeze } from '../util/object-utils.js'
 import { GroupByArg, parseGroupBy } from '../parser/group-by-parser.js'
 import { KyselyPlugin } from '../plugin/kysely-plugin.js'
-import { WhereExpressionFactory, WhereInterface } from './where-interface.js'
+import { WhereInterface } from './where-interface.js'
 import {
   isNoResultErrorConstructor,
   NoResultError,
   NoResultErrorConstructor,
 } from './no-result-error.js'
-import { HavingExpressionFactory, HavingInterface } from './having-interface.js'
+import { HavingInterface } from './having-interface.js'
 import { IdentifierNode } from '../operation-node/identifier-node.js'
 import { Explainable, ExplainFormat } from '../util/explainable.js'
 import {
@@ -67,6 +68,7 @@ import {
 import { KyselyTypeError } from '../util/type-error.js'
 import { Selectable } from '../util/column-type.js'
 import { Streamable } from '../util/streamable.js'
+import { ExpressionOrFactory } from '../parser/expression-parser.js'
 
 export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
   extends WhereInterface<DB, TB>,
@@ -81,9 +83,9 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
     rhs: OperandValueExpressionOrList<DB, TB, RE>
   ): SelectQueryBuilder<DB, TB, O>
 
-  where(factory: WhereExpressionFactory<DB, TB>): SelectQueryBuilder<DB, TB, O>
-
-  where(expression: Expression<any>): SelectQueryBuilder<DB, TB, O>
+  where(
+    expression: ExpressionOrFactory<DB, TB, SqlBool>
+  ): SelectQueryBuilder<DB, TB, O>
 
   whereRef(
     lhs: ReferenceExpression<DB, TB>,
@@ -98,10 +100,8 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
   ): SelectQueryBuilder<DB, TB, O>
 
   having(
-    factory: HavingExpressionFactory<DB, TB>
+    expression: ExpressionOrFactory<DB, TB, SqlBool>
   ): SelectQueryBuilder<DB, TB, O>
-
-  having(expression: Expression<any>): SelectQueryBuilder<DB, TB, O>
 
   havingRef(
     lhs: ReferenceExpression<DB, TB>,

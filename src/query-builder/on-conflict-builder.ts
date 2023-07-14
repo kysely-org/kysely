@@ -9,6 +9,7 @@ import {
   parseValueBinaryOperationOrExpression,
   parseReferentialBinaryOperation,
 } from '../parser/binary-operation-parser.js'
+import { ExpressionOrFactory } from '../parser/expression-parser.js'
 import { ReferenceExpression } from '../parser/reference-parser.js'
 import {
   UpdateExpression,
@@ -16,8 +17,8 @@ import {
 } from '../parser/update-set-parser.js'
 import { freeze } from '../util/object-utils.js'
 import { preventAwait } from '../util/prevent-await.js'
-import { AnyColumn } from '../util/type-utils.js'
-import { WhereExpressionFactory, WhereInterface } from './where-interface.js'
+import { AnyColumn, SqlBool } from '../util/type-utils.js'
+import { WhereInterface } from './where-interface.js'
 
 export class OnConflictBuilder<DB, TB extends keyof DB>
   implements WhereInterface<DB, TB>
@@ -111,8 +112,9 @@ export class OnConflictBuilder<DB, TB extends keyof DB>
     rhs: OperandValueExpressionOrList<DB, TB, RE>
   ): OnConflictBuilder<DB, TB>
 
-  where(factory: WhereExpressionFactory<DB, TB>): OnConflictBuilder<DB, TB>
-  where(expression: Expression<any>): OnConflictBuilder<DB, TB>
+  where(
+    expression: ExpressionOrFactory<DB, TB, SqlBool>
+  ): OnConflictBuilder<DB, TB>
 
   where(...args: any[]): OnConflictBuilder<DB, TB> {
     return new OnConflictBuilder({
@@ -300,10 +302,8 @@ export class OnConflictUpdateBuilder<DB, TB extends keyof DB>
   ): OnConflictUpdateBuilder<DB, TB>
 
   where(
-    factory: WhereExpressionFactory<DB, TB>
+    expression: ExpressionOrFactory<DB, TB, SqlBool>
   ): OnConflictUpdateBuilder<DB, TB>
-
-  where(expression: Expression<any>): OnConflictUpdateBuilder<DB, TB>
 
   where(...args: any[]): OnConflictUpdateBuilder<DB, TB> {
     return new OnConflictUpdateBuilder({

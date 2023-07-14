@@ -28,6 +28,7 @@ import {
   ShallowRecord,
   SimplifyResult,
   SimplifySingleResult,
+  SqlBool,
 } from '../util/type-utils.js'
 import { UpdateQueryNode } from '../operation-node/update-query-node.js'
 import {
@@ -43,7 +44,7 @@ import { QueryId } from '../util/query-id.js'
 import { freeze } from '../util/object-utils.js'
 import { UpdateResult } from './update-result.js'
 import { KyselyPlugin } from '../plugin/kysely-plugin.js'
-import { WhereExpressionFactory, WhereInterface } from './where-interface.js'
+import { WhereInterface } from './where-interface.js'
 import { ReturningInterface } from './returning-interface.js'
 import {
   isNoResultErrorConstructor,
@@ -61,6 +62,7 @@ import {
 } from '../parser/binary-operation-parser.js'
 import { KyselyTypeError } from '../util/type-error.js'
 import { Streamable } from '../util/streamable.js'
+import { ExpressionOrFactory } from '../parser/expression-parser.js'
 
 export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
   implements
@@ -84,10 +86,8 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
   ): UpdateQueryBuilder<DB, UT, TB, O>
 
   where(
-    factory: WhereExpressionFactory<DB, TB>
+    expression: ExpressionOrFactory<DB, TB, SqlBool>
   ): UpdateQueryBuilder<DB, UT, TB, O>
-
-  where(expression: Expression<any>): UpdateQueryBuilder<DB, UT, TB, O>
 
   where(...args: any[]): any {
     return new UpdateQueryBuilder({
