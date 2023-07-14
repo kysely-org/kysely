@@ -213,6 +213,18 @@ function SectionQuotes() {
           />
 
           <Quote
+            authorName={'Orta Therox'}
+            authorTitle={'Ex-TypeScript team'}
+            avatar={'/img/avatars/orta.jpeg'}
+            link={
+              'https://discord.com/channels/890118421587578920/890118421587578925/1037692748825903114'
+            }
+            text={
+              "👋 been using Kysely for a few days in Deno and Node, just wanted to say it's been going really well and it feels like a nice abstraction - kudos!"
+            }
+          />
+
+          <Quote
             authorName={'Ben Holmes'}
             authorTitle={'Astro SWE'}
             avatar={'/img/avatars/benholmes.jpeg'}
