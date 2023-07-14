@@ -19,6 +19,7 @@ export interface HavingInterface<DB, TB extends keyof DB> {
   ): HavingInterface<DB, TB>
 
   having(factory: HavingExpressionFactory<DB, TB>): HavingInterface<DB, TB>
+
   having(expression: Expression<any>): HavingInterface<DB, TB>
 
   /**

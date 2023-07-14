@@ -1,4 +1,7 @@
-import { SelectQueryBuilder } from '../query-builder/select-query-builder.js'
+import {
+  SelectQueryBuilder,
+  createSelectQueryBuilder,
+} from '../query-builder/select-query-builder.js'
 import { SelectQueryNode } from '../operation-node/select-query-node.js'
 import {
   parseTableExpressionOrList,
@@ -771,7 +774,7 @@ export function createExpressionBuilder<DB, TB extends keyof DB>(
     eb: undefined! as ExpressionBuilder<DB, TB>,
 
     selectFrom(table: TableExpressionOrList<DB, TB>): any {
-      return new SelectQueryBuilder({
+      return createSelectQueryBuilder({
         queryId: createQueryId(),
         executor: executor,
         queryNode: SelectQueryNode.create(parseTableExpressionOrList(table)),

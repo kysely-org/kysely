@@ -25,27 +25,27 @@ const CODE_LINE_REGEX = /\*(.*)/
 const moreExamplesByCategory = {
   select: {
     'select method':
-      'https://kysely-org.github.io/kysely/classes/SelectQueryBuilder.html#select',
+      'https://kysely-org.github.io/kysely/interfaces/SelectQueryBuilder.html#select',
     'selectAll method':
-      'https://kysely-org.github.io/kysely/classes/SelectQueryBuilder.html#selectAll',
+      'https://kysely-org.github.io/kysely/interfaces/SelectQueryBuilder.html#selectAll',
     'selectFrom method':
       'https://kysely-org.github.io/kysely/classes/Kysely.html#selectFrom',
   },
   where: {
     'where method':
-      'https://kysely-org.github.io/kysely/classes/SelectQueryBuilder.html#where',
+      'https://kysely-org.github.io/kysely/interfaces/SelectQueryBuilder.html#where',
     'whereRef method':
-      'https://kysely-org.github.io/kysely/classes/SelectQueryBuilder.html#whereRef',
+      'https://kysely-org.github.io/kysely/interfaces/SelectQueryBuilder.html#whereRef',
   },
   join: {
     'innerJoin method':
-      'https://kysely-org.github.io/kysely/classes/SelectQueryBuilder.html#innerJoin',
+      'https://kysely-org.github.io/kysely/interfaces/SelectQueryBuilder.html#innerJoin',
     'leftJoin method':
-      'https://kysely-org.github.io/kysely/classes/SelectQueryBuilder.html#leftJoin',
+      'https://kysely-org.github.io/kysely/interfaces/SelectQueryBuilder.html#leftJoin',
     'rightJoin method':
-      'https://kysely-org.github.io/kysely/classes/SelectQueryBuilder.html#rightJoin',
+      'https://kysely-org.github.io/kysely/interfaces/SelectQueryBuilder.html#rightJoin',
     'fullJoin method':
-      'https://kysely-org.github.io/kysely/classes/SelectQueryBuilder.html#fullJoin',
+      'https://kysely-org.github.io/kysely/interfaces/SelectQueryBuilder.html#fullJoin',
   },
   insert: {
     'values method':

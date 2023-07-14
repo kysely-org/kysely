@@ -314,6 +314,7 @@ export interface WhereInterface<DB, TB extends keyof DB> {
   ): WhereInterface<DB, TB>
 
   where(factory: WhereExpressionFactory<DB, TB>): WhereInterface<DB, TB>
+
   where(expression: Expression<any>): WhereInterface<DB, TB>
 
   /**
