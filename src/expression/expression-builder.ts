@@ -879,9 +879,8 @@ export function createExpressionBuilder<DB, TB extends keyof DB>(
     ): ExpressionWrapper<DB, TB, SqlBool> {
       if (isReadonlyArray(exprs)) {
         return new ExpressionWrapper(parseFilterList(exprs, 'or'))
-      } else {
-        return new ExpressionWrapper(parseFilterObject(exprs, 'or'))
-      }
+
+      return new ExpressionWrapper(parseFilterObject(exprs, 'or'))
     },
 
     parens(...args: any[]) {
