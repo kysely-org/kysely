@@ -164,8 +164,7 @@ export function jsonBuildObject<O extends Record<string, Expression<unknown>>>(
   }>
 > {
   return sql`json_object(${sql.join(
-    Object.keys(obj).flatMap((k) => [sql.lit(k), obj[k]]),
-    sql` || `
+    Object.keys(obj).flatMap((k) => [sql.lit(k), obj[k]])
   )})`
 }
 
