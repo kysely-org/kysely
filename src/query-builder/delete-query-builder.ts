@@ -83,6 +83,7 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
   ): DeleteQueryBuilder<DB, TB, O>
 
   where(factory: WhereExpressionFactory<DB, TB>): DeleteQueryBuilder<DB, TB, O>
+
   where(expression: Expression<any>): DeleteQueryBuilder<DB, TB, O>
 
   where(...args: any[]): any {
