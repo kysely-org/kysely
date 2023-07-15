@@ -416,7 +416,7 @@ for (const dialect of DIALECTS) {
         ])
       })
 
-      it('two where clauses', async () => {
+      it('two where expressions', async () => {
         const query = ctx.db
           .selectFrom('person')
           .selectAll()
@@ -486,6 +486,74 @@ for (const dialect of DIALECTS) {
         ])
       })
 
+      it('`and where` using the expression builder and chaining', async () => {
+        const query = ctx.db
+          .selectFrom('person')
+          .selectAll()
+          .where((eb) =>
+            eb('first_name', '=', 'Jennifer').and(
+              eb.fn('upper', ['last_name']),
+              '=',
+              'ANISTON'
+            )
+          )
+
+        testSql(query, dialect, {
+          postgres: {
+            sql: 'select * from "person" where ("first_name" = $1 and upper("last_name") = $2)',
+            parameters: ['Jennifer', 'ANISTON'],
+          },
+          mysql: {
+            sql: 'select * from `person` where (`first_name` = ? and upper(`last_name`) = ?)',
+            parameters: ['Jennifer', 'ANISTON'],
+          },
+          sqlite: {
+            sql: 'select * from "person" where ("first_name" = ? and upper("last_name") = ?)',
+            parameters: ['Jennifer', 'ANISTON'],
+          },
+        })
+
+        const persons = await query.execute()
+        expect(persons).to.have.length(1)
+        expect(persons).to.containSubset([
+          {
+            first_name: 'Jennifer',
+            last_name: 'Aniston',
+            gender: 'female',
+          },
+        ])
+      })
+
+      it('`and where` using the expression builder and a filter object', async () => {
+        const query = ctx.db
+          .selectFrom('person')
+          .selectAll()
+          .where((eb) =>
+            eb.and({
+              first_name: 'Jennifer',
+              last_name: eb.fn<string>('upper', ['first_name']),
+            })
+          )
+
+        testSql(query, dialect, {
+          postgres: {
+            sql: 'select * from "person" where ("first_name" = $1 and "last_name" = upper("first_name"))',
+            parameters: ['Jennifer'],
+          },
+          mysql: {
+            sql: 'select * from `person` where (`first_name` = ? and `last_name` = upper(`first_name`))',
+            parameters: ['Jennifer'],
+          },
+          sqlite: {
+            sql: 'select * from "person" where ("first_name" = ? and "last_name" = upper("first_name"))',
+            parameters: ['Jennifer'],
+          },
+        })
+
+        const persons = await query.execute()
+        expect(persons).to.have.length(0)
+      })
+
       it('`or where` using the expression builder', async () => {
         const query = ctx.db
           .selectFrom('person')
@@ -495,6 +563,44 @@ for (const dialect of DIALECTS) {
               eb('first_name', '=', 'Jennifer'),
               eb(eb.fn('upper', ['last_name']), '=', 'ANISTON'),
             ])
+          )
+
+        testSql(query, dialect, {
+          postgres: {
+            sql: 'select * from "person" where ("first_name" = $1 or upper("last_name") = $2)',
+            parameters: ['Jennifer', 'ANISTON'],
+          },
+          mysql: {
+            sql: 'select * from `person` where (`first_name` = ? or upper(`last_name`) = ?)',
+            parameters: ['Jennifer', 'ANISTON'],
+          },
+          sqlite: {
+            sql: 'select * from "person" where ("first_name" = ? or upper("last_name") = ?)',
+            parameters: ['Jennifer', 'ANISTON'],
+          },
+        })
+
+        const persons = await query.execute()
+        expect(persons).to.have.length(1)
+        expect(persons).to.containSubset([
+          {
+            first_name: 'Jennifer',
+            last_name: 'Aniston',
+            gender: 'female',
+          },
+        ])
+      })
+
+      it('`or where` using the expression builder and chaining', async () => {
+        const query = ctx.db
+          .selectFrom('person')
+          .selectAll()
+          .where((eb) =>
+            eb('first_name', '=', 'Jennifer').or(
+              eb.fn('upper', ['last_name']),
+              '=',
+              'ANISTON'
+            )
           )
 
         testSql(query, dialect, {
