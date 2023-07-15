@@ -57,7 +57,7 @@ import { Simplify } from '../util/type-utils.js'
 export function jsonArrayFrom<O>(
   expr: SelectQueryBuilder<any, any, O>
 ): RawBuilder<Simplify<O>[]> {
-  return sql`(select coalesce(json_arrayagg(json_object(${sql.join(
+  return sql`(select coalesce(json_group_array(json_object(${sql.join(
     getJsonObjectArgs(expr.toOperationNode(), 'agg')
   )})), '[]') from ${expr} as agg)`
 }
