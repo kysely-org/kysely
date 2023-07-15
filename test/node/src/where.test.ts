@@ -310,6 +310,44 @@ for (const dialect of DIALECTS) {
         ])
       })
 
+      it('a boolean subquery', async () => {
+        const query = ctx.db
+          .selectFrom('person')
+          .selectAll()
+          .where((eb) =>
+            eb
+              .selectFrom('pet')
+              .whereRef('owner_id', '=', 'person.id')
+              .select((eb) => eb('pet.name', '=', 'Doggo').as('is_doggo'))
+          )
+
+        testSql(query, dialect, {
+          postgres: {
+            sql: 'select * from "person" where (select "pet"."name" = $1 as "is_doggo" from "pet" where "owner_id" = "person"."id")',
+            parameters: ['Doggo'],
+          },
+          mysql: {
+            sql: 'select * from `person` where (select `pet`.`name` = ? as `is_doggo` from `pet` where `owner_id` = `person`.`id`)',
+            parameters: ['Doggo'],
+          },
+          sqlite: {
+            sql: 'select * from "person" where (select "pet"."name" = ? as "is_doggo" from "pet" where "owner_id" = "person"."id")',
+            parameters: ['Doggo'],
+          },
+        })
+
+        const persons = await query.execute()
+        expect(persons).to.have.length(1)
+        expect(persons[0].id).to.be.a('number')
+        expect(persons).to.containSubset([
+          {
+            first_name: 'Arnold',
+            last_name: 'Schwarzenegger',
+            gender: 'male',
+          },
+        ])
+      })
+
       it('a raw instance and a subquery', async () => {
         const query = ctx.db
           .selectFrom('person')
@@ -729,8 +767,8 @@ for (const dialect of DIALECTS) {
         const query = ctx.db
           .selectFrom('person')
           .selectAll()
-          .where(sql`first_name between ${'Arnold'} and ${'Jennifer'}`)
-          .where(sql`last_name between ${'A'} and ${'Z'}`)
+          .where(sql<boolean>`first_name between ${'Arnold'} and ${'Jennifer'}`)
+          .where(sql<boolean>`last_name between ${'A'} and ${'Z'}`)
 
         testSql(query, dialect, {
           postgres: {

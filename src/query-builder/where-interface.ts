@@ -6,6 +6,7 @@ import {
 import { ReferenceExpression } from '../parser/reference-parser.js'
 import { SqlBool } from '../util/type-utils.js'
 import { ExpressionBuilder } from '../expression/expression-builder.js'
+import { ExpressionOrFactory } from '../parser/expression-parser.js'
 
 export interface WhereInterface<DB, TB extends keyof DB> {
   /**
@@ -313,9 +314,9 @@ export interface WhereInterface<DB, TB extends keyof DB> {
     rhs: OperandValueExpressionOrList<DB, TB, RE>
   ): WhereInterface<DB, TB>
 
-  where(factory: WhereExpressionFactory<DB, TB>): WhereInterface<DB, TB>
-
-  where(expression: Expression<any>): WhereInterface<DB, TB>
+  where(
+    expression: ExpressionOrFactory<DB, TB, SqlBool>
+  ): WhereInterface<DB, TB>
 
   /**
    * Adds a `where` clause where both sides of the operator are references
@@ -394,7 +395,3 @@ export interface WhereInterface<DB, TB extends keyof DB> {
    */
   clearWhere(): WhereInterface<DB, TB>
 }
-
-export type WhereExpressionFactory<DB, TB extends keyof DB> = (
-  eb: ExpressionBuilder<DB, TB>
-) => Expression<SqlBool>

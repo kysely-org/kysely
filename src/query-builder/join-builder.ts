@@ -9,6 +9,7 @@ import {
   parseValueBinaryOperationOrExpression,
   parseReferentialBinaryOperation,
 } from '../parser/binary-operation-parser.js'
+import { ExpressionOrFactory } from '../parser/expression-parser.js'
 import { ReferenceExpression } from '../parser/reference-parser.js'
 import { freeze } from '../util/object-utils.js'
 import { preventAwait } from '../util/prevent-await.js'
@@ -35,8 +36,7 @@ export class JoinBuilder<DB, TB extends keyof DB>
     rhs: OperandValueExpressionOrList<DB, TB, RE>
   ): JoinBuilder<DB, TB>
 
-  on(factory: OnExpressionFactory<DB, TB>): JoinBuilder<DB, TB>
-  on(expression: Expression<any>): JoinBuilder<DB, TB>
+  on(expression: ExpressionOrFactory<DB, TB, SqlBool>): JoinBuilder<DB, TB>
 
   on(...args: any[]): JoinBuilder<DB, TB> {
     return new JoinBuilder({
@@ -102,7 +102,3 @@ preventAwait(
 export interface JoinBuilderProps {
   readonly joinNode: JoinNode
 }
-
-type OnExpressionFactory<DB, TB extends keyof DB> = (
-  eb: ExpressionBuilder<DB, TB>
-) => Expression<SqlBool>

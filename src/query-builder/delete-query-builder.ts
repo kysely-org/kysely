@@ -28,6 +28,7 @@ import {
   ShallowRecord,
   SimplifyResult,
   SimplifySingleResult,
+  SqlBool,
 } from '../util/type-utils.js'
 import { preventAwait } from '../util/prevent-await.js'
 import { Compilable } from '../util/compilable.js'
@@ -35,7 +36,7 @@ import { QueryExecutor } from '../query-executor/query-executor.js'
 import { QueryId } from '../util/query-id.js'
 import { freeze } from '../util/object-utils.js'
 import { KyselyPlugin } from '../plugin/kysely-plugin.js'
-import { WhereExpressionFactory, WhereInterface } from './where-interface.js'
+import { WhereInterface } from './where-interface.js'
 import { ReturningInterface } from './returning-interface.js'
 import {
   isNoResultErrorConstructor,
@@ -60,6 +61,7 @@ import {
 } from '../parser/binary-operation-parser.js'
 import { KyselyTypeError } from '../util/type-error.js'
 import { Streamable } from '../util/streamable.js'
+import { ExpressionOrFactory } from '../parser/expression-parser.js'
 
 export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
   implements
@@ -82,9 +84,9 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
     rhs: OperandValueExpressionOrList<DB, TB, RE>
   ): DeleteQueryBuilder<DB, TB, O>
 
-  where(factory: WhereExpressionFactory<DB, TB>): DeleteQueryBuilder<DB, TB, O>
-
-  where(expression: Expression<any>): DeleteQueryBuilder<DB, TB, O>
+  where(
+    expression: ExpressionOrFactory<DB, TB, SqlBool>
+  ): DeleteQueryBuilder<DB, TB, O>
 
   where(...args: any[]): any {
     return new DeleteQueryBuilder({

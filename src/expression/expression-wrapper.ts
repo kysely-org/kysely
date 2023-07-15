@@ -10,6 +10,7 @@ import {
   OperandValueExpressionOrList,
   parseValueBinaryOperationOrExpression,
 } from '../parser/binary-operation-parser.js'
+import { OperandExpression } from '../parser/expression-parser.js'
 import { ReferenceExpression } from '../parser/reference-parser.js'
 import { KyselyTypeError } from '../util/type-error.js'
 import { SqlBool } from '../util/type-utils.js'
@@ -131,7 +132,7 @@ export class ExpressionWrapper<DB, TB extends keyof DB, T>
     : KyselyTypeError<'or() method can only be called on boolean expressions'>
 
   or(
-    expression: Expression<SqlBool>
+    expression: OperandExpression<SqlBool>
   ): T extends SqlBool
     ? OrWrapper<DB, TB, SqlBool>
     : KyselyTypeError<'or() method can only be called on boolean expressions'>
@@ -211,7 +212,7 @@ export class ExpressionWrapper<DB, TB extends keyof DB, T>
     : KyselyTypeError<'and() method can only be called on boolean expressions'>
 
   and(
-    expression: Expression<SqlBool>
+    expression: OperandExpression<SqlBool>
   ): T extends SqlBool
     ? AndWrapper<DB, TB, SqlBool>
     : KyselyTypeError<'and() method can only be called on boolean expressions'>
@@ -328,7 +329,7 @@ export class OrWrapper<DB, TB extends keyof DB, T extends SqlBool>
     rhs: OperandValueExpressionOrList<DB, TB, RE>
   ): OrWrapper<DB, TB, T>
 
-  or(expression: Expression<SqlBool>): OrWrapper<DB, TB, T>
+  or(expression: OperandExpression<SqlBool>): OrWrapper<DB, TB, T>
 
   or(...args: any[]): any {
     return new OrWrapper(
@@ -411,7 +412,7 @@ export class AndWrapper<DB, TB extends keyof DB, T extends SqlBool>
     rhs: OperandValueExpressionOrList<DB, TB, RE>
   ): AndWrapper<DB, TB, T>
 
-  and(expression: Expression<SqlBool>): AndWrapper<DB, TB, T>
+  and(expression: OperandExpression<SqlBool>): AndWrapper<DB, TB, T>
 
   and(...args: any[]): any {
     return new AndWrapper(
