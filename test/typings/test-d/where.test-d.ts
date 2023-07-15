@@ -81,6 +81,24 @@ function testWhere(db: Kysely<Database>) {
   db.selectFrom('person').where(sql`whatever`, '=', true)
   db.selectFrom('person').where(sql`whatever`, '=', '1')
 
+  // Boolean returning select query
+  db.selectFrom('person')
+    .selectAll()
+    .where(
+      db
+        .selectFrom('pet')
+        .select((eb) => eb('name', '=', 'Doggo').as('is_doggo'))
+    )
+
+  // Boolean returning select query using a callback
+  db.selectFrom('person')
+    .selectAll()
+    .where((eb) =>
+      eb
+        .selectFrom('pet')
+        .select((eb) => eb('name', '=', 'Doggo').as('is_doggo'))
+    )
+
   // List value
   db.selectFrom('person').where('gender', 'in', ['female', 'male'])
 
@@ -128,4 +146,20 @@ function testWhere(db: Kysely<Database>) {
 
   // Invalid type for column
   expectError(db.selectFrom('person').where(sql<string>`first_name`, '=', 1))
+
+  // Non-boolean returning select query
+  expectError(
+    db
+      .selectFrom('person')
+      .selectAll()
+      .where(db.selectFrom('pet').select('name'))
+  )
+
+  // Non-boolean returning select query using a callback
+  expectError(
+    db
+      .selectFrom('person')
+      .selectAll()
+      .where((eb) => eb.selectFrom('pet').select('name'))
+  )
 }

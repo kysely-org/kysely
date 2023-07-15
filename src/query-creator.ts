@@ -1,4 +1,7 @@
-import { SelectQueryBuilder } from './query-builder/select-query-builder.js'
+import {
+  SelectQueryBuilder,
+  createSelectQueryBuilder,
+} from './query-builder/select-query-builder.js'
 import { InsertQueryBuilder } from './query-builder/insert-query-builder.js'
 import { DeleteQueryBuilder } from './query-builder/delete-query-builder.js'
 import { UpdateQueryBuilder } from './query-builder/update-query-builder.js'
@@ -176,7 +179,7 @@ export class QueryCreator<DB> {
   ): SelectQueryBuilder<From<DB, TE>, FromTables<DB, never, TE>, {}>
 
   selectFrom(from: TableExpressionOrList<any, any>): any {
-    return new SelectQueryBuilder({
+    return createSelectQueryBuilder({
       queryId: createQueryId(),
       executor: this.#props.executor,
       queryNode: SelectQueryNode.create(

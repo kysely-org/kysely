@@ -247,3 +247,7 @@ export {
   FilterObject,
 } from './parser/binary-operation-parser.js'
 export { ExistsExpression } from './parser/unary-operation-parser.js'
+export {
+  OperandExpression,
+  ExpressionOrFactory,
+} from './parser/expression-parser.js'

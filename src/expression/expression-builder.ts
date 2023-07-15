@@ -1,4 +1,7 @@
-import { SelectQueryBuilder } from '../query-builder/select-query-builder.js'
+import {
+  SelectQueryBuilder,
+  createSelectQueryBuilder,
+} from '../query-builder/select-query-builder.js'
 import { SelectQueryNode } from '../operation-node/select-query-node.js'
 import {
   parseTableExpressionOrList,
@@ -56,6 +59,7 @@ import { CaseBuilder } from '../query-builder/case-builder.js'
 import { CaseNode } from '../operation-node/case-node.js'
 import { isReadonlyArray, isUndefined } from '../util/object-utils.js'
 import { JSONPathBuilder } from '../query-builder/json-path-builder.js'
+import { OperandExpression } from '../parser/expression-parser.js'
 
 export interface ExpressionBuilder<DB, TB extends keyof DB> {
   /**
@@ -608,7 +612,7 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    * ```
    */
   and(
-    exprs: ReadonlyArray<Expression<SqlBool>>
+    exprs: ReadonlyArray<OperandExpression<SqlBool>>
   ): ExpressionWrapper<DB, TB, SqlBool>
 
   and(exprs: Readonly<FilterObject<DB, TB>>): ExpressionWrapper<DB, TB, SqlBool>
@@ -670,7 +674,7 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    * ```
    */
   or(
-    exprs: ReadonlyArray<Expression<SqlBool>>
+    exprs: ReadonlyArray<OperandExpression<SqlBool>>
   ): ExpressionWrapper<DB, TB, SqlBool>
 
   or(exprs: Readonly<FilterObject<DB, TB>>): ExpressionWrapper<DB, TB, SqlBool>
@@ -771,7 +775,7 @@ export function createExpressionBuilder<DB, TB extends keyof DB>(
     eb: undefined! as ExpressionBuilder<DB, TB>,
 
     selectFrom(table: TableExpressionOrList<DB, TB>): any {
-      return new SelectQueryBuilder({
+      return createSelectQueryBuilder({
         queryId: createQueryId(),
         executor: executor,
         queryNode: SelectQueryNode.create(parseTableExpressionOrList(table)),
@@ -866,7 +870,9 @@ export function createExpressionBuilder<DB, TB extends keyof DB>(
     },
 
     and(
-      exprs: ReadonlyArray<Expression<SqlBool>> | Readonly<FilterObject<DB, TB>>
+      exprs:
+        | ReadonlyArray<OperandExpression<SqlBool>>
+        | Readonly<FilterObject<DB, TB>>
     ): ExpressionWrapper<DB, TB, SqlBool> {
       if (isReadonlyArray(exprs)) {
         return new ExpressionWrapper(parseFilterList(exprs, 'and'))
@@ -876,7 +882,9 @@ export function createExpressionBuilder<DB, TB extends keyof DB>(
     },
 
     or(
-      exprs: ReadonlyArray<Expression<SqlBool>> | Readonly<FilterObject<DB, TB>>
+      exprs:
+        | ReadonlyArray<OperandExpression<SqlBool>>
+        | Readonly<FilterObject<DB, TB>>
     ): ExpressionWrapper<DB, TB, SqlBool> {
       if (isReadonlyArray(exprs)) {
         return new ExpressionWrapper(parseFilterList(exprs, 'or'))

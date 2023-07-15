@@ -13,7 +13,8 @@ import {
   parseReferentialBinaryOperation,
   parseValueBinaryOperationOrExpression,
 } from '../parser/binary-operation-parser.js'
-import { WhereExpressionFactory } from './where-interface.js'
+import { SqlBool } from '../util/type-utils.js'
+import { ExpressionOrFactory } from '../parser/expression-parser.js'
 
 export class AggregateFunctionBuilder<DB, TB extends keyof DB, O = unknown>
   implements Expression<O>
@@ -138,10 +139,8 @@ export class AggregateFunctionBuilder<DB, TB extends keyof DB, O = unknown>
   ): AggregateFunctionBuilder<DB, TB, O>
 
   filterWhere(
-    factory: WhereExpressionFactory<DB, TB>
+    expression: ExpressionOrFactory<DB, TB, SqlBool>
   ): AggregateFunctionBuilder<DB, TB, O>
-
-  filterWhere(expression: Expression<any>): AggregateFunctionBuilder<DB, TB, O>
 
   filterWhere(...args: any[]): any {
     return new AggregateFunctionBuilder({
