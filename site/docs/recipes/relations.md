@@ -13,7 +13,13 @@ In this recipe we show one way to do that when using the built-in PostgreSQL, My
 
 ## The `json` data type and functions
 
-PostgreSQL, MySQL, and SQLite have rich JSON support through their `json` data types and functions. `pg` and `mysql2`, the node drivers, automatically parse returned `json` columns as json objects. With the combination of these two things, we can write some super efficient queries with nested relations.
+PostgreSQL and MySQL have rich JSON support through their `json` data types and functions. `pg` and `mysql2`, the node drivers, automatically parse returned `json` columns as json objects. With the combination of these two things, we can write some super efficient queries with nested relations.
+
+With the `ParseJSONResultsPlugin`, SQLite can also automatically parse results:
+
+```ts
+db = db.withPlugin(new ParseJSONResultsPlugin())
+```
 
 Let's start with some raw postgres SQL, and then see how we can write the query using Kysely in a nice type-safe way.
 
