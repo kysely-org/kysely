@@ -9,6 +9,11 @@ import {
   jsonObjectFrom as mysql_jsonObjectFrom,
   jsonBuildObject as mysql_jsonBuildObject,
 } from '../../../helpers/mysql'
+import {
+  jsonArrayFrom as sqlite_jsonArrayFrom,
+  jsonObjectFrom as sqlite_jsonObjectFrom,
+  jsonBuildObject as sqlite_jsonBuildObject,
+} from '../../../helpers/sqlite'
 
 import {
   destroyTest,
@@ -31,19 +36,27 @@ interface JsonTable {
   }
 }
 
+const jsonFunctions = {
+  postgres: {
+    jsonArrayFrom: pg_jsonArrayFrom,
+    jsonObjectFrom: pg_jsonObjectFrom,
+    jsonBuildObject: pg_jsonBuildObject,
+  },
+  mysql: {
+    jsonArrayFrom: mysql_jsonArrayFrom,
+    jsonObjectFrom: mysql_jsonObjectFrom,
+    jsonBuildObject: mysql_jsonBuildObject,
+  },
+  sqlite: {
+    jsonArrayFrom: sqlite_jsonArrayFrom,
+    jsonObjectFrom: sqlite_jsonObjectFrom,
+    jsonBuildObject: sqlite_jsonBuildObject,
+  },
+} as const
+
 for (const dialect of DIALECTS) {
-  if (dialect !== 'postgres' && dialect !== 'mysql') {
-    continue
-  }
-
-  const jsonArrayFrom =
-    dialect === 'postgres' ? pg_jsonArrayFrom : mysql_jsonArrayFrom
-
-  const jsonObjectFrom =
-    dialect === 'postgres' ? pg_jsonObjectFrom : mysql_jsonObjectFrom
-
-  const jsonBuildObject =
-    dialect === 'postgres' ? pg_jsonBuildObject : mysql_jsonBuildObject
+  const { jsonArrayFrom, jsonObjectFrom, jsonBuildObject } =
+    jsonFunctions[dialect]
 
   describe(`${dialect} json tests`, () => {
     let ctx: TestContext
