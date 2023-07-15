@@ -121,7 +121,7 @@ export function jsonObjectFrom<O>(
  * The SQLite `json_object` function.
  *
  * NOTE: This helper is only guaranteed to fully work with the built-in `SQLiteDialect`.
- * While the produced SQL is compatibe with all SQLite databases, some 3rd party dialects
+ * While the produced SQL is compatible with all SQLite databases, some 3rd party dialects
  * may not parse the nested results into objects.
  *
  * ### Examples
