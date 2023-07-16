@@ -393,13 +393,6 @@ export class CreateTableBuilder<TB extends string, C extends string = never>
     return func(this)
   }
 
-  /**
-   * @deprecated Use `$call` instead
-   */
-  call<T>(func: (qb: this) => T): T {
-    return this.$call(func)
-  }
-
   toOperationNode(): CreateTableNode {
     return this.#props.executor.transformQuery(
       this.#props.node,

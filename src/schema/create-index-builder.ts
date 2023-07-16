@@ -19,11 +19,11 @@ import { freeze } from '../util/object-utils.js'
 import { Expression } from '../expression/expression.js'
 import {
   ComparisonOperatorExpression,
-  parseWhere,
+  parseValueBinaryOperationOrExpression,
 } from '../parser/binary-operation-parser.js'
 import { QueryNode } from '../operation-node/query-node.js'
 import { ExpressionBuilder } from '../expression/expression-builder.js'
-import { SqlBool } from '../util/type-utils.js'
+import { ShallowRecord, SqlBool } from '../util/type-utils.js'
 import { ImmediateValueTransformer } from '../plugin/immediate-value/immediate-value-transformer.js'
 
 export class CreateIndexBuilder<C = never>
@@ -224,11 +224,14 @@ export class CreateIndexBuilder<C = never>
 
   where(
     factory: (
-      qb: ExpressionBuilder<Record<string, Record<C & string, any>>, string>
+      qb: ExpressionBuilder<
+        ShallowRecord<string, ShallowRecord<C & string, any>>,
+        string
+      >
     ) => Expression<SqlBool>
   ): CreateIndexBuilder<C>
 
-  where(expression: Expression<any>): CreateIndexBuilder<C>
+  where(expression: Expression<SqlBool>): CreateIndexBuilder<C>
 
   where(...args: any[]): any {
     const transformer = new ImmediateValueTransformer()
@@ -237,7 +240,7 @@ export class CreateIndexBuilder<C = never>
       ...this.#props,
       node: QueryNode.cloneWithWhere(
         this.#props.node,
-        transformer.transformNode(parseWhere(args))
+        transformer.transformNode(parseValueBinaryOperationOrExpression(args))
       ),
     })
   }

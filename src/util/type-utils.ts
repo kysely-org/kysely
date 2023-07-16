@@ -35,10 +35,12 @@ import { KyselyTypeError } from './type-error.js'
  * // Columns == 'id' | 'name' | 'species'
  * ```
  */
-export type AnyColumn<DB, TB extends keyof DB> = {
-  [T in TB]: keyof DB[T]
-}[TB] &
-  string
+export type AnyColumn<DB, TB extends keyof DB> = DrainOuterGeneric<
+  {
+    [T in TB]: keyof DB[T]
+  }[TB] &
+    string
+>
 
 /**
  * Extracts a column type.
@@ -134,7 +136,7 @@ export type SimplifyResult<O> = O extends InsertResult
   ? O
   : Simplify<O>
 
-export type Simplify<T> = { [K in keyof T]: T[K] } & {}
+export type Simplify<T> = DrainOuterGeneric<{ [K in keyof T]: T[K] } & {}>
 
 /**
  * Represents a database row whose column names and their types are unknown.
@@ -147,31 +149,14 @@ export type UnknownRow = Record<string, unknown>
 export type Nullable<T> = { [P in keyof T]: T[P] | null }
 
 /**
- * Takes all properties from T1 and merges all properties from T2
- * that don't exist in T1 as optional properties.
- *
- * Example:
- *
- * interface Person {
- *   name: string
- *   age: number
- * }
- *
- * interface Pet {
- *   name: string
- *   species: 'cat' | 'dog'
- * }
- *
- * type Merged = MergePartial<Person, Pet>
- *
- * // { name: string, age: number, species?: 'cat' | 'dog' }
- */
-export type MergePartial<T1, T2> = T1 & Partial<Omit<T2, keyof T1>>
-
-/**
  * Evaluates to `true` if `T` is `never`.
  */
 export type IsNever<T> = [T] extends [never] ? true : false
+
+/**
+ * Evaluates to `true` if `T` is `any`.
+ */
+export type IsAny<T> = 0 extends T & 1 ? true : false
 
 /**
  * Evaluates to `true` if the types `T` and `U` are equal.
@@ -182,12 +167,45 @@ export type Equals<T, U> = (<G>() => G extends T ? 1 : 2) extends <
   ? true
   : false
 
-export type NarrowPartial<S, T> = {
+export type NarrowPartial<S, T> = DrainOuterGeneric<{
   [K in keyof S & string]: K extends keyof T
     ? T[K] extends S[K]
       ? T[K]
       : KyselyTypeError<`$narrowType() call failed: passed type does not exist in '${K}'s type union`>
     : S[K]
-}
+}>
 
 export type SqlBool = boolean | 0 | 1
+
+/**
+ * Utility to reduce depth of TypeScript's internal type instantiation stack.
+ *
+ * Example:
+ *
+ * ```ts
+ * type A<T> = { item: T }
+ *
+ * type Test<T> = A<
+ *   A<A<A<A<A<A<A<A<A<A<A<A<A<A<A<A<A<A<A<A<A<A<A<A<T>>>>>>>>>>>>>>>>>>>>>>>>
+ * >
+ *
+ * type Error = Test<number> // Type instantiation is excessively deep and possibly infinite.ts (2589)
+ * ```
+ *
+ * To fix this, we can use `DrainOuterGeneric`:
+ *
+ * ```ts
+ * type A<T> = DrainOuterGeneric<{ item: T }>
+ *
+ * type Test<T> = A<
+ *  A<A<A<A<A<A<A<A<A<A<A<A<A<A<A<A<A<A<A<A<A<A<A<A<T>>>>>>>>>>>>>>>>>>>>>>>>
+ * >
+ *
+ * type Ok = Test<number> // Ok
+ * ```
+ */
+export type DrainOuterGeneric<T> = [T] extends [unknown] ? T : never
+
+export type ShallowRecord<K extends keyof any, T> = DrainOuterGeneric<{
+  [P in K]: T
+}>

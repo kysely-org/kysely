@@ -70,7 +70,9 @@ export class PostgresIntrospector implements DatabaseIntrospector {
           .as('auto_incrementing'),
       ])
       // r == normal table
-      .where('c.relkind', 'in', ['r', 'v'])
+      .where((eb) =>
+        eb.or([eb('c.relkind', '=', 'r'), eb('c.relkind', '=', 'v')])
+      )
       .where('ns.nspname', '!~', '^pg_')
       .where('ns.nspname', '!=', 'information_schema')
       // No system columns

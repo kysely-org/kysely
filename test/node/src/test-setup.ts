@@ -39,6 +39,7 @@ export interface Person {
   middle_name: ColumnType<string | null, string | undefined, string | undefined>
   last_name: string | null
   gender: 'male' | 'female' | 'other'
+  marital_status: 'single' | 'married' | 'divorced' | 'widowed' | null
 }
 
 export interface Pet {
@@ -127,7 +128,7 @@ export const DIALECT_CONFIGS = {
   },
 }
 
-const DB_CONFIGS: PerDialect<KyselyConfig> = {
+export const DB_CONFIGS: PerDialect<KyselyConfig> = {
   postgres: {
     dialect: new PostgresDialect({
       pool: async () => new Pool(DIALECT_CONFIGS.postgres),
@@ -197,18 +198,21 @@ export const DEFAULT_DATA_SET: PersonInsertParams[] = [
     last_name: 'Aniston',
     gender: 'female',
     pets: [{ name: 'Catto', species: 'cat' }],
+    marital_status: 'divorced',
   },
   {
     first_name: 'Arnold',
     last_name: 'Schwarzenegger',
     gender: 'male',
     pets: [{ name: 'Doggo', species: 'dog' }],
+    marital_status: 'divorced',
   },
   {
     first_name: 'Sylvester',
     last_name: 'Stallone',
     gender: 'male',
     pets: [{ name: 'Hammo', species: 'hamster' }],
+    marital_status: 'married',
   },
 ]
 
@@ -248,6 +252,7 @@ async function createDatabase(
     .addColumn('middle_name', 'varchar(255)')
     .addColumn('last_name', 'varchar(255)')
     .addColumn('gender', 'varchar(50)', (col) => col.notNull())
+    .addColumn('marital_status', 'varchar(50)')
     .execute()
 
   await createTableWithId(db.schema, dialect, 'pet')

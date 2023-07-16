@@ -1,15 +1,9 @@
 export class UpdateResult {
-  readonly #numUpdatedRows: bigint
+  readonly numUpdatedRows: bigint
+  readonly numChangedRows?: bigint
 
-  constructor(numUpdatedRows: bigint) {
-    this.#numUpdatedRows = numUpdatedRows
-  }
-
-  get numUpdatedRows(): bigint {
-    return this.#numUpdatedRows
+  constructor(numUpdatedRows: bigint, numChangedRows: bigint | undefined) {
+    this.numUpdatedRows = numUpdatedRows
+    this.numChangedRows = numChangedRows
   }
 }
-
-Object.defineProperty(UpdateResult.prototype, 'numUpdatedRows', {
-  enumerable: true,
-})

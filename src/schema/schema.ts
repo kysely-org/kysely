@@ -201,8 +201,7 @@ export class SchemaModule {
    * ```ts
    * await db.schema
    *   .alterTable('person')
-   *   .alterColumn('first_name')
-   *   .setDataType('text')
+   *   .alterColumn('first_name', (ac) => ac.setDataType('text'))
    *   .execute()
    * ```
    */
@@ -210,7 +209,7 @@ export class SchemaModule {
     return new AlterTableBuilder({
       queryId: createQueryId(),
       executor: this.#executor,
-      node: AlterTableNode.create(table),
+      node: AlterTableNode.create(parseTable(table)),
     })
   }
 

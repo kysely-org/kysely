@@ -94,6 +94,12 @@ import { BinaryOperationNode } from '../operation-node/binary-operation-node.js'
 import { UnaryOperationNode } from '../operation-node/unary-operation-node.js'
 import { UsingNode } from '../operation-node/using-node.js'
 import { FunctionNode } from '../operation-node/function-node.js'
+import { CaseNode } from '../operation-node/case-node.js'
+import { WhenNode } from '../operation-node/when-node.js'
+import { JSONReferenceNode } from '../operation-node/json-reference-node.js'
+import { JSONPathNode } from '../operation-node/json-path-node.js'
+import { JSONPathLegNode } from '../operation-node/json-path-leg-node.js'
+import { JSONOperatorChainNode } from '../operation-node/json-operator-chain-node.js'
 
 export class DefaultQueryCompiler
   extends OperationNodeVisitor
@@ -126,6 +132,7 @@ export class DefaultQueryCompiler
   protected override visitSelectQuery(node: SelectQueryNode): void {
     const wrapInParens =
       this.parentNode !== undefined &&
+      !ParensNode.is(this.parentNode) &&
       !InsertQueryNode.is(this.parentNode) &&
       !CreateViewNode.is(this.parentNode) &&
       !SetOperationNode.is(this.parentNode)
@@ -386,8 +393,11 @@ export class DefaultQueryCompiler
   }
 
   protected override visitReference(node: ReferenceNode): void {
-    this.visitNode(node.table)
-    this.append('.')
+    if (node.table) {
+      this.visitNode(node.table)
+      this.append('.')
+    }
+
     this.visitNode(node.column)
   }
 
@@ -929,6 +939,15 @@ export class DefaultQueryCompiler
   ): void {
     this.visitNode(node.name)
     this.append(' as ')
+
+    if (isBoolean(node.materialized)) {
+      if (!node.materialized) {
+        this.append('not ')
+      }
+      
+      this.append('materialized ')
+    }
+
     this.visitNode(node.expression)
   }
 
@@ -1213,7 +1232,7 @@ export class DefaultQueryCompiler
       this.append('distinct ')
     }
 
-    this.visitNode(node.aggregated)
+    this.compileList(node.aggregated)
     this.append(')')
 
     if (node.filter) {
@@ -1287,6 +1306,85 @@ export class DefaultQueryCompiler
     this.append('(')
     this.compileList(node.arguments)
     this.append(')')
+  }
+
+  protected override visitCase(node: CaseNode): void {
+    this.append('case')
+
+    if (node.value) {
+      this.append(' ')
+      this.visitNode(node.value)
+    }
+
+    if (node.when) {
+      this.append(' ')
+      this.compileList(node.when, ' ')
+    }
+
+    if (node.else) {
+      this.append(' else ')
+      this.visitNode(node.else)
+    }
+
+    this.append(' end')
+
+    if (node.isStatement) {
+      this.append(' case')
+    }
+  }
+
+  protected override visitWhen(node: WhenNode): void {
+    this.append('when ')
+
+    this.visitNode(node.condition)
+
+    if (node.result) {
+      this.append(' then ')
+      this.visitNode(node.result)
+    }
+  }
+
+  protected override visitJSONReference(node: JSONReferenceNode): void {
+    this.visitNode(node.reference)
+    this.visitNode(node.traversal)
+  }
+
+  protected override visitJSONPath(node: JSONPathNode): void {
+    if (node.inOperator) {
+      this.visitNode(node.inOperator)
+    }
+
+    this.append("'$")
+
+    for (const pathLeg of node.pathLegs) {
+      this.visitNode(pathLeg)
+    }
+
+    this.append("'")
+  }
+
+  protected override visitJSONPathLeg(node: JSONPathLegNode): void {
+    const isArrayLocation = node.type === 'ArrayLocation'
+
+    this.append(isArrayLocation ? '[' : '.')
+
+    this.append(String(node.value))
+
+    if (isArrayLocation) {
+      this.append(']')
+    }
+  }
+
+  protected override visitJSONOperatorChain(node: JSONOperatorChainNode): void {
+    for (let i = 0, len = node.values.length; i < len; i++) {
+      if (i === len - 1) {
+        this.visitNode(node.operator)
+      } else {
+        this.append('->')
+      }
+
+      this.visitNode(node.values[i])
+    }
   }
 
   protected append(str: string): void {

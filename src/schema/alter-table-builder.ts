@@ -70,9 +70,7 @@ export class AlterTableBuilder implements ColumnAlteringInterface {
     column: string,
     alteration: AlterColumnBuilderCallback
   ): AlterTableColumnAlteringBuilder {
-    const builder = alteration(
-      new AlterColumnBuilder(AlterColumnNode.create(column))
-    )
+    const builder = alteration(new AlterColumnBuilder(column))
 
     return new AlterTableColumnAlteringBuilder({
       ...this.#props,
@@ -232,13 +230,6 @@ export class AlterTableBuilder implements ColumnAlteringInterface {
   $call<T>(func: (qb: this) => T): T {
     return func(this)
   }
-
-  /**
-   * @deprecated Use `$call` instead
-   */
-  call<T>(func: (qb: this) => T): T {
-    return this.$call(func)
-  }
 }
 
 export interface AlterTableBuilderProps {
@@ -291,9 +282,7 @@ export class AlterTableColumnAlteringBuilder
     column: string,
     alteration: AlterColumnBuilderCallback
   ): AlterTableColumnAlteringBuilder {
-    const builder = alteration(
-      new AlterColumnBuilder(AlterColumnNode.create(column))
-    )
+    const builder = alteration(new AlterColumnBuilder(column))
 
     return new AlterTableColumnAlteringBuilder({
       ...this.#props,

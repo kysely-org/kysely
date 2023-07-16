@@ -13,6 +13,7 @@ async function testFromSingle(db: Kysely<Database>) {
     age: number
     gender: 'male' | 'female' | 'other'
     modified_at: Date
+    marital_status: 'single' | 'married' | 'divorced' | 'widowed' | null
   }>(r1)
 
   // Table with alias
@@ -89,6 +90,9 @@ async function testFromSingle(db: Kysely<Database>) {
     .execute()
   expectType<{ one: 1 }>(r10)
 
+  const [r11] = await db.selectFrom('book').select('id').execute()
+  expectType<{ id: number }>(r11)
+
   // Should not be able to select animal columns from person.
   expectError(db.selectFrom('person').select('pet.id'))
 
@@ -97,9 +101,6 @@ async function testFromSingle(db: Kysely<Database>) {
 
   // Should not be able to start a query against non-existent aliased table.
   expectError(db.selectFrom('doesnt_exists as de'))
-
-  const [r11] = await db.selectFrom('book').select('id').execute()
-  expectType<{ id: number }>(r11)
 }
 
 async function testFromMultiple(db: Kysely<Database>) {

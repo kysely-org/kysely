@@ -1,3 +1,5 @@
+import { ShallowRecord } from './type-utils.js'
+
 export function isEmpty(obj: ArrayLike<unknown> | string | object): boolean {
   if (Array.isArray(obj) || isString(obj) || isBuffer(obj)) {
     return obj.length === 0
@@ -46,7 +48,7 @@ export function isFunction(obj: unknown): obj is Function {
   return typeof obj === 'function'
 }
 
-export function isObject(obj: unknown): obj is Record<string, unknown> {
+export function isObject(obj: unknown): obj is ShallowRecord<string, unknown> {
   return typeof obj === 'object' && obj !== null
 }
 

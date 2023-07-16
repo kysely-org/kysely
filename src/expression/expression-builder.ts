@@ -1,4 +1,7 @@
-import { SelectQueryBuilder } from '../query-builder/select-query-builder.js'
+import {
+  SelectQueryBuilder,
+  createSelectQueryBuilder,
+} from '../query-builder/select-query-builder.js'
 import { SelectQueryNode } from '../operation-node/select-query-node.js'
 import {
   parseTableExpressionOrList,
@@ -18,25 +21,31 @@ import {
 } from '../query-builder/function-module.js'
 import {
   ExtractTypeFromReferenceExpression,
+  parseJSONReference,
+  parseReferenceExpression,
   parseStringReference,
   ReferenceExpression,
+  SimpleReferenceExpression,
   StringReference,
 } from '../parser/reference-parser.js'
 import { QueryExecutor } from '../query-executor/query-executor.js'
 import {
   BinaryOperatorExpression,
   ComparisonOperatorExpression,
+  FilterObject,
   OperandValueExpression,
   OperandValueExpressionOrList,
+  parseFilterList,
+  parseFilterObject,
   parseValueBinaryOperation,
+  parseValueBinaryOperationOrExpression,
 } from '../parser/binary-operation-parser.js'
 import { Expression } from './expression.js'
-import { AndNode } from '../operation-node/and-node.js'
-import { OrNode } from '../operation-node/or-node.js'
 import { ParensNode } from '../operation-node/parens-node.js'
 import { ExpressionWrapper } from './expression-wrapper.js'
 import {
   ComparisonOperator,
+  JSONOperatorWith$,
   UnaryOperator,
 } from '../operation-node/operator-node.js'
 import { SqlBool } from '../util/type-utils.js'
@@ -46,9 +55,95 @@ import {
   parseValueExpressionOrList,
 } from '../parser/value-parser.js'
 import { NOOP_QUERY_EXECUTOR } from '../query-executor/noop-query-executor.js'
-import { ValueNode } from '../operation-node/value-node.js'
+import { CaseBuilder } from '../query-builder/case-builder.js'
+import { CaseNode } from '../operation-node/case-node.js'
+import { isReadonlyArray, isUndefined } from '../util/object-utils.js'
+import { JSONPathBuilder } from '../query-builder/json-path-builder.js'
+import { OperandExpression } from '../parser/expression-parser.js'
 
 export interface ExpressionBuilder<DB, TB extends keyof DB> {
+  /**
+   * Creates a binary expression.
+   *
+   * This function returns an {@link Expression} and can be used pretty much anywhere.
+   * See the examples for a couple of possible use cases.
+   *
+   * ### Examples
+   *
+   * In the following example `eb` is used to increment an integer column:
+   *
+   * ```ts
+   * db.updateTable('person')
+   *   .set((eb) => ({
+   *     age: eb('age', '+', 1)
+   *   }))
+   *   .where('id', '=', id)
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * update "person"
+   * set "age" = "age" + $1
+   * where "id" = $2
+   * ```
+   *
+   * By default the third argument is a value. {@link ref} can be used to
+   * pass in a column reference instead:
+   *
+   * ```ts
+   * db.updateTable('person')
+   *   .set((eb) => ({
+   *     age: eb('age', '+', eb.ref('age'))
+   *   }))
+   *   .where('id', '=', id)
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * update "person"
+   * set "age" = "age" + "age"
+   * where "id" = $1
+   * ```
+   */
+  <RE extends ReferenceExpression<DB, TB>, OP extends BinaryOperatorExpression>(
+    lhs: RE,
+    op: OP,
+    rhs: OperandValueExpressionOrList<DB, TB, RE>
+  ): ExpressionWrapper<
+    DB,
+    TB,
+    OP extends ComparisonOperator
+      ? SqlBool
+      : ExtractTypeFromReferenceExpression<DB, TB, RE>
+  >
+
+  /**
+   * Returns a copy of `this` expression builder, for destructuring purposes.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * db.selectFrom('person')
+   *   .where(({ eb, exists, selectFrom }) =>
+   *     eb('first_name', '=', 'Jennifer').and(
+   *       exists(selectFrom('pet').whereRef('owner_id', '=', 'person.id').select('pet.id'))
+   *     )
+   *   )
+   *   .selectAll()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * select * from "person" where "first_name" = $1 and exists (
+   *   select "pet.id" from "pet" where "owner_id" = "person.id"
+   * )
+   * ```
+   */
+  eb: ExpressionBuilder<DB, TB>
+
   /**
    * Returns a {@link FunctionModule} that can be used to write type safe function
    * calls.
@@ -66,7 +161,7 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    *     eb.fn.count('pet.id').as('pet_count')
    *   ])
    *   .groupBy('person.id')
-   *   .having(count('pet.id'), '>', 10)
+   *   .having((eb) => eb.fn.count('pet.id'), '>', 10)
    *   .execute()
    * ```
    *
@@ -151,25 +246,87 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
   ): SelectQueryBuilder<From<DB, TE>, FromTables<DB, TB, TE>, {}>
 
   /**
-   * This can be used to reference columns.
+   * Creates a `case` statement/operator.
    *
    * ### Examples
    *
-   * By default the third argument of {@link bxp} and {@link cmpr} is a value.
+   * Kitchen sink example with 2 flavors of `case` operator:
+   *
+   * ```ts
+   * import { sql } from 'kysely'
+   *
+   * const { title, name } = await db
+   *   .selectFrom('person')
+   *   .where('id', '=', '123')
+   *   .select((eb) => [
+   *     eb.fn.coalesce('last_name', 'first_name').as('name'),
+   *     eb
+   *       .case()
+   *       .when('gender', '=', 'male')
+   *       .then('Mr.')
+   *       .when('gender', '=', 'female')
+   *       .then(
+   *         eb
+   *           .case('martialStatus')
+   *           .when('single')
+   *           .then('Ms.')
+   *           .else('Mrs.')
+   *           .end()
+   *       )
+   *       .end()
+   *       .as('title'),
+   *   ])
+   *   .executeTakeFirstOrThrow()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * select
+   *   coalesce("last_name", "first_name") as "name",
+   *   case
+   *     when "gender" = $1 then $2
+   *     when "gender" = $3 then
+   *       case "martialStatus"
+   *         when $4 then $5
+   *         else $6
+   *       end
+   *   end as "title"
+   * from "person"
+   * where "id" = $7
+   * ```
+   */
+  case(): CaseBuilder<DB, TB>
+
+  case<C extends SimpleReferenceExpression<DB, TB>>(
+    column: C
+  ): CaseBuilder<DB, TB, ExtractTypeFromReferenceExpression<DB, TB, C>>
+
+  case<O>(expression: Expression<O>): CaseBuilder<DB, TB, O>
+
+  /**
+   * This method can be used to reference columns within the query's context. For
+   * a non-type-safe version of this method see {@link sql}'s version.
+   *
+   * Additionally, this method can be used to reference nested JSON properties or
+   * array elements. See {@link JSONPathBuilder} for more information.
+   *
+   * ### Examples
+   *
+   * By default the third argument of binary expressions is a value.
    * This function can be used to pass in a column reference instead:
    *
    * ```ts
    * db.selectFrom('person')
    *   .selectAll('person')
-   *   .where(({ or, cmpr, ref }) => or([
-   *     cmpr('first_name', '=', ref('last_name')),
-   *     cmpr('first_name', '=', ref('middle_name'))
+   *   .where((eb) => eb.or([
+   *     eb('first_name', '=', eb.ref('last_name')),
+   *     eb('first_name', '=', eb.ref('middle_name'))
    *   ]))
    * ```
    *
-   * In the next example we use the `ref` method to reference
-   * columns of the virtual table `excluded` in a type-safe way
-   * to create an upsert operation:
+   * In the next example we use the `ref` method to reference columns of the virtual
+   * table `excluded` in a type-safe way to create an upsert operation:
    *
    * ```ts
    * db.insertInto('person')
@@ -183,18 +340,59 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    *   )
    * ```
    *
-   * In the next example we use `ref` in a raw sql expression. Unless you
-   * want to be as type-safe as possible, this is probably overkill:
+   * In the next example we use `ref` in a raw sql expression. Unless you want
+   * to be as type-safe as possible, this is probably overkill:
    *
    * ```ts
    * db.update('pet').set((eb) => ({
    *   name: sql`concat(${eb.ref('pet.name')}, ${suffix})`
    * }))
    * ```
+   *
+   * In the next example we use `ref` to reference a nested JSON property:
+   *
+   * ```ts
+   * db.selectFrom('person')
+   *   .where(({ eb, ref }) => eb(
+   *     ref('address', '->').key('state').key('abbr'),
+   *     '=',
+   *     'CA'
+   *   ))
+   *   .selectAll()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * select * from "person" where "address"->'state'->'abbr' = $1
+   * ```
+   *
+   * You can also compile to a JSON path expression by using the `->$`or `->>$` operator:
+   *
+   * ```ts
+   * db.selectFrom('person')
+   *   .select(({ ref }) =>
+   *     ref('experience', '->$')
+   *       .at('last')
+   *       .key('title')
+   *       .as('current_job')
+   *   )
+   * ```
+   *
+   * The generated SQL (MySQL):
+   *
+   * ```sql
+   * select `experience`->'$[last].title' as `current_job` from `person`
+   * ```
    */
   ref<RE extends StringReference<DB, TB>>(
     reference: RE
-  ): ExpressionWrapper<ExtractTypeFromReferenceExpression<DB, TB, RE>>
+  ): ExpressionWrapper<DB, TB, ExtractTypeFromReferenceExpression<DB, TB, RE>>
+
+  ref<RE extends StringReference<DB, TB>>(
+    reference: RE,
+    op: JSONOperatorWith$
+  ): JSONPathBuilder<ExtractTypeFromReferenceExpression<DB, TB, RE>>
 
   /**
    * Returns a value expression.
@@ -205,11 +403,11 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    *
    * ### Examples
    *
-   * The {@link cmpr} function takes a reference by default as the first argument. `val` could
+   * Binary expressions take a reference by default as the first argument. `val` could
    * be used to pass in a value instead:
    *
    * ```ts
-   * cmpr(val(38), '=', ref('age'))
+   * eb(val(38), '=', ref('age'))
    * ```
    *
    * The generated SQL (PostgreSQL):
@@ -220,60 +418,27 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    */
   val<VE>(
     value: VE
-  ): ExpressionWrapper<ExtractTypeFromValueExpressionOrList<VE>>
+  ): ExpressionWrapper<DB, TB, ExtractTypeFromValueExpressionOrList<VE>>
 
   /**
-   * Creates a binary comparison expression.
+   * @deprecated Use the expression builder as a function instead.
    *
-   * This function returns an {@link Expression} and can be used pretty much anywhere.
-   * See the examples for a couple of possible use cases.
-   *
-   * @see {@link bxp}
-   *
-   * ### Examples
-   *
-   * In this example we use `cmpr` and {@link or} to create a `WHERE expr1 OR expr2 OR expr3`
-   * statement:
+   * Before:
    *
    * ```ts
-   * db.selectFrom('person')
-   *   .selectAll('person')
-   *   .where(({ or, cmpr }) => or([
-   *     cmpr('first_name', '=', 'Jennifer'),
-   *     cmpr('fist_name', '=', 'Arnold'),
-   *     cmpr('fist_name', '=', 'Sylvester')
-   *   ]))
+   * where((eb) => eb.cmpr('first_name', '=', 'Jennifer'))
    * ```
    *
-   * The generated SQL (PostgreSQL):
-   *
-   * ```sql
-   * select "person".*
-   * from "person"
-   * where "first_name" = $1
-   * or "first_name" = $2
-   * or "first_name" = $3
-   * ```
-   *
-   * By default the third argument is a value. {@link ref} can be used to
-   * pass in a column reference instead:
+   * After:
    *
    * ```ts
-   * db.selectFrom('person')
-   *   .selectAll('person')
-   *   .where(({ or, cmpr, ref }) => or([
-   *     cmpr('first_name', '=', ref('last_name')),
-   *     cmpr('first_name', '=', ref('middle_name'))
-   *   ]))
+   * where((eb) => eb('first_name', '=', 'Jennifer'))
    * ```
    *
-   * The generated SQL (PostgreSQL):
+   * or
    *
-   * ```sql
-   * select "person".*
-   * from "person"
-   * where "first_name" = "last_name"
-   * or "first_name" = "middle_name"
+   * ```ts
+   * where(({ eb }) => eb('first_name', '=', 'Jennifer'))
    * ```
    */
   cmpr<
@@ -283,53 +448,33 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
     lhs: RE,
     op: ComparisonOperatorExpression,
     rhs: OperandValueExpressionOrList<DB, TB, RE>
-  ): ExpressionWrapper<O>
+  ): ExpressionWrapper<DB, TB, O>
 
   /**
-   * Creates a binary expression.
+   * @deprecated Use the expression builder as a function instead.
    *
-   * See {@link cmpr} for creating binary comparison operations.
-   *
-   * This function returns an {@link Expression} and can be used pretty much anywhere.
-   * See the examples for a couple of possible use cases.
-   *
-   * ### Examples
-   *
-   * In the following example `bxp` is used to increment an integer column:
+   * Before:
    *
    * ```ts
-   * db.updateTable('person')
-   *   .set((eb) => ({
-   *     age: eb.bxp('age', '+', 1)
-   *   }))
-   *   .where('id', '=', id)
+   * set((eb) => ({
+   *   age: eb.bxp('age', '+', 10)
+   * }))
    * ```
    *
-   * The generated SQL (PostgreSQL):
-   *
-   * ```sql
-   * update "person"
-   * set "age" = "age" + $1
-   * where "id" = $2
-   * ```
-   *
-   * By default the third argument is a value. {@link ref} can be used to
-   * pass in a column reference instead:
+   * After:
    *
    * ```ts
-   * db.updateTable('person')
-   *   .set((eb) => ({
-   *     age: eb.bxp('age', '+', eb.ref('age'))
-   *   }))
-   *   .where('id', '=', id)
+   * set((eb) => ({
+   *   age: eb('age', '+', 10)
+   * }))
    * ```
    *
-   * The generated SQL (PostgreSQL):
+   * or
    *
-   * ```sql
-   * update "person"
-   * set "age" = "age" + "age"
-   * where "id" = $1
+   * ```ts
+   * set(({ eb }) => ({
+   *   age: eb('age', '+', 10)
+   * }))
    * ```
    */
   bxp<
@@ -340,6 +485,8 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
     op: OP,
     rhs: OperandValueExpression<DB, TB, RE>
   ): ExpressionWrapper<
+    DB,
+    TB,
     OP extends ComparisonOperator
       ? SqlBool
       : ExtractTypeFromReferenceExpression<DB, TB, RE>
@@ -373,7 +520,7 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
   unary<RE extends ReferenceExpression<DB, TB>>(
     op: UnaryOperator,
     expr: RE
-  ): ExpressionWrapper<ExtractTypeFromReferenceExpression<DB, TB, RE>>
+  ): ExpressionWrapper<DB, TB, ExtractTypeFromReferenceExpression<DB, TB, RE>>
 
   /**
    * Creates a `not` operation.
@@ -384,7 +531,7 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    */
   not<RE extends ReferenceExpression<DB, TB>>(
     expr: RE
-  ): ExpressionWrapper<ExtractTypeFromReferenceExpression<DB, TB, RE>>
+  ): ExpressionWrapper<DB, TB, ExtractTypeFromReferenceExpression<DB, TB, RE>>
 
   /**
    * Creates an `exists` operation.
@@ -395,7 +542,7 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    */
   exists<RE extends ReferenceExpression<DB, TB>>(
     expr: RE
-  ): ExpressionWrapper<SqlBool>
+  ): ExpressionWrapper<DB, TB, SqlBool>
 
   /**
    * Creates a negation operation.
@@ -406,7 +553,7 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    */
   neg<RE extends ReferenceExpression<DB, TB>>(
     expr: RE
-  ): ExpressionWrapper<ExtractTypeFromReferenceExpression<DB, TB, RE>>
+  ): ExpressionWrapper<DB, TB, ExtractTypeFromReferenceExpression<DB, TB, RE>>
 
   /**
    * Combines two or more expressions using the logical `and` operator.
@@ -416,16 +563,16 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    *
    * ### Examples
    *
-   * In this example we use `and` with {@link cmpr} to create a `WHERE expr1 AND expr2 AND expr3`
+   * In this example we use `and` to create a `WHERE expr1 AND expr2 AND expr3`
    * statement:
    *
    * ```ts
    * db.selectFrom('person')
    *   .selectAll('person')
-   *   .where(({ and, cmpr }) => and([
-   *     cmpr('first_name', '=', 'Jennifer'),
-   *     cmpr('fist_name', '=', 'Arnold'),
-   *     cmpr('fist_name', '=', 'Sylvester')
+   *   .where((eb) => eb.and([
+   *     eb('first_name', '=', 'Jennifer'),
+   *     eb('fist_name', '=', 'Arnold'),
+   *     eb('fist_name', '=', 'Sylvester')
    *   ]))
    * ```
    *
@@ -434,12 +581,41 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    * ```sql
    * select "person".*
    * from "person"
-   * where "first_name" = $1
-   * and "first_name" = $2
-   * and "first_name" = $3
+   * where (
+   *   "first_name" = $1
+   *   and "first_name" = $2
+   *   and "first_name" = $3
+   * )
+   * ```
+   *
+   * Optionally you can use the simpler object notation if you only need
+   * equality comparisons:
+   *
+   * ```ts
+   * db.selectFrom('person')
+   *   .selectAll('person')
+   *   .where((eb) => eb.and({
+   *     first_name: 'Jennifer',
+   *     last_name: 'Aniston'
+   *   }))
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * select "person".*
+   * from "person"
+   * where (
+   *   "first_name" = $1
+   *   and "last_name" = $2
+   * )
    * ```
    */
-  and(expres: ReadonlyArray<Expression<SqlBool>>): ExpressionWrapper<SqlBool>
+  and(
+    exprs: ReadonlyArray<OperandExpression<SqlBool>>
+  ): ExpressionWrapper<DB, TB, SqlBool>
+
+  and(exprs: Readonly<FilterObject<DB, TB>>): ExpressionWrapper<DB, TB, SqlBool>
 
   /**
    * Combines two or more expressions using the logical `or` operator.
@@ -449,16 +625,16 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    *
    * ### Examples
    *
-   * In this example we use `or` with {@link cmpr} to create a `WHERE expr1 OR expr2 OR expr3`
+   * In this example we use `or` to create a `WHERE expr1 OR expr2 OR expr3`
    * statement:
    *
    * ```ts
    * db.selectFrom('person')
    *   .selectAll('person')
-   *   .where(({ or, cmpr }) => or([
-   *     cmpr('first_name', '=', 'Jennifer'),
-   *     cmpr('fist_name', '=', 'Arnold'),
-   *     cmpr('fist_name', '=', 'Sylvester')
+   *   .where((eb) => eb.or([
+   *     eb('first_name', '=', 'Jennifer'),
+   *     eb('fist_name', '=', 'Arnold'),
+   *     eb('fist_name', '=', 'Sylvester')
    *   ]))
    * ```
    *
@@ -467,12 +643,97 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    * ```sql
    * select "person".*
    * from "person"
-   * where "first_name" = $1
-   * or "first_name" = $2
-   * or "first_name" = $3
+   * where (
+   *   "first_name" = $1
+   *   or "first_name" = $2
+   *   or "first_name" = $3
+   * )
+   * ```
+   *
+   * Optionally you can use the simpler object notation if you only need
+   * equality comparisons:
+   *
+   * ```ts
+   * db.selectFrom('person')
+   *   .selectAll('person')
+   *   .where((eb) => eb.or({
+   *     first_name: 'Jennifer',
+   *     last_name: 'Aniston'
+   *   }))
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * select "person".*
+   * from "person"
+   * where (
+   *   "first_name" = $1
+   *   or "last_name" = $2
+   * )
    * ```
    */
-  or(expres: ReadonlyArray<Expression<SqlBool>>): ExpressionWrapper<SqlBool>
+  or(
+    exprs: ReadonlyArray<OperandExpression<SqlBool>>
+  ): ExpressionWrapper<DB, TB, SqlBool>
+
+  or(exprs: Readonly<FilterObject<DB, TB>>): ExpressionWrapper<DB, TB, SqlBool>
+
+  /**
+   * Wraps the expression in parentheses.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * db.selectFrom('person')
+   *   .selectAll('person')
+   *   .where((eb) => eb(eb.parens('age', '+', 1), '/', 100), '<', 0.1))
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * select "person".*
+   * from "person"
+   * where ("age" + $1) / $2 < $3
+   * ```
+   *
+   * You can also pass in any expression as the only argument:
+   *
+   * ```ts
+   * db.selectFrom('person')
+   *   .selectAll('person')
+   *   .where((eb) => parens(
+   *     eb('age', '=', 1).or('age', '=', 2))
+   *   ).and(
+   *     eb('first_name', '=', 'Jennifer').or('first_name', '=', 'Arnold')
+   *   ))
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * select "person".*
+   * from "person"
+   * where ("age" = $1 or "age" = $2) and ("first_name" = $3 or "first_name" = $4)
+   * ```
+   */
+  parens<
+    RE extends ReferenceExpression<DB, TB>,
+    OP extends BinaryOperatorExpression
+  >(
+    lhs: RE,
+    op: OP,
+    rhs: OperandValueExpressionOrList<DB, TB, RE>
+  ): ExpressionWrapper<
+    DB,
+    TB,
+    OP extends ComparisonOperator
+      ? SqlBool
+      : ExtractTypeFromReferenceExpression<DB, TB, RE>
+  >
+
+  parens<T>(expr: Expression<T>): ExpressionWrapper<DB, TB, T>
 
   /**
    * See {@link QueryCreator.withSchema}
@@ -485,38 +746,72 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
 export function createExpressionBuilder<DB, TB extends keyof DB>(
   executor: QueryExecutor = NOOP_QUERY_EXECUTOR
 ): ExpressionBuilder<DB, TB> {
+  function binary<
+    RE extends ReferenceExpression<DB, TB>,
+    OP extends BinaryOperatorExpression
+  >(
+    lhs: RE,
+    op: OP,
+    rhs: OperandValueExpressionOrList<DB, TB, RE>
+  ): ExpressionWrapper<
+    DB,
+    TB,
+    OP extends ComparisonOperator
+      ? SqlBool
+      : ExtractTypeFromReferenceExpression<DB, TB, RE>
+  > {
+    return new ExpressionWrapper(parseValueBinaryOperation(lhs, op, rhs))
+  }
+
   function unary<RE extends ReferenceExpression<DB, TB>>(
     op: UnaryOperator,
     expr: RE
-  ): ExpressionWrapper<ExtractTypeFromReferenceExpression<DB, TB, RE>> {
+  ): ExpressionWrapper<DB, TB, ExtractTypeFromReferenceExpression<DB, TB, RE>> {
     return new ExpressionWrapper(parseUnaryOperation(op, expr))
   }
 
-  return {
-    get fn(): FunctionModule<DB, TB> {
-      return createFunctionModule()
-    },
+  const eb = Object.assign(binary, {
+    fn: undefined! as FunctionModule<DB, TB>,
+    eb: undefined! as ExpressionBuilder<DB, TB>,
 
     selectFrom(table: TableExpressionOrList<DB, TB>): any {
-      return new SelectQueryBuilder({
+      return createSelectQueryBuilder({
         queryId: createQueryId(),
         executor: executor,
         queryNode: SelectQueryNode.create(parseTableExpressionOrList(table)),
       })
     },
 
+    case<RE extends ReferenceExpression<DB, TB>>(
+      reference?: RE
+    ): CaseBuilder<DB, TB, ExtractTypeFromReferenceExpression<DB, TB, RE>> {
+      return new CaseBuilder({
+        node: CaseNode.create(
+          isUndefined(reference)
+            ? undefined
+            : parseReferenceExpression(reference)
+        ),
+      })
+    },
+
     ref<RE extends StringReference<DB, TB>>(
-      reference: RE
-    ): ExpressionWrapper<ExtractTypeFromReferenceExpression<DB, TB, RE>> {
-      return new ExpressionWrapper(parseStringReference(reference))
+      reference: RE,
+      op?: JSONOperatorWith$
+    ): any {
+      if (isUndefined(op)) {
+        return new ExpressionWrapper(parseStringReference(reference))
+      }
+
+      return new JSONPathBuilder(parseJSONReference(reference, op))
     },
 
     val<VE>(
       value: VE
-    ): ExpressionWrapper<ExtractTypeFromValueExpressionOrList<VE>> {
+    ): ExpressionWrapper<DB, TB, ExtractTypeFromValueExpressionOrList<VE>> {
       return new ExpressionWrapper(parseValueExpressionOrList(value))
     },
 
+    // @deprecated
     cmpr<
       O extends SqlBool = SqlBool,
       RE extends ReferenceExpression<DB, TB> = ReferenceExpression<DB, TB>
@@ -524,10 +819,11 @@ export function createExpressionBuilder<DB, TB extends keyof DB>(
       lhs: RE,
       op: ComparisonOperatorExpression,
       rhs: OperandValueExpressionOrList<DB, TB, RE>
-    ): ExpressionWrapper<O> {
+    ): ExpressionWrapper<DB, TB, O> {
       return new ExpressionWrapper(parseValueBinaryOperation(lhs, op, rhs))
     },
 
+    // @deprecated
     bxp<
       RE extends ReferenceExpression<DB, TB>,
       OP extends BinaryOperatorExpression
@@ -536,6 +832,8 @@ export function createExpressionBuilder<DB, TB extends keyof DB>(
       op: OP,
       rhs: OperandValueExpression<DB, TB, RE>
     ): ExpressionWrapper<
+      DB,
+      TB,
       OP extends ComparisonOperator
         ? SqlBool
         : ExtractTypeFromReferenceExpression<DB, TB, RE>
@@ -547,58 +845,63 @@ export function createExpressionBuilder<DB, TB extends keyof DB>(
 
     not<RE extends ReferenceExpression<DB, TB>>(
       expr: RE
-    ): ExpressionWrapper<ExtractTypeFromReferenceExpression<DB, TB, RE>> {
+    ): ExpressionWrapper<
+      DB,
+      TB,
+      ExtractTypeFromReferenceExpression<DB, TB, RE>
+    > {
       return unary('not', expr)
     },
 
     exists<RE extends ReferenceExpression<DB, TB>>(
       expr: RE
-    ): ExpressionWrapper<SqlBool> {
+    ): ExpressionWrapper<DB, TB, SqlBool> {
       return unary('exists', expr)
     },
 
     neg<RE extends ReferenceExpression<DB, TB>>(
       expr: RE
-    ): ExpressionWrapper<ExtractTypeFromReferenceExpression<DB, TB, RE>> {
+    ): ExpressionWrapper<
+      DB,
+      TB,
+      ExtractTypeFromReferenceExpression<DB, TB, RE>
+    > {
       return unary('-', expr)
     },
 
-    and(exprs: ReadonlyArray<Expression<SqlBool>>): ExpressionWrapper<SqlBool> {
-      if (exprs.length === 0) {
-        return new ExpressionWrapper(ValueNode.createImmediate(true))
-      } else if (exprs.length === 1) {
-        return new ExpressionWrapper(exprs[0].toOperationNode())
+    and(
+      exprs:
+        | ReadonlyArray<OperandExpression<SqlBool>>
+        | Readonly<FilterObject<DB, TB>>
+    ): ExpressionWrapper<DB, TB, SqlBool> {
+      if (isReadonlyArray(exprs)) {
+        return new ExpressionWrapper(parseFilterList(exprs, 'and'))
       }
 
-      let node = AndNode.create(
-        exprs[0].toOperationNode(),
-        exprs[1].toOperationNode()
-      )
-
-      for (let i = 2; i < exprs.length; ++i) {
-        node = AndNode.create(node, exprs[i].toOperationNode())
-      }
-
-      return new ExpressionWrapper(ParensNode.create(node))
+      return new ExpressionWrapper(parseFilterObject(exprs, 'and'))
     },
 
-    or(exprs: ReadonlyArray<Expression<SqlBool>>): ExpressionWrapper<SqlBool> {
-      if (exprs.length === 0) {
-        return new ExpressionWrapper(ValueNode.createImmediate(false))
-      } else if (exprs.length === 1) {
-        return new ExpressionWrapper(exprs[0].toOperationNode())
+    or(
+      exprs:
+        | ReadonlyArray<OperandExpression<SqlBool>>
+        | Readonly<FilterObject<DB, TB>>
+    ): ExpressionWrapper<DB, TB, SqlBool> {
+      if (isReadonlyArray(exprs)) {
+        return new ExpressionWrapper(parseFilterList(exprs, 'or'))
       }
 
-      let node = OrNode.create(
-        exprs[0].toOperationNode(),
-        exprs[1].toOperationNode()
-      )
+      return new ExpressionWrapper(parseFilterObject(exprs, 'or'))
+    },
 
-      for (let i = 2; i < exprs.length; ++i) {
-        node = OrNode.create(node, exprs[i].toOperationNode())
+    parens(...args: any[]) {
+      const node = parseValueBinaryOperationOrExpression(args)
+
+      if (ParensNode.is(node)) {
+        // No double wrapping.
+        return new ExpressionWrapper(node)
+      } else {
+        return new ExpressionWrapper(ParensNode.create(node))
       }
-
-      return new ExpressionWrapper(ParensNode.create(node))
     },
 
     withSchema(schema: string): ExpressionBuilder<DB, TB> {
@@ -606,7 +909,12 @@ export function createExpressionBuilder<DB, TB extends keyof DB>(
         executor.withPluginAtFront(new WithSchemaPlugin(schema))
       )
     },
-  }
+  })
+
+  eb.fn = createFunctionModule()
+  eb.eb = eb
+
+  return eb
 }
 
 export function expressionBuilder<DB, TB extends keyof DB>(

@@ -4,10 +4,9 @@ import {
   OperandValueExpressionOrList,
 } from '../parser/binary-operation-parser.js'
 import { ReferenceExpression } from '../parser/reference-parser.js'
-import { ExistsExpression } from '../parser/unary-operation-parser.js'
 import { SqlBool } from '../util/type-utils.js'
 import { ExpressionBuilder } from '../expression/expression-builder.js'
-import { WhereExpressionBuilder } from './deprecated-where-expression-builder.js'
+import { ExpressionOrFactory } from '../parser/expression-parser.js'
 
 export interface WhereInterface<DB, TB extends keyof DB> {
   /**
@@ -18,6 +17,10 @@ export interface WhereInterface<DB, TB extends keyof DB> {
    * Also see {@link whereRef}
    *
    * ### Examples
+   *
+   * <!-- siteExample("where", "Simple where clause", 10) -->
+   *
+   * `where` method calls are combined with `AND`:
    *
    * ```ts
    * const person = await db
@@ -41,9 +44,98 @@ export interface WhereInterface<DB, TB extends keyof DB> {
    * sql`your operator`
    * ```
    *
+   * <!-- siteExample("where", "Where in", 20) -->
+   *
+   * Find multiple items using a list of identifiers:
+   *
+   * ```ts
+   * const persons = await db
+   *   .selectFrom('person')
+   *   .selectAll()
+   *   .where('id', 'in', ['1', '2', '3'])
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * select * from "person" where "id" in ($1, $2, $3)
+   * ```
+   *
+   * <!-- siteExample("where", "Object filter", 30) -->
+   *
+   * You can use the `and` function to create a simple equality
+   * filter using an object
+   *
+   * ```ts
+   * const persons = await db
+   *   .selectFrom('person')
+   *   .selectAll()
+   *   .where((eb) => eb.and({
+   *     first_name: 'Jennifer',
+   *     last_name: eb.ref('first_name')
+   *   }))
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * select *
+   * from "person"
+   * where (
+   *   "first_name" = $1
+   *   and "last_name" = "first_name"
+   * )
+   * ```
+   *
+   * <!-- siteExample("where", "OR where", 40) -->
+   *
+   * To combine conditions using `OR`, you can use the expression builder.
+   * There are two ways to create `OR` expressions. Both are shown in this
+   * example:
+   *
+   * ```ts
+   * const persons = await db
+   *   .selectFrom('person')
+   *   .selectAll()
+   *   // 1. Using the `or` method on the expression builder:
+   *   .where((eb) => eb.or([
+   *     eb('first_name', '=', 'Jennifer'),
+   *     eb('first_name', '=', 'Sylvester')
+   *   ]))
+   *   // 2. Chaining expressions using the `or` method on the
+   *   // created expressions:
+   *   .where((eb) =>
+   *     eb('last_name', '=', 'Aniston').or('last_name', '=', 'Stallone')
+   *   )
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * select *
+   * from "person"
+   * where (
+   *   ("first_name" = $1 or "first_name" = $2)
+   *   and
+   *   ("last_name" = $3 or "last_name" = $4)
+   * )
+   * ```
+   *
+   * <!-- siteExample("where", "Conditional where calls", 50) -->
+   *
    * You can add expressions conditionally like this:
    *
    * ```ts
+   * import { Expression, SqlBool } from 'kysely'
+   *
+   * const firstName: string | undefined = 'Jennifer'
+   * const lastName: string | undefined = 'Aniston'
+   * const under18 = true
+   * const over60 = true
+   *
    * let query = db
    *   .selectFrom('person')
    *   .selectAll()
@@ -56,6 +148,23 @@ export interface WhereInterface<DB, TB extends keyof DB> {
    *
    * if (lastName) {
    *   query = query.where('last_name', '=', lastName)
+   * }
+   *
+   * if (under18 || over60) {
+   *   // Conditional OR expressions can be added like this.
+   *   query = query.where((eb) => {
+   *     const ors: Expression<SqlBool>[] = []
+   *
+   *     if (under18) {
+   *       ors.push(eb('age', '<', 18))
+   *     }
+   *
+   *     if (over60) {
+   *       ors.push(eb('age', '>', 60))
+   *     }
+   *
+   *     return eb.or(ors)
+   *   })
    * }
    *
    * const persons = await query.execute()
@@ -110,22 +219,30 @@ export interface WhereInterface<DB, TB extends keyof DB> {
    * select * from "person" where "id" in ($1, $2, $3)
    * ```
    *
+   * <!-- siteExample("where", "Complex where clause", 60) -->
+   *
    * For complex `where` expressions you can pass in a single callback and
-   * use the {@link ExpressionBuilder} to build your expression:
+   * use the `ExpressionBuilder` to build your expression:
    *
    * ```ts
+   * const firstName = 'Jennifer'
+   * const maxAge = 60
+   *
    * const persons = await db
    *   .selectFrom('person')
    *   .selectAll('person')
-   *   .where(({ cmpr, or, and, not, exists, selectFrom, val }) => and([
+   *   .where(({ eb, or, and, not, exists, selectFrom }) => and([
    *     or([
-   *       cmpr('first_name', '=', firstName),
-   *       cmpr('age', '<', maxAge)
+   *       eb('first_name', '=', firstName),
+   *       eb('age', '<', maxAge)
    *     ]),
    *     not(exists(
-   *       selectFrom('pet').select('pet.id').whereRef('pet.owner_id', '=', 'person.id')
+   *       selectFrom('pet')
+   *         .select('pet.id')
+   *         .whereRef('pet.owner_id', '=', 'person.id')
    *     ))
    *   ]))
+   *   .execute()
    * ```
    *
    * The generated SQL (PostgreSQL):
@@ -197,9 +314,9 @@ export interface WhereInterface<DB, TB extends keyof DB> {
     rhs: OperandValueExpressionOrList<DB, TB, RE>
   ): WhereInterface<DB, TB>
 
-  where(factory: WhereExpressionFactory<DB, TB>): WhereInterface<DB, TB>
-
-  where(expression: Expression<any>): WhereInterface<DB, TB>
+  where(
+    expression: ExpressionOrFactory<DB, TB, SqlBool>
+  ): WhereInterface<DB, TB>
 
   /**
    * Adds a `where` clause where both sides of the operator are references
@@ -259,54 +376,6 @@ export interface WhereInterface<DB, TB extends keyof DB> {
   ): WhereInterface<DB, TB>
 
   /**
-   * @deprecated Follow [these](https://github.com/koskimas/kysely/releases/tag/0.24.0) instructions to migrate
-   */
-  orWhere<RE extends ReferenceExpression<DB, TB>>(
-    lhs: RE,
-    op: ComparisonOperatorExpression,
-    rhs: OperandValueExpressionOrList<DB, TB, RE>
-  ): WhereInterface<DB, TB>
-
-  /**
-   * @deprecated Follow [these](https://github.com/koskimas/kysely/releases/tag/0.24.0) instructions to migrate
-   */
-  orWhere(factory: WhereExpressionFactory<DB, TB>): WhereInterface<DB, TB>
-
-  /**
-   * @deprecated Follow [these](https://github.com/koskimas/kysely/releases/tag/0.24.0) instructions to migrate
-   */
-  orWhere(expression: Expression<any>): WhereInterface<DB, TB>
-
-  /**
-   * @deprecated Follow [these](https://github.com/koskimas/kysely/releases/tag/0.24.0) instructions to migrate
-   */
-  orWhereRef(
-    lhs: ReferenceExpression<DB, TB>,
-    op: ComparisonOperatorExpression,
-    rhs: ReferenceExpression<DB, TB>
-  ): WhereInterface<DB, TB>
-
-  /**
-   * @deprecated Follow [these](https://github.com/koskimas/kysely/releases/tag/0.24.0) instructions to migrate
-   */
-  whereExists(arg: ExistsExpression<DB, TB>): WhereInterface<DB, TB>
-
-  /**
-   * @deprecated Follow [these](https://github.com/koskimas/kysely/releases/tag/0.24.0) instructions to migrate
-   */
-  whereNotExists(arg: ExistsExpression<DB, TB>): WhereInterface<DB, TB>
-
-  /**
-   * @deprecated Follow [these](https://github.com/koskimas/kysely/releases/tag/0.24.0) instructions to migrate
-   */
-  orWhereExists(arg: ExistsExpression<DB, TB>): WhereInterface<DB, TB>
-
-  /**
-   * @deprecated Follow [these](https://github.com/koskimas/kysely/releases/tag/0.24.0) instructions to migrate
-   */
-  orWhereNotExists(arg: ExistsExpression<DB, TB>): WhereInterface<DB, TB>
-
-  /**
    * Clears all where expressions from the query.
    *
    * ### Examples
@@ -326,7 +395,3 @@ export interface WhereInterface<DB, TB extends keyof DB> {
    */
   clearWhere(): WhereInterface<DB, TB>
 }
-
-export type WhereExpressionFactory<DB, TB extends keyof DB> = (
-  eb: WhereExpressionBuilder<DB, TB>
-) => Expression<SqlBool> | WhereExpressionBuilder<DB, TB>

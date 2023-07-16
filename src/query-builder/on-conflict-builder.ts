@@ -6,23 +6,19 @@ import { OperationNodeSource } from '../operation-node/operation-node-source.js'
 import {
   ComparisonOperatorExpression,
   OperandValueExpressionOrList,
-  parseReferentialComparison,
-  parseWhere,
+  parseValueBinaryOperationOrExpression,
+  parseReferentialBinaryOperation,
 } from '../parser/binary-operation-parser.js'
 import { ExpressionOrFactory } from '../parser/expression-parser.js'
 import { ReferenceExpression } from '../parser/reference-parser.js'
-import {
-  parseExists,
-  parseNotExists,
-} from '../parser/unary-operation-parser.js'
 import {
   UpdateExpression,
   parseUpdateExpression,
 } from '../parser/update-set-parser.js'
 import { freeze } from '../util/object-utils.js'
 import { preventAwait } from '../util/prevent-await.js'
-import { AnyColumn } from '../util/type-utils.js'
-import { WhereExpressionFactory, WhereInterface } from './where-interface.js'
+import { AnyColumn, SqlBool } from '../util/type-utils.js'
+import { WhereInterface } from './where-interface.js'
 
 export class OnConflictBuilder<DB, TB extends keyof DB>
   implements WhereInterface<DB, TB>
@@ -116,15 +112,16 @@ export class OnConflictBuilder<DB, TB extends keyof DB>
     rhs: OperandValueExpressionOrList<DB, TB, RE>
   ): OnConflictBuilder<DB, TB>
 
-  where(factory: WhereExpressionFactory<DB, TB>): OnConflictBuilder<DB, TB>
-  where(expression: Expression<any>): OnConflictBuilder<DB, TB>
+  where(
+    expression: ExpressionOrFactory<DB, TB, SqlBool>
+  ): OnConflictBuilder<DB, TB>
 
   where(...args: any[]): OnConflictBuilder<DB, TB> {
     return new OnConflictBuilder({
       ...this.#props,
       onConflictNode: OnConflictNode.cloneWithIndexWhere(
         this.#props.onConflictNode,
-        parseWhere(args)
+        parseValueBinaryOperationOrExpression(args)
       ),
     })
   }
@@ -143,116 +140,7 @@ export class OnConflictBuilder<DB, TB extends keyof DB>
       ...this.#props,
       onConflictNode: OnConflictNode.cloneWithIndexWhere(
         this.#props.onConflictNode,
-        parseReferentialComparison(lhs, op, rhs)
-      ),
-    })
-  }
-
-  /**
-   * @deprecated Follow [these](https://github.com/koskimas/kysely/releases/tag/0.24.0) instructions to migrate
-   */
-  orWhere<RE extends ReferenceExpression<DB, TB>>(
-    lhs: RE,
-    op: ComparisonOperatorExpression,
-    rhs: OperandValueExpressionOrList<DB, TB, RE>
-  ): OnConflictBuilder<DB, TB>
-
-  /**
-   * @deprecated Follow [these](https://github.com/koskimas/kysely/releases/tag/0.24.0) instructions to migrate
-   */
-  orWhere(factory: WhereExpressionFactory<DB, TB>): OnConflictBuilder<DB, TB>
-
-  /**
-   * @deprecated Follow [these](https://github.com/koskimas/kysely/releases/tag/0.24.0) instructions to migrate
-   */
-  orWhere(expression: Expression<any>): OnConflictBuilder<DB, TB>
-
-  /**
-   * @deprecated Follow [these](https://github.com/koskimas/kysely/releases/tag/0.24.0) instructions to migrate
-   */
-  orWhere(...args: any[]): OnConflictBuilder<DB, TB> {
-    return new OnConflictBuilder({
-      ...this.#props,
-      onConflictNode: OnConflictNode.cloneWithIndexOrWhere(
-        this.#props.onConflictNode,
-        parseWhere(args)
-      ),
-    })
-  }
-
-  /**
-   * @deprecated Follow [these](https://github.com/koskimas/kysely/releases/tag/0.24.0) instructions to migrate
-   */
-  orWhereRef(
-    lhs: ReferenceExpression<DB, TB>,
-    op: ComparisonOperatorExpression,
-    rhs: ReferenceExpression<DB, TB>
-  ): OnConflictBuilder<DB, TB> {
-    return new OnConflictBuilder({
-      ...this.#props,
-      onConflictNode: OnConflictNode.cloneWithIndexOrWhere(
-        this.#props.onConflictNode,
-        parseReferentialComparison(lhs, op, rhs)
-      ),
-    })
-  }
-
-  /**
-   * @deprecated Follow [these](https://github.com/koskimas/kysely/releases/tag/0.24.0) instructions to migrate
-   */
-  whereExists(
-    arg: ExpressionOrFactory<DB, TB, any>
-  ): OnConflictBuilder<DB, TB> {
-    return new OnConflictBuilder({
-      ...this.#props,
-      onConflictNode: OnConflictNode.cloneWithIndexWhere(
-        this.#props.onConflictNode,
-        parseExists(arg)
-      ),
-    })
-  }
-
-  /**
-   * @deprecated Follow [these](https://github.com/koskimas/kysely/releases/tag/0.24.0) instructions to migrate
-   */
-  whereNotExists(
-    arg: ExpressionOrFactory<DB, TB, any>
-  ): OnConflictBuilder<DB, TB> {
-    return new OnConflictBuilder({
-      ...this.#props,
-      onConflictNode: OnConflictNode.cloneWithIndexWhere(
-        this.#props.onConflictNode,
-        parseNotExists(arg)
-      ),
-    })
-  }
-
-  /**
-   * @deprecated Follow [these](https://github.com/koskimas/kysely/releases/tag/0.24.0) instructions to migrate
-   */
-  orWhereExists(
-    arg: ExpressionOrFactory<DB, TB, any>
-  ): OnConflictBuilder<DB, TB> {
-    return new OnConflictBuilder({
-      ...this.#props,
-      onConflictNode: OnConflictNode.cloneWithIndexOrWhere(
-        this.#props.onConflictNode,
-        parseExists(arg)
-      ),
-    })
-  }
-
-  /**
-   * @deprecated Follow [these](https://github.com/koskimas/kysely/releases/tag/0.24.0) instructions to migrate
-   */
-  orWhereNotExists(
-    arg: ExpressionOrFactory<DB, TB, any>
-  ): OnConflictBuilder<DB, TB> {
-    return new OnConflictBuilder({
-      ...this.#props,
-      onConflictNode: OnConflictNode.cloneWithIndexOrWhere(
-        this.#props.onConflictNode,
-        parseNotExists(arg)
+        parseReferentialBinaryOperation(lhs, op, rhs)
       ),
     })
   }
@@ -414,17 +302,15 @@ export class OnConflictUpdateBuilder<DB, TB extends keyof DB>
   ): OnConflictUpdateBuilder<DB, TB>
 
   where(
-    factory: WhereExpressionFactory<DB, TB>
+    expression: ExpressionOrFactory<DB, TB, SqlBool>
   ): OnConflictUpdateBuilder<DB, TB>
-
-  where(expression: Expression<any>): OnConflictUpdateBuilder<DB, TB>
 
   where(...args: any[]): OnConflictUpdateBuilder<DB, TB> {
     return new OnConflictUpdateBuilder({
       ...this.#props,
       onConflictNode: OnConflictNode.cloneWithUpdateWhere(
         this.#props.onConflictNode,
-        parseWhere(args)
+        parseValueBinaryOperationOrExpression(args)
       ),
     })
   }
@@ -443,118 +329,7 @@ export class OnConflictUpdateBuilder<DB, TB extends keyof DB>
       ...this.#props,
       onConflictNode: OnConflictNode.cloneWithUpdateWhere(
         this.#props.onConflictNode,
-        parseReferentialComparison(lhs, op, rhs)
-      ),
-    })
-  }
-
-  /**
-   * @deprecated Follow [these](https://github.com/koskimas/kysely/releases/tag/0.24.0) instructions to migrate
-   */
-  orWhere<RE extends ReferenceExpression<DB, TB>>(
-    lhs: RE,
-    op: ComparisonOperatorExpression,
-    rhs: OperandValueExpressionOrList<DB, TB, RE>
-  ): OnConflictUpdateBuilder<DB, TB>
-
-  /**
-   * @deprecated Follow [these](https://github.com/koskimas/kysely/releases/tag/0.24.0) instructions to migrate
-   */
-  orWhere(
-    factory: WhereExpressionFactory<DB, TB>
-  ): OnConflictUpdateBuilder<DB, TB>
-
-  /**
-   * @deprecated Follow [these](https://github.com/koskimas/kysely/releases/tag/0.24.0) instructions to migrate
-   */
-  orWhere(expression: Expression<any>): OnConflictUpdateBuilder<DB, TB>
-
-  /**
-   * @deprecated Follow [these](https://github.com/koskimas/kysely/releases/tag/0.24.0) instructions to migrate
-   */
-  orWhere(...args: any[]): OnConflictUpdateBuilder<DB, TB> {
-    return new OnConflictUpdateBuilder({
-      ...this.#props,
-      onConflictNode: OnConflictNode.cloneWithUpdateOrWhere(
-        this.#props.onConflictNode,
-        parseWhere(args)
-      ),
-    })
-  }
-
-  /**
-   * @deprecated Follow [these](https://github.com/koskimas/kysely/releases/tag/0.24.0) instructions to migrate
-   */
-  orWhereRef(
-    lhs: ReferenceExpression<DB, TB>,
-    op: ComparisonOperatorExpression,
-    rhs: ReferenceExpression<DB, TB>
-  ): OnConflictUpdateBuilder<DB, TB> {
-    return new OnConflictUpdateBuilder({
-      ...this.#props,
-      onConflictNode: OnConflictNode.cloneWithUpdateOrWhere(
-        this.#props.onConflictNode,
-        parseReferentialComparison(lhs, op, rhs)
-      ),
-    })
-  }
-
-  /**
-   * @deprecated Follow [these](https://github.com/koskimas/kysely/releases/tag/0.24.0) instructions to migrate
-   */
-  whereExists(
-    arg: ExpressionOrFactory<DB, TB, any>
-  ): OnConflictUpdateBuilder<DB, TB> {
-    return new OnConflictUpdateBuilder({
-      ...this.#props,
-      onConflictNode: OnConflictNode.cloneWithUpdateWhere(
-        this.#props.onConflictNode,
-        parseExists(arg)
-      ),
-    })
-  }
-
-  /**
-   * @deprecated Follow [these](https://github.com/koskimas/kysely/releases/tag/0.24.0) instructions to migrate
-   */
-  whereNotExists(
-    arg: ExpressionOrFactory<DB, TB, any>
-  ): OnConflictUpdateBuilder<DB, TB> {
-    return new OnConflictUpdateBuilder({
-      ...this.#props,
-      onConflictNode: OnConflictNode.cloneWithUpdateWhere(
-        this.#props.onConflictNode,
-        parseNotExists(arg)
-      ),
-    })
-  }
-
-  /**
-   * @deprecated Follow [these](https://github.com/koskimas/kysely/releases/tag/0.24.0) instructions to migrate
-   */
-  orWhereExists(
-    arg: ExpressionOrFactory<DB, TB, any>
-  ): OnConflictUpdateBuilder<DB, TB> {
-    return new OnConflictUpdateBuilder({
-      ...this.#props,
-      onConflictNode: OnConflictNode.cloneWithUpdateOrWhere(
-        this.#props.onConflictNode,
-        parseExists(arg)
-      ),
-    })
-  }
-
-  /**
-   * @deprecated Follow [these](https://github.com/koskimas/kysely/releases/tag/0.24.0) instructions to migrate
-   */
-  orWhereNotExists(
-    arg: ExpressionOrFactory<DB, TB, any>
-  ): OnConflictUpdateBuilder<DB, TB> {
-    return new OnConflictUpdateBuilder({
-      ...this.#props,
-      onConflictNode: OnConflictNode.cloneWithUpdateOrWhere(
-        this.#props.onConflictNode,
-        parseNotExists(arg)
+        parseReferentialBinaryOperation(lhs, op, rhs)
       ),
     })
   }

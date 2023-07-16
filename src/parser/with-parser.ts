@@ -1,11 +1,15 @@
 import { UpdateQueryBuilder } from '../query-builder/update-query-builder.js'
 import { DeleteQueryBuilder } from '../query-builder/delete-query-builder.js'
 import { InsertQueryBuilder } from '../query-builder/insert-query-builder.js'
-import { CommonTableExpressionNode } from '../operation-node/common-table-expression-node.js'
 import { CommonTableExpressionNameNode } from '../operation-node/common-table-expression-name-node.js'
 import { QueryCreator } from '../query-creator.js'
-import { createQueryCreator } from './parse-utils.js'
 import { Expression } from '../expression/expression.js'
+import { ShallowRecord } from '../util/type-utils.js'
+import { OperationNode } from '../operation-node/operation-node.js'
+import { createQueryCreator } from './parse-utils.js'
+import { isFunction } from '../util/object-utils.js'
+import { CTEBuilder, CTEBuilderCallback } from '../query-builder/cte-builder.js'
+import { CommonTableExpressionNode } from '../operation-node/common-table-expression-node.js'
 
 export type CommonTableExpression<DB, CN extends string> = (
   creator: QueryCreator<DB>
@@ -13,12 +17,10 @@ export type CommonTableExpression<DB, CN extends string> = (
 
 export type RecursiveCommonTableExpression<DB, CN extends string> = (
   creator: QueryCreator<
-    DB &
+    DB & {
       // Recursive CTE can select from itself.
-      Record<
-        ExtractTableFromCommonTableExpressionName<CN>,
-        ExtractRowFromCommonTableExpressionName<CN>
-      >
+      [K in ExtractTableFromCommonTableExpressionName<CN>]: ExtractRowFromCommonTableExpressionName<CN>
+    }
   >
 ) => CommonTableExpressionOutput<DB, CN>
 
@@ -27,11 +29,9 @@ export type QueryCreatorWithCommonTableExpression<
   CN extends string,
   CTE
 > = QueryCreator<
-  DB &
-    Record<
-      ExtractTableFromCommonTableExpressionName<CN>,
-      ExtractRowFromCommonTableExpression<CTE>
-    >
+  DB & {
+    [K in ExtractTableFromCommonTableExpressionName<CN>]: ExtractRowFromCommonTableExpression<CTE>
+  }
 >
 
 type CommonTableExpressionOutput<DB, CN extends string> =
@@ -83,7 +83,7 @@ type ExtractTableFromCommonTableExpressionName<CN extends string> =
 type ExtractRowFromCommonTableExpressionName<CN extends string> =
   CN extends `${string}(${infer CL})`
     ? { [C in ExtractColumnNamesFromColumnList<CL>]: any }
-    : Record<string, any>
+    : ShallowRecord<string, any>
 
 /**
  * Parses a string like 'id, first_name' into a type 'id' | 'first_name'
@@ -94,15 +94,32 @@ type ExtractColumnNamesFromColumnList<R extends string> =
     : R
 
 export function parseCommonTableExpression(
-  name: string,
-  expression: CommonTableExpression<any, any>
+  nameOrBuilderCallback: string | CTEBuilderCallback<string>,
+  expression: CommonTableExpression<any, string>
 ): CommonTableExpressionNode {
-  const builder = expression(createQueryCreator())
+  const expressionNode = expression(createQueryCreator()).toOperationNode()
+
+  if (isFunction(nameOrBuilderCallback)) {
+    return nameOrBuilderCallback(
+      cteBuilderFactory(expressionNode)
+    ).toOperationNode()
+  }
 
   return CommonTableExpressionNode.create(
-    parseCommonTableExpressionName(name),
-    builder.toOperationNode()
+    parseCommonTableExpressionName(nameOrBuilderCallback),
+    expressionNode
   )
+}
+
+function cteBuilderFactory(expressionNode: OperationNode) {
+  return (name: string) => {
+    return new CTEBuilder({
+      node: CommonTableExpressionNode.create(
+        parseCommonTableExpressionName(name),
+        expressionNode
+      ),
+    })
+  }
 }
 
 function parseCommonTableExpressionName(
@@ -110,7 +127,6 @@ function parseCommonTableExpressionName(
 ): CommonTableExpressionNameNode {
   if (name.includes('(')) {
     const parts = name.split(/[\(\)]/)
-
     const table = parts[0]
     const columns = parts[1].split(',').map((it) => it.trim())
 

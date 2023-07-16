@@ -37,8 +37,12 @@ for (const dialect of DIALECTS) {
         .with('jennifer_and_sylvester', (db) =>
           db
             .selectFrom('person')
-            .where('first_name', '=', 'Jennifer')
-            .orWhere('first_name', '=', 'Sylvester')
+            .where((eb) =>
+              eb.or([
+                eb('first_name', '=', 'Jennifer'),
+                eb('first_name', '=', 'Sylvester'),
+              ])
+            )
             .select(['id', 'first_name', 'gender'])
         )
         .with('sylvester', (db) =>
@@ -52,15 +56,15 @@ for (const dialect of DIALECTS) {
 
       testSql(query, dialect, {
         postgres: {
-          sql: 'with "jennifer_and_sylvester" as (select "id", "first_name", "gender" from "person" where "first_name" = $1 or "first_name" = $2), "sylvester" as (select * from "jennifer_and_sylvester" where "gender" = $3) select * from "sylvester"',
+          sql: 'with "jennifer_and_sylvester" as (select "id", "first_name", "gender" from "person" where ("first_name" = $1 or "first_name" = $2)), "sylvester" as (select * from "jennifer_and_sylvester" where "gender" = $3) select * from "sylvester"',
           parameters: ['Jennifer', 'Sylvester', 'male'],
         },
         mysql: {
-          sql: 'with `jennifer_and_sylvester` as (select `id`, `first_name`, `gender` from `person` where `first_name` = ? or `first_name` = ?), `sylvester` as (select * from `jennifer_and_sylvester` where `gender` = ?) select * from `sylvester`',
+          sql: 'with `jennifer_and_sylvester` as (select `id`, `first_name`, `gender` from `person` where (`first_name` = ? or `first_name` = ?)), `sylvester` as (select * from `jennifer_and_sylvester` where `gender` = ?) select * from `sylvester`',
           parameters: ['Jennifer', 'Sylvester', 'male'],
         },
         sqlite: {
-          sql: 'with "jennifer_and_sylvester" as (select "id", "first_name", "gender" from "person" where "first_name" = ? or "first_name" = ?), "sylvester" as (select * from "jennifer_and_sylvester" where "gender" = ?) select * from "sylvester"',
+          sql: 'with "jennifer_and_sylvester" as (select "id", "first_name", "gender" from "person" where ("first_name" = ? or "first_name" = ?)), "sylvester" as (select * from "jennifer_and_sylvester" where "gender" = ?) select * from "sylvester"',
           parameters: ['Jennifer', 'Sylvester', 'male'],
         },
       })
@@ -173,6 +177,60 @@ for (const dialect of DIALECTS) {
             { name: 'node3' },
           ])
         })
+      })
+
+      it('should create a CTE with `as materialized`', async () => {
+        const query = ctx.db
+          .with(
+            (cte) => cte('person_name').materialized(),
+            (qb) => qb.selectFrom('person').select('first_name')
+          )
+          .selectFrom('person_name')
+          .select('person_name.first_name')
+          .orderBy('first_name')
+
+        testSql(query, dialect, {
+          postgres: {
+            sql: 'with "person_name" as materialized (select "first_name" from "person") select "person_name"."first_name" from "person_name" order by "first_name"',
+            parameters: [],
+          },
+          mysql: NOT_SUPPORTED,
+          sqlite: NOT_SUPPORTED,
+        })
+
+        const result = await query.execute()
+        expect(result).to.eql([
+          { first_name: 'Arnold' },
+          { first_name: 'Jennifer' },
+          { first_name: 'Sylvester' },
+        ])
+      })
+
+      it('should create a CTE with `as not materialized`', async () => {
+        const query = ctx.db
+          .with(
+            (cte) => cte('person_name').notMaterialized(),
+            (qb) => qb.selectFrom('person').select('first_name')
+          )
+          .selectFrom('person_name')
+          .select('person_name.first_name')
+          .orderBy('first_name')
+
+        testSql(query, dialect, {
+          postgres: {
+            sql: 'with "person_name" as not materialized (select "first_name" from "person") select "person_name"."first_name" from "person_name" order by "first_name"',
+            parameters: [],
+          },
+          mysql: NOT_SUPPORTED,
+          sqlite: NOT_SUPPORTED,
+        })
+
+        const result = await query.execute()
+        expect(result).to.eql([
+          { first_name: 'Arnold' },
+          { first_name: 'Jennifer' },
+          { first_name: 'Sylvester' },
+        ])
       })
     }
 

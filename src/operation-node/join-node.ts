@@ -57,13 +57,4 @@ export const JoinNode = freeze({
         : OnNode.create(operation),
     })
   },
-
-  cloneWithOrOn(joinNode: JoinNode, operation: OperationNode): JoinNode {
-    return freeze({
-      ...joinNode,
-      on: joinNode.on
-        ? OnNode.cloneWithOperation(joinNode.on, 'Or', operation)
-        : OnNode.create(operation),
-    })
-  },
 })

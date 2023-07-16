@@ -82,6 +82,12 @@ import { BinaryOperationNode } from './binary-operation-node.js'
 import { UnaryOperationNode } from './unary-operation-node.js'
 import { UsingNode } from './using-node.js'
 import { FunctionNode } from './function-node.js'
+import { WhenNode } from './when-node.js'
+import { CaseNode } from './case-node.js'
+import { JSONReferenceNode } from './json-reference-node.js'
+import { JSONPathNode } from './json-path-node.js'
+import { JSONPathLegNode } from './json-path-leg-node.js'
+import { JSONOperatorChainNode } from './json-operator-chain-node.js'
 
 export abstract class OperationNodeVisitor {
   protected readonly nodeStack: OperationNode[] = []
@@ -171,6 +177,12 @@ export abstract class OperationNodeVisitor {
     UnaryOperationNode: this.visitUnaryOperation.bind(this),
     UsingNode: this.visitUsing.bind(this),
     FunctionNode: this.visitFunction.bind(this),
+    CaseNode: this.visitCase.bind(this),
+    WhenNode: this.visitWhen.bind(this),
+    JSONReferenceNode: this.visitJSONReference.bind(this),
+    JSONPathNode: this.visitJSONPath.bind(this),
+    JSONPathLegNode: this.visitJSONPathLeg.bind(this),
+    JSONOperatorChainNode: this.visitJSONOperatorChain.bind(this),
   })
 
   protected readonly visitNode = (node: OperationNode): void => {
@@ -268,4 +280,10 @@ export abstract class OperationNodeVisitor {
   protected abstract visitUnaryOperation(node: UnaryOperationNode): void
   protected abstract visitUsing(node: UsingNode): void
   protected abstract visitFunction(node: FunctionNode): void
+  protected abstract visitCase(node: CaseNode): void
+  protected abstract visitWhen(node: WhenNode): void
+  protected abstract visitJSONReference(node: JSONReferenceNode): void
+  protected abstract visitJSONPath(node: JSONPathNode): void
+  protected abstract visitJSONPathLeg(node: JSONPathLegNode): void
+  protected abstract visitJSONOperatorChain(node: JSONOperatorChainNode): void
 }

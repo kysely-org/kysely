@@ -23,11 +23,13 @@ import {
 import { SelectQueryNode } from '../operation-node/select-query-node.js'
 import { QueryNode } from '../operation-node/query-node.js'
 import {
-  MergePartial,
+  DrainOuterGeneric,
   NarrowPartial,
   Nullable,
+  ShallowRecord,
   Simplify,
   SimplifySingleResult,
+  SqlBool,
 } from '../util/type-utils.js'
 import {
   OrderByDirectionExpression,
@@ -45,164 +47,53 @@ import { QueryId } from '../util/query-id.js'
 import { freeze } from '../util/object-utils.js'
 import { GroupByArg, parseGroupBy } from '../parser/group-by-parser.js'
 import { KyselyPlugin } from '../plugin/kysely-plugin.js'
-import { WhereExpressionFactory, WhereInterface } from './where-interface.js'
+import { WhereInterface } from './where-interface.js'
 import {
   isNoResultErrorConstructor,
   NoResultError,
   NoResultErrorConstructor,
 } from './no-result-error.js'
-import { HavingExpressionFactory, HavingInterface } from './having-interface.js'
+import { HavingInterface } from './having-interface.js'
 import { IdentifierNode } from '../operation-node/identifier-node.js'
 import { Explainable, ExplainFormat } from '../util/explainable.js'
-import { parseSetOperation } from '../parser/set-operation-parser.js'
+import {
+  SetOperandExpression,
+  parseSetOperation,
+} from '../parser/set-operation-parser.js'
 import { AliasedExpression, Expression } from '../expression/expression.js'
 import {
   ComparisonOperatorExpression,
   OperandValueExpressionOrList,
-  parseHaving,
-  parseReferentialComparison,
-  parseWhere,
+  parseValueBinaryOperationOrExpression,
+  parseReferentialBinaryOperation,
 } from '../parser/binary-operation-parser.js'
-import {
-  ExistsExpression,
-  parseExists,
-  parseNotExists,
-} from '../parser/unary-operation-parser.js'
 import { KyselyTypeError } from '../util/type-error.js'
 import { Selectable } from '../util/column-type.js'
 import { Streamable } from '../util/streamable.js'
+import { ExpressionOrFactory } from '../parser/expression-parser.js'
 
-export class SelectQueryBuilder<DB, TB extends keyof DB, O>
-  implements
-    WhereInterface<DB, TB>,
+export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
+  extends WhereInterface<DB, TB>,
     HavingInterface<DB, TB>,
     Expression<O>,
     Compilable<O>,
     Explainable,
-    Streamable<O>
-{
-  readonly #props: SelectQueryBuilderProps
-
-  constructor(props: SelectQueryBuilderProps) {
-    this.#props = freeze(props)
-  }
-
-  /** @private */
-  get expressionType(): O | undefined {
-    return undefined
-  }
-
+    Streamable<O> {
   where<RE extends ReferenceExpression<DB, TB>>(
     lhs: RE,
     op: ComparisonOperatorExpression,
     rhs: OperandValueExpressionOrList<DB, TB, RE>
   ): SelectQueryBuilder<DB, TB, O>
 
-  where(factory: WhereExpressionFactory<DB, TB>): SelectQueryBuilder<DB, TB, O>
-
-  where(expression: Expression<any>): SelectQueryBuilder<DB, TB, O>
-
-  where(...args: any[]): any {
-    return new SelectQueryBuilder({
-      ...this.#props,
-      queryNode: QueryNode.cloneWithWhere(
-        this.#props.queryNode,
-        parseWhere(args)
-      ),
-    })
-  }
+  where(
+    expression: ExpressionOrFactory<DB, TB, SqlBool>
+  ): SelectQueryBuilder<DB, TB, O>
 
   whereRef(
     lhs: ReferenceExpression<DB, TB>,
     op: ComparisonOperatorExpression,
     rhs: ReferenceExpression<DB, TB>
-  ): SelectQueryBuilder<DB, TB, O> {
-    return new SelectQueryBuilder({
-      ...this.#props,
-      queryNode: QueryNode.cloneWithWhere(
-        this.#props.queryNode,
-        parseReferentialComparison(lhs, op, rhs)
-      ),
-    })
-  }
-
-  orWhere<RE extends ReferenceExpression<DB, TB>>(
-    lhs: RE,
-    op: ComparisonOperatorExpression,
-    rhs: OperandValueExpressionOrList<DB, TB, RE>
   ): SelectQueryBuilder<DB, TB, O>
-
-  orWhere(
-    factory: WhereExpressionFactory<DB, TB>
-  ): SelectQueryBuilder<DB, TB, O>
-
-  orWhere(expression: Expression<any>): SelectQueryBuilder<DB, TB, O>
-
-  orWhere(...args: any[]): any {
-    return new SelectQueryBuilder({
-      ...this.#props,
-      queryNode: QueryNode.cloneWithOrWhere(
-        this.#props.queryNode,
-        parseWhere(args)
-      ),
-    })
-  }
-
-  orWhereRef(
-    lhs: ReferenceExpression<DB, TB>,
-    op: ComparisonOperatorExpression,
-    rhs: ReferenceExpression<DB, TB>
-  ): SelectQueryBuilder<DB, TB, O> {
-    return new SelectQueryBuilder({
-      ...this.#props,
-      queryNode: QueryNode.cloneWithOrWhere(
-        this.#props.queryNode,
-        parseReferentialComparison(lhs, op, rhs)
-      ),
-    })
-  }
-
-  whereExists(arg: ExistsExpression<DB, TB>): SelectQueryBuilder<DB, TB, O> {
-    return new SelectQueryBuilder({
-      ...this.#props,
-      queryNode: QueryNode.cloneWithWhere(
-        this.#props.queryNode,
-        parseExists(arg)
-      ),
-    })
-  }
-
-  whereNotExists(arg: ExistsExpression<DB, TB>): SelectQueryBuilder<DB, TB, O> {
-    return new SelectQueryBuilder({
-      ...this.#props,
-      queryNode: QueryNode.cloneWithWhere(
-        this.#props.queryNode,
-        parseNotExists(arg)
-      ),
-    })
-  }
-
-  orWhereExists(arg: ExistsExpression<DB, TB>): SelectQueryBuilder<DB, TB, O> {
-    return new SelectQueryBuilder({
-      ...this.#props,
-      queryNode: QueryNode.cloneWithOrWhere(
-        this.#props.queryNode,
-        parseExists(arg)
-      ),
-    })
-  }
-
-  orWhereNotExists(
-    arg: ExistsExpression<DB, TB>
-  ): SelectQueryBuilder<DB, TB, O> {
-    return new SelectQueryBuilder({
-      ...this.#props,
-      queryNode: QueryNode.cloneWithOrWhere(
-        this.#props.queryNode,
-        parseNotExists(arg)
-      ),
-    })
-  }
 
   having<RE extends ReferenceExpression<DB, TB>>(
     lhs: RE,
@@ -211,127 +102,14 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
   ): SelectQueryBuilder<DB, TB, O>
 
   having(
-    factory: HavingExpressionFactory<DB, TB>
+    expression: ExpressionOrFactory<DB, TB, SqlBool>
   ): SelectQueryBuilder<DB, TB, O>
-
-  having(expression: Expression<any>): SelectQueryBuilder<DB, TB, O>
-
-  having(...args: any[]): any {
-    return new SelectQueryBuilder({
-      ...this.#props,
-      queryNode: SelectQueryNode.cloneWithHaving(
-        this.#props.queryNode,
-        parseHaving(args)
-      ),
-    })
-  }
 
   havingRef(
     lhs: ReferenceExpression<DB, TB>,
     op: ComparisonOperatorExpression,
     rhs: ReferenceExpression<DB, TB>
-  ): SelectQueryBuilder<DB, TB, O> {
-    return new SelectQueryBuilder({
-      ...this.#props,
-      queryNode: SelectQueryNode.cloneWithHaving(
-        this.#props.queryNode,
-        parseReferentialComparison(lhs, op, rhs)
-      ),
-    })
-  }
-
-  orHaving<RE extends ReferenceExpression<DB, TB>>(
-    lhs: RE,
-    op: ComparisonOperatorExpression,
-    rhs: OperandValueExpressionOrList<DB, TB, RE>
   ): SelectQueryBuilder<DB, TB, O>
-
-  orHaving(
-    factory: HavingExpressionFactory<DB, TB>
-  ): SelectQueryBuilder<DB, TB, O>
-
-  orHaving(expression: Expression<any>): SelectQueryBuilder<DB, TB, O>
-
-  orHaving(...args: any[]): any {
-    return new SelectQueryBuilder({
-      ...this.#props,
-      queryNode: SelectQueryNode.cloneWithOrHaving(
-        this.#props.queryNode,
-        parseHaving(args)
-      ),
-    })
-  }
-
-  orHavingRef(
-    lhs: ReferenceExpression<DB, TB>,
-    op: ComparisonOperatorExpression,
-    rhs: ReferenceExpression<DB, TB>
-  ): SelectQueryBuilder<DB, TB, O> {
-    return new SelectQueryBuilder({
-      ...this.#props,
-      queryNode: SelectQueryNode.cloneWithOrHaving(
-        this.#props.queryNode,
-        parseReferentialComparison(lhs, op, rhs)
-      ),
-    })
-  }
-
-  havingExists(arg: ExistsExpression<DB, TB>): SelectQueryBuilder<DB, TB, O> {
-    return new SelectQueryBuilder({
-      ...this.#props,
-      queryNode: SelectQueryNode.cloneWithHaving(
-        this.#props.queryNode,
-        parseExists(arg)
-      ),
-    })
-  }
-
-  /**
-   * @deprecated Use {@link havingNotExists} instead.
-   */
-  havingNotExist(arg: ExistsExpression<DB, TB>): SelectQueryBuilder<DB, TB, O> {
-    return new SelectQueryBuilder({
-      ...this.#props,
-      queryNode: SelectQueryNode.cloneWithHaving(
-        this.#props.queryNode,
-        parseNotExists(arg)
-      ),
-    })
-  }
-
-  havingNotExists(
-    arg: ExistsExpression<DB, TB>
-  ): SelectQueryBuilder<DB, TB, O> {
-    return new SelectQueryBuilder({
-      ...this.#props,
-      queryNode: SelectQueryNode.cloneWithHaving(
-        this.#props.queryNode,
-        parseNotExists(arg)
-      ),
-    })
-  }
-
-  orHavingExists(arg: ExistsExpression<DB, TB>): SelectQueryBuilder<DB, TB, O> {
-    return new SelectQueryBuilder({
-      ...this.#props,
-      queryNode: SelectQueryNode.cloneWithOrHaving(
-        this.#props.queryNode,
-        parseExists(arg)
-      ),
-    })
-  }
-
-  orHavingNotExists(
-    arg: ExistsExpression<DB, TB>
-  ): SelectQueryBuilder<DB, TB, O> {
-    return new SelectQueryBuilder({
-      ...this.#props,
-      queryNode: SelectQueryNode.cloneWithOrHaving(
-        this.#props.queryNode,
-        parseNotExists(arg)
-      ),
-    })
-  }
 
   /**
    * Adds a select statement to the query.
@@ -357,6 +135,8 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    *
    * ### Examples
    *
+   * <!-- siteExample("select", "A single column", 10) -->
+   *
    * Select a single column:
    *
    * ```ts
@@ -365,8 +145,6 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    *   .select('id')
    *   .where('first_name', '=', 'Arnold')
    *   .execute()
-   *
-   * persons[0].id
    * ```
    *
    * The generated SQL (PostgreSQL):
@@ -375,6 +153,8 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    * select "id" from "person" where "first_name" = $1
    * ```
    *
+   * <!-- siteExample("select", "Column with a table", 20) -->
+   *
    * Select a single column and specify a table:
    *
    * ```ts
@@ -382,8 +162,6 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    *   .selectFrom(['person', 'pet'])
    *   .select('person.id')
    *   .execute()
-   *
-   * persons[0].id
    * ```
    *
    * The generated SQL (PostgreSQL):
@@ -392,6 +170,8 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    * select "person"."id" from "person", "pet"
    * ```
    *
+   * <!-- siteExample("select", "Multiple columns", 30) -->
+   *
    * Select multiple columns:
    *
    * ```ts
@@ -399,9 +179,6 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    *   .selectFrom('person')
    *   .select(['person.id', 'first_name'])
    *   .execute()
-   *
-   * persons[0].id
-   * persons[0].first_name
    * ```
    *
    * The generated SQL (PostgreSQL):
@@ -410,38 +187,39 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    * select "person"."id", "first_name" from "person"
    * ```
    *
-   * Aliased selections:
+   * <!-- siteExample("select", "Aliases", 40) -->
+   *
+   * You can provide an alias for the selections by appending `as the_alias` to the selection.
    *
    * ```ts
    * const persons = await db
    *   .selectFrom('person')
    *   .select([
-   *     'person.first_name as fn',
+   *     'first_name as fn',
    *     'person.last_name as ln'
    *   ])
    *   .execute()
-   *
-   * persons[0].fn
-   * persons[0].ln
    * ```
    *
    * The generated SQL (PostgreSQL):
    *
    * ```sql
    * select
-   *   "person"."first_name" as "fn",
+   *   "first_name" as "fn",
    *   "person"."last_name" as "ln"
    * from "person"
    * ```
    *
-   * You can also select arbitrary expression including subqueries and raw sql snippets.
-   * When you do that, you need to give a name for the selections using the {@link as} method:
+   * <!-- siteExample("select", "Complex selections", 50) -->
+   *
+   * You can select arbitrary expression including subqueries and raw sql snippets.
+   * When you do that, you need to give a name for the selections using the `as` method:
    *
    * ```ts
-   * import { sql } from 'kysely'
+   * import { sql } from 'kysely'
    *
    * const persons = await db.selectFrom('person')
-   *   .select(({ selectFrom, or, cmpr }) => [
+   *   .select(({ eb, selectFrom, or }) => [
    *     // Select a correlated subquery
    *     selectFrom('pet')
    *       .whereRef('person.id', '=', 'pet.owner_id')
@@ -450,20 +228,17 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    *       .limit(1)
    *       .as('first_pet_name'),
    *
-   *     // Build and select an expression using the expression builder
+   *     // Build and select an expression using
+   *     // the expression builder
    *     or([
-   *       cmpr('first_name', '=', 'Jennifer'),
-   *       cmpr('first_name', '=', 'Arnold')
+   *       eb('first_name', '=', 'Jennifer'),
+   *       eb('first_name', '=', 'Arnold')
    *     ]).as('is_jennifer_or_arnold'),
    *
    *     // Select a raw sql expression
    *     sql<string>`concat(first_name, ' ', last_name)`.as('full_name')
    *   ])
    *   .execute()
-   *
-   * persons[0].first_pet_name
-   * persons[0].is_jennifer_or_arnold
-   * persons[0].full_name
    * ```
    *
    * The generated SQL (PostgreSQL):
@@ -524,23 +299,17 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    */
   select<SE extends SelectExpression<DB, TB>>(
     selection: SelectArg<DB, TB, SE>
-  ): SelectQueryBuilder<DB, TB, O & Selection<DB, TB, SE>> {
-    return new SelectQueryBuilder({
-      ...this.#props,
-      queryNode: SelectQueryNode.cloneWithSelections(
-        this.#props.queryNode,
-        parseSelectArg(selection)
-      ),
-    })
-  }
+  ): SelectQueryBuilder<DB, TB, O & Selection<DB, TB, SE>>
 
   /**
    * Adds `distinct on` expressions to the select clause.
    *
    * ### Examples
    *
+   * <!-- siteExample("select", "Distinct on", 80) -->
+   *
    * ```ts
-   * await db.selectFrom('person')
+   * const persons = await db.selectFrom('person')
    *   .innerJoin('pet', 'pet.owner_id', 'person.id')
    *   .where('pet.name', '=', 'Doggo')
    *   .distinctOn('person.id')
@@ -565,16 +334,6 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
     selection: RE
   ): SelectQueryBuilder<DB, TB, O>
 
-  distinctOn(selection: ReferenceExpressionOrList<DB, TB>): any {
-    return new SelectQueryBuilder({
-      ...this.#props,
-      queryNode: SelectQueryNode.cloneWithDistinctOn(
-        this.#props.queryNode,
-        parseReferenceExpressionOrList(selection)
-      ),
-    })
-  }
-
   /**
    * This can be used to add any additional SQL to the front of the query __after__ the `select` keyword.
    *
@@ -594,15 +353,7 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    * from `person`
    * ```
    */
-  modifyFront(modifier: Expression<any>): SelectQueryBuilder<DB, TB, O> {
-    return new SelectQueryBuilder({
-      ...this.#props,
-      queryNode: SelectQueryNode.cloneWithFrontModifier(
-        this.#props.queryNode,
-        SelectModifierNode.createWithExpression(modifier.toOperationNode())
-      ),
-    })
-  }
+  modifyFront(modifier: Expression<any>): SelectQueryBuilder<DB, TB, O>
 
   /**
    * This can be used to add any additional SQL to the end of the query.
@@ -627,23 +378,17 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    * for update
    * ```
    */
-  modifyEnd(modifier: Expression<any>): SelectQueryBuilder<DB, TB, O> {
-    return new SelectQueryBuilder({
-      ...this.#props,
-      queryNode: SelectQueryNode.cloneWithEndModifier(
-        this.#props.queryNode,
-        SelectModifierNode.createWithExpression(modifier.toOperationNode())
-      ),
-    })
-  }
+  modifyEnd(modifier: Expression<any>): SelectQueryBuilder<DB, TB, O>
 
   /**
    * Makes the selection distinct.
    *
+   * <!-- siteExample("select", "Distinct", 70) -->
+   *
    * ### Examples
    *
    * ```ts
-   * await db.selectFrom('person')
+   * const persons = await db.selectFrom('person')
    *   .select('first_name')
    *   .distinct()
    *   .execute()
@@ -655,98 +400,46 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    * select distinct "first_name" from "person"
    * ```
    */
-  distinct(): SelectQueryBuilder<DB, TB, O> {
-    return new SelectQueryBuilder({
-      ...this.#props,
-      queryNode: SelectQueryNode.cloneWithFrontModifier(
-        this.#props.queryNode,
-        SelectModifierNode.create('Distinct')
-      ),
-    })
-  }
+  distinct(): SelectQueryBuilder<DB, TB, O>
 
   /**
    * Adds the `for update` modifier to a select query on supported databases.
    */
-  forUpdate(): SelectQueryBuilder<DB, TB, O> {
-    return new SelectQueryBuilder({
-      ...this.#props,
-      queryNode: SelectQueryNode.cloneWithEndModifier(
-        this.#props.queryNode,
-        SelectModifierNode.create('ForUpdate')
-      ),
-    })
-  }
+  forUpdate(): SelectQueryBuilder<DB, TB, O>
 
   /**
    * Adds the `for share` modifier to a select query on supported databases.
    */
-  forShare(): SelectQueryBuilder<DB, TB, O> {
-    return new SelectQueryBuilder({
-      ...this.#props,
-      queryNode: SelectQueryNode.cloneWithEndModifier(
-        this.#props.queryNode,
-        SelectModifierNode.create('ForShare')
-      ),
-    })
-  }
+  forShare(): SelectQueryBuilder<DB, TB, O>
 
   /**
    * Adds the `for key share` modifier to a select query on supported databases.
    */
-  forKeyShare(): SelectQueryBuilder<DB, TB, O> {
-    return new SelectQueryBuilder({
-      ...this.#props,
-      queryNode: SelectQueryNode.cloneWithEndModifier(
-        this.#props.queryNode,
-        SelectModifierNode.create('ForKeyShare')
-      ),
-    })
-  }
+  forKeyShare(): SelectQueryBuilder<DB, TB, O>
 
   /**
    * Adds the `for no key update` modifier to a select query on supported databases.
    */
-  forNoKeyUpdate(): SelectQueryBuilder<DB, TB, O> {
-    return new SelectQueryBuilder({
-      ...this.#props,
-      queryNode: SelectQueryNode.cloneWithEndModifier(
-        this.#props.queryNode,
-        SelectModifierNode.create('ForNoKeyUpdate')
-      ),
-    })
-  }
+  forNoKeyUpdate(): SelectQueryBuilder<DB, TB, O>
 
   /**
    * Adds the `skip locked` modifier to a select query on supported databases.
    */
-  skipLocked(): SelectQueryBuilder<DB, TB, O> {
-    return new SelectQueryBuilder({
-      ...this.#props,
-      queryNode: SelectQueryNode.cloneWithEndModifier(
-        this.#props.queryNode,
-        SelectModifierNode.create('SkipLocked')
-      ),
-    })
-  }
+  skipLocked(): SelectQueryBuilder<DB, TB, O>
 
   /**
    * Adds the `nowait` modifier to a select query on supported databases.
    */
-  noWait(): SelectQueryBuilder<DB, TB, O> {
-    return new SelectQueryBuilder({
-      ...this.#props,
-      queryNode: SelectQueryNode.cloneWithEndModifier(
-        this.#props.queryNode,
-        SelectModifierNode.create('NoWait')
-      ),
-    })
-  }
+  noWait(): SelectQueryBuilder<DB, TB, O>
 
   /**
    * Adds a `select *` or `select table.*` clause to the query.
    *
    * ### Examples
+   *
+   * <!-- siteExample("select", "All columns", 90) -->
+   *
+   * The `selectAll` method generates `SELECT *`:
    *
    * ```ts
    * const persons = await db
@@ -760,6 +453,8 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    * ```sql
    * select * from "person"
    * ```
+   *
+   * <!-- siteExample("select", "All columns of a table", 100) -->
    *
    * Select all columns of a table:
    *
@@ -797,26 +492,18 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
 
   selectAll<T extends TB>(
     table: T
-  ): SelectQueryBuilder<DB, TB, Selectable<DB[T]>>
+  ): SelectQueryBuilder<DB, TB, O & Selectable<DB[T]>>
 
   selectAll(): SelectQueryBuilder<DB, TB, O & AllSelection<DB, TB>>
-
-  selectAll(table?: any): any {
-    return new SelectQueryBuilder({
-      ...this.#props,
-      queryNode: SelectQueryNode.cloneWithSelections(
-        this.#props.queryNode,
-        parseSelectAll(table)
-      ),
-    })
-  }
 
   /**
    * Joins another table to the query using an inner join.
    *
    * ### Examples
    *
-   * Simple usage by providing a table name and two columns to join:
+   * <!-- siteExample("join", "Simple inner join", 10) -->
+   *
+   * Simple inner joins can be done by providing a table name and two columns to join:
    *
    * ```ts
    * const result = await db
@@ -824,21 +511,20 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    *   .innerJoin('pet', 'pet.owner_id', 'person.id')
    *   // `select` needs to come after the call to `innerJoin` so
    *   // that you can select from the joined table.
-   *   .select('person.id', 'pet.name')
+   *   .select(['person.id', 'pet.name as pet_name'])
    *   .execute()
-   *
-   * result[0].id
-   * result[0].name
    * ```
    *
    * The generated SQL (PostgreSQL):
    *
    * ```sql
-   * select "person"."id", "pet"."name"
+   * select "person"."id", "pet"."name" as "pet_name"
    * from "person"
    * inner join "pet"
    * on "pet"."owner_id" = "person"."id"
    * ```
+   *
+   * <!-- siteExample("join", "Aliased inner join", 20) -->
    *
    * You can give an alias for the joined table like this:
    *
@@ -860,13 +546,15 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    * where "p".name" = $1
    * ```
    *
+   * <!-- siteExample("join", "Complex join", 30) -->
+   *
    * You can provide a function as the second argument to get a join
    * builder for creating more complex joins. The join builder has a
    * bunch of `on*` methods for building the `on` clause of the join.
    * There's basically an equivalent for every `where` method
-   * (`on`, `onRef`, `onExists` etc.). You can do all the same things
-   * with the `on` method that you can with the corresponding `where`
-   * method. See the `where` method documentation for more examples.
+   * (`on`, `onRef` etc.). You can do all the same things with the
+   * `on` method that you can with the corresponding `where` method.
+   * See the `where` method documentation for more examples.
    *
    * ```ts
    * await db.selectFrom('person')
@@ -890,56 +578,55 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    * and "pet"."name" = $1
    * ```
    *
-   * You can join a subquery by providing a select query (or a callback)
-   * as the first argument:
+   * <!-- siteExample("join", "Subquery join", 40) -->
+   *
+   * You can join a subquery by providing two callbacks:
    *
    * ```ts
-   * await db.selectFrom('person')
+   * const result = await db.selectFrom('person')
    *   .innerJoin(
-   *     db.selectFrom('pet')
-   *       .select(['owner_id', 'name'])
+   *     (eb) => eb
+   *       .selectFrom('pet')
+   *       .select(['owner_id as owner', 'name'])
    *       .where('name', '=', 'Doggo')
    *       .as('doggos'),
-   *     'doggos.owner_id',
-   *     'person.id',
+   *     (join) => join
+   *       .onRef('doggos.owner', '=', 'person.id'),
    *   )
-   *   .selectAll()
+   *   .selectAll('doggos')
    *   .execute()
    * ```
    *
    * The generated SQL (PostgreSQL):
    *
    * ```sql
-   * select *
+   * select "doggos".*
    * from "person"
    * inner join (
-   *   select "owner_id", "name"
+   *   select "owner_id" as "owner", "name"
    *   from "pet"
    *   where "name" = $1
    * ) as "doggos"
-   * on "doggos"."owner_id" = "person"."id"
+   * on "doggos"."owner" = "person"."id"
    * ```
    */
   innerJoin<
     TE extends TableExpression<DB, TB>,
     K1 extends JoinReferenceExpression<DB, TB, TE>,
     K2 extends JoinReferenceExpression<DB, TB, TE>
-  >(table: TE, k1: K1, k2: K2): SelectQueryBuilderWithInnerJoin<DB, TB, O, TE>
+  >(
+    table: TE,
+    k1: K1,
+    k2: K2
+  ): SelectQueryBuilderWithInnerJoin<DB, TB, O, TE>
 
   innerJoin<
     TE extends TableExpression<DB, TB>,
     FN extends JoinCallbackExpression<DB, TB, TE>
-  >(table: TE, callback: FN): SelectQueryBuilderWithInnerJoin<DB, TB, O, TE>
-
-  innerJoin(...args: any): any {
-    return new SelectQueryBuilder({
-      ...this.#props,
-      queryNode: QueryNode.cloneWithJoin(
-        this.#props.queryNode,
-        parseJoin('InnerJoin', args)
-      ),
-    })
-  }
+  >(
+    table: TE,
+    callback: FN
+  ): SelectQueryBuilderWithInnerJoin<DB, TB, O, TE>
 
   /**
    * Just like {@link innerJoin} but adds a left join instead of an inner join.
@@ -948,22 +635,19 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
     TE extends TableExpression<DB, TB>,
     K1 extends JoinReferenceExpression<DB, TB, TE>,
     K2 extends JoinReferenceExpression<DB, TB, TE>
-  >(table: TE, k1: K1, k2: K2): SelectQueryBuilderWithLeftJoin<DB, TB, O, TE>
+  >(
+    table: TE,
+    k1: K1,
+    k2: K2
+  ): SelectQueryBuilderWithLeftJoin<DB, TB, O, TE>
 
   leftJoin<
     TE extends TableExpression<DB, TB>,
     FN extends JoinCallbackExpression<DB, TB, TE>
-  >(table: TE, callback: FN): SelectQueryBuilderWithLeftJoin<DB, TB, O, TE>
-
-  leftJoin(...args: any): any {
-    return new SelectQueryBuilder({
-      ...this.#props,
-      queryNode: QueryNode.cloneWithJoin(
-        this.#props.queryNode,
-        parseJoin('LeftJoin', args)
-      ),
-    })
-  }
+  >(
+    table: TE,
+    callback: FN
+  ): SelectQueryBuilderWithLeftJoin<DB, TB, O, TE>
 
   /**
    * Just like {@link innerJoin} but adds a right join instead of an inner join.
@@ -972,22 +656,19 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
     TE extends TableExpression<DB, TB>,
     K1 extends JoinReferenceExpression<DB, TB, TE>,
     K2 extends JoinReferenceExpression<DB, TB, TE>
-  >(table: TE, k1: K1, k2: K2): SelectQueryBuilderWithRightJoin<DB, TB, O, TE>
+  >(
+    table: TE,
+    k1: K1,
+    k2: K2
+  ): SelectQueryBuilderWithRightJoin<DB, TB, O, TE>
 
   rightJoin<
     TE extends TableExpression<DB, TB>,
     FN extends JoinCallbackExpression<DB, TB, TE>
-  >(table: TE, callback: FN): SelectQueryBuilderWithRightJoin<DB, TB, O, TE>
-
-  rightJoin(...args: any): any {
-    return new SelectQueryBuilder({
-      ...this.#props,
-      queryNode: QueryNode.cloneWithJoin(
-        this.#props.queryNode,
-        parseJoin('RightJoin', args)
-      ),
-    })
-  }
+  >(
+    table: TE,
+    callback: FN
+  ): SelectQueryBuilderWithRightJoin<DB, TB, O, TE>
 
   /**
    * Just like {@link innerJoin} but adds a full join instead of an inner join.
@@ -996,22 +677,19 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
     TE extends TableExpression<DB, TB>,
     K1 extends JoinReferenceExpression<DB, TB, TE>,
     K2 extends JoinReferenceExpression<DB, TB, TE>
-  >(table: TE, k1: K1, k2: K2): SelectQueryBuilderWithFullJoin<DB, TB, O, TE>
+  >(
+    table: TE,
+    k1: K1,
+    k2: K2
+  ): SelectQueryBuilderWithFullJoin<DB, TB, O, TE>
 
   fullJoin<
     TE extends TableExpression<DB, TB>,
     FN extends JoinCallbackExpression<DB, TB, TE>
-  >(table: TE, callback: FN): SelectQueryBuilderWithFullJoin<DB, TB, O, TE>
-
-  fullJoin(...args: any): any {
-    return new SelectQueryBuilder({
-      ...this.#props,
-      queryNode: QueryNode.cloneWithJoin(
-        this.#props.queryNode,
-        parseJoin('FullJoin', args)
-      ),
-    })
-  }
+  >(
+    table: TE,
+    callback: FN
+  ): SelectQueryBuilderWithFullJoin<DB, TB, O, TE>
 
   /**
    * Just like {@link innerJoin} but adds a lateral join instead of an inner join.
@@ -1036,22 +714,19 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
     TE extends TableExpression<DB, TB>,
     K1 extends JoinReferenceExpression<DB, TB, TE>,
     K2 extends JoinReferenceExpression<DB, TB, TE>
-  >(table: TE, k1: K1, k2: K2): SelectQueryBuilderWithInnerJoin<DB, TB, O, TE>
+  >(
+    table: TE,
+    k1: K1,
+    k2: K2
+  ): SelectQueryBuilderWithInnerJoin<DB, TB, O, TE>
 
   innerJoinLateral<
     TE extends TableExpression<DB, TB>,
     FN extends JoinCallbackExpression<DB, TB, TE>
-  >(table: TE, callback: FN): SelectQueryBuilderWithInnerJoin<DB, TB, O, TE>
-
-  innerJoinLateral(...args: any): any {
-    return new SelectQueryBuilder({
-      ...this.#props,
-      queryNode: QueryNode.cloneWithJoin(
-        this.#props.queryNode,
-        parseJoin('LateralInnerJoin', args)
-      ),
-    })
-  }
+  >(
+    table: TE,
+    callback: FN
+  ): SelectQueryBuilderWithInnerJoin<DB, TB, O, TE>
 
   /**
    * Just like {@link innerJoin} but adds a lateral left join instead of an inner join.
@@ -1075,22 +750,19 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
     TE extends TableExpression<DB, TB>,
     K1 extends JoinReferenceExpression<DB, TB, TE>,
     K2 extends JoinReferenceExpression<DB, TB, TE>
-  >(table: TE, k1: K1, k2: K2): SelectQueryBuilderWithLeftJoin<DB, TB, O, TE>
+  >(
+    table: TE,
+    k1: K1,
+    k2: K2
+  ): SelectQueryBuilderWithLeftJoin<DB, TB, O, TE>
 
   leftJoinLateral<
     TE extends TableExpression<DB, TB>,
     FN extends JoinCallbackExpression<DB, TB, TE>
-  >(table: TE, callback: FN): SelectQueryBuilderWithLeftJoin<DB, TB, O, TE>
-
-  leftJoinLateral(...args: any): any {
-    return new SelectQueryBuilder({
-      ...this.#props,
-      queryNode: QueryNode.cloneWithJoin(
-        this.#props.queryNode,
-        parseJoin('LateralLeftJoin', args)
-      ),
-    })
-  }
+  >(
+    table: TE,
+    callback: FN
+  ): SelectQueryBuilderWithLeftJoin<DB, TB, O, TE>
 
   /**
    * Adds an `order by` clause to the query.
@@ -1324,15 +996,7 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    * group by "first_name"
    * ```
    */
-  groupBy(groupBy: GroupByArg<DB, TB, O>): SelectQueryBuilder<DB, TB, O> {
-    return new SelectQueryBuilder({
-      ...this.#props,
-      queryNode: SelectQueryNode.cloneWithGroupByItems(
-        this.#props.queryNode,
-        parseGroupBy(groupBy)
-      ),
-    })
-  }
+  groupBy(groupBy: GroupByArg<DB, TB, O>): SelectQueryBuilder<DB, TB, O>
 
   /**
    * Adds a limit clause to the query.
@@ -1358,15 +1022,7 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    *   .limit(10)
    * ```
    */
-  limit(limit: number): SelectQueryBuilder<DB, TB, O> {
-    return new SelectQueryBuilder({
-      ...this.#props,
-      queryNode: SelectQueryNode.cloneWithLimit(
-        this.#props.queryNode,
-        LimitNode.create(limit)
-      ),
-    })
-  }
+  limit(limit: number): SelectQueryBuilder<DB, TB, O>
 
   /**
    * Adds an offset clause to the query.
@@ -1383,15 +1039,7 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    *   .limit(10)
    * ```
    */
-  offset(offset: number): SelectQueryBuilder<DB, TB, O> {
-    return new SelectQueryBuilder({
-      ...this.#props,
-      queryNode: SelectQueryNode.cloneWithOffset(
-        this.#props.queryNode,
-        OffsetNode.create(offset)
-      ),
-    })
-  }
+  offset(offset: number): SelectQueryBuilder<DB, TB, O>
 
   /**
    * Combines another select query or raw expression to this query using `union`.
@@ -1406,16 +1054,20 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    *   .union(db.selectFrom('pet').select(['id', 'name']))
    *   .orderBy('name')
    * ```
+   *
+   * You can provide a callback to get an expression builder.
+   * In the following example, this allows us to wrap the query in parentheses:
+   *
+   * ```ts
+   * db.selectFrom('person')
+   *   .select(['id', 'first_name as name'])
+   *   .union((eb) => eb.parens(
+   *     eb.selectFrom('pet').select(['id', 'name'])
+   *   ))
+   *   .orderBy('name')
+   * ```
    */
-  union(expression: Expression<O>): SelectQueryBuilder<DB, TB, O> {
-    return new SelectQueryBuilder({
-      ...this.#props,
-      queryNode: SelectQueryNode.cloneWithSetOperation(
-        this.#props.queryNode,
-        parseSetOperation('union', expression, false)
-      ),
-    })
-  }
+  union(expression: SetOperandExpression<DB, O>): SelectQueryBuilder<DB, TB, O>
 
   /**
    * Combines another select query or raw expression to this query using `union all`.
@@ -1430,16 +1082,22 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    *   .unionAll(db.selectFrom('pet').select(['id', 'name']))
    *   .orderBy('name')
    * ```
+   *
+   * You can provide a callback to get an expression builder.
+   * In the following example, this allows us to wrap the query in parentheses:
+   *
+   * ```ts
+   * db.selectFrom('person')
+   *   .select(['id', 'first_name as name'])
+   *   .unionAll((eb) => eb.parens(
+   *     eb.selectFrom('pet').select(['id', 'name'])
+   *   ))
+   *   .orderBy('name')
+   * ```
    */
-  unionAll(expression: Expression<O>): SelectQueryBuilder<DB, TB, O> {
-    return new SelectQueryBuilder({
-      ...this.#props,
-      queryNode: SelectQueryNode.cloneWithSetOperation(
-        this.#props.queryNode,
-        parseSetOperation('union', expression, true)
-      ),
-    })
-  }
+  unionAll(
+    expression: SetOperandExpression<DB, O>
+  ): SelectQueryBuilder<DB, TB, O>
 
   /**
    * Combines another select query or raw expression to this query using `intersect`.
@@ -1454,16 +1112,22 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    *   .intersect(db.selectFrom('pet').select(['id', 'name']))
    *   .orderBy('name')
    * ```
+   *
+   * You can provide a callback to get an expression builder.
+   * In the following example, this allows us to wrap the query in parentheses:
+   *
+   * ```ts
+   * db.selectFrom('person')
+   *   .select(['id', 'first_name as name'])
+   *   .intersect((eb) => eb.parens(
+   *     eb.selectFrom('pet').select(['id', 'name'])
+   *   ))
+   *   .orderBy('name')
+   * ```
    */
-  intersect(expression: Expression<O>): SelectQueryBuilder<DB, TB, O> {
-    return new SelectQueryBuilder({
-      ...this.#props,
-      queryNode: SelectQueryNode.cloneWithSetOperation(
-        this.#props.queryNode,
-        parseSetOperation('intersect', expression, false)
-      ),
-    })
-  }
+  intersect(
+    expression: SetOperandExpression<DB, O>
+  ): SelectQueryBuilder<DB, TB, O>
 
   /**
    * Combines another select query or raw expression to this query using `intersect all`.
@@ -1478,16 +1142,22 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    *   .intersectAll(db.selectFrom('pet').select(['id', 'name']))
    *   .orderBy('name')
    * ```
+   *
+   * You can provide a callback to get an expression builder.
+   * In the following example, this allows us to wrap the query in parentheses:
+   *
+   * ```ts
+   * db.selectFrom('person')
+   *   .select(['id', 'first_name as name'])
+   *   .intersectAll((eb) => eb.parens(
+   *     eb.selectFrom('pet').select(['id', 'name'])
+   *   ))
+   *   .orderBy('name')
+   * ```
    */
-  intersectAll(expression: Expression<O>): SelectQueryBuilder<DB, TB, O> {
-    return new SelectQueryBuilder({
-      ...this.#props,
-      queryNode: SelectQueryNode.cloneWithSetOperation(
-        this.#props.queryNode,
-        parseSetOperation('intersect', expression, true)
-      ),
-    })
-  }
+  intersectAll(
+    expression: SetOperandExpression<DB, O>
+  ): SelectQueryBuilder<DB, TB, O>
 
   /**
    * Combines another select query or raw expression to this query using `except`.
@@ -1502,16 +1172,20 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    *   .except(db.selectFrom('pet').select(['id', 'name']))
    *   .orderBy('name')
    * ```
+   *
+   * You can provide a callback to get an expression builder.
+   * In the following example, this allows us to wrap the query in parentheses:
+   *
+   * ```ts
+   * db.selectFrom('person')
+   *   .select(['id', 'first_name as name'])
+   *   .except((eb) => eb.parens(
+   *     eb.selectFrom('pet').select(['id', 'name'])
+   *   ))
+   *   .orderBy('name')
+   * ```
    */
-  except(expression: Expression<O>): SelectQueryBuilder<DB, TB, O> {
-    return new SelectQueryBuilder({
-      ...this.#props,
-      queryNode: SelectQueryNode.cloneWithSetOperation(
-        this.#props.queryNode,
-        parseSetOperation('except', expression, false)
-      ),
-    })
-  }
+  except(expression: SetOperandExpression<DB, O>): SelectQueryBuilder<DB, TB, O>
 
   /**
    * Combines another select query or raw expression to this query using `except all`.
@@ -1526,16 +1200,22 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    *   .exceptAll(db.selectFrom('pet').select(['id', 'name']))
    *   .orderBy('name')
    * ```
+   *
+   * You can provide a callback to get an expression builder.
+   * In the following example, this allows us to wrap the query in parentheses:
+   *
+   * ```ts
+   * db.selectFrom('person')
+   *   .select(['id', 'first_name as name'])
+   *   .exceptAll((eb) => eb.parens(
+   *     eb.selectFrom('pet').select(['id', 'name'])
+   *   ))
+   *   .orderBy('name')
+   * ```
    */
-  exceptAll(expression: Expression<O>): SelectQueryBuilder<DB, TB, O> {
-    return new SelectQueryBuilder({
-      ...this.#props,
-      queryNode: SelectQueryNode.cloneWithSetOperation(
-        this.#props.queryNode,
-        parseSetOperation('except', expression, true)
-      ),
-    })
-  }
+  exceptAll(
+    expression: SetOperandExpression<DB, O>
+  ): SelectQueryBuilder<DB, TB, O>
 
   /**
    * Gives an alias for the query. This method is only useful for sub queries.
@@ -1556,9 +1236,7 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    * pets[0].owner_first_name
    * ```
    */
-  as<A extends string>(alias: A): AliasedSelectQueryBuilder<DB, TB, O, A> {
-    return new AliasedSelectQueryBuilder(this, alias)
-  }
+  as<A extends string>(alias: A): AliasedSelectQueryBuilder<DB, TB, O, A>
 
   /**
    * Clears all select clauses from the query.
@@ -1578,19 +1256,9 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    * select "id", "gender" from "person"
    * ```
    */
-  clearSelect(): SelectQueryBuilder<DB, TB, {}> {
-    return new SelectQueryBuilder<DB, TB, {}>({
-      ...this.#props,
-      queryNode: SelectQueryNode.cloneWithoutSelections(this.#props.queryNode),
-    })
-  }
+  clearSelect(): SelectQueryBuilder<DB, TB, {}>
 
-  clearWhere(): SelectQueryBuilder<DB, TB, O> {
-    return new SelectQueryBuilder<DB, TB, O>({
-      ...this.#props,
-      queryNode: QueryNode.cloneWithoutWhere(this.#props.queryNode),
-    })
-  }
+  clearWhere(): SelectQueryBuilder<DB, TB, O>
 
   /**
    * Clears limit clause from the query.
@@ -1610,12 +1278,7 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    * select * from "person"
    * ```
    */
-  clearLimit(): SelectQueryBuilder<DB, TB, O> {
-    return new SelectQueryBuilder<DB, TB, O>({
-      ...this.#props,
-      queryNode: SelectQueryNode.cloneWithoutLimit(this.#props.queryNode),
-    })
-  }
+  clearLimit(): SelectQueryBuilder<DB, TB, O>
 
   /**
    * Clears offset clause from the query.
@@ -1636,12 +1299,7 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    * select * from "person" limit 10
    * ```
    */
-  clearOffset(): SelectQueryBuilder<DB, TB, O> {
-    return new SelectQueryBuilder<DB, TB, O>({
-      ...this.#props,
-      queryNode: SelectQueryNode.cloneWithoutOffset(this.#props.queryNode),
-    })
-  }
+  clearOffset(): SelectQueryBuilder<DB, TB, O>
 
   /**
    * Clears all `order by` clauses from the query.
@@ -1661,12 +1319,7 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    * select * from "person"
    * ```
    */
-  clearOrderBy(): SelectQueryBuilder<DB, TB, O> {
-    return new SelectQueryBuilder<DB, TB, O>({
-      ...this.#props,
-      queryNode: SelectQueryNode.cloneWithoutOrderBy(this.#props.queryNode),
-    })
-  }
+  clearOrderBy(): SelectQueryBuilder<DB, TB, O>
 
   /**
    * Simply calls the provided function passing `this` as the only argument. `$call` returns
@@ -1691,16 +1344,7 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    *   .execute()
    * ```
    */
-  $call<T>(func: (qb: this) => T): T {
-    return func(this)
-  }
-
-  /**
-   * @deprecated Use `$call` instead
-   */
-  call<T>(func: (qb: this) => T): T {
-    return this.$call(func)
-  }
+  $call<T>(func: (qb: this) => T): T
 
   /**
    * Call `func(this)` if `condition` is true.
@@ -1757,40 +1401,20 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    * You can also call any other methods inside the callback:
    *
    * ```ts
-   * const { count } = db.fn
-   *
    * db.selectFrom('person')
    *   .select('person.id')
    *   .$if(filterByFirstName, (qb) => qb.where('first_name', '=', firstName))
    *   .$if(filterByPetCount, (qb) => qb
    *     .innerJoin('pet', 'pet.owner_id', 'person.id')
-   *     .having(count('pet.id'), '>', petCountLimit)
+   *     .having((eb) => eb.fn.count('pet.id'), '>', petCountLimit)
    *     .groupBy('person.id')
    *   )
    * ```
    */
-  $if<O2 extends O>(
+  $if<O2>(
     condition: boolean,
-    func: (qb: this) => SelectQueryBuilder<DB, TB, O2>
-  ): SelectQueryBuilder<DB, TB, MergePartial<O, O2>> {
-    if (condition) {
-      return func(this)
-    }
-
-    return new SelectQueryBuilder({
-      ...this.#props,
-    })
-  }
-
-  /**
-   * @deprecated Use `$if` instead
-   */
-  if<O2 extends O>(
-    condition: boolean,
-    func: (qb: this) => SelectQueryBuilder<DB, TB, O2>
-  ): SelectQueryBuilder<DB, TB, MergePartial<O, O2>> {
-    return this.$if(condition, func)
-  }
+    func: (qb: this) => SelectQueryBuilder<any, any, O & O2>
+  ): SelectQueryBuilder<DB, TB, O & Partial<O2>>
 
   /**
    * Change the output type of the query.
@@ -1798,16 +1422,7 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    * You should only use this method as the last resort if the types
    * don't support your use case.
    */
-  $castTo<T>(): SelectQueryBuilder<DB, TB, T> {
-    return new SelectQueryBuilder(this.#props)
-  }
-
-  /**
-   * @deprecated Use `$castTo` instead.
-   */
-  castTo<T>(): SelectQueryBuilder<DB, TB, T> {
-    return this.$castTo<T>()
-  }
+  $castTo<T>(): SelectQueryBuilder<DB, TB, T>
 
   /**
    * Narrows (parts of) the output type of the query.
@@ -1849,9 +1464,7 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    * functionThatExpectsPersonWithNonNullValue(person)
    * ```
    */
-  $narrowType<T>(): SelectQueryBuilder<DB, TB, NarrowPartial<O, T>> {
-    return new SelectQueryBuilder(this.#props)
-  }
+  $narrowType<T>(): SelectQueryBuilder<DB, TB, NarrowPartial<O, T>>
 
   /**
    * Asserts that query's output row type equals the given type `T`.
@@ -1894,24 +1507,480 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
    */
   $assertType<T extends O>(): O extends T
     ? SelectQueryBuilder<DB, TB, T>
-    : KyselyTypeError<`$assertType() call failed: The type passed in is not equal to the output type of the query.`> {
-    return new SelectQueryBuilder(this.#props) as unknown as any
-  }
-
-  /**
-   * @deprecated Use `$assertType` instead.
-   */
-  assertType<T extends O>(): O extends T
-    ? SelectQueryBuilder<DB, TB, T>
-    : KyselyTypeError<`assertType() call failed: The type passed in is not equal to the output type of the query.`> {
-    return new SelectQueryBuilder(this.#props) as unknown as any
-  }
+    : KyselyTypeError<`$assertType() call failed: The type passed in is not equal to the output type of the query.`>
 
   /**
    * Returns a copy of this SelectQueryBuilder instance with the given plugin installed.
    */
+  withPlugin(plugin: KyselyPlugin): SelectQueryBuilder<DB, TB, O>
+
+  toOperationNode(): SelectQueryNode
+
+  compile(): CompiledQuery<Simplify<O>>
+
+  /**
+   * Executes the query and returns an array of rows.
+   *
+   * Also see the {@link executeTakeFirst} and {@link executeTakeFirstOrThrow} methods.
+   */
+  execute(): Promise<Simplify<O>[]>
+
+  /**
+   * Executes the query and returns the first result or undefined if
+   * the query returned no result.
+   */
+  executeTakeFirst(): Promise<SimplifySingleResult<O>>
+
+  /**
+   * Executes the query and returns the first result or throws if
+   * the query returned no result.
+   *
+   * By default an instance of {@link NoResultError} is thrown, but you can
+   * provide a custom error class, or callback to throw a different
+   * error.
+   */
+  executeTakeFirstOrThrow(
+    errorConstructor?: NoResultErrorConstructor | ((node: QueryNode) => Error)
+  ): Promise<Simplify<O>>
+
+  stream(chunkSize?: number): AsyncIterableIterator<O>
+
+  explain<ER extends Record<string, any> = Record<string, any>>(
+    format?: ExplainFormat,
+    options?: Expression<any>
+  ): Promise<ER[]>
+}
+
+class SelectQueryBuilderImpl<DB, TB extends keyof DB, O>
+  implements SelectQueryBuilder<DB, TB, O>
+{
+  readonly #props: SelectQueryBuilderProps
+
+  constructor(props: SelectQueryBuilderProps) {
+    this.#props = freeze(props)
+  }
+
+  get expressionType(): O | undefined {
+    return undefined
+  }
+
+  where(...args: any[]): any {
+    return new SelectQueryBuilderImpl({
+      ...this.#props,
+      queryNode: QueryNode.cloneWithWhere(
+        this.#props.queryNode,
+        parseValueBinaryOperationOrExpression(args)
+      ),
+    })
+  }
+
+  whereRef(
+    lhs: ReferenceExpression<DB, TB>,
+    op: ComparisonOperatorExpression,
+    rhs: ReferenceExpression<DB, TB>
+  ): SelectQueryBuilder<DB, TB, O> {
+    return new SelectQueryBuilderImpl({
+      ...this.#props,
+      queryNode: QueryNode.cloneWithWhere(
+        this.#props.queryNode,
+        parseReferentialBinaryOperation(lhs, op, rhs)
+      ),
+    })
+  }
+
+  having(...args: any[]): any {
+    return new SelectQueryBuilderImpl({
+      ...this.#props,
+      queryNode: SelectQueryNode.cloneWithHaving(
+        this.#props.queryNode,
+        parseValueBinaryOperationOrExpression(args)
+      ),
+    })
+  }
+
+  havingRef(
+    lhs: ReferenceExpression<DB, TB>,
+    op: ComparisonOperatorExpression,
+    rhs: ReferenceExpression<DB, TB>
+  ): SelectQueryBuilder<DB, TB, O> {
+    return new SelectQueryBuilderImpl({
+      ...this.#props,
+      queryNode: SelectQueryNode.cloneWithHaving(
+        this.#props.queryNode,
+        parseReferentialBinaryOperation(lhs, op, rhs)
+      ),
+    })
+  }
+
+  select<SE extends SelectExpression<DB, TB>>(
+    selection: SelectArg<DB, TB, SE>
+  ): SelectQueryBuilder<DB, TB, O & Selection<DB, TB, SE>> {
+    return new SelectQueryBuilderImpl<DB, TB, O & Selection<DB, TB, SE>>({
+      ...this.#props,
+      queryNode: SelectQueryNode.cloneWithSelections(
+        this.#props.queryNode,
+        parseSelectArg(selection)
+      ),
+    })
+  }
+
+  distinctOn(selection: ReferenceExpressionOrList<DB, TB>): any {
+    return new SelectQueryBuilderImpl({
+      ...this.#props,
+      queryNode: SelectQueryNode.cloneWithDistinctOn(
+        this.#props.queryNode,
+        parseReferenceExpressionOrList(selection)
+      ),
+    })
+  }
+
+  modifyFront(modifier: Expression<any>): SelectQueryBuilder<DB, TB, O> {
+    return new SelectQueryBuilderImpl({
+      ...this.#props,
+      queryNode: SelectQueryNode.cloneWithFrontModifier(
+        this.#props.queryNode,
+        SelectModifierNode.createWithExpression(modifier.toOperationNode())
+      ),
+    })
+  }
+
+  modifyEnd(modifier: Expression<any>): SelectQueryBuilder<DB, TB, O> {
+    return new SelectQueryBuilderImpl({
+      ...this.#props,
+      queryNode: SelectQueryNode.cloneWithEndModifier(
+        this.#props.queryNode,
+        SelectModifierNode.createWithExpression(modifier.toOperationNode())
+      ),
+    })
+  }
+
+  distinct(): SelectQueryBuilder<DB, TB, O> {
+    return new SelectQueryBuilderImpl({
+      ...this.#props,
+      queryNode: SelectQueryNode.cloneWithFrontModifier(
+        this.#props.queryNode,
+        SelectModifierNode.create('Distinct')
+      ),
+    })
+  }
+
+  forUpdate(): SelectQueryBuilder<DB, TB, O> {
+    return new SelectQueryBuilderImpl({
+      ...this.#props,
+      queryNode: SelectQueryNode.cloneWithEndModifier(
+        this.#props.queryNode,
+        SelectModifierNode.create('ForUpdate')
+      ),
+    })
+  }
+
+  forShare(): SelectQueryBuilder<DB, TB, O> {
+    return new SelectQueryBuilderImpl({
+      ...this.#props,
+      queryNode: SelectQueryNode.cloneWithEndModifier(
+        this.#props.queryNode,
+        SelectModifierNode.create('ForShare')
+      ),
+    })
+  }
+
+  forKeyShare(): SelectQueryBuilder<DB, TB, O> {
+    return new SelectQueryBuilderImpl({
+      ...this.#props,
+      queryNode: SelectQueryNode.cloneWithEndModifier(
+        this.#props.queryNode,
+        SelectModifierNode.create('ForKeyShare')
+      ),
+    })
+  }
+
+  forNoKeyUpdate(): SelectQueryBuilder<DB, TB, O> {
+    return new SelectQueryBuilderImpl({
+      ...this.#props,
+      queryNode: SelectQueryNode.cloneWithEndModifier(
+        this.#props.queryNode,
+        SelectModifierNode.create('ForNoKeyUpdate')
+      ),
+    })
+  }
+
+  skipLocked(): SelectQueryBuilder<DB, TB, O> {
+    return new SelectQueryBuilderImpl({
+      ...this.#props,
+      queryNode: SelectQueryNode.cloneWithEndModifier(
+        this.#props.queryNode,
+        SelectModifierNode.create('SkipLocked')
+      ),
+    })
+  }
+
+  noWait(): SelectQueryBuilder<DB, TB, O> {
+    return new SelectQueryBuilderImpl({
+      ...this.#props,
+      queryNode: SelectQueryNode.cloneWithEndModifier(
+        this.#props.queryNode,
+        SelectModifierNode.create('NoWait')
+      ),
+    })
+  }
+
+  selectAll(table?: any): any {
+    return new SelectQueryBuilderImpl({
+      ...this.#props,
+      queryNode: SelectQueryNode.cloneWithSelections(
+        this.#props.queryNode,
+        parseSelectAll(table)
+      ),
+    })
+  }
+
+  innerJoin(...args: any): any {
+    return new SelectQueryBuilderImpl({
+      ...this.#props,
+      queryNode: QueryNode.cloneWithJoin(
+        this.#props.queryNode,
+        parseJoin('InnerJoin', args)
+      ),
+    })
+  }
+
+  leftJoin(...args: any): any {
+    return new SelectQueryBuilderImpl({
+      ...this.#props,
+      queryNode: QueryNode.cloneWithJoin(
+        this.#props.queryNode,
+        parseJoin('LeftJoin', args)
+      ),
+    })
+  }
+
+  rightJoin(...args: any): any {
+    return new SelectQueryBuilderImpl({
+      ...this.#props,
+      queryNode: QueryNode.cloneWithJoin(
+        this.#props.queryNode,
+        parseJoin('RightJoin', args)
+      ),
+    })
+  }
+
+  fullJoin(...args: any): any {
+    return new SelectQueryBuilderImpl({
+      ...this.#props,
+      queryNode: QueryNode.cloneWithJoin(
+        this.#props.queryNode,
+        parseJoin('FullJoin', args)
+      ),
+    })
+  }
+
+  innerJoinLateral(...args: any): any {
+    return new SelectQueryBuilderImpl({
+      ...this.#props,
+      queryNode: QueryNode.cloneWithJoin(
+        this.#props.queryNode,
+        parseJoin('LateralInnerJoin', args)
+      ),
+    })
+  }
+
+  leftJoinLateral(...args: any): any {
+    return new SelectQueryBuilderImpl({
+      ...this.#props,
+      queryNode: QueryNode.cloneWithJoin(
+        this.#props.queryNode,
+        parseJoin('LateralLeftJoin', args)
+      ),
+    })
+  }
+
+  orderBy(
+    orderBy: OrderByExpression<DB, TB, O>,
+    direction?: OrderByDirectionExpression
+  ): SelectQueryBuilder<DB, TB, O> {
+    return new SelectQueryBuilderImpl({
+      ...this.#props,
+      queryNode: SelectQueryNode.cloneWithOrderByItem(
+        this.#props.queryNode,
+        parseOrderBy(orderBy, direction)
+      ),
+    })
+  }
+
+  groupBy(groupBy: GroupByArg<DB, TB, O>): SelectQueryBuilder<DB, TB, O> {
+    return new SelectQueryBuilderImpl({
+      ...this.#props,
+      queryNode: SelectQueryNode.cloneWithGroupByItems(
+        this.#props.queryNode,
+        parseGroupBy(groupBy)
+      ),
+    })
+  }
+
+  limit(limit: number): SelectQueryBuilder<DB, TB, O> {
+    return new SelectQueryBuilderImpl({
+      ...this.#props,
+      queryNode: SelectQueryNode.cloneWithLimit(
+        this.#props.queryNode,
+        LimitNode.create(limit)
+      ),
+    })
+  }
+
+  offset(offset: number): SelectQueryBuilder<DB, TB, O> {
+    return new SelectQueryBuilderImpl({
+      ...this.#props,
+      queryNode: SelectQueryNode.cloneWithOffset(
+        this.#props.queryNode,
+        OffsetNode.create(offset)
+      ),
+    })
+  }
+
+  union(
+    expression: SetOperandExpression<DB, O>
+  ): SelectQueryBuilder<DB, TB, O> {
+    return new SelectQueryBuilderImpl({
+      ...this.#props,
+      queryNode: SelectQueryNode.cloneWithSetOperation(
+        this.#props.queryNode,
+        parseSetOperation('union', expression, false)
+      ),
+    })
+  }
+
+  unionAll(
+    expression: SetOperandExpression<DB, O>
+  ): SelectQueryBuilder<DB, TB, O> {
+    return new SelectQueryBuilderImpl({
+      ...this.#props,
+      queryNode: SelectQueryNode.cloneWithSetOperation(
+        this.#props.queryNode,
+        parseSetOperation('union', expression, true)
+      ),
+    })
+  }
+
+  intersect(
+    expression: SetOperandExpression<DB, O>
+  ): SelectQueryBuilder<DB, TB, O> {
+    return new SelectQueryBuilderImpl({
+      ...this.#props,
+      queryNode: SelectQueryNode.cloneWithSetOperation(
+        this.#props.queryNode,
+        parseSetOperation('intersect', expression, false)
+      ),
+    })
+  }
+
+  intersectAll(
+    expression: SetOperandExpression<DB, O>
+  ): SelectQueryBuilder<DB, TB, O> {
+    return new SelectQueryBuilderImpl({
+      ...this.#props,
+      queryNode: SelectQueryNode.cloneWithSetOperation(
+        this.#props.queryNode,
+        parseSetOperation('intersect', expression, true)
+      ),
+    })
+  }
+
+  except(
+    expression: SetOperandExpression<DB, O>
+  ): SelectQueryBuilder<DB, TB, O> {
+    return new SelectQueryBuilderImpl({
+      ...this.#props,
+      queryNode: SelectQueryNode.cloneWithSetOperation(
+        this.#props.queryNode,
+        parseSetOperation('except', expression, false)
+      ),
+    })
+  }
+
+  exceptAll(
+    expression: SetOperandExpression<DB, O>
+  ): SelectQueryBuilder<DB, TB, O> {
+    return new SelectQueryBuilderImpl({
+      ...this.#props,
+      queryNode: SelectQueryNode.cloneWithSetOperation(
+        this.#props.queryNode,
+        parseSetOperation('except', expression, true)
+      ),
+    })
+  }
+
+  as<A extends string>(alias: A): AliasedSelectQueryBuilder<DB, TB, O, A> {
+    return new AliasedSelectQueryBuilderImpl(this, alias)
+  }
+
+  clearSelect(): SelectQueryBuilder<DB, TB, {}> {
+    return new SelectQueryBuilderImpl<DB, TB, {}>({
+      ...this.#props,
+      queryNode: SelectQueryNode.cloneWithoutSelections(this.#props.queryNode),
+    })
+  }
+
+  clearWhere(): SelectQueryBuilder<DB, TB, O> {
+    return new SelectQueryBuilderImpl<DB, TB, O>({
+      ...this.#props,
+      queryNode: QueryNode.cloneWithoutWhere(this.#props.queryNode),
+    })
+  }
+
+  clearLimit(): SelectQueryBuilder<DB, TB, O> {
+    return new SelectQueryBuilderImpl<DB, TB, O>({
+      ...this.#props,
+      queryNode: SelectQueryNode.cloneWithoutLimit(this.#props.queryNode),
+    })
+  }
+
+  clearOffset(): SelectQueryBuilder<DB, TB, O> {
+    return new SelectQueryBuilderImpl<DB, TB, O>({
+      ...this.#props,
+      queryNode: SelectQueryNode.cloneWithoutOffset(this.#props.queryNode),
+    })
+  }
+
+  clearOrderBy(): SelectQueryBuilder<DB, TB, O> {
+    return new SelectQueryBuilderImpl<DB, TB, O>({
+      ...this.#props,
+      queryNode: SelectQueryNode.cloneWithoutOrderBy(this.#props.queryNode),
+    })
+  }
+
+  $call<T>(func: (qb: this) => T): T {
+    return func(this)
+  }
+
+  $if<O2>(
+    condition: boolean,
+    func: (qb: this) => SelectQueryBuilder<any, any, O & O2>
+  ): SelectQueryBuilder<DB, TB, O & Partial<O2>> {
+    if (condition) {
+      return func(this)
+    }
+
+    return new SelectQueryBuilderImpl<DB, TB, O & Partial<O2>>({
+      ...this.#props,
+    })
+  }
+
+  $castTo<T>(): SelectQueryBuilder<DB, TB, T> {
+    return new SelectQueryBuilderImpl(this.#props)
+  }
+
+  $narrowType<T>(): SelectQueryBuilder<DB, TB, NarrowPartial<O, T>> {
+    return new SelectQueryBuilderImpl(this.#props)
+  }
+
+  $assertType<T extends O>(): O extends T
+    ? SelectQueryBuilder<DB, TB, T>
+    : KyselyTypeError<`$assertType() call failed: The type passed in is not equal to the output type of the query.`> {
+    return new SelectQueryBuilderImpl(this.#props) as unknown as any
+  }
+
   withPlugin(plugin: KyselyPlugin): SelectQueryBuilder<DB, TB, O> {
-    return new SelectQueryBuilder({
+    return new SelectQueryBuilderImpl({
       ...this.#props,
       executor: this.#props.executor.withPlugin(plugin),
     })
@@ -1931,11 +2000,6 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
     )
   }
 
-  /**
-   * Executes the query and returns an array of rows.
-   *
-   * Also see the {@link executeTakeFirst} and {@link executeTakeFirstOrThrow} methods.
-   */
   async execute(): Promise<Simplify<O>[]> {
     const compiledQuery = this.compile()
 
@@ -1947,23 +2011,11 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
     return result.rows
   }
 
-  /**
-   * Executes the query and returns the first result or undefined if
-   * the query returned no result.
-   */
   async executeTakeFirst(): Promise<SimplifySingleResult<O>> {
     const [result] = await this.execute()
     return result as SimplifySingleResult<O>
   }
 
-  /**
-   * Executes the query and returns the first result or throws if
-   * the query returned no result.
-   *
-   * By default an instance of {@link NoResultError} is thrown, but you can
-   * provide a custom error class, or callback to throw a different
-   * error.
-   */
   async executeTakeFirstOrThrow(
     errorConstructor:
       | NoResultErrorConstructor
@@ -2000,7 +2052,7 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
     format?: ExplainFormat,
     options?: Expression<any>
   ): Promise<ER[]> {
-    const builder = new SelectQueryBuilder<DB, TB, ER>({
+    const builder = new SelectQueryBuilderImpl<DB, TB, ER>({
       ...this.#props,
       queryNode: QueryNode.cloneWithExplain(
         this.#props.queryNode,
@@ -2014,9 +2066,15 @@ export class SelectQueryBuilder<DB, TB extends keyof DB, O>
 }
 
 preventAwait(
-  SelectQueryBuilder,
+  SelectQueryBuilderImpl,
   "don't await SelectQueryBuilder instances directly. To execute the query you need to call `execute` or `executeTakeFirst`."
 )
+
+export function createSelectQueryBuilder<DB, TB extends keyof DB, O>(
+  props: SelectQueryBuilderProps
+): SelectQueryBuilder<DB, TB, O> {
+  return new SelectQueryBuilderImpl(props)
+}
 
 export interface SelectQueryBuilderProps {
   readonly queryId: QueryId
@@ -2024,15 +2082,24 @@ export interface SelectQueryBuilderProps {
   readonly executor: QueryExecutor
 }
 
-/**
- * {@link SelectQueryBuilder} with an alias. The result of calling {@link SelectQueryBuilder.as}.
- */
-export class AliasedSelectQueryBuilder<
+export interface AliasedSelectQueryBuilder<
   DB,
   TB extends keyof DB,
   O = undefined,
   A extends string = never
-> implements AliasedExpression<O, A>
+> extends AliasedExpression<O, A> {
+  get selectQueryBuilder(): SelectQueryBuilder<DB, TB, O>
+}
+
+/**
+ * {@link SelectQueryBuilder} with an alias. The result of calling {@link SelectQueryBuilder.as}.
+ */
+class AliasedSelectQueryBuilderImpl<
+  DB,
+  TB extends keyof DB,
+  O = undefined,
+  A extends string = never
+> implements AliasedSelectQueryBuilder<DB, TB, O, A>
 {
   readonly #queryBuilder: SelectQueryBuilder<DB, TB, O>
   readonly #alias: A
@@ -2042,14 +2109,16 @@ export class AliasedSelectQueryBuilder<
     this.#alias = alias
   }
 
-  /** @private */
   get expression(): Expression<O> {
     return this.#queryBuilder
   }
 
-  /** @private */
   get alias(): A {
     return this.#alias
+  }
+
+  get selectQueryBuilder(): SelectQueryBuilder<DB, TB, O> {
+    return this.#queryBuilder
   }
 
   toOperationNode(): AliasNode {
@@ -2059,6 +2128,11 @@ export class AliasedSelectQueryBuilder<
     )
   }
 }
+
+preventAwait(
+  AliasedSelectQueryBuilderImpl,
+  "don't await AliasedSelectQueryBuilder instances directly. AliasedSelectQueryBuilder should never be executed directly since it's always a part of another query."
+)
 
 export type SelectQueryBuilderWithInnerJoin<
   DB,
@@ -2086,11 +2160,11 @@ type InnerJoinedBuilder<
 > = A extends keyof DB
   ? SelectQueryBuilder<InnerJoinedDB<DB, A, R>, TB | A, O>
   : // Much faster non-recursive solution for the simple case.
-    SelectQueryBuilder<DB & Record<A, R>, TB | A, O>
+    SelectQueryBuilder<DB & ShallowRecord<A, R>, TB | A, O>
 
-type InnerJoinedDB<DB, A extends string, R> = {
+type InnerJoinedDB<DB, A extends string, R> = DrainOuterGeneric<{
   [C in keyof DB | A]: C extends A ? R : C extends keyof DB ? DB[C] : never
-}
+}>
 
 export type SelectQueryBuilderWithLeftJoin<
   DB,
@@ -2118,15 +2192,15 @@ type LeftJoinedBuilder<
 > = A extends keyof DB
   ? SelectQueryBuilder<LeftJoinedDB<DB, A, R>, TB | A, O>
   : // Much faster non-recursive solution for the simple case.
-    SelectQueryBuilder<DB & Record<A, Nullable<R>>, TB | A, O>
+    SelectQueryBuilder<DB & ShallowRecord<A, Nullable<R>>, TB | A, O>
 
-type LeftJoinedDB<DB, A extends keyof any, R> = {
+type LeftJoinedDB<DB, A extends keyof any, R> = DrainOuterGeneric<{
   [C in keyof DB | A]: C extends A
     ? Nullable<R>
     : C extends keyof DB
     ? DB[C]
     : never
-}
+}>
 
 export type SelectQueryBuilderWithRightJoin<
   DB,
@@ -2153,7 +2227,12 @@ type RightJoinedBuilder<
   R
 > = SelectQueryBuilder<RightJoinedDB<DB, TB, A, R>, TB | A, O>
 
-type RightJoinedDB<DB, TB extends keyof DB, A extends keyof any, R> = {
+type RightJoinedDB<
+  DB,
+  TB extends keyof DB,
+  A extends keyof any,
+  R
+> = DrainOuterGeneric<{
   [C in keyof DB | A]: C extends A
     ? R
     : C extends TB
@@ -2161,7 +2240,7 @@ type RightJoinedDB<DB, TB extends keyof DB, A extends keyof any, R> = {
     : C extends keyof DB
     ? DB[C]
     : never
-}
+}>
 
 export type SelectQueryBuilderWithFullJoin<
   DB,
@@ -2188,7 +2267,12 @@ type OuterJoinedBuilder<
   R
 > = SelectQueryBuilder<OuterJoinedBuilderDB<DB, TB, A, R>, TB | A, O>
 
-type OuterJoinedBuilderDB<DB, TB extends keyof DB, A extends keyof any, R> = {
+type OuterJoinedBuilderDB<
+  DB,
+  TB extends keyof DB,
+  A extends keyof any,
+  R
+> = DrainOuterGeneric<{
   [C in keyof DB | A]: C extends A
     ? Nullable<R>
     : C extends TB
@@ -2196,4 +2280,4 @@ type OuterJoinedBuilderDB<DB, TB extends keyof DB, A extends keyof any, R> = {
     : C extends keyof DB
     ? DB[C]
     : never
-}
+}>

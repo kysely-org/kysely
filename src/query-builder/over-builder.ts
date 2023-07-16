@@ -30,7 +30,7 @@ export class OverBuilder<DB, TB extends keyof DB>
    * const result = await db
    *   .selectFrom('person')
    *   .select(
-   *     eb => eb.fn.avg<number>('age').over(
+   *     (eb) => eb.fn.avg<number>('age').over(
    *       ob => ob.orderBy('first_name', 'asc').orderBy('last_name', 'asc')
    *     ).as('average_age')
    *   )
@@ -63,7 +63,7 @@ export class OverBuilder<DB, TB extends keyof DB>
    * const result = await db
    *   .selectFrom('person')
    *   .select(
-   *     eb => eb.fn.avg<number>('age').over(
+   *     (eb) => eb.fn.avg<number>('age').over(
    *       ob => ob.partitionBy(['last_name', 'first_name'])
    *     ).as('average_age')
    *   )

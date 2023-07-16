@@ -148,7 +148,7 @@ for (const dialect of DIALECTS) {
         .insertInto('person')
         .columns(['first_name', 'gender'])
         .expression((eb) =>
-          eb.selectFrom('pet').select(['name', sql`${'other'}`.as('gender')])
+          eb.selectFrom('pet').select(['name', eb.val('other').as('gender')])
         )
 
       testSql(query, dialect, {
@@ -765,7 +765,7 @@ for (const dialect of DIALECTS) {
               gender: 'other',
             })
             .returning('first_name')
-            .if(condition, (qb) => qb.returning('last_name'))
+            .$if(condition, (qb) => qb.returning('last_name'))
 
           const result = await query.executeTakeFirstOrThrow()
 

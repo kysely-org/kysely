@@ -80,6 +80,12 @@ import { BinaryOperationNode } from './binary-operation-node.js'
 import { UnaryOperationNode } from './unary-operation-node.js'
 import { UsingNode } from './using-node.js'
 import { FunctionNode } from './function-node.js'
+import { CaseNode } from './case-node.js'
+import { WhenNode } from './when-node.js'
+import { JSONReferenceNode } from './json-reference-node.js'
+import { JSONPathNode } from './json-path-node.js'
+import { JSONPathLegNode } from './json-path-leg-node.js'
+import { JSONOperatorChainNode } from './json-operator-chain-node.js'
 
 /**
  * Transforms an operation node tree into another one.
@@ -194,6 +200,12 @@ export class OperationNodeTransformer {
     UnaryOperationNode: this.transformUnaryOperation.bind(this),
     UsingNode: this.transformUsing.bind(this),
     FunctionNode: this.transformFunction.bind(this),
+    CaseNode: this.transformCase.bind(this),
+    WhenNode: this.transformWhen.bind(this),
+    JSONReferenceNode: this.transformJSONReference.bind(this),
+    JSONPathNode: this.transformJSONPath.bind(this),
+    JSONPathLegNode: this.transformJSONPathLeg.bind(this),
+    JSONOperatorChainNode: this.transformJSONOperatorChain.bind(this),
   })
 
   transformNode<T extends OperationNode | undefined>(node: T): T {
@@ -282,8 +294,8 @@ export class OperationNodeTransformer {
   protected transformReference(node: ReferenceNode): ReferenceNode {
     return requireAllProps<ReferenceNode>({
       kind: 'ReferenceNode',
-      table: this.transformNode(node.table),
       column: this.transformNode(node.column),
+      table: this.transformNode(node.table),
     })
   }
 
@@ -630,6 +642,7 @@ export class OperationNodeTransformer {
     return requireAllProps<CommonTableExpressionNode>({
       kind: 'CommonTableExpressionNode',
       name: this.transformNode(node.name),
+      materialized: node.materialized,
       expression: this.transformNode(node.expression),
     })
   }
@@ -830,7 +843,7 @@ export class OperationNodeTransformer {
   ): AggregateFunctionNode {
     return requireAllProps({
       kind: 'AggregateFunctionNode',
-      aggregated: this.transformNode(node.aggregated),
+      aggregated: this.transformNodeList(node.aggregated),
       distinct: node.distinct,
       filter: this.transformNode(node.filter),
       func: node.func,
@@ -895,6 +908,58 @@ export class OperationNodeTransformer {
       kind: 'FunctionNode',
       func: node.func,
       arguments: this.transformNodeList(node.arguments),
+    })
+  }
+
+  protected transformCase(node: CaseNode): CaseNode {
+    return requireAllProps<CaseNode>({
+      kind: 'CaseNode',
+      value: this.transformNode(node.value),
+      when: this.transformNodeList(node.when),
+      else: this.transformNode(node.else),
+      isStatement: node.isStatement,
+    })
+  }
+
+  protected transformWhen(node: WhenNode): WhenNode {
+    return requireAllProps<WhenNode>({
+      kind: 'WhenNode',
+      condition: this.transformNode(node.condition),
+      result: this.transformNode(node.result),
+    })
+  }
+
+  protected transformJSONReference(node: JSONReferenceNode): JSONReferenceNode {
+    return requireAllProps<JSONReferenceNode>({
+      kind: 'JSONReferenceNode',
+      reference: this.transformNode(node.reference),
+      traversal: this.transformNode(node.traversal),
+    })
+  }
+
+  protected transformJSONPath(node: JSONPathNode): JSONPathNode {
+    return requireAllProps<JSONPathNode>({
+      kind: 'JSONPathNode',
+      inOperator: this.transformNode(node.inOperator),
+      pathLegs: this.transformNodeList(node.pathLegs),
+    })
+  }
+
+  protected transformJSONPathLeg(node: JSONPathLegNode): JSONPathLegNode {
+    return requireAllProps<JSONPathLegNode>({
+      kind: 'JSONPathLegNode',
+      type: node.type,
+      value: node.value,
+    })
+  }
+
+  protected transformJSONOperatorChain(
+    node: JSONOperatorChainNode
+  ): JSONOperatorChainNode {
+    return requireAllProps<JSONOperatorChainNode>({
+      kind: 'JSONOperatorChainNode',
+      operator: this.transformNode(node.operator),
+      values: this.transformNodeList(node.values),
     })
   }
 

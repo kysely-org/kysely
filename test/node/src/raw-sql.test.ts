@@ -1,4 +1,4 @@
-import { sql } from '../../../'
+import { sql, CompiledQuery } from '../../../'
 
 import {
   DIALECTS,
@@ -36,7 +36,7 @@ for (const dialect of DIALECTS) {
       const query = ctx.db
         .selectFrom('person')
         .selectAll()
-        .where(sql`first_name between ${'A'} and ${'B'}`)
+        .where(sql<boolean>`first_name between ${'A'} and ${'B'}`)
 
       testSql(query, dialect, {
         postgres: {
@@ -60,7 +60,9 @@ for (const dialect of DIALECTS) {
       const query = ctx.db
         .selectFrom('person')
         .selectAll()
-        .where(sql`first_name between ${sql.lit('A')} and ${sql.lit('B')}`)
+        .where(
+          sql<boolean>`first_name between ${sql.lit('A')} and ${sql.lit('B')}`
+        )
 
       testSql(query, dialect, {
         postgres: {
@@ -84,7 +86,7 @@ for (const dialect of DIALECTS) {
       const query = ctx.db
         .selectFrom('person')
         .selectAll()
-        .where(sql`${sql.id('first_name')} between ${'A'} and ${'B'}`)
+        .where(sql<boolean>`${sql.id('first_name')} between ${'A'} and ${'B'}`)
 
       testSql(query, dialect, {
         postgres: {
@@ -110,7 +112,7 @@ for (const dialect of DIALECTS) {
           .selectFrom('person')
           .selectAll()
           .where(
-            sql`${sql.id(
+            sql<boolean>`${sql.id(
               'public',
               'person',
               'first_name'
@@ -134,7 +136,7 @@ for (const dialect of DIALECTS) {
       const query = ctx.db
         .selectFrom('person')
         .selectAll()
-        .where(sql`${sql.ref('first_name')} between ${'A'} and ${'B'}`)
+        .where(sql<boolean>`${sql.ref('first_name')} between ${'A'} and ${'B'}`)
 
       testSql(query, dialect, {
         postgres: {
@@ -160,7 +162,7 @@ for (const dialect of DIALECTS) {
           .selectFrom('person')
           .selectAll()
           .where(
-            sql`${sql.ref(
+            sql<boolean>`${sql.ref(
               'public.person.first_name'
             )} between ${'A'} and ${'B'}`
           )
@@ -226,7 +228,7 @@ for (const dialect of DIALECTS) {
       const query = ctx.db
         .selectFrom('person')
         .selectAll()
-        .where(sql`first_name in (${sql.join(names)})`)
+        .where(sql<boolean>`first_name in (${sql.join(names)})`)
 
       testSql(query, dialect, {
         postgres: {
@@ -253,7 +255,9 @@ for (const dialect of DIALECTS) {
         const query = ctx.db
           .selectFrom('person')
           .selectAll()
-          .where(sql`first_name in (${sql.join(names, sql`::varchar,`)})`)
+          .where(
+            sql<boolean>`first_name in (${sql.join(names, sql`::varchar,`)})`
+          )
 
         testSql(query, dialect, {
           postgres: {
@@ -265,6 +269,20 @@ for (const dialect of DIALECTS) {
         })
 
         await query.execute()
+      })
+    }
+
+    if (dialect === 'postgres') {
+      it('CompiledQuery should support raw query with parameters', async () => {
+        const query = CompiledQuery.raw(
+          'select * from "person" where "public"."person"."first_name" between $1 and $2',
+          ['A', 'B']
+        )
+        expect(query.sql).to.equal(
+          'select * from "person" where "public"."person"."first_name" between $1 and $2'
+        )
+        expect(query.parameters).to.deep.equal(['A', 'B'])
+        await ctx.db.executeQuery(query)
       })
     }
 

@@ -13,8 +13,15 @@
 <div class="tsd-page-title">
 <h2>kysely</h2></div>
 <div class="tsd-panel tsd-typography"><p><a href="https://stand-with-ukraine.pp.ua"><img src="https://raw.githubusercontent.com/vshymanskyy/StandWithUkraine/main/banner2-direct.svg" alt="Stand With Ukraine"></a></p>
-<p><a href="https://discord.gg/xyBJ3GwvAm"><img src="https://img.shields.io/discord/890118421587578920" alt="Discord"></a>
-<a href="https://github.com/koskimas/kysely"><img src="https://github.com/koskimas/kysely/actions/workflows/test.yml/badge.svg" alt="Tests"></a></p>
+<p><a href="https://discord.gg/xyBJ3GwvAm"><img src="https://img.shields.io/discord/890118421587578920?logo=discord&style=flat" alt="Discord"></a>
+<a href="https://github.com/koskimas/kysely"><img src="https://github.com/koskimas/kysely/actions/workflows/test.yml/badge.svg" alt="Tests"></a>
+<a href="https://github.com/kysely-org/kysely/blob/master/LICENSE"><img src="https://img.shields.io/github/license/kysely-org/kysely?style=flat" alt="License"></a>
+<a href="https://github.com/kysely-org/kysely/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated-desc"><img src="https://img.shields.io/github/issues-closed/kysely-org/kysely?logo=github" alt="Issues"></a>
+<a href="https://github.com/kysely-org/kysely/pulls?q=is%3Apr+is%3Aopen+sort%3Aupdated-desc"><img src="https://img.shields.io/github/issues-pr-closed/kysely-org/kysely?label=PRs&logo=github&style=flat" alt="Pull Requests"></a>
+<a href="https://snyk.io/advisor/npm-package/kysely"><img src="https://img.shields.io/snyk/vulnerabilities/github/kysely-org/kysely?style=flat&logo=snyk" alt="Vulnerabilities"></a>
+<a href="https://www.npmjs.com/package/kysely"><img src="https://img.shields.io/npm/dw/kysely?logo=npm" alt="Downloads"></a>
+<a href="https://bundlephobia.com/package/kysely"><img src="https://img.shields.io/bundlephobia/minzip/kysely?label=size&logo=npm" alt="Bundle Size"></a>
+<a href="https://twitter.com/kysely_"><img src="https://img.shields.io/twitter/follow/kysely_?style=social" alt="Social"></a></p>
 
 <a href="#kysely" id="kysely" style="color: inherit; text-decoration: none;">
   <h1><a href="https://kysely-org.github.io/kysely/index.html">Kysely</a></h1>
@@ -84,14 +91,16 @@ for <a href="https://kysely-org.github.io/kysely/interfaces/Dialect.html">3rd pa
   <h3>3rd party dialects</h3>
 </a>
 <ul>
-<li><a href="https://github.com/serverless-stack/kysely-data-api">AWS Data API</a></li>
 <li><a href="https://github.com/depot/kysely-planetscale">PlanetScale Serverless Driver</a></li>
-<li><a href="https://github.com/igalklebanov/kysely-singlestore">SingleStore Data API</a></li>
-<li><a href="https://github.com/aidenwallis/kysely-d1">D1</a></li>
+<li><a href="https://github.com/aidenwallis/kysely-d1">Cloudflare D1</a></li>
+<li><a href="https://github.com/serverless-stack/kysely-data-api">AWS RDS Data API</a></li>
 <li><a href="https://github.com/igalklebanov/kysely-surrealdb">SurrealDB</a></li>
-<li><a href="https://github.com/libsql/kysely-libsql">sqld</a></li>
 <li><a href="https://github.com/seveibar/kysely-neon">Neon</a></li>
 <li><a href="https://github.com/igalklebanov/kysely-s3-select">AWS S3 Select</a></li>
+<li><a href="https://github.com/libsql/kysely-libsql">libSQL/sqld</a></li>
+<li><a href="https://github.com/igalklebanov/kysely-singlestore">SingleStore Data API</a></li>
+<li><a href="https://github.com/igalklebanov/kysely-postgres-js">Postgres.js</a></li>
+<li><a href="https://github.com/andersgee/kysely-fetch-driver">Fetch driver</a></li>
 </ul>
 
 <a href="#minimal-example" id="minimal-example" style="color: inherit; text-decoration: none;">
@@ -107,7 +116,7 @@ interfaces to the <code>Kysely</code> constructor:</p>
 <a href="#playground" id="playground" style="color: inherit; text-decoration: none;">
   <h1>Playground</h1>
 </a>
-<p><a href="https://github.com/wirekang">@wirekang</a> has created a <a href="https://wirekang.github.io/kysely-playground/?p=f&i=-NLp3n_P5fyeQKMQda8n">playground for Kysely</a>. You can use to quickly test stuff out and for creating code examples for your issues, PRs and discord messages.</p>
+<p><a href="https://github.com/wirekang">@wirekang</a> has created a <a href="https://kyse.link">playground for Kysely</a>. You can use to quickly test stuff out and for creating code examples for your issues, PRs and discord messages.</p>
 
 <a href="#generating-types" id="generating-types" style="color: inherit; text-decoration: none;">
   <h1>Generating types</h1>
@@ -261,16 +270,22 @@ that aren&#39;t possible at this point of the project. Knex was also originally 
 the typescript typings were added afterwards. That always leads to compromises in the types. Designing
 a library for typescript from the ground up produces much better and simpler types.</p>
 
-<a href="#how-to-contribute-to-kysely" id="how-to-contribute-to-kysely" style="color: inherit; text-decoration: none;">
-  <h1>How to contribute to Kysely</h1>
+<a href="#contributors" id="contributors" style="color: inherit; text-decoration: none;">
+  <h1>Contributors</h1>
 </a>
-<p>See <a href="./CONTRIBUTING.md">CONTRIBUTING.md</a>.</p>
+<p align="center">
+    <a href="https://github.com/kysely-org/kysely/graphs/contributors">
+        <img src="https://contrib.rocks/image?repo=kysely-org/kysely" />
+    </a>
+    </br>
+    <span>Want to contribute? Check out our <a href="./CONTRIBUTING.md" >contribution guidelines</a>.</span>
+</p>
 
-<a href="#sponsors" id="sponsors" style="color: inherit; text-decoration: none;">
-  <h1>Sponsors</h1>
-</a>
-<p><a href="https://vercel.com/?utm_source=kysely&utm_campaign=oss"><img src="https://kysely.dev/img/powered-by-vercel.svg" alt="Powered by Vercel" /></a></p>
-</div></div>
+<p align="center">
+    <a href="https://vercel.com/?utm_source=kysely&utm_campaign=oss">
+        <img src="https://kysely.dev/img/powered-by-vercel.svg" style="width: 214px; height: 44px" alt="Powered by Vercel" />
+    </a>
+</p></div></div>
 <div class="col-4 col-menu menu-sticky-wrap menu-highlight">
 <div class="tsd-navigation settings">
 <details class="tsd-index-accordion"><summary class="tsd-accordion-summary">
@@ -295,6 +310,7 @@ a library for typescript from the ground up produces much better and simpler typ
 <ul>
 <li class="tsd-kind-class"><a href="classes/AggregateFunctionBuilder.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><rect fill="var(--color-icon-background)" stroke="var(--color-ts-class)" stroke-width="1.5" x="1" y="1" width="22" height="22" rx="6" id="icon-128-path"></rect><path d="M11.898 16.1201C11.098 16.1201 10.466 15.8961 10.002 15.4481C9.53803 15.0001 9.30603 14.3841 9.30603 13.6001V9.64012C9.30603 8.85612 9.53803 8.24012 10.002 7.79212C10.466 7.34412 11.098 7.12012 11.898 7.12012C12.682 7.12012 13.306 7.34812 13.77 7.80412C14.234 8.25212 14.466 8.86412 14.466 9.64012H13.386C13.386 9.14412 13.254 8.76412 12.99 8.50012C12.734 8.22812 12.37 8.09212 11.898 8.09212C11.426 8.09212 11.054 8.22412 10.782 8.48812C10.518 8.75212 10.386 9.13212 10.386 9.62812V13.6001C10.386 14.0961 10.518 14.4801 10.782 14.7521C11.054 15.0161 11.426 15.1481 11.898 15.1481C12.37 15.1481 12.734 15.0161 12.99 14.7521C13.254 14.4801 13.386 14.0961 13.386 13.6001H14.466C14.466 14.3761 14.234 14.9921 13.77 15.4481C13.306 15.8961 12.682 16.1201 11.898 16.1201Z" fill="var(--color-text)" id="icon-128-text"></path></svg>Aggregate<wbr/>Function<wbr/>Builder</a></li>
 <li class="tsd-kind-class"><a href="classes/AliasedAggregateFunctionBuilder.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-128-path"></use><use href="#icon-128-text"></use></svg>Aliased<wbr/>Aggregate<wbr/>Function<wbr/>Builder</a></li>
+<li class="tsd-kind-class"><a href="classes/AliasedExpressionWrapper.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-128-path"></use><use href="#icon-128-text"></use></svg>Aliased<wbr/>Expression<wbr/>Wrapper</a></li>
 <li class="tsd-kind-class"><a href="classes/AliasedRawBuilder.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-128-path"></use><use href="#icon-128-text"></use></svg>Aliased<wbr/>Raw<wbr/>Builder</a></li>
 <li class="tsd-kind-class"><a href="classes/AliasedSelectQueryBuilder.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-128-path"></use><use href="#icon-128-text"></use></svg>Aliased<wbr/>Select<wbr/>Query<wbr/>Builder</a></li>
 <li class="tsd-kind-class"><a href="classes/AlterColumnBuilder.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-128-path"></use><use href="#icon-128-text"></use></svg>Alter<wbr/>Column<wbr/>Builder</a></li>
@@ -302,6 +318,10 @@ a library for typescript from the ground up produces much better and simpler typ
 <li class="tsd-kind-class"><a href="classes/AlterTableColumnAlteringBuilder.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-128-path"></use><use href="#icon-128-text"></use></svg>Alter<wbr/>Table<wbr/>Column<wbr/>Altering<wbr/>Builder</a></li>
 <li class="tsd-kind-class"><a href="classes/AlteredColumnBuilder.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-128-path"></use><use href="#icon-128-text"></use></svg>Altered<wbr/>Column<wbr/>Builder</a></li>
 <li class="tsd-kind-class"><a href="classes/CamelCasePlugin.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-128-path"></use><use href="#icon-128-text"></use></svg>Camel<wbr/>Case<wbr/>Plugin</a></li>
+<li class="tsd-kind-class"><a href="classes/CaseBuilder.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-128-path"></use><use href="#icon-128-text"></use></svg>Case<wbr/>Builder</a></li>
+<li class="tsd-kind-class"><a href="classes/CaseEndBuilder.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-128-path"></use><use href="#icon-128-text"></use></svg>Case<wbr/>End<wbr/>Builder</a></li>
+<li class="tsd-kind-class"><a href="classes/CaseThenBuilder.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-128-path"></use><use href="#icon-128-text"></use></svg>Case<wbr/>Then<wbr/>Builder</a></li>
+<li class="tsd-kind-class"><a href="classes/CaseWhenBuilder.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-128-path"></use><use href="#icon-128-text"></use></svg>Case<wbr/>When<wbr/>Builder</a></li>
 <li class="tsd-kind-class"><a href="classes/ColumnDefinitionBuilder.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-128-path"></use><use href="#icon-128-text"></use></svg>Column<wbr/>Definition<wbr/>Builder</a></li>
 <li class="tsd-kind-class"><a href="classes/ConnectionBuilder.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-128-path"></use><use href="#icon-128-text"></use></svg>Connection<wbr/>Builder</a></li>
 <li class="tsd-kind-class"><a href="classes/CreateIndexBuilder.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-128-path"></use><use href="#icon-128-text"></use></svg>Create<wbr/>Index<wbr/>Builder</a></li>
@@ -323,6 +343,7 @@ a library for typescript from the ground up produces much better and simpler typ
 <li class="tsd-kind-class"><a href="classes/DropViewBuilder.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-128-path"></use><use href="#icon-128-text"></use></svg>Drop<wbr/>View<wbr/>Builder</a></li>
 <li class="tsd-kind-class"><a href="classes/DummyDriver.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-128-path"></use><use href="#icon-128-text"></use></svg>Dummy<wbr/>Driver</a></li>
 <li class="tsd-kind-class"><a href="classes/DynamicModule.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-128-path"></use><use href="#icon-128-text"></use></svg>Dynamic<wbr/>Module</a></li>
+<li class="tsd-kind-class"><a href="classes/ExpressionWrapper.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-128-path"></use><use href="#icon-128-text"></use></svg>Expression<wbr/>Wrapper</a></li>
 <li class="tsd-kind-class"><a href="classes/FileMigrationProvider.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-128-path"></use><use href="#icon-128-text"></use></svg>File<wbr/>Migration<wbr/>Provider</a></li>
 <li class="tsd-kind-class"><a href="classes/ForeignKeyConstraintBuilder.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-128-path"></use><use href="#icon-128-text"></use></svg>Foreign<wbr/>Key<wbr/>Constraint<wbr/>Builder</a></li>
 <li class="tsd-kind-class"><a href="classes/InsertQueryBuilder.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-128-path"></use><use href="#icon-128-text"></use></svg>Insert<wbr/>Query<wbr/>Builder</a></li>
@@ -376,6 +397,7 @@ a library for typescript from the ground up produces much better and simpler typ
 <li class="tsd-kind-interface"><a href="interfaces/AndNode.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-256-path"></use><use href="#icon-256-text"></use></svg>And<wbr/>Node</a></li>
 <li class="tsd-kind-interface"><a href="interfaces/BinaryOperationNode.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-256-path"></use><use href="#icon-256-text"></use></svg>Binary<wbr/>Operation<wbr/>Node</a></li>
 <li class="tsd-kind-interface"><a href="interfaces/CamelCasePluginOptions.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-256-path"></use><use href="#icon-256-text"></use></svg>Camel<wbr/>Case<wbr/>Plugin<wbr/>Options</a></li>
+<li class="tsd-kind-interface"><a href="interfaces/CaseNode.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-256-path"></use><use href="#icon-256-text"></use></svg>Case<wbr/>Node</a></li>
 <li class="tsd-kind-interface"><a href="interfaces/CheckConstraintNode.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-256-path"></use><use href="#icon-256-text"></use></svg>Check<wbr/>Constraint<wbr/>Node</a></li>
 <li class="tsd-kind-interface"><a href="interfaces/ColumnAlteringInterface.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-256-path"></use><use href="#icon-256-text"></use></svg>Column<wbr/>Altering<wbr/>Interface</a></li>
 <li class="tsd-kind-interface"><a href="interfaces/ColumnDefinitionNode.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-256-path"></use><use href="#icon-256-text"></use></svg>Column<wbr/>Definition<wbr/>Node</a></li>
@@ -522,6 +544,7 @@ a library for typescript from the ground up produces much better and simpler typ
 <li class="tsd-kind-interface"><a href="interfaces/ValueListNode.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-256-path"></use><use href="#icon-256-text"></use></svg>Value<wbr/>List<wbr/>Node</a></li>
 <li class="tsd-kind-interface"><a href="interfaces/ValueNode.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-256-path"></use><use href="#icon-256-text"></use></svg>Value<wbr/>Node</a></li>
 <li class="tsd-kind-interface"><a href="interfaces/ValuesNode.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-256-path"></use><use href="#icon-256-text"></use></svg>Values<wbr/>Node</a></li>
+<li class="tsd-kind-interface"><a href="interfaces/WhenNode.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-256-path"></use><use href="#icon-256-text"></use></svg>When<wbr/>Node</a></li>
 <li class="tsd-kind-interface"><a href="interfaces/WhereInterface.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-256-path"></use><use href="#icon-256-text"></use></svg>Where<wbr/>Interface</a></li>
 <li class="tsd-kind-interface"><a href="interfaces/WhereNode.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-256-path"></use><use href="#icon-256-text"></use></svg>Where<wbr/>Node</a></li>
 <li class="tsd-kind-interface"><a href="interfaces/WithNode.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-256-path"></use><use href="#icon-256-text"></use></svg>With<wbr/>Node</a></li>
