@@ -888,16 +888,6 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
     refs: ReadonlyArray<OrderByExpression<DB, TB, O>>
   ): SelectQueryBuilder<DB, TB, O>
 
-  orderBy(...args: any[]): SelectQueryBuilder<DB, TB, O> {
-    return new SelectQueryBuilder({
-      ...this.#props,
-      queryNode: SelectQueryNode.cloneWithOrderByItems(
-        this.#props.queryNode,
-        parseOrderBy(args)
-      ),
-    })
-  }
-
   /**
    * Adds a `group by` clause to the query.
    *
@@ -1794,15 +1784,12 @@ class SelectQueryBuilderImpl<DB, TB extends keyof DB, O>
     })
   }
 
-  orderBy(
-    orderBy: OrderByExpression<DB, TB, O>,
-    direction?: OrderByDirectionExpression
-  ): SelectQueryBuilder<DB, TB, O> {
+  orderBy(...args: any[]): SelectQueryBuilder<DB, TB, O> {
     return new SelectQueryBuilderImpl({
       ...this.#props,
-      queryNode: SelectQueryNode.cloneWithOrderByItem(
+      queryNode: SelectQueryNode.cloneWithOrderByItems(
         this.#props.queryNode,
-        parseOrderBy(orderBy, direction)
+        parseOrderBy(args)
       ),
     })
   }
