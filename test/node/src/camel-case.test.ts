@@ -68,7 +68,7 @@ for (const dialect of DIALECTS) {
 
     after(async () => {
       await camelDb.schema.dropTable('camelPerson').ifExists().execute()
-      await camelDb.destroy()
+      await camelDb.closeConnection()
       await destroyTest(ctx)
     })
 

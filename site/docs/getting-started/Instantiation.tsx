@@ -127,8 +127,8 @@ export const db = new Kysely<Database>({
       </Admonition>
       <Admonition type="info" title="kill it with fire">
         When needed, you can dispose of the Kysely instance, release resources
-        and close all connections by invoking the <code>db.destroy()</code>{' '}
-        function.
+        and close all connections by invoking the{' '}
+        <code>db.closeConnection()</code> function.
       </Admonition>
     </>
   )

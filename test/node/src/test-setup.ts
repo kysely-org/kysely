@@ -171,7 +171,7 @@ export async function initTest(
 
 export async function destroyTest(ctx: TestContext): Promise<void> {
   await dropDatabase(ctx.db)
-  await ctx.db.destroy()
+  await ctx.db.closeConnection()
 }
 
 export async function insertPersons(
@@ -304,7 +304,7 @@ async function connect(config: KyselyConfig): Promise<Kysely<Database>> {
       console.error(error)
 
       if (db) {
-        await db.destroy().catch((error) => error)
+        await db.closeConnection().catch((error) => error)
       }
 
       console.log(

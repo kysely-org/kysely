@@ -843,7 +843,7 @@ for (const dialect of DIALECTS) {
             "'cursor' is not present in your postgres dialect config. It's required to make streaming work in postgres."
           )
 
-          await db.destroy()
+          await db.closeConnection()
         })
       }
     }

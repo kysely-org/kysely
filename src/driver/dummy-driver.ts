@@ -65,6 +65,10 @@ export class DummyDriver implements Driver {
   async destroy(): Promise<void> {
     // Nothing to do here.
   }
+
+  async closeConnection(): Promise<void> {
+    // Nothing to do here.
+  }
 }
 
 class DummyConnection implements DatabaseConnection {

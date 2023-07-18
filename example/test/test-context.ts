@@ -38,7 +38,7 @@ export class TestContext {
     const { database } = testConfig.database
     await sql`drop database if exists ${sql.id(database!)}`.execute(adminDb)
     await sql`create database ${sql.id(database!)}`.execute(adminDb)
-    await adminDb.destroy()
+    await adminDb.closeConnection()
 
     // Now connect to the test databse and run the migrations
     const db = new Kysely<any>({
@@ -57,7 +57,7 @@ export class TestContext {
     })
 
     await migrator.migrateToLatest()
-    await db.destroy()
+    await db.closeConnection()
   }
 
   after = async (): Promise<void> => {

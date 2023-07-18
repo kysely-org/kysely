@@ -53,8 +53,12 @@ export class SqliteDriver implements Driver {
     this.#connectionMutex.unlock()
   }
 
-  async destroy(): Promise<void> {
+  async closeConnection(): Promise<void> {
     this.#db?.close()
+  }
+
+  async destroy(): Promise<void> {
+    await this.closeConnection()
   }
 }
 

@@ -68,7 +68,7 @@ export class RuntimeDriver implements Driver {
     return this.#driver.rollbackTransaction(connection)
   }
 
-  async destroy(): Promise<void> {
+  async closeConnection(): Promise<void> {
     if (!this.#initPromise) {
       return
     }
@@ -76,13 +76,17 @@ export class RuntimeDriver implements Driver {
     await this.#initPromise
 
     if (!this.#destroyPromise) {
-      this.#destroyPromise = this.#driver.destroy().catch((err) => {
+      this.#destroyPromise = this.#driver.closeConnection().catch((err) => {
         this.#destroyPromise = undefined
         return Promise.reject(err)
       })
     }
 
     await this.#destroyPromise
+  }
+
+  async destroy(): Promise<void> {
+    await this.closeConnection()
   }
 
   #needsLogging(): boolean {

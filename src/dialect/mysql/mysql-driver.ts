@@ -90,7 +90,7 @@ export class MysqlDriver implements Driver {
     connection[PRIVATE_RELEASE_METHOD]()
   }
 
-  async destroy(): Promise<void> {
+  async closeConnection(): Promise<void> {
     return new Promise((resolve, reject) => {
       this.#pool!.end((err) => {
         if (err) {
@@ -100,6 +100,10 @@ export class MysqlDriver implements Driver {
         }
       })
     })
+  }
+
+  async destroy(): Promise<void> {
+    return await this.closeConnection()
   }
 }
 

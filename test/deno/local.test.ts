@@ -57,4 +57,4 @@ await Promise.all(dbs.map((db) => query.execute(db)))
 
 console.error('local deno test passed')
 
-await Promise.all(dbs.map((db) => db.destroy()))
+await Promise.all(dbs.map((db) => db.closeConnection()))

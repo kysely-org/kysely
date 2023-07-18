@@ -42,7 +42,7 @@ async function migrateToLatest() {
     process.exit(1)
   }
 
-  await db.destroy()
+  await db.closeConnection()
 }
 
 migrateToLatest()

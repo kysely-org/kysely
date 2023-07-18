@@ -45,7 +45,12 @@ export interface Driver {
   /**
    * Destroys the driver and releases all resources.
    */
-  destroy(): Promise<void>
+  closeConnection(): Promise<void>
+
+  /**
+   * @deprecated Use `closeConnection` instead.
+   */
+  destroy?(): Promise<void>
 }
 
 export interface TransactionSettings {

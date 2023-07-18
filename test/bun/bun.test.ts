@@ -59,4 +59,4 @@ await Promise.all(dbs.map((db) => query.execute(db)))
 
 console.log('bun test passed')
 
-await Promise.all(dbs.map((db) => db.destroy()))
+await Promise.all(dbs.map((db) => db.closeConnection()))

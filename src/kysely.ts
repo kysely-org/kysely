@@ -345,8 +345,15 @@ export class Kysely<DB>
    *
    * You need to call this when you are done using the `Kysely` instance.
    */
+  async closeConnection(): Promise<void> {
+    await this.#props.driver.closeConnection()
+  }
+
+  /**
+   * @deprecated Use `db.closeConnection()` instead.
+   */
   async destroy(): Promise<void> {
-    await this.#props.driver.destroy()
+    await this.closeConnection()
   }
 
   /**

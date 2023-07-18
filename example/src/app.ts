@@ -65,7 +65,7 @@ export class App {
       })
     })
 
-    await this.#db?.destroy()
+    await this.#db?.closeConnection()
   }
 
   private readonly errorHandler = async (

@@ -79,6 +79,10 @@ export class PostgresDriver implements Driver {
   }
 
   async destroy(): Promise<void> {
+    await this.closeConnection()
+  }
+
+  async closeConnection(): Promise<void> {
     if (this.#pool) {
       const pool = this.#pool
       this.#pool = undefined
