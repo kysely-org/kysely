@@ -577,9 +577,9 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
   ): DeleteQueryBuilder<DB, TB, O> {
     return new DeleteQueryBuilder({
       ...this.#props,
-      queryNode: DeleteQueryNode.cloneWithOrderByItem(
+      queryNode: DeleteQueryNode.cloneWithOrderByItems(
         this.#props.queryNode,
-        parseOrderBy(orderBy, direction)
+        parseOrderBy([orderBy, direction])
       ),
     })
   }
