@@ -5,6 +5,7 @@ import {
   isBuffer,
   isDate,
   isObject,
+  isPlainObject,
 } from '../../util/object-utils.js'
 import { UnknownRow } from '../../util/type-utils.js'
 import {
@@ -177,11 +178,5 @@ function canMap(
   obj: unknown,
   opt: CamelCasePluginOptions
 ): obj is Record<string, unknown> {
-  return (
-    isObject(obj) &&
-    !isDate(obj) &&
-    !isBuffer(obj) &&
-    !isArrayBufferOrView(obj) &&
-    !opt?.maintainNestedObjectKeys
-  )
+  return isPlainObject(obj) && !opt?.maintainNestedObjectKeys
 }
