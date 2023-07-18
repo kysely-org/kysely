@@ -9,7 +9,11 @@ import {
   OperandValueExpressionOrList,
   parseValueBinaryOperationOrExpression,
 } from '../parser/binary-operation-parser.js'
-import { parseValueExpression } from '../parser/value-parser.js'
+import {
+  isSafeImmediateValue,
+  parseSafeImmediateValue,
+  parseValueExpression,
+} from '../parser/value-parser.js'
 import { KyselyTypeError } from '../util/type-error.js'
 
 export class CaseBuilder<DB, TB extends keyof DB, W = unknown, O = never>
@@ -71,7 +75,9 @@ export class CaseThenBuilder<DB, TB extends keyof DB, W, O> {
       ...this.#props,
       node: CaseNode.cloneWithThen(
         this.#props.node,
-        parseValueExpression(valueExpression)
+        isSafeImmediateValue(valueExpression)
+          ? parseSafeImmediateValue(valueExpression)
+          : parseValueExpression(valueExpression)
       ),
     })
   }

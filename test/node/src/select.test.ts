@@ -289,16 +289,16 @@ for (const dialect of DIALECTS) {
 
       testSql(query, dialect, {
         postgres: {
-          sql: 'select count(case when "first_name" = $1 then $2 end) as "num_jennifers" from "person"',
-          parameters: ['Jennifer', 1],
+          sql: 'select count(case when "first_name" = $1 then 1 end) as "num_jennifers" from "person"',
+          parameters: ['Jennifer'],
         },
         mysql: {
-          sql: 'select count(case when `first_name` = ? then ? end) as `num_jennifers` from `person`',
-          parameters: ['Jennifer', 1],
+          sql: 'select count(case when `first_name` = ? then 1 end) as `num_jennifers` from `person`',
+          parameters: ['Jennifer'],
         },
         sqlite: {
-          sql: 'select count(case when "first_name" = ? then ? end) as "num_jennifers" from "person"',
-          parameters: ['Jennifer', 1],
+          sql: 'select count(case when "first_name" = ? then 1 end) as "num_jennifers" from "person"',
+          parameters: ['Jennifer'],
         },
       })
 

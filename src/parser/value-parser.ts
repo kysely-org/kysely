@@ -1,7 +1,12 @@
 import { PrimitiveValueListNode } from '../operation-node/primitive-value-list-node.js'
 import { ValueListNode } from '../operation-node/value-list-node.js'
 import { ValueNode } from '../operation-node/value-node.js'
-import { isReadonlyArray } from '../util/object-utils.js'
+import {
+  isBoolean,
+  isNull,
+  isNumber,
+  isReadonlyArray,
+} from '../util/object-utils.js'
 import {
   parseExpression,
   ExpressionOrFactory,
@@ -53,6 +58,22 @@ export function parseValueExpression(
   }
 
   return ValueNode.create(exp)
+}
+
+export function isSafeImmediateValue(
+  value: unknown
+): value is number | boolean | null {
+  return isNumber(value) || isBoolean(value) || isNull(value)
+}
+
+export function parseSafeImmediateValue(
+  value: number | boolean | null
+): ValueNode {
+  if (!isSafeImmediateValue(value)) {
+    throw new Error(`unsafe immediate value ${JSON.stringify(value)}`)
+  }
+
+  return ValueNode.createImmediate(value)
 }
 
 function parseValueExpressionList(
