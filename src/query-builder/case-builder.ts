@@ -130,7 +130,9 @@ export class CaseWhenBuilder<DB, TB extends keyof DB, W, O>
     return new CaseEndBuilder({
       ...this.#props,
       node: CaseNode.cloneWith(this.#props.node, {
-        else: parseValueExpression(valueExpression),
+        else: isSafeImmediateValue(valueExpression)
+          ? parseSafeImmediateValue(valueExpression)
+          : parseValueExpression(valueExpression),
       }),
     })
   }

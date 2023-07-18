@@ -187,25 +187,25 @@ for (const dialect of DIALECTS) {
           sql: [
             `select case when "gender" = $1 then $2`,
             `when "gender" = $3 then $4`,
-            `else $5 end as "title" from "person"`,
+            `else null end as "title" from "person"`,
           ],
-          parameters: ['male', 'Mr.', 'female', 'Mrs.', null],
+          parameters: ['male', 'Mr.', 'female', 'Mrs.'],
         },
         mysql: {
           sql: [
             'select case when `gender` = ? then ?',
             'when `gender` = ? then ?',
-            'else ? end as `title` from `person`',
+            'else null end as `title` from `person`',
           ],
-          parameters: ['male', 'Mr.', 'female', 'Mrs.', null],
+          parameters: ['male', 'Mr.', 'female', 'Mrs.'],
         },
         sqlite: {
           sql: [
             `select case when "gender" = ? then ?`,
             `when "gender" = ? then ?`,
-            `else ? end as "title" from "person"`,
+            `else null end as "title" from "person"`,
           ],
-          parameters: ['male', 'Mr.', 'female', 'Mrs.', null],
+          parameters: ['male', 'Mr.', 'female', 'Mrs.'],
         },
       })
 
