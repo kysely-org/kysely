@@ -25,6 +25,10 @@ export class RuntimeDriver implements Driver {
   }
 
   async init(): Promise<void> {
+    if (this.#destroyPromise) {
+      throw new Error('driver has already been destroyed')
+    }
+
     if (!this.#initPromise) {
       this.#initPromise = this.#driver
         .init()
@@ -41,6 +45,10 @@ export class RuntimeDriver implements Driver {
   }
 
   async acquireConnection(): Promise<DatabaseConnection> {
+    if (this.#destroyPromise) {
+      throw new Error('driver has already been destroyed')
+    }
+
     if (!this.#initDone) {
       await this.init()
     }
