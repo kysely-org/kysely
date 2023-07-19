@@ -14,27 +14,36 @@ export class RuntimeDriver implements Driver {
   readonly #log: Log
 
   #initPromise?: Promise<void>
+  #initDone: boolean
   #destroyPromise?: Promise<void>
   #connections = new WeakSet<DatabaseConnection>()
 
   constructor(driver: Driver, log: Log) {
+    this.#initDone = false
     this.#driver = driver
     this.#log = log
   }
 
   async init(): Promise<void> {
     if (!this.#initPromise) {
-      this.#initPromise = this.#driver.init().catch((err) => {
-        this.#initPromise = undefined
-        return Promise.reject(err)
-      })
+      this.#initPromise = this.#driver
+        .init()
+        .then(() => {
+          this.#initDone = true
+        })
+        .catch((err) => {
+          this.#initPromise = undefined
+          return Promise.reject(err)
+        })
     }
 
     await this.#initPromise
   }
 
   async acquireConnection(): Promise<DatabaseConnection> {
-    await this.init()
+    if (!this.#initDone) {
+      await this.init()
+    }
 
     const connection = await this.#driver.acquireConnection()
 
