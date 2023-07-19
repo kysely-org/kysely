@@ -67,6 +67,7 @@ export const OPERATORS = [
   ...JSON_OPERATORS,
   ...UNARY_OPERATORS,
   'between',
+  'between symmetric',
 ] as const
 
 export type ComparisonOperator = (typeof COMPARISON_OPERATORS)[number]

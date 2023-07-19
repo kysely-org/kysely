@@ -608,6 +608,29 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
   ): ExpressionWrapper<DB, TB, SqlBool>
 
   /**
+   * Creates a `between symmetric` expression.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * db.selectFrom('person')
+   *   .selectAll()
+   *   .where((eb) => eb.betweenSymmetric('age', 40, 60))
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * select * from "person" where "age" between symmetric $1 and $2
+   * ```
+   */
+  betweenSymmetric<RE extends ReferenceExpression<DB, TB>>(
+    expr: RE,
+    start: OperandValueExpression<DB, TB, RE>,
+    end: OperandValueExpression<DB, TB, RE>
+  ): ExpressionWrapper<DB, TB, SqlBool>
+
+  /**
    * Combines two or more expressions using the logical `and` operator.
    *
    * This function returns an {@link Expression} and can be used pretty much anywhere.
@@ -936,6 +959,20 @@ export function createExpressionBuilder<DB, TB extends keyof DB>(
         BinaryOperationNode.create(
           parseReferenceExpression(expr),
           OperatorNode.create('between'),
+          AndNode.create(parseValueExpression(start), parseValueExpression(end))
+        )
+      )
+    },
+
+    betweenSymmetric<RE extends ReferenceExpression<DB, TB>>(
+      expr: RE,
+      start: OperandValueExpression<DB, TB, RE>,
+      end: OperandValueExpression<DB, TB, RE>
+    ): ExpressionWrapper<DB, TB, SqlBool> {
+      return new ExpressionWrapper(
+        BinaryOperationNode.create(
+          parseReferenceExpression(expr),
+          OperatorNode.create('between symmetric'),
           AndNode.create(parseValueExpression(start), parseValueExpression(end))
         )
       )

@@ -117,6 +117,9 @@ function testExpressionBuilder(eb: ExpressionBuilder<Database, 'person'>) {
   // A custom function call
   expectAssignable<Expression<string>>(eb.fn<string>('upper', ['first_name']))
 
+  expectAssignable<Expression<SqlBool>>(eb.between('age', 10, 20))
+  expectAssignable<Expression<SqlBool>>(eb.betweenSymmetric('age', 10, 20))
+
   expectError(eb('not_a_person_column', '=', 'Jennifer'))
   expectError(eb('not_a_person_column', '=', 'Jennifer'))
 
@@ -137,4 +140,6 @@ function testExpressionBuilder(eb: ExpressionBuilder<Database, 'person'>) {
 
   expectError(eb.between('age', 'wrong type', 2))
   expectError(eb.between('age', 1, 'wrong type'))
+  expectError(eb.betweenSymmetric('age', 'wrong type', 2))
+  expectError(eb.betweenSymmetric('age', 1, 'wrong type'))
 }

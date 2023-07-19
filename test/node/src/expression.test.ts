@@ -70,14 +70,17 @@ for (const dialect of DIALECTS) {
               }),
               // Boolean literal
               eb.lit(true),
-              // Between expression
+              // Between expressions
               eb.between('id', 1000, 2000),
+              ...(dialect === 'postgres'
+                ? [eb.betweenSymmetric('id', 3000, 4000)]
+                : []),
             ])
         )
 
       testSql(query, dialect, {
         postgres: {
-          sql: 'select "person".* from "person" where ((not "first_name" = $1 or "id" + $2 > $3 or "id" in ($4, $5, $6) or upper("first_name") = $7 or false) and exists (select "pet"."id" from "pet" where "pet"."owner_id" = "person"."id") and true and ("id" = $8 or "id" = $9 or "id" = $10 or "id" = $11) and ("id" = $12 and "first_name" = $13 and "last_name" = $14 and "marital_status" = $15) and ("id" = $16 or "id" = $17) and ("id" + $18) > $19 and ("first_name" = $20 and "last_name" = $21) and ("first_name" = "last_name" or "last_name" = "first_name") and true and "id" between $22 and $23)',
+          sql: 'select "person".* from "person" where ((not "first_name" = $1 or "id" + $2 > $3 or "id" in ($4, $5, $6) or upper("first_name") = $7 or false) and exists (select "pet"."id" from "pet" where "pet"."owner_id" = "person"."id") and true and ("id" = $8 or "id" = $9 or "id" = $10 or "id" = $11) and ("id" = $12 and "first_name" = $13 and "last_name" = $14 and "marital_status" = $15) and ("id" = $16 or "id" = $17) and ("id" + $18) > $19 and ("first_name" = $20 and "last_name" = $21) and ("first_name" = "last_name" or "last_name" = "first_name") and true and "id" between $22 and $23 and "id" between symmetric $24 and $25)',
           parameters: [
             'Jennifer',
             1,
@@ -102,6 +105,8 @@ for (const dialect of DIALECTS) {
             'Aniston',
             1000,
             2000,
+            3000,
+            4000,
           ],
         },
         mysql: {
