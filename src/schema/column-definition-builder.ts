@@ -1,6 +1,5 @@
 import { CheckConstraintNode } from '../operation-node/check-constraint-node.js'
 import { OperationNodeSource } from '../operation-node/operation-node-source.js'
-import { ReferenceNode } from '../operation-node/reference-node.js'
 import {
   OnModifyForeignAction,
   ReferencesNode,

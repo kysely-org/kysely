@@ -1,5 +1,4 @@
 import { AddColumnNode } from '../operation-node/add-column-node.js'
-import { AlterColumnNode } from '../operation-node/alter-column-node.js'
 import { AlterTableNode } from '../operation-node/alter-table-node.js'
 import { ColumnDefinitionNode } from '../operation-node/column-definition-node.js'
 import { DropColumnNode } from '../operation-node/drop-column-node.js'
