@@ -1,5 +1,5 @@
 import { Connection, ConnectionPool, Request } from 'mssql'
-import { Request as TediousRequest, TYPES } from 'tedious'
+import type { Request as TediousRequest } from 'tedious'
 import {
   DatabaseConnection,
   QueryResult,
@@ -17,7 +17,7 @@ import {
   isString,
   isUndefined,
 } from '../../util/object-utils.js'
-import { MssqlDialectConfig } from './mssql-dialect-config.js'
+import { MssqlDialectConfig, Tedious } from './mssql-dialect-config.js'
 import { CompiledQuery } from '../../query-compiler/compiled-query.js'
 import { extendStackTrace } from '../../util/stack-trace-utils.js'
 
@@ -45,7 +45,11 @@ export class MssqlDriver implements Driver {
     let connection = this.#connections.get(rawConnection)
 
     if (!connection) {
-      connection = new MssqlConnection(rawConnection, pool)
+      connection = new MssqlConnection(
+        rawConnection,
+        pool,
+        this.#config.tedious
+      )
       this.#connections.set(rawConnection, connection)
 
       if (this.#config.onCreateConnection) {
@@ -90,10 +94,16 @@ export class MssqlDriver implements Driver {
 class MssqlConnection implements DatabaseConnection {
   readonly #pool: ConnectionPool
   readonly #rawConnection: Connection
+  readonly #tedious: Tedious
 
-  constructor(rawConnection: Connection, pool: ConnectionPool) {
+  constructor(
+    rawConnection: Connection,
+    pool: ConnectionPool,
+    tedious: Tedious
+  ) {
     this.#pool = pool
     this.#rawConnection = rawConnection
+    this.#tedious = tedious
   }
 
   async executeQuery<O>(compiledQuery: CompiledQuery): Promise<QueryResult<O>> {
@@ -156,7 +166,7 @@ class MssqlConnection implements DatabaseConnection {
     reject: (reason?: any) => void,
     resolve: (value: any) => void
   ): TediousRequest {
-    const request = new TediousRequest(
+    const request = new this.#tedious.Request(
       compiledQuery.sql,
       (err, rowCount, rows) => {
         if (err) {
@@ -188,34 +198,34 @@ class MssqlConnection implements DatabaseConnection {
 
   #getTediousDataType(value: unknown): any {
     if (isNull(value) || isUndefined(value) || isString(value)) {
-      return TYPES.NVarChar
+      return this.#tedious.TYPES.NVarChar
     }
 
     if (isBigInt(value) || (isNumber(value) && value % 1 === 0)) {
       if (value < -2147483648 || value > 2147483647) {
-        return TYPES.BigInt
+        return this.#tedious.TYPES.BigInt
       } else {
-        return TYPES.Int
+        return this.#tedious.TYPES.Int
       }
     }
 
     if (isNumber(value)) {
-      return TYPES.Float
+      return this.#tedious.TYPES.Float
     }
 
     if (isBoolean(value)) {
-      return TYPES.Bit
+      return this.#tedious.TYPES.Bit
     }
 
     if (isDate(value)) {
-      return TYPES.DateTime
+      return this.#tedious.TYPES.DateTime
     }
 
     if (isBuffer(value)) {
-      return TYPES.VarBinary
+      return this.#tedious.TYPES.VarBinary
     }
 
-    return TYPES.NVarChar
+    return this.#tedious.TYPES.NVarChar
   }
 
   [PRIVATE_RELEASE_METHOD](): void {

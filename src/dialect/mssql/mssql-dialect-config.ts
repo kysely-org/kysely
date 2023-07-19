@@ -1,4 +1,5 @@
 import { ConnectionPool } from 'mssql'
+import { Request, TYPES } from 'tedious'
 import { DatabaseConnection } from '../../driver/database-connection.js'
 
 export interface MssqlDialectConfig {
@@ -11,10 +12,17 @@ export interface MssqlDialectConfig {
    */
   pool: ConnectionPool | (() => Promise<ConnectionPool>)
 
+  tedious: Tedious
+
   /**
    * Called once for each created connection.
    */
   onCreateConnection?: (connection: DatabaseConnection) => Promise<void>
+}
+
+export interface Tedious {
+  Request: typeof Request
+  TYPES: typeof TYPES
 }
 
 export interface MssqlPool {
