@@ -134,4 +134,7 @@ function testExpressionBuilder(eb: ExpressionBuilder<Database, 'person'>) {
 
   // String literals are not allowed.
   expectError(eb.lit('foobar'))
+
+  expectError(eb.between('age', 'wrong type', 2))
+  expectError(eb.between('age', 1, 'wrong type'))
 }

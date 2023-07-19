@@ -46,6 +46,7 @@ import { ExpressionWrapper } from './expression-wrapper.js'
 import {
   ComparisonOperator,
   JSONOperatorWith$,
+  OperatorNode,
   UnaryOperator,
 } from '../operation-node/operator-node.js'
 import { SqlBool } from '../util/type-utils.js'
@@ -53,6 +54,7 @@ import { parseUnaryOperation } from '../parser/unary-operation-parser.js'
 import {
   ExtractTypeFromValueExpressionOrList,
   parseSafeImmediateValue,
+  parseValueExpression,
   parseValueExpressionOrList,
 } from '../parser/value-parser.js'
 import { NOOP_QUERY_EXECUTOR } from '../query-executor/noop-query-executor.js'
@@ -61,6 +63,8 @@ import { CaseNode } from '../operation-node/case-node.js'
 import { isReadonlyArray, isUndefined } from '../util/object-utils.js'
 import { JSONPathBuilder } from '../query-builder/json-path-builder.js'
 import { OperandExpression } from '../parser/expression-parser.js'
+import { BinaryOperationNode } from '../operation-node/binary-operation-node.js'
+import { AndNode } from '../operation-node/and-node.js'
 
 export interface ExpressionBuilder<DB, TB extends keyof DB> {
   /**
@@ -581,6 +585,29 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
   ): ExpressionWrapper<DB, TB, ExtractTypeFromReferenceExpression<DB, TB, RE>>
 
   /**
+   * Creates a `between` expression.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * db.selectFrom('person')
+   *   .selectAll()
+   *   .where((eb) => eb.between('age', 40, 60))
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * select * from "person" where "age" between $1 and $2
+   * ```
+   */
+  between<RE extends ReferenceExpression<DB, TB>>(
+    expr: RE,
+    start: OperandValueExpression<DB, TB, RE>,
+    end: OperandValueExpression<DB, TB, RE>
+  ): ExpressionWrapper<DB, TB, SqlBool>
+
+  /**
    * Combines two or more expressions using the logical `and` operator.
    *
    * This function returns an {@link Expression} and can be used pretty much anywhere.
@@ -898,6 +925,20 @@ export function createExpressionBuilder<DB, TB extends keyof DB>(
       ExtractTypeFromReferenceExpression<DB, TB, RE>
     > {
       return unary('-', expr)
+    },
+
+    between<RE extends ReferenceExpression<DB, TB>>(
+      expr: RE,
+      start: OperandValueExpression<DB, TB, RE>,
+      end: OperandValueExpression<DB, TB, RE>
+    ): ExpressionWrapper<DB, TB, SqlBool> {
+      return new ExpressionWrapper(
+        BinaryOperationNode.create(
+          parseReferenceExpression(expr),
+          OperatorNode.create('between'),
+          AndNode.create(parseValueExpression(start), parseValueExpression(end))
+        )
+      )
     },
 
     and(
