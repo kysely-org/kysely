@@ -12,7 +12,7 @@ import { Simplify } from '../util/type-utils.js'
 /**
  * A SQLite helper for aggregating a subquery into a JSON array.
  *
- * NOTE: This helper is only guaranteed to fully work with the built-in `SQLiteDialect`.
+ * NOTE: This helper is only guaranteed to fully work with the built-in `SqliteDialect`.
  * While the produced SQL is compatible with all SQLite databases, some 3rd party dialects
  * may not parse the nested results into arrays.
  *
@@ -67,7 +67,7 @@ export function jsonArrayFrom<O>(
  *
  * The subquery must only return one row.
  *
- * NOTE: This helper is only guaranteed to fully work with the built-in `SQLiteDialect`.
+ * NOTE: This helper is only guaranteed to fully work with the built-in `SqliteDialect`.
  * While the produced SQL is compatibe with all SQLite databases, some 3rd party dialects
  * may not parse the nested results into objects.
  *
@@ -120,7 +120,7 @@ export function jsonObjectFrom<O>(
 /**
  * The SQLite `json_object` function.
  *
- * NOTE: This helper is only guaranteed to fully work with the built-in `SQLiteDialect`.
+ * NOTE: This helper is only guaranteed to fully work with the built-in `SqliteDialect`.
  * While the produced SQL is compatible with all SQLite databases, some 3rd party dialects
  * may not parse the nested results into objects.
  *
