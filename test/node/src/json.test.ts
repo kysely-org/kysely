@@ -1,4 +1,10 @@
-import { Generated, Kysely, RawBuilder, sql } from '../../..'
+import {
+  Generated,
+  Kysely,
+  RawBuilder,
+  sql,
+  ParseJSONResultsPlugin,
+} from '../../..'
 import {
   jsonArrayFrom as pg_jsonArrayFrom,
   jsonObjectFrom as pg_jsonObjectFrom,
@@ -82,6 +88,10 @@ for (const dialect of DIALECTS) {
       }
 
       db = ctx.db.withTables<{ json_table: JsonTable }>()
+
+      if (dialect === 'sqlite') {
+        db = db.withPlugin(new ParseJSONResultsPlugin())
+      }
     })
 
     beforeEach(async () => {
@@ -172,15 +182,15 @@ for (const dialect of DIALECTS) {
         jsonBuildObject({
           first: eb.ref('first_name'),
           last: eb.ref('last_name'),
-          full: eb.fn('concat', ['first_name', sql.lit(' '), 'last_name']),
+          full:
+            dialect === 'sqlite'
+              ? sql<string>`first_name || ' ' || last_name`
+              : eb.fn('concat', ['first_name', sql.lit(' '), 'last_name']),
         }).as('name'),
 
         // Nest an empty list
         jsonArrayFrom(
-          eb
-            .selectFrom('pet')
-            .select('id')
-            .where((eb) => eb.val(false))
+          eb.selectFrom('pet').select('id').where(sql.lit(false))
         ).as('emptyList'),
       ])
 
