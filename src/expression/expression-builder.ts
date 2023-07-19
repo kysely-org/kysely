@@ -52,6 +52,7 @@ import { SqlBool } from '../util/type-utils.js'
 import { parseUnaryOperation } from '../parser/unary-operation-parser.js'
 import {
   ExtractTypeFromValueExpressionOrList,
+  parseSafeImmediateValue,
   parseValueExpressionOrList,
 } from '../parser/value-parser.js'
 import { NOOP_QUERY_EXECUTOR } from '../query-executor/noop-query-executor.js'
@@ -419,6 +420,30 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
   val<VE>(
     value: VE
   ): ExpressionWrapper<DB, TB, ExtractTypeFromValueExpressionOrList<VE>>
+
+  /**
+   * Returns a literal value expression.
+   *
+   * Just like `val` but creates a literal value that gets merged in the SQL.
+   * To prevent SQL injections, only `boolean`, `number` and `null` values
+   * are accepted. If you need `string` or other literals, use `sql.lit` instead.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * db.selectFrom('person')
+   *   .select((eb) => eb.lit(1).as('one'))
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * select 1 as "one" from "person"
+   * ```
+   */
+  lit<VE extends number | boolean | null>(
+    literal: VE
+  ): ExpressionWrapper<DB, TB, VE>
 
   /**
    * @deprecated Use the expression builder as a function instead.
@@ -809,6 +834,12 @@ export function createExpressionBuilder<DB, TB extends keyof DB>(
       value: VE
     ): ExpressionWrapper<DB, TB, ExtractTypeFromValueExpressionOrList<VE>> {
       return new ExpressionWrapper(parseValueExpressionOrList(value))
+    },
+
+    lit<VE extends number | boolean | null>(
+      value: VE
+    ): ExpressionWrapper<DB, TB, VE> {
+      return new ExpressionWrapper(parseSafeImmediateValue(value))
     },
 
     // @deprecated

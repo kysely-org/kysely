@@ -80,6 +80,10 @@ function testExpressionBuilder(eb: ExpressionBuilder<Database, 'person'>) {
     ])
   )
 
+  expectAssignable<Expression<1>>(eb.lit(1))
+  expectAssignable<Expression<boolean>>(eb.lit(true))
+  expectAssignable<Expression<null>>(eb.lit(null))
+
   expectAssignable<Expression<SqlBool>>(
     eb.and({
       'person.age': 10,
@@ -127,4 +131,7 @@ function testExpressionBuilder(eb: ExpressionBuilder<Database, 'person'>) {
 
   expectError(eb.or({ unknown_column: 'Jennifer' }))
   expectError(eb.or({ age: 'wrong type' }))
+
+  // String literals are not allowed.
+  expectError(eb.lit('foobar'))
 }
