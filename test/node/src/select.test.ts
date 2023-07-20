@@ -848,6 +848,43 @@ for (const dialect of DIALECTS) {
       }
     }
 
+    it('should create a select statement without a `from` clause', async () => {
+      const query = ctx.db.select((eb) => [
+        eb.select(eb.lit(1).as('one')).as('one'),
+        eb
+          .selectFrom('person')
+          .select('first_name')
+          .orderBy('first_name')
+          .limit(1)
+          .as('person_first_name'),
+      ])
+
+      testSql(query, dialect, {
+        postgres: {
+          sql: `select (select 1 as "one") as "one", (select "first_name" from "person" order by "first_name" limit $1) as "person_first_name"`,
+          parameters: [1],
+        },
+        mysql: {
+          sql: 'select (select 1 as `one`) as `one`, (select `first_name` from `person` order by `first_name` limit ?) as `person_first_name`',
+          parameters: [1],
+        },
+        sqlite: {
+          sql: 'select (select 1 as "one") as "one", (select "first_name" from "person" order by "first_name" limit ?) as "person_first_name"',
+          parameters: [1],
+        },
+      })
+
+      const result = await query.execute()
+      expect(result).to.have.length(1)
+
+      if (dialect === 'mysql') {
+        // For some weird reason, MySQL returns `one` as a string.
+        expect(result[0]).to.eql({ one: '1', person_first_name: 'Arnold' })
+      } else {
+        expect(result[0]).to.eql({ one: 1, person_first_name: 'Arnold' })
+      }
+    })
+
     it.skip('perf', async () => {
       const ids = Array.from({ length: 100 }).map(() =>
         Math.round(Math.random() * 1000)

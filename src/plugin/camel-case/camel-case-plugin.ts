@@ -1,12 +1,6 @@
 import { QueryResult } from '../../driver/database-connection.js'
 import { RootOperationNode } from '../../query-compiler/query-compiler.js'
-import {
-  isArrayBufferOrView,
-  isBuffer,
-  isDate,
-  isObject,
-  isPlainObject,
-} from '../../util/object-utils.js'
+import { isPlainObject } from '../../util/object-utils.js'
 import { UnknownRow } from '../../util/type-utils.js'
 import {
   KyselyPlugin,
@@ -97,9 +91,9 @@ export interface CamelCasePluginOptions {
  * ```
  *
  * As you can see from the example, __everything__ needs to be defined
- * in camelCase in the typescript code: the table names, the columns,
- * schemas, __everything__. When using the `CamelCasePlugin` Kysely
- * works as if the database was defined in camelCase.
+ * in camelCase in the typescript code: table names, columns, schemas,
+ * __everything__. When using the `CamelCasePlugin` Kysely works as if
+ * the database was defined in camelCase.
  *
  * There are various options you can give to the plugin to modify
  * the way identifiers are converted. See {@link CamelCasePluginOptions}.

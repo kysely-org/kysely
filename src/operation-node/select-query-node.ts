@@ -18,7 +18,7 @@ import { SetOperationNode } from './set-operation-node.js'
 
 export interface SelectQueryNode extends OperationNode {
   readonly kind: 'SelectQueryNode'
-  readonly from: FromNode
+  readonly from?: FromNode
   readonly selections?: ReadonlyArray<SelectionNode>
   readonly distinctOn?: ReadonlyArray<OperationNode>
   readonly joins?: ReadonlyArray<JoinNode>
@@ -43,7 +43,14 @@ export const SelectQueryNode = freeze({
     return node.kind === 'SelectQueryNode'
   },
 
-  create(
+  create(withNode?: WithNode): SelectQueryNode {
+    return freeze({
+      kind: 'SelectQueryNode',
+      ...(withNode && { with: withNode }),
+    })
+  },
+
+  createFrom(
     fromItems: ReadonlyArray<OperationNode>,
     withNode?: WithNode
   ): SelectQueryNode {

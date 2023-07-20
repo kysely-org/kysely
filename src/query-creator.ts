@@ -39,6 +39,12 @@ import { DeleteResult } from './query-builder/delete-result.js'
 import { UpdateResult } from './query-builder/update-result.js'
 import { KyselyPlugin } from './plugin/kysely-plugin.js'
 import { CTEBuilderCallback } from './query-builder/cte-builder.js'
+import {
+  SelectArg,
+  SelectExpression,
+  Selection,
+  parseSelectArg,
+} from './parser/select-parser.js'
 
 export class QueryCreator<DB> {
   readonly #props: QueryCreatorProps
@@ -182,9 +188,69 @@ export class QueryCreator<DB> {
     return createSelectQueryBuilder({
       queryId: createQueryId(),
       executor: this.#props.executor,
-      queryNode: SelectQueryNode.create(
+      queryNode: SelectQueryNode.createFrom(
         parseTableExpressionOrList(from),
         this.#props.withNode
+      ),
+    })
+  }
+
+  /**
+   * Creates a `select` query builder without a `from` clause.
+   *
+   * If you want to create a `select from` query, use the `selectFrom` method instead.
+   * This one can be used to create a plain `select` statement without a `from` clause.
+   * 
+   * This method accepts the same inputs as {@link SelectQueryBuilder.select}. See its
+   * documentation for more examples.
+   * 
+   * ### Examples
+   * 
+   * ```ts
+   * const result = db.select((eb) => [
+   *   eb.selectFrom('person')
+   *     .select('id')
+   *     .where('first_name', '=', 'Jennifer')
+   *     .limit(1)
+   *     .as('jennifer_id'),
+   * 
+   *   eb.selectFrom('pet')
+   *     .select('id')
+   *     .where('name', '=', 'Doggo')
+   *     .limit(1)
+   *     .as('doggo_id')
+   *   ])
+   *   .executeTakeFirstOrThrow()
+   * 
+   * console.log(result.jennifer_id)
+   * console.log(result.doggo_id)
+   * ```
+   * 
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * select (
+   *   select "id"
+   *   from "person"
+   *   where "first_name" = $1
+   *   limit $2
+   * ) as "jennifer_id", (
+   *   select "id"
+   *   from "pet"
+   *   where "name" = $3
+   *   limit $4
+   * ) as "doggo_id"
+   * ```
+   */
+  select<SE extends SelectExpression<DB, never>>(
+    selection: SelectArg<DB, never, SE>
+  ): SelectQueryBuilder<DB, never, Selection<DB, never, SE>> {
+    return createSelectQueryBuilder({
+      queryId: createQueryId(),
+      executor: this.#props.executor,
+      queryNode: SelectQueryNode.cloneWithSelections(
+        SelectQueryNode.create(this.#props.withNode),
+        parseSelectArg(selection as any)
       ),
     })
   }

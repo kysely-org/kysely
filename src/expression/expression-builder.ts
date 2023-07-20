@@ -65,6 +65,12 @@ import { JSONPathBuilder } from '../query-builder/json-path-builder.js'
 import { OperandExpression } from '../parser/expression-parser.js'
 import { BinaryOperationNode } from '../operation-node/binary-operation-node.js'
 import { AndNode } from '../operation-node/and-node.js'
+import {
+  SelectArg,
+  SelectExpression,
+  Selection,
+  parseSelectArg,
+} from '../parser/select-parser.js'
 
 export interface ExpressionBuilder<DB, TB extends keyof DB> {
   /**
@@ -249,6 +255,19 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
   selectFrom<TE extends TableExpression<DB, TB>>(
     from: TE
   ): SelectQueryBuilder<From<DB, TE>, FromTables<DB, TB, TE>, {}>
+
+  /**
+   * Creates a `select` expression without a `from` clause.
+   *
+   * If you want to create a `select from` query, use the `selectFrom` method instead.
+   * This one can be used to create a plain `select` statement without a `from` clause.
+   *
+   * This method accepts the same inputs as {@link SelectQueryBuilder.select}. See its
+   * documentation for examples.
+   */
+  select<SE extends SelectExpression<DB, TB>>(
+    selection: SelectArg<DB, TB, SE>
+  ): SelectQueryBuilder<DB, TB, Selection<DB, TB, SE>>
 
   /**
    * Creates a `case` statement/operator.
@@ -852,8 +871,23 @@ export function createExpressionBuilder<DB, TB extends keyof DB>(
     selectFrom(table: TableExpressionOrList<DB, TB>): any {
       return createSelectQueryBuilder({
         queryId: createQueryId(),
-        executor: executor,
-        queryNode: SelectQueryNode.create(parseTableExpressionOrList(table)),
+        executor,
+        queryNode: SelectQueryNode.createFrom(
+          parseTableExpressionOrList(table)
+        ),
+      })
+    },
+
+    select<SE extends SelectExpression<DB, TB>>(
+      selection: SelectArg<DB, TB, SE>
+    ): SelectQueryBuilder<DB, TB, Selection<DB, TB, SE>> {
+      return createSelectQueryBuilder({
+        queryId: createQueryId(),
+        executor,
+        queryNode: SelectQueryNode.cloneWithSelections(
+          SelectQueryNode.create(),
+          parseSelectArg(selection)
+        ),
       })
     },
 
