@@ -15,3 +15,7 @@ your database. This library works with all built-in dialects.
 
 - [prisma-kysely](https://github.com/valtyr/prisma-kysely) - This library generates 
 Kysely database schema type definitions from your existing Prisma schemas.
+
+- [kanel-kysely](https://github.com/kristiandupont/kanel/tree/main/packages/kanel-kysely) - This
+library generates Kysely database schema type definitions by connecting to and introspecting 
+your database. This library extends Kanel which is a mature PostgreSQL-only type generator.

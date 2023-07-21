@@ -79,4 +79,4 @@ corner cases where the `DeduplicateJoinsPlugin` fails and we don't want it to af
 don't need this deduplication (most people).
 
 See [this recipe](/docs/recipes/conditional-selects)
-if you are wondering why we are using the `if` method.
+if you are wondering why we are using the `$if` method.

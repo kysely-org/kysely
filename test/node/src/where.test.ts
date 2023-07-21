@@ -671,25 +671,25 @@ for (const dialect of DIALECTS) {
         const query = ctx.db
           .selectFrom('person')
           .selectAll()
-          .where(({ exists, selectFrom }) =>
+          .where(({ exists, selectFrom, lit }) =>
             exists(
               selectFrom('pet')
-                .select('pet.id')
+                .select(lit(1).as('exists'))
                 .whereRef('pet.owner_id', '=', 'person.id')
             )
           )
 
         testSql(query, dialect, {
           postgres: {
-            sql: 'select * from "person" where exists (select "pet"."id" from "pet" where "pet"."owner_id" = "person"."id")',
+            sql: 'select * from "person" where exists (select 1 as "exists" from "pet" where "pet"."owner_id" = "person"."id")',
             parameters: [],
           },
           mysql: {
-            sql: 'select * from `person` where exists (select `pet`.`id` from `pet` where `pet`.`owner_id` = `person`.`id`)',
+            sql: 'select * from `person` where exists (select 1 as `exists` from `pet` where `pet`.`owner_id` = `person`.`id`)',
             parameters: [],
           },
           sqlite: {
-            sql: 'select * from "person" where exists (select "pet"."id" from "pet" where "pet"."owner_id" = "person"."id")',
+            sql: 'select * from "person" where exists (select 1 as "exists" from "pet" where "pet"."owner_id" = "person"."id")',
             parameters: [],
           },
         })

@@ -46,12 +46,15 @@ import { ExpressionWrapper } from './expression-wrapper.js'
 import {
   ComparisonOperator,
   JSONOperatorWith$,
+  OperatorNode,
   UnaryOperator,
 } from '../operation-node/operator-node.js'
 import { SqlBool } from '../util/type-utils.js'
 import { parseUnaryOperation } from '../parser/unary-operation-parser.js'
 import {
   ExtractTypeFromValueExpressionOrList,
+  parseSafeImmediateValue,
+  parseValueExpression,
   parseValueExpressionOrList,
 } from '../parser/value-parser.js'
 import { NOOP_QUERY_EXECUTOR } from '../query-executor/noop-query-executor.js'
@@ -60,6 +63,8 @@ import { CaseNode } from '../operation-node/case-node.js'
 import { isReadonlyArray, isUndefined } from '../util/object-utils.js'
 import { JSONPathBuilder } from '../query-builder/json-path-builder.js'
 import { OperandExpression } from '../parser/expression-parser.js'
+import { BinaryOperationNode } from '../operation-node/binary-operation-node.js'
+import { AndNode } from '../operation-node/and-node.js'
 
 export interface ExpressionBuilder<DB, TB extends keyof DB> {
   /**
@@ -421,6 +426,30 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
   ): ExpressionWrapper<DB, TB, ExtractTypeFromValueExpressionOrList<VE>>
 
   /**
+   * Returns a literal value expression.
+   *
+   * Just like `val` but creates a literal value that gets merged in the SQL.
+   * To prevent SQL injections, only `boolean`, `number` and `null` values
+   * are accepted. If you need `string` or other literals, use `sql.lit` instead.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * db.selectFrom('person')
+   *   .select((eb) => eb.lit(1).as('one'))
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * select 1 as "one" from "person"
+   * ```
+   */
+  lit<VE extends number | boolean | null>(
+    literal: VE
+  ): ExpressionWrapper<DB, TB, VE>
+
+  /**
    * @deprecated Use the expression builder as a function instead.
    *
    * Before:
@@ -554,6 +583,52 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
   neg<RE extends ReferenceExpression<DB, TB>>(
     expr: RE
   ): ExpressionWrapper<DB, TB, ExtractTypeFromReferenceExpression<DB, TB, RE>>
+
+  /**
+   * Creates a `between` expression.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * db.selectFrom('person')
+   *   .selectAll()
+   *   .where((eb) => eb.between('age', 40, 60))
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * select * from "person" where "age" between $1 and $2
+   * ```
+   */
+  between<RE extends ReferenceExpression<DB, TB>>(
+    expr: RE,
+    start: OperandValueExpression<DB, TB, RE>,
+    end: OperandValueExpression<DB, TB, RE>
+  ): ExpressionWrapper<DB, TB, SqlBool>
+
+  /**
+   * Creates a `between symmetric` expression.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * db.selectFrom('person')
+   *   .selectAll()
+   *   .where((eb) => eb.betweenSymmetric('age', 40, 60))
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * select * from "person" where "age" between symmetric $1 and $2
+   * ```
+   */
+  betweenSymmetric<RE extends ReferenceExpression<DB, TB>>(
+    expr: RE,
+    start: OperandValueExpression<DB, TB, RE>,
+    end: OperandValueExpression<DB, TB, RE>
+  ): ExpressionWrapper<DB, TB, SqlBool>
 
   /**
    * Combines two or more expressions using the logical `and` operator.
@@ -811,6 +886,12 @@ export function createExpressionBuilder<DB, TB extends keyof DB>(
       return new ExpressionWrapper(parseValueExpressionOrList(value))
     },
 
+    lit<VE extends number | boolean | null>(
+      value: VE
+    ): ExpressionWrapper<DB, TB, VE> {
+      return new ExpressionWrapper(parseSafeImmediateValue(value))
+    },
+
     // @deprecated
     cmpr<
       O extends SqlBool = SqlBool,
@@ -867,6 +948,34 @@ export function createExpressionBuilder<DB, TB extends keyof DB>(
       ExtractTypeFromReferenceExpression<DB, TB, RE>
     > {
       return unary('-', expr)
+    },
+
+    between<RE extends ReferenceExpression<DB, TB>>(
+      expr: RE,
+      start: OperandValueExpression<DB, TB, RE>,
+      end: OperandValueExpression<DB, TB, RE>
+    ): ExpressionWrapper<DB, TB, SqlBool> {
+      return new ExpressionWrapper(
+        BinaryOperationNode.create(
+          parseReferenceExpression(expr),
+          OperatorNode.create('between'),
+          AndNode.create(parseValueExpression(start), parseValueExpression(end))
+        )
+      )
+    },
+
+    betweenSymmetric<RE extends ReferenceExpression<DB, TB>>(
+      expr: RE,
+      start: OperandValueExpression<DB, TB, RE>,
+      end: OperandValueExpression<DB, TB, RE>
+    ): ExpressionWrapper<DB, TB, SqlBool> {
+      return new ExpressionWrapper(
+        BinaryOperationNode.create(
+          parseReferenceExpression(expr),
+          OperatorNode.create('between symmetric'),
+          AndNode.create(parseValueExpression(start), parseValueExpression(end))
+        )
+      )
     },
 
     and(
