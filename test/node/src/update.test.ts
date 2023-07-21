@@ -435,5 +435,31 @@ for (const dialect of DIALECTS) {
         expect(pet.owner_id).to.equal(jennifer.id)
       }
     })
+
+    if (dialect === 'postgres') {
+      it('should update using a from clause and a join', async () => {
+        const query = ctx.db
+          .updateTable('pet as p')
+          .from('pet')
+          .whereRef('p.id', '=', 'pet.id')
+          .innerJoin('person', 'person.id', 'pet.owner_id')
+          .set((eb) => ({
+            name: eb.fn.coalesce('person.first_name', eb.val('')),
+          }))
+
+        await query.execute()
+
+        const pets = await ctx.db
+          .selectFrom('pet')
+          .innerJoin('person', 'person.id', 'pet.owner_id')
+          .select(['pet.name as pet_name', 'person.first_name as person_name'])
+          .execute()
+
+        expect(pets).to.have.length(3)
+        for (const pet of pets) {
+          expect(pet.person_name).to.equal(pet.pet_name)
+        }
+      })
+    }
   })
 }
