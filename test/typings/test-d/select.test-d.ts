@@ -1,5 +1,5 @@
 import { Expression, Kysely, RawBuilder, Selectable, Simplify, sql } from '..'
-import { Database, Person, Pet } from '../shared'
+import { Database, Person } from '../shared'
 import { expectType, expectError } from 'tsd'
 
 async function testSelectSingle(db: Kysely<Database>) {
@@ -94,6 +94,19 @@ async function testSelectSingle(db: Kysely<Database>) {
   expectError(qb.select('not_property'))
   expectError(qb.select('person.not_property'))
   expectError(qb.select('person.not_property as np'))
+
+  // Narrow Type
+  type NarrowTarget =
+    | { queue_id: string; callback_url: null }
+    | { queue_id: null; callback_url: string }
+
+  const [r15] = await db
+    .selectFrom('action')
+    .select(['callback_url', 'queue_id'])
+    .$narrowType<NarrowTarget>()
+    .execute()
+
+  expectType<NarrowTarget>(r15)
 }
 
 async function testSelectAll(db: Kysely<Database>) {
