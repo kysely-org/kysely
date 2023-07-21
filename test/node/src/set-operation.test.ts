@@ -63,6 +63,84 @@ for (const dialect of DIALECTS) {
       ])
     })
 
+    it('should combine multiple select queries using union with an array', async () => {
+      const query = ctx.db
+        .selectFrom('person')
+        .select(['id', 'first_name as name'])
+        .union([
+          ctx.db.selectFrom('pet').select(['id', 'name']),
+          ctx.db.selectFrom('pet').select(['id', 'species as name']),
+        ])
+        .orderBy('name')
+
+      testSql(query, dialect, {
+        postgres: {
+          sql: 'select "id", "first_name" as "name" from "person" union select "id", "name" from "pet" union select "id", "species" as "name" from "pet" order by "name"',
+          parameters: [],
+        },
+        mysql: {
+          sql: 'select `id`, `first_name` as `name` from `person` union select `id`, `name` from `pet` union select `id`, `species` as `name` from `pet` order by `name`',
+          parameters: [],
+        },
+        sqlite: {
+          sql: 'select "id", "first_name" as "name" from "person" union select "id", "name" from "pet" union select "id", "species" as "name" from "pet" order by "name"',
+          parameters: [],
+        },
+      })
+
+      const result = await query.execute()
+      expect(result).to.containSubset([
+        { name: 'Arnold' },
+        { name: 'Catto' },
+        { name: 'Doggo' },
+        { name: 'Hammo' },
+        { name: 'Jennifer' },
+        { name: 'Sylvester' },
+        { name: 'cat' },
+        { name: 'dog' },
+        { name: 'hamster' },
+      ])
+    })
+
+    it('should combine multiple select queries using union with a callback returning an array', async () => {
+      const query = ctx.db
+        .selectFrom('person')
+        .select(['id', 'first_name as name'])
+        .union((eb) => [
+          eb.selectFrom('pet').select(['id', 'name']),
+          eb.selectFrom('pet').select(['id', 'species as name']),
+        ])
+        .orderBy('name')
+
+      testSql(query, dialect, {
+        postgres: {
+          sql: 'select "id", "first_name" as "name" from "person" union select "id", "name" from "pet" union select "id", "species" as "name" from "pet" order by "name"',
+          parameters: [],
+        },
+        mysql: {
+          sql: 'select `id`, `first_name` as `name` from `person` union select `id`, `name` from `pet` union select `id`, `species` as `name` from `pet` order by `name`',
+          parameters: [],
+        },
+        sqlite: {
+          sql: 'select "id", "first_name" as "name" from "person" union select "id", "name" from "pet" union select "id", "species" as "name" from "pet" order by "name"',
+          parameters: [],
+        },
+      })
+
+      const result = await query.execute()
+      expect(result).to.containSubset([
+        { name: 'Arnold' },
+        { name: 'Catto' },
+        { name: 'Doggo' },
+        { name: 'Hammo' },
+        { name: 'Jennifer' },
+        { name: 'Sylvester' },
+        { name: 'cat' },
+        { name: 'dog' },
+        { name: 'hamster' },
+      ])
+    })
+
     if (dialect === 'postgres' || dialect === 'mysql') {
       it('should combine three select queries using union and an expression builder', async () => {
         const query = ctx.db

@@ -158,15 +158,15 @@ export const SelectQueryNode = freeze({
     })
   },
 
-  cloneWithSetOperation(
+  cloneWithSetOperations(
     selectNode: SelectQueryNode,
-    setOperation: SetOperationNode
+    setOperations: ReadonlyArray<SetOperationNode>
   ): SelectQueryNode {
     return freeze({
       ...selectNode,
       setOperations: selectNode.setOperations
-        ? freeze([...selectNode.setOperations, setOperation])
-        : freeze([setOperation]),
+        ? freeze([...selectNode.setOperations, ...setOperations])
+        : freeze([...setOperations]),
     })
   },
 

@@ -58,7 +58,7 @@ import { IdentifierNode } from '../operation-node/identifier-node.js'
 import { Explainable, ExplainFormat } from '../util/explainable.js'
 import {
   SetOperandExpression,
-  parseSetOperation,
+  parseSetOperations,
 } from '../parser/set-operation-parser.js'
 import { AliasedExpression, Expression } from '../expression/expression.js'
 import {
@@ -1829,9 +1829,9 @@ class SelectQueryBuilderImpl<DB, TB extends keyof DB, O>
   ): SelectQueryBuilder<DB, TB, O> {
     return new SelectQueryBuilderImpl({
       ...this.#props,
-      queryNode: SelectQueryNode.cloneWithSetOperation(
+      queryNode: SelectQueryNode.cloneWithSetOperations(
         this.#props.queryNode,
-        parseSetOperation('union', expression, false)
+        parseSetOperations('union', expression, false)
       ),
     })
   }
@@ -1841,9 +1841,9 @@ class SelectQueryBuilderImpl<DB, TB extends keyof DB, O>
   ): SelectQueryBuilder<DB, TB, O> {
     return new SelectQueryBuilderImpl({
       ...this.#props,
-      queryNode: SelectQueryNode.cloneWithSetOperation(
+      queryNode: SelectQueryNode.cloneWithSetOperations(
         this.#props.queryNode,
-        parseSetOperation('union', expression, true)
+        parseSetOperations('union', expression, true)
       ),
     })
   }
@@ -1853,9 +1853,9 @@ class SelectQueryBuilderImpl<DB, TB extends keyof DB, O>
   ): SelectQueryBuilder<DB, TB, O> {
     return new SelectQueryBuilderImpl({
       ...this.#props,
-      queryNode: SelectQueryNode.cloneWithSetOperation(
+      queryNode: SelectQueryNode.cloneWithSetOperations(
         this.#props.queryNode,
-        parseSetOperation('intersect', expression, false)
+        parseSetOperations('intersect', expression, false)
       ),
     })
   }
@@ -1865,9 +1865,9 @@ class SelectQueryBuilderImpl<DB, TB extends keyof DB, O>
   ): SelectQueryBuilder<DB, TB, O> {
     return new SelectQueryBuilderImpl({
       ...this.#props,
-      queryNode: SelectQueryNode.cloneWithSetOperation(
+      queryNode: SelectQueryNode.cloneWithSetOperations(
         this.#props.queryNode,
-        parseSetOperation('intersect', expression, true)
+        parseSetOperations('intersect', expression, true)
       ),
     })
   }
@@ -1877,9 +1877,9 @@ class SelectQueryBuilderImpl<DB, TB extends keyof DB, O>
   ): SelectQueryBuilder<DB, TB, O> {
     return new SelectQueryBuilderImpl({
       ...this.#props,
-      queryNode: SelectQueryNode.cloneWithSetOperation(
+      queryNode: SelectQueryNode.cloneWithSetOperations(
         this.#props.queryNode,
-        parseSetOperation('except', expression, false)
+        parseSetOperations('except', expression, false)
       ),
     })
   }
@@ -1889,9 +1889,9 @@ class SelectQueryBuilderImpl<DB, TB extends keyof DB, O>
   ): SelectQueryBuilder<DB, TB, O> {
     return new SelectQueryBuilderImpl({
       ...this.#props,
-      queryNode: SelectQueryNode.cloneWithSetOperation(
+      queryNode: SelectQueryNode.cloneWithSetOperations(
         this.#props.queryNode,
-        parseSetOperation('except', expression, true)
+        parseSetOperations('except', expression, true)
       ),
     })
   }
