@@ -490,7 +490,7 @@ for (const dialect of DIALECTS_WITH_MSSQL) {
           parameters: ['Jennifer', 1],
         },
         mysql: {
-          sql: 'update `pet` set `owner_id` = (select `id` from (select `id` from `person` where `first_name` = ? limit ?) as `jennifer_id`)',
+          sql: 'with `jennifer_id` as (select `id` from `person` where `first_name` = ? limit ?) update `pet` set `owner_id` = (select `id` from `jennifer_id`)',
           parameters: ['Jennifer', 1],
         },
         mssql: {
