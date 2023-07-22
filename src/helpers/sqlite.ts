@@ -10,13 +10,20 @@ import { sql } from '../raw-builder/sql.js'
 import { Simplify } from '../util/type-utils.js'
 
 /**
- * A MySQL helper for aggregating a subquery into a JSON array.
+ * A SQLite helper for aggregating a subquery into a JSON array.
  *
- * NOTE: This helper is only guaranteed to fully work with the built-in `MysqlDialect`.
- * While the produced SQL is compatible with all MySQL databases, some 3rd party dialects
- * may not parse the nested results into arrays.
+ * NOTE: This helper is only guaranteed to fully work with the built-in `SqliteDialect` and `ParseJSONResultsPlugin`.
+ * While the produced SQL is compatible with many databases, SQLite needs the `ParseJSONResultsPlugin` to automatically parse the results.
  *
  * ### Examples
+ *
+ * Installing the plugin:
+ *
+ * ```ts
+ * db = db.withPlugin(new ParseJSONResultsPlugin())
+ * ```
+ *
+ * Writing the query:
  *
  * ```ts
  * const result = await db
@@ -37,41 +44,48 @@ import { Simplify } from '../util/type-utils.js'
  * result[0].pets[0].name
  * ```
  *
- * The generated SQL (MySQL):
+ * The generated SQL (SQLite):
  *
  * ```sql
- * select `id`, (
- *   select cast(coalesce(json_arrayagg(json_object(
- *     'pet_id', `agg`.`pet_id`,
- *     'name', `agg`.`name`
- *   )), '[]') as json) from (
- *     select `pet`.`id` as `pet_id`, `pet`.`name`
- *     from `pet`
- *     where `pet`.`owner_id` = `person`.`id`
- *     order by `pet`.`name`
- *   ) as `agg`
- * ) as `pets`
- * from `person`
+ * select "id", (
+ *   select coalesce(json_group_array(json_object(
+ *     'pet_id', "agg"."pet_id",
+ *     'name', "agg"."name"
+ *   )), '[]') from (
+ *     select "pet"."id" as "pet_id", "pet"."name"
+ *     from "pet"
+ *     where "pet"."owner_id" = "person"."id"
+ *     order by "pet"."name"
+ *   ) as "agg"
+ * ) as "pets"
+ * from "person"
  * ```
  */
 export function jsonArrayFrom<O>(
   expr: SelectQueryBuilder<any, any, O>
 ): RawBuilder<Simplify<O>[]> {
-  return sql`(select cast(coalesce(json_arrayagg(json_object(${sql.join(
+  return sql`(select coalesce(json_group_array(json_object(${sql.join(
     getJsonObjectArgs(expr.toOperationNode(), 'agg')
-  )})), '[]') as json) from ${expr} as agg)`
+  )})), '[]') from ${expr} as agg)`
 }
 
 /**
- * A MySQL helper for turning a subquery into a JSON object.
+ * A SQLite helper for turning a subquery into a JSON object.
  *
  * The subquery must only return one row.
  *
- * NOTE: This helper is only guaranteed to fully work with the built-in `MysqlDialect`.
- * While the produced SQL is compatible with all MySQL databases, some 3rd party dialects
- * may not parse the nested results into objects.
+ * NOTE: This helper is only guaranteed to fully work with the built-in `SqliteDialect` and `ParseJSONResultsPlugin`.
+ * While the produced SQL is compatible with many databases, SQLite needs the `ParseJSONResultsPlugin` to automatically parse the results.
  *
  * ### Examples
+ *
+ * Installing the plugin:
+ *
+ * ```ts
+ * db = db.withPlugin(new ParseJSONResultsPlugin())
+ * ```
+ *
+ * Writing the query:
  *
  * ```ts
  * const result = await db
@@ -92,21 +106,21 @@ export function jsonArrayFrom<O>(
  * result[0].favorite_pet.name
  * ```
  *
- * The generated SQL (MySQL):
+ * The generated SQL (SQLite):
  *
  * ```sql
- * select `id`, (
+ * select "id", (
  *   select json_object(
- *     'pet_id', `obj`.`pet_id`,
- *     'name', `obj`.`name`
+ *     'pet_id', "obj"."pet_id",
+ *     'name', "obj"."name"
  *   ) from (
- *     select `pet`.`id` as `pet_id`, `pet`.`name`
- *     from `pet`
- *     where `pet`.`owner_id` = `person`.`id`
- *     and `pet`.`is_favorite` = ?
+ *     select "pet"."id" as "pet_id", "pet"."name"
+ *     from "pet"
+ *     where "pet"."owner_id" = "person"."id"
+ *     and "pet"."is_favorite" = ?
  *   ) as obj
- * ) as `favorite_pet`
- * from `person`
+ * ) as "favorite_pet"
+ * from "person";
  * ```
  */
 export function jsonObjectFrom<O>(
@@ -118,13 +132,20 @@ export function jsonObjectFrom<O>(
 }
 
 /**
- * The MySQL `json_object` function.
+ * The SQLite `json_object` function.
  *
- * NOTE: This helper is only guaranteed to fully work with the built-in `MysqlDialect`.
- * While the produced SQL is compatible with all MySQL databases, some 3rd party dialects
- * may not parse the nested results into objects.
+ * NOTE: This helper is only guaranteed to fully work with the built-in `SqliteDialect` and `ParseJSONResultsPlugin`.
+ * While the produced SQL is compatible with many databases, SQLite needs the `ParseJSONResultsPlugin` to automatically parse the results.
  *
  * ### Examples
+ *
+ * Installing the plugin:
+ *
+ * ```ts
+ * db = db.withPlugin(new ParseJSONResultsPlugin())
+ * ```
+ *
+ * Writing the query:
  *
  * ```ts
  * const result = await db
@@ -145,13 +166,13 @@ export function jsonObjectFrom<O>(
  * result[0].name.full
  * ```
  *
- * The generated SQL (MySQL):
+ * The generated SQL (SQLite):
  *
  * ```sql
  * select "id", json_object(
  *   'first', first_name,
  *   'last', last_name,
- *   'full', concat(`first_name`, ?, `last_name`)
+ *   'full', "first_name" || ' ' || "last_name"
  * ) as "name"
  * from "person"
  * ```
@@ -184,7 +205,7 @@ function getJsonObjectArgs(
       return [sql.lit(s.alias.name), sql.id(table, s.alias.name)]
     } else {
       throw new Error(
-        'MySQL jsonArrayFrom and jsonObjectFrom functions can only handle explicit selections due to limitations of the json_object function. selectAll() is not allowed in the subquery.'
+        'SQLite jsonArrayFrom and jsonObjectFrom functions can only handle explicit selections due to limitations of the json_object function. selectAll() is not allowed in the subquery.'
       )
     }
   })
