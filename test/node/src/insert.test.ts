@@ -1,4 +1,10 @@
-import { AliasedRawBuilder, InsertResult, Kysely, sql } from '../../../'
+import {
+  AliasedRawBuilder,
+  InsertResult,
+  Kysely,
+  SelectQueryBuilder,
+  sql,
+} from '../../../'
 
 import {
   DIALECTS,
@@ -12,10 +18,12 @@ import {
   Database,
   NOT_SUPPORTED,
   insertDefaultDataSet,
+  DIALECTS_WITH_MSSQL,
+  BuiltInDialect,
 } from './test-setup.js'
 
-for (const dialect of DIALECTS) {
-  describe(`${dialect}: insert`, () => {
+for (const dialect of DIALECTS_WITH_MSSQL) {
+  describe.only(`${dialect}: insert`, () => {
     let ctx: TestContext
 
     before(async function () {
@@ -50,6 +58,10 @@ for (const dialect of DIALECTS) {
           sql: 'insert into `person` (`first_name`, `last_name`, `gender`) values (?, ?, ?)',
           parameters: ['Foo', 'Barson', 'other'],
         },
+        mssql: {
+          sql: 'insert into "person" ("first_name", "last_name", "gender") values (@1, @2, @3)',
+          parameters: ['Foo', 'Barson', 'other'],
+        },
         sqlite: {
           sql: 'insert into "person" ("first_name", "last_name", "gender") values (?, ?, ?)',
           parameters: ['Foo', 'Barson', 'other'],
@@ -60,7 +72,7 @@ for (const dialect of DIALECTS) {
       expect(result).to.be.instanceOf(InsertResult)
       expect(result.numInsertedOrUpdatedRows).to.equal(1n)
 
-      if (dialect === 'postgres') {
+      if (dialect === 'postgres' || dialect === 'mssql') {
         expect(result.insertId).to.be.undefined
       } else {
         expect(result.insertId).to.be.a('bigint')
@@ -91,6 +103,10 @@ for (const dialect of DIALECTS) {
         },
         mysql: {
           sql: "insert into `person` (`first_name`, `last_name`, `gender`) values ((select max(name) as `max_name` from `pet`), concat('Bar', 'son'), ?)",
+          parameters: ['other'],
+        },
+        mssql: {
+          sql: `insert into "person" ("first_name", "last_name", "gender") values ((select max(name) as "max_name" from "pet"), concat('Bar', 'son'), @1)`,
           parameters: ['other'],
         },
         sqlite: {
@@ -127,6 +143,10 @@ for (const dialect of DIALECTS) {
           sql: 'insert into `person` (`first_name`, `gender`) values ((select `first_name` from `person` where `last_name` = ? limit ?), ?)',
           parameters: ['Aniston', 1, 'female'],
         },
+        mssql: {
+          sql: `insert into "person" ("first_name", "gender") values ((select "first_name" from "person" where "last_name" = @1 limit @2), @3)`,
+          parameters: ['Aniston', 1, 'female'],
+        },
         sqlite: {
           sql: `insert into "person" ("first_name", "gender") values ((select "first_name" from "person" where "last_name" = ? limit ?), ?)`,
           parameters: ['Aniston', 1, 'female'],
@@ -158,6 +178,10 @@ for (const dialect of DIALECTS) {
         },
         mysql: {
           sql: 'insert into `person` (`first_name`, `gender`) select `name`, ? as `gender` from `pet`',
+          parameters: ['other'],
+        },
+        mssql: {
+          sql: 'insert into "person" ("first_name", "gender") select "name", @1 as "gender" from "pet"',
           parameters: ['other'],
         },
         sqlite: {
@@ -192,6 +216,8 @@ for (const dialect of DIALECTS) {
       ])
     })
 
+    // TODO: revisit this when mssql has output clause support as it also supports values expression
+    // https://database.guide/values-clause-in-sql-server/#:~:text=In%20SQL%20Server%2C%20VALUES%20is,statement%20or%20the%20FROM%20clause.
     if (dialect === 'postgres') {
       it('should insert the result of a values expression', async () => {
         const query = ctx.db
@@ -218,6 +244,7 @@ for (const dialect of DIALECTS) {
             parameters: [1, 'foo', 2, 'bar'],
           },
           mysql: NOT_SUPPORTED,
+          mssql: NOT_SUPPORTED,
           sqlite: NOT_SUPPORTED,
         })
 
@@ -248,6 +275,10 @@ for (const dialect of DIALECTS) {
           sql: 'insert into `person` (`first_name`, `last_name`, `gender`) values (?, ?, ?)',
           parameters: ['Foo', 'Barson', 'other'],
         },
+        mssql: {
+          sql: 'insert into "person" ("first_name", "last_name", "gender") values (@1, @2, @3)',
+          parameters: ['Foo', 'Barson', 'other'],
+        },
         sqlite: {
           sql: 'insert into "person" ("first_name", "last_name", "gender") values (?, ?, ?)',
           parameters: ['Foo', 'Barson', 'other'],
@@ -259,7 +290,7 @@ for (const dialect of DIALECTS) {
       expect(result).to.be.instanceOf(InsertResult)
       expect(result.numInsertedOrUpdatedRows).to.equal(1n)
 
-      if (dialect === 'postgres') {
+      if (dialect === 'postgres' || dialect === 'mssql') {
         expect(result.insertId).to.be.undefined
       } else {
         expect(result.insertId).to.be.a('bigint')
@@ -286,6 +317,7 @@ for (const dialect of DIALECTS) {
             ],
           },
           postgres: NOT_SUPPORTED,
+          mssql: NOT_SUPPORTED,
           sqlite: NOT_SUPPORTED,
         })
 
@@ -297,7 +329,7 @@ for (const dialect of DIALECTS) {
       })
     }
 
-    if (dialect !== 'mysql') {
+    if (dialect === 'postgres' || dialect === 'sqlite') {
       it('should insert one row and ignore conflicts using `on conflict do nothing`', async () => {
         const [{ id, ...existingPet }] = await ctx.db
           .selectFrom('pet')
@@ -319,6 +351,7 @@ for (const dialect of DIALECTS) {
               existingPet.species,
             ],
           },
+          mssql: NOT_SUPPORTED,
           sqlite: {
             sql: 'insert into "pet" ("name", "owner_id", "species") values (?, ?, ?) on conflict ("name") do nothing',
             parameters: [
@@ -367,6 +400,7 @@ for (const dialect of DIALECTS) {
             ],
           },
           mysql: NOT_SUPPORTED,
+          mssql: NOT_SUPPORTED,
           sqlite: NOT_SUPPORTED,
         })
 
@@ -402,6 +436,7 @@ for (const dialect of DIALECTS) {
             ],
           },
           postgres: NOT_SUPPORTED,
+          mssql: NOT_SUPPORTED,
           sqlite: NOT_SUPPORTED,
         })
 
@@ -424,7 +459,7 @@ for (const dialect of DIALECTS) {
       })
     }
 
-    if (dialect !== 'mysql') {
+    if (dialect === 'postgres' || dialect === 'sqlite') {
       it('should update instead of insert on conflict when using `on conflict do update`', async () => {
         const [{ id, ...existingPet }] = await ctx.db
           .selectFrom('pet')
@@ -450,6 +485,7 @@ for (const dialect of DIALECTS) {
             ],
           },
           mysql: NOT_SUPPORTED,
+          mssql: NOT_SUPPORTED,
           sqlite: {
             sql: 'insert into "pet" ("name", "owner_id", "species") values (?, ?, ?) on conflict ("name") do update set "species" = ?',
             parameters: [
@@ -512,6 +548,7 @@ for (const dialect of DIALECTS) {
             ],
           },
           mysql: NOT_SUPPORTED,
+          mssql: NOT_SUPPORTED,
           sqlite: NOT_SUPPORTED,
         })
 
@@ -558,6 +595,7 @@ for (const dialect of DIALECTS) {
             ],
           },
           mysql: NOT_SUPPORTED,
+          mssql: NOT_SUPPORTED,
           sqlite: NOT_SUPPORTED,
         })
 
@@ -594,6 +632,10 @@ for (const dialect of DIALECTS) {
           sql: 'insert into `person` (`first_name`, `last_name`, `gender`) values (?, ?, ?), (?, ?, ?)',
           parameters: ['Foo', 'Bar', 'other', 'Baz', 'Spam', 'other'],
         },
+        mssql: {
+          sql: 'insert into "person" ("first_name", "last_name", "gender") values (@1, @2, @3), (@4, @5, @6)',
+          parameters: ['Foo', 'Bar', 'other', 'Baz', 'Spam', 'other'],
+        },
         sqlite: {
           sql: 'insert into "person" ("first_name", "last_name", "gender") values (?, ?, ?), (?, ?, ?)',
           parameters: ['Foo', 'Bar', 'other', 'Baz', 'Spam', 'other'],
@@ -605,7 +647,7 @@ for (const dialect of DIALECTS) {
       expect(result).to.be.instanceOf(InsertResult)
       expect(result.numInsertedOrUpdatedRows).to.equal(2n)
 
-      if (dialect === 'postgres') {
+      if (dialect === 'postgres' || dialect === 'mssql') {
         expect(result.insertId).to.be.undefined
       } else {
         expect(result.insertId).to.be.a('bigint')
@@ -615,7 +657,7 @@ for (const dialect of DIALECTS) {
         .selectFrom('person')
         .selectAll()
         .orderBy('id', 'desc')
-        .limit(2)
+        .$call(limit(2, dialect))
         .execute()
 
       expect(inserted).to.containSubset([
@@ -647,6 +689,10 @@ for (const dialect of DIALECTS) {
         },
         mysql: {
           sql: 'insert into `person` (`first_name`, `gender`, `last_name`, `middle_name`) values (?, ?, default, default), (?, ?, ?, ?)',
+          parameters: ['Foo', 'other', 'Baz', 'other', 'Spam', 'Bo'],
+        },
+        mssql: {
+          sql: 'insert into "person" ("first_name", "gender", "last_name", "middle_name") values (@1, @2, default, default), (@3, @4, @5, @6)',
           parameters: ['Foo', 'other', 'Baz', 'other', 'Spam', 'Bo'],
         },
         sqlite: {
@@ -683,6 +729,10 @@ for (const dialect of DIALECTS) {
           sql: 'insert into `person` (`first_name`, `last_name`, `middle_name`, `gender`) values (?, ?, ?, ?), (?, default, default, ?)',
           parameters: ['Foo', 'Spam', 'Bo', 'other', 'Baz', 'other'],
         },
+        mssql: {
+          sql: 'insert into "person" ("first_name", "last_name", "middle_name", "gender") values (@1, @2, @3, @4), (@5, default, default, @6)',
+          parameters: ['Foo', 'Spam', 'Bo', 'other', 'Baz', 'other'],
+        },
         sqlite: {
           sql: 'insert into "person" ("first_name", "last_name", "middle_name", "gender") values (?, ?, ?, ?), (?, null, null, ?)',
           parameters: ['Foo', 'Spam', 'Bo', 'other', 'Baz', 'other'],
@@ -715,6 +765,10 @@ for (const dialect of DIALECTS) {
         },
         mysql: {
           sql: 'insert into `person` (`first_name`, `middle_name`, `gender`, `last_name`) values (?, ?, ?, default), (?, default, ?, ?)',
+          parameters: ['Foo', 'Bo', 'other', 'Baz', 'other', 'Spam'],
+        },
+        mssql: {
+          sql: 'insert into "person" ("first_name", "middle_name", "gender", "last_name") values (@1, @2, @3, default), (@4, default, @5, @6)',
           parameters: ['Foo', 'Bo', 'other', 'Baz', 'other', 'Spam'],
         },
         sqlite: {
@@ -866,4 +920,17 @@ function values<R extends Record<string, unknown>, A extends string>(
   return sql<R>`(values ${values})`.as<A>(
     sql.raw(`${alias}(${keys.join(', ')})`)
   )
+}
+
+function limit<QB extends SelectQueryBuilder<any, any, any>>(
+  limit: number,
+  dialect: BuiltInDialect
+): (qb: QB) => QB {
+  return (qb) => {
+    if (dialect === 'mssql') {
+      return qb.modifyFront(sql`top ${sql.lit(limit)}`) as QB
+    }
+
+    return qb.limit(limit) as QB
+  }
 }
