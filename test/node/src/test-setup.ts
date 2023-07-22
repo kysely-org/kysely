@@ -35,6 +35,7 @@ import {
   ColumnType,
   InsertObject,
   MssqlDialect,
+  SelectQueryBuilder,
 } from '../../../'
 
 export interface Person {
@@ -455,4 +456,17 @@ function createNoopTransformerPlugin(): KyselyPlugin {
 
 function sleep(millis: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, millis))
+}
+
+export function limit<QB extends SelectQueryBuilder<any, any, any>>(
+  limit: number,
+  dialect: BuiltInDialect
+): (qb: QB) => QB {
+  return (qb) => {
+    if (dialect === 'mssql') {
+      return qb.modifyFront(sql`top ${sql.lit(limit)}`) as QB
+    }
+
+    return qb.limit(limit) as QB
+  }
 }

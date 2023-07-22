@@ -20,6 +20,7 @@ import {
   insertDefaultDataSet,
   DIALECTS_WITH_MSSQL,
   BuiltInDialect,
+  limit,
 } from './test-setup.js'
 
 for (const dialect of DIALECTS_WITH_MSSQL) {
@@ -920,17 +921,4 @@ function values<R extends Record<string, unknown>, A extends string>(
   return sql<R>`(values ${values})`.as<A>(
     sql.raw(`${alias}(${keys.join(', ')})`)
   )
-}
-
-function limit<QB extends SelectQueryBuilder<any, any, any>>(
-  limit: number,
-  dialect: BuiltInDialect
-): (qb: QB) => QB {
-  return (qb) => {
-    if (dialect === 'mssql') {
-      return qb.modifyFront(sql`top ${sql.lit(limit)}`) as QB
-    }
-
-    return qb.limit(limit) as QB
-  }
 }
