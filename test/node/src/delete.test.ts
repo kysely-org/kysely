@@ -1,7 +1,6 @@
 import { DeleteResult, sql } from '../../../'
 
 import {
-  DIALECTS,
   clearDatabase,
   destroyTest,
   initTest,
@@ -11,9 +10,10 @@ import {
   NOT_SUPPORTED,
   insertDefaultDataSet,
   DEFAULT_DATA_SET,
+  DIALECTS_WITH_MSSQL,
 } from './test-setup.js'
 
-for (const dialect of DIALECTS) {
+for (const dialect of DIALECTS_WITH_MSSQL) {
   describe(`${dialect}: delete`, () => {
     let ctx: TestContext
 
@@ -45,7 +45,10 @@ for (const dialect of DIALECTS) {
           sql: 'delete from `person` where `gender` = ?',
           parameters: ['female'],
         },
-        mssql: NOT_SUPPORTED,
+        mssql: {
+          sql: 'delete from "person" where "gender" = @1',
+          parameters: ['female'],
+        },
         sqlite: {
           sql: 'delete from "person" where "gender" = ?',
           parameters: ['female'],
@@ -80,6 +83,25 @@ for (const dialect of DIALECTS) {
           ])
         )
 
+      testSql(query, dialect, {
+        postgres: {
+          sql: 'delete from "person" where ("first_name" = $1 or "first_name" = $2)',
+          parameters: ['Jennifer', 'Arnold'],
+        },
+        mysql: {
+          sql: 'delete from `person` where (`first_name` = ? or `first_name` = ?)',
+          parameters: ['Jennifer', 'Arnold'],
+        },
+        mssql: {
+          sql: 'delete from "person" where ("first_name" = @1 or "first_name" = @2)',
+          parameters: ['Jennifer', 'Arnold'],
+        },
+        sqlite: {
+          sql: 'delete from "person" where ("first_name" = ? or "first_name" = ?)',
+          parameters: ['Jennifer', 'Arnold'],
+        },
+      })
+
       const result = await query.executeTakeFirst()
 
       expect(result).to.be.instanceOf(DeleteResult)
@@ -90,6 +112,25 @@ for (const dialect of DIALECTS) {
       const query = ctx.db
         .deleteFrom('person')
         .where('first_name', '=', 'Nobody')
+
+      testSql(query, dialect, {
+        postgres: {
+          sql: 'delete from "person" where "first_name" = $1',
+          parameters: ['Nobody'],
+        },
+        mysql: {
+          sql: 'delete from `person` where `first_name` = ?',
+          parameters: ['Nobody'],
+        },
+        mssql: {
+          sql: 'delete from "person" where "first_name" = @1',
+          parameters: ['Nobody'],
+        },
+        sqlite: {
+          sql: 'delete from "person" where "first_name" = ?',
+          parameters: ['Nobody'],
+        },
+      })
 
       const result = await query.executeTakeFirst()
 
