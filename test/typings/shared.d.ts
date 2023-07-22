@@ -36,8 +36,22 @@ export interface Database {
   book: Book
   toy: Toy
   person_metadata: PersonMetadata
+  action: Action
 }
 
+export type Action =
+  | {
+      id: GeneratedAlways<string>
+      type: 'CALL_WEBHOOK'
+      queue_id: null
+      callback_url: string
+    }
+  | {
+      id: GeneratedAlways<string>
+      type: 'DELETE_FROM_QUEUE'
+      queue_id: string
+      callback_url: null
+    }
 export interface Person {
   id: Generated<number>
   first_name: string

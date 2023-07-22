@@ -167,13 +167,17 @@ export type Equals<T, U> = (<G>() => G extends T ? 1 : 2) extends <
   ? true
   : false
 
-export type NarrowPartial<S, T> = DrainOuterGeneric<{
-  [K in keyof S & string]: K extends keyof T
-    ? T[K] extends S[K]
-      ? T[K]
-      : KyselyTypeError<`$narrowType() call failed: passed type does not exist in '${K}'s type union`>
-    : S[K]
-}>
+export type NarrowPartial<S, T> = DrainOuterGeneric<
+  T extends object
+    ? {
+        [K in keyof S & string]: K extends keyof T
+          ? T[K] extends S[K]
+            ? T[K]
+            : KyselyTypeError<`$narrowType() call failed: passed type does not exist in '${K}'s type union`>
+          : S[K]
+      }
+    : never
+>
 
 export type SqlBool = boolean | 0 | 1
 
