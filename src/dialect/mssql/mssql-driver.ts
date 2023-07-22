@@ -1,5 +1,5 @@
 import { Connection, ConnectionPool, Request } from 'mssql'
-import type { Request as TediousRequest } from 'tedious'
+import type { ColumnValue, Request as TediousRequest } from 'tedious'
 import {
   DatabaseConnection,
   QueryResult,
@@ -117,9 +117,6 @@ class MssqlConnection implements DatabaseConnection {
         )
       )
 
-      console.log('rows', JSON.stringify(rows))
-      console.log('rowCount', rowCount)
-
       return {
         numAffectedRows: BigInt(rowCount),
         rows,
@@ -166,24 +163,48 @@ class MssqlConnection implements DatabaseConnection {
     reject: (reason?: any) => void,
     resolve: (value: any) => void
   ): TediousRequest {
-    const request = new this.#tedious.Request(
-      compiledQuery.sql,
-      (err, rowCount, rows) => {
-        if (err) {
-          reject(err)
-        } else {
-          resolve({ rowCount, rows })
-        }
-      }
-    )
+    const { parameters, sql } = compiledQuery
 
-    compiledQuery.parameters.forEach((parameter, index) =>
+    let promisedRowCount: number | undefined
+    const rows: Record<string, unknown>[] = []
+
+    const request = new this.#tedious.Request(sql, (err, rowCount) => {
+      if (err) {
+        reject(err)
+      } else {
+        promisedRowCount = rowCount
+      }
+    })
+
+    for (let i = 0; i < parameters.length; i++) {
+      const parameter = parameters[i]
+
       request.addParameter(
-        String(index + 1),
+        String(i + 1),
         this.#getTediousDataType(parameter),
         parameter
       )
-    )
+    }
+
+    const rowListener = (columns: ColumnValue[]) => {
+      const row: Record<string, unknown> = {}
+
+      for (const column of columns) {
+        row[column.metadata.colName] = column.value
+      }
+
+      rows.push(row)
+    }
+
+    request.on('row', rowListener)
+
+    request.once('requestCompleted', () => {
+      request.off('row', rowListener)
+      resolve({
+        rows,
+        rowCount: promisedRowCount!,
+      })
+    })
 
     return request
   }
