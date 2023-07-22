@@ -1,7 +1,6 @@
 import { sql } from '../../../'
 
 import {
-  DIALECTS,
   clearDatabase,
   destroyTest,
   initTest,
@@ -10,9 +9,10 @@ import {
   expect,
   NOT_SUPPORTED,
   insertDefaultDataSet,
+  DIALECTS_WITH_MSSQL,
 } from './test-setup.js'
 
-for (const dialect of DIALECTS) {
+for (const dialect of DIALECTS_WITH_MSSQL) {
   describe(`${dialect}: with`, () => {
     let ctx: TestContext
 
@@ -63,7 +63,10 @@ for (const dialect of DIALECTS) {
           sql: 'with `jennifer_and_sylvester` as (select `id`, `first_name`, `gender` from `person` where (`first_name` = ? or `first_name` = ?)), `sylvester` as (select * from `jennifer_and_sylvester` where `gender` = ?) select * from `sylvester`',
           parameters: ['Jennifer', 'Sylvester', 'male'],
         },
-        mssql: NOT_SUPPORTED,
+        mssql: {
+          sql: 'with "jennifer_and_sylvester" as (select "id", "first_name", "gender" from "person" where ("first_name" = @1 or "first_name" = @2)), "sylvester" as (select * from "jennifer_and_sylvester" where "gender" = @3) select * from "sylvester"',
+          parameters: ['Jennifer', 'Sylvester', 'male'],
+        },
         sqlite: {
           sql: 'with "jennifer_and_sylvester" as (select "id", "first_name", "gender" from "person" where ("first_name" = ? or "first_name" = ?)), "sylvester" as (select * from "jennifer_and_sylvester" where "gender" = ?) select * from "sylvester"',
           parameters: ['Jennifer', 'Sylvester', 'male'],
@@ -71,6 +74,7 @@ for (const dialect of DIALECTS) {
       })
 
       const result = await query.execute()
+
       expect(result).to.have.length(1)
       expect(Object.keys(result[0]).sort()).to.eql([
         'first_name',
@@ -103,7 +107,10 @@ for (const dialect of DIALECTS) {
           sql: 'with `arnold`(`id`, `first_name`) as (select `id`, `first_name` from `person` where `first_name` = ?) select * from `arnold`',
           parameters: ['Arnold'],
         },
-        mssql: NOT_SUPPORTED,
+        mssql: {
+          sql: 'with "arnold"("id", "first_name") as (select "id", "first_name" from "person" where "first_name" = @1) select * from "arnold"',
+          parameters: ['Arnold'],
+        },
         sqlite: {
           sql: 'with "arnold"("id", "first_name") as (select "id", "first_name" from "person" where "first_name" = ?) select * from "arnold"',
           parameters: ['Arnold'],
@@ -239,7 +246,7 @@ for (const dialect of DIALECTS) {
       })
     }
 
-    if (dialect !== 'mysql') {
+    if (dialect === 'postgres' || dialect === 'mssql' || dialect === 'sqlite') {
       it('should create an insert query with common table expressions', async () => {
         const query = ctx.db
           .with('jennifer', (db) =>
@@ -260,7 +267,10 @@ for (const dialect of DIALECTS) {
             sql: 'with "jennifer" as (select "id", "first_name", "gender" from "person" where "first_name" = $1) insert into "pet" ("owner_id", "name", "species") values ((select "id" from "jennifer"), $2, $3)',
             parameters: ['Jennifer', 'Catto 2', 'cat'],
           },
-          mssql: NOT_SUPPORTED,
+          mssql: {
+            sql: 'with "jennifer" as (select "id", "first_name", "gender" from "person" where "first_name" = @1) insert into "pet" ("owner_id", "name", "species") values ((select "id" from "jennifer"), @2, @3)',
+            parameters: ['Jennifer', 'Catto 2', 'cat'],
+          },
           sqlite: {
             sql: 'with "jennifer" as (select "id", "first_name", "gender" from "person" where "first_name" = ?) insert into "pet" ("owner_id", "name", "species") values ((select "id" from "jennifer"), ?, ?)',
             parameters: ['Jennifer', 'Catto 2', 'cat'],
@@ -272,7 +282,7 @@ for (const dialect of DIALECTS) {
       })
     }
 
-    if (dialect !== 'mysql' && dialect !== 'sqlite') {
+    if (dialect === 'postgres') {
       it('should create a with query where CTEs are inserts updates and deletes', async () => {
         const query = ctx.db
           .with('deleted_arnold', (db) =>
