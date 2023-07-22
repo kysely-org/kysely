@@ -200,12 +200,12 @@ export class QueryCreator<DB> {
    *
    * If you want to create a `select from` query, use the `selectFrom` method instead.
    * This one can be used to create a plain `select` statement without a `from` clause.
-   * 
+   *
    * This method accepts the same inputs as {@link SelectQueryBuilder.select}. See its
    * documentation for more examples.
-   * 
+   *
    * ### Examples
-   * 
+   *
    * ```ts
    * const result = db.select((eb) => [
    *   eb.selectFrom('person')
@@ -213,7 +213,7 @@ export class QueryCreator<DB> {
    *     .where('first_name', '=', 'Jennifer')
    *     .limit(1)
    *     .as('jennifer_id'),
-   * 
+   *
    *   eb.selectFrom('pet')
    *     .select('id')
    *     .where('name', '=', 'Doggo')
@@ -221,11 +221,11 @@ export class QueryCreator<DB> {
    *     .as('doggo_id')
    *   ])
    *   .executeTakeFirstOrThrow()
-   * 
+   *
    * console.log(result.jennifer_id)
    * console.log(result.doggo_id)
    * ```
-   * 
+   *
    * The generated SQL (PostgreSQL):
    *
    * ```sql
@@ -242,7 +242,7 @@ export class QueryCreator<DB> {
    * ) as "doggo_id"
    * ```
    */
-  select<SE extends SelectExpression<DB, never>>(
+  selectNoFrom<SE extends SelectExpression<DB, never>>(
     selection: SelectArg<DB, never, SE>
   ): SelectQueryBuilder<DB, never, Selection<DB, never, SE>> {
     return createSelectQueryBuilder({

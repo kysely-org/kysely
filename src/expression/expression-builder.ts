@@ -265,7 +265,7 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    * This method accepts the same inputs as {@link SelectQueryBuilder.select}. See its
    * documentation for examples.
    */
-  select<SE extends SelectExpression<DB, TB>>(
+  selectNoFrom<SE extends SelectExpression<DB, TB>>(
     selection: SelectArg<DB, TB, SE>
   ): SelectQueryBuilder<DB, TB, Selection<DB, TB, SE>>
 
@@ -878,7 +878,7 @@ export function createExpressionBuilder<DB, TB extends keyof DB>(
       })
     },
 
-    select<SE extends SelectExpression<DB, TB>>(
+    selectNoFrom<SE extends SelectExpression<DB, TB>>(
       selection: SelectArg<DB, TB, SE>
     ): SelectQueryBuilder<DB, TB, Selection<DB, TB, SE>> {
       return createSelectQueryBuilder({

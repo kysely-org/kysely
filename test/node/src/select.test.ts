@@ -849,8 +849,8 @@ for (const dialect of DIALECTS) {
     }
 
     it('should create a select statement without a `from` clause', async () => {
-      const query = ctx.db.select((eb) => [
-        eb.select(eb.lit(1).as('one')).as('one'),
+      const query = ctx.db.selectNoFrom((eb) => [
+        eb.selectNoFrom(eb.lit(1).as('one')).as('one'),
         eb
           .selectFrom('person')
           .select('first_name')

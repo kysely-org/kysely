@@ -151,15 +151,15 @@ async function testExpressionBuilderSelect(
   eb: ExpressionBuilder<Database, 'person'>
 ) {
   expectAssignable<Expression<{ first_name: string }>>(
-    eb.select(eb.val('Jennifer').as('first_name'))
+    eb.selectNoFrom(eb.val('Jennifer').as('first_name'))
   )
 
   expectAssignable<Expression<{ first_name: string }>>(
-    eb.select((eb) => eb.val('Jennifer').as('first_name'))
+    eb.selectNoFrom((eb) => eb.val('Jennifer').as('first_name'))
   )
 
   expectAssignable<Expression<{ first_name: string; last_name: string }>>(
-    eb.select([
+    eb.selectNoFrom([
       eb.val('Jennifer').as('first_name'),
       eb(eb.val('Anis'), '||', eb.val('ton')).as('last_name'),
     ])
@@ -168,7 +168,7 @@ async function testExpressionBuilderSelect(
   expectAssignable<
     Expression<{ first_name: string; last_name: string | null }>
   >(
-    eb.select((eb) => [
+    eb.selectNoFrom((eb) => [
       eb.val('Jennifer').as('first_name'),
       eb.selectFrom('person').select('last_name').limit(1).as('last_name'),
     ])
@@ -176,11 +176,13 @@ async function testExpressionBuilderSelect(
 
   const r1 = await db
     .selectFrom('person as p')
-    .select((eb) => [eb.select('p.age').as('age')])
+    .select((eb) => [eb.selectNoFrom('p.age').as('age')])
     .executeTakeFirstOrThrow()
   expectType<{ age: number | null }>(r1)
 
   expectError(
-    db.selectFrom('person').select((eb) => [eb.select('pet.name').as('name')])
+    db
+      .selectFrom('person')
+      .select((eb) => [eb.selectNoFrom('pet.name').as('name')])
   )
 }
