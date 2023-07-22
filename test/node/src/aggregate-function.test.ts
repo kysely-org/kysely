@@ -65,6 +65,7 @@ for (const dialect of DIALECTS) {
               ],
               parameters: [],
             },
+            mssql: NOT_SUPPORTED,
             sqlite: {
               sql: [
                 `select ${funcName}("id") as "${funcName}",`,
@@ -109,6 +110,7 @@ for (const dialect of DIALECTS) {
               ],
               parameters: [],
             },
+            mssql: NOT_SUPPORTED,
             sqlite: {
               sql: [
                 `select ${funcName}(distinct "id") as "${funcName}",`,
@@ -153,6 +155,7 @@ for (const dialect of DIALECTS) {
               ],
               parameters: [],
             },
+            mssql: NOT_SUPPORTED,
             sqlite: {
               sql: [
                 `select ${funcName}("id") over() as "${funcName}",`,
@@ -201,6 +204,7 @@ for (const dialect of DIALECTS) {
               ],
               parameters: [],
             },
+            mssql: NOT_SUPPORTED,
             sqlite: {
               sql: [
                 `select ${funcName}("id")`,
@@ -261,6 +265,7 @@ for (const dialect of DIALECTS) {
               ],
               parameters: [],
             },
+            mssql: NOT_SUPPORTED,
             sqlite: {
               sql: [
                 `select ${funcName}("id")`,
@@ -331,6 +336,7 @@ for (const dialect of DIALECTS) {
               ],
               parameters: [],
             },
+            mssql: NOT_SUPPORTED,
             sqlite: {
               sql: [
                 `select ${funcName}("id")`,
@@ -376,6 +382,7 @@ for (const dialect of DIALECTS) {
               ],
               parameters: [3],
             },
+            mssql: NOT_SUPPORTED,
             sqlite: {
               sql: [
                 `select *`,
@@ -414,6 +421,7 @@ for (const dialect of DIALECTS) {
               ],
               parameters: [],
             },
+            mssql: NOT_SUPPORTED,
             sqlite: {
               sql: [
                 `select *`,
@@ -457,6 +465,7 @@ for (const dialect of DIALECTS) {
               ],
               parameters: [],
             },
+            mssql: NOT_SUPPORTED,
             sqlite: {
               sql: [
                 `select ${funcName}("person"."id") as "${funcName}",`,
@@ -494,6 +503,7 @@ for (const dialect of DIALECTS) {
               ],
               parameters: [3],
             },
+            mssql: NOT_SUPPORTED,
             sqlite: {
               sql: [
                 `select *`,
@@ -532,6 +542,7 @@ for (const dialect of DIALECTS) {
               ],
               parameters: [],
             },
+            mssql: NOT_SUPPORTED,
             sqlite: {
               sql: [
                 `select *`,
@@ -573,6 +584,7 @@ for (const dialect of DIALECTS) {
                 parameters: ['female', 'female'],
               },
               mysql: NOT_SUPPORTED,
+              mssql: NOT_SUPPORTED,
               sqlite: {
                 sql: [
                   `select ${funcName}("person"."id")`,
@@ -620,6 +632,7 @@ for (const dialect of DIALECTS) {
                 parameters: ['female', 'female'],
               },
               mysql: NOT_SUPPORTED,
+              mssql: NOT_SUPPORTED,
               sqlite: {
                 sql: [
                   `select ${funcName}("person"."id")`,
@@ -675,6 +688,7 @@ for (const dialect of DIALECTS) {
                 parameters: ['female', 'female'],
               },
               mysql: NOT_SUPPORTED,
+              mssql: NOT_SUPPORTED,
               sqlite: {
                 sql: [
                   `select ${funcName}("person"."id")`,
@@ -724,6 +738,7 @@ for (const dialect of DIALECTS) {
                 parameters: ['female', 'female'],
               },
               mysql: NOT_SUPPORTED,
+              mssql: NOT_SUPPORTED,
               sqlite: {
                 sql: [
                   `select ${funcName}("person"."id")`,
@@ -768,6 +783,7 @@ for (const dialect of DIALECTS) {
                 ],
                 parameters: [],
               },
+              mssql: NOT_SUPPORTED,
               sqlite: {
                 sql: [
                   `select ${funcName}(*) as "${funcName}",`,
@@ -803,6 +819,7 @@ for (const dialect of DIALECTS) {
                   parameters: [],
                 },
                 mysql: NOT_SUPPORTED,
+                mssql: NOT_SUPPORTED,
                 sqlite: NOT_SUPPORTED,
               })
 
@@ -836,6 +853,7 @@ for (const dialect of DIALECTS) {
                 ],
                 parameters: [],
               },
+              mssql: NOT_SUPPORTED,
               sqlite: {
                 sql: [
                   `select ${funcName}(*) over() as "${funcName}",`,
@@ -875,6 +893,7 @@ for (const dialect of DIALECTS) {
                   parameters: ['female', 'female'],
                 },
                 mysql: NOT_SUPPORTED,
+                mssql: NOT_SUPPORTED,
                 sqlite: {
                   sql: [
                     `select ${funcName}(*)`,
@@ -937,6 +956,7 @@ for (const dialect of DIALECTS) {
           ],
           parameters: [],
         },
+        mssql: NOT_SUPPORTED,
         sqlite: {
           sql: [
             'select rank() over() as "rank",',

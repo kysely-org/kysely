@@ -9,6 +9,7 @@ import {
   testSql,
   expect,
   insertDefaultDataSet,
+  NOT_SUPPORTED,
 } from './test-setup.js'
 
 for (const dialect of DIALECTS) {
@@ -47,6 +48,7 @@ for (const dialect of DIALECTS) {
           sql: 'select `gender`, max(first_name) as `max_first_name` from `person` group by `gender` order by `gender`',
           parameters: [],
         },
+        mssql: NOT_SUPPORTED,
         sqlite: {
           sql: 'select "gender", max(first_name) as "max_first_name" from "person" group by "gender" order by "gender"',
           parameters: [],
@@ -84,6 +86,7 @@ for (const dialect of DIALECTS) {
           sql: 'select `gender` as `g`, max(first_name) as `max_first_name` from `person` group by `g` order by `g`',
           parameters: [],
         },
+        mssql: NOT_SUPPORTED,
         sqlite: {
           sql: 'select "gender" as "g", max(first_name) as "max_first_name" from "person" group by "g" order by "g"',
           parameters: [],
@@ -121,6 +124,7 @@ for (const dialect of DIALECTS) {
           sql: 'select `gender`, max(first_name) as `max_first_name` from `person` group by `gender`, `id` order by `gender`',
           parameters: [],
         },
+        mssql: NOT_SUPPORTED,
         sqlite: {
           sql: 'select "gender", max(first_name) as "max_first_name" from "person" group by "gender", "id" order by "gender"',
           parameters: [],
@@ -146,6 +150,7 @@ for (const dialect of DIALECTS) {
           sql: 'select `gender`, max(first_name) as `max_first_name` from `person` group by `person`.`gender` order by `gender` asc',
           parameters: [],
         },
+        mssql: NOT_SUPPORTED,
         sqlite: {
           sql: 'select "gender", max(first_name) as "max_first_name" from "person" group by "person"."gender" order by "gender" asc',
           parameters: [],
@@ -171,6 +176,7 @@ for (const dialect of DIALECTS) {
           sql: 'select `gender`, max(first_name) as `max_first_name` from `person` group by person.gender order by `gender` asc',
           parameters: [],
         },
+        mssql: NOT_SUPPORTED,
         sqlite: {
           sql: 'select "gender", max(first_name) as "max_first_name" from "person" group by person.gender order by "gender" asc',
           parameters: [],
@@ -211,6 +217,7 @@ for (const dialect of DIALECTS) {
           ],
           parameters: [],
         },
+        mssql: NOT_SUPPORTED,
         sqlite: {
           sql: [
             'select max(first_name) as "max_first_name"',

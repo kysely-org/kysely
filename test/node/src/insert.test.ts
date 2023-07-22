@@ -23,7 +23,7 @@ import {
 } from './test-setup.js'
 
 for (const dialect of DIALECTS_WITH_MSSQL) {
-  describe.only(`${dialect}: insert`, () => {
+  describe(`${dialect}: insert`, () => {
     let ctx: TestContext
 
     before(async function () {

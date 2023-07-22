@@ -47,6 +47,7 @@ for (const dialect of DIALECTS) {
           sql: 'select * from `person` where first_name between ? and ?',
           parameters: ['A', 'B'],
         },
+        mssql: NOT_SUPPORTED,
         sqlite: {
           sql: 'select * from "person" where first_name between ? and ?',
           parameters: ['A', 'B'],
@@ -73,6 +74,7 @@ for (const dialect of DIALECTS) {
           sql: "select * from `person` where first_name between 'A' and 'B'",
           parameters: [],
         },
+        mssql: NOT_SUPPORTED,
         sqlite: {
           sql: `select * from "person" where first_name between 'A' and 'B'`,
           parameters: [],
@@ -97,6 +99,7 @@ for (const dialect of DIALECTS) {
           sql: 'select * from `person` where `first_name` between ? and ?',
           parameters: ['A', 'B'],
         },
+        mssql: NOT_SUPPORTED,
         sqlite: {
           sql: 'select * from "person" where "first_name" between ? and ?',
           parameters: ['A', 'B'],
@@ -125,6 +128,7 @@ for (const dialect of DIALECTS) {
             parameters: ['A', 'B'],
           },
           mysql: NOT_SUPPORTED,
+          mssql: NOT_SUPPORTED,
           sqlite: NOT_SUPPORTED,
         })
 
@@ -147,6 +151,7 @@ for (const dialect of DIALECTS) {
           sql: 'select * from `person` where `first_name` between ? and ?',
           parameters: ['A', 'B'],
         },
+        mssql: NOT_SUPPORTED,
         sqlite: {
           sql: 'select * from "person" where "first_name" between ? and ?',
           parameters: ['A', 'B'],
@@ -173,6 +178,7 @@ for (const dialect of DIALECTS) {
             parameters: ['A', 'B'],
           },
           mysql: NOT_SUPPORTED,
+          mssql: NOT_SUPPORTED,
           sqlite: NOT_SUPPORTED,
         })
 
@@ -194,6 +200,7 @@ for (const dialect of DIALECTS) {
           sql: 'select * from `person` as `person`',
           parameters: [],
         },
+        mssql: NOT_SUPPORTED,
         sqlite: {
           sql: 'select * from "person" as "person"',
           parameters: [],
@@ -215,6 +222,7 @@ for (const dialect of DIALECTS) {
             parameters: [],
           },
           mysql: NOT_SUPPORTED,
+          mssql: NOT_SUPPORTED,
           sqlite: NOT_SUPPORTED,
         })
 
@@ -239,6 +247,7 @@ for (const dialect of DIALECTS) {
           sql: 'select * from `person` where first_name in (?, ?)',
           parameters: names,
         },
+        mssql: NOT_SUPPORTED,
         sqlite: {
           sql: 'select * from "person" where first_name in (?, ?)',
           parameters: names,
@@ -265,6 +274,7 @@ for (const dialect of DIALECTS) {
             parameters: names,
           },
           mysql: NOT_SUPPORTED,
+          mssql: NOT_SUPPORTED,
           sqlite: NOT_SUPPORTED,
         })
 

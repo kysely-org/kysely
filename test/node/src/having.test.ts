@@ -9,6 +9,7 @@ import {
   TestContext,
   testSql,
   expect,
+  NOT_SUPPORTED,
 } from './test-setup.js'
 
 for (const dialect of DIALECTS) {
@@ -87,6 +88,7 @@ for (const dialect of DIALECTS) {
           ],
           parameters: [1],
         },
+        mssql: NOT_SUPPORTED,
         sqlite: {
           sql: [
             `select "first_name", count(pet.id) as "num_pets"`,
@@ -146,6 +148,7 @@ for (const dialect of DIALECTS) {
           ],
           parameters: [1],
         },
+        mssql: NOT_SUPPORTED,
         sqlite: {
           sql: [
             `select "person"."id", count("pet"."id") as "num_pets"`,
@@ -191,6 +194,7 @@ for (const dialect of DIALECTS) {
           sql: 'select * from `person` group by `first_name` having (`id` in (?, ?, ?) or `first_name` < ? or `first_name` = `first_name`) and `first_name` = `first_name` and not exists (select `id` from `pet`)',
           parameters: [1, 2, 3, 'foo'],
         },
+        mssql: NOT_SUPPORTED,
         sqlite: {
           sql: `select * from "person" group by "first_name" having ("id" in (?, ?, ?) or "first_name" < ? or "first_name" = "first_name") and "first_name" = "first_name" and not exists (select "id" from "pet")`,
           parameters: [1, 2, 3, 'foo'],

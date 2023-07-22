@@ -7,6 +7,7 @@ import {
   TestContext,
   Person,
   testSql,
+  NOT_SUPPORTED,
 } from './test-setup.js'
 
 for (const dialect of DIALECTS) {
@@ -39,6 +40,7 @@ for (const dialect of DIALECTS) {
           sql: 'update `person` set `first_name` = ?, `last_name"``` = ?',
           parameters: ['foo', 'bar'],
         },
+        mssql: NOT_SUPPORTED,
         sqlite: {
           sql: 'update "person" set "first_name" = ?, "last_name""`" = ?',
           parameters: ['foo', 'bar'],
@@ -64,6 +66,7 @@ for (const dialect of DIALECTS) {
           sql: 'update `person` set `first_name` = ?, `last_name""````` = ?',
           parameters: ['foo', 'bar'],
         },
+        mssql: NOT_SUPPORTED,
         sqlite: {
           sql: 'update "person" set "first_name" = ?, "last_name""""``" = ?',
           parameters: ['foo', 'bar'],

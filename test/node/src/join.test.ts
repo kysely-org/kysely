@@ -74,6 +74,7 @@ for (const dialect of DIALECTS) {
             sql: `select * from \`person\` inner join \`pet\` on \`pet\`.\`owner_id\` = \`person\`.\`id\` order by \`person\`.\`first_name\``,
             parameters: [],
           },
+          mssql: NOT_SUPPORTED,
           sqlite: {
             sql: `select * from "person" inner join "pet" on "pet"."owner_id" = "person"."id" order by "person"."first_name"`,
             parameters: [],
@@ -135,6 +136,7 @@ for (const dialect of DIALECTS) {
             ],
             parameters: [],
           },
+          mssql: NOT_SUPPORTED,
           sqlite: {
             sql: [
               `select * from "person"`,
@@ -185,6 +187,7 @@ for (const dialect of DIALECTS) {
             sql: `select \`pet\`.\`name\` as \`pet_name\`, \`toy\`.\`name\` as \`toy_name\` from \`person\` inner join \`pet\` on \`pet\`.\`owner_id\` = \`person\`.\`id\` inner join \`toy\` on \`toy\`.\`pet_id\` = \`pet\`.\`id\` where \`first_name\` = ?`,
             parameters: ['Jennifer'],
           },
+          mssql: NOT_SUPPORTED,
           sqlite: {
             sql: `select "pet"."name" as "pet_name", "toy"."name" as "toy_name" from "person" inner join "pet" on "pet"."owner_id" = "person"."id" inner join "toy" on "toy"."pet_id" = "pet"."id" where "first_name" = ?`,
             parameters: ['Jennifer'],
@@ -250,6 +253,7 @@ for (const dialect of DIALECTS) {
             ],
             parameters: ['Catto', 'Doggo', 'Hammo', 'cat', 'dog', 1, 0],
           },
+          mssql: NOT_SUPPORTED,
           sqlite: {
             sql: [
               `select * from "person"`,
@@ -315,6 +319,7 @@ for (const dialect of DIALECTS) {
             ],
             parameters: ['Catto', 'Doggo', 'Hammo', 'cat', 'dog', 1, 0],
           },
+          mssql: NOT_SUPPORTED,
           sqlite: {
             sql: [
               `select * from "person"`,
@@ -363,6 +368,7 @@ for (const dialect of DIALECTS) {
             ],
             parameters: [],
           },
+          mssql: NOT_SUPPORTED,
           sqlite: {
             sql: [
               `select "pet"."id" from "person"`,
@@ -394,6 +400,7 @@ for (const dialect of DIALECTS) {
             sql: `select * from \`person\` left join \`pet\` on \`pet\`.\`owner_id\` = \`person\`.\`id\` order by \`person\`.\`first_name\``,
             parameters: [],
           },
+          mssql: NOT_SUPPORTED,
           sqlite: {
             sql: `select * from "person" left join "pet" on "pet"."owner_id" = "person"."id" order by "person"."first_name"`,
             parameters: [],
@@ -436,6 +443,7 @@ for (const dialect of DIALECTS) {
             ],
             parameters: [],
           },
+          mssql: NOT_SUPPORTED,
           sqlite: {
             sql: [
               `select * from "person"`,
@@ -467,6 +475,7 @@ for (const dialect of DIALECTS) {
             sql: `select \`pet\`.\`name\` as \`pet_name\`, \`toy\`.\`name\` as \`toy_name\` from \`person\` left join \`pet\` on \`pet\`.\`owner_id\` = \`person\`.\`id\` left join \`toy\` on \`toy\`.\`pet_id\` = \`pet\`.\`id\` where \`first_name\` = ?`,
             parameters: ['Jennifer'],
           },
+          mssql: NOT_SUPPORTED,
           sqlite: {
             sql: `select "pet"."name" as "pet_name", "toy"."name" as "toy_name" from "person" left join "pet" on "pet"."owner_id" = "person"."id" left join "toy" on "toy"."pet_id" = "pet"."id" where "first_name" = ?`,
             parameters: ['Jennifer'],
@@ -525,6 +534,7 @@ for (const dialect of DIALECTS) {
             ],
             parameters: ['Catto', 'Doggo', 'Hammo', 'cat', 'dog', 1, 0],
           },
+          mssql: NOT_SUPPORTED,
           sqlite: {
             sql: [
               `select * from "person"`,
@@ -567,6 +577,7 @@ for (const dialect of DIALECTS) {
             sql: 'select `pet`.`id` from `person` left join `pet` on not exists (select `id` from `pet` as `p` where `p`.`id` = `pet`.`id` and `p`.`owner_id` = `person`.`id`)',
             parameters: [],
           },
+          mssql: NOT_SUPPORTED,
           sqlite: {
             sql: `select "pet"."id" from "person" left join "pet" on not exists (select "id" from "pet" as "p" where "p"."id" = "pet"."id" and "p"."owner_id" = "person"."id")`,
             parameters: [],
@@ -595,6 +606,7 @@ for (const dialect of DIALECTS) {
               sql: `select * from \`person\` right join \`pet\` on \`pet\`.\`owner_id\` = \`person\`.\`id\` order by \`person\`.\`first_name\``,
               parameters: [],
             },
+            mssql: NOT_SUPPORTED,
             sqlite: {
               sql: `select * from "person" right join "pet" on "pet"."owner_id" = "person"."id" order by "person"."first_name"`,
               parameters: [],
@@ -621,6 +633,7 @@ for (const dialect of DIALECTS) {
               parameters: [],
             },
             mysql: NOT_SUPPORTED,
+            mssql: NOT_SUPPORTED,
             sqlite: NOT_SUPPORTED,
           })
 
@@ -650,6 +663,7 @@ for (const dialect of DIALECTS) {
               parameters: [],
             },
             mysql: NOT_SUPPORTED,
+            mssql: NOT_SUPPORTED,
             sqlite: NOT_SUPPORTED,
           })
 
@@ -682,6 +696,7 @@ for (const dialect of DIALECTS) {
               parameters: [],
             },
             mysql: NOT_SUPPORTED,
+            mssql: NOT_SUPPORTED,
             sqlite: NOT_SUPPORTED,
           })
 

@@ -9,6 +9,7 @@ import {
   expect,
   insertDefaultDataSet,
   testSql,
+  NOT_SUPPORTED,
 } from './test-setup.js'
 
 for (const dialect of DIALECTS) {
@@ -117,6 +118,7 @@ for (const dialect of DIALECTS) {
           sql: 'select first_name from person where gender = ? order by first_name asc, last_name asc',
           parameters: [gender],
         },
+        mssql: NOT_SUPPORTED,
         sqlite: {
           sql: 'select first_name from person where gender = ? order by first_name asc, last_name asc',
           parameters: [gender],

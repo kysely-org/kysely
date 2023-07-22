@@ -45,6 +45,7 @@ for (const dialect of DIALECTS) {
           sql: 'delete from `person` where `gender` = ?',
           parameters: ['female'],
         },
+        mssql: NOT_SUPPORTED,
         sqlite: {
           sql: 'delete from "person" where "gender" = ?',
           parameters: ['female'],
@@ -106,6 +107,7 @@ for (const dialect of DIALECTS) {
             parameters: [2],
           },
           postgres: NOT_SUPPORTED,
+          mssql: NOT_SUPPORTED,
           sqlite: NOT_SUPPORTED,
         })
 
@@ -129,6 +131,7 @@ for (const dialect of DIALECTS) {
             parameters: ['male'],
           },
           mysql: NOT_SUPPORTED,
+          mssql: NOT_SUPPORTED,
           sqlite: {
             sql: 'delete from "person" where "gender" = ? returning "first_name", "last_name" as "last"',
             parameters: ['male'],
@@ -160,6 +163,7 @@ for (const dialect of DIALECTS) {
             parameters: ['female'],
           },
           mysql: NOT_SUPPORTED,
+          mssql: NOT_SUPPORTED,
           sqlite: {
             sql: 'delete from "person" where "gender" = ? returning "first_name", "last_name"',
             parameters: ['female'],
@@ -190,6 +194,7 @@ for (const dialect of DIALECTS) {
             parameters: ['NO_SUCH_SPECIES'],
           },
           mysql: NOT_SUPPORTED,
+          mssql: NOT_SUPPORTED,
           sqlite: NOT_SUPPORTED,
         })
 
@@ -216,6 +221,7 @@ for (const dialect of DIALECTS) {
             parameters: [0],
           },
           mysql: NOT_SUPPORTED,
+          mssql: NOT_SUPPORTED,
           sqlite: NOT_SUPPORTED,
         })
 
@@ -244,6 +250,7 @@ for (const dialect of DIALECTS) {
             parameters: ['Bob'],
           },
           mysql: NOT_SUPPORTED,
+          mssql: NOT_SUPPORTED,
           sqlite: NOT_SUPPORTED,
         })
 
@@ -266,6 +273,7 @@ for (const dialect of DIALECTS) {
             parameters: ['cat'],
           },
           mysql: NOT_SUPPORTED,
+          mssql: NOT_SUPPORTED,
           sqlite: NOT_SUPPORTED,
         })
 
@@ -294,6 +302,7 @@ for (const dialect of DIALECTS) {
             parameters: ['Zoro'],
           },
           mysql: NOT_SUPPORTED,
+          mssql: NOT_SUPPORTED,
           sqlite: NOT_SUPPORTED,
         })
 
@@ -322,6 +331,7 @@ for (const dialect of DIALECTS) {
             parameters: ['Luffy'],
           },
           mysql: NOT_SUPPORTED,
+          mssql: NOT_SUPPORTED,
           sqlite: NOT_SUPPORTED,
         })
 
@@ -350,6 +360,7 @@ for (const dialect of DIALECTS) {
             parameters: ['Itachi'],
           },
           mysql: NOT_SUPPORTED,
+          mssql: NOT_SUPPORTED,
           sqlite: NOT_SUPPORTED,
         })
 
@@ -372,6 +383,7 @@ for (const dialect of DIALECTS) {
             parameters: ['male'],
           },
           mysql: NOT_SUPPORTED,
+          mssql: NOT_SUPPORTED,
           sqlite: NOT_SUPPORTED,
         })
 
@@ -390,6 +402,7 @@ for (const dialect of DIALECTS) {
             parameters: ['male'],
           },
           mysql: NOT_SUPPORTED,
+          mssql: NOT_SUPPORTED,
           sqlite: NOT_SUPPORTED,
         })
 
@@ -418,6 +431,7 @@ for (const dialect of DIALECTS) {
             parameters: ['Bob'],
           },
           mysql: NOT_SUPPORTED,
+          mssql: NOT_SUPPORTED,
           sqlite: NOT_SUPPORTED,
         })
 
@@ -444,6 +458,7 @@ for (const dialect of DIALECTS) {
             ],
             parameters: ['NO_SUCH_SPECIES'],
           },
+          mssql: NOT_SUPPORTED,
           sqlite: NOT_SUPPORTED,
         })
 
@@ -468,6 +483,7 @@ for (const dialect of DIALECTS) {
             ],
             parameters: ['NO_SUCH_SPECIES'],
           },
+          mssql: NOT_SUPPORTED,
           sqlite: NOT_SUPPORTED,
         })
 
@@ -493,6 +509,7 @@ for (const dialect of DIALECTS) {
             sql: 'delete from `person` using `person` inner join `pet` on `pet`.`owner_id` = `person`.`id` left join `toy` on `toy`.`pet_id` = `pet`.`id` where (`pet`.`species` = ? or `toy`.`price` = ?)',
             parameters: ['NO_SUCH_SPECIES', 0],
           },
+          mssql: NOT_SUPPORTED,
           sqlite: NOT_SUPPORTED,
         })
 
@@ -515,6 +532,7 @@ for (const dialect of DIALECTS) {
             ],
             parameters: ['NO_SUCH_SPECIES'],
           },
+          mssql: NOT_SUPPORTED,
           sqlite: NOT_SUPPORTED,
         })
 
@@ -539,6 +557,7 @@ for (const dialect of DIALECTS) {
             ],
             parameters: [0],
           },
+          mssql: NOT_SUPPORTED,
           sqlite: NOT_SUPPORTED,
         })
 
@@ -563,6 +582,7 @@ for (const dialect of DIALECTS) {
             ],
             parameters: [0],
           },
+          mssql: NOT_SUPPORTED,
           sqlite: NOT_SUPPORTED,
         })
 
@@ -587,6 +607,7 @@ for (const dialect of DIALECTS) {
             ],
             parameters: [911],
           },
+          mssql: NOT_SUPPORTED,
           sqlite: NOT_SUPPORTED,
         })
 
@@ -611,6 +632,7 @@ for (const dialect of DIALECTS) {
             ],
             parameters: [911],
           },
+          mssql: NOT_SUPPORTED,
           sqlite: NOT_SUPPORTED,
         })
 
@@ -637,6 +659,7 @@ for (const dialect of DIALECTS) {
             ],
             parameters: [1000],
           },
+          mssql: NOT_SUPPORTED,
           sqlite: NOT_SUPPORTED,
         })
 
@@ -663,6 +686,7 @@ for (const dialect of DIALECTS) {
             ],
             parameters: [1000],
           },
+          mssql: NOT_SUPPORTED,
           sqlite: NOT_SUPPORTED,
         })
 
@@ -689,6 +713,7 @@ for (const dialect of DIALECTS) {
             ],
             parameters: [1000],
           },
+          mssql: NOT_SUPPORTED,
           sqlite: NOT_SUPPORTED,
         })
 
@@ -715,6 +740,7 @@ for (const dialect of DIALECTS) {
             ],
             parameters: [1000],
           },
+          mssql: NOT_SUPPORTED,
           sqlite: NOT_SUPPORTED,
         })
 
@@ -741,6 +767,7 @@ for (const dialect of DIALECTS) {
             ],
             parameters: [1000],
           },
+          mssql: NOT_SUPPORTED,
           sqlite: NOT_SUPPORTED,
         })
 
@@ -767,6 +794,7 @@ for (const dialect of DIALECTS) {
             ],
             parameters: [1000],
           },
+          mssql: NOT_SUPPORTED,
           sqlite: NOT_SUPPORTED,
         })
 

@@ -6,6 +6,7 @@ import {
   insertDefaultDataSet,
   TestContext,
   testSql,
+  NOT_SUPPORTED,
 } from './test-setup.js'
 
 for (const dialect of DIALECTS) {
@@ -137,6 +138,7 @@ for (const dialect of DIALECTS) {
             2000,
           ],
         },
+        mssql: NOT_SUPPORTED,
         sqlite: {
           sql: 'select "person".* from "person" where ((not "first_name" = ? or "id" + ? > ? or "id" in (?, ?, ?) or upper("first_name") = ? or false) and exists (select "pet"."id" from "pet" where "pet"."owner_id" = "person"."id") and true and ("id" = ? or "id" = ? or "id" = ? or "id" = ?) and ("id" = ? and "first_name" = ? and "last_name" = ? and "marital_status" = ?) and ("id" = ? or "id" = ?) and ("id" + ?) > ? and ("first_name" = ? and "last_name" = ?) and ("first_name" = "last_name" or "last_name" = "first_name") and true and "id" between ? and ?)',
           parameters: [

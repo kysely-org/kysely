@@ -108,6 +108,7 @@ for (const dialect of DIALECTS) {
               parameters: [],
             },
             mysql: NOT_SUPPORTED,
+            mssql: NOT_SUPPORTED,
             sqlite: NOT_SUPPORTED,
           })
 
@@ -210,6 +211,7 @@ for (const dialect of DIALECTS) {
               parameters: [],
             },
             postgres: NOT_SUPPORTED,
+            mssql: NOT_SUPPORTED,
             sqlite: NOT_SUPPORTED,
           })
 
@@ -277,6 +279,7 @@ for (const dialect of DIALECTS) {
             .addColumn('s', 'blob')
 
           testSql(builder, dialect, {
+            mssql: NOT_SUPPORTED,
             sqlite: {
               sql: [
                 'create table "test"',
@@ -352,6 +355,7 @@ for (const dialect of DIALECTS) {
             sql: 'create table `test` (`a` varchar(255), `b` varchar(255), `c` varchar(255), constraint `a_b_unique` unique (`a`, `b`), constraint `b_c_unique` unique (`b`, `c`))',
             parameters: [],
           },
+          mssql: NOT_SUPPORTED,
           sqlite: {
             sql: 'create table "test" ("a" varchar(255), "b" varchar(255), "c" varchar(255), constraint "a_b_unique" unique ("a", "b"), constraint "b_c_unique" unique ("b", "c"))',
             parameters: [],
@@ -379,6 +383,7 @@ for (const dialect of DIALECTS) {
             sql: 'create table `test` (`a` integer, `b` integer, `c` integer, constraint `check_a` check (a > 1), constraint `check_b` check (b < c))',
             parameters: [],
           },
+          mssql: NOT_SUPPORTED,
           sqlite: {
             sql: 'create table "test" ("a" integer, "b" integer, "c" integer, constraint "check_a" check (a > 1), constraint "check_b" check (b < c))',
             parameters: [],
@@ -404,6 +409,7 @@ for (const dialect of DIALECTS) {
             sql: 'create table `test` (`a` integer, `b` integer, constraint `primary` primary key (`a`, `b`))',
             parameters: [],
           },
+          mssql: NOT_SUPPORTED,
           sqlite: {
             sql: 'create table "test" ("a" integer, "b" integer, constraint "primary" primary key ("a", "b"))',
             parameters: [],
@@ -439,6 +445,7 @@ for (const dialect of DIALECTS) {
             sql: 'create table `test` (`a` integer, `b` integer, constraint `foreign_key` foreign key (`a`, `b`) references `test2` (`c`, `d`))',
             parameters: [],
           },
+          mssql: NOT_SUPPORTED,
           sqlite: {
             sql: 'create table "test" ("a" integer, "b" integer, constraint "foreign_key" foreign key ("a", "b") references "test2" ("c", "d"))',
             parameters: [],
@@ -474,6 +481,7 @@ for (const dialect of DIALECTS) {
               parameters: [],
             },
             mysql: NOT_SUPPORTED,
+            mssql: NOT_SUPPORTED,
             sqlite: NOT_SUPPORTED,
           })
 
@@ -510,6 +518,7 @@ for (const dialect of DIALECTS) {
             sql: 'create table `test` (`a` integer, `b` integer, constraint `foreign_key` foreign key (`a`, `b`) references `test2` (`c`, `d`) on update cascade)',
             parameters: [],
           },
+          mssql: NOT_SUPPORTED,
           sqlite: {
             sql: 'create table "test" ("a" integer, "b" integer, constraint "foreign_key" foreign key ("a", "b") references "test2" ("c", "d") on update cascade)',
             parameters: [],
@@ -534,6 +543,7 @@ for (const dialect of DIALECTS) {
             sql: 'create table if not exists `test` (`id` integer primary key)',
             parameters: [],
           },
+          mssql: NOT_SUPPORTED,
           sqlite: {
             sql: 'create table if not exists "test" ("id" integer primary key)',
             parameters: [],
@@ -558,6 +568,7 @@ for (const dialect of DIALECTS) {
             sql: 'create temporary table `test` (`id` integer primary key)',
             parameters: [],
           },
+          mssql: NOT_SUPPORTED,
           sqlite: {
             sql: 'create temporary table "test" ("id" integer primary key)',
             parameters: [],
@@ -581,6 +592,7 @@ for (const dialect of DIALECTS) {
               parameters: [],
             },
             mysql: NOT_SUPPORTED,
+            mssql: NOT_SUPPORTED,
             sqlite: NOT_SUPPORTED,
           })
 
@@ -603,6 +615,7 @@ for (const dialect of DIALECTS) {
               parameters: [],
             },
             mysql: NOT_SUPPORTED,
+            mssql: NOT_SUPPORTED,
             sqlite: NOT_SUPPORTED,
           })
 
@@ -624,6 +637,7 @@ for (const dialect of DIALECTS) {
               parameters: [],
             },
             mysql: NOT_SUPPORTED,
+            mssql: NOT_SUPPORTED,
             sqlite: NOT_SUPPORTED,
           })
 
@@ -645,6 +659,7 @@ for (const dialect of DIALECTS) {
               parameters: [],
             },
             mysql: NOT_SUPPORTED,
+            mssql: NOT_SUPPORTED,
             sqlite: NOT_SUPPORTED,
           })
 
@@ -672,6 +687,7 @@ for (const dialect of DIALECTS) {
               parameters: [],
             },
             mysql: NOT_SUPPORTED,
+            mssql: NOT_SUPPORTED,
             sqlite: NOT_SUPPORTED,
           })
 
@@ -701,6 +717,7 @@ for (const dialect of DIALECTS) {
               parameters: [],
             },
             mysql: NOT_SUPPORTED,
+            mssql: NOT_SUPPORTED,
             sqlite: NOT_SUPPORTED,
           })
 
@@ -728,6 +745,7 @@ for (const dialect of DIALECTS) {
               ],
               parameters: [],
             },
+            mssql: NOT_SUPPORTED,
             sqlite: NOT_SUPPORTED,
           })
 
@@ -745,6 +763,7 @@ for (const dialect of DIALECTS) {
           testSql(builder, dialect, {
             postgres: NOT_SUPPORTED,
             mysql: NOT_SUPPORTED,
+            mssql: NOT_SUPPORTED,
             sqlite: {
               sql: [
                 'create table "test"',
@@ -790,6 +809,7 @@ for (const dialect of DIALECTS) {
               ],
               parameters: [],
             },
+            mssql: NOT_SUPPORTED,
             sqlite: NOT_SUPPORTED,
           })
 
@@ -824,6 +844,7 @@ for (const dialect of DIALECTS) {
             ],
             parameters: [],
           },
+          mssql: NOT_SUPPORTED,
           sqlite: {
             sql: [
               'create table "test"',
@@ -858,6 +879,7 @@ for (const dialect of DIALECTS) {
             sql: 'drop table `test`',
             parameters: [],
           },
+          mssql: NOT_SUPPORTED,
           sqlite: {
             sql: 'drop table "test"',
             parameters: [],
@@ -879,6 +901,7 @@ for (const dialect of DIALECTS) {
             sql: 'drop table if exists `test`',
             parameters: [],
           },
+          mssql: NOT_SUPPORTED,
           sqlite: {
             sql: 'drop table if exists "test"',
             parameters: [],
@@ -899,6 +922,7 @@ for (const dialect of DIALECTS) {
               sql: 'drop table `test` cascade',
               parameters: [],
             },
+            mssql: NOT_SUPPORTED,
             sqlite: NOT_SUPPORTED,
           })
         })
@@ -914,6 +938,7 @@ for (const dialect of DIALECTS) {
               sql: 'drop table if exists `test` cascade',
               parameters: [],
             },
+            mssql: NOT_SUPPORTED,
             sqlite: NOT_SUPPORTED,
           })
         })
@@ -946,6 +971,7 @@ for (const dialect of DIALECTS) {
             sql: 'create index `test_first_name_index` on `test` (`first_name`)',
             parameters: [],
           },
+          mssql: NOT_SUPPORTED,
           sqlite: {
             sql: 'create index "test_first_name_index" on "test" ("first_name")',
             parameters: [],
@@ -974,6 +1000,7 @@ for (const dialect of DIALECTS) {
               sql: 'create index if not exists "test_first_name_index" on "test" ("first_name")',
               parameters: [],
             },
+            mssql: NOT_SUPPORTED,
             sqlite: {
               sql: 'create index if not exists "test_first_name_index" on "test" ("first_name")',
               parameters: [],
@@ -1001,6 +1028,7 @@ for (const dialect of DIALECTS) {
             sql: 'create unique index `test_first_name_index` on `test` (`first_name`)',
             parameters: [],
           },
+          mssql: NOT_SUPPORTED,
           sqlite: {
             sql: 'create unique index "test_first_name_index" on "test" ("first_name")',
             parameters: [],
@@ -1027,6 +1055,7 @@ for (const dialect of DIALECTS) {
               sql: 'create index `test_first_name_index` on `test` using hash (`first_name`)',
               parameters: [],
             },
+            mssql: NOT_SUPPORTED,
             sqlite: {
               sql: 'create index "test_first_name_index" on "test" using hash ("first_name")',
               parameters: [],
@@ -1052,6 +1081,7 @@ for (const dialect of DIALECTS) {
             sql: 'create index `test_name_index` on `test` (`first_name`, `last_name`)',
             parameters: [],
           },
+          mssql: NOT_SUPPORTED,
           sqlite: {
             sql: 'create index "test_name_index" on "test" ("first_name", "last_name")',
             parameters: [],
@@ -1076,6 +1106,7 @@ for (const dialect of DIALECTS) {
             sql: "create index `test_first_name_index` on `test` ((first_name < 'Sami'))",
             parameters: [],
           },
+          mssql: NOT_SUPPORTED,
           sqlite: {
             sql: `create index "test_first_name_index" on "test" ((first_name < 'Sami'))`,
             parameters: [],
@@ -1100,6 +1131,7 @@ for (const dialect of DIALECTS) {
             sql: 'create index `test_descending_first_name_index` on `test` (`first_name` desc)',
             parameters: [],
           },
+          mssql: NOT_SUPPORTED,
           sqlite: {
             sql: 'create index "test_descending_first_name_index" on "test" ("first_name" desc)',
             parameters: [],
@@ -1124,6 +1156,7 @@ for (const dialect of DIALECTS) {
             sql: 'create index `test_first_name_descending_last_name_index` on `test` (`first_name`, `last_name` desc)',
             parameters: [],
           },
+          mssql: NOT_SUPPORTED,
           sqlite: {
             sql: 'create index "test_first_name_descending_last_name_index" on "test" ("first_name", "last_name" desc)',
             parameters: [],
@@ -1152,6 +1185,7 @@ for (const dialect of DIALECTS) {
               parameters: [],
             },
             mysql: NOT_SUPPORTED,
+            mssql: NOT_SUPPORTED,
             sqlite: {
               sql: `create index "test_partial_index" on "test" ("first_name", "last_name") where ("first_name" = 'Igal' or "age" >= 18)`,
               parameters: [],
@@ -1194,6 +1228,7 @@ for (const dialect of DIALECTS) {
             sql: 'drop index `test_first_name_index` on `test`',
             parameters: [],
           },
+          mssql: NOT_SUPPORTED,
           sqlite: {
             sql: 'drop index "test_first_name_index"',
             parameters: [],
@@ -1214,6 +1249,7 @@ for (const dialect of DIALECTS) {
               sql: 'drop index if exists "test_first_name_index"',
               parameters: [],
             },
+            mssql: NOT_SUPPORTED,
             sqlite: {
               sql: 'drop index if exists "test_first_name_index"',
               parameters: [],
@@ -1237,6 +1273,7 @@ for (const dialect of DIALECTS) {
               parameters: [],
             },
             mysql: NOT_SUPPORTED,
+            mssql: NOT_SUPPORTED,
             sqlite: NOT_SUPPORTED,
           })
 
@@ -1255,6 +1292,7 @@ for (const dialect of DIALECTS) {
               parameters: [],
             },
             mysql: NOT_SUPPORTED,
+            mssql: NOT_SUPPORTED,
             sqlite: NOT_SUPPORTED,
           })
 
@@ -1281,6 +1319,7 @@ for (const dialect of DIALECTS) {
             sql: "create view `dogs` as select * from `pet` where `species` = 'dog'",
             parameters: [],
           },
+          mssql: NOT_SUPPORTED,
           sqlite: {
             sql: `create view "dogs" as select * from "pet" where "species" = 'dog'`,
             parameters: [],
@@ -1304,6 +1343,7 @@ for (const dialect of DIALECTS) {
               sql: `create temporary view "dogs" as select * from "pet" where "species" = 'dog'`,
               parameters: [],
             },
+            mssql: NOT_SUPPORTED,
             sqlite: {
               sql: `create temporary view "dogs" as select * from "pet" where "species" = 'dog'`,
               parameters: [],
@@ -1333,6 +1373,7 @@ for (const dialect of DIALECTS) {
               sql: "create or replace view `dogs` as select * from `pet` where `species` = 'dog'",
               parameters: [],
             },
+            mssql: NOT_SUPPORTED,
             sqlite: NOT_SUPPORTED,
           })
 
@@ -1350,6 +1391,7 @@ for (const dialect of DIALECTS) {
             )
 
           testSql(builder, dialect, {
+            mssql: NOT_SUPPORTED,
             sqlite: {
               sql: `create view if not exists "dogs" as select * from "pet" where "species" = 'dog'`,
               parameters: [],
@@ -1377,6 +1419,7 @@ for (const dialect of DIALECTS) {
               parameters: [],
             },
             mysql: NOT_SUPPORTED,
+            mssql: NOT_SUPPORTED,
             sqlite: NOT_SUPPORTED,
           })
 
@@ -1421,6 +1464,7 @@ for (const dialect of DIALECTS) {
             sql: 'drop view `dogs`',
             parameters: [],
           },
+          mssql: NOT_SUPPORTED,
           sqlite: {
             sql: `drop view "dogs"`,
             parameters: [],
@@ -1442,6 +1486,7 @@ for (const dialect of DIALECTS) {
             sql: 'drop view if exists `dogs`',
             parameters: [],
           },
+          mssql: NOT_SUPPORTED,
           sqlite: {
             sql: `drop view if exists "dogs"`,
             parameters: [],
@@ -1463,6 +1508,7 @@ for (const dialect of DIALECTS) {
               sql: 'drop view `dogs` cascade',
               parameters: [],
             },
+            mssql: NOT_SUPPORTED,
             sqlite: NOT_SUPPORTED,
           })
 
@@ -1480,6 +1526,7 @@ for (const dialect of DIALECTS) {
               sql: 'drop view if exists `dogs` cascade',
               parameters: [],
             },
+            mssql: NOT_SUPPORTED,
             sqlite: NOT_SUPPORTED,
           })
 
@@ -1505,6 +1552,7 @@ for (const dialect of DIALECTS) {
               sql: 'create schema `pets`',
               parameters: [],
             },
+            mssql: NOT_SUPPORTED,
             sqlite: NOT_SUPPORTED,
           })
 
@@ -1523,6 +1571,7 @@ for (const dialect of DIALECTS) {
               sql: 'create schema if not exists `pets`',
               parameters: [],
             },
+            mssql: NOT_SUPPORTED,
             sqlite: NOT_SUPPORTED,
           })
 
@@ -1554,6 +1603,7 @@ for (const dialect of DIALECTS) {
               sql: 'drop schema `pets`',
               parameters: [],
             },
+            mssql: NOT_SUPPORTED,
             sqlite: NOT_SUPPORTED,
           })
 
@@ -1572,6 +1622,7 @@ for (const dialect of DIALECTS) {
               sql: 'drop schema if exists `pets`',
               parameters: [],
             },
+            mssql: NOT_SUPPORTED,
             sqlite: NOT_SUPPORTED,
           })
 
@@ -1588,6 +1639,7 @@ for (const dialect of DIALECTS) {
                 parameters: [],
               },
               mysql: NOT_SUPPORTED,
+              mssql: NOT_SUPPORTED,
               sqlite: NOT_SUPPORTED,
             })
 
@@ -1606,6 +1658,7 @@ for (const dialect of DIALECTS) {
                 parameters: [],
               },
               mysql: NOT_SUPPORTED,
+              mssql: NOT_SUPPORTED,
               sqlite: NOT_SUPPORTED,
             })
 
@@ -1635,6 +1688,7 @@ for (const dialect of DIALECTS) {
               parameters: [],
             },
             mysql: NOT_SUPPORTED,
+            mssql: NOT_SUPPORTED,
             sqlite: NOT_SUPPORTED,
           })
 
@@ -1663,6 +1717,7 @@ for (const dialect of DIALECTS) {
               parameters: [],
             },
             mysql: NOT_SUPPORTED,
+            mssql: NOT_SUPPORTED,
             sqlite: NOT_SUPPORTED,
           })
 
@@ -1678,6 +1733,7 @@ for (const dialect of DIALECTS) {
               parameters: [],
             },
             mysql: NOT_SUPPORTED,
+            mssql: NOT_SUPPORTED,
             sqlite: NOT_SUPPORTED,
           })
 
@@ -1714,6 +1770,7 @@ for (const dialect of DIALECTS) {
               sql: 'alter table `test` add column `bool_col` boolean not null',
               parameters: [],
             },
+            mssql: NOT_SUPPORTED,
             sqlite: {
               sql: 'alter table "test" add column "bool_col" boolean not null',
               parameters: [],
@@ -1749,6 +1806,7 @@ for (const dialect of DIALECTS) {
                 sql: 'alter table `test` add column `bool_col` boolean not null unique',
                 parameters: [],
               },
+              mssql: NOT_SUPPORTED,
               sqlite: {
                 sql: 'alter table "test" add column "bool_col" boolean not null unique',
                 parameters: [],
@@ -1787,6 +1845,7 @@ for (const dialect of DIALECTS) {
                 ],
                 parameters: [],
               },
+              mssql: NOT_SUPPORTED,
               sqlite: {
                 sql: [
                   'alter table "test"',
@@ -1815,6 +1874,7 @@ for (const dialect of DIALECTS) {
                 parameters: [],
               },
               postgres: NOT_SUPPORTED,
+              mssql: NOT_SUPPORTED,
               sqlite: NOT_SUPPORTED,
             })
 
@@ -1832,6 +1892,7 @@ for (const dialect of DIALECTS) {
                 parameters: [],
               },
               postgres: NOT_SUPPORTED,
+              mssql: NOT_SUPPORTED,
               sqlite: NOT_SUPPORTED,
             })
 
@@ -1858,6 +1919,7 @@ for (const dialect of DIALECTS) {
                 parameters: [],
               },
               postgres: NOT_SUPPORTED,
+              mssql: NOT_SUPPORTED,
               sqlite: NOT_SUPPORTED,
             })
 
@@ -1884,6 +1946,7 @@ for (const dialect of DIALECTS) {
                 parameters: [],
               },
               postgres: NOT_SUPPORTED,
+              mssql: NOT_SUPPORTED,
               sqlite: NOT_SUPPORTED,
             })
 
@@ -1908,6 +1971,7 @@ for (const dialect of DIALECTS) {
                 sql: "alter table `test` alter column `varchar_col` set default 'foo'",
                 parameters: [],
               },
+              mssql: NOT_SUPPORTED,
               sqlite: NOT_SUPPORTED,
             })
 
@@ -1935,6 +1999,7 @@ for (const dialect of DIALECTS) {
                 sql: 'alter table `test` alter column `varchar_col` drop default',
                 parameters: [],
               },
+              mssql: NOT_SUPPORTED,
               sqlite: NOT_SUPPORTED,
             })
             await builder.execute()
@@ -1951,6 +2016,7 @@ for (const dialect of DIALECTS) {
                   sql: 'alter table "test" alter column "varchar_col" type text',
                   parameters: [],
                 },
+                mssql: NOT_SUPPORTED,
                 sqlite: {
                   sql: 'alter table "test" alter column "varchar_col" type text',
                   parameters: [],
@@ -1971,6 +2037,7 @@ for (const dialect of DIALECTS) {
                   sql: 'alter table "test" alter column "varchar_col" type text',
                   parameters: [],
                 },
+                mssql: NOT_SUPPORTED,
                 sqlite: {
                   sql: 'alter table "test" alter column "varchar_col" type text',
                   parameters: [],
@@ -1991,6 +2058,7 @@ for (const dialect of DIALECTS) {
                   sql: 'alter table "test" alter column "varchar_col" set not null',
                   parameters: [],
                 },
+                mssql: NOT_SUPPORTED,
                 sqlite: {
                   sql: 'alter table "test" alter column "varchar_col" set not null',
                   parameters: [],
@@ -2016,6 +2084,7 @@ for (const dialect of DIALECTS) {
                   sql: 'alter table "test" alter column "varchar_col" drop not null',
                   parameters: [],
                 },
+                mssql: NOT_SUPPORTED,
                 sqlite: {
                   sql: 'alter table "test" alter column "varchar_col" drop not null',
                   parameters: [],
@@ -2050,6 +2119,7 @@ for (const dialect of DIALECTS) {
                 ],
                 parameters: [],
               },
+              mssql: NOT_SUPPORTED,
               sqlite: NOT_SUPPORTED,
             })
 
@@ -2073,6 +2143,7 @@ for (const dialect of DIALECTS) {
               sql: 'alter table `test` drop column `varchar_col`',
               parameters: [],
             },
+            mssql: NOT_SUPPORTED,
             sqlite: {
               sql: 'alter table "test" drop column "varchar_col"',
               parameters: [],
@@ -2111,6 +2182,7 @@ for (const dialect of DIALECTS) {
                 ],
                 parameters: [],
               },
+              mssql: NOT_SUPPORTED,
               sqlite: {
                 sql: [
                   'alter table "test"',
@@ -2139,6 +2211,7 @@ for (const dialect of DIALECTS) {
               sql: 'alter table `test` rename to `test2`',
               parameters: [],
             },
+            mssql: NOT_SUPPORTED,
             sqlite: {
               sql: 'alter table "test" rename to "test2"',
               parameters: [],
@@ -2160,6 +2233,7 @@ for (const dialect of DIALECTS) {
                 parameters: [],
               },
               mysql: NOT_SUPPORTED,
+              mssql: NOT_SUPPORTED,
               sqlite: NOT_SUPPORTED,
             })
 
@@ -2183,6 +2257,7 @@ for (const dialect of DIALECTS) {
               sql: 'alter table `test` rename column `varchar_col` to `text_col`',
               parameters: [],
             },
+            mssql: NOT_SUPPORTED,
             sqlite: {
               sql: 'alter table "test" rename column "varchar_col" to "text_col"',
               parameters: [],
@@ -2216,6 +2291,7 @@ for (const dialect of DIALECTS) {
                 ],
                 parameters: [],
               },
+              mssql: NOT_SUPPORTED,
               sqlite: {
                 sql: [
                   'alter table "test"',
@@ -2251,6 +2327,7 @@ for (const dialect of DIALECTS) {
                 parameters: [],
               },
               mysql: NOT_SUPPORTED,
+              mssql: NOT_SUPPORTED,
               sqlite: NOT_SUPPORTED,
             })
 
@@ -2287,6 +2364,7 @@ for (const dialect of DIALECTS) {
                 ],
                 parameters: [],
               },
+              mssql: NOT_SUPPORTED,
               sqlite: NOT_SUPPORTED,
             })
 
@@ -2314,6 +2392,7 @@ for (const dialect of DIALECTS) {
                 sql: 'alter table `test` add constraint `some_constraint` unique (`varchar_col`, `integer_col`)',
                 parameters: [],
               },
+              mssql: NOT_SUPPORTED,
               sqlite: {
                 sql: 'alter table "test" add constraint "some_constraint" unique ("varchar_col", "integer_col")',
                 parameters: [],
@@ -2341,6 +2420,7 @@ for (const dialect of DIALECTS) {
                 sql: 'alter table `test` add constraint `some_constraint` check (integer_col > 0)',
                 parameters: [],
               },
+              mssql: NOT_SUPPORTED,
               sqlite: {
                 sql: 'alter table "test" add constraint "some_constraint" check (integer_col > 0)',
                 parameters: [],
@@ -2380,6 +2460,7 @@ for (const dialect of DIALECTS) {
                 sql: 'alter table `test` add constraint `some_constraint` foreign key (`integer_col`, `varchar_col`) references `test2` (`a`, `b`)',
                 parameters: [],
               },
+              mssql: NOT_SUPPORTED,
               sqlite: {
                 sql: 'alter table "test" add constraint "some_constraint" foreign key ("integer_col", "varchar_col") references "test2" ("a", "b")',
                 parameters: [],
@@ -2417,6 +2498,7 @@ for (const dialect of DIALECTS) {
                 sql: 'alter table `test` add constraint `some_constraint` foreign key (`integer_col`, `varchar_col`) references `test2` (`a`, `b`) on delete set null on update cascade',
                 parameters: [],
               },
+              mssql: NOT_SUPPORTED,
               sqlite: {
                 sql: 'alter table "test" add constraint "some_constraint" foreign key ("integer_col", "varchar_col") references "test2" ("a", "b") on delete set null on update cascade',
                 parameters: [],
@@ -2460,6 +2542,7 @@ for (const dialect of DIALECTS) {
                 sql: 'alter table `test` drop constraint `foreign_key_constraint`',
                 parameters: [],
               },
+              mssql: NOT_SUPPORTED,
               sqlite: NOT_SUPPORTED,
             })
 
@@ -2496,6 +2579,7 @@ for (const dialect of DIALECTS) {
                 sql: 'alter table `test_schema`.`test` add column `second_column` text',
                 parameters: [],
               },
+              mssql: NOT_SUPPORTED,
               sqlite: NOT_SUPPORTED,
             })
 
@@ -2528,6 +2612,7 @@ for (const dialect of DIALECTS) {
             sql: ["alter table `test` add column `abc` integer default '42'"],
             parameters: [],
           },
+          mssql: NOT_SUPPORTED,
           sqlite: {
             sql: [`alter table "test" add column "abc" integer default '42'`],
             parameters: [],

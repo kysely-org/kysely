@@ -1,6 +1,7 @@
 import { sql } from '../../..'
 import {
   DIALECTS,
+  NOT_SUPPORTED,
   TestContext,
   clearDatabase,
   destroyTest,
@@ -45,6 +46,7 @@ for (const dialect of DIALECTS) {
           sql: 'select case when `gender` = ? then ? end as `title` from `person`',
           parameters: ['male', 'Mr.'],
         },
+        mssql: NOT_SUPPORTED,
         sqlite: {
           sql: `select case when "gender" = ? then ? end as "title" from "person"`,
           parameters: ['male', 'Mr.'],
@@ -70,6 +72,7 @@ for (const dialect of DIALECTS) {
           sql: 'select case `gender` when ? then ? end as `title` from `person`',
           parameters: ['male', 'Mr.'],
         },
+        mssql: NOT_SUPPORTED,
         sqlite: {
           sql: `select case "gender" when ? then ? end as "title" from "person"`,
           parameters: ['male', 'Mr.'],
@@ -110,6 +113,7 @@ for (const dialect of DIALECTS) {
           ],
           parameters: ['male', 'female'],
         },
+        mssql: NOT_SUPPORTED,
         sqlite: {
           sql: [
             `select case when "gender" = ? then 'Mr.'`,
@@ -154,6 +158,7 @@ for (const dialect of DIALECTS) {
           ],
           parameters: [],
         },
+        mssql: NOT_SUPPORTED,
         sqlite: {
           sql: [
             `select case "gender" when 'male' then 'Mr.'`,
@@ -199,6 +204,7 @@ for (const dialect of DIALECTS) {
           ],
           parameters: ['male', 'Mr.', 'female', 'Mrs.'],
         },
+        mssql: NOT_SUPPORTED,
         sqlite: {
           sql: [
             `select case when "gender" = ? then ?`,
@@ -259,6 +265,7 @@ for (const dialect of DIALECTS) {
           ],
           parameters: ['male', 'Mr.', 'female', 'single', 'Ms.', 'Mrs.'],
         },
+        mssql: NOT_SUPPORTED,
         sqlite: {
           sql: [
             'select case "gender" when ? then ?',

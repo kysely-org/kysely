@@ -4,6 +4,7 @@ import {
   initTest,
   TestContext,
   testSql,
+  NOT_SUPPORTED,
 } from './test-setup'
 
 for (const dialect of DIALECTS) {
@@ -34,6 +35,7 @@ for (const dialect of DIALECTS) {
           sql: 'select `id` from `person`',
           parameters: [],
         },
+        mssql: NOT_SUPPORTED,
         sqlite: {
           sql: `select "id" from "person"`,
           parameters: [],
@@ -57,6 +59,7 @@ for (const dialect of DIALECTS) {
           sql: 'select * from `person`',
           parameters: [],
         },
+        mssql: NOT_SUPPORTED,
         sqlite: {
           sql: `select * from "person"`,
           parameters: [],
@@ -78,6 +81,7 @@ for (const dialect of DIALECTS) {
           sql: 'insert into `person` on conflict do nothing',
           parameters: [],
         },
+        mssql: NOT_SUPPORTED,
         sqlite: {
           sql: `insert into "person" on conflict do nothing`,
           parameters: [],
@@ -104,6 +108,7 @@ for (const dialect of DIALECTS) {
           sql: 'insert into `person` on conflict do update set `gender` = ?',
           parameters: ['other'],
         },
+        mssql: NOT_SUPPORTED,
         sqlite: {
           sql: `insert into "person" on conflict do update set "gender" = ?`,
           parameters: ['other'],
@@ -127,6 +132,7 @@ for (const dialect of DIALECTS) {
           sql: 'update `person` set `gender` = ?',
           parameters: ['other'],
         },
+        mssql: NOT_SUPPORTED,
         sqlite: {
           sql: `update "person" set "gender" = ?`,
           parameters: ['other'],
@@ -149,6 +155,7 @@ for (const dialect of DIALECTS) {
           sql: 'delete from `person`',
           parameters: [],
         },
+        mssql: NOT_SUPPORTED,
         sqlite: {
           sql: `delete from "person"`,
           parameters: [],
@@ -172,6 +179,7 @@ for (const dialect of DIALECTS) {
           sql: 'select * from `person`',
           parameters: [],
         },
+        mssql: NOT_SUPPORTED,
         sqlite: {
           sql: `select * from "person"`,
           parameters: [],
@@ -195,6 +203,7 @@ for (const dialect of DIALECTS) {
           sql: 'select * from `person`',
           parameters: [],
         },
+        mssql: NOT_SUPPORTED,
         sqlite: {
           sql: `select * from "person"`,
           parameters: [],
@@ -219,6 +228,7 @@ for (const dialect of DIALECTS) {
           sql: 'select * from `person` limit ?',
           parameters: [1],
         },
+        mssql: NOT_SUPPORTED,
         sqlite: {
           sql: `select * from "person" limit ?`,
           parameters: [1],

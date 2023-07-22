@@ -8,6 +8,7 @@ import {
   testSql,
   expect,
   createTableWithId,
+  NOT_SUPPORTED,
 } from './test-setup.js'
 
 for (const dialect of DIALECTS) {
@@ -117,6 +118,7 @@ for (const dialect of DIALECTS) {
           ],
           parameters: [],
         },
+        mssql: NOT_SUPPORTED,
         sqlite: {
           sql: [
             `select "camel_person"."first_name"`,
@@ -167,6 +169,7 @@ for (const dialect of DIALECTS) {
             ],
             parameters: [],
           },
+          mssql: NOT_SUPPORTED,
           sqlite: {
             sql: [
               `select "camel_person"."first_name"`,
@@ -203,6 +206,7 @@ for (const dialect of DIALECTS) {
           sql: 'alter table `camel_person` add column `middle_name` text references `camel_person` (`first_name`)',
           parameters: [],
         },
+        mssql: NOT_SUPPORTED,
         sqlite: {
           sql: 'alter table "camel_person" add column "middle_name" text references "camel_person" ("first_name")',
           parameters: [],
@@ -225,6 +229,7 @@ for (const dialect of DIALECTS) {
           sql: 'delete from `camel_person` as `c` using `camel_person` where `camel_person`.`first_name` = ?',
           parameters: ['Arnold'],
         },
+        mssql: NOT_SUPPORTED,
         sqlite: {
           sql: `delete from "camel_person" as "c" using "camel_person" where "camel_person"."first_name" = ?`,
           parameters: ['Arnold'],

@@ -69,6 +69,7 @@ for (const dialect of DIALECTS) {
             ],
             parameters: [1],
           },
+          mssql: NOT_SUPPORTED,
           sqlite: NOT_SUPPORTED,
         })
 
@@ -167,6 +168,7 @@ for (const dialect of DIALECTS) {
           ],
           parameters: [1, 2, 3, 4, 5, 6, 7, 8],
         },
+        mssql: NOT_SUPPORTED,
         sqlite: {
           sql: [
             'select',
@@ -230,6 +232,7 @@ for (const dialect of DIALECTS) {
           ],
           parameters: [],
         },
+        mssql: NOT_SUPPORTED,
         sqlite: {
           sql: [
             'select',

@@ -9,6 +9,7 @@ import {
   testSql,
   expect,
   insertDefaultDataSet,
+  NOT_SUPPORTED,
 } from './test-setup.js'
 
 for (const dialect of DIALECTS) {
@@ -47,6 +48,7 @@ for (const dialect of DIALECTS) {
             sql: 'select * from `person` where `first_name` = ?',
             parameters: ['Arnold'],
           },
+          mssql: NOT_SUPPORTED,
           sqlite: {
             sql: 'select * from "person" where "first_name" = ?',
             parameters: ['Arnold'],
@@ -87,6 +89,7 @@ for (const dialect of DIALECTS) {
             sql: 'select * from `person` where `last_name` is not null',
             parameters: [],
           },
+          mssql: NOT_SUPPORTED,
           sqlite: {
             sql: 'select * from "person" where "last_name" is not null',
             parameters: [],
@@ -118,6 +121,7 @@ for (const dialect of DIALECTS) {
             sql: 'select * from `person` where `last_name` is null',
             parameters: [],
           },
+          mssql: NOT_SUPPORTED,
           sqlite: {
             sql: 'select * from "person" where "last_name" is null',
             parameters: [],
@@ -147,6 +151,7 @@ for (const dialect of DIALECTS) {
             sql: 'select * from `person` where `first_name` = ?',
             parameters: ['Arnold'],
           },
+          mssql: NOT_SUPPORTED,
           sqlite: {
             sql: 'select * from "person" where "first_name" = ?',
             parameters: ['Arnold'],
@@ -180,6 +185,7 @@ for (const dialect of DIALECTS) {
             sql: 'select * from `person` where `person`.`first_name` = ?',
             parameters: ['Arnold'],
           },
+          mssql: NOT_SUPPORTED,
           sqlite: {
             sql: 'select * from "person" where "person"."first_name" = ?',
             parameters: ['Arnold'],
@@ -209,6 +215,7 @@ for (const dialect of DIALECTS) {
             sql: 'select * from `person` where person.first_name = ?',
             parameters: ['Arnold'],
           },
+          mssql: NOT_SUPPORTED,
           sqlite: {
             sql: 'select * from "person" where person.first_name = ?',
             parameters: ['Arnold'],
@@ -234,6 +241,7 @@ for (const dialect of DIALECTS) {
             sql: 'select * from `person` where `person`.`first_name` = ?',
             parameters: ['Arnold'],
           },
+          mssql: NOT_SUPPORTED,
           sqlite: {
             sql: 'select * from "person" where "person"."first_name" = ?',
             parameters: ['Arnold'],
@@ -259,6 +267,7 @@ for (const dialect of DIALECTS) {
             sql: 'select * from `person` where (first_name is null) is false',
             parameters: [],
           },
+          mssql: NOT_SUPPORTED,
           sqlite: {
             sql: 'select * from "person" where (first_name is null) is false',
             parameters: [],
@@ -292,6 +301,7 @@ for (const dialect of DIALECTS) {
             sql: 'select * from `person` where (select `pet`.`name` from `pet` where `owner_id` = `person`.`id`) = ?',
             parameters: ['Catto'],
           },
+          mssql: NOT_SUPPORTED,
           sqlite: {
             sql: 'select * from "person" where (select "pet"."name" from "pet" where "owner_id" = "person"."id") = ?',
             parameters: ['Catto'],
@@ -330,6 +340,7 @@ for (const dialect of DIALECTS) {
             sql: 'select * from `person` where (select `pet`.`name` = ? as `is_doggo` from `pet` where `owner_id` = `person`.`id`)',
             parameters: ['Doggo'],
           },
+          mssql: NOT_SUPPORTED,
           sqlite: {
             sql: 'select * from "person" where (select "pet"."name" = ? as "is_doggo" from "pet" where "owner_id" = "person"."id")',
             parameters: ['Doggo'],
@@ -368,6 +379,7 @@ for (const dialect of DIALECTS) {
             sql: 'select * from `person` where ? = (select `pet`.`name` from `pet` where `owner_id` = `person`.`id`)',
             parameters: ['Catto'],
           },
+          mssql: NOT_SUPPORTED,
           sqlite: {
             sql: 'select * from "person" where ? = (select "pet"."name" from "pet" where "owner_id" = "person"."id")',
             parameters: ['Catto'],
@@ -397,6 +409,7 @@ for (const dialect of DIALECTS) {
             sql: 'select * from `person` where `first_name` = ?',
             parameters: ['Arnold'],
           },
+          mssql: NOT_SUPPORTED,
           sqlite: {
             sql: 'select * from "person" where "first_name" = ?',
             parameters: ['Arnold'],
@@ -431,6 +444,7 @@ for (const dialect of DIALECTS) {
             sql: 'select * from `person` where `first_name` in (?, ?) order by `first_name` desc',
             parameters: ['Arnold', 'Jennifer'],
           },
+          mssql: NOT_SUPPORTED,
           sqlite: {
             sql: 'select * from "person" where "first_name" in (?, ?) order by "first_name" desc',
             parameters: ['Arnold', 'Jennifer'],
@@ -470,6 +484,7 @@ for (const dialect of DIALECTS) {
             sql: 'select * from `person` where `first_name` = ? and `person`.`last_name` = ?',
             parameters: ['Arnold', 'Schwarzenegger'],
           },
+          mssql: NOT_SUPPORTED,
           sqlite: {
             sql: 'select * from "person" where "first_name" = ? and "person"."last_name" = ?',
             parameters: ['Arnold', 'Schwarzenegger'],
@@ -507,6 +522,7 @@ for (const dialect of DIALECTS) {
             sql: 'select * from `person` where (`first_name` = ? and upper(`last_name`) = ?)',
             parameters: ['Jennifer', 'ANISTON'],
           },
+          mssql: NOT_SUPPORTED,
           sqlite: {
             sql: 'select * from "person" where ("first_name" = ? and upper("last_name") = ?)',
             parameters: ['Jennifer', 'ANISTON'],
@@ -545,6 +561,7 @@ for (const dialect of DIALECTS) {
             sql: 'select * from `person` where (`first_name` = ? and upper(`last_name`) = ?)',
             parameters: ['Jennifer', 'ANISTON'],
           },
+          mssql: NOT_SUPPORTED,
           sqlite: {
             sql: 'select * from "person" where ("first_name" = ? and upper("last_name") = ?)',
             parameters: ['Jennifer', 'ANISTON'],
@@ -582,6 +599,7 @@ for (const dialect of DIALECTS) {
             sql: 'select * from `person` where (`first_name` = ? and `last_name` = upper(`first_name`))',
             parameters: ['Jennifer'],
           },
+          mssql: NOT_SUPPORTED,
           sqlite: {
             sql: 'select * from "person" where ("first_name" = ? and "last_name" = upper("first_name"))',
             parameters: ['Jennifer'],
@@ -612,6 +630,7 @@ for (const dialect of DIALECTS) {
             sql: 'select * from `person` where (`first_name` = ? or upper(`last_name`) = ?)',
             parameters: ['Jennifer', 'ANISTON'],
           },
+          mssql: NOT_SUPPORTED,
           sqlite: {
             sql: 'select * from "person" where ("first_name" = ? or upper("last_name") = ?)',
             parameters: ['Jennifer', 'ANISTON'],
@@ -650,6 +669,7 @@ for (const dialect of DIALECTS) {
             sql: 'select * from `person` where (`first_name` = ? or upper(`last_name`) = ?)',
             parameters: ['Jennifer', 'ANISTON'],
           },
+          mssql: NOT_SUPPORTED,
           sqlite: {
             sql: 'select * from "person" where ("first_name" = ? or upper("last_name") = ?)',
             parameters: ['Jennifer', 'ANISTON'],
@@ -688,6 +708,7 @@ for (const dialect of DIALECTS) {
             sql: 'select * from `person` where exists (select 1 as `exists` from `pet` where `pet`.`owner_id` = `person`.`id`)',
             parameters: [],
           },
+          mssql: NOT_SUPPORTED,
           sqlite: {
             sql: 'select * from "person" where exists (select 1 as "exists" from "pet" where "pet"."owner_id" = "person"."id")',
             parameters: [],
@@ -721,6 +742,7 @@ for (const dialect of DIALECTS) {
             sql: 'select * from `person` where not exists (select `pet`.`id` from `pet` where `pet`.`owner_id` = `person`.`id`)',
             parameters: [],
           },
+          mssql: NOT_SUPPORTED,
           sqlite: {
             sql: 'select * from "person" where not exists (select "pet"."id" from "pet" where "pet"."owner_id" = "person"."id")',
             parameters: [],
@@ -753,6 +775,7 @@ for (const dialect of DIALECTS) {
             sql: 'select * from `person` where case when `first_name` = ? then true else false end',
             parameters: ['Jennifer'],
           },
+          mssql: NOT_SUPPORTED,
           sqlite: {
             sql: 'select * from "person" where case when "first_name" = ? then true else false end',
             parameters: ['Jennifer'],
@@ -779,6 +802,7 @@ for (const dialect of DIALECTS) {
             sql: 'select * from `person` where first_name between ? and ? and last_name between ? and ?',
             parameters: ['Arnold', 'Jennifer', 'A', 'Z'],
           },
+          mssql: NOT_SUPPORTED,
           sqlite: {
             sql: 'select * from "person" where first_name between ? and ? and last_name between ? and ?',
             parameters: ['Arnold', 'Jennifer', 'A', 'Z'],
@@ -805,6 +829,7 @@ for (const dialect of DIALECTS) {
             sql: 'select * from `person`, `pet` where `person`.`id` = `pet`.`id`',
             parameters: [],
           },
+          mssql: NOT_SUPPORTED,
           sqlite: {
             sql: 'select * from "person", "pet" where "person"."id" = "pet"."id"',
             parameters: [],

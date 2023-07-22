@@ -64,6 +64,7 @@ if (DIALECTS.includes('postgres')) {
             parameters: [],
           },
           mysql: NOT_SUPPORTED,
+          mssql: NOT_SUPPORTED,
           sqlite: NOT_SUPPORTED,
         })
 
@@ -83,6 +84,7 @@ if (DIALECTS.includes('postgres')) {
             parameters: [],
           },
           mysql: NOT_SUPPORTED,
+          mssql: NOT_SUPPORTED,
           sqlite: NOT_SUPPORTED,
         })
 
@@ -102,6 +104,7 @@ if (DIALECTS.includes('postgres')) {
             parameters: [],
           },
           mysql: NOT_SUPPORTED,
+          mssql: NOT_SUPPORTED,
           sqlite: NOT_SUPPORTED,
         })
 
@@ -120,6 +123,7 @@ if (DIALECTS.includes('postgres')) {
             parameters: [],
           },
           mysql: NOT_SUPPORTED,
+          mssql: NOT_SUPPORTED,
           sqlite: NOT_SUPPORTED,
         })
 
@@ -150,6 +154,7 @@ if (DIALECTS.includes('postgres')) {
             parameters: [],
           },
           mysql: NOT_SUPPORTED,
+          mssql: NOT_SUPPORTED,
           sqlite: NOT_SUPPORTED,
         })
 
@@ -181,6 +186,7 @@ if (DIALECTS.includes('postgres')) {
             parameters: [],
           },
           mysql: NOT_SUPPORTED,
+          mssql: NOT_SUPPORTED,
           sqlite: NOT_SUPPORTED,
         })
 
@@ -212,6 +218,7 @@ if (DIALECTS.includes('postgres')) {
             parameters: ['Doggo', 'dog', anyPerson.id],
           },
           mysql: NOT_SUPPORTED,
+          mssql: NOT_SUPPORTED,
           sqlite: {
             sql: 'insert into "mammals"."pet" ("name", "species", "owner_id") values (?, ?, ?) returning "mammals"."pet"."id"',
             parameters: ['Doggo', 'dog', anyPerson.id],
@@ -233,6 +240,7 @@ if (DIALECTS.includes('postgres')) {
             parameters: ['Doggo'],
           },
           mysql: NOT_SUPPORTED,
+          mssql: NOT_SUPPORTED,
           sqlite: NOT_SUPPORTED,
         })
 
@@ -254,6 +262,7 @@ if (DIALECTS.includes('postgres')) {
             parameters: ['cat', 'Doggo'],
           },
           mysql: NOT_SUPPORTED,
+          mssql: NOT_SUPPORTED,
           sqlite: NOT_SUPPORTED,
         })
 
@@ -277,6 +286,7 @@ if (DIALECTS.includes('postgres')) {
             parameters: ['Doggo'],
           },
           mysql: NOT_SUPPORTED,
+          mssql: NOT_SUPPORTED,
           sqlite: NOT_SUPPORTED,
         })
 
@@ -302,6 +312,7 @@ if (DIALECTS.includes('postgres')) {
             parameters: ['Doggo'],
           },
           mysql: NOT_SUPPORTED,
+          mssql: NOT_SUPPORTED,
           sqlite: NOT_SUPPORTED,
         })
 
@@ -322,6 +333,7 @@ if (DIALECTS.includes('postgres')) {
             parameters: [],
           },
           mysql: NOT_SUPPORTED,
+          mssql: NOT_SUPPORTED,
           sqlite: NOT_SUPPORTED,
         })
       })
@@ -349,6 +361,7 @@ if (DIALECTS.includes('postgres')) {
             parameters: [],
           },
           mysql: NOT_SUPPORTED,
+          mssql: NOT_SUPPORTED,
           sqlite: NOT_SUPPORTED,
         })
 
@@ -385,6 +398,7 @@ if (DIALECTS.includes('postgres')) {
             parameters: [],
           },
           mysql: NOT_SUPPORTED,
+          mssql: NOT_SUPPORTED,
           sqlite: NOT_SUPPORTED,
         })
 
@@ -413,6 +427,7 @@ if (DIALECTS.includes('postgres')) {
             parameters: [],
           },
           mysql: NOT_SUPPORTED,
+          mssql: NOT_SUPPORTED,
           sqlite: NOT_SUPPORTED,
         })
 
@@ -446,6 +461,7 @@ if (DIALECTS.includes('postgres')) {
             parameters: [],
           },
           mysql: NOT_SUPPORTED,
+          mssql: NOT_SUPPORTED,
           sqlite: NOT_SUPPORTED,
         })
 

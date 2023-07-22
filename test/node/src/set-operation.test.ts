@@ -46,6 +46,7 @@ for (const dialect of DIALECTS) {
           sql: 'select `id`, `first_name` as `name` from `person` union select `id`, `name` from `pet` order by `name`',
           parameters: [],
         },
+        mssql: NOT_SUPPORTED,
         sqlite: {
           sql: 'select "id", "first_name" as "name" from "person" union select "id", "name" from "pet" order by "name"',
           parameters: [],
@@ -87,6 +88,7 @@ for (const dialect of DIALECTS) {
             sql: 'select `id`, `first_name` as `name` from `person` union (select `id`, `name` from `pet` union select `id`, `name` from `toy`) order by `name`',
             parameters: [],
           },
+          mssql: NOT_SUPPORTED,
           sqlite: NOT_SUPPORTED,
         })
 
@@ -118,6 +120,7 @@ for (const dialect of DIALECTS) {
           sql: 'select `id`, `first_name` as `name` from `person` union all select `id`, `name` from `pet` order by `name`',
           parameters: [],
         },
+        mssql: NOT_SUPPORTED,
         sqlite: {
           sql: 'select "id", "first_name" as "name" from "person" union all select "id", "name" from "pet" order by "name"',
           parameters: [],
@@ -152,6 +155,7 @@ for (const dialect of DIALECTS) {
           sql: 'select `id`, `first_name` as `name` from `person` union all select `id`, `name` from `pet` union select `id`, `name` from `toy` order by `name`',
           parameters: [],
         },
+        mssql: NOT_SUPPORTED,
         sqlite: {
           sql: 'select "id", "first_name" as "name" from "person" union all select "id", "name" from "pet" union select "id", "name" from "toy" order by "name"',
           parameters: [],
@@ -175,6 +179,7 @@ for (const dialect of DIALECTS) {
             parameters: [],
           },
           mysql: NOT_SUPPORTED,
+          mssql: NOT_SUPPORTED,
           sqlite: {
             sql: 'select "id", "first_name" as "name" from "person" intersect select "id", "name" from "pet" order by "name"',
             parameters: [],
@@ -197,6 +202,7 @@ for (const dialect of DIALECTS) {
             parameters: [],
           },
           mysql: NOT_SUPPORTED,
+          mssql: NOT_SUPPORTED,
           sqlite: {
             sql: 'select "id", "first_name" as "name" from "person" except select "id", "name" from "pet" order by "name"',
             parameters: [],
@@ -222,6 +228,7 @@ for (const dialect of DIALECTS) {
             parameters: [],
           },
           mysql: NOT_SUPPORTED,
+          mssql: NOT_SUPPORTED,
           sqlite: {
             sql: 'select "id", "first_name" as "name" from "person" union select "id", "name" from "pet" union all select "id", "name" from "toy" intersect select "id", "name" from "pet" except select "id", "name" from "toy" order by "name"',
             parameters: [],
@@ -246,6 +253,7 @@ for (const dialect of DIALECTS) {
             parameters: [],
           },
           mysql: NOT_SUPPORTED,
+          mssql: NOT_SUPPORTED,
           sqlite: NOT_SUPPORTED,
         })
 
@@ -265,6 +273,7 @@ for (const dialect of DIALECTS) {
             parameters: [],
           },
           mysql: NOT_SUPPORTED,
+          mssql: NOT_SUPPORTED,
           sqlite: NOT_SUPPORTED,
         })
 

@@ -63,6 +63,7 @@ for (const dialect of DIALECTS) {
           sql: 'with `jennifer_and_sylvester` as (select `id`, `first_name`, `gender` from `person` where (`first_name` = ? or `first_name` = ?)), `sylvester` as (select * from `jennifer_and_sylvester` where `gender` = ?) select * from `sylvester`',
           parameters: ['Jennifer', 'Sylvester', 'male'],
         },
+        mssql: NOT_SUPPORTED,
         sqlite: {
           sql: 'with "jennifer_and_sylvester" as (select "id", "first_name", "gender" from "person" where ("first_name" = ? or "first_name" = ?)), "sylvester" as (select * from "jennifer_and_sylvester" where "gender" = ?) select * from "sylvester"',
           parameters: ['Jennifer', 'Sylvester', 'male'],
@@ -102,6 +103,7 @@ for (const dialect of DIALECTS) {
           sql: 'with `arnold`(`id`, `first_name`) as (select `id`, `first_name` from `person` where `first_name` = ?) select * from `arnold`',
           parameters: ['Arnold'],
         },
+        mssql: NOT_SUPPORTED,
         sqlite: {
           sql: 'with "arnold"("id", "first_name") as (select "id", "first_name" from "person" where "first_name" = ?) select * from "arnold"',
           parameters: ['Arnold'],
@@ -166,6 +168,7 @@ for (const dialect of DIALECTS) {
               parameters: ['node1'],
             },
             mysql: NOT_SUPPORTED,
+            mssql: NOT_SUPPORTED,
             sqlite: NOT_SUPPORTED,
           })
 
@@ -195,6 +198,7 @@ for (const dialect of DIALECTS) {
             parameters: [],
           },
           mysql: NOT_SUPPORTED,
+          mssql: NOT_SUPPORTED,
           sqlite: NOT_SUPPORTED,
         })
 
@@ -222,6 +226,7 @@ for (const dialect of DIALECTS) {
             parameters: [],
           },
           mysql: NOT_SUPPORTED,
+          mssql: NOT_SUPPORTED,
           sqlite: NOT_SUPPORTED,
         })
 
@@ -255,6 +260,7 @@ for (const dialect of DIALECTS) {
             sql: 'with "jennifer" as (select "id", "first_name", "gender" from "person" where "first_name" = $1) insert into "pet" ("owner_id", "name", "species") values ((select "id" from "jennifer"), $2, $3)',
             parameters: ['Jennifer', 'Catto 2', 'cat'],
           },
+          mssql: NOT_SUPPORTED,
           sqlite: {
             sql: 'with "jennifer" as (select "id", "first_name", "gender" from "person" where "first_name" = ?) insert into "pet" ("owner_id", "name", "species") values ((select "id" from "jennifer"), ?, ?)',
             parameters: ['Jennifer', 'Catto 2', 'cat'],
@@ -309,6 +315,7 @@ for (const dialect of DIALECTS) {
               'Jennifer',
             ],
           },
+          mssql: NOT_SUPPORTED,
           sqlite: NOT_SUPPORTED,
           mysql: NOT_SUPPORTED,
         })

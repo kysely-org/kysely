@@ -48,6 +48,7 @@ for (const dialect of DIALECTS) {
           sql: 'update `person` set `first_name` = ?, `last_name` = ? where `gender` = ?',
           parameters: ['Foo', 'Barson', 'female'],
         },
+        mssql: NOT_SUPPORTED,
         sqlite: {
           sql: 'update "person" set "first_name" = ?, "last_name" = ? where "gender" = ?',
           parameters: ['Foo', 'Barson', 'female'],
@@ -93,6 +94,7 @@ for (const dialect of DIALECTS) {
           sql: 'update `person` as `p` set `first_name` = ?, `last_name` = ? where `p`.`gender` = ?',
           parameters: ['Foo', 'Barson', 'female'],
         },
+        mssql: NOT_SUPPORTED,
         sqlite: {
           sql: 'update "person" as "p" set "first_name" = ?, "last_name" = ? where "p"."gender" = ?',
           parameters: ['Foo', 'Barson', 'female'],
@@ -143,6 +145,7 @@ for (const dialect of DIALECTS) {
           sql: 'update `person` set `last_name` = (select `name` from `pet` where `person`.`id` = `owner_id`) where `first_name` = ?',
           parameters: ['Jennifer'],
         },
+        mssql: NOT_SUPPORTED,
         sqlite: {
           sql: 'update "person" set "last_name" = (select "name" from "pet" where "person"."id" = "owner_id") where "first_name" = ?',
           parameters: ['Jennifer'],
@@ -183,6 +186,7 @@ for (const dialect of DIALECTS) {
             parameters: ['2', 'Jennifer'],
           },
           mysql: NOT_SUPPORTED,
+          mssql: NOT_SUPPORTED,
           sqlite: NOT_SUPPORTED,
         })
 
@@ -219,6 +223,7 @@ for (const dialect of DIALECTS) {
           sql: 'update `person` set `last_name` = `first_name` where `first_name` = ?',
           parameters: ['Jennifer'],
         },
+        mssql: NOT_SUPPORTED,
         sqlite: {
           sql: 'update "person" set "last_name" = "first_name" where "first_name" = ?',
           parameters: ['Jennifer'],
@@ -259,6 +264,7 @@ for (const dialect of DIALECTS) {
           sql: 'update `person` set `first_name` = ?, `last_name` = ? where `gender` = ?',
           parameters: ['Foo', 'Barson', 'female'],
         },
+        mssql: NOT_SUPPORTED,
         sqlite: {
           sql: 'update "person" set "first_name" = ?, "last_name" = ? where "gender" = ?',
           parameters: ['Foo', 'Barson', 'female'],
@@ -301,6 +307,7 @@ for (const dialect of DIALECTS) {
             parameters: ['Barson', 'male'],
           },
           mysql: NOT_SUPPORTED,
+          mssql: NOT_SUPPORTED,
           sqlite: {
             sql: 'update "person" set "last_name" = ? where "gender" = ? returning "first_name", "last_name"',
             parameters: ['Barson', 'male'],
@@ -351,6 +358,7 @@ for (const dialect of DIALECTS) {
             parameters: ['Arnold'],
           },
           mysql: NOT_SUPPORTED,
+          mssql: NOT_SUPPORTED,
           sqlite: {
             sql: 'update "person" set "first_name" = "pet"."name" from "pet" where "pet"."owner_id" = "person"."id" and "person"."first_name" = ? returning "first_name"',
             parameters: ['Arnold'],

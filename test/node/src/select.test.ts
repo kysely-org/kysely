@@ -18,7 +18,7 @@ import {
 } from './test-setup.js'
 
 for (const dialect of DIALECTS_WITH_MSSQL) {
-  describe.only(`${dialect}: select`, () => {
+  describe(`${dialect}: select`, () => {
     let ctx: TestContext
 
     before(async function () {
@@ -369,19 +369,25 @@ for (const dialect of DIALECTS_WITH_MSSQL) {
           sql: 'select sum(case when "first_name" = $1 then 1 else 0 end) as "num_jennifers" from "person"',
           parameters: ['Jennifer'],
         },
-        mysql: NOT_SUPPORTED,
+        mysql: {
+          sql: 'select sum(case when `first_name` = ? then 1 else 0 end) as `num_jennifers` from `person`',
+          parameters: ['Jennifer'],
+        },
         mssql: {
           sql: 'select sum(case when "first_name" = @1 then 1 else 0 end) as "num_jennifers" from "person"',
           parameters: ['Jennifer'],
         },
-        sqlite: NOT_SUPPORTED,
+        sqlite: {
+          sql: 'select sum(case when "first_name" = ? then 1 else 0 end) as "num_jennifers" from "person"',
+          parameters: ['Jennifer'],
+        },
       })
 
       const counts = await query.execute()
 
       expect(counts).to.have.length(1)
       expect(counts[0]).to.eql({
-        num_jennifers: dialect === 'postgres' ? '1' : 1,
+        num_jennifers: dialect === 'postgres' || dialect === 'mysql' ? '1' : 1,
       })
     })
 
