@@ -42,11 +42,13 @@ export type SelectArg<
   | ReadonlyArray<SE>
   | ((eb: ExpressionBuilder<DB, TB>) => ReadonlyArray<SE>)
 
-export type Selection<DB, TB extends keyof DB, SE> = {
-  [A in ExtractAliasFromSelectExpression<SE>]: SelectType<
-    ExtractTypeFromSelectExpression<DB, TB, SE, A>
-  >
-}
+export type Selection<DB, TB extends keyof DB, SE> = [SE] extends [unknown]
+  ? {
+      [A in ExtractAliasFromSelectExpression<SE>]: SelectType<
+        ExtractTypeFromSelectExpression<DB, TB, SE, A>
+      >
+    }
+  : never
 
 type ExtractAliasFromSelectExpression<SE> = SE extends string
   ? ExtractAliasFromStringSelectExpression<SE>
@@ -151,11 +153,13 @@ type ExtractTypeFromStringSelectExpression<
     : never
   : never
 
-export type AllSelection<DB, TB extends keyof DB> = Selectable<{
-  [C in AnyColumn<DB, TB>]: {
-    [T in TB]: C extends keyof DB[T] ? DB[T][C] : never
-  }[TB]
-}>
+export type AllSelection<DB, TB extends keyof DB> = [DB] extends [unknown]
+  ? Selectable<{
+      [C in AnyColumn<DB, TB>]: {
+        [T in TB]: C extends keyof DB[T] ? DB[T][C] : never
+      }[TB]
+    }>
+  : never
 
 export function parseSelectArg(
   selection: SelectArg<any, any, SelectExpression<any, any>>
