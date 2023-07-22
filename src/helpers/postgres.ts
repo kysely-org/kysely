@@ -117,7 +117,7 @@ export function jsonObjectFrom<O>(
  * The PostgreSQL `json_build_object` function.
  *
  * NOTE: This helper is only guaranteed to fully work with the built-in `PostgresDialect`.
- * While the produced SQL is compatibe with all PostgreSQL databases, some 3rd party dialects
+ * While the produced SQL is compatible with all PostgreSQL databases, some 3rd party dialects
  * may not parse the nested results into objects.
  *
  * ### Examples

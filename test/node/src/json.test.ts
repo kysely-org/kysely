@@ -1,4 +1,10 @@
-import { Generated, Kysely, RawBuilder, sql } from '../../..'
+import {
+  Generated,
+  Kysely,
+  RawBuilder,
+  sql,
+  ParseJSONResultsPlugin,
+} from '../../..'
 import {
   jsonArrayFrom as pg_jsonArrayFrom,
   jsonObjectFrom as pg_jsonObjectFrom,
@@ -9,6 +15,11 @@ import {
   jsonObjectFrom as mysql_jsonObjectFrom,
   jsonBuildObject as mysql_jsonBuildObject,
 } from '../../../helpers/mysql'
+import {
+  jsonArrayFrom as sqlite_jsonArrayFrom,
+  jsonObjectFrom as sqlite_jsonObjectFrom,
+  jsonBuildObject as sqlite_jsonBuildObject,
+} from '../../../helpers/sqlite'
 
 import {
   destroyTest,
@@ -31,19 +42,27 @@ interface JsonTable {
   }
 }
 
+const jsonFunctions = {
+  postgres: {
+    jsonArrayFrom: pg_jsonArrayFrom,
+    jsonObjectFrom: pg_jsonObjectFrom,
+    jsonBuildObject: pg_jsonBuildObject,
+  },
+  mysql: {
+    jsonArrayFrom: mysql_jsonArrayFrom,
+    jsonObjectFrom: mysql_jsonObjectFrom,
+    jsonBuildObject: mysql_jsonBuildObject,
+  },
+  sqlite: {
+    jsonArrayFrom: sqlite_jsonArrayFrom,
+    jsonObjectFrom: sqlite_jsonObjectFrom,
+    jsonBuildObject: sqlite_jsonBuildObject,
+  },
+} as const
+
 for (const dialect of DIALECTS) {
-  if (dialect !== 'postgres' && dialect !== 'mysql') {
-    continue
-  }
-
-  const jsonArrayFrom =
-    dialect === 'postgres' ? pg_jsonArrayFrom : mysql_jsonArrayFrom
-
-  const jsonObjectFrom =
-    dialect === 'postgres' ? pg_jsonObjectFrom : mysql_jsonObjectFrom
-
-  const jsonBuildObject =
-    dialect === 'postgres' ? pg_jsonBuildObject : mysql_jsonBuildObject
+  const { jsonArrayFrom, jsonObjectFrom, jsonBuildObject } =
+    jsonFunctions[dialect]
 
   describe(`${dialect} json tests`, () => {
     let ctx: TestContext
@@ -69,6 +88,10 @@ for (const dialect of DIALECTS) {
       }
 
       db = ctx.db.withTables<{ json_table: JsonTable }>()
+
+      if (dialect === 'sqlite') {
+        db = db.withPlugin(new ParseJSONResultsPlugin())
+      }
     })
 
     beforeEach(async () => {
@@ -159,15 +182,15 @@ for (const dialect of DIALECTS) {
         jsonBuildObject({
           first: eb.ref('first_name'),
           last: eb.ref('last_name'),
-          full: eb.fn('concat', ['first_name', sql.lit(' '), 'last_name']),
+          full:
+            dialect === 'sqlite'
+              ? sql<string>`first_name || ' ' || last_name`
+              : eb.fn('concat', ['first_name', sql.lit(' '), 'last_name']),
         }).as('name'),
 
         // Nest an empty list
         jsonArrayFrom(
-          eb
-            .selectFrom('pet')
-            .select('id')
-            .where((eb) => eb.val(false))
+          eb.selectFrom('pet').select('id').where(sql.lit(false))
         ).as('emptyList'),
       ])
 
