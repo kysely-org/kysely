@@ -83,6 +83,7 @@ for (const dialect of DIALECTS) {
           sql: 'select `id`, `first_name` as `name` from `person` union select `id`, `name` from `pet` union select `id`, `species` as `name` from `pet` order by `name`',
           parameters: [],
         },
+        mssql: NOT_SUPPORTED,
         sqlite: {
           sql: 'select "id", "first_name" as "name" from "person" union select "id", "name" from "pet" union select "id", "species" as "name" from "pet" order by "name"',
           parameters: [],
@@ -122,6 +123,7 @@ for (const dialect of DIALECTS) {
           sql: 'select `id`, `first_name` as `name` from `person` union select `id`, `name` from `pet` union select `id`, `species` as `name` from `pet` order by `name`',
           parameters: [],
         },
+        mssql: NOT_SUPPORTED,
         sqlite: {
           sql: 'select "id", "first_name" as "name" from "person" union select "id", "name" from "pet" union select "id", "species" as "name" from "pet" order by "name"',
           parameters: [],

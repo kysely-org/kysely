@@ -53,6 +53,12 @@ const jsonFunctions = {
     jsonObjectFrom: mysql_jsonObjectFrom,
     jsonBuildObject: mysql_jsonBuildObject,
   },
+  // TODO: this is fake, to avoid ts errors.
+  mssql: {
+    jsonArrayFrom: mysql_jsonArrayFrom,
+    jsonObjectFrom: mysql_jsonObjectFrom,
+    jsonBuildObject: mysql_jsonBuildObject,
+  },
   sqlite: {
     jsonArrayFrom: sqlite_jsonArrayFrom,
     jsonObjectFrom: sqlite_jsonObjectFrom,
