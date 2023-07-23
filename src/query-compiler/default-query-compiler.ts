@@ -151,24 +151,27 @@ export class DefaultQueryCompiler
       this.append(' ')
     }
 
-    this.append('select ')
+    this.append('select')
 
     if (node.distinctOn) {
-      this.compileDistinctOn(node.distinctOn)
       this.append(' ')
+      this.compileDistinctOn(node.distinctOn)
     }
 
-    if (node.frontModifiers && node.frontModifiers.length > 0) {
-      this.compileList(node.frontModifiers, ' ')
+    if (node.frontModifiers?.length) {
       this.append(' ')
+      this.compileList(node.frontModifiers, ' ')
     }
 
     if (node.selections) {
-      this.compileList(node.selections)
       this.append(' ')
+      this.compileList(node.selections)
     }
 
-    this.visitNode(node.from)
+    if (node.from) {
+      this.append(' ')
+      this.visitNode(node.from)
+    }
 
     if (node.joins) {
       this.append(' ')
@@ -210,7 +213,7 @@ export class DefaultQueryCompiler
       this.visitNode(node.offset)
     }
 
-    if (node.endModifiers && node.endModifiers.length > 0) {
+    if (node.endModifiers?.length) {
       this.append(' ')
       this.compileList(node.endModifiers, ' ')
     }
@@ -944,7 +947,7 @@ export class DefaultQueryCompiler
       if (!node.materialized) {
         this.append('not ')
       }
-      
+
       this.append('materialized ')
     }
 

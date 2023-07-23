@@ -20,7 +20,7 @@ export function createSelectQueryBuilder(): SelectQueryBuilder<any, any, any> {
   return newSelectQueryBuilder({
     queryId: createQueryId(),
     executor: NOOP_QUERY_EXECUTOR,
-    queryNode: SelectQueryNode.create(parseTableExpressionOrList([])),
+    queryNode: SelectQueryNode.createFrom(parseTableExpressionOrList([])),
   })
 }
 
