@@ -15,6 +15,7 @@ import {
   Database,
   POOL_SIZE,
   DIALECTS_WITH_MSSQL,
+  limit,
 } from './test-setup.js'
 
 for (const dialect of DIALECTS_WITH_MSSQL) {
@@ -939,7 +940,7 @@ for (const dialect of DIALECTS_WITH_MSSQL) {
           .selectFrom('person')
           .select('first_name')
           .orderBy('first_name')
-          .limit(1)
+          .$call(limit(1, dialect))
           .as('person_first_name'),
       ])
 
@@ -951,6 +952,10 @@ for (const dialect of DIALECTS_WITH_MSSQL) {
         mysql: {
           sql: 'select (select 1 as `one`) as `one`, (select `first_name` from `person` order by `first_name` limit ?) as `person_first_name`',
           parameters: [1],
+        },
+        mssql: {
+          sql: `select (select 1 as "one") as "one", (select top 1 "first_name" from "person" order by "first_name") as "person_first_name"`,
+          parameters: [],
         },
         sqlite: {
           sql: 'select (select 1 as "one") as "one", (select "first_name" from "person" order by "first_name" limit ?) as "person_first_name"',
