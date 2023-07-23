@@ -455,6 +455,97 @@ for (const dialect of DIALECTS) {
         ])
       })
 
+      it('a `where in` query with tuples', async () => {
+        const query = ctx.db
+          .selectFrom('person')
+          .selectAll()
+          .where((eb) =>
+            eb(eb.tuple('first_name', 'last_name'), 'in', [
+              eb.valTuple('Jennifer', 'Aniston'),
+              eb.valTuple('Sylvester', 'Stallone'),
+            ])
+          )
+          .orderBy('first_name asc')
+
+        testSql(query, dialect, {
+          postgres: {
+            sql: 'select * from "person" where ("first_name", "last_name") in (($1, $2), ($3, $4)) order by "first_name" asc',
+            parameters: ['Jennifer', 'Aniston', 'Sylvester', 'Stallone'],
+          },
+          mysql: {
+            sql: 'select * from `person` where (`first_name`, `last_name`) in ((?, ?), (?, ?)) order by `first_name` asc',
+            parameters: ['Jennifer', 'Aniston', 'Sylvester', 'Stallone'],
+          },
+          sqlite: {
+            sql: 'select * from "person" where ("first_name", "last_name") in ((?, ?), (?, ?)) order by "first_name" asc',
+            parameters: ['Jennifer', 'Aniston', 'Sylvester', 'Stallone'],
+          },
+        })
+
+        const persons = await query.execute()
+        expect(persons).to.have.length(2)
+        expect(persons).to.containSubset([
+          {
+            first_name: 'Jennifer',
+            last_name: 'Aniston',
+            gender: 'female',
+          },
+          {
+            first_name: 'Sylvester',
+            last_name: 'Stallone',
+            gender: 'male',
+          },
+        ])
+      })
+
+      it('a `where in` query with tuples and a subquery', async () => {
+        const query = ctx.db
+          .selectFrom('person')
+          .selectAll()
+          .where((eb) =>
+            eb(
+              eb.tuple('first_name', 'last_name'),
+              'in',
+              eb
+                .selectFrom('person as p2')
+                .select(['p2.first_name', 'p2.last_name'])
+                .where('first_name', 'in', ['Arnold', 'Sylvester'])
+                .$asTuple('first_name', 'last_name')
+            )
+          )
+          .orderBy('first_name asc')
+
+        testSql(query, dialect, {
+          postgres: {
+            sql: 'select * from "person" where ("first_name", "last_name") in (select "p2"."first_name", "p2"."last_name" from "person" as "p2" where "first_name" in ($1, $2)) order by "first_name" asc',
+            parameters: ['Arnold', 'Sylvester'],
+          },
+          mysql: {
+            sql: 'select * from `person` where (`first_name`, `last_name`) in (select `p2`.`first_name`, `p2`.`last_name` from `person` as `p2` where `first_name` in (?, ?)) order by `first_name` asc',
+            parameters: ['Arnold', 'Sylvester'],
+          },
+          sqlite: {
+            sql: 'select * from "person" where ("first_name", "last_name") in (select "p2"."first_name", "p2"."last_name" from "person" as "p2" where "first_name" in (?, ?)) order by "first_name" asc',
+            parameters: ['Arnold', 'Sylvester'],
+          },
+        })
+
+        const persons = await query.execute()
+        expect(persons).to.have.length(2)
+        expect(persons).to.containSubset([
+          {
+            first_name: 'Arnold',
+            last_name: 'Schwarzenegger',
+            gender: 'male',
+          },
+          {
+            first_name: 'Sylvester',
+            last_name: 'Stallone',
+            gender: 'male',
+          },
+        ])
+      })
+
       it('two where expressions', async () => {
         const query = ctx.db
           .selectFrom('person')

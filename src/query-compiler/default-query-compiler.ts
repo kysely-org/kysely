@@ -100,6 +100,7 @@ import { JSONReferenceNode } from '../operation-node/json-reference-node.js'
 import { JSONPathNode } from '../operation-node/json-path-node.js'
 import { JSONPathLegNode } from '../operation-node/json-path-leg-node.js'
 import { JSONOperatorChainNode } from '../operation-node/json-operator-chain-node.js'
+import { TupleNode } from '../operation-node/tuple-node.js'
 
 export class DefaultQueryCompiler
   extends OperationNodeVisitor
@@ -445,6 +446,12 @@ export class DefaultQueryCompiler
   }
 
   protected override visitValueList(node: ValueListNode): void {
+    this.append('(')
+    this.compileList(node.values)
+    this.append(')')
+  }
+
+  protected override visitTuple(node: TupleNode): void {
     this.append('(')
     this.compileList(node.values)
     this.append(')')

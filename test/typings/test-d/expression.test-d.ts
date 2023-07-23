@@ -221,3 +221,50 @@ async function textExpressionBuilderAny(
   // Not an array
   expectError(eb(eb.val('Jen'), '=', eb.fn.any('id')))
 }
+
+function testExpressionBuilderTuple(db: Kysely<Database>) {
+  db.selectFrom('person')
+    .selectAll()
+    .where(({ eb, tuple, valTuple }) =>
+      eb(tuple('first_name', 'last_name'), 'in', [
+        valTuple('Jennifer', 'Aniston'),
+        valTuple('Sylvester', 'Stallone'),
+      ])
+    )
+
+  db.selectFrom('person')
+    .selectAll()
+    .where(({ eb, tuple, selectFrom }) =>
+      eb(
+        tuple('first_name', 'last_name'),
+        'in',
+        selectFrom('person')
+          .select(['first_name', 'last_name'])
+          .$asTuple('first_name', 'last_name')
+      )
+    )
+
+  // Wrong tuple type
+  expectError(
+    db
+      .selectFrom('person')
+      .where(({ eb, tuple, valTuple }) =>
+        eb(tuple('first_name', 'last_name'), 'in', [
+          valTuple('Jennifer', 'Aniston'),
+          valTuple('Sylvester', 1),
+        ])
+      )
+  )
+
+  // Wrong tuple length
+  expectError(
+    db
+      .selectFrom('person')
+      .where(({ eb, tuple, valTuple }) =>
+        eb(tuple('first_name', 'last_name'), 'in', [
+          valTuple('Jennifer', 'Aniston', 'Extra'),
+          valTuple('Sylvester', 'Stallone'),
+        ])
+      )
+  )
+}
