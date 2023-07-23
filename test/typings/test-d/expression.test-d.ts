@@ -25,7 +25,9 @@ function testExpression(db: Kysely<Database>) {
   )
 }
 
-function testExpressionBuilder(eb: ExpressionBuilder<Database, 'person'>) {
+async function testExpressionBuilder(
+  eb: ExpressionBuilder<Database, 'person'>
+) {
   // Binary expression
   expectAssignable<Expression<number>>(eb('age', '+', 1))
 
@@ -142,4 +144,45 @@ function testExpressionBuilder(eb: ExpressionBuilder<Database, 'person'>) {
   expectError(eb.between('age', 1, 'wrong type'))
   expectError(eb.betweenSymmetric('age', 'wrong type', 2))
   expectError(eb.betweenSymmetric('age', 1, 'wrong type'))
+}
+
+async function testExpressionBuilderSelect(
+  db: Kysely<Database>,
+  eb: ExpressionBuilder<Database, 'person'>
+) {
+  expectAssignable<Expression<{ first_name: string }>>(
+    eb.selectNoFrom(eb.val('Jennifer').as('first_name'))
+  )
+
+  expectAssignable<Expression<{ first_name: string }>>(
+    eb.selectNoFrom((eb) => eb.val('Jennifer').as('first_name'))
+  )
+
+  expectAssignable<Expression<{ first_name: string; last_name: string }>>(
+    eb.selectNoFrom([
+      eb.val('Jennifer').as('first_name'),
+      eb(eb.val('Anis'), '||', eb.val('ton')).as('last_name'),
+    ])
+  )
+
+  expectAssignable<
+    Expression<{ first_name: string; last_name: string | null }>
+  >(
+    eb.selectNoFrom((eb) => [
+      eb.val('Jennifer').as('first_name'),
+      eb.selectFrom('person').select('last_name').limit(1).as('last_name'),
+    ])
+  )
+
+  const r1 = await db
+    .selectFrom('person as p')
+    .select((eb) => [eb.selectNoFrom('p.age').as('age')])
+    .executeTakeFirstOrThrow()
+  expectType<{ age: number | null }>(r1)
+
+  expectError(
+    db
+      .selectFrom('person')
+      .select((eb) => [eb.selectNoFrom('pet.name').as('name')])
+  )
 }

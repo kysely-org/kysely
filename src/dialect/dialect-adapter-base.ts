@@ -1,5 +1,5 @@
 import { Kysely } from '../kysely.js'
-import { DialectAdapter } from './dialect-adapter.js'
+import { DialectAdapter, MigrationLockOptions } from './dialect-adapter.js'
 
 /**
  * A basic implementation of `DialectAdapter` with sensible default values.
@@ -16,6 +16,13 @@ export abstract class DialectAdapterBase implements DialectAdapter {
     return false
   }
 
-  abstract acquireMigrationLock(db: Kysely<any>): Promise<void>
-  abstract releaseMigrationLock(db: Kysely<any>): Promise<void>
+  abstract acquireMigrationLock(
+    db: Kysely<any>,
+    options: MigrationLockOptions
+  ): Promise<void>
+
+  abstract releaseMigrationLock(
+    db: Kysely<any>,
+    options: MigrationLockOptions
+  ): Promise<void>
 }

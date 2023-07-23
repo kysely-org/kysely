@@ -26,7 +26,7 @@ import { Simplify } from '../util/type-utils.js'
  *     jsonArrayFrom(
  *       eb.selectFrom('pet')
  *         .select(['pet.id as pet_id', 'pet.name'])
- *         .where('pet.owner_id', '=', 'person.id')
+ *         .whereRef('pet.owner_id', '=', 'person.id')
  *         .orderBy('pet.name')
  *     ).as('pets')
  *   ])
@@ -81,7 +81,7 @@ export function jsonArrayFrom<O>(
  *     jsonObjectFrom(
  *       eb.selectFrom('pet')
  *         .select(['pet.id as pet_id', 'pet.name'])
- *         .where('pet.owner_id', '=', 'person.id')
+ *         .whereRef('pet.owner_id', '=', 'person.id')
  *         .where('pet.is_favorite', '=', true)
  *     ).as('favorite_pet')
  *   ])

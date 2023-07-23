@@ -12,18 +12,19 @@ import { Simplify } from '../util/type-utils.js'
 /**
  * A SQLite helper for aggregating a subquery into a JSON array.
  *
- * NOTE: This helper is only guaranteed to fully work with the built-in `SqliteDialect` and `ParseJSONResultsPlugin`.
- * While the produced SQL is compatible with many databases, SQLite needs the `ParseJSONResultsPlugin` to automatically parse the results.
+ * NOTE: This helper only works correctly if you've installed the `ParseJSONResultsPlugin`.
+ * Otherwise the nested selections will be returned as JSON strings.
  *
- * ### Examples
- *
- * Installing the plugin:
+ * The plugin can be installed like this:
  *
  * ```ts
- * db = db.withPlugin(new ParseJSONResultsPlugin())
+ * const db = new Kysely({
+ *   dialect: new SqliteDialect(config),
+ *   plugins: [new ParseJSONResultsPlugin()]
+ * })
  * ```
  *
- * Writing the query:
+ * ### Examples
  *
  * ```ts
  * const result = await db
@@ -33,7 +34,7 @@ import { Simplify } from '../util/type-utils.js'
  *     jsonArrayFrom(
  *       eb.selectFrom('pet')
  *         .select(['pet.id as pet_id', 'pet.name'])
- *         .where('pet.owner_id', '=', 'person.id')
+ *         .whereRef('pet.owner_id', '=', 'person.id')
  *         .orderBy('pet.name')
  *     ).as('pets')
  *   ])
@@ -74,18 +75,19 @@ export function jsonArrayFrom<O>(
  *
  * The subquery must only return one row.
  *
- * NOTE: This helper is only guaranteed to fully work with the built-in `SqliteDialect` and `ParseJSONResultsPlugin`.
- * While the produced SQL is compatible with many databases, SQLite needs the `ParseJSONResultsPlugin` to automatically parse the results.
+ * NOTE: This helper only works correctly if you've installed the `ParseJSONResultsPlugin`.
+ * Otherwise the nested selections will be returned as JSON strings.
  *
- * ### Examples
- *
- * Installing the plugin:
+ * The plugin can be installed like this:
  *
  * ```ts
- * db = db.withPlugin(new ParseJSONResultsPlugin())
+ * const db = new Kysely({
+ *   dialect: new SqliteDialect(config),
+ *   plugins: [new ParseJSONResultsPlugin()]
+ * })
  * ```
  *
- * Writing the query:
+ * ### Examples
  *
  * ```ts
  * const result = await db
@@ -95,7 +97,7 @@ export function jsonArrayFrom<O>(
  *     jsonObjectFrom(
  *       eb.selectFrom('pet')
  *         .select(['pet.id as pet_id', 'pet.name'])
- *         .where('pet.owner_id', '=', 'person.id')
+ *         .whereRef('pet.owner_id', '=', 'person.id')
  *         .where('pet.is_favorite', '=', true)
  *     ).as('favorite_pet')
  *   ])
@@ -134,18 +136,19 @@ export function jsonObjectFrom<O>(
 /**
  * The SQLite `json_object` function.
  *
- * NOTE: This helper is only guaranteed to fully work with the built-in `SqliteDialect` and `ParseJSONResultsPlugin`.
- * While the produced SQL is compatible with many databases, SQLite needs the `ParseJSONResultsPlugin` to automatically parse the results.
+ * NOTE: This helper only works correctly if you've installed the `ParseJSONResultsPlugin`.
+ * Otherwise the nested selections will be returned as JSON strings.
  *
- * ### Examples
- *
- * Installing the plugin:
+ * The plugin can be installed like this:
  *
  * ```ts
- * db = db.withPlugin(new ParseJSONResultsPlugin())
+ * const db = new Kysely({
+ *   dialect: new SqliteDialect(config),
+ *   plugins: [new ParseJSONResultsPlugin()]
+ * })
  * ```
  *
- * Writing the query:
+ * ### Examples
  *
  * ```ts
  * const result = await db
@@ -155,7 +158,7 @@ export function jsonObjectFrom<O>(
  *     jsonBuildObject({
  *       first: eb.ref('first_name'),
  *       last: eb.ref('last_name'),
- *       full: eb.fn('concat', ['first_name', eb.val(' '), 'last_name'])
+ *       full: sql<string>`first_name || ' ' || last_name`
  *     }).as('name')
  *   ])
  *   .execute()
