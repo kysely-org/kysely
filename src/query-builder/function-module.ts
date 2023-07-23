@@ -11,6 +11,7 @@ import {
   parseReferenceExpressionOrList,
 } from '../parser/reference-parser.js'
 import { parseSelectAll } from '../parser/select-parser.js'
+import { KyselyTypeError } from '../util/type-error.js'
 import { Equals, IsAny } from '../util/type-utils.js'
 import { AggregateFunctionBuilder } from './aggregate-function-builder.js'
 
@@ -127,7 +128,7 @@ export interface FunctionModule<DB, TB extends keyof DB> {
   ): AggregateFunctionBuilder<DB, TB, O>
 
   /**
-   * Calls the `avg` function for the column given as the argument.
+   * Calls the `avg` function for the column or expression given as the argument.
    *
    * This sql function calculates the average value for a given column.
    *
@@ -264,7 +265,7 @@ export interface FunctionModule<DB, TB extends keyof DB> {
   >
 
   /**
-   * Calls the `count` function for the column given as the argument.
+   * Calls the `count` function for the column or expression given as the argument.
    *
    * When called with a column as argument, this sql function counts the number of rows where there
    * is a non-null value in that column.
@@ -400,7 +401,7 @@ export interface FunctionModule<DB, TB extends keyof DB> {
   >
 
   /**
-   * Calls the `max` function for the column given as the argument.
+   * Calls the `max` function for the column or expression given as the argument.
    *
    * This sql function calculates the maximum value for a given column.
    *
@@ -457,7 +458,7 @@ export interface FunctionModule<DB, TB extends keyof DB> {
   ): AggregateFunctionBuilder<DB, TB, O>
 
   /**
-   * Calls the `min` function for the column given as the argument.
+   * Calls the `min` function for the column or expression given as the argument.
    *
    * This sql function calculates the minimum value for a given column.
    *
@@ -514,7 +515,7 @@ export interface FunctionModule<DB, TB extends keyof DB> {
   ): AggregateFunctionBuilder<DB, TB, O>
 
   /**
-   * Calls the `sum` function for the column given as the argument.
+   * Calls the `sum` function for the column or expression given as the argument.
    *
    * This sql function sums the values of a given column.
    *
@@ -577,6 +578,44 @@ export interface FunctionModule<DB, TB extends keyof DB> {
   >(
     column: C
   ): AggregateFunctionBuilder<DB, TB, O>
+
+  /**
+   * Calls the `any` function for the column or expression given as the argument.
+   *
+   * The argument must evaluate to an array.
+   *
+   * ### Examples
+   *
+   * In the following example, `nicknames` is assumed to be a column of type `string[]`:
+   *
+   * ```ts
+   * db.selectFrom('person')
+   *   .selectAll('person')
+   *   .where((eb) => eb(
+   *     eb.val('Jen'), '=', eb.fn.any('person.nicknames')
+   *   ))
+   * ```
+   *
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * select
+   *   "person".*
+   * from
+   *   "person"
+   * where
+   *  $1 = any("person"."nicknames")
+   * ```
+   */
+  any<RE extends ReferenceExpression<DB, TB>>(
+    expr: RE
+  ): Exclude<
+    ExtractTypeFromReferenceExpression<DB, TB, RE>,
+    null
+  > extends ReadonlyArray<infer I>
+    ? ExpressionWrapper<DB, TB, I>
+    : KyselyTypeError<'any(expr) call failed: expr must be an array'>
 }
 
 export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
@@ -667,6 +706,10 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
       C extends ReferenceExpression<DB, TB> = ReferenceExpression<DB, TB>
     >(column: C): AggregateFunctionBuilder<DB, TB, O> {
       return agg('sum', [column])
+    },
+
+    any<RE extends ReferenceExpression<DB, TB>>(column: RE): any {
+      return fn('any', [column])
     },
   })
 }

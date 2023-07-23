@@ -30,7 +30,7 @@ export type ExtractTypeFromValueExpressionOrList<VE> = VE extends ReadonlyArray<
   ? ExtractTypeFromValueExpression<AV>
   : ExtractTypeFromValueExpression<VE>
 
-type ExtractTypeFromValueExpression<VE> = VE extends SelectQueryBuilder<
+export type ExtractTypeFromValueExpression<VE> = VE extends SelectQueryBuilder<
   any,
   any,
   Record<string, infer SV>

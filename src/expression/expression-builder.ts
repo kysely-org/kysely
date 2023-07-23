@@ -53,6 +53,7 @@ import { SqlBool } from '../util/type-utils.js'
 import { parseUnaryOperation } from '../parser/unary-operation-parser.js'
 import {
   ExtractTypeFromValueExpressionOrList,
+  ExtractTypeFromValueExpression,
   parseSafeImmediateValue,
   parseValueExpression,
   parseValueExpressionOrList,
@@ -471,7 +472,7 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    */
   val<VE>(
     value: VE
-  ): ExpressionWrapper<DB, TB, ExtractTypeFromValueExpressionOrList<VE>>
+  ): ExpressionWrapper<DB, TB, ExtractTypeFromValueExpression<VE>>
 
   /**
    * Returns a literal value expression.
@@ -945,7 +946,7 @@ export function createExpressionBuilder<DB, TB extends keyof DB>(
 
     val<VE>(
       value: VE
-    ): ExpressionWrapper<DB, TB, ExtractTypeFromValueExpressionOrList<VE>> {
+    ): ExpressionWrapper<DB, TB, ExtractTypeFromValueExpression<VE>> {
       return new ExpressionWrapper(parseValueExpressionOrList(value))
     },
 
