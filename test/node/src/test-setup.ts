@@ -398,7 +398,7 @@ async function insertToysForPet(
     .executeTakeFirst()
 }
 
-async function insert<TB extends keyof Database>(
+export async function insert<TB extends keyof Database>(
   ctx: TestContext,
   qb: InsertQueryBuilder<Database, TB, InsertResult>
 ): Promise<number> {
