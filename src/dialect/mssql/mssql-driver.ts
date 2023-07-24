@@ -170,7 +170,11 @@ class MssqlConnection implements DatabaseConnection {
 
     const request = new this.#tedious.Request(sql, (err, rowCount) => {
       if (err) {
-        reject(err)
+        if (err instanceof AggregateError) {
+          reject(err.errors)
+        } else {
+          reject(err)
+        }
       } else {
         promisedRowCount = rowCount
       }
