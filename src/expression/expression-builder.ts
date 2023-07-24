@@ -81,6 +81,39 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    *
    * ### Examples
    *
+   * A simple comparison:
+   *
+   * ```ts
+   * eb.selectFrom('person')
+   *   .selectAll()
+   *   .where((eb) => eb('first_name', '=', 'Jennifer'))
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * select *
+   * from "person"
+   * where "first_name" = $1
+   * ```
+   *
+   * By default the third argument is interpreted as a value. To pass in
+   * a column reference, you can use {@link ref}:
+   *
+   * ```ts
+   * eb.selectFrom('person')
+   *   .selectAll()
+   *   .where((eb) => eb('first_name', '=', eb.ref('last_name')))
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * select *
+   * from "person"
+   * where "first_name" = "last_name"
+   * ```
+   *
    * In the following example `eb` is used to increment an integer column:
    *
    * ```ts
@@ -99,23 +132,19 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    * where "id" = $2
    * ```
    *
-   * By default the third argument is a value. {@link ref} can be used to
-   * pass in a column reference instead:
+   * As always, expressions can be nested. Both the first and the third argument
+   * can be any expression:
    *
    * ```ts
-   * db.updateTable('person')
-   *   .set((eb) => ({
-   *     age: eb('age', '+', eb.ref('age'))
-   *   }))
-   *   .where('id', '=', id)
-   * ```
-   *
-   * The generated SQL (PostgreSQL):
-   *
-   * ```sql
-   * update "person"
-   * set "age" = "age" + "age"
-   * where "id" = $1
+   * eb.selectFrom('person')
+   *   .selectAll()
+   *   .where((eb) => eb(
+   *     eb.fn('lower', ['first_name']),
+   *     'in',
+   *     eb.selectFrom('pet')
+   *       .select('pet.name')
+   *       .where('pet.species', '=', 'cat')
+   *   ))
    * ```
    */
   <RE extends ReferenceExpression<DB, TB>, OP extends BinaryOperatorExpression>(
