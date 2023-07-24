@@ -186,3 +186,38 @@ async function testExpressionBuilderSelect(
       .select((eb) => [eb.selectNoFrom('pet.name').as('name')])
   )
 }
+
+async function textExpressionBuilderAny(
+  eb: ExpressionBuilder<
+    Database & {
+      actor: {
+        id: string
+        movie_earnings: number[]
+        nicknames: string[] | null
+      }
+    },
+    'actor'
+  >
+) {
+  expectAssignable<Expression<string>>(eb.fn.any('nicknames'))
+  expectAssignable<Expression<number>>(eb.fn.any('movie_earnings'))
+  expectAssignable<Expression<number>>(eb.fn.any(eb.val([1, 2, 3])))
+
+  expectAssignable<Expression<SqlBool>>(
+    eb(eb.val('Jen'), '=', eb.fn.any('nicknames'))
+  )
+
+  expectAssignable<Expression<SqlBool>>(
+    eb(eb.val(42_000_000), '=', eb.fn.any('movie_earnings'))
+  )
+
+  expectAssignable<Expression<SqlBool>>(
+    eb(eb.val('cat'), '=', eb.fn.any(eb.selectFrom('pet').select('species')))
+  )
+
+  // Wrong array type
+  expectError(eb(eb.val('Jen'), '=', eb.fn.any('movie_earnings')))
+
+  // Not an array
+  expectError(eb(eb.val('Jen'), '=', eb.fn.any('id')))
+}
