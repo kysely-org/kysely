@@ -9,6 +9,7 @@ import {
   testSql,
   expect,
   insertDefaultDataSet,
+  NOT_SUPPORTED,
 } from './test-setup.js'
 
 for (const dialect of DIALECTS) {
@@ -787,6 +788,54 @@ for (const dialect of DIALECTS) {
 
         await query.execute()
       })
+
+      if (dialect !== 'sqlite') {
+        it('subquery inside `any` operator', async () => {
+          await ctx.db
+            .insertInto('pet')
+            .values((eb) => ({
+              name: 'Cat Stevens',
+              species: 'cat',
+              owner_id: eb
+                .selectFrom('person')
+                .select('id')
+                .where('first_name', '=', 'Jennifer'),
+            }))
+            .execute()
+
+          const query = ctx.db
+            .selectFrom('person')
+            .select('first_name')
+            .where((eb) =>
+              eb(
+                eb.val('Cat Stevens'),
+                '=',
+                eb.fn.any(
+                  eb
+                    .selectFrom('pet')
+                    .whereRef('pet.owner_id', '=', 'person.id')
+                    .select('name')
+                )
+              )
+            )
+
+          testSql(query, dialect, {
+            postgres: {
+              sql: 'select "first_name" from "person" where $1 = any((select "name" from "pet" where "pet"."owner_id" = "person"."id"))',
+              parameters: ['Cat Stevens'],
+            },
+            mysql: {
+              sql: 'select `first_name` from `person` where ? = any((select `name` from `pet` where `pet`.`owner_id` = `person`.`id`))',
+              parameters: ['Cat Stevens'],
+            },
+            sqlite: NOT_SUPPORTED,
+          })
+
+          const result = await query.execute()
+          expect(result).to.have.length(1)
+          expect(result[0]).to.eql({ first_name: 'Jennifer' })
+        })
+      }
     })
 
     describe('whereRef', () => {

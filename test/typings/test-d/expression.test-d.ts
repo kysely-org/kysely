@@ -190,7 +190,11 @@ async function testExpressionBuilderSelect(
 async function textExpressionBuilderAny(
   eb: ExpressionBuilder<
     Database & {
-      actor: { movie_earnings: number[]; nicknames: string[] | null }
+      actor: {
+        id: string
+        movie_earnings: number[]
+        nicknames: string[] | null
+      }
     },
     'actor'
   >
@@ -207,6 +211,13 @@ async function textExpressionBuilderAny(
     eb(eb.val(42_000_000), '=', eb.fn.any('movie_earnings'))
   )
 
+  expectAssignable<Expression<SqlBool>>(
+    eb(eb.val('cat'), '=', eb.fn.any(eb.selectFrom('pet').select('species')))
+  )
+
   // Wrong array type
   expectError(eb(eb.val('Jen'), '=', eb.fn.any('movie_earnings')))
+
+  // Not an array
+  expectError(eb(eb.val('Jen'), '=', eb.fn.any('id')))
 }
