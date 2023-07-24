@@ -1,7 +1,6 @@
 import { ColumnMetadata, sql } from '../../../'
 
 import {
-  DIALECTS,
   clearDatabase,
   destroyTest,
   expect,
@@ -9,9 +8,10 @@ import {
   NOT_SUPPORTED,
   TestContext,
   testSql,
+  DIALECTS_WITH_MSSQL,
 } from './test-setup.js'
 
-for (const dialect of DIALECTS) {
+for (const dialect of DIALECTS_WITH_MSSQL) {
   describe(`${dialect}: schema`, () => {
     let ctx: TestContext
 
@@ -241,7 +241,89 @@ for (const dialect of DIALECTS) {
             name: 'k',
           })
         })
-      } else {
+      } else if (dialect === 'mssql') {
+        it('should create a table with all data types', async () => {
+          const builder = ctx.db.schema
+            .createTable('test')
+            .addColumn('a', 'integer', (col) =>
+              col
+                .notNull()
+                .modifyFront(sql`identity(1,1)`)
+                .primaryKey()
+            )
+            .addColumn('b', 'integer', (col) =>
+              col
+                .references('test.a')
+                .onDelete('no action')
+                .onUpdate('no action')
+                .check(sql`b < 10`)
+            )
+            .addColumn('c', 'varchar')
+            .addColumn('d', 'varchar(10)')
+            .addColumn('e', 'bigint', (col) => col.unique().notNull())
+            .addColumn('f', 'double precision')
+            .addColumn('g', 'real')
+            .addColumn('h', 'text')
+            .addColumn('i', sql`varchar(123)`)
+            .addColumn('j', 'numeric(6, 2)')
+            .addColumn('k', 'decimal(8, 4)')
+            .addColumn('l', sql`bit`, (col) => col.notNull().defaultTo(0))
+            .addColumn('m', 'date')
+            .addColumn('n', 'datetime', (col) =>
+              col.defaultTo(sql`current_timestamp`)
+            )
+            .addColumn('o', sql`uniqueidentifier`, (col) =>
+              col.notNull().defaultTo(sql`newid()`)
+            )
+            .addColumn('p', sql`smallint`)
+            .addColumn('q', sql`int`)
+            .addColumn('r', 'double precision', (col) => col.notNull())
+            .addColumn('s', 'time(6)')
+            .addColumn('t', 'timestamp', (col) => col.notNull())
+            .addColumn('u', sql`datetime2`)
+            .addColumn('v', 'char(4)')
+            .addColumn('w', 'char')
+            .addColumn('x', 'binary')
+
+          testSql(builder, dialect, {
+            mssql: {
+              sql: [
+                'create table "test"',
+                '("a" integer identity(1,1) not null primary key,',
+                '"b" integer references "test" ("a") on delete no action on update no action check (b < 10),',
+                '"c" varchar,',
+                '"d" varchar(10),',
+                '"e" bigint not null unique,',
+                '"f" double precision,',
+                '"g" real,',
+                '"h" text,',
+                '"i" varchar(123),',
+                '"j" numeric(6, 2),',
+                '"k" decimal(8, 4),',
+                '"l" bit default 0 not null,',
+                '"m" date,',
+                '"n" datetime default current_timestamp,',
+                '"o" uniqueidentifier default newid() not null,',
+                '"p" smallint,',
+                '"q" int,',
+                '"r" double precision not null,',
+                '"s" time(6),',
+                '"t" timestamp not null,',
+                '"u" datetime2,',
+                '"v" char(4),',
+                '"w" char,',
+                '"x" binary)',
+              ],
+              parameters: [],
+            },
+            postgres: NOT_SUPPORTED,
+            mysql: NOT_SUPPORTED,
+            sqlite: NOT_SUPPORTED,
+          })
+
+          await builder.execute()
+        })
+      } else if (dialect === 'sqlite') {
         it('should create a table with all data types', async () => {
           const builder = ctx.db.schema
             .createTable('test')
@@ -335,6 +417,13 @@ for (const dialect of DIALECTS) {
             name: 'l',
           })
         })
+      } else {
+        throw new Error(`Unknown dialect: ${dialect}`)
+      }
+
+      // TODO: ... remove and continue
+      if (dialect === 'mssql') {
+        return
       }
 
       it('should create a table with a unique constraints', async () => {
@@ -858,6 +947,11 @@ for (const dialect of DIALECTS) {
         await builder.execute()
       })
     })
+
+    // TODO: ... remove and continue
+    if (dialect === 'mssql') {
+      return
+    }
 
     describe('drop table', () => {
       beforeEach(async () => {
