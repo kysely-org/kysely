@@ -183,7 +183,7 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    * )
    * ```
    */
-  eb: ExpressionBuilder<DB, TB>
+  get eb(): ExpressionBuilder<DB, TB>
 
   /**
    * Returns a {@link FunctionModule} that can be used to write type safe function
