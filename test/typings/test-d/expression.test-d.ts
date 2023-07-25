@@ -225,18 +225,18 @@ async function textExpressionBuilderAny(
 function testExpressionBuilderTuple(db: Kysely<Database>) {
   db.selectFrom('person')
     .selectAll()
-    .where(({ eb, tuple, valTuple }) =>
-      eb(tuple('first_name', 'last_name'), 'in', [
-        valTuple('Jennifer', 'Aniston'),
-        valTuple('Sylvester', 'Stallone'),
+    .where(({ eb, refTuple, tuple }) =>
+      eb(refTuple('first_name', 'last_name'), 'in', [
+        tuple('Jennifer', 'Aniston'),
+        tuple('Sylvester', 'Stallone'),
       ])
     )
 
   db.selectFrom('person')
     .selectAll()
-    .where(({ eb, tuple, selectFrom }) =>
+    .where(({ eb, refTuple, selectFrom }) =>
       eb(
-        tuple('first_name', 'last_name'),
+        refTuple('first_name', 'last_name'),
         'in',
         selectFrom('person')
           .select(['first_name', 'last_name'])
@@ -248,10 +248,10 @@ function testExpressionBuilderTuple(db: Kysely<Database>) {
   expectError(
     db
       .selectFrom('person')
-      .where(({ eb, tuple, valTuple }) =>
-        eb(tuple('first_name', 'last_name'), 'in', [
-          valTuple('Jennifer', 'Aniston'),
-          valTuple('Sylvester', 1),
+      .where(({ eb, refTuple, tuple }) =>
+        eb(refTuple('first_name', 'last_name'), 'in', [
+          tuple('Jennifer', 'Aniston'),
+          tuple('Sylvester', 1),
         ])
       )
   )
@@ -260,10 +260,10 @@ function testExpressionBuilderTuple(db: Kysely<Database>) {
   expectError(
     db
       .selectFrom('person')
-      .where(({ eb, tuple, valTuple }) =>
-        eb(tuple('first_name', 'last_name'), 'in', [
-          valTuple('Jennifer', 'Aniston', 'Extra'),
-          valTuple('Sylvester', 'Stallone'),
+      .where(({ eb, refTuple, tuple }) =>
+        eb(refTuple('first_name', 'last_name'), 'in', [
+          tuple('Jennifer', 'Aniston', 'Extra'),
+          tuple('Sylvester', 'Stallone'),
         ])
       )
   )

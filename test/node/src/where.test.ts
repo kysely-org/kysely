@@ -460,9 +460,9 @@ for (const dialect of DIALECTS) {
           .selectFrom('person')
           .selectAll()
           .where((eb) =>
-            eb(eb.tuple('first_name', 'last_name'), 'in', [
-              eb.valTuple('Jennifer', 'Aniston'),
-              eb.valTuple('Sylvester', 'Stallone'),
+            eb(eb.refTuple('first_name', 'last_name'), 'in', [
+              eb.tuple('Jennifer', 'Aniston'),
+              eb.tuple('Sylvester', 'Stallone'),
             ])
           )
           .orderBy('first_name asc')
@@ -504,7 +504,7 @@ for (const dialect of DIALECTS) {
           .selectAll()
           .where((eb) =>
             eb(
-              eb.tuple('first_name', 'last_name'),
+              eb.refTuple('first_name', 'last_name'),
               'in',
               eb
                 .selectFrom('person as p2')

@@ -1432,8 +1432,8 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    * const result = await db
    *   .selectFrom('person')
    *   .selectAll('person')
-   *   .where(({ eb, tuple, selectFrom }) => eb(
-   *     tuple('first_name', 'last_name'),
+   *   .where(({ eb, refTuple, selectFrom }) => eb(
+   *     refTuple('first_name', 'last_name'),
    *     'in',
    *     selectFrom('pet')
    *       .select(['name', 'species'])

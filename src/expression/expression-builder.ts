@@ -488,7 +488,7 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
   /**
    * Creates a tuple expression.
    *
-   * This creates a tuple using column references by default. See {@link valTuple}
+   * This creates a tuple using column references by default. See {@link tuple}
    * if you need to create value tuples.
    *
    * ### Examples
@@ -496,12 +496,12 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    * ```ts
    * db.selectFrom('person')
    *   .selectAll('person')
-   *   .where(({ eb, tuple, valTuple }) => eb(
-   *     tuple('first_name', 'last_name'),
+   *   .where(({ eb, refTuple, tuple }) => eb(
+   *     refTuple('first_name', 'last_name'),
    *     'in',
    *     [
-   *       valTuple('Jennifer', 'Aniston'),
-   *       valTuple('Sylvester', 'Stallone')
+   *       tuple('Jennifer', 'Aniston'),
+   *       tuple('Sylvester', 'Stallone')
    *     ]
    *   ))
    * ```
@@ -529,8 +529,8 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    * ```ts
    * db.selectFrom('person')
    *   .selectAll('person')
-   *   .where(({ eb, tuple, selectFrom }) => eb(
-   *     tuple('first_name', 'last_name'),
+   *   .where(({ eb, refTuple, selectFrom }) => eb(
+   *     refTuple('first_name', 'last_name'),
    *     'in',
    *     selectFrom('pet')
    *       .select(['name', 'species'])
@@ -556,7 +556,7 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    *   )
    * ```
    */
-  tuple<
+  refTuple<
     R1 extends ReferenceExpression<DB, TB>,
     R2 extends ReferenceExpression<DB, TB>
   >(
@@ -564,7 +564,7 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
     value2: R2
   ): ExpressionWrapper<DB, TB, RefTuple2<DB, TB, R1, R2>>
 
-  tuple<
+  refTuple<
     R1 extends ReferenceExpression<DB, TB>,
     R2 extends ReferenceExpression<DB, TB>,
     R3 extends ReferenceExpression<DB, TB>
@@ -574,7 +574,7 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
     value3: R3
   ): ExpressionWrapper<DB, TB, RefTuple3<DB, TB, R1, R2, R3>>
 
-  tuple<
+  refTuple<
     R1 extends ReferenceExpression<DB, TB>,
     R2 extends ReferenceExpression<DB, TB>,
     R3 extends ReferenceExpression<DB, TB>,
@@ -586,7 +586,7 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
     value4: R4
   ): ExpressionWrapper<DB, TB, RefTuple4<DB, TB, R1, R2, R3, R4>>
 
-  tuple<
+  refTuple<
     R1 extends ReferenceExpression<DB, TB>,
     R2 extends ReferenceExpression<DB, TB>,
     R3 extends ReferenceExpression<DB, TB>,
@@ -603,7 +603,7 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
   /**
    * Creates a value tuple expression.
    *
-   * This creates a tuple using values by default. See {@link tuple} if you need to create
+   * This creates a tuple using values by default. See {@link refTuple} if you need to create
    * tuples using column references.
    *
    * ### Examples
@@ -611,12 +611,12 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    * ```ts
    * db.selectFrom('person')
    *   .selectAll('person')
-   *   .where(({ eb, tuple, valTuple }) => eb(
-   *     tuple('first_name', 'last_name'),
+   *   .where(({ eb, refTuple, tuple }) => eb(
+   *     refTuple('first_name', 'last_name'),
    *     'in',
    *     [
-   *       valTuple('Jennifer', 'Aniston'),
-   *       valTuple('Sylvester', 'Stallone')
+   *       tuple('Jennifer', 'Aniston'),
+   *       tuple('Sylvester', 'Stallone')
    *     ]
    *   ))
    * ```
@@ -637,25 +637,25 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    *   )
    * ```
    */
-  valTuple<V1, V2>(
+  tuple<V1, V2>(
     value1: V1,
     value2: V2
   ): ExpressionWrapper<DB, TB, ValTuple2<V1, V2>>
 
-  valTuple<V1, V2, V3>(
+  tuple<V1, V2, V3>(
     value1: V1,
     value2: V2,
     value3: V3
   ): ExpressionWrapper<DB, TB, ValTuple3<V1, V2, V3>>
 
-  valTuple<V1, V2, V3, V4>(
+  tuple<V1, V2, V3, V4>(
     value1: V1,
     value2: V2,
     value3: V3,
     value4: V4
   ): ExpressionWrapper<DB, TB, ValTuple4<V1, V2, V3, V4>>
 
-  valTuple<V1, V2, V3, V4, V5>(
+  tuple<V1, V2, V3, V4, V5>(
     value1: V1,
     value2: V2,
     value3: V3,
@@ -1139,7 +1139,7 @@ export function createExpressionBuilder<DB, TB extends keyof DB>(
       return new ExpressionWrapper(parseValueExpressionOrList(value))
     },
 
-    tuple(
+    refTuple(
       ...values: ReadonlyArray<ReferenceExpression<any, any>>
     ): ExpressionWrapper<DB, TB, any> {
       return new ExpressionWrapper(
@@ -1147,9 +1147,7 @@ export function createExpressionBuilder<DB, TB extends keyof DB>(
       )
     },
 
-    valTuple(
-      ...values: ReadonlyArray<unknown>
-    ): ExpressionWrapper<DB, TB, any> {
+    tuple(...values: ReadonlyArray<unknown>): ExpressionWrapper<DB, TB, any> {
       return new ExpressionWrapper(
         TupleNode.create(values.map(parseValueExpression))
       )
