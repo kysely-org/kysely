@@ -221,3 +221,68 @@ async function textExpressionBuilderAny(
   // Not an array
   expectError(eb(eb.val('Jen'), '=', eb.fn.any('id')))
 }
+
+function testExpressionBuilderTuple(db: Kysely<Database>) {
+  db.selectFrom('person')
+    .selectAll()
+    .where(({ eb, refTuple, tuple }) =>
+      eb(refTuple('first_name', 'last_name'), 'in', [
+        tuple('Jennifer', 'Aniston'),
+        tuple('Sylvester', 'Stallone'),
+      ])
+    )
+
+  db.selectFrom('person')
+    .selectAll()
+    .where(({ eb, refTuple, selectFrom }) =>
+      eb(
+        refTuple('first_name', 'last_name'),
+        'in',
+        selectFrom('person')
+          .select(['first_name', 'last_name'])
+          .$asTuple('first_name', 'last_name')
+      )
+    )
+
+  // Wrong tuple type
+  expectError(
+    db
+      .selectFrom('person')
+      .where(({ eb, refTuple, tuple }) =>
+        eb(refTuple('first_name', 'last_name'), 'in', [
+          tuple('Jennifer', 'Aniston'),
+          tuple('Sylvester', 1),
+        ])
+      )
+  )
+
+  // Wrong tuple length
+  expectError(
+    db
+      .selectFrom('person')
+      .where(({ eb, refTuple, tuple }) =>
+        eb(refTuple('first_name', 'last_name'), 'in', [
+          tuple('Jennifer', 'Aniston', 'Extra'),
+          tuple('Sylvester', 'Stallone'),
+        ])
+      )
+  )
+
+  // Not all selected columns provided for $asTuple
+  expectType<
+    KyselyTypeError<'$asTuple() call failed: All selected columns must be provided as arguments'>
+  >(
+    db
+      .selectFrom('person')
+      .select(['first_name', 'last_name', 'age'])
+      .$asTuple('first_name', 'last_name')
+  )
+
+  // Duplicate column provided for $asTuple
+  expectError(
+    db
+      .selectFrom('person')
+      .select(['first_name', 'last_name'])
+      .$asTuple('first_name', 'last_name', 'last_name')
+  )
+}

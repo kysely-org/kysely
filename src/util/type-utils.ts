@@ -35,19 +35,23 @@ import { KyselyTypeError } from './type-error.js'
  * // Columns == 'id' | 'name' | 'species'
  * ```
  */
-export type AnyColumn<DB, TB extends keyof DB> = DrainOuterGeneric<
-  {
-    [T in TB]: keyof DB[T]
-  }[TB] &
-    string
->
+export type AnyColumn<DB, TB extends keyof DB> = [DB] extends [unknown]
+  ? {
+      [T in TB]: keyof DB[T]
+    }[TB] &
+      string
+  : never
 
 /**
  * Extracts a column type.
  */
-export type ExtractColumnType<DB, TB extends keyof DB, C> = {
-  [T in TB]: C extends keyof DB[T] ? DB[T][C] : never
-}[TB]
+export type ExtractColumnType<DB, TB extends keyof DB, C> = [C] extends [
+  unknown
+]
+  ? {
+      [T in TB]: C extends keyof DB[T] ? DB[T][C] : never
+    }[TB]
+  : never
 
 /**
  * Given a database type and a union of table names in that db, returns
