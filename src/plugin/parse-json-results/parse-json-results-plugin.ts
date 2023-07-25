@@ -8,6 +8,19 @@ import {
   PluginTransformResultArgs,
 } from '../kysely-plugin.js'
 
+/**
+ * Parses JSON strings in query results into JSON objects.
+ *
+ * This plugin can be useful with dialects that don't automatically parse
+ * JSON into objects and arrays but return JSON strings instead.
+ *
+ * ```ts
+ * const db = new Kysely<DB>({
+ *   ...
+ *   plugins: [new ParseJSONResultsPlugin()]
+ * })
+ * ```
+ */
 export class ParseJSONResultsPlugin implements KyselyPlugin {
   // noop
   transformQuery(args: PluginTransformQueryArgs): RootOperationNode {

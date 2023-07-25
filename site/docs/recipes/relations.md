@@ -15,10 +15,15 @@ In this recipe we show one way to do that when using the built-in PostgreSQL, My
 
 PostgreSQL and MySQL have rich JSON support through their `json` data types and functions. `pg` and `mysql2`, the node drivers, automatically parse returned `json` columns as json objects. With the combination of these two things, we can write some super efficient queries with nested relations.
 
-With the `ParseJSONResultsPlugin`, SQLite can also automatically parse results:
+The built in `SqliteDialect` and some 3rd party dialects don't parse the returned `json` columns to objects automatically.
+Not even if they use `PostgreSQL` or `MySQL` under the hood. The parsing is handled (or not handled) by the database driver
+that Kysely has no control over. In these cases you can use the built in `ParseJSONResultsPlugin`:
 
 ```ts
-db = db.withPlugin(new ParseJSONResultsPlugin())
+const db = new Kysely<DB>({
+  ...
+  plugins: [new ParseJSONResultsPlugin()]
+})
 ```
 
 Let's start with some raw postgres SQL, and then see how we can write the query using Kysely in a nice type-safe way.
