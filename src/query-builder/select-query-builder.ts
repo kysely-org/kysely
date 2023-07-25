@@ -1459,42 +1459,54 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    *   )
    * ```
    */
-  $asTuple<K1 extends keyof O, K2 extends keyof O>(
+  $asTuple<K1 extends keyof O, K2 extends Exclude<keyof O, K1>>(
     key1: K1,
     key2: K2
-  ): ExpressionWrapper<DB, TB, [O[K1], O[K2]]>
-
-  $asTuple<K1 extends keyof O, K2 extends keyof O, K3 extends keyof O>(
-    key1: K1,
-    key2: K2,
-    key3: K3
-  ): ExpressionWrapper<DB, TB, [O[K1], O[K2], O[K3]]>
+  ): keyof O extends K1 | K2
+    ? ExpressionWrapper<DB, TB, [O[K1], O[K2]]>
+    : KyselyTypeError<'$asTuple() call failed: All selected columns must be provided as arguments'>
 
   $asTuple<
     K1 extends keyof O,
-    K2 extends keyof O,
-    K3 extends keyof O,
-    K4 extends keyof O
+    K2 extends Exclude<keyof O, K1>,
+    K3 extends Exclude<keyof O, K1 | K2>
+  >(
+    key1: K1,
+    key2: K2,
+    key3: K3
+  ): keyof O extends K1 | K2 | K3
+    ? ExpressionWrapper<DB, TB, [O[K1], O[K2], O[K3]]>
+    : KyselyTypeError<'$asTuple() call failed: All selected columns must be provided as arguments'>
+
+  $asTuple<
+    K1 extends keyof O,
+    K2 extends Exclude<keyof O, K1>,
+    K3 extends Exclude<keyof O, K1 | K2>,
+    K4 extends Exclude<keyof O, K1 | K2 | K3>
   >(
     key1: K1,
     key2: K2,
     key3: K3,
     key4: K4
-  ): ExpressionWrapper<DB, TB, [O[K1], O[K2], O[K3], O[K4]]>
+  ): keyof O extends K1 | K2 | K3 | K4
+    ? ExpressionWrapper<DB, TB, [O[K1], O[K2], O[K3], O[K4]]>
+    : KyselyTypeError<'$asTuple() call failed: All selected columns must be provided as arguments'>
 
   $asTuple<
     K1 extends keyof O,
-    K2 extends keyof O,
-    K3 extends keyof O,
-    K4 extends keyof O,
-    K5 extends keyof O
+    K2 extends Exclude<keyof O, K1>,
+    K3 extends Exclude<keyof O, K1 | K2>,
+    K4 extends Exclude<keyof O, K1 | K2 | K3>,
+    K5 extends Exclude<keyof O, K1 | K2 | K3 | K4>
   >(
     key1: K1,
     key2: K2,
     key3: K3,
     key4: K4,
     key5: K5
-  ): ExpressionWrapper<DB, TB, [O[K1], O[K2], O[K3], O[K4], O[K5]]>
+  ): keyof O extends K1 | K2 | K3 | K4 | K5
+    ? ExpressionWrapper<DB, TB, [O[K1], O[K2], O[K3], O[K4], O[K5]]>
+    : KyselyTypeError<'$asTuple() call failed: All selected columns must be provided as arguments'>
 
   /**
    * Narrows (parts of) the output type of the query.

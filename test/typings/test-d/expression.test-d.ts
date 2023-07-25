@@ -267,4 +267,22 @@ function testExpressionBuilderTuple(db: Kysely<Database>) {
         ])
       )
   )
+
+  // Not all selected columns provided for $asTuple
+  expectType<
+    KyselyTypeError<'$asTuple() call failed: All selected columns must be provided as arguments'>
+  >(
+    db
+      .selectFrom('person')
+      .select(['first_name', 'last_name', 'age'])
+      .$asTuple('first_name', 'last_name')
+  )
+
+  // Duplicate column provided for $asTuple
+  expectError(
+    db
+      .selectFrom('person')
+      .select(['first_name', 'last_name'])
+      .$asTuple('first_name', 'last_name', 'last_name')
+  )
 }
