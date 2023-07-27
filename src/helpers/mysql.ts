@@ -14,7 +14,8 @@ import { Simplify } from '../util/type-utils.js'
  *
  * NOTE: This helper is only guaranteed to fully work with the built-in `MysqlDialect`.
  * While the produced SQL is compatible with all MySQL databases, some 3rd party dialects
- * may not parse the nested results into arrays.
+ * may not parse the nested JSON into arrays. In these cases you can use the built in
+ * `ParseJSONResultsPlugin` to parse the results.
  *
  * ### Examples
  *
@@ -69,7 +70,8 @@ export function jsonArrayFrom<O>(
  *
  * NOTE: This helper is only guaranteed to fully work with the built-in `MysqlDialect`.
  * While the produced SQL is compatible with all MySQL databases, some 3rd party dialects
- * may not parse the nested results into objects.
+ * may not parse the nested JSON into objects. In these cases you can use the built in
+ * `ParseJSONResultsPlugin` to parse the results.
  *
  * ### Examples
  *
@@ -122,7 +124,8 @@ export function jsonObjectFrom<O>(
  *
  * NOTE: This helper is only guaranteed to fully work with the built-in `MysqlDialect`.
  * While the produced SQL is compatible with all MySQL databases, some 3rd party dialects
- * may not parse the nested results into objects.
+ * may not parse the nested JSON into objects. In these cases you can use the built in
+ * `ParseJSONResultsPlugin` to parse the results.
  *
  * ### Examples
  *

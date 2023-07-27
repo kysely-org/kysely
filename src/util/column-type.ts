@@ -149,9 +149,11 @@ export type UpdateKeys<R> = {
  * // }
  * ```
  */
-export type Selectable<R> = {
-  [K in NonNeverSelectKeys<R>]: SelectType<R[K]>
-}
+export type Selectable<R> = [R] extends [unknown]
+  ? {
+      [K in NonNeverSelectKeys<R>]: SelectType<R[K]>
+    }
+  : never
 
 /**
  * Given a table interface, extracts the insert type from all
@@ -174,11 +176,13 @@ export type Selectable<R> = {
  * // }
  * ```
  */
-export type Insertable<R> = {
-  [K in NonNullableInsertKeys<R>]: InsertType<R[K]>
-} & {
-  [K in NullableInsertKeys<R>]?: InsertType<R[K]>
-}
+export type Insertable<R> = [R] extends [unknown]
+  ? {
+      [K in NonNullableInsertKeys<R>]: InsertType<R[K]>
+    } & {
+      [K in NullableInsertKeys<R>]?: InsertType<R[K]>
+    }
+  : never
 
 /**
  * Given a table interface, extracts the update type from all
@@ -200,6 +204,8 @@ export type Insertable<R> = {
  * // }
  * ```
  */
-export type Updateable<R> = {
-  [K in UpdateKeys<R>]?: UpdateType<R[K]>
-}
+export type Updateable<R> = [R] extends [unknown]
+  ? {
+      [K in UpdateKeys<R>]?: UpdateType<R[K]>
+    }
+  : never

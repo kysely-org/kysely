@@ -53,6 +53,7 @@ import { SqlBool } from '../util/type-utils.js'
 import { parseUnaryOperation } from '../parser/unary-operation-parser.js'
 import {
   ExtractTypeFromValueExpressionOrList,
+  ExtractTypeFromValueExpression,
   parseSafeImmediateValue,
   parseValueExpression,
   parseValueExpressionOrList,
@@ -71,6 +72,17 @@ import {
   Selection,
   parseSelectArg,
 } from '../parser/select-parser.js'
+import {
+  RefTuple2,
+  RefTuple3,
+  RefTuple4,
+  RefTuple5,
+  ValTuple2,
+  ValTuple3,
+  ValTuple4,
+  ValTuple5,
+} from '../parser/tuple-parser.js'
+import { TupleNode } from '../operation-node/tuple-node.js'
 
 export interface ExpressionBuilder<DB, TB extends keyof DB> {
   /**
@@ -80,6 +92,39 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    * See the examples for a couple of possible use cases.
    *
    * ### Examples
+   *
+   * A simple comparison:
+   *
+   * ```ts
+   * eb.selectFrom('person')
+   *   .selectAll()
+   *   .where((eb) => eb('first_name', '=', 'Jennifer'))
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * select *
+   * from "person"
+   * where "first_name" = $1
+   * ```
+   *
+   * By default the third argument is interpreted as a value. To pass in
+   * a column reference, you can use {@link ref}:
+   *
+   * ```ts
+   * eb.selectFrom('person')
+   *   .selectAll()
+   *   .where((eb) => eb('first_name', '=', eb.ref('last_name')))
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * select *
+   * from "person"
+   * where "first_name" = "last_name"
+   * ```
    *
    * In the following example `eb` is used to increment an integer column:
    *
@@ -99,23 +144,19 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    * where "id" = $2
    * ```
    *
-   * By default the third argument is a value. {@link ref} can be used to
-   * pass in a column reference instead:
+   * As always, expressions can be nested. Both the first and the third argument
+   * can be any expression:
    *
    * ```ts
-   * db.updateTable('person')
-   *   .set((eb) => ({
-   *     age: eb('age', '+', eb.ref('age'))
-   *   }))
-   *   .where('id', '=', id)
-   * ```
-   *
-   * The generated SQL (PostgreSQL):
-   *
-   * ```sql
-   * update "person"
-   * set "age" = "age" + "age"
-   * where "id" = $1
+   * eb.selectFrom('person')
+   *   .selectAll()
+   *   .where((eb) => eb(
+   *     eb.fn('lower', ['first_name']),
+   *     'in',
+   *     eb.selectFrom('pet')
+   *       .select('pet.name')
+   *       .where('pet.species', '=', 'cat')
+   *   ))
    * ```
    */
   <RE extends ReferenceExpression<DB, TB>, OP extends BinaryOperatorExpression>(
@@ -153,7 +194,7 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    * )
    * ```
    */
-  eb: ExpressionBuilder<DB, TB>
+  get eb(): ExpressionBuilder<DB, TB>
 
   /**
    * Returns a {@link FunctionModule} that can be used to write type safe function
@@ -442,7 +483,185 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    */
   val<VE>(
     value: VE
-  ): ExpressionWrapper<DB, TB, ExtractTypeFromValueExpressionOrList<VE>>
+  ): ExpressionWrapper<DB, TB, ExtractTypeFromValueExpression<VE>>
+
+  /**
+   * Creates a tuple expression.
+   *
+   * This creates a tuple using column references by default. See {@link tuple}
+   * if you need to create value tuples.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * db.selectFrom('person')
+   *   .selectAll('person')
+   *   .where(({ eb, refTuple, tuple }) => eb(
+   *     refTuple('first_name', 'last_name'),
+   *     'in',
+   *     [
+   *       tuple('Jennifer', 'Aniston'),
+   *       tuple('Sylvester', 'Stallone')
+   *     ]
+   *   ))
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * select
+   *   "person".*
+   * from
+   *   "person"
+   * where
+   *   ("first_name", "last_name")
+   *   in
+   *   (
+   *     ($1, $2),
+   *     ($3, $4)
+   *   )
+   * ```
+   *
+   * In the next example a reference tuple is compared to a subquery. Note that
+   * in this case you need to use the {@link @SelectQueryBuilder.$asTuple | $asTuple}
+   * function:
+   *
+   * ```ts
+   * db.selectFrom('person')
+   *   .selectAll('person')
+   *   .where(({ eb, refTuple, selectFrom }) => eb(
+   *     refTuple('first_name', 'last_name'),
+   *     'in',
+   *     selectFrom('pet')
+   *       .select(['name', 'species'])
+   *       .where('species', '!=', 'cat')
+   *       .$asTuple('name', 'species')
+   *   ))
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * select
+   *   "person".*
+   * from
+   *   "person"
+   * where
+   *   ("first_name", "last_name")
+   *   in
+   *   (
+   *     select "name", "species"
+   *     from "pet"
+   *     where "species" != $1
+   *   )
+   * ```
+   */
+  refTuple<
+    R1 extends ReferenceExpression<DB, TB>,
+    R2 extends ReferenceExpression<DB, TB>
+  >(
+    value1: R1,
+    value2: R2
+  ): ExpressionWrapper<DB, TB, RefTuple2<DB, TB, R1, R2>>
+
+  refTuple<
+    R1 extends ReferenceExpression<DB, TB>,
+    R2 extends ReferenceExpression<DB, TB>,
+    R3 extends ReferenceExpression<DB, TB>
+  >(
+    value1: R1,
+    value2: R2,
+    value3: R3
+  ): ExpressionWrapper<DB, TB, RefTuple3<DB, TB, R1, R2, R3>>
+
+  refTuple<
+    R1 extends ReferenceExpression<DB, TB>,
+    R2 extends ReferenceExpression<DB, TB>,
+    R3 extends ReferenceExpression<DB, TB>,
+    R4 extends ReferenceExpression<DB, TB>
+  >(
+    value1: R1,
+    value2: R2,
+    value3: R3,
+    value4: R4
+  ): ExpressionWrapper<DB, TB, RefTuple4<DB, TB, R1, R2, R3, R4>>
+
+  refTuple<
+    R1 extends ReferenceExpression<DB, TB>,
+    R2 extends ReferenceExpression<DB, TB>,
+    R3 extends ReferenceExpression<DB, TB>,
+    R4 extends ReferenceExpression<DB, TB>,
+    R5 extends ReferenceExpression<DB, TB>
+  >(
+    value1: R1,
+    value2: R2,
+    value3: R3,
+    value4: R4,
+    value5: R5
+  ): ExpressionWrapper<DB, TB, RefTuple5<DB, TB, R1, R2, R3, R4, R5>>
+
+  /**
+   * Creates a value tuple expression.
+   *
+   * This creates a tuple using values by default. See {@link refTuple} if you need to create
+   * tuples using column references.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * db.selectFrom('person')
+   *   .selectAll('person')
+   *   .where(({ eb, refTuple, tuple }) => eb(
+   *     refTuple('first_name', 'last_name'),
+   *     'in',
+   *     [
+   *       tuple('Jennifer', 'Aniston'),
+   *       tuple('Sylvester', 'Stallone')
+   *     ]
+   *   ))
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * select
+   *   "person".*
+   * from
+   *   "person"
+   * where
+   *   ("first_name", "last_name")
+   *   in
+   *   (
+   *     ($1, $2),
+   *     ($3, $4)
+   *   )
+   * ```
+   */
+  tuple<V1, V2>(
+    value1: V1,
+    value2: V2
+  ): ExpressionWrapper<DB, TB, ValTuple2<V1, V2>>
+
+  tuple<V1, V2, V3>(
+    value1: V1,
+    value2: V2,
+    value3: V3
+  ): ExpressionWrapper<DB, TB, ValTuple3<V1, V2, V3>>
+
+  tuple<V1, V2, V3, V4>(
+    value1: V1,
+    value2: V2,
+    value3: V3,
+    value4: V4
+  ): ExpressionWrapper<DB, TB, ValTuple4<V1, V2, V3, V4>>
+
+  tuple<V1, V2, V3, V4, V5>(
+    value1: V1,
+    value2: V2,
+    value3: V3,
+    value4: V4,
+    value5: V5
+  ): ExpressionWrapper<DB, TB, ValTuple5<V1, V2, V3, V4, V5>>
 
   /**
    * Returns a literal value expression.
@@ -916,8 +1135,22 @@ export function createExpressionBuilder<DB, TB extends keyof DB>(
 
     val<VE>(
       value: VE
-    ): ExpressionWrapper<DB, TB, ExtractTypeFromValueExpressionOrList<VE>> {
+    ): ExpressionWrapper<DB, TB, ExtractTypeFromValueExpression<VE>> {
       return new ExpressionWrapper(parseValueExpressionOrList(value))
+    },
+
+    refTuple(
+      ...values: ReadonlyArray<ReferenceExpression<any, any>>
+    ): ExpressionWrapper<DB, TB, any> {
+      return new ExpressionWrapper(
+        TupleNode.create(values.map(parseReferenceExpression))
+      )
+    },
+
+    tuple(...values: ReadonlyArray<unknown>): ExpressionWrapper<DB, TB, any> {
+      return new ExpressionWrapper(
+        TupleNode.create(values.map(parseValueExpression))
+      )
     },
 
     lit<VE extends number | boolean | null>(

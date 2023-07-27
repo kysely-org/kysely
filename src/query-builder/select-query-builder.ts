@@ -71,6 +71,7 @@ import { KyselyTypeError } from '../util/type-error.js'
 import { Selectable } from '../util/column-type.js'
 import { Streamable } from '../util/streamable.js'
 import { ExpressionOrFactory } from '../parser/expression-parser.js'
+import { ExpressionWrapper } from '../expression/expression-wrapper.js'
 
 export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
   extends WhereInterface<DB, TB>,
@@ -1415,6 +1416,99 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
   $castTo<T>(): SelectQueryBuilder<DB, TB, T>
 
   /**
+   * Changes the output type from an object to a tuple.
+   *
+   * This doesn't affect the generated SQL in any way. This function is
+   * just a necessary evil when you need to convert a query's output
+   * record type to a tuple type. Typescript doesn't currently offer
+   * tools to do this automatically (without insane hackery).
+   *
+   * The returned object can no longer be executed. It can only be used
+   * as a subquery.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * const result = await db
+   *   .selectFrom('person')
+   *   .selectAll('person')
+   *   .where(({ eb, refTuple, selectFrom }) => eb(
+   *     refTuple('first_name', 'last_name'),
+   *     'in',
+   *     selectFrom('pet')
+   *       .select(['name', 'species'])
+   *       .where('pet.species', '!=', 'cat')
+   *       .$asTuple('name', 'species')
+   *   ))
+   * ```
+   *
+   * The generated SQL(PostgreSQL):
+   *
+   * ```sql
+   * select
+   *   "person".*
+   * from
+   *   "person"
+   * where
+   *   ("first_name", "last_name")
+   *   in
+   *   (
+   *     select "name", "species"
+   *     from "pet"
+   *     where "pet"."species" != $1
+   *   )
+   * ```
+   */
+  $asTuple<K1 extends keyof O, K2 extends Exclude<keyof O, K1>>(
+    key1: K1,
+    key2: K2
+  ): keyof O extends K1 | K2
+    ? ExpressionWrapper<DB, TB, [O[K1], O[K2]]>
+    : KyselyTypeError<'$asTuple() call failed: All selected columns must be provided as arguments'>
+
+  $asTuple<
+    K1 extends keyof O,
+    K2 extends Exclude<keyof O, K1>,
+    K3 extends Exclude<keyof O, K1 | K2>
+  >(
+    key1: K1,
+    key2: K2,
+    key3: K3
+  ): keyof O extends K1 | K2 | K3
+    ? ExpressionWrapper<DB, TB, [O[K1], O[K2], O[K3]]>
+    : KyselyTypeError<'$asTuple() call failed: All selected columns must be provided as arguments'>
+
+  $asTuple<
+    K1 extends keyof O,
+    K2 extends Exclude<keyof O, K1>,
+    K3 extends Exclude<keyof O, K1 | K2>,
+    K4 extends Exclude<keyof O, K1 | K2 | K3>
+  >(
+    key1: K1,
+    key2: K2,
+    key3: K3,
+    key4: K4
+  ): keyof O extends K1 | K2 | K3 | K4
+    ? ExpressionWrapper<DB, TB, [O[K1], O[K2], O[K3], O[K4]]>
+    : KyselyTypeError<'$asTuple() call failed: All selected columns must be provided as arguments'>
+
+  $asTuple<
+    K1 extends keyof O,
+    K2 extends Exclude<keyof O, K1>,
+    K3 extends Exclude<keyof O, K1 | K2>,
+    K4 extends Exclude<keyof O, K1 | K2 | K3>,
+    K5 extends Exclude<keyof O, K1 | K2 | K3 | K4>
+  >(
+    key1: K1,
+    key2: K2,
+    key3: K3,
+    key4: K4,
+    key5: K5
+  ): keyof O extends K1 | K2 | K3 | K4 | K5
+    ? ExpressionWrapper<DB, TB, [O[K1], O[K2], O[K3], O[K4], O[K5]]>
+    : KyselyTypeError<'$asTuple() call failed: All selected columns must be provided as arguments'>
+
+  /**
    * Narrows (parts of) the output type of the query.
    *
    * Kysely tries to be as type-safe as possible, but in some cases we have to make
@@ -1964,6 +2058,10 @@ class SelectQueryBuilderImpl<DB, TB extends keyof DB, O>
     ? SelectQueryBuilder<DB, TB, T>
     : KyselyTypeError<`$assertType() call failed: The type passed in is not equal to the output type of the query.`> {
     return new SelectQueryBuilderImpl(this.#props) as unknown as any
+  }
+
+  $asTuple(): ExpressionWrapper<DB, TB, any> {
+    return new ExpressionWrapper(this.toOperationNode())
   }
 
   withPlugin(plugin: KyselyPlugin): SelectQueryBuilder<DB, TB, O> {

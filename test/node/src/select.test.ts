@@ -644,6 +644,58 @@ for (const dialect of DIALECTS_WITH_MSSQL) {
         expect(persons).to.have.length(1)
         expect(persons).to.eql([{ last_name: 'Aniston' }])
       })
+
+      it('should select a row for update with skip locked', async () => {
+        const query = ctx.db
+          .selectFrom('person')
+          .select('last_name')
+          .where('first_name', '=', 'Jennifer')
+          .forUpdate()
+          .skipLocked()
+
+        testSql(query, dialect, {
+          postgres: {
+            sql: 'select "last_name" from "person" where "first_name" = $1 for update skip locked',
+            parameters: ['Jennifer'],
+          },
+          mysql: {
+            sql: 'select `last_name` from `person` where `first_name` = ? for update skip locked',
+            parameters: ['Jennifer'],
+          },
+          sqlite: NOT_SUPPORTED,
+        })
+
+        const persons = await query.execute()
+
+        expect(persons).to.have.length(1)
+        expect(persons).to.eql([{ last_name: 'Aniston' }])
+      })
+
+      it('should select a row for update with skipLocked called before forUpdate', async () => {
+        const query = ctx.db
+          .selectFrom('person')
+          .select('last_name')
+          .where('first_name', '=', 'Jennifer')
+          .skipLocked()
+          .forUpdate()
+
+        testSql(query, dialect, {
+          postgres: {
+            sql: 'select "last_name" from "person" where "first_name" = $1 for update skip locked',
+            parameters: ['Jennifer'],
+          },
+          mysql: {
+            sql: 'select `last_name` from `person` where `first_name` = ? for update skip locked',
+            parameters: ['Jennifer'],
+          },
+          sqlite: NOT_SUPPORTED,
+        })
+
+        const persons = await query.execute()
+
+        expect(persons).to.have.length(1)
+        expect(persons).to.eql([{ last_name: 'Aniston' }])
+      })
     }
 
     if (dialect === 'postgres') {
@@ -972,40 +1024,6 @@ for (const dialect of DIALECTS_WITH_MSSQL) {
       } else {
         expect(result[0]).to.eql({ one: 1, person_first_name: 'Arnold' })
       }
-    })
-
-    it.skip('perf', async () => {
-      const ids = Array.from({ length: 100 }).map(() =>
-        Math.round(Math.random() * 1000)
-      )
-
-      function test() {
-        return ctx.db
-          .updateTable('person')
-          .set({
-            first_name: 'foo',
-            last_name: 'bar',
-            id: 100,
-            gender: 'other',
-          })
-          .where('id', 'in', ids)
-          .compile()
-      }
-
-      // Warmup
-      for (let i = 0; i < 1000; ++i) {
-        test()
-      }
-
-      const time = Date.now()
-      const N = 100000
-
-      for (let i = 0; i < N; ++i) {
-        test()
-      }
-
-      const endTime = Date.now()
-      console.log((endTime - time) / N)
     })
   })
 }

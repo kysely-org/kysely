@@ -39,7 +39,7 @@ for (const dialect of DIALECTS) {
               or([
                 not(eb('first_name', '=', 'Jennifer')),
                 eb(eb('id', '+', 1), '>', 10),
-                eb(ref('id'), 'in', val([10, 20, 30])),
+                eb(ref('id'), 'in', [10, 20, 30].map(val)),
                 or([eb(fn('upper', ['first_name']), '=', 'SYLVESTER')]),
                 // Empty or
                 or([]),

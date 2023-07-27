@@ -86,6 +86,7 @@ import { JSONReferenceNode } from './json-reference-node.js'
 import { JSONPathNode } from './json-path-node.js'
 import { JSONPathLegNode } from './json-path-leg-node.js'
 import { JSONOperatorChainNode } from './json-operator-chain-node.js'
+import { TupleNode } from './tuple-node.js'
 
 /**
  * Transforms an operation node tree into another one.
@@ -206,6 +207,7 @@ export class OperationNodeTransformer {
     JSONPathNode: this.transformJSONPath.bind(this),
     JSONPathLegNode: this.transformJSONPathLeg.bind(this),
     JSONOperatorChainNode: this.transformJSONOperatorChain.bind(this),
+    TupleNode: this.transformTuple.bind(this),
   })
 
   transformNode<T extends OperationNode | undefined>(node: T): T {
@@ -959,6 +961,13 @@ export class OperationNodeTransformer {
     return requireAllProps<JSONOperatorChainNode>({
       kind: 'JSONOperatorChainNode',
       operator: this.transformNode(node.operator),
+      values: this.transformNodeList(node.values),
+    })
+  }
+
+  protected transformTuple(node: TupleNode): TupleNode {
+    return requireAllProps<TupleNode>({
+      kind: 'TupleNode',
       values: this.transformNodeList(node.values),
     })
   }
