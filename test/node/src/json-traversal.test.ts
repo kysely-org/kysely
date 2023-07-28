@@ -335,6 +335,36 @@ for (const dialect of DIALECTS) {
           expect(results).to.have.length(1)
           expect(results[0].profile.auth.login_count).to.equal(12)
         })
+
+        it(`should execute a query with column${jsonOperator}.key.key in order by clause`, async () => {
+          const query = ctx.db
+            .selectFrom('person_metadata')
+            .orderBy(
+              (eb) =>
+                eb.ref('profile', jsonOperator).key('auth').key('login_count'),
+              'desc'
+            )
+            .selectAll()
+
+          testSql(query, dialect, {
+            postgres: NOT_SUPPORTED,
+            mysql: {
+              parameters: [],
+              sql: "select * from `person_metadata` order by `profile`->'$.auth.login_count' desc",
+            },
+            sqlite: {
+              parameters: [],
+              sql: `select * from "person_metadata" order by "profile"->>'$.auth.login_count' desc`,
+            },
+          })
+
+          const results = await query.execute()
+
+          expect(results).to.have.length(3)
+          expect(results[0].profile.auth.login_count).to.equal(14)
+          expect(results[1].profile.auth.login_count).to.equal(13)
+          expect(results[2].profile.auth.login_count).to.equal(12)
+        })
       })
     }
 
@@ -605,6 +635,36 @@ for (const dialect of DIALECTS) {
 
           expect(results).to.have.length(1)
           expect(results[0].profile.auth.login_count).to.equal(12)
+        })
+
+        it(`should execute a query with column->key${jsonOperator}key in order by clause`, async () => {
+          const query = ctx.db
+            .selectFrom('person_metadata')
+            .orderBy(
+              (eb) =>
+                eb.ref('profile', jsonOperator).key('auth').key('login_count'),
+              'desc'
+            )
+            .selectAll()
+
+          testSql(query, dialect, {
+            postgres: {
+              parameters: [],
+              sql: `select * from "person_metadata" order by "profile"->'auth'->'login_count' desc`,
+            },
+            mysql: NOT_SUPPORTED,
+            sqlite: {
+              parameters: [],
+              sql: `select * from "person_metadata" order by "profile"->'auth'->>'login_count' desc`,
+            },
+          })
+
+          const results = await query.execute()
+
+          expect(results).to.have.length(3)
+          expect(results[0].profile.auth.login_count).to.equal(14)
+          expect(results[1].profile.auth.login_count).to.equal(13)
+          expect(results[2].profile.auth.login_count).to.equal(12)
         })
       })
     }
