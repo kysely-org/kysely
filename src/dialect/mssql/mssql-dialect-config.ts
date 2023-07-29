@@ -1,34 +1,22 @@
-import { ConnectionPool } from 'mssql'
-import { Request, TYPES } from 'tedious'
-import { DatabaseConnection } from '../../driver/database-connection.js'
+import { Pool } from 'tarn'
+import { Connection, ISOLATION_LEVEL, Request, TYPES } from 'tedious'
 
 export interface MssqlDialectConfig {
-  /**
-   * A mssql Pool instance or a function that returns one.
-   *
-   * If a function is provided, it's called once when the first query is executed.
-   *
-   * https://github.com/sidorares/node-mysql2#using-connection-pools
-   */
-  pool: ConnectionPool | (() => Promise<ConnectionPool>)
+  connectionFactory: () => Connection | Promise<Connection>
+  Tarn: Tarn
+  Tedious: Tedious
+}
 
-  tedious: Tedious
-
-  /**
-   * Called once for each created connection.
-   */
-  onCreateConnection?: (connection: DatabaseConnection) => Promise<void>
+export interface Tarn {
+  Pool: typeof Pool
+  options: Omit<
+    ConstructorParameters<typeof Pool>[0],
+    'create' | 'destroy' | 'validate'
+  >
 }
 
 export interface Tedious {
   Request: typeof Request
+  ISOLATION_LEVEL: typeof ISOLATION_LEVEL
   TYPES: typeof TYPES
-}
-
-export interface MssqlPool {
-  // TODO: ...
-}
-
-export interface MssqlPoolConnection {
-  // TODO: ...
 }

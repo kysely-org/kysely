@@ -5,9 +5,9 @@ import * as Cursor from 'pg-cursor'
 import { Pool, PoolConfig } from 'pg'
 import { createPool } from 'mysql2'
 import * as Database from 'better-sqlite3'
+import * as Tarn from 'tarn'
 import * as Tedious from 'tedious'
 import { PoolOptions } from 'mysql2'
-import { ConnectionPool, config } from 'mssql'
 
 chai.use(chaiSubset)
 chai.use(chaiAsPromised)
@@ -134,21 +134,22 @@ export const DIALECT_CONFIGS = {
   } satisfies PoolOptions,
 
   mssql: {
-    server: 'localhost',
-    user: 'sa',
-    password: 'KyselyTest0',
-    // parseJSON: true,
+    authentication: {
+      options: {
+        password: 'KyselyTest0',
+        userName: 'sa',
+      },
+      type: 'default',
+    },
     options: {
-      port: 21433,
+      connectTimeout: 3000,
       database: 'kysely_test',
-      trustedConnection: true,
+      port: 21433,
       trustServerCertificate: true,
       useUTC: true,
     },
-    pool: {
-      max: POOL_SIZE,
-    },
-  } satisfies config,
+    server: 'localhost',
+  } satisfies Tedious.ConnectionConfig,
 
   sqlite: {
     databasePath: ':memory:',
@@ -173,9 +174,17 @@ export const DB_CONFIGS: PerDialect<KyselyConfig> = {
 
   mssql: {
     dialect: new MssqlDialect({
-      pool: async () => new ConnectionPool(DIALECT_CONFIGS.mssql),
-      tedious: Tedious,
+      connectionFactory: () => new Tedious.Connection(DIALECT_CONFIGS.mssql),
+      Tarn: {
+        options: {
+          max: POOL_SIZE,
+          min: 0,
+        },
+        ...Tarn,
+      },
+      Tedious,
     }),
+    plugins: PLUGINS,
   },
 
   sqlite: {

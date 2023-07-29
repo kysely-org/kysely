@@ -1,17 +1,20 @@
-import { Connection, ConnectionPool, Request } from 'mssql'
-import type { ColumnValue, Request as TediousRequest } from 'tedious'
+import { Pool } from 'tarn'
+import { ColumnValue, Connection, Request } from 'tedious'
 import {
   DatabaseConnection,
   QueryResult,
 } from '../../driver/database-connection.js'
-import { Driver, TransactionSettings } from '../../driver/driver.js'
+import {
+  Driver,
+  IsolationLevel,
+  TransactionSettings,
+} from '../../driver/driver.js'
 import {
   freeze,
   isBigInt,
   isBoolean,
   isBuffer,
   isDate,
-  isFunction,
   isNull,
   isNumber,
   isString,
@@ -22,88 +25,111 @@ import { CompiledQuery } from '../../query-compiler/compiled-query.js'
 import { extendStackTrace } from '../../util/stack-trace-utils.js'
 
 const PRIVATE_RELEASE_METHOD = Symbol()
+const PRIVATE_DESTROY_METHOD = Symbol()
 
 export class MssqlDriver implements Driver {
   readonly #config: MssqlDialectConfig
-  readonly #connections = new WeakMap<Connection, DatabaseConnection>()
-  #pool?: ConnectionPool
+  readonly #pool: Pool<MssqlConnection>
 
   constructor(config: MssqlDialectConfig) {
     this.#config = freeze({ ...config })
+
+    this.#pool = new this.#config.Tarn.Pool({
+      ...this.#config.Tarn.options,
+      create: async () => {
+        const connection = await this.#config.connectionFactory()
+
+        await new Promise((resolve, reject) =>
+          connection.connect((error) => {
+            if (error) reject(error)
+            else resolve(undefined)
+          })
+        )
+
+        return new MssqlConnection(connection, this.#config.Tedious)
+      },
+      destroy: async (connection) => {
+        await connection[PRIVATE_DESTROY_METHOD]()
+      },
+      // @ts-ignore
+      validate: async (connection) => {
+        try {
+          await connection.executeQuery(CompiledQuery.raw('select 1'))
+
+          return true
+        } catch (err) {
+          return false
+        }
+      },
+    })
   }
 
   async init(): Promise<void> {
-    this.#pool = isFunction(this.#config.pool)
-      ? await this.#config.pool()
-      : this.#config.pool
+    // noop
   }
 
   async acquireConnection(): Promise<DatabaseConnection> {
-    const pool = await this.#pool!.connect()
-    const rawConnection = await pool.pool.acquire().promise
-
-    let connection = this.#connections.get(rawConnection)
-
-    if (!connection) {
-      connection = new MssqlConnection(
-        rawConnection,
-        pool,
-        this.#config.tedious
-      )
-      this.#connections.set(rawConnection, connection)
-
-      if (this.#config.onCreateConnection) {
-        await this.#config.onCreateConnection(connection)
-      }
-    }
-
-    return connection
+    return await this.#pool.acquire().promise
   }
 
   async beginTransaction(
-    connection: DatabaseConnection,
+    connection: MssqlConnection,
     settings: TransactionSettings
   ): Promise<void> {
-    // TODO: ...
-    throw new Error('Not implemented')
+    await connection.beginTransaction(settings)
   }
 
-  async commitTransaction(connection: DatabaseConnection): Promise<void> {
-    // TODO: ...
-    throw new Error('Not implemented')
+  async commitTransaction(connection: MssqlConnection): Promise<void> {
+    await connection.commitTransaction()
   }
 
-  async rollbackTransaction(connection: DatabaseConnection): Promise<void> {
-    // TODO: ...
-    throw new Error('Not implemented')
+  async rollbackTransaction(connection: MssqlConnection): Promise<void> {
+    await connection.rollbackTransaction()
   }
 
   async releaseConnection(connection: MssqlConnection): Promise<void> {
-    connection[PRIVATE_RELEASE_METHOD]()
+    await connection[PRIVATE_RELEASE_METHOD]()
+    this.#pool.release(connection)
   }
 
   async destroy(): Promise<void> {
-    if (this.#pool) {
-      const pool = this.#pool
-      this.#pool = undefined
-      await pool.close()
-    }
+    await this.#pool.destroy()
   }
 }
 
 class MssqlConnection implements DatabaseConnection {
-  readonly #pool: ConnectionPool
-  readonly #rawConnection: Connection
+  readonly #connection: Connection
   readonly #tedious: Tedious
 
-  constructor(
-    rawConnection: Connection,
-    pool: ConnectionPool,
-    tedious: Tedious
-  ) {
-    this.#pool = pool
-    this.#rawConnection = rawConnection
+  constructor(connection: Connection, tedious: Tedious) {
+    this.#connection = connection
     this.#tedious = tedious
+  }
+
+  async beginTransaction(settings: TransactionSettings): Promise<void> {
+    const { isolationLevel } = settings
+
+    await new Promise((resolve, reject) =>
+      this.#connection.beginTransaction(
+        (error) => {
+          if (error) reject(error)
+          else resolve(undefined)
+        },
+        isolationLevel ? Date.now().toString() : undefined,
+        isolationLevel
+          ? this.#getTediousIsolationLevel(isolationLevel)
+          : undefined
+      )
+    )
+  }
+
+  async commitTransaction(): Promise<void> {
+    await new Promise((resolve, reject) =>
+      this.#connection.commitTransaction((error) => {
+        if (error) reject(error)
+        else resolve(undefined)
+      })
+    )
   }
 
   async executeQuery<O>(compiledQuery: CompiledQuery): Promise<QueryResult<O>> {
@@ -112,7 +138,7 @@ class MssqlConnection implements DatabaseConnection {
         rows: O[]
         rowCount: number
       }>((resolve, reject) =>
-        this.#rawConnection.execSql(
+        this.#connection.execSql(
           this.#createTediousRequest(compiledQuery, reject, resolve)
         )
       )
@@ -126,6 +152,15 @@ class MssqlConnection implements DatabaseConnection {
     }
   }
 
+  async rollbackTransaction(): Promise<void> {
+    await new Promise((resolve, reject) =>
+      this.#connection.rollbackTransaction((error) => {
+        if (error) reject(error)
+        else resolve(undefined)
+      })
+    )
+  }
+
   async *streamQuery<O>(
     compiledQuery: CompiledQuery,
     chunkSize: number
@@ -134,35 +169,35 @@ class MssqlConnection implements DatabaseConnection {
       throw new Error('chunkSize must be a positive integer')
     }
 
-    const request = this.#createMssqlRequest(compiledQuery)
-    request.stream = true
+    // const request = this.#createMssqlRequest(this.#request, compiledQuery)
+    // request.stream = true
 
-    const cursor = new MssqlCursor<O>(request)
+    // const cursor = new MssqlCursor<O>(request)
 
-    try {
-      request.query(compiledQuery.sql)
+    // try {
+    //   request.query(compiledQuery.sql)
 
-      while (true) {
-        const rows = await cursor.read(chunkSize)
+    //   while (true) {
+    //     const rows = await cursor.read(chunkSize)
 
-        if (rows.length === 0) {
-          break
-        }
+    //     if (rows.length === 0) {
+    //       break
+    //     }
 
-        yield {
-          rows: rows,
-        }
-      }
-    } finally {
-      request.cancel()
-    }
+    //     yield {
+    //       rows: rows,
+    //     }
+    //   }
+    // } finally {
+    //   request.cancel()
+    // }
   }
 
   #createTediousRequest(
     compiledQuery: CompiledQuery,
     reject: (reason?: any) => void,
     resolve: (value: any) => void
-  ): TediousRequest {
+  ): Request {
     const { parameters, sql } = compiledQuery
 
     let promisedRowCount: number | undefined
@@ -213,14 +248,6 @@ class MssqlConnection implements DatabaseConnection {
     return request
   }
 
-  #createMssqlRequest(compiledQuery: CompiledQuery): Request {
-    return compiledQuery.parameters.reduce(
-      (request: Request, param, index) =>
-        request.input(String(index + 1), param),
-      this.#pool.request()
-    )
-  }
-
   #getTediousDataType(value: unknown): any {
     if (isNull(value) || isUndefined(value) || isString(value)) {
       return this.#tedious.TYPES.NVarChar
@@ -253,46 +280,79 @@ class MssqlConnection implements DatabaseConnection {
     return this.#tedious.TYPES.NVarChar
   }
 
-  [PRIVATE_RELEASE_METHOD](): void {
-    this.#pool.pool.release(this.#rawConnection)
-  }
-}
+  #getTediousIsolationLevel(isolationLevel: IsolationLevel) {
+    const { ISOLATION_LEVEL } = this.#tedious
 
-class MssqlCursor<O> {
-  readonly #request: Request
-  readonly #chunk: O[] = []
-
-  constructor(request: Request) {
-    this.#request = request
-  }
-
-  async read(chunkSize: number): Promise<O[]> {
-    if (this.#chunk.length >= chunkSize) {
-      return this.#chunk.splice(0, chunkSize)
+    const mapper: Record<
+      IsolationLevel,
+      (typeof ISOLATION_LEVEL)[keyof typeof ISOLATION_LEVEL]
+    > = {
+      [isolationLevel]: ISOLATION_LEVEL.NO_CHANGE,
+      'read committed': ISOLATION_LEVEL.READ_COMMITTED,
+      'read uncommitted': ISOLATION_LEVEL.READ_UNCOMMITTED,
+      'repeatable read': ISOLATION_LEVEL.REPEATABLE_READ,
+      serializable: ISOLATION_LEVEL.SERIALIZABLE,
+      snapshot: ISOLATION_LEVEL.SNAPSHOT,
     }
 
-    return new Promise<O[]>((resolve, reject) => {
-      const rowListener = (row: O) => {
-        this.#chunk.push(row)
+    return mapper[isolationLevel] || undefined
+  }
 
-        if (this.#chunk.length >= chunkSize) {
-          this.#request.pause()
-          this.#request.off('row', rowListener)
-          resolve(this.#chunk.splice(0, chunkSize))
-        }
-      }
+  [PRIVATE_RELEASE_METHOD](): Promise<void> {
+    return new Promise((resolve, reject) => {
+      this.#connection.reset((error) => {
+        if (error) reject(error)
+        else resolve(undefined)
+      })
+    })
+  }
 
-      this.#request.on('row', rowListener)
-
-      this.#request.once('error', reject)
-
-      this.#request.once('done', () => {
-        if (this.#chunk.length < chunkSize) {
-          resolve(this.#chunk)
-        }
+  [PRIVATE_DESTROY_METHOD](): Promise<void> {
+    return new Promise((resolve) => {
+      this.#connection.once('end', () => {
+        resolve(undefined)
       })
 
-      this.#request.resume()
+      this.#connection.close()
     })
   }
 }
+
+// class MssqlCursor<O> {
+//   readonly #request: Request
+//   readonly #chunk: O[] = []
+
+//   constructor(request: Request) {
+//     this.#request = request
+//   }
+
+//   async read(chunkSize: number): Promise<O[]> {
+//     if (this.#chunk.length >= chunkSize) {
+//       return this.#chunk.splice(0, chunkSize)
+//     }
+
+//     return new Promise<O[]>((resolve, reject) => {
+//       const rowListener = (row: O) => {
+//         this.#chunk.push(row)
+
+//         if (this.#chunk.length >= chunkSize) {
+//           this.#request.pause()
+//           this.#request.off('row', rowListener)
+//           resolve(this.#chunk.splice(0, chunkSize))
+//         }
+//       }
+
+//       this.#request.on('row', rowListener)
+
+//       this.#request.once('error', reject)
+
+//       this.#request.once('done', () => {
+//         if (this.#chunk.length < chunkSize) {
+//           resolve(this.#chunk)
+//         }
+//       })
+
+//       this.#request.resume()
+//     })
+//   }
+// }
