@@ -1010,7 +1010,7 @@ for (const dialect of DIALECTS) {
         await builder.execute()
       })
 
-      if (dialect === 'postgres') {
+      if (dialect === 'postgres' || dialect === 'mysql') {
         it('should create an index with a type', async () => {
           const builder = ctx.db.schema
             .createIndex('test_first_name_index')
@@ -1024,7 +1024,7 @@ for (const dialect of DIALECTS) {
               parameters: [],
             },
             mysql: {
-              sql: 'create index `test_first_name_index` on `test` using hash (`first_name`)',
+              sql: 'create index `test_first_name_index` using hash on `test` (`first_name`)',
               parameters: [],
             },
             sqlite: {
