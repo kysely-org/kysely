@@ -662,6 +662,7 @@ for (const dialect of DIALECTS_WITH_MSSQL) {
             sql: 'select `last_name` from `person` where `first_name` = ? for update skip locked',
             parameters: ['Jennifer'],
           },
+          mssql: NOT_SUPPORTED,
           sqlite: NOT_SUPPORTED,
         })
 
@@ -688,6 +689,7 @@ for (const dialect of DIALECTS_WITH_MSSQL) {
             sql: 'select `last_name` from `person` where `first_name` = ? for update skip locked',
             parameters: ['Jennifer'],
           },
+          mssql: NOT_SUPPORTED,
           sqlite: NOT_SUPPORTED,
         })
 
