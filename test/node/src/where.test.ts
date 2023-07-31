@@ -989,7 +989,11 @@ for (const dialect of DIALECTS_WITH_MSSQL) {
         await query.execute()
       })
 
-      if (dialect !== 'sqlite') {
+      if (
+        dialect === 'postgres' ||
+        dialect === 'mysql' ||
+        dialect === 'mssql'
+      ) {
         it('subquery inside `any` operator', async () => {
           await ctx.db
             .insertInto('pet')
@@ -1028,7 +1032,10 @@ for (const dialect of DIALECTS_WITH_MSSQL) {
               sql: 'select `first_name` from `person` where ? = any((select `name` from `pet` where `pet`.`owner_id` = `person`.`id`))',
               parameters: ['Cat Stevens'],
             },
-            mssql: NOT_SUPPORTED,
+            mssql: {
+              sql: 'select "first_name" from "person" where @1 = any((select "name" from "pet" where "pet"."owner_id" = "person"."id"))',
+              parameters: ['Cat Stevens'],
+            },
             sqlite: NOT_SUPPORTED,
           })
 
