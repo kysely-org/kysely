@@ -58,7 +58,10 @@ import { RootOperationNode, QueryCompiler } from './query-compiler.js'
 import { HavingNode } from '../operation-node/having-node.js'
 import { CreateSchemaNode } from '../operation-node/create-schema-node.js'
 import { DropSchemaNode } from '../operation-node/drop-schema-node.js'
-import { AlterTableNode } from '../operation-node/alter-table-node.js'
+import {
+  AlterTableColumnAlterationNode,
+  AlterTableNode,
+} from '../operation-node/alter-table-node.js'
 import { DropColumnNode } from '../operation-node/drop-column-node.js'
 import { RenameColumnNode } from '../operation-node/rename-column-node.js'
 import { AlterColumnNode } from '../operation-node/alter-column-node.js'
@@ -997,7 +1000,7 @@ export class DefaultQueryCompiler
     }
 
     if (node.columnAlterations) {
-      this.compileList(node.columnAlterations)
+      this.compileColumnAlterations(node.columnAlterations)
     }
   }
 
@@ -1024,7 +1027,10 @@ export class DefaultQueryCompiler
     this.append(' ')
 
     if (node.dataType) {
-      this.append('type ')
+      if (this.announcesNewColumnDataType()) {
+        this.append('type ')
+      }
+
       this.visitNode(node.dataType)
 
       if (node.dataTypeExpression) {
@@ -1483,6 +1489,16 @@ export class DefaultQueryCompiler
     )
 
     return freeze(arr)
+  }
+
+  protected compileColumnAlterations(
+    columnAlterations: readonly AlterTableColumnAlterationNode[]
+  ) {
+    this.compileList(columnAlterations)
+  }
+
+  protected announcesNewColumnDataType(): boolean {
+    return true
   }
 }
 
