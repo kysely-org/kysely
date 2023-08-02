@@ -1,13 +1,6 @@
-import {
-  AliasedRawBuilder,
-  InsertResult,
-  Kysely,
-  SelectQueryBuilder,
-  sql,
-} from '../../../'
+import { AliasedRawBuilder, InsertResult, Kysely, sql } from '../../../'
 
 import {
-  DIALECTS,
   clearDatabase,
   destroyTest,
   initTest,
@@ -19,7 +12,6 @@ import {
   NOT_SUPPORTED,
   insertDefaultDataSet,
   DIALECTS_WITH_MSSQL,
-  BuiltInDialect,
   limit,
 } from './test-setup.js'
 

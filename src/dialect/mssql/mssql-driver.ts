@@ -144,7 +144,7 @@ class MssqlConnection implements DatabaseConnection {
       )
 
       return {
-        numAffectedRows: BigInt(rowCount),
+        numAffectedRows: rowCount !== undefined ? BigInt(rowCount) : undefined,
         rows,
       }
     } catch (err) {
@@ -198,7 +198,7 @@ class MssqlConnection implements DatabaseConnection {
     reject: (reason?: any) => void,
     resolve: (value: any) => void
   ): Request {
-    const { parameters, sql } = compiledQuery
+    const { parameters, query, sql } = compiledQuery
 
     let promisedRowCount: number | undefined
     const rows: Record<string, unknown>[] = []
@@ -241,7 +241,7 @@ class MssqlConnection implements DatabaseConnection {
       request.off('row', rowListener)
       resolve({
         rows,
-        rowCount: promisedRowCount!,
+        rowCount: promisedRowCount,
       })
     })
 
