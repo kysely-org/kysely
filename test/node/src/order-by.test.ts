@@ -1,7 +1,6 @@
 import { sql } from '../../../'
 
 import {
-  DIALECTS,
   clearDatabase,
   destroyTest,
   initTest,
@@ -10,9 +9,10 @@ import {
   expect,
   NOT_SUPPORTED,
   insertDefaultDataSet,
+  DIALECTS_WITH_MSSQL,
 } from './test-setup.js'
 
-for (const dialect of DIALECTS) {
+for (const dialect of DIALECTS_WITH_MSSQL) {
   describe(`${dialect}: order by`, () => {
     let ctx: TestContext
 
@@ -47,7 +47,10 @@ for (const dialect of DIALECTS) {
           sql: 'select * from `person` order by `first_name`',
           parameters: [],
         },
-        mssql: NOT_SUPPORTED,
+        mssql: {
+          sql: 'select * from "person" order by "first_name"',
+          parameters: [],
+        },
         sqlite: {
           sql: 'select * from "person" order by "first_name"',
           parameters: [],
@@ -80,7 +83,10 @@ for (const dialect of DIALECTS) {
           sql: 'select * from `person` order by `first_name`, `last_name` desc',
           parameters: [],
         },
-        mssql: NOT_SUPPORTED,
+        mssql: {
+          sql: 'select * from "person" order by "first_name", "last_name" desc',
+          parameters: [],
+        },
         sqlite: {
           sql: 'select * from "person" order by "first_name", "last_name" desc',
           parameters: [],
@@ -105,7 +111,10 @@ for (const dialect of DIALECTS) {
           sql: 'select * from `person` order by `first_name`, `last_name` desc',
           parameters: [],
         },
-        mssql: NOT_SUPPORTED,
+        mssql: {
+          sql: 'select * from "person" order by "first_name", "last_name" desc',
+          parameters: [],
+        },
         sqlite: {
           sql: 'select * from "person" order by "first_name", "last_name" desc',
           parameters: [],
@@ -149,7 +158,16 @@ for (const dialect of DIALECTS) {
           ],
           parameters: [],
         },
-        mssql: NOT_SUPPORTED,
+        mssql: {
+          sql: [
+            'select "first_name" as "fn",',
+            '"middle_name" as "mn",',
+            '"last_name" as "ln",',
+            '"gender" as "g"',
+            'from "person" order by "fn", "mn" asc, "ln" desc, "g"',
+          ],
+          parameters: [],
+        },
         sqlite: {
           sql: [
             'select "first_name" as "fn",',
@@ -170,10 +188,10 @@ for (const dialect of DIALECTS) {
         .selectFrom('person')
         .selectAll()
         .orderBy(sql`coalesce(${sql.ref('first_name')}, ${sql.lit('foo')}) asc`)
-        .orderBy((eb) => eb.fn.coalesce('first_name', sql.lit('foo')))
+        .orderBy((eb) => eb.fn.coalesce('last_name', sql.lit('foo')))
         .orderBy([
-          sql`coalesce(${sql.ref('first_name')}, ${sql.lit('foo')})`,
-          (eb) => sql`${eb.fn.coalesce('first_name', sql.lit('foo'))} desc`,
+          sql`coalesce(${sql.ref('gender')}, ${sql.lit('foo')})`,
+          (eb) => sql`${eb.fn.coalesce('middle_name', sql.lit('foo'))} desc`,
         ])
 
       testSql(query, dialect, {
@@ -181,9 +199,9 @@ for (const dialect of DIALECTS) {
           sql: [
             'select * from "person"',
             `order by coalesce("first_name", 'foo') asc,`,
-            `coalesce("first_name", 'foo'),`,
-            `coalesce("first_name", 'foo'),`,
-            `coalesce("first_name", 'foo') desc`,
+            `coalesce("last_name", 'foo'),`,
+            `coalesce("gender", 'foo'),`,
+            `coalesce("middle_name", 'foo') desc`,
           ],
           parameters: [],
         },
@@ -191,20 +209,29 @@ for (const dialect of DIALECTS) {
           sql: [
             'select * from `person`',
             "order by coalesce(`first_name`, 'foo') asc,",
-            "coalesce(`first_name`, 'foo'),",
-            "coalesce(`first_name`, 'foo'),",
-            "coalesce(`first_name`, 'foo') desc",
+            "coalesce(`last_name`, 'foo'),",
+            "coalesce(`gender`, 'foo'),",
+            "coalesce(`middle_name`, 'foo') desc",
           ],
           parameters: [],
         },
-        mssql: NOT_SUPPORTED,
+        mssql: {
+          sql: [
+            'select * from "person"',
+            `order by coalesce("first_name", 'foo') asc,`,
+            `coalesce("last_name", 'foo'),`,
+            `coalesce("gender", 'foo'),`,
+            `coalesce("middle_name", 'foo') desc`,
+          ],
+          parameters: [],
+        },
         sqlite: {
           sql: [
             'select * from "person"',
             `order by coalesce("first_name", 'foo') asc,`,
-            `coalesce("first_name", 'foo'),`,
-            `coalesce("first_name", 'foo'),`,
-            `coalesce("first_name", 'foo') desc`,
+            `coalesce("last_name", 'foo'),`,
+            `coalesce("gender", 'foo'),`,
+            `coalesce("middle_name", 'foo') desc`,
           ],
           parameters: [],
         },
@@ -228,7 +255,10 @@ for (const dialect of DIALECTS) {
           sql: "select * from `person` order by coalesce(`first_name`, 'foo') asc",
           parameters: [],
         },
-        mssql: NOT_SUPPORTED,
+        mssql: {
+          sql: `select * from "person" order by coalesce("first_name", 'foo') asc`,
+          parameters: [],
+        },
         sqlite: {
           sql: `select * from "person" order by coalesce("first_name", 'foo') asc`,
           parameters: [],
