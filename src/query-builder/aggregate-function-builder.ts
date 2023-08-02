@@ -5,7 +5,11 @@ import { IdentifierNode } from '../operation-node/identifier-node.js'
 import { preventAwait } from '../util/prevent-await.js'
 import { OverBuilder } from './over-builder.js'
 import { createOverBuilder } from '../parser/parse-utils.js'
-import { AliasedExpression, Expression } from '../expression/expression.js'
+import {
+  AliasableExpression,
+  AliasedExpression,
+  Expression,
+} from '../expression/expression.js'
 import { ReferenceExpression } from '../parser/reference-parser.js'
 import {
   ComparisonOperatorExpression,
@@ -17,7 +21,7 @@ import { SqlBool } from '../util/type-utils.js'
 import { ExpressionOrFactory } from '../parser/expression-parser.js'
 
 export class AggregateFunctionBuilder<DB, TB extends keyof DB, O = unknown>
-  implements Expression<O>
+  implements AliasableExpression<O>
 {
   readonly #props: AggregateFunctionBuilderProps
 
