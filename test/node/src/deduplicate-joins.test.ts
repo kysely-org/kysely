@@ -1,17 +1,16 @@
 import { DeduplicateJoinsPlugin } from '../../..'
 
 import {
-  DIALECTS,
   clearDatabase,
   destroyTest,
   initTest,
   TestContext,
   testSql,
   insertDefaultDataSet,
-  NOT_SUPPORTED,
+  DIALECTS_WITH_MSSQL,
 } from './test-setup.js'
 
-for (const dialect of DIALECTS) {
+for (const dialect of DIALECTS_WITH_MSSQL) {
   describe(`${dialect}: deduplicate joins`, () => {
     let ctx: TestContext
 
@@ -47,7 +46,10 @@ for (const dialect of DIALECTS) {
           sql: 'select from `person` inner join `pet` on `pet`.`owner_id` = `person`.`id`',
           parameters: [],
         },
-        mssql: NOT_SUPPORTED,
+        mssql: {
+          sql: 'select from "person" inner join "pet" on "pet"."owner_id" = "person"."id"',
+          parameters: [],
+        },
         sqlite: {
           sql: 'select from "person" inner join "pet" on "pet"."owner_id" = "person"."id"',
           parameters: [],
@@ -89,7 +91,10 @@ for (const dialect of DIALECTS) {
           sql: 'select from `person` inner join (select `owner_id`, `id` as `pet_id`, `species` from `pet`) as `p` on `p`.`owner_id` = `person`.`id` and `p`.`species` in (?, ?)',
           parameters: ['cat', 'hamster'],
         },
-        mssql: NOT_SUPPORTED,
+        mssql: {
+          sql: 'select from "person" inner join (select "owner_id", "id" as "pet_id", "species" from "pet") as "p" on "p"."owner_id" = "person"."id" and "p"."species" in (@1, @2)',
+          parameters: ['cat', 'hamster'],
+        },
         sqlite: {
           sql: 'select from "person" inner join (select "owner_id", "id" as "pet_id", "species" from "pet") as "p" on "p"."owner_id" = "person"."id" and "p"."species" in (?, ?)',
           parameters: ['cat', 'hamster'],
@@ -113,7 +118,10 @@ for (const dialect of DIALECTS) {
           sql: 'select from `person` inner join `pet` on `pet`.`owner_id` = `person`.`id` inner join `toy` on `toy`.`pet_id` = `pet`.`id`',
           parameters: [],
         },
-        mssql: NOT_SUPPORTED,
+        mssql: {
+          sql: 'select from "person" inner join "pet" on "pet"."owner_id" = "person"."id" inner join "toy" on "toy"."pet_id" = "pet"."id"',
+          parameters: [],
+        },
         sqlite: {
           sql: 'select from "person" inner join "pet" on "pet"."owner_id" = "person"."id" inner join "toy" on "toy"."pet_id" = "pet"."id"',
           parameters: [],
