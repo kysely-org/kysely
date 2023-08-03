@@ -133,7 +133,11 @@ export function parseFilterList(
   const combine = combinator === 'and' ? AndNode.create : OrNode.create
 
   if (list.length === 0) {
-    return ValueNode.createImmediate(combinator === 'and')
+    return BinaryOperationNode.create(
+      ValueNode.createImmediate(1),
+      OperatorNode.create('='),
+      ValueNode.createImmediate(combinator === 'and' ? 1 : 0)
+    )
   }
 
   let node = toOperationNode(list[0])
