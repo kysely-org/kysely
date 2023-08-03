@@ -1,7 +1,6 @@
 import { sql } from '../../../'
 
 import {
-  DIALECTS,
   clearDatabase,
   destroyTest,
   initTest,
@@ -10,9 +9,10 @@ import {
   expect,
   insertDefaultDataSet,
   NOT_SUPPORTED,
+  DIALECTS_WITH_MSSQL,
 } from './test-setup.js'
 
-for (const dialect of DIALECTS) {
+for (const dialect of DIALECTS_WITH_MSSQL) {
   describe(`${dialect}: group by`, () => {
     let ctx: TestContext
 
@@ -48,7 +48,10 @@ for (const dialect of DIALECTS) {
           sql: 'select `gender`, max(first_name) as `max_first_name` from `person` group by `gender` order by `gender`',
           parameters: [],
         },
-        mssql: NOT_SUPPORTED,
+        mssql: {
+          sql: 'select "gender", max(first_name) as "max_first_name" from "person" group by "gender" order by "gender"',
+          parameters: [],
+        },
         sqlite: {
           sql: 'select "gender", max(first_name) as "max_first_name" from "person" group by "gender" order by "gender"',
           parameters: [],
@@ -70,43 +73,45 @@ for (const dialect of DIALECTS) {
       ])
     })
 
-    it('group by selection', async () => {
-      const query = ctx.db
-        .selectFrom('person')
-        .select(['gender as g', sql`max(first_name)`.as('max_first_name')])
-        .groupBy('g')
-        .orderBy('g')
+    if (dialect === 'postgres' || dialect === 'mysql' || dialect === 'sqlite') {
+      it('group by selection', async () => {
+        const query = ctx.db
+          .selectFrom('person')
+          .select(['gender as g', sql`max(first_name)`.as('max_first_name')])
+          .groupBy('g')
+          .orderBy('g')
 
-      testSql(query, dialect, {
-        postgres: {
-          sql: 'select "gender" as "g", max(first_name) as "max_first_name" from "person" group by "g" order by "g"',
-          parameters: [],
-        },
-        mysql: {
-          sql: 'select `gender` as `g`, max(first_name) as `max_first_name` from `person` group by `g` order by `g`',
-          parameters: [],
-        },
-        mssql: NOT_SUPPORTED,
-        sqlite: {
-          sql: 'select "gender" as "g", max(first_name) as "max_first_name" from "person" group by "g" order by "g"',
-          parameters: [],
-        },
+        testSql(query, dialect, {
+          postgres: {
+            sql: 'select "gender" as "g", max(first_name) as "max_first_name" from "person" group by "g" order by "g"',
+            parameters: [],
+          },
+          mysql: {
+            sql: 'select `gender` as `g`, max(first_name) as `max_first_name` from `person` group by `g` order by `g`',
+            parameters: [],
+          },
+          mssql: NOT_SUPPORTED,
+          sqlite: {
+            sql: 'select "gender" as "g", max(first_name) as "max_first_name" from "person" group by "g" order by "g"',
+            parameters: [],
+          },
+        })
+
+        const persons = await query.execute()
+
+        expect(persons).to.have.length(2)
+        expect(persons).to.containSubset([
+          {
+            max_first_name: 'Jennifer',
+            g: 'female',
+          },
+          {
+            max_first_name: 'Sylvester',
+            g: 'male',
+          },
+        ])
       })
-
-      const persons = await query.execute()
-
-      expect(persons).to.have.length(2)
-      expect(persons).to.containSubset([
-        {
-          max_first_name: 'Jennifer',
-          g: 'female',
-        },
-        {
-          max_first_name: 'Sylvester',
-          g: 'male',
-        },
-      ])
-    })
+    }
 
     it('group by two columns', async () => {
       const query = ctx.db
@@ -124,7 +129,10 @@ for (const dialect of DIALECTS) {
           sql: 'select `gender`, max(first_name) as `max_first_name` from `person` group by `gender`, `id` order by `gender`',
           parameters: [],
         },
-        mssql: NOT_SUPPORTED,
+        mssql: {
+          sql: 'select "gender", max(first_name) as "max_first_name" from "person" group by "gender", "id" order by "gender"',
+          parameters: [],
+        },
         sqlite: {
           sql: 'select "gender", max(first_name) as "max_first_name" from "person" group by "gender", "id" order by "gender"',
           parameters: [],
@@ -150,7 +158,10 @@ for (const dialect of DIALECTS) {
           sql: 'select `gender`, max(first_name) as `max_first_name` from `person` group by `person`.`gender` order by `gender` asc',
           parameters: [],
         },
-        mssql: NOT_SUPPORTED,
+        mssql: {
+          sql: 'select "gender", max(first_name) as "max_first_name" from "person" group by "person"."gender" order by "gender" asc',
+          parameters: [],
+        },
         sqlite: {
           sql: 'select "gender", max(first_name) as "max_first_name" from "person" group by "person"."gender" order by "gender" asc',
           parameters: [],
@@ -176,7 +187,10 @@ for (const dialect of DIALECTS) {
           sql: 'select `gender`, max(first_name) as `max_first_name` from `person` group by person.gender order by `gender` asc',
           parameters: [],
         },
-        mssql: NOT_SUPPORTED,
+        mssql: {
+          sql: 'select "gender", max(first_name) as "max_first_name" from "person" group by person.gender order by "gender" asc',
+          parameters: [],
+        },
         sqlite: {
           sql: 'select "gender", max(first_name) as "max_first_name" from "person" group by person.gender order by "gender" asc',
           parameters: [],
@@ -186,51 +200,61 @@ for (const dialect of DIALECTS) {
       await query.execute()
     })
 
-    it('group by a sub query', async () => {
-      const query = ctx.db
-        .selectFrom('person')
-        .select(sql`max(first_name)`.as('max_first_name'))
-        .groupBy((qb) =>
-          qb
-            .selectFrom('pet')
-            .whereRef('person.id', '=', 'pet.owner_id')
-            .select('pet.name')
-        )
-        .orderBy('max_first_name')
+    if (dialect === 'postgres' || dialect === 'mysql' || dialect === 'sqlite') {
+      it('group by a sub query', async () => {
+        const query = ctx.db
+          .selectFrom('person')
+          .select(sql`max(first_name)`.as('max_first_name'))
+          .groupBy((qb) =>
+            qb
+              .selectFrom('pet')
+              .whereRef('person.id', '=', 'pet.owner_id')
+              .select('pet.name')
+          )
+          .orderBy('max_first_name')
 
-      testSql(query, dialect, {
-        postgres: {
-          sql: [
-            'select max(first_name) as "max_first_name"',
-            'from "person"',
-            'group by (select "pet"."name" from "pet" where "person"."id" = "pet"."owner_id")',
-            'order by "max_first_name"',
-          ],
-          parameters: [],
-        },
-        mysql: {
-          sql: [
-            'select max(first_name) as `max_first_name`',
-            'from `person`',
-            'group by (select `pet`.`name` from `pet` where `person`.`id` = `pet`.`owner_id`)',
-            'order by `max_first_name`',
-          ],
-          parameters: [],
-        },
-        mssql: NOT_SUPPORTED,
-        sqlite: {
-          sql: [
-            'select max(first_name) as "max_first_name"',
-            'from "person"',
-            'group by (select "pet"."name" from "pet" where "person"."id" = "pet"."owner_id")',
-            'order by "max_first_name"',
-          ],
-          parameters: [],
-        },
+        testSql(query, dialect, {
+          postgres: {
+            sql: [
+              'select max(first_name) as "max_first_name"',
+              'from "person"',
+              'group by (select "pet"."name" from "pet" where "person"."id" = "pet"."owner_id")',
+              'order by "max_first_name"',
+            ],
+            parameters: [],
+          },
+          mysql: {
+            sql: [
+              'select max(first_name) as `max_first_name`',
+              'from `person`',
+              'group by (select `pet`.`name` from `pet` where `person`.`id` = `pet`.`owner_id`)',
+              'order by `max_first_name`',
+            ],
+            parameters: [],
+          },
+          mssql: {
+            sql: [
+              'select max(first_name) as "max_first_name"',
+              'from "person"',
+              'group by (select "pet"."name" from "pet" where "person"."id" = "pet"."owner_id")',
+              'order by "max_first_name"',
+            ],
+            parameters: [],
+          },
+          sqlite: {
+            sql: [
+              'select max(first_name) as "max_first_name"',
+              'from "person"',
+              'group by (select "pet"."name" from "pet" where "person"."id" = "pet"."owner_id")',
+              'order by "max_first_name"',
+            ],
+            parameters: [],
+          },
+        })
+
+        await query.execute()
       })
-
-      await query.execute()
-    })
+    }
 
     it('conditional group by', async () => {
       const filterByPetCount = true
