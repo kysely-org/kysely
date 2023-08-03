@@ -1,7 +1,6 @@
 import { sql } from '../../..'
 import {
-  DIALECTS,
-  NOT_SUPPORTED,
+  DIALECTS_WITH_MSSQL,
   TestContext,
   clearDatabase,
   destroyTest,
@@ -10,7 +9,7 @@ import {
   testSql,
 } from './test-setup.js'
 
-for (const dialect of DIALECTS) {
+for (const dialect of DIALECTS_WITH_MSSQL) {
   describe(`${dialect}: case`, () => {
     let ctx: TestContext
 
@@ -46,7 +45,10 @@ for (const dialect of DIALECTS) {
           sql: 'select case when `gender` = ? then ? end as `title` from `person`',
           parameters: ['male', 'Mr.'],
         },
-        mssql: NOT_SUPPORTED,
+        mssql: {
+          sql: `select case when "gender" = @1 then @2 end as "title" from "person"`,
+          parameters: ['male', 'Mr.'],
+        },
         sqlite: {
           sql: `select case when "gender" = ? then ? end as "title" from "person"`,
           parameters: ['male', 'Mr.'],
@@ -72,7 +74,10 @@ for (const dialect of DIALECTS) {
           sql: 'select case `gender` when ? then ? end as `title` from `person`',
           parameters: ['male', 'Mr.'],
         },
-        mssql: NOT_SUPPORTED,
+        mssql: {
+          sql: `select case "gender" when @1 then @2 end as "title" from "person"`,
+          parameters: ['male', 'Mr.'],
+        },
         sqlite: {
           sql: `select case "gender" when ? then ? end as "title" from "person"`,
           parameters: ['male', 'Mr.'],
@@ -113,7 +118,14 @@ for (const dialect of DIALECTS) {
           ],
           parameters: ['male', 'female'],
         },
-        mssql: NOT_SUPPORTED,
+        mssql: {
+          sql: [
+            `select case when "gender" = @1 then 'Mr.'`,
+            `when "gender" = @2 then 'Mrs.'`,
+            `end as "title" from "person"`,
+          ],
+          parameters: ['male', 'female'],
+        },
         sqlite: {
           sql: [
             `select case when "gender" = ? then 'Mr.'`,
@@ -158,7 +170,14 @@ for (const dialect of DIALECTS) {
           ],
           parameters: [],
         },
-        mssql: NOT_SUPPORTED,
+        mssql: {
+          sql: [
+            `select case "gender" when 'male' then 'Mr.'`,
+            `when 'female' then 'Mrs.'`,
+            `end as "title" from "person"`,
+          ],
+          parameters: [],
+        },
         sqlite: {
           sql: [
             `select case "gender" when 'male' then 'Mr.'`,
@@ -204,7 +223,14 @@ for (const dialect of DIALECTS) {
           ],
           parameters: ['male', 'Mr.', 'female', 'Mrs.'],
         },
-        mssql: NOT_SUPPORTED,
+        mssql: {
+          sql: [
+            `select case when "gender" = @1 then @2`,
+            `when "gender" = @3 then @4`,
+            `else null end as "title" from "person"`,
+          ],
+          parameters: ['male', 'Mr.', 'female', 'Mrs.'],
+        },
         sqlite: {
           sql: [
             `select case when "gender" = ? then ?`,
@@ -265,7 +291,17 @@ for (const dialect of DIALECTS) {
           ],
           parameters: ['male', 'Mr.', 'female', 'single', 'Ms.', 'Mrs.'],
         },
-        mssql: NOT_SUPPORTED,
+        mssql: {
+          sql: [
+            'select case "gender" when @1 then @2',
+            'when @3 then',
+            'case when ("marital_status" = @4 or',
+            '"marital_status" is null) then @5',
+            'else @6 end',
+            'end as "title" from "person"',
+          ],
+          parameters: ['male', 'Mr.', 'female', 'single', 'Ms.', 'Mrs.'],
+        },
         sqlite: {
           sql: [
             'select case "gender" when ? then ?',
