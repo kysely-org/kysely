@@ -29,7 +29,7 @@ import {
   Database,
   insertDefaultDataSet,
   clearDatabase,
-  DIALECTS,
+  DIALECTS_WITH_MSSQL,
 } from './test-setup.js'
 
 interface JsonTable {
@@ -66,7 +66,9 @@ const jsonFunctions = {
   },
 } as const
 
-for (const dialect of DIALECTS) {
+for (const dialect of DIALECTS_WITH_MSSQL.filter(
+  (dialect) => dialect !== 'mssql'
+)) {
   const { jsonArrayFrom, jsonObjectFrom, jsonBuildObject } =
     jsonFunctions[dialect]
 

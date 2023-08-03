@@ -7,7 +7,7 @@ import {
 } from '../../..'
 import {
   BuiltInDialect,
-  DIALECTS,
+  DIALECTS_WITH_MSSQL,
   NOT_SUPPORTED,
   clearDatabase,
   destroyTest,
@@ -19,7 +19,9 @@ import {
 
 type TestContext = Awaited<ReturnType<typeof initJSONTest>>
 
-for (const dialect of DIALECTS) {
+for (const dialect of DIALECTS_WITH_MSSQL.filter(
+  (dialect) => dialect !== 'mssql'
+)) {
   describe(`${dialect}: json traversal`, () => {
     let ctx: TestContext
 

@@ -1,7 +1,6 @@
 import { sql } from '../../../'
 
 import {
-  DIALECTS,
   clearDatabase,
   destroyTest,
   initTest,
@@ -10,9 +9,11 @@ import {
   testSql,
   expect,
   NOT_SUPPORTED,
+  DIALECTS_WITH_MSSQL,
+  limit,
 } from './test-setup.js'
 
-for (const dialect of DIALECTS) {
+for (const dialect of DIALECTS_WITH_MSSQL) {
   describe(`${dialect}: join`, () => {
     let ctx: TestContext
 
@@ -74,7 +75,10 @@ for (const dialect of DIALECTS) {
             sql: `select * from \`person\` inner join \`pet\` on \`pet\`.\`owner_id\` = \`person\`.\`id\` order by \`person\`.\`first_name\``,
             parameters: [],
           },
-          mssql: NOT_SUPPORTED,
+          mssql: {
+            sql: `select * from "person" inner join "pet" on "pet"."owner_id" = "person"."id" order by "person"."first_name"`,
+            parameters: [],
+          },
           sqlite: {
             sql: `select * from "person" inner join "pet" on "pet"."owner_id" = "person"."id" order by "person"."first_name"`,
             parameters: [],
@@ -136,7 +140,15 @@ for (const dialect of DIALECTS) {
             ],
             parameters: [],
           },
-          mssql: NOT_SUPPORTED,
+          mssql: {
+            sql: [
+              `select * from "person"`,
+              `inner join (select "owner_id" as "oid", "name" from "pet") as "p"`,
+              `on "p"."oid" = "person"."id"`,
+              `order by "person"."first_name"`,
+            ],
+            parameters: [],
+          },
           sqlite: {
             sql: [
               `select * from "person"`,
@@ -187,7 +199,10 @@ for (const dialect of DIALECTS) {
             sql: `select \`pet\`.\`name\` as \`pet_name\`, \`toy\`.\`name\` as \`toy_name\` from \`person\` inner join \`pet\` on \`pet\`.\`owner_id\` = \`person\`.\`id\` inner join \`toy\` on \`toy\`.\`pet_id\` = \`pet\`.\`id\` where \`first_name\` = ?`,
             parameters: ['Jennifer'],
           },
-          mssql: NOT_SUPPORTED,
+          mssql: {
+            sql: `select "pet"."name" as "pet_name", "toy"."name" as "toy_name" from "person" inner join "pet" on "pet"."owner_id" = "person"."id" inner join "toy" on "toy"."pet_id" = "pet"."id" where "first_name" = @1`,
+            parameters: ['Jennifer'],
+          },
           sqlite: {
             sql: `select "pet"."name" as "pet_name", "toy"."name" as "toy_name" from "person" inner join "pet" on "pet"."owner_id" = "person"."id" inner join "toy" on "toy"."pet_id" = "pet"."id" where "first_name" = ?`,
             parameters: ['Jennifer'],
@@ -221,8 +236,7 @@ for (const dialect of DIALECTS) {
                     '=',
                     selectFrom('pet')
                       .select(sql<'hamster'>`'hamster'`.as('hamster'))
-                      .limit(1)
-                      .offset(0)
+                      .$call(limit(1, dialect))
                   ),
                 ])
               )
@@ -237,10 +251,10 @@ for (const dialect of DIALECTS) {
               `inner join "pet"`,
               `on "pet"."owner_id" = "person"."id"`,
               `and "pet"."name" in ($1, $2, $3)`,
-              `and ("pet"."species" = $4 or "species" = $5 or "species" = (select 'hamster' as "hamster" from "pet" limit $6 offset $7))`,
+              `and ("pet"."species" = $4 or "species" = $5 or "species" = (select 'hamster' as "hamster" from "pet" limit $6))`,
               `order by "person"."first_name"`,
             ],
-            parameters: ['Catto', 'Doggo', 'Hammo', 'cat', 'dog', 1, 0],
+            parameters: ['Catto', 'Doggo', 'Hammo', 'cat', 'dog', 1],
           },
           mysql: {
             sql: [
@@ -248,22 +262,32 @@ for (const dialect of DIALECTS) {
               'inner join `pet`',
               'on `pet`.`owner_id` = `person`.`id`',
               'and `pet`.`name` in (?, ?, ?)',
-              "and (`pet`.`species` = ? or `species` = ? or `species` = (select 'hamster' as `hamster` from `pet` limit ? offset ?))",
+              "and (`pet`.`species` = ? or `species` = ? or `species` = (select 'hamster' as `hamster` from `pet` limit ?))",
               'order by `person`.`first_name`',
             ],
-            parameters: ['Catto', 'Doggo', 'Hammo', 'cat', 'dog', 1, 0],
+            parameters: ['Catto', 'Doggo', 'Hammo', 'cat', 'dog', 1],
           },
-          mssql: NOT_SUPPORTED,
+          mssql: {
+            sql: [
+              `select * from "person"`,
+              `inner join "pet"`,
+              `on "pet"."owner_id" = "person"."id"`,
+              `and "pet"."name" in (@1, @2, @3)`,
+              `and ("pet"."species" = @4 or "species" = @5 or "species" = (select top 1 'hamster' as "hamster" from "pet"))`,
+              `order by "person"."first_name"`,
+            ],
+            parameters: ['Catto', 'Doggo', 'Hammo', 'cat', 'dog'],
+          },
           sqlite: {
             sql: [
               `select * from "person"`,
               `inner join "pet"`,
               `on "pet"."owner_id" = "person"."id"`,
               `and "pet"."name" in (?, ?, ?)`,
-              `and ("pet"."species" = ? or "species" = ? or "species" = (select 'hamster' as "hamster" from "pet" limit ? offset ?))`,
+              `and ("pet"."species" = ? or "species" = ? or "species" = (select 'hamster' as "hamster" from "pet" limit ?))`,
               `order by "person"."first_name"`,
             ],
-            parameters: ['Catto', 'Doggo', 'Hammo', 'cat', 'dog', 1, 0],
+            parameters: ['Catto', 'Doggo', 'Hammo', 'cat', 'dog', 1],
           },
         })
 
@@ -287,8 +311,7 @@ for (const dialect of DIALECTS) {
                     eb
                       .selectFrom('pet')
                       .select(sql<'hamster'>`'hamster'`.as('hamster'))
-                      .limit(1)
-                      .offset(0)
+                      .$call(limit(1, dialect))
                   ),
                 ])
               )
@@ -303,10 +326,10 @@ for (const dialect of DIALECTS) {
               `inner join "pet"`,
               `on "pet"."owner_id" = "person"."id"`,
               `and "pet"."name" in ($1, $2, $3)`,
-              `and ("pet"."species" = $4 or "species" = $5 or "species" = (select 'hamster' as "hamster" from "pet" limit $6 offset $7))`,
+              `and ("pet"."species" = $4 or "species" = $5 or "species" = (select 'hamster' as "hamster" from "pet" limit $6))`,
               `order by "person"."first_name"`,
             ],
-            parameters: ['Catto', 'Doggo', 'Hammo', 'cat', 'dog', 1, 0],
+            parameters: ['Catto', 'Doggo', 'Hammo', 'cat', 'dog', 1],
           },
           mysql: {
             sql: [
@@ -314,22 +337,32 @@ for (const dialect of DIALECTS) {
               'inner join `pet`',
               'on `pet`.`owner_id` = `person`.`id`',
               'and `pet`.`name` in (?, ?, ?)',
-              "and (`pet`.`species` = ? or `species` = ? or `species` = (select 'hamster' as `hamster` from `pet` limit ? offset ?))",
+              "and (`pet`.`species` = ? or `species` = ? or `species` = (select 'hamster' as `hamster` from `pet` limit ?))",
               'order by `person`.`first_name`',
             ],
-            parameters: ['Catto', 'Doggo', 'Hammo', 'cat', 'dog', 1, 0],
+            parameters: ['Catto', 'Doggo', 'Hammo', 'cat', 'dog', 1],
           },
-          mssql: NOT_SUPPORTED,
+          mssql: {
+            sql: [
+              `select * from "person"`,
+              `inner join "pet"`,
+              `on "pet"."owner_id" = "person"."id"`,
+              `and "pet"."name" in (@1, @2, @3)`,
+              `and ("pet"."species" = @4 or "species" = @5 or "species" = (select top 1 'hamster' as "hamster" from "pet"))`,
+              `order by "person"."first_name"`,
+            ],
+            parameters: ['Catto', 'Doggo', 'Hammo', 'cat', 'dog'],
+          },
           sqlite: {
             sql: [
               `select * from "person"`,
               `inner join "pet"`,
               `on "pet"."owner_id" = "person"."id"`,
               `and "pet"."name" in (?, ?, ?)`,
-              `and ("pet"."species" = ? or "species" = ? or "species" = (select 'hamster' as "hamster" from "pet" limit ? offset ?))`,
+              `and ("pet"."species" = ? or "species" = ? or "species" = (select 'hamster' as "hamster" from "pet" limit ?))`,
               `order by "person"."first_name"`,
             ],
-            parameters: ['Catto', 'Doggo', 'Hammo', 'cat', 'dog', 1, 0],
+            parameters: ['Catto', 'Doggo', 'Hammo', 'cat', 'dog', 1],
           },
         })
 
@@ -368,7 +401,14 @@ for (const dialect of DIALECTS) {
             ],
             parameters: [],
           },
-          mssql: NOT_SUPPORTED,
+          mssql: {
+            sql: [
+              `select "pet"."id" from "person"`,
+              `inner join "pet" on exists`,
+              `(select "id" from "pet" as "p" where "p"."id" = "pet"."id" and "p"."owner_id" = "person"."id")`,
+            ],
+            parameters: [],
+          },
           sqlite: {
             sql: [
               `select "pet"."id" from "person"`,
@@ -400,7 +440,10 @@ for (const dialect of DIALECTS) {
             sql: `select * from \`person\` left join \`pet\` on \`pet\`.\`owner_id\` = \`person\`.\`id\` order by \`person\`.\`first_name\``,
             parameters: [],
           },
-          mssql: NOT_SUPPORTED,
+          mssql: {
+            sql: `select * from "person" left join "pet" on "pet"."owner_id" = "person"."id" order by "person"."first_name"`,
+            parameters: [],
+          },
           sqlite: {
             sql: `select * from "person" left join "pet" on "pet"."owner_id" = "person"."id" order by "person"."first_name"`,
             parameters: [],
@@ -443,7 +486,15 @@ for (const dialect of DIALECTS) {
             ],
             parameters: [],
           },
-          mssql: NOT_SUPPORTED,
+          mssql: {
+            sql: [
+              `select * from "person"`,
+              `left join (select "owner_id" as "oid", "name" from "pet") as "p"`,
+              `on "p"."oid" = "person"."id"`,
+              `order by "person"."first_name"`,
+            ],
+            parameters: [],
+          },
           sqlite: {
             sql: [
               `select * from "person"`,
@@ -475,7 +526,10 @@ for (const dialect of DIALECTS) {
             sql: `select \`pet\`.\`name\` as \`pet_name\`, \`toy\`.\`name\` as \`toy_name\` from \`person\` left join \`pet\` on \`pet\`.\`owner_id\` = \`person\`.\`id\` left join \`toy\` on \`toy\`.\`pet_id\` = \`pet\`.\`id\` where \`first_name\` = ?`,
             parameters: ['Jennifer'],
           },
-          mssql: NOT_SUPPORTED,
+          mssql: {
+            sql: `select "pet"."name" as "pet_name", "toy"."name" as "toy_name" from "person" left join "pet" on "pet"."owner_id" = "person"."id" left join "toy" on "toy"."pet_id" = "pet"."id" where "first_name" = @1`,
+            parameters: ['Jennifer'],
+          },
           sqlite: {
             sql: `select "pet"."name" as "pet_name", "toy"."name" as "toy_name" from "person" left join "pet" on "pet"."owner_id" = "person"."id" left join "toy" on "toy"."pet_id" = "pet"."id" where "first_name" = ?`,
             parameters: ['Jennifer'],
@@ -502,8 +556,7 @@ for (const dialect of DIALECTS) {
                     eb
                       .selectFrom('pet')
                       .select(sql`'hamster'`.as('hamster'))
-                      .limit(1)
-                      .offset(0)
+                      .$call(limit(1, dialect))
                   ),
                 ])
               )
@@ -518,10 +571,10 @@ for (const dialect of DIALECTS) {
               `left join "pet"`,
               `on "pet"."owner_id" = "person"."id"`,
               `and "pet"."name" in ($1, $2, $3)`,
-              `and ("pet"."species" = $4 or "species" = $5 or "species" = (select 'hamster' as "hamster" from "pet" limit $6 offset $7))`,
+              `and ("pet"."species" = $4 or "species" = $5 or "species" = (select 'hamster' as "hamster" from "pet" limit $6))`,
               `order by "person"."first_name"`,
             ],
-            parameters: ['Catto', 'Doggo', 'Hammo', 'cat', 'dog', 1, 0],
+            parameters: ['Catto', 'Doggo', 'Hammo', 'cat', 'dog', 1],
           },
           mysql: {
             sql: [
@@ -529,22 +582,32 @@ for (const dialect of DIALECTS) {
               'left join `pet`',
               'on `pet`.`owner_id` = `person`.`id`',
               'and `pet`.`name` in (?, ?, ?)',
-              "and (`pet`.`species` = ? or `species` = ? or `species` = (select 'hamster' as `hamster` from `pet` limit ? offset ?))",
+              "and (`pet`.`species` = ? or `species` = ? or `species` = (select 'hamster' as `hamster` from `pet` limit ?))",
               'order by `person`.`first_name`',
             ],
-            parameters: ['Catto', 'Doggo', 'Hammo', 'cat', 'dog', 1, 0],
+            parameters: ['Catto', 'Doggo', 'Hammo', 'cat', 'dog', 1],
           },
-          mssql: NOT_SUPPORTED,
+          mssql: {
+            sql: [
+              `select * from "person"`,
+              `left join "pet"`,
+              `on "pet"."owner_id" = "person"."id"`,
+              `and "pet"."name" in (@1, @2, @3)`,
+              `and ("pet"."species" = @4 or "species" = @5 or "species" = (select top 1 'hamster' as "hamster" from "pet"))`,
+              `order by "person"."first_name"`,
+            ],
+            parameters: ['Catto', 'Doggo', 'Hammo', 'cat', 'dog'],
+          },
           sqlite: {
             sql: [
               `select * from "person"`,
               `left join "pet"`,
               `on "pet"."owner_id" = "person"."id"`,
               `and "pet"."name" in (?, ?, ?)`,
-              `and ("pet"."species" = ? or "species" = ? or "species" = (select 'hamster' as "hamster" from "pet" limit ? offset ?))`,
+              `and ("pet"."species" = ? or "species" = ? or "species" = (select 'hamster' as "hamster" from "pet" limit ?))`,
               `order by "person"."first_name"`,
             ],
-            parameters: ['Catto', 'Doggo', 'Hammo', 'cat', 'dog', 1, 0],
+            parameters: ['Catto', 'Doggo', 'Hammo', 'cat', 'dog', 1],
           },
         })
 
@@ -577,7 +640,10 @@ for (const dialect of DIALECTS) {
             sql: 'select `pet`.`id` from `person` left join `pet` on not exists (select `id` from `pet` as `p` where `p`.`id` = `pet`.`id` and `p`.`owner_id` = `person`.`id`)',
             parameters: [],
           },
-          mssql: NOT_SUPPORTED,
+          mssql: {
+            sql: `select "pet"."id" from "person" left join "pet" on not exists (select "id" from "pet" as "p" where "p"."id" = "pet"."id" and "p"."owner_id" = "person"."id")`,
+            parameters: [],
+          },
           sqlite: {
             sql: `select "pet"."id" from "person" left join "pet" on not exists (select "id" from "pet" as "p" where "p"."id" = "pet"."id" and "p"."owner_id" = "person"."id")`,
             parameters: [],
@@ -588,7 +654,7 @@ for (const dialect of DIALECTS) {
       })
     })
 
-    if (dialect !== 'sqlite') {
+    if (dialect === 'postgres' || dialect === 'mysql' || dialect === 'mssql') {
       describe('right join', () => {
         it(`should right join a table`, async () => {
           const query = ctx.db
@@ -606,11 +672,11 @@ for (const dialect of DIALECTS) {
               sql: `select * from \`person\` right join \`pet\` on \`pet\`.\`owner_id\` = \`person\`.\`id\` order by \`person\`.\`first_name\``,
               parameters: [],
             },
-            mssql: NOT_SUPPORTED,
-            sqlite: {
+            mssql: {
               sql: `select * from "person" right join "pet" on "pet"."owner_id" = "person"."id" order by "person"."first_name"`,
               parameters: [],
             },
+            sqlite: NOT_SUPPORTED,
           })
 
           await query.execute()
@@ -618,7 +684,7 @@ for (const dialect of DIALECTS) {
       })
     }
 
-    if (dialect === 'postgres') {
+    if (dialect === 'postgres' || dialect === 'mssql') {
       describe('full join', () => {
         it(`should full join a table`, async () => {
           const query = ctx.db
@@ -633,14 +699,19 @@ for (const dialect of DIALECTS) {
               parameters: [],
             },
             mysql: NOT_SUPPORTED,
-            mssql: NOT_SUPPORTED,
+            mssql: {
+              sql: `select * from "person" full join "pet" on "pet"."owner_id" = "person"."id" order by "person"."first_name"`,
+              parameters: [],
+            },
             sqlite: NOT_SUPPORTED,
           })
 
           await query.execute()
         })
       })
+    }
 
+    if (dialect === 'postgres') {
       describe('lateral join', () => {
         it('should join an expression laterally', async () => {
           const query = ctx.db
