@@ -1,4 +1,8 @@
-import { AliasedExpression, Expression } from '../expression/expression.js'
+import {
+  AliasableExpression,
+  AliasedExpression,
+  Expression,
+} from '../expression/expression.js'
 import { AliasNode } from '../operation-node/alias-node.js'
 import { IdentifierNode } from '../operation-node/identifier-node.js'
 import { JSONOperatorChainNode } from '../operation-node/json-operator-chain-node.js'
@@ -182,7 +186,7 @@ export class JSONPathBuilder<S, O = S> {
 
 export class TraversedJSONPathBuilder<S, O>
   extends JSONPathBuilder<S, O>
-  implements Expression<O>
+  implements AliasableExpression<O>
 {
   readonly #node: JSONReferenceNode
 

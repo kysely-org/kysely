@@ -1,3 +1,5 @@
+import { DrainOuterGeneric } from './type-utils.js'
+
 /**
  * This type can be used to specify a different type for
  * select, insert and update operations.
@@ -149,11 +151,9 @@ export type UpdateKeys<R> = {
  * // }
  * ```
  */
-export type Selectable<R> = [R] extends [unknown]
-  ? {
-      [K in NonNeverSelectKeys<R>]: SelectType<R[K]>
-    }
-  : never
+export type Selectable<R> = DrainOuterGeneric<{
+  [K in NonNeverSelectKeys<R>]: SelectType<R[K]>
+}>
 
 /**
  * Given a table interface, extracts the insert type from all
@@ -176,13 +176,13 @@ export type Selectable<R> = [R] extends [unknown]
  * // }
  * ```
  */
-export type Insertable<R> = [R] extends [unknown]
-  ? {
-      [K in NonNullableInsertKeys<R>]: InsertType<R[K]>
-    } & {
-      [K in NullableInsertKeys<R>]?: InsertType<R[K]>
-    }
-  : never
+export type Insertable<R> = DrainOuterGeneric<
+  {
+    [K in NonNullableInsertKeys<R>]: InsertType<R[K]>
+  } & {
+    [K in NullableInsertKeys<R>]?: InsertType<R[K]>
+  }
+>
 
 /**
  * Given a table interface, extracts the update type from all
@@ -204,8 +204,6 @@ export type Insertable<R> = [R] extends [unknown]
  * // }
  * ```
  */
-export type Updateable<R> = [R] extends [unknown]
-  ? {
-      [K in UpdateKeys<R>]?: UpdateType<R[K]>
-    }
-  : never
+export type Updateable<R> = DrainOuterGeneric<{
+  [K in UpdateKeys<R>]?: UpdateType<R[K]>
+}>

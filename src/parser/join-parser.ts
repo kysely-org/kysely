@@ -1,5 +1,9 @@
 import { JoinNode, JoinType } from '../operation-node/join-node.js'
-import { AnyColumn, AnyColumnWithTable } from '../util/type-utils.js'
+import {
+  AnyColumn,
+  AnyColumnWithTable,
+  DrainOuterGeneric,
+} from '../util/type-utils.js'
 import {
   TableExpression,
   parseTableExpression,
@@ -10,9 +14,13 @@ import { parseReferentialBinaryOperation } from './binary-operation-parser.js'
 import { JoinBuilder } from '../query-builder/join-builder.js'
 import { createJoinBuilder } from './parse-utils.js'
 
-export type JoinReferenceExpression<DB, TB extends keyof DB, TE> =
-  | AnyJoinColumn<DB, TB, TE>
-  | AnyJoinColumnWithTable<DB, TB, TE>
+export type JoinReferenceExpression<
+  DB,
+  TB extends keyof DB,
+  TE
+> = DrainOuterGeneric<
+  AnyJoinColumn<DB, TB, TE> | AnyJoinColumnWithTable<DB, TB, TE>
+>
 
 export type JoinCallbackExpression<DB, TB extends keyof DB, TE> = (
   join: JoinBuilder<From<DB, TE>, FromTables<DB, TB, TE>>
