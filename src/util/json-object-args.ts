@@ -32,11 +32,11 @@ export function getJsonObjectArgs(
   return args
 }
 
-function colName(col: string): Expression<any> {
+function colName(col: string): Expression<unknown> {
   return new ExpressionWrapper(ValueNode.createImmediate(col))
 }
 
-function colRef(table: string, col: string): Expression<any> {
+function colRef(table: string, col: string): Expression<unknown> {
   return new ExpressionWrapper(
     ReferenceNode.create(ColumnNode.create(col), TableNode.create(table))
   )
