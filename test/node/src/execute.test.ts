@@ -6,16 +6,16 @@ import {
   QueryNode,
 } from '../../../'
 import {
-  DIALECTS,
   clearDatabase,
   destroyTest,
   initTest,
   insertPersons,
   TestContext,
   expect,
+  DIALECTS_WITH_MSSQL,
 } from './test-setup.js'
 
-for (const dialect of DIALECTS) {
+for (const dialect of DIALECTS_WITH_MSSQL) {
   describe(`${dialect}: execute`, () => {
     let ctx: TestContext
 
