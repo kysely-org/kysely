@@ -13,6 +13,7 @@ import {
   ExtractTypeFromStringReference,
 } from '../parser/reference-parser.js'
 import { parseSelectAll } from '../parser/select-parser.js'
+import { GetConfig, GetConfigFallback } from '../type-config.js'
 import { KyselyTypeError } from '../util/type-error.js'
 import { Equals, IsAny } from '../util/type-utils.js'
 import { AggregateFunctionBuilder } from './aggregate-function-builder.js'
@@ -189,7 +190,10 @@ export interface FunctionModule<DB, TB extends keyof DB> {
    * ```
    */
   avg<
-    O extends number | string | null = number | string,
+    O extends number | string | null = GetConfigFallback<
+      'avgType',
+      'floatType'
+    >,
     C extends ReferenceExpression<DB, TB> = ReferenceExpression<DB, TB>
   >(
     column: C
@@ -318,7 +322,10 @@ export interface FunctionModule<DB, TB extends keyof DB> {
    * ```
    */
   count<
-    O extends number | string | bigint,
+    O extends number | string | bigint = GetConfigFallback<
+      'countType',
+      'bigIntType'
+    >,
     C extends ReferenceExpression<DB, TB> = ReferenceExpression<DB, TB>
   >(
     column: C
@@ -393,15 +400,22 @@ export interface FunctionModule<DB, TB extends keyof DB> {
    *   .execute()
    * ```
    */
-  countAll<O extends number | string | bigint, T extends TB = TB>(
+  countAll<
+    O extends number | string | bigint = GetConfigFallback<
+      'countType',
+      'bigIntType'
+    >,
+    T extends TB = TB
+  >(
     table: T
   ): AggregateFunctionBuilder<DB, TB, O>
 
-  countAll<O extends number | string | bigint>(): AggregateFunctionBuilder<
-    DB,
-    TB,
-    O
-  >
+  countAll<
+    O extends number | string | bigint = GetConfigFallback<
+      'countType',
+      'bigIntType'
+    >
+  >(): AggregateFunctionBuilder<DB, TB, O>
 
   /**
    * Calls the `max` function for the column or expression given as the argument.
@@ -576,7 +590,7 @@ export interface FunctionModule<DB, TB extends keyof DB> {
    * ```
    */
   sum<
-    O extends number | string | bigint | null = number | string | bigint,
+    O extends number | string | bigint | null = GetConfig<'sumType'>,
     C extends ReferenceExpression<DB, TB> = ReferenceExpression<DB, TB>
   >(
     column: C
