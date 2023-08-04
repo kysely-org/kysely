@@ -1,3 +1,4 @@
+import { Database } from '../database.js'
 import { OperatorNode, UnaryOperator } from '../operation-node/operator-node.js'
 import { UnaryOperationNode } from '../operation-node/unary-operation-node.js'
 import { ExpressionOrFactory } from './expression-parser.js'
@@ -6,11 +7,10 @@ import {
   ReferenceExpression,
 } from './reference-parser.js'
 
-export type ExistsExpression<DB, TB extends keyof DB> = ExpressionOrFactory<
-  DB,
-  TB,
-  any
->
+export type ExistsExpression<
+  DB extends Database,
+  TB extends keyof DB['tables']
+> = ExpressionOrFactory<DB, TB, any>
 
 export function parseExists(
   operand: ExistsExpression<any, any>

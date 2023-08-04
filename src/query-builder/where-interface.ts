@@ -6,8 +6,12 @@ import { ReferenceExpression } from '../parser/reference-parser.js'
 import { SqlBool } from '../util/type-utils.js'
 import { ExpressionBuilder } from '../expression/expression-builder.js'
 import { ExpressionOrFactory } from '../parser/expression-parser.js'
+import { Database } from '../database.js'
 
-export interface WhereInterface<DB, TB extends keyof DB> {
+export interface WhereInterface<
+  DB extends Database,
+  TB extends keyof DB['tables']
+> {
   /**
    * Adds a `where` expression to the query.
    *

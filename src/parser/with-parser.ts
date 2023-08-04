@@ -4,37 +4,47 @@ import { InsertQueryBuilder } from '../query-builder/insert-query-builder.js'
 import { CommonTableExpressionNameNode } from '../operation-node/common-table-expression-name-node.js'
 import { QueryCreator } from '../query-creator.js'
 import { Expression } from '../expression/expression.js'
-import { ShallowRecord } from '../util/type-utils.js'
+import { DrainOuterGeneric, ShallowRecord } from '../util/type-utils.js'
 import { OperationNode } from '../operation-node/operation-node.js'
 import { createQueryCreator } from './parse-utils.js'
 import { isFunction } from '../util/object-utils.js'
 import { CTEBuilder, CTEBuilderCallback } from '../query-builder/cte-builder.js'
 import { CommonTableExpressionNode } from '../operation-node/common-table-expression-node.js'
+import { Database } from '../database.js'
 
-export type CommonTableExpression<DB, CN extends string> = (
+export type CommonTableExpression<DB extends Database, CN extends string> = (
   creator: QueryCreator<DB>
 ) => CommonTableExpressionOutput<DB, CN>
 
-export type RecursiveCommonTableExpression<DB, CN extends string> = (
+export type RecursiveCommonTableExpression<
+  DB extends Database,
+  CN extends string
+> = (
   creator: QueryCreator<
-    DB & {
-      // Recursive CTE can select from itself.
-      [K in ExtractTableFromCommonTableExpressionName<CN>]: ExtractRowFromCommonTableExpressionName<CN>
-    }
+    DrainOuterGeneric<{
+      tables: DB['tables'] & {
+        // Recursive CTE can select from itself.
+        [K in ExtractTableFromCommonTableExpressionName<CN>]: ExtractRowFromCommonTableExpressionName<CN>
+      }
+      config: DB['config']
+    }>
   >
 ) => CommonTableExpressionOutput<DB, CN>
 
 export type QueryCreatorWithCommonTableExpression<
-  DB,
+  DB extends Database,
   CN extends string,
   CTE
-> = QueryCreator<
-  DB & {
-    [K in ExtractTableFromCommonTableExpressionName<CN>]: ExtractRowFromCommonTableExpression<CTE>
-  }
+> = DrainOuterGeneric<
+  QueryCreator<{
+    tables: DB['tables'] & {
+      [K in ExtractTableFromCommonTableExpressionName<CN>]: ExtractRowFromCommonTableExpression<CTE>
+    }
+    config: DB['config']
+  }>
 >
 
-type CommonTableExpressionOutput<DB, CN extends string> =
+type CommonTableExpressionOutput<DB extends Database, CN extends string> =
   | Expression<ExtractRowFromCommonTableExpressionName<CN>>
   | InsertQueryBuilder<DB, any, ExtractRowFromCommonTableExpressionName<CN>>
   | UpdateQueryBuilder<

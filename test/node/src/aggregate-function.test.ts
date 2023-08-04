@@ -953,14 +953,18 @@ for (const dialect of DIALECTS) {
   })
 }
 
-function getAggregateFunctionFromTestContext<TB extends keyof Database>(
+function getAggregateFunctionFromTestContext<
+  TB extends keyof Database['tables']
+>(
   ctx: TestContext,
   funcName: (typeof funcNames)[number]
 ): AggregateFunction<TB> {
   return ctx.db.fn[funcName] as any
 }
 
-function getAggregateFunctionFromExpressionBuilder<TB extends keyof Database>(
+function getAggregateFunctionFromExpressionBuilder<
+  TB extends keyof Database['tables']
+>(
   eb: ExpressionBuilder<Database, TB>,
   funcName: (typeof funcNames)[number]
 ): AggregateFunction<TB> {
@@ -968,7 +972,7 @@ function getAggregateFunctionFromExpressionBuilder<TB extends keyof Database>(
 }
 
 type AggregateFunction<
-  TB extends keyof Database,
+  TB extends keyof Database['tables'],
   C extends SimpleReferenceExpression<Database, TB> = SimpleReferenceExpression<
     Database,
     TB

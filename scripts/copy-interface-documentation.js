@@ -22,7 +22,7 @@ const OBJECT_REGEXES = [
   /^(?:export )?declare (?:abstract )?class (\w+)/,
   /^(?:export )?interface (\w+)/,
 ]
-const GENERIC_ARGUMENTS_REGEX = /<[\w"'`,{}=| ]+>/g
+const GENERIC_ARGUMENTS_REGEX = /<[\w"'`,{}=|\[\] ]+>/g
 const JSDOC_START_REGEX = /^\s+\/\*\*/
 const JSDOC_END_REGEX = /^\s+\*\//
 

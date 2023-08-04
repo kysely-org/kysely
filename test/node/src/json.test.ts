@@ -30,6 +30,7 @@ import {
   insertDefaultDataSet,
   clearDatabase,
   DIALECTS,
+  Tables,
 } from './test-setup.js'
 
 interface JsonTable {
@@ -66,7 +67,10 @@ for (const dialect of DIALECTS) {
 
   describe(`${dialect} json tests`, () => {
     let ctx: TestContext
-    let db: Kysely<Database & { json_table: JsonTable }>
+    let db: Kysely<{
+      tables: Tables & { json_table: JsonTable }
+      config: Database['config']
+    }>
 
     before(async function () {
       ctx = await initTest(this, dialect)

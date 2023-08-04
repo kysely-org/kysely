@@ -189,12 +189,15 @@ async function testExpressionBuilderSelect(
 
 async function textExpressionBuilderAny(
   eb: ExpressionBuilder<
-    Database & {
-      actor: {
-        id: string
-        movie_earnings: number[]
-        nicknames: string[] | null
+    {
+      tables: Database['tables'] & {
+        actor: {
+          id: string
+          movie_earnings: number[]
+          nicknames: string[] | null
+        }
       }
+      config: Database['config']
     },
     'actor'
   >

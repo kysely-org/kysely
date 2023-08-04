@@ -33,26 +33,31 @@ import {
 import { JSONReferenceNode } from '../operation-node/json-reference-node.js'
 import { JSONOperatorChainNode } from '../operation-node/json-operator-chain-node.js'
 import { JSONPathNode } from '../operation-node/json-path-node.js'
+import { Database } from '../database.js'
 
-export type StringReference<DB, TB extends keyof DB> =
-  | AnyColumn<DB, TB>
-  | AnyColumnWithTable<DB, TB>
+export type StringReference<
+  DB extends Database,
+  TB extends keyof DB['tables']
+> = AnyColumn<DB, TB> | AnyColumnWithTable<DB, TB>
 
-export type SimpleReferenceExpression<DB, TB extends keyof DB> =
-  | StringReference<DB, TB>
-  | DynamicReferenceBuilder<any>
+export type SimpleReferenceExpression<
+  DB extends Database,
+  TB extends keyof DB['tables']
+> = StringReference<DB, TB> | DynamicReferenceBuilder<any>
 
-export type ReferenceExpression<DB, TB extends keyof DB> =
-  | SimpleReferenceExpression<DB, TB>
-  | ExpressionOrFactory<DB, TB, any>
+export type ReferenceExpression<
+  DB extends Database,
+  TB extends keyof DB['tables']
+> = SimpleReferenceExpression<DB, TB> | ExpressionOrFactory<DB, TB, any>
 
-export type ReferenceExpressionOrList<DB, TB extends keyof DB> =
-  | ReferenceExpression<DB, TB>
-  | ReadonlyArray<ReferenceExpression<DB, TB>>
+export type ReferenceExpressionOrList<
+  DB extends Database,
+  TB extends keyof DB['tables']
+> = ReferenceExpression<DB, TB> | ReadonlyArray<ReferenceExpression<DB, TB>>
 
 export type ExtractTypeFromReferenceExpression<
-  DB,
-  TB extends keyof DB,
+  DB extends Database,
+  TB extends keyof DB['tables'],
   RE,
   DV = unknown
 > = RE extends string
@@ -68,20 +73,20 @@ export type ExtractTypeFromReferenceExpression<
   : DV
 
 export type ExtractTypeFromStringReference<
-  DB,
-  TB extends keyof DB,
+  DB extends Database,
+  TB extends keyof DB['tables'],
   RE extends string,
   DV = unknown
 > = RE extends `${infer SC}.${infer T}.${infer C}`
   ? `${SC}.${T}` extends TB
-    ? C extends keyof DB[`${SC}.${T}`]
-      ? DB[`${SC}.${T}`][C]
+    ? C extends keyof DB['tables'][`${SC}.${T}`]
+      ? DB['tables'][`${SC}.${T}`][C]
       : never
     : never
   : RE extends `${infer T}.${infer C}`
   ? T extends TB
-    ? C extends keyof DB[T]
-      ? DB[T][C]
+    ? C extends keyof DB['tables'][T]
+      ? DB['tables'][T][C]
       : never
     : never
   : RE extends AnyColumn<DB, TB>

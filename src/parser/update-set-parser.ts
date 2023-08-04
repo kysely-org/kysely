@@ -7,23 +7,28 @@ import {
 import { UpdateKeys, UpdateType } from '../util/column-type.js'
 import { isFunction } from '../util/object-utils.js'
 import { parseValueExpression, ValueExpression } from './value-parser.js'
+import { Database } from '../database.js'
 
-export type UpdateObject<DB, TB extends keyof DB, UT extends keyof DB = TB> = {
-  [C in UpdateKeys<DB[UT]>]?:
-    | ValueExpression<DB, TB, UpdateType<DB[UT][C]>>
+export type UpdateObject<
+  DB extends Database,
+  TB extends keyof DB['tables'],
+  UT extends keyof DB['tables'] = TB
+> = {
+  [C in UpdateKeys<DB['tables'][UT]>]?:
+    | ValueExpression<DB, TB, UpdateType<DB['tables'][UT][C]>>
     | undefined
 }
 
 export type UpdateObjectFactory<
-  DB,
-  TB extends keyof DB,
-  UT extends keyof DB
+  DB extends Database,
+  TB extends keyof DB['tables'],
+  UT extends keyof DB['tables']
 > = (eb: ExpressionBuilder<DB, TB>) => UpdateObject<DB, TB, UT>
 
 export type UpdateExpression<
-  DB,
-  TB extends keyof DB,
-  UT extends keyof DB = TB
+  DB extends Database,
+  TB extends keyof DB['tables'],
+  UT extends keyof DB['tables'] = TB
 > = UpdateObject<DB, TB, UT> | UpdateObjectFactory<DB, TB, UT>
 
 export function parseUpdateExpression(

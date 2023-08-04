@@ -20,30 +20,34 @@ import {
   expressionBuilder,
   ExpressionBuilder,
 } from '../expression/expression-builder.js'
+import { Database } from '../database.js'
 
-export type InsertObject<DB, TB extends keyof DB> = {
-  [C in NonNullableInsertKeys<DB[TB]>]: ValueExpression<
+export type InsertObject<DB extends Database, TB extends keyof DB['tables']> = {
+  [C in NonNullableInsertKeys<DB['tables'][TB]>]: ValueExpression<
     DB,
     TB,
-    InsertType<DB[TB][C]>
+    InsertType<DB['tables'][TB][C]>
   >
 } & {
-  [C in NullableInsertKeys<DB[TB]>]?:
-    | ValueExpression<DB, TB, InsertType<DB[TB][C]>>
+  [C in NullableInsertKeys<DB['tables'][TB]>]?:
+    | ValueExpression<DB, TB, InsertType<DB['tables'][TB][C]>>
     | undefined
 }
 
-export type InsertObjectOrList<DB, TB extends keyof DB> =
-  | InsertObject<DB, TB>
-  | ReadonlyArray<InsertObject<DB, TB>>
+export type InsertObjectOrList<
+  DB extends Database,
+  TB extends keyof DB['tables']
+> = InsertObject<DB, TB> | ReadonlyArray<InsertObject<DB, TB>>
 
-export type InsertObjectOrListFactory<DB, TB extends keyof DB> = (
-  eb: ExpressionBuilder<DB, TB>
-) => InsertObjectOrList<DB, TB>
+export type InsertObjectOrListFactory<
+  DB extends Database,
+  TB extends keyof DB['tables']
+> = (eb: ExpressionBuilder<DB, TB>) => InsertObjectOrList<DB, TB>
 
-export type InsertExpression<DB, TB extends keyof DB> =
-  | InsertObjectOrList<DB, TB>
-  | InsertObjectOrListFactory<DB, TB>
+export type InsertExpression<
+  DB extends Database,
+  TB extends keyof DB['tables']
+> = InsertObjectOrList<DB, TB> | InsertObjectOrListFactory<DB, TB>
 
 export function parseInsertExpression(
   arg: InsertExpression<any, any>

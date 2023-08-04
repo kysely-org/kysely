@@ -16,6 +16,7 @@ import {
   clearDatabase,
   DIALECTS,
   Person,
+  Tables,
 } from './test-setup.js'
 
 interface PersonWithArrays extends Person {
@@ -31,7 +32,10 @@ for (const dialect of DIALECTS) {
 
   describe(`${dialect} array tests`, () => {
     let ctx: TestContext
-    let db: Kysely<Omit<Database, 'person'> & { person: PersonWithArrays }>
+    let db: Kysely<{
+      tables: Omit<Tables, 'person'> & { person: PersonWithArrays }
+      config: Database['config']
+    }>
 
     before(async function () {
       ctx = await initTest(this, dialect)

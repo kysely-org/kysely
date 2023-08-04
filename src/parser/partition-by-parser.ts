@@ -1,3 +1,4 @@
+import { Database } from '../database.js'
 import { DynamicReferenceBuilder } from '../dynamic/dynamic-reference-builder.js'
 import { PartitionByItemNode } from '../operation-node/partition-by-item-node.js'
 import { SimpleReferenceExpressionNode } from '../operation-node/simple-reference-expression-node.js'
@@ -6,13 +7,15 @@ import {
   StringReference,
 } from './reference-parser.js'
 
-export type PartitionByExpression<DB, TB extends keyof DB> =
-  | StringReference<DB, TB>
-  | DynamicReferenceBuilder<any>
+export type PartitionByExpression<
+  DB extends Database,
+  TB extends keyof DB['tables']
+> = StringReference<DB, TB> | DynamicReferenceBuilder<any>
 
-export type PartitionByExpressionOrList<DB, TB extends keyof DB> =
-  | ReadonlyArray<PartitionByExpression<DB, TB>>
-  | PartitionByExpression<DB, TB>
+export type PartitionByExpressionOrList<
+  DB extends Database,
+  TB extends keyof DB['tables']
+> = ReadonlyArray<PartitionByExpression<DB, TB>> | PartitionByExpression<DB, TB>
 
 export function parsePartitionBy(
   partitionBy: PartitionByExpressionOrList<any, any>

@@ -1,3 +1,4 @@
+import { Database } from '../database.js'
 import {
   ComparisonOperatorExpression,
   OperandValueExpressionOrList,
@@ -6,7 +7,10 @@ import { ExpressionOrFactory } from '../parser/expression-parser.js'
 import { ReferenceExpression } from '../parser/reference-parser.js'
 import { SqlBool } from '../util/type-utils.js'
 
-export interface HavingInterface<DB, TB extends keyof DB> {
+export interface HavingInterface<
+  DB extends Database,
+  TB extends keyof DB['tables']
+> {
   /**
    * Just like {@link WhereInterface.where | where} but adds a `having` statement
    * instead of a `where` statement.

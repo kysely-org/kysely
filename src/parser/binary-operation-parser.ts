@@ -36,16 +36,17 @@ import { SelectType } from '../util/column-type.js'
 import { AndNode } from '../operation-node/and-node.js'
 import { ParensNode } from '../operation-node/parens-node.js'
 import { OrNode } from '../operation-node/or-node.js'
+import { Database } from '../database.js'
 
 export type OperandValueExpression<
-  DB,
-  TB extends keyof DB,
+  DB extends Database,
+  TB extends keyof DB['tables'],
   RE
 > = ValueExpression<DB, TB, ExtractTypeFromReferenceExpression<DB, TB, RE>>
 
 export type OperandValueExpressionOrList<
-  DB,
-  TB extends keyof DB,
+  DB extends Database,
+  TB extends keyof DB['tables'],
   RE
 > = ValueExpressionOrList<
   DB,
@@ -60,7 +61,7 @@ export type ComparisonOperatorExpression =
   | ComparisonOperator
   | Expression<unknown>
 
-export type FilterObject<DB, TB extends keyof DB> = {
+export type FilterObject<DB extends Database, TB extends keyof DB['tables']> = {
   [R in StringReference<DB, TB>]?: ValueExpressionOrList<
     DB,
     TB,

@@ -60,9 +60,13 @@ import { Explainable, ExplainFormat } from '../util/explainable.js'
 import { Expression } from '../expression/expression.js'
 import { KyselyTypeError } from '../util/type-error.js'
 import { Streamable } from '../util/streamable.js'
+import { Database } from '../database.js'
 
-export class InsertQueryBuilder<DB, TB extends keyof DB, O>
-  implements
+export class InsertQueryBuilder<
+  DB extends Database,
+  TB extends keyof DB['tables'],
+  O
+> implements
     ReturningInterface<DB, TB, O>,
     OperationNodeSource,
     Compilable<O>,
@@ -258,7 +262,7 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    * ```
    */
   columns(
-    columns: ReadonlyArray<keyof DB[TB] & string>
+    columns: ReadonlyArray<keyof DB['tables'][TB] & string>
   ): InsertQueryBuilder<DB, TB, O> {
     return new InsertQueryBuilder({
       ...this.#props,
@@ -567,7 +571,7 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
     })
   }
 
-  returningAll(): InsertQueryBuilder<DB, TB, Selectable<DB[TB]>> {
+  returningAll(): InsertQueryBuilder<DB, TB, Selectable<DB['tables'][TB]>> {
     return new InsertQueryBuilder({
       ...this.#props,
       queryNode: QueryNode.cloneWithReturning(

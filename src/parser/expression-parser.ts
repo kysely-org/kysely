@@ -13,6 +13,7 @@ import {
 } from '../expression/expression-builder.js'
 import { SelectQueryBuilderExpression } from '../query-builder/select-query-builder-expression.js'
 import { isFunction } from '../util/object-utils.js'
+import { Database } from '../database.js'
 
 /**
  * Like `Expression<V>` but also accepts a select query with an output
@@ -26,25 +27,33 @@ export type OperandExpression<V> =
   // is also an `Expression`.
   Expression<V> | SelectQueryBuilderExpression<Record<string, V>>
 
-export type ExpressionOrFactory<DB, TB extends keyof DB, V> =
-  | OperandExpression<V>
-  | OperandExpressionFactory<DB, TB, V>
+export type ExpressionOrFactory<
+  DB extends Database,
+  TB extends keyof DB['tables'],
+  V
+> = OperandExpression<V> | OperandExpressionFactory<DB, TB, V>
 
-export type AliasedExpressionOrFactory<DB, TB extends keyof DB> =
-  | AliasedExpression<any, any>
-  | AliasedExpressionFactory<DB, TB>
+export type AliasedExpressionOrFactory<
+  DB extends Database,
+  TB extends keyof DB['tables']
+> = AliasedExpression<any, any> | AliasedExpressionFactory<DB, TB>
 
-export type ExpressionFactory<DB, TB extends keyof DB, V> = (
-  eb: ExpressionBuilder<DB, TB>
-) => Expression<V>
+export type ExpressionFactory<
+  DB extends Database,
+  TB extends keyof DB['tables'],
+  V
+> = (eb: ExpressionBuilder<DB, TB>) => Expression<V>
 
-type OperandExpressionFactory<DB, TB extends keyof DB, V> = (
-  eb: ExpressionBuilder<DB, TB>
-) => OperandExpression<V>
+type OperandExpressionFactory<
+  DB extends Database,
+  TB extends keyof DB['tables'],
+  V
+> = (eb: ExpressionBuilder<DB, TB>) => OperandExpression<V>
 
-type AliasedExpressionFactory<DB, TB extends keyof DB> = (
-  eb: ExpressionBuilder<DB, TB>
-) => AliasedExpression<any, any>
+type AliasedExpressionFactory<
+  DB extends Database,
+  TB extends keyof DB['tables']
+> = (eb: ExpressionBuilder<DB, TB>) => AliasedExpression<any, any>
 
 export function parseExpression(
   exp: ExpressionOrFactory<any, any, any>

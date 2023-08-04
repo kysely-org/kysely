@@ -1,3 +1,4 @@
+import { Database } from '../database.js'
 import { DynamicReferenceBuilder } from '../dynamic/dynamic-reference-builder.js'
 import { ExpressionWrapper } from '../expression/expression-wrapper.js'
 import { Expression } from '../expression/expression.js'
@@ -62,7 +63,10 @@ import { SelectQueryBuilderExpression } from '../query-builder/select-query-buil
  * having count("pet"."id") > $1
  * ```
  */
-export interface FunctionModule<DB, TB extends keyof DB> {
+export interface FunctionModule<
+  DB extends Database,
+  TB extends keyof DB['tables']
+> {
   /**
    * Creates a function call.
    *
@@ -627,10 +631,10 @@ export interface FunctionModule<DB, TB extends keyof DB> {
   any<T>(expr: Expression<ReadonlyArray<T>>): ExpressionWrapper<DB, TB, T>
 }
 
-export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
-  DB,
-  TB
-> {
+export function createFunctionModule<
+  DB extends Database,
+  TB extends keyof DB['tables']
+>(): FunctionModule<DB, TB> {
   const fn = <T>(
     name: string,
     args: ReadonlyArray<ReferenceExpression<DB, TB>>
@@ -724,8 +728,8 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
 }
 
 type OutputBoundStringReference<
-  DB,
-  TB extends keyof DB,
+  DB extends Database,
+  TB extends keyof DB['tables'],
   C extends StringReference<DB, TB>,
   O
 > = IsAny<O> extends true
@@ -738,8 +742,8 @@ type OutputBoundStringReference<
   : never
 
 type StringReferenceBoundAggregateFunctionBuilder<
-  DB,
-  TB extends keyof DB,
+  DB extends Database,
+  TB extends keyof DB['tables'],
   C extends StringReference<DB, TB>,
   O
 > = AggregateFunctionBuilder<

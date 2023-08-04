@@ -1,6 +1,10 @@
+import { Database } from '../database.js'
+import { Expression } from '../expression/expression.js'
+import { OperationNode } from '../operation-node/operation-node.js'
 import { PrimitiveValueListNode } from '../operation-node/primitive-value-list-node.js'
 import { ValueListNode } from '../operation-node/value-list-node.js'
 import { ValueNode } from '../operation-node/value-node.js'
+import { SelectQueryBuilderExpression } from '../query-builder/select-query-builder-expression.js'
 import {
   isBoolean,
   isNull,
@@ -8,21 +12,22 @@ import {
   isReadonlyArray,
 } from '../util/object-utils.js'
 import {
-  parseExpression,
   ExpressionOrFactory,
   isExpressionOrFactory,
+  parseExpression,
 } from './expression-parser.js'
-import { OperationNode } from '../operation-node/operation-node.js'
-import { Expression } from '../expression/expression.js'
-import { SelectQueryBuilderExpression } from '../query-builder/select-query-builder-expression.js'
 
-export type ValueExpression<DB, TB extends keyof DB, V> =
-  | V
-  | ExpressionOrFactory<DB, TB, V>
+export type ValueExpression<
+  DB extends Database,
+  TB extends keyof DB['tables'],
+  V
+> = V | ExpressionOrFactory<DB, TB, V>
 
-export type ValueExpressionOrList<DB, TB extends keyof DB, V> =
-  | ValueExpression<DB, TB, V>
-  | ReadonlyArray<ValueExpression<DB, TB, V>>
+export type ValueExpressionOrList<
+  DB extends Database,
+  TB extends keyof DB['tables'],
+  V
+> = ValueExpression<DB, TB, V> | ReadonlyArray<ValueExpression<DB, TB, V>>
 
 export type ExtractTypeFromValueExpressionOrList<VE> = VE extends ReadonlyArray<
   infer AV

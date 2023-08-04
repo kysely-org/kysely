@@ -1,3 +1,4 @@
+import { Database } from '../database.js'
 import { JoinNode } from '../operation-node/join-node.js'
 import { OperationNodeSource } from '../operation-node/operation-node-source.js'
 import { RawNode } from '../operation-node/raw-node.js'
@@ -13,7 +14,7 @@ import { freeze } from '../util/object-utils.js'
 import { preventAwait } from '../util/prevent-await.js'
 import { SqlBool } from '../util/type-utils.js'
 
-export class JoinBuilder<DB, TB extends keyof DB>
+export class JoinBuilder<DB extends Database, TB extends keyof DB['tables']>
   implements OperationNodeSource
 {
   readonly #props: JoinBuilderProps

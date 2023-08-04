@@ -1,3 +1,4 @@
+import { Database } from '../database.js'
 import {
   ExpressionBuilder,
   createExpressionBuilder,
@@ -10,7 +11,7 @@ import {
 import { isFunction, isReadonlyArray } from '../util/object-utils.js'
 import { parseExpression } from './expression-parser.js'
 
-export type SetOperandExpression<DB, O> =
+export type SetOperandExpression<DB extends Database, O> =
   | Expression<O>
   | ReadonlyArray<Expression<O>>
   | ((

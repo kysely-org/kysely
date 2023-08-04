@@ -25,7 +25,8 @@ for (const dialect of DIALECTS) {
     }
 
     interface CamelDatabase {
-      camelPerson: CamelPerson
+      tables: { camelPerson: CamelPerson }
+      config: {}
     }
 
     before(async function () {

@@ -28,7 +28,7 @@ export interface Book {
   name: string
 }
 
-export interface Database {
+export interface Tables {
   person: Person
   pet: Pet
   movie: Movie
@@ -37,6 +37,11 @@ export interface Database {
   toy: Toy
   person_metadata: PersonMetadata
   action: Action
+}
+
+export interface Database {
+  tables: Tables
+  config: {}
 }
 
 export type Action =

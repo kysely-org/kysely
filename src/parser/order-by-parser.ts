@@ -1,3 +1,4 @@
+import { Database } from '../database.js'
 import { isDynamicReferenceBuilder } from '../dynamic/dynamic-reference-builder.js'
 import { Expression } from '../expression/expression.js'
 import { OperationNode } from '../operation-node/operation-node.js'
@@ -9,23 +10,31 @@ import { ReferenceExpression } from './reference-parser.js'
 
 export type OrderByDirection = 'asc' | 'desc'
 
-export function isOrderByDirection(thing: unknown): thing is OrderByDirection {
-  return thing === 'asc' || thing === 'desc'
-}
+export type DirectedOrderByStringReference<
+  DB extends Database,
+  TB extends keyof DB['tables'],
+  O
+> = `${StringReference<DB, TB> | (keyof O & string)} ${OrderByDirection}`
 
-export type DirectedOrderByStringReference<DB, TB extends keyof DB, O> = `${
-  | StringReference<DB, TB>
-  | (keyof O & string)} ${OrderByDirection}`
+export type UndirectedOrderByExpression<
+  DB extends Database,
+  TB extends keyof DB['tables'],
+  O
+> = ReferenceExpression<DB, TB> | (keyof O & string)
 
-export type UndirectedOrderByExpression<DB, TB extends keyof DB, O> =
-  | ReferenceExpression<DB, TB>
-  | (keyof O & string)
-
-export type OrderByExpression<DB, TB extends keyof DB, O> =
+export type OrderByExpression<
+  DB extends Database,
+  TB extends keyof DB['tables'],
+  O
+> =
   | UndirectedOrderByExpression<DB, TB, O>
   | DirectedOrderByStringReference<DB, TB, O>
 
 export type OrderByDirectionExpression = OrderByDirection | Expression<any>
+
+export function isOrderByDirection(thing: unknown): thing is OrderByDirection {
+  return thing === 'asc' || thing === 'desc'
+}
 
 export function parseOrderBy(args: any[]): OrderByItemNode[] {
   if (args.length === 2) {

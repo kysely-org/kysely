@@ -352,7 +352,7 @@ async function testCall(db: Kysely<Database>) {
   expectType<{ species: 'dog' | 'cat'; name: string }>(r1)
 }
 
-async function testGenericSelect<T extends keyof Database>(
+async function testGenericSelect<T extends keyof Database['tables']>(
   db: Kysely<Database>,
   table: T
 ) {

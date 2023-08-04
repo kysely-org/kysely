@@ -1,3 +1,4 @@
+import { Database } from '../database.js'
 import { Expression } from '../expression/expression.js'
 import { ColumnNode } from '../operation-node/column-node.js'
 import { IdentifierNode } from '../operation-node/identifier-node.js'
@@ -17,11 +18,13 @@ import {
 } from '../parser/update-set-parser.js'
 import { freeze } from '../util/object-utils.js'
 import { preventAwait } from '../util/prevent-await.js'
-import { AnyColumn, SqlBool } from '../util/type-utils.js'
+import { AnyColumn, DrainOuterGeneric, SqlBool } from '../util/type-utils.js'
 import { WhereInterface } from './where-interface.js'
 
-export class OnConflictBuilder<DB, TB extends keyof DB>
-  implements WhereInterface<DB, TB>
+export class OnConflictBuilder<
+  DB extends Database,
+  TB extends keyof DB['tables']
+> implements WhereInterface<DB, TB>
 {
   readonly #props: OnConflictBuilderProps
 
@@ -256,14 +259,24 @@ export interface OnConflictBuilderProps {
 
 preventAwait(OnConflictBuilder, "don't await OnConflictBuilder instances.")
 
-export type OnConflictDatabase<DB, TB extends keyof DB> = {
-  [K in keyof DB | 'excluded']: K extends keyof DB ? DB[K] : DB[TB]
-}
+export type OnConflictDatabase<
+  DB extends Database,
+  TB extends keyof DB['tables']
+> = DrainOuterGeneric<{
+  tables: {
+    [K in keyof DB['tables'] | 'excluded']: K extends keyof DB['tables']
+      ? DB['tables'][K]
+      : DB['tables'][TB]
+  }
+  config: DB['config']
+}>
 
 export type OnConflictTables<TB> = TB | 'excluded'
 
-export class OnConflictDoNothingBuilder<DB, TB extends keyof DB>
-  implements OperationNodeSource
+export class OnConflictDoNothingBuilder<
+  DB extends Database,
+  TB extends keyof DB['tables']
+> implements OperationNodeSource
 {
   readonly #props: OnConflictBuilderProps
 
@@ -281,8 +294,10 @@ preventAwait(
   "don't await OnConflictDoNothingBuilder instances."
 )
 
-export class OnConflictUpdateBuilder<DB, TB extends keyof DB>
-  implements WhereInterface<DB, TB>, OperationNodeSource
+export class OnConflictUpdateBuilder<
+  DB extends Database,
+  TB extends keyof DB['tables']
+> implements WhereInterface<DB, TB>, OperationNodeSource
 {
   readonly #props: OnConflictBuilderProps
 

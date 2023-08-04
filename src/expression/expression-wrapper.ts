@@ -1,3 +1,4 @@
+import { Database } from '../database.js'
 import { AliasNode } from '../operation-node/alias-node.js'
 import { AndNode } from '../operation-node/and-node.js'
 import { IdentifierNode } from '../operation-node/identifier-node.js'
@@ -20,8 +21,11 @@ import {
   Expression,
 } from './expression.js'
 
-export class ExpressionWrapper<DB, TB extends keyof DB, T>
-  implements AliasableExpression<T>
+export class ExpressionWrapper<
+  DB extends Database,
+  TB extends keyof DB['tables'],
+  T
+> implements AliasableExpression<T>
 {
   readonly #node: OperationNode
 
@@ -273,8 +277,11 @@ export class AliasedExpressionWrapper<T, A extends string>
   }
 }
 
-export class OrWrapper<DB, TB extends keyof DB, T extends SqlBool>
-  implements AliasableExpression<T>
+export class OrWrapper<
+  DB extends Database,
+  TB extends keyof DB['tables'],
+  T extends SqlBool
+> implements AliasableExpression<T>
 {
   readonly #node: OrNode
 
@@ -356,8 +363,11 @@ export class OrWrapper<DB, TB extends keyof DB, T extends SqlBool>
   }
 }
 
-export class AndWrapper<DB, TB extends keyof DB, T extends SqlBool>
-  implements AliasableExpression<T>
+export class AndWrapper<
+  DB extends Database,
+  TB extends keyof DB['tables'],
+  T extends SqlBool
+> implements AliasableExpression<T>
 {
   readonly #node: AndNode
 

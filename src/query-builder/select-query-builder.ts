@@ -28,7 +28,6 @@ import {
   DrainOuterGeneric,
   NarrowPartial,
   Nullable,
-  ShallowRecord,
   Simplify,
   SimplifySingleResult,
   SqlBool,
@@ -75,9 +74,15 @@ import { Streamable } from '../util/streamable.js'
 import { ExpressionOrFactory } from '../parser/expression-parser.js'
 import { ExpressionWrapper } from '../expression/expression-wrapper.js'
 import { SelectQueryBuilderExpression } from './select-query-builder-expression.js'
+import { Database } from '../database.js'
+import { ExpressionBuilder } from '../expression/expression-builder.js'
+import { AliasedRawBuilder } from '../raw-builder/raw-builder.js'
 
-export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
-  extends WhereInterface<DB, TB>,
+export interface SelectQueryBuilder<
+  DB extends Database,
+  TB extends keyof DB['tables'],
+  O
+> extends WhereInterface<DB, TB>,
     HavingInterface<DB, TB>,
     SelectQueryBuilderExpression<O>,
     Compilable<O>,
@@ -504,7 +509,7 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
 
   selectAll<T extends TB>(
     table: T
-  ): SelectQueryBuilder<DB, TB, O & Selectable<DB[T]>>
+  ): SelectQueryBuilder<DB, TB, O & Selectable<DB['tables'][T]>>
 
   selectAll(): SelectQueryBuilder<DB, TB, O & AllSelection<DB, TB>>
 
@@ -1646,8 +1651,11 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
   ): Promise<ER[]>
 }
 
-class SelectQueryBuilderImpl<DB, TB extends keyof DB, O>
-  implements SelectQueryBuilder<DB, TB, O>
+class SelectQueryBuilderImpl<
+  DB extends Database,
+  TB extends keyof DB['tables'],
+  O
+> implements SelectQueryBuilder<DB, TB, O>
 {
   readonly #props: SelectQueryBuilderProps
 
@@ -2170,9 +2178,11 @@ preventAwait(
   "don't await SelectQueryBuilder instances directly. To execute the query you need to call `execute` or `executeTakeFirst`."
 )
 
-export function createSelectQueryBuilder<DB, TB extends keyof DB, O>(
-  props: SelectQueryBuilderProps
-): SelectQueryBuilder<DB, TB, O> {
+export function createSelectQueryBuilder<
+  DB extends Database,
+  TB extends keyof DB['tables'],
+  O
+>(props: SelectQueryBuilderProps): SelectQueryBuilder<DB, TB, O> {
   return new SelectQueryBuilderImpl(props)
 }
 
@@ -2193,8 +2203,8 @@ export interface AliasedSelectQueryBuilder<
  * {@link SelectQueryBuilder} with an alias. The result of calling {@link SelectQueryBuilder.as}.
  */
 class AliasedSelectQueryBuilderImpl<
-  DB,
-  TB extends keyof DB,
+  DB extends Database,
+  TB extends keyof DB['tables'],
   O = undefined,
   A extends string = never
 > implements AliasedSelectQueryBuilder<O, A>
@@ -2233,15 +2243,15 @@ preventAwait(
 )
 
 export type SelectQueryBuilderWithInnerJoin<
-  DB,
-  TB extends keyof DB,
+  DB extends Database,
+  TB extends keyof DB['tables'],
   O,
   TE extends TableExpression<DB, TB>
 > = TE extends `${infer T} as ${infer A}`
-  ? T extends keyof DB
-    ? InnerJoinedBuilder<DB, TB, O, A, DB[T]>
+  ? T extends keyof DB['tables']
+    ? InnerJoinedBuilder<DB, TB, O, A, DB['tables'][T]>
     : never
-  : TE extends keyof DB
+  : TE extends keyof DB['tables']
   ? SelectQueryBuilder<DB, TB | TE, O>
   : TE extends AliasedExpression<infer QO, infer QA>
   ? InnerJoinedBuilder<DB, TB, O, QA, QO>
@@ -2250,31 +2260,49 @@ export type SelectQueryBuilderWithInnerJoin<
   : never
 
 type InnerJoinedBuilder<
-  DB,
-  TB extends keyof DB,
+  DB extends Database,
+  TB extends keyof DB['tables'],
   O,
   A extends string,
   R
-> = A extends keyof DB
+> = A extends keyof DB['tables']
   ? SelectQueryBuilder<InnerJoinedDB<DB, A, R>, TB | A, O>
   : // Much faster non-recursive solution for the simple case.
-    SelectQueryBuilder<DB & ShallowRecord<A, R>, TB | A, O>
+    SelectQueryBuilder<
+      {
+        tables: DB['tables'] & { [K in A]: R }
+        config: DB['config']
+      },
+      TB | A,
+      O
+    >
 
-type InnerJoinedDB<DB, A extends string, R> = DrainOuterGeneric<{
-  [C in keyof DB | A]: C extends A ? R : C extends keyof DB ? DB[C] : never
+type InnerJoinedDB<
+  DB extends Database,
+  A extends string,
+  R
+> = DrainOuterGeneric<{
+  tables: {
+    [C in keyof DB['tables'] | A]: C extends A
+      ? R
+      : C extends keyof DB['tables']
+      ? DB['tables'][C]
+      : never
+  }
+  config: DB['config']
 }>
 
 export type SelectQueryBuilderWithLeftJoin<
-  DB,
-  TB extends keyof DB,
+  DB extends Database,
+  TB extends keyof DB['tables'],
   O,
   TE extends TableExpression<DB, TB>
 > = TE extends `${infer T} as ${infer A}`
-  ? T extends keyof DB
-    ? LeftJoinedBuilder<DB, TB, O, A, DB[T]>
+  ? T extends keyof DB['tables']
+    ? LeftJoinedBuilder<DB, TB, O, A, DB['tables'][T]>
     : never
-  : TE extends keyof DB
-  ? LeftJoinedBuilder<DB, TB, O, TE, DB[TE]>
+  : TE extends keyof DB['tables']
+  ? LeftJoinedBuilder<DB, TB, O, TE, DB['tables'][TE]>
   : TE extends AliasedExpression<infer QO, infer QA>
   ? LeftJoinedBuilder<DB, TB, O, QA, QO>
   : TE extends (qb: any) => AliasedExpression<infer QO, infer QA>
@@ -2282,35 +2310,48 @@ export type SelectQueryBuilderWithLeftJoin<
   : never
 
 type LeftJoinedBuilder<
-  DB,
-  TB extends keyof DB,
+  DB extends Database,
+  TB extends keyof DB['tables'],
   O,
   A extends keyof any,
   R
-> = A extends keyof DB
+> = A extends keyof DB['tables']
   ? SelectQueryBuilder<LeftJoinedDB<DB, A, R>, TB | A, O>
-  : // Much faster non-recursive solution for the simple case.
-    SelectQueryBuilder<DB & ShallowRecord<A, Nullable<R>>, TB | A, O>
+  : SelectQueryBuilder<
+      {
+        tables: DB['tables'] & { [K in A]: Nullable<R> }
+        config: DB['config']
+      },
+      TB | A,
+      O
+    >
 
-type LeftJoinedDB<DB, A extends keyof any, R> = DrainOuterGeneric<{
-  [C in keyof DB | A]: C extends A
-    ? Nullable<R>
-    : C extends keyof DB
-    ? DB[C]
-    : never
+type LeftJoinedDB<
+  DB extends Database,
+  A extends keyof any,
+  R
+> = DrainOuterGeneric<{
+  tables: {
+    [C in keyof DB['tables'] | A]: C extends A
+      ? Nullable<R>
+      : C extends keyof DB['tables']
+      ? DB['tables'][C]
+      : never
+  }
+  config: DB['config']
 }>
 
 export type SelectQueryBuilderWithRightJoin<
-  DB,
-  TB extends keyof DB,
+  DB extends Database,
+  TB extends keyof DB['tables'],
   O,
   TE extends TableExpression<DB, TB>
 > = TE extends `${infer T} as ${infer A}`
-  ? T extends keyof DB
-    ? RightJoinedBuilder<DB, TB, O, A, DB[T]>
+  ? T extends keyof DB['tables']
+    ? RightJoinedBuilder<DB, TB, O, A, DB['tables'][T]>
     : never
-  : TE extends keyof DB
-  ? RightJoinedBuilder<DB, TB, O, TE, DB[TE]>
+  : TE extends keyof DB['tables']
+  ? RightJoinedBuilder<DB, TB, O, TE, DB['tables'][TE]>
   : TE extends AliasedExpression<infer QO, infer QA>
   ? RightJoinedBuilder<DB, TB, O, QA, QO>
   : TE extends (qb: any) => AliasedExpression<infer QO, infer QA>
@@ -2318,39 +2359,42 @@ export type SelectQueryBuilderWithRightJoin<
   : never
 
 type RightJoinedBuilder<
-  DB,
-  TB extends keyof DB,
+  DB extends Database,
+  TB extends keyof DB['tables'],
   O,
   A extends keyof any,
   R
 > = SelectQueryBuilder<RightJoinedDB<DB, TB, A, R>, TB | A, O>
 
 type RightJoinedDB<
-  DB,
-  TB extends keyof DB,
+  DB extends Database,
+  TB extends keyof DB['tables'],
   A extends keyof any,
   R
 > = DrainOuterGeneric<{
-  [C in keyof DB | A]: C extends A
-    ? R
-    : C extends TB
-    ? Nullable<DB[C]>
-    : C extends keyof DB
-    ? DB[C]
-    : never
+  tables: {
+    [C in keyof DB['tables'] | A]: C extends A
+      ? R
+      : C extends TB
+      ? Nullable<DB['tables'][C]>
+      : C extends keyof DB['tables']
+      ? DB['tables'][C]
+      : never
+  }
+  config: DB['config']
 }>
 
 export type SelectQueryBuilderWithFullJoin<
-  DB,
-  TB extends keyof DB,
+  DB extends Database,
+  TB extends keyof DB['tables'],
   O,
   TE extends TableExpression<DB, TB>
 > = TE extends `${infer T} as ${infer A}`
-  ? T extends keyof DB
-    ? OuterJoinedBuilder<DB, TB, O, A, DB[T]>
+  ? T extends keyof DB['tables']
+    ? OuterJoinedBuilder<DB, TB, O, A, DB['tables'][T]>
     : never
-  : TE extends keyof DB
-  ? OuterJoinedBuilder<DB, TB, O, TE, DB[TE]>
+  : TE extends keyof DB['tables']
+  ? OuterJoinedBuilder<DB, TB, O, TE, DB['tables'][TE]>
   : TE extends AliasedExpression<infer QO, infer QA>
   ? OuterJoinedBuilder<DB, TB, O, QA, QO>
   : TE extends (qb: any) => AliasedExpression<infer QO, infer QA>
@@ -2358,24 +2402,27 @@ export type SelectQueryBuilderWithFullJoin<
   : never
 
 type OuterJoinedBuilder<
-  DB,
-  TB extends keyof DB,
+  DB extends Database,
+  TB extends keyof DB['tables'],
   O,
   A extends keyof any,
   R
 > = SelectQueryBuilder<OuterJoinedBuilderDB<DB, TB, A, R>, TB | A, O>
 
 type OuterJoinedBuilderDB<
-  DB,
-  TB extends keyof DB,
+  DB extends Database,
+  TB extends keyof DB['tables'],
   A extends keyof any,
   R
 > = DrainOuterGeneric<{
-  [C in keyof DB | A]: C extends A
-    ? Nullable<R>
-    : C extends TB
-    ? Nullable<DB[C]>
-    : C extends keyof DB
-    ? DB[C]
-    : never
+  tables: {
+    [C in keyof DB['tables'] | A]: C extends A
+      ? Nullable<R>
+      : C extends TB
+      ? Nullable<DB['tables'][C]>
+      : C extends keyof DB['tables']
+      ? DB['tables'][C]
+      : never
+  }
+  config: DB['config']
 }>

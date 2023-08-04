@@ -56,11 +56,16 @@ export interface Toy {
   pet_id: number
 }
 
-export interface Database {
+export interface Tables {
   person: Person
   pet: Pet
   toy: Toy
   'toy_schema.toy': Toy
+}
+
+export interface Database {
+  tables: Tables
+  config: {}
 }
 
 interface PersonInsertParams extends InsertObject<Database, 'person'> {
@@ -354,7 +359,7 @@ async function insertToysForPet(
     .executeTakeFirst()
 }
 
-async function insert<TB extends keyof Database>(
+async function insert<TB extends keyof Tables>(
   dialect: BuiltInDialect,
   qb: InsertQueryBuilder<Database, TB, InsertResult>
 ): Promise<number> {

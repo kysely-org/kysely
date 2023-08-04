@@ -9,60 +9,74 @@ import { IdentifierNode } from '../operation-node/identifier-node.js'
 import { OperationNode } from '../operation-node/operation-node.js'
 import { AliasedExpression } from '../expression/expression.js'
 import { DrainOuterGeneric, ShallowRecord } from '../util/type-utils.js'
+import { Database } from '../database.js'
 
-export type TableExpression<DB, TB extends keyof DB> =
-  | AnyAliasedTable<DB>
-  | AnyTable<DB>
-  | AliasedExpressionOrFactory<DB, TB>
+export type TableExpression<
+  DB extends Database,
+  TB extends keyof DB['tables']
+> = AnyAliasedTable<DB> | AnyTable<DB> | AliasedExpressionOrFactory<DB, TB>
 
-export type TableExpressionOrList<DB, TB extends keyof DB> =
-  | TableExpression<DB, TB>
-  | ReadonlyArray<TableExpression<DB, TB>>
+export type TableExpressionOrList<
+  DB extends Database,
+  TB extends keyof DB['tables']
+> = TableExpression<DB, TB> | ReadonlyArray<TableExpression<DB, TB>>
 
-export type TableReference<DB> =
+export type TableReference<DB extends Database> =
   | AnyAliasedTable<DB>
   | AnyTable<DB>
   | AliasedExpression<any, any>
 
-export type AnyAliasedTable<DB> = `${AnyTable<DB>} as ${string}`
+export type AnyAliasedTable<DB extends Database> =
+  `${AnyTable<DB>} as ${string}`
 
-export type TableReferenceOrList<DB> =
+export type TableReferenceOrList<DB extends Database> =
   | TableReference<DB>
   | ReadonlyArray<TableReference<DB>>
 
-export type From<DB, TE> = DrainOuterGeneric<{
-  [C in
-    | keyof DB
-    | ExtractAliasFromTableExpression<
-        DB,
-        TE
-      >]: C extends ExtractAliasFromTableExpression<DB, TE>
-    ? ExtractRowTypeFromTableExpression<DB, TE, C>
-    : C extends keyof DB
-    ? DB[C]
-    : never
+export type From<DB extends Database, TE> = DrainOuterGeneric<{
+  tables: {
+    [C in
+      | keyof DB['tables']
+      | ExtractAliasFromTableExpression<
+          DB,
+          TE
+        >]: C extends ExtractAliasFromTableExpression<DB, TE>
+      ? ExtractRowTypeFromTableExpression<DB, TE, C>
+      : C extends keyof DB['tables']
+      ? DB['tables'][C]
+      : never
+  }
+  config: DB['config']
 }>
 
-export type FromTables<DB, TB extends keyof DB, TE> = DrainOuterGeneric<
-  TB | ExtractAliasFromTableExpression<DB, TE>
->
+export type FromTables<
+  DB extends Database,
+  TB extends keyof DB['tables'],
+  TE
+> = DrainOuterGeneric<TB | ExtractAliasFromTableExpression<DB, TE>>
 
-export type ExtractTableAlias<DB, TE> = TE extends `${string} as ${infer TA}`
+export type ExtractTableAlias<
+  DB extends Database,
+  TE
+> = TE extends `${string} as ${infer TA}`
   ? TA
-  : TE extends keyof DB
+  : TE extends keyof DB['tables']
   ? TE
   : never
 
 export type PickTableWithAlias<
-  DB,
+  DB extends Database,
   T extends AnyAliasedTable<DB>
 > = T extends `${infer TB} as ${infer A}`
-  ? TB extends keyof DB
-    ? ShallowRecord<A, DB[TB]>
+  ? TB extends keyof DB['tables']
+    ? ShallowRecord<A, DB['tables'][TB]>
     : never
   : never
 
-type ExtractAliasFromTableExpression<DB, TE> = TE extends string
+type ExtractAliasFromTableExpression<
+  DB extends Database,
+  TE
+> = TE extends string
   ? ExtractTableAlias<DB, TE>
   : TE extends AliasedExpression<any, infer QA>
   ? QA
@@ -71,18 +85,18 @@ type ExtractAliasFromTableExpression<DB, TE> = TE extends string
   : never
 
 type ExtractRowTypeFromTableExpression<
-  DB,
+  DB extends Database,
   TE,
   A extends keyof any
 > = TE extends `${infer T} as ${infer TA}`
   ? TA extends A
-    ? T extends keyof DB
-      ? DB[T]
+    ? T extends keyof DB['tables']
+      ? DB['tables'][T]
       : never
     : never
   : TE extends A
-  ? TE extends keyof DB
-    ? DB[TE]
+  ? TE extends keyof DB['tables']
+    ? DB['tables'][TE]
     : never
   : TE extends AliasedExpression<infer O, infer QA>
   ? QA extends A
@@ -94,7 +108,7 @@ type ExtractRowTypeFromTableExpression<
     : never
   : never
 
-type AnyTable<DB> = keyof DB & string
+type AnyTable<DB extends Database> = keyof DB['tables'] & string
 
 export function parseTableExpressionOrList(
   table: TableExpressionOrList<any, any>

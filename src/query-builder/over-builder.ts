@@ -1,3 +1,4 @@
+import { Database } from '../database.js'
 import { DynamicReferenceBuilder } from '../dynamic/dynamic-reference-builder.js'
 import { OperationNodeSource } from '../operation-node/operation-node-source.js'
 import { OverNode } from '../operation-node/over-node.js'
@@ -14,7 +15,7 @@ import { StringReference } from '../parser/reference-parser.js'
 import { freeze } from '../util/object-utils.js'
 import { preventAwait } from '../util/prevent-await.js'
 
-export class OverBuilder<DB, TB extends keyof DB>
+export class OverBuilder<DB extends Database, TB extends keyof DB['tables']>
   implements OperationNodeSource
 {
   readonly #props: OverBuilderProps

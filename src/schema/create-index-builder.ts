@@ -225,7 +225,10 @@ export class CreateIndexBuilder<C = never>
   where(
     factory: (
       qb: ExpressionBuilder<
-        ShallowRecord<string, ShallowRecord<C & string, any>>,
+        {
+          tables: ShallowRecord<string, ShallowRecord<C & string, any>>
+          config: Record<string, unknown>
+        },
         string
       >
     ) => Expression<SqlBool>
