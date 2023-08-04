@@ -52,7 +52,6 @@ import {
 import { SqlBool } from '../util/type-utils.js'
 import { parseUnaryOperation } from '../parser/unary-operation-parser.js'
 import {
-  ExtractTypeFromValueExpressionOrList,
   ExtractTypeFromValueExpression,
   parseSafeImmediateValue,
   parseValueExpression,
@@ -871,6 +870,8 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
   /**
    * Combines two or more expressions using the logical `and` operator.
    *
+   * An empty array produces a `true` expression.
+   *
    * This function returns an {@link Expression} and can be used pretty much anywhere.
    * See the examples for a couple of possible use cases.
    *
@@ -932,6 +933,8 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
 
   /**
    * Combines two or more expressions using the logical `or` operator.
+   *
+   * An empty array produces a `false` expression.
    *
    * This function returns an {@link Expression} and can be used pretty much anywhere.
    * See the examples for a couple of possible use cases.
