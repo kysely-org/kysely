@@ -5,19 +5,19 @@ import {
   sql,
 } from '../../../'
 import {
-  DIALECTS,
   Database,
   destroyTest,
   initTest,
   NOT_SUPPORTED,
   TestContext,
   testSql,
+  DIALECTS_WITH_MSSQL,
 } from './test-setup.js'
 
 const funcNames = ['avg', 'count', 'max', 'min', 'sum'] as const
 
-for (const dialect of DIALECTS) {
-  describe(`${dialect}: aggregate functions`, () => {
+for (const dialect of DIALECTS_WITH_MSSQL) {
+  describe.only(`${dialect}: aggregate functions`, () => {
     let ctx: TestContext
 
     before(async function () {
@@ -65,7 +65,14 @@ for (const dialect of DIALECTS) {
               ],
               parameters: [],
             },
-            mssql: NOT_SUPPORTED,
+            mssql: {
+              sql: [
+                `select ${funcName}("id") as "${funcName}",`,
+                `${funcName}("person"."id") as "another_${funcName}"`,
+                `from "person"`,
+              ],
+              parameters: [],
+            },
             sqlite: {
               sql: [
                 `select ${funcName}("id") as "${funcName}",`,
@@ -110,7 +117,14 @@ for (const dialect of DIALECTS) {
               ],
               parameters: [],
             },
-            mssql: NOT_SUPPORTED,
+            mssql: {
+              sql: [
+                `select ${funcName}(distinct "id") as "${funcName}",`,
+                `${funcName}(distinct "person"."id") as "another_${funcName}"`,
+                `from "person"`,
+              ],
+              parameters: [],
+            },
             sqlite: {
               sql: [
                 `select ${funcName}(distinct "id") as "${funcName}",`,
@@ -155,7 +169,14 @@ for (const dialect of DIALECTS) {
               ],
               parameters: [],
             },
-            mssql: NOT_SUPPORTED,
+            mssql: {
+              sql: [
+                `select ${funcName}("id") over() as "${funcName}",`,
+                `${funcName}("person"."id") over() as "another_${funcName}"`,
+                `from "person"`,
+              ],
+              parameters: [],
+            },
             sqlite: {
               sql: [
                 `select ${funcName}("id") over() as "${funcName}",`,
@@ -204,7 +225,16 @@ for (const dialect of DIALECTS) {
               ],
               parameters: [],
             },
-            mssql: NOT_SUPPORTED,
+            mssql: {
+              sql: [
+                `select ${funcName}("id")`,
+                `over(partition by "first_name") as "${funcName}",`,
+                `${funcName}("person"."id")`,
+                `over(partition by "person"."first_name") as "another_${funcName}"`,
+                `from "person"`,
+              ],
+              parameters: [],
+            },
             sqlite: {
               sql: [
                 `select ${funcName}("id")`,
@@ -265,7 +295,18 @@ for (const dialect of DIALECTS) {
               ],
               parameters: [],
             },
-            mssql: NOT_SUPPORTED,
+            mssql: {
+              sql: [
+                `select ${funcName}("id")`,
+                `over(order by "last_name" asc,`,
+                `"first_name" asc) as "${funcName}",`,
+                `${funcName}("person"."id")`,
+                `over(order by "person"."last_name" desc,`,
+                `"person"."first_name" desc) as "another_${funcName}"`,
+                `from "person"`,
+              ],
+              parameters: [],
+            },
             sqlite: {
               sql: [
                 `select ${funcName}("id")`,
@@ -336,7 +377,20 @@ for (const dialect of DIALECTS) {
               ],
               parameters: [],
             },
-            mssql: NOT_SUPPORTED,
+            mssql: {
+              sql: [
+                `select ${funcName}("id")`,
+                `over(partition by "gender"`,
+                `order by "last_name" asc,`,
+                `"first_name" asc) as "${funcName}",`,
+                `${funcName}("person"."id")`,
+                `over(partition by "person"."gender"`,
+                `order by "person"."last_name" desc,`,
+                `"person"."first_name" desc) as "another_${funcName}"`,
+                `from "person"`,
+              ],
+              parameters: [],
+            },
             sqlite: {
               sql: [
                 `select ${funcName}("id")`,
@@ -359,79 +413,99 @@ for (const dialect of DIALECTS) {
         it(`should execute a query with ${funcName}(column) in having clause`, async () => {
           const query = ctx.db
             .selectFrom('person')
-            .selectAll()
-            .groupBy(['person.gender'])
-            .having(func('person.id'), '>=', 3)
+            .select(['person.children'])
+            .groupBy(['person.children'])
+            .having(func('person.children'), '>=', 3)
 
           testSql(query, dialect, {
             postgres: {
               sql: [
-                `select *`,
+                `select "person"."children"`,
                 `from "person"`,
-                `group by "person"."gender"`,
-                `having ${funcName}("person"."id") >= $1`,
+                `group by "person"."children"`,
+                `having ${funcName}("person"."children") >= $1`,
               ],
               parameters: [3],
             },
             mysql: {
               sql: [
-                `select *`,
+                `select \`person\`.\`children\``,
                 `from \`person\``,
-                `group by \`person\`.\`gender\``,
-                `having ${funcName}(\`person\`.\`id\`) >= ?`,
+                `group by \`person\`.\`children\``,
+                `having ${funcName}(\`person\`.\`children\`) >= ?`,
               ],
               parameters: [3],
             },
-            mssql: NOT_SUPPORTED,
+            mssql: {
+              sql: [
+                `select "person"."children"`,
+                `from "person"`,
+                `group by "person"."children"`,
+                `having ${funcName}("person"."children") >= @1`,
+              ],
+              parameters: [3],
+            },
             sqlite: {
               sql: [
-                `select *`,
+                `select "person"."children"`,
                 `from "person"`,
-                `group by "person"."gender"`,
-                `having ${funcName}("person"."id") >= ?`,
+                `group by "person"."children"`,
+                `having ${funcName}("person"."children") >= ?`,
               ],
               parameters: [3],
             },
           })
+
+          await query.execute()
         })
 
         it(`should execute a query with ${funcName}(column) in order by clause`, async () => {
           const query = ctx.db
             .selectFrom('person')
-            .selectAll()
-            .groupBy(['person.gender'])
-            .orderBy(func('person.id'), 'desc')
+            .select(['person.children'])
+            .groupBy(['person.children'])
+            .orderBy(func('person.children'), 'desc')
 
           testSql(query, dialect, {
             postgres: {
               sql: [
-                `select *`,
+                `select "person"."children"`,
                 `from "person"`,
-                `group by "person"."gender"`,
-                `order by ${funcName}("person"."id") desc`,
+                `group by "person"."children"`,
+                `order by ${funcName}("person"."children") desc`,
               ],
               parameters: [],
             },
             mysql: {
               sql: [
-                `select *`,
+                `select \`person\`.\`children\``,
                 `from \`person\``,
-                `group by \`person\`.\`gender\``,
-                `order by ${funcName}(\`person\`.\`id\`) desc`,
+                `group by \`person\`.\`children\``,
+                `order by ${funcName}(\`person\`.\`children\`) desc`,
               ],
               parameters: [],
             },
-            mssql: NOT_SUPPORTED,
+            mssql: {
+              sql: [
+                `select "person"."children"`,
+                `from "person"`,
+                `group by "person"."children"`,
+                `order by ${funcName}("person"."children") desc`,
+              ],
+              parameters: [],
+            },
             sqlite: {
               sql: [
-                `select *`,
+                `select "person"."children"`,
                 `from "person"`,
-                `group by "person"."gender"`,
-                `order by ${funcName}("person"."id") desc`,
+                `group by "person"."children"`,
+                `order by ${funcName}("person"."children") desc`,
               ],
               parameters: [],
             },
           })
+
+          await query.execute()
         })
 
         it(`should execute a query with ${funcName}(column) and a dynamic reference in select clause`, async () => {
@@ -465,7 +539,14 @@ for (const dialect of DIALECTS) {
               ],
               parameters: [],
             },
-            mssql: NOT_SUPPORTED,
+            mssql: {
+              sql: [
+                `select ${funcName}("person"."id") as "${funcName}",`,
+                `${funcName}("person"."id") as "another_${funcName}"`,
+                `from "person"`,
+              ],
+              parameters: [],
+            },
             sqlite: {
               sql: [
                 `select ${funcName}("person"."id") as "${funcName}",`,
@@ -475,84 +556,106 @@ for (const dialect of DIALECTS) {
               parameters: [],
             },
           })
+
+          await query.execute()
         })
 
         it(`should execute a query with ${funcName}(column) and a dynamic reference in having clause`, async () => {
           const query = ctx.db
             .selectFrom('person')
-            .selectAll()
-            .groupBy(['person.gender'])
-            .having(func(ctx.db.dynamic.ref('person.id')), '>=', 3)
+            .select(['person.children'])
+            .groupBy(['person.children'])
+            .having(func(ctx.db.dynamic.ref('person.children')), '>=', 3)
 
           testSql(query, dialect, {
             postgres: {
               sql: [
-                `select *`,
+                `select "person"."children"`,
                 `from "person"`,
-                `group by "person"."gender"`,
-                `having ${funcName}("person"."id") >= $1`,
+                `group by "person"."children"`,
+                `having ${funcName}("person"."children") >= $1`,
               ],
               parameters: [3],
             },
             mysql: {
               sql: [
-                `select *`,
+                `select \`person\`.\`children\``,
                 `from \`person\``,
-                `group by \`person\`.\`gender\``,
-                `having ${funcName}(\`person\`.\`id\`) >= ?`,
+                `group by \`person\`.\`children\``,
+                `having ${funcName}(\`person\`.\`children\`) >= ?`,
               ],
               parameters: [3],
             },
-            mssql: NOT_SUPPORTED,
+            mssql: {
+              sql: [
+                `select "person"."children"`,
+                `from "person"`,
+                `group by "person"."children"`,
+                `having ${funcName}("person"."children") >= @1`,
+              ],
+              parameters: [3],
+            },
             sqlite: {
               sql: [
-                `select *`,
+                `select "person"."children"`,
                 `from "person"`,
-                `group by "person"."gender"`,
-                `having ${funcName}("person"."id") >= ?`,
+                `group by "person"."children"`,
+                `having ${funcName}("person"."children") >= ?`,
               ],
               parameters: [3],
             },
           })
+
+          await query.execute()
         })
 
         it(`should execute a query with ${funcName}(column) and a dynamic reference in order by clause`, async () => {
           const query = ctx.db
             .selectFrom('person')
-            .selectAll()
-            .groupBy(['person.gender'])
-            .orderBy(func(ctx.db.dynamic.ref('person.id')), 'desc')
+            .select(['person.children'])
+            .groupBy(['person.children'])
+            .orderBy(func(ctx.db.dynamic.ref('person.children')), 'desc')
 
           testSql(query, dialect, {
             postgres: {
               sql: [
-                `select *`,
+                `select "person"."children"`,
                 `from "person"`,
-                `group by "person"."gender"`,
-                `order by ${funcName}("person"."id") desc`,
+                `group by "person"."children"`,
+                `order by ${funcName}("person"."children") desc`,
               ],
               parameters: [],
             },
             mysql: {
               sql: [
-                `select *`,
+                `select \`person\`.\`children\``,
                 `from \`person\``,
-                `group by \`person\`.\`gender\``,
-                `order by ${funcName}(\`person\`.\`id\`) desc`,
+                `group by \`person\`.\`children\``,
+                `order by ${funcName}(\`person\`.\`children\`) desc`,
               ],
               parameters: [],
             },
-            mssql: NOT_SUPPORTED,
+            mssql: {
+              sql: [
+                `select "person"."children"`,
+                `from "person"`,
+                `group by "person"."children"`,
+                `order by ${funcName}("person"."children") desc`,
+              ],
+              parameters: [],
+            },
             sqlite: {
               sql: [
-                `select *`,
+                `select "person"."children"`,
                 `from "person"`,
-                `group by "person"."gender"`,
-                `order by ${funcName}("person"."id") desc`,
+                `group by "person"."children"`,
+                `order by ${funcName}("person"."children") desc`,
               ],
               parameters: [],
             },
           })
+
+          await query.execute()
         })
 
         if (dialect === 'postgres' || dialect === 'sqlite') {
@@ -783,7 +886,14 @@ for (const dialect of DIALECTS) {
                 ],
                 parameters: [],
               },
-              mssql: NOT_SUPPORTED,
+              mssql: {
+                sql: [
+                  `select ${funcName}(*) as "${funcName}",`,
+                  `${funcName}(*) as "another_${funcName}"`,
+                  'from "person"',
+                ],
+                parameters: [],
+              },
               sqlite: {
                 sql: [
                   `select ${funcName}(*) as "${funcName}",`,
@@ -853,7 +963,14 @@ for (const dialect of DIALECTS) {
                 ],
                 parameters: [],
               },
-              mssql: NOT_SUPPORTED,
+              mssql: {
+                sql: [
+                  `select ${funcName}(*) over() as "${funcName}",`,
+                  `${funcName}(*) over() as "another_${funcName}"`,
+                  'from "person"',
+                ],
+                parameters: [],
+              },
               sqlite: {
                 sql: [
                   `select ${funcName}(*) over() as "${funcName}",`,
@@ -916,15 +1033,25 @@ for (const dialect of DIALECTS) {
     it('should execute "dynamic" aggregate functions', async () => {
       const query = ctx.db
         .selectFrom('person')
+        .$if(dialect === 'mssql', (qb) => qb.groupBy('person.first_name'))
         .select([
-          ctx.db.fn.agg('rank').over().as('rank'),
-          (eb) => eb.fn.agg('rank').over().as('another_rank'),
+          ctx.db.fn
+            .agg('rank')
+            .over((ob) => (dialect === 'mssql' ? ob.orderBy('first_name') : ob))
+            .as('rank'),
+          (eb) =>
+            eb.fn
+              .agg('rank')
+              .over((ob) =>
+                dialect === 'mssql' ? ob.orderBy('first_name') : ob
+              )
+              .as('another_rank'),
         ])
-        .$if(dialect === 'postgres', (qb) =>
+        .$if(dialect === 'postgres' || dialect === 'mssql', (qb) =>
           qb.select((eb) =>
             eb.fn
               .agg('string_agg', ['first_name', sql.lit(',')])
-              .distinct()
+              .$call((eb) => (dialect === 'mssql' ? eb : eb.distinct()))
               .as('first_names')
           )
         )
@@ -956,7 +1083,16 @@ for (const dialect of DIALECTS) {
           ],
           parameters: [],
         },
-        mssql: NOT_SUPPORTED,
+        mssql: {
+          sql: [
+            'select rank() over(order by "first_name") as "rank",',
+            'rank() over(order by "first_name") as "another_rank",',
+            `string_agg("first_name", ',') as "first_names"`,
+            'from "person"',
+            'group by "person"."first_name"',
+          ],
+          parameters: [],
+        },
         sqlite: {
           sql: [
             'select rank() over() as "rank",',

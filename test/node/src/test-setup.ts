@@ -45,6 +45,7 @@ export interface Person {
   last_name: string | null
   gender: 'male' | 'female' | 'other'
   marital_status: 'single' | 'married' | 'divorced' | 'widowed' | null
+  children: Generated<number>
 }
 
 export interface Pet {
@@ -296,6 +297,7 @@ async function createDatabase(
     .addColumn('last_name', 'varchar(255)')
     .addColumn('gender', 'varchar(50)', (col) => col.notNull())
     .addColumn('marital_status', 'varchar(50)')
+    .addColumn('children', 'integer', (col) => col.notNull().defaultTo(0))
     .execute()
 
   await createTableWithId(db.schema, dialect, 'pet')
