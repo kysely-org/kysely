@@ -17,7 +17,7 @@ import {
 const funcNames = ['avg', 'count', 'max', 'min', 'sum'] as const
 
 for (const dialect of DIALECTS_WITH_MSSQL) {
-  describe.only(`${dialect}: aggregate functions`, () => {
+  describe(`${dialect}: aggregate functions`, () => {
     let ctx: TestContext
 
     before(async function () {
