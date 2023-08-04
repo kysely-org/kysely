@@ -23,6 +23,7 @@ import {
 import { MssqlDialectConfig, Tedious } from './mssql-dialect-config.js'
 import { CompiledQuery } from '../../query-compiler/compiled-query.js'
 import { extendStackTrace } from '../../util/stack-trace-utils.js'
+import { randomString } from '../../util/random-string.js'
 
 const PRIVATE_RELEASE_METHOD = Symbol()
 const PRIVATE_DESTROY_METHOD = Symbol()
@@ -107,7 +108,7 @@ class MssqlConnection implements DatabaseConnection {
           if (error) reject(error)
           else resolve(undefined)
         },
-        isolationLevel ? Date.now().toString() : undefined,
+        isolationLevel ? randomString(8) : undefined,
         isolationLevel
           ? this.#getTediousIsolationLevel(isolationLevel)
           : undefined

@@ -26,10 +26,6 @@ for (const dialect of DIALECTS_WITH_MSSQL) {
       Parameters<Connection['commitTransaction']>,
       ReturnType<Connection['commitTransaction']>
     >
-    let tediousRollbackTransactionSpy: sinon.SinonSpy<
-      Parameters<Connection['rollbackTransaction']>,
-      ReturnType<Connection['rollbackTransaction']>
-    >
 
     before(async function () {
       ctx = await initTest(this, dialect, (event) => {
@@ -49,10 +45,6 @@ for (const dialect of DIALECTS_WITH_MSSQL) {
       tediousCommitTransactionSpy = sandbox.spy(
         Connection.prototype,
         'commitTransaction'
-      )
-      tediousRollbackTransactionSpy = sandbox.spy(
-        Connection.prototype,
-        'rollbackTransaction'
       )
     })
 
@@ -231,15 +223,25 @@ for (const dialect of DIALECTS_WITH_MSSQL) {
       trx: Transaction<Database>,
       id: number
     ): Promise<void> {
-      await trx
-        .insertInto('person')
-        .values({
-          id: id,
-          first_name: `Person ${id}`,
-          last_name: null,
-          gender: 'other',
-        })
-        .execute()
+      const query = trx.insertInto('person').values({
+        id: id,
+        first_name: `Person ${id}`,
+        last_name: null,
+        gender: 'other',
+      })
+
+      if (dialect === 'mssql') {
+        const compiledQuery = query.compile()
+
+        await trx.executeQuery(
+          CompiledQuery.raw(
+            `set identity_insert "person" on; ${compiledQuery.sql}; set identity_insert "person" off;`,
+            [...compiledQuery.parameters]
+          )
+        )
+      } else {
+        await query.execute()
+      }
     }
 
     async function doesPersonExists(id: number): Promise<boolean> {
