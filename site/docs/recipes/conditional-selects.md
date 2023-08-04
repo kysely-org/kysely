@@ -64,7 +64,7 @@ conditions the amount of code explodes if you want to keep things type-safe. You
 to create a separate branch for every possible combination of selections or otherwise
 the types won't be correct.
 
-This is where the [$if](https://kysely-org.github.io/kysely/classes/SelectQueryBuilder.html#_if)
+This is where the [$if](https://kysely-org.github.io/kysely-apidoc/interfaces/SelectQueryBuilder.html#_if)
 method can help you:
 
 ```ts
