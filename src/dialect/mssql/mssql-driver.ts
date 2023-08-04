@@ -52,15 +52,7 @@ export class MssqlDriver implements Driver {
         await connection[PRIVATE_DESTROY_METHOD]()
       },
       // @ts-ignore
-      validate: async (connection) => {
-        try {
-          await connection.executeQuery(CompiledQuery.raw('select 1'))
-
-          return true
-        } catch (err) {
-          return false
-        }
-      },
+      validate: (connection) => connection.validate(),
     })
   }
 
@@ -191,6 +183,18 @@ class MssqlConnection implements DatabaseConnection {
     // } finally {
     //   request.cancel()
     // }
+  }
+
+  validate(): Promise<boolean> {
+    return new Promise((resolve) =>
+      this.#connection.execSql(
+        this.#createTediousRequest(
+          CompiledQuery.raw('select 1'),
+          () => resolve(false),
+          () => resolve(true)
+        )
+      )
+    )
   }
 
   #createTediousRequest(
