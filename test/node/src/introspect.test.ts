@@ -101,6 +101,14 @@ for (const dialect of DIALECTS) {
                 isAutoIncrementing: false,
                 hasDefaultValue: false,
               },
+              {
+                name: 'children',
+                dataType: 'int4',
+                dataTypeSchema: 'pg_catalog',
+                isNullable: false,
+                isAutoIncrementing: false,
+                hasDefaultValue: true,
+              },
             ],
           },
           {
@@ -270,6 +278,13 @@ for (const dialect of DIALECTS) {
                 isAutoIncrementing: false,
                 hasDefaultValue: false,
               },
+              {
+                name: 'children',
+                dataType: 'int',
+                isNullable: false,
+                isAutoIncrementing: false,
+                hasDefaultValue: true,
+              },
             ],
           },
           {
@@ -405,6 +420,13 @@ for (const dialect of DIALECTS) {
                 isNullable: true,
                 isAutoIncrementing: false,
                 hasDefaultValue: false,
+              },
+              {
+                name: 'children',
+                dataType: 'INTEGER',
+                isNullable: false,
+                isAutoIncrementing: false,
+                hasDefaultValue: true,
               },
             ],
           },

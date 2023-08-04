@@ -14,7 +14,7 @@ import {
 } from './test-setup.js'
 
 for (const dialect of DIALECTS_WITH_MSSQL) {
-  describe.only(`${dialect}: transaction`, () => {
+  describe(`${dialect}: transaction`, () => {
     let ctx: TestContext
     const executedQueries: CompiledQuery[] = []
     const sandbox = sinon.createSandbox()
