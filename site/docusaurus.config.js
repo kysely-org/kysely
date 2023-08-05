@@ -103,7 +103,7 @@ const config = {
             position: 'right',
           },
           {
-            href: 'https://kysely-org.github.io/kysely/',
+            href: 'https://kysely-org.github.io/kysely-apidoc/',
             label: 'API docs',
             position: 'right',
           },
@@ -172,7 +172,7 @@ const config = {
               },
               {
                 label: 'API docs',
-                href: 'https://kysely-org.github.io/kysely/',
+                href: 'https://kysely-org.github.io/kysely-apidoc/',
               },
             ],
           },

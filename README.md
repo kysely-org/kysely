@@ -1,7 +1,7 @@
 [![Stand With Ukraine](https://raw.githubusercontent.com/vshymanskyy/StandWithUkraine/main/banner2-direct.svg)](https://stand-with-ukraine.pp.ua)
 
 [![Discord](https://img.shields.io/discord/890118421587578920?logo=discord&style=flat)](https://discord.gg/xyBJ3GwvAm)
-[![Tests](https://github.com/koskimas/kysely/actions/workflows/test.yml/badge.svg)](https://github.com/koskimas/kysely)
+[![Tests](https://github.com/kysely-org/kysely/actions/workflows/test.yml/badge.svg)](https://github.com/kysely-org/kysely)
 [![License](https://img.shields.io/github/license/kysely-org/kysely?style=flat)](https://github.com/kysely-org/kysely/blob/master/LICENSE)
 [![Issues](https://img.shields.io/github/issues-closed/kysely-org/kysely?logo=github)](https://github.com/kysely-org/kysely/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated-desc)
 [![Pull Requests](https://img.shields.io/github/issues-pr-closed/kysely-org/kysely?label=PRs&logo=github&style=flat)](https://github.com/kysely-org/kysely/pulls?q=is%3Apr+is%3Aopen+sort%3Aupdated-desc)
@@ -16,7 +16,7 @@ Kysely (pronounce “Key-Seh-Lee”) is a type-safe and autocompletion-friendly 
 Inspired by [knex](http://knexjs.org/). Mainly developed for [node.js](https://nodejs.org/en/) but also 
 runs on all other javascript environments like [deno](https://deno.land/).
 
-![](https://github.com/koskimas/kysely/blob/master/assets/demo.gif)
+![](https://github.com/kysely-org/kysely/blob/master/assets/demo.gif)
 
 Kysely makes sure you only refer to tables and columns that are visible to the part of the query
 you're writing. The result type only has the selected columns with correct types and aliases. As an
@@ -28,11 +28,11 @@ column names, aliases and types from selected subqueries, joined subqueries, `wi
 much anything you can think of.
 
 Of course there are cases where things cannot be typed at compile time, and Kysely offers escape
-hatches for these situations. See the [sql template tag](https://kysely-org.github.io/kysely/interfaces/Sql.html) 
-and the [DynamicModule](https://kysely-org.github.io/kysely/classes/DynamicModule.html#ref) for more info.
+hatches for these situations. See the [sql template tag](https://kysely-org.github.io/kysely-apidoc/interfaces/Sql.html)
+and the [DynamicModule](https://kysely-org.github.io/kysely-apidoc/classes/DynamicModule.html#ref) for more info.
 
 All API documentation is written in the typing files and you can simply hover over the module, class
-or method you're using to see it in your IDE. The same documentation is also hosted [here](https://github.com/koskimas/kysely).
+or method you're using to see it in your IDE. The same documentation is also hosted [here](https://github.com/kysely-org/kysely).
 
 If you start using Kysely and can't find something you'd want to use, please open an issue or join our
 [discord server](https://discord.gg/xyBJ3GwvAm).
@@ -40,7 +40,7 @@ If you start using Kysely and can't find something you'd want to use, please ope
 # Getting started
 
 Please visit our documentation site [kysely.dev](https://kysely.dev) to get started. We also have a comprehensive
-API documentation hosted [here](https://kysely-org.github.io/kysely/) but you can access the same
+API documentation hosted [here](https://kysely-org.github.io/kysely-apidoc/) but you can access the same
 documentation in your IDE by hovering over a class/method/property/whatever.
 
 # Contributors

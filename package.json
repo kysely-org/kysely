@@ -54,8 +54,6 @@
     "build": "npm run clean && concurrently -n esm,cjs \"npm run build:esm\" \"npm run build:cjs\" && concurrently -n modulefix,docfix \"npm run script:module-fixup\" \"npm run script:copy-interface-doc\"",
     "build:esm": "tsc -p tsconfig.json && npm run script:add-deno-type-references",
     "build:cjs": "tsc -p tsconfig-cjs.json",
-    "docs:build": "typedoc --excludePrivate --excludeInternal --customCss ./docs-theme.css src/index.ts && npm run docs:postprocess",
-    "docs:postprocess": "node scripts/post-process-docs.js",
     "script:module-fixup": "node scripts/module-fixup.js",
     "script:copy-interface-doc": "node scripts/copy-interface-documentation.js",
     "script:add-deno-type-references": "node scripts/add-deno-type-references.js",
@@ -91,7 +89,6 @@
     "prettier": "^2.8.8",
     "sinon": "^15.1.0",
     "tsd": "^0.28.1",
-    "typedoc": "^0.24.8",
     "typescript": "^5.1.6"
   }
 }

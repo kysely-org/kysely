@@ -35,23 +35,21 @@ import { KyselyTypeError } from './type-error.js'
  * // Columns == 'id' | 'name' | 'species'
  * ```
  */
-export type AnyColumn<DB, TB extends keyof DB> = [DB] extends [unknown]
-  ? {
-      [T in TB]: keyof DB[T]
-    }[TB] &
-      string
-  : never
+export type AnyColumn<DB, TB extends keyof DB> = DrainOuterGeneric<
+  {
+    [T in TB]: keyof DB[T]
+  }[TB] &
+    string
+>
 
 /**
  * Extracts a column type.
  */
-export type ExtractColumnType<DB, TB extends keyof DB, C> = [C] extends [
-  unknown
-]
-  ? {
-      [T in TB]: C extends keyof DB[T] ? DB[T][C] : never
-    }[TB]
-  : never
+export type ExtractColumnType<DB, TB extends keyof DB, C> = DrainOuterGeneric<
+  {
+    [T in TB]: C extends keyof DB[T] ? DB[T][C] : never
+  }[TB]
+>
 
 /**
  * Given a database type and a union of table names in that db, returns
@@ -84,35 +82,44 @@ export type ExtractColumnType<DB, TB extends keyof DB, C> = [C] extends [
  * // Columns == 'person.id' | 'pet.name' | 'pet.species'
  * ```
  */
-export type AnyColumnWithTable<DB, TB extends keyof DB> = {
-  [T in TB]: T extends string
-    ? keyof DB[T] extends string
-      ? `${T}.${keyof DB[T]}`
+export type AnyColumnWithTable<DB, TB extends keyof DB> = DrainOuterGeneric<
+  {
+    [T in TB]: T extends string
+      ? keyof DB[T] extends string
+        ? `${T}.${keyof DB[T]}`
+        : never
       : never
-    : never
-}[TB]
+  }[TB]
+>
 
 /**
  * Just like {@link AnyColumn} but with a ` as <string>` suffix.
  */
-export type AnyAliasedColumn<DB, TB extends keyof DB> = {
-  [T in TB]: T extends string
-    ? keyof DB[T] extends string
-      ? `${keyof DB[T]} as ${string}`
+export type AnyAliasedColumn<DB, TB extends keyof DB> = DrainOuterGeneric<
+  {
+    [T in TB]: T extends string
+      ? keyof DB[T] extends string
+        ? `${keyof DB[T]} as ${string}`
+        : never
       : never
-    : never
-}[TB]
+  }[TB]
+>
 
 /**
  * Just like {@link AnyColumnWithTable} but with a ` as <string>` suffix.
  */
-export type AnyAliasedColumnWithTable<DB, TB extends keyof DB> = {
-  [T in TB]: T extends string
-    ? keyof DB[T] extends string
-      ? `${T}.${keyof DB[T]} as ${string}`
+export type AnyAliasedColumnWithTable<
+  DB,
+  TB extends keyof DB
+> = DrainOuterGeneric<
+  {
+    [T in TB]: T extends string
+      ? keyof DB[T] extends string
+        ? `${T}.${keyof DB[T]} as ${string}`
+        : never
       : never
-    : never
-}[TB]
+  }[TB]
+>
 
 /**
  * Extracts the item type of an array.

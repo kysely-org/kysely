@@ -60,7 +60,11 @@ import {
   SetOperandExpression,
   parseSetOperations,
 } from '../parser/set-operation-parser.js'
-import { AliasedExpression, Expression } from '../expression/expression.js'
+import {
+  AliasableExpression,
+  AliasedExpression,
+  Expression,
+} from '../expression/expression.js'
 import {
   ComparisonOperatorExpression,
   OperandValueExpressionOrList,
@@ -76,7 +80,7 @@ import { ExpressionWrapper } from '../expression/expression-wrapper.js'
 export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
   extends WhereInterface<DB, TB>,
     HavingInterface<DB, TB>,
-    Expression<O>,
+    AliasableExpression<O>,
     Compilable<O>,
     Explainable,
     Streamable<O> {
