@@ -64,6 +64,7 @@ export class MssqlIntrospector implements DatabaseIntrospector {
             >()
             .as('table_type'),
         'table_schemas.name as table_schema_name',
+        'columns.default_object_id as column_default_object_id',
         'columns.generated_always_type_desc as column_generated_always_type',
         'columns.is_computed as column_is_computed',
         'columns.is_identity as column_is_identity',
@@ -101,6 +102,7 @@ export class MssqlIntrospector implements DatabaseIntrospector {
             'views.name as table_name',
             'views.type as table_type',
             'view_schemas.name as table_schema_name',
+            'columns.default_object_id as column_default_object_id',
             'columns.generated_always_type_desc as column_generated_always_type',
             'columns.is_computed as column_is_computed',
             'columns.is_identity as column_is_identity',
@@ -134,6 +136,7 @@ export class MssqlIntrospector implements DatabaseIntrospector {
           dataType: rawColumn.type_name,
           dataTypeSchema: rawColumn.type_schema_name ?? undefined,
           hasDefaultValue:
+            rawColumn.column_default_object_id > 0 ||
             rawColumn.column_generated_always_type !== 'NOT_APPLICABLE' ||
             rawColumn.column_is_computed ||
             rawColumn.column_is_rowguidcol,
@@ -163,7 +166,7 @@ interface MssqlSysTables {
     // column_encryption_key_database_name: null
     // column_encryption_key_id: null
     column_id: number
-    // default_object_id: number
+    default_object_id: number
     // encryption_algorithm_name: null
     // encryption_type: null
     // encryption_type_desc: null
