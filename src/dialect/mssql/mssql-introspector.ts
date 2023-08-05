@@ -8,14 +8,14 @@ import {
 } from '../database-introspector.js'
 
 export class MssqlIntrospector implements DatabaseIntrospector {
-  readonly #db: Kysely<any>
+  readonly #db: Kysely<MssqlSysTables>
 
   constructor(db: Kysely<any>) {
     this.#db = db
   }
 
   async getSchemas(): Promise<SchemaMetadata[]> {
-    throw new Error('Not implemented')
+    return await this.#db.selectFrom('sys.schemas').select('name').execute()
   }
 
   async getTables(
@@ -27,6 +27,14 @@ export class MssqlIntrospector implements DatabaseIntrospector {
   async getMetadata(
     options?: DatabaseMetadataOptions | undefined
   ): Promise<DatabaseMetadata> {
-    throw new Error('Not implemented')
+    return {
+      tables: await this.getTables(options),
+    }
+  }
+}
+
+interface MssqlSysTables {
+  'sys.schemas': {
+    name: string
   }
 }

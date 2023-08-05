@@ -1,22 +1,22 @@
 import { sql } from '../../../'
 import {
-  DIALECTS,
   clearDatabase,
   destroyTest,
   initTest,
   TestContext,
   expect,
   insertDefaultDataSet,
+  DIALECTS_WITH_MSSQL,
 } from './test-setup.js'
 
-for (const dialect of DIALECTS) {
-  describe(`${dialect}: introspect`, () => {
+for (const dialect of DIALECTS_WITH_MSSQL) {
+  describe.only(`${dialect}: introspect`, () => {
     let ctx: TestContext
 
     before(async function () {
       ctx = await initTest(this, dialect)
 
-      if (dialect === 'postgres') {
+      if (dialect === 'postgres' || dialect === 'mssql') {
         await dropSchema()
         await createSchema()
       }
@@ -40,6 +40,40 @@ for (const dialect of DIALECTS) {
       }
 
       await destroyTest(ctx)
+    })
+
+    describe('getSchemas', () => {
+      it('should get schema names', async () => {
+        const schemas = await ctx.db.introspection.getSchemas()
+
+        if (dialect === 'postgres') {
+          expect(schemas).to.containSubset([
+            { name: 'public' },
+            { name: 'information_schema' },
+            { name: 'pg_catalog' },
+            { name: 'some_schema' },
+            { name: 'dtype_schema' },
+          ])
+        } else if (dialect === 'mysql') {
+          expect(schemas).to.containSubset([
+            { name: 'mysql' },
+            { name: 'information_schema' },
+            { name: 'performance_schema' },
+            { name: 'sys' },
+            { name: 'kysely_test' },
+          ])
+        } else if (dialect === 'mssql') {
+          expect(schemas).to.containSubset([
+            { name: 'dbo' },
+            { name: 'sys' },
+            { name: 'guest' },
+            { name: 'INFORMATION_SCHEMA' },
+            { name: 'some_schema' },
+          ])
+        } else if (dialect === 'sqlite') {
+          expect(schemas).to.eql([])
+        }
+      })
     })
 
     it('should get table metadata', async () => {
@@ -544,7 +578,12 @@ for (const dialect of DIALECTS) {
       } else {
         await ctx.db.schema
           .createTable('some_schema.pet')
-          .addColumn('some_column', 'serial', (col) => col.primaryKey())
+          .addColumn('some_column', 'integer', (col) =>
+            col
+              .notNull()
+              .modifyFront(sql`identity(1,1)`)
+              .primaryKey()
+          )
           .execute()
       }
     }
