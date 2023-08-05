@@ -406,6 +406,188 @@ for (const dialect of DIALECTS_WITH_MSSQL) {
             ],
           },
         ])
+      } else if (dialect === 'mssql') {
+        expect(meta).to.eql([
+          {
+            isView: false,
+            name: 'person',
+            schema: 'dbo',
+            columns: [
+              {
+                dataType: 'int',
+                dataTypeSchema: 'sys',
+                hasDefaultValue: true,
+                isAutoIncrementing: false,
+                isNullable: false,
+                name: 'children',
+              },
+              {
+                dataType: 'varchar',
+                dataTypeSchema: 'sys',
+                hasDefaultValue: false,
+                isAutoIncrementing: false,
+                isNullable: true,
+                name: 'first_name',
+              },
+              {
+                dataType: 'varchar',
+                dataTypeSchema: 'sys',
+                hasDefaultValue: false,
+                isAutoIncrementing: false,
+                isNullable: false,
+                name: 'gender',
+              },
+              {
+                dataType: 'int',
+                dataTypeSchema: 'sys',
+                hasDefaultValue: false,
+                isAutoIncrementing: true,
+                isNullable: false,
+                name: 'id',
+              },
+              {
+                dataType: 'varchar',
+                dataTypeSchema: 'sys',
+                hasDefaultValue: false,
+                isAutoIncrementing: false,
+                isNullable: true,
+                name: 'last_name',
+              },
+              {
+                dataType: 'varchar',
+                dataTypeSchema: 'sys',
+                hasDefaultValue: false,
+                isAutoIncrementing: false,
+                isNullable: true,
+                name: 'marital_status',
+              },
+              {
+                dataType: 'varchar',
+                dataTypeSchema: 'sys',
+                hasDefaultValue: false,
+                isAutoIncrementing: false,
+                isNullable: true,
+                name: 'middle_name',
+              },
+            ],
+          },
+          {
+            isView: false,
+            name: 'pet',
+            schema: 'dbo',
+            columns: [
+              {
+                dataType: 'int',
+                dataTypeSchema: 'sys',
+                hasDefaultValue: false,
+                isAutoIncrementing: true,
+                isNullable: false,
+                name: 'id',
+              },
+              {
+                dataType: 'varchar',
+                dataTypeSchema: 'sys',
+                hasDefaultValue: false,
+                isAutoIncrementing: false,
+                isNullable: false,
+                name: 'name',
+              },
+              {
+                dataType: 'int',
+                dataTypeSchema: 'sys',
+                hasDefaultValue: false,
+                isAutoIncrementing: false,
+                isNullable: false,
+                name: 'owner_id',
+              },
+              {
+                dataType: 'varchar',
+                dataTypeSchema: 'sys',
+                hasDefaultValue: false,
+                isAutoIncrementing: false,
+                isNullable: false,
+                name: 'species',
+              },
+            ],
+          },
+          {
+            isView: false,
+            name: 'toy',
+            schema: 'dbo',
+            columns: [
+              {
+                dataType: 'int',
+                dataTypeSchema: 'sys',
+                hasDefaultValue: false,
+                isAutoIncrementing: true,
+                isNullable: false,
+                name: 'id',
+              },
+              {
+                dataType: 'varchar',
+                dataTypeSchema: 'sys',
+                hasDefaultValue: false,
+                isAutoIncrementing: false,
+                isNullable: false,
+                name: 'name',
+              },
+              {
+                dataType: 'int',
+                dataTypeSchema: 'sys',
+                hasDefaultValue: false,
+                isAutoIncrementing: false,
+                isNullable: false,
+                name: 'pet_id',
+              },
+              {
+                dataType: 'float',
+                dataTypeSchema: 'sys',
+                hasDefaultValue: false,
+                isAutoIncrementing: false,
+                isNullable: false,
+                name: 'price',
+              },
+            ],
+          },
+          {
+            isView: true,
+            name: 'toy_names',
+            schema: 'dbo',
+            columns: [
+              {
+                dataType: 'varchar',
+                dataTypeSchema: 'sys',
+                hasDefaultValue: false,
+                isAutoIncrementing: false,
+                isNullable: false,
+                name: 'name',
+              },
+            ],
+          },
+          {
+            isView: false,
+            name: 'pet',
+            schema: 'some_schema',
+            columns: [
+              {
+                dataType: 'int',
+                dataTypeSchema: 'sys',
+                hasDefaultValue: false,
+                isAutoIncrementing: true,
+                isNullable: false,
+                name: 'some_column',
+              },
+              {
+                dataType: 'int',
+                dataTypeSchema: 'sys',
+                hasDefaultValue: true,
+                isAutoIncrementing: false,
+                isNullable: true,
+                name: 'some_column_plus_1',
+              },
+            ],
+          },
+        ])
       } else if (dialect === 'sqlite') {
         expect(meta).to.eql([
           {
@@ -583,6 +765,9 @@ for (const dialect of DIALECTS_WITH_MSSQL) {
               .notNull()
               .modifyFront(sql`identity(1,1)`)
               .primaryKey()
+          )
+          .addColumn('some_column_plus_1', sql``, (col) =>
+            col.modifyEnd(sql`as (some_column + 1)`)
           )
           .execute()
       }
