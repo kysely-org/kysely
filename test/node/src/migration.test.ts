@@ -9,7 +9,7 @@ import {
   DEFAULT_MIGRATION_TABLE,
   Migrator,
   NO_MIGRATIONS,
-  MigratorProps,
+  MigratorProps
 } from '../../../'
 
 import {
@@ -513,7 +513,10 @@ for (const dialect of DIALECTS) {
 
     function createMigrations(
       migrationConfigs: (string | { name: string; error?: string })[],
-      migratorConfig?: Partial<MigratorProps>
+      migratorConfig?: Pick<
+        MigratorProps,
+        'migrationLockTableName' | 'migrationTableName' | 'migrationTableSchema'
+      >
     ): [Migrator, string[], string[]] {
       const executedUpMethods: string[] = []
       const executedDownMethods: string[] = []
