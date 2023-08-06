@@ -138,6 +138,7 @@ export class MssqlIntrospector implements DatabaseIntrospector {
           hasDefaultValue:
             rawColumn.column_default_object_id > 0 ||
             rawColumn.column_generated_always_type !== 'NOT_APPLICABLE' ||
+            rawColumn.column_is_identity ||
             rawColumn.column_is_computed ||
             rawColumn.column_is_rowguidcol,
           isAutoIncrementing: rawColumn.column_is_identity,
