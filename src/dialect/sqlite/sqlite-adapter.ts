@@ -2,7 +2,7 @@ import { Kysely } from '../../kysely.js'
 import { DialectAdapterBase } from '../dialect-adapter-base.js'
 import { MigrationLockOptions } from '../dialect-adapter.js'
 
-export class SqliteAdapter implements DialectAdapterBase {
+export class SqliteAdapter extends DialectAdapterBase {
   get supportsTransactionalDdl(): boolean {
     return false
   }

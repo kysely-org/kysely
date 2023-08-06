@@ -4,6 +4,10 @@ import { sql } from '../../raw-builder/sql.js'
 import { DialectAdapterBase } from '../dialect-adapter-base.js'
 
 export class MssqlAdapter extends DialectAdapterBase {
+  get supportsCreateIfNotExists(): boolean {
+    return false
+  }
+
   get supportsTransactionalDdl(): boolean {
     return true
   }
@@ -21,8 +25,6 @@ export class MssqlAdapter extends DialectAdapterBase {
     )}, @Resource = ${sql.lit(DEFAULT_MIGRATION_TABLE)}, @LockMode = ${sql.lit(
       'Exclusive'
     )}`.execute(db)
-
-    console.log('sp_getapplock result', result)
   }
 
   async releaseMigrationLock(): Promise<void> {
