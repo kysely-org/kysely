@@ -8,7 +8,7 @@ import {
 import { IdentifierNode } from '../operation-node/identifier-node.js'
 import { OperationNode } from '../operation-node/operation-node.js'
 import { AliasedExpression } from '../expression/expression.js'
-import { DrainOuterGeneric, ShallowRecord } from '../util/type-utils.js'
+import { DrainOuterGeneric } from '../util/type-utils.js'
 import { Database } from '../database.js'
 
 export type TableExpression<
@@ -69,7 +69,7 @@ export type PickTableWithAlias<
   T extends AnyAliasedTable<DB>
 > = T extends `${infer TB} as ${infer A}`
   ? TB extends keyof DB['tables']
-    ? ShallowRecord<A, DB['tables'][TB]>
+    ? Record<A, DB['tables'][TB]>
     : never
   : never
 

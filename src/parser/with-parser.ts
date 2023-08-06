@@ -14,7 +14,7 @@ import { Database } from '../database.js'
 
 export type CommonTableExpression<DB extends Database, CN extends string> = (
   creator: QueryCreator<DB>
-) => CommonTableExpressionOutput<DB, CN>
+) => CommonTableExpressionOutput<CN>
 
 export type RecursiveCommonTableExpression<
   DB extends Database,
@@ -29,7 +29,7 @@ export type RecursiveCommonTableExpression<
       config: DB['config']
     }>
   >
-) => CommonTableExpressionOutput<DB, CN>
+) => CommonTableExpressionOutput<CN>
 
 export type QueryCreatorWithCommonTableExpression<
   DB extends Database,
@@ -44,16 +44,16 @@ export type QueryCreatorWithCommonTableExpression<
   }>
 >
 
-type CommonTableExpressionOutput<DB extends Database, CN extends string> =
+type CommonTableExpressionOutput<CN extends string> =
   | Expression<ExtractRowFromCommonTableExpressionName<CN>>
-  | InsertQueryBuilder<DB, any, ExtractRowFromCommonTableExpressionName<CN>>
+  | InsertQueryBuilder<any, any, ExtractRowFromCommonTableExpressionName<CN>>
   | UpdateQueryBuilder<
-      DB,
+      any,
       any,
       any,
       ExtractRowFromCommonTableExpressionName<CN>
     >
-  | DeleteQueryBuilder<DB, any, ExtractRowFromCommonTableExpressionName<CN>>
+  | DeleteQueryBuilder<any, any, ExtractRowFromCommonTableExpressionName<CN>>
 
 /**
  * Given a common CommonTableExpression CTE extracts the row type from it.

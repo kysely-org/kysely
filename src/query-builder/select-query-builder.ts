@@ -75,8 +75,6 @@ import { ExpressionOrFactory } from '../parser/expression-parser.js'
 import { ExpressionWrapper } from '../expression/expression-wrapper.js'
 import { SelectQueryBuilderExpression } from './select-query-builder-expression.js'
 import { Database } from '../database.js'
-import { ExpressionBuilder } from '../expression/expression-builder.js'
-import { AliasedRawBuilder } from '../raw-builder/raw-builder.js'
 
 export interface SelectQueryBuilder<
   DB extends Database,
