@@ -58,8 +58,7 @@ export type ReferenceExpressionOrList<
 export type ExtractTypeFromReferenceExpression<
   DB extends Database,
   TB extends keyof DB['tables'],
-  RE,
-  DV = unknown
+  RE
 > = RE extends string
   ? SelectType<ExtractTypeFromStringReference<DB, TB, RE>>
   : RE extends SelectQueryBuilderExpression<infer O>
@@ -70,13 +69,12 @@ export type ExtractTypeFromReferenceExpression<
   ? O
   : RE extends (qb: any) => Expression<infer O>
   ? O
-  : DV
+  : unknown
 
 export type ExtractTypeFromStringReference<
   DB extends Database,
   TB extends keyof DB['tables'],
-  RE extends string,
-  DV = unknown
+  RE extends string
 > = RE extends `${infer SC}.${infer T}.${infer C}`
   ? `${SC}.${T}` extends TB
     ? C extends keyof DB['tables'][`${SC}.${T}`]
@@ -91,7 +89,7 @@ export type ExtractTypeFromStringReference<
     : never
   : RE extends AnyColumn<DB, TB>
   ? ExtractColumnType<DB, TB, RE>
-  : DV
+  : unknown
 
 export type OrderedColumnName<C extends string> =
   C extends `${string} ${infer O}`

@@ -8,7 +8,7 @@ import {
 } from '../parser/join-parser.js'
 import { TableExpression } from '../parser/table-parser.js'
 import {
-  parseSelectArg,
+  parseSelect,
   parseSelectAll,
   SelectExpression,
   Selection,
@@ -1724,7 +1724,7 @@ class SelectQueryBuilderImpl<
       ...this.#props,
       queryNode: SelectQueryNode.cloneWithSelections(
         this.#props.queryNode,
-        parseSelectArg(selection)
+        parseSelect(selection)
       ),
     })
   }

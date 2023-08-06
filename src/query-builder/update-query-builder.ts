@@ -13,7 +13,7 @@ import {
   TableExpressionOrList,
 } from '../parser/table-parser.js'
 import {
-  parseSelectArg,
+  parseSelect,
   parseSelectAll,
   SelectExpression,
   SelectArg,
@@ -552,7 +552,7 @@ export class UpdateQueryBuilder<
       ...this.#props,
       queryNode: QueryNode.cloneWithReturning(
         this.#props.queryNode,
-        parseSelectArg(selection)
+        parseSelect(selection)
       ),
     })
   }

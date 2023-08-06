@@ -71,7 +71,7 @@ import {
   SelectCallback,
   SelectExpression,
   Selection,
-  parseSelectArg,
+  parseSelect,
 } from '../parser/select-parser.js'
 import {
   RefTuple2,
@@ -1126,7 +1126,7 @@ export function createExpressionBuilder<
         executor,
         queryNode: SelectQueryNode.cloneWithSelections(
           SelectQueryNode.create(),
-          parseSelectArg(selection)
+          parseSelect(selection)
         ),
       })
     },

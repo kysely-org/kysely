@@ -172,11 +172,11 @@ export type AllSelection<
   }[TB]
 }>
 
-export function parseSelectArg(
+export function parseSelect(
   selection: SelectArg<any, any, SelectExpression<any, any>>
 ): SelectionNode[] {
   if (isFunction(selection)) {
-    return parseSelectArg(selection(expressionBuilder()))
+    return parseSelect(selection(expressionBuilder()))
   } else if (isReadonlyArray(selection)) {
     return selection.map((it) => parseSelectExpression(it))
   } else {

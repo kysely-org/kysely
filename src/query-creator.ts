@@ -45,7 +45,7 @@ import {
   SelectCallback,
   SelectExpression,
   Selection,
-  parseSelectArg,
+  parseSelect,
 } from './parser/select-parser.js'
 import { Database } from './database.js'
 import { DrainOuterGeneric } from './util/type-utils.js'
@@ -269,7 +269,7 @@ export class QueryCreator<DB extends Database> {
       executor: this.#props.executor,
       queryNode: SelectQueryNode.cloneWithSelections(
         SelectQueryNode.create(this.#props.withNode),
-        parseSelectArg(selection)
+        parseSelect(selection)
       ),
     })
   }

@@ -1,7 +1,7 @@
 import { OperationNodeSource } from '../operation-node/operation-node-source.js'
 import { CompiledQuery } from '../query-compiler/compiled-query.js'
 import {
-  parseSelectArg,
+  parseSelect,
   parseSelectAll,
   SelectExpression,
   SelectArg,
@@ -566,7 +566,7 @@ export class InsertQueryBuilder<
       ...this.#props,
       queryNode: QueryNode.cloneWithReturning(
         this.#props.queryNode,
-        parseSelectArg(selection)
+        parseSelect(selection)
       ),
     })
   }
