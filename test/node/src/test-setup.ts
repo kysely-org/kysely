@@ -31,6 +31,7 @@ import {
   sql,
   ColumnType,
   InsertObject,
+  DefaultTypeConfig,
 } from '../../../'
 
 export interface Person {
@@ -65,7 +66,7 @@ export interface Tables {
 
 export interface Database {
   tables: Tables
-  config: {}
+  config: DefaultTypeConfig
 }
 
 interface PersonInsertParams extends InsertObject<Database, 'person'> {

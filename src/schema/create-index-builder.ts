@@ -25,6 +25,7 @@ import { QueryNode } from '../operation-node/query-node.js'
 import { ExpressionBuilder } from '../expression/expression-builder.js'
 import { ShallowRecord, SqlBool } from '../util/type-utils.js'
 import { ImmediateValueTransformer } from '../plugin/immediate-value/immediate-value-transformer.js'
+import { DefaultTypeConfig } from '../database.js'
 
 export class CreateIndexBuilder<C = never>
   implements OperationNodeSource, Compilable
@@ -227,7 +228,7 @@ export class CreateIndexBuilder<C = never>
       qb: ExpressionBuilder<
         {
           tables: ShallowRecord<string, ShallowRecord<C & string, any>>
-          config: Record<string, unknown>
+          config: DefaultTypeConfig
         },
         string
       >

@@ -1,4 +1,11 @@
-import { CamelCasePlugin, Generated, Kysely, RawBuilder, sql } from '../../../'
+import {
+  CamelCasePlugin,
+  Generated,
+  Kysely,
+  RawBuilder,
+  sql,
+  DefaultTypeConfig,
+} from '../../../'
 
 import {
   DIALECTS,
@@ -26,7 +33,7 @@ for (const dialect of DIALECTS) {
 
     interface CamelDatabase {
       tables: { camelPerson: CamelPerson }
-      config: {}
+      config: DefaultTypeConfig
     }
 
     before(async function () {

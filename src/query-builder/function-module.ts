@@ -1,4 +1,4 @@
-import { Database } from '../database.js'
+import { Database, GetConfig, GetConfigFallback } from '../database.js'
 import { DynamicReferenceBuilder } from '../dynamic/dynamic-reference-builder.js'
 import { ExpressionWrapper } from '../expression/expression-wrapper.js'
 import { Expression } from '../expression/expression.js'
@@ -193,7 +193,7 @@ export interface FunctionModule<
    * ```
    */
   avg<
-    O extends number | string | null = number | string,
+    O = GetConfigFallback<DB, 'avgType', 'floatType'>,
     C extends ReferenceExpression<DB, TB> = ReferenceExpression<DB, TB>
   >(
     column: C
@@ -322,7 +322,7 @@ export interface FunctionModule<
    * ```
    */
   count<
-    O extends number | string | bigint,
+    O = GetConfigFallback<DB, 'countType', 'bigIntType'>,
     C extends ReferenceExpression<DB, TB> = ReferenceExpression<DB, TB>
   >(
     column: C
@@ -397,15 +397,16 @@ export interface FunctionModule<
    *   .execute()
    * ```
    */
-  countAll<O extends number | string | bigint, T extends TB = TB>(
+  countAll<
+    O = GetConfigFallback<DB, 'countType', 'bigIntType'>,
+    T extends TB = TB
+  >(
     table: T
   ): AggregateFunctionBuilder<DB, TB, O>
 
-  countAll<O extends number | string | bigint>(): AggregateFunctionBuilder<
-    DB,
-    TB,
-    O
-  >
+  countAll<
+    O = GetConfigFallback<DB, 'countType', 'bigIntType'>
+  >(): AggregateFunctionBuilder<DB, TB, O>
 
   /**
    * Calls the `max` function for the column or expression given as the argument.
@@ -580,7 +581,7 @@ export interface FunctionModule<
    * ```
    */
   sum<
-    O extends number | string | bigint | null = number | string | bigint,
+    O = GetConfig<DB, 'sumType'>,
     C extends ReferenceExpression<DB, TB> = ReferenceExpression<DB, TB>
   >(
     column: C
@@ -670,7 +671,7 @@ export function createFunctionModule<
     agg,
 
     avg<
-      O extends number | string | null = number | string,
+      O = GetConfigFallback<DB, 'avgType', 'floatType'>,
       C extends ReferenceExpression<DB, TB> = ReferenceExpression<DB, TB>
     >(column: C): AggregateFunctionBuilder<DB, TB, O> {
       return agg('avg', [column])
@@ -691,7 +692,7 @@ export function createFunctionModule<
     },
 
     count<
-      O extends number | string | bigint,
+      O = GetConfigFallback<DB, 'countType', 'bigIntType'>,
       C extends ReferenceExpression<DB, TB> = ReferenceExpression<DB, TB>
     >(column: C): AggregateFunctionBuilder<DB, TB, O> {
       return agg('count', [column])
@@ -725,7 +726,7 @@ export function createFunctionModule<
     },
 
     sum<
-      O extends number | string | bigint | null = number | string | bigint,
+      O = GetConfig<DB, 'sumType'>,
       C extends ReferenceExpression<DB, TB> = ReferenceExpression<DB, TB>
     >(column: C): AggregateFunctionBuilder<DB, TB, O> {
       return agg('sum', [column])

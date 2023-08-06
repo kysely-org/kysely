@@ -3,7 +3,8 @@ import {
   Generated,
   GeneratedAlways,
   JSONColumnType,
-} from '../../dist/cjs'
+  DefaultTypeConfig,
+} from '.'
 
 export interface Pet {
   id: Generated<string>
@@ -41,7 +42,7 @@ export interface Tables {
 
 export interface Database {
   tables: Tables
-  config: {}
+  config: DefaultTypeConfig
 }
 
 export type Action =
