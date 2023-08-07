@@ -25,3 +25,4 @@ A dialect is the glue between Kysely and the underlying database engine. Check t
 | Postgres.js | https://github.com/igalklebanov/kysely-postgres-js |
 | Fetch driver | https://github.com/andersgee/kysely-fetch-driver |
 | SQLite WASM | https://github.com/DallasHoff/sqlocal |
+| Deno SQLite | https://gitlab.com/soapbox-pub/kysely-deno-sqlite |
