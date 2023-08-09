@@ -132,7 +132,7 @@ class MssqlConnection implements DatabaseConnection {
         rowCount: number
       }>((resolve, reject) =>
         this.#connection.execSql(
-          this.#createTediousRequest(compiledQuery, reject, resolve)
+          this.#createTediousRequest(compiledQuery, { reject, resolve })
         )
       )
 
@@ -162,73 +162,65 @@ class MssqlConnection implements DatabaseConnection {
       throw new Error('chunkSize must be a positive integer')
     }
 
-    // const request = this.#createMssqlRequest(this.#request, compiledQuery)
-    // request.stream = true
+    const request = this.#createTediousRequest(compiledQuery)
 
-    // const cursor = new MssqlCursor<O>(request)
+    this.#connection.execSql(request)
 
-    // try {
-    //   request.query(compiledQuery.sql)
+    try {
+      while (true) {
+        const rows = await request.readChunk<O>(chunkSize)
 
-    //   while (true) {
-    //     const rows = await cursor.read(chunkSize)
+        if (rows.length === 0) {
+          break
+        }
 
-    //     if (rows.length === 0) {
-    //       break
-    //     }
+        yield { rows }
 
-    //     yield {
-    //       rows: rows,
-    //     }
-    //   }
-    // } finally {
-    //   request.cancel()
-    // }
+        if (rows.length < chunkSize) {
+          break
+        }
+      }
+    } finally {
+      this.#connection.cancel()
+    }
   }
 
   validate(): Promise<boolean> {
     return new Promise((resolve) =>
       this.#connection.execSql(
-        this.#createTediousRequest(
-          CompiledQuery.raw('select 1'),
-          () => resolve(false),
-          () => resolve(true)
-        )
+        this.#createTediousRequest(CompiledQuery.raw('select 1'), {
+          reject: () => resolve(false),
+          resolve: () => resolve(true),
+        })
       )
     )
   }
 
   #createTediousRequest(
     compiledQuery: CompiledQuery,
-    reject: (reason?: any) => void,
-    resolve: (value: any) => void
-  ): Request {
-    const { parameters, query, sql } = compiledQuery
+    promise?: {
+      reject: (reason?: any) => void
+      resolve: (value: any) => void
+    }
+  ): Request & {
+    readChunk: <O>(chunkSize: number) => Promise<O[]>
+  } {
+    const { parameters, sql } = compiledQuery
 
     let promisedRowCount: number | undefined
+    let error: Error | any[] | undefined
     const rows: Record<string, unknown>[] = []
 
     const request = new this.#tedious.Request(sql, (err, rowCount) => {
       if (err) {
-        if (err instanceof AggregateError) {
-          reject(err.errors)
-        } else {
-          reject(err)
-        }
+        error = err instanceof AggregateError ? err.errors : err
+        promise?.reject(error)
       } else {
         promisedRowCount = rowCount
       }
     })
 
-    for (let i = 0; i < parameters.length; i++) {
-      const parameter = parameters[i]
-
-      request.addParameter(
-        String(i + 1),
-        this.#getTediousDataType(parameter),
-        parameter
-      )
-    }
+    this.#addParametersToTediousRequest(request, parameters)
 
     const rowListener = (columns: ColumnValue[]) => {
       const row: Record<string, unknown> = {}
@@ -242,15 +234,51 @@ class MssqlConnection implements DatabaseConnection {
 
     request.on('row', rowListener)
 
+    let requestCompleted = false
+
     request.once('requestCompleted', () => {
+      requestCompleted = true
       request.off('row', rowListener)
-      resolve({
-        rows,
+
+      promise?.resolve({
         rowCount: promisedRowCount,
+        rows,
       })
     })
 
-    return request
+    return Object.defineProperty(request, 'readChunk', {
+      configurable: false,
+      enumerable: false,
+      value: (chunkSize: number) => {
+        return new Promise((resolve, reject) => {
+          const interval = setInterval(() => {
+            if (error) {
+              clearInterval(interval)
+              reject(error)
+            } else if (requestCompleted || rows.length >= chunkSize) {
+              clearInterval(interval)
+              resolve(rows.splice(0, chunkSize))
+            }
+          }, 0)
+        })
+      },
+      writable: false,
+    }) as any
+  }
+
+  #addParametersToTediousRequest(
+    request: Request,
+    parameters: readonly unknown[]
+  ): void {
+    for (let i = 0; i < parameters.length; i++) {
+      const parameter = parameters[i]
+
+      request.addParameter(
+        String(i + 1),
+        this.#getTediousDataType(parameter),
+        parameter
+      )
+    }
   }
 
   #getTediousDataType(value: unknown): any {

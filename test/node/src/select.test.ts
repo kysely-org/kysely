@@ -879,8 +879,7 @@ for (const dialect of DIALECTS_WITH_MSSQL) {
       })
     }
 
-    // TODO: introduce mssql
-    if (dialect === 'mysql' || dialect === 'postgres') {
+    if (dialect === 'postgres' || dialect === 'mysql' || dialect === 'mssql') {
       it('should stream results', async () => {
         const males: unknown[] = []
 
@@ -910,7 +909,7 @@ for (const dialect of DIALECTS_WITH_MSSQL) {
         ])
       })
 
-      if (dialect === 'postgres') {
+      if (dialect === 'postgres' || dialect === 'mssql') {
         it('should stream results with a specific chunk size', async () => {
           const males: unknown[] = []
 
