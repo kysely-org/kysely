@@ -2876,7 +2876,62 @@ for (const dialect of DIALECTS_WITH_MSSQL) {
           })
         })
       }
+      
+      if (
+        dialect === 'postgres' ||
+        dialect === 'mysql' ||
+        dialect === 'mssql'
+      ) {
+        describe('add primary key constraint', async () => {
+          it('should add a primary key constraint', async () => {
+            const builder = ctx.db.schema
+              .alterTable('test')
+              .addPrimaryKeyConstraint('test_pkey', ['integer_col'])
 
+            testSql(builder, dialect, {
+              postgres: {
+                sql: 'alter table "test" add constraint "test_pkey" primary key ("integer_col")',
+                parameters: [],
+              },
+              mysql: {
+                sql: 'alter table `test` add constraint `test_pkey` primary key (`integer_col`)',
+                parameters: [],
+              },
+              mssql: {
+                sql: 'alter table "test" add constraint "test_pkey" primary key ("integer_col")',
+                parameters: [],
+              },
+              sqlite: NOT_SUPPORTED,
+            })
+
+            await builder.execute()
+          })
+
+          it('should add a primary key constraint for multiple columns', async () => {
+            const builder = ctx.db.schema
+              .alterTable('test')
+              .addPrimaryKeyConstraint('test_pkey', [
+                'integer_col',
+                'varchar_col',
+              ])
+
+            testSql(builder, dialect, {
+              postgres: {
+                sql: 'alter table "test" add constraint "test_pkey" primary key ("integer_col", "varchar_col")',
+                parameters: [],
+              },
+              mysql: {
+                sql: 'alter table `test` add constraint `test_pkey` primary key (`integer_col`, `varchar_col`)',
+                parameters: [],
+              },
+              sqlite: NOT_SUPPORTED,
+            })
+
+            await builder.execute()
+          })
+        })
+      }
+      
       if (
         dialect === 'postgres' ||
         dialect === 'mysql' ||

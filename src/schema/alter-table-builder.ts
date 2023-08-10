@@ -36,6 +36,7 @@ import {
 import { AlterTableExecutor } from './alter-table-executor.js'
 import { AlterTableAddForeignKeyConstraintBuilder } from './alter-table-add-foreign-key-constraint-builder.js'
 import { AlterTableDropConstraintBuilder } from './alter-table-drop-constraint-builder.js'
+import { PrimaryConstraintNode } from '../operation-node/primary-constraint-node.js'
 
 /**
  * This builder can be used to create a `alter table` query.
@@ -209,6 +210,23 @@ export class AlterTableBuilder implements ColumnAlteringInterface {
           constraintName
         )
       ),
+    })
+  }
+
+  /**
+   * See {@link CreateTableBuilder.addPrimaryKeyConstraint}
+   */
+  addPrimaryKeyConstraint(
+    constraintName: string,
+    columns: string[]
+  ): AlterTableExecutor {
+    return new AlterTableExecutor({
+      ...this.#props,
+      node: AlterTableNode.cloneWithTableProps(this.#props.node, {
+        addConstraint: AddConstraintNode.create(
+          PrimaryConstraintNode.create(columns, constraintName)
+        ),
+      }),
     })
   }
 
