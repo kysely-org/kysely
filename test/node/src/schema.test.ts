@@ -2876,29 +2876,52 @@ for (const dialect of DIALECTS_WITH_MSSQL) {
           })
         })
       }
-      
+
       if (
         dialect === 'postgres' ||
         dialect === 'mysql' ||
         dialect === 'mssql'
       ) {
         describe('add primary key constraint', async () => {
+          beforeEach(() => {
+            return ctx.db.schema
+              .alterTable('test')
+              .addColumn('decimal_col', 'decimal', (cb) => cb.notNull())
+              .addColumn('smallint_col', sql`smallint`, (cb) => cb.notNull())
+              .execute()
+          })
+
+          afterEach(async () => {
+            if (dialect === 'mssql') {
+              await ctx.db.schema
+                .alterTable('test')
+                .dropConstraint('test_pkey')
+                .execute()
+            }
+
+            await ctx.db.schema
+              .alterTable('test')
+              .dropColumn('decimal_col')
+              .dropColumn('smallint_col')
+              .execute()
+          })
+
           it('should add a primary key constraint', async () => {
             const builder = ctx.db.schema
               .alterTable('test')
-              .addPrimaryKeyConstraint('test_pkey', ['integer_col'])
+              .addPrimaryKeyConstraint('test_pkey', ['decimal_col'])
 
             testSql(builder, dialect, {
               postgres: {
-                sql: 'alter table "test" add constraint "test_pkey" primary key ("integer_col")',
+                sql: 'alter table "test" add constraint "test_pkey" primary key ("decimal_col")',
                 parameters: [],
               },
               mysql: {
-                sql: 'alter table `test` add constraint `test_pkey` primary key (`integer_col`)',
+                sql: 'alter table `test` add constraint `test_pkey` primary key (`decimal_col`)',
                 parameters: [],
               },
               mssql: {
-                sql: 'alter table "test" add constraint "test_pkey" primary key ("integer_col")',
+                sql: 'alter table "test" add constraint "test_pkey" primary key ("decimal_col")',
                 parameters: [],
               },
               sqlite: NOT_SUPPORTED,
@@ -2911,17 +2934,21 @@ for (const dialect of DIALECTS_WITH_MSSQL) {
             const builder = ctx.db.schema
               .alterTable('test')
               .addPrimaryKeyConstraint('test_pkey', [
-                'integer_col',
-                'varchar_col',
+                'decimal_col',
+                'smallint_col',
               ])
 
             testSql(builder, dialect, {
               postgres: {
-                sql: 'alter table "test" add constraint "test_pkey" primary key ("integer_col", "varchar_col")',
+                sql: 'alter table "test" add constraint "test_pkey" primary key ("decimal_col", "smallint_col")',
                 parameters: [],
               },
               mysql: {
-                sql: 'alter table `test` add constraint `test_pkey` primary key (`integer_col`, `varchar_col`)',
+                sql: 'alter table `test` add constraint `test_pkey` primary key (`decimal_col`, `smallint_col`)',
+                parameters: [],
+              },
+              mssql: {
+                sql: 'alter table "test" add constraint "test_pkey" primary key ("decimal_col", "smallint_col")',
                 parameters: [],
               },
               sqlite: NOT_SUPPORTED,
@@ -2931,7 +2958,7 @@ for (const dialect of DIALECTS_WITH_MSSQL) {
           })
         })
       }
-      
+
       if (
         dialect === 'postgres' ||
         dialect === 'mysql' ||
