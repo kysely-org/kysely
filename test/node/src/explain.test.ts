@@ -8,12 +8,10 @@ import {
   insertDefaultDataSet,
   NOT_SUPPORTED,
   TestContext,
-  DIALECTS_WITH_MSSQL,
+  DIALECTS,
 } from './test-setup.js'
 
-for (const dialect of DIALECTS_WITH_MSSQL.filter(
-  (dialect) => dialect !== 'mssql'
-)) {
+for (const dialect of DIALECTS.filter((dialect) => dialect !== 'mssql')) {
   describe(`${dialect}: explain test`, () => {
     let ctx: TestContext
     const sandbox = createSandbox()

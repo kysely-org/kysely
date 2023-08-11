@@ -10,10 +10,10 @@ import {
   expect,
   Database,
   insertDefaultDataSet,
-  DIALECTS_WITH_MSSQL,
+  DIALECTS,
 } from './test-setup.js'
 
-for (const dialect of DIALECTS_WITH_MSSQL) {
+for (const dialect of DIALECTS) {
   describe(`${dialect}: transaction`, () => {
     let ctx: TestContext
     const executedQueries: CompiledQuery[] = []

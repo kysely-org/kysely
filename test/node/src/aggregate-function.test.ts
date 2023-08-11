@@ -11,12 +11,12 @@ import {
   NOT_SUPPORTED,
   TestContext,
   testSql,
-  DIALECTS_WITH_MSSQL,
+  DIALECTS,
 } from './test-setup.js'
 
 const funcNames = ['avg', 'count', 'max', 'min', 'sum'] as const
 
-for (const dialect of DIALECTS_WITH_MSSQL) {
+for (const dialect of DIALECTS) {
   describe(`${dialect}: aggregate functions`, () => {
     let ctx: TestContext
 

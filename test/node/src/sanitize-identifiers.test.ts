@@ -7,10 +7,10 @@ import {
   Person,
   testSql,
   NOT_SUPPORTED,
-  DIALECTS_WITH_MSSQL,
+  DIALECTS,
 } from './test-setup.js'
 
-for (const dialect of DIALECTS_WITH_MSSQL) {
+for (const dialect of DIALECTS) {
   describe(`${dialect}: sanitize identifiers`, () => {
     let ctx: TestContext
 

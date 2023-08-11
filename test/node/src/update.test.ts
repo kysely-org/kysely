@@ -11,11 +11,11 @@ import {
   NOT_SUPPORTED,
   insertDefaultDataSet,
   DEFAULT_DATA_SET,
-  DIALECTS_WITH_MSSQL,
+  DIALECTS,
   limit,
 } from './test-setup.js'
 
-for (const dialect of DIALECTS_WITH_MSSQL) {
+for (const dialect of DIALECTS) {
   describe(`${dialect}: update`, () => {
     let ctx: TestContext
 

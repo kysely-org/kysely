@@ -7,10 +7,10 @@ import {
   expect,
   insertDefaultDataSet,
   NOT_SUPPORTED,
-  DIALECTS_WITH_MSSQL,
+  DIALECTS,
 } from './test-setup.js'
 
-for (const dialect of DIALECTS_WITH_MSSQL) {
+for (const dialect of DIALECTS) {
   describe(`${dialect}: set operations`, () => {
     let ctx: TestContext
 

@@ -8,10 +8,10 @@ import {
   TestContext,
   testSql,
   expect,
-  DIALECTS_WITH_MSSQL,
+  DIALECTS,
 } from './test-setup.js'
 
-for (const dialect of DIALECTS_WITH_MSSQL) {
+for (const dialect of DIALECTS) {
   describe(`${dialect}: having`, () => {
     let ctx: TestContext
 

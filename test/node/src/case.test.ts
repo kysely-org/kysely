@@ -1,6 +1,6 @@
 import { sql } from '../../..'
 import {
-  DIALECTS_WITH_MSSQL,
+  DIALECTS,
   TestContext,
   clearDatabase,
   destroyTest,
@@ -9,7 +9,7 @@ import {
   testSql,
 } from './test-setup.js'
 
-for (const dialect of DIALECTS_WITH_MSSQL) {
+for (const dialect of DIALECTS) {
   describe(`${dialect}: case`, () => {
     let ctx: TestContext
 

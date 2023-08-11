@@ -18,14 +18,14 @@ import {
   expect,
   initTest,
   TestContext,
-  DIALECTS_WITH_MSSQL,
+  DIALECTS,
 } from './test-setup.js'
 
 const CUSTOM_MIGRATION_SCHEMA = 'migrate'
 const CUSTOM_MIGRATION_TABLE = 'custom_migrations'
 const CUSTOM_MIGRATION_LOCK_TABLE = 'custom_migrations_lock'
 
-for (const dialect of DIALECTS_WITH_MSSQL) {
+for (const dialect of DIALECTS) {
   describe(`${dialect}: migration`, () => {
     let ctx: TestContext
 

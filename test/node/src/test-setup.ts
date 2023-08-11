@@ -87,12 +87,7 @@ export type BuiltInDialect = 'postgres' | 'mysql' | 'mssql' | 'sqlite'
 export type PerDialect<T> = Record<BuiltInDialect, T>
 
 export const DIALECTS: BuiltInDialect[] = (
-  ['postgres', 'mysql', 'sqlite'] as const
-).filter((d) => !process.env.DIALECT || d === process.env.DIALECT)
-
-// temporary, to slowly introduce mssql tests file by file.
-export const DIALECTS_WITH_MSSQL: BuiltInDialect[] = (
-  [...DIALECTS, 'mssql'] as const
+  ['postgres', 'mysql', 'mssql', 'sqlite'] as const
 ).filter((d) => !process.env.DIALECT || d === process.env.DIALECT)
 
 const TEST_INIT_TIMEOUT = 5 * 60 * 1000

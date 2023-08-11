@@ -9,7 +9,7 @@ import {
   insertDefaultDataSet,
   clearDatabase,
   Person,
-  DIALECTS_WITH_MSSQL,
+  DIALECTS,
 } from './test-setup.js'
 
 interface PersonWithArrays extends Person {
@@ -18,7 +18,7 @@ interface PersonWithArrays extends Person {
   nicknames: string[] | null
 }
 
-if (DIALECTS_WITH_MSSQL.includes('postgres')) {
+if (DIALECTS.includes('postgres')) {
   const dialect = 'postgres'
 
   describe(`${dialect} array tests`, () => {

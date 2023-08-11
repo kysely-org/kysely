@@ -11,10 +11,10 @@ import {
   Database,
   NOT_SUPPORTED,
   insertDefaultDataSet,
-  DIALECTS_WITH_MSSQL,
+  DIALECTS,
 } from './test-setup.js'
 
-if (DIALECTS_WITH_MSSQL.includes('mysql')) {
+if (DIALECTS.includes('mysql')) {
   const dialect = 'mysql' as const
 
   describe(`mysql: replace`, () => {

@@ -6,10 +6,10 @@ import {
   initTest,
   TestContext,
   insertDefaultDataSet,
-  DIALECTS_WITH_MSSQL,
+  DIALECTS,
 } from './test-setup.js'
 
-if (DIALECTS_WITH_MSSQL.includes('postgres')) {
+if (DIALECTS.includes('postgres')) {
   describe.skip(`query builder performance`, () => {
     let ctx: TestContext
 

@@ -6,12 +6,12 @@ import {
   testSql,
   NOT_SUPPORTED,
   createTableWithId,
-  DIALECTS_WITH_MSSQL,
+  DIALECTS,
   insert,
   limit,
 } from './test-setup.js'
 
-for (const dialect of DIALECTS_WITH_MSSQL.filter(
+for (const dialect of DIALECTS.filter(
   (dialect) => dialect === 'postgres' || dialect === 'mssql'
 )) {
   describe(`${dialect}: with schema`, () => {

@@ -14,11 +14,11 @@ import {
   DIALECT_CONFIGS,
   Database,
   POOL_SIZE,
-  DIALECTS_WITH_MSSQL,
+  DIALECTS,
   limit,
 } from './test-setup.js'
 
-for (const dialect of DIALECTS_WITH_MSSQL) {
+for (const dialect of DIALECTS) {
   describe(`${dialect}: select`, () => {
     let ctx: TestContext
 

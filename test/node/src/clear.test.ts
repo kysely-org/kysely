@@ -4,11 +4,11 @@ import {
   TestContext,
   testSql,
   NOT_SUPPORTED,
-  DIALECTS_WITH_MSSQL,
+  DIALECTS,
   limit,
 } from './test-setup'
 
-for (const dialect of DIALECTS_WITH_MSSQL) {
+for (const dialect of DIALECTS) {
   describe(`${dialect} clear`, () => {
     let ctx: TestContext
 

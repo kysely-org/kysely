@@ -9,10 +9,10 @@ import {
   testSql,
   NOT_SUPPORTED,
   expect,
-  DIALECTS_WITH_MSSQL,
+  DIALECTS,
 } from './test-setup.js'
 
-for (const dialect of DIALECTS_WITH_MSSQL) {
+for (const dialect of DIALECTS) {
   describe(`${dialect}: raw sql`, () => {
     let ctx: TestContext
 
