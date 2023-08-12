@@ -1497,6 +1497,10 @@ export class DefaultQueryCompiler
     this.compileList(columnAlterations)
   }
 
+  /**
+   * controls whether the dialect adds a "type" keyword before a column's new data
+   * type in an ALTER TABLE statement.
+   */
   protected announcesNewColumnDataType(): boolean {
     return true
   }

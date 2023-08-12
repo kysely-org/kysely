@@ -13,14 +13,15 @@ export class MssqlAdapter extends DialectAdapterBase {
   }
 
   get supportsReturning(): boolean {
-    // mssql supports returning with the output clause
-    return true
+    // mssql should support returning with the `output` clause.
+    // we need to figure this out when we'll introduce support for it.
+    return false
   }
 
   async acquireMigrationLock(db: Kysely<any>): Promise<void> {
     // Acquire a transaction-level exclusive lock on the migrations table.
     // https://learn.microsoft.com/en-us/sql/relational-databases/system-stored-procedures/sp-getapplock-transact-sql?view=sql-server-ver16
-    const result = await sql`exec sp_getapplock @DbPrincipal = ${sql.lit(
+    await sql`exec sp_getapplock @DbPrincipal = ${sql.lit(
       'dbo'
     )}, @Resource = ${sql.lit(DEFAULT_MIGRATION_TABLE)}, @LockMode = ${sql.lit(
       'Exclusive'

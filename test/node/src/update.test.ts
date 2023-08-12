@@ -1,7 +1,6 @@
 import { UpdateResult, sql } from '../../../'
 
 import {
-  DIALECTS,
   clearDatabase,
   destroyTest,
   initTest,

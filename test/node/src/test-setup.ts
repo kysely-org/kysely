@@ -142,7 +142,6 @@ export const DIALECT_CONFIGS = {
       database: 'kysely_test',
       port: 21433,
       trustServerCertificate: true,
-      useUTC: true,
     },
     server: 'localhost',
   } satisfies Tedious.ConnectionConfig,
@@ -170,15 +169,17 @@ export const DB_CONFIGS: PerDialect<KyselyConfig> = {
 
   mssql: {
     dialect: new MssqlDialect({
-      connectionFactory: () => new Tedious.Connection(DIALECT_CONFIGS.mssql),
-      Tarn: {
+      tarn: {
         options: {
           max: POOL_SIZE,
           min: 0,
         },
         ...Tarn,
       },
-      Tedious,
+      tedious: {
+        ...Tedious,
+        connectionFactory: () => new Tedious.Connection(DIALECT_CONFIGS.mssql),
+      },
     }),
     plugins: PLUGINS,
   },

@@ -1,5 +1,3 @@
-import { Pool } from 'tarn'
-import { ColumnValue, Connection, Request } from 'tedious'
 import {
   DatabaseConnection,
   QueryResult,
@@ -20,25 +18,33 @@ import {
   isString,
   isUndefined,
 } from '../../util/object-utils.js'
-import { MssqlDialectConfig, Tedious } from './mssql-dialect-config.js'
+import {
+  MssqlDialectConfig,
+  TarnPool,
+  Tedious,
+  TediousColumnValue,
+  TediousConnection,
+  TediousRequest,
+} from './mssql-dialect-config.js'
 import { CompiledQuery } from '../../query-compiler/compiled-query.js'
 import { extendStackTrace } from '../../util/stack-trace-utils.js'
 import { randomString } from '../../util/random-string.js'
+import { Deferred } from '../../util/deferred.js'
 
 const PRIVATE_RELEASE_METHOD = Symbol()
 const PRIVATE_DESTROY_METHOD = Symbol()
 
 export class MssqlDriver implements Driver {
   readonly #config: MssqlDialectConfig
-  readonly #pool: Pool<MssqlConnection>
+  readonly #pool: TarnPool<MssqlConnection>
 
   constructor(config: MssqlDialectConfig) {
     this.#config = freeze({ ...config })
 
-    this.#pool = new this.#config.Tarn.Pool({
-      ...this.#config.Tarn.options,
+    this.#pool = new this.#config.tarn.Pool({
+      ...this.#config.tarn.options,
       create: async () => {
-        const connection = await this.#config.connectionFactory()
+        const connection = await this.#config.tedious.connectionFactory()
 
         await new Promise((resolve, reject) =>
           connection.connect((error) => {
@@ -47,12 +53,13 @@ export class MssqlDriver implements Driver {
           })
         )
 
-        return new MssqlConnection(connection, this.#config.Tedious)
+        return new MssqlConnection(connection, this.#config.tedious)
       },
       destroy: async (connection) => {
         await connection[PRIVATE_DESTROY_METHOD]()
       },
-      // @ts-ignore
+      // @ts-ignore `tarn` accepts a function that returns a promise here, but
+      // the types are not aligned and it type errors.
       validate: (connection) => connection.validate(),
     })
   }
@@ -91,10 +98,10 @@ export class MssqlDriver implements Driver {
 }
 
 class MssqlConnection implements DatabaseConnection {
-  readonly #connection: Connection
+  readonly #connection: TediousConnection
   readonly #tedious: Tedious
 
-  constructor(connection: Connection, tedious: Tedious) {
+  constructor(connection: TediousConnection, tedious: Tedious) {
     this.#connection = connection
     this.#tedious = tedious
   }
@@ -127,14 +134,17 @@ class MssqlConnection implements DatabaseConnection {
 
   async executeQuery<O>(compiledQuery: CompiledQuery): Promise<QueryResult<O>> {
     try {
-      const { rowCount, rows } = await new Promise<{
-        rows: O[]
-        rowCount: number
-      }>((resolve, reject) =>
-        this.#connection.execSql(
-          this.#createTediousRequest(compiledQuery, { reject, resolve })
-        )
+      const deferred = new Deferred<OnDone<O>>()
+
+      const request = new MssqlRequest<O>(
+        this.#tedious,
+        compiledQuery,
+        deferred
       )
+
+      this.#connection.execSql(request.request)
+
+      const { rowCount, rows } = await deferred.promise
 
       return {
         numAffectedRows: rowCount !== undefined ? BigInt(rowCount) : undefined,
@@ -162,13 +172,13 @@ class MssqlConnection implements DatabaseConnection {
       throw new Error('chunkSize must be a positive integer')
     }
 
-    const request = this.#createTediousRequest(compiledQuery)
+    const request = new MssqlRequest<O>(this.#tedious, compiledQuery)
 
-    this.#connection.execSql(request)
+    this.#connection.execSql(request.request)
 
     try {
       while (true) {
-        const rows = await request.readChunk<O>(chunkSize)
+        const rows = await request.readChunk(chunkSize)
 
         if (rows.length === 0) {
           break
@@ -185,100 +195,165 @@ class MssqlConnection implements DatabaseConnection {
     }
   }
 
-  validate(): Promise<boolean> {
-    return new Promise((resolve) =>
-      this.#connection.execSql(
-        this.#createTediousRequest(CompiledQuery.raw('select 1'), {
-          reject: () => resolve(false),
-          resolve: () => resolve(true),
-        })
+  async validate(): Promise<boolean> {
+    try {
+      const deferred = new Deferred<OnDone<unknown>>()
+
+      const request = new MssqlRequest<unknown>(
+        this.#tedious,
+        CompiledQuery.raw('select 1'),
+        deferred
       )
-    )
+
+      this.#connection.execSql(request.request)
+
+      await deferred.promise
+
+      return true
+    } catch {
+      return false
+    }
   }
 
-  #createTediousRequest(
-    compiledQuery: CompiledQuery,
-    promise?: {
-      reject: (reason?: any) => void
-      resolve: (value: any) => void
+  #getTediousIsolationLevel(isolationLevel: IsolationLevel) {
+    const { ISOLATION_LEVEL } = this.#tedious
+
+    const mapper: Record<
+      IsolationLevel,
+      (typeof ISOLATION_LEVEL)[keyof typeof ISOLATION_LEVEL]
+    > = {
+      'read committed': ISOLATION_LEVEL.READ_COMMITTED,
+      'read uncommitted': ISOLATION_LEVEL.READ_UNCOMMITTED,
+      'repeatable read': ISOLATION_LEVEL.REPEATABLE_READ,
+      serializable: ISOLATION_LEVEL.SERIALIZABLE,
+      snapshot: ISOLATION_LEVEL.SNAPSHOT,
     }
-  ): Request & {
-    readChunk: <O>(chunkSize: number) => Promise<O[]>
-  } {
+
+    const tediousIsolationLevel = mapper[isolationLevel]
+
+    if (tediousIsolationLevel === undefined) {
+      throw new Error(`Unknown isolation level: ${isolationLevel}`)
+    }
+
+    return tediousIsolationLevel
+  }
+
+  [PRIVATE_RELEASE_METHOD](): Promise<void> {
+    return new Promise((resolve, reject) => {
+      this.#connection.reset((error) => {
+        if (error) reject(error)
+        else resolve(undefined)
+      })
+    })
+  }
+
+  [PRIVATE_DESTROY_METHOD](): Promise<void> {
+    return new Promise((resolve) => {
+      this.#connection.once('end', () => {
+        resolve(undefined)
+      })
+
+      this.#connection.close()
+    })
+  }
+}
+
+interface OnDone<O> {
+  rowCount: number | undefined
+  rows: O[]
+}
+
+interface PlainDeferred<O> {
+  reject: (reason: any) => void
+  resolve: (value?: O) => void
+}
+
+class MssqlRequest<O> {
+  readonly #request: TediousRequest
+  readonly #rows: O[]
+  readonly #tedious: Tedious
+  #completed: boolean
+  #error: Error | any[] | undefined
+  #rowCount: number | undefined
+
+  constructor(
+    tedious: Tedious,
+    compiledQuery: CompiledQuery,
+    onDone?: Deferred<OnDone<O>> | PlainDeferred<OnDone<O>>
+  ) {
+    this.#completed = false
+    this.#rows = []
+    this.#tedious = tedious
+
     const { parameters, sql } = compiledQuery
 
-    let promisedRowCount: number | undefined
-    let error: Error | any[] | undefined
-    const rows: Record<string, unknown>[] = []
-
-    const request = new this.#tedious.Request(sql, (err, rowCount) => {
+    this.#request = new this.#tedious.Request(sql, (err, rowCount) => {
       if (err) {
-        error = err instanceof AggregateError ? err.errors : err
-        promise?.reject(error)
+        this.#error = err instanceof AggregateError ? err.errors : err
+        onDone?.reject(this.#error)
       } else {
-        promisedRowCount = rowCount
+        this.#rowCount = rowCount
       }
     })
 
-    this.#addParametersToTediousRequest(request, parameters)
+    this.#addParametersToRequest(parameters)
+    this.#attachListeners(onDone)
+  }
 
-    const rowListener = (columns: ColumnValue[]) => {
+  get request(): TediousRequest {
+    return this.#request
+  }
+
+  readChunk(chunkSize: number): Promise<O[]> {
+    return new Promise<O[]>((resolve, reject) => {
+      const interval = setInterval(() => {
+        if (this.#error) {
+          clearInterval(interval)
+          reject(this.#error)
+        } else if (this.#completed || this.#rows.length >= chunkSize) {
+          clearInterval(interval)
+          resolve(this.#rows.splice(0, chunkSize))
+        }
+      }, 0)
+    })
+  }
+
+  #addParametersToRequest(parameters: readonly unknown[]): void {
+    for (let i = 0; i < parameters.length; i++) {
+      const parameter = parameters[i]
+
+      this.#request.addParameter(
+        String(i + 1),
+        this.#getTediousDataType(parameter),
+        parameter
+      )
+    }
+  }
+
+  #attachListeners(
+    onDone: Deferred<OnDone<O>> | PlainDeferred<OnDone<O>> | undefined
+  ): void {
+    const rowListener = (columns: TediousColumnValue[]) => {
       const row: Record<string, unknown> = {}
 
       for (const column of columns) {
         row[column.metadata.colName] = column.value
       }
 
-      rows.push(row)
+      this.#rows.push(row as O)
     }
 
-    request.on('row', rowListener)
+    this.#request.on('row', rowListener)
 
-    let requestCompleted = false
+    this.#request.once('requestCompleted', () => {
+      this.#completed = true
+      this.#request.off('row', rowListener)
 
-    request.once('requestCompleted', () => {
-      requestCompleted = true
-      request.off('row', rowListener)
-
-      promise?.resolve({
-        rowCount: promisedRowCount,
-        rows,
+      onDone?.resolve({
+        rowCount: this.#rowCount,
+        rows: this.#rows,
       })
     })
-
-    return Object.defineProperty(request, 'readChunk', {
-      configurable: false,
-      enumerable: false,
-      value: (chunkSize: number) => {
-        return new Promise((resolve, reject) => {
-          const interval = setInterval(() => {
-            if (error) {
-              clearInterval(interval)
-              reject(error)
-            } else if (requestCompleted || rows.length >= chunkSize) {
-              clearInterval(interval)
-              resolve(rows.splice(0, chunkSize))
-            }
-          }, 0)
-        })
-      },
-      writable: false,
-    }) as any
-  }
-
-  #addParametersToTediousRequest(
-    request: Request,
-    parameters: readonly unknown[]
-  ): void {
-    for (let i = 0; i < parameters.length; i++) {
-      const parameter = parameters[i]
-
-      request.addParameter(
-        String(i + 1),
-        this.#getTediousDataType(parameter),
-        parameter
-      )
-    }
   }
 
   #getTediousDataType(value: unknown): any {
@@ -312,80 +387,4 @@ class MssqlConnection implements DatabaseConnection {
 
     return this.#tedious.TYPES.NVarChar
   }
-
-  #getTediousIsolationLevel(isolationLevel: IsolationLevel) {
-    const { ISOLATION_LEVEL } = this.#tedious
-
-    const mapper: Record<
-      IsolationLevel,
-      (typeof ISOLATION_LEVEL)[keyof typeof ISOLATION_LEVEL]
-    > = {
-      [isolationLevel]: ISOLATION_LEVEL.NO_CHANGE,
-      'read committed': ISOLATION_LEVEL.READ_COMMITTED,
-      'read uncommitted': ISOLATION_LEVEL.READ_UNCOMMITTED,
-      'repeatable read': ISOLATION_LEVEL.REPEATABLE_READ,
-      serializable: ISOLATION_LEVEL.SERIALIZABLE,
-      snapshot: ISOLATION_LEVEL.SNAPSHOT,
-    }
-
-    return mapper[isolationLevel] || undefined
-  }
-
-  [PRIVATE_RELEASE_METHOD](): Promise<void> {
-    return new Promise((resolve, reject) => {
-      this.#connection.reset((error) => {
-        if (error) reject(error)
-        else resolve(undefined)
-      })
-    })
-  }
-
-  [PRIVATE_DESTROY_METHOD](): Promise<void> {
-    return new Promise((resolve) => {
-      this.#connection.once('end', () => {
-        resolve(undefined)
-      })
-
-      this.#connection.close()
-    })
-  }
 }
-
-// class MssqlCursor<O> {
-//   readonly #request: Request
-//   readonly #chunk: O[] = []
-
-//   constructor(request: Request) {
-//     this.#request = request
-//   }
-
-//   async read(chunkSize: number): Promise<O[]> {
-//     if (this.#chunk.length >= chunkSize) {
-//       return this.#chunk.splice(0, chunkSize)
-//     }
-
-//     return new Promise<O[]>((resolve, reject) => {
-//       const rowListener = (row: O) => {
-//         this.#chunk.push(row)
-
-//         if (this.#chunk.length >= chunkSize) {
-//           this.#request.pause()
-//           this.#request.off('row', rowListener)
-//           resolve(this.#chunk.splice(0, chunkSize))
-//         }
-//       }
-
-//       this.#request.on('row', rowListener)
-
-//       this.#request.once('error', reject)
-
-//       this.#request.once('done', () => {
-//         if (this.#chunk.length < chunkSize) {
-//           resolve(this.#chunk)
-//         }
-//       })
-
-//       this.#request.resume()
-//     })
-//   }
-// }
