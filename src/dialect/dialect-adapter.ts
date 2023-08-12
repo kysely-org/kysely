@@ -12,8 +12,9 @@ export interface DialectAdapter {
   /**
    * Whether or not this dialect supports `if not exists` in creation of tables/schemas/views/etc.
    *
-   * If this is false, tables and schemas are created without `if not exists` in
-   * migrations. This is not a problem if the dialect supports transactional DDL.
+   * If this is false, Kysely's internal migrations tables and schemas are created
+   * without `if not exists` in migrations. This is not a problem if the dialect
+   * supports transactional DDL.
    */
   readonly supportsCreateIfNotExists: boolean
 
