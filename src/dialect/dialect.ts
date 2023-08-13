@@ -4,6 +4,8 @@ import { QueryCompiler } from '../query-compiler/query-compiler.js'
 import { DatabaseIntrospector } from './database-introspector.js'
 import { DialectAdapter } from './dialect-adapter.js'
 
+export type TypeConfigProp = 'typeConfig'
+
 /**
  * A Dialect is the glue between Kysely and the underlying database engine.
  *

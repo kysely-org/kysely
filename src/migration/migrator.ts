@@ -99,12 +99,12 @@ export class Migrator {
    * ### Examples
    *
    * ```ts
-   * const db = new Kysely<Database>({
-   *   dialect: new PostgresDialect({
+   * const db = kysely<Tables>()
+   *   .dialect(new PostgresDialect({
    *     host: 'localhost',
-   *     database: 'kysely_test',
-   *   }),
-   * })
+   *     database: 'kysely_test'
+   *   }))
+   *   .build()
    *
    * const migrator = new Migrator({
    *   db,

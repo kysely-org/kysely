@@ -1,6 +1,6 @@
 # Generating types
 
-To work with Kysely, you're required to provide a database schema type definition to the Kysely constructor.
+To work with Kysely, you're required to provide a database schema type definition.
 
 In many cases, defining your database schema definitions manually is good enough.
 

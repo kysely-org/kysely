@@ -18,6 +18,7 @@ import {
   PostgresAdapter,
   PostgresIntrospector,
   PostgresQueryCompiler,
+  postgresTypeConfig,
 } from 'kysely'
 
 interface Person {
@@ -26,18 +27,19 @@ interface Person {
   last_name: string | null
 }
 
-interface Database {
+interface Tables {
   person: Person
 }
 
-const db = new Kysely<Database>({
-  dialect: {
+const db = kysely<Tables>()
+  .dialect({
+    typeConfig: postgresTypeConfig(),
     createAdapter: () => new PostgresAdapter(),
     createDriver: () => new DummyDriver(),
     createIntrospector: (db) => new PostgresIntrospector(db),
     createQueryCompiler: () => new PostgresQueryCompiler(),
-  },
-})
+  })
+  .build()
 ```
 
 This Kysely instance will compile to PostgreSQL sql dialect. You can brew "dummy" 

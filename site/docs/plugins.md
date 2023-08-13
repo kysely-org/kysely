@@ -3,13 +3,12 @@
 Plugins are classes that implement [KyselyPlugin](https://kysely-org.github.io/kysely-apidoc/interfaces/KyselyPlugin.html). Plugins are then added to the `Kysely` instance as follows:
 
 ```ts
-const db = new Kysely<Database>({
-  dialect: new PostgresDialect({
+const db = kysely<Tables>()
+  .dialect(new PostgresDialect({
     database: 'kysely_test',
     host: 'localhost',
-  }),
-  plugins: [new CamelCasePlugin()],
-})
+  }))
+  .plugin(new CamelCasePlugin())
 ```
 
 ## Built-in plugins

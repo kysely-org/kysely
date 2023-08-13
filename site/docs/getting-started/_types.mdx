@@ -1,14 +1,14 @@
 For Kysely's type-safety and autocompletion to work, it needs to know your
-database structure. This requires a TypeScript <code>Database</code>
+database structure. This requires a TypeScript <code>Tables</code>
 interface, that contains table names as keys and table schema interfaces as
 values.
 
-**Let's define our first database interface:**
+**Let's define our first tables interface:**
 
 ```ts title="src/types.ts"
 import { ColumnType, Generated, Insertable, Selectable, Updateable } from 'kysely'
 
-export interface Database {
+export interface Tables {
   person: PersonTable
   pet: PetTable
 }
@@ -56,7 +56,7 @@ export type PetUpdate = Updateable<PetTable>
 
 :::tip Codegen
 
-For production apps, it is recommended to automatically generate your <code>Database</code>
+For production apps, it is recommended to automatically generate your <code>Tables</code>
 interface by introspecting your production database or Prisma schemas. Generated types
 might differ in naming convention, internal order, etc. Find out more at ["Generating types"](https://kysely.dev/docs/generating-types).
 

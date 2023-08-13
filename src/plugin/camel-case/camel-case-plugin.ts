@@ -63,18 +63,17 @@ export interface CamelCasePluginOptions {
  *   lastName: string
  * }
  *
- * interface Database {
+ * interface Tables {
  *   personTable: Person
  * }
  *
- * const db = new Kysely<Database>({
- *   dialect: new PostgresDialect({
+ * const db = kysely<Tables>()
+ *   .dialect(new PostgresDialect({
  *     database: 'kysely_test',
  *     host: 'localhost',
- *   }),
- *   plugins: [
- *     new CamelCasePlugin()
- *   ]
+ *   }))
+ *   .plugin(new CamelCasePlugin())
+ *   .build()
  * })
  *
  * const person = await db.selectFrom('personTable')

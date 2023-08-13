@@ -15,10 +15,10 @@ import { Simplify } from '../util/type-utils.js'
  * The plugin can be installed like this:
  *
  * ```ts
- * const db = new Kysely({
- *   dialect: new SqliteDialect(config),
- *   plugins: [new ParseJSONResultsPlugin()]
- * })
+ * const db = kysely<Tables>()
+ *   .dialect(new SqliteDialect(config))
+ *   .plugin(new ParseJSONResultsPlugin())
+ *   .build()
  * ```
  *
  * ### Examples
@@ -78,10 +78,10 @@ export function jsonArrayFrom<O>(
  * The plugin can be installed like this:
  *
  * ```ts
- * const db = new Kysely({
- *   dialect: new SqliteDialect(config),
- *   plugins: [new ParseJSONResultsPlugin()]
- * })
+ * const db = kysely<Tables>()
+ *   .dialect(new SqliteDialect(config))
+ *   .plugin(new ParseJSONResultsPlugin())
+ *   .build()
  * ```
  *
  * ### Examples
@@ -139,10 +139,10 @@ export function jsonObjectFrom<O>(
  * The plugin can be installed like this:
  *
  * ```ts
- * const db = new Kysely({
- *   dialect: new SqliteDialect(config),
- *   plugins: [new ParseJSONResultsPlugin()]
- * })
+ * const db = kysely<Tables>()
+ *   .dialect(new SqliteDialect(config))
+ *   .plugin(new ParseJSONResultsPlugin())
+ *   .build()
  * ```
  *
  * ### Examples

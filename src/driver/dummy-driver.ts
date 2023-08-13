@@ -11,22 +11,27 @@ import { Driver } from './driver.js'
  * This example creates a Kysely instance for building postgres queries:
  *
  * ```ts
- * const db = new Kysely<Database>({
- *   dialect: {
+ * const db = kysely<Tables>()
+ *   .dialect({
+ *     typeConfig: postgresTypeConfig(),
+ *
  *     createAdapter() {
  *       return new PostgresAdapter()
  *     },
+ *
  *     createDriver() {
  *       return new DummyDriver()
  *     },
+ *
  *     createIntrospector(db: Kysely<any>) {
  *       return new PostgresIntrospector(db)
  *     },
+ *
  *     createQueryCompiler() {
  *       return new PostgresQueryCompiler()
- *     },
- *   },
- * })
+ *     }
+ *   })
+ *   .build()
  * ```
  *
  * You can use it to build a query and compile it to SQL but trying to

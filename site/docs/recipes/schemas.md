@@ -15,11 +15,11 @@ Kysely offers tools for both of these cases.
 
 ## 1
 
-When you have an enumarable set of schemas, you can add them to your database interface
+When you have an enumarable set of schemas, you can add them to your tables interface
 like this:
 
 ```ts
-interface Database {
+interface Tables {
   'user.user': UserTable
   'user.user_permission': UserPermissionTable
   'user.permission': PermissionTable
@@ -42,7 +42,7 @@ db.selectFrom('user.user')
 ## 2
 
 In the multitenant case you have a schema per tenant and you can't add each of them to the
-database interface, nor would it make sense to do so. In this case you can use the
+tables interface, nor would it make sense to do so. In this case you can use the
 [withSchema](https://kysely-org.github.io/kysely-apidoc/classes/Kysely.html#withSchema) method.
 
 The `withSchema` method sets the default schema of all table references that don't explicitly
@@ -69,7 +69,7 @@ Please note that you need to add a `'public.permission': PermissionTable` item i
 database schema to be able to refer to the `public.permission` table:
 
 ```ts
-interface Database {
+interface Tables {
   // Add your tenant tables without any schema:
   user: UserTable
   user_permission: UserPermissionTable

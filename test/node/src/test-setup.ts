@@ -32,6 +32,7 @@ import {
   ColumnType,
   InsertObject,
   DefaultTypeConfig,
+  kysely,
 } from '../../../'
 
 export interface Person {
@@ -303,7 +304,12 @@ async function connect(config: KyselyConfig): Promise<Kysely<Database>> {
     let db: Kysely<Database> | undefined
 
     try {
-      db = new Kysely<Database>(config)
+      db = kysely<Tables>()
+        .dialect(config.dialect)
+        .log(config.log)
+        .plugins(config.plugins)
+        .build()
+
       await sql`select 1`.execute(db)
       return db
     } catch (error) {

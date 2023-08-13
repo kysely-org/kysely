@@ -38,12 +38,16 @@ import { Database } from './database.js'
 /**
  * The main Kysely class.
  *
- * You should create one instance of `Kysely` per database using the {@link Kysely}
- * constructor. Each `Kysely` instance maintains it's own connection pool.
+ * You should create one instance of `Kysely` per database using the {@link kysely}
+ * function. Each `Kysely` instance maintains it's own connection pool.
  *
  * ### Examples
  *
- * This example assumes your database has tables `person` and `pet`:
+ * Please note that you shouldn't use the `Kysely` constructor to create
+ * `Kysely` instances. Instead you should use the {@link kysely} function
+ * and the builder it returns. The following example shows how to use
+ * the `Kysely` constructor if you, for whatever reason, still need to
+ * use it:
  *
  * ```ts
  * import { Kysely, Generated, PostgresDialect } from 'kysely'
@@ -61,9 +65,14 @@ import { Database } from './database.js'
  *   species: 'cat' | 'dog'
  * }
  *
- * interface Database {
+ * interface Tables {
  *   person: PersonTable,
  *   pet: PetTable
+ * }
+ *
+ * interface Database {
+ *   tables: Tables,
+ *   config: PostgresTypeConfig
  * }
  *
  * const db = new Kysely<Database>({
@@ -73,10 +82,6 @@ import { Database } from './database.js'
  *   })
  * })
  * ```
- *
- * @typeParam DB - The database interface type. Keys of this type must be table names
- *    in the database and values must be interfaces that describe the rows in those
- *    tables. See the examples above.
  */
 export class Kysely<DB extends Database>
   extends QueryCreator<DB>
@@ -489,22 +494,23 @@ export interface KyselyConfig {
    * ### Examples
    *
    * ```ts
-   * const db = new Kysely<Database>({
-   *   dialect: new PostgresDialect(postgresConfig),
-   *   log: ['query', 'error']
+   * const db = kysely<Tables>()
+   *   .dialect(new PostgresDialect(postgresConfig))
+   *   .log(['query', 'error'])
+   *   .build()
    * })
    * ```
    *
    * ```ts
-   * const db = new Kysely<Database>({
-   *   dialect: new PostgresDialect(postgresConfig),
-   *   log(event): void {
+   * const db = kysely<Tables>()
+   *   .dialect(new PostgresDialect(postgresConfig))
+   *   .log((event) => {
    *     if (event.level === 'query') {
    *       console.log(event.query.sql)
    *       console.log(event.query.parameters)
    *     }
-   *   }
-   * })
+   *   })
+   *   .build()
    * ```
    */
   readonly log?: LogConfig
@@ -603,3 +609,5 @@ function validateTransactionSettings(settings: TransactionSettings): void {
     )
   }
 }
+
+export type InferDB<K> = K extends Kysely<infer DB> ? DB : never

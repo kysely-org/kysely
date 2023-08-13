@@ -39,10 +39,10 @@ To prevent the error from happening, you can install the
 You can either install it globally by providing it in the configuration:
 
 ```ts
-const db = new Kysely<Database>({
-  dialect,
-  plugins: [new DeduplicateJoinsPlugin()],
-})
+const db = kysely<Tables>()
+  .dialect(dialect)
+  .plugin(new DeduplicateJoinsPlugin())
+  .build()
 ```
 
 or you can use it when needed:

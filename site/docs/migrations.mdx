@@ -130,21 +130,21 @@ import * as path from 'path'
 import { Pool } from 'pg'
 import { promises as fs } from 'fs'
 import {
-  Kysely,
+  kysely,
   Migrator,
   PostgresDialect,
   FileMigrationProvider,
 } from 'kysely'
 
 async function migrateToLatest() {
-  const db = new Kysely<Database>({
-    dialect: new PostgresDialect({
+  const db = kysely<Tables>()
+    .dialect(new PostgresDialect({
       pool: new Pool({
         host: 'localhost',
         database: 'kysely_test',
       }),
-    }),
-  })
+    }))
+    .build()
 
   const migrator = new Migrator({
     db,

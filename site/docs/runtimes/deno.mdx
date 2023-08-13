@@ -10,12 +10,13 @@ Kysely doesn't include drivers for Deno, but you can still use Kysely as a query
 ```ts
 // We use jsdeliver to get Kysely from npm.
 import {
+  kysely,
   DummyDriver,
   Generated,
-  Kysely,
   PostgresAdapter,
   PostgresIntrospector,
   PostgresQueryCompiler,
+  postgresTypeConfig(),
 } from 'https://cdn.jsdelivr.net/npm/kysely/dist/esm/index.js'
 
 interface Person {
@@ -24,28 +25,33 @@ interface Person {
   last_name: string | null
 }
 
-interface Database {
+interface Tables {
   person: Person
 }
 
-const db = new Kysely<Database>({
-  dialect: {
+const db = kysely<Tables>()
+  dialect({
+    typeConfig: postgresTypeConfig(),
+
     createAdapter() {
       return new PostgresAdapter()
     },
+
     createDriver() {
       // You need a driver to be able to execute queries. In this example
       // we use the dummy driver that never does anything.
       return new DummyDriver()
     },
+
     createIntrospector(db: Kysely<unknown>) {
       return new PostgresIntrospector(db)
     },
+
     createQueryCompiler() {
       return new PostgresQueryCompiler()
     },
-  },
-})
+  })
+  .build()
 
 const query = db.selectFrom('person').select('id')
 const sql = query.compile()

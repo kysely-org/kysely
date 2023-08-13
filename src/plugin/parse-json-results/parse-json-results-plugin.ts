@@ -15,10 +15,10 @@ import {
  * JSON into objects and arrays but return JSON strings instead.
  *
  * ```ts
- * const db = new Kysely<DB>({
- *   ...
- *   plugins: [new ParseJSONResultsPlugin()]
- * })
+ * const db = kysely<Tables>()
+ *   .dialect(new SqliteDialect(config))
+ *   .plugin(new ParseJSONResultsPlugin())
+ *   .build()
  * ```
  */
 export class ParseJSONResultsPlugin implements KyselyPlugin {

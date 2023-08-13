@@ -19,7 +19,7 @@ const dialectSpecificCodeSnippets: Record<
   postgresql: (packageManager) => `import { Pool } from '${
     packageManager === 'deno' ? 'pg-pool' : DRIVER_NPM_PACKAGE_NAMES.postgresql
   }'
-import { Kysely, PostgresDialect } from 'kysely'
+import { kysely, PostgresDialect, InferDB } from 'kysely'
 
 const dialect = new PostgresDialect({
   pool: new Pool({
@@ -32,7 +32,7 @@ const dialect = new PostgresDialect({
 })`,
   mysql:
     () => `import { createPool } from '${DRIVER_NPM_PACKAGE_NAMES.mysql}' // do not use 'mysql2/promises'!
-import { Kysely, MysqlDialect } from 'kysely'
+import { kysely, MysqlDialect } from 'kysely'
 
 const dialect = new MysqlDialect({
   pool: createPool({
@@ -47,7 +47,7 @@ const dialect = new MysqlDialect({
   sqlite: (packageManager) =>
     isDialectSupported('sqlite', packageManager)
       ? `import * as SQLite from '${DRIVER_NPM_PACKAGE_NAMES.sqlite}'
-import { Kysely, SqliteDialect } from 'kysely'
+import { kysely, SqliteDialect } from 'kysely'
 
 const dialect = new SqliteDialect({
   database: new SQLite(':memory:'),
@@ -55,7 +55,7 @@ const dialect = new SqliteDialect({
       : `/* Kysely doesn't support SQLite + ${
           PRETTY_PACKAGE_MANAGER_NAMES[packageManager || 'npm']
         } out of the box. Import a community dialect that does here. */
-import { Kysely } from 'kysely'
+import { kysely } from 'kysely'
 
 const dialect = /* instantiate the dialect here */`,
 }
@@ -99,16 +99,20 @@ export function Instantiation(
         <strong>:</strong>
       </p>
       <CodeBlock language="ts" title="src/database.ts">
-        {`import { Database } from './types.ts' // this is the Database interface we defined earlier
+        {`import { Tables } from './types.ts' // this is the Tables interface we defined earlier
 ${dialectSpecificCodeSnippet}
 
-// Database interface is passed to Kysely's constructor, and from now on, Kysely 
+// Tables interface is passed to the kysely function, and from now on, Kysely 
 // knows your database structure.
-// Dialect is passed to Kysely's constructor, and from now on, Kysely knows how 
+// Dialect is passed to the dialect method, and from now on, Kysely knows how 
 // to communicate with your database.
-export const db = new Kysely<Database>({
-  dialect,
-})`}
+export const db = kysely<Tables>()
+  .dialect(dialect)
+  .build()
+
+// The type of the db variable above is Kysely<DB>. This gives you the DB type.
+export type DB = InferDB<typeof db>
+`}
       </CodeBlock>
       <p style={{ display: 'flex', gap: '25px', justifyContent: 'end' }}>
         <IUseADifferentPackageManager {...props} />

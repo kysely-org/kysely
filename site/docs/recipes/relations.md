@@ -21,10 +21,10 @@ Not even if they use `PostgreSQL` or `MySQL` under the hood! Parsing is handled 
 that Kysely has no control over. If your JSON columns get returned as strings, you can use the `ParseJSONResultsPlugin`:
 
 ```ts
-const db = new Kysely<DB>({
-  ...
-  plugins: [new ParseJSONResultsPlugin()]
-})
+const db = kysely<Tables>()
+  .dialect(dialect)
+  .plugin(new ParseJSONResultsPlugin())
+  .build()
 ```
 :::
 
@@ -154,6 +154,7 @@ function withMom(eb: ExpressionBuilder<DB, 'person'>) {
 }
 ```
 
+The `DB` type can be inferred using `InferDB<typeof db>` where `db` is the Kysely instance.
 And now you get this:
 
 ```ts

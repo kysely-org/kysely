@@ -51,15 +51,6 @@ class JsonValue<T> implements Expression<T> {
 Now you can use your new `JsonValue` expression pretty much anywhere _as a value_ in a type-safe way:
 
 ```ts
-interface DB {
-  person: {
-    address: {
-      postalCode: string
-      street: string
-    }
-  }
-}
-
 async function test(db: Kysely<DB>) {
   await db
     .insertInto('person')
