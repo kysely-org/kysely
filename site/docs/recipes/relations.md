@@ -7,7 +7,7 @@ Kysely IS a query builder. Kysely DOES build the SQL you tell it to, nothing mor
 
 Phew, glad we got that out the way..
 
-Having said all that, there are ways to nest related rows rows in your queries. You just have to do it 
+Having said all that, there are ways to nest related rows in your queries. You just have to do it 
 using the tools SQL and the underlying dialect (e.g. PostgreSQL, MySQL, or SQLite) provide. In this recipe
 we show one way to do that when using the built-in PostgreSQL, MySQL, and SQLite dialects.
 
