@@ -73,6 +73,6 @@ export interface FileMigrationProviderPath {
 export interface FileMigrationProviderProps {
   fs: FileMigrationProviderFS
   path: FileMigrationProviderPath
-  migrationFolder: string,
-  protocol?: 'file://',
+  migrationFolder: string
+  protocol?: 'file://'
 }
