@@ -31,6 +31,7 @@ export class FileMigrationProvider implements MigrationProvider {
     for (const fileName of files) {
       if (
         fileName.endsWith('.js') ||
+        fileName.endsWith('.cjs') ||
         (fileName.endsWith('.ts') && !fileName.endsWith('.d.ts')) ||
         fileName.endsWith('.mjs') ||
         (fileName.endsWith('.mts') && !fileName.endsWith('.d.mts'))
