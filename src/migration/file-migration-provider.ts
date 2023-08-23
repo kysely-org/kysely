@@ -74,5 +74,5 @@ export interface FileMigrationProviderProps {
   fs: FileMigrationProviderFS
   path: FileMigrationProviderPath
   migrationFolder: string,
-  protocole?: 'file://',
+  protocol?: 'file://',
 }
