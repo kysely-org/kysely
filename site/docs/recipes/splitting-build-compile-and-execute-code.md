@@ -15,7 +15,6 @@ import {
   DummyDriver,
   Kysely,
   PostgresAdapter,
-  PostgresCompiler,
   PostgresIntrospector,
   PostgresQueryCompiler,
 } from 'kysely'
