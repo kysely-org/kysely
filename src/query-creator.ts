@@ -207,7 +207,7 @@ export class QueryCreator<DB> {
    * ### Examples
    *
    * ```ts
-   * const result = db.select((eb) => [
+   * const result = db.selectNoFrom((eb) => [
    *   eb.selectFrom('person')
    *     .select('id')
    *     .where('first_name', '=', 'Jennifer')
