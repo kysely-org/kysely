@@ -20,15 +20,16 @@ interface KyselyBuilder<DB extends Database> {
   build(): Kysely<DB>
 }
 
-type PickConfigFromDialect<D extends Dialect> = TypeConfigProp extends keyof D
-  ? D[TypeConfigProp] extends TypeConfig
-    ? D[TypeConfigProp]
-    : {
-        [K in keyof TypeConfig]: K extends keyof D[TypeConfigProp]
-          ? D[TypeConfigProp][K]
-          : DefaultTypeConfig[K]
-      }
-  : DefaultTypeConfig
+type PickConfigFromDialect<
+  D extends Dialect,
+  TC = TypeConfigProp extends keyof D
+    ? Exclude<D[TypeConfigProp], undefined>
+    : DefaultTypeConfig
+> = TC extends TypeConfig
+  ? TC
+  : {
+      [K in keyof TypeConfig]: K extends keyof TC ? TC[K] : DefaultTypeConfig[K]
+    }
 
 class InitialKyselyBuilderImpl<TBL extends object>
   implements InitialKyselyBuilder<TBL>

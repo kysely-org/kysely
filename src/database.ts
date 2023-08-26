@@ -1,3 +1,5 @@
+import { SqlBool } from './util/type-utils.js'
+
 export interface Database {
   tables: object
   config: TypeConfig
@@ -7,6 +9,7 @@ export interface TypeConfig {
   dateTimeType: unknown
   floatType: unknown
   bigIntType: unknown
+  boolType: unknown
 
   /**
    * This type can be used to specify the `sum` function's output type.
@@ -30,6 +33,7 @@ export interface DefaultTypeConfig extends TypeConfig {
   dateTimeType: Date | string
   floatType: number | string
   bigIntType: bigint | number | string
+  boolType: SqlBool
 
   /**
    * This type can be used to specify the `sum` function's output type.

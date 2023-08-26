@@ -84,7 +84,7 @@ import {
   ValTuple5,
 } from '../parser/tuple-parser.js'
 import { TupleNode } from '../operation-node/tuple-node.js'
-import { Database } from '../database.js'
+import { Database, GetConfig } from '../database.js'
 
 export interface ExpressionBuilder<
   DB extends Database,
@@ -172,7 +172,7 @@ export interface ExpressionBuilder<
     DB,
     TB,
     OP extends ComparisonOperator
-      ? SqlBool
+      ? GetConfig<DB, 'boolType'>
       : ExtractTypeFromReferenceExpression<DB, TB, RE>
   >
 
@@ -825,7 +825,7 @@ export interface ExpressionBuilder<
    */
   exists<RE extends ReferenceExpression<DB, TB>>(
     expr: RE
-  ): ExpressionWrapper<DB, TB, SqlBool>
+  ): ExpressionWrapper<DB, TB, GetConfig<DB, 'boolType'>>
 
   /**
    * Creates a negation operation.
@@ -859,7 +859,7 @@ export interface ExpressionBuilder<
     expr: RE,
     start: OperandValueExpression<DB, TB, RE>,
     end: OperandValueExpression<DB, TB, RE>
-  ): ExpressionWrapper<DB, TB, SqlBool>
+  ): ExpressionWrapper<DB, TB, GetConfig<DB, 'boolType'>>
 
   /**
    * Creates a `between symmetric` expression.
@@ -882,7 +882,7 @@ export interface ExpressionBuilder<
     expr: RE,
     start: OperandValueExpression<DB, TB, RE>,
     end: OperandValueExpression<DB, TB, RE>
-  ): ExpressionWrapper<DB, TB, SqlBool>
+  ): ExpressionWrapper<DB, TB, GetConfig<DB, 'boolType'>>
 
   /**
    * Combines two or more expressions using the logical `and` operator.
@@ -944,9 +944,11 @@ export interface ExpressionBuilder<
    */
   and(
     exprs: ReadonlyArray<OperandExpression<SqlBool>>
-  ): ExpressionWrapper<DB, TB, SqlBool>
+  ): ExpressionWrapper<DB, TB, GetConfig<DB, 'boolType'>>
 
-  and(exprs: Readonly<FilterObject<DB, TB>>): ExpressionWrapper<DB, TB, SqlBool>
+  and(
+    exprs: Readonly<FilterObject<DB, TB>>
+  ): ExpressionWrapper<DB, TB, GetConfig<DB, 'boolType'>>
 
   /**
    * Combines two or more expressions using the logical `or` operator.
@@ -1008,9 +1010,11 @@ export interface ExpressionBuilder<
    */
   or(
     exprs: ReadonlyArray<OperandExpression<SqlBool>>
-  ): ExpressionWrapper<DB, TB, SqlBool>
+  ): ExpressionWrapper<DB, TB, GetConfig<DB, 'boolType'>>
 
-  or(exprs: Readonly<FilterObject<DB, TB>>): ExpressionWrapper<DB, TB, SqlBool>
+  or(
+    exprs: Readonly<FilterObject<DB, TB>>
+  ): ExpressionWrapper<DB, TB, GetConfig<DB, 'boolType'>>
 
   /**
    * Wraps the expression in parentheses.
@@ -1062,7 +1066,7 @@ export interface ExpressionBuilder<
     DB,
     TB,
     OP extends ComparisonOperator
-      ? SqlBool
+      ? GetConfig<DB, 'boolType'>
       : ExtractTypeFromReferenceExpression<DB, TB, RE>
   >
 
@@ -1091,7 +1095,7 @@ export function createExpressionBuilder<
     DB,
     TB,
     OP extends ComparisonOperator
-      ? SqlBool
+      ? GetConfig<DB, 'boolType'>
       : ExtractTypeFromReferenceExpression<DB, TB, RE>
   > {
     return new ExpressionWrapper(parseValueBinaryOperation(lhs, op, rhs))
@@ -1224,7 +1228,7 @@ export function createExpressionBuilder<
 
     exists<RE extends ReferenceExpression<DB, TB>>(
       expr: RE
-    ): ExpressionWrapper<DB, TB, SqlBool> {
+    ): ExpressionWrapper<DB, TB, GetConfig<DB, 'boolType'>> {
       return unary('exists', expr)
     },
 
@@ -1242,7 +1246,7 @@ export function createExpressionBuilder<
       expr: RE,
       start: OperandValueExpression<DB, TB, RE>,
       end: OperandValueExpression<DB, TB, RE>
-    ): ExpressionWrapper<DB, TB, SqlBool> {
+    ): ExpressionWrapper<DB, TB, GetConfig<DB, 'boolType'>> {
       return new ExpressionWrapper(
         BinaryOperationNode.create(
           parseReferenceExpression(expr),
@@ -1256,7 +1260,7 @@ export function createExpressionBuilder<
       expr: RE,
       start: OperandValueExpression<DB, TB, RE>,
       end: OperandValueExpression<DB, TB, RE>
-    ): ExpressionWrapper<DB, TB, SqlBool> {
+    ): ExpressionWrapper<DB, TB, GetConfig<DB, 'boolType'>> {
       return new ExpressionWrapper(
         BinaryOperationNode.create(
           parseReferenceExpression(expr),
@@ -1270,7 +1274,7 @@ export function createExpressionBuilder<
       exprs:
         | ReadonlyArray<OperandExpression<SqlBool>>
         | Readonly<FilterObject<DB, TB>>
-    ): ExpressionWrapper<DB, TB, SqlBool> {
+    ): ExpressionWrapper<DB, TB, GetConfig<DB, 'boolType'>> {
       if (isReadonlyArray(exprs)) {
         return new ExpressionWrapper(parseFilterList(exprs, 'and'))
       }
@@ -1282,7 +1286,7 @@ export function createExpressionBuilder<
       exprs:
         | ReadonlyArray<OperandExpression<SqlBool>>
         | Readonly<FilterObject<DB, TB>>
-    ): ExpressionWrapper<DB, TB, SqlBool> {
+    ): ExpressionWrapper<DB, TB, GetConfig<DB, 'boolType'>> {
       if (isReadonlyArray(exprs)) {
         return new ExpressionWrapper(parseFilterList(exprs, 'or'))
       }

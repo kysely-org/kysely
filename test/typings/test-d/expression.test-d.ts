@@ -102,14 +102,6 @@ async function testExpressionBuilder(
     })
   )
 
-  expectType<
-    KyselyTypeError<'or() method can only be called on boolean expressions'>
-  >(eb('age', '+', 1).or('age', '=', 1))
-
-  expectType<
-    KyselyTypeError<'and() method can only be called on boolean expressions'>
-  >(eb('age', '+', 1).and('age', '=', 1))
-
   // `neg` expression
   expectAssignable<Expression<number>>(eb.neg(eb('age', '+', 10)))
 

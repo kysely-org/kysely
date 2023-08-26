@@ -13,7 +13,6 @@ import {
 } from '../parser/binary-operation-parser.js'
 import { OperandExpression } from '../parser/expression-parser.js'
 import { ReferenceExpression } from '../parser/reference-parser.js'
-import { KyselyTypeError } from '../util/type-error.js'
 import { SqlBool } from '../util/type-utils.js'
 import {
   AliasableExpression,
@@ -135,15 +134,9 @@ export class ExpressionWrapper<
     lhs: RE,
     op: ComparisonOperatorExpression,
     rhs: OperandValueExpressionOrList<DB, TB, RE>
-  ): T extends SqlBool
-    ? OrWrapper<DB, TB, SqlBool>
-    : KyselyTypeError<'or() method can only be called on boolean expressions'>
+  ): OrWrapper<DB, TB, T>
 
-  or(
-    expression: OperandExpression<SqlBool>
-  ): T extends SqlBool
-    ? OrWrapper<DB, TB, SqlBool>
-    : KyselyTypeError<'or() method can only be called on boolean expressions'>
+  or(expression: OperandExpression<SqlBool>): OrWrapper<DB, TB, T>
 
   or(...args: any[]): any {
     return new OrWrapper(
@@ -215,15 +208,9 @@ export class ExpressionWrapper<
     lhs: RE,
     op: ComparisonOperatorExpression,
     rhs: OperandValueExpressionOrList<DB, TB, RE>
-  ): T extends SqlBool
-    ? AndWrapper<DB, TB, SqlBool>
-    : KyselyTypeError<'and() method can only be called on boolean expressions'>
+  ): AndWrapper<DB, TB, T>
 
-  and(
-    expression: OperandExpression<SqlBool>
-  ): T extends SqlBool
-    ? AndWrapper<DB, TB, SqlBool>
-    : KyselyTypeError<'and() method can only be called on boolean expressions'>
+  and(expression: OperandExpression<SqlBool>): AndWrapper<DB, TB, T>
 
   and(...args: any[]): any {
     return new AndWrapper(
@@ -277,11 +264,8 @@ export class AliasedExpressionWrapper<T, A extends string>
   }
 }
 
-export class OrWrapper<
-  DB extends Database,
-  TB extends keyof DB['tables'],
-  T extends SqlBool
-> implements AliasableExpression<T>
+export class OrWrapper<DB extends Database, TB extends keyof DB['tables'], T>
+  implements AliasableExpression<T>
 {
   readonly #node: OrNode
 
@@ -363,11 +347,8 @@ export class OrWrapper<
   }
 }
 
-export class AndWrapper<
-  DB extends Database,
-  TB extends keyof DB['tables'],
-  T extends SqlBool
-> implements AliasableExpression<T>
+export class AndWrapper<DB extends Database, TB extends keyof DB['tables'], T>
+  implements AliasableExpression<T>
 {
   readonly #node: AndNode
 
