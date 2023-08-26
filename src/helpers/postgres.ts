@@ -10,7 +10,7 @@ import { Simplify } from '../util/type-utils.js'
  *
  * <!-- siteExample("select", "Nested array", 110) -->
  *
- * While kysely is not an ORM and it doesn't have the concept of relations, we do provide
+ * While kysely is not an ORM and doesn't have the concept of relations, we do provide
  * helpers for fetching nested objects and arrays in a single query. In this example we
  * use the `jsonArrayFrom` helper to fetch person's pets along with the person's id.
  *
@@ -67,7 +67,7 @@ export function jsonArrayFrom<O>(
  *
  * <!-- siteExample("select", "Nested object", 120) -->
  *
- * While kysely is not an ORM and it doesn't have the concept of relations, we do provide
+ * While kysely is not an ORM and doesn't have the concept of relations, we do provide
  * helpers for fetching nested objects and arrays in a single query. In this example we
  * use the `jsonObjectFrom` helper to fetch person's favorite pet along with the person's id.
  *
