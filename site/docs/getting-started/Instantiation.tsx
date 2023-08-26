@@ -32,7 +32,7 @@ const dialect = new PostgresDialect({
 })`,
   mysql:
     () => `import { createPool } from '${DRIVER_NPM_PACKAGE_NAMES.mysql}' // do not use 'mysql2/promises'!
-import { kysely, MysqlDialect } from 'kysely'
+import { kysely, MysqlDialect, InferDB } from 'kysely'
 
 const dialect = new MysqlDialect({
   pool: createPool({
@@ -47,7 +47,7 @@ const dialect = new MysqlDialect({
   sqlite: (packageManager) =>
     isDialectSupported('sqlite', packageManager)
       ? `import * as SQLite from '${DRIVER_NPM_PACKAGE_NAMES.sqlite}'
-import { kysely, SqliteDialect } from 'kysely'
+import { kysely, SqliteDialect, InferDB } from 'kysely'
 
 const dialect = new SqliteDialect({
   database: new SQLite(':memory:'),
@@ -55,7 +55,7 @@ const dialect = new SqliteDialect({
       : `/* Kysely doesn't support SQLite + ${
           PRETTY_PACKAGE_MANAGER_NAMES[packageManager || 'npm']
         } out of the box. Import a community dialect that does here. */
-import { kysely } from 'kysely'
+import { kysely, InferDB } from 'kysely'
 
 const dialect = /* instantiate the dialect here */`,
 }
