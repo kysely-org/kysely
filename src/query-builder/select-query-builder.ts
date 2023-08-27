@@ -60,11 +60,7 @@ import {
   SetOperandExpression,
   parseSetOperations,
 } from '../parser/set-operation-parser.js'
-import {
-  AliasableExpression,
-  AliasedExpression,
-  Expression,
-} from '../expression/expression.js'
+import { AliasedExpression, Expression } from '../expression/expression.js'
 import {
   ComparisonOperatorExpression,
   OperandValueExpressionOrList,
@@ -76,11 +72,12 @@ import { Selectable } from '../util/column-type.js'
 import { Streamable } from '../util/streamable.js'
 import { ExpressionOrFactory } from '../parser/expression-parser.js'
 import { ExpressionWrapper } from '../expression/expression-wrapper.js'
+import { SelectQueryBuilderExpression } from './select-query-builder-expression.js'
 
 export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
   extends WhereInterface<DB, TB>,
     HavingInterface<DB, TB>,
-    AliasableExpression<O>,
+    SelectQueryBuilderExpression<O>,
     Compilable<O>,
     Explainable,
     Streamable<O> {
@@ -1231,7 +1228,7 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    * pets[0].owner_first_name
    * ```
    */
-  as<A extends string>(alias: A): AliasedSelectQueryBuilder<DB, TB, O, A>
+  as<A extends string>(alias: A): AliasedSelectQueryBuilder<O, A>
 
   /**
    * Clears all select clauses from the query.
@@ -1652,6 +1649,10 @@ class SelectQueryBuilderImpl<DB, TB extends keyof DB, O>
     return undefined
   }
 
+  get isSelectQueryBuilder(): true {
+    return true
+  }
+
   where(...args: any[]): any {
     return new SelectQueryBuilderImpl({
       ...this.#props,
@@ -1994,7 +1995,7 @@ class SelectQueryBuilderImpl<DB, TB extends keyof DB, O>
     })
   }
 
-  as<A extends string>(alias: A): AliasedSelectQueryBuilder<DB, TB, O, A> {
+  as<A extends string>(alias: A): AliasedSelectQueryBuilder<O, A> {
     return new AliasedSelectQueryBuilderImpl(this, alias)
   }
 
@@ -2172,12 +2173,10 @@ export interface SelectQueryBuilderProps {
 }
 
 export interface AliasedSelectQueryBuilder<
-  DB,
-  TB extends keyof DB,
   O = undefined,
   A extends string = never
 > extends AliasedExpression<O, A> {
-  get selectQueryBuilder(): SelectQueryBuilder<DB, TB, O>
+  get isAliasedSelectQueryBuilder(): true
 }
 
 /**
@@ -2188,7 +2187,7 @@ class AliasedSelectQueryBuilderImpl<
   TB extends keyof DB,
   O = undefined,
   A extends string = never
-> implements AliasedSelectQueryBuilder<DB, TB, O, A>
+> implements AliasedSelectQueryBuilder<O, A>
 {
   readonly #queryBuilder: SelectQueryBuilder<DB, TB, O>
   readonly #alias: A
@@ -2206,8 +2205,8 @@ class AliasedSelectQueryBuilderImpl<
     return this.#alias
   }
 
-  get selectQueryBuilder(): SelectQueryBuilder<DB, TB, O> {
-    return this.#queryBuilder
+  get isAliasedSelectQueryBuilder(): true {
+    return true
   }
 
   toOperationNode(): AliasNode {

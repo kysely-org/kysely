@@ -79,13 +79,11 @@ type ExtractTypeFromSelectExpression<
   A extends keyof any
 > = SE extends string
   ? ExtractTypeFromStringSelectExpression<DB, TB, SE, A>
-  : SE extends AliasedSelectQueryBuilder<any, any, infer O, infer QA>
+  : SE extends AliasedSelectQueryBuilder<infer O, infer QA>
   ? QA extends A
     ? O[keyof O] | null
     : never
-  : SE extends (
-      qb: any
-    ) => AliasedSelectQueryBuilder<any, any, infer O, infer QA>
+  : SE extends (qb: any) => AliasedSelectQueryBuilder<infer O, infer QA>
   ? QA extends A
     ? O[keyof O] | null
     : never

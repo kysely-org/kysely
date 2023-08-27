@@ -1,4 +1,3 @@
-import { SelectQueryBuilder } from '../query-builder/select-query-builder.js'
 import { InsertResult } from '../query-builder/insert-result.js'
 import { DeleteResult } from '../query-builder/delete-result.js'
 import { UpdateResult } from '../query-builder/update-result.js'
@@ -125,11 +124,6 @@ export type AnyAliasedColumnWithTable<
  * Extracts the item type of an array.
  */
 export type ArrayItemType<T> = T extends ReadonlyArray<infer I> ? I : never
-
-/**
- * Any select query builder.
- */
-export type AnySelectQueryBuilder = SelectQueryBuilder<any, any, any>
 
 export type SimplifySingleResult<O> = O extends InsertResult
   ? O

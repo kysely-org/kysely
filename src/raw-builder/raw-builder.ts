@@ -24,9 +24,6 @@ import { isOperationNodeSource } from '../operation-node/operation-node-source.j
  * use the {@link sql} template tag.
  */
 export interface RawBuilder<O> extends AliasableExpression<O> {
-  /**
-   * @private Without this SelectQueryBuilder extends RawBuilder and things break.
-   */
   get isRawBuilder(): true
 
   /**

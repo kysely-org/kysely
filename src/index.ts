@@ -201,7 +201,6 @@ export {
   AnyAliasedColumnWithTable,
   AnyColumn,
   AnyColumnWithTable,
-  AnySelectQueryBuilder,
   Equals,
   UnknownRow,
   Simplify,
