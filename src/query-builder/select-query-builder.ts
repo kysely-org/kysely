@@ -14,6 +14,8 @@ import {
   Selection,
   SelectArg,
   AllSelection,
+  SelectCallback,
+  CallbackSelection,
 } from '../parser/select-parser.js'
 import {
   parseReferenceExpressionOrList,
@@ -300,7 +302,15 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    * ```
    */
   select<SE extends SelectExpression<DB, TB>>(
-    selection: SelectArg<DB, TB, SE>
+    selections: ReadonlyArray<SE>
+  ): SelectQueryBuilder<DB, TB, O & Selection<DB, TB, SE>>
+
+  select<CB extends SelectCallback<DB, TB>>(
+    callback: CB
+  ): SelectQueryBuilder<DB, TB, O & CallbackSelection<DB, TB, CB>>
+
+  select<SE extends SelectExpression<DB, TB>>(
+    selection: SE
   ): SelectQueryBuilder<DB, TB, O & Selection<DB, TB, SE>>
 
   /**

@@ -66,7 +66,9 @@ import { OperandExpression } from '../parser/expression-parser.js'
 import { BinaryOperationNode } from '../operation-node/binary-operation-node.js'
 import { AndNode } from '../operation-node/and-node.js'
 import {
+  CallbackSelection,
   SelectArg,
+  SelectCallback,
   SelectExpression,
   Selection,
   parseSelectArg,
@@ -306,7 +308,15 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    * documentation for examples.
    */
   selectNoFrom<SE extends SelectExpression<DB, TB>>(
-    selection: SelectArg<DB, TB, SE>
+    selections: ReadonlyArray<SE>
+  ): SelectQueryBuilder<DB, TB, Selection<DB, TB, SE>>
+
+  selectNoFrom<CB extends SelectCallback<DB, TB>>(
+    callback: CB
+  ): SelectQueryBuilder<DB, TB, CallbackSelection<DB, TB, CB>>
+
+  selectNoFrom<SE extends SelectExpression<DB, TB>>(
+    selection: SE
   ): SelectQueryBuilder<DB, TB, Selection<DB, TB, SE>>
 
   /**

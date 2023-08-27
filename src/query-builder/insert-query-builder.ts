@@ -5,6 +5,7 @@ import {
   parseSelectAll,
   SelectExpression,
   SelectArg,
+  SelectCallback,
 } from '../parser/select-parser.js'
 import {
   InsertExpression,
@@ -31,7 +32,10 @@ import { freeze } from '../util/object-utils.js'
 import { OnDuplicateKeyNode } from '../operation-node/on-duplicate-key-node.js'
 import { InsertResult } from './insert-result.js'
 import { KyselyPlugin } from '../plugin/kysely-plugin.js'
-import { ReturningRow } from '../parser/returning-parser.js'
+import {
+  ReturningCallbackRow,
+  ReturningRow,
+} from '../parser/returning-parser.js'
 import {
   isNoResultErrorConstructor,
   NoResultError,
@@ -538,6 +542,18 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
       }),
     })
   }
+
+  returning<SE extends SelectExpression<DB, TB>>(
+    selections: ReadonlyArray<SE>
+  ): InsertQueryBuilder<DB, TB, ReturningRow<DB, TB, O, SE>>
+
+  returning<CB extends SelectCallback<DB, TB>>(
+    callback: CB
+  ): InsertQueryBuilder<DB, TB, ReturningCallbackRow<DB, TB, O, CB>>
+
+  returning<SE extends SelectExpression<DB, TB>>(
+    selection: SE
+  ): InsertQueryBuilder<DB, TB, ReturningRow<DB, TB, O, SE>>
 
   returning<SE extends SelectExpression<DB, TB>>(
     selection: SelectArg<DB, TB, SE>
