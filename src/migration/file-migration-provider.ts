@@ -37,8 +37,8 @@ export class FileMigrationProvider implements MigrationProvider {
         (fileName.endsWith('.mts') && !fileName.endsWith('.d.mts'))
       ) {
         const migration = await import(
-            (this.#props.protocol ?? "") +
           /* webpackIgnore: true */ this.#props.path.join(
+            this.#props.protocol ?? "",
             this.#props.migrationFolder,
             fileName
           )
