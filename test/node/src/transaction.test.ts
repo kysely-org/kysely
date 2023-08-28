@@ -154,6 +154,19 @@ for (const dialect of DIALECTS) {
       }
     })
 
+    it('should retain the full stack trace', async () => {
+      try {
+        await ctx.db.transaction().execute(async (trx) => {
+          await trx.selectFrom('person').where('id', 'in', -1).execute()
+        })
+
+        expect.fail('Expected transaction to fail')
+      } catch (error) {
+        expect((error as Error).stack).to.include('syntax error')
+        expect((error as Error).stack).to.include('transaction.test.js')
+      }
+    })
+
     async function insertPet(
       trx: Transaction<Database>,
       ownerId: number
