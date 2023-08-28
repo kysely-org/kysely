@@ -1,4 +1,3 @@
-import { SelectQueryBuilder } from '../query-builder/select-query-builder.js'
 import { InsertResult } from '../query-builder/insert-result.js'
 import { DeleteResult } from '../query-builder/delete-result.js'
 import { UpdateResult } from '../query-builder/update-result.js'
@@ -35,21 +34,27 @@ import { KyselyTypeError } from './type-error.js'
  * // Columns == 'id' | 'name' | 'species'
  * ```
  */
-export type AnyColumn<DB, TB extends keyof DB> = DrainOuterGeneric<
-  {
-    [T in TB]: keyof DB[T]
-  }[TB] &
-    string
->
+export type AnyColumn<DB, TB extends keyof DB> =
+  // Inline version of DrainOuterGeneric for performance reasons.
+  // Don't replace with DrainOuterGeneric!
+  [DB] extends [unknown]
+    ? {
+        [T in TB]: keyof DB[T]
+      }[TB] &
+        string
+    : never
 
 /**
  * Extracts a column type.
  */
-export type ExtractColumnType<DB, TB extends keyof DB, C> = DrainOuterGeneric<
-  {
-    [T in TB]: C extends keyof DB[T] ? DB[T][C] : never
-  }[TB]
->
+export type ExtractColumnType<DB, TB extends keyof DB, C> =
+  // Inline version of DrainOuterGeneric for performance reasons.
+  // Don't replace with DrainOuterGeneric!
+  [DB] extends [unknown]
+    ? {
+        [T in TB]: C extends keyof DB[T] ? DB[T][C] : never
+      }[TB]
+    : never
 
 /**
  * Given a database type and a union of table names in that db, returns
@@ -125,11 +130,6 @@ export type AnyAliasedColumnWithTable<
  * Extracts the item type of an array.
  */
 export type ArrayItemType<T> = T extends ReadonlyArray<infer I> ? I : never
-
-/**
- * Any select query builder.
- */
-export type AnySelectQueryBuilder = SelectQueryBuilder<any, any, any>
 
 export type SimplifySingleResult<O> = O extends InsertResult
   ? O

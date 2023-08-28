@@ -11,7 +11,7 @@ import {
   expressionBuilder,
   ExpressionBuilder,
 } from '../expression/expression-builder.js'
-import { SelectQueryBuilder } from '../query-builder/select-query-builder.js'
+import { SelectQueryBuilderExpression } from '../query-builder/select-query-builder-expression.js'
 import { isFunction } from '../util/object-utils.js'
 
 /**
@@ -24,7 +24,7 @@ export type OperandExpression<V> =
   // why we need to explicitly allow `SelectQueryBuilder` here with a
   // `Record<string, V>` output type, even though `SelectQueryBuilder`
   // is also an `Expression`.
-  Expression<V> | SelectQueryBuilder<any, any, Record<string, V>>
+  Expression<V> | SelectQueryBuilderExpression<Record<string, V>>
 
 export type ExpressionOrFactory<DB, TB extends keyof DB, V> =
   | OperandExpression<V>
