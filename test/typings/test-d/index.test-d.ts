@@ -12,7 +12,6 @@ import {
   Transaction,
   InsertResult,
   UpdateResult,
-  DeleteResult,
   Selectable,
   sql,
   ExpressionBuilder,
