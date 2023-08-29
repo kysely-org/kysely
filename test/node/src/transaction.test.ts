@@ -10,6 +10,8 @@ import {
   Database,
   insertDefaultDataSet,
 } from './test-setup.js'
+import { DatabaseError as PostgresError } from 'pg'
+import { SqliteError } from 'better-sqlite3'
 
 for (const dialect of DIALECTS) {
   describe(`${dialect}: transaction`, () => {
@@ -162,7 +164,12 @@ for (const dialect of DIALECTS) {
 
         expect.fail('Expected transaction to fail')
       } catch (error) {
-        expect((error as Error).stack).to.include('syntax error')
+        if (dialect === 'sqlite') {
+          expect(error).to.be.instanceOf(SqliteError)
+        } else if (dialect === 'postgres') {
+          expect(error).to.be.instanceOf(PostgresError)
+        }
+
         expect((error as Error).stack).to.include('transaction.test.js')
       }
     })
