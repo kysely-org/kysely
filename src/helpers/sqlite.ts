@@ -1,6 +1,6 @@
 import { Expression } from '../expression/expression.js'
 import { SelectQueryNode } from '../operation-node/select-query-node.js'
-import { SelectQueryBuilder } from '../query-builder/select-query-builder.js'
+import { SelectQueryBuilderExpression } from '../query-builder/select-query-builder-expression.js'
 import { RawBuilder } from '../raw-builder/raw-builder.js'
 import { sql } from '../raw-builder/sql.js'
 import { getJsonObjectArgs } from '../util/json-object-args.js'
@@ -60,7 +60,7 @@ import { Simplify } from '../util/type-utils.js'
  * ```
  */
 export function jsonArrayFrom<O>(
-  expr: SelectQueryBuilder<any, any, O>
+  expr: SelectQueryBuilderExpression<O>
 ): RawBuilder<Simplify<O>[]> {
   return sql`(select coalesce(json_group_array(json_object(${sql.join(
     getSqliteJsonObjectArgs(expr.toOperationNode(), 'agg')
@@ -123,7 +123,7 @@ export function jsonArrayFrom<O>(
  * ```
  */
 export function jsonObjectFrom<O>(
-  expr: SelectQueryBuilder<any, any, O>
+  expr: SelectQueryBuilderExpression<O>
 ): RawBuilder<Simplify<O> | null> {
   return sql`(select json_object(${sql.join(
     getSqliteJsonObjectArgs(expr.toOperationNode(), 'obj')

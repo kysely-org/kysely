@@ -208,7 +208,6 @@ export {
   AnyAliasedColumnWithTable,
   AnyColumn,
   AnyColumnWithTable,
-  AnySelectQueryBuilder,
   Equals,
   UnknownRow,
   Simplify,
@@ -219,8 +218,10 @@ export { logOnce } from './util/log-once.js'
 
 export {
   SelectExpression,
+  SelectCallback,
   SelectArg,
   Selection,
+  CallbackSelection,
 } from './parser/select-parser.js'
 export {
   ReferenceExpression,

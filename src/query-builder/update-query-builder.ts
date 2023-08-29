@@ -17,8 +17,12 @@ import {
   parseSelectAll,
   SelectExpression,
   SelectArg,
+  SelectCallback,
 } from '../parser/select-parser.js'
-import { ReturningRow } from '../parser/returning-parser.js'
+import {
+  ReturningCallbackRow,
+  ReturningRow,
+} from '../parser/returning-parser.js'
 import { ReferenceExpression } from '../parser/reference-parser.js'
 import { QueryNode } from '../operation-node/query-node.js'
 import {
@@ -524,6 +528,18 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
       ),
     })
   }
+
+  returning<SE extends SelectExpression<DB, TB>>(
+    selections: ReadonlyArray<SE>
+  ): UpdateQueryBuilder<DB, UT, TB, ReturningRow<DB, TB, O, SE>>
+
+  returning<CB extends SelectCallback<DB, TB>>(
+    callback: CB
+  ): UpdateQueryBuilder<DB, UT, TB, ReturningCallbackRow<DB, TB, O, CB>>
+
+  returning<SE extends SelectExpression<DB, TB>>(
+    selection: SE
+  ): UpdateQueryBuilder<DB, UT, TB, ReturningRow<DB, TB, O, SE>>
 
   returning<SE extends SelectExpression<DB, TB>>(
     selection: SelectArg<DB, TB, SE>
