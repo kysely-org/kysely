@@ -21,8 +21,8 @@ import {
   SimplifySingleResult,
 } from '../util/type-utils.js'
 import {
-  UpdateExpression,
-  parseUpdateExpression,
+  UpdateObjectExpression,
+  parseUpdateObjectExpression,
 } from '../parser/update-set-parser.js'
 import { preventAwait } from '../util/prevent-await.js'
 import { Compilable } from '../util/compilable.js'
@@ -531,13 +531,13 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    * ```
    */
   onDuplicateKeyUpdate(
-    update: UpdateExpression<DB, TB, TB>
+    update: UpdateObjectExpression<DB, TB, TB>
   ): InsertQueryBuilder<DB, TB, O> {
     return new InsertQueryBuilder({
       ...this.#props,
       queryNode: InsertQueryNode.cloneWith(this.#props.queryNode, {
         onDuplicateKey: OnDuplicateKeyNode.create(
-          parseUpdateExpression(update)
+          parseUpdateObjectExpression(update)
         ),
       }),
     })
