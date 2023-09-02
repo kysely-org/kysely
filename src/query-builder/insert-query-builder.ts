@@ -285,7 +285,7 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    *     .select((eb) => [
    *       'pet.name',
    *       eb.val('Petson').as('last_name'),
-   *       eb.val(7).as('age'),
+   *       eb.lit(7).as('age'),
    *     ])
    *   )
    *   .execute()
@@ -295,7 +295,7 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    *
    * ```sql
    * insert into "person" ("first_name", "last_name", "age")
-   * select "pet"."name", $1 as "first_name", $2 as "last_name" from "pet"
+   * select "pet"."name", $1 as "last_name", 7 as "age from "pet"
    * ```
    */
   expression(

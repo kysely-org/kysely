@@ -12,6 +12,7 @@ import {
   ExtractTableAlias,
   AnyAliasedTable,
   PickTableWithAlias,
+  parseTable,
 } from '../parser/table-parser.js'
 import { WithSchemaPlugin } from '../plugin/with-schema/with-schema-plugin.js'
 import { createQueryId } from '../util/query-id.js'
@@ -84,6 +85,7 @@ import {
   ValTuple5,
 } from '../parser/tuple-parser.js'
 import { TupleNode } from '../operation-node/tuple-node.js'
+import { Selectable } from '../util/column-type.js'
 
 export interface ExpressionBuilder<DB, TB extends keyof DB> {
   /**
@@ -467,6 +469,33 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
     reference: RE,
     op: JSONOperatorWith$
   ): JSONPathBuilder<ExtractTypeFromReferenceExpression<DB, TB, RE>>
+
+  /**
+   * Creates a table reference.
+   *
+   * ```ts
+   * db.selectFrom('person')
+   *   .innerJoin('pet', 'pet.owner_id', 'person.id')
+   *   .select(eb => [
+   *     'person.id',
+   *     sql<Pet[]>`jsonb_agg(${eb.table('pet')})`.as('pets')
+   *   ])
+   *   .groupBy('person.id')
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * select "person"."id", jsonb_agg("pet") as "pets"
+   * from "person"
+   * inner join "pet" on "pet"."owner_id" = "person"."id"
+   * group by "person"."id"
+   * ```
+   */
+  table<T extends TB & string>(
+    table: T
+  ): ExpressionWrapper<DB, TB, Selectable<DB[T]>>
 
   /**
    * Returns a value expression.
@@ -1144,6 +1173,12 @@ export function createExpressionBuilder<DB, TB extends keyof DB>(
       }
 
       return new JSONPathBuilder(parseJSONReference(reference, op))
+    },
+
+    table<T extends TB & string>(
+      table: T
+    ): ExpressionWrapper<DB, TB, Selectable<DB[T]>> {
+      return new ExpressionWrapper(parseTable(table))
     },
 
     val<VE>(
