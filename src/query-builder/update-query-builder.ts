@@ -460,6 +460,20 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
    *   "id" = $4
    * ```
    *
+   * If you provide two arguments the first one is interpreted as the column
+   * (or other target) and the second as the value:
+   *
+   * ```ts
+   * const result = await db
+   *   .updateTable('person')
+   *   .set('first_name', 'Foo')
+   *   // As always, both arguments can be arbitrary expressions or
+   *   // callbacks that give you access to an expression builder:
+   *   .set(sql`address['postalCode']`, (eb) => eb.val('61710))
+   *   .where('id', '=', '1')
+   *   .executeTakeFirst()
+   * ```
+   *
    * On PostgreSQL you can chain `returning` to the query to get
    * the updated rows' columns (or any other expression) as the
    * return value:

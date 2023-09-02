@@ -83,20 +83,21 @@ for (const dialect of DIALECTS) {
         .updateTable('person')
         .set('first_name', 'Foo')
         .set((eb) => eb.ref('last_name'), 'Barson')
+        .set('gender', (eb) => eb.val('other' as const))
         .where('gender', '=', 'female')
 
       testSql(query, dialect, {
         postgres: {
-          sql: 'update "person" set "first_name" = $1, "last_name" = $2 where "gender" = $3',
-          parameters: ['Foo', 'Barson', 'female'],
+          sql: 'update "person" set "first_name" = $1, "last_name" = $2, "gender" = $3 where "gender" = $4',
+          parameters: ['Foo', 'Barson', 'other', 'female'],
         },
         mysql: {
-          sql: 'update `person` set `first_name` = ?, `last_name` = ? where `gender` = ?',
-          parameters: ['Foo', 'Barson', 'female'],
+          sql: 'update `person` set `first_name` = ?, `last_name` = ?, `gender` = ? where `gender` = ?',
+          parameters: ['Foo', 'Barson', 'other', 'female'],
         },
         sqlite: {
-          sql: 'update "person" set "first_name" = ?, "last_name" = ? where "gender" = ?',
-          parameters: ['Foo', 'Barson', 'female'],
+          sql: 'update "person" set "first_name" = ?, "last_name" = ?, "gender" = ? where "gender" = ?',
+          parameters: ['Foo', 'Barson', 'other', 'female'],
         },
       })
 
@@ -119,7 +120,7 @@ for (const dialect of DIALECTS) {
           .execute()
       ).to.eql([
         { first_name: 'Arnold', last_name: 'Schwarzenegger', gender: 'male' },
-        { first_name: 'Foo', last_name: 'Barson', gender: 'female' },
+        { first_name: 'Foo', last_name: 'Barson', gender: 'other' },
         { first_name: 'Sylvester', last_name: 'Stallone', gender: 'male' },
       ])
     })
