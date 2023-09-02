@@ -143,6 +143,33 @@ for (const dialect of DIALECTS) {
     })
 
     if (dialect === 'postgres') {
+      it('should update json data of a row using the subscript syntax and a raw sql snippet', async () => {
+        await db
+          .insertInto('json_table')
+          .values({
+            data: toJson({
+              number_field: 1,
+              nested: { string_field: 'a' },
+            }),
+          })
+          .executeTakeFirstOrThrow()
+
+        const newValue = Math.random()
+        await db
+          .updateTable('json_table')
+          .set(sql`data['number_field']`, newValue)
+          .executeTakeFirstOrThrow()
+
+        const result = await db
+          .selectFrom('json_table')
+          .select('data')
+          .executeTakeFirstOrThrow()
+
+        expect(result.data.number_field).to.equal(newValue)
+      })
+    }
+
+    if (dialect === 'postgres') {
       it('should aggregate a joined table using json_agg', async () => {
         const res = await db
           .selectFrom('person')
