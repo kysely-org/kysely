@@ -1184,7 +1184,7 @@ export function createExpressionBuilder<DB, TB extends keyof DB>(
     val<VE>(
       value: VE
     ): ExpressionWrapper<DB, TB, ExtractTypeFromValueExpression<VE>> {
-      return new ExpressionWrapper(parseValueExpressionOrList(value))
+      return new ExpressionWrapper(parseValueExpression(value))
     },
 
     refTuple(
