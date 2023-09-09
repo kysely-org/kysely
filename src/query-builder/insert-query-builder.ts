@@ -111,13 +111,18 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    *   })
    *   .executeTakeFirst()
    *
+   * // The `insertId` is only available on dialects that automatically
+   * // return the id of the inserted row such as MySQL and SQLite.
+   * // On postgres, for example, you need to add a `returning` clause
+   * // to the query to get anything out. See the "returning data"
+   * // example.
    * console.log(result.insertId)
    * ```
    *
-   * The generated SQL (PostgreSQL):
+   * The generated SQL (MySQL):
    *
    * ```sql
-   * insert into "person" ("first_name", "last_name", "age") values ($1, $2, $3)
+   * insert into `person` (`first_name`, `last_name`, `age`) values (?, ?, ?)
    * ```
    *
    * <!-- siteExample("insert", "Multiple rows", 20) -->
