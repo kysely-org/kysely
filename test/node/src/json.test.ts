@@ -53,6 +53,12 @@ const jsonFunctions = {
     jsonObjectFrom: mysql_jsonObjectFrom,
     jsonBuildObject: mysql_jsonBuildObject,
   },
+  // TODO: this is fake, to avoid ts errors.
+  mssql: {
+    jsonArrayFrom: mysql_jsonArrayFrom,
+    jsonObjectFrom: mysql_jsonObjectFrom,
+    jsonBuildObject: mysql_jsonBuildObject,
+  },
   sqlite: {
     jsonArrayFrom: sqlite_jsonArrayFrom,
     jsonObjectFrom: sqlite_jsonObjectFrom,
@@ -60,7 +66,7 @@ const jsonFunctions = {
   },
 } as const
 
-for (const dialect of DIALECTS) {
+for (const dialect of DIALECTS.filter((dialect) => dialect !== 'mssql')) {
   const { jsonArrayFrom, jsonObjectFrom, jsonBuildObject } =
     jsonFunctions[dialect]
 

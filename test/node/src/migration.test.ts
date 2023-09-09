@@ -13,12 +13,12 @@ import {
 } from '../../../'
 
 import {
-  DIALECTS,
   clearDatabase,
   destroyTest,
   expect,
   initTest,
   TestContext,
+  DIALECTS,
 } from './test-setup.js'
 
 const CUSTOM_MIGRATION_SCHEMA = 'migrate'

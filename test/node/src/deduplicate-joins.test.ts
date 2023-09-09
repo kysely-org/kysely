@@ -1,13 +1,13 @@
 import { DeduplicateJoinsPlugin } from '../../..'
 
 import {
-  DIALECTS,
   clearDatabase,
   destroyTest,
   initTest,
   TestContext,
   testSql,
   insertDefaultDataSet,
+  DIALECTS,
 } from './test-setup.js'
 
 for (const dialect of DIALECTS) {
@@ -44,6 +44,10 @@ for (const dialect of DIALECTS) {
         },
         mysql: {
           sql: 'select from `person` inner join `pet` on `pet`.`owner_id` = `person`.`id`',
+          parameters: [],
+        },
+        mssql: {
+          sql: 'select from "person" inner join "pet" on "pet"."owner_id" = "person"."id"',
           parameters: [],
         },
         sqlite: {
@@ -87,6 +91,10 @@ for (const dialect of DIALECTS) {
           sql: 'select from `person` inner join (select `owner_id`, `id` as `pet_id`, `species` from `pet`) as `p` on `p`.`owner_id` = `person`.`id` and `p`.`species` in (?, ?)',
           parameters: ['cat', 'hamster'],
         },
+        mssql: {
+          sql: 'select from "person" inner join (select "owner_id", "id" as "pet_id", "species" from "pet") as "p" on "p"."owner_id" = "person"."id" and "p"."species" in (@1, @2)',
+          parameters: ['cat', 'hamster'],
+        },
         sqlite: {
           sql: 'select from "person" inner join (select "owner_id", "id" as "pet_id", "species" from "pet") as "p" on "p"."owner_id" = "person"."id" and "p"."species" in (?, ?)',
           parameters: ['cat', 'hamster'],
@@ -108,6 +116,10 @@ for (const dialect of DIALECTS) {
         },
         mysql: {
           sql: 'select from `person` inner join `pet` on `pet`.`owner_id` = `person`.`id` inner join `toy` on `toy`.`pet_id` = `pet`.`id`',
+          parameters: [],
+        },
+        mssql: {
+          sql: 'select from "person" inner join "pet" on "pet"."owner_id" = "person"."id" inner join "toy" on "toy"."pet_id" = "pet"."id"',
           parameters: [],
         },
         sqlite: {

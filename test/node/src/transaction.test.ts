@@ -1,7 +1,8 @@
-import { CompiledQuery, Transaction } from '../../../'
+import * as sinon from 'sinon'
+import { Connection, ISOLATION_LEVEL } from 'tedious'
+import { CompiledQuery, IsolationLevel, Transaction } from '../../../'
 
 import {
-  DIALECTS,
   clearDatabase,
   destroyTest,
   initTest,
@@ -9,6 +10,7 @@ import {
   expect,
   Database,
   insertDefaultDataSet,
+  DIALECTS,
 } from './test-setup.js'
 import { DatabaseError as PostgresError } from 'pg'
 import { SqliteError } from 'better-sqlite3'
@@ -16,7 +18,16 @@ import { SqliteError } from 'better-sqlite3'
 for (const dialect of DIALECTS) {
   describe(`${dialect}: transaction`, () => {
     let ctx: TestContext
-    let executedQueries: CompiledQuery[] = []
+    const executedQueries: CompiledQuery[] = []
+    const sandbox = sinon.createSandbox()
+    let tediousBeginTransactionSpy: sinon.SinonSpy<
+      Parameters<Connection['beginTransaction']>,
+      ReturnType<Connection['beginTransaction']>
+    >
+    let tediousCommitTransactionSpy: sinon.SinonSpy<
+      Parameters<Connection['commitTransaction']>,
+      ReturnType<Connection['commitTransaction']>
+    >
 
     before(async function () {
       ctx = await initTest(this, dialect, (event) => {
@@ -28,73 +39,113 @@ for (const dialect of DIALECTS) {
 
     beforeEach(async () => {
       await insertDefaultDataSet(ctx)
-      executedQueries = []
+      executedQueries.length = 0
+      tediousBeginTransactionSpy = sandbox.spy(
+        Connection.prototype,
+        'beginTransaction'
+      )
+      tediousCommitTransactionSpy = sandbox.spy(
+        Connection.prototype,
+        'commitTransaction'
+      )
     })
 
     afterEach(async () => {
       await clearDatabase(ctx)
+      sandbox.restore()
     })
 
     after(async () => {
       await destroyTest(ctx)
     })
 
-    if (dialect !== 'sqlite') {
-      it('should set the transaction isolation level', async () => {
-        await ctx.db
-          .transaction()
-          .setIsolationLevel('serializable')
-          .execute(async (trx) => {
-            await trx
-              .insertInto('person')
-              .values({
-                first_name: 'Foo',
-                last_name: 'Barson',
-                gender: 'male',
-              })
-              .execute()
-          })
+    if (dialect === 'postgres' || dialect === 'mysql' || dialect === 'mssql') {
+      for (const isolationLevel of [
+        'read uncommitted',
+        'read committed',
+        'repeatable read',
+        'serializable',
+        ...(dialect === 'mssql' ? (['snapshot'] as const) : []),
+      ] satisfies IsolationLevel[]) {
+        it(`should set the transaction isolation level as "${isolationLevel}"`, async () => {
+          await ctx.db
+            .transaction()
+            .setIsolationLevel(isolationLevel)
+            .execute(async (trx) => {
+              await trx
+                .insertInto('person')
+                .values({
+                  first_name: 'Foo',
+                  last_name: 'Barson',
+                  gender: 'male',
+                })
+                .execute()
+            })
 
-        if (dialect == 'postgres') {
-          expect(
-            executedQueries.map((it) => ({
-              sql: it.sql,
-              parameters: it.parameters,
-            }))
-          ).to.eql([
-            {
-              sql: 'start transaction isolation level serializable',
-              parameters: [],
-            },
-            {
-              sql: 'insert into "person" ("first_name", "last_name", "gender") values ($1, $2, $3)',
-              parameters: ['Foo', 'Barson', 'male'],
-            },
-            { sql: 'commit', parameters: [] },
-          ])
-        } else if (dialect === 'mysql') {
-          expect(
-            executedQueries.map((it) => ({
-              sql: it.sql,
-              parameters: it.parameters,
-            }))
-          ).to.eql([
-            {
-              sql: 'set transaction isolation level serializable',
-              parameters: [],
-            },
-            {
-              sql: 'begin',
-              parameters: [],
-            },
-            {
-              sql: 'insert into `person` (`first_name`, `last_name`, `gender`) values (?, ?, ?)',
-              parameters: ['Foo', 'Barson', 'male'],
-            },
-            { sql: 'commit', parameters: [] },
-          ])
-        }
-      })
+          if (dialect == 'postgres') {
+            expect(
+              executedQueries.map((it) => ({
+                sql: it.sql,
+                parameters: it.parameters,
+              }))
+            ).to.eql([
+              {
+                sql: `start transaction isolation level ${isolationLevel}`,
+                parameters: [],
+              },
+              {
+                sql: 'insert into "person" ("first_name", "last_name", "gender") values ($1, $2, $3)',
+                parameters: ['Foo', 'Barson', 'male'],
+              },
+              { sql: 'commit', parameters: [] },
+            ])
+          } else if (dialect === 'mysql') {
+            expect(
+              executedQueries.map((it) => ({
+                sql: it.sql,
+                parameters: it.parameters,
+              }))
+            ).to.eql([
+              {
+                sql: `set transaction isolation level ${isolationLevel}`,
+                parameters: [],
+              },
+              {
+                sql: 'begin',
+                parameters: [],
+              },
+              {
+                sql: 'insert into `person` (`first_name`, `last_name`, `gender`) values (?, ?, ?)',
+                parameters: ['Foo', 'Barson', 'male'],
+              },
+              { sql: 'commit', parameters: [] },
+            ])
+          } else if (dialect === 'mssql') {
+            expect(tediousBeginTransactionSpy.calledOnce).to.be.true
+            expect(tediousBeginTransactionSpy.getCall(0).args[1]).to.not.be
+              .undefined
+            expect(tediousBeginTransactionSpy.getCall(0).args[2]).to.equal(
+              ISOLATION_LEVEL[
+                isolationLevel.replace(' ', '_').toUpperCase() as any
+              ]
+            )
+
+            expect(
+              executedQueries.map((it) => ({
+                sql: it.sql,
+                parameters: it.parameters,
+              }))
+            ).to.eql([
+              {
+                sql: 'insert into "person" ("first_name", "last_name", "gender") values (@1, @2, @3)',
+                parameters: ['Foo', 'Barson', 'male'],
+              },
+            ])
+
+            expect(tediousCommitTransactionSpy.calledOnce).to.be.true
+          }
+        })
+      }
     }
 
     if (dialect === 'postgres') {
@@ -192,15 +243,25 @@ for (const dialect of DIALECTS) {
       trx: Transaction<Database>,
       id: number
     ): Promise<void> {
-      await trx
-        .insertInto('person')
-        .values({
-          id: id,
-          first_name: `Person ${id}`,
-          last_name: null,
-          gender: 'other',
-        })
-        .execute()
+      const query = trx.insertInto('person').values({
+        id: id,
+        first_name: `Person ${id}`,
+        last_name: null,
+        gender: 'other',
+      })
+
+      if (dialect === 'mssql') {
+        const compiledQuery = query.compile()
+
+        await trx.executeQuery(
+          CompiledQuery.raw(
+            `set identity_insert "person" on; ${compiledQuery.sql}; set identity_insert "person" off;`,
+            [...compiledQuery.parameters]
+          )
+        )
+      } else {
+        await query.execute()
+      }
     }
 
     async function doesPersonExists(id: number): Promise<boolean> {
