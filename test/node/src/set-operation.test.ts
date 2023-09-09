@@ -1,5 +1,4 @@
 import {
-  DIALECTS,
   clearDatabase,
   destroyTest,
   initTest,
@@ -8,6 +7,7 @@ import {
   expect,
   insertDefaultDataSet,
   NOT_SUPPORTED,
+  DIALECTS,
 } from './test-setup.js'
 
 for (const dialect of DIALECTS) {
@@ -46,6 +46,10 @@ for (const dialect of DIALECTS) {
           sql: 'select `id`, `first_name` as `name` from `person` union select `id`, `name` from `pet` order by `name`',
           parameters: [],
         },
+        mssql: {
+          sql: 'select "id", "first_name" as "name" from "person" union select "id", "name" from "pet" order by "name"',
+          parameters: [],
+        },
         sqlite: {
           sql: 'select "id", "first_name" as "name" from "person" union select "id", "name" from "pet" order by "name"',
           parameters: [],
@@ -80,6 +84,10 @@ for (const dialect of DIALECTS) {
         },
         mysql: {
           sql: 'select `id`, `first_name` as `name` from `person` union select `id`, `name` from `pet` union select `id`, `species` as `name` from `pet` order by `name`',
+          parameters: [],
+        },
+        mssql: {
+          sql: 'select "id", "first_name" as "name" from "person" union select "id", "name" from "pet" union select "id", "species" as "name" from "pet" order by "name"',
           parameters: [],
         },
         sqlite: {
@@ -121,6 +129,10 @@ for (const dialect of DIALECTS) {
           sql: 'select `id`, `first_name` as `name` from `person` union select `id`, `name` from `pet` union select `id`, `species` as `name` from `pet` order by `name`',
           parameters: [],
         },
+        mssql: {
+          sql: 'select "id", "first_name" as "name" from "person" union select "id", "name" from "pet" union select "id", "species" as "name" from "pet" order by "name"',
+          parameters: [],
+        },
         sqlite: {
           sql: 'select "id", "first_name" as "name" from "person" union select "id", "name" from "pet" union select "id", "species" as "name" from "pet" order by "name"',
           parameters: [],
@@ -141,7 +153,7 @@ for (const dialect of DIALECTS) {
       ])
     })
 
-    if (dialect === 'postgres' || dialect === 'mysql') {
+    if (dialect === 'postgres' || dialect === 'mysql' || dialect === 'mssql') {
       it('should combine three select queries using union and an expression builder', async () => {
         const query = ctx.db
           .selectFrom('person')
@@ -163,6 +175,10 @@ for (const dialect of DIALECTS) {
           },
           mysql: {
             sql: 'select `id`, `first_name` as `name` from `person` union (select `id`, `name` from `pet` union select `id`, `name` from `toy`) order by `name`',
+            parameters: [],
+          },
+          mssql: {
+            sql: 'select "id", "first_name" as "name" from "person" union (select "id", "name" from "pet" union select "id", "name" from "toy") order by "name"',
             parameters: [],
           },
           sqlite: NOT_SUPPORTED,
@@ -194,6 +210,10 @@ for (const dialect of DIALECTS) {
         },
         mysql: {
           sql: 'select `id`, `first_name` as `name` from `person` union all select `id`, `name` from `pet` order by `name`',
+          parameters: [],
+        },
+        mssql: {
+          sql: 'select "id", "first_name" as "name" from "person" union all select "id", "name" from "pet" order by "name"',
           parameters: [],
         },
         sqlite: {
@@ -230,6 +250,10 @@ for (const dialect of DIALECTS) {
           sql: 'select `id`, `first_name` as `name` from `person` union all select `id`, `name` from `pet` union select `id`, `name` from `toy` order by `name`',
           parameters: [],
         },
+        mssql: {
+          sql: 'select "id", "first_name" as "name" from "person" union all select "id", "name" from "pet" union select "id", "name" from "toy" order by "name"',
+          parameters: [],
+        },
         sqlite: {
           sql: 'select "id", "first_name" as "name" from "person" union all select "id", "name" from "pet" union select "id", "name" from "toy" order by "name"',
           parameters: [],
@@ -239,7 +263,7 @@ for (const dialect of DIALECTS) {
       await query.execute()
     })
 
-    if (dialect === 'postgres' || dialect === 'sqlite') {
+    if (dialect === 'postgres' || dialect === 'mssql' || dialect === 'sqlite') {
       it('should combine two select queries using intersect', async () => {
         const query = ctx.db
           .selectFrom('person')
@@ -253,6 +277,10 @@ for (const dialect of DIALECTS) {
             parameters: [],
           },
           mysql: NOT_SUPPORTED,
+          mssql: {
+            sql: 'select "id", "first_name" as "name" from "person" intersect select "id", "name" from "pet" order by "name"',
+            parameters: [],
+          },
           sqlite: {
             sql: 'select "id", "first_name" as "name" from "person" intersect select "id", "name" from "pet" order by "name"',
             parameters: [],
@@ -275,6 +303,10 @@ for (const dialect of DIALECTS) {
             parameters: [],
           },
           mysql: NOT_SUPPORTED,
+          mssql: {
+            sql: 'select "id", "first_name" as "name" from "person" except select "id", "name" from "pet" order by "name"',
+            parameters: [],
+          },
           sqlite: {
             sql: 'select "id", "first_name" as "name" from "person" except select "id", "name" from "pet" order by "name"',
             parameters: [],
@@ -300,6 +332,10 @@ for (const dialect of DIALECTS) {
             parameters: [],
           },
           mysql: NOT_SUPPORTED,
+          mssql: {
+            sql: 'select "id", "first_name" as "name" from "person" union select "id", "name" from "pet" union all select "id", "name" from "toy" intersect select "id", "name" from "pet" except select "id", "name" from "toy" order by "name"',
+            parameters: [],
+          },
           sqlite: {
             sql: 'select "id", "first_name" as "name" from "person" union select "id", "name" from "pet" union all select "id", "name" from "toy" intersect select "id", "name" from "pet" except select "id", "name" from "toy" order by "name"',
             parameters: [],
@@ -324,6 +360,7 @@ for (const dialect of DIALECTS) {
             parameters: [],
           },
           mysql: NOT_SUPPORTED,
+          mssql: NOT_SUPPORTED,
           sqlite: NOT_SUPPORTED,
         })
 
@@ -343,6 +380,7 @@ for (const dialect of DIALECTS) {
             parameters: [],
           },
           mysql: NOT_SUPPORTED,
+          mssql: NOT_SUPPORTED,
           sqlite: NOT_SUPPORTED,
         })
 

@@ -2,9 +2,12 @@ import * as chai from 'chai'
 import * as chaiAsPromised from 'chai-as-promised'
 import * as chaiSubset from 'chai-subset'
 import * as Cursor from 'pg-cursor'
-import { Pool } from 'pg'
+import { Pool, PoolConfig } from 'pg'
 import { createPool } from 'mysql2'
 import * as Database from 'better-sqlite3'
+import * as Tarn from 'tarn'
+import * as Tedious from 'tedious'
+import { PoolOptions } from 'mysql2'
 
 chai.use(chaiSubset)
 chai.use(chaiAsPromised)
@@ -31,6 +34,8 @@ import {
   sql,
   ColumnType,
   InsertObject,
+  MssqlDialect,
+  SelectQueryBuilder,
 } from '../../../'
 
 export interface Person {
@@ -40,6 +45,7 @@ export interface Person {
   last_name: string | null
   gender: 'male' | 'female' | 'other'
   marital_status: 'single' | 'married' | 'divorced' | 'widowed' | null
+  children: Generated<number>
 }
 
 export interface Pet {
@@ -77,11 +83,11 @@ export interface TestContext {
   db: Kysely<Database>
 }
 
-export type BuiltInDialect = 'postgres' | 'mysql' | 'sqlite'
+export type BuiltInDialect = 'postgres' | 'mysql' | 'mssql' | 'sqlite'
 export type PerDialect<T> = Record<BuiltInDialect, T>
 
 export const DIALECTS: BuiltInDialect[] = (
-  ['postgres', 'mysql', 'sqlite'] as const
+  ['postgres', 'mysql', 'mssql', 'sqlite'] as const
 ).filter((d) => !process.env.DIALECT || d === process.env.DIALECT)
 
 const TEST_INIT_TIMEOUT = 5 * 60 * 1000
@@ -108,7 +114,7 @@ export const DIALECT_CONFIGS = {
     user: 'kysely',
     port: 5434,
     max: POOL_SIZE,
-  },
+  } satisfies PoolConfig,
 
   mysql: {
     database: 'kysely_test',
@@ -121,7 +127,24 @@ export const DIALECT_CONFIGS = {
     bigNumberStrings: true,
 
     connectionLimit: POOL_SIZE,
-  },
+  } satisfies PoolOptions,
+
+  mssql: {
+    authentication: {
+      options: {
+        password: 'KyselyTest0',
+        userName: 'sa',
+      },
+      type: 'default',
+    },
+    options: {
+      connectTimeout: 3000,
+      database: 'kysely_test',
+      port: 21433,
+      trustServerCertificate: true,
+    },
+    server: 'localhost',
+  } satisfies Tedious.ConnectionConfig,
 
   sqlite: {
     databasePath: ':memory:',
@@ -140,6 +163,23 @@ export const DB_CONFIGS: PerDialect<KyselyConfig> = {
   mysql: {
     dialect: new MysqlDialect({
       pool: async () => createPool(DIALECT_CONFIGS.mysql),
+    }),
+    plugins: PLUGINS,
+  },
+
+  mssql: {
+    dialect: new MssqlDialect({
+      tarn: {
+        options: {
+          max: POOL_SIZE,
+          min: 0,
+        },
+        ...Tarn,
+      },
+      tedious: {
+        ...Tedious,
+        connectionFactory: () => new Tedious.Connection(DIALECT_CONFIGS.mssql),
+      },
     }),
     plugins: PLUGINS,
   },
@@ -182,7 +222,7 @@ export async function insertPersons(
     const { pets, ...person } = insertPerson
 
     const personId = await insert(
-      ctx.dialect,
+      ctx,
       ctx.db.insertInto('person').values({ ...person })
     )
 
@@ -253,6 +293,7 @@ async function createDatabase(
     .addColumn('last_name', 'varchar(255)')
     .addColumn('gender', 'varchar(50)', (col) => col.notNull())
     .addColumn('marital_status', 'varchar(50)')
+    .addColumn('children', 'integer', (col) => col.notNull().defaultTo(0))
     .execute()
 
   await createTableWithId(db.schema, dialect, 'pet')
@@ -285,11 +326,21 @@ export function createTableWithId(
 
   if (dialect === 'postgres') {
     return builder.addColumn('id', 'serial', (col) => col.primaryKey())
-  } else {
+  }
+
+  if (dialect === 'mssql') {
     return builder.addColumn('id', 'integer', (col) =>
-      col.autoIncrement().primaryKey()
+      col
+        .notNull()
+        // TODO: change to method when its implemented
+        .modifyFront(sql`identity(1,1)`)
+        .primaryKey()
     )
   }
+
+  return builder.addColumn('id', 'integer', (col) =>
+    col.autoIncrement().primaryKey()
+  )
 }
 
 async function connect(config: KyselyConfig): Promise<Kysely<Database>> {
@@ -334,7 +385,7 @@ async function insertPetForPerson(
   const { toys, ...pet } = insertPet
 
   const petId = await insert(
-    ctx.dialect,
+    ctx,
     ctx.db.insertInto('pet').values({ ...pet, owner_id: personId })
   )
 
@@ -354,17 +405,44 @@ async function insertToysForPet(
     .executeTakeFirst()
 }
 
-async function insert<TB extends keyof Database>(
-  dialect: BuiltInDialect,
+export async function insert<TB extends keyof Database>(
+  ctx: TestContext,
   qb: InsertQueryBuilder<Database, TB, InsertResult>
 ): Promise<number> {
+  const { dialect } = ctx
+
   if (dialect === 'postgres' || dialect === 'sqlite') {
     const { id } = await qb.returning('id').executeTakeFirstOrThrow()
+
     return id
-  } else {
-    const { insertId } = await qb.executeTakeFirst()
-    return Number(insertId)
   }
+
+  if (dialect === 'mssql') {
+    // TODO: use insert into "table" (...) output inserted.id values (...) when its implemented
+    return await ctx.db.connection().execute(async (db) => {
+      await qb.executeTakeFirstOrThrow()
+
+      const { query } = qb.compile()
+
+      const table =
+        query.kind === 'InsertQueryNode' &&
+        [query.into.table.schema?.name, query.into.table.identifier.name]
+          .filter(Boolean)
+          .join('.')
+
+      const {
+        rows: [{ id }],
+      } = await sql<{ id: number }>`select IDENT_CURRENT(${sql.lit(
+        table
+      )}) as id`.execute(db)
+
+      return Number(id)
+    })
+  }
+
+  const { insertId } = await qb.executeTakeFirstOrThrow()
+
+  return Number(insertId)
 }
 
 function createNoopTransformerPlugin(): KyselyPlugin {
@@ -385,4 +463,17 @@ function createNoopTransformerPlugin(): KyselyPlugin {
 
 function sleep(millis: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, millis))
+}
+
+export function limit<QB extends SelectQueryBuilder<any, any, any>>(
+  limit: number,
+  dialect: BuiltInDialect
+): (qb: QB) => QB {
+  return (qb) => {
+    if (dialect === 'mssql') {
+      return qb.modifyFront(sql`top ${sql.lit(limit)}`) as QB
+    }
+
+    return qb.limit(limit) as QB
+  }
 }

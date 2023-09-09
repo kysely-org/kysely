@@ -1,6 +1,6 @@
 {
   "name": "kysely",
-  "version": "0.26.1",
+  "version": "0.26.3",
   "description": "Type safe SQL query builder",
   "repository": {
     "type": "git",
@@ -37,9 +37,10 @@
     "clean": "rm -rf dist & rm -rf test/node/dist & rm -rf test/browser/bundle.js & rm -rf helpers",
     "test": "npm run build && npm run test:node:build && concurrently -n node,typings,esmimports \"npm run test:node\" \"npm run test:typings\" \"npm run test:esmimports\"",
     "test:node:build": "tsc -p test/node",
-    "test:node": "concurrently -n postgres,mysql,sqlite \"npm run test:node:postgres\" \"npm run test:node:mysql\" \"npm run test:node:sqlite\"",
+    "test:node": "concurrently -n postgres,mysql,mssql,sqlite \"npm run test:node:postgres\" \"npm run test:node:mysql\" \"npm run test:node:mssql\" \"npm run test:node:sqlite\"",
     "test:node:postgres": "DIALECT=postgres npm run test:node:run",
     "test:node:mysql": "DIALECT=mysql npm run test:node:run",
+    "test:node:mssql": "DIALECT=mssql npm run test:node:run",
     "test:node:sqlite": "DIALECT=sqlite npm run test:node:run",
     "test:node:run": "mocha --reporter min --timeout 15000 test/node/dist/**/*.test.js",
     "test:browser:build": "rm -rf test/browser/bundle.js && esbuild test/browser/main.ts --bundle --outfile=test/browser/bundle.js",
@@ -54,8 +55,6 @@
     "build": "npm run clean && concurrently -n esm,cjs \"npm run build:esm\" \"npm run build:cjs\" && concurrently -n modulefix,docfix \"npm run script:module-fixup\" \"npm run script:copy-interface-doc\"",
     "build:esm": "tsc -p tsconfig.json && npm run script:add-deno-type-references",
     "build:cjs": "tsc -p tsconfig-cjs.json",
-    "docs:build": "typedoc --excludePrivate --excludeInternal --customCss ./docs-theme.css src/index.ts && npm run docs:postprocess",
-    "docs:postprocess": "node scripts/post-process-docs.js",
     "script:module-fixup": "node scripts/module-fixup.js",
     "script:copy-interface-doc": "node scripts/copy-interface-documentation.js",
     "script:add-deno-type-references": "node scripts/add-deno-type-references.js",
@@ -77,6 +76,7 @@
     "@types/pg": "^8.10.2",
     "@types/pg-cursor": "^2.7.0",
     "@types/sinon": "^10.0.15",
+    "@types/tedious": "^4.0.9",
     "better-sqlite3": "^8.4.0",
     "chai": "^4.3.7",
     "chai-as-promised": "^7.1.1",
@@ -90,8 +90,9 @@
     "playwright": "^1.34.3",
     "prettier": "^2.8.8",
     "sinon": "^15.1.0",
+    "tarn": "^3.0.2",
+    "tedious": "^16.4.0",
     "tsd": "^0.28.1",
-    "typedoc": "^0.24.8",
-    "typescript": "^5.1.6"
+    "typescript": "^5.2.2"
   }
 }

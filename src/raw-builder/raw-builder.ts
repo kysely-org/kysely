@@ -10,7 +10,11 @@ import { NOOP_QUERY_EXECUTOR } from '../query-executor/noop-query-executor.js'
 import { QueryExecutorProvider } from '../query-executor/query-executor-provider.js'
 import { QueryId } from '../util/query-id.js'
 import { IdentifierNode } from '../operation-node/identifier-node.js'
-import { AliasedExpression, Expression } from '../expression/expression.js'
+import {
+  AliasableExpression,
+  AliasedExpression,
+  Expression,
+} from '../expression/expression.js'
 import { isOperationNodeSource } from '../operation-node/operation-node-source.js'
 
 /**
@@ -19,10 +23,7 @@ import { isOperationNodeSource } from '../operation-node/operation-node-source.j
  * You shouldn't need to create `RawBuilder` instances directly. Instead you should
  * use the {@link sql} template tag.
  */
-export interface RawBuilder<O> extends Expression<O> {
-  /**
-   * @private Without this SelectQueryBuilder extends RawBuilder and things break.
-   */
+export interface RawBuilder<O> extends AliasableExpression<O> {
   get isRawBuilder(): true
 
   /**

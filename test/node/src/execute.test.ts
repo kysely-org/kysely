@@ -6,13 +6,13 @@ import {
   QueryNode,
 } from '../../../'
 import {
-  DIALECTS,
   clearDatabase,
   destroyTest,
   initTest,
   insertPersons,
   TestContext,
   expect,
+  DIALECTS,
 } from './test-setup.js'
 
 for (const dialect of DIALECTS) {

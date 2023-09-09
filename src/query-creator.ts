@@ -40,7 +40,9 @@ import { UpdateResult } from './query-builder/update-result.js'
 import { KyselyPlugin } from './plugin/kysely-plugin.js'
 import { CTEBuilderCallback } from './query-builder/cte-builder.js'
 import {
+  CallbackSelection,
   SelectArg,
+  SelectCallback,
   SelectExpression,
   Selection,
   parseSelectArg,
@@ -207,7 +209,7 @@ export class QueryCreator<DB> {
    * ### Examples
    *
    * ```ts
-   * const result = db.select((eb) => [
+   * const result = db.selectNoFrom((eb) => [
    *   eb.selectFrom('person')
    *     .select('id')
    *     .where('first_name', '=', 'Jennifer')
@@ -242,6 +244,18 @@ export class QueryCreator<DB> {
    * ) as "doggo_id"
    * ```
    */
+  selectNoFrom<SE extends SelectExpression<DB, never>>(
+    selections: ReadonlyArray<SE>
+  ): SelectQueryBuilder<DB, never, Selection<DB, never, SE>>
+
+  selectNoFrom<CB extends SelectCallback<DB, never>>(
+    callback: CB
+  ): SelectQueryBuilder<DB, never, CallbackSelection<DB, never, CB>>
+
+  selectNoFrom<SE extends SelectExpression<DB, never>>(
+    selection: SE
+  ): SelectQueryBuilder<DB, never, Selection<DB, never, SE>>
+
   selectNoFrom<SE extends SelectExpression<DB, never>>(
     selection: SelectArg<DB, never, SE>
   ): SelectQueryBuilder<DB, never, Selection<DB, never, SE>> {

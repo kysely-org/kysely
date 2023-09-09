@@ -25,55 +25,55 @@ const CODE_LINE_REGEX = /\*(.*)/
 const moreExamplesByCategory = {
   select: {
     'select method':
-      'https://kysely-org.github.io/kysely/interfaces/SelectQueryBuilder.html#select',
+      'https://kysely-org.github.io/kysely-apidoc/interfaces/SelectQueryBuilder.html#select',
     'selectAll method':
-      'https://kysely-org.github.io/kysely/interfaces/SelectQueryBuilder.html#selectAll',
+      'https://kysely-org.github.io/kysely-apidoc/interfaces/SelectQueryBuilder.html#selectAll',
     'selectFrom method':
-      'https://kysely-org.github.io/kysely/classes/Kysely.html#selectFrom',
+      'https://kysely-org.github.io/kysely-apidoc/classes/Kysely.html#selectFrom',
   },
   where: {
     'where method':
-      'https://kysely-org.github.io/kysely/interfaces/SelectQueryBuilder.html#where',
+      'https://kysely-org.github.io/kysely-apidoc/interfaces/SelectQueryBuilder.html#where',
     'whereRef method':
-      'https://kysely-org.github.io/kysely/interfaces/SelectQueryBuilder.html#whereRef',
+      'https://kysely-org.github.io/kysely-apidoc/interfaces/SelectQueryBuilder.html#whereRef',
   },
   join: {
     'innerJoin method':
-      'https://kysely-org.github.io/kysely/interfaces/SelectQueryBuilder.html#innerJoin',
+      'https://kysely-org.github.io/kysely-apidoc/interfaces/SelectQueryBuilder.html#innerJoin',
     'leftJoin method':
-      'https://kysely-org.github.io/kysely/interfaces/SelectQueryBuilder.html#leftJoin',
+      'https://kysely-org.github.io/kysely-apidoc/interfaces/SelectQueryBuilder.html#leftJoin',
     'rightJoin method':
-      'https://kysely-org.github.io/kysely/interfaces/SelectQueryBuilder.html#rightJoin',
+      'https://kysely-org.github.io/kysely-apidoc/interfaces/SelectQueryBuilder.html#rightJoin',
     'fullJoin method':
-      'https://kysely-org.github.io/kysely/interfaces/SelectQueryBuilder.html#fullJoin',
+      'https://kysely-org.github.io/kysely-apidoc/interfaces/SelectQueryBuilder.html#fullJoin',
   },
   insert: {
     'values method':
-      'https://kysely-org.github.io/kysely/classes/InsertQueryBuilder.html#values',
+      'https://kysely-org.github.io/kysely-apidoc/classes/InsertQueryBuilder.html#values',
     'onConflict method':
-      'https://kysely-org.github.io/kysely/classes/InsertQueryBuilder.html#onConflict',
+      'https://kysely-org.github.io/kysely-apidoc/classes/InsertQueryBuilder.html#onConflict',
     'returning method':
-      'https://kysely-org.github.io/kysely/classes/InsertQueryBuilder.html#returning',
+      'https://kysely-org.github.io/kysely-apidoc/classes/InsertQueryBuilder.html#returning',
     'insertInto method':
-      'https://kysely-org.github.io/kysely/classes/Kysely.html#insertInto',
+      'https://kysely-org.github.io/kysely-apidoc/classes/Kysely.html#insertInto',
   },
   update: {
     'set method':
-      'https://kysely-org.github.io/kysely/classes/UpdateQueryBuilder.html#set',
+      'https://kysely-org.github.io/kysely-apidoc/classes/UpdateQueryBuilder.html#set',
     'returning method':
-      'https://kysely-org.github.io/kysely/classes/UpdateQueryBuilder.html#returning',
+      'https://kysely-org.github.io/kysely-apidoc/classes/UpdateQueryBuilder.html#returning',
     'updateTable method':
-      'https://kysely-org.github.io/kysely/classes/Kysely.html#updateTable',
+      'https://kysely-org.github.io/kysely-apidoc/classes/Kysely.html#updateTable',
   },
   delete: {
     'deleteFrom method':
-      'https://kysely-org.github.io/kysely/classes/Kysely.html#deleteFrom',
+      'https://kysely-org.github.io/kysely-apidoc/classes/Kysely.html#deleteFrom',
     'returning method':
-      'https://kysely-org.github.io/kysely/classes/DeleteQueryBuilder.html#returning',
+      'https://kysely-org.github.io/kysely-apidoc/classes/DeleteQueryBuilder.html#returning',
   },
   transactions: {
     'transaction method':
-      'https://kysely-org.github.io/kysely/classes/Kysely.html#transaction',
+      'https://kysely-org.github.io/kysely-apidoc/classes/Kysely.html#transaction',
   },
 }
 
@@ -209,7 +209,7 @@ function buildMoreExamplesMarkdown(category) {
 
   const lines = [
     ':::info More examples',
-    'The API documentation is packed with examples. The API docs are hosted [here](https://kysely-org.github.io/kysely/)',
+    'The API documentation is packed with examples. The API docs are hosted [here](https://kysely-org.github.io/kysely-apidoc/)',
     'but you can access the same documentation by hovering over functions/methods/classes in your IDE. The examples are always',
     'just one hover away!',
     '',

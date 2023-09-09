@@ -3,6 +3,7 @@ import { InsertResult } from '../query-builder/insert-result.js'
 import { UpdateResult } from '../query-builder/update-result.js'
 import { CompiledQuery } from '../query-compiler/compiled-query.js'
 import { Compilable } from './compilable.js'
+import { Simplify } from './type-utils.js'
 
 /**
  * A helper type that allows inferring a select/insert/update/delete query's result
@@ -51,4 +52,4 @@ export type InferResult<C extends Compilable<any> | CompiledQuery<any>> =
 
 type ResolveResult<O> = O extends InsertResult | UpdateResult | DeleteResult
   ? O
-  : O[]
+  : Simplify<O>[]

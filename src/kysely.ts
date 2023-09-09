@@ -32,6 +32,7 @@ import { CaseNode } from './operation-node/case-node.js'
 import { parseExpression } from './parser/expression-parser.js'
 import { Expression } from './expression/expression.js'
 import { WithSchemaPlugin } from './plugin/with-schema/with-schema-plugin.js'
+import { DrainOuterGeneric } from './util/type-utils.js'
 
 /**
  * The main Kysely class.
@@ -336,7 +337,9 @@ export class Kysely<DB>
    *   .execute()
    * ```
    */
-  withTables<T extends Record<string, Record<string, any>>>(): Kysely<DB & T> {
+  withTables<T extends Record<string, Record<string, any>>>(): Kysely<
+    DrainOuterGeneric<DB & T>
+  > {
     return new Kysely({ ...this.#props })
   }
 
@@ -442,7 +445,7 @@ export class Transaction<DB> extends Kysely<DB> {
 
   override withTables<
     T extends Record<string, Record<string, any>>
-  >(): Transaction<DB & T> {
+  >(): Transaction<DrainOuterGeneric<DB & T>> {
     return new Transaction({ ...this.#props })
   }
 }

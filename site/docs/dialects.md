@@ -1,14 +1,14 @@
 # Dialects
 
-A dialect is the glue between Kysely and the underlying database engine. Check the [API docs](https://kysely-org.github.io/kysely/interfaces/Dialect.html) to learn how to build your own.
+A dialect is the glue between Kysely and the underlying database engine. Check the [API docs](https://kysely-org.github.io/kysely-apidoc/interfaces/Dialect.html) to learn how to build your own.
 
 ## Built-in dialects
 
 | Dialect | Link |
 | --- | --- |
-| MySQL | https://kysely-org.github.io/kysely/classes/MysqlDialect.html |
-| PostgreSQL | https://kysely-org.github.io/kysely/classes/PostgresDialect.html |
-| SQLite | https://kysely-org.github.io/kysely/classes/SqliteDialect.html |
+| MySQL | https://kysely-org.github.io/kysely-apidoc/classes/MysqlDialect.html |
+| PostgreSQL | https://kysely-org.github.io/kysely-apidoc/classes/PostgresDialect.html |
+| SQLite | https://kysely-org.github.io/kysely-apidoc/classes/SqliteDialect.html |
 
 ## 3rd party dialects
 
@@ -19,8 +19,11 @@ A dialect is the glue between Kysely and the underlying database engine. Check t
 | AWS RDS Data API | https://github.com/serverless-stack/kysely-data-api |
 | SurrealDB | https://github.com/igalklebanov/kysely-surrealdb |
 | Neon | https://github.com/seveibar/kysely-neon |
+| Xata | https://github.com/xataio/client-ts/tree/main/packages/plugin-client-kysely |
 | AWS S3 Select | https://github.com/igalklebanov/kysely-s3-select |
 | libSQL/sqld | https://github.com/libsql/kysely-libsql |
 | SingleStore Data API | https://github.com/igalklebanov/kysely-singlestore |
 | Postgres.js | https://github.com/igalklebanov/kysely-postgres-js |
 | Fetch driver | https://github.com/andersgee/kysely-fetch-driver |
+| SQLite WASM | https://github.com/DallasHoff/sqlocal |
+| Deno SQLite | https://gitlab.com/soapbox-pub/kysely-deno-sqlite |

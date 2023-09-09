@@ -14,7 +14,7 @@ import {
 } from './expression-parser.js'
 import { OperationNode } from '../operation-node/operation-node.js'
 import { Expression } from '../expression/expression.js'
-import { SelectQueryBuilder } from '../query-builder/select-query-builder.js'
+import { SelectQueryBuilderExpression } from '../query-builder/select-query-builder-expression.js'
 
 export type ValueExpression<DB, TB extends keyof DB, V> =
   | V
@@ -30,15 +30,12 @@ export type ExtractTypeFromValueExpressionOrList<VE> = VE extends ReadonlyArray<
   ? ExtractTypeFromValueExpression<AV>
   : ExtractTypeFromValueExpression<VE>
 
-export type ExtractTypeFromValueExpression<VE> = VE extends SelectQueryBuilder<
-  any,
-  any,
-  Record<string, infer SV>
->
-  ? SV
-  : VE extends Expression<infer V>
-  ? V
-  : VE
+export type ExtractTypeFromValueExpression<VE> =
+  VE extends SelectQueryBuilderExpression<Record<string, infer SV>>
+    ? SV
+    : VE extends Expression<infer V>
+    ? V
+    : VE
 
 export function parseValueExpressionOrList(
   arg: ValueExpressionOrList<any, any, unknown>

@@ -50,6 +50,7 @@ if (DIALECTS.includes('mysql')) {
           sql: 'replace into `person` (`id`, `first_name`, `last_name`, `gender`) values (?, ?, ?, ?)',
           parameters: [15, 'Foo', 'Barson', 'other'],
         },
+        mssql: NOT_SUPPORTED,
         sqlite: NOT_SUPPORTED,
       })
 
@@ -84,6 +85,7 @@ if (DIALECTS.includes('mysql')) {
           sql: "replace into `person` (`id`, `first_name`, `last_name`, `gender`) values (?, (select max(name) as `max_name` from `pet`), concat('Bar', 'son'), ?)",
           parameters: [2500, 'other'],
         },
+        mssql: NOT_SUPPORTED,
         sqlite: NOT_SUPPORTED,
       })
 
@@ -110,6 +112,7 @@ if (DIALECTS.includes('mysql')) {
           sql: 'replace into `person` (`first_name`, `gender`) select `name`, ? as `gender` from `pet`',
           parameters: ['other'],
         },
+        mssql: NOT_SUPPORTED,
         sqlite: NOT_SUPPORTED,
       })
 
@@ -144,6 +147,7 @@ if (DIALECTS.includes('mysql')) {
           sql: 'replace into `person` (`id`, `gender`) values (?, ?)',
           parameters: [12, 'male'],
         },
+        mssql: NOT_SUPPORTED,
         sqlite: NOT_SUPPORTED,
       })
 
@@ -172,6 +176,7 @@ if (DIALECTS.includes('mysql')) {
           ],
         },
         postgres: NOT_SUPPORTED,
+        mssql: NOT_SUPPORTED,
         sqlite: NOT_SUPPORTED,
       })
 

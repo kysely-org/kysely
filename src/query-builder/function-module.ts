@@ -16,7 +16,10 @@ import { parseSelectAll } from '../parser/select-parser.js'
 import { KyselyTypeError } from '../util/type-error.js'
 import { Equals, IsAny } from '../util/type-utils.js'
 import { AggregateFunctionBuilder } from './aggregate-function-builder.js'
-import { SelectQueryBuilder } from './select-query-builder.js'
+import { SelectQueryBuilderExpression } from '../query-builder/select-query-builder-expression.js'
+import { isString } from '../util/object-utils.js'
+import { parseTable } from '../parser/table-parser.js'
+import { Selectable } from '../util/column-type.js'
 
 /**
  * Helpers for type safe SQL function calls.
@@ -621,10 +624,72 @@ export interface FunctionModule<DB, TB extends keyof DB> {
     : KyselyTypeError<'any(expr) call failed: expr must be an array'>
 
   any<T>(
-    subquery: SelectQueryBuilder<any, any, Record<string, T>>
+    subquery: SelectQueryBuilderExpression<Record<string, T>>
   ): ExpressionWrapper<DB, TB, T>
 
   any<T>(expr: Expression<ReadonlyArray<T>>): ExpressionWrapper<DB, TB, T>
+
+  /**
+   * Creates a json_agg function call.
+   *
+   * This function is only available on PostgreSQL.
+   *
+   * ```ts
+   * db.selectFrom('person')
+   *   .innerJoin('pet', 'pet.owner_id', 'person.id')
+   *   .select((eb) => ['first_name', eb.fn.jsonAgg('pet').as('pets')])
+   *   .groupBy('person.first_name')
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * select "first_name", json_agg("pet") as "pets"
+   * from "person"
+   * inner join "pet" on "pet"."owner_id" = "person"."id"
+   * group by "person"."first_name"
+   * ```
+   */
+  jsonAgg<T extends (TB & string) | Expression<unknown>>(
+    table: T
+  ): AggregateFunctionBuilder<
+    DB,
+    TB,
+    T extends TB
+      ? Selectable<DB[T]>[]
+      : T extends Expression<infer O>
+      ? O[]
+      : never
+  >
+
+  /**
+   * Creates a to_json function call.
+   *
+   * This function is only available on PostgreSQL.
+   *
+   * ```ts
+   * db.selectFrom('person')
+   *   .innerJoin('pet', 'pet.owner_id', 'person.id')
+   *   .select((eb) => ['first_name', eb.fn.toJson('pet').as('pet')])
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * select "first_name", to_json("pet") as "pet"
+   * from "person"
+   * inner join "pet" on "pet"."owner_id" = "person"."id"
+   * ```
+   */
+  toJson<T extends (TB & string) | Expression<unknown>>(
+    table: T
+  ): ExpressionWrapper<
+    DB,
+    TB,
+    T extends TB ? Selectable<DB[T]> : T extends Expression<infer O> ? O : never
+  >
 }
 
 export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
@@ -719,6 +784,22 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
 
     any<RE extends ReferenceExpression<DB, TB>>(column: RE): any {
       return fn('any', [column])
+    },
+
+    jsonAgg(table: string | Expression<unknown>): any {
+      return new AggregateFunctionBuilder({
+        aggregateFunctionNode: AggregateFunctionNode.create('json_agg', [
+          isString(table) ? parseTable(table) : table.toOperationNode(),
+        ]),
+      })
+    },
+
+    toJson(table: string | Expression<unknown>): any {
+      return new ExpressionWrapper(
+        FunctionNode.create('to_json', [
+          isString(table) ? parseTable(table) : table.toOperationNode(),
+        ])
+      )
     },
   })
 }

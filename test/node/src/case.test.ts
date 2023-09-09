@@ -45,6 +45,10 @@ for (const dialect of DIALECTS) {
           sql: 'select case when `gender` = ? then ? end as `title` from `person`',
           parameters: ['male', 'Mr.'],
         },
+        mssql: {
+          sql: `select case when "gender" = @1 then @2 end as "title" from "person"`,
+          parameters: ['male', 'Mr.'],
+        },
         sqlite: {
           sql: `select case when "gender" = ? then ? end as "title" from "person"`,
           parameters: ['male', 'Mr.'],
@@ -68,6 +72,10 @@ for (const dialect of DIALECTS) {
         },
         mysql: {
           sql: 'select case `gender` when ? then ? end as `title` from `person`',
+          parameters: ['male', 'Mr.'],
+        },
+        mssql: {
+          sql: `select case "gender" when @1 then @2 end as "title" from "person"`,
           parameters: ['male', 'Mr.'],
         },
         sqlite: {
@@ -107,6 +115,14 @@ for (const dialect of DIALECTS) {
             "select case when `gender` = ? then 'Mr.'",
             "when `gender` = ? then 'Mrs.'",
             'end as `title` from `person`',
+          ],
+          parameters: ['male', 'female'],
+        },
+        mssql: {
+          sql: [
+            `select case when "gender" = @1 then 'Mr.'`,
+            `when "gender" = @2 then 'Mrs.'`,
+            `end as "title" from "person"`,
           ],
           parameters: ['male', 'female'],
         },
@@ -154,6 +170,14 @@ for (const dialect of DIALECTS) {
           ],
           parameters: [],
         },
+        mssql: {
+          sql: [
+            `select case "gender" when 'male' then 'Mr.'`,
+            `when 'female' then 'Mrs.'`,
+            `end as "title" from "person"`,
+          ],
+          parameters: [],
+        },
         sqlite: {
           sql: [
             `select case "gender" when 'male' then 'Mr.'`,
@@ -196,6 +220,14 @@ for (const dialect of DIALECTS) {
             'select case when `gender` = ? then ?',
             'when `gender` = ? then ?',
             'else null end as `title` from `person`',
+          ],
+          parameters: ['male', 'Mr.', 'female', 'Mrs.'],
+        },
+        mssql: {
+          sql: [
+            `select case when "gender" = @1 then @2`,
+            `when "gender" = @3 then @4`,
+            `else null end as "title" from "person"`,
           ],
           parameters: ['male', 'Mr.', 'female', 'Mrs.'],
         },
@@ -256,6 +288,17 @@ for (const dialect of DIALECTS) {
             '`marital_status` is null) then ?',
             'else ? end',
             'end as `title` from `person`',
+          ],
+          parameters: ['male', 'Mr.', 'female', 'single', 'Ms.', 'Mrs.'],
+        },
+        mssql: {
+          sql: [
+            'select case "gender" when @1 then @2',
+            'when @3 then',
+            'case when ("marital_status" = @4 or',
+            '"marital_status" is null) then @5',
+            'else @6 end',
+            'end as "title" from "person"',
           ],
           parameters: ['male', 'Mr.', 'female', 'single', 'Ms.', 'Mrs.'],
         },
