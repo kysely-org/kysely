@@ -83,6 +83,53 @@ for (const dialect of DIALECTS) {
       ])
     })
 
+    it('should update one row using the (key, value) variant of `set` method', async () => {
+      const query = ctx.db
+        .updateTable('person')
+        .set('first_name', 'Foo')
+        .set((eb) => eb.ref('last_name'), 'Barson')
+        .set('gender', (eb) => eb.val('other' as const))
+        .where('gender', '=', 'female')
+
+      testSql(query, dialect, {
+        postgres: {
+          sql: 'update "person" set "first_name" = $1, "last_name" = $2, "gender" = $3 where "gender" = $4',
+          parameters: ['Foo', 'Barson', 'other', 'female'],
+        },
+        mysql: {
+          sql: 'update `person` set `first_name` = ?, `last_name` = ?, `gender` = ? where `gender` = ?',
+          parameters: ['Foo', 'Barson', 'other', 'female'],
+        },
+        sqlite: {
+          sql: 'update "person" set "first_name" = ?, "last_name" = ?, "gender" = ? where "gender" = ?',
+          parameters: ['Foo', 'Barson', 'other', 'female'],
+        },
+      })
+
+      const result = await query.executeTakeFirst()
+
+      expect(result).to.be.instanceOf(UpdateResult)
+      expect(result.numUpdatedRows).to.equal(1n)
+      if (dialect === 'mysql') {
+        expect(result.numChangedRows).to.equal(1n)
+      } else {
+        expect(result.numChangedRows).to.undefined
+      }
+
+      expect(
+        await ctx.db
+          .selectFrom('person')
+          .select(['first_name', 'last_name', 'gender'])
+          .orderBy('first_name')
+          .orderBy('last_name')
+          .execute()
+      ).to.eql([
+        { first_name: 'Arnold', last_name: 'Schwarzenegger', gender: 'male' },
+        { first_name: 'Foo', last_name: 'Barson', gender: 'other' },
+        { first_name: 'Sylvester', last_name: 'Stallone', gender: 'male' },
+      ])
+    })
+
     // mssql doesn't support table aliases in update clause, but it does support this
     // with update alias set ... from table_name as alias
     if (dialect === 'postgres' || dialect === 'mysql' || dialect === 'sqlite') {

@@ -12,8 +12,8 @@ import {
 import { ExpressionOrFactory } from '../parser/expression-parser.js'
 import { ReferenceExpression } from '../parser/reference-parser.js'
 import {
-  UpdateExpression,
-  parseUpdateExpression,
+  UpdateObjectExpression,
+  parseUpdateObjectExpression,
 } from '../parser/update-set-parser.js'
 import { freeze } from '../util/object-utils.js'
 import { preventAwait } from '../util/prevent-await.js'
@@ -227,7 +227,7 @@ export class OnConflictBuilder<DB, TB extends keyof DB>
    * ```
    */
   doUpdateSet(
-    update: UpdateExpression<
+    update: UpdateObjectExpression<
       OnConflictDatabase<DB, TB>,
       OnConflictTables<TB>,
       OnConflictTables<TB>
@@ -236,7 +236,7 @@ export class OnConflictBuilder<DB, TB extends keyof DB>
     return new OnConflictUpdateBuilder({
       ...this.#props,
       onConflictNode: OnConflictNode.cloneWith(this.#props.onConflictNode, {
-        updates: parseUpdateExpression(update),
+        updates: parseUpdateObjectExpression(update),
       }),
     })
   }

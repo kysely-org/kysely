@@ -36,6 +36,8 @@ export const COMPARISON_OPERATORS = [
   '!!',
   '<->',
   'regexp',
+  'is distinct from',
+  'is not distinct from',
 ] as const
 
 export const ARITHMETIC_OPERATORS = [

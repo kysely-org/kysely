@@ -36,10 +36,11 @@ import {
 } from '../util/type-utils.js'
 import { UpdateQueryNode } from '../operation-node/update-query-node.js'
 import {
-  parseUpdateExpression,
-  UpdateExpression,
+  UpdateObjectExpression,
   UpdateObject,
   UpdateObjectFactory,
+  ExtractUpdateTypeFromReferenceExpression,
+  parseUpdate,
 } from '../parser/update-set-parser.js'
 import { preventAwait } from '../util/prevent-await.js'
 import { Compilable } from '../util/compilable.js'
@@ -67,6 +68,7 @@ import {
 import { KyselyTypeError } from '../util/type-error.js'
 import { Streamable } from '../util/streamable.js'
 import { ExpressionOrFactory } from '../parser/expression-parser.js'
+import { ValueExpression } from '../parser/value-parser.js'
 
 export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
   implements
@@ -458,6 +460,20 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
    *   "id" = $4
    * ```
    *
+   * If you provide two arguments the first one is interpreted as the column
+   * (or other target) and the second as the value:
+   *
+   * ```ts
+   * const result = await db
+   *   .updateTable('person')
+   *   .set('first_name', 'Foo')
+   *   // As always, both arguments can be arbitrary expressions or
+   *   // callbacks that give you access to an expression builder:
+   *   .set(sql`address['postalCode']`, (eb) => eb.val('61710))
+   *   .where('id', '=', '1')
+   *   .executeTakeFirst()
+   * ```
+   *
    * On PostgreSQL you can chain `returning` to the query to get
    * the updated rows' columns (or any other expression) as the
    * return value:
@@ -519,12 +535,25 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
     update: UpdateObjectFactory<DB, TB, UT>
   ): UpdateQueryBuilder<DB, UT, TB, O>
 
-  set(update: UpdateExpression<DB, TB, UT>): UpdateQueryBuilder<DB, UT, TB, O> {
+  set<RE extends ReferenceExpression<DB, UT>>(
+    key: RE,
+    value: ValueExpression<
+      DB,
+      TB,
+      ExtractUpdateTypeFromReferenceExpression<DB, UT, RE>
+    >
+  ): UpdateQueryBuilder<DB, UT, TB, O>
+
+  set(
+    ...args:
+      | [UpdateObjectExpression<DB, TB, UT>]
+      | [ReferenceExpression<DB, UT>, ValueExpression<DB, UT, unknown>]
+  ): UpdateQueryBuilder<DB, UT, TB, O> {
     return new UpdateQueryBuilder({
       ...this.#props,
       queryNode: UpdateQueryNode.cloneWithUpdates(
         this.#props.queryNode,
-        parseUpdateExpression(update)
+        parseUpdate(...args)
       ),
     })
   }
