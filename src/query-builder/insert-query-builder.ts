@@ -203,8 +203,18 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    * The generated SQL (PostgreSQL):
    *
    * ```sql
-   * insert into "person" ("first_name", "last_name", "age")
-   * values ($1, $2 || $3, (select avg("age") as "avg_age" from "person"))
+   * insert into "person" (
+   *   "first_name",
+   *   "last_name",
+   *   "middle_name",
+   *   "age"
+   * )
+   * values (
+   *   $1,
+   *   $2 || $3,
+   *   "first_name",
+   *   (select avg("age") as "avg_age" from "person")
+   * )
    * ```
    *
    * You can also use the callback version of subqueries or raw expressions:
