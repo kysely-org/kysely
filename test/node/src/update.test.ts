@@ -100,6 +100,10 @@ for (const dialect of DIALECTS) {
           sql: 'update `person` set `first_name` = ?, `last_name` = ?, `gender` = ? where `gender` = ?',
           parameters: ['Foo', 'Barson', 'other', 'female'],
         },
+        mssql: {
+          sql: 'update "person" set "first_name" = @1, "last_name" = @2, "gender" = @3 where "gender" = @4',
+          parameters: ['Foo', 'Barson', 'other', 'female'],
+        },
         sqlite: {
           sql: 'update "person" set "first_name" = ?, "last_name" = ?, "gender" = ? where "gender" = ?',
           parameters: ['Foo', 'Barson', 'other', 'female'],
