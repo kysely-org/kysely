@@ -23,7 +23,14 @@
  */
 export class InsertResult {
   /**
-   * The auto incrementing primary key
+   * The auto incrementing primary key of the inserted row.
+   *
+   * This property can be undefined when the query contains an `on conflict`
+   * clause that makes the query succeed even when nothing gets inserted.
+   *
+   * This property is always undefined on dialects like PostgreSQL that
+   * don't return the inserted id by default. On those dialects you need
+   * to use the {@link ReturningInterface.returning | returning} method.
    */
   readonly insertId: bigint | undefined
 
