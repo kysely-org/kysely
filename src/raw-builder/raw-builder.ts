@@ -4,13 +4,17 @@ import { RawNode } from '../operation-node/raw-node.js'
 import { CompiledQuery } from '../query-compiler/compiled-query.js'
 import { preventAwait } from '../util/prevent-await.js'
 import { QueryExecutor } from '../query-executor/query-executor.js'
-import { freeze, isFunction, isObject } from '../util/object-utils.js'
+import { freeze } from '../util/object-utils.js'
 import { KyselyPlugin } from '../plugin/kysely-plugin.js'
 import { NOOP_QUERY_EXECUTOR } from '../query-executor/noop-query-executor.js'
 import { QueryExecutorProvider } from '../query-executor/query-executor-provider.js'
 import { QueryId } from '../util/query-id.js'
 import { IdentifierNode } from '../operation-node/identifier-node.js'
-import { AliasedExpression, Expression } from '../expression/expression.js'
+import {
+  AliasableExpression,
+  AliasedExpression,
+  Expression,
+} from '../expression/expression.js'
 import { isOperationNodeSource } from '../operation-node/operation-node-source.js'
 
 /**
@@ -19,17 +23,8 @@ import { isOperationNodeSource } from '../operation-node/operation-node-source.j
  * You shouldn't need to create `RawBuilder` instances directly. Instead you should
  * use the {@link sql} template tag.
  */
-export class RawBuilder<O> implements Expression<O> {
-  readonly #props: RawBuilderProps
-
-  constructor(props: RawBuilderProps) {
-    this.#props = freeze(props)
-  }
-
-  /** @private */
-  get expressionType(): O | undefined {
-    return undefined
-  }
+export interface RawBuilder<O> extends AliasableExpression<O> {
+  get isRawBuilder(): true
 
   /**
    * Returns an aliased version of the SQL expression.
@@ -86,9 +81,6 @@ export class RawBuilder<O> implements Expression<O> {
    */
   as<A extends string>(alias: A): AliasedRawBuilder<O, A>
   as<A extends string>(alias: Expression<any>): AliasedRawBuilder<O, A>
-  as(alias: string | Expression<unknown>): AliasedRawBuilder<O, string> {
-    return new AliasedRawBuilder(this, alias)
-  }
 
   /**
    * Change the output type of the raw expression.
@@ -96,22 +88,64 @@ export class RawBuilder<O> implements Expression<O> {
    * This method call doesn't change the SQL in any way. This methods simply
    * returns a copy of this `RawBuilder` with a new output type.
    */
-  $castTo<T>(): RawBuilder<T> {
-    return new RawBuilder({ ...this.#props })
-  }
-
-  /**
-   * @deprecated Use `$castTo` instead.
-   */
-  castTo<T>(): RawBuilder<T> {
-    return this.$castTo<T>()
-  }
+  $castTo<T>(): RawBuilder<T>
 
   /**
    * Adds a plugin for this SQL snippet.
    */
+  withPlugin(plugin: KyselyPlugin): RawBuilder<O>
+
+  /**
+   * Compiles the builder to a `CompiledQuery`.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * const { sql } = sql`select * from ${sql.table('person')}`.compile(db)
+   * console.log(sql)
+   * ```
+   */
+  compile(executorProvider: QueryExecutorProvider): CompiledQuery<O>
+
+  /**
+   * Executes the raw query.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * const result = await sql`select * from ${sql.table('person')}`.execute(db)
+   * ```
+   */
+  execute(executorProvider: QueryExecutorProvider): Promise<QueryResult<O>>
+
+  toOperationNode(): RawNode
+}
+
+class RawBuilderImpl<O> implements RawBuilder<O> {
+  readonly #props: RawBuilderProps
+
+  constructor(props: RawBuilderProps) {
+    this.#props = freeze(props)
+  }
+
+  get expressionType(): O | undefined {
+    return undefined
+  }
+
+  get isRawBuilder(): true {
+    return true
+  }
+
+  as(alias: string | Expression<unknown>): AliasedRawBuilder<O, string> {
+    return new AliasedRawBuilderImpl(this, alias)
+  }
+
+  $castTo<T>(): RawBuilder<T> {
+    return new RawBuilderImpl({ ...this.#props })
+  }
+
   withPlugin(plugin: KyselyPlugin): RawBuilder<O> {
-    return new RawBuilder({
+    return new RawBuilderImpl({
       ...this.#props,
       plugins:
         this.#props.plugins !== undefined
@@ -162,27 +196,31 @@ export class RawBuilder<O> implements Expression<O> {
   }
 }
 
-export function isRawBuilder(obj: unknown): obj is RawBuilder<unknown> {
-  return (
-    isObject(obj) &&
-    isFunction(obj.as) &&
-    isFunction(obj.$castTo) &&
-    isFunction(obj.withPlugin) &&
-    isFunction(obj.toOperationNode) &&
-    isFunction(obj.execute)
-  )
+export interface RawBuilderProps {
+  readonly queryId: QueryId
+  readonly rawNode: RawNode
+  readonly plugins?: ReadonlyArray<KyselyPlugin>
+}
+
+export function createRawBuilder<O>(props: RawBuilderProps): RawBuilder<O> {
+  return new RawBuilderImpl(props)
 }
 
 preventAwait(
-  RawBuilder,
+  RawBuilderImpl,
   "don't await RawBuilder instances directly. To execute the query you need to call `execute`"
 )
 
 /**
  * {@link RawBuilder} with an alias. The result of calling {@link RawBuilder.as}.
  */
-export class AliasedRawBuilder<O = unknown, A extends string = never>
-  implements AliasedExpression<O, A>
+export interface AliasedRawBuilder<O = unknown, A extends string = never>
+  extends AliasedExpression<O, A> {
+  get rawBuilder(): RawBuilder<O>
+}
+
+class AliasedRawBuilderImpl<O = unknown, A extends string = never>
+  implements AliasedRawBuilder<O, A>
 {
   readonly #rawBuilder: RawBuilder<O>
   readonly #alias: A | Expression<unknown>
@@ -192,14 +230,16 @@ export class AliasedRawBuilder<O = unknown, A extends string = never>
     this.#alias = alias
   }
 
-  /** @private */
   get expression(): Expression<O> {
     return this.#rawBuilder
   }
 
-  /** @private */
   get alias(): A | Expression<unknown> {
     return this.#alias
+  }
+
+  get rawBuilder(): RawBuilder<O> {
+    return this.#rawBuilder
   }
 
   toOperationNode(): AliasNode {
@@ -212,8 +252,7 @@ export class AliasedRawBuilder<O = unknown, A extends string = never>
   }
 }
 
-export interface RawBuilderProps {
-  readonly queryId: QueryId
-  readonly rawNode: RawNode
-  readonly plugins?: ReadonlyArray<KyselyPlugin>
-}
+preventAwait(
+  AliasedRawBuilderImpl,
+  "don't await AliasedRawBuilder instances directly. AliasedRawBuilder should never be executed directly since it's always a part of another query."
+)

@@ -17,6 +17,7 @@ async function getPerson(id: number, withLastName: boolean) {
   let query = db.selectFrom('person').select('first_name').where('id', '=', id)
 
   if (withLastName) {
+    // ❌ The type of `query` doesn't change here
     query = query.select('last_name')
   }
 
@@ -32,10 +33,12 @@ with `last_name` selection is `B` which extends `A` but also contains informatio
 about the new selection. When you assign an object of type `B` to `query` inside
 the `if` statement, the type gets downcast to `A`.
 
-You can write code like this to add conditional `where`, `groupBy`, `orderBy` etc.
+:::info
+You _can_ write code like this to add conditional `where`, `groupBy`, `orderBy` etc.
 statements that don't change the type of the query builder, but it doesn't work
 with `select`, `returning`, `innerJoin` etc. that _do_ change the type of the
 query builder.
+:::
 
 In this simple case you could implement the method like this:
 
@@ -61,7 +64,7 @@ conditions the amount of code explodes if you want to keep things type-safe. You
 to create a separate branch for every possible combination of selections or otherwise
 the types won't be correct.
 
-This is where the [$if](https://kysely-org.github.io/kysely/classes/SelectQueryBuilder.html#_if)
+This is where the [$if](https://kysely-org.github.io/kysely-apidoc/interfaces/SelectQueryBuilder.html#_if)
 method can help you:
 
 ```ts

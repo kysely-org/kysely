@@ -1,4 +1,7 @@
-import { SelectQueryBuilder } from './query-builder/select-query-builder.js'
+import {
+  SelectQueryBuilder,
+  createSelectQueryBuilder,
+} from './query-builder/select-query-builder.js'
 import { InsertQueryBuilder } from './query-builder/insert-query-builder.js'
 import { DeleteQueryBuilder } from './query-builder/delete-query-builder.js'
 import { UpdateQueryBuilder } from './query-builder/update-query-builder.js'
@@ -23,9 +26,9 @@ import {
 import { QueryExecutor } from './query-executor/query-executor.js'
 import {
   CommonTableExpression,
-  parseCommonTableExpression,
   QueryCreatorWithCommonTableExpression,
   RecursiveCommonTableExpression,
+  parseCommonTableExpression,
 } from './parser/with-parser.js'
 import { WithNode } from './operation-node/with-node.js'
 import { createQueryId } from './util/query-id.js'
@@ -35,6 +38,15 @@ import { InsertResult } from './query-builder/insert-result.js'
 import { DeleteResult } from './query-builder/delete-result.js'
 import { UpdateResult } from './query-builder/update-result.js'
 import { KyselyPlugin } from './plugin/kysely-plugin.js'
+import { CTEBuilderCallback } from './query-builder/cte-builder.js'
+import {
+  CallbackSelection,
+  SelectArg,
+  SelectCallback,
+  SelectExpression,
+  Selection,
+  parseSelectArg,
+} from './parser/select-parser.js'
 
 export class QueryCreator<DB> {
   readonly #props: QueryCreatorProps
@@ -175,12 +187,84 @@ export class QueryCreator<DB> {
   ): SelectQueryBuilder<From<DB, TE>, FromTables<DB, never, TE>, {}>
 
   selectFrom(from: TableExpressionOrList<any, any>): any {
-    return new SelectQueryBuilder({
+    return createSelectQueryBuilder({
       queryId: createQueryId(),
       executor: this.#props.executor,
-      queryNode: SelectQueryNode.create(
+      queryNode: SelectQueryNode.createFrom(
         parseTableExpressionOrList(from),
         this.#props.withNode
+      ),
+    })
+  }
+
+  /**
+   * Creates a `select` query builder without a `from` clause.
+   *
+   * If you want to create a `select from` query, use the `selectFrom` method instead.
+   * This one can be used to create a plain `select` statement without a `from` clause.
+   *
+   * This method accepts the same inputs as {@link SelectQueryBuilder.select}. See its
+   * documentation for more examples.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * const result = db.selectNoFrom((eb) => [
+   *   eb.selectFrom('person')
+   *     .select('id')
+   *     .where('first_name', '=', 'Jennifer')
+   *     .limit(1)
+   *     .as('jennifer_id'),
+   *
+   *   eb.selectFrom('pet')
+   *     .select('id')
+   *     .where('name', '=', 'Doggo')
+   *     .limit(1)
+   *     .as('doggo_id')
+   *   ])
+   *   .executeTakeFirstOrThrow()
+   *
+   * console.log(result.jennifer_id)
+   * console.log(result.doggo_id)
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * select (
+   *   select "id"
+   *   from "person"
+   *   where "first_name" = $1
+   *   limit $2
+   * ) as "jennifer_id", (
+   *   select "id"
+   *   from "pet"
+   *   where "name" = $3
+   *   limit $4
+   * ) as "doggo_id"
+   * ```
+   */
+  selectNoFrom<SE extends SelectExpression<DB, never>>(
+    selections: ReadonlyArray<SE>
+  ): SelectQueryBuilder<DB, never, Selection<DB, never, SE>>
+
+  selectNoFrom<CB extends SelectCallback<DB, never>>(
+    callback: CB
+  ): SelectQueryBuilder<DB, never, CallbackSelection<DB, never, CB>>
+
+  selectNoFrom<SE extends SelectExpression<DB, never>>(
+    selection: SE
+  ): SelectQueryBuilder<DB, never, Selection<DB, never, SE>>
+
+  selectNoFrom<SE extends SelectExpression<DB, never>>(
+    selection: SelectArg<DB, never, SE>
+  ): SelectQueryBuilder<DB, never, Selection<DB, never, SE>> {
+    return createSelectQueryBuilder({
+      queryId: createQueryId(),
+      executor: this.#props.executor,
+      queryNode: SelectQueryNode.cloneWithSelections(
+        SelectQueryNode.create(this.#props.withNode),
+        parseSelectArg(selection as any)
       ),
     })
   }
@@ -453,12 +537,29 @@ export class QueryCreator<DB> {
    *   .selectAll()
    *   .execute()
    * ```
+   *
+   * The first argument can also be a callback. The callback is passed
+   * a `CTEBuilder` instance that can be used to configure the CTE:
+   *
+   * ```ts
+   * await db
+   *   .with(
+   *     (cte) => cte('jennifers').materialized(),
+   *     (db) => db
+   *       .selectFrom('person')
+   *       .where('first_name', '=', 'Jennifer')
+   *       .select(['id', 'age'])
+   *   )
+   *   .selectFrom('jennifers')
+   *   .selectAll()
+   *   .execute()
+   * ```
    */
   with<N extends string, E extends CommonTableExpression<DB, N>>(
-    name: N,
+    nameOrBuilder: N | CTEBuilderCallback<N>,
     expression: E
   ): QueryCreatorWithCommonTableExpression<DB, N, E> {
-    const cte = parseCommonTableExpression(name, expression)
+    const cte = parseCommonTableExpression(nameOrBuilder, expression)
 
     return new QueryCreator({
       ...this.#props,
@@ -471,13 +572,21 @@ export class QueryCreator<DB> {
   /**
    * Creates a recursive `with` query (Common Table Expression).
    *
+   * Note that recursiveness is a property of the whole `with` statement.
+   * You cannot have recursive and non-recursive CTEs in a same `with` statement.
+   * Therefore the recursiveness is determined by the **first** `with` or
+   * `withRecusive` call you make.
+   *
    * See the {@link with} method for examples and more documentation.
    */
   withRecursive<
     N extends string,
     E extends RecursiveCommonTableExpression<DB, N>
-  >(name: N, expression: E): QueryCreatorWithCommonTableExpression<DB, N, E> {
-    const cte = parseCommonTableExpression(name, expression)
+  >(
+    nameOrBuilder: N | CTEBuilderCallback<N>,
+    expression: E
+  ): QueryCreatorWithCommonTableExpression<DB, N, E> {
+    const cte = parseCommonTableExpression(nameOrBuilder, expression)
 
     return new QueryCreator({
       ...this.#props,

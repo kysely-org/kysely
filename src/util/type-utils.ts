@@ -1,4 +1,3 @@
-import { SelectQueryBuilder } from '../query-builder/select-query-builder.js'
 import { InsertResult } from '../query-builder/insert-result.js'
 import { DeleteResult } from '../query-builder/delete-result.js'
 import { UpdateResult } from '../query-builder/update-result.js'
@@ -35,19 +34,27 @@ import { KyselyTypeError } from './type-error.js'
  * // Columns == 'id' | 'name' | 'species'
  * ```
  */
-export type AnyColumn<DB, TB extends keyof DB> = DrainOuterGeneric<
-  {
-    [T in TB]: keyof DB[T]
-  }[TB] &
-    string
->
+export type AnyColumn<DB, TB extends keyof DB> =
+  // Inline version of DrainOuterGeneric for performance reasons.
+  // Don't replace with DrainOuterGeneric!
+  [DB] extends [unknown]
+    ? {
+        [T in TB]: keyof DB[T]
+      }[TB] &
+        string
+    : never
 
 /**
  * Extracts a column type.
  */
-export type ExtractColumnType<DB, TB extends keyof DB, C> = {
-  [T in TB]: C extends keyof DB[T] ? DB[T][C] : never
-}[TB]
+export type ExtractColumnType<DB, TB extends keyof DB, C> =
+  // Inline version of DrainOuterGeneric for performance reasons.
+  // Don't replace with DrainOuterGeneric!
+  [DB] extends [unknown]
+    ? {
+        [T in TB]: C extends keyof DB[T] ? DB[T][C] : never
+      }[TB]
+    : never
 
 /**
  * Given a database type and a union of table names in that db, returns
@@ -80,45 +87,49 @@ export type ExtractColumnType<DB, TB extends keyof DB, C> = {
  * // Columns == 'person.id' | 'pet.name' | 'pet.species'
  * ```
  */
-export type AnyColumnWithTable<DB, TB extends keyof DB> = {
-  [T in TB]: T extends string
-    ? keyof DB[T] extends string
-      ? `${T}.${keyof DB[T]}`
+export type AnyColumnWithTable<DB, TB extends keyof DB> = DrainOuterGeneric<
+  {
+    [T in TB]: T extends string
+      ? keyof DB[T] extends string
+        ? `${T}.${keyof DB[T]}`
+        : never
       : never
-    : never
-}[TB]
+  }[TB]
+>
 
 /**
  * Just like {@link AnyColumn} but with a ` as <string>` suffix.
  */
-export type AnyAliasedColumn<DB, TB extends keyof DB> = {
-  [T in TB]: T extends string
-    ? keyof DB[T] extends string
-      ? `${keyof DB[T]} as ${string}`
+export type AnyAliasedColumn<DB, TB extends keyof DB> = DrainOuterGeneric<
+  {
+    [T in TB]: T extends string
+      ? keyof DB[T] extends string
+        ? `${keyof DB[T]} as ${string}`
+        : never
       : never
-    : never
-}[TB]
+  }[TB]
+>
 
 /**
  * Just like {@link AnyColumnWithTable} but with a ` as <string>` suffix.
  */
-export type AnyAliasedColumnWithTable<DB, TB extends keyof DB> = {
-  [T in TB]: T extends string
-    ? keyof DB[T] extends string
-      ? `${T}.${keyof DB[T]} as ${string}`
+export type AnyAliasedColumnWithTable<
+  DB,
+  TB extends keyof DB
+> = DrainOuterGeneric<
+  {
+    [T in TB]: T extends string
+      ? keyof DB[T] extends string
+        ? `${T}.${keyof DB[T]} as ${string}`
+        : never
       : never
-    : never
-}[TB]
+  }[TB]
+>
 
 /**
  * Extracts the item type of an array.
  */
 export type ArrayItemType<T> = T extends ReadonlyArray<infer I> ? I : never
-
-/**
- * Any select query builder.
- */
-export type AnySelectQueryBuilder = SelectQueryBuilder<any, any, any>
 
 export type SimplifySingleResult<O> = O extends InsertResult
   ? O
@@ -167,13 +178,17 @@ export type Equals<T, U> = (<G>() => G extends T ? 1 : 2) extends <
   ? true
   : false
 
-export type NarrowPartial<S, T> = DrainOuterGeneric<{
-  [K in keyof S & string]: K extends keyof T
-    ? T[K] extends S[K]
-      ? T[K]
-      : KyselyTypeError<`$narrowType() call failed: passed type does not exist in '${K}'s type union`>
-    : S[K]
-}>
+export type NarrowPartial<S, T> = DrainOuterGeneric<
+  T extends object
+    ? {
+        [K in keyof S & string]: K extends keyof T
+          ? T[K] extends S[K]
+            ? T[K]
+            : KyselyTypeError<`$narrowType() call failed: passed type does not exist in '${K}'s type union`>
+          : S[K]
+      }
+    : never
+>
 
 export type SqlBool = boolean | 0 | 1
 

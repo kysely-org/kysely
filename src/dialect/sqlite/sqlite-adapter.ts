@@ -1,6 +1,8 @@
+import { Kysely } from '../../kysely.js'
 import { DialectAdapterBase } from '../dialect-adapter-base.js'
+import { MigrationLockOptions } from '../dialect-adapter.js'
 
-export class SqliteAdapter implements DialectAdapterBase {
+export class SqliteAdapter extends DialectAdapterBase {
   get supportsTransactionalDdl(): boolean {
     return false
   }
@@ -9,13 +11,19 @@ export class SqliteAdapter implements DialectAdapterBase {
     return true
   }
 
-  async acquireMigrationLock(): Promise<void> {
+  async acquireMigrationLock(
+    _db: Kysely<any>,
+    _opt: MigrationLockOptions
+  ): Promise<void> {
     // SQLite only has one connection that's reserved by the migration system
     // for the whole time between acquireMigrationLock and releaseMigrationLock.
     // We don't need to do anything here.
   }
 
-  async releaseMigrationLock(): Promise<void> {
+  async releaseMigrationLock(
+    _db: Kysely<any>,
+    _opt: MigrationLockOptions
+  ): Promise<void> {
     // SQLite only has one connection that's reserved by the migration system
     // for the whole time between acquireMigrationLock and releaseMigrationLock.
     // We don't need to do anything here.

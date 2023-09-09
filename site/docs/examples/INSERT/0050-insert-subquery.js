@@ -5,7 +5,7 @@ export const insertSubquery = `const result = await db.insertInto('person')
     .select((eb) => [
       'pet.name',
       eb.val('Petson').as('last_name'),
-      eb.val(7).as('age'),
+      eb.lit(7).as('age'),
     ])
   )
   .execute()`

@@ -66,7 +66,6 @@ export abstract class QueryExecutorBase implements QueryExecutor {
   ): Promise<QueryResult<R>> {
     return await this.provideConnection(async (connection) => {
       const result = await connection.executeQuery(compiledQuery)
-
       const transformedResult = await this.#transformResult(result, queryId)
 
       // TODO: remove.

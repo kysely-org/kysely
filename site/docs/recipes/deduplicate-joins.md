@@ -35,7 +35,7 @@ But if both `withPetName` and `withPetSpecies` are `true`, we end up with two id
 joins which will cause an error in the database.
 
 To prevent the error from happening, you can install the
-[DeduplicateJoinsPlugin](https://kysely-org.github.io/kysely/classes/DeduplicateJoinsPlugin.html).
+[DeduplicateJoinsPlugin](https://kysely-org.github.io/kysely-apidoc/classes/DeduplicateJoinsPlugin.html).
 You can either install it globally by providing it in the configuration:
 
 ```ts
@@ -79,4 +79,4 @@ corner cases where the `DeduplicateJoinsPlugin` fails and we don't want it to af
 don't need this deduplication (most people).
 
 See [this recipe](/docs/recipes/conditional-selects)
-if you are wondering why we are using the `if` method.
+if you are wondering why we are using the `$if` method.

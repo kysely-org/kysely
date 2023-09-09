@@ -19,7 +19,7 @@ import { freeze } from '../util/object-utils.js'
 import { Expression } from '../expression/expression.js'
 import {
   ComparisonOperatorExpression,
-  parseFilter,
+  parseValueBinaryOperationOrExpression,
 } from '../parser/binary-operation-parser.js'
 import { QueryNode } from '../operation-node/query-node.js'
 import { ExpressionBuilder } from '../expression/expression-builder.js'
@@ -231,7 +231,7 @@ export class CreateIndexBuilder<C = never>
     ) => Expression<SqlBool>
   ): CreateIndexBuilder<C>
 
-  where(expression: Expression<any>): CreateIndexBuilder<C>
+  where(expression: Expression<SqlBool>): CreateIndexBuilder<C>
 
   where(...args: any[]): any {
     const transformer = new ImmediateValueTransformer()
@@ -240,7 +240,7 @@ export class CreateIndexBuilder<C = never>
       ...this.#props,
       node: QueryNode.cloneWithWhere(
         this.#props.node,
-        transformer.transformNode(parseFilter(args))
+        transformer.transformNode(parseValueBinaryOperationOrExpression(args))
       ),
     })
   }

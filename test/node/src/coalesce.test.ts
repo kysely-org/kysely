@@ -1,6 +1,5 @@
 import { sql } from '../../..'
 import {
-  DIALECTS,
   clearDatabase,
   destroyTest,
   initTest,
@@ -8,6 +7,7 @@ import {
   NOT_SUPPORTED,
   TestContext,
   testSql,
+  DIALECTS,
 } from './test-setup.js'
 
 for (const dialect of DIALECTS) {
@@ -69,6 +69,7 @@ for (const dialect of DIALECTS) {
             ],
             parameters: [1],
           },
+          mssql: NOT_SUPPORTED,
           sqlite: NOT_SUPPORTED,
         })
 
@@ -86,7 +87,11 @@ for (const dialect of DIALECTS) {
           coalesce('first_name', ctx.db.dynamic.ref('last_name')).as(
             'ColumnReference1'
           ),
-          coalesce('first_name', sql`${1}`).as('ColumnReference2'),
+          ...(dialect === 'postgres' ||
+          dialect === 'mysql' ||
+          dialect === 'sqlite'
+            ? [coalesce('first_name', sql`${1}`).as('ColumnReference2')]
+            : []),
           coalesce('first_name', max('last_name')).as('ColumnReference3'),
           coalesce(
             ctx.db.dynamic.ref('first_name'),
@@ -95,9 +100,15 @@ for (const dialect of DIALECTS) {
           coalesce(ctx.db.dynamic.ref('first_name'), 'last_name').as(
             'DynamicReference1'
           ),
-          coalesce(ctx.db.dynamic.ref('first_name'), sql`${2}`).as(
-            'DynamicReference2'
-          ),
+          ...(dialect === 'postgres' ||
+          dialect === 'mysql' ||
+          dialect === 'sqlite'
+            ? [
+                coalesce(ctx.db.dynamic.ref('first_name'), sql`${2}`).as(
+                  'DynamicReference2'
+                ),
+              ]
+            : []),
           coalesce(ctx.db.dynamic.ref('first_name'), max('last_name')).as(
             'DynamicReference3'
           ),
@@ -114,7 +125,11 @@ for (const dialect of DIALECTS) {
           coalesce(max('first_name'), ctx.db.dynamic.ref('last_name')).as(
             'AggregateFunction2'
           ),
-          coalesce(max('first_name'), sql`${8}`).as('AggregateFunction3'),
+          ...(dialect === 'postgres' ||
+          dialect === 'mysql' ||
+          dialect === 'sqlite'
+            ? [coalesce(max('first_name'), sql`${8}`).as('AggregateFunction3')]
+            : []),
         ])
         .groupBy(['first_name', 'last_name'])
 
@@ -166,6 +181,27 @@ for (const dialect of DIALECTS) {
             'group by `first_name`, `last_name`',
           ],
           parameters: [1, 2, 3, 4, 5, 6, 7, 8],
+        },
+        mssql: {
+          sql: [
+            'select',
+            'coalesce("first_name", "last_name") as "ColumnReference0",',
+            'coalesce("first_name", "last_name") as "ColumnReference1",',
+            'coalesce("first_name", max("last_name")) as "ColumnReference3",',
+            'coalesce("first_name", "last_name") as "DynamicReference0",',
+            'coalesce("first_name", "last_name") as "DynamicReference1",',
+            'coalesce("first_name", max("last_name")) as "DynamicReference3",',
+            'coalesce(@1, @2) as "RawBuilder0",',
+            'coalesce(@3, "last_name") as "RawBuilder1",',
+            'coalesce(@4, "last_name") as "RawBuilder2",',
+            'coalesce(@5, max("last_name")) as "RawBuilder3",',
+            'coalesce(max("first_name"), max("last_name")) as "AggregateFunction0",',
+            'coalesce(max("first_name"), "last_name") as "AggregateFunction1",',
+            'coalesce(max("first_name"), "last_name") as "AggregateFunction2"',
+            'from "person"',
+            'group by "first_name", "last_name"',
+          ],
+          parameters: [3, 4, 5, 6, 7],
         },
         sqlite: {
           sql: [
@@ -227,6 +263,15 @@ for (const dialect of DIALECTS) {
             "coalesce(`first_name`, `last_name`, max(`last_name`), '(N/A)') as `name`",
             'from `person`',
             'group by `first_name`, `last_name`',
+          ],
+          parameters: [],
+        },
+        mssql: {
+          sql: [
+            'select',
+            `coalesce("first_name", "last_name", max("last_name"), '(N/A)') as "name"`,
+            'from "person"',
+            'group by "first_name", "last_name"',
           ],
           parameters: [],
         },

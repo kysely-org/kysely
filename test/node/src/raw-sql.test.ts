@@ -1,7 +1,6 @@
 import { sql, CompiledQuery } from '../../../'
 
 import {
-  DIALECTS,
   clearDatabase,
   destroyTest,
   initTest,
@@ -10,6 +9,7 @@ import {
   testSql,
   NOT_SUPPORTED,
   expect,
+  DIALECTS,
 } from './test-setup.js'
 
 for (const dialect of DIALECTS) {
@@ -36,7 +36,7 @@ for (const dialect of DIALECTS) {
       const query = ctx.db
         .selectFrom('person')
         .selectAll()
-        .where(sql`first_name between ${'A'} and ${'B'}`)
+        .where(sql<boolean>`first_name between ${'A'} and ${'B'}`)
 
       testSql(query, dialect, {
         postgres: {
@@ -45,6 +45,10 @@ for (const dialect of DIALECTS) {
         },
         mysql: {
           sql: 'select * from `person` where first_name between ? and ?',
+          parameters: ['A', 'B'],
+        },
+        mssql: {
+          sql: 'select * from "person" where first_name between @1 and @2',
           parameters: ['A', 'B'],
         },
         sqlite: {
@@ -60,7 +64,9 @@ for (const dialect of DIALECTS) {
       const query = ctx.db
         .selectFrom('person')
         .selectAll()
-        .where(sql`first_name between ${sql.lit('A')} and ${sql.lit('B')}`)
+        .where(
+          sql<boolean>`first_name between ${sql.lit('A')} and ${sql.lit('B')}`
+        )
 
       testSql(query, dialect, {
         postgres: {
@@ -69,6 +75,10 @@ for (const dialect of DIALECTS) {
         },
         mysql: {
           sql: "select * from `person` where first_name between 'A' and 'B'",
+          parameters: [],
+        },
+        mssql: {
+          sql: `select * from "person" where first_name between 'A' and 'B'`,
           parameters: [],
         },
         sqlite: {
@@ -84,7 +94,7 @@ for (const dialect of DIALECTS) {
       const query = ctx.db
         .selectFrom('person')
         .selectAll()
-        .where(sql`${sql.id('first_name')} between ${'A'} and ${'B'}`)
+        .where(sql<boolean>`${sql.id('first_name')} between ${'A'} and ${'B'}`)
 
       testSql(query, dialect, {
         postgres: {
@@ -93,6 +103,10 @@ for (const dialect of DIALECTS) {
         },
         mysql: {
           sql: 'select * from `person` where `first_name` between ? and ?',
+          parameters: ['A', 'B'],
+        },
+        mssql: {
+          sql: 'select * from "person" where "first_name" between @1 and @2',
           parameters: ['A', 'B'],
         },
         sqlite: {
@@ -104,14 +118,14 @@ for (const dialect of DIALECTS) {
       await query.execute()
     })
 
-    if (dialect == 'postgres') {
+    if (dialect === 'postgres' || dialect === 'mssql') {
       it('sql.id should separate multiple arguments by dots', async () => {
         const query = ctx.db
           .selectFrom('person')
           .selectAll()
           .where(
-            sql`${sql.id(
-              'public',
+            sql<boolean>`${sql.id(
+              dialect === 'postgres' ? 'public' : 'dbo',
               'person',
               'first_name'
             )} between ${'A'} and ${'B'}`
@@ -123,6 +137,10 @@ for (const dialect of DIALECTS) {
             parameters: ['A', 'B'],
           },
           mysql: NOT_SUPPORTED,
+          mssql: {
+            sql: 'select * from "person" where "dbo"."person"."first_name" between @1 and @2',
+            parameters: ['A', 'B'],
+          },
           sqlite: NOT_SUPPORTED,
         })
 
@@ -134,7 +152,7 @@ for (const dialect of DIALECTS) {
       const query = ctx.db
         .selectFrom('person')
         .selectAll()
-        .where(sql`${sql.ref('first_name')} between ${'A'} and ${'B'}`)
+        .where(sql<boolean>`${sql.ref('first_name')} between ${'A'} and ${'B'}`)
 
       testSql(query, dialect, {
         postgres: {
@@ -143,6 +161,10 @@ for (const dialect of DIALECTS) {
         },
         mysql: {
           sql: 'select * from `person` where `first_name` between ? and ?',
+          parameters: ['A', 'B'],
+        },
+        mssql: {
+          sql: 'select * from "person" where "first_name" between @1 and @2',
           parameters: ['A', 'B'],
         },
         sqlite: {
@@ -154,14 +176,14 @@ for (const dialect of DIALECTS) {
       await query.execute()
     })
 
-    if (dialect === 'postgres') {
+    if (dialect === 'postgres' || dialect === 'mssql') {
       it('sql.ref should support schemas and table names', async () => {
         const query = ctx.db
           .selectFrom('person')
           .selectAll()
           .where(
-            sql`${sql.ref(
-              'public.person.first_name'
+            sql<boolean>`${sql.ref(
+              `${dialect === 'postgres' ? 'public' : 'dbo'}.person.first_name`
             )} between ${'A'} and ${'B'}`
           )
 
@@ -171,6 +193,10 @@ for (const dialect of DIALECTS) {
             parameters: ['A', 'B'],
           },
           mysql: NOT_SUPPORTED,
+          mssql: {
+            sql: 'select * from "person" where "dbo"."person"."first_name" between @1 and @2',
+            parameters: ['A', 'B'],
+          },
           sqlite: NOT_SUPPORTED,
         })
 
@@ -192,6 +218,10 @@ for (const dialect of DIALECTS) {
           sql: 'select * from `person` as `person`',
           parameters: [],
         },
+        mssql: {
+          sql: 'select * from "person" as "person"',
+          parameters: [],
+        },
         sqlite: {
           sql: 'select * from "person" as "person"',
           parameters: [],
@@ -201,10 +231,14 @@ for (const dialect of DIALECTS) {
       await query.execute()
     })
 
-    if (dialect === 'postgres') {
+    if (dialect === 'postgres' || dialect === 'mssql') {
       it('sql.table should support schemas', async () => {
         const query = ctx.db
-          .selectFrom(sql`${sql.table('public.person')}`.as('person'))
+          .selectFrom(
+            sql`${sql.table(
+              `${dialect === 'postgres' ? 'public' : 'dbo'}.person`
+            )}`.as('person')
+          )
           .selectAll()
 
         testSql(query, dialect, {
@@ -213,6 +247,10 @@ for (const dialect of DIALECTS) {
             parameters: [],
           },
           mysql: NOT_SUPPORTED,
+          mssql: {
+            sql: 'select * from "dbo"."person" as "person"',
+            parameters: [],
+          },
           sqlite: NOT_SUPPORTED,
         })
 
@@ -226,7 +264,7 @@ for (const dialect of DIALECTS) {
       const query = ctx.db
         .selectFrom('person')
         .selectAll()
-        .where(sql`first_name in (${sql.join(names)})`)
+        .where(sql<boolean>`first_name in (${sql.join(names)})`)
 
       testSql(query, dialect, {
         postgres: {
@@ -235,6 +273,10 @@ for (const dialect of DIALECTS) {
         },
         mysql: {
           sql: 'select * from `person` where first_name in (?, ?)',
+          parameters: names,
+        },
+        mssql: {
+          sql: 'select * from "person" where first_name in (@1, @2)',
           parameters: names,
         },
         sqlite: {
@@ -253,7 +295,9 @@ for (const dialect of DIALECTS) {
         const query = ctx.db
           .selectFrom('person')
           .selectAll()
-          .where(sql`first_name in (${sql.join(names, sql`::varchar,`)})`)
+          .where(
+            sql<boolean>`first_name in (${sql.join(names, sql`::varchar,`)})`
+          )
 
         testSql(query, dialect, {
           postgres: {
@@ -261,6 +305,7 @@ for (const dialect of DIALECTS) {
             parameters: names,
           },
           mysql: NOT_SUPPORTED,
+          mssql: NOT_SUPPORTED,
           sqlite: NOT_SUPPORTED,
         })
 

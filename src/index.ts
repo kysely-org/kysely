@@ -88,6 +88,13 @@ export * from './dialect/sqlite/sqlite-query-compiler.js'
 export * from './dialect/sqlite/sqlite-introspector.js'
 export * from './dialect/sqlite/sqlite-adapter.js'
 
+export * from './dialect/mssql/mssql-adapter.js'
+export * from './dialect/mssql/mssql-dialect-config.js'
+export * from './dialect/mssql/mssql-dialect.js'
+export * from './dialect/mssql/mssql-driver.js'
+export * from './dialect/mssql/mssql-introspector.js'
+export * from './dialect/mssql/mssql-query-compiler.js'
+
 export * from './query-compiler/default-query-compiler.js'
 export * from './query-compiler/query-compiler.js'
 
@@ -189,6 +196,7 @@ export * from './operation-node/json-reference-node.js'
 export * from './operation-node/json-path-leg-node.js'
 export * from './operation-node/json-path-node.js'
 export * from './operation-node/json-operator-chain-node.js'
+export * from './operation-node/tuple-node.js'
 
 export * from './util/column-type.js'
 export * from './util/compilable.js'
@@ -200,19 +208,21 @@ export {
   AnyAliasedColumnWithTable,
   AnyColumn,
   AnyColumnWithTable,
-  AnySelectQueryBuilder,
   Equals,
   UnknownRow,
   Simplify,
   SqlBool,
+  Nullable,
 } from './util/type-utils.js'
 export * from './util/infer-result.js'
 export { logOnce } from './util/log-once.js'
 
 export {
   SelectExpression,
+  SelectCallback,
   SelectArg,
   Selection,
+  CallbackSelection,
 } from './parser/select-parser.js'
 export {
   ReferenceExpression,
@@ -244,5 +254,10 @@ export {
   ComparisonOperatorExpression,
   OperandValueExpression,
   OperandValueExpressionOrList,
+  FilterObject,
 } from './parser/binary-operation-parser.js'
 export { ExistsExpression } from './parser/unary-operation-parser.js'
+export {
+  OperandExpression,
+  ExpressionOrFactory,
+} from './parser/expression-parser.js'

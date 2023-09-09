@@ -1,9 +1,8 @@
-import { ExpressionBuilder } from '../expression/expression-builder.js'
-import { Expression } from '../expression/expression.js'
 import {
   ComparisonOperatorExpression,
   OperandValueExpressionOrList,
 } from '../parser/binary-operation-parser.js'
+import { ExpressionOrFactory } from '../parser/expression-parser.js'
 import { ReferenceExpression } from '../parser/reference-parser.js'
 import { SqlBool } from '../util/type-utils.js'
 
@@ -18,8 +17,9 @@ export interface HavingInterface<DB, TB extends keyof DB> {
     rhs: OperandValueExpressionOrList<DB, TB, RE>
   ): HavingInterface<DB, TB>
 
-  having(factory: HavingExpressionFactory<DB, TB>): HavingInterface<DB, TB>
-  having(expression: Expression<any>): HavingInterface<DB, TB>
+  having(
+    expression: ExpressionOrFactory<DB, TB, SqlBool>
+  ): HavingInterface<DB, TB>
 
   /**
    * Just like {@link WhereInterface.whereRef | whereRef} but adds a `having` statement
@@ -31,7 +31,3 @@ export interface HavingInterface<DB, TB extends keyof DB> {
     rhs: ReferenceExpression<DB, TB>
   ): HavingInterface<DB, TB>
 }
-
-export type HavingExpressionFactory<DB, TB extends keyof DB> = (
-  eb: ExpressionBuilder<DB, TB>
-) => Expression<SqlBool>

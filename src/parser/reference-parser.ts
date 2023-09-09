@@ -8,14 +8,14 @@ import {
   AnyColumnWithTable,
   ExtractColumnType,
 } from '../util/type-utils.js'
-import { SelectQueryBuilder } from '../query-builder/select-query-builder.js'
+import { SelectQueryBuilderExpression } from '../query-builder/select-query-builder-expression.js'
 import {
   parseExpression,
   ExpressionOrFactory,
   isExpressionOrFactory,
 } from './expression-parser.js'
 import { DynamicReferenceBuilder } from '../dynamic/dynamic-reference-builder.js'
-import { SelectType } from '../util/column-type.js'
+import { SelectType, UpdateType } from '../util/column-type.js'
 import { IdentifierNode } from '../operation-node/identifier-node.js'
 import { OperationNode } from '../operation-node/operation-node.js'
 import { Expression } from '../expression/expression.js'
@@ -55,11 +55,18 @@ export type ExtractTypeFromReferenceExpression<
   TB extends keyof DB,
   RE,
   DV = unknown
+> = SelectType<ExtractRawTypeFromReferenceExpression<DB, TB, RE, DV>>
+
+export type ExtractRawTypeFromReferenceExpression<
+  DB,
+  TB extends keyof DB,
+  RE,
+  DV = unknown
 > = RE extends string
-  ? SelectType<ExtractTypeFromStringReference<DB, TB, RE>>
-  : RE extends SelectQueryBuilder<any, any, infer O>
+  ? ExtractTypeFromStringReference<DB, TB, RE>
+  : RE extends SelectQueryBuilderExpression<infer O>
   ? O[keyof O] | null
-  : RE extends (qb: any) => SelectQueryBuilder<any, any, infer O>
+  : RE extends (qb: any) => SelectQueryBuilderExpression<infer O>
   ? O[keyof O] | null
   : RE extends Expression<infer O>
   ? O
@@ -210,7 +217,7 @@ export function parseOrderedColumnName(column: string): OperationNode {
       )
     }
 
-    return parseOrderBy(columnName, order)
+    return parseOrderBy([columnName, order])[0]
   } else {
     return parseColumnName(column)
   }

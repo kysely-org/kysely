@@ -1,4 +1,8 @@
-import { AliasedExpression, Expression } from '../expression/expression.js'
+import {
+  AliasableExpression,
+  AliasedExpression,
+  Expression,
+} from '../expression/expression.js'
 import { AliasNode } from '../operation-node/alias-node.js'
 import { IdentifierNode } from '../operation-node/identifier-node.js'
 import { JSONOperatorChainNode } from '../operation-node/json-operator-chain-node.js'
@@ -151,6 +155,9 @@ export class JSONPathBuilder<S, O = S> {
       ? null | NonNullable<NonNullable<O>[K]>
       : null extends O
       ? null | NonNullable<NonNullable<O>[K]>
+      : // when the object has non-specific keys, e.g. Record<string, T>, should infer `T | null`!
+      string extends keyof NonNullable<O>
+      ? null | NonNullable<NonNullable<O>[K]>
       : NonNullable<O>[K]
   >(key: K): TraversedJSONPathBuilder<S, O2> {
     return this.#createBuilderWithPathLeg('Member', key)
@@ -179,7 +186,7 @@ export class JSONPathBuilder<S, O = S> {
 
 export class TraversedJSONPathBuilder<S, O>
   extends JSONPathBuilder<S, O>
-  implements Expression<O>
+  implements AliasableExpression<O>
 {
   readonly #node: JSONReferenceNode
 
@@ -203,7 +210,7 @@ export class TraversedJSONPathBuilder<S, O>
    * const result = await db
    *   .selectFrom('person')
    *   .select(eb =>
-   *     eb.cmpr('first_name', '=', 'Jennifer').as('is_jennifer')
+   *     eb('first_name', '=', 'Jennifer').as('is_jennifer')
    *   )
    *   .executeTakeFirstOrThrow()
    *

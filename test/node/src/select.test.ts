@@ -2,7 +2,6 @@ import { Kysely, PostgresDialect, sql } from '../../../'
 import { Pool } from 'pg'
 
 import {
-  DIALECTS,
   clearDatabase,
   destroyTest,
   initTest,
@@ -15,6 +14,8 @@ import {
   DIALECT_CONFIGS,
   Database,
   POOL_SIZE,
+  DIALECTS,
+  limit,
 } from './test-setup.js'
 
 for (const dialect of DIALECTS) {
@@ -77,6 +78,10 @@ for (const dialect of DIALECTS) {
           sql: 'select * from `person` where `first_name` = ?',
           parameters: ['Jennifer'],
         },
+        mssql: {
+          sql: 'select * from "person" where "first_name" = @1',
+          parameters: ['Jennifer'],
+        },
         sqlite: {
           sql: 'select * from "person" where "first_name" = ?',
           parameters: ['Jennifer'],
@@ -106,6 +111,10 @@ for (const dialect of DIALECTS) {
           sql: 'select `person`.* from `person` where `first_name` = ?',
           parameters: ['Jennifer'],
         },
+        mssql: {
+          sql: 'select "person".* from "person" where "first_name" = @1',
+          parameters: ['Jennifer'],
+        },
         sqlite: {
           sql: 'select "person".* from "person" where "first_name" = ?',
           parameters: ['Jennifer'],
@@ -120,7 +129,7 @@ for (const dialect of DIALECTS) {
       ])
     })
 
-    if (dialect === 'postgres') {
+    if (dialect === 'postgres' || dialect === 'mssql') {
       it('should select all columns of a table with a schema', async () => {
         const query = ctx.db
           .selectFrom('toy_schema.toy')
@@ -132,6 +141,10 @@ for (const dialect of DIALECTS) {
             parameters: [],
           },
           mysql: NOT_SUPPORTED,
+          mssql: {
+            sql: 'select "toy_schema"."toy".* from "toy_schema"."toy"',
+            parameters: [],
+          },
           sqlite: NOT_SUPPORTED,
         })
       })
@@ -150,6 +163,10 @@ for (const dialect of DIALECTS) {
         },
         mysql: {
           sql: 'select `last_name` from `person` where `first_name` = ?',
+          parameters: ['Jennifer'],
+        },
+        mssql: {
+          sql: 'select "last_name" from "person" where "first_name" = @1',
           parameters: ['Jennifer'],
         },
         sqlite: {
@@ -179,6 +196,10 @@ for (const dialect of DIALECTS) {
           sql: 'select `last_name` as `ln` from `person` where `first_name` = ?',
           parameters: ['Jennifer'],
         },
+        mssql: {
+          sql: 'select "last_name" as "ln" from "person" where "first_name" = @1',
+          parameters: ['Jennifer'],
+        },
         sqlite: {
           sql: 'select "last_name" as "ln" from "person" where "first_name" = ?',
           parameters: ['Jennifer'],
@@ -206,6 +227,10 @@ for (const dialect of DIALECTS) {
           sql: 'select `person`.`last_name` from `person` where `first_name` = ?',
           parameters: ['Jennifer'],
         },
+        mssql: {
+          sql: 'select "person"."last_name" from "person" where "first_name" = @1',
+          parameters: ['Jennifer'],
+        },
         sqlite: {
           sql: 'select "person"."last_name" from "person" where "first_name" = ?',
           parameters: ['Jennifer'],
@@ -231,6 +256,10 @@ for (const dialect of DIALECTS) {
         },
         mysql: {
           sql: 'select `person`.`last_name` as `ln` from `person` where `first_name` = ?',
+          parameters: ['Jennifer'],
+        },
+        mssql: {
+          sql: 'select "person"."last_name" as "ln" from "person" where "first_name" = @1',
           parameters: ['Jennifer'],
         },
         sqlite: {
@@ -266,6 +295,10 @@ for (const dialect of DIALECTS) {
           sql: 'select (select `name` from `pet` where `person`.`id` = `pet`.`owner_id`) as `pet_name` from `person` where `first_name` = ?',
           parameters: ['Jennifer'],
         },
+        mssql: {
+          sql: 'select (select "name" from "pet" where "person"."id" = "pet"."owner_id") as "pet_name" from "person" where "first_name" = @1',
+          parameters: ['Jennifer'],
+        },
         sqlite: {
           sql: 'select (select "name" from "pet" where "person"."id" = "pet"."owner_id") as "pet_name" from "person" where "first_name" = ?',
           parameters: ['Jennifer'],
@@ -289,16 +322,20 @@ for (const dialect of DIALECTS) {
 
       testSql(query, dialect, {
         postgres: {
-          sql: 'select count(case when "first_name" = $1 then $2 end) as "num_jennifers" from "person"',
-          parameters: ['Jennifer', 1],
+          sql: 'select count(case when "first_name" = $1 then 1 end) as "num_jennifers" from "person"',
+          parameters: ['Jennifer'],
         },
         mysql: {
-          sql: 'select count(case when `first_name` = ? then ? end) as `num_jennifers` from `person`',
-          parameters: ['Jennifer', 1],
+          sql: 'select count(case when `first_name` = ? then 1 end) as `num_jennifers` from `person`',
+          parameters: ['Jennifer'],
+        },
+        mssql: {
+          sql: 'select count(case when "first_name" = @1 then 1 end) as "num_jennifers" from "person"',
+          parameters: ['Jennifer'],
         },
         sqlite: {
-          sql: 'select count(case when "first_name" = ? then ? end) as "num_jennifers" from "person"',
-          parameters: ['Jennifer', 1],
+          sql: 'select count(case when "first_name" = ? then 1 end) as "num_jennifers" from "person"',
+          parameters: ['Jennifer'],
         },
       })
 
@@ -312,42 +349,52 @@ for (const dialect of DIALECTS) {
       }
     })
 
-    if (dialect === 'postgres') {
-      it('should select the count of jennifers using sum', async () => {
-        const query = ctx.db
-          .selectFrom('person')
-          .select((eb) =>
-            eb.fn
-              .sum(
-                eb
-                  .case()
-                  .when('first_name', '=', 'Jennifer')
-                  .then(sql.lit(1))
-                  .else(sql.lit(0))
-                  .end()
-              )
-              .as('num_jennifers')
-          )
+    it('should select the count of jennifers using sum', async () => {
+      const query = ctx.db
+        .selectFrom('person')
+        .select((eb) =>
+          eb.fn
+            .sum(
+              eb
+                .case()
+                .when('first_name', '=', 'Jennifer')
+                .then(sql.lit(1))
+                .else(sql.lit(0))
+                .end()
+            )
+            .as('num_jennifers')
+        )
 
-        testSql(query, dialect, {
-          postgres: {
-            sql: 'select sum(case when "first_name" = $1 then 1 else 0 end) as "num_jennifers" from "person"',
-            parameters: ['Jennifer'],
-          },
-          mysql: NOT_SUPPORTED,
-          sqlite: NOT_SUPPORTED,
-        })
-
-        const counts = await query.execute()
-
-        expect(counts).to.have.length(1)
-        expect(counts[0]).to.eql({ num_jennifers: '1' })
+      testSql(query, dialect, {
+        postgres: {
+          sql: 'select sum(case when "first_name" = $1 then 1 else 0 end) as "num_jennifers" from "person"',
+          parameters: ['Jennifer'],
+        },
+        mysql: {
+          sql: 'select sum(case when `first_name` = ? then 1 else 0 end) as `num_jennifers` from `person`',
+          parameters: ['Jennifer'],
+        },
+        mssql: {
+          sql: 'select sum(case when "first_name" = @1 then 1 else 0 end) as "num_jennifers" from "person"',
+          parameters: ['Jennifer'],
+        },
+        sqlite: {
+          sql: 'select sum(case when "first_name" = ? then 1 else 0 end) as "num_jennifers" from "person"',
+          parameters: ['Jennifer'],
+        },
       })
-    }
 
-    // Raw exrpessions are of course supported on all dialects, but we use an
-    // expression that's only valid on postgres.
-    if (dialect === 'postgres') {
+      const counts = await query.execute()
+
+      expect(counts).to.have.length(1)
+      expect(counts[0]).to.eql({
+        num_jennifers: dialect === 'postgres' || dialect === 'mysql' ? '1' : 1,
+      })
+    })
+
+    // Raw expressions are of course supported on all dialects, but we use an
+    // expression that's only valid on postgres or mssql.
+    if (dialect === 'postgres' || dialect === 'mssql') {
       it('should select one field using a raw expression', async () => {
         const query = ctx.db
           .selectFrom('person')
@@ -366,6 +413,10 @@ for (const dialect of DIALECTS) {
             parameters: ['Muriel', 'Jennifer'],
           },
           mysql: NOT_SUPPORTED,
+          mssql: {
+            sql: `select concat("first_name", ' ', cast(@1 as varchar), ' ', "last_name") as "full_name_with_middle_name" from "person" where "first_name" = @2`,
+            parameters: ['Muriel', 'Jennifer'],
+          },
           sqlite: NOT_SUPPORTED,
         })
 
@@ -380,7 +431,7 @@ for (const dialect of DIALECTS) {
 
     it('should select multiple fields', async () => {
       const fullName =
-        dialect === 'mysql'
+        dialect === 'mysql' || dialect === 'mssql'
           ? sql`concat(first_name, ' ', last_name)`
           : sql`first_name || ' ' || last_name`
 
@@ -408,6 +459,10 @@ for (const dialect of DIALECTS) {
         },
         mysql: {
           sql: "select `first_name`, `last_name` as `ln`, `person`.`gender`, `person`.`first_name` as `fn`, concat(first_name, ' ', last_name) as `full_name`, (select `name` from `pet` where `person`.`id` = `owner_id`) as `pet_name` from `person` where `first_name` = ?",
+          parameters: ['Jennifer'],
+        },
+        mssql: {
+          sql: `select "first_name", "last_name" as "ln", "person"."gender", "person"."first_name" as "fn", concat(first_name, ' ', last_name) as "full_name", (select "name" from "pet" where "person"."id" = "owner_id") as "pet_name" from "person" where "first_name" = @1`,
           parameters: ['Jennifer'],
         },
         sqlite: {
@@ -447,6 +502,10 @@ for (const dialect of DIALECTS) {
           sql: 'select `last_name`, `name` as `pet_name` from `person`, `pet` where `owner_id` = `person`.`id` and `first_name` = ?',
           parameters: ['Jennifer'],
         },
+        mssql: {
+          sql: 'select "last_name", "name" as "pet_name" from "person", "pet" where "owner_id" = "person"."id" and "first_name" = @1',
+          parameters: ['Jennifer'],
+        },
         sqlite: {
           sql: 'select "last_name", "name" as "pet_name" from "person", "pet" where "owner_id" = "person"."id" and "first_name" = ?',
           parameters: ['Jennifer'],
@@ -479,6 +538,10 @@ for (const dialect of DIALECTS) {
           sql: 'select `last_name`, `species` as `pet_species`, `one` from `person`, (select `owner_id`, `species` from `pet`) as `p`, (select 1 as one) as `o` where `p`.`owner_id` = `person`.`id` and `first_name` = ?',
           parameters: ['Jennifer'],
         },
+        mssql: {
+          sql: 'select "last_name", "species" as "pet_species", "one" from "person", (select "owner_id", "species" from "pet") as "p", (select 1 as one) as "o" where "p"."owner_id" = "person"."id" and "first_name" = @1',
+          parameters: ['Jennifer'],
+        },
         sqlite: {
           sql: 'select "last_name", "species" as "pet_species", "one" from "person", (select "owner_id", "species" from "pet") as "p", (select 1 as one) as "o" where "p"."owner_id" = "person"."id" and "first_name" = ?',
           parameters: ['Jennifer'],
@@ -503,6 +566,10 @@ for (const dialect of DIALECTS) {
         },
         mysql: {
           sql: 'select `first_name`, `pet`.`name` as `pet_name`, `toy`.`name` as `toy_name` from `person` inner join `pet` on `owner_id` = `person`.`id` inner join `toy` on `pet_id` = `pet`.`id` where `first_name` = ?',
+          parameters: ['Jennifer'],
+        },
+        mssql: {
+          sql: 'select "first_name", "pet"."name" as "pet_name", "toy"."name" as "toy_name" from "person" inner join "pet" on "owner_id" = "person"."id" inner join "toy" on "pet_id" = "pet"."id" where "first_name" = @1',
           parameters: ['Jennifer'],
         },
         sqlite: {
@@ -535,6 +602,10 @@ for (const dialect of DIALECTS) {
           sql: 'select distinct `gender` from `person` order by `gender`',
           parameters: [],
         },
+        mssql: {
+          sql: 'select distinct "gender" from "person" order by "gender"',
+          parameters: [],
+        },
         sqlite: {
           sql: 'select distinct "gender" from "person" order by "gender"',
           parameters: [],
@@ -547,7 +618,7 @@ for (const dialect of DIALECTS) {
       expect(persons).to.eql([{ gender: 'female' }, { gender: 'male' }])
     })
 
-    if (dialect !== 'sqlite') {
+    if (dialect === 'postgres' || dialect === 'mysql') {
       it('should select a row for update', async () => {
         const query = ctx.db
           .selectFrom('person')
@@ -564,6 +635,61 @@ for (const dialect of DIALECTS) {
             sql: 'select `last_name` from `person` where `first_name` = ? for update',
             parameters: ['Jennifer'],
           },
+          mssql: NOT_SUPPORTED,
+          sqlite: NOT_SUPPORTED,
+        })
+
+        const persons = await query.execute()
+
+        expect(persons).to.have.length(1)
+        expect(persons).to.eql([{ last_name: 'Aniston' }])
+      })
+
+      it('should select a row for update with skip locked', async () => {
+        const query = ctx.db
+          .selectFrom('person')
+          .select('last_name')
+          .where('first_name', '=', 'Jennifer')
+          .forUpdate()
+          .skipLocked()
+
+        testSql(query, dialect, {
+          postgres: {
+            sql: 'select "last_name" from "person" where "first_name" = $1 for update skip locked',
+            parameters: ['Jennifer'],
+          },
+          mysql: {
+            sql: 'select `last_name` from `person` where `first_name` = ? for update skip locked',
+            parameters: ['Jennifer'],
+          },
+          mssql: NOT_SUPPORTED,
+          sqlite: NOT_SUPPORTED,
+        })
+
+        const persons = await query.execute()
+
+        expect(persons).to.have.length(1)
+        expect(persons).to.eql([{ last_name: 'Aniston' }])
+      })
+
+      it('should select a row for update with skipLocked called before forUpdate', async () => {
+        const query = ctx.db
+          .selectFrom('person')
+          .select('last_name')
+          .where('first_name', '=', 'Jennifer')
+          .skipLocked()
+          .forUpdate()
+
+        testSql(query, dialect, {
+          postgres: {
+            sql: 'select "last_name" from "person" where "first_name" = $1 for update skip locked',
+            parameters: ['Jennifer'],
+          },
+          mysql: {
+            sql: 'select `last_name` from `person` where `first_name` = ? for update skip locked',
+            parameters: ['Jennifer'],
+          },
+          mssql: NOT_SUPPORTED,
           sqlite: NOT_SUPPORTED,
         })
 
@@ -589,6 +715,7 @@ for (const dialect of DIALECTS) {
             parameters: [],
           },
           mysql: NOT_SUPPORTED,
+          mssql: NOT_SUPPORTED,
           sqlite: NOT_SUPPORTED,
         })
 
@@ -601,7 +728,7 @@ for (const dialect of DIALECTS) {
         ])
       })
 
-      it('should select with distict on that uses a RawBuilder expression', async () => {
+      it('should select with distinct on that uses a RawBuilder expression', async () => {
         const query = ctx.db
           .selectFrom('person')
           .select(['first_name', 'last_name'])
@@ -613,6 +740,7 @@ for (const dialect of DIALECTS) {
             parameters: [],
           },
           mysql: NOT_SUPPORTED,
+          mssql: NOT_SUPPORTED,
           sqlite: NOT_SUPPORTED,
         })
 
@@ -646,6 +774,7 @@ for (const dialect of DIALECTS) {
               parameters: [],
             },
             mysql: NOT_SUPPORTED,
+            mssql: NOT_SUPPORTED,
             sqlite: NOT_SUPPORTED,
           })
 
@@ -671,6 +800,10 @@ for (const dialect of DIALECTS) {
         },
         mysql: {
           sql: 'select max(`person`.`first_name`) as `max_first_name`, min(`person`.`first_name`) as `min_first_name` from `person`',
+          parameters: [],
+        },
+        mssql: {
+          sql: 'select max("person"."first_name") as "max_first_name", min("person"."first_name") as "min_first_name" from "person"',
           parameters: [],
         },
         sqlite: {
@@ -702,6 +835,10 @@ for (const dialect of DIALECTS) {
           sql: 'select distinct `gender` from `person` order by `gender`',
           parameters: [],
         },
+        mssql: {
+          sql: 'select distinct "gender" from "person" order by "gender"',
+          parameters: [],
+        },
         sqlite: {
           sql: 'select distinct "gender" from "person" order by "gender"',
           parameters: [],
@@ -714,7 +851,7 @@ for (const dialect of DIALECTS) {
       expect(persons).to.eql([{ gender: 'female' }, { gender: 'male' }])
     })
 
-    if (dialect !== 'sqlite') {
+    if (dialect === 'postgres' || dialect === 'mysql') {
       it('modifyEnd should add arbitrary SQL to the end of the query', async () => {
         const query = ctx.db
           .selectFrom('person')
@@ -731,6 +868,7 @@ for (const dialect of DIALECTS) {
             sql: 'select `last_name` from `person` where `first_name` = ? for update',
             parameters: ['Jennifer'],
           },
+          mssql: NOT_SUPPORTED,
           sqlite: NOT_SUPPORTED,
         })
 
@@ -741,7 +879,7 @@ for (const dialect of DIALECTS) {
       })
     }
 
-    if (dialect === 'mysql' || dialect === 'postgres') {
+    if (dialect === 'postgres' || dialect === 'mysql' || dialect === 'mssql') {
       it('should stream results', async () => {
         const males: unknown[] = []
 
@@ -771,7 +909,7 @@ for (const dialect of DIALECTS) {
         ])
       })
 
-      if (dialect === 'postgres') {
+      if (dialect === 'postgres' || dialect === 'mssql') {
         it('should stream results with a specific chunk size', async () => {
           const males: unknown[] = []
 
@@ -848,38 +986,45 @@ for (const dialect of DIALECTS) {
       }
     }
 
-    it.skip('perf', async () => {
-      const ids = Array.from({ length: 100 }).map(() =>
-        Math.round(Math.random() * 1000)
-      )
+    it('should create a select statement without a `from` clause', async () => {
+      const query = ctx.db.selectNoFrom((eb) => [
+        eb.selectNoFrom(eb.lit(1).as('one')).as('one'),
+        eb
+          .selectFrom('person')
+          .select('first_name')
+          .orderBy('first_name')
+          .$call(limit(1, dialect))
+          .as('person_first_name'),
+      ])
 
-      function test() {
-        return ctx.db
-          .updateTable('person')
-          .set({
-            first_name: 'foo',
-            last_name: 'bar',
-            id: 100,
-            gender: 'other',
-          })
-          .where('id', 'in', ids)
-          .compile()
+      testSql(query, dialect, {
+        postgres: {
+          sql: `select (select 1 as "one") as "one", (select "first_name" from "person" order by "first_name" limit $1) as "person_first_name"`,
+          parameters: [1],
+        },
+        mysql: {
+          sql: 'select (select 1 as `one`) as `one`, (select `first_name` from `person` order by `first_name` limit ?) as `person_first_name`',
+          parameters: [1],
+        },
+        mssql: {
+          sql: `select (select 1 as "one") as "one", (select top 1 "first_name" from "person" order by "first_name") as "person_first_name"`,
+          parameters: [],
+        },
+        sqlite: {
+          sql: 'select (select 1 as "one") as "one", (select "first_name" from "person" order by "first_name" limit ?) as "person_first_name"',
+          parameters: [1],
+        },
+      })
+
+      const result = await query.execute()
+      expect(result).to.have.length(1)
+
+      if (dialect === 'mysql') {
+        // For some weird reason, MySQL returns `one` as a string.
+        expect(result[0]).to.eql({ one: '1', person_first_name: 'Arnold' })
+      } else {
+        expect(result[0]).to.eql({ one: 1, person_first_name: 'Arnold' })
       }
-
-      // Warmup
-      for (let i = 0; i < 1000; ++i) {
-        test()
-      }
-
-      const time = Date.now()
-      const N = 100000
-
-      for (let i = 0; i < N; ++i) {
-        test()
-      }
-
-      const endTime = Date.now()
-      console.log((endTime - time) / N)
     })
   })
 }

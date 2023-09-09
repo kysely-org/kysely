@@ -11,31 +11,36 @@ import {
   expressionBuilder,
   ExpressionBuilder,
 } from '../expression/expression-builder.js'
-import { SelectQueryBuilder } from '../query-builder/select-query-builder.js'
+import { SelectQueryBuilderExpression } from '../query-builder/select-query-builder-expression.js'
 import { isFunction } from '../util/object-utils.js'
-import { ShallowRecord } from '../util/type-utils.js'
 
-export type ExpressionOrFactory<DB, TB extends keyof DB, V> =
+/**
+ * Like `Expression<V>` but also accepts a select query with an output
+ * type extending `Record<string, V>`. This type is useful because SQL
+ * treats records with a single column as single values.
+ */
+export type OperandExpression<V> =
   // SQL treats a subquery with a single selection as a scalar. That's
   // why we need to explicitly allow `SelectQueryBuilder` here with a
-  // `ShallowRecord<string, V>` output type, even though `SelectQueryBuilder`
+  // `Record<string, V>` output type, even though `SelectQueryBuilder`
   // is also an `Expression`.
-  | SelectQueryBuilder<any, any, ShallowRecord<string, V>>
-  | SelectQueryBuilderFactory<DB, TB, ShallowRecord<string, V>>
-  | Expression<V>
-  | ExpressionFactory<DB, TB, V>
+  Expression<V> | SelectQueryBuilderExpression<Record<string, V>>
+
+export type ExpressionOrFactory<DB, TB extends keyof DB, V> =
+  | OperandExpression<V>
+  | OperandExpressionFactory<DB, TB, V>
 
 export type AliasedExpressionOrFactory<DB, TB extends keyof DB> =
   | AliasedExpression<any, any>
   | AliasedExpressionFactory<DB, TB>
 
-type SelectQueryBuilderFactory<DB, TB extends keyof DB, V> = (
-  eb: ExpressionBuilder<DB, TB>
-) => SelectQueryBuilder<any, any, V>
-
-type ExpressionFactory<DB, TB extends keyof DB, V> = (
+export type ExpressionFactory<DB, TB extends keyof DB, V> = (
   eb: ExpressionBuilder<DB, TB>
 ) => Expression<V>
+
+type OperandExpressionFactory<DB, TB extends keyof DB, V> = (
+  eb: ExpressionBuilder<DB, TB>
+) => OperandExpression<V>
 
 type AliasedExpressionFactory<DB, TB extends keyof DB> = (
   eb: ExpressionBuilder<DB, TB>

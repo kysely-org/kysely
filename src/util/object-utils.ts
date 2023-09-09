@@ -34,7 +34,7 @@ export function isDate(obj: unknown): obj is Date {
   return obj instanceof Date
 }
 
-export function isBigInt(obj: unknown): obj is BigInt {
+export function isBigInt(obj: unknown): obj is bigint {
   return typeof obj === 'bigint'
 }
 
@@ -56,6 +56,16 @@ export function isArrayBufferOrView(
   obj: unknown
 ): obj is ArrayBuffer | ArrayBufferView {
   return obj instanceof ArrayBuffer || ArrayBuffer.isView(obj)
+}
+
+export function isPlainObject(obj: unknown): obj is Record<string, unknown> {
+  return (
+    isObject(obj) &&
+    !Array.isArray(obj) &&
+    !isDate(obj) &&
+    !isBuffer(obj) &&
+    !isArrayBufferOrView(obj)
+  )
 }
 
 export function getLast<T>(arr: ArrayLike<T>): T | undefined {

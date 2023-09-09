@@ -1,14 +1,13 @@
-import { ExpressionBuilder } from '../expression/expression-builder.js'
-import { Expression } from '../expression/expression.js'
 import { JoinNode } from '../operation-node/join-node.js'
 import { OperationNodeSource } from '../operation-node/operation-node-source.js'
 import { RawNode } from '../operation-node/raw-node.js'
 import {
   ComparisonOperatorExpression,
   OperandValueExpressionOrList,
-  parseFilter,
-  parseReferentialComparison,
+  parseValueBinaryOperationOrExpression,
+  parseReferentialBinaryOperation,
 } from '../parser/binary-operation-parser.js'
+import { ExpressionOrFactory } from '../parser/expression-parser.js'
 import { ReferenceExpression } from '../parser/reference-parser.js'
 import { freeze } from '../util/object-utils.js'
 import { preventAwait } from '../util/prevent-await.js'
@@ -35,13 +34,15 @@ export class JoinBuilder<DB, TB extends keyof DB>
     rhs: OperandValueExpressionOrList<DB, TB, RE>
   ): JoinBuilder<DB, TB>
 
-  on(factory: OnExpressionFactory<DB, TB>): JoinBuilder<DB, TB>
-  on(expression: Expression<any>): JoinBuilder<DB, TB>
+  on(expression: ExpressionOrFactory<DB, TB, SqlBool>): JoinBuilder<DB, TB>
 
   on(...args: any[]): JoinBuilder<DB, TB> {
     return new JoinBuilder({
       ...this.#props,
-      joinNode: JoinNode.cloneWithOn(this.#props.joinNode, parseFilter(args)),
+      joinNode: JoinNode.cloneWithOn(
+        this.#props.joinNode,
+        parseValueBinaryOperationOrExpression(args)
+      ),
     })
   }
 
@@ -60,7 +61,7 @@ export class JoinBuilder<DB, TB extends keyof DB>
       ...this.#props,
       joinNode: JoinNode.cloneWithOn(
         this.#props.joinNode,
-        parseReferentialComparison(lhs, op, rhs)
+        parseReferentialBinaryOperation(lhs, op, rhs)
       ),
     })
   }
@@ -99,7 +100,3 @@ preventAwait(
 export interface JoinBuilderProps {
   readonly joinNode: JoinNode
 }
-
-type OnExpressionFactory<DB, TB extends keyof DB> = (
-  eb: ExpressionBuilder<DB, TB>
-) => Expression<SqlBool>

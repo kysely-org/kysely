@@ -1,7 +1,6 @@
 import { UpdateResult, sql } from '../../../'
 
 import {
-  DIALECTS,
   clearDatabase,
   destroyTest,
   initTest,
@@ -11,6 +10,8 @@ import {
   NOT_SUPPORTED,
   insertDefaultDataSet,
   DEFAULT_DATA_SET,
+  DIALECTS,
+  limit,
 } from './test-setup.js'
 
 for (const dialect of DIALECTS) {
@@ -48,6 +49,10 @@ for (const dialect of DIALECTS) {
           sql: 'update `person` set `first_name` = ?, `last_name` = ? where `gender` = ?',
           parameters: ['Foo', 'Barson', 'female'],
         },
+        mssql: {
+          sql: 'update "person" set "first_name" = @1, "last_name" = @2 where "gender" = @3',
+          parameters: ['Foo', 'Barson', 'female'],
+        },
         sqlite: {
           sql: 'update "person" set "first_name" = ?, "last_name" = ? where "gender" = ?',
           parameters: ['Foo', 'Barson', 'female'],
@@ -78,24 +83,30 @@ for (const dialect of DIALECTS) {
       ])
     })
 
-    it('should update one row with table alias', async () => {
+    it('should update one row using the (key, value) variant of `set` method', async () => {
       const query = ctx.db
-        .updateTable('person as p')
-        .set({ first_name: 'Foo', last_name: 'Barson' })
-        .where('p.gender', '=', 'female')
+        .updateTable('person')
+        .set('first_name', 'Foo')
+        .set((eb) => eb.ref('last_name'), 'Barson')
+        .set('gender', (eb) => eb.val('other' as const))
+        .where('gender', '=', 'female')
 
       testSql(query, dialect, {
         postgres: {
-          sql: 'update "person" as "p" set "first_name" = $1, "last_name" = $2 where "p"."gender" = $3',
-          parameters: ['Foo', 'Barson', 'female'],
+          sql: 'update "person" set "first_name" = $1, "last_name" = $2, "gender" = $3 where "gender" = $4',
+          parameters: ['Foo', 'Barson', 'other', 'female'],
         },
         mysql: {
-          sql: 'update `person` as `p` set `first_name` = ?, `last_name` = ? where `p`.`gender` = ?',
-          parameters: ['Foo', 'Barson', 'female'],
+          sql: 'update `person` set `first_name` = ?, `last_name` = ?, `gender` = ? where `gender` = ?',
+          parameters: ['Foo', 'Barson', 'other', 'female'],
+        },
+        mssql: {
+          sql: 'update "person" set "first_name" = @1, "last_name" = @2, "gender" = @3 where "gender" = @4',
+          parameters: ['Foo', 'Barson', 'other', 'female'],
         },
         sqlite: {
-          sql: 'update "person" as "p" set "first_name" = ?, "last_name" = ? where "p"."gender" = ?',
-          parameters: ['Foo', 'Barson', 'female'],
+          sql: 'update "person" set "first_name" = ?, "last_name" = ?, "gender" = ? where "gender" = ?',
+          parameters: ['Foo', 'Barson', 'other', 'female'],
         },
       })
 
@@ -118,10 +129,99 @@ for (const dialect of DIALECTS) {
           .execute()
       ).to.eql([
         { first_name: 'Arnold', last_name: 'Schwarzenegger', gender: 'male' },
-        { first_name: 'Foo', last_name: 'Barson', gender: 'female' },
+        { first_name: 'Foo', last_name: 'Barson', gender: 'other' },
         { first_name: 'Sylvester', last_name: 'Stallone', gender: 'male' },
       ])
     })
+
+    // mssql doesn't support table aliases in update clause, but it does support this
+    // with update alias set ... from table_name as alias
+    if (dialect === 'postgres' || dialect === 'mysql' || dialect === 'sqlite') {
+      it('should update one row with table alias', async () => {
+        const query = ctx.db
+          .updateTable('person as p')
+          .set({ first_name: 'Foo', last_name: 'Barson' })
+          .where('p.gender', '=', 'female')
+
+        testSql(query, dialect, {
+          postgres: {
+            sql: 'update "person" as "p" set "first_name" = $1, "last_name" = $2 where "p"."gender" = $3',
+            parameters: ['Foo', 'Barson', 'female'],
+          },
+          mysql: {
+            sql: 'update `person` as `p` set `first_name` = ?, `last_name` = ? where `p`.`gender` = ?',
+            parameters: ['Foo', 'Barson', 'female'],
+          },
+          mssql: NOT_SUPPORTED,
+          sqlite: {
+            sql: 'update "person" as "p" set "first_name" = ?, "last_name" = ? where "p"."gender" = ?',
+            parameters: ['Foo', 'Barson', 'female'],
+          },
+        })
+
+        const result = await query.executeTakeFirst()
+
+        expect(result).to.be.instanceOf(UpdateResult)
+        expect(result.numUpdatedRows).to.equal(1n)
+        if (dialect === 'mysql') {
+          expect(result.numChangedRows).to.equal(1n)
+        } else {
+          expect(result.numChangedRows).to.undefined
+        }
+
+        expect(
+          await ctx.db
+            .selectFrom('person')
+            .select(['first_name', 'last_name', 'gender'])
+            .orderBy('first_name')
+            .orderBy('last_name')
+            .execute()
+        ).to.eql([
+          { first_name: 'Arnold', last_name: 'Schwarzenegger', gender: 'male' },
+          { first_name: 'Foo', last_name: 'Barson', gender: 'female' },
+          { first_name: 'Sylvester', last_name: 'Stallone', gender: 'male' },
+        ])
+      })
+    }
+
+    if (dialect === 'mssql') {
+      it('should update one row with table alias in from clause', async () => {
+        const query = ctx.db
+          .updateTable('p' as 'person')
+          .set({ first_name: 'Foo', last_name: 'Barson' })
+          .from('person as p')
+          .where('p.gender', '=', 'female')
+
+        testSql(query, dialect, {
+          postgres: NOT_SUPPORTED,
+          mysql: NOT_SUPPORTED,
+          mssql: {
+            sql: 'update "p" set "first_name" = @1, "last_name" = @2 from "person" as "p" where "p"."gender" = @3',
+            parameters: ['Foo', 'Barson', 'female'],
+          },
+          sqlite: NOT_SUPPORTED,
+        })
+
+        const result = await query.executeTakeFirst()
+
+        expect(result).to.be.instanceOf(UpdateResult)
+        expect(result.numUpdatedRows).to.equal(1n)
+        expect(result.numChangedRows).to.undefined
+
+        expect(
+          await ctx.db
+            .selectFrom('person')
+            .select(['first_name', 'last_name', 'gender'])
+            .orderBy('first_name')
+            .orderBy('last_name')
+            .execute()
+        ).to.eql([
+          { first_name: 'Arnold', last_name: 'Schwarzenegger', gender: 'male' },
+          { first_name: 'Foo', last_name: 'Barson', gender: 'female' },
+          { first_name: 'Sylvester', last_name: 'Stallone', gender: 'male' },
+        ])
+      })
+    }
 
     it('should update one row using a subquery', async () => {
       const query = ctx.db
@@ -141,6 +241,10 @@ for (const dialect of DIALECTS) {
         },
         mysql: {
           sql: 'update `person` set `last_name` = (select `name` from `pet` where `person`.`id` = `owner_id`) where `first_name` = ?',
+          parameters: ['Jennifer'],
+        },
+        mssql: {
+          sql: 'update "person" set "last_name" = (select "name" from "pet" where "person"."id" = "owner_id") where "first_name" = @1',
           parameters: ['Jennifer'],
         },
         sqlite: {
@@ -173,7 +277,7 @@ for (const dialect of DIALECTS) {
         const query = ctx.db
           .updateTable('person')
           .set((eb) => ({
-            first_name: eb.bxp('first_name', `||`, '2'),
+            first_name: eb('first_name', '||', '2'),
           }))
           .where('first_name', '=', 'Jennifer')
 
@@ -183,6 +287,7 @@ for (const dialect of DIALECTS) {
             parameters: ['2', 'Jennifer'],
           },
           mysql: NOT_SUPPORTED,
+          mssql: NOT_SUPPORTED,
           sqlite: NOT_SUPPORTED,
         })
 
@@ -217,6 +322,10 @@ for (const dialect of DIALECTS) {
         },
         mysql: {
           sql: 'update `person` set `last_name` = `first_name` where `first_name` = ?',
+          parameters: ['Jennifer'],
+        },
+        mssql: {
+          sql: 'update "person" set "last_name" = "first_name" where "first_name" = @1',
           parameters: ['Jennifer'],
         },
         sqlite: {
@@ -257,6 +366,10 @@ for (const dialect of DIALECTS) {
         },
         mysql: {
           sql: 'update `person` set `first_name` = ?, `last_name` = ? where `gender` = ?',
+          parameters: ['Foo', 'Barson', 'female'],
+        },
+        mssql: {
+          sql: 'update "person" set "first_name" = @1, "last_name" = @2 where "gender" = @3',
           parameters: ['Foo', 'Barson', 'female'],
         },
         sqlite: {
@@ -301,6 +414,7 @@ for (const dialect of DIALECTS) {
             parameters: ['Barson', 'male'],
           },
           mysql: NOT_SUPPORTED,
+          mssql: NOT_SUPPORTED,
           sqlite: {
             sql: 'update "person" set "last_name" = ? where "gender" = ? returning "first_name", "last_name"',
             parameters: ['Barson', 'male'],
@@ -351,6 +465,7 @@ for (const dialect of DIALECTS) {
             parameters: ['Arnold'],
           },
           mysql: NOT_SUPPORTED,
+          mssql: NOT_SUPPORTED,
           sqlite: {
             sql: 'update "person" set "first_name" = "pet"."name" from "pet" where "pet"."owner_id" = "person"."id" and "person"."first_name" = ? returning "first_name"',
             parameters: ['Arnold'],
@@ -402,6 +517,127 @@ for (const dialect of DIALECTS) {
         expect(result).instanceOf(UpdateResult)
         expect(result.numUpdatedRows).to.equal(1n)
         expect(result.numChangedRows).to.equal(0n)
+      })
+    }
+
+    it('should create an update query that uses a CTE', async () => {
+      const query = ctx.db
+        .with('jennifer_id', (qb) =>
+          qb
+            .selectFrom('person')
+            .where('first_name', '=', 'Jennifer')
+            .$call(limit(1, dialect))
+            .select('id')
+        )
+        .updateTable('pet')
+        .set((eb) => ({
+          owner_id: eb.selectFrom('jennifer_id').select('id'),
+        }))
+
+      testSql(query, dialect, {
+        postgres: {
+          sql: 'with "jennifer_id" as (select "id" from "person" where "first_name" = $1 limit $2) update "pet" set "owner_id" = (select "id" from "jennifer_id")',
+          parameters: ['Jennifer', 1],
+        },
+        mysql: {
+          sql: 'with `jennifer_id` as (select `id` from `person` where `first_name` = ? limit ?) update `pet` set `owner_id` = (select `id` from `jennifer_id`)',
+          parameters: ['Jennifer', 1],
+        },
+        mssql: {
+          sql: 'with "jennifer_id" as (select top 1 "id" from "person" where "first_name" = @1) update "pet" set "owner_id" = (select "id" from "jennifer_id")',
+          parameters: ['Jennifer'],
+        },
+        sqlite: {
+          sql: 'with "jennifer_id" as (select "id" from "person" where "first_name" = ? limit ?) update "pet" set "owner_id" = (select "id" from "jennifer_id")',
+          parameters: ['Jennifer', 1],
+        },
+      })
+
+      await query.execute()
+
+      const jennifer = await ctx.db
+        .selectFrom('person')
+        .where('first_name', '=', 'Jennifer')
+        .select('id')
+        .executeTakeFirstOrThrow()
+
+      const pets = await ctx.db.selectFrom('pet').select('owner_id').execute()
+      expect(pets).to.have.length(3)
+
+      // All pets should now belong to jennifer.
+      for (const pet of pets) {
+        expect(pet.owner_id).to.equal(jennifer.id)
+      }
+    })
+
+    if (dialect === 'postgres') {
+      it('should update using a from clause and a join', async () => {
+        const query = ctx.db
+          .updateTable('pet as p')
+          .from('pet')
+          .whereRef('p.id', '=', 'pet.id')
+          .innerJoin('person', 'person.id', 'pet.owner_id')
+          .set((eb) => ({
+            name: eb.fn.coalesce('person.first_name', eb.val('')),
+          }))
+
+        testSql(query, dialect, {
+          postgres: {
+            sql: 'update "pet" as "p" set "name" = coalesce("person"."first_name", $1) from "pet" inner join "person" on "person"."id" = "pet"."owner_id" where "p"."id" = "pet"."id"',
+            parameters: [''],
+          },
+          mysql: NOT_SUPPORTED,
+          mssql: NOT_SUPPORTED,
+          sqlite: NOT_SUPPORTED,
+        })
+
+        await query.execute()
+
+        const pets = await ctx.db
+          .selectFrom('pet')
+          .innerJoin('person', 'person.id', 'pet.owner_id')
+          .select(['pet.name as pet_name', 'person.first_name as person_name'])
+          .execute()
+
+        expect(pets).to.have.length(3)
+        for (const pet of pets) {
+          expect(pet.person_name).to.equal(pet.pet_name)
+        }
+      })
+    }
+
+    if (dialect === 'mssql') {
+      it('should update using a from clause and a join', async () => {
+        const query = ctx.db
+          .updateTable('p' as 'pet')
+          .from('pet as p')
+          .innerJoin('person', 'person.id', 'p.owner_id')
+          .set((eb) => ({
+            name: eb.fn.coalesce('person.first_name', eb.val('')),
+          }))
+
+        testSql(query, dialect, {
+          postgres: NOT_SUPPORTED,
+          mysql: NOT_SUPPORTED,
+          mssql: {
+            sql: 'update "p" set "name" = coalesce("person"."first_name", @1) from "pet" as "p" inner join "person" on "person"."id" = "p"."owner_id"',
+            parameters: [''],
+          },
+          sqlite: NOT_SUPPORTED,
+        })
+
+        await query.execute()
+
+        const pets = await ctx.db
+          .selectFrom('pet')
+          .innerJoin('person', 'person.id', 'pet.owner_id')
+          .select(['pet.name as pet_name', 'person.first_name as person_name'])
+          .execute()
+
+        expect(pets).to.have.length(3)
+        for (const pet of pets) {
+          expect(pet.person_name).to.equal(pet.pet_name)
+        }
       })
     }
   })

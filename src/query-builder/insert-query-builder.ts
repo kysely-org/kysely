@@ -5,6 +5,7 @@ import {
   parseSelectAll,
   SelectExpression,
   SelectArg,
+  SelectCallback,
 } from '../parser/select-parser.js'
 import {
   InsertExpression,
@@ -20,8 +21,8 @@ import {
   SimplifySingleResult,
 } from '../util/type-utils.js'
 import {
-  UpdateExpression,
-  parseUpdateExpression,
+  UpdateObjectExpression,
+  parseUpdateObjectExpression,
 } from '../parser/update-set-parser.js'
 import { preventAwait } from '../util/prevent-await.js'
 import { Compilable } from '../util/compilable.js'
@@ -31,7 +32,10 @@ import { freeze } from '../util/object-utils.js'
 import { OnDuplicateKeyNode } from '../operation-node/on-duplicate-key-node.js'
 import { InsertResult } from './insert-result.js'
 import { KyselyPlugin } from '../plugin/kysely-plugin.js'
-import { ReturningRow } from '../parser/returning-parser.js'
+import {
+  ReturningCallbackRow,
+  ReturningRow,
+} from '../parser/returning-parser.js'
 import {
   isNoResultErrorConstructor,
   NoResultError,
@@ -107,13 +111,18 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    *   })
    *   .executeTakeFirst()
    *
+   * // `insertId` is only available on dialects that
+   * // automatically return the id of the inserted row
+   * // such as MySQL and SQLite. On PostgreSQL, for example,
+   * // you need to add a `returning` clause to the query to
+   * // get anything out. See the "returning data" example.
    * console.log(result.insertId)
    * ```
    *
-   * The generated SQL (PostgreSQL):
+   * The generated SQL (MySQL):
    *
    * ```sql
-   * insert into "person" ("first_name", "last_name", "age") values ($1, $2, $3)
+   * insert into `person` (`first_name`, `last_name`, `age`) values (?, ?, ?)
    * ```
    *
    * <!-- siteExample("insert", "Multiple rows", 20) -->
@@ -194,8 +203,18 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    * The generated SQL (PostgreSQL):
    *
    * ```sql
-   * insert into "person" ("first_name", "last_name", "age")
-   * values ($1, $2 || $3, (select avg("age") as "avg_age" from "person"))
+   * insert into "person" (
+   *   "first_name",
+   *   "last_name",
+   *   "middle_name",
+   *   "age"
+   * )
+   * values (
+   *   $1,
+   *   $2 || $3,
+   *   "first_name",
+   *   (select avg("age") as "avg_age" from "person")
+   * )
    * ```
    *
    * You can also use the callback version of subqueries or raw expressions:
@@ -281,7 +300,7 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    *     .select((eb) => [
    *       'pet.name',
    *       eb.val('Petson').as('last_name'),
-   *       eb.val(7).as('age'),
+   *       eb.lit(7).as('age'),
    *     ])
    *   )
    *   .execute()
@@ -291,7 +310,7 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    *
    * ```sql
    * insert into "person" ("first_name", "last_name", "age")
-   * select "pet"."name", $1 as "first_name", $2 as "last_name" from "pet"
+   * select "pet"."name", $1 as "last_name", 7 as "age from "pet"
    * ```
    */
   expression(
@@ -527,17 +546,29 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    * ```
    */
   onDuplicateKeyUpdate(
-    update: UpdateExpression<DB, TB, TB>
+    update: UpdateObjectExpression<DB, TB, TB>
   ): InsertQueryBuilder<DB, TB, O> {
     return new InsertQueryBuilder({
       ...this.#props,
       queryNode: InsertQueryNode.cloneWith(this.#props.queryNode, {
         onDuplicateKey: OnDuplicateKeyNode.create(
-          parseUpdateExpression(update)
+          parseUpdateObjectExpression(update)
         ),
       }),
     })
   }
+
+  returning<SE extends SelectExpression<DB, TB>>(
+    selections: ReadonlyArray<SE>
+  ): InsertQueryBuilder<DB, TB, ReturningRow<DB, TB, O, SE>>
+
+  returning<CB extends SelectCallback<DB, TB>>(
+    callback: CB
+  ): InsertQueryBuilder<DB, TB, ReturningCallbackRow<DB, TB, O, CB>>
+
+  returning<SE extends SelectExpression<DB, TB>>(
+    selection: SE
+  ): InsertQueryBuilder<DB, TB, ReturningRow<DB, TB, O, SE>>
 
   returning<SE extends SelectExpression<DB, TB>>(
     selection: SelectArg<DB, TB, SE>
@@ -625,7 +656,7 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    */
   $if<O2>(
     condition: boolean,
-    func: (qb: this) => InsertQueryBuilder<DB, TB, O2>
+    func: (qb: this) => InsertQueryBuilder<any, any, O2>
   ): O2 extends InsertResult
     ? InsertQueryBuilder<DB, TB, InsertResult>
     : O2 extends O & infer E

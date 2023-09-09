@@ -17,8 +17,13 @@ import {
   parseSelectAll,
   SelectExpression,
   SelectArg,
+  SelectCallback,
 } from '../parser/select-parser.js'
-import { ReturningAllRow, ReturningRow } from '../parser/returning-parser.js'
+import {
+  ReturningAllRow,
+  ReturningCallbackRow,
+  ReturningRow,
+} from '../parser/returning-parser.js'
 import { ReferenceExpression } from '../parser/reference-parser.js'
 import { QueryNode } from '../operation-node/query-node.js'
 import {
@@ -28,6 +33,7 @@ import {
   ShallowRecord,
   SimplifyResult,
   SimplifySingleResult,
+  SqlBool,
 } from '../util/type-utils.js'
 import { preventAwait } from '../util/prevent-await.js'
 import { Compilable } from '../util/compilable.js'
@@ -35,7 +41,7 @@ import { QueryExecutor } from '../query-executor/query-executor.js'
 import { QueryId } from '../util/query-id.js'
 import { freeze } from '../util/object-utils.js'
 import { KyselyPlugin } from '../plugin/kysely-plugin.js'
-import { WhereExpressionFactory, WhereInterface } from './where-interface.js'
+import { WhereInterface } from './where-interface.js'
 import { ReturningInterface } from './returning-interface.js'
 import {
   isNoResultErrorConstructor,
@@ -55,11 +61,12 @@ import { AliasedExpression, Expression } from '../expression/expression.js'
 import {
   ComparisonOperatorExpression,
   OperandValueExpressionOrList,
-  parseFilter,
-  parseReferentialComparison,
+  parseValueBinaryOperationOrExpression,
+  parseReferentialBinaryOperation,
 } from '../parser/binary-operation-parser.js'
 import { KyselyTypeError } from '../util/type-error.js'
 import { Streamable } from '../util/streamable.js'
+import { ExpressionOrFactory } from '../parser/expression-parser.js'
 
 export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
   implements
@@ -82,15 +89,16 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
     rhs: OperandValueExpressionOrList<DB, TB, RE>
   ): DeleteQueryBuilder<DB, TB, O>
 
-  where(factory: WhereExpressionFactory<DB, TB>): DeleteQueryBuilder<DB, TB, O>
-  where(expression: Expression<any>): DeleteQueryBuilder<DB, TB, O>
+  where(
+    expression: ExpressionOrFactory<DB, TB, SqlBool>
+  ): DeleteQueryBuilder<DB, TB, O>
 
   where(...args: any[]): any {
     return new DeleteQueryBuilder({
       ...this.#props,
       queryNode: QueryNode.cloneWithWhere(
         this.#props.queryNode,
-        parseFilter(args)
+        parseValueBinaryOperationOrExpression(args)
       ),
     })
   }
@@ -104,7 +112,7 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
       ...this.#props,
       queryNode: QueryNode.cloneWithWhere(
         this.#props.queryNode,
-        parseReferentialComparison(lhs, op, rhs)
+        parseReferentialBinaryOperation(lhs, op, rhs)
       ),
     })
   }
@@ -411,6 +419,18 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
   }
 
   returning<SE extends SelectExpression<DB, TB>>(
+    selections: ReadonlyArray<SE>
+  ): DeleteQueryBuilder<DB, TB, ReturningRow<DB, TB, O, SE>>
+
+  returning<CB extends SelectCallback<DB, TB>>(
+    callback: CB
+  ): DeleteQueryBuilder<DB, TB, ReturningCallbackRow<DB, TB, O, CB>>
+
+  returning<SE extends SelectExpression<DB, TB>>(
+    selection: SE
+  ): DeleteQueryBuilder<DB, TB, ReturningRow<DB, TB, O, SE>>
+
+  returning<SE extends SelectExpression<DB, TB>>(
     selection: SelectArg<DB, TB, SE>
   ): DeleteQueryBuilder<DB, TB, ReturningRow<DB, TB, O, SE>> {
     return new DeleteQueryBuilder({
@@ -574,9 +594,9 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
   ): DeleteQueryBuilder<DB, TB, O> {
     return new DeleteQueryBuilder({
       ...this.#props,
-      queryNode: DeleteQueryNode.cloneWithOrderByItem(
+      queryNode: DeleteQueryNode.cloneWithOrderByItems(
         this.#props.queryNode,
-        parseOrderBy(orderBy, direction)
+        parseOrderBy([orderBy, direction])
       ),
     })
   }
@@ -672,7 +692,7 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
    */
   $if<O2>(
     condition: boolean,
-    func: (qb: this) => DeleteQueryBuilder<DB, TB, O2>
+    func: (qb: this) => DeleteQueryBuilder<any, any, O2>
   ): O2 extends DeleteResult
     ? DeleteQueryBuilder<DB, TB, DeleteResult>
     : O2 extends O & infer E

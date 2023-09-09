@@ -21,6 +21,7 @@ export const COMPARISON_OPERATORS = [
   'not ilike',
   '@>',
   '<@',
+  '&&',
   '?',
   '?&',
   '!<',
@@ -35,6 +36,8 @@ export const COMPARISON_OPERATORS = [
   '!!',
   '<->',
   'regexp',
+  'is distinct from',
+  'is not distinct from',
 ] as const
 
 export const ARITHMETIC_OPERATORS = [
@@ -66,6 +69,8 @@ export const OPERATORS = [
   ...BINARY_OPERATORS,
   ...JSON_OPERATORS,
   ...UNARY_OPERATORS,
+  'between',
+  'between symmetric',
 ] as const
 
 export type ComparisonOperator = (typeof COMPARISON_OPERATORS)[number]

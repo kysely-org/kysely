@@ -8,15 +8,20 @@ import { ParensNode } from '../operation-node/parens-node.js'
 import {
   ComparisonOperatorExpression,
   OperandValueExpressionOrList,
-  parseFilter,
+  parseValueBinaryOperationOrExpression,
 } from '../parser/binary-operation-parser.js'
+import { OperandExpression } from '../parser/expression-parser.js'
 import { ReferenceExpression } from '../parser/reference-parser.js'
 import { KyselyTypeError } from '../util/type-error.js'
 import { SqlBool } from '../util/type-utils.js'
-import { AliasedExpression, Expression } from './expression.js'
+import {
+  AliasableExpression,
+  AliasedExpression,
+  Expression,
+} from './expression.js'
 
 export class ExpressionWrapper<DB, TB extends keyof DB, T>
-  implements Expression<T>
+  implements AliasableExpression<T>
 {
   readonly #node: OperationNode
 
@@ -131,13 +136,15 @@ export class ExpressionWrapper<DB, TB extends keyof DB, T>
     : KyselyTypeError<'or() method can only be called on boolean expressions'>
 
   or(
-    expression: Expression<SqlBool>
+    expression: OperandExpression<SqlBool>
   ): T extends SqlBool
     ? OrWrapper<DB, TB, SqlBool>
     : KyselyTypeError<'or() method can only be called on boolean expressions'>
 
   or(...args: any[]): any {
-    return new OrWrapper(OrNode.create(this.#node, parseFilter(args)))
+    return new OrWrapper(
+      OrNode.create(this.#node, parseValueBinaryOperationOrExpression(args))
+    )
   }
 
   /**
@@ -209,13 +216,15 @@ export class ExpressionWrapper<DB, TB extends keyof DB, T>
     : KyselyTypeError<'and() method can only be called on boolean expressions'>
 
   and(
-    expression: Expression<SqlBool>
+    expression: OperandExpression<SqlBool>
   ): T extends SqlBool
     ? AndWrapper<DB, TB, SqlBool>
     : KyselyTypeError<'and() method can only be called on boolean expressions'>
 
   and(...args: any[]): any {
-    return new AndWrapper(AndNode.create(this.#node, parseFilter(args)))
+    return new AndWrapper(
+      AndNode.create(this.#node, parseValueBinaryOperationOrExpression(args))
+    )
   }
 
   /**
@@ -265,7 +274,7 @@ export class AliasedExpressionWrapper<T, A extends string>
 }
 
 export class OrWrapper<DB, TB extends keyof DB, T extends SqlBool>
-  implements Expression<T>
+  implements AliasableExpression<T>
 {
   readonly #node: OrNode
 
@@ -324,10 +333,12 @@ export class OrWrapper<DB, TB extends keyof DB, T extends SqlBool>
     rhs: OperandValueExpressionOrList<DB, TB, RE>
   ): OrWrapper<DB, TB, T>
 
-  or(expression: Expression<SqlBool>): OrWrapper<DB, TB, T>
+  or(expression: OperandExpression<SqlBool>): OrWrapper<DB, TB, T>
 
   or(...args: any[]): any {
-    return new OrWrapper(OrNode.create(this.#node, parseFilter(args)))
+    return new OrWrapper(
+      OrNode.create(this.#node, parseValueBinaryOperationOrExpression(args))
+    )
   }
 
   /**
@@ -346,7 +357,7 @@ export class OrWrapper<DB, TB extends keyof DB, T extends SqlBool>
 }
 
 export class AndWrapper<DB, TB extends keyof DB, T extends SqlBool>
-  implements Expression<T>
+  implements AliasableExpression<T>
 {
   readonly #node: AndNode
 
@@ -405,10 +416,12 @@ export class AndWrapper<DB, TB extends keyof DB, T extends SqlBool>
     rhs: OperandValueExpressionOrList<DB, TB, RE>
   ): AndWrapper<DB, TB, T>
 
-  and(expression: Expression<SqlBool>): AndWrapper<DB, TB, T>
+  and(expression: OperandExpression<SqlBool>): AndWrapper<DB, TB, T>
 
   and(...args: any[]): any {
-    return new AndWrapper(AndNode.create(this.#node, parseFilter(args)))
+    return new AndWrapper(
+      AndNode.create(this.#node, parseValueBinaryOperationOrExpression(args))
+    )
   }
 
   /**

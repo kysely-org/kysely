@@ -17,8 +17,12 @@ import {
   parseSelectAll,
   SelectExpression,
   SelectArg,
+  SelectCallback,
 } from '../parser/select-parser.js'
-import { ReturningRow } from '../parser/returning-parser.js'
+import {
+  ReturningCallbackRow,
+  ReturningRow,
+} from '../parser/returning-parser.js'
 import { ReferenceExpression } from '../parser/reference-parser.js'
 import { QueryNode } from '../operation-node/query-node.js'
 import {
@@ -28,13 +32,15 @@ import {
   ShallowRecord,
   SimplifyResult,
   SimplifySingleResult,
+  SqlBool,
 } from '../util/type-utils.js'
 import { UpdateQueryNode } from '../operation-node/update-query-node.js'
 import {
-  parseUpdateExpression,
-  UpdateExpression,
+  UpdateObjectExpression,
   UpdateObject,
   UpdateObjectFactory,
+  ExtractUpdateTypeFromReferenceExpression,
+  parseUpdate,
 } from '../parser/update-set-parser.js'
 import { preventAwait } from '../util/prevent-await.js'
 import { Compilable } from '../util/compilable.js'
@@ -43,7 +49,7 @@ import { QueryId } from '../util/query-id.js'
 import { freeze } from '../util/object-utils.js'
 import { UpdateResult } from './update-result.js'
 import { KyselyPlugin } from '../plugin/kysely-plugin.js'
-import { WhereExpressionFactory, WhereInterface } from './where-interface.js'
+import { WhereInterface } from './where-interface.js'
 import { ReturningInterface } from './returning-interface.js'
 import {
   isNoResultErrorConstructor,
@@ -56,11 +62,13 @@ import { AliasedExpression, Expression } from '../expression/expression.js'
 import {
   ComparisonOperatorExpression,
   OperandValueExpressionOrList,
-  parseReferentialComparison,
-  parseFilter,
+  parseReferentialBinaryOperation,
+  parseValueBinaryOperationOrExpression,
 } from '../parser/binary-operation-parser.js'
 import { KyselyTypeError } from '../util/type-error.js'
 import { Streamable } from '../util/streamable.js'
+import { ExpressionOrFactory } from '../parser/expression-parser.js'
+import { ValueExpression } from '../parser/value-parser.js'
 
 export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
   implements
@@ -84,17 +92,15 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
   ): UpdateQueryBuilder<DB, UT, TB, O>
 
   where(
-    factory: WhereExpressionFactory<DB, TB>
+    expression: ExpressionOrFactory<DB, TB, SqlBool>
   ): UpdateQueryBuilder<DB, UT, TB, O>
-
-  where(expression: Expression<any>): UpdateQueryBuilder<DB, UT, TB, O>
 
   where(...args: any[]): any {
     return new UpdateQueryBuilder({
       ...this.#props,
       queryNode: QueryNode.cloneWithWhere(
         this.#props.queryNode,
-        parseFilter(args)
+        parseValueBinaryOperationOrExpression(args)
       ),
     })
   }
@@ -108,7 +114,7 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
       ...this.#props,
       queryNode: QueryNode.cloneWithWhere(
         this.#props.queryNode,
-        parseReferentialComparison(lhs, op, rhs)
+        parseReferentialBinaryOperation(lhs, op, rhs)
       ),
     })
   }
@@ -423,7 +429,52 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
    * update "person" set "first_name" = $1, "last_name" = $2 where "id" = $3
    * ```
    *
-   * On PostgreSQL you ca chain `returning` to the query to get
+   * <!-- siteExample("update", "Complex values", 20) -->
+   *
+   * As always, you can provide a callback to the `set` method to get access
+   * to an expression builder:
+   *
+   * ```ts
+   * const result = await db
+   *   .updateTable('person')
+   *   .set((eb) => ({
+   *     age: eb('age', '+', 1),
+   *     first_name: eb.selectFrom('pet').select('name').limit(1),
+   *     last_name: 'updated',
+   *   }))
+   *   .where('id', '=', '1')
+   *   .executeTakeFirst()
+   *
+   * console.log(result.numUpdatedRows)
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * update "person"
+   * set
+   *   "first_name" = (select "name" from "pet" limit $1),
+   *   "age" = "age" + $2,
+   *   "last_name" = $3
+   * where
+   *   "id" = $4
+   * ```
+   *
+   * If you provide two arguments the first one is interpreted as the column
+   * (or other target) and the second as the value:
+   *
+   * ```ts
+   * const result = await db
+   *   .updateTable('person')
+   *   .set('first_name', 'Foo')
+   *   // As always, both arguments can be arbitrary expressions or
+   *   // callbacks that give you access to an expression builder:
+   *   .set(sql`address['postalCode']`, (eb) => eb.val('61710))
+   *   .where('id', '=', '1')
+   *   .executeTakeFirst()
+   * ```
+   *
+   * On PostgreSQL you can chain `returning` to the query to get
    * the updated rows' columns (or any other expression) as the
    * return value:
    *
@@ -484,15 +535,40 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
     update: UpdateObjectFactory<DB, TB, UT>
   ): UpdateQueryBuilder<DB, UT, TB, O>
 
-  set(update: UpdateExpression<DB, TB, UT>): UpdateQueryBuilder<DB, UT, TB, O> {
+  set<RE extends ReferenceExpression<DB, UT>>(
+    key: RE,
+    value: ValueExpression<
+      DB,
+      TB,
+      ExtractUpdateTypeFromReferenceExpression<DB, UT, RE>
+    >
+  ): UpdateQueryBuilder<DB, UT, TB, O>
+
+  set(
+    ...args:
+      | [UpdateObjectExpression<DB, TB, UT>]
+      | [ReferenceExpression<DB, UT>, ValueExpression<DB, UT, unknown>]
+  ): UpdateQueryBuilder<DB, UT, TB, O> {
     return new UpdateQueryBuilder({
       ...this.#props,
       queryNode: UpdateQueryNode.cloneWithUpdates(
         this.#props.queryNode,
-        parseUpdateExpression(update)
+        parseUpdate(...args)
       ),
     })
   }
+
+  returning<SE extends SelectExpression<DB, TB>>(
+    selections: ReadonlyArray<SE>
+  ): UpdateQueryBuilder<DB, UT, TB, ReturningRow<DB, TB, O, SE>>
+
+  returning<CB extends SelectCallback<DB, TB>>(
+    callback: CB
+  ): UpdateQueryBuilder<DB, UT, TB, ReturningCallbackRow<DB, TB, O, CB>>
+
+  returning<SE extends SelectExpression<DB, TB>>(
+    selection: SE
+  ): UpdateQueryBuilder<DB, UT, TB, ReturningRow<DB, TB, O, SE>>
 
   returning<SE extends SelectExpression<DB, TB>>(
     selection: SelectArg<DB, TB, SE>
@@ -581,7 +657,7 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
    */
   $if<O2>(
     condition: boolean,
-    func: (qb: this) => UpdateQueryBuilder<DB, UT, TB, O2>
+    func: (qb: this) => UpdateQueryBuilder<any, any, any, O2>
   ): O2 extends UpdateResult
     ? UpdateQueryBuilder<DB, UT, TB, UpdateResult>
     : O2 extends O & infer E

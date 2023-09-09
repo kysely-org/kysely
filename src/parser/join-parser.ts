@@ -1,18 +1,26 @@
 import { JoinNode, JoinType } from '../operation-node/join-node.js'
-import { AnyColumn, AnyColumnWithTable } from '../util/type-utils.js'
+import {
+  AnyColumn,
+  AnyColumnWithTable,
+  DrainOuterGeneric,
+} from '../util/type-utils.js'
 import {
   TableExpression,
   parseTableExpression,
   From,
   FromTables,
 } from './table-parser.js'
-import { parseReferentialComparison } from './binary-operation-parser.js'
+import { parseReferentialBinaryOperation } from './binary-operation-parser.js'
 import { JoinBuilder } from '../query-builder/join-builder.js'
 import { createJoinBuilder } from './parse-utils.js'
 
-export type JoinReferenceExpression<DB, TB extends keyof DB, TE> =
-  | AnyJoinColumn<DB, TB, TE>
-  | AnyJoinColumnWithTable<DB, TB, TE>
+export type JoinReferenceExpression<
+  DB,
+  TB extends keyof DB,
+  TE
+> = DrainOuterGeneric<
+  AnyJoinColumn<DB, TB, TE> | AnyJoinColumnWithTable<DB, TB, TE>
+>
 
 export type JoinCallbackExpression<DB, TB extends keyof DB, TE> = (
   join: JoinBuilder<From<DB, TE>, FromTables<DB, TB, TE>>
@@ -43,8 +51,7 @@ function parseCallbackJoin(
   from: TableExpression<any, any>,
   callback: JoinCallbackExpression<any, any, any>
 ): JoinNode {
-  const joinBuilder = callback(createJoinBuilder(joinType, from))
-  return joinBuilder.toOperationNode()
+  return callback(createJoinBuilder(joinType, from)).toOperationNode()
 }
 
 function parseSingleOnJoin(
@@ -56,6 +63,6 @@ function parseSingleOnJoin(
   return JoinNode.createWithOn(
     joinType,
     parseTableExpression(from),
-    parseReferentialComparison(lhsColumn, '=', rhsColumn)
+    parseReferentialBinaryOperation(lhsColumn, '=', rhsColumn)
   )
 }

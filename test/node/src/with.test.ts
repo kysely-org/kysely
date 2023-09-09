@@ -1,7 +1,6 @@
 import { sql } from '../../../'
 
 import {
-  DIALECTS,
   clearDatabase,
   destroyTest,
   initTest,
@@ -10,6 +9,7 @@ import {
   expect,
   NOT_SUPPORTED,
   insertDefaultDataSet,
+  DIALECTS,
 } from './test-setup.js'
 
 for (const dialect of DIALECTS) {
@@ -63,6 +63,10 @@ for (const dialect of DIALECTS) {
           sql: 'with `jennifer_and_sylvester` as (select `id`, `first_name`, `gender` from `person` where (`first_name` = ? or `first_name` = ?)), `sylvester` as (select * from `jennifer_and_sylvester` where `gender` = ?) select * from `sylvester`',
           parameters: ['Jennifer', 'Sylvester', 'male'],
         },
+        mssql: {
+          sql: 'with "jennifer_and_sylvester" as (select "id", "first_name", "gender" from "person" where ("first_name" = @1 or "first_name" = @2)), "sylvester" as (select * from "jennifer_and_sylvester" where "gender" = @3) select * from "sylvester"',
+          parameters: ['Jennifer', 'Sylvester', 'male'],
+        },
         sqlite: {
           sql: 'with "jennifer_and_sylvester" as (select "id", "first_name", "gender" from "person" where ("first_name" = ? or "first_name" = ?)), "sylvester" as (select * from "jennifer_and_sylvester" where "gender" = ?) select * from "sylvester"',
           parameters: ['Jennifer', 'Sylvester', 'male'],
@@ -70,6 +74,7 @@ for (const dialect of DIALECTS) {
       })
 
       const result = await query.execute()
+
       expect(result).to.have.length(1)
       expect(Object.keys(result[0]).sort()).to.eql([
         'first_name',
@@ -100,6 +105,10 @@ for (const dialect of DIALECTS) {
         },
         mysql: {
           sql: 'with `arnold`(`id`, `first_name`) as (select `id`, `first_name` from `person` where `first_name` = ?) select * from `arnold`',
+          parameters: ['Arnold'],
+        },
+        mssql: {
+          sql: 'with "arnold"("id", "first_name") as (select "id", "first_name" from "person" where "first_name" = @1) select * from "arnold"',
           parameters: ['Arnold'],
         },
         sqlite: {
@@ -166,6 +175,7 @@ for (const dialect of DIALECTS) {
               parameters: ['node1'],
             },
             mysql: NOT_SUPPORTED,
+            mssql: NOT_SUPPORTED,
             sqlite: NOT_SUPPORTED,
           })
 
@@ -178,9 +188,65 @@ for (const dialect of DIALECTS) {
           ])
         })
       })
+
+      it('should create a CTE with `as materialized`', async () => {
+        const query = ctx.db
+          .with(
+            (cte) => cte('person_name').materialized(),
+            (qb) => qb.selectFrom('person').select('first_name')
+          )
+          .selectFrom('person_name')
+          .select('person_name.first_name')
+          .orderBy('first_name')
+
+        testSql(query, dialect, {
+          postgres: {
+            sql: 'with "person_name" as materialized (select "first_name" from "person") select "person_name"."first_name" from "person_name" order by "first_name"',
+            parameters: [],
+          },
+          mysql: NOT_SUPPORTED,
+          mssql: NOT_SUPPORTED,
+          sqlite: NOT_SUPPORTED,
+        })
+
+        const result = await query.execute()
+        expect(result).to.eql([
+          { first_name: 'Arnold' },
+          { first_name: 'Jennifer' },
+          { first_name: 'Sylvester' },
+        ])
+      })
+
+      it('should create a CTE with `as not materialized`', async () => {
+        const query = ctx.db
+          .with(
+            (cte) => cte('person_name').notMaterialized(),
+            (qb) => qb.selectFrom('person').select('first_name')
+          )
+          .selectFrom('person_name')
+          .select('person_name.first_name')
+          .orderBy('first_name')
+
+        testSql(query, dialect, {
+          postgres: {
+            sql: 'with "person_name" as not materialized (select "first_name" from "person") select "person_name"."first_name" from "person_name" order by "first_name"',
+            parameters: [],
+          },
+          mysql: NOT_SUPPORTED,
+          mssql: NOT_SUPPORTED,
+          sqlite: NOT_SUPPORTED,
+        })
+
+        const result = await query.execute()
+        expect(result).to.eql([
+          { first_name: 'Arnold' },
+          { first_name: 'Jennifer' },
+          { first_name: 'Sylvester' },
+        ])
+      })
     }
 
-    if (dialect !== 'mysql') {
+    if (dialect === 'postgres' || dialect === 'mssql' || dialect === 'sqlite') {
       it('should create an insert query with common table expressions', async () => {
         const query = ctx.db
           .with('jennifer', (db) =>
@@ -201,6 +267,10 @@ for (const dialect of DIALECTS) {
             sql: 'with "jennifer" as (select "id", "first_name", "gender" from "person" where "first_name" = $1) insert into "pet" ("owner_id", "name", "species") values ((select "id" from "jennifer"), $2, $3)',
             parameters: ['Jennifer', 'Catto 2', 'cat'],
           },
+          mssql: {
+            sql: 'with "jennifer" as (select "id", "first_name", "gender" from "person" where "first_name" = @1) insert into "pet" ("owner_id", "name", "species") values ((select "id" from "jennifer"), @2, @3)',
+            parameters: ['Jennifer', 'Catto 2', 'cat'],
+          },
           sqlite: {
             sql: 'with "jennifer" as (select "id", "first_name", "gender" from "person" where "first_name" = ?) insert into "pet" ("owner_id", "name", "species") values ((select "id" from "jennifer"), ?, ?)',
             parameters: ['Jennifer', 'Catto 2', 'cat'],
@@ -212,7 +282,7 @@ for (const dialect of DIALECTS) {
       })
     }
 
-    if (dialect !== 'mysql' && dialect !== 'sqlite') {
+    if (dialect === 'postgres') {
       it('should create a with query where CTEs are inserts updates and deletes', async () => {
         const query = ctx.db
           .with('deleted_arnold', (db) =>
@@ -255,6 +325,7 @@ for (const dialect of DIALECTS) {
               'Jennifer',
             ],
           },
+          mssql: NOT_SUPPORTED,
           sqlite: NOT_SUPPORTED,
           mysql: NOT_SUPPORTED,
         })

@@ -18,7 +18,7 @@ import { SetOperationNode } from './set-operation-node.js'
 
 export interface SelectQueryNode extends OperationNode {
   readonly kind: 'SelectQueryNode'
-  readonly from: FromNode
+  readonly from?: FromNode
   readonly selections?: ReadonlyArray<SelectionNode>
   readonly distinctOn?: ReadonlyArray<OperationNode>
   readonly joins?: ReadonlyArray<JoinNode>
@@ -43,7 +43,14 @@ export const SelectQueryNode = freeze({
     return node.kind === 'SelectQueryNode'
   },
 
-  create(
+  create(withNode?: WithNode): SelectQueryNode {
+    return freeze({
+      kind: 'SelectQueryNode',
+      ...(withNode && { with: withNode }),
+    })
+  },
+
+  createFrom(
     fromItems: ReadonlyArray<OperationNode>,
     withNode?: WithNode
   ): SelectQueryNode {
@@ -102,15 +109,15 @@ export const SelectQueryNode = freeze({
     })
   },
 
-  cloneWithOrderByItem(
+  cloneWithOrderByItems(
     selectNode: SelectQueryNode,
-    item: OrderByItemNode
+    items: ReadonlyArray<OrderByItemNode>
   ): SelectQueryNode {
     return freeze({
       ...selectNode,
       orderBy: selectNode.orderBy
-        ? OrderByNode.cloneWithItem(selectNode.orderBy, item)
-        : OrderByNode.create(item),
+        ? OrderByNode.cloneWithItems(selectNode.orderBy, items)
+        : OrderByNode.create(items),
     })
   },
 
@@ -158,15 +165,15 @@ export const SelectQueryNode = freeze({
     })
   },
 
-  cloneWithSetOperation(
+  cloneWithSetOperations(
     selectNode: SelectQueryNode,
-    setOperation: SetOperationNode
+    setOperations: ReadonlyArray<SetOperationNode>
   ): SelectQueryNode {
     return freeze({
       ...selectNode,
       setOperations: selectNode.setOperations
-        ? freeze([...selectNode.setOperations, setOperation])
-        : freeze([setOperation]),
+        ? freeze([...selectNode.setOperations, ...setOperations])
+        : freeze([...setOperations]),
     })
   },
 

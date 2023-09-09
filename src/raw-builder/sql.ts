@@ -6,7 +6,7 @@ import { parseStringReference } from '../parser/reference-parser.js'
 import { parseTable } from '../parser/table-parser.js'
 import { parseValueExpression } from '../parser/value-parser.js'
 import { createQueryId } from '../util/query-id.js'
-import { RawBuilder } from './raw-builder.js'
+import { RawBuilder, createRawBuilder } from './raw-builder.js'
 
 export interface Sql {
   /**
@@ -374,7 +374,7 @@ export const sql: Sql = Object.assign(
     sqlFragments: TemplateStringsArray,
     ...parameters: unknown[]
   ): RawBuilder<T> => {
-    return new RawBuilder({
+    return createRawBuilder({
       queryId: createQueryId(),
       rawNode: RawNode.create(
         sqlFragments,
@@ -384,14 +384,14 @@ export const sql: Sql = Object.assign(
   },
   {
     ref<R = unknown>(columnReference: string): RawBuilder<R> {
-      return new RawBuilder({
+      return createRawBuilder({
         queryId: createQueryId(),
         rawNode: RawNode.createWithChild(parseStringReference(columnReference)),
       })
     },
 
     val<V>(value: V): RawBuilder<V> {
-      return new RawBuilder({
+      return createRawBuilder({
         queryId: createQueryId(),
         rawNode: RawNode.createWithChild(parseValueExpression(value)),
       })
@@ -402,7 +402,7 @@ export const sql: Sql = Object.assign(
     },
 
     table(tableReference: string): RawBuilder<unknown> {
-      return new RawBuilder({
+      return createRawBuilder({
         queryId: createQueryId(),
         rawNode: RawNode.createWithChild(parseTable(tableReference)),
       })
@@ -414,14 +414,14 @@ export const sql: Sql = Object.assign(
       fragments[0] = ''
       fragments[fragments.length - 1] = ''
 
-      return new RawBuilder({
+      return createRawBuilder({
         queryId: createQueryId(),
         rawNode: RawNode.create(fragments, ids.map(IdentifierNode.create)),
       })
     },
 
     lit<V>(value: V): RawBuilder<V> {
-      return new RawBuilder({
+      return createRawBuilder({
         queryId: createQueryId(),
         rawNode: RawNode.createWithChild(ValueNode.createImmediate(value)),
       })
@@ -432,7 +432,7 @@ export const sql: Sql = Object.assign(
     },
 
     raw<R = unknown>(sql: string): RawBuilder<R> {
-      return new RawBuilder({
+      return createRawBuilder({
         queryId: createQueryId(),
         rawNode: RawNode.createWithSql(sql),
       })
@@ -453,7 +453,7 @@ export const sql: Sql = Object.assign(
         }
       }
 
-      return new RawBuilder({
+      return createRawBuilder({
         queryId: createQueryId(),
         rawNode: RawNode.createWithChildren(nodes),
       })

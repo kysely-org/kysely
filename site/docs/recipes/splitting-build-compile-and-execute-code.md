@@ -12,15 +12,25 @@ you can instantiate it with the built-in `DummyDriver` class:
 
 ```ts
 import { 
+  Generated,
   DummyDriver,
   Kysely,
   PostgresAdapter,
-  PostgresCompiler,
   PostgresIntrospector,
   PostgresQueryCompiler,
 } from 'kysely'
 
-const db = new Kysely({
+interface Person {
+  id: Generated<number>
+  first_name: string
+  last_name: string | null
+}
+
+interface Database {
+  person: Person
+}
+
+const db = new Kysely<Database>({
   dialect: {
     createAdapter: () => new PostgresAdapter(),
     createDriver: () => new DummyDriver(),
