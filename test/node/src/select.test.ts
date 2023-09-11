@@ -986,6 +986,35 @@ for (const dialect of DIALECTS) {
       }
     }
 
+    if (dialect !== 'mssql') {
+      it('should create a select query with limit and offset', async () => {
+        const query = ctx.db
+          .selectFrom('person')
+          .select('first_name')
+          .limit(2)
+          .offset(1)
+
+        testSql(query, dialect, {
+          postgres: {
+            sql: `select "first_name" from "person" limit $1 offset $2`,
+            parameters: [2, 1],
+          },
+          mysql: {
+            sql: 'select `first_name` from `person` limit ? offset ?',
+            parameters: [2, 1],
+          },
+          mssql: NOT_SUPPORTED,
+          sqlite: {
+            sql: 'select "first_name" from "person" limit ? offset ?',
+            parameters: [2, 1],
+          },
+        })
+
+        const result = await query.execute()
+        expect(result).to.have.length(2)
+      })
+    }
+
     it('should create a select statement without a `from` clause', async () => {
       const query = ctx.db.selectNoFrom((eb) => [
         eb.selectNoFrom(eb.lit(1).as('one')).as('one'),
