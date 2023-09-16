@@ -1,12 +1,9 @@
 import { Expression } from '../expression/expression.js'
-import { AliasNode } from '../operation-node/alias-node.js'
-import { ColumnNode } from '../operation-node/column-node.js'
-import { IdentifierNode } from '../operation-node/identifier-node.js'
-import { ReferenceNode } from '../operation-node/reference-node.js'
 import { SelectQueryNode } from '../operation-node/select-query-node.js'
-import { SelectQueryBuilder } from '../query-builder/select-query-builder.js'
+import { SelectQueryBuilderExpression } from '../query-builder/select-query-builder-expression.js'
 import { RawBuilder } from '../raw-builder/raw-builder.js'
 import { sql } from '../raw-builder/sql.js'
+import { getJsonObjectArgs } from '../util/json-object-args.js'
 import { Simplify } from '../util/type-utils.js'
 
 /**
@@ -56,10 +53,10 @@ import { Simplify } from '../util/type-utils.js'
  * ```
  */
 export function jsonArrayFrom<O>(
-  expr: SelectQueryBuilder<any, any, O>
+  expr: SelectQueryBuilderExpression<O>
 ): RawBuilder<Simplify<O>[]> {
   return sql`(select cast(coalesce(json_arrayagg(json_object(${sql.join(
-    getJsonObjectArgs(expr.toOperationNode(), 'agg')
+    getMysqlJsonObjectArgs(expr.toOperationNode(), 'agg')
   )})), '[]') as json) from ${expr} as agg)`
 }
 
@@ -112,10 +109,10 @@ export function jsonArrayFrom<O>(
  * ```
  */
 export function jsonObjectFrom<O>(
-  expr: SelectQueryBuilder<any, any, O>
+  expr: SelectQueryBuilderExpression<O>
 ): RawBuilder<Simplify<O> | null> {
   return sql`(select json_object(${sql.join(
-    getJsonObjectArgs(expr.toOperationNode(), 'obj')
+    getMysqlJsonObjectArgs(expr.toOperationNode(), 'obj')
   )}) from ${expr} as obj)`
 }
 
@@ -171,24 +168,15 @@ export function jsonBuildObject<O extends Record<string, Expression<unknown>>>(
   )})`
 }
 
-function getJsonObjectArgs(
+function getMysqlJsonObjectArgs(
   node: SelectQueryNode,
   table: string
-): RawBuilder<unknown>[] {
-  return node.selections!.flatMap(({ selection: s }) => {
-    if (ReferenceNode.is(s) && ColumnNode.is(s.column)) {
-      return [
-        sql.lit(s.column.column.name),
-        sql.id(table, s.column.column.name),
-      ]
-    } else if (ColumnNode.is(s)) {
-      return [sql.lit(s.column.name), sql.id(table, s.column.name)]
-    } else if (AliasNode.is(s) && IdentifierNode.is(s.alias)) {
-      return [sql.lit(s.alias.name), sql.id(table, s.alias.name)]
-    } else {
-      throw new Error(
-        'MySQL jsonArrayFrom and jsonObjectFrom functions can only handle explicit selections due to limitations of the json_object function. selectAll() is not allowed in the subquery.'
-      )
-    }
-  })
+): Expression<unknown>[] {
+  try {
+    return getJsonObjectArgs(node, table)
+  } catch {
+    throw new Error(
+      'MySQL jsonArrayFrom and jsonObjectFrom functions can only handle explicit selections due to limitations of the json_object function. selectAll() is not allowed in the subquery.'
+    )
+  }
 }

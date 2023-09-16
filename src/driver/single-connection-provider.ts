@@ -1,9 +1,11 @@
 import { DatabaseConnection } from './database-connection.js'
 import { ConnectionProvider } from './connection-provider.js'
 
+const ignoreError = () => {}
+
 export class SingleConnectionProvider implements ConnectionProvider {
   readonly #connection: DatabaseConnection
-  #runningPromise?: Promise<void>
+  #runningPromise?: Promise<any>
 
   constructor(connection: DatabaseConnection) {
     this.#connection = connection
@@ -13,20 +15,17 @@ export class SingleConnectionProvider implements ConnectionProvider {
     consumer: (connection: DatabaseConnection) => Promise<T>
   ): Promise<T> {
     while (this.#runningPromise) {
-      await this.#runningPromise
+      await this.#runningPromise.catch(ignoreError)
     }
 
-    const promise = this.#run(consumer)
+    // `#runningPromise` must be set to undefined before it's
+    // resolved or rejected. Otherwise the while loop above
+    // will misbehave.
+    this.#runningPromise = this.#run(consumer).finally(() => {
+      this.#runningPromise = undefined
+    })
 
-    this.#runningPromise = promise
-      .then(() => {
-        this.#runningPromise = undefined
-      })
-      .catch(() => {
-        this.#runningPromise = undefined
-      })
-
-    return promise
+    return this.#runningPromise
   }
 
   // Run the runner in an async function to make sure it doesn't

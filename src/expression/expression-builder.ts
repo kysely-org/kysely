@@ -12,6 +12,7 @@ import {
   ExtractTableAlias,
   AnyAliasedTable,
   PickTableWithAlias,
+  parseTable,
 } from '../parser/table-parser.js'
 import { WithSchemaPlugin } from '../plugin/with-schema/with-schema-plugin.js'
 import { createQueryId } from '../util/query-id.js'
@@ -52,7 +53,6 @@ import {
 import { SqlBool } from '../util/type-utils.js'
 import { parseUnaryOperation } from '../parser/unary-operation-parser.js'
 import {
-  ExtractTypeFromValueExpressionOrList,
   ExtractTypeFromValueExpression,
   parseSafeImmediateValue,
   parseValueExpression,
@@ -67,7 +67,9 @@ import { OperandExpression } from '../parser/expression-parser.js'
 import { BinaryOperationNode } from '../operation-node/binary-operation-node.js'
 import { AndNode } from '../operation-node/and-node.js'
 import {
+  CallbackSelection,
   SelectArg,
+  SelectCallback,
   SelectExpression,
   Selection,
   parseSelectArg,
@@ -83,6 +85,7 @@ import {
   ValTuple5,
 } from '../parser/tuple-parser.js'
 import { TupleNode } from '../operation-node/tuple-node.js'
+import { Selectable } from '../util/column-type.js'
 
 export interface ExpressionBuilder<DB, TB extends keyof DB> {
   /**
@@ -307,7 +310,15 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    * documentation for examples.
    */
   selectNoFrom<SE extends SelectExpression<DB, TB>>(
-    selection: SelectArg<DB, TB, SE>
+    selections: ReadonlyArray<SE>
+  ): SelectQueryBuilder<DB, TB, Selection<DB, TB, SE>>
+
+  selectNoFrom<CB extends SelectCallback<DB, TB>>(
+    callback: CB
+  ): SelectQueryBuilder<DB, TB, CallbackSelection<DB, TB, CB>>
+
+  selectNoFrom<SE extends SelectExpression<DB, TB>>(
+    selection: SE
   ): SelectQueryBuilder<DB, TB, Selection<DB, TB, SE>>
 
   /**
@@ -458,6 +469,33 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
     reference: RE,
     op: JSONOperatorWith$
   ): JSONPathBuilder<ExtractTypeFromReferenceExpression<DB, TB, RE>>
+
+  /**
+   * Creates a table reference.
+   *
+   * ```ts
+   * db.selectFrom('person')
+   *   .innerJoin('pet', 'pet.owner_id', 'person.id')
+   *   .select(eb => [
+   *     'person.id',
+   *     sql<Pet[]>`jsonb_agg(${eb.table('pet')})`.as('pets')
+   *   ])
+   *   .groupBy('person.id')
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * select "person"."id", jsonb_agg("pet") as "pets"
+   * from "person"
+   * inner join "pet" on "pet"."owner_id" = "person"."id"
+   * group by "person"."id"
+   * ```
+   */
+  table<T extends TB & string>(
+    table: T
+  ): ExpressionWrapper<DB, TB, Selectable<DB[T]>>
 
   /**
    * Returns a value expression.
@@ -871,6 +909,8 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
   /**
    * Combines two or more expressions using the logical `and` operator.
    *
+   * An empty array produces a `true` expression.
+   *
    * This function returns an {@link Expression} and can be used pretty much anywhere.
    * See the examples for a couple of possible use cases.
    *
@@ -932,6 +972,8 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
 
   /**
    * Combines two or more expressions using the logical `or` operator.
+   *
+   * An empty array produces a `false` expression.
    *
    * This function returns an {@link Expression} and can be used pretty much anywhere.
    * See the examples for a couple of possible use cases.
@@ -1133,10 +1175,16 @@ export function createExpressionBuilder<DB, TB extends keyof DB>(
       return new JSONPathBuilder(parseJSONReference(reference, op))
     },
 
+    table<T extends TB & string>(
+      table: T
+    ): ExpressionWrapper<DB, TB, Selectable<DB[T]>> {
+      return new ExpressionWrapper(parseTable(table))
+    },
+
     val<VE>(
       value: VE
     ): ExpressionWrapper<DB, TB, ExtractTypeFromValueExpression<VE>> {
-      return new ExpressionWrapper(parseValueExpressionOrList(value))
+      return new ExpressionWrapper(parseValueExpression(value))
     },
 
     refTuple(

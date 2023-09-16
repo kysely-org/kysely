@@ -56,7 +56,71 @@ export interface Expression<T> extends OperationNodeSource {
 }
 
 /**
- * Just like `Expression<T>` but also holds an alias type `A`.
+ * An expression with an `as` method.
+ */
+export interface AliasableExpression<T> extends Expression<T> {
+  /**
+   * Returns an aliased version of the expression.
+   *
+   * In addition to slapping `as "the_alias"` at the end of the expression,
+   * this method also provides strict typing:
+   *
+   * ```ts
+   * const result = await db
+   *   .selectFrom('person')
+   *   .select((eb) =>
+   *     // `eb.fn<string>` returns an AliasableExpression<string>
+   *     eb.fn<string>('concat', ['first_name' eb.val(' '), 'last_name']).as('full_name')
+   *   )
+   *   .executeTakeFirstOrThrow()
+   *
+   * // `full_name: string` field exists in the result type.
+   * console.log(result.full_name)
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```ts
+   * select
+   *   concat("first_name", $1, "last_name") as "full_name"
+   * from
+   *   "person"
+   * ```
+   *
+   * You can also pass in a raw SQL snippet (or any expression) but in that case you must
+   * provide the alias as the only type argument:
+   *
+   * ```ts
+   * const values = sql<{ a: number, b: string }>`(values (1, 'foo'))`
+   *
+   * // The alias is `t(a, b)` which specifies the column names
+   * // in addition to the table name. We must tell kysely that
+   * // columns of the table can be referenced through `t`
+   * // by providing an explicit type argument.
+   * const aliasedValues = values.as<'t'>(sql`t(a, b)`)
+   *
+   * await db
+   *   .insertInto('person')
+   *   .columns(['first_name', 'last_name'])
+   *   .expression(
+   *     db.selectFrom(aliasedValues).select(['t.a', 't.b'])
+   *   )
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```ts
+   * insert into "person" ("first_name", "last_name")
+   * from (values (1, 'foo')) as t(a, b)
+   * select "t"."a", "t"."b"
+   * ```
+   */
+  as<A extends string>(alias: A): AliasedExpression<T, A>
+  as<A extends string>(alias: Expression<any>): AliasedExpression<T, A>
+}
+
+/**
+ * A type that holds an expression and an alias for it.
  *
  * `AliasedExpression<T, A>` can be used in places where, in addition to the value type `T`, you
  * also need a name `A` for that value. For example anything you can pass into the `select` method

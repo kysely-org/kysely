@@ -7,17 +7,18 @@ Kysely IS a query builder. Kysely DOES build the SQL you tell it to, nothing mor
 
 Phew, glad we got that out the way..
 
-All that was said above doesn't mean there's no way to nest related rows in your queries.
-You just have to do it with the tools SQL and the underlying dialect (e.g. PostgreSQL, MySQL, or SQLite) provide.
-In this recipe we show one way to do that when using the built-in PostgreSQL, MySQL, and SQLite dialects.
+Having said all that, there are ways to nest related rows in your queries. You just have to do it 
+using the tools SQL and the underlying dialect (e.g. PostgreSQL, MySQL, or SQLite) provide. In this recipe
+we show one way to do that when using the built-in PostgreSQL, MySQL, and SQLite dialects.
 
 ## The `json` data type and functions
 
 PostgreSQL and MySQL have rich JSON support through their `json` data types and functions. `pg` and `mysql2`, the node drivers, automatically parse returned `json` columns as json objects. With the combination of these two things, we can write some super efficient queries with nested relations.
 
-The built in `SqliteDialect` and some 3rd party dialects don't parse the returned `json` columns to objects automatically.
-Not even if they use `PostgreSQL` or `MySQL` under the hood. The parsing is handled (or not handled) by the database driver
-that Kysely has no control over. In these cases you can use the built in `ParseJSONResultsPlugin`:
+:::info Parsing JSON
+The built in `SqliteDialect` and some 3rd party dialects don't parse the returned JSON columns to objects automatically.
+Not even if they use `PostgreSQL` or `MySQL` under the hood! Parsing is handled (or not handled) by the database driver
+that Kysely has no control over. If your JSON columns get returned as strings, you can use the `ParseJSONResultsPlugin`:
 
 ```ts
 const db = new Kysely<DB>({
@@ -25,6 +26,7 @@ const db = new Kysely<DB>({
   plugins: [new ParseJSONResultsPlugin()]
 })
 ```
+:::
 
 Let's start with some raw postgres SQL, and then see how we can write the query using Kysely in a nice type-safe way.
 
@@ -166,4 +168,15 @@ const persons = await db
 
 console.log(persons[0].pets[0].name)
 console.log(persons[0].mother.first_name)
+```
+
+If you need to select relations conditionally, `$if` is your friend:
+
+```ts
+const persons = await db
+  .selectFrom('person')
+  .selectAll('person')
+  .$if(includePets, (qb) => qb.select(withPets))
+  .$if(includeMom, (qb) => qb.select(withMom))
+  .execute()
 ```

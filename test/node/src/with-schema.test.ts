@@ -7,38 +7,38 @@ import {
   NOT_SUPPORTED,
   createTableWithId,
   DIALECTS,
+  insert,
+  limit,
 } from './test-setup.js'
 
-if (DIALECTS.includes('postgres')) {
-  const dialect = 'postgres' as const
-
+for (const dialect of DIALECTS.filter(
+  (dialect) => dialect === 'postgres' || dialect === 'mssql'
+)) {
   describe(`${dialect}: with schema`, () => {
     let ctx: TestContext
 
     before(async function () {
       ctx = await initTest(this, dialect)
-
       await dropTables()
       await createTables()
     })
 
     beforeEach(async () => {
-      const person = await ctx.db
-        .insertInto('person')
-        .values({
+      const personId = await insert(
+        ctx,
+        ctx.db.insertInto('person').values({
           first_name: 'Foo',
           last_name: 'Bar',
           gender: 'other',
         })
-        .returning('id')
-        .executeTakeFirst()
+      )
 
       await ctx.db
         .withSchema('mammals')
         .insertInto('pet')
         .values({
           name: 'Catto',
-          owner_id: person!.id,
+          owner_id: personId,
           species: 'cat',
         })
         .execute()
@@ -64,6 +64,10 @@ if (DIALECTS.includes('postgres')) {
             parameters: [],
           },
           mysql: NOT_SUPPORTED,
+          mssql: {
+            sql: 'select * from "mammals"."pet"',
+            parameters: [],
+          },
           sqlite: NOT_SUPPORTED,
         })
 
@@ -83,6 +87,10 @@ if (DIALECTS.includes('postgres')) {
             parameters: [],
           },
           mysql: NOT_SUPPORTED,
+          mssql: {
+            sql: 'select * from "mammals"."pet" as "p" left join "mammals"."pet" on "mammals"."pet"."id" = "p"."id"',
+            parameters: [],
+          },
           sqlite: NOT_SUPPORTED,
         })
 
@@ -102,6 +110,10 @@ if (DIALECTS.includes('postgres')) {
             parameters: [],
           },
           mysql: NOT_SUPPORTED,
+          mssql: {
+            sql: 'select * from "mammals"."pet" as "p1" left join "mammals"."pet" as "p2" on "p1"."id" = "p2"."id"',
+            parameters: [],
+          },
           sqlite: NOT_SUPPORTED,
         })
 
@@ -120,6 +132,10 @@ if (DIALECTS.includes('postgres')) {
             parameters: [],
           },
           mysql: NOT_SUPPORTED,
+          mssql: {
+            sql: 'select "p"."name" from "mammals"."pet" as "p"',
+            parameters: [],
+          },
           sqlite: NOT_SUPPORTED,
         })
 
@@ -150,6 +166,14 @@ if (DIALECTS.includes('postgres')) {
             parameters: [],
           },
           mysql: NOT_SUPPORTED,
+          mssql: {
+            sql: [
+              'select "mammals"."pet"."name",',
+              '(select "name" from "mammals"."pet" as "p" where "p"."id" = "mammals"."pet"."id") as "p_name"',
+              'from "mammals"."pet"',
+            ],
+            parameters: [],
+          },
           sqlite: NOT_SUPPORTED,
         })
 
@@ -164,7 +188,7 @@ if (DIALECTS.includes('postgres')) {
             'pet.name',
             (qb) =>
               qb
-                .withSchema('public')
+                .withSchema(dialect === 'postgres' ? 'public' : 'dbo')
                 .selectFrom('person')
                 .select('first_name')
                 .whereRef('pet.owner_id', '=', 'person.id')
@@ -181,6 +205,14 @@ if (DIALECTS.includes('postgres')) {
             parameters: [],
           },
           mysql: NOT_SUPPORTED,
+          mssql: {
+            sql: [
+              'select "mammals"."pet"."name",',
+              '(select "first_name" from "dbo"."person" where "mammals"."pet"."owner_id" = "dbo"."person"."id") as "owner_first_name"',
+              'from "mammals"."pet"',
+            ],
+            parameters: [],
+          },
           sqlite: NOT_SUPPORTED,
         })
 
@@ -193,7 +225,7 @@ if (DIALECTS.includes('postgres')) {
         const [anyPerson] = await ctx.db
           .selectFrom('person')
           .selectAll()
-          .limit(1)
+          .$call(limit(1, dialect))
           .execute()
 
         const query = ctx.db
@@ -204,7 +236,7 @@ if (DIALECTS.includes('postgres')) {
             species: 'dog',
             owner_id: anyPerson.id,
           })
-          .returning('pet.id')
+          .$call((qb) => (dialect === 'postgres' ? qb.returning('pet.id') : qb))
 
         testSql(query, dialect, {
           postgres: {
@@ -212,11 +244,14 @@ if (DIALECTS.includes('postgres')) {
             parameters: ['Doggo', 'dog', anyPerson.id],
           },
           mysql: NOT_SUPPORTED,
-          sqlite: {
-            sql: 'insert into "mammals"."pet" ("name", "species", "owner_id") values (?, ?, ?) returning "mammals"."pet"."id"',
+          mssql: {
+            sql: 'insert into "mammals"."pet" ("name", "species", "owner_id") values (@1, @2, @3)',
             parameters: ['Doggo', 'dog', anyPerson.id],
           },
+          sqlite: NOT_SUPPORTED,
         })
+
+        await query.execute()
       })
     })
 
@@ -233,6 +268,10 @@ if (DIALECTS.includes('postgres')) {
             parameters: ['Doggo'],
           },
           mysql: NOT_SUPPORTED,
+          mssql: {
+            sql: 'delete from "mammals"."pet" where "mammals"."pet"."name" = @1',
+            parameters: ['Doggo'],
+          },
           sqlite: NOT_SUPPORTED,
         })
 
@@ -254,6 +293,10 @@ if (DIALECTS.includes('postgres')) {
             parameters: ['cat', 'Doggo'],
           },
           mysql: NOT_SUPPORTED,
+          mssql: {
+            sql: 'update "mammals"."pet" set "species" = @1 where "mammals"."pet"."name" = @2',
+            parameters: ['cat', 'Doggo'],
+          },
           sqlite: NOT_SUPPORTED,
         })
 
@@ -277,6 +320,10 @@ if (DIALECTS.includes('postgres')) {
             parameters: ['Doggo'],
           },
           mysql: NOT_SUPPORTED,
+          mssql: {
+            sql: 'with "doggo" as (select * from "mammals"."pet" where "mammals"."pet"."name" = @1) select * from "doggo"',
+            parameters: ['Doggo'],
+          },
           sqlite: NOT_SUPPORTED,
         })
 
@@ -302,6 +349,10 @@ if (DIALECTS.includes('postgres')) {
             parameters: ['Doggo'],
           },
           mysql: NOT_SUPPORTED,
+          mssql: {
+            sql: 'with "doggo" as (select "mammals"."pet"."id" from "mammals"."pet" where "name" = @1) select "mammals"."pet"."id", (select "id" from "doggo") as "doggo_id", * from "mammals"."pet"',
+            parameters: ['Doggo'],
+          },
           sqlite: NOT_SUPPORTED,
         })
 
@@ -310,20 +361,34 @@ if (DIALECTS.includes('postgres')) {
     })
 
     describe('create table', () => {
+      afterEach(async () => {
+        await ctx.db.schema
+          .withSchema('mammals')
+          .dropTable('foo')
+          .ifExists()
+          .execute()
+      })
+
       it('should add schema for references', async () => {
         const query = ctx.db.schema
           .withSchema('mammals')
           .createTable('foo')
-          .addColumn('bar', 'integer', (col) => col.references('pets.id'))
+          .addColumn('bar', 'integer', (col) => col.references('pet.id'))
 
         testSql(query, dialect, {
           postgres: {
-            sql: 'create table "mammals"."foo" ("bar" integer references "mammals"."pets" ("id"))',
+            sql: 'create table "mammals"."foo" ("bar" integer references "mammals"."pet" ("id"))',
             parameters: [],
           },
           mysql: NOT_SUPPORTED,
+          mssql: {
+            sql: 'create table "mammals"."foo" ("bar" integer references "mammals"."pet" ("id"))',
+            parameters: [],
+          },
           sqlite: NOT_SUPPORTED,
         })
+
+        await query.execute()
       })
     })
 
@@ -349,48 +414,47 @@ if (DIALECTS.includes('postgres')) {
             parameters: [],
           },
           mysql: NOT_SUPPORTED,
-          sqlite: NOT_SUPPORTED,
-        })
-
-        await query.execute()
-      })
-    })
-
-    describe('drop index', () => {
-      beforeEach(async () => {
-        await ctx.db.schema
-          .withSchema('mammals')
-          .createIndex('pet_id_index')
-          .column('id')
-          .on('pet')
-          .execute()
-      })
-
-      afterEach(async () => {
-        await ctx.db.schema
-          .withSchema('mammals')
-          .dropIndex('pet_id_index')
-          .ifExists()
-          .execute()
-      })
-
-      it('should add schema for dropped index', async () => {
-        const query = ctx.db.schema
-          .withSchema('mammals')
-          .dropIndex('pet_id_index')
-
-        testSql(query, dialect, {
-          postgres: {
-            sql: 'drop index "mammals"."pet_id_index"',
+          mssql: {
+            sql: 'create index "pet_id_index" on "mammals"."pet" ("id")',
             parameters: [],
           },
-          mysql: NOT_SUPPORTED,
           sqlite: NOT_SUPPORTED,
         })
 
         await query.execute()
       })
     })
+
+    if (dialect === 'postgres') {
+      describe('drop index', () => {
+        beforeEach(async () => {
+          await ctx.db.schema
+            .withSchema('mammals')
+            .createIndex('pet_id_index')
+            .column('id')
+            .on('pet')
+            .execute()
+        })
+
+        it('should add schema for dropped index', async () => {
+          const query = ctx.db.schema
+            .withSchema('mammals')
+            .dropIndex('pet_id_index')
+
+          testSql(query, dialect, {
+            postgres: {
+              sql: 'drop index "mammals"."pet_id_index"',
+              parameters: [],
+            },
+            mysql: NOT_SUPPORTED,
+            mssql: NOT_SUPPORTED,
+            sqlite: NOT_SUPPORTED,
+          })
+
+          await query.execute()
+        })
+      })
+    }
 
     describe('create view', () => {
       afterEach(async () => {
@@ -405,14 +469,18 @@ if (DIALECTS.includes('postgres')) {
         const query = ctx.db.schema
           .withSchema('mammals')
           .createView('dogs')
-          .as(ctx.db.selectFrom('pet').where('species', '=', 'dog'))
+          .as(ctx.db.selectFrom('pet').where('species', '=', 'dog').selectAll())
 
         testSql(query, dialect, {
           postgres: {
-            sql: `create view "mammals"."dogs" as select from "mammals"."pet" where "species" = 'dog'`,
+            sql: `create view "mammals"."dogs" as select * from "mammals"."pet" where "species" = 'dog'`,
             parameters: [],
           },
           mysql: NOT_SUPPORTED,
+          mssql: {
+            sql: `create view "mammals"."dogs" as select * from "mammals"."pet" where "species" = 'dog'`,
+            parameters: [],
+          },
           sqlite: NOT_SUPPORTED,
         })
 
@@ -425,15 +493,7 @@ if (DIALECTS.includes('postgres')) {
         await ctx.db.schema
           .withSchema('mammals')
           .createView('dogs')
-          .as(ctx.db.selectFrom('pet').where('species', '=', 'dog'))
-          .execute()
-      })
-
-      afterEach(async () => {
-        await ctx.db.schema
-          .withSchema('mammals')
-          .dropView('dogs')
-          .ifExists()
+          .as(ctx.db.selectFrom('pet').where('species', '=', 'dog').selectAll())
           .execute()
       })
 
@@ -446,6 +506,10 @@ if (DIALECTS.includes('postgres')) {
             parameters: [],
           },
           mysql: NOT_SUPPORTED,
+          mssql: {
+            sql: `drop view "mammals"."dogs"`,
+            parameters: [],
+          },
           sqlite: NOT_SUPPORTED,
         })
 
@@ -454,7 +518,10 @@ if (DIALECTS.includes('postgres')) {
     })
 
     async function createTables(): Promise<void> {
-      await ctx.db.schema.createSchema('mammals').ifNotExists().execute()
+      await ctx.db.schema
+        .createSchema('mammals')
+        .$call((qb) => (dialect === 'postgres' ? qb.ifNotExists() : qb))
+        .execute()
 
       const table = createTableWithId(
         ctx.db.schema.withSchema('mammals'),
@@ -463,11 +530,15 @@ if (DIALECTS.includes('postgres')) {
       )
 
       await table
-        .addColumn('name', 'varchar', (col) => col.unique())
+        .addColumn('name', 'varchar(50)', (col) => col.unique())
         .addColumn('owner_id', 'integer', (col) =>
-          col.references('public.person.id').onDelete('cascade')
+          col
+            .references(
+              dialect === 'postgres' ? 'public.person.id' : 'dbo.person.id'
+            )
+            .onDelete('cascade')
         )
-        .addColumn('species', 'varchar')
+        .addColumn('species', 'varchar(50)')
         .execute()
     }
 

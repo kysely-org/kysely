@@ -2,16 +2,16 @@ import { expect } from 'chai'
 import { createSandbox, SinonSpy } from 'sinon'
 import { DefaultQueryExecutor, sql } from '../../../'
 import {
-  DIALECTS,
   clearDatabase,
   destroyTest,
   initTest,
   insertDefaultDataSet,
   NOT_SUPPORTED,
   TestContext,
+  DIALECTS,
 } from './test-setup.js'
 
-for (const dialect of DIALECTS) {
+for (const dialect of DIALECTS.filter((dialect) => dialect !== 'mssql')) {
   describe(`${dialect}: explain test`, () => {
     let ctx: TestContext
     const sandbox = createSandbox()
@@ -46,6 +46,7 @@ for (const dialect of DIALECTS) {
         {
           postgres: 'explain select * from "person" limit $1',
           mysql: 'explain select * from `person` limit ?',
+          mssql: NOT_SUPPORTED,
           sqlite: 'explain select * from "person" limit ?',
         }[dialect]
       )
@@ -59,6 +60,7 @@ for (const dialect of DIALECTS) {
         {
           postgres: 'explain insert into "person" ("gender") values ($1)',
           mysql: 'explain insert into `person` (`gender`) values (?)',
+          mssql: NOT_SUPPORTED,
           sqlite: 'explain insert into "person" ("gender") values (?)',
         }[dialect]
       )
@@ -76,6 +78,7 @@ for (const dialect of DIALECTS) {
         {
           postgres: 'explain update "person" set "gender" = $1 where "id" = $2',
           mysql: 'explain update `person` set `gender` = ? where `id` = ?',
+          mssql: NOT_SUPPORTED,
           sqlite: 'explain update "person" set "gender" = ? where "id" = ?',
         }[dialect]
       )
@@ -89,6 +92,7 @@ for (const dialect of DIALECTS) {
         {
           postgres: 'explain delete from "person" where "id" = $1',
           mysql: 'explain delete from `person` where `id` = ?',
+          mssql: NOT_SUPPORTED,
           sqlite: 'explain delete from "person" where "id" = ?',
         }[dialect]
       )
@@ -122,6 +126,7 @@ for (const dialect of DIALECTS) {
             postgres:
               'explain (analyze, format json) select * from "person" where "id" = $1',
             mysql: NOT_SUPPORTED,
+            mssql: NOT_SUPPORTED,
             sqlite: NOT_SUPPORTED,
           }[dialect]
         )
@@ -142,6 +147,7 @@ for (const dialect of DIALECTS) {
             postgres: NOT_SUPPORTED,
             mysql:
               'explain analyze format=tree select * from `person` where `id` = ?',
+            mssql: NOT_SUPPORTED,
             sqlite: NOT_SUPPORTED,
           }[dialect]
         )
