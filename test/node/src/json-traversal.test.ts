@@ -39,7 +39,7 @@ for (const dialect of DIALECTS.filter((dialect) => dialect !== 'mssql')) {
       await destroyJSONTest(ctx)
     })
 
-    if (dialect !== 'postgres') {
+    if (dialect === 'mysql' || dialect === 'sqlite') {
       describe('JSON Path syntax ($)', () => {
         const jsonOperator = dialect === 'mysql' ? '->$' : '->>$'
 
@@ -362,6 +362,7 @@ for (const dialect of DIALECTS.filter((dialect) => dialect !== 'mssql')) {
               parameters: [],
               sql: "select * from `person_metadata` order by `profile`->'$.auth.login_count' desc",
             },
+            mssql: NOT_SUPPORTED,
             sqlite: {
               parameters: [],
               sql: `select * from "person_metadata" order by "profile"->>'$.auth.login_count' desc`,
@@ -378,7 +379,7 @@ for (const dialect of DIALECTS.filter((dialect) => dialect !== 'mssql')) {
       })
     }
 
-    if (dialect !== 'mysql') {
+    if (dialect === 'postgres' || dialect === 'sqlite') {
       describe('PostgreSQL-style syntax (->->->>)', () => {
         const jsonOperator = dialect === 'postgres' ? '->' : '->>'
 
@@ -671,6 +672,7 @@ for (const dialect of DIALECTS.filter((dialect) => dialect !== 'mssql')) {
               sql: `select * from "person_metadata" order by "profile"->'auth'->'login_count' desc`,
             },
             mysql: NOT_SUPPORTED,
+            mssql: NOT_SUPPORTED,
             sqlite: {
               parameters: [],
               sql: `select * from "person_metadata" order by "profile"->'auth'->>'login_count' desc`,
