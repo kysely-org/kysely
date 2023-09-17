@@ -3,6 +3,9 @@ import { DeleteResult } from '../query-builder/delete-result.js'
 import { UpdateResult } from '../query-builder/update-result.js'
 import { KyselyTypeError } from './type-error.js'
 
+export type TableNames = object
+export type TableNameSet<T extends keyof any> = { [K in T]: unknown }
+
 /**
  * Given a database type and a union of table names in that db, returns
  * a union type with all possible column names.
@@ -34,27 +37,25 @@ import { KyselyTypeError } from './type-error.js'
  * // Columns == 'id' | 'name' | 'species'
  * ```
  */
-export type AnyColumn<DB, TB extends keyof DB> =
-  // Inline version of DrainOuterGeneric for performance reasons.
-  // Don't replace with DrainOuterGeneric!
-  [DB] extends [unknown]
-    ? {
-        [T in TB]: keyof DB[T]
-      }[TB] &
-        string
-    : never
+export type AnyColumn<DB extends TB, TB extends TableNames> = DrainOuterGeneric<
+  {
+    [T in keyof TB]: keyof DB[T]
+  }[keyof TB] &
+    string
+>
 
 /**
  * Extracts a column type.
  */
-export type ExtractColumnType<DB, TB extends keyof DB, C> =
-  // Inline version of DrainOuterGeneric for performance reasons.
-  // Don't replace with DrainOuterGeneric!
-  [DB] extends [unknown]
-    ? {
-        [T in TB]: C extends keyof DB[T] ? DB[T][C] : never
-      }[TB]
-    : never
+export type ExtractColumnType<
+  DB extends TB,
+  TB extends TableNames,
+  C
+> = DrainOuterGeneric<
+  {
+    [T in keyof TB]: C extends keyof DB[T] ? DB[T][C] : never
+  }[keyof TB]
+>
 
 /**
  * Given a database type and a union of table names in that db, returns
@@ -82,48 +83,54 @@ export type ExtractColumnType<DB, TB extends keyof DB, C> =
  *   movie: Movie
  * }
  *
- * type Columns = AnyColumnWithTable<Database, 'person' | 'pet'>
+ * type Columns = AnyColumnWithTable<Database, TableNameSet<'person' | 'pet'>>
  *
  * // Columns == 'person.id' | 'pet.name' | 'pet.species'
  * ```
  */
-export type AnyColumnWithTable<DB, TB extends keyof DB> = DrainOuterGeneric<
+export type AnyColumnWithTable<
+  DB extends TB,
+  TB extends TableNames
+> = DrainOuterGeneric<
   {
-    [T in TB]: T extends string
+    [T in keyof TB]: T extends string
       ? keyof DB[T] extends string
         ? `${T}.${keyof DB[T]}`
         : never
       : never
-  }[TB]
+  }[keyof TB]
 >
 
 /**
  * Just like {@link AnyColumn} but with a ` as <string>` suffix.
  */
-export type AnyAliasedColumn<DB, TB extends keyof DB> = DrainOuterGeneric<
+export type AnyAliasedColumn<
+  DB extends TB,
+  TB extends TableNames
+> = DrainOuterGeneric<
   {
-    [T in TB]: T extends string
+    [T in keyof TB]: T extends string
       ? keyof DB[T] extends string
         ? `${keyof DB[T]} as ${string}`
         : never
       : never
-  }[TB]
+  }[keyof TB]
 >
 
 /**
  * Just like {@link AnyColumnWithTable} but with a ` as <string>` suffix.
  */
 export type AnyAliasedColumnWithTable<
-  DB,
-  TB extends keyof DB
+  DB extends TB,
+  TB extends TableNames
 > = DrainOuterGeneric<
   {
-    [T in TB]: T extends string
+    [T in keyof TB]: T extends string
       ? keyof DB[T] extends string
         ? `${T}.${keyof DB[T]} as ${string}`
         : never
       : never
-  }[TB]
+  }[keyof TB]
 >
 
 /**

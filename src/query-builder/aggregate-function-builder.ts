@@ -17,11 +17,14 @@ import {
   parseReferentialBinaryOperation,
   parseValueBinaryOperationOrExpression,
 } from '../parser/binary-operation-parser.js'
-import { SqlBool } from '../util/type-utils.js'
+import { SqlBool, TableNames } from '../util/type-utils.js'
 import { ExpressionOrFactory } from '../parser/expression-parser.js'
 
-export class AggregateFunctionBuilder<DB, TB extends keyof DB, O = unknown>
-  implements AliasableExpression<O>
+export class AggregateFunctionBuilder<
+  DB extends TB,
+  TB extends TableNames,
+  O = unknown
+> implements AliasableExpression<O>
 {
   readonly #props: AggregateFunctionBuilderProps
 
@@ -280,8 +283,8 @@ preventAwait(
  * {@link AggregateFunctionBuilder} with an alias. The result of calling {@link AggregateFunctionBuilder.as}.
  */
 export class AliasedAggregateFunctionBuilder<
-  DB,
-  TB extends keyof DB,
+  DB extends TB,
+  TB extends TableNames,
   O = unknown,
   A extends string = never
 > implements AliasedExpression<O, A>
@@ -319,6 +322,6 @@ export interface AggregateFunctionBuilderProps {
   aggregateFunctionNode: AggregateFunctionNode
 }
 
-export type OverBuilderCallback<DB, TB extends keyof DB> = (
+export type OverBuilderCallback<DB extends TB, TB extends TableNames> = (
   builder: OverBuilder<DB, TB>
 ) => OverBuilder<DB, TB>

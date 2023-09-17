@@ -2,6 +2,7 @@ import {
   AggregateFunctionBuilder,
   ExpressionBuilder,
   SimpleReferenceExpression,
+  TableNameSet,
   sql,
 } from '../../../'
 import {
@@ -1117,7 +1118,7 @@ function getAggregateFunctionFromTestContext<TB extends keyof Database>(
 }
 
 function getAggregateFunctionFromExpressionBuilder<TB extends keyof Database>(
-  eb: ExpressionBuilder<Database, TB>,
+  eb: ExpressionBuilder<Database, TableNameSet<TB>>,
   funcName: (typeof funcNames)[number]
 ): AggregateFunction<TB> {
   return eb.fn[funcName] as any
@@ -1125,8 +1126,8 @@ function getAggregateFunctionFromExpressionBuilder<TB extends keyof Database>(
 
 type AggregateFunction<
   TB extends keyof Database,
-  C extends SimpleReferenceExpression<Database, TB> = SimpleReferenceExpression<
+  C extends SimpleReferenceExpression<
     Database,
-    TB
-  >
-> = (column: C) => AggregateFunctionBuilder<Database, TB>
+    TableNameSet<TB>
+  > = SimpleReferenceExpression<Database, TableNameSet<TB>>
+> = (column: C) => AggregateFunctionBuilder<Database, TableNameSet<TB>>

@@ -32,7 +32,11 @@ import { CaseNode } from './operation-node/case-node.js'
 import { parseExpression } from './parser/expression-parser.js'
 import { Expression } from './expression/expression.js'
 import { WithSchemaPlugin } from './plugin/with-schema/with-schema-plugin.js'
-import { DrainOuterGeneric } from './util/type-utils.js'
+import {
+  DrainOuterGeneric,
+  TableNameSet,
+  TableNames,
+} from './util/type-utils.js'
 
 /**
  * The main Kysely class.
@@ -77,7 +81,7 @@ import { DrainOuterGeneric } from './util/type-utils.js'
  *    in the database and values must be interfaces that describe the rows in those
  *    tables. See the examples above.
  */
-export class Kysely<DB>
+export class Kysely<DB extends TableNames>
   extends QueryCreator<DB>
   implements QueryExecutorProvider
 {
@@ -152,9 +156,9 @@ export class Kysely<DB>
    *
    * See {@link ExpressionBuilder.case} for more information.
    */
-  case(): CaseBuilder<DB, keyof DB>
+  case(): CaseBuilder<DB, TableNameSet<keyof DB>>
 
-  case<V>(value: Expression<V>): CaseBuilder<DB, keyof DB, V>
+  case<V>(value: Expression<V>): CaseBuilder<DB, TableNameSet<keyof DB>, V>
 
   case<V>(value?: Expression<V>): any {
     return new CaseBuilder({
@@ -190,7 +194,7 @@ export class Kysely<DB>
    * having count("pet"."id") > $1
    * ```
    */
-  get fn(): FunctionModule<DB, keyof DB> {
+  get fn(): FunctionModule<DB, TableNameSet<keyof DB>> {
     return createFunctionModule()
   }
 
@@ -384,7 +388,7 @@ export class Kysely<DB>
   }
 }
 
-export class Transaction<DB> extends Kysely<DB> {
+export class Transaction<DB extends TableNames> extends Kysely<DB> {
   readonly #props: KyselyProps
 
   constructor(props: KyselyProps) {
@@ -501,7 +505,7 @@ export interface KyselyConfig {
   readonly log?: LogConfig
 }
 
-export class ConnectionBuilder<DB> {
+export class ConnectionBuilder<DB extends TableNames> {
   readonly #props: ConnectionBuilderProps
 
   constructor(props: ConnectionBuilderProps) {
@@ -531,7 +535,7 @@ preventAwait(
   "don't await ConnectionBuilder instances directly. To execute the query you need to call the `execute` method"
 )
 
-export class TransactionBuilder<DB> {
+export class TransactionBuilder<DB extends TableNames> {
   readonly #props: TransactionBuilderProps
 
   constructor(props: TransactionBuilderProps) {

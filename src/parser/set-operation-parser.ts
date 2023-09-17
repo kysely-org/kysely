@@ -8,13 +8,14 @@ import {
   SetOperationNode,
 } from '../operation-node/set-operation-node.js'
 import { isFunction, isReadonlyArray } from '../util/object-utils.js'
+import { TableNames } from '../util/type-utils.js'
 import { parseExpression } from './expression-parser.js'
 
-export type SetOperandExpression<DB, O> =
+export type SetOperandExpression<DB extends TableNames, O> =
   | Expression<O>
   | ReadonlyArray<Expression<O>>
   | ((
-      eb: ExpressionBuilder<DB, never>
+      eb: ExpressionBuilder<DB, {}>
     ) => Expression<O> | ReadonlyArray<Expression<O>>)
 
 export function parseSetOperations(

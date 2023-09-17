@@ -20,28 +20,29 @@ import {
   expressionBuilder,
   ExpressionBuilder,
 } from '../expression/expression-builder.js'
+import { TableNames } from '../util/type-utils.js'
 
-export type InsertObject<DB, TB extends keyof DB> = {
-  [C in NonNullableInsertKeys<DB[TB]>]: ValueExpression<
+export type InsertObject<DB extends TB, TB extends TableNames> = {
+  [C in NonNullableInsertKeys<DB[keyof TB]>]: ValueExpression<
     DB,
     TB,
-    InsertType<DB[TB][C]>
+    InsertType<DB[keyof TB][C]>
   >
 } & {
-  [C in NullableInsertKeys<DB[TB]>]?:
-    | ValueExpression<DB, TB, InsertType<DB[TB][C]>>
+  [C in NullableInsertKeys<DB[keyof TB]>]?:
+    | ValueExpression<DB, TB, InsertType<DB[keyof TB][C]>>
     | undefined
 }
 
-export type InsertObjectOrList<DB, TB extends keyof DB> =
+export type InsertObjectOrList<DB extends TB, TB extends TableNames> =
   | InsertObject<DB, TB>
   | ReadonlyArray<InsertObject<DB, TB>>
 
-export type InsertObjectOrListFactory<DB, TB extends keyof DB> = (
+export type InsertObjectOrListFactory<DB extends TB, TB extends TableNames> = (
   eb: ExpressionBuilder<DB, TB>
 ) => InsertObjectOrList<DB, TB>
 
-export type InsertExpression<DB, TB extends keyof DB> =
+export type InsertExpression<DB extends TB, TB extends TableNames> =
   | InsertObjectOrList<DB, TB>
   | InsertObjectOrListFactory<DB, TB>
 

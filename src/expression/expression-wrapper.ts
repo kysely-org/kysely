@@ -13,14 +13,14 @@ import {
 import { OperandExpression } from '../parser/expression-parser.js'
 import { ReferenceExpression } from '../parser/reference-parser.js'
 import { KyselyTypeError } from '../util/type-error.js'
-import { SqlBool } from '../util/type-utils.js'
+import { SqlBool, TableNames } from '../util/type-utils.js'
 import {
   AliasableExpression,
   AliasedExpression,
   Expression,
 } from './expression.js'
 
-export class ExpressionWrapper<DB, TB extends keyof DB, T>
+export class ExpressionWrapper<DB extends TB, TB extends TableNames, T>
   implements AliasableExpression<T>
 {
   readonly #node: OperationNode
@@ -273,7 +273,7 @@ export class AliasedExpressionWrapper<T, A extends string>
   }
 }
 
-export class OrWrapper<DB, TB extends keyof DB, T extends SqlBool>
+export class OrWrapper<DB extends TB, TB extends TableNames, T extends SqlBool>
   implements AliasableExpression<T>
 {
   readonly #node: OrNode
@@ -356,7 +356,7 @@ export class OrWrapper<DB, TB extends keyof DB, T extends SqlBool>
   }
 }
 
-export class AndWrapper<DB, TB extends keyof DB, T extends SqlBool>
+export class AndWrapper<DB extends TB, TB extends TableNames, T extends SqlBool>
   implements AliasableExpression<T>
 {
   readonly #node: AndNode

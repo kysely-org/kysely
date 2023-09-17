@@ -11,9 +11,9 @@ import { ExpressionOrFactory } from '../parser/expression-parser.js'
 import { ReferenceExpression } from '../parser/reference-parser.js'
 import { freeze } from '../util/object-utils.js'
 import { preventAwait } from '../util/prevent-await.js'
-import { SqlBool } from '../util/type-utils.js'
+import { SqlBool, TableNames } from '../util/type-utils.js'
 
-export class JoinBuilder<DB, TB extends keyof DB>
+export class JoinBuilder<DB extends TB, TB extends TableNames>
   implements OperationNodeSource
 {
   readonly #props: JoinBuilderProps

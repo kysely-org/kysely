@@ -13,8 +13,9 @@ import {
 import { StringReference } from '../parser/reference-parser.js'
 import { freeze } from '../util/object-utils.js'
 import { preventAwait } from '../util/prevent-await.js'
+import { TableNames } from '../util/type-utils.js'
 
-export class OverBuilder<DB, TB extends keyof DB>
+export class OverBuilder<DB extends TB, TB extends TableNames>
   implements OperationNodeSource
 {
   readonly #props: OverBuilderProps

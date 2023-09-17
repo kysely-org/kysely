@@ -3,6 +3,7 @@ import { Expression } from '../expression/expression.js'
 import { OperationNode } from '../operation-node/operation-node.js'
 import { OrderByItemNode } from '../operation-node/order-by-item-node.js'
 import { RawNode } from '../operation-node/raw-node.js'
+import { TableNames } from '../util/type-utils.js'
 import { isExpressionOrFactory, parseExpression } from './expression-parser.js'
 import { StringReference, parseStringReference } from './reference-parser.js'
 import { ReferenceExpression } from './reference-parser.js'
@@ -13,15 +14,19 @@ export function isOrderByDirection(thing: unknown): thing is OrderByDirection {
   return thing === 'asc' || thing === 'desc'
 }
 
-export type DirectedOrderByStringReference<DB, TB extends keyof DB, O> = `${
-  | StringReference<DB, TB>
-  | (keyof O & string)} ${OrderByDirection}`
+export type DirectedOrderByStringReference<
+  DB extends TB,
+  TB extends TableNames,
+  O
+> = `${StringReference<DB, TB> | (keyof O & string)} ${OrderByDirection}`
 
-export type UndirectedOrderByExpression<DB, TB extends keyof DB, O> =
-  | ReferenceExpression<DB, TB>
-  | (keyof O & string)
+export type UndirectedOrderByExpression<
+  DB extends TB,
+  TB extends TableNames,
+  O
+> = ReferenceExpression<DB, TB> | (keyof O & string)
 
-export type OrderByExpression<DB, TB extends keyof DB, O> =
+export type OrderByExpression<DB extends TB, TB extends TableNames, O> =
   | UndirectedOrderByExpression<DB, TB, O>
   | DirectedOrderByStringReference<DB, TB, O>
 

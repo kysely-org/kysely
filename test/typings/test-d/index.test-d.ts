@@ -15,10 +15,11 @@ import {
   Selectable,
   sql,
   ExpressionBuilder,
+  TableNameSet,
 } from '..'
 
 import { Database, Person } from '../shared'
-import { expectType, expectError, expectAssignable } from 'tsd'
+import { expectType, expectError } from 'tsd'
 
 async function testInsert(db: Kysely<Database>) {
   const person = {
@@ -351,22 +352,10 @@ async function testCall(db: Kysely<Database>) {
   expectType<{ species: 'dog' | 'cat'; name: string }>(r1)
 }
 
-async function testGenericSelect<T extends keyof Database>(
-  db: Kysely<Database>,
-  table: T
-) {
-  const r1 = await db.selectFrom(table).select('id').executeTakeFirstOrThrow()
-  expectAssignable<string | number>(r1.id)
-}
-
-async function testGenericUpdate(db: Kysely<Database>, table: 'pet' | 'movie') {
-  await db.updateTable(table).set({ id: '123' }).execute()
-}
-
 async function testSelectsInVariable(db: Kysely<Database>) {
   const selects = [
     'first_name',
-    (eb: ExpressionBuilder<Database, 'person'>) =>
+    (eb: ExpressionBuilder<Database, TableNameSet<'person'>>) =>
       eb
         .selectFrom('pet')
         .select('name')

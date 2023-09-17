@@ -8,14 +8,14 @@ import {
 import { IdentifierNode } from '../operation-node/identifier-node.js'
 import { OperationNode } from '../operation-node/operation-node.js'
 import { AliasedExpression } from '../expression/expression.js'
-import { DrainOuterGeneric, ShallowRecord } from '../util/type-utils.js'
+import { DrainOuterGeneric, TableNames } from '../util/type-utils.js'
 
-export type TableExpression<DB, TB extends keyof DB> =
+export type TableExpression<DB extends TB, TB extends TableNames> =
   | AnyAliasedTable<DB>
   | AnyTable<DB>
   | AliasedExpressionOrFactory<DB, TB>
 
-export type TableExpressionOrList<DB, TB extends keyof DB> =
+export type TableExpressionOrList<DB extends TB, TB extends TableNames> =
   | TableExpression<DB, TB>
   | ReadonlyArray<TableExpression<DB, TB>>
 
@@ -30,66 +30,82 @@ export type TableReferenceOrList<DB> =
   | TableReference<DB>
   | ReadonlyArray<TableReference<DB>>
 
+// Given a database type and a `TableExpression` TE, creates a new DB type
+// that contains `DB` and the new names in `TE`. If any of the names in TE
+// collide with the existing table names in DB, types from TE take precedence.
 export type From<DB, TE> = DrainOuterGeneric<{
-  [C in
+  [T in
     | keyof DB
-    | ExtractAliasFromTableExpression<
+    | ExtractNameUnionFromTableExpression<
         DB,
         TE
-      >]: C extends ExtractAliasFromTableExpression<DB, TE>
-    ? ExtractRowTypeFromTableExpression<DB, TE, C>
-    : C extends keyof DB
-    ? DB[C]
+      >]: T extends ExtractNameUnionFromTableExpression<DB, TE>
+    ? ExtractRowTypeFromTableExpression<DB, TE, T>
+    : T extends keyof DB
+    ? DB[T]
     : never
 }>
 
-export type FromTables<DB, TB extends keyof DB, TE> = DrainOuterGeneric<
-  TB | ExtractAliasFromTableExpression<DB, TE>
->
+export type FromTables<
+  DB extends TB,
+  TB extends TableNames,
+  TE
+> = DrainOuterGeneric<{
+  [T in keyof TB | ExtractNameUnionFromTableExpression<DB, TE>]: unknown
+}>
 
-export type ExtractTableAlias<DB, TE> = TE extends `${string} as ${infer TA}`
-  ? TA
-  : TE extends keyof DB
-  ? TE
-  : never
+export type ExtractNamesFromTableExpression<DB, TE> = DrainOuterGeneric<{
+  [T in ExtractNameUnionFromTableExpression<DB, TE>]: unknown
+}>
+
+export type MergeNamesFromTableExpression<
+  DB extends TB,
+  TB extends TableNames,
+  TE
+> = DrainOuterGeneric<{
+  [T in keyof TB | ExtractNameUnionFromTableExpression<DB, TE>]: unknown
+}>
 
 export type PickTableWithAlias<
   DB,
   T extends AnyAliasedTable<DB>
 > = T extends `${infer TB} as ${infer A}`
   ? TB extends keyof DB
-    ? ShallowRecord<A, DB[TB]>
+    ? Record<A, DB[TB]>
     : never
   : never
 
-type ExtractAliasFromTableExpression<DB, TE> = TE extends string
-  ? ExtractTableAlias<DB, TE>
-  : TE extends AliasedExpression<any, infer QA>
-  ? QA
-  : TE extends (qb: any) => AliasedExpression<any, infer QA>
-  ? QA
-  : never
+export type ExtractNameUnionFromTableExpression<DB, TE> =
+  TE extends `${string} as ${infer TA}`
+    ? TA
+    : TE extends keyof DB
+    ? TE
+    : TE extends AliasedExpression<any, infer QA>
+    ? QA
+    : TE extends (qb: any) => AliasedExpression<any, infer QA>
+    ? QA
+    : never
 
 type ExtractRowTypeFromTableExpression<
   DB,
   TE,
-  A extends keyof any
+  N extends keyof any
 > = TE extends `${infer T} as ${infer TA}`
-  ? TA extends A
+  ? TA extends N
     ? T extends keyof DB
       ? DB[T]
       : never
     : never
-  : TE extends A
+  : TE extends N
   ? TE extends keyof DB
     ? DB[TE]
     : never
   : TE extends AliasedExpression<infer O, infer QA>
-  ? QA extends A
+  ? QA extends N
     ? O
     : never
   : TE extends (qb: any) => AliasedExpression<infer O, infer QA>
-  ? QA extends A
+  ? QA extends N
     ? O
     : never
   : never

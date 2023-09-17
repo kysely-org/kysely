@@ -4,9 +4,9 @@ import {
 } from '../parser/binary-operation-parser.js'
 import { ExpressionOrFactory } from '../parser/expression-parser.js'
 import { ReferenceExpression } from '../parser/reference-parser.js'
-import { SqlBool } from '../util/type-utils.js'
+import { SqlBool, TableNames } from '../util/type-utils.js'
 
-export interface HavingInterface<DB, TB extends keyof DB> {
+export interface HavingInterface<DB extends TB, TB extends TableNames> {
   /**
    * Just like {@link WhereInterface.where | where} but adds a `having` statement
    * instead of a `where` statement.

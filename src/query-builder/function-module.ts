@@ -14,7 +14,7 @@ import {
 } from '../parser/reference-parser.js'
 import { parseSelectAll } from '../parser/select-parser.js'
 import { KyselyTypeError } from '../util/type-error.js'
-import { Equals, IsAny } from '../util/type-utils.js'
+import { Equals, IsAny, TableNames } from '../util/type-utils.js'
 import { AggregateFunctionBuilder } from './aggregate-function-builder.js'
 import { SelectQueryBuilderExpression } from '../query-builder/select-query-builder-expression.js'
 import { isString } from '../util/object-utils.js'
@@ -65,7 +65,7 @@ import { Selectable } from '../util/column-type.js'
  * having count("pet"."id") > $1
  * ```
  */
-export interface FunctionModule<DB, TB extends keyof DB> {
+export interface FunctionModule<DB extends TB, TB extends TableNames> {
   /**
    * Creates a function call.
    *
@@ -396,7 +396,7 @@ export interface FunctionModule<DB, TB extends keyof DB> {
    *   .execute()
    * ```
    */
-  countAll<O extends number | string | bigint, T extends TB = TB>(
+  countAll<O extends number | string | bigint, T extends keyof TB = keyof TB>(
     table: T
   ): AggregateFunctionBuilder<DB, TB, O>
 
@@ -651,12 +651,12 @@ export interface FunctionModule<DB, TB extends keyof DB> {
    * group by "person"."first_name"
    * ```
    */
-  jsonAgg<T extends (TB & string) | Expression<unknown>>(
+  jsonAgg<T extends (keyof TB & string) | Expression<unknown>>(
     table: T
   ): AggregateFunctionBuilder<
     DB,
     TB,
-    T extends TB
+    T extends keyof TB
       ? Selectable<DB[T]>[]
       : T extends Expression<infer O>
       ? O[]
@@ -683,19 +683,23 @@ export interface FunctionModule<DB, TB extends keyof DB> {
    * inner join "pet" on "pet"."owner_id" = "person"."id"
    * ```
    */
-  toJson<T extends (TB & string) | Expression<unknown>>(
+  toJson<T extends (keyof TB & string) | Expression<unknown>>(
     table: T
   ): ExpressionWrapper<
     DB,
     TB,
-    T extends TB ? Selectable<DB[T]> : T extends Expression<infer O> ? O : never
+    T extends keyof TB
+      ? Selectable<DB[T]>
+      : T extends Expression<infer O>
+      ? O
+      : never
   >
 }
 
-export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
-  DB,
-  TB
-> {
+export function createFunctionModule<
+  DB extends TB,
+  TB extends TableNames
+>(): FunctionModule<DB, TB> {
   const fn = <T>(
     name: string,
     args: ReadonlyArray<ReferenceExpression<DB, TB>>
@@ -805,8 +809,8 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
 }
 
 type OutputBoundStringReference<
-  DB,
-  TB extends keyof DB,
+  DB extends TB,
+  TB extends TableNames,
   C extends StringReference<DB, TB>,
   O
 > = IsAny<O> extends true
@@ -819,8 +823,8 @@ type OutputBoundStringReference<
   : never
 
 type StringReferenceBoundAggregateFunctionBuilder<
-  DB,
-  TB extends keyof DB,
+  DB extends TB,
+  TB extends TableNames,
   C extends StringReference<DB, TB>,
   O
 > = AggregateFunctionBuilder<

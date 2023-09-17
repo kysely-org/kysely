@@ -4,14 +4,14 @@ import { InsertQueryBuilder } from '../query-builder/insert-query-builder.js'
 import { CommonTableExpressionNameNode } from '../operation-node/common-table-expression-name-node.js'
 import { QueryCreator } from '../query-creator.js'
 import { Expression } from '../expression/expression.js'
-import { ShallowRecord } from '../util/type-utils.js'
+import { ShallowRecord, TableNames } from '../util/type-utils.js'
 import { OperationNode } from '../operation-node/operation-node.js'
 import { createQueryCreator } from './parse-utils.js'
 import { isFunction } from '../util/object-utils.js'
 import { CTEBuilder, CTEBuilderCallback } from '../query-builder/cte-builder.js'
 import { CommonTableExpressionNode } from '../operation-node/common-table-expression-node.js'
 
-export type CommonTableExpression<DB, CN extends string> = (
+export type CommonTableExpression<DB extends TableNames, CN extends string> = (
   creator: QueryCreator<DB>
 ) => CommonTableExpressionOutput<DB, CN>
 

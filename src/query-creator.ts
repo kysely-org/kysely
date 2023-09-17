@@ -19,9 +19,10 @@ import {
   FromTables,
   TableReference,
   TableReferenceOrList,
-  ExtractTableAlias,
   AnyAliasedTable,
   PickTableWithAlias,
+  ExtractNamesFromTableExpression,
+  ExtractNameUnionFromTableExpression,
 } from './parser/table-parser.js'
 import { QueryExecutor } from './query-executor/query-executor.js'
 import {
@@ -47,8 +48,9 @@ import {
   Selection,
   parseSelectArg,
 } from './parser/select-parser.js'
+import { TableNameSet, TableNames } from './util/type-utils.js'
 
-export class QueryCreator<DB> {
+export class QueryCreator<DB extends TableNames> {
   readonly #props: QueryCreatorProps
 
   constructor(props: QueryCreatorProps) {
@@ -164,27 +166,27 @@ export class QueryCreator<DB> {
    */
   selectFrom<TE extends keyof DB & string>(
     from: TE[]
-  ): SelectQueryBuilder<DB, ExtractTableAlias<DB, TE>, {}>
+  ): SelectQueryBuilder<DB, TableNameSet<TE>, {}>
 
-  selectFrom<TE extends TableExpression<DB, keyof DB>>(
+  selectFrom<TE extends TableExpression<DB, {}>>(
     from: TE[]
-  ): SelectQueryBuilder<From<DB, TE>, FromTables<DB, never, TE>, {}>
+  ): SelectQueryBuilder<From<DB, TE>, FromTables<DB, {}, TE>, {}>
+
+  selectFrom<TE extends `${keyof DB & string} as ${string}`>(
+    from: TE
+  ): TE extends `${infer T} as ${infer A}`
+    ? T extends keyof DB
+      ? SelectQueryBuilder<DB & Record<A, DB[T]>, TableNameSet<A>, {}>
+      : never
+    : never
 
   selectFrom<TE extends keyof DB & string>(
     from: TE
-  ): SelectQueryBuilder<DB, ExtractTableAlias<DB, TE>, {}>
+  ): SelectQueryBuilder<DB, TableNameSet<TE>, {}>
 
-  selectFrom<TE extends AnyAliasedTable<DB>>(
+  selectFrom<TE extends TableExpression<DB, {}>>(
     from: TE
-  ): SelectQueryBuilder<
-    DB & PickTableWithAlias<DB, TE>,
-    ExtractTableAlias<DB, TE>,
-    {}
-  >
-
-  selectFrom<TE extends TableExpression<DB, keyof DB>>(
-    from: TE
-  ): SelectQueryBuilder<From<DB, TE>, FromTables<DB, never, TE>, {}>
+  ): SelectQueryBuilder<From<DB, TE>, FromTables<DB, {}, TE>, {}>
 
   selectFrom(from: TableExpressionOrList<any, any>): any {
     return createSelectQueryBuilder({
@@ -244,21 +246,21 @@ export class QueryCreator<DB> {
    * ) as "doggo_id"
    * ```
    */
-  selectNoFrom<SE extends SelectExpression<DB, never>>(
+  selectNoFrom<SE extends SelectExpression<DB, {}>>(
     selections: ReadonlyArray<SE>
-  ): SelectQueryBuilder<DB, never, Selection<DB, never, SE>>
+  ): SelectQueryBuilder<DB, {}, Selection<DB, {}, SE>>
 
-  selectNoFrom<CB extends SelectCallback<DB, never>>(
+  selectNoFrom<CB extends SelectCallback<DB, {}>>(
     callback: CB
-  ): SelectQueryBuilder<DB, never, CallbackSelection<DB, never, CB>>
+  ): SelectQueryBuilder<DB, {}, CallbackSelection<DB, {}, CB>>
 
-  selectNoFrom<SE extends SelectExpression<DB, never>>(
+  selectNoFrom<SE extends SelectExpression<DB, {}>>(
     selection: SE
-  ): SelectQueryBuilder<DB, never, Selection<DB, never, SE>>
+  ): SelectQueryBuilder<DB, {}, Selection<DB, {}, SE>>
 
-  selectNoFrom<SE extends SelectExpression<DB, never>>(
-    selection: SelectArg<DB, never, SE>
-  ): SelectQueryBuilder<DB, never, Selection<DB, never, SE>> {
+  selectNoFrom<SE extends SelectExpression<DB, {}>>(
+    selection: SelectArg<DB, {}, SE>
+  ): SelectQueryBuilder<DB, {}, Selection<DB, {}, SE>> {
     return createSelectQueryBuilder({
       queryId: createQueryId(),
       executor: this.#props.executor,
@@ -309,7 +311,7 @@ export class QueryCreator<DB> {
    */
   insertInto<T extends keyof DB & string>(
     table: T
-  ): InsertQueryBuilder<DB, T, InsertResult> {
+  ): InsertQueryBuilder<DB, TableNameSet<T>, InsertResult> {
     return new InsertQueryBuilder({
       queryId: createQueryId(),
       executor: this.#props.executor,
@@ -348,7 +350,7 @@ export class QueryCreator<DB> {
    */
   replaceInto<T extends keyof DB & string>(
     table: T
-  ): InsertQueryBuilder<DB, T, InsertResult> {
+  ): InsertQueryBuilder<DB, TableNameSet<T>, InsertResult> {
     return new InsertQueryBuilder({
       queryId: createQueryId(),
       executor: this.#props.executor,
@@ -411,19 +413,27 @@ export class QueryCreator<DB> {
    */
   deleteFrom<TR extends keyof DB & string>(
     from: TR[]
-  ): DeleteQueryBuilder<DB, ExtractTableAlias<DB, TR>, DeleteResult>
+  ): DeleteQueryBuilder<
+    DB,
+    ExtractNamesFromTableExpression<DB, TR>,
+    DeleteResult
+  >
 
   deleteFrom<TR extends TableReference<DB>>(
     tables: TR[]
-  ): DeleteQueryBuilder<From<DB, TR>, FromTables<DB, never, TR>, DeleteResult>
+  ): DeleteQueryBuilder<From<DB, TR>, FromTables<DB, {}, TR>, DeleteResult>
 
   deleteFrom<TR extends keyof DB & string>(
     from: TR
-  ): DeleteQueryBuilder<DB, ExtractTableAlias<DB, TR>, DeleteResult>
+  ): DeleteQueryBuilder<
+    DB,
+    ExtractNamesFromTableExpression<DB, TR>,
+    DeleteResult
+  >
 
   deleteFrom<TR extends TableReference<DB>>(
     table: TR
-  ): DeleteQueryBuilder<From<DB, TR>, FromTables<DB, never, TR>, DeleteResult>
+  ): DeleteQueryBuilder<From<DB, TR>, FromTables<DB, {}, TR>, DeleteResult>
 
   deleteFrom(tables: TableReferenceOrList<DB>): any {
     return new DeleteQueryBuilder({
@@ -463,8 +473,8 @@ export class QueryCreator<DB> {
     table: TR
   ): UpdateQueryBuilder<
     DB,
-    ExtractTableAlias<DB, TR>,
-    ExtractTableAlias<DB, TR>,
+    ExtractNameUnionFromTableExpression<DB, TR>,
+    ExtractNamesFromTableExpression<DB, TR>,
     UpdateResult
   >
 
@@ -472,8 +482,8 @@ export class QueryCreator<DB> {
     table: TR
   ): UpdateQueryBuilder<
     DB & PickTableWithAlias<DB, TR>,
-    ExtractTableAlias<DB, TR>,
-    ExtractTableAlias<DB, TR>,
+    ExtractNameUnionFromTableExpression<DB, TR>,
+    ExtractNamesFromTableExpression<DB, TR>,
     UpdateResult
   >
 
@@ -481,8 +491,8 @@ export class QueryCreator<DB> {
     table: TR
   ): UpdateQueryBuilder<
     From<DB, TR>,
-    FromTables<DB, never, TR>,
-    FromTables<DB, never, TR>,
+    keyof FromTables<DB, {}, TR>,
+    FromTables<DB, {}, TR>,
     UpdateResult
   >
 

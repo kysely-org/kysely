@@ -12,28 +12,33 @@ import {
   parseReferenceExpression,
   ReferenceExpression,
 } from './reference-parser.js'
+import { TableNames } from '../util/type-utils.js'
 
-export type UpdateObject<DB, TB extends keyof DB, UT extends keyof DB = TB> = {
+export type UpdateObject<
+  DB extends TB,
+  TB extends TableNames,
+  UT extends keyof DB = keyof TB
+> = {
   [C in UpdateKeys<DB[UT]>]?:
     | ValueExpression<DB, TB, UpdateType<DB[UT][C]>>
     | undefined
 }
 
 export type UpdateObjectFactory<
-  DB,
-  TB extends keyof DB,
+  DB extends TB,
+  TB extends TableNames,
   UT extends keyof DB
 > = (eb: ExpressionBuilder<DB, TB>) => UpdateObject<DB, TB, UT>
 
 export type UpdateObjectExpression<
-  DB,
-  TB extends keyof DB,
-  UT extends keyof DB = TB
+  DB extends TB,
+  TB extends TableNames,
+  UT extends keyof DB = keyof TB
 > = UpdateObject<DB, TB, UT> | UpdateObjectFactory<DB, TB, UT>
 
 export type ExtractUpdateTypeFromReferenceExpression<
-  DB,
-  TB extends keyof DB,
+  DB extends TB,
+  TB extends TableNames,
   RE,
   DV = unknown
 > = UpdateType<ExtractRawTypeFromReferenceExpression<DB, TB, RE, DV>>

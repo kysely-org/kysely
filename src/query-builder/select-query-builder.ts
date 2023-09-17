@@ -32,6 +32,8 @@ import {
   Simplify,
   SimplifySingleResult,
   SqlBool,
+  TableNameSet,
+  TableNames,
 } from '../util/type-utils.js'
 import {
   OrderByDirectionExpression,
@@ -76,7 +78,7 @@ import { ExpressionOrFactory } from '../parser/expression-parser.js'
 import { ExpressionWrapper } from '../expression/expression-wrapper.js'
 import { SelectQueryBuilderExpression } from './select-query-builder-expression.js'
 
-export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
+export interface SelectQueryBuilder<DB extends TB, TB extends TableNames, O>
   extends WhereInterface<DB, TB>,
     HavingInterface<DB, TB>,
     SelectQueryBuilderExpression<O>,
@@ -498,11 +500,11 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    * select "person".*, "pet".* from "person", "pet"
    * ```
    */
-  selectAll<T extends TB>(
+  selectAll<T extends keyof TB>(
     table: ReadonlyArray<T>
-  ): SelectQueryBuilder<DB, TB, O & AllSelection<DB, T>>
+  ): SelectQueryBuilder<DB, TB, O & AllSelection<DB, Record<T, unknown>>>
 
-  selectAll<T extends TB>(
+  selectAll<T extends keyof TB>(
     table: T
   ): SelectQueryBuilder<DB, TB, O & Selectable<DB[T]>>
 
@@ -887,17 +889,17 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    * order by "fn" asc
    * ```
    */
-  orderBy(
-    orderBy: UndirectedOrderByExpression<DB, TB, O>,
+  orderBy<OE extends UndirectedOrderByExpression<DB, TB, O>>(
+    orderBy: OE,
     direction?: OrderByDirectionExpression
   ): SelectQueryBuilder<DB, TB, O>
 
-  orderBy(
-    ref: DirectedOrderByStringReference<DB, TB, O>
+  orderBy<OE extends DirectedOrderByStringReference<DB, TB, O>>(
+    ref: OE
   ): SelectQueryBuilder<DB, TB, O>
 
-  orderBy(
-    refs: ReadonlyArray<OrderByExpression<DB, TB, O>>
+  orderBy<OE extends DirectedOrderByStringReference<DB, TB, O>>(
+    refs: ReadonlyArray<OE>
   ): SelectQueryBuilder<DB, TB, O>
 
   /**
@@ -998,7 +1000,9 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    * group by "first_name"
    * ```
    */
-  groupBy(groupBy: GroupByArg<DB, TB, O>): SelectQueryBuilder<DB, TB, O>
+  groupBy<GA extends GroupByArg<DB, TB, O>>(
+    groupBy: GA
+  ): SelectQueryBuilder<DB, TB, O>
 
   /**
    * Adds a limit clause to the query.
@@ -1646,7 +1650,7 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
   ): Promise<ER[]>
 }
 
-class SelectQueryBuilderImpl<DB, TB extends keyof DB, O>
+class SelectQueryBuilderImpl<DB extends TB, TB extends TableNames, O>
   implements SelectQueryBuilder<DB, TB, O>
 {
   readonly #props: SelectQueryBuilderProps
@@ -2170,9 +2174,11 @@ preventAwait(
   "don't await SelectQueryBuilder instances directly. To execute the query you need to call `execute` or `executeTakeFirst`."
 )
 
-export function createSelectQueryBuilder<DB, TB extends keyof DB, O>(
-  props: SelectQueryBuilderProps
-): SelectQueryBuilder<DB, TB, O> {
+export function createSelectQueryBuilder<
+  DB extends TB,
+  TB extends TableNames,
+  O
+>(props: SelectQueryBuilderProps): SelectQueryBuilder<DB, TB, O> {
   return new SelectQueryBuilderImpl(props)
 }
 
@@ -2193,8 +2199,8 @@ export interface AliasedSelectQueryBuilder<
  * {@link SelectQueryBuilder} with an alias. The result of calling {@link SelectQueryBuilder.as}.
  */
 class AliasedSelectQueryBuilderImpl<
-  DB,
-  TB extends keyof DB,
+  DB extends TB,
+  TB extends TableNames,
   O = undefined,
   A extends string = never
 > implements AliasedSelectQueryBuilder<O, A>
@@ -2233,8 +2239,8 @@ preventAwait(
 )
 
 export type SelectQueryBuilderWithInnerJoin<
-  DB,
-  TB extends keyof DB,
+  DB extends TB,
+  TB extends TableNames,
   O,
   TE extends TableExpression<DB, TB>
 > = TE extends `${infer T} as ${infer A}`
@@ -2242,7 +2248,8 @@ export type SelectQueryBuilderWithInnerJoin<
     ? InnerJoinedBuilder<DB, TB, O, A, DB[T]>
     : never
   : TE extends keyof DB
-  ? SelectQueryBuilder<DB, TB | TE, O>
+  ? // The most common case where a table is joined using its own name
+    SelectQueryBuilder<DB, TableNameSet<keyof TB | TE>, O>
   : TE extends AliasedExpression<infer QO, infer QA>
   ? InnerJoinedBuilder<DB, TB, O, QA, QO>
   : TE extends (qb: any) => AliasedExpression<infer QO, infer QA>
@@ -2250,23 +2257,34 @@ export type SelectQueryBuilderWithInnerJoin<
   : never
 
 type InnerJoinedBuilder<
-  DB,
-  TB extends keyof DB,
+  DB extends TB,
+  TB extends TableNames,
   O,
   A extends string,
   R
 > = A extends keyof DB
-  ? SelectQueryBuilder<InnerJoinedDB<DB, A, R>, TB | A, O>
-  : // Much faster non-recursive solution for the simple case.
-    SelectQueryBuilder<DB & ShallowRecord<A, R>, TB | A, O>
+  ? // The alias is an existing table name. Replace the table `A` in `DB`.
+    SelectQueryBuilder<
+      InnerJoinedDB<DB, TB, A, R>,
+      TableNameSet<keyof TB | A>,
+      O
+    >
+  : // Much faster solution for the most common case where the alias is not
+    // already found in `DB`.
+    SelectQueryBuilder<DB & Record<A, R>, Record<keyof TB | A, unknown>, O>
 
-type InnerJoinedDB<DB, A extends string, R> = DrainOuterGeneric<{
-  [C in keyof DB | A]: C extends A ? R : C extends keyof DB ? DB[C] : never
+type InnerJoinedDB<
+  DB extends TB,
+  TB extends TableNames,
+  A extends keyof DB,
+  R
+> = DrainOuterGeneric<{
+  [T in keyof DB]: T extends A ? R : T extends keyof DB ? DB[T] : never
 }>
 
 export type SelectQueryBuilderWithLeftJoin<
-  DB,
-  TB extends keyof DB,
+  DB extends TB,
+  TB extends TableNames,
   O,
   TE extends TableExpression<DB, TB>
 > = TE extends `${infer T} as ${infer A}`
@@ -2282,18 +2300,24 @@ export type SelectQueryBuilderWithLeftJoin<
   : never
 
 type LeftJoinedBuilder<
-  DB,
-  TB extends keyof DB,
+  DB extends TB,
+  TB extends TableNames,
   O,
   A extends keyof any,
   R
 > = A extends keyof DB
-  ? SelectQueryBuilder<LeftJoinedDB<DB, A, R>, TB | A, O>
-  : // Much faster non-recursive solution for the simple case.
-    SelectQueryBuilder<DB & ShallowRecord<A, Nullable<R>>, TB | A, O>
+  ? // The alias is an existing table name. Replace the table `A` in `DB`.
+    SelectQueryBuilder<LeftJoinedDB<DB, A, R>, TableNameSet<keyof TB | A>, O>
+  : // Much faster solution for the most common case where the alias is not
+    // already found in `DB`.
+    SelectQueryBuilder<
+      DB & Record<A, Nullable<R>>,
+      TableNameSet<keyof TB | A>,
+      O
+    >
 
-type LeftJoinedDB<DB, A extends keyof any, R> = DrainOuterGeneric<{
-  [C in keyof DB | A]: C extends A
+type LeftJoinedDB<DB, A extends keyof DB, R> = DrainOuterGeneric<{
+  [C in keyof DB]: C extends A
     ? Nullable<R>
     : C extends keyof DB
     ? DB[C]
@@ -2301,8 +2325,8 @@ type LeftJoinedDB<DB, A extends keyof any, R> = DrainOuterGeneric<{
 }>
 
 export type SelectQueryBuilderWithRightJoin<
-  DB,
-  TB extends keyof DB,
+  DB extends TB,
+  TB extends TableNames,
   O,
   TE extends TableExpression<DB, TB>
 > = TE extends `${infer T} as ${infer A}`
@@ -2318,22 +2342,26 @@ export type SelectQueryBuilderWithRightJoin<
   : never
 
 type RightJoinedBuilder<
-  DB,
-  TB extends keyof DB,
+  DB extends TB,
+  TB extends TableNames,
   O,
   A extends keyof any,
   R
-> = SelectQueryBuilder<RightJoinedDB<DB, TB, A, R>, TB | A, O>
+> = SelectQueryBuilder<
+  RightJoinedDB<DB, TB, A, R>,
+  TableNameSet<keyof TB | A>,
+  O
+>
 
 type RightJoinedDB<
-  DB,
-  TB extends keyof DB,
+  DB extends TB,
+  TB extends TableNames,
   A extends keyof any,
   R
 > = DrainOuterGeneric<{
   [C in keyof DB | A]: C extends A
     ? R
-    : C extends TB
+    : C extends keyof TB
     ? Nullable<DB[C]>
     : C extends keyof DB
     ? DB[C]
@@ -2341,8 +2369,8 @@ type RightJoinedDB<
 }>
 
 export type SelectQueryBuilderWithFullJoin<
-  DB,
-  TB extends keyof DB,
+  DB extends TB,
+  TB extends TableNames,
   O,
   TE extends TableExpression<DB, TB>
 > = TE extends `${infer T} as ${infer A}`
@@ -2358,22 +2386,26 @@ export type SelectQueryBuilderWithFullJoin<
   : never
 
 type OuterJoinedBuilder<
-  DB,
-  TB extends keyof DB,
+  DB extends TB,
+  TB extends TableNames,
   O,
   A extends keyof any,
   R
-> = SelectQueryBuilder<OuterJoinedBuilderDB<DB, TB, A, R>, TB | A, O>
+> = SelectQueryBuilder<
+  OuterJoinedBuilderDB<DB, TB, A, R>,
+  TableNameSet<keyof TB | A>,
+  O
+>
 
 type OuterJoinedBuilderDB<
-  DB,
-  TB extends keyof DB,
+  DB extends TB,
+  TB extends TableNames,
   A extends keyof any,
   R
 > = DrainOuterGeneric<{
   [C in keyof DB | A]: C extends A
     ? Nullable<R>
-    : C extends TB
+    : C extends keyof TB
     ? Nullable<DB[C]>
     : C extends keyof DB
     ? DB[C]

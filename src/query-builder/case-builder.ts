@@ -15,9 +15,14 @@ import {
   parseValueExpression,
 } from '../parser/value-parser.js'
 import { KyselyTypeError } from '../util/type-error.js'
+import { TableNames } from '../util/type-utils.js'
 
-export class CaseBuilder<DB, TB extends keyof DB, W = unknown, O = never>
-  implements Whenable<DB, TB, W, O>
+export class CaseBuilder<
+  DB extends TB,
+  TB extends TableNames,
+  W = unknown,
+  O = never
+> implements Whenable<DB, TB, W, O>
 {
   readonly #props: CaseBuilderProps
 
@@ -56,7 +61,7 @@ interface CaseBuilderProps {
   readonly node: CaseNode
 }
 
-export class CaseThenBuilder<DB, TB extends keyof DB, W, O> {
+export class CaseThenBuilder<DB extends TB, TB extends TableNames, W, O> {
   readonly #props: CaseBuilderProps
 
   constructor(props: CaseBuilderProps) {
@@ -86,7 +91,7 @@ export class CaseThenBuilder<DB, TB extends keyof DB, W, O> {
   }
 }
 
-export class CaseWhenBuilder<DB, TB extends keyof DB, W, O>
+export class CaseWhenBuilder<DB extends TB, TB extends TableNames, W, O>
   implements Whenable<DB, TB, W, O>, Endable<DB, TB, O | null>
 {
   readonly #props: CaseBuilderProps
@@ -154,7 +159,7 @@ export class CaseWhenBuilder<DB, TB extends keyof DB, W, O>
   }
 }
 
-export class CaseEndBuilder<DB, TB extends keyof DB, O>
+export class CaseEndBuilder<DB extends TB, TB extends TableNames, O>
   implements Endable<DB, TB, O>
 {
   readonly #props: CaseBuilderProps
@@ -176,7 +181,7 @@ export class CaseEndBuilder<DB, TB extends keyof DB, O>
   }
 }
 
-interface Whenable<DB, TB extends keyof DB, W, O> {
+interface Whenable<DB extends TB, TB extends TableNames, W, O> {
   /**
    * Adds a `when` clause to the case statement.
    *
@@ -199,7 +204,7 @@ interface Whenable<DB, TB extends keyof DB, W, O> {
   ): CaseThenBuilder<DB, TB, W, O>
 }
 
-interface Endable<DB, TB extends keyof DB, O> {
+interface Endable<DB extends TB, TB extends TableNames, O> {
   /**
    * Adds an `end` keyword to the case operator.
    *

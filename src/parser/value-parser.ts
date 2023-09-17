@@ -15,12 +15,13 @@ import {
 import { OperationNode } from '../operation-node/operation-node.js'
 import { Expression } from '../expression/expression.js'
 import { SelectQueryBuilderExpression } from '../query-builder/select-query-builder-expression.js'
+import { TableNames } from '../util/type-utils.js'
 
-export type ValueExpression<DB, TB extends keyof DB, V> =
+export type ValueExpression<DB extends TB, TB extends TableNames, V> =
   | V
   | ExpressionOrFactory<DB, TB, V>
 
-export type ValueExpressionOrList<DB, TB extends keyof DB, V> =
+export type ValueExpressionOrList<DB extends TB, TB extends TableNames, V> =
   | ValueExpression<DB, TB, V>
   | ReadonlyArray<ValueExpression<DB, TB, V>>
 

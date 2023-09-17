@@ -8,12 +8,13 @@ import {
   parseReferenceExpressionOrList,
   ReferenceExpression,
 } from './reference-parser.js'
+import { TableNames } from '../util/type-utils.js'
 
-export type GroupByExpression<DB, TB extends keyof DB, O> =
+export type GroupByExpression<DB extends TB, TB extends TableNames, O> =
   | ReferenceExpression<DB, TB>
   | (keyof O & string)
 
-export type GroupByArg<DB, TB extends keyof DB, O> =
+export type GroupByArg<DB extends TB, TB extends TableNames, O> =
   | GroupByExpression<DB, TB, O>
   | ReadonlyArray<GroupByExpression<DB, TB, O>>
   | ((

@@ -1,11 +1,12 @@
+import { TableNames } from '../util/type-utils.js'
 import {
   ExtractTypeFromReferenceExpression,
   ReferenceExpression,
 } from './reference-parser.js'
 
 export type CoalesceReferenceExpressionList<
-  DB,
-  TB extends keyof DB,
+  DB extends TB,
+  TB extends TableNames,
   RE extends unknown[],
   O = never
 > = RE extends []

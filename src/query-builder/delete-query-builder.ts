@@ -34,6 +34,8 @@ import {
   SimplifyResult,
   SimplifySingleResult,
   SqlBool,
+  TableNameSet,
+  TableNames,
 } from '../util/type-utils.js'
 import { preventAwait } from '../util/prevent-await.js'
 import { Compilable } from '../util/compilable.js'
@@ -68,7 +70,7 @@ import { KyselyTypeError } from '../util/type-error.js'
 import { Streamable } from '../util/streamable.js'
 import { ExpressionOrFactory } from '../parser/expression-parser.js'
 
-export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
+export class DeleteQueryBuilder<DB extends TB, TB extends TableNames, O>
   implements
     WhereInterface<DB, TB>,
     ReturningInterface<DB, TB, O>,
@@ -198,11 +200,11 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
    * returning "pet"."name"
    * ```
    */
-  using<TE extends TableExpression<DB, keyof DB>>(
+  using<TE extends TableExpression<DB, TableNameSet<keyof DB>>>(
     tables: TE[]
   ): DeleteQueryBuilder<From<DB, TE>, FromTables<DB, TB, TE>, O>
 
-  using<TE extends TableExpression<DB, keyof DB>>(
+  using<TE extends TableExpression<DB, TableNameSet<keyof DB>>>(
     table: TE
   ): DeleteQueryBuilder<From<DB, TE>, FromTables<DB, TB, TE>, O>
 
@@ -534,13 +536,13 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
    * returning "toy".*, "pet".*
    * ```
    */
-  returningAll<T extends TB>(
+  returningAll<T extends keyof TB>(
     tables: ReadonlyArray<T>
-  ): DeleteQueryBuilder<DB, TB, ReturningAllRow<DB, T, O>>
+  ): DeleteQueryBuilder<DB, TB, ReturningAllRow<DB, TableNameSet<T>, O>>
 
-  returningAll<T extends TB>(
+  returningAll<T extends keyof TB>(
     table: T
-  ): DeleteQueryBuilder<DB, TB, ReturningAllRow<DB, T, O>>
+  ): DeleteQueryBuilder<DB, TB, ReturningAllRow<DB, TableNameSet<T>, O>>
 
   returningAll(): DeleteQueryBuilder<DB, TB, ReturningAllRow<DB, TB, O>>
 
@@ -937,8 +939,8 @@ export interface DeleteQueryBuilderProps {
 }
 
 export type DeleteQueryBuilderWithInnerJoin<
-  DB,
-  TB extends keyof DB,
+  DB extends TB,
+  TB extends TableNames,
   O,
   TE extends TableExpression<DB, TB>
 > = TE extends `${infer T} as ${infer A}`
@@ -946,7 +948,8 @@ export type DeleteQueryBuilderWithInnerJoin<
     ? InnerJoinedBuilder<DB, TB, O, A, DB[T]>
     : never
   : TE extends keyof DB
-  ? DeleteQueryBuilder<DB, TB | TE, O>
+  ? // The most common case where a table is joined using its own name
+    DeleteQueryBuilder<DB, TableNameSet<keyof TB | TE>, O>
   : TE extends AliasedExpression<infer QO, infer QA>
   ? InnerJoinedBuilder<DB, TB, O, QA, QO>
   : TE extends (qb: any) => AliasedExpression<infer QO, infer QA>
@@ -954,23 +957,34 @@ export type DeleteQueryBuilderWithInnerJoin<
   : never
 
 type InnerJoinedBuilder<
-  DB,
-  TB extends keyof DB,
+  DB extends TB,
+  TB extends TableNames,
   O,
   A extends string,
   R
 > = A extends keyof DB
-  ? DeleteQueryBuilder<InnerJoinedDB<DB, A, R>, TB | A, O>
-  : // Much faster non-recursive solution for the simple case.
-    DeleteQueryBuilder<DB & ShallowRecord<A, R>, TB | A, O>
+  ? // The alias is an existing table name. Replace the table `A` in `DB`.
+    DeleteQueryBuilder<
+      InnerJoinedDB<DB, TB, A, R>,
+      TableNameSet<keyof TB | A>,
+      O
+    >
+  : // Much faster solution for the most common case where the alias is not
+    // already found in `DB`.
+    DeleteQueryBuilder<DB & Record<A, R>, Record<keyof TB | A, unknown>, O>
 
-type InnerJoinedDB<DB, A extends string, R> = DrainOuterGeneric<{
-  [C in keyof DB | A]: C extends A ? R : C extends keyof DB ? DB[C] : never
+type InnerJoinedDB<
+  DB extends TB,
+  TB extends TableNames,
+  A extends keyof DB,
+  R
+> = DrainOuterGeneric<{
+  [T in keyof DB]: T extends A ? R : T extends keyof DB ? DB[T] : never
 }>
 
 export type DeleteQueryBuilderWithLeftJoin<
-  DB,
-  TB extends keyof DB,
+  DB extends TB,
+  TB extends TableNames,
   O,
   TE extends TableExpression<DB, TB>
 > = TE extends `${infer T} as ${infer A}`
@@ -986,18 +1000,24 @@ export type DeleteQueryBuilderWithLeftJoin<
   : never
 
 type LeftJoinedBuilder<
-  DB,
-  TB extends keyof DB,
+  DB extends TB,
+  TB extends TableNames,
   O,
   A extends keyof any,
   R
 > = A extends keyof DB
-  ? DeleteQueryBuilder<LeftJoinedDB<DB, A, R>, TB | A, O>
-  : // Much faster non-recursive solution for the simple case.
-    DeleteQueryBuilder<DB & ShallowRecord<A, Nullable<R>>, TB | A, O>
+  ? // The alias is an existing table name. Replace the table `A` in `DB`.
+    DeleteQueryBuilder<LeftJoinedDB<DB, A, R>, TableNameSet<keyof TB | A>, O>
+  : // Much faster solution for the most common case where the alias is not
+    // already found in `DB`.
+    DeleteQueryBuilder<
+      DB & Record<A, Nullable<R>>,
+      TableNameSet<keyof TB | A>,
+      O
+    >
 
-type LeftJoinedDB<DB, A extends keyof any, R> = DrainOuterGeneric<{
-  [C in keyof DB | A]: C extends A
+type LeftJoinedDB<DB, A extends keyof DB, R> = DrainOuterGeneric<{
+  [C in keyof DB]: C extends A
     ? Nullable<R>
     : C extends keyof DB
     ? DB[C]
@@ -1005,8 +1025,8 @@ type LeftJoinedDB<DB, A extends keyof any, R> = DrainOuterGeneric<{
 }>
 
 export type DeleteQueryBuilderWithRightJoin<
-  DB,
-  TB extends keyof DB,
+  DB extends TB,
+  TB extends TableNames,
   O,
   TE extends TableExpression<DB, TB>
 > = TE extends `${infer T} as ${infer A}`
@@ -1022,22 +1042,26 @@ export type DeleteQueryBuilderWithRightJoin<
   : never
 
 type RightJoinedBuilder<
-  DB,
-  TB extends keyof DB,
+  DB extends TB,
+  TB extends TableNames,
   O,
   A extends keyof any,
   R
-> = DeleteQueryBuilder<RightJoinedDB<DB, TB, A, R>, TB | A, O>
+> = DeleteQueryBuilder<
+  RightJoinedDB<DB, TB, A, R>,
+  TableNameSet<keyof TB | A>,
+  O
+>
 
 type RightJoinedDB<
-  DB,
-  TB extends keyof DB,
+  DB extends TB,
+  TB extends TableNames,
   A extends keyof any,
   R
 > = DrainOuterGeneric<{
   [C in keyof DB | A]: C extends A
     ? R
-    : C extends TB
+    : C extends keyof TB
     ? Nullable<DB[C]>
     : C extends keyof DB
     ? DB[C]
@@ -1045,8 +1069,8 @@ type RightJoinedDB<
 }>
 
 export type DeleteQueryBuilderWithFullJoin<
-  DB,
-  TB extends keyof DB,
+  DB extends TB,
+  TB extends TableNames,
   O,
   TE extends TableExpression<DB, TB>
 > = TE extends `${infer T} as ${infer A}`
@@ -1062,22 +1086,26 @@ export type DeleteQueryBuilderWithFullJoin<
   : never
 
 type OuterJoinedBuilder<
-  DB,
-  TB extends keyof DB,
+  DB extends TB,
+  TB extends TableNames,
   O,
   A extends keyof any,
   R
-> = DeleteQueryBuilder<OuterJoinedBuilderDB<DB, TB, A, R>, TB | A, O>
+> = DeleteQueryBuilder<
+  OuterJoinedBuilderDB<DB, TB, A, R>,
+  TableNameSet<keyof TB | A>,
+  O
+>
 
 type OuterJoinedBuilderDB<
-  DB,
-  TB extends keyof DB,
+  DB extends TB,
+  TB extends TableNames,
   A extends keyof any,
   R
 > = DrainOuterGeneric<{
   [C in keyof DB | A]: C extends A
     ? Nullable<R>
-    : C extends TB
+    : C extends keyof TB
     ? Nullable<DB[C]>
     : C extends keyof DB
     ? DB[C]

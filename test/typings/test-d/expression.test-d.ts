@@ -4,7 +4,13 @@ import {
   expectError,
   expectType,
 } from 'tsd'
-import { Expression, ExpressionBuilder, Kysely, SqlBool } from '..'
+import {
+  Expression,
+  ExpressionBuilder,
+  Kysely,
+  SqlBool,
+  TableNameSet,
+} from '..'
 import { Database } from '../shared'
 import { KyselyTypeError } from '../../../dist/cjs/util/type-error'
 
@@ -26,7 +32,7 @@ function testExpression(db: Kysely<Database>) {
 }
 
 async function testExpressionBuilder(
-  eb: ExpressionBuilder<Database, 'person'>
+  eb: ExpressionBuilder<Database, TableNameSet<'person'>>
 ) {
   // Binary expression
   expectAssignable<Expression<number>>(eb('age', '+', 1))
@@ -148,7 +154,7 @@ async function testExpressionBuilder(
 
 async function testExpressionBuilderSelect(
   db: Kysely<Database>,
-  eb: ExpressionBuilder<Database, 'person'>
+  eb: ExpressionBuilder<Database, TableNameSet<'person'>>
 ) {
   expectAssignable<Expression<{ first_name: string }>>(
     eb.selectNoFrom(eb.val('Jennifer').as('first_name'))
@@ -196,7 +202,7 @@ async function textExpressionBuilderAny(
         nicknames: string[] | null
       }
     },
-    'actor'
+    TableNameSet<'actor'>
   >
 ) {
   expectAssignable<Expression<string>>(eb.fn.any('nicknames'))

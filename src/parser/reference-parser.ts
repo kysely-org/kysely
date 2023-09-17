@@ -7,6 +7,7 @@ import {
   AnyColumn,
   AnyColumnWithTable,
   ExtractColumnType,
+  TableNames,
 } from '../util/type-utils.js'
 import { SelectQueryBuilderExpression } from '../query-builder/select-query-builder-expression.js'
 import {
@@ -15,7 +16,7 @@ import {
   isExpressionOrFactory,
 } from './expression-parser.js'
 import { DynamicReferenceBuilder } from '../dynamic/dynamic-reference-builder.js'
-import { SelectType, UpdateType } from '../util/column-type.js'
+import { SelectType } from '../util/column-type.js'
 import { IdentifierNode } from '../operation-node/identifier-node.js'
 import { OperationNode } from '../operation-node/operation-node.js'
 import { Expression } from '../expression/expression.js'
@@ -34,32 +35,32 @@ import { JSONReferenceNode } from '../operation-node/json-reference-node.js'
 import { JSONOperatorChainNode } from '../operation-node/json-operator-chain-node.js'
 import { JSONPathNode } from '../operation-node/json-path-node.js'
 
-export type StringReference<DB, TB extends keyof DB> =
+export type StringReference<DB extends TB, TB extends TableNames> =
   | AnyColumn<DB, TB>
   | AnyColumnWithTable<DB, TB>
 
-export type SimpleReferenceExpression<DB, TB extends keyof DB> =
+export type SimpleReferenceExpression<DB extends TB, TB extends TableNames> =
   | StringReference<DB, TB>
   | DynamicReferenceBuilder<any>
 
-export type ReferenceExpression<DB, TB extends keyof DB> =
+export type ReferenceExpression<DB extends TB, TB extends TableNames> =
   | SimpleReferenceExpression<DB, TB>
   | ExpressionOrFactory<DB, TB, any>
 
-export type ReferenceExpressionOrList<DB, TB extends keyof DB> =
+export type ReferenceExpressionOrList<DB extends TB, TB extends TableNames> =
   | ReferenceExpression<DB, TB>
   | ReadonlyArray<ReferenceExpression<DB, TB>>
 
 export type ExtractTypeFromReferenceExpression<
-  DB,
-  TB extends keyof DB,
+  DB extends TB,
+  TB extends TableNames,
   RE,
   DV = unknown
 > = SelectType<ExtractRawTypeFromReferenceExpression<DB, TB, RE, DV>>
 
 export type ExtractRawTypeFromReferenceExpression<
-  DB,
-  TB extends keyof DB,
+  DB extends TB,
+  TB extends TableNames,
   RE,
   DV = unknown
 > = RE extends string
@@ -75,18 +76,18 @@ export type ExtractRawTypeFromReferenceExpression<
   : DV
 
 export type ExtractTypeFromStringReference<
-  DB,
-  TB extends keyof DB,
+  DB extends TB,
+  TB extends TableNames,
   RE extends string,
   DV = unknown
 > = RE extends `${infer SC}.${infer T}.${infer C}`
-  ? `${SC}.${T}` extends TB
+  ? `${SC}.${T}` extends keyof TB
     ? C extends keyof DB[`${SC}.${T}`]
       ? DB[`${SC}.${T}`][C]
       : never
     : never
   : RE extends `${infer T}.${infer C}`
-  ? T extends TB
+  ? T extends keyof TB
     ? C extends keyof DB[T]
       ? DB[T][C]
       : never

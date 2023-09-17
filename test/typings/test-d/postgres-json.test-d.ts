@@ -6,6 +6,7 @@ import {
   sql,
   ExpressionBuilder,
   Selectable,
+  TableNameSet,
 } from '..'
 import { Database, Pet } from '../shared'
 import { expectType } from 'tsd'
@@ -145,7 +146,7 @@ async function testPostgresToJson(db: Kysely<Database>) {
   >(r1)
 }
 
-function withPets(eb: ExpressionBuilder<Database, 'person'>) {
+function withPets(eb: ExpressionBuilder<Database, TableNameSet<'person'>>) {
   return jsonArrayFrom(
     eb
       .selectFrom('pet')
@@ -155,7 +156,7 @@ function withPets(eb: ExpressionBuilder<Database, 'person'>) {
   ).as('pets')
 }
 
-function withDoggo(eb: ExpressionBuilder<Database, 'person'>) {
+function withDoggo(eb: ExpressionBuilder<Database, TableNameSet<'person'>>) {
   return jsonObjectFrom(
     eb
       .selectFrom('pet')

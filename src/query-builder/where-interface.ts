@@ -3,11 +3,11 @@ import {
   OperandValueExpressionOrList,
 } from '../parser/binary-operation-parser.js'
 import { ReferenceExpression } from '../parser/reference-parser.js'
-import { SqlBool } from '../util/type-utils.js'
+import { SqlBool, TableNames } from '../util/type-utils.js'
 import { ExpressionBuilder } from '../expression/expression-builder.js'
 import { ExpressionOrFactory } from '../parser/expression-parser.js'
 
-export interface WhereInterface<DB, TB extends keyof DB> {
+export interface WhereInterface<DB extends TB, TB extends TableNames> {
   /**
    * Adds a `where` expression to the query.
    *

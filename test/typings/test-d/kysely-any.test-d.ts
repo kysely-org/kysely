@@ -17,7 +17,11 @@ async function testKyselyAnySelects(db: Kysely<any>) {
     }[]
   >(r2)
 
-  const r3 = await db.selectFrom('foo').select('foo.bar').execute()
+  const r3 = await db
+    .selectFrom('foo')
+    .select('foo.bar')
+    .where('foo.spam', '=', 1)
+    .execute()
   expectType<
     {
       bar: any
@@ -39,6 +43,8 @@ async function testKyselyAnySelects(db: Kysely<any>) {
   const r5 = await db
     .selectFrom(['foo1', 'foo2'])
     .select(['spam', 'foo1.bar', 'foo2.baz', 'doesnotexists.fux'])
+    .where('foo1.lol', '=', 'something')
+    .where('foo2.lol', '<', new Date())
     .execute()
   expectType<
     {
@@ -48,6 +54,29 @@ async function testKyselyAnySelects(db: Kysely<any>) {
       fux: never
     }[]
   >(r5)
+
+  const r6 = await db
+    .selectFrom('foo as bar')
+    .select('bar.spam')
+    .where('bar.baz', '=', false)
+    .execute()
+  expectType<
+    {
+      spam: any
+    }[]
+  >(r6)
+
+  const r7 = await db
+    .selectFrom((eb) => eb.selectFrom('spam').select('id').as('s'))
+    .select(['foo', 'bar', 's.spam'])
+    .execute()
+  expectType<
+    {
+      foo: any
+      bar: any
+      spam: any
+    }[]
+  >(r7)
 }
 
 async function testKyselyAnyUpdates(db: Kysely<any>) {

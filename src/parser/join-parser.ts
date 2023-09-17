@@ -3,6 +3,7 @@ import {
   AnyColumn,
   AnyColumnWithTable,
   DrainOuterGeneric,
+  TableNames,
 } from '../util/type-utils.js'
 import {
   TableExpression,
@@ -15,26 +16,27 @@ import { JoinBuilder } from '../query-builder/join-builder.js'
 import { createJoinBuilder } from './parse-utils.js'
 
 export type JoinReferenceExpression<
-  DB,
-  TB extends keyof DB,
+  DB extends TB,
+  TB extends TableNames,
   TE
 > = DrainOuterGeneric<
   AnyJoinColumn<DB, TB, TE> | AnyJoinColumnWithTable<DB, TB, TE>
 >
 
-export type JoinCallbackExpression<DB, TB extends keyof DB, TE> = (
+export type JoinCallbackExpression<DB extends TB, TB extends TableNames, TE> = (
   join: JoinBuilder<From<DB, TE>, FromTables<DB, TB, TE>>
 ) => JoinBuilder<any, any>
 
-type AnyJoinColumn<DB, TB extends keyof DB, TE> = AnyColumn<
+type AnyJoinColumn<DB extends TB, TB extends TableNames, TE> = AnyColumn<
   From<DB, TE>,
   FromTables<DB, TB, TE>
 >
 
-type AnyJoinColumnWithTable<DB, TB extends keyof DB, TE> = AnyColumnWithTable<
-  From<DB, TE>,
-  FromTables<DB, TB, TE>
->
+type AnyJoinColumnWithTable<
+  DB extends TB,
+  TB extends TableNames,
+  TE
+> = AnyColumnWithTable<From<DB, TE>, FromTables<DB, TB, TE>>
 
 export function parseJoin(joinType: JoinType, args: any[]): JoinNode {
   if (args.length === 3) {

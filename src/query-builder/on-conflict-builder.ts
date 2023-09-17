@@ -17,10 +17,15 @@ import {
 } from '../parser/update-set-parser.js'
 import { freeze } from '../util/object-utils.js'
 import { preventAwait } from '../util/prevent-await.js'
-import { AnyColumn, SqlBool } from '../util/type-utils.js'
+import {
+  AnyColumn,
+  SqlBool,
+  TableNameSet,
+  TableNames,
+} from '../util/type-utils.js'
 import { WhereInterface } from './where-interface.js'
 
-export class OnConflictBuilder<DB, TB extends keyof DB>
+export class OnConflictBuilder<DB extends TB, TB extends TableNames>
   implements WhereInterface<DB, TB>
 {
   readonly #props: OnConflictBuilderProps
@@ -177,7 +182,7 @@ export class OnConflictBuilder<DB, TB extends keyof DB>
    * on conflict ("pic") do nothing
    * ```
    */
-  doNothing(): OnConflictDoNothingBuilder<DB, TB> {
+  doNothing(): OnConflictDoNothingBuilder {
     return new OnConflictDoNothingBuilder({
       ...this.#props,
       onConflictNode: OnConflictNode.cloneWith(this.#props.onConflictNode, {
@@ -230,7 +235,7 @@ export class OnConflictBuilder<DB, TB extends keyof DB>
     update: UpdateObjectExpression<
       OnConflictDatabase<DB, TB>,
       OnConflictTables<TB>,
-      OnConflictTables<TB>
+      keyof OnConflictTables<TB>
     >
   ): OnConflictUpdateBuilder<OnConflictDatabase<DB, TB>, OnConflictTables<TB>> {
     return new OnConflictUpdateBuilder({
@@ -256,15 +261,15 @@ export interface OnConflictBuilderProps {
 
 preventAwait(OnConflictBuilder, "don't await OnConflictBuilder instances.")
 
-export type OnConflictDatabase<DB, TB extends keyof DB> = {
-  [K in keyof DB | 'excluded']: K extends keyof DB ? DB[K] : DB[TB]
+export type OnConflictDatabase<DB extends TB, TB extends TableNames> = {
+  [K in keyof DB | 'excluded']: K extends keyof DB ? DB[K] : DB[keyof TB]
 }
 
-export type OnConflictTables<TB> = TB | 'excluded'
+export type OnConflictTables<TB extends TableNames> = TableNameSet<
+  keyof TB | 'excluded'
+>
 
-export class OnConflictDoNothingBuilder<DB, TB extends keyof DB>
-  implements OperationNodeSource
-{
+export class OnConflictDoNothingBuilder implements OperationNodeSource {
   readonly #props: OnConflictBuilderProps
 
   constructor(props: OnConflictBuilderProps) {
@@ -281,7 +286,7 @@ preventAwait(
   "don't await OnConflictDoNothingBuilder instances."
 )
 
-export class OnConflictUpdateBuilder<DB, TB extends keyof DB>
+export class OnConflictUpdateBuilder<DB extends TB, TB extends TableNames>
   implements WhereInterface<DB, TB>, OperationNodeSource
 {
   readonly #props: OnConflictBuilderProps

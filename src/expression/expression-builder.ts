@@ -9,10 +9,10 @@ import {
   From,
   TableExpressionOrList,
   FromTables,
-  ExtractTableAlias,
   AnyAliasedTable,
   PickTableWithAlias,
   parseTable,
+  MergeNamesFromTableExpression,
 } from '../parser/table-parser.js'
 import { WithSchemaPlugin } from '../plugin/with-schema/with-schema-plugin.js'
 import { createQueryId } from '../util/query-id.js'
@@ -50,13 +50,12 @@ import {
   OperatorNode,
   UnaryOperator,
 } from '../operation-node/operator-node.js'
-import { SqlBool } from '../util/type-utils.js'
+import { SqlBool, TableNameSet, TableNames } from '../util/type-utils.js'
 import { parseUnaryOperation } from '../parser/unary-operation-parser.js'
 import {
   ExtractTypeFromValueExpression,
   parseSafeImmediateValue,
   parseValueExpression,
-  parseValueExpressionOrList,
 } from '../parser/value-parser.js'
 import { NOOP_QUERY_EXECUTOR } from '../query-executor/noop-query-executor.js'
 import { CaseBuilder } from '../query-builder/case-builder.js'
@@ -87,7 +86,7 @@ import {
 import { TupleNode } from '../operation-node/tuple-node.js'
 import { Selectable } from '../util/column-type.js'
 
-export interface ExpressionBuilder<DB, TB extends keyof DB> {
+export interface ExpressionBuilder<DB extends TB, TB extends TableNames> {
   /**
    * Creates a binary expression.
    *
@@ -278,25 +277,29 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    */
   selectFrom<TE extends keyof DB & string>(
     from: TE[]
-  ): SelectQueryBuilder<DB, TB | ExtractTableAlias<DB, TE>, {}>
+  ): SelectQueryBuilder<DB, TableNameSet<keyof TB | TE>, {}>
 
-  selectFrom<TE extends TableExpression<DB, TB>>(
+  selectFrom<TE extends TableExpression<DB, {}>>(
     from: TE[]
   ): SelectQueryBuilder<From<DB, TE>, FromTables<DB, TB, TE>, {}>
 
+  selectFrom<TE extends `${keyof DB & string} as ${string}`>(
+    from: TE
+  ): TE extends `${infer T} as ${infer A}`
+    ? T extends keyof DB
+      ? SelectQueryBuilder<
+          DB & Record<A, DB[T]>,
+          TableNameSet<keyof TB | A>,
+          {}
+        >
+      : never
+    : never
+
   selectFrom<TE extends keyof DB & string>(
     from: TE
-  ): SelectQueryBuilder<DB, TB | ExtractTableAlias<DB, TE>, {}>
+  ): SelectQueryBuilder<DB, TableNameSet<keyof TB | TE>, {}>
 
-  selectFrom<TE extends AnyAliasedTable<DB>>(
-    from: TE
-  ): SelectQueryBuilder<
-    DB & PickTableWithAlias<DB, TE>,
-    TB | ExtractTableAlias<DB, TE>,
-    {}
-  >
-
-  selectFrom<TE extends TableExpression<DB, TB>>(
+  selectFrom<TE extends TableExpression<DB, {}>>(
     from: TE
   ): SelectQueryBuilder<From<DB, TE>, FromTables<DB, TB, TE>, {}>
 
@@ -493,7 +496,7 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    * group by "person"."id"
    * ```
    */
-  table<T extends TB & string>(
+  table<T extends keyof TB & string>(
     table: T
   ): ExpressionWrapper<DB, TB, Selectable<DB[T]>>
 
@@ -1098,7 +1101,7 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
   withSchema(schema: string): ExpressionBuilder<DB, TB>
 }
 
-export function createExpressionBuilder<DB, TB extends keyof DB>(
+export function createExpressionBuilder<DB extends TB, TB extends TableNames>(
   executor: QueryExecutor = NOOP_QUERY_EXECUTOR
 ): ExpressionBuilder<DB, TB> {
   function binary<
@@ -1175,7 +1178,7 @@ export function createExpressionBuilder<DB, TB extends keyof DB>(
       return new JSONPathBuilder(parseJSONReference(reference, op))
     },
 
-    table<T extends TB & string>(
+    table<T extends keyof TB & string>(
       table: T
     ): ExpressionWrapper<DB, TB, Selectable<DB[T]>> {
       return new ExpressionWrapper(parseTable(table))
@@ -1341,16 +1344,16 @@ export function createExpressionBuilder<DB, TB extends keyof DB>(
   return eb
 }
 
-export function expressionBuilder<DB, TB extends keyof DB>(
+export function expressionBuilder<DB extends TB, TB extends TableNames>(
   _: SelectQueryBuilder<DB, TB, any>
 ): ExpressionBuilder<DB, TB>
 
-export function expressionBuilder<DB, TB extends keyof DB>(): ExpressionBuilder<
-  DB,
-  TB
->
+export function expressionBuilder<
+  DB extends TB,
+  TB extends TableNames
+>(): ExpressionBuilder<DB, TB>
 
-export function expressionBuilder<DB, TB extends keyof DB>(
+export function expressionBuilder<DB extends TB, TB extends TableNames>(
   _?: unknown
 ): ExpressionBuilder<DB, TB> {
   return createExpressionBuilder()

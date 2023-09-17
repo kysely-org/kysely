@@ -36,6 +36,7 @@ import {
   InsertObject,
   MssqlDialect,
   SelectQueryBuilder,
+  TableNameSet,
 } from '../../../'
 
 export interface Person {
@@ -69,7 +70,8 @@ export interface Database {
   'toy_schema.toy': Toy
 }
 
-interface PersonInsertParams extends InsertObject<Database, 'person'> {
+interface PersonInsertParams
+  extends InsertObject<Database, TableNameSet<'person'>> {
   pets?: PetInsertParams[]
 }
 
@@ -407,7 +409,7 @@ async function insertToysForPet(
 
 export async function insert<TB extends keyof Database>(
   ctx: TestContext,
-  qb: InsertQueryBuilder<Database, TB, InsertResult>
+  qb: InsertQueryBuilder<Database, TableNameSet<TB>, InsertResult>
 ): Promise<number> {
   const { dialect } = ctx
 

@@ -19,6 +19,7 @@ import {
   NarrowPartial,
   SimplifyResult,
   SimplifySingleResult,
+  TableNames,
 } from '../util/type-utils.js'
 import {
   UpdateObjectExpression,
@@ -61,7 +62,7 @@ import { Expression } from '../expression/expression.js'
 import { KyselyTypeError } from '../util/type-error.js'
 import { Streamable } from '../util/streamable.js'
 
-export class InsertQueryBuilder<DB, TB extends keyof DB, O>
+export class InsertQueryBuilder<DB extends TB, TB extends TableNames, O>
   implements
     ReturningInterface<DB, TB, O>,
     OperationNodeSource,
@@ -273,7 +274,7 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    * ```
    */
   columns(
-    columns: ReadonlyArray<keyof DB[TB] & string>
+    columns: ReadonlyArray<keyof DB[keyof TB] & string>
   ): InsertQueryBuilder<DB, TB, O> {
     return new InsertQueryBuilder({
       ...this.#props,
@@ -513,7 +514,7 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
           OnConflictDatabase<DB, TB>,
           OnConflictTables<TB>
         >
-      | OnConflictDoNothingBuilder<DB, TB>
+      | OnConflictDoNothingBuilder
   ): InsertQueryBuilder<DB, TB, O> {
     return new InsertQueryBuilder({
       ...this.#props,
@@ -546,7 +547,7 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    * ```
    */
   onDuplicateKeyUpdate(
-    update: UpdateObjectExpression<DB, TB, TB>
+    update: UpdateObjectExpression<DB, TB, keyof TB>
   ): InsertQueryBuilder<DB, TB, O> {
     return new InsertQueryBuilder({
       ...this.#props,
@@ -582,7 +583,7 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
     })
   }
 
-  returningAll(): InsertQueryBuilder<DB, TB, Selectable<DB[TB]>> {
+  returningAll(): InsertQueryBuilder<DB, TB, Selectable<DB[keyof TB]>> {
     return new InsertQueryBuilder({
       ...this.#props,
       queryNode: QueryNode.cloneWithReturning(

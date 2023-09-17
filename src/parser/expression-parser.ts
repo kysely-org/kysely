@@ -13,6 +13,7 @@ import {
 } from '../expression/expression-builder.js'
 import { SelectQueryBuilderExpression } from '../query-builder/select-query-builder-expression.js'
 import { isFunction } from '../util/object-utils.js'
+import { TableNames } from '../util/type-utils.js'
 
 /**
  * Like `Expression<V>` but also accepts a select query with an output
@@ -26,23 +27,23 @@ export type OperandExpression<V> =
   // is also an `Expression`.
   Expression<V> | SelectQueryBuilderExpression<Record<string, V>>
 
-export type ExpressionOrFactory<DB, TB extends keyof DB, V> =
+export type ExpressionOrFactory<DB extends TB, TB extends TableNames, V> =
   | OperandExpression<V>
   | OperandExpressionFactory<DB, TB, V>
 
-export type AliasedExpressionOrFactory<DB, TB extends keyof DB> =
+export type AliasedExpressionOrFactory<DB extends TB, TB extends TableNames> =
   | AliasedExpression<any, any>
   | AliasedExpressionFactory<DB, TB>
 
-export type ExpressionFactory<DB, TB extends keyof DB, V> = (
+export type ExpressionFactory<DB extends TB, TB extends TableNames, V> = (
   eb: ExpressionBuilder<DB, TB>
 ) => Expression<V>
 
-type OperandExpressionFactory<DB, TB extends keyof DB, V> = (
+type OperandExpressionFactory<DB extends TB, TB extends TableNames, V> = (
   eb: ExpressionBuilder<DB, TB>
 ) => OperandExpression<V>
 
-type AliasedExpressionFactory<DB, TB extends keyof DB> = (
+type AliasedExpressionFactory<DB extends TB, TB extends TableNames> = (
   eb: ExpressionBuilder<DB, TB>
 ) => AliasedExpression<any, any>
 

@@ -1,15 +1,26 @@
-import { DrainOuterGeneric } from '../util/type-utils.js'
+import { DrainOuterGeneric, TableNames } from '../util/type-utils.js'
 import { ExtractTypeFromReferenceExpression } from './reference-parser.js'
 import { ExtractTypeFromValueExpression } from './value-parser.js'
 
-export type RefTuple2<DB, TB extends keyof DB, R1, R2> = DrainOuterGeneric<
+export type RefTuple2<
+  DB extends TB,
+  TB extends TableNames,
+  R1,
+  R2
+> = DrainOuterGeneric<
   [
     ExtractTypeFromReferenceExpression<DB, TB, R1>,
     ExtractTypeFromReferenceExpression<DB, TB, R2>
   ]
 >
 
-export type RefTuple3<DB, TB extends keyof DB, R1, R2, R3> = DrainOuterGeneric<
+export type RefTuple3<
+  DB extends TB,
+  TB extends TableNames,
+  R1,
+  R2,
+  R3
+> = DrainOuterGeneric<
   [
     ExtractTypeFromReferenceExpression<DB, TB, R1>,
     ExtractTypeFromReferenceExpression<DB, TB, R2>,
@@ -18,8 +29,8 @@ export type RefTuple3<DB, TB extends keyof DB, R1, R2, R3> = DrainOuterGeneric<
 >
 
 export type RefTuple4<
-  DB,
-  TB extends keyof DB,
+  DB extends TB,
+  TB extends TableNames,
   R1,
   R2,
   R3,
@@ -34,8 +45,8 @@ export type RefTuple4<
 >
 
 export type RefTuple5<
-  DB,
-  TB extends keyof DB,
+  DB extends TB,
+  TB extends TableNames,
   R1,
   R2,
   R3,
