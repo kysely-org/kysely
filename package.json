@@ -27,6 +27,11 @@
       "require": "./dist/cjs/helpers/mysql.js",
       "default": "./dist/cjs/helpers/mysql.js"
     },
+    "./helpers/mssql": {
+      "import": "./dist/esm/helpers/mssql.js",
+      "require": "./dist/cjs/helpers/mssql.js",
+      "default": "./dist/cjs/helpers/mssql.js"
+    },
     "./helpers/sqlite": {
       "import": "./dist/esm/helpers/sqlite.js",
       "require": "./dist/cjs/helpers/sqlite.js",
