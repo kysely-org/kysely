@@ -9,6 +9,7 @@ import { freeze, getLast } from '../util/object-utils.js'
 
 export const DEFAULT_MIGRATION_TABLE = 'kysely_migration'
 export const DEFAULT_MIGRATION_LOCK_TABLE = 'kysely_migration_lock'
+export const DEFAULT_MIGRATION_ORDER = 'strict'
 export const MIGRATION_LOCK_ID = 'migration_lock'
 export const NO_MIGRATIONS: NoMigrations = freeze({ __noMigrations__: true })
 
@@ -244,6 +245,10 @@ export class Migrator {
     return this.#props.migrationLockTableName ?? DEFAULT_MIGRATION_LOCK_TABLE
   }
 
+  get #migrationOrder(): 'strict' | 'permissive' | undefined {
+    return this.#props.migrationOrder ?? DEFAULT_MIGRATION_ORDER
+  }
+
   get #schemaPlugin(): KyselyPlugin {
     if (this.#migrationTableSchema) {
       return new WithSchemaPlugin(this.#migrationTableSchema)
@@ -433,7 +438,10 @@ export class Migrator {
     const migrations = await this.#resolveMigrations()
     const executedMigrations = await this.#getExecutedMigrations(db)
 
-    this.#ensureMigrationsNotCorrupted(migrations, executedMigrations)
+    this.#ensureNoMissingMigrations(migrations, executedMigrations)
+    if (this.#migrationOrder !== 'permissive') {
+      this.#ensureMigrationOrder(migrations, executedMigrations)
+    }
 
     return freeze({
       migrations,
@@ -467,10 +475,11 @@ export class Migrator {
     return executedMigrations.map((it) => it.name)
   }
 
-  #ensureMigrationsNotCorrupted(
+  #ensureNoMissingMigrations(
     migrations: ReadonlyArray<NamedMigration>,
     executedMigrations: ReadonlyArray<string>
   ) {
+    // Ensure all executed migrations exist in the `migrations` list.
     for (const executed of executedMigrations) {
       if (!migrations.some((it) => it.name === executed)) {
         throw new Error(
@@ -478,10 +487,13 @@ export class Migrator {
         )
       }
     }
+  }
 
-    // Now we know all executed migrations exist in the `migrations` list.
-    // Next we need to make sure that the executed migratiosns are the first
-    // ones in the migration list.
+  #ensureMigrationOrder(
+    migrations: ReadonlyArray<NamedMigration>,
+    executedMigrations: ReadonlyArray<string>
+  ) {
+    // Ensure the executed migrations are the first ones in the migration list.
     for (let i = 0; i < executedMigrations.length; ++i) {
       if (migrations[i].name !== executedMigrations[i]) {
         throw new Error(
@@ -657,6 +669,21 @@ export interface MigratorProps {
    * This only works on postgres.
    */
   readonly migrationTableSchema?: string
+
+  /**
+   * Enforces whether or not migrations must be run in alpha-numeric order.
+   *
+   * In strict mode, migrations must be run in their exact alpha-numeric order.
+   * This is checked against the migrations already run in the database
+   * (`migrationTableName'). This ensures your migrations are always run in
+   * the same order and is the safest option.
+   *
+   * In permissive mode, migrations are still run in alpha-numeric order, but
+   * the order is not checked against already-run migrations in the database.
+   * Kysely will simply run all migrations that haven't run yet, in alpha-numeric
+   * order.
+   */
+  readonly migrationOrder?: 'strict' | 'permissive'
 }
 
 /**
