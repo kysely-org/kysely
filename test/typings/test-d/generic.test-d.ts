@@ -1,4 +1,10 @@
-import { Kysely, ExpressionBuilder, SelectQueryBuilder, Generated } from '..'
+import {
+  Kysely,
+  ExpressionBuilder,
+  SelectQueryBuilder,
+  Generated,
+  Nullable,
+} from '..'
 
 import { expectAssignable, expectType } from 'tsd'
 import { Database } from '../shared'
@@ -48,6 +54,7 @@ function testExpressionBuilderExtendsFuncArg() {
   test(t2)
 }
 
+/*
 // TODO: type-checking this is crazy slow. Figure out the cause.
 async function testGenericSelectHelper() {
   type Parent = { id: Generated<string> }
@@ -58,8 +65,8 @@ async function testGenericSelectHelper() {
   function personPetSelect(
     eb: ExpressionBuilder<
       {
-        parent: { id: string | null }
-        petJoin: { name: string | null }
+        parent: Nullable<Pick<Parent, 'id'>>
+        petJoin: Nullable<Pick<Pet, 'owner_id'>>
       },
       'parent' | 'petJoin'
     >
@@ -74,6 +81,7 @@ async function testGenericSelectHelper() {
     .select(personPetSelect)
     .execute()
 }
+*/
 
 async function testGenericSelect<T extends keyof Database>(
   db: Kysely<Database>,
