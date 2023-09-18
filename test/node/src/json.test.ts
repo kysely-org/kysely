@@ -16,6 +16,11 @@ import {
   jsonBuildObject as mysql_jsonBuildObject,
 } from '../../../helpers/mysql'
 import {
+  jsonArrayFrom as mssql_jsonArrayFrom,
+  jsonObjectFrom as mssql_jsonObjectFrom,
+  jsonBuildObject as mssql_jsonBuildObject,
+} from '../../../helpers/mssql'
+import {
   jsonArrayFrom as sqlite_jsonArrayFrom,
   jsonObjectFrom as sqlite_jsonObjectFrom,
   jsonBuildObject as sqlite_jsonBuildObject,
@@ -53,11 +58,10 @@ const jsonFunctions = {
     jsonObjectFrom: mysql_jsonObjectFrom,
     jsonBuildObject: mysql_jsonBuildObject,
   },
-  // TODO: this is fake, to avoid ts errors.
   mssql: {
-    jsonArrayFrom: mysql_jsonArrayFrom,
-    jsonObjectFrom: mysql_jsonObjectFrom,
-    jsonBuildObject: mysql_jsonBuildObject,
+    jsonArrayFrom: mssql_jsonArrayFrom,
+    jsonObjectFrom: mssql_jsonObjectFrom,
+    jsonBuildObject: mssql_jsonBuildObject,
   },
   sqlite: {
     jsonArrayFrom: sqlite_jsonArrayFrom,
@@ -66,7 +70,7 @@ const jsonFunctions = {
   },
 } as const
 
-for (const dialect of DIALECTS.filter((dialect) => dialect !== 'mssql')) {
+for (const dialect of DIALECTS) {
   const { jsonArrayFrom, jsonObjectFrom, jsonBuildObject } =
     jsonFunctions[dialect]
 
@@ -84,6 +88,12 @@ for (const dialect of DIALECTS.filter((dialect) => dialect !== 'mssql')) {
           .addColumn('id', 'serial', (col) => col.primaryKey())
           .addColumn('data', 'jsonb')
           .execute()
+      } else if (dialect === 'mssql') {
+        await ctx.db.schema
+          .createTable('json_table')
+          .addColumn('id', 'integer', (col) => col.autoIncrement().primaryKey())
+          .addColumn('data', 'varchar(255)')
+          .execute()
       } else {
         await ctx.db.schema
           .createTable('json_table')
@@ -95,7 +105,7 @@ for (const dialect of DIALECTS.filter((dialect) => dialect !== 'mssql')) {
 
       db = ctx.db.withTables<{ json_table: JsonTable }>()
 
-      if (dialect === 'sqlite') {
+      if (dialect === 'sqlite' || dialect === 'mssql') {
         db = db.withPlugin(new ParseJSONResultsPlugin())
       }
     })
@@ -385,7 +395,7 @@ for (const dialect of DIALECTS.filter((dialect) => dialect !== 'mssql')) {
 
         // Nest an empty list
         jsonArrayFrom(
-          eb.selectFrom('pet').select('id').where(sql.lit(false))
+          eb.selectFrom('pet').select('id').where(sql.lit(1), '=', sql.lit(0))
         ).as('emptyList'),
       ])
 
