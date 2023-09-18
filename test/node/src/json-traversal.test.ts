@@ -39,7 +39,7 @@ for (const dialect of DIALECTS.filter((dialect) => dialect !== 'mssql')) {
       await destroyJSONTest(ctx)
     })
 
-    if (dialect !== 'postgres') {
+    if (dialect === 'mysql' || dialect === 'sqlite') {
       describe('JSON Path syntax ($)', () => {
         const jsonOperator = dialect === 'mysql' ? '->$' : '->>$'
 
@@ -345,10 +345,41 @@ for (const dialect of DIALECTS.filter((dialect) => dialect !== 'mssql')) {
           expect(results).to.have.length(1)
           expect(results[0].profile.auth.login_count).to.equal(12)
         })
+
+        it(`should execute a query with column${jsonOperator}.key.key in order by clause`, async () => {
+          const query = ctx.db
+            .selectFrom('person_metadata')
+            .orderBy(
+              (eb) =>
+                eb.ref('profile', jsonOperator).key('auth').key('login_count'),
+              'desc'
+            )
+            .selectAll()
+
+          testSql(query, dialect, {
+            postgres: NOT_SUPPORTED,
+            mysql: {
+              parameters: [],
+              sql: "select * from `person_metadata` order by `profile`->'$.auth.login_count' desc",
+            },
+            mssql: NOT_SUPPORTED,
+            sqlite: {
+              parameters: [],
+              sql: `select * from "person_metadata" order by "profile"->>'$.auth.login_count' desc`,
+            },
+          })
+
+          const results = await query.execute()
+
+          expect(results).to.have.length(3)
+          expect(results[0].profile.auth.login_count).to.equal(14)
+          expect(results[1].profile.auth.login_count).to.equal(13)
+          expect(results[2].profile.auth.login_count).to.equal(12)
+        })
       })
     }
 
-    if (dialect !== 'mysql') {
+    if (dialect === 'postgres' || dialect === 'sqlite') {
       describe('PostgreSQL-style syntax (->->->>)', () => {
         const jsonOperator = dialect === 'postgres' ? '->' : '->>'
 
@@ -623,6 +654,37 @@ for (const dialect of DIALECTS.filter((dialect) => dialect !== 'mssql')) {
 
           expect(results).to.have.length(1)
           expect(results[0].profile.auth.login_count).to.equal(12)
+        })
+
+        it(`should execute a query with column->key${jsonOperator}key in order by clause`, async () => {
+          const query = ctx.db
+            .selectFrom('person_metadata')
+            .orderBy(
+              (eb) =>
+                eb.ref('profile', jsonOperator).key('auth').key('login_count'),
+              'desc'
+            )
+            .selectAll()
+
+          testSql(query, dialect, {
+            postgres: {
+              parameters: [],
+              sql: `select * from "person_metadata" order by "profile"->'auth'->'login_count' desc`,
+            },
+            mysql: NOT_SUPPORTED,
+            mssql: NOT_SUPPORTED,
+            sqlite: {
+              parameters: [],
+              sql: `select * from "person_metadata" order by "profile"->'auth'->>'login_count' desc`,
+            },
+          })
+
+          const results = await query.execute()
+
+          expect(results).to.have.length(3)
+          expect(results[0].profile.auth.login_count).to.equal(14)
+          expect(results[1].profile.auth.login_count).to.equal(13)
+          expect(results[2].profile.auth.login_count).to.equal(12)
         })
       })
     }
