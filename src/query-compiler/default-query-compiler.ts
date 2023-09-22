@@ -1534,4 +1534,5 @@ const JOIN_TYPE_SQL: Readonly<Record<JoinType, string>> = freeze({
   FullJoin: 'full join',
   LateralInnerJoin: 'inner join lateral',
   LateralLeftJoin: 'left join lateral',
+  Using: 'using',
 })
