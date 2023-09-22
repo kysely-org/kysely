@@ -407,7 +407,7 @@ async function insertToysForPet(
 
 export async function insert<TB extends keyof Database>(
   ctx: TestContext,
-  qb: InsertQueryBuilder<Database, TB, InsertResult>
+  qb: InsertQueryBuilder<Database, TB, TB, InsertResult>
 ): Promise<number> {
   const { dialect } = ctx
 
@@ -426,7 +426,7 @@ export async function insert<TB extends keyof Database>(
 
       const table =
         query.kind === 'InsertQueryNode' &&
-        [query.into.table.schema?.name, query.into.table.identifier.name]
+        [query.into!.table.schema?.name, query.into!.table.identifier.name]
           .filter(Boolean)
           .join('.')
 

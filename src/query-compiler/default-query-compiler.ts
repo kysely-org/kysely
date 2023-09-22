@@ -1421,7 +1421,7 @@ export class DefaultQueryCompiler
     this.visitNode(node.into)
 
     if (node.using) {
-      this.append(' using ')
+      this.append(' ')
       this.visitNode(node.using)
     }
 
