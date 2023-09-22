@@ -21,7 +21,7 @@ export interface QueryResult<O> {
   readonly numUpdatedOrDeletedRows?: bigint
 
   /**
-   * This is defined for insert, update and delete queries and contains
+   * This is defined for insert, update, delete and merge queries and contains
    * the number of rows the query inserted/updated/deleted.
    */
   readonly numAffectedRows?: bigint

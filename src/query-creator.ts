@@ -51,6 +51,7 @@ import {
 } from './parser/select-parser.js'
 import { MergeQueryBuilder } from './query-builder/merge-query-builder.js'
 import { MergeQueryNode } from './operation-node/merge-query-node.js'
+import { MergeResult } from './query-builder/merge-result.js'
 
 export class QueryCreator<DB> {
   readonly #props: QueryCreatorProps
@@ -313,7 +314,7 @@ export class QueryCreator<DB> {
    */
   insertInto<T extends keyof DB & string>(
     table: T
-  ): InsertQueryBuilder<DB, T, never, InsertResult> {
+  ): InsertQueryBuilder<DB, T, T, InsertResult> {
     return new InsertQueryBuilder({
       queryId: createQueryId(),
       executor: this.#props.executor,
@@ -352,7 +353,7 @@ export class QueryCreator<DB> {
    */
   replaceInto<T extends keyof DB & string>(
     table: T
-  ): InsertQueryBuilder<DB, T, never, InsertResult> {
+  ): InsertQueryBuilder<DB, T, T, InsertResult> {
     return new InsertQueryBuilder({
       queryId: createQueryId(),
       executor: this.#props.executor,
@@ -504,13 +505,16 @@ export class QueryCreator<DB> {
   /**
    * TODO: ...
    */
-  mergeInto<TR extends keyof DB & string>(table: TR): MergeQueryBuilder<DB, TR>
+  mergeInto<TR extends keyof DB & string>(
+    table: TR
+  ): MergeQueryBuilder<DB, TR, MergeResult>
 
   mergeInto<TR extends AnyAliasedTable<DB>>(
     table: TR
   ): MergeQueryBuilder<
     DB & PickTableWithAlias<DB, TR>,
-    ExtractTableAlias<DB, TR>
+    ExtractTableAlias<DB, TR>,
+    MergeResult
   >
 
   mergeInto<TR extends SimpleTableReference<DB>>(table: TR): any {
