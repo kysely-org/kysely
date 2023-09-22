@@ -3,6 +3,7 @@ import {
   createExpressionBuilder,
 } from '../expression/expression-builder.js'
 import { AliasedExpression, Expression } from '../expression/expression.js'
+import { InsertQueryNode } from '../operation-node/insert-query-node.js'
 import { MergeQueryNode } from '../operation-node/merge-query-node'
 import { UpdateQueryNode } from '../operation-node/update-query-node.js'
 import {
@@ -20,6 +21,7 @@ import { freeze } from '../util/object-utils.js'
 import { preventAwait } from '../util/prevent-await.js'
 import { QueryId } from '../util/query-id.js'
 import { ShallowRecord, SqlBool } from '../util/type-utils.js'
+import { InsertQueryBuilder } from './insert-query-builder.js'
 import { UpdateQueryBuilder } from './update-query-builder.js'
 
 export class MergeQueryBuilder<DB, IT extends keyof DB> {
@@ -171,9 +173,37 @@ export class NotMatchedMergeQueryBuilder<
     this.#props = freeze(props)
   }
 
-  thenDoNothing() {}
+  thenDoNothing(): WheneableMergeQueryBuilder<DB, IT, UT> {
+    return new WheneableMergeQueryBuilder({
+      ...this.#props,
+      queryNode: MergeQueryNode.cloneWithThen(
+        this.#props.queryNode,
+        parseMergeThen('do nothing')
+      ),
+    })
+  }
 
-  thenInsert() {}
+  thenInsert(
+    values: (
+      ib: InsertQueryBuilder<DB, IT, UT, never>
+    ) => InsertQueryBuilder<DB, IT, UT, never>
+  ): WheneableMergeQueryBuilder<DB, IT, UT> {
+    return new WheneableMergeQueryBuilder({
+      ...this.#props,
+      queryNode: MergeQueryNode.cloneWithThen(
+        this.#props.queryNode,
+        parseMergeThen(
+          values(
+            new InsertQueryBuilder({
+              queryId: this.#props.queryId,
+              executor: NOOP_QUERY_EXECUTOR,
+              queryNode: InsertQueryNode.createWithoutInto(),
+            })
+          )
+        )
+      ),
+    })
+  }
 }
 
 export type ExtractWheneableMergeQueryBuilder<
