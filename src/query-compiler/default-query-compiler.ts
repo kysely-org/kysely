@@ -104,6 +104,7 @@ import { JSONPathNode } from '../operation-node/json-path-node.js'
 import { JSONPathLegNode } from '../operation-node/json-path-leg-node.js'
 import { JSONOperatorChainNode } from '../operation-node/json-operator-chain-node.js'
 import { TupleNode } from '../operation-node/tuple-node.js'
+import { MergeQueryNode } from '../operation-node/merge-query-node.js'
 
 export class DefaultQueryCompiler
   extends OperationNodeVisitor
@@ -1405,6 +1406,26 @@ export class DefaultQueryCompiler
       }
 
       this.visitNode(node.values[i])
+    }
+  }
+
+  protected override visitMergeQuery(node: MergeQueryNode): void {
+    if (node.with) {
+      this.visitNode(node.with)
+      this.append(' ')
+    }
+
+    this.append('merge into ')
+    this.visitNode(node.into)
+
+    if (node.using) {
+      this.append(' using ')
+      this.visitNode(node.using)
+    }
+
+    if (node.whens) {
+      this.append(' ')
+      this.compileList(node.whens)
     }
   }
 
