@@ -22,6 +22,8 @@ import {
   ExtractTableAlias,
   AnyAliasedTable,
   PickTableWithAlias,
+  SimpleTableReference,
+  parseAliasedTable,
 } from './parser/table-parser.js'
 import { QueryExecutor } from './query-executor/query-executor.js'
 import {
@@ -47,6 +49,8 @@ import {
   Selection,
   parseSelectArg,
 } from './parser/select-parser.js'
+import { MergeQueryBuilder } from './query-builder/merge-query-builder.js'
+import { MergeQueryNode } from './operation-node/merge-query-node.js'
 
 export class QueryCreator<DB> {
   readonly #props: QueryCreatorProps
@@ -492,6 +496,29 @@ export class QueryCreator<DB> {
       executor: this.#props.executor,
       queryNode: UpdateQueryNode.create(
         parseTableExpression(table),
+        this.#props.withNode
+      ),
+    })
+  }
+
+  /**
+   * TODO: ...
+   */
+  mergeInto<TR extends keyof DB & string>(table: TR): MergeQueryBuilder<DB, TR>
+
+  mergeInto<TR extends AnyAliasedTable<DB>>(
+    table: TR
+  ): MergeQueryBuilder<
+    DB & PickTableWithAlias<DB, TR>,
+    ExtractTableAlias<DB, TR>
+  >
+
+  mergeInto<TR extends SimpleTableReference<DB>>(table: TR): any {
+    return new MergeQueryBuilder({
+      queryId: createQueryId(),
+      executor: this.#props.executor,
+      queryNode: MergeQueryNode.create(
+        parseAliasedTable(table),
         this.#props.withNode
       ),
     })
