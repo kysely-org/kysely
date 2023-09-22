@@ -295,8 +295,10 @@ export class DefaultQueryCompiler
       this.append(' ignore')
     }
 
-    this.append(' into ')
-    this.visitNode(node.into)
+    if (node.into) {
+      this.append(' into ')
+      this.visitNode(node.into)
+    }
 
     if (node.columns) {
       this.append(' (')
