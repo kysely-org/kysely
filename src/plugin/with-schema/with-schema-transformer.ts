@@ -31,6 +31,7 @@ const ROOT_OPERATION_NODES: Record<RootOperationNode['kind'], true> = freeze({
   RawNode: true,
   SelectQueryNode: true,
   UpdateQueryNode: true,
+  MergeQueryNode: true,
 })
 
 export class WithSchemaTransformer extends OperationNodeTransformer {
@@ -133,6 +134,10 @@ export class WithSchemaTransformer extends OperationNodeTransformer {
       for (const join of node.joins) {
         this.#collectSchemableIdsFromTableExpr(join.table, schemableIds)
       }
+    }
+
+    if ('using' in node && node.using) {
+      this.#collectSchemableIdsFromTableExpr(node.using, schemableIds)
     }
 
     return schemableIds
