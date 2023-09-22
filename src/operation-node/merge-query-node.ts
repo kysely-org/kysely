@@ -30,19 +30,37 @@ export const MergeQueryNode = freeze({
     })
   },
 
-  cloneWithUsing(mergeNode: MergeQueryNode, using: JoinNode) {
+  cloneWithUsing(mergeNode: MergeQueryNode, using: JoinNode): MergeQueryNode {
     return freeze({
       ...mergeNode,
       using,
     })
   },
 
-  cloneWithWhen(mergeNode: MergeQueryNode, when: WhenNode) {
+  cloneWithWhen(mergeNode: MergeQueryNode, when: WhenNode): MergeQueryNode {
     return freeze({
       ...mergeNode,
       whens: mergeNode.whens
         ? freeze([...mergeNode.whens, when])
         : freeze([when]),
+    })
+  },
+
+  cloneWithThen(
+    mergeNode: MergeQueryNode,
+    then: OperationNode
+  ): MergeQueryNode {
+    return freeze({
+      ...mergeNode,
+      whens: mergeNode.whens
+        ? freeze([
+            ...mergeNode.whens.slice(0, -1),
+            WhenNode.cloneWithResult(
+              mergeNode.whens[mergeNode.whens.length - 1],
+              then
+            ),
+          ])
+        : undefined,
     })
   },
 })

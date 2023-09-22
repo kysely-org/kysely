@@ -40,6 +40,12 @@ export const UpdateQueryNode = freeze({
     })
   },
 
+  createWithoutTable(): UpdateQueryNode {
+    return freeze({
+      kind: 'UpdateQueryNode',
+    })
+  },
+
   cloneWithFromItems(
     updateQuery: UpdateQueryNode,
     fromItems: ReadonlyArray<OperationNode>

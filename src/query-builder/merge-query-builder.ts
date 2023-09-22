@@ -4,6 +4,8 @@ import {
 } from '../expression/expression-builder.js'
 import { AliasedExpression, Expression } from '../expression/expression.js'
 import { MergeQueryNode } from '../operation-node/merge-query-node'
+import { RawNode } from '../operation-node/raw-node.js'
+import { UpdateQueryNode } from '../operation-node/update-query-node.js'
 import { parseMergeWhenCondition } from '../parser/binary-operation-parser.js'
 import {
   JoinCallbackExpression,
@@ -12,6 +14,7 @@ import {
 } from '../parser/join-parser.js'
 import { TableExpression } from '../parser/table-parser.js'
 import { CompiledQuery } from '../query-compiler/compiled-query.js'
+import { NOOP_QUERY_EXECUTOR } from '../query-executor/noop-query-executor.js'
 import { QueryExecutor } from '../query-executor/query-executor.js'
 import { Compilable } from '../util/compilable.js'
 import { freeze } from '../util/object-utils.js'
@@ -118,16 +121,20 @@ export class MatchedMergeQueryBuilder<
   thenDelete(): WheneableMergeQueryBuilder<DB, IT, UT> {
     return new WheneableMergeQueryBuilder({
       ...this.#props,
-      // queryNode: MergeQueryNode.cloneWithMatchedDelete(this.#props.queryNode),
+      queryNode: MergeQueryNode.cloneWithThen(
+        this.#props.queryNode,
+        RawNode.create(['delete'], [])
+      ),
     })
   }
 
   thenDoNothing(): WheneableMergeQueryBuilder<DB, IT, UT> {
     return new WheneableMergeQueryBuilder({
       ...this.#props,
-      // queryNode: MergeQueryNode.cloneWithMatchedDoNothing(
-      //   this.#props.queryNode
-      // ),
+      queryNode: MergeQueryNode.cloneWithThen(
+        this.#props.queryNode,
+        RawNode.create(['do nothing'], [])
+      ),
     })
   }
 
@@ -138,10 +145,16 @@ export class MatchedMergeQueryBuilder<
   ): WheneableMergeQueryBuilder<DB, IT, UT> {
     return new WheneableMergeQueryBuilder({
       ...this.#props,
-      // queryNode: MergeQueryNode.cloneWithMatchedUpdate(
-      //   this.#props.queryNode,
-      //   set(createUpdateQueryBuilder())
-      // ),
+      queryNode: MergeQueryNode.cloneWithThen(
+        this.#props.queryNode,
+        set(
+          new UpdateQueryBuilder({
+            queryId: this.#props.queryId,
+            executor: NOOP_QUERY_EXECUTOR,
+            queryNode: UpdateQueryNode.createWithoutTable(),
+          })
+        ).toOperationNode()
+      ),
     })
   }
 }
