@@ -155,21 +155,6 @@ export function parseFilterList(
   return node
 }
 
-export function parseMergeWhenCondition(
-  isMatched: boolean,
-  and: Expression<any> | undefined
-) {
-  return WhenNode.create(
-    parseFilterList(
-      [
-        RawNode.create([isMatched ? 'matched' : 'not matched'], []),
-        ...(and ? [and] : []),
-      ],
-      'and'
-    )
-  )
-}
-
 function isIsOperator(
   operator: BinaryOperatorExpression
 ): operator is 'is' | 'is not' {

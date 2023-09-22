@@ -4,14 +4,13 @@ import {
 } from '../expression/expression-builder.js'
 import { AliasedExpression, Expression } from '../expression/expression.js'
 import { MergeQueryNode } from '../operation-node/merge-query-node'
-import { RawNode } from '../operation-node/raw-node.js'
 import { UpdateQueryNode } from '../operation-node/update-query-node.js'
-import { parseMergeWhenCondition } from '../parser/binary-operation-parser.js'
 import {
   JoinCallbackExpression,
   JoinReferenceExpression,
   parseJoin,
 } from '../parser/join-parser.js'
+import { parseMergeThen, parseMergeWhen } from '../parser/merge-parser.js'
 import { TableExpression } from '../parser/table-parser.js'
 import { CompiledQuery } from '../query-compiler/compiled-query.js'
 import { NOOP_QUERY_EXECUTOR } from '../query-executor/noop-query-executor.js'
@@ -82,7 +81,7 @@ export class WheneableMergeQueryBuilder<
       ...this.#props,
       queryNode: MergeQueryNode.cloneWithWhen(
         this.#props.queryNode,
-        parseMergeWhenCondition(true, and?.(createExpressionBuilder()))
+        parseMergeWhen(true, and?.(createExpressionBuilder()))
       ),
     })
   }
@@ -94,7 +93,7 @@ export class WheneableMergeQueryBuilder<
       ...this.#props,
       queryNode: MergeQueryNode.cloneWithWhen(
         this.#props.queryNode,
-        parseMergeWhenCondition(false, and?.(createExpressionBuilder()))
+        parseMergeWhen(false, and?.(createExpressionBuilder()))
       ),
     })
   }
@@ -123,7 +122,7 @@ export class MatchedMergeQueryBuilder<
       ...this.#props,
       queryNode: MergeQueryNode.cloneWithThen(
         this.#props.queryNode,
-        RawNode.create(['delete'], [])
+        parseMergeThen('delete')
       ),
     })
   }
@@ -133,7 +132,7 @@ export class MatchedMergeQueryBuilder<
       ...this.#props,
       queryNode: MergeQueryNode.cloneWithThen(
         this.#props.queryNode,
-        RawNode.create(['do nothing'], [])
+        parseMergeThen('do nothing')
       ),
     })
   }
@@ -147,13 +146,15 @@ export class MatchedMergeQueryBuilder<
       ...this.#props,
       queryNode: MergeQueryNode.cloneWithThen(
         this.#props.queryNode,
-        set(
-          new UpdateQueryBuilder({
-            queryId: this.#props.queryId,
-            executor: NOOP_QUERY_EXECUTOR,
-            queryNode: UpdateQueryNode.createWithoutTable(),
-          })
-        ).toOperationNode()
+        parseMergeThen(
+          set(
+            new UpdateQueryBuilder({
+              queryId: this.#props.queryId,
+              executor: NOOP_QUERY_EXECUTOR,
+              queryNode: UpdateQueryNode.createWithoutTable(),
+            })
+          )
+        )
       ),
     })
   }
