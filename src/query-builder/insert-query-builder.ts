@@ -61,7 +61,7 @@ import { Expression } from '../expression/expression.js'
 import { KyselyTypeError } from '../util/type-error.js'
 import { Streamable } from '../util/streamable.js'
 
-export class InsertQueryBuilder<DB, TB extends keyof DB, O>
+export class InsertQueryBuilder<DB, TB extends keyof DB, UT extends keyof DB, O>
   implements
     ReturningInterface<DB, TB, O>,
     OperationNodeSource,
@@ -232,13 +232,15 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    * }))
    * ```
    */
-  values(insert: InsertObjectOrList<DB, TB>): InsertQueryBuilder<DB, TB, O>
+  values(insert: InsertObjectOrList<DB, TB>): InsertQueryBuilder<DB, TB, UT, O>
 
   values(
-    insert: InsertObjectOrListFactory<DB, TB>
-  ): InsertQueryBuilder<DB, TB, O>
+    insert: InsertObjectOrListFactory<DB, TB, UT>
+  ): InsertQueryBuilder<DB, TB, UT, O>
 
-  values(insert: InsertExpression<DB, TB>): InsertQueryBuilder<DB, TB, O> {
+  values(
+    insert: InsertExpression<DB, TB, UT>
+  ): InsertQueryBuilder<DB, TB, UT, O> {
     const [columns, values] = parseInsertExpression(insert)
 
     return new InsertQueryBuilder({
@@ -274,7 +276,7 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    */
   columns(
     columns: ReadonlyArray<keyof DB[TB] & string>
-  ): InsertQueryBuilder<DB, TB, O> {
+  ): InsertQueryBuilder<DB, TB, UT, O> {
     return new InsertQueryBuilder({
       ...this.#props,
       queryNode: InsertQueryNode.cloneWith(this.#props.queryNode, {
@@ -315,7 +317,7 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    */
   expression(
     expression: ExpressionOrFactory<DB, TB, any>
-  ): InsertQueryBuilder<DB, TB, O> {
+  ): InsertQueryBuilder<DB, TB, UT, O> {
     return new InsertQueryBuilder({
       ...this.#props,
       queryNode: InsertQueryNode.cloneWith(this.#props.queryNode, {
@@ -345,7 +347,7 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    *   .execute()
    * ```
    */
-  ignore(): InsertQueryBuilder<DB, TB, O> {
+  ignore(): InsertQueryBuilder<DB, TB, UT, O> {
     return new InsertQueryBuilder({
       ...this.#props,
       queryNode: InsertQueryNode.cloneWith(this.#props.queryNode, {
@@ -514,7 +516,7 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
           OnConflictTables<TB>
         >
       | OnConflictDoNothingBuilder<DB, TB>
-  ): InsertQueryBuilder<DB, TB, O> {
+  ): InsertQueryBuilder<DB, TB, UT, O> {
     return new InsertQueryBuilder({
       ...this.#props,
       queryNode: InsertQueryNode.cloneWith(this.#props.queryNode, {
@@ -547,7 +549,7 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    */
   onDuplicateKeyUpdate(
     update: UpdateObjectExpression<DB, TB, TB>
-  ): InsertQueryBuilder<DB, TB, O> {
+  ): InsertQueryBuilder<DB, TB, UT, O> {
     return new InsertQueryBuilder({
       ...this.#props,
       queryNode: InsertQueryNode.cloneWith(this.#props.queryNode, {
@@ -560,19 +562,19 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
 
   returning<SE extends SelectExpression<DB, TB>>(
     selections: ReadonlyArray<SE>
-  ): InsertQueryBuilder<DB, TB, ReturningRow<DB, TB, O, SE>>
+  ): InsertQueryBuilder<DB, TB, UT, ReturningRow<DB, TB, O, SE>>
 
   returning<CB extends SelectCallback<DB, TB>>(
     callback: CB
-  ): InsertQueryBuilder<DB, TB, ReturningCallbackRow<DB, TB, O, CB>>
+  ): InsertQueryBuilder<DB, TB, UT, ReturningCallbackRow<DB, TB, O, CB>>
 
   returning<SE extends SelectExpression<DB, TB>>(
     selection: SE
-  ): InsertQueryBuilder<DB, TB, ReturningRow<DB, TB, O, SE>>
+  ): InsertQueryBuilder<DB, TB, UT, ReturningRow<DB, TB, O, SE>>
 
   returning<SE extends SelectExpression<DB, TB>>(
     selection: SelectArg<DB, TB, SE>
-  ): InsertQueryBuilder<DB, TB, ReturningRow<DB, TB, O, SE>> {
+  ): InsertQueryBuilder<DB, TB, UT, ReturningRow<DB, TB, O, SE>> {
     return new InsertQueryBuilder({
       ...this.#props,
       queryNode: QueryNode.cloneWithReturning(
@@ -582,7 +584,7 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
     })
   }
 
-  returningAll(): InsertQueryBuilder<DB, TB, Selectable<DB[TB]>> {
+  returningAll(): InsertQueryBuilder<DB, TB, UT, Selectable<DB[TB]>> {
     return new InsertQueryBuilder({
       ...this.#props,
       queryNode: QueryNode.cloneWithReturning(
@@ -656,12 +658,12 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    */
   $if<O2>(
     condition: boolean,
-    func: (qb: this) => InsertQueryBuilder<any, any, O2>
+    func: (qb: this) => InsertQueryBuilder<any, any, any, O2>
   ): O2 extends InsertResult
-    ? InsertQueryBuilder<DB, TB, InsertResult>
+    ? InsertQueryBuilder<DB, TB, UT, InsertResult>
     : O2 extends O & infer E
-    ? InsertQueryBuilder<DB, TB, O & Partial<E>>
-    : InsertQueryBuilder<DB, TB, Partial<O2>> {
+    ? InsertQueryBuilder<DB, TB, UT, O & Partial<E>>
+    : InsertQueryBuilder<DB, TB, UT, Partial<O2>> {
     if (condition) {
       return func(this) as any
     }
@@ -677,7 +679,7 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    * You should only use this method as the last resort if the types
    * don't support your use case.
    */
-  $castTo<T>(): InsertQueryBuilder<DB, TB, T> {
+  $castTo<T>(): InsertQueryBuilder<DB, TB, UT, T> {
     return new InsertQueryBuilder(this.#props)
   }
 
@@ -721,7 +723,7 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    * functionThatExpectsPersonWithNonNullValue(person)
    * ```
    */
-  $narrowType<T>(): InsertQueryBuilder<DB, TB, NarrowPartial<O, T>> {
+  $narrowType<T>(): InsertQueryBuilder<DB, TB, UT, NarrowPartial<O, T>> {
     return new InsertQueryBuilder(this.#props)
   }
 
@@ -767,7 +769,7 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    * ```
    */
   $assertType<T extends O>(): O extends T
-    ? InsertQueryBuilder<DB, TB, T>
+    ? InsertQueryBuilder<DB, TB, UT, T>
     : KyselyTypeError<`$assertType() call failed: The type passed in is not equal to the output type of the query.`> {
     return new InsertQueryBuilder(this.#props) as unknown as any
   }
@@ -775,7 +777,7 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
   /**
    * Returns a copy of this InsertQueryBuilder instance with the given plugin installed.
    */
-  withPlugin(plugin: KyselyPlugin): InsertQueryBuilder<DB, TB, O> {
+  withPlugin(plugin: KyselyPlugin): InsertQueryBuilder<DB, TB, UT, O> {
     return new InsertQueryBuilder({
       ...this.#props,
       executor: this.#props.executor.withPlugin(plugin),
@@ -876,7 +878,7 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
     format?: ExplainFormat,
     options?: Expression<any>
   ): Promise<ER[]> {
-    const builder = new InsertQueryBuilder<DB, TB, ER>({
+    const builder = new InsertQueryBuilder<DB, TB, UT, ER>({
       ...this.#props,
       queryNode: QueryNode.cloneWithExplain(
         this.#props.queryNode,

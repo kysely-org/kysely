@@ -37,16 +37,18 @@ export type InsertObjectOrList<DB, TB extends keyof DB> =
   | InsertObject<DB, TB>
   | ReadonlyArray<InsertObject<DB, TB>>
 
-export type InsertObjectOrListFactory<DB, TB extends keyof DB> = (
-  eb: ExpressionBuilder<DB, TB>
-) => InsertObjectOrList<DB, TB>
+export type InsertObjectOrListFactory<
+  DB,
+  TB extends keyof DB,
+  UT extends keyof DB
+> = (eb: ExpressionBuilder<DB, TB | UT>) => InsertObjectOrList<DB, TB>
 
-export type InsertExpression<DB, TB extends keyof DB> =
+export type InsertExpression<DB, TB extends keyof DB, UT extends keyof DB> =
   | InsertObjectOrList<DB, TB>
-  | InsertObjectOrListFactory<DB, TB>
+  | InsertObjectOrListFactory<DB, TB, UT>
 
 export function parseInsertExpression(
-  arg: InsertExpression<any, any>
+  arg: InsertExpression<any, any, any>
 ): [ReadonlyArray<ColumnNode>, ValuesNode] {
   const objectOrList = isFunction(arg) ? arg(expressionBuilder()) : arg
   const list = isReadonlyArray(objectOrList)

@@ -313,7 +313,7 @@ export class QueryCreator<DB> {
    */
   insertInto<T extends keyof DB & string>(
     table: T
-  ): InsertQueryBuilder<DB, T, InsertResult> {
+  ): InsertQueryBuilder<DB, T, never, InsertResult> {
     return new InsertQueryBuilder({
       queryId: createQueryId(),
       executor: this.#props.executor,
@@ -352,7 +352,7 @@ export class QueryCreator<DB> {
    */
   replaceInto<T extends keyof DB & string>(
     table: T
-  ): InsertQueryBuilder<DB, T, InsertResult> {
+  ): InsertQueryBuilder<DB, T, never, InsertResult> {
     return new InsertQueryBuilder({
       queryId: createQueryId(),
       executor: this.#props.executor,
