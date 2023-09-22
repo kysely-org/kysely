@@ -30,7 +30,7 @@ export const MergeQueryNode = freeze({
     })
   },
 
-  cloneWithUsing(mergeNode: MergeQueryNode, using: OperationNode) {
+  cloneWithUsing(mergeNode: MergeQueryNode, using: JoinNode) {
     return freeze({
       ...mergeNode,
       using,
