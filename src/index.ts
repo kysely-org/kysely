@@ -239,6 +239,7 @@ export {
   ValueExpressionOrList,
 } from './parser/value-parser.js'
 export {
+  SimpleTableReference,
   TableExpression,
   TableExpressionOrList,
 } from './parser/table-parser.js'
