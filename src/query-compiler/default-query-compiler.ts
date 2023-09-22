@@ -703,8 +703,13 @@ export class DefaultQueryCompiler
     }
 
     this.append('update ')
-    this.visitNode(node.table)
-    this.append(' set ')
+
+    if (node.table) {
+      this.visitNode(node.table)
+      this.append(' ')
+    }
+
+    this.append('set ')
 
     if (node.updates) {
       this.compileList(node.updates)
