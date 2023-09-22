@@ -36,6 +36,8 @@ import { SelectType } from '../util/column-type.js'
 import { AndNode } from '../operation-node/and-node.js'
 import { ParensNode } from '../operation-node/parens-node.js'
 import { OrNode } from '../operation-node/or-node.js'
+import { WhenNode } from '../operation-node/when-node.js'
+import { RawNode } from '../operation-node/raw-node.js'
 
 export type OperandValueExpression<
   DB,
@@ -151,6 +153,21 @@ export function parseFilterList(
   }
 
   return node
+}
+
+export function parseMergeWhenCondition(
+  isMatched: boolean,
+  and: Expression<any> | undefined
+) {
+  return WhenNode.create(
+    parseFilterList(
+      [
+        RawNode.create([isMatched ? 'matched' : 'not matched'], []),
+        ...(and ? [and] : []),
+      ],
+      'and'
+    )
+  )
 }
 
 function isIsOperator(

@@ -4,14 +4,13 @@ import {
 } from '../expression/expression-builder.js'
 import { AliasedExpression, Expression } from '../expression/expression.js'
 import { MergeQueryNode } from '../operation-node/merge-query-node'
-import { UsingNode } from '../operation-node/using-node.js'
+import { parseMergeWhenCondition } from '../parser/binary-operation-parser.js'
 import {
   JoinCallbackExpression,
   JoinReferenceExpression,
   parseJoin,
 } from '../parser/join-parser.js'
 import { TableExpression } from '../parser/table-parser.js'
-import { UpdateObjectExpression } from '../parser/update-set-parser.js'
 import { CompiledQuery } from '../query-compiler/compiled-query.js'
 import { QueryExecutor } from '../query-executor/query-executor.js'
 import { Compilable } from '../util/compilable.js'
@@ -52,7 +51,7 @@ export class MergeQueryBuilder<DB, IT extends keyof DB> {
 
 preventAwait(
   MergeQueryBuilder,
-  "don't await MergeQueryBuilder instances directly. To execute the query you need to call `execute` or `executeTakeFirst`."
+  "don't await MergeQueryBuilder instances directly. To execute the query you need to call `execute` when available."
 )
 
 export interface MergeQueryBuilderProps {
@@ -78,10 +77,10 @@ export class WheneableMergeQueryBuilder<
   ): MatchedMergeQueryBuilder<DB, IT, UT> {
     return new MatchedMergeQueryBuilder({
       ...this.#props,
-      // queryNode: MergeQueryNode.cloneWithWhen(
-      // this.#props.queryNode,
-      // and?.(createExpressionBuilder()) // ??!
-      // ),
+      queryNode: MergeQueryNode.cloneWithWhen(
+        this.#props.queryNode,
+        parseMergeWhenCondition(true, and?.(createExpressionBuilder()))
+      ),
     })
   }
 
@@ -90,10 +89,10 @@ export class WheneableMergeQueryBuilder<
   ): NotMatchedMergeQueryBuilder<DB, IT, UT> {
     return new NotMatchedMergeQueryBuilder({
       ...this.#props,
-      // queryNode: MergeQueryNode.cloneWithWhen(
-      //   this.#props.queryNode,
-      //   and?.(createExpressionBuilder()) // ??!
-      // ),
+      queryNode: MergeQueryNode.cloneWithWhen(
+        this.#props.queryNode,
+        parseMergeWhenCondition(false, and?.(createExpressionBuilder()))
+      ),
     })
   }
 
