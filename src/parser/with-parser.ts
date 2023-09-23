@@ -36,12 +36,7 @@ export type QueryCreatorWithCommonTableExpression<
 
 type CommonTableExpressionOutput<DB, CN extends string> =
   | Expression<ExtractRowFromCommonTableExpressionName<CN>>
-  | InsertQueryBuilder<
-      DB,
-      any,
-      any,
-      ExtractRowFromCommonTableExpressionName<CN>
-    >
+  | InsertQueryBuilder<DB, any, ExtractRowFromCommonTableExpressionName<CN>>
   | UpdateQueryBuilder<
       DB,
       any,
@@ -61,7 +56,7 @@ type ExtractRowFromCommonTableExpression<CTE> = CTE extends (
 ) => infer Q
   ? Q extends Expression<infer QO>
     ? QO
-    : Q extends InsertQueryBuilder<any, any, any, infer QO>
+    : Q extends InsertQueryBuilder<any, any, infer QO>
     ? QO
     : Q extends UpdateQueryBuilder<any, any, any, infer QO>
     ? QO
