@@ -9,12 +9,25 @@ import { OperationNodeSource } from '../operation-node/operation-node-source.js'
 import { QueryNode } from '../operation-node/query-node.js'
 import { UpdateQueryNode } from '../operation-node/update-query-node.js'
 import {
+  InsertExpression,
+  InsertObjectOrList,
+  InsertObjectOrListFactory,
+  parseInsertExpression,
+} from '../parser/insert-values-parser.js'
+import {
   JoinCallbackExpression,
   JoinReferenceExpression,
   parseJoin,
 } from '../parser/join-parser.js'
 import { parseMergeThen, parseMergeWhen } from '../parser/merge-parser.js'
+import { ReferenceExpression } from '../parser/reference-parser.js'
 import { TableExpression } from '../parser/table-parser.js'
+import {
+  ExtractUpdateTypeFromReferenceExpression,
+  UpdateObject,
+  UpdateObjectFactory,
+} from '../parser/update-set-parser.js'
+import { ValueExpression } from '../parser/value-parser.js'
 import { CompiledQuery } from '../query-compiler/compiled-query.js'
 import { NOOP_QUERY_EXECUTOR } from '../query-executor/noop-query-executor.js'
 import { QueryExecutor } from '../query-executor/query-executor.js'
@@ -37,7 +50,7 @@ import {
 } from './no-result-error.js'
 import { UpdateQueryBuilder } from './update-query-builder.js'
 
-export class MergeQueryBuilder<DB, IT extends keyof DB, O> {
+export class MergeQueryBuilder<DB, MT extends keyof DB, O> {
   readonly #props: MergeQueryBuilderProps
 
   constructor(props: MergeQueryBuilderProps) {
@@ -45,15 +58,15 @@ export class MergeQueryBuilder<DB, IT extends keyof DB, O> {
   }
 
   using<
-    TE extends TableExpression<DB, IT>,
-    K1 extends JoinReferenceExpression<DB, IT, TE>,
-    K2 extends JoinReferenceExpression<DB, IT, TE>
-  >(table: TE, k1: K1, k2: K2): ExtractWheneableMergeQueryBuilder<DB, IT, TE, O>
+    TE extends TableExpression<DB, MT>,
+    K1 extends JoinReferenceExpression<DB, MT, TE>,
+    K2 extends JoinReferenceExpression<DB, MT, TE>
+  >(table: TE, k1: K1, k2: K2): ExtractWheneableMergeQueryBuilder<DB, MT, TE, O>
 
   using<
-    TE extends TableExpression<DB, IT>,
-    FN extends JoinCallbackExpression<DB, IT, TE>
-  >(table: TE, callback: FN): ExtractWheneableMergeQueryBuilder<DB, IT, TE, O>
+    TE extends TableExpression<DB, MT>,
+    FN extends JoinCallbackExpression<DB, MT, TE>
+  >(table: TE, callback: FN): ExtractWheneableMergeQueryBuilder<DB, MT, TE, O>
 
   using(...args: any): any {
     return new WheneableMergeQueryBuilder({
@@ -79,7 +92,7 @@ export interface MergeQueryBuilderProps {
 
 export class WheneableMergeQueryBuilder<
   DB,
-  IT extends keyof DB,
+  MT extends keyof DB,
   UT extends keyof DB,
   O
 > implements Compilable<O>, OperationNodeSource
@@ -90,9 +103,12 @@ export class WheneableMergeQueryBuilder<
     this.#props = freeze(props)
   }
 
+  /**
+   * TODO: ...
+   */
   whenMatched(
-    and?: (eb: ExpressionBuilder<DB, IT | UT>) => Expression<SqlBool>
-  ): MatchedMergeQueryBuilder<DB, IT, UT, O> {
+    and?: (eb: ExpressionBuilder<DB, MT | UT>) => Expression<SqlBool>
+  ): MatchedMergeQueryBuilder<DB, MT, UT, O> {
     return new MatchedMergeQueryBuilder({
       ...this.#props,
       queryNode: MergeQueryNode.cloneWithWhen(
@@ -102,9 +118,12 @@ export class WheneableMergeQueryBuilder<
     })
   }
 
+  /**
+   * TODO: ...
+   */
   whenNotMatched(
-    and?: (eb: ExpressionBuilder<DB, IT | UT>) => Expression<SqlBool>
-  ): NotMatchedMergeQueryBuilder<DB, IT, UT, O> {
+    and?: (eb: ExpressionBuilder<DB, MT | UT>) => Expression<SqlBool>
+  ): NotMatchedMergeQueryBuilder<DB, MT, UT, O> {
     return new NotMatchedMergeQueryBuilder({
       ...this.#props,
       queryNode: MergeQueryNode.cloneWithWhen(
@@ -181,10 +200,10 @@ export class WheneableMergeQueryBuilder<
     condition: boolean,
     func: (qb: this) => WheneableMergeQueryBuilder<any, any, any, O2>
   ): O2 extends MergeResult
-    ? WheneableMergeQueryBuilder<DB, IT, UT, MergeResult>
+    ? WheneableMergeQueryBuilder<DB, MT, UT, MergeResult>
     : O2 extends O & infer E
-    ? WheneableMergeQueryBuilder<DB, IT, UT, O & Partial<E>>
-    : WheneableMergeQueryBuilder<DB, IT, UT, Partial<O2>> {
+    ? WheneableMergeQueryBuilder<DB, MT, UT, O & Partial<E>>
+    : WheneableMergeQueryBuilder<DB, MT, UT, Partial<O2>> {
     if (condition) {
       return func(this) as any
     }
@@ -262,7 +281,7 @@ export class WheneableMergeQueryBuilder<
 
 export class MatchedMergeQueryBuilder<
   DB,
-  IT extends keyof DB,
+  MT extends keyof DB,
   UT extends keyof DB,
   O
 > {
@@ -272,7 +291,29 @@ export class MatchedMergeQueryBuilder<
     this.#props = freeze(props)
   }
 
-  thenDelete(): WheneableMergeQueryBuilder<DB, IT, UT, O> {
+  /**
+   * Performs the `delete` action.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * const result = await db.mergeInto('person')
+   *   .using('pet', 'person.id', 'pet.owner_id')
+   *   .whenMatched()
+   *   .thenDelete()
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * merge into "person"
+   * using "pet" on "person"."id" = "pet"."owner_id"
+   * when matched then
+   *   delete
+   * ```
+   */
+  thenDelete(): WheneableMergeQueryBuilder<DB, MT, UT, O> {
     return new WheneableMergeQueryBuilder({
       ...this.#props,
       queryNode: MergeQueryNode.cloneWithThen(
@@ -282,7 +323,31 @@ export class MatchedMergeQueryBuilder<
     })
   }
 
-  thenDoNothing(): WheneableMergeQueryBuilder<DB, IT, UT, O> {
+  /**
+   * Performs the `do nothing` action.
+   *
+   * This is supported in PostgreSQL.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * const result = await db.mergeInto('person')
+   *   .using('pet', 'person.id', 'pet.owner_id')
+   *   .whenMatched()
+   *   .thenDoNothing()
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * merge into "person"
+   * using "pet" on "person"."id" = "pet"."owner_id"
+   * when matched then
+   *   do nothing
+   * ```
+   */
+  thenDoNothing(): WheneableMergeQueryBuilder<DB, MT, UT, O> {
     return new WheneableMergeQueryBuilder({
       ...this.#props,
       queryNode: MergeQueryNode.cloneWithThen(
@@ -292,11 +357,43 @@ export class MatchedMergeQueryBuilder<
     })
   }
 
+  /**
+   * Perform an `update` operation with a full-fledged {@link UpdateQueryBuilder}.
+   * This is handy when multiple `set` invocations are needed.
+   *
+   * For a shorthand version of this method, see {@link thenUpdateSet}.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * import { sql } from 'kysely'
+   *
+   * const result = await db.mergeInto('person')
+   *   .using('pet', 'person.id', 'pet.owner_id')
+   *   .whenMatched()
+   *   .thenUpdate((ub) => ub
+   *     .set(sql`metadata['has_pets']`, 'Y')
+   *     .set({
+   *       updated_at: Date.now(),
+   *     })
+   *   )
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * merge into "person"
+   * using "pet" on "person"."id" = "pet"."owner_id"
+   * when matched then
+   *   update set metadata['has_pets'] = $1, "updated_at" = $2
+   * ```
+   */
   thenUpdate(
     set: (
-      ub: UpdateQueryBuilder<DB, IT, UT, never>
-    ) => UpdateQueryBuilder<DB, IT, UT, never>
-  ): WheneableMergeQueryBuilder<DB, IT, UT, O> {
+      ub: UpdateQueryBuilder<DB, MT, UT, never>
+    ) => UpdateQueryBuilder<DB, MT, UT, never>
+  ): WheneableMergeQueryBuilder<DB, MT, UT, O> {
     return new WheneableMergeQueryBuilder({
       ...this.#props,
       queryNode: MergeQueryNode.cloneWithThen(
@@ -313,11 +410,59 @@ export class MatchedMergeQueryBuilder<
       ),
     })
   }
+
+  /**
+   * Performs an `update set` action, similar to {@link UpdateQueryBuilder.set}.
+   *
+   * For a full-fledged update query builder, see {@link thenUpdate}.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * const result = await db.mergeInto('person')
+   *   .using('pet', 'person.id', 'pet.owner_id')
+   *   .whenMatched()
+   *   .thenUpdateSet({
+   *     middle_name: 'dog owner',
+   *   })
+   *   .execute()
+   * ```
+   *
+   * The generate SQL (PostgreSQL):
+   *
+   * ```sql
+   * merge into "person"
+   * using "pet" on "person"."id" = "pet"."owner_id"
+   * when matched then
+   *   update set "middle_name" = $1
+   * ```
+   */
+  thenUpdateSet(
+    update: UpdateObject<DB, UT, MT>
+  ): WheneableMergeQueryBuilder<DB, MT, UT, O>
+
+  thenUpdateSet(
+    update: UpdateObjectFactory<DB, UT, MT>
+  ): WheneableMergeQueryBuilder<DB, MT, UT, O>
+
+  thenUpdateSet<RE extends ReferenceExpression<DB, MT>>(
+    key: RE,
+    value: ValueExpression<
+      DB,
+      UT,
+      ExtractUpdateTypeFromReferenceExpression<DB, MT, RE>
+    >
+  ): WheneableMergeQueryBuilder<DB, MT, UT, O>
+
+  thenUpdateSet(...args: any[]): any {
+    // @ts-ignore not sure how to type this so it won't complain about set(...args).
+    return this.thenUpdate((ub) => ub.set(...args))
+  }
 }
 
 export class NotMatchedMergeQueryBuilder<
   DB,
-  IT extends keyof DB,
+  MT extends keyof DB,
   UT extends keyof DB,
   O
 > {
@@ -327,7 +472,31 @@ export class NotMatchedMergeQueryBuilder<
     this.#props = freeze(props)
   }
 
-  thenDoNothing(): WheneableMergeQueryBuilder<DB, IT, UT, O> {
+  /**
+   * Performs the `do nothing` action.
+   *
+   * This is supported in PostgreSQL.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * const result = await db.mergeInto('person')
+   *   .using('pet', 'person.id', 'pet.owner_id')
+   *   .whenNotMatched()
+   *   .thenDoNothing()
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * merge into "person"
+   * using "pet" on "person"."id" = "pet"."owner_id"
+   * when not matched then
+   *   do nothing
+   * ```
+   */
+  thenDoNothing(): WheneableMergeQueryBuilder<DB, MT, UT, O> {
     return new WheneableMergeQueryBuilder({
       ...this.#props,
       queryNode: MergeQueryNode.cloneWithThen(
@@ -337,23 +506,53 @@ export class NotMatchedMergeQueryBuilder<
     })
   }
 
-  thenInsert(
-    values: (
-      ib: InsertQueryBuilder<DB, IT, UT, never>
-    ) => InsertQueryBuilder<DB, IT, UT, never>
-  ): WheneableMergeQueryBuilder<DB, IT, UT, O> {
+  /**
+   * Performs an `insert (...) values` action, similar to {@link InsertQueryBuilder.values}.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * const result = await db.mergeInto('person')
+   *   .using('pet', 'person.id', 'pet.owner_id')
+   *   .whenNotMatched()
+   *   .thenInsertValues({
+   *     first_name: 'John',
+   *     last_name: 'Doe',
+   *   })
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * merge into "person"
+   * using "pet" on "person"."id" = "pet"."owner_id"
+   * when not matched then
+   *   insert ("first_name", "last_name") values ($1, $2)
+   * ```
+   */
+  thenInsertValues(
+    insert: InsertObjectOrList<DB, MT>
+  ): WheneableMergeQueryBuilder<DB, MT, UT, O>
+
+  thenInsertValues(
+    insert: InsertObjectOrListFactory<DB, MT, UT>
+  ): WheneableMergeQueryBuilder<DB, MT, UT, O>
+
+  thenInsertValues(
+    insert: InsertExpression<DB, MT, UT>
+  ): WheneableMergeQueryBuilder<DB, MT, UT, O> {
+    const [columns, values] = parseInsertExpression(insert)
+
     return new WheneableMergeQueryBuilder({
       ...this.#props,
       queryNode: MergeQueryNode.cloneWithThen(
         this.#props.queryNode,
         parseMergeThen(
-          values(
-            new InsertQueryBuilder({
-              queryId: this.#props.queryId,
-              executor: NOOP_QUERY_EXECUTOR,
-              queryNode: InsertQueryNode.createWithoutInto(),
-            })
-          )
+          InsertQueryNode.cloneWith(InsertQueryNode.createWithoutInto(), {
+            columns,
+            values,
+          })
         )
       ),
     })
