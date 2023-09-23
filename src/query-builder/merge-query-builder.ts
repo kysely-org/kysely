@@ -4,7 +4,7 @@ import {
 } from '../expression/expression-builder.js'
 import { AliasedExpression, Expression } from '../expression/expression.js'
 import { InsertQueryNode } from '../operation-node/insert-query-node.js'
-import { MergeQueryNode } from '../operation-node/merge-query-node'
+import { MergeQueryNode } from '../operation-node/merge-query-node.js'
 import { OperationNodeSource } from '../operation-node/operation-node-source.js'
 import { QueryNode } from '../operation-node/query-node.js'
 import { UpdateQueryNode } from '../operation-node/update-query-node.js'
