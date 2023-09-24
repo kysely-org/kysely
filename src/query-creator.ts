@@ -503,7 +503,38 @@ export class QueryCreator<DB> {
   }
 
   /**
-   * TODO: ...
+   * Creates a merge query.
+   *
+   * The return value of the query is a {@link MergeResult}.
+   *
+   * See the {@link MergeQueryBuilder.using} method for examples on how to specify
+   * the other table.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * const result = await db
+   *   .mergeInto('person')
+   *   .using('pet', 'pet.owner_id', 'person.id')
+   *   .whenMatched((and) => and('has_pets', '!=', 'Y'))
+   *   .thenUpdateSet({ has_pets: 'Y' })
+   *   .whenNotMatched()
+   *   .thenDoNothing()
+   *   .executeTakeFirstOrThrow()
+   *
+   * console.log(result.numChangedRows)
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * merge into "person"
+   * using "pet" on "pet"."owner_id" = "person"."id"
+   * when matched and "has_pets" != $1 then
+   *   update set "has_pets" = $2
+   * when not matched then
+   *   do nothing
+   * ```
    */
   mergeInto<TR extends keyof DB & string>(
     table: TR
