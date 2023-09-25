@@ -157,7 +157,7 @@ export class WheneableMergeQueryBuilder<
    *   delete
    * ```
    */
-  whenMatched(): MatchedMergeQueryBuilder<DB, MT, UT, O> {
+  whenMatched(): MatchedThenableMergeQueryBuilder<DB, MT, UT, O> {
     return this.#whenMatched([])
   }
 
@@ -192,13 +192,15 @@ export class WheneableMergeQueryBuilder<
     lhs: RE,
     op: ComparisonOperatorExpression,
     rhs: OperandValueExpressionOrList<DB, MT | UT, RE>
-  ): MatchedMergeQueryBuilder<DB, MT, UT, O>
+  ): MatchedThenableMergeQueryBuilder<DB, MT, UT, O>
 
   whenMatchedAnd(
     expression: ExpressionOrFactory<DB, MT | UT, SqlBool>
-  ): MatchedMergeQueryBuilder<DB, MT, UT, O>
+  ): MatchedThenableMergeQueryBuilder<DB, MT, UT, O>
 
-  whenMatchedAnd(...args: any[]): MatchedMergeQueryBuilder<DB, MT, UT, O> {
+  whenMatchedAnd(
+    ...args: any[]
+  ): MatchedThenableMergeQueryBuilder<DB, MT, UT, O> {
     return this.#whenMatched(args)
   }
 
@@ -213,12 +215,12 @@ export class WheneableMergeQueryBuilder<
     lhs: ReferenceExpression<DB, MT | UT>,
     op: ComparisonOperatorExpression,
     rhs: ReferenceExpression<DB, MT | UT>
-  ): MatchedMergeQueryBuilder<DB, MT, UT, O> {
+  ): MatchedThenableMergeQueryBuilder<DB, MT, UT, O> {
     return this.#whenMatched([lhs, op, rhs])
   }
 
-  #whenMatched(args: any[]): MatchedMergeQueryBuilder<DB, MT, UT, O> {
-    return new MatchedMergeQueryBuilder({
+  #whenMatched(args: any[]): MatchedThenableMergeQueryBuilder<DB, MT, UT, O> {
+    return new MatchedThenableMergeQueryBuilder({
       ...this.#props,
       queryNode: MergeQueryNode.cloneWithWhen(
         this.#props.queryNode,
@@ -258,7 +260,7 @@ export class WheneableMergeQueryBuilder<
    *   insert ("first_name", "last_name") values ($1, $2)
    * ```
    */
-  whenNotMatched(): NotMatchedMergeQueryBuilder<DB, MT, UT, O> {
+  whenNotMatched(): NotMatchedThenableMergeQueryBuilder<DB, MT, UT, O> {
     return this.#whenNotMatched([])
   }
 
@@ -296,15 +298,15 @@ export class WheneableMergeQueryBuilder<
     lhs: RE,
     op: ComparisonOperatorExpression,
     rhs: OperandValueExpressionOrList<DB, MT | UT, RE>
-  ): NotMatchedMergeQueryBuilder<DB, MT, UT, O>
+  ): NotMatchedThenableMergeQueryBuilder<DB, MT, UT, O>
 
   whenNotMatchedAnd(
     expression: ExpressionOrFactory<DB, MT | UT, SqlBool>
-  ): NotMatchedMergeQueryBuilder<DB, MT, UT, O>
+  ): NotMatchedThenableMergeQueryBuilder<DB, MT, UT, O>
 
   whenNotMatchedAnd(
     ...args: any[]
-  ): NotMatchedMergeQueryBuilder<DB, MT, UT, O> {
+  ): NotMatchedThenableMergeQueryBuilder<DB, MT, UT, O> {
     return this.#whenNotMatched(args)
   }
 
@@ -319,12 +321,14 @@ export class WheneableMergeQueryBuilder<
     lhs: ReferenceExpression<DB, MT | UT>,
     op: ComparisonOperatorExpression,
     rhs: ReferenceExpression<DB, MT | UT>
-  ): NotMatchedMergeQueryBuilder<DB, MT, UT, O> {
+  ): NotMatchedThenableMergeQueryBuilder<DB, MT, UT, O> {
     return this.#whenNotMatched([lhs, op, rhs])
   }
 
-  #whenNotMatched(args: any[]): NotMatchedMergeQueryBuilder<DB, MT, UT, O> {
-    return new NotMatchedMergeQueryBuilder({
+  #whenNotMatched(
+    args: any[]
+  ): NotMatchedThenableMergeQueryBuilder<DB, MT, UT, O> {
+    return new NotMatchedThenableMergeQueryBuilder({
       ...this.#props,
       queryNode: MergeQueryNode.cloneWithWhen(
         this.#props.queryNode,
@@ -484,7 +488,7 @@ preventAwait(
   "don't await WheneableMergeQueryBuilder instances directly. To execute the query you need to call `execute`."
 )
 
-export class MatchedMergeQueryBuilder<
+export class MatchedThenableMergeQueryBuilder<
   DB,
   MT extends keyof DB,
   UT extends keyof DB,
@@ -681,7 +685,12 @@ export class MatchedMergeQueryBuilder<
   }
 }
 
-export class NotMatchedMergeQueryBuilder<
+preventAwait(
+  MatchedThenableMergeQueryBuilder,
+  "don't await MatchedThenableMergeQueryBuilder instances directly. To execute the query you need to call `execute` when available."
+)
+
+export class NotMatchedThenableMergeQueryBuilder<
   DB,
   MT extends keyof DB,
   UT extends keyof DB,
@@ -786,6 +795,11 @@ export class NotMatchedMergeQueryBuilder<
     })
   }
 }
+
+preventAwait(
+  NotMatchedThenableMergeQueryBuilder,
+  "don't await NotMatchedThenableMergeQueryBuilder instances directly. To execute the query you need to call `execute` when available."
+)
 
 export type ExtractWheneableMergeQueryBuilder<
   DB,
