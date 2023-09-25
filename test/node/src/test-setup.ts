@@ -407,7 +407,7 @@ async function insertToysForPet(
 
 export async function insert<TB extends keyof Database>(
   ctx: TestContext,
-  qb: InsertQueryBuilder<Database, TB, TB, InsertResult>
+  qb: InsertQueryBuilder<Database, TB, InsertResult>
 ): Promise<number> {
   const { dialect } = ctx
 
