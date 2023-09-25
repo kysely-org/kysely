@@ -26,6 +26,7 @@ export * from './query-builder/aggregate-function-builder.js'
 export * from './query-builder/case-builder.js'
 export * from './query-builder/json-path-builder.js'
 export * from './query-builder/merge-query-builder.js'
+export * from './query-builder/merge-result.js'
 
 export * from './raw-builder/raw-builder.js'
 export * from './raw-builder/sql.js'
