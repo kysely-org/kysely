@@ -1,13 +1,14 @@
-import {
-  ExpressionBuilder,
-  createExpressionBuilder,
-} from '../expression/expression-builder.js'
-import { AliasedExpression, Expression } from '../expression/expression.js'
+import { AliasedExpression } from '../expression/expression.js'
 import { InsertQueryNode } from '../operation-node/insert-query-node.js'
 import { MergeQueryNode } from '../operation-node/merge-query-node.js'
 import { OperationNodeSource } from '../operation-node/operation-node-source.js'
 import { QueryNode } from '../operation-node/query-node.js'
 import { UpdateQueryNode } from '../operation-node/update-query-node.js'
+import {
+  ComparisonOperatorExpression,
+  OperandValueExpressionOrList,
+} from '../parser/binary-operation-parser.js'
+import { ExpressionOrFactory } from '../parser/expression-parser.js'
 import {
   InsertExpression,
   InsertObjectOrList,
@@ -57,6 +58,31 @@ export class MergeQueryBuilder<DB, MT extends keyof DB, O> {
     this.#props = freeze(props)
   }
 
+  /**
+   * Adds the `using` clause to the query.
+   *
+   * This method is similar to {@link SelectQueryBuilder.innerJoin}, so see the
+   * documentation for that method for more examples.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * const result = await db.mergeInto('person')
+   *   .using('pet', 'person.id', 'pet.owner_id')
+   *   .whenMatched()
+   *   .thenDelete()
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * merge into "person"
+   * using "pet" on "person"."id" = "pet"."owner_id"
+   * when matched then
+   *   delete
+   * ```
+   */
   using<
     TE extends TableExpression<DB, MT>,
     K1 extends JoinReferenceExpression<DB, MT, TE>,
@@ -104,31 +130,205 @@ export class WheneableMergeQueryBuilder<
   }
 
   /**
-   * TODO: ...
+   * Adds a simple `when matched` clause to the query.
+   *
+   * For a `when matched` clause with an `and` condition, see {@link whenMatchedAnd}.
+   *
+   * For a simple `when not matched` clause, see {@link whenNotMatched}.
+   *
+   * For a `when not matched` clause with an `and` condition, see {@link whenNotMatchedAnd}.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * const result = await db.mergeInto('person')
+   *   .using('pet', 'person.id', 'pet.owner_id')
+   *   .whenMatched()
+   *   .thenDelete()
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * merge into "person"
+   * using "pet" on "person"."id" = "pet"."owner_id"
+   * when matched then
+   *   delete
+   * ```
    */
-  whenMatched(
-    and?: (eb: ExpressionBuilder<DB, MT | UT>) => Expression<SqlBool>
+  whenMatched(): MatchedMergeQueryBuilder<DB, MT, UT, O> {
+    return this.#whenMatched([])
+  }
+
+  /**
+   * Adds the `when matched` clause to the query with an `and` condition.
+   *
+   * This method is similar to {@link SelectQueryBuilder.where}, so see the documentation
+   * for that method for more examples.
+   *
+   * For a simple `when matched` clause (without an `and` condition) see {@link whenMatched}.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * const result = await db.mergeInto('person')
+   *   .using('pet', 'person.id', 'pet.owner_id')
+   *   .whenMatchedAnd('person.first_name', '=', 'John')
+   *   .thenDelete()
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * merge into "person"
+   * using "pet" on "person"."id" = "pet"."owner_id"
+   * when matched and "person"."first_name" = $1 then
+   *   delete
+   * ```
+   */
+  whenMatchedAnd<RE extends ReferenceExpression<DB, MT | UT>>(
+    lhs: RE,
+    op: ComparisonOperatorExpression,
+    rhs: OperandValueExpressionOrList<DB, MT | UT, RE>
+  ): MatchedMergeQueryBuilder<DB, MT, UT, O>
+
+  whenMatchedAnd(
+    expression: ExpressionOrFactory<DB, MT | UT, SqlBool>
+  ): MatchedMergeQueryBuilder<DB, MT, UT, O>
+
+  whenMatchedAnd(...args: any[]): MatchedMergeQueryBuilder<DB, MT, UT, O> {
+    return this.#whenMatched(args)
+  }
+
+  /**
+   * Adds the `when matched` clause to the query with an `and` condition. But unlike
+   * {@link whenMatchedAnd}, this method accepts a column reference as the 3rd argument.
+   *
+   * This method is similar to {@link SelectQueryBuilder.whereRef}, so see the documentation
+   * for that method for more examples.
+   */
+  whenMatchedAndRef(
+    lhs: ReferenceExpression<DB, MT | UT>,
+    op: ComparisonOperatorExpression,
+    rhs: ReferenceExpression<DB, MT | UT>
   ): MatchedMergeQueryBuilder<DB, MT, UT, O> {
+    return this.#whenMatched([lhs, op, rhs])
+  }
+
+  #whenMatched(args: any[]): MatchedMergeQueryBuilder<DB, MT, UT, O> {
     return new MatchedMergeQueryBuilder({
       ...this.#props,
       queryNode: MergeQueryNode.cloneWithWhen(
         this.#props.queryNode,
-        parseMergeWhen(true, and?.(createExpressionBuilder()))
+        parseMergeWhen(true, args)
       ),
     })
   }
 
   /**
-   * TODO: ...
+   * Adds a simple `when not matched` clause to the query.
+   *
+   * For a `when not matched` clause with an `and` condition, see {@link whenNotMatchedAnd}.
+   *
+   * For a simple `when matched` clause, see {@link whenMatched}.
+   *
+   * For a `when matched` clause with an `and` condition, see {@link whenMatchedAnd}.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * const result = await db.mergeInto('person')
+   *   .using('pet', 'person.id', 'pet.owner_id')
+   *   .whenNotMatched()
+   *   .thenInsertValues({
+   *     first_name: 'John',
+   *     last_name: 'Doe',
+   *   })
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * merge into "person"
+   * using "pet" on "person"."id" = "pet"."owner_id"
+   * when not matched then
+   *   insert ("first_name", "last_name") values ($1, $2)
+   * ```
    */
-  whenNotMatched(
-    and?: (eb: ExpressionBuilder<DB, MT | UT>) => Expression<SqlBool>
+  whenNotMatched(): NotMatchedMergeQueryBuilder<DB, MT, UT, O> {
+    return this.#whenNotMatched([])
+  }
+
+  /**
+   * Adds the `when not matched` clause to the query with an `and` condition.
+   *
+   * This method is similar to {@link SelectQueryBuilder.where}, so see the documentation
+   * for that method for more examples.
+   *
+   * For a simple `when not matched` clause (without an `and` condition) see {@link whenMatched}.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * const result = await db.mergeInto('person')
+   *   .using('pet', 'person.id', 'pet.owner_id')
+   *   .whenNotMatchedAnd('person.first_name', '=', 'John')
+   *   .thenInsertValues({
+   *     first_name: 'John',
+   *     last_name: 'Doe',
+   *   })
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * merge into "person"
+   * using "pet" on "person"."id" = "pet"."owner_id"
+   * when not matched and "person"."first_name" = $1 then
+   *   insert ("first_name", "last_name") values ($2, $3)
+   * ```
+   */
+  whenNotMatchedAnd<RE extends ReferenceExpression<DB, MT | UT>>(
+    lhs: RE,
+    op: ComparisonOperatorExpression,
+    rhs: OperandValueExpressionOrList<DB, MT | UT, RE>
+  ): NotMatchedMergeQueryBuilder<DB, MT, UT, O>
+
+  whenNotMatchedAnd(
+    expression: ExpressionOrFactory<DB, MT | UT, SqlBool>
+  ): NotMatchedMergeQueryBuilder<DB, MT, UT, O>
+
+  whenNotMatchedAnd(
+    ...args: any[]
   ): NotMatchedMergeQueryBuilder<DB, MT, UT, O> {
+    return this.#whenNotMatched(args)
+  }
+
+  /**
+   * Adds the `when not matched` clause to the query with an `and` condition. But unlike
+   * {@link whenNotMatchedAnd}, this method accepts a column reference as the 3rd argument.
+   *
+   * This method is similar to {@link SelectQueryBuilder.whereRef}, so see the documentation
+   * for that method for more examples.
+   */
+  whenNotMatchedAndRef(
+    lhs: ReferenceExpression<DB, MT | UT>,
+    op: ComparisonOperatorExpression,
+    rhs: ReferenceExpression<DB, MT | UT>
+  ): NotMatchedMergeQueryBuilder<DB, MT, UT, O> {
+    return this.#whenNotMatched([lhs, op, rhs])
+  }
+
+  #whenNotMatched(args: any[]): NotMatchedMergeQueryBuilder<DB, MT, UT, O> {
     return new NotMatchedMergeQueryBuilder({
       ...this.#props,
       queryNode: MergeQueryNode.cloneWithWhen(
         this.#props.queryNode,
-        parseMergeWhen(false, and?.(createExpressionBuilder()))
+        parseMergeWhen(false, args)
       ),
     })
   }
@@ -279,6 +479,11 @@ export class WheneableMergeQueryBuilder<
   }
 }
 
+preventAwait(
+  WheneableMergeQueryBuilder,
+  "don't await WheneableMergeQueryBuilder instances directly. To execute the query you need to call `execute`."
+)
+
 export class MatchedMergeQueryBuilder<
   DB,
   MT extends keyof DB,
@@ -293,6 +498,10 @@ export class MatchedMergeQueryBuilder<
 
   /**
    * Performs the `delete` action.
+   *
+   * To perform the `do nothing` action, see {@link thenDoNothing}.
+   *
+   * To perform the `update` action, see {@link thenUpdate} or {@link thenUpdateSet}.
    *
    * ### Examples
    *
@@ -328,6 +537,10 @@ export class MatchedMergeQueryBuilder<
    *
    * This is supported in PostgreSQL.
    *
+   * To perform the `delete` action, see {@link thenDelete}.
+   *
+   * To perform the `update` action, see {@link thenUpdate} or {@link thenUpdateSet}.
+   *
    * ### Examples
    *
    * ```ts
@@ -362,6 +575,10 @@ export class MatchedMergeQueryBuilder<
    * This is handy when multiple `set` invocations are needed.
    *
    * For a shorthand version of this method, see {@link thenUpdateSet}.
+   *
+   * To perform the `delete` action, see {@link thenDelete}.
+   *
+   * To perform the `do nothing` action, see {@link thenDoNothing}.
    *
    * ### Examples
    *
@@ -415,6 +632,10 @@ export class MatchedMergeQueryBuilder<
    * Performs an `update set` action, similar to {@link UpdateQueryBuilder.set}.
    *
    * For a full-fledged update query builder, see {@link thenUpdate}.
+   *
+   * To perform the `delete` action, see {@link thenDelete}.
+   *
+   * To perform the `do nothing` action, see {@link thenDoNothing}.
    *
    * ### Examples
    *
@@ -477,6 +698,8 @@ export class NotMatchedMergeQueryBuilder<
    *
    * This is supported in PostgreSQL.
    *
+   * To perform the `insert` action, see {@link thenInsertValues}.
+   *
    * ### Examples
    *
    * ```ts
@@ -507,7 +730,12 @@ export class NotMatchedMergeQueryBuilder<
   }
 
   /**
-   * Performs an `insert (...) values` action, similar to {@link InsertQueryBuilder.values}.
+   * Performs the `insert (...) values` action.
+   *
+   * This method is similar to {@link InsertQueryBuilder.values}, so see the documentation
+   * for that method for more examples.
+   *
+   * To perform the `do nothing` action, see {@link thenDoNothing}.
    *
    * ### Examples
    *
