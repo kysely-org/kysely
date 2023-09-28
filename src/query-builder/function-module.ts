@@ -31,7 +31,9 @@ import { Selectable } from '../util/column-type.js'
  *
  * <!-- siteExample("select", "Function calls", 60) -->
  *
- * This example uses the `fn` module to select some aggregates:
+ * This example shows how to create function calls. These examples also work in any
+ * other place (`where` calls, updates, inserts etc.). The only difference is that you
+ * leave out the alias (the `as` call) if you use these in any other place than `select`.
  *
  * ```ts
  * import { sql } from 'kysely'
