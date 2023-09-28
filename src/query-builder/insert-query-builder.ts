@@ -187,11 +187,14 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    * ```ts
    * import { sql } from 'kysely'
    *
+   * const ani = "Ani"
+   * const ston = "ston"
+   *
    * const result = await db
    *   .insertInto('person')
    *   .values(({ ref, selectFrom, fn }) => ({
    *     first_name: 'Jennifer',
-   *     last_name: sql`${'Ani'} || ${'ston'}`,
+   *     last_name: sql`concat(${ani}, ${ston})`,
    *     middle_name: ref('first_name'),
    *     age: selectFrom('person')
    *       .select(fn.avg<number>('age')
@@ -211,7 +214,7 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    * )
    * values (
    *   $1,
-   *   $2 || $3,
+   *   concat($2, $3),
    *   "first_name",
    *   (select avg("age") as "avg_age" from "person")
    * )
