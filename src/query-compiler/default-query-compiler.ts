@@ -689,14 +689,15 @@ export class DefaultQueryCompiler
   }
 
   protected override visitUpdateQuery(node: UpdateQueryNode): void {
-    const isSubQuery = this.nodeStack.find(QueryNode.is) !== node
+    const rootQueryNode = this.nodeStack.find(QueryNode.is)!
+    const isSubQuery = rootQueryNode !== node
 
     if (!isSubQuery && node.explain) {
       this.visitNode(node.explain)
       this.append(' ')
     }
 
-    if (isSubQuery) {
+    if (isSubQuery && !MergeQueryNode.is(rootQueryNode)) {
       this.append('(')
     }
 
@@ -738,7 +739,7 @@ export class DefaultQueryCompiler
       this.visitNode(node.returning)
     }
 
-    if (isSubQuery) {
+    if (isSubQuery && !MergeQueryNode.is(rootQueryNode)) {
       this.append(')')
     }
   }
