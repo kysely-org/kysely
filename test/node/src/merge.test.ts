@@ -308,5 +308,30 @@ for (const dialect of DIALECTS.filter(
       expect(result).to.be.instanceOf(MergeResult)
       expect(result.numChangedRows).to.equal(3n)
     })
+
+    if (dialect === 'postgres') {
+      it('should perform a merge...using table simple on...when not matched then do nothing query', async () => {
+        const query = ctx.db
+          .mergeInto('person')
+          .using('pet', 'pet.owner_id', 'person.id')
+          .whenNotMatched()
+          .thenDoNothing()
+
+        testSql(query, dialect, {
+          postgres: {
+            sql: 'merge into "person" using "pet" on "pet"."owner_id" = "person"."id" when not matched then do nothing',
+            parameters: [],
+          },
+          mysql: NOT_SUPPORTED,
+          mssql: NOT_SUPPORTED,
+          sqlite: NOT_SUPPORTED,
+        })
+
+        const result = await query.executeTakeFirstOrThrow()
+
+        expect(result).to.be.instanceOf(MergeResult)
+        expect(result.numChangedRows).to.equal(0n)
+      })
+    }
   })
 }
