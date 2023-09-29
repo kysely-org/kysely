@@ -169,7 +169,7 @@ for (const dialect of DIALECTS.filter(
       })
     }
 
-    it('should perform a merge...using table simple on...when matched then update set query', async () => {
+    it('should perform a merge...using table simple on...when matched then update set object query', async () => {
       const query = ctx.db
         .mergeInto('person')
         .using('pet', 'pet.owner_id', 'person.id')
@@ -187,6 +187,118 @@ for (const dialect of DIALECTS.filter(
         mssql: {
           sql: 'merge into "person" using "pet" on "pet"."owner_id" = "person"."id" when matched then update set "middle_name" = @1;',
           parameters: ['pet owner'],
+        },
+        sqlite: NOT_SUPPORTED,
+      })
+
+      const result = await query.executeTakeFirstOrThrow()
+
+      expect(result).to.be.instanceOf(MergeResult)
+      expect(result.numChangedRows).to.equal(3n)
+    })
+
+    it('should perform a merge...using table simple on...when matched then update set object cross ref query', async () => {
+      const query = ctx.db
+        .mergeInto('person')
+        .using('pet', 'pet.owner_id', 'person.id')
+        .whenMatched()
+        .thenUpdateSet((eb) => ({
+          middle_name: eb.ref('pet.name'),
+        }))
+
+      testSql(query, dialect, {
+        postgres: {
+          sql: 'merge into "person" using "pet" on "pet"."owner_id" = "person"."id" when matched then update set "middle_name" = "pet"."name"',
+          parameters: [],
+        },
+        mysql: NOT_SUPPORTED,
+        mssql: {
+          sql: 'merge into "person" using "pet" on "pet"."owner_id" = "person"."id" when matched then update set "middle_name" = "pet"."name";',
+          parameters: [],
+        },
+        sqlite: NOT_SUPPORTED,
+      })
+
+      const result = await query.executeTakeFirstOrThrow()
+
+      expect(result).to.be.instanceOf(MergeResult)
+      expect(result.numChangedRows).to.equal(3n)
+    })
+
+    it('should perform a merge...using table simple on...when matched then update set column query', async () => {
+      const query = ctx.db
+        .mergeInto('person')
+        .using('pet', 'pet.owner_id', 'person.id')
+        .whenMatched()
+        .thenUpdateSet('middle_name', 'pet owner')
+
+      testSql(query, dialect, {
+        postgres: {
+          sql: 'merge into "person" using "pet" on "pet"."owner_id" = "person"."id" when matched then update set "middle_name" = $1',
+          parameters: ['pet owner'],
+        },
+        mysql: NOT_SUPPORTED,
+        mssql: {
+          sql: 'merge into "person" using "pet" on "pet"."owner_id" = "person"."id" when matched then update set "middle_name" = @1;',
+          parameters: ['pet owner'],
+        },
+        sqlite: NOT_SUPPORTED,
+      })
+
+      const result = await query.executeTakeFirstOrThrow()
+
+      expect(result).to.be.instanceOf(MergeResult)
+      expect(result.numChangedRows).to.equal(3n)
+    })
+
+    it('should perform a merge...using table simple on...when matched then update set column cross ref query', async () => {
+      const query = ctx.db
+        .mergeInto('person')
+        .using('pet', 'pet.owner_id', 'person.id')
+        .whenMatched()
+        .thenUpdateSet('middle_name', (eb) => eb.ref('pet.name'))
+
+      testSql(query, dialect, {
+        postgres: {
+          sql: 'merge into "person" using "pet" on "pet"."owner_id" = "person"."id" when matched then update set "middle_name" = "pet"."name"',
+          parameters: [],
+        },
+        mysql: NOT_SUPPORTED,
+        mssql: {
+          sql: 'merge into "person" using "pet" on "pet"."owner_id" = "person"."id" when matched then update set "middle_name" = "pet"."name";',
+          parameters: [],
+        },
+        sqlite: NOT_SUPPORTED,
+      })
+
+      const result = await query.executeTakeFirstOrThrow()
+
+      expect(result).to.be.instanceOf(MergeResult)
+      expect(result.numChangedRows).to.equal(3n)
+    })
+
+    it('should perform a merge...using table simple on...when matched then update set complex query', async () => {
+      const query = ctx.db
+        .mergeInto('person')
+        .using('pet', 'pet.owner_id', 'person.id')
+        .whenMatched()
+        .thenUpdate((ub) =>
+          ub
+            .set('middle_name', (eb) => eb.ref('pet.name'))
+            .set({
+              marital_status: 'single',
+            })
+        )
+
+      testSql(query, dialect, {
+        postgres: {
+          sql: 'merge into "person" using "pet" on "pet"."owner_id" = "person"."id" when matched then update set "middle_name" = "pet"."name", "marital_status" = $1',
+          parameters: ['single'],
+        },
+        mysql: NOT_SUPPORTED,
+        mssql: {
+          sql: 'merge into "person" using "pet" on "pet"."owner_id" = "person"."id" when matched then update set "middle_name" = "pet"."name", "marital_status" = @1;',
+          parameters: ['single'],
         },
         sqlite: NOT_SUPPORTED,
       })
