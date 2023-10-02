@@ -104,6 +104,7 @@ import { JSONPathNode } from '../operation-node/json-path-node.js'
 import { JSONPathLegNode } from '../operation-node/json-path-leg-node.js'
 import { JSONOperatorChainNode } from '../operation-node/json-operator-chain-node.js'
 import { TupleNode } from '../operation-node/tuple-node.js'
+import { AddIndexNode } from '../operation-node/add-index-node.js'
 
 export class DefaultQueryCompiler
   extends OperationNodeVisitor
@@ -1002,6 +1003,14 @@ export class DefaultQueryCompiler
     if (node.columnAlterations) {
       this.compileColumnAlterations(node.columnAlterations)
     }
+
+    if (node.addIndex) {
+      this.visitNode(node.addIndex)
+    }
+
+    if (node.dropIndex) {
+      this.visitNode(node.dropIndex)
+    }
   }
 
   protected override visitAddColumn(node: AddColumnNode): void {
@@ -1400,6 +1409,29 @@ export class DefaultQueryCompiler
       }
 
       this.visitNode(node.values[i])
+    }
+  }
+
+  protected override visitAddIndex(node: AddIndexNode): void {
+    this.append('add ')
+
+    if (node.unique) {
+      this.append('unique ')
+    }
+
+    this.append('index ')
+
+    this.visitNode(node.name)
+
+    if (node.columns) {
+      this.append(' (')
+      this.compileList(node.columns)
+      this.append(')')
+    }
+
+    if (node.using) {
+      this.append(' using ')
+      this.visitNode(node.using)
     }
   }
 
