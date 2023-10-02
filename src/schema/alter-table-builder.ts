@@ -246,7 +246,7 @@ export class AlterTableBuilder implements ColumnAlteringInterface {
     return new AlterTableAddIndexBuilder({
       ...this.#props,
       node: AlterTableNode.cloneWithTableProps(this.#props.node, {
-        addIndex: AddIndexNode.create({ name: IdentifierNode.create(indexName) }),
+        addIndex: AddIndexNode.create(indexName),
       }),
     })
   }
