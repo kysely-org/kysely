@@ -22,10 +22,10 @@ export const AddIndexNode = freeze({
     return node.kind === 'AddIndexNode'
   },
 
-  create(index: Omit<AddIndexNode, 'kind'>): AddIndexNode {
+  create(name: string): AddIndexNode {
     return freeze({
       kind: 'AddIndexNode',
-      ...index,
+      name: IdentifierNode.create(name)
     })
   },
 
