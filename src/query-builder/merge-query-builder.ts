@@ -51,7 +51,7 @@ import {
 } from './no-result-error.js'
 import { UpdateQueryBuilder } from './update-query-builder.js'
 
-export class MergeQueryBuilder<DB, MT extends keyof DB, O> {
+export class MergeQueryBuilder<DB, TT extends keyof DB, O> {
   readonly #props: MergeQueryBuilderProps
 
   constructor(props: MergeQueryBuilderProps) {
@@ -84,15 +84,22 @@ export class MergeQueryBuilder<DB, MT extends keyof DB, O> {
    * ```
    */
   using<
-    TE extends TableExpression<DB, MT>,
-    K1 extends JoinReferenceExpression<DB, MT, TE>,
-    K2 extends JoinReferenceExpression<DB, MT, TE>
-  >(table: TE, k1: K1, k2: K2): ExtractWheneableMergeQueryBuilder<DB, MT, TE, O>
+    TE extends TableExpression<DB, TT>,
+    K1 extends JoinReferenceExpression<DB, TT, TE>,
+    K2 extends JoinReferenceExpression<DB, TT, TE>
+  >(
+    sourceTable: TE,
+    k1: K1,
+    k2: K2
+  ): ExtractWheneableMergeQueryBuilder<DB, TT, TE, O>
 
   using<
-    TE extends TableExpression<DB, MT>,
-    FN extends JoinCallbackExpression<DB, MT, TE>
-  >(table: TE, callback: FN): ExtractWheneableMergeQueryBuilder<DB, MT, TE, O>
+    TE extends TableExpression<DB, TT>,
+    FN extends JoinCallbackExpression<DB, TT, TE>
+  >(
+    sourceTable: TE,
+    callback: FN
+  ): ExtractWheneableMergeQueryBuilder<DB, TT, TE, O>
 
   using(...args: any): any {
     return new WheneableMergeQueryBuilder({
@@ -118,8 +125,8 @@ export interface MergeQueryBuilderProps {
 
 export class WheneableMergeQueryBuilder<
   DB,
-  MT extends keyof DB,
-  UT extends keyof DB,
+  TT extends keyof DB,
+  ST extends keyof DB,
   O
 > implements Compilable<O>, OperationNodeSource
 {
@@ -157,7 +164,7 @@ export class WheneableMergeQueryBuilder<
    *   delete
    * ```
    */
-  whenMatched(): MatchedThenableMergeQueryBuilder<DB, MT, UT, O> {
+  whenMatched(): MatchedThenableMergeQueryBuilder<DB, TT, ST, O> {
     return this.#whenMatched([])
   }
 
@@ -188,19 +195,19 @@ export class WheneableMergeQueryBuilder<
    *   delete
    * ```
    */
-  whenMatchedAnd<RE extends ReferenceExpression<DB, MT | UT>>(
+  whenMatchedAnd<RE extends ReferenceExpression<DB, TT | ST>>(
     lhs: RE,
     op: ComparisonOperatorExpression,
-    rhs: OperandValueExpressionOrList<DB, MT | UT, RE>
-  ): MatchedThenableMergeQueryBuilder<DB, MT, UT, O>
+    rhs: OperandValueExpressionOrList<DB, TT | ST, RE>
+  ): MatchedThenableMergeQueryBuilder<DB, TT, ST, O>
 
   whenMatchedAnd(
-    expression: ExpressionOrFactory<DB, MT | UT, SqlBool>
-  ): MatchedThenableMergeQueryBuilder<DB, MT, UT, O>
+    expression: ExpressionOrFactory<DB, TT | ST, SqlBool>
+  ): MatchedThenableMergeQueryBuilder<DB, TT, ST, O>
 
   whenMatchedAnd(
     ...args: any[]
-  ): MatchedThenableMergeQueryBuilder<DB, MT, UT, O> {
+  ): MatchedThenableMergeQueryBuilder<DB, TT, ST, O> {
     return this.#whenMatched(args)
   }
 
@@ -212,22 +219,22 @@ export class WheneableMergeQueryBuilder<
    * for that method for more examples.
    */
   whenMatchedAndRef(
-    lhs: ReferenceExpression<DB, MT | UT>,
+    lhs: ReferenceExpression<DB, TT | ST>,
     op: ComparisonOperatorExpression,
-    rhs: ReferenceExpression<DB, MT | UT>
-  ): MatchedThenableMergeQueryBuilder<DB, MT, UT, O> {
+    rhs: ReferenceExpression<DB, TT | ST>
+  ): MatchedThenableMergeQueryBuilder<DB, TT, ST, O> {
     return this.#whenMatched([lhs, op, rhs], true)
   }
 
   #whenMatched(
     args: any[],
     refRight?: boolean
-  ): MatchedThenableMergeQueryBuilder<DB, MT, UT, O> {
+  ): MatchedThenableMergeQueryBuilder<DB, TT, ST, O> {
     return new MatchedThenableMergeQueryBuilder({
       ...this.#props,
       queryNode: MergeQueryNode.cloneWithWhen(
         this.#props.queryNode,
-        parseMergeWhen(true, args, refRight)
+        parseMergeWhen({ isMatched: true }, args, refRight)
       ),
     })
   }
@@ -263,7 +270,7 @@ export class WheneableMergeQueryBuilder<
    *   insert ("first_name", "last_name") values ($1, $2)
    * ```
    */
-  whenNotMatched(): NotMatchedThenableMergeQueryBuilder<DB, MT, UT, O> {
+  whenNotMatched(): NotMatchedThenableMergeQueryBuilder<DB, TT, ST, O> {
     return this.#whenNotMatched([])
   }
 
@@ -299,19 +306,19 @@ export class WheneableMergeQueryBuilder<
    *   insert ("first_name", "last_name") values ($2, $3)
    * ```
    */
-  whenNotMatchedAnd<RE extends ReferenceExpression<DB, UT>>(
+  whenNotMatchedAnd<RE extends ReferenceExpression<DB, ST>>(
     lhs: RE,
     op: ComparisonOperatorExpression,
-    rhs: OperandValueExpressionOrList<DB, UT, RE>
-  ): NotMatchedThenableMergeQueryBuilder<DB, MT, UT, O>
+    rhs: OperandValueExpressionOrList<DB, ST, RE>
+  ): NotMatchedThenableMergeQueryBuilder<DB, TT, ST, O>
 
   whenNotMatchedAnd(
-    expression: ExpressionOrFactory<DB, UT, SqlBool>
-  ): NotMatchedThenableMergeQueryBuilder<DB, MT, UT, O>
+    expression: ExpressionOrFactory<DB, ST, SqlBool>
+  ): NotMatchedThenableMergeQueryBuilder<DB, TT, ST, O>
 
   whenNotMatchedAnd(
     ...args: any[]
-  ): NotMatchedThenableMergeQueryBuilder<DB, MT, UT, O> {
+  ): NotMatchedThenableMergeQueryBuilder<DB, TT, ST, O> {
     return this.#whenNotMatched(args)
   }
 
@@ -325,22 +332,57 @@ export class WheneableMergeQueryBuilder<
    * for that method for more examples.
    */
   whenNotMatchedAndRef(
-    lhs: ReferenceExpression<DB, UT>,
+    lhs: ReferenceExpression<DB, ST>,
     op: ComparisonOperatorExpression,
-    rhs: ReferenceExpression<DB, UT>
-  ): NotMatchedThenableMergeQueryBuilder<DB, MT, UT, O> {
+    rhs: ReferenceExpression<DB, ST>
+  ): NotMatchedThenableMergeQueryBuilder<DB, TT, ST, O> {
     return this.#whenNotMatched([lhs, op, rhs], true)
+  }
+
+  /**
+   * Adds a simple `when not matched by source` clause to the query.
+   *
+   * Supported in MS SQL Server.
+   *
+   * Similar to {@link whenNotMatched}.
+   */
+  whenNotMatchedBySource(): NotMatchedThenableMergeQueryBuilder<DB, TT, ST, O> {
+    return this.#whenNotMatched([], false, true)
+  }
+
+  /**
+   * Adds the `when not matched by source` clause to the query with an `and` condition.
+   *
+   * Supported in MS SQL Server.
+   *
+   * Similar to {@link whenNotMatchedAnd}.
+   */
+  whenNotMatchedBySourceAnd<RE extends ReferenceExpression<DB, TT>>(
+    lhs: RE,
+    op: ComparisonOperatorExpression,
+    rhs: OperandValueExpressionOrList<DB, TT, RE>
+  ): NotMatchedThenableMergeQueryBuilder<DB, TT, ST, O>
+
+  whenNotMatchedBySourceAnd(
+    expression: ExpressionOrFactory<DB, TT, SqlBool>
+  ): NotMatchedThenableMergeQueryBuilder<DB, TT, ST, O>
+
+  whenNotMatchedBySourceAnd(
+    ...args: any[]
+  ): NotMatchedThenableMergeQueryBuilder<DB, TT, ST, O> {
+    return this.#whenNotMatched(args, false, true)
   }
 
   #whenNotMatched(
     args: any[],
-    refRight?: boolean
-  ): NotMatchedThenableMergeQueryBuilder<DB, MT, UT, O> {
+    refRight: boolean = false,
+    bySource: boolean = false
+  ): NotMatchedThenableMergeQueryBuilder<DB, TT, ST, O> {
     return new NotMatchedThenableMergeQueryBuilder({
       ...this.#props,
       queryNode: MergeQueryNode.cloneWithWhen(
         this.#props.queryNode,
-        parseMergeWhen(false, args, refRight)
+        parseMergeWhen({ isMatched: false, bySource }, args, refRight)
       ),
     })
   }
@@ -412,10 +454,10 @@ export class WheneableMergeQueryBuilder<
     condition: boolean,
     func: (qb: this) => WheneableMergeQueryBuilder<any, any, any, O2>
   ): O2 extends MergeResult
-    ? WheneableMergeQueryBuilder<DB, MT, UT, MergeResult>
+    ? WheneableMergeQueryBuilder<DB, TT, ST, MergeResult>
     : O2 extends O & infer E
-    ? WheneableMergeQueryBuilder<DB, MT, UT, O & Partial<E>>
-    : WheneableMergeQueryBuilder<DB, MT, UT, Partial<O2>> {
+    ? WheneableMergeQueryBuilder<DB, TT, ST, O & Partial<E>>
+    : WheneableMergeQueryBuilder<DB, TT, ST, Partial<O2>> {
     if (condition) {
       return func(this) as any
     }
@@ -498,8 +540,8 @@ preventAwait(
 
 export class MatchedThenableMergeQueryBuilder<
   DB,
-  MT extends keyof DB,
-  UT extends keyof DB,
+  TT extends keyof DB,
+  ST extends keyof DB,
   O
 > {
   readonly #props: MergeQueryBuilderProps
@@ -534,7 +576,7 @@ export class MatchedThenableMergeQueryBuilder<
    *   delete
    * ```
    */
-  thenDelete(): WheneableMergeQueryBuilder<DB, MT, UT, O> {
+  thenDelete(): WheneableMergeQueryBuilder<DB, TT, ST, O> {
     return new WheneableMergeQueryBuilder({
       ...this.#props,
       queryNode: MergeQueryNode.cloneWithThen(
@@ -572,7 +614,7 @@ export class MatchedThenableMergeQueryBuilder<
    *   do nothing
    * ```
    */
-  thenDoNothing(): WheneableMergeQueryBuilder<DB, MT, UT, O> {
+  thenDoNothing(): WheneableMergeQueryBuilder<DB, TT, ST, O> {
     return new WheneableMergeQueryBuilder({
       ...this.#props,
       queryNode: MergeQueryNode.cloneWithThen(
@@ -620,9 +662,9 @@ export class MatchedThenableMergeQueryBuilder<
    */
   thenUpdate(
     set: (
-      ub: UpdateQueryBuilder<DB, MT, UT, never>
-    ) => UpdateQueryBuilder<DB, MT, UT, never>
-  ): WheneableMergeQueryBuilder<DB, MT, UT, O> {
+      ub: UpdateQueryBuilder<DB, TT, ST, never>
+    ) => UpdateQueryBuilder<DB, TT, ST, never>
+  ): WheneableMergeQueryBuilder<DB, TT, ST, O> {
     return new WheneableMergeQueryBuilder({
       ...this.#props,
       queryNode: MergeQueryNode.cloneWithThen(
@@ -671,21 +713,21 @@ export class MatchedThenableMergeQueryBuilder<
    * ```
    */
   thenUpdateSet(
-    update: UpdateObject<DB, UT, MT>
-  ): WheneableMergeQueryBuilder<DB, MT, UT, O>
+    update: UpdateObject<DB, ST, TT>
+  ): WheneableMergeQueryBuilder<DB, TT, ST, O>
 
   thenUpdateSet(
-    update: UpdateObjectFactory<DB, UT, MT>
-  ): WheneableMergeQueryBuilder<DB, MT, UT, O>
+    update: UpdateObjectFactory<DB, ST, TT>
+  ): WheneableMergeQueryBuilder<DB, TT, ST, O>
 
-  thenUpdateSet<RE extends ReferenceExpression<DB, MT>>(
+  thenUpdateSet<RE extends ReferenceExpression<DB, TT>>(
     key: RE,
     value: ValueExpression<
       DB,
-      UT,
-      ExtractUpdateTypeFromReferenceExpression<DB, MT, RE>
+      ST,
+      ExtractUpdateTypeFromReferenceExpression<DB, TT, RE>
     >
-  ): WheneableMergeQueryBuilder<DB, MT, UT, O>
+  ): WheneableMergeQueryBuilder<DB, TT, ST, O>
 
   thenUpdateSet(...args: any[]): any {
     // @ts-ignore not sure how to type this so it won't complain about set(...args).
@@ -700,8 +742,8 @@ preventAwait(
 
 export class NotMatchedThenableMergeQueryBuilder<
   DB,
-  MT extends keyof DB,
-  UT extends keyof DB,
+  TT extends keyof DB,
+  ST extends keyof DB,
   O
 > {
   readonly #props: MergeQueryBuilderProps
@@ -736,7 +778,7 @@ export class NotMatchedThenableMergeQueryBuilder<
    *   do nothing
    * ```
    */
-  thenDoNothing(): WheneableMergeQueryBuilder<DB, MT, UT, O> {
+  thenDoNothing(): WheneableMergeQueryBuilder<DB, TT, ST, O> {
     return new WheneableMergeQueryBuilder({
       ...this.#props,
       queryNode: MergeQueryNode.cloneWithThen(
@@ -777,16 +819,16 @@ export class NotMatchedThenableMergeQueryBuilder<
    * ```
    */
   thenInsertValues(
-    insert: InsertObjectOrList<DB, MT>
-  ): WheneableMergeQueryBuilder<DB, MT, UT, O>
+    insert: InsertObjectOrList<DB, TT>
+  ): WheneableMergeQueryBuilder<DB, TT, ST, O>
 
   thenInsertValues(
-    insert: InsertObjectOrListFactory<DB, MT, UT>
-  ): WheneableMergeQueryBuilder<DB, MT, UT, O>
+    insert: InsertObjectOrListFactory<DB, TT, ST>
+  ): WheneableMergeQueryBuilder<DB, TT, ST, O>
 
   thenInsertValues(
-    insert: InsertExpression<DB, MT, UT>
-  ): WheneableMergeQueryBuilder<DB, MT, UT, O> {
+    insert: InsertExpression<DB, TT, ST>
+  ): WheneableMergeQueryBuilder<DB, TT, ST, O> {
     const [columns, values] = parseInsertExpression(insert)
 
     return new WheneableMergeQueryBuilder({
@@ -802,6 +844,8 @@ export class NotMatchedThenableMergeQueryBuilder<
       ),
     })
   }
+
+  thenInsertDefaultValues() {}
 }
 
 preventAwait(
@@ -811,27 +855,27 @@ preventAwait(
 
 export type ExtractWheneableMergeQueryBuilder<
   DB,
-  IT extends keyof DB,
-  TE extends TableExpression<DB, IT>,
+  TT extends keyof DB,
+  TE extends TableExpression<DB, TT>,
   O
 > = TE extends `${infer T} as ${infer A}`
   ? T extends keyof DB
-    ? UsingBuilder<DB, IT, A, DB[T], O>
+    ? UsingBuilder<DB, TT, A, DB[T], O>
     : never
   : TE extends keyof DB
-  ? WheneableMergeQueryBuilder<DB, IT, TE, O>
+  ? WheneableMergeQueryBuilder<DB, TT, TE, O>
   : TE extends AliasedExpression<infer QO, infer QA>
-  ? UsingBuilder<DB, IT, QA, QO, O>
+  ? UsingBuilder<DB, TT, QA, QO, O>
   : TE extends (qb: any) => AliasedExpression<infer QO, infer QA>
-  ? UsingBuilder<DB, IT, QA, QO, O>
+  ? UsingBuilder<DB, TT, QA, QO, O>
   : never
 
 type UsingBuilder<
   DB,
-  IT extends keyof DB,
+  TT extends keyof DB,
   A extends string,
   R,
   O
 > = A extends keyof DB
-  ? WheneableMergeQueryBuilder<DB, IT, A, O>
-  : WheneableMergeQueryBuilder<DB & ShallowRecord<A, R>, IT, A, O>
+  ? WheneableMergeQueryBuilder<DB, TT, A, O>
+  : WheneableMergeQueryBuilder<DB & ShallowRecord<A, R>, TT, A, O>

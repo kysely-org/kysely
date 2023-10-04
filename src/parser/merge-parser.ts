@@ -1,4 +1,5 @@
 import { InsertQueryNode } from '../operation-node/insert-query-node.js'
+import { MatchedNode } from '../operation-node/matched-node.js'
 import {
   OperationNodeSource,
   isOperationNodeSource,
@@ -14,14 +15,17 @@ import {
 } from './binary-operation-parser.js'
 
 export function parseMergeWhen(
-  isMatched: boolean,
+  type: {
+    isMatched: boolean
+    bySource?: boolean
+  },
   args?: any[],
   refRight?: boolean
 ): WhenNode {
   return WhenNode.create(
     parseFilterList(
       [
-        RawNode.create([isMatched ? 'matched' : 'not matched'], []),
+        MatchedNode.create(!type.isMatched, type.bySource),
         ...(args && args.length > 0
           ? [
               args.length === 3 && refRight

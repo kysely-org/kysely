@@ -537,23 +537,23 @@ export class QueryCreator<DB> {
    * ```
    */
   mergeInto<TR extends keyof DB & string>(
-    table: TR
+    targetTable: TR
   ): MergeQueryBuilder<DB, TR, MergeResult>
 
   mergeInto<TR extends AnyAliasedTable<DB>>(
-    table: TR
+    targetTable: TR
   ): MergeQueryBuilder<
     DB & PickTableWithAlias<DB, TR>,
     ExtractTableAlias<DB, TR>,
     MergeResult
   >
 
-  mergeInto<TR extends SimpleTableReference<DB>>(table: TR): any {
+  mergeInto<TR extends SimpleTableReference<DB>>(targetTable: TR): any {
     return new MergeQueryBuilder({
       queryId: createQueryId(),
       executor: this.#props.executor,
       queryNode: MergeQueryNode.create(
-        parseAliasedTable(table),
+        parseAliasedTable(targetTable),
         this.#props.withNode
       ),
     })

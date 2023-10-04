@@ -105,6 +105,7 @@ import { JSONPathLegNode } from '../operation-node/json-path-leg-node.js'
 import { JSONOperatorChainNode } from '../operation-node/json-operator-chain-node.js'
 import { TupleNode } from '../operation-node/tuple-node.js'
 import { MergeQueryNode } from '../operation-node/merge-query-node.js'
+import { MatchedNode } from '../operation-node/matched-node.js'
 
 export class DefaultQueryCompiler
   extends OperationNodeVisitor
@@ -1430,6 +1431,18 @@ export class DefaultQueryCompiler
     if (node.whens) {
       this.append(' ')
       this.compileList(node.whens)
+    }
+  }
+
+  protected override visitMatched(node: MatchedNode): void {
+    if (node.not) {
+      this.append('not ')
+    }
+
+    this.append('matched')
+
+    if (node.bySource) {
+      this.append(' by source')
     }
   }
 
