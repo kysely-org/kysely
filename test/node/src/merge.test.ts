@@ -317,23 +317,24 @@ for (const dialect of DIALECTS.filter(
           expect(result.numChangedRows).to.equal(3n)
         })
 
-        it('should perform a merge...using table simple on...when matched then update set object cross ref query', async () => {
+        it('should perform a merge...using table simple on...when matched then update set object ref query', async () => {
           const query = ctx.db
             .mergeInto('person')
             .using('pet', 'pet.owner_id', 'person.id')
             .whenMatched()
             .thenUpdateSet((eb) => ({
+              first_name: eb.ref('person.last_name'),
               middle_name: eb.ref('pet.name'),
             }))
 
           testSql(query, dialect, {
             postgres: {
-              sql: 'merge into "person" using "pet" on "pet"."owner_id" = "person"."id" when matched then update set "middle_name" = "pet"."name"',
+              sql: 'merge into "person" using "pet" on "pet"."owner_id" = "person"."id" when matched then update set "first_name" = "person"."last_name", "middle_name" = "pet"."name"',
               parameters: [],
             },
             mysql: NOT_SUPPORTED,
             mssql: {
-              sql: 'merge into "person" using "pet" on "pet"."owner_id" = "person"."id" when matched then update set "middle_name" = "pet"."name";',
+              sql: 'merge into "person" using "pet" on "pet"."owner_id" = "person"."id" when matched then update set "first_name" = "person"."last_name", "middle_name" = "pet"."name";',
               parameters: [],
             },
             sqlite: NOT_SUPPORTED,
@@ -361,6 +362,32 @@ for (const dialect of DIALECTS.filter(
             mssql: {
               sql: 'merge into "person" using "pet" on "pet"."owner_id" = "person"."id" when matched then update set "middle_name" = @1;',
               parameters: ['pet owner'],
+            },
+            sqlite: NOT_SUPPORTED,
+          })
+
+          const result = await query.executeTakeFirstOrThrow()
+
+          expect(result).to.be.instanceOf(MergeResult)
+          expect(result.numChangedRows).to.equal(3n)
+        })
+
+        it('should perform a merge...using table simple on...when matched then update set column ref query', async () => {
+          const query = ctx.db
+            .mergeInto('person')
+            .using('pet', 'pet.owner_id', 'person.id')
+            .whenMatched()
+            .thenUpdateSet('first_name', (eb) => eb.ref('person.last_name'))
+
+          testSql(query, dialect, {
+            postgres: {
+              sql: 'merge into "person" using "pet" on "pet"."owner_id" = "person"."id" when matched then update set "first_name" = "person"."last_name"',
+              parameters: [],
+            },
+            mysql: NOT_SUPPORTED,
+            mssql: {
+              sql: 'merge into "person" using "pet" on "pet"."owner_id" = "person"."id" when matched then update set "first_name" = "person"."last_name";',
+              parameters: [],
             },
             sqlite: NOT_SUPPORTED,
           })
@@ -404,6 +431,7 @@ for (const dialect of DIALECTS.filter(
             .whenMatched()
             .thenUpdate((ub) =>
               ub
+                .set('first_name', (eb) => eb.ref('person.last_name'))
                 .set('middle_name', (eb) => eb.ref('pet.name'))
                 .set({
                   marital_status: 'single',
@@ -412,12 +440,12 @@ for (const dialect of DIALECTS.filter(
 
           testSql(query, dialect, {
             postgres: {
-              sql: 'merge into "person" using "pet" on "pet"."owner_id" = "person"."id" when matched then update set "middle_name" = "pet"."name", "marital_status" = $1',
+              sql: 'merge into "person" using "pet" on "pet"."owner_id" = "person"."id" when matched then update set "first_name" = "person"."last_name", "middle_name" = "pet"."name", "marital_status" = $1',
               parameters: ['single'],
             },
             mysql: NOT_SUPPORTED,
             mssql: {
-              sql: 'merge into "person" using "pet" on "pet"."owner_id" = "person"."id" when matched then update set "middle_name" = "pet"."name", "marital_status" = @1;',
+              sql: 'merge into "person" using "pet" on "pet"."owner_id" = "person"."id" when matched then update set "first_name" = "person"."last_name", "middle_name" = "pet"."name", "marital_status" = @1;',
               parameters: ['single'],
             },
             sqlite: NOT_SUPPORTED,
@@ -493,140 +521,142 @@ for (const dialect of DIALECTS.filter(
           expect(result.numChangedRows).to.equal(3n)
         })
 
-        it('should perform a merge...using table simple on...when not matched and simple binary then insert values query', async () => {
-          const query = ctx.db
-            .mergeInto('person')
-            .using('pet', 'pet.owner_id', 'person.id')
-            .whenNotMatchedAnd('pet.name', '=', 'Dingo')
-            .thenInsertValues({
-              gender: 'male',
-              first_name: 'Dingo',
-              middle_name: 'the',
-              last_name: 'Dog',
+        describe('And', () => {
+          it('should perform a merge...using table simple on...when not matched and simple binary then insert values query', async () => {
+            const query = ctx.db
+              .mergeInto('person')
+              .using('pet', 'pet.owner_id', 'person.id')
+              .whenNotMatchedAnd('pet.name', '=', 'Dingo')
+              .thenInsertValues({
+                gender: 'male',
+                first_name: 'Dingo',
+                middle_name: 'the',
+                last_name: 'Dog',
+              })
+
+            testSql(query, dialect, {
+              postgres: {
+                sql: 'merge into "person" using "pet" on "pet"."owner_id" = "person"."id" when not matched and "pet"."name" = $1 then insert ("gender", "first_name", "middle_name", "last_name") values ($2, $3, $4, $5)',
+                parameters: ['Dingo', 'male', 'Dingo', 'the', 'Dog'],
+              },
+              mysql: NOT_SUPPORTED,
+              mssql: {
+                sql: 'merge into "person" using "pet" on "pet"."owner_id" = "person"."id" when not matched and "pet"."name" = @1 then insert ("gender", "first_name", "middle_name", "last_name") values (@2, @3, @4, @5);',
+                parameters: ['Dingo', 'male', 'Dingo', 'the', 'Dog'],
+              },
+              sqlite: NOT_SUPPORTED,
             })
 
-          testSql(query, dialect, {
-            postgres: {
-              sql: 'merge into "person" using "pet" on "pet"."owner_id" = "person"."id" when not matched and "pet"."name" = $1 then insert ("gender", "first_name", "middle_name", "last_name") values ($2, $3, $4, $5)',
-              parameters: ['Dingo', 'male', 'Dingo', 'the', 'Dog'],
-            },
-            mysql: NOT_SUPPORTED,
-            mssql: {
-              sql: 'merge into "person" using "pet" on "pet"."owner_id" = "person"."id" when not matched and "pet"."name" = @1 then insert ("gender", "first_name", "middle_name", "last_name") values (@2, @3, @4, @5);',
-              parameters: ['Dingo', 'male', 'Dingo', 'the', 'Dog'],
-            },
-            sqlite: NOT_SUPPORTED,
+            const result = await query.executeTakeFirstOrThrow()
+
+            expect(result).to.be.instanceOf(MergeResult)
+            expect(result.numChangedRows).to.equal(0n)
           })
 
-          const result = await query.executeTakeFirstOrThrow()
+          it('should perform a merge...using table simple on...when not matched and simple binary ref then insert values query', async () => {
+            const query = ctx.db
+              .mergeInto('person')
+              .using('pet', 'pet.owner_id', 'person.id')
+              .whenNotMatchedAndRef('pet.name', '=', 'pet.species')
+              .thenInsertValues({
+                gender: 'male',
+                first_name: 'Dingo',
+                middle_name: 'the',
+                last_name: 'Dog',
+              })
 
-          expect(result).to.be.instanceOf(MergeResult)
-          expect(result.numChangedRows).to.equal(0n)
-        })
-
-        it('should perform a merge...using table simple on...when not matched and simple binary ref then insert values query', async () => {
-          const query = ctx.db
-            .mergeInto('person')
-            .using('pet', 'pet.owner_id', 'person.id')
-            .whenNotMatchedAndRef('pet.name', '=', 'pet.species')
-            .thenInsertValues({
-              gender: 'male',
-              first_name: 'Dingo',
-              middle_name: 'the',
-              last_name: 'Dog',
+            testSql(query, dialect, {
+              postgres: {
+                sql: 'merge into "person" using "pet" on "pet"."owner_id" = "person"."id" when not matched and "pet"."name" = "pet"."species" then insert ("gender", "first_name", "middle_name", "last_name") values ($1, $2, $3, $4)',
+                parameters: ['male', 'Dingo', 'the', 'Dog'],
+              },
+              mysql: NOT_SUPPORTED,
+              mssql: {
+                sql: 'merge into "person" using "pet" on "pet"."owner_id" = "person"."id" when not matched and "pet"."name" = "pet"."species" then insert ("gender", "first_name", "middle_name", "last_name") values (@1, @2, @3, @4);',
+                parameters: ['male', 'Dingo', 'the', 'Dog'],
+              },
+              sqlite: NOT_SUPPORTED,
             })
 
-          testSql(query, dialect, {
-            postgres: {
-              sql: 'merge into "person" using "pet" on "pet"."owner_id" = "person"."id" when not matched and "pet"."name" = "pet"."species" then insert ("gender", "first_name", "middle_name", "last_name") values ($1, $2, $3, $4)',
-              parameters: ['male', 'Dingo', 'the', 'Dog'],
-            },
-            mysql: NOT_SUPPORTED,
-            mssql: {
-              sql: 'merge into "person" using "pet" on "pet"."owner_id" = "person"."id" when not matched and "pet"."name" = "pet"."species" then insert ("gender", "first_name", "middle_name", "last_name") values (@1, @2, @3, @4);',
-              parameters: ['male', 'Dingo', 'the', 'Dog'],
-            },
-            sqlite: NOT_SUPPORTED,
+            const result = await query.executeTakeFirstOrThrow()
+
+            expect(result).to.be.instanceOf(MergeResult)
+            expect(result.numChangedRows).to.equal(0n)
           })
 
-          const result = await query.executeTakeFirstOrThrow()
-
-          expect(result).to.be.instanceOf(MergeResult)
-          expect(result.numChangedRows).to.equal(0n)
-        })
-
-        it('should perform a merge...using table simple on...when not matched and complex and then insert values query', async () => {
-          const query = ctx.db
-            .mergeInto('person')
-            .using('pet', 'pet.owner_id', 'person.id')
-            .whenNotMatchedAnd((eb) =>
-              eb('pet.name', '=', 'Dingo').and(
-                'pet.name',
-                '=',
-                eb.ref('pet.name')
+          it('should perform a merge...using table simple on...when not matched and complex and then insert values query', async () => {
+            const query = ctx.db
+              .mergeInto('person')
+              .using('pet', 'pet.owner_id', 'person.id')
+              .whenNotMatchedAnd((eb) =>
+                eb('pet.name', '=', 'Dingo').and(
+                  'pet.name',
+                  '=',
+                  eb.ref('pet.name')
+                )
               )
-            )
-            .thenInsertValues({
-              gender: 'male',
-              first_name: 'Dingo',
-              middle_name: 'the',
-              last_name: 'Dog',
+              .thenInsertValues({
+                gender: 'male',
+                first_name: 'Dingo',
+                middle_name: 'the',
+                last_name: 'Dog',
+              })
+
+            testSql(query, dialect, {
+              postgres: {
+                sql: 'merge into "person" using "pet" on "pet"."owner_id" = "person"."id" when not matched and ("pet"."name" = $1 and "pet"."name" = "pet"."name") then insert ("gender", "first_name", "middle_name", "last_name") values ($2, $3, $4, $5)',
+                parameters: ['Dingo', 'male', 'Dingo', 'the', 'Dog'],
+              },
+              mysql: NOT_SUPPORTED,
+              mssql: {
+                sql: 'merge into "person" using "pet" on "pet"."owner_id" = "person"."id" when not matched and ("pet"."name" = @1 and "pet"."name" = "pet"."name") then insert ("gender", "first_name", "middle_name", "last_name") values (@2, @3, @4, @5);',
+                parameters: ['Dingo', 'male', 'Dingo', 'the', 'Dog'],
+              },
+              sqlite: NOT_SUPPORTED,
             })
 
-          testSql(query, dialect, {
-            postgres: {
-              sql: 'merge into "person" using "pet" on "pet"."owner_id" = "person"."id" when not matched and ("pet"."name" = $1 and "pet"."name" = "pet"."name") then insert ("gender", "first_name", "middle_name", "last_name") values ($2, $3, $4, $5)',
-              parameters: ['Dingo', 'male', 'Dingo', 'the', 'Dog'],
-            },
-            mysql: NOT_SUPPORTED,
-            mssql: {
-              sql: 'merge into "person" using "pet" on "pet"."owner_id" = "person"."id" when not matched and ("pet"."name" = @1 and "pet"."name" = "pet"."name") then insert ("gender", "first_name", "middle_name", "last_name") values (@2, @3, @4, @5);',
-              parameters: ['Dingo', 'male', 'Dingo', 'the', 'Dog'],
-            },
-            sqlite: NOT_SUPPORTED,
+            const result = await query.executeTakeFirstOrThrow()
+
+            expect(result).to.be.instanceOf(MergeResult)
+            expect(result.numChangedRows).to.equal(0n)
           })
 
-          const result = await query.executeTakeFirstOrThrow()
-
-          expect(result).to.be.instanceOf(MergeResult)
-          expect(result.numChangedRows).to.equal(0n)
-        })
-
-        it('should perform a merge...using table simple on...when not matched and complex or then insert values query', async () => {
-          const query = ctx.db
-            .mergeInto('person')
-            .using('pet', 'pet.owner_id', 'person.id')
-            .whenNotMatchedAnd((eb) =>
-              eb('pet.name', '=', 'Dingo').or(
-                'pet.name',
-                '=',
-                eb.ref('pet.name')
+          it('should perform a merge...using table simple on...when not matched and complex or then insert values query', async () => {
+            const query = ctx.db
+              .mergeInto('person')
+              .using('pet', 'pet.owner_id', 'person.id')
+              .whenNotMatchedAnd((eb) =>
+                eb('pet.name', '=', 'Dingo').or(
+                  'pet.name',
+                  '=',
+                  eb.ref('pet.name')
+                )
               )
-            )
-            .thenInsertValues({
-              gender: 'male',
-              first_name: 'Dingo',
-              middle_name: 'the',
-              last_name: 'Dog',
+              .thenInsertValues({
+                gender: 'male',
+                first_name: 'Dingo',
+                middle_name: 'the',
+                last_name: 'Dog',
+              })
+
+            testSql(query, dialect, {
+              postgres: {
+                sql: 'merge into "person" using "pet" on "pet"."owner_id" = "person"."id" when not matched and ("pet"."name" = $1 or "pet"."name" = "pet"."name") then insert ("gender", "first_name", "middle_name", "last_name") values ($2, $3, $4, $5)',
+                parameters: ['Dingo', 'male', 'Dingo', 'the', 'Dog'],
+              },
+              mysql: NOT_SUPPORTED,
+              mssql: {
+                sql: 'merge into "person" using "pet" on "pet"."owner_id" = "person"."id" when not matched and ("pet"."name" = @1 or "pet"."name" = "pet"."name") then insert ("gender", "first_name", "middle_name", "last_name") values (@2, @3, @4, @5);',
+                parameters: ['Dingo', 'male', 'Dingo', 'the', 'Dog'],
+              },
+              sqlite: NOT_SUPPORTED,
             })
 
-          testSql(query, dialect, {
-            postgres: {
-              sql: 'merge into "person" using "pet" on "pet"."owner_id" = "person"."id" when not matched and ("pet"."name" = $1 or "pet"."name" = "pet"."name") then insert ("gender", "first_name", "middle_name", "last_name") values ($2, $3, $4, $5)',
-              parameters: ['Dingo', 'male', 'Dingo', 'the', 'Dog'],
-            },
-            mysql: NOT_SUPPORTED,
-            mssql: {
-              sql: 'merge into "person" using "pet" on "pet"."owner_id" = "person"."id" when not matched and ("pet"."name" = @1 or "pet"."name" = "pet"."name") then insert ("gender", "first_name", "middle_name", "last_name") values (@2, @3, @4, @5);',
-              parameters: ['Dingo', 'male', 'Dingo', 'the', 'Dog'],
-            },
-            sqlite: NOT_SUPPORTED,
+            const result = await query.executeTakeFirstOrThrow()
+
+            expect(result).to.be.instanceOf(MergeResult)
+            expect(result.numChangedRows).to.equal(0n)
           })
-
-          const result = await query.executeTakeFirstOrThrow()
-
-          expect(result).to.be.instanceOf(MergeResult)
-          expect(result.numChangedRows).to.equal(0n)
         })
 
         it('should perform a merge...using table complex on...when not matched then insert values cross ref query', async () => {
@@ -660,6 +690,270 @@ for (const dialect of DIALECTS.filter(
           expect(result.numChangedRows).to.equal(3n)
         })
       })
+
+      if (dialect === 'mssql') {
+        describe('BySource', () => {
+          it('should perform a merge...using table simple on...when not matched by source then delete query', async () => {
+            const query = ctx.db
+              .mergeInto('person')
+              .using('pet', 'pet.owner_id', 'person.id')
+              .whenNotMatchedBySource()
+              .thenDelete()
+
+            testSql(query, dialect, {
+              postgres: NOT_SUPPORTED,
+              mysql: NOT_SUPPORTED,
+              mssql: {
+                sql: 'merge into "person" using "pet" on "pet"."owner_id" = "person"."id" when not matched by source then delete;',
+                parameters: [],
+              },
+              sqlite: NOT_SUPPORTED,
+            })
+
+            const result = await query.executeTakeFirstOrThrow()
+
+            expect(result).to.be.instanceOf(MergeResult)
+            expect(result.numChangedRows).to.equal(0n)
+          })
+
+          describe('And', () => {
+            it('should perform a merge...using table simple on...when not matched by source and simple binary then delete query', async () => {
+              const query = ctx.db
+                .mergeInto('person')
+                .using('pet', 'pet.owner_id', 'person.id')
+                .whenNotMatchedBySourceAnd('person.first_name', '=', 'Jennifer')
+                .thenDelete()
+
+              testSql(query, dialect, {
+                postgres: NOT_SUPPORTED,
+                mysql: NOT_SUPPORTED,
+                mssql: {
+                  sql: 'merge into "person" using "pet" on "pet"."owner_id" = "person"."id" when not matched by source and "person"."first_name" = @1 then delete;',
+                  parameters: ['Jennifer'],
+                },
+                sqlite: NOT_SUPPORTED,
+              })
+
+              const result = await query.executeTakeFirstOrThrow()
+
+              expect(result).to.be.instanceOf(MergeResult)
+              expect(result.numChangedRows).to.equal(0n)
+            })
+
+            it('should perform a merge...using table simple on...when not matched by source and simple binary ref then delete query', async () => {
+              const query = ctx.db
+                .mergeInto('person')
+                .using('pet', 'pet.owner_id', 'person.id')
+                .whenNotMatchedBySourceAndRef(
+                  'person.first_name',
+                  '=',
+                  'person.last_name'
+                )
+                .thenDelete()
+
+              testSql(query, dialect, {
+                postgres: NOT_SUPPORTED,
+                mysql: NOT_SUPPORTED,
+                mssql: {
+                  sql: 'merge into "person" using "pet" on "pet"."owner_id" = "person"."id" when not matched by source and "person"."first_name" = "person"."last_name" then delete;',
+                  parameters: [],
+                },
+                sqlite: NOT_SUPPORTED,
+              })
+
+              const result = await query.executeTakeFirstOrThrow()
+
+              expect(result).to.be.instanceOf(MergeResult)
+              expect(result.numChangedRows).to.equal(0n)
+            })
+
+            it('should perform a merge...using table simple on...when not matched by source and complex and then delete query', async () => {
+              const query = ctx.db
+                .mergeInto('person')
+                .using('pet', 'pet.owner_id', 'person.id')
+                .whenNotMatchedBySourceAnd((eb) =>
+                  eb('person.gender', '=', 'female').and(
+                    'person.first_name',
+                    '=',
+                    eb.ref('person.last_name')
+                  )
+                )
+                .thenDelete()
+
+              testSql(query, dialect, {
+                postgres: NOT_SUPPORTED,
+                mysql: NOT_SUPPORTED,
+                mssql: {
+                  sql: 'merge into "person" using "pet" on "pet"."owner_id" = "person"."id" when not matched by source and ("person"."gender" = @1 and "person"."first_name" = "person"."last_name") then delete;',
+                  parameters: ['female'],
+                },
+                sqlite: NOT_SUPPORTED,
+              })
+
+              const result = await query.executeTakeFirstOrThrow()
+
+              expect(result).to.be.instanceOf(MergeResult)
+              expect(result.numChangedRows).to.equal(0n)
+            })
+
+            it('should perform a merge...using table simple on...when not matched by source and complex or then delete query', async () => {
+              const query = ctx.db
+                .mergeInto('person')
+                .using('pet', 'pet.owner_id', 'person.id')
+                .whenNotMatchedBySourceAnd((eb) =>
+                  eb('person.gender', '=', 'female').or(
+                    'person.first_name',
+                    '=',
+                    eb.ref('person.last_name')
+                  )
+                )
+                .thenDelete()
+
+              testSql(query, dialect, {
+                postgres: NOT_SUPPORTED,
+                mysql: NOT_SUPPORTED,
+                mssql: {
+                  sql: 'merge into "person" using "pet" on "pet"."owner_id" = "person"."id" when not matched by source and ("person"."gender" = @1 or "person"."first_name" = "person"."last_name") then delete;',
+                  parameters: ['female'],
+                },
+                sqlite: NOT_SUPPORTED,
+              })
+
+              const result = await query.executeTakeFirstOrThrow()
+
+              expect(result).to.be.instanceOf(MergeResult)
+              expect(result.numChangedRows).to.equal(0n)
+            })
+          })
+
+          describe('update', () => {
+            it('should perform a merge...using table simple on...when not matched by source then update set object query', async () => {
+              const query = ctx.db
+                .mergeInto('person')
+                .using('pet', 'pet.owner_id', 'person.id')
+                .whenNotMatchedBySource()
+                .thenUpdateSet({
+                  middle_name: 'pet owner',
+                })
+
+              testSql(query, dialect, {
+                postgres: NOT_SUPPORTED,
+                mysql: NOT_SUPPORTED,
+                mssql: {
+                  sql: 'merge into "person" using "pet" on "pet"."owner_id" = "person"."id" when not matched by source then update set "middle_name" = @1;',
+                  parameters: ['pet owner'],
+                },
+                sqlite: NOT_SUPPORTED,
+              })
+
+              const result = await query.executeTakeFirstOrThrow()
+
+              expect(result).to.be.instanceOf(MergeResult)
+              expect(result.numChangedRows).to.equal(0n)
+            })
+
+            it('should perform a merge...using table simple on...when not matched by source then update set object ref query', async () => {
+              const query = ctx.db
+                .mergeInto('person')
+                .using('pet', 'pet.owner_id', 'person.id')
+                .whenNotMatchedBySource()
+                .thenUpdateSet((eb) => ({
+                  first_name: eb.ref('person.last_name'),
+                }))
+
+              testSql(query, dialect, {
+                postgres: NOT_SUPPORTED,
+                mysql: NOT_SUPPORTED,
+                mssql: {
+                  sql: 'merge into "person" using "pet" on "pet"."owner_id" = "person"."id" when not matched by source then update set "first_name" = "person"."last_name";',
+                  parameters: [],
+                },
+                sqlite: NOT_SUPPORTED,
+              })
+
+              const result = await query.executeTakeFirstOrThrow()
+
+              expect(result).to.be.instanceOf(MergeResult)
+              expect(result.numChangedRows).to.equal(0n)
+            })
+
+            it('should perform a merge...using table simple on...when not matched by source then update set column query', async () => {
+              const query = ctx.db
+                .mergeInto('person')
+                .using('pet', 'pet.owner_id', 'person.id')
+                .whenNotMatchedBySource()
+                .thenUpdateSet('middle_name', 'pet owner')
+
+              testSql(query, dialect, {
+                postgres: NOT_SUPPORTED,
+                mysql: NOT_SUPPORTED,
+                mssql: {
+                  sql: 'merge into "person" using "pet" on "pet"."owner_id" = "person"."id" when not matched by source then update set "middle_name" = @1;',
+                  parameters: ['pet owner'],
+                },
+                sqlite: NOT_SUPPORTED,
+              })
+
+              const result = await query.executeTakeFirstOrThrow()
+
+              expect(result).to.be.instanceOf(MergeResult)
+              expect(result.numChangedRows).to.equal(0n)
+            })
+
+            it('should perform a merge...using table simple on...when not matched by source then update set column ref query', async () => {
+              const query = ctx.db
+                .mergeInto('person')
+                .using('pet', 'pet.owner_id', 'person.id')
+                .whenNotMatchedBySource()
+                .thenUpdateSet('first_name', (eb) => eb.ref('person.last_name'))
+
+              testSql(query, dialect, {
+                postgres: NOT_SUPPORTED,
+                mysql: NOT_SUPPORTED,
+                mssql: {
+                  sql: 'merge into "person" using "pet" on "pet"."owner_id" = "person"."id" when not matched by source then update set "first_name" = "person"."last_name";',
+                  parameters: [],
+                },
+                sqlite: NOT_SUPPORTED,
+              })
+
+              const result = await query.executeTakeFirstOrThrow()
+
+              expect(result).to.be.instanceOf(MergeResult)
+              expect(result.numChangedRows).to.equal(0n)
+            })
+
+            it('should perform a merge...using table simple on...when not matched by source then update set complex query', async () => {
+              const query = ctx.db
+                .mergeInto('person')
+                .using('pet', 'pet.owner_id', 'person.id')
+                .whenNotMatchedBySource()
+                .thenUpdate((ub) =>
+                  ub
+                    .set('first_name', (eb) => eb.ref('person.last_name'))
+                    .set({
+                      marital_status: 'single',
+                    })
+                )
+
+              testSql(query, dialect, {
+                postgres: NOT_SUPPORTED,
+                mysql: NOT_SUPPORTED,
+                mssql: {
+                  sql: 'merge into "person" using "pet" on "pet"."owner_id" = "person"."id" when not matched by source then update set "first_name" = "person"."last_name", "marital_status" = @1;',
+                  parameters: ['single'],
+                },
+                sqlite: NOT_SUPPORTED,
+              })
+
+              const result = await query.executeTakeFirstOrThrow()
+
+              expect(result).to.be.instanceOf(MergeResult)
+              expect(result.numChangedRows).to.equal(0n)
+            })
+          })
+        })
+      }
     })
   })
 }

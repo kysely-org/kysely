@@ -164,7 +164,7 @@ export class WheneableMergeQueryBuilder<
    *   delete
    * ```
    */
-  whenMatched(): MatchedThenableMergeQueryBuilder<DB, TT, ST, O> {
+  whenMatched(): MatchedThenableMergeQueryBuilder<DB, TT, ST, TT | ST, O> {
     return this.#whenMatched([])
   }
 
@@ -199,15 +199,15 @@ export class WheneableMergeQueryBuilder<
     lhs: RE,
     op: ComparisonOperatorExpression,
     rhs: OperandValueExpressionOrList<DB, TT | ST, RE>
-  ): MatchedThenableMergeQueryBuilder<DB, TT, ST, O>
+  ): MatchedThenableMergeQueryBuilder<DB, TT, ST, TT | ST, O>
 
   whenMatchedAnd(
     expression: ExpressionOrFactory<DB, TT | ST, SqlBool>
-  ): MatchedThenableMergeQueryBuilder<DB, TT, ST, O>
+  ): MatchedThenableMergeQueryBuilder<DB, TT, ST, TT | ST, O>
 
   whenMatchedAnd(
     ...args: any[]
-  ): MatchedThenableMergeQueryBuilder<DB, TT, ST, O> {
+  ): MatchedThenableMergeQueryBuilder<DB, TT, ST, TT | ST, O> {
     return this.#whenMatched(args)
   }
 
@@ -222,14 +222,14 @@ export class WheneableMergeQueryBuilder<
     lhs: ReferenceExpression<DB, TT | ST>,
     op: ComparisonOperatorExpression,
     rhs: ReferenceExpression<DB, TT | ST>
-  ): MatchedThenableMergeQueryBuilder<DB, TT, ST, O> {
+  ): MatchedThenableMergeQueryBuilder<DB, TT, ST, TT | ST, O> {
     return this.#whenMatched([lhs, op, rhs], true)
   }
 
   #whenMatched(
     args: any[],
     refRight?: boolean
-  ): MatchedThenableMergeQueryBuilder<DB, TT, ST, O> {
+  ): MatchedThenableMergeQueryBuilder<DB, TT, ST, TT | ST, O> {
     return new MatchedThenableMergeQueryBuilder({
       ...this.#props,
       queryNode: MergeQueryNode.cloneWithWhen(
@@ -326,7 +326,7 @@ export class WheneableMergeQueryBuilder<
    * Adds the `when not matched` clause to the query with an `and` condition. But unlike
    * {@link whenNotMatchedAnd}, this method accepts a column reference as the 3rd argument.
    *
-   * Unlike {@link whenMatchedAndRef}, you cannot reference columns from the table merged into.
+   * Unlike {@link whenMatchedAndRef}, you cannot reference columns from the target table.
    *
    * This method is similar to {@link SelectQueryBuilder.whereRef}, so see the documentation
    * for that method for more examples.
@@ -344,9 +344,15 @@ export class WheneableMergeQueryBuilder<
    *
    * Supported in MS SQL Server.
    *
-   * Similar to {@link whenNotMatched}.
+   * Similar to {@link whenNotMatched}, but returns a {@link MatchedThenableMergeQueryBuilder}.
    */
-  whenNotMatchedBySource(): NotMatchedThenableMergeQueryBuilder<DB, TT, ST, O> {
+  whenNotMatchedBySource(): MatchedThenableMergeQueryBuilder<
+    DB,
+    TT,
+    ST,
+    TT,
+    O
+  > {
     return this.#whenNotMatched([], false, true)
   }
 
@@ -355,36 +361,56 @@ export class WheneableMergeQueryBuilder<
    *
    * Supported in MS SQL Server.
    *
-   * Similar to {@link whenNotMatchedAnd}.
+   * Similar to {@link whenNotMatchedAnd}, but returns a {@link MatchedThenableMergeQueryBuilder}.
    */
   whenNotMatchedBySourceAnd<RE extends ReferenceExpression<DB, TT>>(
     lhs: RE,
     op: ComparisonOperatorExpression,
     rhs: OperandValueExpressionOrList<DB, TT, RE>
-  ): NotMatchedThenableMergeQueryBuilder<DB, TT, ST, O>
+  ): MatchedThenableMergeQueryBuilder<DB, TT, ST, TT, O>
 
   whenNotMatchedBySourceAnd(
     expression: ExpressionOrFactory<DB, TT, SqlBool>
-  ): NotMatchedThenableMergeQueryBuilder<DB, TT, ST, O>
+  ): MatchedThenableMergeQueryBuilder<DB, TT, ST, TT, O>
 
   whenNotMatchedBySourceAnd(
     ...args: any[]
-  ): NotMatchedThenableMergeQueryBuilder<DB, TT, ST, O> {
+  ): MatchedThenableMergeQueryBuilder<DB, TT, ST, TT, O> {
     return this.#whenNotMatched(args, false, true)
+  }
+
+  /**
+   * Adds the `when not matched by source` clause to the query with an `and` condition.
+   *
+   * Similar to {@link whenNotMatchedAndRef}, but you can reference columns from
+   * the target table, and not from source table and returns a {@link MatchedThenableMergeQueryBuilder}.
+   */
+  whenNotMatchedBySourceAndRef(
+    lhs: ReferenceExpression<DB, TT>,
+    op: ComparisonOperatorExpression,
+    rhs: ReferenceExpression<DB, TT>
+  ): MatchedThenableMergeQueryBuilder<DB, TT, ST, TT, O> {
+    return this.#whenNotMatched([lhs, op, rhs], true, true)
   }
 
   #whenNotMatched(
     args: any[],
     refRight: boolean = false,
     bySource: boolean = false
-  ): NotMatchedThenableMergeQueryBuilder<DB, TT, ST, O> {
-    return new NotMatchedThenableMergeQueryBuilder({
+  ): any {
+    const props: MergeQueryBuilderProps = {
       ...this.#props,
       queryNode: MergeQueryNode.cloneWithWhen(
         this.#props.queryNode,
         parseMergeWhen({ isMatched: false, bySource }, args, refRight)
       ),
-    })
+    }
+
+    const Builder: any = bySource
+      ? MatchedThenableMergeQueryBuilder
+      : NotMatchedThenableMergeQueryBuilder
+
+    return new Builder(props)
   }
 
   /**
@@ -542,6 +568,7 @@ export class MatchedThenableMergeQueryBuilder<
   DB,
   TT extends keyof DB,
   ST extends keyof DB,
+  UT extends TT | ST,
   O
 > {
   readonly #props: MergeQueryBuilderProps
@@ -662,8 +689,8 @@ export class MatchedThenableMergeQueryBuilder<
    */
   thenUpdate(
     set: (
-      ub: UpdateQueryBuilder<DB, TT, ST, never>
-    ) => UpdateQueryBuilder<DB, TT, ST, never>
+      ub: UpdateQueryBuilder<DB, TT, UT, never>
+    ) => UpdateQueryBuilder<DB, TT, UT, never>
   ): WheneableMergeQueryBuilder<DB, TT, ST, O> {
     return new WheneableMergeQueryBuilder({
       ...this.#props,
@@ -713,18 +740,18 @@ export class MatchedThenableMergeQueryBuilder<
    * ```
    */
   thenUpdateSet(
-    update: UpdateObject<DB, ST, TT>
+    update: UpdateObject<DB, UT, TT>
   ): WheneableMergeQueryBuilder<DB, TT, ST, O>
 
   thenUpdateSet(
-    update: UpdateObjectFactory<DB, ST, TT>
+    update: UpdateObjectFactory<DB, UT, TT>
   ): WheneableMergeQueryBuilder<DB, TT, ST, O>
 
   thenUpdateSet<RE extends ReferenceExpression<DB, TT>>(
     key: RE,
     value: ValueExpression<
       DB,
-      ST,
+      UT,
       ExtractUpdateTypeFromReferenceExpression<DB, TT, RE>
     >
   ): WheneableMergeQueryBuilder<DB, TT, ST, O>
