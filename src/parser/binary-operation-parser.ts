@@ -130,7 +130,8 @@ export function parseFilterObject(
 
 export function parseFilterList(
   list: ReadonlyArray<OperationNodeSource | OperationNode>,
-  combinator: 'and' | 'or'
+  combinator: 'and' | 'or',
+  withParens = true
 ): OperationNode {
   const combine = combinator === 'and' ? AndNode.create : OrNode.create
 
@@ -148,7 +149,7 @@ export function parseFilterList(
     node = combine(node, toOperationNode(list[i]))
   }
 
-  if (list.length > 1) {
+  if (list.length > 1 && withParens) {
     return ParensNode.create(node)
   }
 

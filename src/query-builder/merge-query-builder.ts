@@ -216,15 +216,18 @@ export class WheneableMergeQueryBuilder<
     op: ComparisonOperatorExpression,
     rhs: ReferenceExpression<DB, MT | UT>
   ): MatchedThenableMergeQueryBuilder<DB, MT, UT, O> {
-    return this.#whenMatched([lhs, op, rhs])
+    return this.#whenMatched([lhs, op, rhs], true)
   }
 
-  #whenMatched(args: any[]): MatchedThenableMergeQueryBuilder<DB, MT, UT, O> {
+  #whenMatched(
+    args: any[],
+    refRight?: boolean
+  ): MatchedThenableMergeQueryBuilder<DB, MT, UT, O> {
     return new MatchedThenableMergeQueryBuilder({
       ...this.#props,
       queryNode: MergeQueryNode.cloneWithWhen(
         this.#props.queryNode,
-        parseMergeWhen(true, args)
+        parseMergeWhen(true, args, refRight)
       ),
     })
   }
