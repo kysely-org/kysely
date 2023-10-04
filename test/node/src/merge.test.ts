@@ -333,5 +333,71 @@ for (const dialect of DIALECTS.filter(
         expect(result.numChangedRows).to.equal(0n)
       })
     }
+
+    it('should perform a merge...using table simple on...when not matched then insert values query', async () => {
+      const query = ctx.db
+        .mergeInto('person')
+        .using('pet', (on) =>
+          on
+            .onRef('pet.owner_id', '=', 'person.id')
+            .on('pet.name', '=', 'NO_SUCH_PET_NAME')
+        )
+        .whenNotMatched()
+        .thenInsertValues({
+          gender: 'male',
+          first_name: 'Dingo',
+          middle_name: 'the',
+          last_name: 'Dog',
+        })
+
+      testSql(query, dialect, {
+        postgres: {
+          sql: 'merge into "person" using "pet" on "pet"."owner_id" = "person"."id" and "pet"."name" = $1 when not matched then insert ("gender", "first_name", "middle_name", "last_name") values ($2, $3, $4, $5)',
+          parameters: ['NO_SUCH_PET_NAME', 'male', 'Dingo', 'the', 'Dog'],
+        },
+        mysql: NOT_SUPPORTED,
+        mssql: {
+          sql: 'merge into "person" using "pet" on "pet"."owner_id" = "person"."id" and "pet"."name" = @1 when not matched then insert ("gender", "first_name", "middle_name", "last_name") values (@2, @3, @4, @5);',
+          parameters: ['NO_SUCH_PET_NAME', 'male', 'Dingo', 'the', 'Dog'],
+        },
+        sqlite: NOT_SUPPORTED,
+      })
+
+      const result = await query.executeTakeFirstOrThrow()
+
+      expect(result).to.be.instanceOf(MergeResult)
+      expect(result.numChangedRows).to.equal(3n)
+    })
+
+    it('should perform a merge...using table simple on...when not matched then insert values cross ref query', async () => {
+      const query = ctx.db
+        .mergeInto('person')
+        .using('pet', (on) => on.on('pet.owner_id', 'is', null))
+        .whenNotMatched()
+        .thenInsertValues((eb) => ({
+          gender: 'other',
+          first_name: eb.ref('pet.name'),
+          middle_name: 'the',
+          last_name: eb.ref('pet.species'),
+        }))
+
+      testSql(query, dialect, {
+        postgres: {
+          sql: 'merge into "person" using "pet" on "pet"."owner_id" is null when not matched then insert ("gender", "first_name", "middle_name", "last_name") values ($1, "pet"."name", $2, "pet"."species")',
+          parameters: ['other', 'the'],
+        },
+        mysql: NOT_SUPPORTED,
+        mssql: {
+          sql: 'merge into "person" using "pet" on "pet"."owner_id" is null when not matched then insert ("gender", "first_name", "middle_name", "last_name") values (@1, "pet"."name", @2, "pet"."species");',
+          parameters: ['other', 'the'],
+        },
+        sqlite: NOT_SUPPORTED,
+      })
+
+      const result = await query.executeTakeFirstOrThrow()
+
+      expect(result).to.be.instanceOf(MergeResult)
+      expect(result.numChangedRows).to.equal(3n)
+    })
   })
 }
