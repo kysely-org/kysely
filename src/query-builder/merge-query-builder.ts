@@ -273,14 +273,16 @@ export class WheneableMergeQueryBuilder<
    * This method is similar to {@link SelectQueryBuilder.where}, so see the documentation
    * for that method for more examples.
    *
-   * For a simple `when not matched` clause (without an `and` condition) see {@link whenMatched}.
+   * For a simple `when not matched` clause (without an `and` condition) see {@link whenNotMatched}.
+   *
+   * Unlike {@link whenMatchedAnd}, you cannot reference columns from the table merged into.
    *
    * ### Examples
    *
    * ```ts
    * const result = await db.mergeInto('person')
    *   .using('pet', 'person.id', 'pet.owner_id')
-   *   .whenNotMatchedAnd('person.first_name', '=', 'John')
+   *   .whenNotMatchedAnd('pet.name', '=', 'Lucky')
    *   .thenInsertValues({
    *     first_name: 'John',
    *     last_name: 'Doe',
@@ -293,18 +295,18 @@ export class WheneableMergeQueryBuilder<
    * ```sql
    * merge into "person"
    * using "pet" on "person"."id" = "pet"."owner_id"
-   * when not matched and "person"."first_name" = $1 then
+   * when not matched and "pet"."name" = $1 then
    *   insert ("first_name", "last_name") values ($2, $3)
    * ```
    */
-  whenNotMatchedAnd<RE extends ReferenceExpression<DB, MT | UT>>(
+  whenNotMatchedAnd<RE extends ReferenceExpression<DB, UT>>(
     lhs: RE,
     op: ComparisonOperatorExpression,
-    rhs: OperandValueExpressionOrList<DB, MT | UT, RE>
+    rhs: OperandValueExpressionOrList<DB, UT, RE>
   ): NotMatchedThenableMergeQueryBuilder<DB, MT, UT, O>
 
   whenNotMatchedAnd(
-    expression: ExpressionOrFactory<DB, MT | UT, SqlBool>
+    expression: ExpressionOrFactory<DB, UT, SqlBool>
   ): NotMatchedThenableMergeQueryBuilder<DB, MT, UT, O>
 
   whenNotMatchedAnd(
@@ -317,25 +319,28 @@ export class WheneableMergeQueryBuilder<
    * Adds the `when not matched` clause to the query with an `and` condition. But unlike
    * {@link whenNotMatchedAnd}, this method accepts a column reference as the 3rd argument.
    *
+   * Unlike {@link whenMatchedAndRef}, you cannot reference columns from the table merged into.
+   *
    * This method is similar to {@link SelectQueryBuilder.whereRef}, so see the documentation
    * for that method for more examples.
    */
   whenNotMatchedAndRef(
-    lhs: ReferenceExpression<DB, MT | UT>,
+    lhs: ReferenceExpression<DB, UT>,
     op: ComparisonOperatorExpression,
-    rhs: ReferenceExpression<DB, MT | UT>
+    rhs: ReferenceExpression<DB, UT>
   ): NotMatchedThenableMergeQueryBuilder<DB, MT, UT, O> {
-    return this.#whenNotMatched([lhs, op, rhs])
+    return this.#whenNotMatched([lhs, op, rhs], true)
   }
 
   #whenNotMatched(
-    args: any[]
+    args: any[],
+    refRight?: boolean
   ): NotMatchedThenableMergeQueryBuilder<DB, MT, UT, O> {
     return new NotMatchedThenableMergeQueryBuilder({
       ...this.#props,
       queryNode: MergeQueryNode.cloneWithWhen(
         this.#props.queryNode,
-        parseMergeWhen(false, args)
+        parseMergeWhen(false, args, refRight)
       ),
     })
   }
