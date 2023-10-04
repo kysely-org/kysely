@@ -136,7 +136,6 @@ for (const dialect of DIALECTS) {
           { migrationOrder: 'permissive' }
         )
 
-        await migrator1.migrateToLatest()
         const { results: results1 } = await migrator1.migrateToLatest()
 
         const [migrator2, executedUpMethods2] = createMigrations(
@@ -144,7 +143,6 @@ for (const dialect of DIALECTS) {
           { migrationOrder: 'permissive' }
         )
 
-        await migrator2.migrateToLatest()
         const { results: results2 } = await migrator2.migrateToLatest()
 
         expect(results1).to.eql([
@@ -154,23 +152,10 @@ for (const dialect of DIALECTS) {
 
         expect(results2).to.eql([
           { migrationName: 'migration2', direction: 'Up', status: 'Success' },
-          // { migrationName: 'migration4', direction: 'Up', status: 'Success' },
         ])
 
         expect(executedUpMethods1).to.eql(['migration1', 'migration3'])
         expect(executedUpMethods2).to.eql(['migration2'])
-
-        //
-        //
-        // const { error } = await migrator2.migrateToLatest()
-        //
-        // expect(error).to.be.an.instanceOf(Error)
-        // expect(getMessage(error)).to.eql(
-        //   'corrupted migrations: expected previously executed migration migration3 to be at index 1 but migration2 was found in its place. New migrations must always have a name that comes alphabetically after the last executed migration.'
-        // )
-        //
-        // expect(executedUpMethods1).to.eql(['migration1', 'migration3'])
-        // expect(executedUpMethods2).to.eql([])
       })
 
       it('should return an error if a previously executed migration is missing', async () => {
