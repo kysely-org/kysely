@@ -397,6 +397,149 @@ for (const dialect of DIALECTS) {
         expect(executedUpMethods2).to.eql([])
         expect(executedDownMethods2).to.eql(['migration4', 'migration3'])
       })
+
+      describe('with permissive ordering enabled', () => {
+        it('should migrate up to a specific migration', async () => {
+          const [migrator1, executedUpMethods1] = createMigrations(
+            [
+              'migration1',
+              'migration3',
+              'migration4',
+              'migration5',
+            ],
+            { migrationOrder: 'permissive' }
+          )
+
+          const { results: results1 } = await migrator1.migrateTo('migration3')
+
+          const [migrator2, executedUpMethods2] = createMigrations(
+            [
+              'migration1',
+              'migration2',
+              'migration3',
+              'migration4',
+              'migration5',
+            ],
+            { migrationOrder: 'permissive' }
+          )
+
+          const { results: results2 } = await migrator2.migrateTo('migration4')
+
+          expect(results1).to.eql([
+            { migrationName: 'migration1', direction: 'Up', status: 'Success' },
+            { migrationName: 'migration3', direction: 'Up', status: 'Success' },
+          ])
+
+          expect(results2).to.eql([
+            { migrationName: 'migration2', direction: 'Up', status: 'Success' },
+            { migrationName: 'migration4', direction: 'Up', status: 'Success' },
+          ])
+
+          expect(executedUpMethods1).to.eql(['migration1', 'migration3'])
+          expect(executedUpMethods2).to.eql(['migration2', 'migration4'])
+        })
+
+        it('should migrate all the way down', async () => {
+          const [migrator1, executedUpMethods1] = 
+            createMigrations(
+            [
+              'migration1',
+              'migration2',
+              'migration4'
+            ],
+            { migrationOrder: 'permissive' }
+          )
+
+          const { results: results1 } = await migrator1.migrateToLatest()
+
+          const [migrator2, executedUpMethods2, executedDownMethods2] = 
+            createMigrations(
+            [
+              'migration1',
+              'migration2',
+              'migration3',
+              'migration4'
+            ],
+            { migrationOrder: 'permissive' }
+          )
+
+          const { results: results2 } = await migrator2.migrateTo(NO_MIGRATIONS)
+
+          expect(results1).to.eql([
+            { migrationName: 'migration1', direction: 'Up', status: 'Success' },
+            { migrationName: 'migration2', direction: 'Up', status: 'Success' },
+            { migrationName: 'migration4', direction: 'Up', status: 'Success' },
+          ])
+
+          expect(results2).to.eql([
+            { migrationName: 'migration4', direction: 'Down', status: 'Success' },
+            { migrationName: 'migration2', direction: 'Down', status: 'Success' },
+            { migrationName: 'migration1', direction: 'Down', status: 'Success' },
+          ])
+
+          expect(executedUpMethods1).to.eql([
+            'migration1',
+            'migration2',
+            'migration4',
+          ])
+          expect(executedUpMethods2).to.eql([])
+          expect(executedDownMethods2).to.eql([
+            'migration4',
+            'migration2',
+            'migration1',
+          ])
+        })
+
+        it('should migrate down to a specific migration', async () => {
+          const [migrator1, executedUpMethods1] = 
+            createMigrations(
+            [
+              'migration1',
+              'migration2',
+              'migration3',
+              'migration5'
+            ],
+            { migrationOrder: 'permissive' }
+          )
+
+          const { results: results1 } = await migrator1.migrateTo('migration5')
+
+          const [migrator2, executedUpMethods2, executedDownMethods2] = createMigrations(
+            [
+              'migration1',
+              'migration2',
+              'migration3',
+              'migration4',
+              'migration5'
+            ],
+            { migrationOrder: 'permissive' }
+          )
+
+          const { results: results2 } = await migrator2.migrateTo('migration2')
+
+          expect(results1).to.eql([
+            { migrationName: 'migration1', direction: 'Up', status: 'Success' },
+            { migrationName: 'migration2', direction: 'Up', status: 'Success' },
+            { migrationName: 'migration3', direction: 'Up', status: 'Success' },
+            { migrationName: 'migration5', direction: 'Up', status: 'Success' },
+          ])
+
+          expect(results2).to.eql([
+            { migrationName: 'migration5', direction: 'Down', status: 'Success' },
+            { migrationName: 'migration3', direction: 'Down', status: 'Success' },
+          ])
+
+          expect(executedUpMethods1).to.eql([
+            'migration1',
+            'migration2',
+            'migration3',
+            'migration5',
+          ])
+
+          expect(executedUpMethods2).to.eql([])
+          expect(executedDownMethods2).to.eql(['migration5', 'migration3'])
+        })
+      })
     })
 
     describe('migrateUp', () => {
@@ -426,6 +569,39 @@ for (const dialect of DIALECTS) {
 
         expect(results3).to.eql([])
         expect(executedUpMethods).to.eql(['migration1', 'migration2'])
+      })
+
+      it('should migrate up one step with permissive ordering enabled', async () => {
+        const [migrator1, executedUpMethods1] = createMigrations(
+          ['migration1', 'migration3'],
+          { migrationOrder: 'permissive' }
+        )
+
+        const { results: results1 } = await migrator1.migrateToLatest()
+
+        const [migrator2, executedUpMethods2] = createMigrations(
+          ['migration1', 'migration2', 'migration3', 'migration4'],
+          { migrationOrder: 'permissive' }
+        )
+
+        const { results: results2 } = await migrator2.migrateUp()
+        const { results: results3 } = await migrator2.migrateUp()
+
+        expect(results1).to.eql([
+          { migrationName: 'migration1', direction: 'Up', status: 'Success' },
+          { migrationName: 'migration3', direction: 'Up', status: 'Success' },
+        ])
+
+        expect(results2).to.eql([
+          { migrationName: 'migration2', direction: 'Up', status: 'Success' },
+        ])
+
+        expect(results3).to.eql([
+          { migrationName: 'migration4', direction: 'Up', status: 'Success' },
+        ])
+
+        expect(executedUpMethods1).to.eql(['migration1', 'migration3'])
+        expect(executedUpMethods2).to.eql(['migration2', 'migration4'])
       })
     })
 
@@ -458,6 +634,54 @@ for (const dialect of DIALECTS) {
 
         expect(executedUpMethods).to.eql(['migration1', 'migration2'])
         expect(executedDownMethods).to.eql(['migration2', 'migration1'])
+      })
+
+      it('should migrate down one step with permissive ordering enabled', async () => {
+        const [migrator1, executedUpMethods1, _executedDownMethods1] =
+          createMigrations(
+            [
+              'migration1',
+              'migration2',
+              'migration4',
+            ],
+            { migrationOrder: 'permissive' }
+          )
+
+        await migrator1.migrateToLatest()
+
+        const [migrator2, _executedUpMethods2, executedDownMethods2] =
+          createMigrations(
+            [
+              'migration1',
+              'migration2',
+              'migration3',
+              'migration4',
+              'migration5',
+            ],
+            { migrationOrder: 'permissive' }
+          )
+
+        const { results: results1 } = await migrator2.migrateDown()
+        const { results: results2 } = await migrator2.migrateDown()
+        const { results: results3 } = await migrator2.migrateDown()
+        const { results: results4 } = await migrator2.migrateDown()
+
+        expect(results1).to.eql([
+          { migrationName: 'migration4', direction: 'Down', status: 'Success' },
+        ])
+
+        expect(results2).to.eql([
+          { migrationName: 'migration2', direction: 'Down', status: 'Success' },
+        ])
+
+        expect(results3).to.eql([
+          { migrationName: 'migration1', direction: 'Down', status: 'Success' },
+        ])
+
+        expect(results4).to.eql([])
+
+        expect(executedUpMethods1).to.eql(['migration1', 'migration2', 'migration4'])
+        expect(executedDownMethods2).to.eql(['migration4', 'migration2', 'migration1'])
       })
     })
 
