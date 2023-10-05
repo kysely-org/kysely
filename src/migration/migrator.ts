@@ -86,8 +86,6 @@ export class Migrator {
     })
   }
 
-  // TODO add getPendingMigrations here too
-
   /**
    * Runs all migrations that have not yet been run.
    *
