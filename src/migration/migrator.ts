@@ -136,7 +136,7 @@ export class Migrator {
    * ```
    */
   async migrateToLatest(): Promise<MigrationResultSet> {
-    return this.#migrate(() => ({direction: 'Up', step: Infinity}))
+    return this.#migrate(() => ({ direction: 'Up', step: Infinity }))
   }
 
   /**
@@ -165,26 +165,43 @@ export class Migrator {
   async migrateTo(
     targetMigrationName: string | NoMigrations
   ): Promise<MigrationResultSet> {
-    return this.#migrate(({ migrations, executedMigrations, pendingMigrations }: MigrationState) => {
-      if (targetMigrationName === NO_MIGRATIONS) {
-        return { direction: 'Down', step: Infinity }
-      }
+    return this.#migrate(
+      ({
+        migrations,
+        executedMigrations,
+        pendingMigrations,
+      }: MigrationState) => {
+        if (targetMigrationName === NO_MIGRATIONS) {
+          return { direction: 'Down', step: Infinity }
+        }
 
-      if (!migrations.find(m => m.name === targetMigrationName as string)) {
-        throw new Error(`migration "${targetMigrationName}" doesn't exist`)
-      }
+        if (
+          !migrations.find((m) => m.name === (targetMigrationName as string))
+        ) {
+          throw new Error(`migration "${targetMigrationName}" doesn't exist`)
+        }
 
-      const executedIndex = executedMigrations.indexOf(targetMigrationName as string)
-      const pendingIndex = pendingMigrations.findIndex(m => m.name === targetMigrationName as string)
+        const executedIndex = executedMigrations.indexOf(
+          targetMigrationName as string
+        )
+        const pendingIndex = pendingMigrations.findIndex(
+          (m) => m.name === (targetMigrationName as string)
+        )
 
-      if (executedIndex !== -1) {
-        return { direction: 'Down', step: executedMigrations.length - executedIndex - 1 }
-      } else if (pendingIndex !== -1) {
-        return { direction: 'Up', step: pendingIndex + 1 }
-      } else {
-        throw new Error(`migration "${targetMigrationName}" isn't executed or pending`)
+        if (executedIndex !== -1) {
+          return {
+            direction: 'Down',
+            step: executedMigrations.length - executedIndex - 1,
+          }
+        } else if (pendingIndex !== -1) {
+          return { direction: 'Up', step: pendingIndex + 1 }
+        } else {
+          throw new Error(
+            `migration "${targetMigrationName}" isn't executed or pending`
+          )
+        }
       }
-    })
+    )
   }
 
   /**
@@ -202,7 +219,7 @@ export class Migrator {
    * ```
    */
   async migrateUp(): Promise<MigrationResultSet> {
-    return this.#migrate(() => ({direction: 'Up', step: 1}))
+    return this.#migrate(() => ({ direction: 'Up', step: 1 }))
   }
 
   /**
@@ -220,11 +237,14 @@ export class Migrator {
    * ```
    */
   async migrateDown(): Promise<MigrationResultSet> {
-    return this.#migrate(() => ({direction: 'Down', step: 1}))
+    return this.#migrate(() => ({ direction: 'Down', step: 1 }))
   }
 
   async #migrate(
-    getMigrationDirectionAndStep: (state: MigrationState) => { direction: MigrationDirection, step: number }
+    getMigrationDirectionAndStep: (state: MigrationState) => {
+      direction: MigrationDirection
+      step: number
+    }
   ): Promise<MigrationResultSet> {
     try {
       await this.#ensureMigrationTablesExists()
@@ -393,7 +413,10 @@ export class Migrator {
   }
 
   async #runMigrations(
-    getMigrationDirectionAndStep: (state: MigrationState) => { direction: MigrationDirection, step: number }
+    getMigrationDirectionAndStep: (state: MigrationState) => {
+      direction: MigrationDirection
+      step: number
+    }
   ): Promise<MigrationResultSet> {
     const adapter = this.#props.db.getExecutor().adapter
 
@@ -412,7 +435,7 @@ export class Migrator {
         if (state.migrations.length === 0) {
           return { results: [] }
         }
-        
+
         const { direction, step } = getMigrationDirectionAndStep(state)
 
         if (step <= 0) {
@@ -447,13 +470,16 @@ export class Migrator {
       this.#ensureMigrationsInOrder(migrations, executedMigrations)
     }
 
-    const pendingMigrations = this.#getPendingMigrations(migrations, executedMigrations)
+    const pendingMigrations = this.#getPendingMigrations(
+      migrations,
+      executedMigrations
+    )
 
     return freeze({
       migrations,
       executedMigrations,
       lastMigration: getLast(executedMigrations),
-      pendingMigrations
+      pendingMigrations,
     })
   }
 
@@ -463,7 +489,7 @@ export class Migrator {
   ): ReadonlyArray<NamedMigration> {
     let pendingMigrations: ReadonlyArray<NamedMigration> = []
 
-    migrations.forEach(migration => {
+    migrations.forEach((migration) => {
       if (!executedMigrations.includes(migration.name)) {
         pendingMigrations = [...pendingMigrations, migration]
       }
@@ -529,15 +555,16 @@ export class Migrator {
     state: MigrationState,
     step: number
   ): Promise<MigrationResultSet> {
-    const migrationsToRollback: ReadonlyArray<NamedMigration> = state.executedMigrations
-      .slice()
-      .reverse()
-      .slice(0, step)
-      .map(name => {
-        return state.migrations.find(it => it.name === name)!
-      })
+    const migrationsToRollback: ReadonlyArray<NamedMigration> =
+      state.executedMigrations
+        .slice()
+        .reverse()
+        .slice(0, step)
+        .map((name) => {
+          return state.migrations.find((it) => it.name === name)!
+        })
 
-    const results: MigrationResult[] = migrationsToRollback.map(migration => {
+    const results: MigrationResult[] = migrationsToRollback.map((migration) => {
       return {
         migrationName: migration.name,
         direction: 'Down',
@@ -580,10 +607,15 @@ export class Migrator {
     return { results }
   }
 
-  async #migrateUp(db: Kysely<any>, state: MigrationState, step: number): Promise<MigrationResultSet> {
-    const migrationsToRun: ReadonlyArray<NamedMigration> = state.pendingMigrations.slice(0, step)
+  async #migrateUp(
+    db: Kysely<any>,
+    state: MigrationState,
+    step: number
+  ): Promise<MigrationResultSet> {
+    const migrationsToRun: ReadonlyArray<NamedMigration> =
+      state.pendingMigrations.slice(0, step)
 
-    const results: MigrationResult[] = migrationsToRun.map(migration => {
+    const results: MigrationResult[] = migrationsToRun.map((migration) => {
       return {
         migrationName: migration.name,
         direction: 'Up',
