@@ -485,15 +485,9 @@ export class Migrator {
     migrations: ReadonlyArray<NamedMigration>,
     executedMigrations: ReadonlyArray<string>
   ): ReadonlyArray<NamedMigration> {
-    let pendingMigrations: ReadonlyArray<NamedMigration> = []
-
-    migrations.forEach((migration) => {
-      if (!executedMigrations.includes(migration.name)) {
-        pendingMigrations = [...pendingMigrations, migration]
-      }
+    return migrations.filter((migration) => {
+      return !executedMigrations.includes(migration.name)
     })
-
-    return pendingMigrations
   }
 
   async #resolveMigrations(): Promise<ReadonlyArray<NamedMigration>> {
