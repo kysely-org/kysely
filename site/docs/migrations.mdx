@@ -26,7 +26,21 @@ Migrations can use the `Kysely.schema` module to modify the schema. Migrations c
 
 ## Execution order
 
-Execution order of the migrations is the alpabetical order of their names. An excellent way to name your migrations is to prefix them with an ISO 8601 date string. A date prefix works well in large teams where multiple team members may add migrations at the same time in parallel commits without knowing about the other migrations.
+There are two options for ordering migrations in Kysely: strict and permissive. Both options are based on the alphanumeric ordering of the migration name. In either case, an excellent way to name your migrations is to prefix them with an ISO 8601 date string.
+
+Strict ordering (the default) will give an error if the alphanumeric order of your migration files does not match the execution order of them in the database. This adds safety by always executing your migrations in the correct, alphanumeric order. 
+
+Permissive ordering will allow new migrations to be run even if they are added alphabetically before ones that have already executed. Permissive ordering works well in large teams where multiple team members may add migrations at the same time in parallel commits without knowing about the other migrations. Permissive ordering will run pending (unexecuted) migrations in order when migrating up. When migrating down, migrations will be undone in the opposite order in which they were executed (reverse sorted by execution timestamp).
+
+To use permissive ordering, pass the `migrationOrder` option to Migrator:
+
+```ts
+const migrator = new Migrator({
+  db,
+  provider: new FileMigrationProvider(...),
+  migrationOrder: 'permissive'
+})
+```
 
 ## Single file vs multiple file migrations
 
