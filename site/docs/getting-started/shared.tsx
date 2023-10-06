@@ -47,7 +47,7 @@ export const PRETTY_DIALECT_NAMES: Record<Dialect, string> = {
   postgresql: 'PostgreSQL',
   mysql: 'MySQL',
   sqlite: 'SQLite',
-  mssql: 'MSSQL',
+  mssql: 'Microsoft SQL Server (MSSQL)',
 }
 
 export const PRETTY_PACKAGE_MANAGER_NAMES: Record<PackageManager, string> = {
@@ -88,7 +88,7 @@ export function getBashCommand(
     content: `${
       PACKAGE_MANAGER_INSTALL_COMMANDS[packageManager]
     } ${installedPackage} ${
-      additionalPackages ? additionalPackages?.join(' ') : ''
+      additionalPackages ? additionalPackages.join(' ') : ''
     }`,
     intro: 'Run the following command in your terminal:',
     language: 'bash',
