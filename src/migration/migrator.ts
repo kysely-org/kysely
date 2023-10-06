@@ -9,7 +9,7 @@ import { freeze, getLast } from '../util/object-utils.js'
 
 export const DEFAULT_MIGRATION_TABLE = 'kysely_migration'
 export const DEFAULT_MIGRATION_LOCK_TABLE = 'kysely_migration_lock'
-export const DEFAULT_MIGRATION_ORDER = 'strict'
+export const DEFAULT_ALLOW_UNORDERED_MIGRATIONS = false
 export const MIGRATION_LOCK_ID = 'migration_lock'
 export const NO_MIGRATIONS: NoMigrations = freeze({ __noMigrations__: true })
 
@@ -268,8 +268,10 @@ export class Migrator {
     return this.#props.migrationLockTableName ?? DEFAULT_MIGRATION_LOCK_TABLE
   }
 
-  get #migrationOrder(): 'strict' | 'permissive' | undefined {
-    return this.#props.migrationOrder ?? DEFAULT_MIGRATION_ORDER
+  get #allowUnorderedMigrations(): boolean {
+    return (
+      this.#props.allowUnorderedMigrations ?? DEFAULT_ALLOW_UNORDERED_MIGRATIONS
+    )
   }
 
   get #schemaPlugin(): KyselyPlugin {
@@ -464,7 +466,7 @@ export class Migrator {
     const executedMigrations = await this.#getExecutedMigrations(db)
 
     this.#ensureNoMissingMigrations(migrations, executedMigrations)
-    if (this.#migrationOrder !== 'permissive') {
+    if (!this.#allowUnorderedMigrations) {
       this.#ensureMigrationsInOrder(migrations, executedMigrations)
     }
 
@@ -716,17 +718,17 @@ export interface MigratorProps {
   /**
    * Enforces whether or not migrations must be run in alpha-numeric order.
    *
-   * In strict mode, migrations must be run in their exact alpha-numeric order.
+   * When false, migrations must be run in their exact alpha-numeric order.
    * This is checked against the migrations already run in the database
    * (`migrationTableName'). This ensures your migrations are always run in
    * the same order and is the safest option.
    *
-   * In permissive mode, migrations are still run in alpha-numeric order, but
+   * When true, migrations are still run in alpha-numeric order, but
    * the order is not checked against already-run migrations in the database.
    * Kysely will simply run all migrations that haven't run yet, in alpha-numeric
    * order.
    */
-  readonly migrationOrder?: 'strict' | 'permissive'
+  readonly allowUnorderedMigrations?: boolean
 }
 
 /**

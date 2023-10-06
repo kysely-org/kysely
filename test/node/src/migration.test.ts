@@ -130,17 +130,17 @@ for (const dialect of DIALECTS) {
         expect(executedUpMethods2).to.eql([])
       })
 
-      it('should run a new migration added before the last executed one with permissive ordering enabled', async () => {
+      it('should run a new migration added before the last executed one with allowUnorderedMigrations enabled', async () => {
         const [migrator1, executedUpMethods1] = createMigrations(
           ['migration1', 'migration3'],
-          { migrationOrder: 'permissive' }
+          { allowUnorderedMigrations: true }
         )
 
         const { results: results1 } = await migrator1.migrateToLatest()
 
         const [migrator2, executedUpMethods2] = createMigrations(
           ['migration1', 'migration2', 'migration3', 'migration4'],
-          { migrationOrder: 'permissive' }
+          { allowUnorderedMigrations: true }
         )
 
         const { results: results2 } = await migrator2.migrateToLatest()
@@ -218,18 +218,18 @@ for (const dialect of DIALECTS) {
         expect(executedUpMethods2).to.eql([])
       })
 
-      describe('with permissive ordering', () => {
+      describe('with allowUnorderedMigrations', () => {
         it('should return an error if a previously executed migration is missing', async () => {
           const [migrator1, executedUpMethods1] = createMigrations(
             ['migration1', 'migration2', 'migration3'],
-            { migrationOrder: 'permissive' }
+            { allowUnorderedMigrations: true }
           )
 
           await migrator1.migrateToLatest()
 
           const [migrator2, executedUpMethods2] = createMigrations(
             ['migration2', 'migration3', 'migration4'],
-            { migrationOrder: 'permissive' }
+            { allowUnorderedMigrations: true }
           )
 
           const { error } = await migrator2.migrateToLatest()
@@ -250,12 +250,12 @@ for (const dialect of DIALECTS) {
         it('should return an error if a the last executed migration is not found', async () => {
           const [migrator1, executedUpMethods1] = createMigrations(
             ['migration1', 'migration2', 'migration3'],
-            { migrationOrder: 'permissive' }
+            { allowUnorderedMigrations: true }
           )
 
           const [migrator2, executedUpMethods2] = createMigrations(
             ['migration1', 'migration2', 'migration4'],
-            { migrationOrder: 'permissive' }
+            { allowUnorderedMigrations: true }
           )
 
           await migrator1.migrateToLatest()
@@ -456,11 +456,11 @@ for (const dialect of DIALECTS) {
         expect(executedDownMethods2).to.eql(['migration4', 'migration3'])
       })
 
-      describe('with permissive ordering enabled', () => {
+      describe('with allowUnorderedMigrations enabled', () => {
         it('should migrate up to a specific migration', async () => {
           const [migrator1, executedUpMethods1] = createMigrations(
             ['migration1', 'migration3', 'migration4', 'migration5'],
-            { migrationOrder: 'permissive' }
+            { allowUnorderedMigrations: true }
           )
 
           const { results: results1 } = await migrator1.migrateTo('migration3')
@@ -473,7 +473,7 @@ for (const dialect of DIALECTS) {
               'migration4',
               'migration5',
             ],
-            { migrationOrder: 'permissive' }
+            { allowUnorderedMigrations: true }
           )
 
           const { results: results2 } = await migrator2.migrateTo('migration4')
@@ -495,7 +495,7 @@ for (const dialect of DIALECTS) {
         it('should migrate all the way down', async () => {
           const [migrator1, executedUpMethods1] = createMigrations(
             ['migration1', 'migration2', 'migration4'],
-            { migrationOrder: 'permissive' }
+            { allowUnorderedMigrations: true }
           )
 
           const { results: results1 } = await migrator1.migrateToLatest()
@@ -503,7 +503,7 @@ for (const dialect of DIALECTS) {
           const [migrator2, executedUpMethods2, executedDownMethods2] =
             createMigrations(
               ['migration1', 'migration2', 'migration3', 'migration4'],
-              { migrationOrder: 'permissive' }
+              { allowUnorderedMigrations: true }
             )
 
           const { results: results2 } = await migrator2.migrateTo(NO_MIGRATIONS)
@@ -548,7 +548,7 @@ for (const dialect of DIALECTS) {
         it('should migrate down to a specific migration', async () => {
           const [migrator1, executedUpMethods1] = createMigrations(
             ['migration1', 'migration2', 'migration3', 'migration5'],
-            { migrationOrder: 'permissive' }
+            { allowUnorderedMigrations: true }
           )
 
           const { results: results1 } = await migrator1.migrateTo('migration5')
@@ -562,7 +562,7 @@ for (const dialect of DIALECTS) {
                 'migration4',
                 'migration5',
               ],
-              { migrationOrder: 'permissive' }
+              { allowUnorderedMigrations: true }
             )
 
           const { results: results2 } = await migrator2.migrateTo('migration2')
@@ -655,17 +655,17 @@ for (const dialect of DIALECTS) {
         expect(executedUpMethods2).to.eql([])
       })
 
-      it('should migrate up one step with permissive ordering enabled', async () => {
+      it('should migrate up one step with allowUnorderedMigrations enabled', async () => {
         const [migrator1, executedUpMethods1] = createMigrations(
           ['migration1', 'migration3'],
-          { migrationOrder: 'permissive' }
+          { allowUnorderedMigrations: true }
         )
 
         const { results: results1 } = await migrator1.migrateToLatest()
 
         const [migrator2, executedUpMethods2] = createMigrations(
           ['migration1', 'migration2', 'migration3', 'migration4'],
-          { migrationOrder: 'permissive' }
+          { allowUnorderedMigrations: true }
         )
 
         const { results: results2 } = await migrator2.migrateUp()
@@ -742,10 +742,10 @@ for (const dialect of DIALECTS) {
         expect(executedDownMethods2).to.eql([])
       })
 
-      it('should migrate down one step with permissive ordering enabled', async () => {
+      it('should migrate down one step with allowUnorderedMigrations enabled', async () => {
         const [migrator1, executedUpMethods1, _executedDownMethods1] =
           createMigrations(['migration1', 'migration2', 'migration4'], {
-            migrationOrder: 'permissive',
+            allowUnorderedMigrations: true,
           })
 
         await migrator1.migrateToLatest()
@@ -759,7 +759,7 @@ for (const dialect of DIALECTS) {
               'migration4',
               'migration5',
             ],
-            { migrationOrder: 'permissive' }
+            { allowUnorderedMigrations: true }
           )
 
         const { results: results1 } = await migrator2.migrateDown()

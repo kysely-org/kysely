@@ -26,19 +26,19 @@ Migrations can use the `Kysely.schema` module to modify the schema. Migrations c
 
 ## Execution order
 
-There are two options for ordering migrations in Kysely: strict and permissive. Both options are based on the alphanumeric ordering of the migration name. In either case, an excellent way to name your migrations is to prefix them with an ISO 8601 date string.
+Migrations will be run in the alpha-numeric order of your migration names. An excellent way to name your migrations is to prefix them with an ISO 8601 date string. 
 
-Strict ordering (the default) will give an error if the alphanumeric order of your migration files does not match the execution order of them in the database. This adds safety by always executing your migrations in the correct, alphanumeric order. 
+By default, Kysely will also ensure this order matches the execution order of any previously executed migrations in your database. If the orders do not match (for example, a new migration was added alphabetically before a previously executed one), an error will be returned. This adds safety by always executing your migrations in the correct, alphanumeric order. 
 
-Permissive ordering will allow new migrations to be run even if they are added alphabetically before ones that have already executed. Permissive ordering works well in large teams where multiple team members may add migrations at the same time in parallel commits without knowing about the other migrations. Permissive ordering will run pending (unexecuted) migrations in order when migrating up. When migrating down, migrations will be undone in the opposite order in which they were executed (reverse sorted by execution timestamp).
+There is also an `allowUnorderedMigrations` option. This option will allow new migrations to be run even if they are added alphabetically before ones that have already executed. Allowing unordered migrations works well in large teams where multiple team members may add migrations at the same time in parallel commits without knowing about the other migrations. Pending (unexecuted) migrations will be run in alpha-numeric order when migrating up. When migrating down, migrations will be undone in the opposite order in which they were executed (reverse sorted by execution timestamp).
 
-To use permissive ordering, pass the `migrationOrder` option to Migrator:
+To allow unordered migrations, pass the `allowUnorderedMigrations` option to Migrator:
 
 ```ts
 const migrator = new Migrator({
   db,
   provider: new FileMigrationProvider(...),
-  migrationOrder: 'permissive'
+  allowUnorderedMigrations: true
 })
 ```
 
