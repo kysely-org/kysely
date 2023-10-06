@@ -58,6 +58,45 @@ const dialect = new SqliteDialect({
 import { Kysely } from 'kysely'
 
 const dialect = /* instantiate the dialect here */`,
+  mssql: (packageManager) =>
+    isDialectSupported('mssql', packageManager)
+      ? `import * as Tedious from 'tedious'
+import * as Tarn from 'tarn'
+import { Kysely, MssqlDialect } from 'kysely'
+
+const dialect = new MssqlDialect({
+  tarn: {
+    ...Tarn,
+    options: {
+      min: 0,
+      max: 10,
+    },
+  },
+  tedious: {
+    ...Tedious,
+    connectionFactory: () => new Tedious.Connection({
+      authentication: {
+        options: {
+          password: 'password',
+          userName: 'username',
+        },
+        type: 'default',
+      },
+      options: {
+        database: 'some_db',
+        port: 1433,
+        trustServerCertificate: true,
+      },
+      server: 'localhost',
+    }),
+  },
+})`
+      : `/* Kysely doesn't support MSSQL + ${
+          PRETTY_PACKAGE_MANAGER_NAMES[packageManager || 'npm']
+        } out of the box. Import a community dialect that does here. */
+import { Kysely } from 'kysely'
+
+const dialect = /* instantiate the dialect here */`,
 }
 
 const dialectClassNames: Record<
@@ -68,6 +107,8 @@ const dialectClassNames: Record<
   mysql: () => 'MysqlDialect',
   sqlite: (packageManager) =>
     isDialectSupported('sqlite', packageManager) ? 'SqliteDialect' : null,
+  mssql: (packageManager) =>
+    isDialectSupported('mssql', packageManager) ? 'MssqlDialect' : null,
 }
 
 export function Instantiation(

@@ -1,7 +1,7 @@
 import React, { type ReactNode } from 'react'
 import packageJson from '../../package.json'
 
-export type Dialect = 'postgresql' | 'mysql' | 'sqlite'
+export type Dialect = 'postgresql' | 'mysql' | 'sqlite' | 'mssql'
 
 export type PropsWithDialect<P = {}> = P & {
   dialect: Dialect | undefined
@@ -12,8 +12,8 @@ export type PackageManager = 'npm' | 'pnpm' | 'yarn' | 'deno' | 'bun'
 
 const PACKAGE_MANAGER_UNSUPPORTED_DIALECTS: Record<PackageManager, Dialect[]> =
   {
-    bun: ['sqlite'],
-    deno: ['sqlite'],
+    bun: ['sqlite', 'mssql'],
+    deno: ['sqlite', 'mssql'],
     npm: [],
     pnpm: [],
     yarn: [],
@@ -30,12 +30,14 @@ export const DRIVER_NPM_PACKAGE_NAMES: Record<Dialect, string> = {
   postgresql: 'pg',
   mysql: 'mysql2',
   sqlite: 'better-sqlite3',
+  mssql: 'tedious',
 }
 
 export const PRETTY_DIALECT_NAMES: Record<Dialect, string> = {
   postgresql: 'PostgreSQL',
   mysql: 'MySQL',
   sqlite: 'SQLite',
+  mssql: 'MSSQL',
 }
 
 export const PRETTY_PACKAGE_MANAGER_NAMES: Record<PackageManager, string> = {

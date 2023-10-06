@@ -37,6 +37,15 @@ const dialectSpecificCodeSnippets: Record<Dialect, string> = {
         cb.notNull().defaultTo(sql\`current_timestamp\`)
       )
       .execute()`,
+  mssql: `    await db.schema.createTable('person')
+      .addColumn('id', 'integer', (cb) => cb.primaryKey().modifyEnd(sql\`IDENTITY(1,1)\`))
+      .addColumn('first_name', 'varchar(255)', (cb) => cb.notNull())
+      .addColumn('last_name', 'varchar(255)')
+      .addColumn('gender', 'varchar(50)', (cb) => cb.notNull())
+      .addColumn('created_at', 'datetime', (cb) =>
+        cb.notNull().defaultTo(sql\`GETDATE()\`)
+      )
+      .execute()`,
 }
 
 export function Summary(props: PropsWithDialect) {

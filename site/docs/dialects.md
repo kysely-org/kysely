@@ -9,6 +9,7 @@ A dialect is the glue between Kysely and the underlying database engine. Check t
 | MySQL | https://kysely-org.github.io/kysely-apidoc/classes/MysqlDialect.html |
 | PostgreSQL | https://kysely-org.github.io/kysely-apidoc/classes/PostgresDialect.html |
 | SQLite | https://kysely-org.github.io/kysely-apidoc/classes/SqliteDialect.html |
+| MSSQL | https://kysely-org.github.io/kysely-apidoc/classes/MssqlDialect.html |
 
 ## 3rd party dialects
 

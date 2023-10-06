@@ -42,6 +42,10 @@ const builtInDialects: BuiltInDialect[] = [
     driverDocsURL:
       'https://github.com/WiseLibs/better-sqlite3/blob/master/docs/api.md',
   },
+  {
+    value: 'mssql',
+    driverDocsURL: 'https://tediousjs.github.io/tedious/index.html',
+  },
 ]
 
 export function Dialects(props: DialectsProps) {
@@ -55,9 +59,10 @@ export function Dialects(props: DialectsProps) {
         it. This requires a <code>Dialect</code> implementation.
         <br />
         <br />
-        There are 3 built-in Node.js dialects for PostgreSQL, MySQL and SQLite.
-        Additionally, the community has implemented several dialects to choose
-        from. Find out more at <Link to="/docs/dialects">"Dialects"</Link>.
+        There are 4 built-in Node.js dialects for PostgreSQL, MySQL, SQLite, and
+        MSSQL. Additionally, the community has implemented several dialects to
+        choose from. Find out more at{' '}
+        <Link to="/docs/dialects">"Dialects"</Link>.
       </p>
       <Heading as="h3">Driver installation</Heading>
       <p>
