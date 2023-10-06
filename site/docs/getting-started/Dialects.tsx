@@ -8,6 +8,7 @@ import Tabs from '@theme/Tabs'
 import { IUseADifferentPackageManager } from './IUseADifferentPackageManager'
 import {
   DRIVER_NPM_PACKAGE_NAMES,
+  DRIVER_ADDITIONAL_NPM_PACKAGE_NAMES,
   getBashCommand,
   getDenoCommand,
   isDialectSupported,
@@ -74,6 +75,7 @@ export function Dialects(props: DialectsProps) {
       <Tabs queryString="dialect">
         {builtInDialects.map(({ driverDocsURL, value }) => {
           const driverNPMPackage = DRIVER_NPM_PACKAGE_NAMES[value]
+          const additionalPackages = DRIVER_ADDITIONAL_NPM_PACKAGE_NAMES[value]
           const prettyDialectName = PRETTY_DIALECT_NAMES[value]
           const installationCommand =
             packageManager === 'deno'
@@ -82,7 +84,11 @@ export function Dialects(props: DialectsProps) {
                   [`${driverNPMPackage}-pool`]:
                     driverNPMPackage === 'pg' ? 'npm:pg-pool' : undefined,
                 })
-              : getBashCommand(packageManager, driverNPMPackage)
+              : getBashCommand(
+                  packageManager,
+                  driverNPMPackage,
+                  additionalPackages
+                )
 
           return (
             // @ts-ignore For some odd reason, TabItem doesn't accept children in this file.

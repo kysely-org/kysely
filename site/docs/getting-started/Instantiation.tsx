@@ -5,6 +5,7 @@ import { IUseADifferentDatabase } from './IUseADifferentDatabase'
 import { IUseADifferentPackageManager } from './IUseADifferentPackageManager'
 import {
   DRIVER_NPM_PACKAGE_NAMES,
+  DRIVER_ADDITIONAL_NPM_PACKAGE_NAMES,
   isDialectSupported,
   PRETTY_PACKAGE_MANAGER_NAMES,
   type Dialect,
@@ -60,8 +61,8 @@ import { Kysely } from 'kysely'
 const dialect = /* instantiate the dialect here */`,
   mssql: (packageManager) =>
     isDialectSupported('mssql', packageManager)
-      ? `import * as Tedious from 'tedious'
-import * as Tarn from 'tarn'
+      ? `import * as Tedious from '${DRIVER_NPM_PACKAGE_NAMES.mssql}'
+import * as Tarn from '${DRIVER_ADDITIONAL_NPM_PACKAGE_NAMES.mssql[0]}'
 import { Kysely, MssqlDialect } from 'kysely'
 
 const dialect = new MssqlDialect({

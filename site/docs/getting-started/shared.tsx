@@ -33,6 +33,16 @@ export const DRIVER_NPM_PACKAGE_NAMES: Record<Dialect, string> = {
   mssql: 'tedious',
 }
 
+export const DRIVER_ADDITIONAL_NPM_PACKAGE_NAMES: Record<
+  Dialect,
+  string[] | undefined
+> = {
+  postgresql: undefined,
+  mysql: undefined,
+  sqlite: undefined,
+  mssql: ['tarn'],
+}
+
 export const PRETTY_DIALECT_NAMES: Record<Dialect, string> = {
   postgresql: 'PostgreSQL',
   mysql: 'MySQL',
@@ -67,14 +77,19 @@ export interface Command {
 
 export function getBashCommand(
   packageManager: PackageManager,
-  installedPackage: string
+  installedPackage: string,
+  additionalPackages?: string[]
 ): Command {
   if (packageManager === 'deno') {
     throw new Error('Deno has no bash command')
   }
 
   return {
-    content: `${PACKAGE_MANAGER_INSTALL_COMMANDS[packageManager]} ${installedPackage}`,
+    content: `${
+      PACKAGE_MANAGER_INSTALL_COMMANDS[packageManager]
+    } ${installedPackage} ${
+      additionalPackages ? additionalPackages?.join(' ') : ''
+    }`,
     intro: 'Run the following command in your terminal:',
     language: 'bash',
     title: 'terminal',
