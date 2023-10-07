@@ -110,7 +110,7 @@ export function Dialects(props: DialectsProps) {
                   </p>
                   {additionalPackages && value === 'mssql' ? (
                     <p>
-                      Additionally, kysely's {prettyDialectName} dialect uses
+                      Additionally, Kysely's {prettyDialectName} dialect uses
                       the "{additionalPackages[0]}" resource pool package for
                       connection pooling. Please refer to its{' '}
                       <Link to="https://github.com/vincit/tarn.js">
