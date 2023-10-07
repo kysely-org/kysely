@@ -37,6 +37,7 @@ const dialectSpecificCodeSnippets: Record<Dialect, string> = {
         cb.notNull().defaultTo(sql\`current_timestamp\`)
       )
       .execute()`,
+      // TODO: Update line 42's IDENTITY once identity(1,1) is added to core.
   mssql: `    await db.schema.createTable('person')
       .addColumn('id', 'integer', (cb) => cb.primaryKey().modifyEnd(sql\`IDENTITY(1,1)\`))
       .addColumn('first_name', 'varchar(255)', (cb) => cb.notNull())
