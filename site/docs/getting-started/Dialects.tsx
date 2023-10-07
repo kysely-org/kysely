@@ -108,6 +108,17 @@ export function Dialects(props: DialectsProps) {
                     <Link to={driverDocsURL}>official documentation</Link> for
                     configuration options.
                   </p>
+                  {additionalPackages && value === 'mssql' ? (
+                    <p>
+                      Additionally, kysely's {prettyDialectName} dialect uses
+                      the "{additionalPackages[0]}" resource pool package for
+                      connection pooling. Please refer to its{' '}
+                      <Link to="https://github.com/vincit/tarn.js">
+                        official documentation
+                      </Link>{' '}
+                      for configuration options.
+                    </p>
+                  ) : null}
                   <p>
                     <strong>{installationCommand.intro}</strong>
                   </p>
