@@ -38,6 +38,25 @@ export async function deletePerson(id: number) {
   return person
 }`,
   sqlite: postgresqlCodeSnippet,
+  // TODO: Update to use output clause once #687 is completed
+  mssql: `export async function createPerson(person: NewPerson) {
+  await db.insertInto('person')
+    .values(person)
+    .executeTakeFirstOrThrow()
+
+  const newPerson = (await findPeople(person)).at(-1)
+  return newPerson
+}
+
+export async function deletePerson(id: number) {
+  const person = await findPersonById(id)
+
+  if (person) {
+    await db.deleteFrom('person').where('id', '=', id).execute()
+  }
+
+  return person
+}`,
 }
 
 export function Querying(props: PropsWithDialect) {
