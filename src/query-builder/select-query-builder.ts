@@ -4,6 +4,7 @@ import { SelectModifierNode } from '../operation-node/select-modifier-node.js'
 import {
   JoinCallbackExpression,
   JoinReferenceExpression,
+  JoinUsingExpression,
   parseJoin,
 } from '../parser/join-parser.js'
 import { TableExpression } from '../parser/table-parser.js'
@@ -638,6 +639,14 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
   >(
     table: TE,
     callback: FN
+  ): SelectQueryBuilderWithInnerJoin<DB, TB, O, TE>
+
+  innerJoinUsing<
+    TE extends TableExpression<DB, TB>,
+    C extends JoinUsingExpression<DB, TB, TE>
+  >(
+    table: TE,
+    columns: readonly [C, ...C[]]
   ): SelectQueryBuilderWithInnerJoin<DB, TB, O, TE>
 
   /**
@@ -1841,6 +1850,11 @@ class SelectQueryBuilderImpl<DB, TB extends keyof DB, O>
         parseJoin('InnerJoin', args)
       ),
     })
+  }
+
+  innerJoinUsing(...args: any): any {
+    // TODO
+    return this
   }
 
   leftJoin(...args: any): any {

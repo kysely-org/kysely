@@ -178,6 +178,20 @@ async function testJoin(db: Kysely<Database>) {
         join.onRef('movie.id', '=', 'person.id')
       )
   )
+
+  // Join using
+  db.selectFrom('pet')
+    .innerJoinUsing('book', ['name'])
+    .selectAll()
+    .executeTakeFirstOrThrow()
+
+  db.selectFrom('person as a')
+    .innerJoinUsing('person as b', ['first_name', 'last_name'])
+    .select(['a.id', 'b.id'])
+    .executeTakeFirstOrThrow()
+
+  // Refer to column that's not present in both tables
+  expectError(db.selectFrom('person').innerJoinUsing('movie', ['last_name']))
 }
 
 async function testManyJoins(db: Kysely<Database>) {

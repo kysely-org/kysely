@@ -36,6 +36,14 @@ type AnyJoinColumnWithTable<DB, TB extends keyof DB, TE> = AnyColumnWithTable<
   FromTables<DB, TB, TE>
 >
 
+export type JoinUsingExpression<
+  DB,
+  TB extends keyof DB,
+  TE
+> = DrainOuterGeneric<
+  AnyJoinColumn<DB, TB, never> & AnyJoinColumn<DB, never, TE>
+>
+
 export function parseJoin(joinType: JoinType, args: any[]): JoinNode {
   if (args.length === 3) {
     return parseSingleOnJoin(joinType, args[0], args[1], args[2])
