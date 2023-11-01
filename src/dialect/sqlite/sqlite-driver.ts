@@ -98,7 +98,7 @@ class SqliteConnection implements DatabaseConnection {
   ): AsyncIterableIterator<QueryResult<R>> {
     const { sql, parameters, query } = compiledQuery
     const stmt = this.#db.prepare(sql)
-    if (query.kind === 'SelectQueryNode') {
+    if (SelectQueryNode.is(query)) {
       const iter = stmt.iterate(parameters) as IterableIterator<R>
       for (const row of iter) {
         yield {
