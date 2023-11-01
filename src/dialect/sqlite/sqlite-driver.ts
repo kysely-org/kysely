@@ -92,8 +92,24 @@ class SqliteConnection implements DatabaseConnection {
     }
   }
 
-  async *streamQuery<R>(): AsyncIterableIterator<QueryResult<R>> {
-    throw new Error("Sqlite driver doesn't support streaming")
+  async *streamQuery<R>(
+    compiledQuery: CompiledQuery,
+    _chunkSize: number
+  ): AsyncIterableIterator<QueryResult<R>> {
+    const { sql, parameters, query } = compiledQuery
+    const stmt = this.#db.prepare(sql)
+    if (query.kind === 'SelectQueryNode') {
+      const iter = stmt.iterate(parameters) as IterableIterator<R>
+      for (const row of iter) {
+        yield {
+          rows: [row],
+        }
+      }
+    } else {
+      throw new Error(
+        'Sqlite driver only supports queries on select operations'
+      )
+    }
   }
 }
 
