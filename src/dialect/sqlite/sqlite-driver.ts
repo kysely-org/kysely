@@ -107,7 +107,7 @@ class SqliteConnection implements DatabaseConnection {
       }
     } else {
       throw new Error(
-        'Sqlite driver only supports queries on select operations'
+        'Sqlite driver only supports streaming of select queries'
       )
     }
   }
