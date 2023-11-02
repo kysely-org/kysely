@@ -3,6 +3,7 @@ import {
   QueryResult,
 } from '../../driver/database-connection.js'
 import { Driver } from '../../driver/driver.js'
+import { SelectQueryNode } from '../../operation-node/select-query-node.js'
 import { CompiledQuery } from '../../query-compiler/compiled-query.js'
 import { freeze, isFunction } from '../../util/object-utils.js'
 import { SqliteDatabase, SqliteDialectConfig } from './sqlite-dialect-config.js'
@@ -106,9 +107,7 @@ class SqliteConnection implements DatabaseConnection {
         }
       }
     } else {
-      throw new Error(
-        'Sqlite driver only supports streaming of select queries'
-      )
+      throw new Error('Sqlite driver only supports streaming of select queries')
     }
   }
 }
