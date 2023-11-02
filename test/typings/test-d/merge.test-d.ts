@@ -3,7 +3,10 @@ import {
   ExpressionBuilder,
   JoinBuilder,
   Kysely,
+  MatchedThenableMergeQueryBuilder,
+  MergeQueryBuilder,
   MergeResult,
+  NotMatchedThenableMergeQueryBuilder,
   WheneableMergeQueryBuilder,
   sql,
 } from '..'
@@ -21,6 +24,10 @@ async function testMergeInto(db: Kysely<Database>) {
     db.mergeInto((eb: ExpressionBuilder<Database, keyof Database>) =>
       eb.selectFrom('person').selectAll().as('person')
     )
+  )
+
+  expectType<MergeQueryBuilder<Database, 'person', MergeResult>>(
+    db.mergeInto('person')
   )
 }
 
@@ -46,9 +53,9 @@ async function testUsing(db: Kysely<Database>) {
     return join.onTrue()
   })
 
-  const baseQuery = db
-    .mergeInto('person')
-    .using('pet', 'pet.owner_id', 'person.id')
+  expectType<
+    WheneableMergeQueryBuilder<Database, 'person', 'pet', MergeResult>
+  >(db.mergeInto('person').using('pet', 'pet.owner_id', 'person.id'))
 
   expectType<MergeResult>(
     await db
@@ -93,6 +100,19 @@ async function testWhenMatched(
   baseQuery.whenMatchedAndRef('age', '>', sql`person.age`)
   baseQuery.whenMatchedAndRef('age', sql`>`, 'person.age')
   expectError(baseQuery.whenMatchedAndRef('age', 'NO_SUCH_OPERATOR', 'age'))
+
+  type ExpectedReturnType = MatchedThenableMergeQueryBuilder<
+    Database,
+    'person',
+    'pet',
+    'person' | 'pet',
+    MergeResult
+  >
+  expectType<ExpectedReturnType>(baseQuery.whenMatched())
+  expectType<ExpectedReturnType>(baseQuery.whenMatchedAnd('age', '>', 2))
+  expectType<ExpectedReturnType>(
+    baseQuery.whenMatchedAndRef('pet.name', '>', 'person.age')
+  )
 }
 
 async function testWhenNotMatched(
@@ -133,11 +153,99 @@ async function testWhenNotMatched(
   expectError(baseQuery.whenNotMatchedAndRef('species', '>', 2))
   baseQuery.whenNotMatchedAndRef('pet.name', '>', 'pet.species')
   // when not matched can only reference the source table's columns.
-  baseQuery.whenNotMatchedAndRef('pet.name', '>', 'person.first_name')
-  baseQuery.whenNotMatchedAndRef('person.first_name', '>', 'pet.species')
+  expectError(
+    baseQuery.whenNotMatchedAndRef('pet.name', '>', 'person.first_name')
+  )
+  expectError(
+    baseQuery.whenNotMatchedAndRef('person.first_name', '>', 'pet.species')
+  )
   baseQuery.whenNotMatchedAndRef('species', '>', sql`person.age`)
   baseQuery.whenNotMatchedAndRef('species', sql`>`, 'pet.species')
   expectError(
     baseQuery.whenNotMatchedAndRef('species', 'NO_SUCH_OPERATOR', 'name')
+  )
+
+  type ExpectedReturnType = NotMatchedThenableMergeQueryBuilder<
+    Database,
+    'person',
+    'pet',
+    MergeResult
+  >
+  expectType<ExpectedReturnType>(baseQuery.whenNotMatched())
+  expectType<ExpectedReturnType>(
+    baseQuery.whenNotMatchedAnd('species', '>', 'dog')
+  )
+  expectType<ExpectedReturnType>(
+    baseQuery.whenNotMatchedAndRef('pet.name', '>', 'pet.species')
+  )
+}
+
+async function testWhenNotMatchedBySource(
+  baseQuery: WheneableMergeQueryBuilder<Database, 'person', 'pet', MergeResult>
+) {
+  baseQuery.whenNotMatchedBySource()
+  expectError(baseQuery.whenNotMatchedBySource('age'))
+  expectError(baseQuery.whenNotMatchedBySourceAnd('age'))
+  expectError(baseQuery.whenNotMatchedBySourceAnd('NO_SUCH_COLUMN'))
+  expectError(baseQuery.whenNotMatchedBySourceAnd('age', '>'))
+  expectError(baseQuery.whenNotMatchedBySourceAnd('age', '>', 'string'))
+  baseQuery.whenNotMatchedBySourceAnd('age', '>', 2)
+  expectError(
+    baseQuery.whenNotMatchedBySourceAnd('age', 'NOT_SUCH_OPERATOR', 'dog')
+  )
+  // when not matched by source can only reference the target table's columns.
+  expectError(baseQuery.whenNotMatchedBySourceAnd('species', '>', 'dog'))
+  baseQuery.whenNotMatchedBySourceAnd('age', sql`>`, 2)
+  baseQuery.whenNotMatchedBySourceAnd('person.age', '>', sql`2`)
+  baseQuery.whenNotMatchedBySourceAnd('age', '>', (eb) => {
+    // already tested in many places
+    expectType<ExpressionBuilder<Database, 'person'>>(eb)
+    return eb.ref('person.age')
+  })
+  expectError(
+    baseQuery.whenNotMatchedBySourceAnd('age', '>', (eb) =>
+      eb.ref('person.gender')
+    )
+  )
+  baseQuery.whenNotMatchedBySourceAnd((eb) => {
+    // already tested in many places
+    expectType<ExpressionBuilder<Database, 'person'>>(eb)
+    return eb.and([])
+  })
+  expectError(baseQuery.whenNotMatchedBySourceAndRef('age'))
+  expectError(baseQuery.whenNotMatchedBySourceAndRef('NO_SUCH_COLUMN'))
+  expectError(baseQuery.whenNotMatchedBySourceAndRef('age', '>'))
+  expectError(baseQuery.whenNotMatchedBySourceAndRef('age', '>', 'string'))
+  expectError(baseQuery.whenNotMatchedBySourceAndRef('age', '>', 2))
+  baseQuery.whenNotMatchedBySourceAndRef(
+    'person.first_name',
+    '>',
+    'person.last_name'
+  )
+  // when not matched by source can only reference the target table's columns.
+  expectError(
+    baseQuery.whenNotMatchedBySourceAndRef('person.first_name', '>', 'pet.name')
+  )
+  expectError(
+    baseQuery.whenNotMatchedBySourceAndRef('pet.name', '>', 'person.first_name')
+  )
+
+  type ExpectedReturnType = MatchedThenableMergeQueryBuilder<
+    Database,
+    'person',
+    'pet',
+    'person',
+    MergeResult
+  >
+  expectType<ExpectedReturnType>(baseQuery.whenNotMatchedBySource())
+  expectType<ExpectedReturnType>(
+    baseQuery.whenNotMatchedBySourceAnd('age', '>', 2)
+  )
+  expectType<ExpectedReturnType>(
+    baseQuery.whenNotMatchedBySourceAndRef(
+      'person.first_name',
+      '>',
+      'person.last_name'
+    )
   )
 }
