@@ -249,3 +249,21 @@ async function testWhenNotMatchedBySource(
     )
   )
 }
+
+async function testThenDelete(
+  baseQuery: MatchedThenableMergeQueryBuilder<
+    Database,
+    'person',
+    'pet',
+    'person' | 'pet',
+    MergeResult
+  >
+) {
+  baseQuery.thenDelete()
+  expectError(baseQuery.thenDelete('person'))
+  expectError(baseQuery.thenDelete(['person']))
+
+  expectType<
+    WheneableMergeQueryBuilder<Database, 'person', 'pet', MergeResult>
+  >(baseQuery.thenDelete())
+}
