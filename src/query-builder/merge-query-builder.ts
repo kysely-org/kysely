@@ -871,8 +871,6 @@ export class NotMatchedThenableMergeQueryBuilder<
       ),
     })
   }
-
-  thenInsertDefaultValues() {}
 }
 
 preventAwait(

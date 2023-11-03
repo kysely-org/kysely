@@ -270,21 +270,33 @@ async function testThenDelete(
 }
 
 async function testThenDoNothing(
-  baseQuery: MatchedThenableMergeQueryBuilder<
+  matchedBaseQuery: MatchedThenableMergeQueryBuilder<
     Database,
     'person',
     'pet',
     'person' | 'pet',
     MergeResult
+  >,
+  notMatchedBaseQuery: NotMatchedThenableMergeQueryBuilder<
+    Database,
+    'person',
+    'pet',
+    MergeResult
   >
 ) {
-  baseQuery.thenDoNothing()
-  expectError(baseQuery.thenDoNothing('person'))
-  expectError(baseQuery.thenDoNothing(['person']))
+  matchedBaseQuery.thenDoNothing()
+  expectError(matchedBaseQuery.thenDoNothing('person'))
+  expectError(matchedBaseQuery.thenDoNothing(['person']))
+  notMatchedBaseQuery.thenDoNothing()
+  expectError(notMatchedBaseQuery.thenDoNothing('person'))
+  expectError(notMatchedBaseQuery.thenDoNothing(['person']))
 
   expectType<
     WheneableMergeQueryBuilder<Database, 'person', 'pet', MergeResult>
-  >(baseQuery.thenDoNothing())
+  >(matchedBaseQuery.thenDoNothing())
+  expectType<
+    WheneableMergeQueryBuilder<Database, 'person', 'pet', MergeResult>
+  >(notMatchedBaseQuery.thenDoNothing())
 }
 
 async function testThenUpdate(
@@ -320,15 +332,25 @@ async function testThenUpdate(
 
   baseQuery.thenUpdateSet({ age: 2 })
   expectError(baseQuery.thenUpdateSet({ age: 'not_a_number' }))
-  baseQuery.thenUpdateSet((eb) => ({ first_name: eb.ref('pet.name') }))
-  expectError(
-    limitedBaseQuery.thenUpdateSet((eb) => ({ first_name: eb.ref('pet.name') }))
-  )
+  baseQuery.thenUpdateSet((eb) => {
+    expectType<ExpressionBuilder<Database, 'person' | 'pet'>>(eb)
+    return { first_name: eb.ref('pet.name') }
+  })
+  limitedBaseQuery.thenUpdateSet((eb) => {
+    expectType<ExpressionBuilder<Database, 'person'>>(eb)
+    return { last_name: eb.ref('person.first_name') }
+  })
   baseQuery.thenUpdateSet('age', 2)
   expectError(baseQuery.thenUpdateSet('age', 'not_a_number'))
-  baseQuery.thenUpdateSet('first_name', (eb) => eb.ref('pet.name'))
+  baseQuery.thenUpdateSet('first_name', (eb) => {
+    expectType<ExpressionBuilder<Database, 'person' | 'pet'>>(eb)
+    return eb.ref('pet.name')
+  })
   expectError(
-    limitedBaseQuery.thenUpdateSet('first_name', (eb) => eb.ref('pet.name'))
+    limitedBaseQuery.thenUpdateSet('last_name', (eb) => {
+      expectType<ExpressionBuilder<Database, 'person'>>(eb)
+      return eb.ref('person.first_name')
+    })
   )
 
   type ExpectedReturnType = WheneableMergeQueryBuilder<
@@ -343,4 +365,46 @@ async function testThenUpdate(
     baseQuery.thenUpdateSet((eb) => ({ first_name: eb.ref('pet.name') }))
   )
   expectType<ExpectedReturnType>(baseQuery.thenUpdateSet('age', 2))
+}
+
+async function testThenInsert(
+  baseQuery: NotMatchedThenableMergeQueryBuilder<
+    Database,
+    'person',
+    'pet',
+    MergeResult
+  >
+) {
+  expectError(baseQuery.thenInsertValues())
+  expectError(baseQuery.thenInsertValues('person'))
+  expectError(baseQuery.thenInsertValues(['person']))
+  expectError(baseQuery.thenInsertValues({ age: 2 }))
+  baseQuery.thenInsertValues({ age: 2, first_name: 'Moshe', gender: 'other' })
+  expectError(
+    baseQuery.thenInsertValues({
+      age: 'not_a_number',
+      first_name: 'Moshe',
+      gender: 'other',
+    })
+  )
+  baseQuery.thenInsertValues((eb) => {
+    expectType<ExpressionBuilder<Database, 'person' | 'pet'>>(eb)
+    return { age: 2, first_name: eb.ref('pet.name'), gender: 'other' }
+  })
+  expectError(
+    baseQuery.thenInsertValues((eb) => {
+      expectType<ExpressionBuilder<Database, 'person' | 'pet'>>(eb)
+      return {
+        age: 'not_a_number',
+        first_name: eb.ref('pet.name'),
+        gender: 'other',
+      }
+    })
+  )
+
+  expectType<
+    WheneableMergeQueryBuilder<Database, 'person', 'pet', MergeResult>
+  >(
+    baseQuery.thenInsertValues({ age: 2, first_name: 'Moshe', gender: 'other' })
+  )
 }
