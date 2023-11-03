@@ -7,6 +7,7 @@ import {
   MergeQueryBuilder,
   MergeResult,
   NotMatchedThenableMergeQueryBuilder,
+  UpdateQueryBuilder,
   WheneableMergeQueryBuilder,
   sql,
 } from '..'
@@ -266,4 +267,80 @@ async function testThenDelete(
   expectType<
     WheneableMergeQueryBuilder<Database, 'person', 'pet', MergeResult>
   >(baseQuery.thenDelete())
+}
+
+async function testThenDoNothing(
+  baseQuery: MatchedThenableMergeQueryBuilder<
+    Database,
+    'person',
+    'pet',
+    'person' | 'pet',
+    MergeResult
+  >
+) {
+  baseQuery.thenDoNothing()
+  expectError(baseQuery.thenDoNothing('person'))
+  expectError(baseQuery.thenDoNothing(['person']))
+
+  expectType<
+    WheneableMergeQueryBuilder<Database, 'person', 'pet', MergeResult>
+  >(baseQuery.thenDoNothing())
+}
+
+async function testThenUpdate(
+  baseQuery: MatchedThenableMergeQueryBuilder<
+    Database,
+    'person',
+    'pet',
+    'person' | 'pet',
+    MergeResult
+  >,
+  limitedBaseQuery: MatchedThenableMergeQueryBuilder<
+    Database,
+    'person',
+    'pet',
+    'person',
+    MergeResult
+  >
+) {
+  expectError(baseQuery.thenUpdate())
+  expectError(baseQuery.thenUpdate('person'))
+  expectError(baseQuery.thenUpdate(['person']))
+  expectError(baseQuery.thenUpdate({ age: 2 }))
+  baseQuery.thenUpdate((ub) => {
+    expectType<UpdateQueryBuilder<Database, 'person', 'person' | 'pet', never>>(
+      ub
+    )
+    return ub
+  })
+  limitedBaseQuery.thenUpdate((ub) => {
+    expectType<UpdateQueryBuilder<Database, 'person', 'person', never>>(ub)
+    return ub
+  })
+
+  baseQuery.thenUpdateSet({ age: 2 })
+  expectError(baseQuery.thenUpdateSet({ age: 'not_a_number' }))
+  baseQuery.thenUpdateSet((eb) => ({ first_name: eb.ref('pet.name') }))
+  expectError(
+    limitedBaseQuery.thenUpdateSet((eb) => ({ first_name: eb.ref('pet.name') }))
+  )
+  baseQuery.thenUpdateSet('age', 2)
+  expectError(baseQuery.thenUpdateSet('age', 'not_a_number'))
+  baseQuery.thenUpdateSet('first_name', (eb) => eb.ref('pet.name'))
+  expectError(
+    limitedBaseQuery.thenUpdateSet('first_name', (eb) => eb.ref('pet.name'))
+  )
+
+  type ExpectedReturnType = WheneableMergeQueryBuilder<
+    Database,
+    'person',
+    'pet',
+    MergeResult
+  >
+  expectType<ExpectedReturnType>(baseQuery.thenUpdate((ub) => ub))
+  expectType<ExpectedReturnType>(baseQuery.thenUpdateSet({ age: 2 }))
+  expectType<ExpectedReturnType>(
+    baseQuery.thenUpdateSet((eb) => ({ first_name: eb.ref('pet.name') }))
+  )
+  expectType<ExpectedReturnType>(baseQuery.thenUpdateSet('age', 2))
 }
