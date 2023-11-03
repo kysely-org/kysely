@@ -346,12 +346,10 @@ async function testThenUpdate(
     expectType<ExpressionBuilder<Database, 'person' | 'pet'>>(eb)
     return eb.ref('pet.name')
   })
-  expectError(
-    limitedBaseQuery.thenUpdateSet('last_name', (eb) => {
-      expectType<ExpressionBuilder<Database, 'person'>>(eb)
-      return eb.ref('person.first_name')
-    })
-  )
+  limitedBaseQuery.thenUpdateSet('last_name', (eb) => {
+    expectType<ExpressionBuilder<Database, 'person'>>(eb)
+    return eb.ref('person.first_name')
+  })
 
   type ExpectedReturnType = WheneableMergeQueryBuilder<
     Database,
