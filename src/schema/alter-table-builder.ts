@@ -242,6 +242,25 @@ export class AlterTableBuilder implements ColumnAlteringInterface {
     })
   }
 
+  /**
+   * This can be used to add index to table.
+   *
+   *  ### Examples
+   *
+   * ```ts
+   * db.schema.alterTable('person')
+   *   .addIndex('person_email_index')
+   *   .column('email')
+   *   .unique()
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (MySQL):
+   *
+   * ```sql
+   * alter table `person` add unique index `person_email_index` (`email`)
+   * ```
+   */
   addIndex(indexName: string): AlterTableAddIndexBuilder {
     return new AlterTableAddIndexBuilder({
       ...this.#props,
@@ -251,6 +270,23 @@ export class AlterTableBuilder implements ColumnAlteringInterface {
     })
   }
 
+  /**
+   * This can be used to drop index from table.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * db.schema.alterTable('person')
+   *   .dropIndex('person_email_index')
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (MySQL):
+   *
+   * ```sql
+   * alter table `person` drop index `test_first_name_index`
+   * ```
+   */
   dropIndex(indexName: string): AlterTableExecutor {
     return new AlterTableExecutor({
       ...this.#props,
