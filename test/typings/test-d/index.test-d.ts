@@ -12,7 +12,6 @@ import {
   Transaction,
   InsertResult,
   UpdateResult,
-  DeleteResult,
   Selectable,
   sql,
   ExpressionBuilder,
@@ -350,37 +349,6 @@ async function testCall(db: Kysely<Database>) {
     .execute()
 
   expectType<{ species: 'dog' | 'cat'; name: string }>(r1)
-}
-
-async function testGenericSelect<T extends keyof Database>(
-  db: Kysely<Database>,
-  table: T
-) {
-  const r1 = await db.selectFrom(table).select('id').executeTakeFirstOrThrow()
-  expectAssignable<string | number>(r1.id)
-}
-
-async function testGenericUpdate(db: Kysely<Database>, table: 'pet' | 'movie') {
-  await db.updateTable(table).set({ id: '123' }).execute()
-}
-
-async function testSelectsInVariable(db: Kysely<Database>) {
-  const selects = [
-    'first_name',
-    (eb: ExpressionBuilder<Database, 'person'>) =>
-      eb
-        .selectFrom('pet')
-        .select('name')
-        .whereRef('pet.owner_id', '=', 'person.id')
-        .as('pet_name'),
-  ] as const
-
-  const r1 = await db
-    .selectFrom('person')
-    .select(selects)
-    .executeTakeFirstOrThrow()
-
-  expectType<{ first_name: string; pet_name: string | null }>(r1)
 }
 
 async function testUntypedKysely(db: Kysely<any>) {

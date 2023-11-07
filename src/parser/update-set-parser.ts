@@ -7,6 +7,11 @@ import {
 import { UpdateKeys, UpdateType } from '../util/column-type.js'
 import { isFunction } from '../util/object-utils.js'
 import { parseValueExpression, ValueExpression } from './value-parser.js'
+import {
+  ExtractRawTypeFromReferenceExpression,
+  parseReferenceExpression,
+  ReferenceExpression,
+} from './reference-parser.js'
 
 export type UpdateObject<DB, TB extends keyof DB, UT extends keyof DB = TB> = {
   [C in UpdateKeys<DB[UT]>]?:
@@ -20,14 +25,38 @@ export type UpdateObjectFactory<
   UT extends keyof DB
 > = (eb: ExpressionBuilder<DB, TB>) => UpdateObject<DB, TB, UT>
 
-export type UpdateExpression<
+export type UpdateObjectExpression<
   DB,
   TB extends keyof DB,
   UT extends keyof DB = TB
 > = UpdateObject<DB, TB, UT> | UpdateObjectFactory<DB, TB, UT>
 
-export function parseUpdateExpression(
-  update: UpdateExpression<any, any, any>
+export type ExtractUpdateTypeFromReferenceExpression<
+  DB,
+  TB extends keyof DB,
+  RE,
+  DV = unknown
+> = UpdateType<ExtractRawTypeFromReferenceExpression<DB, TB, RE, DV>>
+
+export function parseUpdate(
+  ...args:
+    | [UpdateObjectExpression<any, any, any>]
+    | [ReferenceExpression<any, any>, ValueExpression<any, any, any>]
+): ReadonlyArray<ColumnUpdateNode> {
+  if (args.length === 2) {
+    return [
+      ColumnUpdateNode.create(
+        parseReferenceExpression(args[0]),
+        parseValueExpression(args[1])
+      ),
+    ]
+  }
+
+  return parseUpdateObjectExpression(args[0])
+}
+
+export function parseUpdateObjectExpression(
+  update: UpdateObjectExpression<any, any, any>
 ): ReadonlyArray<ColumnUpdateNode> {
   const updateObj = isFunction(update) ? update(expressionBuilder()) : update
 

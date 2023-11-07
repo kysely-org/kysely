@@ -17,6 +17,9 @@ import { KyselyTypeError } from '../util/type-error.js'
 import { Equals, IsAny } from '../util/type-utils.js'
 import { AggregateFunctionBuilder } from './aggregate-function-builder.js'
 import { SelectQueryBuilderExpression } from '../query-builder/select-query-builder-expression.js'
+import { isString } from '../util/object-utils.js'
+import { parseTable } from '../parser/table-parser.js'
+import { Selectable } from '../util/column-type.js'
 
 /**
  * Helpers for type safe SQL function calls.
@@ -28,21 +31,47 @@ import { SelectQueryBuilderExpression } from '../query-builder/select-query-buil
  *
  * <!-- siteExample("select", "Function calls", 60) -->
  *
- * This example uses the `fn` module to select some aggregates:
+ * This example shows how to create function calls. These examples also work in any
+ * other place (`where` calls, updates, inserts etc.). The only difference is that you
+ * leave out the alias (the `as` call) if you use these in any other place than `select`.
  *
  * ```ts
+ * import { sql } from 'kysely'
+ *
  * const result = await db.selectFrom('person')
  *   .innerJoin('pet', 'pet.owner_id', 'person.id')
- *   .select(({ fn }) => [
+ *   .select(({ fn, val, ref }) => [
  *     'person.id',
  *
  *     // The `fn` module contains the most common
  *     // functions.
  *     fn.count<number>('pet.id').as('pet_count'),
  *
- *     // You can call any function using the
- *     // `agg` method
- *     fn.agg<string[]>('array_agg', ['pet.name']).as('pet_names')
+ *     // You can call any function by calling `fn`
+ *     // directly. The arguments are treated as column
+ *     // references by default. If you want  to pass in
+ *     // values, use the `val` function.
+ *     fn<string>('concat', [
+ *       val('Ms. '),
+ *       'first_name',
+ *       val(' '),
+ *       'last_name'
+ *     ]).as('full_name_with_title'),
+ *
+ *     // You can call any aggregate function using the
+ *     // `fn.agg` function.
+ *     fn.agg<string[]>('array_agg', ['pet.name']).as('pet_names'),
+ *
+ *     // And once again, you can use the `sql`
+ *     // template tag. The template tag substitutions
+ *     // are treated as values by default. If you want
+ *     // to reference columns, you can use the `ref`
+ *     // function.
+ *     sql<string>`concat(
+ *       ${ref('first_name')},
+ *       ' ',
+ *       ${ref('last_name')}
+ *     )`.as('full_name')
  *   ])
  *   .groupBy('person.id')
  *   .having((eb) => eb.fn.count('pet.id'), '>', 10)
@@ -55,11 +84,13 @@ import { SelectQueryBuilderExpression } from '../query-builder/select-query-buil
  * select
  *   "person"."id",
  *   count("pet"."id") as "pet_count",
- *   array_agg("pet"."name") as "pet_names"
+ *   concat($1, "first_name", $2, "last_name") as "full_name_with_title",
+ *   array_agg("pet"."name") as "pet_names",
+ *   concat("first_name", ' ', "last_name") as "full_name"
  * from "person"
  * inner join "pet" on "pet"."owner_id" = "person"."id"
  * group by "person"."id"
- * having count("pet"."id") > $1
+ * having count("pet"."id") > $3
  * ```
  */
 export interface FunctionModule<DB, TB extends keyof DB> {
@@ -625,6 +656,68 @@ export interface FunctionModule<DB, TB extends keyof DB> {
   ): ExpressionWrapper<DB, TB, T>
 
   any<T>(expr: Expression<ReadonlyArray<T>>): ExpressionWrapper<DB, TB, T>
+
+  /**
+   * Creates a json_agg function call.
+   *
+   * This function is only available on PostgreSQL.
+   *
+   * ```ts
+   * db.selectFrom('person')
+   *   .innerJoin('pet', 'pet.owner_id', 'person.id')
+   *   .select((eb) => ['first_name', eb.fn.jsonAgg('pet').as('pets')])
+   *   .groupBy('person.first_name')
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * select "first_name", json_agg("pet") as "pets"
+   * from "person"
+   * inner join "pet" on "pet"."owner_id" = "person"."id"
+   * group by "person"."first_name"
+   * ```
+   */
+  jsonAgg<T extends (TB & string) | Expression<unknown>>(
+    table: T
+  ): AggregateFunctionBuilder<
+    DB,
+    TB,
+    T extends TB
+      ? Selectable<DB[T]>[]
+      : T extends Expression<infer O>
+      ? O[]
+      : never
+  >
+
+  /**
+   * Creates a to_json function call.
+   *
+   * This function is only available on PostgreSQL.
+   *
+   * ```ts
+   * db.selectFrom('person')
+   *   .innerJoin('pet', 'pet.owner_id', 'person.id')
+   *   .select((eb) => ['first_name', eb.fn.toJson('pet').as('pet')])
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * select "first_name", to_json("pet") as "pet"
+   * from "person"
+   * inner join "pet" on "pet"."owner_id" = "person"."id"
+   * ```
+   */
+  toJson<T extends (TB & string) | Expression<unknown>>(
+    table: T
+  ): ExpressionWrapper<
+    DB,
+    TB,
+    T extends TB ? Selectable<DB[T]> : T extends Expression<infer O> ? O : never
+  >
 }
 
 export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
@@ -719,6 +812,22 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
 
     any<RE extends ReferenceExpression<DB, TB>>(column: RE): any {
       return fn('any', [column])
+    },
+
+    jsonAgg(table: string | Expression<unknown>): any {
+      return new AggregateFunctionBuilder({
+        aggregateFunctionNode: AggregateFunctionNode.create('json_agg', [
+          isString(table) ? parseTable(table) : table.toOperationNode(),
+        ]),
+      })
+    },
+
+    toJson(table: string | Expression<unknown>): any {
+      return new ExpressionWrapper(
+        FunctionNode.create('to_json', [
+          isString(table) ? parseTable(table) : table.toOperationNode(),
+        ])
+      )
     },
   })
 }

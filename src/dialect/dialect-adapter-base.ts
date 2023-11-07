@@ -8,6 +8,10 @@ import { DialectAdapter, MigrationLockOptions } from './dialect-adapter.js'
  * they are added and there will be less breaking changes.
  */
 export abstract class DialectAdapterBase implements DialectAdapter {
+  get supportsCreateIfNotExists(): boolean {
+    return true
+  }
+
   get supportsTransactionalDdl(): boolean {
     return false
   }

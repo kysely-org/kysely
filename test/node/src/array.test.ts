@@ -1,10 +1,4 @@
-import {
-  Generated,
-  Kysely,
-  RawBuilder,
-  sql,
-  ParseJSONResultsPlugin,
-} from '../../..'
+import { Generated, Kysely, sql } from '../../..'
 
 import {
   destroyTest,
@@ -14,8 +8,8 @@ import {
   Database,
   insertDefaultDataSet,
   clearDatabase,
-  DIALECTS,
   Person,
+  DIALECTS,
 } from './test-setup.js'
 
 interface PersonWithArrays extends Person {
@@ -24,10 +18,8 @@ interface PersonWithArrays extends Person {
   nicknames: string[] | null
 }
 
-for (const dialect of DIALECTS) {
-  if (dialect !== 'postgres') {
-    continue
-  }
+if (DIALECTS.includes('postgres')) {
+  const dialect = 'postgres'
 
   describe(`${dialect} array tests`, () => {
     let ctx: TestContext

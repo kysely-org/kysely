@@ -3,6 +3,7 @@ import {
   JSONColumnType,
   ParseJSONResultsPlugin,
   SqlBool,
+  sql,
 } from '../../..'
 import {
   BuiltInDialect,
@@ -18,7 +19,7 @@ import {
 
 type TestContext = Awaited<ReturnType<typeof initJSONTest>>
 
-for (const dialect of DIALECTS) {
+for (const dialect of DIALECTS.filter((dialect) => dialect !== 'mssql')) {
   describe(`${dialect}: json traversal`, () => {
     let ctx: TestContext
 
@@ -38,7 +39,7 @@ for (const dialect of DIALECTS) {
       await destroyJSONTest(ctx)
     })
 
-    if (dialect !== 'postgres') {
+    if (dialect === 'mysql' || dialect === 'sqlite') {
       describe('JSON Path syntax ($)', () => {
         const jsonOperator = dialect === 'mysql' ? '->$' : '->>$'
 
@@ -55,6 +56,7 @@ for (const dialect of DIALECTS) {
               parameters: [],
               sql: "select `website`->'$.url' as `website_url` from `person_metadata`",
             },
+            mssql: NOT_SUPPORTED,
             sqlite: {
               parameters: [],
               sql: `select "website"->>'$.url' as "website_url" from "person_metadata"`,
@@ -83,6 +85,7 @@ for (const dialect of DIALECTS) {
               parameters: [],
               sql: "select `nicknames`->'$[0]' as `nickname` from `person_metadata`",
             },
+            mssql: NOT_SUPPORTED,
             sqlite: {
               parameters: [],
               sql: `select "nicknames"->>'$[0]' as "nickname" from "person_metadata"`,
@@ -115,6 +118,7 @@ for (const dialect of DIALECTS) {
               parameters: [],
               sql: "select `profile`->'$.auth.roles' as `roles` from `person_metadata`",
             },
+            mssql: NOT_SUPPORTED,
             sqlite: {
               parameters: [],
               sql: `select "profile"->>'$.auth.roles' as "roles" from "person_metadata"`,
@@ -143,6 +147,7 @@ for (const dialect of DIALECTS) {
               parameters: [],
               sql: "select `profile`->'$.tags[0]' as `main_tag` from `person_metadata`",
             },
+            mssql: NOT_SUPPORTED,
             sqlite: {
               parameters: [],
               sql: `select "profile"->>'$.tags[0]' as "main_tag" from "person_metadata"`,
@@ -175,6 +180,7 @@ for (const dialect of DIALECTS) {
               parameters: [],
               sql: "select `experience`->'$[0].establishment' as `establishment` from `person_metadata`",
             },
+            mssql: NOT_SUPPORTED,
             sqlite: {
               parameters: [],
               sql: `select "experience"->>'$[0].establishment' as "establishment" from "person_metadata"`,
@@ -207,6 +213,7 @@ for (const dialect of DIALECTS) {
               parameters: [],
               sql: "select `schedule`->'$[0][0]' as `january_1st_schedule` from `person_metadata`",
             },
+            mssql: NOT_SUPPORTED,
             sqlite: {
               parameters: [],
               sql: `select "schedule"->>'$[0][0]' as "january_1st_schedule" from "person_metadata"`,
@@ -236,6 +243,7 @@ for (const dialect of DIALECTS) {
                 parameters: [],
                 sql: "select `nicknames`->'$[last]' as `nickname` from `person_metadata`",
               },
+              mssql: NOT_SUPPORTED,
               sqlite: NOT_SUPPORTED,
             })
 
@@ -260,6 +268,7 @@ for (const dialect of DIALECTS) {
             testSql(query, dialect, {
               postgres: NOT_SUPPORTED,
               mysql: NOT_SUPPORTED,
+              mssql: NOT_SUPPORTED,
               sqlite: {
                 parameters: [],
                 sql: `select "nicknames"->>'$[#-1]' as "nickname" from "person_metadata"`,
@@ -324,6 +333,7 @@ for (const dialect of DIALECTS) {
               parameters: [12],
               sql: "select * from `person_metadata` where `profile`->'$.auth.login_count' = ?",
             },
+            mssql: NOT_SUPPORTED,
             sqlite: {
               parameters: [12],
               sql: `select * from "person_metadata" where "profile"->>'$.auth.login_count' = ?`,
@@ -335,10 +345,41 @@ for (const dialect of DIALECTS) {
           expect(results).to.have.length(1)
           expect(results[0].profile.auth.login_count).to.equal(12)
         })
+
+        it(`should execute a query with column${jsonOperator}.key.key in order by clause`, async () => {
+          const query = ctx.db
+            .selectFrom('person_metadata')
+            .orderBy(
+              (eb) =>
+                eb.ref('profile', jsonOperator).key('auth').key('login_count'),
+              'desc'
+            )
+            .selectAll()
+
+          testSql(query, dialect, {
+            postgres: NOT_SUPPORTED,
+            mysql: {
+              parameters: [],
+              sql: "select * from `person_metadata` order by `profile`->'$.auth.login_count' desc",
+            },
+            mssql: NOT_SUPPORTED,
+            sqlite: {
+              parameters: [],
+              sql: `select * from "person_metadata" order by "profile"->>'$.auth.login_count' desc`,
+            },
+          })
+
+          const results = await query.execute()
+
+          expect(results).to.have.length(3)
+          expect(results[0].profile.auth.login_count).to.equal(14)
+          expect(results[1].profile.auth.login_count).to.equal(13)
+          expect(results[2].profile.auth.login_count).to.equal(12)
+        })
       })
     }
 
-    if (dialect !== 'mysql') {
+    if (dialect === 'postgres' || dialect === 'sqlite') {
       describe('PostgreSQL-style syntax (->->->>)', () => {
         const jsonOperator = dialect === 'postgres' ? '->' : '->>'
 
@@ -355,6 +396,7 @@ for (const dialect of DIALECTS) {
               sql: `select "website"->'url' as "website_url" from "person_metadata"`,
             },
             mysql: NOT_SUPPORTED,
+            mssql: NOT_SUPPORTED,
             sqlite: {
               parameters: [],
               sql: `select "website"->>'url' as "website_url" from "person_metadata"`,
@@ -383,6 +425,7 @@ for (const dialect of DIALECTS) {
               sql: `select "nicknames"->0 as "nickname" from "person_metadata"`,
             },
             mysql: NOT_SUPPORTED,
+            mssql: NOT_SUPPORTED,
             sqlite: {
               parameters: [],
               sql: `select "nicknames"->>0 as "nickname" from "person_metadata"`,
@@ -415,6 +458,7 @@ for (const dialect of DIALECTS) {
               sql: `select "profile"->'auth'->'roles' as "roles" from "person_metadata"`,
             },
             mysql: NOT_SUPPORTED,
+            mssql: NOT_SUPPORTED,
             sqlite: {
               parameters: [],
               sql: `select "profile"->'auth'->>'roles' as "roles" from "person_metadata"`,
@@ -443,6 +487,7 @@ for (const dialect of DIALECTS) {
               sql: `select "profile"->'tags'->0 as "main_tag" from "person_metadata"`,
             },
             mysql: NOT_SUPPORTED,
+            mssql: NOT_SUPPORTED,
             sqlite: {
               parameters: [],
               sql: `select "profile"->'tags'->>0 as "main_tag" from "person_metadata"`,
@@ -475,6 +520,7 @@ for (const dialect of DIALECTS) {
               sql: `select "experience"->0->'establishment' as "establishment" from "person_metadata"`,
             },
             mysql: NOT_SUPPORTED,
+            mssql: NOT_SUPPORTED,
             sqlite: {
               parameters: [],
               sql: `select "experience"->0->>'establishment' as "establishment" from "person_metadata"`,
@@ -507,6 +553,7 @@ for (const dialect of DIALECTS) {
               sql: `select "schedule"->0->0 as "january_1st_schedule" from "person_metadata"`,
             },
             mysql: NOT_SUPPORTED,
+            mssql: NOT_SUPPORTED,
             sqlite: {
               parameters: [],
               sql: `select "schedule"->0->>0 as "january_1st_schedule" from "person_metadata"`,
@@ -534,6 +581,7 @@ for (const dialect of DIALECTS) {
                 sql: `select "nicknames"->-1 as "nickname" from "person_metadata"`,
               },
               mysql: NOT_SUPPORTED,
+              mssql: NOT_SUPPORTED,
               sqlite: NOT_SUPPORTED,
             })
 
@@ -595,6 +643,7 @@ for (const dialect of DIALECTS) {
               sql: `select * from "person_metadata" where "profile"->'auth'->'login_count' = $1`,
             },
             mysql: NOT_SUPPORTED,
+            mssql: NOT_SUPPORTED,
             sqlite: {
               parameters: [12],
               sql: `select * from "person_metadata" where "profile"->'auth'->>'login_count' = ?`,
@@ -605,6 +654,37 @@ for (const dialect of DIALECTS) {
 
           expect(results).to.have.length(1)
           expect(results[0].profile.auth.login_count).to.equal(12)
+        })
+
+        it(`should execute a query with column->key${jsonOperator}key in order by clause`, async () => {
+          const query = ctx.db
+            .selectFrom('person_metadata')
+            .orderBy(
+              (eb) =>
+                eb.ref('profile', jsonOperator).key('auth').key('login_count'),
+              'desc'
+            )
+            .selectAll()
+
+          testSql(query, dialect, {
+            postgres: {
+              parameters: [],
+              sql: `select * from "person_metadata" order by "profile"->'auth'->'login_count' desc`,
+            },
+            mysql: NOT_SUPPORTED,
+            mssql: NOT_SUPPORTED,
+            sqlite: {
+              parameters: [],
+              sql: `select * from "person_metadata" order by "profile"->'auth'->>'login_count' desc`,
+            },
+          })
+
+          const results = await query.execute()
+
+          expect(results).to.have.length(3)
+          expect(results[0].profile.auth.login_count).to.equal(14)
+          expect(results[1].profile.auth.login_count).to.equal(13)
+          expect(results[2].profile.auth.login_count).to.equal(12)
         })
       })
     }
@@ -669,6 +749,8 @@ function resolveJSONColumnDataType(dialect: BuiltInDialect) {
       return 'jsonb'
     case 'mysql':
       return 'json'
+    case 'mssql':
+      return sql`nvarchar(max)`
     case 'sqlite':
       return 'text'
   }

@@ -2,11 +2,11 @@ import { AssertionError } from 'chai'
 import { sql } from '../../../'
 
 import {
-  DIALECTS,
   destroyTest,
   initTest,
   TestContext,
   expect,
+  DIALECTS,
 } from './test-setup.js'
 
 for (const dialect of DIALECTS) {

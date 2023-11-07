@@ -5,8 +5,9 @@ import {
   jsonObjectFrom,
   sql,
   ExpressionBuilder,
+  Selectable,
 } from '..'
-import { Database } from '../shared'
+import { Database, Pet } from '../shared'
 import { expectType } from 'tsd'
 
 async function testPostgresJsonSelects(db: Kysely<Database>) {
@@ -71,6 +72,75 @@ async function testPostgresConditionalJsonSelects(db: Kysely<Database>) {
       first_name: string
       pets?: { name: string; species: 'dog' | 'cat' }[]
       doggo?: { doggo_name: string } | null
+    }[]
+  >(r1)
+}
+
+async function testPostgresJsonAgg(db: Kysely<Database>) {
+  const r1 = await db
+    .selectFrom('person')
+    .innerJoin('pet', 'pet.owner_id', 'person.id')
+    .select((eb) => ['first_name', eb.fn.jsonAgg('pet').as('pets')])
+    .groupBy('person.first_name')
+    .execute()
+
+  expectType<
+    {
+      first_name: string
+      pets: Selectable<Pet>[]
+    }[]
+  >(r1)
+
+  const r2 = await db
+    .selectFrom('person')
+    .select((eb) => [
+      'first_name',
+      eb
+        .selectFrom('pet')
+        .select((eb) => eb.fn.jsonAgg('pet').as('pet'))
+        .whereRef('pet.owner_id', '=', 'person.id')
+        .as('pets'),
+    ])
+    .execute()
+
+  expectType<
+    {
+      first_name: string
+      pets: Selectable<Pet>[] | null
+    }[]
+  >(r2)
+
+  const r3 = await db
+    .selectFrom('person')
+    .select((eb) => [
+      'first_name',
+      eb
+        .selectFrom('pet')
+        .select((eb) => eb.fn.jsonAgg(eb.table('pet')).as('pet'))
+        .whereRef('pet.owner_id', '=', 'person.id')
+        .as('pets'),
+    ])
+    .execute()
+
+  expectType<
+    {
+      first_name: string
+      pets: Selectable<Pet>[] | null
+    }[]
+  >(r3)
+}
+
+async function testPostgresToJson(db: Kysely<Database>) {
+  const r1 = await db
+    .selectFrom('person')
+    .innerJoin('pet', 'pet.owner_id', 'person.id')
+    .select((eb) => ['first_name', eb.fn.toJson('pet').as('pet')])
+    .execute()
+
+  expectType<
+    {
+      first_name: string
+      pet: Selectable<Pet>
     }[]
   >(r1)
 }

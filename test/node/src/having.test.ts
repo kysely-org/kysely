@@ -1,7 +1,6 @@
 import { sql } from '../../../'
 
 import {
-  DIALECTS,
   clearDatabase,
   destroyTest,
   initTest,
@@ -9,6 +8,7 @@ import {
   TestContext,
   testSql,
   expect,
+  DIALECTS,
 } from './test-setup.js'
 
 for (const dialect of DIALECTS) {
@@ -87,6 +87,16 @@ for (const dialect of DIALECTS) {
           ],
           parameters: [1],
         },
+        mssql: {
+          sql: [
+            `select "first_name", count(pet.id) as "num_pets"`,
+            `from "person"`,
+            `inner join "pet" on "pet"."owner_id" = "person"."id"`,
+            `group by "first_name"`,
+            `having count(pet.id) > @1`,
+          ],
+          parameters: [1],
+        },
         sqlite: {
           sql: [
             `select "first_name", count(pet.id) as "num_pets"`,
@@ -102,7 +112,7 @@ for (const dialect of DIALECTS) {
       const result = await query.execute()
       expect(result).to.have.length(2)
 
-      if (dialect === 'sqlite') {
+      if (dialect === 'mssql' || dialect === 'sqlite') {
         expect(result).to.containSubset([
           { first_name: 'Jennifer', num_pets: 2 },
           { first_name: 'Arnold', num_pets: 2 },
@@ -146,6 +156,16 @@ for (const dialect of DIALECTS) {
           ],
           parameters: [1],
         },
+        mssql: {
+          sql: [
+            `select "person"."id", count("pet"."id") as "num_pets"`,
+            `from "person"`,
+            `inner join "pet" on "pet"."owner_id" = "person"."id"`,
+            `group by "person"."id"`,
+            `having count("pet"."id") > @1`,
+          ],
+          parameters: [1],
+        },
         sqlite: {
           sql: [
             `select "person"."id", count("pet"."id") as "num_pets"`,
@@ -161,7 +181,7 @@ for (const dialect of DIALECTS) {
       const result = await query.execute()
       expect(result).to.have.length(2)
 
-      if (dialect === 'sqlite') {
+      if (dialect === 'mssql' || dialect === 'sqlite') {
         expect(result).to.containSubset([{ num_pets: 2 }, { num_pets: 2 }])
       } else {
         expect(result).to.containSubset([{ num_pets: '2' }, { num_pets: '2' }])
@@ -182,6 +202,7 @@ for (const dialect of DIALECTS) {
         )
         .havingRef('first_name', '=', 'first_name')
         .having((eb) => eb.not(eb.exists(eb.selectFrom('pet').select('id'))))
+
       testSql(query, dialect, {
         postgres: {
           sql: `select * from "person" group by "first_name" having ("id" in ($1, $2, $3) or "first_name" < $4 or "first_name" = "first_name") and "first_name" = "first_name" and not exists (select "id" from "pet")`,
@@ -189,6 +210,10 @@ for (const dialect of DIALECTS) {
         },
         mysql: {
           sql: 'select * from `person` group by `first_name` having (`id` in (?, ?, ?) or `first_name` < ? or `first_name` = `first_name`) and `first_name` = `first_name` and not exists (select `id` from `pet`)',
+          parameters: [1, 2, 3, 'foo'],
+        },
+        mssql: {
+          sql: `select * from "person" group by "first_name" having ("id" in (@1, @2, @3) or "first_name" < @4 or "first_name" = "first_name") and "first_name" = "first_name" and not exists (select "id" from "pet")`,
           parameters: [1, 2, 3, 'foo'],
         },
         sqlite: {

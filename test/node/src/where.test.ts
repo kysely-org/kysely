@@ -1,7 +1,6 @@
 import { sql } from '../../../'
 
 import {
-  DIALECTS,
   clearDatabase,
   destroyTest,
   initTest,
@@ -9,6 +8,7 @@ import {
   testSql,
   expect,
   insertDefaultDataSet,
+  DIALECTS,
   NOT_SUPPORTED,
 } from './test-setup.js'
 
@@ -46,6 +46,10 @@ for (const dialect of DIALECTS) {
           },
           mysql: {
             sql: 'select * from `person` where `first_name` = ?',
+            parameters: ['Arnold'],
+          },
+          mssql: {
+            sql: 'select * from "person" where "first_name" = @1',
             parameters: ['Arnold'],
           },
           sqlite: {
@@ -88,6 +92,10 @@ for (const dialect of DIALECTS) {
             sql: 'select * from `person` where `last_name` is not null',
             parameters: [],
           },
+          mssql: {
+            sql: 'select * from "person" where "last_name" is not null',
+            parameters: [],
+          },
           sqlite: {
             sql: 'select * from "person" where "last_name" is not null',
             parameters: [],
@@ -119,6 +127,10 @@ for (const dialect of DIALECTS) {
             sql: 'select * from `person` where `last_name` is null',
             parameters: [],
           },
+          mssql: {
+            sql: 'select * from "person" where "last_name" is null',
+            parameters: [],
+          },
           sqlite: {
             sql: 'select * from "person" where "last_name" is null',
             parameters: [],
@@ -146,6 +158,10 @@ for (const dialect of DIALECTS) {
           },
           mysql: {
             sql: 'select * from `person` where `first_name` = ?',
+            parameters: ['Arnold'],
+          },
+          mssql: {
+            sql: 'select * from "person" where "first_name" = @1',
             parameters: ['Arnold'],
           },
           sqlite: {
@@ -181,6 +197,10 @@ for (const dialect of DIALECTS) {
             sql: 'select * from `person` where `person`.`first_name` = ?',
             parameters: ['Arnold'],
           },
+          mssql: {
+            sql: 'select * from "person" where "person"."first_name" = @1',
+            parameters: ['Arnold'],
+          },
           sqlite: {
             sql: 'select * from "person" where "person"."first_name" = ?',
             parameters: ['Arnold'],
@@ -210,6 +230,10 @@ for (const dialect of DIALECTS) {
             sql: 'select * from `person` where person.first_name = ?',
             parameters: ['Arnold'],
           },
+          mssql: {
+            sql: 'select * from "person" where person.first_name = @1',
+            parameters: ['Arnold'],
+          },
           sqlite: {
             sql: 'select * from "person" where person.first_name = ?',
             parameters: ['Arnold'],
@@ -235,6 +259,10 @@ for (const dialect of DIALECTS) {
             sql: 'select * from `person` where `person`.`first_name` = ?',
             parameters: ['Arnold'],
           },
+          mssql: {
+            sql: 'select * from "person" where "person"."first_name" = @1',
+            parameters: ['Arnold'],
+          },
           sqlite: {
             sql: 'select * from "person" where "person"."first_name" = ?',
             parameters: ['Arnold'],
@@ -245,30 +273,37 @@ for (const dialect of DIALECTS) {
         expect(person!.first_name).to.equal('Arnold')
       })
 
-      it('a raw instance and a boolean value', async () => {
-        const query = ctx.db
-          .selectFrom('person')
-          .selectAll()
-          .where(sql`(first_name is null)`, 'is', false)
+      if (
+        dialect === 'postgres' ||
+        dialect === 'mysql' ||
+        dialect === 'sqlite'
+      ) {
+        it('a raw instance and a boolean value', async () => {
+          const query = ctx.db
+            .selectFrom('person')
+            .selectAll()
+            .where(sql`(first_name is null)`, 'is', false)
 
-        testSql(query, dialect, {
-          postgres: {
-            sql: 'select * from "person" where (first_name is null) is false',
-            parameters: [],
-          },
-          mysql: {
-            sql: 'select * from `person` where (first_name is null) is false',
-            parameters: [],
-          },
-          sqlite: {
-            sql: 'select * from "person" where (first_name is null) is false',
-            parameters: [],
-          },
+          testSql(query, dialect, {
+            postgres: {
+              sql: 'select * from "person" where (first_name is null) is false',
+              parameters: [],
+            },
+            mysql: {
+              sql: 'select * from `person` where (first_name is null) is false',
+              parameters: [],
+            },
+            mssql: NOT_SUPPORTED,
+            sqlite: {
+              sql: 'select * from "person" where (first_name is null) is false',
+              parameters: [],
+            },
+          })
+
+          const persons = await query.execute()
+          expect(persons).to.have.length(3)
         })
-
-        const persons = await query.execute()
-        expect(persons).to.have.length(3)
-      })
+      }
 
       it('a subquery and a primitive value', async () => {
         const query = ctx.db
@@ -293,6 +328,10 @@ for (const dialect of DIALECTS) {
             sql: 'select * from `person` where (select `pet`.`name` from `pet` where `owner_id` = `person`.`id`) = ?',
             parameters: ['Catto'],
           },
+          mssql: {
+            sql: 'select * from "person" where (select "pet"."name" from "pet" where "owner_id" = "person"."id") = @1',
+            parameters: ['Catto'],
+          },
           sqlite: {
             sql: 'select * from "person" where (select "pet"."name" from "pet" where "owner_id" = "person"."id") = ?',
             parameters: ['Catto'],
@@ -311,43 +350,50 @@ for (const dialect of DIALECTS) {
         ])
       })
 
-      it('a boolean subquery', async () => {
-        const query = ctx.db
-          .selectFrom('person')
-          .selectAll()
-          .where((eb) =>
-            eb
-              .selectFrom('pet')
-              .whereRef('owner_id', '=', 'person.id')
-              .select((eb) => eb('pet.name', '=', 'Doggo').as('is_doggo'))
-          )
+      if (
+        dialect === 'postgres' ||
+        dialect === 'mysql' ||
+        dialect === 'sqlite'
+      ) {
+        it('a boolean subquery', async () => {
+          const query = ctx.db
+            .selectFrom('person')
+            .selectAll()
+            .where((eb) =>
+              eb
+                .selectFrom('pet')
+                .whereRef('owner_id', '=', 'person.id')
+                .select((eb) => eb('pet.name', '=', 'Doggo').as('is_doggo'))
+            )
 
-        testSql(query, dialect, {
-          postgres: {
-            sql: 'select * from "person" where (select "pet"."name" = $1 as "is_doggo" from "pet" where "owner_id" = "person"."id")',
-            parameters: ['Doggo'],
-          },
-          mysql: {
-            sql: 'select * from `person` where (select `pet`.`name` = ? as `is_doggo` from `pet` where `owner_id` = `person`.`id`)',
-            parameters: ['Doggo'],
-          },
-          sqlite: {
-            sql: 'select * from "person" where (select "pet"."name" = ? as "is_doggo" from "pet" where "owner_id" = "person"."id")',
-            parameters: ['Doggo'],
-          },
+          testSql(query, dialect, {
+            postgres: {
+              sql: 'select * from "person" where (select "pet"."name" = $1 as "is_doggo" from "pet" where "owner_id" = "person"."id")',
+              parameters: ['Doggo'],
+            },
+            mysql: {
+              sql: 'select * from `person` where (select `pet`.`name` = ? as `is_doggo` from `pet` where `owner_id` = `person`.`id`)',
+              parameters: ['Doggo'],
+            },
+            mssql: NOT_SUPPORTED,
+            sqlite: {
+              sql: 'select * from "person" where (select "pet"."name" = ? as "is_doggo" from "pet" where "owner_id" = "person"."id")',
+              parameters: ['Doggo'],
+            },
+          })
+
+          const persons = await query.execute()
+          expect(persons).to.have.length(1)
+          expect(persons[0].id).to.be.a('number')
+          expect(persons).to.containSubset([
+            {
+              first_name: 'Arnold',
+              last_name: 'Schwarzenegger',
+              gender: 'male',
+            },
+          ])
         })
-
-        const persons = await query.execute()
-        expect(persons).to.have.length(1)
-        expect(persons[0].id).to.be.a('number')
-        expect(persons).to.containSubset([
-          {
-            first_name: 'Arnold',
-            last_name: 'Schwarzenegger',
-            gender: 'male',
-          },
-        ])
-      })
+      }
 
       it('a raw instance and a subquery', async () => {
         const query = ctx.db
@@ -367,6 +413,10 @@ for (const dialect of DIALECTS) {
           },
           mysql: {
             sql: 'select * from `person` where ? = (select `pet`.`name` from `pet` where `owner_id` = `person`.`id`)',
+            parameters: ['Catto'],
+          },
+          mssql: {
+            sql: 'select * from "person" where @1 = (select "pet"."name" from "pet" where "owner_id" = "person"."id")',
             parameters: ['Catto'],
           },
           sqlite: {
@@ -396,6 +446,10 @@ for (const dialect of DIALECTS) {
           },
           mysql: {
             sql: 'select * from `person` where `first_name` = ?',
+            parameters: ['Arnold'],
+          },
+          mssql: {
+            sql: 'select * from "person" where "first_name" = @1',
             parameters: ['Arnold'],
           },
           sqlite: {
@@ -432,6 +486,10 @@ for (const dialect of DIALECTS) {
             sql: 'select * from `person` where `first_name` in (?, ?) order by `first_name` desc',
             parameters: ['Arnold', 'Jennifer'],
           },
+          mssql: {
+            sql: 'select * from "person" where "first_name" in (@1, @2) order by "first_name" desc',
+            parameters: ['Arnold', 'Jennifer'],
+          },
           sqlite: {
             sql: 'select * from "person" where "first_name" in (?, ?) order by "first_name" desc',
             parameters: ['Arnold', 'Jennifer'],
@@ -455,96 +513,104 @@ for (const dialect of DIALECTS) {
         ])
       })
 
-      it('a `where in` query with tuples', async () => {
-        const query = ctx.db
-          .selectFrom('person')
-          .selectAll()
-          .where((eb) =>
-            eb(eb.refTuple('first_name', 'last_name'), 'in', [
-              eb.tuple('Jennifer', 'Aniston'),
-              eb.tuple('Sylvester', 'Stallone'),
-            ])
-          )
-          .orderBy('first_name asc')
-
-        testSql(query, dialect, {
-          postgres: {
-            sql: 'select * from "person" where ("first_name", "last_name") in (($1, $2), ($3, $4)) order by "first_name" asc',
-            parameters: ['Jennifer', 'Aniston', 'Sylvester', 'Stallone'],
-          },
-          mysql: {
-            sql: 'select * from `person` where (`first_name`, `last_name`) in ((?, ?), (?, ?)) order by `first_name` asc',
-            parameters: ['Jennifer', 'Aniston', 'Sylvester', 'Stallone'],
-          },
-          sqlite: {
-            sql: 'select * from "person" where ("first_name", "last_name") in ((?, ?), (?, ?)) order by "first_name" asc',
-            parameters: ['Jennifer', 'Aniston', 'Sylvester', 'Stallone'],
-          },
-        })
-
-        const persons = await query.execute()
-        expect(persons).to.have.length(2)
-        expect(persons).to.containSubset([
-          {
-            first_name: 'Jennifer',
-            last_name: 'Aniston',
-            gender: 'female',
-          },
-          {
-            first_name: 'Sylvester',
-            last_name: 'Stallone',
-            gender: 'male',
-          },
-        ])
-      })
-
-      it('a `where in` query with tuples and a subquery', async () => {
-        const query = ctx.db
-          .selectFrom('person')
-          .selectAll()
-          .where((eb) =>
-            eb(
-              eb.refTuple('first_name', 'last_name'),
-              'in',
-              eb
-                .selectFrom('person as p2')
-                .select(['p2.first_name', 'p2.last_name'])
-                .where('first_name', 'in', ['Arnold', 'Sylvester'])
-                .$asTuple('first_name', 'last_name')
+      if (
+        dialect === 'postgres' ||
+        dialect === 'mysql' ||
+        dialect === 'sqlite'
+      ) {
+        it('a `where in` query with tuples', async () => {
+          const query = ctx.db
+            .selectFrom('person')
+            .selectAll()
+            .where((eb) =>
+              eb(eb.refTuple('first_name', 'last_name'), 'in', [
+                eb.tuple('Jennifer', 'Aniston'),
+                eb.tuple('Sylvester', 'Stallone'),
+              ])
             )
-          )
-          .orderBy('first_name asc')
+            .orderBy('first_name asc')
 
-        testSql(query, dialect, {
-          postgres: {
-            sql: 'select * from "person" where ("first_name", "last_name") in (select "p2"."first_name", "p2"."last_name" from "person" as "p2" where "first_name" in ($1, $2)) order by "first_name" asc',
-            parameters: ['Arnold', 'Sylvester'],
-          },
-          mysql: {
-            sql: 'select * from `person` where (`first_name`, `last_name`) in (select `p2`.`first_name`, `p2`.`last_name` from `person` as `p2` where `first_name` in (?, ?)) order by `first_name` asc',
-            parameters: ['Arnold', 'Sylvester'],
-          },
-          sqlite: {
-            sql: 'select * from "person" where ("first_name", "last_name") in (select "p2"."first_name", "p2"."last_name" from "person" as "p2" where "first_name" in (?, ?)) order by "first_name" asc',
-            parameters: ['Arnold', 'Sylvester'],
-          },
+          testSql(query, dialect, {
+            postgres: {
+              sql: 'select * from "person" where ("first_name", "last_name") in (($1, $2), ($3, $4)) order by "first_name" asc',
+              parameters: ['Jennifer', 'Aniston', 'Sylvester', 'Stallone'],
+            },
+            mysql: {
+              sql: 'select * from `person` where (`first_name`, `last_name`) in ((?, ?), (?, ?)) order by `first_name` asc',
+              parameters: ['Jennifer', 'Aniston', 'Sylvester', 'Stallone'],
+            },
+            mssql: NOT_SUPPORTED,
+            sqlite: {
+              sql: 'select * from "person" where ("first_name", "last_name") in ((?, ?), (?, ?)) order by "first_name" asc',
+              parameters: ['Jennifer', 'Aniston', 'Sylvester', 'Stallone'],
+            },
+          })
+
+          const persons = await query.execute()
+          expect(persons).to.have.length(2)
+          expect(persons).to.containSubset([
+            {
+              first_name: 'Jennifer',
+              last_name: 'Aniston',
+              gender: 'female',
+            },
+            {
+              first_name: 'Sylvester',
+              last_name: 'Stallone',
+              gender: 'male',
+            },
+          ])
         })
 
-        const persons = await query.execute()
-        expect(persons).to.have.length(2)
-        expect(persons).to.containSubset([
-          {
-            first_name: 'Arnold',
-            last_name: 'Schwarzenegger',
-            gender: 'male',
-          },
-          {
-            first_name: 'Sylvester',
-            last_name: 'Stallone',
-            gender: 'male',
-          },
-        ])
-      })
+        it('a `where in` query with tuples and a subquery', async () => {
+          const query = ctx.db
+            .selectFrom('person')
+            .selectAll()
+            .where((eb) =>
+              eb(
+                eb.refTuple('first_name', 'last_name'),
+                'in',
+                eb
+                  .selectFrom('person as p2')
+                  .select(['p2.first_name', 'p2.last_name'])
+                  .where('first_name', 'in', ['Arnold', 'Sylvester'])
+                  .$asTuple('first_name', 'last_name')
+              )
+            )
+            .orderBy('first_name asc')
+
+          testSql(query, dialect, {
+            postgres: {
+              sql: 'select * from "person" where ("first_name", "last_name") in (select "p2"."first_name", "p2"."last_name" from "person" as "p2" where "first_name" in ($1, $2)) order by "first_name" asc',
+              parameters: ['Arnold', 'Sylvester'],
+            },
+            mysql: {
+              sql: 'select * from `person` where (`first_name`, `last_name`) in (select `p2`.`first_name`, `p2`.`last_name` from `person` as `p2` where `first_name` in (?, ?)) order by `first_name` asc',
+              parameters: ['Arnold', 'Sylvester'],
+            },
+            mssql: NOT_SUPPORTED,
+            sqlite: {
+              sql: 'select * from "person" where ("first_name", "last_name") in (select "p2"."first_name", "p2"."last_name" from "person" as "p2" where "first_name" in (?, ?)) order by "first_name" asc',
+              parameters: ['Arnold', 'Sylvester'],
+            },
+          })
+
+          const persons = await query.execute()
+          expect(persons).to.have.length(2)
+          expect(persons).to.containSubset([
+            {
+              first_name: 'Arnold',
+              last_name: 'Schwarzenegger',
+              gender: 'male',
+            },
+            {
+              first_name: 'Sylvester',
+              last_name: 'Stallone',
+              gender: 'male',
+            },
+          ])
+        })
+      }
 
       it('two where expressions', async () => {
         const query = ctx.db
@@ -560,6 +626,10 @@ for (const dialect of DIALECTS) {
           },
           mysql: {
             sql: 'select * from `person` where `first_name` = ? and `person`.`last_name` = ?',
+            parameters: ['Arnold', 'Schwarzenegger'],
+          },
+          mssql: {
+            sql: 'select * from "person" where "first_name" = @1 and "person"."last_name" = @2',
             parameters: ['Arnold', 'Schwarzenegger'],
           },
           sqlite: {
@@ -597,6 +667,10 @@ for (const dialect of DIALECTS) {
           },
           mysql: {
             sql: 'select * from `person` where (`first_name` = ? and upper(`last_name`) = ?)',
+            parameters: ['Jennifer', 'ANISTON'],
+          },
+          mssql: {
+            sql: 'select * from "person" where ("first_name" = @1 and upper("last_name") = @2)',
             parameters: ['Jennifer', 'ANISTON'],
           },
           sqlite: {
@@ -637,6 +711,10 @@ for (const dialect of DIALECTS) {
             sql: 'select * from `person` where (`first_name` = ? and upper(`last_name`) = ?)',
             parameters: ['Jennifer', 'ANISTON'],
           },
+          mssql: {
+            sql: 'select * from "person" where ("first_name" = @1 and upper("last_name") = @2)',
+            parameters: ['Jennifer', 'ANISTON'],
+          },
           sqlite: {
             sql: 'select * from "person" where ("first_name" = ? and upper("last_name") = ?)',
             parameters: ['Jennifer', 'ANISTON'],
@@ -674,6 +752,10 @@ for (const dialect of DIALECTS) {
             sql: 'select * from `person` where (`first_name` = ? and `last_name` = upper(`first_name`))',
             parameters: ['Jennifer'],
           },
+          mssql: {
+            sql: 'select * from "person" where ("first_name" = @1 and "last_name" = upper("first_name"))',
+            parameters: ['Jennifer'],
+          },
           sqlite: {
             sql: 'select * from "person" where ("first_name" = ? and "last_name" = upper("first_name"))',
             parameters: ['Jennifer'],
@@ -702,6 +784,10 @@ for (const dialect of DIALECTS) {
           },
           mysql: {
             sql: 'select * from `person` where (`first_name` = ? or upper(`last_name`) = ?)',
+            parameters: ['Jennifer', 'ANISTON'],
+          },
+          mssql: {
+            sql: 'select * from "person" where ("first_name" = @1 or upper("last_name") = @2)',
             parameters: ['Jennifer', 'ANISTON'],
           },
           sqlite: {
@@ -742,6 +828,10 @@ for (const dialect of DIALECTS) {
             sql: 'select * from `person` where (`first_name` = ? or upper(`last_name`) = ?)',
             parameters: ['Jennifer', 'ANISTON'],
           },
+          mssql: {
+            sql: 'select * from "person" where ("first_name" = @1 or upper("last_name") = @2)',
+            parameters: ['Jennifer', 'ANISTON'],
+          },
           sqlite: {
             sql: 'select * from "person" where ("first_name" = ? or upper("last_name") = ?)',
             parameters: ['Jennifer', 'ANISTON'],
@@ -780,6 +870,10 @@ for (const dialect of DIALECTS) {
             sql: 'select * from `person` where exists (select 1 as `exists` from `pet` where `pet`.`owner_id` = `person`.`id`)',
             parameters: [],
           },
+          mssql: {
+            sql: 'select * from "person" where exists (select 1 as "exists" from "pet" where "pet"."owner_id" = "person"."id")',
+            parameters: [],
+          },
           sqlite: {
             sql: 'select * from "person" where exists (select 1 as "exists" from "pet" where "pet"."owner_id" = "person"."id")',
             parameters: [],
@@ -813,6 +907,10 @@ for (const dialect of DIALECTS) {
             sql: 'select * from `person` where not exists (select `pet`.`id` from `pet` where `pet`.`owner_id` = `person`.`id`)',
             parameters: [],
           },
+          mssql: {
+            sql: 'select * from "person" where not exists (select "pet"."id" from "pet" where "pet"."owner_id" = "person"."id")',
+            parameters: [],
+          },
           sqlite: {
             sql: 'select * from "person" where not exists (select "pet"."id" from "pet" where "pet"."owner_id" = "person"."id")',
             parameters: [],
@@ -823,37 +921,44 @@ for (const dialect of DIALECTS) {
         expect(persons).to.have.length(0)
       })
 
-      it('case expression', async () => {
-        const query = ctx.db
-          .selectFrom('person')
-          .selectAll()
-          .where((eb) =>
-            eb
-              .case()
-              .when('first_name', '=', 'Jennifer')
-              .then(sql.lit(true))
-              .else(sql.lit(false))
-              .end()
-          )
+      if (
+        dialect === 'postgres' ||
+        dialect === 'mysql' ||
+        dialect === 'sqlite'
+      ) {
+        it('case expression', async () => {
+          const query = ctx.db
+            .selectFrom('person')
+            .selectAll()
+            .where((eb) =>
+              eb
+                .case()
+                .when('first_name', '=', 'Jennifer')
+                .then(sql.lit(true))
+                .else(sql.lit(false))
+                .end()
+            )
 
-        testSql(query, dialect, {
-          postgres: {
-            sql: 'select * from "person" where case when "first_name" = $1 then true else false end',
-            parameters: ['Jennifer'],
-          },
-          mysql: {
-            sql: 'select * from `person` where case when `first_name` = ? then true else false end',
-            parameters: ['Jennifer'],
-          },
-          sqlite: {
-            sql: 'select * from "person" where case when "first_name" = ? then true else false end',
-            parameters: ['Jennifer'],
-          },
+          testSql(query, dialect, {
+            postgres: {
+              sql: 'select * from "person" where case when "first_name" = $1 then true else false end',
+              parameters: ['Jennifer'],
+            },
+            mysql: {
+              sql: 'select * from `person` where case when `first_name` = ? then true else false end',
+              parameters: ['Jennifer'],
+            },
+            mssql: NOT_SUPPORTED,
+            sqlite: {
+              sql: 'select * from "person" where case when "first_name" = ? then true else false end',
+              parameters: ['Jennifer'],
+            },
+          })
+
+          const persons = await query.execute()
+          expect(persons).to.have.length(1)
         })
-
-        const persons = await query.execute()
-        expect(persons).to.have.length(1)
-      })
+      }
 
       it('single raw instance', async () => {
         const query = ctx.db
@@ -871,6 +976,10 @@ for (const dialect of DIALECTS) {
             sql: 'select * from `person` where first_name between ? and ? and last_name between ? and ?',
             parameters: ['Arnold', 'Jennifer', 'A', 'Z'],
           },
+          mssql: {
+            sql: 'select * from "person" where first_name between @1 and @2 and last_name between @3 and @4',
+            parameters: ['Arnold', 'Jennifer', 'A', 'Z'],
+          },
           sqlite: {
             sql: 'select * from "person" where first_name between ? and ? and last_name between ? and ?',
             parameters: ['Arnold', 'Jennifer', 'A', 'Z'],
@@ -880,7 +989,11 @@ for (const dialect of DIALECTS) {
         await query.execute()
       })
 
-      if (dialect !== 'sqlite') {
+      if (
+        dialect === 'postgres' ||
+        dialect === 'mysql' ||
+        dialect === 'mssql'
+      ) {
         it('subquery inside `any` operator', async () => {
           await ctx.db
             .insertInto('pet')
@@ -919,6 +1032,10 @@ for (const dialect of DIALECTS) {
               sql: 'select `first_name` from `person` where ? = any((select `name` from `pet` where `pet`.`owner_id` = `person`.`id`))',
               parameters: ['Cat Stevens'],
             },
+            mssql: {
+              sql: 'select "first_name" from "person" where @1 = any((select "name" from "pet" where "pet"."owner_id" = "person"."id"))',
+              parameters: ['Cat Stevens'],
+            },
             sqlite: NOT_SUPPORTED,
           })
 
@@ -943,6 +1060,10 @@ for (const dialect of DIALECTS) {
           },
           mysql: {
             sql: 'select * from `person`, `pet` where `person`.`id` = `pet`.`id`',
+            parameters: [],
+          },
+          mssql: {
+            sql: 'select * from "person", "pet" where "person"."id" = "pet"."id"',
             parameters: [],
           },
           sqlite: {

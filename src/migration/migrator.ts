@@ -3,6 +3,8 @@ import { Kysely } from '../kysely.js'
 import { KyselyPlugin } from '../plugin/kysely-plugin.js'
 import { NoopPlugin } from '../plugin/noop-plugin.js'
 import { WithSchemaPlugin } from '../plugin/with-schema/with-schema-plugin.js'
+import { CreateSchemaBuilder } from '../schema/create-schema-builder.js'
+import { CreateTableBuilder } from '../schema/create-table-builder.js'
 import { freeze, getLast } from '../util/object-utils.js'
 
 export const DEFAULT_MIGRATION_TABLE = 'kysely_migration'
@@ -265,10 +267,9 @@ export class Migrator {
 
     if (!(await this.#doesSchemaExists())) {
       try {
-        await this.#props.db.schema
-          .createSchema(this.#migrationTableSchema)
-          .ifNotExists()
-          .execute()
+        await this.#createIfNotExists(
+          this.#props.db.schema.createSchema(this.#migrationTableSchema)
+        )
       } catch (error) {
         // At least on PostgreSQL, `if not exists` doesn't guarantee the `create schema`
         // query doesn't throw if the schema already exits. That's why we check if
@@ -284,23 +285,22 @@ export class Migrator {
     if (!(await this.#doesTableExists(this.#migrationTable))) {
       try {
         if (this.#migrationTableSchema) {
-          await this.#props.db.schema
-            .createSchema(this.#migrationTableSchema)
-            .ifNotExists()
-            .execute()
+          await this.#createIfNotExists(
+            this.#props.db.schema.createSchema(this.#migrationTableSchema)
+          )
         }
 
-        await this.#props.db.schema
-          .withPlugin(this.#schemaPlugin)
-          .createTable(this.#migrationTable)
-          .ifNotExists()
-          .addColumn('name', 'varchar(255)', (col) =>
-            col.notNull().primaryKey()
-          )
-          // The migration run time as ISO string. This is not a real date type as we
-          // can't know which data type is supported by all future dialects.
-          .addColumn('timestamp', 'varchar(255)', (col) => col.notNull())
-          .execute()
+        await this.#createIfNotExists(
+          this.#props.db.schema
+            .withPlugin(this.#schemaPlugin)
+            .createTable(this.#migrationTable)
+            .addColumn('name', 'varchar(255)', (col) =>
+              col.notNull().primaryKey()
+            )
+            // The migration run time as ISO string. This is not a real date type as we
+            // can't know which data type is supported by all future dialects.
+            .addColumn('timestamp', 'varchar(255)', (col) => col.notNull())
+        )
       } catch (error) {
         // At least on PostgreSQL, `if not exists` doesn't guarantee the `create table`
         // query doesn't throw if the table already exits. That's why we check if
@@ -315,15 +315,17 @@ export class Migrator {
   async #ensureMigrationLockTableExists(): Promise<void> {
     if (!(await this.#doesTableExists(this.#migrationLockTable))) {
       try {
-        await this.#props.db.schema
-          .withPlugin(this.#schemaPlugin)
-          .createTable(this.#migrationLockTable)
-          .ifNotExists()
-          .addColumn('id', 'varchar(255)', (col) => col.notNull().primaryKey())
-          .addColumn('is_locked', 'integer', (col) =>
-            col.notNull().defaultTo(0)
-          )
-          .execute()
+        await this.#createIfNotExists(
+          this.#props.db.schema
+            .withPlugin(this.#schemaPlugin)
+            .createTable(this.#migrationLockTable)
+            .addColumn('id', 'varchar(255)', (col) =>
+              col.notNull().primaryKey()
+            )
+            .addColumn('is_locked', 'integer', (col) =>
+              col.notNull().defaultTo(0)
+            )
+        )
       } catch (error) {
         // At least on PostgreSQL, `if not exists` doesn't guarantee the `create table`
         // query doesn't throw if the table already exits. That's why we check if
@@ -592,6 +594,16 @@ export class Migrator {
     }
 
     return { results }
+  }
+
+  async #createIfNotExists(
+    qb: CreateTableBuilder<any, any> | CreateSchemaBuilder
+  ): Promise<void> {
+    if (this.#props.db.getExecutor().adapter.supportsCreateIfNotExists) {
+      qb = qb.ifNotExists()
+    }
+
+    await qb.execute()
   }
 }
 
