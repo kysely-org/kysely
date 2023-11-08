@@ -1646,7 +1646,7 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
   ): Promise<ER[]>
 }
 
-class SelectQueryBuilderImpl<DB, TB extends keyof DB, O>
+export class SelectQueryBuilderImpl<DB, TB extends keyof DB, O>
   implements SelectQueryBuilder<DB, TB, O>
 {
   readonly #props: SelectQueryBuilderProps
