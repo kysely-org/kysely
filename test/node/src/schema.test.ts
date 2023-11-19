@@ -2191,6 +2191,26 @@ for (const dialect of DIALECTS) {
           await builder.execute()
         })
 
+        if (dialect === 'postgres') {
+          it('should add a column with nulls not distinct modifier', async () => {
+            const builder = ctx.db.schema
+              .alterTable('test')
+              .addColumn('desc', 'varchar(20)', (cb) => cb.unique().nullsNotDistinct())
+  
+            testSql(builder, dialect, {
+              postgres: {
+                sql: 'alter table "test" add column "desc" varchar(20) unique nulls not distinct',
+                parameters: [],
+              },
+              mysql: NOT_SUPPORTED,
+              mssql: NOT_SUPPORTED,
+              sqlite: NOT_SUPPORTED
+            })
+  
+            await builder.execute()
+          })          
+        }
+
         if (dialect === 'postgres' || dialect === 'mysql') {
           it('should add a unique column', async () => {
             const builder = ctx.db.schema
