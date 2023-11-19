@@ -502,7 +502,7 @@ for (const dialect of DIALECTS) {
       })
 
       if (dialect === 'postgres') {
-        it('should create a table with a unique constraints and nulls not distinct option', async () => {
+        it('should create a table with a unique constraints and "nulls not distinct" option', async () => {
           const builder = ctx.db.schema
             .createTable('test')
             .addColumn('a', 'varchar(255)')
@@ -1307,7 +1307,7 @@ for (const dialect of DIALECTS) {
           await builder.execute()
         })
 
-        it('should create an index with nulls not distinct modifier', async () => {
+        it('should create an index with "nulls not distinct" modifier', async () => {
           const builder = ctx.db.schema
             .createIndex('test_first_name_index')
             .on('test')
@@ -1327,7 +1327,7 @@ for (const dialect of DIALECTS) {
           await builder.execute()
         })
 
-        it('should create an index with nulls not distinct and other modifiers', async () => {
+        it('should create an index with "nulls not distinct" and other modifiers', async () => {
           const builder = ctx.db.schema
             .createIndex('test_first_last_name_index')
             .nullsNotDistinct()
@@ -2192,7 +2192,7 @@ for (const dialect of DIALECTS) {
         })
 
         if (dialect === 'postgres') {
-          it('should add a column with nulls not distinct modifier', async () => {
+          it('should add a column with "nulls not distinct" modifier', async () => {
             const builder = ctx.db.schema
               .alterTable('test')
               .addColumn('desc', 'varchar(20)', (cb) =>
