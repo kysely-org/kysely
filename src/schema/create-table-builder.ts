@@ -19,14 +19,15 @@ import {
   parseDataTypeExpression,
 } from '../parser/data-type-parser.js'
 import { PrimaryConstraintNode } from '../operation-node/primary-constraint-node.js'
-import {
-  NullsNotDistinct,
-  UniqueConstraintNode,
-} from '../operation-node/unique-constraint-node.js'
+import { UniqueConstraintNode } from '../operation-node/unique-constraint-node.js'
 import { CheckConstraintNode } from '../operation-node/check-constraint-node.js'
 import { parseTable } from '../parser/table-parser.js'
 import { parseOnCommitAction } from '../parser/on-commit-action-parse.js'
 import { Expression } from '../expression/expression.js'
+import {
+  UniqueConstraintNodeBuilder,
+  UniqueConstraintNodeBuilderCallback,
+} from './unique-constraint-builder.js'
 
 /**
  * This builder can be used to create a `create table` query.
@@ -199,13 +200,19 @@ export class CreateTableBuilder<TB extends string, C extends string = never>
   addUniqueConstraint(
     constraintName: string,
     columns: C[],
-    nullsNotDistinct?: NullsNotDistinct
+    build: UniqueConstraintNodeBuilderCallback = noop
   ): CreateTableBuilder<TB, C> {
+    const uniqueConstraintBuilder = build(
+      new UniqueConstraintNodeBuilder(
+        UniqueConstraintNode.create(columns, constraintName)
+      )
+    )
+
     return new CreateTableBuilder({
       ...this.#props,
       node: CreateTableNode.cloneWithConstraint(
         this.#props.node,
-        UniqueConstraintNode.create(columns, constraintName, nullsNotDistinct)
+        uniqueConstraintBuilder.toOperationNode()
       ),
     })
   }

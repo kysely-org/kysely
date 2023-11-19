@@ -1,5 +1,5 @@
-import { expectError, expectAssignable, expectNotAssignable } from 'tsd'
-import { Kysely, sql } from '..'
+import { expectError } from 'tsd'
+import { Kysely } from '..'
 import { Database } from '../shared'
 
 async function testCreateTableWithAddUniqueConstraint(db: Kysely<Database>) {
@@ -7,13 +7,13 @@ async function testCreateTableWithAddUniqueConstraint(db: Kysely<Database>) {
     db.schema
       .createTable('test')
       .addColumn('a', 'varchar(255)')
-      .addUniqueConstraint(null, ['a'], 'nulls not distinct')
+      .addUniqueConstraint(null, ['a'], (uc) => uc.nullsNotDistinct())
   )
   expectError(
     db.schema
       .createTable('test')
       .addColumn('a', 'varchar(255)')
-      .addUniqueConstraint('a_unique', [1], 'nulls distinct')
+      .addUniqueConstraint('a_unique', [1], (uc) => uc.nullsNotDistinct())
   )
   expectError(
     db.schema

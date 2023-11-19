@@ -893,7 +893,7 @@ export class DefaultQueryCompiler
 
     this.append('unique')
     if (node.nullsNotDistinct) {
-      this.append(' ' + node.nullsNotDistinct)
+      this.append(' nulls not distinct')
     }
     this.append(' (')
     this.compileList(node.columns)
