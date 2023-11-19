@@ -183,7 +183,7 @@ export class CreateTableBuilder<TB extends string, C extends string = never>
    * The constraint name can be anything you want, but it must be unique
    * across the whole database.
    *
-   * nullsNotDistinct options supported only in PostgreSQL
+   * nullsNotDistinct option supported only in PostgreSQL
    *
    * ### Examples
    *
@@ -193,7 +193,7 @@ export class CreateTableBuilder<TB extends string, C extends string = never>
    *
    * For PostgreSQL:
    * ```ts
-   * addUniqueConstraint('first_name_last_name_unique', ['first_name', 'last_name'], true)
+   * addUniqueConstraint('first_name_last_name_unique', ['first_name', 'last_name'], 'nulls not distinct')
    * ```
    */
   addUniqueConstraint(
