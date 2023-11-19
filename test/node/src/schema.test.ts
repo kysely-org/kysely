@@ -2195,8 +2195,10 @@ for (const dialect of DIALECTS) {
           it('should add a column with nulls not distinct modifier', async () => {
             const builder = ctx.db.schema
               .alterTable('test')
-              .addColumn('desc', 'varchar(20)', (cb) => cb.unique().nullsNotDistinct())
-  
+              .addColumn('desc', 'varchar(20)', (cb) =>
+                cb.unique().nullsNotDistinct()
+              )
+
             testSql(builder, dialect, {
               postgres: {
                 sql: 'alter table "test" add column "desc" varchar(20) unique nulls not distinct',
@@ -2204,11 +2206,11 @@ for (const dialect of DIALECTS) {
               },
               mysql: NOT_SUPPORTED,
               mssql: NOT_SUPPORTED,
-              sqlite: NOT_SUPPORTED
+              sqlite: NOT_SUPPORTED,
             })
-  
+
             await builder.execute()
-          })          
+          })
         }
 
         if (dialect === 'postgres' || dialect === 'mysql') {
@@ -2849,6 +2851,30 @@ for (const dialect of DIALECTS) {
 
             await builder.execute()
           })
+
+          if (dialect === 'postgres') {
+            it('should add a unique constraint with "nulls not distinct" modifier', async () => {
+              const builder = ctx.db.schema
+                .alterTable('test')
+                .addUniqueConstraint(
+                  'varchar_col_constaint',
+                  ['varchar_col'],
+                  (builder) => builder.nullsNotDistinct()
+                )
+
+              testSql(builder, dialect, {
+                postgres: {
+                  sql: 'alter table "test" add constraint "varchar_col_constaint" unique nulls not distinct ("varchar_col")',
+                  parameters: [],
+                },
+                mysql: NOT_SUPPORTED,
+                mssql: NOT_SUPPORTED,
+                sqlite: NOT_SUPPORTED,
+              })
+
+              await builder.execute()
+            })
+          }
         })
       }
 
