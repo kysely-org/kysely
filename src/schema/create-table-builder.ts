@@ -19,7 +19,10 @@ import {
   parseDataTypeExpression,
 } from '../parser/data-type-parser.js'
 import { PrimaryConstraintNode } from '../operation-node/primary-constraint-node.js'
-import { UniqueConstraintNode } from '../operation-node/unique-constraint-node.js'
+import {
+  NullsNotDistinct,
+  UniqueConstraintNode,
+} from '../operation-node/unique-constraint-node.js'
 import { CheckConstraintNode } from '../operation-node/check-constraint-node.js'
 import { parseTable } from '../parser/table-parser.js'
 import { parseOnCommitAction } from '../parser/on-commit-action-parse.js'
@@ -103,7 +106,7 @@ export class CreateTableBuilder<TB extends string, C extends string = never>
    * ```
    *
    * With this method, it's once again good to remember that Kysely just builds the
-   * query and doesn't provide the same API for all databses. For example, some
+   * query and doesn't provide the same API for all databases. For example, some
    * databases like older MySQL don't support the `references` statement in the
    * column definition. Instead foreign key constraints need to be defined in the
    * `create table` query. See the next example:
@@ -180,21 +183,29 @@ export class CreateTableBuilder<TB extends string, C extends string = never>
    * The constraint name can be anything you want, but it must be unique
    * across the whole database.
    *
+   * nullsNotDistinct options supported only in PostgreSQL
+   *
    * ### Examples
    *
    * ```ts
    * addUniqueConstraint('first_name_last_name_unique', ['first_name', 'last_name'])
    * ```
+   *
+   * For PostgreSQL:
+   * ```ts
+   * addUniqueConstraint('first_name_last_name_unique', ['first_name', 'last_name'], true)
+   * ```
    */
   addUniqueConstraint(
     constraintName: string,
-    columns: C[]
+    columns: C[],
+    nullsNotDistinct?: NullsNotDistinct
   ): CreateTableBuilder<TB, C> {
     return new CreateTableBuilder({
       ...this.#props,
       node: CreateTableNode.cloneWithConstraint(
         this.#props.node,
-        UniqueConstraintNode.create(columns, constraintName)
+        UniqueConstraintNode.create(columns, constraintName, nullsNotDistinct)
       ),
     })
   }

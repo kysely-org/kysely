@@ -891,7 +891,11 @@ export class DefaultQueryCompiler
       this.append(' ')
     }
 
-    this.append('unique (')
+    this.append('unique')
+    if (node.nullsNotDistinct) {
+      this.append(' ' + node.nullsNotDistinct)
+    }
+    this.append(' (')
     this.compileList(node.columns)
     this.append(')')
   }

@@ -585,6 +585,7 @@ export class OperationNodeTransformer {
       kind: 'UniqueConstraintNode',
       columns: this.transformNodeList(node.columns),
       name: this.transformNode(node.name),
+      nullsNotDistinct: node.nullsNotDistinct,
     })
   }
 
