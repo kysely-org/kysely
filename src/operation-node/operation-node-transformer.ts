@@ -432,6 +432,7 @@ export class OperationNodeTransformer {
       generated: this.transformNode(node.generated),
       frontModifiers: this.transformNodeList(node.frontModifiers),
       endModifiers: this.transformNodeList(node.endModifiers),
+      nullsNotDistinct: node.nullsNotDistinct
     })
   }
 

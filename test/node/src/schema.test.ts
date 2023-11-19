@@ -142,6 +142,52 @@ for (const dialect of DIALECTS) {
             name: 'l',
           })
         })
+
+        it('should create a table with nulls not distinct specifier for a column', async () => {
+          const builder = ctx.db.schema
+            .createTable('test')
+            .addColumn('a', 'varchar(10)', (builder) =>
+              builder.unique().nullsNotDistinct()
+            )
+            .addColumn('b', 'varchar(20)')
+
+          testSql(builder, dialect, {
+            postgres: {
+              sql: 'create table "test" ("a" varchar(10) unique nulls not distinct, "b" varchar(20))',
+              parameters: [],
+            },
+            mysql: NOT_SUPPORTED,
+            mssql: NOT_SUPPORTED,
+            sqlite: NOT_SUPPORTED,
+          })
+
+          await builder.execute()
+        })
+
+        it('should create a table with "nulls not distinct" and other modifiers', async () => {
+          const builder = ctx.db.schema
+            .createTable('test')
+            .addColumn('a', 'integer', (builder) =>
+              builder
+                .check(sql`a < 100`)
+                .nullsNotDistinct()
+                .unique()
+                .defaultTo(10)
+            )
+            .addColumn('b', 'varchar(20)')
+
+          testSql(builder, dialect, {
+            postgres: {
+              sql: 'create table "test" ("a" integer default 10 unique nulls not distinct check (a < 100), "b" varchar(20))',
+              parameters: [],
+            },
+            mysql: NOT_SUPPORTED,
+            mssql: NOT_SUPPORTED,
+            sqlite: NOT_SUPPORTED,
+          })
+
+          await builder.execute()
+        })
       } else if (dialect === 'mysql') {
         it('should create a table with all data types', async () => {
           const builder = ctx.db.schema

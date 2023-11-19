@@ -330,6 +330,39 @@ export class ColumnDefinitionBuilder implements OperationNodeSource {
   }
 
   /**
+   * Adds `nulls not distinct` specifier.
+   * Should be used with `unique` constraint.
+   *
+   * This only works on some dialects like PostreSQL.
+   * 
+   * ### Examples
+   *
+   * ```ts
+   * db.schema.createTable('person')
+   *  .addColumn('id', 'integer', col => col.primaryKey())
+   *  .addColumn('first_name', 'varchar(30)', col => col.unique().nullsNotDistinct())
+   *  .execute()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * create table "person" (
+   *   "id" integer primary key, 
+   *   "first_name" varchar(30) unique nulls not distinct
+   * )
+   * ```
+   */
+  nullsNotDistinct(): ColumnDefinitionBuilder {
+    return new ColumnDefinitionBuilder(
+      ColumnDefinitionNode.cloneWith(
+        this.#node,
+        { nullsNotDistinct: true }
+      )
+    )
+  }
+
+  /**
    * This can be used to add any additional SQL to the end of the column definition.
    *
    * ### Examples

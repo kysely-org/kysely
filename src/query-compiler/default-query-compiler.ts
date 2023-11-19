@@ -597,6 +597,10 @@ export class DefaultQueryCompiler
       this.append(' unique')
     }
 
+    if (node.nullsNotDistinct) {
+      this.append(' nulls not distinct')
+    }
+
     if (node.primaryKey) {
       this.append(' primary key')
     }
