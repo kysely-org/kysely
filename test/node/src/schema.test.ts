@@ -460,11 +460,14 @@ for (const dialect of DIALECTS) {
           const builder = ctx.db.schema
             .createTable('test')
             .addColumn('a', 'varchar(255)')
-            .addUniqueConstraint('a_unique', ['a'], (uc) => uc.nullsNotDistinct())
+            .addColumn('b', 'varchar(255)')
+            .addUniqueConstraint('a_b_unique', ['a', 'b'], (uc) =>
+              uc.nullsNotDistinct()
+            )
 
           testSql(builder, dialect, {
             postgres: {
-              sql: 'create table "test" ("a" varchar(255), constraint "a_unique" unique nulls not distinct ("a"))',
+              sql: 'create table "test" ("a" varchar(255), "b" varchar(255), constraint "a_b_unique" unique nulls not distinct ("a", "b"))',
               parameters: [],
             },
             mysql: NOT_SUPPORTED,
