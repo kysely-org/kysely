@@ -1306,6 +1306,52 @@ for (const dialect of DIALECTS) {
 
           await builder.execute()
         })
+
+        it('should create an index with nulls not distinct modifier', async () => {
+          const builder = ctx.db.schema
+            .createIndex('test_first_name_index')
+            .on('test')
+            .nullsNotDistinct()
+            .column('first_name')
+
+          testSql(builder, dialect, {
+            postgres: {
+              sql: 'create index "test_first_name_index" on "test" ("first_name") nulls not distinct',
+              parameters: [],
+            },
+            mysql: NOT_SUPPORTED,
+            mssql: NOT_SUPPORTED,
+            sqlite: NOT_SUPPORTED,
+          })
+
+          await builder.execute()
+        })
+
+        it('should create an index with nulls not distinct and other modifiers', async () => {
+          const builder = ctx.db.schema
+            .createIndex('test_first_last_name_index')
+            .nullsNotDistinct()
+            .ifNotExists()
+            .columns(['first_name', 'last_name'])
+            .using('btree')
+            .unique()
+            .where('first_name', 'like', 'test%')
+            .on('test')
+
+          testSql(builder, dialect, {
+            postgres: {
+              sql:
+                'create unique index if not exists "test_first_last_name_index" on "test" ' +
+                'using btree ("first_name", "last_name") nulls not distinct where "first_name" like \'test%\'',
+              parameters: [],
+            },
+            mysql: NOT_SUPPORTED,
+            mssql: NOT_SUPPORTED,
+            sqlite: NOT_SUPPORTED,
+          })
+
+          await builder.execute()
+        })
       }
 
       it('should create an index for multiple columns', async () => {

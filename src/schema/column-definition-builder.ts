@@ -334,7 +334,7 @@ export class ColumnDefinitionBuilder implements OperationNodeSource {
    * Should be used with `unique` constraint.
    *
    * This only works on some dialects like PostreSQL.
-   * 
+   *
    * ### Examples
    *
    * ```ts
@@ -348,17 +348,14 @@ export class ColumnDefinitionBuilder implements OperationNodeSource {
    *
    * ```sql
    * create table "person" (
-   *   "id" integer primary key, 
+   *   "id" integer primary key,
    *   "first_name" varchar(30) unique nulls not distinct
    * )
    * ```
    */
   nullsNotDistinct(): ColumnDefinitionBuilder {
     return new ColumnDefinitionBuilder(
-      ColumnDefinitionNode.cloneWith(
-        this.#node,
-        { nullsNotDistinct: true }
-      )
+      ColumnDefinitionNode.cloneWith(this.#node, { nullsNotDistinct: true })
     )
   }
 

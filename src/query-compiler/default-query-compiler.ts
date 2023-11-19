@@ -825,6 +825,10 @@ export class DefaultQueryCompiler
       this.append(')')
     }
 
+    if (node.nullsNotDistinct) {
+      this.append(' nulls not distinct')
+    }
+
     if (node.where) {
       this.append(' ')
       this.visitNode(node.where)
