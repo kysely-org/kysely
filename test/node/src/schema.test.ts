@@ -143,7 +143,7 @@ for (const dialect of DIALECTS) {
           })
         })
 
-        it('should create a table with nulls not distinct specifier for a column', async () => {
+        it('should create a table with "nulls not distinct" modifier for a column', async () => {
           const builder = ctx.db.schema
             .createTable('test')
             .addColumn('a', 'varchar(10)', (builder) =>
