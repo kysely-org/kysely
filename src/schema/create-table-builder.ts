@@ -373,7 +373,7 @@ export class CreateTableBuilder<TB extends string, C extends string = never>
    * The generated SQL (PostgreSQL):
    *
    * ```sql
-   * create temporary table "copy" as 
+   * create temporary table "copy" as
    * select "first_name", "last_name" from "person"
    * ```
    */
