@@ -411,6 +411,7 @@ export class OperationNodeTransformer {
       onCommit: node.onCommit,
       frontModifiers: this.transformNodeList(node.frontModifiers),
       endModifiers: this.transformNodeList(node.endModifiers),
+      selectQuery: node.selectQuery
     })
   }
 

@@ -138,6 +138,7 @@ export class DefaultQueryCompiler
       this.parentNode !== undefined &&
       !ParensNode.is(this.parentNode) &&
       !InsertQueryNode.is(this.parentNode) &&
+      !CreateTableNode.is(this.parentNode) &&
       !CreateViewNode.is(this.parentNode) &&
       !SetOperationNode.is(this.parentNode)
 
@@ -549,18 +550,25 @@ export class DefaultQueryCompiler
     }
 
     this.visitNode(node.table)
-    this.append(' (')
-    this.compileList([...node.columns, ...(node.constraints ?? [])])
-    this.append(')')
-
-    if (node.onCommit) {
-      this.append(' on commit ')
-      this.append(node.onCommit)
+    
+    if (node.selectQuery) {
+      this.append(' as ')
+      this.visitNode(node.selectQuery)
     }
-
-    if (node.endModifiers && node.endModifiers.length > 0) {
-      this.append(' ')
-      this.compileList(node.endModifiers, ' ')
+    else {
+      this.append(' (')
+      this.compileList([...node.columns, ...(node.constraints ?? [])])
+      this.append(')')
+  
+      if (node.onCommit) {
+        this.append(' on commit ')
+        this.append(node.onCommit)
+      }
+  
+      if (node.endModifiers && node.endModifiers.length > 0) {
+        this.append(' ')
+        this.compileList(node.endModifiers, ' ')
+      }
     }
   }
 
