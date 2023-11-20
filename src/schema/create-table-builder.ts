@@ -24,6 +24,7 @@ import { CheckConstraintNode } from '../operation-node/check-constraint-node.js'
 import { parseTable } from '../parser/table-parser.js'
 import { parseOnCommitAction } from '../parser/on-commit-action-parse.js'
 import { Expression } from '../expression/expression.js'
+import { parseExpression } from '../parser/expression-parser.js'
 
 /**
  * This builder can be used to create a `create table` query.
@@ -354,6 +355,34 @@ export class CreateTableBuilder<TB extends string, C extends string = never>
         this.#props.node,
         modifier.toOperationNode()
       ),
+    })
+  }
+
+  /**
+   * Allows to create table from `select` query.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * db.schema.createTable('copy')
+   *   .temporary()
+   *   .as(db.selectFrom('person').select(['first_name', 'last_name']))
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * create temporary table "copy" as
+   * select "first_name", "last_name" from "person"
+   * ```
+   */
+  as(expression: Expression<unknown>) {
+    return new CreateTableBuilder({
+      ...this.#props,
+      node: CreateTableNode.cloneWith(this.#props.node, {
+        selectQuery: parseExpression(expression),
+      }),
     })
   }
 
