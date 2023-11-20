@@ -757,6 +757,113 @@ for (const dialect of DIALECTS) {
 
           await builder.execute()
         })
+
+        it('should create a table with as expression', async () => {
+          const builder = ctx.db.schema
+            .createTable('test')
+            .as(ctx.db.selectFrom('person').select(['first_name', 'last_name']))
+
+          testSql(builder, dialect, {
+            postgres: {
+              sql: 'create table "test" as select "first_name", "last_name" from "person"',
+              parameters: [],
+            },
+            mysql: {
+              sql: 'create table `test` as select `first_name`, `last_name` from `person`',
+              parameters: [],
+            },
+            mssql: NOT_SUPPORTED,
+            sqlite: {
+              sql: 'create table "test" as select "first_name", "last_name" from "person"',
+              parameters: [],
+            },
+          })
+
+          await builder.execute()
+        })
+
+        it('should create a temporary table if not exists with as expression', async () => {
+          const builder = ctx.db.schema
+            .createTable('test')
+            .temporary()
+            .ifNotExists()
+            .as(
+              ctx.db
+                .selectFrom('person')
+                .select(['first_name', 'last_name'])
+                .where('first_name', '=', 'Jennifer')
+            )
+
+          testSql(builder, dialect, {
+            postgres: {
+              sql: 'create temporary table if not exists "test" as select "first_name", "last_name" from "person" where "first_name" = $1',
+              parameters: ['Jennifer'],
+            },
+            mysql: {
+              sql: 'create temporary table if not exists `test` as select `first_name`, `last_name` from `person` where `first_name` = ?',
+              parameters: ['Jennifer'],
+            },
+            mssql: NOT_SUPPORTED,
+            sqlite: {
+              sql: 'create temporary table if not exists "test" as select "first_name", "last_name" from "person" where "first_name" = ?',
+              parameters: ['Jennifer'],
+            },
+          })
+
+          await builder.execute()
+        })
+
+        it('should create a table with as expression and raw sql', async () => {
+          let rawSql = sql`select "first_name", "last_name" from "person"`
+          if (dialect === 'mysql') {
+            rawSql = sql`select \`first_name\`, \`last_name\` from \`person\``
+          }
+
+          const builder = ctx.db.schema.createTable('test').as(rawSql)
+
+          testSql(builder, dialect, {
+            postgres: {
+              sql: 'create table "test" as select "first_name", "last_name" from "person"',
+              parameters: [],
+            },
+            mysql: {
+              sql: 'create table `test` as select `first_name`, `last_name` from `person`',
+              parameters: [],
+            },
+            mssql: NOT_SUPPORTED,
+            sqlite: {
+              sql: 'create table "test" as select "first_name", "last_name" from "person"',
+              parameters: [],
+            },
+          })
+
+          await builder.execute()
+        })
+
+        it('should create a table with as expression and ignore addColumn', async () => {
+          const builder = ctx.db.schema
+            .createTable('test')
+            .as(ctx.db.selectFrom('person').select(['first_name', 'last_name']))
+            .addColumn('first_name', 'varchar(20)')
+
+          testSql(builder, dialect, {
+            postgres: {
+              sql: 'create table "test" as select "first_name", "last_name" from "person"',
+              parameters: [],
+            },
+            mysql: {
+              sql: 'create table `test` as select `first_name`, `last_name` from `person`',
+              parameters: [],
+            },
+            mssql: NOT_SUPPORTED,
+            sqlite: {
+              sql: 'create table "test" as select "first_name", "last_name" from "person"',
+              parameters: [],
+            },
+          })
+
+          await builder.execute()
+        })
       }
 
       if (dialect === 'mssql') {

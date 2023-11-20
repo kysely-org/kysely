@@ -22,3 +22,8 @@ async function testCreateTableWithAddUniqueConstraint(db: Kysely<Database>) {
       .addUniqueConstraint('a_unique', ['a'], 'wrong option')
   )
 }
+  
+async function testCreateTableWithAsStatement(db: Kysely<Database>) {
+  expectError(db.schema.createTable('test').as())
+  expectError(db.schema.createTable('test').as('test'))
+}
