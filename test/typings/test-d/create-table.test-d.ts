@@ -2,7 +2,46 @@ import { expectError } from 'tsd'
 import { Kysely } from '..'
 import { Database } from '../shared'
 
+async function testCreateTableWithSeveralColumns(db: Kysely<Database>) {
+  expectError(
+    db.schema
+      .createTable(1)
+      .addColumn('a', 'varchar(255)')
+      .addColumn('b', 'varchar(255)')
+  )
+  expectError(
+    db.schema
+      .createTable('test')
+      .addColumn(null, 'varchar(255)')
+      .addColumn('b', 'varchar(255)')
+  )
+  expectError(
+    db.schema
+      .createTable('test')
+      .addColumn('a', 'varchar(255)')
+      .addColumn('b', 'test_type')
+  )
+}
+
 async function testCreateTableWithAddUniqueConstraint(db: Kysely<Database>) {
+  expectError(
+    db.schema
+      .createTable('test')
+      .addColumn('a', 'varchar(255)')
+      .addUniqueConstraint(1, ['a'])
+  )
+  expectError(
+    db.schema
+      .createTable('test')
+      .addColumn('a', 'varchar(255)')
+      .addUniqueConstraint('a_unique', 'test')
+  )
+  expectError(
+    db.schema
+      .createTable('test')
+      .addColumn('a', 'varchar(255)')
+      .addUniqueConstraint('a_unique', [1])
+  )
   expectError(
     db.schema
       .createTable('test')

@@ -333,7 +333,7 @@ export class ColumnDefinitionBuilder implements OperationNodeSource {
    * Adds `nulls not distinct` specifier.
    * Should be used with `unique` constraint.
    *
-   * This only works on some dialects like PostreSQL.
+   * This only works on some dialects like PostgreSQL.
    *
    * ### Examples
    *

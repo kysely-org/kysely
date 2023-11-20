@@ -63,7 +63,7 @@ export class CreateIndexBuilder<C = never>
 
   /**
    * Adds `nulls not distinct` specifier to index.
-   * This only works on some dialects like PostreSQL.
+   * This only works on some dialects like PostgreSQL.
    *
    * ### Examples
    *
@@ -76,6 +76,7 @@ export class CreateIndexBuilder<C = never>
    * ```
    *
    * The generated SQL (PostgreSQL):
+   * 
    * ```sql
    * create index "person_first_name_index"
    * on "test" ("first_name")

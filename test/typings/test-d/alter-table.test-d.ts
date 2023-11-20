@@ -6,6 +6,16 @@ async function testAlterTableWithAddUniqueConstraint(db: Kysely<Database>) {
   expectError(
     db.schema
       .alterTable('test')
+      .addUniqueConstraint('a_unique', null)
+  )
+  expectError(
+    db.schema
+      .alterTable('test')
+      .addUniqueConstraint('a_unique', [1])
+  )
+  expectError(
+    db.schema
+      .alterTable('test')
       .addUniqueConstraint(null, ['a'], (uc) => uc.nullsNotDistinct())
   )
   expectError(
