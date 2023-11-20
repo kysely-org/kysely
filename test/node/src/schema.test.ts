@@ -164,7 +164,7 @@ for (const dialect of DIALECTS) {
           await builder.execute()
         })
 
-        it('should create a table with unique "nulls not distinct" and other modifiers', async () => {
+        it('should create a table with "unique nulls not distinct" and other modifiers', async () => {
           const builder = ctx.db.schema
             .createTable('test')
             .addColumn('a', 'integer', (builder) =>
