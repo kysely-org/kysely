@@ -1,6 +1,6 @@
-import { OperationNodeSource } from '../operation-node/operation-node-source'
-import { UniqueConstraintNode } from '../operation-node/unique-constraint-node'
-import { preventAwait } from '../util/prevent-await'
+import { OperationNodeSource } from '../operation-node/operation-node-source.js'
+import { UniqueConstraintNode } from '../operation-node/unique-constraint-node.js'
+import { preventAwait } from '../util/prevent-await.js'
 
 export class UniqueConstraintNodeBuilder implements OperationNodeSource {
   readonly #node: UniqueConstraintNode
