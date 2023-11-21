@@ -91,6 +91,7 @@ import { JSONOperatorChainNode } from './json-operator-chain-node.js'
 import { TupleNode } from './tuple-node.js'
 import { MergeQueryNode } from './merge-query-node.js'
 import { MatchedNode } from './matched-node.js'
+import { AddIndexNode } from './add-index-node.js'
 
 export abstract class OperationNodeVisitor {
   protected readonly nodeStack: OperationNode[] = []
@@ -189,6 +190,7 @@ export abstract class OperationNodeVisitor {
     TupleNode: this.visitTuple.bind(this),
     MergeQueryNode: this.visitMergeQuery.bind(this),
     MatchedNode: this.visitMatched.bind(this),
+    AddIndexNode: this.visitAddIndex.bind(this),
   })
 
   protected readonly visitNode = (node: OperationNode): void => {
@@ -295,4 +297,5 @@ export abstract class OperationNodeVisitor {
   protected abstract visitTuple(node: TupleNode): void
   protected abstract visitMergeQuery(node: MergeQueryNode): void
   protected abstract visitMatched(node: MatchedNode): void
+  protected abstract visitAddIndex(node: AddIndexNode): void
 }

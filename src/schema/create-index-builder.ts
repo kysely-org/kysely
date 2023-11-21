@@ -62,6 +62,37 @@ export class CreateIndexBuilder<C = never>
   }
 
   /**
+   * Adds `nulls not distinct` specifier to index.
+   * This only works on some dialects like PostgreSQL.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * db.schema.createIndex('person_first_name_index')
+   *  .on('person')
+   *  .column('first_name')
+   *  .nullsNotDistinct()
+   *  .execute()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * create index "person_first_name_index"
+   * on "test" ("first_name")
+   * nulls not distinct;
+   * ```
+   */
+  nullsNotDistinct(): CreateIndexBuilder<C> {
+    return new CreateIndexBuilder({
+      ...this.#props,
+      node: CreateIndexNode.cloneWith(this.#props.node, {
+        nullsNotDistinct: true,
+      }),
+    })
+  }
+
+  /**
    * Specifies the table for the index.
    */
   on(table: string): CreateIndexBuilder<C> {

@@ -89,6 +89,7 @@ import { JSONOperatorChainNode } from './json-operator-chain-node.js'
 import { TupleNode } from './tuple-node.js'
 import { MergeQueryNode } from './merge-query-node.js'
 import { MatchedNode } from './matched-node.js'
+import { AddIndexNode } from './add-index-node.js'
 
 /**
  * Transforms an operation node tree into another one.
@@ -212,6 +213,7 @@ export class OperationNodeTransformer {
     TupleNode: this.transformTuple.bind(this),
     MergeQueryNode: this.transformMergeQuery.bind(this),
     MatchedNode: this.transformMatched.bind(this),
+    AddIndexNode: this.transformAddIndex.bind(this),
   })
 
   transformNode<T extends OperationNode | undefined>(node: T): T {
@@ -415,6 +417,7 @@ export class OperationNodeTransformer {
       onCommit: node.onCommit,
       frontModifiers: this.transformNodeList(node.frontModifiers),
       endModifiers: this.transformNodeList(node.endModifiers),
+      selectQuery: this.transformNode(node.selectQuery),
     })
   }
 
@@ -436,6 +439,7 @@ export class OperationNodeTransformer {
       generated: this.transformNode(node.generated),
       frontModifiers: this.transformNodeList(node.frontModifiers),
       endModifiers: this.transformNodeList(node.endModifiers),
+      nullsNotDistinct: node.nullsNotDistinct,
     })
   }
 
@@ -552,6 +556,7 @@ export class OperationNodeTransformer {
       using: this.transformNode(node.using),
       ifNotExists: node.ifNotExists,
       where: this.transformNode(node.where),
+      nullsNotDistinct: node.nullsNotDistinct,
     })
   }
 
@@ -589,6 +594,7 @@ export class OperationNodeTransformer {
       kind: 'UniqueConstraintNode',
       columns: this.transformNodeList(node.columns),
       name: this.transformNode(node.name),
+      nullsNotDistinct: node.nullsNotDistinct,
     })
   }
 
@@ -696,6 +702,8 @@ export class OperationNodeTransformer {
       columnAlterations: this.transformNodeList(node.columnAlterations),
       addConstraint: this.transformNode(node.addConstraint),
       dropConstraint: this.transformNode(node.dropConstraint),
+      addIndex: this.transformNode(node.addIndex),
+      dropIndex: this.transformNode(node.dropIndex),
     })
   }
 
@@ -991,6 +999,17 @@ export class OperationNodeTransformer {
       kind: 'MatchedNode',
       not: node.not,
       bySource: node.bySource,
+    })
+  }
+
+  protected transformAddIndex(node: AddIndexNode): AddIndexNode {
+    return requireAllProps<AddIndexNode>({
+      kind: 'AddIndexNode',
+      name: this.transformNode(node.name),
+      columns: this.transformNodeList(node.columns),
+      unique: node.unique,
+      using: this.transformNode(node.using),
+      ifNotExists: node.ifNotExists,
     })
   }
 

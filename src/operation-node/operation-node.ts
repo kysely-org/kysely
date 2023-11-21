@@ -87,6 +87,7 @@ export type OperationNodeKind =
   | 'TupleNode'
   | 'MergeQueryNode'
   | 'MatchedNode'
+  | 'AddIndexNode'
 
 export interface OperationNode {
   readonly kind: OperationNodeKind
