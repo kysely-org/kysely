@@ -22,6 +22,7 @@ export interface CreateIndexNode extends OperationNode {
   readonly using?: RawNode
   readonly ifNotExists?: boolean
   readonly where?: WhereNode
+  readonly nullsNotDistinct?: boolean
 }
 
 /**
