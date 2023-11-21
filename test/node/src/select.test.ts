@@ -879,8 +879,37 @@ for (const dialect of DIALECTS) {
       })
     }
 
-    if (dialect === 'postgres' || dialect === 'mysql' || dialect === 'mssql') {
-      it('should stream results', async () => {
+    it('should stream results', async () => {
+      const males: unknown[] = []
+
+      const stream = ctx.db
+        .selectFrom('person')
+        .select(['first_name', 'last_name', 'gender'])
+        .where('gender', '=', 'male')
+        .orderBy('first_name')
+        .stream()
+
+      for await (const male of stream) {
+        males.push(male)
+      }
+
+      expect(males).to.have.length(2)
+      expect(males).to.eql([
+        {
+          first_name: 'Arnold',
+          last_name: 'Schwarzenegger',
+          gender: 'male',
+        },
+        {
+          first_name: 'Sylvester',
+          last_name: 'Stallone',
+          gender: 'male',
+        },
+      ])
+    })
+
+    if (dialect === 'postgres' || dialect === 'mssql') {
+      it('should stream results with a specific chunk size', async () => {
         const males: unknown[] = []
 
         const stream = ctx.db
@@ -888,7 +917,7 @@ for (const dialect of DIALECTS) {
           .select(['first_name', 'last_name', 'gender'])
           .where('gender', '=', 'male')
           .orderBy('first_name')
-          .stream()
+          .stream(1)
 
         for await (const male of stream) {
           males.push(male)
@@ -908,82 +937,51 @@ for (const dialect of DIALECTS) {
           },
         ])
       })
+    }
 
-      if (dialect === 'postgres' || dialect === 'mssql') {
-        it('should stream results with a specific chunk size', async () => {
-          const males: unknown[] = []
+    it('should release connection on premature async iterator stop', async () => {
+      for (let i = 0; i <= POOL_SIZE + 1; i++) {
+        const stream = ctx.db.selectFrom('person').selectAll().stream()
 
-          const stream = ctx.db
-            .selectFrom('person')
-            .select(['first_name', 'last_name', 'gender'])
-            .where('gender', '=', 'male')
-            .orderBy('first_name')
-            .stream(1)
-
-          for await (const male of stream) {
-            males.push(male)
-          }
-
-          expect(males).to.have.length(2)
-          expect(males).to.eql([
-            {
-              first_name: 'Arnold',
-              last_name: 'Schwarzenegger',
-              gender: 'male',
-            },
-            {
-              first_name: 'Sylvester',
-              last_name: 'Stallone',
-              gender: 'male',
-            },
-          ])
-        })
-      }
-
-      it('should release connection on premature async iterator stop', async () => {
-        for (let i = 0; i <= POOL_SIZE + 1; i++) {
-          const stream = ctx.db.selectFrom('person').selectAll().stream()
-
-          for await (const _ of stream) {
-            break
-          }
+        for await (const _ of stream) {
+          break
         }
-      })
-
-      it('should release connection on premature async iterator stop when using a specific chunk size', async () => {
-        for (let i = 0; i <= POOL_SIZE + 1; i++) {
-          const stream = ctx.db.selectFrom('person').selectAll().stream(1)
-
-          for await (const _ of stream) {
-            break
-          }
-        }
-      })
-
-      if (dialect === 'postgres') {
-        it('should throw an error if the cursor implementation is not provided for the postgres dialect', async () => {
-          const db = new Kysely<Database>({
-            dialect: new PostgresDialect({
-              pool: async () => new Pool(DIALECT_CONFIGS.postgres),
-            }),
-            plugins: PLUGINS,
-          })
-
-          await expect(
-            (async () => {
-              for await (const _ of db
-                .selectFrom('person')
-                .selectAll()
-                .stream()) {
-              }
-            })()
-          ).to.be.rejectedWith(
-            "'cursor' is not present in your postgres dialect config. It's required to make streaming work in postgres."
-          )
-
-          await db.destroy()
-        })
       }
+    })
+
+    it('should release connection on premature async iterator stop when using a specific chunk size', async () => {
+      for (let i = 0; i <= POOL_SIZE + 1; i++) {
+        const stream = ctx.db.selectFrom('person').selectAll().stream(1)
+
+        for await (const _ of stream) {
+          break
+        }
+      }
+    })
+
+    if (dialect === 'postgres') {
+      it('should throw an error if the cursor implementation is not provided for the postgres dialect', async () => {
+        const db = new Kysely<Database>({
+          dialect: new PostgresDialect({
+            pool: async () => new Pool(DIALECT_CONFIGS.postgres),
+          }),
+          plugins: PLUGINS,
+        })
+
+        await expect(
+          (async () => {
+            for await (const _ of db
+              .selectFrom('person')
+              .selectAll()
+              .stream()) {
+            }
+          })()
+        ).to.be.rejectedWith(
+          "'cursor' is not present in your postgres dialect config. It's required to make streaming work in postgres."
+        )
+
+        await db.destroy()
+      })
     }
 
     if (dialect !== 'mssql') {
