@@ -40,6 +40,10 @@ import { PrimaryConstraintNode } from '../operation-node/primary-constraint-node
 import { DropIndexNode } from '../operation-node/drop-index-node.js'
 import { AddIndexNode } from '../operation-node/add-index-node.js'
 import { AlterTableAddIndexBuilder } from './alter-table-add-index-builder.js'
+import {
+  UniqueConstraintNodeBuilder,
+  UniqueConstraintNodeBuilderCallback,
+} from './unique-constraint-builder.js'
 
 /**
  * This builder can be used to create a `alter table` query.
@@ -158,13 +162,20 @@ export class AlterTableBuilder implements ColumnAlteringInterface {
    */
   addUniqueConstraint(
     constraintName: string,
-    columns: string[]
+    columns: string[],
+    build: UniqueConstraintNodeBuilderCallback = noop
   ): AlterTableExecutor {
+    const uniqueConstraintBuilder = build(
+      new UniqueConstraintNodeBuilder(
+        UniqueConstraintNode.create(columns, constraintName)
+      )
+    )
+
     return new AlterTableExecutor({
       ...this.#props,
       node: AlterTableNode.cloneWithTableProps(this.#props.node, {
         addConstraint: AddConstraintNode.create(
-          UniqueConstraintNode.create(columns, constraintName)
+          uniqueConstraintBuilder.toOperationNode()
         ),
       }),
     })
