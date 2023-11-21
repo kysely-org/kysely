@@ -104,6 +104,7 @@ import { JSONPathNode } from '../operation-node/json-path-node.js'
 import { JSONPathLegNode } from '../operation-node/json-path-leg-node.js'
 import { JSONOperatorChainNode } from '../operation-node/json-operator-chain-node.js'
 import { TupleNode } from '../operation-node/tuple-node.js'
+import { AddIndexNode } from '../operation-node/add-index-node.js'
 
 export class DefaultQueryCompiler
   extends OperationNodeVisitor
@@ -138,6 +139,7 @@ export class DefaultQueryCompiler
       this.parentNode !== undefined &&
       !ParensNode.is(this.parentNode) &&
       !InsertQueryNode.is(this.parentNode) &&
+      !CreateTableNode.is(this.parentNode) &&
       !CreateViewNode.is(this.parentNode) &&
       !SetOperationNode.is(this.parentNode)
 
@@ -549,18 +551,24 @@ export class DefaultQueryCompiler
     }
 
     this.visitNode(node.table)
-    this.append(' (')
-    this.compileList([...node.columns, ...(node.constraints ?? [])])
-    this.append(')')
 
-    if (node.onCommit) {
-      this.append(' on commit ')
-      this.append(node.onCommit)
-    }
+    if (node.selectQuery) {
+      this.append(' as ')
+      this.visitNode(node.selectQuery)
+    } else {
+      this.append(' (')
+      this.compileList([...node.columns, ...(node.constraints ?? [])])
+      this.append(')')
 
-    if (node.endModifiers && node.endModifiers.length > 0) {
-      this.append(' ')
-      this.compileList(node.endModifiers, ' ')
+      if (node.onCommit) {
+        this.append(' on commit ')
+        this.append(node.onCommit)
+      }
+
+      if (node.endModifiers && node.endModifiers.length > 0) {
+        this.append(' ')
+        this.compileList(node.endModifiers, ' ')
+      }
     }
   }
 
@@ -595,6 +603,10 @@ export class DefaultQueryCompiler
 
     if (node.unique) {
       this.append(' unique')
+    }
+
+    if (node.nullsNotDistinct) {
+      this.append(' nulls not distinct')
     }
 
     if (node.primaryKey) {
@@ -821,6 +833,10 @@ export class DefaultQueryCompiler
       this.append(')')
     }
 
+    if (node.nullsNotDistinct) {
+      this.append(' nulls not distinct')
+    }
+
     if (node.where) {
       this.append(' ')
       this.visitNode(node.where)
@@ -891,7 +907,13 @@ export class DefaultQueryCompiler
       this.append(' ')
     }
 
-    this.append('unique (')
+    this.append('unique')
+
+    if (node.nullsNotDistinct) {
+      this.append(' nulls not distinct')
+    }
+
+    this.append(' (')
     this.compileList(node.columns)
     this.append(')')
   }
@@ -1001,6 +1023,14 @@ export class DefaultQueryCompiler
 
     if (node.columnAlterations) {
       this.compileColumnAlterations(node.columnAlterations)
+    }
+
+    if (node.addIndex) {
+      this.visitNode(node.addIndex)
+    }
+
+    if (node.dropIndex) {
+      this.visitNode(node.dropIndex)
     }
   }
 
@@ -1400,6 +1430,29 @@ export class DefaultQueryCompiler
       }
 
       this.visitNode(node.values[i])
+    }
+  }
+
+  protected override visitAddIndex(node: AddIndexNode): void {
+    this.append('add ')
+
+    if (node.unique) {
+      this.append('unique ')
+    }
+
+    this.append('index ')
+
+    this.visitNode(node.name)
+
+    if (node.columns) {
+      this.append(' (')
+      this.compileList(node.columns)
+      this.append(')')
+    }
+
+    if (node.using) {
+      this.append(' using ')
+      this.visitNode(node.using)
     }
   }
 
