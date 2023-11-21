@@ -37,6 +37,9 @@ import { AlterTableExecutor } from './alter-table-executor.js'
 import { AlterTableAddForeignKeyConstraintBuilder } from './alter-table-add-foreign-key-constraint-builder.js'
 import { AlterTableDropConstraintBuilder } from './alter-table-drop-constraint-builder.js'
 import { PrimaryConstraintNode } from '../operation-node/primary-constraint-node.js'
+import { DropIndexNode } from '../operation-node/drop-index-node.js'
+import { AddIndexNode } from '../operation-node/add-index-node.js'
+import { AlterTableAddIndexBuilder } from './alter-table-add-index-builder.js'
 import {
   UniqueConstraintNodeBuilder,
   UniqueConstraintNodeBuilderCallback,
@@ -246,6 +249,60 @@ export class AlterTableBuilder implements ColumnAlteringInterface {
       ...this.#props,
       node: AlterTableNode.cloneWithTableProps(this.#props.node, {
         dropConstraint: DropConstraintNode.create(constraintName),
+      }),
+    })
+  }
+
+  /**
+   * This can be used to add index to table.
+   *
+   *  ### Examples
+   *
+   * ```ts
+   * db.schema.alterTable('person')
+   *   .addIndex('person_email_index')
+   *   .column('email')
+   *   .unique()
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (MySQL):
+   *
+   * ```sql
+   * alter table `person` add unique index `person_email_index` (`email`)
+   * ```
+   */
+  addIndex(indexName: string): AlterTableAddIndexBuilder {
+    return new AlterTableAddIndexBuilder({
+      ...this.#props,
+      node: AlterTableNode.cloneWithTableProps(this.#props.node, {
+        addIndex: AddIndexNode.create(indexName),
+      }),
+    })
+  }
+
+  /**
+   * This can be used to drop index from table.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * db.schema.alterTable('person')
+   *   .dropIndex('person_email_index')
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (MySQL):
+   *
+   * ```sql
+   * alter table `person` drop index `test_first_name_index`
+   * ```
+   */
+  dropIndex(indexName: string): AlterTableExecutor {
+    return new AlterTableExecutor({
+      ...this.#props,
+      node: AlterTableNode.cloneWithTableProps(this.#props.node, {
+        dropIndex: DropIndexNode.create(indexName),
       }),
     })
   }

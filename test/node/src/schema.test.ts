@@ -3305,6 +3305,156 @@ for (const dialect of DIALECTS) {
 
         await builder.execute()
       })
+
+      if (dialect === 'mysql') {
+        describe('add index', () => {
+          it('should add an index', async () => {
+            const query = ctx.db.schema
+              .alterTable('test')
+              .addIndex('test_integer_col_index')
+              .column('integer_col')
+
+            testSql(query, dialect, {
+              mysql: {
+                sql: 'alter table `test` add index `test_integer_col_index` (`integer_col`)',
+                parameters: [],
+              },
+              postgres: NOT_SUPPORTED,
+              mssql: NOT_SUPPORTED,
+              sqlite: NOT_SUPPORTED
+            })
+
+            await query.execute()
+          })
+
+          it('should add a unique index', async () => {
+            const query = ctx.db.schema
+              .alterTable('test')
+              .addIndex('test_integer_col_index')
+              .unique()
+              .column('integer_col')
+
+            testSql(query, dialect, {
+              mysql: {
+                sql: 'alter table `test` add unique index `test_integer_col_index` (`integer_col`)',
+                parameters: [],
+              },
+              postgres: NOT_SUPPORTED,
+              mssql: NOT_SUPPORTED,
+              sqlite: NOT_SUPPORTED,
+            })
+
+            await query.execute()
+          })
+
+          it('should add an index for multiple columns', async () => {
+            const query = ctx.db.schema
+              .alterTable('test')
+              .addIndex('test_integer_varchar_col_index')
+              .unique()
+              .columns(['integer_col', 'varchar_col'])
+
+            testSql(query, dialect, {
+              mysql: {
+                sql: 'alter table `test` add unique index `test_integer_varchar_col_index` (`integer_col`, `varchar_col`)',
+                parameters: [],
+              },
+              postgres: NOT_SUPPORTED,
+              mssql: NOT_SUPPORTED,
+              sqlite: NOT_SUPPORTED,
+            })
+
+            await query.execute()
+          })
+
+          it('should add an index for an expression', async () => {
+            const query = ctx.db.schema
+              .alterTable('test')
+              .addIndex('test_varchar_col_index')
+              .expression(sql`(varchar_col < 'Sami')`)
+
+            testSql(query, dialect, {
+              mysql: {
+                sql: "alter table `test` add index `test_varchar_col_index` ((varchar_col < 'Sami'))",
+                parameters: [],
+              },
+              postgres: NOT_SUPPORTED,
+              mssql: NOT_SUPPORTED,
+              sqlite: NOT_SUPPORTED,
+            })
+
+            await query.execute()
+          })
+
+          it('should add a sorted index, single column', async () => {
+            const query = ctx.db.schema
+              .alterTable('test')
+              .addIndex('test_integer_col_index')
+              .column('integer_col desc')
+
+            testSql(query, dialect, {
+              mysql: {
+                sql: 'alter table `test` add index `test_integer_col_index` (`integer_col` desc)',
+                parameters: [],
+              },
+              postgres: NOT_SUPPORTED,
+              mssql: NOT_SUPPORTED,
+              sqlite: NOT_SUPPORTED,
+            })
+
+            await query.execute()
+          })
+
+          it('should add a sorted index, multi-column', async () => {
+            const query = ctx.db.schema
+              .alterTable('test')
+              .addIndex('test_integer_varchar_col_index')
+              .columns(['integer_col desc', 'varchar_col desc'])
+
+            testSql(query, dialect, {
+              mysql: {
+                sql: 'alter table `test` add index `test_integer_varchar_col_index` (`integer_col` desc, `varchar_col` desc)',
+                parameters: [],
+              },
+              postgres: NOT_SUPPORTED,
+              mssql: NOT_SUPPORTED,
+              sqlite: NOT_SUPPORTED,
+            })
+
+            await query.execute()
+          })
+        })
+      }
+      
+      if (dialect === 'mysql') {
+        describe('drop index', () => {
+          beforeEach(async () => {
+            await ctx.db.schema
+              .alterTable('test')
+              .addIndex('test_integer_col_index')
+              .column('integer_col')
+              .execute()
+          })
+
+          it('should drop an index', async () => {
+            const query = ctx.db.schema
+              .alterTable('test')
+              .dropIndex('test_integer_col_index')
+
+            testSql(query, dialect, {
+              mysql: {
+                sql: 'alter table `test` drop index `test_integer_col_index`',
+                parameters: [],
+              },
+              postgres: NOT_SUPPORTED,
+              mssql: NOT_SUPPORTED,
+              sqlite: NOT_SUPPORTED,
+            })
+
+            await query.execute()
+          })
+        })
+      }
     })
 
     async function dropTestTables(): Promise<void> {
