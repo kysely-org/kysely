@@ -41,4 +41,5 @@ export interface SqliteStatement {
     changes: number | bigint
     lastInsertRowid: number | bigint
   }
+  iterate(parameters: ReadonlyArray<unknown>): IterableIterator<unknown>
 }
