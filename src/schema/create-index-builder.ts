@@ -76,7 +76,7 @@ export class CreateIndexBuilder<C = never>
    * ```
    *
    * The generated SQL (PostgreSQL):
-   * 
+   *
    * ```sql
    * create index "person_first_name_index"
    * on "test" ("first_name")

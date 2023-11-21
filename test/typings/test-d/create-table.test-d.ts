@@ -1,8 +1,14 @@
-import { expectError } from 'tsd'
-import { Kysely } from '..'
+import { expectError, expectType } from 'tsd'
+import { CreateTableBuilder, Kysely } from '..'
 import { Database } from '../shared'
 
 async function testCreateTableWithSeveralColumns(db: Kysely<Database>) {
+  expectType<CreateTableBuilder<'person'>>(db.schema.createTable('person'))
+
+  expectType<CreateTableBuilder<'person', 'a'>>(
+    db.schema.createTable('person').addColumn('a', 'varchar(255)')
+  )
+
   expectError(
     db.schema
       .createTable(1)
@@ -24,6 +30,20 @@ async function testCreateTableWithSeveralColumns(db: Kysely<Database>) {
 }
 
 async function testCreateTableWithAddUniqueConstraint(db: Kysely<Database>) {
+  expectType<CreateTableBuilder<'person', 'a'>>(
+    db.schema
+      .createTable('person')
+      .addColumn('a', 'varchar(255)')
+      .addUniqueConstraint('a_unique', ['a'])
+  )
+
+  expectType<CreateTableBuilder<'person', 'a'>>(
+    db.schema
+      .createTable('person')
+      .addColumn('a', 'varchar(255)')
+      .addUniqueConstraint('a_unique', ['a'], (uc) => uc.nullsNotDistinct())
+  )
+
   expectError(
     db.schema
       .createTable('test')
@@ -61,7 +81,7 @@ async function testCreateTableWithAddUniqueConstraint(db: Kysely<Database>) {
       .addUniqueConstraint('a_unique', ['a'], 'wrong option')
   )
 }
-  
+
 async function testCreateTableWithAsStatement(db: Kysely<Database>) {
   expectError(db.schema.createTable('test').as())
   expectError(db.schema.createTable('test').as('test'))
