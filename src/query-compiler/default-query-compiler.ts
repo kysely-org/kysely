@@ -604,6 +604,10 @@ export class DefaultQueryCompiler
       this.append(' unique')
     }
 
+    if (node.nullsNotDistinct) {
+      this.append(' nulls not distinct')
+    }
+
     if (node.primaryKey) {
       this.append(' primary key')
     }
@@ -828,6 +832,10 @@ export class DefaultQueryCompiler
       this.append(')')
     }
 
+    if (node.nullsNotDistinct) {
+      this.append(' nulls not distinct')
+    }
+
     if (node.where) {
       this.append(' ')
       this.visitNode(node.where)
@@ -898,7 +906,13 @@ export class DefaultQueryCompiler
       this.append(' ')
     }
 
-    this.append('unique (')
+    this.append('unique')
+
+    if (node.nullsNotDistinct) {
+      this.append(' nulls not distinct')
+    }
+
+    this.append(' (')
     this.compileList(node.columns)
     this.append(')')
   }

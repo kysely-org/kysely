@@ -433,6 +433,7 @@ export class OperationNodeTransformer {
       generated: this.transformNode(node.generated),
       frontModifiers: this.transformNodeList(node.frontModifiers),
       endModifiers: this.transformNodeList(node.endModifiers),
+      nullsNotDistinct: node.nullsNotDistinct,
     })
   }
 
@@ -549,6 +550,7 @@ export class OperationNodeTransformer {
       using: this.transformNode(node.using),
       ifNotExists: node.ifNotExists,
       where: this.transformNode(node.where),
+      nullsNotDistinct: node.nullsNotDistinct,
     })
   }
 
@@ -586,6 +588,7 @@ export class OperationNodeTransformer {
       kind: 'UniqueConstraintNode',
       columns: this.transformNodeList(node.columns),
       name: this.transformNode(node.name),
+      nullsNotDistinct: node.nullsNotDistinct,
     })
   }
 
