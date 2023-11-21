@@ -28,6 +28,7 @@ export interface CreateTableNode extends OperationNode {
   readonly onCommit?: OnCommitAction
   readonly frontModifiers?: ReadonlyArray<OperationNode>
   readonly endModifiers?: ReadonlyArray<OperationNode>
+  readonly selectQuery?: OperationNode
 }
 
 /**
