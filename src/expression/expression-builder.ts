@@ -86,6 +86,7 @@ import {
 } from '../parser/tuple-parser.js'
 import { TupleNode } from '../operation-node/tuple-node.js'
 import { Selectable } from '../util/column-type.js'
+import { JSONPathNode } from '../operation-node/json-path-node.js'
 
 export interface ExpressionBuilder<DB, TB extends keyof DB> {
   /**
@@ -385,7 +386,8 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    * a non-type-safe version of this method see {@link sql}'s version.
    *
    * Additionally, this method can be used to reference nested JSON properties or
-   * array elements. See {@link JSONPathBuilder} for more information.
+   * array elements. See {@link JSONPathBuilder} for more information. For regular
+   * JSON path expressions you can use {@link jsonPath}.
    *
    * ### Examples
    *
@@ -468,6 +470,36 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
   ref<RE extends StringReference<DB, TB>>(
     reference: RE,
     op: JSONOperatorWith$
+  ): JSONPathBuilder<ExtractTypeFromReferenceExpression<DB, TB, RE>>
+
+  /**
+   * Creates a JSON path expression with provided column as root document (the $).
+   *
+   * For a JSON reference expression, see {@link ref}.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * db.updateTable('person')
+   *   .set('experience', (eb) => eb.fn('json_set', [
+   *     'experience',
+   *     eb.jsonPath('experience').at('last').key('title'),
+   *     eb.val('CEO')
+   *   ]))
+   *   .where('id', '=', id)
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (MySQL):
+   *
+   * ```sql
+   * update `person`
+   * set `experience` = json_set(`experience`, '$[last].title', ?)
+   * where `id` = ?
+   * ```
+   */
+  jsonPath<RE extends StringReference<DB, TB>>(
+    $: RE
   ): JSONPathBuilder<ExtractTypeFromReferenceExpression<DB, TB, RE>>
 
   /**
@@ -1173,6 +1205,12 @@ export function createExpressionBuilder<DB, TB extends keyof DB>(
       }
 
       return new JSONPathBuilder(parseJSONReference(reference, op))
+    },
+
+    jsonPath<RE extends StringReference<DB, TB>>(
+      _$: RE
+    ): JSONPathBuilder<ExtractTypeFromReferenceExpression<DB, TB, RE>> {
+      return new JSONPathBuilder(JSONPathNode.create())
     },
 
     table<T extends TB & string>(
