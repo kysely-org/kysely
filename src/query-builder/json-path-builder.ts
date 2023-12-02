@@ -17,9 +17,9 @@ import { OperationNode } from '../operation-node/operation-node.js'
 import { ValueNode } from '../operation-node/value-node.js'
 
 export class JSONPathBuilder<S, O = S> {
-  readonly #node: JSONReferenceNode
+  readonly #node: JSONReferenceNode | JSONPathNode
 
-  constructor(node: JSONReferenceNode) {
+  constructor(node: JSONReferenceNode | JSONPathNode) {
     this.#node = node
   }
 
@@ -167,18 +167,27 @@ export class JSONPathBuilder<S, O = S> {
     legType: JSONPathLegType,
     value: string | number
   ): TraversedJSONPathBuilder<any, any> {
+    if (JSONReferenceNode.is(this.#node)) {
+      return new TraversedJSONPathBuilder(
+        JSONReferenceNode.cloneWithTraversal(
+          this.#node,
+          JSONPathNode.is(this.#node.traversal)
+            ? JSONPathNode.cloneWithLeg(
+                this.#node.traversal,
+                JSONPathLegNode.create(legType, value)
+              )
+            : JSONOperatorChainNode.cloneWithValue(
+                this.#node.traversal,
+                ValueNode.createImmediate(value)
+              )
+        )
+      )
+    }
+
     return new TraversedJSONPathBuilder(
-      JSONReferenceNode.cloneWithTraversal(
+      JSONPathNode.cloneWithLeg(
         this.#node,
-        JSONPathNode.is(this.#node.traversal)
-          ? JSONPathNode.cloneWithLeg(
-              this.#node.traversal,
-              JSONPathLegNode.create(legType, value)
-            )
-          : JSONOperatorChainNode.cloneWithValue(
-              this.#node.traversal,
-              ValueNode.createImmediate(value)
-            )
+        JSONPathLegNode.create(legType, value)
       )
     )
   }
@@ -188,9 +197,9 @@ export class TraversedJSONPathBuilder<S, O>
   extends JSONPathBuilder<S, O>
   implements AliasableExpression<O>
 {
-  readonly #node: JSONReferenceNode
+  readonly #node: JSONReferenceNode | JSONPathNode
 
-  constructor(node: JSONReferenceNode) {
+  constructor(node: JSONReferenceNode | JSONPathNode) {
     super(node)
     this.#node = node
   }
