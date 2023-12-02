@@ -1,8 +1,9 @@
 import { expectError, expectType } from 'tsd'
-import { Kysely } from '..'
-import { Database } from '../shared'
+import { ExpressionBuilder, JSONPathBuilder, Kysely } from '..'
+import { Database, PersonMetadata } from '../shared'
+import { expect } from 'chai'
 
-async function testJSONTraversal(db: Kysely<Database>) {
+async function testJSONReference(db: Kysely<Database>) {
   const [r1] = await db
     .selectFrom('person_metadata')
     .select((eb) => eb.ref('website', '->>$').key('url').as('website_url'))
@@ -192,4 +193,16 @@ async function testJSONTraversal(db: Kysely<Database>) {
       .select((eb) => eb.ref('nicknames', '->>$').at('last ').as('alias'))
       .execute()
   )
+}
+
+async function testJSONPath(eb: ExpressionBuilder<Database, keyof Database>) {
+  expectType<JSONPathBuilder<PersonMetadata['experience']>>(
+    eb.jsonPath('experience')
+  )
+
+  expectType<JSONPathBuilder<PersonMetadata['experience']>>(
+    eb.jsonPath('person_metadata.experience')
+  )
+
+  expectError(eb.jsonPath('NO_SUCH_COLUMN'))
 }
