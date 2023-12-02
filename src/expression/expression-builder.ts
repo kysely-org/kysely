@@ -498,11 +498,9 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    * where `id` = ?
    * ```
    */
-  jsonPath<
-    RE extends StringReference<DB, TB> = never
-  >(): IsNever<RE> extends true
-    ? KyselyTypeError<"You must provide a column reference as this method's generic">
-    : JSONPathBuilder<ExtractTypeFromReferenceExpression<DB, TB, RE>>
+  jsonPath<$ extends StringReference<DB, TB> = never>(): IsNever<$> extends true
+    ? KyselyTypeError<"You must provide a column reference as this method's $ generic">
+    : JSONPathBuilder<ExtractTypeFromReferenceExpression<DB, TB, $>>
 
   /**
    * Creates a table reference.
@@ -1210,10 +1208,10 @@ export function createExpressionBuilder<DB, TB extends keyof DB>(
     },
 
     jsonPath<
-      RE extends StringReference<DB, TB> = never
-    >(): IsNever<RE> extends true
-      ? KyselyTypeError<"You must provide a column reference as this method's generic">
-      : JSONPathBuilder<ExtractTypeFromReferenceExpression<DB, TB, RE>> {
+      $ extends StringReference<DB, TB> = never
+    >(): IsNever<$> extends true
+      ? KyselyTypeError<"You must provide a column reference as this method's $ generic">
+      : JSONPathBuilder<ExtractTypeFromReferenceExpression<DB, TB, $>> {
       return new JSONPathBuilder(JSONPathNode.create()) as any
     },
 

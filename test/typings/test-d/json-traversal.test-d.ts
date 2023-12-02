@@ -2,6 +2,7 @@ import { expectError, expectType } from 'tsd'
 import { ExpressionBuilder, JSONPathBuilder, Kysely } from '..'
 import { Database, PersonMetadata } from '../shared'
 import { expect } from 'chai'
+import { KyselyTypeError } from '../../../dist/cjs/util/type-error'
 
 async function testJSONReference(db: Kysely<Database>) {
   const [r1] = await db
@@ -206,6 +207,8 @@ async function testJSONPath(eb: ExpressionBuilder<Database, keyof Database>) {
 
   expectError(eb.jsonPath('experience'))
   expectError(eb.jsonPath('person_metadata.experience'))
-  expectError(eb.jsonPath().at('last'))
+  expectType<
+    KyselyTypeError<"You must provide a column reference as this method's $ generic">
+  >(eb.jsonPath())
   expectError(eb.jsonPath<'NO_SUCH_COLUMN'>())
 }
