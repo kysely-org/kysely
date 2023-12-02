@@ -50,13 +50,12 @@ import {
   OperatorNode,
   UnaryOperator,
 } from '../operation-node/operator-node.js'
-import { SqlBool } from '../util/type-utils.js'
+import { IsNever, SqlBool } from '../util/type-utils.js'
 import { parseUnaryOperation } from '../parser/unary-operation-parser.js'
 import {
   ExtractTypeFromValueExpression,
   parseSafeImmediateValue,
   parseValueExpression,
-  parseValueExpressionOrList,
 } from '../parser/value-parser.js'
 import { NOOP_QUERY_EXECUTOR } from '../query-executor/noop-query-executor.js'
 import { CaseBuilder } from '../query-builder/case-builder.js'
@@ -87,6 +86,7 @@ import {
 import { TupleNode } from '../operation-node/tuple-node.js'
 import { Selectable } from '../util/column-type.js'
 import { JSONPathNode } from '../operation-node/json-path-node.js'
+import { KyselyTypeError } from '../util/type-error.js'
 
 export interface ExpressionBuilder<DB, TB extends keyof DB> {
   /**
@@ -483,7 +483,7 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    * db.updateTable('person')
    *   .set('experience', (eb) => eb.fn('json_set', [
    *     'experience',
-   *     eb.jsonPath('experience').at('last').key('title'),
+   *     eb.jsonPath<'experience'>().at('last').key('title'),
    *     eb.val('CEO')
    *   ]))
    *   .where('id', '=', id)
@@ -498,9 +498,11 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    * where `id` = ?
    * ```
    */
-  jsonPath<RE extends StringReference<DB, TB>>(
-    $: RE
-  ): JSONPathBuilder<ExtractTypeFromReferenceExpression<DB, TB, RE>>
+  jsonPath<
+    RE extends StringReference<DB, TB> = never
+  >(): IsNever<RE> extends true
+    ? KyselyTypeError<"You must provide a column reference as this method's generic">
+    : JSONPathBuilder<ExtractTypeFromReferenceExpression<DB, TB, RE>>
 
   /**
    * Creates a table reference.
@@ -1207,10 +1209,12 @@ export function createExpressionBuilder<DB, TB extends keyof DB>(
       return new JSONPathBuilder(parseJSONReference(reference, op))
     },
 
-    jsonPath<RE extends StringReference<DB, TB>>(
-      _$: RE
-    ): JSONPathBuilder<ExtractTypeFromReferenceExpression<DB, TB, RE>> {
-      return new JSONPathBuilder(JSONPathNode.create())
+    jsonPath<
+      RE extends StringReference<DB, TB> = never
+    >(): IsNever<RE> extends true
+      ? KyselyTypeError<"You must provide a column reference as this method's generic">
+      : JSONPathBuilder<ExtractTypeFromReferenceExpression<DB, TB, RE>> {
+      return new JSONPathBuilder(JSONPathNode.create()) as any
     },
 
     table<T extends TB & string>(

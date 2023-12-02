@@ -197,12 +197,15 @@ async function testJSONReference(db: Kysely<Database>) {
 
 async function testJSONPath(eb: ExpressionBuilder<Database, keyof Database>) {
   expectType<JSONPathBuilder<PersonMetadata['experience']>>(
-    eb.jsonPath('experience')
+    eb.jsonPath<'experience'>()
   )
 
   expectType<JSONPathBuilder<PersonMetadata['experience']>>(
-    eb.jsonPath('person_metadata.experience')
+    eb.jsonPath<'person_metadata.experience'>()
   )
 
-  expectError(eb.jsonPath('NO_SUCH_COLUMN'))
+  expectError(eb.jsonPath('experience'))
+  expectError(eb.jsonPath('person_metadata.experience'))
+  expectError(eb.jsonPath().at('last'))
+  expectError(eb.jsonPath<'NO_SUCH_COLUMN'>())
 }

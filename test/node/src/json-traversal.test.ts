@@ -387,7 +387,7 @@ for (const dialect of DIALECTS.filter((dialect) => dialect !== 'mssql')) {
             .set('experience', (eb) =>
               eb.fn('json_set', [
                 'experience',
-                eb.jsonPath('experience').at(lastItem).key('establishment'),
+                eb.jsonPath<'experience'>().at(lastItem).key('establishment'),
                 eb.val('Papa Johns'),
               ])
             )
