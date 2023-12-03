@@ -111,6 +111,7 @@ async function testDelete(db: Kysely<Database>) {
       gender: 'male' | 'female' | 'other'
       modified_at: Date
       marital_status: 'single' | 'married' | 'divorced' | 'widowed' | null
+      deleted_at: Date | null
 
       name: string
       owner_id: number
@@ -136,6 +137,7 @@ async function testDelete(db: Kysely<Database>) {
       gender: 'male' | 'female' | 'other'
       modified_at: Date
       marital_status: 'single' | 'married' | 'divorced' | 'widowed' | null
+      deleted_at: Date | null
 
       name: string
       owner_id: number
@@ -173,6 +175,7 @@ async function testDelete(db: Kysely<Database>) {
       gender: 'male' | 'female' | 'other'
       modified_at: Date
       marital_status: 'single' | 'married' | 'divorced' | 'widowed' | null
+      deleted_at: Date | null
 
       name: string
       owner_id: number

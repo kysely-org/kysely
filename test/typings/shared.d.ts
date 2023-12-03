@@ -64,6 +64,8 @@ export interface Person {
   // we never want the user to be able to insert or
   // update.
   modified_at: ColumnType<Date, never, never>
+  // A column that cannot be inserted, but can be updated.
+  deleted_at: ColumnType<Date | null, never, string | undefined>
 }
 
 export interface PersonMetadata {
