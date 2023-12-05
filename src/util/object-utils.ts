@@ -59,13 +59,7 @@ export function isArrayBufferOrView(
 }
 
 export function isPlainObject(obj: unknown): obj is Record<string, unknown> {
-  return (
-    isObject(obj) &&
-    !Array.isArray(obj) &&
-    !isDate(obj) &&
-    !isBuffer(obj) &&
-    !isArrayBufferOrView(obj)
-  )
+  return isObject(obj) && (obj.constructor === undefined || obj.constructor.name === 'Object')
 }
 
 export function getLast<T>(arr: ArrayLike<T>): T | undefined {
