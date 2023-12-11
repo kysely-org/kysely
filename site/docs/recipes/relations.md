@@ -11,6 +11,8 @@ Having said all that, there are ways to nest related rows in your queries. You j
 using the tools SQL and the underlying dialect (e.g. PostgreSQL, MySQL, or SQLite) provide. In this recipe
 we show one way to do that when using the built-in PostgreSQL, MySQL, and SQLite dialects.
 
+This recipe will fail on MySQL versions before 8.0.14 or on any MariaDB server. This is due to the way subqueries use outer references in this recipe (cf. [MySQL 8.0.14 changelog](https://dev.mysql.com/doc/relnotes/mysql/8.0/en/news-8-0-14.html#mysqld-8-0-14-optimizer) | [open ticket for MariaDB](https://jira.mariadb.org/browse/MDEV-19078)).
+
 ## The `json` data type and functions
 
 PostgreSQL and MySQL have rich JSON support through their `json` data types and functions. `pg` and `mysql2`, the node drivers, automatically parse returned `json` columns as json objects. With the combination of these two things, we can write some super efficient queries with nested relations.
