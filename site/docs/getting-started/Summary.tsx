@@ -73,19 +73,19 @@ ${dialectSpecificCodeSnippet}
     await db.schema.dropTable('person').execute()
   })
     
-  it('should find a person with a given id', () => {
+  it('should find a person with a given id', async () => {
     await PersonRepository.findPersonById(123)
   })
     
-  it('should find all people named Arnold', () => {
+  it('should find all people named Arnold', async () => {
     await PersonRepository.findPeople({ first_name: 'Arnold' })
   })
     
-  it('should update gender of a person with a given id', () => {
+  it('should update gender of a person with a given id', async () => {
     await PersonRepository.updatePerson(123, { gender: 'woman' })
   })
     
-  it('should create a person', () => {
+  it('should create a person', async () => {
     await PersonRepository.createPerson({
       first_name: 'Jennifer',
       last_name: 'Aniston',
@@ -93,7 +93,7 @@ ${dialectSpecificCodeSnippet}
     })
   })
     
-  it('should delete a person with a given id', () => {
+  it('should delete a person with a given id', async () => {
     await PersonRepository.deletePerson(123)
   })
 })`}
