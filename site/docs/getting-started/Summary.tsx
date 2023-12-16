@@ -39,10 +39,17 @@ const dialectSpecificCodeSnippets: Record<Dialect, string> = {
       .execute()`,
 }
 
+const dialectSpecificTruncateSnippets: Record<Dialect, string> = {
+  postgresql: `await sql\`truncate table \${sql.table('person')}\`.execute(db)`,
+  mysql: `await sql\`truncate table \${sql.table('person')}\`.execute(db)`,
+  sqlite: `await sql\`delete from \${sql.table('person')}\`.execute(db)`,
+}
+
 export function Summary(props: PropsWithDialect) {
   const dialect = props.dialect || 'postgresql'
 
   const dialectSpecificCodeSnippet = dialectSpecificCodeSnippets[dialect]
+  const dialectSpecificTruncateSnippet = dialectSpecificTruncateSnippets[dialect]
   const prettyDialectName = PRETTY_DIALECT_NAMES[dialect]
 
   return (
@@ -66,7 +73,7 @@ ${dialectSpecificCodeSnippet}
   })
     
   afterEach(async () => {
-    await sql\`truncate table \${sql.table('person')}\`.execute(db)
+    ${dialectSpecificTruncateSnippet}
   })
     
   after(async () => {
