@@ -33,7 +33,7 @@ const dialectSpecificCodeSnippets: Record<Dialect, string> = {
       .addColumn('first_name', 'varchar(255)', (cb) => cb.notNull())
       .addColumn('last_name', 'varchar(255)')
       .addColumn('gender', 'varchar(50)', (cb) => cb.notNull())
-      .addColumn('created_at', 'timestampz', (cb) =>
+      .addColumn('created_at', 'timestamp', (cb) =>
         cb.notNull().defaultTo(sql\`current_timestamp\`)
       )
       .execute()`,
