@@ -88,6 +88,10 @@ import { JSONPathLegNode } from './json-path-leg-node.js'
 import { JSONOperatorChainNode } from './json-operator-chain-node.js'
 import { TupleNode } from './tuple-node.js'
 import { AddIndexNode } from './add-index-node.js'
+import { CreateTriggerNode } from './create-trigger-node.js'
+import { DropTriggerNode } from './drop-trigger-node.js'
+import { TriggerEventNode } from './trigger-event-node.js'
+import { TriggerOrderNode } from './trigger-order-node.js'
 
 /**
  * Transforms an operation node tree into another one.
@@ -210,6 +214,10 @@ export class OperationNodeTransformer {
     JSONOperatorChainNode: this.transformJSONOperatorChain.bind(this),
     TupleNode: this.transformTuple.bind(this),
     AddIndexNode: this.transformAddIndex.bind(this),
+    CreateTriggerNode: this.transformCreateTrigger.bind(this),
+    TriggerEventNode: this.transformTriggerEvent.bind(this),
+    TriggerOrderNode: this.transformTriggerOrder.bind(this),
+    DropTriggerNode: this.transformDropTrigger.bind(this),
   })
 
   transformNode<T extends OperationNode | undefined>(node: T): T {
@@ -417,6 +425,40 @@ export class OperationNodeTransformer {
     })
   }
 
+  protected transformCreateTrigger(node: CreateTriggerNode): CreateTriggerNode {
+    return requireAllProps<CreateTriggerNode>({
+      kind: 'CreateTriggerNode',
+      name: this.transformNode(node.name),
+      table: this.transformNode(node.table),
+      ifNotExists: node.ifNotExists,
+      time: node.time,
+      events: this.transformNodeList(node.events),
+      forEach: node.forEach,
+      orReplace: node.orReplace,
+      temporary: node.temporary,
+      queries: this.transformNodeList(node.queries),
+      function: this.transformNode(node.function),
+      when: this.transformNode(node.when),
+      order: this.transformNode(node.order),
+    })
+  }
+
+  protected transformTriggerEvent(node: TriggerEventNode): TriggerEventNode {
+    return requireAllProps<TriggerEventNode>({
+      kind: 'TriggerEventNode',
+      event: node.event,
+      columns: this.transformNodeList(node.columns),
+    })
+  }
+
+  protected transformTriggerOrder(node: TriggerOrderNode): TriggerOrderNode {
+    return requireAllProps<TriggerOrderNode>({
+      kind: 'TriggerOrderNode',
+      order: node.order,
+      otherTriggerName: this.transformNode(node.otherTriggerName),
+    })
+  }
+
   protected transformColumnDefinition(
     node: ColumnDefinitionNode
   ): ColumnDefinitionNode {
@@ -450,6 +492,15 @@ export class OperationNodeTransformer {
     return requireAllProps<DropTableNode>({
       kind: 'DropTableNode',
       table: this.transformNode(node.table),
+      ifExists: node.ifExists,
+      cascade: node.cascade,
+    })
+  }
+
+  protected transformDropTrigger(node: DropTriggerNode): DropTriggerNode {
+    return requireAllProps<DropTriggerNode>({
+      kind: 'DropTriggerNode',
+      name: this.transformNode(node.name),
       ifExists: node.ifExists,
       cascade: node.cascade,
     })

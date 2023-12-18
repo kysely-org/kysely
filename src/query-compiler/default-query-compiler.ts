@@ -105,6 +105,10 @@ import { JSONPathLegNode } from '../operation-node/json-path-leg-node.js'
 import { JSONOperatorChainNode } from '../operation-node/json-operator-chain-node.js'
 import { TupleNode } from '../operation-node/tuple-node.js'
 import { AddIndexNode } from '../operation-node/add-index-node.js'
+import { CreateTriggerNode } from '../operation-node/create-trigger-node.js'
+import { DropTriggerNode } from '../operation-node/drop-trigger-node.js'
+import { TriggerEventNode } from '../operation-node/trigger-event-node.js'
+import { TriggerOrderNode } from '../operation-node/trigger-order-node.js'
 
 export class DefaultQueryCompiler
   extends OperationNodeVisitor
@@ -570,6 +574,83 @@ export class DefaultQueryCompiler
         this.compileList(node.endModifiers, ' ')
       }
     }
+  }
+
+  protected override visitCreateTrigger(node: CreateTriggerNode): void {
+    if (!node.time) throw new Error('Trigger time is required.')
+    if (!node.events) throw new Error('Trigger event is required.')
+    if (!node.table) throw new Error('Trigger table is required.')
+
+    this.append('create ')
+
+    if (node.temporary) {
+      this.append('temporary ')
+    }
+
+    if (node.orReplace) {
+      this.append('or replace ')
+    }
+
+    this.append('trigger ')
+
+    if (node.ifNotExists) {
+      this.append('if not exists ')
+    }
+
+    this.visitNode(node.name)
+
+    this.append(` ${node.time} `)
+
+    this.compileList(node.events, ' or ')
+
+    this.append(' on ')
+
+    this.visitNode(node.table)
+
+    if (node.forEach) this.append(` for each ${node.forEach} `)
+
+    if (node.when) {
+      this.append(' when ')
+      this.visitNode(node.when)
+    }
+
+    if (node.order) this.visitNode(node.order)
+
+    if (node.queries) {
+      this.append(' begin ')
+
+      this.compileList(node.queries, '; ')
+      this.append('; ')
+
+      this.append('end')
+    } else if (node.function) {
+      this.append(' execute function ')
+      this.visitNode(node.function)
+    }
+  }
+
+  protected override visitTriggerEvent(node: TriggerEventNode): void {
+    this.append(`${node.event} `)
+
+    if (node.event === 'update' && node.columns) {
+      this.append('of ')
+      this.compileList(node.columns, ', ')
+    }
+  }
+
+  protected override visitTriggerOrder(node: TriggerOrderNode): void {
+    this.append(`${node.order} `)
+    this.visitNode(node.otherTriggerName)
+  }
+
+  protected override visitDropTrigger(node: DropTriggerNode): void {
+    this.append('drop trigger ')
+
+    if (node.ifExists) {
+      this.append('if exists ')
+    }
+
+    this.visitNode(node.name)
   }
 
   protected override visitColumnDefinition(node: ColumnDefinitionNode): void {

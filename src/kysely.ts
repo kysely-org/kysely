@@ -126,7 +126,7 @@ export class Kysely<DB>
   /**
    * Returns the {@link SchemaModule} module for building database schema.
    */
-  get schema(): SchemaModule {
+  get schema(): SchemaModule<DB> {
     return new SchemaModule(this.#props.executor)
   }
 

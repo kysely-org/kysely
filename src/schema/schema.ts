@@ -26,11 +26,16 @@ import { DropTypeBuilder } from './drop-type-builder.js'
 import { CreateTypeNode } from '../operation-node/create-type-node.js'
 import { DropTypeNode } from '../operation-node/drop-type-node.js'
 import { parseSchemableIdentifier } from '../parser/identifier-parser.js'
+import { CreateTriggerBuilder } from './create-trigger-builder.js'
+import { CreateTriggerNode } from '../operation-node/create-trigger-node.js'
+import { IdentifierNode } from '../operation-node/identifier-node.js'
+import { DropTriggerNode } from '../operation-node/drop-trigger-node.js'
+import { DropTriggerBuilder } from './drop-trigger-builder.js'
 
 /**
  * Provides methods for building database schema.
  */
-export class SchemaModule {
+export class SchemaModule<DB> {
   readonly #executor: QueryExecutor
 
   constructor(executor: QueryExecutor) {
@@ -298,24 +303,40 @@ export class SchemaModule {
     })
   }
 
+  createTrigger(name: string): CreateTriggerBuilder<DB, keyof DB> {
+    return new CreateTriggerBuilder({
+      queryId: createQueryId(),
+      executor: this.#executor,
+      node: CreateTriggerNode.create(IdentifierNode.create(name)),
+    })
+  }
+
+  dropTrigger(triggerName: string): DropTriggerBuilder {
+    return new DropTriggerBuilder({
+      queryId: createQueryId(),
+      executor: this.#executor,
+      node: DropTriggerNode.create(parseSchemableIdentifier(triggerName)),
+    })
+  }
+
   /**
    * Returns a copy of this schema module with the given plugin installed.
    */
-  withPlugin(plugin: KyselyPlugin): SchemaModule {
+  withPlugin(plugin: KyselyPlugin): SchemaModule<DB> {
     return new SchemaModule(this.#executor.withPlugin(plugin))
   }
 
   /**
    * Returns a copy of this schema module  without any plugins.
    */
-  withoutPlugins(): SchemaModule {
+  withoutPlugins(): SchemaModule<DB> {
     return new SchemaModule(this.#executor.withoutPlugins())
   }
 
   /**
    * See {@link QueryCreator.withSchema}
    */
-  withSchema(schema: string): SchemaModule {
+  withSchema(schema: string): SchemaModule<DB> {
     return new SchemaModule(
       this.#executor.withPluginAtFront(new WithSchemaPlugin(schema))
     )
