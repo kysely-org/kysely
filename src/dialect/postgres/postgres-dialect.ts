@@ -16,10 +16,10 @@ import { PostgresDialectConfig } from './postgres-dialect-config.js'
  * The constructor takes an instance of {@link PostgresDialectConfig}.
  *
  * ```ts
- * import { Pool } from 'pg'
+ * import pg from 'pg'
  *
  * new PostgresDialect({
- *   pool: new Pool({
+ *   pool: new pg.Pool({
  *     database: 'some_db',
  *     host: 'localhost',
  *   })
@@ -30,10 +30,10 @@ import { PostgresDialectConfig } from './postgres-dialect-config.js'
  * can be a function:
  *
  * ```ts
- * import { Pool } from 'pg'
+ * import pg from 'pg'
  *
  * new PostgresDialect({
- *   pool: async () => new Pool({
+ *   pool: async () => new pg.Pool({
  *     database: 'some_db',
  *     host: 'localhost',
  *   })
