@@ -127,7 +127,7 @@ Kysely doesn't have a CLI for running migrations and probably never will. This i
 
 ```ts
 import * as path from 'path'
-import { Pool } from 'pg'
+import pg from 'pg'
 import { promises as fs } from 'fs'
 import {
   Kysely,
@@ -139,7 +139,7 @@ import {
 async function migrateToLatest() {
   const db = new Kysely<Database>({
     dialect: new PostgresDialect({
-      pool: new Pool({
+      pool: new pg.Pool({
         host: 'localhost',
         database: 'kysely_test',
       }),
