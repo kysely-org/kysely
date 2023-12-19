@@ -8,12 +8,12 @@ import {
   PostgresDialect,
   FileMigrationProvider,
 } from 'kysely'
-import { Pool } from 'pg'
+import pg from 'pg'
 
 async function migrateToLatest() {
   const db = new Kysely<Database>({
     dialect: new PostgresDialect({
-      pool: new Pool(config.database),
+      pool: new pg.Pool(config.database),
     }),
   })
 
