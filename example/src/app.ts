@@ -12,7 +12,7 @@ import { Router } from './router'
 import { userController } from './user/user.controller'
 import { ControllerError } from './util/errors'
 import { isObject } from './util/object'
-import { Pool } from 'pg'
+import pg from 'pg'
 
 export class App {
   #config: Config
@@ -27,7 +27,7 @@ export class App {
     this.#router = new Router()
     this.#db = new Kysely<Database>({
       dialect: new PostgresDialect({
-        pool: async () => new Pool(this.#config.database),
+        pool: async () => new pg.Pool(this.#config.database),
       }),
     })
 
