@@ -76,7 +76,7 @@ for (const dialect of DIALECTS) {
   const { jsonArrayFrom, jsonObjectFrom, jsonBuildObject } =
     jsonFunctions[dialect]
 
-  describe.only(`${dialect} json tests`, () => {
+  describe(`${dialect} json tests`, () => {
     let ctx: TestContext
     let db: Kysely<Database & { json_table: JsonTable }>
 
