@@ -16,6 +16,11 @@ import {
   jsonBuildObject as mysql_jsonBuildObject,
 } from '../../../helpers/mysql'
 import {
+  jsonArrayFrom as mssql_jsonArrayFrom,
+  jsonObjectFrom as mssql_jsonObjectFrom,
+  jsonBuildObject as mssql_jsonBuildObject,
+} from '../../../helpers/mssql'
+import {
   jsonArrayFrom as sqlite_jsonArrayFrom,
   jsonObjectFrom as sqlite_jsonObjectFrom,
   jsonBuildObject as sqlite_jsonBuildObject,
@@ -30,6 +35,8 @@ import {
   insertDefaultDataSet,
   clearDatabase,
   DIALECTS,
+  orderBy,
+  limit,
 } from './test-setup.js'
 
 interface JsonTable {
@@ -53,11 +60,10 @@ const jsonFunctions = {
     jsonObjectFrom: mysql_jsonObjectFrom,
     jsonBuildObject: mysql_jsonBuildObject,
   },
-  // TODO: this is fake, to avoid ts errors.
   mssql: {
-    jsonArrayFrom: mysql_jsonArrayFrom,
-    jsonObjectFrom: mysql_jsonObjectFrom,
-    jsonBuildObject: mysql_jsonBuildObject,
+    jsonArrayFrom: mssql_jsonArrayFrom,
+    jsonObjectFrom: mssql_jsonObjectFrom,
+    jsonBuildObject: mssql_jsonBuildObject,
   },
   sqlite: {
     jsonArrayFrom: sqlite_jsonArrayFrom,
@@ -66,11 +72,11 @@ const jsonFunctions = {
   },
 } as const
 
-for (const dialect of DIALECTS.filter((dialect) => dialect !== 'mssql')) {
+for (const dialect of DIALECTS) {
   const { jsonArrayFrom, jsonObjectFrom, jsonBuildObject } =
     jsonFunctions[dialect]
 
-  describe(`${dialect} json tests`, () => {
+  describe.only(`${dialect} json tests`, () => {
     let ctx: TestContext
     let db: Kysely<Database & { json_table: JsonTable }>
 
@@ -84,6 +90,10 @@ for (const dialect of DIALECTS.filter((dialect) => dialect !== 'mssql')) {
           .addColumn('id', 'serial', (col) => col.primaryKey())
           .addColumn('data', 'jsonb')
           .execute()
+      } else if (dialect === 'mssql') {
+        await sql`if object_id(N'json_table', N'U') is null begin create table json_table (id int primary key identity, data nvarchar(1024)); end;`.execute(
+          ctx.db
+        )
       } else {
         await ctx.db.schema
           .createTable('json_table')
@@ -95,7 +105,7 @@ for (const dialect of DIALECTS.filter((dialect) => dialect !== 'mssql')) {
 
       db = ctx.db.withTables<{ json_table: JsonTable }>()
 
-      if (dialect === 'sqlite') {
+      if (dialect === 'mssql' || dialect === 'sqlite') {
         db = db.withPlugin(new ParseJSONResultsPlugin())
       }
     })
@@ -337,7 +347,7 @@ for (const dialect of DIALECTS.filter((dialect) => dialect !== 'mssql')) {
       })
     }
 
-    it('should select subqueries as nested jsonb objects', async () => {
+    it('should select subqueries as nested json objects', async () => {
       const query = db.selectFrom('person').select((eb) => [
         'person.first_name',
 
@@ -355,11 +365,11 @@ for (const dialect of DIALECTS.filter((dialect) => dialect !== 'mssql')) {
                   .selectFrom('toy')
                   .select('toy.name')
                   .whereRef('toy.pet_id', '=', 'pet.id')
-                  .orderBy('toy.name', 'asc')
+                  .$call(orderBy('toy.name', 'asc', dialect))
               ).as('toys'),
             ])
             .whereRef('owner_id', '=', 'person.id')
-            .orderBy('pet.name')
+            .$call(orderBy('pet.name', 'asc', dialect))
         ).as('pets'),
 
         // Nest the first found dog the person owns
@@ -369,8 +379,8 @@ for (const dialect of DIALECTS.filter((dialect) => dialect !== 'mssql')) {
             .select('name as doggo_name')
             .whereRef('owner_id', '=', 'person.id')
             .where('species', '=', 'dog')
-            .orderBy('name')
-            .limit(1)
+            .orderBy('name', 'asc')
+            .$call(limit(1, dialect))
         ).as('doggo'),
 
         // Nest an object that holds the person's formatted name
@@ -385,7 +395,7 @@ for (const dialect of DIALECTS.filter((dialect) => dialect !== 'mssql')) {
 
         // Nest an empty list
         jsonArrayFrom(
-          eb.selectFrom('pet').select('id').where(sql.lit(false))
+          eb.selectFrom('pet').select('id').where(sql`1 = 2`)
         ).as('emptyList'),
       ])
 
