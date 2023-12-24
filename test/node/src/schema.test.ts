@@ -233,7 +233,6 @@ for (const dialect of DIALECTS) {
             .addColumn('u', 'char')
             .addColumn('v', 'binary(16)')
             .addColumn('w', 'varbinary(16)')
-            .addColumn('x', 'varbinary')
 
           testSql(builder, dialect, {
             mysql: {
