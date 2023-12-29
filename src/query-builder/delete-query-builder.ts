@@ -625,7 +625,7 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
    *   .execute()
    * ```
    */
-  limit(limit: number): DeleteQueryBuilder<DB, TB, O> {
+  limit(limit: number | bigint): DeleteQueryBuilder<DB, TB, O> {
     return new DeleteQueryBuilder({
       ...this.#props,
       queryNode: DeleteQueryNode.cloneWithLimit(
