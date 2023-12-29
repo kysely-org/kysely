@@ -5,21 +5,21 @@ import { Simplify } from '../util/type-utils.js'
 
 /**
  * An MS SQL Server helper for aggregating a subquery into a JSON array.
- * 
+ *
  * NOTE: This helper only works correctly if you've installed the `ParseJSONResultsPlugin`.
  * Otherwise the nested selections will be returned as JSON strings.
- * 
+ *
  * The plugin can be installed like this:
- * 
+ *
  * ```ts
  * const db = new Kysely({
  *   dialect: new MssqlDialect(config),
  *   plugins: [new ParseJSONResultsPlugin()]
  * })
  * ```
- * 
+ *
  * ### Examples
- * 
+ *
  * ```ts
  * const result = await db
  *   .selectFrom('person')
@@ -34,14 +34,14 @@ import { Simplify } from '../util/type-utils.js'
  *     ).as('pets')
  *   ])
  *   .execute()
- * 
+ *
  * result[0].id
  * result[0].pets[0].pet_id
  * result[0].pets[0].name
  * ```
- * 
+ *
  * The generated SQL (MS SQL Server):
- * 
+ *
  * ```sql
  * select "id", (
  *   select coalesce((select * from (
@@ -63,23 +63,23 @@ export function jsonArrayFrom<O>(
 
 /**
  * An MS SQL Server helper for turning a subquery into a JSON object.
- * 
+ *
  * The subquery must only return one row.
- * 
+ *
  * NOTE: This helper only works correctly if you've installed the `ParseJSONResultsPlugin`.
  * Otherwise the nested selections will be returned as JSON strings.
- * 
+ *
  * The plugin can be installed like this:
- * 
+ *
  * ```ts
  * const db = new Kysely({
  *   dialect: new MssqlDialect(config),
  *   plugins: [new ParseJSONResultsPlugin()]
  * })
  * ```
- * 
+ *
  * ### Examples
- * 
+ *
  * ```ts
  * const result = await db
  *   .selectFrom('person')
@@ -93,14 +93,14 @@ export function jsonArrayFrom<O>(
  *     ).as('favorite_pet')
  *   ])
  *   .execute()
- * 
+ *
  * result[0].id
  * result[0].favorite_pet.pet_id
  * result[0].favorite_pet.name
  * ```
- * 
+ *
  * The generated SQL (MS SQL Server):
- * 
+ *
  * ```sql
  * select "id", (
  *   select * from (
@@ -121,21 +121,21 @@ export function jsonObjectFrom<O>(
 
 /**
  * The MS SQL Server `json_query` function, single argument variant.
- * 
+ *
  * NOTE: This helper only works correctly if you've installed the `ParseJSONResultsPlugin`.
  * Otherwise the nested selections will be returned as JSON strings.
- * 
+ *
  * The plugin can be installed like this:
- * 
+ *
  * ```ts
  * const db = new Kysely({
  *   dialect: new MssqlDialect(config),
  *   plugins: [new ParseJSONResultsPlugin()]
  * })
  * ```
- * 
+ *
  * ### Examples
- * 
+ *
  * ```ts
  * const result = await db
  *   .selectFrom('person')
@@ -149,9 +149,9 @@ export function jsonObjectFrom<O>(
  *   ])
  *   .execute()
  * ```
- * 
+ *
  * The generated SQL (MS SQL Server):
- * 
+ *
  * ```sql
  * select "id", json_query(
  *   '{"first":"'+"first_name"+',"last":"'+"last_name"+',"full":"'+concat("first_name", ' ', "last_name")+'"}'

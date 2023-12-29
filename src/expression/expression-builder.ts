@@ -32,7 +32,6 @@ import {
 import { QueryExecutor } from '../query-executor/query-executor.js'
 import {
   BinaryOperatorExpression,
-  ComparisonOperatorExpression,
   FilterObject,
   OperandValueExpression,
   OperandValueExpressionOrList,
@@ -65,14 +64,6 @@ import { JSONPathBuilder } from '../query-builder/json-path-builder.js'
 import { OperandExpression } from '../parser/expression-parser.js'
 import { BinaryOperationNode } from '../operation-node/binary-operation-node.js'
 import { AndNode } from '../operation-node/and-node.js'
-import {
-  CallbackSelection,
-  SelectArg,
-  SelectCallback,
-  SelectExpression,
-  Selection,
-  parseSelectArg,
-} from '../parser/select-parser.js'
 import {
   RefTuple2,
   RefTuple3,
@@ -163,10 +154,14 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    *   ))
    * ```
    */
-  <RE extends ReferenceExpression<DB, TB>, OP extends BinaryOperatorExpression>(
+  <
+    RE extends ReferenceExpression<DB, TB>,
+    OP extends BinaryOperatorExpression,
+    VE extends OperandValueExpressionOrList<DB, TB, RE>
+  >(
     lhs: RE,
     op: OP,
-    rhs: OperandValueExpressionOrList<DB, TB, RE>
+    rhs: VE
   ): ExpressionWrapper<
     DB,
     TB,
@@ -300,27 +295,6 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
   selectFrom<TE extends TableExpression<DB, TB>>(
     from: TE
   ): SelectQueryBuilder<From<DB, TE>, FromTables<DB, TB, TE>, {}>
-
-  /**
-   * Creates a `select` expression without a `from` clause.
-   *
-   * If you want to create a `select from` query, use the `selectFrom` method instead.
-   * This one can be used to create a plain `select` statement without a `from` clause.
-   *
-   * This method accepts the same inputs as {@link SelectQueryBuilder.select}. See its
-   * documentation for examples.
-   */
-  selectNoFrom<SE extends SelectExpression<DB, TB>>(
-    selections: ReadonlyArray<SE>
-  ): SelectQueryBuilder<DB, TB, Selection<DB, TB, SE>>
-
-  selectNoFrom<CB extends SelectCallback<DB, TB>>(
-    callback: CB
-  ): SelectQueryBuilder<DB, TB, CallbackSelection<DB, TB, CB>>
-
-  selectNoFrom<SE extends SelectExpression<DB, TB>>(
-    selection: SE
-  ): SelectQueryBuilder<DB, TB, Selection<DB, TB, SE>>
 
   /**
    * Creates a `case` statement/operator.
@@ -758,78 +732,6 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
   ): ExpressionWrapper<DB, TB, VE>
 
   /**
-   * @deprecated Use the expression builder as a function instead.
-   *
-   * Before:
-   *
-   * ```ts
-   * where((eb) => eb.cmpr('first_name', '=', 'Jennifer'))
-   * ```
-   *
-   * After:
-   *
-   * ```ts
-   * where((eb) => eb('first_name', '=', 'Jennifer'))
-   * ```
-   *
-   * or
-   *
-   * ```ts
-   * where(({ eb }) => eb('first_name', '=', 'Jennifer'))
-   * ```
-   */
-  cmpr<
-    O extends SqlBool = SqlBool,
-    RE extends ReferenceExpression<DB, TB> = ReferenceExpression<DB, TB>
-  >(
-    lhs: RE,
-    op: ComparisonOperatorExpression,
-    rhs: OperandValueExpressionOrList<DB, TB, RE>
-  ): ExpressionWrapper<DB, TB, O>
-
-  /**
-   * @deprecated Use the expression builder as a function instead.
-   *
-   * Before:
-   *
-   * ```ts
-   * set((eb) => ({
-   *   age: eb.bxp('age', '+', 10)
-   * }))
-   * ```
-   *
-   * After:
-   *
-   * ```ts
-   * set((eb) => ({
-   *   age: eb('age', '+', 10)
-   * }))
-   * ```
-   *
-   * or
-   *
-   * ```ts
-   * set(({ eb }) => ({
-   *   age: eb('age', '+', 10)
-   * }))
-   * ```
-   */
-  bxp<
-    RE extends ReferenceExpression<DB, TB>,
-    OP extends BinaryOperatorExpression
-  >(
-    lhs: RE,
-    op: OP,
-    rhs: OperandValueExpression<DB, TB, RE>
-  ): ExpressionWrapper<
-    DB,
-    TB,
-    OP extends ComparisonOperator
-      ? SqlBool
-      : ExtractTypeFromReferenceExpression<DB, TB, RE>
-  >
-
-  /**
    * Creates an unary expression.
    *
    * This function returns an {@link Expression} and can be used pretty much anywhere.
@@ -909,10 +811,14 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    * select * from "person" where "age" between $1 and $2
    * ```
    */
-  between<RE extends ReferenceExpression<DB, TB>>(
+  between<
+    RE extends ReferenceExpression<DB, TB>,
+    SE extends OperandValueExpression<DB, TB, RE>,
+    EE extends OperandValueExpression<DB, TB, RE>
+  >(
     expr: RE,
-    start: OperandValueExpression<DB, TB, RE>,
-    end: OperandValueExpression<DB, TB, RE>
+    start: SE,
+    end: EE
   ): ExpressionWrapper<DB, TB, SqlBool>
 
   /**
@@ -932,10 +838,14 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    * select * from "person" where "age" between symmetric $1 and $2
    * ```
    */
-  betweenSymmetric<RE extends ReferenceExpression<DB, TB>>(
+  betweenSymmetric<
+    RE extends ReferenceExpression<DB, TB>,
+    SE extends OperandValueExpression<DB, TB, RE>,
+    EE extends OperandValueExpression<DB, TB, RE>
+  >(
     expr: RE,
-    start: OperandValueExpression<DB, TB, RE>,
-    end: OperandValueExpression<DB, TB, RE>
+    start: SE,
+    end: EE
   ): ExpressionWrapper<DB, TB, SqlBool>
 
   /**
@@ -996,11 +906,13 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    * )
    * ```
    */
-  and(
-    exprs: ReadonlyArray<OperandExpression<SqlBool>>
+  and<E extends OperandExpression<SqlBool>>(
+    exprs: ReadonlyArray<E>
   ): ExpressionWrapper<DB, TB, SqlBool>
 
-  and(exprs: Readonly<FilterObject<DB, TB>>): ExpressionWrapper<DB, TB, SqlBool>
+  and<E extends Readonly<FilterObject<DB, TB>>>(
+    exprs: E
+  ): ExpressionWrapper<DB, TB, SqlBool>
 
   /**
    * Combines two or more expressions using the logical `or` operator.
@@ -1060,11 +972,13 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    * )
    * ```
    */
-  or(
-    exprs: ReadonlyArray<OperandExpression<SqlBool>>
+  or<E extends OperandExpression<SqlBool>>(
+    exprs: ReadonlyArray<E>
   ): ExpressionWrapper<DB, TB, SqlBool>
 
-  or(exprs: Readonly<FilterObject<DB, TB>>): ExpressionWrapper<DB, TB, SqlBool>
+  or<E extends Readonly<FilterObject<DB, TB>>>(
+    exprs: E
+  ): ExpressionWrapper<DB, TB, SqlBool>
 
   /**
    * Wraps the expression in parentheses.
@@ -1107,11 +1021,12 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    */
   parens<
     RE extends ReferenceExpression<DB, TB>,
-    OP extends BinaryOperatorExpression
+    OP extends BinaryOperatorExpression,
+    VE extends OperandValueExpressionOrList<DB, TB, RE>
   >(
     lhs: RE,
     op: OP,
-    rhs: OperandValueExpressionOrList<DB, TB, RE>
+    rhs: VE
   ): ExpressionWrapper<
     DB,
     TB,
@@ -1167,19 +1082,6 @@ export function createExpressionBuilder<DB, TB extends keyof DB>(
         executor,
         queryNode: SelectQueryNode.createFrom(
           parseTableExpressionOrList(table)
-        ),
-      })
-    },
-
-    selectNoFrom<SE extends SelectExpression<DB, TB>>(
-      selection: SelectArg<DB, TB, SE>
-    ): SelectQueryBuilder<DB, TB, Selection<DB, TB, SE>> {
-      return createSelectQueryBuilder({
-        queryId: createQueryId(),
-        executor,
-        queryNode: SelectQueryNode.cloneWithSelections(
-          SelectQueryNode.create(),
-          parseSelectArg(selection)
         ),
       })
     },
@@ -1245,36 +1147,6 @@ export function createExpressionBuilder<DB, TB extends keyof DB>(
       value: VE
     ): ExpressionWrapper<DB, TB, VE> {
       return new ExpressionWrapper(parseSafeImmediateValue(value))
-    },
-
-    // @deprecated
-    cmpr<
-      O extends SqlBool = SqlBool,
-      RE extends ReferenceExpression<DB, TB> = ReferenceExpression<DB, TB>
-    >(
-      lhs: RE,
-      op: ComparisonOperatorExpression,
-      rhs: OperandValueExpressionOrList<DB, TB, RE>
-    ): ExpressionWrapper<DB, TB, O> {
-      return new ExpressionWrapper(parseValueBinaryOperation(lhs, op, rhs))
-    },
-
-    // @deprecated
-    bxp<
-      RE extends ReferenceExpression<DB, TB>,
-      OP extends BinaryOperatorExpression
-    >(
-      lhs: RE,
-      op: OP,
-      rhs: OperandValueExpression<DB, TB, RE>
-    ): ExpressionWrapper<
-      DB,
-      TB,
-      OP extends ComparisonOperator
-        ? SqlBool
-        : ExtractTypeFromReferenceExpression<DB, TB, RE>
-    > {
-      return new ExpressionWrapper(parseValueBinaryOperation(lhs, op, rhs))
     },
 
     unary,

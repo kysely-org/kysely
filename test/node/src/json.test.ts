@@ -395,7 +395,10 @@ for (const dialect of DIALECTS) {
 
         // Nest an empty list
         jsonArrayFrom(
-          eb.selectFrom('pet').select('id').where(sql`1 = 2`)
+          eb
+            .selectFrom('pet')
+            .select('id')
+            .where(sql<boolean>`1 = 2`)
         ).as('emptyList'),
       ])
 

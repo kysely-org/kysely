@@ -307,14 +307,17 @@ export interface WhereInterface<DB, TB extends keyof DB> {
    *   .execute()
    * ```
    */
-  where<RE extends ReferenceExpression<DB, TB>>(
+  where<
+    RE extends ReferenceExpression<DB, TB>,
+    VE extends OperandValueExpressionOrList<DB, TB, RE>
+  >(
     lhs: RE,
     op: ComparisonOperatorExpression,
-    rhs: OperandValueExpressionOrList<DB, TB, RE>
+    rhs: VE
   ): WhereInterface<DB, TB>
 
-  where(
-    expression: ExpressionOrFactory<DB, TB, SqlBool>
+  where<E extends ExpressionOrFactory<DB, TB, SqlBool>>(
+    expression: E
   ): WhereInterface<DB, TB>
 
   /**
@@ -368,10 +371,13 @@ export interface WhereInterface<DB, TB extends keyof DB> {
    * ) as "pet_name"
    * from "person"
    */
-  whereRef(
-    lhs: ReferenceExpression<DB, TB>,
+  whereRef<
+    LRE extends ReferenceExpression<DB, TB>,
+    RRE extends ReferenceExpression<DB, TB>
+  >(
+    lhs: LRE,
     op: ComparisonOperatorExpression,
-    rhs: ReferenceExpression<DB, TB>
+    rhs: RRE
   ): WhereInterface<DB, TB>
 
   /**

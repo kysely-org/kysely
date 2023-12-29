@@ -35,27 +35,17 @@ import { MergeResult } from '../query-builder/merge-result.js'
  * // Columns == 'id' | 'name' | 'species'
  * ```
  */
-export type AnyColumn<DB, TB extends keyof DB> =
-  // Inline version of DrainOuterGeneric for performance reasons.
-  // Don't replace with DrainOuterGeneric!
-  [DB] extends [unknown]
-    ? {
-        [T in TB]: keyof DB[T]
-      }[TB] &
-        string
-    : never
+export type AnyColumn<DB, TB extends keyof DB> = {
+  [T in TB]: keyof DB[T]
+}[TB] &
+  string
 
 /**
  * Extracts a column type.
  */
-export type ExtractColumnType<DB, TB extends keyof DB, C> =
-  // Inline version of DrainOuterGeneric for performance reasons.
-  // Don't replace with DrainOuterGeneric!
-  [DB] extends [unknown]
-    ? {
-        [T in TB]: C extends keyof DB[T] ? DB[T][C] : never
-      }[TB]
-    : never
+export type ExtractColumnType<DB, TB extends keyof DB, C> = {
+  [T in TB]: C extends keyof DB[T] ? DB[T][C] : never
+}[TB]
 
 /**
  * Given a database type and a union of table names in that db, returns
@@ -88,28 +78,17 @@ export type ExtractColumnType<DB, TB extends keyof DB, C> =
  * // Columns == 'person.id' | 'pet.name' | 'pet.species'
  * ```
  */
-export type AnyColumnWithTable<DB, TB extends keyof DB> = DrainOuterGeneric<
-  {
-    [T in TB]: T extends string
-      ? keyof DB[T] extends string
-        ? `${T}.${keyof DB[T]}`
-        : never
-      : never
-  }[TB]
->
+export type AnyColumnWithTable<DB, TB extends keyof DB> = {
+  [T in TB]: `${T & string}.${keyof DB[T] & string}`
+}[TB]
 
 /**
  * Just like {@link AnyColumn} but with a ` as <string>` suffix.
  */
-export type AnyAliasedColumn<DB, TB extends keyof DB> = DrainOuterGeneric<
-  {
-    [T in TB]: T extends string
-      ? keyof DB[T] extends string
-        ? `${keyof DB[T]} as ${string}`
-        : never
-      : never
-  }[TB]
->
+export type AnyAliasedColumn<DB, TB extends keyof DB> = `${AnyColumn<
+  DB,
+  TB
+>} as ${string}`
 
 /**
  * Just like {@link AnyColumnWithTable} but with a ` as <string>` suffix.
@@ -117,15 +96,7 @@ export type AnyAliasedColumn<DB, TB extends keyof DB> = DrainOuterGeneric<
 export type AnyAliasedColumnWithTable<
   DB,
   TB extends keyof DB
-> = DrainOuterGeneric<
-  {
-    [T in TB]: T extends string
-      ? keyof DB[T] extends string
-        ? `${T}.${keyof DB[T]} as ${string}`
-        : never
-      : never
-  }[TB]
->
+> = `${AnyColumnWithTable<DB, TB>} as ${string}`
 
 /**
  * Extracts the item type of an array.
@@ -183,17 +154,34 @@ export type Equals<T, U> = (<G>() => G extends T ? 1 : 2) extends <
   ? true
   : false
 
-export type NarrowPartial<S, T> = DrainOuterGeneric<
+export type NarrowPartial<O, T> = DrainOuterGeneric<
   T extends object
     ? {
-        [K in keyof S & string]: K extends keyof T
-          ? T[K] extends S[K]
+        [K in keyof O & string]: K extends keyof T
+          ? T[K] extends NotNull
+            ? Exclude<O[K], null>
+            : T[K] extends O[K]
             ? T[K]
             : KyselyTypeError<`$narrowType() call failed: passed type does not exist in '${K}'s type union`>
-          : S[K]
+          : O[K]
       }
     : never
 >
+
+/**
+ * A type constant for marking a column as not null. Can be used with `$narrowPartial`.
+ *
+ * Example:
+ *
+ * ```ts
+ * const person = await db.selectFrom('person')
+ *   .where('nullable_column', 'is not', null)
+ *   .selectAll()
+ *   .$narrowType<{ nullable_column: NotNull }>()
+ *   .executeTakeFirstOrThrow()
+ * ```
+ */
+export type NotNull = { readonly __notNull__: unique symbol }
 
 export type SqlBool = boolean | 0 | 1
 

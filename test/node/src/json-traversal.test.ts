@@ -319,7 +319,7 @@ for (const dialect of DIALECTS.filter((dialect) => dialect !== 'mssql')) {
           const query = ctx.db
             .selectFrom('person_metadata')
             .where((eb) =>
-              eb.cmpr(
+              eb(
                 eb.ref('profile', jsonOperator).key('auth').key('login_count'),
                 '=',
                 12
@@ -661,7 +661,7 @@ for (const dialect of DIALECTS.filter((dialect) => dialect !== 'mssql')) {
           const query = ctx.db
             .selectFrom('person_metadata')
             .where((eb) =>
-              eb.cmpr(
+              eb(
                 eb.ref('profile', jsonOperator).key('auth').key('login_count'),
                 '=',
                 12

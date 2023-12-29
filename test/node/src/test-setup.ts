@@ -39,13 +39,17 @@ import {
 } from '../../../'
 import { OrderByDirection, UndirectedOrderByExpression } from '../../../dist/cjs/parser/order-by-parser'
 
+export type Gender = 'male' | 'female' | 'other'
+export type MaritalStatus = 'single' | 'married' | 'divorced' | 'widowed'
+export type Species = 'dog' | 'cat' | 'hamster'
+
 export interface Person {
   id: Generated<number>
   first_name: string | null
   middle_name: ColumnType<string | null, string | undefined, string | undefined>
   last_name: string | null
-  gender: 'male' | 'female' | 'other'
-  marital_status: 'single' | 'married' | 'divorced' | 'widowed' | null
+  gender: Gender
+  marital_status: MaritalStatus | null
   children: Generated<number>
 }
 
@@ -53,7 +57,7 @@ export interface Pet {
   id: Generated<number>
   name: string
   owner_id: number
-  species: 'dog' | 'cat' | 'hamster'
+  species: Species
 }
 
 export interface Toy {

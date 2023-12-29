@@ -11,6 +11,7 @@ import {
   insertDefaultDataSet,
   DEFAULT_DATA_SET,
   DIALECTS,
+  Species,
 } from './test-setup.js'
 
 for (const dialect of DIALECTS) {
@@ -222,7 +223,7 @@ for (const dialect of DIALECTS) {
           .deleteFrom('person')
           .using('pet')
           .whereRef('pet.owner_id', '=', 'person.id')
-          .where('pet.species', '=', sql`${'NO_SUCH_SPECIES'}`)
+          .where('pet.species', '=', sql<Species>`${'NO_SUCH_SPECIES'}`)
 
         testSql(query, dialect, {
           postgres: {
@@ -486,7 +487,7 @@ for (const dialect of DIALECTS) {
           .deleteFrom('person')
           .using('person')
           .innerJoin('pet', 'pet.owner_id', 'person.id')
-          .where('pet.species', '=', sql`${'NO_SUCH_SPECIES'}`)
+          .where('pet.species', '=', sql<Species>`${'NO_SUCH_SPECIES'}`)
 
         testSql(query, dialect, {
           postgres: NOT_SUPPORTED,
@@ -511,7 +512,7 @@ for (const dialect of DIALECTS) {
           .deleteFrom('person')
           .using('person')
           .leftJoin('pet', 'pet.owner_id', 'person.id')
-          .where('pet.species', '=', sql`${'NO_SUCH_SPECIES'}`)
+          .where('pet.species', '=', sql<Species>`${'NO_SUCH_SPECIES'}`)
 
         testSql(query, dialect, {
           postgres: NOT_SUPPORTED,
@@ -539,7 +540,7 @@ for (const dialect of DIALECTS) {
           .leftJoin('toy', 'toy.pet_id', 'pet.id')
           .where(({ eb, or }) =>
             or([
-              eb('pet.species', '=', sql`${'NO_SUCH_SPECIES'}`),
+              eb('pet.species', '=', sql<Species>`${'NO_SUCH_SPECIES'}`),
               eb('toy.price', '=', 0),
             ])
           )
@@ -561,7 +562,7 @@ for (const dialect of DIALECTS) {
         const query = ctx.db
           .deleteFrom('person')
           .using(['person', 'pet'])
-          .where('pet.species', '=', sql`${'NO_SUCH_SPECIES'}`)
+          .where('pet.species', '=', sql<Species>`${'NO_SUCH_SPECIES'}`)
 
         testSql(query, dialect, {
           postgres: NOT_SUPPORTED,
