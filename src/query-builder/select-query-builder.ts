@@ -205,14 +205,14 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    *
    * <!-- siteExample("select", "Aliases", 40) -->
    *
-   * You can provide an alias for the selections by appending `as the_alias` to the selection.
+   * You can give an alias for selections and tables by appending `as the_alias` to the name:
    *
    * ```ts
    * const persons = await db
-   *   .selectFrom('person')
+   *   .selectFrom('person as p')
    *   .select([
    *     'first_name as fn',
-   *     'person.last_name as ln'
+   *     'p.last_name as ln'
    *   ])
    *   .execute()
    * ```
@@ -222,8 +222,8 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    * ```sql
    * select
    *   "first_name" as "fn",
-   *   "person"."last_name" as "ln"
-   * from "person"
+   *   "p"."last_name" as "ln"
+   * from "person" as "p"
    * ```
    *
    * <!-- siteExample("select", "Complex selections", 50) -->
