@@ -65,11 +65,4 @@ export const UpdateQueryNode = freeze({
         : updates,
     })
   },
-
-  cloneWithTop(updateQuery: UpdateQueryNode, top: TopNode): UpdateQueryNode {
-    return freeze({
-      ...updateQuery,
-      top,
-    })
-  },
 })

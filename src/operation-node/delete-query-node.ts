@@ -76,11 +76,4 @@ export const DeleteQueryNode = freeze({
           : UsingNode.create(tables),
     })
   },
-
-  cloneWithTop(deleteNode: DeleteQueryNode, top: TopNode): DeleteQueryNode {
-    return freeze({
-      ...deleteNode,
-      top,
-    })
-  },
 })
