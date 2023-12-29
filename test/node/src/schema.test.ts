@@ -1416,7 +1416,9 @@ for (const dialect of DIALECTS) {
 
           await builder.execute()
         })
+      }
 
+      if (dialect === 'postgres') {
         it('should create an index with "nulls not distinct" modifier', async () => {
           const builder = ctx.db.schema
             .createIndex('test_first_name_index')
@@ -3428,7 +3430,7 @@ for (const dialect of DIALECTS) {
           })
         })
       }
-      
+
       if (dialect === 'mysql') {
         describe('drop index', () => {
           beforeEach(async () => {
