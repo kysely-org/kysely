@@ -37,10 +37,7 @@ import {
   MssqlDialect,
   SelectQueryBuilder,
 } from '../../../'
-import {
-  OrderByDirection,
-  UndirectedOrderByExpression,
-} from '../../../dist/cjs/parser/order-by-parser'
+import { OrderByDirection, UndirectedOrderByExpression } from '../../../dist/cjs/parser/order-by-parser'
 
 export type Gender = 'male' | 'female' | 'other'
 export type MaritalStatus = 'single' | 'married' | 'divorced' | 'widowed'
@@ -495,12 +492,7 @@ export function orderBy<QB extends SelectQueryBuilder<any, any, any>>(
 ): (qb: QB) => QB {
   return (qb) => {
     if (dialect === 'mssql') {
-      return qb.orderBy(
-        orderBy,
-        sql`${sql.raw(direction ? `${direction} ` : '')}${sql.raw(
-          'offset 0 rows'
-        )}`
-      ) as QB
+      return qb.orderBy(orderBy, sql`${sql.raw(direction ? `${direction} ` : '')}${sql.raw('offset 0 rows')}`) as QB
     }
 
     return qb.orderBy(orderBy, direction) as QB
