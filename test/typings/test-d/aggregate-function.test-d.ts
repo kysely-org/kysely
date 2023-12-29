@@ -1,5 +1,5 @@
 import { expectError, expectAssignable, expectNotAssignable } from 'tsd'
-import { Kysely, sql } from '..'
+import { Generated, Kysely, sql } from '..'
 import { Database } from '../shared'
 
 async function testSelectWithoutAs(db: Kysely<Database>) {
@@ -1023,4 +1023,76 @@ async function testSelectAsCustomFunctionArgument(db: Kysely<Database>) {
       ])
       .executeTakeFirstOrThrow()
   )
+}
+
+interface DB764 {
+  order: Order764
+  orderDetails: OrderDetails764
+}
+
+interface OrderDetails764 {
+  id: Generated<string>
+  orderId: string
+  itemName: string
+  itemType: string
+  quantity: number
+  unlimited: true
+}
+
+interface Order764 {
+  id: Generated<string>
+}
+
+enum ItemType764 {
+  FOOD = 'FOOD',
+  FEELING = 'FEELING',
+}
+
+// https://github.com/kysely-org/kysely/issues/764
+async function testIssue764(db: Kysely<DB764>) {
+  await db
+    .with('OrderAggregates', (db) =>
+      db
+        .selectFrom('orderDetails')
+        .innerJoin('order', 'order.id', 'orderDetails.orderId')
+        .select([
+          'orderDetails.itemName',
+          'orderDetails.itemType',
+          'order.id as order_id',
+          (eb) => eb.fn.max('orderDetails.quantity').as('MaxQuantity'),
+          (eb) => eb.fn.sum('orderDetails.quantity').as('SumQuantity'),
+          (eb) =>
+            eb
+              .fn('bool_or', [eb.ref('orderDetails.unlimited')])
+              .as('AnyUnlimited'),
+        ])
+        .groupBy(['order_id'])
+    )
+    .selectFrom('OrderAggregates')
+    .select(['order_id', 'OrderAggregates.itemName'])
+    .select((eb) =>
+      eb
+        .case()
+        .when('OrderAggregates.itemType', '=', ItemType764.FOOD)
+        .then(
+          eb
+            .case()
+            .when(sql<boolean>`bool_or(${eb.ref('AnyUnlimited')})`)
+            .then(-1)
+            .else(eb.fn.max('SumQuantity'))
+            .end()
+        )
+        .when('OrderAggregates.itemType', '=', ItemType764.FEELING)
+        .then(eb.fn.max('MaxQuantity')) // <-- WOT?
+        .else(0)
+        .end()
+        .as('totalQuantity')
+    )
+    .groupBy([
+      'OrderAggregates.itemName',
+      'OrderAggregates.AnyUnlimited',
+      'OrderAggregates.MaxQuantity',
+      'OrderAggregates.SumQuantity',
+    ])
+    .execute()
 }
