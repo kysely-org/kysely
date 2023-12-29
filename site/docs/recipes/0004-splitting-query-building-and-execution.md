@@ -1,4 +1,4 @@
-# Splitting query building from execution
+# Splitting query building and execution
 
 Kysely is primarily a type-safe sql query builder.
 
