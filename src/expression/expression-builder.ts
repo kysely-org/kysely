@@ -302,27 +302,6 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
   ): SelectQueryBuilder<From<DB, TE>, FromTables<DB, TB, TE>, {}>
 
   /**
-   * Creates a `select` expression without a `from` clause.
-   *
-   * If you want to create a `select from` query, use the `selectFrom` method instead.
-   * This one can be used to create a plain `select` statement without a `from` clause.
-   *
-   * This method accepts the same inputs as {@link SelectQueryBuilder.select}. See its
-   * documentation for examples.
-   */
-  selectNoFrom<SE extends SelectExpression<DB, TB>>(
-    selections: ReadonlyArray<SE>
-  ): SelectQueryBuilder<DB, TB, Selection<DB, TB, SE>>
-
-  selectNoFrom<CB extends SelectCallback<DB, TB>>(
-    callback: CB
-  ): SelectQueryBuilder<DB, TB, CallbackSelection<DB, TB, CB>>
-
-  selectNoFrom<SE extends SelectExpression<DB, TB>>(
-    selection: SE
-  ): SelectQueryBuilder<DB, TB, Selection<DB, TB, SE>>
-
-  /**
    * Creates a `case` statement/operator.
    *
    * ### Examples
@@ -1167,19 +1146,6 @@ export function createExpressionBuilder<DB, TB extends keyof DB>(
         executor,
         queryNode: SelectQueryNode.createFrom(
           parseTableExpressionOrList(table)
-        ),
-      })
-    },
-
-    selectNoFrom<SE extends SelectExpression<DB, TB>>(
-      selection: SelectArg<DB, TB, SE>
-    ): SelectQueryBuilder<DB, TB, Selection<DB, TB, SE>> {
-      return createSelectQueryBuilder({
-        queryId: createQueryId(),
-        executor,
-        queryNode: SelectQueryNode.cloneWithSelections(
-          SelectQueryNode.create(),
-          parseSelectArg(selection)
         ),
       })
     },

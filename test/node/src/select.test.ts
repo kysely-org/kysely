@@ -1015,7 +1015,6 @@ for (const dialect of DIALECTS) {
 
     it('should create a select statement without a `from` clause', async () => {
       const query = ctx.db.selectNoFrom((eb) => [
-        eb.selectNoFrom(eb.lit(1).as('one')).as('one'),
         eb
           .selectFrom('person')
           .select('first_name')
@@ -1026,19 +1025,19 @@ for (const dialect of DIALECTS) {
 
       testSql(query, dialect, {
         postgres: {
-          sql: `select (select 1 as "one") as "one", (select "first_name" from "person" order by "first_name" limit $1) as "person_first_name"`,
+          sql: `select (select "first_name" from "person" order by "first_name" limit $1) as "person_first_name"`,
           parameters: [1],
         },
         mysql: {
-          sql: 'select (select 1 as `one`) as `one`, (select `first_name` from `person` order by `first_name` limit ?) as `person_first_name`',
+          sql: 'select (select `first_name` from `person` order by `first_name` limit ?) as `person_first_name`',
           parameters: [1],
         },
         mssql: {
-          sql: `select (select 1 as "one") as "one", (select top 1 "first_name" from "person" order by "first_name") as "person_first_name"`,
+          sql: `select (select top 1 "first_name" from "person" order by "first_name") as "person_first_name"`,
           parameters: [],
         },
         sqlite: {
-          sql: 'select (select 1 as "one") as "one", (select "first_name" from "person" order by "first_name" limit ?) as "person_first_name"',
+          sql: 'select (select "first_name" from "person" order by "first_name" limit ?) as "person_first_name"',
           parameters: [1],
         },
       })
@@ -1048,9 +1047,9 @@ for (const dialect of DIALECTS) {
 
       if (dialect === 'mysql') {
         // For some weird reason, MySQL returns `one` as a string.
-        expect(result[0]).to.eql({ one: '1', person_first_name: 'Arnold' })
+        expect(result[0]).to.eql({ person_first_name: 'Arnold' })
       } else {
-        expect(result[0]).to.eql({ one: 1, person_first_name: 'Arnold' })
+        expect(result[0]).to.eql({ person_first_name: 'Arnold' })
       }
     })
   })
