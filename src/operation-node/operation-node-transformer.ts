@@ -998,8 +998,7 @@ export class OperationNodeTransformer {
     return requireAllProps<TopNode>({
       kind: 'TopNode',
       expression: node.expression,
-      percent: node.percent,
-      withTies: node.withTies,
+      modifiers: node.modifiers,
     })
   }
 

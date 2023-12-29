@@ -1460,12 +1460,8 @@ export class DefaultQueryCompiler
   protected override visitTop(node: TopNode): void {
     this.append(`top(${node.expression})`)
 
-    if (node.percent) {
-      this.append(' percent')
-    }
-
-    if (node.withTies) {
-      this.append(' with ties')
+    if (node.modifiers) {
+      this.append(` ${node.modifiers}`)
     }
   }
 

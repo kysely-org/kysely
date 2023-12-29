@@ -1,11 +1,12 @@
 import { freeze } from '../util/object-utils.js'
 import { OperationNode } from './operation-node.js'
 
+export type TopModifier = 'percent' | 'with ties' | 'percent with ties'
+
 export interface TopNode extends OperationNode {
   readonly kind: 'TopNode'
-  readonly expression: number
-  readonly percent: boolean
-  readonly withTies: boolean
+  readonly expression: number | bigint
+  readonly modifiers?: TopModifier
 }
 
 /**
@@ -16,12 +17,11 @@ export const TopNode = freeze({
     return node.kind === 'TopNode'
   },
 
-  create(expression: number, percent: boolean, withTies: boolean): TopNode {
+  create(expression: number | bigint, modifiers?: TopModifier): TopNode {
     return freeze({
       kind: 'TopNode',
       expression,
-      percent,
-      withTies,
+      modifiers,
     })
   },
 })
