@@ -373,6 +373,7 @@ export class OperationNodeTransformer {
       ignore: node.ignore,
       replace: node.replace,
       explain: this.transformNode(node.explain),
+      top: this.transformNode(node.top),
     })
   }
 

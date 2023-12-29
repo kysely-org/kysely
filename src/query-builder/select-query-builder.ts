@@ -1080,7 +1080,7 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
   offset(offset: number): SelectQueryBuilder<DB, TB, O>
 
   /**
-   * Adds a top clause to the query.
+   * Adds a `top` clause to the query.
    *
    * This clause is only supported by some dialects like MS SQL Server.
    *

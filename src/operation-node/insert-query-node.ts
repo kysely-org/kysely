@@ -6,6 +6,7 @@ import { OnDuplicateKeyNode } from './on-duplicate-key-node.js'
 import { OperationNode } from './operation-node.js'
 import { ReturningNode } from './returning-node.js'
 import { TableNode } from './table-node.js'
+import { TopNode } from './top-node.js'
 import { WithNode } from './with-node.js'
 
 export type InsertQueryNodeProps = Omit<InsertQueryNode, 'kind' | 'into'>
@@ -22,6 +23,7 @@ export interface InsertQueryNode extends OperationNode {
   readonly ignore?: boolean
   readonly replace?: boolean
   readonly explain?: ExplainNode
+  readonly top?: TopNode
 }
 
 /**

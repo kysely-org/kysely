@@ -302,6 +302,11 @@ export class DefaultQueryCompiler
       this.append(' ignore')
     }
 
+    if (node.top) {
+      this.append(' ')
+      this.visitNode(node.top)
+    }
+
     this.append(' into ')
     this.visitNode(node.into)
 

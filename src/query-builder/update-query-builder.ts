@@ -133,9 +133,9 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
   }
 
   /**
-   * Adds a `top` clause to the query.
+   * Changes an `update` query into a `update top` query.
    *
-   * This clause is only supported by some dialects like MS SQL Server.
+   * `top` clause is only supported by some dialects like MS SQL Server.
    *
    * ### Examples
    *

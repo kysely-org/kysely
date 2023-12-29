@@ -132,9 +132,9 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
   }
 
   /**
-   * Adds a `top` clause to the query.
+   * Changes a `delete from` query into a `delete top from` query.
    *
-   * This clause is only supported by some dialects like MS SQL Server.
+   * `top` clause is only supported by some dialects like MS SQL Server.
    *
    * ### Examples
    *

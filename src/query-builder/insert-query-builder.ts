@@ -358,6 +358,63 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
   }
 
   /**
+   * Changes an `insert into` query to an `insert top into` query.
+   *
+   * `top` clause is only supported by some dialects like MS SQL Server.
+   *
+   * ### Examples
+   *
+   * Insert the first 5 rows:
+   *
+   * ```ts
+   * await db.insertInto('person')
+   *   .top(5)
+   *   .columns(['first_name', 'gender'])
+   *   .expression(
+   *     (eb) => eb.selectFrom('pet').select(['name', sql.lit('other').as('gender')])
+   *   )
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (MS SQL Server):
+   *
+   * ```sql
+   * insert top(5) into "person" ("first_name", "gender") select "name", 'other' as "gender" from "pet"
+   * ```
+   *
+   * Insert the first 50 percent of rows:
+   *
+   * ```ts
+   * await db.insertInto('person')
+   *   .top(50, 'percent')
+   *   .columns(['first_name', 'gender'])
+   *   .expression(
+   *     (eb) => eb.selectFrom('pet').select(['name', sql.lit('other').as('gender')])
+   *   )
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (MS SQL Server):
+   *
+   * ```sql
+   * insert top(50) percent into "person" ("first_name", "gender") select "name", 'other' as "gender" from "pet"
+   * ```
+   */
+  top(
+    expression: number | bigint,
+    modifiers?: 'percent'
+  ): InsertQueryBuilder<DB, TB, O> {
+    return new InsertQueryBuilder({
+      ...this.#props,
+      queryNode: QueryNode.cloneWithTop(
+        this.#props.queryNode,
+        expression,
+        modifiers
+      ),
+    })
+  }
+
+  /**
    * Adds an `on conflict` clause to the query.
    *
    * `on conflict` is only supported by some dialects like PostgreSQL and SQLite. On MySQL
