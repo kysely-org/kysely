@@ -867,5 +867,50 @@ for (const dialect of DIALECTS) {
         )
       })
     }
+
+    if (dialect === 'mssql') {
+      it('should delete first row', async () => {
+        const query = ctx.db
+          .deleteFrom('person')
+          .top(1)
+          .where('gender', '=', 'male')
+
+        testSql(query, dialect, {
+          postgres: NOT_SUPPORTED,
+          mysql: NOT_SUPPORTED,
+          mssql: {
+            sql: 'delete top(1) from "person" where "gender" = @1',
+            parameters: ['male'],
+          },
+          sqlite: NOT_SUPPORTED,
+        })
+
+        const result = await query.executeTakeFirst()
+
+        expect(result).to.be.instanceOf(DeleteResult)
+        expect(result.numDeletedRows).to.equal(1n)
+      })
+
+      it('should delete first 50% rows', async () => {
+        const query = ctx.db
+          .deleteFrom('person')
+          .top(50, 'percent')
+          .where('gender', '=', 'male')
+
+        testSql(query, dialect, {
+          postgres: NOT_SUPPORTED,
+          mysql: NOT_SUPPORTED,
+          mssql: {
+            sql: 'delete top(50) percent from "person" where "gender" = @1',
+            parameters: ['male'],
+          },
+          sqlite: NOT_SUPPORTED,
+        })
+
+        const result = await query.executeTakeFirst()
+
+        expect(result).to.be.instanceOf(DeleteResult)
+      })
+    }
   })
 }

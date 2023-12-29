@@ -67,6 +67,7 @@ import {
 import { KyselyTypeError } from '../util/type-error.js'
 import { Streamable } from '../util/streamable.js'
 import { ExpressionOrFactory } from '../parser/expression-parser.js'
+import { TopNode } from '../operation-node/top-node.js'
 
 export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
   implements
@@ -127,6 +128,58 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
     return new DeleteQueryBuilder<DB, TB, O>({
       ...this.#props,
       queryNode: QueryNode.cloneWithoutWhere(this.#props.queryNode),
+    })
+  }
+
+  /**
+   * Adds a `top` clause to the query.
+   *
+   * This clause is only supported by some dialects like MS SQL Server.
+   *
+   * ### Examples
+   *
+   * Delete the first 5 rows:
+   *
+   * ```ts
+   * await db
+   *   .deleteFrom('person')
+   *   .top(5)
+   *   .where('age', '>', 18)
+   *   .executeTakeFirstOrThrow()
+   * ```
+   *
+   * The generated SQL (MS SQL Server):
+   *
+   * ```sql
+   * delete top(5) from "person" where "age" > @1
+   * ```
+   *
+   * Delete the first 50% of rows:
+   *
+   * ```ts
+   * await db
+   *   .deleteFrom('person')
+   *   .top(50, 'percent')
+   *   .where('age', '>', 18)
+   *   .executeTakeFirstOrThrow()
+   * ```
+   *
+   * The generated SQL (MS SQL Server):
+   *
+   * ```sql
+   * delete top(50) percent from "person" where "age" > @1
+   * ```
+   */
+  top(
+    top: number | bigint,
+    modifiers?: 'percent'
+  ): DeleteQueryBuilder<DB, TB, O> {
+    return new DeleteQueryBuilder({
+      ...this.#props,
+      queryNode: DeleteQueryNode.cloneWithTop(
+        this.#props.queryNode,
+        TopNode.create(top, modifiers)
+      ),
     })
   }
 

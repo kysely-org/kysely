@@ -359,6 +359,12 @@ export class DefaultQueryCompiler
     }
 
     this.append('delete ')
+
+    if (node.top) {
+      this.visitNode(node.top)
+      this.append(' ')
+    }
+
     this.visitNode(node.from)
 
     if (node.using) {

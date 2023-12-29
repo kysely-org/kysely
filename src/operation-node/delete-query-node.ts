@@ -10,6 +10,7 @@ import { OrderByNode } from './order-by-node.js'
 import { OrderByItemNode } from './order-by-item-node.js'
 import { ExplainNode } from './explain-node.js'
 import { UsingNode } from './using-node.js'
+import { TopNode } from './top-node.js'
 
 export interface DeleteQueryNode extends OperationNode {
   readonly kind: 'DeleteQueryNode'
@@ -22,6 +23,7 @@ export interface DeleteQueryNode extends OperationNode {
   readonly orderBy?: OrderByNode
   readonly limit?: LimitNode
   readonly explain?: ExplainNode
+  readonly top?: TopNode
 }
 
 /**
@@ -72,6 +74,13 @@ export const DeleteQueryNode = freeze({
         deleteNode.using !== undefined
           ? UsingNode.cloneWithTables(deleteNode.using, tables)
           : UsingNode.create(tables),
+    })
+  },
+
+  cloneWithTop(deleteNode: DeleteQueryNode, top: TopNode): DeleteQueryNode {
+    return freeze({
+      ...deleteNode,
+      top,
     })
   },
 })

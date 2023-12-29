@@ -1082,6 +1082,8 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
   /**
    * Adds a top clause to the query.
    *
+   * This clause is only supported by some dialects like MS SQL Server.
+   *
    * ### Examples
    *
    * Select 10 biggest ages:
