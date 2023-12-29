@@ -15,6 +15,7 @@ import { WithNode } from './with-node.js'
 import { SelectModifierNode } from './select-modifier-node.js'
 import { ExplainNode } from './explain-node.js'
 import { SetOperationNode } from './set-operation-node.js'
+import { TopNode } from './top-node.js'
 
 export interface SelectQueryNode extends OperationNode {
   readonly kind: 'SelectQueryNode'
@@ -33,6 +34,7 @@ export interface SelectQueryNode extends OperationNode {
   readonly having?: HavingNode
   readonly explain?: ExplainNode
   readonly setOperations?: ReadonlyArray<SetOperationNode>
+  readonly top?: TopNode
 }
 
 /**
@@ -52,7 +54,7 @@ export const SelectQueryNode = freeze({
 
   createFrom(
     fromItems: ReadonlyArray<OperationNode>,
-    withNode?: WithNode
+    withNode?: WithNode,
   ): SelectQueryNode {
     return freeze({
       kind: 'SelectQueryNode',
@@ -63,7 +65,7 @@ export const SelectQueryNode = freeze({
 
   cloneWithSelections(
     select: SelectQueryNode,
-    selections: ReadonlyArray<SelectionNode>
+    selections: ReadonlyArray<SelectionNode>,
   ): SelectQueryNode {
     return freeze({
       ...select,
@@ -75,7 +77,7 @@ export const SelectQueryNode = freeze({
 
   cloneWithDistinctOn(
     select: SelectQueryNode,
-    expressions: ReadonlyArray<OperationNode>
+    expressions: ReadonlyArray<OperationNode>,
   ): SelectQueryNode {
     return freeze({
       ...select,
@@ -87,7 +89,7 @@ export const SelectQueryNode = freeze({
 
   cloneWithFrontModifier(
     select: SelectQueryNode,
-    modifier: SelectModifierNode
+    modifier: SelectModifierNode,
   ): SelectQueryNode {
     return freeze({
       ...select,
@@ -99,7 +101,7 @@ export const SelectQueryNode = freeze({
 
   cloneWithEndModifier(
     select: SelectQueryNode,
-    modifier: SelectModifierNode
+    modifier: SelectModifierNode,
   ): SelectQueryNode {
     return freeze({
       ...select,
@@ -111,7 +113,7 @@ export const SelectQueryNode = freeze({
 
   cloneWithOrderByItems(
     selectNode: SelectQueryNode,
-    items: ReadonlyArray<OrderByItemNode>
+    items: ReadonlyArray<OrderByItemNode>,
   ): SelectQueryNode {
     return freeze({
       ...selectNode,
@@ -123,7 +125,7 @@ export const SelectQueryNode = freeze({
 
   cloneWithGroupByItems(
     selectNode: SelectQueryNode,
-    items: ReadonlyArray<GroupByItemNode>
+    items: ReadonlyArray<GroupByItemNode>,
   ): SelectQueryNode {
     return freeze({
       ...selectNode,
@@ -135,7 +137,7 @@ export const SelectQueryNode = freeze({
 
   cloneWithLimit(
     selectNode: SelectQueryNode,
-    limit: LimitNode
+    limit: LimitNode,
   ): SelectQueryNode {
     return freeze({
       ...selectNode,
@@ -145,7 +147,7 @@ export const SelectQueryNode = freeze({
 
   cloneWithOffset(
     selectNode: SelectQueryNode,
-    offset: OffsetNode
+    offset: OffsetNode,
   ): SelectQueryNode {
     return freeze({
       ...selectNode,
@@ -155,7 +157,7 @@ export const SelectQueryNode = freeze({
 
   cloneWithHaving(
     selectNode: SelectQueryNode,
-    operation: OperationNode
+    operation: OperationNode,
   ): SelectQueryNode {
     return freeze({
       ...selectNode,
@@ -167,13 +169,20 @@ export const SelectQueryNode = freeze({
 
   cloneWithSetOperations(
     selectNode: SelectQueryNode,
-    setOperations: ReadonlyArray<SetOperationNode>
+    setOperations: ReadonlyArray<SetOperationNode>,
   ): SelectQueryNode {
     return freeze({
       ...selectNode,
       setOperations: selectNode.setOperations
         ? freeze([...selectNode.setOperations, ...setOperations])
         : freeze([...setOperations]),
+    })
+  },
+
+  cloneWithTop(selectNode: SelectQueryNode, top: TopNode): SelectQueryNode {
+    return freeze({
+      ...selectNode,
+      top,
     })
   },
 

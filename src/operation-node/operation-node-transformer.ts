@@ -88,6 +88,7 @@ import { JSONPathLegNode } from './json-path-leg-node.js'
 import { JSONOperatorChainNode } from './json-operator-chain-node.js'
 import { TupleNode } from './tuple-node.js'
 import { AddIndexNode } from './add-index-node.js'
+import { TopNode } from './top-node.js'
 
 /**
  * Transforms an operation node tree into another one.
@@ -210,6 +211,7 @@ export class OperationNodeTransformer {
     JSONOperatorChainNode: this.transformJSONOperatorChain.bind(this),
     TupleNode: this.transformTuple.bind(this),
     AddIndexNode: this.transformAddIndex.bind(this),
+    TopNode: this.transformTop.bind(this),
   })
 
   transformNode<T extends OperationNode | undefined>(node: T): T {
@@ -229,7 +231,7 @@ export class OperationNodeTransformer {
   }
 
   protected transformNodeList<
-    T extends ReadonlyArray<OperationNode> | undefined
+    T extends ReadonlyArray<OperationNode> | undefined,
   >(list: T): T {
     if (!list) {
       return list
@@ -256,6 +258,7 @@ export class OperationNodeTransformer {
       having: this.transformNode(node.having),
       explain: this.transformNode(node.explain),
       setOperations: this.transformNodeList(node.setOperations),
+      top: this.transformNode(node.top),
     })
   }
 
@@ -418,7 +421,7 @@ export class OperationNodeTransformer {
   }
 
   protected transformColumnDefinition(
-    node: ColumnDefinitionNode
+    node: ColumnDefinitionNode,
   ): ColumnDefinitionNode {
     return requireAllProps<ColumnDefinitionNode>({
       kind: 'ColumnDefinitionNode',
@@ -534,7 +537,7 @@ export class OperationNodeTransformer {
   }
 
   protected transformOnDuplicateKey(
-    node: OnDuplicateKeyNode
+    node: OnDuplicateKeyNode,
   ): OnDuplicateKeyNode {
     return requireAllProps<OnDuplicateKeyNode>({
       kind: 'OnDuplicateKeyNode',
@@ -574,7 +577,7 @@ export class OperationNodeTransformer {
   }
 
   protected transformPrimaryKeyConstraint(
-    node: PrimaryKeyConstraintNode
+    node: PrimaryKeyConstraintNode,
   ): PrimaryKeyConstraintNode {
     return requireAllProps<PrimaryKeyConstraintNode>({
       kind: 'PrimaryKeyConstraintNode',
@@ -584,7 +587,7 @@ export class OperationNodeTransformer {
   }
 
   protected transformUniqueConstraint(
-    node: UniqueConstraintNode
+    node: UniqueConstraintNode,
   ): UniqueConstraintNode {
     return requireAllProps<UniqueConstraintNode>({
       kind: 'UniqueConstraintNode',
@@ -595,7 +598,7 @@ export class OperationNodeTransformer {
   }
 
   protected transformForeignKeyConstraint(
-    node: ForeignKeyConstraintNode
+    node: ForeignKeyConstraintNode,
   ): ForeignKeyConstraintNode {
     return requireAllProps<ForeignKeyConstraintNode>({
       kind: 'ForeignKeyConstraintNode',
@@ -627,7 +630,7 @@ export class OperationNodeTransformer {
   }
 
   protected transformCheckConstraint(
-    node: CheckConstraintNode
+    node: CheckConstraintNode,
   ): CheckConstraintNode {
     return requireAllProps<CheckConstraintNode>({
       kind: 'CheckConstraintNode',
@@ -645,7 +648,7 @@ export class OperationNodeTransformer {
   }
 
   protected transformCommonTableExpression(
-    node: CommonTableExpressionNode
+    node: CommonTableExpressionNode,
   ): CommonTableExpressionNode {
     return requireAllProps<CommonTableExpressionNode>({
       kind: 'CommonTableExpressionNode',
@@ -656,7 +659,7 @@ export class OperationNodeTransformer {
   }
 
   protected transformCommonTableExpressionName(
-    node: CommonTableExpressionNameNode
+    node: CommonTableExpressionNameNode,
   ): CommonTableExpressionNameNode {
     return requireAllProps<CommonTableExpressionNameNode>({
       kind: 'CommonTableExpressionNameNode',
@@ -746,7 +749,7 @@ export class OperationNodeTransformer {
   }
 
   protected transformDropConstraint(
-    node: DropConstraintNode
+    node: DropConstraintNode,
   ): DropConstraintNode {
     return requireAllProps<DropConstraintNode>({
       kind: 'DropConstraintNode',
@@ -805,7 +808,7 @@ export class OperationNodeTransformer {
   }
 
   protected transformSelectModifier(
-    node: SelectModifierNode
+    node: SelectModifierNode,
   ): SelectModifierNode {
     return requireAllProps<SelectModifierNode>({
       kind: 'SelectModifierNode',
@@ -839,7 +842,7 @@ export class OperationNodeTransformer {
   }
 
   protected transformSchemableIdentifier(
-    node: SchemableIdentifierNode
+    node: SchemableIdentifierNode,
   ): SchemableIdentifierNode {
     return requireAllProps<SchemableIdentifierNode>({
       kind: 'SchemableIdentifierNode',
@@ -849,7 +852,7 @@ export class OperationNodeTransformer {
   }
 
   protected transformAggregateFunction(
-    node: AggregateFunctionNode
+    node: AggregateFunctionNode,
   ): AggregateFunctionNode {
     return requireAllProps({
       kind: 'AggregateFunctionNode',
@@ -877,7 +880,7 @@ export class OperationNodeTransformer {
   }
 
   protected transformPartitionByItem(
-    node: PartitionByItemNode
+    node: PartitionByItemNode,
   ): PartitionByItemNode {
     return requireAllProps({
       kind: 'PartitionByItemNode',
@@ -886,7 +889,7 @@ export class OperationNodeTransformer {
   }
 
   protected transformBinaryOperation(
-    node: BinaryOperationNode
+    node: BinaryOperationNode,
   ): BinaryOperationNode {
     return requireAllProps<BinaryOperationNode>({
       kind: 'BinaryOperationNode',
@@ -897,7 +900,7 @@ export class OperationNodeTransformer {
   }
 
   protected transformUnaryOperation(
-    node: UnaryOperationNode
+    node: UnaryOperationNode,
   ): UnaryOperationNode {
     return requireAllProps<UnaryOperationNode>({
       kind: 'UnaryOperationNode',
@@ -964,7 +967,7 @@ export class OperationNodeTransformer {
   }
 
   protected transformJSONOperatorChain(
-    node: JSONOperatorChainNode
+    node: JSONOperatorChainNode,
   ): JSONOperatorChainNode {
     return requireAllProps<JSONOperatorChainNode>({
       kind: 'JSONOperatorChainNode',
@@ -991,6 +994,15 @@ export class OperationNodeTransformer {
     })
   }
 
+  protected transformTop(node: TopNode): TopNode {
+    return requireAllProps<TopNode>({
+      kind: 'TopNode',
+      expression: node.expression,
+      percent: node.percent,
+      withTies: node.withTies,
+    })
+  }
+
   protected transformDataType(node: DataTypeNode): DataTypeNode {
     // An Object.freezed leaf node. No need to clone.
     return node
@@ -1012,7 +1024,7 @@ export class OperationNodeTransformer {
   }
 
   protected transformPrimitiveValueList(
-    node: PrimitiveValueListNode
+    node: PrimitiveValueListNode,
   ): PrimitiveValueListNode {
     // An Object.freezed leaf node. No need to clone.
     return node
@@ -1024,7 +1036,7 @@ export class OperationNodeTransformer {
   }
 
   protected transformDefaultInsertValue(
-    node: DefaultInsertValueNode
+    node: DefaultInsertValueNode,
   ): DefaultInsertValueNode {
     // An Object.freezed leaf node. No need to clone.
     return node
