@@ -1,4 +1,5 @@
 export * from './kysely.js'
+export * from './type-config.js'
 export * from './query-creator.js'
 
 export * from './expression/expression.js'
