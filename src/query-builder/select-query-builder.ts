@@ -1582,6 +1582,8 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    * you can use the special `NotNull` type to make the column not null.
    *
    * ```ts
+   * import { NotNull } from 'kysely'
+   *
    * const person = await db.selectFrom('person')
    *   .where('nullable_column', 'is not', null)
    *   .selectAll()

@@ -176,7 +176,7 @@ export type NarrowPartial<O, T> = DrainOuterGeneric<
  *   .executeTakeFirstOrThrow()
  * ```
  */
-export type NotNull = { readonly __excludeNull__: true }
+export type NotNull = { readonly __notNull__: unique symbol }
 
 export type SqlBool = boolean | 0 | 1
 
