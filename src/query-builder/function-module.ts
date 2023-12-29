@@ -6,7 +6,6 @@ import { FunctionNode } from '../operation-node/function-node.js'
 import { CoalesceReferenceExpressionList } from '../parser/coalesce-parser.js'
 import {
   ExtractTypeFromReferenceExpression,
-  SimpleReferenceExpression,
   ReferenceExpression,
   StringReference,
   parseReferenceExpressionOrList,
@@ -480,8 +479,16 @@ export interface FunctionModule<DB, TB extends keyof DB> {
    *   .execute()
    * ```
    */
+  max<C extends StringReference<DB, TB>>(
+    column: C
+  ): AggregateFunctionBuilder<
+    DB,
+    TB,
+    ExtractTypeFromReferenceExpression<DB, TB, C>
+  >
+
   max<
-    O extends number | string | bigint | null = any,
+    O extends number | string | bigint | null,
     C extends StringReference<DB, TB> = StringReference<DB, TB>
   >(
     column: OutputBoundStringReference<DB, TB, C, O>
@@ -537,8 +544,16 @@ export interface FunctionModule<DB, TB extends keyof DB> {
    *   .execute()
    * ```
    */
+  min<C extends StringReference<DB, TB>>(
+    column: C
+  ): AggregateFunctionBuilder<
+    DB,
+    TB,
+    ExtractTypeFromReferenceExpression<DB, TB, C>
+  >
+
   min<
-    O extends number | string | bigint | null = any,
+    O extends number | string | bigint | null,
     C extends StringReference<DB, TB> = StringReference<DB, TB>
   >(
     column: OutputBoundStringReference<DB, TB, C, O>
@@ -785,21 +800,11 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
       })
     },
 
-    max<
-      C extends SimpleReferenceExpression<DB, TB> = SimpleReferenceExpression<
-        DB,
-        TB
-      >
-    >(column: C): any {
+    max(column: any): any {
       return agg('max', [column])
     },
 
-    min<
-      C extends SimpleReferenceExpression<DB, TB> = SimpleReferenceExpression<
-        DB,
-        TB
-      >
-    >(column: C): any {
+    min(column: any): any {
       return agg('min', [column])
     },
 
@@ -832,24 +837,17 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
   })
 }
 
-type OutputBoundStringReference<
-  DB,
-  TB extends keyof DB,
-  C extends StringReference<DB, TB>,
-  O
-> = IsAny<O> extends true
-  ? C // output not provided, unbound
-  : Equals<
-      ExtractTypeFromReferenceExpression<DB, TB, C> | null,
-      O | null
-    > extends true
+type OutputBoundStringReference<DB, TB extends keyof DB, C, O> = Equals<
+  ExtractTypeFromReferenceExpression<DB, TB, C> | null,
+  O | null
+> extends true
   ? C
   : never
 
 type StringReferenceBoundAggregateFunctionBuilder<
   DB,
   TB extends keyof DB,
-  C extends StringReference<DB, TB>,
+  C,
   O
 > = AggregateFunctionBuilder<
   DB,
