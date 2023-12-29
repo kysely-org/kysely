@@ -25,12 +25,15 @@ export class CaseBuilder<DB, TB extends keyof DB, W = unknown, O = never>
     this.#props = freeze(props)
   }
 
-  when<RE extends ReferenceExpression<DB, TB>>(
+  when<
+    RE extends ReferenceExpression<DB, TB>,
+    VE extends OperandValueExpressionOrList<DB, TB, RE>
+  >(
     lhs: unknown extends W
       ? RE
       : KyselyTypeError<'when(lhs, op, rhs) is not supported when using case(value)'>,
     op: ComparisonOperatorExpression,
-    rhs: OperandValueExpressionOrList<DB, TB, RE>
+    rhs: VE
   ): CaseThenBuilder<DB, TB, W, O>
 
   when(expression: Expression<W>): CaseThenBuilder<DB, TB, W, O>
@@ -95,12 +98,15 @@ export class CaseWhenBuilder<DB, TB extends keyof DB, W, O>
     this.#props = freeze(props)
   }
 
-  when<RE extends ReferenceExpression<DB, TB>>(
+  when<
+    RE extends ReferenceExpression<DB, TB>,
+    VE extends OperandValueExpressionOrList<DB, TB, RE>
+  >(
     lhs: unknown extends W
       ? RE
       : KyselyTypeError<'when(lhs, op, rhs) is not supported when using case(value)'>,
     op: ComparisonOperatorExpression,
-    rhs: OperandValueExpressionOrList<DB, TB, RE>
+    rhs: VE
   ): CaseThenBuilder<DB, TB, W, O>
 
   when(expression: Expression<W>): CaseThenBuilder<DB, TB, W, O>
@@ -182,12 +188,15 @@ interface Whenable<DB, TB extends keyof DB, W, O> {
    *
    * A `when` call must be followed by a {@link CaseThenBuilder.then} call.
    */
-  when<RE extends ReferenceExpression<DB, TB>>(
+  when<
+    RE extends ReferenceExpression<DB, TB>,
+    VE extends OperandValueExpressionOrList<DB, TB, RE>
+  >(
     lhs: unknown extends W
       ? RE
       : KyselyTypeError<'when(lhs, op, rhs) is not supported when using case(value)'>,
     op: ComparisonOperatorExpression,
-    rhs: OperandValueExpressionOrList<DB, TB, RE>
+    rhs: VE
   ): CaseThenBuilder<DB, TB, W, O>
 
   when(expression: Expression<W>): CaseThenBuilder<DB, TB, W, O>

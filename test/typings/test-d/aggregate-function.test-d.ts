@@ -355,7 +355,7 @@ async function testWithFilterWhere(db: Kysely<Database>) {
   // Subquery in RHS
   db.selectFrom('movie').select(
     avg('stars')
-      .filterWhere(sql`${'female'}`, '=', (qb) =>
+      .filterWhere(sql<string>`${'female'}`, '=', (qb) =>
         qb.selectFrom('person').select('gender')
       )
       .as('avg_stars')
@@ -364,7 +364,7 @@ async function testWithFilterWhere(db: Kysely<Database>) {
   // Raw expression
   db.selectFrom('person').select(
     avg('age')
-      .filterWhere('first_name', '=', sql`'foo'`)
+      .filterWhere('first_name', '=', sql<string>`'foo'`)
       .filterWhere('first_name', '=', sql<string>`'foo'`)
       .filterWhere(sql`whatever`, '=', 1)
       .filterWhere(sql`whatever`, '=', true)

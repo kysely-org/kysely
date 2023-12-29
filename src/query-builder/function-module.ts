@@ -128,10 +128,10 @@ export interface FunctionModule<DB, TB extends keyof DB> {
    *   .where(sql`upper(first_name)`, '=', 'JENNIFER')
    * ```
    */
-  <T>(
+  <O, RE extends ReferenceExpression<DB, TB> = ReferenceExpression<DB, TB>>(
     name: string,
-    args: ReadonlyArray<ReferenceExpression<DB, TB>>
-  ): ExpressionWrapper<DB, TB, T>
+    args?: ReadonlyArray<RE>
+  ): ExpressionWrapper<DB, TB, O>
 
   /**
    * Creates an aggregate function call.
@@ -161,9 +161,9 @@ export interface FunctionModule<DB, TB extends keyof DB> {
    * from "person"
    * ```
    */
-  agg<O>(
+  agg<O, RE extends ReferenceExpression<DB, TB>>(
     name: string,
-    args?: ReadonlyArray<ReferenceExpression<DB, TB>>
+    args?: ReadonlyArray<RE>
   ): AggregateFunctionBuilder<DB, TB, O>
 
   /**

@@ -69,6 +69,7 @@
   "author": "Sami Koskimäki <sami@jakso.me>",
   "license": "MIT",
   "contributors": [
+    "Sami Koskimäki <sami@jakso.me>",
     "Igal Klebanov <igalklebanov@gmail.com>"
   ],
   "devDependencies": {

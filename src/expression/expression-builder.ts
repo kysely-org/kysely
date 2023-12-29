@@ -32,7 +32,6 @@ import {
 import { QueryExecutor } from '../query-executor/query-executor.js'
 import {
   BinaryOperatorExpression,
-  ComparisonOperatorExpression,
   FilterObject,
   OperandValueExpression,
   OperandValueExpressionOrList,
@@ -65,14 +64,6 @@ import { JSONPathBuilder } from '../query-builder/json-path-builder.js'
 import { OperandExpression } from '../parser/expression-parser.js'
 import { BinaryOperationNode } from '../operation-node/binary-operation-node.js'
 import { AndNode } from '../operation-node/and-node.js'
-import {
-  CallbackSelection,
-  SelectArg,
-  SelectCallback,
-  SelectExpression,
-  Selection,
-  parseSelectArg,
-} from '../parser/select-parser.js'
 import {
   RefTuple2,
   RefTuple3,
@@ -163,10 +154,14 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    *   ))
    * ```
    */
-  <RE extends ReferenceExpression<DB, TB>, OP extends BinaryOperatorExpression>(
+  <
+    RE extends ReferenceExpression<DB, TB>,
+    OP extends BinaryOperatorExpression,
+    VE extends OperandValueExpressionOrList<DB, TB, RE>
+  >(
     lhs: RE,
     op: OP,
-    rhs: OperandValueExpressionOrList<DB, TB, RE>
+    rhs: VE
   ): ExpressionWrapper<
     DB,
     TB,
@@ -816,10 +811,14 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    * select * from "person" where "age" between $1 and $2
    * ```
    */
-  between<RE extends ReferenceExpression<DB, TB>>(
+  between<
+    RE extends ReferenceExpression<DB, TB>,
+    SE extends OperandValueExpression<DB, TB, RE>,
+    EE extends OperandValueExpression<DB, TB, RE>
+  >(
     expr: RE,
-    start: OperandValueExpression<DB, TB, RE>,
-    end: OperandValueExpression<DB, TB, RE>
+    start: SE,
+    end: EE
   ): ExpressionWrapper<DB, TB, SqlBool>
 
   /**
@@ -839,10 +838,14 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    * select * from "person" where "age" between symmetric $1 and $2
    * ```
    */
-  betweenSymmetric<RE extends ReferenceExpression<DB, TB>>(
+  betweenSymmetric<
+    RE extends ReferenceExpression<DB, TB>,
+    SE extends OperandValueExpression<DB, TB, RE>,
+    EE extends OperandValueExpression<DB, TB, RE>
+  >(
     expr: RE,
-    start: OperandValueExpression<DB, TB, RE>,
-    end: OperandValueExpression<DB, TB, RE>
+    start: SE,
+    end: EE
   ): ExpressionWrapper<DB, TB, SqlBool>
 
   /**
@@ -903,11 +906,13 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    * )
    * ```
    */
-  and(
-    exprs: ReadonlyArray<OperandExpression<SqlBool>>
+  and<E extends OperandExpression<SqlBool>>(
+    exprs: ReadonlyArray<E>
   ): ExpressionWrapper<DB, TB, SqlBool>
 
-  and(exprs: Readonly<FilterObject<DB, TB>>): ExpressionWrapper<DB, TB, SqlBool>
+  and<E extends Readonly<FilterObject<DB, TB>>>(
+    exprs: E
+  ): ExpressionWrapper<DB, TB, SqlBool>
 
   /**
    * Combines two or more expressions using the logical `or` operator.
@@ -967,11 +972,13 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    * )
    * ```
    */
-  or(
-    exprs: ReadonlyArray<OperandExpression<SqlBool>>
+  or<E extends OperandExpression<SqlBool>>(
+    exprs: ReadonlyArray<E>
   ): ExpressionWrapper<DB, TB, SqlBool>
 
-  or(exprs: Readonly<FilterObject<DB, TB>>): ExpressionWrapper<DB, TB, SqlBool>
+  or<E extends Readonly<FilterObject<DB, TB>>>(
+    exprs: E
+  ): ExpressionWrapper<DB, TB, SqlBool>
 
   /**
    * Wraps the expression in parentheses.
@@ -1014,11 +1021,12 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    */
   parens<
     RE extends ReferenceExpression<DB, TB>,
-    OP extends BinaryOperatorExpression
+    OP extends BinaryOperatorExpression,
+    VE extends OperandValueExpressionOrList<DB, TB, RE>
   >(
     lhs: RE,
     op: OP,
-    rhs: OperandValueExpressionOrList<DB, TB, RE>
+    rhs: VE
   ): ExpressionWrapper<
     DB,
     TB,
