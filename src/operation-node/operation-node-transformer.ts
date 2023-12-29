@@ -88,6 +88,7 @@ import { JSONPathLegNode } from './json-path-leg-node.js'
 import { JSONOperatorChainNode } from './json-operator-chain-node.js'
 import { TupleNode } from './tuple-node.js'
 import { AddIndexNode } from './add-index-node.js'
+import { FetchNode } from './fetch-node.js'
 
 /**
  * Transforms an operation node tree into another one.
@@ -210,6 +211,7 @@ export class OperationNodeTransformer {
     JSONOperatorChainNode: this.transformJSONOperatorChain.bind(this),
     TupleNode: this.transformTuple.bind(this),
     AddIndexNode: this.transformAddIndex.bind(this),
+    FetchNode: this.transformFetch.bind(this),
   })
 
   transformNode<T extends OperationNode | undefined>(node: T): T {
@@ -256,6 +258,7 @@ export class OperationNodeTransformer {
       having: this.transformNode(node.having),
       explain: this.transformNode(node.explain),
       setOperations: this.transformNodeList(node.setOperations),
+      fetch: this.transformNode(node.fetch),
     })
   }
 
@@ -988,6 +991,14 @@ export class OperationNodeTransformer {
       unique: node.unique,
       using: this.transformNode(node.using),
       ifNotExists: node.ifNotExists,
+    })
+  }
+
+  protected transformFetch(node: FetchNode): FetchNode {
+    return requireAllProps<FetchNode>({
+      kind: 'FetchNode',
+      rowCount: this.transformNode(node.rowCount),
+      modifier: node.modifier,
     })
   }
 
