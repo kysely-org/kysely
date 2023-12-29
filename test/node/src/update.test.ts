@@ -311,7 +311,7 @@ for (const dialect of DIALECTS) {
       const query = ctx.db
         .updateTable('person')
         .set({
-          last_name: sql<string>`${sql.ref('first_name')}`,
+          last_name: sql`${sql.ref('first_name')}`,
         })
         .where('first_name', '=', 'Jennifer')
 
