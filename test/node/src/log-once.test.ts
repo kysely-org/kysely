@@ -7,7 +7,11 @@ describe('logOnce', () => {
   const sandbox = createSandbox()
 
   before(() => {
-    logSpy = sandbox.spy(console, 'log')
+    logSpy = sandbox.stub(console, 'log')
+  })
+
+  after(() => {
+    sandbox.restore()
   })
 
   it('should log each message once.', () => {
