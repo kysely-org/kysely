@@ -132,6 +132,7 @@ async function testSelectAll(db: Kysely<Database>) {
     modified_at: Date
     owner_id: number
     species: 'dog' | 'cat'
+    deleted_at: Date | null
   }>(r2)
 
   // Select all from a single table when there are two tables to select from
@@ -171,6 +172,7 @@ async function testSelectAll(db: Kysely<Database>) {
     modified_at: Date
     owner_id: number
     species: 'dog' | 'cat'
+    deleted_at: Date | null
   }>(r5)
 }
 
