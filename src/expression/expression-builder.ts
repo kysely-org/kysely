@@ -353,7 +353,9 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
     column: C
   ): CaseBuilder<DB, TB, ExtractTypeFromReferenceExpression<DB, TB, C>>
 
-  case<O>(expression: Expression<O>): CaseBuilder<DB, TB, O>
+  case<E extends Expression<any>>(
+    expression: E
+  ): CaseBuilder<DB, TB, ExtractTypeFromValueExpression<E>>
 
   /**
    * This method can be used to reference columns within the query's context. For
