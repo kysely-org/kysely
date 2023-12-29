@@ -1393,7 +1393,7 @@ for (const dialect of DIALECTS) {
         await builder.execute()
       })
 
-      if (dialect === 'postgres') {
+      if (dialect === 'postgres' || dialect === 'mysql') {
         it('should create an index with a type', async () => {
           const builder = ctx.db.schema
             .createIndex('test_first_name_index')
@@ -1406,14 +1406,19 @@ for (const dialect of DIALECTS) {
               sql: 'create index "test_first_name_index" on "test" using hash ("first_name")',
               parameters: [],
             },
-            mysql: NOT_SUPPORTED,
+            mysql: {
+              sql: 'create index `test_first_name_index` using hash on `test` (`first_name`)',
+              parameters: [],
+            },
             mssql: NOT_SUPPORTED,
             sqlite: NOT_SUPPORTED,
           })
 
           await builder.execute()
         })
+      }
 
+      if (dialect === 'postgres') {
         it('should create an index with "nulls not distinct" modifier', async () => {
           const builder = ctx.db.schema
             .createIndex('test_first_name_index')
@@ -3425,7 +3430,7 @@ for (const dialect of DIALECTS) {
           })
         })
       }
-      
+
       if (dialect === 'mysql') {
         describe('drop index', () => {
           beforeEach(async () => {
