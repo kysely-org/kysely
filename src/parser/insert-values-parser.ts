@@ -34,8 +34,8 @@ export type InsertObject<DB, TB extends keyof DB> = {
 }
 
 export type InsertObjectOrList<DB, TB extends keyof DB> =
-  | InsertObject<DB, TB>
   | ReadonlyArray<InsertObject<DB, TB>>
+  | InsertObject<DB, TB>
 
 export type InsertObjectOrListFactory<DB, TB extends keyof DB> = (
   eb: ExpressionBuilder<DB, TB>
