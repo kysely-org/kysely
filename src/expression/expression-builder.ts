@@ -50,13 +50,12 @@ import {
   OperatorNode,
   UnaryOperator,
 } from '../operation-node/operator-node.js'
-import { SqlBool } from '../util/type-utils.js'
+import { IsNever, SqlBool } from '../util/type-utils.js'
 import { parseUnaryOperation } from '../parser/unary-operation-parser.js'
 import {
   ExtractTypeFromValueExpression,
   parseSafeImmediateValue,
   parseValueExpression,
-  parseValueExpressionOrList,
 } from '../parser/value-parser.js'
 import { NOOP_QUERY_EXECUTOR } from '../query-executor/noop-query-executor.js'
 import { CaseBuilder } from '../query-builder/case-builder.js'
@@ -86,6 +85,8 @@ import {
 } from '../parser/tuple-parser.js'
 import { TupleNode } from '../operation-node/tuple-node.js'
 import { Selectable } from '../util/column-type.js'
+import { JSONPathNode } from '../operation-node/json-path-node.js'
+import { KyselyTypeError } from '../util/type-error.js'
 
 export interface ExpressionBuilder<DB, TB extends keyof DB> {
   /**
@@ -385,7 +386,8 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    * a non-type-safe version of this method see {@link sql}'s version.
    *
    * Additionally, this method can be used to reference nested JSON properties or
-   * array elements. See {@link JSONPathBuilder} for more information.
+   * array elements. See {@link JSONPathBuilder} for more information. For regular
+   * JSON path expressions you can use {@link jsonPath}.
    *
    * ### Examples
    *
@@ -469,6 +471,36 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
     reference: RE,
     op: JSONOperatorWith$
   ): JSONPathBuilder<ExtractTypeFromReferenceExpression<DB, TB, RE>>
+
+  /**
+   * Creates a JSON path expression with provided column as root document (the $).
+   *
+   * For a JSON reference expression, see {@link ref}.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * db.updateTable('person')
+   *   .set('experience', (eb) => eb.fn('json_set', [
+   *     'experience',
+   *     eb.jsonPath<'experience'>().at('last').key('title'),
+   *     eb.val('CEO')
+   *   ]))
+   *   .where('id', '=', id)
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (MySQL):
+   *
+   * ```sql
+   * update `person`
+   * set `experience` = json_set(`experience`, '$[last].title', ?)
+   * where `id` = ?
+   * ```
+   */
+  jsonPath<$ extends StringReference<DB, TB> = never>(): IsNever<$> extends true
+    ? KyselyTypeError<"You must provide a column reference as this method's $ generic">
+    : JSONPathBuilder<ExtractTypeFromReferenceExpression<DB, TB, $>>
 
   /**
    * Creates a table reference.
@@ -1173,6 +1205,14 @@ export function createExpressionBuilder<DB, TB extends keyof DB>(
       }
 
       return new JSONPathBuilder(parseJSONReference(reference, op))
+    },
+
+    jsonPath<
+      $ extends StringReference<DB, TB> = never
+    >(): IsNever<$> extends true
+      ? KyselyTypeError<"You must provide a column reference as this method's $ generic">
+      : JSONPathBuilder<ExtractTypeFromReferenceExpression<DB, TB, $>> {
+      return new JSONPathBuilder(JSONPathNode.create()) as any
     },
 
     table<T extends TB & string>(
