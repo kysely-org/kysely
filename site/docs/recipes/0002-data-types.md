@@ -7,13 +7,15 @@ When talking about data types in Kysely we need to make a distinction between th
 
 ## Typescript types
 
-In Kysely, you only define typescript types for your tables and columns. Since typescript is entirely a compile-time concept, the typescript types __can't__ affect the runtime types. If you define your column to be a `string` in typescript but the database returns a `number`, the runtime type doesn't magically change to `string`. You'll see a `string` in the typescript code, but observe a number when you run the program.
+In Kysely, you only define typescript types for your tables and columns. Since typescript is entirely a compile-time concept, typescript types __can't__ affect runtime javascript types. If you define your column to be a `string` in typescript but the database returns a `number`, the runtime type doesn't magically change to `string`. You'll see a `string` in the typescript code, but observe a number when you run the program.
 
-It's up to you to define correct types for the columns.
+:::info
+It's up to **you** to define correct typescript types for the columns based on what the driver returns.
+:::
 
 ## Runtime javascript types
 
-Kysely never touches the runtime types the underlying DB driver such as `pg` or `mysql2` return. In fact, Kysely doesn't touch the data returned by the driver in any way. It simply executes the query and returns whatever the driver returns. An exception to this rule is when you use a plugin like `CamelCasePlugin`, in which case Kysely does change the column names.
+The database driver, such as `pg` or `mysql2`, decides the runtime javascript types the queries return. Kysely never touches the runtime types the driver returns. In fact, Kysely doesn't touch the data returned by the driver in any way. It simply executes the query and returns whatever the driver returns. An exception to this rule is when you use a plugin like `CamelCasePlugin`, in which case Kysely does change the column names.
 
 You need to read the underlying driver's documentation or otherwise figure out what the driver returns and then align the typescript types to match them.
 
@@ -69,4 +71,10 @@ export const db = new Kysely<Database>({
     }),
   }),
 })
-````
+```
+
+## Type generators
+
+There are 3rd party type generators such as [kysely-codegen](https://github.com/RobinBlomberg/kysely-codegen) and [kanel-kysely](https://kristiandupont.github.io/kanel/kanel-kysely.html) that automatically generate typescript types based on the database schema.
+
+If these tools generate a type that doesn't match the runtime type you observe, please refer to their documentation or open an issue in their github. Kysely has no control over these libraries.
