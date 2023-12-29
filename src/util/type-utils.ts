@@ -178,17 +178,34 @@ export type Equals<T, U> = (<G>() => G extends T ? 1 : 2) extends <
   ? true
   : false
 
-export type NarrowPartial<S, T> = DrainOuterGeneric<
+export type NarrowPartial<O, T> = DrainOuterGeneric<
   T extends object
     ? {
-        [K in keyof S & string]: K extends keyof T
-          ? T[K] extends S[K]
+        [K in keyof O & string]: K extends keyof T
+          ? T[K] extends NotNull
+            ? Exclude<O[K], null>
+            : T[K] extends O[K]
             ? T[K]
             : KyselyTypeError<`$narrowType() call failed: passed type does not exist in '${K}'s type union`>
-          : S[K]
+          : O[K]
       }
     : never
 >
+
+/**
+ * A type constant for marking a column as not null. Can be used with `$narrowPartial`.
+ *
+ * Example:
+ *
+ * ```ts
+ * const person = await db.selectFrom('person')
+ *   .where('nullable_column', 'is not', null)
+ *   .selectAll()
+ *   .$narrowType<{ nullable_column: NotNull }>()
+ *   .executeTakeFirstOrThrow()
+ * ```
+ */
+export type NotNull = { readonly __excludeNull__: true }
 
 export type SqlBool = boolean | 0 | 1
 

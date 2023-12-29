@@ -1558,6 +1558,20 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    *
    * functionThatExpectsPersonWithNonNullValue(person)
    * ```
+   *
+   * Giving the explicit narrowed type (`string` in the example above) works fine for
+   * simple types. If the type is complex, for example a JSON column or a subquery,
+   * you can use the special `NotNull` type to make the column not null.
+   *
+   * ```ts
+   * const person = await db.selectFrom('person')
+   *   .where('nullable_column', 'is not', null)
+   *   .selectAll()
+   *   .$narrowType<{ nullable_column: NotNull }>()
+   *   .executeTakeFirstOrThrow()
+   *
+   * functionThatExpectsPersonWithNonNullValue(person)
+   * ```
    */
   $narrowType<T>(): SelectQueryBuilder<DB, TB, NarrowPartial<O, T>>
 
