@@ -1033,7 +1033,7 @@ for (const dialect of DIALECTS) {
           parameters: [1],
         },
         mssql: {
-          sql: `select (select top 1 "first_name" from "person" order by "first_name") as "person_first_name"`,
+          sql: `select (select top(1) "first_name" from "person" order by "first_name") as "person_first_name"`,
           parameters: [],
         },
         sqlite: {

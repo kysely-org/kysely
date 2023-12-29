@@ -544,7 +544,7 @@ for (const dialect of DIALECTS) {
           parameters: ['Jennifer', 1],
         },
         mssql: {
-          sql: 'with "jennifer_id" as (select top 1 "id" from "person" where "first_name" = @1) update "pet" set "owner_id" = (select "id" from "jennifer_id")',
+          sql: 'with "jennifer_id" as (select top(1) "id" from "person" where "first_name" = @1) update "pet" set "owner_id" = (select "id" from "jennifer_id")',
           parameters: ['Jennifer'],
         },
         sqlite: {

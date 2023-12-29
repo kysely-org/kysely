@@ -253,7 +253,7 @@ for (const dialect of DIALECTS) {
           parameters: [1],
         },
         mssql: {
-          sql: `select top 1 * from "person"`,
+          sql: `select top(1) * from "person"`,
           parameters: [],
         },
         sqlite: {
