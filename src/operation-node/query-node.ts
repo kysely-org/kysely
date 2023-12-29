@@ -11,6 +11,7 @@ import { OperationNode } from './operation-node.js'
 import { ExplainNode } from './explain-node.js'
 import { ExplainFormat } from '../util/explainable.js'
 import { Expression } from '../expression/expression.js'
+import { TopModifier, TopNode } from './top-node.js'
 
 export type QueryNode =
   | SelectQueryNode
@@ -22,6 +23,7 @@ type HasJoins = { joins?: ReadonlyArray<JoinNode> }
 type HasWhere = { where?: WhereNode }
 type HasReturning = { returning?: ReturningNode }
 type HasExplain = { explain?: ExplainNode }
+type HasTop = { top?: TopNode }
 
 /**
  * @internal
@@ -79,6 +81,17 @@ export const QueryNode = freeze({
     return freeze({
       ...node,
       explain: ExplainNode.create(format, options?.toOperationNode()),
+    })
+  },
+
+  cloneWithTop<T extends HasTop>(
+    node: T,
+    expression: number | bigint,
+    modifiers?: TopModifier
+  ): T {
+    return freeze({
+      ...node,
+      top: TopNode.create(expression, modifiers),
     })
   },
 })

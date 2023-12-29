@@ -2040,9 +2040,10 @@ class SelectQueryBuilderImpl<DB, TB extends keyof DB, O>
   ): SelectQueryBuilder<DB, TB, O> {
     return new SelectQueryBuilderImpl({
       ...this.#props,
-      queryNode: SelectQueryNode.cloneWithTop(
+      queryNode: QueryNode.cloneWithTop(
         this.#props.queryNode,
-        TopNode.create(expression, modifiers)
+        expression,
+        modifiers
       ),
     })
   }

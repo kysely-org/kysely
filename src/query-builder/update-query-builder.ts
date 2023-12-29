@@ -133,6 +133,59 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
   }
 
   /**
+   * Adds a `top` clause to the query.
+   *
+   * This clause is only supported by some dialects like MS SQL Server.
+   *
+   * ### Examples
+   *
+   * Update the first row:
+   *
+   * ```ts
+   * await db.updateTable('person')
+   *   .top(1)
+   *   .set({ first_name: 'Foo' })
+   *   .where('age', '>', 18)
+   *   .executeTakeFirstOrThrow()
+   * ```
+   *
+   * The generated SQL (MS SQL Server):
+   *
+   * ```sql
+   * update top(1) "person" set "first_name" = @1 where "age" > @2
+   * ```
+   *
+   * Update the 50% first rows:
+   *
+   * ```ts
+   * await db.updateTable('person')
+   *   .top(50, 'percent')
+   *   .set({ first_name: 'Foo' })
+   *   .where('age', '>', 18)
+   *   .executeTakeFirstOrThrow()
+   * ```
+   *
+   * The generated SQL (MS SQL Server):
+   *
+   * ```sql
+   * update top(50) percent "person" set "first_name" = @1 where "age" > @2
+   * ```
+   */
+  top(
+    expression: number | bigint,
+    modifiers?: 'percent'
+  ): UpdateQueryBuilder<DB, UT, TB, O> {
+    return new UpdateQueryBuilder({
+      ...this.#props,
+      queryNode: QueryNode.cloneWithTop(
+        this.#props.queryNode,
+        expression,
+        modifiers
+      ),
+    })
+  }
+
+  /**
    * Adds a from clause to the update query.
    *
    * This is supported only on some databases like PostgreSQL.

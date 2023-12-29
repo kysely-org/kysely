@@ -9,6 +9,7 @@ import { WhereNode } from './where-node.js'
 import { WithNode } from './with-node.js'
 import { FromNode } from './from-node.js'
 import { ExplainNode } from './explain-node.js'
+import { TopNode } from './top-node.js'
 
 export type UpdateValuesNode = ValueListNode | PrimitiveValueListNode
 
@@ -22,6 +23,7 @@ export interface UpdateQueryNode extends OperationNode {
   readonly returning?: ReturningNode
   readonly with?: WithNode
   readonly explain?: ExplainNode
+  readonly top?: TopNode
 }
 
 /**
@@ -61,6 +63,13 @@ export const UpdateQueryNode = freeze({
       updates: updateQuery.updates
         ? freeze([...updateQuery.updates, ...updates])
         : updates,
+    })
+  },
+
+  cloneWithTop(updateQuery: UpdateQueryNode, top: TopNode): UpdateQueryNode {
+    return freeze({
+      ...updateQuery,
+      top,
     })
   },
 })

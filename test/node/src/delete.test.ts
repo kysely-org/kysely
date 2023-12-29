@@ -869,7 +869,7 @@ for (const dialect of DIALECTS) {
     }
 
     if (dialect === 'mssql') {
-      it('should delete first row', async () => {
+      it('should delete top', async () => {
         const query = ctx.db
           .deleteFrom('person')
           .top(1)
@@ -891,7 +891,7 @@ for (const dialect of DIALECTS) {
         expect(result.numDeletedRows).to.equal(1n)
       })
 
-      it('should delete first 50% rows', async () => {
+      it('should delete top percent', async () => {
         const query = ctx.db
           .deleteFrom('person')
           .top(50, 'percent')

@@ -499,6 +499,7 @@ export class OperationNodeTransformer {
       returning: this.transformNode(node.returning),
       with: this.transformNode(node.with),
       explain: this.transformNode(node.explain),
+      top: this.transformNode(node.top),
     })
   }
 

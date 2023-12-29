@@ -639,6 +639,46 @@ for (const dialect of DIALECTS) {
           expect(pet.person_name).to.equal(pet.pet_name)
         }
       })
+
+      it('should update top', async () => {
+        const query = ctx.db
+          .updateTable('pet')
+          .top(1)
+          .set({ name: 'Lucky' })
+          .where('species', '=', 'dog')
+
+        testSql(query, dialect, {
+          postgres: NOT_SUPPORTED,
+          mysql: NOT_SUPPORTED,
+          mssql: {
+            sql: 'update top(1) "pet" set "name" = @1 where "species" = @2',
+            parameters: ['Lucky', 'dog'],
+          },
+          sqlite: NOT_SUPPORTED,
+        })
+
+        await query.execute()
+      })
+
+      it('should update top percent', async () => {
+        const query = ctx.db
+          .updateTable('pet')
+          .top(50, 'percent')
+          .set({ name: 'Lucky' })
+          .where('species', '=', 'dog')
+
+        testSql(query, dialect, {
+          postgres: NOT_SUPPORTED,
+          mysql: NOT_SUPPORTED,
+          mssql: {
+            sql: 'update top(50) percent "pet" set "name" = @1 where "species" = @2',
+            parameters: ['Lucky', 'dog'],
+          },
+          sqlite: NOT_SUPPORTED,
+        })
+
+        await query.execute()
+      })
     }
   })
 }

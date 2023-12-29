@@ -176,10 +176,7 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
   ): DeleteQueryBuilder<DB, TB, O> {
     return new DeleteQueryBuilder({
       ...this.#props,
-      queryNode: DeleteQueryNode.cloneWithTop(
-        this.#props.queryNode,
-        TopNode.create(top, modifiers)
-      ),
+      queryNode: QueryNode.cloneWithTop(this.#props.queryNode, top, modifiers),
     })
   }
 
