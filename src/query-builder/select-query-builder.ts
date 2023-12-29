@@ -75,6 +75,7 @@ import { Streamable } from '../util/streamable.js'
 import { ExpressionOrFactory } from '../parser/expression-parser.js'
 import { ExpressionWrapper } from '../expression/expression-wrapper.js'
 import { SelectQueryBuilderExpression } from './select-query-builder-expression.js'
+import { TopModifier, TopNode } from '../operation-node/top-node.js'
 
 export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
   extends WhereInterface<DB, TB>,
@@ -1026,6 +1027,13 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    *   .selectFrom('person')
    *   .select('first_name')
    *   .limit(10)
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * select "first_name" from "person" limit $1
    * ```
    *
    * Select rows from index 10 to index 19 of the result:
@@ -1034,8 +1042,15 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    * return await db
    *   .selectFrom('person')
    *   .select('first_name')
-   *   .offset(10)
    *   .limit(10)
+   *   .offset(10)
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * select "first_name" from "person" limit $1 offset $2
    * ```
    */
   limit(limit: number): SelectQueryBuilder<DB, TB, O>
@@ -1051,11 +1066,61 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    * return await db
    *   .selectFrom('person')
    *   .select('first_name')
-   *   .offset(10)
    *   .limit(10)
+   *   .offset(10)
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * select "first_name" from "person" limit $1 offset $2
    * ```
    */
   offset(offset: number): SelectQueryBuilder<DB, TB, O>
+
+  /**
+   * Adds a top clause to the query.
+   *
+   * ### Examples
+   *
+   * Select 10 biggest ages:
+   *
+   * ```ts
+   * return await db
+   *   .selectFrom('person')
+   *   .select('age')
+   *   .top(10)
+   *   .orderBy('age desc')
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (MS SQL Server):
+   *
+   * ```sql
+   * select top(10) "age" from "person" order by "age" desc
+   * ```
+   *
+   * Select 10% first rows:
+   *
+   * ```ts
+   * return await db
+   *  .selectFrom('person')
+   *  .selectAll()
+   *  .top(10, 'percent')
+   *  .execute()
+   * ```
+   *
+   * The generated SQL (MS SQL Server):
+   *
+   * ```sql
+   * select top(10) percent * from "person"
+   * ```
+   */
+  top(
+    expression: number | bigint,
+    modifiers?: TopModifier
+  ): SelectQueryBuilder<DB, TB, O>
 
   /**
    * Combines another select query or raw expression to this query using `union`.
@@ -1963,6 +2028,19 @@ class SelectQueryBuilderImpl<DB, TB extends keyof DB, O>
       queryNode: SelectQueryNode.cloneWithOffset(
         this.#props.queryNode,
         OffsetNode.create(offset)
+      ),
+    })
+  }
+
+  top(
+    expression: number | bigint,
+    modifiers?: TopModifier
+  ): SelectQueryBuilder<DB, TB, O> {
+    return new SelectQueryBuilderImpl({
+      ...this.#props,
+      queryNode: SelectQueryNode.cloneWithTop(
+        this.#props.queryNode,
+        TopNode.create(expression, modifiers)
       ),
     })
   }
