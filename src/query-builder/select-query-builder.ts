@@ -1039,7 +1039,7 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    *   .limit(10)
    * ```
    */
-  limit(limit: number): SelectQueryBuilder<DB, TB, O>
+  limit(limit: number | bigint): SelectQueryBuilder<DB, TB, O>
 
   /**
    * Adds an `offset` clause to the query.
@@ -1980,12 +1980,12 @@ class SelectQueryBuilderImpl<DB, TB extends keyof DB, O>
     })
   }
 
-  limit(limit: number): SelectQueryBuilder<DB, TB, O> {
+  limit(rowCount: number | bigint): SelectQueryBuilder<DB, TB, O> {
     return new SelectQueryBuilderImpl({
       ...this.#props,
       queryNode: SelectQueryNode.cloneWithLimit(
         this.#props.queryNode,
-        LimitNode.create(limit)
+        LimitNode.create(rowCount)
       ),
     })
   }

@@ -15,7 +15,7 @@ export const OffsetNode = freeze({
     return node.kind === 'OffsetNode'
   },
 
-  create(offset: number): OffsetNode {
+  create(offset: number | bigint): OffsetNode {
     return freeze({
       kind: 'OffsetNode',
       offset: ValueNode.create(offset),
