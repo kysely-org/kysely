@@ -75,7 +75,7 @@ if (DIALECTS.includes('mysql')) {
         first_name: ctx.db
           .selectFrom('pet')
           .select(sql<string>`max(name)`.as('max_name')),
-        last_name: sql`concat('Bar', 'son')`,
+        last_name: sql<string>`concat('Bar', 'son')`,
         gender: 'other',
       })
 

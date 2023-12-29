@@ -24,11 +24,13 @@ for (const dialect of DIALECTS) {
     it('error stack should contain the userland stack', async () => {
       for (const query of [
         ctx.db.selectFrom('person').select(sql`doesnt_exists`.as('d')),
-        ctx.db.updateTable('person').set({ first_name: sql`doesnt_exists` }),
+        ctx.db
+          .updateTable('person')
+          .set({ first_name: sql<string>`doesnt_exists` }),
         ctx.db.deleteFrom('person').where(sql`doesnt_exists`, '=', 1),
         ctx.db
           .insertInto('person')
-          .values({ first_name: sql`doesnt_exists`, gender: 'other' }),
+          .values({ first_name: sql<string>`doesnt_exists`, gender: 'other' }),
 
         {
           execute: () => sql`select doesnt_exists`.execute(ctx.db),
