@@ -37,6 +37,7 @@ import {
   MssqlDialect,
   SelectQueryBuilder,
 } from '../../../'
+import { OrderByDirection, UndirectedOrderByExpression } from '../../../dist/cjs/parser/order-by-parser'
 
 export interface Person {
   id: Generated<number>
@@ -475,5 +476,21 @@ export function limit<QB extends SelectQueryBuilder<any, any, any>>(
     }
 
     return qb.limit(limit) as QB
+  }
+}
+
+export function orderBy<QB extends SelectQueryBuilder<any, any, any>>(
+  orderBy: QB extends SelectQueryBuilder<infer DB, infer TB, infer O>
+    ? UndirectedOrderByExpression<DB, TB, O>
+    : never,
+  direction: OrderByDirection | undefined,
+  dialect: BuiltInDialect
+): (qb: QB) => QB {
+  return (qb) => {
+    if (dialect === 'mssql') {
+      return qb.orderBy(orderBy, sql`${sql.raw(direction ? `${direction} ` : '')}${sql.raw('offset 0 rows')}`) as QB
+    }
+
+    return qb.orderBy(orderBy, direction) as QB
   }
 }
