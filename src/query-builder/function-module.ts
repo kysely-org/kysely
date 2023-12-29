@@ -3,7 +3,13 @@ import { ExpressionWrapper } from '../expression/expression-wrapper.js'
 import { Expression } from '../expression/expression.js'
 import { AggregateFunctionNode } from '../operation-node/aggregate-function-node.js'
 import { FunctionNode } from '../operation-node/function-node.js'
-import { CoalesceReferenceExpressionList } from '../parser/coalesce-parser.js'
+import {
+  ExtractTypeFromCoalesce1,
+  ExtractTypeFromCoalesce3,
+  ExtractTypeFromCoalesce2,
+  ExtractTypeFromCoalesce4,
+  ExtractTypeFromCoalesce5,
+} from '../parser/coalesce-parser.js'
 import {
   ExtractTypeFromReferenceExpression,
   ReferenceExpression,
@@ -285,16 +291,56 @@ export interface FunctionModule<DB, TB extends keyof DB> {
    * select coalesce(avg("age"), 0) as "avg_age" from "person" where "first_name" = $1
    * ```
    */
+  coalesce<V1 extends ReferenceExpression<DB, TB>>(
+    v1: V1
+  ): ExpressionWrapper<DB, TB, ExtractTypeFromCoalesce1<DB, TB, V1>>
+
   coalesce<
-    V extends ReferenceExpression<DB, TB>,
-    OV extends ReferenceExpression<DB, TB>[]
+    V1 extends ReferenceExpression<DB, TB>,
+    V2 extends ReferenceExpression<DB, TB>
   >(
-    value: V,
-    ...otherValues: OV
+    v1: V1,
+    v2: V2
+  ): ExpressionWrapper<DB, TB, ExtractTypeFromCoalesce2<DB, TB, V1, V2>>
+
+  coalesce<
+    V1 extends ReferenceExpression<DB, TB>,
+    V2 extends ReferenceExpression<DB, TB>,
+    V3 extends ReferenceExpression<DB, TB>
+  >(
+    v1: V1,
+    v2: V2,
+    v3: V3
+  ): ExpressionWrapper<DB, TB, ExtractTypeFromCoalesce3<DB, TB, V1, V2, V3>>
+
+  coalesce<
+    V1 extends ReferenceExpression<DB, TB>,
+    V2 extends ReferenceExpression<DB, TB>,
+    V3 extends ReferenceExpression<DB, TB>,
+    V4 extends ReferenceExpression<DB, TB>
+  >(
+    v1: V1,
+    v2: V2,
+    v3: V3,
+    v4: V4
+  ): ExpressionWrapper<DB, TB, ExtractTypeFromCoalesce4<DB, TB, V1, V2, V3, V4>>
+
+  coalesce<
+    V1 extends ReferenceExpression<DB, TB>,
+    V2 extends ReferenceExpression<DB, TB>,
+    V3 extends ReferenceExpression<DB, TB>,
+    V4 extends ReferenceExpression<DB, TB>,
+    V5 extends ReferenceExpression<DB, TB>
+  >(
+    v1: V1,
+    v2: V2,
+    v3: V3,
+    v4: V4,
+    v5: V5
   ): ExpressionWrapper<
     DB,
     TB,
-    CoalesceReferenceExpressionList<DB, TB, [V, ...OV]>
+    ExtractTypeFromCoalesce5<DB, TB, V1, V2, V3, V4, V5>
   >
 
   /**
@@ -741,10 +787,10 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
 > {
   const fn = <T>(
     name: string,
-    args: ReadonlyArray<ReferenceExpression<DB, TB>>
+    args?: ReadonlyArray<ReferenceExpression<DB, TB>>
   ): ExpressionWrapper<DB, TB, T> => {
     return new ExpressionWrapper(
-      FunctionNode.create(name, parseReferenceExpressionOrList(args))
+      FunctionNode.create(name, parseReferenceExpressionOrList(args ?? []))
     )
   }
 
@@ -770,18 +816,8 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
       return agg('avg', [column])
     },
 
-    coalesce<
-      V extends ReferenceExpression<DB, TB>,
-      OV extends ReferenceExpression<DB, TB>[]
-    >(
-      value: V,
-      ...otherValues: OV
-    ): ExpressionWrapper<
-      DB,
-      TB,
-      CoalesceReferenceExpressionList<DB, TB, [V, ...OV]>
-    > {
-      return fn('coalesce', [value, ...otherValues])
+    coalesce(...values: any[]): ExpressionWrapper<DB, TB, any> {
+      return fn('coalesce', values)
     },
 
     count<
