@@ -85,6 +85,47 @@ async function testWith(db: Kysely<Database>) {
     }[]
   >(r4)
 
+  // https://github.com/kysely-org/kysely/issues/785
+  const r5 = await db
+    .with('person_projection', (qb) =>
+      qb
+        .selectFrom('person')
+        .select(['first_name', 'last_name'])
+        .$if(true, (qb) => qb.where('first_name', 'is not', null))
+    )
+    .selectFrom('person_projection')
+    .selectAll()
+    .$if(true, (qb) => qb.where('first_name', 'is not', null))
+    .execute()
+
+  expectType<
+    {
+      first_name: string
+      last_name: string | null
+    }[]
+  >(r5)
+
+  // testing fix of https://github.com/kysely-org/kysely/issues/785 didn't break $if that adds columns to the projection.
+  const r6 = await db
+    .with('person_projection', (qb) =>
+      qb
+        .selectFrom('person')
+        .select(['first_name', 'last_name'])
+        .$if(true, (qb) => qb.select('age'))
+    )
+    .selectFrom('person_projection')
+    .selectAll()
+    .$if(true, (qb) => qb.where('first_name', 'is not', null))
+    .execute()
+
+  expectType<
+    {
+      first_name: string
+      last_name: string | null
+      age: number | undefined
+    }[]
+  >(r6)
+
   // Different columns in expression and CTE name.
   expectError(
     db
