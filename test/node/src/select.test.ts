@@ -984,7 +984,7 @@ for (const dialect of DIALECTS) {
       })
     }
 
-    if (dialect !== 'mssql') {
+    if (dialect === 'postgres' || dialect === 'mysql' || dialect === 'sqlite') {
       it('should create a select query with limit and offset', async () => {
         const query = ctx.db
           .selectFrom('person')
