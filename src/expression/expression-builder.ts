@@ -737,78 +737,6 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
   ): ExpressionWrapper<DB, TB, VE>
 
   /**
-   * @deprecated Use the expression builder as a function instead.
-   *
-   * Before:
-   *
-   * ```ts
-   * where((eb) => eb.cmpr('first_name', '=', 'Jennifer'))
-   * ```
-   *
-   * After:
-   *
-   * ```ts
-   * where((eb) => eb('first_name', '=', 'Jennifer'))
-   * ```
-   *
-   * or
-   *
-   * ```ts
-   * where(({ eb }) => eb('first_name', '=', 'Jennifer'))
-   * ```
-   */
-  cmpr<
-    O extends SqlBool = SqlBool,
-    RE extends ReferenceExpression<DB, TB> = ReferenceExpression<DB, TB>
-  >(
-    lhs: RE,
-    op: ComparisonOperatorExpression,
-    rhs: OperandValueExpressionOrList<DB, TB, RE>
-  ): ExpressionWrapper<DB, TB, O>
-
-  /**
-   * @deprecated Use the expression builder as a function instead.
-   *
-   * Before:
-   *
-   * ```ts
-   * set((eb) => ({
-   *   age: eb.bxp('age', '+', 10)
-   * }))
-   * ```
-   *
-   * After:
-   *
-   * ```ts
-   * set((eb) => ({
-   *   age: eb('age', '+', 10)
-   * }))
-   * ```
-   *
-   * or
-   *
-   * ```ts
-   * set(({ eb }) => ({
-   *   age: eb('age', '+', 10)
-   * }))
-   * ```
-   */
-  bxp<
-    RE extends ReferenceExpression<DB, TB>,
-    OP extends BinaryOperatorExpression
-  >(
-    lhs: RE,
-    op: OP,
-    rhs: OperandValueExpression<DB, TB, RE>
-  ): ExpressionWrapper<
-    DB,
-    TB,
-    OP extends ComparisonOperator
-      ? SqlBool
-      : ExtractTypeFromReferenceExpression<DB, TB, RE>
-  >
-
-  /**
    * Creates an unary expression.
    *
    * This function returns an {@link Expression} and can be used pretty much anywhere.
@@ -1211,36 +1139,6 @@ export function createExpressionBuilder<DB, TB extends keyof DB>(
       value: VE
     ): ExpressionWrapper<DB, TB, VE> {
       return new ExpressionWrapper(parseSafeImmediateValue(value))
-    },
-
-    // @deprecated
-    cmpr<
-      O extends SqlBool = SqlBool,
-      RE extends ReferenceExpression<DB, TB> = ReferenceExpression<DB, TB>
-    >(
-      lhs: RE,
-      op: ComparisonOperatorExpression,
-      rhs: OperandValueExpressionOrList<DB, TB, RE>
-    ): ExpressionWrapper<DB, TB, O> {
-      return new ExpressionWrapper(parseValueBinaryOperation(lhs, op, rhs))
-    },
-
-    // @deprecated
-    bxp<
-      RE extends ReferenceExpression<DB, TB>,
-      OP extends BinaryOperatorExpression
-    >(
-      lhs: RE,
-      op: OP,
-      rhs: OperandValueExpression<DB, TB, RE>
-    ): ExpressionWrapper<
-      DB,
-      TB,
-      OP extends ComparisonOperator
-        ? SqlBool
-        : ExtractTypeFromReferenceExpression<DB, TB, RE>
-    > {
-      return new ExpressionWrapper(parseValueBinaryOperation(lhs, op, rhs))
     },
 
     unary,
