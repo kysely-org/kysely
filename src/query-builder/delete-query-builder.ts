@@ -83,14 +83,17 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
     this.#props = freeze(props)
   }
 
-  where<RE extends ReferenceExpression<DB, TB>>(
+  where<
+    RE extends ReferenceExpression<DB, TB>,
+    VE extends OperandValueExpressionOrList<DB, TB, RE>
+  >(
     lhs: RE,
     op: ComparisonOperatorExpression,
-    rhs: OperandValueExpressionOrList<DB, TB, RE>
+    rhs: VE
   ): DeleteQueryBuilder<DB, TB, O>
 
-  where(
-    expression: ExpressionOrFactory<DB, TB, SqlBool>
+  where<E extends ExpressionOrFactory<DB, TB, SqlBool>>(
+    expression: E
   ): DeleteQueryBuilder<DB, TB, O>
 
   where(...args: any[]): any {
@@ -103,10 +106,13 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
     })
   }
 
-  whereRef(
-    lhs: ReferenceExpression<DB, TB>,
+  whereRef<
+    LRE extends ReferenceExpression<DB, TB>,
+    RRE extends ReferenceExpression<DB, TB>
+  >(
+    lhs: LRE,
     op: ComparisonOperatorExpression,
-    rhs: ReferenceExpression<DB, TB>
+    rhs: RRE
   ): DeleteQueryBuilder<DB, TB, O> {
     return new DeleteQueryBuilder({
       ...this.#props,

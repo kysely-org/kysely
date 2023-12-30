@@ -399,7 +399,7 @@ for (const dialect of DIALECTS) {
         const query = ctx.db
           .selectFrom('person')
           .selectAll()
-          .where(sql`${'Catto'}`, '=', (eb) =>
+          .where(sql<string>`${'Catto'}`, '=', (eb) =>
             eb
               .selectFrom('pet')
               .select('pet.name')
@@ -437,7 +437,7 @@ for (const dialect of DIALECTS) {
         const query = ctx.db
           .selectFrom('person')
           .selectAll()
-          .where('first_name', sql`=`, sql`${'Arnold'}`)
+          .where('first_name', sql`=`, sql<string>`${'Arnold'}`)
 
         testSql(query, dialect, {
           postgres: {

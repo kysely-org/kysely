@@ -15,6 +15,7 @@ import {
   UpdateObjectExpression,
   parseUpdateObjectExpression,
 } from '../parser/update-set-parser.js'
+import { Updateable } from '../util/column-type.js'
 import { freeze } from '../util/object-utils.js'
 import { preventAwait } from '../util/prevent-await.js'
 import { AnyColumn, SqlBool } from '../util/type-utils.js'
@@ -101,19 +102,17 @@ export class OnConflictBuilder<DB, TB extends keyof DB>
     })
   }
 
-  /**
-   * Specify an index predicate for the index target.
-   *
-   * See {@link WhereInterface.where} for more info.
-   */
-  where<RE extends ReferenceExpression<DB, TB>>(
+  where<
+    RE extends ReferenceExpression<DB, TB>,
+    VE extends OperandValueExpressionOrList<DB, TB, RE>
+  >(
     lhs: RE,
     op: ComparisonOperatorExpression,
-    rhs: OperandValueExpressionOrList<DB, TB, RE>
+    rhs: VE
   ): OnConflictBuilder<DB, TB>
 
-  where(
-    expression: ExpressionOrFactory<DB, TB, SqlBool>
+  where<E extends ExpressionOrFactory<DB, TB, SqlBool>>(
+    expression: E
   ): OnConflictBuilder<DB, TB>
 
   where(...args: any[]): OnConflictBuilder<DB, TB> {
@@ -126,15 +125,13 @@ export class OnConflictBuilder<DB, TB extends keyof DB>
     })
   }
 
-  /**
-   * Specify an index predicate for the index target.
-   *
-   * See {@link WhereInterface.whereRef} for more info.
-   */
-  whereRef(
-    lhs: ReferenceExpression<DB, TB>,
+  whereRef<
+    LRE extends ReferenceExpression<DB, TB>,
+    RRE extends ReferenceExpression<DB, TB>
+  >(
+    lhs: LRE,
     op: ComparisonOperatorExpression,
-    rhs: ReferenceExpression<DB, TB>
+    rhs: RRE
   ): OnConflictBuilder<DB, TB> {
     return new OnConflictBuilder({
       ...this.#props,
@@ -257,7 +254,7 @@ export interface OnConflictBuilderProps {
 preventAwait(OnConflictBuilder, "don't await OnConflictBuilder instances.")
 
 export type OnConflictDatabase<DB, TB extends keyof DB> = {
-  [K in keyof DB | 'excluded']: K extends keyof DB ? DB[K] : DB[TB]
+  [K in keyof DB | 'excluded']: Updateable<K extends keyof DB ? DB[K] : DB[TB]>
 }
 
 export type OnConflictTables<TB> = TB | 'excluded'
@@ -295,14 +292,17 @@ export class OnConflictUpdateBuilder<DB, TB extends keyof DB>
    *
    * See {@link WhereInterface.where} for more info.
    */
-  where<RE extends ReferenceExpression<DB, TB>>(
+  where<
+    RE extends ReferenceExpression<DB, TB>,
+    VE extends OperandValueExpressionOrList<DB, TB, RE>
+  >(
     lhs: RE,
     op: ComparisonOperatorExpression,
-    rhs: OperandValueExpressionOrList<DB, TB, RE>
+    rhs: VE
   ): OnConflictUpdateBuilder<DB, TB>
 
-  where(
-    expression: ExpressionOrFactory<DB, TB, SqlBool>
+  where<E extends ExpressionOrFactory<DB, TB, SqlBool>>(
+    expression: E
   ): OnConflictUpdateBuilder<DB, TB>
 
   where(...args: any[]): OnConflictUpdateBuilder<DB, TB> {
@@ -320,10 +320,13 @@ export class OnConflictUpdateBuilder<DB, TB extends keyof DB>
    *
    * See {@link WhereInterface.whereRef} for more info.
    */
-  whereRef(
-    lhs: ReferenceExpression<DB, TB>,
+  whereRef<
+    LRE extends ReferenceExpression<DB, TB>,
+    RRE extends ReferenceExpression<DB, TB>
+  >(
+    lhs: LRE,
     op: ComparisonOperatorExpression,
-    rhs: ReferenceExpression<DB, TB>
+    rhs: RRE
   ): OnConflictUpdateBuilder<DB, TB> {
     return new OnConflictUpdateBuilder({
       ...this.#props,

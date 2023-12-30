@@ -1,6 +1,6 @@
 {
   "name": "kysely",
-  "version": "0.26.3",
+  "version": "0.27.0",
   "description": "Type safe SQL query builder",
   "repository": {
     "type": "git",
@@ -26,6 +26,11 @@
       "import": "./dist/esm/helpers/mysql.js",
       "require": "./dist/cjs/helpers/mysql.js",
       "default": "./dist/cjs/helpers/mysql.js"
+    },
+    "./helpers/mssql": {
+      "import": "./dist/esm/helpers/mssql.js",
+      "require": "./dist/cjs/helpers/mssql.js",
+      "default": "./dist/cjs/helpers/mssql.js"
     },
     "./helpers/sqlite": {
       "import": "./dist/esm/helpers/sqlite.js",
@@ -64,6 +69,7 @@
   "author": "Sami Koskimäki <sami@jakso.me>",
   "license": "MIT",
   "contributors": [
+    "Sami Koskimäki <sami@jakso.me>",
     "Igal Klebanov <igalklebanov@gmail.com>"
   ],
   "devDependencies": {

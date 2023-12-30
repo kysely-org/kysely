@@ -1,4 +1,12 @@
-import { Expression, Kysely, RawBuilder, Selectable, Simplify, sql } from '..'
+import {
+  Expression,
+  Kysely,
+  NotNull,
+  RawBuilder,
+  Selectable,
+  Simplify,
+  sql,
+} from '..'
 import { Database, Person } from '../shared'
 import { expectType, expectError } from 'tsd'
 
@@ -106,7 +114,24 @@ async function testSelectSingle(db: Kysely<Database>) {
     .$narrowType<NarrowTarget>()
     .execute()
 
-  expectType<NarrowTarget>(r15)
+  // Narrow not null
+  const [r16] = await db
+    .selectFrom('action')
+    .select(['callback_url', 'queue_id'])
+    .$narrowType<{ callback_url: NotNull }>()
+    .execute()
+
+  expectType<string>(r16.callback_url)
+  expectType<string | null>(r16.queue_id)
+
+  const [r17] = await db
+    .selectFrom('action')
+    .select(['callback_url', 'queue_id'])
+    .$narrowType<{ callback_url: NotNull; queue_id: NotNull }>()
+    .execute()
+
+  expectType<string>(r17.callback_url)
+  expectType<string>(r17.queue_id)
 }
 
 async function testSelectAll(db: Kysely<Database>) {
@@ -132,6 +157,7 @@ async function testSelectAll(db: Kysely<Database>) {
     modified_at: Date
     owner_id: number
     species: 'dog' | 'cat'
+    deleted_at: Date | null
   }>(r2)
 
   // Select all from a single table when there are two tables to select from
@@ -171,6 +197,7 @@ async function testSelectAll(db: Kysely<Database>) {
     modified_at: Date
     owner_id: number
     species: 'dog' | 'cat'
+    deleted_at: Date | null
   }>(r5)
 }
 

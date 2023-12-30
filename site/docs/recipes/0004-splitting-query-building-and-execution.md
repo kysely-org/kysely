@@ -1,17 +1,17 @@
-# Splitting build, compile and execute code
+# Splitting query building and execution
 
 Kysely is primarily a type-safe sql query builder.
 
-It also does query execution, migrations, etc. in order to align with Knex's "batteries 
+It also does query execution, migrations, etc. in order to align with Knex's "batteries
 included" approach.
 
 ## "Cold" Kysely instances
 
-In order to use Kysely purely as a query builder without database driver dependencies, 
+In order to use Kysely purely as a query builder without database driver dependencies,
 you can instantiate it with the built-in `DummyDriver` class:
 
 ```ts
-import { 
+import {
   Generated,
   DummyDriver,
   Kysely,
@@ -40,12 +40,12 @@ const db = new Kysely<Database>({
 })
 ```
 
-This Kysely instance will compile to PostgreSQL sql dialect. You can brew "dummy" 
-dialects to compile to all kinds of sql dialects (e.g. MySQL). Trying to execute 
-queries using "cold" kysely instances will return empty results without communicating 
+This Kysely instance will compile to PostgreSQL sql dialect. You can brew "dummy"
+dialects to compile to all kinds of sql dialects (e.g. MySQL). Trying to execute
+queries using "cold" kysely instances will return empty results without communicating
 with a database.
 
-> "Cold" Kysely instances are not required for the following sections. You can 
+> "Cold" Kysely instances are not required for the following sections. You can
 use "hot" kysely instances, with real drivers, if you want to.
 
 ## Compile a query
@@ -62,11 +62,11 @@ const compiledQuery = db
 console.log(compiledQuery) // { sql: 'select "first_name" from "person" where "id" = $1', parameters: [1], query: { ... } }
 ```
 
-The result of `.compile()` is a `CompiledQuery` object. It contains the query string 
-(in `sql` field), parameters and the original Kysely-specific syntax tree used 
+The result of `.compile()` is a `CompiledQuery` object. It contains the query string
+(in `sql` field), parameters and the original Kysely-specific syntax tree used
 for compilation.
 
-This output alone can be used with any database driver that understands the sql 
+This output alone can be used with any database driver that understands the sql
 dialect used (PostgreSQL in this example).
 
 Raw queries can be compiled as well:
@@ -81,8 +81,8 @@ console.log(compiledQuery) // { sql: 'select * from person where id = $1', param
 
 ## Infer result type
 
-Kysely supports inferring a (compiled) query's result type even when detached from 
-query building chains. This allows splitting query building, compilation and execution 
+Kysely supports inferring a (compiled) query's result type even when detached from
+query building chains. This allows splitting query building, compilation and execution
 code without losing type-safety.
 
 ```ts
@@ -115,5 +115,5 @@ const compiledQuery = db
 const results = await db.executeQuery(compiledQuery)
 ```
 
-The `QueryResult` object returned by `.executeQuery()` contains the query results' 
+The `QueryResult` object returned by `.executeQuery()` contains the query results'
 rows, insertId and number of affected rows (if applicable).

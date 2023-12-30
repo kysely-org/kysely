@@ -136,14 +136,17 @@ export class AggregateFunctionBuilder<DB, TB extends keyof DB, O = unknown>
    * from "person"
    * ```
    */
-  filterWhere<RE extends ReferenceExpression<DB, TB>>(
+  filterWhere<
+    RE extends ReferenceExpression<DB, TB>,
+    VE extends OperandValueExpressionOrList<DB, TB, RE>
+  >(
     lhs: RE,
     op: ComparisonOperatorExpression,
-    rhs: OperandValueExpressionOrList<DB, TB, RE>
+    rhs: VE
   ): AggregateFunctionBuilder<DB, TB, O>
 
-  filterWhere(
-    expression: ExpressionOrFactory<DB, TB, SqlBool>
+  filterWhere<E extends ExpressionOrFactory<DB, TB, SqlBool>>(
+    expression: E
   ): AggregateFunctionBuilder<DB, TB, O>
 
   filterWhere(...args: any[]): any {
@@ -188,10 +191,13 @@ export class AggregateFunctionBuilder<DB, TB extends keyof DB, O = unknown>
    * from "person"
    * ```
    */
-  filterWhereRef(
-    lhs: ReferenceExpression<DB, TB>,
+  filterWhereRef<
+    LRE extends ReferenceExpression<DB, TB>,
+    RRE extends ReferenceExpression<DB, TB>
+  >(
+    lhs: LRE,
     op: ComparisonOperatorExpression,
-    rhs: ReferenceExpression<DB, TB>
+    rhs: RRE
   ): AggregateFunctionBuilder<DB, TB, O> {
     return new AggregateFunctionBuilder({
       ...this.#props,
@@ -321,4 +327,4 @@ export interface AggregateFunctionBuilderProps {
 
 export type OverBuilderCallback<DB, TB extends keyof DB> = (
   builder: OverBuilder<DB, TB>
-) => OverBuilder<DB, TB>
+) => OverBuilder<any, any>

@@ -559,7 +559,7 @@ export class QueryCreator<DB> {
     nameOrBuilder: N | CTEBuilderCallback<N>,
     expression: E
   ): QueryCreatorWithCommonTableExpression<DB, N, E> {
-    const cte = parseCommonTableExpression(nameOrBuilder, expression)
+    const cte = parseCommonTableExpression(nameOrBuilder, expression as any)
 
     return new QueryCreator({
       ...this.#props,

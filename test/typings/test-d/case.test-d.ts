@@ -94,6 +94,15 @@ async function testCase(eb: ExpressionBuilder<Database, 'person'>) {
       .end()
   )
 
+  // subquery
+  expectType<ExpressionWrapper<Database, 'person', string | null>>(
+    eb
+      .case()
+      .when('gender', '=', 'male')
+      .then(eb.selectFrom('person').select('first_name'))
+      .end()
+  )
+
   // errors
 
   expectError(eb.case().when('no_such_column', '=', 'male').then('Mr.').end())

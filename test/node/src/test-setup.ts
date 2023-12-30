@@ -37,14 +37,19 @@ import {
   MssqlDialect,
   SelectQueryBuilder,
 } from '../../../'
+import { OrderByDirection, UndirectedOrderByExpression } from '../../../dist/cjs/parser/order-by-parser'
+
+export type Gender = 'male' | 'female' | 'other'
+export type MaritalStatus = 'single' | 'married' | 'divorced' | 'widowed'
+export type Species = 'dog' | 'cat' | 'hamster'
 
 export interface Person {
   id: Generated<number>
   first_name: string | null
   middle_name: ColumnType<string | null, string | undefined, string | undefined>
   last_name: string | null
-  gender: 'male' | 'female' | 'other'
-  marital_status: 'single' | 'married' | 'divorced' | 'widowed' | null
+  gender: Gender
+  marital_status: MaritalStatus | null
   children: Generated<number>
 }
 
@@ -52,7 +57,7 @@ export interface Pet {
   id: Generated<number>
   name: string
   owner_id: number
-  species: 'dog' | 'cat' | 'hamster'
+  species: Species
 }
 
 export interface Toy {
@@ -475,5 +480,21 @@ export function limit<QB extends SelectQueryBuilder<any, any, any>>(
     }
 
     return qb.limit(limit) as QB
+  }
+}
+
+export function orderBy<QB extends SelectQueryBuilder<any, any, any>>(
+  orderBy: QB extends SelectQueryBuilder<infer DB, infer TB, infer O>
+    ? UndirectedOrderByExpression<DB, TB, O>
+    : never,
+  direction: OrderByDirection | undefined,
+  dialect: BuiltInDialect
+): (qb: QB) => QB {
+  return (qb) => {
+    if (dialect === 'mssql') {
+      return qb.orderBy(orderBy, sql`${sql.raw(direction ? `${direction} ` : '')}${sql.raw('offset 0 rows')}`) as QB
+    }
+
+    return qb.orderBy(orderBy, direction) as QB
   }
 }

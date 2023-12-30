@@ -75,7 +75,7 @@ function testWhere(db: Kysely<Database>) {
   )
 
   // Raw expression
-  db.selectFrom('person').where('first_name', '=', sql`'foo'`)
+  db.selectFrom('person').where('first_name', '=', sql<string>`'foo'`)
   db.selectFrom('person').where('first_name', '=', sql<string>`'foo'`)
   db.selectFrom('person').where(sql`whatever`, '=', 1)
   db.selectFrom('person').where(sql`whatever`, '=', true)
