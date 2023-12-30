@@ -1064,6 +1064,33 @@ for (const dialect of DIALECTS) {
         const result = await query.execute()
         expect(result).to.have.length(2)
       })
+
+      it('should create a select query with limit and offset expressions', async () => {
+        const query = ctx.db
+          .selectFrom('person')
+          .select('first_name')
+          .limit((eb) => eb.lit(2))
+          .offset((eb) => eb.lit(1))
+
+        testSql(query, dialect, {
+          postgres: {
+            sql: `select "first_name" from "person" limit 2 offset 1`,
+            parameters: [],
+          },
+          mysql: {
+            sql: 'select `first_name` from `person` limit 2 offset 1',
+            parameters: [],
+          },
+          mssql: NOT_SUPPORTED,
+          sqlite: {
+            sql: 'select "first_name" from "person" limit 2 offset 1',
+            parameters: [],
+          },
+        })
+
+        const result = await query.execute()
+        expect(result).to.have.length(2)
+      })
     }
 
     it('should create a select statement without a `from` clause', async () => {

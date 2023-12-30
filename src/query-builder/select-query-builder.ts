@@ -75,6 +75,10 @@ import { Streamable } from '../util/streamable.js'
 import { ExpressionOrFactory } from '../parser/expression-parser.js'
 import { ExpressionWrapper } from '../expression/expression-wrapper.js'
 import { SelectQueryBuilderExpression } from './select-query-builder-expression.js'
+import {
+  ValueExpression,
+  parseValueExpression,
+} from '../parser/value-parser.js'
 
 export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
   extends WhereInterface<DB, TB>,
@@ -1038,7 +1042,7 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    *   .limit(10)
    * ```
    */
-  limit(limit: number): SelectQueryBuilder<DB, TB, O>
+  limit(limit: ValueExpression<DB, TB, number>): SelectQueryBuilder<DB, TB, O>
 
   /**
    * Adds an offset clause to the query.
@@ -1055,7 +1059,7 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    *   .limit(10)
    * ```
    */
-  offset(offset: number): SelectQueryBuilder<DB, TB, O>
+  offset(offset: ValueExpression<DB, TB, number>): SelectQueryBuilder<DB, TB, O>
 
   /**
    * Combines another select query or raw expression to this query using `union`.
@@ -1959,22 +1963,24 @@ class SelectQueryBuilderImpl<DB, TB extends keyof DB, O>
     })
   }
 
-  limit(limit: number): SelectQueryBuilder<DB, TB, O> {
+  limit(limit: ValueExpression<DB, TB, number>): SelectQueryBuilder<DB, TB, O> {
     return new SelectQueryBuilderImpl({
       ...this.#props,
       queryNode: SelectQueryNode.cloneWithLimit(
         this.#props.queryNode,
-        LimitNode.create(limit)
+        LimitNode.create(parseValueExpression(limit))
       ),
     })
   }
 
-  offset(offset: number): SelectQueryBuilder<DB, TB, O> {
+  offset(
+    offset: ValueExpression<DB, TB, number>
+  ): SelectQueryBuilder<DB, TB, O> {
     return new SelectQueryBuilderImpl({
       ...this.#props,
       queryNode: SelectQueryNode.cloneWithOffset(
         this.#props.queryNode,
-        OffsetNode.create(offset)
+        OffsetNode.create(parseValueExpression(offset))
       ),
     })
   }
