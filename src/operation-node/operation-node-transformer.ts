@@ -811,6 +811,7 @@ export class OperationNodeTransformer {
       kind: 'SelectModifierNode',
       modifier: node.modifier,
       rawModifier: this.transformNode(node.rawModifier),
+      of: this.transformNodeList(node.of),
     })
   }
 

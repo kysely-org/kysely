@@ -645,6 +645,32 @@ for (const dialect of DIALECTS) {
         expect(persons).to.eql([{ last_name: 'Aniston' }])
       })
 
+      it('should select a row for update of', async () => {
+        const query = ctx.db
+          .selectFrom('person')
+          .select('last_name')
+          .where('first_name', '=', 'Jennifer')
+          .forUpdate('person')
+
+        testSql(query, dialect, {
+          postgres: {
+            sql: 'select "last_name" from "person" where "first_name" = $1 for update of "person"',
+            parameters: ['Jennifer'],
+          },
+          mysql: {
+            sql: 'select `last_name` from `person` where `first_name` = ? for update of "person"',
+            parameters: ['Jennifer'],
+          },
+          mssql: NOT_SUPPORTED,
+          sqlite: NOT_SUPPORTED,
+        })
+
+        const persons = await query.execute()
+
+        expect(persons).to.have.length(1)
+        expect(persons).to.eql([{ last_name: 'Aniston' }])
+      })
+
       it('should select a row for update with skip locked', async () => {
         const query = ctx.db
           .selectFrom('person')
@@ -660,6 +686,33 @@ for (const dialect of DIALECTS) {
           },
           mysql: {
             sql: 'select `last_name` from `person` where `first_name` = ? for update skip locked',
+            parameters: ['Jennifer'],
+          },
+          mssql: NOT_SUPPORTED,
+          sqlite: NOT_SUPPORTED,
+        })
+
+        const persons = await query.execute()
+
+        expect(persons).to.have.length(1)
+        expect(persons).to.eql([{ last_name: 'Aniston' }])
+      })
+
+      it('should select a row for update of with skip locked', async () => {
+        const query = ctx.db
+          .selectFrom('person')
+          .select('last_name')
+          .where('first_name', '=', 'Jennifer')
+          .forUpdate(['person'])
+          .skipLocked()
+
+        testSql(query, dialect, {
+          postgres: {
+            sql: 'select "last_name" from "person" where "first_name" = $1 for update of "person" skip locked',
+            parameters: ['Jennifer'],
+          },
+          mysql: {
+            sql: 'select `last_name` from `person` where `first_name` = ? for update of "person" skip locked',
             parameters: ['Jennifer'],
           },
           mssql: NOT_SUPPORTED,
