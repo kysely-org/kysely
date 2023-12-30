@@ -1439,10 +1439,10 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
   /**
    * Change the output type of the query.
    *
-   * You should only use this method as the last resort if the types
-   * don't support your use case.
+   * This method call doesn't change the SQL in any way. This methods simply
+   * returns a copy of this `SelectQueryBuilder` with a new output type.
    */
-  $castTo<T>(): SelectQueryBuilder<DB, TB, T>
+  $castTo<C>(): SelectQueryBuilder<DB, TB, C>
 
   /**
    * Changes the output type from an object to a tuple.
@@ -2095,7 +2095,7 @@ class SelectQueryBuilderImpl<DB, TB extends keyof DB, O>
     }) as any
   }
 
-  $castTo<T>(): SelectQueryBuilder<DB, TB, T> {
+  $castTo<C>(): SelectQueryBuilder<DB, TB, C> {
     return new SelectQueryBuilderImpl(this.#props)
   }
 

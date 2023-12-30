@@ -716,10 +716,10 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
   /**
    * Change the output type of the query.
    *
-   * You should only use this method as the last resort if the types
-   * don't support your use case.
+   * This method call doesn't change the SQL in any way. This methods simply
+   * returns a copy of this `DeleteQueryBuilder` with a new output type.
    */
-  $castTo<T>(): DeleteQueryBuilder<DB, TB, T> {
+  $castTo<C>(): DeleteQueryBuilder<DB, TB, C> {
     return new DeleteQueryBuilder(this.#props)
   }
 

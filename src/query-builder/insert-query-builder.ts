@@ -677,10 +677,10 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
   /**
    * Change the output type of the query.
    *
-   * You should only use this method as the last resort if the types
-   * don't support your use case.
+   * This method call doesn't change the SQL in any way. This methods simply
+   * returns a copy of this `InsertQueryBuilder` with a new output type.
    */
-  $castTo<T>(): InsertQueryBuilder<DB, TB, T> {
+  $castTo<C>(): InsertQueryBuilder<DB, TB, C> {
     return new InsertQueryBuilder(this.#props)
   }
 
