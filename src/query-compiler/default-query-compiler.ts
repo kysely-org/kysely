@@ -592,6 +592,10 @@ export class DefaultQueryCompiler
       this.visitNode(node.generated)
     }
 
+    if (node.identity) {
+      this.append(' identity')
+    }
+
     if (node.defaultTo) {
       this.append(' ')
       this.visitNode(node.defaultTo)
