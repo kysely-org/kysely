@@ -1,4 +1,9 @@
-import { expectError, expectAssignable, expectNotAssignable } from 'tsd'
+import {
+  expectError,
+  expectAssignable,
+  expectNotAssignable,
+  expectType,
+} from 'tsd'
 import { Generated, Kysely, sql } from '..'
 import { Database } from '../shared'
 
@@ -90,6 +95,65 @@ async function testSelectWithDefaultGenerics(db: Kysely<Database>) {
   expectNotAssignable<null>(result.total_age)
 }
 
+async function testSelectExpressionBuilderWithDefaultGenerics(
+  db: Kysely<Database>
+) {
+  const result = await db
+    .selectFrom('person')
+    .select((eb) => [
+      eb.fn.avg('age').as('avg_age'),
+      eb.fn.count('age').as('total_people'),
+      eb.fn.countAll().as('total_all'),
+      eb.fn.countAll('person').as('total_all_people'),
+      eb.fn.max('age').as('max_age'),
+      eb.fn.min('age').as('min_age'),
+      eb.fn.sum('age').as('total_age'),
+    ])
+
+    .executeTakeFirstOrThrow()
+
+  expectAssignable<string | number>(result.avg_age)
+  expectNotAssignable<null>(result.avg_age)
+  expectAssignable<string | number | bigint>(result.total_people)
+  expectNotAssignable<null>(result.total_people)
+  expectAssignable<string | number | bigint>(result.total_all)
+  expectNotAssignable<null>(result.total_all)
+  expectAssignable<string | number | bigint>(result.total_all_people)
+  expectNotAssignable<null>(result.total_all_people)
+  expectAssignable<number>(result.max_age)
+  expectNotAssignable<string | bigint | null>(result.max_age)
+  expectAssignable<number>(result.min_age)
+  expectNotAssignable<string | bigint | null>(result.min_age)
+  expectAssignable<string | number | bigint>(result.total_age)
+  expectNotAssignable<null>(result.total_age)
+}
+
+async function testSelectExpressionBuilderWithSubExpressions(
+  db: Kysely<Database>
+) {
+  const result = await db
+    .selectFrom('person')
+    .select((eb) => [
+      eb.fn.avg(eb.ref('age')).as('avg_age'),
+      eb.fn.count(eb.ref('age')).as('total_people'),
+      eb.fn.countAll().as('total_all'),
+      eb.fn.countAll('person').as('total_all_people'),
+      eb.fn.max(eb.ref('age').$castTo<bigint>()).as('max_age'),
+      eb.fn.min(eb.ref('age')).as('min_age'),
+      eb.fn.sum(eb.ref('age')).as('total_age'),
+    ])
+
+    .executeTakeFirstOrThrow()
+
+  expectType<string | number>(result.avg_age)
+  expectType<string | number | bigint>(result.total_people)
+  expectType<string | number | bigint>(result.total_all)
+  expectType<string | number | bigint>(result.total_all_people)
+  expectType<bigint>(result.max_age)
+  expectType<number>(result.min_age)
+  expectType<string | number | bigint>(result.total_age)
+}
+
 async function testSelectWithCustomGenerics(db: Kysely<Database>) {
   const { avg, count, countAll, max, min, sum } = db.fn
 
@@ -100,8 +164,8 @@ async function testSelectWithCustomGenerics(db: Kysely<Database>) {
     .select(count<number>('age').as('total_people'))
     .select(countAll<number>().as('total_all'))
     .select(countAll<number>('person').as('total_all_people'))
-    .select(max<number | null, 'age'>('age').as('nullable_max_age'))
-    .select(min<number | null, 'age'>('age').as('nullable_min_age'))
+    .select(max<number | null>('age').as('nullable_max_age'))
+    .select(min<number | null>('age').as('nullable_min_age'))
     .select(sum<number>('age').as('total_age'))
     .select(sum<number | null>('age').as('nullable_total_age'))
     .executeTakeFirstOrThrow()
@@ -124,56 +188,6 @@ async function testSelectWithCustomGenerics(db: Kysely<Database>) {
   expectNotAssignable<string | bigint | null>(result.total_age)
   expectAssignable<number | null>(result.nullable_total_age)
   expectNotAssignable<string | bigint>(result.nullable_total_age)
-
-  expectError(
-    db
-      .selectFrom('person')
-      .select(max<string>('age').as('max_lie_return_type'))
-      .executeTakeFirstOrThrow()
-  )
-
-  expectError(
-    db
-      .selectFrom('person')
-      .select(max<string, 'age'>('age').as('another_max_lie_return_type'))
-      .executeTakeFirstOrThrow()
-  )
-
-  expectError(
-    db
-      .selectFrom('person')
-      .select(
-        max<number | null>('age').as(
-          'max_explicit_return_type_but_no_string_ref'
-        )
-      )
-      .executeTakeFirstOrThrow()
-  )
-
-  expectError(
-    db
-      .selectFrom('person')
-      .select(min<string>('age').as('min_lie_return_type'))
-      .executeTakeFirstOrThrow()
-  )
-
-  expectError(
-    db
-      .selectFrom('person')
-      .select(min<string, 'age'>('age').as('another_min_lie_return_type'))
-      .executeTakeFirstOrThrow()
-  )
-
-  expectError(
-    db
-      .selectFrom('person')
-      .select(
-        min<number | null>('age').as(
-          'min_explicit_return_type_but_no_string_ref'
-        )
-      )
-      .executeTakeFirstOrThrow()
-  )
 }
 
 async function testSelectUnexpectedColumn(db: Kysely<Database>) {
@@ -1083,7 +1097,7 @@ async function testIssue764(db: Kysely<DB764>) {
             .end()
         )
         .when('OrderAggregates.itemType', '=', ItemType764.FEELING)
-        .then(eb.fn.max('MaxQuantity')) // <-- WOT?
+        .then(eb.fn.max('MaxQuantity'))
         .else(0)
         .end()
         .as('totalQuantity')
