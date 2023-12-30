@@ -7,7 +7,7 @@ Kysely IS a query builder. Kysely DOES build the SQL you tell it to, nothing mor
 
 Phew, glad we got that out the way..
 
-Having said all that, there are ways to nest related rows in your queries. You just have to do it 
+Having said all that, there are ways to nest related rows in your queries. You just have to do it
 using the tools SQL and the underlying dialect (e.g. PostgreSQL, MySQL, or SQLite) provide. In this recipe
 we show one way to do that when using the built-in PostgreSQL, MySQL, and SQLite dialects.
 
@@ -38,32 +38,32 @@ SELECT
 
   -- Select person's pets as a json array
   (
-    SELECT 
+    SELECT
       COALESCE(JSON_AGG(pets), '[]')
     FROM
     (
-      SELECT 
+      SELECT
         pet.id, pet.name
       FROM
         pet
-      WHERE 
+      WHERE
         pet.owner_id = person.id
-      ORDER BY 
+      ORDER BY
         pet.name
     ) pets
   ) pets,
 
   -- Select person's mother as a json object
   (
-    SELECT 
+    SELECT
       TO_JSON(mother)
     FROM
     (
-      SELECT 
+      SELECT
         mother.id, mother.first_name
       FROM
         person as mother
-      WHERE 
+      WHERE
         mother.id = person.mother_id
     ) mother
   ) mother

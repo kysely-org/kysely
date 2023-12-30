@@ -10,6 +10,7 @@ import {
   parseValueBinaryOperationOrExpression,
 } from '../parser/binary-operation-parser.js'
 import {
+  ExtractTypeFromValueExpression,
   isSafeImmediateValue,
   parseSafeImmediateValue,
   parseValueExpression,
@@ -72,7 +73,9 @@ export class CaseThenBuilder<DB, TB extends keyof DB, W, O> {
    * A `then` call can be followed by {@link Whenable.when}, {@link CaseWhenBuilder.else},
    * {@link CaseWhenBuilder.end} or {@link CaseWhenBuilder.endCase} call.
    */
-  then<O2>(expression: Expression<O2>): CaseWhenBuilder<DB, TB, W, O | O2>
+  then<E extends Expression<any>>(
+    expression: E
+  ): CaseWhenBuilder<DB, TB, W, O | ExtractTypeFromValueExpression<E>>
 
   then<V>(value: V): CaseWhenBuilder<DB, TB, W, O | V>
 
