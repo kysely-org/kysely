@@ -658,7 +658,7 @@ for (const dialect of DIALECTS) {
             parameters: ['Jennifer'],
           },
           mysql: {
-            sql: 'select `last_name` from `person` where `first_name` = ? for update of "person"',
+            sql: 'select `last_name` from `person` where `first_name` = ? for update of `person`',
             parameters: ['Jennifer'],
           },
           mssql: NOT_SUPPORTED,
@@ -712,7 +712,7 @@ for (const dialect of DIALECTS) {
             parameters: ['Jennifer'],
           },
           mysql: {
-            sql: 'select `last_name` from `person` where `first_name` = ? for update of "person" skip locked',
+            sql: 'select `last_name` from `person` where `first_name` = ? for update of `person` skip locked',
             parameters: ['Jennifer'],
           },
           mssql: NOT_SUPPORTED,

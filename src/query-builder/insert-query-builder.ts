@@ -328,6 +328,18 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
   }
 
   /**
+   * Creates an `insert into "person" default values` query.
+   */
+  defaultValues(): InsertQueryBuilder<DB, TB, O> {
+    return new InsertQueryBuilder({
+      ...this.#props,
+      queryNode: InsertQueryNode.cloneWith(this.#props.queryNode, {
+        defaultValues: true,
+      }),
+    })
+  }
+
+  /**
    * Changes an `insert into` query to an `insert ignore into` query.
    *
    * If you use the ignore modifier, ignorable errors that occur while executing the
