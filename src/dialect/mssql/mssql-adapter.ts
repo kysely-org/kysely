@@ -13,9 +13,7 @@ export class MssqlAdapter extends DialectAdapterBase {
   }
 
   get supportsReturning(): boolean {
-    // mssql should support returning with the `output` clause.
-    // we need to figure this out when we'll introduce support for it.
-    return false
+    return true
   }
 
   async acquireMigrationLock(db: Kysely<any>): Promise<void> {
