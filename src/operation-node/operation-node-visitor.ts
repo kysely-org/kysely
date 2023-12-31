@@ -90,6 +90,7 @@ import { JSONPathLegNode } from './json-path-leg-node.js'
 import { JSONOperatorChainNode } from './json-operator-chain-node.js'
 import { TupleNode } from './tuple-node.js'
 import { AddIndexNode } from './add-index-node.js'
+import { OutputNode } from './output-node.js'
 
 export abstract class OperationNodeVisitor {
   protected readonly nodeStack: OperationNode[] = []
@@ -187,6 +188,7 @@ export abstract class OperationNodeVisitor {
     JSONOperatorChainNode: this.visitJSONOperatorChain.bind(this),
     TupleNode: this.visitTuple.bind(this),
     AddIndexNode: this.visitAddIndex.bind(this),
+    OutputNode: this.visitOutput.bind(this),
   })
 
   protected readonly visitNode = (node: OperationNode): void => {
@@ -292,4 +294,5 @@ export abstract class OperationNodeVisitor {
   protected abstract visitJSONOperatorChain(node: JSONOperatorChainNode): void
   protected abstract visitTuple(node: TupleNode): void
   protected abstract visitAddIndex(node: AddIndexNode): void
+  protected abstract visitOutput(node: OutputNode): void
 }

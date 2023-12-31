@@ -86,6 +86,7 @@ export type OperationNodeKind =
   | 'JSONOperatorChainNode'
   | 'TupleNode'
   | 'AddIndexNode'
+  | 'OutputNode'
 
 export interface OperationNode {
   readonly kind: OperationNodeKind

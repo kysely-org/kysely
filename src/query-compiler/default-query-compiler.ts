@@ -105,6 +105,7 @@ import { JSONPathLegNode } from '../operation-node/json-path-leg-node.js'
 import { JSONOperatorChainNode } from '../operation-node/json-operator-chain-node.js'
 import { TupleNode } from '../operation-node/tuple-node.js'
 import { AddIndexNode } from '../operation-node/add-index-node.js'
+import { OutputNode } from '../operation-node/output-node.js'
 
 export class DefaultQueryCompiler
   extends OperationNodeVisitor
@@ -1463,6 +1464,17 @@ export class DefaultQueryCompiler
     if (node.using) {
       this.append(' using ')
       this.visitNode(node.using)
+    }
+  }
+
+  protected override visitOutput(node: OutputNode): void {
+    this.append('output ')
+
+    this.compileList(node.selections)
+
+    if (node.into) {
+      this.append(' into ')
+      this.visitNode(node.into)
     }
   }
 

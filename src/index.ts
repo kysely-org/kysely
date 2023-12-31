@@ -197,6 +197,7 @@ export * from './operation-node/json-path-leg-node.js'
 export * from './operation-node/json-path-node.js'
 export * from './operation-node/json-operator-chain-node.js'
 export * from './operation-node/tuple-node.js'
+export * from './operation-node/output-node.js'
 
 export * from './util/column-type.js'
 export * from './util/compilable.js'
