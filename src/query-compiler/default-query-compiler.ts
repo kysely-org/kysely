@@ -306,6 +306,11 @@ export class DefaultQueryCompiler
       this.append(')')
     }
 
+    if (node.output) {
+      this.append(' ')
+      this.visitNode(node.output)
+    }
+
     if (node.values) {
       this.append(' ')
       this.visitNode(node.values)
