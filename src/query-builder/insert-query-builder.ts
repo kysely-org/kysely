@@ -60,10 +60,18 @@ import { Explainable, ExplainFormat } from '../util/explainable.js'
 import { Expression } from '../expression/expression.js'
 import { KyselyTypeError } from '../util/type-error.js'
 import { Streamable } from '../util/streamable.js'
+import {
+  OutputCallback,
+  OutputExpression,
+  OutputInterface,
+  SelectExpressionFromOutputCallback,
+  SelectExpressionFromOutputExpression,
+} from './output-interface.js'
 
 export class InsertQueryBuilder<DB, TB extends keyof DB, O>
   implements
     ReturningInterface<DB, TB, O>,
+    OutputInterface<DB, TB, O, 'inserted'>,
     OperationNodeSource,
     Compilable<O>,
     Explainable,
@@ -603,6 +611,40 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
       queryNode: QueryNode.cloneWithReturning(
         this.#props.queryNode,
         parseSelectAll()
+      ),
+    })
+  }
+
+  output<OE extends OutputExpression<DB, TB, 'inserted'>>(
+    selections: readonly OE[]
+  ): InsertQueryBuilder<
+    DB,
+    TB,
+    ReturningRow<DB, TB, O, SelectExpressionFromOutputExpression<OE>>
+  >
+
+  output<CB extends OutputCallback<DB, TB, 'inserted'>>(
+    callback: CB
+  ): InsertQueryBuilder<
+    DB,
+    TB,
+    ReturningRow<DB, TB, O, SelectExpressionFromOutputCallback<CB>>
+  >
+
+  output<OE extends OutputExpression<DB, TB, 'inserted'>>(
+    selection: OE
+  ): InsertQueryBuilder<
+    DB,
+    TB,
+    ReturningRow<DB, TB, O, SelectExpressionFromOutputExpression<OE>>
+  >
+
+  output(args: any): any {
+    return new InsertQueryBuilder({
+      ...this.#props,
+      queryNode: QueryNode.cloneWithOutput(
+        this.#props.queryNode,
+        parseSelectArg(args)
       ),
     })
   }
