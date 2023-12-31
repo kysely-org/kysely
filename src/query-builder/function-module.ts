@@ -1,4 +1,3 @@
-import { DynamicReferenceBuilder } from '../dynamic/dynamic-reference-builder.js'
 import { ExpressionWrapper } from '../expression/expression-wrapper.js'
 import { Expression } from '../expression/expression.js'
 import { AggregateFunctionNode } from '../operation-node/aggregate-function-node.js'
@@ -19,7 +18,7 @@ import {
 } from '../parser/reference-parser.js'
 import { parseSelectAll } from '../parser/select-parser.js'
 import { KyselyTypeError } from '../util/type-error.js'
-import { Equals, IsAny } from '../util/type-utils.js'
+import { IsNever } from '../util/type-utils.js'
 import { AggregateFunctionBuilder } from './aggregate-function-builder.js'
 import { SelectQueryBuilderExpression } from '../query-builder/select-query-builder-expression.js'
 import { isString } from '../util/object-utils.js'
@@ -226,9 +225,9 @@ export interface FunctionModule<DB, TB extends keyof DB> {
    */
   avg<
     O extends number | string | null = number | string,
-    C extends ReferenceExpression<DB, TB> = ReferenceExpression<DB, TB>
+    RE extends ReferenceExpression<DB, TB> = ReferenceExpression<DB, TB>
   >(
-    column: C
+    expr: RE
   ): AggregateFunctionBuilder<DB, TB, O>
 
   /**
@@ -395,9 +394,9 @@ export interface FunctionModule<DB, TB extends keyof DB> {
    */
   count<
     O extends number | string | bigint,
-    C extends ReferenceExpression<DB, TB> = ReferenceExpression<DB, TB>
+    RE extends ReferenceExpression<DB, TB> = ReferenceExpression<DB, TB>
   >(
-    column: C
+    expr: RE
   ): AggregateFunctionBuilder<DB, TB, O>
 
   /**
@@ -521,28 +520,22 @@ export interface FunctionModule<DB, TB extends keyof DB> {
    *
    * ```ts
    * db.selectFrom('toy')
-   *   .select((eb) => eb.fn.max<number | null, 'price'>('price').as('max_price'))
+   *   .select((eb) => eb.fn.max<number | null>('price').as('max_price'))
    *   .execute()
    * ```
    */
-  max<C extends StringReference<DB, TB>>(
-    column: C
+  max<
+    O extends number | string | bigint | null = never,
+    RE extends ReferenceExpression<DB, TB> = ReferenceExpression<DB, TB>
+  >(
+    expr: RE
   ): AggregateFunctionBuilder<
     DB,
     TB,
-    ExtractTypeFromReferenceExpression<DB, TB, C>
+    IsNever<O> extends true
+      ? ExtractTypeFromReferenceExpression<DB, TB, RE, number | string | bigint>
+      : O
   >
-
-  max<
-    O extends number | string | bigint | null,
-    C extends StringReference<DB, TB> = StringReference<DB, TB>
-  >(
-    column: OutputBoundStringReference<DB, TB, C, O>
-  ): StringReferenceBoundAggregateFunctionBuilder<DB, TB, C, O>
-
-  max<O extends number | string | bigint | null = number | string | bigint>(
-    column: DynamicReferenceBuilder
-  ): AggregateFunctionBuilder<DB, TB, O>
 
   /**
    * Calls the `min` function for the column or expression given as the argument.
@@ -586,28 +579,22 @@ export interface FunctionModule<DB, TB extends keyof DB> {
    *
    * ```ts
    * db.selectFrom('toy')
-   *   .select((eb) => eb.fn.min<number | null, 'price'>('price').as('min_price'))
+   *   .select((eb) => eb.fn.min<number | null>('price').as('min_price'))
    *   .execute()
    * ```
    */
-  min<C extends StringReference<DB, TB>>(
-    column: C
+  min<
+    O extends number | string | bigint | null = never,
+    RE extends ReferenceExpression<DB, TB> = ReferenceExpression<DB, TB>
+  >(
+    expr: RE
   ): AggregateFunctionBuilder<
     DB,
     TB,
-    ExtractTypeFromReferenceExpression<DB, TB, C>
+    IsNever<O> extends true
+      ? ExtractTypeFromReferenceExpression<DB, TB, RE, number | string | bigint>
+      : O
   >
-
-  min<
-    O extends number | string | bigint | null,
-    C extends StringReference<DB, TB> = StringReference<DB, TB>
-  >(
-    column: OutputBoundStringReference<DB, TB, C, O>
-  ): StringReferenceBoundAggregateFunctionBuilder<DB, TB, C, O>
-
-  min<O extends number | string | bigint | null = number | string | bigint>(
-    column: DynamicReferenceBuilder
-  ): AggregateFunctionBuilder<DB, TB, O>
 
   /**
    * Calls the `sum` function for the column or expression given as the argument.
@@ -669,9 +656,9 @@ export interface FunctionModule<DB, TB extends keyof DB> {
    */
   sum<
     O extends number | string | bigint | null = number | string | bigint,
-    C extends ReferenceExpression<DB, TB> = ReferenceExpression<DB, TB>
+    RE extends ReferenceExpression<DB, TB> = ReferenceExpression<DB, TB>
   >(
-    column: C
+    expr: RE
   ): AggregateFunctionBuilder<DB, TB, O>
 
   /**
@@ -872,22 +859,3 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
     },
   })
 }
-
-type OutputBoundStringReference<DB, TB extends keyof DB, C, O> = Equals<
-  ExtractTypeFromReferenceExpression<DB, TB, C> | null,
-  O | null
-> extends true
-  ? C
-  : never
-
-type StringReferenceBoundAggregateFunctionBuilder<
-  DB,
-  TB extends keyof DB,
-  C,
-  O
-> = AggregateFunctionBuilder<
-  DB,
-  TB,
-  | ExtractTypeFromReferenceExpression<DB, TB, C>
-  | (IsAny<O> extends true ? never : null extends O ? null : never) // output is nullable, but column type might not be nullable.
->

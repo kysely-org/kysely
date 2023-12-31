@@ -315,6 +315,11 @@ export class DefaultQueryCompiler
       this.visitNode(node.values)
     }
 
+    if (node.defaultValues) {
+      this.append(' ')
+      this.append('default values')
+    }
+
     if (node.onConflict) {
       this.append(' ')
       this.visitNode(node.onConflict)
@@ -1229,6 +1234,11 @@ export class DefaultQueryCompiler
       this.visitNode(node.rawModifier)
     } else {
       this.append(SELECT_MODIFIER_SQL[node.modifier!])
+    }
+
+    if (node.of) {
+      this.append(' of ')
+      this.compileList(node.of, ', ')
     }
   }
 
