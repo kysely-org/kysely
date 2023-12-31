@@ -37,15 +37,20 @@ export async function deletePerson(id: number) {
 
   return person
 }`,
-  sqlite: postgresqlCodeSnippet,
-  // TODO: Update to use output clause once #687 is completed
-  mssql: `export async function createPerson(person: NewPerson) {
-  await db.insertInto('person')
-    .values(person)
-    .executeTakeFirstOrThrow()
+  mssql: `// As of v0.27.0, Kysely doesn't support the \`OUTPUT\` clause. This will change 
+// in the future. For now, the following implementations achieve the same results 
+// as other dialects' examples, but with extra steps.
 
-  const newPerson = (await findPeople(person)).at(-1)
-  return newPerson
+export async function createPerson(person: NewPerson) {
+  const compiledQuery = db.insertInto('person').values(person).compile()
+
+  compiledQuery.sql += '; select scope_identity() as id'
+
+  const {
+    rows: [{ id }],
+  } = await db.executeQuery<Pick<Person, 'id'>>(compiledQuery)
+
+  return await findPersonById(id)
 }
 
 export async function deletePerson(id: number) {
@@ -57,6 +62,8 @@ export async function deletePerson(id: number) {
 
   return person
 }`,
+  sqlite: postgresqlCodeSnippet,
+  // TODO: Update to use output clause once #687 is completed
 }
 
 export function Querying(props: PropsWithDialect) {

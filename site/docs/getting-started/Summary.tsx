@@ -28,6 +28,16 @@ const dialectSpecificCodeSnippets: Record<Dialect, string> = {
         cb.notNull().defaultTo(sql\`now()\`)
       )
       .execute()`,
+  // TODO: Update line 42's IDENTITY once identity(1,1) is added to core.
+  mssql: `    await db.schema.createTable('person')
+      .addColumn('id', 'integer', (cb) => cb.primaryKey().modifyEnd(sql\`identity\`))
+      .addColumn('first_name', 'varchar(255)', (cb) => cb.notNull())
+      .addColumn('last_name', 'varchar(255)')
+      .addColumn('gender', 'varchar(50)', (cb) => cb.notNull())
+      .addColumn('created_at', 'datetime', (cb) =>
+        cb.notNull().defaultTo(sql\`GETDATE()\`)
+      )
+      .execute()`,
   sqlite: `    await db.schema.createTable('person')
       .addColumn('id', 'integer', (cb) => cb.primaryKey().autoIncrement().notNull())
       .addColumn('first_name', 'varchar(255)', (cb) => cb.notNull())
@@ -37,21 +47,12 @@ const dialectSpecificCodeSnippets: Record<Dialect, string> = {
         cb.notNull().defaultTo(sql\`current_timestamp\`)
       )
       .execute()`,
-      // TODO: Update line 42's IDENTITY once identity(1,1) is added to core.
-  mssql: `    await db.schema.createTable('person')
-      .addColumn('id', 'integer', (cb) => cb.primaryKey().modifyEnd(sql\`IDENTITY(1,1)\`))
-      .addColumn('first_name', 'varchar(255)', (cb) => cb.notNull())
-      .addColumn('last_name', 'varchar(255)')
-      .addColumn('gender', 'varchar(50)', (cb) => cb.notNull())
-      .addColumn('created_at', 'datetime', (cb) =>
-        cb.notNull().defaultTo(sql\`GETDATE()\`)
-      )
-      .execute()`,
 }
 
 const dialectSpecificTruncateSnippets: Record<Dialect, string> = {
   postgresql: `await sql\`truncate table \${sql.table('person')}\`.execute(db)`,
   mysql: `await sql\`truncate table \${sql.table('person')}\`.execute(db)`,
+  mssql: `await sql\`truncate table \${sql.table('person')}\`.execute(db)`,
   sqlite: `await sql\`delete from \${sql.table('person')}\`.execute(db)`,
 }
 
@@ -59,8 +60,8 @@ export function Summary(props: PropsWithDialect) {
   const dialect = props.dialect || 'postgresql'
 
   const dialectSpecificCodeSnippet = dialectSpecificCodeSnippets[dialect]
-  const dialectSpecificTruncateSnippet = dialectSpecificTruncateSnippets[dialect]
-  const prettyDialectName = PRETTY_DIALECT_NAMES[dialect]
+  const dialectSpecificTruncateSnippet =
+    dialectSpecificTruncateSnippets[dialect]
 
   return (
     <>

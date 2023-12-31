@@ -7,11 +7,11 @@ import TabItem from '@theme/TabItem'
 import Tabs from '@theme/Tabs'
 import { IUseADifferentPackageManager } from './IUseADifferentPackageManager'
 import {
-  DRIVER_NPM_PACKAGE_NAMES,
-  DRIVER_ADDITIONAL_NPM_PACKAGE_NAMES,
+  getDriverNPMPackageNames,
   getBashCommand,
   getDenoCommand,
   isDialectSupported,
+  POOL_NPM_PACKAGE_NAMES,
   PRETTY_DIALECT_NAMES,
   PRETTY_PACKAGE_MANAGER_NAMES,
   type Dialect,
@@ -26,6 +26,7 @@ export interface DialectsProps {
 interface BuiltInDialect {
   value: Dialect
   driverDocsURL: string
+  poolDocsURL?: string
 }
 
 const builtInDialects: BuiltInDialect[] = [
@@ -39,13 +40,14 @@ const builtInDialects: BuiltInDialect[] = [
       'https://github.com/sidorares/node-mysql2/tree/master/documentation',
   },
   {
+    value: 'mssql',
+    driverDocsURL: 'https://tediousjs.github.io/tedious/index.html',
+    poolDocsURL: 'https://github.com/vincit/tarn.js',
+  },
+  {
     value: 'sqlite',
     driverDocsURL:
       'https://github.com/WiseLibs/better-sqlite3/blob/master/docs/api.md',
-  },
-  {
-    value: 'mssql',
-    driverDocsURL: 'https://tediousjs.github.io/tedious/index.html',
   },
 ]
 
@@ -60,9 +62,9 @@ export function Dialects(props: DialectsProps) {
         it. This requires a <code>Dialect</code> implementation.
         <br />
         <br />
-        There are 4 built-in dialects for PostgreSQL, MySQL, Microsoft SQL Server 
-        (MSSQL), and SQLite. Additionally, the community has implemented several
-        dialects to choose from. Find out more at{' '}
+        There are 4 built-in dialects for PostgreSQL, MySQL, Microsoft SQL
+        Server (MSSQL), and SQLite. Additionally, the community has implemented
+        several dialects to choose from. Find out more at{' '}
         <Link to="/docs/dialects">"Dialects"</Link>.
       </p>
       <Heading as="h3">Driver installation</Heading>
@@ -73,9 +75,9 @@ export function Dialects(props: DialectsProps) {
       </p>
       {/* @ts-ignore For some odd reason, Tabs doesn't accept children in this file. */}
       <Tabs queryString="dialect">
-        {builtInDialects.map(({ driverDocsURL, value }) => {
-          const driverNPMPackage = DRIVER_NPM_PACKAGE_NAMES[value]
-          const additionalPackages = DRIVER_ADDITIONAL_NPM_PACKAGE_NAMES[value]
+        {builtInDialects.map(({ driverDocsURL, poolDocsURL, value }) => {
+          const driverNPMPackage = getDriverNPMPackageNames()[value]
+          const poolNPMPackage = POOL_NPM_PACKAGE_NAMES[value]
           const prettyDialectName = PRETTY_DIALECT_NAMES[value]
           const installationCommand =
             packageManager === 'deno'
@@ -84,11 +86,9 @@ export function Dialects(props: DialectsProps) {
                   [`${driverNPMPackage}-pool`]:
                     driverNPMPackage === 'pg' ? 'npm:pg-pool' : undefined,
                 })
-              : getBashCommand(
-                  packageManager,
-                  driverNPMPackage,
-                  additionalPackages
-                )
+              : getBashCommand(packageManager, driverNPMPackage, [
+                  poolNPMPackage,
+                ])
 
           return (
             // @ts-ignore For some odd reason, TabItem doesn't accept children in this file.
@@ -108,15 +108,13 @@ export function Dialects(props: DialectsProps) {
                     <Link to={driverDocsURL}>official documentation</Link> for
                     configuration options.
                   </p>
-                  {additionalPackages && value === 'mssql' ? (
+                  {poolNPMPackage ? (
                     <p>
                       Additionally, Kysely's {prettyDialectName} dialect uses
-                      the "{additionalPackages[0]}" resource pool package for
+                      the "{poolNPMPackage}" resource pool package for
                       connection pooling. Please refer to its{' '}
-                      <Link to="https://github.com/vincit/tarn.js">
-                        official documentation
-                      </Link>{' '}
-                      for configuration options.
+                      <Link to={poolDocsURL}>official documentation</Link> for
+                      configuration options.
                     </p>
                   ) : null}
                   <p>

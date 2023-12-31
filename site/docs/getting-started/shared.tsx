@@ -26,47 +26,48 @@ export function isDialectSupported(
   return !PACKAGE_MANAGER_UNSUPPORTED_DIALECTS[packageManager].includes(dialect)
 }
 
-export const DRIVER_NPM_PACKAGE_NAMES: Record<Dialect, string> = {
-  postgresql: 'pg',
-  mysql: 'mysql2',
-  sqlite: 'better-sqlite3',
-  mssql: 'tedious',
-}
+export const DIALECT_CLASS_NAMES = {
+  postgresql: 'PostgresDialect',
+  mysql: 'MysqlDialect',
+  mssql: 'MssqlDialect',
+  sqlite: 'SqliteDialect',
+} as const satisfies Record<Dialect, string>
 
-export const DRIVER_ADDITIONAL_NPM_PACKAGE_NAMES: Record<
-  Dialect,
-  string[] | undefined
-> = {
-  postgresql: undefined,
-  mysql: undefined,
-  sqlite: undefined,
-  mssql: ['tarn'],
-}
+export const getDriverNPMPackageNames = (
+  packageManager: PackageManager = 'npm'
+) =>
+  ({
+    postgresql: packageManager === 'deno' ? 'pg-pool' : 'pg',
+    mysql: 'mysql2',
+    mssql: 'tedious',
+    sqlite: 'better-sqlite3',
+  } as const satisfies Record<Dialect, string>)
 
-export const PRETTY_DIALECT_NAMES: Record<Dialect, string> = {
+export const POOL_NPM_PACKAGE_NAMES = {
+  mssql: 'tarn',
+} as const satisfies Partial<Record<Dialect, string>>
+
+export const PRETTY_DIALECT_NAMES = {
   postgresql: 'PostgreSQL',
   mysql: 'MySQL',
-  sqlite: 'SQLite',
   mssql: 'Microsoft SQL Server (MSSQL)',
-}
+  sqlite: 'SQLite',
+} as const satisfies Record<Dialect, string>
 
-export const PRETTY_PACKAGE_MANAGER_NAMES: Record<PackageManager, string> = {
+export const PRETTY_PACKAGE_MANAGER_NAMES = {
   npm: 'npm',
   pnpm: 'pnpm',
   yarn: 'Yarn',
   deno: 'Deno',
   bun: 'Bun',
-}
+} as const satisfies Record<PackageManager, string>
 
-const PACKAGE_MANAGER_INSTALL_COMMANDS: Record<
-  Exclude<PackageManager, 'deno'>,
-  string
-> = {
+const PACKAGE_MANAGER_INSTALL_COMMANDS = {
   npm: 'npm install',
   pnpm: 'pnpm install',
   yarn: 'yarn add',
   bun: 'bun install',
-}
+} as const satisfies Omit<Record<PackageManager, string>, 'deno'>
 
 export interface Command {
   content: ReactNode
@@ -87,8 +88,8 @@ export function getBashCommand(
   return {
     content: `${
       PACKAGE_MANAGER_INSTALL_COMMANDS[packageManager]
-    } ${installedPackage} ${
-      additionalPackages ? additionalPackages.join(' ') : ''
+    } ${installedPackage}${
+      additionalPackages?.length ? ` ${additionalPackages.join(' ')}` : ''
     }`,
     intro: 'Run the following command in your terminal:',
     language: 'bash',

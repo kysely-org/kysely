@@ -4,39 +4,60 @@ import CodeBlock from '@theme/CodeBlock'
 import { IUseADifferentDatabase } from './IUseADifferentDatabase'
 import { IUseADifferentPackageManager } from './IUseADifferentPackageManager'
 import {
-  DRIVER_NPM_PACKAGE_NAMES,
-  DRIVER_ADDITIONAL_NPM_PACKAGE_NAMES,
+  getDriverNPMPackageNames,
   isDialectSupported,
+  POOL_NPM_PACKAGE_NAMES,
   PRETTY_PACKAGE_MANAGER_NAMES,
   type Dialect,
   type PackageManager,
   type PropsWithDialect,
+  DIALECT_CLASS_NAMES,
+  PRETTY_DIALECT_NAMES,
 } from './shared'
 
-const dialectSpecificCodeSnippets: Record<
-  Dialect,
-  (packageManager: PackageManager) => string | ReactNode
-> = {
-  postgresql: (packageManager) => `import { Pool } from '${
-    packageManager === 'deno' ? 'pg-pool' : DRIVER_NPM_PACKAGE_NAMES.postgresql
-  }'
-import { Kysely, PostgresDialect } from 'kysely'
+function getNotSupportedCode(
+  dialect: Dialect,
+  packageManager: PackageManager
+): string {
+  return `/* Kysely doesn't support ${PRETTY_DIALECT_NAMES[dialect]} + ${
+    PRETTY_PACKAGE_MANAGER_NAMES[packageManager || 'npm']
+  } out of the box. Import a community dialect that does here. */
+import { Kysely } from 'kysely'
 
-const dialect = new PostgresDialect({
-  pool: new Pool({
+const dialect = /* instantiate the dialect here */`
+}
+
+function getDialectSpecificCodeSnippet(
+  dialect: Dialect,
+  packageManager: PackageManager
+): string {
+  const driverNPMPackageName = getDriverNPMPackageNames(packageManager)[dialect]
+  const dialectClassName = DIALECT_CLASS_NAMES[dialect]
+  const poolClassName = 'Pool'
+
+  if (dialect === 'postgresql') {
+    return `import { ${poolClassName} } from '${driverNPMPackageName}'
+import { Kysely, ${dialectClassName} } from 'kysely'
+
+const dialect = new ${dialectClassName}({
+  pool: new ${poolClassName}({
     database: 'test',
     host: 'localhost',
     user: 'admin',
     port: 5434,
     max: 10,
   })
-})`,
-  mysql:
-    () => `import { createPool } from '${DRIVER_NPM_PACKAGE_NAMES.mysql}' // do not use 'mysql2/promises'!
-import { Kysely, MysqlDialect } from 'kysely'
+})`
+  }
 
-const dialect = new MysqlDialect({
-  pool: createPool({
+  if (dialect === 'mysql') {
+    const poolFactoryName = 'createPool'
+
+    return `import { ${poolFactoryName} } from '${driverNPMPackageName}' // do not use 'mysql2/promises'!
+import { Kysely, ${dialectClassName} } from 'kysely'
+
+const dialect = new ${dialectClassName}({
+  pool: ${poolFactoryName}({
     database: 'test',
     host: 'localhost',
     user: 'admin',
@@ -44,38 +65,27 @@ const dialect = new MysqlDialect({
     port: 3308,
     connectionLimit: 10,
   })
-})`,
-  sqlite: (packageManager) =>
-    isDialectSupported('sqlite', packageManager)
-      ? `import * as SQLite from '${DRIVER_NPM_PACKAGE_NAMES.sqlite}'
-import { Kysely, SqliteDialect } from 'kysely'
-
-const dialect = new SqliteDialect({
-  database: new SQLite(':memory:'),
 })`
-      : `/* Kysely doesn't support SQLite + ${
-          PRETTY_PACKAGE_MANAGER_NAMES[packageManager || 'npm']
-        } out of the box. Import a community dialect that does here. */
-import { Kysely } from 'kysely'
+  }
 
-const dialect = /* instantiate the dialect here */`,
-  mssql: (packageManager) =>
-    isDialectSupported('mssql', packageManager)
-      ? `import * as Tedious from '${DRIVER_NPM_PACKAGE_NAMES.mssql}'
-import * as Tarn from '${DRIVER_ADDITIONAL_NPM_PACKAGE_NAMES.mssql[0]}'
-import { Kysely, MssqlDialect } from 'kysely'
+  if (dialect === 'mssql') {
+    const poolPackageName = POOL_NPM_PACKAGE_NAMES.mssql
 
-const dialect = new MssqlDialect({
-  tarn: {
-    ...Tarn,
+    return `import * as ${driverNPMPackageName} from '${driverNPMPackageName}'
+import * as ${poolPackageName} from '${poolPackageName}'
+import { Kysely, ${dialectClassName} } from 'kysely'
+
+const dialect = new ${dialectClassName}({
+  ${poolPackageName}: {
+    ...${poolPackageName},
     options: {
       min: 0,
       max: 10,
     },
   },
-  tedious: {
-    ...Tedious,
-    connectionFactory: () => new Tedious.Connection({
+  ${driverNPMPackageName}: {
+    ...${driverNPMPackageName},
+    connectionFactory: () => new ${driverNPMPackageName}.Connection({
       authentication: {
         options: {
           password: 'password',
@@ -92,24 +102,20 @@ const dialect = new MssqlDialect({
     }),
   },
 })`
-      : `/* Kysely doesn't support MSSQL + ${
-          PRETTY_PACKAGE_MANAGER_NAMES[packageManager || 'npm']
-        } out of the box. Import a community dialect that does here. */
-import { Kysely } from 'kysely'
+  }
 
-const dialect = /* instantiate the dialect here */`,
-}
+  if (dialect === 'sqlite') {
+    const driverImportName = 'SQLite'
 
-const dialectClassNames: Record<
-  Dialect,
-  (packageManager: PackageManager) => string | null
-> = {
-  postgresql: () => 'PostgresDialect',
-  mysql: () => 'MysqlDialect',
-  sqlite: (packageManager) =>
-    isDialectSupported('sqlite', packageManager) ? 'SqliteDialect' : null,
-  mssql: (packageManager) =>
-    isDialectSupported('mssql', packageManager) ? 'MssqlDialect' : null,
+    return `import * as ${driverImportName} from '${driverNPMPackageName}'
+import { Kysely, ${dialectClassName} } from 'kysely'
+
+const dialect = new ${dialectClassName}({
+  database: new ${driverImportName}(':memory:'),
+})`
+  }
+
+  throw new Error(`Unsupported dialect: ${dialect}`)
 }
 
 export function Instantiation(
@@ -121,15 +127,19 @@ export function Instantiation(
   const dialect = props.dialect || 'postgresql'
   const packageManager = props.packageManager || 'npm'
 
-  const dialectSpecificCodeSnippet =
-    dialectSpecificCodeSnippets[dialect](packageManager)
-  const dialectClassName = dialectClassNames[dialect](packageManager)
+  const dialectSpecificCodeSnippet = !isDialectSupported(
+    dialect,
+    packageManager
+  )
+    ? getNotSupportedCode(dialect, packageManager)
+    : getDialectSpecificCodeSnippet(dialect, packageManager)
+  const dialectClassName = DIALECT_CLASS_NAMES[dialect]
 
   return (
     <>
       <p>
         <strong>Let's create a Kysely instance</strong>
-        {dialectClassName ? (
+        {isDialectSupported(dialect, packageManager) ? (
           <>
             <strong> using the built-in </strong>
             <code>{dialectClassName}</code>
