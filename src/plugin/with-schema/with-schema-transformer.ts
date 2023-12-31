@@ -2,6 +2,7 @@ import { AliasNode } from '../../operation-node/alias-node.js'
 import { IdentifierNode } from '../../operation-node/identifier-node.js'
 import { OperationNodeTransformer } from '../../operation-node/operation-node-transformer.js'
 import { OperationNode } from '../../operation-node/operation-node.js'
+import { RawNode } from '../../operation-node/raw-node.js'
 import { ReferencesNode } from '../../operation-node/references-node.js'
 import { SchemableIdentifierNode } from '../../operation-node/schemable-identifier-node.js'
 import { TableNode } from '../../operation-node/table-node.js'
@@ -138,6 +139,12 @@ export class WithSchemaTransformer extends OperationNodeTransformer {
 
     if ('using' in node && node.using) {
       this.#collectSchemableIdsFromTableExpr(node.using, schemableIds)
+    }
+
+    if (RawNode.is(node)) {
+      for (const parameter of node.parameters) {
+        this.#collectSchemableIdsFromTableExpr(parameter, schemableIds)
+      }
     }
 
     return schemableIds
