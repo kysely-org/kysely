@@ -96,7 +96,13 @@ export type PerDialect<T> = Record<BuiltInDialect, T>
 
 export const DIALECTS: BuiltInDialect[] = (
   ['postgres', 'mysql', 'mssql', 'sqlite'] as const
-).filter((d) => !process.env.DIALECT || d === process.env.DIALECT)
+).filter(
+  (d) =>
+    !process.env.DIALECTS ||
+    process.env.DIALECTS.split(',')
+      .map((it) => it.trim())
+      .includes(d)
+)
 
 const TEST_INIT_TIMEOUT = 5 * 60 * 1000
 // This can be used as a placeholder for testSql when a query is not

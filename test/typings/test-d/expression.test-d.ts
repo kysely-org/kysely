@@ -102,6 +102,18 @@ async function testExpressionBuilder(
     })
   )
 
+  expectAssignable<Expression<number | null>>(
+    eb.case().when('age', '=', 10).then(1).else(null).end()
+  )
+
+  expectNotAssignable<Expression<number>>(
+    eb.case().when('age', '=', 10).then(1).else(null).end()
+  )
+
+  expectAssignable<Expression<number>>(
+    eb.case().when('age', '=', 10).then(1).else(null).end().$notNull()
+  )
+
   expectType<
     KyselyTypeError<'or() method can only be called on boolean expressions'>
   >(eb('age', '+', 1).or('age', '=', 1))

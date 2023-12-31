@@ -73,7 +73,7 @@ export class CaseThenBuilder<DB, TB extends keyof DB, W, O> {
    * A `then` call can be followed by {@link Whenable.when}, {@link CaseWhenBuilder.else},
    * {@link CaseWhenBuilder.end} or {@link CaseWhenBuilder.endCase} call.
    */
-  then<E extends Expression<any>>(
+  then<E extends Expression<unknown>>(
     expression: E
   ): CaseWhenBuilder<DB, TB, W, O | ExtractTypeFromValueExpression<E>>
 
@@ -135,7 +135,9 @@ export class CaseWhenBuilder<DB, TB extends keyof DB, W, O>
    *
    * An `else` call must be followed by an {@link Endable.end} or {@link Endable.endCase} call.
    */
-  else<O2>(expression: Expression<O2>): CaseEndBuilder<DB, TB, O | O2>
+  else<E extends Expression<unknown>>(
+    expression: E
+  ): CaseEndBuilder<DB, TB, O | ExtractTypeFromValueExpression<E>>
 
   else<V>(value: V): CaseEndBuilder<DB, TB, O | V>
 

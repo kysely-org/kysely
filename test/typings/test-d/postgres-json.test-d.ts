@@ -128,6 +128,47 @@ async function testPostgresJsonAgg(db: Kysely<Database>) {
       pets: Selectable<Pet>[] | null
     }[]
   >(r3)
+
+  const db2 = db.withTables<{
+    acquisition: {
+      id: number
+    }
+    transaction: {
+      id: number
+      acquisitionId: number
+      status: string
+    }
+  }>()
+
+  const r4 = await db2
+    .selectFrom('acquisition')
+    .leftJoin('transaction', 'transaction.acquisitionId', 'acquisition.id')
+    .select(({ ref, fn }) => [
+      'acquisition.id',
+      fn
+        .coalesce(
+          fn
+            .jsonAgg(
+              jsonBuildObject({
+                id: ref('transaction.id').$notNull(),
+                status: ref('transaction.status'),
+              })
+            )
+            .filterWhere('transaction.id', 'is not', null),
+          sql`'[]'`
+        )
+        .as('transactions'),
+    ])
+    .groupBy('acquisition.id')
+    .executeTakeFirstOrThrow()
+
+  expectType<{
+    id: number
+    transactions: {
+      id: number
+      status: string | null
+    }[]
+  }>(r4)
 }
 
 async function testPostgresToJson(db: Kysely<Database>) {

@@ -370,6 +370,7 @@ export class OperationNodeTransformer {
       ignore: node.ignore,
       replace: node.replace,
       explain: this.transformNode(node.explain),
+      defaultValues: node.defaultValues,
     })
   }
 
@@ -812,6 +813,7 @@ export class OperationNodeTransformer {
       kind: 'SelectModifierNode',
       modifier: node.modifier,
       rawModifier: this.transformNode(node.rawModifier),
+      of: this.transformNodeList(node.of),
     })
   }
 
