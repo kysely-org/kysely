@@ -22,6 +22,7 @@ export interface InsertQueryNode extends OperationNode {
   readonly ignore?: boolean
   readonly replace?: boolean
   readonly explain?: ExplainNode
+  readonly defaultValues?: boolean
 }
 
 /**

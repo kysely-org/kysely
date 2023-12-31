@@ -239,7 +239,20 @@ export class ExpressionWrapper<DB, TB extends keyof DB, T>
    * This method call doesn't change the SQL in any way. This methods simply
    * returns a copy of this `ExpressionWrapper` with a new output type.
    */
-  $castTo<T>(): ExpressionWrapper<DB, TB, T> {
+  $castTo<C>(): ExpressionWrapper<DB, TB, C> {
+    return new ExpressionWrapper(this.#node)
+  }
+
+  /**
+   * Omit null from the expression's type.
+   *
+   * This function can be useful in cases where you know an expression can't be
+   * null, but Kysely is unable to infer it.
+   *
+   * This method call doesn't change the SQL in any way. This methods simply
+   * returns a copy of `this` with a new output type.
+   */
+  $notNull(): ExpressionWrapper<DB, TB, Exclude<T, null>> {
     return new ExpressionWrapper(this.#node)
   }
 
@@ -352,7 +365,7 @@ export class OrWrapper<DB, TB extends keyof DB, T extends SqlBool>
    * This method call doesn't change the SQL in any way. This methods simply
    * returns a copy of this `OrWrapper` with a new output type.
    */
-  $castTo<T extends SqlBool>(): OrWrapper<DB, TB, T> {
+  $castTo<C extends SqlBool>(): OrWrapper<DB, TB, C> {
     return new OrWrapper(this.#node)
   }
 
@@ -436,7 +449,7 @@ export class AndWrapper<DB, TB extends keyof DB, T extends SqlBool>
    * This method call doesn't change the SQL in any way. This methods simply
    * returns a copy of this `AndWrapper` with a new output type.
    */
-  $castTo<T extends SqlBool>(): AndWrapper<DB, TB, T> {
+  $castTo<C extends SqlBool>(): AndWrapper<DB, TB, C> {
     return new AndWrapper(this.#node)
   }
 
