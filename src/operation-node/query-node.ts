@@ -11,6 +11,12 @@ import { OperationNode } from './operation-node.js'
 import { ExplainNode } from './explain-node.js'
 import { ExplainFormat } from '../util/explainable.js'
 import { Expression } from '../expression/expression.js'
+import { OutputNode } from './output-node.js'
+import {
+  SelectArg,
+  SelectExpression,
+  parseSelectArg,
+} from '../parser/select-parser.js'
 
 export type QueryNode =
   | SelectQueryNode
@@ -22,6 +28,7 @@ type HasJoins = { joins?: ReadonlyArray<JoinNode> }
 type HasWhere = { where?: WhereNode }
 type HasReturning = { returning?: ReturningNode }
 type HasExplain = { explain?: ExplainNode }
+type HasOutput = { output?: OutputNode }
 
 /**
  * @internal
@@ -79,6 +86,18 @@ export const QueryNode = freeze({
     return freeze({
       ...node,
       explain: ExplainNode.create(format, options?.toOperationNode()),
+    })
+  },
+
+  cloneWithOutput<T extends HasOutput>(
+    node: T,
+    selections: ReadonlyArray<SelectionNode>
+  ): T {
+    return freeze({
+      ...node,
+      output: node.output
+        ? OutputNode.cloneWithSelections(node.output, selections)
+        : OutputNode.create(selections),
     })
   },
 })
