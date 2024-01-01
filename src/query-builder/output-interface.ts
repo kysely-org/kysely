@@ -13,7 +13,55 @@ export interface OutputInterface<
   OP extends OutputPrefix = OutputPrefix
 > {
   /**
-   * TODO: ...
+   * Allows you to return data from modified rows.
+   *
+   * On supported databases like MS SQL Server (MSSQL), this method can be chained
+   * to `insert`, `update` and `delete` queries to return data.
+   *
+   * Also see the {@link outputAll} method.
+   *
+   * ### Examples
+   *
+   * Return one column:
+   *
+   * ```ts
+   * const { id } = await db
+   *   .insertInto('person')
+   *   .output('inserted.id')
+   *   .values({
+   *     first_name: 'Jennifer',
+   *     last_name: 'Aniston'
+   *   })
+   *   .executeTakeFirst()
+   * ```
+   *
+   * Return multiple columns:
+   *
+   * ```ts
+   * const { id, first_name } = await db
+   *   .updateTable('person')
+   *   .set({ first_name: 'John', last_name: 'Doe' })
+   *   .output([
+   *     'deleted.first_name as old_first_name',
+   *     'deleted.last_name as old_last_name',
+   *     'inserted.first_name as new_first_name',
+   *     'inserted.last_name as new_last_name',
+   *   ])
+   *   .where('created_at', '<', new Date())
+   *   .executeTakeFirst()
+   * ```
+   *
+   * Return arbitrary expressions:
+   *
+   * ```ts
+   * import { sql } from 'kysely'
+   *
+   * const { id, full_name } = await db
+   *   .deleteFrom('person')
+   *   .output((eb) => sql<string>`concat(${eb.ref('deleted.first_name')}, ' ', ${eb.ref('deleted.last_name')})`.as('full_name')
+   *   .where('created_at', '<', new Date())
+   *   .executeTakeFirst()
+   * ```
    */
   output<OE extends OutputExpression<DB, TB, OP>>(
     selections: ReadonlyArray<OE>
@@ -43,7 +91,10 @@ export interface OutputInterface<
   >
 
   /**
-   * TODO: ...
+   * Adds an `output {prefix}.*` to an `insert`/`update`/`delete` query on databases
+   * that support `output` such as MS SQL Server (MSSQL).
+   *
+   * Also see the {@link output} method.
    */
   outputAll(table: OP): OutputInterface<DB, TB, ReturningAllRow<DB, TB, O>, OP>
 }
