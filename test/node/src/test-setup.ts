@@ -432,26 +432,12 @@ export async function insert<TB extends keyof Database>(
   }
 
   if (dialect === 'mssql') {
-    // TODO: use insert into "table" (...) output inserted.id values (...) when its implemented
-    return await ctx.db.connection().execute(async (db) => {
-      await qb.executeTakeFirstOrThrow()
+    const { id } = await qb
+      .output('inserted.id' as any)
+      .$castTo<{ id: number }>()
+      .executeTakeFirstOrThrow()
 
-      const { query } = qb.compile()
-
-      const table =
-        query.kind === 'InsertQueryNode' &&
-        [query.into.table.schema?.name, query.into.table.identifier.name]
-          .filter(Boolean)
-          .join('.')
-
-      const {
-        rows: [{ id }],
-      } = await sql<{ id: number }>`select IDENT_CURRENT(${sql.lit(
-        table
-      )}) as id`.execute(db)
-
-      return Number(id)
-    })
+    return id
   }
 
   const { insertId } = await qb.executeTakeFirstOrThrow()
