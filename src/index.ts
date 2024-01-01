@@ -10,6 +10,7 @@ export * from './expression/expression-wrapper.js'
 
 export * from './query-builder/where-interface.js'
 export * from './query-builder/returning-interface.js'
+export * from './query-builder/output-interface.js'
 export * from './query-builder/having-interface.js'
 export * from './query-builder/select-query-builder.js'
 export * from './query-builder/insert-query-builder.js'
