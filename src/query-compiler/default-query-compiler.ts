@@ -366,6 +366,11 @@ export class DefaultQueryCompiler
     this.append('delete ')
     this.visitNode(node.from)
 
+    if (node.output) {
+      this.append(' ')
+      this.visitNode(node.output)
+    }
+
     if (node.using) {
       this.append(' ')
       this.visitNode(node.using)
