@@ -33,6 +33,7 @@ import { OnDuplicateKeyNode } from '../operation-node/on-duplicate-key-node.js'
 import { InsertResult } from './insert-result.js'
 import { KyselyPlugin } from '../plugin/kysely-plugin.js'
 import {
+  ReturningAllRow,
   ReturningCallbackRow,
   ReturningRow,
 } from '../parser/returning-parser.js'
@@ -645,6 +646,18 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
       queryNode: QueryNode.cloneWithOutput(
         this.#props.queryNode,
         parseSelectArg(args)
+      ),
+    })
+  }
+
+  outputAll(
+    table: 'inserted'
+  ): InsertQueryBuilder<DB, TB, ReturningAllRow<DB, TB, O>> {
+    return new InsertQueryBuilder({
+      ...this.#props,
+      queryNode: QueryNode.cloneWithOutput(
+        this.#props.queryNode,
+        parseSelectAll(table)
       ),
     })
   }

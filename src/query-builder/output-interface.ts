@@ -1,6 +1,6 @@
 import { ExpressionBuilder } from '../expression/expression-builder.js'
 import { AliasedExpressionOrFactory } from '../parser/expression-parser.js'
-import { ReturningRow } from '../parser/returning-parser.js'
+import { ReturningAllRow, ReturningRow } from '../parser/returning-parser.js'
 import {
   AnyAliasedColumnWithTable,
   AnyColumnWithTable,
@@ -20,7 +20,8 @@ export interface OutputInterface<
   ): OutputInterface<
     DB,
     TB,
-    ReturningRow<DB, TB, O, SelectExpressionFromOutputExpression<OE>>
+    ReturningRow<DB, TB, O, SelectExpressionFromOutputExpression<OE>>,
+    OP
   >
 
   output<CB extends OutputCallback<DB, TB, OP>>(
@@ -28,7 +29,8 @@ export interface OutputInterface<
   ): OutputInterface<
     DB,
     TB,
-    ReturningRow<DB, TB, O, SelectExpressionFromOutputCallback<CB>>
+    ReturningRow<DB, TB, O, SelectExpressionFromOutputCallback<CB>>,
+    OP
   >
 
   output<OE extends OutputExpression<DB, TB, OP>>(
@@ -36,13 +38,23 @@ export interface OutputInterface<
   ): OutputInterface<
     DB,
     TB,
-    ReturningRow<DB, TB, O, SelectExpressionFromOutputExpression<OE>>
+    ReturningRow<DB, TB, O, SelectExpressionFromOutputExpression<OE>>,
+    OP
   >
+
+  /**
+   * TODO: ...
+   */
+  outputAll(table: OP): OutputInterface<DB, TB, ReturningAllRow<DB, TB, O>, OP>
 }
 
 export type OutputPrefix = 'deleted' | 'inserted'
 
-export type OutputDatabase<DB, TB extends keyof DB, OP extends OutputPrefix> = {
+export type OutputDatabase<
+  DB,
+  TB extends keyof DB,
+  OP extends OutputPrefix = OutputPrefix
+> = {
   [K in OP]: DB[TB]
 }
 
