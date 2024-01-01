@@ -71,11 +71,19 @@ import {
   ValueExpression,
   parseValueExpression,
 } from '../parser/value-parser.js'
+import {
+  OutputCallback,
+  OutputExpression,
+  OutputInterface,
+  SelectExpressionFromOutputCallback,
+  SelectExpressionFromOutputExpression,
+} from './output-interface.js'
 
 export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
   implements
     WhereInterface<DB, TB>,
     ReturningInterface<DB, TB, O>,
+    OutputInterface<DB, TB, O, 'deleted'>,
     OperationNodeSource,
     Compilable<O>,
     Explainable,
@@ -558,6 +566,52 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
     return new DeleteQueryBuilder({
       ...this.#props,
       queryNode: QueryNode.cloneWithReturning(
+        this.#props.queryNode,
+        parseSelectAll(table)
+      ),
+    })
+  }
+
+  output<OE extends OutputExpression<DB, TB, 'deleted'>>(
+    selections: readonly OE[]
+  ): DeleteQueryBuilder<
+    DB,
+    TB,
+    ReturningRow<DB, TB, O, SelectExpressionFromOutputExpression<OE>>
+  >
+
+  output<CB extends OutputCallback<DB, TB, 'deleted'>>(
+    callback: CB
+  ): DeleteQueryBuilder<
+    DB,
+    TB,
+    ReturningRow<DB, TB, O, SelectExpressionFromOutputCallback<CB>>
+  >
+
+  output<OE extends OutputExpression<DB, TB, 'deleted'>>(
+    selection: OE
+  ): DeleteQueryBuilder<
+    DB,
+    TB,
+    ReturningRow<DB, TB, O, SelectExpressionFromOutputExpression<OE>>
+  >
+
+  output(args: any): any {
+    return new DeleteQueryBuilder({
+      ...this.#props,
+      queryNode: QueryNode.cloneWithOutput(
+        this.#props.queryNode,
+        parseSelectArg(args)
+      ),
+    })
+  }
+
+  outputAll(
+    table: 'deleted'
+  ): DeleteQueryBuilder<DB, TB, ReturningAllRow<DB, TB, O>> {
+    return new DeleteQueryBuilder({
+      ...this.#props,
+      queryNode: QueryNode.cloneWithOutput(
         this.#props.queryNode,
         parseSelectAll(table)
       ),
