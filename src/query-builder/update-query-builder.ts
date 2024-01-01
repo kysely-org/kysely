@@ -20,6 +20,7 @@ import {
   SelectCallback,
 } from '../parser/select-parser.js'
 import {
+  ReturningAllRow,
   ReturningCallbackRow,
   ReturningRow,
 } from '../parser/returning-parser.js'
@@ -69,11 +70,20 @@ import { KyselyTypeError } from '../util/type-error.js'
 import { Streamable } from '../util/streamable.js'
 import { ExpressionOrFactory } from '../parser/expression-parser.js'
 import { ValueExpression } from '../parser/value-parser.js'
+import {
+  OutputCallback,
+  OutputExpression,
+  OutputInterface,
+  OutputPrefix,
+  SelectExpressionFromOutputCallback,
+  SelectExpressionFromOutputExpression,
+} from './output-interface.js'
 
 export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
   implements
     WhereInterface<DB, TB>,
     ReturningInterface<DB, TB, O>,
+    OutputInterface<DB, TB, O>,
     OperationNodeSource,
     Compilable<O>,
     Explainable,
@@ -594,6 +604,55 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
       queryNode: QueryNode.cloneWithReturning(
         this.#props.queryNode,
         parseSelectAll()
+      ),
+    })
+  }
+
+  output<OE extends OutputExpression<DB, UT>>(
+    selections: readonly OE[]
+  ): UpdateQueryBuilder<
+    DB,
+    UT,
+    TB,
+    ReturningRow<DB, TB, O, SelectExpressionFromOutputExpression<OE>>
+  >
+
+  output<CB extends OutputCallback<DB, TB>>(
+    callback: CB
+  ): UpdateQueryBuilder<
+    DB,
+    UT,
+    TB,
+    ReturningRow<DB, TB, O, SelectExpressionFromOutputCallback<CB>>
+  >
+
+  output<OE extends OutputExpression<DB, TB>>(
+    selection: OE
+  ): UpdateQueryBuilder<
+    DB,
+    UT,
+    TB,
+    ReturningRow<DB, TB, O, SelectExpressionFromOutputExpression<OE>>
+  >
+
+  output(args: any): any {
+    return new UpdateQueryBuilder({
+      ...this.#props,
+      queryNode: QueryNode.cloneWithOutput(
+        this.#props.queryNode,
+        parseSelectArg(args)
+      ),
+    })
+  }
+
+  outputAll(
+    table: OutputPrefix
+  ): UpdateQueryBuilder<DB, UT, TB, ReturningAllRow<DB, TB, O>> {
+    return new UpdateQueryBuilder({
+      ...this.#props,
+      queryNode: QueryNode.cloneWithOutput(
+        this.#props.queryNode,
+        parseSelectAll(table)
       ),
     })
   }

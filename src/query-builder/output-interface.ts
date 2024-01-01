@@ -61,7 +61,7 @@ export type OutputDatabase<
 export type OutputExpression<
   DB,
   TB extends keyof DB,
-  OP extends OutputPrefix,
+  OP extends OutputPrefix = OutputPrefix,
   ODB = OutputDatabase<DB, TB, OP>,
   OTB extends keyof ODB = keyof ODB
 > =
@@ -69,7 +69,11 @@ export type OutputExpression<
   | AnyColumnWithTable<ODB, OTB>
   | AliasedExpressionOrFactory<ODB, OTB>
 
-export type OutputCallback<DB, TB extends keyof DB, OP extends OutputPrefix> = (
+export type OutputCallback<
+  DB,
+  TB extends keyof DB,
+  OP extends OutputPrefix = OutputPrefix
+> = (
   eb: ExpressionBuilder<OutputDatabase<DB, TB, OP>, OP>
 ) => ReadonlyArray<OutputExpression<DB, TB, OP>>
 
