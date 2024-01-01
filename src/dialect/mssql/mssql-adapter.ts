@@ -12,7 +12,7 @@ export class MssqlAdapter extends DialectAdapterBase {
     return true
   }
 
-  get supportsReturning(): boolean {
+  get supportsOutput(): boolean {
     return true
   }
 
