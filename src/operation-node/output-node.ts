@@ -4,7 +4,6 @@ import { OperationNode } from './operation-node.js'
 export interface OutputNode extends OperationNode {
   readonly kind: 'OutputNode'
   readonly selections: ReadonlyArray<OperationNode>
-  readonly into?: OperationNode
 }
 
 /**
@@ -31,13 +30,6 @@ export const OutputNode = freeze({
       selections: output.selections
         ? freeze([...output.selections, ...selections])
         : freeze(selections),
-    })
-  },
-
-  cloneWithInto(output: OutputNode, into: OperationNode): OutputNode {
-    return freeze({
-      ...output,
-      into,
     })
   },
 })

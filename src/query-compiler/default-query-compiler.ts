@@ -1484,13 +1484,7 @@ export class DefaultQueryCompiler
 
   protected override visitOutput(node: OutputNode): void {
     this.append('output ')
-
     this.compileList(node.selections)
-
-    if (node.into) {
-      this.append(' into ')
-      this.visitNode(node.into)
-    }
   }
 
   protected append(str: string): void {

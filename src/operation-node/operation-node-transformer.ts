@@ -396,6 +396,7 @@ export class OperationNodeTransformer {
       orderBy: this.transformNode(node.orderBy),
       limit: this.transformNode(node.limit),
       explain: this.transformNode(node.explain),
+      output: this.transformNode(node.output),
     })
   }
 
@@ -499,6 +500,7 @@ export class OperationNodeTransformer {
       returning: this.transformNode(node.returning),
       with: this.transformNode(node.with),
       explain: this.transformNode(node.explain),
+      output: this.transformNode(node.output),
     })
   }
 
@@ -1000,7 +1002,6 @@ export class OperationNodeTransformer {
     return requireAllProps<OutputNode>({
       kind: 'OutputNode',
       selections: this.transformNodeList(node.selections),
-      into: this.transformNode(node.into),
     })
   }
 
