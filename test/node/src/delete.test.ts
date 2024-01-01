@@ -867,5 +867,56 @@ for (const dialect of DIALECTS) {
         )
       })
     }
+
+    if (dialect === 'mssql') {
+      it('should return deleted rows when `output` is used', async () => {
+        const query = ctx.db
+          .deleteFrom('person')
+          .output(['deleted.first_name', 'deleted.last_name as last'])
+          .where('gender', '=', 'male')
+
+        testSql(query, dialect, {
+          postgres: NOT_SUPPORTED,
+          mysql: NOT_SUPPORTED,
+          mssql: {
+            sql: 'delete from "person" output "deleted"."first_name", "deleted"."last_name" as "last" where "gender" = @1',
+            parameters: ['male'],
+          },
+          sqlite: NOT_SUPPORTED,
+        })
+
+        const result = await query.execute()
+
+        expect(result).to.have.length(2)
+        expect(Object.keys(result[0]).sort()).to.eql(['first_name', 'last'])
+        expect(result).to.containSubset([
+          { first_name: 'Arnold', last: 'Schwarzenegger' },
+          { first_name: 'Sylvester', last: 'Stallone' },
+        ])
+      })
+
+      it('conditional `output` statement should add optional fields', async () => {
+        const condition = true
+
+        const query = ctx.db
+          .deleteFrom('person')
+          .output('deleted.first_name')
+          .$if(condition, (qb) => qb.output('deleted.last_name'))
+          .where('gender', '=', 'female')
+
+        testSql(query, dialect, {
+          postgres: NOT_SUPPORTED,
+          mysql: NOT_SUPPORTED,
+          mssql: {
+            sql: 'delete from "person" output "deleted"."first_name", "deleted"."last_name" where "gender" = @1',
+            parameters: ['female'],
+          },
+          sqlite: NOT_SUPPORTED,
+        })
+
+        const result = await query.executeTakeFirstOrThrow()
+        expect(result.last_name).to.equal('Aniston')
+      })
+    }
   })
 }
