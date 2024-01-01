@@ -187,3 +187,69 @@ async function testReturning(db: Kysely<Database>) {
   // Non-existent column
   expectError(db.insertInto('person').values(person).returning('not_column'))
 }
+
+async function testOutput(db: Kysely<Database>) {
+  const person = {
+    first_name: 'Jennifer',
+    last_name: 'Aniston',
+    gender: 'other' as const,
+    age: 30,
+  }
+
+  // One returning expression
+  const r1 = await db
+    .insertInto('person')
+    .output('inserted.id')
+    .values(person)
+    .executeTakeFirst()
+
+  expectType<{ id: number } | undefined>(r1)
+
+  // Multiple returning expressions
+  const r2 = await db
+    .insertInto('person')
+    .output(['inserted.id', 'inserted.first_name as fn'])
+    .values(person)
+    .execute()
+
+  expectType<{ id: number; fn: string }[]>(r2)
+
+  // Non-column reference returning expressions
+  const r3 = await db
+    .insertInto('person')
+    .output([
+      'inserted.id',
+      sql<string>`concat(inserted.first_name, ' ', inserted.last_name)`.as(
+        'full_name'
+      ),
+    ])
+    .values(person)
+    .execute()
+
+  expectType<{ id: number; full_name: string }[]>(r3)
+
+  const r4 = await db
+    .insertInto('movie')
+    .outputAll('inserted')
+    .values({ stars: 5 })
+    .executeTakeFirstOrThrow()
+
+  expectType<{ id: string; stars: number }>(r4)
+
+  // Non-existent column
+  expectError(
+    db.insertInto('person').output('inserted.not_column').values(person)
+  )
+
+  // Without prefix
+  expectError(db.insertInto('person').output('age').values(person))
+  expectError(db.insertInto('person').outputAll().values(person))
+
+  // Non-existent prefix
+  expectError(db.insertInto('person').output('foo.age').values(person))
+  expectError(db.insertInto('person').outputAll('foo').values(person))
+
+  // Wrong prefix
+  expectError(db.insertInto('person').output('deleted.age').values(person))
+  expectError(db.insertInto('person').outputAll('deleted').values(person))
+}
