@@ -9,6 +9,7 @@ import { WhereNode } from './where-node.js'
 import { WithNode } from './with-node.js'
 import { FromNode } from './from-node.js'
 import { ExplainNode } from './explain-node.js'
+import { OutputNode } from './output-node.js'
 
 export type UpdateValuesNode = ValueListNode | PrimitiveValueListNode
 
@@ -22,6 +23,7 @@ export interface UpdateQueryNode extends OperationNode {
   readonly returning?: ReturningNode
   readonly with?: WithNode
   readonly explain?: ExplainNode
+  readonly output?: OutputNode
 }
 
 /**

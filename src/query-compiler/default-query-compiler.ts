@@ -738,6 +738,11 @@ export class DefaultQueryCompiler
       this.compileList(node.updates)
     }
 
+    if (node.output) {
+      this.append(' ')
+      this.visitNode(node.output)
+    }
+
     if (node.from) {
       this.append(' ')
       this.visitNode(node.from)
