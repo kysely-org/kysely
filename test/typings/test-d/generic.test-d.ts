@@ -1,10 +1,4 @@
-import {
-  Kysely,
-  ExpressionBuilder,
-  SelectQueryBuilder,
-  Generated,
-  Nullable,
-} from '..'
+import { Kysely, ExpressionBuilder, SelectQueryBuilder } from '..'
 
 import { expectAssignable, expectType } from 'tsd'
 import { Database } from '../shared'

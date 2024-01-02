@@ -70,8 +70,8 @@ export function freeze<T>(obj: T): Readonly<T> {
   return Object.freeze(obj)
 }
 
-export function asArray<T>(arg: T | T[]): T[] {
-  if (Array.isArray(arg)) {
+export function asArray<T>(arg: T | ReadonlyArray<T>): ReadonlyArray<T> {
+  if (isReadonlyArray(arg)) {
     return arg
   } else {
     return [arg]

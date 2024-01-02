@@ -124,12 +124,14 @@ export class MssqlIntrospector implements DatabaseIntrospector {
     for (const rawColumn of rawColumns) {
       const key = `${rawColumn.table_schema_name}.${rawColumn.table_name}`
 
-      const table = (tableDictionary[key] ||= freeze({
-        columns: [],
-        isView: rawColumn.table_type === 'V ',
-        name: rawColumn.table_name,
-        schema: rawColumn.table_schema_name ?? undefined,
-      }))
+      const table = (tableDictionary[key] =
+        tableDictionary[key] ||
+        freeze({
+          columns: [],
+          isView: rawColumn.table_type === 'V ',
+          name: rawColumn.table_name,
+          schema: rawColumn.table_schema_name ?? undefined,
+        }))
 
       table.columns.push(
         freeze({

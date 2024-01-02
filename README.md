@@ -13,7 +13,7 @@
 # [Kysely](https://kysely.dev)
 
 Kysely (pronounce “Key-Seh-Lee”) is a type-safe and autocompletion-friendly typescript SQL query builder.
-Inspired by [knex](http://knexjs.org/). Mainly developed for [node.js](https://nodejs.org/en/) but also 
+Inspired by [knex](http://knexjs.org/). Mainly developed for [node.js](https://nodejs.org/en/) but also
 runs on all other javascript environments like [deno](https://deno.land/).
 
 ![](https://github.com/kysely-org/kysely/blob/master/assets/demo.gif)
@@ -32,7 +32,7 @@ hatches for these situations. See the [sql template tag](https://kysely-org.gith
 and the [DynamicModule](https://kysely-org.github.io/kysely-apidoc/classes/DynamicModule.html#ref) for more info.
 
 All API documentation is written in the typing files and you can simply hover over the module, class
-or method you're using to see it in your IDE. The same documentation is also hosted [here](https://github.com/kysely-org/kysely).
+or method you're using to see it in your IDE. The same documentation is also hosted [here](https://kysely-org.github.io/kysely-apidoc/).
 
 If you start using Kysely and can't find something you'd want to use, please open an issue or join our
 [discord server](https://discord.gg/xyBJ3GwvAm).

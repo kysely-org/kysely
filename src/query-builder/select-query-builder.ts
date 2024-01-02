@@ -6,7 +6,7 @@ import {
   JoinReferenceExpression,
   parseJoin,
 } from '../parser/join-parser.js'
-import { TableExpression } from '../parser/table-parser.js'
+import { TableExpression, parseTable } from '../parser/table-parser.js'
 import {
   parseSelectArg,
   parseSelectAll,
@@ -46,7 +46,7 @@ import { OffsetNode } from '../operation-node/offset-node.js'
 import { Compilable } from '../util/compilable.js'
 import { QueryExecutor } from '../query-executor/query-executor.js'
 import { QueryId } from '../util/query-id.js'
-import { freeze } from '../util/object-utils.js'
+import { asArray, freeze } from '../util/object-utils.js'
 import { GroupByArg, parseGroupBy } from '../parser/group-by-parser.js'
 import { KyselyPlugin } from '../plugin/kysely-plugin.js'
 import { WhereInterface } from './where-interface.js'
@@ -75,6 +75,10 @@ import { Streamable } from '../util/streamable.js'
 import { ExpressionOrFactory } from '../parser/expression-parser.js'
 import { ExpressionWrapper } from '../expression/expression-wrapper.js'
 import { SelectQueryBuilderExpression } from './select-query-builder-expression.js'
+import {
+  ValueExpression,
+  parseValueExpression,
+} from '../parser/value-parser.js'
 
 export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
   extends WhereInterface<DB, TB>,
@@ -83,36 +87,48 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
     Compilable<O>,
     Explainable,
     Streamable<O> {
-  where<RE extends ReferenceExpression<DB, TB>>(
+  where<
+    RE extends ReferenceExpression<DB, TB>,
+    VE extends OperandValueExpressionOrList<DB, TB, RE>
+  >(
     lhs: RE,
     op: ComparisonOperatorExpression,
-    rhs: OperandValueExpressionOrList<DB, TB, RE>
+    rhs: VE
   ): SelectQueryBuilder<DB, TB, O>
 
-  where(
-    expression: ExpressionOrFactory<DB, TB, SqlBool>
+  where<E extends ExpressionOrFactory<DB, TB, SqlBool>>(
+    expression: E
   ): SelectQueryBuilder<DB, TB, O>
 
-  whereRef(
-    lhs: ReferenceExpression<DB, TB>,
+  whereRef<
+    LRE extends ReferenceExpression<DB, TB>,
+    RRE extends ReferenceExpression<DB, TB>
+  >(
+    lhs: LRE,
     op: ComparisonOperatorExpression,
-    rhs: ReferenceExpression<DB, TB>
+    rhs: RRE
   ): SelectQueryBuilder<DB, TB, O>
 
-  having<RE extends ReferenceExpression<DB, TB>>(
+  having<
+    RE extends ReferenceExpression<DB, TB>,
+    VE extends OperandValueExpressionOrList<DB, TB, RE>
+  >(
     lhs: RE,
     op: ComparisonOperatorExpression,
-    rhs: OperandValueExpressionOrList<DB, TB, RE>
+    rhs: VE
   ): SelectQueryBuilder<DB, TB, O>
 
-  having(
-    expression: ExpressionOrFactory<DB, TB, SqlBool>
+  having<E extends ExpressionOrFactory<DB, TB, SqlBool>>(
+    expression: E
   ): SelectQueryBuilder<DB, TB, O>
 
-  havingRef(
-    lhs: ReferenceExpression<DB, TB>,
+  havingRef<
+    LRE extends ReferenceExpression<DB, TB>,
+    RRE extends ReferenceExpression<DB, TB>
+  >(
+    lhs: LRE,
     op: ComparisonOperatorExpression,
-    rhs: ReferenceExpression<DB, TB>
+    rhs: RRE
   ): SelectQueryBuilder<DB, TB, O>
 
   /**
@@ -193,14 +209,14 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    *
    * <!-- siteExample("select", "Aliases", 40) -->
    *
-   * You can provide an alias for the selections by appending `as the_alias` to the selection.
+   * You can give an alias for selections and tables by appending `as the_alias` to the name:
    *
    * ```ts
    * const persons = await db
-   *   .selectFrom('person')
+   *   .selectFrom('person as p')
    *   .select([
    *     'first_name as fn',
-   *     'person.last_name as ln'
+   *     'p.last_name as ln'
    *   ])
    *   .execute()
    * ```
@@ -210,8 +226,8 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    * ```sql
    * select
    *   "first_name" as "fn",
-   *   "person"."last_name" as "ln"
-   * from "person"
+   *   "p"."last_name" as "ln"
+   * from "person" as "p"
    * ```
    *
    * <!-- siteExample("select", "Complex selections", 50) -->
@@ -417,22 +433,22 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
   /**
    * Adds the `for update` modifier to a select query on supported databases.
    */
-  forUpdate(): SelectQueryBuilder<DB, TB, O>
+  forUpdate(of?: TableOrList<TB>): SelectQueryBuilder<DB, TB, O>
 
   /**
    * Adds the `for share` modifier to a select query on supported databases.
    */
-  forShare(): SelectQueryBuilder<DB, TB, O>
+  forShare(of?: TableOrList<TB>): SelectQueryBuilder<DB, TB, O>
 
   /**
    * Adds the `for key share` modifier to a select query on supported databases.
    */
-  forKeyShare(): SelectQueryBuilder<DB, TB, O>
+  forKeyShare(of?: TableOrList<TB>): SelectQueryBuilder<DB, TB, O>
 
   /**
    * Adds the `for no key update` modifier to a select query on supported databases.
    */
-  forNoKeyUpdate(): SelectQueryBuilder<DB, TB, O>
+  forNoKeyUpdate(of?: TableOrList<TB>): SelectQueryBuilder<DB, TB, O>
 
   /**
    * Adds the `skip locked` modifier to a select query on supported databases.
@@ -887,17 +903,17 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    * order by "fn" asc
    * ```
    */
-  orderBy(
-    orderBy: UndirectedOrderByExpression<DB, TB, O>,
+  orderBy<OE extends UndirectedOrderByExpression<DB, TB, O>>(
+    orderBy: OE,
     direction?: OrderByDirectionExpression
   ): SelectQueryBuilder<DB, TB, O>
 
-  orderBy(
-    ref: DirectedOrderByStringReference<DB, TB, O>
+  orderBy<OE extends DirectedOrderByStringReference<DB, TB, O>>(
+    ref: OE
   ): SelectQueryBuilder<DB, TB, O>
 
-  orderBy(
-    refs: ReadonlyArray<OrderByExpression<DB, TB, O>>
+  orderBy<OE extends OrderByExpression<DB, TB, O>>(
+    refs: ReadonlyArray<OE>
   ): SelectQueryBuilder<DB, TB, O>
 
   /**
@@ -998,7 +1014,9 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    * group by "first_name"
    * ```
    */
-  groupBy(groupBy: GroupByArg<DB, TB, O>): SelectQueryBuilder<DB, TB, O>
+  groupBy<GE extends GroupByArg<DB, TB, O>>(
+    groupBy: GE
+  ): SelectQueryBuilder<DB, TB, O>
 
   /**
    * Adds a limit clause to the query.
@@ -1024,7 +1042,7 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    *   .limit(10)
    * ```
    */
-  limit(limit: number): SelectQueryBuilder<DB, TB, O>
+  limit(limit: ValueExpression<DB, TB, number>): SelectQueryBuilder<DB, TB, O>
 
   /**
    * Adds an offset clause to the query.
@@ -1041,7 +1059,7 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    *   .limit(10)
    * ```
    */
-  offset(offset: number): SelectQueryBuilder<DB, TB, O>
+  offset(offset: ValueExpression<DB, TB, number>): SelectQueryBuilder<DB, TB, O>
 
   /**
    * Combines another select query or raw expression to this query using `union`.
@@ -1069,7 +1087,9 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    *   .orderBy('name')
    * ```
    */
-  union(expression: SetOperandExpression<DB, O>): SelectQueryBuilder<DB, TB, O>
+  union<E extends SetOperandExpression<DB, O>>(
+    expression: E
+  ): SelectQueryBuilder<DB, TB, O>
 
   /**
    * Combines another select query or raw expression to this query using `union all`.
@@ -1097,8 +1117,8 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    *   .orderBy('name')
    * ```
    */
-  unionAll(
-    expression: SetOperandExpression<DB, O>
+  unionAll<E extends SetOperandExpression<DB, O>>(
+    expression: E
   ): SelectQueryBuilder<DB, TB, O>
 
   /**
@@ -1127,8 +1147,8 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    *   .orderBy('name')
    * ```
    */
-  intersect(
-    expression: SetOperandExpression<DB, O>
+  intersect<E extends SetOperandExpression<DB, O>>(
+    expression: E
   ): SelectQueryBuilder<DB, TB, O>
 
   /**
@@ -1157,8 +1177,8 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    *   .orderBy('name')
    * ```
    */
-  intersectAll(
-    expression: SetOperandExpression<DB, O>
+  intersectAll<E extends SetOperandExpression<DB, O>>(
+    expression: E
   ): SelectQueryBuilder<DB, TB, O>
 
   /**
@@ -1187,7 +1207,9 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    *   .orderBy('name')
    * ```
    */
-  except(expression: SetOperandExpression<DB, O>): SelectQueryBuilder<DB, TB, O>
+  except<E extends SetOperandExpression<DB, O>>(
+    expression: E
+  ): SelectQueryBuilder<DB, TB, O>
 
   /**
    * Combines another select query or raw expression to this query using `except all`.
@@ -1215,8 +1237,8 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    *   .orderBy('name')
    * ```
    */
-  exceptAll(
-    expression: SetOperandExpression<DB, O>
+  exceptAll<E extends SetOperandExpression<DB, O>>(
+    expression: E
   ): SelectQueryBuilder<DB, TB, O>
 
   /**
@@ -1416,15 +1438,15 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
   $if<O2>(
     condition: boolean,
     func: (qb: this) => SelectQueryBuilder<any, any, O & O2>
-  ): SelectQueryBuilder<DB, TB, O & Partial<O2>>
+  ): SelectQueryBuilder<DB, TB, O & Partial<Omit<O2, keyof O>>>
 
   /**
    * Change the output type of the query.
    *
-   * You should only use this method as the last resort if the types
-   * don't support your use case.
+   * This method call doesn't change the SQL in any way. This methods simply
+   * returns a copy of this `SelectQueryBuilder` with a new output type.
    */
-  $castTo<T>(): SelectQueryBuilder<DB, TB, T>
+  $castTo<C>(): SelectQueryBuilder<DB, TB, C>
 
   /**
    * Changes the output type from an object to a tuple.
@@ -1554,6 +1576,22 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    *   .where('nullable_column', 'is not', null)
    *   .selectAll()
    *   .$narrowType<{ nullable_column: string }>()
+   *   .executeTakeFirstOrThrow()
+   *
+   * functionThatExpectsPersonWithNonNullValue(person)
+   * ```
+   *
+   * Giving the explicit narrowed type (`string` in the example above) works fine for
+   * simple types. If the type is complex, for example a JSON column or a subquery,
+   * you can use the special `NotNull` type to make the column not null.
+   *
+   * ```ts
+   * import { NotNull } from 'kysely'
+   *
+   * const person = await db.selectFrom('person')
+   *   .where('nullable_column', 'is not', null)
+   *   .selectAll()
+   *   .$narrowType<{ nullable_column: NotNull }>()
    *   .executeTakeFirstOrThrow()
    *
    * functionThatExpectsPersonWithNonNullValue(person)
@@ -1763,42 +1801,54 @@ class SelectQueryBuilderImpl<DB, TB extends keyof DB, O>
     })
   }
 
-  forUpdate(): SelectQueryBuilder<DB, TB, O> {
+  forUpdate(of?: TableOrList<TB>): SelectQueryBuilder<DB, TB, O> {
     return new SelectQueryBuilderImpl({
       ...this.#props,
       queryNode: SelectQueryNode.cloneWithEndModifier(
         this.#props.queryNode,
-        SelectModifierNode.create('ForUpdate')
+        SelectModifierNode.create(
+          'ForUpdate',
+          of ? asArray(of).map(parseTable) : undefined
+        )
       ),
     })
   }
 
-  forShare(): SelectQueryBuilder<DB, TB, O> {
+  forShare(of?: TableOrList<TB>): SelectQueryBuilder<DB, TB, O> {
     return new SelectQueryBuilderImpl({
       ...this.#props,
       queryNode: SelectQueryNode.cloneWithEndModifier(
         this.#props.queryNode,
-        SelectModifierNode.create('ForShare')
+        SelectModifierNode.create(
+          'ForShare',
+          of ? asArray(of).map(parseTable) : undefined
+        )
       ),
     })
   }
 
-  forKeyShare(): SelectQueryBuilder<DB, TB, O> {
+  forKeyShare(of?: TableOrList<TB>): SelectQueryBuilder<DB, TB, O> {
     return new SelectQueryBuilderImpl({
       ...this.#props,
       queryNode: SelectQueryNode.cloneWithEndModifier(
         this.#props.queryNode,
-        SelectModifierNode.create('ForKeyShare')
+        SelectModifierNode.create(
+          'ForKeyShare',
+          of ? asArray(of).map(parseTable) : undefined
+        )
       ),
     })
   }
 
-  forNoKeyUpdate(): SelectQueryBuilder<DB, TB, O> {
+  forNoKeyUpdate(of?: TableOrList<TB>): SelectQueryBuilder<DB, TB, O> {
     return new SelectQueryBuilderImpl({
       ...this.#props,
       queryNode: SelectQueryNode.cloneWithEndModifier(
         this.#props.queryNode,
-        SelectModifierNode.create('ForNoKeyUpdate')
+        SelectModifierNode.create(
+          'ForNoKeyUpdate',
+          of ? asArray(of).map(parseTable) : undefined
+        )
       ),
     })
   }
@@ -1913,22 +1963,24 @@ class SelectQueryBuilderImpl<DB, TB extends keyof DB, O>
     })
   }
 
-  limit(limit: number): SelectQueryBuilder<DB, TB, O> {
+  limit(limit: ValueExpression<DB, TB, number>): SelectQueryBuilder<DB, TB, O> {
     return new SelectQueryBuilderImpl({
       ...this.#props,
       queryNode: SelectQueryNode.cloneWithLimit(
         this.#props.queryNode,
-        LimitNode.create(limit)
+        LimitNode.create(parseValueExpression(limit))
       ),
     })
   }
 
-  offset(offset: number): SelectQueryBuilder<DB, TB, O> {
+  offset(
+    offset: ValueExpression<DB, TB, number>
+  ): SelectQueryBuilder<DB, TB, O> {
     return new SelectQueryBuilderImpl({
       ...this.#props,
       queryNode: SelectQueryNode.cloneWithOffset(
         this.#props.queryNode,
-        OffsetNode.create(offset)
+        OffsetNode.create(parseValueExpression(offset))
       ),
     })
   }
@@ -2051,17 +2103,17 @@ class SelectQueryBuilderImpl<DB, TB extends keyof DB, O>
   $if<O2>(
     condition: boolean,
     func: (qb: this) => SelectQueryBuilder<any, any, O & O2>
-  ): SelectQueryBuilder<DB, TB, O & Partial<O2>> {
+  ): SelectQueryBuilder<DB, TB, O & Partial<Omit<O2, keyof O>>> {
     if (condition) {
       return func(this)
     }
 
-    return new SelectQueryBuilderImpl<DB, TB, O & Partial<O2>>({
+    return new SelectQueryBuilderImpl({
       ...this.#props,
-    })
+    }) as any
   }
 
-  $castTo<T>(): SelectQueryBuilder<DB, TB, T> {
+  $castTo<C>(): SelectQueryBuilder<DB, TB, C> {
     return new SelectQueryBuilderImpl(this.#props)
   }
 
@@ -2379,3 +2431,7 @@ type OuterJoinedBuilderDB<
     ? DB[C]
     : never
 }>
+
+type TableOrList<TB extends keyof any> =
+  | (TB & string)
+  | ReadonlyArray<TB & string>

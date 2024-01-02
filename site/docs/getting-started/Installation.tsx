@@ -29,13 +29,11 @@ const packageManagers: PackageManagerDetails[] = [
     value: 'npm',
     description: (
       <>
-        <Link to="https://npmjs.com">
-          {PRETTY_PACKAGE_MANAGER_NAMES['npm']}
-        </Link>{' '}
+        <Link to="https://npmjs.com">{PRETTY_PACKAGE_MANAGER_NAMES.npm}</Link>{' '}
         is the default package manager for <NodeJSLink />, and to where Kysely
         is published.
         <br />
-        Your project is using {PRETTY_PACKAGE_MANAGER_NAMES['npm']} if it has a{' '}
+        Your project is using {PRETTY_PACKAGE_MANAGER_NAMES.npm} if it has a{' '}
         <code>package-lock.json</code> file in its root folder.
       </>
     ),
@@ -45,11 +43,11 @@ const packageManagers: PackageManagerDetails[] = [
     value: 'pnpm',
     description: (
       <>
-        <Link to="https://pnpm.io">{PRETTY_PACKAGE_MANAGER_NAMES['pnpm']}</Link>{' '}
-        is a fast, disk space efficient package manager for <NodeJSLink />
+        <Link to="https://pnpm.io">{PRETTY_PACKAGE_MANAGER_NAMES.pnpm}</Link> is
+        a fast, disk space efficient package manager for <NodeJSLink />
         .
         <br />
-        Your project is using {PRETTY_PACKAGE_MANAGER_NAMES['pnpm']} if it has a{' '}
+        Your project is using {PRETTY_PACKAGE_MANAGER_NAMES.pnpm} if it has a{' '}
         <code>pnpm-lock.yaml</code> file in its root folder.
       </>
     ),
@@ -60,12 +58,12 @@ const packageManagers: PackageManagerDetails[] = [
     description: (
       <>
         <Link to="https://yarnpkg.com">
-          {PRETTY_PACKAGE_MANAGER_NAMES['yarn']}
+          {PRETTY_PACKAGE_MANAGER_NAMES.yarn}
         </Link>{' '}
         is a fast, reliable and secure dependency manager for <NodeJSLink />
         .
         <br />
-        Your project is using {PRETTY_PACKAGE_MANAGER_NAMES['yarn']} if it has a{' '}
+        Your project is using {PRETTY_PACKAGE_MANAGER_NAMES.yarn} if it has a{' '}
         <code>yarn.lock</code> file in its root folder.
       </>
     ),
@@ -76,7 +74,7 @@ const packageManagers: PackageManagerDetails[] = [
     description: (
       <>
         <Link to="https://deno.com/runtime">
-          {PRETTY_PACKAGE_MANAGER_NAMES['deno']}
+          {PRETTY_PACKAGE_MANAGER_NAMES.deno}
         </Link>{' '}
         is a secure runtime for <JavaScriptLink /> and{' '}
         <Link to="https://www.typescriptlang.org">TypeScript</Link>.
@@ -88,10 +86,9 @@ const packageManagers: PackageManagerDetails[] = [
     value: 'bun',
     description: (
       <>
-        <Link to="https://bun.sh">{PRETTY_PACKAGE_MANAGER_NAMES['bun']}</Link>{' '}
-        is a new <JavaScriptLink /> runtime built for speed, with a native
-        bundler, transpiler, test runner, and{' '}
-        {PRETTY_PACKAGE_MANAGER_NAMES['npm']}
+        <Link to="https://bun.sh">{PRETTY_PACKAGE_MANAGER_NAMES.bun}</Link> is a
+        new <JavaScriptLink /> runtime built for speed, with a native bundler,
+        transpiler, test runner, and {PRETTY_PACKAGE_MANAGER_NAMES.npm}
         -compatible package manager baked-in.
       </>
     ),
