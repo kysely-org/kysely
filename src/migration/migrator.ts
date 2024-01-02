@@ -510,7 +510,7 @@ export class Migrator {
       .withPlugin(this.#schemaPlugin)
       .selectFrom(this.#migrationTable)
       .select('name')
-      .orderBy('timestamp')
+      .orderBy(['timestamp', 'name'])
       .execute()
 
     return executedMigrations.map((it) => it.name)
