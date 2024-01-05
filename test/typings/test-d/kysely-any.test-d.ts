@@ -1,4 +1,10 @@
-import { DeleteResult, Kysely, UpdateResult } from '..'
+import {
+  DeleteResult,
+  InsertResult,
+  Kysely,
+  UpdateResult,
+  expressionBuilder,
+} from '..'
 import { expectType } from 'tsd'
 
 async function testKyselyAnySelects(db: Kysely<any>) {
@@ -50,6 +56,34 @@ async function testKyselyAnySelects(db: Kysely<any>) {
   >(r5)
 }
 
+async function testKyselyAnyInserts(db: Kysely<any>) {
+  const r1 = await db
+    .insertInto('foo')
+    .values({ bar: 'baz', spam: 1 })
+    .executeTakeFirstOrThrow()
+  expectType<InsertResult>(r1)
+
+  const r2 = await db
+    .insertInto('foo')
+    .values({ bar: 'baz', spam: 1 })
+    .returning('foo')
+    .executeTakeFirstOrThrow()
+  expectType<{ foo: any }>(r2)
+
+  const r3 = await db
+    .insertInto('foo')
+    .values({ bar: 'baz', spam: 1 })
+    .returning(['foo', 'baz'])
+    .executeTakeFirstOrThrow()
+  expectType<{ foo: any; baz: any }>(r3)
+
+  const r4 = await db
+    .insertInto('foo')
+    .values((eb) => ({ foo: eb.ref('foo.bar') }))
+    .executeTakeFirstOrThrow()
+  expectType<InsertResult>(r4)
+}
+
 async function testKyselyAnyUpdates(db: Kysely<any>) {
   const r1 = await db
     .updateTable('foo')
@@ -74,6 +108,15 @@ async function testKyselyAnyUpdates(db: Kysely<any>) {
     .returning(['a', 'b'])
     .executeTakeFirstOrThrow()
   expectType<{ a: any; b: any }>(r3)
+
+  const r4 = await db
+    .updateTable('foo')
+    .set((eb) => ({
+      foo: eb('foo.bar', '=', 1),
+    }))
+    .where('foo.eggs', '=', 1)
+    .executeTakeFirstOrThrow()
+  expectType<UpdateResult>(r4)
 }
 
 async function testKyselyAnyDeletes(db: Kysely<any>) {

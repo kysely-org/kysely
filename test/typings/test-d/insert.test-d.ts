@@ -61,6 +61,17 @@ async function testInsert(db: Kysely<Database>) {
 
   expectType<InsertResult>(r5)
 
+  const r6 = await db
+    .insertInto('person')
+    .values((eb) => ({
+      first_name: 'fname',
+      age: 10,
+      gender: eb.ref('gender'),
+    }))
+    .executeTakeFirst()
+
+  expectType<InsertResult>(r6)
+
   // Non-existent table
   expectError(db.insertInto('doesnt_exists'))
 

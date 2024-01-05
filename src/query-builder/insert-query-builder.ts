@@ -235,12 +235,6 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    * }))
    * ```
    */
-  values(insert: InsertObjectOrList<DB, TB>): InsertQueryBuilder<DB, TB, O>
-
-  values(
-    insert: InsertObjectOrListFactory<DB, TB>
-  ): InsertQueryBuilder<DB, TB, O>
-
   values(insert: InsertExpression<DB, TB>): InsertQueryBuilder<DB, TB, O> {
     const [columns, values] = parseInsertExpression(insert)
 
