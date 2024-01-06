@@ -9,6 +9,7 @@ import { freeze, getLast } from '../util/object-utils.js'
 
 export const DEFAULT_MIGRATION_TABLE = 'kysely_migration'
 export const DEFAULT_MIGRATION_LOCK_TABLE = 'kysely_migration_lock'
+export const DEFAULT_ALLOW_UNORDERED_MIGRATIONS = false
 export const MIGRATION_LOCK_ID = 'migration_lock'
 export const NO_MIGRATIONS: NoMigrations = freeze({ __noMigrations__: true })
 
@@ -96,7 +97,7 @@ export class Migrator {
    * This method goes through all possible migrations provided by the provider and runs the
    * ones whose names come alphabetically after the last migration that has been run. If the
    * list of executed migrations doesn't match the beginning of the list of possible migrations
-   * an error is thrown.
+   * an error is returned.
    *
    * ### Examples
    *
@@ -133,7 +134,7 @@ export class Migrator {
    * ```
    */
   async migrateToLatest(): Promise<MigrationResultSet> {
-    return this.#migrate(({ migrations }) => migrations.length - 1)
+    return this.#migrate(() => ({ direction: 'Up', step: Infinity }))
   }
 
   /**
@@ -162,21 +163,43 @@ export class Migrator {
   async migrateTo(
     targetMigrationName: string | NoMigrations
   ): Promise<MigrationResultSet> {
-    return this.#migrate(({ migrations }) => {
-      if (targetMigrationName === NO_MIGRATIONS) {
-        return -1
+    return this.#migrate(
+      ({
+        migrations,
+        executedMigrations,
+        pendingMigrations,
+      }: MigrationState) => {
+        if (targetMigrationName === NO_MIGRATIONS) {
+          return { direction: 'Down', step: Infinity }
+        }
+
+        if (
+          !migrations.find((m) => m.name === (targetMigrationName as string))
+        ) {
+          throw new Error(`migration "${targetMigrationName}" doesn't exist`)
+        }
+
+        const executedIndex = executedMigrations.indexOf(
+          targetMigrationName as string
+        )
+        const pendingIndex = pendingMigrations.findIndex(
+          (m) => m.name === (targetMigrationName as string)
+        )
+
+        if (executedIndex !== -1) {
+          return {
+            direction: 'Down',
+            step: executedMigrations.length - executedIndex - 1,
+          }
+        } else if (pendingIndex !== -1) {
+          return { direction: 'Up', step: pendingIndex + 1 }
+        } else {
+          throw new Error(
+            `migration "${targetMigrationName}" isn't executed or pending`
+          )
+        }
       }
-
-      const index = migrations.findIndex(
-        (it) => it.name === targetMigrationName
-      )
-
-      if (index === -1) {
-        throw new Error(`migration "${targetMigrationName}" doesn't exist`)
-      }
-
-      return index
-    })
+    )
   }
 
   /**
@@ -194,9 +217,7 @@ export class Migrator {
    * ```
    */
   async migrateUp(): Promise<MigrationResultSet> {
-    return this.#migrate(({ currentIndex, migrations }) =>
-      Math.min(currentIndex + 1, migrations.length - 1)
-    )
+    return this.#migrate(() => ({ direction: 'Up', step: 1 }))
   }
 
   /**
@@ -214,15 +235,18 @@ export class Migrator {
    * ```
    */
   async migrateDown(): Promise<MigrationResultSet> {
-    return this.#migrate(({ currentIndex }) => Math.max(currentIndex - 1, -1))
+    return this.#migrate(() => ({ direction: 'Down', step: 1 }))
   }
 
   async #migrate(
-    getTargetMigrationIndex: (state: MigrationState) => number | undefined
+    getMigrationDirectionAndStep: (state: MigrationState) => {
+      direction: MigrationDirection
+      step: number
+    }
   ): Promise<MigrationResultSet> {
     try {
       await this.#ensureMigrationTablesExists()
-      return await this.#runMigrations(getTargetMigrationIndex)
+      return await this.#runMigrations(getMigrationDirectionAndStep)
     } catch (error) {
       if (error instanceof MigrationResultSetError) {
         return error.resultSet
@@ -242,6 +266,12 @@ export class Migrator {
 
   get #migrationLockTable(): string {
     return this.#props.migrationLockTableName ?? DEFAULT_MIGRATION_LOCK_TABLE
+  }
+
+  get #allowUnorderedMigrations(): boolean {
+    return (
+      this.#props.allowUnorderedMigrations ?? DEFAULT_ALLOW_UNORDERED_MIGRATIONS
+    )
   }
 
   get #schemaPlugin(): KyselyPlugin {
@@ -383,7 +413,10 @@ export class Migrator {
   }
 
   async #runMigrations(
-    getTargetMigrationIndex: (state: MigrationState) => number | undefined
+    getMigrationDirectionAndStep: (state: MigrationState) => {
+      direction: MigrationDirection
+      step: number
+    }
   ): Promise<MigrationResultSet> {
     const adapter = this.#props.db.getExecutor().adapter
 
@@ -397,23 +430,22 @@ export class Migrator {
     const run = async (db: Kysely<any>): Promise<MigrationResultSet> => {
       try {
         await adapter.acquireMigrationLock(db, lockOptions)
-
         const state = await this.#getState(db)
 
         if (state.migrations.length === 0) {
           return { results: [] }
         }
 
-        const targetIndex = getTargetMigrationIndex(state)
+        const { direction, step } = getMigrationDirectionAndStep(state)
 
-        if (targetIndex === undefined) {
+        if (step <= 0) {
           return { results: [] }
         }
 
-        if (targetIndex < state.currentIndex) {
-          return await this.#migrateDown(db, state, targetIndex)
-        } else if (targetIndex > state.currentIndex) {
-          return await this.#migrateUp(db, state, targetIndex)
+        if (direction === 'Down') {
+          return await this.#migrateDown(db, state, step)
+        } else if (direction === 'Up') {
+          return await this.#migrateUp(db, state, step)
         }
 
         return { results: [] }
@@ -433,13 +465,30 @@ export class Migrator {
     const migrations = await this.#resolveMigrations()
     const executedMigrations = await this.#getExecutedMigrations(db)
 
-    this.#ensureMigrationsNotCorrupted(migrations, executedMigrations)
+    this.#ensureNoMissingMigrations(migrations, executedMigrations)
+    if (!this.#allowUnorderedMigrations) {
+      this.#ensureMigrationsInOrder(migrations, executedMigrations)
+    }
+
+    const pendingMigrations = this.#getPendingMigrations(
+      migrations,
+      executedMigrations
+    )
 
     return freeze({
       migrations,
-      currentIndex: migrations.findIndex(
-        (it) => it.name === getLast(executedMigrations)
-      ),
+      executedMigrations,
+      lastMigration: getLast(executedMigrations),
+      pendingMigrations,
+    })
+  }
+
+  #getPendingMigrations(
+    migrations: ReadonlyArray<NamedMigration>,
+    executedMigrations: ReadonlyArray<string>
+  ): ReadonlyArray<NamedMigration> {
+    return migrations.filter((migration) => {
+      return !executedMigrations.includes(migration.name)
     })
   }
 
@@ -461,16 +510,17 @@ export class Migrator {
       .withPlugin(this.#schemaPlugin)
       .selectFrom(this.#migrationTable)
       .select('name')
-      .orderBy('name')
+      .orderBy(['timestamp', 'name'])
       .execute()
 
     return executedMigrations.map((it) => it.name)
   }
 
-  #ensureMigrationsNotCorrupted(
+  #ensureNoMissingMigrations(
     migrations: ReadonlyArray<NamedMigration>,
     executedMigrations: ReadonlyArray<string>
   ) {
+    // Ensure all executed migrations exist in the `migrations` list.
     for (const executed of executedMigrations) {
       if (!migrations.some((it) => it.name === executed)) {
         throw new Error(
@@ -478,10 +528,13 @@ export class Migrator {
         )
       }
     }
+  }
 
-    // Now we know all executed migrations exist in the `migrations` list.
-    // Next we need to make sure that the executed migratiosns are the first
-    // ones in the migration list.
+  #ensureMigrationsInOrder(
+    migrations: ReadonlyArray<NamedMigration>,
+    executedMigrations: ReadonlyArray<string>
+  ) {
+    // Ensure the executed migrations are the first ones in the migration list.
     for (let i = 0; i < executedMigrations.length; ++i) {
       if (migrations[i].name !== executedMigrations[i]) {
         throw new Error(
@@ -494,22 +547,27 @@ export class Migrator {
   async #migrateDown(
     db: Kysely<any>,
     state: MigrationState,
-    targetIndex: number
+    step: number
   ): Promise<MigrationResultSet> {
-    const results: MigrationResult[] = []
+    const migrationsToRollback: ReadonlyArray<NamedMigration> =
+      state.executedMigrations
+        .slice()
+        .reverse()
+        .slice(0, step)
+        .map((name) => {
+          return state.migrations.find((it) => it.name === name)!
+        })
 
-    for (let i = state.currentIndex; i > targetIndex; --i) {
-      results.push({
-        migrationName: state.migrations[i].name,
+    const results: MigrationResult[] = migrationsToRollback.map((migration) => {
+      return {
+        migrationName: migration.name,
         direction: 'Down',
         status: 'NotExecuted',
-      })
-    }
+      }
+    })
 
     for (let i = 0; i < results.length; ++i) {
-      const migration = state.migrations.find(
-        (it) => it.name === results[i].migrationName
-      )!
+      const migration = migrationsToRollback[i]
 
       try {
         if (migration.down) {
@@ -546,22 +604,21 @@ export class Migrator {
   async #migrateUp(
     db: Kysely<any>,
     state: MigrationState,
-    targetIndex: number
+    step: number
   ): Promise<MigrationResultSet> {
-    const results: MigrationResult[] = []
+    const migrationsToRun: ReadonlyArray<NamedMigration> =
+      state.pendingMigrations.slice(0, step)
 
-    for (let i = state.currentIndex + 1; i <= targetIndex; ++i) {
-      results.push({
-        migrationName: state.migrations[i].name,
+    const results: MigrationResult[] = migrationsToRun.map((migration) => {
+      return {
+        migrationName: migration.name,
         direction: 'Up',
         status: 'NotExecuted',
-      })
-    }
+      }
+    })
 
-    for (let i = 0; i < results.length; ++i) {
-      const migration = state.migrations.find(
-        (it) => it.name === results[i].migrationName
-      )!
+    for (let i = 0; i < results.length; i++) {
+      const migration = state.pendingMigrations[i]
 
       try {
         await migration.up(db)
@@ -657,6 +714,21 @@ export interface MigratorProps {
    * This only works on postgres.
    */
   readonly migrationTableSchema?: string
+
+  /**
+   * Enforces whether or not migrations must be run in alpha-numeric order.
+   *
+   * When false, migrations must be run in their exact alpha-numeric order.
+   * This is checked against the migrations already run in the database
+   * (`migrationTableName'). This ensures your migrations are always run in
+   * the same order and is the safest option.
+   *
+   * When true, migrations are still run in alpha-numeric order, but
+   * the order is not checked against already-run migrations in the database.
+   * Kysely will simply run all migrations that haven't run yet, in alpha-numeric
+   * order.
+   */
+  readonly allowUnorderedMigrations?: boolean
 }
 
 /**
@@ -694,13 +766,15 @@ export interface MigrationResultSet {
   readonly results?: MigrationResult[]
 }
 
+type MigrationDirection = 'Up' | 'Down'
+
 export interface MigrationResult {
   readonly migrationName: string
 
   /**
    * The direction in which this migration was executed.
    */
-  readonly direction: 'Up' | 'Down'
+  readonly direction: MigrationDirection
 
   /**
    * The execution status.
@@ -772,8 +846,14 @@ interface MigrationState {
   // All migrations sorted by name.
   readonly migrations: ReadonlyArray<NamedMigration>
 
-  // Index of the last executed migration.
-  readonly currentIndex: number
+  // Names of executed migrations sorted by execution timestamp
+  readonly executedMigrations: ReadonlyArray<string>
+
+  // Name of the last executed migration.
+  readonly lastMigration?: string
+
+  // Migrations that have not yet ran
+  readonly pendingMigrations: ReadonlyArray<NamedMigration>
 }
 
 class MigrationResultSetError extends Error {

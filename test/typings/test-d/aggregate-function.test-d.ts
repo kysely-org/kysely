@@ -109,7 +109,6 @@ async function testSelectExpressionBuilderWithDefaultGenerics(
       eb.fn.min('age').as('min_age'),
       eb.fn.sum('age').as('total_age'),
     ])
-
     .executeTakeFirstOrThrow()
 
   expectAssignable<string | number>(result.avg_age)
@@ -126,6 +125,33 @@ async function testSelectExpressionBuilderWithDefaultGenerics(
   expectNotAssignable<string | bigint | null>(result.min_age)
   expectAssignable<string | number | bigint>(result.total_age)
   expectNotAssignable<null>(result.total_age)
+}
+
+async function testSelectExpressionBuilderWithCustomGenerics(
+  db: Kysely<Database>
+) {
+  const result = await db
+    .selectFrom('person')
+    .select((eb) => [
+      eb.fn.avg<number>('age').as('avg_age'),
+      eb.fn.count<number>('age').as('total_people'),
+      eb.fn.countAll<number>().as('total_all'),
+      eb.fn.countAll<number>('person').as('total_all_people'),
+      eb.fn.max<number>('age').as('max_age'),
+      eb.fn.min<number>('age').as('min_age'),
+      eb.fn.sum<number>('age').as('total_age'),
+      eb.fn.agg<number>('max', ['age']).as('another_max_age'),
+    ])
+    .executeTakeFirstOrThrow()
+
+  expectType<number>(result.avg_age)
+  expectType<number>(result.total_people)
+  expectType<number>(result.total_all)
+  expectType<number>(result.total_all_people)
+  expectType<number>(result.max_age)
+  expectType<number>(result.min_age)
+  expectType<number>(result.total_age)
+  expectType<number>(result.another_max_age)
 }
 
 async function testSelectExpressionBuilderWithSubExpressions(
@@ -155,7 +181,7 @@ async function testSelectExpressionBuilderWithSubExpressions(
 }
 
 async function testSelectWithCustomGenerics(db: Kysely<Database>) {
-  const { avg, count, countAll, max, min, sum } = db.fn
+  const { avg, count, countAll, max, min, sum, agg } = db.fn
 
   const result = await db
     .selectFrom('person')
@@ -168,6 +194,7 @@ async function testSelectWithCustomGenerics(db: Kysely<Database>) {
     .select(min<number | null>('age').as('nullable_min_age'))
     .select(sum<number>('age').as('total_age'))
     .select(sum<number | null>('age').as('nullable_total_age'))
+    .select(agg<number>('max', ['age']).as('max_age'))
     .executeTakeFirstOrThrow()
 
   expectAssignable<number>(result.avg_age)
@@ -188,6 +215,7 @@ async function testSelectWithCustomGenerics(db: Kysely<Database>) {
   expectNotAssignable<string | bigint | null>(result.total_age)
   expectAssignable<number | null>(result.nullable_total_age)
   expectNotAssignable<string | bigint>(result.nullable_total_age)
+  expectType<number>(result.max_age)
 }
 
 async function testSelectUnexpectedColumn(db: Kysely<Database>) {
