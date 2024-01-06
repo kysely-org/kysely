@@ -1,59 +1,41 @@
-import {
-  DeleteResult,
-  InsertResult,
-  Kysely,
-  UpdateResult,
-  expressionBuilder,
-} from '..'
+import { DeleteResult, InsertResult, Kysely, UpdateResult } from '..'
 import { expectType } from 'tsd'
 
 async function testKyselyAnySelects(db: Kysely<any>) {
   const r1 = await db.selectFrom('foo').select('bar').execute()
-  expectType<
-    {
-      bar: any
-    }[]
-  >(r1)
+  expectType<{ bar: any }[]>(r1)
 
   const r2 = await db.selectFrom('foo').select(['bar', 'baz']).execute()
-  expectType<
-    {
-      bar: any
-      baz: any
-    }[]
-  >(r2)
+  expectType<{ bar: any; baz: any }[]>(r2)
 
   const r3 = await db.selectFrom('foo').select('foo.bar').execute()
-  expectType<
-    {
-      bar: any
-    }[]
-  >(r3)
+  expectType<{ bar: any }[]>(r3)
 
   const r4 = await db
     .selectFrom('foo')
     .select(['spam', 'foo.bar', 'foo.baz'])
     .execute()
-  expectType<
-    {
-      spam: any
-      bar: any
-      baz: any
-    }[]
-  >(r4)
+  expectType<{ spam: any; bar: any; baz: any }[]>(r4)
 
   const r5 = await db
     .selectFrom(['foo1', 'foo2'])
     .select(['spam', 'foo1.bar', 'foo2.baz', 'doesnotexists.fux'])
     .execute()
-  expectType<
-    {
-      spam: any
-      bar: any
-      baz: any
-      fux: never
-    }[]
-  >(r5)
+  expectType<{ spam: any; bar: any; baz: any; fux: never }[]>(r5)
+
+  const r6 = await db
+    .selectFrom('foo')
+    .select((eb) => [
+      eb.lit(1).as('baz'),
+      eb.ref('foo.bar').as('bar'),
+      eb
+        .selectFrom('bar')
+        .select('spam')
+        .whereRef('foo.id', '=', 'bar.id')
+        .as('spam'),
+    ])
+    .executeTakeFirstOrThrow()
+  expectType<{ bar: any; spam: any; baz: 1 }>(r6)
 }
 
 async function testKyselyAnyInserts(db: Kysely<any>) {

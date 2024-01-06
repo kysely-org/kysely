@@ -37,8 +37,6 @@ import {
 import { UpdateQueryNode } from '../operation-node/update-query-node.js'
 import {
   UpdateObjectExpression,
-  UpdateObject,
-  UpdateObjectFactory,
   ExtractUpdateTypeFromReferenceExpression,
   parseUpdate,
 } from '../parser/update-set-parser.js'

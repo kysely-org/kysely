@@ -9,8 +9,6 @@ import {
 } from '../parser/select-parser.js'
 import {
   InsertExpression,
-  InsertObjectOrList,
-  InsertObjectOrListFactory,
   parseInsertExpression,
 } from '../parser/insert-values-parser.js'
 import { InsertQueryNode } from '../operation-node/insert-query-node.js'
