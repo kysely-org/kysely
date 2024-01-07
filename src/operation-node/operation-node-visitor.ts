@@ -90,6 +90,10 @@ import { JSONPathLegNode } from './json-path-leg-node.js'
 import { JSONOperatorChainNode } from './json-operator-chain-node.js'
 import { TupleNode } from './tuple-node.js'
 import { AddIndexNode } from './add-index-node.js'
+import { CreateTriggerNode } from './create-trigger-node.js'
+import { DropTriggerNode } from './drop-trigger-node.js'
+import { TriggerEventNode } from './trigger-event-node.js'
+import { TriggerOrderNode } from './trigger-order-node.js'
 
 export abstract class OperationNodeVisitor {
   protected readonly nodeStack: OperationNode[] = []
@@ -187,6 +191,10 @@ export abstract class OperationNodeVisitor {
     JSONOperatorChainNode: this.visitJSONOperatorChain.bind(this),
     TupleNode: this.visitTuple.bind(this),
     AddIndexNode: this.visitAddIndex.bind(this),
+    CreateTriggerNode: this.visitCreateTrigger.bind(this),
+    TriggerEventNode: this.visitTriggerEvent.bind(this),
+    TriggerOrderNode: this.visitTriggerOrder.bind(this),
+    DropTriggerNode: this.visitDropTrigger.bind(this),
   })
 
   protected readonly visitNode = (node: OperationNode): void => {
@@ -213,9 +221,13 @@ export abstract class OperationNodeVisitor {
   protected abstract visitDeleteQuery(node: DeleteQueryNode): void
   protected abstract visitReturning(node: ReturningNode): void
   protected abstract visitCreateTable(node: CreateTableNode): void
+  protected abstract visitCreateTrigger(node: CreateTriggerNode): void
+  protected abstract visitTriggerEvent(node: TriggerEventNode): void
+  protected abstract visitTriggerOrder(node: TriggerOrderNode): void
   protected abstract visitAddColumn(node: AddColumnNode): void
   protected abstract visitColumnDefinition(node: ColumnDefinitionNode): void
   protected abstract visitDropTable(node: DropTableNode): void
+  protected abstract visitDropTrigger(node: DropTriggerNode): void
   protected abstract visitOrderBy(node: OrderByNode): void
   protected abstract visitOrderByItem(node: OrderByItemNode): void
   protected abstract visitGroupBy(node: GroupByNode): void

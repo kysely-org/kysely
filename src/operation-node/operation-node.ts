@@ -86,6 +86,10 @@ export type OperationNodeKind =
   | 'JSONOperatorChainNode'
   | 'TupleNode'
   | 'AddIndexNode'
+  | 'CreateTriggerNode'
+  | 'TriggerEventNode'
+  | 'TriggerOrderNode'
+  | 'DropTriggerNode'
 
 export interface OperationNode {
   readonly kind: OperationNodeKind
