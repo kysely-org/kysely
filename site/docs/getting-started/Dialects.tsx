@@ -136,8 +136,8 @@ export function Dialects(props: DialectsProps) {
       <Admonition type="info" title="Driverless">
         Kysely can also work in compile-only mode that doesn't require a
         database driver. Find out more at{' '}
-        <Link to="/docs/recipes/splitting-build-compile-and-execute-code">
-          "Splitting build, compile and execute code"
+        <Link to="/docs/recipes/splitting-query-building-and-execution">
+          "Splitting query building and execution"
         </Link>
         .
       </Admonition>

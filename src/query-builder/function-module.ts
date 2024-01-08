@@ -160,7 +160,7 @@ export interface FunctionModule<DB, TB extends keyof DB> {
    * from "person"
    * ```
    */
-  agg<O, RE extends ReferenceExpression<DB, TB>>(
+  agg<O, RE extends ReferenceExpression<DB, TB> = ReferenceExpression<DB, TB>>(
     name: string,
     args?: ReadonlyArray<RE>
   ): AggregateFunctionBuilder<DB, TB, O>

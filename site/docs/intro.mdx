@@ -10,7 +10,7 @@ Kysely (pronounced “Key-Seh-Lee”) is a type-safe and autocompletion-friendly
 
 <DemoVideo />
 
-Kysely makes sure you only refer to tables and columns that are visible to the part of the query you're writing. The result type only has the selected columns with correct types and aliases. As an added bonus you get autocompletion for all that stuff.
+Kysely makes sure you only use tables and columns that are visible to the part of the query you're writing. The result type only has the selected columns with correct types and aliases. As an added bonus you get autocompletion for all that stuff.
 
 As shown above, through the magic of TypeScript, Kysely is able to parse the alias given to `pet.name` and add the `pet_name` column to the result row type. Kysely is able to infer column names, aliases and types from selected subqueries, joined subqueries, `with` statements and pretty much anything you can think of.
 
