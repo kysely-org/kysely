@@ -36,6 +36,8 @@ import { SelectType } from '../util/column-type.js'
 import { AndNode } from '../operation-node/and-node.js'
 import { ParensNode } from '../operation-node/parens-node.js'
 import { OrNode } from '../operation-node/or-node.js'
+import { WhenNode } from '../operation-node/when-node.js'
+import { RawNode } from '../operation-node/raw-node.js'
 
 export type OperandValueExpression<
   DB,
@@ -128,7 +130,8 @@ export function parseFilterObject(
 
 export function parseFilterList(
   list: ReadonlyArray<OperationNodeSource | OperationNode>,
-  combinator: 'and' | 'or'
+  combinator: 'and' | 'or',
+  withParens = true
 ): OperationNode {
   const combine = combinator === 'and' ? AndNode.create : OrNode.create
 
@@ -146,7 +149,7 @@ export function parseFilterList(
     node = combine(node, toOperationNode(list[i]))
   }
 
-  if (list.length > 1) {
+  if (list.length > 1 && withParens) {
     return ParensNode.create(node)
   }
 

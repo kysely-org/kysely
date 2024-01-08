@@ -10,7 +10,7 @@ When talking about data types in Kysely we need to make a distinction between th
 In Kysely, you only define typescript types for your tables and columns. Since typescript is entirely a compile-time concept, typescript types __can't__ affect runtime javascript types. If you define your column to be a `string` in typescript but the database returns a `number`, the runtime type doesn't magically change to `string`. You'll see a `string` in the typescript code, but observe a number when you run the program.
 
 :::info
-It's up to **you** to define correct typescript types for the columns based on what the driver returns.
+It's up to **you** to select correct typescript types for your columns based on what the driver returns.
 :::
 
 ## Runtime javascript types
@@ -75,6 +75,6 @@ export const db = new Kysely<Database>({
 
 ## Type generators
 
-There are 3rd party type generators such as [kysely-codegen](https://github.com/RobinBlomberg/kysely-codegen) and [kanel-kysely](https://kristiandupont.github.io/kanel/kanel-kysely.html) that automatically generate typescript types based on the database schema.
+There are 3rd party type generators such as [kysely-codegen](https://github.com/RobinBlomberg/kysely-codegen) and [kanel-kysely](https://kristiandupont.github.io/kanel/kanel-kysely.html) that automatically generate typescript types based on the database schema. Find out more at ["Generating types"](https://kysely.dev/docs/generating-types).
 
 If these tools generate a type that doesn't match the runtime type you observe, please refer to their documentation or open an issue in their github. Kysely has no control over these libraries.

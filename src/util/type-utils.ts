@@ -2,6 +2,7 @@ import { InsertResult } from '../query-builder/insert-result.js'
 import { DeleteResult } from '../query-builder/delete-result.js'
 import { UpdateResult } from '../query-builder/update-result.js'
 import { KyselyTypeError } from './type-error.js'
+import { MergeResult } from '../query-builder/merge-result.js'
 
 /**
  * Given a database type and a union of table names in that db, returns
@@ -108,6 +109,8 @@ export type SimplifySingleResult<O> = O extends InsertResult
   ? O
   : O extends UpdateResult
   ? O
+  : O extends MergeResult
+  ? O
   : Simplify<O> | undefined
 
 export type SimplifyResult<O> = O extends InsertResult
@@ -115,6 +118,8 @@ export type SimplifyResult<O> = O extends InsertResult
   : O extends DeleteResult
   ? O
   : O extends UpdateResult
+  ? O
+  : O extends MergeResult
   ? O
   : Simplify<O>
 

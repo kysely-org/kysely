@@ -1,5 +1,6 @@
 import { DeleteResult } from '../query-builder/delete-result.js'
 import { InsertResult } from '../query-builder/insert-result.js'
+import { MergeResult } from '../query-builder/merge-result.js'
 import { UpdateResult } from '../query-builder/update-result.js'
 import { CompiledQuery } from '../query-compiler/compiled-query.js'
 import { Compilable } from './compilable.js'
@@ -50,6 +51,10 @@ export type InferResult<C extends Compilable<any> | CompiledQuery<any>> =
     ? ResolveResult<O>
     : never
 
-type ResolveResult<O> = O extends InsertResult | UpdateResult | DeleteResult
+type ResolveResult<O> = O extends
+  | InsertResult
+  | UpdateResult
+  | DeleteResult
+  | MergeResult
   ? O
   : Simplify<O>[]

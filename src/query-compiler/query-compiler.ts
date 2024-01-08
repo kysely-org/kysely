@@ -9,6 +9,7 @@ import { DropSchemaNode } from '../operation-node/drop-schema-node.js'
 import { DropTableNode } from '../operation-node/drop-table-node.js'
 import { DropTypeNode } from '../operation-node/drop-type-node.js'
 import { DropViewNode } from '../operation-node/drop-view-node.js'
+import { MergeQueryNode } from '../operation-node/merge-query-node.js'
 import { QueryNode } from '../operation-node/query-node.js'
 import { RawNode } from '../operation-node/raw-node.js'
 import { CompiledQuery } from './compiled-query.js'
@@ -27,6 +28,7 @@ export type RootOperationNode =
   | RawNode
   | CreateTypeNode
   | DropTypeNode
+  | MergeQueryNode
 
 /**
  * a `QueryCompiler` compiles a query expressed as a tree of `OperationNodes` into SQL.
