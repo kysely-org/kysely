@@ -67,6 +67,10 @@ import {
 import { KyselyTypeError } from '../util/type-error.js'
 import { Streamable } from '../util/streamable.js'
 import { ExpressionOrFactory } from '../parser/expression-parser.js'
+import {
+  ValueExpression,
+  parseValueExpression,
+} from '../parser/value-parser.js'
 
 export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
   implements
@@ -630,7 +634,7 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
       ...this.#props,
       queryNode: DeleteQueryNode.cloneWithLimit(
         this.#props.queryNode,
-        LimitNode.create(limit)
+        LimitNode.create(parseValueExpression(limit))
       ),
     })
   }
@@ -716,10 +720,10 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
   /**
    * Change the output type of the query.
    *
-   * You should only use this method as the last resort if the types
-   * don't support your use case.
+   * This method call doesn't change the SQL in any way. This methods simply
+   * returns a copy of this `DeleteQueryBuilder` with a new output type.
    */
-  $castTo<T>(): DeleteQueryBuilder<DB, TB, T> {
+  $castTo<C>(): DeleteQueryBuilder<DB, TB, C> {
     return new DeleteQueryBuilder(this.#props)
   }
 

@@ -2,6 +2,7 @@ import { AddColumnNode } from '../../operation-node/add-column-node.js'
 import { AlterTableColumnAlterationNode } from '../../operation-node/alter-table-node.js'
 import { DropColumnNode } from '../../operation-node/drop-column-node.js'
 import { OffsetNode } from '../../operation-node/offset-node.js'
+import { MergeQueryNode } from '../../operation-node/merge-query-node.js'
 import { DefaultQueryCompiler } from '../../query-compiler/default-query-compiler.js'
 
 export class MssqlQueryCompiler extends DefaultQueryCompiler {
@@ -77,6 +78,11 @@ export class MssqlQueryCompiler extends DefaultQueryCompiler {
 
   protected override visitDropColumn(node: DropColumnNode): void {
     this.visitNode(node.column)
+  }
+
+  protected override visitMergeQuery(node: MergeQueryNode): void {
+    super.visitMergeQuery(node)
+    this.append(';')
   }
 
   protected override announcesNewColumnDataType(): boolean {

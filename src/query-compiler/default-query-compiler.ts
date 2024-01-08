@@ -104,6 +104,8 @@ import { JSONPathNode } from '../operation-node/json-path-node.js'
 import { JSONPathLegNode } from '../operation-node/json-path-leg-node.js'
 import { JSONOperatorChainNode } from '../operation-node/json-operator-chain-node.js'
 import { TupleNode } from '../operation-node/tuple-node.js'
+import { MergeQueryNode } from '../operation-node/merge-query-node.js'
+import { MatchedNode } from '../operation-node/matched-node.js'
 import { AddIndexNode } from '../operation-node/add-index-node.js'
 import { FetchNode } from '../operation-node/fetch-node.js'
 
@@ -280,14 +282,15 @@ export class DefaultQueryCompiler
   }
 
   protected override visitInsertQuery(node: InsertQueryNode): void {
-    const isSubQuery = this.nodeStack.find(QueryNode.is) !== node
+    const rootQueryNode = this.nodeStack.find(QueryNode.is)!
+    const isSubQuery = rootQueryNode !== node
 
     if (!isSubQuery && node.explain) {
       this.visitNode(node.explain)
       this.append(' ')
     }
 
-    if (isSubQuery) {
+    if (isSubQuery && !MergeQueryNode.is(rootQueryNode)) {
       this.append('(')
     }
 
@@ -302,8 +305,10 @@ export class DefaultQueryCompiler
       this.append(' ignore')
     }
 
-    this.append(' into ')
-    this.visitNode(node.into)
+    if (node.into) {
+      this.append(' into ')
+      this.visitNode(node.into)
+    }
 
     if (node.columns) {
       this.append(' (')
@@ -314,6 +319,11 @@ export class DefaultQueryCompiler
     if (node.values) {
       this.append(' ')
       this.visitNode(node.values)
+    }
+
+    if (node.defaultValues) {
+      this.append(' ')
+      this.append('default values')
     }
 
     if (node.onConflict) {
@@ -331,7 +341,7 @@ export class DefaultQueryCompiler
       this.visitNode(node.returning)
     }
 
-    if (isSubQuery) {
+    if (isSubQuery && !MergeQueryNode.is(rootQueryNode)) {
       this.append(')')
     }
   }
@@ -704,14 +714,15 @@ export class DefaultQueryCompiler
   }
 
   protected override visitUpdateQuery(node: UpdateQueryNode): void {
-    const isSubQuery = this.nodeStack.find(QueryNode.is) !== node
+    const rootQueryNode = this.nodeStack.find(QueryNode.is)!
+    const isSubQuery = rootQueryNode !== node
 
     if (!isSubQuery && node.explain) {
       this.visitNode(node.explain)
       this.append(' ')
     }
 
-    if (isSubQuery) {
+    if (isSubQuery && !MergeQueryNode.is(rootQueryNode)) {
       this.append('(')
     }
 
@@ -721,8 +732,13 @@ export class DefaultQueryCompiler
     }
 
     this.append('update ')
-    this.visitNode(node.table)
-    this.append(' set ')
+
+    if (node.table) {
+      this.visitNode(node.table)
+      this.append(' ')
+    }
+
+    this.append('set ')
 
     if (node.updates) {
       this.compileList(node.updates)
@@ -748,7 +764,7 @@ export class DefaultQueryCompiler
       this.visitNode(node.returning)
     }
 
-    if (isSubQuery) {
+    if (isSubQuery && !MergeQueryNode.is(rootQueryNode)) {
       this.append(')')
     }
   }
@@ -1225,6 +1241,11 @@ export class DefaultQueryCompiler
     } else {
       this.append(SELECT_MODIFIER_SQL[node.modifier!])
     }
+
+    if (node.of) {
+      this.append(' of ')
+      this.compileList(node.of, ', ')
+    }
   }
 
   protected override visitCreateType(node: CreateTypeNode): void {
@@ -1439,6 +1460,38 @@ export class DefaultQueryCompiler
     }
   }
 
+  protected override visitMergeQuery(node: MergeQueryNode): void {
+    if (node.with) {
+      this.visitNode(node.with)
+      this.append(' ')
+    }
+
+    this.append('merge into ')
+    this.visitNode(node.into)
+
+    if (node.using) {
+      this.append(' ')
+      this.visitNode(node.using)
+    }
+
+    if (node.whens) {
+      this.append(' ')
+      this.compileList(node.whens)
+    }
+  }
+
+  protected override visitMatched(node: MatchedNode): void {
+    if (node.not) {
+      this.append('not ')
+    }
+
+    this.append('matched')
+
+    if (node.bySource) {
+      this.append(' by source')
+    }
+  }
+  
   protected override visitAddIndex(node: AddIndexNode): void {
     this.append('add ')
 
@@ -1599,4 +1652,5 @@ const JOIN_TYPE_SQL: Readonly<Record<JoinType, string>> = freeze({
   FullJoin: 'full join',
   LateralInnerJoin: 'inner join lateral',
   LateralLeftJoin: 'left join lateral',
+  Using: 'using',
 })

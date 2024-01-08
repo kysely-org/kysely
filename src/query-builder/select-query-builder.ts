@@ -6,7 +6,7 @@ import {
   JoinReferenceExpression,
   parseJoin,
 } from '../parser/join-parser.js'
-import { TableExpression } from '../parser/table-parser.js'
+import { TableExpression, parseTable } from '../parser/table-parser.js'
 import {
   parseSelectArg,
   parseSelectAll,
@@ -46,7 +46,7 @@ import { OffsetNode } from '../operation-node/offset-node.js'
 import { Compilable } from '../util/compilable.js'
 import { QueryExecutor } from '../query-executor/query-executor.js'
 import { QueryId } from '../util/query-id.js'
-import { freeze } from '../util/object-utils.js'
+import { asArray, freeze } from '../util/object-utils.js'
 import { GroupByArg, parseGroupBy } from '../parser/group-by-parser.js'
 import { KyselyPlugin } from '../plugin/kysely-plugin.js'
 import { WhereInterface } from './where-interface.js'
@@ -75,6 +75,10 @@ import { Streamable } from '../util/streamable.js'
 import { ExpressionOrFactory } from '../parser/expression-parser.js'
 import { ExpressionWrapper } from '../expression/expression-wrapper.js'
 import { SelectQueryBuilderExpression } from './select-query-builder-expression.js'
+import {
+  ValueExpression,
+  parseValueExpression,
+} from '../parser/value-parser.js'
 import { FetchModifier, FetchNode } from '../operation-node/fetch-node.js'
 
 export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
@@ -430,22 +434,22 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
   /**
    * Adds the `for update` modifier to a select query on supported databases.
    */
-  forUpdate(): SelectQueryBuilder<DB, TB, O>
+  forUpdate(of?: TableOrList<TB>): SelectQueryBuilder<DB, TB, O>
 
   /**
    * Adds the `for share` modifier to a select query on supported databases.
    */
-  forShare(): SelectQueryBuilder<DB, TB, O>
+  forShare(of?: TableOrList<TB>): SelectQueryBuilder<DB, TB, O>
 
   /**
    * Adds the `for key share` modifier to a select query on supported databases.
    */
-  forKeyShare(): SelectQueryBuilder<DB, TB, O>
+  forKeyShare(of?: TableOrList<TB>): SelectQueryBuilder<DB, TB, O>
 
   /**
    * Adds the `for no key update` modifier to a select query on supported databases.
    */
-  forNoKeyUpdate(): SelectQueryBuilder<DB, TB, O>
+  forNoKeyUpdate(of?: TableOrList<TB>): SelectQueryBuilder<DB, TB, O>
 
   /**
    * Adds the `skip locked` modifier to a select query on supported databases.
@@ -1472,10 +1476,10 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
   /**
    * Change the output type of the query.
    *
-   * You should only use this method as the last resort if the types
-   * don't support your use case.
+   * This method call doesn't change the SQL in any way. This methods simply
+   * returns a copy of this `SelectQueryBuilder` with a new output type.
    */
-  $castTo<T>(): SelectQueryBuilder<DB, TB, T>
+  $castTo<C>(): SelectQueryBuilder<DB, TB, C>
 
   /**
    * Changes the output type from an object to a tuple.
@@ -1830,42 +1834,54 @@ class SelectQueryBuilderImpl<DB, TB extends keyof DB, O>
     })
   }
 
-  forUpdate(): SelectQueryBuilder<DB, TB, O> {
+  forUpdate(of?: TableOrList<TB>): SelectQueryBuilder<DB, TB, O> {
     return new SelectQueryBuilderImpl({
       ...this.#props,
       queryNode: SelectQueryNode.cloneWithEndModifier(
         this.#props.queryNode,
-        SelectModifierNode.create('ForUpdate')
+        SelectModifierNode.create(
+          'ForUpdate',
+          of ? asArray(of).map(parseTable) : undefined
+        )
       ),
     })
   }
 
-  forShare(): SelectQueryBuilder<DB, TB, O> {
+  forShare(of?: TableOrList<TB>): SelectQueryBuilder<DB, TB, O> {
     return new SelectQueryBuilderImpl({
       ...this.#props,
       queryNode: SelectQueryNode.cloneWithEndModifier(
         this.#props.queryNode,
-        SelectModifierNode.create('ForShare')
+        SelectModifierNode.create(
+          'ForShare',
+          of ? asArray(of).map(parseTable) : undefined
+        )
       ),
     })
   }
 
-  forKeyShare(): SelectQueryBuilder<DB, TB, O> {
+  forKeyShare(of?: TableOrList<TB>): SelectQueryBuilder<DB, TB, O> {
     return new SelectQueryBuilderImpl({
       ...this.#props,
       queryNode: SelectQueryNode.cloneWithEndModifier(
         this.#props.queryNode,
-        SelectModifierNode.create('ForKeyShare')
+        SelectModifierNode.create(
+          'ForKeyShare',
+          of ? asArray(of).map(parseTable) : undefined
+        )
       ),
     })
   }
 
-  forNoKeyUpdate(): SelectQueryBuilder<DB, TB, O> {
+  forNoKeyUpdate(of?: TableOrList<TB>): SelectQueryBuilder<DB, TB, O> {
     return new SelectQueryBuilderImpl({
       ...this.#props,
       queryNode: SelectQueryNode.cloneWithEndModifier(
         this.#props.queryNode,
-        SelectModifierNode.create('ForNoKeyUpdate')
+        SelectModifierNode.create(
+          'ForNoKeyUpdate',
+          of ? asArray(of).map(parseTable) : undefined
+        )
       ),
     })
   }
@@ -2141,7 +2157,7 @@ class SelectQueryBuilderImpl<DB, TB extends keyof DB, O>
     }) as any
   }
 
-  $castTo<T>(): SelectQueryBuilder<DB, TB, T> {
+  $castTo<C>(): SelectQueryBuilder<DB, TB, C> {
     return new SelectQueryBuilderImpl(this.#props)
   }
 
@@ -2459,3 +2475,7 @@ type OuterJoinedBuilderDB<
     ? DB[C]
     : never
 }>
+
+type TableOrList<TB extends keyof any> =
+  | (TB & string)
+  | ReadonlyArray<TB & string>

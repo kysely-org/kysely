@@ -88,7 +88,18 @@ export interface RawBuilder<O> extends AliasableExpression<O> {
    * This method call doesn't change the SQL in any way. This methods simply
    * returns a copy of this `RawBuilder` with a new output type.
    */
-  $castTo<T>(): RawBuilder<T>
+  $castTo<C>(): RawBuilder<C>
+
+  /**
+   * Omit null from the expression's type.
+   *
+   * This function can be useful in cases where you know an expression can't be
+   * null, but Kysely is unable to infer it.
+   *
+   * This method call doesn't change the SQL in any way. This methods simply
+   * returns a copy of `this` with a new output type.
+   */
+  $notNull(): RawBuilder<Exclude<O, null>>
 
   /**
    * Adds a plugin for this SQL snippet.
@@ -140,8 +151,12 @@ class RawBuilderImpl<O> implements RawBuilder<O> {
     return new AliasedRawBuilderImpl(this, alias)
   }
 
-  $castTo<T>(): RawBuilder<T> {
+  $castTo<C>(): RawBuilder<C> {
     return new RawBuilderImpl({ ...this.#props })
+  }
+
+  $notNull(): RawBuilder<Exclude<O, null>> {
+    return new RawBuilderImpl(this.#props)
   }
 
   withPlugin(plugin: KyselyPlugin): RawBuilder<O> {

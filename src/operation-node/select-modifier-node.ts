@@ -14,6 +14,7 @@ export interface SelectModifierNode extends OperationNode {
   readonly kind: 'SelectModifierNode'
   readonly modifier?: SelectModifier
   readonly rawModifier?: OperationNode
+  readonly of?: ReadonlyArray<OperationNode>
 }
 
 /**
@@ -24,10 +25,14 @@ export const SelectModifierNode = freeze({
     return node.kind === 'SelectModifierNode'
   },
 
-  create(modifier: SelectModifier): SelectModifierNode {
+  create(
+    modifier: SelectModifier,
+    of?: ReadonlyArray<OperationNode>
+  ): SelectModifierNode {
     return freeze({
       kind: 'SelectModifierNode',
       modifier,
+      of,
     })
   },
 

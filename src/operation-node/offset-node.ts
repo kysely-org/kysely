@@ -1,10 +1,9 @@
 import { freeze } from '../util/object-utils.js'
 import { OperationNode } from './operation-node.js'
-import { ValueNode } from './value-node.js'
 
 export interface OffsetNode extends OperationNode {
   readonly kind: 'OffsetNode'
-  readonly offset: ValueNode
+  readonly offset: OperationNode
 }
 
 /**
@@ -18,7 +17,7 @@ export const OffsetNode = freeze({
   create(offset: number | bigint): OffsetNode {
     return freeze({
       kind: 'OffsetNode',
-      offset: ValueNode.create(offset),
+      offset,
     })
   },
 })

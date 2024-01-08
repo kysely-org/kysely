@@ -1,4 +1,4 @@
-import { sql, CompiledQuery } from '../../../'
+import { sql, CompiledQuery, DefaultQueryCompiler } from '../../../'
 
 import {
   clearDatabase,
@@ -60,7 +60,41 @@ for (const dialect of DIALECTS) {
       await query.execute()
     })
 
-    it('sql.unsafeLiteral should turn substitutions from parameters into literal values', async () => {
+    it('substitutions should accept queries', async () => {
+      const compiler = new DefaultQueryCompiler()
+
+      let node = sql`before ${ctx.db
+        .selectFrom('person')
+        .selectAll()} after`.toOperationNode()
+      expect(compiler.compileQuery(node).sql).to.equal(
+        `before (select * from "person") after`
+      )
+
+      node = sql`before ${ctx.db.insertInto('person').values({
+        first_name: 'Jennifer',
+        last_name: 'Aniston',
+        gender: 'female',
+      })} after`.toOperationNode()
+      expect(compiler.compileQuery(node).sql).to.equal(
+        `before insert into "person" ("first_name", "last_name", "gender") values ($1, $2, $3) after`
+      )
+
+      node = sql`before ${ctx.db
+        .deleteFrom('person')
+        .where('id', '=', 1)} after`.toOperationNode()
+      expect(compiler.compileQuery(node).sql).to.equal(
+        `before delete from "person" where "id" = $1 after`
+      )
+
+      node = sql`before ${ctx.db
+        .updateTable('person')
+        .set('first_name', 'Jennifer')} after`.toOperationNode()
+      expect(compiler.compileQuery(node).sql).to.equal(
+        `before update "person" set "first_name" = $1 after`
+      )
+    })
+
+    it('sql.lit should turn substitutions from parameters into literal values', async () => {
       const query = ctx.db
         .selectFrom('person')
         .selectAll()

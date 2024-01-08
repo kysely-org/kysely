@@ -272,6 +272,29 @@ export class AggregateFunctionBuilder<DB, TB extends keyof DB, O = unknown>
     return func(this)
   }
 
+  /**
+   * Casts the expression to the given type.
+   *
+   * This method call doesn't change the SQL in any way. This methods simply
+   * returns a copy of this `AggregateFunctionBuilder` with a new output type.
+   */
+  $castTo<C>(): AggregateFunctionBuilder<DB, TB, C> {
+    return new AggregateFunctionBuilder(this.#props)
+  }
+
+  /**
+   * Omit null from the expression's type.
+   *
+   * This function can be useful in cases where you know an expression can't be
+   * null, but Kysely is unable to infer it.
+   *
+   * This method call doesn't change the SQL in any way. This methods simply
+   * returns a copy of `this` with a new output type.
+   */
+  $notNull(): AggregateFunctionBuilder<DB, TB, Exclude<O, null>> {
+    return new AggregateFunctionBuilder(this.#props)
+  }
+
   toOperationNode(): AggregateFunctionNode {
     return this.#props.aggregateFunctionNode
   }

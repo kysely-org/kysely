@@ -22,6 +22,8 @@ import {
   ExtractTableAlias,
   AnyAliasedTable,
   PickTableWithAlias,
+  SimpleTableReference,
+  parseAliasedTable,
 } from './parser/table-parser.js'
 import { QueryExecutor } from './query-executor/query-executor.js'
 import {
@@ -47,6 +49,9 @@ import {
   Selection,
   parseSelectArg,
 } from './parser/select-parser.js'
+import { MergeQueryBuilder } from './query-builder/merge-query-builder.js'
+import { MergeQueryNode } from './operation-node/merge-query-node.js'
+import { MergeResult } from './query-builder/merge-result.js'
 
 export class QueryCreator<DB> {
   readonly #props: QueryCreatorProps
@@ -492,6 +497,63 @@ export class QueryCreator<DB> {
       executor: this.#props.executor,
       queryNode: UpdateQueryNode.create(
         parseTableExpression(table),
+        this.#props.withNode
+      ),
+    })
+  }
+
+  /**
+   * Creates a merge query.
+   *
+   * The return value of the query is a {@link MergeResult}.
+   *
+   * See the {@link MergeQueryBuilder.using} method for examples on how to specify
+   * the other table.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * const result = await db
+   *   .mergeInto('person')
+   *   .using('pet', 'pet.owner_id', 'person.id')
+   *   .whenMatched((and) => and('has_pets', '!=', 'Y'))
+   *   .thenUpdateSet({ has_pets: 'Y' })
+   *   .whenNotMatched()
+   *   .thenDoNothing()
+   *   .executeTakeFirstOrThrow()
+   *
+   * console.log(result.numChangedRows)
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * merge into "person"
+   * using "pet" on "pet"."owner_id" = "person"."id"
+   * when matched and "has_pets" != $1 then
+   *   update set "has_pets" = $2
+   * when not matched then
+   *   do nothing
+   * ```
+   */
+  mergeInto<TR extends keyof DB & string>(
+    targetTable: TR
+  ): MergeQueryBuilder<DB, TR, MergeResult>
+
+  mergeInto<TR extends AnyAliasedTable<DB>>(
+    targetTable: TR
+  ): MergeQueryBuilder<
+    DB & PickTableWithAlias<DB, TR>,
+    ExtractTableAlias<DB, TR>,
+    MergeResult
+  >
+
+  mergeInto<TR extends SimpleTableReference<DB>>(targetTable: TR): any {
+    return new MergeQueryBuilder({
+      queryId: createQueryId(),
+      executor: this.#props.executor,
+      queryNode: MergeQueryNode.create(
+        parseAliasedTable(targetTable),
         this.#props.withNode
       ),
     })

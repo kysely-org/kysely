@@ -37,7 +37,10 @@ import {
   MssqlDialect,
   SelectQueryBuilder,
 } from '../../../'
-import { OrderByDirection, UndirectedOrderByExpression } from '../../../dist/cjs/parser/order-by-parser'
+import {
+  OrderByDirection,
+  UndirectedOrderByExpression,
+} from '../../../dist/cjs/parser/order-by-parser'
 
 export type Gender = 'male' | 'female' | 'other'
 export type MaritalStatus = 'single' | 'married' | 'divorced' | 'widowed'
@@ -93,7 +96,13 @@ export type PerDialect<T> = Record<BuiltInDialect, T>
 
 export const DIALECTS: BuiltInDialect[] = (
   ['postgres', 'mysql', 'mssql', 'sqlite'] as const
-).filter((d) => !process.env.DIALECT || d === process.env.DIALECT)
+).filter(
+  (d) =>
+    !process.env.DIALECTS ||
+    process.env.DIALECTS.split(',')
+      .map((it) => it.trim())
+      .includes(d)
+)
 
 const TEST_INIT_TIMEOUT = 5 * 60 * 1000
 // This can be used as a placeholder for testSql when a query is not
@@ -431,7 +440,7 @@ export async function insert<TB extends keyof Database>(
 
       const table =
         query.kind === 'InsertQueryNode' &&
-        [query.into.table.schema?.name, query.into.table.identifier.name]
+        [query.into!.table.schema?.name, query.into!.table.identifier.name]
           .filter(Boolean)
           .join('.')
 
@@ -492,7 +501,12 @@ export function orderBy<QB extends SelectQueryBuilder<any, any, any>>(
 ): (qb: QB) => QB {
   return (qb) => {
     if (dialect === 'mssql') {
-      return qb.orderBy(orderBy, sql`${sql.raw(direction ? `${direction} ` : '')}${sql.raw('offset 0 rows')}`) as QB
+      return qb.orderBy(
+        orderBy,
+        sql`${sql.raw(direction ? `${direction} ` : '')}${sql.raw(
+          'offset 0 rows'
+        )}`
+      ) as QB
     }
 
     return qb.orderBy(orderBy, direction) as QB
