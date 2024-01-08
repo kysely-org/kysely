@@ -133,7 +133,7 @@ async function testWhenNotMatched(
   // when not matched can only reference the source table's columns.
   expectError(baseQuery.whenNotMatchedAnd('age', '>', 'dog'))
   baseQuery.whenNotMatchedAnd('species', sql`>`, 'dog')
-  baseQuery.whenNotMatchedAnd('pet.species', '>', sql`dog`)
+  baseQuery.whenNotMatchedAnd('pet.species', '>', sql<'dog'>`dog`)
   baseQuery.whenNotMatchedAnd('species', '>', (eb) => {
     // already tested in many places
     expectType<ExpressionBuilder<Database, 'pet'>>(eb)
@@ -197,7 +197,7 @@ async function testWhenNotMatchedBySource(
   // when not matched by source can only reference the target table's columns.
   expectError(baseQuery.whenNotMatchedBySourceAnd('species', '>', 'dog'))
   baseQuery.whenNotMatchedBySourceAnd('age', sql`>`, 2)
-  baseQuery.whenNotMatchedBySourceAnd('person.age', '>', sql`2`)
+  baseQuery.whenNotMatchedBySourceAnd('person.age', '>', sql<2>`2`)
   baseQuery.whenNotMatchedBySourceAnd('age', '>', (eb) => {
     // already tested in many places
     expectType<ExpressionBuilder<Database, 'person'>>(eb)
