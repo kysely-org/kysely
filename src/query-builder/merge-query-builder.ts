@@ -195,10 +195,13 @@ export class WheneableMergeQueryBuilder<
    *   delete
    * ```
    */
-  whenMatchedAnd<RE extends ReferenceExpression<DB, TT | ST>>(
+  whenMatchedAnd<
+    RE extends ReferenceExpression<DB, TT | ST>,
+    VE extends OperandValueExpressionOrList<DB, TT | ST, RE>
+  >(
     lhs: RE,
     op: ComparisonOperatorExpression,
-    rhs: OperandValueExpressionOrList<DB, TT | ST, RE>
+    rhs: VE
   ): MatchedThenableMergeQueryBuilder<DB, TT, ST, TT | ST, O>
 
   whenMatchedAnd(
