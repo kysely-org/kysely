@@ -87,6 +87,8 @@ import { JSONPathNode } from './json-path-node.js'
 import { JSONPathLegNode } from './json-path-leg-node.js'
 import { JSONOperatorChainNode } from './json-operator-chain-node.js'
 import { TupleNode } from './tuple-node.js'
+import { MergeQueryNode } from './merge-query-node.js'
+import { MatchedNode } from './matched-node.js'
 import { AddIndexNode } from './add-index-node.js'
 
 /**
@@ -209,6 +211,8 @@ export class OperationNodeTransformer {
     JSONPathLegNode: this.transformJSONPathLeg.bind(this),
     JSONOperatorChainNode: this.transformJSONOperatorChain.bind(this),
     TupleNode: this.transformTuple.bind(this),
+    MergeQueryNode: this.transformMergeQuery.bind(this),
+    MatchedNode: this.transformMatched.bind(this),
     AddIndexNode: this.transformAddIndex.bind(this),
   })
 
@@ -979,6 +983,24 @@ export class OperationNodeTransformer {
     return requireAllProps<TupleNode>({
       kind: 'TupleNode',
       values: this.transformNodeList(node.values),
+    })
+  }
+
+  protected transformMergeQuery(node: MergeQueryNode): MergeQueryNode {
+    return requireAllProps<MergeQueryNode>({
+      kind: 'MergeQueryNode',
+      into: this.transformNode(node.into),
+      using: this.transformNode(node.using),
+      whens: this.transformNodeList(node.whens),
+      with: this.transformNode(node.with),
+    })
+  }
+
+  protected transformMatched(node: MatchedNode): MatchedNode {
+    return requireAllProps<MatchedNode>({
+      kind: 'MatchedNode',
+      not: node.not,
+      bySource: node.bySource,
     })
   }
 

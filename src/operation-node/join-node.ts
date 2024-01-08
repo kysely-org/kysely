@@ -1,8 +1,6 @@
 import { freeze } from '../util/object-utils.js'
-import { AliasNode } from './alias-node.js'
 import { OnNode } from './on-node.js'
 import { OperationNode } from './operation-node.js'
-import { TableNode } from './table-node.js'
 
 export type JoinType =
   | 'InnerJoin'
@@ -11,6 +9,7 @@ export type JoinType =
   | 'FullJoin'
   | 'LateralInnerJoin'
   | 'LateralLeftJoin'
+  | 'Using'
 
 export interface JoinNode extends OperationNode {
   readonly kind: 'JoinNode'

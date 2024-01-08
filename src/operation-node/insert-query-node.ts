@@ -12,7 +12,7 @@ export type InsertQueryNodeProps = Omit<InsertQueryNode, 'kind' | 'into'>
 
 export interface InsertQueryNode extends OperationNode {
   readonly kind: 'InsertQueryNode'
-  readonly into: TableNode
+  readonly into?: TableNode
   readonly columns?: ReadonlyArray<ColumnNode>
   readonly values?: OperationNode
   readonly returning?: ReturningNode
@@ -43,6 +43,12 @@ export const InsertQueryNode = freeze({
       into,
       ...(withNode && { with: withNode }),
       replace,
+    })
+  },
+
+  createWithoutInto(): InsertQueryNode {
+    return freeze({
+      kind: 'InsertQueryNode',
     })
   },
 
