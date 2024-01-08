@@ -22,28 +22,28 @@
  * ```
  */
 export class InsertResult {
-  readonly #insertId: bigint | undefined
-  readonly #numInsertedOrUpdatedRows: bigint | undefined
+  /**
+   * The auto incrementing primary key of the inserted row.
+   *
+   * This property can be undefined when the query contains an `on conflict`
+   * clause that makes the query succeed even when nothing gets inserted.
+   *
+   * This property is always undefined on dialects like PostgreSQL that
+   * don't return the inserted id by default. On those dialects you need
+   * to use the {@link ReturningInterface.returning | returning} method.
+   */
+  readonly insertId: bigint | undefined
+
+  /**
+   * Affected rows count.
+   */
+  readonly numInsertedOrUpdatedRows: bigint | undefined
 
   constructor(
     insertId: bigint | undefined,
     numInsertedOrUpdatedRows: bigint | undefined
   ) {
-    this.#insertId = insertId
-    this.#numInsertedOrUpdatedRows = numInsertedOrUpdatedRows
-  }
-
-  /**
-   * The auto incrementing primary key
-   */
-  get insertId(): bigint | undefined {
-    return this.#insertId
-  }
-
-  /**
-   * Affected rows count.
-   */
-  get numInsertedOrUpdatedRows(): bigint | undefined {
-    return this.#numInsertedOrUpdatedRows
+    this.insertId = insertId
+    this.numInsertedOrUpdatedRows = numInsertedOrUpdatedRows
   }
 }

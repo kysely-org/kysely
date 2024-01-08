@@ -77,6 +77,17 @@ export type OperationNodeKind =
   | 'BinaryOperationNode'
   | 'UnaryOperationNode'
   | 'UsingNode'
+  | 'FunctionNode'
+  | 'CaseNode'
+  | 'WhenNode'
+  | 'JSONReferenceNode'
+  | 'JSONPathNode'
+  | 'JSONPathLegNode'
+  | 'JSONOperatorChainNode'
+  | 'TupleNode'
+  | 'MergeQueryNode'
+  | 'MatchedNode'
+  | 'AddIndexNode'
 
 export interface OperationNode {
   readonly kind: OperationNodeKind

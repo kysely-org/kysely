@@ -13,19 +13,27 @@ import {
   TableExpressionOrList,
 } from '../parser/table-parser.js'
 import {
-  parseSelectExpressionOrList,
+  parseSelectArg,
   parseSelectAll,
   SelectExpression,
-  SelectExpressionOrList,
+  SelectArg,
+  SelectCallback,
 } from '../parser/select-parser.js'
-import { ReturningAllRow, ReturningRow } from '../parser/returning-parser.js'
+import {
+  ReturningAllRow,
+  ReturningCallbackRow,
+  ReturningRow,
+} from '../parser/returning-parser.js'
 import { ReferenceExpression } from '../parser/reference-parser.js'
 import { QueryNode } from '../operation-node/query-node.js'
 import {
-  MergePartial,
+  DrainOuterGeneric,
+  NarrowPartial,
   Nullable,
+  ShallowRecord,
   SimplifyResult,
   SimplifySingleResult,
+  SqlBool,
 } from '../util/type-utils.js'
 import { preventAwait } from '../util/prevent-await.js'
 import { Compilable } from '../util/compilable.js'
@@ -49,21 +57,20 @@ import {
   parseOrderBy,
 } from '../parser/order-by-parser.js'
 import { Explainable, ExplainFormat } from '../util/explainable.js'
-import { ExplainNode } from '../operation-node/explain-node.js'
 import { AliasedExpression, Expression } from '../expression/expression.js'
 import {
   ComparisonOperatorExpression,
   OperandValueExpressionOrList,
-  parseReferentialFilter,
-  parseWhere,
-  WhereGrouper,
+  parseValueBinaryOperationOrExpression,
+  parseReferentialBinaryOperation,
 } from '../parser/binary-operation-parser.js'
-import {
-  ExistsExpression,
-  parseExists,
-  parseNotExists,
-} from '../parser/unary-operation-parser.js'
 import { KyselyTypeError } from '../util/type-error.js'
+import { Streamable } from '../util/streamable.js'
+import { ExpressionOrFactory } from '../parser/expression-parser.js'
+import {
+  ValueExpression,
+  parseValueExpression,
+} from '../parser/value-parser.js'
 
 export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
   implements
@@ -71,7 +78,8 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
     ReturningInterface<DB, TB, O>,
     OperationNodeSource,
     Compilable<O>,
-    Explainable
+    Explainable,
+    Streamable<O>
 {
   readonly #props: DeleteQueryBuilderProps
 
@@ -79,110 +87,42 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
     this.#props = freeze(props)
   }
 
-  where<RE extends ReferenceExpression<DB, TB>>(
+  where<
+    RE extends ReferenceExpression<DB, TB>,
+    VE extends OperandValueExpressionOrList<DB, TB, RE>
+  >(
     lhs: RE,
     op: ComparisonOperatorExpression,
-    rhs: OperandValueExpressionOrList<DB, TB, RE>
+    rhs: VE
   ): DeleteQueryBuilder<DB, TB, O>
 
-  where(grouper: WhereGrouper<DB, TB>): DeleteQueryBuilder<DB, TB, O>
-  where(expression: Expression<any>): DeleteQueryBuilder<DB, TB, O>
+  where<E extends ExpressionOrFactory<DB, TB, SqlBool>>(
+    expression: E
+  ): DeleteQueryBuilder<DB, TB, O>
 
   where(...args: any[]): any {
     return new DeleteQueryBuilder({
       ...this.#props,
       queryNode: QueryNode.cloneWithWhere(
         this.#props.queryNode,
-        parseWhere(args)
+        parseValueBinaryOperationOrExpression(args)
       ),
     })
   }
 
-  whereRef(
-    lhs: ReferenceExpression<DB, TB>,
+  whereRef<
+    LRE extends ReferenceExpression<DB, TB>,
+    RRE extends ReferenceExpression<DB, TB>
+  >(
+    lhs: LRE,
     op: ComparisonOperatorExpression,
-    rhs: ReferenceExpression<DB, TB>
+    rhs: RRE
   ): DeleteQueryBuilder<DB, TB, O> {
     return new DeleteQueryBuilder({
       ...this.#props,
       queryNode: QueryNode.cloneWithWhere(
         this.#props.queryNode,
-        parseReferentialFilter(lhs, op, rhs)
-      ),
-    })
-  }
-
-  orWhere<RE extends ReferenceExpression<DB, TB>>(
-    lhs: RE,
-    op: ComparisonOperatorExpression,
-    rhs: OperandValueExpressionOrList<DB, TB, RE>
-  ): DeleteQueryBuilder<DB, TB, O>
-
-  orWhere(grouper: WhereGrouper<DB, TB>): DeleteQueryBuilder<DB, TB, O>
-  orWhere(expression: Expression<any>): DeleteQueryBuilder<DB, TB, O>
-
-  orWhere(...args: any[]): any {
-    return new DeleteQueryBuilder({
-      ...this.#props,
-      queryNode: QueryNode.cloneWithOrWhere(
-        this.#props.queryNode,
-        parseWhere(args)
-      ),
-    })
-  }
-
-  orWhereRef(
-    lhs: ReferenceExpression<DB, TB>,
-    op: ComparisonOperatorExpression,
-    rhs: ReferenceExpression<DB, TB>
-  ): DeleteQueryBuilder<DB, TB, O> {
-    return new DeleteQueryBuilder({
-      ...this.#props,
-      queryNode: QueryNode.cloneWithOrWhere(
-        this.#props.queryNode,
-        parseReferentialFilter(lhs, op, rhs)
-      ),
-    })
-  }
-
-  whereExists(arg: ExistsExpression<DB, TB>): DeleteQueryBuilder<DB, TB, O> {
-    return new DeleteQueryBuilder({
-      ...this.#props,
-      queryNode: QueryNode.cloneWithWhere(
-        this.#props.queryNode,
-        parseExists(arg)
-      ),
-    })
-  }
-
-  whereNotExists(arg: ExistsExpression<DB, TB>): DeleteQueryBuilder<DB, TB, O> {
-    return new DeleteQueryBuilder({
-      ...this.#props,
-      queryNode: QueryNode.cloneWithWhere(
-        this.#props.queryNode,
-        parseNotExists(arg)
-      ),
-    })
-  }
-
-  orWhereExists(arg: ExistsExpression<DB, TB>): DeleteQueryBuilder<DB, TB, O> {
-    return new DeleteQueryBuilder({
-      ...this.#props,
-      queryNode: QueryNode.cloneWithOrWhere(
-        this.#props.queryNode,
-        parseExists(arg)
-      ),
-    })
-  }
-
-  orWhereNotExists(
-    arg: ExistsExpression<DB, TB>
-  ): DeleteQueryBuilder<DB, TB, O> {
-    return new DeleteQueryBuilder({
-      ...this.#props,
-      queryNode: QueryNode.cloneWithOrWhere(
-        this.#props.queryNode,
-        parseNotExists(arg)
+        parseReferentialBinaryOperation(lhs, op, rhs)
       ),
     })
   }
@@ -492,16 +432,22 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
     selections: ReadonlyArray<SE>
   ): DeleteQueryBuilder<DB, TB, ReturningRow<DB, TB, O, SE>>
 
+  returning<CB extends SelectCallback<DB, TB>>(
+    callback: CB
+  ): DeleteQueryBuilder<DB, TB, ReturningCallbackRow<DB, TB, O, CB>>
+
   returning<SE extends SelectExpression<DB, TB>>(
     selection: SE
   ): DeleteQueryBuilder<DB, TB, ReturningRow<DB, TB, O, SE>>
 
-  returning(selection: SelectExpressionOrList<DB, TB>): any {
+  returning<SE extends SelectExpression<DB, TB>>(
+    selection: SelectArg<DB, TB, SE>
+  ): DeleteQueryBuilder<DB, TB, ReturningRow<DB, TB, O, SE>> {
     return new DeleteQueryBuilder({
       ...this.#props,
       queryNode: QueryNode.cloneWithReturning(
         this.#props.queryNode,
-        parseSelectExpressionOrList(selection)
+        parseSelectArg(selection)
       ),
     })
   }
@@ -658,9 +604,9 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
   ): DeleteQueryBuilder<DB, TB, O> {
     return new DeleteQueryBuilder({
       ...this.#props,
-      queryNode: DeleteQueryNode.cloneWithOrderByItem(
+      queryNode: DeleteQueryNode.cloneWithOrderByItems(
         this.#props.queryNode,
-        parseOrderBy(orderBy, direction)
+        parseOrderBy([orderBy, direction])
       ),
     })
   }
@@ -683,12 +629,12 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
    *   .execute()
    * ```
    */
-  limit(limit: number): DeleteQueryBuilder<DB, TB, O> {
+  limit(limit: ValueExpression<DB, TB, number>): DeleteQueryBuilder<DB, TB, O> {
     return new DeleteQueryBuilder({
       ...this.#props,
       queryNode: DeleteQueryNode.cloneWithLimit(
         this.#props.queryNode,
-        LimitNode.create(limit)
+        LimitNode.create(parseValueExpression(limit))
       ),
     })
   }
@@ -717,13 +663,6 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
    */
   $call<T>(func: (qb: this) => T): T {
     return func(this)
-  }
-
-  /**
-   * @deprecated Use `$call` instead
-   */
-  call<T>(func: (qb: this) => T): T {
-    return this.$call(func)
   }
 
   /**
@@ -763,58 +702,74 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
    */
   $if<O2>(
     condition: boolean,
-    func: (qb: this) => DeleteQueryBuilder<DB, TB, O2>
-  ): DeleteQueryBuilder<
-    DB,
-    TB,
-    O2 extends DeleteResult
-      ? DeleteResult
-      : O extends DeleteResult
-      ? Partial<O2>
-      : MergePartial<O, O2>
-  > {
+    func: (qb: this) => DeleteQueryBuilder<any, any, O2>
+  ): O2 extends DeleteResult
+    ? DeleteQueryBuilder<DB, TB, DeleteResult>
+    : O2 extends O & infer E
+    ? DeleteQueryBuilder<DB, TB, O & Partial<E>>
+    : DeleteQueryBuilder<DB, TB, Partial<O2>> {
     if (condition) {
       return func(this) as any
     }
 
     return new DeleteQueryBuilder({
       ...this.#props,
-    })
-  }
-
-  /**
-   * @deprecated Use `$if` instead
-   */
-  if<O2>(
-    condition: boolean,
-    func: (qb: this) => DeleteQueryBuilder<DB, TB, O2>
-  ): DeleteQueryBuilder<
-    DB,
-    TB,
-    O2 extends DeleteResult
-      ? DeleteResult
-      : O extends DeleteResult
-      ? Partial<O2>
-      : MergePartial<O, O2>
-  > {
-    return this.$if(condition, func)
+    }) as any
   }
 
   /**
    * Change the output type of the query.
    *
-   * You should only use this method as the last resort if the types
-   * don't support your use case.
+   * This method call doesn't change the SQL in any way. This methods simply
+   * returns a copy of this `DeleteQueryBuilder` with a new output type.
    */
-  $castTo<T>(): DeleteQueryBuilder<DB, TB, T> {
+  $castTo<C>(): DeleteQueryBuilder<DB, TB, C> {
     return new DeleteQueryBuilder(this.#props)
   }
 
   /**
-   * @deprecated Use `$castTo` instead.
+   * Narrows (parts of) the output type of the query.
+   *
+   * Kysely tries to be as type-safe as possible, but in some cases we have to make
+   * compromises for better maintainability and compilation performance. At present,
+   * Kysely doesn't narrow the output type of the query when using {@link where} and {@link returning} or {@link returningAll}.
+   *
+   * This utility method is very useful for these situations, as it removes unncessary
+   * runtime assertion/guard code. Its input type is limited to the output type
+   * of the query, so you can't add a column that doesn't exist, or change a column's
+   * type to something that doesn't exist in its union type.
+   *
+   * ### Examples
+   *
+   * Turn this code:
+   *
+   * ```ts
+   * const person = await db.deleteFrom('person')
+   *   .where('id', '=', id)
+   *   .where('nullable_column', 'is not', null)
+   *   .returningAll()
+   *   .executeTakeFirstOrThrow()
+   *
+   * if (person.nullable_column) {
+   *   functionThatExpectsPersonWithNonNullValue(person)
+   * }
+   * ```
+   *
+   * Into this:
+   *
+   * ```ts
+   * const person = await db.deleteFrom('person')
+   *   .where('id', '=', id)
+   *   .where('nullable_column', 'is not', null)
+   *   .returningAll()
+   *   .$narrowType<{ nullable_column: string }>()
+   *   .executeTakeFirstOrThrow()
+   *
+   * functionThatExpectsPersonWithNonNullValue(person)
+   * ```
    */
-  castTo<T>(): DeleteQueryBuilder<DB, TB, T> {
-    return this.$castTo<T>()
+  $narrowType<T>(): DeleteQueryBuilder<DB, TB, NarrowPartial<O, T>> {
+    return new DeleteQueryBuilder(this.#props)
   }
 
   /**
@@ -865,15 +820,6 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
   }
 
   /**
-   * @deprecated Use `$assertType` instead.
-   */
-  assertType<T extends O>(): O extends T
-    ? DeleteQueryBuilder<DB, TB, T>
-    : KyselyTypeError<`assertType() call failed: The type passed in is not equal to the output type of the query.`> {
-    return new DeleteQueryBuilder(this.#props) as unknown as any
-  }
-
-  /**
    * Returns a copy of this DeleteQueryBuilder instance with the given plugin installed.
    */
   withPlugin(plugin: KyselyPlugin): DeleteQueryBuilder<DB, TB, O> {
@@ -918,7 +864,7 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
     return [
       new DeleteResult(
         // TODO: remove numUpdatedOrDeletedRows.
-        result.numAffectedRows ?? result.numUpdatedOrDeletedRows ?? 0n
+        result.numAffectedRows ?? result.numUpdatedOrDeletedRows ?? BigInt(0)
       ) as any,
     ]
   }
@@ -958,31 +904,30 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
     return result as SimplifyResult<O>
   }
 
-  /**
-   * Executes query with `explain` statement before `delete` keyword.
-   *
-   * ```ts
-   * const explained = await db
-   *  .deleteFrom('person')
-   *  .where('id', '=', 123)
-   *  .explain('json')
-   * ```
-   *
-   * The generated SQL (MySQL):
-   *
-   * ```sql
-   * explain format=json delete from `person` where `id` = ?
-   * ```
-   */
+  async *stream(chunkSize: number = 100): AsyncIterableIterator<O> {
+    const compiledQuery = this.compile()
+
+    const stream = this.#props.executor.stream<O>(
+      compiledQuery,
+      chunkSize,
+      this.#props.queryId
+    )
+
+    for await (const item of stream) {
+      yield* item.rows
+    }
+  }
+
   async explain<ER extends Record<string, any> = Record<string, any>>(
     format?: ExplainFormat,
     options?: Expression<any>
   ): Promise<ER[]> {
     const builder = new DeleteQueryBuilder<DB, TB, ER>({
       ...this.#props,
-      queryNode: DeleteQueryNode.cloneWithExplain(
+      queryNode: QueryNode.cloneWithExplain(
         this.#props.queryNode,
-        ExplainNode.create(format, options?.toOperationNode())
+        format,
+        options
       ),
     })
 
@@ -1027,11 +972,11 @@ type InnerJoinedBuilder<
 > = A extends keyof DB
   ? DeleteQueryBuilder<InnerJoinedDB<DB, A, R>, TB | A, O>
   : // Much faster non-recursive solution for the simple case.
-    DeleteQueryBuilder<DB & Record<A, R>, TB | A, O>
+    DeleteQueryBuilder<DB & ShallowRecord<A, R>, TB | A, O>
 
-type InnerJoinedDB<DB, A extends string, R> = {
+type InnerJoinedDB<DB, A extends string, R> = DrainOuterGeneric<{
   [C in keyof DB | A]: C extends A ? R : C extends keyof DB ? DB[C] : never
-}
+}>
 
 export type DeleteQueryBuilderWithLeftJoin<
   DB,
@@ -1059,15 +1004,15 @@ type LeftJoinedBuilder<
 > = A extends keyof DB
   ? DeleteQueryBuilder<LeftJoinedDB<DB, A, R>, TB | A, O>
   : // Much faster non-recursive solution for the simple case.
-    DeleteQueryBuilder<DB & Record<A, Nullable<R>>, TB | A, O>
+    DeleteQueryBuilder<DB & ShallowRecord<A, Nullable<R>>, TB | A, O>
 
-type LeftJoinedDB<DB, A extends keyof any, R> = {
+type LeftJoinedDB<DB, A extends keyof any, R> = DrainOuterGeneric<{
   [C in keyof DB | A]: C extends A
     ? Nullable<R>
     : C extends keyof DB
     ? DB[C]
     : never
-}
+}>
 
 export type DeleteQueryBuilderWithRightJoin<
   DB,
@@ -1094,7 +1039,12 @@ type RightJoinedBuilder<
   R
 > = DeleteQueryBuilder<RightJoinedDB<DB, TB, A, R>, TB | A, O>
 
-type RightJoinedDB<DB, TB extends keyof DB, A extends keyof any, R> = {
+type RightJoinedDB<
+  DB,
+  TB extends keyof DB,
+  A extends keyof any,
+  R
+> = DrainOuterGeneric<{
   [C in keyof DB | A]: C extends A
     ? R
     : C extends TB
@@ -1102,7 +1052,7 @@ type RightJoinedDB<DB, TB extends keyof DB, A extends keyof any, R> = {
     : C extends keyof DB
     ? DB[C]
     : never
-}
+}>
 
 export type DeleteQueryBuilderWithFullJoin<
   DB,
@@ -1129,7 +1079,12 @@ type OuterJoinedBuilder<
   R
 > = DeleteQueryBuilder<OuterJoinedBuilderDB<DB, TB, A, R>, TB | A, O>
 
-type OuterJoinedBuilderDB<DB, TB extends keyof DB, A extends keyof any, R> = {
+type OuterJoinedBuilderDB<
+  DB,
+  TB extends keyof DB,
+  A extends keyof any,
+  R
+> = DrainOuterGeneric<{
   [C in keyof DB | A]: C extends A
     ? Nullable<R>
     : C extends TB
@@ -1137,4 +1092,4 @@ type OuterJoinedBuilderDB<DB, TB extends keyof DB, A extends keyof any, R> = {
     : C extends keyof DB
     ? DB[C]
     : never
-}
+}>

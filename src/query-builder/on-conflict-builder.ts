@@ -6,20 +6,19 @@ import { OperationNodeSource } from '../operation-node/operation-node-source.js'
 import {
   ComparisonOperatorExpression,
   OperandValueExpressionOrList,
-  parseReferentialFilter,
-  parseWhere,
-  WhereGrouper,
+  parseValueBinaryOperationOrExpression,
+  parseReferentialBinaryOperation,
 } from '../parser/binary-operation-parser.js'
 import { ExpressionOrFactory } from '../parser/expression-parser.js'
 import { ReferenceExpression } from '../parser/reference-parser.js'
 import {
-  parseExists,
-  parseNotExists,
-} from '../parser/unary-operation-parser.js'
-import { UpdateObject, parseUpdateObject } from '../parser/update-set-parser.js'
+  UpdateObjectExpression,
+  parseUpdateObjectExpression,
+} from '../parser/update-set-parser.js'
+import { Updateable } from '../util/column-type.js'
 import { freeze } from '../util/object-utils.js'
 import { preventAwait } from '../util/prevent-await.js'
-import { AnyColumn } from '../util/type-utils.js'
+import { AnyColumn, SqlBool } from '../util/type-utils.js'
 import { WhereInterface } from './where-interface.js'
 
 export class OnConflictBuilder<DB, TB extends keyof DB>
@@ -103,155 +102,42 @@ export class OnConflictBuilder<DB, TB extends keyof DB>
     })
   }
 
-  /**
-   * Specify an index predicate for the index target.
-   *
-   * See {@link WhereInterface.where} for more info.
-   */
-  where<RE extends ReferenceExpression<DB, TB>>(
+  where<
+    RE extends ReferenceExpression<DB, TB>,
+    VE extends OperandValueExpressionOrList<DB, TB, RE>
+  >(
     lhs: RE,
     op: ComparisonOperatorExpression,
-    rhs: OperandValueExpressionOrList<DB, TB, RE>
+    rhs: VE
   ): OnConflictBuilder<DB, TB>
 
-  where(grouper: WhereGrouper<DB, TB>): OnConflictBuilder<DB, TB>
-  where(expression: Expression<any>): OnConflictBuilder<DB, TB>
+  where<E extends ExpressionOrFactory<DB, TB, SqlBool>>(
+    expression: E
+  ): OnConflictBuilder<DB, TB>
 
   where(...args: any[]): OnConflictBuilder<DB, TB> {
     return new OnConflictBuilder({
       ...this.#props,
       onConflictNode: OnConflictNode.cloneWithIndexWhere(
         this.#props.onConflictNode,
-        parseWhere(args)
+        parseValueBinaryOperationOrExpression(args)
       ),
     })
   }
 
-  /**
-   * Specify an index predicate for the index target.
-   *
-   * See {@link WhereInterface.whereRef} for more info.
-   */
-  whereRef(
-    lhs: ReferenceExpression<DB, TB>,
+  whereRef<
+    LRE extends ReferenceExpression<DB, TB>,
+    RRE extends ReferenceExpression<DB, TB>
+  >(
+    lhs: LRE,
     op: ComparisonOperatorExpression,
-    rhs: ReferenceExpression<DB, TB>
+    rhs: RRE
   ): OnConflictBuilder<DB, TB> {
     return new OnConflictBuilder({
       ...this.#props,
       onConflictNode: OnConflictNode.cloneWithIndexWhere(
         this.#props.onConflictNode,
-        parseReferentialFilter(lhs, op, rhs)
-      ),
-    })
-  }
-
-  /**
-   * Specify an index predicate for the index target.
-   *
-   * See {@link WhereInterface.orWhere} for more info.
-   */
-  orWhere<RE extends ReferenceExpression<DB, TB>>(
-    lhs: RE,
-    op: ComparisonOperatorExpression,
-    rhs: OperandValueExpressionOrList<DB, TB, RE>
-  ): OnConflictBuilder<DB, TB>
-  orWhere(grouper: WhereGrouper<DB, TB>): OnConflictBuilder<DB, TB>
-  orWhere(expression: Expression<any>): OnConflictBuilder<DB, TB>
-
-  orWhere(...args: any[]): OnConflictBuilder<DB, TB> {
-    return new OnConflictBuilder({
-      ...this.#props,
-      onConflictNode: OnConflictNode.cloneWithIndexOrWhere(
-        this.#props.onConflictNode,
-        parseWhere(args)
-      ),
-    })
-  }
-
-  /**
-   * Specify an index predicate for the index target.
-   *
-   * See {@link WhereInterface.orWhereRef} for more info.
-   */
-  orWhereRef(
-    lhs: ReferenceExpression<DB, TB>,
-    op: ComparisonOperatorExpression,
-    rhs: ReferenceExpression<DB, TB>
-  ): OnConflictBuilder<DB, TB> {
-    return new OnConflictBuilder({
-      ...this.#props,
-      onConflictNode: OnConflictNode.cloneWithIndexOrWhere(
-        this.#props.onConflictNode,
-        parseReferentialFilter(lhs, op, rhs)
-      ),
-    })
-  }
-
-  /**
-   * Specify an index predicate for the index target.
-   *
-   * See {@link WhereInterface.whereExists} for more info.
-   */
-  whereExists(
-    arg: ExpressionOrFactory<DB, TB, any>
-  ): OnConflictBuilder<DB, TB> {
-    return new OnConflictBuilder({
-      ...this.#props,
-      onConflictNode: OnConflictNode.cloneWithIndexWhere(
-        this.#props.onConflictNode,
-        parseExists(arg)
-      ),
-    })
-  }
-
-  /**
-   * Specify an index predicate for the index target.
-   *
-   * See {@link WhereInterface.whereNotExists} for more info.
-   */
-  whereNotExists(
-    arg: ExpressionOrFactory<DB, TB, any>
-  ): OnConflictBuilder<DB, TB> {
-    return new OnConflictBuilder({
-      ...this.#props,
-      onConflictNode: OnConflictNode.cloneWithIndexWhere(
-        this.#props.onConflictNode,
-        parseNotExists(arg)
-      ),
-    })
-  }
-
-  /**
-   * Specify an index predicate for the index target.
-   *
-   * See {@link WhereInterface.orWhereExists} for more info.
-   */
-  orWhereExists(
-    arg: ExpressionOrFactory<DB, TB, any>
-  ): OnConflictBuilder<DB, TB> {
-    return new OnConflictBuilder({
-      ...this.#props,
-      onConflictNode: OnConflictNode.cloneWithIndexOrWhere(
-        this.#props.onConflictNode,
-        parseExists(arg)
-      ),
-    })
-  }
-
-  /**
-   * Specify an index predicate for the index target.
-   *
-   * See {@link WhereInterface.orWhereNotExists} for more info.
-   */
-  orWhereNotExists(
-    arg: ExpressionOrFactory<DB, TB, any>
-  ): OnConflictBuilder<DB, TB> {
-    return new OnConflictBuilder({
-      ...this.#props,
-      onConflictNode: OnConflictNode.cloneWithIndexOrWhere(
-        this.#props.onConflictNode,
-        parseNotExists(arg)
+        parseReferentialBinaryOperation(lhs, op, rhs)
       ),
     })
   }
@@ -320,9 +206,25 @@ export class OnConflictBuilder<DB, TB extends keyof DB>
    * on conflict ("pic")
    * do update set "first_name" = $3
    * ```
+   *
+   * In the next example we use the `ref` method to reference
+   * columns of the virtual table `excluded` in a type-safe way
+   * to create an upsert operation:
+   *
+   * ```ts
+   * db.insertInto('person')
+   *   .values(person)
+   *   .onConflict((oc) => oc
+   *     .column('id')
+   *     .doUpdateSet((eb) => ({
+   *       first_name: eb.ref('excluded.first_name'),
+   *       last_name: eb.ref('excluded.last_name')
+   *     }))
+   *   )
+   * ```
    */
   doUpdateSet(
-    updates: UpdateObject<
+    update: UpdateObjectExpression<
       OnConflictDatabase<DB, TB>,
       OnConflictTables<TB>,
       OnConflictTables<TB>
@@ -331,7 +233,7 @@ export class OnConflictBuilder<DB, TB extends keyof DB>
     return new OnConflictUpdateBuilder({
       ...this.#props,
       onConflictNode: OnConflictNode.cloneWith(this.#props.onConflictNode, {
-        updates: parseUpdateObject(updates),
+        updates: parseUpdateObjectExpression(update),
       }),
     })
   }
@@ -352,7 +254,7 @@ export interface OnConflictBuilderProps {
 preventAwait(OnConflictBuilder, "don't await OnConflictBuilder instances.")
 
 export type OnConflictDatabase<DB, TB extends keyof DB> = {
-  [K in keyof DB | 'excluded']: K extends keyof DB ? DB[K] : DB[TB]
+  [K in keyof DB | 'excluded']: Updateable<K extends keyof DB ? DB[K] : DB[TB]>
 }
 
 export type OnConflictTables<TB> = TB | 'excluded'
@@ -390,21 +292,25 @@ export class OnConflictUpdateBuilder<DB, TB extends keyof DB>
    *
    * See {@link WhereInterface.where} for more info.
    */
-  where<RE extends ReferenceExpression<DB, TB>>(
+  where<
+    RE extends ReferenceExpression<DB, TB>,
+    VE extends OperandValueExpressionOrList<DB, TB, RE>
+  >(
     lhs: RE,
     op: ComparisonOperatorExpression,
-    rhs: OperandValueExpressionOrList<DB, TB, RE>
+    rhs: VE
   ): OnConflictUpdateBuilder<DB, TB>
 
-  where(grouper: WhereGrouper<DB, TB>): OnConflictUpdateBuilder<DB, TB>
-  where(expression: Expression<any>): OnConflictUpdateBuilder<DB, TB>
+  where<E extends ExpressionOrFactory<DB, TB, SqlBool>>(
+    expression: E
+  ): OnConflictUpdateBuilder<DB, TB>
 
   where(...args: any[]): OnConflictUpdateBuilder<DB, TB> {
     return new OnConflictUpdateBuilder({
       ...this.#props,
       onConflictNode: OnConflictNode.cloneWithUpdateWhere(
         this.#props.onConflictNode,
-        parseWhere(args)
+        parseValueBinaryOperationOrExpression(args)
       ),
     })
   }
@@ -414,126 +320,19 @@ export class OnConflictUpdateBuilder<DB, TB extends keyof DB>
    *
    * See {@link WhereInterface.whereRef} for more info.
    */
-  whereRef(
-    lhs: ReferenceExpression<DB, TB>,
+  whereRef<
+    LRE extends ReferenceExpression<DB, TB>,
+    RRE extends ReferenceExpression<DB, TB>
+  >(
+    lhs: LRE,
     op: ComparisonOperatorExpression,
-    rhs: ReferenceExpression<DB, TB>
+    rhs: RRE
   ): OnConflictUpdateBuilder<DB, TB> {
     return new OnConflictUpdateBuilder({
       ...this.#props,
       onConflictNode: OnConflictNode.cloneWithUpdateWhere(
         this.#props.onConflictNode,
-        parseReferentialFilter(lhs, op, rhs)
-      ),
-    })
-  }
-
-  /**
-   * Specify a where condition for the update operation.
-   *
-   * See {@link WhereInterface.orWhere} for more info.
-   */
-  orWhere<RE extends ReferenceExpression<DB, TB>>(
-    lhs: RE,
-    op: ComparisonOperatorExpression,
-    rhs: OperandValueExpressionOrList<DB, TB, RE>
-  ): OnConflictUpdateBuilder<DB, TB>
-  orWhere(grouper: WhereGrouper<DB, TB>): OnConflictUpdateBuilder<DB, TB>
-  orWhere(expression: Expression<any>): OnConflictUpdateBuilder<DB, TB>
-
-  orWhere(...args: any[]): OnConflictUpdateBuilder<DB, TB> {
-    return new OnConflictUpdateBuilder({
-      ...this.#props,
-      onConflictNode: OnConflictNode.cloneWithUpdateOrWhere(
-        this.#props.onConflictNode,
-        parseWhere(args)
-      ),
-    })
-  }
-
-  /**
-   * Specify a where condition for the update operation.
-   *
-   * See {@link WhereInterface.orWhereRef} for more info.
-   */
-  orWhereRef(
-    lhs: ReferenceExpression<DB, TB>,
-    op: ComparisonOperatorExpression,
-    rhs: ReferenceExpression<DB, TB>
-  ): OnConflictUpdateBuilder<DB, TB> {
-    return new OnConflictUpdateBuilder({
-      ...this.#props,
-      onConflictNode: OnConflictNode.cloneWithUpdateOrWhere(
-        this.#props.onConflictNode,
-        parseReferentialFilter(lhs, op, rhs)
-      ),
-    })
-  }
-
-  /**
-   * Specify a where condition for the update operation.
-   *
-   * See {@link WhereInterface.whereExists} for more info.
-   */
-  whereExists(
-    arg: ExpressionOrFactory<DB, TB, any>
-  ): OnConflictUpdateBuilder<DB, TB> {
-    return new OnConflictUpdateBuilder({
-      ...this.#props,
-      onConflictNode: OnConflictNode.cloneWithUpdateWhere(
-        this.#props.onConflictNode,
-        parseExists(arg)
-      ),
-    })
-  }
-
-  /**
-   * Specify a where condition for the update operation.
-   *
-   * See {@link WhereInterface.whereNotExists} for more info.
-   */
-  whereNotExists(
-    arg: ExpressionOrFactory<DB, TB, any>
-  ): OnConflictUpdateBuilder<DB, TB> {
-    return new OnConflictUpdateBuilder({
-      ...this.#props,
-      onConflictNode: OnConflictNode.cloneWithUpdateWhere(
-        this.#props.onConflictNode,
-        parseNotExists(arg)
-      ),
-    })
-  }
-
-  /**
-   * Specify a where condition for the update operation.
-   *
-   * See {@link WhereInterface.orWhereExists} for more info.
-   */
-  orWhereExists(
-    arg: ExpressionOrFactory<DB, TB, any>
-  ): OnConflictUpdateBuilder<DB, TB> {
-    return new OnConflictUpdateBuilder({
-      ...this.#props,
-      onConflictNode: OnConflictNode.cloneWithUpdateOrWhere(
-        this.#props.onConflictNode,
-        parseExists(arg)
-      ),
-    })
-  }
-
-  /**
-   * Specify a where condition for the update operation.
-   *
-   * See {@link WhereInterface.orWhereNotExists} for more info.
-   */
-  orWhereNotExists(
-    arg: ExpressionOrFactory<DB, TB, any>
-  ): OnConflictUpdateBuilder<DB, TB> {
-    return new OnConflictUpdateBuilder({
-      ...this.#props,
-      onConflictNode: OnConflictNode.cloneWithUpdateOrWhere(
-        this.#props.onConflictNode,
-        parseNotExists(arg)
+        parseReferentialBinaryOperation(lhs, op, rhs)
       ),
     })
   }

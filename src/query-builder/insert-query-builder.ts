@@ -1,24 +1,27 @@
 import { OperationNodeSource } from '../operation-node/operation-node-source.js'
 import { CompiledQuery } from '../query-compiler/compiled-query.js'
 import {
-  parseSelectExpressionOrList,
+  parseSelectArg,
   parseSelectAll,
   SelectExpression,
-  SelectExpressionOrList,
+  SelectArg,
+  SelectCallback,
 } from '../parser/select-parser.js'
 import {
-  InsertObject,
-  InsertObjectOrList,
-  parseInsertObjectOrList,
+  InsertExpression,
+  parseInsertExpression,
 } from '../parser/insert-values-parser.js'
 import { InsertQueryNode } from '../operation-node/insert-query-node.js'
 import { QueryNode } from '../operation-node/query-node.js'
 import {
-  MergePartial,
+  NarrowPartial,
   SimplifyResult,
   SimplifySingleResult,
 } from '../util/type-utils.js'
-import { UpdateObject, parseUpdateObject } from '../parser/update-set-parser.js'
+import {
+  UpdateObjectExpression,
+  parseUpdateObjectExpression,
+} from '../parser/update-set-parser.js'
 import { preventAwait } from '../util/prevent-await.js'
 import { Compilable } from '../util/compilable.js'
 import { QueryExecutor } from '../query-executor/query-executor.js'
@@ -27,7 +30,10 @@ import { freeze } from '../util/object-utils.js'
 import { OnDuplicateKeyNode } from '../operation-node/on-duplicate-key-node.js'
 import { InsertResult } from './insert-result.js'
 import { KyselyPlugin } from '../plugin/kysely-plugin.js'
-import { ReturningRow } from '../parser/returning-parser.js'
+import {
+  ReturningCallbackRow,
+  ReturningRow,
+} from '../parser/returning-parser.js'
 import {
   isNoResultErrorConstructor,
   NoResultError,
@@ -41,22 +47,25 @@ import { ColumnNode } from '../operation-node/column-node.js'
 import { ReturningInterface } from './returning-interface.js'
 import {
   OnConflictBuilder,
+  OnConflictDatabase,
   OnConflictDoNothingBuilder,
+  OnConflictTables,
   OnConflictUpdateBuilder,
 } from './on-conflict-builder.js'
 import { OnConflictNode } from '../operation-node/on-conflict-node.js'
 import { Selectable } from '../util/column-type.js'
 import { Explainable, ExplainFormat } from '../util/explainable.js'
-import { ExplainNode } from '../operation-node/explain-node.js'
 import { Expression } from '../expression/expression.js'
 import { KyselyTypeError } from '../util/type-error.js'
+import { Streamable } from '../util/streamable.js'
 
 export class InsertQueryBuilder<DB, TB extends keyof DB, O>
   implements
     ReturningInterface<DB, TB, O>,
     OperationNodeSource,
     Compilable<O>,
-    Explainable
+    Explainable,
+    Streamable<O>
 {
   readonly #props: InsertQueryBuilderProps
 
@@ -86,22 +95,35 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    *
    * ### Examples
    *
-   * Insert a row into `person`:
+   * <!-- siteExample("insert", "Single row", 10) -->
+   *
+   * Insert a single row:
+   *
    * ```ts
    * const result = await db
    *   .insertInto('person')
    *   .values({
    *     first_name: 'Jennifer',
-   *     last_name: 'Aniston'
+   *     last_name: 'Aniston',
+   *     age: 40
    *   })
-   *   .executeTakeFirstOrThrow()
+   *   .executeTakeFirst()
+   *
+   * // `insertId` is only available on dialects that
+   * // automatically return the id of the inserted row
+   * // such as MySQL and SQLite. On PostgreSQL, for example,
+   * // you need to add a `returning` clause to the query to
+   * // get anything out. See the "returning data" example.
+   * console.log(result.insertId)
    * ```
    *
-   * The generated SQL (PostgreSQL):
+   * The generated SQL (MySQL):
    *
    * ```sql
-   * insert into "person" ("first_name", "last_name") values ($1, $2)
+   * insert into `person` (`first_name`, `last_name`, `age`) values (?, ?, ?)
    * ```
+   *
+   * <!-- siteExample("insert", "Multiple rows", 20) -->
    *
    * On dialects that support it (for example PostgreSQL) you can insert multiple
    * rows by providing an array. Note that the return value is once again very
@@ -113,10 +135,12 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    *   .insertInto('person')
    *   .values([{
    *     first_name: 'Jennifer',
-   *     last_name: 'Aniston'
+   *     last_name: 'Aniston',
+   *     age: 40,
    *   }, {
    *     first_name: 'Arnold',
    *     last_name: 'Schwarzenegger',
+   *     age: 70,
    *   }])
    *   .execute()
    * ```
@@ -124,55 +148,74 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    * The generated SQL (PostgreSQL):
    *
    * ```sql
-   * insert into "person" ("first_name", "last_name") values (($1, $2), ($3, $4))
+   * insert into "person" ("first_name", "last_name", "age") values (($1, $2, $3), ($4, $5, $6))
    * ```
    *
-   * On PostgreSQL you need to chain `returning` to the query to get
-   * the inserted row's columns (or any other expression) as the
-   * return value:
+   * <!-- siteExample("insert", "Returning data", 30) -->
+   *
+   * On supported dialects like PostgreSQL you need to chain `returning` to the query to get
+   * the inserted row's columns (or any other expression) as the return value. `returning`
+   * works just like `select`. Refer to `select` method's examples and documentation for
+   * more info.
    *
    * ```ts
-   * const row = await db
-   *   .insertInto('person')
-   *   .values({
-   *     first_name: 'Jennifer',
-   *     last_name: 'Aniston'
-   *   })
-   *   .returning('id')
-   *   .executeTakeFirstOrThrow()
-   *
-   * row.id
-   * ```
-   *
-   * The generated SQL (PostgreSQL):
-   *
-   * ```sql
-   * insert into "person" ("first_name", "last_name") values ($1, $2) returning "id"
-   * ```
-   *
-   * In addition to primitives, the values can also be raw sql expressions or
-   * select queries:
-   *
-   * ```ts
-   * import { sql } from 'kysely'
-   *
    * const result = await db
    *   .insertInto('person')
    *   .values({
    *     first_name: 'Jennifer',
-   *     last_name: sql`${'Ani'} || ${'ston'}`,
-   *     age: db.selectFrom('person').select(sql`avg(age)`),
+   *     last_name: 'Aniston',
+   *     age: 40,
    *   })
-   *   .executeTakeFirst()
-   *
-   * console.log(result.insertId)
+   *   .returning(['id', 'first_name as name'])
+   *   .executeTakeFirstOrThrow()
    * ```
    *
    * The generated SQL (PostgreSQL):
    *
    * ```sql
-   * insert into "person" ("first_name", "last_name", "age")
-   * values ($1, $2 || $3, (select avg(age) from "person"))
+   * insert into "person" ("first_name", "last_name", "age") values ($1, $2, $3) returning "id", "first_name" as "name"
+   * ```
+   *
+   * <!-- siteExample("insert", "Complex values", 40) -->
+   *
+   * In addition to primitives, the values can also be arbitrary expressions.
+   * You can build the expressions by using a callback and calling the methods
+   * on the expression builder passed to it:
+   *
+   * ```ts
+   * import { sql } from 'kysely'
+   *
+   * const ani = "Ani"
+   * const ston = "ston"
+   *
+   * const result = await db
+   *   .insertInto('person')
+   *   .values(({ ref, selectFrom, fn }) => ({
+   *     first_name: 'Jennifer',
+   *     last_name: sql`concat(${ani}, ${ston})`,
+   *     middle_name: ref('first_name'),
+   *     age: selectFrom('person')
+   *       .select(fn.avg<number>('age')
+   *       .as('avg_age')),
+   *   }))
+   *   .executeTakeFirst()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * insert into "person" (
+   *   "first_name",
+   *   "last_name",
+   *   "middle_name",
+   *   "age"
+   * )
+   * values (
+   *   $1,
+   *   concat($2, $3),
+   *   "first_name",
+   *   (select avg("age") as "avg_age" from "person")
+   * )
    * ```
    *
    * You can also use the callback version of subqueries or raw expressions:
@@ -183,21 +226,15 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    *   .where('first_name', '=', 'Jennifer')
    *   .select(['id', 'first_name', 'gender'])
    *   .limit(1)
-   * ).insertInto('pet').values({
-   *   owner_id: (eb) => eb.selectFrom('jennifer').select('id'),
-   *   name: (eb) => eb.selectFrom('jennifer').select('first_name'),
+   * ).insertInto('pet').values((eb) => ({
+   *   owner_id: eb.selectFrom('jennifer').select('id'),
+   *   name: eb.selectFrom('jennifer').select('first_name'),
    *   species: 'cat',
-   * })
+   * }))
    * ```
    */
-  values(row: InsertObject<DB, TB>): InsertQueryBuilder<DB, TB, O>
-
-  values(
-    row: ReadonlyArray<InsertObject<DB, TB>>
-  ): InsertQueryBuilder<DB, TB, O>
-
-  values(args: InsertObjectOrList<DB, TB>): any {
-    const [columns, values] = parseInsertObjectOrList(args)
+  values(insert: InsertExpression<DB, TB>): InsertQueryBuilder<DB, TB, O> {
+    const [columns, values] = parseInsertExpression(insert)
 
     return new InsertQueryBuilder({
       ...this.#props,
@@ -246,17 +283,29 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    *
    * ### Examples
    *
+   * <!-- siteExample("insert", "Insert subquery", 50) -->
+   *
+   * You can create an `INSERT INTO SELECT FROM` query using the `expression` method:
+   *
    * ```ts
-   * db.insertInto('person')
-   *   .columns(['first_name'])
-   *   .expression((eb) => eb.selectFrom('pet').select('pet.name'))
+   * const result = await db.insertInto('person')
+   *   .columns(['first_name', 'last_name', 'age'])
+   *   .expression((eb) => eb
+   *     .selectFrom('pet')
+   *     .select((eb) => [
+   *       'pet.name',
+   *       eb.val('Petson').as('last_name'),
+   *       eb.lit(7).as('age'),
+   *     ])
+   *   )
+   *   .execute()
    * ```
    *
    * The generated SQL (PostgreSQL):
    *
    * ```sql
-   * insert into "person" ("first_name")
-   * select "pet"."name" from "pet"
+   * insert into "person" ("first_name", "last_name", "age")
+   * select "pet"."name", $1 as "last_name", 7 as "age from "pet"
    * ```
    */
   expression(
@@ -266,6 +315,18 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
       ...this.#props,
       queryNode: InsertQueryNode.cloneWith(this.#props.queryNode, {
         values: parseExpression(expression),
+      }),
+    })
+  }
+
+  /**
+   * Creates an `insert into "person" default values` query.
+   */
+  defaultValues(): InsertQueryBuilder<DB, TB, O> {
+    return new InsertQueryBuilder({
+      ...this.#props,
+      queryNode: InsertQueryNode.cloneWith(this.#props.queryNode, {
+        defaultValues: true,
       }),
     })
   }
@@ -454,7 +515,12 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
   onConflict(
     callback: (
       builder: OnConflictBuilder<DB, TB>
-    ) => OnConflictDoNothingBuilder<DB, TB> | OnConflictUpdateBuilder<DB, TB>
+    ) =>
+      | OnConflictUpdateBuilder<
+          OnConflictDatabase<DB, TB>,
+          OnConflictTables<TB>
+        >
+      | OnConflictDoNothingBuilder<DB, TB>
   ): InsertQueryBuilder<DB, TB, O> {
     return new InsertQueryBuilder({
       ...this.#props,
@@ -487,12 +553,14 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    * ```
    */
   onDuplicateKeyUpdate(
-    updates: UpdateObject<DB, TB, TB>
+    update: UpdateObjectExpression<DB, TB, TB>
   ): InsertQueryBuilder<DB, TB, O> {
     return new InsertQueryBuilder({
       ...this.#props,
       queryNode: InsertQueryNode.cloneWith(this.#props.queryNode, {
-        onDuplicateKey: OnDuplicateKeyNode.create(parseUpdateObject(updates)),
+        onDuplicateKey: OnDuplicateKeyNode.create(
+          parseUpdateObjectExpression(update)
+        ),
       }),
     })
   }
@@ -501,16 +569,22 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
     selections: ReadonlyArray<SE>
   ): InsertQueryBuilder<DB, TB, ReturningRow<DB, TB, O, SE>>
 
+  returning<CB extends SelectCallback<DB, TB>>(
+    callback: CB
+  ): InsertQueryBuilder<DB, TB, ReturningCallbackRow<DB, TB, O, CB>>
+
   returning<SE extends SelectExpression<DB, TB>>(
     selection: SE
   ): InsertQueryBuilder<DB, TB, ReturningRow<DB, TB, O, SE>>
 
-  returning(selection: SelectExpressionOrList<DB, TB>): any {
+  returning<SE extends SelectExpression<DB, TB>>(
+    selection: SelectArg<DB, TB, SE>
+  ): InsertQueryBuilder<DB, TB, ReturningRow<DB, TB, O, SE>> {
     return new InsertQueryBuilder({
       ...this.#props,
       queryNode: QueryNode.cloneWithReturning(
         this.#props.queryNode,
-        parseSelectExpressionOrList(selection)
+        parseSelectArg(selection)
       ),
     })
   }
@@ -553,13 +627,6 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
   }
 
   /**
-   * @deprecated Use `$call` instead
-   */
-  call<T>(func: (qb: this) => T): T {
-    return this.$call(func)
-  }
-
-  /**
    * Call `func(this)` if `condition` is true.
    *
    * This method is especially handy with optional selects. Any `returning` or `returningAll`
@@ -596,58 +663,73 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    */
   $if<O2>(
     condition: boolean,
-    func: (qb: this) => InsertQueryBuilder<DB, TB, O2>
-  ): InsertQueryBuilder<
-    DB,
-    TB,
-    O2 extends InsertResult
-      ? InsertResult
-      : O extends InsertResult
-      ? Partial<O2>
-      : MergePartial<O, O2>
-  > {
+    func: (qb: this) => InsertQueryBuilder<any, any, O2>
+  ): O2 extends InsertResult
+    ? InsertQueryBuilder<DB, TB, InsertResult>
+    : O2 extends O & infer E
+    ? InsertQueryBuilder<DB, TB, O & Partial<E>>
+    : InsertQueryBuilder<DB, TB, Partial<O2>> {
     if (condition) {
       return func(this) as any
     }
 
     return new InsertQueryBuilder({
       ...this.#props,
-    })
-  }
-
-  /**
-   * @deprecated Use `$if` instead
-   */
-  if<O2>(
-    condition: boolean,
-    func: (qb: this) => InsertQueryBuilder<DB, TB, O2>
-  ): InsertQueryBuilder<
-    DB,
-    TB,
-    O2 extends InsertResult
-      ? InsertResult
-      : O extends InsertResult
-      ? Partial<O2>
-      : MergePartial<O, O2>
-  > {
-    return this.$if(condition, func)
+    }) as any
   }
 
   /**
    * Change the output type of the query.
    *
-   * You should only use this method as the last resort if the types
-   * don't support your use case.
+   * This method call doesn't change the SQL in any way. This methods simply
+   * returns a copy of this `InsertQueryBuilder` with a new output type.
    */
-  $castTo<T>(): InsertQueryBuilder<DB, TB, T> {
+  $castTo<C>(): InsertQueryBuilder<DB, TB, C> {
     return new InsertQueryBuilder(this.#props)
   }
 
   /**
-   * @deprecated Use `$castTo` instead.
+   * Narrows (parts of) the output type of the query.
+   *
+   * Kysely tries to be as type-safe as possible, but in some cases we have to make
+   * compromises for better maintainability and compilation performance. At present,
+   * Kysely doesn't narrow the output type of the query based on {@link values} input
+   * when using {@link returning} or {@link returningAll}.
+   *
+   * This utility method is very useful for these situations, as it removes unncessary
+   * runtime assertion/guard code. Its input type is limited to the output type
+   * of the query, so you can't add a column that doesn't exist, or change a column's
+   * type to something that doesn't exist in its union type.
+   *
+   * ### Examples
+   *
+   * Turn this code:
+   *
+   * ```ts
+   * const person = await db.insertInto('person')
+   *   .values({ ...inputPerson, nullable_column: 'hell yeah!' })
+   *   .returningAll()
+   *   .executeTakeFirstOrThrow()
+   *
+   * if (nullable_column) {
+   *   functionThatExpectsPersonWithNonNullValue(person)
+   * }
+   * ```
+   *
+   * Into this:
+   *
+   * ```ts
+   * const person = await db.insertInto('person')
+   *   .values({ ...inputPerson, nullable_column: 'hell yeah!' })
+   *   .returningAll()
+   *   .$narrowType<{ nullable_column: string }>()
+   *   .executeTakeFirstOrThrow()
+   *
+   * functionThatExpectsPersonWithNonNullValue(person)
+   * ```
    */
-  castTo<T>(): InsertQueryBuilder<DB, TB, T> {
-    return this.$castTo<T>()
+  $narrowType<T>(): InsertQueryBuilder<DB, TB, NarrowPartial<O, T>> {
+    return new InsertQueryBuilder(this.#props)
   }
 
   /**
@@ -682,7 +764,7 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    *   )
    *   .with('new_pet', (qb) => qb
    *     .insertInto('pet')
-   *     .values({ owner_id: (eb) => eb.selectFrom('new_person').select('id'), ...pet })
+   *     .values((eb) => ({ owner_id: eb.selectFrom('new_person').select('id'), ...pet }))
    *     .returning(['name as pet_name', 'species'])
    *     .$assertType<{ pet_name: string, species: Species }>()
    *   )
@@ -694,15 +776,6 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
   $assertType<T extends O>(): O extends T
     ? InsertQueryBuilder<DB, TB, T>
     : KyselyTypeError<`$assertType() call failed: The type passed in is not equal to the output type of the query.`> {
-    return new InsertQueryBuilder(this.#props) as unknown as any
-  }
-
-  /**
-   * @deprecated Use `$assertType` instead.
-   */
-  assertType<T extends O>(): O extends T
-    ? InsertQueryBuilder<DB, TB, T>
-    : KyselyTypeError<`assertType() call failed: The type passed in is not equal to the output type of the query.`> {
     return new InsertQueryBuilder(this.#props) as unknown as any
   }
 
@@ -792,31 +865,31 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
     return result as SimplifyResult<O>
   }
 
-  /**
-   * Executes query with `explain` statement before `insert` keyword.
-   *
-   * ```ts
-   * const explained = await db
-   *  .insertInto('person')
-   *  .values(values)
-   *  .explain('json')
-   * ```
-   *
-   * The generated SQL (MySQL):
-   *
-   * ```sql
-   * explain format=json insert into `person` (`id`, `first_name`, `last_name`) values (?, ?, ?) (?, ?, ?)
-   * ```
-   */
+  async *stream(chunkSize: number = 100): AsyncIterableIterator<O> {
+    const compiledQuery = this.compile()
+
+    const stream = this.#props.executor.stream<O>(
+      compiledQuery,
+      chunkSize,
+      this.#props.queryId
+    )
+
+    for await (const item of stream) {
+      yield* item.rows
+    }
+  }
+
   async explain<ER extends Record<string, any> = Record<string, any>>(
     format?: ExplainFormat,
     options?: Expression<any>
   ): Promise<ER[]> {
     const builder = new InsertQueryBuilder<DB, TB, ER>({
       ...this.#props,
-      queryNode: InsertQueryNode.cloneWith(this.#props.queryNode, {
-        explain: ExplainNode.create(format, options?.toOperationNode()),
-      }),
+      queryNode: QueryNode.cloneWithExplain(
+        this.#props.queryNode,
+        format,
+        options
+      ),
     })
 
     return await builder.execute()

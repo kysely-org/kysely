@@ -79,6 +79,17 @@ import { SetOperationNode } from './set-operation-node.js'
 import { BinaryOperationNode } from './binary-operation-node.js'
 import { UnaryOperationNode } from './unary-operation-node.js'
 import { UsingNode } from './using-node.js'
+import { FunctionNode } from './function-node.js'
+import { CaseNode } from './case-node.js'
+import { WhenNode } from './when-node.js'
+import { JSONReferenceNode } from './json-reference-node.js'
+import { JSONPathNode } from './json-path-node.js'
+import { JSONPathLegNode } from './json-path-leg-node.js'
+import { JSONOperatorChainNode } from './json-operator-chain-node.js'
+import { TupleNode } from './tuple-node.js'
+import { MergeQueryNode } from './merge-query-node.js'
+import { MatchedNode } from './matched-node.js'
+import { AddIndexNode } from './add-index-node.js'
 
 /**
  * Transforms an operation node tree into another one.
@@ -192,6 +203,17 @@ export class OperationNodeTransformer {
     BinaryOperationNode: this.transformBinaryOperation.bind(this),
     UnaryOperationNode: this.transformUnaryOperation.bind(this),
     UsingNode: this.transformUsing.bind(this),
+    FunctionNode: this.transformFunction.bind(this),
+    CaseNode: this.transformCase.bind(this),
+    WhenNode: this.transformWhen.bind(this),
+    JSONReferenceNode: this.transformJSONReference.bind(this),
+    JSONPathNode: this.transformJSONPath.bind(this),
+    JSONPathLegNode: this.transformJSONPathLeg.bind(this),
+    JSONOperatorChainNode: this.transformJSONOperatorChain.bind(this),
+    TupleNode: this.transformTuple.bind(this),
+    MergeQueryNode: this.transformMergeQuery.bind(this),
+    MatchedNode: this.transformMatched.bind(this),
+    AddIndexNode: this.transformAddIndex.bind(this),
   })
 
   transformNode<T extends OperationNode | undefined>(node: T): T {
@@ -280,8 +302,8 @@ export class OperationNodeTransformer {
   protected transformReference(node: ReferenceNode): ReferenceNode {
     return requireAllProps<ReferenceNode>({
       kind: 'ReferenceNode',
-      table: this.transformNode(node.table),
       column: this.transformNode(node.column),
+      table: this.transformNode(node.table),
     })
   }
 
@@ -352,6 +374,7 @@ export class OperationNodeTransformer {
       ignore: node.ignore,
       replace: node.replace,
       explain: this.transformNode(node.explain),
+      defaultValues: node.defaultValues,
     })
   }
 
@@ -395,6 +418,7 @@ export class OperationNodeTransformer {
       onCommit: node.onCommit,
       frontModifiers: this.transformNodeList(node.frontModifiers),
       endModifiers: this.transformNodeList(node.endModifiers),
+      selectQuery: this.transformNode(node.selectQuery),
     })
   }
 
@@ -416,6 +440,7 @@ export class OperationNodeTransformer {
       generated: this.transformNode(node.generated),
       frontModifiers: this.transformNodeList(node.frontModifiers),
       endModifiers: this.transformNodeList(node.endModifiers),
+      nullsNotDistinct: node.nullsNotDistinct,
     })
   }
 
@@ -527,10 +552,12 @@ export class OperationNodeTransformer {
       kind: 'CreateIndexNode',
       name: this.transformNode(node.name),
       table: this.transformNode(node.table),
-      expression: this.transformNode(node.expression),
+      columns: this.transformNodeList(node.columns),
       unique: node.unique,
       using: this.transformNode(node.using),
       ifNotExists: node.ifNotExists,
+      where: this.transformNode(node.where),
+      nullsNotDistinct: node.nullsNotDistinct,
     })
   }
 
@@ -568,6 +595,7 @@ export class OperationNodeTransformer {
       kind: 'UniqueConstraintNode',
       columns: this.transformNodeList(node.columns),
       name: this.transformNode(node.name),
+      nullsNotDistinct: node.nullsNotDistinct,
     })
   }
 
@@ -627,6 +655,7 @@ export class OperationNodeTransformer {
     return requireAllProps<CommonTableExpressionNode>({
       kind: 'CommonTableExpressionNode',
       name: this.transformNode(node.name),
+      materialized: node.materialized,
       expression: this.transformNode(node.expression),
     })
   }
@@ -674,6 +703,8 @@ export class OperationNodeTransformer {
       columnAlterations: this.transformNodeList(node.columnAlterations),
       addConstraint: this.transformNode(node.addConstraint),
       dropConstraint: this.transformNode(node.dropConstraint),
+      addIndex: this.transformNode(node.addIndex),
+      dropIndex: this.transformNode(node.dropIndex),
     })
   }
 
@@ -785,6 +816,7 @@ export class OperationNodeTransformer {
       kind: 'SelectModifierNode',
       modifier: node.modifier,
       rawModifier: this.transformNode(node.rawModifier),
+      of: this.transformNodeList(node.of),
     })
   }
 
@@ -827,7 +859,7 @@ export class OperationNodeTransformer {
   ): AggregateFunctionNode {
     return requireAllProps({
       kind: 'AggregateFunctionNode',
-      aggregated: this.transformNode(node.aggregated),
+      aggregated: this.transformNodeList(node.aggregated),
       distinct: node.distinct,
       filter: this.transformNode(node.filter),
       func: node.func,
@@ -884,6 +916,102 @@ export class OperationNodeTransformer {
     return requireAllProps<UsingNode>({
       kind: 'UsingNode',
       tables: this.transformNodeList(node.tables),
+    })
+  }
+
+  protected transformFunction(node: FunctionNode): FunctionNode {
+    return requireAllProps<FunctionNode>({
+      kind: 'FunctionNode',
+      func: node.func,
+      arguments: this.transformNodeList(node.arguments),
+    })
+  }
+
+  protected transformCase(node: CaseNode): CaseNode {
+    return requireAllProps<CaseNode>({
+      kind: 'CaseNode',
+      value: this.transformNode(node.value),
+      when: this.transformNodeList(node.when),
+      else: this.transformNode(node.else),
+      isStatement: node.isStatement,
+    })
+  }
+
+  protected transformWhen(node: WhenNode): WhenNode {
+    return requireAllProps<WhenNode>({
+      kind: 'WhenNode',
+      condition: this.transformNode(node.condition),
+      result: this.transformNode(node.result),
+    })
+  }
+
+  protected transformJSONReference(node: JSONReferenceNode): JSONReferenceNode {
+    return requireAllProps<JSONReferenceNode>({
+      kind: 'JSONReferenceNode',
+      reference: this.transformNode(node.reference),
+      traversal: this.transformNode(node.traversal),
+    })
+  }
+
+  protected transformJSONPath(node: JSONPathNode): JSONPathNode {
+    return requireAllProps<JSONPathNode>({
+      kind: 'JSONPathNode',
+      inOperator: this.transformNode(node.inOperator),
+      pathLegs: this.transformNodeList(node.pathLegs),
+    })
+  }
+
+  protected transformJSONPathLeg(node: JSONPathLegNode): JSONPathLegNode {
+    return requireAllProps<JSONPathLegNode>({
+      kind: 'JSONPathLegNode',
+      type: node.type,
+      value: node.value,
+    })
+  }
+
+  protected transformJSONOperatorChain(
+    node: JSONOperatorChainNode
+  ): JSONOperatorChainNode {
+    return requireAllProps<JSONOperatorChainNode>({
+      kind: 'JSONOperatorChainNode',
+      operator: this.transformNode(node.operator),
+      values: this.transformNodeList(node.values),
+    })
+  }
+
+  protected transformTuple(node: TupleNode): TupleNode {
+    return requireAllProps<TupleNode>({
+      kind: 'TupleNode',
+      values: this.transformNodeList(node.values),
+    })
+  }
+
+  protected transformMergeQuery(node: MergeQueryNode): MergeQueryNode {
+    return requireAllProps<MergeQueryNode>({
+      kind: 'MergeQueryNode',
+      into: this.transformNode(node.into),
+      using: this.transformNode(node.using),
+      whens: this.transformNodeList(node.whens),
+      with: this.transformNode(node.with),
+    })
+  }
+
+  protected transformMatched(node: MatchedNode): MatchedNode {
+    return requireAllProps<MatchedNode>({
+      kind: 'MatchedNode',
+      not: node.not,
+      bySource: node.bySource,
+    })
+  }
+
+  protected transformAddIndex(node: AddIndexNode): AddIndexNode {
+    return requireAllProps<AddIndexNode>({
+      kind: 'AddIndexNode',
+      name: this.transformNode(node.name),
+      columns: this.transformNodeList(node.columns),
+      unique: node.unique,
+      using: this.transformNode(node.using),
+      ifNotExists: node.ifNotExists,
     })
   }
 

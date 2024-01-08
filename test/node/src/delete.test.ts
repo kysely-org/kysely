@@ -1,7 +1,6 @@
 import { DeleteResult, sql } from '../../../'
 
 import {
-  DIALECTS,
   clearDatabase,
   destroyTest,
   initTest,
@@ -10,6 +9,9 @@ import {
   expect,
   NOT_SUPPORTED,
   insertDefaultDataSet,
+  DEFAULT_DATA_SET,
+  DIALECTS,
+  Species,
 } from './test-setup.js'
 
 for (const dialect of DIALECTS) {
@@ -44,6 +46,10 @@ for (const dialect of DIALECTS) {
           sql: 'delete from `person` where `gender` = ?',
           parameters: ['female'],
         },
+        mssql: {
+          sql: 'delete from "person" where "gender" = @1',
+          parameters: ['female'],
+        },
         sqlite: {
           sql: 'delete from "person" where "gender" = ?',
           parameters: ['female'],
@@ -71,8 +77,31 @@ for (const dialect of DIALECTS) {
     it('should delete two rows', async () => {
       const query = ctx.db
         .deleteFrom('person')
-        .where('first_name', '=', 'Jennifer')
-        .orWhere('first_name', '=', 'Arnold')
+        .where((eb) =>
+          eb.or([
+            eb('first_name', '=', 'Jennifer'),
+            eb('first_name', '=', 'Arnold'),
+          ])
+        )
+
+      testSql(query, dialect, {
+        postgres: {
+          sql: 'delete from "person" where ("first_name" = $1 or "first_name" = $2)',
+          parameters: ['Jennifer', 'Arnold'],
+        },
+        mysql: {
+          sql: 'delete from `person` where (`first_name` = ? or `first_name` = ?)',
+          parameters: ['Jennifer', 'Arnold'],
+        },
+        mssql: {
+          sql: 'delete from "person" where ("first_name" = @1 or "first_name" = @2)',
+          parameters: ['Jennifer', 'Arnold'],
+        },
+        sqlite: {
+          sql: 'delete from "person" where ("first_name" = ? or "first_name" = ?)',
+          parameters: ['Jennifer', 'Arnold'],
+        },
+      })
 
       const result = await query.executeTakeFirst()
 
@@ -84,6 +113,25 @@ for (const dialect of DIALECTS) {
       const query = ctx.db
         .deleteFrom('person')
         .where('first_name', '=', 'Nobody')
+
+      testSql(query, dialect, {
+        postgres: {
+          sql: 'delete from "person" where "first_name" = $1',
+          parameters: ['Nobody'],
+        },
+        mysql: {
+          sql: 'delete from `person` where `first_name` = ?',
+          parameters: ['Nobody'],
+        },
+        mssql: {
+          sql: 'delete from "person" where "first_name" = @1',
+          parameters: ['Nobody'],
+        },
+        sqlite: {
+          sql: 'delete from "person" where "first_name" = ?',
+          parameters: ['Nobody'],
+        },
+      })
 
       const result = await query.executeTakeFirst()
 
@@ -101,6 +149,7 @@ for (const dialect of DIALECTS) {
             parameters: [2],
           },
           postgres: NOT_SUPPORTED,
+          mssql: NOT_SUPPORTED,
           sqlite: NOT_SUPPORTED,
         })
 
@@ -124,6 +173,7 @@ for (const dialect of DIALECTS) {
             parameters: ['male'],
           },
           mysql: NOT_SUPPORTED,
+          mssql: NOT_SUPPORTED,
           sqlite: {
             sql: 'delete from "person" where "gender" = ? returning "first_name", "last_name" as "last"',
             parameters: ['male'],
@@ -147,7 +197,7 @@ for (const dialect of DIALECTS) {
           .deleteFrom('person')
           .where('gender', '=', 'female')
           .returning('first_name')
-          .if(condition, (qb) => qb.returning('last_name'))
+          .$if(condition, (qb) => qb.returning('last_name'))
 
         testSql(query, dialect, {
           postgres: {
@@ -155,6 +205,7 @@ for (const dialect of DIALECTS) {
             parameters: ['female'],
           },
           mysql: NOT_SUPPORTED,
+          mssql: NOT_SUPPORTED,
           sqlite: {
             sql: 'delete from "person" where "gender" = ? returning "first_name", "last_name"',
             parameters: ['female'],
@@ -172,7 +223,7 @@ for (const dialect of DIALECTS) {
           .deleteFrom('person')
           .using('pet')
           .whereRef('pet.owner_id', '=', 'person.id')
-          .where('pet.species', '=', sql`${'NO_SUCH_SPECIES'}`)
+          .where('pet.species', '=', sql<Species>`${'NO_SUCH_SPECIES'}`)
 
         testSql(query, dialect, {
           postgres: {
@@ -185,6 +236,7 @@ for (const dialect of DIALECTS) {
             parameters: ['NO_SUCH_SPECIES'],
           },
           mysql: NOT_SUPPORTED,
+          mssql: NOT_SUPPORTED,
           sqlite: NOT_SUPPORTED,
         })
 
@@ -211,6 +263,7 @@ for (const dialect of DIALECTS) {
             parameters: [0],
           },
           mysql: NOT_SUPPORTED,
+          mssql: NOT_SUPPORTED,
           sqlite: NOT_SUPPORTED,
         })
 
@@ -239,6 +292,7 @@ for (const dialect of DIALECTS) {
             parameters: ['Bob'],
           },
           mysql: NOT_SUPPORTED,
+          mssql: NOT_SUPPORTED,
           sqlite: NOT_SUPPORTED,
         })
 
@@ -261,6 +315,7 @@ for (const dialect of DIALECTS) {
             parameters: ['cat'],
           },
           mysql: NOT_SUPPORTED,
+          mssql: NOT_SUPPORTED,
           sqlite: NOT_SUPPORTED,
         })
 
@@ -289,6 +344,7 @@ for (const dialect of DIALECTS) {
             parameters: ['Zoro'],
           },
           mysql: NOT_SUPPORTED,
+          mssql: NOT_SUPPORTED,
           sqlite: NOT_SUPPORTED,
         })
 
@@ -317,6 +373,7 @@ for (const dialect of DIALECTS) {
             parameters: ['Luffy'],
           },
           mysql: NOT_SUPPORTED,
+          mssql: NOT_SUPPORTED,
           sqlite: NOT_SUPPORTED,
         })
 
@@ -345,6 +402,7 @@ for (const dialect of DIALECTS) {
             parameters: ['Itachi'],
           },
           mysql: NOT_SUPPORTED,
+          mssql: NOT_SUPPORTED,
           sqlite: NOT_SUPPORTED,
         })
 
@@ -367,6 +425,7 @@ for (const dialect of DIALECTS) {
             parameters: ['male'],
           },
           mysql: NOT_SUPPORTED,
+          mssql: NOT_SUPPORTED,
           sqlite: NOT_SUPPORTED,
         })
 
@@ -385,6 +444,7 @@ for (const dialect of DIALECTS) {
             parameters: ['male'],
           },
           mysql: NOT_SUPPORTED,
+          mssql: NOT_SUPPORTED,
           sqlite: NOT_SUPPORTED,
         })
 
@@ -413,6 +473,7 @@ for (const dialect of DIALECTS) {
             parameters: ['Bob'],
           },
           mysql: NOT_SUPPORTED,
+          mssql: NOT_SUPPORTED,
           sqlite: NOT_SUPPORTED,
         })
 
@@ -426,7 +487,7 @@ for (const dialect of DIALECTS) {
           .deleteFrom('person')
           .using('person')
           .innerJoin('pet', 'pet.owner_id', 'person.id')
-          .where('pet.species', '=', sql`${'NO_SUCH_SPECIES'}`)
+          .where('pet.species', '=', sql<Species>`${'NO_SUCH_SPECIES'}`)
 
         testSql(query, dialect, {
           postgres: NOT_SUPPORTED,
@@ -439,6 +500,7 @@ for (const dialect of DIALECTS) {
             ],
             parameters: ['NO_SUCH_SPECIES'],
           },
+          mssql: NOT_SUPPORTED,
           sqlite: NOT_SUPPORTED,
         })
 
@@ -450,7 +512,7 @@ for (const dialect of DIALECTS) {
           .deleteFrom('person')
           .using('person')
           .leftJoin('pet', 'pet.owner_id', 'person.id')
-          .where('pet.species', '=', sql`${'NO_SUCH_SPECIES'}`)
+          .where('pet.species', '=', sql<Species>`${'NO_SUCH_SPECIES'}`)
 
         testSql(query, dialect, {
           postgres: NOT_SUPPORTED,
@@ -463,6 +525,7 @@ for (const dialect of DIALECTS) {
             ],
             parameters: ['NO_SUCH_SPECIES'],
           },
+          mssql: NOT_SUPPORTED,
           sqlite: NOT_SUPPORTED,
         })
 
@@ -475,22 +538,20 @@ for (const dialect of DIALECTS) {
           .using('person')
           .innerJoin('pet', 'pet.owner_id', 'person.id')
           .leftJoin('toy', 'toy.pet_id', 'pet.id')
-          .where('pet.species', '=', sql`${'NO_SUCH_SPECIES'}`)
-          .orWhere('toy.price', '=', 0)
+          .where(({ eb, or }) =>
+            or([
+              eb('pet.species', '=', sql<Species>`${'NO_SUCH_SPECIES'}`),
+              eb('toy.price', '=', 0),
+            ])
+          )
 
         testSql(query, dialect, {
           postgres: NOT_SUPPORTED,
           mysql: {
-            sql: [
-              'delete from `person`',
-              'using `person`',
-              'inner join `pet` on `pet`.`owner_id` = `person`.`id`',
-              'left join `toy` on `toy`.`pet_id` = `pet`.`id`',
-              'where `pet`.`species` = ?',
-              'or `toy`.`price` = ?',
-            ],
+            sql: 'delete from `person` using `person` inner join `pet` on `pet`.`owner_id` = `person`.`id` left join `toy` on `toy`.`pet_id` = `pet`.`id` where (`pet`.`species` = ? or `toy`.`price` = ?)',
             parameters: ['NO_SUCH_SPECIES', 0],
           },
+          mssql: NOT_SUPPORTED,
           sqlite: NOT_SUPPORTED,
         })
 
@@ -501,7 +562,7 @@ for (const dialect of DIALECTS) {
         const query = ctx.db
           .deleteFrom('person')
           .using(['person', 'pet'])
-          .where('pet.species', '=', sql`${'NO_SUCH_SPECIES'}`)
+          .where('pet.species', '=', sql<Species>`${'NO_SUCH_SPECIES'}`)
 
         testSql(query, dialect, {
           postgres: NOT_SUPPORTED,
@@ -513,6 +574,7 @@ for (const dialect of DIALECTS) {
             ],
             parameters: ['NO_SUCH_SPECIES'],
           },
+          mssql: NOT_SUPPORTED,
           sqlite: NOT_SUPPORTED,
         })
 
@@ -537,6 +599,7 @@ for (const dialect of DIALECTS) {
             ],
             parameters: [0],
           },
+          mssql: NOT_SUPPORTED,
           sqlite: NOT_SUPPORTED,
         })
 
@@ -561,6 +624,7 @@ for (const dialect of DIALECTS) {
             ],
             parameters: [0],
           },
+          mssql: NOT_SUPPORTED,
           sqlite: NOT_SUPPORTED,
         })
 
@@ -585,6 +649,7 @@ for (const dialect of DIALECTS) {
             ],
             parameters: [911],
           },
+          mssql: NOT_SUPPORTED,
           sqlite: NOT_SUPPORTED,
         })
 
@@ -609,6 +674,7 @@ for (const dialect of DIALECTS) {
             ],
             parameters: [911],
           },
+          mssql: NOT_SUPPORTED,
           sqlite: NOT_SUPPORTED,
         })
 
@@ -635,6 +701,7 @@ for (const dialect of DIALECTS) {
             ],
             parameters: [1000],
           },
+          mssql: NOT_SUPPORTED,
           sqlite: NOT_SUPPORTED,
         })
 
@@ -661,6 +728,7 @@ for (const dialect of DIALECTS) {
             ],
             parameters: [1000],
           },
+          mssql: NOT_SUPPORTED,
           sqlite: NOT_SUPPORTED,
         })
 
@@ -687,6 +755,7 @@ for (const dialect of DIALECTS) {
             ],
             parameters: [1000],
           },
+          mssql: NOT_SUPPORTED,
           sqlite: NOT_SUPPORTED,
         })
 
@@ -713,6 +782,7 @@ for (const dialect of DIALECTS) {
             ],
             parameters: [1000],
           },
+          mssql: NOT_SUPPORTED,
           sqlite: NOT_SUPPORTED,
         })
 
@@ -739,6 +809,7 @@ for (const dialect of DIALECTS) {
             ],
             parameters: [1000],
           },
+          mssql: NOT_SUPPORTED,
           sqlite: NOT_SUPPORTED,
         })
 
@@ -765,10 +836,35 @@ for (const dialect of DIALECTS) {
             ],
             parameters: [1000],
           },
+          mssql: NOT_SUPPORTED,
           sqlite: NOT_SUPPORTED,
         })
 
         await query.execute()
+      })
+    }
+
+    if (dialect === 'postgres') {
+      it('should delete all rows and stream returned results', async () => {
+        const stream = ctx.db
+          .deleteFrom('person')
+          .returning(['first_name', 'last_name', 'gender'])
+          .stream()
+
+        const people = []
+
+        for await (const person of stream) {
+          people.push(person)
+        }
+
+        expect(people).to.have.length(DEFAULT_DATA_SET.length)
+        expect(people).to.eql(
+          DEFAULT_DATA_SET.map(({ first_name, last_name, gender }) => ({
+            first_name,
+            last_name,
+            gender,
+          }))
+        )
       })
     }
   })

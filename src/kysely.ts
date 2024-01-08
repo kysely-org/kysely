@@ -7,7 +7,7 @@ import { QueryCreator, QueryCreatorProps } from './query-creator.js'
 import { KyselyPlugin } from './plugin/kysely-plugin.js'
 import { DefaultQueryExecutor } from './query-executor/default-query-executor.js'
 import { DatabaseIntrospector } from './dialect/database-introspector.js'
-import { freeze, isObject } from './util/object-utils.js'
+import { freeze, isObject, isUndefined } from './util/object-utils.js'
 import { RuntimeDriver } from './driver/runtime-driver.js'
 import { SingleConnectionProvider } from './driver/single-connection-provider.js'
 import {
@@ -17,13 +17,22 @@ import {
   TRANSACTION_ISOLATION_LEVELS,
 } from './driver/driver.js'
 import { preventAwait } from './util/prevent-await.js'
-import { FunctionModule } from './query-builder/function-module.js'
+import {
+  createFunctionModule,
+  FunctionModule,
+} from './query-builder/function-module.js'
 import { Log, LogConfig } from './util/log.js'
 import { QueryExecutorProvider } from './query-executor/query-executor-provider.js'
 import { QueryResult } from './driver/database-connection.js'
 import { CompiledQuery } from './query-compiler/compiled-query.js'
 import { createQueryId, QueryId } from './util/query-id.js'
 import { Compilable, isCompilable } from './util/compilable.js'
+import { CaseBuilder } from './query-builder/case-builder.js'
+import { CaseNode } from './operation-node/case-node.js'
+import { parseExpression } from './parser/expression-parser.js'
+import { Expression } from './expression/expression.js'
+import { WithSchemaPlugin } from './plugin/with-schema/with-schema-plugin.js'
+import { DrainOuterGeneric } from './util/type-utils.js'
 
 /**
  * The main Kysely class.
@@ -48,7 +57,7 @@ import { Compilable, isCompilable } from './util/compilable.js'
  *   id: Generated<number>
  *   owner_id: number
  *   name: string
- *   species 'cat' | 'dog'
+ *   species: 'cat' | 'dog'
  * }
  *
  * interface Database {
@@ -139,20 +148,35 @@ export class Kysely<DB>
   }
 
   /**
+   * Creates a `case` statement/operator.
+   *
+   * See {@link ExpressionBuilder.case} for more information.
+   */
+  case(): CaseBuilder<DB, keyof DB>
+
+  case<V>(value: Expression<V>): CaseBuilder<DB, keyof DB, V>
+
+  case<V>(value?: Expression<V>): any {
+    return new CaseBuilder({
+      node: CaseNode.create(
+        isUndefined(value) ? undefined : parseExpression(value)
+      ),
+    })
+  }
+
+  /**
    * Returns a {@link FunctionModule} that can be used to write type safe function
    * calls.
    *
    * ```ts
-   * const { count } = db.fn
-   *
    * await db.selectFrom('person')
    *   .innerJoin('pet', 'pet.owner_id', 'person.id')
-   *   .select([
+   *   .select((eb) => [
    *     'person.id',
-   *     count('pet.id').as('pet_count')
+   *     eb.fn.count('pet.id').as('pet_count')
    *   ])
    *   .groupBy('person.id')
-   *   .having(count('pet.id'), '>', 10)
+   *   .having((eb) => eb.fn.count('pet.id'), '>', 10)
    *   .execute()
    * ```
    *
@@ -167,7 +191,7 @@ export class Kysely<DB>
    * ```
    */
   get fn(): FunctionModule<DB, keyof DB> {
-    return new FunctionModule()
+    return createFunctionModule()
   }
 
   /**
@@ -186,25 +210,31 @@ export class Kysely<DB>
    *
    * ### Examples
    *
+   * <!-- siteExample("transactions", "Simple transaction", 10) -->
+   *
+   * This example inserts two rows in a transaction. If an error is thrown inside
+   * the callback passed to the `execute` method, the transaction is rolled back.
+   * Otherwise it's committed.
+   *
    * ```ts
    * const catto = await db.transaction().execute(async (trx) => {
    *   const jennifer = await trx.insertInto('person')
    *     .values({
    *       first_name: 'Jennifer',
    *       last_name: 'Aniston',
+   *       age: 40,
    *     })
    *     .returning('id')
    *     .executeTakeFirstOrThrow()
    *
-   *   await someFunction(trx, jennifer)
-   *
    *   return await trx.insertInto('pet')
    *     .values({
-   *       user_id: jennifer.id,
+   *       owner_id: jennifer.id,
    *       name: 'Catto',
-   *       species: 'cat'
+   *       species: 'cat',
+   *       is_favorite: false,
    *     })
-   *     .returning('*')
+   *     .returningAll()
    *     .executeTakeFirst()
    * })
    * ```
@@ -265,6 +295,18 @@ export class Kysely<DB>
   }
 
   /**
+   * @override
+   */
+  withSchema(schema: string): Kysely<DB> {
+    return new Kysely({
+      ...this.#props,
+      executor: this.#props.executor.withPluginAtFront(
+        new WithSchemaPlugin(schema)
+      ),
+    })
+  }
+
+  /**
    * Returns a copy of this Kysely instance with tables added to its
    * database type.
    *
@@ -295,7 +337,9 @@ export class Kysely<DB>
    *   .execute()
    * ```
    */
-  withTables<T extends Record<string, Record<string, any>>>(): Kysely<DB & T> {
+  withTables<T extends Record<string, Record<string, any>>>(): Kysely<
+    DrainOuterGeneric<DB & T>
+  > {
     return new Kysely({ ...this.#props })
   }
 
@@ -328,7 +372,7 @@ export class Kysely<DB>
   /**
    * Executes a given compiled query or query builder.
    *
-   * See {@link https://github.com/koskimas/kysely/blob/master/recipes/splitting-build-compile-and-execute-code.md#execute-compiled-queries splitting build, compile and execute code recipe} for more information.
+   * See {@link https://github.com/koskimas/kysely/blob/master/site/docs/recipes/splitting-build-compile-and-execute-code.md#execute-compiled-queries splitting build, compile and execute code recipe} for more information.
    */
   executeQuery<R>(
     query: CompiledQuery<R> | Compilable<R>,
@@ -336,7 +380,7 @@ export class Kysely<DB>
   ): Promise<QueryResult<R>> {
     const compiledQuery = isCompilable(query) ? query.compile() : query
 
-    return this.getExecutor().executeQuery(compiledQuery, queryId)
+    return this.getExecutor().executeQuery<R>(compiledQuery, queryId)
   }
 }
 
@@ -387,9 +431,21 @@ export class Transaction<DB> extends Kysely<DB> {
     })
   }
 
+  /**
+   * @override
+   */
+  withSchema(schema: string): Transaction<DB> {
+    return new Transaction({
+      ...this.#props,
+      executor: this.#props.executor.withPluginAtFront(
+        new WithSchemaPlugin(schema)
+      ),
+    })
+  }
+
   override withTables<
     T extends Record<string, Record<string, any>>
-  >(): Transaction<DB & T> {
+  >(): Transaction<DrainOuterGeneric<DB & T>> {
     return new Transaction({ ...this.#props })
   }
 }

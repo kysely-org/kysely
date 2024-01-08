@@ -43,7 +43,7 @@ export class PostgresDriver implements Driver {
       // The driver must take care of calling `onCreateConnection` when a new
       // connection is created. The `pg` module doesn't provide an async hook
       // for the connection creation. We need to call the method explicitly.
-      if (this.#config?.onCreateConnection) {
+      if (this.#config.onCreateConnection) {
         await this.#config.onCreateConnection(connection)
       }
     }
@@ -109,7 +109,8 @@ class PostgresConnection implements DatabaseConnection {
       if (
         result.command === 'INSERT' ||
         result.command === 'UPDATE' ||
-        result.command === 'DELETE'
+        result.command === 'DELETE' ||
+        result.command === 'MERGE'
       ) {
         const numAffectedRows = BigInt(result.rowCount)
 

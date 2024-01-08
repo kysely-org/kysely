@@ -5,23 +5,23 @@ import { IdentifierNode } from '../operation-node/identifier-node.js'
 import { preventAwait } from '../util/prevent-await.js'
 import { OverBuilder } from './over-builder.js'
 import { createOverBuilder } from '../parser/parse-utils.js'
-import { AliasedExpression, Expression } from '../expression/expression.js'
+import {
+  AliasableExpression,
+  AliasedExpression,
+  Expression,
+} from '../expression/expression.js'
 import { ReferenceExpression } from '../parser/reference-parser.js'
 import {
   ComparisonOperatorExpression,
   OperandValueExpressionOrList,
-  parseReferentialFilter,
-  parseWhere,
-  WhereGrouper,
+  parseReferentialBinaryOperation,
+  parseValueBinaryOperationOrExpression,
 } from '../parser/binary-operation-parser.js'
-import {
-  ExistsExpression,
-  parseExists,
-  parseNotExists,
-} from '../parser/unary-operation-parser.js'
+import { SqlBool } from '../util/type-utils.js'
+import { ExpressionOrFactory } from '../parser/expression-parser.js'
 
 export class AggregateFunctionBuilder<DB, TB extends keyof DB, O = unknown>
-  implements Expression<O>
+  implements AliasableExpression<O>
 {
   readonly #props: AggregateFunctionBuilderProps
 
@@ -44,7 +44,7 @@ export class AggregateFunctionBuilder<DB, TB extends keyof DB, O = unknown>
    * const result = await db
    *   .selectFrom('person')
    *   .select(
-   *     eb => eb.fn.count<number>('id').as('person_count')
+   *     (eb) => eb.fn.count<number>('id').as('person_count')
    *   )
    *   .executeTakeFirstOrThrow()
    *
@@ -100,7 +100,7 @@ export class AggregateFunctionBuilder<DB, TB extends keyof DB, O = unknown>
    *
    * Similar to {@link WhereInterface}'s `where` method.
    *
-   * Also see {@link orFilterWhere}, {@link filterWhereExists} and {@link filterWhereRef}.
+   * Also see {@link filterWhereRef}.
    *
    * ### Examples
    *
@@ -109,22 +109,19 @@ export class AggregateFunctionBuilder<DB, TB extends keyof DB, O = unknown>
    * ```ts
    * const result = await db
    *   .selectFrom('person')
-   *   .select([
-   *     (eb) =>
-   *       eb.fn
-   *         .count<number>('id')
-   *         .filterWhere('gender', '=', 'female')
-   *         .as('female_count'),
-   *     (eb) =>
-   *       eb.fn
-   *         .count<number>('id')
-   *         .filterWhere('gender', '=', 'male')
-   *         .as('male_count'),
-   *     (eb) =>
-   *       eb.fn
-   *         .count<number>('id')
-   *         .filterWhere('gender', '=', 'other')
-   *         .as('other_count'),
+   *   .select((eb) => [
+   *     eb.fn
+   *       .count<number>('id')
+   *       .filterWhere('gender', '=', 'female')
+   *       .as('female_count'),
+   *     eb.fn
+   *       .count<number>('id')
+   *       .filterWhere('gender', '=', 'male')
+   *       .as('male_count'),
+   *     eb.fn
+   *       .count<number>('id')
+   *       .filterWhere('gender', '=', 'other')
+   *       .as('other_count'),
    *   ])
    *   .executeTakeFirstOrThrow()
    * ```
@@ -139,92 +136,25 @@ export class AggregateFunctionBuilder<DB, TB extends keyof DB, O = unknown>
    * from "person"
    * ```
    */
-  filterWhere<RE extends ReferenceExpression<DB, TB>>(
+  filterWhere<
+    RE extends ReferenceExpression<DB, TB>,
+    VE extends OperandValueExpressionOrList<DB, TB, RE>
+  >(
     lhs: RE,
     op: ComparisonOperatorExpression,
-    rhs: OperandValueExpressionOrList<DB, TB, RE>
+    rhs: VE
   ): AggregateFunctionBuilder<DB, TB, O>
 
-  filterWhere(
-    grouper: WhereGrouper<DB, TB>
+  filterWhere<E extends ExpressionOrFactory<DB, TB, SqlBool>>(
+    expression: E
   ): AggregateFunctionBuilder<DB, TB, O>
-
-  filterWhere(expression: Expression<any>): AggregateFunctionBuilder<DB, TB, O>
 
   filterWhere(...args: any[]): any {
     return new AggregateFunctionBuilder({
       ...this.#props,
       aggregateFunctionNode: AggregateFunctionNode.cloneWithFilter(
         this.#props.aggregateFunctionNode,
-        parseWhere(args)
-      ),
-    })
-  }
-
-  /**
-   * Adds a `filter` clause with a nested `where exists` clause after the function.
-   *
-   * Similar to {@link WhereInterface}'s `whereExists` method.
-   *
-   * ### Examples
-   *
-   * Count pet owners versus general public:
-   *
-   * ```ts
-   * const result = await db
-   *   .selectFrom('person')
-   *   .select([
-   *     (eb) =>
-   *       eb.fn
-   *         .count<number>('person.id')
-   *         .filterWhereExists((qb) =>
-   *           qb
-   *             .selectFrom('pet')
-   *             .select('pet.id')
-   *             .whereRef('pet.owner_id', '=', 'person.id')
-   *         )
-   *         .as('pet_owner_count'),
-   *     (eb) => eb.fn.count<number>('person.id').as('total_count'),
-   *   ])
-   *   .executeTakeFirstOrThrow()
-   * ```
-   *
-   * The generated SQL (PostgreSQL):
-   *
-   * ```sql
-   * select count("person"."id") filter(where exists (
-   *   select "pet"."id"
-   *   from "pet"
-   *   where "pet"."owner_id" = "person"."id"
-   * )) as "pet_ower_count",
-   *   count("person"."id") as "total_count"
-   * from "person"
-   * ```
-   */
-  filterWhereExists(
-    arg: ExistsExpression<DB, TB>
-  ): AggregateFunctionBuilder<DB, TB, O> {
-    return new AggregateFunctionBuilder({
-      ...this.#props,
-      aggregateFunctionNode: AggregateFunctionNode.cloneWithFilter(
-        this.#props.aggregateFunctionNode,
-        parseExists(arg)
-      ),
-    })
-  }
-
-  /**
-   * Just like {@link filterWhereExists} but creates a `not exists` clause inside
-   * the `filter` clause.
-   */
-  filterWhereNotExists(
-    arg: ExistsExpression<DB, TB>
-  ): AggregateFunctionBuilder<DB, TB, O> {
-    return new AggregateFunctionBuilder({
-      ...this.#props,
-      aggregateFunctionNode: AggregateFunctionNode.cloneWithFilter(
-        this.#props.aggregateFunctionNode,
-        parseNotExists(arg)
+        parseValueBinaryOperationOrExpression(args)
       ),
     })
   }
@@ -242,13 +172,12 @@ export class AggregateFunctionBuilder<DB, TB extends keyof DB, O = unknown>
    * ```ts
    * const result = await db
    *   .selectFrom('person')
-   *   .select([
-   *     (eb) =>
-   *       eb.fn
-   *         .count<number>('id')
-   *         .filterWhereRef('first_name', '=', 'last_name')
-   *         .as('repeat_name_count'),
-   *     (eb) => eb.fn.count<number>('id').as('total_count'),
+   *   .select((eb) => [
+   *     eb.fn
+   *       .count<number>('id')
+   *       .filterWhereRef('first_name', '=', 'last_name')
+   *       .as('repeat_name_count'),
+   *     eb.fn.count<number>('id').as('total_count'),
    *   ])
    *   .executeTakeFirstOrThrow()
    * ```
@@ -262,133 +191,19 @@ export class AggregateFunctionBuilder<DB, TB extends keyof DB, O = unknown>
    * from "person"
    * ```
    */
-  filterWhereRef(
-    lhs: ReferenceExpression<DB, TB>,
+  filterWhereRef<
+    LRE extends ReferenceExpression<DB, TB>,
+    RRE extends ReferenceExpression<DB, TB>
+  >(
+    lhs: LRE,
     op: ComparisonOperatorExpression,
-    rhs: ReferenceExpression<DB, TB>
+    rhs: RRE
   ): AggregateFunctionBuilder<DB, TB, O> {
     return new AggregateFunctionBuilder({
       ...this.#props,
       aggregateFunctionNode: AggregateFunctionNode.cloneWithFilter(
         this.#props.aggregateFunctionNode,
-        parseReferentialFilter(lhs, op, rhs)
-      ),
-    })
-  }
-
-  /**
-   * Adds a `filter` clause with a nested `or where` clause after the function.
-   * Otherwise works just like {@link filterWhere}.
-   *
-   * Similar to {@link WhereInterface}'s `orWhere` method.
-   *
-   * ### Examples
-   *
-   * For some reason you're tasked with counting adults (18+) or people called
-   * "Bob" versus general public:
-   *
-   * ```ts
-   * const result = await db
-   *   .selectFrom('person')
-   *   .select([
-   *     (eb) =>
-   *       eb.fn
-   *         .count<number>('id')
-   *         .filterWhere('age', '>=', '18')
-   *         .orFilterWhere('first_name', '=', 'Bob')
-   *         .as('adult_or_bob_count'),
-   *     (eb) => eb.fn.count<number>('id').as('total_count'),
-   *   ])
-   *   .executeTakeFirstOrThrow()
-   * ```
-   *
-   * The generated SQL (PostgreSQL):
-   *
-   * ```sql
-   * select
-   *   count("id") filter(where "age" >= $1 or "first_name" = $2) as "adult_or_bob_count",
-   *   count("id") as "total_count"
-   * from "person"
-   * ```
-   */
-  orFilterWhere<RE extends ReferenceExpression<DB, TB>>(
-    lhs: RE,
-    op: ComparisonOperatorExpression,
-    rhs: OperandValueExpressionOrList<DB, TB, RE>
-  ): AggregateFunctionBuilder<DB, TB, O>
-
-  orFilterWhere(
-    grouper: WhereGrouper<DB, TB>
-  ): AggregateFunctionBuilder<DB, TB, O>
-
-  orFilterWhere(
-    expression: Expression<any>
-  ): AggregateFunctionBuilder<DB, TB, O>
-
-  orFilterWhere(...args: any[]): any {
-    return new AggregateFunctionBuilder({
-      ...this.#props,
-      aggregateFunctionNode: AggregateFunctionNode.cloneWithOrFilter(
-        this.#props.aggregateFunctionNode,
-        parseWhere(args)
-      ),
-    })
-  }
-
-  /**
-   * Just like {@link filterWhereExists} but creates an `or exists` clause inside
-   * the `filter` clause.
-   *
-   * Similar to {@link WhereInterface}'s `orWhereExists` method.
-   */
-  orFilterWhereExists(
-    arg: ExistsExpression<DB, TB>
-  ): AggregateFunctionBuilder<DB, TB, O> {
-    return new AggregateFunctionBuilder({
-      ...this.#props,
-      aggregateFunctionNode: AggregateFunctionNode.cloneWithOrFilter(
-        this.#props.aggregateFunctionNode,
-        parseExists(arg)
-      ),
-    })
-  }
-
-  /**
-   * Just like {@link filterWhereExists} but creates an `or not exists` clause inside
-   * the `filter` clause.
-   *
-   * Similar to {@link WhereInterface}'s `orWhereNotExists` method.
-   */
-  orFilterWhereNotExists(
-    arg: ExistsExpression<DB, TB>
-  ): AggregateFunctionBuilder<DB, TB, O> {
-    return new AggregateFunctionBuilder({
-      ...this.#props,
-      aggregateFunctionNode: AggregateFunctionNode.cloneWithOrFilter(
-        this.#props.aggregateFunctionNode,
-        parseNotExists(arg)
-      ),
-    })
-  }
-
-  /**
-   * Adds an `or where` clause inside the `filter` clause. Otherwise works just
-   * like {@link filterWhereRef}.
-   *
-   * Also see {@link orFilterWhere} and {@link filterWhere}.
-   *
-   * Similar to {@link WhereInterface}'s `orWhereRef` method.
-   */
-  orFilterWhereRef(
-    lhs: ReferenceExpression<DB, TB>,
-    op: ComparisonOperatorExpression,
-    rhs: ReferenceExpression<DB, TB>
-  ): AggregateFunctionBuilder<DB, TB, O> {
-    return new AggregateFunctionBuilder({
-      ...this.#props,
-      aggregateFunctionNode: AggregateFunctionNode.cloneWithOrFilter(
-        this.#props.aggregateFunctionNode,
-        parseReferentialFilter(lhs, op, rhs)
+        parseReferentialBinaryOperation(lhs, op, rhs)
       ),
     })
   }
@@ -402,7 +217,7 @@ export class AggregateFunctionBuilder<DB, TB extends keyof DB, O = unknown>
    * const result = await db
    *   .selectFrom('person')
    *   .select(
-   *     eb => eb.fn.avg<number>('age').over().as('average_age')
+   *     (eb) => eb.fn.avg<number>('age').over().as('average_age')
    *   )
    *   .execute()
    * ```
@@ -421,7 +236,7 @@ export class AggregateFunctionBuilder<DB, TB extends keyof DB, O = unknown>
    * const result = await db
    *   .selectFrom('person')
    *   .select(
-   *     eb => eb.fn.avg<number>('age').over(
+   *     (eb) => eb.fn.avg<number>('age').over(
    *       ob => ob.partitionBy('last_name').orderBy('first_name', 'asc')
    *     ).as('average_age')
    *   )
@@ -455,6 +270,29 @@ export class AggregateFunctionBuilder<DB, TB extends keyof DB, O = unknown>
    */
   $call<T>(func: (qb: this) => T): T {
     return func(this)
+  }
+
+  /**
+   * Casts the expression to the given type.
+   *
+   * This method call doesn't change the SQL in any way. This methods simply
+   * returns a copy of this `AggregateFunctionBuilder` with a new output type.
+   */
+  $castTo<C>(): AggregateFunctionBuilder<DB, TB, C> {
+    return new AggregateFunctionBuilder(this.#props)
+  }
+
+  /**
+   * Omit null from the expression's type.
+   *
+   * This function can be useful in cases where you know an expression can't be
+   * null, but Kysely is unable to infer it.
+   *
+   * This method call doesn't change the SQL in any way. This methods simply
+   * returns a copy of `this` with a new output type.
+   */
+  $notNull(): AggregateFunctionBuilder<DB, TB, Exclude<O, null>> {
+    return new AggregateFunctionBuilder(this.#props)
   }
 
   toOperationNode(): AggregateFunctionNode {
@@ -512,4 +350,4 @@ export interface AggregateFunctionBuilderProps {
 
 export type OverBuilderCallback<DB, TB extends keyof DB> = (
   builder: OverBuilder<DB, TB>
-) => OverBuilder<DB, TB>
+) => OverBuilder<any, any>

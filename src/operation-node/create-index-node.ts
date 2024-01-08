@@ -3,6 +3,7 @@ import { IdentifierNode } from './identifier-node.js'
 import { OperationNode } from './operation-node.js'
 import { RawNode } from './raw-node.js'
 import { TableNode } from './table-node.js'
+import { WhereNode } from './where-node.js'
 
 export type CreateIndexNodeProps = Omit<CreateIndexNode, 'kind' | 'name'>
 export type IndexType = 'btree' | 'hash' | 'gist' | 'gin'
@@ -14,12 +15,14 @@ export interface CreateIndexNode extends OperationNode {
   // same as the target table's schema.
   readonly name: IdentifierNode
   readonly table?: TableNode
-  readonly expression?: OperationNode
+  readonly columns?: OperationNode[]
   readonly unique?: boolean
   // TODO(samiko): Do we need to add an `IndexTypeNode` for consistency?
   //               This would then be of type `IndexTypeNode | RawNode`.
   readonly using?: RawNode
   readonly ifNotExists?: boolean
+  readonly where?: WhereNode
+  readonly nullsNotDistinct?: boolean
 }
 
 /**
@@ -44,6 +47,16 @@ export const CreateIndexNode = freeze({
     return freeze({
       ...node,
       ...props,
+    })
+  },
+
+  cloneWithColumns(
+    node: CreateIndexNode,
+    columns: OperationNode[]
+  ): CreateIndexNode {
+    return freeze({
+      ...node,
+      columns: [...(node.columns || []), ...columns],
     })
   },
 })

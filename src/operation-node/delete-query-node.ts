@@ -40,15 +40,15 @@ export const DeleteQueryNode = freeze({
     })
   },
 
-  cloneWithOrderByItem(
+  cloneWithOrderByItems(
     deleteNode: DeleteQueryNode,
-    item: OrderByItemNode
+    items: ReadonlyArray<OrderByItemNode>
   ): DeleteQueryNode {
     return freeze({
       ...deleteNode,
       orderBy: deleteNode.orderBy
-        ? OrderByNode.cloneWithItem(deleteNode.orderBy, item)
-        : OrderByNode.create(item),
+        ? OrderByNode.cloneWithItems(deleteNode.orderBy, items)
+        : OrderByNode.create(items),
     })
   },
 
@@ -59,16 +59,6 @@ export const DeleteQueryNode = freeze({
     return freeze({
       ...deleteNode,
       limit,
-    })
-  },
-
-  cloneWithExplain(
-    deleteNode: DeleteQueryNode,
-    explain: ExplainNode
-  ): DeleteQueryNode {
-    return freeze({
-      ...deleteNode,
-      explain,
     })
   },
 

@@ -1,4 +1,5 @@
 import { IdentifierNode } from '../operation-node/identifier-node.js'
+import { isOperationNodeSource } from '../operation-node/operation-node-source.js'
 import { OperationNode } from '../operation-node/operation-node.js'
 import { RawNode } from '../operation-node/raw-node.js'
 import { ValueNode } from '../operation-node/value-node.js'
@@ -6,7 +7,7 @@ import { parseStringReference } from '../parser/reference-parser.js'
 import { parseTable } from '../parser/table-parser.js'
 import { parseValueExpression } from '../parser/value-parser.js'
 import { createQueryId } from '../util/query-id.js'
-import { RawBuilder } from './raw-builder.js'
+import { RawBuilder, createRawBuilder } from './raw-builder.js'
 
 export interface Sql {
   /**
@@ -27,7 +28,7 @@ export interface Sql {
    *
    * If you need your substitutions to be interpreted as identifiers, value literals or
    * lists of things, see the {@link Sql.ref}, {@link Sql.table}, {@link Sql.id},
-   * {@link Sql.literal}, {@link Sql.raw} and {@link Sql.join} functions.
+   * {@link Sql.lit}, {@link Sql.raw} and {@link Sql.join} functions.
    *
    * You can pass sql snippets returned by the `sql` tag pretty much anywhere. Whenever
    * something can't be done using the Kysely API, you should be able to drop down to
@@ -111,13 +112,18 @@ export interface Sql {
   ): RawBuilder<T>
 
   /**
-   * `sql.value(value)` is a shortcut for:
+   * `sql.val(value)` is a shortcut for:
    *
    * ```ts
    * sql<ValueType>`${value}`
    * ```
    */
-  value<T>(value: T): RawBuilder<T>
+  val<V>(value: V): RawBuilder<V>
+
+  /**
+   * @deprecated Use {@link Sql.val} instead.
+   */
+  value<V>(value: V): RawBuilder<V>
 
   /**
    * This can be used to add runtime column references to SQL snippets.
@@ -169,7 +175,7 @@ export interface Sql {
    * select "public"."person"."first_name" from person
    * ```
    */
-  ref(columnReference: string): RawBuilder<unknown>
+  ref<R = unknown>(columnReference: string): RawBuilder<R>
 
   /**
    * This can be used to add runtime table references to SQL snippets.
@@ -263,7 +269,7 @@ export interface Sql {
    * ```ts
    * const firstName = 'first_name'
    *
-   * sql`select * from person where first_name = ${sql.literal(firstName)}`
+   * sql`select * from person where first_name = ${sql.lit(firstName)}`
    * ```
    *
    * The generated SQL (PostgreSQL):
@@ -276,7 +282,12 @@ export interface Sql {
    * the SQL string instead of as a parameter. Only use this function when
    * something can't be sent as a parameter.
    */
-  literal(value: unknown): RawBuilder<unknown>
+  lit<V>(value: V): RawBuilder<V>
+
+  /**
+   * @deprecated Use {@link lit} instead.
+   */
+  literal<V>(value: V): RawBuilder<V>
 
   /**
    * This can be used to add arbitrary runtime SQL to SQL snippets.
@@ -296,11 +307,11 @@ export interface Sql {
    * select * from person where first_name = 'first_name'
    * ```
    *
-   * Note that the difference to `sql.literal` is that this function
+   * Note that the difference to `sql.lit` is that this function
    * doesn't assume the inputs are values. The input to this function
    * can be any sql and it's simply glued to the parent string as-is.
    */
-  raw(anySql: string): RawBuilder<unknown>
+  raw<R = unknown>(anySql: string): RawBuilder<R>
 
   /**
    * This can be used to add lists of things to SQL snippets.
@@ -340,7 +351,7 @@ export interface Sql {
    *   123,
    *   sql`(1 == 1)`,
    *   db.selectFrom('person').selectAll(),
-   *   sql.literal(false),
+   *   sql.lit(false),
    *   sql.id('first_name')
    * ]
    *
@@ -364,31 +375,35 @@ export const sql: Sql = Object.assign(
     sqlFragments: TemplateStringsArray,
     ...parameters: unknown[]
   ): RawBuilder<T> => {
-    return new RawBuilder({
+    return createRawBuilder({
       queryId: createQueryId(),
       rawNode: RawNode.create(
         sqlFragments,
-        parameters?.map(parseValueExpression) ?? []
+        parameters?.map(parseParameter) ?? []
       ),
     })
   },
   {
-    ref(columnReference: string): RawBuilder<unknown> {
-      return new RawBuilder({
+    ref<R = unknown>(columnReference: string): RawBuilder<R> {
+      return createRawBuilder({
         queryId: createQueryId(),
         rawNode: RawNode.createWithChild(parseStringReference(columnReference)),
       })
     },
 
-    value<T>(value: T): RawBuilder<T> {
-      return new RawBuilder({
+    val<V>(value: V): RawBuilder<V> {
+      return createRawBuilder({
         queryId: createQueryId(),
         rawNode: RawNode.createWithChild(parseValueExpression(value)),
       })
     },
 
+    value<V>(value: V): RawBuilder<V> {
+      return this.val(value)
+    },
+
     table(tableReference: string): RawBuilder<unknown> {
-      return new RawBuilder({
+      return createRawBuilder({
         queryId: createQueryId(),
         rawNode: RawNode.createWithChild(parseTable(tableReference)),
       })
@@ -400,21 +415,25 @@ export const sql: Sql = Object.assign(
       fragments[0] = ''
       fragments[fragments.length - 1] = ''
 
-      return new RawBuilder({
+      return createRawBuilder({
         queryId: createQueryId(),
         rawNode: RawNode.create(fragments, ids.map(IdentifierNode.create)),
       })
     },
 
-    literal(value: unknown): RawBuilder<unknown> {
-      return new RawBuilder({
+    lit<V>(value: V): RawBuilder<V> {
+      return createRawBuilder({
         queryId: createQueryId(),
         rawNode: RawNode.createWithChild(ValueNode.createImmediate(value)),
       })
     },
 
-    raw(sql: string): RawBuilder<unknown> {
-      return new RawBuilder({
+    literal<V>(value: V): RawBuilder<V> {
+      return this.lit(value)
+    },
+
+    raw<R = unknown>(sql: string): RawBuilder<R> {
+      return createRawBuilder({
         queryId: createQueryId(),
         rawNode: RawNode.createWithSql(sql),
       })
@@ -428,17 +447,25 @@ export const sql: Sql = Object.assign(
       const sep = separator.toOperationNode()
 
       for (let i = 0; i < array.length; ++i) {
-        nodes[2 * i] = parseValueExpression(array[i])
+        nodes[2 * i] = parseParameter(array[i])
 
         if (i !== array.length - 1) {
           nodes[2 * i + 1] = sep
         }
       }
 
-      return new RawBuilder({
+      return createRawBuilder({
         queryId: createQueryId(),
         rawNode: RawNode.createWithChildren(nodes),
       })
     },
   }
 )
+
+function parseParameter(param: unknown): OperationNode {
+  if (isOperationNodeSource(param)) {
+    return param.toOperationNode()
+  }
+
+  return parseValueExpression(param)
+}

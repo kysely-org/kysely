@@ -21,10 +21,17 @@ export interface QueryResult<O> {
   readonly numUpdatedOrDeletedRows?: bigint
 
   /**
-   * This is defined for insert, update and delete queries and contains
+   * This is defined for insert, update, delete and merge queries and contains
    * the number of rows the query inserted/updated/deleted.
    */
   readonly numAffectedRows?: bigint
+
+  /**
+   * This is defined for update queries and contains the number of rows
+   * the query changed.
+   * This is optional and only provided by some drivers like node-mysql2.
+   */
+  readonly numChangedRows?: bigint
 
   /**
    * This is defined for insert queries on dialects that return

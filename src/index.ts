@@ -2,6 +2,11 @@ export * from './kysely.js'
 export * from './query-creator.js'
 
 export * from './expression/expression.js'
+export {
+  ExpressionBuilder,
+  expressionBuilder,
+} from './expression/expression-builder.js'
+export * from './expression/expression-wrapper.js'
 
 export * from './query-builder/where-interface.js'
 export * from './query-builder/returning-interface.js'
@@ -12,13 +17,16 @@ export * from './query-builder/update-query-builder.js'
 export * from './query-builder/delete-query-builder.js'
 export * from './query-builder/no-result-error.js'
 export * from './query-builder/join-builder.js'
-export * from './query-builder/expression-builder.js'
 export * from './query-builder/function-module.js'
 export * from './query-builder/insert-result.js'
 export * from './query-builder/delete-result.js'
 export * from './query-builder/update-result.js'
 export * from './query-builder/on-conflict-builder.js'
 export * from './query-builder/aggregate-function-builder.js'
+export * from './query-builder/case-builder.js'
+export * from './query-builder/json-path-builder.js'
+export * from './query-builder/merge-query-builder.js'
+export * from './query-builder/merge-result.js'
 
 export * from './raw-builder/raw-builder.js'
 export * from './raw-builder/sql.js'
@@ -82,6 +90,13 @@ export * from './dialect/sqlite/sqlite-query-compiler.js'
 export * from './dialect/sqlite/sqlite-introspector.js'
 export * from './dialect/sqlite/sqlite-adapter.js'
 
+export * from './dialect/mssql/mssql-adapter.js'
+export * from './dialect/mssql/mssql-dialect-config.js'
+export * from './dialect/mssql/mssql-dialect.js'
+export * from './dialect/mssql/mssql-driver.js'
+export * from './dialect/mssql/mssql-introspector.js'
+export * from './dialect/mssql/mssql-query-compiler.js'
+
 export * from './query-compiler/default-query-compiler.js'
 export * from './query-compiler/query-compiler.js'
 
@@ -92,6 +107,7 @@ export * from './plugin/kysely-plugin.js'
 export * from './plugin/camel-case/camel-case-plugin.js'
 export * from './plugin/deduplicate-joins/deduplicate-joins-plugin.js'
 export * from './plugin/with-schema/with-schema-plugin.js'
+export * from './plugin/parse-json-results/parse-json-results-plugin.js'
 
 export * from './operation-node/add-column-node.js'
 export * from './operation-node/add-constraint-node.js'
@@ -99,6 +115,7 @@ export * from './operation-node/alias-node.js'
 export * from './operation-node/alter-column-node.js'
 export * from './operation-node/alter-table-node.js'
 export * from './operation-node/and-node.js'
+export * from './operation-node/case-node.js'
 export * from './operation-node/check-constraint-node.js'
 export * from './operation-node/column-definition-node.js'
 export * from './operation-node/column-node.js'
@@ -164,6 +181,7 @@ export * from './operation-node/update-query-node.js'
 export * from './operation-node/value-list-node.js'
 export * from './operation-node/value-node.js'
 export * from './operation-node/values-node.js'
+export * from './operation-node/when-node.js'
 export * from './operation-node/where-node.js'
 export * from './operation-node/with-node.js'
 export * from './operation-node/explain-node.js'
@@ -176,20 +194,30 @@ export * from './operation-node/set-operation-node.js'
 export * from './operation-node/binary-operation-node.js'
 export * from './operation-node/unary-operation-node.js'
 export * from './operation-node/using-node.js'
+export * from './operation-node/json-reference-node.js'
+export * from './operation-node/json-path-leg-node.js'
+export * from './operation-node/json-path-node.js'
+export * from './operation-node/json-operator-chain-node.js'
+export * from './operation-node/tuple-node.js'
+export * from './operation-node/merge-query-node.js'
+export * from './operation-node/matched-node.js'
 
 export * from './util/column-type.js'
 export * from './util/compilable.js'
 export * from './util/explainable.js'
+export * from './util/streamable.js'
 export * from './util/log.js'
 export {
   AnyAliasedColumn,
   AnyAliasedColumnWithTable,
   AnyColumn,
   AnyColumnWithTable,
-  AnySelectQueryBuilder,
   Equals,
   UnknownRow,
   Simplify,
+  SqlBool,
+  Nullable,
+  NotNull,
 } from './util/type-utils.js'
 export { QueryId } from './util/query-id.js'
 export * from './util/infer-result.js'
@@ -197,8 +225,10 @@ export { logOnce } from './util/log-once.js'
 
 export {
   SelectExpression,
-  SelectExpressionOrList,
+  SelectCallback,
+  SelectArg,
   Selection,
+  CallbackSelection,
 } from './parser/select-parser.js'
 export {
   ReferenceExpression,
@@ -213,6 +243,7 @@ export {
   ValueExpressionOrList,
 } from './parser/value-parser.js'
 export {
+  SimpleTableReference,
   TableExpression,
   TableExpressionOrList,
 } from './parser/table-parser.js'
@@ -230,5 +261,10 @@ export {
   ComparisonOperatorExpression,
   OperandValueExpression,
   OperandValueExpressionOrList,
+  FilterObject,
 } from './parser/binary-operation-parser.js'
 export { ExistsExpression } from './parser/unary-operation-parser.js'
+export {
+  OperandExpression,
+  ExpressionOrFactory,
+} from './parser/expression-parser.js'

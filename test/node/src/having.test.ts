@@ -1,7 +1,6 @@
 import { sql } from '../../../'
 
 import {
-  DIALECTS,
   clearDatabase,
   destroyTest,
   initTest,
@@ -9,6 +8,7 @@ import {
   TestContext,
   testSql,
   expect,
+  DIALECTS,
 } from './test-setup.js'
 
 for (const dialect of DIALECTS) {
@@ -87,6 +87,16 @@ for (const dialect of DIALECTS) {
           ],
           parameters: [1],
         },
+        mssql: {
+          sql: [
+            `select "first_name", count(pet.id) as "num_pets"`,
+            `from "person"`,
+            `inner join "pet" on "pet"."owner_id" = "person"."id"`,
+            `group by "first_name"`,
+            `having count(pet.id) > @1`,
+          ],
+          parameters: [1],
+        },
         sqlite: {
           sql: [
             `select "first_name", count(pet.id) as "num_pets"`,
@@ -102,7 +112,7 @@ for (const dialect of DIALECTS) {
       const result = await query.execute()
       expect(result).to.have.length(2)
 
-      if (dialect === 'sqlite') {
+      if (dialect === 'mssql' || dialect === 'sqlite') {
         expect(result).to.containSubset([
           { first_name: 'Jennifer', num_pets: 2 },
           { first_name: 'Arnold', num_pets: 2 },
@@ -146,6 +156,16 @@ for (const dialect of DIALECTS) {
           ],
           parameters: [1],
         },
+        mssql: {
+          sql: [
+            `select "person"."id", count("pet"."id") as "num_pets"`,
+            `from "person"`,
+            `inner join "pet" on "pet"."owner_id" = "person"."id"`,
+            `group by "person"."id"`,
+            `having count("pet"."id") > @1`,
+          ],
+          parameters: [1],
+        },
         sqlite: {
           sql: [
             `select "person"."id", count("pet"."id") as "num_pets"`,
@@ -161,7 +181,7 @@ for (const dialect of DIALECTS) {
       const result = await query.execute()
       expect(result).to.have.length(2)
 
-      if (dialect === 'sqlite') {
+      if (dialect === 'mssql' || dialect === 'sqlite') {
         expect(result).to.containSubset([{ num_pets: 2 }, { num_pets: 2 }])
       } else {
         expect(result).to.containSubset([{ num_pets: '2' }, { num_pets: '2' }])
@@ -173,64 +193,32 @@ for (const dialect of DIALECTS) {
         .selectFrom('person')
         .selectAll()
         .groupBy('first_name')
-        .having('id', 'in', [1, 2, 3])
-        .orHaving('first_name', '<', 'foo')
+        .having((eb) =>
+          eb.or([
+            eb('id', 'in', [1, 2, 3]),
+            eb('first_name', '<', 'foo'),
+            eb('first_name', '=', eb.ref('first_name')),
+          ])
+        )
         .havingRef('first_name', '=', 'first_name')
-        .orHavingRef('first_name', '=', 'first_name')
-        .havingExists((qb) => qb.selectFrom('pet').select('id'))
-        .orHavingExists((qb) => qb.selectFrom('pet').select('id'))
-        .havingNotExist((qb) => qb.selectFrom('pet').select('id'))
-        .orHavingNotExists((qb) => qb.selectFrom('pet').select('id'))
-        .having((qb) => qb.having('id', '=', 1).orHaving('id', '=', 2))
+        .having((eb) => eb.not(eb.exists(eb.selectFrom('pet').select('id'))))
 
       testSql(query, dialect, {
         postgres: {
-          sql: [
-            `select * from "person"`,
-            `group by "first_name"`,
-            `having "id" in ($1, $2, $3)`,
-            `or "first_name" < $4`,
-            `and "first_name" = "first_name"`,
-            `or "first_name" = "first_name"`,
-            `and exists (select "id" from "pet")`,
-            `or exists (select "id" from "pet")`,
-            `and not exists (select "id" from "pet")`,
-            `or not exists (select "id" from "pet")`,
-            'and ("id" = $5 or "id" = $6)',
-          ],
-          parameters: [1, 2, 3, 'foo', 1, 2],
+          sql: `select * from "person" group by "first_name" having ("id" in ($1, $2, $3) or "first_name" < $4 or "first_name" = "first_name") and "first_name" = "first_name" and not exists (select "id" from "pet")`,
+          parameters: [1, 2, 3, 'foo'],
         },
         mysql: {
-          sql: [
-            'select * from `person`',
-            'group by `first_name`',
-            'having `id` in (?, ?, ?)',
-            'or `first_name` < ?',
-            'and `first_name` = `first_name`',
-            'or `first_name` = `first_name`',
-            'and exists (select `id` from `pet`)',
-            'or exists (select `id` from `pet`)',
-            'and not exists (select `id` from `pet`)',
-            'or not exists (select `id` from `pet`)',
-            'and (`id` = ? or `id` = ?)',
-          ],
-          parameters: [1, 2, 3, 'foo', 1, 2],
+          sql: 'select * from `person` group by `first_name` having (`id` in (?, ?, ?) or `first_name` < ? or `first_name` = `first_name`) and `first_name` = `first_name` and not exists (select `id` from `pet`)',
+          parameters: [1, 2, 3, 'foo'],
+        },
+        mssql: {
+          sql: `select * from "person" group by "first_name" having ("id" in (@1, @2, @3) or "first_name" < @4 or "first_name" = "first_name") and "first_name" = "first_name" and not exists (select "id" from "pet")`,
+          parameters: [1, 2, 3, 'foo'],
         },
         sqlite: {
-          sql: [
-            `select * from "person"`,
-            `group by "first_name"`,
-            `having "id" in (?, ?, ?)`,
-            `or "first_name" < ?`,
-            `and "first_name" = "first_name"`,
-            `or "first_name" = "first_name"`,
-            `and exists (select "id" from "pet")`,
-            `or exists (select "id" from "pet")`,
-            `and not exists (select "id" from "pet")`,
-            `or not exists (select "id" from "pet")`,
-            'and ("id" = ? or "id" = ?)',
-          ],
-          parameters: [1, 2, 3, 'foo', 1, 2],
+          sql: `select * from "person" group by "first_name" having ("id" in (?, ?, ?) or "first_name" < ? or "first_name" = "first_name") and "first_name" = "first_name" and not exists (select "id" from "pet")`,
+          parameters: [1, 2, 3, 'foo'],
         },
       })
     })

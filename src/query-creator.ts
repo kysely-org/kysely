@@ -1,4 +1,7 @@
-import { SelectQueryBuilder } from './query-builder/select-query-builder.js'
+import {
+  SelectQueryBuilder,
+  createSelectQueryBuilder,
+} from './query-builder/select-query-builder.js'
 import { InsertQueryBuilder } from './query-builder/insert-query-builder.js'
 import { DeleteQueryBuilder } from './query-builder/delete-query-builder.js'
 import { UpdateQueryBuilder } from './query-builder/update-query-builder.js'
@@ -17,13 +20,17 @@ import {
   TableReference,
   TableReferenceOrList,
   ExtractTableAlias,
+  AnyAliasedTable,
+  PickTableWithAlias,
+  SimpleTableReference,
+  parseAliasedTable,
 } from './parser/table-parser.js'
 import { QueryExecutor } from './query-executor/query-executor.js'
 import {
   CommonTableExpression,
-  parseCommonTableExpression,
   QueryCreatorWithCommonTableExpression,
   RecursiveCommonTableExpression,
+  parseCommonTableExpression,
 } from './parser/with-parser.js'
 import { WithNode } from './operation-node/with-node.js'
 import { createQueryId } from './util/query-id.js'
@@ -33,6 +40,18 @@ import { InsertResult } from './query-builder/insert-result.js'
 import { DeleteResult } from './query-builder/delete-result.js'
 import { UpdateResult } from './query-builder/update-result.js'
 import { KyselyPlugin } from './plugin/kysely-plugin.js'
+import { CTEBuilderCallback } from './query-builder/cte-builder.js'
+import {
+  CallbackSelection,
+  SelectArg,
+  SelectCallback,
+  SelectExpression,
+  Selection,
+  parseSelectArg,
+} from './parser/select-parser.js'
+import { MergeQueryBuilder } from './query-builder/merge-query-builder.js'
+import { MergeQueryNode } from './operation-node/merge-query-node.js'
+import { MergeResult } from './query-builder/merge-result.js'
 
 export class QueryCreator<DB> {
   readonly #props: QueryCreatorProps
@@ -148,7 +167,7 @@ export class QueryCreator<DB> {
    *   (select 1 as one) as "q"
    * ```
    */
-  selectFrom<TE extends keyof DB>(
+  selectFrom<TE extends keyof DB & string>(
     from: TE[]
   ): SelectQueryBuilder<DB, ExtractTableAlias<DB, TE>, {}>
 
@@ -156,21 +175,101 @@ export class QueryCreator<DB> {
     from: TE[]
   ): SelectQueryBuilder<From<DB, TE>, FromTables<DB, never, TE>, {}>
 
-  selectFrom<TE extends keyof DB>(
+  selectFrom<TE extends keyof DB & string>(
     from: TE
   ): SelectQueryBuilder<DB, ExtractTableAlias<DB, TE>, {}>
+
+  selectFrom<TE extends AnyAliasedTable<DB>>(
+    from: TE
+  ): SelectQueryBuilder<
+    DB & PickTableWithAlias<DB, TE>,
+    ExtractTableAlias<DB, TE>,
+    {}
+  >
 
   selectFrom<TE extends TableExpression<DB, keyof DB>>(
     from: TE
   ): SelectQueryBuilder<From<DB, TE>, FromTables<DB, never, TE>, {}>
 
   selectFrom(from: TableExpressionOrList<any, any>): any {
-    return new SelectQueryBuilder({
+    return createSelectQueryBuilder({
       queryId: createQueryId(),
       executor: this.#props.executor,
-      queryNode: SelectQueryNode.create(
+      queryNode: SelectQueryNode.createFrom(
         parseTableExpressionOrList(from),
         this.#props.withNode
+      ),
+    })
+  }
+
+  /**
+   * Creates a `select` query builder without a `from` clause.
+   *
+   * If you want to create a `select from` query, use the `selectFrom` method instead.
+   * This one can be used to create a plain `select` statement without a `from` clause.
+   *
+   * This method accepts the same inputs as {@link SelectQueryBuilder.select}. See its
+   * documentation for more examples.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * const result = db.selectNoFrom((eb) => [
+   *   eb.selectFrom('person')
+   *     .select('id')
+   *     .where('first_name', '=', 'Jennifer')
+   *     .limit(1)
+   *     .as('jennifer_id'),
+   *
+   *   eb.selectFrom('pet')
+   *     .select('id')
+   *     .where('name', '=', 'Doggo')
+   *     .limit(1)
+   *     .as('doggo_id')
+   *   ])
+   *   .executeTakeFirstOrThrow()
+   *
+   * console.log(result.jennifer_id)
+   * console.log(result.doggo_id)
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * select (
+   *   select "id"
+   *   from "person"
+   *   where "first_name" = $1
+   *   limit $2
+   * ) as "jennifer_id", (
+   *   select "id"
+   *   from "pet"
+   *   where "name" = $3
+   *   limit $4
+   * ) as "doggo_id"
+   * ```
+   */
+  selectNoFrom<SE extends SelectExpression<DB, never>>(
+    selections: ReadonlyArray<SE>
+  ): SelectQueryBuilder<DB, never, Selection<DB, never, SE>>
+
+  selectNoFrom<CB extends SelectCallback<DB, never>>(
+    callback: CB
+  ): SelectQueryBuilder<DB, never, CallbackSelection<DB, never, CB>>
+
+  selectNoFrom<SE extends SelectExpression<DB, never>>(
+    selection: SE
+  ): SelectQueryBuilder<DB, never, Selection<DB, never, SE>>
+
+  selectNoFrom<SE extends SelectExpression<DB, never>>(
+    selection: SelectArg<DB, never, SE>
+  ): SelectQueryBuilder<DB, never, Selection<DB, never, SE>> {
+    return createSelectQueryBuilder({
+      queryId: createQueryId(),
+      executor: this.#props.executor,
+      queryNode: SelectQueryNode.cloneWithSelections(
+        SelectQueryNode.create(this.#props.withNode),
+        parseSelectArg(selection as any)
       ),
     })
   }
@@ -276,12 +375,14 @@ export class QueryCreator<DB> {
    *
    * ### Examples
    *
-   * Deleting person with id 1:
+   * <!-- siteExample("delete", "Single row", 10) -->
+   *
+   * Delete a single row:
    *
    * ```ts
    * const result = await db
    *   .deleteFrom('person')
-   *   .where('person.id', '=', 1)
+   *   .where('person.id', '=', '1')
    *   .executeTakeFirst()
    *
    * console.log(result.numDeletedRows)
@@ -313,9 +414,17 @@ export class QueryCreator<DB> {
    * where `person`.`id` = ?
    * ```
    */
+  deleteFrom<TR extends keyof DB & string>(
+    from: TR[]
+  ): DeleteQueryBuilder<DB, ExtractTableAlias<DB, TR>, DeleteResult>
+
   deleteFrom<TR extends TableReference<DB>>(
     tables: TR[]
   ): DeleteQueryBuilder<From<DB, TR>, FromTables<DB, never, TR>, DeleteResult>
+
+  deleteFrom<TR extends keyof DB & string>(
+    from: TR
+  ): DeleteQueryBuilder<DB, ExtractTableAlias<DB, TR>, DeleteResult>
 
   deleteFrom<TR extends TableReference<DB>>(
     table: TR
@@ -355,6 +464,24 @@ export class QueryCreator<DB> {
    * console.log(result.numUpdatedRows)
    * ```
    */
+  updateTable<TR extends keyof DB & string>(
+    table: TR
+  ): UpdateQueryBuilder<
+    DB,
+    ExtractTableAlias<DB, TR>,
+    ExtractTableAlias<DB, TR>,
+    UpdateResult
+  >
+
+  updateTable<TR extends AnyAliasedTable<DB>>(
+    table: TR
+  ): UpdateQueryBuilder<
+    DB & PickTableWithAlias<DB, TR>,
+    ExtractTableAlias<DB, TR>,
+    ExtractTableAlias<DB, TR>,
+    UpdateResult
+  >
+
   updateTable<TR extends TableReference<DB>>(
     table: TR
   ): UpdateQueryBuilder<
@@ -362,12 +489,71 @@ export class QueryCreator<DB> {
     FromTables<DB, never, TR>,
     FromTables<DB, never, TR>,
     UpdateResult
-  > {
+  >
+
+  updateTable<TR extends TableReference<DB>>(table: TR): any {
     return new UpdateQueryBuilder({
       queryId: createQueryId(),
       executor: this.#props.executor,
       queryNode: UpdateQueryNode.create(
         parseTableExpression(table),
+        this.#props.withNode
+      ),
+    })
+  }
+
+  /**
+   * Creates a merge query.
+   *
+   * The return value of the query is a {@link MergeResult}.
+   *
+   * See the {@link MergeQueryBuilder.using} method for examples on how to specify
+   * the other table.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * const result = await db
+   *   .mergeInto('person')
+   *   .using('pet', 'pet.owner_id', 'person.id')
+   *   .whenMatched((and) => and('has_pets', '!=', 'Y'))
+   *   .thenUpdateSet({ has_pets: 'Y' })
+   *   .whenNotMatched()
+   *   .thenDoNothing()
+   *   .executeTakeFirstOrThrow()
+   *
+   * console.log(result.numChangedRows)
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * merge into "person"
+   * using "pet" on "pet"."owner_id" = "person"."id"
+   * when matched and "has_pets" != $1 then
+   *   update set "has_pets" = $2
+   * when not matched then
+   *   do nothing
+   * ```
+   */
+  mergeInto<TR extends keyof DB & string>(
+    targetTable: TR
+  ): MergeQueryBuilder<DB, TR, MergeResult>
+
+  mergeInto<TR extends AnyAliasedTable<DB>>(
+    targetTable: TR
+  ): MergeQueryBuilder<
+    DB & PickTableWithAlias<DB, TR>,
+    ExtractTableAlias<DB, TR>,
+    MergeResult
+  >
+
+  mergeInto<TR extends SimpleTableReference<DB>>(targetTable: TR): any {
+    return new MergeQueryBuilder({
+      queryId: createQueryId(),
+      executor: this.#props.executor,
+      queryNode: MergeQueryNode.create(
+        parseAliasedTable(targetTable),
         this.#props.withNode
       ),
     })
@@ -413,12 +599,29 @@ export class QueryCreator<DB> {
    *   .selectAll()
    *   .execute()
    * ```
+   *
+   * The first argument can also be a callback. The callback is passed
+   * a `CTEBuilder` instance that can be used to configure the CTE:
+   *
+   * ```ts
+   * await db
+   *   .with(
+   *     (cte) => cte('jennifers').materialized(),
+   *     (db) => db
+   *       .selectFrom('person')
+   *       .where('first_name', '=', 'Jennifer')
+   *       .select(['id', 'age'])
+   *   )
+   *   .selectFrom('jennifers')
+   *   .selectAll()
+   *   .execute()
+   * ```
    */
   with<N extends string, E extends CommonTableExpression<DB, N>>(
-    name: N,
+    nameOrBuilder: N | CTEBuilderCallback<N>,
     expression: E
   ): QueryCreatorWithCommonTableExpression<DB, N, E> {
-    const cte = parseCommonTableExpression(name, expression)
+    const cte = parseCommonTableExpression(nameOrBuilder, expression as any)
 
     return new QueryCreator({
       ...this.#props,
@@ -431,13 +634,21 @@ export class QueryCreator<DB> {
   /**
    * Creates a recursive `with` query (Common Table Expression).
    *
+   * Note that recursiveness is a property of the whole `with` statement.
+   * You cannot have recursive and non-recursive CTEs in a same `with` statement.
+   * Therefore the recursiveness is determined by the **first** `with` or
+   * `withRecusive` call you make.
+   *
    * See the {@link with} method for examples and more documentation.
    */
   withRecursive<
     N extends string,
     E extends RecursiveCommonTableExpression<DB, N>
-  >(name: N, expression: E): QueryCreatorWithCommonTableExpression<DB, N, E> {
-    const cte = parseCommonTableExpression(name, expression)
+  >(
+    nameOrBuilder: N | CTEBuilderCallback<N>,
+    expression: E
+  ): QueryCreatorWithCommonTableExpression<DB, N, E> {
+    const cte = parseCommonTableExpression(nameOrBuilder, expression)
 
     return new QueryCreator({
       ...this.#props,
@@ -474,7 +685,7 @@ export class QueryCreator<DB> {
    * This only affects the query created through the builder returned from
    * this method and doesn't modify the `db` instance.
    *
-   * See [this recipe](https://github.com/koskimas/kysely/tree/master/recipes/schemas.md)
+   * See [this recipe](https://github.com/koskimas/kysely/tree/master/site/docs/recipes/schemas.md)
    * for a more detailed explanation.
    *
    * ### Examples

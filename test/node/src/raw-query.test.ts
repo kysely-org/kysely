@@ -1,7 +1,6 @@
 import { sql } from '../../../'
 
 import {
-  DIALECTS,
   clearDatabase,
   destroyTest,
   initTest,
@@ -9,6 +8,7 @@ import {
   expect,
   insertDefaultDataSet,
   testSql,
+  DIALECTS,
 } from './test-setup.js'
 
 for (const dialect of DIALECTS) {
@@ -41,7 +41,9 @@ for (const dialect of DIALECTS) {
       )
 
       expect(result.insertId).to.equal(undefined)
-      expect(result.numUpdatedOrDeletedRows).to.equal(undefined)
+      expect(result.numAffectedRows).to.equal(
+        dialect === 'mssql' ? 2n : undefined
+      )
       expect(result.rows).to.eql([
         { first_name: 'Arnold' },
         { first_name: 'Sylvester' },
@@ -57,7 +59,7 @@ for (const dialect of DIALECTS) {
           ctx.db
         )
 
-      expect(result.numUpdatedOrDeletedRows).to.equal(2n)
+      expect(result.numAffectedRows).to.equal(2n)
       expect(result.rows).to.eql([])
     })
 
@@ -67,11 +69,11 @@ for (const dialect of DIALECTS) {
       const result =
         await sql`delete from person where gender = ${gender}`.execute(ctx.db)
 
-      expect(result.numUpdatedOrDeletedRows).to.equal(2n)
+      expect(result.numAffectedRows).to.equal(2n)
       expect(result.rows).to.eql([])
     })
 
-    if (dialect === 'postgres') {
+    if (dialect === 'postgres' || dialect === 'sqlite') {
       it('should run a raw insert query', async () => {
         const firstName = 'New'
         const lastName = 'Personsson'
@@ -87,7 +89,9 @@ for (const dialect of DIALECTS) {
           { first_name: 'New', last_name: 'Personsson' },
         ])
       })
-    } else {
+    }
+
+    if (dialect === 'mysql') {
       it('should run a raw insert query', async () => {
         const firstName = 'New'
         const lastName = 'Personsson'
@@ -115,6 +119,10 @@ for (const dialect of DIALECTS) {
         },
         mysql: {
           sql: 'select first_name from person where gender = ? order by first_name asc, last_name asc',
+          parameters: [gender],
+        },
+        mssql: {
+          sql: 'select first_name from person where gender = @1 order by first_name asc, last_name asc',
           parameters: [gender],
         },
         sqlite: {

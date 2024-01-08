@@ -1,5 +1,4 @@
 import { AddColumnNode } from '../operation-node/add-column-node.js'
-import { AlterColumnNode } from '../operation-node/alter-column-node.js'
 import { AlterTableNode } from '../operation-node/alter-table-node.js'
 import { ColumnDefinitionNode } from '../operation-node/column-definition-node.js'
 import { DropColumnNode } from '../operation-node/drop-column-node.js'
@@ -37,6 +36,14 @@ import {
 import { AlterTableExecutor } from './alter-table-executor.js'
 import { AlterTableAddForeignKeyConstraintBuilder } from './alter-table-add-foreign-key-constraint-builder.js'
 import { AlterTableDropConstraintBuilder } from './alter-table-drop-constraint-builder.js'
+import { PrimaryConstraintNode } from '../operation-node/primary-constraint-node.js'
+import { DropIndexNode } from '../operation-node/drop-index-node.js'
+import { AddIndexNode } from '../operation-node/add-index-node.js'
+import { AlterTableAddIndexBuilder } from './alter-table-add-index-builder.js'
+import {
+  UniqueConstraintNodeBuilder,
+  UniqueConstraintNodeBuilderCallback,
+} from './unique-constraint-builder.js'
 
 /**
  * This builder can be used to create a `alter table` query.
@@ -70,9 +77,7 @@ export class AlterTableBuilder implements ColumnAlteringInterface {
     column: string,
     alteration: AlterColumnBuilderCallback
   ): AlterTableColumnAlteringBuilder {
-    const builder = alteration(
-      new AlterColumnBuilder(AlterColumnNode.create(column))
-    )
+    const builder = alteration(new AlterColumnBuilder(column))
 
     return new AlterTableColumnAlteringBuilder({
       ...this.#props,
@@ -157,13 +162,20 @@ export class AlterTableBuilder implements ColumnAlteringInterface {
    */
   addUniqueConstraint(
     constraintName: string,
-    columns: string[]
+    columns: string[],
+    build: UniqueConstraintNodeBuilderCallback = noop
   ): AlterTableExecutor {
+    const uniqueConstraintBuilder = build(
+      new UniqueConstraintNodeBuilder(
+        UniqueConstraintNode.create(columns, constraintName)
+      )
+    )
+
     return new AlterTableExecutor({
       ...this.#props,
       node: AlterTableNode.cloneWithTableProps(this.#props.node, {
         addConstraint: AddConstraintNode.create(
-          UniqueConstraintNode.create(columns, constraintName)
+          uniqueConstraintBuilder.toOperationNode()
         ),
       }),
     })
@@ -215,11 +227,82 @@ export class AlterTableBuilder implements ColumnAlteringInterface {
     })
   }
 
+  /**
+   * See {@link CreateTableBuilder.addPrimaryKeyConstraint}
+   */
+  addPrimaryKeyConstraint(
+    constraintName: string,
+    columns: string[]
+  ): AlterTableExecutor {
+    return new AlterTableExecutor({
+      ...this.#props,
+      node: AlterTableNode.cloneWithTableProps(this.#props.node, {
+        addConstraint: AddConstraintNode.create(
+          PrimaryConstraintNode.create(columns, constraintName)
+        ),
+      }),
+    })
+  }
+
   dropConstraint(constraintName: string): AlterTableDropConstraintBuilder {
     return new AlterTableDropConstraintBuilder({
       ...this.#props,
       node: AlterTableNode.cloneWithTableProps(this.#props.node, {
         dropConstraint: DropConstraintNode.create(constraintName),
+      }),
+    })
+  }
+
+  /**
+   * This can be used to add index to table.
+   *
+   *  ### Examples
+   *
+   * ```ts
+   * db.schema.alterTable('person')
+   *   .addIndex('person_email_index')
+   *   .column('email')
+   *   .unique()
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (MySQL):
+   *
+   * ```sql
+   * alter table `person` add unique index `person_email_index` (`email`)
+   * ```
+   */
+  addIndex(indexName: string): AlterTableAddIndexBuilder {
+    return new AlterTableAddIndexBuilder({
+      ...this.#props,
+      node: AlterTableNode.cloneWithTableProps(this.#props.node, {
+        addIndex: AddIndexNode.create(indexName),
+      }),
+    })
+  }
+
+  /**
+   * This can be used to drop index from table.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * db.schema.alterTable('person')
+   *   .dropIndex('person_email_index')
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (MySQL):
+   *
+   * ```sql
+   * alter table `person` drop index `test_first_name_index`
+   * ```
+   */
+  dropIndex(indexName: string): AlterTableExecutor {
+    return new AlterTableExecutor({
+      ...this.#props,
+      node: AlterTableNode.cloneWithTableProps(this.#props.node, {
+        dropIndex: DropIndexNode.create(indexName),
       }),
     })
   }
@@ -231,13 +314,6 @@ export class AlterTableBuilder implements ColumnAlteringInterface {
    */
   $call<T>(func: (qb: this) => T): T {
     return func(this)
-  }
-
-  /**
-   * @deprecated Use `$call` instead
-   */
-  call<T>(func: (qb: this) => T): T {
-    return this.$call(func)
   }
 }
 
@@ -291,9 +367,7 @@ export class AlterTableColumnAlteringBuilder
     column: string,
     alteration: AlterColumnBuilderCallback
   ): AlterTableColumnAlteringBuilder {
-    const builder = alteration(
-      new AlterColumnBuilder(AlterColumnNode.create(column))
-    )
+    const builder = alteration(new AlterColumnBuilder(column))
 
     return new AlterTableColumnAlteringBuilder({
       ...this.#props,

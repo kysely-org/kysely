@@ -24,6 +24,11 @@ import { CheckConstraintNode } from '../operation-node/check-constraint-node.js'
 import { parseTable } from '../parser/table-parser.js'
 import { parseOnCommitAction } from '../parser/on-commit-action-parse.js'
 import { Expression } from '../expression/expression.js'
+import {
+  UniqueConstraintNodeBuilder,
+  UniqueConstraintNodeBuilderCallback,
+} from './unique-constraint-builder.js'
+import { parseExpression } from '../parser/expression-parser.js'
 
 /**
  * This builder can be used to create a `create table` query.
@@ -94,14 +99,16 @@ export class CreateTableBuilder<TB extends string, C extends string = never>
    *   .addColumn('first_name', 'varchar(50)', (col) => col.notNull())
    *   .addColumn('last_name', 'varchar(255)')
    *   .addColumn('bank_balance', 'numeric(8, 2)')
-   *   .addColumn('data', sql`some_type`)
+   *   // You can specify any data type using the `sql` tag if the types
+   *   // don't include it.
+   *   .addColumn('data', sql`any_type_here`)
    *   .addColumn('parent_id', 'integer', (col) =>
    *     col.references('person.id').onDelete('cascade'))
    *   )
    * ```
    *
    * With this method, it's once again good to remember that Kysely just builds the
-   * query and doesn't provide the same API for all databses. For example, some
+   * query and doesn't provide the same API for all databases. For example, some
    * databases like older MySQL don't support the `references` statement in the
    * column definition. Instead foreign key constraints need to be defined in the
    * `create table` query. See the next example:
@@ -183,16 +190,28 @@ export class CreateTableBuilder<TB extends string, C extends string = never>
    * ```ts
    * addUniqueConstraint('first_name_last_name_unique', ['first_name', 'last_name'])
    * ```
+   *
+   * In dialects such as PostgreSQL you can specify `nulls not distinct` as follows:
+   * ```ts
+   * addUniqueConstraint('first_name_last_name_unique', ['first_name', 'last_name'], (builder) => builder.nullsNotDistinct())
+   * ```
    */
   addUniqueConstraint(
     constraintName: string,
-    columns: C[]
+    columns: C[],
+    build: UniqueConstraintNodeBuilderCallback = noop
   ): CreateTableBuilder<TB, C> {
+    const uniqueConstraintBuilder = build(
+      new UniqueConstraintNodeBuilder(
+        UniqueConstraintNode.create(columns, constraintName)
+      )
+    )
+
     return new CreateTableBuilder({
       ...this.#props,
       node: CreateTableNode.cloneWithConstraint(
         this.#props.node,
-        UniqueConstraintNode.create(columns, constraintName)
+        uniqueConstraintBuilder.toOperationNode()
       ),
     })
   }
@@ -356,6 +375,34 @@ export class CreateTableBuilder<TB extends string, C extends string = never>
   }
 
   /**
+   * Allows to create table from `select` query.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * db.schema.createTable('copy')
+   *   .temporary()
+   *   .as(db.selectFrom('person').select(['first_name', 'last_name']))
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * create temporary table "copy" as
+   * select "first_name", "last_name" from "person"
+   * ```
+   */
+  as(expression: Expression<unknown>) {
+    return new CreateTableBuilder({
+      ...this.#props,
+      node: CreateTableNode.cloneWith(this.#props.node, {
+        selectQuery: parseExpression(expression),
+      }),
+    })
+  }
+
+  /**
    * Calls the given function passing `this` as the only argument.
    *
    * ### Examples
@@ -389,13 +436,6 @@ export class CreateTableBuilder<TB extends string, C extends string = never>
    */
   $call<T>(func: (qb: this) => T): T {
     return func(this)
-  }
-
-  /**
-   * @deprecated Use `$call` instead
-   */
-  call<T>(func: (qb: this) => T): T {
-    return this.$call(func)
   }
 
   toOperationNode(): CreateTableNode {

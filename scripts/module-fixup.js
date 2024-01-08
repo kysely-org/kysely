@@ -34,9 +34,9 @@ for (const ex of Object.keys(package.exports)) {
 
   const [, ...targetFolders] = package.exports[ex].require.split('/')
   const targetFileName = targetFolders.pop()
-  const target = path.relative(
-    path.join(ROOT_PATH, ...folders),
-    path.join(ROOT_PATH, ...targetFolders, targetFileName)
+  const target = path.posix.relative(
+    path.posix.join(ROOT_PATH, ...folders),
+    path.posix.join(ROOT_PATH, ...targetFolders, targetFileName)
   )
 
   fs.mkdirSync(path.join(ROOT_PATH, ...folders), {

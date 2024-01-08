@@ -1,13 +1,13 @@
 import { CamelCasePlugin, Generated, Kysely, RawBuilder, sql } from '../../../'
 
 import {
-  DIALECTS,
   destroyTest,
   initTest,
   TestContext,
   testSql,
   expect,
   createTableWithId,
+  DIALECTS,
 } from './test-setup.js'
 
 for (const dialect of DIALECTS) {
@@ -40,7 +40,10 @@ for (const dialect of DIALECTS) {
       await createTableWithId(camelDb.schema, dialect, 'camelPerson')
         .addColumn('firstName', 'varchar(255)')
         .addColumn('lastName', 'varchar(255)')
-        .addColumn('preferences', 'json')
+        .addColumn(
+          'preferences',
+          dialect === 'mssql' ? 'varchar(8000)' : 'json'
+        )
         .execute()
     })
 
@@ -74,7 +77,7 @@ for (const dialect of DIALECTS) {
 
     // Can't run this test on SQLite because we can't access the same database
     // from the other Kysely instance.
-    if (dialect !== 'sqlite') {
+    if (dialect === 'postgres' || dialect === 'mysql' || dialect === 'mssql') {
       it('should have created the table and its columns in snake_case', async () => {
         const result = await sql<any>`select * from camel_person`.execute(
           ctx.db
@@ -114,6 +117,15 @@ for (const dialect of DIALECTS) {
             'from `camel_person`',
             'inner join `camel_person` as `camel_person2` on `camel_person2`.`id` = `camel_person`.`id`',
             'order by `camel_person`.`first_name`',
+          ],
+          parameters: [],
+        },
+        mssql: {
+          sql: [
+            `select "camel_person"."first_name"`,
+            `from "camel_person"`,
+            `inner join "camel_person" as "camel_person2" on "camel_person2"."id" = "camel_person"."id"`,
+            `order by "camel_person"."first_name"`,
           ],
           parameters: [],
         },
@@ -167,6 +179,15 @@ for (const dialect of DIALECTS) {
             ],
             parameters: [],
           },
+          mssql: {
+            sql: [
+              `select "camel_person"."first_name"`,
+              `from "camel_person"`,
+              `inner join "camel_person" as "camel_person2" on "camel_person2"."id" = "camel_person"."id"`,
+              `order by "camel_person"."first_name"`,
+            ],
+            parameters: [],
+          },
           sqlite: {
             sql: [
               `select "camel_person"."first_name"`,
@@ -203,6 +224,10 @@ for (const dialect of DIALECTS) {
           sql: 'alter table `camel_person` add column `middle_name` text references `camel_person` (`first_name`)',
           parameters: [],
         },
+        mssql: {
+          sql: 'alter table "camel_person" add "middle_name" text references "camel_person" ("first_name")',
+          parameters: [],
+        },
         sqlite: {
           sql: 'alter table "camel_person" add column "middle_name" text references "camel_person" ("first_name")',
           parameters: [],
@@ -225,6 +250,10 @@ for (const dialect of DIALECTS) {
           sql: 'delete from `camel_person` as `c` using `camel_person` where `camel_person`.`first_name` = ?',
           parameters: ['Arnold'],
         },
+        mssql: {
+          sql: `delete from "camel_person" as "c" using "camel_person" where "camel_person"."first_name" = @1`,
+          parameters: ['Arnold'],
+        },
         sqlite: {
           sql: `delete from "camel_person" as "c" using "camel_person" where "camel_person"."first_name" = ?`,
           parameters: ['Arnold'],
@@ -240,7 +269,7 @@ for (const dialect of DIALECTS) {
         .selectAll()
         .executeTakeFirstOrThrow()
 
-      if (dialect === 'sqlite') {
+      if (dialect === 'mssql' || dialect === 'sqlite') {
         data.preferences = JSON.parse(data.preferences.toString())
       }
 

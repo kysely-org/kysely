@@ -6,8 +6,8 @@ import { freeze } from '../util/object-utils.js'
 
 export interface ReferenceNode extends OperationNode {
   readonly kind: 'ReferenceNode'
-  readonly table: TableNode
   readonly column: ColumnNode | SelectAllNode
+  readonly table?: TableNode
 }
 
 /**
@@ -18,7 +18,7 @@ export const ReferenceNode = freeze({
     return node.kind === 'ReferenceNode'
   },
 
-  create(table: TableNode, column: ColumnNode): ReferenceNode {
+  create(column: ColumnNode, table?: TableNode): ReferenceNode {
     return freeze({
       kind: 'ReferenceNode',
       table,

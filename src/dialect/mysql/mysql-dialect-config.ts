@@ -60,6 +60,7 @@ export interface MysqlStream<T> {
 
 export interface MysqlOkPacket {
   affectedRows: number
+  changedRows: number
   insertId: number
 }
 

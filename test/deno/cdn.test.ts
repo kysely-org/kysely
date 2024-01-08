@@ -1,11 +1,6 @@
-import {
-  DummyDriver,
-  Generated,
-  Kysely,
-  PostgresAdapter,
-  PostgresIntrospector,
-  PostgresQueryCompiler,
-} from 'https://cdn.jsdelivr.net/npm/kysely@0.19.0/dist/esm/index.js'
+import { Generated, Kysely, MysqlDialect, PostgresDialect, sql } from 'kysely'
+import { createPool } from 'mysql2'
+import Pool from 'pg-pool'
 
 interface Person {
   id: Generated<number>
@@ -17,29 +12,43 @@ interface Database {
   person: Person
 }
 
-const db = new Kysely<Database>({
-  dialect: {
-    createAdapter() {
-      return new PostgresAdapter()
-    },
-    createDriver() {
-      return new DummyDriver()
-    },
-    createIntrospector(db: Kysely<unknown>) {
-      return new PostgresIntrospector(db)
-    },
-    createQueryCompiler() {
-      return new PostgresQueryCompiler()
-    },
-  },
-})
+const dbs = [
+  new Kysely<Database>({
+    dialect: new PostgresDialect({
+      pool: new Pool({
+        database: 'kysely_test',
+        host: 'localhost',
+        user: 'kysely',
+        port: 5434,
+      }),
+    }),
+  }),
+  new Kysely<Database>({
+    dialect: new MysqlDialect({
+      pool: createPool({
+        database: 'kysely_test',
+        host: 'localhost',
+        user: 'kysely',
+        password: 'kysely',
+        port: 3308,
+      }),
+    }),
+  }),
+]
 
-const query = db.selectFrom('person').select('id')
-const sql = query.compile()
-
-if (sql.sql !== 'select "id" from "person"') {
-  console.error('deno test failed')
+if (
+  dbs
+    .map((db) => db.selectFrom('person').select('id').compile().sql)
+    .some((sql) => sql.match(/^select ["`]id["`] from ["`]person["`]$/) == null)
+) {
+  console.error('CDN deno test failed')
   Deno.exit(1)
 }
 
+const query = sql`select 1`
+
+await Promise.all(dbs.map((db) => query.execute(db)))
+
 console.error('CDN deno test passed')
+
+await Promise.all(dbs.map((db) => db.destroy()))

@@ -6,36 +6,43 @@ import { Simplify } from '../util/type-utils.js'
 /**
  * A postgres helper for aggregating a subquery (or other expression) into a JSONB array.
  *
- * NOTE: This helper is only guaranteed to fully work with the built-in `PostgresDialect`.
- * While the produced SQL is compatibe with all PostgreSQL databases, some 3rd party dialects
- * may not parse the nested results into arrays.
- *
  * ### Examples
  *
+ * <!-- siteExample("select", "Nested array", 110) -->
+ *
+ * While kysely is not an ORM and it doesn't have the concept of relations, we do provide
+ * helpers for fetching nested objects and arrays in a single query. In this example we
+ * use the `jsonArrayFrom` helper to fetch person's pets along with the person's id.
+ *
+ * Please keep in mind that the helpers under the `kysely/helpers` folder, including
+ * `jsonArrayFrom`, are not guaranteed to work with third party dialects. In order for
+ * them to work, the dialect must automatically parse the `json` data type into
+ * javascript JSON values like objects and arrays. Some dialects might simply return
+ * the data as a JSON string. In these cases you can use the built in `ParseJSONResultsPlugin`
+ * to parse the results.
+ *
  * ```ts
+ * import { jsonArrayFrom } from 'kysely/helpers/postgres'
+ *
  * const result = await db
  *   .selectFrom('person')
- *   .select([
+ *   .select((eb) => [
  *     'id',
- *     eb => jsonArrayFrom(
+ *     jsonArrayFrom(
  *       eb.selectFrom('pet')
  *         .select(['pet.id as pet_id', 'pet.name'])
- *         .where('pet.owner_id', '=', 'person.id')
+ *         .whereRef('pet.owner_id', '=', 'person.id')
  *         .orderBy('pet.name')
  *     ).as('pets')
  *   ])
  *   .execute()
- *
- * result[0].id
- * result[0].pets[0].pet_id
- * result[0].pets[0].name
  * ```
  *
  * The generated SQL (PostgreSQL):
  *
  * ```sql
  * select "id", (
- *   select coalesce(jsonb_agg(agg), '[]') from (
+ *   select coalesce(json_agg(agg), '[]') from (
  *     select "pet"."id" as "pet_id", "pet"."name"
  *     from "pet"
  *     where "pet"."owner_id" = "person"."id"
@@ -48,44 +55,51 @@ import { Simplify } from '../util/type-utils.js'
 export function jsonArrayFrom<O>(
   expr: Expression<O>
 ): RawBuilder<Simplify<O>[]> {
-  return sql`(select coalesce(jsonb_agg(agg), '[]') from ${expr} as agg)`
+  return sql`(select coalesce(json_agg(agg), '[]') from ${expr} as agg)`
 }
 
 /**
- * A postgres helper for turning a subquery (or other expression) into a JSONB object.
+ * A postgres helper for turning a subquery (or other expression) into a JSON object.
  *
  * The subquery must only return one row.
  *
- * NOTE: This helper is only guaranteed to fully work with the built-in `PostgresDialect`.
- * While the produced SQL is compatibe with all PostgreSQL databases, some 3rd party dialects
- * may not parse the nested results into objects.
- *
  * ### Examples
  *
+ * <!-- siteExample("select", "Nested object", 120) -->
+ *
+ * While kysely is not an ORM and it doesn't have the concept of relations, we do provide
+ * helpers for fetching nested objects and arrays in a single query. In this example we
+ * use the `jsonObjectFrom` helper to fetch person's favorite pet along with the person's id.
+ *
+ * Please keep in mind that the helpers under the `kysely/helpers` folder, including
+ * `jsonObjectFrom`, are not guaranteed to work with 3rd party dialects. In order for
+ * them to work, the dialect must automatically parse the `json` data type into
+ * javascript JSON values like objects and arrays. Some dialects might simply return
+ * the data as a JSON string. In these cases you can use the built in `ParseJSONResultsPlugin`
+ * to parse the results.
+ *
  * ```ts
+ * import { jsonObjectFrom } from 'kysely/helpers/postgres'
+ *
  * const result = await db
  *   .selectFrom('person')
- *   .select([
+ *   .select((eb) => [
  *     'id',
- *     eb => jsonObjectFrom(
+ *     jsonObjectFrom(
  *       eb.selectFrom('pet')
  *         .select(['pet.id as pet_id', 'pet.name'])
- *         .where('pet.owner_id', '=', 'person.id')
+ *         .whereRef('pet.owner_id', '=', 'person.id')
  *         .where('pet.is_favorite', '=', true)
  *     ).as('favorite_pet')
  *   ])
  *   .execute()
- *
- * result[0].id
- * result[0].favorite_pet.pet_id
- * result[0].favorite_pet.name
  * ```
  *
  * The generated SQL (PostgreSQL):
  *
  * ```sql
  * select "id", (
- *   select to_jsonb(obj) from (
+ *   select to_json(obj) from (
  *     select "pet"."id" as "pet_id", "pet"."name"
  *     from "pet"
  *     where "pet"."owner_id" = "person"."id"
@@ -97,25 +111,26 @@ export function jsonArrayFrom<O>(
  */
 export function jsonObjectFrom<O>(
   expr: Expression<O>
-): RawBuilder<Simplify<O>> {
-  return sql`(select to_jsonb(obj) from ${expr} as obj)`
+): RawBuilder<Simplify<O> | null> {
+  return sql`(select to_json(obj) from ${expr} as obj)`
 }
 
 /**
- * The PostgreSQL `jsonb_build_object` function.
+ * The PostgreSQL `json_build_object` function.
  *
  * NOTE: This helper is only guaranteed to fully work with the built-in `PostgresDialect`.
- * While the produced SQL is compatibe with all PostgreSQL databases, some 3rd party dialects
- * may not parse the nested results into objects.
+ * While the produced SQL is compatible with all PostgreSQL databases, some 3rd party dialects
+ * may not parse the nested JSON into objects. In these cases you can use the built in
+ * `ParseJSONResultsPlugin` to parse the results.
  *
  * ### Examples
  *
  * ```ts
  * const result = await db
  *   .selectFrom('person')
- *   .select([
+ *   .select((eb) => [
  *     'id',
- *     eb => jsonbBuildObject({
+ *     jsonBuildObject({
  *       first: eb.ref('first_name'),
  *       last: eb.ref('last_name'),
  *       full: sql<string>`first_name || ' ' || last_name`
@@ -132,7 +147,7 @@ export function jsonObjectFrom<O>(
  * The generated SQL (PostgreSQL):
  *
  * ```sql
- * select "id", jsonb_build_object(
+ * select "id", json_build_object(
  *   'first', first_name,
  *   'last', last_name,
  *   'full', first_name || ' ' || last_name
@@ -140,14 +155,14 @@ export function jsonObjectFrom<O>(
  * from "person"
  * ```
  */
-export function jsonbBuildObject<O extends Record<string, Expression<unknown>>>(
+export function jsonBuildObject<O extends Record<string, Expression<unknown>>>(
   obj: O
 ): RawBuilder<
   Simplify<{
     [K in keyof O]: O[K] extends Expression<infer V> ? V : never
   }>
 > {
-  return sql`jsonb_build_object(${sql.join(
-    Object.keys(obj).flatMap((k) => [sql.literal(k), obj[k]])
+  return sql`json_build_object(${sql.join(
+    Object.keys(obj).flatMap((k) => [sql.lit(k), obj[k]])
   )})`
 }

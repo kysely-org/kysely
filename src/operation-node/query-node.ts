@@ -8,22 +8,22 @@ import { JoinNode } from './join-node.js'
 import { SelectionNode } from './selection-node.js'
 import { ReturningNode } from './returning-node.js'
 import { OperationNode } from './operation-node.js'
+import { ExplainNode } from './explain-node.js'
+import { ExplainFormat } from '../util/explainable.js'
+import { Expression } from '../expression/expression.js'
+import { MergeQueryNode } from './merge-query-node.js'
 
 export type QueryNode =
   | SelectQueryNode
-  | DeleteQueryNode
   | InsertQueryNode
   | UpdateQueryNode
-
-export type MutatingQueryNode =
   | DeleteQueryNode
-  | InsertQueryNode
-  | UpdateQueryNode
+  | MergeQueryNode
 
-export type FilterableQueryNode =
-  | SelectQueryNode
-  | DeleteQueryNode
-  | UpdateQueryNode
+type HasJoins = { joins?: ReadonlyArray<JoinNode> }
+type HasWhere = { where?: WhereNode }
+type HasReturning = { returning?: ReturningNode }
+type HasExplain = { explain?: ExplainNode }
 
 /**
  * @internal
@@ -31,17 +31,15 @@ export type FilterableQueryNode =
 export const QueryNode = freeze({
   is(node: OperationNode): node is QueryNode {
     return (
-      DeleteQueryNode.is(node) ||
+      SelectQueryNode.is(node) ||
       InsertQueryNode.is(node) ||
       UpdateQueryNode.is(node) ||
-      SelectQueryNode.is(node)
+      DeleteQueryNode.is(node) ||
+      MergeQueryNode.is(node)
     )
   },
 
-  cloneWithWhere<T extends FilterableQueryNode>(
-    node: T,
-    operation: OperationNode
-  ): T {
+  cloneWithWhere<T extends HasWhere>(node: T, operation: OperationNode): T {
     return freeze({
       ...node,
       where: node.where
@@ -50,26 +48,14 @@ export const QueryNode = freeze({
     })
   },
 
-  cloneWithOrWhere<T extends FilterableQueryNode>(
-    node: T,
-    operation: OperationNode
-  ): T {
-    return freeze({
-      ...node,
-      where: node.where
-        ? WhereNode.cloneWithOperation(node.where, 'Or', operation)
-        : WhereNode.create(operation),
-    })
-  },
-
-  cloneWithJoin<T extends FilterableQueryNode>(node: T, join: JoinNode): T {
+  cloneWithJoin<T extends HasJoins>(node: T, join: JoinNode): T {
     return freeze({
       ...node,
       joins: node.joins ? freeze([...node.joins, join]) : freeze([join]),
     })
   },
 
-  cloneWithReturning<T extends MutatingQueryNode>(
+  cloneWithReturning<T extends HasReturning>(
     node: T,
     selections: ReadonlyArray<SelectionNode>
   ): T {
@@ -81,10 +67,21 @@ export const QueryNode = freeze({
     })
   },
 
-  cloneWithoutWhere<T extends FilterableQueryNode>(node: T): T {
+  cloneWithoutWhere<T extends HasWhere>(node: T): T {
     return freeze({
       ...node,
       where: undefined,
+    })
+  },
+
+  cloneWithExplain<T extends HasExplain>(
+    node: T,
+    format: ExplainFormat | undefined,
+    options: Expression<any> | undefined
+  ): T {
+    return freeze({
+      ...node,
+      explain: ExplainNode.create(format, options?.toOperationNode()),
     })
   },
 })

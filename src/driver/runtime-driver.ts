@@ -14,27 +14,44 @@ export class RuntimeDriver implements Driver {
   readonly #log: Log
 
   #initPromise?: Promise<void>
+  #initDone: boolean
   #destroyPromise?: Promise<void>
   #connections = new WeakSet<DatabaseConnection>()
 
   constructor(driver: Driver, log: Log) {
+    this.#initDone = false
     this.#driver = driver
     this.#log = log
   }
 
   async init(): Promise<void> {
+    if (this.#destroyPromise) {
+      throw new Error('driver has already been destroyed')
+    }
+
     if (!this.#initPromise) {
-      this.#initPromise = this.#driver.init().catch((err) => {
-        this.#initPromise = undefined
-        return Promise.reject(err)
-      })
+      this.#initPromise = this.#driver
+        .init()
+        .then(() => {
+          this.#initDone = true
+        })
+        .catch((err) => {
+          this.#initPromise = undefined
+          return Promise.reject(err)
+        })
     }
 
     await this.#initPromise
   }
 
   async acquireConnection(): Promise<DatabaseConnection> {
-    await this.init()
+    if (this.#destroyPromise) {
+      throw new Error('driver has already been destroyed')
+    }
+
+    if (!this.#initDone) {
+      await this.init()
+    }
 
     const connection = await this.#driver.acquireConnection()
 
@@ -100,25 +117,29 @@ export class RuntimeDriver implements Driver {
     connection.executeQuery = async (
       compiledQuery
     ): Promise<QueryResult<any>> => {
+      let caughtError: unknown
       const startTime = performanceNow()
 
       try {
         return await executeQuery.call(connection, compiledQuery)
       } catch (error) {
-        this.#logError(error, compiledQuery, startTime)
+        caughtError = error
+        await this.#logError(error, compiledQuery, startTime)
         throw error
       } finally {
-        this.#logQuery(compiledQuery, startTime)
+        if (!caughtError) {
+          await this.#logQuery(compiledQuery, startTime)
+        }
       }
     }
   }
 
-  #logError(
+  async #logError(
     error: unknown,
     compiledQuery: CompiledQuery,
     startTime: number
-  ): void {
-    this.#log.error(() => ({
+  ): Promise<void> {
+    await this.#log.error(() => ({
       level: 'error',
       error,
       query: compiledQuery,
@@ -126,8 +147,11 @@ export class RuntimeDriver implements Driver {
     }))
   }
 
-  #logQuery(compiledQuery: CompiledQuery, startTime: number): void {
-    this.#log.query(() => ({
+  async #logQuery(
+    compiledQuery: CompiledQuery,
+    startTime: number
+  ): Promise<void> {
+    await this.#log.query(() => ({
       level: 'query',
       query: compiledQuery,
       queryDurationMillis: this.#calculateDurationMillis(startTime),

@@ -13,22 +13,33 @@ import {
   TableExpressionOrList,
 } from '../parser/table-parser.js'
 import {
-  parseSelectExpressionOrList,
+  parseSelectArg,
   parseSelectAll,
   SelectExpression,
-  SelectExpressionOrList,
+  SelectArg,
+  SelectCallback,
 } from '../parser/select-parser.js'
-import { ReturningRow } from '../parser/returning-parser.js'
+import {
+  ReturningCallbackRow,
+  ReturningRow,
+} from '../parser/returning-parser.js'
 import { ReferenceExpression } from '../parser/reference-parser.js'
 import { QueryNode } from '../operation-node/query-node.js'
 import {
-  MergePartial,
+  DrainOuterGeneric,
+  NarrowPartial,
   Nullable,
+  ShallowRecord,
   SimplifyResult,
   SimplifySingleResult,
+  SqlBool,
 } from '../util/type-utils.js'
 import { UpdateQueryNode } from '../operation-node/update-query-node.js'
-import { UpdateObject, parseUpdateObject } from '../parser/update-set-parser.js'
+import {
+  UpdateObjectExpression,
+  ExtractUpdateTypeFromReferenceExpression,
+  parseUpdate,
+} from '../parser/update-set-parser.js'
 import { preventAwait } from '../util/prevent-await.js'
 import { Compilable } from '../util/compilable.js'
 import { QueryExecutor } from '../query-executor/query-executor.js'
@@ -45,21 +56,17 @@ import {
 } from './no-result-error.js'
 import { Selectable } from '../util/column-type.js'
 import { Explainable, ExplainFormat } from '../util/explainable.js'
-import { ExplainNode } from '../operation-node/explain-node.js'
 import { AliasedExpression, Expression } from '../expression/expression.js'
 import {
   ComparisonOperatorExpression,
   OperandValueExpressionOrList,
-  parseReferentialFilter,
-  parseWhere,
-  WhereGrouper,
+  parseReferentialBinaryOperation,
+  parseValueBinaryOperationOrExpression,
 } from '../parser/binary-operation-parser.js'
-import {
-  ExistsExpression,
-  parseExists,
-  parseNotExists,
-} from '../parser/unary-operation-parser.js'
 import { KyselyTypeError } from '../util/type-error.js'
+import { Streamable } from '../util/streamable.js'
+import { ExpressionOrFactory } from '../parser/expression-parser.js'
+import { ValueExpression } from '../parser/value-parser.js'
 
 export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
   implements
@@ -67,7 +74,8 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
     ReturningInterface<DB, TB, O>,
     OperationNodeSource,
     Compilable<O>,
-    Explainable
+    Explainable,
+    Streamable<O>
 {
   readonly #props: UpdateQueryBuilderProps
 
@@ -75,116 +83,42 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
     this.#props = freeze(props)
   }
 
-  where<RE extends ReferenceExpression<DB, TB>>(
+  where<
+    RE extends ReferenceExpression<DB, TB>,
+    VE extends OperandValueExpressionOrList<DB, TB, RE>
+  >(
     lhs: RE,
     op: ComparisonOperatorExpression,
-    rhs: OperandValueExpressionOrList<DB, TB, RE>
+    rhs: VE
   ): UpdateQueryBuilder<DB, UT, TB, O>
 
-  where(grouper: WhereGrouper<DB, TB>): UpdateQueryBuilder<DB, UT, TB, O>
-  where(expression: Expression<any>): UpdateQueryBuilder<DB, UT, TB, O>
+  where<E extends ExpressionOrFactory<DB, TB, SqlBool>>(
+    expression: E
+  ): UpdateQueryBuilder<DB, UT, TB, O>
 
   where(...args: any[]): any {
     return new UpdateQueryBuilder({
       ...this.#props,
       queryNode: QueryNode.cloneWithWhere(
         this.#props.queryNode,
-        parseWhere(args)
+        parseValueBinaryOperationOrExpression(args)
       ),
     })
   }
 
-  whereRef(
-    lhs: ReferenceExpression<DB, TB>,
+  whereRef<
+    LRE extends ReferenceExpression<DB, TB>,
+    RRE extends ReferenceExpression<DB, TB>
+  >(
+    lhs: LRE,
     op: ComparisonOperatorExpression,
-    rhs: ReferenceExpression<DB, TB>
+    rhs: RRE
   ): UpdateQueryBuilder<DB, UT, TB, O> {
     return new UpdateQueryBuilder({
       ...this.#props,
       queryNode: QueryNode.cloneWithWhere(
         this.#props.queryNode,
-        parseReferentialFilter(lhs, op, rhs)
-      ),
-    })
-  }
-
-  orWhere<RE extends ReferenceExpression<DB, TB>>(
-    lhs: RE,
-    op: ComparisonOperatorExpression,
-    rhs: OperandValueExpressionOrList<DB, TB, RE>
-  ): UpdateQueryBuilder<DB, UT, TB, O>
-
-  orWhere(grouper: WhereGrouper<DB, TB>): UpdateQueryBuilder<DB, UT, TB, O>
-  orWhere(expression: Expression<any>): UpdateQueryBuilder<DB, UT, TB, O>
-
-  orWhere(...args: any[]): any {
-    return new UpdateQueryBuilder({
-      ...this.#props,
-      queryNode: QueryNode.cloneWithOrWhere(
-        this.#props.queryNode,
-        parseWhere(args)
-      ),
-    })
-  }
-
-  orWhereRef(
-    lhs: ReferenceExpression<DB, TB>,
-    op: ComparisonOperatorExpression,
-    rhs: ReferenceExpression<DB, TB>
-  ): UpdateQueryBuilder<DB, UT, TB, O> {
-    return new UpdateQueryBuilder({
-      ...this.#props,
-      queryNode: QueryNode.cloneWithOrWhere(
-        this.#props.queryNode,
-        parseReferentialFilter(lhs, op, rhs)
-      ),
-    })
-  }
-
-  whereExists(
-    arg: ExistsExpression<DB, TB>
-  ): UpdateQueryBuilder<DB, UT, TB, O> {
-    return new UpdateQueryBuilder({
-      ...this.#props,
-      queryNode: QueryNode.cloneWithWhere(
-        this.#props.queryNode,
-        parseExists(arg)
-      ),
-    })
-  }
-
-  whereNotExists(
-    arg: ExistsExpression<DB, TB>
-  ): UpdateQueryBuilder<DB, UT, TB, O> {
-    return new UpdateQueryBuilder({
-      ...this.#props,
-      queryNode: QueryNode.cloneWithWhere(
-        this.#props.queryNode,
-        parseNotExists(arg)
-      ),
-    })
-  }
-
-  orWhereExists(
-    arg: ExistsExpression<DB, TB>
-  ): UpdateQueryBuilder<DB, UT, TB, O> {
-    return new UpdateQueryBuilder({
-      ...this.#props,
-      queryNode: QueryNode.cloneWithOrWhere(
-        this.#props.queryNode,
-        parseExists(arg)
-      ),
-    })
-  }
-
-  orWhereNotExists(
-    arg: ExistsExpression<DB, TB>
-  ): UpdateQueryBuilder<DB, UT, TB, O> {
-    return new UpdateQueryBuilder({
-      ...this.#props,
-      queryNode: QueryNode.cloneWithOrWhere(
-        this.#props.queryNode,
-        parseNotExists(arg)
+        parseReferentialBinaryOperation(lhs, op, rhs)
       ),
     })
   }
@@ -208,9 +142,9 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
    * ```ts
    * db.updateTable('person')
    *   .from('pet')
-   *   .set({
-   *     first_name: (eb) => eb.ref('pet.name')
-   *   })
+   *   .set((eb) => ({
+   *     first_name: eb.ref('pet.name')
+   *   }))
    *   .whereRef('pet.owner_id', '=', 'person.id')
    * ```
    *
@@ -254,7 +188,7 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
    *   .innerJoin('pet', 'pet.owner_id', 'person.id')
    *   // `select` needs to come after the call to `innerJoin` so
    *   // that you can select from the joined table.
-   *   .select('person.id', 'pet.name')
+   *   .select(['person.id', 'pet.name'])
    *   .execute()
    *
    * result[0].id
@@ -464,13 +398,19 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
    *
    * This method takes an object whose keys are column names and values are
    * values to update. In addition to the column's type, the values can be
-   * raw {@link sql} snippets or select queries.
+   * any expressions such as raw {@link sql} snippets or select queries.
+   *
+   * This method also accepts a callback that returns the update object. The
+   * callback takes an instance of {@link ExpressionBuilder} as its only argument.
+   * The expression builder can be used to create arbitrary update expressions.
    *
    * The return value of an update query is an instance of {@link UpdateResult}.
    * You can use the {@link returning} method on supported databases to get out
    * the updated rows.
    *
    * ### Examples
+   *
+   * <!-- siteExample("update", "Single row", 10) -->
    *
    * Update a row in `person` table:
    *
@@ -481,7 +421,7 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
    *     first_name: 'Jennifer',
    *     last_name: 'Aniston'
    *   })
-   *   .where('id', '=', 1)
+   *   .where('id', '=', '1')
    *   .executeTakeFirst()
    *
    * console.log(result.numUpdatedRows)
@@ -493,7 +433,52 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
    * update "person" set "first_name" = $1, "last_name" = $2 where "id" = $3
    * ```
    *
-   * On PostgreSQL you ca chain `returning` to the query to get
+   * <!-- siteExample("update", "Complex values", 20) -->
+   *
+   * As always, you can provide a callback to the `set` method to get access
+   * to an expression builder:
+   *
+   * ```ts
+   * const result = await db
+   *   .updateTable('person')
+   *   .set((eb) => ({
+   *     age: eb('age', '+', 1),
+   *     first_name: eb.selectFrom('pet').select('name').limit(1),
+   *     last_name: 'updated',
+   *   }))
+   *   .where('id', '=', '1')
+   *   .executeTakeFirst()
+   *
+   * console.log(result.numUpdatedRows)
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * update "person"
+   * set
+   *   "first_name" = (select "name" from "pet" limit $1),
+   *   "age" = "age" + $2,
+   *   "last_name" = $3
+   * where
+   *   "id" = $4
+   * ```
+   *
+   * If you provide two arguments the first one is interpreted as the column
+   * (or other target) and the second as the value:
+   *
+   * ```ts
+   * const result = await db
+   *   .updateTable('person')
+   *   .set('first_name', 'Foo')
+   *   // As always, both arguments can be arbitrary expressions or
+   *   // callbacks that give you access to an expression builder:
+   *   .set(sql`address['postalCode']`, (eb) => eb.val('61710))
+   *   .where('id', '=', '1')
+   *   .executeTakeFirst()
+   * ```
+   *
+   * On PostgreSQL you can chain `returning` to the query to get
    * the updated rows' columns (or any other expression) as the
    * return value:
    *
@@ -517,19 +502,20 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
    * update "person" set "first_name" = $1, "last_name" = $2 where "id" = $3 returning "id"
    * ```
    *
-   * In addition to primitives, the values can also be raw sql expressions or
-   * select queries:
+   * In addition to primitives, the values can arbitrary expressions including
+   * raw `sql` snippets or subqueries:
    *
    * ```ts
    * import { sql } from 'kysely'
    *
    * const result = await db
    *   .updateTable('person')
-   *   .set({
-   *     first_name: 'Jennifer',
+   *   .set(({ selectFrom, ref, fn, eb }) => ({
+   *     first_name: selectFrom('person').select('first_name').limit(1),
+   *     middle_name: ref('first_name'),
+   *     age: eb('age', '+', 1),
    *     last_name: sql`${'Ani'} || ${'ston'}`,
-   *     age: db.selectFrom('person').select(sql`avg(age)`),
-   *   })
+   *   }))
    *   .where('id', '=', 1)
    *   .executeTakeFirst()
    *
@@ -540,18 +526,36 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
    *
    * ```sql
    * update "person" set
-   * "first_name" = $1,
-   * "last_name" = $2 || $3,
-   * "age" = (select avg(age) from "person")
-   * where "id" = $4
+   * "first_name" = (select "first_name" from "person" limit $1),
+   * "middle_name" = "first_name",
+   * "age" = "age" + $2,
+   * "last_name" = $3 || $4
+   * where "id" = $5
    * ```
    */
-  set(row: UpdateObject<DB, TB, UT>): UpdateQueryBuilder<DB, UT, TB, O> {
+  set(
+    update: UpdateObjectExpression<DB, TB, UT>
+  ): UpdateQueryBuilder<DB, UT, TB, O>
+
+  set<RE extends ReferenceExpression<DB, UT>>(
+    key: RE,
+    value: ValueExpression<
+      DB,
+      TB,
+      ExtractUpdateTypeFromReferenceExpression<DB, UT, RE>
+    >
+  ): UpdateQueryBuilder<DB, UT, TB, O>
+
+  set(
+    ...args:
+      | [UpdateObjectExpression<DB, TB, UT>]
+      | [ReferenceExpression<DB, UT>, ValueExpression<DB, UT, unknown>]
+  ): UpdateQueryBuilder<DB, UT, TB, O> {
     return new UpdateQueryBuilder({
       ...this.#props,
       queryNode: UpdateQueryNode.cloneWithUpdates(
         this.#props.queryNode,
-        parseUpdateObject(row)
+        parseUpdate(...args)
       ),
     })
   }
@@ -560,16 +564,22 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
     selections: ReadonlyArray<SE>
   ): UpdateQueryBuilder<DB, UT, TB, ReturningRow<DB, TB, O, SE>>
 
+  returning<CB extends SelectCallback<DB, TB>>(
+    callback: CB
+  ): UpdateQueryBuilder<DB, UT, TB, ReturningCallbackRow<DB, TB, O, CB>>
+
   returning<SE extends SelectExpression<DB, TB>>(
     selection: SE
   ): UpdateQueryBuilder<DB, UT, TB, ReturningRow<DB, TB, O, SE>>
 
-  returning(selection: SelectExpressionOrList<DB, TB>): any {
+  returning<SE extends SelectExpression<DB, TB>>(
+    selection: SelectArg<DB, TB, SE>
+  ): UpdateQueryBuilder<DB, UT, TB, ReturningRow<DB, TB, O, SE>> {
     return new UpdateQueryBuilder({
       ...this.#props,
       queryNode: QueryNode.cloneWithReturning(
         this.#props.queryNode,
-        parseSelectExpressionOrList(selection)
+        parseSelectArg(selection)
       ),
     })
   }
@@ -612,13 +622,6 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
   }
 
   /**
-   * @deprecated Use `$call` instead
-   */
-  call<T>(func: (qb: this) => T): T {
-    return this.$call(func)
-  }
-
-  /**
    * Call `func(this)` if `condition` is true.
    *
    * This method is especially handy with optional selects. Any `returning` or `returningAll`
@@ -656,60 +659,77 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
    */
   $if<O2>(
     condition: boolean,
-    func: (qb: this) => UpdateQueryBuilder<DB, UT, TB, O2>
-  ): UpdateQueryBuilder<
-    DB,
-    UT,
-    TB,
-    O2 extends UpdateResult
-      ? UpdateResult
-      : O extends UpdateResult
-      ? Partial<O2>
-      : MergePartial<O, O2>
-  > {
+    func: (qb: this) => UpdateQueryBuilder<any, any, any, O2>
+  ): O2 extends UpdateResult
+    ? UpdateQueryBuilder<DB, UT, TB, UpdateResult>
+    : O2 extends O & infer E
+    ? UpdateQueryBuilder<DB, UT, TB, O & Partial<E>>
+    : UpdateQueryBuilder<DB, UT, TB, Partial<O2>> {
     if (condition) {
       return func(this) as any
     }
 
     return new UpdateQueryBuilder({
       ...this.#props,
-    })
-  }
-
-  /**
-   * @deprecated Use `$if` instead
-   */
-  if<O2>(
-    condition: boolean,
-    func: (qb: this) => UpdateQueryBuilder<DB, UT, TB, O2>
-  ): UpdateQueryBuilder<
-    DB,
-    UT,
-    TB,
-    O2 extends UpdateResult
-      ? UpdateResult
-      : O extends UpdateResult
-      ? Partial<O2>
-      : MergePartial<O, O2>
-  > {
-    return this.$if(condition, func)
+    }) as any
   }
 
   /**
    * Change the output type of the query.
    *
-   * You should only use this method as the last resort if the types
-   * don't support your use case.
+   * This method call doesn't change the SQL in any way. This methods simply
+   * returns a copy of this `UpdateQueryBuilder` with a new output type.
    */
-  $castTo<T>(): UpdateQueryBuilder<DB, UT, TB, T> {
+  $castTo<C>(): UpdateQueryBuilder<DB, UT, TB, C> {
     return new UpdateQueryBuilder(this.#props)
   }
 
   /**
-   * @deprecated Use `$castTo` instead.
+   * Narrows (parts of) the output type of the query.
+   *
+   * Kysely tries to be as type-safe as possible, but in some cases we have to make
+   * compromises for better maintainability and compilation performance. At present,
+   * Kysely doesn't narrow the output type of the query based on {@link set} input
+   * when using {@link where} and/or {@link returning} or {@link returningAll}.
+   *
+   * This utility method is very useful for these situations, as it removes unncessary
+   * runtime assertion/guard code. Its input type is limited to the output type
+   * of the query, so you can't add a column that doesn't exist, or change a column's
+   * type to something that doesn't exist in its union type.
+   *
+   * ### Examples
+   *
+   * Turn this code:
+   *
+   * ```ts
+   * const person = await db.updateTable('person')
+   *   .set({ deletedAt: now })
+   *   .where('id', '=', id)
+   *   .where('nullable_column', 'is not', null)
+   *   .returningAll()
+   *   .executeTakeFirstOrThrow()
+   *
+   * if (person.nullable_column) {
+   *   functionThatExpectsPersonWithNonNullValue(person)
+   * }
+   * ```
+   *
+   * Into this:
+   *
+   * ```ts
+   * const person = await db.updateTable('person')
+   *   .set({ deletedAt: now })
+   *   .where('id', '=', id)
+   *   .where('nullable_column', 'is not', null)
+   *   .returningAll()
+   *   .$narrowType<{ deletedAt: Date; nullable_column: string }>()
+   *   .executeTakeFirstOrThrow()
+   *
+   * functionThatExpectsPersonWithNonNullValue(person)
+   * ```
    */
-  castTo<T>(): UpdateQueryBuilder<DB, UT, TB, T> {
-    return this.$castTo<T>()
+  $narrowType<T>(): UpdateQueryBuilder<DB, UT, TB, NarrowPartial<O, T>> {
+    return new UpdateQueryBuilder(this.#props)
   }
 
   /**
@@ -762,15 +782,6 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
   }
 
   /**
-   * @deprecated Use `$assertType` instead.
-   */
-  assertType<T extends O>(): O extends T
-    ? UpdateQueryBuilder<DB, UT, TB, T>
-    : KyselyTypeError<`assertType() call failed: The type passed in is not equal to the output type of the query.`> {
-    return new UpdateQueryBuilder(this.#props) as unknown as any
-  }
-
-  /**
    * Returns a copy of this UpdateQueryBuilder instance with the given plugin installed.
    */
   withPlugin(plugin: KyselyPlugin): UpdateQueryBuilder<DB, UT, TB, O> {
@@ -815,7 +826,9 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
     return [
       new UpdateResult(
         // TODO: remove numUpdatedOrDeletedRows.
-        result.numAffectedRows ?? result.numUpdatedOrDeletedRows ?? 0n
+        // TODO: https://github.com/kysely-org/kysely/pull/431#discussion_r1172330899
+        result.numAffectedRows ?? result.numUpdatedOrDeletedRows ?? BigInt(0),
+        result.numChangedRows
       ) as any,
     ]
   }
@@ -855,32 +868,30 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
     return result as SimplifyResult<O>
   }
 
-  /**
-   * Executes query with `explain` statement before `update` keyword.
-   *
-   * ```ts
-   * const explained = await db
-   *  .updateTable('person')
-   *  .set(updates)
-   *  .where('id', '=', 123)
-   *  .explain('json')
-   * ```
-   *
-   * The generated SQL (MySQL):
-   *
-   * ```sql
-   * explain format=json update `person` set `first_name` = ?, `last_name` = ? where `id` = ?
-   * ```
-   */
+  async *stream(chunkSize: number = 100): AsyncIterableIterator<O> {
+    const compiledQuery = this.compile()
+
+    const stream = this.#props.executor.stream<O>(
+      compiledQuery,
+      chunkSize,
+      this.#props.queryId
+    )
+
+    for await (const item of stream) {
+      yield* item.rows
+    }
+  }
+
   async explain<ER extends Record<string, any> = Record<string, any>>(
     format?: ExplainFormat,
     options?: Expression<any>
   ): Promise<ER[]> {
     const builder = new UpdateQueryBuilder<DB, UT, TB, ER>({
       ...this.#props,
-      queryNode: UpdateQueryNode.cloneWithExplain(
+      queryNode: QueryNode.cloneWithExplain(
         this.#props.queryNode,
-        ExplainNode.create(format, options?.toOperationNode())
+        format,
+        options
       ),
     })
 
@@ -927,11 +938,11 @@ type InnerJoinedBuilder<
 > = A extends keyof DB
   ? UpdateQueryBuilder<InnerJoinedDB<DB, A, R>, UT, TB | A, O>
   : // Much faster non-recursive solution for the simple case.
-    UpdateQueryBuilder<DB & Record<A, R>, UT, TB | A, O>
+    UpdateQueryBuilder<DB & ShallowRecord<A, R>, UT, TB | A, O>
 
-type InnerJoinedDB<DB, A extends string, R> = {
+type InnerJoinedDB<DB, A extends string, R> = DrainOuterGeneric<{
   [C in keyof DB | A]: C extends A ? R : C extends keyof DB ? DB[C] : never
-}
+}>
 
 export type UpdateQueryBuilderWithLeftJoin<
   DB,
@@ -961,15 +972,15 @@ type LeftJoinedBuilder<
 > = A extends keyof DB
   ? UpdateQueryBuilder<LeftJoinedDB<DB, A, R>, UT, TB | A, O>
   : // Much faster non-recursive solution for the simple case.
-    UpdateQueryBuilder<DB & Record<A, Nullable<R>>, UT, TB | A, O>
+    UpdateQueryBuilder<DB & ShallowRecord<A, Nullable<R>>, UT, TB | A, O>
 
-type LeftJoinedDB<DB, A extends keyof any, R> = {
+type LeftJoinedDB<DB, A extends keyof any, R> = DrainOuterGeneric<{
   [C in keyof DB | A]: C extends A
     ? Nullable<R>
     : C extends keyof DB
     ? DB[C]
     : never
-}
+}>
 
 export type UpdateQueryBuilderWithRightJoin<
   DB,
@@ -998,7 +1009,12 @@ type RightJoinedBuilder<
   R
 > = UpdateQueryBuilder<RightJoinedDB<DB, TB, A, R>, UT, TB | A, O>
 
-type RightJoinedDB<DB, TB extends keyof DB, A extends keyof any, R> = {
+type RightJoinedDB<
+  DB,
+  TB extends keyof DB,
+  A extends keyof any,
+  R
+> = DrainOuterGeneric<{
   [C in keyof DB | A]: C extends A
     ? R
     : C extends TB
@@ -1006,7 +1022,7 @@ type RightJoinedDB<DB, TB extends keyof DB, A extends keyof any, R> = {
     : C extends keyof DB
     ? DB[C]
     : never
-}
+}>
 
 export type UpdateQueryBuilderWithFullJoin<
   DB,
@@ -1035,7 +1051,12 @@ type OuterJoinedBuilder<
   R
 > = UpdateQueryBuilder<OuterJoinedBuilderDB<DB, TB, A, R>, UT, TB | A, O>
 
-type OuterJoinedBuilderDB<DB, TB extends keyof DB, A extends keyof any, R> = {
+type OuterJoinedBuilderDB<
+  DB,
+  TB extends keyof DB,
+  A extends keyof any,
+  R
+> = DrainOuterGeneric<{
   [C in keyof DB | A]: C extends A
     ? Nullable<R>
     : C extends TB
@@ -1043,4 +1064,4 @@ type OuterJoinedBuilderDB<DB, TB extends keyof DB, A extends keyof any, R> = {
     : C extends keyof DB
     ? DB[C]
     : never
-}
+}>

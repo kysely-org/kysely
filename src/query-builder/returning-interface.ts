@@ -1,5 +1,8 @@
-import { ReturningRow } from '../parser/returning-parser.js'
-import { SelectExpression } from '../parser/select-parser.js'
+import {
+  ReturningCallbackRow,
+  ReturningRow,
+} from '../parser/returning-parser.js'
+import { SelectCallback, SelectExpression } from '../parser/select-parser.js'
 import { Selectable } from '../util/column-type.js'
 
 export interface ReturningInterface<DB, TB extends keyof DB, O> {
@@ -54,10 +57,10 @@ export interface ReturningInterface<DB, TB extends keyof DB, O> {
    *     first_name: 'Jennifer',
    *     last_name: 'Aniston'
    *   })
-   *   .returning([
+   *   .returning((eb) => [
    *     'id as id',
    *     sql<string>`concat(first_name, ' ', last_name)`.as('full_name'),
-   *     (qb) => qb.selectFrom('pets').select('pet.id').limit(1).as('first_pet_id')
+   *     eb.selectFrom('pets').select('pet.id').limit(1).as('first_pet_id')
    *   ])
    *   .executeTakeFirst()
    * ```
@@ -65,6 +68,10 @@ export interface ReturningInterface<DB, TB extends keyof DB, O> {
   returning<SE extends SelectExpression<DB, TB>>(
     selections: ReadonlyArray<SE>
   ): ReturningInterface<DB, TB, ReturningRow<DB, TB, O, SE>>
+
+  returning<CB extends SelectCallback<DB, TB>>(
+    callback: CB
+  ): ReturningInterface<DB, TB, ReturningCallbackRow<DB, TB, O, CB>>
 
   returning<SE extends SelectExpression<DB, TB>>(
     selection: SE

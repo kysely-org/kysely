@@ -31,11 +31,13 @@ const ROOT_OPERATION_NODES: Record<RootOperationNode['kind'], true> = freeze({
   RawNode: true,
   SelectQueryNode: true,
   UpdateQueryNode: true,
+  MergeQueryNode: true,
 })
 
 export class WithSchemaTransformer extends OperationNodeTransformer {
   readonly #schema: string
   readonly #schemableIds = new Set<string>()
+  readonly #ctes = new Set<string>()
 
   constructor(schema: string) {
     super()
@@ -45,6 +47,12 @@ export class WithSchemaTransformer extends OperationNodeTransformer {
   protected override transformNodeImpl<T extends OperationNode>(node: T): T {
     if (!this.#isRootOperationNode(node)) {
       return super.transformNodeImpl(node)
+    }
+
+    const ctes = this.#collectCTEs(node)
+
+    for (const cte of ctes) {
+      this.#ctes.add(cte)
     }
 
     const tables = this.#collectSchemableIds(node)
@@ -57,6 +65,10 @@ export class WithSchemaTransformer extends OperationNodeTransformer {
 
     for (const table of tables) {
       this.#schemableIds.delete(table)
+    }
+
+    for (const cte of ctes) {
+      this.#ctes.delete(cte)
     }
 
     return transformed
@@ -124,11 +136,21 @@ export class WithSchemaTransformer extends OperationNodeTransformer {
       }
     }
 
-    if ('with' in node && node.with) {
-      this.#removeCommonTableExpressionTables(node.with, schemableIds)
+    if ('using' in node && node.using) {
+      this.#collectSchemableIdsFromTableExpr(node.using, schemableIds)
     }
 
     return schemableIds
+  }
+
+  #collectCTEs(node: RootOperationNode): Set<string> {
+    const ctes = new Set<string>()
+
+    if ('with' in node && node.with) {
+      this.#collectCTEIds(node.with, ctes)
+    }
+
+    return ctes
   }
 
   #collectSchemableIdsFromTableExpr(
@@ -150,17 +172,20 @@ export class WithSchemaTransformer extends OperationNodeTransformer {
     node: SchemableIdentifierNode,
     schemableIds: Set<string>
   ): void {
-    if (!this.#schemableIds.has(node.identifier.name)) {
-      schemableIds.add(node.identifier.name)
+    const id = node.identifier.name
+
+    if (!this.#schemableIds.has(id) && !this.#ctes.has(id)) {
+      schemableIds.add(id)
     }
   }
 
-  #removeCommonTableExpressionTables(
-    node: WithNode,
-    schemableIds: Set<string>
-  ) {
+  #collectCTEIds(node: WithNode, ctes: Set<string>): void {
     for (const expr of node.expressions) {
-      schemableIds.delete(expr.name.table.table.identifier.name)
+      const cteId = expr.name.table.table.identifier.name
+
+      if (!this.#ctes.has(cteId)) {
+        ctes.add(cteId)
+      }
     }
   }
 }

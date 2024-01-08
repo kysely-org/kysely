@@ -15,17 +15,20 @@ export const OrderByNode = freeze({
     return node.kind === 'OrderByNode'
   },
 
-  create(item: OrderByItemNode): OrderByNode {
+  create(items: ReadonlyArray<OrderByItemNode>): OrderByNode {
     return freeze({
       kind: 'OrderByNode',
-      items: freeze([item]),
+      items: freeze([...items]),
     })
   },
 
-  cloneWithItem(orderBy: OrderByNode, item: OrderByItemNode): OrderByNode {
+  cloneWithItems(
+    orderBy: OrderByNode,
+    items: ReadonlyArray<OrderByItemNode>
+  ): OrderByNode {
     return freeze({
       ...orderBy,
-      items: freeze([...orderBy.items, item]),
+      items: freeze([...orderBy.items, ...items]),
     })
   },
 })

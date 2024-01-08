@@ -1,4 +1,4 @@
-import { Kysely, sql } from '..'
+import { Expression, Kysely, SqlBool, sql } from '..'
 import { Database } from '../shared'
 import { expectError } from 'tsd'
 
@@ -25,36 +25,79 @@ function testWhere(db: Kysely<Database>) {
   // Nullable LHS with reference
   db.selectFrom('person').whereRef('last_name', '=', 'first_name')
 
+  // Expression builder callback
+  db.selectFrom('movie').where(
+    (eb) => eb.selectFrom('person').select('gender'),
+    '=',
+    'female'
+  )
+
   // Subquery in LHS
   db.selectFrom('movie').where(
-    (qb) => qb.selectFrom('person').select('gender'),
+    (eb) => eb.selectFrom('person').select('gender'),
     '=',
     'female'
   )
 
   // Nullable subquery in LHS
-  db.selectFrom('movie').where(
-    (qb) => qb.selectFrom('person').select('last_name'),
-    '=',
-    'female'
+  db.selectFrom('movie').where((eb) =>
+    eb.or([
+      eb('id', '=', '1'),
+      eb.and([eb('stars', '>', 2), eb('stars', '<', 5)]),
+    ])
   )
 
+  const firstName = 'Jennifer'
+  const lastName = 'Aniston'
+  // Dynamic `and` list in expression builder
+  db.selectFrom('person').where((eb) => {
+    const exprs: Expression<SqlBool>[] = []
+
+    if (firstName) {
+      exprs.push(eb('first_name', '=', firstName))
+    }
+
+    if (lastName) {
+      exprs.push(eb('last_name', '=', lastName))
+    }
+
+    return eb.and(exprs)
+  })
+
   // Subquery in RHS
-  db.selectFrom('movie').where(sql`${'female'}`, '=', (qb) =>
-    qb.selectFrom('person').select('gender')
+  db.selectFrom('movie').where(sql<string>`${'female'}`, '=', (eb) =>
+    eb.selectFrom('person').select('gender')
   )
 
   // Nullable subquery in RHS
-  db.selectFrom('person').where('first_name', 'in', (qb) =>
-    qb.selectFrom('person').select('last_name')
+  db.selectFrom('person').where('first_name', 'in', (eb) =>
+    eb.selectFrom('person').select('last_name')
   )
 
   // Raw expression
-  db.selectFrom('person').where('first_name', '=', sql`'foo'`)
+  db.selectFrom('person').where('first_name', '=', sql<string>`'foo'`)
   db.selectFrom('person').where('first_name', '=', sql<string>`'foo'`)
   db.selectFrom('person').where(sql`whatever`, '=', 1)
   db.selectFrom('person').where(sql`whatever`, '=', true)
   db.selectFrom('person').where(sql`whatever`, '=', '1')
+
+  // Boolean returning select query
+  db.selectFrom('person')
+    .selectAll()
+    .where(
+      db
+        .selectFrom('pet')
+        .select((eb) => eb('name', '=', 'Doggo').as('is_doggo'))
+    )
+
+  // Boolean returning select query using a callback
+  db.selectFrom('person')
+    .selectAll()
+    .where((eb) =>
+      eb
+        .selectFrom('pet')
+        .select((eb) => eb('name', '=', 'Doggo').as('is_doggo'))
+    )
 
   // List value
   db.selectFrom('person').where('gender', 'in', ['female', 'male'])
@@ -103,4 +146,20 @@ function testWhere(db: Kysely<Database>) {
 
   // Invalid type for column
   expectError(db.selectFrom('person').where(sql<string>`first_name`, '=', 1))
+
+  // Non-boolean returning select query
+  expectError(
+    db
+      .selectFrom('person')
+      .selectAll()
+      .where(db.selectFrom('pet').select('name'))
+  )
+
+  // Non-boolean returning select query using a callback
+  expectError(
+    db
+      .selectFrom('person')
+      .selectAll()
+      .where((eb) => eb.selectFrom('pet').select('name'))
+  )
 }

@@ -1,7 +1,6 @@
 import { AliasedRawBuilder, InsertResult, Kysely, sql } from '../../../'
 
 import {
-  DIALECTS,
   clearDatabase,
   destroyTest,
   initTest,
@@ -12,6 +11,8 @@ import {
   Database,
   NOT_SUPPORTED,
   insertDefaultDataSet,
+  DIALECTS,
+  limit,
 } from './test-setup.js'
 
 for (const dialect of DIALECTS) {
@@ -50,6 +51,10 @@ for (const dialect of DIALECTS) {
           sql: 'insert into `person` (`first_name`, `last_name`, `gender`) values (?, ?, ?)',
           parameters: ['Foo', 'Barson', 'other'],
         },
+        mssql: {
+          sql: 'insert into "person" ("first_name", "last_name", "gender") values (@1, @2, @3)',
+          parameters: ['Foo', 'Barson', 'other'],
+        },
         sqlite: {
           sql: 'insert into "person" ("first_name", "last_name", "gender") values (?, ?, ?)',
           parameters: ['Foo', 'Barson', 'other'],
@@ -60,7 +65,7 @@ for (const dialect of DIALECTS) {
       expect(result).to.be.instanceOf(InsertResult)
       expect(result.numInsertedOrUpdatedRows).to.equal(1n)
 
-      if (dialect === 'postgres') {
+      if (dialect === 'postgres' || dialect === 'mssql') {
         expect(result.insertId).to.be.undefined
       } else {
         expect(result.insertId).to.be.a('bigint')
@@ -69,6 +74,29 @@ for (const dialect of DIALECTS) {
       expect(await getNewestPerson(ctx.db)).to.eql({
         first_name: 'Foo',
         last_name: 'Barson',
+      })
+    })
+
+    it('should insert one row with default values', async () => {
+      const query = ctx.db.insertInto('person').defaultValues()
+
+      testSql(query, dialect, {
+        postgres: {
+          sql: 'insert into "person" default values',
+          parameters: [],
+        },
+        mysql: {
+          sql: 'insert into `person` default values',
+          parameters: [],
+        },
+        mssql: {
+          sql: 'insert into "person" default values',
+          parameters: [],
+        },
+        sqlite: {
+          sql: 'insert into "person" default values',
+          parameters: [],
+        },
       })
     })
 
@@ -93,6 +121,10 @@ for (const dialect of DIALECTS) {
           sql: "insert into `person` (`first_name`, `last_name`, `gender`) values ((select max(name) as `max_name` from `pet`), concat('Bar', 'son'), ?)",
           parameters: ['other'],
         },
+        mssql: {
+          sql: `insert into "person" ("first_name", "last_name", "gender") values ((select max(name) as "max_name" from "pet"), concat('Bar', 'son'), @1)`,
+          parameters: ['other'],
+        },
         sqlite: {
           sql: `insert into "person" ("first_name", "last_name", "gender") values ((select max(name) as "max_name" from "pet"), 'Bar' || 'son', ?)`,
           parameters: ['other'],
@@ -109,12 +141,49 @@ for (const dialect of DIALECTS) {
       })
     })
 
+    if (dialect !== 'mssql') {
+      it('should insert one row with expressions', async () => {
+        const query = ctx.db.insertInto('person').values(({ selectFrom }) => ({
+          first_name: selectFrom('pet')
+            .select('name')
+            .where('species', '=', 'dog')
+            .limit(1),
+          gender: 'female',
+        }))
+
+        testSql(query, dialect, {
+          postgres: {
+            sql: `insert into "person" ("first_name", "gender") values ((select "name" from "pet" where "species" = $1 limit $2), $3)`,
+            parameters: ['dog', 1, 'female'],
+          },
+          mysql: {
+            sql: 'insert into `person` (`first_name`, `gender`) values ((select `name` from `pet` where `species` = ? limit ?), ?)',
+            parameters: ['dog', 1, 'female'],
+          },
+          sqlite: {
+            sql: `insert into "person" ("first_name", "gender") values ((select "name" from "pet" where "species" = ? limit ?), ?)`,
+            parameters: ['dog', 1, 'female'],
+          },
+          mssql: NOT_SUPPORTED,
+        })
+
+        const result = await query.executeTakeFirst()
+        expect(result).to.be.instanceOf(InsertResult)
+        expect(result.numInsertedOrUpdatedRows).to.equal(1n)
+
+        expect(await getNewestPerson(ctx.db)).to.eql({
+          first_name: 'Doggo',
+          last_name: null,
+        })
+      })
+    }
+
     it('should insert the result of a select query', async () => {
       const query = ctx.db
         .insertInto('person')
         .columns(['first_name', 'gender'])
         .expression((eb) =>
-          eb.selectFrom('pet').select(['name', sql`${'other'}`.as('gender')])
+          eb.selectFrom('pet').select(['name', eb.val('other').as('gender')])
         )
 
       testSql(query, dialect, {
@@ -124,6 +193,10 @@ for (const dialect of DIALECTS) {
         },
         mysql: {
           sql: 'insert into `person` (`first_name`, `gender`) select `name`, ? as `gender` from `pet`',
+          parameters: ['other'],
+        },
+        mssql: {
+          sql: 'insert into "person" ("first_name", "gender") select "name", @1 as "gender" from "pet"',
           parameters: ['other'],
         },
         sqlite: {
@@ -158,6 +231,8 @@ for (const dialect of DIALECTS) {
       ])
     })
 
+    // TODO: revisit this when mssql has output clause support as it also supports values expression
+    // https://database.guide/values-clause-in-sql-server/#:~:text=In%20SQL%20Server%2C%20VALUES%20is,statement%20or%20the%20FROM%20clause.
     if (dialect === 'postgres') {
       it('should insert the result of a values expression', async () => {
         const query = ctx.db
@@ -184,6 +259,7 @@ for (const dialect of DIALECTS) {
             parameters: [1, 'foo', 2, 'bar'],
           },
           mysql: NOT_SUPPORTED,
+          mssql: NOT_SUPPORTED,
           sqlite: NOT_SUPPORTED,
         })
 
@@ -214,6 +290,10 @@ for (const dialect of DIALECTS) {
           sql: 'insert into `person` (`first_name`, `last_name`, `gender`) values (?, ?, ?)',
           parameters: ['Foo', 'Barson', 'other'],
         },
+        mssql: {
+          sql: 'insert into "person" ("first_name", "last_name", "gender") values (@1, @2, @3)',
+          parameters: ['Foo', 'Barson', 'other'],
+        },
         sqlite: {
           sql: 'insert into "person" ("first_name", "last_name", "gender") values (?, ?, ?)',
           parameters: ['Foo', 'Barson', 'other'],
@@ -225,7 +305,7 @@ for (const dialect of DIALECTS) {
       expect(result).to.be.instanceOf(InsertResult)
       expect(result.numInsertedOrUpdatedRows).to.equal(1n)
 
-      if (dialect === 'postgres') {
+      if (dialect === 'postgres' || dialect === 'mssql') {
         expect(result.insertId).to.be.undefined
       } else {
         expect(result.insertId).to.be.a('bigint')
@@ -252,6 +332,7 @@ for (const dialect of DIALECTS) {
             ],
           },
           postgres: NOT_SUPPORTED,
+          mssql: NOT_SUPPORTED,
           sqlite: NOT_SUPPORTED,
         })
 
@@ -263,7 +344,7 @@ for (const dialect of DIALECTS) {
       })
     }
 
-    if (dialect !== 'mysql') {
+    if (dialect === 'postgres' || dialect === 'sqlite') {
       it('should insert one row and ignore conflicts using `on conflict do nothing`', async () => {
         const [{ id, ...existingPet }] = await ctx.db
           .selectFrom('pet')
@@ -285,6 +366,7 @@ for (const dialect of DIALECTS) {
               existingPet.species,
             ],
           },
+          mssql: NOT_SUPPORTED,
           sqlite: {
             sql: 'insert into "pet" ("name", "owner_id", "species") values (?, ?, ?) on conflict ("name") do nothing',
             parameters: [
@@ -333,6 +415,7 @@ for (const dialect of DIALECTS) {
             ],
           },
           mysql: NOT_SUPPORTED,
+          mssql: NOT_SUPPORTED,
           sqlite: NOT_SUPPORTED,
         })
 
@@ -368,6 +451,7 @@ for (const dialect of DIALECTS) {
             ],
           },
           postgres: NOT_SUPPORTED,
+          mssql: NOT_SUPPORTED,
           sqlite: NOT_SUPPORTED,
         })
 
@@ -390,7 +474,7 @@ for (const dialect of DIALECTS) {
       })
     }
 
-    if (dialect !== 'mysql') {
+    if (dialect === 'postgres' || dialect === 'sqlite') {
       it('should update instead of insert on conflict when using `on conflict do update`', async () => {
         const [{ id, ...existingPet }] = await ctx.db
           .selectFrom('pet')
@@ -416,6 +500,7 @@ for (const dialect of DIALECTS) {
             ],
           },
           mysql: NOT_SUPPORTED,
+          mssql: NOT_SUPPORTED,
           sqlite: {
             sql: 'insert into "pet" ("name", "owner_id", "species") values (?, ?, ?) on conflict ("name") do update set "species" = ?',
             parameters: [
@@ -478,6 +563,7 @@ for (const dialect of DIALECTS) {
             ],
           },
           mysql: NOT_SUPPORTED,
+          mssql: NOT_SUPPORTED,
           sqlite: NOT_SUPPORTED,
         })
 
@@ -524,6 +610,7 @@ for (const dialect of DIALECTS) {
             ],
           },
           mysql: NOT_SUPPORTED,
+          mssql: NOT_SUPPORTED,
           sqlite: NOT_SUPPORTED,
         })
 
@@ -560,6 +647,10 @@ for (const dialect of DIALECTS) {
           sql: 'insert into `person` (`first_name`, `last_name`, `gender`) values (?, ?, ?), (?, ?, ?)',
           parameters: ['Foo', 'Bar', 'other', 'Baz', 'Spam', 'other'],
         },
+        mssql: {
+          sql: 'insert into "person" ("first_name", "last_name", "gender") values (@1, @2, @3), (@4, @5, @6)',
+          parameters: ['Foo', 'Bar', 'other', 'Baz', 'Spam', 'other'],
+        },
         sqlite: {
           sql: 'insert into "person" ("first_name", "last_name", "gender") values (?, ?, ?), (?, ?, ?)',
           parameters: ['Foo', 'Bar', 'other', 'Baz', 'Spam', 'other'],
@@ -571,7 +662,7 @@ for (const dialect of DIALECTS) {
       expect(result).to.be.instanceOf(InsertResult)
       expect(result.numInsertedOrUpdatedRows).to.equal(2n)
 
-      if (dialect === 'postgres') {
+      if (dialect === 'postgres' || dialect === 'mssql') {
         expect(result.insertId).to.be.undefined
       } else {
         expect(result.insertId).to.be.a('bigint')
@@ -581,7 +672,7 @@ for (const dialect of DIALECTS) {
         .selectFrom('person')
         .selectAll()
         .orderBy('id', 'desc')
-        .limit(2)
+        .$call(limit(2, dialect))
         .execute()
 
       expect(inserted).to.containSubset([
@@ -590,47 +681,121 @@ for (const dialect of DIALECTS) {
       ])
     })
 
-    if (dialect === 'postgres' || dialect === 'sqlite') {
-      it('should insert multiple rows while falling back to default values in partial rows', async () => {
-        const query = ctx.db
-          .insertInto('person')
-          .values([
-            {
-              first_name: 'Foo',
-              // last_name is missing on purpose
-              // middle_name is missing on purpose
-              gender: 'other',
-            },
-            {
-              first_name: 'Baz',
-              last_name: 'Spam',
-              middle_name: 'Bo',
-              gender: 'other',
-            },
-          ])
-          .returningAll()
+    it('should insert multiple rows while falling back to default values in partial rows - missing columns', async () => {
+      const query = ctx.db.insertInto('person').values([
+        {
+          first_name: 'Foo',
+          // last_name is missing on purpose
+          // middle_name is missing on purpose
+          gender: 'other',
+        },
+        {
+          first_name: 'Baz',
+          last_name: 'Spam',
+          middle_name: 'Bo',
+          gender: 'other',
+        },
+      ])
 
-        testSql(query, dialect, {
-          postgres: {
-            sql: 'insert into "person" ("first_name", "gender", "last_name", "middle_name") values ($1, $2, default, default), ($3, $4, $5, $6) returning *',
-            parameters: ['Foo', 'other', 'Baz', 'other', 'Spam', 'Bo'],
-          },
-          mysql: NOT_SUPPORTED,
-          sqlite: {
-            sql: 'insert into "person" ("first_name", "gender", "last_name", "middle_name") values (?, ?, null, null), (?, ?, ?, ?) returning *',
-            parameters: ['Foo', 'other', 'Baz', 'other', 'Spam', 'Bo'],
-          },
-        })
-
-        const result = await query.execute()
-
-        expect(result).to.have.length(2)
-        expect(result).to.containSubset([
-          { first_name: 'Foo', last_name: null, gender: 'other' },
-          { first_name: 'Baz', last_name: 'Spam', gender: 'other' },
-        ])
+      testSql(query, dialect, {
+        postgres: {
+          sql: 'insert into "person" ("first_name", "gender", "last_name", "middle_name") values ($1, $2, default, default), ($3, $4, $5, $6)',
+          parameters: ['Foo', 'other', 'Baz', 'other', 'Spam', 'Bo'],
+        },
+        mysql: {
+          sql: 'insert into `person` (`first_name`, `gender`, `last_name`, `middle_name`) values (?, ?, default, default), (?, ?, ?, ?)',
+          parameters: ['Foo', 'other', 'Baz', 'other', 'Spam', 'Bo'],
+        },
+        mssql: {
+          sql: 'insert into "person" ("first_name", "gender", "last_name", "middle_name") values (@1, @2, default, default), (@3, @4, @5, @6)',
+          parameters: ['Foo', 'other', 'Baz', 'other', 'Spam', 'Bo'],
+        },
+        sqlite: {
+          sql: 'insert into "person" ("first_name", "gender", "last_name", "middle_name") values (?, ?, null, null), (?, ?, ?, ?)',
+          parameters: ['Foo', 'other', 'Baz', 'other', 'Spam', 'Bo'],
+        },
       })
 
+      await query.execute()
+    })
+
+    it('should insert multiple rows while falling back to default values in partial rows - undefined columns', async () => {
+      const query = ctx.db.insertInto('person').values([
+        {
+          first_name: 'Foo',
+          last_name: 'Spam',
+          middle_name: 'Bo',
+          gender: 'other',
+        },
+        {
+          first_name: 'Baz',
+          last_name: undefined,
+          middle_name: undefined,
+          gender: 'other',
+        },
+      ])
+
+      testSql(query, dialect, {
+        postgres: {
+          sql: 'insert into "person" ("first_name", "last_name", "middle_name", "gender") values ($1, $2, $3, $4), ($5, default, default, $6)',
+          parameters: ['Foo', 'Spam', 'Bo', 'other', 'Baz', 'other'],
+        },
+        mysql: {
+          sql: 'insert into `person` (`first_name`, `last_name`, `middle_name`, `gender`) values (?, ?, ?, ?), (?, default, default, ?)',
+          parameters: ['Foo', 'Spam', 'Bo', 'other', 'Baz', 'other'],
+        },
+        mssql: {
+          sql: 'insert into "person" ("first_name", "last_name", "middle_name", "gender") values (@1, @2, @3, @4), (@5, default, default, @6)',
+          parameters: ['Foo', 'Spam', 'Bo', 'other', 'Baz', 'other'],
+        },
+        sqlite: {
+          sql: 'insert into "person" ("first_name", "last_name", "middle_name", "gender") values (?, ?, ?, ?), (?, null, null, ?)',
+          parameters: ['Foo', 'Spam', 'Bo', 'other', 'Baz', 'other'],
+        },
+      })
+
+      await query.execute()
+    })
+
+    it('should insert multiple rows while falling back to default values in partial rows - undefined/missing columns', async () => {
+      const query = ctx.db.insertInto('person').values([
+        {
+          first_name: 'Foo',
+          // last_name missing on purpose
+          middle_name: 'Bo',
+          gender: 'other',
+        },
+        {
+          first_name: 'Baz',
+          last_name: 'Spam',
+          middle_name: undefined,
+          gender: 'other',
+        },
+      ])
+
+      testSql(query, dialect, {
+        postgres: {
+          sql: 'insert into "person" ("first_name", "middle_name", "gender", "last_name") values ($1, $2, $3, default), ($4, default, $5, $6)',
+          parameters: ['Foo', 'Bo', 'other', 'Baz', 'other', 'Spam'],
+        },
+        mysql: {
+          sql: 'insert into `person` (`first_name`, `middle_name`, `gender`, `last_name`) values (?, ?, ?, default), (?, default, ?, ?)',
+          parameters: ['Foo', 'Bo', 'other', 'Baz', 'other', 'Spam'],
+        },
+        mssql: {
+          sql: 'insert into "person" ("first_name", "middle_name", "gender", "last_name") values (@1, @2, @3, default), (@4, default, @5, @6)',
+          parameters: ['Foo', 'Bo', 'other', 'Baz', 'other', 'Spam'],
+        },
+        sqlite: {
+          sql: 'insert into "person" ("first_name", "middle_name", "gender", "last_name") values (?, ?, ?, null), (?, null, ?, ?)',
+          parameters: ['Foo', 'Bo', 'other', 'Baz', 'other', 'Spam'],
+        },
+      })
+
+      await query.execute()
+    })
+
+    if (dialect === 'postgres' || dialect === 'sqlite') {
       it('should insert a row and return data using `returning`', async () => {
         const result = await ctx.db
           .insertInto('person')
@@ -669,7 +834,7 @@ for (const dialect of DIALECTS) {
               gender: 'other',
             })
             .returning('first_name')
-            .if(condition, (qb) => qb.returning('last_name'))
+            .$if(condition, (qb) => qb.returning('last_name'))
 
           const result = await query.executeTakeFirstOrThrow()
 
@@ -703,6 +868,38 @@ for (const dialect of DIALECTS) {
           first_name: 'Sylvester',
           last_name: 'Barson',
         })
+      })
+    }
+
+    if (dialect === 'postgres') {
+      it('should insert multiple rows and stream returned results', async () => {
+        const values = [
+          {
+            first_name: 'Moses',
+            last_name: 'Malone',
+            gender: 'male',
+          },
+          {
+            first_name: 'Erykah',
+            last_name: 'Badu',
+            gender: 'female',
+          },
+        ] as const
+
+        const stream = ctx.db
+          .insertInto('person')
+          .values(values)
+          .returning(['first_name', 'last_name', 'gender'])
+          .stream()
+
+        const people = []
+
+        for await (const person of stream) {
+          people.push(person)
+        }
+
+        expect(people).to.have.length(values.length)
+        expect(people).to.eql(values)
       })
     }
   })

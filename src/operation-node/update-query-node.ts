@@ -14,7 +14,7 @@ export type UpdateValuesNode = ValueListNode | PrimitiveValueListNode
 
 export interface UpdateQueryNode extends OperationNode {
   readonly kind: 'UpdateQueryNode'
-  readonly table: OperationNode
+  readonly table?: OperationNode
   readonly from?: FromNode
   readonly joins?: ReadonlyArray<JoinNode>
   readonly where?: WhereNode
@@ -40,6 +40,12 @@ export const UpdateQueryNode = freeze({
     })
   },
 
+  createWithoutTable(): UpdateQueryNode {
+    return freeze({
+      kind: 'UpdateQueryNode',
+    })
+  },
+
   cloneWithFromItems(
     updateQuery: UpdateQueryNode,
     fromItems: ReadonlyArray<OperationNode>
@@ -61,16 +67,6 @@ export const UpdateQueryNode = freeze({
       updates: updateQuery.updates
         ? freeze([...updateQuery.updates, ...updates])
         : updates,
-    })
-  },
-
-  cloneWithExplain(
-    updateQuery: UpdateQueryNode,
-    explain: ExplainNode
-  ): UpdateQueryNode {
-    return freeze({
-      ...updateQuery,
-      explain,
     })
   },
 })

@@ -4,6 +4,8 @@ import { OperationNode } from './operation-node.js'
 export type ColumnDataType =
   | 'varchar'
   | `varchar(${number})`
+  | 'char'
+  | `char(${number})`
   | 'text'
   | 'integer'
   | 'int2'
@@ -20,6 +22,8 @@ export type ColumnDataType =
   | 'numeric'
   | `numeric(${number}, ${number})`
   | 'binary'
+  | `binary(${number})`
+  | 'bytea'
   | 'date'
   | 'datetime'
   | `datetime(${number})`

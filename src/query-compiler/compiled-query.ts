@@ -11,12 +11,12 @@ export interface CompiledQuery<O = unknown> {
 }
 
 export const CompiledQuery = freeze({
-  raw(sql: string): CompiledQuery {
+  raw(sql: string, parameters: unknown[] = []): CompiledQuery {
     return freeze({
       sql,
       query: RawNode.createWithSql(sql),
       queryId: createQueryId(),
-      parameters: freeze([]),
+      parameters: freeze(parameters),
     })
   },
 })

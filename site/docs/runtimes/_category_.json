@@ -1,0 +1,8 @@
+{
+  "label": "Other runtimes",
+  "position": 10,
+  "link": {
+    "type": "generated-index",
+    "description": "Kysely works on the browser, Node.js and Deno. Here are some examples of how to use it."
+  }
+}

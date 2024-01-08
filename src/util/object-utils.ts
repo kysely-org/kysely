@@ -1,3 +1,5 @@
+import { ShallowRecord } from './type-utils.js'
+
 export function isEmpty(obj: ArrayLike<unknown> | string | object): boolean {
   if (Array.isArray(obj) || isString(obj) || isBuffer(obj)) {
     return obj.length === 0
@@ -9,7 +11,7 @@ export function isEmpty(obj: ArrayLike<unknown> | string | object): boolean {
 }
 
 export function isUndefined(obj: unknown): obj is undefined {
-  return obj === undefined
+  return typeof obj === 'undefined' || obj === undefined
 }
 
 export function isString(obj: unknown): obj is string {
@@ -32,7 +34,7 @@ export function isDate(obj: unknown): obj is Date {
   return obj instanceof Date
 }
 
-export function isBigInt(obj: unknown): obj is BigInt {
+export function isBigInt(obj: unknown): obj is bigint {
   return typeof obj === 'bigint'
 }
 
@@ -46,7 +48,7 @@ export function isFunction(obj: unknown): obj is Function {
   return typeof obj === 'function'
 }
 
-export function isObject(obj: unknown): obj is Record<string, unknown> {
+export function isObject(obj: unknown): obj is ShallowRecord<string, unknown> {
   return typeof obj === 'object' && obj !== null
 }
 
@@ -54,6 +56,16 @@ export function isArrayBufferOrView(
   obj: unknown
 ): obj is ArrayBuffer | ArrayBufferView {
   return obj instanceof ArrayBuffer || ArrayBuffer.isView(obj)
+}
+
+export function isPlainObject(obj: unknown): obj is Record<string, unknown> {
+  return (
+    isObject(obj) &&
+    !Array.isArray(obj) &&
+    !isDate(obj) &&
+    !isBuffer(obj) &&
+    !isArrayBufferOrView(obj)
+  )
 }
 
 export function getLast<T>(arr: ArrayLike<T>): T | undefined {
@@ -64,8 +76,8 @@ export function freeze<T>(obj: T): Readonly<T> {
   return Object.freeze(obj)
 }
 
-export function asArray<T>(arg: T | T[]): T[] {
-  if (Array.isArray(arg)) {
+export function asArray<T>(arg: T | ReadonlyArray<T>): ReadonlyArray<T> {
+  if (isReadonlyArray(arg)) {
     return arg
   } else {
     return [arg]

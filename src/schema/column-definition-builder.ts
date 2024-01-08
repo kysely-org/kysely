@@ -1,6 +1,5 @@
 import { CheckConstraintNode } from '../operation-node/check-constraint-node.js'
 import { OperationNodeSource } from '../operation-node/operation-node-source.js'
-import { ReferenceNode } from '../operation-node/reference-node.js'
 import {
   OnModifyForeignAction,
   ReferencesNode,
@@ -66,7 +65,7 @@ export class ColumnDefinitionBuilder implements OperationNodeSource {
   references(ref: string): ColumnDefinitionBuilder {
     const references = parseStringReference(ref)
 
-    if (!ReferenceNode.is(references) || SelectAllNode.is(references.column)) {
+    if (!references.table || SelectAllNode.is(references.column)) {
       throw new Error(
         `invalid call references('${ref}'). The reference must have format table.column or schema.table.column`
       )
@@ -331,6 +330,36 @@ export class ColumnDefinitionBuilder implements OperationNodeSource {
   }
 
   /**
+   * Adds `nulls not distinct` specifier.
+   * Should be used with `unique` constraint.
+   *
+   * This only works on some dialects like PostgreSQL.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * db.schema.createTable('person')
+   *  .addColumn('id', 'integer', col => col.primaryKey())
+   *  .addColumn('first_name', 'varchar(30)', col => col.unique().nullsNotDistinct())
+   *  .execute()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * create table "person" (
+   *   "id" integer primary key,
+   *   "first_name" varchar(30) unique nulls not distinct
+   * )
+   * ```
+   */
+  nullsNotDistinct(): ColumnDefinitionBuilder {
+    return new ColumnDefinitionBuilder(
+      ColumnDefinitionNode.cloneWith(this.#node, { nullsNotDistinct: true })
+    )
+  }
+
+  /**
    * This can be used to add any additional SQL to the end of the column definition.
    *
    * ### Examples
@@ -338,7 +367,7 @@ export class ColumnDefinitionBuilder implements OperationNodeSource {
    * ```ts
    * db.schema.createTable('person')
    *  .addColumn('id', 'integer', col => col.primaryKey())
-   *  .addColumn('age', 'integer', col => col.unsigned().notNull().modifyEnd(sql`comment ${sql.literal('it is not polite to ask a woman her age')}`))
+   *  .addColumn('age', 'integer', col => col.unsigned().notNull().modifyEnd(sql`comment ${sql.lit('it is not polite to ask a woman her age')}`))
    *  .execute()
    * ```
    *

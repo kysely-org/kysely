@@ -1,37 +1,43 @@
 import { BinaryOperationNode } from '../operation-node/binary-operation-node.js'
 import {
-  freeze,
   isBoolean,
-  isFunction,
   isNull,
   isString,
+  isUndefined,
 } from '../util/object-utils.js'
-import { AnySelectQueryBuilder } from '../util/type-utils.js'
-import { isOperationNodeSource } from '../operation-node/operation-node-source.js'
-import { RawNode } from '../operation-node/raw-node.js'
+import {
+  OperationNodeSource,
+  isOperationNodeSource,
+} from '../operation-node/operation-node-source.js'
 import {
   OperatorNode,
-  COMPARISON_OPERATORS,
   ComparisonOperator,
+  BinaryOperator,
+  Operator,
+  OPERATORS,
 } from '../operation-node/operator-node.js'
-import { ParensNode } from '../operation-node/parens-node.js'
 import {
   ExtractTypeFromReferenceExpression,
+  ExtractTypeFromStringReference,
   parseReferenceExpression,
   ReferenceExpression,
+  StringReference,
 } from './reference-parser.js'
 import {
+  parseValueExpression,
   parseValueExpressionOrList,
   ValueExpression,
   ValueExpressionOrList,
 } from './value-parser.js'
-import { JoinBuilder } from '../query-builder/join-builder.js'
 import { ValueNode } from '../operation-node/value-node.js'
-import { WhereInterface } from '../query-builder/where-interface.js'
-import { HavingInterface } from '../query-builder/having-interface.js'
-import { createJoinBuilder, createSelectQueryBuilder } from './parse-utils.js'
 import { OperationNode } from '../operation-node/operation-node.js'
 import { Expression } from '../expression/expression.js'
+import { SelectType } from '../util/column-type.js'
+import { AndNode } from '../operation-node/and-node.js'
+import { ParensNode } from '../operation-node/parens-node.js'
+import { OrNode } from '../operation-node/or-node.js'
+import { WhenNode } from '../operation-node/when-node.js'
+import { RawNode } from '../operation-node/raw-node.js'
 
 export type OperandValueExpression<
   DB,
@@ -49,167 +55,133 @@ export type OperandValueExpressionOrList<
   ExtractTypeFromReferenceExpression<DB, TB, RE> | null
 >
 
-export type WhereGrouper<DB, TB extends keyof DB> = (
-  qb: WhereInterface<DB, TB>
-) => WhereInterface<DB, TB>
+export type OperatorExpression = Operator | Expression<unknown>
+export type BinaryOperatorExpression = BinaryOperator | Expression<unknown>
 
-export type HavingGrouper<DB, TB extends keyof DB> = (
-  qb: HavingInterface<DB, TB>
-) => HavingInterface<DB, TB>
+export type ComparisonOperatorExpression =
+  | ComparisonOperator
+  | Expression<unknown>
 
-export type ComparisonOperatorExpression = ComparisonOperator | Expression<any>
-
-type FilterExpressionType = 'where' | 'having' | 'on'
-
-export function parseWhere(args: any[]): OperationNode {
-  return parseFilterExpression('where', args)
+export type FilterObject<DB, TB extends keyof DB> = {
+  [R in StringReference<DB, TB>]?: ValueExpressionOrList<
+    DB,
+    TB,
+    SelectType<ExtractTypeFromStringReference<DB, TB, R>>
+  >
 }
 
-export function parseHaving(args: any[]): OperationNode {
-  return parseFilterExpression('having', args)
-}
-
-export function parseOn(args: any[]): OperationNode {
-  return parseFilterExpression('on', args)
-}
-
-export function parseReferentialFilter(
-  leftOperand: ReferenceExpression<any, any>,
-  operator: ComparisonOperatorExpression,
-  rightOperand: ReferenceExpression<any, any>
-): BinaryOperationNode {
-  return BinaryOperationNode.create(
-    parseReferenceExpression(leftOperand),
-    parseComparisonOperatorExpression(operator),
-    parseReferenceExpression(rightOperand)
-  )
-}
-
-export function parseFilterExpression(
-  type: FilterExpressionType,
+export function parseValueBinaryOperationOrExpression(
   args: any[]
 ): OperationNode {
   if (args.length === 3) {
-    return parseFilter(args[0], args[1], args[2])
+    return parseValueBinaryOperation(args[0], args[1], args[2])
+  } else if (args.length === 1) {
+    return parseValueExpression(args[0])
   }
 
-  if (args.length === 1) {
-    return parseOneArgFilterExpression(type, args[0])
-  }
-
-  throw createFilterExpressionError(type, args)
+  throw new Error(`invalid arguments: ${JSON.stringify(args)}`)
 }
 
-function parseFilter(
-  leftOperand: ReferenceExpression<any, any>,
-  operator: ComparisonOperatorExpression,
-  rightOperand: OperandValueExpressionOrList<any, any, any>
+export function parseValueBinaryOperation(
+  left: ReferenceExpression<any, any>,
+  operator: BinaryOperatorExpression,
+  right: OperandValueExpressionOrList<any, any, any>
 ): BinaryOperationNode {
-  if (
-    (operator === 'is' || operator === 'is not') &&
-    (isNull(rightOperand) || isBoolean(rightOperand))
-  ) {
-    return parseIs(leftOperand, operator, rightOperand)
+  if (isIsOperator(operator) && needsIsOperator(right)) {
+    return BinaryOperationNode.create(
+      parseReferenceExpression(left),
+      parseOperator(operator),
+      ValueNode.createImmediate(right)
+    )
   }
 
   return BinaryOperationNode.create(
-    parseReferenceExpression(leftOperand),
-    parseComparisonOperatorExpression(operator),
-    parseValueExpressionOrList(rightOperand)
+    parseReferenceExpression(left),
+    parseOperator(operator),
+    parseValueExpressionOrList(right)
   )
 }
 
-function parseIs(
-  leftOperand: ReferenceExpression<any, any>,
-  operator: 'is' | 'is not',
-  rightOperand: null | boolean
-) {
+export function parseReferentialBinaryOperation(
+  left: ReferenceExpression<any, any>,
+  operator: BinaryOperatorExpression,
+  right: OperandValueExpressionOrList<any, any, any>
+): BinaryOperationNode {
   return BinaryOperationNode.create(
-    parseReferenceExpression(leftOperand),
-    parseComparisonOperatorExpression(operator),
-    ValueNode.createImmediate(rightOperand)
+    parseReferenceExpression(left),
+    parseOperator(operator),
+    parseReferenceExpression(right)
   )
 }
 
-function parseComparisonOperatorExpression(
-  operator: ComparisonOperatorExpression
+export function parseFilterObject(
+  obj: Readonly<FilterObject<any, any>>,
+  combinator: 'and' | 'or'
 ): OperationNode {
-  if (isString(operator) && COMPARISON_OPERATORS.includes(operator)) {
+  return parseFilterList(
+    Object.entries(obj)
+      .filter(([, v]) => !isUndefined(v))
+      .map(([k, v]) =>
+        parseValueBinaryOperation(k, needsIsOperator(v) ? 'is' : '=', v)
+      ),
+    combinator
+  )
+}
+
+export function parseFilterList(
+  list: ReadonlyArray<OperationNodeSource | OperationNode>,
+  combinator: 'and' | 'or',
+  withParens = true
+): OperationNode {
+  const combine = combinator === 'and' ? AndNode.create : OrNode.create
+
+  if (list.length === 0) {
+    return BinaryOperationNode.create(
+      ValueNode.createImmediate(1),
+      OperatorNode.create('='),
+      ValueNode.createImmediate(combinator === 'and' ? 1 : 0)
+    )
+  }
+
+  let node = toOperationNode(list[0])
+
+  for (let i = 1; i < list.length; ++i) {
+    node = combine(node, toOperationNode(list[i]))
+  }
+
+  if (list.length > 1 && withParens) {
+    return ParensNode.create(node)
+  }
+
+  return node
+}
+
+function isIsOperator(
+  operator: BinaryOperatorExpression
+): operator is 'is' | 'is not' {
+  return operator === 'is' || operator === 'is not'
+}
+
+function needsIsOperator(value: unknown): value is null | boolean {
+  return isNull(value) || isBoolean(value)
+}
+
+function parseOperator(operator: OperatorExpression): OperationNode {
+  if (isString(operator) && OPERATORS.includes(operator)) {
     return OperatorNode.create(operator)
-  } else if (isOperationNodeSource(operator)) {
+  }
+
+  if (isOperationNodeSource(operator)) {
     return operator.toOperationNode()
   }
 
-  throw new Error(
-    `invalid comparison operator ${JSON.stringify(
-      operator
-    )} passed to a filter method`
-  )
+  throw new Error(`invalid operator ${JSON.stringify(operator)}`)
 }
 
-function parseOneArgFilterExpression(
-  type: FilterExpressionType,
-  arg: any
-): ParensNode | RawNode {
-  if (isFunction(arg)) {
-    return GROUP_PARSERS[type](arg)
-  } else if (isOperationNodeSource(arg)) {
-    const node = arg.toOperationNode()
-
-    if (RawNode.is(node)) {
-      return node
-    }
-  }
-
-  throw createFilterExpressionError(type, arg)
+function toOperationNode(
+  nodeOrSource: OperationNode | OperationNodeSource
+): OperationNode {
+  return isOperationNodeSource(nodeOrSource)
+    ? nodeOrSource.toOperationNode()
+    : nodeOrSource
 }
-
-function createFilterExpressionError(
-  type: FilterExpressionType,
-  args: any[]
-): Error {
-  return new Error(
-    `invalid arguments passed to a '${type}' method: ${JSON.stringify(args)}`
-  )
-}
-
-const GROUP_PARSERS = freeze({
-  where(
-    callback: (qb: AnySelectQueryBuilder) => AnySelectQueryBuilder
-  ): ParensNode {
-    const query = callback(createSelectQueryBuilder())
-    const queryNode = query.toOperationNode()
-
-    if (!queryNode.where) {
-      throw new Error('no `where` methods called inside a group callback')
-    }
-
-    return ParensNode.create(queryNode.where.where)
-  },
-
-  having(
-    callback: (qb: AnySelectQueryBuilder) => AnySelectQueryBuilder
-  ): ParensNode {
-    const query = callback(createSelectQueryBuilder())
-    const queryNode = query.toOperationNode()
-
-    if (!queryNode.having) {
-      throw new Error('no `having` methods called inside a group callback')
-    }
-
-    return ParensNode.create(queryNode.having.having)
-  },
-
-  on(
-    callback: (qb: JoinBuilder<any, any>) => JoinBuilder<any, any>
-  ): ParensNode {
-    const joinBuilder = callback(createJoinBuilder('InnerJoin', 'table'))
-    const joinNode = joinBuilder.toOperationNode()
-
-    if (!joinNode.on) {
-      throw new Error('no `on` methods called inside a group callback')
-    }
-
-    return ParensNode.create(joinNode.on.on)
-  },
-})

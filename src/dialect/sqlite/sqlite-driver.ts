@@ -3,6 +3,7 @@ import {
   QueryResult,
 } from '../../driver/database-connection.js'
 import { Driver } from '../../driver/driver.js'
+import { SelectQueryNode } from '../../operation-node/select-query-node.js'
 import { CompiledQuery } from '../../query-compiler/compiled-query.js'
 import { freeze, isFunction } from '../../util/object-utils.js'
 import { SqliteDatabase, SqliteDialectConfig } from './sqlite-dialect-config.js'
@@ -92,8 +93,22 @@ class SqliteConnection implements DatabaseConnection {
     }
   }
 
-  async *streamQuery<R>(): AsyncIterableIterator<QueryResult<R>> {
-    throw new Error("Sqlite driver doesn't support streaming")
+  async *streamQuery<R>(
+    compiledQuery: CompiledQuery,
+    _chunkSize: number
+  ): AsyncIterableIterator<QueryResult<R>> {
+    const { sql, parameters, query } = compiledQuery
+    const stmt = this.#db.prepare(sql)
+    if (SelectQueryNode.is(query)) {
+      const iter = stmt.iterate(parameters) as IterableIterator<R>
+      for (const row of iter) {
+        yield {
+          rows: [row],
+        }
+      }
+    } else {
+      throw new Error('Sqlite driver only supports streaming of select queries')
+    }
   }
 }
 

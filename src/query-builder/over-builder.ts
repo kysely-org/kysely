@@ -30,7 +30,7 @@ export class OverBuilder<DB, TB extends keyof DB>
    * const result = await db
    *   .selectFrom('person')
    *   .select(
-   *     eb => eb.fn.avg<number>('age').over(
+   *     (eb) => eb.fn.avg<number>('age').over(
    *       ob => ob.orderBy('first_name', 'asc').orderBy('last_name', 'asc')
    *     ).as('average_age')
    *   )
@@ -44,14 +44,14 @@ export class OverBuilder<DB, TB extends keyof DB>
    * from "person"
    * ```
    */
-  orderBy(
-    orderBy: StringReference<DB, TB> | DynamicReferenceBuilder<any>,
+  orderBy<OE extends StringReference<DB, TB> | DynamicReferenceBuilder<any>>(
+    orderBy: OE,
     direction?: OrderByDirectionExpression
   ): OverBuilder<DB, TB> {
     return new OverBuilder({
-      overNode: OverNode.cloneWithOrderByItem(
+      overNode: OverNode.cloneWithOrderByItems(
         this.#props.overNode,
-        parseOrderBy(orderBy, direction)
+        parseOrderBy([orderBy, direction])
       ),
     })
   }
@@ -63,7 +63,7 @@ export class OverBuilder<DB, TB extends keyof DB>
    * const result = await db
    *   .selectFrom('person')
    *   .select(
-   *     eb => eb.fn.avg<number>('age').over(
+   *     (eb) => eb.fn.avg<number>('age').over(
    *       ob => ob.partitionBy(['last_name', 'first_name'])
    *     ).as('average_age')
    *   )
@@ -81,7 +81,9 @@ export class OverBuilder<DB, TB extends keyof DB>
     partitionBy: ReadonlyArray<PartitionByExpression<DB, TB>>
   ): OverBuilder<DB, TB>
 
-  partitionBy(partitionBy: PartitionByExpression<DB, TB>): OverBuilder<DB, TB>
+  partitionBy<PE extends PartitionByExpression<DB, TB>>(
+    partitionBy: PE
+  ): OverBuilder<DB, TB>
 
   partitionBy(partitionBy: PartitionByExpressionOrList<DB, TB>): any {
     return new OverBuilder({

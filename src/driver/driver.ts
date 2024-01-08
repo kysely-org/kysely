@@ -57,6 +57,7 @@ export const TRANSACTION_ISOLATION_LEVELS = [
   'read committed',
   'repeatable read',
   'serializable',
+  'snapshot',
 ] as const
 
 export type IsolationLevel = ArrayItemType<typeof TRANSACTION_ISOLATION_LEVELS>

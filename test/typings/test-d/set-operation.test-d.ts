@@ -23,6 +23,42 @@ async function testUnion(db: Kysely<Database>) {
 
   expectType<{ id: number; name: string }>(r2)
 
+  // Two subqueries
+  const r3 = await db
+    .selectFrom('person')
+    .select(['id', 'first_name as name'])
+    .where('id', 'in', [1, 2, 3])
+    .union([
+      db.selectFrom('pet').select('name').select('owner_id as id'),
+      db.selectFrom('book').select(['id', 'name']),
+    ])
+    .executeTakeFirstOrThrow()
+
+  expectType<{ id: number; name: string }>(r3)
+
+  // Subquery using a callback
+  const r4 = await db
+    .selectFrom('person')
+    .select(['id', 'first_name as name'])
+    .where('id', 'in', [1, 2, 3])
+    .union((eb) => eb.selectFrom('pet').select('name').select('owner_id as id'))
+    .executeTakeFirstOrThrow()
+
+  expectType<{ id: number; name: string }>(r4)
+
+  // Two subqueries using a callback
+  const r5 = await db
+    .selectFrom('person')
+    .select(['id', 'first_name as name'])
+    .where('id', 'in', [1, 2, 3])
+    .union((eb) => [
+      eb.selectFrom('pet').select('name').select('owner_id as id'),
+      eb.selectFrom('book').select(['id', 'name']),
+    ])
+    .executeTakeFirstOrThrow()
+
+  expectType<{ id: number; name: string }>(r5)
+
   // Unioned expression has a different type
   expectError(
     db

@@ -7,20 +7,32 @@ import {
   AnyColumn,
   AnyColumnWithTable,
   ExtractColumnType,
-  ValueType,
 } from '../util/type-utils.js'
-import { SelectQueryBuilder } from '../query-builder/select-query-builder.js'
+import { SelectQueryBuilderExpression } from '../query-builder/select-query-builder-expression.js'
 import {
   parseExpression,
   ExpressionOrFactory,
   isExpressionOrFactory,
 } from './expression-parser.js'
 import { DynamicReferenceBuilder } from '../dynamic/dynamic-reference-builder.js'
-import { SelectType } from '../util/column-type.js'
+import { SelectType, UpdateType } from '../util/column-type.js'
 import { IdentifierNode } from '../operation-node/identifier-node.js'
 import { OperationNode } from '../operation-node/operation-node.js'
 import { Expression } from '../expression/expression.js'
 import { SimpleReferenceExpressionNode } from '../operation-node/simple-reference-expression-node.js'
+import {
+  OrderByDirection,
+  isOrderByDirection,
+  parseOrderBy,
+} from './order-by-parser.js'
+import {
+  JSONOperatorWith$,
+  OperatorNode,
+  isJSONOperator,
+} from '../operation-node/operator-node.js'
+import { JSONReferenceNode } from '../operation-node/json-reference-node.js'
+import { JSONOperatorChainNode } from '../operation-node/json-operator-chain-node.js'
+import { JSONPathNode } from '../operation-node/json-path-node.js'
 
 export type StringReference<DB, TB extends keyof DB> =
   | AnyColumn<DB, TB>
@@ -43,12 +55,19 @@ export type ExtractTypeFromReferenceExpression<
   TB extends keyof DB,
   RE,
   DV = unknown
+> = SelectType<ExtractRawTypeFromReferenceExpression<DB, TB, RE, DV>>
+
+export type ExtractRawTypeFromReferenceExpression<
+  DB,
+  TB extends keyof DB,
+  RE,
+  DV = unknown
 > = RE extends string
-  ? SelectType<ExtractTypeFromStringReference<DB, TB, RE>>
-  : RE extends SelectQueryBuilder<any, any, infer O>
-  ? ValueType<O>
-  : RE extends (qb: any) => SelectQueryBuilder<any, any, infer O>
-  ? ValueType<O>
+  ? ExtractTypeFromStringReference<DB, TB, RE>
+  : RE extends SelectQueryBuilderExpression<infer O>
+  ? O[keyof O] | null
+  : RE extends (qb: any) => SelectQueryBuilderExpression<infer O>
+  ? O[keyof O] | null
   : RE extends Expression<infer O>
   ? O
   : RE extends (qb: any) => Expression<infer O>
@@ -75,6 +94,20 @@ export type ExtractTypeFromStringReference<
   : RE extends AnyColumn<DB, TB>
   ? ExtractColumnType<DB, TB, RE>
   : DV
+
+export type OrderedColumnName<C extends string> =
+  C extends `${string} ${infer O}`
+    ? O extends OrderByDirection
+      ? C
+      : never
+    : C
+
+export type ExtractColumnNameFromOrderedColumnName<C extends string> =
+  C extends `${infer CL} ${infer O}`
+    ? O extends OrderByDirection
+      ? CL
+      : never
+    : C
 
 export function parseSimpleReferenceExpression(
   exp: SimpleReferenceExpression<any, any>
@@ -106,24 +139,49 @@ export function parseReferenceExpression(
   return parseSimpleReferenceExpression(exp)
 }
 
-export function parseStringReference(
-  ref: string
-): SimpleReferenceExpressionNode {
+export function parseJSONReference(
+  ref: string,
+  op: JSONOperatorWith$
+): JSONReferenceNode {
+  const referenceNode = parseStringReference(ref)
+
+  if (isJSONOperator(op)) {
+    return JSONReferenceNode.create(
+      referenceNode,
+      JSONOperatorChainNode.create(OperatorNode.create(op))
+    )
+  }
+
+  const opWithoutLastChar = op.slice(0, -1)
+
+  if (isJSONOperator(opWithoutLastChar)) {
+    return JSONReferenceNode.create(
+      referenceNode,
+      JSONPathNode.create(OperatorNode.create(opWithoutLastChar))
+    )
+  }
+
+  throw new Error(`Invalid JSON operator: ${op}`)
+}
+
+export function parseStringReference(ref: string): ReferenceNode {
   const COLUMN_SEPARATOR = '.'
 
-  if (ref.includes(COLUMN_SEPARATOR)) {
-    const parts = ref.split(COLUMN_SEPARATOR).map(trim)
-
-    if (parts.length === 3) {
-      return parseStringReferenceWithTableAndSchema(parts)
-    } else if (parts.length === 2) {
-      return parseStringReferenceWithTable(parts)
-    } else {
-      throw new Error(`invalid column reference ${ref}`)
-    }
-  } else {
-    return ColumnNode.create(ref)
+  if (!ref.includes(COLUMN_SEPARATOR)) {
+    return ReferenceNode.create(ColumnNode.create(ref))
   }
+
+  const parts = ref.split(COLUMN_SEPARATOR).map(trim)
+
+  if (parts.length === 3) {
+    return parseStringReferenceWithTableAndSchema(parts)
+  }
+
+  if (parts.length === 2) {
+    return parseStringReferenceWithTable(parts)
+  }
+
+  throw new Error(`invalid column reference ${ref}`)
 }
 
 export function parseAliasedStringReference(
@@ -144,7 +202,25 @@ export function parseAliasedStringReference(
 }
 
 export function parseColumnName(column: AnyColumn<any, any>): ColumnNode {
-  return ColumnNode.create(column as string)
+  return ColumnNode.create(column)
+}
+
+export function parseOrderedColumnName(column: string): OperationNode {
+  const ORDER_SEPARATOR = ' '
+
+  if (column.includes(ORDER_SEPARATOR)) {
+    const [columnName, order] = column.split(ORDER_SEPARATOR).map(trim)
+
+    if (!isOrderByDirection(order)) {
+      throw new Error(
+        `invalid order direction "${order}" next to "${columnName}"`
+      )
+    }
+
+    return parseOrderBy([columnName, order])[0]
+  } else {
+    return parseColumnName(column)
+  }
 }
 
 function parseStringReferenceWithTableAndSchema(
@@ -153,8 +229,8 @@ function parseStringReferenceWithTableAndSchema(
   const [schema, table, column] = parts
 
   return ReferenceNode.create(
-    TableNode.createWithSchema(schema, table),
-    ColumnNode.create(column)
+    ColumnNode.create(column),
+    TableNode.createWithSchema(schema, table)
   )
 }
 
@@ -162,8 +238,8 @@ function parseStringReferenceWithTable(parts: string[]): ReferenceNode {
   const [table, column] = parts
 
   return ReferenceNode.create(
-    TableNode.create(table),
-    ColumnNode.create(column)
+    ColumnNode.create(column),
+    TableNode.create(table)
   )
 }
 

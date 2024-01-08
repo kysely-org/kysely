@@ -20,7 +20,7 @@ export interface ErrorLogEvent {
 }
 
 export type LogEvent = QueryLogEvent | ErrorLogEvent
-export type Logger = (event: LogEvent) => void
+export type Logger = (event: LogEvent) => void | Promise<void>
 export type LogConfig = ReadonlyArray<LogLevel> | Logger
 
 export class Log {
@@ -49,15 +49,15 @@ export class Log {
     return this.#levels[level]
   }
 
-  query(getEvent: () => QueryLogEvent) {
+  async query(getEvent: () => QueryLogEvent) {
     if (this.#levels.query) {
-      this.#logger(getEvent())
+      await this.#logger(getEvent())
     }
   }
 
-  error(getEvent: () => ErrorLogEvent) {
+  async error(getEvent: () => ErrorLogEvent) {
     if (this.#levels.error) {
-      this.#logger(getEvent())
+      await this.#logger(getEvent())
     }
   }
 }
@@ -72,7 +72,13 @@ function defaultLogger(event: LogEvent): void {
     if (event.error instanceof Error) {
       console.error(`kysely:error: ${event.error.stack ?? event.error.message}`)
     } else {
-      console.error(`kysely:error: ${event}`)
+      console.error(
+        `kysely:error: ${JSON.stringify({
+          error: event.error,
+          query: event.query.sql,
+          queryDurationMillis: event.queryDurationMillis,
+        })}`
+      )
     }
   }
 }

@@ -1,10 +1,10 @@
-import {
-  OperatorNode,
-  UnaryFilterOperator,
-} from '../operation-node/operator-node.js'
+import { OperatorNode, UnaryOperator } from '../operation-node/operator-node.js'
 import { UnaryOperationNode } from '../operation-node/unary-operation-node.js'
 import { ExpressionOrFactory } from './expression-parser.js'
-import { parseValueExpressionOrList } from './value-parser.js'
+import {
+  parseReferenceExpression,
+  ReferenceExpression,
+} from './reference-parser.js'
 
 export type ExistsExpression<DB, TB extends keyof DB> = ExpressionOrFactory<
   DB,
@@ -13,23 +13,23 @@ export type ExistsExpression<DB, TB extends keyof DB> = ExpressionOrFactory<
 >
 
 export function parseExists(
-  arg: ExistsExpression<any, any>
+  operand: ExistsExpression<any, any>
 ): UnaryOperationNode {
-  return parseUnaryOperation('exists', arg)
+  return parseUnaryOperation('exists', operand)
 }
 
 export function parseNotExists(
-  arg: ExistsExpression<any, any>
+  operand: ExistsExpression<any, any>
 ): UnaryOperationNode {
-  return parseUnaryOperation('not exists', arg)
+  return parseUnaryOperation('not exists', operand)
 }
 
-function parseUnaryOperation(
-  type: UnaryFilterOperator,
-  arg: ExistsExpression<any, any>
+export function parseUnaryOperation(
+  operator: UnaryOperator,
+  operand: ReferenceExpression<any, any>
 ): UnaryOperationNode {
   return UnaryOperationNode.create(
-    OperatorNode.create(type),
-    parseValueExpressionOrList(arg)
+    OperatorNode.create(operator),
+    parseReferenceExpression(operand)
   )
 }

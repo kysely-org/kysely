@@ -19,7 +19,7 @@ async function testCoalesceSingle(db: Kysely<Database>) {
 
   const [r2] = await db
     .selectFrom('person')
-    .select(coalesce(db.dynamic.ref('age')).castTo<number>().as('age'))
+    .select(coalesce(db.dynamic.ref('age')).$castTo<number>().as('age'))
     .execute()
   expectType<{ age: number }>(r2)
 
@@ -96,8 +96,8 @@ async function testCoalesceMultiple(db: Kysely<Database>) {
     .selectFrom('person')
     .select(
       coalesce(
-        db.fn.max<string | null, 'first_name'>('first_name'),
-        sql<string>`${sql.literal('N/A')}`
+        db.fn.max<string | null>('first_name'),
+        sql<string>`${sql.lit('N/A')}`
       ).as('max_first_name')
     )
     .execute()
