@@ -38,8 +38,6 @@ import {
 import { UpdateQueryNode } from '../operation-node/update-query-node.js'
 import {
   UpdateObjectExpression,
-  UpdateObject,
-  UpdateObjectFactory,
   ExtractUpdateTypeFromReferenceExpression,
   parseUpdate,
 } from '../parser/update-set-parser.js'
@@ -545,10 +543,8 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
    * where "id" = $5
    * ```
    */
-  set(update: UpdateObject<DB, TB, UT>): UpdateQueryBuilder<DB, UT, TB, O>
-
   set(
-    update: UpdateObjectFactory<DB, TB, UT>
+    update: UpdateObjectExpression<DB, TB, UT>
   ): UpdateQueryBuilder<DB, UT, TB, O>
 
   set<RE extends ReferenceExpression<DB, UT>>(

@@ -20,9 +20,10 @@ export type TableExpressionOrList<DB, TB extends keyof DB> =
   | ReadonlyArray<TableExpression<DB, TB>>
 
 export type TableReference<DB> =
-  | AnyAliasedTable<DB>
-  | AnyTable<DB>
+  | SimpleTableReference<DB>
   | AliasedExpression<any, any>
+
+export type SimpleTableReference<DB> = AnyAliasedTable<DB> | AnyTable<DB>
 
 export type AnyAliasedTable<DB> = `${AnyTable<DB>} as ${string}`
 
