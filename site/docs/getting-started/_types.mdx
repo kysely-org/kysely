@@ -6,7 +6,7 @@ values.
 **Let's define our first database interface:**
 
 ```ts title="src/types.ts"
-import { 
+import {
   ColumnType,
   Generated,
   Insertable,
@@ -78,5 +78,14 @@ export type PetUpdate = Updateable<PetTable>
 For production apps, it is recommended to automatically generate your <code>Database</code>
 interface by introspecting your production database or Prisma schemas. Generated types
 might differ in naming convention, internal order, etc. Find out more at ["Generating types"](https://kysely.dev/docs/generating-types).
+
+:::
+
+:::info Runtime types
+
+Kysely only deals with types in the typescript level. The runtime javascript types are decided
+by the underlying 3rd party driver such as `pg` or `mysql2` and it's up to you to select the correct
+typescript types in the database interface. Kysely never touches the runtime output types in
+any way. Find out more at ["Data types"](https://kysely.dev/docs/recipes/data-types).
 
 :::

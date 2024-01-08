@@ -76,7 +76,9 @@ async function testInsert(db: Kysely<Database>) {
   expectError(db.insertInto('doesnt_exists'))
 
   // Non-existent column
-  expectError(db.insertInto('person').values({ not_column: 'foo' }))
+  expectError(
+    db.insertInto('person').values({ first_name: 'Foo', not_column: 'foo' })
+  )
 
   // Wrong type for a column
   expectError(
