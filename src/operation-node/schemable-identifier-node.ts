@@ -25,7 +25,7 @@ export const SchemableIdentifierNode = freeze({
 
   createWithSchema(
     schema: string,
-    identifier: string
+    identifier: string,
   ): SchemableIdentifierNode {
     return freeze({
       kind: 'SchemableIdentifierNode',
