@@ -14,10 +14,10 @@ export const LimitNode = freeze({
     return node.kind === 'LimitNode'
   },
 
-  create(rowCount: number | bigint): LimitNode {
+  create(limit: OperationNode): LimitNode {
     return freeze({
       kind: 'LimitNode',
-      limit: ValueNode.create(rowCount),
+      limit,
     })
   },
 })
