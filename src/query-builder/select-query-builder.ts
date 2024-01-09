@@ -1043,7 +1043,9 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    *   .limit(10)
    * ```
    */
-  limit(limit: number | bigint): SelectQueryBuilder<DB, TB, O>
+  limit(
+    limit: ValueExpression<DB, TB, number | bigint>
+  ): SelectQueryBuilder<DB, TB, O>
 
   /**
    * Adds an `offset` clause to the query.
@@ -1060,7 +1062,9 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    *   .offset(10)
    * ```
    */
-  offset(rowCount: number | bigint): SelectQueryBuilder<DB, TB, O>
+  offset(
+    rowCount: ValueExpression<DB, TB, number | bigint>
+  ): SelectQueryBuilder<DB, TB, O>
 
   /**
    * Adds a `fetch` clause to the query.
@@ -1996,22 +2000,26 @@ class SelectQueryBuilderImpl<DB, TB extends keyof DB, O>
     })
   }
 
-  limit(rowCount: number | bigint): SelectQueryBuilder<DB, TB, O> {
+  limit(
+    limit: ValueExpression<DB, TB, number | bigint>
+  ): SelectQueryBuilder<DB, TB, O> {
     return new SelectQueryBuilderImpl({
       ...this.#props,
       queryNode: SelectQueryNode.cloneWithLimit(
         this.#props.queryNode,
-        LimitNode.create(rowCount)
+        LimitNode.create(parseValueExpression(limit))
       ),
     })
   }
 
-  offset(rowCount: number | bigint): SelectQueryBuilder<DB, TB, O> {
+  offset(
+    offset: ValueExpression<DB, TB, number | bigint>
+  ): SelectQueryBuilder<DB, TB, O> {
     return new SelectQueryBuilderImpl({
       ...this.#props,
       queryNode: SelectQueryNode.cloneWithOffset(
         this.#props.queryNode,
-        OffsetNode.create(rowCount)
+        OffsetNode.create(parseValueExpression(offset))
       ),
     })
   }
