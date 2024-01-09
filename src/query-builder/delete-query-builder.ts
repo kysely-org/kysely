@@ -629,7 +629,7 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
    *   .execute()
    * ```
    */
-  limit(limit: number | bigint): DeleteQueryBuilder<DB, TB, O> {
+  limit(limit: ValueExpression<DB, TB, number>): DeleteQueryBuilder<DB, TB, O> {
     return new DeleteQueryBuilder({
       ...this.#props,
       queryNode: DeleteQueryNode.cloneWithLimit(
