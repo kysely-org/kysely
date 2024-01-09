@@ -9,8 +9,6 @@ import {
 } from '../parser/select-parser.js'
 import {
   InsertExpression,
-  InsertObjectOrList,
-  InsertObjectOrListFactory,
   parseInsertExpression,
 } from '../parser/insert-values-parser.js'
 import { InsertQueryNode } from '../operation-node/insert-query-node.js'
@@ -235,12 +233,6 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    * }))
    * ```
    */
-  values(insert: InsertObjectOrList<DB, TB>): InsertQueryBuilder<DB, TB, O>
-
-  values(
-    insert: InsertObjectOrListFactory<DB, TB>
-  ): InsertQueryBuilder<DB, TB, O>
-
   values(insert: InsertExpression<DB, TB>): InsertQueryBuilder<DB, TB, O> {
     const [columns, values] = parseInsertExpression(insert)
 
@@ -323,6 +315,18 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
       ...this.#props,
       queryNode: InsertQueryNode.cloneWith(this.#props.queryNode, {
         values: parseExpression(expression),
+      }),
+    })
+  }
+
+  /**
+   * Creates an `insert into "person" default values` query.
+   */
+  defaultValues(): InsertQueryBuilder<DB, TB, O> {
+    return new InsertQueryBuilder({
+      ...this.#props,
+      queryNode: InsertQueryNode.cloneWith(this.#props.queryNode, {
+        defaultValues: true,
       }),
     })
   }
@@ -734,10 +738,10 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
   /**
    * Change the output type of the query.
    *
-   * You should only use this method as the last resort if the types
-   * don't support your use case.
+   * This method call doesn't change the SQL in any way. This methods simply
+   * returns a copy of this `InsertQueryBuilder` with a new output type.
    */
-  $castTo<T>(): InsertQueryBuilder<DB, TB, T> {
+  $castTo<C>(): InsertQueryBuilder<DB, TB, C> {
     return new InsertQueryBuilder(this.#props)
   }
 

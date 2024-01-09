@@ -25,6 +25,8 @@ export * from './query-builder/on-conflict-builder.js'
 export * from './query-builder/aggregate-function-builder.js'
 export * from './query-builder/case-builder.js'
 export * from './query-builder/json-path-builder.js'
+export * from './query-builder/merge-query-builder.js'
+export * from './query-builder/merge-result.js'
 
 export * from './raw-builder/raw-builder.js'
 export * from './raw-builder/sql.js'
@@ -197,6 +199,8 @@ export * from './operation-node/json-path-leg-node.js'
 export * from './operation-node/json-path-node.js'
 export * from './operation-node/json-operator-chain-node.js'
 export * from './operation-node/tuple-node.js'
+export * from './operation-node/merge-query-node.js'
+export * from './operation-node/matched-node.js'
 export * from './operation-node/top-node.js'
 
 export * from './util/column-type.js'
@@ -239,6 +243,7 @@ export {
   ValueExpressionOrList,
 } from './parser/value-parser.js'
 export {
+  SimpleTableReference,
   TableExpression,
   TableExpressionOrList,
 } from './parser/table-parser.js'

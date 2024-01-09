@@ -89,6 +89,8 @@ import { JSONPathNode } from './json-path-node.js'
 import { JSONPathLegNode } from './json-path-leg-node.js'
 import { JSONOperatorChainNode } from './json-operator-chain-node.js'
 import { TupleNode } from './tuple-node.js'
+import { MergeQueryNode } from './merge-query-node.js'
+import { MatchedNode } from './matched-node.js'
 import { AddIndexNode } from './add-index-node.js'
 import { TopNode } from './top-node.js'
 
@@ -187,6 +189,8 @@ export abstract class OperationNodeVisitor {
     JSONPathLegNode: this.visitJSONPathLeg.bind(this),
     JSONOperatorChainNode: this.visitJSONOperatorChain.bind(this),
     TupleNode: this.visitTuple.bind(this),
+    MergeQueryNode: this.visitMergeQuery.bind(this),
+    MatchedNode: this.visitMatched.bind(this),
     AddIndexNode: this.visitAddIndex.bind(this),
     TopNode: this.visitTop.bind(this),
   })
@@ -293,6 +297,8 @@ export abstract class OperationNodeVisitor {
   protected abstract visitJSONPathLeg(node: JSONPathLegNode): void
   protected abstract visitJSONOperatorChain(node: JSONOperatorChainNode): void
   protected abstract visitTuple(node: TupleNode): void
+  protected abstract visitMergeQuery(node: MergeQueryNode): void
+  protected abstract visitMatched(node: MatchedNode): void
   protected abstract visitAddIndex(node: AddIndexNode): void
   protected abstract visitTop(node: TopNode): void
 }

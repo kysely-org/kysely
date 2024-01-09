@@ -37,8 +37,6 @@ import {
 import { UpdateQueryNode } from '../operation-node/update-query-node.js'
 import {
   UpdateObjectExpression,
-  UpdateObject,
-  UpdateObjectFactory,
   ExtractUpdateTypeFromReferenceExpression,
   parseUpdate,
 } from '../parser/update-set-parser.js'
@@ -588,10 +586,8 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
    * where "id" = $5
    * ```
    */
-  set(update: UpdateObject<DB, TB, UT>): UpdateQueryBuilder<DB, UT, TB, O>
-
   set(
-    update: UpdateObjectFactory<DB, TB, UT>
+    update: UpdateObjectExpression<DB, TB, UT>
   ): UpdateQueryBuilder<DB, UT, TB, O>
 
   set<RE extends ReferenceExpression<DB, UT>>(
@@ -734,10 +730,10 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
   /**
    * Change the output type of the query.
    *
-   * You should only use this method as the last resort if the types
-   * don't support your use case.
+   * This method call doesn't change the SQL in any way. This methods simply
+   * returns a copy of this `UpdateQueryBuilder` with a new output type.
    */
-  $castTo<T>(): UpdateQueryBuilder<DB, UT, TB, T> {
+  $castTo<C>(): UpdateQueryBuilder<DB, UT, TB, C> {
     return new UpdateQueryBuilder(this.#props)
   }
 
