@@ -1063,7 +1063,7 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    * ```
    */
   offset(
-    rowCount: ValueExpression<DB, TB, number | bigint>
+    offset: ValueExpression<DB, TB, number | bigint>
   ): SelectQueryBuilder<DB, TB, O>
 
   /**
