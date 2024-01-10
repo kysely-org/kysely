@@ -565,6 +565,83 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
   }
 
   /**
+   * Clears all `returning` clauses from the query.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * db.deleteFrom('pet')
+   *   .returningAll()
+   *   .where('name', '=', 'Max')
+   *   .clearReturning()
+   * ```
+   *
+   * The generated SQL(PostgreSQL):
+   *
+   * ```sql
+   * delete from "pet" where "name" = "Max"
+   * ```
+   */
+  clearReturning(): DeleteQueryBuilder<DB, TB, DeleteResult> {
+    return new DeleteQueryBuilder({
+      ...this.#props,
+      queryNode: QueryNode.cloneWithoutReturning(this.#props.queryNode),
+    })
+  }
+
+  /**
+   * Clears the `limit` clause from the query.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * db.deleteFrom('pet')
+   *   .returningAll()
+   *   .where('name', '=', 'Max')
+   *   .limit(5)
+   *   .clearLimit()
+   * ```
+   *
+   * The generated SQL(PostgreSQL):
+   *
+   * ```sql
+   * delete from "pet" where "name" = "Max" returning *
+   * ```
+   */
+  clearLimit(): DeleteQueryBuilder<DB, TB, O> {
+    return new DeleteQueryBuilder<DB, TB, O>({
+      ...this.#props,
+      queryNode: DeleteQueryNode.cloneWithoutLimit(this.#props.queryNode),
+    })
+  }
+
+  /**
+   * Clears the `order by` clause from the query.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * db.deleteFrom('pet')
+   *   .returningAll()
+   *   .where('name', '=', 'Max')
+   *   .orderBy('id')
+   *   .clearOrderBy()
+   * ```
+   *
+   * The generated SQL(PostgreSQL):
+   *
+   * ```sql
+   * delete from "pet" where "name" = "Max" returning *
+   * ```
+   */
+  clearOrderBy(): DeleteQueryBuilder<DB, TB, O> {
+    return new DeleteQueryBuilder<DB, TB, O>({
+      ...this.#props,
+      queryNode: DeleteQueryNode.cloneWithoutOrderBy(this.#props.queryNode),
+    })
+  }
+
+  /**
    * Adds an `order by` clause to the query.
    *
    * `orderBy` calls are additive. To order by multiple columns, call `orderBy`

@@ -1282,6 +1282,24 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    */
   clearSelect(): SelectQueryBuilder<DB, TB, {}>
 
+  /**
+   * Clears all `where` clauses from the query.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * db.selectFrom('person')
+   *   .selectAll()
+   *   .where('first_name', '=', 'James')
+   *   .clearWhere()
+   * ```
+   *
+   * The generated SQL(PostgreSQL):
+   *
+   * ```sql
+   * select * from "person"
+   * ```
+   */
   clearWhere(): SelectQueryBuilder<DB, TB, O>
 
   /**

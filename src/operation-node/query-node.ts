@@ -67,6 +67,13 @@ export const QueryNode = freeze({
     })
   },
 
+  cloneWithoutReturning<T extends HasReturning>(node: T): T {
+    return freeze({
+      ...node,
+      returning: undefined,
+    })
+  },
+
   cloneWithoutWhere<T extends HasWhere>(node: T): T {
     return freeze({
       ...node,
