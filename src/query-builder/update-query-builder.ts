@@ -88,6 +88,10 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
     this.#props = freeze(props)
   }
 
+  get isUpdateQueryBuilder(): true {
+    return true
+  }
+
   where<
     RE extends ReferenceExpression<DB, TB>,
     VE extends OperandValueExpressionOrList<DB, TB, RE>,

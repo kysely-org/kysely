@@ -74,6 +74,10 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
     this.#props = freeze(props)
   }
 
+  get isInsertQueryBuilder(): true {
+    return true
+  }
+
   /**
    * Sets the values to insert for an {@link Kysely.insertInto | insert} query.
    *
