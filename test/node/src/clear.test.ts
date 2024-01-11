@@ -182,6 +182,88 @@ for (const dialect of DIALECTS) {
       })
     })
 
+    it('InsertQueryBuilder should clear returning', () => {
+      const query = ctx.db
+        .insertInto('person')
+        .values({ first_name: 'Bruce', last_name: 'Willis', gender: 'male' })
+        .returning(['first_name'])
+        .clearReturning()
+
+      testSql(query, dialect, {
+        postgres: {
+          sql: `insert into "person" ("first_name", "last_name", "gender") values ($1, $2, $3)`,
+          parameters: ['Bruce', 'Willis', 'male'],
+        },
+        mysql: {
+          sql: 'insert into `person` (`first_name`, `last_name`, `gender`) values (?, ?, ?)',
+          parameters: ['Bruce', 'Willis', 'male'],
+        },
+        mssql: {
+          sql: `insert into "person" ("first_name", "last_name", "gender") values (@1, @2, @3)`,
+          parameters: ['Bruce', 'Willis', 'male'],
+        },
+        sqlite: {
+          sql: `insert into "person" ("first_name", "last_name", "gender") values (?, ?, ?)`,
+          parameters: ['Bruce', 'Willis', 'male'],
+        },
+      })
+    })
+
+    it('UpdateQueryBuilder should clear returning', () => {
+      const query = ctx.db
+        .updateTable('person')
+        .set({ marital_status: 'married' })
+        .where('first_name', '=', 'Bruce')
+        .returning(['first_name'])
+        .clearReturning()
+
+      testSql(query, dialect, {
+        postgres: {
+          sql: `update "person" set "marital_status" = $1 where "first_name" = $2`,
+          parameters: ['married', 'Bruce'],
+        },
+        mysql: {
+          sql: 'update `person` set `marital_status` = ? where `first_name` = ?',
+          parameters: ['married', 'Bruce'],
+        },
+        mssql: {
+          sql: `update "person" set "marital_status" = @1 where "first_name" = @2`,
+          parameters: ['married', 'Bruce'],
+        },
+        sqlite: {
+          sql: `update "person" set "marital_status" = ? where "first_name" = ?`,
+          parameters: ['married', 'Bruce'],
+        },
+      })
+    })
+
+    it('DeleteQueryBuilder should clear returning', () => {
+      const query = ctx.db
+        .deleteFrom('person')
+        .where('first_name', '=', 'James')
+        .returning(['first_name'])
+        .clearReturning()
+
+      testSql(query, dialect, {
+        postgres: {
+          sql: `delete from "person" where "first_name" = $1`,
+          parameters: ['James'],
+        },
+        mysql: {
+          sql: 'delete from `person` where `first_name` = ?',
+          parameters: ['James'],
+        },
+        mssql: {
+          sql: `delete from "person" where "first_name" = @1`,
+          parameters: ['James'],
+        },
+        sqlite: {
+          sql: `delete from "person" where "first_name" = ?`,
+          parameters: ['James'],
+        },
+      })
+    })
+
     it('should clear orderBy', () => {
       const query = ctx.db
         .selectFrom('person')
@@ -209,6 +291,33 @@ for (const dialect of DIALECTS) {
       })
     })
 
+    it('DeleteQueryBuilder clear orderBy', () => {
+      const query = ctx.db
+        .deleteFrom('person')
+        .where('gender', '=', 'male')
+        .orderBy('id')
+        .clearOrderBy()
+
+      testSql(query, dialect, {
+        postgres: {
+          sql: `delete from "person" where "gender" = $1`,
+          parameters: ['male'],
+        },
+        mysql: {
+          sql: 'delete from `person` where `gender` = ?',
+          parameters: ['male'],
+        },
+        mssql: {
+          sql: `delete from "person" where "gender" = @1`,
+          parameters: ['male'],
+        },
+        sqlite: {
+          sql: `delete from "person" where "gender" = ?`,
+          parameters: ['male'],
+        },
+      })
+    })
+
     if (dialect === 'postgres' || dialect === 'mysql' || dialect === 'sqlite') {
       it('should clear limit', () => {
         const query = ctx.db
@@ -230,6 +339,30 @@ for (const dialect of DIALECTS) {
           sqlite: {
             sql: `select * from "person"`,
             parameters: [],
+          },
+        })
+      })
+
+      it('DeleteQueryBuilder should clear limit', () => {
+        const query = ctx.db
+          .deleteFrom('person')
+          .where('gender', '=', 'male')
+          .limit(1)
+          .clearLimit()
+
+        testSql(query, dialect, {
+          postgres: {
+            sql: `delete from "person" where "gender" = $1`,
+            parameters: ['male'],
+          },
+          mysql: {
+            sql: 'delete from `person` where `gender` = ?',
+            parameters: ['male'],
+          },
+          mssql: NOT_SUPPORTED,
+          sqlite: {
+            sql: `delete from "person" where "gender" = ?`,
+            parameters: ['male'],
           },
         })
       })
