@@ -123,24 +123,6 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
     })
   }
 
-  /**
-   * Clears all `where` clauses from the query.
-   *
-   * ### Examples
-   *
-   * ```ts
-   * db.updateTable('person')
-   *   .set({ age: 39 })
-   *   .where('name', '=', 'John')
-   *   .clearWhere()
-   * ```
-   *
-   * The generated SQL(PostgreSQL):
-   *
-   * ```sql
-   * update "person" set "age" = 39
-   * ```
-   */
   clearWhere(): UpdateQueryBuilder<DB, UT, TB, O> {
     return new UpdateQueryBuilder({
       ...this.#props,
