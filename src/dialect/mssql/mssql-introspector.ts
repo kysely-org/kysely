@@ -48,6 +48,13 @@ export class MssqlIntrospector implements DatabaseIntrospector {
         'type_schemas.schema_id',
         'types.schema_id'
       )
+      .leftJoin(
+        'sys.extended_properties as comments',
+        join => join
+          .onRef('comments.major_id', '=', 'tables.object_id')
+          .onRef('comments.minor_id', '=', 'columns.column_id')
+          .on('comments.name', '=', 'MS_Description')
+      )
       .$if(!options.withInternalKyselyTables, (qb) =>
         qb
           .where('tables.name', '!=', DEFAULT_MIGRATION_TABLE)
@@ -74,6 +81,7 @@ export class MssqlIntrospector implements DatabaseIntrospector {
         'types.is_nullable as type_is_nullable',
         'types.name as type_name',
         'type_schemas.name as type_schema_name',
+        'comments.value as column_comment'
       ])
       .unionAll(
         this.#db
@@ -98,6 +106,13 @@ export class MssqlIntrospector implements DatabaseIntrospector {
             'type_schemas.schema_id',
             'types.schema_id'
           )
+          .leftJoin(
+            'sys.extended_properties as comments',
+            join => join
+              .onRef('comments.major_id', '=', 'views.object_id')
+              .onRef('comments.minor_id', '=', 'columns.column_id')
+              .on('comments.name', '=', 'MS_Description')
+          )
           .select([
             'views.name as table_name',
             'views.type as table_type',
@@ -112,6 +127,7 @@ export class MssqlIntrospector implements DatabaseIntrospector {
             'types.is_nullable as type_is_nullable',
             'types.name as type_name',
             'type_schemas.name as type_schema_name',
+            'comments.value as column_comment'
           ])
       )
       .orderBy('table_schema_name')
@@ -147,6 +163,7 @@ export class MssqlIntrospector implements DatabaseIntrospector {
           isNullable:
             rawColumn.column_is_nullable && rawColumn.type_is_nullable,
           name: rawColumn.column_name,
+          comment: rawColumn.column_comment ?? undefined,
         })
       )
     }
@@ -203,6 +220,12 @@ interface MssqlSysTables {
     // rule_object_id: number
     // scale: number
     system_type_id: number
+  }
+  'sys.extended_properties': {
+    major_id: number
+    minor_id: number
+    name: string
+    value: string
   }
   'sys.schemas': {
     name: string

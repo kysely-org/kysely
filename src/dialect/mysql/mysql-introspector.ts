@@ -50,6 +50,7 @@ export class MysqlIntrospector implements DatabaseIntrospector {
         'columns.IS_NULLABLE',
         'columns.DATA_TYPE',
         'columns.EXTRA',
+        'columns.COLUMN_COMMENT',
       ])
       .where('columns.TABLE_SCHEMA', '=', sql`database()`)
       .orderBy('columns.TABLE_NAME')
@@ -96,6 +97,7 @@ export class MysqlIntrospector implements DatabaseIntrospector {
           isNullable: it.IS_NULLABLE === 'YES',
           isAutoIncrementing: it.EXTRA.toLowerCase().includes('auto_increment'),
           hasDefaultValue: it.COLUMN_DEFAULT !== null,
+          comment: it.COLUMN_COMMENT === '' ? undefined : it.COLUMN_COMMENT
         })
       )
 
@@ -117,4 +119,5 @@ interface RawColumnMetadata {
   IS_NULLABLE: 'YES' | 'NO'
   DATA_TYPE: string
   EXTRA: string
+  COLUMN_COMMENT: string
 }

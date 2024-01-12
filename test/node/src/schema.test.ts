@@ -116,6 +116,7 @@ for (const dialect of DIALECTS) {
           await builder.execute()
 
           expect(await getColumnMeta('test.a')).to.eql({
+            comment: undefined,
             dataType: 'int4',
             dataTypeSchema: 'pg_catalog',
             isAutoIncrementing: true,
@@ -125,6 +126,7 @@ for (const dialect of DIALECTS) {
           })
 
           expect(await getColumnMeta('test.b')).to.eql({
+            comment: undefined,
             dataType: 'int4',
             dataTypeSchema: 'pg_catalog',
             isAutoIncrementing: false,
@@ -134,6 +136,7 @@ for (const dialect of DIALECTS) {
           })
 
           expect(await getColumnMeta('test.l')).to.eql({
+            comment: undefined,
             dataType: 'bool',
             dataTypeSchema: 'pg_catalog',
             isAutoIncrementing: false,
@@ -265,6 +268,7 @@ for (const dialect of DIALECTS) {
           await builder.execute()
 
           expect(await getColumnMeta('test.a')).to.eql({
+            comment: undefined,
             dataType: 'int',
             isAutoIncrementing: true,
             isNullable: false,
@@ -273,6 +277,7 @@ for (const dialect of DIALECTS) {
           })
 
           expect(await getColumnMeta('test.b')).to.eql({
+            comment: undefined,
             dataType: 'int',
             isAutoIncrementing: false,
             isNullable: true,
@@ -281,6 +286,7 @@ for (const dialect of DIALECTS) {
           })
 
           expect(await getColumnMeta('test.k')).to.eql({
+            comment: undefined,
             dataType: 'tinyint',
             isAutoIncrementing: false,
             isNullable: false,
@@ -443,6 +449,7 @@ for (const dialect of DIALECTS) {
           await builder.execute()
 
           expect(await getColumnMeta('test.a')).to.eql({
+            comment: undefined,
             dataType: 'INTEGER',
             isAutoIncrementing: true,
             isNullable: false,
@@ -451,6 +458,7 @@ for (const dialect of DIALECTS) {
           })
 
           expect(await getColumnMeta('test.b')).to.eql({
+            comment: undefined,
             dataType: 'INTEGER',
             isAutoIncrementing: false,
             isNullable: true,
@@ -459,6 +467,7 @@ for (const dialect of DIALECTS) {
           })
 
           expect(await getColumnMeta('test.l')).to.eql({
+            comment: undefined,
             dataType: 'boolean',
             isAutoIncrementing: false,
             isNullable: false,

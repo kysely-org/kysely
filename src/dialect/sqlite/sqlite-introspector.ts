@@ -94,6 +94,7 @@ export class SqliteIntrospector implements DatabaseIntrospector {
         isNullable: !col.notnull,
         isAutoIncrementing: col.name === autoIncrementCol,
         hasDefaultValue: col.dflt_value != null,
+        comment: undefined
       })),
     }
   }
