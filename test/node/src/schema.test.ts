@@ -227,6 +227,7 @@ for (const dialect of DIALECTS) {
             .addColumn('t', 'char(4)')
             .addColumn('u', 'char')
             .addColumn('v', 'binary(16)')
+            .addColumn('w', 'varbinary(16)')
 
           testSql(builder, dialect, {
             mysql: {
@@ -253,7 +254,8 @@ for (const dialect of DIALECTS) {
                 '`s` timestamp(6) default current_timestamp(6) not null,',
                 '`t` char(4),',
                 '`u` char,',
-                '`v` binary(16))',
+                '`v` binary(16),',
+                '`w` varbinary(16)',
               ],
               parameters: [],
             },

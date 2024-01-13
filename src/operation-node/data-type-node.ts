@@ -21,6 +21,8 @@ export type ColumnDataType =
   | `decimal(${number}, ${number})`
   | 'numeric'
   | `numeric(${number}, ${number})`
+  | 'varbinary'
+  | `varbinary(${number})`
   | 'binary'
   | `binary(${number})`
   | 'bytea'
