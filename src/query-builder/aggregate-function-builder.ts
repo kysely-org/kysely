@@ -136,14 +136,17 @@ export class AggregateFunctionBuilder<DB, TB extends keyof DB, O = unknown>
    * from "person"
    * ```
    */
-  filterWhere<RE extends ReferenceExpression<DB, TB>>(
+  filterWhere<
+    RE extends ReferenceExpression<DB, TB>,
+    VE extends OperandValueExpressionOrList<DB, TB, RE>
+  >(
     lhs: RE,
     op: ComparisonOperatorExpression,
-    rhs: OperandValueExpressionOrList<DB, TB, RE>
+    rhs: VE
   ): AggregateFunctionBuilder<DB, TB, O>
 
-  filterWhere(
-    expression: ExpressionOrFactory<DB, TB, SqlBool>
+  filterWhere<E extends ExpressionOrFactory<DB, TB, SqlBool>>(
+    expression: E
   ): AggregateFunctionBuilder<DB, TB, O>
 
   filterWhere(...args: any[]): any {
@@ -188,10 +191,13 @@ export class AggregateFunctionBuilder<DB, TB extends keyof DB, O = unknown>
    * from "person"
    * ```
    */
-  filterWhereRef(
-    lhs: ReferenceExpression<DB, TB>,
+  filterWhereRef<
+    LRE extends ReferenceExpression<DB, TB>,
+    RRE extends ReferenceExpression<DB, TB>
+  >(
+    lhs: LRE,
     op: ComparisonOperatorExpression,
-    rhs: ReferenceExpression<DB, TB>
+    rhs: RRE
   ): AggregateFunctionBuilder<DB, TB, O> {
     return new AggregateFunctionBuilder({
       ...this.#props,
@@ -266,6 +272,29 @@ export class AggregateFunctionBuilder<DB, TB extends keyof DB, O = unknown>
     return func(this)
   }
 
+  /**
+   * Casts the expression to the given type.
+   *
+   * This method call doesn't change the SQL in any way. This methods simply
+   * returns a copy of this `AggregateFunctionBuilder` with a new output type.
+   */
+  $castTo<C>(): AggregateFunctionBuilder<DB, TB, C> {
+    return new AggregateFunctionBuilder(this.#props)
+  }
+
+  /**
+   * Omit null from the expression's type.
+   *
+   * This function can be useful in cases where you know an expression can't be
+   * null, but Kysely is unable to infer it.
+   *
+   * This method call doesn't change the SQL in any way. This methods simply
+   * returns a copy of `this` with a new output type.
+   */
+  $notNull(): AggregateFunctionBuilder<DB, TB, Exclude<O, null>> {
+    return new AggregateFunctionBuilder(this.#props)
+  }
+
   toOperationNode(): AggregateFunctionNode {
     return this.#props.aggregateFunctionNode
   }
@@ -321,4 +350,4 @@ export interface AggregateFunctionBuilderProps {
 
 export type OverBuilderCallback<DB, TB extends keyof DB> = (
   builder: OverBuilder<DB, TB>
-) => OverBuilder<DB, TB>
+) => OverBuilder<any, any>

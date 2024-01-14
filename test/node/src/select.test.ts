@@ -645,6 +645,32 @@ for (const dialect of DIALECTS) {
         expect(persons).to.eql([{ last_name: 'Aniston' }])
       })
 
+      it('should select a row for update of', async () => {
+        const query = ctx.db
+          .selectFrom('person')
+          .select('last_name')
+          .where('first_name', '=', 'Jennifer')
+          .forUpdate('person')
+
+        testSql(query, dialect, {
+          postgres: {
+            sql: 'select "last_name" from "person" where "first_name" = $1 for update of "person"',
+            parameters: ['Jennifer'],
+          },
+          mysql: {
+            sql: 'select `last_name` from `person` where `first_name` = ? for update of `person`',
+            parameters: ['Jennifer'],
+          },
+          mssql: NOT_SUPPORTED,
+          sqlite: NOT_SUPPORTED,
+        })
+
+        const persons = await query.execute()
+
+        expect(persons).to.have.length(1)
+        expect(persons).to.eql([{ last_name: 'Aniston' }])
+      })
+
       it('should select a row for update with skip locked', async () => {
         const query = ctx.db
           .selectFrom('person')
@@ -660,6 +686,33 @@ for (const dialect of DIALECTS) {
           },
           mysql: {
             sql: 'select `last_name` from `person` where `first_name` = ? for update skip locked',
+            parameters: ['Jennifer'],
+          },
+          mssql: NOT_SUPPORTED,
+          sqlite: NOT_SUPPORTED,
+        })
+
+        const persons = await query.execute()
+
+        expect(persons).to.have.length(1)
+        expect(persons).to.eql([{ last_name: 'Aniston' }])
+      })
+
+      it('should select a row for update of with skip locked', async () => {
+        const query = ctx.db
+          .selectFrom('person')
+          .select('last_name')
+          .where('first_name', '=', 'Jennifer')
+          .forUpdate(['person'])
+          .skipLocked()
+
+        testSql(query, dialect, {
+          postgres: {
+            sql: 'select "last_name" from "person" where "first_name" = $1 for update of "person" skip locked',
+            parameters: ['Jennifer'],
+          },
+          mysql: {
+            sql: 'select `last_name` from `person` where `first_name` = ? for update of `person` skip locked',
             parameters: ['Jennifer'],
           },
           mssql: NOT_SUPPORTED,
@@ -879,8 +932,37 @@ for (const dialect of DIALECTS) {
       })
     }
 
-    if (dialect === 'postgres' || dialect === 'mysql' || dialect === 'mssql') {
-      it('should stream results', async () => {
+    it('should stream results', async () => {
+      const males: unknown[] = []
+
+      const stream = ctx.db
+        .selectFrom('person')
+        .select(['first_name', 'last_name', 'gender'])
+        .where('gender', '=', 'male')
+        .orderBy('first_name')
+        .stream()
+
+      for await (const male of stream) {
+        males.push(male)
+      }
+
+      expect(males).to.have.length(2)
+      expect(males).to.eql([
+        {
+          first_name: 'Arnold',
+          last_name: 'Schwarzenegger',
+          gender: 'male',
+        },
+        {
+          first_name: 'Sylvester',
+          last_name: 'Stallone',
+          gender: 'male',
+        },
+      ])
+    })
+
+    if (dialect === 'postgres' || dialect === 'mssql') {
+      it('should stream results with a specific chunk size', async () => {
         const males: unknown[] = []
 
         const stream = ctx.db
@@ -888,7 +970,7 @@ for (const dialect of DIALECTS) {
           .select(['first_name', 'last_name', 'gender'])
           .where('gender', '=', 'male')
           .orderBy('first_name')
-          .stream()
+          .stream(1)
 
         for await (const male of stream) {
           males.push(male)
@@ -908,82 +990,51 @@ for (const dialect of DIALECTS) {
           },
         ])
       })
+    }
 
-      if (dialect === 'postgres' || dialect === 'mssql') {
-        it('should stream results with a specific chunk size', async () => {
-          const males: unknown[] = []
+    it('should release connection on premature async iterator stop', async () => {
+      for (let i = 0; i <= POOL_SIZE + 1; i++) {
+        const stream = ctx.db.selectFrom('person').selectAll().stream()
 
-          const stream = ctx.db
-            .selectFrom('person')
-            .select(['first_name', 'last_name', 'gender'])
-            .where('gender', '=', 'male')
-            .orderBy('first_name')
-            .stream(1)
-
-          for await (const male of stream) {
-            males.push(male)
-          }
-
-          expect(males).to.have.length(2)
-          expect(males).to.eql([
-            {
-              first_name: 'Arnold',
-              last_name: 'Schwarzenegger',
-              gender: 'male',
-            },
-            {
-              first_name: 'Sylvester',
-              last_name: 'Stallone',
-              gender: 'male',
-            },
-          ])
-        })
-      }
-
-      it('should release connection on premature async iterator stop', async () => {
-        for (let i = 0; i <= POOL_SIZE + 1; i++) {
-          const stream = ctx.db.selectFrom('person').selectAll().stream()
-
-          for await (const _ of stream) {
-            break
-          }
+        for await (const _ of stream) {
+          break
         }
-      })
-
-      it('should release connection on premature async iterator stop when using a specific chunk size', async () => {
-        for (let i = 0; i <= POOL_SIZE + 1; i++) {
-          const stream = ctx.db.selectFrom('person').selectAll().stream(1)
-
-          for await (const _ of stream) {
-            break
-          }
-        }
-      })
-
-      if (dialect === 'postgres') {
-        it('should throw an error if the cursor implementation is not provided for the postgres dialect', async () => {
-          const db = new Kysely<Database>({
-            dialect: new PostgresDialect({
-              pool: async () => new Pool(DIALECT_CONFIGS.postgres),
-            }),
-            plugins: PLUGINS,
-          })
-
-          await expect(
-            (async () => {
-              for await (const _ of db
-                .selectFrom('person')
-                .selectAll()
-                .stream()) {
-              }
-            })()
-          ).to.be.rejectedWith(
-            "'cursor' is not present in your postgres dialect config. It's required to make streaming work in postgres."
-          )
-
-          await db.destroy()
-        })
       }
+    })
+
+    it('should release connection on premature async iterator stop when using a specific chunk size', async () => {
+      for (let i = 0; i <= POOL_SIZE + 1; i++) {
+        const stream = ctx.db.selectFrom('person').selectAll().stream(1)
+
+        for await (const _ of stream) {
+          break
+        }
+      }
+    })
+
+    if (dialect === 'postgres') {
+      it('should throw an error if the cursor implementation is not provided for the postgres dialect', async () => {
+        const db = new Kysely<Database>({
+          dialect: new PostgresDialect({
+            pool: async () => new Pool(DIALECT_CONFIGS.postgres),
+          }),
+          plugins: PLUGINS,
+        })
+
+        await expect(
+          (async () => {
+            for await (const _ of db
+              .selectFrom('person')
+              .selectAll()
+              .stream()) {
+            }
+          })()
+        ).to.be.rejectedWith(
+          "'cursor' is not present in your postgres dialect config. It's required to make streaming work in postgres."
+        )
+
+        await db.destroy()
+      })
     }
 
     if (dialect !== 'mssql') {
@@ -1013,11 +1064,37 @@ for (const dialect of DIALECTS) {
         const result = await query.execute()
         expect(result).to.have.length(2)
       })
+
+      it('should create a select query with limit and offset expressions', async () => {
+        const query = ctx.db
+          .selectFrom('person')
+          .select('first_name')
+          .limit((eb) => eb.lit(2))
+          .offset((eb) => eb.lit(1))
+
+        testSql(query, dialect, {
+          postgres: {
+            sql: `select "first_name" from "person" limit 2 offset 1`,
+            parameters: [],
+          },
+          mysql: {
+            sql: 'select `first_name` from `person` limit 2 offset 1',
+            parameters: [],
+          },
+          mssql: NOT_SUPPORTED,
+          sqlite: {
+            sql: 'select "first_name" from "person" limit 2 offset 1',
+            parameters: [],
+          },
+        })
+
+        const result = await query.execute()
+        expect(result).to.have.length(2)
+      })
     }
 
     it('should create a select statement without a `from` clause', async () => {
       const query = ctx.db.selectNoFrom((eb) => [
-        eb.selectNoFrom(eb.lit(1).as('one')).as('one'),
         eb
           .selectFrom('person')
           .select('first_name')
@@ -1028,19 +1105,19 @@ for (const dialect of DIALECTS) {
 
       testSql(query, dialect, {
         postgres: {
-          sql: `select (select 1 as "one") as "one", (select "first_name" from "person" order by "first_name" limit $1) as "person_first_name"`,
+          sql: `select (select "first_name" from "person" order by "first_name" limit $1) as "person_first_name"`,
           parameters: [1],
         },
         mysql: {
-          sql: 'select (select 1 as `one`) as `one`, (select `first_name` from `person` order by `first_name` limit ?) as `person_first_name`',
+          sql: 'select (select `first_name` from `person` order by `first_name` limit ?) as `person_first_name`',
           parameters: [1],
         },
         mssql: {
-          sql: `select (select 1 as "one") as "one", (select top 1 "first_name" from "person" order by "first_name") as "person_first_name"`,
+          sql: `select (select top 1 "first_name" from "person" order by "first_name") as "person_first_name"`,
           parameters: [],
         },
         sqlite: {
-          sql: 'select (select 1 as "one") as "one", (select "first_name" from "person" order by "first_name" limit ?) as "person_first_name"',
+          sql: 'select (select "first_name" from "person" order by "first_name" limit ?) as "person_first_name"',
           parameters: [1],
         },
       })
@@ -1050,9 +1127,9 @@ for (const dialect of DIALECTS) {
 
       if (dialect === 'mysql') {
         // For some weird reason, MySQL returns `one` as a string.
-        expect(result[0]).to.eql({ one: '1', person_first_name: 'Arnold' })
+        expect(result[0]).to.eql({ person_first_name: 'Arnold' })
       } else {
-        expect(result[0]).to.eql({ one: 1, person_first_name: 'Arnold' })
+        expect(result[0]).to.eql({ person_first_name: 'Arnold' })
       }
     })
   })

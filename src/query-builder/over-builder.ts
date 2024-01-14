@@ -44,8 +44,8 @@ export class OverBuilder<DB, TB extends keyof DB>
    * from "person"
    * ```
    */
-  orderBy(
-    orderBy: StringReference<DB, TB> | DynamicReferenceBuilder<any>,
+  orderBy<OE extends StringReference<DB, TB> | DynamicReferenceBuilder<any>>(
+    orderBy: OE,
     direction?: OrderByDirectionExpression
   ): OverBuilder<DB, TB> {
     return new OverBuilder({
@@ -81,7 +81,9 @@ export class OverBuilder<DB, TB extends keyof DB>
     partitionBy: ReadonlyArray<PartitionByExpression<DB, TB>>
   ): OverBuilder<DB, TB>
 
-  partitionBy(partitionBy: PartitionByExpression<DB, TB>): OverBuilder<DB, TB>
+  partitionBy<PE extends PartitionByExpression<DB, TB>>(
+    partitionBy: PE
+  ): OverBuilder<DB, TB>
 
   partitionBy(partitionBy: PartitionByExpressionOrList<DB, TB>): any {
     return new OverBuilder({

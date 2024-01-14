@@ -67,6 +67,10 @@ import {
 import { KyselyTypeError } from '../util/type-error.js'
 import { Streamable } from '../util/streamable.js'
 import { ExpressionOrFactory } from '../parser/expression-parser.js'
+import {
+  ValueExpression,
+  parseValueExpression,
+} from '../parser/value-parser.js'
 
 export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
   implements
@@ -83,14 +87,17 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
     this.#props = freeze(props)
   }
 
-  where<RE extends ReferenceExpression<DB, TB>>(
+  where<
+    RE extends ReferenceExpression<DB, TB>,
+    VE extends OperandValueExpressionOrList<DB, TB, RE>
+  >(
     lhs: RE,
     op: ComparisonOperatorExpression,
-    rhs: OperandValueExpressionOrList<DB, TB, RE>
+    rhs: VE
   ): DeleteQueryBuilder<DB, TB, O>
 
-  where(
-    expression: ExpressionOrFactory<DB, TB, SqlBool>
+  where<E extends ExpressionOrFactory<DB, TB, SqlBool>>(
+    expression: E
   ): DeleteQueryBuilder<DB, TB, O>
 
   where(...args: any[]): any {
@@ -103,10 +110,13 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
     })
   }
 
-  whereRef(
-    lhs: ReferenceExpression<DB, TB>,
+  whereRef<
+    LRE extends ReferenceExpression<DB, TB>,
+    RRE extends ReferenceExpression<DB, TB>
+  >(
+    lhs: LRE,
     op: ComparisonOperatorExpression,
-    rhs: ReferenceExpression<DB, TB>
+    rhs: RRE
   ): DeleteQueryBuilder<DB, TB, O> {
     return new DeleteQueryBuilder({
       ...this.#props,
@@ -619,12 +629,12 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
    *   .execute()
    * ```
    */
-  limit(limit: number): DeleteQueryBuilder<DB, TB, O> {
+  limit(limit: ValueExpression<DB, TB, number>): DeleteQueryBuilder<DB, TB, O> {
     return new DeleteQueryBuilder({
       ...this.#props,
       queryNode: DeleteQueryNode.cloneWithLimit(
         this.#props.queryNode,
-        LimitNode.create(limit)
+        LimitNode.create(parseValueExpression(limit))
       ),
     })
   }
@@ -710,10 +720,10 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
   /**
    * Change the output type of the query.
    *
-   * You should only use this method as the last resort if the types
-   * don't support your use case.
+   * This method call doesn't change the SQL in any way. This methods simply
+   * returns a copy of this `DeleteQueryBuilder` with a new output type.
    */
-  $castTo<T>(): DeleteQueryBuilder<DB, TB, T> {
+  $castTo<C>(): DeleteQueryBuilder<DB, TB, C> {
     return new DeleteQueryBuilder(this.#props)
   }
 

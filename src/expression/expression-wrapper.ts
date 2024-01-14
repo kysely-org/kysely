@@ -127,16 +127,19 @@ export class ExpressionWrapper<DB, TB extends keyof DB, T>
    * )
    * ```
    */
-  or<RE extends ReferenceExpression<DB, TB>>(
+  or<
+    RE extends ReferenceExpression<DB, TB>,
+    VE extends OperandValueExpressionOrList<DB, TB, RE>
+  >(
     lhs: RE,
     op: ComparisonOperatorExpression,
-    rhs: OperandValueExpressionOrList<DB, TB, RE>
+    rhs: VE
   ): T extends SqlBool
     ? OrWrapper<DB, TB, SqlBool>
     : KyselyTypeError<'or() method can only be called on boolean expressions'>
 
-  or(
-    expression: OperandExpression<SqlBool>
+  or<E extends OperandExpression<SqlBool>>(
+    expression: E
   ): T extends SqlBool
     ? OrWrapper<DB, TB, SqlBool>
     : KyselyTypeError<'or() method can only be called on boolean expressions'>
@@ -207,16 +210,19 @@ export class ExpressionWrapper<DB, TB extends keyof DB, T>
    * )
    * ```
    */
-  and<RE extends ReferenceExpression<DB, TB>>(
+  and<
+    RE extends ReferenceExpression<DB, TB>,
+    VE extends OperandValueExpressionOrList<DB, TB, RE>
+  >(
     lhs: RE,
     op: ComparisonOperatorExpression,
-    rhs: OperandValueExpressionOrList<DB, TB, RE>
+    rhs: VE
   ): T extends SqlBool
     ? AndWrapper<DB, TB, SqlBool>
     : KyselyTypeError<'and() method can only be called on boolean expressions'>
 
-  and(
-    expression: OperandExpression<SqlBool>
+  and<E extends OperandExpression<SqlBool>>(
+    expression: E
   ): T extends SqlBool
     ? AndWrapper<DB, TB, SqlBool>
     : KyselyTypeError<'and() method can only be called on boolean expressions'>
@@ -233,7 +239,20 @@ export class ExpressionWrapper<DB, TB extends keyof DB, T>
    * This method call doesn't change the SQL in any way. This methods simply
    * returns a copy of this `ExpressionWrapper` with a new output type.
    */
-  $castTo<T>(): ExpressionWrapper<DB, TB, T> {
+  $castTo<C>(): ExpressionWrapper<DB, TB, C> {
+    return new ExpressionWrapper(this.#node)
+  }
+
+  /**
+   * Omit null from the expression's type.
+   *
+   * This function can be useful in cases where you know an expression can't be
+   * null, but Kysely is unable to infer it.
+   *
+   * This method call doesn't change the SQL in any way. This methods simply
+   * returns a copy of `this` with a new output type.
+   */
+  $notNull(): ExpressionWrapper<DB, TB, Exclude<T, null>> {
     return new ExpressionWrapper(this.#node)
   }
 
@@ -327,13 +346,12 @@ export class OrWrapper<DB, TB extends keyof DB, T extends SqlBool>
    *
    * See {@link ExpressionWrapper.or} for examples.
    */
-  or<RE extends ReferenceExpression<DB, TB>>(
-    lhs: RE,
-    op: ComparisonOperatorExpression,
-    rhs: OperandValueExpressionOrList<DB, TB, RE>
-  ): OrWrapper<DB, TB, T>
+  or<
+    RE extends ReferenceExpression<DB, TB>,
+    VE extends OperandValueExpressionOrList<DB, TB, RE>
+  >(lhs: RE, op: ComparisonOperatorExpression, rhs: VE): OrWrapper<DB, TB, T>
 
-  or(expression: OperandExpression<SqlBool>): OrWrapper<DB, TB, T>
+  or<E extends OperandExpression<SqlBool>>(expression: E): OrWrapper<DB, TB, T>
 
   or(...args: any[]): any {
     return new OrWrapper(
@@ -347,7 +365,7 @@ export class OrWrapper<DB, TB extends keyof DB, T extends SqlBool>
    * This method call doesn't change the SQL in any way. This methods simply
    * returns a copy of this `OrWrapper` with a new output type.
    */
-  $castTo<T extends SqlBool>(): OrWrapper<DB, TB, T> {
+  $castTo<C extends SqlBool>(): OrWrapper<DB, TB, C> {
     return new OrWrapper(this.#node)
   }
 
@@ -410,13 +428,14 @@ export class AndWrapper<DB, TB extends keyof DB, T extends SqlBool>
    *
    * See {@link ExpressionWrapper.and} for examples.
    */
-  and<RE extends ReferenceExpression<DB, TB>>(
-    lhs: RE,
-    op: ComparisonOperatorExpression,
-    rhs: OperandValueExpressionOrList<DB, TB, RE>
-  ): AndWrapper<DB, TB, T>
+  and<
+    RE extends ReferenceExpression<DB, TB>,
+    VE extends OperandValueExpressionOrList<DB, TB, RE>
+  >(lhs: RE, op: ComparisonOperatorExpression, rhs: VE): AndWrapper<DB, TB, T>
 
-  and(expression: OperandExpression<SqlBool>): AndWrapper<DB, TB, T>
+  and<E extends OperandExpression<SqlBool>>(
+    expression: E
+  ): AndWrapper<DB, TB, T>
 
   and(...args: any[]): any {
     return new AndWrapper(
@@ -430,7 +449,7 @@ export class AndWrapper<DB, TB extends keyof DB, T extends SqlBool>
    * This method call doesn't change the SQL in any way. This methods simply
    * returns a copy of this `AndWrapper` with a new output type.
    */
-  $castTo<T extends SqlBool>(): AndWrapper<DB, TB, T> {
+  $castTo<C extends SqlBool>(): AndWrapper<DB, TB, C> {
     return new AndWrapper(this.#node)
   }
 

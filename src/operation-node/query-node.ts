@@ -11,12 +11,14 @@ import { OperationNode } from './operation-node.js'
 import { ExplainNode } from './explain-node.js'
 import { ExplainFormat } from '../util/explainable.js'
 import { Expression } from '../expression/expression.js'
+import { MergeQueryNode } from './merge-query-node.js'
 
 export type QueryNode =
   | SelectQueryNode
   | InsertQueryNode
   | UpdateQueryNode
   | DeleteQueryNode
+  | MergeQueryNode
 
 type HasJoins = { joins?: ReadonlyArray<JoinNode> }
 type HasWhere = { where?: WhereNode }
@@ -32,7 +34,8 @@ export const QueryNode = freeze({
       SelectQueryNode.is(node) ||
       InsertQueryNode.is(node) ||
       UpdateQueryNode.is(node) ||
-      DeleteQueryNode.is(node)
+      DeleteQueryNode.is(node) ||
+      MergeQueryNode.is(node)
     )
   },
 

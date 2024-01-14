@@ -72,7 +72,13 @@ function defaultLogger(event: LogEvent): void {
     if (event.error instanceof Error) {
       console.error(`kysely:error: ${event.error.stack ?? event.error.message}`)
     } else {
-      console.error(`kysely:error: ${event}`)
+      console.error(
+        `kysely:error: ${JSON.stringify({
+          error: event.error,
+          query: event.query.sql,
+          queryDurationMillis: event.queryDurationMillis,
+        })}`
+      )
     }
   }
 }
