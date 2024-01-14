@@ -7,6 +7,9 @@ import {
 } from './test-setup.js'
 import { allowNoopAwait } from '../../../'
 
+// `allowNoopAwait` has a module scope side effects.
+let didCallAllowNoopAwait = false
+
 for (const dialect of DIALECTS) {
   describe(`${dialect}: prevent await`, () => {
     let ctx: TestContext
@@ -25,8 +28,9 @@ for (const dialect of DIALECTS) {
         await ctx.db.selectFrom('person').selectAll()
         thrown = false
       } catch (e: any) {}
-      expect(thrown).true
+      expect(thrown || didCallAllowNoopAwait).true
       allowNoopAwait()
+      didCallAllowNoopAwait = true
       const query = ctx.db.selectFrom('person').selectAll()
       expect(query).eq(await query)
     })
