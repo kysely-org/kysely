@@ -792,6 +792,48 @@ for (const dialect of DIALECTS) {
           'migration1',
         ])
       })
+
+      describe('Migrate up should work when timestamps are equal', () => {
+        // The following lines of code simulate a situation where the migrations would have the
+        // timestamp
+
+        let originalToIsoString: typeof Date.prototype.toISOString
+
+        before(() => {
+          originalToIsoString = Date.prototype.toISOString
+          const defaultDateIsoString = new Date(2024, 0, 11).toISOString()
+          Date.prototype.toISOString = () => defaultDateIsoString
+        })
+
+        after(() => {
+          // Reset to originalToIsoString function so that upcoming tests are not affected
+          Date.prototype.toISOString = originalToIsoString
+        })
+
+        it('should use the same ordering strategy for migrations for both not executed migrations and executed migrations', async () => {
+          const [migrator1, executedUpMethods1] = createMigrations([
+            '2024-01-01-create-table',
+            '2024-01-01.2-update-table',
+          ])
+
+          await migrator1.migrateToLatest()
+
+          const [migrator2, executedUpMethods2] = createMigrations([
+            '2024-01-01-create-table',
+            '2024-01-01.2-update-table',
+          ])
+
+          const { results: results2, error } = await migrator2.migrateToLatest()
+          expect(error).to.be.undefined
+          expect(results2).to.eql([])
+
+          expect(executedUpMethods1).to.eql([
+            '2024-01-01-create-table',
+            '2024-01-01.2-update-table',
+          ])
+          expect(executedUpMethods2).to.eql([])
+        })
+      })
     })
 
     if (dialect === 'postgres') {

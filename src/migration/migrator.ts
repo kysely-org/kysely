@@ -513,7 +513,7 @@ export class Migrator {
       .orderBy(['timestamp', 'name'])
       .execute()
 
-    return executedMigrations.map((it) => it.name)
+    return executedMigrations.map((it) => it.name).sort()
   }
 
   #ensureNoMissingMigrations(
