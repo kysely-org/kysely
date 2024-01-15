@@ -509,11 +509,17 @@ export class Migrator {
     const executedMigrations = await db
       .withPlugin(this.#schemaPlugin)
       .selectFrom(this.#migrationTable)
-      .select('name')
-      .orderBy(['timestamp', 'name'])
+      .select(['name', 'timestamp'])
       .execute()
 
-    return executedMigrations.map((it) => it.name).sort()
+    return executedMigrations
+      .sort((a, b) => {
+        if (a.timestamp === b.timestamp) {
+          return a.name < b.name ? -1 : 1
+        }
+        return new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+      })
+      .map((it) => it.name)
   }
 
   #ensureNoMissingMigrations(
