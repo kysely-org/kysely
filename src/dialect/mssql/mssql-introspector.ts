@@ -40,8 +40,8 @@ export class MssqlIntrospector implements DatabaseIntrospector {
       )
       .innerJoin(
         'sys.types as types',
-        'types.system_type_id',
-        'columns.system_type_id'
+        'types.user_type_id',
+        'columns.user_type_id'
       )
       .leftJoin(
         'sys.schemas as type_schemas',
@@ -98,8 +98,8 @@ export class MssqlIntrospector implements DatabaseIntrospector {
           )
           .innerJoin(
             'sys.types as types',
-            'types.system_type_id',
-            'columns.system_type_id'
+            'types.user_type_id',
+            'columns.user_type_id'
           )
           .leftJoin(
             'sys.schemas as type_schemas',
@@ -219,6 +219,7 @@ interface MssqlSysTables {
     // precision: number
     // rule_object_id: number
     // scale: number
+    user_type_id: number
     system_type_id: number
   }
   'sys.extended_properties': {
@@ -297,7 +298,7 @@ interface MssqlSysTables {
     // scale: number
     schema_id: number
     system_type_id: number
-    // user_type_id: number
+    user_type_id: number
   }
   'sys.views': {
     // create_date: Date
