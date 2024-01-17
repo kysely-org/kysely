@@ -597,6 +597,58 @@ for (const dialect of DIALECTS) {
           expect(executedUpMethods2).to.eql([])
           expect(executedDownMethods2).to.eql(['migration5', 'migration3'])
         })
+
+        it('should migrate down if allowUnorderedMigrations is enabled and migration names are not in order', async () => {
+          const [migrator1, executedUpMethods1] = createMigrations(
+            ['migration1', 'migration3'],
+            { allowUnorderedMigrations: true },
+          )
+
+          const { results: results1 } = await migrator1.migrateToLatest()
+
+          const [migrator2, executedUpMethods2] = createMigrations(
+            ['migration1', 'migration2', 'migration3'],
+            {
+              allowUnorderedMigrations: true,
+            },
+          )
+
+          const { results: results2 } = await migrator2.migrateToLatest()
+
+          expect(results1).to.eql([
+            { migrationName: 'migration1', direction: 'Up', status: 'Success' },
+            { migrationName: 'migration3', direction: 'Up', status: 'Success' },
+          ])
+
+          expect(results2).to.eql([
+            {
+              migrationName: 'migration2',
+              direction: 'Up',
+              status: 'Success',
+            },
+          ])
+
+          expect(executedUpMethods1).to.eql(['migration1', 'migration3'])
+          expect(executedUpMethods2).to.eql(['migration2'])
+
+          const [migrator3, executedUpMethods3, executedDownMethods3] =
+            createMigrations(['migration1', 'migration2', 'migration3'], {
+              allowUnorderedMigrations: true,
+            })
+
+          const { results: results3 } = await migrator3.migrateDown()
+          expect(results3).to.eql([
+            {
+              migrationName: 'migration2',
+              direction: 'Down',
+              status: 'Success',
+            },
+          ])
+
+        expect(executedUpMethods3).to.eql([])
+        expect(executedDownMethods3).to.eql(['migration2'])
+        })
+
       })
     })
 
