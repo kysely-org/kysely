@@ -317,12 +317,37 @@ async function createDatabase(
     )
     .addColumn('species', 'varchar(50)', (col) => col.notNull())
     .execute()
-
-  await createTableWithId(db.schema, dialect, 'toy')
+  
+  const createToyTableBase = createTableWithId(db.schema, dialect, 'toy')
     .addColumn('name', 'varchar(255)', (col) => col.notNull())
     .addColumn('pet_id', 'integer', (col) => col.references('pet.id').notNull())
-    .addColumn('price', 'double precision', (col) => col.notNull())
+  
+  if (dialect === 'postgres') {
+    await createToyTableBase
+      .addColumn('price', 'double precision', (col) => col.notNull())
+      .execute()
+    await sql`COMMENT ON COLUMN toy.price IS 'Price in USD';`.execute(db)
+  }
+
+  if (dialect === 'mssql') {
+    await createToyTableBase
+      .addColumn('price', 'double precision', (col) => col.notNull())
+      .execute()
+    await sql`EXECUTE sp_addextendedproperty N'MS_Description', N'Price in USD', N'SCHEMA', N'dbo', N'TABLE', 'toy', N'COLUMN', N'price'`.execute(db)
+  }
+
+  if (dialect === 'mysql') {
+    await createToyTableBase
+    .addColumn('price', 'double precision', (col) => col.notNull().modifyEnd(sql`comment ${sql.lit('Price in USD')}`))
     .execute()
+  }
+
+  if (dialect === 'sqlite') {
+    // there is no way to add a comment
+    await createToyTableBase
+      .addColumn('price', 'double precision', (col) => col.notNull())
+      .execute()
+  }
 
   await db.schema
     .createIndex('pet_owner_id_index')

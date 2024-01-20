@@ -57,7 +57,7 @@ export class PostgresIntrospector implements DatabaseIntrospector {
         'ns.nspname as schema',
         'typ.typname as type',
         'dtns.nspname as type_schema',
-
+        sql<string | null>`col_description(a.attrelid, a.attnum)`.as('column_description'),
         // Detect if the column is auto incrementing by finding the sequence
         // that is created for `serial` and `bigserial` columns.
         this.#db
@@ -126,6 +126,7 @@ export class PostgresIntrospector implements DatabaseIntrospector {
           isNullable: !it.not_null,
           isAutoIncrementing: !!it.auto_incrementing,
           hasDefaultValue: it.has_default,
+          comment: it.column_description ?? undefined
         })
       )
 
@@ -148,4 +149,5 @@ interface RawColumnMetadata {
   type: string
   type_schema: string
   auto_incrementing: boolean | null
+  column_description: string | null
 }
