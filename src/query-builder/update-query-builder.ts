@@ -595,6 +595,32 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
   }
 
   /**
+   * Clears all `returning` clauses from the query.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * db.updateTable('person')
+   *   .returningAll()
+   *   .set({ age: 39 })
+   *   .where('first_name', '=', 'John')
+   *   .clearReturning()
+   * ```
+   *
+   * The generated SQL(PostgreSQL):
+   *
+   * ```sql
+   * update "person" set "age" = 39 where "first_name" = "John"
+   * ```
+   */
+  clearReturning(): UpdateQueryBuilder<DB, UT, TB, UpdateResult> {
+    return new UpdateQueryBuilder({
+      ...this.#props,
+      queryNode: QueryNode.cloneWithoutReturning(this.#props.queryNode),
+    })
+  }
+
+  /**
    * Simply calls the provided function passing `this` as the only argument. `$call` returns
    * what the provided function returns.
    *

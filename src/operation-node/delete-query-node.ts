@@ -52,6 +52,15 @@ export const DeleteQueryNode = freeze({
     })
   },
 
+  cloneWithoutOrderBy(
+    deleteNode: DeleteQueryNode
+  ): DeleteQueryNode {
+    return freeze({
+      ...deleteNode,
+      orderBy: undefined,
+    })
+  },
+
   cloneWithLimit(
     deleteNode: DeleteQueryNode,
     limit: LimitNode
@@ -59,6 +68,15 @@ export const DeleteQueryNode = freeze({
     return freeze({
       ...deleteNode,
       limit,
+    })
+  },
+
+  cloneWithoutLimit(
+    deleteNode: DeleteQueryNode
+  ): DeleteQueryNode {
+    return freeze({
+      ...deleteNode,
+      limit: undefined,
     })
   },
 

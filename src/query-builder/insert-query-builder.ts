@@ -608,6 +608,31 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
   }
 
   /**
+   * Clears all `returning` clauses from the query.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * db.insertInto('person')
+   *   .values({ first_name: 'James', last_name: 'Smith', age: 42 })
+   *   .returning(['first_name'])
+   *   .clearReturning()
+   * ```
+   *
+   * The generated SQL(PostgreSQL):
+   *
+   * ```sql
+   * insert into "person" ("James", "Smith", 42)
+   * ```
+   */
+  clearReturning(): InsertQueryBuilder<DB, TB, InsertResult> {
+    return new InsertQueryBuilder({
+      ...this.#props,
+      queryNode: QueryNode.cloneWithoutReturning(this.#props.queryNode),
+    })
+  }
+
+  /**
    * Simply calls the provided function passing `this` as the only argument. `$call` returns
    * what the provided function returns.
    *
