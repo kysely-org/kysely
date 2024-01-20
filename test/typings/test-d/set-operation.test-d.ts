@@ -65,7 +65,7 @@ async function testUnion(db: Kysely<Database>) {
       .selectFrom('person')
       .select(['id', 'first_name as name'])
       .where('id', 'in', [1, 2, 3])
-      .union(db.selectFrom('pet').select('name').select('owner_id'))
+      .union(db.selectFrom('pet').select('name').select('owner_id')),
   )
 }
 
@@ -96,7 +96,7 @@ async function testUnionAll(db: Kysely<Database>) {
       .selectFrom('person')
       .select(['id', 'first_name as name'])
       .where('id', 'in', [1, 2, 3])
-      .unionAll(db.selectFrom('pet').select('name').select('owner_id'))
+      .unionAll(db.selectFrom('pet').select('name').select('owner_id')),
   )
 }
 
@@ -127,7 +127,7 @@ async function testIntersect(db: Kysely<Database>) {
       .selectFrom('person')
       .select(['id', 'first_name as name'])
       .where('id', 'in', [1, 2, 3])
-      .intersect(db.selectFrom('pet').select('name').select('owner_id'))
+      .intersect(db.selectFrom('pet').select('name').select('owner_id')),
   )
 }
 
@@ -158,7 +158,7 @@ async function testIntersectAll(db: Kysely<Database>) {
       .selectFrom('person')
       .select(['id', 'first_name as name'])
       .where('id', 'in', [1, 2, 3])
-      .intersectAll(db.selectFrom('pet').select('name').select('owner_id'))
+      .intersectAll(db.selectFrom('pet').select('name').select('owner_id')),
   )
 }
 
@@ -189,7 +189,7 @@ async function testExcept(db: Kysely<Database>) {
       .selectFrom('person')
       .select(['id', 'first_name as name'])
       .where('id', 'in', [1, 2, 3])
-      .except(db.selectFrom('pet').select('name').select('owner_id'))
+      .except(db.selectFrom('pet').select('name').select('owner_id')),
   )
 }
 
@@ -220,6 +220,6 @@ async function testExceptAll(db: Kysely<Database>) {
       .selectFrom('person')
       .select(['id', 'first_name as name'])
       .where('id', 'in', [1, 2, 3])
-      .exceptAll(db.selectFrom('pet').select('name').select('owner_id'))
+      .exceptAll(db.selectFrom('pet').select('name').select('owner_id')),
   )
 }

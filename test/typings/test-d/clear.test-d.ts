@@ -25,7 +25,12 @@ async function testClearSelect(db: Kysely<Database>) {
 async function testClearInsert(db: Kysely<Database>) {
   const r1 = await db
     .insertInto('person')
-    .values({ first_name: 'Bruce', last_name: 'Willis', age: 68, gender: 'male' })
+    .values({
+      first_name: 'Bruce',
+      last_name: 'Willis',
+      age: 68,
+      gender: 'male',
+    })
     .returning(['first_name', 'gender'])
     .clearReturning()
     .returning('id')
@@ -35,7 +40,12 @@ async function testClearInsert(db: Kysely<Database>) {
 
   const r2 = await db
     .insertInto('person')
-    .values({ first_name: 'Bruce', last_name: 'Willis', age: 68, gender: 'male' })
+    .values({
+      first_name: 'Bruce',
+      last_name: 'Willis',
+      age: 68,
+      gender: 'male',
+    })
     .returningAll()
     .clearReturning()
     .returning('age')

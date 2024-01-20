@@ -176,7 +176,7 @@ export function isExpression(obj: unknown): obj is Expression<any> {
 }
 
 export function isAliasedExpression(
-  obj: unknown
+  obj: unknown,
 ): obj is AliasedExpression<any, any> {
   return (
     isObject(obj) &&

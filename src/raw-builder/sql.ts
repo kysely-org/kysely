@@ -366,7 +366,7 @@ export interface Sql {
    */
   join(
     array: readonly unknown[],
-    separator?: RawBuilder<any>
+    separator?: RawBuilder<any>,
   ): RawBuilder<unknown>
 }
 
@@ -379,7 +379,7 @@ export const sql: Sql = Object.assign(
       queryId: createQueryId(),
       rawNode: RawNode.create(
         sqlFragments,
-        parameters?.map(parseParameter) ?? []
+        parameters?.map(parseParameter) ?? [],
       ),
     })
   },
@@ -441,7 +441,7 @@ export const sql: Sql = Object.assign(
 
     join(
       array: readonly unknown[],
-      separator: RawBuilder<any> = sql`, `
+      separator: RawBuilder<any> = sql`, `,
     ): RawBuilder<unknown> {
       const nodes = new Array<OperationNode>(2 * array.length - 1)
       const sep = separator.toOperationNode()
@@ -459,7 +459,7 @@ export const sql: Sql = Object.assign(
         rawNode: RawNode.createWithChildren(nodes),
       })
     },
-  }
+  },
 )
 
 function parseParameter(param: unknown): OperationNode {

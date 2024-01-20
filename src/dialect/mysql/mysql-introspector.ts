@@ -31,7 +31,7 @@ export class MysqlIntrospector implements DatabaseIntrospector {
   }
 
   async getTables(
-    options: DatabaseMetadataOptions = { withInternalKyselyTables: false }
+    options: DatabaseMetadataOptions = { withInternalKyselyTables: false },
   ): Promise<TableMetadata[]> {
     let query = this.#db
       .selectFrom('information_schema.columns as columns')
@@ -39,7 +39,7 @@ export class MysqlIntrospector implements DatabaseIntrospector {
         b
           .onRef('columns.TABLE_CATALOG', '=', 'tables.TABLE_CATALOG')
           .onRef('columns.TABLE_SCHEMA', '=', 'tables.TABLE_SCHEMA')
-          .onRef('columns.TABLE_NAME', '=', 'tables.TABLE_NAME')
+          .onRef('columns.TABLE_NAME', '=', 'tables.TABLE_NAME'),
       )
       .select([
         'columns.COLUMN_NAME',
@@ -68,7 +68,7 @@ export class MysqlIntrospector implements DatabaseIntrospector {
   }
 
   async getMetadata(
-    options?: DatabaseMetadataOptions
+    options?: DatabaseMetadataOptions,
   ): Promise<DatabaseMetadata> {
     return {
       tables: await this.getTables(options),
@@ -97,8 +97,8 @@ export class MysqlIntrospector implements DatabaseIntrospector {
           isNullable: it.IS_NULLABLE === 'YES',
           isAutoIncrementing: it.EXTRA.toLowerCase().includes('auto_increment'),
           hasDefaultValue: it.COLUMN_DEFAULT !== null,
-          comment: it.COLUMN_COMMENT === '' ? undefined : it.COLUMN_COMMENT
-        })
+          comment: it.COLUMN_COMMENT === '' ? undefined : it.COLUMN_COMMENT,
+        }),
       )
 
       return tables

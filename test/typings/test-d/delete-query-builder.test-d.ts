@@ -59,22 +59,22 @@ async function testDelete(db: Kysely<Database>) {
   expectError(db.deleteFrom('pet').using('NO_SUCH_TABLE'))
   expectError(db.deleteFrom('pet').using(['pet', 'NO_SUCH_TABLE']))
   expectError(
-    db.deleteFrom('pet').using('pet').innerJoin('NO_SUCH_TABLE', 'pet.id', 'b')
+    db.deleteFrom('pet').using('pet').innerJoin('NO_SUCH_TABLE', 'pet.id', 'b'),
   )
   expectError(
     db
       .deleteFrom('pet')
       .using('pet')
-      .innerJoin('person', 'NO_SUCH_COLUMN', 'pet.owner_id')
+      .innerJoin('person', 'NO_SUCH_COLUMN', 'pet.owner_id'),
   )
   expectError(
-    db.deleteFrom('pet').using('pet').leftJoin('NO_SUCH_TABLE', 'pet.id', 'b')
+    db.deleteFrom('pet').using('pet').leftJoin('NO_SUCH_TABLE', 'pet.id', 'b'),
   )
   expectError(
     db
       .deleteFrom('pet')
       .using('pet')
-      .leftJoin('person', 'NO_SUCH_COLUMN', 'pet.owner_id')
+      .leftJoin('person', 'NO_SUCH_COLUMN', 'pet.owner_id'),
   )
 
   const r8 = await db
@@ -82,7 +82,7 @@ async function testDelete(db: Kysely<Database>) {
     .using(['person', 'pet'])
     .leftJoin('toy', 'toy.pet_id', 'pet.id')
     .where((eb) =>
-      eb.or([eb('pet.species', '=', 'cat'), eb('toy.price', '=', 0)])
+      eb.or([eb('pet.species', '=', 'cat'), eb('toy.price', '=', 0)]),
     )
     .returningAll('person')
     .execute()

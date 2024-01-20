@@ -26,7 +26,7 @@ export const WhereNode = freeze({
   cloneWithOperation(
     whereNode: WhereNode,
     operator: 'And' | 'Or',
-    operation: OperationNode
+    operation: OperationNode,
   ): WhereNode {
     return freeze({
       ...whereNode,

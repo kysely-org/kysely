@@ -6,6 +6,6 @@ export interface ConnectionProvider {
    * the connection after the callback has been run.
    */
   provideConnection<T>(
-    consumer: (connection: DatabaseConnection) => Promise<T>
+    consumer: (connection: DatabaseConnection) => Promise<T>,
   ): Promise<T>
 }

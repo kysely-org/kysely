@@ -3,14 +3,14 @@ import { ExtractTypeFromReferenceExpression } from './reference-parser.js'
 export type ExtractTypeFromCoalesce1<
   DB,
   TB extends keyof DB,
-  R1
+  R1,
 > = ExtractTypeFromReferenceExpression<DB, TB, R1>
 
 export type ExtractTypeFromCoalesce2<
   DB,
   TB extends keyof DB,
   R1,
-  R2
+  R2,
 > = ExtractTypeFromCoalesceValues2<
   ExtractTypeFromReferenceExpression<DB, TB, R1>,
   ExtractTypeFromReferenceExpression<DB, TB, R2>
@@ -27,7 +27,7 @@ export type ExtractTypeFromCoalesce3<
   TB extends keyof DB,
   R1,
   R2,
-  R3
+  R3,
 > = ExtractTypeFromCoalesceValues3<
   ExtractTypeFromReferenceExpression<DB, TB, R1>,
   ExtractTypeFromReferenceExpression<DB, TB, R2>,
@@ -48,7 +48,7 @@ export type ExtractTypeFromCoalesce4<
   R1,
   R2,
   R3,
-  R4
+  R4,
 > = ExtractTypeFromCoalesceValues4<
   ExtractTypeFromReferenceExpression<DB, TB, R1>,
   ExtractTypeFromReferenceExpression<DB, TB, R2>,
@@ -73,7 +73,7 @@ export type ExtractTypeFromCoalesce5<
   R2,
   R3,
   R4,
-  R5
+  R5,
 > = ExtractTypeFromCoalesceValues5<
   ExtractTypeFromReferenceExpression<DB, TB, R1>,
   ExtractTypeFromReferenceExpression<DB, TB, R2>,

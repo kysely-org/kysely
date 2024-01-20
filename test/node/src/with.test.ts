@@ -41,15 +41,15 @@ for (const dialect of DIALECTS) {
               eb.or([
                 eb('first_name', '=', 'Jennifer'),
                 eb('first_name', '=', 'Sylvester'),
-              ])
+              ]),
             )
-            .select(['id', 'first_name', 'gender'])
+            .select(['id', 'first_name', 'gender']),
         )
         .with('sylvester', (db) =>
           db
             .selectFrom('jennifer_and_sylvester')
             .where('gender', '=', 'male')
-            .selectAll()
+            .selectAll(),
         )
         .selectFrom('sylvester')
         .selectAll()
@@ -93,7 +93,7 @@ for (const dialect of DIALECTS) {
           db
             .selectFrom('person')
             .where('first_name', '=', 'Arnold')
-            .select(['id', 'first_name'])
+            .select(['id', 'first_name']),
         )
         .selectFrom('arnold')
         .selectAll()
@@ -129,7 +129,7 @@ for (const dialect of DIALECTS) {
             .temporary()
             .addColumn('name', 'varchar', (col) => col.notNull().unique())
             .addColumn('parent', 'varchar', (col) =>
-              col.references('node.name')
+              col.references('node.name'),
             )
             .onCommit('drop')
             .execute()
@@ -163,8 +163,8 @@ for (const dialect of DIALECTS) {
                   db
                     .selectFrom('node')
                     .innerJoin('ancestors', 'node.name', 'ancestors.parent')
-                    .select(['node.name', 'node.parent'])
-                )
+                    .select(['node.name', 'node.parent']),
+                ),
             )
             .selectFrom('ancestors')
             .select('name')
@@ -193,7 +193,7 @@ for (const dialect of DIALECTS) {
         const query = ctx.db
           .with(
             (cte) => cte('person_name').materialized(),
-            (qb) => qb.selectFrom('person').select('first_name')
+            (qb) => qb.selectFrom('person').select('first_name'),
           )
           .selectFrom('person_name')
           .select('person_name.first_name')
@@ -221,7 +221,7 @@ for (const dialect of DIALECTS) {
         const query = ctx.db
           .with(
             (cte) => cte('person_name').notMaterialized(),
-            (qb) => qb.selectFrom('person').select('first_name')
+            (qb) => qb.selectFrom('person').select('first_name'),
           )
           .selectFrom('person_name')
           .select('person_name.first_name')
@@ -253,7 +253,7 @@ for (const dialect of DIALECTS) {
             db
               .selectFrom('person')
               .where('first_name', '=', 'Jennifer')
-              .select(['id', 'first_name', 'gender'])
+              .select(['id', 'first_name', 'gender']),
           )
           .insertInto('pet')
           .values({
@@ -289,7 +289,7 @@ for (const dialect of DIALECTS) {
             db
               .deleteFrom('person')
               .where('first_name', '=', 'Arnold')
-              .returning('first_name as deleted_first_name')
+              .returning('first_name as deleted_first_name'),
           )
           .with('inserted_matt', (db) =>
             db
@@ -299,14 +299,14 @@ for (const dialect of DIALECTS) {
                 last_name: 'Damon',
                 gender: 'male',
               })
-              .returning('first_name as inserted_first_name')
+              .returning('first_name as inserted_first_name'),
           )
           .with('updated_jennifer', (db) =>
             db
               .updateTable('person')
               .where('first_name', '=', 'Jennifer')
               .set({ last_name: 'Lawrence' })
-              .returning('first_name as updated_first_name')
+              .returning('first_name as updated_first_name'),
           )
           .selectFrom('deleted_arnold')
           .innerJoin('inserted_matt', (join) => join.on(sql`1`, '=', sql`1`))

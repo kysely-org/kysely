@@ -48,8 +48,8 @@ export type InferResult<C extends Compilable<any> | CompiledQuery<any>> =
   C extends Compilable<infer O>
     ? ResolveResult<O>
     : C extends CompiledQuery<infer O>
-    ? ResolveResult<O>
-    : never
+      ? ResolveResult<O>
+      : never
 
 type ResolveResult<O> = O extends
   | InsertResult

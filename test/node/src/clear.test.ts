@@ -106,7 +106,7 @@ for (const dialect of DIALECTS) {
           b
             .doUpdateSet({ gender: 'other' })
             .where('gender', '=', 'male')
-            .clearWhere()
+            .clearWhere(),
         )
 
       testSql(query, dialect, {

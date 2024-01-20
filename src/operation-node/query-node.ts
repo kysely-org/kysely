@@ -57,7 +57,7 @@ export const QueryNode = freeze({
 
   cloneWithReturning<T extends HasReturning>(
     node: T,
-    selections: ReadonlyArray<SelectionNode>
+    selections: ReadonlyArray<SelectionNode>,
   ): T {
     return freeze({
       ...node,
@@ -84,7 +84,7 @@ export const QueryNode = freeze({
   cloneWithExplain<T extends HasExplain>(
     node: T,
     format: ExplainFormat | undefined,
-    options: Expression<any> | undefined
+    options: Expression<any> | undefined,
   ): T {
     return freeze({
       ...node,

@@ -123,7 +123,7 @@ export class CamelCasePlugin implements KyselyPlugin {
     this.#snakeCase = createSnakeCaseMapper(opt)
 
     this.#snakeCaseTransformer = new SnakeCaseTransformer(
-      this.snakeCase.bind(this)
+      this.snakeCase.bind(this),
     )
   }
 
@@ -132,7 +132,7 @@ export class CamelCasePlugin implements KyselyPlugin {
   }
 
   async transformResult(
-    args: PluginTransformResultArgs
+    args: PluginTransformResultArgs,
   ): Promise<QueryResult<UnknownRow>> {
     if (args.result.rows && Array.isArray(args.result.rows)) {
       return {
@@ -170,7 +170,7 @@ export class CamelCasePlugin implements KyselyPlugin {
 
 function canMap(
   obj: unknown,
-  opt: CamelCasePluginOptions
+  opt: CamelCasePluginOptions,
 ): obj is Record<string, unknown> {
   return isPlainObject(obj) && !opt?.maintainNestedObjectKeys
 }

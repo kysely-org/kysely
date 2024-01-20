@@ -42,11 +42,11 @@ for (const dialect of DIALECTS) {
       executedQueries.length = 0
       tediousBeginTransactionSpy = sandbox.spy(
         Connection.prototype,
-        'beginTransaction'
+        'beginTransaction',
       )
       tediousCommitTransactionSpy = sandbox.spy(
         Connection.prototype,
-        'commitTransaction'
+        'commitTransaction',
       )
     })
 
@@ -87,7 +87,7 @@ for (const dialect of DIALECTS) {
               executedQueries.map((it) => ({
                 sql: it.sql,
                 parameters: it.parameters,
-              }))
+              })),
             ).to.eql([
               {
                 sql: `start transaction isolation level ${isolationLevel}`,
@@ -104,7 +104,7 @@ for (const dialect of DIALECTS) {
               executedQueries.map((it) => ({
                 sql: it.sql,
                 parameters: it.parameters,
-              }))
+              })),
             ).to.eql([
               {
                 sql: `set transaction isolation level ${isolationLevel}`,
@@ -127,14 +127,14 @@ for (const dialect of DIALECTS) {
             expect(tediousBeginTransactionSpy.getCall(0).args[2]).to.equal(
               ISOLATION_LEVEL[
                 isolationLevel.replace(' ', '_').toUpperCase() as any
-              ]
+              ],
             )
 
             expect(
               executedQueries.map((it) => ({
                 sql: it.sql,
                 parameters: it.parameters,
-              }))
+              })),
             ).to.eql([
               {
                 sql: 'insert into "person" ("first_name", "last_name", "gender") values (@1, @2, @3)',
@@ -175,7 +175,7 @@ for (const dialect of DIALECTS) {
       }))
 
       const results = await Promise.allSettled(
-        threads.map((thread) => executeThread(thread.id, thread.fails))
+        threads.map((thread) => executeThread(thread.id, thread.fails)),
       )
 
       for (let i = 0; i < threads.length; ++i) {
@@ -227,7 +227,7 @@ for (const dialect of DIALECTS) {
 
     async function insertPet(
       trx: Transaction<Database>,
-      ownerId: number
+      ownerId: number,
     ): Promise<void> {
       await trx
         .insertInto('pet')
@@ -241,7 +241,7 @@ for (const dialect of DIALECTS) {
 
     async function insertPerson(
       trx: Transaction<Database>,
-      id: number
+      id: number,
     ): Promise<void> {
       const query = trx.insertInto('person').values({
         id: id,
@@ -256,8 +256,8 @@ for (const dialect of DIALECTS) {
         await trx.executeQuery(
           CompiledQuery.raw(
             `set identity_insert "person" on; ${compiledQuery.sql}; set identity_insert "person" off;`,
-            [...compiledQuery.parameters]
-          )
+            [...compiledQuery.parameters],
+          ),
         )
       } else {
         await query.execute()

@@ -41,7 +41,7 @@ for (const dialect of DIALECTS) {
                 .references('test.a')
                 .onDelete('cascade')
                 .onUpdate('restrict')
-                .check(sql`b < a`)
+                .check(sql`b < a`),
             )
             .addColumn('c', 'varchar')
             .addColumn('d', 'varchar(10)')
@@ -56,7 +56,7 @@ for (const dialect of DIALECTS) {
             .addColumn('m', 'date')
             .addColumn('n', 'timestamptz')
             .addColumn('o', 'uuid', (col) =>
-              col.defaultTo(sql`gen_random_uuid()`)
+              col.defaultTo(sql`gen_random_uuid()`),
             )
             .addColumn('p', 'int2')
             .addColumn('q', 'int4')
@@ -65,11 +65,11 @@ for (const dialect of DIALECTS) {
               col
                 .generatedAlwaysAs(sql`f + g`)
                 .stored()
-                .notNull()
+                .notNull(),
             )
             .addColumn('t', 'time(6)')
             .addColumn('u', 'timestamp(6)', (col) =>
-              col.notNull().defaultTo(sql`current_timestamp`)
+              col.notNull().defaultTo(sql`current_timestamp`),
             )
             .addColumn('v', 'timestamptz(6)')
             .addColumn('w', 'char(4)')
@@ -150,7 +150,7 @@ for (const dialect of DIALECTS) {
           const builder = ctx.db.schema
             .createTable('test')
             .addColumn('a', 'varchar(10)', (builder) =>
-              builder.unique().nullsNotDistinct()
+              builder.unique().nullsNotDistinct(),
             )
             .addColumn('b', 'varchar(20)')
 
@@ -175,7 +175,7 @@ for (const dialect of DIALECTS) {
                 .check(sql`a < 100`)
                 .nullsNotDistinct()
                 .unique()
-                .defaultTo(10)
+                .defaultTo(10),
             )
             .addColumn('b', 'varchar(20)')
 
@@ -196,14 +196,14 @@ for (const dialect of DIALECTS) {
           const builder = ctx.db.schema
             .createTable('test')
             .addColumn('a', 'integer', (col) =>
-              col.primaryKey().autoIncrement()
+              col.primaryKey().autoIncrement(),
             )
             .addColumn('b', 'integer', (col) =>
-              col.references('test.a').onDelete('cascade').onUpdate('set null')
+              col.references('test.a').onDelete('cascade').onUpdate('set null'),
             )
             .addColumn('c', 'varchar(255)')
             .addColumn('d', 'bigint', (col) =>
-              col.unsigned().unique().notNull()
+              col.unsigned().unique().notNull(),
             )
             .addColumn('e', 'double precision')
             .addColumn('f', 'real')
@@ -220,12 +220,12 @@ for (const dialect of DIALECTS) {
               col
                 .generatedAlwaysAs(sql`e + f`)
                 .stored()
-                .notNull()
+                .notNull(),
             )
             .addColumn('q', 'time(6)')
             .addColumn('r', 'datetime(6)')
             .addColumn('s', 'timestamp(6)', (col) =>
-              col.notNull().defaultTo(sql`current_timestamp(6)`)
+              col.notNull().defaultTo(sql`current_timestamp(6)`),
             )
             .addColumn('t', 'char(4)')
             .addColumn('u', 'char')
@@ -302,14 +302,14 @@ for (const dialect of DIALECTS) {
               col
                 .notNull()
                 .modifyFront(sql`identity(1,1)`)
-                .primaryKey()
+                .primaryKey(),
             )
             .addColumn('b', 'integer', (col) =>
               col
                 .references('test.a')
                 .onDelete('no action')
                 .onUpdate('no action')
-                .check(sql`b < 10`)
+                .check(sql`b < 10`),
             )
             .addColumn('c', 'varchar')
             .addColumn('d', 'varchar(10)')
@@ -323,10 +323,10 @@ for (const dialect of DIALECTS) {
             .addColumn('l', sql`bit`, (col) => col.notNull().defaultTo(0))
             .addColumn('m', 'date')
             .addColumn('n', 'datetime', (col) =>
-              col.defaultTo(sql`current_timestamp`)
+              col.defaultTo(sql`current_timestamp`),
             )
             .addColumn('o', sql`uniqueidentifier`, (col) =>
-              col.notNull().defaultTo(sql`newid()`)
+              col.notNull().defaultTo(sql`newid()`),
             )
             .addColumn('p', sql`smallint`)
             .addColumn('q', sql`int`)
@@ -383,14 +383,14 @@ for (const dialect of DIALECTS) {
           const builder = ctx.db.schema
             .createTable('test')
             .addColumn('a', 'integer', (col) =>
-              col.primaryKey().autoIncrement().notNull()
+              col.primaryKey().autoIncrement().notNull(),
             )
             .addColumn('b', 'integer', (col) =>
               col
                 .references('test.a')
                 .onDelete('cascade')
                 .onUpdate('restrict')
-                .check(sql`b < a`)
+                .check(sql`b < a`),
             )
             .addColumn('c', 'varchar')
             .addColumn('d', 'varchar(10)')
@@ -411,7 +411,7 @@ for (const dialect of DIALECTS) {
               col
                 .generatedAlwaysAs(sql`f + g`)
                 .stored()
-                .notNull()
+                .notNull(),
             )
             .addColumn('s', 'blob')
 
@@ -517,7 +517,7 @@ for (const dialect of DIALECTS) {
             .addColumn('a', 'varchar(255)')
             .addColumn('b', 'varchar(255)')
             .addUniqueConstraint('a_b_unique', ['a', 'b'], (uc) =>
-              uc.nullsNotDistinct()
+              uc.nullsNotDistinct(),
             )
 
           testSql(builder, dialect, {
@@ -650,7 +650,7 @@ for (const dialect of DIALECTS) {
               'foreign_key',
               ['a', 'b'],
               dialect === 'postgres' ? 'public.test2' : 'dbo.test2',
-              ['c', 'd']
+              ['c', 'd'],
             )
 
           testSql(builder, dialect, {
@@ -687,7 +687,7 @@ for (const dialect of DIALECTS) {
             ['a', 'b'],
             'test2',
             ['c', 'd'],
-            (cb) => cb.onUpdate('cascade')
+            (cb) => cb.onUpdate('cascade'),
           )
 
         testSql(builder, dialect, {
@@ -800,7 +800,7 @@ for (const dialect of DIALECTS) {
               ctx.db
                 .selectFrom('person')
                 .select(['first_name', 'last_name'])
-                .where('first_name', '=', 'Jennifer')
+                .where('first_name', '=', 'Jennifer'),
             )
 
           testSql(builder, dialect, {
@@ -937,7 +937,7 @@ for (const dialect of DIALECTS) {
             .createTable(`${schema}.test`)
             .addColumn('id', 'varchar(32)', (col) => col.primaryKey())
             .addColumn('foreign_key', 'varchar(32)', (col) =>
-              col.references(`${schema}.test.id`)
+              col.references(`${schema}.test.id`),
             )
 
           testSql(builder, dialect, {
@@ -962,7 +962,7 @@ for (const dialect of DIALECTS) {
           const builder = ctx.db.schema
             .createTable('test')
             .addColumn('id', 'integer', (col) =>
-              col.generatedAlwaysAsIdentity()
+              col.generatedAlwaysAsIdentity(),
             )
 
           testSql(builder, dialect, {
@@ -984,7 +984,7 @@ for (const dialect of DIALECTS) {
           const builder = ctx.db.schema
             .createTable('test')
             .addColumn('id', 'integer', (col) =>
-              col.generatedByDefaultAsIdentity()
+              col.generatedByDefaultAsIdentity(),
             )
 
           testSql(builder, dialect, {
@@ -1123,7 +1123,7 @@ for (const dialect of DIALECTS) {
             .createTable('test')
             .addColumn('id', 'integer', (col) => col.primaryKey())
             .addColumn('first_name', 'varchar(36)', (col) =>
-              col.modifyFront(sql`collate utf8mb4_general_ci`).notNull()
+              col.modifyFront(sql`collate utf8mb4_general_ci`).notNull(),
             )
             .addColumn('age', 'integer', (col) =>
               col
@@ -1131,9 +1131,9 @@ for (const dialect of DIALECTS) {
                 .notNull()
                 .modifyEnd(
                   sql`comment ${sql.lit(
-                    'it is not polite to ask a woman her age'
-                  )}`
-                )
+                    'it is not polite to ask a woman her age',
+                  )}`,
+                ),
             )
 
           testSql(builder, dialect, {
@@ -1161,8 +1161,8 @@ for (const dialect of DIALECTS) {
           .addColumn('id', 'integer', (col) => col.notNull())
           .$call((builder) =>
             builder.addColumn('call_me', 'varchar(10)', (col) =>
-              col.defaultTo('maybe')
-            )
+              col.defaultTo('maybe'),
+            ),
           )
 
         testSql(builder, dialect, {
@@ -1630,7 +1630,7 @@ for (const dialect of DIALECTS) {
               eb.and([
                 eb('first_name', '=', 'Igal'),
                 eb(sql.ref('age'), '>=', 18),
-              ])
+              ]),
             )
 
           testSql(builder, dialect, {
@@ -1663,7 +1663,7 @@ for (const dialect of DIALECTS) {
               eb.or([
                 eb('first_name', '=', 'Igal'),
                 eb(sql.ref('age'), '>=', 18),
-              ])
+              ]),
             )
 
           testSql(builder, dialect, {
@@ -1839,7 +1839,7 @@ for (const dialect of DIALECTS) {
             .createView('dogs')
             .temporary()
             .as(
-              ctx.db.selectFrom('pet').selectAll().where('species', '=', 'dog')
+              ctx.db.selectFrom('pet').selectAll().where('species', '=', 'dog'),
             )
 
           testSql(builder, dialect, {
@@ -1865,7 +1865,7 @@ for (const dialect of DIALECTS) {
             .createView('dogs')
             .orReplace()
             .as(
-              ctx.db.selectFrom('pet').selectAll().where('species', '=', 'dog')
+              ctx.db.selectFrom('pet').selectAll().where('species', '=', 'dog'),
             )
 
           testSql(builder, dialect, {
@@ -1891,7 +1891,7 @@ for (const dialect of DIALECTS) {
             .createView('dogs')
             .ifNotExists()
             .as(
-              ctx.db.selectFrom('pet').selectAll().where('species', '=', 'dog')
+              ctx.db.selectFrom('pet').selectAll().where('species', '=', 'dog'),
             )
 
           testSql(builder, dialect, {
@@ -1914,7 +1914,7 @@ for (const dialect of DIALECTS) {
             .createView('materialized_dogs')
             .materialized()
             .as(
-              ctx.db.selectFrom('pet').selectAll().where('species', '=', 'dog')
+              ctx.db.selectFrom('pet').selectAll().where('species', '=', 'dog'),
             )
 
           testSql(builder, dialect, {
@@ -2317,7 +2317,7 @@ for (const dialect of DIALECTS) {
             const builder = ctx.db.schema
               .alterTable('test')
               .addColumn('desc', 'varchar(20)', (cb) =>
-                cb.unique().nullsNotDistinct()
+                cb.unique().nullsNotDistinct(),
               )
 
             testSql(builder, dialect, {
@@ -2452,7 +2452,7 @@ for (const dialect of DIALECTS) {
               .execute()
 
             expect(
-              (await getColumnMeta('test.varchar_col')).isNullable
+              (await getColumnMeta('test.varchar_col')).isNullable,
             ).to.equal(false)
 
             const builder = ctx.db.schema
@@ -2472,7 +2472,7 @@ for (const dialect of DIALECTS) {
             await builder.execute()
 
             expect(
-              (await getColumnMeta('test.varchar_col')).isNullable
+              (await getColumnMeta('test.varchar_col')).isNullable,
             ).to.equal(true)
           })
 
@@ -2980,7 +2980,7 @@ for (const dialect of DIALECTS) {
                 .addUniqueConstraint(
                   'varchar_col_constaint',
                   ['varchar_col'],
-                  (builder) => builder.nullsNotDistinct()
+                  (builder) => builder.nullsNotDistinct(),
                 )
 
               testSql(builder, dialect, {
@@ -3054,7 +3054,7 @@ for (const dialect of DIALECTS) {
                 'some_constraint',
                 ['integer_col', 'varchar_col'],
                 'test2',
-                ['a', 'b']
+                ['a', 'b'],
               )
 
             testSql(builder, dialect, {
@@ -3090,7 +3090,7 @@ for (const dialect of DIALECTS) {
                 'some_constraint',
                 ['integer_col', 'varchar_col'],
                 'test2',
-                ['a', 'b']
+                ['a', 'b'],
               )
               .onDelete('set null')
               .onUpdate('cascade')
@@ -3131,7 +3131,7 @@ for (const dialect of DIALECTS) {
                 'foreign_key_constraint',
                 ['foreign_key'],
                 'test2',
-                ['id']
+                ['id'],
               )
               .execute()
 
@@ -3295,7 +3295,7 @@ for (const dialect of DIALECTS) {
         const builder = ctx.db.schema
           .alterTable('test')
           .$call((builder) =>
-            builder.addColumn('abc', 'integer', (col) => col.notNull())
+            builder.addColumn('abc', 'integer', (col) => col.notNull()),
           )
 
         testSql(builder, dialect, {
@@ -3335,7 +3335,7 @@ for (const dialect of DIALECTS) {
               },
               postgres: NOT_SUPPORTED,
               mssql: NOT_SUPPORTED,
-              sqlite: NOT_SUPPORTED
+              sqlite: NOT_SUPPORTED,
             })
 
             await query.execute()

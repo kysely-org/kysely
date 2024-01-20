@@ -48,7 +48,7 @@ export const MergeQueryNode = freeze({
 
   cloneWithThen(
     mergeNode: MergeQueryNode,
-    then: OperationNode
+    then: OperationNode,
   ): MergeQueryNode {
     return freeze({
       ...mergeNode,
@@ -57,7 +57,7 @@ export const MergeQueryNode = freeze({
             ...mergeNode.whens.slice(0, -1),
             WhenNode.cloneWithResult(
               mergeNode.whens[mergeNode.whens.length - 1],
-              then
+              then,
             ),
           ])
         : undefined,

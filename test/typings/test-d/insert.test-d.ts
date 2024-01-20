@@ -34,7 +34,7 @@ async function testInsert(db: Kysely<Database>) {
   // Insert values from a CTE
   const r4 = await db
     .with('foo', (db) =>
-      db.selectFrom('person').select('id').where('person.id', '=', 1)
+      db.selectFrom('person').select('id').where('person.id', '=', 1),
     )
     .insertInto('movie')
     .values({
@@ -55,7 +55,7 @@ async function testInsert(db: Kysely<Database>) {
         last_name: (eb) => eb.ref('last_name'),
         // `excluded` "table" should take the `UpdateType` of complex columns.
         deleted_at: (eb) => eb.ref('excluded.deleted_at'),
-      })
+      }),
     )
     .executeTakeFirst()
 
@@ -77,12 +77,14 @@ async function testInsert(db: Kysely<Database>) {
 
   // Non-existent column
   expectError(
-    db.insertInto('person').values({ first_name: 'Foo', not_column: 'foo' })
+    db.insertInto('person').values({ first_name: 'Foo', not_column: 'foo' }),
   )
 
   // Wrong type for a column
   expectError(
-    db.insertInto('person').values({ first_name: 10, age: 10, gender: 'other' })
+    db
+      .insertInto('person')
+      .values({ first_name: 10, age: 10, gender: 'other' }),
   )
 
   // Missing required columns
@@ -99,8 +101,8 @@ async function testInsert(db: Kysely<Database>) {
       .onConflict((oc) =>
         oc.column('id').doUpdateSet({
           first_name: (eb) => eb.ref('doesnt_exist'),
-        })
-      )
+        }),
+      ),
   )
 
   // GeneratedAlways column is not allowed to be inserted
@@ -112,7 +114,7 @@ async function testInsert(db: Kysely<Database>) {
       first_name: 'what',
       gender: 'male',
       age: (eb) => eb.selectFrom('pet').select('pet.name'),
-    })
+    }),
   )
 
   // Nullable column as undefined

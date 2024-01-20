@@ -25,7 +25,7 @@ export class SqliteIntrospector implements DatabaseIntrospector {
   }
 
   async getTables(
-    options: DatabaseMetadataOptions = { withInternalKyselyTables: false }
+    options: DatabaseMetadataOptions = { withInternalKyselyTables: false },
   ): Promise<TableMetadata[]> {
     let query = this.#db
       .selectFrom('sqlite_master')
@@ -46,7 +46,7 @@ export class SqliteIntrospector implements DatabaseIntrospector {
   }
 
   async getMetadata(
-    options?: DatabaseMetadataOptions
+    options?: DatabaseMetadataOptions,
   ): Promise<DatabaseMetadata> {
     return {
       tables: await this.getTables(options),
@@ -79,7 +79,7 @@ export class SqliteIntrospector implements DatabaseIntrospector {
           type: string
           notnull: 0 | 1
           dflt_value: any
-        }>`pragma_table_info(${table})`.as('table_info')
+        }>`pragma_table_info(${table})`.as('table_info'),
       )
       .select(['name', 'type', 'notnull', 'dflt_value'])
       .orderBy('cid')
@@ -94,7 +94,7 @@ export class SqliteIntrospector implements DatabaseIntrospector {
         isNullable: !col.notnull,
         isAutoIncrementing: col.name === autoIncrementCol,
         hasDefaultValue: col.dflt_value != null,
-        comment: undefined
+        comment: undefined,
       })),
     }
   }

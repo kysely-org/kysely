@@ -67,7 +67,7 @@ for (const dialect of DIALECTS) {
           .select(['first_name', 'last_name', 'gender'])
           .orderBy('first_name')
           .orderBy('last_name')
-          .execute()
+          .execute(),
       ).to.eql([
         { first_name: 'Arnold', last_name: 'Schwarzenegger', gender: 'male' },
         { first_name: 'Sylvester', last_name: 'Stallone', gender: 'male' },
@@ -81,7 +81,7 @@ for (const dialect of DIALECTS) {
           eb.or([
             eb('first_name', '=', 'Jennifer'),
             eb('first_name', '=', 'Arnold'),
-          ])
+          ]),
         )
 
       testSql(query, dialect, {
@@ -542,7 +542,7 @@ for (const dialect of DIALECTS) {
             or([
               eb('pet.species', '=', sql<Species>`${'NO_SUCH_SPECIES'}`),
               eb('toy.price', '=', 0),
-            ])
+            ]),
           )
 
         testSql(query, dialect, {
@@ -863,7 +863,7 @@ for (const dialect of DIALECTS) {
             first_name,
             last_name,
             gender,
-          }))
+          })),
         )
       })
     }

@@ -85,7 +85,7 @@ for (const dialect of DIALECTS) {
         .select([
           coalesce('first_name', 'last_name').as('ColumnReference0'),
           coalesce('first_name', ctx.db.dynamic.ref('last_name')).as(
-            'ColumnReference1'
+            'ColumnReference1',
           ),
           ...(dialect === 'postgres' ||
           dialect === 'mysql' ||
@@ -95,35 +95,35 @@ for (const dialect of DIALECTS) {
           coalesce('first_name', max('last_name')).as('ColumnReference3'),
           coalesce(
             ctx.db.dynamic.ref('first_name'),
-            ctx.db.dynamic.ref('last_name')
+            ctx.db.dynamic.ref('last_name'),
           ).as('DynamicReference0'),
           coalesce(ctx.db.dynamic.ref('first_name'), 'last_name').as(
-            'DynamicReference1'
+            'DynamicReference1',
           ),
           ...(dialect === 'postgres' ||
           dialect === 'mysql' ||
           dialect === 'sqlite'
             ? [
                 coalesce(ctx.db.dynamic.ref('first_name'), sql`${2}`).as(
-                  'DynamicReference2'
+                  'DynamicReference2',
                 ),
               ]
             : []),
           coalesce(ctx.db.dynamic.ref('first_name'), max('last_name')).as(
-            'DynamicReference3'
+            'DynamicReference3',
           ),
           coalesce(sql`${3}`, sql`${4}`).as('RawBuilder0'),
           coalesce(sql`${5}`, 'last_name').as('RawBuilder1'),
           coalesce(sql`${6}`, ctx.db.dynamic.ref('last_name')).as(
-            'RawBuilder2'
+            'RawBuilder2',
           ),
           coalesce(sql`${7}`, max('last_name')).as('RawBuilder3'),
           coalesce(max('first_name'), max('last_name')).as(
-            'AggregateFunction0'
+            'AggregateFunction0',
           ),
           coalesce(max('first_name'), 'last_name').as('AggregateFunction1'),
           coalesce(max('first_name'), ctx.db.dynamic.ref('last_name')).as(
-            'AggregateFunction2'
+            'AggregateFunction2',
           ),
           ...(dialect === 'postgres' ||
           dialect === 'mysql' ||
@@ -241,7 +241,7 @@ for (const dialect of DIALECTS) {
               'first_name',
               ctx.db.dynamic.ref('last_name'),
               ctx.db.fn.max('last_name'),
-              sql.lit('(N/A)')
+              sql.lit('(N/A)'),
             )
             .as('name'),
         ])

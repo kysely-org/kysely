@@ -41,7 +41,7 @@ export class CTEBuilder<N extends string> implements OperationNodeSource {
 
 preventAwait(
   CTEBuilder,
-  "don't await CTEBuilder instances. They are never executed directly and are always just a part of a query."
+  "don't await CTEBuilder instances. They are never executed directly and are always just a part of a query.",
 )
 
 interface CTEBuilderProps {
@@ -50,5 +50,5 @@ interface CTEBuilderProps {
 
 export type CTEBuilderCallback<N extends string> = (
   // N2 is needed for proper inference. Don't remove it.
-  cte: <N2 extends string>(name: N2) => CTEBuilder<N2>
+  cte: <N2 extends string>(name: N2) => CTEBuilder<N2>,
 ) => CTEBuilder<N>

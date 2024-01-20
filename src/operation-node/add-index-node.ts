@@ -25,7 +25,7 @@ export const AddIndexNode = freeze({
   create(name: string): AddIndexNode {
     return freeze({
       kind: 'AddIndexNode',
-      name: IdentifierNode.create(name)
+      name: IdentifierNode.create(name),
     })
   },
 
