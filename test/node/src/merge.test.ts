@@ -12,7 +12,7 @@ import {
 } from './test-setup.js'
 
 for (const dialect of DIALECTS.filter(
-  (dialect) => dialect === 'postgres' || dialect === 'mssql'
+  (dialect) => dialect === 'postgres' || dialect === 'mssql',
 )) {
   describe(`merge (${dialect})`, () => {
     let ctx: TestContext
@@ -92,7 +92,7 @@ for (const dialect of DIALECTS.filter(
           .using('pet', (on) =>
             on
               .onRef('pet.owner_id', '=', 'person.id')
-              .on('pet.name', '=', 'Lucky')
+              .on('pet.name', '=', 'Lucky'),
           )
           .whenMatched()
           .thenDelete()
@@ -126,7 +126,7 @@ for (const dialect of DIALECTS.filter(
               .where('name', '=', 'Lucky')
               .as('pet'),
             'pet.owner_id',
-            'person.id'
+            'person.id',
           )
           .whenMatched()
           .thenDelete()
@@ -207,8 +207,8 @@ for (const dialect of DIALECTS.filter(
             eb('person.gender', '=', 'female').and(
               'person.first_name',
               '=',
-              eb.ref('pet.name')
-            )
+              eb.ref('pet.name'),
+            ),
           )
           .thenDelete()
 
@@ -239,8 +239,8 @@ for (const dialect of DIALECTS.filter(
             eb('person.gender', '=', 'female').or(
               'person.first_name',
               '=',
-              eb.ref('pet.name')
-            )
+              eb.ref('pet.name'),
+            ),
           )
           .thenDelete()
 
@@ -435,7 +435,7 @@ for (const dialect of DIALECTS.filter(
                 .set('middle_name', (eb) => eb.ref('pet.name'))
                 .set({
                   marital_status: 'single',
-                })
+                }),
             )
 
           testSql(query, dialect, {
@@ -492,7 +492,7 @@ for (const dialect of DIALECTS.filter(
             .using('pet', (on) =>
               on
                 .onRef('pet.owner_id', '=', 'person.id')
-                .on('pet.name', '=', 'NO_SUCH_PET_NAME')
+                .on('pet.name', '=', 'NO_SUCH_PET_NAME'),
             )
             .whenNotMatched()
             .thenInsertValues({
@@ -592,8 +592,8 @@ for (const dialect of DIALECTS.filter(
                 eb('pet.name', '=', 'Dingo').and(
                   'pet.name',
                   '=',
-                  eb.ref('pet.name')
-                )
+                  eb.ref('pet.name'),
+                ),
               )
               .thenInsertValues({
                 gender: 'male',
@@ -629,8 +629,8 @@ for (const dialect of DIALECTS.filter(
                 eb('pet.name', '=', 'Dingo').or(
                   'pet.name',
                   '=',
-                  eb.ref('pet.name')
-                )
+                  eb.ref('pet.name'),
+                ),
               )
               .thenInsertValues({
                 gender: 'male',
@@ -747,7 +747,7 @@ for (const dialect of DIALECTS.filter(
                 .whenNotMatchedBySourceAndRef(
                   'person.first_name',
                   '=',
-                  'person.last_name'
+                  'person.last_name',
                 )
                 .thenDelete()
 
@@ -775,8 +775,8 @@ for (const dialect of DIALECTS.filter(
                   eb('person.gender', '=', 'female').and(
                     'person.first_name',
                     '=',
-                    eb.ref('person.last_name')
-                  )
+                    eb.ref('person.last_name'),
+                  ),
                 )
                 .thenDelete()
 
@@ -804,8 +804,8 @@ for (const dialect of DIALECTS.filter(
                   eb('person.gender', '=', 'female').or(
                     'person.first_name',
                     '=',
-                    eb.ref('person.last_name')
-                  )
+                    eb.ref('person.last_name'),
+                  ),
                 )
                 .thenDelete()
 
@@ -933,7 +933,7 @@ for (const dialect of DIALECTS.filter(
                     .set('first_name', (eb) => eb.ref('person.last_name'))
                     .set({
                       marital_status: 'single',
-                    })
+                    }),
                 )
 
               testSql(query, dialect, {

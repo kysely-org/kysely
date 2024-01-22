@@ -46,12 +46,12 @@ export class OverBuilder<DB, TB extends keyof DB>
    */
   orderBy<OE extends StringReference<DB, TB> | DynamicReferenceBuilder<any>>(
     orderBy: OE,
-    direction?: OrderByDirectionExpression
+    direction?: OrderByDirectionExpression,
   ): OverBuilder<DB, TB> {
     return new OverBuilder({
       overNode: OverNode.cloneWithOrderByItems(
         this.#props.overNode,
-        parseOrderBy([orderBy, direction])
+        parseOrderBy([orderBy, direction]),
       ),
     })
   }
@@ -78,18 +78,18 @@ export class OverBuilder<DB, TB extends keyof DB>
    * ```
    */
   partitionBy(
-    partitionBy: ReadonlyArray<PartitionByExpression<DB, TB>>
+    partitionBy: ReadonlyArray<PartitionByExpression<DB, TB>>,
   ): OverBuilder<DB, TB>
 
   partitionBy<PE extends PartitionByExpression<DB, TB>>(
-    partitionBy: PE
+    partitionBy: PE,
   ): OverBuilder<DB, TB>
 
   partitionBy(partitionBy: PartitionByExpressionOrList<DB, TB>): any {
     return new OverBuilder({
       overNode: OverNode.cloneWithPartitionByItems(
         this.#props.overNode,
-        parsePartitionBy(partitionBy)
+        parsePartitionBy(partitionBy),
       ),
     })
   }
@@ -109,7 +109,7 @@ export class OverBuilder<DB, TB extends keyof DB>
 
 preventAwait(
   OverBuilder,
-  "don't await OverBuilder instances. They are never executed directly and are always just a part of a query."
+  "don't await OverBuilder instances. They are never executed directly and are always just a part of a query.",
 )
 
 export interface OverBuilderProps {

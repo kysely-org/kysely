@@ -134,22 +134,22 @@ export class CreateTableBuilder<TB extends string, C extends string = never>
   addColumn<CN extends string>(
     columnName: CN,
     dataType: DataTypeExpression,
-    build: ColumnBuilderCallback = noop
+    build: ColumnBuilderCallback = noop,
   ): CreateTableBuilder<TB, C | CN> {
     const columnBuilder = build(
       new ColumnDefinitionBuilder(
         ColumnDefinitionNode.create(
           columnName,
-          parseDataTypeExpression(dataType)
-        )
-      )
+          parseDataTypeExpression(dataType),
+        ),
+      ),
     )
 
     return new CreateTableBuilder({
       ...this.#props,
       node: CreateTableNode.cloneWithColumn(
         this.#props.node,
-        columnBuilder.toOperationNode()
+        columnBuilder.toOperationNode(),
       ),
     })
   }
@@ -168,13 +168,13 @@ export class CreateTableBuilder<TB extends string, C extends string = never>
    */
   addPrimaryKeyConstraint(
     constraintName: string,
-    columns: C[]
+    columns: C[],
   ): CreateTableBuilder<TB, C> {
     return new CreateTableBuilder({
       ...this.#props,
       node: CreateTableNode.cloneWithConstraint(
         this.#props.node,
-        PrimaryConstraintNode.create(columns, constraintName)
+        PrimaryConstraintNode.create(columns, constraintName),
       ),
     })
   }
@@ -199,19 +199,19 @@ export class CreateTableBuilder<TB extends string, C extends string = never>
   addUniqueConstraint(
     constraintName: string,
     columns: C[],
-    build: UniqueConstraintNodeBuilderCallback = noop
+    build: UniqueConstraintNodeBuilderCallback = noop,
   ): CreateTableBuilder<TB, C> {
     const uniqueConstraintBuilder = build(
       new UniqueConstraintNodeBuilder(
-        UniqueConstraintNode.create(columns, constraintName)
-      )
+        UniqueConstraintNode.create(columns, constraintName),
+      ),
     )
 
     return new CreateTableBuilder({
       ...this.#props,
       node: CreateTableNode.cloneWithConstraint(
         this.#props.node,
-        uniqueConstraintBuilder.toOperationNode()
+        uniqueConstraintBuilder.toOperationNode(),
       ),
     })
   }
@@ -232,7 +232,7 @@ export class CreateTableBuilder<TB extends string, C extends string = never>
    */
   addCheckConstraint(
     constraintName: string,
-    checkExpression: Expression<any>
+    checkExpression: Expression<any>,
   ): CreateTableBuilder<TB, C> {
     return new CreateTableBuilder({
       ...this.#props,
@@ -240,8 +240,8 @@ export class CreateTableBuilder<TB extends string, C extends string = never>
         this.#props.node,
         CheckConstraintNode.create(
           checkExpression.toOperationNode(),
-          constraintName
-        )
+          constraintName,
+        ),
       ),
     })
   }
@@ -280,7 +280,7 @@ export class CreateTableBuilder<TB extends string, C extends string = never>
     columns: C[],
     targetTable: string,
     targetColumns: string[],
-    build: ForeignKeyConstraintBuilderCallback = noop
+    build: ForeignKeyConstraintBuilderCallback = noop,
   ): CreateTableBuilder<TB, C> {
     const builder = build(
       new ForeignKeyConstraintBuilder(
@@ -288,16 +288,16 @@ export class CreateTableBuilder<TB extends string, C extends string = never>
           columns.map(ColumnNode.create),
           parseTable(targetTable),
           targetColumns.map(ColumnNode.create),
-          constraintName
-        )
-      )
+          constraintName,
+        ),
+      ),
     )
 
     return new CreateTableBuilder({
       ...this.#props,
       node: CreateTableNode.cloneWithConstraint(
         this.#props.node,
-        builder.toOperationNode()
+        builder.toOperationNode(),
       ),
     })
   }
@@ -333,7 +333,7 @@ export class CreateTableBuilder<TB extends string, C extends string = never>
       ...this.#props,
       node: CreateTableNode.cloneWithFrontModifier(
         this.#props.node,
-        modifier.toOperationNode()
+        modifier.toOperationNode(),
       ),
     })
   }
@@ -369,7 +369,7 @@ export class CreateTableBuilder<TB extends string, C extends string = never>
       ...this.#props,
       node: CreateTableNode.cloneWithEndModifier(
         this.#props.node,
-        modifier.toOperationNode()
+        modifier.toOperationNode(),
       ),
     })
   }
@@ -441,14 +441,14 @@ export class CreateTableBuilder<TB extends string, C extends string = never>
   toOperationNode(): CreateTableNode {
     return this.#props.executor.transformQuery(
       this.#props.node,
-      this.#props.queryId
+      this.#props.queryId,
     )
   }
 
   compile(): CompiledQuery {
     return this.#props.executor.compileQuery(
       this.toOperationNode(),
-      this.#props.queryId
+      this.#props.queryId,
     )
   }
 
@@ -459,7 +459,7 @@ export class CreateTableBuilder<TB extends string, C extends string = never>
 
 preventAwait(
   CreateTableBuilder,
-  "don't await CreateTableBuilder instances directly. To execute the query you need to call `execute`"
+  "don't await CreateTableBuilder instances directly. To execute the query you need to call `execute`",
 )
 
 export interface CreateTableBuilderProps {
@@ -469,9 +469,9 @@ export interface CreateTableBuilderProps {
 }
 
 export type ColumnBuilderCallback = (
-  builder: ColumnDefinitionBuilder
+  builder: ColumnDefinitionBuilder,
 ) => ColumnDefinitionBuilder
 
 export type ForeignKeyConstraintBuilderCallback = (
-  builder: ForeignKeyConstraintBuilder
+  builder: ForeignKeyConstraintBuilder,
 ) => ForeignKeyConstraintBuilder

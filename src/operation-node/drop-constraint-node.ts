@@ -31,7 +31,7 @@ export const DropConstraintNode = freeze({
 
   cloneWith(
     dropConstraint: DropConstraintNode,
-    props: DropConstraintNodeProps
+    props: DropConstraintNodeProps,
   ): DropConstraintNode {
     return freeze({
       ...dropConstraint,

@@ -64,7 +64,7 @@ export class Migrator {
    */
   async getMigrations(): Promise<ReadonlyArray<MigrationInfo>> {
     const executedMigrations = (await this.#doesTableExists(
-      this.#migrationTable
+      this.#migrationTable,
     ))
       ? await this.#props.db
           .withPlugin(this.#schemaPlugin)
@@ -161,7 +161,7 @@ export class Migrator {
    * ```
    */
   async migrateTo(
-    targetMigrationName: string | NoMigrations
+    targetMigrationName: string | NoMigrations,
   ): Promise<MigrationResultSet> {
     return this.#migrate(
       ({
@@ -180,10 +180,10 @@ export class Migrator {
         }
 
         const executedIndex = executedMigrations.indexOf(
-          targetMigrationName as string
+          targetMigrationName as string,
         )
         const pendingIndex = pendingMigrations.findIndex(
-          (m) => m.name === (targetMigrationName as string)
+          (m) => m.name === (targetMigrationName as string),
         )
 
         if (executedIndex !== -1) {
@@ -195,10 +195,10 @@ export class Migrator {
           return { direction: 'Up', step: pendingIndex + 1 }
         } else {
           throw new Error(
-            `migration "${targetMigrationName}" isn't executed or pending`
+            `migration "${targetMigrationName}" isn't executed or pending`,
           )
         }
-      }
+      },
     )
   }
 
@@ -242,7 +242,7 @@ export class Migrator {
     getMigrationDirectionAndStep: (state: MigrationState) => {
       direction: MigrationDirection
       step: number
-    }
+    },
   ): Promise<MigrationResultSet> {
     try {
       await this.#ensureMigrationTablesExists()
@@ -298,7 +298,7 @@ export class Migrator {
     if (!(await this.#doesSchemaExists())) {
       try {
         await this.#createIfNotExists(
-          this.#props.db.schema.createSchema(this.#migrationTableSchema)
+          this.#props.db.schema.createSchema(this.#migrationTableSchema),
         )
       } catch (error) {
         // At least on PostgreSQL, `if not exists` doesn't guarantee the `create schema`
@@ -316,7 +316,7 @@ export class Migrator {
       try {
         if (this.#migrationTableSchema) {
           await this.#createIfNotExists(
-            this.#props.db.schema.createSchema(this.#migrationTableSchema)
+            this.#props.db.schema.createSchema(this.#migrationTableSchema),
           )
         }
 
@@ -325,11 +325,11 @@ export class Migrator {
             .withPlugin(this.#schemaPlugin)
             .createTable(this.#migrationTable)
             .addColumn('name', 'varchar(255)', (col) =>
-              col.notNull().primaryKey()
+              col.notNull().primaryKey(),
             )
             // The migration run time as ISO string. This is not a real date type as we
             // can't know which data type is supported by all future dialects.
-            .addColumn('timestamp', 'varchar(255)', (col) => col.notNull())
+            .addColumn('timestamp', 'varchar(255)', (col) => col.notNull()),
         )
       } catch (error) {
         // At least on PostgreSQL, `if not exists` doesn't guarantee the `create table`
@@ -350,11 +350,11 @@ export class Migrator {
             .withPlugin(this.#schemaPlugin)
             .createTable(this.#migrationLockTable)
             .addColumn('id', 'varchar(255)', (col) =>
-              col.notNull().primaryKey()
+              col.notNull().primaryKey(),
             )
             .addColumn('is_locked', 'integer', (col) =>
-              col.notNull().defaultTo(0)
-            )
+              col.notNull().defaultTo(0),
+            ),
         )
       } catch (error) {
         // At least on PostgreSQL, `if not exists` doesn't guarantee the `create table`
@@ -397,7 +397,7 @@ export class Migrator {
     })
 
     return tables.some(
-      (it) => it.name === tableName && (!schema || it.schema === schema)
+      (it) => it.name === tableName && (!schema || it.schema === schema),
     )
   }
 
@@ -416,7 +416,7 @@ export class Migrator {
     getMigrationDirectionAndStep: (state: MigrationState) => {
       direction: MigrationDirection
       step: number
-    }
+    },
   ): Promise<MigrationResultSet> {
     const adapter = this.#props.db.getExecutor().adapter
 
@@ -472,7 +472,7 @@ export class Migrator {
 
     const pendingMigrations = this.#getPendingMigrations(
       migrations,
-      executedMigrations
+      executedMigrations,
     )
 
     return freeze({
@@ -485,7 +485,7 @@ export class Migrator {
 
   #getPendingMigrations(
     migrations: ReadonlyArray<NamedMigration>,
-    executedMigrations: ReadonlyArray<string>
+    executedMigrations: ReadonlyArray<string>,
   ): ReadonlyArray<NamedMigration> {
     return migrations.filter((migration) => {
       return !executedMigrations.includes(migration.name)
@@ -504,7 +504,7 @@ export class Migrator {
   }
 
   async #getExecutedMigrations(
-    db: Kysely<any>
+    db: Kysely<any>,
   ): Promise<ReadonlyArray<string>> {
     const executedMigrations = await db
       .withPlugin(this.#schemaPlugin)
@@ -524,13 +524,13 @@ export class Migrator {
 
   #ensureNoMissingMigrations(
     migrations: ReadonlyArray<NamedMigration>,
-    executedMigrations: ReadonlyArray<string>
+    executedMigrations: ReadonlyArray<string>,
   ) {
     // Ensure all executed migrations exist in the `migrations` list.
     for (const executed of executedMigrations) {
       if (!migrations.some((it) => it.name === executed)) {
         throw new Error(
-          `corrupted migrations: previously executed migration ${executed} is missing`
+          `corrupted migrations: previously executed migration ${executed} is missing`,
         )
       }
     }
@@ -538,13 +538,13 @@ export class Migrator {
 
   #ensureMigrationsInOrder(
     migrations: ReadonlyArray<NamedMigration>,
-    executedMigrations: ReadonlyArray<string>
+    executedMigrations: ReadonlyArray<string>,
   ) {
     // Ensure the executed migrations are the first ones in the migration list.
     for (let i = 0; i < executedMigrations.length; ++i) {
       if (migrations[i].name !== executedMigrations[i]) {
         throw new Error(
-          `corrupted migrations: expected previously executed migration ${executedMigrations[i]} to be at index ${i} but ${migrations[i].name} was found in its place. New migrations must always have a name that comes alphabetically after the last executed migration.`
+          `corrupted migrations: expected previously executed migration ${executedMigrations[i]} to be at index ${i} but ${migrations[i].name} was found in its place. New migrations must always have a name that comes alphabetically after the last executed migration.`,
         )
       }
     }
@@ -553,7 +553,7 @@ export class Migrator {
   async #migrateDown(
     db: Kysely<any>,
     state: MigrationState,
-    step: number
+    step: number,
   ): Promise<MigrationResultSet> {
     const migrationsToRollback: ReadonlyArray<NamedMigration> =
       state.executedMigrations
@@ -610,7 +610,7 @@ export class Migrator {
   async #migrateUp(
     db: Kysely<any>,
     state: MigrationState,
-    step: number
+    step: number,
   ): Promise<MigrationResultSet> {
     const migrationsToRun: ReadonlyArray<NamedMigration> =
       state.pendingMigrations.slice(0, step)
@@ -660,7 +660,7 @@ export class Migrator {
   }
 
   async #createIfNotExists(
-    qb: CreateTableBuilder<any, any> | CreateSchemaBuilder
+    qb: CreateTableBuilder<any, any> | CreateSchemaBuilder,
   ): Promise<void> {
     if (this.#props.db.getExecutor().adapter.supportsCreateIfNotExists) {
       qb = qb.ifNotExists()

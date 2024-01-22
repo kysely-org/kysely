@@ -38,7 +38,7 @@ for (const dialect of DIALECTS) {
         try {
           await query.execute()
           expect.fail(
-            `query "${query.compile().sql}" was supposed to throw but didn't`
+            `query "${query.compile().sql}" was supposed to throw but didn't`,
           )
         } catch (err: any) {
           if (err instanceof AssertionError) {

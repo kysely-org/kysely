@@ -19,7 +19,7 @@ export class DeduplicateJoinsTransformer extends OperationNodeTransformer {
   }
 
   #transformQuery<
-    T extends SelectQueryNode | UpdateQueryNode | DeleteQueryNode
+    T extends SelectQueryNode | UpdateQueryNode | DeleteQueryNode,
   >(node: T): T {
     if (!node.joins || node.joins.length === 0) {
       return node

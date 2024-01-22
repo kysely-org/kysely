@@ -15,11 +15,11 @@ export type PartitionByExpressionOrList<DB, TB extends keyof DB> =
   | PartitionByExpression<DB, TB>
 
 export function parsePartitionBy(
-  partitionBy: PartitionByExpressionOrList<any, any>
+  partitionBy: PartitionByExpressionOrList<any, any>,
 ): PartitionByItemNode[] {
   return (
     parseReferenceExpressionOrList(
-      partitionBy
+      partitionBy,
     ) as SimpleReferenceExpressionNode[]
   ).map(PartitionByItemNode.create)
 }

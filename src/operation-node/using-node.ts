@@ -23,7 +23,7 @@ export const UsingNode = freeze({
 
   cloneWithTables(
     using: UsingNode,
-    tables: ReadonlyArray<OperationNode>
+    tables: ReadonlyArray<OperationNode>,
   ): UsingNode {
     return freeze({
       ...using,
