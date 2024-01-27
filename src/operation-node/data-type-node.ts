@@ -9,6 +9,7 @@ const SIMPLE_COLUMN_DATA_TYPES = [
   'int2',
   'int4',
   'int8',
+  'smallint',
   'bigint',
   'boolean',
   'real',
