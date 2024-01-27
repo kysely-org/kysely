@@ -8,6 +8,7 @@ import {
   testSql,
   expect,
   insertDefaultDataSet,
+  insertPersons,
   DIALECTS,
   NOT_SUPPORTED,
 } from './test-setup.js'
@@ -606,6 +607,109 @@ for (const dialect of DIALECTS) {
             {
               first_name: 'Sylvester',
               last_name: 'Stallone',
+              gender: 'male',
+            },
+          ])
+        })
+
+        it('a `where in` query with tuples of length six', async () => {
+          await insertPersons(ctx, [
+            {
+              first_name: 'Robert',
+              middle_name: 'Anthony',
+              last_name: 'De Niro',
+              gender: 'male',
+              marital_status: 'divorced',
+              children: 7,
+            },
+            {
+              first_name: 'Alfredo',
+              middle_name: 'James',
+              last_name: 'Pacino',
+              gender: 'male',
+              marital_status: 'divorced',
+              children: 3,
+            },
+          ])
+
+          const query = ctx.db
+            .selectFrom('person')
+            .selectAll()
+            .where((eb) =>
+              eb(
+                eb.refTuple(
+                  'first_name',
+                  'middle_name',
+                  'last_name',
+                  'gender',
+                  'marital_status',
+                  'children',
+                ),
+                'in',
+                [
+                  eb.tuple(
+                    'Robert',
+                    'Anthony',
+                    'De Niro',
+                    'male' as const,
+                    'divorced' as const,
+                    7,
+                  ),
+                  eb.tuple(
+                    'Alfredo',
+                    'James',
+                    'Pacino',
+                    'male' as const,
+                    'divorced' as const,
+                    3,
+                  ),
+                ],
+              ),
+            )
+            .orderBy('first_name asc')
+
+          const parameters = [
+            'Robert',
+            'Anthony',
+            'De Niro',
+            'male',
+            'divorced',
+            7,
+            'Alfredo',
+            'James',
+            'Pacino',
+            'male',
+            'divorced',
+            3,
+          ]
+
+          testSql(query, dialect, {
+            postgres: {
+              sql: 'select * from "person" where ("first_name", "middle_name", "last_name", "gender", "marital_status", "children") in (($1, $2, $3, $4, $5, $6), ($7, $8, $9, $10, $11, $12)) order by "first_name" asc',
+              parameters,
+            },
+            mysql: {
+              sql: 'select * from `person` where (`first_name`, `middle_name`, `last_name`, `gender`, `marital_status`, `children`) in ((?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?)) order by `first_name` asc',
+              parameters,
+            },
+            mssql: NOT_SUPPORTED,
+            sqlite: {
+              sql: 'select * from "person" where ("first_name", "middle_name", "last_name", "gender", "marital_status", "children") in ((?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?)) order by "first_name" asc',
+              parameters,
+            },
+          })
+
+          const persons = await query.execute()
+          expect(persons).to.have.length(2)
+          expect(persons).to.containSubset([
+            {
+              first_name: 'Robert',
+              last_name: 'De Niro',
+              gender: 'male',
+            },
+            {
+              first_name: 'Alfredo',
+              last_name: 'Pacino',
               gender: 'male',
             },
           ])

@@ -51,6 +51,72 @@ export type RefTuple5<
   ]
 >
 
+export type RefTuple6<
+  DB,
+  TB extends keyof DB,
+  R1,
+  R2,
+  R3,
+  R4,
+  R5,
+  R6,
+> = DrainOuterGeneric<
+  [
+    ExtractTypeFromReferenceExpression<DB, TB, R1>,
+    ExtractTypeFromReferenceExpression<DB, TB, R2>,
+    ExtractTypeFromReferenceExpression<DB, TB, R3>,
+    ExtractTypeFromReferenceExpression<DB, TB, R4>,
+    ExtractTypeFromReferenceExpression<DB, TB, R5>,
+    ExtractTypeFromReferenceExpression<DB, TB, R6>,
+  ]
+>
+
+export type RefTuple7<
+  DB,
+  TB extends keyof DB,
+  R1,
+  R2,
+  R3,
+  R4,
+  R5,
+  R6,
+  R7,
+> = DrainOuterGeneric<
+  [
+    ExtractTypeFromReferenceExpression<DB, TB, R1>,
+    ExtractTypeFromReferenceExpression<DB, TB, R2>,
+    ExtractTypeFromReferenceExpression<DB, TB, R3>,
+    ExtractTypeFromReferenceExpression<DB, TB, R4>,
+    ExtractTypeFromReferenceExpression<DB, TB, R5>,
+    ExtractTypeFromReferenceExpression<DB, TB, R6>,
+    ExtractTypeFromReferenceExpression<DB, TB, R7>,
+  ]
+>
+
+export type RefTuple8<
+  DB,
+  TB extends keyof DB,
+  R1,
+  R2,
+  R3,
+  R4,
+  R5,
+  R6,
+  R7,
+  R8,
+> = DrainOuterGeneric<
+  [
+    ExtractTypeFromReferenceExpression<DB, TB, R1>,
+    ExtractTypeFromReferenceExpression<DB, TB, R2>,
+    ExtractTypeFromReferenceExpression<DB, TB, R3>,
+    ExtractTypeFromReferenceExpression<DB, TB, R4>,
+    ExtractTypeFromReferenceExpression<DB, TB, R5>,
+    ExtractTypeFromReferenceExpression<DB, TB, R6>,
+    ExtractTypeFromReferenceExpression<DB, TB, R7>,
+    ExtractTypeFromReferenceExpression<DB, TB, R8>,
+  ]
+>
+
 export type ValTuple2<V1, V2> = DrainOuterGeneric<
   [ExtractTypeFromValueExpression<V1>, ExtractTypeFromValueExpression<V2>]
 >
@@ -79,5 +145,41 @@ export type ValTuple5<V1, V2, V3, V4, V5> = DrainOuterGeneric<
     ExtractTypeFromValueExpression<V3>,
     ExtractTypeFromValueExpression<V4>,
     ExtractTypeFromValueExpression<V5>,
+  ]
+>
+
+export type ValTuple6<V1, V2, V3, V4, V5, V6> = DrainOuterGeneric<
+  [
+    ExtractTypeFromValueExpression<V1>,
+    ExtractTypeFromValueExpression<V2>,
+    ExtractTypeFromValueExpression<V3>,
+    ExtractTypeFromValueExpression<V4>,
+    ExtractTypeFromValueExpression<V5>,
+    ExtractTypeFromValueExpression<V6>,
+  ]
+>
+
+export type ValTuple7<V1, V2, V3, V4, V5, V6, V7> = DrainOuterGeneric<
+  [
+    ExtractTypeFromValueExpression<V1>,
+    ExtractTypeFromValueExpression<V2>,
+    ExtractTypeFromValueExpression<V3>,
+    ExtractTypeFromValueExpression<V4>,
+    ExtractTypeFromValueExpression<V5>,
+    ExtractTypeFromValueExpression<V6>,
+    ExtractTypeFromValueExpression<V7>,
+  ]
+>
+
+export type ValTuple8<V1, V2, V3, V4, V5, V6, V7, V8> = DrainOuterGeneric<
+  [
+    ExtractTypeFromValueExpression<V1>,
+    ExtractTypeFromValueExpression<V2>,
+    ExtractTypeFromValueExpression<V3>,
+    ExtractTypeFromValueExpression<V4>,
+    ExtractTypeFromValueExpression<V5>,
+    ExtractTypeFromValueExpression<V6>,
+    ExtractTypeFromValueExpression<V7>,
+    ExtractTypeFromValueExpression<V8>,
   ]
 >

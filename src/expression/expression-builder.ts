@@ -69,10 +69,16 @@ import {
   RefTuple3,
   RefTuple4,
   RefTuple5,
+  RefTuple6,
+  RefTuple7,
+  RefTuple8,
   ValTuple2,
   ValTuple3,
   ValTuple4,
   ValTuple5,
+  ValTuple6,
+  ValTuple7,
+  ValTuple8,
 } from '../parser/tuple-parser.js'
 import { TupleNode } from '../operation-node/tuple-node.js'
 import { Selectable } from '../util/column-type.js'
@@ -651,6 +657,64 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
     value5: R5,
   ): ExpressionWrapper<DB, TB, RefTuple5<DB, TB, R1, R2, R3, R4, R5>>
 
+  refTuple<
+    R1 extends ReferenceExpression<DB, TB>,
+    R2 extends ReferenceExpression<DB, TB>,
+    R3 extends ReferenceExpression<DB, TB>,
+    R4 extends ReferenceExpression<DB, TB>,
+    R5 extends ReferenceExpression<DB, TB>,
+    R6 extends ReferenceExpression<DB, TB>,
+  >(
+    value1: R1,
+    value2: R2,
+    value3: R3,
+    value4: R4,
+    value5: R5,
+    value6: R6,
+  ): ExpressionWrapper<DB, TB, RefTuple6<DB, TB, R1, R2, R3, R4, R5, R6>>
+
+  refTuple<
+    R1 extends ReferenceExpression<DB, TB>,
+    R2 extends ReferenceExpression<DB, TB>,
+    R3 extends ReferenceExpression<DB, TB>,
+    R4 extends ReferenceExpression<DB, TB>,
+    R5 extends ReferenceExpression<DB, TB>,
+    R6 extends ReferenceExpression<DB, TB>,
+    R7 extends ReferenceExpression<DB, TB>,
+  >(
+    value1: R1,
+    value2: R2,
+    value3: R3,
+    value4: R4,
+    value5: R5,
+    value6: R6,
+    value7: R7,
+  ): ExpressionWrapper<DB, TB, RefTuple7<DB, TB, R1, R2, R3, R4, R5, R6, R7>>
+
+  refTuple<
+    R1 extends ReferenceExpression<DB, TB>,
+    R2 extends ReferenceExpression<DB, TB>,
+    R3 extends ReferenceExpression<DB, TB>,
+    R4 extends ReferenceExpression<DB, TB>,
+    R5 extends ReferenceExpression<DB, TB>,
+    R6 extends ReferenceExpression<DB, TB>,
+    R7 extends ReferenceExpression<DB, TB>,
+    R8 extends ReferenceExpression<DB, TB>,
+  >(
+    value1: R1,
+    value2: R2,
+    value3: R3,
+    value4: R4,
+    value5: R5,
+    value6: R6,
+    value7: R7,
+    value8: R8,
+  ): ExpressionWrapper<
+    DB,
+    TB,
+    RefTuple8<DB, TB, R1, R2, R3, R4, R5, R6, R7, R8>
+  >
+
   /**
    * Creates a value tuple expression.
    *
@@ -713,6 +777,36 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
     value4: V4,
     value5: V5,
   ): ExpressionWrapper<DB, TB, ValTuple5<V1, V2, V3, V4, V5>>
+
+  tuple<V1, V2, V3, V4, V5, V6>(
+    value1: V1,
+    value2: V2,
+    value3: V3,
+    value4: V4,
+    value5: V5,
+    value6: V6,
+  ): ExpressionWrapper<DB, TB, ValTuple6<V1, V2, V3, V4, V5, V6>>
+
+  tuple<V1, V2, V3, V4, V5, V6, V7>(
+    value1: V1,
+    value2: V2,
+    value3: V3,
+    value4: V4,
+    value5: V5,
+    value6: V6,
+    value7: V7,
+  ): ExpressionWrapper<DB, TB, ValTuple7<V1, V2, V3, V4, V5, V6, V7>>
+
+  tuple<V1, V2, V3, V4, V5, V6, V7, V8>(
+    value1: V1,
+    value2: V2,
+    value3: V3,
+    value4: V4,
+    value5: V5,
+    value6: V6,
+    value7: V7,
+    value8: V8,
+  ): ExpressionWrapper<DB, TB, ValTuple8<V1, V2, V3, V4, V5, V6, V7, V8>>
 
   /**
    * Returns a literal value expression.
