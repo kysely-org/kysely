@@ -33,7 +33,7 @@ export function createQueryCreator(): QueryCreator<any> {
 export function createJoinBuilder(
   joinType: JoinType,
   table: TableExpression<any, any>,
-): JoinBuilder<any, any> {
+): JoinBuilder<any, any, any> {
   return new JoinBuilder({
     joinNode: JoinNode.create(joinType, parseTableExpression(table)),
   })
