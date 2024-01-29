@@ -1,5 +1,4 @@
 import * as React from 'react'
-import { gray } from '@radix-ui/colors'
 
 export function Playground({
   code,
@@ -7,19 +6,15 @@ export function Playground({
   kyselyVersion,
   dialect = 'postgres',
 }: PlaygroundProps) {
-  const params = new URLSearchParams()
-  params.set('p', 'j')
-  params.set(
-    'i',
-    JSON.stringify({
-      q: code.trim(),
-      s: setupCode.trim(),
-      v: kyselyVersion,
-      d: dialect,
-      c: false,
-    })
-  )
-
+  const state: PlaygroundState = {
+    dialect,
+    editors: { query: code, type: setupCode },
+    hideType: true,
+  }
+  if (kyselyVersion) {
+    state.kysely = { type: 'tag', name: kyselyVersion }
+  }
+  const hash = 'r' + encodeURIComponent(JSON.stringify(state))
   return (
     <iframe
       style={{
@@ -28,7 +23,7 @@ export function Playground({
         borderRadius: 7,
       }}
       allow="clipboard-write"
-      src={`https://kyse.link/?${params.toString()}`}
+      src={`https://kyse.link/?theme=dark#${hash}`}
     />
   )
 }
@@ -40,30 +35,40 @@ interface PlaygroundProps {
   setupCode?: string
 }
 
-export const exampleSetup = `
-import { Generated } from 'kysely'
+interface PlaygroundState {
+  dialect: 'postgres' | 'mysql' | 'mssql' | 'sqlite'
+  editors: {
+    type: string
+    query: string
+  }
+  hideType?: boolean
+  kysely?: {
+    type: 'tag' | 'branch'
+    name: string
+  }
+}
 
-declare global {
-  interface DB {
+export const exampleSetup = `import { Generated } from 'kysely'
+
+export interface Database {
     person: PersonTable
     pet: PetTable
-  }
+}
 
-  interface PersonTable {
-    id: Generated<string>
-    first_name: string
-    last_name: string | null
-    created_at: Generated<Date>
-    age: number
-  }
+interface PersonTable {
+  id: Generated<string>
+  first_name: string
+  last_name: string | null
+  created_at: Generated<Date>
+  age: number
+}
 
-  interface PetTable {
-    id: Generated<string>
-    name: string
-    owner_id: string
-    species: 'cat' | 'dog'
-    is_favorite: boolean
-  }
+interface PetTable {
+  id: Generated<string>
+  name: string
+  owner_id: string
+  species: 'cat' | 'dog'
+  is_favorite: boolean
 }
 `
 
