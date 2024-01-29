@@ -347,7 +347,6 @@ export class OperationNodeTransformer {
       joinType: node.joinType,
       table: this.transformNode(node.table),
       on: this.transformNode(node.on),
-      using: this.transformNode(node.using),
     })
   }
 

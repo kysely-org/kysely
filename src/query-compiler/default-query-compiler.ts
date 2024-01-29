@@ -506,10 +506,6 @@ export class DefaultQueryCompiler
       this.append(' ')
       this.visitNode(node.on)
     }
-    if (node.using) {
-      this.append(' ')
-      this.visitNode(node.using)
-    }
   }
 
   protected visitJoinUsing(node: JoinUsingNode): void {

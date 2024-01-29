@@ -16,8 +16,7 @@ export interface JoinNode extends OperationNode {
   readonly kind: 'JoinNode'
   readonly joinType: JoinType
   readonly table: OperationNode
-  readonly on?: OnNode
-  readonly using?: JoinUsingNode
+  readonly on?: OnNode | JoinUsingNode
 }
 
 /**
@@ -34,7 +33,6 @@ export const JoinNode = freeze({
       joinType,
       table,
       on: undefined,
-      using: undefined,
     })
   },
 
@@ -48,25 +46,23 @@ export const JoinNode = freeze({
       joinType,
       table,
       on: OnNode.create(on),
-      using: undefined,
     })
   },
 
   cloneWithOn(joinNode: JoinNode, operation: OperationNode): JoinNode {
     return freeze({
       ...joinNode,
-      on: joinNode.on
-        ? OnNode.cloneWithOperation(joinNode.on, 'And', operation)
-        : OnNode.create(operation),
-      using: undefined,
+      on:
+        joinNode.on && OnNode.is(joinNode.on)
+          ? OnNode.cloneWithOperation(joinNode.on, 'And', operation)
+          : OnNode.create(operation),
     })
   },
 
   cloneWithUsing(joinNode: JoinNode, columns: string[]): JoinNode {
     return freeze({
       ...joinNode,
-      on: undefined,
-      using: JoinUsingNode.create(columns),
+      on: JoinUsingNode.create(columns),
     })
   },
 })
