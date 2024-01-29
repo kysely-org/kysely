@@ -79,6 +79,30 @@ export class JoinBuilder<DB, TB extends keyof DB, C extends string>
     })
   }
 
+  /**
+   * Adds a `using` clause to the query.
+   *
+   * This clause is a non-standard shorthand for the specific situation where both
+   * sides of the join use the same name for the joining column(s).
+   *
+   * ### Examples:
+   *
+   * ```ts
+   * await db
+   *   .selectFrom('person')
+   *   .innerJoin('pet', join => join.using(['name']))
+   *   .selectAll()
+   *   .executeTakeFirstOrThrow()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * select *
+   * from "person"
+   * inner join "pet" using ("name")
+   * ```
+   */
   using(columns: [C, ...C[]]): JoinBuilder<DB, TB, C> {
     return new JoinBuilder({
       ...this.#props,
