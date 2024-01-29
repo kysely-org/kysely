@@ -11,6 +11,7 @@ import { SelectionNode } from '../operation-node/selection-node.js'
 import { TableNode } from '../operation-node/table-node.js'
 import { AndNode } from './and-node.js'
 import { JoinNode } from './join-node.js'
+import { JoinUsingNode } from './join-using-node.js'
 import { OrNode } from './or-node.js'
 import { ParensNode } from './parens-node.js'
 import { PrimitiveValueListNode } from './primitive-value-list-node.js'
@@ -120,6 +121,7 @@ export abstract class OperationNodeVisitor {
     PrimitiveValueListNode: this.visitPrimitiveValueList.bind(this),
     ParensNode: this.visitParens.bind(this),
     JoinNode: this.visitJoin.bind(this),
+    JoinUsingNode: this.visitJoinUsing.bind(this),
     OperatorNode: this.visitOperator.bind(this),
     WhereNode: this.visitWhere.bind(this),
     InsertQueryNode: this.visitInsertQuery.bind(this),
@@ -213,6 +215,7 @@ export abstract class OperationNodeVisitor {
   protected abstract visitValueList(node: ValueListNode): void
   protected abstract visitParens(node: ParensNode): void
   protected abstract visitJoin(node: JoinNode): void
+  protected abstract visitJoinUsing(node: JoinUsingNode): void
   protected abstract visitRaw(node: RawNode): void
   protected abstract visitWhere(node: WhereNode): void
   protected abstract visitInsertQuery(node: InsertQueryNode): void

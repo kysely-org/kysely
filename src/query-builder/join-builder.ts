@@ -80,8 +80,10 @@ export class JoinBuilder<DB, TB extends keyof DB, C extends string>
   }
 
   using(columns: [C, ...C[]]): JoinBuilder<DB, TB, C> {
-    // not implemented
-    return this
+    return new JoinBuilder({
+      ...this.#props,
+      joinNode: JoinNode.cloneWithUsing(this.#props.joinNode, columns),
+    })
   }
 
   /**

@@ -1,5 +1,6 @@
 import { freeze } from '../util/object-utils.js'
 import { OnNode } from './on-node.js'
+import { JoinUsingNode } from './join-using-node.js'
 import { OperationNode } from './operation-node.js'
 
 export type JoinType =
@@ -16,6 +17,7 @@ export interface JoinNode extends OperationNode {
   readonly joinType: JoinType
   readonly table: OperationNode
   readonly on?: OnNode
+  readonly using?: JoinUsingNode
 }
 
 /**
@@ -32,6 +34,7 @@ export const JoinNode = freeze({
       joinType,
       table,
       on: undefined,
+      using: undefined,
     })
   },
 
@@ -45,6 +48,7 @@ export const JoinNode = freeze({
       joinType,
       table,
       on: OnNode.create(on),
+      using: undefined,
     })
   },
 
@@ -54,6 +58,15 @@ export const JoinNode = freeze({
       on: joinNode.on
         ? OnNode.cloneWithOperation(joinNode.on, 'And', operation)
         : OnNode.create(operation),
+      using: undefined,
+    })
+  },
+
+  cloneWithUsing(joinNode: JoinNode, columns: string[]): JoinNode {
+    return freeze({
+      ...joinNode,
+      on: undefined,
+      using: JoinUsingNode.create(columns),
     })
   },
 })

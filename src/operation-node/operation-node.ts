@@ -17,6 +17,7 @@ export type OperationNodeKind =
   | 'ValueListNode'
   | 'PrimitiveValueListNode'
   | 'JoinNode'
+  | 'JoinUsingNode'
   | 'OperatorNode'
   | 'WhereNode'
   | 'InsertQueryNode'

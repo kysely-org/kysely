@@ -8,6 +8,7 @@ import { SelectionNode } from './selection-node.js'
 import { TableNode } from './table-node.js'
 import { AndNode } from './and-node.js'
 import { JoinNode } from './join-node.js'
+import { JoinUsingNode } from './join-using-node.js'
 import { OrNode } from './or-node.js'
 import { ParensNode } from './parens-node.js'
 import { PrimitiveValueListNode } from './primitive-value-list-node.js'
@@ -143,6 +144,7 @@ export class OperationNodeTransformer {
     PrimitiveValueListNode: this.transformPrimitiveValueList.bind(this),
     ParensNode: this.transformParens.bind(this),
     JoinNode: this.transformJoin.bind(this),
+    JoinUsingNode: this.transformJoinUsing.bind(this),
     OperatorNode: this.transformOperator.bind(this),
     WhereNode: this.transformWhere.bind(this),
     InsertQueryNode: this.transformInsertQuery.bind(this),
@@ -345,6 +347,14 @@ export class OperationNodeTransformer {
       joinType: node.joinType,
       table: this.transformNode(node.table),
       on: this.transformNode(node.on),
+      using: this.transformNode(node.using),
+    })
+  }
+
+  protected transformJoinUsing(node: JoinUsingNode): JoinUsingNode {
+    return requireAllProps<JoinUsingNode>({
+      kind: 'JoinUsingNode',
+      columns: this.transformNodeList(node.columns),
     })
   }
 

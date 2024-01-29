@@ -15,6 +15,7 @@ import { GroupByNode } from '../operation-node/group-by-node.js'
 import { IdentifierNode } from '../operation-node/identifier-node.js'
 import { InsertQueryNode } from '../operation-node/insert-query-node.js'
 import { JoinNode, JoinType } from '../operation-node/join-node.js'
+import { JoinUsingNode } from '../operation-node/join-using-node.js'
 import { LimitNode } from '../operation-node/limit-node.js'
 import { ListNode } from '../operation-node/list-node.js'
 import { OffsetNode } from '../operation-node/offset-node.js'
@@ -505,6 +506,16 @@ export class DefaultQueryCompiler
       this.append(' ')
       this.visitNode(node.on)
     }
+    if (node.using) {
+      this.append(' ')
+      this.visitNode(node.using)
+    }
+  }
+
+  protected visitJoinUsing(node: JoinUsingNode): void {
+    this.append('using (')
+    this.compileList(node.columns)
+    this.append(')')
   }
 
   protected override visitOn(node: OnNode): void {
