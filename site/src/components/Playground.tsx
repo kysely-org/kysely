@@ -5,6 +5,7 @@ export function Playground({
   setupCode = exampleSetup,
   kyselyVersion,
   dialect = 'postgres',
+  disableIframeMode = false,
 }: PlaygroundProps) {
   const state: PlaygroundState = {
     dialect,
@@ -14,7 +15,16 @@ export function Playground({
   if (kyselyVersion) {
     state.kysely = { type: 'tag', name: kyselyVersion }
   }
-  const hash = 'r' + encodeURIComponent(JSON.stringify(state))
+  const params = new URLSearchParams()
+  params.set('theme', 'dark')
+  if (!disableIframeMode) {
+    params.set('open', '1')
+    params.set('nomore', '1')
+    params.set('notheme', '1')
+    params.set('nohotkey', '1')
+  }
+  const hash = '#r' + encodeURIComponent(JSON.stringify(state))
+
   return (
     <iframe
       style={{
@@ -23,7 +33,7 @@ export function Playground({
         borderRadius: 7,
       }}
       allow="clipboard-write"
-      src={`https://kyse.link/?theme=dark#${hash}`}
+      src={`https://kyse.link/?${params}${hash}`}
     />
   )
 }
@@ -33,6 +43,7 @@ interface PlaygroundProps {
   dialect?: 'postgres'
   code: string
   setupCode?: string
+  disableIframeMode: boolean
 }
 
 interface PlaygroundState {
