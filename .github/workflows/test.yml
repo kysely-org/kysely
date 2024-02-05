@@ -37,6 +37,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Install playwright
+        run: npx playwright install
+
       - name: Run docker compose
         run: docker-compose up -d
 

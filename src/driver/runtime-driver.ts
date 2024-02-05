@@ -72,7 +72,7 @@ export class RuntimeDriver implements Driver {
 
   beginTransaction(
     connection: DatabaseConnection,
-    settings: TransactionSettings
+    settings: TransactionSettings,
   ): Promise<void> {
     return this.#driver.beginTransaction(connection, settings)
   }
@@ -115,7 +115,7 @@ export class RuntimeDriver implements Driver {
     const executeQuery = connection.executeQuery
 
     connection.executeQuery = async (
-      compiledQuery
+      compiledQuery,
     ): Promise<QueryResult<any>> => {
       let caughtError: unknown
       const startTime = performanceNow()
@@ -137,7 +137,7 @@ export class RuntimeDriver implements Driver {
   async #logError(
     error: unknown,
     compiledQuery: CompiledQuery,
-    startTime: number
+    startTime: number,
   ): Promise<void> {
     await this.#log.error(() => ({
       level: 'error',
@@ -149,7 +149,7 @@ export class RuntimeDriver implements Driver {
 
   async #logQuery(
     compiledQuery: CompiledQuery,
-    startTime: number
+    startTime: number,
   ): Promise<void> {
     await this.#log.query(() => ({
       level: 'query',

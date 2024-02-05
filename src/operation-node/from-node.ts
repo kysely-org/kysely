@@ -23,7 +23,7 @@ export const FromNode = freeze({
 
   cloneWithFroms(
     from: FromNode,
-    froms: ReadonlyArray<OperationNode>
+    froms: ReadonlyArray<OperationNode>,
   ): FromNode {
     return freeze({
       ...from,

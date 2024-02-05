@@ -112,7 +112,7 @@ export interface TediousConnection {
   beginTransaction(
     callback: (error?: Error) => void,
     transactionId?: string | undefined,
-    isolationLevel?: number | undefined
+    isolationLevel?: number | undefined,
   ): void
   cancel(): void
   close(): void
@@ -127,7 +127,7 @@ export interface TediousConnection {
 export declare class TediousRequest {
   constructor(
     sql: string,
-    callback: (error: Error, rowCount: number, rows: any[]) => void
+    callback: (error: Error, rowCount: number, rows: any[]) => void,
   )
   addParameter(
     name: string,
@@ -137,7 +137,7 @@ export declare class TediousRequest {
       length?: number | 'max' | undefined
       precision?: number | undefined
       scale?: number | undefined
-    }
+    },
   ): void
   off(event: 'row', listener: (...args: any[]) => void): void
   on(event: 'row', listener: (columns: TediousColumnValue[]) => void): void

@@ -20,7 +20,7 @@ export function parseMergeWhen(
     bySource?: boolean
   },
   args?: any[],
-  refRight?: boolean
+  refRight?: boolean,
 ): WhenNode {
   return WhenNode.create(
     parseFilterList(
@@ -35,13 +35,13 @@ export function parseMergeWhen(
           : []),
       ],
       'and',
-      false
-    )
+      false,
+    ),
   )
 }
 
 export function parseMergeThen(
-  result: 'delete' | 'do nothing' | OperationNodeSource | InsertQueryNode
+  result: 'delete' | 'do nothing' | OperationNodeSource | InsertQueryNode,
 ): OperationNode {
   if (isString(result)) {
     return RawNode.create([result], [])

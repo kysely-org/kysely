@@ -22,20 +22,20 @@ export type UpdateObject<DB, TB extends keyof DB, UT extends keyof DB = TB> = {
 export type UpdateObjectFactory<
   DB,
   TB extends keyof DB,
-  UT extends keyof DB
+  UT extends keyof DB,
 > = (eb: ExpressionBuilder<DB, TB>) => UpdateObject<DB, TB, UT>
 
 export type UpdateObjectExpression<
   DB,
   TB extends keyof DB,
-  UT extends keyof DB = TB
+  UT extends keyof DB = TB,
 > = UpdateObject<DB, TB, UT> | UpdateObjectFactory<DB, TB, UT>
 
 export type ExtractUpdateTypeFromReferenceExpression<
   DB,
   TB extends keyof DB,
   RE,
-  DV = unknown
+  DV = unknown,
 > = UpdateType<ExtractRawTypeFromReferenceExpression<DB, TB, RE, DV>>
 
 export function parseUpdate(
@@ -47,7 +47,7 @@ export function parseUpdate(
     return [
       ColumnUpdateNode.create(
         parseReferenceExpression(args[0]),
-        parseValueExpression(args[1])
+        parseValueExpression(args[1]),
       ),
     ]
   }
@@ -56,7 +56,7 @@ export function parseUpdate(
 }
 
 export function parseUpdateObjectExpression(
-  update: UpdateObjectExpression<any, any, any>
+  update: UpdateObjectExpression<any, any, any>,
 ): ReadonlyArray<ColumnUpdateNode> {
   const updateObj = isFunction(update) ? update(expressionBuilder()) : update
 
@@ -65,7 +65,7 @@ export function parseUpdateObjectExpression(
     .map(([key, value]) => {
       return ColumnUpdateNode.create(
         ColumnNode.create(key),
-        parseValueExpression(value)
+        parseValueExpression(value),
       )
     })
 }

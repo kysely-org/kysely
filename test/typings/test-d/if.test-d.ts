@@ -28,7 +28,7 @@ async function testIfInSelect(db: Kysely<Database>) {
     .$if(condition, (qb) =>
       qb
         .innerJoin('person', 'person.id', 'p.owner_id')
-        .select('age as person_age')
+        .select('age as person_age'),
     )
     .execute()
 
@@ -50,7 +50,7 @@ async function testIfInSelect(db: Kysely<Database>) {
     .$if(condition, (qb) =>
       qb
         .leftJoin('person', 'person.id', 'p.owner_id')
-        .select('age as person_age')
+        .select('age as person_age'),
     )
     .execute()
 

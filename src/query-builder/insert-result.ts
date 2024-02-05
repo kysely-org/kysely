@@ -41,7 +41,7 @@ export class InsertResult {
 
   constructor(
     insertId: bigint | undefined,
-    numInsertedOrUpdatedRows: bigint | undefined
+    numInsertedOrUpdatedRows: bigint | undefined,
   ) {
     this.insertId = insertId
     this.numInsertedOrUpdatedRows = numInsertedOrUpdatedRows

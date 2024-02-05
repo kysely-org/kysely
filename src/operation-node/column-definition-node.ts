@@ -48,7 +48,7 @@ export const ColumnDefinitionNode = freeze({
 
   cloneWithFrontModifier(
     node: ColumnDefinitionNode,
-    modifier: OperationNode
+    modifier: OperationNode,
   ): ColumnDefinitionNode {
     return freeze({
       ...node,
@@ -60,7 +60,7 @@ export const ColumnDefinitionNode = freeze({
 
   cloneWithEndModifier(
     node: ColumnDefinitionNode,
-    modifier: OperationNode
+    modifier: OperationNode,
   ): ColumnDefinitionNode {
     return freeze({
       ...node,
@@ -72,7 +72,7 @@ export const ColumnDefinitionNode = freeze({
 
   cloneWith(
     node: ColumnDefinitionNode,
-    props: ColumnDefinitionNodeProps
+    props: ColumnDefinitionNodeProps,
   ): ColumnDefinitionNode {
     return freeze({
       ...node,

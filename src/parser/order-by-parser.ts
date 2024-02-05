@@ -43,13 +43,13 @@ export function parseOrderBy(args: any[]): OrderByItemNode[] {
   }
 
   throw new Error(
-    `Invalid number of arguments at order by! expected 1-2, received ${args.length}`
+    `Invalid number of arguments at order by! expected 1-2, received ${args.length}`,
   )
 }
 
 export function parseOrderByItem(
   ref: ReferenceExpression<any, any>,
-  direction?: OrderByDirectionExpression
+  direction?: OrderByDirectionExpression,
 ): OrderByItemNode {
   const parsedRef = parseOrderByExpression(ref)
 
@@ -63,12 +63,12 @@ export function parseOrderByItem(
 
   return OrderByItemNode.create(
     parsedRef,
-    parseOrderByDirectionExpression(direction)
+    parseOrderByDirectionExpression(direction),
   )
 }
 
 function parseOrderByExpression(
-  expr: OrderByExpression<any, any, any>
+  expr: OrderByExpression<any, any, any>,
 ): OperationNode {
   if (isExpressionOrFactory(expr)) {
     return parseExpression(expr)
@@ -87,7 +87,7 @@ function parseOrderByExpression(
 
     return OrderByItemNode.create(
       parseStringReference(ref),
-      parseOrderByDirectionExpression(direction as any)
+      parseOrderByDirectionExpression(direction as any),
     )
   }
 
@@ -95,7 +95,7 @@ function parseOrderByExpression(
 }
 
 function parseOrderByDirectionExpression(
-  expr?: OrderByDirectionExpression
+  expr?: OrderByDirectionExpression,
 ): OperationNode | undefined {
   if (!expr) {
     return undefined

@@ -50,7 +50,7 @@ export class MssqlDriver implements Driver {
           connection.connect((error) => {
             if (error) reject(error)
             else resolve(undefined)
-          })
+          }),
         )
 
         return new MssqlConnection(connection, this.#config.tedious)
@@ -74,7 +74,7 @@ export class MssqlDriver implements Driver {
 
   async beginTransaction(
     connection: MssqlConnection,
-    settings: TransactionSettings
+    settings: TransactionSettings,
   ): Promise<void> {
     await connection.beginTransaction(settings)
   }
@@ -118,8 +118,8 @@ class MssqlConnection implements DatabaseConnection {
         isolationLevel ? randomString(8) : undefined,
         isolationLevel
           ? this.#getTediousIsolationLevel(isolationLevel)
-          : undefined
-      )
+          : undefined,
+      ),
     )
   }
 
@@ -128,7 +128,7 @@ class MssqlConnection implements DatabaseConnection {
       this.#connection.commitTransaction((error) => {
         if (error) reject(error)
         else resolve(undefined)
-      })
+      }),
     )
   }
 
@@ -139,7 +139,7 @@ class MssqlConnection implements DatabaseConnection {
       const request = new MssqlRequest<O>(
         this.#tedious,
         compiledQuery,
-        deferred
+        deferred,
       )
 
       this.#connection.execSql(request.request)
@@ -160,13 +160,13 @@ class MssqlConnection implements DatabaseConnection {
       this.#connection.rollbackTransaction((error) => {
         if (error) reject(error)
         else resolve(undefined)
-      })
+      }),
     )
   }
 
   async *streamQuery<O>(
     compiledQuery: CompiledQuery,
-    chunkSize: number
+    chunkSize: number,
   ): AsyncIterableIterator<QueryResult<O>> {
     if (!Number.isInteger(chunkSize) || chunkSize <= 0) {
       throw new Error('chunkSize must be a positive integer')
@@ -202,7 +202,7 @@ class MssqlConnection implements DatabaseConnection {
       const request = new MssqlRequest<unknown>(
         this.#tedious,
         CompiledQuery.raw('select 1'),
-        deferred
+        deferred,
       )
 
       this.#connection.execSql(request.request)
@@ -279,7 +279,7 @@ class MssqlRequest<O> {
   constructor(
     tedious: Tedious,
     compiledQuery: CompiledQuery,
-    onDone?: Deferred<OnDone<O>> | PlainDeferred<OnDone<O>>
+    onDone?: Deferred<OnDone<O>> | PlainDeferred<OnDone<O>>,
   ) {
     this.#completed = false
     this.#rows = []
@@ -325,13 +325,13 @@ class MssqlRequest<O> {
       this.#request.addParameter(
         String(i + 1),
         this.#getTediousDataType(parameter),
-        parameter
+        parameter,
       )
     }
   }
 
   #attachListeners(
-    onDone: Deferred<OnDone<O>> | PlainDeferred<OnDone<O>> | undefined
+    onDone: Deferred<OnDone<O>> | PlainDeferred<OnDone<O>> | undefined,
   ): void {
     const rowListener = (columns: TediousColumnValue[]) => {
       const row: Record<string, unknown> = {}
