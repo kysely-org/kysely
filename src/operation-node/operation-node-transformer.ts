@@ -91,6 +91,9 @@ import { MergeQueryNode } from './merge-query-node.js'
 import { MatchedNode } from './matched-node.js'
 import { AddIndexNode } from './add-index-node.js'
 import { CastNode } from './cast-node.js'
+import {InsertModifierNode} from './insert-modifier-node.js'
+import {UpdateModifierNode} from './update-modifier-node.js'
+import {DeleteModifierNode} from './delete-modifier-node.js'
 
 /**
  * Transforms an operation node tree into another one.
@@ -192,6 +195,9 @@ export class OperationNodeTransformer {
     OnNode: this.transformOn.bind(this),
     ValuesNode: this.transformValues.bind(this),
     SelectModifierNode: this.transformSelectModifier.bind(this),
+    InsertModifierNode: this.transformInsertModifier.bind(this),
+    UpdateModifierNode: this.transformUpdateModifier.bind(this),
+    DeleteModifierNode: this.transformDeleteModifier.bind(this),
     CreateTypeNode: this.transformCreateType.bind(this),
     DropTypeNode: this.transformDropType.bind(this),
     ExplainNode: this.transformExplain.bind(this),
@@ -372,6 +378,8 @@ export class OperationNodeTransformer {
       returning: this.transformNode(node.returning),
       onConflict: this.transformNode(node.onConflict),
       onDuplicateKey: this.transformNode(node.onDuplicateKey),
+      frontModifiers: this.transformNodeList(node.frontModifiers),
+      endModifiers: this.transformNodeList(node.endModifiers),
       with: this.transformNode(node.with),
       ignore: node.ignore,
       replace: node.replace,
@@ -395,6 +403,8 @@ export class OperationNodeTransformer {
       joins: this.transformNodeList(node.joins),
       where: this.transformNode(node.where),
       returning: this.transformNode(node.returning),
+      frontModifiers: this.transformNodeList(node.frontModifiers),
+      endModifiers: this.transformNodeList(node.endModifiers),
       with: this.transformNode(node.with),
       orderBy: this.transformNode(node.orderBy),
       limit: this.transformNode(node.limit),
@@ -500,6 +510,8 @@ export class OperationNodeTransformer {
       where: this.transformNode(node.where),
       updates: this.transformNodeList(node.updates),
       returning: this.transformNode(node.returning),
+      frontModifiers: this.transformNodeList(node.frontModifiers),
+      endModifiers: this.transformNodeList(node.endModifiers),
       with: this.transformNode(node.with),
       explain: this.transformNode(node.explain),
     })
@@ -817,6 +829,36 @@ export class OperationNodeTransformer {
     return requireAllProps<SelectModifierNode>({
       kind: 'SelectModifierNode',
       modifier: node.modifier,
+      rawModifier: this.transformNode(node.rawModifier),
+      of: this.transformNodeList(node.of),
+    })
+  }
+
+  protected transformInsertModifier(
+    node: InsertModifierNode,
+  ): InsertModifierNode {
+    return requireAllProps<InsertModifierNode>({
+      kind: 'InsertModifierNode',
+      rawModifier: this.transformNode(node.rawModifier),
+      of: this.transformNodeList(node.of),
+    })
+  }
+
+  protected transformUpdateModifier(
+    node: UpdateModifierNode,
+  ): UpdateModifierNode {
+    return requireAllProps<UpdateModifierNode>({
+      kind: 'UpdateModifierNode',
+      rawModifier: this.transformNode(node.rawModifier),
+      of: this.transformNodeList(node.of),
+    })
+  }
+
+  protected transformDeleteModifier(
+    node: DeleteModifierNode,
+  ): DeleteModifierNode {
+    return requireAllProps<DeleteModifierNode>({
+      kind: 'DeleteModifierNode',
       rawModifier: this.transformNode(node.rawModifier),
       of: this.transformNodeList(node.of),
     })

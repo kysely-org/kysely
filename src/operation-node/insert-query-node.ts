@@ -1,6 +1,7 @@
 import { freeze } from '../util/object-utils.js'
 import { ColumnNode } from './column-node.js'
 import { ExplainNode } from './explain-node.js'
+import {InsertModifierNode} from './insert-modifier-node.js'
 import { OnConflictNode } from './on-conflict-node.js'
 import { OnDuplicateKeyNode } from './on-duplicate-key-node.js'
 import { OperationNode } from './operation-node.js'
@@ -23,6 +24,8 @@ export interface InsertQueryNode extends OperationNode {
   readonly replace?: boolean
   readonly explain?: ExplainNode
   readonly defaultValues?: boolean
+  readonly frontModifiers?: ReadonlyArray<InsertModifierNode>
+  readonly endModifiers?: ReadonlyArray<InsertModifierNode>
 }
 
 /**
@@ -52,6 +55,30 @@ export const InsertQueryNode = freeze({
     })
   },
 
+  cloneWithFrontModifier(
+    insertQuery: InsertQueryNode,
+    modifier: InsertModifierNode,
+  ): InsertQueryNode {
+    return freeze({
+      ...insertQuery,
+      frontModifiers: insertQuery.frontModifiers
+        ? freeze([...insertQuery.frontModifiers, modifier])
+        : freeze([modifier]),
+    })
+  },
+
+  cloneWithEndModifier(
+    insertQuery: InsertQueryNode,
+    modifier: InsertModifierNode,
+  ): InsertQueryNode {
+    return freeze({
+      ...insertQuery,
+      endModifiers: insertQuery.endModifiers
+        ? freeze([...insertQuery.endModifiers, modifier])
+        : freeze([modifier]),
+    })
+  },
+
   cloneWith(
     insertQuery: InsertQueryNode,
     props: InsertQueryNodeProps,
@@ -59,6 +86,13 @@ export const InsertQueryNode = freeze({
     return freeze({
       ...insertQuery,
       ...props,
+    })
+  },
+
+  createWithExpression(modifier: OperationNode): InsertModifierNode {
+    return freeze({
+      kind: 'InsertModifierNode',
+      rawModifier: modifier,
     })
   },
 })

@@ -108,6 +108,9 @@ import { MergeQueryNode } from '../operation-node/merge-query-node.js'
 import { MatchedNode } from '../operation-node/matched-node.js'
 import { AddIndexNode } from '../operation-node/add-index-node.js'
 import { CastNode } from '../operation-node/cast-node.js'
+import {InsertModifierNode} from '../operation-node/insert-modifier-node.js'
+import {UpdateModifierNode} from '../operation-node/update-modifier-node.js'
+import {DeleteModifierNode} from '../operation-node/delete-modifier-node.js'
 
 export class DefaultQueryCompiler
   extends OperationNodeVisitor
@@ -305,6 +308,11 @@ export class DefaultQueryCompiler
       this.visitNode(node.into)
     }
 
+    if (node.frontModifiers?.length) {
+      this.append(' ')
+      this.compileList(node.frontModifiers, ' ')
+    }
+
     if (node.columns) {
       this.append(' (')
       this.compileList(node.columns)
@@ -338,6 +346,11 @@ export class DefaultQueryCompiler
 
     if (isSubQuery && !MergeQueryNode.is(rootQueryNode)) {
       this.append(')')
+    }
+
+    if (node.endModifiers?.length) {
+      this.append(' ')
+      this.compileList(node.endModifiers, ' ')
     }
   }
 
@@ -376,6 +389,11 @@ export class DefaultQueryCompiler
       this.compileList(node.joins, ' ')
     }
 
+    if (node.frontModifiers?.length) {
+      this.append(' ')
+      this.compileList(node.frontModifiers, ' ')
+    }
+
     if (node.where) {
       this.append(' ')
       this.visitNode(node.where)
@@ -398,6 +416,11 @@ export class DefaultQueryCompiler
 
     if (isSubQuery) {
       this.append(')')
+    }
+
+    if (node.endModifiers?.length) {
+      this.append(' ')
+      this.compileList(node.endModifiers, ' ')
     }
   }
 
@@ -733,6 +756,12 @@ export class DefaultQueryCompiler
       this.append(' ')
     }
 
+    if (node.frontModifiers?.length) {
+      this.append(' ')
+      this.compileList(node.frontModifiers, ' ')
+      this.append(' ')
+    }
+
     this.append('set ')
 
     if (node.updates) {
@@ -761,6 +790,11 @@ export class DefaultQueryCompiler
 
     if (isSubQuery && !MergeQueryNode.is(rootQueryNode)) {
       this.append(')')
+    }
+
+    if (node.endModifiers?.length) {
+      this.append(' ')
+      this.compileList(node.endModifiers, ' ')
     }
   }
 
@@ -1235,6 +1269,39 @@ export class DefaultQueryCompiler
       this.visitNode(node.rawModifier)
     } else {
       this.append(SELECT_MODIFIER_SQL[node.modifier!])
+    }
+
+    if (node.of) {
+      this.append(' of ')
+      this.compileList(node.of, ', ')
+    }
+  }
+
+  protected override visitInsertModifier(node: InsertModifierNode): void {
+    if(node.rawModifier) {
+      this.visitNode(node.rawModifier)
+    }
+
+    if (node.of) {
+      this.append(' of ')
+      this.compileList(node.of, ', ')
+    }
+  }
+
+  protected override visitUpdateModifier(node: UpdateModifierNode): void {
+    if(node.rawModifier) {
+      this.visitNode(node.rawModifier)
+    }
+
+    if (node.of) {
+      this.append(' of ')
+      this.compileList(node.of, ', ')
+    }
+  }
+
+  protected override visitDeleteModifier(node: DeleteModifierNode): void {
+    if(node.rawModifier) {
+      this.visitNode(node.rawModifier)
     }
 
     if (node.of) {

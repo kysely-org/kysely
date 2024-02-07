@@ -10,6 +10,7 @@ import { OrderByNode } from './order-by-node.js'
 import { OrderByItemNode } from './order-by-item-node.js'
 import { ExplainNode } from './explain-node.js'
 import { UsingNode } from './using-node.js'
+import {DeleteModifierNode} from './delete-modifier-node.js'
 
 export interface DeleteQueryNode extends OperationNode {
   readonly kind: 'DeleteQueryNode'
@@ -22,6 +23,8 @@ export interface DeleteQueryNode extends OperationNode {
   readonly orderBy?: OrderByNode
   readonly limit?: LimitNode
   readonly explain?: ExplainNode
+  readonly frontModifiers?: ReadonlyArray<DeleteModifierNode>
+  readonly endModifiers?: ReadonlyArray<DeleteModifierNode>
 }
 
 /**
@@ -37,6 +40,30 @@ export const DeleteQueryNode = freeze({
       kind: 'DeleteQueryNode',
       from: FromNode.create(fromItems),
       ...(withNode && { with: withNode }),
+    })
+  },
+
+  cloneWithFrontModifier(
+    deleteQuery: DeleteQueryNode,
+    modifier: DeleteModifierNode,
+  ): DeleteQueryNode {
+    return freeze({
+      ...deleteQuery,
+      frontModifiers: deleteQuery.frontModifiers
+        ? freeze([...deleteQuery.frontModifiers, modifier])
+        : freeze([modifier]),
+    })
+  },
+
+  cloneWithEndModifier(
+    deleteQuery: DeleteQueryNode,
+    modifier: DeleteModifierNode,
+  ): DeleteQueryNode {
+    return freeze({
+      ...deleteQuery,
+      endModifiers: deleteQuery.endModifiers
+        ? freeze([...deleteQuery.endModifiers, modifier])
+        : freeze([modifier]),
     })
   },
 
@@ -86,6 +113,13 @@ export const DeleteQueryNode = freeze({
         deleteNode.using !== undefined
           ? UsingNode.cloneWithTables(deleteNode.using, tables)
           : UsingNode.create(tables),
+    })
+  },
+
+  createWithExpression(modifier: OperationNode): DeleteModifierNode {
+    return freeze({
+      kind: 'DeleteModifierNode',
+      rawModifier: modifier,
     })
   },
 })
