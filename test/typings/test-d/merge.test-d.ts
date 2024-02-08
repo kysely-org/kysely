@@ -51,7 +51,7 @@ async function testUsing(db: Kysely<Database>) {
   )
   db.mergeInto('person').using('pet', (join) => {
     // already tested in join.test-d.ts
-    expectType<JoinBuilder<Database, 'person' | 'pet'>>(join)
+    expectType<JoinBuilder<Database, 'person' | 'pet', 'id'>>(join)
 
     return join.onTrue()
   })
