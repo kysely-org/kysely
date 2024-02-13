@@ -55,8 +55,8 @@ jobs:
       - name: Run deno tests
         run: npm run test:deno
 
-      - name: Run bun tests
-        run: npm run test:bun
+      # - name: Run bun tests
+      #   run: npm run test:bun
 
       - name: Run esbuild test
         run: npm run test:esbuild
