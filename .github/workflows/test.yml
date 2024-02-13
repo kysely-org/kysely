@@ -29,10 +29,10 @@ jobs:
         with:
           deno-version: ${{ matrix.deno-version }}
 
-      - name: Use Bun ${{ matrix.bun-version }}
-        uses: oven-sh/setup-bun@v1
-        with:
-          bun-version: ${{ matrix.bun-version }}
+      # - name: Use Bun ${{ matrix.bun-version }}
+      #   uses: oven-sh/setup-bun@v1
+      #   with:
+      #     bun-version: ${{ matrix.bun-version }}
 
       - name: Install dependencies
         run: npm ci
