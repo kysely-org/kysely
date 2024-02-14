@@ -606,6 +606,68 @@ for (const dialect of DIALECTS) {
       })
     }
 
+    it('modifyFront should add arbitrary SQL to the front of the query', async () => {
+      const query = ctx.db
+        .updateTable('person')
+        .modifyFront(sql.raw('-- this is a comment\n'))
+        .set({
+            gender: 'other'
+        })
+        .where('first_name', '=', 'Jennifer')
+
+      testSql(query, dialect, {
+        postgres: {
+          sql: 'update "person"  -- this is a comment\n set "gender" = $1 where "first_name" = $2',
+          parameters: ['other', 'Jennifer'],
+        },
+        mysql: {
+          sql: 'update `person`  -- this is a comment\n set `gender` = ? where `first_name` = ?',
+          parameters: ['other', 'Jennifer'],
+        },
+        mssql: {
+          sql: 'update "person"  -- this is a comment\n set "gender" = @1 where "first_name" = @2',
+          parameters: ['other', 'Jennifer'],
+        },
+        sqlite: {
+          sql: 'update "person"  -- this is a comment\n set "gender" = ? where "first_name" = ?',
+          parameters: ['other', 'Jennifer'],
+        },
+      })
+
+      const result = await query.execute()
+
+      expect(result).to.have.length(1)
+    })
+
+    if (dialect === 'postgres' || dialect === 'mysql') {
+      it.only('modifyEnd should add arbitrary SQL to the end of the query', async () => {
+        const query = ctx.db
+        .updateTable('person')
+        .set({
+            gender: 'other'
+        })
+        .where('first_name', '=', 'Jennifer')
+        .modifyEnd(sql.raw('-- this is a comment'))
+
+      testSql(query, dialect, {
+        postgres: {
+          sql: 'update "person" set "gender" = $1 where "first_name" = $2 -- this is a comment',
+          parameters: ['other', 'Jennifer'],
+        },
+        mysql: {
+          sql: 'update `person` set `gender` = ? where `first_name` = ? -- this is a comment',
+          parameters: ['other', 'Jennifer'],
+        },
+        mssql: NOT_SUPPORTED,
+        sqlite: NOT_SUPPORTED,
+      })
+
+        const result = await query.execute()
+
+        expect(result).to.have.length(1)
+      })
+    }
+
     if (dialect === 'mssql') {
       it('should update using a from clause and a join', async () => {
         const query = ctx.db

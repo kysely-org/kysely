@@ -93,6 +93,9 @@ import { MergeQueryNode } from './merge-query-node.js'
 import { MatchedNode } from './matched-node.js'
 import { AddIndexNode } from './add-index-node.js'
 import { CastNode } from './cast-node.js'
+import {DeleteModifierNode} from './delete-modifier-node.js'
+import {InsertModifierNode} from './insert-modifier-node.js'
+import {UpdateModifierNode} from './update-modifier-node.js'
 
 export abstract class OperationNodeVisitor {
   protected readonly nodeStack: OperationNode[] = []
@@ -169,6 +172,9 @@ export abstract class OperationNodeVisitor {
     OnNode: this.visitOn.bind(this),
     ValuesNode: this.visitValues.bind(this),
     SelectModifierNode: this.visitSelectModifier.bind(this),
+    InsertModifierNode: this.visitInsertModifier.bind(this),
+    UpdateModifierNode: this.visitUpdateModifier.bind(this),
+    DeleteModifierNode: this.visitDeleteModifier.bind(this),
     CreateTypeNode: this.visitCreateType.bind(this),
     DropTypeNode: this.visitDropType.bind(this),
     ExplainNode: this.visitExplain.bind(this),
@@ -277,6 +283,9 @@ export abstract class OperationNodeVisitor {
   protected abstract visitOn(node: OnNode): void
   protected abstract visitValues(node: ValuesNode): void
   protected abstract visitSelectModifier(node: SelectModifierNode): void
+  protected abstract visitInsertModifier(node: InsertModifierNode): void
+  protected abstract visitUpdateModifier(node: UpdateModifierNode): void
+  protected abstract visitDeleteModifier(node: DeleteModifierNode): void
   protected abstract visitCreateType(node: CreateTypeNode): void
   protected abstract visitDropType(node: DropTypeNode): void
   protected abstract visitExplain(node: ExplainNode): void

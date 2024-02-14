@@ -340,6 +340,65 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
   }
 
   /**
+   * This can be used to add any additional SQL to the front of the query __after__ the `insert` keyword.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * await db.insertInto('person')
+   *   .modifyFront(sql.raw('-- This is a comment\n'))
+   *   .values(values)
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (MySQL):
+   *
+   * ```sql
+   * insert into `person` -- This is a comment
+   * values (?, ?, ?)
+   * ```
+   */
+  modifyFront(modifier: Expression<any>): InsertQueryBuilder<DB, TB, O> {
+    return new InsertQueryBuilder({
+      ...this.#props,
+      queryNode: InsertQueryNode.cloneWithFrontModifier(
+        this.#props.queryNode,
+        InsertQueryNode.createWithExpression(modifier.toOperationNode()),
+      ),
+    })
+  }
+
+  /**
+   * This can be used to add any additional SQL to the end of the query.
+   *
+   *
+   * ### Examples
+   *
+   * ```ts
+   * await db.insertInto('person')
+   *   .values(values)
+   *   .modifyEnd(sql.raw('-- This is a comment'))
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (MySQL):
+   *
+   * ```sql
+   * insert into `person` 
+   * values (?, ?, ?) -- This is a comment
+   * ```
+   */
+  modifyEnd(modifier: Expression<any>): InsertQueryBuilder<DB, TB, O> {
+    return new InsertQueryBuilder({
+      ...this.#props,
+      queryNode: InsertQueryNode.cloneWithEndModifier(
+        this.#props.queryNode,
+        InsertQueryNode.createWithExpression(modifier.toOperationNode()),
+      ),
+    })
+  }
+
+  /**
    * Changes an `insert into` query to an `insert ignore into` query.
    *
    * If you use the ignore modifier, ignorable errors that occur while executing the
