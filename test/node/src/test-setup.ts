@@ -373,11 +373,7 @@ export function createTableWithId(
 
   if (dialect === 'mssql') {
     return builder.addColumn('id', 'integer', (col) =>
-      col
-        .notNull()
-        // TODO: change to method when its implemented
-        .modifyFront(sql`identity(1,1)`)
-        .primaryKey(),
+      col.identity().notNull().primaryKey()
     )
   }
 

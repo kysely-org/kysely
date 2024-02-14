@@ -38,6 +38,19 @@ export class ColumnDefinitionBuilder implements OperationNodeSource {
   }
 
   /**
+   * Makes the column an identity column.
+   *
+   * This only works on some dialects like MS SQL Server (MSSQL).
+   *
+   * For PostgreSQL's `generated always as identity` use {@link generatedAlwaysAsIdentity}.
+   */
+  identity(): ColumnDefinitionBuilder {
+    return new ColumnDefinitionBuilder(
+      ColumnDefinitionNode.cloneWith(this.#node, { identity: true })
+    )
+  }
+
+  /**
    * Makes the column the primary key.
    *
    * If you want to specify a composite primary key use the
@@ -248,7 +261,11 @@ export class ColumnDefinitionBuilder implements OperationNodeSource {
   }
 
   /**
-   * Adds the `generated always as identity` specifier on supported dialects.
+   * Adds the `generated always as identity` specifier.
+   *
+   * This only works on some dialects like PostgreSQL.
+   *
+   * For MS SQL Server (MSSQL)'s identity column use {@link identity}.
    */
   generatedAlwaysAsIdentity(): ColumnDefinitionBuilder {
     return new ColumnDefinitionBuilder(
