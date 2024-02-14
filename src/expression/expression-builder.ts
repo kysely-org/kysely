@@ -323,7 +323,7 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    *       .when('gender', '=', 'female')
    *       .then(
    *         eb
-   *           .case('martialStatus')
+   *           .case('maritalStatus')
    *           .when('single')
    *           .then('Ms.')
    *           .else('Mrs.')
@@ -343,7 +343,7 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    *   case
    *     when "gender" = $1 then $2
    *     when "gender" = $3 then
-   *       case "martialStatus"
+   *       case "maritalStatus"
    *         when $4 then $5
    *         else $6
    *       end
