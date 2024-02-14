@@ -38,7 +38,7 @@ export const JoinNode = freeze({
   createWithOn(
     joinType: JoinType,
     table: OperationNode,
-    on: OperationNode
+    on: OperationNode,
   ): JoinNode {
     return freeze({
       kind: 'JoinNode',

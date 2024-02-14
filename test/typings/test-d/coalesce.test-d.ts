@@ -55,7 +55,7 @@ async function testCoalesceSingle(db: Kysely<Database>) {
   expectType<{ void: null }>(r7)
 
   expectError(
-    db.selectFrom('person').select(coalesce('no_such_column').as('alias'))
+    db.selectFrom('person').select(coalesce('no_such_column').as('alias')),
   )
 
   // no alias
@@ -84,8 +84,8 @@ async function testCoalesceMultiple(db: Kysely<Database>) {
     .selectFrom('person')
     .select(
       coalesce(value(null), 'last_name', db.fn.max('first_name'), 'age').as(
-        'field'
-      )
+        'field',
+      ),
     )
     .groupBy(['last_name', 'first_name', 'age'])
     .execute()
@@ -97,8 +97,8 @@ async function testCoalesceMultiple(db: Kysely<Database>) {
     .select(
       coalesce(
         db.fn.max<string | null>('first_name'),
-        sql<string>`${sql.lit('N/A')}`
-      ).as('max_first_name')
+        sql<string>`${sql.lit('N/A')}`,
+      ).as('max_first_name'),
     )
     .execute()
   expectType<{ max_first_name: string }>(r3)

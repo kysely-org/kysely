@@ -26,11 +26,11 @@ export abstract class DialectAdapterBase implements DialectAdapter {
 
   abstract acquireMigrationLock(
     db: Kysely<any>,
-    options: MigrationLockOptions
+    options: MigrationLockOptions,
   ): Promise<void>
 
   abstract releaseMigrationLock(
     db: Kysely<any>,
-    options: MigrationLockOptions
+    options: MigrationLockOptions,
   ): Promise<void>
 }

@@ -17,13 +17,13 @@ import { createJoinBuilder } from './parse-utils.js'
 export type JoinReferenceExpression<
   DB,
   TB extends keyof DB,
-  TE
+  TE,
 > = DrainOuterGeneric<
   AnyJoinColumn<DB, TB, TE> | AnyJoinColumnWithTable<DB, TB, TE>
 >
 
 export type JoinCallbackExpression<DB, TB extends keyof DB, TE> = (
-  join: JoinBuilder<From<DB, TE>, FromTables<DB, TB, TE>>
+  join: JoinBuilder<From<DB, TE>, FromTables<DB, TB, TE>>,
 ) => JoinBuilder<any, any>
 
 type AnyJoinColumn<DB, TB extends keyof DB, TE> = AnyColumn<
@@ -49,7 +49,7 @@ export function parseJoin(joinType: JoinType, args: any[]): JoinNode {
 function parseCallbackJoin(
   joinType: JoinType,
   from: TableExpression<any, any>,
-  callback: JoinCallbackExpression<any, any, any>
+  callback: JoinCallbackExpression<any, any, any>,
 ): JoinNode {
   return callback(createJoinBuilder(joinType, from)).toOperationNode()
 }
@@ -58,11 +58,11 @@ function parseSingleOnJoin(
   joinType: JoinType,
   from: TableExpression<any, any>,
   lhsColumn: string,
-  rhsColumn: string
+  rhsColumn: string,
 ): JoinNode {
   return JoinNode.createWithOn(
     joinType,
     parseTableExpression(from),
-    parseReferentialBinaryOperation(lhsColumn, '=', rhsColumn)
+    parseReferentialBinaryOperation(lhsColumn, '=', rhsColumn),
   )
 }

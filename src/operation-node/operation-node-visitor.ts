@@ -92,6 +92,7 @@ import { TupleNode } from './tuple-node.js'
 import { MergeQueryNode } from './merge-query-node.js'
 import { MatchedNode } from './matched-node.js'
 import { AddIndexNode } from './add-index-node.js'
+import { CastNode } from './cast-node.js'
 import { OutputNode } from './output-node.js'
 
 export abstract class OperationNodeVisitor {
@@ -192,6 +193,7 @@ export abstract class OperationNodeVisitor {
     MergeQueryNode: this.visitMergeQuery.bind(this),
     MatchedNode: this.visitMatched.bind(this),
     AddIndexNode: this.visitAddIndex.bind(this),
+    CastNode: this.visitCast.bind(this),
     OutputNode: this.visitOutput.bind(this),
   })
 
@@ -236,17 +238,17 @@ export abstract class OperationNodeVisitor {
   protected abstract visitDropIndex(node: DropIndexNode): void
   protected abstract visitList(node: ListNode): void
   protected abstract visitPrimaryKeyConstraint(
-    node: PrimaryKeyConstraintNode
+    node: PrimaryKeyConstraintNode,
   ): void
   protected abstract visitUniqueConstraint(node: UniqueConstraintNode): void
   protected abstract visitReferences(node: ReferencesNode): void
   protected abstract visitCheckConstraint(node: CheckConstraintNode): void
   protected abstract visitWith(node: WithNode): void
   protected abstract visitCommonTableExpression(
-    node: CommonTableExpressionNode
+    node: CommonTableExpressionNode,
   ): void
   protected abstract visitCommonTableExpressionName(
-    node: CommonTableExpressionNameNode
+    node: CommonTableExpressionNameNode,
   ): void
   protected abstract visitHaving(node: HavingNode): void
   protected abstract visitCreateSchema(node: CreateSchemaNode): void
@@ -259,13 +261,13 @@ export abstract class OperationNodeVisitor {
   protected abstract visitAddConstraint(node: AddConstraintNode): void
   protected abstract visitDropConstraint(node: DropConstraintNode): void
   protected abstract visitForeignKeyConstraint(
-    node: ForeignKeyConstraintNode
+    node: ForeignKeyConstraintNode,
   ): void
   protected abstract visitDataType(node: DataTypeNode): void
   protected abstract visitSelectAll(node: SelectAllNode): void
   protected abstract visitIdentifier(node: IdentifierNode): void
   protected abstract visitSchemableIdentifier(
-    node: SchemableIdentifierNode
+    node: SchemableIdentifierNode,
   ): void
   protected abstract visitValue(node: ValueNode): void
   protected abstract visitPrimitiveValueList(node: PrimitiveValueListNode): void
@@ -300,5 +302,6 @@ export abstract class OperationNodeVisitor {
   protected abstract visitMergeQuery(node: MergeQueryNode): void
   protected abstract visitMatched(node: MatchedNode): void
   protected abstract visitAddIndex(node: AddIndexNode): void
+  protected abstract visitCast(node: CastNode): void
   protected abstract visitOutput(node: OutputNode): void
 }

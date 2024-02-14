@@ -20,9 +20,9 @@ export class MssqlAdapter extends DialectAdapterBase {
     // Acquire a transaction-level exclusive lock on the migrations table.
     // https://learn.microsoft.com/en-us/sql/relational-databases/system-stored-procedures/sp-getapplock-transact-sql?view=sql-server-ver16
     await sql`exec sp_getapplock @DbPrincipal = ${sql.lit(
-      'dbo'
+      'dbo',
     )}, @Resource = ${sql.lit(DEFAULT_MIGRATION_TABLE)}, @LockMode = ${sql.lit(
-      'Exclusive'
+      'Exclusive',
     )}`.execute(db)
   }
 

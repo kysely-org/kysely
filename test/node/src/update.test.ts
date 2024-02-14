@@ -75,7 +75,7 @@ for (const dialect of DIALECTS) {
           .select(['first_name', 'last_name', 'gender'])
           .orderBy('first_name')
           .orderBy('last_name')
-          .execute()
+          .execute(),
       ).to.eql([
         { first_name: 'Arnold', last_name: 'Schwarzenegger', gender: 'male' },
         { first_name: 'Foo', last_name: 'Barson', gender: 'female' },
@@ -126,7 +126,7 @@ for (const dialect of DIALECTS) {
           .select(['first_name', 'last_name', 'gender'])
           .orderBy('first_name')
           .orderBy('last_name')
-          .execute()
+          .execute(),
       ).to.eql([
         { first_name: 'Arnold', last_name: 'Schwarzenegger', gender: 'male' },
         { first_name: 'Foo', last_name: 'Barson', gender: 'other' },
@@ -175,7 +175,7 @@ for (const dialect of DIALECTS) {
             .select(['first_name', 'last_name', 'gender'])
             .orderBy('first_name')
             .orderBy('last_name')
-            .execute()
+            .execute(),
         ).to.eql([
           { first_name: 'Arnold', last_name: 'Schwarzenegger', gender: 'male' },
           { first_name: 'Foo', last_name: 'Barson', gender: 'female' },
@@ -214,7 +214,7 @@ for (const dialect of DIALECTS) {
             .select(['first_name', 'last_name', 'gender'])
             .orderBy('first_name')
             .orderBy('last_name')
-            .execute()
+            .execute(),
         ).to.eql([
           { first_name: 'Arnold', last_name: 'Schwarzenegger', gender: 'male' },
           { first_name: 'Foo', last_name: 'Barson', gender: 'female' },
@@ -498,7 +498,7 @@ for (const dialect of DIALECTS) {
             first_name,
             last_name: 'Nobody',
             gender,
-          }))
+          })),
         )
       })
     }
@@ -527,7 +527,7 @@ for (const dialect of DIALECTS) {
             .selectFrom('person')
             .where('first_name', '=', 'Jennifer')
             .$call(limit(1, dialect))
-            .select('id')
+            .select('id'),
         )
         .updateTable('pet')
         .set((eb) => ({

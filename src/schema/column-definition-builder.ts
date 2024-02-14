@@ -33,7 +33,7 @@ export class ColumnDefinitionBuilder implements OperationNodeSource {
    */
   autoIncrement(): ColumnDefinitionBuilder {
     return new ColumnDefinitionBuilder(
-      ColumnDefinitionNode.cloneWith(this.#node, { autoIncrement: true })
+      ColumnDefinitionNode.cloneWith(this.#node, { autoIncrement: true }),
     )
   }
 
@@ -45,7 +45,7 @@ export class ColumnDefinitionBuilder implements OperationNodeSource {
    */
   primaryKey(): ColumnDefinitionBuilder {
     return new ColumnDefinitionBuilder(
-      ColumnDefinitionNode.cloneWith(this.#node, { primaryKey: true })
+      ColumnDefinitionNode.cloneWith(this.#node, { primaryKey: true }),
     )
   }
 
@@ -67,7 +67,7 @@ export class ColumnDefinitionBuilder implements OperationNodeSource {
 
     if (!references.table || SelectAllNode.is(references.column)) {
       throw new Error(
-        `invalid call references('${ref}'). The reference must have format table.column or schema.table.column`
+        `invalid call references('${ref}'). The reference must have format table.column or schema.table.column`,
       )
     }
 
@@ -76,7 +76,7 @@ export class ColumnDefinitionBuilder implements OperationNodeSource {
         references: ReferencesNode.create(references.table, [
           references.column,
         ]),
-      })
+      }),
     )
   }
 
@@ -102,9 +102,9 @@ export class ColumnDefinitionBuilder implements OperationNodeSource {
       ColumnDefinitionNode.cloneWith(this.#node, {
         references: ReferencesNode.cloneWithOnDelete(
           this.#node.references,
-          parseOnModifyForeignAction(onDelete)
+          parseOnModifyForeignAction(onDelete),
         ),
-      })
+      }),
     )
   }
 
@@ -126,9 +126,9 @@ export class ColumnDefinitionBuilder implements OperationNodeSource {
       ColumnDefinitionNode.cloneWith(this.#node, {
         references: ReferencesNode.cloneWithOnUpdate(
           this.#node.references,
-          parseOnModifyForeignAction(onUpdate)
+          parseOnModifyForeignAction(onUpdate),
         ),
-      })
+      }),
     )
   }
 
@@ -137,7 +137,7 @@ export class ColumnDefinitionBuilder implements OperationNodeSource {
    */
   unique(): ColumnDefinitionBuilder {
     return new ColumnDefinitionBuilder(
-      ColumnDefinitionNode.cloneWith(this.#node, { unique: true })
+      ColumnDefinitionNode.cloneWith(this.#node, { unique: true }),
     )
   }
 
@@ -146,7 +146,7 @@ export class ColumnDefinitionBuilder implements OperationNodeSource {
    */
   notNull(): ColumnDefinitionBuilder {
     return new ColumnDefinitionBuilder(
-      ColumnDefinitionNode.cloneWith(this.#node, { notNull: true })
+      ColumnDefinitionNode.cloneWith(this.#node, { notNull: true }),
     )
   }
 
@@ -157,7 +157,7 @@ export class ColumnDefinitionBuilder implements OperationNodeSource {
    */
   unsigned(): ColumnDefinitionBuilder {
     return new ColumnDefinitionBuilder(
-      ColumnDefinitionNode.cloneWith(this.#node, { unsigned: true })
+      ColumnDefinitionNode.cloneWith(this.#node, { unsigned: true }),
     )
   }
 
@@ -193,7 +193,7 @@ export class ColumnDefinitionBuilder implements OperationNodeSource {
     return new ColumnDefinitionBuilder(
       ColumnDefinitionNode.cloneWith(this.#node, {
         defaultTo: DefaultValueNode.create(parseDefaultValueExpression(value)),
-      })
+      }),
     )
   }
 
@@ -217,7 +217,7 @@ export class ColumnDefinitionBuilder implements OperationNodeSource {
     return new ColumnDefinitionBuilder(
       ColumnDefinitionNode.cloneWith(this.#node, {
         check: CheckConstraintNode.create(expression.toOperationNode()),
-      })
+      }),
     )
   }
 
@@ -241,9 +241,9 @@ export class ColumnDefinitionBuilder implements OperationNodeSource {
     return new ColumnDefinitionBuilder(
       ColumnDefinitionNode.cloneWith(this.#node, {
         generated: GeneratedNode.createWithExpression(
-          expression.toOperationNode()
+          expression.toOperationNode(),
         ),
-      })
+      }),
     )
   }
 
@@ -254,7 +254,7 @@ export class ColumnDefinitionBuilder implements OperationNodeSource {
     return new ColumnDefinitionBuilder(
       ColumnDefinitionNode.cloneWith(this.#node, {
         generated: GeneratedNode.create({ identity: true, always: true }),
-      })
+      }),
     )
   }
 
@@ -265,7 +265,7 @@ export class ColumnDefinitionBuilder implements OperationNodeSource {
     return new ColumnDefinitionBuilder(
       ColumnDefinitionNode.cloneWith(this.#node, {
         generated: GeneratedNode.create({ identity: true, byDefault: true }),
-      })
+      }),
     )
   }
 
@@ -295,7 +295,7 @@ export class ColumnDefinitionBuilder implements OperationNodeSource {
         generated: GeneratedNode.cloneWith(this.#node.generated, {
           stored: true,
         }),
-      })
+      }),
     )
   }
 
@@ -324,8 +324,8 @@ export class ColumnDefinitionBuilder implements OperationNodeSource {
     return new ColumnDefinitionBuilder(
       ColumnDefinitionNode.cloneWithFrontModifier(
         this.#node,
-        modifier.toOperationNode()
-      )
+        modifier.toOperationNode(),
+      ),
     )
   }
 
@@ -355,7 +355,7 @@ export class ColumnDefinitionBuilder implements OperationNodeSource {
    */
   nullsNotDistinct(): ColumnDefinitionBuilder {
     return new ColumnDefinitionBuilder(
-      ColumnDefinitionNode.cloneWith(this.#node, { nullsNotDistinct: true })
+      ColumnDefinitionNode.cloneWith(this.#node, { nullsNotDistinct: true }),
     )
   }
 
@@ -384,8 +384,8 @@ export class ColumnDefinitionBuilder implements OperationNodeSource {
     return new ColumnDefinitionBuilder(
       ColumnDefinitionNode.cloneWithEndModifier(
         this.#node,
-        modifier.toOperationNode()
-      )
+        modifier.toOperationNode(),
+      ),
     )
   }
 
@@ -404,9 +404,9 @@ export class ColumnDefinitionBuilder implements OperationNodeSource {
 
 preventAwait(
   ColumnDefinitionBuilder,
-  "don't await ColumnDefinitionBuilder instances directly."
+  "don't await ColumnDefinitionBuilder instances directly.",
 )
 
 export type ColumnDefinitionBuilderCallback = (
-  builder: ColumnDefinitionBuilder
+  builder: ColumnDefinitionBuilder,
 ) => ColumnDefinitionBuilder
