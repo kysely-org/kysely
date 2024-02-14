@@ -831,10 +831,7 @@ for (const dialect of DIALECTS) {
         await ctx.db.schema
           .createTable('some_schema.pet')
           .addColumn('some_column', 'integer', (col) =>
-            col
-              .notNull()
-              .modifyFront(sql`identity(1,1)`)
-              .primaryKey(),
+            col.identity().notNull().primaryKey()
           )
           .addColumn('some_column_plus_1', sql``, (col) =>
             col.modifyEnd(sql`as (some_column + 1)`),

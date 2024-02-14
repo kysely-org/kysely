@@ -580,8 +580,10 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    * builder for creating more complex joins. The join builder has a
    * bunch of `on*` methods for building the `on` clause of the join.
    * There's basically an equivalent for every `where` method
-   * (`on`, `onRef` etc.). You can do all the same things with the
-   * `on` method that you can with the corresponding `where` method.
+   * (`on`, `onRef` etc.).
+   *
+   * You can do all the same things with the
+   * `on` method that you can with the corresponding `where` method (like [OR expressions for example](https://kysely.dev/docs/examples/WHERE/or-where)).
    * See the `where` method documentation for more examples.
    *
    * ```ts
@@ -591,6 +593,7 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    *     (join) => join
    *       .onRef('pet.owner_id', '=', 'person.id')
    *       .on('pet.name', '=', 'Doggo')
+   *       .on((eb) => eb.or([eb("person.age", ">", 18), eb("person.age", "<", 100)]))
    *   )
    *   .selectAll()
    *   .execute()
