@@ -299,10 +299,7 @@ for (const dialect of DIALECTS) {
           const builder = ctx.db.schema
             .createTable('test')
             .addColumn('a', 'integer', (col) =>
-              col
-                .notNull()
-                .modifyFront(sql`identity(1,1)`)
-                .primaryKey(),
+              col.identity().notNull().primaryKey()
             )
             .addColumn('b', 'integer', (col) =>
               col
@@ -343,7 +340,7 @@ for (const dialect of DIALECTS) {
             mssql: {
               sql: [
                 'create table "test"',
-                '("a" integer identity(1,1) not null primary key,',
+                '("a" integer identity not null primary key,',
                 '"b" integer references "test" ("a") on delete no action on update no action check (b < 10),',
                 '"c" varchar,',
                 '"d" varchar(10),',
