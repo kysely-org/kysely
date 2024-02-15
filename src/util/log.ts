@@ -66,7 +66,7 @@ function defaultLogger(event: LogEvent): void {
   if (event.level === 'query') {
     console.log(`kysely:query: ${event.query.sql}`)
     console.log(
-      `kysely:query: duration: ${event.queryDurationMillis.toFixed(1)}ms`
+      `kysely:query: duration: ${event.queryDurationMillis.toFixed(1)}ms`,
     )
   } else if (event.level === 'error') {
     if (event.error instanceof Error) {
@@ -77,7 +77,7 @@ function defaultLogger(event: LogEvent): void {
           error: event.error,
           query: event.query.sql,
           queryDurationMillis: event.queryDurationMillis,
-        })}`
+        })}`,
       )
     }
   }

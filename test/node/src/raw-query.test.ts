@@ -37,12 +37,12 @@ for (const dialect of DIALECTS) {
       const result = await sql<{
         first_name: string
       }>`select first_name from person where gender = ${gender} order by first_name asc, last_name asc`.execute(
-        ctx.db
+        ctx.db,
       )
 
       expect(result.insertId).to.equal(undefined)
       expect(result.numAffectedRows).to.equal(
-        dialect === 'mssql' ? 2n : undefined
+        dialect === 'mssql' ? 2n : undefined,
       )
       expect(result.rows).to.eql([
         { first_name: 'Arnold' },
@@ -56,7 +56,7 @@ for (const dialect of DIALECTS) {
 
       const result =
         await sql`update person set first_name = ${newFirstName} where gender = ${gender}`.execute(
-          ctx.db
+          ctx.db,
         )
 
       expect(result.numAffectedRows).to.equal(2n)
@@ -81,7 +81,7 @@ for (const dialect of DIALECTS) {
 
         const result =
           await sql`insert into person (first_name, last_name, gender) values (${firstName}, ${lastName}, ${gender}) returning first_name, last_name`.execute(
-            ctx.db
+            ctx.db,
           )
 
         expect(result.insertId).to.equal(undefined)
@@ -99,7 +99,7 @@ for (const dialect of DIALECTS) {
 
         const result =
           await sql`insert into person (first_name, last_name, gender) values (${firstName}, ${lastName}, ${gender})`.execute(
-            ctx.db
+            ctx.db,
           )
 
         expect(result.insertId! > 0n).to.be.equal(true)

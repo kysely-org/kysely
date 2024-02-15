@@ -17,14 +17,14 @@ export class AlterTableExecutor implements OperationNodeSource, Compilable {
   toOperationNode(): AlterTableNode {
     return this.#props.executor.transformQuery(
       this.#props.node,
-      this.#props.queryId
+      this.#props.queryId,
     )
   }
 
   compile(): CompiledQuery {
     return this.#props.executor.compileQuery(
       this.toOperationNode(),
-      this.#props.queryId
+      this.#props.queryId,
     )
   }
 
@@ -41,5 +41,5 @@ export interface AlterTableExecutorProps {
 
 preventAwait(
   AlterTableExecutor,
-  "don't await AlterTableExecutor instances directly. To execute the query you need to call `execute`"
+  "don't await AlterTableExecutor instances directly. To execute the query you need to call `execute`",
 )

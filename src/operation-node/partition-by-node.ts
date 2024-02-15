@@ -24,7 +24,7 @@ export const PartitionByNode = freeze({
 
   cloneWithItems(
     partitionBy: PartitionByNode,
-    items: ReadonlyArray<PartitionByItemNode>
+    items: ReadonlyArray<PartitionByItemNode>,
   ): PartitionByNode {
     return freeze({
       ...partitionBy,

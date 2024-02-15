@@ -88,6 +88,7 @@ export type OperationNodeKind =
   | 'MergeQueryNode'
   | 'MatchedNode'
   | 'AddIndexNode'
+  | 'CastNode'
   | 'FetchNode'
 
 export interface OperationNode {

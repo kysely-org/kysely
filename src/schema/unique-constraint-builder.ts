@@ -20,16 +20,16 @@ export class UniqueConstraintNodeBuilder implements OperationNodeSource {
    */
   nullsNotDistinct(): UniqueConstraintNodeBuilder {
     return new UniqueConstraintNodeBuilder(
-      UniqueConstraintNode.cloneWith(this.#node, { nullsNotDistinct: true })
+      UniqueConstraintNode.cloneWith(this.#node, { nullsNotDistinct: true }),
     )
   }
 }
 
 preventAwait(
   UniqueConstraintNodeBuilder,
-  "don't await UniqueConstraintNodeBuilder instances directly."
+  "don't await UniqueConstraintNodeBuilder instances directly.",
 )
 
 export type UniqueConstraintNodeBuilderCallback = (
-  builder: UniqueConstraintNodeBuilder
+  builder: UniqueConstraintNodeBuilder,
 ) => UniqueConstraintNodeBuilder

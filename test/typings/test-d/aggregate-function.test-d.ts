@@ -11,57 +11,69 @@ async function testSelectWithoutAs(db: Kysely<Database>) {
   const { avg, count, countAll, max, min, sum } = db.fn
 
   expectError(
-    db.selectFrom('person').select(avg('age')).executeTakeFirstOrThrow()
+    db.selectFrom('person').select(avg('age')).executeTakeFirstOrThrow(),
   )
 
   expectError(
-    db.selectFrom('person').select(avg<number>('age')).executeTakeFirstOrThrow()
+    db
+      .selectFrom('person')
+      .select(avg<number>('age'))
+      .executeTakeFirstOrThrow(),
   )
 
   expectError(
-    db.selectFrom('person').select(count('age')).executeTakeFirstOrThrow()
+    db.selectFrom('person').select(count('age')).executeTakeFirstOrThrow(),
   )
 
   expectError(
     db
       .selectFrom('person')
       .select(count<number>('age'))
-      .executeTakeFirstOrThrow()
+      .executeTakeFirstOrThrow(),
   )
 
   expectError(
-    db.selectFrom('person').select(countAll()).executeTakeFirstOrThrow()
+    db.selectFrom('person').select(countAll()).executeTakeFirstOrThrow(),
   )
 
   expectError(
-    db.selectFrom('person').select(countAll<number>()).executeTakeFirstOrThrow()
+    db
+      .selectFrom('person')
+      .select(countAll<number>())
+      .executeTakeFirstOrThrow(),
   )
 
   expectError(
-    db.selectFrom('person').select(countAll('person')).executeTakeFirstOrThrow()
+    db
+      .selectFrom('person')
+      .select(countAll('person'))
+      .executeTakeFirstOrThrow(),
   )
 
   expectError(
     db
       .selectFrom('person')
       .select(countAll<number>('person'))
-      .executeTakeFirstOrThrow()
+      .executeTakeFirstOrThrow(),
   )
 
   expectError(
-    db.selectFrom('person').select(max('age')).executeTakeFirstOrThrow()
+    db.selectFrom('person').select(max('age')).executeTakeFirstOrThrow(),
   )
 
   expectError(
-    db.selectFrom('person').select(min('age')).executeTakeFirstOrThrow()
+    db.selectFrom('person').select(min('age')).executeTakeFirstOrThrow(),
   )
 
   expectError(
-    db.selectFrom('person').select(sum('age')).executeTakeFirstOrThrow()
+    db.selectFrom('person').select(sum('age')).executeTakeFirstOrThrow(),
   )
 
   expectError(
-    db.selectFrom('person').select(sum<number>('age')).executeTakeFirstOrThrow()
+    db
+      .selectFrom('person')
+      .select(sum<number>('age'))
+      .executeTakeFirstOrThrow(),
   )
 }
 
@@ -96,7 +108,7 @@ async function testSelectWithDefaultGenerics(db: Kysely<Database>) {
 }
 
 async function testSelectExpressionBuilderWithDefaultGenerics(
-  db: Kysely<Database>
+  db: Kysely<Database>,
 ) {
   const result = await db
     .selectFrom('person')
@@ -128,7 +140,7 @@ async function testSelectExpressionBuilderWithDefaultGenerics(
 }
 
 async function testSelectExpressionBuilderWithCustomGenerics(
-  db: Kysely<Database>
+  db: Kysely<Database>,
 ) {
   const result = await db
     .selectFrom('person')
@@ -155,7 +167,7 @@ async function testSelectExpressionBuilderWithCustomGenerics(
 }
 
 async function testSelectExpressionBuilderWithSubExpressions(
-  db: Kysely<Database>
+  db: Kysely<Database>,
 ) {
   const result = await db
     .selectFrom('person')
@@ -225,70 +237,70 @@ async function testSelectUnexpectedColumn(db: Kysely<Database>) {
     db
       .selectFrom('person')
       .select(avg('no_such_column').as('avg_age'))
-      .executeTakeFirstOrThrow()
+      .executeTakeFirstOrThrow(),
   )
 
   expectError(
     db
       .selectFrom('person')
       .select(avg<number>('no_such_column').as('avg_age'))
-      .executeTakeFirstOrThrow()
+      .executeTakeFirstOrThrow(),
   )
 
   expectError(
     db
       .selectFrom('person')
       .select(count('no_such_column').as('total_people'))
-      .executeTakeFirstOrThrow()
+      .executeTakeFirstOrThrow(),
   )
 
   expectError(
     db
       .selectFrom('person')
       .select(count<number>('no_such_column').as('total_people'))
-      .executeTakeFirstOrThrow()
+      .executeTakeFirstOrThrow(),
   )
 
   expectError(
     db
       .selectFrom('person')
       .select(countAll('no_such_table').as('total_all_people'))
-      .executeTakeFirstOrThrow()
+      .executeTakeFirstOrThrow(),
   )
 
   expectError(
     db
       .selectFrom('person')
       .select(countAll<number>('no_such_table').as('total_all_people'))
-      .executeTakeFirstOrThrow()
+      .executeTakeFirstOrThrow(),
   )
 
   expectError(
     db
       .selectFrom('person')
       .select(max('no_such_column').as('max_age'))
-      .executeTakeFirstOrThrow()
+      .executeTakeFirstOrThrow(),
   )
 
   expectError(
     db
       .selectFrom('person')
       .select(min('no_such_column').as('min_age'))
-      .executeTakeFirstOrThrow()
+      .executeTakeFirstOrThrow(),
   )
 
   expectError(
     db
       .selectFrom('person')
       .select(sum('no_such_column').as('total_age'))
-      .executeTakeFirstOrThrow()
+      .executeTakeFirstOrThrow(),
   )
 
   expectError(
     db
       .selectFrom('person')
       .select(sum<number>('no_such_column').as('total_age'))
-      .executeTakeFirstOrThrow()
+      .executeTakeFirstOrThrow(),
   )
 }
 
@@ -379,28 +391,28 @@ async function testWithFilterWhere(db: Kysely<Database>) {
 
   // Table and column
   db.selectFrom('person').select(
-    avg('age').filterWhere('person.gender', '=', 'female').as('avg_age')
+    avg('age').filterWhere('person.gender', '=', 'female').as('avg_age'),
   )
 
   // Schema, table and column
   db.selectFrom('some_schema.movie').select(
-    avg('stars').filterWhere('some_schema.movie.stars', '>', 0).as('avg_stars')
+    avg('stars').filterWhere('some_schema.movie.stars', '>', 0).as('avg_stars'),
   )
 
   // Subquery in LHS
   db.selectFrom('person').select(
     avg('age')
       .filterWhere((qb) => qb.selectFrom('movie').select('stars'), '>', 0)
-      .as('avg_age')
+      .as('avg_age'),
   )
 
   // Subquery in RHS
   db.selectFrom('movie').select(
     avg('stars')
       .filterWhere(sql<string>`${'female'}`, '=', (qb) =>
-        qb.selectFrom('person').select('gender')
+        qb.selectFrom('person').select('gender'),
       )
-      .as('avg_stars')
+      .as('avg_stars'),
   )
 
   // Raw expression
@@ -411,26 +423,26 @@ async function testWithFilterWhere(db: Kysely<Database>) {
       .filterWhere(sql`whatever`, '=', 1)
       .filterWhere(sql`whatever`, '=', true)
       .filterWhere(sql`whatever`, '=', '1')
-      .as('avg_age')
+      .as('avg_age'),
   )
 
   // List value
   db.selectFrom('person').select(
-    avg('age').filterWhere('gender', 'in', ['female', 'male']).as('avg_age')
+    avg('age').filterWhere('gender', 'in', ['female', 'male']).as('avg_age'),
   )
 
   // Raw operator
   db.selectFrom('person').select(
     avg('age')
       .filterWhere('person.age', sql`lol`, 25)
-      .as('avg_age')
+      .as('avg_age'),
   )
 
   // Invalid operator
   expectError(
     db
       .selectFrom('person')
-      .select(avg('age').filterWhere('person.age', 'lol', 25).as('avg_age'))
+      .select(avg('age').filterWhere('person.age', 'lol', 25).as('avg_age')),
   )
 
   // Invalid table
@@ -438,8 +450,8 @@ async function testWithFilterWhere(db: Kysely<Database>) {
     db
       .selectFrom('person')
       .select((eb) =>
-        eb.fn.avg('age').filterWhere('movie.stars', '=', 25).as('avg_age')
-      )
+        eb.fn.avg('age').filterWhere('movie.stars', '=', 25).as('avg_age'),
+      ),
   )
 
   // Invalid column
@@ -447,15 +459,15 @@ async function testWithFilterWhere(db: Kysely<Database>) {
     db
       .selectFrom('person')
       .select((eb) =>
-        eb.fn.avg('age').filterWhere('stars', '=', 25).as('avg_age')
-      )
+        eb.fn.avg('age').filterWhere('stars', '=', 25).as('avg_age'),
+      ),
   )
 
   // Invalid type for column
   expectError(
     db
       .selectFrom('person')
-      .select(avg('age').filterWhere('first_name', '=', 25).as('avg_age'))
+      .select(avg('age').filterWhere('first_name', '=', 25).as('avg_age')),
   )
 
   // Invalid type for column
@@ -463,8 +475,8 @@ async function testWithFilterWhere(db: Kysely<Database>) {
     db
       .selectFrom('person')
       .select(
-        avg('age').filterWhere('gender', '=', 'not_a_gender').as('avg_age')
-      )
+        avg('age').filterWhere('gender', '=', 'not_a_gender').as('avg_age'),
+      ),
   )
 
   // Invalid type for column
@@ -474,8 +486,8 @@ async function testWithFilterWhere(db: Kysely<Database>) {
       .select(
         avg('age')
           .filterWhere('gender', 'in', ['female', 'not_a_gender'])
-          .as('avg_age')
-      )
+          .as('avg_age'),
+      ),
   )
 
   // Invalid type for column
@@ -483,8 +495,10 @@ async function testWithFilterWhere(db: Kysely<Database>) {
     db
       .selectFrom('some_schema.movie')
       .select(
-        avg('stars').filterWhere('some_schema.movie.id', '=', 1).as('avg_stars')
-      )
+        avg('stars')
+          .filterWhere('some_schema.movie.id', '=', 1)
+          .as('avg_stars'),
+      ),
   )
 
   // Invalid type for column
@@ -494,10 +508,10 @@ async function testWithFilterWhere(db: Kysely<Database>) {
         .filterWhere(
           (qb) => qb.selectFrom('person').select('gender'),
           '=',
-          'not_a_gender'
+          'not_a_gender',
         )
-        .as('avg_stars')
-    )
+        .as('avg_stars'),
+    ),
   )
 
   // Invalid type for column
@@ -505,8 +519,8 @@ async function testWithFilterWhere(db: Kysely<Database>) {
     db.selectFrom('person').select(
       avg('age')
         .filterWhere('first_name', '=', sql<number>`1`)
-        .as('avg_age')
-    )
+        .as('avg_age'),
+    ),
   )
 
   // Invalid type for column
@@ -514,8 +528,8 @@ async function testWithFilterWhere(db: Kysely<Database>) {
     db.selectFrom('person').select(
       avg('age')
         .filterWhere(sql<string>`first_name`, '=', 1)
-        .as('avg_age')
-    )
+        .as('avg_age'),
+    ),
   )
 }
 
@@ -525,19 +539,19 @@ async function testWithFilterWhereRef(db: Kysely<Database>) {
   // Column name
   db.selectFrom('person')
     .select(
-      avg('age').filterWhereRef('first_name', '=', 'last_name').as('avg_age')
+      avg('age').filterWhereRef('first_name', '=', 'last_name').as('avg_age'),
     )
     .select(
-      count('id').filterWhereRef('first_name', '=', 'last_name').as('count')
+      count('id').filterWhereRef('first_name', '=', 'last_name').as('count'),
     )
     .select(
-      max('age').filterWhereRef('first_name', '=', 'last_name').as('max_age')
+      max('age').filterWhereRef('first_name', '=', 'last_name').as('max_age'),
     )
     .select(
-      min('age').filterWhereRef('first_name', '=', 'last_name').as('min_age')
+      min('age').filterWhereRef('first_name', '=', 'last_name').as('min_age'),
     )
     .select(
-      sum('age').filterWhereRef('first_name', '=', 'last_name').as('total_age')
+      sum('age').filterWhereRef('first_name', '=', 'last_name').as('total_age'),
     )
 
   // Table and column
@@ -545,17 +559,17 @@ async function testWithFilterWhereRef(db: Kysely<Database>) {
     .select(
       avg('age')
         .filterWhereRef('person.first_name', '=', 'last_name')
-        .as('avg_age')
+        .as('avg_age'),
     )
     .select(
       count('id')
         .filterWhereRef('first_name', '=', 'person.last_name')
-        .as('count')
+        .as('count'),
     )
     .select(
       max('age')
         .filterWhereRef('person.first_name', '=', 'person.last_name')
-        .as('max_age')
+        .as('max_age'),
     )
 
   // Schema, table and column
@@ -563,27 +577,27 @@ async function testWithFilterWhereRef(db: Kysely<Database>) {
     .select(
       avg('stars')
         .filterWhereRef('some_schema.movie.id', '=', 'stars')
-        .as('avg_stars')
+        .as('avg_stars'),
     )
     .select(
       count('id')
         .filterWhereRef('some_schema.movie.id', '=', 'movie.stars')
-        .as('count')
+        .as('count'),
     )
     .select(
       max('stars')
         .filterWhereRef('some_schema.movie.id', '=', 'some_schema.movie.stars')
-        .as('max_stars')
+        .as('max_stars'),
     )
     .select(
       min('stars')
         .filterWhereRef('movie.id', '=', 'some_schema.movie.stars')
-        .as('min_stars')
+        .as('min_stars'),
     )
     .select(
       sum('stars')
         .filterWhereRef('id', '=', 'some_schema.movie.stars')
-        .as('total_stars')
+        .as('total_stars'),
     )
 
   // Subquery in LHS
@@ -592,25 +606,25 @@ async function testWithFilterWhereRef(db: Kysely<Database>) {
       .filterWhereRef(
         (qb) => qb.selectFrom('movie').select('stars'),
         '>',
-        'age'
+        'age',
       )
-      .as('avg_age')
+      .as('avg_age'),
   )
 
   // Subquery in RHS
   db.selectFrom('person').select(
     avg('age')
       .filterWhereRef('age', '>', (qb) =>
-        qb.selectFrom('movie').select('stars')
+        qb.selectFrom('movie').select('stars'),
       )
-      .as('avg_age')
+      .as('avg_age'),
   )
 
   // Raw operator
   db.selectFrom('person').select(
     avg('age')
       .filterWhereRef('first_name', sql`lol`, 'last_name')
-      .as('avg_age')
+      .as('avg_age'),
   )
 
   // Invalid operator
@@ -620,8 +634,8 @@ async function testWithFilterWhereRef(db: Kysely<Database>) {
       .select(
         avg('age')
           .filterWhereRef('first_name', 'lol', 'last_name')
-          .as('avg_age')
-      )
+          .as('avg_age'),
+      ),
   )
 
   // Invalid table LHS
@@ -629,8 +643,11 @@ async function testWithFilterWhereRef(db: Kysely<Database>) {
     db
       .selectFrom('person')
       .select((eb) =>
-        eb.fn.avg('age').filterWhereRef('movie.stars', '>', 'age').as('avg_age')
-      )
+        eb.fn
+          .avg('age')
+          .filterWhereRef('movie.stars', '>', 'age')
+          .as('avg_age'),
+      ),
   )
 
   // Invalid table RHS
@@ -638,8 +655,11 @@ async function testWithFilterWhereRef(db: Kysely<Database>) {
     db
       .selectFrom('person')
       .select((eb) =>
-        eb.fn.avg('age').filterWhereRef('age', '>', 'movie.stars').as('avg_age')
-      )
+        eb.fn
+          .avg('age')
+          .filterWhereRef('age', '>', 'movie.stars')
+          .as('avg_age'),
+      ),
   )
 
   // Invalid column LHS
@@ -647,8 +667,8 @@ async function testWithFilterWhereRef(db: Kysely<Database>) {
     db
       .selectFrom('person')
       .select((eb) =>
-        eb.fn.avg('age').filterWhereRef('stars', '>', 'age').as('avg_age')
-      )
+        eb.fn.avg('age').filterWhereRef('stars', '>', 'age').as('avg_age'),
+      ),
   )
 
   // Invalid column RHS
@@ -656,8 +676,8 @@ async function testWithFilterWhereRef(db: Kysely<Database>) {
     db
       .selectFrom('person')
       .select((eb) =>
-        eb.fn.avg('age').filterWhereRef('age', '>', 'stars').as('avg_age')
-      )
+        eb.fn.avg('age').filterWhereRef('age', '>', 'stars').as('avg_age'),
+      ),
   )
 }
 
@@ -688,27 +708,27 @@ async function testSelectWithOverAndPartitionBySingle(db: Kysely<Database>) {
     .select(
       avg('age')
         .over((ob) => ob.partitionBy('gender'))
-        .as('avg_age')
+        .as('avg_age'),
     )
     .select(
       count('age')
         .over((ob) => ob.partitionBy('gender'))
-        .as('total_people')
+        .as('total_people'),
     )
     .select(
       max('age')
         .over((ob) => ob.partitionBy('gender'))
-        .as('max_age')
+        .as('max_age'),
     )
     .select(
       min('age')
         .over((ob) => ob.partitionBy('gender'))
-        .as('min_age')
+        .as('min_age'),
     )
     .select(
       sum('age')
         .over((ob) => ob.partitionBy('gender'))
-        .as('total_age')
+        .as('total_age'),
     )
     .executeTakeFirstOrThrow()
 
@@ -727,35 +747,35 @@ async function testSelectWithOverAndPartitionByMultiple(db: Kysely<Database>) {
     .select(
       avg('age')
         .over((ob) => ob.partitionBy(['gender']))
-        .as('avg_age')
+        .as('avg_age'),
     )
     .select(
       count('age')
         .over((ob) =>
-          ob.partitionBy(['gender']).partitionBy('person.first_name')
+          ob.partitionBy(['gender']).partitionBy('person.first_name'),
         )
-        .as('total_people')
+        .as('total_people'),
     )
     .select(
       max('age')
         .over((ob) =>
-          ob.partitionBy(['gender']).partitionBy('person.first_name')
+          ob.partitionBy(['gender']).partitionBy('person.first_name'),
         )
-        .as('max_age')
+        .as('max_age'),
     )
     .select(
       min('age')
         .over((ob) =>
-          ob.partitionBy(['gender']).partitionBy('person.first_name')
+          ob.partitionBy(['gender']).partitionBy('person.first_name'),
         )
-        .as('min_age')
+        .as('min_age'),
     )
     .select(
       sum('age')
         .over((ob) =>
-          ob.partitionBy(['gender']).partitionBy('person.first_name')
+          ob.partitionBy(['gender']).partitionBy('person.first_name'),
         )
-        .as('total_age')
+        .as('total_age'),
     )
     .executeTakeFirstOrThrow()
 
@@ -767,7 +787,7 @@ async function testSelectWithOverAndPartitionByMultiple(db: Kysely<Database>) {
 }
 
 async function testSelectWithOverAndPartitionByUnexpectedColumns(
-  db: Kysely<Database>
+  db: Kysely<Database>,
 ) {
   const { avg, count, max, min, sum } = db.fn
 
@@ -777,9 +797,9 @@ async function testSelectWithOverAndPartitionByUnexpectedColumns(
       .select(
         avg('age')
           .over((ob) => ob.partitionBy('no_such_column'))
-          .as('avg_age')
+          .as('avg_age'),
       )
-      .executeTakeFirst()
+      .executeTakeFirst(),
   )
   expectError(
     db
@@ -787,9 +807,9 @@ async function testSelectWithOverAndPartitionByUnexpectedColumns(
       .select(
         avg('age')
           .over((ob) => ob.partitionBy(['no_such_column']))
-          .as('avg_age')
+          .as('avg_age'),
       )
-      .executeTakeFirst()
+      .executeTakeFirst(),
   )
   expectError(
     db
@@ -797,9 +817,9 @@ async function testSelectWithOverAndPartitionByUnexpectedColumns(
       .select(
         count('age')
           .over((ob) => ob.partitionBy('no_such_column'))
-          .as('avg_age')
+          .as('avg_age'),
       )
-      .executeTakeFirst()
+      .executeTakeFirst(),
   )
   expectError(
     db
@@ -807,9 +827,9 @@ async function testSelectWithOverAndPartitionByUnexpectedColumns(
       .select(
         count('age')
           .over((ob) => ob.partitionBy(['no_such_column']))
-          .as('avg_age')
+          .as('avg_age'),
       )
-      .executeTakeFirst()
+      .executeTakeFirst(),
   )
   expectError(
     db
@@ -817,9 +837,9 @@ async function testSelectWithOverAndPartitionByUnexpectedColumns(
       .select(
         max('age')
           .over((ob) => ob.partitionBy('no_such_column'))
-          .as('avg_age')
+          .as('avg_age'),
       )
-      .executeTakeFirst()
+      .executeTakeFirst(),
   )
   expectError(
     db
@@ -827,9 +847,9 @@ async function testSelectWithOverAndPartitionByUnexpectedColumns(
       .select(
         max('age')
           .over((ob) => ob.partitionBy(['no_such_column']))
-          .as('avg_age')
+          .as('avg_age'),
       )
-      .executeTakeFirst()
+      .executeTakeFirst(),
   )
   expectError(
     db
@@ -837,9 +857,9 @@ async function testSelectWithOverAndPartitionByUnexpectedColumns(
       .select(
         min('age')
           .over((ob) => ob.partitionBy('no_such_column'))
-          .as('avg_age')
+          .as('avg_age'),
       )
-      .executeTakeFirst()
+      .executeTakeFirst(),
   )
   expectError(
     db
@@ -847,9 +867,9 @@ async function testSelectWithOverAndPartitionByUnexpectedColumns(
       .select(
         min('age')
           .over((ob) => ob.partitionBy(['no_such_column']))
-          .as('avg_age')
+          .as('avg_age'),
       )
-      .executeTakeFirst()
+      .executeTakeFirst(),
   )
   expectError(
     db
@@ -857,9 +877,9 @@ async function testSelectWithOverAndPartitionByUnexpectedColumns(
       .select(
         sum('age')
           .over((ob) => ob.partitionBy('no_such_column'))
-          .as('avg_age')
+          .as('avg_age'),
       )
-      .executeTakeFirst()
+      .executeTakeFirst(),
   )
   expectError(
     db
@@ -867,9 +887,9 @@ async function testSelectWithOverAndPartitionByUnexpectedColumns(
       .select(
         sum('age')
           .over((ob) => ob.partitionBy(['no_such_column']))
-          .as('avg_age')
+          .as('avg_age'),
       )
-      .executeTakeFirst()
+      .executeTakeFirst(),
   )
 }
 
@@ -881,27 +901,27 @@ async function testSelectWithOverAndOrderBySingle(db: Kysely<Database>) {
     .select(
       avg('age')
         .over((ob) => ob.orderBy('gender'))
-        .as('avg_age')
+        .as('avg_age'),
     )
     .select(
       count('age')
         .over((ob) => ob.orderBy('gender'))
-        .as('total_people')
+        .as('total_people'),
     )
     .select(
       max('age')
         .over((ob) => ob.orderBy('gender'))
-        .as('max_age')
+        .as('max_age'),
     )
     .select(
       min('age')
         .over((ob) => ob.orderBy('gender'))
-        .as('min_age')
+        .as('min_age'),
     )
     .select(
       sum('age')
         .over((ob) => ob.orderBy('gender'))
-        .as('total_age')
+        .as('total_age'),
     )
     .executeTakeFirstOrThrow()
 
@@ -920,27 +940,27 @@ async function testSelectWithOverAndOrderByMultiple(db: Kysely<Database>) {
     .select(
       avg('age')
         .over((ob) => ob.orderBy('gender').orderBy('first_name', 'desc'))
-        .as('avg_age')
+        .as('avg_age'),
     )
     .select(
       count('age')
         .over((ob) => ob.orderBy('gender').orderBy('first_name', 'desc'))
-        .as('total_people')
+        .as('total_people'),
     )
     .select(
       max('age')
         .over((ob) => ob.orderBy('gender').orderBy('first_name', 'desc'))
-        .as('max_age')
+        .as('max_age'),
     )
     .select(
       min('age')
         .over((ob) => ob.orderBy('gender').orderBy('first_name', 'desc'))
-        .as('min_age')
+        .as('min_age'),
     )
     .select(
       sum('age')
         .over((ob) => ob.orderBy('gender').orderBy('first_name', 'desc'))
-        .as('total_age')
+        .as('total_age'),
     )
     .executeTakeFirstOrThrow()
 
@@ -952,7 +972,7 @@ async function testSelectWithOverAndOrderByMultiple(db: Kysely<Database>) {
 }
 
 async function testSelectWithOverAndOrderByUnexpectedColumns(
-  db: Kysely<Database>
+  db: Kysely<Database>,
 ) {
   const { avg, count, max, min, sum } = db.fn
 
@@ -962,9 +982,9 @@ async function testSelectWithOverAndOrderByUnexpectedColumns(
       .select(
         avg('age')
           .over((ob) => ob.orderBy('no_such_column'))
-          .as('avg_age')
+          .as('avg_age'),
       )
-      .executeTakeFirst()
+      .executeTakeFirst(),
   )
   expectError(
     db
@@ -972,9 +992,9 @@ async function testSelectWithOverAndOrderByUnexpectedColumns(
       .select(
         count('age')
           .over((ob) => ob.orderBy('no_such_column'))
-          .as('avg_age')
+          .as('avg_age'),
       )
-      .executeTakeFirst()
+      .executeTakeFirst(),
   )
   expectError(
     db
@@ -982,9 +1002,9 @@ async function testSelectWithOverAndOrderByUnexpectedColumns(
       .select(
         max('age')
           .over((ob) => ob.orderBy('no_such_column'))
-          .as('avg_age')
+          .as('avg_age'),
       )
-      .executeTakeFirst()
+      .executeTakeFirst(),
   )
   expectError(
     db
@@ -992,9 +1012,9 @@ async function testSelectWithOverAndOrderByUnexpectedColumns(
       .select(
         min('age')
           .over((ob) => ob.orderBy('no_such_column'))
-          .as('avg_age')
+          .as('avg_age'),
       )
-      .executeTakeFirst()
+      .executeTakeFirst(),
   )
   expectError(
     db
@@ -1002,9 +1022,9 @@ async function testSelectWithOverAndOrderByUnexpectedColumns(
       .select(
         sum('age')
           .over((ob) => ob.orderBy('no_such_column'))
-          .as('avg_age')
+          .as('avg_age'),
       )
-      .executeTakeFirst()
+      .executeTakeFirst(),
   )
 }
 
@@ -1027,7 +1047,7 @@ async function testSelectAsCustomFunctionArgument(db: Kysely<Database>) {
       .select(({ fn }) => [
         fn('round', [fn.avg('NO_SUCH_COLUMN')]).as('avg_age'),
       ])
-      .executeTakeFirstOrThrow()
+      .executeTakeFirstOrThrow(),
   )
 
   expectError(
@@ -1036,7 +1056,7 @@ async function testSelectAsCustomFunctionArgument(db: Kysely<Database>) {
       .select(({ fn }) => [
         fn('round', [fn.count('NO_SUCH_COLUMN')]).as('avg_age'),
       ])
-      .executeTakeFirstOrThrow()
+      .executeTakeFirstOrThrow(),
   )
 
   expectError(
@@ -1045,7 +1065,7 @@ async function testSelectAsCustomFunctionArgument(db: Kysely<Database>) {
       .select(({ fn }) => [
         fn('round', [fn.max('NO_SUCH_COLUMN')]).as('avg_age'),
       ])
-      .executeTakeFirstOrThrow()
+      .executeTakeFirstOrThrow(),
   )
 
   expectError(
@@ -1054,7 +1074,7 @@ async function testSelectAsCustomFunctionArgument(db: Kysely<Database>) {
       .select(({ fn }) => [
         fn('round', [fn.min('NO_SUCH_COLUMN')]).as('avg_age'),
       ])
-      .executeTakeFirstOrThrow()
+      .executeTakeFirstOrThrow(),
   )
 
   expectError(
@@ -1063,7 +1083,7 @@ async function testSelectAsCustomFunctionArgument(db: Kysely<Database>) {
       .select(({ fn }) => [
         fn('round', [fn.sum('NO_SUCH_COLUMN')]).as('avg_age'),
       ])
-      .executeTakeFirstOrThrow()
+      .executeTakeFirstOrThrow(),
   )
 }
 
@@ -1108,7 +1128,7 @@ async function testIssue764(db: Kysely<DB764>) {
               .fn('bool_or', [eb.ref('orderDetails.unlimited')])
               .as('AnyUnlimited'),
         ])
-        .groupBy(['order_id'])
+        .groupBy(['order_id']),
     )
     .selectFrom('OrderAggregates')
     .select(['order_id', 'OrderAggregates.itemName'])
@@ -1122,13 +1142,13 @@ async function testIssue764(db: Kysely<DB764>) {
             .when(sql<boolean>`bool_or(${eb.ref('AnyUnlimited')})`)
             .then(-1)
             .else(eb.fn.max('SumQuantity'))
-            .end()
+            .end(),
         )
         .when('OrderAggregates.itemType', '=', ItemType764.FEELING)
         .then(eb.fn.max('MaxQuantity'))
         .else(0)
         .end()
-        .as('totalQuantity')
+        .as('totalQuantity'),
     )
     .groupBy([
       'OrderAggregates.itemName',

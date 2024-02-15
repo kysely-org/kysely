@@ -42,7 +42,7 @@ export const ReferencesNode = freeze({
 
   cloneWithOnDelete(
     references: ReferencesNode,
-    onDelete: OnModifyForeignAction
+    onDelete: OnModifyForeignAction,
   ): ReferencesNode {
     return freeze({
       ...references,
@@ -52,7 +52,7 @@ export const ReferencesNode = freeze({
 
   cloneWithOnUpdate(
     references: ReferencesNode,
-    onUpdate: OnModifyForeignAction
+    onUpdate: OnModifyForeignAction,
   ): ReferencesNode {
     return freeze({
       ...references,

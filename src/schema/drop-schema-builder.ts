@@ -43,14 +43,14 @@ export class DropSchemaBuilder implements OperationNodeSource, Compilable {
   toOperationNode(): DropSchemaNode {
     return this.#props.executor.transformQuery(
       this.#props.node,
-      this.#props.queryId
+      this.#props.queryId,
     )
   }
 
   compile(): CompiledQuery {
     return this.#props.executor.compileQuery(
       this.toOperationNode(),
-      this.#props.queryId
+      this.#props.queryId,
     )
   }
 
@@ -61,7 +61,7 @@ export class DropSchemaBuilder implements OperationNodeSource, Compilable {
 
 preventAwait(
   DropSchemaBuilder,
-  "don't await DropSchemaBuilder instances directly. To execute the query you need to call `execute`"
+  "don't await DropSchemaBuilder instances directly. To execute the query you need to call `execute`",
 )
 
 export interface DropSchemaBuilderProps {

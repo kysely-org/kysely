@@ -42,13 +42,13 @@ import { RawNode } from '../operation-node/raw-node.js'
 export type OperandValueExpression<
   DB,
   TB extends keyof DB,
-  RE
+  RE,
 > = ValueExpression<DB, TB, ExtractTypeFromReferenceExpression<DB, TB, RE>>
 
 export type OperandValueExpressionOrList<
   DB,
   TB extends keyof DB,
-  RE
+  RE,
 > = ValueExpressionOrList<
   DB,
   TB,
@@ -71,7 +71,7 @@ export type FilterObject<DB, TB extends keyof DB> = {
 }
 
 export function parseValueBinaryOperationOrExpression(
-  args: any[]
+  args: any[],
 ): OperationNode {
   if (args.length === 3) {
     return parseValueBinaryOperation(args[0], args[1], args[2])
@@ -85,53 +85,53 @@ export function parseValueBinaryOperationOrExpression(
 export function parseValueBinaryOperation(
   left: ReferenceExpression<any, any>,
   operator: BinaryOperatorExpression,
-  right: OperandValueExpressionOrList<any, any, any>
+  right: OperandValueExpressionOrList<any, any, any>,
 ): BinaryOperationNode {
   if (isIsOperator(operator) && needsIsOperator(right)) {
     return BinaryOperationNode.create(
       parseReferenceExpression(left),
       parseOperator(operator),
-      ValueNode.createImmediate(right)
+      ValueNode.createImmediate(right),
     )
   }
 
   return BinaryOperationNode.create(
     parseReferenceExpression(left),
     parseOperator(operator),
-    parseValueExpressionOrList(right)
+    parseValueExpressionOrList(right),
   )
 }
 
 export function parseReferentialBinaryOperation(
   left: ReferenceExpression<any, any>,
   operator: BinaryOperatorExpression,
-  right: OperandValueExpressionOrList<any, any, any>
+  right: OperandValueExpressionOrList<any, any, any>,
 ): BinaryOperationNode {
   return BinaryOperationNode.create(
     parseReferenceExpression(left),
     parseOperator(operator),
-    parseReferenceExpression(right)
+    parseReferenceExpression(right),
   )
 }
 
 export function parseFilterObject(
   obj: Readonly<FilterObject<any, any>>,
-  combinator: 'and' | 'or'
+  combinator: 'and' | 'or',
 ): OperationNode {
   return parseFilterList(
     Object.entries(obj)
       .filter(([, v]) => !isUndefined(v))
       .map(([k, v]) =>
-        parseValueBinaryOperation(k, needsIsOperator(v) ? 'is' : '=', v)
+        parseValueBinaryOperation(k, needsIsOperator(v) ? 'is' : '=', v),
       ),
-    combinator
+    combinator,
   )
 }
 
 export function parseFilterList(
   list: ReadonlyArray<OperationNodeSource | OperationNode>,
   combinator: 'and' | 'or',
-  withParens = true
+  withParens = true,
 ): OperationNode {
   const combine = combinator === 'and' ? AndNode.create : OrNode.create
 
@@ -139,7 +139,7 @@ export function parseFilterList(
     return BinaryOperationNode.create(
       ValueNode.createImmediate(1),
       OperatorNode.create('='),
-      ValueNode.createImmediate(combinator === 'and' ? 1 : 0)
+      ValueNode.createImmediate(combinator === 'and' ? 1 : 0),
     )
   }
 
@@ -157,7 +157,7 @@ export function parseFilterList(
 }
 
 function isIsOperator(
-  operator: BinaryOperatorExpression
+  operator: BinaryOperatorExpression,
 ): operator is 'is' | 'is not' {
   return operator === 'is' || operator === 'is not'
 }
@@ -179,7 +179,7 @@ function parseOperator(operator: OperatorExpression): OperationNode {
 }
 
 function toOperationNode(
-  nodeOrSource: OperationNode | OperationNodeSource
+  nodeOrSource: OperationNode | OperationNodeSource,
 ): OperationNode {
   return isOperationNodeSource(nodeOrSource)
     ? nodeOrSource.toOperationNode()

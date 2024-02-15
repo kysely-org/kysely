@@ -49,7 +49,7 @@ export const CreateTableNode = freeze({
 
   cloneWithColumn(
     createTable: CreateTableNode,
-    column: ColumnDefinitionNode
+    column: ColumnDefinitionNode,
   ): CreateTableNode {
     return freeze({
       ...createTable,
@@ -59,7 +59,7 @@ export const CreateTableNode = freeze({
 
   cloneWithConstraint(
     createTable: CreateTableNode,
-    constraint: ConstraintNode
+    constraint: ConstraintNode,
   ): CreateTableNode {
     return freeze({
       ...createTable,
@@ -71,7 +71,7 @@ export const CreateTableNode = freeze({
 
   cloneWithFrontModifier(
     createTable: CreateTableNode,
-    modifier: OperationNode
+    modifier: OperationNode,
   ): CreateTableNode {
     return freeze({
       ...createTable,
@@ -83,7 +83,7 @@ export const CreateTableNode = freeze({
 
   cloneWithEndModifier(
     createTable: CreateTableNode,
-    modifier: OperationNode
+    modifier: OperationNode,
   ): CreateTableNode {
     return freeze({
       ...createTable,
@@ -95,7 +95,7 @@ export const CreateTableNode = freeze({
 
   cloneWith(
     createTable: CreateTableNode,
-    params: CreateTableNodeParams
+    params: CreateTableNodeParams,
   ): CreateTableNode {
     return freeze({
       ...createTable,

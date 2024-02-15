@@ -25,7 +25,7 @@ export class AlterTableDropConstraintBuilder
           this.#props.node.dropConstraint!,
           {
             ifExists: true,
-          }
+          },
         ),
       }),
     })
@@ -39,7 +39,7 @@ export class AlterTableDropConstraintBuilder
           this.#props.node.dropConstraint!,
           {
             modifier: 'cascade',
-          }
+          },
         ),
       }),
     })
@@ -53,7 +53,7 @@ export class AlterTableDropConstraintBuilder
           this.#props.node.dropConstraint!,
           {
             modifier: 'restrict',
-          }
+          },
         ),
       }),
     })
@@ -70,14 +70,14 @@ export class AlterTableDropConstraintBuilder
   toOperationNode(): AlterTableNode {
     return this.#props.executor.transformQuery(
       this.#props.node,
-      this.#props.queryId
+      this.#props.queryId,
     )
   }
 
   compile(): CompiledQuery {
     return this.#props.executor.compileQuery(
       this.toOperationNode(),
-      this.#props.queryId
+      this.#props.queryId,
     )
   }
 
@@ -94,5 +94,5 @@ export interface AlterTableDropConstraintBuilderProps {
 
 preventAwait(
   AlterTableDropConstraintBuilder,
-  "don't await AlterTableDropConstraintBuilder instances directly. To execute the query you need to call `execute`"
+  "don't await AlterTableDropConstraintBuilder instances directly. To execute the query you need to call `execute`",
 )

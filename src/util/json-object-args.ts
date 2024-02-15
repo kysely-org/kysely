@@ -10,7 +10,7 @@ import { ValueNode } from '../operation-node/value-node.js'
 
 export function getJsonObjectArgs(
   node: SelectQueryNode,
-  table: string
+  table: string,
 ): Expression<unknown>[] {
   const args: Expression<unknown>[] = []
 
@@ -18,7 +18,7 @@ export function getJsonObjectArgs(
     if (ReferenceNode.is(s) && ColumnNode.is(s.column)) {
       args.push(
         colName(s.column.column.name),
-        colRef(table, s.column.column.name)
+        colRef(table, s.column.column.name),
       )
     } else if (ColumnNode.is(s)) {
       args.push(colName(s.column.name), colRef(table, s.column.name))
@@ -38,6 +38,6 @@ function colName(col: string): Expression<unknown> {
 
 function colRef(table: string, col: string): Expression<unknown> {
   return new ExpressionWrapper(
-    ReferenceNode.create(ColumnNode.create(col), TableNode.create(table))
+    ReferenceNode.create(ColumnNode.create(col), TableNode.create(table)),
   )
 }

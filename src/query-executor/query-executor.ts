@@ -37,7 +37,7 @@ export interface QueryExecutor extends ConnectionProvider {
    */
   compileQuery<R = unknown>(
     node: RootOperationNode,
-    queryId: QueryId
+    queryId: QueryId,
   ): CompiledQuery<R>
 
   /**
@@ -46,7 +46,7 @@ export interface QueryExecutor extends ConnectionProvider {
    */
   executeQuery<R>(
     compiledQuery: CompiledQuery<R>,
-    queryId: QueryId
+    queryId: QueryId,
   ): Promise<QueryResult<R>>
 
   /**
@@ -61,7 +61,7 @@ export interface QueryExecutor extends ConnectionProvider {
      * only by the postgres driver.
      */
     chunkSize: number,
-    queryId: QueryId
+    queryId: QueryId,
   ): AsyncIterableIterator<QueryResult<R>>
 
   /**

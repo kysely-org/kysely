@@ -78,7 +78,7 @@ export interface DialectAdapter {
    */
   acquireMigrationLock(
     db: Kysely<any>,
-    options: MigrationLockOptions
+    options: MigrationLockOptions,
   ): Promise<void>
 
   /**
@@ -91,7 +91,7 @@ export interface DialectAdapter {
    */
   releaseMigrationLock(
     db: Kysely<any>,
-    options: MigrationLockOptions
+    options: MigrationLockOptions,
   ): Promise<void>
 }
 

@@ -20,7 +20,7 @@ export const WithNode = freeze({
 
   create(
     expression: CommonTableExpressionNode,
-    params?: WithNodeParams
+    params?: WithNodeParams,
   ): WithNode {
     return freeze({
       kind: 'WithNode',
@@ -31,7 +31,7 @@ export const WithNode = freeze({
 
   cloneWithExpression(
     withNode: WithNode,
-    expression: CommonTableExpressionNode
+    expression: CommonTableExpressionNode,
   ): WithNode {
     return freeze({
       ...withNode,

@@ -27,7 +27,7 @@ export const JSONOperatorChainNode = freeze({
 
   cloneWithValue(
     node: JSONOperatorChainNode,
-    value: ValueNode
+    value: ValueNode,
   ): JSONOperatorChainNode {
     return freeze({
       ...node,

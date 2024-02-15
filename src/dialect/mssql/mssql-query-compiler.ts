@@ -21,7 +21,7 @@ export class MssqlQueryCompiler extends DefaultQueryCompiler {
   // alter table statement, but we compile that anyway for the sake
   // of WYSIWYG.
   protected override compileColumnAlterations(
-    columnAlterations: readonly AlterTableColumnAlterationNode[]
+    columnAlterations: readonly AlterTableColumnAlterationNode[],
   ): void {
     const nodesByKind: Partial<
       Record<

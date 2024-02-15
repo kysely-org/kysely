@@ -20,7 +20,7 @@ export const JSONReferenceNode = freeze({
 
   create(
     reference: ReferenceNode,
-    traversal: JSONPathNode | JSONOperatorChainNode
+    traversal: JSONPathNode | JSONOperatorChainNode,
   ): JSONReferenceNode {
     return freeze({
       kind: 'JSONReferenceNode',
@@ -31,7 +31,7 @@ export const JSONReferenceNode = freeze({
 
   cloneWithTraversal(
     node: JSONReferenceNode,
-    traversal: JSONPathNode | JSONOperatorChainNode
+    traversal: JSONPathNode | JSONOperatorChainNode,
   ): JSONReferenceNode {
     return freeze({
       ...node,
