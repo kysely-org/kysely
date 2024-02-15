@@ -50,7 +50,7 @@ export const UpdateQueryNode = freeze({
 
   cloneWithFromItems(
     updateQuery: UpdateQueryNode,
-    fromItems: ReadonlyArray<OperationNode>
+    fromItems: ReadonlyArray<OperationNode>,
   ): UpdateQueryNode {
     return freeze({
       ...updateQuery,
@@ -62,7 +62,7 @@ export const UpdateQueryNode = freeze({
 
   cloneWithUpdates(
     updateQuery: UpdateQueryNode,
-    updates: ReadonlyArray<ColumnUpdateNode>
+    updates: ReadonlyArray<ColumnUpdateNode>,
   ): UpdateQueryNode {
     return freeze({
       ...updateQuery,

@@ -316,7 +316,7 @@ for (const dialect of DIALECTS) {
                 .select('pet.name')
                 .whereRef('owner_id', '=', 'person.id'),
             '=',
-            'Catto'
+            'Catto',
           )
 
         testSql(query, dialect, {
@@ -363,7 +363,7 @@ for (const dialect of DIALECTS) {
               eb
                 .selectFrom('pet')
                 .whereRef('owner_id', '=', 'person.id')
-                .select((eb) => eb('pet.name', '=', 'Doggo').as('is_doggo'))
+                .select((eb) => eb('pet.name', '=', 'Doggo').as('is_doggo')),
             )
 
           testSql(query, dialect, {
@@ -403,7 +403,7 @@ for (const dialect of DIALECTS) {
             eb
               .selectFrom('pet')
               .select('pet.name')
-              .whereRef('owner_id', '=', 'person.id')
+              .whereRef('owner_id', '=', 'person.id'),
           )
 
         testSql(query, dialect, {
@@ -526,7 +526,7 @@ for (const dialect of DIALECTS) {
               eb(eb.refTuple('first_name', 'last_name'), 'in', [
                 eb.tuple('Jennifer', 'Aniston'),
                 eb.tuple('Sylvester', 'Stallone'),
-              ])
+              ]),
             )
             .orderBy('first_name asc')
 
@@ -574,8 +574,8 @@ for (const dialect of DIALECTS) {
                   .selectFrom('person as p2')
                   .select(['p2.first_name', 'p2.last_name'])
                   .where('first_name', 'in', ['Arnold', 'Sylvester'])
-                  .$asTuple('first_name', 'last_name')
-              )
+                  .$asTuple('first_name', 'last_name'),
+              ),
             )
             .orderBy('first_name asc')
 
@@ -657,7 +657,7 @@ for (const dialect of DIALECTS) {
             eb.and([
               eb('first_name', '=', 'Jennifer'),
               eb(eb.fn('upper', ['last_name']), '=', 'ANISTON'),
-            ])
+            ]),
           )
 
         testSql(query, dialect, {
@@ -698,8 +698,8 @@ for (const dialect of DIALECTS) {
             eb('first_name', '=', 'Jennifer').and(
               eb.fn('upper', ['last_name']),
               '=',
-              'ANISTON'
-            )
+              'ANISTON',
+            ),
           )
 
         testSql(query, dialect, {
@@ -740,7 +740,7 @@ for (const dialect of DIALECTS) {
             eb.and({
               first_name: 'Jennifer',
               last_name: eb.fn<string>('upper', ['first_name']),
-            })
+            }),
           )
 
         testSql(query, dialect, {
@@ -774,7 +774,7 @@ for (const dialect of DIALECTS) {
             or([
               eb('first_name', '=', 'Jennifer'),
               eb(eb.fn('upper', ['last_name']), '=', 'ANISTON'),
-            ])
+            ]),
           )
 
         testSql(query, dialect, {
@@ -815,8 +815,8 @@ for (const dialect of DIALECTS) {
             eb('first_name', '=', 'Jennifer').or(
               eb.fn('upper', ['last_name']),
               '=',
-              'ANISTON'
-            )
+              'ANISTON',
+            ),
           )
 
         testSql(query, dialect, {
@@ -857,8 +857,8 @@ for (const dialect of DIALECTS) {
             exists(
               selectFrom('pet')
                 .select(lit(1).as('exists'))
-                .whereRef('pet.owner_id', '=', 'person.id')
-            )
+                .whereRef('pet.owner_id', '=', 'person.id'),
+            ),
           )
 
         testSql(query, dialect, {
@@ -893,9 +893,9 @@ for (const dialect of DIALECTS) {
               exists(
                 selectFrom('pet')
                   .select('pet.id')
-                  .whereRef('pet.owner_id', '=', 'person.id')
-              )
-            )
+                  .whereRef('pet.owner_id', '=', 'person.id'),
+              ),
+            ),
           )
 
         testSql(query, dialect, {
@@ -936,7 +936,7 @@ for (const dialect of DIALECTS) {
                 .when('first_name', '=', 'Jennifer')
                 .then(sql.lit(true))
                 .else(sql.lit(false))
-                .end()
+                .end(),
             )
 
           testSql(query, dialect, {
@@ -1018,9 +1018,9 @@ for (const dialect of DIALECTS) {
                   eb
                     .selectFrom('pet')
                     .whereRef('pet.owner_id', '=', 'person.id')
-                    .select('name')
-                )
-              )
+                    .select('name'),
+                ),
+              ),
             )
 
           testSql(query, dialect, {

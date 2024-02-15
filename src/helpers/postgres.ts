@@ -53,7 +53,7 @@ import { Simplify } from '../util/type-utils.js'
  * ```
  */
 export function jsonArrayFrom<O>(
-  expr: Expression<O>
+  expr: Expression<O>,
 ): RawBuilder<Simplify<O>[]> {
   return sql`(select coalesce(json_agg(agg), '[]') from ${expr} as agg)`
 }
@@ -110,7 +110,7 @@ export function jsonArrayFrom<O>(
  * ```
  */
 export function jsonObjectFrom<O>(
-  expr: Expression<O>
+  expr: Expression<O>,
 ): RawBuilder<Simplify<O> | null> {
   return sql`(select to_json(obj) from ${expr} as obj)`
 }
@@ -156,13 +156,13 @@ export function jsonObjectFrom<O>(
  * ```
  */
 export function jsonBuildObject<O extends Record<string, Expression<unknown>>>(
-  obj: O
+  obj: O,
 ): RawBuilder<
   Simplify<{
     [K in keyof O]: O[K] extends Expression<infer V> ? V : never
   }>
 > {
   return sql`json_build_object(${sql.join(
-    Object.keys(obj).flatMap((k) => [sql.lit(k), obj[k]])
+    Object.keys(obj).flatMap((k) => [sql.lit(k), obj[k]]),
   )})`
 }

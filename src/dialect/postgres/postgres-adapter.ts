@@ -17,7 +17,7 @@ export class PostgresAdapter extends DialectAdapterBase {
 
   async acquireMigrationLock(
     db: Kysely<any>,
-    _opt: MigrationLockOptions
+    _opt: MigrationLockOptions,
   ): Promise<void> {
     // Acquire a transaction level advisory lock.
     await sql`select pg_advisory_xact_lock(${sql.lit(LOCK_ID)})`.execute(db)
@@ -25,7 +25,7 @@ export class PostgresAdapter extends DialectAdapterBase {
 
   async releaseMigrationLock(
     _db: Kysely<any>,
-    _opt: MigrationLockOptions
+    _opt: MigrationLockOptions,
   ): Promise<void> {
     // Nothing to do here. `pg_advisory_xact_lock` is automatically released at the
     // end of the transaction and since `supportsTransactionalDdl` true, we know

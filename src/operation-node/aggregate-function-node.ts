@@ -22,7 +22,7 @@ export const AggregateFunctionNode = freeze({
 
   create(
     aggregateFunction: string,
-    aggregated: readonly OperationNode[] = []
+    aggregated: readonly OperationNode[] = [],
   ): AggregateFunctionNode {
     return freeze({
       kind: 'AggregateFunctionNode',
@@ -32,7 +32,7 @@ export const AggregateFunctionNode = freeze({
   },
 
   cloneWithDistinct(
-    aggregateFunctionNode: AggregateFunctionNode
+    aggregateFunctionNode: AggregateFunctionNode,
   ): AggregateFunctionNode {
     return freeze({
       ...aggregateFunctionNode,
@@ -42,7 +42,7 @@ export const AggregateFunctionNode = freeze({
 
   cloneWithFilter(
     aggregateFunctionNode: AggregateFunctionNode,
-    filter: OperationNode
+    filter: OperationNode,
   ): AggregateFunctionNode {
     return freeze({
       ...aggregateFunctionNode,
@@ -50,7 +50,7 @@ export const AggregateFunctionNode = freeze({
         ? WhereNode.cloneWithOperation(
             aggregateFunctionNode.filter,
             'And',
-            filter
+            filter,
           )
         : WhereNode.create(filter),
     })
@@ -58,7 +58,7 @@ export const AggregateFunctionNode = freeze({
 
   cloneWithOrFilter(
     aggregateFunctionNode: AggregateFunctionNode,
-    filter: OperationNode
+    filter: OperationNode,
   ): AggregateFunctionNode {
     return freeze({
       ...aggregateFunctionNode,
@@ -66,7 +66,7 @@ export const AggregateFunctionNode = freeze({
         ? WhereNode.cloneWithOperation(
             aggregateFunctionNode.filter,
             'Or',
-            filter
+            filter,
           )
         : WhereNode.create(filter),
     })
@@ -74,7 +74,7 @@ export const AggregateFunctionNode = freeze({
 
   cloneWithOver(
     aggregateFunctionNode: AggregateFunctionNode,
-    over?: OverNode
+    over?: OverNode,
   ): AggregateFunctionNode {
     return freeze({
       ...aggregateFunctionNode,

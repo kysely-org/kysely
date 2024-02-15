@@ -101,7 +101,7 @@ export const DIALECTS: BuiltInDialect[] = (
     !process.env.DIALECTS ||
     process.env.DIALECTS.split(',')
       .map((it) => it.trim())
-      .includes(d)
+      .includes(d),
 )
 
 const TEST_INIT_TIMEOUT = 5 * 60 * 1000
@@ -209,7 +209,7 @@ export const DB_CONFIGS: PerDialect<KyselyConfig> = {
 export async function initTest(
   ctx: Mocha.Context,
   dialect: BuiltInDialect,
-  log?: Logger
+  log?: Logger,
 ): Promise<TestContext> {
   const config = DB_CONFIGS[dialect]
 
@@ -230,14 +230,14 @@ export async function destroyTest(ctx: TestContext): Promise<void> {
 
 export async function insertPersons(
   ctx: TestContext,
-  insertPersons: PersonInsertParams[]
+  insertPersons: PersonInsertParams[],
 ): Promise<void> {
   for (const insertPerson of insertPersons) {
     const { pets, ...person } = insertPerson
 
     const personId = await insert(
       ctx,
-      ctx.db.insertInto('person').values({ ...person })
+      ctx.db.insertInto('person').values({ ...person }),
     )
 
     for (const insertPet of pets ?? []) {
@@ -283,7 +283,7 @@ export async function clearDatabase(ctx: TestContext): Promise<void> {
 export function testSql(
   query: Compilable,
   dialect: BuiltInDialect,
-  expectedPerDialect: PerDialect<{ sql: string | string[]; parameters: any[] }>
+  expectedPerDialect: PerDialect<{ sql: string | string[]; parameters: any[] }>,
 ): void {
   const expected = expectedPerDialect[dialect]
   const expectedSql = Array.isArray(expected.sql)
@@ -297,7 +297,7 @@ export function testSql(
 
 async function createDatabase(
   db: Kysely<Database>,
-  dialect: BuiltInDialect
+  dialect: BuiltInDialect,
 ): Promise<void> {
   await dropDatabase(db)
 
@@ -313,16 +313,45 @@ async function createDatabase(
   await createTableWithId(db.schema, dialect, 'pet')
     .addColumn('name', 'varchar(255)', (col) => col.unique().notNull())
     .addColumn('owner_id', 'integer', (col) =>
-      col.references('person.id').onDelete('cascade').notNull()
+      col.references('person.id').onDelete('cascade').notNull(),
     )
     .addColumn('species', 'varchar(50)', (col) => col.notNull())
     .execute()
 
-  await createTableWithId(db.schema, dialect, 'toy')
+  const createToyTableBase = createTableWithId(db.schema, dialect, 'toy')
     .addColumn('name', 'varchar(255)', (col) => col.notNull())
     .addColumn('pet_id', 'integer', (col) => col.references('pet.id').notNull())
-    .addColumn('price', 'double precision', (col) => col.notNull())
-    .execute()
+
+  if (dialect === 'postgres') {
+    await createToyTableBase
+      .addColumn('price', 'double precision', (col) => col.notNull())
+      .execute()
+    await sql`COMMENT ON COLUMN toy.price IS 'Price in USD';`.execute(db)
+  }
+
+  if (dialect === 'mssql') {
+    await createToyTableBase
+      .addColumn('price', 'double precision', (col) => col.notNull())
+      .execute()
+    await sql`EXECUTE sp_addextendedproperty N'MS_Description', N'Price in USD', N'SCHEMA', N'dbo', N'TABLE', 'toy', N'COLUMN', N'price'`.execute(
+      db,
+    )
+  }
+
+  if (dialect === 'mysql') {
+    await createToyTableBase
+      .addColumn('price', 'double precision', (col) =>
+        col.notNull().modifyEnd(sql`comment ${sql.lit('Price in USD')}`),
+      )
+      .execute()
+  }
+
+  if (dialect === 'sqlite') {
+    // there is no way to add a comment
+    await createToyTableBase
+      .addColumn('price', 'double precision', (col) => col.notNull())
+      .execute()
+  }
 
   await db.schema
     .createIndex('pet_owner_id_index')
@@ -334,7 +363,7 @@ async function createDatabase(
 export function createTableWithId(
   schema: SchemaModule,
   dialect: BuiltInDialect,
-  tableName: string
+  tableName: string,
 ) {
   const builder = schema.createTable(tableName)
 
@@ -344,16 +373,12 @@ export function createTableWithId(
 
   if (dialect === 'mssql') {
     return builder.addColumn('id', 'integer', (col) =>
-      col
-        .notNull()
-        // TODO: change to method when its implemented
-        .modifyFront(sql`identity(1,1)`)
-        .primaryKey()
+      col.identity().notNull().primaryKey()
     )
   }
 
   return builder.addColumn('id', 'integer', (col) =>
-    col.autoIncrement().primaryKey()
+    col.autoIncrement().primaryKey(),
   )
 }
 
@@ -373,7 +398,7 @@ async function connect(config: KyselyConfig): Promise<Kysely<Database>> {
       }
 
       console.log(
-        'Waiting for the database to become available. Did you remember to run `docker-compose up`?'
+        'Waiting for the database to become available. Did you remember to run `docker-compose up`?',
       )
 
       await sleep(1000)
@@ -394,13 +419,13 @@ export const expect = chai.expect
 async function insertPetForPerson(
   ctx: TestContext,
   personId: number,
-  insertPet: PetInsertParams
+  insertPet: PetInsertParams,
 ): Promise<void> {
   const { toys, ...pet } = insertPet
 
   const petId = await insert(
     ctx,
-    ctx.db.insertInto('pet').values({ ...pet, owner_id: personId })
+    ctx.db.insertInto('pet').values({ ...pet, owner_id: personId }),
   )
 
   for (const toy of toys ?? []) {
@@ -411,7 +436,7 @@ async function insertPetForPerson(
 async function insertToysForPet(
   ctx: TestContext,
   petId: number,
-  toy: Omit<Toy, 'id' | 'pet_id'>
+  toy: Omit<Toy, 'id' | 'pet_id'>,
 ): Promise<void> {
   await ctx.db
     .insertInto('toy')
@@ -421,7 +446,7 @@ async function insertToysForPet(
 
 export async function insert<TB extends keyof Database>(
   ctx: TestContext,
-  qb: InsertQueryBuilder<Database, TB, InsertResult>
+  qb: InsertQueryBuilder<Database, TB, InsertResult>,
 ): Promise<number> {
   const { dialect } = ctx
 
@@ -447,7 +472,7 @@ export async function insert<TB extends keyof Database>(
       const {
         rows: [{ id }],
       } = await sql<{ id: number }>`select IDENT_CURRENT(${sql.lit(
-        table
+        table,
       )}) as id`.execute(db)
 
       return Number(id)
@@ -468,7 +493,7 @@ function createNoopTransformerPlugin(): KyselyPlugin {
     },
 
     async transformResult(
-      args: PluginTransformResultArgs
+      args: PluginTransformResultArgs,
     ): Promise<QueryResult<UnknownRow>> {
       return args.result
     },
@@ -481,7 +506,7 @@ function sleep(millis: number): Promise<void> {
 
 export function limit<QB extends SelectQueryBuilder<any, any, any>>(
   limit: number,
-  dialect: BuiltInDialect
+  dialect: BuiltInDialect,
 ): (qb: QB) => QB {
   return (qb) => {
     if (dialect === 'mssql') {
@@ -497,15 +522,15 @@ export function orderBy<QB extends SelectQueryBuilder<any, any, any>>(
     ? UndirectedOrderByExpression<DB, TB, O>
     : never,
   direction: OrderByDirection | undefined,
-  dialect: BuiltInDialect
+  dialect: BuiltInDialect,
 ): (qb: QB) => QB {
   return (qb) => {
     if (dialect === 'mssql') {
       return qb.orderBy(
         orderBy,
         sql`${sql.raw(direction ? `${direction} ` : '')}${sql.raw(
-          'offset 0 rows'
-        )}`
+          'offset 0 rows',
+        )}`,
       ) as QB
     }
 

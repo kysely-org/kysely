@@ -282,7 +282,7 @@ for (const dialect of DIALECTS) {
             .selectFrom('pet')
             .whereRef('person.id', '=', 'pet.owner_id')
             .select('name')
-            .as('pet_name')
+            .as('pet_name'),
         )
         .where('first_name', '=', 'Jennifer')
 
@@ -317,7 +317,7 @@ for (const dialect of DIALECTS) {
         .select((eb) =>
           eb.fn
             .count(eb.case().when('first_name', '=', 'Jennifer').then(1).end())
-            .as('num_jennifers')
+            .as('num_jennifers'),
         )
 
       testSql(query, dialect, {
@@ -360,9 +360,9 @@ for (const dialect of DIALECTS) {
                 .when('first_name', '=', 'Jennifer')
                 .then(sql.lit(1))
                 .else(sql.lit(0))
-                .end()
+                .end(),
             )
-            .as('num_jennifers')
+            .as('num_jennifers'),
         )
 
       testSql(query, dialect, {
@@ -400,10 +400,10 @@ for (const dialect of DIALECTS) {
           .selectFrom('person')
           .select(
             sql`concat(${sql.ref(
-              'first_name'
+              'first_name',
             )}, ' ', cast(${'Muriel'} as varchar), ' ', ${sql.ref(
-              'last_name'
-            )})`.as('full_name_with_middle_name')
+              'last_name',
+            )})`.as('full_name_with_middle_name'),
           )
           .where('first_name', '=', 'Jennifer')
 
@@ -872,6 +872,36 @@ for (const dialect of DIALECTS) {
       expect(max_first_name).to.equal('Sylvester')
     })
 
+    it('should use a cast in a select call', async () => {
+      const query = ctx.db
+        .selectFrom('toy')
+        .select((eb) => [
+          eb.cast<number>('price', 'double precision').as('price'),
+        ])
+
+      testSql(query, dialect, {
+        postgres: {
+          sql: 'select cast("price" as double precision) as "price" from "toy"',
+          parameters: [],
+        },
+        mysql: {
+          sql: 'select cast(`price` as double precision) as `price` from `toy`',
+          parameters: [],
+        },
+        mssql: {
+          sql: 'select cast("price" as double precision) as "price" from "toy"',
+          parameters: [],
+        },
+        sqlite: {
+          sql: 'select cast("price" as double precision) as "price" from "toy"',
+          parameters: [],
+        },
+      })
+
+      const { price } = await query.executeTakeFirstOrThrow()
+      expect(price).to.equal(10)
+    })
+
     it('modifyFront should add arbitrary SQL to the front of the query', async () => {
       const query = ctx.db
         .selectFrom('person')
@@ -1028,9 +1058,9 @@ for (const dialect of DIALECTS) {
               .selectAll()
               .stream()) {
             }
-          })()
+          })(),
         ).to.be.rejectedWith(
-          "'cursor' is not present in your postgres dialect config. It's required to make streaming work in postgres."
+          "'cursor' is not present in your postgres dialect config. It's required to make streaming work in postgres.",
         )
 
         await db.destroy()

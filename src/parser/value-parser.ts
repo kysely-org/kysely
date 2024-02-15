@@ -34,11 +34,11 @@ export type ExtractTypeFromValueExpression<VE> =
   VE extends SelectQueryBuilderExpression<Record<string, infer SV>>
     ? SV
     : VE extends Expression<infer V>
-    ? V
-    : VE
+      ? V
+      : VE
 
 export function parseValueExpressionOrList(
-  arg: ValueExpressionOrList<any, any, unknown>
+  arg: ValueExpressionOrList<any, any, unknown>,
 ): OperationNode {
   if (isReadonlyArray(arg)) {
     return parseValueExpressionList(arg)
@@ -48,7 +48,7 @@ export function parseValueExpressionOrList(
 }
 
 export function parseValueExpression(
-  exp: ValueExpression<any, any, unknown>
+  exp: ValueExpression<any, any, unknown>,
 ): OperationNode {
   if (isExpressionOrFactory(exp)) {
     return parseExpression(exp)
@@ -58,13 +58,13 @@ export function parseValueExpression(
 }
 
 export function isSafeImmediateValue(
-  value: unknown
+  value: unknown,
 ): value is number | boolean | null {
   return isNumber(value) || isBoolean(value) || isNull(value)
 }
 
 export function parseSafeImmediateValue(
-  value: number | boolean | null
+  value: number | boolean | null,
 ): ValueNode {
   if (!isSafeImmediateValue(value)) {
     throw new Error(`unsafe immediate value ${JSON.stringify(value)}`)
@@ -74,7 +74,7 @@ export function parseSafeImmediateValue(
 }
 
 function parseValueExpressionList(
-  arg: ReadonlyArray<ValueExpression<any, any, unknown>>
+  arg: ReadonlyArray<ValueExpression<any, any, unknown>>,
 ): PrimitiveValueListNode | ValueListNode {
   if (arg.some(isExpressionOrFactory)) {
     return ValueListNode.create(arg.map((it) => parseValueExpression(it)))

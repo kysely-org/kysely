@@ -92,6 +92,7 @@ import { TupleNode } from './tuple-node.js'
 import { MergeQueryNode } from './merge-query-node.js'
 import { MatchedNode } from './matched-node.js'
 import { AddIndexNode } from './add-index-node.js'
+import { CastNode } from './cast-node.js'
 import { TopNode } from './top-node.js'
 
 export abstract class OperationNodeVisitor {
@@ -192,6 +193,7 @@ export abstract class OperationNodeVisitor {
     MergeQueryNode: this.visitMergeQuery.bind(this),
     MatchedNode: this.visitMatched.bind(this),
     AddIndexNode: this.visitAddIndex.bind(this),
+    CastNode: this.visitCast.bind(this),
     TopNode: this.visitTop.bind(this),
   })
 
@@ -300,5 +302,6 @@ export abstract class OperationNodeVisitor {
   protected abstract visitMergeQuery(node: MergeQueryNode): void
   protected abstract visitMatched(node: MatchedNode): void
   protected abstract visitAddIndex(node: AddIndexNode): void
+  protected abstract visitCast(node: CastNode): void
   protected abstract visitTop(node: TopNode): void
 }

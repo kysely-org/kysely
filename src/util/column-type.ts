@@ -38,7 +38,7 @@ import { DrainOuterGeneric } from './type-utils.js'
 export type ColumnType<
   SelectType,
   InsertType = SelectType,
-  UpdateType = SelectType
+  UpdateType = SelectType,
 > = {
   readonly __select__: SelectType
   readonly __insert__: InsertType
@@ -74,7 +74,7 @@ export type GeneratedAlways<S> = ColumnType<S, never, never>
 export type JSONColumnType<
   SelectType extends object | null,
   InsertType = string,
-  UpdateType = string
+  UpdateType = string,
 > = ColumnType<SelectType, InsertType, UpdateType>
 
 /**
@@ -88,10 +88,10 @@ type IfNullable<T, K> = undefined extends T ? K : null extends T ? K : never
 type IfNotNullable<T, K> = undefined extends T
   ? never
   : null extends T
-  ? never
-  : T extends never
-  ? never
-  : K
+    ? never
+    : T extends never
+      ? never
+      : K
 
 /**
  * Evaluates to `K` if `T` isn't `never`.

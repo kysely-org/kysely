@@ -107,6 +107,7 @@ import { TupleNode } from '../operation-node/tuple-node.js'
 import { MergeQueryNode } from '../operation-node/merge-query-node.js'
 import { MatchedNode } from '../operation-node/matched-node.js'
 import { AddIndexNode } from '../operation-node/add-index-node.js'
+import { CastNode } from '../operation-node/cast-node.js'
 import { TopNode } from '../operation-node/top-node.js'
 
 export class DefaultQueryCompiler
@@ -258,7 +259,7 @@ export class DefaultQueryCompiler
 
   protected compileList(
     nodes: ReadonlyArray<OperationNode>,
-    separator = ', '
+    separator = ', ',
   ): void {
     const lastIndex = nodes.length - 1
 
@@ -450,7 +451,7 @@ export class DefaultQueryCompiler
   protected compileUnwrappedIdentifier(node: IdentifierNode): void {
     if (!isString(node.name)) {
       throw new Error(
-        'a non-string identifier was passed to compileUnwrappedIdentifier.'
+        'a non-string identifier was passed to compileUnwrappedIdentifier.',
       )
     }
 
@@ -490,7 +491,7 @@ export class DefaultQueryCompiler
   }
 
   protected override visitPrimitiveValueList(
-    node: PrimitiveValueListNode
+    node: PrimitiveValueListNode,
   ): void {
     this.append('(')
 
@@ -549,7 +550,7 @@ export class DefaultQueryCompiler
   }
 
   protected override visitSchemableIdentifier(
-    node: SchemableIdentifierNode
+    node: SchemableIdentifierNode,
   ): void {
     if (node.schema) {
       this.visitNode(node.schema)
@@ -617,6 +618,10 @@ export class DefaultQueryCompiler
     if (node.generated) {
       this.append(' ')
       this.visitNode(node.generated)
+    }
+
+    if (node.identity) {
+      this.append(' identity')
     }
 
     if (node.defaultTo) {
@@ -925,7 +930,7 @@ export class DefaultQueryCompiler
   }
 
   protected override visitPrimaryKeyConstraint(
-    node: PrimaryKeyConstraintNode
+    node: PrimaryKeyConstraintNode,
   ): void {
     if (node.name) {
       this.append('constraint ')
@@ -969,7 +974,7 @@ export class DefaultQueryCompiler
   }
 
   protected override visitForeignKeyConstraint(
-    node: ForeignKeyConstraintNode
+    node: ForeignKeyConstraintNode,
   ): void {
     if (node.name) {
       this.append('constraint ')
@@ -1008,7 +1013,7 @@ export class DefaultQueryCompiler
   }
 
   protected override visitCommonTableExpression(
-    node: CommonTableExpressionNode
+    node: CommonTableExpressionNode,
   ): void {
     this.visitNode(node.name)
     this.append(' as ')
@@ -1025,7 +1030,7 @@ export class DefaultQueryCompiler
   }
 
   protected override visitCommonTableExpressionName(
-    node: CommonTableExpressionNameNode
+    node: CommonTableExpressionNameNode,
   ): void {
     this.visitNode(node.table)
 
@@ -1507,7 +1512,7 @@ export class DefaultQueryCompiler
       this.append(' by source')
     }
   }
-  
+
   protected override visitAddIndex(node: AddIndexNode): void {
     this.append('add ')
 
@@ -1531,6 +1536,14 @@ export class DefaultQueryCompiler
     }
   }
 
+  protected override visitCast(node: CastNode): void {
+    this.append('cast(')
+    this.visitNode(node.expression)
+    this.append(' as ')
+    this.visitNode(node.dataType)
+    this.append(')')
+  }
+  
   protected override visitTop(node: TopNode): void {
     this.append(`top(${node.expression})`)
 
@@ -1615,20 +1628,20 @@ export class DefaultQueryCompiler
   }
 
   protected sortSelectModifiers(
-    arr: SelectModifierNode[]
+    arr: SelectModifierNode[],
   ): ReadonlyArray<SelectModifierNode> {
     arr.sort((left, right) =>
       left.modifier && right.modifier
         ? SELECT_MODIFIER_PRIORITY[left.modifier] -
           SELECT_MODIFIER_PRIORITY[right.modifier]
-        : 1
+        : 1,
     )
 
     return freeze(arr)
   }
 
   protected compileColumnAlterations(
-    columnAlterations: readonly AlterTableColumnAlterationNode[]
+    columnAlterations: readonly AlterTableColumnAlterationNode[],
   ) {
     this.compileList(columnAlterations)
   }

@@ -103,7 +103,7 @@ if (DIALECTS.includes('mysql')) {
         .replaceInto('person')
         .columns(['first_name', 'gender'])
         .expression((eb) =>
-          eb.selectFrom('pet').select(['name', sql`${'other'}`.as('gender')])
+          eb.selectFrom('pet').select(['name', sql`${'other'}`.as('gender')]),
         )
 
       testSql(query, dialect, {
@@ -196,7 +196,7 @@ if (DIALECTS.includes('mysql')) {
   })
 
   async function getNewestPerson(
-    db: Kysely<Database>
+    db: Kysely<Database>,
   ): Promise<Pick<Person, 'first_name' | 'last_name'> | undefined> {
     return await db
       .selectFrom('person')
@@ -204,7 +204,7 @@ if (DIALECTS.includes('mysql')) {
       .where(
         'id',
         '=',
-        db.selectFrom('person').select(sql<number>`max(id)`.as('max_id'))
+        db.selectFrom('person').select(sql<number>`max(id)`.as('max_id')),
       )
       .executeTakeFirst()
   }

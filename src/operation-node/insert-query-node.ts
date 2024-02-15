@@ -38,7 +38,7 @@ export const InsertQueryNode = freeze({
   create(
     into: TableNode,
     withNode?: WithNode,
-    replace?: boolean
+    replace?: boolean,
   ): InsertQueryNode {
     return freeze({
       kind: 'InsertQueryNode',
@@ -56,7 +56,7 @@ export const InsertQueryNode = freeze({
 
   cloneWith(
     insertQuery: InsertQueryNode,
-    props: InsertQueryNodeProps
+    props: InsertQueryNodeProps,
   ): InsertQueryNode {
     return freeze({
       ...insertQuery,

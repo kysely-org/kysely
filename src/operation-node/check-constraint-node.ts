@@ -18,7 +18,7 @@ export const CheckConstraintNode = freeze({
 
   create(
     expression: OperationNode,
-    constraintName?: string
+    constraintName?: string,
   ): CheckConstraintNode {
     return freeze({
       kind: 'CheckConstraintNode',

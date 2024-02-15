@@ -13,11 +13,11 @@ export interface HavingInterface<DB, TB extends keyof DB> {
    */
   having<
     RE extends ReferenceExpression<DB, TB>,
-    VE extends OperandValueExpressionOrList<DB, TB, RE>
+    VE extends OperandValueExpressionOrList<DB, TB, RE>,
   >(
     lhs: RE,
     op: ComparisonOperatorExpression,
-    rhs: VE
+    rhs: VE,
   ): HavingInterface<DB, TB>
 
   having<E>(expression: E): HavingInterface<DB, TB>
@@ -28,10 +28,10 @@ export interface HavingInterface<DB, TB extends keyof DB> {
    */
   havingRef<
     LRE extends ReferenceExpression<DB, TB>,
-    RRE extends ReferenceExpression<DB, TB>
+    RRE extends ReferenceExpression<DB, TB>,
   >(
     lhs: LRE,
     op: ComparisonOperatorExpression,
-    rhs: RRE
+    rhs: RRE,
   ): HavingInterface<DB, TB>
 }

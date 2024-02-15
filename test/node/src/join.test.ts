@@ -116,7 +116,7 @@ for (const dialect of DIALECTS) {
               .select(['owner_id as oid', 'name'])
               .as('p'),
             'p.oid',
-            'person.id'
+            'person.id',
           )
           .selectAll()
           .orderBy('person.first_name')
@@ -236,10 +236,10 @@ for (const dialect of DIALECTS) {
                     '=',
                     selectFrom('pet')
                       .select(sql<'hamster'>`'hamster'`.as('hamster'))
-                      .$call(limit(1, dialect))
+                      .$call(limit(1, dialect)),
                   ),
-                ])
-              )
+                ]),
+              ),
           )
           .selectAll()
           .orderBy('person.first_name')
@@ -311,10 +311,10 @@ for (const dialect of DIALECTS) {
                     eb
                       .selectFrom('pet')
                       .select(sql<'hamster'>`'hamster'`.as('hamster'))
-                      .$call(limit(1, dialect))
+                      .$call(limit(1, dialect)),
                   ),
-                ])
-              )
+                ]),
+              ),
           )
           .selectAll()
           .orderBy('person.first_name')
@@ -378,9 +378,9 @@ for (const dialect of DIALECTS) {
                 selectFrom('pet as p')
                   .whereRef('p.id', '=', 'pet.id')
                   .whereRef('p.owner_id', '=', 'person.id')
-                  .select('id')
-              )
-            )
+                  .select('id'),
+              ),
+            ),
           )
           .select('pet.id')
 
@@ -462,7 +462,7 @@ for (const dialect of DIALECTS) {
               .select(['owner_id as oid', 'name'])
               .as('p'),
             'p.oid',
-            'person.id'
+            'person.id',
           )
           .selectAll()
           .orderBy('person.first_name')
@@ -556,10 +556,10 @@ for (const dialect of DIALECTS) {
                     eb
                       .selectFrom('pet')
                       .select(sql`'hamster'`.as('hamster'))
-                      .$call(limit(1, dialect))
+                      .$call(limit(1, dialect)),
                   ),
-                ])
-              )
+                ]),
+              ),
           )
           .selectAll()
           .orderBy('person.first_name')
@@ -624,10 +624,10 @@ for (const dialect of DIALECTS) {
                   selectFrom('pet as p')
                     .whereRef('p.id', '=', 'pet.id')
                     .whereRef('p.owner_id', '=', 'person.id')
-                    .select('id')
-                )
-              )
-            )
+                    .select('id'),
+                ),
+              ),
+            ),
           )
           .select('pet.id')
 
@@ -723,7 +723,7 @@ for (const dialect of DIALECTS) {
                   .select('name')
                   .whereRef('pet.owner_id', '=', 'person.id')
                   .as('p'),
-              (join) => join.onTrue()
+              (join) => join.onTrue(),
             )
             .select(['first_name', 'p.name'])
             .orderBy('first_name')
@@ -756,7 +756,7 @@ for (const dialect of DIALECTS) {
                   .select('name')
                   .whereRef('pet.owner_id', '=', 'person.id')
                   .as('p'),
-              (join) => join.onTrue()
+              (join) => join.onTrue(),
             )
             .select(['first_name', 'p.name'])
             .orderBy('first_name')

@@ -183,7 +183,7 @@ for (const dialect of DIALECTS) {
         .insertInto('person')
         .columns(['first_name', 'gender'])
         .expression((eb) =>
-          eb.selectFrom('pet').select(['name', eb.val('other').as('gender')])
+          eb.selectFrom('pet').select(['name', eb.val('other').as('gender')]),
         )
 
       testSql(query, dialect, {
@@ -246,10 +246,10 @@ for (const dialect of DIALECTS) {
                     { a: 1, b: 'foo' },
                     { a: 2, b: 'bar' },
                   ],
-                  't'
-                )
+                  't',
+                ),
               )
-              .select(['t.a', 't.b'])
+              .select(['t.a', 't.b']),
           )
           .returning(['first_name', 'gender'])
 
@@ -486,7 +486,7 @@ for (const dialect of DIALECTS) {
           .insertInto('pet')
           .values(existingPet)
           .onConflict((oc) =>
-            oc.columns(['name']).doUpdateSet({ species: 'hamster' })
+            oc.columns(['name']).doUpdateSet({ species: 'hamster' }),
           )
 
         testSql(query, dialect, {
@@ -548,7 +548,7 @@ for (const dialect of DIALECTS) {
           .insertInto('pet')
           .values(existingPet)
           .onConflict((oc) =>
-            oc.constraint('pet_name_key').doUpdateSet({ species: 'hamster' })
+            oc.constraint('pet_name_key').doUpdateSet({ species: 'hamster' }),
           )
           .returningAll()
 
@@ -593,7 +593,7 @@ for (const dialect of DIALECTS) {
                 species: 'hamster',
                 name: (eb) => eb.ref('excluded.name'),
               })
-              .where('excluded.name', '!=', 'Doggo')
+              .where('excluded.name', '!=', 'Doggo'),
           )
           .returningAll()
 
@@ -951,7 +951,7 @@ for (const dialect of DIALECTS) {
   })
 
   async function getNewestPerson(
-    db: Kysely<Database>
+    db: Kysely<Database>,
   ): Promise<Pick<Person, 'first_name' | 'last_name'> | undefined> {
     return await db
       .selectFrom('person')
@@ -959,7 +959,7 @@ for (const dialect of DIALECTS) {
       .where(
         'id',
         '=',
-        db.selectFrom('person').select(sql<number>`max(id)`.as('max_id'))
+        db.selectFrom('person').select(sql<number>`max(id)`.as('max_id')),
       )
       .executeTakeFirst()
   }
@@ -967,7 +967,7 @@ for (const dialect of DIALECTS) {
 
 function values<R extends Record<string, unknown>, A extends string>(
   records: R[],
-  alias: A
+  alias: A,
 ): AliasedRawBuilder<R, A> {
   const keys = Object.keys(records[0])
 
@@ -975,10 +975,10 @@ function values<R extends Record<string, unknown>, A extends string>(
     records.map((r) => {
       const v = sql.join(keys.map((k) => sql`${r[k]}`))
       return sql`(${v})`
-    })
+    }),
   )
 
   return sql<R>`(values ${values})`.as<A>(
-    sql.raw(`${alias}(${keys.join(', ')})`)
+    sql.raw(`${alias}(${keys.join(', ')})`),
   )
 }

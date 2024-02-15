@@ -43,14 +43,14 @@ export class DropTableBuilder implements OperationNodeSource, Compilable {
   toOperationNode(): DropTableNode {
     return this.#props.executor.transformQuery(
       this.#props.node,
-      this.#props.queryId
+      this.#props.queryId,
     )
   }
 
   compile(): CompiledQuery {
     return this.#props.executor.compileQuery(
       this.toOperationNode(),
-      this.#props.queryId
+      this.#props.queryId,
     )
   }
 
@@ -61,7 +61,7 @@ export class DropTableBuilder implements OperationNodeSource, Compilable {
 
 preventAwait(
   DropTableBuilder,
-  "don't await DropTableBuilder instances directly. To execute the query you need to call `execute`"
+  "don't await DropTableBuilder instances directly. To execute the query you need to call `execute`",
 )
 
 export interface DropTableBuilderProps {

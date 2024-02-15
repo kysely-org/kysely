@@ -44,7 +44,7 @@ export const DeleteQueryNode = freeze({
 
   cloneWithOrderByItems(
     deleteNode: DeleteQueryNode,
-    items: ReadonlyArray<OrderByItemNode>
+    items: ReadonlyArray<OrderByItemNode>,
   ): DeleteQueryNode {
     return freeze({
       ...deleteNode,
@@ -54,9 +54,16 @@ export const DeleteQueryNode = freeze({
     })
   },
 
+  cloneWithoutOrderBy(deleteNode: DeleteQueryNode): DeleteQueryNode {
+    return freeze({
+      ...deleteNode,
+      orderBy: undefined,
+    })
+  },
+
   cloneWithLimit(
     deleteNode: DeleteQueryNode,
-    limit: LimitNode
+    limit: LimitNode,
   ): DeleteQueryNode {
     return freeze({
       ...deleteNode,
@@ -64,9 +71,16 @@ export const DeleteQueryNode = freeze({
     })
   },
 
+  cloneWithoutLimit(deleteNode: DeleteQueryNode): DeleteQueryNode {
+    return freeze({
+      ...deleteNode,
+      limit: undefined,
+    })
+  },
+
   cloneWithUsing(
     deleteNode: DeleteQueryNode,
-    tables: OperationNode[]
+    tables: OperationNode[],
   ): DeleteQueryNode {
     return freeze({
       ...deleteNode,

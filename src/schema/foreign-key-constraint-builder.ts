@@ -24,7 +24,7 @@ export class ForeignKeyConstraintBuilder
     return new ForeignKeyConstraintBuilder(
       ForeignKeyConstraintNode.cloneWith(this.#node, {
         onDelete: parseOnModifyForeignAction(onDelete),
-      })
+      }),
     )
   }
 
@@ -32,7 +32,7 @@ export class ForeignKeyConstraintBuilder
     return new ForeignKeyConstraintBuilder(
       ForeignKeyConstraintNode.cloneWith(this.#node, {
         onUpdate: parseOnModifyForeignAction(onUpdate),
-      })
+      }),
     )
   }
 
@@ -51,5 +51,5 @@ export class ForeignKeyConstraintBuilder
 
 preventAwait(
   ForeignKeyConstraintBuilder,
-  "don't await ForeignKeyConstraintBuilder instances directly."
+  "don't await ForeignKeyConstraintBuilder instances directly.",
 )
