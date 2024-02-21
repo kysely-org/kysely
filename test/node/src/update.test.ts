@@ -518,6 +518,37 @@ for (const dialect of DIALECTS) {
         expect(result.numUpdatedRows).to.equal(1n)
         expect(result.numChangedRows).to.equal(0n)
       })
+
+      it('should limit the amount of updated rows', async () => {
+        const query = ctx.db
+          .updateTable('person')
+          .set({ first_name: 'Foo' })
+          .limit(2)
+
+        testSql(query, dialect, {
+          postgres: NOT_SUPPORTED,
+          mysql: {
+            sql: 'update `person` set `first_name` = ? limit ?',
+            parameters: ['Foo', 2],
+          },
+          mssql: NOT_SUPPORTED,
+          sqlite: NOT_SUPPORTED,
+        })
+
+        const result = await query.executeTakeFirst()
+
+        expect(result).to.be.instanceOf(UpdateResult)
+        expect(result.numUpdatedRows).to.equal(2n)
+        expect(result.numChangedRows).to.equal(2n)
+
+        const people = await ctx.db
+          .selectFrom('person')
+          .select('first_name')
+          .where('first_name', '=', 'Foo')
+          .execute()
+
+        expect(people).to.have.length(2)
+      })
     }
 
     it('should create an update query that uses a CTE', async () => {
