@@ -23,6 +23,7 @@ import {
 import { parseMergeThen, parseMergeWhen } from '../parser/merge-parser.js'
 import { ReferenceExpression } from '../parser/reference-parser.js'
 import { TableExpression } from '../parser/table-parser.js'
+import { parseTop } from '../parser/top-parser.js'
 import {
   ExtractUpdateTypeFromReferenceExpression,
   UpdateObject,
@@ -56,6 +57,66 @@ export class MergeQueryBuilder<DB, TT extends keyof DB, O> {
 
   constructor(props: MergeQueryBuilderProps) {
     this.#props = freeze(props)
+  }
+
+  /**
+   * Changes a `merge into` query to an `merge top into` query.
+   *
+   * `top` clause is only supported by some dialects like MS SQL Server.
+   *
+   * ### Examples
+   *
+   * Affect 5 matched rows at most:
+   *
+   * ```ts
+   * await db.mergeInto('person')
+   *   .top(5)
+   *   .using('pet', 'person.id', 'pet.owner_id')
+   *   .whenMatched()
+   *   .thenDelete()
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (MS SQL Server):
+   *
+   * ```sql
+   * merge top(5) into "person"
+   * using "pet" on "person"."id" = "pet"."owner_id"
+   * when matched then
+   *   delete
+   * ```
+   *
+   * Affect 50% of matched rows:
+   *
+   * ```ts
+   * await db.mergeInto('person')
+   *   .top(50, 'percent')
+   *   .using('pet', 'person.id', 'pet.owner_id')
+   *   .whenMatched()
+   *   .thenDelete()
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (MS SQL Server):
+   *
+   * ```sql
+   * merge top(50) percent into "person"
+   * using "pet" on "person"."id" = "pet"."owner_id"
+   * when matched then
+   *   delete
+   * ```
+   */
+  top(
+    expression: number | bigint,
+    modifiers?: 'percent',
+  ): MergeQueryBuilder<DB, TT, O> {
+    return new MergeQueryBuilder({
+      ...this.#props,
+      queryNode: QueryNode.cloneWithTop(
+        this.#props.queryNode,
+        parseTop(expression, modifiers),
+      ),
+    })
   }
 
   /**

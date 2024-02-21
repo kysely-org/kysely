@@ -1492,7 +1492,14 @@ export class DefaultQueryCompiler
       this.append(' ')
     }
 
-    this.append('merge into ')
+    this.append('merge ')
+
+    if (node.top) {
+      this.visitNode(node.top)
+      this.append(' ')
+    }
+
+    this.append('into ')
     this.visitNode(node.into)
 
     if (node.using) {
@@ -1548,7 +1555,7 @@ export class DefaultQueryCompiler
     this.visitNode(node.dataType)
     this.append(')')
   }
-  
+
   protected override visitTop(node: TopNode): void {
     this.append(`top(${node.expression})`)
 
