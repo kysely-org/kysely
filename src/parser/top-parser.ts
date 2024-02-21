@@ -1,5 +1,5 @@
-import { TopModifier, TopNode } from '../operation-node/top-node'
-import { isBigInt, isNumber, isString } from '../util/object-utils'
+import { TopModifier, TopNode } from '../operation-node/top-node.js'
+import { isBigInt, isNumber, isUndefined } from '../util/object-utils.js'
 
 export function parseTop(
   expression: number | bigint,
@@ -9,7 +9,7 @@ export function parseTop(
     throw new Error(`Invalid top expression: ${expression}`)
   }
 
-  if (!isString(modifiers) || !isTopModifiers(modifiers)) {
+  if (!isUndefined(modifiers) && !isTopModifiers(modifiers)) {
     throw new Error(`Invalid top modifiers: ${modifiers}`)
   }
 
