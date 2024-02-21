@@ -199,6 +199,22 @@ export class WheneableMergeQueryBuilder<
   }
 
   /**
+   * See {@link MergeQueryBuilder.top}.
+   */
+  top(
+    expression: number | bigint,
+    modifiers?: 'percent',
+  ): WheneableMergeQueryBuilder<DB, TT, ST, O> {
+    return new WheneableMergeQueryBuilder({
+      ...this.#props,
+      queryNode: QueryNode.cloneWithTop(
+        this.#props.queryNode,
+        parseTop(expression, modifiers),
+      ),
+    })
+  }
+
+  /**
    * Adds a simple `when matched` clause to the query.
    *
    * For a `when matched` clause with an `and` condition, see {@link whenMatchedAnd}.
