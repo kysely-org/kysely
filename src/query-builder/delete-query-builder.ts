@@ -71,7 +71,6 @@ import {
   ValueExpression,
   parseValueExpression,
 } from '../parser/value-parser.js'
-import { TopNode } from '../operation-node/top-node.js'
 import { parseTop } from '../parser/top-parser.js'
 
 export class DeleteQueryBuilder<DB, TB extends keyof DB, O>

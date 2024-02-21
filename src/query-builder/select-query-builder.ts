@@ -79,7 +79,7 @@ import {
   ValueExpression,
   parseValueExpression,
 } from '../parser/value-parser.js'
-import { TopModifier, TopNode } from '../operation-node/top-node.js'
+import { TopModifier } from '../operation-node/top-node.js'
 import { parseTop } from '../parser/top-parser.js'
 
 export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
