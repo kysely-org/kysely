@@ -3,7 +3,7 @@ import { isBigInt, isNumber, isString } from '../util/object-utils'
 
 export function parseTop(
   expression: number | bigint,
-  modifiers?: TopModifier
+  modifiers?: TopModifier,
 ): TopNode {
   if (!isNumber(expression) && !isBigInt(expression)) {
     throw new Error(`Invalid top expression: ${expression}`)
