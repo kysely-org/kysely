@@ -59,7 +59,7 @@ export const QueryNode = freeze({
 
   cloneWithReturning<T extends HasReturning>(
     node: T,
-    selections: ReadonlyArray<SelectionNode>,
+    selections: ReadonlyArray<SelectionNode>
   ): T {
     return freeze({
       ...node,
@@ -86,7 +86,7 @@ export const QueryNode = freeze({
   cloneWithExplain<T extends HasExplain>(
     node: T,
     format: ExplainFormat | undefined,
-    options: Expression<any> | undefined,
+    options: Expression<any> | undefined
   ): T {
     return freeze({
       ...node,
@@ -94,14 +94,10 @@ export const QueryNode = freeze({
     })
   },
 
-  cloneWithTop<T extends HasTop>(
-    node: T,
-    expression: number | bigint,
-    modifiers?: TopModifier
-  ): T {
+  cloneWithTop<T extends HasTop>(node: T, top: TopNode): T {
     return freeze({
       ...node,
-      top: TopNode.create(expression, modifiers),
+      top,
     })
   },
 })
