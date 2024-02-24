@@ -79,6 +79,8 @@ import {
   ValueExpression,
   parseValueExpression,
 } from '../parser/value-parser.js'
+import { FetchModifier } from '../operation-node/fetch-node.js'
+import { parseFetch } from '../parser/fetch-parser.js'
 import { TopModifier } from '../operation-node/top-node.js'
 import { parseTop } from '../parser/top-parser.js'
 
@@ -1061,10 +1063,12 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    * select "first_name" from "person" limit $1 offset $2
    * ```
    */
-  limit(limit: ValueExpression<DB, TB, number>): SelectQueryBuilder<DB, TB, O>
+  limit(
+    limit: ValueExpression<DB, TB, number | bigint>,
+  ): SelectQueryBuilder<DB, TB, O>
 
   /**
-   * Adds an offset clause to the query.
+   * Adds an `offset` clause to the query.
    *
    * ### Examples
    *
@@ -1085,7 +1089,41 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    * select "first_name" from "person" limit $1 offset $2
    * ```
    */
-  offset(offset: ValueExpression<DB, TB, number>): SelectQueryBuilder<DB, TB, O>
+  offset(
+    offset: ValueExpression<DB, TB, number | bigint>,
+  ): SelectQueryBuilder<DB, TB, O>
+
+  /**
+   * Adds a `fetch` clause to the query.
+   *
+   * This clause is only supported by some dialects like PostgreSQL or MS SQL Server.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * return await db
+   *   .selectFrom('person')
+   *   .select('first_name')
+   *   .orderBy('first_name')
+   *   .offset(0)
+   *   .fetch(10)
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (MS SQL Server):
+   *
+   * ```sql
+   * select "first_name"
+   * from "person"
+   * order by "first_name"
+   * offset 0 rows
+   * fetch next 10 rows only
+   * ```
+   */
+  fetch(
+    rowCount: number | bigint,
+    modifier?: FetchModifier,
+  ): SelectQueryBuilder<DB, TB, O>
 
   /**
    * Adds a `top` clause to the query.
@@ -2034,7 +2072,9 @@ class SelectQueryBuilderImpl<DB, TB extends keyof DB, O>
     })
   }
 
-  limit(limit: ValueExpression<DB, TB, number>): SelectQueryBuilder<DB, TB, O> {
+  limit(
+    limit: ValueExpression<DB, TB, number | bigint>,
+  ): SelectQueryBuilder<DB, TB, O> {
     return new SelectQueryBuilderImpl({
       ...this.#props,
       queryNode: SelectQueryNode.cloneWithLimit(
@@ -2045,7 +2085,7 @@ class SelectQueryBuilderImpl<DB, TB extends keyof DB, O>
   }
 
   offset(
-    offset: ValueExpression<DB, TB, number>,
+    offset: ValueExpression<DB, TB, number | bigint>,
   ): SelectQueryBuilder<DB, TB, O> {
     return new SelectQueryBuilderImpl({
       ...this.#props,
@@ -2056,6 +2096,19 @@ class SelectQueryBuilderImpl<DB, TB extends keyof DB, O>
     })
   }
 
+  fetch(
+    rowCount: number | bigint,
+    modifier: FetchModifier = 'only',
+  ): SelectQueryBuilder<DB, TB, O> {
+    return new SelectQueryBuilderImpl({
+      ...this.#props,
+      queryNode: SelectQueryNode.cloneWithFetch(
+        this.#props.queryNode,
+        parseFetch(rowCount, modifier),
+      ),
+    })
+  }
+  
   top(
     expression: number | bigint,
     modifiers?: TopModifier,

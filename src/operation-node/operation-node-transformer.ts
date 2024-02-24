@@ -91,6 +91,7 @@ import { MergeQueryNode } from './merge-query-node.js'
 import { MatchedNode } from './matched-node.js'
 import { AddIndexNode } from './add-index-node.js'
 import { CastNode } from './cast-node.js'
+import { FetchNode } from './fetch-node.js'
 import { TopNode } from './top-node.js'
 
 /**
@@ -217,6 +218,7 @@ export class OperationNodeTransformer {
     MatchedNode: this.transformMatched.bind(this),
     AddIndexNode: this.transformAddIndex.bind(this),
     CastNode: this.transformCast.bind(this),
+    FetchNode: this.transformFetch.bind(this),
     TopNode: this.transformTop.bind(this),
   })
 
@@ -264,6 +266,7 @@ export class OperationNodeTransformer {
       having: this.transformNode(node.having),
       explain: this.transformNode(node.explain),
       setOperations: this.transformNodeList(node.setOperations),
+      fetch: this.transformNode(node.fetch),
       top: this.transformNode(node.top),
     })
   }
@@ -1031,6 +1034,14 @@ export class OperationNodeTransformer {
       kind: 'CastNode',
       expression: this.transformNode(node.expression),
       dataType: this.transformNode(node.dataType),
+    })
+  }
+
+  protected transformFetch(node: FetchNode): FetchNode {
+    return requireAllProps<FetchNode>({
+      kind: 'FetchNode',
+      rowCount: this.transformNode(node.rowCount),
+      modifier: node.modifier,
     })
   }
 

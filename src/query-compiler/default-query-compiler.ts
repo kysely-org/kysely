@@ -108,6 +108,7 @@ import { MergeQueryNode } from '../operation-node/merge-query-node.js'
 import { MatchedNode } from '../operation-node/matched-node.js'
 import { AddIndexNode } from '../operation-node/add-index-node.js'
 import { CastNode } from '../operation-node/cast-node.js'
+import { FetchNode } from '../operation-node/fetch-node.js'
 import { TopNode } from '../operation-node/top-node.js'
 
 export class DefaultQueryCompiler
@@ -226,6 +227,11 @@ export class DefaultQueryCompiler
     if (node.offset) {
       this.append(' ')
       this.visitNode(node.offset)
+    }
+
+    if (node.fetch) {
+      this.append(' ')
+      this.visitNode(node.fetch)
     }
 
     if (node.endModifiers?.length) {
@@ -1554,6 +1560,12 @@ export class DefaultQueryCompiler
     this.append(' as ')
     this.visitNode(node.dataType)
     this.append(')')
+  }
+  
+  protected override visitFetch(node: FetchNode): void {
+    this.append('fetch next ')
+    this.visitNode(node.rowCount)
+    this.append(` rows ${node.modifier}`)
   }
 
   protected override visitTop(node: TopNode): void {
