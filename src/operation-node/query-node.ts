@@ -12,6 +12,7 @@ import { ExplainNode } from './explain-node.js'
 import { ExplainFormat } from '../util/explainable.js'
 import { Expression } from '../expression/expression.js'
 import { MergeQueryNode } from './merge-query-node.js'
+import { TopNode } from './top-node.js'
 
 export type QueryNode =
   | SelectQueryNode
@@ -24,6 +25,7 @@ type HasJoins = { joins?: ReadonlyArray<JoinNode> }
 type HasWhere = { where?: WhereNode }
 type HasReturning = { returning?: ReturningNode }
 type HasExplain = { explain?: ExplainNode }
+type HasTop = { top?: TopNode }
 
 /**
  * @internal
@@ -89,6 +91,13 @@ export const QueryNode = freeze({
     return freeze({
       ...node,
       explain: ExplainNode.create(format, options?.toOperationNode()),
+    })
+  },
+
+  cloneWithTop<T extends HasTop>(node: T, top: TopNode): T {
+    return freeze({
+      ...node,
+      top,
     })
   },
 })

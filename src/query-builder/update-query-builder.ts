@@ -71,6 +71,7 @@ import {
   parseValueExpression,
 } from '../parser/value-parser.js'
 import { LimitNode } from '../operation-node/limit-node.js'
+import { parseTop } from '../parser/top-parser.js'
 
 export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
   implements
@@ -131,6 +132,58 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
     return new UpdateQueryBuilder({
       ...this.#props,
       queryNode: QueryNode.cloneWithoutWhere(this.#props.queryNode),
+    })
+  }
+
+  /**
+   * Changes an `update` query into a `update top` query.
+   *
+   * `top` clause is only supported by some dialects like MS SQL Server.
+   *
+   * ### Examples
+   *
+   * Update the first row:
+   *
+   * ```ts
+   * await db.updateTable('person')
+   *   .top(1)
+   *   .set({ first_name: 'Foo' })
+   *   .where('age', '>', 18)
+   *   .executeTakeFirstOrThrow()
+   * ```
+   *
+   * The generated SQL (MS SQL Server):
+   *
+   * ```sql
+   * update top(1) "person" set "first_name" = @1 where "age" > @2
+   * ```
+   *
+   * Update the 50% first rows:
+   *
+   * ```ts
+   * await db.updateTable('person')
+   *   .top(50, 'percent')
+   *   .set({ first_name: 'Foo' })
+   *   .where('age', '>', 18)
+   *   .executeTakeFirstOrThrow()
+   * ```
+   *
+   * The generated SQL (MS SQL Server):
+   *
+   * ```sql
+   * update top(50) percent "person" set "first_name" = @1 where "age" > @2
+   * ```
+   */
+  top(
+    expression: number | bigint,
+    modifiers?: 'percent',
+  ): UpdateQueryBuilder<DB, UT, TB, O> {
+    return new UpdateQueryBuilder({
+      ...this.#props,
+      queryNode: QueryNode.cloneWithTop(
+        this.#props.queryNode,
+        parseTop(expression, modifiers),
+      ),
     })
   }
 
@@ -724,8 +777,8 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
   ): O2 extends UpdateResult
     ? UpdateQueryBuilder<DB, UT, TB, UpdateResult>
     : O2 extends O & infer E
-      ? UpdateQueryBuilder<DB, UT, TB, O & Partial<E>>
-      : UpdateQueryBuilder<DB, UT, TB, Partial<O2>> {
+    ? UpdateQueryBuilder<DB, UT, TB, O & Partial<E>>
+    : UpdateQueryBuilder<DB, UT, TB, Partial<O2>> {
     if (condition) {
       return func(this) as any
     }
@@ -982,12 +1035,12 @@ export type UpdateQueryBuilderWithInnerJoin<
     ? InnerJoinedBuilder<DB, UT, TB, O, A, DB[T]>
     : never
   : TE extends keyof DB
-    ? UpdateQueryBuilder<DB, UT, TB | TE, O>
-    : TE extends AliasedExpression<infer QO, infer QA>
-      ? InnerJoinedBuilder<DB, UT, TB, O, QA, QO>
-      : TE extends (qb: any) => AliasedExpression<infer QO, infer QA>
-        ? InnerJoinedBuilder<DB, UT, TB, O, QA, QO>
-        : never
+  ? UpdateQueryBuilder<DB, UT, TB | TE, O>
+  : TE extends AliasedExpression<infer QO, infer QA>
+  ? InnerJoinedBuilder<DB, UT, TB, O, QA, QO>
+  : TE extends (qb: any) => AliasedExpression<infer QO, infer QA>
+  ? InnerJoinedBuilder<DB, UT, TB, O, QA, QO>
+  : never
 
 type InnerJoinedBuilder<
   DB,
@@ -1016,12 +1069,12 @@ export type UpdateQueryBuilderWithLeftJoin<
     ? LeftJoinedBuilder<DB, UT, TB, O, A, DB[T]>
     : never
   : TE extends keyof DB
-    ? LeftJoinedBuilder<DB, UT, TB, O, TE, DB[TE]>
-    : TE extends AliasedExpression<infer QO, infer QA>
-      ? LeftJoinedBuilder<DB, UT, TB, O, QA, QO>
-      : TE extends (qb: any) => AliasedExpression<infer QO, infer QA>
-        ? LeftJoinedBuilder<DB, UT, TB, O, QA, QO>
-        : never
+  ? LeftJoinedBuilder<DB, UT, TB, O, TE, DB[TE]>
+  : TE extends AliasedExpression<infer QO, infer QA>
+  ? LeftJoinedBuilder<DB, UT, TB, O, QA, QO>
+  : TE extends (qb: any) => AliasedExpression<infer QO, infer QA>
+  ? LeftJoinedBuilder<DB, UT, TB, O, QA, QO>
+  : never
 
 type LeftJoinedBuilder<
   DB,
@@ -1039,8 +1092,8 @@ type LeftJoinedDB<DB, A extends keyof any, R> = DrainOuterGeneric<{
   [C in keyof DB | A]: C extends A
     ? Nullable<R>
     : C extends keyof DB
-      ? DB[C]
-      : never
+    ? DB[C]
+    : never
 }>
 
 export type UpdateQueryBuilderWithRightJoin<
@@ -1054,12 +1107,12 @@ export type UpdateQueryBuilderWithRightJoin<
     ? RightJoinedBuilder<DB, UT, TB, O, A, DB[T]>
     : never
   : TE extends keyof DB
-    ? RightJoinedBuilder<DB, UT, TB, O, TE, DB[TE]>
-    : TE extends AliasedExpression<infer QO, infer QA>
-      ? RightJoinedBuilder<DB, UT, TB, O, QA, QO>
-      : TE extends (qb: any) => AliasedExpression<infer QO, infer QA>
-        ? RightJoinedBuilder<DB, UT, TB, O, QA, QO>
-        : never
+  ? RightJoinedBuilder<DB, UT, TB, O, TE, DB[TE]>
+  : TE extends AliasedExpression<infer QO, infer QA>
+  ? RightJoinedBuilder<DB, UT, TB, O, QA, QO>
+  : TE extends (qb: any) => AliasedExpression<infer QO, infer QA>
+  ? RightJoinedBuilder<DB, UT, TB, O, QA, QO>
+  : never
 
 type RightJoinedBuilder<
   DB,
@@ -1079,10 +1132,10 @@ type RightJoinedDB<
   [C in keyof DB | A]: C extends A
     ? R
     : C extends TB
-      ? Nullable<DB[C]>
-      : C extends keyof DB
-        ? DB[C]
-        : never
+    ? Nullable<DB[C]>
+    : C extends keyof DB
+    ? DB[C]
+    : never
 }>
 
 export type UpdateQueryBuilderWithFullJoin<
@@ -1096,12 +1149,12 @@ export type UpdateQueryBuilderWithFullJoin<
     ? OuterJoinedBuilder<DB, UT, TB, O, A, DB[T]>
     : never
   : TE extends keyof DB
-    ? OuterJoinedBuilder<DB, UT, TB, O, TE, DB[TE]>
-    : TE extends AliasedExpression<infer QO, infer QA>
-      ? OuterJoinedBuilder<DB, UT, TB, O, QA, QO>
-      : TE extends (qb: any) => AliasedExpression<infer QO, infer QA>
-        ? OuterJoinedBuilder<DB, UT, TB, O, QA, QO>
-        : never
+  ? OuterJoinedBuilder<DB, UT, TB, O, TE, DB[TE]>
+  : TE extends AliasedExpression<infer QO, infer QA>
+  ? OuterJoinedBuilder<DB, UT, TB, O, QA, QO>
+  : TE extends (qb: any) => AliasedExpression<infer QO, infer QA>
+  ? OuterJoinedBuilder<DB, UT, TB, O, QA, QO>
+  : never
 
 type OuterJoinedBuilder<
   DB,
@@ -1121,8 +1174,8 @@ type OuterJoinedBuilderDB<
   [C in keyof DB | A]: C extends A
     ? Nullable<R>
     : C extends TB
-      ? Nullable<DB[C]>
-      : C extends keyof DB
-        ? DB[C]
-        : never
+    ? Nullable<DB[C]>
+    : C extends keyof DB
+    ? DB[C]
+    : never
 }>

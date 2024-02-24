@@ -575,7 +575,7 @@ for (const dialect of DIALECTS) {
           parameters: ['Jennifer', 1],
         },
         mssql: {
-          sql: 'with "jennifer_id" as (select top 1 "id" from "person" where "first_name" = @1) update "pet" set "owner_id" = (select "id" from "jennifer_id")',
+          sql: 'with "jennifer_id" as (select top(1) "id" from "person" where "first_name" = @1) update "pet" set "owner_id" = (select "id" from "jennifer_id")',
           parameters: ['Jennifer'],
         },
         sqlite: {
@@ -669,6 +669,46 @@ for (const dialect of DIALECTS) {
         for (const pet of pets) {
           expect(pet.person_name).to.equal(pet.pet_name)
         }
+      })
+
+      it('should update top', async () => {
+        const query = ctx.db
+          .updateTable('pet')
+          .top(1)
+          .set({ name: 'Lucky' })
+          .where('species', '=', 'dog')
+
+        testSql(query, dialect, {
+          postgres: NOT_SUPPORTED,
+          mysql: NOT_SUPPORTED,
+          mssql: {
+            sql: 'update top(1) "pet" set "name" = @1 where "species" = @2',
+            parameters: ['Lucky', 'dog'],
+          },
+          sqlite: NOT_SUPPORTED,
+        })
+
+        await query.execute()
+      })
+
+      it('should update top percent', async () => {
+        const query = ctx.db
+          .updateTable('pet')
+          .top(50, 'percent')
+          .set({ name: 'Lucky' })
+          .where('species', '=', 'dog')
+
+        testSql(query, dialect, {
+          postgres: NOT_SUPPORTED,
+          mysql: NOT_SUPPORTED,
+          mssql: {
+            sql: 'update top(50) percent "pet" set "name" = @1 where "species" = @2',
+            parameters: ['Lucky', 'dog'],
+          },
+          sqlite: NOT_SUPPORTED,
+        })
+
+        await query.execute()
       })
     }
   })

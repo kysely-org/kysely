@@ -109,6 +109,7 @@ import { MatchedNode } from '../operation-node/matched-node.js'
 import { AddIndexNode } from '../operation-node/add-index-node.js'
 import { CastNode } from '../operation-node/cast-node.js'
 import { FetchNode } from '../operation-node/fetch-node.js'
+import { TopNode } from '../operation-node/top-node.js'
 
 export class DefaultQueryCompiler
   extends OperationNodeVisitor
@@ -171,6 +172,11 @@ export class DefaultQueryCompiler
     if (node.frontModifiers?.length) {
       this.append(' ')
       this.compileList(node.frontModifiers, ' ')
+    }
+
+    if (node.top) {
+      this.append(' ')
+      this.visitNode(node.top)
     }
 
     if (node.selections) {
@@ -306,6 +312,11 @@ export class DefaultQueryCompiler
       this.append(' ignore')
     }
 
+    if (node.top) {
+      this.append(' ')
+      this.visitNode(node.top)
+    }
+
     if (node.into) {
       this.append(' into ')
       this.visitNode(node.into)
@@ -370,6 +381,12 @@ export class DefaultQueryCompiler
     }
 
     this.append('delete ')
+
+    if (node.top) {
+      this.visitNode(node.top)
+      this.append(' ')
+    }
+
     this.visitNode(node.from)
 
     if (node.using) {
@@ -737,6 +754,11 @@ export class DefaultQueryCompiler
     }
 
     this.append('update ')
+
+    if (node.top) {
+      this.visitNode(node.top)
+      this.append(' ')
+    }
 
     if (node.table) {
       this.visitNode(node.table)
@@ -1476,7 +1498,14 @@ export class DefaultQueryCompiler
       this.append(' ')
     }
 
-    this.append('merge into ')
+    this.append('merge ')
+
+    if (node.top) {
+      this.visitNode(node.top)
+      this.append(' ')
+    }
+
+    this.append('into ')
     this.visitNode(node.into)
 
     if (node.using) {
@@ -1537,6 +1566,14 @@ export class DefaultQueryCompiler
     this.append('fetch next ')
     this.visitNode(node.rowCount)
     this.append(` rows ${node.modifier}`)
+  }
+
+  protected override visitTop(node: TopNode): void {
+    this.append(`top(${node.expression})`)
+
+    if (node.modifiers) {
+      this.append(` ${node.modifiers}`)
+    }
   }
 
   protected append(str: string): void {

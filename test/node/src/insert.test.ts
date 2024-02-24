@@ -902,6 +902,52 @@ for (const dialect of DIALECTS) {
         expect(people).to.eql(values)
       })
     }
+
+    if (dialect === 'mssql') {
+      it('should insert top', async () => {
+        const query = ctx.db
+          .insertInto('person')
+          .top(1)
+          .columns(['first_name', 'gender'])
+          .expression((eb) =>
+            eb.selectFrom('pet').select(['name', eb.val('other').as('gender')])
+          )
+
+        testSql(query, dialect, {
+          postgres: NOT_SUPPORTED,
+          mysql: NOT_SUPPORTED,
+          mssql: {
+            sql: 'insert top(1) into "person" ("first_name", "gender") select "name", @1 as "gender" from "pet"',
+            parameters: ['other'],
+          },
+          sqlite: NOT_SUPPORTED,
+        })
+
+        await query.executeTakeFirstOrThrow()
+      })
+
+      it('should insert top percent', async () => {
+        const query = ctx.db
+          .insertInto('person')
+          .top(50, 'percent')
+          .columns(['first_name', 'gender'])
+          .expression((eb) =>
+            eb.selectFrom('pet').select(['name', eb.val('other').as('gender')])
+          )
+
+        testSql(query, dialect, {
+          postgres: NOT_SUPPORTED,
+          mysql: NOT_SUPPORTED,
+          mssql: {
+            sql: 'insert top(50) percent into "person" ("first_name", "gender") select "name", @1 as "gender" from "pet"',
+            parameters: ['other'],
+          },
+          sqlite: NOT_SUPPORTED,
+        })
+
+        await query.executeTakeFirstOrThrow()
+      })
+    }
   })
 
   async function getNewestPerson(

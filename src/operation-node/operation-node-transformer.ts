@@ -92,6 +92,7 @@ import { MatchedNode } from './matched-node.js'
 import { AddIndexNode } from './add-index-node.js'
 import { CastNode } from './cast-node.js'
 import { FetchNode } from './fetch-node.js'
+import { TopNode } from './top-node.js'
 
 /**
  * Transforms an operation node tree into another one.
@@ -218,6 +219,7 @@ export class OperationNodeTransformer {
     AddIndexNode: this.transformAddIndex.bind(this),
     CastNode: this.transformCast.bind(this),
     FetchNode: this.transformFetch.bind(this),
+    TopNode: this.transformTop.bind(this),
   })
 
   transformNode<T extends OperationNode | undefined>(node: T): T {
@@ -265,6 +267,7 @@ export class OperationNodeTransformer {
       explain: this.transformNode(node.explain),
       setOperations: this.transformNodeList(node.setOperations),
       fetch: this.transformNode(node.fetch),
+      top: this.transformNode(node.top),
     })
   }
 
@@ -380,6 +383,7 @@ export class OperationNodeTransformer {
       replace: node.replace,
       explain: this.transformNode(node.explain),
       defaultValues: node.defaultValues,
+      top: this.transformNode(node.top),
     })
   }
 
@@ -402,6 +406,7 @@ export class OperationNodeTransformer {
       orderBy: this.transformNode(node.orderBy),
       limit: this.transformNode(node.limit),
       explain: this.transformNode(node.explain),
+      top: this.transformNode(node.top),
     })
   }
 
@@ -507,6 +512,7 @@ export class OperationNodeTransformer {
       with: this.transformNode(node.with),
       explain: this.transformNode(node.explain),
       limit: this.transformNode(node.limit),
+      top: this.transformNode(node.top),
     })
   }
 
@@ -1000,6 +1006,7 @@ export class OperationNodeTransformer {
       using: this.transformNode(node.using),
       whens: this.transformNodeList(node.whens),
       with: this.transformNode(node.with),
+      top: this.transformNode(node.top),
     })
   }
 
@@ -1035,6 +1042,14 @@ export class OperationNodeTransformer {
       kind: 'FetchNode',
       rowCount: this.transformNode(node.rowCount),
       modifier: node.modifier,
+    })
+  }
+
+  protected transformTop(node: TopNode): TopNode {
+    return requireAllProps<TopNode>({
+      kind: 'TopNode',
+      expression: node.expression,
+      modifiers: node.modifiers,
     })
   }
 
