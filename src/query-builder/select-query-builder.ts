@@ -79,7 +79,8 @@ import {
   ValueExpression,
   parseValueExpression,
 } from '../parser/value-parser.js'
-import { FetchModifier, FetchNode } from '../operation-node/fetch-node.js'
+import { FetchModifier } from '../operation-node/fetch-node.js'
+import { parseFetch } from '../parser/fetch-parser.js'
 
 export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
   extends WhereInterface<DB, TB>,
@@ -1047,7 +1048,7 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    * ```
    */
   limit(
-    limit: ValueExpression<DB, TB, number | bigint>
+    limit: ValueExpression<DB, TB, number | bigint>,
   ): SelectQueryBuilder<DB, TB, O>
 
   /**
@@ -1066,7 +1067,7 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    * ```
    */
   offset(
-    offset: ValueExpression<DB, TB, number | bigint>
+    offset: ValueExpression<DB, TB, number | bigint>,
   ): SelectQueryBuilder<DB, TB, O>
 
   /**
@@ -1098,7 +1099,7 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    */
   fetch(
     rowCount: number | bigint,
-    modifier?: FetchModifier
+    modifier?: FetchModifier,
   ): SelectQueryBuilder<DB, TB, O>
 
   /**
@@ -2004,7 +2005,7 @@ class SelectQueryBuilderImpl<DB, TB extends keyof DB, O>
   }
 
   limit(
-    limit: ValueExpression<DB, TB, number | bigint>
+    limit: ValueExpression<DB, TB, number | bigint>,
   ): SelectQueryBuilder<DB, TB, O> {
     return new SelectQueryBuilderImpl({
       ...this.#props,
@@ -2016,7 +2017,7 @@ class SelectQueryBuilderImpl<DB, TB extends keyof DB, O>
   }
 
   offset(
-    offset: ValueExpression<DB, TB, number | bigint>
+    offset: ValueExpression<DB, TB, number | bigint>,
   ): SelectQueryBuilder<DB, TB, O> {
     return new SelectQueryBuilderImpl({
       ...this.#props,
@@ -2029,13 +2030,13 @@ class SelectQueryBuilderImpl<DB, TB extends keyof DB, O>
 
   fetch(
     rowCount: number | bigint,
-    modifier: FetchModifier = 'only'
+    modifier: FetchModifier = 'only',
   ): SelectQueryBuilder<DB, TB, O> {
     return new SelectQueryBuilderImpl({
       ...this.#props,
       queryNode: SelectQueryNode.cloneWithFetch(
         this.#props.queryNode,
-        FetchNode.create(rowCount, modifier)
+        parseFetch(rowCount, modifier),
       ),
     })
   }
