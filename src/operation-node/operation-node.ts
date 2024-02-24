@@ -90,6 +90,7 @@ export type OperationNodeKind =
   | 'AddIndexNode'
   | 'CastNode'
   | 'FetchNode'
+  | 'TopNode'
   | 'OutputNode'
 
 export interface OperationNode {

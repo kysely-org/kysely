@@ -10,6 +10,7 @@ import { OrderByNode } from './order-by-node.js'
 import { OrderByItemNode } from './order-by-item-node.js'
 import { ExplainNode } from './explain-node.js'
 import { UsingNode } from './using-node.js'
+import { TopNode } from './top-node.js'
 import { OutputNode } from './output-node.js'
 
 export interface DeleteQueryNode extends OperationNode {
@@ -23,6 +24,7 @@ export interface DeleteQueryNode extends OperationNode {
   readonly orderBy?: OrderByNode
   readonly limit?: LimitNode
   readonly explain?: ExplainNode
+  readonly top?: TopNode
   readonly output?: OutputNode
 }
 

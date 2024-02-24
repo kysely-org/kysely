@@ -496,7 +496,7 @@ export function limit<QB extends SelectQueryBuilder<any, any, any>>(
 ): (qb: QB) => QB {
   return (qb) => {
     if (dialect === 'mssql') {
-      return qb.modifyFront(sql`top ${sql.lit(limit)}`) as QB
+      return qb.top(limit) as QB
     }
 
     return qb.limit(limit) as QB

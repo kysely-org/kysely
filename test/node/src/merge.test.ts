@@ -955,5 +955,55 @@ for (const dialect of DIALECTS.filter(
         })
       }
     })
+
+    if (dialect === 'mssql') {
+      it('should perform a merge top...using table simple on...when matched then delete query', async () => {
+        const query = ctx.db
+          .mergeInto('person')
+          .top(1)
+          .using('pet', 'pet.owner_id', 'person.id')
+          .whenMatched()
+          .thenDelete()
+
+        testSql(query, dialect, {
+          postgres: NOT_SUPPORTED,
+          mysql: NOT_SUPPORTED,
+          mssql: {
+            sql: 'merge top(1) into "person" using "pet" on "pet"."owner_id" = "person"."id" when matched then delete;',
+            parameters: [],
+          },
+          sqlite: NOT_SUPPORTED,
+        })
+
+        const result = await query.executeTakeFirstOrThrow()
+
+        expect(result).to.be.instanceOf(MergeResult)
+        expect(result.numChangedRows).to.equal(1n)
+      })
+
+      it('should perform a merge top percent...using table simple on...when matched then delete query', async () => {
+        const query = ctx.db
+          .mergeInto('person')
+          .top(50, 'percent')
+          .using('pet', 'pet.owner_id', 'person.id')
+          .whenMatched()
+          .thenDelete()
+
+        testSql(query, dialect, {
+          postgres: NOT_SUPPORTED,
+          mysql: NOT_SUPPORTED,
+          mssql: {
+            sql: 'merge top(50) percent into "person" using "pet" on "pet"."owner_id" = "person"."id" when matched then delete;',
+            parameters: [],
+          },
+          sqlite: NOT_SUPPORTED,
+        })
+
+        const result = await query.executeTakeFirstOrThrow()
+
+        expect(result).to.be.instanceOf(MergeResult)
+        expect(result.numChangedRows).to.equal(2n)
+      })
+    }
   })
 }

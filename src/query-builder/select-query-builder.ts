@@ -81,6 +81,8 @@ import {
 } from '../parser/value-parser.js'
 import { FetchModifier } from '../operation-node/fetch-node.js'
 import { parseFetch } from '../parser/fetch-parser.js'
+import { TopModifier } from '../operation-node/top-node.js'
+import { parseTop } from '../parser/top-parser.js'
 
 export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
   extends WhereInterface<DB, TB>,
@@ -1035,6 +1037,13 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    *   .selectFrom('person')
    *   .select('first_name')
    *   .limit(10)
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * select "first_name" from "person" limit $1
    * ```
    *
    * Select rows from index 10 to index 19 of the result:
@@ -1043,8 +1052,15 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    * return await db
    *   .selectFrom('person')
    *   .select('first_name')
-   *   .offset(10)
    *   .limit(10)
+   *   .offset(10)
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * select "first_name" from "person" limit $1 offset $2
    * ```
    */
   limit(
@@ -1064,6 +1080,13 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    *   .select('first_name')
    *   .limit(10)
    *   .offset(10)
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * select "first_name" from "person" limit $1 offset $2
    * ```
    */
   offset(
@@ -1100,6 +1123,51 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
   fetch(
     rowCount: number | bigint,
     modifier?: FetchModifier,
+  ): SelectQueryBuilder<DB, TB, O>
+
+  /**
+   * Adds a `top` clause to the query.
+   *
+   * This clause is only supported by some dialects like MS SQL Server.
+   *
+   * ### Examples
+   *
+   * Select 10 biggest ages:
+   *
+   * ```ts
+   * return await db
+   *   .selectFrom('person')
+   *   .select('age')
+   *   .top(10)
+   *   .orderBy('age desc')
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (MS SQL Server):
+   *
+   * ```sql
+   * select top(10) "age" from "person" order by "age" desc
+   * ```
+   *
+   * Select 10% first rows:
+   *
+   * ```ts
+   * return await db
+   *  .selectFrom('person')
+   *  .selectAll()
+   *  .top(10, 'percent')
+   *  .execute()
+   * ```
+   *
+   * The generated SQL (MS SQL Server):
+   *
+   * ```sql
+   * select top(10) percent * from "person"
+   * ```
+   */
+  top(
+    expression: number | bigint,
+    modifiers?: TopModifier,
   ): SelectQueryBuilder<DB, TB, O>
 
   /**
@@ -2040,6 +2108,19 @@ class SelectQueryBuilderImpl<DB, TB extends keyof DB, O>
       ),
     })
   }
+  
+  top(
+    expression: number | bigint,
+    modifiers?: TopModifier,
+  ): SelectQueryBuilder<DB, TB, O> {
+    return new SelectQueryBuilderImpl({
+      ...this.#props,
+      queryNode: QueryNode.cloneWithTop(
+        this.#props.queryNode,
+        parseTop(expression, modifiers),
+      ),
+    })
+  }
 
   union(
     expression: SetOperandExpression<DB, O>,
@@ -2350,12 +2431,12 @@ export type SelectQueryBuilderWithInnerJoin<
     ? InnerJoinedBuilder<DB, TB, O, A, DB[T]>
     : never
   : TE extends keyof DB
-    ? SelectQueryBuilder<DB, TB | TE, O>
-    : TE extends AliasedExpression<infer QO, infer QA>
-      ? InnerJoinedBuilder<DB, TB, O, QA, QO>
-      : TE extends (qb: any) => AliasedExpression<infer QO, infer QA>
-        ? InnerJoinedBuilder<DB, TB, O, QA, QO>
-        : never
+  ? SelectQueryBuilder<DB, TB | TE, O>
+  : TE extends AliasedExpression<infer QO, infer QA>
+  ? InnerJoinedBuilder<DB, TB, O, QA, QO>
+  : TE extends (qb: any) => AliasedExpression<infer QO, infer QA>
+  ? InnerJoinedBuilder<DB, TB, O, QA, QO>
+  : never
 
 type InnerJoinedBuilder<
   DB,
@@ -2382,12 +2463,12 @@ export type SelectQueryBuilderWithLeftJoin<
     ? LeftJoinedBuilder<DB, TB, O, A, DB[T]>
     : never
   : TE extends keyof DB
-    ? LeftJoinedBuilder<DB, TB, O, TE, DB[TE]>
-    : TE extends AliasedExpression<infer QO, infer QA>
-      ? LeftJoinedBuilder<DB, TB, O, QA, QO>
-      : TE extends (qb: any) => AliasedExpression<infer QO, infer QA>
-        ? LeftJoinedBuilder<DB, TB, O, QA, QO>
-        : never
+  ? LeftJoinedBuilder<DB, TB, O, TE, DB[TE]>
+  : TE extends AliasedExpression<infer QO, infer QA>
+  ? LeftJoinedBuilder<DB, TB, O, QA, QO>
+  : TE extends (qb: any) => AliasedExpression<infer QO, infer QA>
+  ? LeftJoinedBuilder<DB, TB, O, QA, QO>
+  : never
 
 type LeftJoinedBuilder<
   DB,
@@ -2404,8 +2485,8 @@ type LeftJoinedDB<DB, A extends keyof any, R> = DrainOuterGeneric<{
   [C in keyof DB | A]: C extends A
     ? Nullable<R>
     : C extends keyof DB
-      ? DB[C]
-      : never
+    ? DB[C]
+    : never
 }>
 
 export type SelectQueryBuilderWithRightJoin<
@@ -2418,12 +2499,12 @@ export type SelectQueryBuilderWithRightJoin<
     ? RightJoinedBuilder<DB, TB, O, A, DB[T]>
     : never
   : TE extends keyof DB
-    ? RightJoinedBuilder<DB, TB, O, TE, DB[TE]>
-    : TE extends AliasedExpression<infer QO, infer QA>
-      ? RightJoinedBuilder<DB, TB, O, QA, QO>
-      : TE extends (qb: any) => AliasedExpression<infer QO, infer QA>
-        ? RightJoinedBuilder<DB, TB, O, QA, QO>
-        : never
+  ? RightJoinedBuilder<DB, TB, O, TE, DB[TE]>
+  : TE extends AliasedExpression<infer QO, infer QA>
+  ? RightJoinedBuilder<DB, TB, O, QA, QO>
+  : TE extends (qb: any) => AliasedExpression<infer QO, infer QA>
+  ? RightJoinedBuilder<DB, TB, O, QA, QO>
+  : never
 
 type RightJoinedBuilder<
   DB,
@@ -2442,10 +2523,10 @@ type RightJoinedDB<
   [C in keyof DB | A]: C extends A
     ? R
     : C extends TB
-      ? Nullable<DB[C]>
-      : C extends keyof DB
-        ? DB[C]
-        : never
+    ? Nullable<DB[C]>
+    : C extends keyof DB
+    ? DB[C]
+    : never
 }>
 
 export type SelectQueryBuilderWithFullJoin<
@@ -2458,12 +2539,12 @@ export type SelectQueryBuilderWithFullJoin<
     ? OuterJoinedBuilder<DB, TB, O, A, DB[T]>
     : never
   : TE extends keyof DB
-    ? OuterJoinedBuilder<DB, TB, O, TE, DB[TE]>
-    : TE extends AliasedExpression<infer QO, infer QA>
-      ? OuterJoinedBuilder<DB, TB, O, QA, QO>
-      : TE extends (qb: any) => AliasedExpression<infer QO, infer QA>
-        ? OuterJoinedBuilder<DB, TB, O, QA, QO>
-        : never
+  ? OuterJoinedBuilder<DB, TB, O, TE, DB[TE]>
+  : TE extends AliasedExpression<infer QO, infer QA>
+  ? OuterJoinedBuilder<DB, TB, O, QA, QO>
+  : TE extends (qb: any) => AliasedExpression<infer QO, infer QA>
+  ? OuterJoinedBuilder<DB, TB, O, QA, QO>
+  : never
 
 type OuterJoinedBuilder<
   DB,
@@ -2482,10 +2563,10 @@ type OuterJoinedBuilderDB<
   [C in keyof DB | A]: C extends A
     ? Nullable<R>
     : C extends TB
-      ? Nullable<DB[C]>
-      : C extends keyof DB
-        ? DB[C]
-        : never
+    ? Nullable<DB[C]>
+    : C extends keyof DB
+    ? DB[C]
+    : never
 }>
 
 type TableOrList<TB extends keyof any> =

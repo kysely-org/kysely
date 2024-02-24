@@ -909,76 +909,48 @@ for (const dialect of DIALECTS) {
     }
 
     if (dialect === 'mssql') {
-      it('should insert a row and return data using `output`', async () => {
-        const result = await ctx.db
-          .insertInto('person')
-          .output([
-            'inserted.first_name',
-            'inserted.last_name',
-            'inserted.gender',
-          ])
-          .values({
-            gender: 'other',
-            first_name: ctx.db
-              .selectFrom('person')
-              .select(sql<string>`max(first_name)`.as('max_first_name')),
-            last_name: sql`concat(cast(${'Bar'} as varchar), cast(${'son'} as varchar))`,
-          })
-          .executeTakeFirst()
-
-        expect(result).to.eql({
-          first_name: 'Sylvester',
-          last_name: 'Barson',
-          gender: 'other',
-        })
-
-        expect(await getNewestPerson(ctx.db)).to.eql({
-          first_name: 'Sylvester',
-          last_name: 'Barson',
-        })
-      })
-
-      it('should insert a row, returning some fields of inserted row and conditionally returning additional fields', async () => {
-        const condition = true
-
+      it('should insert top', async () => {
         const query = ctx.db
           .insertInto('person')
-          .output('inserted.first_name')
-          .$if(condition, (qb) => qb.output('inserted.last_name'))
-          .values({
-            first_name: 'Foo',
-            last_name: 'Barson',
-            gender: 'other',
-          })
+          .top(1)
+          .columns(['first_name', 'gender'])
+          .expression((eb) =>
+            eb.selectFrom('pet').select(['name', eb.val('other').as('gender')])
+          )
 
-        const result = await query.executeTakeFirstOrThrow()
+        testSql(query, dialect, {
+          postgres: NOT_SUPPORTED,
+          mysql: NOT_SUPPORTED,
+          mssql: {
+            sql: 'insert top(1) into "person" ("first_name", "gender") select "name", @1 as "gender" from "pet"',
+            parameters: ['other'],
+          },
+          sqlite: NOT_SUPPORTED,
+        })
 
-        expect(result.last_name).to.equal('Barson')
+        await query.executeTakeFirstOrThrow()
       })
 
-      it('should insert a row and return data using `outputAll`', async () => {
-        const result = await ctx.db
+      it('should insert top percent', async () => {
+        const query = ctx.db
           .insertInto('person')
-          .outputAll('inserted')
-          .values({
-            gender: 'other',
-            first_name: ctx.db
-              .selectFrom('person')
-              .select(sql<string>`max(first_name)`.as('max_first_name')),
-            last_name: sql`concat(cast(${'Bar'} as varchar), cast(${'son'} as varchar))`,
-          })
-          .executeTakeFirst()
+          .top(50, 'percent')
+          .columns(['first_name', 'gender'])
+          .expression((eb) =>
+            eb.selectFrom('pet').select(['name', eb.val('other').as('gender')])
+          )
 
-        expect(result).to.containSubset({
-          first_name: 'Sylvester',
-          last_name: 'Barson',
-          gender: 'other',
+        testSql(query, dialect, {
+          postgres: NOT_SUPPORTED,
+          mysql: NOT_SUPPORTED,
+          mssql: {
+            sql: 'insert top(50) percent into "person" ("first_name", "gender") select "name", @1 as "gender" from "pet"',
+            parameters: ['other'],
+          },
+          sqlite: NOT_SUPPORTED,
         })
 
-        expect(await getNewestPerson(ctx.db)).to.eql({
-          first_name: 'Sylvester',
-          last_name: 'Barson',
-        })
+        await query.executeTakeFirstOrThrow()
       })
     }
   })

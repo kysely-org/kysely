@@ -59,6 +59,7 @@ import { Explainable, ExplainFormat } from '../util/explainable.js'
 import { Expression } from '../expression/expression.js'
 import { KyselyTypeError } from '../util/type-error.js'
 import { Streamable } from '../util/streamable.js'
+import { parseTop } from '../parser/top-parser.js'
 import {
   OutputCallback,
   OutputExpression,
@@ -375,6 +376,62 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
       queryNode: InsertQueryNode.cloneWith(this.#props.queryNode, {
         ignore: true,
       }),
+    })
+  }
+
+  /**
+   * Changes an `insert into` query to an `insert top into` query.
+   *
+   * `top` clause is only supported by some dialects like MS SQL Server.
+   *
+   * ### Examples
+   *
+   * Insert the first 5 rows:
+   *
+   * ```ts
+   * await db.insertInto('person')
+   *   .top(5)
+   *   .columns(['first_name', 'gender'])
+   *   .expression(
+   *     (eb) => eb.selectFrom('pet').select(['name', sql.lit('other').as('gender')])
+   *   )
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (MS SQL Server):
+   *
+   * ```sql
+   * insert top(5) into "person" ("first_name", "gender") select "name", 'other' as "gender" from "pet"
+   * ```
+   *
+   * Insert the first 50 percent of rows:
+   *
+   * ```ts
+   * await db.insertInto('person')
+   *   .top(50, 'percent')
+   *   .columns(['first_name', 'gender'])
+   *   .expression(
+   *     (eb) => eb.selectFrom('pet').select(['name', sql.lit('other').as('gender')])
+   *   )
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (MS SQL Server):
+   *
+   * ```sql
+   * insert top(50) percent into "person" ("first_name", "gender") select "name", 'other' as "gender" from "pet"
+   * ```
+   */
+  top(
+    expression: number | bigint,
+    modifiers?: 'percent',
+  ): InsertQueryBuilder<DB, TB, O> {
+    return new InsertQueryBuilder({
+      ...this.#props,
+      queryNode: QueryNode.cloneWithTop(
+        this.#props.queryNode,
+        parseTop(expression, modifiers),
+      ),
     })
   }
 
@@ -755,8 +812,8 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
   ): O2 extends InsertResult
     ? InsertQueryBuilder<DB, TB, InsertResult>
     : O2 extends O & infer E
-      ? InsertQueryBuilder<DB, TB, O & Partial<E>>
-      : InsertQueryBuilder<DB, TB, Partial<O2>> {
+    ? InsertQueryBuilder<DB, TB, O & Partial<E>>
+    : InsertQueryBuilder<DB, TB, Partial<O2>> {
     if (condition) {
       return func(this) as any
     }

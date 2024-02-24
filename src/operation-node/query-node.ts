@@ -12,6 +12,7 @@ import { ExplainNode } from './explain-node.js'
 import { ExplainFormat } from '../util/explainable.js'
 import { Expression } from '../expression/expression.js'
 import { MergeQueryNode } from './merge-query-node.js'
+import { TopNode } from './top-node.js'
 import { OutputNode } from './output-node.js'
 import {
   SelectArg,
@@ -30,6 +31,7 @@ type HasJoins = { joins?: ReadonlyArray<JoinNode> }
 type HasWhere = { where?: WhereNode }
 type HasReturning = { returning?: ReturningNode }
 type HasExplain = { explain?: ExplainNode }
+type HasTop = { top?: TopNode }
 type HasOutput = { output?: OutputNode }
 
 /**
@@ -98,7 +100,14 @@ export const QueryNode = freeze({
       explain: ExplainNode.create(format, options?.toOperationNode()),
     })
   },
-
+    
+  cloneWithTop<T extends HasTop>(node: T, top: TopNode): T {
+    return freeze({
+      ...node,
+      top,
+    })
+  },
+    
   cloneWithOutput<T extends HasOutput>(
     node: T,
     selections: ReadonlyArray<SelectionNode>
