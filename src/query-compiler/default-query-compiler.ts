@@ -764,6 +764,11 @@ export class DefaultQueryCompiler
       this.visitNode(node.where)
     }
 
+    if (node.limit) {
+      this.append(' ')
+      this.visitNode(node.limit)
+    }
+
     if (node.returning) {
       this.append(' ')
       this.visitNode(node.returning)

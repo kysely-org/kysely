@@ -506,6 +506,7 @@ export class OperationNodeTransformer {
       returning: this.transformNode(node.returning),
       with: this.transformNode(node.with),
       explain: this.transformNode(node.explain),
+      limit: this.transformNode(node.limit),
     })
   }
 
