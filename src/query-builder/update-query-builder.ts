@@ -67,7 +67,11 @@ import {
 import { KyselyTypeError } from '../util/type-error.js'
 import { Streamable } from '../util/streamable.js'
 import { ExpressionOrFactory } from '../parser/expression-parser.js'
-import { ValueExpression } from '../parser/value-parser.js'
+import {
+  ValueExpression,
+  parseValueExpression,
+} from '../parser/value-parser.js'
+import { LimitNode } from '../operation-node/limit-node.js'
 import {
   OutputCallback,
   OutputExpression,
@@ -399,6 +403,37 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
       queryNode: QueryNode.cloneWithJoin(
         this.#props.queryNode,
         parseJoin('FullJoin', args),
+      ),
+    })
+  }
+
+  /**
+   * Adds a limit clause to the update query for supported databases, such as MySQL.
+   *
+   * ### Examples
+   *
+   * Update the first 2 rows in the 'person' table:
+   *
+   * ```ts
+   * return await db
+   *   .updateTable('person')
+   *   .set({ first_name: 'Foo' })
+   *   .limit(2);
+   * ```
+   *
+   * The generated SQL (MySQL):
+   * ```sql
+   * update `person` set `first_name` = 'Foo' limit 2
+   * ```
+   */
+  limit(
+    limit: ValueExpression<DB, TB, number>,
+  ): UpdateQueryBuilder<DB, UT, TB, O> {
+    return new UpdateQueryBuilder({
+      ...this.#props,
+      queryNode: UpdateQueryNode.cloneWithLimit(
+        this.#props.queryNode,
+        LimitNode.create(parseValueExpression(limit)),
       ),
     })
   }

@@ -89,6 +89,7 @@ export type OperationNodeKind =
   | 'MatchedNode'
   | 'AddIndexNode'
   | 'CastNode'
+  | 'FetchNode'
   | 'OutputNode'
 
 export interface OperationNode {

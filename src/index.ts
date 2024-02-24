@@ -202,6 +202,7 @@ export * from './operation-node/json-operator-chain-node.js'
 export * from './operation-node/tuple-node.js'
 export * from './operation-node/merge-query-node.js'
 export * from './operation-node/matched-node.js'
+export * from './operation-node/fetch-node.js'
 export * from './operation-node/output-node.js'
 
 export * from './util/column-type.js'

@@ -1067,7 +1067,7 @@ for (const dialect of DIALECTS) {
       })
     }
 
-    if (dialect !== 'mssql') {
+    if (dialect === 'postgres' || dialect === 'mysql' || dialect === 'sqlite') {
       it('should create a select query with limit and offset', async () => {
         const query = ctx.db
           .selectFrom('person')
@@ -1162,5 +1162,80 @@ for (const dialect of DIALECTS) {
         expect(result[0]).to.eql({ person_first_name: 'Arnold' })
       }
     })
+
+    if (dialect === 'postgres' || dialect === 'mssql') {
+      it('should create a select query with order by, offset and fetch', async () => {
+        const query = ctx.db
+          .selectFrom('person')
+          .select('first_name')
+          .orderBy('first_name')
+          .offset(1)
+          .fetch(2)
+
+        testSql(query, dialect, {
+          postgres: {
+            sql: 'select "first_name" from "person" order by "first_name" offset $1 fetch next $2 rows only',
+            parameters: [1, 2],
+          },
+          mysql: NOT_SUPPORTED,
+          mssql: {
+            sql: 'select "first_name" from "person" order by "first_name" offset @1 rows fetch next @2 rows only',
+            parameters: [1, 2],
+          },
+          sqlite: NOT_SUPPORTED,
+        })
+
+        const result = await query.execute()
+        expect(result).to.have.length(2)
+      })
+
+      it('should create a select query with order by, offset and fetch only', async () => {
+        const query = ctx.db
+          .selectFrom('person')
+          .select('first_name')
+          .orderBy('first_name')
+          .offset(1)
+          .fetch(2, 'only')
+
+        testSql(query, dialect, {
+          postgres: {
+            sql: 'select "first_name" from "person" order by "first_name" offset $1 fetch next $2 rows only',
+            parameters: [1, 2],
+          },
+          mysql: NOT_SUPPORTED,
+          mssql: {
+            sql: 'select "first_name" from "person" order by "first_name" offset @1 rows fetch next @2 rows only',
+            parameters: [1, 2],
+          },
+          sqlite: NOT_SUPPORTED,
+        })
+
+        const result = await query.execute()
+        expect(result).to.have.length(2)
+      })
+    }
+
+    if (dialect === 'postgres') {
+      it('should create a select query with order by, offset and fetch with ties', async () => {
+        const query = ctx.db
+          .selectFrom('person')
+          .select('first_name')
+          .orderBy('first_name')
+          .offset(1)
+          .fetch(2, 'with ties')
+
+        testSql(query, dialect, {
+          postgres: {
+            sql: 'select "first_name" from "person" order by "first_name" offset $1 fetch next $2 rows with ties',
+            parameters: [1, 2],
+          },
+          mysql: NOT_SUPPORTED,
+          mssql: NOT_SUPPORTED,
+          sqlite: NOT_SUPPORTED,
+        })
+
+        await query.execute()
+      })
+    }
   })
 }
