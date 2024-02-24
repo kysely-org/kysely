@@ -230,6 +230,7 @@ export {
   SelectArg,
   Selection,
   CallbackSelection,
+  AllSelection
 } from './parser/select-parser.js'
 export {
   ReferenceExpression,
