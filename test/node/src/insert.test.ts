@@ -141,7 +141,7 @@ for (const dialect of DIALECTS) {
       })
     })
 
-    if (dialect !== 'mssql') {
+    if (dialect === 'postgres' || dialect === 'mysql' || dialect === 'sqlite') {
       it('should insert one row with expressions', async () => {
         const query = ctx.db.insertInto('person').values(({ selectFrom }) => ({
           first_name: selectFrom('pet')
@@ -252,7 +252,7 @@ for (const dialect of DIALECTS) {
           .$call((qb) =>
             dialect === 'postgres'
               ? qb.returning(['first_name', 'gender'])
-              : qb.output(['inserted.first_name', 'inserted.gender'])
+              : qb.output(['inserted.first_name', 'inserted.gender']),
           )
 
         testSql(query, dialect, {
@@ -915,7 +915,7 @@ for (const dialect of DIALECTS) {
           .top(1)
           .columns(['first_name', 'gender'])
           .expression((eb) =>
-            eb.selectFrom('pet').select(['name', eb.val('other').as('gender')])
+            eb.selectFrom('pet').select(['name', eb.val('other').as('gender')]),
           )
 
         testSql(query, dialect, {
@@ -937,7 +937,7 @@ for (const dialect of DIALECTS) {
           .top(50, 'percent')
           .columns(['first_name', 'gender'])
           .expression((eb) =>
-            eb.selectFrom('pet').select(['name', eb.val('other').as('gender')])
+            eb.selectFrom('pet').select(['name', eb.val('other').as('gender')]),
           )
 
         testSql(query, dialect, {
@@ -951,6 +951,80 @@ for (const dialect of DIALECTS) {
         })
 
         await query.executeTakeFirstOrThrow()
+      })
+    }
+
+    if (dialect === 'mssql') {
+      it('should insert a row and return data using `output`', async () => {
+        const result = await ctx.db
+          .insertInto('person')
+          .output([
+            'inserted.first_name',
+            'inserted.last_name',
+            'inserted.gender',
+          ])
+          .values({
+            gender: 'other',
+            first_name: ctx.db
+              .selectFrom('person')
+              .select(sql<string>`max(first_name)`.as('max_first_name')),
+            last_name: sql`concat(cast(${'Bar'} as varchar), cast(${'son'} as varchar))`,
+          })
+          .executeTakeFirst()
+
+        expect(result).to.eql({
+          first_name: 'Sylvester',
+          last_name: 'Barson',
+          gender: 'other',
+        })
+
+        expect(await getNewestPerson(ctx.db)).to.eql({
+          first_name: 'Sylvester',
+          last_name: 'Barson',
+        })
+      })
+
+      it('should insert a row, returning some fields of inserted row and conditionally returning additional fields', async () => {
+        const condition = true
+
+        const query = ctx.db
+          .insertInto('person')
+          .output('inserted.first_name')
+          .$if(condition, (qb) => qb.output('inserted.last_name'))
+          .values({
+            first_name: 'Foo',
+            last_name: 'Barson',
+            gender: 'other',
+          })
+
+        const result = await query.executeTakeFirstOrThrow()
+
+        expect(result.last_name).to.equal('Barson')
+      })
+
+      it('should insert a row and return data using `outputAll`', async () => {
+        const result = await ctx.db
+          .insertInto('person')
+          .outputAll('inserted')
+          .values({
+            gender: 'other',
+            first_name: ctx.db
+              .selectFrom('person')
+              .select(sql<string>`max(first_name)`.as('max_first_name')),
+            last_name: sql`concat(cast(${'Bar'} as varchar), cast(${'son'} as varchar))`,
+          })
+          .executeTakeFirst()
+
+        expect(result).to.containSubset({
+          first_name: 'Sylvester',
+          last_name: 'Barson',
+          gender: 'other',
+        })
+
+        expect(await getNewestPerson(ctx.db)).to.eql({
+          first_name: 'Sylvester',
+          last_name: 'Barson',
+        })
       })
     }
   })
