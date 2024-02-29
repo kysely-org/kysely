@@ -740,6 +740,40 @@ export interface FunctionModule<DB, TB extends keyof DB> {
   >
 
   /**
+   * Creates a json_agg_strict function call.
+   *
+   * This function is only available on PostgreSQL.
+   *
+   * ```ts
+   * db.selectFrom('person')
+   *   .innerJoin('pet', 'pet.owner_id', 'person.id')
+   *   .select((eb) => ['first_name', eb.fn.jsonAggStrict('pet').as('pets')])
+   *   .groupBy('person.first_name')
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * select "first_name", json_agg_strict("pet") as "pets"
+   * from "person"
+   * inner join "pet" on "pet"."owner_id" = "person"."id"
+   * group by "person"."first_name"
+   * ```
+   */
+  jsonAggStrict<T extends (TB & string) | Expression<unknown>>(
+    table: T,
+  ): AggregateFunctionBuilder<
+    DB,
+    TB,
+    T extends TB
+      ? Selectable<DB[T]>[]
+      : T extends Expression<infer O>
+        ? O[]
+        : never
+  >
+
+  /**
    * Creates a to_json function call.
    *
    * This function is only available on PostgreSQL.
@@ -845,6 +879,14 @@ export function createFunctionModule<DB, TB extends keyof DB>(): FunctionModule<
     jsonAgg(table: string | Expression<unknown>): any {
       return new AggregateFunctionBuilder({
         aggregateFunctionNode: AggregateFunctionNode.create('json_agg', [
+          isString(table) ? parseTable(table) : table.toOperationNode(),
+        ]),
+      })
+    },
+
+    jsonAggStrict(table: string | Expression<unknown>): any {
+      return new AggregateFunctionBuilder({
+        aggregateFunctionNode: AggregateFunctionNode.create('json_agg_strict', [
           isString(table) ? parseTable(table) : table.toOperationNode(),
         ]),
       })

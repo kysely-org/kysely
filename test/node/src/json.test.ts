@@ -319,6 +319,139 @@ for (const dialect of DIALECTS) {
         ])
       })
 
+      it('should aggregate a joined table using json_agg_strict', async () => {
+        const res = await db
+          .selectFrom('person')
+          .innerJoin('pet', 'pet.owner_id', 'person.id')
+          .select((eb) => ['first_name', eb.fn.jsonAggStrict('pet').as('pets')])
+          .groupBy('person.first_name')
+          .execute()
+
+        expect(res).to.have.length(3)
+        expect(res).to.containSubset([
+          {
+            first_name: 'Jennifer',
+            pets: [{ name: 'Catto', species: 'cat' }],
+          },
+          {
+            first_name: 'Arnold',
+            pets: [
+              {
+                name: 'Doggo',
+                species: 'dog',
+              },
+            ],
+          },
+          {
+            first_name: 'Sylvester',
+            pets: [{ name: 'Hammo', species: 'hamster' }],
+          },
+        ])
+      })
+
+      it('should aggregate a joined table using json_agg_strict and distinct', async () => {
+        const res = await db
+          .selectFrom('person')
+          .innerJoin('pet', 'pet.owner_id', 'person.id')
+          .select((eb) => [
+            'first_name',
+            eb.fn.jsonAggStrict('pet').distinct().as('pets'),
+          ])
+          .groupBy('person.first_name')
+          .execute()
+
+        expect(res).to.have.length(3)
+        expect(res).to.containSubset([
+          {
+            first_name: 'Jennifer',
+            pets: [{ name: 'Catto', species: 'cat' }],
+          },
+          {
+            first_name: 'Arnold',
+            pets: [
+              {
+                name: 'Doggo',
+                species: 'dog',
+              },
+            ],
+          },
+          {
+            first_name: 'Sylvester',
+            pets: [{ name: 'Hammo', species: 'hamster' }],
+          },
+        ])
+      })
+
+      it('should aggregate a subquery using json_agg_strict', async () => {
+        const res = await db
+          .selectFrom('person')
+          .select((eb) => [
+            'first_name',
+            eb
+              .selectFrom('pet')
+              .select((eb) => eb.fn.jsonAggStrict('pet').as('pet'))
+              .whereRef('pet.owner_id', '=', 'person.id')
+              .as('pets'),
+          ])
+          .execute()
+
+        expect(res).to.have.length(3)
+        expect(res).to.containSubset([
+          {
+            first_name: 'Jennifer',
+            pets: [{ name: 'Catto', species: 'cat' }],
+          },
+          {
+            first_name: 'Arnold',
+            pets: [
+              {
+                name: 'Doggo',
+                species: 'dog',
+              },
+            ],
+          },
+          {
+            first_name: 'Sylvester',
+            pets: [{ name: 'Hammo', species: 'hamster' }],
+          },
+        ])
+      })
+
+      it('should aggregate a subquery using json_agg_strict and eb.table', async () => {
+        const res = await db
+          .selectFrom('person')
+          .select((eb) => [
+            'first_name',
+            eb
+              .selectFrom('pet')
+              .select((eb) => eb.fn.jsonAggStrict(eb.table('pet')).as('pet'))
+              .whereRef('pet.owner_id', '=', 'person.id')
+              .as('pets'),
+          ])
+          .execute()
+
+        expect(res).to.have.length(3)
+        expect(res).to.containSubset([
+          {
+            first_name: 'Jennifer',
+            pets: [{ name: 'Catto', species: 'cat' }],
+          },
+          {
+            first_name: 'Arnold',
+            pets: [
+              {
+                name: 'Doggo',
+                species: 'dog',
+              },
+            ],
+          },
+          {
+            first_name: 'Sylvester',
+            pets: [{ name: 'Hammo', species: 'hamster' }],
+          },
+        ])
+      })
+
       it('should jsonify a joined table using to_json', async () => {
         const res = await db
           .selectFrom('person')
