@@ -2,12 +2,15 @@ import { freeze } from '../util/object-utils.js'
 import { OperationNode } from './operation-node.js'
 import { OverNode } from './over-node.js'
 import { WhereNode } from './where-node.js'
+import { OrderByNode } from './order-by-node'
+import { OrderByItemNode } from './order-by-item-node'
 
 export interface AggregateFunctionNode extends OperationNode {
   readonly kind: 'AggregateFunctionNode'
   readonly func: string
   readonly aggregated: readonly OperationNode[]
   readonly distinct?: boolean
+  readonly orderBy?: OrderByNode
   readonly filter?: WhereNode
   readonly over?: OverNode
 }
@@ -37,6 +40,15 @@ export const AggregateFunctionNode = freeze({
     return freeze({
       ...aggregateFunctionNode,
       distinct: true,
+    })
+  },
+
+  cloneWithOrderBy(aggregateFunctionNode: AggregateFunctionNode, orderItems: ReadonlyArray<OrderByItemNode>,): AggregateFunctionNode {
+    return freeze({
+      ...aggregateFunctionNode,
+      orderBy: aggregateFunctionNode.orderBy
+        ? OrderByNode.cloneWithItems(aggregateFunctionNode.orderBy, orderItems)
+        : OrderByNode.create(orderItems),
     })
   },
 
