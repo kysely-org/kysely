@@ -1338,6 +1338,12 @@ export class DefaultQueryCompiler
     }
 
     this.compileList(node.aggregated)
+
+    if (node.orderBy) {
+      this.append(' ')
+      this.visitNode(node.orderBy)
+    }
+
     this.append(')')
 
     if (node.filter) {
@@ -1561,7 +1567,7 @@ export class DefaultQueryCompiler
     this.visitNode(node.dataType)
     this.append(')')
   }
-  
+
   protected override visitFetch(node: FetchNode): void {
     this.append('fetch next ')
     this.visitNode(node.rowCount)
