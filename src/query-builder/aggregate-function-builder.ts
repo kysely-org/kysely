@@ -22,11 +22,11 @@ import {
 } from '../parser/binary-operation-parser.js'
 import { SqlBool } from '../util/type-utils.js'
 import { ExpressionOrFactory } from '../parser/expression-parser.js'
-import { DynamicReferenceBuilder } from '../dynamic/dynamic-reference-builder'
+import { DynamicReferenceBuilder } from '../dynamic/dynamic-reference-builder.js'
 import {
   OrderByDirectionExpression,
   parseOrderBy,
-} from '../parser/order-by-parser'
+} from '../parser/order-by-parser.js'
 
 export class AggregateFunctionBuilder<DB, TB extends keyof DB, O = unknown>
   implements AliasableExpression<O>

@@ -2,8 +2,8 @@ import { freeze } from '../util/object-utils.js'
 import { OperationNode } from './operation-node.js'
 import { OverNode } from './over-node.js'
 import { WhereNode } from './where-node.js'
-import { OrderByNode } from './order-by-node'
-import { OrderByItemNode } from './order-by-item-node'
+import { OrderByNode } from './order-by-node.js'
+import { OrderByItemNode } from './order-by-item-node.js'
 
 export interface AggregateFunctionNode extends OperationNode {
   readonly kind: 'AggregateFunctionNode'
@@ -43,7 +43,10 @@ export const AggregateFunctionNode = freeze({
     })
   },
 
-  cloneWithOrderBy(aggregateFunctionNode: AggregateFunctionNode, orderItems: ReadonlyArray<OrderByItemNode>,): AggregateFunctionNode {
+  cloneWithOrderBy(
+    aggregateFunctionNode: AggregateFunctionNode,
+    orderItems: ReadonlyArray<OrderByItemNode>,
+  ): AggregateFunctionNode {
     return freeze({
       ...aggregateFunctionNode,
       orderBy: aggregateFunctionNode.orderBy
