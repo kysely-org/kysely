@@ -874,6 +874,7 @@ export class OperationNodeTransformer {
       kind: 'AggregateFunctionNode',
       aggregated: this.transformNodeList(node.aggregated),
       distinct: node.distinct,
+      orderBy: this.transformNode(node.orderBy),
       filter: this.transformNode(node.filter),
       func: node.func,
       over: this.transformNode(node.over),
