@@ -10,7 +10,10 @@ import {
   AliasedExpression,
   Expression,
 } from '../expression/expression.js'
-import { ReferenceExpression } from '../parser/reference-parser.js'
+import {
+  ReferenceExpression,
+  StringReference,
+} from '../parser/reference-parser.js'
 import {
   ComparisonOperatorExpression,
   OperandValueExpressionOrList,
@@ -19,6 +22,11 @@ import {
 } from '../parser/binary-operation-parser.js'
 import { SqlBool } from '../util/type-utils.js'
 import { ExpressionOrFactory } from '../parser/expression-parser.js'
+import { DynamicReferenceBuilder } from '../dynamic/dynamic-reference-builder'
+import {
+  OrderByDirectionExpression,
+  parseOrderBy,
+} from '../parser/order-by-parser'
 
 export class AggregateFunctionBuilder<DB, TB extends keyof DB, O = unknown>
   implements AliasableExpression<O>
@@ -91,6 +99,43 @@ export class AggregateFunctionBuilder<DB, TB extends keyof DB, O = unknown>
       ...this.#props,
       aggregateFunctionNode: AggregateFunctionNode.cloneWithDistinct(
         this.#props.aggregateFunctionNode,
+      ),
+    })
+  }
+
+  /**
+   * Adds an `order by` clause inside the aggregate function for specify correct result order
+   * ([see postgres docs](https://www.postgresql.org/docs/9.5/sql-expressions.html#SYNTAX-AGGREGATES))
+   *
+   * ### Examples
+   *
+   * ```ts
+   * const result = await db
+   *   .selectFrom('person')
+   *   .innerJoin('pet', 'pet.owner_id', 'person.id')
+   *   .select((eb) =>
+   *     eb.fn.jsonAgg('pet.name').orderBy('pet.name').as('person_pets')
+   *   )
+   *   .executeTakeFirstOrThrow()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * select json_agg("pet"."name" order by "pet"."name") as "person_pets"
+   * from "person"
+   * inner join "pet" ON "pet"."owner_id" = "person"."id"
+   * ```
+   */
+  orderBy<OE extends StringReference<DB, TB> | DynamicReferenceBuilder<any>>(
+    orderBy: OE,
+    direction?: OrderByDirectionExpression,
+  ): AggregateFunctionBuilder<DB, TB, O> {
+    return new AggregateFunctionBuilder({
+      ...this.#props,
+      aggregateFunctionNode: AggregateFunctionNode.cloneWithOrderBy(
+        this.#props.aggregateFunctionNode,
+        parseOrderBy([orderBy, direction]),
       ),
     })
   }
