@@ -277,17 +277,17 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    * that case Kysely typings wouldn't allow you to reference `pet.owner_id`
    * because `pet` is not joined to that query.
    */
-  selectFrom<TE extends keyof DB & string>(
+  selectFrom<TE extends keyof DB & string, TA extends ExtractTableAlias<DB, TE>>(
     from: TE[],
-  ): SelectQueryBuilder<DB, TB | ExtractTableAlias<DB, TE>, {}>
+  ): SelectQueryBuilder<DB, TA extends keyof DB ? TA : TB, {}>
 
   selectFrom<TE extends TableExpression<DB, TB>>(
     from: TE[],
   ): SelectQueryBuilder<From<DB, TE>, FromTables<DB, TB, TE>, {}>
 
-  selectFrom<TE extends keyof DB & string>(
+  selectFrom<TE extends keyof DB & string, TA extends ExtractTableAlias<DB, TE>>(
     from: TE,
-  ): SelectQueryBuilder<DB, TB | ExtractTableAlias<DB, TE>, {}>
+  ): SelectQueryBuilder<DB, TA extends keyof DB ? TA : TB, {}>
 
   selectFrom<TE extends AnyAliasedTable<DB>>(
     from: TE,
