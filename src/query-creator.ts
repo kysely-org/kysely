@@ -183,7 +183,7 @@ export class QueryCreator<DB> {
     from: TE,
   ): SelectQueryBuilder<
     DB & PickTableWithAlias<DB, TE>,
-    ExtractTableAlias<DB, TE>,
+    ExtractTableAlias<DB & PickTableWithAlias<DB, TE>, TE>,
     {}
   >
 
@@ -477,8 +477,8 @@ export class QueryCreator<DB> {
     table: TR,
   ): UpdateQueryBuilder<
     DB & PickTableWithAlias<DB, TR>,
-    ExtractTableAlias<DB, TR>,
-    ExtractTableAlias<DB, TR>,
+    ExtractTableAlias<DB & PickTableWithAlias<DB, TR>, TR>,
+    ExtractTableAlias<DB & PickTableWithAlias<DB, TR>, TR>,
     UpdateResult
   >
 
@@ -544,7 +544,7 @@ export class QueryCreator<DB> {
     targetTable: TR,
   ): MergeQueryBuilder<
     DB & PickTableWithAlias<DB, TR>,
-    ExtractTableAlias<DB, TR>,
+    ExtractTableAlias<DB & PickTableWithAlias<DB, TR>, TR>,
     MergeResult
   >
 
