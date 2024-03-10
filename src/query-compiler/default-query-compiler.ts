@@ -607,6 +607,10 @@ export class DefaultQueryCompiler
   }
 
   protected override visitColumnDefinition(node: ColumnDefinitionNode): void {
+    if (node.ifNotExists) {
+      this.append('if not exists ')
+    }
+
     this.visitNode(node.column)
 
     this.append(' ')
