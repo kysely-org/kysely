@@ -6,6 +6,7 @@ import {
   InferResult,
   InsertResult,
   Kysely,
+  MergeResult,
   Selectable,
   UpdateResult,
 } from '..'
@@ -113,4 +114,17 @@ function testInferResultDeleteQuery(db: Kysely<Database>) {
   type Expected2 = { id: string }[]
   expectType<Equals<Expected2, InferResult<typeof query2>>>(true)
   expectType<Equals<Expected2, InferResult<typeof compiledQuery2>>>(true)
+}
+
+function testInferResultMergeQuery(db: Kysely<Database>) {
+  const query0 = db
+    .mergeInto('person')
+    .using('pet', 'pet.owner_id', 'person.id')
+    .whenMatched()
+    .thenDelete()
+  const compiledQuery0 = query0.compile()
+
+  type Expected0 = MergeResult[]
+  expectType<Equals<Expected0, InferResult<typeof query0>>>(true)
+  expectType<Equals<Expected0, InferResult<typeof compiledQuery0>>>(true)
 }
