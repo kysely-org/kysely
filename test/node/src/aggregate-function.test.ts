@@ -2,6 +2,7 @@ import {
   AggregateFunctionBuilder,
   ExpressionBuilder,
   SimpleReferenceExpression,
+  ReferenceExpression,
   sql,
 } from '../../../'
 import {
@@ -137,39 +138,6 @@ for (const dialect of DIALECTS) {
 
           await query.execute()
         })
-
-        if (dialect === 'postgres') {
-          it(`should execute a query with ${funcName}(column order by column) in select clause`, async () => {
-            const query = ctx.db
-              .selectFrom('person')
-              .select([
-                func('id').orderBy('first_name', 'desc').as(funcName),
-                (eb) =>
-                  getAggregateFunctionFromExpressionBuilder(
-                    eb,
-                    funcName,
-                  )('person.id')
-                    .orderBy('person.first_name', 'desc')
-                    .as(`another_${funcName}`),
-              ])
-
-            testSql(query, dialect, {
-              postgres: {
-                sql: [
-                  `select ${funcName}("id" order by "first_name" desc) as "${funcName}",`,
-                  `${funcName}("person"."id" order by "person"."first_name" desc) as "another_${funcName}"`,
-                  `from "person"`,
-                ],
-                parameters: [],
-              },
-              mysql: NOT_SUPPORTED,
-              mssql: NOT_SUPPORTED,
-              sqlite: NOT_SUPPORTED,
-            })
-
-            await query.execute()
-          })
-        }
 
         it(`should execute a query with ${funcName}(column) over() in select clause`, async () => {
           const query = ctx.db
@@ -1138,6 +1106,56 @@ for (const dialect of DIALECTS) {
       })
 
       await query.execute()
+    })
+
+    describe(`should execute order-sensitive aggregate functions`, () => {
+      // @todo add test for mssql when implement `WITHIN GROUP ( order_by_clause )` clause
+      if (dialect !== 'mssql') {
+        const isMySql = dialect === 'mysql'
+        const funcName = isMySql ? 'group_concat' : 'string_agg'
+        const funcArgs: Array<ReferenceExpression<Database, 'person'>> = [
+          'first_name',
+        ]
+        if (!isMySql) funcArgs.push(sql.lit(','))
+
+        it(`should execute a query with ${funcName}(column order by column) in select clause`, async () => {
+          const query = ctx.db
+            .selectFrom('person')
+            .select((eb) =>
+              eb.fn
+                .agg(funcName, funcArgs)
+                .orderBy('first_name', 'desc')
+                .as('first_names'),
+            )
+
+          testSql(query, dialect, {
+            postgres: {
+              sql: [
+                `select ${funcName}("first_name", ',' order by "first_name" desc) as "first_names"`,
+                `from "person"`,
+              ],
+              parameters: [],
+            },
+            mysql: {
+              sql: [
+                `select group_concat(\`first_name\` order by \`first_name\` desc) as \`first_names\``,
+                `from \`person\``,
+              ],
+              parameters: [],
+            },
+            mssql: NOT_SUPPORTED,
+            sqlite: {
+              sql: [
+                `select string_agg("first_name", ',' order by "first_name" desc) as "first_names"`,
+                `from "person"`,
+              ],
+              parameters: [],
+            },
+          })
+
+          await query.execute()
+        })
+      }
     })
   })
 }
