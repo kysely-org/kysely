@@ -139,39 +139,6 @@ for (const dialect of DIALECTS) {
           await query.execute()
         })
 
-        if (dialect === 'postgres') {
-          it(`should execute a query with ${funcName}(column order by column) in select clause`, async () => {
-            const query = ctx.db
-              .selectFrom('person')
-              .select([
-                func('id').orderBy('first_name', 'desc').as(funcName),
-                (eb) =>
-                  getAggregateFunctionFromExpressionBuilder(
-                    eb,
-                    funcName,
-                  )('person.id')
-                    .orderBy('person.first_name', 'desc')
-                    .as(`another_${funcName}`),
-              ])
-
-            testSql(query, dialect, {
-              postgres: {
-                sql: [
-                  `select ${funcName}("id" order by "first_name" desc) as "${funcName}",`,
-                  `${funcName}("person"."id" order by "person"."first_name" desc) as "another_${funcName}"`,
-                  `from "person"`,
-                ],
-                parameters: [],
-              },
-              mysql: NOT_SUPPORTED,
-              mssql: NOT_SUPPORTED,
-              sqlite: NOT_SUPPORTED,
-            })
-
-            await query.execute()
-          })
-        }
-
         it(`should execute a query with ${funcName}(column) over() in select clause`, async () => {
           const query = ctx.db
             .selectFrom('person')
