@@ -299,7 +299,7 @@ for (const dialect of DIALECTS) {
           const builder = ctx.db.schema
             .createTable('test')
             .addColumn('a', 'integer', (col) =>
-              col.identity().notNull().primaryKey()
+              col.identity().notNull().primaryKey(),
             )
             .addColumn('b', 'integer', (col) =>
               col
@@ -2320,6 +2320,24 @@ for (const dialect of DIALECTS) {
             testSql(builder, dialect, {
               postgres: {
                 sql: 'alter table "test" add column "desc" varchar(20) unique nulls not distinct',
+                parameters: [],
+              },
+              mysql: NOT_SUPPORTED,
+              mssql: NOT_SUPPORTED,
+              sqlite: NOT_SUPPORTED,
+            })
+
+            await builder.execute()
+          })
+
+          it('should add a column with "if not exists" modifier', async () => {
+            const builder = ctx.db.schema
+              .alterTable('test')
+              .addColumn('desc', 'varchar(20)', (cb) => cb.ifNotExists())
+
+            testSql(builder, dialect, {
+              postgres: {
+                sql: 'alter table "test" add column if not exists "desc" varchar(20)',
                 parameters: [],
               },
               mysql: NOT_SUPPORTED,
