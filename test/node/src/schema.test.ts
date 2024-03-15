@@ -68,6 +68,7 @@ for (const dialect of DIALECTS) {
                 .notNull(),
             )
             .addColumn('t', 'time(6)')
+            .addColumn('tz', 'timetz(6)')
             .addColumn('u', 'timestamp(6)', (col) =>
               col.notNull().defaultTo(sql`current_timestamp`),
             )
@@ -100,6 +101,7 @@ for (const dialect of DIALECTS) {
                 '"r" int8,',
                 '"s" double precision generated always as (f + g) stored not null,',
                 '"t" time(6),',
+                '"tz" timetz(6),',
                 '"u" timestamp(6) default current_timestamp not null,',
                 '"v" timestamptz(6),',
                 '"w" char(4),',

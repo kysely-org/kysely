@@ -42,7 +42,7 @@ const COLUMN_DATA_TYPE_REGEX = [
   /^binary\(\d+\)$/,
   /^datetime\(\d+\)$/,
   /^time\(\d+\)$/,
-  /^timez\(\d+\)$/,
+  /^timetz\(\d+\)$/,
   /^timestamp\(\d+\)$/,
   /^timestamptz\(\d+\)$/,
 ]
