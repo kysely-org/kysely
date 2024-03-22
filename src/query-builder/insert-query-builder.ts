@@ -196,8 +196,7 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    *     last_name: sql`concat(${ani}, ${ston})`,
    *     middle_name: ref('first_name'),
    *     age: selectFrom('person')
-   *       .select(fn.avg<number>('age')
-   *       .as('avg_age')),
+   *       .select(fn.avg<number>('age').as('avg_age')),
    *   }))
    *   .executeTakeFirst()
    * ```
