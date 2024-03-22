@@ -615,8 +615,8 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    * on "pet"."owner_id" = "person"."id"
    * and "pet"."name" = $1
    * and (
-   *   "person"."age" > $2 OR
-   *   "person"."age" < $3
+   *   "person"."age" > $2
+   *   OR "person"."age" < $3
    * )
    * ```
    *
