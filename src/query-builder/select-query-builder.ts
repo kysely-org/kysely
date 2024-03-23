@@ -912,7 +912,7 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    *     .limit(1)
    *   )
    *   .orderBy(
-   *     sql`concat(first_name, last_name)`
+   *     sql<string>`concat(first_name, last_name)`
    *   )
    *   .execute()
    * ```
@@ -981,7 +981,7 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    *   .selectFrom('person')
    *   .select([
    *     'first_name',
-   *     sql`max(id)`.as('max_id')
+   *     sql<string>`max(id)`.as('max_id')
    *   ])
    *   .groupBy('first_name')
    *   .execute()
@@ -1005,7 +1005,7 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    *   .select([
    *     'first_name',
    *     'last_name',
-   *     sql`max(id)`.as('max_id')
+   *     sql<string>`max(id)`.as('max_id')
    *   ])
    *   .groupBy([
    *     'first_name',
@@ -1033,10 +1033,10 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    *   .select([
    *     'first_name',
    *     'last_name',
-   *     sql`max(id)`.as('max_id')
+   *     sql<string>`max(id)`.as('max_id')
    *   ])
    *   .groupBy([
-   *     sql`concat(first_name, last_name)`,
+   *     sql<string>`concat(first_name, last_name)`,
    *     (qb) => qb.selectFrom('pet').select('id').limit(1)
    *   ])
    *   .execute()

@@ -193,7 +193,7 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    *   .insertInto('person')
    *   .values(({ ref, selectFrom, fn }) => ({
    *     first_name: 'Jennifer',
-   *     last_name: sql`concat(${ani}, ${ston})`,
+   *     last_name: sql<string>`>concat(${ani}, ${ston})`,
    *     middle_name: ref('first_name'),
    *     age: selectFrom('person')
    *       .select(fn.avg<number>('age').as('avg_age')),
@@ -496,7 +496,7 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    *     species: 'cat',
    *   })
    *   .onConflict((oc) => oc
-   *     .expression(sql`lower(name)`)
+   *     .expression(sql<string>`lower(name)`)
    *     .doUpdateSet({ species: 'hamster' })
    *   )
    *   .execute()

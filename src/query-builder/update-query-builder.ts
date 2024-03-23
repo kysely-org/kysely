@@ -561,7 +561,7 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
    *   .set('first_name', 'Foo')
    *   // As always, both arguments can be arbitrary expressions or
    *   // callbacks that give you access to an expression builder:
-   *   .set(sql`address['postalCode']`, (eb) => eb.val('61710))
+   *   .set(sql<string>`address['postalCode']`, (eb) => eb.val('61710))
    *   .where('id', '=', '1')
    *   .executeTakeFirst()
    * ```
@@ -602,7 +602,7 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
    *     first_name: selectFrom('person').select('first_name').limit(1),
    *     middle_name: ref('first_name'),
    *     age: eb('age', '+', 1),
-   *     last_name: sql`${'Ani'} || ${'ston'}`,
+   *     last_name: sql<string>`${'Ani'} || ${'ston'}`,
    *   }))
    *   .where('id', '=', 1)
    *   .executeTakeFirst()
