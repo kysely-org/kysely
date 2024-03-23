@@ -121,7 +121,7 @@ export class AlterTableAddIndexBuilder
    * await db.schema
    *   .alterTable('person')
    *   .addIndex('person_first_name_index')
-   *   .expression(sql`(first_name < 'Sami')`)
+   *   .expression(sql<boolean>`(first_name < 'Sami')`)
    *   .execute()
    * ```
    *

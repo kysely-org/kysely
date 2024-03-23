@@ -270,7 +270,7 @@ export interface WhereInterface<DB, TB extends keyof DB> {
    *   .selectFrom('person')
    *   .selectAll()
    *   .where(
-   *     sql`coalesce(first_name, last_name)`,
+   *     sql<string>`coalesce(first_name, last_name)`,
    *     'like',
    *     '%' + name + '%',
    *   )

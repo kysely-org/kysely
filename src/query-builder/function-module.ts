@@ -124,7 +124,7 @@ export interface FunctionModule<DB, TB extends keyof DB> {
    * ```ts
    * db.selectFrom('person')
    *   .selectAll('person')
-   *   .where(sql`upper(first_name)`, '=', 'JENNIFER')
+   *   .where(sql<string>`upper(first_name)`, '=', 'JENNIFER')
    * ```
    */
   <O, RE extends ReferenceExpression<DB, TB> = ReferenceExpression<DB, TB>>(
