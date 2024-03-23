@@ -1537,6 +1537,11 @@ export class DefaultQueryCompiler
       this.append(' ')
       this.compileList(node.whens)
     }
+
+    if (node.output) {
+      this.append(' ')
+      this.visitNode(node.output)
+    }
   }
 
   protected override visitMatched(node: MatchedNode): void {
@@ -1581,13 +1586,13 @@ export class DefaultQueryCompiler
     this.visitNode(node.dataType)
     this.append(')')
   }
-  
+
   protected override visitFetch(node: FetchNode): void {
     this.append('fetch next ')
     this.visitNode(node.rowCount)
     this.append(` rows ${node.modifier}`)
   }
-  
+
   protected override visitOutput(node: OutputNode): void {
     this.append('output ')
     this.compileList(node.selections)
