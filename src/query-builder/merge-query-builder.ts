@@ -23,7 +23,7 @@ import {
 import { parseMergeThen, parseMergeWhen } from '../parser/merge-parser.js'
 import { ReferenceExpression } from '../parser/reference-parser.js'
 import { ReturningAllRow, ReturningRow } from '../parser/returning-parser.js'
-import { parseSelectAll } from '../parser/select-parser.js'
+import { parseSelectAll, parseSelectArg } from '../parser/select-parser.js'
 import { TableExpression } from '../parser/table-parser.js'
 import { parseTop } from '../parser/top-parser.js'
 import {
@@ -211,7 +211,10 @@ export class MergeQueryBuilder<DB, TT extends keyof DB, O>
   output(args: any): any {
     return new MergeQueryBuilder({
       ...this.#props,
-      queryNode: QueryNode.cloneWithOutput(this.#props.queryNode, args),
+      queryNode: QueryNode.cloneWithOutput(
+        this.#props.queryNode,
+        parseSelectArg(args),
+      ),
     })
   }
 
@@ -574,7 +577,10 @@ export class WheneableMergeQueryBuilder<
   output(args: any): any {
     return new WheneableMergeQueryBuilder({
       ...this.#props,
-      queryNode: QueryNode.cloneWithOutput(this.#props.queryNode, args),
+      queryNode: QueryNode.cloneWithOutput(
+        this.#props.queryNode,
+        parseSelectArg(args),
+      ),
     })
   }
 
@@ -716,6 +722,13 @@ export class WheneableMergeQueryBuilder<
       compiledQuery,
       this.#props.queryId,
     )
+
+    if (
+      (compiledQuery.query as MergeQueryNode).output &&
+      this.#props.executor.adapter.supportsOutput
+    ) {
+      return result.rows as any
+    }
 
     return [new MergeResult(result.numAffectedRows) as any]
   }
