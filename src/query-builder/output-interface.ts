@@ -10,13 +10,13 @@ export interface OutputInterface<
   DB,
   TB extends keyof DB,
   O,
-  OP extends OutputPrefix = OutputPrefix
+  OP extends OutputPrefix = OutputPrefix,
 > {
   /**
    * Allows you to return data from modified rows.
    *
    * On supported databases like MS SQL Server (MSSQL), this method can be chained
-   * to `insert`, `update` and `delete` queries to return data.
+   * to `insert`, `update`, `delete` and `merge` queries to return data.
    *
    * Also see the {@link outputAll} method.
    *
@@ -62,9 +62,30 @@ export interface OutputInterface<
    *   .where('created_at', '<', new Date())
    *   .executeTakeFirst()
    * ```
+   *
+   * Return the action performed on the row:
+   *
+   * ```ts
+   * await db
+   *   .mergeInto('person')
+   *   .using('pet', 'pet.owner_id', 'person.id')
+   *   .whenMatched()
+   *   .thenDelete()
+   *   .whenNotMatched()
+   *   .thenInsertValues({
+   *     first_name: 'John',
+   *     last_name: 'Doe',
+   *     gender: 'male'
+   *   })
+   *   .output([
+   *     '$action',
+   *     'inserted.id as inserted_id',
+   *     'deleted.id as deleted_id',
+   *   ])
+   * ```
    */
   output<OE extends OutputExpression<DB, TB, OP>>(
-    selections: ReadonlyArray<OE>
+    selections: ReadonlyArray<OE>,
   ): OutputInterface<
     DB,
     TB,
@@ -73,7 +94,7 @@ export interface OutputInterface<
   >
 
   output<CB extends OutputCallback<DB, TB, OP>>(
-    callback: CB
+    callback: CB,
   ): OutputInterface<
     DB,
     TB,
@@ -82,7 +103,7 @@ export interface OutputInterface<
   >
 
   output<OE extends OutputExpression<DB, TB, OP>>(
-    selection: OE
+    selection: OE,
   ): OutputInterface<
     DB,
     TB,
@@ -91,7 +112,7 @@ export interface OutputInterface<
   >
 
   /**
-   * Adds an `output {prefix}.*` to an `insert`/`update`/`delete` query on databases
+   * Adds an `output {prefix}.*` to an `insert`/`update`/`delete`/`merge` query on databases
    * that support `output` such as MS SQL Server (MSSQL).
    *
    * Also see the {@link output} method.
@@ -104,7 +125,7 @@ export type OutputPrefix = 'deleted' | 'inserted'
 export type OutputDatabase<
   DB,
   TB extends keyof DB,
-  OP extends OutputPrefix = OutputPrefix
+  OP extends OutputPrefix = OutputPrefix,
 > = {
   [K in OP]: DB[TB]
 }
@@ -114,7 +135,7 @@ export type OutputExpression<
   TB extends keyof DB,
   OP extends OutputPrefix = OutputPrefix,
   ODB = OutputDatabase<DB, TB, OP>,
-  OTB extends keyof ODB = keyof ODB
+  OTB extends keyof ODB = keyof ODB,
 > =
   | AnyAliasedColumnWithTable<ODB, OTB>
   | AnyColumnWithTable<ODB, OTB>
@@ -123,16 +144,16 @@ export type OutputExpression<
 export type OutputCallback<
   DB,
   TB extends keyof DB,
-  OP extends OutputPrefix = OutputPrefix
+  OP extends OutputPrefix = OutputPrefix,
 > = (
-  eb: ExpressionBuilder<OutputDatabase<DB, TB, OP>, OP>
+  eb: ExpressionBuilder<OutputDatabase<DB, TB, OP>, OP>,
 ) => ReadonlyArray<OutputExpression<DB, TB, OP>>
 
 export type SelectExpressionFromOutputExpression<OE> =
   OE extends `${OutputPrefix}.${infer C}` ? C : OE
 
 export type SelectExpressionFromOutputCallback<CB> = CB extends (
-  eb: ExpressionBuilder<any, any>
+  eb: ExpressionBuilder<any, any>,
 ) => ReadonlyArray<infer OE>
   ? SelectExpressionFromOutputExpression<OE>
   : never
