@@ -1013,6 +1013,7 @@ export class OperationNodeTransformer {
       whens: this.transformNodeList(node.whens),
       with: this.transformNode(node.with),
       top: this.transformNode(node.top),
+      output: this.transformNode(node.output),
     })
   }
 
