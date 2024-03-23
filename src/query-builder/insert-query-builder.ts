@@ -205,8 +205,7 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    *     last_name: sql`concat(${ani}, ${ston})`,
    *     middle_name: ref('first_name'),
    *     age: selectFrom('person')
-   *       .select(fn.avg<number>('age')
-   *       .as('avg_age')),
+   *       .select(fn.avg<number>('age').as('avg_age')),
    *   }))
    *   .executeTakeFirst()
    * ```
@@ -295,7 +294,9 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    *
    * <!-- siteExample("insert", "Insert subquery", 50) -->
    *
-   * You can create an `INSERT INTO SELECT FROM` query using the `expression` method:
+   * You can create an `INSERT INTO SELECT FROM` query using the `expression` method.
+   * This API doesn't follow our WYSIWYG principles and might be a bit difficult to
+   * remember. The reasons for this design stem from implementation difficulties.
    *
    * ```ts
    * const result = await db.insertInto('person')

@@ -293,7 +293,7 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
     from: TE,
   ): SelectQueryBuilder<
     DB & PickTableWithAlias<DB, TE>,
-    TB | ExtractTableAlias<DB, TE>,
+    TB | ExtractTableAlias<DB & PickTableWithAlias<DB, TE>, TE>,
     {}
   >
 

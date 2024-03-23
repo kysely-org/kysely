@@ -456,6 +456,7 @@ export class OperationNodeTransformer {
       endModifiers: this.transformNodeList(node.endModifiers),
       nullsNotDistinct: node.nullsNotDistinct,
       identity: node.identity,
+      ifNotExists: node.ifNotExists,
     })
   }
 
