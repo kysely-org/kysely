@@ -78,7 +78,6 @@ export interface OutputInterface<
    *     gender: 'male'
    *   })
    *   .output([
-   *     '$action',
    *     'inserted.id as inserted_id',
    *     'deleted.id as deleted_id',
    *   ])
