@@ -31,7 +31,7 @@ export const ForeignKeyConstraintNode = freeze({
     sourceColumns: ReadonlyArray<ColumnNode>,
     targetTable: TableNode,
     targetColumns: ReadonlyArray<ColumnNode>,
-    constraintName?: string
+    constraintName?: string,
   ): ForeignKeyConstraintNode {
     return freeze({
       kind: 'ForeignKeyConstraintNode',
@@ -43,7 +43,7 @@ export const ForeignKeyConstraintNode = freeze({
 
   cloneWith(
     node: ForeignKeyConstraintNode,
-    props: ForeignKeyConstraintNodeProps
+    props: ForeignKeyConstraintNodeProps,
   ) {
     return freeze({
       ...node,

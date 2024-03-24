@@ -17,7 +17,7 @@ export class CreateTypeBuilder implements OperationNodeSource, Compilable {
   toOperationNode(): CreateTypeNode {
     return this.#props.executor.transformQuery(
       this.#props.node,
-      this.#props.queryId
+      this.#props.queryId,
     )
   }
 
@@ -48,7 +48,7 @@ export class CreateTypeBuilder implements OperationNodeSource, Compilable {
   compile(): CompiledQuery {
     return this.#props.executor.compileQuery(
       this.toOperationNode(),
-      this.#props.queryId
+      this.#props.queryId,
     )
   }
 
@@ -59,7 +59,7 @@ export class CreateTypeBuilder implements OperationNodeSource, Compilable {
 
 preventAwait(
   CreateTypeBuilder,
-  "don't await CreateTypeBuilder instances directly. To execute the query you need to call `execute`"
+  "don't await CreateTypeBuilder instances directly. To execute the query you need to call `execute`",
 )
 
 export interface CreateTypeBuilderProps {

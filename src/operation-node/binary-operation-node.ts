@@ -19,7 +19,7 @@ export const BinaryOperationNode = freeze({
   create(
     leftOperand: OperationNode,
     operator: OperationNode,
-    rightOperand: OperationNode
+    rightOperand: OperationNode,
   ): BinaryOperationNode {
     return freeze({
       kind: 'BinaryOperationNode',

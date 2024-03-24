@@ -27,7 +27,7 @@ export const OverNode = freeze({
 
   cloneWithOrderByItems(
     overNode: OverNode,
-    items: ReadonlyArray<OrderByItemNode>
+    items: ReadonlyArray<OrderByItemNode>,
   ): OverNode {
     return freeze({
       ...overNode,
@@ -39,7 +39,7 @@ export const OverNode = freeze({
 
   cloneWithPartitionByItems(
     overNode: OverNode,
-    items: ReadonlyArray<PartitionByItemNode>
+    items: ReadonlyArray<PartitionByItemNode>,
   ): OverNode {
     return freeze({
       ...overNode,

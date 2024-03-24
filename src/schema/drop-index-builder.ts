@@ -57,14 +57,14 @@ export class DropIndexBuilder implements OperationNodeSource, Compilable {
   toOperationNode(): DropIndexNode {
     return this.#props.executor.transformQuery(
       this.#props.node,
-      this.#props.queryId
+      this.#props.queryId,
     )
   }
 
   compile(): CompiledQuery {
     return this.#props.executor.compileQuery(
       this.toOperationNode(),
-      this.#props.queryId
+      this.#props.queryId,
     )
   }
 
@@ -75,7 +75,7 @@ export class DropIndexBuilder implements OperationNodeSource, Compilable {
 
 preventAwait(
   DropIndexBuilder,
-  "don't await DropIndexBuilder instances directly. To execute the query you need to call `execute`"
+  "don't await DropIndexBuilder instances directly. To execute the query you need to call `execute`",
 )
 
 export interface DropIndexBuilderProps {

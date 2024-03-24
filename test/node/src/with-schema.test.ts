@@ -12,7 +12,7 @@ import {
 } from './test-setup.js'
 
 for (const dialect of DIALECTS.filter(
-  (dialect) => dialect === 'postgres' || dialect === 'mssql'
+  (dialect) => dialect === 'postgres' || dialect === 'mssql',
 )) {
   describe(`${dialect}: with schema`, () => {
     let ctx: TestContext
@@ -30,7 +30,7 @@ for (const dialect of DIALECTS.filter(
           first_name: 'Foo',
           last_name: 'Bar',
           gender: 'other',
-        })
+        }),
       )
 
       await ctx.db
@@ -355,7 +355,7 @@ for (const dialect of DIALECTS.filter(
         const query = ctx.db
           .withSchema('mammals')
           .with('doggo', (db) =>
-            db.selectFrom('pet').where('pet.name', '=', 'Doggo').selectAll()
+            db.selectFrom('pet').where('pet.name', '=', 'Doggo').selectAll(),
           )
           .selectFrom('doggo')
           .selectAll()
@@ -380,7 +380,7 @@ for (const dialect of DIALECTS.filter(
         const query = ctx.db
           .withSchema('mammals')
           .with('doggo', (qb) =>
-            qb.selectFrom('pet').where('name', '=', 'Doggo').select('pet.id')
+            qb.selectFrom('pet').where('name', '=', 'Doggo').select('pet.id'),
           )
           .selectFrom('pet')
           .select((eb) => [
@@ -572,7 +572,7 @@ for (const dialect of DIALECTS.filter(
       const table = createTableWithId(
         ctx.db.schema.withSchema('mammals'),
         dialect,
-        'pet'
+        'pet',
       )
 
       await table
@@ -580,9 +580,9 @@ for (const dialect of DIALECTS.filter(
         .addColumn('owner_id', 'integer', (col) =>
           col
             .references(
-              dialect === 'postgres' ? 'public.person.id' : 'dbo.person.id'
+              dialect === 'postgres' ? 'public.person.id' : 'dbo.person.id',
             )
-            .onDelete('cascade')
+            .onDelete('cascade'),
         )
         .addColumn('species', 'varchar(50)')
         .execute()

@@ -17,7 +17,7 @@ export const RawNode = freeze({
 
   create(
     sqlFragments: ReadonlyArray<string>,
-    parameters: ReadonlyArray<OperationNode>
+    parameters: ReadonlyArray<OperationNode>,
   ): RawNode {
     return freeze({
       kind: 'RawNode',

@@ -38,7 +38,7 @@ export class FileMigrationProvider implements MigrationProvider {
         const migration = await import(
           /* webpackIgnore: true */ this.#props.path.join(
             this.#props.migrationFolder,
-            fileName
+            fileName,
           )
         )
         const migrationKey = fileName.substring(0, fileName.lastIndexOf('.'))

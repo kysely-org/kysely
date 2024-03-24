@@ -13,23 +13,23 @@ export type ExistsExpression<DB, TB extends keyof DB> = ExpressionOrFactory<
 >
 
 export function parseExists(
-  operand: ExistsExpression<any, any>
+  operand: ExistsExpression<any, any>,
 ): UnaryOperationNode {
   return parseUnaryOperation('exists', operand)
 }
 
 export function parseNotExists(
-  operand: ExistsExpression<any, any>
+  operand: ExistsExpression<any, any>,
 ): UnaryOperationNode {
   return parseUnaryOperation('not exists', operand)
 }
 
 export function parseUnaryOperation(
   operator: UnaryOperator,
-  operand: ReferenceExpression<any, any>
+  operand: ReferenceExpression<any, any>,
 ): UnaryOperationNode {
   return UnaryOperationNode.create(
     OperatorNode.create(operator),
-    parseReferenceExpression(operand)
+    parseReferenceExpression(operand),
   )
 }

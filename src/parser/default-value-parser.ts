@@ -6,7 +6,7 @@ import { ValueNode } from '../operation-node/value-node.js'
 export type DefaultValueExpression = unknown | Expression<unknown>
 
 export function parseDefaultValueExpression(
-  value: DefaultValueExpression
+  value: DefaultValueExpression,
 ): OperationNode {
   return isOperationNodeSource(value)
     ? value.toOperationNode()

@@ -12,7 +12,7 @@ export class SingleConnectionProvider implements ConnectionProvider {
   }
 
   async provideConnection<T>(
-    consumer: (connection: DatabaseConnection) => Promise<T>
+    consumer: (connection: DatabaseConnection) => Promise<T>,
   ): Promise<T> {
     while (this.#runningPromise) {
       await this.#runningPromise.catch(ignoreError)
@@ -31,7 +31,7 @@ export class SingleConnectionProvider implements ConnectionProvider {
   // Run the runner in an async function to make sure it doesn't
   // throw synchronous errors.
   async #run<T>(
-    runner: (connection: DatabaseConnection) => Promise<T>
+    runner: (connection: DatabaseConnection) => Promise<T>,
   ): Promise<T> {
     return await runner(this.#connection)
   }

@@ -42,7 +42,7 @@ for (const dialect of DIALECTS) {
         .addColumn('lastName', 'varchar(255)')
         .addColumn(
           'preferences',
-          dialect === 'mssql' ? 'varchar(8000)' : 'json'
+          dialect === 'mssql' ? 'varchar(8000)' : 'json',
         )
         .execute()
     })
@@ -80,7 +80,7 @@ for (const dialect of DIALECTS) {
     if (dialect === 'postgres' || dialect === 'mysql' || dialect === 'mssql') {
       it('should have created the table and its columns in snake_case', async () => {
         const result = await sql<any>`select * from camel_person`.execute(
-          ctx.db
+          ctx.db,
         )
 
         expect(result.rows).to.have.length(2)
@@ -97,7 +97,7 @@ for (const dialect of DIALECTS) {
         .innerJoin(
           'camelPerson as camelPerson2',
           'camelPerson2.id',
-          'camelPerson.id'
+          'camelPerson.id',
         )
         .orderBy('camelPerson.firstName')
 
@@ -156,7 +156,7 @@ for (const dialect of DIALECTS) {
           .innerJoin(
             'camelPerson as camelPerson2',
             'camelPerson2.id',
-            'camelPerson.id'
+            'camelPerson.id',
           )
           .orderBy('camelPerson.firstName')
 
@@ -212,7 +212,7 @@ for (const dialect of DIALECTS) {
       const query = camelDb.schema
         .alterTable('camelPerson')
         .addColumn('middleName', 'text', (col) =>
-          col.references('camelPerson.firstName')
+          col.references('camelPerson.firstName'),
         )
 
       testSql(query, dialect, {

@@ -52,14 +52,14 @@ export class DropViewBuilder implements OperationNodeSource, Compilable {
   toOperationNode(): DropViewNode {
     return this.#props.executor.transformQuery(
       this.#props.node,
-      this.#props.queryId
+      this.#props.queryId,
     )
   }
 
   compile(): CompiledQuery {
     return this.#props.executor.compileQuery(
       this.toOperationNode(),
-      this.#props.queryId
+      this.#props.queryId,
     )
   }
 
@@ -70,7 +70,7 @@ export class DropViewBuilder implements OperationNodeSource, Compilable {
 
 preventAwait(
   DropViewBuilder,
-  "don't await DropViewBuilder instances directly. To execute the query you need to call `execute`"
+  "don't await DropViewBuilder instances directly. To execute the query you need to call `execute`",
 )
 
 export interface DropViewBuilderProps {

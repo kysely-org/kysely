@@ -19,7 +19,7 @@ export const CommonTableExpressionNameNode = freeze({
 
   create(
     tableName: string,
-    columnNames?: ReadonlyArray<string>
+    columnNames?: ReadonlyArray<string>,
   ): CommonTableExpressionNameNode {
     return freeze({
       kind: 'CommonTableExpressionNameNode',

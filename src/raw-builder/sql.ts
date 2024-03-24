@@ -43,12 +43,12 @@ export interface Sql {
    *     // method to give it an alias.
    *     sql<string>`concat(first_name, ' ', last_name)`.as('full_name')
    *   )
-   *   .where(sql`birthdate between ${date1} and ${date2}`)
+   *   .where(sql<boolean>`birthdate between ${date1} and ${date2}`)
    *   // Here we assume we have list of nicknames for the person
    *   // (a list of strings) and we use the PostgreSQL `@>` operator
    *   // to test if all of them are valid nicknames for the user.
-   *   .where('nicknames', '@>', sql`ARRAY[${sql.join(nicknames)}]`)
-   *   .orderBy(sql`concat(first_name, ' ', last_name)`)
+   *   .where('nicknames', '@>', sql<string[]>`ARRAY[${sql.join(nicknames)}]`)
+   *   .orderBy(sql<string>`concat(first_name, ' ', last_name)`)
    *   .execute()
    * ```
    *
@@ -73,7 +73,7 @@ export interface Sql {
    *
    * ```ts
    * const petName = db.selectFrom('pet').select('name').limit(1)
-   * const fullName = sql`concat(first_name, ' ', last_name)`
+   * const fullName = sql<string>`concat(first_name, ' ', last_name)`
    *
    * sql`
    *   select ${fullName} as full_name, ${petName} as pet_name
@@ -323,7 +323,7 @@ export interface Sql {
    *   return db
    *     .selectFrom('person')
    *     .selectAll()
-   *     .where('nicknames', '@>', sql`ARRAY[${sql.join(nicknames)}]`)
+   *     .where('nicknames', '@>', sql<string[]>`ARRAY[${sql.join(nicknames)}]`)
    *     .execute()
    * }
    * ```
@@ -366,7 +366,7 @@ export interface Sql {
    */
   join(
     array: readonly unknown[],
-    separator?: RawBuilder<any>
+    separator?: RawBuilder<any>,
   ): RawBuilder<unknown>
 }
 
@@ -379,7 +379,7 @@ export const sql: Sql = Object.assign(
       queryId: createQueryId(),
       rawNode: RawNode.create(
         sqlFragments,
-        parameters?.map(parseParameter) ?? []
+        parameters?.map(parseParameter) ?? [],
       ),
     })
   },
@@ -441,7 +441,7 @@ export const sql: Sql = Object.assign(
 
     join(
       array: readonly unknown[],
-      separator: RawBuilder<any> = sql`, `
+      separator: RawBuilder<any> = sql`, `,
     ): RawBuilder<unknown> {
       const nodes = new Array<OperationNode>(2 * array.length - 1)
       const sep = separator.toOperationNode()
@@ -459,7 +459,7 @@ export const sql: Sql = Object.assign(
         rawNode: RawNode.createWithChildren(nodes),
       })
     },
-  }
+  },
 )
 
 function parseParameter(param: unknown): OperationNode {

@@ -24,7 +24,7 @@ export interface Driver {
    */
   beginTransaction(
     connection: DatabaseConnection,
-    settings: TransactionSettings
+    settings: TransactionSettings,
   ): Promise<void>
 
   /**

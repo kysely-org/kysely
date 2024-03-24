@@ -10,6 +10,8 @@ import { OrderByNode } from './order-by-node.js'
 import { OrderByItemNode } from './order-by-item-node.js'
 import { ExplainNode } from './explain-node.js'
 import { UsingNode } from './using-node.js'
+import { TopNode } from './top-node.js'
+import { OutputNode } from './output-node.js'
 
 export interface DeleteQueryNode extends OperationNode {
   readonly kind: 'DeleteQueryNode'
@@ -22,6 +24,8 @@ export interface DeleteQueryNode extends OperationNode {
   readonly orderBy?: OrderByNode
   readonly limit?: LimitNode
   readonly explain?: ExplainNode
+  readonly top?: TopNode
+  readonly output?: OutputNode
 }
 
 /**
@@ -42,7 +46,7 @@ export const DeleteQueryNode = freeze({
 
   cloneWithOrderByItems(
     deleteNode: DeleteQueryNode,
-    items: ReadonlyArray<OrderByItemNode>
+    items: ReadonlyArray<OrderByItemNode>,
   ): DeleteQueryNode {
     return freeze({
       ...deleteNode,
@@ -52,9 +56,16 @@ export const DeleteQueryNode = freeze({
     })
   },
 
+  cloneWithoutOrderBy(deleteNode: DeleteQueryNode): DeleteQueryNode {
+    return freeze({
+      ...deleteNode,
+      orderBy: undefined,
+    })
+  },
+
   cloneWithLimit(
     deleteNode: DeleteQueryNode,
-    limit: LimitNode
+    limit: LimitNode,
   ): DeleteQueryNode {
     return freeze({
       ...deleteNode,
@@ -62,9 +73,16 @@ export const DeleteQueryNode = freeze({
     })
   },
 
+  cloneWithoutLimit(deleteNode: DeleteQueryNode): DeleteQueryNode {
+    return freeze({
+      ...deleteNode,
+      limit: undefined,
+    })
+  },
+
   cloneWithUsing(
     deleteNode: DeleteQueryNode,
-    tables: OperationNode[]
+    tables: OperationNode[],
   ): DeleteQueryNode {
     return freeze({
       ...deleteNode,

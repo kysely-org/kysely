@@ -31,7 +31,7 @@ export class PostgresIntrospector implements DatabaseIntrospector {
   }
 
   async getTables(
-    options: DatabaseMetadataOptions = { withInternalKyselyTables: false }
+    options: DatabaseMetadataOptions = { withInternalKyselyTables: false },
   ): Promise<TableMetadata[]> {
     let query = this.#db
       // column
@@ -46,7 +46,7 @@ export class PostgresIntrospector implements DatabaseIntrospector {
       .innerJoin(
         'pg_catalog.pg_namespace as dtns',
         'typ.typnamespace',
-        'dtns.oid'
+        'dtns.oid',
       )
       .select([
         'a.attname as column',
@@ -57,7 +57,9 @@ export class PostgresIntrospector implements DatabaseIntrospector {
         'ns.nspname as schema',
         'typ.typname as type',
         'dtns.nspname as type_schema',
-
+        sql<string | null>`col_description(a.attrelid, a.attnum)`.as(
+          'column_description',
+        ),
         // Detect if the column is auto incrementing by finding the sequence
         // that is created for `serial` and `bigserial` columns.
         this.#db
@@ -71,7 +73,7 @@ export class PostgresIntrospector implements DatabaseIntrospector {
       ])
       // r == normal table
       .where((eb) =>
-        eb.or([eb('c.relkind', '=', 'r'), eb('c.relkind', '=', 'v')])
+        eb.or([eb('c.relkind', '=', 'r'), eb('c.relkind', '=', 'v')]),
       )
       .where('ns.nspname', '!~', '^pg_')
       .where('ns.nspname', '!=', 'information_schema')
@@ -94,7 +96,7 @@ export class PostgresIntrospector implements DatabaseIntrospector {
   }
 
   async getMetadata(
-    options?: DatabaseMetadataOptions
+    options?: DatabaseMetadataOptions,
   ): Promise<DatabaseMetadata> {
     return {
       tables: await this.getTables(options),
@@ -104,7 +106,7 @@ export class PostgresIntrospector implements DatabaseIntrospector {
   #parseTableMetadata(columns: RawColumnMetadata[]): TableMetadata[] {
     return columns.reduce<TableMetadata[]>((tables, it) => {
       let table = tables.find(
-        (tbl) => tbl.name === it.table && tbl.schema === it.schema
+        (tbl) => tbl.name === it.table && tbl.schema === it.schema,
       )
 
       if (!table) {
@@ -126,7 +128,8 @@ export class PostgresIntrospector implements DatabaseIntrospector {
           isNullable: !it.not_null,
           isAutoIncrementing: !!it.auto_incrementing,
           hasDefaultValue: it.has_default,
-        })
+          comment: it.column_description ?? undefined,
+        }),
       )
 
       return tables
@@ -148,4 +151,5 @@ interface RawColumnMetadata {
   type: string
   type_schema: string
   auto_incrementing: boolean | null
+  column_description: string | null
 }

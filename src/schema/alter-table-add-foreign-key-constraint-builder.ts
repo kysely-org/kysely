@@ -26,7 +26,7 @@ export class AlterTableAddForeignKeyConstraintBuilder
   }
 
   onDelete(
-    onDelete: OnModifyForeignAction
+    onDelete: OnModifyForeignAction,
   ): AlterTableAddForeignKeyConstraintBuilder {
     return new AlterTableAddForeignKeyConstraintBuilder({
       ...this.#props,
@@ -35,7 +35,7 @@ export class AlterTableAddForeignKeyConstraintBuilder
   }
 
   onUpdate(
-    onUpdate: OnModifyForeignAction
+    onUpdate: OnModifyForeignAction,
   ): AlterTableAddForeignKeyConstraintBuilder {
     return new AlterTableAddForeignKeyConstraintBuilder({
       ...this.#props,
@@ -55,17 +55,17 @@ export class AlterTableAddForeignKeyConstraintBuilder
     return this.#props.executor.transformQuery(
       AlterTableNode.cloneWithTableProps(this.#props.node, {
         addConstraint: AddConstraintNode.create(
-          this.#props.constraintBuilder.toOperationNode()
+          this.#props.constraintBuilder.toOperationNode(),
         ),
       }),
-      this.#props.queryId
+      this.#props.queryId,
     )
   }
 
   compile(): CompiledQuery {
     return this.#props.executor.compileQuery(
       this.toOperationNode(),
-      this.#props.queryId
+      this.#props.queryId,
     )
   }
 
@@ -83,5 +83,5 @@ export interface AlterTableAddForeignKeyConstraintBuilderProps {
 
 preventAwait(
   AlterTableAddForeignKeyConstraintBuilder,
-  "don't await AlterTableAddForeignKeyConstraintBuilder instances directly. To execute the query you need to call `execute`"
+  "don't await AlterTableAddForeignKeyConstraintBuilder instances directly. To execute the query you need to call `execute`",
 )

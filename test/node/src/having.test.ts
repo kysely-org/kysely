@@ -198,7 +198,7 @@ for (const dialect of DIALECTS) {
             eb('id', 'in', [1, 2, 3]),
             eb('first_name', '<', 'foo'),
             eb('first_name', '=', eb.ref('first_name')),
-          ])
+          ]),
         )
         .havingRef('first_name', '=', 'first_name')
         .having((eb) => eb.not(eb.exists(eb.selectFrom('pet').select('id'))))

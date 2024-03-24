@@ -27,7 +27,7 @@ export const SelectModifierNode = freeze({
 
   create(
     modifier: SelectModifier,
-    of?: ReadonlyArray<OperationNode>
+    of?: ReadonlyArray<OperationNode>,
   ): SelectModifierNode {
     return freeze({
       kind: 'SelectModifierNode',

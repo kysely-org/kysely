@@ -54,31 +54,31 @@ export type ExtractTypeFromReferenceExpression<
   DB,
   TB extends keyof DB,
   RE,
-  DV = unknown
+  DV = unknown,
 > = SelectType<ExtractRawTypeFromReferenceExpression<DB, TB, RE, DV>>
 
 export type ExtractRawTypeFromReferenceExpression<
   DB,
   TB extends keyof DB,
   RE,
-  DV = unknown
+  DV = unknown,
 > = RE extends string
   ? ExtractTypeFromStringReference<DB, TB, RE>
   : RE extends SelectQueryBuilderExpression<infer O>
-  ? O[keyof O] | null
-  : RE extends (qb: any) => SelectQueryBuilderExpression<infer O>
-  ? O[keyof O] | null
-  : RE extends Expression<infer O>
-  ? O
-  : RE extends (qb: any) => Expression<infer O>
-  ? O
-  : DV
+    ? O[keyof O] | null
+    : RE extends (qb: any) => SelectQueryBuilderExpression<infer O>
+      ? O[keyof O] | null
+      : RE extends Expression<infer O>
+        ? O
+        : RE extends (qb: any) => Expression<infer O>
+          ? O
+          : DV
 
 export type ExtractTypeFromStringReference<
   DB,
   TB extends keyof DB,
   RE extends string,
-  DV = unknown
+  DV = unknown,
 > = RE extends `${infer SC}.${infer T}.${infer C}`
   ? `${SC}.${T}` extends TB
     ? C extends keyof DB[`${SC}.${T}`]
@@ -86,14 +86,14 @@ export type ExtractTypeFromStringReference<
       : never
     : never
   : RE extends `${infer T}.${infer C}`
-  ? T extends TB
-    ? C extends keyof DB[T]
-      ? DB[T][C]
+    ? T extends TB
+      ? C extends keyof DB[T]
+        ? DB[T][C]
+        : never
       : never
-    : never
-  : RE extends AnyColumn<DB, TB>
-  ? ExtractColumnType<DB, TB, RE>
-  : DV
+    : RE extends AnyColumn<DB, TB>
+      ? ExtractColumnType<DB, TB, RE>
+      : DV
 
 export type OrderedColumnName<C extends string> =
   C extends `${string} ${infer O}`
@@ -110,7 +110,7 @@ export type ExtractColumnNameFromOrderedColumnName<C extends string> =
     : C
 
 export function parseSimpleReferenceExpression(
-  exp: SimpleReferenceExpression<any, any>
+  exp: SimpleReferenceExpression<any, any>,
 ): SimpleReferenceExpressionNode {
   if (isString(exp)) {
     return parseStringReference(exp)
@@ -120,7 +120,7 @@ export function parseSimpleReferenceExpression(
 }
 
 export function parseReferenceExpressionOrList(
-  arg: ReferenceExpressionOrList<any, any>
+  arg: ReferenceExpressionOrList<any, any>,
 ): OperationNode[] {
   if (isReadonlyArray(arg)) {
     return arg.map((it) => parseReferenceExpression(it))
@@ -130,7 +130,7 @@ export function parseReferenceExpressionOrList(
 }
 
 export function parseReferenceExpression(
-  exp: ReferenceExpression<any, any>
+  exp: ReferenceExpression<any, any>,
 ): OperationNode {
   if (isExpressionOrFactory(exp)) {
     return parseExpression(exp)
@@ -141,14 +141,14 @@ export function parseReferenceExpression(
 
 export function parseJSONReference(
   ref: string,
-  op: JSONOperatorWith$
+  op: JSONOperatorWith$,
 ): JSONReferenceNode {
   const referenceNode = parseStringReference(ref)
 
   if (isJSONOperator(op)) {
     return JSONReferenceNode.create(
       referenceNode,
-      JSONOperatorChainNode.create(OperatorNode.create(op))
+      JSONOperatorChainNode.create(OperatorNode.create(op)),
     )
   }
 
@@ -157,7 +157,7 @@ export function parseJSONReference(
   if (isJSONOperator(opWithoutLastChar)) {
     return JSONReferenceNode.create(
       referenceNode,
-      JSONPathNode.create(OperatorNode.create(opWithoutLastChar))
+      JSONPathNode.create(OperatorNode.create(opWithoutLastChar)),
     )
   }
 
@@ -185,7 +185,7 @@ export function parseStringReference(ref: string): ReferenceNode {
 }
 
 export function parseAliasedStringReference(
-  ref: string
+  ref: string,
 ): SimpleReferenceExpressionNode | AliasNode {
   const ALIAS_SEPARATOR = ' as '
 
@@ -194,7 +194,7 @@ export function parseAliasedStringReference(
 
     return AliasNode.create(
       parseStringReference(columnRef),
-      IdentifierNode.create(alias)
+      IdentifierNode.create(alias),
     )
   } else {
     return parseStringReference(ref)
@@ -213,7 +213,7 @@ export function parseOrderedColumnName(column: string): OperationNode {
 
     if (!isOrderByDirection(order)) {
       throw new Error(
-        `invalid order direction "${order}" next to "${columnName}"`
+        `invalid order direction "${order}" next to "${columnName}"`,
       )
     }
 
@@ -224,13 +224,13 @@ export function parseOrderedColumnName(column: string): OperationNode {
 }
 
 function parseStringReferenceWithTableAndSchema(
-  parts: string[]
+  parts: string[],
 ): ReferenceNode {
   const [schema, table, column] = parts
 
   return ReferenceNode.create(
     ColumnNode.create(column),
-    TableNode.createWithSchema(schema, table)
+    TableNode.createWithSchema(schema, table),
   )
 }
 
@@ -239,7 +239,7 @@ function parseStringReferenceWithTable(parts: string[]): ReferenceNode {
 
   return ReferenceNode.create(
     ColumnNode.create(column),
-    TableNode.create(table)
+    TableNode.create(table),
   )
 }
 
