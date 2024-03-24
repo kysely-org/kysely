@@ -20,6 +20,10 @@ export abstract class DialectAdapterBase implements DialectAdapter {
     return false
   }
 
+  get supportsOutput(): boolean {
+    return false
+  }
+
   abstract acquireMigrationLock(
     db: Kysely<any>,
     options: MigrationLockOptions,

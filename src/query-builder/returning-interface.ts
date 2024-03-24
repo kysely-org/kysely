@@ -80,6 +80,8 @@ export interface ReturningInterface<DB, TB extends keyof DB, O> {
   /**
    * Adds a `returning *` to an insert/update/delete query on databases
    * that support `returning` such as PostgreSQL.
+   *
+   * Also see the {@link returning} method.
    */
   returningAll(): ReturningInterface<DB, TB, Selectable<DB[TB]>>
 }
