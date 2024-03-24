@@ -1501,6 +1501,26 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
   clearOrderBy(): SelectQueryBuilder<DB, TB, O>
 
   /**
+   * Clears `group by` clause from the query.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * db.selectFrom('person')
+   *   .selectAll()
+   *   .orderBy('id')
+   *   .clearGroupBy()
+   * ```
+   *
+   * The generated SQL(PostgreSQL):
+   *
+   * ```sql
+   * select * from "person"
+   * ```
+   */
+  clearGroupBy(): SelectQueryBuilder<DB, TB, O>
+
+  /**
    * Simply calls the provided function passing `this` as the only argument. `$call` returns
    * what the provided function returns.
    *
@@ -2276,6 +2296,13 @@ class SelectQueryBuilderImpl<DB, TB extends keyof DB, O>
     return new SelectQueryBuilderImpl<DB, TB, O>({
       ...this.#props,
       queryNode: SelectQueryNode.cloneWithoutOrderBy(this.#props.queryNode),
+    })
+  }
+
+  clearGroupBy(): SelectQueryBuilder<DB, TB, O> {
+    return new SelectQueryBuilderImpl<DB, TB, O>({
+      ...this.#props,
+      queryNode: SelectQueryNode.cloneWithoutGroupBy(this.#props.queryNode),
     })
   }
 
