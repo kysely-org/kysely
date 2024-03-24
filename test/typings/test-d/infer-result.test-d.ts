@@ -6,6 +6,7 @@ import {
   InferResult,
   InsertResult,
   Kysely,
+  MergeResult,
   Selectable,
   UpdateResult,
 } from '..'
@@ -46,7 +47,7 @@ function testInferResultInsertQuery(db: Kysely<Database>) {
   })
   const compiledQuery0 = query0.compile()
 
-  type Expected0 = InsertResult
+  type Expected0 = InsertResult[]
   expectType<Equals<Expected0, InferResult<typeof query0>>>(true)
   expectType<Equals<Expected0, InferResult<typeof compiledQuery0>>>(true)
 
@@ -73,7 +74,7 @@ function testInferResultUpdateQuery(db: Kysely<Database>) {
     .where('pet.id', '=', '1')
   const compiledQuery0 = query0.compile()
 
-  type Expected0 = UpdateResult
+  type Expected0 = UpdateResult[]
   expectType<Equals<Expected0, InferResult<typeof query0>>>(true)
   expectType<Equals<Expected0, InferResult<typeof compiledQuery0>>>(true)
 
@@ -96,7 +97,7 @@ function testInferResultDeleteQuery(db: Kysely<Database>) {
   const query0 = db.deleteFrom('pet').where('id', '=', '1')
   const compiledQuery0 = query0.compile()
 
-  type Expected0 = DeleteResult
+  type Expected0 = DeleteResult[]
   expectType<Equals<Expected0, InferResult<typeof query0>>>(true)
   expectType<Equals<Expected0, InferResult<typeof compiledQuery0>>>(true)
 
@@ -113,4 +114,17 @@ function testInferResultDeleteQuery(db: Kysely<Database>) {
   type Expected2 = { id: string }[]
   expectType<Equals<Expected2, InferResult<typeof query2>>>(true)
   expectType<Equals<Expected2, InferResult<typeof compiledQuery2>>>(true)
+}
+
+function testInferResultMergeQuery(db: Kysely<Database>) {
+  const query0 = db
+    .mergeInto('person')
+    .using('pet', 'pet.owner_id', 'person.id')
+    .whenMatched()
+    .thenDelete()
+  const compiledQuery0 = query0.compile()
+
+  type Expected0 = MergeResult[]
+  expectType<Equals<Expected0, InferResult<typeof query0>>>(true)
+  expectType<Equals<Expected0, InferResult<typeof compiledQuery0>>>(true)
 }
