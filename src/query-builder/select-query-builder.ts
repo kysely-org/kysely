@@ -1508,7 +1508,7 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    * ```ts
    * db.selectFrom('person')
    *   .selectAll()
-   *   .orderBy('id')
+   *   .groupBy('id')
    *   .clearGroupBy()
    * ```
    *
