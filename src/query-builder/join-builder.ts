@@ -13,7 +13,7 @@ import { freeze } from '../util/object-utils.js'
 import { preventAwait } from '../util/prevent-await.js'
 import { SqlBool } from '../util/type-utils.js'
 
-export class JoinBuilder<DB, TB extends keyof DB>
+export class JoinBuilder<DB, TB extends keyof DB, C extends string>
   implements OperationNodeSource
 {
   readonly #props: JoinBuilderProps
@@ -32,11 +32,11 @@ export class JoinBuilder<DB, TB extends keyof DB>
     lhs: RE,
     op: ComparisonOperatorExpression,
     rhs: OperandValueExpressionOrList<DB, TB, RE>,
-  ): JoinBuilder<DB, TB>
+  ): JoinBuilder<DB, TB, C>
 
-  on(expression: ExpressionOrFactory<DB, TB, SqlBool>): JoinBuilder<DB, TB>
+  on(expression: ExpressionOrFactory<DB, TB, SqlBool>): JoinBuilder<DB, TB, C>
 
-  on(...args: any[]): JoinBuilder<DB, TB> {
+  on(...args: any[]): JoinBuilder<DB, TB, C> {
     return new JoinBuilder({
       ...this.#props,
       joinNode: JoinNode.cloneWithOn(
@@ -56,7 +56,7 @@ export class JoinBuilder<DB, TB extends keyof DB>
     lhs: ReferenceExpression<DB, TB>,
     op: ComparisonOperatorExpression,
     rhs: ReferenceExpression<DB, TB>,
-  ): JoinBuilder<DB, TB> {
+  ): JoinBuilder<DB, TB, C> {
     return new JoinBuilder({
       ...this.#props,
       joinNode: JoinNode.cloneWithOn(
@@ -69,13 +69,44 @@ export class JoinBuilder<DB, TB extends keyof DB>
   /**
    * Adds `on true`.
    */
-  onTrue(): JoinBuilder<DB, TB> {
+  onTrue(): JoinBuilder<DB, TB, C> {
     return new JoinBuilder({
       ...this.#props,
       joinNode: JoinNode.cloneWithOn(
         this.#props.joinNode,
         RawNode.createWithSql('true'),
       ),
+    })
+  }
+
+  /**
+   * Adds a `using` clause to the query.
+   *
+   * This clause is a non-standard shorthand for the specific situation where both
+   * sides of the join use the same name for the joining column(s).
+   *
+   * ### Examples:
+   *
+   * ```ts
+   * await db
+   *   .selectFrom('person')
+   *   .innerJoin('pet', join => join.using(['name']))
+   *   .selectAll()
+   *   .executeTakeFirstOrThrow()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * select *
+   * from "person"
+   * inner join "pet" using ("name")
+   * ```
+   */
+  using(columns: [C, ...C[]]): JoinBuilder<DB, TB, C> {
+    return new JoinBuilder({
+      ...this.#props,
+      joinNode: JoinNode.cloneWithUsing(this.#props.joinNode, columns),
     })
   }
 
