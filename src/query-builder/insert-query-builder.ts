@@ -31,6 +31,7 @@ import { OnDuplicateKeyNode } from '../operation-node/on-duplicate-key-node.js'
 import { InsertResult } from './insert-result.js'
 import { KyselyPlugin } from '../plugin/kysely-plugin.js'
 import {
+  ReturningAllRow,
   ReturningCallbackRow,
   ReturningRow,
 } from '../parser/returning-parser.js'
@@ -59,10 +60,18 @@ import { Expression } from '../expression/expression.js'
 import { KyselyTypeError } from '../util/type-error.js'
 import { Streamable } from '../util/streamable.js'
 import { parseTop } from '../parser/top-parser.js'
+import {
+  OutputCallback,
+  OutputExpression,
+  OutputInterface,
+  SelectExpressionFromOutputCallback,
+  SelectExpressionFromOutputExpression,
+} from './output-interface.js'
 
 export class InsertQueryBuilder<DB, TB extends keyof DB, O>
   implements
     ReturningInterface<DB, TB, O>,
+    OutputInterface<DB, TB, O, 'inserted'>,
     OperationNodeSource,
     Compilable<O>,
     Explainable,
@@ -665,6 +674,52 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
     })
   }
 
+  output<OE extends OutputExpression<DB, TB, 'inserted'>>(
+    selections: readonly OE[]
+  ): InsertQueryBuilder<
+    DB,
+    TB,
+    ReturningRow<DB, TB, O, SelectExpressionFromOutputExpression<OE>>
+  >
+
+  output<CB extends OutputCallback<DB, TB, 'inserted'>>(
+    callback: CB
+  ): InsertQueryBuilder<
+    DB,
+    TB,
+    ReturningRow<DB, TB, O, SelectExpressionFromOutputCallback<CB>>
+  >
+
+  output<OE extends OutputExpression<DB, TB, 'inserted'>>(
+    selection: OE
+  ): InsertQueryBuilder<
+    DB,
+    TB,
+    ReturningRow<DB, TB, O, SelectExpressionFromOutputExpression<OE>>
+  >
+
+  output(args: any): any {
+    return new InsertQueryBuilder({
+      ...this.#props,
+      queryNode: QueryNode.cloneWithOutput(
+        this.#props.queryNode,
+        parseSelectArg(args)
+      ),
+    })
+  }
+
+  outputAll(
+    table: 'inserted'
+  ): InsertQueryBuilder<DB, TB, ReturningAllRow<DB, TB, O>> {
+    return new InsertQueryBuilder({
+      ...this.#props,
+      queryNode: QueryNode.cloneWithOutput(
+        this.#props.queryNode,
+        parseSelectAll(table)
+      ),
+    })
+  }
+
   /**
    * Clears all `returning` clauses from the query.
    *
@@ -901,14 +956,19 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    */
   async execute(): Promise<SimplifyResult<O>[]> {
     const compiledQuery = this.compile()
-    const query = compiledQuery.query as InsertQueryNode
 
     const result = await this.#props.executor.executeQuery<O>(
       compiledQuery,
       this.#props.queryId,
     )
 
-    if (this.#props.executor.adapter.supportsReturning && query.returning) {
+    const { adapter } = this.#props.executor
+    const query = compiledQuery.query as InsertQueryNode
+
+    if (
+      (query.returning && adapter.supportsReturning) ||
+      (query.output && adapter.supportsOutput)
+    ) {
       return result.rows as any
     }
 

@@ -110,6 +110,7 @@ import { AddIndexNode } from '../operation-node/add-index-node.js'
 import { CastNode } from '../operation-node/cast-node.js'
 import { FetchNode } from '../operation-node/fetch-node.js'
 import { TopNode } from '../operation-node/top-node.js'
+import { OutputNode } from '../operation-node/output-node.js'
 
 export class DefaultQueryCompiler
   extends OperationNodeVisitor
@@ -328,6 +329,11 @@ export class DefaultQueryCompiler
       this.append(')')
     }
 
+    if (node.output) {
+      this.append(' ')
+      this.visitNode(node.output)
+    }
+
     if (node.values) {
       this.append(' ')
       this.visitNode(node.values)
@@ -388,6 +394,11 @@ export class DefaultQueryCompiler
     }
 
     this.visitNode(node.from)
+
+    if (node.output) {
+      this.append(' ')
+      this.visitNode(node.output)
+    }
 
     if (node.using) {
       this.append(' ')
@@ -773,6 +784,11 @@ export class DefaultQueryCompiler
 
     if (node.updates) {
       this.compileList(node.updates)
+    }
+
+    if (node.output) {
+      this.append(' ')
+      this.visitNode(node.output)
     }
 
     if (node.from) {
@@ -1521,6 +1537,11 @@ export class DefaultQueryCompiler
       this.append(' ')
       this.compileList(node.whens)
     }
+
+    if (node.output) {
+      this.append(' ')
+      this.visitNode(node.output)
+    }
   }
 
   protected override visitMatched(node: MatchedNode): void {
@@ -1565,11 +1586,16 @@ export class DefaultQueryCompiler
     this.visitNode(node.dataType)
     this.append(')')
   }
-  
+
   protected override visitFetch(node: FetchNode): void {
     this.append('fetch next ')
     this.visitNode(node.rowCount)
     this.append(` rows ${node.modifier}`)
+  }
+
+  protected override visitOutput(node: OutputNode): void {
+    this.append('output ')
+    this.compileList(node.selections)
   }
 
   protected override visitTop(node: TopNode): void {

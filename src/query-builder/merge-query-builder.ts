@@ -22,6 +22,8 @@ import {
 } from '../parser/join-parser.js'
 import { parseMergeThen, parseMergeWhen } from '../parser/merge-parser.js'
 import { ReferenceExpression } from '../parser/reference-parser.js'
+import { ReturningAllRow, ReturningRow } from '../parser/returning-parser.js'
+import { parseSelectAll, parseSelectArg } from '../parser/select-parser.js'
 import { TableExpression } from '../parser/table-parser.js'
 import { parseTop } from '../parser/top-parser.js'
 import {
@@ -50,9 +52,19 @@ import {
   NoResultErrorConstructor,
   isNoResultErrorConstructor,
 } from './no-result-error.js'
+import {
+  OutputCallback,
+  OutputExpression,
+  OutputInterface,
+  OutputPrefix,
+  SelectExpressionFromOutputCallback,
+  SelectExpressionFromOutputExpression,
+} from './output-interface.js'
 import { UpdateQueryBuilder } from './update-query-builder.js'
 
-export class MergeQueryBuilder<DB, TT extends keyof DB, O> {
+export class MergeQueryBuilder<DB, TT extends keyof DB, O>
+  implements OutputInterface<DB, TT, O>
+{
   readonly #props: MergeQueryBuilderProps
 
   constructor(props: MergeQueryBuilderProps) {
@@ -171,6 +183,52 @@ export class MergeQueryBuilder<DB, TT extends keyof DB, O> {
       ),
     })
   }
+
+  output<OE extends OutputExpression<DB, TT>>(
+    selections: readonly OE[],
+  ): MergeQueryBuilder<
+    DB,
+    TT,
+    ReturningRow<DB, TT, O, SelectExpressionFromOutputExpression<OE>>
+  >
+
+  output<CB extends OutputCallback<DB, TT>>(
+    callback: CB,
+  ): MergeQueryBuilder<
+    DB,
+    TT,
+    ReturningRow<DB, TT, O, SelectExpressionFromOutputCallback<CB>>
+  >
+
+  output<OE extends OutputExpression<DB, TT>>(
+    selection: OE,
+  ): MergeQueryBuilder<
+    DB,
+    TT,
+    ReturningRow<DB, TT, O, SelectExpressionFromOutputExpression<OE>>
+  >
+
+  output(args: any): any {
+    return new MergeQueryBuilder({
+      ...this.#props,
+      queryNode: QueryNode.cloneWithOutput(
+        this.#props.queryNode,
+        parseSelectArg(args),
+      ),
+    })
+  }
+
+  outputAll(
+    table: OutputPrefix,
+  ): MergeQueryBuilder<DB, TT, ReturningAllRow<DB, TT, O>> {
+    return new MergeQueryBuilder({
+      ...this.#props,
+      queryNode: QueryNode.cloneWithOutput(
+        this.#props.queryNode,
+        parseSelectAll(table),
+      ),
+    })
+  }
 }
 
 preventAwait(
@@ -190,7 +248,7 @@ export class WheneableMergeQueryBuilder<
     ST extends keyof DB,
     O,
   >
-  implements Compilable<O>, OperationNodeSource
+  implements Compilable<O>, OutputInterface<DB, TT, O>, OperationNodeSource
 {
   readonly #props: MergeQueryBuilderProps
 
@@ -489,6 +547,55 @@ export class WheneableMergeQueryBuilder<
     return this.#whenNotMatched([lhs, op, rhs], true, true)
   }
 
+  output<OE extends OutputExpression<DB, TT>>(
+    selections: readonly OE[],
+  ): WheneableMergeQueryBuilder<
+    DB,
+    TT,
+    ST,
+    ReturningRow<DB, TT, O, SelectExpressionFromOutputExpression<OE>>
+  >
+
+  output<CB extends OutputCallback<DB, TT>>(
+    callback: CB,
+  ): WheneableMergeQueryBuilder<
+    DB,
+    TT,
+    ST,
+    ReturningRow<DB, TT, O, SelectExpressionFromOutputCallback<CB>>
+  >
+
+  output<OE extends OutputExpression<DB, TT>>(
+    selection: OE,
+  ): WheneableMergeQueryBuilder<
+    DB,
+    TT,
+    ST,
+    ReturningRow<DB, TT, O, SelectExpressionFromOutputExpression<OE>>
+  >
+
+  output(args: any): any {
+    return new WheneableMergeQueryBuilder({
+      ...this.#props,
+      queryNode: QueryNode.cloneWithOutput(
+        this.#props.queryNode,
+        parseSelectArg(args),
+      ),
+    })
+  }
+
+  outputAll(
+    table: OutputPrefix,
+  ): WheneableMergeQueryBuilder<DB, TT, ST, ReturningAllRow<DB, TT, O>> {
+    return new WheneableMergeQueryBuilder({
+      ...this.#props,
+      queryNode: QueryNode.cloneWithOutput(
+        this.#props.queryNode,
+        parseSelectAll(table),
+      ),
+    })
+  }
+
   #whenNotMatched(
     args: any[],
     refRight: boolean = false,
@@ -615,6 +722,13 @@ export class WheneableMergeQueryBuilder<
       compiledQuery,
       this.#props.queryId,
     )
+
+    if (
+      (compiledQuery.query as MergeQueryNode).output &&
+      this.#props.executor.adapter.supportsOutput
+    ) {
+      return result.rows as any
+    }
 
     return [new MergeResult(result.numAffectedRows) as any]
   }
