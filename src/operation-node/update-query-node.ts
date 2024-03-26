@@ -11,6 +11,7 @@ import { FromNode } from './from-node.js'
 import { ExplainNode } from './explain-node.js'
 import { LimitNode } from './limit-node.js'
 import { TopNode } from './top-node.js'
+import { OutputNode } from './output-node.js'
 
 export type UpdateValuesNode = ValueListNode | PrimitiveValueListNode
 
@@ -26,6 +27,7 @@ export interface UpdateQueryNode extends OperationNode {
   readonly explain?: ExplainNode
   readonly limit?: LimitNode
   readonly top?: TopNode
+  readonly output?: OutputNode
 }
 
 /**
