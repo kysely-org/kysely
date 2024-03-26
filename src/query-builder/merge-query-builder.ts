@@ -71,6 +71,10 @@ export class MergeQueryBuilder<DB, TT extends keyof DB, O>
     this.#props = freeze(props)
   }
 
+  get isMergeQueryBuilder(): true {
+    return true
+  }
+
   /**
    * Changes a `merge into` query to an `merge top into` query.
    *
@@ -254,6 +258,10 @@ export class WheneableMergeQueryBuilder<
 
   constructor(props: MergeQueryBuilderProps) {
     this.#props = freeze(props)
+  }
+
+  get isMergeQueryBuilder(): true {
+    return true
   }
 
   /**
@@ -787,6 +795,10 @@ export class MatchedThenableMergeQueryBuilder<
     this.#props = freeze(props)
   }
 
+  get isMergeQueryBuilder(): true {
+    return true
+  }
+
   /**
    * Performs the `delete` action.
    *
@@ -985,6 +997,10 @@ export class NotMatchedThenableMergeQueryBuilder<
 
   constructor(props: MergeQueryBuilderProps) {
     this.#props = freeze(props)
+  }
+
+  get isMergeQueryBuilder(): true {
+    return true
   }
 
   /**
