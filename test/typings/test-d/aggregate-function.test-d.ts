@@ -4,8 +4,8 @@ import {
   expectNotAssignable,
   expectType,
 } from 'tsd'
-import { Generated, Kysely, sql } from '..'
-import { Database } from '../shared'
+import { Generated, Kysely, Selectable, sql } from '..'
+import { Database, Pet } from '../shared'
 
 async function testSelectWithoutAs(db: Kysely<Database>) {
   const { avg, count, countAll, max, min, sum } = db.fn
@@ -376,6 +376,23 @@ async function testSelectWithDistinct(db: Kysely<Database>) {
   expectAssignable<number>(result.max_age)
   expectAssignable<number>(result.min_age)
   expectAssignable<string | number | bigint>(result.total_age)
+}
+
+async function testAggregateWithOrderBy(db: Kysely<Database>) {
+  const result = await db
+    .selectFrom('person')
+    .innerJoin('pet', 'pet.owner_id', 'person.id')
+    .select((eb) => [
+      eb.fn
+        .agg<string[]>('array_agg', ['pet.name'])
+        .orderBy('pet.name')
+        .as('person_pet_names'),
+      eb.fn.jsonAgg('pet').orderBy('pet.id').as('person_pets'),
+    ])
+    .executeTakeFirstOrThrow()
+
+  expectAssignable<string[]>(result.person_pet_names)
+  expectAssignable<Selectable<Pet>[]>(result.person_pets)
 }
 
 async function testWithFilterWhere(db: Kysely<Database>) {
