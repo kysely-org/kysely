@@ -34,9 +34,7 @@ export abstract class QueryExecutorBase implements QueryExecutor {
 
       // We need to do a runtime check here. There is no good way
       // to write types that enforce this constraint.
-      if (transformedNode.kind === node.kind) {
-        node = transformedNode as T
-      } else {
+      if (transformedNode.kind !== node.kind) {
         console.warn(
           [
             `KyselyPlugin.transformQuery must return a node`,
@@ -46,6 +44,8 @@ export abstract class QueryExecutorBase implements QueryExecutor {
           ].join(' '),
         )
       }
+
+      node = transformedNode as T
     }
 
     return node
