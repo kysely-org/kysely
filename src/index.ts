@@ -110,6 +110,7 @@ export * from './plugin/camel-case/camel-case-plugin.js'
 export * from './plugin/deduplicate-joins/deduplicate-joins-plugin.js'
 export * from './plugin/with-schema/with-schema-plugin.js'
 export * from './plugin/parse-json-results/parse-json-results-plugin.js'
+export * from './plugin/safe-empty-array-where-in/safe-empty-array-where-in.plugin.js'
 
 export * from './operation-node/add-column-node.js'
 export * from './operation-node/add-constraint-node.js'
