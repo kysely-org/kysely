@@ -37,7 +37,7 @@ export abstract class QueryExecutorBase implements QueryExecutor {
       if (transformedNode.kind === node.kind) {
         node = transformedNode as T
       } else {
-        throw new Error(
+        console.warn(
           [
             `KyselyPlugin.transformQuery must return a node`,
             `of the same kind that was given to it.`,
