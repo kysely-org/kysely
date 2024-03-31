@@ -11,9 +11,10 @@
 
 # [Kysely](https://kysely.dev)
 
-Kysely (pronounce “Key-Seh-Lee”) is a type-safe and autocompletion-friendly typescript SQL query builder.
-Inspired by [knex](http://knexjs.org/). Mainly developed for [node.js](https://nodejs.org/en/) but also
-runs on all other javascript environments like [deno](https://deno.land/).
+Kysely (pronounce “Key-Seh-Lee”) is a type-safe and autocompletion-friendly [TypeScript](https://www.typescriptlang.org/) [SQL](https://en.wikipedia.org/wiki/SQL) query builder.
+Inspired by [Knex.js](http://knexjs.org/). Mainly developed for [Node.js](https://nodejs.org/en/) but also
+runs on all other [JavaScript](https://developer.mozilla.org/en-US/docs/Web/JavaScript) environments like [Deno](https://deno.com/), [Bun](https://bun.sh/), [Cloudflare Workers](https://workers.cloudflare.com/)
+and web browsers.
 
 ![](https://github.com/kysely-org/kysely/blob/master/assets/demo.gif)
 
@@ -21,7 +22,7 @@ Kysely makes sure you only refer to tables and columns that are visible to the p
 you're writing. The result type only has the selected columns with correct types and aliases. As an
 added bonus you get autocompletion for all that stuff.
 
-As shown in the gif above, through the pure magic of modern typescript, Kysely is even able to parse
+As shown in the gif above, through the pure magic of modern TypeScript, Kysely is even able to parse
 the alias given to `pet.name` and add the `pet_name` column to the result row type. Kysely is able to infer
 column names, aliases and types from selected subqueries, joined subqueries, `with` statements and pretty
 much anything you can think of.
@@ -34,7 +35,7 @@ All API documentation is written in the typing files and you can simply hover ov
 or method you're using to see it in your IDE. The same documentation is also hosted [here](https://kysely-org.github.io/kysely-apidoc/).
 
 If you start using Kysely and can't find something you'd want to use, please open an issue or join our
-[discord server](https://discord.gg/xyBJ3GwvAm).
+[Discord server](https://discord.gg/xyBJ3GwvAm).
 
 # Getting started
 
