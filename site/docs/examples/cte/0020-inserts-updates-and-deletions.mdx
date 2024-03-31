@@ -1,0 +1,21 @@
+---
+title: 'Inserts, updates and deletions'
+---
+
+# Inserts, updates and deletions
+
+Some databases like postgres also allow you to run other queries than selects
+in CTEs. On these databases CTEs are extremely powerful:
+
+import {
+  Playground,
+  exampleSetup,
+} from '../../../src/components/Playground'
+
+import {
+  insertsUpdatesAndDeletions
+} from './0020-inserts-updates-and-deletions'
+
+<div style={{ marginBottom: '1em' }}>
+  <Playground code={insertsUpdatesAndDeletions} setupCode={exampleSetup} />
+</div>
