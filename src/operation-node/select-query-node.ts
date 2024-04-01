@@ -15,6 +15,8 @@ import { WithNode } from './with-node.js'
 import { SelectModifierNode } from './select-modifier-node.js'
 import { ExplainNode } from './explain-node.js'
 import { SetOperationNode } from './set-operation-node.js'
+import { FetchNode } from './fetch-node.js'
+import { TopNode } from './top-node.js'
 
 export interface SelectQueryNode extends OperationNode {
   readonly kind: 'SelectQueryNode'
@@ -33,6 +35,8 @@ export interface SelectQueryNode extends OperationNode {
   readonly having?: HavingNode
   readonly explain?: ExplainNode
   readonly setOperations?: ReadonlyArray<SetOperationNode>
+  readonly fetch?: FetchNode
+  readonly top?: TopNode
 }
 
 /**
@@ -153,6 +157,16 @@ export const SelectQueryNode = freeze({
     })
   },
 
+  cloneWithFetch(
+    selectNode: SelectQueryNode,
+    fetch: FetchNode
+  ): SelectQueryNode {
+    return freeze({
+      ...selectNode,
+      fetch,
+    })
+  },
+
   cloneWithHaving(
     selectNode: SelectQueryNode,
     operation: OperationNode,
@@ -202,6 +216,13 @@ export const SelectQueryNode = freeze({
     return freeze({
       ...select,
       orderBy: undefined,
+    })
+  },
+
+  cloneWithoutGroupBy(select: SelectQueryNode): SelectQueryNode {
+    return freeze({
+      ...select,
+      groupBy: undefined,
     })
   },
 })

@@ -79,6 +79,10 @@ import {
   ValueExpression,
   parseValueExpression,
 } from '../parser/value-parser.js'
+import { FetchModifier } from '../operation-node/fetch-node.js'
+import { parseFetch } from '../parser/fetch-parser.js'
+import { TopModifier } from '../operation-node/top-node.js'
+import { parseTop } from '../parser/top-parser.js'
 
 export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
   extends WhereInterface<DB, TB>,
@@ -279,6 +283,45 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    *
    * In case you use the {@link sql} tag you need to specify the type of the expression
    * (in this example `string`).
+   *
+   *  <!-- siteExample("select", "Not null", 51) -->
+   *
+   * Sometimes you can be sure something's not null but Kysely isn't able to infer
+   * it. For example calling `where('last_name', 'is not', null)` doesn't make
+   * `last_name` not null in the result type but unless you have other where statements
+   * you can be sure it's never null.
+   *
+   * Kysely has a couple of helpers for dealing with these cases: `$notNull()` and `$narrowType`.
+   * Both are used in the following example:
+   *
+   * ```ts
+   * import { NotNull } from 'kysely'
+   * import { jsonObjectFrom } from 'kysely/helpers/postgres'
+   *
+   * const persons = db
+   *   .selectFrom('person')
+   *   .select((eb) => [
+   *     'last_name',
+   *      // Let's assume we know the person has at least one
+   *      // pet. We can use the `.$notNull()` method to make
+   *      // the expression not null. You could just as well
+   *      // add `pet` to the `$narrowType` call below.
+   *      jsonObjectFrom(
+   *        eb.selectFrom('pet')
+   *          .selectAll()
+   *          .limit(1)
+   *          .whereRef('person.id', '=', 'pet.owner_id')
+   *      ).$notNull().as('pet')
+   *   ])
+   *   .where('last_name', 'is not', null)
+   *   // $narrowType can be used to narrow the output type.
+   *   // The special `NotNull` type can be used to make a
+   *   // selection not null. You could add `pet: NotNull`
+   *   // here and omit the `$notNull()` call on it.
+   *   // Use whichever way you prefer.
+   *   .$narrowType<{ last_name: NotNull }>()
+   *   .execute()
+   * ```
    *
    * All the examples above assume you know the column names at compile time.
    * While it's better to build your code like that (that way you also know
@@ -593,7 +636,10 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    *     (join) => join
    *       .onRef('pet.owner_id', '=', 'person.id')
    *       .on('pet.name', '=', 'Doggo')
-   *       .on((eb) => eb.or([eb("person.age", ">", 18), eb("person.age", "<", 100)]))
+   *       .on((eb) => eb.or([
+   *         eb('person.age', '>', 18),
+   *         eb('person.age', '<', 100)
+   *       ]))
    *   )
    *   .selectAll()
    *   .execute()
@@ -607,6 +653,10 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    * inner join "pet"
    * on "pet"."owner_id" = "person"."id"
    * and "pet"."name" = $1
+   * and (
+   *   "person"."age" > $2
+   *   OR "person"."age" < $3
+   * )
    * ```
    *
    * <!-- siteExample("join", "Subquery join", 40) -->
@@ -862,7 +912,7 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    *     .limit(1)
    *   )
    *   .orderBy(
-   *     sql`concat(first_name, last_name)`
+   *     sql<string>`concat(first_name, last_name)`
    *   )
    *   .execute()
    * ```
@@ -931,7 +981,7 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    *   .selectFrom('person')
    *   .select([
    *     'first_name',
-   *     sql`max(id)`.as('max_id')
+   *     sql<string>`max(id)`.as('max_id')
    *   ])
    *   .groupBy('first_name')
    *   .execute()
@@ -955,7 +1005,7 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    *   .select([
    *     'first_name',
    *     'last_name',
-   *     sql`max(id)`.as('max_id')
+   *     sql<string>`max(id)`.as('max_id')
    *   ])
    *   .groupBy([
    *     'first_name',
@@ -983,10 +1033,10 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    *   .select([
    *     'first_name',
    *     'last_name',
-   *     sql`max(id)`.as('max_id')
+   *     sql<string>`max(id)`.as('max_id')
    *   ])
    *   .groupBy([
-   *     sql`concat(first_name, last_name)`,
+   *     sql<string>`concat(first_name, last_name)`,
    *     (qb) => qb.selectFrom('pet').select('id').limit(1)
    *   ])
    *   .execute()
@@ -1033,6 +1083,13 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    *   .selectFrom('person')
    *   .select('first_name')
    *   .limit(10)
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * select "first_name" from "person" limit $1
    * ```
    *
    * Select rows from index 10 to index 19 of the result:
@@ -1041,14 +1098,23 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    * return await db
    *   .selectFrom('person')
    *   .select('first_name')
-   *   .offset(10)
    *   .limit(10)
+   *   .offset(10)
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * select "first_name" from "person" limit $1 offset $2
    * ```
    */
-  limit(limit: ValueExpression<DB, TB, number>): SelectQueryBuilder<DB, TB, O>
+  limit(
+    limit: ValueExpression<DB, TB, number | bigint>,
+  ): SelectQueryBuilder<DB, TB, O>
 
   /**
-   * Adds an offset clause to the query.
+   * Adds an `offset` clause to the query.
    *
    * ### Examples
    *
@@ -1058,11 +1124,97 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    * return await db
    *   .selectFrom('person')
    *   .select('first_name')
-   *   .offset(10)
    *   .limit(10)
+   *   .offset(10)
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * select "first_name" from "person" limit $1 offset $2
    * ```
    */
-  offset(offset: ValueExpression<DB, TB, number>): SelectQueryBuilder<DB, TB, O>
+  offset(
+    offset: ValueExpression<DB, TB, number | bigint>,
+  ): SelectQueryBuilder<DB, TB, O>
+
+  /**
+   * Adds a `fetch` clause to the query.
+   *
+   * This clause is only supported by some dialects like PostgreSQL or MS SQL Server.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * return await db
+   *   .selectFrom('person')
+   *   .select('first_name')
+   *   .orderBy('first_name')
+   *   .offset(0)
+   *   .fetch(10)
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (MS SQL Server):
+   *
+   * ```sql
+   * select "first_name"
+   * from "person"
+   * order by "first_name"
+   * offset 0 rows
+   * fetch next 10 rows only
+   * ```
+   */
+  fetch(
+    rowCount: number | bigint,
+    modifier?: FetchModifier,
+  ): SelectQueryBuilder<DB, TB, O>
+
+  /**
+   * Adds a `top` clause to the query.
+   *
+   * This clause is only supported by some dialects like MS SQL Server.
+   *
+   * ### Examples
+   *
+   * Select 10 biggest ages:
+   *
+   * ```ts
+   * return await db
+   *   .selectFrom('person')
+   *   .select('age')
+   *   .top(10)
+   *   .orderBy('age desc')
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (MS SQL Server):
+   *
+   * ```sql
+   * select top(10) "age" from "person" order by "age" desc
+   * ```
+   *
+   * Select 10% first rows:
+   *
+   * ```ts
+   * return await db
+   *  .selectFrom('person')
+   *  .selectAll()
+   *  .top(10, 'percent')
+   *  .execute()
+   * ```
+   *
+   * The generated SQL (MS SQL Server):
+   *
+   * ```sql
+   * select top(10) percent * from "person"
+   * ```
+   */
+  top(
+    expression: number | bigint,
+    modifiers?: TopModifier,
+  ): SelectQueryBuilder<DB, TB, O>
 
   /**
    * Combines another select query or raw expression to this query using `union`.
@@ -1347,6 +1499,26 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    * ```
    */
   clearOrderBy(): SelectQueryBuilder<DB, TB, O>
+
+  /**
+   * Clears `group by` clause from the query.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * db.selectFrom('person')
+   *   .selectAll()
+   *   .groupBy('id')
+   *   .clearGroupBy()
+   * ```
+   *
+   * The generated SQL(PostgreSQL):
+   *
+   * ```sql
+   * select * from "person"
+   * ```
+   */
+  clearGroupBy(): SelectQueryBuilder<DB, TB, O>
 
   /**
    * Simply calls the provided function passing `this` as the only argument. `$call` returns
@@ -1966,7 +2138,9 @@ class SelectQueryBuilderImpl<DB, TB extends keyof DB, O>
     })
   }
 
-  limit(limit: ValueExpression<DB, TB, number>): SelectQueryBuilder<DB, TB, O> {
+  limit(
+    limit: ValueExpression<DB, TB, number | bigint>,
+  ): SelectQueryBuilder<DB, TB, O> {
     return new SelectQueryBuilderImpl({
       ...this.#props,
       queryNode: SelectQueryNode.cloneWithLimit(
@@ -1977,13 +2151,39 @@ class SelectQueryBuilderImpl<DB, TB extends keyof DB, O>
   }
 
   offset(
-    offset: ValueExpression<DB, TB, number>,
+    offset: ValueExpression<DB, TB, number | bigint>,
   ): SelectQueryBuilder<DB, TB, O> {
     return new SelectQueryBuilderImpl({
       ...this.#props,
       queryNode: SelectQueryNode.cloneWithOffset(
         this.#props.queryNode,
         OffsetNode.create(parseValueExpression(offset)),
+      ),
+    })
+  }
+
+  fetch(
+    rowCount: number | bigint,
+    modifier: FetchModifier = 'only',
+  ): SelectQueryBuilder<DB, TB, O> {
+    return new SelectQueryBuilderImpl({
+      ...this.#props,
+      queryNode: SelectQueryNode.cloneWithFetch(
+        this.#props.queryNode,
+        parseFetch(rowCount, modifier),
+      ),
+    })
+  }
+
+  top(
+    expression: number | bigint,
+    modifiers?: TopModifier,
+  ): SelectQueryBuilder<DB, TB, O> {
+    return new SelectQueryBuilderImpl({
+      ...this.#props,
+      queryNode: QueryNode.cloneWithTop(
+        this.#props.queryNode,
+        parseTop(expression, modifiers),
       ),
     })
   }
@@ -2096,6 +2296,13 @@ class SelectQueryBuilderImpl<DB, TB extends keyof DB, O>
     return new SelectQueryBuilderImpl<DB, TB, O>({
       ...this.#props,
       queryNode: SelectQueryNode.cloneWithoutOrderBy(this.#props.queryNode),
+    })
+  }
+
+  clearGroupBy(): SelectQueryBuilder<DB, TB, O> {
+    return new SelectQueryBuilderImpl<DB, TB, O>({
+      ...this.#props,
+      queryNode: SelectQueryNode.cloneWithoutGroupBy(this.#props.queryNode),
     })
   }
 
@@ -2297,12 +2504,12 @@ export type SelectQueryBuilderWithInnerJoin<
     ? InnerJoinedBuilder<DB, TB, O, A, DB[T]>
     : never
   : TE extends keyof DB
-    ? SelectQueryBuilder<DB, TB | TE, O>
-    : TE extends AliasedExpression<infer QO, infer QA>
-      ? InnerJoinedBuilder<DB, TB, O, QA, QO>
-      : TE extends (qb: any) => AliasedExpression<infer QO, infer QA>
-        ? InnerJoinedBuilder<DB, TB, O, QA, QO>
-        : never
+  ? SelectQueryBuilder<DB, TB | TE, O>
+  : TE extends AliasedExpression<infer QO, infer QA>
+  ? InnerJoinedBuilder<DB, TB, O, QA, QO>
+  : TE extends (qb: any) => AliasedExpression<infer QO, infer QA>
+  ? InnerJoinedBuilder<DB, TB, O, QA, QO>
+  : never
 
 type InnerJoinedBuilder<
   DB,
@@ -2329,12 +2536,12 @@ export type SelectQueryBuilderWithLeftJoin<
     ? LeftJoinedBuilder<DB, TB, O, A, DB[T]>
     : never
   : TE extends keyof DB
-    ? LeftJoinedBuilder<DB, TB, O, TE, DB[TE]>
-    : TE extends AliasedExpression<infer QO, infer QA>
-      ? LeftJoinedBuilder<DB, TB, O, QA, QO>
-      : TE extends (qb: any) => AliasedExpression<infer QO, infer QA>
-        ? LeftJoinedBuilder<DB, TB, O, QA, QO>
-        : never
+  ? LeftJoinedBuilder<DB, TB, O, TE, DB[TE]>
+  : TE extends AliasedExpression<infer QO, infer QA>
+  ? LeftJoinedBuilder<DB, TB, O, QA, QO>
+  : TE extends (qb: any) => AliasedExpression<infer QO, infer QA>
+  ? LeftJoinedBuilder<DB, TB, O, QA, QO>
+  : never
 
 type LeftJoinedBuilder<
   DB,
@@ -2351,8 +2558,8 @@ type LeftJoinedDB<DB, A extends keyof any, R> = DrainOuterGeneric<{
   [C in keyof DB | A]: C extends A
     ? Nullable<R>
     : C extends keyof DB
-      ? DB[C]
-      : never
+    ? DB[C]
+    : never
 }>
 
 export type SelectQueryBuilderWithRightJoin<
@@ -2365,12 +2572,12 @@ export type SelectQueryBuilderWithRightJoin<
     ? RightJoinedBuilder<DB, TB, O, A, DB[T]>
     : never
   : TE extends keyof DB
-    ? RightJoinedBuilder<DB, TB, O, TE, DB[TE]>
-    : TE extends AliasedExpression<infer QO, infer QA>
-      ? RightJoinedBuilder<DB, TB, O, QA, QO>
-      : TE extends (qb: any) => AliasedExpression<infer QO, infer QA>
-        ? RightJoinedBuilder<DB, TB, O, QA, QO>
-        : never
+  ? RightJoinedBuilder<DB, TB, O, TE, DB[TE]>
+  : TE extends AliasedExpression<infer QO, infer QA>
+  ? RightJoinedBuilder<DB, TB, O, QA, QO>
+  : TE extends (qb: any) => AliasedExpression<infer QO, infer QA>
+  ? RightJoinedBuilder<DB, TB, O, QA, QO>
+  : never
 
 type RightJoinedBuilder<
   DB,
@@ -2389,10 +2596,10 @@ type RightJoinedDB<
   [C in keyof DB | A]: C extends A
     ? R
     : C extends TB
-      ? Nullable<DB[C]>
-      : C extends keyof DB
-        ? DB[C]
-        : never
+    ? Nullable<DB[C]>
+    : C extends keyof DB
+    ? DB[C]
+    : never
 }>
 
 export type SelectQueryBuilderWithFullJoin<
@@ -2405,12 +2612,12 @@ export type SelectQueryBuilderWithFullJoin<
     ? OuterJoinedBuilder<DB, TB, O, A, DB[T]>
     : never
   : TE extends keyof DB
-    ? OuterJoinedBuilder<DB, TB, O, TE, DB[TE]>
-    : TE extends AliasedExpression<infer QO, infer QA>
-      ? OuterJoinedBuilder<DB, TB, O, QA, QO>
-      : TE extends (qb: any) => AliasedExpression<infer QO, infer QA>
-        ? OuterJoinedBuilder<DB, TB, O, QA, QO>
-        : never
+  ? OuterJoinedBuilder<DB, TB, O, TE, DB[TE]>
+  : TE extends AliasedExpression<infer QO, infer QA>
+  ? OuterJoinedBuilder<DB, TB, O, QA, QO>
+  : TE extends (qb: any) => AliasedExpression<infer QO, infer QA>
+  ? OuterJoinedBuilder<DB, TB, O, QA, QO>
+  : never
 
 type OuterJoinedBuilder<
   DB,
@@ -2429,10 +2636,10 @@ type OuterJoinedBuilderDB<
   [C in keyof DB | A]: C extends A
     ? Nullable<R>
     : C extends TB
-      ? Nullable<DB[C]>
-      : C extends keyof DB
-        ? DB[C]
-        : never
+    ? Nullable<DB[C]>
+    : C extends keyof DB
+    ? DB[C]
+    : never
 }>
 
 type TableOrList<TB extends keyof any> =

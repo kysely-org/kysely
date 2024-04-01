@@ -107,7 +107,7 @@ const dialect = new ${dialectClassName}({
   if (dialect === 'sqlite') {
     const driverImportName = 'SQLite'
 
-    return `import * as ${driverImportName} from '${driverNPMPackageName}'
+    return `import ${driverImportName} from '${driverNPMPackageName}'
 import { Kysely, ${dialectClassName} } from 'kysely'
 
 const dialect = new ${dialectClassName}({

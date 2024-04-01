@@ -377,6 +377,16 @@ export class ColumnDefinitionBuilder implements OperationNodeSource {
   }
 
   /**
+   * Adds `if not exists` specifier.
+   * This only works for PostgreSQL.
+   */
+  ifNotExists(): ColumnDefinitionBuilder {
+    return new ColumnDefinitionBuilder(
+      ColumnDefinitionNode.cloneWith(this.#node, { ifNotExists: true }),
+    )
+  }
+
+  /**
    * This can be used to add any additional SQL to the end of the column definition.
    *
    * ### Examples
