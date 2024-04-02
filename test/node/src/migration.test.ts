@@ -794,6 +794,28 @@ for (const dialect of DIALECTS) {
       })
     })
 
+    describe('getLastExecutedMigrationName', () =>{
+      it('should return undefined when no migrations have been executed', async ()=>{
+        const [migrator, executedUpMethods1] = createMigrations([]);
+
+        const lastExecutedMigration = await migrator.getLastExecutedMigrationName();
+
+        expect(lastExecutedMigration).to.eql(undefined);
+      });
+
+      it('should return the name of the last executed migration', async ()=>{
+        const [migrator, executedUpMethods1] = createMigrations([
+          'migration1',
+          'migration2',
+        ]);
+        await migrator.migrateUp();
+
+        const lastExecutedMigration = await migrator.getLastExecutedMigrationName();
+
+        expect(lastExecutedMigration).to.eql('migration1');
+      })
+    });
+
     if (dialect === 'postgres') {
       describe('custom migration tables in a custom schema', () => {
         it('should create custom migration tables in custom schema', async () => {

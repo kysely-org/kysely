@@ -238,6 +238,21 @@ export class Migrator {
     return this.#migrate(() => ({ direction: 'Down', step: 1 }))
   }
 
+  /**
+   * Returns the name last executed migration.
+   * 
+   * @returns the name of the last executed migration when at least one migration
+   * was executed, or `undefined` otherwise.
+   */
+  async getLastExecutedMigrationName(): Promise<MigrationState['lastMigration']> {
+    await this.#ensureMigrationTablesExists();
+    const db = this.#props.db;
+
+    const { lastMigration } = await this.#getState(db)
+
+    return lastMigration
+  }
+  
   async #migrate(
     getMigrationDirectionAndStep: (state: MigrationState) => {
       direction: MigrationDirection
