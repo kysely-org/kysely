@@ -41,7 +41,7 @@ jobs:
         run: npx playwright install
 
       - name: Run docker compose
-        run: docker-compose up -d
+        run: docker compose up -d
 
       - name: Run node tests
         run: npm test
