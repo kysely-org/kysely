@@ -33,10 +33,11 @@ function getDialectSpecificCodeSnippet(
 ): string {
   const driverNPMPackageName = getDriverNPMPackageNames(packageManager)[dialect]
   const dialectClassName = DIALECT_CLASS_NAMES[dialect]
-  const poolClassName = packageManager === 'deno' ? 'Pool' : '{ Pool }'
+  const poolClassName = 'Pool'
+  const poolClassImport = packageManager === 'deno' ? `{ ${poolClassName} }` : poolClassName
 
   if (dialect === 'postgresql') {
-    return `import ${poolClassName} from '${driverNPMPackageName}'
+    return `import ${poolClassImport} from '${driverNPMPackageName}'
 import { Kysely, ${dialectClassName} } from 'kysely'
 
 const dialect = new ${dialectClassName}({
