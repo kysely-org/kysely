@@ -28,9 +28,11 @@ export type QueryCreatorWithCommonTableExpression<
   DB,
   CN extends string,
   CTE,
+  XTRA = unknown,
 > = QueryCreator<
   DB & {
-    [K in ExtractTableFromCommonTableExpressionName<CN>]: ExtractRowFromCommonTableExpression<CTE>
+    [K in ExtractTableFromCommonTableExpressionName<CN>]: ExtractRowFromCommonTableExpression<CTE> &
+      XTRA
   }
 >
 
@@ -51,7 +53,7 @@ type CommonTableExpressionOutput<DB, CN extends string> =
  * For example a CTE `(db) => db.selectFrom('person').select(['id', 'first_name'])`
  * would result in `Pick<Person, 'id' | 'first_name'>`.
  */
-type ExtractRowFromCommonTableExpression<CTE> = CTE extends (
+export type ExtractRowFromCommonTableExpression<CTE> = CTE extends (
   creator: QueryCreator<any>,
 ) => infer Q
   ? Q extends Expression<infer QO>

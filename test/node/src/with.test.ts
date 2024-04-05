@@ -189,6 +189,99 @@ for (const dialect of DIALECTS) {
         })
       })
 
+      it('recursive common table expressions with cycle', async () => {
+        await ctx.db.transaction().execute(async (trx) => {
+          // Create a temporary table that gets dropped when the transaction ends.
+          await trx.schema
+            .createTable('node')
+            .temporary()
+            .addColumn('name', 'varchar', (col) => col.notNull().unique())
+            .addColumn('parent', 'varchar', (col) =>
+              col.references('node.name'),
+            )
+            .onCommit('drop')
+            .execute()
+
+          // Extend the database type with the temporary table.
+          const nodeTrx = trx.withTables<{
+            node: {
+              name: string
+              parent: string | null
+            }
+          }>()
+
+          // Insert some items to the temporary table.
+          await nodeTrx
+            .insertInto('node')
+            .values([
+              { name: 'node2', parent: 'node1' },
+              { name: 'node1', parent: 'node2' },
+            ])
+            .execute()
+
+          // Fetch a node and all it's ancestors using a single recursive CTE.
+
+          const query = nodeTrx
+            .withRecursive(
+              'ancestors',
+              (db) =>
+                db
+                  .selectFrom('node')
+                  .where('name', '=', 'node1')
+                  .select(['name', 'parent'])
+                  .unionAll(
+                    db
+                      .selectFrom('node')
+                      .innerJoin('ancestors', 'node.name', 'ancestors.parent')
+                      .select(['node.name', 'node.parent']),
+                  ),
+              {
+                cycle: {
+                  columnList: ['name', 'parent'],
+                  using: 'path',
+                  set: {
+                    column: 'is_cycle',
+                    default: 0,
+                    to: 1,
+                  },
+                },
+              },
+            )
+            .selectFrom('ancestors')
+            .select(['ancestors.name', 'ancestors.is_cycle', 'ancestors.path'])
+
+          testSql(query, dialect, {
+            postgres: {
+              sql: 'with recursive "ancestors" as (select "name", "parent" from "node" where "name" = $1 union all select "node"."name", "node"."parent" from "node" inner join "ancestors" on "node"."name" = "ancestors"."parent") cycle name, parent set is_cycle to 1 default 0 using path select "ancestors"."name", "ancestors"."is_cycle", "ancestors"."path" from "ancestors"',
+              parameters: ['node1'],
+            },
+            mysql: NOT_SUPPORTED,
+            mssql: NOT_SUPPORTED,
+            sqlite: NOT_SUPPORTED,
+          })
+
+          const result = await query.execute()
+
+          expect(result).to.eql([
+            {
+              name: 'node1',
+              is_cycle: 0,
+              path: '{"(node1,node2)"}',
+            },
+            {
+              name: 'node2',
+              is_cycle: 0,
+              path: '{"(node1,node2)","(node2,node1)"}',
+            },
+            {
+              name: 'node1',
+              is_cycle: 1,
+              path: '{"(node1,node2)","(node2,node1)","(node1,node2)"}',
+            },
+          ])
+        })
+      })
+
       it('should create a CTE with `as materialized`', async () => {
         const query = ctx.db
           .with(

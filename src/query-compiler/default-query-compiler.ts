@@ -1041,6 +1041,15 @@ export class DefaultQueryCompiler
     }
 
     this.compileList(node.expressions)
+
+    if (node.recursive?.cycle) {
+      const { columnList, using, set } = node.recursive.cycle
+      const columns = columnList.join(', ')
+
+      this.append(
+        ` cycle ${columns} set ${set.column} to ${set.to} default ${set.default} using ${using}`,
+      )
+    }
   }
 
   protected override visitCommonTableExpression(

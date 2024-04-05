@@ -7,7 +7,27 @@ export type WithNodeParams = Omit<WithNode, 'kind' | 'expressions'>
 export interface WithNode extends OperationNode {
   readonly kind: 'WithNode'
   readonly expressions: ReadonlyArray<CommonTableExpressionNode>
-  readonly recursive?: boolean
+  readonly recursive?: RecursiveOptions
+}
+
+export interface RecursiveOptions {
+  cycle?: Cycle
+  // search: Search
+}
+
+export interface Cycle<
+  UsingColumn extends string = string,
+  SetColumnName extends string = string,
+  SetValueType = unknown,
+  ColumnList = Array<unknown>,
+> {
+  columnList: ColumnList
+  using: UsingColumn
+  set: {
+    column: SetColumnName
+    default?: SetValueType
+    to?: SetValueType
+  }
 }
 
 /**

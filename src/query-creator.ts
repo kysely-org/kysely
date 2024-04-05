@@ -28,11 +28,12 @@ import {
 import { QueryExecutor } from './query-executor/query-executor.js'
 import {
   CommonTableExpression,
+  ExtractRowFromCommonTableExpression,
   QueryCreatorWithCommonTableExpression,
   RecursiveCommonTableExpression,
   parseCommonTableExpression,
 } from './parser/with-parser.js'
-import { WithNode } from './operation-node/with-node.js'
+import { Cycle, WithNode } from './operation-node/with-node.js'
 import { createQueryId } from './util/query-id.js'
 import { WithSchemaPlugin } from './plugin/with-schema/with-schema-plugin.js'
 import { freeze } from './util/object-utils.js'
@@ -697,17 +698,35 @@ export class QueryCreator<DB> {
   withRecursive<
     N extends string,
     E extends RecursiveCommonTableExpression<DB, N>,
+    CycleUsingColumn extends string = never,
+    CycleSetColumnName extends string = never,
+    CycleSetValueType = boolean,
   >(
     nameOrBuilder: N | CTEBuilderCallback<N>,
     expression: E,
-  ): QueryCreatorWithCommonTableExpression<DB, N, E> {
+    recursiveOptions?: {
+      cycle?: Cycle<
+        CycleUsingColumn,
+        CycleSetColumnName,
+        CycleSetValueType,
+        Array<keyof ExtractRowFromCommonTableExpression<E>>
+      >
+    },
+  ): QueryCreatorWithCommonTableExpression<
+    DB,
+    N,
+    E,
+    { [key in CycleSetColumnName]: CycleSetValueType } & {
+      [key in CycleUsingColumn]: string /** This is the raw data returned by pg (data type RECORD, OID=2287) */
+    }
+  > {
     const cte = parseCommonTableExpression(nameOrBuilder, expression)
 
     return new QueryCreator({
       ...this.#props,
       withNode: this.#props.withNode
         ? WithNode.cloneWithExpression(this.#props.withNode, cte)
-        : WithNode.create(cte, { recursive: true }),
+        : WithNode.create(cte, { recursive: recursiveOptions || {} }),
     })
   }
 
