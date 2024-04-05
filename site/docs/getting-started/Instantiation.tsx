@@ -34,7 +34,7 @@ function getDialectSpecificCodeSnippet(
   const driverNPMPackageName = getDriverNPMPackageNames(packageManager)[dialect]
   const dialectClassName = DIALECT_CLASS_NAMES[dialect]
   const poolClassName = 'Pool'
-  const poolClassImport = packageManager === 'deno' ? `{ ${poolClassName} }` : poolClassName
+  const poolClassImport = packageManager === 'deno' ? poolClassName : `{ ${poolClassName} }`
 
   if (dialect === 'postgresql') {
     return `import ${poolClassImport} from '${driverNPMPackageName}'
