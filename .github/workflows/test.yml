@@ -32,11 +32,33 @@ jobs:
       - name: Run node tests
         run: npm test
 
-      - name: Run node tests with transformer
-        run: TEST_TRANSFORMER=1 npm test
-
       - name: Run esbuild test
         run: npm run test:esbuild
+
+  NodeJS-with-transformer:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run docker compose
+        run: docker compose up -d
+
+      - name: Run node tests with transformer
+        run: TEST_TRANSFORMER=1 npm test
 
   Deno:
     runs-on: ubuntu-latest
