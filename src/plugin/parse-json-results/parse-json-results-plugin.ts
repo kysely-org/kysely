@@ -8,6 +8,27 @@ import {
   PluginTransformResultArgs,
 } from '../kysely-plugin.js'
 
+export interface ParseJSONResultsPluginOptions {
+  /**
+   * When `'in-place'`, arrays' and objects' values are parsed in-place. This is
+   * the most time and space efficient option.
+   *
+   * This can result in runtime errors if some objects/arrays are readonly.
+   *
+   * When `'spread'`, arrays and objects are spread (`...`) into new arrays and
+   * objects. This is least efficient time-wise, but safe from readonly runtime
+   * errors.
+   *
+   * When `'create'`, new arrays and objects are created. This is least efficient
+   * space-wise, but safe from readonly runtime errors.
+   *
+   * Defaults to `'in-place'`.
+   */
+  objectStrategy?: ObjectStrategy
+}
+
+type ObjectStrategy = 'in-place' | 'spread' | 'create'
+
 /**
  * Parses JSON strings in query results into JSON objects.
  *
@@ -22,6 +43,12 @@ import {
  * ```
  */
 export class ParseJSONResultsPlugin implements KyselyPlugin {
+  readonly #objectStrategy: ObjectStrategy
+
+  constructor(readonly opt: ParseJSONResultsPluginOptions = {}) {
+    this.#objectStrategy = opt.objectStrategy || 'in-place'
+  }
+
   // noop
   transformQuery(args: PluginTransformQueryArgs): RootOperationNode {
     return args.node
@@ -32,30 +59,36 @@ export class ParseJSONResultsPlugin implements KyselyPlugin {
   ): Promise<QueryResult<UnknownRow>> {
     return {
       ...args.result,
-      rows: parseArray(args.result.rows),
+      rows: parseArray(args.result.rows, this.#objectStrategy),
     }
   }
 }
 
-function parseArray<T>(arr: T[]): T[] {
-  for (let i = 0; i < arr.length; ++i) {
-    arr[i] = parse(arr[i]) as T
+function parseArray<T>(arr: T[], objectStrategy: ObjectStrategy): T[] {
+  if (objectStrategy === 'spread') {
+    arr = [...arr]
   }
 
-  return arr
+  const target = objectStrategy === 'create' ? [] : arr
+
+  for (let i = 0; i < arr.length; ++i) {
+    target[i] = parse(arr[i], objectStrategy) as T
+  }
+
+  return target
 }
 
-function parse(obj: unknown): unknown {
+function parse(obj: unknown, objectStrategy: ObjectStrategy): unknown {
   if (isString(obj)) {
     return parseString(obj)
   }
 
   if (Array.isArray(obj)) {
-    return parseArray(obj)
+    return parseArray(obj, objectStrategy)
   }
 
   if (isPlainObject(obj)) {
-    return parseObject(obj)
+    return parseObject(obj, objectStrategy)
   }
 
   return obj
@@ -64,7 +97,7 @@ function parse(obj: unknown): unknown {
 function parseString(str: string): unknown {
   if (maybeJson(str)) {
     try {
-      return parse(JSON.parse(str))
+      return parse(JSON.parse(str), 'in-place')
     } catch (err) {
       // this catch block is intentionally empty.
     }
@@ -77,10 +110,19 @@ function maybeJson(value: string): boolean {
   return value.match(/^[\[\{]/) != null
 }
 
-function parseObject(obj: Record<string, unknown>): Record<string, unknown> {
-  for (const key in obj) {
-    obj[key] = parse(obj[key])
+function parseObject(
+  obj: Record<string, unknown>,
+  objectStrategy: ObjectStrategy,
+): Record<string, unknown> {
+  if (objectStrategy === 'spread') {
+    obj = { ...obj }
   }
 
-  return obj
+  const target = objectStrategy === 'create' ? {} : obj
+
+  for (const key in obj) {
+    target[key] = parse(obj[key], objectStrategy)
+  }
+
+  return target
 }
