@@ -15,19 +15,14 @@ export interface ParseJSONResultsPluginOptions {
    *
    * This can result in runtime errors if some objects/arrays are readonly.
    *
-   * When `'spread'`, arrays and objects are spread (`...`) into new arrays and
-   * objects. This is least efficient time-wise, but safe from readonly runtime
-   * errors.
-   *
-   * When `'create'`, new arrays and objects are created. This is least efficient
-   * space-wise, but safe from readonly runtime errors.
+   * When `'create'`, new arrays and objects are created to avoid such errors.
    *
    * Defaults to `'in-place'`.
    */
   objectStrategy?: ObjectStrategy
 }
 
-type ObjectStrategy = 'in-place' | 'spread' | 'create'
+type ObjectStrategy = 'in-place' | 'create'
 
 /**
  * Parses JSON strings in query results into JSON objects.
@@ -65,10 +60,6 @@ export class ParseJSONResultsPlugin implements KyselyPlugin {
 }
 
 function parseArray<T>(arr: T[], objectStrategy: ObjectStrategy): T[] {
-  if (objectStrategy === 'spread') {
-    arr = [...arr]
-  }
-
   const target = objectStrategy === 'create' ? [] : arr
 
   for (let i = 0; i < arr.length; ++i) {
@@ -114,10 +105,6 @@ function parseObject(
   obj: Record<string, unknown>,
   objectStrategy: ObjectStrategy,
 ): Record<string, unknown> {
-  if (objectStrategy === 'spread') {
-    obj = { ...obj }
-  }
-
   const target = objectStrategy === 'create' ? {} : obj
 
   for (const key in obj) {
