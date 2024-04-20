@@ -60,7 +60,7 @@ export class ParseJSONResultsPlugin implements KyselyPlugin {
 }
 
 function parseArray<T>(arr: T[], objectStrategy: ObjectStrategy): T[] {
-  const target = objectStrategy === 'create' ? [] : arr
+  const target = objectStrategy === 'create' ? new Array(arr.length) : arr
 
   for (let i = 0; i < arr.length; ++i) {
     target[i] = parse(arr[i], objectStrategy) as T

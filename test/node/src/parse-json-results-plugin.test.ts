@@ -1,7 +1,7 @@
 import { ParseJSONResultsPlugin } from '../../..'
 import { createQueryId } from '../../../dist/cjs/util/query-id.js'
 
-describe.only('ParseJSONResultsPlugin', () => {
+describe('ParseJSONResultsPlugin', () => {
   describe("when `objectStrategy` is 'create'", () => {
     let plugin: ParseJSONResultsPlugin
 
