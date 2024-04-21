@@ -165,14 +165,18 @@ export class WithSchemaTransformer extends OperationNodeTransformer {
     node: OperationNode,
     schemableIds: Set<string>,
   ): void {
-    const table = TableNode.is(node)
-      ? node
-      : AliasNode.is(node) && TableNode.is(node.node)
-        ? node.node
-        : null
+    if (TableNode.is(node)) {
+      return this.#collectSchemableId(node.table, schemableIds)
+    }
 
-    if (table) {
-      this.#collectSchemableId(table.table, schemableIds)
+    if (ReferenceNode.is(node)) {
+      if (node.table) {
+        return this.#collectSchemableIdsFromTableExpr(node.table, schemableIds)
+      }
+    }
+
+    if (AliasNode.is(node)) {
+      return this.#collectSchemableIdsFromTableExpr(node.node, schemableIds)
     }
   }
 
