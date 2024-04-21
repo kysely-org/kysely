@@ -956,6 +956,41 @@ for (const dialect of DIALECTS.filter(
       }
     })
 
+    describe('multiple whens', () => {
+      it('should perform a merge...using table simple on...when matched then delete query', async () => {
+        const query = ctx.db
+          .mergeInto('person')
+          .using('pet', 'pet.owner_id', 'person.id')
+          .whenMatched()
+          .thenDelete()
+          .whenNotMatched()
+          .thenInsertValues((eb) => ({
+            gender: 'other',
+            first_name: eb.ref('pet.name'),
+            middle_name: 'the',
+            last_name: eb.ref('pet.species'),
+          }))
+
+        testSql(query, dialect, {
+          postgres: {
+            sql: 'merge into "person" using "pet" on "pet"."owner_id" = "person"."id" when matched then delete when not matched then insert ("gender", "first_name", "middle_name", "last_name") values ($1, "pet"."name", $2, "pet"."species")',
+            parameters: ['other', 'the'],
+          },
+          mysql: NOT_SUPPORTED,
+          mssql: {
+            sql: 'merge into "person" using "pet" on "pet"."owner_id" = "person"."id" when matched then delete when not matched then insert ("gender", "first_name", "middle_name", "last_name") values (@1, "pet"."name", @2, "pet"."species");',
+            parameters: ['other', 'the'],
+          },
+          sqlite: NOT_SUPPORTED,
+        })
+
+        const result = await query.executeTakeFirstOrThrow()
+
+        expect(result).to.be.instanceOf(MergeResult)
+        expect(result.numChangedRows).to.equal(3n)
+      })
+    })
+
     if (dialect === 'mssql') {
       it('should perform a merge top...using table simple on...when matched then delete query', async () => {
         const query = ctx.db

@@ -395,5 +395,32 @@ for (const dialect of DIALECTS) {
         },
       })
     })
+
+    it('should clear groupBy', () => {
+      const query = ctx.db
+        .selectFrom('person')
+        .selectAll()
+        .groupBy('id')
+        .clearGroupBy()
+
+      testSql(query, dialect, {
+        postgres: {
+          sql: `select * from "person"`,
+          parameters: [],
+        },
+        mysql: {
+          sql: 'select * from `person`',
+          parameters: [],
+        },
+        mssql: {
+          sql: `select * from "person"`,
+          parameters: [],
+        },
+        sqlite: {
+          sql: `select * from "person"`,
+          parameters: [],
+        },
+      })
+    })
   })
 }

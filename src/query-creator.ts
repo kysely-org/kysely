@@ -564,21 +564,74 @@ export class QueryCreator<DB> {
    *
    * ### Examples
    *
+   * <!-- siteExample("cte", "Simple selects", 10) -->
+   *
+   * Common table expressions (CTE) are a great way to modularize complex queries.
+   * Essentially they allow you to run multiple separate queries within a
+   * single roundtrip to the DB.
+   *
+   * Since CTEs are a part of the main query, query optimizers inside DB
+   * engines are able to optimize the overall query. For example, postgres
+   * is able to inline the CTEs inside the using queries if it decides it's
+   * faster.
+   *
    * ```ts
-   * await db
+   * const result = await db
+   *   // Create a CTE called `jennifers` that selects all
+   *   // persons named 'Jennifer'.
    *   .with('jennifers', (db) => db
    *     .selectFrom('person')
    *     .where('first_name', '=', 'Jennifer')
    *     .select(['id', 'age'])
    *   )
+   *   // Select all rows from the `jennifers` CTE and
+   *   // further filter it.
    *   .with('adult_jennifers', (db) => db
    *     .selectFrom('jennifers')
    *     .where('age', '>', 18)
    *     .select(['id', 'age'])
    *   )
+   *   // Finally select all adult jennifers that are
+   *   // also younger than 60.
    *   .selectFrom('adult_jennifers')
    *   .where('age', '<', 60)
    *   .selectAll()
+   *   .execute()
+   * ```
+   *
+   * <!-- siteExample("cte", "Inserts, updates and deletions", 20) -->
+   *
+   * Some databases like postgres also allow you to run other queries than selects
+   * in CTEs. On these databases CTEs are extremely powerful:
+   *
+   * ```ts
+   * const result = await db
+   *   .with('new_person', (db) => db
+   *     .insertInto('person')
+   *     .values({
+   *       first_name: 'Jennifer',
+   *       age: 35,
+   *     })
+   *     .returning('id')
+   *   )
+   *   .with('new_pet', (db) => db
+   *     .insertInto('pet')
+   *     .values({
+   *       name: 'Doggo',
+   *       species: 'dog',
+   *       is_favorite: true,
+   *       // Use the id of the person we just inserted.
+   *       owner_id: db
+   *         .selectFrom('new_person')
+   *         .select('id')
+   *     })
+   *     .returning('id')
+   *   )
+   *   .selectFrom(['new_person', 'new_pet'])
+   *   .select([
+   *     'new_person.id as person_id',
+   *     'new_pet.id as pet_id'
+   *   ])
    *   .execute()
    * ```
    *

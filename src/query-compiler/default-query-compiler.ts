@@ -1535,7 +1535,7 @@ export class DefaultQueryCompiler
 
     if (node.whens) {
       this.append(' ')
-      this.compileList(node.whens)
+      this.compileList(node.whens, ' ')
     }
 
     if (node.output) {

@@ -8,6 +8,7 @@ import {
   expect,
   createTableWithId,
   DIALECTS,
+  NOT_SUPPORTED,
 } from './test-setup.js'
 
 for (const dialect of DIALECTS) {
@@ -277,6 +278,43 @@ for (const dialect of DIALECTS) {
         disable_emails: true,
       })
     })
+
+    if (dialect === 'postgres' || dialect === 'mssql') {
+      it('should convert merge queries', async () => {
+        const query = camelDb
+          .mergeInto('camelPerson')
+          .using(
+            'camelPerson as anotherCamelPerson',
+            'camelPerson.firstName',
+            'anotherCamelPerson.firstName',
+          )
+          .whenMatched()
+          .thenUpdateSet((eb) => ({
+            firstName: sql<string>`concat(${eb.ref('anotherCamelPerson.firstName')}, ${sql.lit('2')})`,
+          }))
+
+        testSql(query, dialect, {
+          postgres: {
+            sql: [
+              `merge into "camel_person"`,
+              `using "camel_person" as "another_camel_person" on "camel_person"."first_name" = "another_camel_person"."first_name"`,
+              `when matched then update set "first_name" = concat("another_camel_person"."first_name", '2')`,
+            ],
+            parameters: [],
+          },
+          mysql: NOT_SUPPORTED,
+          mssql: {
+            sql: [
+              `merge into "camel_person"`,
+              `using "camel_person" as "another_camel_person" on "camel_person"."first_name" = "another_camel_person"."first_name"`,
+              `when matched then update set "first_name" = concat("another_camel_person"."first_name", '2');`,
+            ],
+            parameters: [],
+          },
+          sqlite: NOT_SUPPORTED,
+        })
+      })
+    }
   })
 }
 
