@@ -32,6 +32,12 @@ export interface DialectAdapter {
   readonly supportsReturning: boolean
 
   /**
+   * Whether or not this dialect supports the `output` clause in inserts
+   * updates and deletes.
+   */
+  readonly supportsOutput?: boolean
+
+  /**
    * This method is used to acquire a lock for the migrations so that
    * it's not possible for two migration operations to run in parallel.
    *

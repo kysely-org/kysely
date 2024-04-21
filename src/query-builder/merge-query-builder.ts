@@ -22,7 +22,10 @@ import {
 } from '../parser/join-parser.js'
 import { parseMergeThen, parseMergeWhen } from '../parser/merge-parser.js'
 import { ReferenceExpression } from '../parser/reference-parser.js'
+import { ReturningAllRow, ReturningRow } from '../parser/returning-parser.js'
+import { parseSelectAll, parseSelectArg } from '../parser/select-parser.js'
 import { TableExpression } from '../parser/table-parser.js'
+import { parseTop } from '../parser/top-parser.js'
 import {
   ExtractUpdateTypeFromReferenceExpression,
   UpdateObject,
@@ -49,13 +52,83 @@ import {
   NoResultErrorConstructor,
   isNoResultErrorConstructor,
 } from './no-result-error.js'
+import {
+  OutputCallback,
+  OutputExpression,
+  OutputInterface,
+  OutputPrefix,
+  SelectExpressionFromOutputCallback,
+  SelectExpressionFromOutputExpression,
+} from './output-interface.js'
 import { UpdateQueryBuilder } from './update-query-builder.js'
 
-export class MergeQueryBuilder<DB, TT extends keyof DB, O> {
+export class MergeQueryBuilder<DB, TT extends keyof DB, O>
+  implements OutputInterface<DB, TT, O>
+{
   readonly #props: MergeQueryBuilderProps
 
   constructor(props: MergeQueryBuilderProps) {
     this.#props = freeze(props)
+  }
+
+  /**
+   * Changes a `merge into` query to an `merge top into` query.
+   *
+   * `top` clause is only supported by some dialects like MS SQL Server.
+   *
+   * ### Examples
+   *
+   * Affect 5 matched rows at most:
+   *
+   * ```ts
+   * await db.mergeInto('person')
+   *   .top(5)
+   *   .using('pet', 'person.id', 'pet.owner_id')
+   *   .whenMatched()
+   *   .thenDelete()
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (MS SQL Server):
+   *
+   * ```sql
+   * merge top(5) into "person"
+   * using "pet" on "person"."id" = "pet"."owner_id"
+   * when matched then
+   *   delete
+   * ```
+   *
+   * Affect 50% of matched rows:
+   *
+   * ```ts
+   * await db.mergeInto('person')
+   *   .top(50, 'percent')
+   *   .using('pet', 'person.id', 'pet.owner_id')
+   *   .whenMatched()
+   *   .thenDelete()
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (MS SQL Server):
+   *
+   * ```sql
+   * merge top(50) percent into "person"
+   * using "pet" on "person"."id" = "pet"."owner_id"
+   * when matched then
+   *   delete
+   * ```
+   */
+  top(
+    expression: number | bigint,
+    modifiers?: 'percent',
+  ): MergeQueryBuilder<DB, TT, O> {
+    return new MergeQueryBuilder({
+      ...this.#props,
+      queryNode: QueryNode.cloneWithTop(
+        this.#props.queryNode,
+        parseTop(expression, modifiers),
+      ),
+    })
   }
 
   /**
@@ -110,6 +183,52 @@ export class MergeQueryBuilder<DB, TT extends keyof DB, O> {
       ),
     })
   }
+
+  output<OE extends OutputExpression<DB, TT>>(
+    selections: readonly OE[],
+  ): MergeQueryBuilder<
+    DB,
+    TT,
+    ReturningRow<DB, TT, O, SelectExpressionFromOutputExpression<OE>>
+  >
+
+  output<CB extends OutputCallback<DB, TT>>(
+    callback: CB,
+  ): MergeQueryBuilder<
+    DB,
+    TT,
+    ReturningRow<DB, TT, O, SelectExpressionFromOutputCallback<CB>>
+  >
+
+  output<OE extends OutputExpression<DB, TT>>(
+    selection: OE,
+  ): MergeQueryBuilder<
+    DB,
+    TT,
+    ReturningRow<DB, TT, O, SelectExpressionFromOutputExpression<OE>>
+  >
+
+  output(args: any): any {
+    return new MergeQueryBuilder({
+      ...this.#props,
+      queryNode: QueryNode.cloneWithOutput(
+        this.#props.queryNode,
+        parseSelectArg(args),
+      ),
+    })
+  }
+
+  outputAll(
+    table: OutputPrefix,
+  ): MergeQueryBuilder<DB, TT, ReturningAllRow<DB, TT, O>> {
+    return new MergeQueryBuilder({
+      ...this.#props,
+      queryNode: QueryNode.cloneWithOutput(
+        this.#props.queryNode,
+        parseSelectAll(table),
+      ),
+    })
+  }
 }
 
 preventAwait(
@@ -129,12 +248,28 @@ export class WheneableMergeQueryBuilder<
     ST extends keyof DB,
     O,
   >
-  implements Compilable<O>, OperationNodeSource
+  implements Compilable<O>, OutputInterface<DB, TT, O>, OperationNodeSource
 {
   readonly #props: MergeQueryBuilderProps
 
   constructor(props: MergeQueryBuilderProps) {
     this.#props = freeze(props)
+  }
+
+  /**
+   * See {@link MergeQueryBuilder.top}.
+   */
+  top(
+    expression: number | bigint,
+    modifiers?: 'percent',
+  ): WheneableMergeQueryBuilder<DB, TT, ST, O> {
+    return new WheneableMergeQueryBuilder({
+      ...this.#props,
+      queryNode: QueryNode.cloneWithTop(
+        this.#props.queryNode,
+        parseTop(expression, modifiers),
+      ),
+    })
   }
 
   /**
@@ -412,6 +547,55 @@ export class WheneableMergeQueryBuilder<
     return this.#whenNotMatched([lhs, op, rhs], true, true)
   }
 
+  output<OE extends OutputExpression<DB, TT>>(
+    selections: readonly OE[],
+  ): WheneableMergeQueryBuilder<
+    DB,
+    TT,
+    ST,
+    ReturningRow<DB, TT, O, SelectExpressionFromOutputExpression<OE>>
+  >
+
+  output<CB extends OutputCallback<DB, TT>>(
+    callback: CB,
+  ): WheneableMergeQueryBuilder<
+    DB,
+    TT,
+    ST,
+    ReturningRow<DB, TT, O, SelectExpressionFromOutputCallback<CB>>
+  >
+
+  output<OE extends OutputExpression<DB, TT>>(
+    selection: OE,
+  ): WheneableMergeQueryBuilder<
+    DB,
+    TT,
+    ST,
+    ReturningRow<DB, TT, O, SelectExpressionFromOutputExpression<OE>>
+  >
+
+  output(args: any): any {
+    return new WheneableMergeQueryBuilder({
+      ...this.#props,
+      queryNode: QueryNode.cloneWithOutput(
+        this.#props.queryNode,
+        parseSelectArg(args),
+      ),
+    })
+  }
+
+  outputAll(
+    table: OutputPrefix,
+  ): WheneableMergeQueryBuilder<DB, TT, ST, ReturningAllRow<DB, TT, O>> {
+    return new WheneableMergeQueryBuilder({
+      ...this.#props,
+      queryNode: QueryNode.cloneWithOutput(
+        this.#props.queryNode,
+        parseSelectAll(table),
+      ),
+    })
+  }
+
   #whenNotMatched(
     args: any[],
     refRight: boolean = false,
@@ -521,7 +705,7 @@ export class WheneableMergeQueryBuilder<
 
   compile(): CompiledQuery<never> {
     return this.#props.executor.compileQuery(
-      this.#props.queryNode,
+      this.toOperationNode(),
       this.#props.queryId,
     )
   }
@@ -538,6 +722,13 @@ export class WheneableMergeQueryBuilder<
       compiledQuery,
       this.#props.queryId,
     )
+
+    if (
+      (compiledQuery.query as MergeQueryNode).output &&
+      this.#props.executor.adapter.supportsOutput
+    ) {
+      return result.rows as any
+    }
 
     return [new MergeResult(result.numAffectedRows) as any]
   }
