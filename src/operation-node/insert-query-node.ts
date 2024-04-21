@@ -4,8 +4,10 @@ import { ExplainNode } from './explain-node.js'
 import { OnConflictNode } from './on-conflict-node.js'
 import { OnDuplicateKeyNode } from './on-duplicate-key-node.js'
 import { OperationNode } from './operation-node.js'
+import { OutputNode } from './output-node.js'
 import { ReturningNode } from './returning-node.js'
 import { TableNode } from './table-node.js'
+import { TopNode } from './top-node.js'
 import { WithNode } from './with-node.js'
 
 export type InsertQueryNodeProps = Omit<InsertQueryNode, 'kind' | 'into'>
@@ -23,6 +25,8 @@ export interface InsertQueryNode extends OperationNode {
   readonly replace?: boolean
   readonly explain?: ExplainNode
   readonly defaultValues?: boolean
+  readonly top?: TopNode
+  readonly output?: OutputNode
 }
 
 /**

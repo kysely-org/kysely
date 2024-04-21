@@ -109,6 +109,9 @@ import { MergeQueryNode } from '../operation-node/merge-query-node.js'
 import { MatchedNode } from '../operation-node/matched-node.js'
 import { AddIndexNode } from '../operation-node/add-index-node.js'
 import { CastNode } from '../operation-node/cast-node.js'
+import { FetchNode } from '../operation-node/fetch-node.js'
+import { TopNode } from '../operation-node/top-node.js'
+import { OutputNode } from '../operation-node/output-node.js'
 
 export class DefaultQueryCompiler
   extends OperationNodeVisitor
@@ -173,6 +176,11 @@ export class DefaultQueryCompiler
       this.compileList(node.frontModifiers, ' ')
     }
 
+    if (node.top) {
+      this.append(' ')
+      this.visitNode(node.top)
+    }
+
     if (node.selections) {
       this.append(' ')
       this.compileList(node.selections)
@@ -221,6 +229,11 @@ export class DefaultQueryCompiler
     if (node.offset) {
       this.append(' ')
       this.visitNode(node.offset)
+    }
+
+    if (node.fetch) {
+      this.append(' ')
+      this.visitNode(node.fetch)
     }
 
     if (node.endModifiers?.length) {
@@ -301,6 +314,11 @@ export class DefaultQueryCompiler
       this.append(' ignore')
     }
 
+    if (node.top) {
+      this.append(' ')
+      this.visitNode(node.top)
+    }
+
     if (node.into) {
       this.append(' into ')
       this.visitNode(node.into)
@@ -310,6 +328,11 @@ export class DefaultQueryCompiler
       this.append(' (')
       this.compileList(node.columns)
       this.append(')')
+    }
+
+    if (node.output) {
+      this.append(' ')
+      this.visitNode(node.output)
     }
 
     if (node.values) {
@@ -365,7 +388,18 @@ export class DefaultQueryCompiler
     }
 
     this.append('delete ')
+
+    if (node.top) {
+      this.visitNode(node.top)
+      this.append(' ')
+    }
+
     this.visitNode(node.from)
+
+    if (node.output) {
+      this.append(' ')
+      this.visitNode(node.output)
+    }
 
     if (node.using) {
       this.append(' ')
@@ -591,6 +625,10 @@ export class DefaultQueryCompiler
   }
 
   protected override visitColumnDefinition(node: ColumnDefinitionNode): void {
+    if (node.ifNotExists) {
+      this.append('if not exists ')
+    }
+
     this.visitNode(node.column)
 
     this.append(' ')
@@ -608,6 +646,10 @@ export class DefaultQueryCompiler
     if (node.generated) {
       this.append(' ')
       this.visitNode(node.generated)
+    }
+
+    if (node.identity) {
+      this.append(' identity')
     }
 
     if (node.defaultTo) {
@@ -735,6 +777,11 @@ export class DefaultQueryCompiler
 
     this.append('update ')
 
+    if (node.top) {
+      this.visitNode(node.top)
+      this.append(' ')
+    }
+
     if (node.table) {
       this.visitNode(node.table)
       this.append(' ')
@@ -744,6 +791,11 @@ export class DefaultQueryCompiler
 
     if (node.updates) {
       this.compileList(node.updates)
+    }
+
+    if (node.output) {
+      this.append(' ')
+      this.visitNode(node.output)
     }
 
     if (node.from) {
@@ -759,6 +811,11 @@ export class DefaultQueryCompiler
     if (node.where) {
       this.append(' ')
       this.visitNode(node.where)
+    }
+
+    if (node.limit) {
+      this.append(' ')
+      this.visitNode(node.limit)
     }
 
     if (node.returning) {
@@ -1468,7 +1525,14 @@ export class DefaultQueryCompiler
       this.append(' ')
     }
 
-    this.append('merge into ')
+    this.append('merge ')
+
+    if (node.top) {
+      this.visitNode(node.top)
+      this.append(' ')
+    }
+
+    this.append('into ')
     this.visitNode(node.into)
 
     if (node.using) {
@@ -1478,7 +1542,12 @@ export class DefaultQueryCompiler
 
     if (node.whens) {
       this.append(' ')
-      this.compileList(node.whens)
+      this.compileList(node.whens, ' ')
+    }
+
+    if (node.output) {
+      this.append(' ')
+      this.visitNode(node.output)
     }
   }
 
@@ -1523,6 +1592,25 @@ export class DefaultQueryCompiler
     this.append(' as ')
     this.visitNode(node.dataType)
     this.append(')')
+  }
+
+  protected override visitFetch(node: FetchNode): void {
+    this.append('fetch next ')
+    this.visitNode(node.rowCount)
+    this.append(` rows ${node.modifier}`)
+  }
+
+  protected override visitOutput(node: OutputNode): void {
+    this.append('output ')
+    this.compileList(node.selections)
+  }
+
+  protected override visitTop(node: TopNode): void {
+    this.append(`top(${node.expression})`)
+
+    if (node.modifiers) {
+      this.append(` ${node.modifiers}`)
+    }
   }
 
   protected append(str: string): void {

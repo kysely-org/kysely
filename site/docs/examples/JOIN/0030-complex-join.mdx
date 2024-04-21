@@ -8,8 +8,10 @@ You can provide a function as the second argument to get a join
 builder for creating more complex joins. The join builder has a
 bunch of `on*` methods for building the `on` clause of the join.
 There's basically an equivalent for every `where` method
-(`on`, `onRef` etc.). You can do all the same things with the
-`on` method that you can with the corresponding `where` method.
+(`on`, `onRef` etc.).
+
+You can do all the same things with the
+`on` method that you can with the corresponding `where` method (like [OR expressions for example](https://kysely.dev/docs/examples/WHERE/or-where)).
 See the `where` method documentation for more examples.
 
 import {
