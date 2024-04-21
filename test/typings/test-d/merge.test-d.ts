@@ -7,11 +7,12 @@ import {
   MergeQueryBuilder,
   MergeResult,
   NotMatchedThenableMergeQueryBuilder,
+  Selectable,
   UpdateQueryBuilder,
   WheneableMergeQueryBuilder,
   sql,
 } from '..'
-import { Database } from '../shared'
+import { Database, Person } from '../shared'
 
 async function testMergeInto(db: Kysely<Database>) {
   db.mergeInto('person')
@@ -418,5 +419,106 @@ async function testThenInsert(
       first_name: 'Moshe',
       gender: 'other',
     }),
+  )
+}
+
+async function testOutput(db: Kysely<Database>) {
+  // One returning expression
+  const r1 = await db
+    .mergeInto('person')
+    .using('pet', 'pet.owner_id', 'person.id')
+    .whenMatched()
+    .thenDelete()
+    .output('deleted.id')
+    .executeTakeFirst()
+
+  expectType<{ id: number } | undefined>(r1)
+
+  // Multiple returning expressions
+  const r2 = await db
+    .mergeInto('person')
+    .using('pet', 'pet.owner_id', 'person.id')
+    .whenMatched()
+    .thenDelete()
+    .output(['deleted.id', 'deleted.first_name as fn'])
+    .execute()
+
+  expectType<{ id: number; fn: string }[]>(r2)
+
+  // Non-column reference returning expressions
+  const r3 = await db
+    .mergeInto('person')
+    .using('pet', 'pet.owner_id', 'person.id')
+    .whenMatched()
+    .thenUpdateSet('age', (eb) => eb(eb.ref('age'), '+', 20))
+    .output([
+      'inserted.age',
+      sql<string>`concat(deleted.first_name, ' ', deleted.last_name)`.as(
+        'full_name',
+      ),
+    ])
+    .execute()
+
+  expectType<{ age: number; full_name: string }[]>(r3)
+
+  // Return all columns
+  const r4 = await db
+    .mergeInto('person')
+    .using('pet', 'person.id', 'pet.owner_id')
+    .whenNotMatched()
+    .thenInsertValues({
+      gender: 'female',
+      age: 15,
+      first_name: 'Jane',
+    })
+    .outputAll('inserted')
+    .executeTakeFirstOrThrow()
+
+  expectType<Selectable<Person>>(r4)
+
+  // Non-existent column
+  expectError(
+    db
+      .mergeInto('person')
+      .using('pet', 'pet.owner_id', 'person.id')
+      .whenMatched()
+      .thenDelete()
+      .output('inserted.not_column'),
+  )
+
+  // Without prefix
+  expectError(
+    db
+      .mergeInto('person')
+      .using('pet', 'pet.owner_id', 'person.id')
+      .whenMatched()
+      .thenDelete()
+      .output('age'),
+  )
+  expectError(
+    db
+      .mergeInto('person')
+      .using('pet', 'pet.owner_id', 'person.id')
+      .whenMatched()
+      .thenDelete()
+      .outputAll(),
+  )
+
+  // Non-existent prefix
+  expectError(
+    db
+      .mergeInto('person')
+      .using('pet', 'pet.owner_id', 'person.id')
+      .whenMatched()
+      .thenDelete()
+      .output('foo.age'),
+  )
+  expectError(
+    db
+      .mergeInto('person')
+      .using('pet', 'pet.owner_id', 'person.id')
+      .whenMatched()
+      .thenDelete()
+      .outputAll('foo'),
   )
 }
