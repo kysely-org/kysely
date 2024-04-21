@@ -53,7 +53,7 @@ async function testSelectSingle(db: Kysely<Database>) {
         .selectFrom('movie')
         .whereRef('movie.id', '=', 'person.id')
         .select('movie.id')
-        .as('movie_id')
+        .as('movie_id'),
     )
     .execute()
   expectType<{ movie_id: string | null }>(r7)
@@ -387,7 +387,7 @@ async function testManyNestedSubqueries(db: Kysely<Database>) {
                                               .whereRef(
                                                 'pet4.owner_id',
                                                 '=',
-                                                'p4.id'
+                                                'p4.id',
                                               )
                                               .select((eb8) => [
                                                 'pet4.id',
@@ -397,23 +397,23 @@ async function testManyNestedSubqueries(db: Kysely<Database>) {
                                                     .whereRef(
                                                       'p5.id',
                                                       '=',
-                                                      'pet4.owner_id'
+                                                      'pet4.owner_id',
                                                     )
-                                                    .select('p5.id')
+                                                    .select('p5.id'),
                                                 ).as('owner'),
-                                              ])
+                                              ]),
                                           ).as('pets'),
-                                        ])
+                                        ]),
                                     ).as('owner'),
-                                  ])
+                                  ]),
                               ).as('pets'),
-                            ])
+                            ]),
                         ).as('owner'),
-                      ])
+                      ]),
                   ).as('pets'),
-                ])
+                ]),
             ).as('owner'),
-          ])
+          ]),
       ).as('pets'),
     ])
     .executeTakeFirstOrThrow()
@@ -446,13 +446,13 @@ async function testManyNestedSubqueries(db: Kysely<Database>) {
 }
 
 export function jsonArrayFrom<O>(
-  expr: Expression<O>
+  expr: Expression<O>,
 ): RawBuilder<Simplify<O>[]> {
   return sql`(select coalesce(json_agg(agg), '[]') from ${expr} as agg)`
 }
 
 export function jsonObjectFrom<O>(
-  expr: Expression<O>
+  expr: Expression<O>,
 ): RawBuilder<Simplify<O> | null> {
   return sql`(select to_json(obj) from ${expr} as obj)`
 }

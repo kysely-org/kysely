@@ -7,11 +7,12 @@ import {
   MergeQueryBuilder,
   MergeResult,
   NotMatchedThenableMergeQueryBuilder,
+  Selectable,
   UpdateQueryBuilder,
   WheneableMergeQueryBuilder,
   sql,
 } from '..'
-import { Database } from '../shared'
+import { Database, Person } from '../shared'
 
 async function testMergeInto(db: Kysely<Database>) {
   db.mergeInto('person')
@@ -23,12 +24,12 @@ async function testMergeInto(db: Kysely<Database>) {
   expectError(db.mergeInto(db.selectFrom('person').selectAll().as('person')))
   expectError(
     db.mergeInto((eb: ExpressionBuilder<Database, keyof Database>) =>
-      eb.selectFrom('person').selectAll().as('person')
-    )
+      eb.selectFrom('person').selectAll().as('person'),
+    ),
   )
 
   expectType<MergeQueryBuilder<Database, 'person', MergeResult>>(
-    db.mergeInto('person')
+    db.mergeInto('person'),
   )
 }
 
@@ -40,12 +41,14 @@ async function testUsing(db: Kysely<Database>) {
   expectError(db.mergeInto('person').using('pet', 'pet.NO_SUCH_COLUMN'))
   expectError(db.mergeInto('person').using('pet', 'pet.owner_id', 'person'))
   expectError(
-    db.mergeInto('person').using('pet', 'pet.owner_id', 'person.NO_SUCH_COLUMN')
+    db
+      .mergeInto('person')
+      .using('pet', 'pet.owner_id', 'person.NO_SUCH_COLUMN'),
   )
   expectError(
     db
       .mergeInto('person')
-      .using('NO_SUCH_TABLE as n', 'n.owner_id', 'person.id')
+      .using('NO_SUCH_TABLE as n', 'n.owner_id', 'person.id'),
   )
   db.mergeInto('person').using('pet', (join) => {
     // already tested in join.test-d.ts
@@ -62,12 +65,12 @@ async function testUsing(db: Kysely<Database>) {
     await db
       .mergeInto('person')
       .using('pet', 'pet.owner_id', 'person.id')
-      .executeTakeFirstOrThrow()
+      .executeTakeFirstOrThrow(),
   )
 }
 
 async function testWhenMatched(
-  baseQuery: WheneableMergeQueryBuilder<Database, 'person', 'pet', MergeResult>
+  baseQuery: WheneableMergeQueryBuilder<Database, 'person', 'pet', MergeResult>,
 ) {
   baseQuery.whenMatched()
   expectError(baseQuery.whenMatched('age'))
@@ -84,7 +87,7 @@ async function testWhenMatched(
     return eb.ref('person.age')
   })
   expectError(
-    baseQuery.whenMatchedAnd('age', '>', (eb) => eb.ref('person.first_name'))
+    baseQuery.whenMatchedAnd('age', '>', (eb) => eb.ref('person.first_name')),
   )
   baseQuery.whenMatchedAnd((eb) => {
     // already tested in many places
@@ -112,12 +115,12 @@ async function testWhenMatched(
   expectType<ExpectedReturnType>(baseQuery.whenMatched())
   expectType<ExpectedReturnType>(baseQuery.whenMatchedAnd('age', '>', 2))
   expectType<ExpectedReturnType>(
-    baseQuery.whenMatchedAndRef('pet.name', '>', 'person.age')
+    baseQuery.whenMatchedAndRef('pet.name', '>', 'person.age'),
   )
 }
 
 async function testWhenNotMatched(
-  baseQuery: WheneableMergeQueryBuilder<Database, 'person', 'pet', MergeResult>
+  baseQuery: WheneableMergeQueryBuilder<Database, 'person', 'pet', MergeResult>,
 ) {
   baseQuery.whenNotMatched()
   expectError(baseQuery.whenNotMatched('species'))
@@ -128,7 +131,7 @@ async function testWhenNotMatched(
   expectError(baseQuery.whenNotMatchedAnd('species', '>', 2))
   baseQuery.whenNotMatchedAnd('species', '>', 'dog')
   expectError(
-    baseQuery.whenNotMatchedAnd('species', 'NOT_SUCH_OPERATOR', 'dog')
+    baseQuery.whenNotMatchedAnd('species', 'NOT_SUCH_OPERATOR', 'dog'),
   )
   // when not matched can only reference the source table's columns.
   expectError(baseQuery.whenNotMatchedAnd('age', '>', 'dog'))
@@ -140,7 +143,7 @@ async function testWhenNotMatched(
     return eb.ref('pet.species')
   })
   expectError(
-    baseQuery.whenNotMatchedAnd('species', '>', (eb) => eb.ref('pet.owner_id'))
+    baseQuery.whenNotMatchedAnd('species', '>', (eb) => eb.ref('pet.owner_id')),
   )
   baseQuery.whenNotMatchedAnd((eb) => {
     // already tested in many places
@@ -155,15 +158,15 @@ async function testWhenNotMatched(
   baseQuery.whenNotMatchedAndRef('pet.name', '>', 'pet.species')
   // when not matched can only reference the source table's columns.
   expectError(
-    baseQuery.whenNotMatchedAndRef('pet.name', '>', 'person.first_name')
+    baseQuery.whenNotMatchedAndRef('pet.name', '>', 'person.first_name'),
   )
   expectError(
-    baseQuery.whenNotMatchedAndRef('person.first_name', '>', 'pet.species')
+    baseQuery.whenNotMatchedAndRef('person.first_name', '>', 'pet.species'),
   )
   baseQuery.whenNotMatchedAndRef('species', '>', sql`person.age`)
   baseQuery.whenNotMatchedAndRef('species', sql`>`, 'pet.species')
   expectError(
-    baseQuery.whenNotMatchedAndRef('species', 'NO_SUCH_OPERATOR', 'name')
+    baseQuery.whenNotMatchedAndRef('species', 'NO_SUCH_OPERATOR', 'name'),
   )
 
   type ExpectedReturnType = NotMatchedThenableMergeQueryBuilder<
@@ -174,15 +177,15 @@ async function testWhenNotMatched(
   >
   expectType<ExpectedReturnType>(baseQuery.whenNotMatched())
   expectType<ExpectedReturnType>(
-    baseQuery.whenNotMatchedAnd('species', '>', 'dog')
+    baseQuery.whenNotMatchedAnd('species', '>', 'dog'),
   )
   expectType<ExpectedReturnType>(
-    baseQuery.whenNotMatchedAndRef('pet.name', '>', 'pet.species')
+    baseQuery.whenNotMatchedAndRef('pet.name', '>', 'pet.species'),
   )
 }
 
 async function testWhenNotMatchedBySource(
-  baseQuery: WheneableMergeQueryBuilder<Database, 'person', 'pet', MergeResult>
+  baseQuery: WheneableMergeQueryBuilder<Database, 'person', 'pet', MergeResult>,
 ) {
   baseQuery.whenNotMatchedBySource()
   expectError(baseQuery.whenNotMatchedBySource('age'))
@@ -192,7 +195,7 @@ async function testWhenNotMatchedBySource(
   expectError(baseQuery.whenNotMatchedBySourceAnd('age', '>', 'string'))
   baseQuery.whenNotMatchedBySourceAnd('age', '>', 2)
   expectError(
-    baseQuery.whenNotMatchedBySourceAnd('age', 'NOT_SUCH_OPERATOR', 'dog')
+    baseQuery.whenNotMatchedBySourceAnd('age', 'NOT_SUCH_OPERATOR', 'dog'),
   )
   // when not matched by source can only reference the target table's columns.
   expectError(baseQuery.whenNotMatchedBySourceAnd('species', '>', 'dog'))
@@ -205,8 +208,8 @@ async function testWhenNotMatchedBySource(
   })
   expectError(
     baseQuery.whenNotMatchedBySourceAnd('age', '>', (eb) =>
-      eb.ref('person.gender')
-    )
+      eb.ref('person.gender'),
+    ),
   )
   baseQuery.whenNotMatchedBySourceAnd((eb) => {
     // already tested in many places
@@ -221,14 +224,22 @@ async function testWhenNotMatchedBySource(
   baseQuery.whenNotMatchedBySourceAndRef(
     'person.first_name',
     '>',
-    'person.last_name'
+    'person.last_name',
   )
   // when not matched by source can only reference the target table's columns.
   expectError(
-    baseQuery.whenNotMatchedBySourceAndRef('person.first_name', '>', 'pet.name')
+    baseQuery.whenNotMatchedBySourceAndRef(
+      'person.first_name',
+      '>',
+      'pet.name',
+    ),
   )
   expectError(
-    baseQuery.whenNotMatchedBySourceAndRef('pet.name', '>', 'person.first_name')
+    baseQuery.whenNotMatchedBySourceAndRef(
+      'pet.name',
+      '>',
+      'person.first_name',
+    ),
   )
 
   type ExpectedReturnType = MatchedThenableMergeQueryBuilder<
@@ -240,14 +251,14 @@ async function testWhenNotMatchedBySource(
   >
   expectType<ExpectedReturnType>(baseQuery.whenNotMatchedBySource())
   expectType<ExpectedReturnType>(
-    baseQuery.whenNotMatchedBySourceAnd('age', '>', 2)
+    baseQuery.whenNotMatchedBySourceAnd('age', '>', 2),
   )
   expectType<ExpectedReturnType>(
     baseQuery.whenNotMatchedBySourceAndRef(
       'person.first_name',
       '>',
-      'person.last_name'
-    )
+      'person.last_name',
+    ),
   )
 }
 
@@ -258,7 +269,7 @@ async function testThenDelete(
     'pet',
     'person' | 'pet',
     MergeResult
-  >
+  >,
 ) {
   baseQuery.thenDelete()
   expectError(baseQuery.thenDelete('person'))
@@ -282,7 +293,7 @@ async function testThenDoNothing(
     'person',
     'pet',
     MergeResult
-  >
+  >,
 ) {
   matchedBaseQuery.thenDoNothing()
   expectError(matchedBaseQuery.thenDoNothing('person'))
@@ -313,7 +324,7 @@ async function testThenUpdate(
     'pet',
     'person',
     MergeResult
-  >
+  >,
 ) {
   expectError(baseQuery.thenUpdate())
   expectError(baseQuery.thenUpdate('person'))
@@ -321,7 +332,7 @@ async function testThenUpdate(
   expectError(baseQuery.thenUpdate({ age: 2 }))
   baseQuery.thenUpdate((ub) => {
     expectType<UpdateQueryBuilder<Database, 'person', 'person' | 'pet', never>>(
-      ub
+      ub,
     )
     return ub
   })
@@ -360,7 +371,7 @@ async function testThenUpdate(
   expectType<ExpectedReturnType>(baseQuery.thenUpdate((ub) => ub))
   expectType<ExpectedReturnType>(baseQuery.thenUpdateSet({ age: 2 }))
   expectType<ExpectedReturnType>(
-    baseQuery.thenUpdateSet((eb) => ({ first_name: eb.ref('pet.name') }))
+    baseQuery.thenUpdateSet((eb) => ({ first_name: eb.ref('pet.name') })),
   )
   expectType<ExpectedReturnType>(baseQuery.thenUpdateSet('age', 2))
 }
@@ -371,7 +382,7 @@ async function testThenInsert(
     'person',
     'pet',
     MergeResult
-  >
+  >,
 ) {
   expectError(baseQuery.thenInsertValues())
   expectError(baseQuery.thenInsertValues('person'))
@@ -383,7 +394,7 @@ async function testThenInsert(
       age: 'not_a_number',
       first_name: 'Moshe',
       gender: 'other',
-    })
+    }),
   )
   baseQuery.thenInsertValues((eb) => {
     expectType<ExpressionBuilder<Database, 'person' | 'pet'>>(eb)
@@ -397,12 +408,117 @@ async function testThenInsert(
         first_name: eb.ref('pet.name'),
         gender: 'other',
       }
-    })
+    }),
   )
 
   expectType<
     WheneableMergeQueryBuilder<Database, 'person', 'pet', MergeResult>
   >(
-    baseQuery.thenInsertValues({ age: 2, first_name: 'Moshe', gender: 'other' })
+    baseQuery.thenInsertValues({
+      age: 2,
+      first_name: 'Moshe',
+      gender: 'other',
+    }),
+  )
+}
+
+async function testOutput(db: Kysely<Database>) {
+  // One returning expression
+  const r1 = await db
+    .mergeInto('person')
+    .using('pet', 'pet.owner_id', 'person.id')
+    .whenMatched()
+    .thenDelete()
+    .output('deleted.id')
+    .executeTakeFirst()
+
+  expectType<{ id: number } | undefined>(r1)
+
+  // Multiple returning expressions
+  const r2 = await db
+    .mergeInto('person')
+    .using('pet', 'pet.owner_id', 'person.id')
+    .whenMatched()
+    .thenDelete()
+    .output(['deleted.id', 'deleted.first_name as fn'])
+    .execute()
+
+  expectType<{ id: number; fn: string }[]>(r2)
+
+  // Non-column reference returning expressions
+  const r3 = await db
+    .mergeInto('person')
+    .using('pet', 'pet.owner_id', 'person.id')
+    .whenMatched()
+    .thenUpdateSet('age', (eb) => eb(eb.ref('age'), '+', 20))
+    .output([
+      'inserted.age',
+      sql<string>`concat(deleted.first_name, ' ', deleted.last_name)`.as(
+        'full_name',
+      ),
+    ])
+    .execute()
+
+  expectType<{ age: number; full_name: string }[]>(r3)
+
+  // Return all columns
+  const r4 = await db
+    .mergeInto('person')
+    .using('pet', 'person.id', 'pet.owner_id')
+    .whenNotMatched()
+    .thenInsertValues({
+      gender: 'female',
+      age: 15,
+      first_name: 'Jane',
+    })
+    .outputAll('inserted')
+    .executeTakeFirstOrThrow()
+
+  expectType<Selectable<Person>>(r4)
+
+  // Non-existent column
+  expectError(
+    db
+      .mergeInto('person')
+      .using('pet', 'pet.owner_id', 'person.id')
+      .whenMatched()
+      .thenDelete()
+      .output('inserted.not_column'),
+  )
+
+  // Without prefix
+  expectError(
+    db
+      .mergeInto('person')
+      .using('pet', 'pet.owner_id', 'person.id')
+      .whenMatched()
+      .thenDelete()
+      .output('age'),
+  )
+  expectError(
+    db
+      .mergeInto('person')
+      .using('pet', 'pet.owner_id', 'person.id')
+      .whenMatched()
+      .thenDelete()
+      .outputAll(),
+  )
+
+  // Non-existent prefix
+  expectError(
+    db
+      .mergeInto('person')
+      .using('pet', 'pet.owner_id', 'person.id')
+      .whenMatched()
+      .thenDelete()
+      .output('foo.age'),
+  )
+  expectError(
+    db
+      .mergeInto('person')
+      .using('pet', 'pet.owner_id', 'person.id')
+      .whenMatched()
+      .thenDelete()
+      .outputAll('foo'),
   )
 }

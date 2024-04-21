@@ -38,7 +38,7 @@ export const CreateViewNode = freeze({
 
   cloneWith(
     createView: CreateViewNode,
-    params: CreateViewNodeParams
+    params: CreateViewNodeParams,
   ): CreateViewNode {
     return freeze({
       ...createView,

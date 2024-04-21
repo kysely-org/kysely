@@ -6,7 +6,7 @@ export interface OperationNodeSource {
 }
 
 export function isOperationNodeSource(
-  obj: unknown
+  obj: unknown,
 ): obj is OperationNodeSource {
   return isObject(obj) && isFunction(obj.toOperationNode)
 }

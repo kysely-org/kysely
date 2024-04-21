@@ -178,13 +178,13 @@ class RawBuilderImpl<O> implements RawBuilder<O> {
   }
 
   async execute(
-    executorProvider: QueryExecutorProvider
+    executorProvider: QueryExecutorProvider,
   ): Promise<QueryResult<O>> {
     const executor = this.#getExecutor(executorProvider)
 
     return executor.executeQuery<O>(
       this.#compile(executor),
-      this.#props.queryId
+      this.#props.queryId,
     )
   }
 
@@ -206,7 +206,7 @@ class RawBuilderImpl<O> implements RawBuilder<O> {
   #compile(executor: QueryExecutor): CompiledQuery {
     return executor.compileQuery(
       this.#toOperationNode(executor),
-      this.#props.queryId
+      this.#props.queryId,
     )
   }
 }
@@ -223,7 +223,7 @@ export function createRawBuilder<O>(props: RawBuilderProps): RawBuilder<O> {
 
 preventAwait(
   RawBuilderImpl,
-  "don't await RawBuilder instances directly. To execute the query you need to call `execute`"
+  "don't await RawBuilder instances directly. To execute the query you need to call `execute`",
 )
 
 /**
@@ -262,12 +262,12 @@ class AliasedRawBuilderImpl<O = unknown, A extends string = never>
       this.#rawBuilder.toOperationNode(),
       isOperationNodeSource(this.#alias)
         ? this.#alias.toOperationNode()
-        : IdentifierNode.create(this.#alias)
+        : IdentifierNode.create(this.#alias),
     )
   }
 }
 
 preventAwait(
   AliasedRawBuilderImpl,
-  "don't await AliasedRawBuilder instances directly. AliasedRawBuilder should never be executed directly since it's always a part of another query."
+  "don't await AliasedRawBuilder instances directly. AliasedRawBuilder should never be executed directly since it's always a part of another query.",
 )

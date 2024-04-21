@@ -20,7 +20,7 @@ export class WithSchemaPlugin implements KyselyPlugin {
   }
 
   async transformResult(
-    args: PluginTransformResultArgs
+    args: PluginTransformResultArgs,
   ): Promise<QueryResult<UnknownRow>> {
     return args.result
   }

@@ -71,11 +71,20 @@ import {
   ValueExpression,
   parseValueExpression,
 } from '../parser/value-parser.js'
+import { parseTop } from '../parser/top-parser.js'
+import {
+  OutputCallback,
+  OutputExpression,
+  OutputInterface,
+  SelectExpressionFromOutputCallback,
+  SelectExpressionFromOutputExpression,
+} from './output-interface.js'
 
 export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
   implements
     WhereInterface<DB, TB>,
     ReturningInterface<DB, TB, O>,
+    OutputInterface<DB, TB, O, 'deleted'>,
     OperationNodeSource,
     Compilable<O>,
     Explainable,
@@ -89,15 +98,15 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
 
   where<
     RE extends ReferenceExpression<DB, TB>,
-    VE extends OperandValueExpressionOrList<DB, TB, RE>
+    VE extends OperandValueExpressionOrList<DB, TB, RE>,
   >(
     lhs: RE,
     op: ComparisonOperatorExpression,
-    rhs: VE
+    rhs: VE,
   ): DeleteQueryBuilder<DB, TB, O>
 
   where<E extends ExpressionOrFactory<DB, TB, SqlBool>>(
-    expression: E
+    expression: E,
   ): DeleteQueryBuilder<DB, TB, O>
 
   where(...args: any[]): any {
@@ -105,24 +114,24 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
       ...this.#props,
       queryNode: QueryNode.cloneWithWhere(
         this.#props.queryNode,
-        parseValueBinaryOperationOrExpression(args)
+        parseValueBinaryOperationOrExpression(args),
       ),
     })
   }
 
   whereRef<
     LRE extends ReferenceExpression<DB, TB>,
-    RRE extends ReferenceExpression<DB, TB>
+    RRE extends ReferenceExpression<DB, TB>,
   >(
     lhs: LRE,
     op: ComparisonOperatorExpression,
-    rhs: RRE
+    rhs: RRE,
   ): DeleteQueryBuilder<DB, TB, O> {
     return new DeleteQueryBuilder({
       ...this.#props,
       queryNode: QueryNode.cloneWithWhere(
         this.#props.queryNode,
-        parseReferentialBinaryOperation(lhs, op, rhs)
+        parseReferentialBinaryOperation(lhs, op, rhs),
       ),
     })
   }
@@ -131,6 +140,58 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
     return new DeleteQueryBuilder<DB, TB, O>({
       ...this.#props,
       queryNode: QueryNode.cloneWithoutWhere(this.#props.queryNode),
+    })
+  }
+
+  /**
+   * Changes a `delete from` query into a `delete top from` query.
+   *
+   * `top` clause is only supported by some dialects like MS SQL Server.
+   *
+   * ### Examples
+   *
+   * Delete the first 5 rows:
+   *
+   * ```ts
+   * await db
+   *   .deleteFrom('person')
+   *   .top(5)
+   *   .where('age', '>', 18)
+   *   .executeTakeFirstOrThrow()
+   * ```
+   *
+   * The generated SQL (MS SQL Server):
+   *
+   * ```sql
+   * delete top(5) from "person" where "age" > @1
+   * ```
+   *
+   * Delete the first 50% of rows:
+   *
+   * ```ts
+   * await db
+   *   .deleteFrom('person')
+   *   .top(50, 'percent')
+   *   .where('age', '>', 18)
+   *   .executeTakeFirstOrThrow()
+   * ```
+   *
+   * The generated SQL (MS SQL Server):
+   *
+   * ```sql
+   * delete top(50) percent from "person" where "age" > @1
+   * ```
+   */
+  top(
+    expression: number | bigint,
+    modifiers?: 'percent',
+  ): DeleteQueryBuilder<DB, TB, O> {
+    return new DeleteQueryBuilder({
+      ...this.#props,
+      queryNode: QueryNode.cloneWithTop(
+        this.#props.queryNode,
+        parseTop(expression, modifiers),
+      ),
     })
   }
 
@@ -209,11 +270,11 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
    * ```
    */
   using<TE extends TableExpression<DB, keyof DB>>(
-    tables: TE[]
+    tables: TE[],
   ): DeleteQueryBuilder<From<DB, TE>, FromTables<DB, TB, TE>, O>
 
   using<TE extends TableExpression<DB, keyof DB>>(
-    table: TE
+    table: TE,
   ): DeleteQueryBuilder<From<DB, TE>, FromTables<DB, TB, TE>, O>
 
   using(tables: TableExpressionOrList<any, any>): any {
@@ -221,7 +282,7 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
       ...this.#props,
       queryNode: DeleteQueryNode.cloneWithUsing(
         this.#props.queryNode,
-        parseTableExpressionOrList(tables)
+        parseTableExpressionOrList(tables),
       ),
     })
   }
@@ -338,12 +399,12 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
   innerJoin<
     TE extends TableExpression<DB, TB>,
     K1 extends JoinReferenceExpression<DB, TB, TE>,
-    K2 extends JoinReferenceExpression<DB, TB, TE>
+    K2 extends JoinReferenceExpression<DB, TB, TE>,
   >(table: TE, k1: K1, k2: K2): DeleteQueryBuilderWithInnerJoin<DB, TB, O, TE>
 
   innerJoin<
     TE extends TableExpression<DB, TB>,
-    FN extends JoinCallbackExpression<DB, TB, TE>
+    FN extends JoinCallbackExpression<DB, TB, TE>,
   >(table: TE, callback: FN): DeleteQueryBuilderWithInnerJoin<DB, TB, O, TE>
 
   innerJoin(...args: any): any {
@@ -351,7 +412,7 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
       ...this.#props,
       queryNode: QueryNode.cloneWithJoin(
         this.#props.queryNode,
-        parseJoin('InnerJoin', args)
+        parseJoin('InnerJoin', args),
       ),
     })
   }
@@ -362,12 +423,12 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
   leftJoin<
     TE extends TableExpression<DB, TB>,
     K1 extends JoinReferenceExpression<DB, TB, TE>,
-    K2 extends JoinReferenceExpression<DB, TB, TE>
+    K2 extends JoinReferenceExpression<DB, TB, TE>,
   >(table: TE, k1: K1, k2: K2): DeleteQueryBuilderWithLeftJoin<DB, TB, O, TE>
 
   leftJoin<
     TE extends TableExpression<DB, TB>,
-    FN extends JoinCallbackExpression<DB, TB, TE>
+    FN extends JoinCallbackExpression<DB, TB, TE>,
   >(table: TE, callback: FN): DeleteQueryBuilderWithLeftJoin<DB, TB, O, TE>
 
   leftJoin(...args: any): any {
@@ -375,7 +436,7 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
       ...this.#props,
       queryNode: QueryNode.cloneWithJoin(
         this.#props.queryNode,
-        parseJoin('LeftJoin', args)
+        parseJoin('LeftJoin', args),
       ),
     })
   }
@@ -386,12 +447,12 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
   rightJoin<
     TE extends TableExpression<DB, TB>,
     K1 extends JoinReferenceExpression<DB, TB, TE>,
-    K2 extends JoinReferenceExpression<DB, TB, TE>
+    K2 extends JoinReferenceExpression<DB, TB, TE>,
   >(table: TE, k1: K1, k2: K2): DeleteQueryBuilderWithRightJoin<DB, TB, O, TE>
 
   rightJoin<
     TE extends TableExpression<DB, TB>,
-    FN extends JoinCallbackExpression<DB, TB, TE>
+    FN extends JoinCallbackExpression<DB, TB, TE>,
   >(table: TE, callback: FN): DeleteQueryBuilderWithRightJoin<DB, TB, O, TE>
 
   rightJoin(...args: any): any {
@@ -399,7 +460,7 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
       ...this.#props,
       queryNode: QueryNode.cloneWithJoin(
         this.#props.queryNode,
-        parseJoin('RightJoin', args)
+        parseJoin('RightJoin', args),
       ),
     })
   }
@@ -410,12 +471,12 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
   fullJoin<
     TE extends TableExpression<DB, TB>,
     K1 extends JoinReferenceExpression<DB, TB, TE>,
-    K2 extends JoinReferenceExpression<DB, TB, TE>
+    K2 extends JoinReferenceExpression<DB, TB, TE>,
   >(table: TE, k1: K1, k2: K2): DeleteQueryBuilderWithFullJoin<DB, TB, O, TE>
 
   fullJoin<
     TE extends TableExpression<DB, TB>,
-    FN extends JoinCallbackExpression<DB, TB, TE>
+    FN extends JoinCallbackExpression<DB, TB, TE>,
   >(table: TE, callback: FN): DeleteQueryBuilderWithFullJoin<DB, TB, O, TE>
 
   fullJoin(...args: any): any {
@@ -423,31 +484,31 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
       ...this.#props,
       queryNode: QueryNode.cloneWithJoin(
         this.#props.queryNode,
-        parseJoin('FullJoin', args)
+        parseJoin('FullJoin', args),
       ),
     })
   }
 
   returning<SE extends SelectExpression<DB, TB>>(
-    selections: ReadonlyArray<SE>
+    selections: ReadonlyArray<SE>,
   ): DeleteQueryBuilder<DB, TB, ReturningRow<DB, TB, O, SE>>
 
   returning<CB extends SelectCallback<DB, TB>>(
-    callback: CB
+    callback: CB,
   ): DeleteQueryBuilder<DB, TB, ReturningCallbackRow<DB, TB, O, CB>>
 
   returning<SE extends SelectExpression<DB, TB>>(
-    selection: SE
+    selection: SE,
   ): DeleteQueryBuilder<DB, TB, ReturningRow<DB, TB, O, SE>>
 
   returning<SE extends SelectExpression<DB, TB>>(
-    selection: SelectArg<DB, TB, SE>
+    selection: SelectArg<DB, TB, SE>,
   ): DeleteQueryBuilder<DB, TB, ReturningRow<DB, TB, O, SE>> {
     return new DeleteQueryBuilder({
       ...this.#props,
       queryNode: QueryNode.cloneWithReturning(
         this.#props.queryNode,
-        parseSelectArg(selection)
+        parseSelectArg(selection),
       ),
     })
   }
@@ -545,11 +606,11 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
    * ```
    */
   returningAll<T extends TB>(
-    tables: ReadonlyArray<T>
+    tables: ReadonlyArray<T>,
   ): DeleteQueryBuilder<DB, TB, ReturningAllRow<DB, T, O>>
 
   returningAll<T extends TB>(
-    table: T
+    table: T,
   ): DeleteQueryBuilder<DB, TB, ReturningAllRow<DB, T, O>>
 
   returningAll(): DeleteQueryBuilder<DB, TB, ReturningAllRow<DB, TB, O>>
@@ -559,8 +620,131 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
       ...this.#props,
       queryNode: QueryNode.cloneWithReturning(
         this.#props.queryNode,
+        parseSelectAll(table),
+      ),
+    })
+  }
+
+  output<OE extends OutputExpression<DB, TB, 'deleted'>>(
+    selections: readonly OE[]
+  ): DeleteQueryBuilder<
+    DB,
+    TB,
+    ReturningRow<DB, TB, O, SelectExpressionFromOutputExpression<OE>>
+  >
+
+  output<CB extends OutputCallback<DB, TB, 'deleted'>>(
+    callback: CB
+  ): DeleteQueryBuilder<
+    DB,
+    TB,
+    ReturningRow<DB, TB, O, SelectExpressionFromOutputCallback<CB>>
+  >
+
+  output<OE extends OutputExpression<DB, TB, 'deleted'>>(
+    selection: OE
+  ): DeleteQueryBuilder<
+    DB,
+    TB,
+    ReturningRow<DB, TB, O, SelectExpressionFromOutputExpression<OE>>
+  >
+
+  output(args: any): any {
+    return new DeleteQueryBuilder({
+      ...this.#props,
+      queryNode: QueryNode.cloneWithOutput(
+        this.#props.queryNode,
+        parseSelectArg(args)
+      ),
+    })
+  }
+
+  outputAll(
+    table: 'deleted'
+  ): DeleteQueryBuilder<DB, TB, ReturningAllRow<DB, TB, O>> {
+    return new DeleteQueryBuilder({
+      ...this.#props,
+      queryNode: QueryNode.cloneWithOutput(
+        this.#props.queryNode,
         parseSelectAll(table)
       ),
+    })
+  }
+
+  /**
+   * Clears all `returning` clauses from the query.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * db.deleteFrom('pet')
+   *   .returningAll()
+   *   .where('name', '=', 'Max')
+   *   .clearReturning()
+   * ```
+   *
+   * The generated SQL(PostgreSQL):
+   *
+   * ```sql
+   * delete from "pet" where "name" = "Max"
+   * ```
+   */
+  clearReturning(): DeleteQueryBuilder<DB, TB, DeleteResult> {
+    return new DeleteQueryBuilder({
+      ...this.#props,
+      queryNode: QueryNode.cloneWithoutReturning(this.#props.queryNode),
+    })
+  }
+
+  /**
+   * Clears the `limit` clause from the query.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * db.deleteFrom('pet')
+   *   .returningAll()
+   *   .where('name', '=', 'Max')
+   *   .limit(5)
+   *   .clearLimit()
+   * ```
+   *
+   * The generated SQL(PostgreSQL):
+   *
+   * ```sql
+   * delete from "pet" where "name" = "Max" returning *
+   * ```
+   */
+  clearLimit(): DeleteQueryBuilder<DB, TB, O> {
+    return new DeleteQueryBuilder<DB, TB, O>({
+      ...this.#props,
+      queryNode: DeleteQueryNode.cloneWithoutLimit(this.#props.queryNode),
+    })
+  }
+
+  /**
+   * Clears the `order by` clause from the query.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * db.deleteFrom('pet')
+   *   .returningAll()
+   *   .where('name', '=', 'Max')
+   *   .orderBy('id')
+   *   .clearOrderBy()
+   * ```
+   *
+   * The generated SQL(PostgreSQL):
+   *
+   * ```sql
+   * delete from "pet" where "name" = "Max" returning *
+   * ```
+   */
+  clearOrderBy(): DeleteQueryBuilder<DB, TB, O> {
+    return new DeleteQueryBuilder<DB, TB, O>({
+      ...this.#props,
+      queryNode: DeleteQueryNode.cloneWithoutOrderBy(this.#props.queryNode),
     })
   }
 
@@ -600,13 +784,13 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
    */
   orderBy(
     orderBy: OrderByExpression<DB, TB, O>,
-    direction?: OrderByDirectionExpression
+    direction?: OrderByDirectionExpression,
   ): DeleteQueryBuilder<DB, TB, O> {
     return new DeleteQueryBuilder({
       ...this.#props,
       queryNode: DeleteQueryNode.cloneWithOrderByItems(
         this.#props.queryNode,
-        parseOrderBy([orderBy, direction])
+        parseOrderBy([orderBy, direction]),
       ),
     })
   }
@@ -634,7 +818,7 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
       ...this.#props,
       queryNode: DeleteQueryNode.cloneWithLimit(
         this.#props.queryNode,
-        LimitNode.create(parseValueExpression(limit))
+        LimitNode.create(parseValueExpression(limit)),
       ),
     })
   }
@@ -702,7 +886,7 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
    */
   $if<O2>(
     condition: boolean,
-    func: (qb: this) => DeleteQueryBuilder<any, any, O2>
+    func: (qb: this) => DeleteQueryBuilder<any, any, O2>,
   ): O2 extends DeleteResult
     ? DeleteQueryBuilder<DB, TB, DeleteResult>
     : O2 extends O & infer E
@@ -832,14 +1016,14 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
   toOperationNode(): DeleteQueryNode {
     return this.#props.executor.transformQuery(
       this.#props.queryNode,
-      this.#props.queryId
+      this.#props.queryId,
     )
   }
 
   compile(): CompiledQuery<SimplifyResult<O>> {
     return this.#props.executor.compileQuery(
       this.toOperationNode(),
-      this.#props.queryId
+      this.#props.queryId,
     )
   }
 
@@ -850,21 +1034,26 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
    */
   async execute(): Promise<SimplifyResult<O>[]> {
     const compiledQuery = this.compile()
-    const query = compiledQuery.query as DeleteQueryNode
 
     const result = await this.#props.executor.executeQuery<O>(
       compiledQuery,
-      this.#props.queryId
+      this.#props.queryId,
     )
 
-    if (this.#props.executor.adapter.supportsReturning && query.returning) {
+    const { adapter } = this.#props.executor
+    const query = compiledQuery.query as DeleteQueryNode
+
+    if (
+      (query.returning && adapter.supportsReturning) ||
+      (query.output && adapter.supportsOutput)
+    ) {
       return result.rows as any
     }
 
     return [
       new DeleteResult(
         // TODO: remove numUpdatedOrDeletedRows.
-        result.numAffectedRows ?? result.numUpdatedOrDeletedRows ?? BigInt(0)
+        result.numAffectedRows ?? result.numUpdatedOrDeletedRows ?? BigInt(0),
       ) as any,
     ]
   }
@@ -889,7 +1078,7 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
   async executeTakeFirstOrThrow(
     errorConstructor:
       | NoResultErrorConstructor
-      | ((node: QueryNode) => Error) = NoResultError
+      | ((node: QueryNode) => Error) = NoResultError,
   ): Promise<SimplifyResult<O>> {
     const result = await this.executeTakeFirst()
 
@@ -910,7 +1099,7 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
     const stream = this.#props.executor.stream<O>(
       compiledQuery,
       chunkSize,
-      this.#props.queryId
+      this.#props.queryId,
     )
 
     for await (const item of stream) {
@@ -920,14 +1109,14 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
 
   async explain<ER extends Record<string, any> = Record<string, any>>(
     format?: ExplainFormat,
-    options?: Expression<any>
+    options?: Expression<any>,
   ): Promise<ER[]> {
     const builder = new DeleteQueryBuilder<DB, TB, ER>({
       ...this.#props,
       queryNode: QueryNode.cloneWithExplain(
         this.#props.queryNode,
         format,
-        options
+        options,
       ),
     })
 
@@ -937,7 +1126,7 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
 
 preventAwait(
   DeleteQueryBuilder,
-  "don't await DeleteQueryBuilder instances directly. To execute the query you need to call `execute` or `executeTakeFirst`."
+  "don't await DeleteQueryBuilder instances directly. To execute the query you need to call `execute` or `executeTakeFirst`.",
 )
 
 export interface DeleteQueryBuilderProps {
@@ -950,7 +1139,7 @@ export type DeleteQueryBuilderWithInnerJoin<
   DB,
   TB extends keyof DB,
   O,
-  TE extends TableExpression<DB, TB>
+  TE extends TableExpression<DB, TB>,
 > = TE extends `${infer T} as ${infer A}`
   ? T extends keyof DB
     ? InnerJoinedBuilder<DB, TB, O, A, DB[T]>
@@ -968,7 +1157,7 @@ type InnerJoinedBuilder<
   TB extends keyof DB,
   O,
   A extends string,
-  R
+  R,
 > = A extends keyof DB
   ? DeleteQueryBuilder<InnerJoinedDB<DB, A, R>, TB | A, O>
   : // Much faster non-recursive solution for the simple case.
@@ -982,7 +1171,7 @@ export type DeleteQueryBuilderWithLeftJoin<
   DB,
   TB extends keyof DB,
   O,
-  TE extends TableExpression<DB, TB>
+  TE extends TableExpression<DB, TB>,
 > = TE extends `${infer T} as ${infer A}`
   ? T extends keyof DB
     ? LeftJoinedBuilder<DB, TB, O, A, DB[T]>
@@ -1000,7 +1189,7 @@ type LeftJoinedBuilder<
   TB extends keyof DB,
   O,
   A extends keyof any,
-  R
+  R,
 > = A extends keyof DB
   ? DeleteQueryBuilder<LeftJoinedDB<DB, A, R>, TB | A, O>
   : // Much faster non-recursive solution for the simple case.
@@ -1018,7 +1207,7 @@ export type DeleteQueryBuilderWithRightJoin<
   DB,
   TB extends keyof DB,
   O,
-  TE extends TableExpression<DB, TB>
+  TE extends TableExpression<DB, TB>,
 > = TE extends `${infer T} as ${infer A}`
   ? T extends keyof DB
     ? RightJoinedBuilder<DB, TB, O, A, DB[T]>
@@ -1036,14 +1225,14 @@ type RightJoinedBuilder<
   TB extends keyof DB,
   O,
   A extends keyof any,
-  R
+  R,
 > = DeleteQueryBuilder<RightJoinedDB<DB, TB, A, R>, TB | A, O>
 
 type RightJoinedDB<
   DB,
   TB extends keyof DB,
   A extends keyof any,
-  R
+  R,
 > = DrainOuterGeneric<{
   [C in keyof DB | A]: C extends A
     ? R
@@ -1058,7 +1247,7 @@ export type DeleteQueryBuilderWithFullJoin<
   DB,
   TB extends keyof DB,
   O,
-  TE extends TableExpression<DB, TB>
+  TE extends TableExpression<DB, TB>,
 > = TE extends `${infer T} as ${infer A}`
   ? T extends keyof DB
     ? OuterJoinedBuilder<DB, TB, O, A, DB[T]>
@@ -1076,14 +1265,14 @@ type OuterJoinedBuilder<
   TB extends keyof DB,
   O,
   A extends keyof any,
-  R
+  R,
 > = DeleteQueryBuilder<OuterJoinedBuilderDB<DB, TB, A, R>, TB | A, O>
 
 type OuterJoinedBuilderDB<
   DB,
   TB extends keyof DB,
   A extends keyof any,
-  R
+  R,
 > = DrainOuterGeneric<{
   [C in keyof DB | A]: C extends A
     ? Nullable<R>

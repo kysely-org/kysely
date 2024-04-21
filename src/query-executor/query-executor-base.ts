@@ -43,7 +43,7 @@ export abstract class QueryExecutorBase implements QueryExecutor {
             `of the same kind that was given to it.`,
             `The plugin was given a ${node.kind}`,
             `but it returned a ${transformedNode.kind}`,
-          ].join(' ')
+          ].join(' '),
         )
       }
     }
@@ -53,16 +53,16 @@ export abstract class QueryExecutorBase implements QueryExecutor {
 
   abstract compileQuery(
     node: RootOperationNode,
-    queryId: QueryId
+    queryId: QueryId,
   ): CompiledQuery
 
   abstract provideConnection<T>(
-    consumer: (connection: DatabaseConnection) => Promise<T>
+    consumer: (connection: DatabaseConnection) => Promise<T>,
   ): Promise<T>
 
   async executeQuery<R>(
     compiledQuery: CompiledQuery,
-    queryId: QueryId
+    queryId: QueryId,
   ): Promise<QueryResult<R>> {
     return await this.provideConnection(async (connection) => {
       const result = await connection.executeQuery(compiledQuery)
@@ -78,7 +78,7 @@ export abstract class QueryExecutorBase implements QueryExecutor {
   async *stream<R>(
     compiledQuery: CompiledQuery,
     chunkSize: number,
-    queryId: QueryId
+    queryId: QueryId,
   ): AsyncIterableIterator<QueryResult<R>> {
     const connectionDefer = new Deferred<DatabaseConnection>()
     const connectionReleaseDefer = new Deferred<void>()
@@ -95,7 +95,7 @@ export abstract class QueryExecutorBase implements QueryExecutor {
     try {
       for await (const result of connection.streamQuery(
         compiledQuery,
-        chunkSize
+        chunkSize,
       )) {
         yield await this.#transformResult(result, queryId)
       }
@@ -105,7 +105,7 @@ export abstract class QueryExecutorBase implements QueryExecutor {
   }
 
   abstract withConnectionProvider(
-    connectionProvider: ConnectionProvider
+    connectionProvider: ConnectionProvider,
   ): QueryExecutorBase
 
   abstract withPlugin(plugin: KyselyPlugin): QueryExecutorBase
@@ -115,7 +115,7 @@ export abstract class QueryExecutorBase implements QueryExecutor {
 
   async #transformResult<T>(
     result: QueryResult<any>,
-    queryId: QueryId
+    queryId: QueryId,
   ): Promise<QueryResult<T>> {
     for (const plugin of this.#plugins) {
       result = await plugin.transformResult({ result, queryId })
@@ -128,7 +128,7 @@ export abstract class QueryExecutorBase implements QueryExecutor {
 // TODO: remove.
 function warnOfOutdatedDriverOrPlugins(
   result: QueryResult<unknown>,
-  transformedResult: QueryResult<unknown>
+  transformedResult: QueryResult<unknown>,
 ): void {
   const { numAffectedRows } = result
 
@@ -142,6 +142,6 @@ function warnOfOutdatedDriverOrPlugins(
   }
 
   logOnce(
-    'kysely:warning: outdated driver/plugin detected! QueryResult.numUpdatedOrDeletedRows is deprecated and will be removed in a future release.'
+    'kysely:warning: outdated driver/plugin detected! QueryResult.numUpdatedOrDeletedRows is deprecated and will be removed in a future release.',
   )
 }

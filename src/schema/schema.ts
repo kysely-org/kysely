@@ -317,7 +317,7 @@ export class SchemaModule {
    */
   withSchema(schema: string): SchemaModule {
     return new SchemaModule(
-      this.#executor.withPluginAtFront(new WithSchemaPlugin(schema))
+      this.#executor.withPluginAtFront(new WithSchemaPlugin(schema)),
     )
   }
 }

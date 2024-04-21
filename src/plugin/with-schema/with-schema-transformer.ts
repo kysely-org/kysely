@@ -77,7 +77,7 @@ export class WithSchemaTransformer extends OperationNodeTransformer {
   }
 
   protected override transformSchemableIdentifier(
-    node: SchemableIdentifierNode
+    node: SchemableIdentifierNode,
   ): SchemableIdentifierNode {
     const transformed = super.transformSchemableIdentifier(node)
 
@@ -102,7 +102,7 @@ export class WithSchemaTransformer extends OperationNodeTransformer {
       ...transformed,
       table: TableNode.createWithSchema(
         this.#schema,
-        transformed.table.table.identifier.name
+        transformed.table.table.identifier.name,
       ),
     }
   }
@@ -163,26 +163,22 @@ export class WithSchemaTransformer extends OperationNodeTransformer {
 
   #collectSchemableIdsFromTableExpr(
     node: OperationNode,
-    schemableIds: Set<string>
+    schemableIds: Set<string>,
   ): void {
-    if (TableNode.is(node)) {
-      return this.#collectSchemableId(node.table, schemableIds)
-    }
+    const table = TableNode.is(node)
+      ? node
+      : AliasNode.is(node) && TableNode.is(node.node)
+        ? node.node
+        : null
 
-    if (ReferenceNode.is(node)) {
-      if (node.table) {
-        return this.#collectSchemableIdsFromTableExpr(node.table, schemableIds)
-      }
-    }
-
-    if (AliasNode.is(node)) {
-      return this.#collectSchemableIdsFromTableExpr(node.node, schemableIds)
+    if (table) {
+      this.#collectSchemableId(table.table, schemableIds)
     }
   }
 
   #collectSchemableId(
     node: SchemableIdentifierNode,
-    schemableIds: Set<string>
+    schemableIds: Set<string>,
   ): void {
     const id = node.identifier.name
 

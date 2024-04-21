@@ -9,7 +9,7 @@ export interface DatabaseConnection {
   executeQuery<R>(compiledQuery: CompiledQuery): Promise<QueryResult<R>>
   streamQuery<R>(
     compiledQuery: CompiledQuery,
-    chunkSize?: number
+    chunkSize?: number,
   ): AsyncIterableIterator<QueryResult<R>>
 }
 

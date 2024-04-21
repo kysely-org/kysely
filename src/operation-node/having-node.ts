@@ -26,7 +26,7 @@ export const HavingNode = freeze({
   cloneWithOperation(
     havingNode: HavingNode,
     operator: 'And' | 'Or',
-    operation: OperationNode
+    operation: OperationNode,
   ): HavingNode {
     return freeze({
       ...havingNode,

@@ -81,7 +81,7 @@ export class CreateViewBuilder implements OperationNodeSource, Compilable {
    * into the query or raw expression passed to this method!
    */
   as(
-    query: SelectQueryBuilder<any, any, any> | RawBuilder<any>
+    query: SelectQueryBuilder<any, any, any> | RawBuilder<any>,
   ): CreateViewBuilder {
     const queryNode = query
       .withPlugin(new ImmediateValuePlugin())
@@ -106,14 +106,14 @@ export class CreateViewBuilder implements OperationNodeSource, Compilable {
   toOperationNode(): CreateViewNode {
     return this.#props.executor.transformQuery(
       this.#props.node,
-      this.#props.queryId
+      this.#props.queryId,
     )
   }
 
   compile(): CompiledQuery {
     return this.#props.executor.compileQuery(
       this.toOperationNode(),
-      this.#props.queryId
+      this.#props.queryId,
     )
   }
 
@@ -124,7 +124,7 @@ export class CreateViewBuilder implements OperationNodeSource, Compilable {
 
 preventAwait(
   CreateViewBuilder,
-  "don't await CreateViewBuilder instances directly. To execute the query you need to call `execute`"
+  "don't await CreateViewBuilder instances directly. To execute the query you need to call `execute`",
 )
 
 export interface CreateViewBuilderProps {

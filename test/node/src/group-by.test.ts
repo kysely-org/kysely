@@ -209,7 +209,7 @@ for (const dialect of DIALECTS) {
             qb
               .selectFrom('pet')
               .whereRef('person.id', '=', 'pet.owner_id')
-              .select('pet.name')
+              .select('pet.name'),
           )
           .orderBy('max_first_name')
 
@@ -280,7 +280,7 @@ for (const dialect of DIALECTS) {
           qb
             .innerJoin('pet', 'pet.owner_id', 'person.id')
             .having(count('pet.id'), '>', 1)
-            .groupBy('person.first_name')
+            .groupBy('person.first_name'),
         )
         .execute()
 

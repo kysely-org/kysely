@@ -53,10 +53,10 @@ import { Simplify } from '../util/type-utils.js'
  * ```
  */
 export function jsonArrayFrom<O>(
-  expr: SelectQueryBuilderExpression<O>
+  expr: SelectQueryBuilderExpression<O>,
 ): RawBuilder<Simplify<O>[]> {
   return sql`(select cast(coalesce(json_arrayagg(json_object(${sql.join(
-    getMysqlJsonObjectArgs(expr.toOperationNode(), 'agg')
+    getMysqlJsonObjectArgs(expr.toOperationNode(), 'agg'),
   )})), '[]') as json) from ${expr} as agg)`
 }
 
@@ -109,10 +109,10 @@ export function jsonArrayFrom<O>(
  * ```
  */
 export function jsonObjectFrom<O>(
-  expr: SelectQueryBuilderExpression<O>
+  expr: SelectQueryBuilderExpression<O>,
 ): RawBuilder<Simplify<O> | null> {
   return sql`(select json_object(${sql.join(
-    getMysqlJsonObjectArgs(expr.toOperationNode(), 'obj')
+    getMysqlJsonObjectArgs(expr.toOperationNode(), 'obj'),
   )}) from ${expr} as obj)`
 }
 
@@ -157,26 +157,26 @@ export function jsonObjectFrom<O>(
  * ```
  */
 export function jsonBuildObject<O extends Record<string, Expression<unknown>>>(
-  obj: O
+  obj: O,
 ): RawBuilder<
   Simplify<{
     [K in keyof O]: O[K] extends Expression<infer V> ? V : never
   }>
 > {
   return sql`json_object(${sql.join(
-    Object.keys(obj).flatMap((k) => [sql.lit(k), obj[k]])
+    Object.keys(obj).flatMap((k) => [sql.lit(k), obj[k]]),
   )})`
 }
 
 function getMysqlJsonObjectArgs(
   node: SelectQueryNode,
-  table: string
+  table: string,
 ): Expression<unknown>[] {
   try {
     return getJsonObjectArgs(node, table)
   } catch {
     throw new Error(
-      'MySQL jsonArrayFrom and jsonObjectFrom functions can only handle explicit selections due to limitations of the json_object function. selectAll() is not allowed in the subquery.'
+      'MySQL jsonArrayFrom and jsonObjectFrom functions can only handle explicit selections due to limitations of the json_object function. selectAll() is not allowed in the subquery.',
     )
   }
 }

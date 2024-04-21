@@ -67,7 +67,7 @@ for (const dialect of DIALECTS) {
         .selectFrom('person')
         .selectAll()} after`.toOperationNode()
       expect(compiler.compileQuery(node).sql).to.equal(
-        `before (select * from "person") after`
+        `before (select * from "person") after`,
       )
 
       node = sql`before ${ctx.db.insertInto('person').values({
@@ -76,21 +76,21 @@ for (const dialect of DIALECTS) {
         gender: 'female',
       })} after`.toOperationNode()
       expect(compiler.compileQuery(node).sql).to.equal(
-        `before insert into "person" ("first_name", "last_name", "gender") values ($1, $2, $3) after`
+        `before insert into "person" ("first_name", "last_name", "gender") values ($1, $2, $3) after`,
       )
 
       node = sql`before ${ctx.db
         .deleteFrom('person')
         .where('id', '=', 1)} after`.toOperationNode()
       expect(compiler.compileQuery(node).sql).to.equal(
-        `before delete from "person" where "id" = $1 after`
+        `before delete from "person" where "id" = $1 after`,
       )
 
       node = sql`before ${ctx.db
         .updateTable('person')
         .set('first_name', 'Jennifer')} after`.toOperationNode()
       expect(compiler.compileQuery(node).sql).to.equal(
-        `before update "person" set "first_name" = $1 after`
+        `before update "person" set "first_name" = $1 after`,
       )
     })
 
@@ -99,7 +99,7 @@ for (const dialect of DIALECTS) {
         .selectFrom('person')
         .selectAll()
         .where(
-          sql<boolean>`first_name between ${sql.lit('A')} and ${sql.lit('B')}`
+          sql<boolean>`first_name between ${sql.lit('A')} and ${sql.lit('B')}`,
         )
 
       testSql(query, dialect, {
@@ -161,8 +161,8 @@ for (const dialect of DIALECTS) {
             sql<boolean>`${sql.id(
               dialect === 'postgres' ? 'public' : 'dbo',
               'person',
-              'first_name'
-            )} between ${'A'} and ${'B'}`
+              'first_name',
+            )} between ${'A'} and ${'B'}`,
           )
 
         testSql(query, dialect, {
@@ -217,8 +217,8 @@ for (const dialect of DIALECTS) {
           .selectAll()
           .where(
             sql<boolean>`${sql.ref(
-              `${dialect === 'postgres' ? 'public' : 'dbo'}.person.first_name`
-            )} between ${'A'} and ${'B'}`
+              `${dialect === 'postgres' ? 'public' : 'dbo'}.person.first_name`,
+            )} between ${'A'} and ${'B'}`,
           )
 
         testSql(query, dialect, {
@@ -270,8 +270,8 @@ for (const dialect of DIALECTS) {
         const query = ctx.db
           .selectFrom(
             sql`${sql.table(
-              `${dialect === 'postgres' ? 'public' : 'dbo'}.person`
-            )}`.as('person')
+              `${dialect === 'postgres' ? 'public' : 'dbo'}.person`,
+            )}`.as('person'),
           )
           .selectAll()
 
@@ -330,7 +330,7 @@ for (const dialect of DIALECTS) {
           .selectFrom('person')
           .selectAll()
           .where(
-            sql<boolean>`first_name in (${sql.join(names, sql`::varchar,`)})`
+            sql<boolean>`first_name in (${sql.join(names, sql`::varchar,`)})`,
           )
 
         testSql(query, dialect, {
@@ -351,10 +351,10 @@ for (const dialect of DIALECTS) {
       it('CompiledQuery should support raw query with parameters', async () => {
         const query = CompiledQuery.raw(
           'select * from "person" where "public"."person"."first_name" between $1 and $2',
-          ['A', 'B']
+          ['A', 'B'],
         )
         expect(query.sql).to.equal(
-          'select * from "person" where "public"."person"."first_name" between $1 and $2'
+          'select * from "person" where "public"."person"."first_name" between $1 and $2',
         )
         expect(query.parameters).to.deep.equal(['A', 'B'])
         await ctx.db.executeQuery(query)
@@ -371,7 +371,7 @@ for (const dialect of DIALECTS) {
         sql.ref('id'),
         sql.lit(9.99).as('price'),
       ])} from ${sql.table('pet')} where ${sql.ref(
-        'name'
+        'name',
       )} = ${'Hammo'}`.execute(ctx.db)
 
       const wheel = await ctx.db

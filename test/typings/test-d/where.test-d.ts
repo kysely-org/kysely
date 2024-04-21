@@ -29,14 +29,14 @@ function testWhere(db: Kysely<Database>) {
   db.selectFrom('movie').where(
     (eb) => eb.selectFrom('person').select('gender'),
     '=',
-    'female'
+    'female',
   )
 
   // Subquery in LHS
   db.selectFrom('movie').where(
     (eb) => eb.selectFrom('person').select('gender'),
     '=',
-    'female'
+    'female',
   )
 
   // Nullable subquery in LHS
@@ -44,7 +44,7 @@ function testWhere(db: Kysely<Database>) {
     eb.or([
       eb('id', '=', '1'),
       eb.and([eb('stars', '>', 2), eb('stars', '<', 5)]),
-    ])
+    ]),
   )
 
   const firstName = 'Jennifer'
@@ -66,12 +66,12 @@ function testWhere(db: Kysely<Database>) {
 
   // Subquery in RHS
   db.selectFrom('movie').where(sql<string>`${'female'}`, '=', (eb) =>
-    eb.selectFrom('person').select('gender')
+    eb.selectFrom('person').select('gender'),
   )
 
   // Nullable subquery in RHS
   db.selectFrom('person').where('first_name', 'in', (eb) =>
-    eb.selectFrom('person').select('last_name')
+    eb.selectFrom('person').select('last_name'),
   )
 
   // Raw expression
@@ -87,7 +87,7 @@ function testWhere(db: Kysely<Database>) {
     .where(
       db
         .selectFrom('pet')
-        .select((eb) => eb('name', '=', 'Doggo').as('is_doggo'))
+        .select((eb) => eb('name', '=', 'Doggo').as('is_doggo')),
     )
 
   // Boolean returning select query using a callback
@@ -96,7 +96,7 @@ function testWhere(db: Kysely<Database>) {
     .where((eb) =>
       eb
         .selectFrom('pet')
-        .select((eb) => eb('name', '=', 'Doggo').as('is_doggo'))
+        .select((eb) => eb('name', '=', 'Doggo').as('is_doggo')),
     )
 
   // List value
@@ -122,12 +122,12 @@ function testWhere(db: Kysely<Database>) {
 
   // Invalid type for column
   expectError(
-    db.selectFrom('person').where('gender', 'in', ['female', 'not_a_gender'])
+    db.selectFrom('person').where('gender', 'in', ['female', 'not_a_gender']),
   )
 
   // Invalid type for column
   expectError(
-    db.selectFrom('some_schema.movie').where('some_schema.movie.id', '=', 1)
+    db.selectFrom('some_schema.movie').where('some_schema.movie.id', '=', 1),
   )
 
   // Invalid type for column
@@ -137,8 +137,8 @@ function testWhere(db: Kysely<Database>) {
       .where(
         (qb) => qb.selectFrom('person').select('gender'),
         '=',
-        'not_a_gender'
-      )
+        'not_a_gender',
+      ),
   )
 
   // Invalid type for column
@@ -152,7 +152,7 @@ function testWhere(db: Kysely<Database>) {
     db
       .selectFrom('person')
       .selectAll()
-      .where(db.selectFrom('pet').select('name'))
+      .where(db.selectFrom('pet').select('name')),
   )
 
   // Non-boolean returning select query using a callback
@@ -160,6 +160,6 @@ function testWhere(db: Kysely<Database>) {
     db
       .selectFrom('person')
       .selectAll()
-      .where((eb) => eb.selectFrom('pet').select('name'))
+      .where((eb) => eb.selectFrom('pet').select('name')),
   )
 }

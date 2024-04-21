@@ -82,7 +82,7 @@ async function testReplace(db: Kysely<Database>) {
 
   const r4 = await db
     .with('foo', (db) =>
-      db.selectFrom('person').select('id').where('person.id', '=', 1)
+      db.selectFrom('person').select('id').where('person.id', '=', 1),
     )
     .replaceInto('movie')
     .values({
@@ -103,12 +103,12 @@ async function testReplace(db: Kysely<Database>) {
   expectError(
     db
       .replaceInto('person')
-      .values({ first_name: 10, age: 10, gender: 'other' })
+      .values({ first_name: 10, age: 10, gender: 'other' }),
   )
 
   // Missing required columns
   expectError(
-    db.replaceInto('person').values({ age: 5, first_name: 'Jennifer' })
+    db.replaceInto('person').values({ age: 5, first_name: 'Jennifer' }),
   )
 
   // Explicitly excluded column

@@ -24,7 +24,7 @@ export const CommonTableExpressionNode = freeze({
 
   create(
     name: CommonTableExpressionNameNode,
-    expression: OperationNode
+    expression: OperationNode,
   ): CommonTableExpressionNode {
     return freeze({
       kind: 'CommonTableExpressionNode',
@@ -35,7 +35,7 @@ export const CommonTableExpressionNode = freeze({
 
   cloneWith(
     node: CommonTableExpressionNode,
-    props: CommonTableExpressionNodeProps
+    props: CommonTableExpressionNodeProps,
   ): CommonTableExpressionNode {
     return freeze({
       ...node,

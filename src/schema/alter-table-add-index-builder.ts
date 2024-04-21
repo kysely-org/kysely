@@ -4,7 +4,10 @@ import { AlterTableNode } from '../operation-node/alter-table-node.js'
 import { IndexType } from '../operation-node/create-index-node.js'
 import { OperationNodeSource } from '../operation-node/operation-node-source.js'
 import { RawNode } from '../operation-node/raw-node.js'
-import { OrderedColumnName, parseOrderedColumnName } from '../parser/reference-parser.js'
+import {
+  OrderedColumnName,
+  parseOrderedColumnName,
+} from '../parser/reference-parser.js'
 import { CompiledQuery } from '../query-compiler/compiled-query.js'
 import { QueryExecutor } from '../query-executor/query-executor.js'
 import { Compilable } from '../util/compilable.js'
@@ -13,9 +16,7 @@ import { preventAwait } from '../util/prevent-await.js'
 import { QueryId } from '../util/query-id.js'
 
 export class AlterTableAddIndexBuilder
-  implements
-    OperationNodeSource,
-    Compilable
+  implements OperationNodeSource, Compilable
 {
   readonly #props: AlterTableAddIndexBuilderProps
 
@@ -30,12 +31,9 @@ export class AlterTableAddIndexBuilder
     return new AlterTableAddIndexBuilder({
       ...this.#props,
       node: AlterTableNode.cloneWithTableProps(this.#props.node, {
-        addIndex: AddIndexNode.cloneWith(
-          this.#props.node.addIndex!,
-          {
-            unique: true,
-          }
-        ),
+        addIndex: AddIndexNode.cloneWith(this.#props.node.addIndex!, {
+          unique: true,
+        }),
       }),
     })
   }
@@ -64,15 +62,14 @@ export class AlterTableAddIndexBuilder
    * ```
    */
   column<CL extends string>(
-    column: OrderedColumnName<CL>
+    column: OrderedColumnName<CL>,
   ): AlterTableAddIndexBuilder {
     return new AlterTableAddIndexBuilder({
       ...this.#props,
       node: AlterTableNode.cloneWithTableProps(this.#props.node, {
-        addIndex: AddIndexNode.cloneWithColumns(
-          this.#props.node.addIndex!,
-          [parseOrderedColumnName(column)],
-        ),
+        addIndex: AddIndexNode.cloneWithColumns(this.#props.node.addIndex!, [
+          parseOrderedColumnName(column),
+        ]),
       }),
     })
   }
@@ -100,7 +97,7 @@ export class AlterTableAddIndexBuilder
    * ```
    */
   columns<CL extends string>(
-    columns: OrderedColumnName<CL>[]
+    columns: OrderedColumnName<CL>[],
   ): AlterTableAddIndexBuilder {
     return new AlterTableAddIndexBuilder({
       ...this.#props,
@@ -124,7 +121,7 @@ export class AlterTableAddIndexBuilder
    * await db.schema
    *   .alterTable('person')
    *   .addIndex('person_first_name_index')
-   *   .expression(sql`(first_name < 'Sami')`)
+   *   .expression(sql<boolean>`(first_name < 'Sami')`)
    *   .execute()
    * ```
    *
@@ -138,10 +135,9 @@ export class AlterTableAddIndexBuilder
     return new AlterTableAddIndexBuilder({
       ...this.#props,
       node: AlterTableNode.cloneWithTableProps(this.#props.node, {
-        addIndex: AddIndexNode.cloneWithColumns(
-          this.#props.node.addIndex!,
-          [expression.toOperationNode()],
-        ),
+        addIndex: AddIndexNode.cloneWithColumns(this.#props.node.addIndex!, [
+          expression.toOperationNode(),
+        ]),
       }),
     })
   }
@@ -155,14 +151,10 @@ export class AlterTableAddIndexBuilder
     return new AlterTableAddIndexBuilder({
       ...this.#props,
       node: AlterTableNode.cloneWithTableProps(this.#props.node, {
-        addIndex: AddIndexNode.cloneWith(
-          this.#props.node.addIndex!,
-          {
-            using: RawNode.createWithSql(indexType),
-          }
-        ),
+        addIndex: AddIndexNode.cloneWith(this.#props.node.addIndex!, {
+          using: RawNode.createWithSql(indexType),
+        }),
       }),
-      
     })
   }
 
@@ -177,14 +169,14 @@ export class AlterTableAddIndexBuilder
   toOperationNode(): AlterTableNode {
     return this.#props.executor.transformQuery(
       this.#props.node,
-      this.#props.queryId
+      this.#props.queryId,
     )
   }
 
   compile(): CompiledQuery {
     return this.#props.executor.compileQuery(
       this.toOperationNode(),
-      this.#props.queryId
+      this.#props.queryId,
     )
   }
 
@@ -201,5 +193,5 @@ export interface AlterTableAddIndexBuilderProps {
 
 preventAwait(
   AlterTableAddIndexBuilder,
-  "don't await AlterTableAddIndexBuilder instances directly. To execute the query you need to call `execute`"
+  "don't await AlterTableAddIndexBuilder instances directly. To execute the query you need to call `execute`",
 )

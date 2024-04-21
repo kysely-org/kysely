@@ -24,34 +24,40 @@ export class MssqlIntrospector implements DatabaseIntrospector {
   }
 
   async getTables(
-    options: DatabaseMetadataOptions = { withInternalKyselyTables: false }
+    options: DatabaseMetadataOptions = { withInternalKyselyTables: false },
   ): Promise<TableMetadata[]> {
     const rawColumns = await this.#db
       .selectFrom('sys.tables as tables')
       .leftJoin(
         'sys.schemas as table_schemas',
         'table_schemas.schema_id',
-        'tables.schema_id'
+        'tables.schema_id',
       )
       .innerJoin(
         'sys.columns as columns',
         'columns.object_id',
-        'tables.object_id'
+        'tables.object_id',
       )
       .innerJoin(
         'sys.types as types',
-        'types.system_type_id',
-        'columns.system_type_id'
+        'types.user_type_id',
+        'columns.user_type_id',
       )
       .leftJoin(
         'sys.schemas as type_schemas',
         'type_schemas.schema_id',
-        'types.schema_id'
+        'types.schema_id',
+      )
+      .leftJoin('sys.extended_properties as comments', (join) =>
+        join
+          .onRef('comments.major_id', '=', 'tables.object_id')
+          .onRef('comments.minor_id', '=', 'columns.column_id')
+          .on('comments.name', '=', 'MS_Description'),
       )
       .$if(!options.withInternalKyselyTables, (qb) =>
         qb
           .where('tables.name', '!=', DEFAULT_MIGRATION_TABLE)
-          .where('tables.name', '!=', DEFAULT_MIGRATION_LOCK_TABLE)
+          .where('tables.name', '!=', DEFAULT_MIGRATION_LOCK_TABLE),
       )
       .select([
         'tables.name as table_name',
@@ -74,6 +80,7 @@ export class MssqlIntrospector implements DatabaseIntrospector {
         'types.is_nullable as type_is_nullable',
         'types.name as type_name',
         'type_schemas.name as type_schema_name',
+        'comments.value as column_comment',
       ])
       .unionAll(
         this.#db
@@ -81,22 +88,28 @@ export class MssqlIntrospector implements DatabaseIntrospector {
           .leftJoin(
             'sys.schemas as view_schemas',
             'view_schemas.schema_id',
-            'views.schema_id'
+            'views.schema_id',
           )
           .innerJoin(
             'sys.columns as columns',
             'columns.object_id',
-            'views.object_id'
+            'views.object_id',
           )
           .innerJoin(
             'sys.types as types',
-            'types.system_type_id',
-            'columns.system_type_id'
+            'types.user_type_id',
+            'columns.user_type_id',
           )
           .leftJoin(
             'sys.schemas as type_schemas',
             'type_schemas.schema_id',
-            'types.schema_id'
+            'types.schema_id',
+          )
+          .leftJoin('sys.extended_properties as comments', (join) =>
+            join
+              .onRef('comments.major_id', '=', 'views.object_id')
+              .onRef('comments.minor_id', '=', 'columns.column_id')
+              .on('comments.name', '=', 'MS_Description'),
           )
           .select([
             'views.name as table_name',
@@ -112,7 +125,8 @@ export class MssqlIntrospector implements DatabaseIntrospector {
             'types.is_nullable as type_is_nullable',
             'types.name as type_name',
             'type_schemas.name as type_schema_name',
-          ])
+            'comments.value as column_comment',
+          ]),
       )
       .orderBy('table_schema_name')
       .orderBy('table_name')
@@ -147,7 +161,8 @@ export class MssqlIntrospector implements DatabaseIntrospector {
           isNullable:
             rawColumn.column_is_nullable && rawColumn.type_is_nullable,
           name: rawColumn.column_name,
-        })
+          comment: rawColumn.column_comment ?? undefined,
+        }),
       )
     }
 
@@ -155,7 +170,7 @@ export class MssqlIntrospector implements DatabaseIntrospector {
   }
 
   async getMetadata(
-    options?: DatabaseMetadataOptions
+    options?: DatabaseMetadataOptions,
   ): Promise<DatabaseMetadata> {
     return {
       tables: await this.getTables(options),
@@ -202,7 +217,14 @@ interface MssqlSysTables {
     // precision: number
     // rule_object_id: number
     // scale: number
+    user_type_id: number
     system_type_id: number
+  }
+  'sys.extended_properties': {
+    major_id: number
+    minor_id: number
+    name: string
+    value: string
   }
   'sys.schemas': {
     name: string
@@ -274,7 +296,7 @@ interface MssqlSysTables {
     // scale: number
     schema_id: number
     system_type_id: number
-    // user_type_id: number
+    user_type_id: number
   }
   'sys.views': {
     // create_date: Date

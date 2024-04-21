@@ -31,7 +31,7 @@ export const DropTableNode = freeze({
 
   cloneWith(
     dropIndex: DropTableNode,
-    params: DropTablexNodeParams
+    params: DropTablexNodeParams,
   ): DropTableNode {
     return freeze({
       ...dropIndex,

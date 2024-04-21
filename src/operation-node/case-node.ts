@@ -40,7 +40,7 @@ export const CaseNode = freeze({
             ...caseNode.when.slice(0, -1),
             WhenNode.cloneWithResult(
               caseNode.when[caseNode.when.length - 1],
-              then
+              then,
             ),
           ])
         : undefined,
@@ -49,7 +49,7 @@ export const CaseNode = freeze({
 
   cloneWith(
     caseNode: CaseNode,
-    props: Partial<Pick<CaseNode, 'else' | 'isStatement'>>
+    props: Partial<Pick<CaseNode, 'else' | 'isStatement'>>,
   ): CaseNode {
     return freeze({
       ...caseNode,

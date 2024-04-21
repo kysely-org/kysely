@@ -270,7 +270,7 @@ export interface WhereInterface<DB, TB extends keyof DB> {
    *   .selectFrom('person')
    *   .selectAll()
    *   .where(
-   *     sql`coalesce(first_name, last_name)`,
+   *     sql<string>`coalesce(first_name, last_name)`,
    *     'like',
    *     '%' + name + '%',
    *   )
@@ -309,15 +309,15 @@ export interface WhereInterface<DB, TB extends keyof DB> {
    */
   where<
     RE extends ReferenceExpression<DB, TB>,
-    VE extends OperandValueExpressionOrList<DB, TB, RE>
+    VE extends OperandValueExpressionOrList<DB, TB, RE>,
   >(
     lhs: RE,
     op: ComparisonOperatorExpression,
-    rhs: VE
+    rhs: VE,
   ): WhereInterface<DB, TB>
 
   where<E extends ExpressionOrFactory<DB, TB, SqlBool>>(
-    expression: E
+    expression: E,
   ): WhereInterface<DB, TB>
 
   /**
@@ -373,11 +373,11 @@ export interface WhereInterface<DB, TB extends keyof DB> {
    */
   whereRef<
     LRE extends ReferenceExpression<DB, TB>,
-    RRE extends ReferenceExpression<DB, TB>
+    RRE extends ReferenceExpression<DB, TB>,
   >(
     lhs: LRE,
     op: ComparisonOperatorExpression,
-    rhs: RRE
+    rhs: RRE,
   ): WhereInterface<DB, TB>
 
   /**

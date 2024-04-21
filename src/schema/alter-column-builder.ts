@@ -21,8 +21,8 @@ export class AlterColumnBuilder {
       AlterColumnNode.create(
         this.#column,
         'dataType',
-        parseDataTypeExpression(dataType)
-      )
+        parseDataTypeExpression(dataType),
+      ),
     )
   }
 
@@ -31,26 +31,26 @@ export class AlterColumnBuilder {
       AlterColumnNode.create(
         this.#column,
         'setDefault',
-        parseDefaultValueExpression(value)
-      )
+        parseDefaultValueExpression(value),
+      ),
     )
   }
 
   dropDefault(): AlteredColumnBuilder {
     return new AlteredColumnBuilder(
-      AlterColumnNode.create(this.#column, 'dropDefault', true)
+      AlterColumnNode.create(this.#column, 'dropDefault', true),
     )
   }
 
   setNotNull(): AlteredColumnBuilder {
     return new AlteredColumnBuilder(
-      AlterColumnNode.create(this.#column, 'setNotNull', true)
+      AlterColumnNode.create(this.#column, 'setNotNull', true),
     )
   }
 
   dropNotNull(): AlteredColumnBuilder {
     return new AlteredColumnBuilder(
-      AlterColumnNode.create(this.#column, 'dropNotNull', true)
+      AlterColumnNode.create(this.#column, 'dropNotNull', true),
     )
   }
 
@@ -91,5 +91,5 @@ export class AlteredColumnBuilder implements OperationNodeSource {
 }
 
 export type AlterColumnBuilderCallback = (
-  builder: AlterColumnBuilder
+  builder: AlterColumnBuilder,
 ) => AlteredColumnBuilder

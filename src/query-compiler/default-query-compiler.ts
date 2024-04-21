@@ -107,6 +107,10 @@ import { TupleNode } from '../operation-node/tuple-node.js'
 import { MergeQueryNode } from '../operation-node/merge-query-node.js'
 import { MatchedNode } from '../operation-node/matched-node.js'
 import { AddIndexNode } from '../operation-node/add-index-node.js'
+import { CastNode } from '../operation-node/cast-node.js'
+import { FetchNode } from '../operation-node/fetch-node.js'
+import { TopNode } from '../operation-node/top-node.js'
+import { OutputNode } from '../operation-node/output-node.js'
 
 export class DefaultQueryCompiler
   extends OperationNodeVisitor
@@ -171,6 +175,11 @@ export class DefaultQueryCompiler
       this.compileList(node.frontModifiers, ' ')
     }
 
+    if (node.top) {
+      this.append(' ')
+      this.visitNode(node.top)
+    }
+
     if (node.selections) {
       this.append(' ')
       this.compileList(node.selections)
@@ -221,6 +230,11 @@ export class DefaultQueryCompiler
       this.visitNode(node.offset)
     }
 
+    if (node.fetch) {
+      this.append(' ')
+      this.visitNode(node.fetch)
+    }
+
     if (node.endModifiers?.length) {
       this.append(' ')
       this.compileList(this.sortSelectModifiers([...node.endModifiers]), ' ')
@@ -252,7 +266,7 @@ export class DefaultQueryCompiler
 
   protected compileList(
     nodes: ReadonlyArray<OperationNode>,
-    separator = ', '
+    separator = ', ',
   ): void {
     const lastIndex = nodes.length - 1
 
@@ -299,6 +313,11 @@ export class DefaultQueryCompiler
       this.append(' ignore')
     }
 
+    if (node.top) {
+      this.append(' ')
+      this.visitNode(node.top)
+    }
+
     if (node.into) {
       this.append(' into ')
       this.visitNode(node.into)
@@ -308,6 +327,11 @@ export class DefaultQueryCompiler
       this.append(' (')
       this.compileList(node.columns)
       this.append(')')
+    }
+
+    if (node.output) {
+      this.append(' ')
+      this.visitNode(node.output)
     }
 
     if (node.values) {
@@ -363,7 +387,18 @@ export class DefaultQueryCompiler
     }
 
     this.append('delete ')
+
+    if (node.top) {
+      this.visitNode(node.top)
+      this.append(' ')
+    }
+
     this.visitNode(node.from)
+
+    if (node.output) {
+      this.append(' ')
+      this.visitNode(node.output)
+    }
 
     if (node.using) {
       this.append(' ')
@@ -433,7 +468,7 @@ export class DefaultQueryCompiler
   protected compileUnwrappedIdentifier(node: IdentifierNode): void {
     if (!isString(node.name)) {
       throw new Error(
-        'a non-string identifier was passed to compileUnwrappedIdentifier.'
+        'a non-string identifier was passed to compileUnwrappedIdentifier.',
       )
     }
 
@@ -473,7 +508,7 @@ export class DefaultQueryCompiler
   }
 
   protected override visitPrimitiveValueList(
-    node: PrimitiveValueListNode
+    node: PrimitiveValueListNode,
   ): void {
     this.append('(')
 
@@ -532,7 +567,7 @@ export class DefaultQueryCompiler
   }
 
   protected override visitSchemableIdentifier(
-    node: SchemableIdentifierNode
+    node: SchemableIdentifierNode,
   ): void {
     if (node.schema) {
       this.visitNode(node.schema)
@@ -583,6 +618,10 @@ export class DefaultQueryCompiler
   }
 
   protected override visitColumnDefinition(node: ColumnDefinitionNode): void {
+    if (node.ifNotExists) {
+      this.append('if not exists ')
+    }
+
     this.visitNode(node.column)
 
     this.append(' ')
@@ -600,6 +639,10 @@ export class DefaultQueryCompiler
     if (node.generated) {
       this.append(' ')
       this.visitNode(node.generated)
+    }
+
+    if (node.identity) {
+      this.append(' identity')
     }
 
     if (node.defaultTo) {
@@ -727,6 +770,11 @@ export class DefaultQueryCompiler
 
     this.append('update ')
 
+    if (node.top) {
+      this.visitNode(node.top)
+      this.append(' ')
+    }
+
     if (node.table) {
       this.visitNode(node.table)
       this.append(' ')
@@ -736,6 +784,11 @@ export class DefaultQueryCompiler
 
     if (node.updates) {
       this.compileList(node.updates)
+    }
+
+    if (node.output) {
+      this.append(' ')
+      this.visitNode(node.output)
     }
 
     if (node.from) {
@@ -751,6 +804,11 @@ export class DefaultQueryCompiler
     if (node.where) {
       this.append(' ')
       this.visitNode(node.where)
+    }
+
+    if (node.limit) {
+      this.append(' ')
+      this.visitNode(node.limit)
     }
 
     if (node.returning) {
@@ -903,7 +961,7 @@ export class DefaultQueryCompiler
   }
 
   protected override visitPrimaryKeyConstraint(
-    node: PrimaryKeyConstraintNode
+    node: PrimaryKeyConstraintNode,
   ): void {
     if (node.name) {
       this.append('constraint ')
@@ -947,7 +1005,7 @@ export class DefaultQueryCompiler
   }
 
   protected override visitForeignKeyConstraint(
-    node: ForeignKeyConstraintNode
+    node: ForeignKeyConstraintNode,
   ): void {
     if (node.name) {
       this.append('constraint ')
@@ -986,7 +1044,7 @@ export class DefaultQueryCompiler
   }
 
   protected override visitCommonTableExpression(
-    node: CommonTableExpressionNode
+    node: CommonTableExpressionNode,
   ): void {
     this.visitNode(node.name)
     this.append(' as ')
@@ -1003,7 +1061,7 @@ export class DefaultQueryCompiler
   }
 
   protected override visitCommonTableExpressionName(
-    node: CommonTableExpressionNameNode
+    node: CommonTableExpressionNameNode,
   ): void {
     this.visitNode(node.table)
 
@@ -1460,7 +1518,14 @@ export class DefaultQueryCompiler
       this.append(' ')
     }
 
-    this.append('merge into ')
+    this.append('merge ')
+
+    if (node.top) {
+      this.visitNode(node.top)
+      this.append(' ')
+    }
+
+    this.append('into ')
     this.visitNode(node.into)
 
     if (node.using) {
@@ -1470,7 +1535,12 @@ export class DefaultQueryCompiler
 
     if (node.whens) {
       this.append(' ')
-      this.compileList(node.whens)
+      this.compileList(node.whens, ' ')
+    }
+
+    if (node.output) {
+      this.append(' ')
+      this.visitNode(node.output)
     }
   }
 
@@ -1485,7 +1555,7 @@ export class DefaultQueryCompiler
       this.append(' by source')
     }
   }
-  
+
   protected override visitAddIndex(node: AddIndexNode): void {
     this.append('add ')
 
@@ -1506,6 +1576,33 @@ export class DefaultQueryCompiler
     if (node.using) {
       this.append(' using ')
       this.visitNode(node.using)
+    }
+  }
+
+  protected override visitCast(node: CastNode): void {
+    this.append('cast(')
+    this.visitNode(node.expression)
+    this.append(' as ')
+    this.visitNode(node.dataType)
+    this.append(')')
+  }
+
+  protected override visitFetch(node: FetchNode): void {
+    this.append('fetch next ')
+    this.visitNode(node.rowCount)
+    this.append(` rows ${node.modifier}`)
+  }
+
+  protected override visitOutput(node: OutputNode): void {
+    this.append('output ')
+    this.compileList(node.selections)
+  }
+
+  protected override visitTop(node: TopNode): void {
+    this.append(`top(${node.expression})`)
+
+    if (node.modifiers) {
+      this.append(` ${node.modifiers}`)
     }
   }
 
@@ -1585,20 +1682,20 @@ export class DefaultQueryCompiler
   }
 
   protected sortSelectModifiers(
-    arr: SelectModifierNode[]
+    arr: SelectModifierNode[],
   ): ReadonlyArray<SelectModifierNode> {
     arr.sort((left, right) =>
       left.modifier && right.modifier
         ? SELECT_MODIFIER_PRIORITY[left.modifier] -
           SELECT_MODIFIER_PRIORITY[right.modifier]
-        : 1
+        : 1,
     )
 
     return freeze(arr)
   }
 
   protected compileColumnAlterations(
-    columnAlterations: readonly AlterTableColumnAlterationNode[]
+    columnAlterations: readonly AlterTableColumnAlterationNode[],
   ) {
     this.compileList(columnAlterations)
   }

@@ -44,7 +44,7 @@ export const OnConflictNode = freeze({
 
   cloneWithIndexWhere(
     node: OnConflictNode,
-    operation: OperationNode
+    operation: OperationNode,
   ): OnConflictNode {
     return freeze({
       ...node,
@@ -56,7 +56,7 @@ export const OnConflictNode = freeze({
 
   cloneWithIndexOrWhere(
     node: OnConflictNode,
-    operation: OperationNode
+    operation: OperationNode,
   ): OnConflictNode {
     return freeze({
       ...node,
@@ -68,7 +68,7 @@ export const OnConflictNode = freeze({
 
   cloneWithUpdateWhere(
     node: OnConflictNode,
-    operation: OperationNode
+    operation: OperationNode,
   ): OnConflictNode {
     return freeze({
       ...node,
@@ -80,7 +80,7 @@ export const OnConflictNode = freeze({
 
   cloneWithUpdateOrWhere(
     node: OnConflictNode,
-    operation: OperationNode
+    operation: OperationNode,
   ): OnConflictNode {
     return freeze({
       ...node,

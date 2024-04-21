@@ -33,7 +33,7 @@ for (const dialect of DIALECTS) {
       const query = ctx.db
         .selectFrom('person')
         .select((eb) =>
-          eb.case().when('gender', '=', 'male').then('Mr.').end().as('title')
+          eb.case().when('gender', '=', 'male').then('Mr.').end().as('title'),
         )
 
       testSql(query, dialect, {
@@ -62,7 +62,7 @@ for (const dialect of DIALECTS) {
       const query = ctx.db
         .selectFrom('person')
         .select((eb) =>
-          eb.case('gender').when('male').then('Mr.').end().as('title')
+          eb.case('gender').when('male').then('Mr.').end().as('title'),
         )
 
       testSql(query, dialect, {
@@ -88,18 +88,16 @@ for (const dialect of DIALECTS) {
     })
 
     it('should execute a query with a case...when...then...when...then...end operator', async () => {
-      const query = ctx.db
-        .selectFrom('person')
-        .select((eb) =>
-          eb
-            .case()
-            .when(eb('gender', '=', 'male'))
-            .then(sql.lit('Mr.'))
-            .when(eb('gender', '=', 'female'))
-            .then(sql.lit('Mrs.'))
-            .end()
-            .as('title')
-        )
+      const query = ctx.db.selectFrom('person').select((eb) =>
+        eb
+          .case()
+          .when(eb('gender', '=', 'male'))
+          .then(sql.lit('Mr.'))
+          .when(eb('gender', '=', 'female'))
+          .then(sql.lit('Mrs.'))
+          .end()
+          .as('title'),
+      )
 
       testSql(query, dialect, {
         postgres: {
@@ -150,7 +148,7 @@ for (const dialect of DIALECTS) {
             .when(sql.lit('female'))
             .then(sql.lit('Mrs.'))
             .end()
-            .as('title')
+            .as('title'),
         )
 
       testSql(query, dialect, {
@@ -203,7 +201,7 @@ for (const dialect of DIALECTS) {
             .then('Mrs.')
             .else(null)
             .end()
-            .as('title')
+            .as('title'),
         )
 
       testSql(query, dialect, {
@@ -258,14 +256,14 @@ for (const dialect of DIALECTS) {
                 eb.or([
                   eb('marital_status', '=', 'single'),
                   eb('marital_status', 'is', null),
-                ])
+                ]),
               )
               .then('Ms.')
               .else('Mrs.')
-              .end()
+              .end(),
           )
           .end()
-          .as('title')
+          .as('title'),
       )
 
       testSql(query, dialect, {

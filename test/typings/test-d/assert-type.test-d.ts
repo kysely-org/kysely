@@ -41,7 +41,7 @@ async function testAssertType(db: Kysely<Database>) {
       .selectFrom('person')
       .select('first_name as fn')
       .$assertType<{ wrong: string }>()
-      .execute()
+      .execute(),
   )
 
   expectError(
@@ -49,6 +49,6 @@ async function testAssertType(db: Kysely<Database>) {
       .selectFrom('person')
       .select('first_name as fn')
       .$assertType<{ fn: string; extra: number }>()
-      .execute()
+      .execute(),
   )
 }
