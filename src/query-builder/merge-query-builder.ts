@@ -713,7 +713,7 @@ export class WheneableMergeQueryBuilder<
 
   compile(): CompiledQuery<never> {
     return this.#props.executor.compileQuery(
-      this.#props.queryNode,
+      this.toOperationNode(),
       this.#props.queryId,
     )
   }
