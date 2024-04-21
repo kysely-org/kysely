@@ -28,6 +28,7 @@ export interface ColumnDefinitionNode extends OperationNode {
   readonly endModifiers?: ReadonlyArray<OperationNode>
   readonly nullsNotDistinct?: boolean
   readonly identity?: boolean
+  readonly ifNotExists?: boolean
 }
 
 /**

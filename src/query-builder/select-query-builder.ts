@@ -284,6 +284,45 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    * In case you use the {@link sql} tag you need to specify the type of the expression
    * (in this example `string`).
    *
+   *  <!-- siteExample("select", "Not null", 51) -->
+   *
+   * Sometimes you can be sure something's not null but Kysely isn't able to infer
+   * it. For example calling `where('last_name', 'is not', null)` doesn't make
+   * `last_name` not null in the result type but unless you have other where statements
+   * you can be sure it's never null.
+   *
+   * Kysely has a couple of helpers for dealing with these cases: `$notNull()` and `$narrowType`.
+   * Both are used in the following example:
+   *
+   * ```ts
+   * import { NotNull } from 'kysely'
+   * import { jsonObjectFrom } from 'kysely/helpers/postgres'
+   *
+   * const persons = db
+   *   .selectFrom('person')
+   *   .select((eb) => [
+   *     'last_name',
+   *      // Let's assume we know the person has at least one
+   *      // pet. We can use the `.$notNull()` method to make
+   *      // the expression not null. You could just as well
+   *      // add `pet` to the `$narrowType` call below.
+   *      jsonObjectFrom(
+   *        eb.selectFrom('pet')
+   *          .selectAll()
+   *          .limit(1)
+   *          .whereRef('person.id', '=', 'pet.owner_id')
+   *      ).$notNull().as('pet')
+   *   ])
+   *   .where('last_name', 'is not', null)
+   *   // $narrowType can be used to narrow the output type.
+   *   // The special `NotNull` type can be used to make a
+   *   // selection not null. You could add `pet: NotNull`
+   *   // here and omit the `$notNull()` call on it.
+   *   // Use whichever way you prefer.
+   *   .$narrowType<{ last_name: NotNull }>()
+   *   .execute()
+   * ```
+   *
    * All the examples above assume you know the column names at compile time.
    * While it's better to build your code like that (that way you also know
    * the types) sometimes it's not possible or you just prefer to write more
@@ -597,7 +636,10 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    *     (join) => join
    *       .onRef('pet.owner_id', '=', 'person.id')
    *       .on('pet.name', '=', 'Doggo')
-   *       .on((eb) => eb.or([eb("person.age", ">", 18), eb("person.age", "<", 100)]))
+   *       .on((eb) => eb.or([
+   *         eb('person.age', '>', 18),
+   *         eb('person.age', '<', 100)
+   *       ]))
    *   )
    *   .selectAll()
    *   .execute()
@@ -611,6 +653,10 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    * inner join "pet"
    * on "pet"."owner_id" = "person"."id"
    * and "pet"."name" = $1
+   * and (
+   *   "person"."age" > $2
+   *   OR "person"."age" < $3
+   * )
    * ```
    *
    * <!-- siteExample("join", "Subquery join", 40) -->
@@ -866,7 +912,7 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    *     .limit(1)
    *   )
    *   .orderBy(
-   *     sql`concat(first_name, last_name)`
+   *     sql<string>`concat(first_name, last_name)`
    *   )
    *   .execute()
    * ```
@@ -935,7 +981,7 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    *   .selectFrom('person')
    *   .select([
    *     'first_name',
-   *     sql`max(id)`.as('max_id')
+   *     sql<string>`max(id)`.as('max_id')
    *   ])
    *   .groupBy('first_name')
    *   .execute()
@@ -959,7 +1005,7 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    *   .select([
    *     'first_name',
    *     'last_name',
-   *     sql`max(id)`.as('max_id')
+   *     sql<string>`max(id)`.as('max_id')
    *   ])
    *   .groupBy([
    *     'first_name',
@@ -987,10 +1033,10 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    *   .select([
    *     'first_name',
    *     'last_name',
-   *     sql`max(id)`.as('max_id')
+   *     sql<string>`max(id)`.as('max_id')
    *   ])
    *   .groupBy([
-   *     sql`concat(first_name, last_name)`,
+   *     sql<string>`concat(first_name, last_name)`,
    *     (qb) => qb.selectFrom('pet').select('id').limit(1)
    *   ])
    *   .execute()
@@ -1453,6 +1499,26 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    * ```
    */
   clearOrderBy(): SelectQueryBuilder<DB, TB, O>
+
+  /**
+   * Clears `group by` clause from the query.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * db.selectFrom('person')
+   *   .selectAll()
+   *   .groupBy('id')
+   *   .clearGroupBy()
+   * ```
+   *
+   * The generated SQL(PostgreSQL):
+   *
+   * ```sql
+   * select * from "person"
+   * ```
+   */
+  clearGroupBy(): SelectQueryBuilder<DB, TB, O>
 
   /**
    * Simply calls the provided function passing `this` as the only argument. `$call` returns
@@ -2176,7 +2242,7 @@ class SelectQueryBuilderImpl<DB, TB extends keyof DB, O>
       ),
     })
   }
-  
+
   top(
     expression: number | bigint,
     modifiers?: TopModifier,
@@ -2298,6 +2364,13 @@ class SelectQueryBuilderImpl<DB, TB extends keyof DB, O>
     return new SelectQueryBuilderImpl<DB, TB, O>({
       ...this.#props,
       queryNode: SelectQueryNode.cloneWithoutOrderBy(this.#props.queryNode),
+    })
+  }
+
+  clearGroupBy(): SelectQueryBuilder<DB, TB, O> {
+    return new SelectQueryBuilderImpl<DB, TB, O>({
+      ...this.#props,
+      queryNode: SelectQueryNode.cloneWithoutGroupBy(this.#props.queryNode),
     })
   }
 

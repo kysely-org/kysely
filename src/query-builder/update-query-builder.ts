@@ -20,6 +20,7 @@ import {
   SelectCallback,
 } from '../parser/select-parser.js'
 import {
+  ReturningAllRow,
   ReturningCallbackRow,
   ReturningRow,
 } from '../parser/returning-parser.js'
@@ -72,11 +73,20 @@ import {
 } from '../parser/value-parser.js'
 import { LimitNode } from '../operation-node/limit-node.js'
 import { parseTop } from '../parser/top-parser.js'
+import {
+  OutputCallback,
+  OutputExpression,
+  OutputInterface,
+  OutputPrefix,
+  SelectExpressionFromOutputCallback,
+  SelectExpressionFromOutputExpression,
+} from './output-interface.js'
 
 export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
   implements
     WhereInterface<DB, TB>,
     ReturningInterface<DB, TB, O>,
+    OutputInterface<DB, TB, O>,
     OperationNodeSource,
     Compilable<O>,
     Explainable,
@@ -561,7 +571,7 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
    *   .set('first_name', 'Foo')
    *   // As always, both arguments can be arbitrary expressions or
    *   // callbacks that give you access to an expression builder:
-   *   .set(sql`address['postalCode']`, (eb) => eb.val('61710))
+   *   .set(sql<string>`address['postalCode']`, (eb) => eb.val('61710))
    *   .where('id', '=', '1')
    *   .executeTakeFirst()
    * ```
@@ -602,7 +612,7 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
    *     first_name: selectFrom('person').select('first_name').limit(1),
    *     middle_name: ref('first_name'),
    *     age: eb('age', '+', 1),
-   *     last_name: sql`${'Ani'} || ${'ston'}`,
+   *     last_name: sql<string>`${'Ani'} || ${'ston'}`,
    *   }))
    *   .where('id', '=', 1)
    *   .executeTakeFirst()
@@ -678,6 +688,55 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
       queryNode: QueryNode.cloneWithReturning(
         this.#props.queryNode,
         parseSelectAll(),
+      ),
+    })
+  }
+
+  output<OE extends OutputExpression<DB, UT>>(
+    selections: readonly OE[]
+  ): UpdateQueryBuilder<
+    DB,
+    UT,
+    TB,
+    ReturningRow<DB, TB, O, SelectExpressionFromOutputExpression<OE>>
+  >
+
+  output<CB extends OutputCallback<DB, TB>>(
+    callback: CB
+  ): UpdateQueryBuilder<
+    DB,
+    UT,
+    TB,
+    ReturningRow<DB, TB, O, SelectExpressionFromOutputCallback<CB>>
+  >
+
+  output<OE extends OutputExpression<DB, TB>>(
+    selection: OE
+  ): UpdateQueryBuilder<
+    DB,
+    UT,
+    TB,
+    ReturningRow<DB, TB, O, SelectExpressionFromOutputExpression<OE>>
+  >
+
+  output(args: any): any {
+    return new UpdateQueryBuilder({
+      ...this.#props,
+      queryNode: QueryNode.cloneWithOutput(
+        this.#props.queryNode,
+        parseSelectArg(args)
+      ),
+    })
+  }
+
+  outputAll(
+    table: OutputPrefix
+  ): UpdateQueryBuilder<DB, UT, TB, ReturningAllRow<DB, TB, O>> {
+    return new UpdateQueryBuilder({
+      ...this.#props,
+      queryNode: QueryNode.cloneWithOutput(
+        this.#props.queryNode,
+        parseSelectAll(table)
       ),
     })
   }
@@ -926,14 +985,19 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
    */
   async execute(): Promise<SimplifyResult<O>[]> {
     const compiledQuery = this.compile()
-    const query = compiledQuery.query as UpdateQueryNode
 
     const result = await this.#props.executor.executeQuery<O>(
       compiledQuery,
       this.#props.queryId,
     )
 
-    if (this.#props.executor.adapter.supportsReturning && query.returning) {
+    const { adapter } = this.#props.executor
+    const query = compiledQuery.query as UpdateQueryNode
+
+    if (
+      (query.returning && adapter.supportsReturning) ||
+      (query.output && adapter.supportsOutput)
+    ) {
       return result.rows as any
     }
 

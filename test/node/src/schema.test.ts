@@ -68,6 +68,7 @@ for (const dialect of DIALECTS) {
                 .notNull(),
             )
             .addColumn('t', 'time(6)')
+            .addColumn('tz', 'timetz(6)')
             .addColumn('u', 'timestamp(6)', (col) =>
               col.notNull().defaultTo(sql`current_timestamp`),
             )
@@ -100,6 +101,7 @@ for (const dialect of DIALECTS) {
                 '"r" int8,',
                 '"s" double precision generated always as (f + g) stored not null,',
                 '"t" time(6),',
+                '"tz" timetz(6),',
                 '"u" timestamp(6) default current_timestamp not null,',
                 '"v" timestamptz(6),',
                 '"w" char(4),',
@@ -299,7 +301,7 @@ for (const dialect of DIALECTS) {
           const builder = ctx.db.schema
             .createTable('test')
             .addColumn('a', 'integer', (col) =>
-              col.identity().notNull().primaryKey()
+              col.identity().notNull().primaryKey(),
             )
             .addColumn('b', 'integer', (col) =>
               col
@@ -2320,6 +2322,24 @@ for (const dialect of DIALECTS) {
             testSql(builder, dialect, {
               postgres: {
                 sql: 'alter table "test" add column "desc" varchar(20) unique nulls not distinct',
+                parameters: [],
+              },
+              mysql: NOT_SUPPORTED,
+              mssql: NOT_SUPPORTED,
+              sqlite: NOT_SUPPORTED,
+            })
+
+            await builder.execute()
+          })
+
+          it('should add a column with "if not exists" modifier', async () => {
+            const builder = ctx.db.schema
+              .alterTable('test')
+              .addColumn('desc', 'varchar(20)', (cb) => cb.ifNotExists())
+
+            testSql(builder, dialect, {
+              postgres: {
+                sql: 'alter table "test" add column if not exists "desc" varchar(20)',
                 parameters: [],
               },
               mysql: NOT_SUPPORTED,
