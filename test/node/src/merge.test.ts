@@ -1,4 +1,4 @@
-import { MergeResult } from '../../..'
+import { MergeResult, sql } from '../../..'
 import {
   DIALECTS,
   NOT_SUPPORTED,
@@ -956,6 +956,41 @@ for (const dialect of DIALECTS.filter(
       }
     })
 
+    describe('multiple whens', () => {
+      it('should perform a merge...using table simple on...when matched then delete query', async () => {
+        const query = ctx.db
+          .mergeInto('person')
+          .using('pet', 'pet.owner_id', 'person.id')
+          .whenMatched()
+          .thenDelete()
+          .whenNotMatched()
+          .thenInsertValues((eb) => ({
+            gender: 'other',
+            first_name: eb.ref('pet.name'),
+            middle_name: 'the',
+            last_name: eb.ref('pet.species'),
+          }))
+
+        testSql(query, dialect, {
+          postgres: {
+            sql: 'merge into "person" using "pet" on "pet"."owner_id" = "person"."id" when matched then delete when not matched then insert ("gender", "first_name", "middle_name", "last_name") values ($1, "pet"."name", $2, "pet"."species")',
+            parameters: ['other', 'the'],
+          },
+          mysql: NOT_SUPPORTED,
+          mssql: {
+            sql: 'merge into "person" using "pet" on "pet"."owner_id" = "person"."id" when matched then delete when not matched then insert ("gender", "first_name", "middle_name", "last_name") values (@1, "pet"."name", @2, "pet"."species");',
+            parameters: ['other', 'the'],
+          },
+          sqlite: NOT_SUPPORTED,
+        })
+
+        const result = await query.executeTakeFirstOrThrow()
+
+        expect(result).to.be.instanceOf(MergeResult)
+        expect(result.numChangedRows).to.equal(3n)
+      })
+    })
+
     if (dialect === 'mssql') {
       it('should perform a merge top...using table simple on...when matched then delete query', async () => {
         const query = ctx.db
@@ -1003,6 +1038,60 @@ for (const dialect of DIALECTS.filter(
 
         expect(result).to.be.instanceOf(MergeResult)
         expect(result.numChangedRows).to.equal(2n)
+      })
+
+      it('should perform a merge...using table simple on...when matched then delete output id query', async () => {
+        const expected = await ctx.db.selectFrom('pet').select('id').execute()
+
+        const query = ctx.db
+          .mergeInto('pet')
+          .using('person', 'pet.owner_id', 'person.id')
+          .whenMatched()
+          .thenDelete()
+          .output('deleted.id')
+
+        testSql(query, dialect, {
+          postgres: NOT_SUPPORTED,
+          mysql: NOT_SUPPORTED,
+          mssql: {
+            sql: 'merge into "pet" using "person" on "pet"."owner_id" = "person"."id" when matched then delete output "deleted"."id";',
+            parameters: [],
+          },
+          sqlite: NOT_SUPPORTED,
+        })
+
+        const result = await query.execute()
+
+        expect(result).to.eql(expected)
+      })
+
+      it('should perform a merge...using table simple on...when matched then update set name output deleted.name, inserted.name query', async () => {
+        const query = ctx.db
+          .mergeInto('pet')
+          .using('person', 'pet.owner_id', 'person.id')
+          .whenMatched()
+          .thenUpdateSet((eb) => ({
+            name: sql`${eb.ref('person.first_name')} + '''s pet'`,
+          }))
+          .output(['deleted.name as old_name', 'inserted.name as new_name'])
+
+        testSql(query, dialect, {
+          postgres: NOT_SUPPORTED,
+          mysql: NOT_SUPPORTED,
+          mssql: {
+            sql: 'merge into "pet" using "person" on "pet"."owner_id" = "person"."id" when matched then update set "name" = "person"."first_name" + \'\'\'s pet\' output "deleted"."name" as "old_name", "inserted"."name" as "new_name";',
+            parameters: [],
+          },
+          sqlite: NOT_SUPPORTED,
+        })
+
+        const result = await query.execute()
+
+        expect(result).to.eql([
+          { old_name: 'Catto', new_name: "Jennifer's pet" },
+          { old_name: 'Doggo', new_name: "Arnold's pet" },
+          { old_name: 'Hammo', new_name: "Sylvester's pet" },
+        ])
       })
     }
   })

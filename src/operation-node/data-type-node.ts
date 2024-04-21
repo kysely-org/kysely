@@ -32,6 +32,7 @@ const SIMPLE_COLUMN_DATA_TYPES = [
   'json',
   'jsonb',
   'blob',
+  'varbinary',
 ] as const
 
 const COLUMN_DATA_TYPE_REGEX = [
@@ -42,9 +43,10 @@ const COLUMN_DATA_TYPE_REGEX = [
   /^binary\(\d+\)$/,
   /^datetime\(\d+\)$/,
   /^time\(\d+\)$/,
-  /^timez\(\d+\)$/,
+  /^timetz\(\d+\)$/,
   /^timestamp\(\d+\)$/,
   /^timestamptz\(\d+\)$/,
+  /^varbinary\(\d+\)$/,
 ]
 
 type SimpleColumnDataType = (typeof SIMPLE_COLUMN_DATA_TYPES)[number]
@@ -61,6 +63,7 @@ export type ColumnDataType =
   | `timetz(${number})`
   | `timestamp(${number})`
   | `timestamptz(${number})`
+  | `varbinary(${number})`
 
 export type DataTypeParams = Omit<DataTypeNode, 'kind' | 'dataType'>
 

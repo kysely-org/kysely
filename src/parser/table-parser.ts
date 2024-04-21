@@ -49,7 +49,9 @@ export type FromTables<DB, TB extends keyof DB, TE> = DrainOuterGeneric<
 >
 
 export type ExtractTableAlias<DB, TE> = TE extends `${string} as ${infer TA}`
-  ? TA
+  ? TA extends keyof DB
+    ? TA
+    : never
   : TE extends keyof DB
     ? TE
     : never
@@ -64,7 +66,11 @@ export type PickTableWithAlias<
   : never
 
 type ExtractAliasFromTableExpression<DB, TE> = TE extends string
-  ? ExtractTableAlias<DB, TE>
+  ? TE extends `${string} as ${infer TA}`
+    ? TA
+    : TE extends keyof DB
+      ? TE
+      : never
   : TE extends AliasedExpression<any, infer QA>
     ? QA
     : TE extends (qb: any) => AliasedExpression<any, infer QA>

@@ -72,11 +72,19 @@ import {
   parseValueExpression,
 } from '../parser/value-parser.js'
 import { parseTop } from '../parser/top-parser.js'
+import {
+  OutputCallback,
+  OutputExpression,
+  OutputInterface,
+  SelectExpressionFromOutputCallback,
+  SelectExpressionFromOutputExpression,
+} from './output-interface.js'
 
 export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
   implements
     WhereInterface<DB, TB>,
     ReturningInterface<DB, TB, O>,
+    OutputInterface<DB, TB, O, 'deleted'>,
     OperationNodeSource,
     Compilable<O>,
     Explainable,
@@ -617,6 +625,52 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
     })
   }
 
+  output<OE extends OutputExpression<DB, TB, 'deleted'>>(
+    selections: readonly OE[]
+  ): DeleteQueryBuilder<
+    DB,
+    TB,
+    ReturningRow<DB, TB, O, SelectExpressionFromOutputExpression<OE>>
+  >
+
+  output<CB extends OutputCallback<DB, TB, 'deleted'>>(
+    callback: CB
+  ): DeleteQueryBuilder<
+    DB,
+    TB,
+    ReturningRow<DB, TB, O, SelectExpressionFromOutputCallback<CB>>
+  >
+
+  output<OE extends OutputExpression<DB, TB, 'deleted'>>(
+    selection: OE
+  ): DeleteQueryBuilder<
+    DB,
+    TB,
+    ReturningRow<DB, TB, O, SelectExpressionFromOutputExpression<OE>>
+  >
+
+  output(args: any): any {
+    return new DeleteQueryBuilder({
+      ...this.#props,
+      queryNode: QueryNode.cloneWithOutput(
+        this.#props.queryNode,
+        parseSelectArg(args)
+      ),
+    })
+  }
+
+  outputAll(
+    table: 'deleted'
+  ): DeleteQueryBuilder<DB, TB, ReturningAllRow<DB, TB, O>> {
+    return new DeleteQueryBuilder({
+      ...this.#props,
+      queryNode: QueryNode.cloneWithOutput(
+        this.#props.queryNode,
+        parseSelectAll(table)
+      ),
+    })
+  }
+
   /**
    * Clears all `returning` clauses from the query.
    *
@@ -980,14 +1034,19 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
    */
   async execute(): Promise<SimplifyResult<O>[]> {
     const compiledQuery = this.compile()
-    const query = compiledQuery.query as DeleteQueryNode
 
     const result = await this.#props.executor.executeQuery<O>(
       compiledQuery,
       this.#props.queryId,
     )
 
-    if (this.#props.executor.adapter.supportsReturning && query.returning) {
+    const { adapter } = this.#props.executor
+    const query = compiledQuery.query as DeleteQueryNode
+
+    if (
+      (query.returning && adapter.supportsReturning) ||
+      (query.output && adapter.supportsOutput)
+    ) {
       return result.rows as any
     }
 

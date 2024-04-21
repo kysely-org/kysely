@@ -68,6 +68,7 @@ for (const dialect of DIALECTS) {
                 .notNull(),
             )
             .addColumn('t', 'time(6)')
+            .addColumn('tz', 'timetz(6)')
             .addColumn('u', 'timestamp(6)', (col) =>
               col.notNull().defaultTo(sql`current_timestamp`),
             )
@@ -100,6 +101,7 @@ for (const dialect of DIALECTS) {
                 '"r" int8,',
                 '"s" double precision generated always as (f + g) stored not null,',
                 '"t" time(6),',
+                '"tz" timetz(6),',
                 '"u" timestamp(6) default current_timestamp not null,',
                 '"v" timestamptz(6),',
                 '"w" char(4),',
@@ -230,6 +232,7 @@ for (const dialect of DIALECTS) {
             .addColumn('t', 'char(4)')
             .addColumn('u', 'char')
             .addColumn('v', 'binary(16)')
+            .addColumn('w', 'varbinary(16)')
 
           testSql(builder, dialect, {
             mysql: {
@@ -256,7 +259,8 @@ for (const dialect of DIALECTS) {
                 '`s` timestamp(6) default current_timestamp(6) not null,',
                 '`t` char(4),',
                 '`u` char,',
-                '`v` binary(16))',
+                '`v` binary(16),',
+                '`w` varbinary(16))',
               ],
               parameters: [],
             },
@@ -299,7 +303,7 @@ for (const dialect of DIALECTS) {
           const builder = ctx.db.schema
             .createTable('test')
             .addColumn('a', 'integer', (col) =>
-              col.identity().notNull().primaryKey()
+              col.identity().notNull().primaryKey(),
             )
             .addColumn('b', 'integer', (col) =>
               col
@@ -335,6 +339,8 @@ for (const dialect of DIALECTS) {
             .addColumn('w', 'char')
             .addColumn('x', 'binary')
             .addColumn('y', sql``, (col) => col.modifyEnd(sql`as (a + f)`))
+            .addColumn('z', 'varbinary')
+            .addColumn('aa', 'varbinary(16)')
 
           testSql(builder, dialect, {
             mssql: {
@@ -364,7 +370,9 @@ for (const dialect of DIALECTS) {
                 '"v" char(4),',
                 '"w" char,',
                 '"x" binary,',
-                '"y"  as (a + f))',
+                '"y"  as (a + f),',
+                '"z" varbinary,',
+                '"aa" varbinary(16))',
               ],
               parameters: [],
             },
@@ -2320,6 +2328,24 @@ for (const dialect of DIALECTS) {
             testSql(builder, dialect, {
               postgres: {
                 sql: 'alter table "test" add column "desc" varchar(20) unique nulls not distinct',
+                parameters: [],
+              },
+              mysql: NOT_SUPPORTED,
+              mssql: NOT_SUPPORTED,
+              sqlite: NOT_SUPPORTED,
+            })
+
+            await builder.execute()
+          })
+
+          it('should add a column with "if not exists" modifier', async () => {
+            const builder = ctx.db.schema
+              .alterTable('test')
+              .addColumn('desc', 'varchar(20)', (cb) => cb.ifNotExists())
+
+            testSql(builder, dialect, {
+              postgres: {
+                sql: 'alter table "test" add column if not exists "desc" varchar(20)',
                 parameters: [],
               },
               mysql: NOT_SUPPORTED,
