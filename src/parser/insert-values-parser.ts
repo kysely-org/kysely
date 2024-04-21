@@ -40,17 +40,17 @@ export type InsertObjectOrList<DB, TB extends keyof DB> =
 export type InsertObjectOrListFactory<
   DB,
   TB extends keyof DB,
-  UT extends keyof DB = never
+  UT extends keyof DB = never,
 > = (eb: ExpressionBuilder<DB, TB | UT>) => InsertObjectOrList<DB, TB>
 
 export type InsertExpression<
   DB,
   TB extends keyof DB,
-  UT extends keyof DB = never
+  UT extends keyof DB = never,
 > = InsertObjectOrList<DB, TB> | InsertObjectOrListFactory<DB, TB, UT>
 
 export function parseInsertExpression(
-  arg: InsertExpression<any, any, any>
+  arg: InsertExpression<any, any, any>,
 ): [ReadonlyArray<ColumnNode>, ValuesNode] {
   const objectOrList = isFunction(arg) ? arg(expressionBuilder()) : arg
   const list = isReadonlyArray(objectOrList)
@@ -61,7 +61,7 @@ export function parseInsertExpression(
 }
 
 function parseInsertColumnsAndValues(
-  rows: ReadonlyArray<InsertObject<any, any>>
+  rows: ReadonlyArray<InsertObject<any, any>>,
 ): [ReadonlyArray<ColumnNode>, ValuesNode] {
   const columns = parseColumnNamesAndIndexes(rows)
 
@@ -72,7 +72,7 @@ function parseInsertColumnsAndValues(
 }
 
 function parseColumnNamesAndIndexes(
-  rows: ReadonlyArray<InsertObject<any, any>>
+  rows: ReadonlyArray<InsertObject<any, any>>,
 ): Map<string, number> {
   const columns = new Map<string, number>()
 
@@ -91,7 +91,7 @@ function parseColumnNamesAndIndexes(
 
 function parseRowValues(
   row: InsertObject<any, any>,
-  columns: Map<string, number>
+  columns: Map<string, number>,
 ): PrimitiveValueListNode | ValueListNode {
   const rowColumns = Object.keys(row)
 
@@ -124,8 +124,8 @@ function parseRowValues(
 
     return ValueListNode.create(
       rowValues.map((it) =>
-        isUndefined(it) ? defaultValue : parseValueExpression(it)
-      )
+        isUndefined(it) ? defaultValue : parseValueExpression(it),
+      ),
     )
   }
 

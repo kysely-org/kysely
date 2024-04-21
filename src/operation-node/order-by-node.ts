@@ -24,7 +24,7 @@ export const OrderByNode = freeze({
 
   cloneWithItems(
     orderBy: OrderByNode,
-    items: ReadonlyArray<OrderByItemNode>
+    items: ReadonlyArray<OrderByItemNode>,
   ): OrderByNode {
     return freeze({
       ...orderBy,

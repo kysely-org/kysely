@@ -68,7 +68,7 @@ async function testGenericSelectHelper() {
         petJoin: Nullable<Pick<Pet, 'owner_id'>>
       },
       'parent' | 'petJoin'
-    >
+    >,
   ) {
     return ['parent.id'] as const
   }
@@ -83,7 +83,7 @@ async function testGenericSelectHelper() {
 
 async function testGenericSelect<T extends keyof Database>(
   db: Kysely<Database>,
-  table: T
+  table: T,
 ) {
   const r1 = await db.selectFrom(table).select('id').executeTakeFirstOrThrow()
   expectAssignable<string | number>(r1.id)

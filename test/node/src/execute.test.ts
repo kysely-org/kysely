@@ -128,7 +128,7 @@ for (const dialect of DIALECTS) {
       beforeEach(() => {
         executorSpy = sandbox.spy(
           ctx.db.getExecutor() as QueryExecutor,
-          'executeQuery'
+          'executeQuery',
         )
       })
 

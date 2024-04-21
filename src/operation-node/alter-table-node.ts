@@ -14,7 +14,12 @@ import { AddIndexNode } from './add-index-node.js'
 
 export type AlterTableNodeTableProps = Pick<
   AlterTableNode,
-  'renameTo' | 'setSchema' | 'addConstraint' | 'dropConstraint' | 'addIndex' | 'dropIndex'
+  | 'renameTo'
+  | 'setSchema'
+  | 'addConstraint'
+  | 'dropConstraint'
+  | 'addIndex'
+  | 'dropIndex'
 >
 
 export type AlterTableColumnAlterationNode =
@@ -53,7 +58,7 @@ export const AlterTableNode = freeze({
 
   cloneWithTableProps(
     node: AlterTableNode,
-    props: AlterTableNodeTableProps
+    props: AlterTableNodeTableProps,
   ): AlterTableNode {
     return freeze({
       ...node,
@@ -63,7 +68,7 @@ export const AlterTableNode = freeze({
 
   cloneWithColumnAlteration(
     node: AlterTableNode,
-    columnAlteration: AlterTableColumnAlterationNode
+    columnAlteration: AlterTableColumnAlterationNode,
   ): AlterTableNode {
     return freeze({
       ...node,

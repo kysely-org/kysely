@@ -35,19 +35,19 @@ export type AliasedExpressionOrFactory<DB, TB extends keyof DB> =
   | AliasedExpressionFactory<DB, TB>
 
 export type ExpressionFactory<DB, TB extends keyof DB, V> = (
-  eb: ExpressionBuilder<DB, TB>
+  eb: ExpressionBuilder<DB, TB>,
 ) => Expression<V>
 
 type OperandExpressionFactory<DB, TB extends keyof DB, V> = (
-  eb: ExpressionBuilder<DB, TB>
+  eb: ExpressionBuilder<DB, TB>,
 ) => OperandExpression<V>
 
 type AliasedExpressionFactory<DB, TB extends keyof DB> = (
-  eb: ExpressionBuilder<DB, TB>
+  eb: ExpressionBuilder<DB, TB>,
 ) => AliasedExpression<any, any>
 
 export function parseExpression(
-  exp: ExpressionOrFactory<any, any, any>
+  exp: ExpressionOrFactory<any, any, any>,
 ): OperationNode {
   if (isOperationNodeSource(exp)) {
     return exp.toOperationNode()
@@ -59,7 +59,7 @@ export function parseExpression(
 }
 
 export function parseAliasedExpression(
-  exp: AliasedExpressionOrFactory<any, any>
+  exp: AliasedExpressionOrFactory<any, any>,
 ): AliasNode {
   if (isOperationNodeSource(exp)) {
     return exp.toOperationNode()
@@ -71,7 +71,7 @@ export function parseAliasedExpression(
 }
 
 export function isExpressionOrFactory(
-  obj: unknown
+  obj: unknown,
 ): obj is ExpressionOrFactory<any, any, any> {
   return isExpression(obj) || isAliasedExpression(obj) || isFunction(obj)
 }

@@ -25,7 +25,7 @@ for (const dialect of DIALECTS.filter((dialect) => dialect !== 'mssql')) {
       await insertDefaultDataSet(ctx)
       executeQuerySpy = sandbox.spy(
         DefaultQueryExecutor.prototype,
-        'executeQuery'
+        'executeQuery',
       )
     })
 
@@ -48,7 +48,7 @@ for (const dialect of DIALECTS.filter((dialect) => dialect !== 'mssql')) {
           mysql: 'explain select * from `person` limit ?',
           mssql: NOT_SUPPORTED,
           sqlite: 'explain select * from "person" limit ?',
-        }[dialect]
+        }[dialect],
       )
     })
 
@@ -62,7 +62,7 @@ for (const dialect of DIALECTS.filter((dialect) => dialect !== 'mssql')) {
           mysql: 'explain insert into `person` (`gender`) values (?)',
           mssql: NOT_SUPPORTED,
           sqlite: 'explain insert into "person" ("gender") values (?)',
-        }[dialect]
+        }[dialect],
       )
     })
 
@@ -80,7 +80,7 @@ for (const dialect of DIALECTS.filter((dialect) => dialect !== 'mssql')) {
           mysql: 'explain update `person` set `gender` = ? where `id` = ?',
           mssql: NOT_SUPPORTED,
           sqlite: 'explain update "person" set "gender" = ? where "id" = ?',
-        }[dialect]
+        }[dialect],
       )
     })
 
@@ -94,7 +94,7 @@ for (const dialect of DIALECTS.filter((dialect) => dialect !== 'mssql')) {
           mysql: 'explain delete from `person` where `id` = ?',
           mssql: NOT_SUPPORTED,
           sqlite: 'explain delete from "person" where "id" = ?',
-        }[dialect]
+        }[dialect],
       )
     })
 
@@ -107,7 +107,7 @@ for (const dialect of DIALECTS.filter((dialect) => dialect !== 'mssql')) {
 
         expect(executeQuerySpy.calledOnce).to.be.true
         expect(executeQuerySpy.getCall(0).args[0].sql).to.equal(
-          'explain replace into `person` (`id`, `gender`) values (?, ?)'
+          'explain replace into `person` (`id`, `gender`) values (?, ?)',
         )
       })
     }
@@ -128,7 +128,7 @@ for (const dialect of DIALECTS.filter((dialect) => dialect !== 'mssql')) {
             mysql: NOT_SUPPORTED,
             mssql: NOT_SUPPORTED,
             sqlite: NOT_SUPPORTED,
-          }[dialect]
+          }[dialect],
         )
       })
     }
@@ -149,7 +149,7 @@ for (const dialect of DIALECTS.filter((dialect) => dialect !== 'mssql')) {
               'explain analyze format=tree select * from `person` where `id` = ?',
             mssql: NOT_SUPPORTED,
             sqlite: NOT_SUPPORTED,
-          }[dialect]
+          }[dialect],
         )
       })
     }

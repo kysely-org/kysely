@@ -46,7 +46,7 @@ for (const dialect of DIALECTS) {
               exists(
                 selectFrom('pet')
                   .select('pet.id')
-                  .whereRef('pet.owner_id', '=', 'person.id')
+                  .whereRef('pet.owner_id', '=', 'person.id'),
               ),
               // Empty and
               and([]),
@@ -79,7 +79,7 @@ for (const dialect of DIALECTS) {
               ...(dialect === 'postgres'
                 ? [eb.betweenSymmetric('id', 3000, 4000)]
                 : []),
-            ])
+            ]),
         )
 
       testSql(query, dialect, {

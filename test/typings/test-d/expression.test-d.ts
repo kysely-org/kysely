@@ -15,18 +15,18 @@ function testExpression(db: Kysely<Database>) {
   expectNotAssignable<Expression<string>>(e1)
 
   expectAssignable<Expression<{ first_name: string }>>(
-    db.selectFrom('person').select('first_name')
+    db.selectFrom('person').select('first_name'),
   )
   expectNotAssignable<Expression<{ first_name: number }>>(
-    db.selectFrom('person').select('first_name')
+    db.selectFrom('person').select('first_name'),
   )
   expectNotAssignable<Expression<{ age: number }>>(
-    db.selectFrom('person').select('first_name')
+    db.selectFrom('person').select('first_name'),
   )
 }
 
 async function testExpressionBuilder(
-  eb: ExpressionBuilder<Database, 'person'>
+  eb: ExpressionBuilder<Database, 'person'>,
 ) {
   // Binary expression
   expectAssignable<Expression<number>>(eb('age', '+', 1))
@@ -36,7 +36,7 @@ async function testExpressionBuilder(
 
   // `and` expression with one item
   expectAssignable<Expression<SqlBool>>(
-    eb.and([eb('first_name', '=', 'Jennifer')])
+    eb.and([eb('first_name', '=', 'Jennifer')]),
   )
 
   // `and` expression with two items
@@ -44,12 +44,12 @@ async function testExpressionBuilder(
     eb.and([
       eb('first_name', '=', 'Jennifer'),
       eb.not(eb('last_name', '=', 'Aniston')),
-    ])
+    ]),
   )
 
   // `or` expression with one item
   expectAssignable<Expression<SqlBool>>(
-    eb.or([eb('first_name', '=', 'Jennifer')])
+    eb.or([eb('first_name', '=', 'Jennifer')]),
   )
 
   // `or` expression with two items
@@ -57,21 +57,21 @@ async function testExpressionBuilder(
     eb.or([
       eb('first_name', '=', 'Jennifer'),
       eb.not(eb('last_name', '=', 'Aniston')),
-    ])
+    ]),
   )
 
   // `or` chain with three items
   expectAssignable<Expression<SqlBool>>(
     eb('first_name', '=', 'Jennifer')
       .or(eb.not(eb('last_name', '=', 'Aniston')))
-      .or('age', '>', 23)
+      .or('age', '>', 23),
   )
 
   // `and` chain with three items
   expectAssignable<Expression<SqlBool>>(
     eb('first_name', '=', 'Jennifer')
       .and(eb.not(eb('last_name', '=', 'Aniston')))
-      .and('age', '>', 23)
+      .and('age', '>', 23),
   )
 
   // nested `and` and `or` chains.
@@ -79,7 +79,7 @@ async function testExpressionBuilder(
     eb.and([
       eb('age', '=', 1).or('age', '=', 2),
       eb('first_name', '=', 'Jennifer').or('first_name', '=', 'Arnold'),
-    ])
+    ]),
   )
 
   expectAssignable<Expression<1>>(eb.lit(1))
@@ -91,7 +91,7 @@ async function testExpressionBuilder(
       'person.age': 10,
       first_name: 'Jennifer',
       last_name: eb.ref('first_name'),
-    })
+    }),
   )
 
   expectAssignable<Expression<SqlBool>>(
@@ -99,19 +99,19 @@ async function testExpressionBuilder(
       'person.age': 10,
       first_name: 'Jennifer',
       last_name: eb.ref('first_name'),
-    })
+    }),
   )
 
   expectAssignable<Expression<number | null>>(
-    eb.case().when('age', '=', 10).then(1).else(null).end()
+    eb.case().when('age', '=', 10).then(1).else(null).end(),
   )
 
   expectNotAssignable<Expression<number>>(
-    eb.case().when('age', '=', 10).then(1).else(null).end()
+    eb.case().when('age', '=', 10).then(1).else(null).end(),
   )
 
   expectAssignable<Expression<number>>(
-    eb.case().when('age', '=', 10).then(1).else(null).end().$notNull()
+    eb.case().when('age', '=', 10).then(1).else(null).end().$notNull(),
   )
 
   expectType<
@@ -133,6 +133,9 @@ async function testExpressionBuilder(
 
   expectAssignable<Expression<SqlBool>>(eb.between('age', 10, 20))
   expectAssignable<Expression<SqlBool>>(eb.betweenSymmetric('age', 10, 20))
+
+  expectAssignable<Expression<string>>(eb.cast<string>('age', 'text'))
+  expectAssignable<Expression<string>>(eb.cast<string>(eb.ref('age'), 'text'))
 
   expectError(eb('not_a_person_column', '=', 'Jennifer'))
   expectError(eb('not_a_person_column', '=', 'Jennifer'))
@@ -168,22 +171,22 @@ async function textExpressionBuilderAny(
       }
     },
     'actor'
-  >
+  >,
 ) {
   expectAssignable<Expression<string>>(eb.fn.any('nicknames'))
   expectAssignable<Expression<number>>(eb.fn.any('movie_earnings'))
   expectAssignable<Expression<number>>(eb.fn.any(eb.val([1, 2, 3])))
 
   expectAssignable<Expression<SqlBool>>(
-    eb(eb.val('Jen'), '=', eb.fn.any('nicknames'))
+    eb(eb.val('Jen'), '=', eb.fn.any('nicknames')),
   )
 
   expectAssignable<Expression<SqlBool>>(
-    eb(eb.val(42_000_000), '=', eb.fn.any('movie_earnings'))
+    eb(eb.val(42_000_000), '=', eb.fn.any('movie_earnings')),
   )
 
   expectAssignable<Expression<SqlBool>>(
-    eb(eb.val('cat'), '=', eb.fn.any(eb.selectFrom('pet').select('species')))
+    eb(eb.val('cat'), '=', eb.fn.any(eb.selectFrom('pet').select('species'))),
   )
 
   // Wrong array type
@@ -200,7 +203,7 @@ function testExpressionBuilderTuple(db: Kysely<Database>) {
       eb(refTuple('first_name', 'last_name'), 'in', [
         tuple('Jennifer', 'Aniston'),
         tuple('Sylvester', 'Stallone'),
-      ])
+      ]),
     )
 
   db.selectFrom('person')
@@ -211,8 +214,8 @@ function testExpressionBuilderTuple(db: Kysely<Database>) {
         'in',
         selectFrom('person')
           .select(['first_name', 'last_name'])
-          .$asTuple('first_name', 'last_name')
-      )
+          .$asTuple('first_name', 'last_name'),
+      ),
     )
 
   // Wrong tuple type
@@ -223,8 +226,8 @@ function testExpressionBuilderTuple(db: Kysely<Database>) {
         eb(refTuple('first_name', 'last_name'), 'in', [
           tuple('Jennifer', 'Aniston'),
           tuple('Sylvester', 1),
-        ])
-      )
+        ]),
+      ),
   )
 
   // Wrong tuple length
@@ -235,8 +238,8 @@ function testExpressionBuilderTuple(db: Kysely<Database>) {
         eb(refTuple('first_name', 'last_name'), 'in', [
           tuple('Jennifer', 'Aniston', 'Extra'),
           tuple('Sylvester', 'Stallone'),
-        ])
-      )
+        ]),
+      ),
   )
 
   // Not all selected columns provided for $asTuple
@@ -246,7 +249,7 @@ function testExpressionBuilderTuple(db: Kysely<Database>) {
     db
       .selectFrom('person')
       .select(['first_name', 'last_name', 'age'])
-      .$asTuple('first_name', 'last_name')
+      .$asTuple('first_name', 'last_name'),
   )
 
   // Duplicate column provided for $asTuple
@@ -254,6 +257,6 @@ function testExpressionBuilderTuple(db: Kysely<Database>) {
     db
       .selectFrom('person')
       .select(['first_name', 'last_name'])
-      .$asTuple('first_name', 'last_name', 'last_name')
+      .$asTuple('first_name', 'last_name', 'last_name'),
   )
 }

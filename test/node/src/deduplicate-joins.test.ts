@@ -69,7 +69,7 @@ for (const dialect of DIALECTS) {
           (join) =>
             join
               .onRef('p.owner_id', '=', 'person.id')
-              .on('p.species', 'in', ['cat', 'hamster'])
+              .on('p.species', 'in', ['cat', 'hamster']),
         )
         .innerJoin(
           ctx.db
@@ -79,7 +79,7 @@ for (const dialect of DIALECTS) {
           (join) =>
             join
               .onRef('p.owner_id', '=', 'person.id')
-              .on('p.species', 'in', ['cat', 'hamster'])
+              .on('p.species', 'in', ['cat', 'hamster']),
         )
 
       testSql(query, dialect, {

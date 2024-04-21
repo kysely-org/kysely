@@ -163,8 +163,8 @@ for (const dialect of DIALECTS) {
               eb
                 .selectFrom('pet')
                 .select(['id', 'name'])
-                .union(eb.selectFrom('toy').select(['id', 'name']))
-            )
+                .union(eb.selectFrom('toy').select(['id', 'name'])),
+            ),
           )
           .orderBy('name')
 

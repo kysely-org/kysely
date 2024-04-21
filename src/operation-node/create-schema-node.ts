@@ -31,7 +31,7 @@ export const CreateSchemaNode = freeze({
 
   cloneWith(
     createSchema: CreateSchemaNode,
-    params: CreateSchemaNodeParams
+    params: CreateSchemaNodeParams,
   ): CreateSchemaNode {
     return freeze({
       ...createSchema,

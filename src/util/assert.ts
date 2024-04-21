@@ -1,5 +1,5 @@
 export function assertNotNullOrUndefined<T>(
-  value: T
+  value: T,
 ): asserts value is NonNullable<T> {
   if (value === null || value === undefined) {
     throw new Error(`${value} must not be null or undefined`)

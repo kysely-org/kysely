@@ -19,7 +19,7 @@ export class DefaultQueryExecutor extends QueryExecutorBase {
     compiler: QueryCompiler,
     adapter: DialectAdapter,
     connectionProvider: ConnectionProvider,
-    plugins: KyselyPlugin[] = []
+    plugins: KyselyPlugin[] = [],
   ) {
     super(plugins)
 
@@ -37,7 +37,7 @@ export class DefaultQueryExecutor extends QueryExecutorBase {
   }
 
   provideConnection<T>(
-    consumer: (connection: DatabaseConnection) => Promise<T>
+    consumer: (connection: DatabaseConnection) => Promise<T>,
   ): Promise<T> {
     return this.#connectionProvider.provideConnection(consumer)
   }
@@ -47,7 +47,7 @@ export class DefaultQueryExecutor extends QueryExecutorBase {
       this.#compiler,
       this.#adapter,
       this.#connectionProvider,
-      [...this.plugins, ...plugins]
+      [...this.plugins, ...plugins],
     )
   }
 
@@ -56,7 +56,7 @@ export class DefaultQueryExecutor extends QueryExecutorBase {
       this.#compiler,
       this.#adapter,
       this.#connectionProvider,
-      [...this.plugins, plugin]
+      [...this.plugins, plugin],
     )
   }
 
@@ -65,18 +65,18 @@ export class DefaultQueryExecutor extends QueryExecutorBase {
       this.#compiler,
       this.#adapter,
       this.#connectionProvider,
-      [plugin, ...this.plugins]
+      [plugin, ...this.plugins],
     )
   }
 
   withConnectionProvider(
-    connectionProvider: ConnectionProvider
+    connectionProvider: ConnectionProvider,
   ): DefaultQueryExecutor {
     return new DefaultQueryExecutor(
       this.#compiler,
       this.#adapter,
       connectionProvider,
-      [...this.plugins]
+      [...this.plugins],
     )
   }
 
@@ -85,7 +85,7 @@ export class DefaultQueryExecutor extends QueryExecutorBase {
       this.#compiler,
       this.#adapter,
       this.#connectionProvider,
-      []
+      [],
     )
   }
 }

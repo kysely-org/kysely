@@ -21,7 +21,7 @@ async function testPostgresJsonSelects(db: Kysely<Database>) {
           .selectFrom('pet')
           .select(['name', 'species'])
           .whereRef('owner_id', '=', 'person.id')
-          .orderBy('pet.name')
+          .orderBy('pet.name'),
       ).as('pets'),
 
     // Nest the first found dog the person owns. Only select specific fields
@@ -34,7 +34,7 @@ async function testPostgresJsonSelects(db: Kysely<Database>) {
           .whereRef('owner_id', '=', 'person.id')
           .where('species', '=', 'dog')
           .orderBy('name')
-          .limit(1)
+          .limit(1),
       ).as('doggo'),
 
     // Nest an object that holds the person's formatted name.
@@ -152,10 +152,10 @@ async function testPostgresJsonAgg(db: Kysely<Database>) {
               jsonBuildObject({
                 id: ref('transaction.id').$notNull(),
                 status: ref('transaction.status'),
-              })
+              }),
             )
             .filterWhere('transaction.id', 'is not', null),
-          sql`'[]'`
+          sql`'[]'`,
         )
         .as('transactions'),
     ])
@@ -192,7 +192,7 @@ function withPets(eb: ExpressionBuilder<Database, 'person'>) {
       .selectFrom('pet')
       .select(['name', 'species'])
       .whereRef('owner_id', '=', 'person.id')
-      .orderBy('pet.name')
+      .orderBy('pet.name'),
   ).as('pets')
 }
 
@@ -204,6 +204,6 @@ function withDoggo(eb: ExpressionBuilder<Database, 'person'>) {
       .whereRef('owner_id', '=', 'person.id')
       .where('species', '=', 'dog')
       .orderBy('name')
-      .limit(1)
+      .limit(1),
   ).as('doggo')
 }

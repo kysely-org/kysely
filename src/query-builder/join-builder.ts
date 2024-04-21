@@ -31,7 +31,7 @@ export class JoinBuilder<DB, TB extends keyof DB>
   on<RE extends ReferenceExpression<DB, TB>>(
     lhs: RE,
     op: ComparisonOperatorExpression,
-    rhs: OperandValueExpressionOrList<DB, TB, RE>
+    rhs: OperandValueExpressionOrList<DB, TB, RE>,
   ): JoinBuilder<DB, TB>
 
   on(expression: ExpressionOrFactory<DB, TB, SqlBool>): JoinBuilder<DB, TB>
@@ -41,7 +41,7 @@ export class JoinBuilder<DB, TB extends keyof DB>
       ...this.#props,
       joinNode: JoinNode.cloneWithOn(
         this.#props.joinNode,
-        parseValueBinaryOperationOrExpression(args)
+        parseValueBinaryOperationOrExpression(args),
       ),
     })
   }
@@ -55,13 +55,13 @@ export class JoinBuilder<DB, TB extends keyof DB>
   onRef(
     lhs: ReferenceExpression<DB, TB>,
     op: ComparisonOperatorExpression,
-    rhs: ReferenceExpression<DB, TB>
+    rhs: ReferenceExpression<DB, TB>,
   ): JoinBuilder<DB, TB> {
     return new JoinBuilder({
       ...this.#props,
       joinNode: JoinNode.cloneWithOn(
         this.#props.joinNode,
-        parseReferentialBinaryOperation(lhs, op, rhs)
+        parseReferentialBinaryOperation(lhs, op, rhs),
       ),
     })
   }
@@ -74,7 +74,7 @@ export class JoinBuilder<DB, TB extends keyof DB>
       ...this.#props,
       joinNode: JoinNode.cloneWithOn(
         this.#props.joinNode,
-        RawNode.createWithSql('true')
+        RawNode.createWithSql('true'),
       ),
     })
   }
@@ -94,7 +94,7 @@ export class JoinBuilder<DB, TB extends keyof DB>
 
 preventAwait(
   JoinBuilder,
-  "don't await JoinBuilder instances. They are never executed directly and are always just a part of a query."
+  "don't await JoinBuilder instances. They are never executed directly and are always just a part of a query.",
 )
 
 export interface JoinBuilderProps {

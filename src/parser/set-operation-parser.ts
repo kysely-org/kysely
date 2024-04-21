@@ -14,13 +14,13 @@ export type SetOperandExpression<DB, O> =
   | Expression<O>
   | ReadonlyArray<Expression<O>>
   | ((
-      eb: ExpressionBuilder<DB, never>
+      eb: ExpressionBuilder<DB, never>,
     ) => Expression<O> | ReadonlyArray<Expression<O>>)
 
 export function parseSetOperations(
   operator: SetOperator,
   expression: SetOperandExpression<any, any>,
-  all: boolean
+  all: boolean,
 ) {
   if (isFunction(expression)) {
     expression = expression(createExpressionBuilder())
@@ -31,6 +31,6 @@ export function parseSetOperations(
   }
 
   return expression.map((expr) =>
-    SetOperationNode.create(operator, parseExpression(expr), all)
+    SetOperationNode.create(operator, parseExpression(expr), all),
   )
 }

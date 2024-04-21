@@ -31,7 +31,7 @@ export const DropIndexNode = freeze({
 
   cloneWith(
     dropIndex: DropIndexNode,
-    props: DropIndexNodeProps
+    props: DropIndexNodeProps,
   ): DropIndexNode {
     return freeze({
       ...dropIndex,

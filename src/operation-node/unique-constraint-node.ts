@@ -26,7 +26,7 @@ export const UniqueConstraintNode = freeze({
   create(
     columns: string[],
     constraintName?: string,
-    nullsNotDistinct?: boolean
+    nullsNotDistinct?: boolean,
   ): UniqueConstraintNode {
     return freeze({
       kind: 'UniqueConstraintNode',
@@ -38,7 +38,7 @@ export const UniqueConstraintNode = freeze({
 
   cloneWith(
     node: UniqueConstraintNode,
-    props: UniqueConstraintNodeProps
+    props: UniqueConstraintNodeProps,
   ): UniqueConstraintNode {
     return freeze({
       ...node,

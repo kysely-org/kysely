@@ -42,14 +42,14 @@ if (DIALECTS.includes('postgres')) {
               selectFrom('toy_schema.toy').whereRef(
                 'toy_schema.toy.id',
                 '=',
-                'toy.id'
-              )
-            )
+                'toy.id',
+              ),
+            ),
           )
           .select([
             'toy.price as price',
             sql`concat(${sql.ref('first_name')}, ' ', ${sql.ref(
-              'last_name'
+              'last_name',
             )})`.as('full_name'),
           ])
           .compile()
@@ -71,7 +71,7 @@ if (DIALECTS.includes('postgres')) {
       console.log(
         'query building time:',
         (t1.getTime() - t0.getTime()) / TEST_ROUNDS,
-        'ms'
+        'ms',
       )
     })
   })

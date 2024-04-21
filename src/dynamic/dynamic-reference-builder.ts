@@ -37,7 +37,7 @@ export class DynamicReferenceBuilder<R extends string = never>
 }
 
 export function isDynamicReferenceBuilder(
-  obj: unknown
+  obj: unknown,
 ): obj is DynamicReferenceBuilder<any> {
   return (
     isObject(obj) &&

@@ -8,6 +8,7 @@ import {
   expect,
   createTableWithId,
   DIALECTS,
+  NOT_SUPPORTED,
 } from './test-setup.js'
 
 for (const dialect of DIALECTS) {
@@ -42,7 +43,7 @@ for (const dialect of DIALECTS) {
         .addColumn('lastName', 'varchar(255)')
         .addColumn(
           'preferences',
-          dialect === 'mssql' ? 'varchar(8000)' : 'json'
+          dialect === 'mssql' ? 'varchar(8000)' : 'json',
         )
         .execute()
     })
@@ -80,7 +81,7 @@ for (const dialect of DIALECTS) {
     if (dialect === 'postgres' || dialect === 'mysql' || dialect === 'mssql') {
       it('should have created the table and its columns in snake_case', async () => {
         const result = await sql<any>`select * from camel_person`.execute(
-          ctx.db
+          ctx.db,
         )
 
         expect(result.rows).to.have.length(2)
@@ -97,7 +98,7 @@ for (const dialect of DIALECTS) {
         .innerJoin(
           'camelPerson as camelPerson2',
           'camelPerson2.id',
-          'camelPerson.id'
+          'camelPerson.id',
         )
         .orderBy('camelPerson.firstName')
 
@@ -156,7 +157,7 @@ for (const dialect of DIALECTS) {
           .innerJoin(
             'camelPerson as camelPerson2',
             'camelPerson2.id',
-            'camelPerson.id'
+            'camelPerson.id',
           )
           .orderBy('camelPerson.firstName')
 
@@ -212,7 +213,7 @@ for (const dialect of DIALECTS) {
       const query = camelDb.schema
         .alterTable('camelPerson')
         .addColumn('middleName', 'text', (col) =>
-          col.references('camelPerson.firstName')
+          col.references('camelPerson.firstName'),
         )
 
       testSql(query, dialect, {
@@ -277,6 +278,43 @@ for (const dialect of DIALECTS) {
         disable_emails: true,
       })
     })
+
+    if (dialect === 'postgres' || dialect === 'mssql') {
+      it('should convert merge queries', async () => {
+        const query = camelDb
+          .mergeInto('camelPerson')
+          .using(
+            'camelPerson as anotherCamelPerson',
+            'camelPerson.firstName',
+            'anotherCamelPerson.firstName',
+          )
+          .whenMatched()
+          .thenUpdateSet((eb) => ({
+            firstName: sql<string>`concat(${eb.ref('anotherCamelPerson.firstName')}, ${sql.lit('2')})`,
+          }))
+
+        testSql(query, dialect, {
+          postgres: {
+            sql: [
+              `merge into "camel_person"`,
+              `using "camel_person" as "another_camel_person" on "camel_person"."first_name" = "another_camel_person"."first_name"`,
+              `when matched then update set "first_name" = concat("another_camel_person"."first_name", '2')`,
+            ],
+            parameters: [],
+          },
+          mysql: NOT_SUPPORTED,
+          mssql: {
+            sql: [
+              `merge into "camel_person"`,
+              `using "camel_person" as "another_camel_person" on "camel_person"."first_name" = "another_camel_person"."first_name"`,
+              `when matched then update set "first_name" = concat("another_camel_person"."first_name", '2');`,
+            ],
+            parameters: [],
+          },
+          sqlite: NOT_SUPPORTED,
+        })
+      })
+    }
   })
 }
 

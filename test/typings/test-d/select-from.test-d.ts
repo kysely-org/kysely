@@ -31,7 +31,7 @@ async function testFromSingle(db: Kysely<Database>) {
   // Subquery factory
   const [r4] = await db
     .selectFrom((eb) =>
-      eb.selectFrom('movie').select('movie.stars as strs').as('m')
+      eb.selectFrom('movie').select('movie.stars as strs').as('m'),
     )
     .selectAll('m')
     .execute()
@@ -72,13 +72,13 @@ async function testFromSingle(db: Kysely<Database>) {
         .selectFrom((eb2) =>
           eb2
             .selectFrom((eb3) =>
-              eb3.selectFrom('movie').select('stars as s').as('m1')
+              eb3.selectFrom('movie').select('stars as s').as('m1'),
             )
             .select('m1.s as s2')
-            .as('m2')
+            .as('m2'),
         )
         .select('m2.s2 as s3')
-        .as('m3')
+        .as('m3'),
     )
     .selectAll('m3')
     .execute()

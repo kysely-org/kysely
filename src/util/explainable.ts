@@ -46,6 +46,6 @@ export interface Explainable {
    */
   explain<O extends Record<string, any> = Record<string, any>>(
     format?: ExplainFormat,
-    options?: Expression<any>
+    options?: Expression<any>,
   ): Promise<O[]>
 }

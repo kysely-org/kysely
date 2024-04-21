@@ -26,7 +26,7 @@ export const OnNode = freeze({
   cloneWithOperation(
     onNode: OnNode,
     operator: 'And' | 'Or',
-    operation: OperationNode
+    operation: OperationNode,
   ): OnNode {
     return freeze({
       ...onNode,

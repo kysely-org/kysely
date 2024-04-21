@@ -31,7 +31,7 @@ export const CreateTypeNode = freeze({
     return freeze({
       ...createType,
       enum: ValueListNode.create(
-        values.map((value) => ValueNode.createImmediate(value))
+        values.map((value) => ValueNode.createImmediate(value)),
       ),
     })
   },

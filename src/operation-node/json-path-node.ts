@@ -27,7 +27,7 @@ export const JSONPathNode = freeze({
 
   cloneWithLeg(
     jsonPathNode: JSONPathNode,
-    pathLeg: JSONPathLegNode
+    pathLeg: JSONPathLegNode,
   ): JSONPathNode {
     return freeze({
       ...jsonPathNode,

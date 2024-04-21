@@ -27,7 +27,7 @@ export const AlterColumnNode = freeze({
   create<T extends keyof AlterColumnNodeProps>(
     column: string,
     prop: T,
-    value: Required<AlterColumnNodeProps>[T]
+    value: Required<AlterColumnNodeProps>[T],
   ): AlterColumnNode {
     return freeze({
       kind: 'AlterColumnNode',

@@ -123,7 +123,7 @@ for (const dialect of DIALECTS) {
 
         expect(error).to.be.an.instanceOf(Error)
         expect(getMessage(error)).to.eql(
-          'corrupted migrations: expected previously executed migration migration3 to be at index 1 but migration2 was found in its place. New migrations must always have a name that comes alphabetically after the last executed migration.'
+          'corrupted migrations: expected previously executed migration migration3 to be at index 1 but migration2 was found in its place. New migrations must always have a name that comes alphabetically after the last executed migration.',
         )
 
         expect(executedUpMethods1).to.eql(['migration1', 'migration3'])
@@ -133,14 +133,14 @@ for (const dialect of DIALECTS) {
       it('should run a new migration added before the last executed one with allowUnorderedMigrations enabled', async () => {
         const [migrator1, executedUpMethods1] = createMigrations(
           ['migration1', 'migration3'],
-          { allowUnorderedMigrations: true }
+          { allowUnorderedMigrations: true },
         )
 
         const { results: results1 } = await migrator1.migrateToLatest()
 
         const [migrator2, executedUpMethods2] = createMigrations(
           ['migration1', 'migration2', 'migration3', 'migration4'],
-          { allowUnorderedMigrations: true }
+          { allowUnorderedMigrations: true },
         )
 
         const { results: results2 } = await migrator2.migrateToLatest()
@@ -178,7 +178,7 @@ for (const dialect of DIALECTS) {
 
         expect(error).to.be.an.instanceOf(Error)
         expect(getMessage(error)).to.eql(
-          'corrupted migrations: previously executed migration migration1 is missing'
+          'corrupted migrations: previously executed migration migration1 is missing',
         )
 
         expect(executedUpMethods1).to.eql([
@@ -207,7 +207,7 @@ for (const dialect of DIALECTS) {
 
         expect(error).to.be.an.instanceOf(Error)
         expect(getMessage(error)).to.eql(
-          'corrupted migrations: previously executed migration migration3 is missing'
+          'corrupted migrations: previously executed migration migration3 is missing',
         )
 
         expect(executedUpMethods1).to.eql([
@@ -222,21 +222,21 @@ for (const dialect of DIALECTS) {
         it('should return an error if a previously executed migration is missing', async () => {
           const [migrator1, executedUpMethods1] = createMigrations(
             ['migration1', 'migration2', 'migration3'],
-            { allowUnorderedMigrations: true }
+            { allowUnorderedMigrations: true },
           )
 
           await migrator1.migrateToLatest()
 
           const [migrator2, executedUpMethods2] = createMigrations(
             ['migration2', 'migration3', 'migration4'],
-            { allowUnorderedMigrations: true }
+            { allowUnorderedMigrations: true },
           )
 
           const { error } = await migrator2.migrateToLatest()
 
           expect(error).to.be.an.instanceOf(Error)
           expect(getMessage(error)).to.eql(
-            'corrupted migrations: previously executed migration migration1 is missing'
+            'corrupted migrations: previously executed migration migration1 is missing',
           )
 
           expect(executedUpMethods1).to.eql([
@@ -250,12 +250,12 @@ for (const dialect of DIALECTS) {
         it('should return an error if a the last executed migration is not found', async () => {
           const [migrator1, executedUpMethods1] = createMigrations(
             ['migration1', 'migration2', 'migration3'],
-            { allowUnorderedMigrations: true }
+            { allowUnorderedMigrations: true },
           )
 
           const [migrator2, executedUpMethods2] = createMigrations(
             ['migration1', 'migration2', 'migration4'],
-            { allowUnorderedMigrations: true }
+            { allowUnorderedMigrations: true },
           )
 
           await migrator1.migrateToLatest()
@@ -263,7 +263,7 @@ for (const dialect of DIALECTS) {
 
           expect(error).to.be.an.instanceOf(Error)
           expect(getMessage(error)).to.eql(
-            'corrupted migrations: previously executed migration migration3 is missing'
+            'corrupted migrations: previously executed migration migration3 is missing',
           )
 
           expect(executedUpMethods1).to.eql([
@@ -460,7 +460,7 @@ for (const dialect of DIALECTS) {
         it('should migrate up to a specific migration', async () => {
           const [migrator1, executedUpMethods1] = createMigrations(
             ['migration1', 'migration3', 'migration4', 'migration5'],
-            { allowUnorderedMigrations: true }
+            { allowUnorderedMigrations: true },
           )
 
           const { results: results1 } = await migrator1.migrateTo('migration3')
@@ -473,7 +473,7 @@ for (const dialect of DIALECTS) {
               'migration4',
               'migration5',
             ],
-            { allowUnorderedMigrations: true }
+            { allowUnorderedMigrations: true },
           )
 
           const { results: results2 } = await migrator2.migrateTo('migration4')
@@ -495,7 +495,7 @@ for (const dialect of DIALECTS) {
         it('should migrate all the way down', async () => {
           const [migrator1, executedUpMethods1] = createMigrations(
             ['migration1', 'migration2', 'migration4'],
-            { allowUnorderedMigrations: true }
+            { allowUnorderedMigrations: true },
           )
 
           const { results: results1 } = await migrator1.migrateToLatest()
@@ -503,7 +503,7 @@ for (const dialect of DIALECTS) {
           const [migrator2, executedUpMethods2, executedDownMethods2] =
             createMigrations(
               ['migration1', 'migration2', 'migration3', 'migration4'],
-              { allowUnorderedMigrations: true }
+              { allowUnorderedMigrations: true },
             )
 
           const { results: results2 } = await migrator2.migrateTo(NO_MIGRATIONS)
@@ -548,7 +548,7 @@ for (const dialect of DIALECTS) {
         it('should migrate down to a specific migration', async () => {
           const [migrator1, executedUpMethods1] = createMigrations(
             ['migration1', 'migration2', 'migration3', 'migration5'],
-            { allowUnorderedMigrations: true }
+            { allowUnorderedMigrations: true },
           )
 
           const { results: results1 } = await migrator1.migrateTo('migration5')
@@ -562,7 +562,7 @@ for (const dialect of DIALECTS) {
                 'migration4',
                 'migration5',
               ],
-              { allowUnorderedMigrations: true }
+              { allowUnorderedMigrations: true },
             )
 
           const { results: results2 } = await migrator2.migrateTo('migration2')
@@ -648,7 +648,7 @@ for (const dialect of DIALECTS) {
 
         expect(error).to.be.an.instanceOf(Error)
         expect(getMessage(error)).to.eql(
-          'corrupted migrations: expected previously executed migration migration3 to be at index 1 but migration2 was found in its place. New migrations must always have a name that comes alphabetically after the last executed migration.'
+          'corrupted migrations: expected previously executed migration migration3 to be at index 1 but migration2 was found in its place. New migrations must always have a name that comes alphabetically after the last executed migration.',
         )
 
         expect(executedUpMethods1).to.eql(['migration1', 'migration3'])
@@ -658,14 +658,14 @@ for (const dialect of DIALECTS) {
       it('should migrate up one step with allowUnorderedMigrations enabled', async () => {
         const [migrator1, executedUpMethods1] = createMigrations(
           ['migration1', 'migration3'],
-          { allowUnorderedMigrations: true }
+          { allowUnorderedMigrations: true },
         )
 
         const { results: results1 } = await migrator1.migrateToLatest()
 
         const [migrator2, executedUpMethods2] = createMigrations(
           ['migration1', 'migration2', 'migration3', 'migration4'],
-          { allowUnorderedMigrations: true }
+          { allowUnorderedMigrations: true },
         )
 
         const { results: results2 } = await migrator2.migrateUp()
@@ -735,7 +735,7 @@ for (const dialect of DIALECTS) {
 
         expect(error).to.be.an.instanceOf(Error)
         expect(getMessage(error)).to.eql(
-          'corrupted migrations: expected previously executed migration migration3 to be at index 1 but migration2 was found in its place. New migrations must always have a name that comes alphabetically after the last executed migration.'
+          'corrupted migrations: expected previously executed migration migration3 to be at index 1 but migration2 was found in its place. New migrations must always have a name that comes alphabetically after the last executed migration.',
         )
 
         expect(executedUpMethods1).to.eql(['migration1', 'migration3'])
@@ -759,7 +759,7 @@ for (const dialect of DIALECTS) {
               'migration4',
               'migration5',
             ],
-            { allowUnorderedMigrations: true }
+            { allowUnorderedMigrations: true },
           )
 
         const { results: results1 } = await migrator2.migrateDown()
@@ -803,7 +803,7 @@ for (const dialect of DIALECTS) {
               migrationTableName: CUSTOM_MIGRATION_TABLE,
               migrationLockTableName: CUSTOM_MIGRATION_LOCK_TABLE,
               migrationTableSchema: CUSTOM_MIGRATION_SCHEMA,
-            }
+            },
           )
 
           let promises: Promise<MigrationResultSet>[] = []
@@ -822,20 +822,20 @@ for (const dialect of DIALECTS) {
           expect(
             await doesTableExists(
               CUSTOM_MIGRATION_LOCK_TABLE,
-              CUSTOM_MIGRATION_SCHEMA
-            )
+              CUSTOM_MIGRATION_SCHEMA,
+            ),
           ).to.equal(true)
 
           expect(
             await doesTableExists(
               CUSTOM_MIGRATION_LOCK_TABLE,
-              CUSTOM_MIGRATION_SCHEMA
-            )
+              CUSTOM_MIGRATION_SCHEMA,
+            ),
           ).to.equal(true)
 
           expect(await doesTableExists(DEFAULT_MIGRATION_TABLE)).to.equal(false)
           expect(await doesTableExists(DEFAULT_MIGRATION_LOCK_TABLE)).to.equal(
-            false
+            false,
           )
         })
       })
@@ -874,7 +874,7 @@ for (const dialect of DIALECTS) {
 
     function createMigrations(
       migrationConfigs: (string | { name: string; error?: string })[],
-      migratorConfig?: Partial<MigratorProps>
+      migratorConfig?: Partial<MigratorProps>,
     ): [Migrator, string[], string[]] {
       const executedUpMethods: string[] = []
       const executedDownMethods: string[] = []
@@ -909,7 +909,7 @@ for (const dialect of DIALECTS) {
             },
           }
         },
-        {}
+        {},
       )
 
       return [
@@ -927,11 +927,11 @@ for (const dialect of DIALECTS) {
 
     async function doesTableExists(
       tableName: string,
-      schema?: string
+      schema?: string,
     ): Promise<boolean> {
       const tables = await ctx.db.introspection.getTables()
       return !!tables.find(
-        (it) => it.name === tableName && (!schema || it.schema === schema)
+        (it) => it.name === tableName && (!schema || it.schema === schema),
       )
     }
 
