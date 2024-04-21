@@ -32,82 +32,6 @@ async function testKyselyAndTransactionTypes(db: Kysely<Database>) {
   db = trx
 }
 
-async function testWith(db: Kysely<Database>) {
-  const r1 = await db
-    .with('jennifers', (db) =>
-      db.selectFrom('person').where('first_name', '=', 'Jennifer').selectAll()
-    )
-    .with('female_jennifers', (db) =>
-      db
-        .selectFrom('jennifers')
-        .select('first_name')
-        .where('gender', '=', 'female')
-        .selectAll('jennifers')
-        .select(['first_name as fn', 'last_name as ln'])
-    )
-    .selectFrom('female_jennifers')
-    .select(['fn', 'ln'])
-    .execute()
-
-  expectType<
-    {
-      fn: string
-      ln: string | null
-    }[]
-  >(r1)
-
-  const r2 = await db
-    .with('jennifers(first_name, ln, gender)', (db) =>
-      db
-        .selectFrom('person')
-        .where('first_name', '=', 'Jennifer')
-        .select(['first_name', 'last_name as ln', 'gender'])
-    )
-    .selectFrom('jennifers')
-    .select(['first_name', 'ln'])
-    .execute()
-
-  expectType<
-    {
-      first_name: string
-      ln: string | null
-    }[]
-  >(r2)
-
-  const r3 = await db
-    .withRecursive('jennifers(first_name, ln)', (db) =>
-      db
-        .selectFrom('person')
-        .where('first_name', '=', 'Jennifer')
-        .select(['first_name', 'last_name as ln'])
-        // Recursive CTE can refer to itself.
-        .union(db.selectFrom('jennifers').select(['first_name', 'ln']))
-    )
-    .selectFrom('jennifers')
-    .select(['first_name', 'ln'])
-    .execute()
-
-  expectType<
-    {
-      first_name: string
-      ln: string | null
-    }[]
-  >(r3)
-
-  // Different columns in expression and CTE name.
-  expectError(
-    db
-      .with('jennifers(first_name, last_name, gender)', (db) =>
-        db
-          .selectFrom('person')
-          .where('first_name', '=', 'Jennifer')
-          .select(['first_name', 'last_name'])
-      )
-      .selectFrom('jennifers')
-      .select(['first_name', 'last_name'])
-  )
-}
-
 async function testExecuteTakeFirstOrThrow(db: Kysely<Database>) {
   const r1 = await db
     .selectFrom('person')
@@ -127,16 +51,6 @@ async function testCall(db: Kysely<Database>) {
     .execute()
 
   expectType<{ species: 'dog' | 'cat'; name: string }>(r1)
-}
-
-async function testUntypedKysely(db: Kysely<any>) {
-  // Kysely instance with `any` DB type still extracts column names.
-  const r1 = await db
-    .selectFrom('foo')
-    .select(['spam', 'bar as baz'])
-    .executeTakeFirstOrThrow()
-
-  expectType<{ spam: any; baz: any }>(r1)
 }
 
 async function testReplace(db: Kysely<Database>) {
@@ -168,7 +82,7 @@ async function testReplace(db: Kysely<Database>) {
 
   const r4 = await db
     .with('foo', (db) =>
-      db.selectFrom('person').select('id').where('person.id', '=', 1)
+      db.selectFrom('person').select('id').where('person.id', '=', 1),
     )
     .replaceInto('movie')
     .values({
@@ -189,12 +103,12 @@ async function testReplace(db: Kysely<Database>) {
   expectError(
     db
       .replaceInto('person')
-      .values({ first_name: 10, age: 10, gender: 'other' })
+      .values({ first_name: 10, age: 10, gender: 'other' }),
   )
 
   // Missing required columns
   expectError(
-    db.replaceInto('person').values({ age: 5, first_name: 'Jennifer' })
+    db.replaceInto('person').values({ age: 5, first_name: 'Jennifer' }),
   )
 
   // Explicitly excluded column

@@ -9,7 +9,7 @@ export interface DatabaseConnection {
   executeQuery<R>(compiledQuery: CompiledQuery): Promise<QueryResult<R>>
   streamQuery<R>(
     compiledQuery: CompiledQuery,
-    chunkSize?: number
+    chunkSize?: number,
   ): AsyncIterableIterator<QueryResult<R>>
 }
 
@@ -21,7 +21,7 @@ export interface QueryResult<O> {
   readonly numUpdatedOrDeletedRows?: bigint
 
   /**
-   * This is defined for insert, update and delete queries and contains
+   * This is defined for insert, update, delete and merge queries and contains
    * the number of rows the query inserted/updated/deleted.
    */
   readonly numAffectedRows?: bigint

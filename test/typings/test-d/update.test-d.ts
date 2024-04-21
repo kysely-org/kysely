@@ -36,7 +36,7 @@ async function testUpdate(db: Kysely<Database>) {
     db
       .updateTable('pet as p')
       .where('p.id', '=', '1')
-      .set({ not_a_column: 'Fluffy' })
+      .set({ name: 'Fluffy', not_a_column: 'not_a_column' }),
   )
 
   // Non-existent column in a callback
@@ -44,7 +44,7 @@ async function testUpdate(db: Kysely<Database>) {
     db
       .updateTable('pet as p')
       .where('p.id', '=', '1')
-      .set((eb) => ({ not_a_column: 'Fluffy' }))
+      .set((eb) => ({ not_a_column: eb.val('not_a_column') })),
   )
 
   // GeneratedAlways column is not allowed to be updated

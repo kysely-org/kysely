@@ -34,14 +34,14 @@ export class DropTypeBuilder implements OperationNodeSource, Compilable {
   toOperationNode(): DropTypeNode {
     return this.#props.executor.transformQuery(
       this.#props.node,
-      this.#props.queryId
+      this.#props.queryId,
     )
   }
 
   compile(): CompiledQuery {
     return this.#props.executor.compileQuery(
       this.toOperationNode(),
-      this.#props.queryId
+      this.#props.queryId,
     )
   }
 
@@ -52,7 +52,7 @@ export class DropTypeBuilder implements OperationNodeSource, Compilable {
 
 preventAwait(
   DropTypeBuilder,
-  "don't await DropTypeBuilder instances directly. To execute the query you need to call `execute`"
+  "don't await DropTypeBuilder instances directly. To execute the query you need to call `execute`",
 )
 
 export interface DropTypeBuilderProps {

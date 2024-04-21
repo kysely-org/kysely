@@ -11,7 +11,7 @@ async function testCase(eb: ExpressionBuilder<Database, 'person'>) {
       .then('Mr.')
       .when('gender', '=', 'female')
       .then(12)
-      .end()
+      .end(),
   )
 
   // case...when...then...when...then...end (as const)
@@ -22,7 +22,7 @@ async function testCase(eb: ExpressionBuilder<Database, 'person'>) {
       .then('Mr.' as const)
       .when('gender', '=', 'female')
       .then(12 as const)
-      .end()
+      .end(),
   )
 
   // case...when...then...when...then...else...end
@@ -34,7 +34,7 @@ async function testCase(eb: ExpressionBuilder<Database, 'person'>) {
       .when('gender', '=', 'female')
       .then(12)
       .else(true)
-      .end()
+      .end(),
   )
 
   // case...when...then...when...then...else...end (as const)
@@ -46,7 +46,7 @@ async function testCase(eb: ExpressionBuilder<Database, 'person'>) {
       .when('gender', '=', 'female')
       .then(12 as const)
       .else(true as const)
-      .end()
+      .end(),
   )
 
   // nested case
@@ -64,9 +64,9 @@ async function testCase(eb: ExpressionBuilder<Database, 'person'>) {
           .when('marital_status', '=', 'single')
           .then('Ms.' as const)
           .else('Mrs.' as const)
-          .end()
+          .end(),
       )
-      .end()
+      .end(),
   )
 
   // references
@@ -76,7 +76,7 @@ async function testCase(eb: ExpressionBuilder<Database, 'person'>) {
       .when('gender', '=', 'male')
       .then(eb.ref('first_name'))
       .else(eb.ref('age'))
-      .end()
+      .end(),
   )
 
   // expressions
@@ -89,9 +89,9 @@ async function testCase(eb: ExpressionBuilder<Database, 'person'>) {
           eb.val('Mr.'),
           sql.lit(' '),
           eb.ref('last_name'),
-        ])
+        ]),
       )
-      .end()
+      .end(),
   )
 
   // subquery
@@ -100,7 +100,7 @@ async function testCase(eb: ExpressionBuilder<Database, 'person'>) {
       .case()
       .when('gender', '=', 'male')
       .then(eb.selectFrom('person').select('first_name'))
-      .end()
+      .end(),
   )
 
   // errors
@@ -114,7 +114,7 @@ async function testCase(eb: ExpressionBuilder<Database, 'person'>) {
 function testCaseValue(eb: ExpressionBuilder<Database, 'person'>) {
   // case...value...when...then...when...then...end
   expectType<ExpressionWrapper<Database, 'person', string | number | null>>(
-    eb.case('gender').when('male').then('Mr.').when('female').then(12).end()
+    eb.case('gender').when('male').then('Mr.').when('female').then(12).end(),
   )
 
   // case...value...when...then...when...then...else...end
@@ -126,7 +126,7 @@ function testCaseValue(eb: ExpressionBuilder<Database, 'person'>) {
       .when('female')
       .then(12)
       .else(true)
-      .end()
+      .end(),
   )
 
   // nested case
@@ -144,9 +144,9 @@ function testCaseValue(eb: ExpressionBuilder<Database, 'person'>) {
           .when('single')
           .then('Ms.' as const)
           .else('Mrs.' as const)
-          .end()
+          .end(),
       )
-      .end()
+      .end(),
   )
 
   // errors

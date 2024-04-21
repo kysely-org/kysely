@@ -89,7 +89,13 @@ import { JSONPathNode } from './json-path-node.js'
 import { JSONPathLegNode } from './json-path-leg-node.js'
 import { JSONOperatorChainNode } from './json-operator-chain-node.js'
 import { TupleNode } from './tuple-node.js'
+import { MergeQueryNode } from './merge-query-node.js'
+import { MatchedNode } from './matched-node.js'
 import { AddIndexNode } from './add-index-node.js'
+import { CastNode } from './cast-node.js'
+import { FetchNode } from './fetch-node.js'
+import { TopNode } from './top-node.js'
+import { OutputNode } from './output-node.js'
 
 export abstract class OperationNodeVisitor {
   protected readonly nodeStack: OperationNode[] = []
@@ -186,7 +192,13 @@ export abstract class OperationNodeVisitor {
     JSONPathLegNode: this.visitJSONPathLeg.bind(this),
     JSONOperatorChainNode: this.visitJSONOperatorChain.bind(this),
     TupleNode: this.visitTuple.bind(this),
+    MergeQueryNode: this.visitMergeQuery.bind(this),
+    MatchedNode: this.visitMatched.bind(this),
     AddIndexNode: this.visitAddIndex.bind(this),
+    CastNode: this.visitCast.bind(this),
+    FetchNode: this.visitFetch.bind(this),
+    TopNode: this.visitTop.bind(this),
+    OutputNode: this.visitOutput.bind(this),
   })
 
   protected readonly visitNode = (node: OperationNode): void => {
@@ -230,17 +242,17 @@ export abstract class OperationNodeVisitor {
   protected abstract visitDropIndex(node: DropIndexNode): void
   protected abstract visitList(node: ListNode): void
   protected abstract visitPrimaryKeyConstraint(
-    node: PrimaryKeyConstraintNode
+    node: PrimaryKeyConstraintNode,
   ): void
   protected abstract visitUniqueConstraint(node: UniqueConstraintNode): void
   protected abstract visitReferences(node: ReferencesNode): void
   protected abstract visitCheckConstraint(node: CheckConstraintNode): void
   protected abstract visitWith(node: WithNode): void
   protected abstract visitCommonTableExpression(
-    node: CommonTableExpressionNode
+    node: CommonTableExpressionNode,
   ): void
   protected abstract visitCommonTableExpressionName(
-    node: CommonTableExpressionNameNode
+    node: CommonTableExpressionNameNode,
   ): void
   protected abstract visitHaving(node: HavingNode): void
   protected abstract visitCreateSchema(node: CreateSchemaNode): void
@@ -253,13 +265,13 @@ export abstract class OperationNodeVisitor {
   protected abstract visitAddConstraint(node: AddConstraintNode): void
   protected abstract visitDropConstraint(node: DropConstraintNode): void
   protected abstract visitForeignKeyConstraint(
-    node: ForeignKeyConstraintNode
+    node: ForeignKeyConstraintNode,
   ): void
   protected abstract visitDataType(node: DataTypeNode): void
   protected abstract visitSelectAll(node: SelectAllNode): void
   protected abstract visitIdentifier(node: IdentifierNode): void
   protected abstract visitSchemableIdentifier(
-    node: SchemableIdentifierNode
+    node: SchemableIdentifierNode,
   ): void
   protected abstract visitValue(node: ValueNode): void
   protected abstract visitPrimitiveValueList(node: PrimitiveValueListNode): void
@@ -291,5 +303,11 @@ export abstract class OperationNodeVisitor {
   protected abstract visitJSONPathLeg(node: JSONPathLegNode): void
   protected abstract visitJSONOperatorChain(node: JSONOperatorChainNode): void
   protected abstract visitTuple(node: TupleNode): void
+  protected abstract visitMergeQuery(node: MergeQueryNode): void
+  protected abstract visitMatched(node: MatchedNode): void
   protected abstract visitAddIndex(node: AddIndexNode): void
+  protected abstract visitCast(node: CastNode): void
+  protected abstract visitFetch(node: FetchNode): void
+  protected abstract visitTop(node: TopNode): void
+  protected abstract visitOutput(node: OutputNode): void
 }
