@@ -232,6 +232,7 @@ for (const dialect of DIALECTS) {
             .addColumn('t', 'char(4)')
             .addColumn('u', 'char')
             .addColumn('v', 'binary(16)')
+            .addColumn('w', 'varbinary(16)')
 
           testSql(builder, dialect, {
             mysql: {
@@ -258,7 +259,8 @@ for (const dialect of DIALECTS) {
                 '`s` timestamp(6) default current_timestamp(6) not null,',
                 '`t` char(4),',
                 '`u` char,',
-                '`v` binary(16))',
+                '`v` binary(16),',
+                '`w` varbinary(16))',
               ],
               parameters: [],
             },
@@ -337,6 +339,8 @@ for (const dialect of DIALECTS) {
             .addColumn('w', 'char')
             .addColumn('x', 'binary')
             .addColumn('y', sql``, (col) => col.modifyEnd(sql`as (a + f)`))
+            .addColumn('z', 'varbinary')
+            .addColumn('aa', 'varbinary(16)')
 
           testSql(builder, dialect, {
             mssql: {
@@ -366,7 +370,9 @@ for (const dialect of DIALECTS) {
                 '"v" char(4),',
                 '"w" char,',
                 '"x" binary,',
-                '"y"  as (a + f))',
+                '"y"  as (a + f),',
+                '"z" varbinary,',
+                '"aa" varbinary(16))',
               ],
               parameters: [],
             },
