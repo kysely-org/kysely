@@ -260,7 +260,7 @@ for (const dialect of DIALECTS) {
                 '`t` char(4),',
                 '`u` char,',
                 '`v` binary(16),',
-                '`w` varbinary(16)',
+                '`w` varbinary(16))',
               ],
               parameters: [],
             },
@@ -339,6 +339,8 @@ for (const dialect of DIALECTS) {
             .addColumn('w', 'char')
             .addColumn('x', 'binary')
             .addColumn('y', sql``, (col) => col.modifyEnd(sql`as (a + f)`))
+            .addColumn('z', 'varbinary')
+            .addColumn('aa', 'varbinary(16)')
 
           testSql(builder, dialect, {
             mssql: {
@@ -368,7 +370,9 @@ for (const dialect of DIALECTS) {
                 '"v" char(4),',
                 '"w" char,',
                 '"x" binary,',
-                '"y"  as (a + f))',
+                '"y"  as (a + f),',
+                '"z" varbinary,',
+                '"aa" varbinary(16))',
               ],
               parameters: [],
             },
