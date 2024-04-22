@@ -445,6 +445,15 @@ async function testManyNestedSubqueries(db: Kysely<Database>) {
   }>(r)
 }
 
+async function testColumnType(db: Kysely<Database>) {
+  const [r1] = await db
+  .selectFrom('big_numbers')
+  .select(['one_number', 'numbers_array'])
+  .execute()
+
+  expectType<{ one_number: string, numbers_array: string[] }>(r1)
+}
+
 export function jsonArrayFrom<O>(
   expr: Expression<O>,
 ): RawBuilder<Simplify<O>[]> {

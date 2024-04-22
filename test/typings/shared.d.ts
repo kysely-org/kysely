@@ -37,6 +37,7 @@ export interface Database {
   toy: Toy
   person_metadata: PersonMetadata
   action: Action
+  big_numbers: BigNumbers
 }
 
 export type Action =
@@ -88,4 +89,12 @@ export interface PersonMetadata {
   schedule: JSONColumnType<{ name: string; time: string }[][][]>
   record: JSONColumnType<Record<string, string>>
   array: JSONColumnType<Array<string>>
+}
+
+type Int8 = ColumnType<string, string | number | bigint, string | number | bigint>
+
+export interface BigNumbers {
+  id: Generated<number>
+  one_number: Int8
+  numbers_array: Int8[]
 }

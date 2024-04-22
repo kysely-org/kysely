@@ -59,3 +59,17 @@ async function testUpdate(db: Kysely<Database>) {
 
   db.updateTable('person').set(mutationObject)
 }
+
+async function testColumnType(db: Kysely<Database>) {
+  const record = {
+    one_number: BigInt(123),
+    numbers_array: [123, '456', BigInt(789)]
+  }
+
+  const [r1] = await db
+    .updateTable('big_numbers')
+    .set(record)
+    .execute()
+
+  expectType<UpdateResult>(r1)
+}

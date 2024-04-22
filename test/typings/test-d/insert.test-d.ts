@@ -268,3 +268,17 @@ async function testOutput(db: Kysely<Database>) {
   expectError(db.insertInto('person').output('deleted.age').values(person))
   expectError(db.insertInto('person').outputAll('deleted').values(person))
 }
+
+async function testColumnType(db: Kysely<Database>) {
+  const record = {
+    one_number: BigInt(123),
+    numbers_array: [123, '456', BigInt(789)]
+  }
+
+  const [r1] = await db
+    .insertInto('big_numbers')
+    .values(record)
+    .execute()
+
+  expectType<InsertResult>(r1)
+}
