@@ -22,7 +22,7 @@ import { DrainOuterGeneric } from './type-utils.js'
  * The above example makes the column optional in inserts
  * and updates, but you can still choose to provide the
  * column. If you want to prevent insertion/update you
- * can se the type as `never`:
+ * can set the type as `never`:
  *
  * ```ts
  * ColumnType<number, never, never>
@@ -88,19 +88,19 @@ type IfNullable<T, K> = undefined extends T ? K : null extends T ? K : never
 type IfNotNullable<T, K> = undefined extends T
   ? never
   : null extends T
-    ? never
-    : T extends never
-      ? never
-      : K
+  ? never
+  : T extends never
+  ? never
+  : K
 
 /**
  * Evaluates to `K` if `T` isn't `never`.
  */
 type IfNotNever<T, K> = T extends never ? never : K
 
-export type SelectType<T> = T extends ColumnType<infer S, any, any> ? S : T
-export type InsertType<T> = T extends ColumnType<any, infer I, any> ? I : T
-export type UpdateType<T> = T extends ColumnType<any, any, infer U> ? U : T
+export type SelectType<T> = T extends ColumnType<infer S, any, any> ? S : T extends ColumnType<infer S, any, any>[] ? S[] : T
+export type InsertType<T> = T extends ColumnType<any, infer I, any> ? I : T extends ColumnType<any, infer I, any>[] ? I[] : T
+export type UpdateType<T> = T extends ColumnType<any, any, infer U> ? U : T extends ColumnType<any, any, infer U>[] ? U[] : T
 
 /**
  * Keys of `R` whose `InsertType` values can be `null` or `undefined`.
