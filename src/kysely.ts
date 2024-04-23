@@ -36,6 +36,10 @@ import { Expression } from './expression/expression.js'
 import { WithSchemaPlugin } from './plugin/with-schema/with-schema-plugin.js'
 import { DrainOuterGeneric } from './util/type-utils.js'
 import { QueryCompiler } from './query-compiler/query-compiler.js'
+import {
+  ReleaseSavepoint,
+  RollbackToSavepoint,
+} from './parser/savepoint-parser.js'
 
 /**
  * The main Kysely class.
@@ -637,9 +641,14 @@ preventAwait(
   "don't await ControlledTransactionBuilder instances directly. To execute the transaction you need to call the `execute` method",
 )
 
-export class ControlledTransaction<DB> extends Transaction<DB> {
+export class ControlledTransaction<
+  DB,
+  S extends string[] = [],
+> extends Transaction<DB> {
   readonly #props: ControlledTransactionProps
   readonly #compileQuery: QueryCompiler['compileQuery']
+  #isCommitted: boolean
+  #isRolledBack: boolean
 
   constructor(props: ControlledTransactionProps) {
     const {
@@ -652,50 +661,96 @@ export class ControlledTransaction<DB> extends Transaction<DB> {
 
     const queryId = createQueryId()
     this.#compileQuery = (node) => props.executor.compileQuery(node, queryId)
+
+    this.#isCommitted = false
+    this.#isRolledBack = false
   }
 
   commit(): Command<void> {
+    this.#assertNotCommittedOrRolledBack()
+
     return new Command(async () => {
       await this.#props.driver.commitTransaction(this.#props.connection)
+      this.#isCommitted = true
       await this.#releaseConnectionIfNecessary()
     })
   }
 
   rollback(): Command<void> {
+    this.#assertNotCommittedOrRolledBack()
+
     return new Command(async () => {
       await this.#props.driver.rollbackTransaction(this.#props.connection)
+      this.#isRolledBack = true
       await this.#releaseConnectionIfNecessary()
     })
   }
 
-  savepoint(savepointName: string): Command<void> {
+  savepoint<SN extends string>(
+    savepointName: SN extends S ? never : SN,
+  ): Command<ControlledTransaction<DB, [...S, SN]>> {
+    this.#assertNotCommittedOrRolledBack()
+
     return new Command(async () => {
       await this.#props.driver.savepoint?.(
         this.#props.connection,
         savepointName,
         this.#compileQuery,
       )
+
+      return new ControlledTransaction({
+        ...this.#props,
+        connection: this.#props.connection,
+      })
     })
   }
 
-  rollbackToSavepoint(savepointName: string): Command<void> {
+  rollbackToSavepoint<SN extends S[number]>(
+    savepointName: SN,
+  ): Command<ControlledTransaction<DB, RollbackToSavepoint<S, SN>>> {
+    this.#assertNotCommittedOrRolledBack()
+
     return new Command(async () => {
       await this.#props.driver.rollbackToSavepoint?.(
         this.#props.connection,
         savepointName,
         this.#compileQuery,
       )
+
+      return new ControlledTransaction({
+        ...this.#props,
+        connection: this.#props.connection,
+      })
     })
   }
 
-  releaseSavepoint(savepointName: string): Command<void> {
+  releaseSavepoint<SN extends S[number]>(
+    savepointName: SN,
+  ): Command<ControlledTransaction<DB, ReleaseSavepoint<S, SN>>> {
+    this.#assertNotCommittedOrRolledBack()
+
     return new Command(async () => {
       await this.#props.driver.releaseSavepoint?.(
         this.#props.connection,
         savepointName,
         this.#compileQuery,
       )
+
+      return new ControlledTransaction({
+        ...this.#props,
+        connection: this.#props.connection,
+      })
     })
+  }
+
+  #assertNotCommittedOrRolledBack(): void {
+    if (this.#isCommitted) {
+      throw new Error('Transaction is already committed')
+    }
+
+    if (this.#isRolledBack) {
+      throw new Error('Transaction is already rolled back')
+    }
   }
 
   async #releaseConnectionIfNecessary(): Promise<void> {
