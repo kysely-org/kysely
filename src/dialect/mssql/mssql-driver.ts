@@ -30,6 +30,8 @@ import { CompiledQuery } from '../../query-compiler/compiled-query.js'
 import { extendStackTrace } from '../../util/stack-trace-utils.js'
 import { randomString } from '../../util/random-string.js'
 import { Deferred } from '../../util/deferred.js'
+import { parseSavepointCommand } from '../../parser/savepoint-parser.js'
+import { QueryCompiler } from '../../query-compiler/query-compiler.js'
 
 const PRIVATE_RELEASE_METHOD = Symbol()
 const PRIVATE_DESTROY_METHOD = Symbol()
@@ -84,6 +86,34 @@ export class MssqlDriver implements Driver {
 
   async rollbackTransaction(connection: MssqlConnection): Promise<void> {
     await connection.rollbackTransaction()
+  }
+
+  async savepoint(
+    connection: DatabaseConnection,
+    savepointName: string,
+    compileQuery: QueryCompiler['compileQuery'],
+  ): Promise<void> {
+    await connection.executeQuery(
+      compileQuery(parseSavepointCommand('save transaction', savepointName)),
+    )
+  }
+
+  async rollbackToSavepoint(
+    connection: DatabaseConnection,
+    savepointName: string,
+    compileQuery: QueryCompiler['compileQuery'],
+  ): Promise<void> {
+    await connection.executeQuery(
+      compileQuery(
+        parseSavepointCommand('rollback transaction', savepointName),
+      ),
+    )
+  }
+
+  async releaseSavepoint(): Promise<void> {
+    throw new Error(
+      'MS SQL Server (mssql) does not support releasing savepoints',
+    )
   }
 
   async releaseConnection(connection: MssqlConnection): Promise<void> {

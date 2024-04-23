@@ -35,6 +35,7 @@ import { parseExpression } from './parser/expression-parser.js'
 import { Expression } from './expression/expression.js'
 import { WithSchemaPlugin } from './plugin/with-schema/with-schema-plugin.js'
 import { DrainOuterGeneric } from './util/type-utils.js'
+import { QueryCompiler } from './query-compiler/query-compiler.js'
 
 /**
  * The main Kysely class.
@@ -595,9 +596,9 @@ function validateTransactionSettings(settings: TransactionSettings): void {
 }
 
 export class ControlledTransactionBuilder<DB> {
-  readonly #props: TransactionBuilderProps
+  readonly #props: ControlledTransactionBuilderProps
 
-  constructor(props: TransactionBuilderProps) {
+  constructor(props: ControlledTransactionBuilderProps) {
     this.#props = freeze(props)
   }
 
@@ -611,7 +612,7 @@ export class ControlledTransactionBuilder<DB> {
   }
 
   async execute(): Promise<ControlledTransaction<DB>> {
-    const { isolationLevel, ...kyselyProps } = this.#props
+    const { isolationLevel, ...props } = this.#props
     const settings = { isolationLevel }
 
     validateTransactionSettings(settings)
@@ -621,10 +622,14 @@ export class ControlledTransactionBuilder<DB> {
     await this.#props.driver.beginTransaction(connection, settings)
 
     return new ControlledTransaction({
-      ...kyselyProps,
+      ...props,
       connection,
     })
   }
+}
+
+interface ControlledTransactionBuilderProps extends TransactionBuilderProps {
+  readonly releaseConnection?: boolean
 }
 
 preventAwait(
@@ -634,28 +639,75 @@ preventAwait(
 
 export class ControlledTransaction<DB> extends Transaction<DB> {
   readonly #props: ControlledTransactionProps
+  readonly #compileQuery: QueryCompiler['compileQuery']
 
   constructor(props: ControlledTransactionProps) {
-    const { connection, ...transactionProps } = props
+    const {
+      connection,
+      releaseConnectedWhenDone: releaseConnection,
+      ...transactionProps
+    } = props
     super(transactionProps)
     this.#props = props
+
+    const queryId = createQueryId()
+    this.#compileQuery = (node) => props.executor.compileQuery(node, queryId)
   }
 
   commit(): Command<void> {
-    return new Command(() =>
-      this.#props.driver.commitTransaction(this.#props.connection),
-    )
+    return new Command(async () => {
+      await this.#props.driver.commitTransaction(this.#props.connection)
+      await this.#releaseConnectionIfNecessary()
+    })
   }
 
   rollback(): Command<void> {
-    return new Command(() =>
-      this.#props.driver.rollbackTransaction(this.#props.connection),
-    )
+    return new Command(async () => {
+      await this.#props.driver.rollbackTransaction(this.#props.connection)
+      await this.#releaseConnectionIfNecessary()
+    })
+  }
+
+  savepoint(savepointName: string): Command<void> {
+    return new Command(async () => {
+      await this.#props.driver.savepoint?.(
+        this.#props.connection,
+        savepointName,
+        this.#compileQuery,
+      )
+    })
+  }
+
+  rollbackToSavepoint(savepointName: string): Command<void> {
+    return new Command(async () => {
+      await this.#props.driver.rollbackToSavepoint?.(
+        this.#props.connection,
+        savepointName,
+        this.#compileQuery,
+      )
+    })
+  }
+
+  releaseSavepoint(savepointName: string): Command<void> {
+    return new Command(async () => {
+      await this.#props.driver.releaseSavepoint?.(
+        this.#props.connection,
+        savepointName,
+        this.#compileQuery,
+      )
+    })
+  }
+
+  async #releaseConnectionIfNecessary(): Promise<void> {
+    if (this.#props.releaseConnectedWhenDone !== false) {
+      await this.#props.driver.releaseConnection(this.#props.connection)
+    }
   }
 }
 
 interface ControlledTransactionProps extends KyselyProps {
   readonly connection: DatabaseConnection
+  readonly releaseConnectedWhenDone?: boolean
 }
 
 preventAwait(
@@ -670,6 +722,9 @@ export class Command<T> {
     this.#cb = cb
   }
 
+  /**
+   * Executes the command.
+   */
   async execute(): Promise<T> {
     return await this.#cb()
   }
