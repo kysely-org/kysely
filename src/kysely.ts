@@ -22,7 +22,10 @@ import {
 } from './query-builder/function-module.js'
 import { Log, LogConfig } from './util/log.js'
 import { QueryExecutorProvider } from './query-executor/query-executor-provider.js'
-import { QueryResult } from './driver/database-connection.js'
+import {
+  DatabaseConnection,
+  QueryResult,
+} from './driver/database-connection.js'
 import { CompiledQuery } from './query-compiler/compiled-query.js'
 import { createQueryId, QueryId } from './util/query-id.js'
 import { Compilable, isCompilable } from './util/compilable.js'
@@ -251,6 +254,13 @@ export class Kysely<DB>
    */
   transaction(): TransactionBuilder<DB> {
     return new TransactionBuilder({ ...this.#props })
+  }
+
+  /**
+   * TODO: ...
+   */
+  startTransaction(): ControlledTransactionBuilder<DB> {
+    return new ControlledTransactionBuilder({ ...this.#props })
   }
 
   /**
@@ -583,3 +593,89 @@ function validateTransactionSettings(settings: TransactionSettings): void {
     )
   }
 }
+
+export class ControlledTransactionBuilder<DB> {
+  readonly #props: TransactionBuilderProps
+
+  constructor(props: TransactionBuilderProps) {
+    this.#props = freeze(props)
+  }
+
+  setIsolationLevel(
+    isolationLevel: IsolationLevel,
+  ): ControlledTransactionBuilder<DB> {
+    return new ControlledTransactionBuilder({
+      ...this.#props,
+      isolationLevel,
+    })
+  }
+
+  async execute(): Promise<ControlledTransaction<DB>> {
+    const { isolationLevel, ...kyselyProps } = this.#props
+    const settings = { isolationLevel }
+
+    validateTransactionSettings(settings)
+
+    const connection = await this.#props.driver.acquireConnection()
+
+    await this.#props.driver.beginTransaction(connection, settings)
+
+    return new ControlledTransaction({
+      ...kyselyProps,
+      connection,
+    })
+  }
+}
+
+preventAwait(
+  ControlledTransactionBuilder,
+  "don't await ControlledTransactionBuilder instances directly. To execute the transaction you need to call the `execute` method",
+)
+
+export class ControlledTransaction<DB> extends Transaction<DB> {
+  readonly #props: ControlledTransactionProps
+
+  constructor(props: ControlledTransactionProps) {
+    const { connection, ...transactionProps } = props
+    super(transactionProps)
+    this.#props = props
+  }
+
+  commit(): Command<void> {
+    return new Command(() =>
+      this.#props.driver.commitTransaction(this.#props.connection),
+    )
+  }
+
+  rollback(): Command<void> {
+    return new Command(() =>
+      this.#props.driver.rollbackTransaction(this.#props.connection),
+    )
+  }
+}
+
+interface ControlledTransactionProps extends KyselyProps {
+  readonly connection: DatabaseConnection
+}
+
+preventAwait(
+  ControlledTransaction,
+  "don't await ControlledTransaction instances directly. To commit or rollback the transaction you need to call the `commit` or `rollback` method",
+)
+
+export class Command<T> {
+  readonly #cb: () => Promise<T>
+
+  constructor(cb: () => Promise<T>) {
+    this.#cb = cb
+  }
+
+  async execute(): Promise<T> {
+    return await this.#cb()
+  }
+}
+
+preventAwait(
+  Command,
+  "don't await Command instances directly. Call the `execute` method",
+)
