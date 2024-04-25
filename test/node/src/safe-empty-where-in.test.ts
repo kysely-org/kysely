@@ -60,133 +60,365 @@ for (const dialect of DIALECTS) {
         .execute()
     })
 
-    describe('SELECT FROM WHERE IN TESTS', () => {
-      it('should handle empty array select from statements without throwing runtime errors', async () => {
-        const query = db
-          .selectFrom('safeEmptyArrayPerson')
-          .where('firstName', 'in', [])
-          .select('safeEmptyArrayPerson.firstName')
+    it('should handle empty array select from statements without throwing runtime errors', async () => {
+      const query = db
+        .selectFrom('safeEmptyArrayPerson')
+        .where('firstName', 'in', [])
+        .where('firstName', 'not in', [])
+        .select('safeEmptyArrayPerson.firstName')
 
-        testSql(query, dialect, {
-          postgres: {
-            sql: [
-              `select "safeEmptyArrayPerson"."firstName"`,
-              `from "safeEmptyArrayPerson"`,
-              `where "firstName" in ($1)`,
-            ],
-            parameters: [null],
-          },
-          mysql: {
-            sql: [
-              'select `safeEmptyArrayPerson`.`firstName`',
-              'from `safeEmptyArrayPerson`',
-              'where `firstName` in (?)',
-            ],
-            parameters: [null],
-          },
-          mssql: {
-            sql: [
-              `select "safeEmptyArrayPerson"."firstName"`,
-              `from "safeEmptyArrayPerson"`,
-              `where "firstName" in (@1)`,
-            ],
-            parameters: [null],
-          },
-          sqlite: {
-            sql: [
-              `select "safeEmptyArrayPerson"."firstName"`,
-              `from "safeEmptyArrayPerson"`,
-              `where "firstName" in (?)`,
-            ],
-            parameters: [null],
-          },
-        })
-
-        let result = await query.execute()
-
-        expect(result).to.deep.equal([])
-
-        const notInQuery = db
-          .selectFrom('safeEmptyArrayPerson')
-          .where('firstName', 'not in', [])
-          .select('safeEmptyArrayPerson.firstName')
-
-        testSql(notInQuery, dialect, {
-          postgres: {
-            sql: [
-              `select "safeEmptyArrayPerson"."firstName"`,
-              `from "safeEmptyArrayPerson"`,
-              `where "firstName" not in ($1)`,
-            ],
-            parameters: [null],
-          },
-          mysql: {
-            sql: [
-              'select `safeEmptyArrayPerson`.`firstName`',
-              'from `safeEmptyArrayPerson`',
-              'where `firstName` not in (?)',
-            ],
-            parameters: [null],
-          },
-          mssql: {
-            sql: [
-              `select "safeEmptyArrayPerson"."firstName"`,
-              `from "safeEmptyArrayPerson"`,
-              `where "firstName" not in (@1)`,
-            ],
-            parameters: [null],
-          },
-          sqlite: {
-            sql: [
-              `select "safeEmptyArrayPerson"."firstName"`,
-              `from "safeEmptyArrayPerson"`,
-              `where "firstName" not in (?)`,
-            ],
-            parameters: [null],
-          },
-        })
-
-        result = await notInQuery.execute()
-
-        expect(result).to.deep.equal([])
+      testSql(query, dialect, {
+        postgres: {
+          sql: [
+            `select "safeEmptyArrayPerson"."firstName"`,
+            `from "safeEmptyArrayPerson"`,
+            `where "firstName" in ($1)`,
+            `and "firstName" not in ($2)`,
+          ],
+          parameters: [null, null],
+        },
+        mysql: {
+          sql: [
+            'select `safeEmptyArrayPerson`.`firstName`',
+            'from `safeEmptyArrayPerson`',
+            'where `firstName` in (?)',
+            'and `firstName` not in (?)',
+          ],
+          parameters: [null, null],
+        },
+        mssql: {
+          sql: [
+            `select "safeEmptyArrayPerson"."firstName"`,
+            `from "safeEmptyArrayPerson"`,
+            `where "firstName" in (@1)`,
+            `and "firstName" not in (@2)`,
+          ],
+          parameters: [null, null],
+        },
+        sqlite: {
+          sql: [
+            `select "safeEmptyArrayPerson"."firstName"`,
+            `from "safeEmptyArrayPerson"`,
+            `where "firstName" in (?)`,
+            `and "firstName" not in (?)`,
+          ],
+          parameters: [null, null],
+        },
       })
 
-      it('non-empty array select from should return expected results', async () => {
+      const result = await query.execute()
+
+      expect(result).to.deep.equal([])
+    })
+
+    it('non-empty array select from should return expected results', async () => {
+      const query = db
+        .selectFrom('safeEmptyArrayPerson')
+        .where('firstName', 'in', ['John', 'Mary'])
+        .select('safeEmptyArrayPerson.firstName')
+
+      testSql(query, dialect, {
+        postgres: {
+          sql: [
+            `select "safeEmptyArrayPerson"."firstName"`,
+            `from "safeEmptyArrayPerson"`,
+            `where "firstName" in ($1, $2)`,
+          ],
+          parameters: ['John', 'Mary'],
+        },
+        mysql: {
+          sql: [
+            'select `safeEmptyArrayPerson`.`firstName`',
+            'from `safeEmptyArrayPerson`',
+            'where `firstName` in (?, ?)',
+          ],
+          parameters: ['John', 'Mary'],
+        },
+        mssql: {
+          sql: [
+            `select "safeEmptyArrayPerson"."firstName"`,
+            `from "safeEmptyArrayPerson"`,
+            `where "firstName" in (@1, @2)`,
+          ],
+          parameters: ['John', 'Mary'],
+        },
+        sqlite: {
+          sql: [
+            `select "safeEmptyArrayPerson"."firstName"`,
+            `from "safeEmptyArrayPerson"`,
+            `where "firstName" in (?, ?)`,
+          ],
+          parameters: ['John', 'Mary'],
+        },
+      })
+
+      let result = await query.execute()
+
+      expect(result).to.have.length(2)
+      expect(result).to.deep.equal([
+        { firstName: 'John' },
+        { firstName: 'Mary' },
+      ])
+
+      const notInQuery = db
+        .selectFrom('safeEmptyArrayPerson')
+        .where('firstName', 'not in', ['John', 'Mary'])
+        .select('safeEmptyArrayPerson.firstName')
+
+      testSql(notInQuery, dialect, {
+        postgres: {
+          sql: [
+            `select "safeEmptyArrayPerson"."firstName"`,
+            `from "safeEmptyArrayPerson"`,
+            `where "firstName" not in ($1, $2)`,
+          ],
+          parameters: ['John', 'Mary'],
+        },
+        mysql: {
+          sql: [
+            'select `safeEmptyArrayPerson`.`firstName`',
+            'from `safeEmptyArrayPerson`',
+            'where `firstName` not in (?, ?)',
+          ],
+          parameters: ['John', 'Mary'],
+        },
+        mssql: {
+          sql: [
+            `select "safeEmptyArrayPerson"."firstName"`,
+            `from "safeEmptyArrayPerson"`,
+            `where "firstName" not in (@1, @2)`,
+          ],
+          parameters: ['John', 'Mary'],
+        },
+        sqlite: {
+          sql: [
+            `select "safeEmptyArrayPerson"."firstName"`,
+            `from "safeEmptyArrayPerson"`,
+            `where "firstName" not in (?, ?)`,
+          ],
+          parameters: ['John', 'Mary'],
+        },
+      })
+
+      result = await notInQuery.execute()
+
+      expect(result).to.have.length(1)
+      expect(result).to.deep.equal([{ firstName: 'Tom' }])
+    })
+
+    it('should handle deleteFrom without returning with no runtime errors', async () => {
+      const query = db
+        .deleteFrom('safeEmptyArrayPerson')
+        .where('firstName', 'in', [])
+        .where('firstName', 'not in', [])
+
+      testSql(query, dialect, {
+        postgres: {
+          sql: [
+            `delete from "safeEmptyArrayPerson"`,
+            `where "firstName" in ($1)`,
+            `and "firstName" not in ($2)`,
+          ],
+          parameters: [null, null],
+        },
+        mysql: {
+          sql: [
+            'delete from `safeEmptyArrayPerson`',
+            'where `firstName` in (?)',
+            'and `firstName` not in (?)',
+          ],
+          parameters: [null, null],
+        },
+        mssql: {
+          sql: [
+            `delete from "safeEmptyArrayPerson"`,
+            `where "firstName" in (@1)`,
+            `and "firstName" not in (@2)`,
+          ],
+          parameters: [null, null],
+        },
+        sqlite: {
+          sql: [
+            `delete from "safeEmptyArrayPerson"`,
+            `where "firstName" in (?)`,
+            `and "firstName" not in (?)`,
+          ],
+          parameters: [null, null],
+        },
+      })
+
+      const result = await query.execute()
+
+      expect(result).to.deep.equal([new DeleteResult(BigInt(0))])
+    })
+
+    it('should handle deleteFrom with returning in supported dialects', async () => {
+      if (dialect === 'postgres' || dialect === 'sqlite') {
         const query = db
-          .selectFrom('safeEmptyArrayPerson')
-          .where('firstName', 'in', ['John', 'Mary'])
-          .select('safeEmptyArrayPerson.firstName')
+          .deleteFrom('safeEmptyArrayPerson')
+          .where('firstName', 'in', [])
+          .returning(['firstName', 'id'])
 
         testSql(query, dialect, {
           postgres: {
             sql: [
-              `select "safeEmptyArrayPerson"."firstName"`,
-              `from "safeEmptyArrayPerson"`,
-              `where "firstName" in ($1, $2)`,
+              `delete from "safeEmptyArrayPerson"`,
+              `where "firstName" in ($1)`,
+              `returning "firstName", "id"`,
             ],
-            parameters: ['John', 'Mary'],
+            parameters: [null],
           },
-          mysql: {
-            sql: [
-              'select `safeEmptyArrayPerson`.`firstName`',
-              'from `safeEmptyArrayPerson`',
-              'where `firstName` in (?, ?)',
-            ],
-            parameters: ['John', 'Mary'],
-          },
-          mssql: {
-            sql: [
-              `select "safeEmptyArrayPerson"."firstName"`,
-              `from "safeEmptyArrayPerson"`,
-              `where "firstName" in (@1, @2)`,
-            ],
-            parameters: ['John', 'Mary'],
-          },
+          mysql: NOT_SUPPORTED,
+          mssql: NOT_SUPPORTED,
           sqlite: {
             sql: [
-              `select "safeEmptyArrayPerson"."firstName"`,
-              `from "safeEmptyArrayPerson"`,
+              `delete from "safeEmptyArrayPerson"`,
+              `where "firstName" in (?)`,
+              `returning "firstName", "id"`,
+            ],
+            parameters: [null],
+          },
+        })
+
+        const resultWithReturning = await query.execute()
+
+        expect(resultWithReturning).to.deep.equal([])
+
+        const notInWithReturningQuery = db
+          .deleteFrom('safeEmptyArrayPerson')
+          .where('firstName', 'not in', [])
+          .returning(['firstName', 'id'])
+
+        testSql(notInWithReturningQuery, dialect, {
+          postgres: {
+            sql: [
+              `delete from "safeEmptyArrayPerson"`,
+              `where "firstName" not in ($1)`,
+              `returning "firstName", "id"`,
+            ],
+            parameters: [null],
+          },
+          mysql: NOT_SUPPORTED,
+          mssql: NOT_SUPPORTED,
+          sqlite: {
+            sql: [
+              `delete from "safeEmptyArrayPerson"`,
+              `where "firstName" not in (?)`,
+              `returning "firstName", "id"`,
+            ],
+            parameters: [null],
+          },
+        })
+
+        const notInResult = await notInWithReturningQuery.execute()
+
+        expect(notInResult).to.deep.equal([])
+      }
+    })
+
+    it('non-empty array should handle deleteFrom without returning', async () => {
+      const query = db
+        .deleteFrom('safeEmptyArrayPerson')
+        .where('firstName', 'in', ['John', 'Mary'])
+
+      testSql(query, dialect, {
+        postgres: {
+          sql: [
+            `delete from "safeEmptyArrayPerson"`,
+            `where "firstName" in ($1, $2)`,
+          ],
+          parameters: ['John', 'Mary'],
+        },
+        mysql: {
+          sql: [
+            'delete from `safeEmptyArrayPerson`',
+            'where `firstName` in (?, ?)',
+          ],
+          parameters: ['John', 'Mary'],
+        },
+        mssql: {
+          sql: [
+            `delete from "safeEmptyArrayPerson"`,
+            `where "firstName" in (@1, @2)`,
+          ],
+          parameters: ['John', 'Mary'],
+        },
+        sqlite: {
+          sql: [
+            `delete from "safeEmptyArrayPerson"`,
+            `where "firstName" in (?, ?)`,
+          ],
+          parameters: ['John', 'Mary'],
+        },
+      })
+
+      let result = await query.execute()
+
+      expect(result).to.deep.equal([new DeleteResult(BigInt(2))])
+
+      const notInQuery = db
+        .deleteFrom('safeEmptyArrayPerson')
+        .where('firstName', 'not in', ['John', 'Mary'])
+
+      testSql(notInQuery, dialect, {
+        postgres: {
+          sql: [
+            `delete from "safeEmptyArrayPerson"`,
+            `where "firstName" not in ($1, $2)`,
+          ],
+          parameters: ['John', 'Mary'],
+        },
+        mysql: {
+          sql: [
+            'delete from `safeEmptyArrayPerson`',
+            'where `firstName` not in (?, ?)',
+          ],
+          parameters: ['John', 'Mary'],
+        },
+        mssql: {
+          sql: [
+            `delete from "safeEmptyArrayPerson"`,
+            `where "firstName" not in (@1, @2)`,
+          ],
+          parameters: ['John', 'Mary'],
+        },
+        sqlite: {
+          sql: [
+            `delete from "safeEmptyArrayPerson"`,
+            `where "firstName" not in (?, ?)`,
+          ],
+          parameters: ['John', 'Mary'],
+        },
+      })
+
+      result = await notInQuery.execute()
+
+      expect(result).to.deep.equal([new DeleteResult(BigInt(1))])
+    })
+
+    it('non-empty array should handle deleteFrom with returning in supported dialects', async () => {
+      if (dialect === 'postgres' || dialect === 'sqlite') {
+        const query = db
+          .deleteFrom('safeEmptyArrayPerson')
+          .where('firstName', 'in', ['John', 'Mary'])
+          .returning(['firstName', 'id'])
+
+        testSql(query, dialect, {
+          postgres: {
+            sql: [
+              `delete from "safeEmptyArrayPerson"`,
+              `where "firstName" in ($1, $2)`,
+              `returning "firstName", "id"`,
+            ],
+            parameters: ['John', 'Mary'],
+          },
+          mysql: NOT_SUPPORTED,
+          mssql: NOT_SUPPORTED,
+          sqlite: {
+            sql: [
+              `delete from "safeEmptyArrayPerson"`,
               `where "firstName" in (?, ?)`,
+              `returning "firstName", "id"`,
             ],
             parameters: ['John', 'Mary'],
           },
@@ -194,274 +426,35 @@ for (const dialect of DIALECTS) {
 
         let result = await query.execute()
 
-        expect(result).to.have.length(2)
         expect(result).to.deep.equal([
-          { firstName: 'John' },
-          { firstName: 'Mary' },
+          {
+            id: 1,
+            firstName: 'John',
+          },
+          { id: 2, firstName: 'Mary' },
         ])
 
         const notInQuery = db
-          .selectFrom('safeEmptyArrayPerson')
-          .where('firstName', 'not in', ['John', 'Mary'])
-          .select('safeEmptyArrayPerson.firstName')
-
-        testSql(notInQuery, dialect, {
-          postgres: {
-            sql: [
-              `select "safeEmptyArrayPerson"."firstName"`,
-              `from "safeEmptyArrayPerson"`,
-              `where "firstName" not in ($1, $2)`,
-            ],
-            parameters: ['John', 'Mary'],
-          },
-          mysql: {
-            sql: [
-              'select `safeEmptyArrayPerson`.`firstName`',
-              'from `safeEmptyArrayPerson`',
-              'where `firstName` not in (?, ?)',
-            ],
-            parameters: ['John', 'Mary'],
-          },
-          mssql: {
-            sql: [
-              `select "safeEmptyArrayPerson"."firstName"`,
-              `from "safeEmptyArrayPerson"`,
-              `where "firstName" not in (@1, @2)`,
-            ],
-            parameters: ['John', 'Mary'],
-          },
-          sqlite: {
-            sql: [
-              `select "safeEmptyArrayPerson"."firstName"`,
-              `from "safeEmptyArrayPerson"`,
-              `where "firstName" not in (?, ?)`,
-            ],
-            parameters: ['John', 'Mary'],
-          },
-        })
-
-        result = await notInQuery.execute()
-
-        expect(result).to.have.length(1)
-        expect(result).to.deep.equal([{ firstName: 'Tom' }])
-      })
-    })
-
-    describe('DELETE FROM WHERE IN TESTS', () => {
-      it('should handle deleteFrom without returning with no runtime errors', async () => {
-        const query = db
-          .deleteFrom('safeEmptyArrayPerson')
-          .where('firstName', 'in', [])
-
-        testSql(query, dialect, {
-          postgres: {
-            sql: [
-              `delete from "safeEmptyArrayPerson"`,
-              `where "firstName" in ($1)`,
-            ],
-            parameters: [null],
-          },
-          mysql: {
-            sql: [
-              'delete from `safeEmptyArrayPerson`',
-              'where `firstName` in (?)',
-            ],
-            parameters: [null],
-          },
-          mssql: {
-            sql: [
-              `delete from "safeEmptyArrayPerson"`,
-              `where "firstName" in (@1)`,
-            ],
-            parameters: [null],
-          },
-          sqlite: {
-            sql: [
-              `delete from "safeEmptyArrayPerson"`,
-              `where "firstName" in (?)`,
-            ],
-            parameters: [null],
-          },
-        })
-
-        let result = await query.execute()
-
-        expect(result).to.deep.equal([new DeleteResult(BigInt(0))])
-
-        const notInQuery = db
-          .deleteFrom('safeEmptyArrayPerson')
-          .where('firstName', 'not in', [])
-
-        testSql(notInQuery, dialect, {
-          postgres: {
-            sql: [
-              `delete from "safeEmptyArrayPerson"`,
-              `where "firstName" not in ($1)`,
-            ],
-            parameters: [null],
-          },
-          mysql: {
-            sql: [
-              'delete from `safeEmptyArrayPerson`',
-              'where `firstName` not in (?)',
-            ],
-            parameters: [null],
-          },
-          mssql: {
-            sql: [
-              `delete from "safeEmptyArrayPerson"`,
-              `where "firstName" not in (@1)`,
-            ],
-            parameters: [null],
-          },
-          sqlite: {
-            sql: [
-              `delete from "safeEmptyArrayPerson"`,
-              `where "firstName" not in (?)`,
-            ],
-            parameters: [null],
-          },
-        })
-
-        result = await notInQuery.execute()
-
-        expect(result).to.deep.equal([new DeleteResult(BigInt(0))])
-      })
-
-      it('should handle deleteFrom with returning in supported dialects', async () => {
-        if (dialect === 'postgres' || dialect === 'sqlite') {
-          const query = db
-            .deleteFrom('safeEmptyArrayPerson')
-            .where('firstName', 'in', [])
-            .returning(['firstName', 'id'])
-
-          testSql(query, dialect, {
-            postgres: {
-              sql: [
-                `delete from "safeEmptyArrayPerson"`,
-                `where "firstName" in ($1)`,
-                `returning "firstName", "id"`,
-              ],
-              parameters: [null],
-            },
-            mysql: NOT_SUPPORTED,
-            mssql: NOT_SUPPORTED,
-            sqlite: {
-              sql: [
-                `delete from "safeEmptyArrayPerson"`,
-                `where "firstName" in (?)`,
-                `returning "firstName", "id"`,
-              ],
-              parameters: [null],
-            },
-          })
-
-          const resultWithReturning = await query.execute()
-
-          expect(resultWithReturning).to.deep.equal([])
-
-          const notInWithReturningQuery = db
-            .deleteFrom('safeEmptyArrayPerson')
-            .where('firstName', 'not in', [])
-            .returning(['firstName', 'id'])
-
-          testSql(notInWithReturningQuery, dialect, {
-            postgres: {
-              sql: [
-                `delete from "safeEmptyArrayPerson"`,
-                `where "firstName" not in ($1)`,
-                `returning "firstName", "id"`,
-              ],
-              parameters: [null],
-            },
-            mysql: NOT_SUPPORTED,
-            mssql: NOT_SUPPORTED,
-            sqlite: {
-              sql: [
-                `delete from "safeEmptyArrayPerson"`,
-                `where "firstName" not in (?)`,
-                `returning "firstName", "id"`,
-              ],
-              parameters: [null],
-            },
-          })
-
-          const notInResult = await notInWithReturningQuery.execute()
-
-          expect(notInResult).to.deep.equal([])
-        }
-      })
-
-      it('non-empty array should handle deleteFrom without returning', async () => {
-        const query = db
-          .deleteFrom('safeEmptyArrayPerson')
-          .where('firstName', 'in', ['John', 'Mary'])
-
-        testSql(query, dialect, {
-          postgres: {
-            sql: [
-              `delete from "safeEmptyArrayPerson"`,
-              `where "firstName" in ($1, $2)`,
-            ],
-            parameters: ['John', 'Mary'],
-          },
-          mysql: {
-            sql: [
-              'delete from `safeEmptyArrayPerson`',
-              'where `firstName` in (?, ?)',
-            ],
-            parameters: ['John', 'Mary'],
-          },
-          mssql: {
-            sql: [
-              `delete from "safeEmptyArrayPerson"`,
-              `where "firstName" in (@1, @2)`,
-            ],
-            parameters: ['John', 'Mary'],
-          },
-          sqlite: {
-            sql: [
-              `delete from "safeEmptyArrayPerson"`,
-              `where "firstName" in (?, ?)`,
-            ],
-            parameters: ['John', 'Mary'],
-          },
-        })
-
-        let result = await query.execute()
-
-        expect(result).to.deep.equal([new DeleteResult(BigInt(2))])
-
-        const notInQuery = db
           .deleteFrom('safeEmptyArrayPerson')
           .where('firstName', 'not in', ['John', 'Mary'])
+          .returning(['firstName', 'id'])
 
         testSql(notInQuery, dialect, {
           postgres: {
             sql: [
               `delete from "safeEmptyArrayPerson"`,
               `where "firstName" not in ($1, $2)`,
+              `returning "firstName", "id"`,
             ],
             parameters: ['John', 'Mary'],
           },
-          mysql: {
-            sql: [
-              'delete from `safeEmptyArrayPerson`',
-              'where `firstName` not in (?, ?)',
-            ],
-            parameters: ['John', 'Mary'],
-          },
-          mssql: {
-            sql: [
-              `delete from "safeEmptyArrayPerson"`,
-              `where "firstName" not in (@1, @2)`,
-            ],
-            parameters: ['John', 'Mary'],
-          },
+          mysql: NOT_SUPPORTED,
+          mssql: NOT_SUPPORTED,
           sqlite: {
             sql: [
               `delete from "safeEmptyArrayPerson"`,
               `where "firstName" not in (?, ?)`,
+              `returning "firstName", "id"`,
             ],
             parameters: ['John', 'Mary'],
           },
@@ -469,86 +462,74 @@ for (const dialect of DIALECTS) {
 
         result = await notInQuery.execute()
 
-        expect(result).to.deep.equal([new DeleteResult(BigInt(1))])
-      })
-
-      it('non-empty array should handle deleteFrom with returning in supported dialects', async () => {
-        if (dialect === 'postgres' || dialect === 'sqlite') {
-          const query = db
-            .deleteFrom('safeEmptyArrayPerson')
-            .where('firstName', 'in', ['John', 'Mary'])
-            .returning(['firstName', 'id'])
-
-          testSql(query, dialect, {
-            postgres: {
-              sql: [
-                `delete from "safeEmptyArrayPerson"`,
-                `where "firstName" in ($1, $2)`,
-                `returning "firstName", "id"`,
-              ],
-              parameters: ['John', 'Mary'],
-            },
-            mysql: NOT_SUPPORTED,
-            mssql: NOT_SUPPORTED,
-            sqlite: {
-              sql: [
-                `delete from "safeEmptyArrayPerson"`,
-                `where "firstName" in (?, ?)`,
-                `returning "firstName", "id"`,
-              ],
-              parameters: ['John', 'Mary'],
-            },
-          })
-
-          let result = await query.execute()
-
-          expect(result).to.deep.equal([
-            {
-              id: 1,
-              firstName: 'John',
-            },
-            { id: 2, firstName: 'Mary' },
-          ])
-
-          const notInQuery = db
-            .deleteFrom('safeEmptyArrayPerson')
-            .where('firstName', 'not in', ['John', 'Mary'])
-            .returning(['firstName', 'id'])
-
-          testSql(notInQuery, dialect, {
-            postgres: {
-              sql: [
-                `delete from "safeEmptyArrayPerson"`,
-                `where "firstName" not in ($1, $2)`,
-                `returning "firstName", "id"`,
-              ],
-              parameters: ['John', 'Mary'],
-            },
-            mysql: NOT_SUPPORTED,
-            mssql: NOT_SUPPORTED,
-            sqlite: {
-              sql: [
-                `delete from "safeEmptyArrayPerson"`,
-                `where "firstName" not in (?, ?)`,
-                `returning "firstName", "id"`,
-              ],
-              parameters: ['John', 'Mary'],
-            },
-          })
-
-          result = await notInQuery.execute()
-
-          expect(result).to.deep.equal([{ firstName: 'Tom', id: 3 }])
-        }
-      })
+        expect(result).to.deep.equal([{ firstName: 'Tom', id: 3 }])
+      }
     })
 
-    describe('UPDATE WHERE IN TESTS', () => {
-      it('should handle updateTable without returning with no runtime errors', async () => {
+    it('should handle updateTable without returning with no runtime errors', async () => {
+      const empty: string[] = []
+
+      const query = db
+        .updateTable('safeEmptyArrayPerson')
+        .where('firstName', 'in', empty)
+        .where('firstName', 'not in', empty)
+        .set('firstName', 'John')
+
+      const result = await query.execute()
+
+      testSql(query, dialect, {
+        postgres: {
+          sql: [
+            `update "safeEmptyArrayPerson"`,
+            `set "firstName" = $1`,
+            `where "firstName" in ($2)`,
+            `and "firstName" not in ($3)`,
+          ],
+          parameters: ['John', null, null],
+        },
+        mysql: {
+          sql: [
+            'update `safeEmptyArrayPerson`',
+            'set `firstName` = ?',
+            'where `firstName` in (?)',
+            'and `firstName` not in (?)',
+          ],
+          parameters: ['John', null, null],
+        },
+        mssql: {
+          sql: [
+            `update "safeEmptyArrayPerson"`,
+            'set "firstName" = @1',
+            `where "firstName" in (@2)`,
+            `and "firstName" not in (@3)`,
+          ],
+          parameters: ['John', null, null],
+        },
+        sqlite: {
+          sql: [
+            `update "safeEmptyArrayPerson"`,
+            `set "firstName" = ?`,
+            `where "firstName" in (?)`,
+            `and "firstName" not in (?)`,
+          ],
+          parameters: ['John', null, null],
+        },
+      })
+
+      if (dialect === 'mysql') {
+        expect(result).to.deep.equal([new UpdateResult(BigInt(0), BigInt(0))])
+      } else {
+        expect(result).to.deep.equal([new UpdateResult(BigInt(0), undefined)])
+      }
+    })
+
+    it('should handle updateTable with returning in supported dialects', async () => {
+      if (dialect === 'postgres' || dialect === 'sqlite') {
         const query = db
           .updateTable('safeEmptyArrayPerson')
           .where('firstName', 'in', [])
           .set('firstName', 'John')
+          .returning(['firstName', 'id'])
 
         testSql(query, dialect, {
           postgres: {
@@ -556,22 +537,7 @@ for (const dialect of DIALECTS) {
               `update "safeEmptyArrayPerson"`,
               `set "firstName" = $1`,
               `where "firstName" in ($2)`,
-            ],
-            parameters: ['John', null],
-          },
-          mysql: {
-            sql: [
-              'update `safeEmptyArrayPerson`',
-              'set `firstName` = ?',
-              'where `firstName` in (?)',
-            ],
-            parameters: ['John', null],
-          },
-          mssql: {
-            sql: [
-              `update "safeEmptyArrayPerson"`,
-              'set "firstName" = @1',
-              `where "firstName" in (@2)`,
+              `returning "firstName", "id"`,
             ],
             parameters: ['John', null],
           },
@@ -580,46 +546,31 @@ for (const dialect of DIALECTS) {
               `update "safeEmptyArrayPerson"`,
               `set "firstName" = ?`,
               `where "firstName" in (?)`,
+              `returning "firstName", "id"`,
             ],
             parameters: ['John', null],
           },
+          mysql: NOT_SUPPORTED,
+          mssql: NOT_SUPPORTED,
         })
 
-        let result = await query.execute()
+        const resultWithReturning = await query.execute()
 
-        if (dialect === 'mysql') {
-          expect(result).to.deep.equal([new UpdateResult(BigInt(0), BigInt(0))])
-        } else {
-          expect(result).to.deep.equal([new UpdateResult(BigInt(0), undefined)])
-        }
+        expect(resultWithReturning).to.deep.equal([])
 
-        const notInQuery = db
+        const notInWithReturningQuery = db
           .updateTable('safeEmptyArrayPerson')
           .where('firstName', 'not in', [])
           .set('firstName', 'John')
+          .returning(['firstName', 'id'])
 
-        testSql(notInQuery, dialect, {
+        testSql(notInWithReturningQuery, dialect, {
           postgres: {
             sql: [
               `update "safeEmptyArrayPerson"`,
               `set "firstName" = $1`,
               `where "firstName" not in ($2)`,
-            ],
-            parameters: ['John', null],
-          },
-          mysql: {
-            sql: [
-              'update `safeEmptyArrayPerson`',
-              'set `firstName` = ?',
-              'where `firstName` not in (?)',
-            ],
-            parameters: ['John', null],
-          },
-          mssql: {
-            sql: [
-              `update "safeEmptyArrayPerson"`,
-              'set "firstName" = @1',
-              `where "firstName" not in (@2)`,
+              `returning "firstName", "id"`,
             ],
             parameters: ['John', null],
           },
@@ -628,95 +579,144 @@ for (const dialect of DIALECTS) {
               `update "safeEmptyArrayPerson"`,
               `set "firstName" = ?`,
               `where "firstName" not in (?)`,
+              `returning "firstName", "id"`,
             ],
             parameters: ['John', null],
           },
+          mysql: NOT_SUPPORTED,
+          mssql: NOT_SUPPORTED,
         })
 
-        result = await query.execute()
+        const notInResult = await notInWithReturningQuery.execute()
 
-        if (dialect === 'mysql') {
-          expect(result).to.deep.equal([new UpdateResult(BigInt(0), BigInt(0))])
-        } else {
-          expect(result).to.deep.equal([new UpdateResult(BigInt(0), undefined)])
-        }
+        expect(notInResult).to.deep.equal([])
+      }
+    })
+
+    it('non-empty array should handle updateTable without returning', async () => {
+      const query = db
+        .updateTable('safeEmptyArrayPerson')
+        .where('firstName', 'in', ['John', 'Mary'])
+        .set('firstName', 'Thomas')
+
+      testSql(query, dialect, {
+        postgres: {
+          sql: [
+            `update "safeEmptyArrayPerson"`,
+            `set "firstName" = $1`,
+            `where "firstName" in ($2, $3)`,
+          ],
+          parameters: ['Thomas', 'John', 'Mary'],
+        },
+        mysql: {
+          sql: [
+            'update `safeEmptyArrayPerson`',
+            'set `firstName` = ?',
+            'where `firstName` in (?, ?)',
+          ],
+          parameters: ['Thomas', 'John', 'Mary'],
+        },
+        mssql: {
+          sql: [
+            `update "safeEmptyArrayPerson"`,
+            'set "firstName" = @1',
+            `where "firstName" in (@2, @3)`,
+          ],
+          parameters: ['Thomas', 'John', 'Mary'],
+        },
+        sqlite: {
+          sql: [
+            `update "safeEmptyArrayPerson"`,
+            `set "firstName" = ?`,
+            `where "firstName" in (?, ?)`,
+          ],
+          parameters: ['Thomas', 'John', 'Mary'],
+        },
       })
 
-      it('should handle updateTable with returning in supported dialects', async () => {
-        if (dialect === 'postgres' || dialect === 'sqlite') {
-          const query = db
-            .updateTable('safeEmptyArrayPerson')
-            .where('firstName', 'in', [])
-            .set('firstName', 'John')
-            .returning(['firstName', 'id'])
+      let result = await query.execute()
 
-          testSql(query, dialect, {
-            postgres: {
-              sql: [
-                `update "safeEmptyArrayPerson"`,
-                `set "firstName" = $1`,
-                `where "firstName" in ($2)`,
-                `returning "firstName", "id"`,
-              ],
-              parameters: ['John', null],
-            },
-            sqlite: {
-              sql: [
-                `update "safeEmptyArrayPerson"`,
-                `set "firstName" = ?`,
-                `where "firstName" in (?)`,
-                `returning "firstName", "id"`,
-              ],
-              parameters: ['John', null],
-            },
-            mysql: NOT_SUPPORTED,
-            mssql: NOT_SUPPORTED,
-          })
+      if (dialect === 'mysql') {
+        expect(result).to.deep.equal([new UpdateResult(BigInt(2), BigInt(2))])
+      } else {
+        expect(result).to.deep.equal([new UpdateResult(BigInt(2), undefined)])
+      }
 
-          const resultWithReturning = await query.execute()
+      const notInQuery = db
+        .updateTable('safeEmptyArrayPerson')
+        .where('firstName', 'not in', [
+          'UNIQUE_NAME_THAT_DOES_NOT_EXIST',
+          'UNIQUE_NAME_2_THAT_DOES_NOT_EXIST',
+        ])
+        .set('firstName', 'UNIQUE_3')
 
-          expect(resultWithReturning).to.deep.equal([])
-
-          const notInWithReturningQuery = db
-            .updateTable('safeEmptyArrayPerson')
-            .where('firstName', 'not in', [])
-            .set('firstName', 'John')
-            .returning(['firstName', 'id'])
-
-          testSql(notInWithReturningQuery, dialect, {
-            postgres: {
-              sql: [
-                `update "safeEmptyArrayPerson"`,
-                `set "firstName" = $1`,
-                `where "firstName" not in ($2)`,
-                `returning "firstName", "id"`,
-              ],
-              parameters: ['John', null],
-            },
-            sqlite: {
-              sql: [
-                `update "safeEmptyArrayPerson"`,
-                `set "firstName" = ?`,
-                `where "firstName" not in (?)`,
-                `returning "firstName", "id"`,
-              ],
-              parameters: ['John', null],
-            },
-            mysql: NOT_SUPPORTED,
-            mssql: NOT_SUPPORTED,
-          })
-
-          const notInResult = await notInWithReturningQuery.execute()
-
-          expect(notInResult).to.deep.equal([])
-        }
+      testSql(notInQuery, dialect, {
+        postgres: {
+          sql: [
+            `update "safeEmptyArrayPerson"`,
+            `set "firstName" = $1`,
+            `where "firstName" not in ($2, $3)`,
+          ],
+          parameters: [
+            'UNIQUE_3',
+            'UNIQUE_NAME_THAT_DOES_NOT_EXIST',
+            'UNIQUE_NAME_2_THAT_DOES_NOT_EXIST',
+          ],
+        },
+        mysql: {
+          sql: [
+            'update `safeEmptyArrayPerson`',
+            'set `firstName` = ?',
+            'where `firstName` not in (?, ?)',
+          ],
+          parameters: [
+            'UNIQUE_3',
+            'UNIQUE_NAME_THAT_DOES_NOT_EXIST',
+            'UNIQUE_NAME_2_THAT_DOES_NOT_EXIST',
+          ],
+        },
+        mssql: {
+          sql: [
+            `update "safeEmptyArrayPerson"`,
+            'set "firstName" = @1',
+            `where "firstName" not in (@2, @3)`,
+          ],
+          parameters: [
+            'UNIQUE_3',
+            'UNIQUE_NAME_THAT_DOES_NOT_EXIST',
+            'UNIQUE_NAME_2_THAT_DOES_NOT_EXIST',
+          ],
+        },
+        sqlite: {
+          sql: [
+            `update "safeEmptyArrayPerson"`,
+            `set "firstName" = ?`,
+            `where "firstName" not in (?, ?)`,
+          ],
+          parameters: [
+            'UNIQUE_3',
+            'UNIQUE_NAME_THAT_DOES_NOT_EXIST',
+            'UNIQUE_NAME_2_THAT_DOES_NOT_EXIST',
+          ],
+        },
       })
 
-      it('non-empty array should handle updateTable without returning', async () => {
+      result = await notInQuery.execute()
+
+      if (dialect === 'mysql') {
+        expect(result).to.deep.equal([new UpdateResult(BigInt(3), BigInt(3))])
+      } else {
+        expect(result).to.deep.equal([new UpdateResult(BigInt(3), undefined)])
+      }
+    })
+
+    it('non-empty array should handle updateTable with returning in supported dialects', async () => {
+      if (dialect === 'postgres' || dialect === 'sqlite') {
         const query = db
           .updateTable('safeEmptyArrayPerson')
           .where('firstName', 'in', ['John', 'Mary'])
           .set('firstName', 'Thomas')
+          .returning(['firstName', 'id'])
 
         testSql(query, dialect, {
           postgres: {
@@ -724,22 +724,7 @@ for (const dialect of DIALECTS) {
               `update "safeEmptyArrayPerson"`,
               `set "firstName" = $1`,
               `where "firstName" in ($2, $3)`,
-            ],
-            parameters: ['Thomas', 'John', 'Mary'],
-          },
-          mysql: {
-            sql: [
-              'update `safeEmptyArrayPerson`',
-              'set `firstName` = ?',
-              'where `firstName` in (?, ?)',
-            ],
-            parameters: ['Thomas', 'John', 'Mary'],
-          },
-          mssql: {
-            sql: [
-              `update "safeEmptyArrayPerson"`,
-              'set "firstName" = @1',
-              `where "firstName" in (@2, @3)`,
+              `returning "firstName", "id"`,
             ],
             parameters: ['Thomas', 'John', 'Mary'],
           },
@@ -748,163 +733,58 @@ for (const dialect of DIALECTS) {
               `update "safeEmptyArrayPerson"`,
               `set "firstName" = ?`,
               `where "firstName" in (?, ?)`,
+              `returning "firstName", "id"`,
             ],
             parameters: ['Thomas', 'John', 'Mary'],
           },
+          mysql: NOT_SUPPORTED,
+          mssql: NOT_SUPPORTED,
         })
 
         let result = await query.execute()
 
-        if (dialect === 'mysql') {
-          expect(result).to.deep.equal([new UpdateResult(BigInt(2), BigInt(2))])
-        } else {
-          expect(result).to.deep.equal([new UpdateResult(BigInt(2), undefined)])
-        }
+        expect(result).to.deep.equal([
+          { id: 1, firstName: 'Thomas' },
+          { id: 2, firstName: 'Thomas' },
+        ])
 
-        const notInQuery = db
+        const notInWithReturningQuery = db
           .updateTable('safeEmptyArrayPerson')
-          .where('firstName', 'not in', [
-            'UNIQUE_NAME_THAT_DOES_NOT_EXIST',
-            'UNIQUE_NAME_2_THAT_DOES_NOT_EXIST',
-          ])
-          .set('firstName', 'UNIQUE_3')
+          .where('firstName', 'not in', ['John', 'Mary'])
+          .set('firstName', 'Thomas')
+          .returning(['firstName', 'id'])
 
-        testSql(notInQuery, dialect, {
+        testSql(notInWithReturningQuery, dialect, {
           postgres: {
             sql: [
               `update "safeEmptyArrayPerson"`,
               `set "firstName" = $1`,
               `where "firstName" not in ($2, $3)`,
+              `returning "firstName", "id"`,
             ],
-            parameters: [
-              'UNIQUE_3',
-              'UNIQUE_NAME_THAT_DOES_NOT_EXIST',
-              'UNIQUE_NAME_2_THAT_DOES_NOT_EXIST',
-            ],
-          },
-          mysql: {
-            sql: [
-              'update `safeEmptyArrayPerson`',
-              'set `firstName` = ?',
-              'where `firstName` not in (?, ?)',
-            ],
-            parameters: [
-              'UNIQUE_3',
-              'UNIQUE_NAME_THAT_DOES_NOT_EXIST',
-              'UNIQUE_NAME_2_THAT_DOES_NOT_EXIST',
-            ],
-          },
-          mssql: {
-            sql: [
-              `update "safeEmptyArrayPerson"`,
-              'set "firstName" = @1',
-              `where "firstName" not in (@2, @3)`,
-            ],
-            parameters: [
-              'UNIQUE_3',
-              'UNIQUE_NAME_THAT_DOES_NOT_EXIST',
-              'UNIQUE_NAME_2_THAT_DOES_NOT_EXIST',
-            ],
+            parameters: ['Thomas', 'John', 'Mary'],
           },
           sqlite: {
             sql: [
               `update "safeEmptyArrayPerson"`,
               `set "firstName" = ?`,
               `where "firstName" not in (?, ?)`,
+              `returning "firstName", "id"`,
             ],
-            parameters: [
-              'UNIQUE_3',
-              'UNIQUE_NAME_THAT_DOES_NOT_EXIST',
-              'UNIQUE_NAME_2_THAT_DOES_NOT_EXIST',
-            ],
+            parameters: ['Thomas', 'John', 'Mary'],
           },
+          mysql: NOT_SUPPORTED,
+          mssql: NOT_SUPPORTED,
         })
 
-        result = await notInQuery.execute()
+        result = await notInWithReturningQuery.execute()
 
-        if (dialect === 'mysql') {
-          expect(result).to.deep.equal([new UpdateResult(BigInt(3), BigInt(3))])
-        } else {
-          expect(result).to.deep.equal([new UpdateResult(BigInt(3), undefined)])
-        }
-      })
-
-      it('non-empty array should handle updateTable with returning in supported dialects', async () => {
-        if (dialect === 'postgres' || dialect === 'sqlite') {
-          const query = db
-            .updateTable('safeEmptyArrayPerson')
-            .where('firstName', 'in', ['John', 'Mary'])
-            .set('firstName', 'Thomas')
-            .returning(['firstName', 'id'])
-
-          testSql(query, dialect, {
-            postgres: {
-              sql: [
-                `update "safeEmptyArrayPerson"`,
-                `set "firstName" = $1`,
-                `where "firstName" in ($2, $3)`,
-                `returning "firstName", "id"`,
-              ],
-              parameters: ['Thomas', 'John', 'Mary'],
-            },
-            sqlite: {
-              sql: [
-                `update "safeEmptyArrayPerson"`,
-                `set "firstName" = ?`,
-                `where "firstName" in (?, ?)`,
-                `returning "firstName", "id"`,
-              ],
-              parameters: ['Thomas', 'John', 'Mary'],
-            },
-            mysql: NOT_SUPPORTED,
-            mssql: NOT_SUPPORTED,
-          })
-
-          let result = await query.execute()
-
-          expect(result).to.deep.equal([
-            { id: 1, firstName: 'Thomas' },
-            { id: 2, firstName: 'Thomas' },
-          ])
-
-          const notInWithReturningQuery = db
-            .updateTable('safeEmptyArrayPerson')
-            .where('firstName', 'not in', ['John', 'Mary'])
-            .set('firstName', 'Thomas')
-            .returning(['firstName', 'id'])
-
-          testSql(notInWithReturningQuery, dialect, {
-            postgres: {
-              sql: [
-                `update "safeEmptyArrayPerson"`,
-                `set "firstName" = $1`,
-                `where "firstName" not in ($2, $3)`,
-                `returning "firstName", "id"`,
-              ],
-              parameters: ['Thomas', 'John', 'Mary'],
-            },
-            sqlite: {
-              sql: [
-                `update "safeEmptyArrayPerson"`,
-                `set "firstName" = ?`,
-                `where "firstName" not in (?, ?)`,
-                `returning "firstName", "id"`,
-              ],
-              parameters: ['Thomas', 'John', 'Mary'],
-            },
-            mysql: NOT_SUPPORTED,
-            mssql: NOT_SUPPORTED,
-          })
-
-          result = await notInWithReturningQuery.execute()
-
-          expect(result.sort((a, b) => a.id - b.id)).to.deep.equal([
-            { id: 1, firstName: 'Thomas' },
-            { id: 2, firstName: 'Thomas' },
-            { id: 3, firstName: 'Thomas' },
-          ])
-        }
-      })
+        expect(result.sort((a, b) => a.id - b.id)).to.deep.equal([
+          { id: 1, firstName: 'Thomas' },
+          { id: 2, firstName: 'Thomas' },
+          { id: 3, firstName: 'Thomas' },
+        ])
+      }
     })
 
     after(async () => {
