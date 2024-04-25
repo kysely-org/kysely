@@ -1109,14 +1109,15 @@ for (const dialect of DIALECTS) {
     })
 
     describe(`should execute order-sensitive aggregate functions`, () => {
-      // @todo add test for mssql when implement `WITHIN GROUP ( order_by_clause )` clause
-      if (dialect !== 'mssql') {
+      if (dialect === 'postgres' || dialect === 'mysql' || dialect === 'sqlite') {
         const isMySql = dialect === 'mysql'
         const funcName = isMySql ? 'group_concat' : 'string_agg'
         const funcArgs: Array<ReferenceExpression<Database, 'person'>> = [
           'first_name',
         ]
-        if (!isMySql) funcArgs.push(sql.lit(','))
+        if (!isMySql) {
+          funcArgs.push(sql.lit(','))
+        }
 
         it(`should execute a query with ${funcName}(column order by column) in select clause`, async () => {
           const query = ctx.db
@@ -1138,7 +1139,7 @@ for (const dialect of DIALECTS) {
             },
             mysql: {
               sql: [
-                `select group_concat(\`first_name\` order by \`first_name\` desc) as \`first_names\``,
+                `select ${funcName}(\`first_name\` order by \`first_name\` desc) as \`first_names\``,
                 `from \`person\``,
               ],
               parameters: [],
@@ -1146,7 +1147,7 @@ for (const dialect of DIALECTS) {
             mssql: NOT_SUPPORTED,
             sqlite: {
               sql: [
-                `select string_agg("first_name", ',' order by "first_name" desc) as "first_names"`,
+                `select ${funcName}("first_name", ',' order by "first_name" desc) as "first_names"`,
                 `from "person"`,
               ],
               parameters: [],

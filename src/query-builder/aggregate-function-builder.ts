@@ -104,8 +104,7 @@ export class AggregateFunctionBuilder<DB, TB extends keyof DB, O = unknown>
   }
 
   /**
-   * Adds an `order by` clause inside the aggregate function for specify correct result order
-   * ([see postgres docs](https://www.postgresql.org/docs/9.5/sql-expressions.html#SYNTAX-AGGREGATES))
+   * Adds an `order by` clause inside the aggregate function.
    *
    * ### Examples
    *
