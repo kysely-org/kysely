@@ -111,6 +111,57 @@ for (const dialect of DIALECTS) {
       expect(result).to.deep.equal([])
     })
 
+    it('having clause', async () => {
+      const query = db
+        .selectFrom('safeEmptyArrayPerson')
+        .groupBy('safeEmptyArrayPerson.firstName')
+        .having('firstName', 'in', [])
+        .select('safeEmptyArrayPerson.firstName')
+
+      testSql(query, dialect, {
+        postgres: {
+          sql: [
+            `select "safeEmptyArrayPerson"."firstName"`,
+            `from "safeEmptyArrayPerson"`,
+            `group by "safeEmptyArrayPerson"."firstName"`,
+            `having "firstName" in ($1)`,
+          ],
+          parameters: [null],
+        },
+        mysql: {
+          sql: [
+            'select `safeEmptyArrayPerson`.`firstName`',
+            'from `safeEmptyArrayPerson`',
+            'group by `safeEmptyArrayPerson`.`firstName`',
+            'having `firstName` in (?)',
+          ],
+          parameters: [null],
+        },
+        mssql: {
+          sql: [
+            `select "safeEmptyArrayPerson"."firstName"`,
+            `from "safeEmptyArrayPerson"`,
+            `group by "safeEmptyArrayPerson"."firstName"`,
+            `having "firstName" in (@1)`,
+          ],
+          parameters: [null],
+        },
+        sqlite: {
+          sql: [
+            `select "safeEmptyArrayPerson"."firstName"`,
+            `from "safeEmptyArrayPerson"`,
+            `group by "safeEmptyArrayPerson"."firstName"`,
+            `having "firstName" in (?)`,
+          ],
+          parameters: [null],
+        },
+      })
+
+      const res = await query.execute()
+
+      expect(res).to.deep.equal([])
+    })
+
     it('non-empty array select from should return expected results', async () => {
       const query = db
         .selectFrom('safeEmptyArrayPerson')
