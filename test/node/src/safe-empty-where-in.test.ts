@@ -25,6 +25,7 @@ for (const dialect of DIALECTS) {
     interface Person {
       id: Generated<number>
       firstName: string
+      nullableColumn: null | string
     }
 
     interface Database {
@@ -42,6 +43,7 @@ for (const dialect of DIALECTS) {
       await db.schema.dropTable('safeEmptyArrayPerson').ifExists().execute()
       await createTableWithId(db.schema, dialect, 'safeEmptyArrayPerson')
         .addColumn('firstName', 'varchar(255)')
+        .addColumn('nullableColumn', 'varchar(255)')
         .execute()
 
       await db
@@ -49,15 +51,64 @@ for (const dialect of DIALECTS) {
         .values([
           {
             firstName: 'John',
+            nullableColumn: '1',
           },
           {
             firstName: 'Mary',
+            nullableColumn: null,
           },
           {
             firstName: 'Tom',
+            nullableColumn: null,
           },
         ])
         .execute()
+    })
+
+    it('nullable columns should still return empty as it is a no-op', async () => {
+      const query = db
+        .selectFrom('safeEmptyArrayPerson')
+        .where('nullableColumn', 'in', [])
+        .select('safeEmptyArrayPerson.nullableColumn')
+
+      testSql(query, dialect, {
+        postgres: {
+          sql: [
+            `select "safeEmptyArrayPerson"."nullableColumn"`,
+            `from "safeEmptyArrayPerson"`,
+            `where "nullableColumn" in ($1)`,
+          ],
+          parameters: [null],
+        },
+        mysql: {
+          sql: [
+            'select `safeEmptyArrayPerson`.`nullableColumn`',
+            'from `safeEmptyArrayPerson`',
+            'where `nullableColumn` in (?)',
+          ],
+          parameters: [null],
+        },
+        mssql: {
+          sql: [
+            `select "safeEmptyArrayPerson"."nullableColumn"`,
+            `from "safeEmptyArrayPerson"`,
+            `where "nullableColumn" in (@1)`,
+          ],
+          parameters: [null],
+        },
+        sqlite: {
+          sql: [
+            `select "safeEmptyArrayPerson"."nullableColumn"`,
+            `from "safeEmptyArrayPerson"`,
+            `where "nullableColumn" in (?)`,
+          ],
+          parameters: [null],
+        },
+      })
+
+      const result = await query.execute()
+
+      expect(result).to.deep.equal([])
     })
 
     it('should handle empty array select from statements without throwing runtime errors', async () => {
