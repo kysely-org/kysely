@@ -3,36 +3,19 @@ import { OperationNode } from '../../operation-node/operation-node.js'
 import { OperationNodeTransformer } from '../../operation-node/operation-node-transformer.js'
 import { PrimitiveValueListNode } from '../../operation-node/primitive-value-list-node.js'
 import { WhereNode } from '../../operation-node/where-node.js'
+import { OperatorNode } from '../../operation-node/operator-node.js'
+import { freeze } from '../../util/object-utils.js'
 
-const IN_OPERATORS = ['in', 'not in'] as const
-
-interface InOperatorNode {
-  kind: 'OperatorNode'
-  operator: (typeof IN_OPERATORS)[number]
-}
 
 export class WithSafeArrayWhereInTransformer extends OperationNodeTransformer {
-  #BinaryOperationNode(node: OperationNode): node is BinaryOperationNode {
-    return node.kind === 'BinaryOperationNode'
-  }
-
-  #isPrimitiveValueListNode(
-    node: OperationNode,
-  ): node is PrimitiveValueListNode {
-    return node.kind === 'PrimitiveValueListNode'
-  }
-
-  #IsInOperatorNode(node: OperationNode): node is InOperatorNode {
-    return (
-      (node as InOperatorNode).kind === 'OperatorNode' &&
-      IN_OPERATORS.includes((node as InOperatorNode).operator)
-    )
+  #isInOperatorNode(node: OperationNode): node is OperatorNode {
+    return OperatorNode.is(node) && (node.operator === 'in' || node.operator === 'not in')
   }
 
   protected transformWhere(node: WhereNode): WhereNode {
     const binaryOperatorNode = node.where
 
-    if (!this.#BinaryOperationNode(binaryOperatorNode)) {
+    if (!BinaryOperationNode.is(binaryOperatorNode)) {
       return node
     }
 
@@ -40,21 +23,22 @@ export class WithSafeArrayWhereInTransformer extends OperationNodeTransformer {
     const operator = binaryOperatorNode.operator
 
     if (
-      this.#IsInOperatorNode(operator) &&
-      this.#isPrimitiveValueListNode(rightOperand)
+      this.#isInOperatorNode(operator) &&
+      PrimitiveValueListNode.is(rightOperand)
     ) {
+      console.log("> TEST", operator, rightOperand)
       const values = rightOperand.values
 
       if (Array.isArray(values) && values.length === 0) {
-        return Object.freeze({
+        return freeze({
           ...node,
-          where: {
+          where: freeze({
             ...binaryOperatorNode,
-            rightOperand: {
+            rightOperand: freeze({
               ...rightOperand,
               values: [null],
-            },
-          },
+            }),
+          }),
         })
       }
     }
