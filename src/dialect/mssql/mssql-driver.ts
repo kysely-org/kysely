@@ -89,25 +89,17 @@ export class MssqlDriver implements Driver {
   }
 
   async savepoint(
-    connection: DatabaseConnection,
+    connection: MssqlConnection,
     savepointName: string,
-    compileQuery: QueryCompiler['compileQuery'],
   ): Promise<void> {
-    await connection.executeQuery(
-      compileQuery(parseSavepointCommand('save transaction', savepointName)),
-    )
+    await connection.savepoint(savepointName)
   }
 
   async rollbackToSavepoint(
-    connection: DatabaseConnection,
+    connection: MssqlConnection,
     savepointName: string,
-    compileQuery: QueryCompiler['compileQuery'],
   ): Promise<void> {
-    await connection.executeQuery(
-      compileQuery(
-        parseSavepointCommand('rollback transaction', savepointName),
-      ),
-    )
+    await connection.rollbackTransaction(savepointName)
   }
 
   async releaseSavepoint(): Promise<void> {
@@ -204,12 +196,21 @@ class MssqlConnection implements DatabaseConnection {
     }
   }
 
-  async rollbackTransaction(): Promise<void> {
+  async rollbackTransaction(savepointName?: string): Promise<void> {
     await new Promise((resolve, reject) =>
       this.#connection.rollbackTransaction((error) => {
         if (error) reject(error)
         else resolve(undefined)
-      }),
+      }, savepointName),
+    )
+  }
+
+  async savepoint(savepointName: string): Promise<void> {
+    await new Promise((resolve, reject) =>
+      this.#connection.saveTransaction((error) => {
+        if (error) reject(error)
+        else resolve(undefined)
+      }, savepointName),
     )
   }
 

@@ -65,17 +65,14 @@ export interface Tedious {
 
 export interface TediousConnection {
   beginTransaction(
-    callback: (error?: Error | null, transactionDescriptor?: any) => void,
-    name?: string,
-    isolationLevel?: number,
+    callback: (error?: Error | null) => void,
+    transactionId?: string | undefined,
+    isolationLevel?: number | undefined,
   ): void
   cancel(): boolean
   close(): void
-  commitTransaction(
-    callback: (error?: Error | null) => void,
-    name?: string,
-  ): void
-  connect(callback?: (error?: Error) => void): void
+  commitTransaction(callback: (error?: Error | null) => void): void
+  connect(callback: (error?: Error | null) => void): void
   execSql(request: TediousRequest): void
   off(event: 'error', listener: (error: unknown) => void): this
   off(event: string, listener: (...args: any[]) => void): this
