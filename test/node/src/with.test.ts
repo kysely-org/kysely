@@ -152,7 +152,7 @@ for (const dialect of DIALECTS) {
             ])
             .execute()
 
-          // Fetch a node and all it's ancestors using a single recursive CTE.
+          // Fetch a node and all its ancestors using a single recursive CTE.
           const query = nodeTrx
             .withRecursive('ancestors(name, parent)', (db) =>
               db
