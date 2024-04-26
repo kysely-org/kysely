@@ -628,6 +628,9 @@ export class ControlledTransactionBuilder<DB> {
     return new ControlledTransaction({
       ...props,
       connection,
+      executor: this.#props.executor.withConnectionProvider(
+        new SingleConnectionProvider(connection),
+      ),
     })
   }
 }
@@ -653,17 +656,27 @@ export class ControlledTransaction<
   constructor(props: ControlledTransactionProps) {
     const {
       connection,
-      releaseConnectedWhenDone: releaseConnection,
+      releaseConnectionWhenDone: releaseConnection,
       ...transactionProps
     } = props
     super(transactionProps)
-    this.#props = props
+    this.#props = freeze(props)
 
     const queryId = createQueryId()
     this.#compileQuery = (node) => props.executor.compileQuery(node, queryId)
 
     this.#isCommitted = false
     this.#isRolledBack = false
+
+    this.#assertNotCommittedOrRolledBackBeforeAllExecutions()
+  }
+
+  get isCommitted(): boolean {
+    return this.#isCommitted
+  }
+
+  get isRolledBack(): boolean {
+    return this.#isRolledBack
   }
 
   commit(): Command<void> {
@@ -743,18 +756,35 @@ export class ControlledTransaction<
     })
   }
 
+  #assertNotCommittedOrRolledBackBeforeAllExecutions() {
+    const { executor } = this.#props
+
+    const originalExecuteQuery = executor.executeQuery.bind(executor)
+    executor.executeQuery = async (query, queryId) => {
+      this.#assertNotCommittedOrRolledBack()
+      return await originalExecuteQuery(query, queryId)
+    }
+
+    const that = this
+    const originalStream = executor.stream.bind(executor)
+    executor.stream = (query, chunkSize, queryId) => {
+      that.#assertNotCommittedOrRolledBack()
+      return originalStream(query, chunkSize, queryId)
+    }
+  }
+
   #assertNotCommittedOrRolledBack(): void {
-    if (this.#isCommitted) {
+    if (this.isCommitted) {
       throw new Error('Transaction is already committed')
     }
 
-    if (this.#isRolledBack) {
+    if (this.isRolledBack) {
       throw new Error('Transaction is already rolled back')
     }
   }
 
   async #releaseConnectionIfNecessary(): Promise<void> {
-    if (this.#props.releaseConnectedWhenDone !== false) {
+    if (this.#props.releaseConnectionWhenDone !== false) {
       await this.#props.driver.releaseConnection(this.#props.connection)
     }
   }
@@ -762,7 +792,7 @@ export class ControlledTransaction<
 
 interface ControlledTransactionProps extends KyselyProps {
   readonly connection: DatabaseConnection
-  readonly releaseConnectedWhenDone?: boolean
+  readonly releaseConnectionWhenDone?: boolean
 }
 
 preventAwait(
