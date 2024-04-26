@@ -795,11 +795,6 @@ interface ControlledTransactionProps extends KyselyProps {
   readonly releaseConnectionWhenDone?: boolean
 }
 
-preventAwait(
-  ControlledTransaction,
-  "don't await ControlledTransaction instances directly. To commit or rollback the transaction you need to call the `commit` or `rollback` method",
-)
-
 export class Command<T> {
   readonly #cb: () => Promise<T>
 
