@@ -41,7 +41,10 @@ import {
   ReleaseSavepoint,
   RollbackToSavepoint,
 } from './parser/savepoint-parser.js'
-import { Deferred } from './util/deferred.js'
+import {
+  ControlledConnection,
+  provideControlledConnection,
+} from './util/provide-controlled-connection.js'
 
 /**
  * The main Kysely class.
@@ -633,18 +636,7 @@ export class ControlledTransactionBuilder<DB> {
 
     validateTransactionSettings(settings)
 
-    const connectionDefer = new Deferred<DatabaseConnection>()
-    const connectionReleaseDefer = new Deferred<void>()
-
-    this.#props.executor
-      .provideConnection(async (connection) => {
-        connectionDefer.resolve(connection)
-
-        return await connectionReleaseDefer.promise
-      })
-      .catch((ex) => connectionDefer.reject(ex))
-
-    const connection = await connectionDefer.promise
+    const connection = await provideControlledConnection(this.#props.executor)
 
     await this.#props.driver.beginTransaction(connection, settings)
 
@@ -654,7 +646,6 @@ export class ControlledTransactionBuilder<DB> {
       executor: this.#props.executor.withConnectionProvider(
         new SingleConnectionProvider(connection),
       ),
-      releaseConnection: connectionReleaseDefer.resolve,
     })
   }
 }
@@ -678,7 +669,7 @@ export class ControlledTransaction<
   #isRolledBack: boolean
 
   constructor(props: ControlledTransactionProps) {
-    const { connection, releaseConnection, ...transactionProps } = props
+    const { connection, ...transactionProps } = props
     super(transactionProps)
     this.#props = freeze(props)
 
@@ -705,7 +696,7 @@ export class ControlledTransaction<
     return new Command(async () => {
       await this.#props.driver.commitTransaction(this.#props.connection)
       this.#isCommitted = true
-      this.#props.releaseConnection()
+      this.#props.connection.release()
     })
   }
 
@@ -715,7 +706,7 @@ export class ControlledTransaction<
     return new Command(async () => {
       await this.#props.driver.rollbackTransaction(this.#props.connection)
       this.#isRolledBack = true
-      this.#props.releaseConnection()
+      this.#props.connection.release()
     })
   }
 
@@ -825,8 +816,7 @@ export class ControlledTransaction<
 }
 
 interface ControlledTransactionProps extends KyselyProps {
-  readonly connection: DatabaseConnection
-  readonly releaseConnection: () => void
+  readonly connection: ControlledConnection
 }
 
 export class Command<T> {
