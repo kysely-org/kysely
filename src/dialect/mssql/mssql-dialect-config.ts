@@ -1,3 +1,5 @@
+import type { Connection, ISOLATION_LEVEL, Request, TYPES } from 'tedious'
+
 export interface MssqlDialectConfig {
   /**
    * This dialect uses the `tarn` package to manage the connection pool to your
@@ -50,102 +52,10 @@ export interface MssqlDialectConfig {
 }
 
 export interface Tedious {
-  connectionFactory: () => TediousConnection | Promise<TediousConnection>
-  ISOLATION_LEVEL: TediousIsolationLevel
-  Request: typeof TediousRequest
-  TYPES: TediousTypes
-}
-
-export type TediousIsolationLevel = Record<
-  | 'NO_CHANGE'
-  | 'READ_UNCOMMITTED'
-  | 'READ_COMMITTED'
-  | 'REPEATABLE_READ'
-  | 'SERIALIZABLE'
-  | 'SNAPSHOT',
-  number
->
-
-export type TediousTypes = Record<
-  | 'BigInt'
-  | 'Binary'
-  | 'Bit'
-  | 'Char'
-  | 'Date'
-  | 'DateTime'
-  | 'DateTime2'
-  | 'DateTimeOffset'
-  | 'Decimal'
-  | 'Float'
-  | 'Image'
-  | 'Int'
-  | 'Money'
-  | 'NChar'
-  | 'NText'
-  | 'Null'
-  | 'Numeric'
-  | 'NVarChar'
-  | 'Real'
-  | 'SmallDateTime'
-  | 'SmallInt'
-  | 'SmallMoney'
-  | 'Text'
-  | 'Time'
-  | 'TinyInt'
-  | 'TVP'
-  | 'UDT'
-  | 'UniqueIdentifier'
-  | 'VarBinary'
-  | 'VarChar'
-  // TODO: uncomment once it is introduced in @types/tedious. See https://github.com/DefinitelyTyped/DefinitelyTyped/pull/66369
-  // | 'Variant'
-  | 'Xml',
-  { name: string; type: string }
->
-
-export interface TediousType {
-  name: string
-  type: string
-}
-
-export interface TediousConnection {
-  beginTransaction(
-    callback: (error?: Error | null) => void,
-    transactionId?: string | undefined,
-    isolationLevel?: number | undefined,
-  ): void
-  cancel(): void
-  close(): void
-  commitTransaction(callback: (error?: Error | null) => void): void
-  connect(callback: (error?: Error | null) => void): void
-  execSql(request: TediousRequest): void
-  reset(callback: (error?: Error | null) => void): void
-  rollbackTransaction(
-    callback: (error?: Error | null) => void,
-    name?: string,
-  ): void
-  saveTransaction(callback: (error?: Error | null) => void, name: string): void
-  once(event: 'end', listener: () => void): void
-}
-
-export declare class TediousRequest {
-  constructor(
-    sql: string,
-    callback: (error: Error, rowCount: number, rows: any[]) => void,
-  )
-  addParameter(
-    name: string,
-    type: TediousType,
-    value: any,
-    options?: {
-      length?: number | 'max' | undefined
-      precision?: number | undefined
-      scale?: number | undefined
-    },
-  ): void
-  off(event: 'row', listener: (...args: any[]) => void): void
-  on(event: 'row', listener: (columns: TediousColumnValue[]) => void): void
-  once(event: 'requestCompleted', listener: (...args: any[]) => void): void
+  connectionFactory: () => Connection | Promise<Connection>
+  ISOLATION_LEVEL: typeof ISOLATION_LEVEL
+  Request: typeof Request
+  TYPES: typeof TYPES
 }
 
 export interface TediousColumnValue {

@@ -41,6 +41,7 @@ import {
   OrderByDirection,
   UndirectedOrderByExpression,
 } from '../../../dist/cjs/parser/order-by-parser'
+import type { ConnectionConfiguration } from 'tedious'
 
 export type Gender = 'male' | 'female' | 'other'
 export type MaritalStatus = 'single' | 'married' | 'divorced' | 'widowed'
@@ -158,7 +159,7 @@ export const DIALECT_CONFIGS = {
       trustServerCertificate: true,
     },
     server: 'localhost',
-  } satisfies Tedious.ConnectionConfig,
+  } satisfies ConnectionConfiguration,
 
   sqlite: {
     databasePath: ':memory:',
@@ -373,7 +374,7 @@ export function createTableWithId(
 
   if (dialect === 'mssql') {
     return builder.addColumn('id', 'integer', (col) =>
-      col.identity().notNull().primaryKey()
+      col.identity().notNull().primaryKey(),
     )
   }
 
