@@ -722,10 +722,7 @@ export class ControlledTransaction<
         this.#compileQuery,
       )
 
-      return new ControlledTransaction({
-        ...this.#props,
-        connection: this.#props.connection,
-      })
+      return new ControlledTransaction({ ...this.#props })
     })
   }
 
@@ -741,10 +738,7 @@ export class ControlledTransaction<
         this.#compileQuery,
       )
 
-      return new ControlledTransaction({
-        ...this.#props,
-        connection: this.#props.connection,
-      })
+      return new ControlledTransaction({ ...this.#props })
     })
   }
 
@@ -760,11 +754,37 @@ export class ControlledTransaction<
         this.#compileQuery,
       )
 
-      return new ControlledTransaction({
-        ...this.#props,
-        connection: this.#props.connection,
-      })
+      return new ControlledTransaction({ ...this.#props })
     })
+  }
+
+  override withPlugin(plugin: KyselyPlugin): ControlledTransaction<DB, S> {
+    return new ControlledTransaction({
+      ...this.#props,
+      executor: this.#props.executor.withPlugin(plugin),
+    })
+  }
+
+  override withoutPlugins(): ControlledTransaction<DB, S> {
+    return new ControlledTransaction({
+      ...this.#props,
+      executor: this.#props.executor.withoutPlugins(),
+    })
+  }
+
+  override withSchema(schema: string): ControlledTransaction<DB, S> {
+    return new ControlledTransaction({
+      ...this.#props,
+      executor: this.#props.executor.withPluginAtFront(
+        new WithSchemaPlugin(schema),
+      ),
+    })
+  }
+
+  override withTables<
+    T extends Record<string, Record<string, any>>,
+  >(): ControlledTransaction<DrainOuterGeneric<DB & T>, S> {
+    return new ControlledTransaction({ ...this.#props })
   }
 
   #assertNotCommittedOrRolledBackBeforeAllExecutions() {
