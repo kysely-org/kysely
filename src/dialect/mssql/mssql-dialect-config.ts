@@ -1,3 +1,5 @@
+import type { Connection, ISOLATION_LEVEL, Request, TYPES } from 'tedious'
+
 export interface MssqlDialectConfig {
   /**
    * This dialect uses the `tarn` package to manage the connection pool to your
