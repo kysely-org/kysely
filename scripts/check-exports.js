@@ -35,6 +35,6 @@ checkExports(path.join(__dirname, '..', 'src/operation-node'))
 
 if (errorsFound) {
   console.log(' ')
-  console.log('check-all-operation-nodes-exported.js failed!')
+  console.log('check-exports.js failed!')
   process.exit(1)
 }
