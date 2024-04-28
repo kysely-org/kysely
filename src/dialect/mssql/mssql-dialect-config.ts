@@ -1,4 +1,4 @@
-import type { Connection, ISOLATION_LEVEL, Request, TYPES } from 'tedious'
+import { Request } from 'tedious'
 
 export interface MssqlDialectConfig {
   /**

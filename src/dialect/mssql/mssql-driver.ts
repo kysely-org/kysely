@@ -23,12 +23,13 @@ import {
   TarnPool,
   Tedious,
   TediousColumnValue,
+  TediousConnection,
+  TediousRequest,
 } from './mssql-dialect-config.js'
 import { CompiledQuery } from '../../query-compiler/compiled-query.js'
 import { extendStackTrace } from '../../util/stack-trace-utils.js'
 import { randomString } from '../../util/random-string.js'
 import { Deferred } from '../../util/deferred.js'
-import type { Connection, Request } from 'tedious'
 
 const PRIVATE_RELEASE_METHOD = Symbol()
 const PRIVATE_DESTROY_METHOD = Symbol()
@@ -116,10 +117,10 @@ export class MssqlDriver implements Driver {
 }
 
 class MssqlConnection implements DatabaseConnection {
-  readonly #connection: Connection
+  readonly #connection: TediousConnection
   readonly #tedious: Tedious
 
-  constructor(connection: Connection, tedious: Tedious) {
+  constructor(connection: TediousConnection, tedious: Tedious) {
     this.#connection = connection
     this.#tedious = tedious
 
@@ -336,7 +337,7 @@ interface PlainDeferred<O> {
 }
 
 class MssqlRequest<O> {
-  readonly #request: Request
+  readonly #request: TediousRequest
   readonly #rows: O[]
   readonly #streamChunkSize: number | undefined
   readonly #subscribers: Record<
@@ -396,7 +397,7 @@ class MssqlRequest<O> {
     this.#attachListeners()
   }
 
-  get request(): Request {
+  get request(): TediousRequest {
     return this.#request
   }
 
