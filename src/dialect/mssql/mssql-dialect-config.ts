@@ -1,4 +1,4 @@
-import type { Connection, ISOLATION_LEVEL, Request, TYPES } from 'tedious'
+import { Request } from 'tedious'
 
 export interface MssqlDialectConfig {
   /**
@@ -52,11 +52,80 @@ export interface MssqlDialectConfig {
 }
 
 export interface Tedious {
-  connectionFactory: () => Connection | Promise<Connection>
-  ISOLATION_LEVEL: typeof ISOLATION_LEVEL
-  Request: typeof Request
-  TYPES: typeof TYPES
+  connectionFactory: () => TediousConnection | Promise<TediousConnection>
+  ISOLATION_LEVEL: TediousIsolationLevel
+  Request: TediousRequestClass
+  TYPES: TediousTypes
 }
+
+export interface TediousConnection {
+  beginTransaction(
+    callback: (error?: Error | null, transactionDescriptor?: any) => void,
+    name?: string,
+    isolationLevel?: number,
+  ): void
+  commitTransaction(
+    callback: (error?: Error | null) => void,
+    name?: string,
+  ): void
+  execSql(request: TediousRequest): void
+  rollbackTransaction(
+    callback: (error?: Error | null) => void,
+    name?: string,
+  ): void
+  saveTransaction(callback: (error?: Error | null) => void, name: string): void
+  cancel(): boolean
+  reset(callback: (error?: Error | null) => void): void
+  close(): void
+  once(event: 'end', listener: () => void): this
+  once(event: string, listener: (...args: any[]) => void): this
+  connect(callback?: (error?: Error) => void): void
+}
+
+export type TediousIsolationLevel = Record<string, number>
+
+export interface TediousRequestClass {
+  new (
+    sqlTextOrProcedure: string | undefined,
+    callback: (error?: Error | null, rowCount?: number, rows?: any) => void,
+    options?: {
+      statementColumnEncryptionSetting?: any
+    },
+  ): TediousRequest
+}
+
+export interface TediousRequest {
+  addParameter(
+    name: string,
+    dataType: TediousDataType,
+    value?: unknown,
+    options?: Readonly<{
+      output?: boolean
+      length?: number
+      precision?: number
+      scale?: number
+    }> | null,
+  ): void
+  on(event: 'row', listener: (columns: any) => void): this
+  on(event: string, listener: (...args: any[]) => void): this
+  once(event: 'requestCompleted', listener: () => void): this
+  once(event: string, listener: (...args: any[]) => void): this
+  off(event: 'row', listener: (columns: any) => void): this
+  off(event: string, listener: (...args: any[]) => void): this
+}
+
+export interface TediousTypes {
+  NVarChar: TediousDataType
+  BigInt: TediousDataType
+  Int: TediousDataType
+  Float: TediousDataType
+  Bit: TediousDataType
+  DateTime: TediousDataType
+  VarBinary: TediousDataType
+  [x: string]: TediousDataType
+}
+
+export interface TediousDataType {}
 
 export interface TediousColumnValue {
   metadata: {

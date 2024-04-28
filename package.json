@@ -68,14 +68,6 @@
     "Sami Koskimäki <sami@jakso.me>",
     "Igal Klebanov <igalklebanov@gmail.com>"
   ],
-  "peerDependencies": {
-    "tedious": "~18.x"
-  },
-  "peerDependenciesMeta": {
-    "tedious": {
-      "optional": true
-    }
-  },
   "devDependencies": {
     "@types/better-sqlite3": "^7.6.8",
     "@types/chai": "^4.3.11",
