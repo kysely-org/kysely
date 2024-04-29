@@ -9,7 +9,6 @@ import { WhereNode } from './where-node.js'
 import { WithNode } from './with-node.js'
 import { FromNode } from './from-node.js'
 import { ExplainNode } from './explain-node.js'
-import {UpdateModifierNode} from './update-modifier-node.js'
 
 export type UpdateValuesNode = ValueListNode | PrimitiveValueListNode
 
@@ -23,8 +22,7 @@ export interface UpdateQueryNode extends OperationNode {
   readonly returning?: ReturningNode
   readonly with?: WithNode
   readonly explain?: ExplainNode
-  readonly frontModifiers?: ReadonlyArray<UpdateModifierNode>
-  readonly endModifiers?: ReadonlyArray<UpdateModifierNode>
+  readonly endModifiers?: ReadonlyArray<OperationNode>
 }
 
 /**
@@ -61,21 +59,9 @@ export const UpdateQueryNode = freeze({
     })
   },
 
-  cloneWithFrontModifier(
-    updateQuery: UpdateQueryNode,
-    modifier: UpdateModifierNode,
-  ): UpdateQueryNode {
-    return freeze({
-      ...updateQuery,
-      frontModifiers: updateQuery.frontModifiers
-        ? freeze([...updateQuery.frontModifiers, modifier])
-        : freeze([modifier]),
-    })
-  },
-
   cloneWithEndModifier(
     updateQuery: UpdateQueryNode,
-    modifier: UpdateModifierNode,
+    modifier: OperationNode,
   ): UpdateQueryNode {
     return freeze({
       ...updateQuery,
@@ -94,13 +80,6 @@ export const UpdateQueryNode = freeze({
       updates: updateQuery.updates
         ? freeze([...updateQuery.updates, ...updates])
         : updates,
-    })
-  },
-
-  createWithExpression(modifier: OperationNode): UpdateModifierNode {
-    return freeze({
-      kind: 'UpdateModifierNode',
-      rawModifier: modifier,
     })
   },
 })

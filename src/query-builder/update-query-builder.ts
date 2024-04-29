@@ -595,39 +595,7 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
   }
 
   /**
-   * This can be used to add any additional SQL to the front of the query __after__ the `update` keyword.
-   *
-   * ### Examples
-   *
-   * ```ts
-   * await db.updateTable('person')
-   * .modifyFront(sql.raw('-- This is a comment\n'))
-   * .set({ age: 39 })
-   * .where('first_name', '=', 'John')
-   * .execute()
-   * ```
-   *
-   * The generated SQL (MySQL):
-   *
-   * ```sql
-   * update `person` -- This is a comment
-   * set `age` = 39
-   * where `first_name` = "John" 
-   * ```
-   */
-  modifyFront(modifier: Expression<any>): UpdateQueryBuilder<DB, UT, TB, O> {
-    return new UpdateQueryBuilder({
-      ...this.#props,
-      queryNode: UpdateQueryNode.cloneWithFrontModifier(
-        this.#props.queryNode,
-        UpdateQueryNode.createWithExpression(modifier.toOperationNode()),
-      ),
-    })
-  }
-
-  /**
    * This can be used to add any additional SQL to the end of the query.
-   *
    *
    * ### Examples
    *
@@ -652,7 +620,7 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
       ...this.#props,
       queryNode: UpdateQueryNode.cloneWithEndModifier(
         this.#props.queryNode,
-        UpdateQueryNode.createWithExpression(modifier.toOperationNode()),
+        modifier.toOperationNode(),
       ),
     })
   }

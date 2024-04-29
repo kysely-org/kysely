@@ -716,38 +716,9 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
     })
   }
 
-  /**
-   * This can be used to add any additional SQL to the front of the query __after__ the `delete` keyword.
-   *
-   * ### Examples
-   *
-   * ```ts
-   * await db.deleteFrom('person')
-   * .modifyFront(sql.raw('-- This is a comment\n'))
-   * .where('first_name', '=', 'John')
-   * .execute()
-   * ```
-   *
-   * The generated SQL (MySQL):
-   *
-   * ```sql
-   * delete from `person` -- This is a comment
-   * where `first_name` = "John"
-   * ```
-   */
-  modifyFront(modifier: Expression<any>): DeleteQueryBuilder<DB, TB, O> {
-    return new DeleteQueryBuilder({
-      ...this.#props,
-      queryNode: DeleteQueryNode.cloneWithFrontModifier(
-        this.#props.queryNode,
-        DeleteQueryNode.createWithExpression(modifier.toOperationNode()),
-      ),
-    })
-  }
-
+  
   /**
    * This can be used to add any additional SQL to the end of the query.
-   *
    *
    * ### Examples
    *
@@ -770,7 +741,7 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
       ...this.#props,
       queryNode: DeleteQueryNode.cloneWithEndModifier(
         this.#props.queryNode,
-        DeleteQueryNode.createWithExpression(modifier.toOperationNode()),
+        modifier.toOperationNode(),
       ),
     })
   }

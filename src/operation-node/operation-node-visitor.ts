@@ -93,9 +93,6 @@ import { MergeQueryNode } from './merge-query-node.js'
 import { MatchedNode } from './matched-node.js'
 import { AddIndexNode } from './add-index-node.js'
 import { CastNode } from './cast-node.js'
-import {DeleteModifierNode} from './delete-modifier-node.js'
-import {InsertModifierNode} from './insert-modifier-node.js'
-import {UpdateModifierNode} from './update-modifier-node.js'
 
 export abstract class OperationNodeVisitor {
   protected readonly nodeStack: OperationNode[] = []
@@ -283,9 +280,9 @@ export abstract class OperationNodeVisitor {
   protected abstract visitOn(node: OnNode): void
   protected abstract visitValues(node: ValuesNode): void
   protected abstract visitSelectModifier(node: SelectModifierNode): void
-  protected abstract visitInsertModifier(node: InsertModifierNode): void
-  protected abstract visitUpdateModifier(node: UpdateModifierNode): void
-  protected abstract visitDeleteModifier(node: DeleteModifierNode): void
+  protected abstract visitInsertModifier(node: OperationNode): void
+  protected abstract visitUpdateModifier(node: OperationNode): void
+  protected abstract visitDeleteModifier(node: OperationNode): void
   protected abstract visitCreateType(node: CreateTypeNode): void
   protected abstract visitDropType(node: DropTypeNode): void
   protected abstract visitExplain(node: ExplainNode): void

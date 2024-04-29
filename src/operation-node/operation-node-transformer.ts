@@ -91,9 +91,6 @@ import { MergeQueryNode } from './merge-query-node.js'
 import { MatchedNode } from './matched-node.js'
 import { AddIndexNode } from './add-index-node.js'
 import { CastNode } from './cast-node.js'
-import {InsertModifierNode} from './insert-modifier-node.js'
-import {UpdateModifierNode} from './update-modifier-node.js'
-import {DeleteModifierNode} from './delete-modifier-node.js'
 
 /**
  * Transforms an operation node tree into another one.
@@ -378,7 +375,6 @@ export class OperationNodeTransformer {
       returning: this.transformNode(node.returning),
       onConflict: this.transformNode(node.onConflict),
       onDuplicateKey: this.transformNode(node.onDuplicateKey),
-      frontModifiers: this.transformNodeList(node.frontModifiers),
       endModifiers: this.transformNodeList(node.endModifiers),
       with: this.transformNode(node.with),
       ignore: node.ignore,
@@ -403,7 +399,6 @@ export class OperationNodeTransformer {
       joins: this.transformNodeList(node.joins),
       where: this.transformNode(node.where),
       returning: this.transformNode(node.returning),
-      frontModifiers: this.transformNodeList(node.frontModifiers),
       endModifiers: this.transformNodeList(node.endModifiers),
       with: this.transformNode(node.with),
       orderBy: this.transformNode(node.orderBy),
@@ -510,7 +505,6 @@ export class OperationNodeTransformer {
       where: this.transformNode(node.where),
       updates: this.transformNodeList(node.updates),
       returning: this.transformNode(node.returning),
-      frontModifiers: this.transformNodeList(node.frontModifiers),
       endModifiers: this.transformNodeList(node.endModifiers),
       with: this.transformNode(node.with),
       explain: this.transformNode(node.explain),
@@ -834,33 +828,21 @@ export class OperationNodeTransformer {
     })
   }
 
-  protected transformInsertModifier(
-    node: InsertModifierNode,
-  ): InsertModifierNode {
-    return requireAllProps<InsertModifierNode>({
-      kind: 'InsertModifierNode',
-      rawModifier: this.transformNode(node.rawModifier),
-      of: this.transformNodeList(node.of),
+  protected transformInsertModifier(): OperationNode {
+    return requireAllProps<OperationNode>({
+      kind: 'InsertModifierNode'
     })
   }
 
-  protected transformUpdateModifier(
-    node: UpdateModifierNode,
-  ): UpdateModifierNode {
-    return requireAllProps<UpdateModifierNode>({
+  protected transformUpdateModifier(): OperationNode {
+    return requireAllProps<OperationNode>({
       kind: 'UpdateModifierNode',
-      rawModifier: this.transformNode(node.rawModifier),
-      of: this.transformNodeList(node.of),
     })
   }
 
-  protected transformDeleteModifier(
-    node: DeleteModifierNode,
-  ): DeleteModifierNode {
-    return requireAllProps<DeleteModifierNode>({
+  protected transformDeleteModifier(): OperationNode {
+    return requireAllProps<OperationNode>({
       kind: 'DeleteModifierNode',
-      rawModifier: this.transformNode(node.rawModifier),
-      of: this.transformNodeList(node.of),
     })
   }
 

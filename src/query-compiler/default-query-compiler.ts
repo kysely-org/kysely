@@ -108,9 +108,7 @@ import { MergeQueryNode } from '../operation-node/merge-query-node.js'
 import { MatchedNode } from '../operation-node/matched-node.js'
 import { AddIndexNode } from '../operation-node/add-index-node.js'
 import { CastNode } from '../operation-node/cast-node.js'
-import {InsertModifierNode} from '../operation-node/insert-modifier-node.js'
-import {UpdateModifierNode} from '../operation-node/update-modifier-node.js'
-import {DeleteModifierNode} from '../operation-node/delete-modifier-node.js'
+import type {OperandExpression} from '../parser/expression-parser.js'
 
 export class DefaultQueryCompiler
   extends OperationNodeVisitor
@@ -308,11 +306,6 @@ export class DefaultQueryCompiler
       this.visitNode(node.into)
     }
 
-    if (node.frontModifiers?.length) {
-      this.append(' ')
-      this.compileList(node.frontModifiers, ' ')
-    }
-
     if (node.columns) {
       this.append(' (')
       this.compileList(node.columns)
@@ -387,11 +380,6 @@ export class DefaultQueryCompiler
     if (node.joins) {
       this.append(' ')
       this.compileList(node.joins, ' ')
-    }
-
-    if (node.frontModifiers?.length) {
-      this.append(' ')
-      this.compileList(node.frontModifiers, ' ')
     }
 
     if (node.where) {
@@ -753,12 +741,6 @@ export class DefaultQueryCompiler
 
     if (node.table) {
       this.visitNode(node.table)
-      this.append(' ')
-    }
-
-    if (node.frontModifiers?.length) {
-      this.append(' ')
-      this.compileList(node.frontModifiers, ' ')
       this.append(' ')
     }
 
@@ -1277,37 +1259,16 @@ export class DefaultQueryCompiler
     }
   }
 
-  protected override visitInsertModifier(node: InsertModifierNode): void {
-    if(node.rawModifier) {
-      this.visitNode(node.rawModifier)
-    }
-
-    if (node.of) {
-      this.append(' of ')
-      this.compileList(node.of, ', ')
-    }
+  protected override visitInsertModifier(node: OperationNode): void {
+    this.visitNode(node)
   }
 
-  protected override visitUpdateModifier(node: UpdateModifierNode): void {
-    if(node.rawModifier) {
-      this.visitNode(node.rawModifier)
-    }
-
-    if (node.of) {
-      this.append(' of ')
-      this.compileList(node.of, ', ')
-    }
+  protected override visitUpdateModifier(node: OperationNode): void {
+    this.visitNode(node)
   }
 
-  protected override visitDeleteModifier(node: DeleteModifierNode): void {
-    if(node.rawModifier) {
-      this.visitNode(node.rawModifier)
-    }
-
-    if (node.of) {
-      this.append(' of ')
-      this.compileList(node.of, ', ')
-    }
+  protected override visitDeleteModifier(node: OperationNode): void {
+    this.visitNode(node)
   }
 
   protected override visitCreateType(node: CreateTypeNode): void {

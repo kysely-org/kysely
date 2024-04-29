@@ -871,38 +871,6 @@ for (const dialect of DIALECTS) {
       })
     }
 
-    it('modifyFront should add arbitrary SQL to the front of the query', async () => {
-      const query = ctx.db
-        .insertInto('person')
-        .modifyFront(sql.raw('-- this is a comment\n'))
-        .values({
-            gender: 'other'
-        })
-
-      testSql(query, dialect, {
-        postgres: {
-          sql: 'insert into "person" -- this is a comment\n ("gender") values ($1)',
-          parameters: ['other'],
-        },
-        mysql: {
-          sql: 'insert into `person` -- this is a comment\n (`gender`) values (?)',
-          parameters: ['other'],
-        },
-        mssql: {
-          sql: 'insert into "person" -- this is a comment\n ("gender") values (@1)',
-          parameters: ['other'],
-        },
-        sqlite: {
-          sql: 'insert into "person" -- this is a comment\n ("gender") values (?)',
-          parameters: ['other'],
-        },
-      })
-
-      const result = await query.execute()
-
-      expect(result).to.have.length(1)
-    })
-
     if (dialect === 'postgres' || dialect === 'mysql') {
       it('modifyEnd should add arbitrary SQL to the end of the query', async () => {
         const query = ctx.db

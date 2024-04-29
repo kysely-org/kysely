@@ -8,10 +8,10 @@ import {
   TableExpression,
   From,
   TableExpressionOrList,
-  FromTables,
+  FromTables, 
   ExtractTableAlias,
   AnyAliasedTable,
-  PickTableWithAlias,
+  PickTableWithAlias, 
   parseTable,
 } from '../parser/table-parser.js'
 import { WithSchemaPlugin } from '../plugin/with-schema/with-schema-plugin.js'

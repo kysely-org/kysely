@@ -844,38 +844,8 @@ for (const dialect of DIALECTS) {
       })
     }
 
-    it('modifyFront should add arbitrary SQL to the front of the query', async () => {
-      const query = ctx.db
-        .deleteFrom('person')
-        .modifyFront(sql.raw('-- this is a comment\n'))
-        .where('first_name', '=', 'Jennifer')
-
-      testSql(query, dialect, {
-        postgres: {
-          sql: 'delete from "person" -- this is a comment\n where "first_name" = $1',
-          parameters: ['Jennifer'],
-        },
-        mysql: {
-          sql: 'delete from `person` -- this is a comment\n where `first_name` = ?',
-          parameters: ['Jennifer'],
-        },
-        mssql: {
-          sql: 'delete from "person" -- this is a comment\n where "first_name" = @1',
-          parameters: ['Jennifer'],
-        },
-        sqlite: {
-          sql: 'delete from "person" -- this is a comment\n where "first_name" = ?',
-          parameters: ['Jennifer'],
-        },
-      })
-
-      const result = await query.execute()
-
-      expect(result).to.have.length(1)
-    })
-
     if (dialect === 'postgres' || dialect === 'mysql') {
-      it.only('modifyEnd should add arbitrary SQL to the end of the query', async () => {
+      it('modifyEnd should add arbitrary SQL to the end of the query', async () => {
         const query = ctx.db
         .deleteFrom('person')
         .where('first_name', '=', 'Jennifer')
