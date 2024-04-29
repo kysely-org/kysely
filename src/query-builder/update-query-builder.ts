@@ -765,7 +765,7 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
   modifyEnd(modifier: Expression<any>): UpdateQueryBuilder<DB, UT, TB, O> {
     return new UpdateQueryBuilder({
       ...this.#props,
-      queryNode: UpdateQueryNode.cloneWithEndModifier(
+      queryNode: QueryNode.cloneWithEndModifier(
         this.#props.queryNode,
         modifier.toOperationNode(),
       ),

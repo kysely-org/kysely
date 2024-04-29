@@ -1959,7 +1959,7 @@ class SelectQueryBuilderImpl<DB, TB extends keyof DB, O>
   modifyEnd(modifier: Expression<any>): SelectQueryBuilder<DB, TB, O> {
     return new SelectQueryBuilderImpl({
       ...this.#props,
-      queryNode: SelectQueryNode.cloneWithEndModifier(
+      queryNode: QueryNode.cloneWithEndModifier(
         this.#props.queryNode,
         SelectModifierNode.createWithExpression(modifier.toOperationNode()),
       ),
@@ -1979,7 +1979,7 @@ class SelectQueryBuilderImpl<DB, TB extends keyof DB, O>
   forUpdate(of?: TableOrList<TB>): SelectQueryBuilder<DB, TB, O> {
     return new SelectQueryBuilderImpl({
       ...this.#props,
-      queryNode: SelectQueryNode.cloneWithEndModifier(
+      queryNode: QueryNode.cloneWithEndModifier(
         this.#props.queryNode,
         SelectModifierNode.create(
           'ForUpdate',
@@ -1992,7 +1992,7 @@ class SelectQueryBuilderImpl<DB, TB extends keyof DB, O>
   forShare(of?: TableOrList<TB>): SelectQueryBuilder<DB, TB, O> {
     return new SelectQueryBuilderImpl({
       ...this.#props,
-      queryNode: SelectQueryNode.cloneWithEndModifier(
+      queryNode: QueryNode.cloneWithEndModifier(
         this.#props.queryNode,
         SelectModifierNode.create(
           'ForShare',
@@ -2005,7 +2005,7 @@ class SelectQueryBuilderImpl<DB, TB extends keyof DB, O>
   forKeyShare(of?: TableOrList<TB>): SelectQueryBuilder<DB, TB, O> {
     return new SelectQueryBuilderImpl({
       ...this.#props,
-      queryNode: SelectQueryNode.cloneWithEndModifier(
+      queryNode: QueryNode.cloneWithEndModifier(
         this.#props.queryNode,
         SelectModifierNode.create(
           'ForKeyShare',
@@ -2018,7 +2018,7 @@ class SelectQueryBuilderImpl<DB, TB extends keyof DB, O>
   forNoKeyUpdate(of?: TableOrList<TB>): SelectQueryBuilder<DB, TB, O> {
     return new SelectQueryBuilderImpl({
       ...this.#props,
-      queryNode: SelectQueryNode.cloneWithEndModifier(
+      queryNode: QueryNode.cloneWithEndModifier(
         this.#props.queryNode,
         SelectModifierNode.create(
           'ForNoKeyUpdate',
@@ -2031,7 +2031,7 @@ class SelectQueryBuilderImpl<DB, TB extends keyof DB, O>
   skipLocked(): SelectQueryBuilder<DB, TB, O> {
     return new SelectQueryBuilderImpl({
       ...this.#props,
-      queryNode: SelectQueryNode.cloneWithEndModifier(
+      queryNode: QueryNode.cloneWithEndModifier(
         this.#props.queryNode,
         SelectModifierNode.create('SkipLocked'),
       ),
@@ -2041,7 +2041,7 @@ class SelectQueryBuilderImpl<DB, TB extends keyof DB, O>
   noWait(): SelectQueryBuilder<DB, TB, O> {
     return new SelectQueryBuilderImpl({
       ...this.#props,
-      queryNode: SelectQueryNode.cloneWithEndModifier(
+      queryNode: QueryNode.cloneWithEndModifier(
         this.#props.queryNode,
         SelectModifierNode.create('NoWait'),
       ),

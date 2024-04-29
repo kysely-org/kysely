@@ -373,7 +373,7 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
   modifyEnd(modifier: Expression<any>): InsertQueryBuilder<DB, TB, O> {
     return new InsertQueryBuilder({
       ...this.#props,
-      queryNode: InsertQueryNode.cloneWithEndModifier(
+      queryNode: QueryNode.cloneWithEndModifier(
         this.#props.queryNode,
         modifier.toOperationNode(),
       ),

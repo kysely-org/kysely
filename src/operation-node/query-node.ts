@@ -43,6 +43,18 @@ export const QueryNode = freeze({
     )
   },
 
+  cloneWithEndModifier<T extends QueryNode>(
+    query: T,
+    modifier: OperationNode,
+  ): T {
+    return freeze({
+      ...query,
+      endModifiers: query.endModifiers
+        ? freeze([...query.endModifiers, modifier])
+        : freeze([modifier]),
+    })
+  },
+
   cloneWithWhere<T extends HasWhere>(node: T, operation: OperationNode): T {
     return freeze({
       ...node,

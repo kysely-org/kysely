@@ -65,18 +65,6 @@ export const UpdateQueryNode = freeze({
     })
   },
 
-  cloneWithEndModifier(
-    updateQuery: UpdateQueryNode,
-    modifier: OperationNode,
-  ): UpdateQueryNode {
-    return freeze({
-      ...updateQuery,
-      endModifiers: updateQuery.endModifiers
-        ? freeze([...updateQuery.endModifiers, modifier])
-        : freeze([modifier]),
-    })
-  },
-
   cloneWithUpdates(
     updateQuery: UpdateQueryNode,
     updates: ReadonlyArray<ColumnUpdateNode>,

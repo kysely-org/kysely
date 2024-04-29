@@ -57,18 +57,6 @@ export const InsertQueryNode = freeze({
     })
   },
 
-  cloneWithEndModifier(
-    insertQuery: InsertQueryNode,
-    modifier: OperationNode,
-  ): InsertQueryNode {
-    return freeze({
-      ...insertQuery,
-      endModifiers: insertQuery.endModifiers
-        ? freeze([...insertQuery.endModifiers, modifier])
-        : freeze([modifier]),
-    })
-  },
-
   cloneWith(
     insertQuery: InsertQueryNode,
     props: InsertQueryNodeProps,

@@ -45,18 +45,6 @@ export const DeleteQueryNode = freeze({
     })
   },
 
-  cloneWithEndModifier(
-    deleteQuery: DeleteQueryNode,
-    modifier: OperationNode,
-  ): DeleteQueryNode {
-    return freeze({
-      ...deleteQuery,
-      endModifiers: deleteQuery.endModifiers
-        ? freeze([...deleteQuery.endModifiers, modifier])
-        : freeze([modifier]),
-    })
-  },
-
   cloneWithOrderByItems(
     deleteNode: DeleteQueryNode,
     items: ReadonlyArray<OrderByItemNode>,

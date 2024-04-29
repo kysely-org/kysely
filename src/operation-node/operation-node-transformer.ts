@@ -1016,6 +1016,7 @@ export class OperationNodeTransformer {
       whens: this.transformNodeList(node.whens),
       with: this.transformNode(node.with),
       top: this.transformNode(node.top),
+      endModifiers: this.transformNodeList(node.endModifiers),
       output: this.transformNode(node.output),
     })
   }

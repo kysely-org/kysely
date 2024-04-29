@@ -846,7 +846,7 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
   modifyEnd(modifier: Expression<any>): DeleteQueryBuilder<DB, TB, O> {
     return new DeleteQueryBuilder({
       ...this.#props,
-      queryNode: DeleteQueryNode.cloneWithEndModifier(
+      queryNode: QueryNode.cloneWithEndModifier(
         this.#props.queryNode,
         modifier.toOperationNode(),
       ),
