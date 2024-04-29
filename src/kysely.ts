@@ -219,6 +219,9 @@ export class Kysely<DB>
    * of type {@link Transaction} which inherits {@link Kysely}. Any query
    * started through the transaction object is executed inside the transaction.
    *
+   * To run a controlled transaction, allowing you to commit and rollback manually,
+   * use {@link startTransaction} instead.
+   *
    * ### Examples
    *
    * <!-- siteExample("transactions", "Simple transaction", 10) -->
@@ -266,7 +269,51 @@ export class Kysely<DB>
   }
 
   /**
-   * TODO: ...
+   * Creates a {@link ControlledTransactionBuilder} that can be used to run queries inside a controlled transaction.
+   *
+   * The returned {@link ControlledTransactionBuilder} can be used to configure the transaction.
+   * The {@link ControlledTransactionBuilder.execute} method can then be called
+   * to start the transaction and return a {@link ControlledTransaction}.
+   *
+   * A {@link ControlledTransaction} allows you to commit and rollback manually, execute savepoint commands. It extends {@link Transaction} which extends {@link Kysely}, so you can run queries inside the transaction.
+   *
+   * ### Examples
+   *
+   * <!-- siteExample("transactions", "Controlled transaction", 11) -->
+   *
+   * A controlled transaction allows you to commit and rollback manually, execute savepoint commands, and queries in general. In this example we start a transaction, use it to insert two rows and then commit the transaction.
+   * If an error is thrown, we catch it and rollback the transaction.
+   *
+   * ```ts
+   * const trx = await db.startTransaction().execute()
+   *
+   * try {
+   *   const jennifer = await trx.insertInto('person')
+   *     .values({
+   *       first_name: 'Jennifer',
+   *       last_name: 'Aniston',
+   *       age: 40,
+   *     })
+   *     .returning('id')
+   *     .executeTakeFirstOrThrow()
+   *
+   *   const catto = await trx.insertInto('pet')
+   *     .values({
+   *       owner_id: jennifer.id,
+   *       name: 'Catto',
+   *       species: 'cat',
+   *       is_favorite: false,
+   *     })
+   *     .returningAll()
+   *     .executeTakeFirstOrThrow()
+   *
+   *   await trx.commit().execute()
+   *
+   *   return catto
+   * } catch (error) {
+   *   await trx.rollback().execute()
+   * }
+   * ```
    */
   startTransaction(): ControlledTransactionBuilder<DB> {
     return new ControlledTransactionBuilder({ ...this.#props })
