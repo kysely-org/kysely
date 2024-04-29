@@ -275,7 +275,12 @@ export class Kysely<DB>
    * The {@link ControlledTransactionBuilder.execute} method can then be called
    * to start the transaction and return a {@link ControlledTransaction}.
    *
-   * A {@link ControlledTransaction} allows you to commit and rollback manually, execute savepoint commands. It extends {@link Transaction} which extends {@link Kysely}, so you can run queries inside the transaction.
+   * A {@link ControlledTransaction} allows you to commit and rollback manually,
+   * execute savepoint commands. It extends {@link Transaction} which extends {@link Kysely},
+   * so you can run queries inside the transaction. Once the transaction is committed,
+   * or rolled back, it can't be used anymore - all queries will throw an error.
+   * This is to prevent accidentally running queries outside the transaction - where
+   * atomicity is not guaranteed anymore.
    *
    * ### Examples
    *
