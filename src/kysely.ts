@@ -786,6 +786,23 @@ export class ControlledTransaction<
     return this.#isRolledBack
   }
 
+  /**
+   * Commits the transaction.
+   *
+   * See {@link rollback}.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * try {
+   *   await doSomething(trx)
+   *
+   *   await trx.commit().execute()
+   * } catch (error) {
+   *   await trx.rollback().execute()
+   * }
+   * ```
+   */
   commit(): Command<void> {
     this.#assertNotCommittedOrRolledBack()
 
@@ -796,6 +813,23 @@ export class ControlledTransaction<
     })
   }
 
+  /**
+   * Rolls back the transaction.
+   *
+   * See {@link commit} and {@link rollbackToSavepoint}.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * try {
+   *   await doSomething(trx)
+   *
+   *   await trx.commit().execute()
+   * } catch (error) {
+   *   await trx.rollback().execute()
+   * }
+   * ```
+   */
   rollback(): Command<void> {
     this.#assertNotCommittedOrRolledBack()
 
@@ -806,6 +840,27 @@ export class ControlledTransaction<
     })
   }
 
+  /**
+   * Creates a savepoint with a given name.
+   *
+   * See {@link rollbackToSavepoint} and {@link releaseSavepoint}.
+   *
+   * For a type-safe experience, you should use the returned instance from now on.
+   *
+   * ### Examples
+   *
+   * ```ts
+   *   await insertJennifer(trx)
+   *
+   *   const trxAfterJennifer = await trx.savepoint('after_jennifer').execute()
+   *
+   *   try {
+   *     await doSomething(trxAfterJennifer)
+   *   } catch (error) {
+   *     await trxAfterJennifer.rollbackToSavepoint('after_jennifer').execute()
+   *   }
+   * ```
+   */
   savepoint<SN extends string>(
     savepointName: SN extends S ? never : SN,
   ): Command<ControlledTransaction<DB, [...S, SN]>> {
@@ -822,6 +877,28 @@ export class ControlledTransaction<
     })
   }
 
+  /**
+   * Rolls back to a savepoint with a given name.
+   *
+   * See {@link savepoint} and {@link releaseSavepoint}.
+   *
+   * You must use the same instance returned by {@link savepoint}, or
+   * escape the type-check by using `as any`.
+   *
+   * ### Examples
+   *
+   * ```ts
+   *   await insertJennifer(trx)
+   *
+   *   const trxAfterJennifer = await trx.savepoint('after_jennifer').execute()
+   *
+   *   try {
+   *     await doSomething(trxAfterJennifer)
+   *   } catch (error) {
+   *     await trxAfterJennifer.rollbackToSavepoint('after_jennifer').execute()
+   *   }
+   * ```
+   */
   rollbackToSavepoint<SN extends S[number]>(
     savepointName: SN,
   ): Command<ControlledTransaction<DB, RollbackToSavepoint<S, SN>>> {
@@ -838,6 +915,32 @@ export class ControlledTransaction<
     })
   }
 
+  /**
+   * Releases a savepoint with a given name.
+   *
+   * See {@link savepoint} and {@link rollbackToSavepoint}.
+   *
+   * You must use the same instance returned by {@link savepoint}, or
+   * escape the type-check by using `as any`.
+   *
+   * ### Examples
+   *
+   * ```ts
+   *   await insertJennifer(trx)
+   *
+   *   const trxAfterJennifer = await trx.savepoint('after_jennifer').execute()
+   *
+   *   try {
+   *     await doSomething(trxAfterJennifer)
+   *   } catch (error) {
+   *     await trxAfterJennifer.rollbackToSavepoint('after_jennifer').execute()
+   *   }
+   *
+   *   await trxAfterJennifer.releaseSavepoint('after_jennifer').execute()
+   *
+   *   await doSomethingElse(trx)
+   * ```
+   */
   releaseSavepoint<SN extends S[number]>(
     savepointName: SN,
   ): Command<ControlledTransaction<DB, ReleaseSavepoint<S, SN>>> {
