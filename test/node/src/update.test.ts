@@ -518,6 +518,37 @@ for (const dialect of DIALECTS) {
         expect(result.numUpdatedRows).to.equal(1n)
         expect(result.numChangedRows).to.equal(0n)
       })
+
+      it('should limit the amount of updated rows', async () => {
+        const query = ctx.db
+          .updateTable('person')
+          .set({ first_name: 'Foo' })
+          .limit(2)
+
+        testSql(query, dialect, {
+          postgres: NOT_SUPPORTED,
+          mysql: {
+            sql: 'update `person` set `first_name` = ? limit ?',
+            parameters: ['Foo', 2],
+          },
+          mssql: NOT_SUPPORTED,
+          sqlite: NOT_SUPPORTED,
+        })
+
+        const result = await query.executeTakeFirst()
+
+        expect(result).to.be.instanceOf(UpdateResult)
+        expect(result.numUpdatedRows).to.equal(2n)
+        expect(result.numChangedRows).to.equal(2n)
+
+        const people = await ctx.db
+          .selectFrom('person')
+          .select('first_name')
+          .where('first_name', '=', 'Foo')
+          .execute()
+
+        expect(people).to.have.length(2)
+      })
     }
 
     it('should create an update query that uses a CTE', async () => {
@@ -544,7 +575,7 @@ for (const dialect of DIALECTS) {
           parameters: ['Jennifer', 1],
         },
         mssql: {
-          sql: 'with "jennifer_id" as (select top 1 "id" from "person" where "first_name" = @1) update "pet" set "owner_id" = (select "id" from "jennifer_id")',
+          sql: 'with "jennifer_id" as (select top(1) "id" from "person" where "first_name" = @1) update "pet" set "owner_id" = (select "id" from "jennifer_id")',
           parameters: ['Jennifer'],
         },
         sqlite: {
@@ -667,6 +698,92 @@ for (const dialect of DIALECTS) {
         for (const pet of pets) {
           expect(pet.person_name).to.equal(pet.pet_name)
         }
+      })
+
+      it('should update top', async () => {
+        const query = ctx.db
+          .updateTable('pet')
+          .top(1)
+          .set({ name: 'Lucky' })
+          .where('species', '=', 'dog')
+
+        testSql(query, dialect, {
+          postgres: NOT_SUPPORTED,
+          mysql: NOT_SUPPORTED,
+          mssql: {
+            sql: 'update top(1) "pet" set "name" = @1 where "species" = @2',
+            parameters: ['Lucky', 'dog'],
+          },
+          sqlite: NOT_SUPPORTED,
+        })
+
+        await query.execute()
+      })
+
+      it('should update top percent', async () => {
+        const query = ctx.db
+          .updateTable('pet')
+          .top(50, 'percent')
+          .set({ name: 'Lucky' })
+          .where('species', '=', 'dog')
+
+        testSql(query, dialect, {
+          postgres: NOT_SUPPORTED,
+          mysql: NOT_SUPPORTED,
+          mssql: {
+            sql: 'update top(50) percent "pet" set "name" = @1 where "species" = @2',
+            parameters: ['Lucky', 'dog'],
+          },
+          sqlite: NOT_SUPPORTED,
+        })
+
+        await query.execute()
+      })
+    }
+
+    if (dialect === 'mssql') {
+      it('should update some rows and return updated rows when `output` is used', async () => {
+        const query = ctx.db
+          .updateTable('person')
+          .set({ last_name: 'Barson' })
+          .output(['inserted.first_name', 'inserted.last_name'])
+          .where('gender', '=', 'male')
+
+        testSql(query, dialect, {
+          postgres: NOT_SUPPORTED,
+          mysql: NOT_SUPPORTED,
+          mssql: {
+            sql: 'update "person" set "last_name" = @1 output "inserted"."first_name", "inserted"."last_name" where "gender" = @2',
+            parameters: ['Barson', 'male'],
+          },
+          sqlite: NOT_SUPPORTED,
+        })
+
+        const result = await query.execute()
+
+        expect(result).to.have.length(2)
+        expect(Object.keys(result[0]).sort()).to.eql([
+          'first_name',
+          'last_name',
+        ])
+        expect(result).to.containSubset([
+          { first_name: 'Arnold', last_name: 'Barson' },
+          { first_name: 'Sylvester', last_name: 'Barson' },
+        ])
+      })
+
+      it('should update all rows, returning some fields of updated rows, and conditionally returning additional fields', async () => {
+        const condition = true
+
+        const query = ctx.db
+          .updateTable('person')
+          .set({ last_name: 'Barson' })
+          .output('inserted.first_name')
+          .$if(condition, (qb) => qb.output('inserted.last_name'))
+
+        const result = await query.executeTakeFirstOrThrow()
+
+        expect(result.last_name).to.equal('Barson')
       })
     }
   })

@@ -71,11 +71,20 @@ import {
   ValueExpression,
   parseValueExpression,
 } from '../parser/value-parser.js'
+import { parseTop } from '../parser/top-parser.js'
+import {
+  OutputCallback,
+  OutputExpression,
+  OutputInterface,
+  SelectExpressionFromOutputCallback,
+  SelectExpressionFromOutputExpression,
+} from './output-interface.js'
 
 export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
   implements
     WhereInterface<DB, TB>,
     ReturningInterface<DB, TB, O>,
+    OutputInterface<DB, TB, O, 'deleted'>,
     OperationNodeSource,
     Compilable<O>,
     Explainable,
@@ -131,6 +140,58 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
     return new DeleteQueryBuilder<DB, TB, O>({
       ...this.#props,
       queryNode: QueryNode.cloneWithoutWhere(this.#props.queryNode),
+    })
+  }
+
+  /**
+   * Changes a `delete from` query into a `delete top from` query.
+   *
+   * `top` clause is only supported by some dialects like MS SQL Server.
+   *
+   * ### Examples
+   *
+   * Delete the first 5 rows:
+   *
+   * ```ts
+   * await db
+   *   .deleteFrom('person')
+   *   .top(5)
+   *   .where('age', '>', 18)
+   *   .executeTakeFirstOrThrow()
+   * ```
+   *
+   * The generated SQL (MS SQL Server):
+   *
+   * ```sql
+   * delete top(5) from "person" where "age" > @1
+   * ```
+   *
+   * Delete the first 50% of rows:
+   *
+   * ```ts
+   * await db
+   *   .deleteFrom('person')
+   *   .top(50, 'percent')
+   *   .where('age', '>', 18)
+   *   .executeTakeFirstOrThrow()
+   * ```
+   *
+   * The generated SQL (MS SQL Server):
+   *
+   * ```sql
+   * delete top(50) percent from "person" where "age" > @1
+   * ```
+   */
+  top(
+    expression: number | bigint,
+    modifiers?: 'percent',
+  ): DeleteQueryBuilder<DB, TB, O> {
+    return new DeleteQueryBuilder({
+      ...this.#props,
+      queryNode: QueryNode.cloneWithTop(
+        this.#props.queryNode,
+        parseTop(expression, modifiers),
+      ),
     })
   }
 
@@ -564,6 +625,52 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
     })
   }
 
+  output<OE extends OutputExpression<DB, TB, 'deleted'>>(
+    selections: readonly OE[]
+  ): DeleteQueryBuilder<
+    DB,
+    TB,
+    ReturningRow<DB, TB, O, SelectExpressionFromOutputExpression<OE>>
+  >
+
+  output<CB extends OutputCallback<DB, TB, 'deleted'>>(
+    callback: CB
+  ): DeleteQueryBuilder<
+    DB,
+    TB,
+    ReturningRow<DB, TB, O, SelectExpressionFromOutputCallback<CB>>
+  >
+
+  output<OE extends OutputExpression<DB, TB, 'deleted'>>(
+    selection: OE
+  ): DeleteQueryBuilder<
+    DB,
+    TB,
+    ReturningRow<DB, TB, O, SelectExpressionFromOutputExpression<OE>>
+  >
+
+  output(args: any): any {
+    return new DeleteQueryBuilder({
+      ...this.#props,
+      queryNode: QueryNode.cloneWithOutput(
+        this.#props.queryNode,
+        parseSelectArg(args)
+      ),
+    })
+  }
+
+  outputAll(
+    table: 'deleted'
+  ): DeleteQueryBuilder<DB, TB, ReturningAllRow<DB, TB, O>> {
+    return new DeleteQueryBuilder({
+      ...this.#props,
+      queryNode: QueryNode.cloneWithOutput(
+        this.#props.queryNode,
+        parseSelectAll(table)
+      ),
+    })
+  }
+
   /**
    * Clears all `returning` clauses from the query.
    *
@@ -814,8 +921,8 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
   ): O2 extends DeleteResult
     ? DeleteQueryBuilder<DB, TB, DeleteResult>
     : O2 extends O & infer E
-      ? DeleteQueryBuilder<DB, TB, O & Partial<E>>
-      : DeleteQueryBuilder<DB, TB, Partial<O2>> {
+    ? DeleteQueryBuilder<DB, TB, O & Partial<E>>
+    : DeleteQueryBuilder<DB, TB, Partial<O2>> {
     if (condition) {
       return func(this) as any
     }
@@ -958,14 +1065,19 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
    */
   async execute(): Promise<SimplifyResult<O>[]> {
     const compiledQuery = this.compile()
-    const query = compiledQuery.query as DeleteQueryNode
 
     const result = await this.#props.executor.executeQuery<O>(
       compiledQuery,
       this.#props.queryId,
     )
 
-    if (this.#props.executor.adapter.supportsReturning && query.returning) {
+    const { adapter } = this.#props.executor
+    const query = compiledQuery.query as DeleteQueryNode
+
+    if (
+      (query.returning && adapter.supportsReturning) ||
+      (query.output && adapter.supportsOutput)
+    ) {
       return result.rows as any
     }
 
@@ -1064,12 +1176,12 @@ export type DeleteQueryBuilderWithInnerJoin<
     ? InnerJoinedBuilder<DB, TB, O, A, DB[T]>
     : never
   : TE extends keyof DB
-    ? DeleteQueryBuilder<DB, TB | TE, O>
-    : TE extends AliasedExpression<infer QO, infer QA>
-      ? InnerJoinedBuilder<DB, TB, O, QA, QO>
-      : TE extends (qb: any) => AliasedExpression<infer QO, infer QA>
-        ? InnerJoinedBuilder<DB, TB, O, QA, QO>
-        : never
+  ? DeleteQueryBuilder<DB, TB | TE, O>
+  : TE extends AliasedExpression<infer QO, infer QA>
+  ? InnerJoinedBuilder<DB, TB, O, QA, QO>
+  : TE extends (qb: any) => AliasedExpression<infer QO, infer QA>
+  ? InnerJoinedBuilder<DB, TB, O, QA, QO>
+  : never
 
 type InnerJoinedBuilder<
   DB,
@@ -1096,12 +1208,12 @@ export type DeleteQueryBuilderWithLeftJoin<
     ? LeftJoinedBuilder<DB, TB, O, A, DB[T]>
     : never
   : TE extends keyof DB
-    ? LeftJoinedBuilder<DB, TB, O, TE, DB[TE]>
-    : TE extends AliasedExpression<infer QO, infer QA>
-      ? LeftJoinedBuilder<DB, TB, O, QA, QO>
-      : TE extends (qb: any) => AliasedExpression<infer QO, infer QA>
-        ? LeftJoinedBuilder<DB, TB, O, QA, QO>
-        : never
+  ? LeftJoinedBuilder<DB, TB, O, TE, DB[TE]>
+  : TE extends AliasedExpression<infer QO, infer QA>
+  ? LeftJoinedBuilder<DB, TB, O, QA, QO>
+  : TE extends (qb: any) => AliasedExpression<infer QO, infer QA>
+  ? LeftJoinedBuilder<DB, TB, O, QA, QO>
+  : never
 
 type LeftJoinedBuilder<
   DB,
@@ -1118,8 +1230,8 @@ type LeftJoinedDB<DB, A extends keyof any, R> = DrainOuterGeneric<{
   [C in keyof DB | A]: C extends A
     ? Nullable<R>
     : C extends keyof DB
-      ? DB[C]
-      : never
+    ? DB[C]
+    : never
 }>
 
 export type DeleteQueryBuilderWithRightJoin<
@@ -1132,12 +1244,12 @@ export type DeleteQueryBuilderWithRightJoin<
     ? RightJoinedBuilder<DB, TB, O, A, DB[T]>
     : never
   : TE extends keyof DB
-    ? RightJoinedBuilder<DB, TB, O, TE, DB[TE]>
-    : TE extends AliasedExpression<infer QO, infer QA>
-      ? RightJoinedBuilder<DB, TB, O, QA, QO>
-      : TE extends (qb: any) => AliasedExpression<infer QO, infer QA>
-        ? RightJoinedBuilder<DB, TB, O, QA, QO>
-        : never
+  ? RightJoinedBuilder<DB, TB, O, TE, DB[TE]>
+  : TE extends AliasedExpression<infer QO, infer QA>
+  ? RightJoinedBuilder<DB, TB, O, QA, QO>
+  : TE extends (qb: any) => AliasedExpression<infer QO, infer QA>
+  ? RightJoinedBuilder<DB, TB, O, QA, QO>
+  : never
 
 type RightJoinedBuilder<
   DB,
@@ -1156,10 +1268,10 @@ type RightJoinedDB<
   [C in keyof DB | A]: C extends A
     ? R
     : C extends TB
-      ? Nullable<DB[C]>
-      : C extends keyof DB
-        ? DB[C]
-        : never
+    ? Nullable<DB[C]>
+    : C extends keyof DB
+    ? DB[C]
+    : never
 }>
 
 export type DeleteQueryBuilderWithFullJoin<
@@ -1172,12 +1284,12 @@ export type DeleteQueryBuilderWithFullJoin<
     ? OuterJoinedBuilder<DB, TB, O, A, DB[T]>
     : never
   : TE extends keyof DB
-    ? OuterJoinedBuilder<DB, TB, O, TE, DB[TE]>
-    : TE extends AliasedExpression<infer QO, infer QA>
-      ? OuterJoinedBuilder<DB, TB, O, QA, QO>
-      : TE extends (qb: any) => AliasedExpression<infer QO, infer QA>
-        ? OuterJoinedBuilder<DB, TB, O, QA, QO>
-        : never
+  ? OuterJoinedBuilder<DB, TB, O, TE, DB[TE]>
+  : TE extends AliasedExpression<infer QO, infer QA>
+  ? OuterJoinedBuilder<DB, TB, O, QA, QO>
+  : TE extends (qb: any) => AliasedExpression<infer QO, infer QA>
+  ? OuterJoinedBuilder<DB, TB, O, QA, QO>
+  : never
 
 type OuterJoinedBuilder<
   DB,
@@ -1196,8 +1308,8 @@ type OuterJoinedBuilderDB<
   [C in keyof DB | A]: C extends A
     ? Nullable<R>
     : C extends TB
-      ? Nullable<DB[C]>
-      : C extends keyof DB
-        ? DB[C]
-        : never
+    ? Nullable<DB[C]>
+    : C extends keyof DB
+    ? DB[C]
+    : never
 }>

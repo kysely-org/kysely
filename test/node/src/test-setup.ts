@@ -373,11 +373,7 @@ export function createTableWithId(
 
   if (dialect === 'mssql') {
     return builder.addColumn('id', 'integer', (col) =>
-      col
-        .notNull()
-        // TODO: change to method when its implemented
-        .modifyFront(sql`identity(1,1)`)
-        .primaryKey(),
+      col.identity().notNull().primaryKey()
     )
   }
 
@@ -461,26 +457,12 @@ export async function insert<TB extends keyof Database>(
   }
 
   if (dialect === 'mssql') {
-    // TODO: use insert into "table" (...) output inserted.id values (...) when its implemented
-    return await ctx.db.connection().execute(async (db) => {
-      await qb.executeTakeFirstOrThrow()
+    const { id } = await qb
+      .output('inserted.id' as any)
+      .$castTo<{ id: number }>()
+      .executeTakeFirstOrThrow()
 
-      const { query } = qb.compile()
-
-      const table =
-        query.kind === 'InsertQueryNode' &&
-        [query.into!.table.schema?.name, query.into!.table.identifier.name]
-          .filter(Boolean)
-          .join('.')
-
-      const {
-        rows: [{ id }],
-      } = await sql<{ id: number }>`select IDENT_CURRENT(${sql.lit(
-        table,
-      )}) as id`.execute(db)
-
-      return Number(id)
-    })
+    return id
   }
 
   const { insertId } = await qb.executeTakeFirstOrThrow()
@@ -514,7 +496,7 @@ export function limit<QB extends SelectQueryBuilder<any, any, any>>(
 ): (qb: QB) => QB {
   return (qb) => {
     if (dialect === 'mssql') {
-      return qb.modifyFront(sql`top ${sql.lit(limit)}`) as QB
+      return qb.top(limit) as QB
     }
 
     return qb.limit(limit) as QB

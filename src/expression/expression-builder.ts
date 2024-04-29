@@ -293,7 +293,7 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
     from: TE,
   ): SelectQueryBuilder<
     DB & PickTableWithAlias<DB, TE>,
-    TB | ExtractTableAlias<DB, TE>,
+    TB | ExtractTableAlias<DB & PickTableWithAlias<DB, TE>, TE>,
     {}
   >
 
@@ -404,7 +404,7 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    *
    * ```ts
    * db.update('pet').set((eb) => ({
-   *   name: sql`concat(${eb.ref('pet.name')}, ${suffix})`
+   *   name: sql<string>`concat(${eb.ref('pet.name')}, ${suffix})`
    * }))
    * ```
    *

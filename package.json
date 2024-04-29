@@ -1,6 +1,6 @@
 {
   "name": "kysely",
-  "version": "0.27.2",
+  "version": "0.27.3",
   "description": "Type safe SQL query builder",
   "repository": {
     "type": "git",
@@ -79,11 +79,12 @@
     "@types/pg-cursor": "^2.7.2",
     "@types/sinon": "^17.0.2",
     "@types/tedious": "^4.0.9",
-    "better-sqlite3": "^9.2.2",
+    "better-sqlite3": "^9.6.0",
     "chai": "^4.4.0",
     "chai-as-promised": "^7.1.1",
     "chai-subset": "^1.6.0",
     "esbuild": "^0.19.11",
+    "lodash": "^4.17.21",
     "mocha": "^10.2.0",
     "mysql2": "^3.6.5",
     "pg": "^8.11.3",
@@ -94,6 +95,6 @@
     "tarn": "^3.0.2",
     "tedious": "^16.4.0",
     "tsd": "^0.30.3",
-    "typescript": "^5.3.3"
+    "typescript": "^5.4.2"
   }
 }

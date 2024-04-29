@@ -31,6 +31,7 @@ import { OnDuplicateKeyNode } from '../operation-node/on-duplicate-key-node.js'
 import { InsertResult } from './insert-result.js'
 import { KyselyPlugin } from '../plugin/kysely-plugin.js'
 import {
+  ReturningAllRow,
   ReturningCallbackRow,
   ReturningRow,
 } from '../parser/returning-parser.js'
@@ -58,10 +59,19 @@ import { Explainable, ExplainFormat } from '../util/explainable.js'
 import { Expression } from '../expression/expression.js'
 import { KyselyTypeError } from '../util/type-error.js'
 import { Streamable } from '../util/streamable.js'
+import { parseTop } from '../parser/top-parser.js'
+import {
+  OutputCallback,
+  OutputExpression,
+  OutputInterface,
+  SelectExpressionFromOutputCallback,
+  SelectExpressionFromOutputExpression,
+} from './output-interface.js'
 
 export class InsertQueryBuilder<DB, TB extends keyof DB, O>
   implements
     ReturningInterface<DB, TB, O>,
+    OutputInterface<DB, TB, O, 'inserted'>,
     OperationNodeSource,
     Compilable<O>,
     Explainable,
@@ -192,11 +202,10 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    *   .insertInto('person')
    *   .values(({ ref, selectFrom, fn }) => ({
    *     first_name: 'Jennifer',
-   *     last_name: sql`concat(${ani}, ${ston})`,
+   *     last_name: sql<string>`>concat(${ani}, ${ston})`,
    *     middle_name: ref('first_name'),
    *     age: selectFrom('person')
-   *       .select(fn.avg<number>('age')
-   *       .as('avg_age')),
+   *       .select(fn.avg<number>('age').as('avg_age')),
    *   }))
    *   .executeTakeFirst()
    * ```
@@ -285,7 +294,9 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    *
    * <!-- siteExample("insert", "Insert subquery", 50) -->
    *
-   * You can create an `INSERT INTO SELECT FROM` query using the `expression` method:
+   * You can create an `INSERT INTO SELECT FROM` query using the `expression` method.
+   * This API doesn't follow our WYSIWYG principles and might be a bit difficult to
+   * remember. The reasons for this design stem from implementation difficulties.
    *
    * ```ts
    * const result = await db.insertInto('person')
@@ -400,6 +411,62 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
   }
 
   /**
+   * Changes an `insert into` query to an `insert top into` query.
+   *
+   * `top` clause is only supported by some dialects like MS SQL Server.
+   *
+   * ### Examples
+   *
+   * Insert the first 5 rows:
+   *
+   * ```ts
+   * await db.insertInto('person')
+   *   .top(5)
+   *   .columns(['first_name', 'gender'])
+   *   .expression(
+   *     (eb) => eb.selectFrom('pet').select(['name', sql.lit('other').as('gender')])
+   *   )
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (MS SQL Server):
+   *
+   * ```sql
+   * insert top(5) into "person" ("first_name", "gender") select "name", 'other' as "gender" from "pet"
+   * ```
+   *
+   * Insert the first 50 percent of rows:
+   *
+   * ```ts
+   * await db.insertInto('person')
+   *   .top(50, 'percent')
+   *   .columns(['first_name', 'gender'])
+   *   .expression(
+   *     (eb) => eb.selectFrom('pet').select(['name', sql.lit('other').as('gender')])
+   *   )
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (MS SQL Server):
+   *
+   * ```sql
+   * insert top(50) percent into "person" ("first_name", "gender") select "name", 'other' as "gender" from "pet"
+   * ```
+   */
+  top(
+    expression: number | bigint,
+    modifiers?: 'percent',
+  ): InsertQueryBuilder<DB, TB, O> {
+    return new InsertQueryBuilder({
+      ...this.#props,
+      queryNode: QueryNode.cloneWithTop(
+        this.#props.queryNode,
+        parseTop(expression, modifiers),
+      ),
+    })
+  }
+
+  /**
    * Adds an `on conflict` clause to the query.
    *
    * `on conflict` is only supported by some dialects like PostgreSQL and SQLite. On MySQL
@@ -468,7 +535,7 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    *     species: 'cat',
    *   })
    *   .onConflict((oc) => oc
-   *     .expression(sql`lower(name)`)
+   *     .expression(sql<string>`lower(name)`)
    *     .doUpdateSet({ species: 'hamster' })
    *   )
    *   .execute()
@@ -637,6 +704,52 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
     })
   }
 
+  output<OE extends OutputExpression<DB, TB, 'inserted'>>(
+    selections: readonly OE[]
+  ): InsertQueryBuilder<
+    DB,
+    TB,
+    ReturningRow<DB, TB, O, SelectExpressionFromOutputExpression<OE>>
+  >
+
+  output<CB extends OutputCallback<DB, TB, 'inserted'>>(
+    callback: CB
+  ): InsertQueryBuilder<
+    DB,
+    TB,
+    ReturningRow<DB, TB, O, SelectExpressionFromOutputCallback<CB>>
+  >
+
+  output<OE extends OutputExpression<DB, TB, 'inserted'>>(
+    selection: OE
+  ): InsertQueryBuilder<
+    DB,
+    TB,
+    ReturningRow<DB, TB, O, SelectExpressionFromOutputExpression<OE>>
+  >
+
+  output(args: any): any {
+    return new InsertQueryBuilder({
+      ...this.#props,
+      queryNode: QueryNode.cloneWithOutput(
+        this.#props.queryNode,
+        parseSelectArg(args)
+      ),
+    })
+  }
+
+  outputAll(
+    table: 'inserted'
+  ): InsertQueryBuilder<DB, TB, ReturningAllRow<DB, TB, O>> {
+    return new InsertQueryBuilder({
+      ...this.#props,
+      queryNode: QueryNode.cloneWithOutput(
+        this.#props.queryNode,
+        parseSelectAll(table)
+      ),
+    })
+  }
+
   /**
    * Clears all `returning` clauses from the query.
    *
@@ -730,8 +843,8 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
   ): O2 extends InsertResult
     ? InsertQueryBuilder<DB, TB, InsertResult>
     : O2 extends O & infer E
-      ? InsertQueryBuilder<DB, TB, O & Partial<E>>
-      : InsertQueryBuilder<DB, TB, Partial<O2>> {
+    ? InsertQueryBuilder<DB, TB, O & Partial<E>>
+    : InsertQueryBuilder<DB, TB, Partial<O2>> {
     if (condition) {
       return func(this) as any
     }
@@ -873,14 +986,19 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    */
   async execute(): Promise<SimplifyResult<O>[]> {
     const compiledQuery = this.compile()
-    const query = compiledQuery.query as InsertQueryNode
 
     const result = await this.#props.executor.executeQuery<O>(
       compiledQuery,
       this.#props.queryId,
     )
 
-    if (this.#props.executor.adapter.supportsReturning && query.returning) {
+    const { adapter } = this.#props.executor
+    const query = compiledQuery.query as InsertQueryNode
+
+    if (
+      (query.returning && adapter.supportsReturning) ||
+      (query.output && adapter.supportsOutput)
+    ) {
       return result.rows as any
     }
 
