@@ -195,9 +195,6 @@ export class OperationNodeTransformer {
     OnNode: this.transformOn.bind(this),
     ValuesNode: this.transformValues.bind(this),
     SelectModifierNode: this.transformSelectModifier.bind(this),
-    InsertModifierNode: this.transformInsertModifier.bind(this),
-    UpdateModifierNode: this.transformUpdateModifier.bind(this),
-    DeleteModifierNode: this.transformDeleteModifier.bind(this),
     CreateTypeNode: this.transformCreateType.bind(this),
     DropTypeNode: this.transformDropType.bind(this),
     ExplainNode: this.transformExplain.bind(this),
@@ -842,24 +839,6 @@ export class OperationNodeTransformer {
       modifier: node.modifier,
       rawModifier: this.transformNode(node.rawModifier),
       of: this.transformNodeList(node.of),
-    })
-  }
-
-  protected transformInsertModifier(): OperationNode {
-    return requireAllProps<OperationNode>({
-      kind: 'InsertModifierNode'
-    })
-  }
-
-  protected transformUpdateModifier(): OperationNode {
-    return requireAllProps<OperationNode>({
-      kind: 'UpdateModifierNode',
-    })
-  }
-
-  protected transformDeleteModifier(): OperationNode {
-    return requireAllProps<OperationNode>({
-      kind: 'DeleteModifierNode',
     })
   }
 
