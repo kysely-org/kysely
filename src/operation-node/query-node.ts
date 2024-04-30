@@ -28,6 +28,7 @@ type HasReturning = { returning?: ReturningNode }
 type HasExplain = { explain?: ExplainNode }
 type HasTop = { top?: TopNode }
 type HasOutput = { output?: OutputNode }
+type HasEndModifiers = { endModifiers?: ReadonlyArray<OperationNode> }
 
 /**
  * @internal
@@ -43,7 +44,7 @@ export const QueryNode = freeze({
     )
   },
 
-  cloneWithEndModifier<T extends QueryNode>(
+  cloneWithEndModifier<T extends HasEndModifiers>(
     query: T,
     modifier: OperationNode,
   ): T {
