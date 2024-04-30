@@ -286,9 +286,9 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    *
    *  <!-- siteExample("select", "Not null", 51) -->
    *
-   * Sometimes you can be sure something's not null but Kysely isn't able to infer
+   * Sometimes you can be sure something's not null, but Kysely isn't able to infer
    * it. For example calling `where('last_name', 'is not', null)` doesn't make
-   * `last_name` not null in the result type but unless you have other where statements
+   * `last_name` not null in the result type, but unless you have other where statements
    * you can be sure it's never null.
    *
    * Kysely has a couple of helpers for dealing with these cases: `$notNull()` and `$narrowType`.
@@ -1548,7 +1548,7 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
   /**
    * Call `func(this)` if `condition` is true.
    *
-   * NOTE: This method has an impact on typescript performance and it should only be used
+   * NOTE: This method has an impact on TypeScript performance and it should only be used
    * when necessary. Remember that you can call most methods like `where` conditionally
    * like this:
    *
@@ -1777,17 +1777,17 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
   /**
    * Asserts that query's output row type equals the given type `T`.
    *
-   * This method can be used to simplify excessively complex types to make typescript happy
+   * This method can be used to simplify excessively complex types to make TypeScript happy
    * and much faster.
    *
    * Kysely uses complex type magic to achieve its type safety. This complexity is sometimes too much
-   * for typescript and you get errors like this:
+   * for TypeScript and you get errors like this:
    *
    * ```
    * error TS2589: Type instantiation is excessively deep and possibly infinite.
    * ```
    *
-   * In these case you can often use this method to help typescript a little bit. When you use this
+   * In these case you can often use this method to help TypeScript a little bit. When you use this
    * method to assert the output type of a query, Kysely can drop the complex output type that
    * consists of multiple nested helper types and replace it with the simple asserted type.
    *

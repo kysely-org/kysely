@@ -209,7 +209,7 @@ function buildMoreExamplesMarkdown(category) {
 
   const lines = [
     ':::info More examples',
-    'The API documentation is packed with examples. The API docs are hosted [here](https://kysely-org.github.io/kysely-apidoc/)',
+    'The API documentation is packed with examples. The API docs are hosted [here](https://kysely-org.github.io/kysely-apidoc/),',
     'but you can access the same documentation by hovering over functions/methods/classes in your IDE. The examples are always',
     'just one hover away!',
     '',

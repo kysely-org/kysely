@@ -50,7 +50,7 @@ function HomepageHeader() {
               href="https://github.com/kysely-org/kysely"
               className="button button--secondary button--md button--block"
             >
-              View on Github
+              View on GitHub
             </a>
           </span>
         </div>
@@ -203,7 +203,7 @@ function SectionQuotes() {
     >
       <div className="container" style={{ textAlign: 'center' }}>
         <h1>What the internet is saying</h1>
-        <p>Developers are loving Kysely for it's simplicity and power.</p>
+        <p>Developers are loving Kysely for its simplicity and power.</p>
         <div
           style={{
             display: 'flex',
