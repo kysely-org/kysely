@@ -60,7 +60,7 @@ for (const dialect of DIALECTS.filter(
         expect(result.numChangedRows).to.equal(3n)
       })
 
-      /*it.only('should add a modifyEnd clause to the query', async () => {
+      it('should add a modifyEnd clause to the query', async () => {
         const query = ctx.db
           .mergeInto('person')
           .using('pet', 'pet.owner_id', 'person.id')
@@ -80,7 +80,7 @@ for (const dialect of DIALECTS.filter(
           },
           sqlite: NOT_SUPPORTED,
         })
-      })*/
+      })
 
       it('should perform a merge...using table alias simple on alias...when matched then delete query', async () => {
         const query = ctx.db

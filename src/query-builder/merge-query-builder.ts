@@ -71,6 +71,27 @@ export class MergeQueryBuilder<DB, TT extends keyof DB, O>
     this.#props = freeze(props)
   }
 
+  /**
+   * This can be used to add any additional SQL to the end of the query.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * const result = await db
+   *   .mergeInto('person')
+   *   .using('pet', 'pet.owner_id', 'person.id')
+   *   .whenMatched()
+   *   .thenDelete()
+   *   .modifyEnd(sql.raw('-- this is a comment'))
+   *   .execute()
+   * ```
+   * 
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * merge into "person" using "pet" on "pet"."owner_id" = "person"."id" when matched then delete -- this is a comment
+   * ```
+   */
   modifyEnd(modifier: Expression<any>): MergeQueryBuilder<DB, TT, O> {
     return new MergeQueryBuilder({
       ...this.#props,
@@ -266,6 +287,27 @@ export class WheneableMergeQueryBuilder<
     this.#props = freeze(props)
   }
 
+  /**
+   * This can be used to add any additional SQL to the end of the query.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * const result = await db
+   *   .mergeInto('person')
+   *   .using('pet', 'pet.owner_id', 'person.id')
+   *   .whenMatched()
+   *   .thenDelete()
+   *   .modifyEnd(sql.raw('-- this is a comment'))
+   *   .execute()
+   * ```
+   * 
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * merge into "person" using "pet" on "pet"."owner_id" = "person"."id" when matched then delete -- this is a comment
+   * ```
+   */
   modifyEnd(modifier: Expression<any>): WheneableMergeQueryBuilder<DB, TT, ST, O> {
     return new WheneableMergeQueryBuilder({
       ...this.#props,

@@ -1557,6 +1557,11 @@ export class DefaultQueryCompiler
       this.append(' ')
       this.visitNode(node.output)
     }
+
+    if (node.endModifiers?.length) {
+      this.append(' ')
+      this.compileList(node.endModifiers, ' ')
+    }
   }
 
   protected override visitMatched(node: MatchedNode): void {
