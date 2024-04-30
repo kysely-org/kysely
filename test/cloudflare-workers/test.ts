@@ -1,14 +1,9 @@
 import { unstable_dev } from 'wrangler'
 ;(async () => {
   const worker = await unstable_dev('./api.ts', {
-    compatibilityDate: '2023-06-28',
     experimental: { disableExperimentalWarning: true },
     local: true,
-    // logLevel: 'debug',
     nodeCompat: true,
-    vars: {
-      NAME: 'cloudflare',
-    },
   })
 
   let exitCode = 0

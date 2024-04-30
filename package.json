@@ -79,7 +79,7 @@
     "@types/pg-cursor": "^2.7.2",
     "@types/sinon": "^17.0.2",
     "@types/tedious": "^4.0.9",
-    "better-sqlite3": "^9.2.2",
+    "better-sqlite3": "^9.6.0",
     "chai": "^4.4.0",
     "chai-as-promised": "^7.1.1",
     "chai-subset": "^1.6.0",
