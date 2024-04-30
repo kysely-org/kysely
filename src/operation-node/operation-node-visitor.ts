@@ -283,9 +283,6 @@ export abstract class OperationNodeVisitor {
   protected abstract visitOn(node: OnNode): void
   protected abstract visitValues(node: ValuesNode): void
   protected abstract visitSelectModifier(node: SelectModifierNode): void
-  protected abstract visitInsertModifier(node: OperationNode): void
-  protected abstract visitUpdateModifier(node: OperationNode): void
-  protected abstract visitDeleteModifier(node: OperationNode): void
   protected abstract visitCreateType(node: CreateTypeNode): void
   protected abstract visitDropType(node: DropTypeNode): void
   protected abstract visitExplain(node: ExplainNode): void

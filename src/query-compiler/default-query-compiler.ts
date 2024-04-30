@@ -1315,18 +1315,6 @@ export class DefaultQueryCompiler
     }
   }
 
-  protected override visitInsertModifier(node: OperationNode): void {
-    this.visitNode(node)
-  }
-
-  protected override visitUpdateModifier(node: OperationNode): void {
-    this.visitNode(node)
-  }
-
-  protected override visitDeleteModifier(node: OperationNode): void {
-    this.visitNode(node)
-  }
-
   protected override visitCreateType(node: CreateTypeNode): void {
     this.append('create type ')
     this.visitNode(node.name)

@@ -1,4 +1,4 @@
-import { AliasedExpression } from '../expression/expression.js'
+import { AliasedExpression, type Expression } from '../expression/expression.js'
 import { InsertQueryNode } from '../operation-node/insert-query-node.js'
 import { MergeQueryNode } from '../operation-node/merge-query-node.js'
 import { OperationNodeSource } from '../operation-node/operation-node-source.js'
@@ -69,6 +69,16 @@ export class MergeQueryBuilder<DB, TT extends keyof DB, O>
 
   constructor(props: MergeQueryBuilderProps) {
     this.#props = freeze(props)
+  }
+
+  modifyEnd(modifier: Expression<any>): MergeQueryBuilder<DB, TT, O> {
+    return new MergeQueryBuilder({
+      ...this.#props,
+      queryNode: QueryNode.cloneWithEndModifier(
+        this.#props.queryNode,
+        modifier.toOperationNode(),
+      ),
+    })
   }
 
   /**
@@ -254,6 +264,16 @@ export class WheneableMergeQueryBuilder<
 
   constructor(props: MergeQueryBuilderProps) {
     this.#props = freeze(props)
+  }
+
+  modifyEnd(modifier: Expression<any>): WheneableMergeQueryBuilder<DB, TT, ST, O> {
+    return new WheneableMergeQueryBuilder({
+      ...this.#props,
+      queryNode: QueryNode.cloneWithEndModifier(
+        this.#props.queryNode,
+        modifier.toOperationNode(),
+      ),
+    })
   }
 
   /**
