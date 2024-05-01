@@ -111,6 +111,7 @@ import { CastNode } from '../operation-node/cast-node.js'
 import { FetchNode } from '../operation-node/fetch-node.js'
 import { TopNode } from '../operation-node/top-node.js'
 import { OutputNode } from '../operation-node/output-node.js'
+import { OrConflictNode } from '../operation-node/or-conflict-node.js'
 
 export class DefaultQueryCompiler
   extends OperationNodeVisitor
@@ -1604,6 +1605,10 @@ export class DefaultQueryCompiler
     if (node.modifiers) {
       this.append(` ${node.modifiers}`)
     }
+  }
+
+  protected override visitOrConflict(node: OrConflictNode): void {
+    // todo
   }
 
   protected append(str: string): void {
