@@ -1,7 +1,7 @@
 import { freeze } from '../util/object-utils.js'
 import { OperationNode } from './operation-node.js'
 
-type OrConflictNodeResolutions =
+export type OrConflictNodeResolutions =
   | 'Rollback'
   | 'Abort'
   | 'Fail'

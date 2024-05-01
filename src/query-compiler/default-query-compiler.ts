@@ -111,7 +111,10 @@ import { CastNode } from '../operation-node/cast-node.js'
 import { FetchNode } from '../operation-node/fetch-node.js'
 import { TopNode } from '../operation-node/top-node.js'
 import { OutputNode } from '../operation-node/output-node.js'
-import { OrConflictNode } from '../operation-node/or-conflict-node.js'
+import {
+  OrConflictNode,
+  OrConflictNodeResolutions,
+} from '../operation-node/or-conflict-node.js'
 
 export class DefaultQueryCompiler
   extends OperationNodeVisitor
@@ -310,8 +313,8 @@ export class DefaultQueryCompiler
 
     this.append(node.replace ? 'replace' : 'insert')
 
-    if (node.ignore) {
-      this.append(' ignore')
+    if (node.or) {
+      this.visitNode(node.or)
     }
 
     if (node.top) {
@@ -1608,7 +1611,8 @@ export class DefaultQueryCompiler
   }
 
   protected override visitOrConflict(node: OrConflictNode): void {
-    // todo
+    this.append(' or ')
+    this.append(OR_CONFLICT_RESOLUTION[node.resolution])
   }
 
   protected append(str: string): void {
@@ -1743,4 +1747,14 @@ const JOIN_TYPE_SQL: Readonly<Record<JoinType, string>> = freeze({
   LateralInnerJoin: 'inner join lateral',
   LateralLeftJoin: 'left join lateral',
   Using: 'using',
+})
+
+const OR_CONFLICT_RESOLUTION: Readonly<
+  Record<OrConflictNodeResolutions, string>
+> = freeze({
+  Abort: 'abort',
+  Fail: 'fail',
+  Ignore: 'ignore',
+  Replace: 'replace',
+  Rollback: 'rollback',
 })
