@@ -50,7 +50,7 @@ export const QueryNode = freeze({
   ): T {
     return freeze({
       ...node,
-      endModifiers: query.endModifiers
+      endModifiers: node.endModifiers
         ? freeze([...node.endModifiers, modifier])
         : freeze([modifier]),
     })
