@@ -1,4 +1,3 @@
-version: '3'
 services:
   # credit to Knex.js team for the following mssql setup here:
   mssql:

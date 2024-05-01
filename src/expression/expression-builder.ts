@@ -1047,7 +1047,7 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
   /**
    * Creates a `cast(expr as dataType)` expression.
    *
-   * Since Kysely can't know the mapping between javascript and database types,
+   * Since Kysely can't know the mapping between JavaScript and database types,
    * you need to provide both explicitly.
    *
    * ### Examples

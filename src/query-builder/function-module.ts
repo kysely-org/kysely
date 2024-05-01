@@ -199,7 +199,7 @@ export interface FunctionModule<DB, TB extends keyof DB> {
    * If this function is used in a `select` statement, the type of the selected
    * expression will be `number | string` by default. This is because Kysely can't know the
    * type the db driver outputs. Sometimes the output can be larger than the largest
-   * javascript number and a string is returned instead. Most drivers allow you
+   * JavaScript number and a string is returned instead. Most drivers allow you
    * to configure the output type of large numbers and Kysely can't know if you've
    * done so.
    *
@@ -371,7 +371,7 @@ export interface FunctionModule<DB, TB extends keyof DB> {
    * If this function is used in a `select` statement, the type of the selected
    * expression will be `number | string | bigint` by default. This is because
    * Kysely can't know the type the db driver outputs. Sometimes the output can
-   * be larger than the largest javascript number and a string is returned instead.
+   * be larger than the largest JavaScript number and a string is returned instead.
    * Most drivers allow you to configure the output type of large numbers and Kysely
    * can't know if you've done so.
    *
@@ -429,7 +429,7 @@ export interface FunctionModule<DB, TB extends keyof DB> {
    * If this is used in a `select` statement, the type of the selected expression
    * will be `number | string | bigint` by default. This is because Kysely
    * can't know the type the db driver outputs. Sometimes the output can be larger
-   * than the largest javascript number and a string is returned instead. Most
+   * than the largest JavaScript number and a string is returned instead. Most
    * drivers allow you to configure the output type of large numbers and Kysely
    * can't know if you've done so.
    *
@@ -630,7 +630,7 @@ export interface FunctionModule<DB, TB extends keyof DB> {
    * If this function is used in a `select` statement, the type of the selected
    * expression will be `number | string` by default. This is because Kysely can't know the
    * type the db driver outputs. Sometimes the output can be larger than the largest
-   * javascript number and a string is returned instead. Most drivers allow you
+   * JavaScript number and a string is returned instead. Most drivers allow you
    * to configure the output type of large numbers and Kysely can't know if you've
    * done so.
    *
