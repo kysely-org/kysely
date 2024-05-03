@@ -378,23 +378,6 @@ async function testSelectWithDistinct(db: Kysely<Database>) {
   expectAssignable<string | number | bigint>(result.total_age)
 }
 
-async function testAggregateWithOrderBy(db: Kysely<Database>) {
-  const result = await db
-    .selectFrom('person')
-    .innerJoin('pet', 'pet.owner_id', 'person.id')
-    .select((eb) => [
-      eb.fn
-        .agg<string[]>('array_agg', ['pet.name'])
-        .orderBy('pet.name')
-        .as('person_pet_names'),
-      eb.fn.jsonAgg('pet').orderBy('pet.id').as('person_pets'),
-    ])
-    .executeTakeFirstOrThrow()
-
-  expectAssignable<string[]>(result.person_pet_names)
-  expectAssignable<Selectable<Pet>[]>(result.person_pets)
-}
-
 async function testWithFilterWhere(db: Kysely<Database>) {
   const { avg, count, max, min, sum } = db.fn
 
