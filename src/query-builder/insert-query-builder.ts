@@ -67,7 +67,7 @@ import {
   SelectExpressionFromOutputCallback,
   SelectExpressionFromOutputExpression,
 } from './output-interface.js'
-import { OrConflictNode } from '../operation-node/or-conflict-node.js'
+import { OrActionNode } from '../operation-node/or-action-node.js'
 
 export class InsertQueryBuilder<DB, TB extends keyof DB, O>
   implements
@@ -406,7 +406,7 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
     return new InsertQueryBuilder({
       ...this.#props,
       queryNode: InsertQueryNode.cloneWith(this.#props.queryNode, {
-        or: OrConflictNode.create('Ignore'),
+        or: OrActionNode.create('ignore'),
       }),
     })
   }
@@ -429,7 +429,7 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
     return new InsertQueryBuilder({
       ...this.#props,
       queryNode: InsertQueryNode.cloneWith(this.#props.queryNode, {
-        or: OrConflictNode.create('Abort'),
+        or: OrActionNode.create('abort'),
       }),
     })
   }
@@ -452,7 +452,7 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
     return new InsertQueryBuilder({
       ...this.#props,
       queryNode: InsertQueryNode.cloneWith(this.#props.queryNode, {
-        or: OrConflictNode.create('Fail'),
+        or: OrActionNode.create('fail'),
       }),
     })
   }
@@ -475,7 +475,7 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
     return new InsertQueryBuilder({
       ...this.#props,
       queryNode: InsertQueryNode.cloneWith(this.#props.queryNode, {
-        or: OrConflictNode.create('Replace'),
+        or: OrActionNode.create('replace'),
       }),
     })
   }
@@ -498,7 +498,7 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
     return new InsertQueryBuilder({
       ...this.#props,
       queryNode: InsertQueryNode.cloneWith(this.#props.queryNode, {
-        or: OrConflictNode.create('Rollback'),
+        or: OrActionNode.create('rollback'),
       }),
     })
   }

@@ -96,7 +96,7 @@ import { CastNode } from './cast-node.js'
 import { FetchNode } from './fetch-node.js'
 import { TopNode } from './top-node.js'
 import { OutputNode } from './output-node.js'
-import { OrConflictNode } from './or-conflict-node.js'
+import { OrActionNode } from './or-action-node.js'
 
 export abstract class OperationNodeVisitor {
   protected readonly nodeStack: OperationNode[] = []
@@ -200,7 +200,7 @@ export abstract class OperationNodeVisitor {
     FetchNode: this.visitFetch.bind(this),
     TopNode: this.visitTop.bind(this),
     OutputNode: this.visitOutput.bind(this),
-    OrConflictNode: this.visitOrConflict.bind(this),
+    OrActionNode: this.visitOrAction.bind(this),
   })
 
   protected readonly visitNode = (node: OperationNode): void => {
@@ -312,5 +312,5 @@ export abstract class OperationNodeVisitor {
   protected abstract visitFetch(node: FetchNode): void
   protected abstract visitTop(node: TopNode): void
   protected abstract visitOutput(node: OutputNode): void
-  protected abstract visitOrConflict(node: OrConflictNode): void
+  protected abstract visitOrAction(node: OrActionNode): void
 }

@@ -94,7 +94,7 @@ import { CastNode } from './cast-node.js'
 import { FetchNode } from './fetch-node.js'
 import { TopNode } from './top-node.js'
 import { OutputNode } from './output-node.js'
-import { OrConflictNode } from './or-conflict-node.js'
+import { OrActionNode } from './or-action-node.js'
 
 /**
  * Transforms an operation node tree into another one.
@@ -223,7 +223,7 @@ export class OperationNodeTransformer {
     FetchNode: this.transformFetch.bind(this),
     TopNode: this.transformTop.bind(this),
     OutputNode: this.transformOutput.bind(this),
-    OrConflictNode: this.transformOrConflict.bind(this),
+    OrActionNode: this.transformOrAction.bind(this),
   })
 
   transformNode<T extends OperationNode | undefined>(node: T): T {
@@ -1109,7 +1109,7 @@ export class OperationNodeTransformer {
     return node
   }
 
-  protected transformOrConflict(node: OrConflictNode): OrConflictNode {
+  protected transformOrAction(node: OrActionNode): OrActionNode {
     // An Object.freezed leaf node. No need to clone.
     return node
   }

@@ -92,7 +92,7 @@ export type OperationNodeKind =
   | 'FetchNode'
   | 'TopNode'
   | 'OutputNode'
-  | 'OrConflictNode'
+  | 'OrActionNode'
 
 export interface OperationNode {
   readonly kind: OperationNodeKind
