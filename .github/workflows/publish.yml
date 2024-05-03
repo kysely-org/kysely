@@ -1,0 +1,22 @@
+# https://docs.npmjs.com/generating-provenance-statements#publishing-packages-with-provenance-via-github-actions
+# https://github.blog/2023-04-19-introducing-npm-package-provenance/
+name: Publish to NPM /w provenance
+on:
+  release:
+    types: [created]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.x'
+          registry-url: 'https://registry.npmjs.org'
+      - run: npm ci
+      - run: npm publish --provenance --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
