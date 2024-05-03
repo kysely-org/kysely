@@ -383,6 +383,7 @@ export class OperationNodeTransformer {
       onConflict: this.transformNode(node.onConflict),
       onDuplicateKey: this.transformNode(node.onDuplicateKey),
       with: this.transformNode(node.with),
+      ignore: node.ignore,
       or: this.transformNode(node.or),
       replace: node.replace,
       explain: this.transformNode(node.explain),

@@ -376,7 +376,7 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
     return new InsertQueryBuilder({
       ...this.#props,
       queryNode: InsertQueryNode.cloneWith(this.#props.queryNode, {
-        or: OrConflictNode.create('Ignore'),
+        ignore: true,
       }),
     })
   }

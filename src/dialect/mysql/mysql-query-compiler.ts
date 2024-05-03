@@ -1,5 +1,4 @@
 import { CreateIndexNode } from '../../operation-node/create-index-node.js'
-import { OrConflictNode } from '../../operation-node/or-conflict-node.js'
 import { DefaultQueryCompiler } from '../../query-compiler/default-query-compiler.js'
 
 const ID_WRAP_REGEX = /`/g
@@ -71,15 +70,6 @@ export class MysqlQueryCompiler extends DefaultQueryCompiler {
     if (node.where) {
       this.append(' ')
       this.visitNode(node.where)
-    }
-  }
-
-  protected override visitOrConflict(node: OrConflictNode): void {
-    if (node.resolution === 'Ignore') {
-      this.append(' ')
-      this.append('ignore')
-    } else {
-      super.visitOrConflict(node)
     }
   }
 }

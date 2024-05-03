@@ -313,6 +313,10 @@ export class DefaultQueryCompiler
 
     this.append(node.replace ? 'replace' : 'insert')
 
+    if (node.ignore) {
+      this.append(' ignore')
+    }
+
     if (node.or) {
       this.visitNode(node.or)
     }
