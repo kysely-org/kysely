@@ -18,7 +18,7 @@ This recipe is supported on MySQL versions starting from 8.0.14. This is due to 
 PostgreSQL and MySQL have rich JSON support through their `json` data types and functions. `pg` and `mysql2`, the node drivers, automatically parse returned `json` columns as json objects. With the combination of these two things, we can write some super efficient queries with nested relations.
 
 :::info Parsing JSON
-The built in `SqliteDialect` and some 3rd party dialects don't parse the returned JSON columns to objects automatically.
+The built in `SqliteDialect` and some third-party dialects don't parse the returned JSON columns to objects automatically.
 Not even if they use `PostgreSQL` or `MySQL` under the hood! Parsing is handled (or not handled) by the database driver
 that Kysely has no control over. If your JSON columns get returned as strings, you can use the `ParseJSONResultsPlugin`:
 
@@ -97,7 +97,7 @@ These helpers are included in Kysely and you can import them from the `helpers` 
 import { jsonArrayFrom, jsonObjectFrom } from 'kysely/helpers/postgres'
 ```
 
-MySQL and SQLite versions of the helpers are slightly different but you can use them the same way. You can import them like this:
+MySQL and SQLite versions of the helpers are slightly different, but you can use them the same way. You can import them like this:
 
 ```ts
 import { jsonArrayFrom, jsonObjectFrom } from 'kysely/helpers/mysql'
