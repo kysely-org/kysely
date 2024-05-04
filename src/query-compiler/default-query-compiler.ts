@@ -290,6 +290,16 @@ export class DefaultQueryCompiler
     this.visitNode(node.having)
   }
 
+  protected handleInsertIgnoreAndOrAction(node: InsertQueryNode): void {
+    if (node.ignore) {
+      this.append(' ignore')
+    }
+
+    if (node.or) {
+      this.visitNode(node.or)
+    }
+  }
+
   protected override visitInsertQuery(node: InsertQueryNode): void {
     const rootQueryNode = this.nodeStack.find(QueryNode.is)!
     const isSubQuery = rootQueryNode !== node
@@ -310,13 +320,7 @@ export class DefaultQueryCompiler
 
     this.append(node.replace ? 'replace' : 'insert')
 
-    if (node.ignore) {
-      this.append(' ignore')
-    }
-
-    if (node.or) {
-      this.visitNode(node.or)
-    }
+    this.handleInsertIgnoreAndOrAction(node)
 
     if (node.top) {
       this.append(' ')

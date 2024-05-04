@@ -361,7 +361,8 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    * occurs.
    *
    * This is only supported on some dialects like MySQL. On most dialects you should
-   * use the {@link onConflict} method.
+   * use the {@link onConflict} method. Calls to this method for the SQLite dialect will
+   * be treated like a call to {@link orIgnore}.
    *
    * ### Examples
    *
