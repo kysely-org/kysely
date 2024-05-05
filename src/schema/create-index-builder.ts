@@ -158,7 +158,7 @@ export class CreateIndexBuilder<C = never>
    * The generated SQL (PostgreSQL):
    *
    * ```sql
-   * create index "person_first_name_include_age_index" on "person" ("first_name", "age" desc) INCLUDE ("age")
+   * create index "person_first_name_include_age_index" on "person" ("first_name") INCLUDE ("age")
    * ```
    */
     include<CL extends string>(
