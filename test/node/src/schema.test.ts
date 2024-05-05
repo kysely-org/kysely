@@ -1687,6 +1687,33 @@ for (const dialect of DIALECTS) {
           await builder.execute()
         })
       }
+
+      if (dialect === 'mssql' || dialect === 'postgres') {
+        it('should create an index with INCLUDE clauses', async () => {
+          const builder = ctx.db.schema
+            .createIndex('test_first_name_include_age')
+            .columns(['first_name'])
+            .include(['age'])
+            .on('test')
+  
+          testSql(builder, dialect, {
+            postgres: {
+              sql:
+                'create index "test_first_name_include_age" on "test" ("first_name") INCLUDE ("age")',
+              parameters: [],
+            },
+            mysql: NOT_SUPPORTED,
+            mssql: {
+              sql:
+                'create index "test_first_name_include_age" on "test" ("first_name") INCLUDE ("age")',
+              parameters: [],
+            },
+            sqlite: NOT_SUPPORTED,
+          })
+  
+          await builder.execute()
+        })
+      }
     })
 
     describe('drop index', () => {
@@ -3490,33 +3517,6 @@ for (const dialect of DIALECTS) {
 
             await query.execute()
           })
-        })
-      }
-
-      if (dialect === 'mssql' || dialect === 'postgres') {
-        it('should create an index with INCLUDE clauses', async () => {
-          const builder = ctx.db.schema
-            .createIndex('test_first_name_include_age')
-            .columns(['first_name'])
-            .include(['age'])
-            .on('test')
-  
-          testSql(builder, dialect, {
-            postgres: {
-              sql:
-                'create index "test_first_name_include_age" on "test" ("first_name") INCLUDE ("age")',
-              parameters: [],
-            },
-            mysql: NOT_SUPPORTED,
-            mssql: {
-              sql:
-                'create index "test_first_name_include_age" on "test" ("first_name") INCLUDE ("age")',
-              parameters: [],
-            },
-            sqlite: NOT_SUPPORTED,
-          })
-  
-          await builder.execute()
         })
       }
     })
