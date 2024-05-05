@@ -907,6 +907,12 @@ export class DefaultQueryCompiler
       this.append(')')
     }
 
+    if (node.include) {
+      this.append(' INCLUDE (')
+      this.compileList(node.include)
+      this.append(') ')
+    }
+
     if (node.nullsNotDistinct) {
       this.append(' nulls not distinct')
     }
