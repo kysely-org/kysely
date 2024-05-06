@@ -158,12 +158,12 @@ export class CreateIndexBuilder<C = never>
    * The generated SQL (PostgreSQL):
    *
    * ```sql
-   * create index "person_first_name_include_age_index" on "person" ("first_name") INCLUDE ("age")
+   * create index "person_first_name_include_age_index" on "person" ("first_name") include ("age")
    * ```
    */
-    include<CL extends string>(
-      columns: OrderedColumnName<CL>[],
-    ): CreateIndexBuilder<C | ExtractColumnNameFromOrderedColumnName<CL>> {
+    include(
+      columns: string[],
+    ): CreateIndexBuilder<C> {
       return new CreateIndexBuilder({
         ...this.#props,
         node: CreateIndexNode.cloneWith(
