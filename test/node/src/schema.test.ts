@@ -1699,13 +1699,13 @@ for (const dialect of DIALECTS) {
           testSql(builder, dialect, {
             postgres: {
               sql:
-                'create index "test_first_name_include_age" on "test" ("first_name") INCLUDE ("age")',
+                'create index "test_first_name_include_age" on "test" ("first_name") include ("age")',
               parameters: [],
             },
             mysql: NOT_SUPPORTED,
             mssql: {
               sql:
-                'create index "test_first_name_include_age" on "test" ("first_name") INCLUDE ("age")',
+                'create index "test_first_name_include_age" on "test" ("first_name") include ("age")',
               parameters: [],
             },
             sqlite: NOT_SUPPORTED,
