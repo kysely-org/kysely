@@ -7,6 +7,7 @@ import { RawNode } from '../operation-node/raw-node.js'
 import {
   ExtractColumnNameFromOrderedColumnName,
   OrderedColumnName,
+  parseColumnName,
   parseOrderedColumnName,
 } from '../parser/reference-parser.js'
 import { parseTable } from '../parser/table-parser.js'
@@ -169,7 +170,7 @@ export class CreateIndexBuilder<C = never>
         node: CreateIndexNode.cloneWith(
           this.#props.node,
           {
-            include: columns.map(parseOrderedColumnName)
+            include: columns.map(parseColumnName)
           },
         ),
       })
