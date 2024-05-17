@@ -1949,6 +1949,70 @@ for (const dialect of DIALECTS) {
       }
     })
 
+    describe('refresh materialized view', () => {
+      beforeEach(async () => {
+        await ctx.db.schema
+          .createView('dogs')
+          .materialized()
+          .as(ctx.db.selectFrom('pet').selectAll().where('species', '=', 'dog'))
+          .execute()
+      })
+
+      afterEach(async () => {
+        await ctx.db.schema.dropView('dogs').ifExists().execute()
+      })
+
+      if (dialect === 'postgres') {
+        it('should refresh a materialized view', async () => {
+          const builder = ctx.db.schema.refreshMaterializedView('dogs')
+  
+          testSql(builder, dialect, {
+            postgres: {
+              sql: `refresh materialized view "dogs" with data`,
+              parameters: [],
+            },
+            mssql: NOT_SUPPORTED,
+            mysql: NOT_SUPPORTED,
+            sqlite: NOT_SUPPORTED,
+          })
+
+          await builder.execute()
+        })
+
+        it('should refresh a materialized view concurrently', async () => {
+          const builder = ctx.db.schema.refreshMaterializedView('dogs').concurrently()
+
+          testSql(builder, dialect, {
+            postgres: {
+              sql: `refresh materialized view concurrently "dogs" with data`,
+              parameters: [],
+            },
+            mssql: NOT_SUPPORTED,
+            mysql: NOT_SUPPORTED,
+            sqlite: NOT_SUPPORTED,
+          })
+
+          await builder.execute()
+        })
+
+        it('should refresh a materialized view with no data', async () => {
+          const builder = ctx.db.schema.refreshMaterializedView('dogs').withNoData()
+
+          testSql(builder, dialect, {
+            postgres: {
+              sql: `refresh materialized view "dogs" with no data`,
+              parameters: [],
+            },
+            mssql: NOT_SUPPORTED,
+            mysql: NOT_SUPPORTED,
+            sqlite: NOT_SUPPORTED,
+          })
+
+          await builder.execute()
+        })
+      }
+    })
+
     describe('drop view', () => {
       beforeEach(async () => {
         await ctx.db.schema
