@@ -1,5 +1,6 @@
 import { isFunction, isObject } from '../util/object-utils.js'
 import { Migration, MigrationProvider } from './migrator.js'
+import { pathToFileURL } from 'url';
 
 /**
  * Reads all migrations from a folder in node.js.
@@ -37,7 +38,7 @@ export class FileMigrationProvider implements MigrationProvider {
       ) {
         const migration = await import(
           /* webpackIgnore: true */ this.#props.path.join(
-            this.#props.migrationFolder,
+            pathToFileURL(this.#props.migrationFolder).toString(),
             fileName,
           )
         )
