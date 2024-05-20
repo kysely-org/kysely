@@ -19,6 +19,11 @@ export interface MysqlDialectConfig {
    * Called once for each created connection.
    */
   onCreateConnection?: (connection: DatabaseConnection) => Promise<void>
+
+  /**
+   * Called every time a connection is checked out from the pool.
+   */
+  onReserveConnection?: (connection: DatabaseConnection) => Promise<void>
 }
 
 /**
