@@ -83,6 +83,8 @@ import { FetchModifier } from '../operation-node/fetch-node.js'
 import { parseFetch } from '../parser/fetch-parser.js'
 import { TopModifier } from '../operation-node/top-node.js'
 import { parseTop } from '../parser/top-parser.js'
+import { CamelCasedProperties } from '../pave/typeHelpers'
+import * as _ from 'lodash'
 
 export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
   extends WhereInterface<DB, TB>,
@@ -2371,6 +2373,16 @@ class SelectQueryBuilderImpl<DB, TB extends keyof DB, O>
     )
 
     return result.rows
+  }
+
+  async executeCamelCase(): Promise<CamelCasedProperties<Simplify<O>>[]> {
+    const result = await this.execute();
+
+    return result.map( row => _.mapKeys(
+        row,
+        (value: unknown, key: string) => _.camelCase(key)
+      ) as CamelCasedProperties<Simplify<O>>
+    )
   }
 
   async executeTakeFirst(): Promise<SimplifySingleResult<O>> {
