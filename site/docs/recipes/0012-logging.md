@@ -9,12 +9,14 @@ There are 2 ways to configure logging:
 You can provide an array of log levels to the `log` property when instantiating `Kysely`.
 
 When `'query'` is included in the array, `Kysely` will log all executed queries, not including parameter values.
+
 When `'error'` is included in the array, `Kysely` will log all errors.
 
 ```ts
 const db = new Kysely({
   ...
   log: ['query', 'error']
+  ...
 });
 ```
 
@@ -53,6 +55,8 @@ const db = new Kysely({
         params: event.query.parameters.map(maskPII),
       });
     }
+  }
 })
+```
 
 For more information check the docs for details on the interfaces [KyselyConfig](https://kysely-org.github.io/kysely-apidoc/interfaces/KyselyConfig.html).
