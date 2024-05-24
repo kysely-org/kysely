@@ -38,7 +38,7 @@ import { DrainOuterGeneric } from './util/type-utils.js'
  * The main Kysely class.
  *
  * You should create one instance of `Kysely` per database using the {@link Kysely}
- * constructor. Each `Kysely` instance maintains it's own connection pool.
+ * constructor. Each `Kysely` instance maintains its own connection pool.
  *
  * ### Examples
  *
