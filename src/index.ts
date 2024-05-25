@@ -59,6 +59,7 @@ export * from './schema/alter-column-builder.js'
 export * from './dynamic/dynamic.js'
 
 export * from './driver/driver.js'
+export * from './driver/runtime-driver.js'
 export * from './driver/database-connection.js'
 export * from './driver/connection-provider.js'
 export * from './driver/default-connection-provider.js'
