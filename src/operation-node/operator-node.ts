@@ -24,6 +24,7 @@ export const COMPARISON_OPERATORS = [
   '&&',
   '?',
   '?&',
+  '?|',
   '!<',
   '!>',
   '<=>',
