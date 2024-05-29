@@ -1,0 +1,238 @@
+---
+sidebar_position: 4
+---
+
+# Deno
+
+An example of the code in this guide can be found at [this repo](https://github.com/Sleepful/deno-kysely-migrations).
+
+To manage migrations we need a few things:
+
+- A way to create new migrations.
+- A way to run our migrations.
+
+This guide will show how to do this in Deno.
+
+Assume the following configuration in `deno.json`:
+
+```ts
+{
+  "tasks": {
+    "dev": "deno run --watch main.ts",
+    "migrate": "deno run -A ./tasks/db_migrate.ts",
+    "new_migration": "deno run -A ./tasks/new_migration.ts",
+  },
+  "imports": {
+    "$std/": "https://deno.land/std/",
+    "kysely": "npm:kysely",
+    "kysely-postgres-js": "npm:kysely-postgres-js",
+    "postgres": "https://deno.land/x/postgresjs/mod.js",
+  }
+}
+```
+
+Lets put a script that creates our migrations, we can run this script with:
+```
+$ deno new_migration <your_migration_name>
+```
+The script will be located at `tasks/new_migration.ts` and it will look like this:
+
+```ts
+// tasks/new_migration.ts
+import { parseArgs } from "$std/cli/parse_args.ts";
+
+// This is a Deno task, that means that CWD (Deno.cwd) is the root dir of the project,
+// remember this when looking at the relative paths below.
+
+// Make sure there is this `migrations` dir in root of project
+const migrationDir = "./migrations";
+
+const isMigrationFile = (filename: string): boolean => {
+  const regex = /.*migration.ts$/;
+  return regex.test(filename);
+};
+
+const files = [];
+for await (const f of Deno.readDir(migrationDir)) {
+  f.isFile && isMigrationFile(f.name) && files.push(f);
+}
+
+const filename = (idx: number, filename: string) => {
+  const YYYYmmDD = new Date().toISOString().split("T")[0];
+  // pad the index of the migration to 3 digits because
+  // the migrations will be executed in alphanumerical order
+  const paddedIdx = String(idx).padStart(3, "0");
+  return `${paddedIdx}-${YYYYmmDD}-${filename}.migration.ts`;
+};
+
+const firstCLIarg = parseArgs(Deno.args)?._[0] as string ?? null;
+
+if (!firstCLIarg) {
+  console.error("You must pass-in the name of the migration file as an arg");
+  Deno.exit(1);
+}
+
+// make sure this is file is present in the project
+const templateText = await Deno.readTextFile(
+  "./tasks/new_migration/migration_template.ts",
+);
+
+const migrationFilename = filename(files.length, firstCLIarg);
+
+console.log(`Creating migration:\n\nmigrations/${migrationFilename}\n`);
+
+await Deno.writeTextFile(`./migrations/${migrationFilename}`, templateText);
+
+console.log("Done!");
+```
+
+This script uses a template file for our migrations, lets create that too at `tasks/new_migration/migration_template.ts`:
+
+```ts
+// tasks/new_migration/migration_template.ts
+import { Kysely, sql } from "kysely";
+
+export async function up(db: Kysely<any>): Promise<void> {
+  // Migration code
+}
+
+export async function down(db: Kysely<any>): Promise<void> {
+  // Migration code
+}
+```
+
+Finally, lets create the script that will run our migrations. We will use this script like this:
+```
+$ deno migrate
+$ deno migrate down
+```
+The script will be located at `tasks/db_migrate.ts` and will look like this:
+```ts
+// tasks/db_migrate.ts
+import {
+  Kysely,
+  type Migration,
+  type MigrationProvider,
+  Migrator,
+} from "kysely";
+import { PostgresJSDialect } from "kysely-postgres-js";
+import postgres from "postgres";
+import * as Path from "$std/path/mod.ts";
+import { parseArgs } from "$std/cli/parse_args.ts";
+
+const databaseConfig = {
+  postgres: postgres({
+    database: "my_database_name",
+    host: "localhost",
+    max: 10,
+    port: 5432,
+    user: "postgres",
+  }),
+};
+
+// Migration files must be found in the `migrationDir`.
+// and the migration files must follow name convention:
+//    number-<filename>.migration.ts
+// where `number` identifies the order in which migrations are to be run.
+//
+// To create a new migration file use:
+//   deno task new_migration <name-of-your-migration-file>
+
+const migrationDir = "./migrations";
+
+const allowUnorderedMigrations = false;
+
+// Documentation to understand why the code in this file looks as it does:
+// Kysely docs: https://www.kysely.dev/docs/migrations/deno
+// Example provider: https://github.com/kysely-org/kysely/blob/6f913552/src/migration/file-migration-provider.ts#L20
+
+interface Database {}
+
+const db = new Kysely<Database>({
+  dialect: new PostgresJSDialect(databaseConfig),
+});
+
+export interface FileMigrationProviderProps {
+  migrationDir: string;
+}
+
+class DenoMigrationProvider implements MigrationProvider {
+  readonly #props: FileMigrationProviderProps;
+
+  constructor(props: FileMigrationProviderProps) {
+    this.#props = props;
+  }
+
+  isMigrationFile = (filename: string): boolean => {
+    const regex = /.*migration.ts$/;
+    return regex.test(filename);
+  };
+
+  async getMigrations(): Promise<Record<string, Migration>> {
+    const files: Deno.DirEntry[] = [];
+    for await (const f of Deno.readDir(this.#props.migrationDir)) {
+      f.isFile && this.isMigrationFile(f.name) && files.push(f);
+    }
+
+    const migrations: Record<string, Migration> = {};
+
+    for (const f of files) {
+      const filePath = Path.join(Deno.cwd(), this.#props.migrationDir, f.name);
+      const migration = await import(filePath);
+      const migrationKey = f.name.match(/(\d+-.*).migration.ts/)![1];
+      migrations[migrationKey] = migration;
+    }
+
+    return migrations;
+  }
+}
+
+const migrator = new Migrator({
+  db,
+  provider: new DenoMigrationProvider({ migrationDir }),
+  allowUnorderedMigrations,
+});
+
+const firstCLIarg = parseArgs(Deno.args)?._[0] as string ?? null;
+
+const migrate = () => {
+  if (firstCLIarg == "down") {
+    return migrator.migrateDown();
+  }
+  return migrator.migrateToLatest();
+};
+
+const { error, results } = await migrate();
+results?.forEach((it) => {
+  if (it.status === "Success") {
+    console.log(`Migration "${it.migrationName}" was executed successfully`);
+  } else if (it.status === "Error") {
+    console.error(`Failed to execute migration "${it.migrationName}"`);
+  }
+});
+
+if (error) {
+  console.error("Failed to migrate");
+  console.error(error);
+  Deno.exit(1);
+}
+
+await db.destroy();
+
+Deno.exit(0);
+```
+
+Remember to adjust `databaseConfig` so that it connects to your database.
+
+Now you can create a migration with:
+```
+deno task new_migration <name>
+```
+Then apply it to your database with:
+```
+deno task migrate
+```
+If you want to undo your last migration just use:
+```
+deno task migrate down
+```
