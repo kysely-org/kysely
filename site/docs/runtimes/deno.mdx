@@ -52,3 +52,35 @@ const sql = query.compile()
 
 console.log(sql.sql)
 ```
+
+Deno works well with [PostgresJS](https://github.com/porsager/postgres), to that end you can use the Kysely dialect and the driver:
+
+```ts
+import { PostgresJSDialect } from "npm:kysely-postgres-js";
+import postgres from 'https://deno.land/x/postgresjs/mod.js'
+import { Kysely } from "kysely";
+
+interface Database {}
+
+// adjust accordingly
+const databaseConfig = {
+  postgres: postgres({
+    database: "my_database_name",
+    host: "localhost",
+    max: 10,
+    port: 5432,
+    user: "postgres",
+  }),
+};
+
+const db = new Kysely<Database>({
+  dialect: new PostgresJSDialect(databaseConfig),
+});
+
+// example assuming there is a "users" table:
+const users = await db.selectFrom("users")
+    .selectAll()
+    .execute();
+
+console.log(users)
+```
