@@ -1,13 +1,13 @@
 export class UpdateResult {
   /**
-   * The number of rows the update query updated.
+   * The number of rows the update query updated (even if not changed).
   */
   readonly numUpdatedRows: bigint
 
   /**
    * The number of rows the update query changed.
-   * This is **optional** and only provided by some drivers like `node-mysql2`.
-   * You would probably use `numUpdatedRows` in most cases.
+   * This is **optional** and only supported in dialects such as MySQL.
+   * You would probably use {@link numUpdatedRows} in most cases.
   */
   readonly numChangedRows?: bigint
 
