@@ -15,9 +15,9 @@ export class WithSafeArrayWhereInPlugin implements KyselyPlugin {
     return this.#transformer.transformNode(args.node)
   }
 
-  transformResult(
+  async transformResult(
     args: PluginTransformResultArgs,
   ): Promise<QueryResult<UnknownRow>> {
-    return Promise.resolve(args.result)
+    return args.result
   }
 }
