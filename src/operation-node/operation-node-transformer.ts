@@ -904,11 +904,12 @@ export class OperationNodeTransformer {
   ): AggregateFunctionNode {
     return requireAllProps({
       kind: 'AggregateFunctionNode',
+      func: node.func,
       aggregated: this.transformNodeList(node.aggregated),
       distinct: node.distinct,
       orderBy: this.transformNode(node.orderBy),
+      withinGroup: this.transformNode(node.orderBy),
       filter: this.transformNode(node.filter),
-      func: node.func,
       over: this.transformNode(node.over),
     })
   }

@@ -11,6 +11,7 @@ export interface AggregateFunctionNode extends OperationNode {
   readonly aggregated: readonly OperationNode[]
   readonly distinct?: boolean
   readonly orderBy?: OrderByNode
+  readonly withinGroup?: OrderByNode
   readonly filter?: WhereNode
   readonly over?: OverNode
 }
@@ -51,6 +52,21 @@ export const AggregateFunctionNode = freeze({
       ...aggregateFunctionNode,
       orderBy: aggregateFunctionNode.orderBy
         ? OrderByNode.cloneWithItems(aggregateFunctionNode.orderBy, orderItems)
+        : OrderByNode.create(orderItems),
+    })
+  },
+
+  cloneWithWithinGroup(
+    aggregateFunctionNode: AggregateFunctionNode,
+    orderItems: ReadonlyArray<OrderByItemNode>,
+  ): AggregateFunctionNode {
+    return freeze({
+      ...aggregateFunctionNode,
+      withinGroup: aggregateFunctionNode.withinGroup
+        ? OrderByNode.cloneWithItems(
+            aggregateFunctionNode.withinGroup,
+            orderItems,
+          )
         : OrderByNode.create(orderItems),
     })
   },
