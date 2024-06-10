@@ -908,7 +908,7 @@ export class OperationNodeTransformer {
       aggregated: this.transformNodeList(node.aggregated),
       distinct: node.distinct,
       orderBy: this.transformNode(node.orderBy),
-      withinGroup: this.transformNode(node.orderBy),
+      withinGroup: this.transformNode(node.withinGroup),
       filter: this.transformNode(node.filter),
       over: this.transformNode(node.over),
     })
