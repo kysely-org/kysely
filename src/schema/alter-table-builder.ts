@@ -323,6 +323,8 @@ export interface AlterTableBuilderProps {
   readonly node: AlterTableNode
 }
 
+preventAwait(AlterTableBuilder, "don't await AlterTableBuilder instances")
+
 export interface ColumnAlteringInterface {
   alterColumn(
     column: string,
@@ -468,9 +470,6 @@ export class AlterTableColumnAlteringBuilder
 
 export interface AlterTableColumnAlteringBuilderProps
   extends AlterTableBuilderProps {}
-
-preventAwait(AlterTableBuilder, "don't await AlterTableBuilder instances")
-preventAwait(AlterColumnBuilder, "don't await AlterColumnBuilder instances")
 
 preventAwait(
   AlterTableColumnAlteringBuilder,
