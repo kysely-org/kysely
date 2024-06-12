@@ -64,7 +64,8 @@ export function isPlainObject(obj: unknown): obj is Record<string, unknown> {
     !Array.isArray(obj) &&
     !isDate(obj) &&
     !isBuffer(obj) &&
-    !isArrayBufferOrView(obj)
+    !isArrayBufferOrView(obj) &&
+    hasPlainObjectPrototype(obj)
   )
 }
 
@@ -168,4 +169,18 @@ function compareGenericObjects(
   }
 
   return true
+}
+
+function hasPlainObjectPrototype(obj: unknown): boolean {
+  if (Object.getPrototypeOf(obj) === null) {
+    return true
+  }
+
+  let proto = obj
+
+  while (Object.getPrototypeOf(proto) !== null) {
+    proto = Object.getPrototypeOf(proto)
+  }
+
+  return Object.getPrototypeOf(obj) === proto
 }
