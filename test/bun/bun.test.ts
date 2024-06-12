@@ -1,11 +1,14 @@
 import { createPool } from 'mysql2'
 import { Pool } from 'pg'
+import * as Tarn from 'tarn'
+import * as Tedious from 'tedious'
 import {
   Generated,
   Kysely,
   PostgresDialect,
   MysqlDialect,
   sql,
+  MssqlDialect,
 } from '../../dist/esm/index.js'
 
 interface Person {
@@ -40,6 +43,38 @@ const dbs = [
       }),
     }),
   }),
+  new Kysely<Database>({
+    dialect: new MssqlDialect({
+      tarn: {
+        ...Tarn,
+        options: {
+          min: 0,
+          max: 10,
+        },
+      },
+      tedious: {
+        ...Tedious,
+        connectionFactory: () =>
+          new Tedious.Connection({
+            authentication: {
+              options: {
+                password: 'KyselyTest0',
+                userName: 'sa',
+              },
+              type: 'default',
+            },
+            options: {
+              connectTimeout: 3000,
+              database: 'kysely_test',
+              encrypt: false,
+              port: 21433,
+              trustServerCertificate: true,
+            },
+            server: 'localhost',
+          }),
+      },
+    }),
+  }),
 ]
 
 if (
@@ -60,3 +95,5 @@ await Promise.all(dbs.map((db) => query.execute(db)))
 console.log('bun test passed')
 
 await Promise.all(dbs.map((db) => db.destroy()))
+
+process.exit(0) // hangs otherwise...

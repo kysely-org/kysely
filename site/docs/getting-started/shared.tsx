@@ -12,7 +12,7 @@ export type PackageManager = 'npm' | 'pnpm' | 'yarn' | 'deno' | 'bun'
 
 const PACKAGE_MANAGER_UNSUPPORTED_DIALECTS: Record<PackageManager, Dialect[]> =
   {
-    bun: ['sqlite', 'mssql'],
+    bun: ['sqlite'],
     deno: ['sqlite', 'mssql'],
     npm: [],
     pnpm: [],
