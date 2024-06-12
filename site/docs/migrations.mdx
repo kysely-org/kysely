@@ -4,6 +4,18 @@ sidebar_position: 4
 
 # Migrations
 
+## Installation (optional)
+
+Kysely offers a CLI you can use for migrations. To install it, run the following in your terminal:
+
+```bash
+npm i -D kysely-ctl
+```
+
+For more information, visit https://github.com/kysely-org/kysely-ctl.
+
+## Migration files
+
 Migration files should look like this:
 
 ```ts
@@ -18,11 +30,21 @@ export async function down(db: Kysely<any>): Promise<void> {
 }
 ```
 
-The up function is called when you update your database schema to the next version and down when you go back to previous version. The only argument for the functions is an instance of `Kysely<any>`. It's important to use ` Kysely<any>` and not `Kysely<YourDatabase>`.
+The `up` function is called when you update your database schema to the next version and `down` when you go back to previous version. The only argument for the functions is an instance of `Kysely<any>`. It's important to use `Kysely<any>` and not `Kysely<YourDatabase>`.
 
 Migrations should never depend on the current code of your app because they need to work even when the app changes. Migrations need to be "frozen in time".
 
-Migrations can use the `Kysely.schema` module to modify the schema. Migrations can also run normal queries to modify data.
+Migrations can use the `Kysely.schema` module to modify the schema. Migrations can also run normal queries to read/modify data.
+
+:::info Automation
+
+You can create migration files using the CLI by running:
+
+```bash
+kysely migrate make <migration_name>
+```
+
+:::
 
 ## Execution order
 
@@ -128,7 +150,7 @@ export async function down(db: Kysely<any>): Promise<void> {
 
 ## Running migrations
 
-You can then use
+You can then use:
 
 ```ts
 const migrator = new Migrator(migratorConfig)
