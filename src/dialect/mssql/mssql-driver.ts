@@ -136,11 +136,11 @@ class MssqlConnection implements DatabaseConnection {
     try {
       const deferred = new Deferred<OnDone<O>>()
 
-      const request = new MssqlRequest<O>(
-        this.#tedious,
+      const request = new MssqlRequest<O>({
         compiledQuery,
-        deferred,
-      )
+        tedious: this.#tedious,
+        onDone: deferred,
+      })
 
       this.#connection.execSql(request.request)
 
@@ -172,13 +172,17 @@ class MssqlConnection implements DatabaseConnection {
       throw new Error('chunkSize must be a positive integer')
     }
 
-    const request = new MssqlRequest<O>(this.#tedious, compiledQuery)
+    const request = new MssqlRequest<O>({
+      compiledQuery,
+      streamChunkSize: chunkSize,
+      tedious: this.#tedious,
+    })
 
     this.#connection.execSql(request.request)
 
     try {
       while (true) {
-        const rows = await request.readChunk(chunkSize)
+        const rows = await request.readChunk()
 
         if (rows.length === 0) {
           break
@@ -199,11 +203,11 @@ class MssqlConnection implements DatabaseConnection {
     try {
       const deferred = new Deferred<OnDone<unknown>>()
 
-      const request = new MssqlRequest<unknown>(
-        this.#tedious,
-        CompiledQuery.raw('select 1'),
-        deferred,
-      )
+      const request = new MssqlRequest<unknown>({
+        compiledQuery: CompiledQuery.raw('select 1'),
+        onDone: deferred,
+        tedious: this.#tedious,
+      })
 
       this.#connection.execSql(request.request)
 
@@ -271,50 +275,79 @@ interface PlainDeferred<O> {
 class MssqlRequest<O> {
   readonly #request: TediousRequest
   readonly #rows: O[]
+  readonly #streamChunkSize: number | undefined
+  readonly #subscribers: Record<
+    string,
+    (event: 'completed' | 'chunkReady' | 'error', error?: unknown) => void
+  >
   readonly #tedious: Tedious
-  #completed: boolean
   #error: Error | any[] | undefined
   #rowCount: number | undefined
 
-  constructor(
-    tedious: Tedious,
-    compiledQuery: CompiledQuery,
-    onDone?: Deferred<OnDone<O>> | PlainDeferred<OnDone<O>>,
-  ) {
-    this.#completed = false
+  constructor(props: MssqlRequestProps<O>) {
+    const { compiledQuery, onDone, streamChunkSize, tedious } = props
+
     this.#rows = []
+    this.#streamChunkSize = streamChunkSize
+    this.#subscribers = {}
     this.#tedious = tedious
 
-    const { parameters, sql } = compiledQuery
+    if (onDone) {
+      this.#subscribers['onDone'] = (event, error) => {
+        if (event === 'chunkReady') {
+          return
+        }
 
-    this.#request = new this.#tedious.Request(sql, (err, rowCount) => {
-      if (err) {
-        this.#error = err instanceof AggregateError ? err.errors : err
-        onDone?.reject(this.#error)
-      } else {
-        this.#rowCount = rowCount
+        delete this.#subscribers['onDone']
+
+        if (event === 'error') {
+          onDone.reject(error)
+        } else {
+          onDone.resolve({
+            rowCount: this.#rowCount,
+            rows: this.#rows,
+          })
+        }
       }
-    })
+    }
 
-    this.#addParametersToRequest(parameters)
-    this.#attachListeners(onDone)
+    this.#request = new this.#tedious.Request(
+      compiledQuery.sql,
+      (err, rowCount) => {
+        if (err) {
+          Object.values(this.#subscribers).forEach((subscriber) =>
+            subscriber(
+              'error',
+              err instanceof AggregateError ? err.errors : err,
+            ),
+          )
+        } else {
+          this.#rowCount = rowCount
+        }
+      },
+    )
+
+    this.#addParametersToRequest(compiledQuery.parameters)
+    this.#attachListeners()
   }
 
   get request(): TediousRequest {
     return this.#request
   }
 
-  readChunk(chunkSize: number): Promise<O[]> {
+  readChunk(): Promise<O[]> {
     return new Promise<O[]>((resolve, reject) => {
-      const interval = setInterval(() => {
-        if (this.#error) {
-          clearInterval(interval)
-          reject(this.#error)
-        } else if (this.#completed || this.#rows.length >= chunkSize) {
-          clearInterval(interval)
-          resolve(this.#rows.splice(0, chunkSize))
+      this.#subscribers['waitForChunk'] = (event, error) => {
+        delete this.#subscribers['waitForChunk']
+
+        if (event === 'error') {
+          reject(error)
+        } else {
+          resolve(this.#rows.splice(0, this.#streamChunkSize))
         }
-      }, 0)
+      }
+
+      this.#request.resume()
     })
   }
 
@@ -330,9 +363,18 @@ class MssqlRequest<O> {
     }
   }
 
-  #attachListeners(
-    onDone: Deferred<OnDone<O>> | PlainDeferred<OnDone<O>> | undefined,
-  ): void {
+  #attachListeners(): void {
+    const pauseAndEmitChunkReady = this.#streamChunkSize
+      ? () => {
+          if (this.#streamChunkSize! <= this.#rows.length) {
+            this.#request.pause()
+            Object.values(this.#subscribers).forEach((subscriber) =>
+              subscriber('chunkReady'),
+            )
+          }
+        }
+      : undefined
+
     const rowListener = (columns: TediousColumnValue[]) => {
       const row: Record<string, unknown> = {}
 
@@ -341,18 +383,17 @@ class MssqlRequest<O> {
       }
 
       this.#rows.push(row as O)
+
+      pauseAndEmitChunkReady?.()
     }
 
     this.#request.on('row', rowListener)
 
     this.#request.once('requestCompleted', () => {
-      this.#completed = true
+      Object.values(this.#subscribers).forEach((subscriber) =>
+        subscriber('completed'),
+      )
       this.#request.off('row', rowListener)
-
-      onDone?.resolve({
-        rowCount: this.#rowCount,
-        rows: this.#rows,
-      })
     })
   }
 
@@ -387,4 +428,11 @@ class MssqlRequest<O> {
 
     return this.#tedious.TYPES.NVarChar
   }
+}
+
+interface MssqlRequestProps<O> {
+  compiledQuery: CompiledQuery
+  onDone?: Deferred<OnDone<O>> | PlainDeferred<OnDone<O>>
+  streamChunkSize?: number
+  tedious: Tedious
 }
