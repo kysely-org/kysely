@@ -195,7 +195,7 @@ class MssqlConnection implements DatabaseConnection {
         }
       }
     } finally {
-      this.#connection.cancel()
+      await this.#cancelRequest(request)
     }
   }
 
@@ -240,6 +240,19 @@ class MssqlConnection implements DatabaseConnection {
     }
 
     return tediousIsolationLevel
+  }
+
+  #cancelRequest<O>(request: MssqlRequest<O>): Promise<void> {
+    return new Promise((resolve) => {
+      request.request.once('requestCompleted', resolve)
+
+      const wasCanceled = this.#connection.cancel()
+
+      if (!wasCanceled) {
+        request.request.off('requestCompleted', resolve)
+        resolve(undefined)
+      }
+    })
   }
 
   [PRIVATE_RELEASE_METHOD](): Promise<void> {
@@ -293,12 +306,14 @@ class MssqlRequest<O> {
     this.#tedious = tedious
 
     if (onDone) {
-      this.#subscribers['onDone'] = (event, error) => {
+      const subscriptionKey = 'onDone'
+
+      this.#subscribers[subscriptionKey] = (event, error) => {
         if (event === 'chunkReady') {
           return
         }
 
-        delete this.#subscribers['onDone']
+        delete this.#subscribers[subscriptionKey]
 
         if (event === 'error') {
           onDone.reject(error)
@@ -336,9 +351,11 @@ class MssqlRequest<O> {
   }
 
   readChunk(): Promise<O[]> {
+    const subscriptionKey = this.readChunk.name
+
     return new Promise<O[]>((resolve, reject) => {
-      this.#subscribers['waitForChunk'] = (event, error) => {
-        delete this.#subscribers['waitForChunk']
+      this.#subscribers[subscriptionKey] = (event, error) => {
+        delete this.#subscribers[subscriptionKey]
 
         if (event === 'error') {
           reject(error)
@@ -368,12 +385,13 @@ class MssqlRequest<O> {
       ? () => {
           if (this.#streamChunkSize! <= this.#rows.length) {
             this.#request.pause()
+
             Object.values(this.#subscribers).forEach((subscriber) =>
               subscriber('chunkReady'),
             )
           }
         }
-      : undefined
+      : () => {}
 
     const rowListener = (columns: TediousColumnValue[]) => {
       const row: Record<string, unknown> = {}
@@ -384,7 +402,7 @@ class MssqlRequest<O> {
 
       this.#rows.push(row as O)
 
-      pauseAndEmitChunkReady?.()
+      pauseAndEmitChunkReady()
     }
 
     this.#request.on('row', rowListener)
