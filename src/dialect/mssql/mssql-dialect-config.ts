@@ -1,5 +1,3 @@
-import { Request } from 'tedious'
-
 export interface MssqlDialectConfig {
   /**
    * This dialect uses the `tarn` package to manage the connection pool to your
@@ -94,7 +92,7 @@ export interface TediousRequestClass {
   ): TediousRequest
 }
 
-export interface TediousRequest {
+export declare class TediousRequest {
   addParameter(
     name: string,
     dataType: TediousDataType,
@@ -112,6 +110,8 @@ export interface TediousRequest {
   once(event: string, listener: (...args: any[]) => void): this
   off(event: 'row', listener: (columns: any) => void): this
   off(event: string, listener: (...args: any[]) => void): this
+  pause(): void
+  resume(): void
 }
 
 export interface TediousTypes {
