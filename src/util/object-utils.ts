@@ -59,13 +59,20 @@ export function isArrayBufferOrView(
 }
 
 export function isPlainObject(obj: unknown): obj is Record<string, unknown> {
-  return (
-    isObject(obj) &&
-    !Array.isArray(obj) &&
-    !isDate(obj) &&
-    !isBuffer(obj) &&
-    !isArrayBufferOrView(obj)
-  )
+  if (!isObject(obj) || getTag(obj) !== '[object Object]') {
+    return false
+  }
+
+  if (Object.getPrototypeOf(obj) === null) {
+    return true
+  }
+
+  let proto = obj
+  while (Object.getPrototypeOf(proto) !== null) {
+    proto = Object.getPrototypeOf(proto)
+  }
+
+  return Object.getPrototypeOf(obj) === proto
 }
 
 export function getLast<T>(arr: ArrayLike<T>): T | undefined {
@@ -168,4 +175,14 @@ function compareGenericObjects(
   }
 
   return true
+}
+
+const toString = Object.prototype.toString
+
+function getTag(value: unknown): string {
+  if (value == null) {
+    return value === undefined ? '[object Undefined]' : '[object Null]'
+  }
+
+  return toString.call(value)
 }

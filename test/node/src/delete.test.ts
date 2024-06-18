@@ -299,6 +299,35 @@ for (const dialect of DIALECTS) {
         await query.execute()
       })
 
+      it('should delete from t1 using t2, t3 returning t2.*', async () => {
+        const query = ctx.db
+          .deleteFrom('toy')
+          .using(['pet', 'person'])
+          .whereRef('toy.pet_id', '=', 'pet.id')
+          .whereRef('pet.owner_id', '=', 'person.id')
+          .where('person.first_name', '=', 'Bob')
+          .returningAll('pet')
+
+        testSql(query, dialect, {
+          postgres: {
+            sql: [
+              'delete from "toy"',
+              'using "pet", "person"',
+              'where "toy"."pet_id" = "pet"."id"',
+              'and "pet"."owner_id" = "person"."id"',
+              'and "person"."first_name" = $1',
+              'returning "pet".*',
+            ],
+            parameters: ['Bob'],
+          },
+          mysql: NOT_SUPPORTED,
+          mssql: NOT_SUPPORTED,
+          sqlite: NOT_SUPPORTED,
+        })
+
+        await query.execute()
+      })
+
       it('should delete from t1 returning *', async () => {
         const query = ctx.db
           .deleteFrom('pet')
