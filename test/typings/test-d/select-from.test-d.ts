@@ -37,6 +37,16 @@ async function testFromSingle(db: Kysely<Database>) {
     .execute()
   expectType<{ strs: number }>(r4)
 
+  // Subquery factory list
+  const [r4_2] = await db
+    .selectFrom([
+      (eb) => eb.selectFrom('movie').select('movie.stars as strs').as('m'),
+      (eb) => eb.selectFrom('pet').select('id').as('p'),
+    ])
+    .selectAll(['m', 'p'])
+    .execute()
+  expectType<{ strs: number; id: string }>(r4_2)
+
   // Table with schema
   const [r5] = await db
     .selectFrom('some_schema.movie')
