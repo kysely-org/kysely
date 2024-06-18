@@ -4,6 +4,8 @@ sidebar_position: 4
 
 # Migrations
 
+## Migration files
+
 Migration files should look like this:
 
 ```ts
@@ -18,11 +20,11 @@ export async function down(db: Kysely<any>): Promise<void> {
 }
 ```
 
-The up function is called when you update your database schema to the next version and down when you go back to previous version. The only argument for the functions is an instance of `Kysely<any>`. It's important to use ` Kysely<any>` and not `Kysely<YourDatabase>`.
+The `up` function is called when you update your database schema to the next version and `down` when you go back to previous version. The only argument for the functions is an instance of `Kysely<any>`. It's important to use `Kysely<any>` and not `Kysely<YourDatabase>`.
 
 Migrations should never depend on the current code of your app because they need to work even when the app changes. Migrations need to be "frozen in time".
 
-Migrations can use the `Kysely.schema` module to modify the schema. Migrations can also run normal queries to modify data.
+Migrations can use the `Kysely.schema` module to modify the schema. Migrations can also run normal queries to read/modify data.
 
 ## Execution order
 
@@ -126,9 +128,16 @@ export async function down(db: Kysely<any>): Promise<void> {
 }
 ```
 
+## CLI (optional)
+
+Kysely offers a CLI you can use for migrations (and more). It can help you create and run migrations. 
+It is not part of the core, and your mileage may vary.
+
+For more information, visit https://github.com/kysely-org/kysely-ctl.
+
 ## Running migrations
 
-You can then use
+You can then use:
 
 ```ts
 const migrator = new Migrator(migratorConfig)
@@ -137,7 +146,7 @@ await migrator.migrateToLatest(pathToMigrationsFolder)
 
 to run all migrations that have not yet been run. See the Migrator class's documentation for more info.
 
-Kysely doesn't have a CLI for running migrations and probably never will. This is because Kysely's migrations are also written in TypeScript. To run the migrations, you need to first build the TypeScript code into JavaScript. A CLI would cause confusion over which migrations are being run, the TypeScript ones or the JavaScript ones. If we added support for both, the CLI would need to depend on a TypeScript compiler, which most production environments don't (and shouldn't) have. You will probably want to add a simple migration script to your projects like this:
+You will probably want to add a simple migration script to your projects like this:
 
 ```ts
 import * as path from 'path'
