@@ -59,8 +59,8 @@ for await (const f of Deno.readDir(migrationDir)) {
 
 const filename = (idx: number, filename: string) => {
   const YYYYmmDD = new Date().toISOString().split("T")[0];
-  // pad the index of the migration to 3 digits because
-  // the migrations will be executed in alphanumerical order
+  // Pad the index of the migration to 3 digits because
+  // the migrations will be executed in alphanumerical order.
   const paddedIdx = String(idx).padStart(3, "0");
   return `${paddedIdx}-${YYYYmmDD}-${filename}.migration.ts`;
 };
