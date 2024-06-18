@@ -479,6 +479,34 @@ for (const dialect of DIALECTS) {
     }
 
     if (dialect === 'postgres') {
+      it('should update some rows and return joined rows when `returningAll` is used', async () => {
+        const query = ctx.db
+          .updateTable('person')
+          .from('pet')
+          .set({
+            first_name: (eb) => eb.ref('pet.name'),
+          })
+          .whereRef('pet.owner_id', '=', 'person.id')
+          .where('person.first_name', '=', 'Arnold')
+          .returningAll('pet')
+
+        testSql(query, dialect, {
+          postgres: {
+            sql: 'update "person" set "first_name" = "pet"."name" from "pet" where "pet"."owner_id" = "person"."id" and "person"."first_name" = $1 returning "pet".*',
+            parameters: ['Arnold'],
+          },
+          mysql: NOT_SUPPORTED,
+          mssql: NOT_SUPPORTED,
+          sqlite: NOT_SUPPORTED,
+        })
+
+        const result = await query.execute()
+        expect(result[0].name).to.equal('Doggo')
+        expect(result[0].species).to.equal('dog')
+      })
+    }
+
+    if (dialect === 'postgres') {
       it('should update multiple rows and stream returned results', async () => {
         const stream = ctx.db
           .updateTable('person')
