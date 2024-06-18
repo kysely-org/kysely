@@ -29,6 +29,7 @@ export interface QueryResult<O> {
   /**
    * This is defined for update queries and contains the number of rows
    * the query changed.
+   *
    * This is **optional** and only provided in dialects such as MySQL.
    * You would probably use {@link numAffectedRows} in most cases.
    */
