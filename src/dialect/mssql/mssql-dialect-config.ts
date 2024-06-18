@@ -62,22 +62,26 @@ export interface TediousConnection {
     name?: string,
     isolationLevel?: number,
   ): void
+  cancel(): boolean
+  close(): void
   commitTransaction(
     callback: (error?: Error | null) => void,
     name?: string,
   ): void
+  connect(callback?: (error?: Error) => void): void
   execSql(request: TediousRequest): void
+  off(event: 'error', listener: (error: unknown) => void): this
+  off(event: string, listener: (...args: any[]) => void): this
+  on(event: 'error', listener: (error: unknown) => void): this
+  on(event: string, listener: (...args: any[]) => void): this
+  once(event: 'end', listener: () => void): this
+  once(event: string, listener: (...args: any[]) => void): this
+  reset(callback: (error?: Error | null) => void): void
   rollbackTransaction(
     callback: (error?: Error | null) => void,
     name?: string,
   ): void
   saveTransaction(callback: (error?: Error | null) => void, name: string): void
-  cancel(): boolean
-  reset(callback: (error?: Error | null) => void): void
-  close(): void
-  once(event: 'end', listener: () => void): this
-  once(event: string, listener: (...args: any[]) => void): this
-  connect(callback?: (error?: Error) => void): void
 }
 
 export type TediousIsolationLevel = Record<string, number>
@@ -104,12 +108,12 @@ export declare class TediousRequest {
       scale?: number
     }> | null,
   ): void
+  off(event: 'row', listener: (columns: any) => void): this
+  off(event: string, listener: (...args: any[]) => void): this
   on(event: 'row', listener: (columns: any) => void): this
   on(event: string, listener: (...args: any[]) => void): this
   once(event: 'requestCompleted', listener: () => void): this
   once(event: string, listener: (...args: any[]) => void): this
-  off(event: 'row', listener: (columns: any) => void): this
-  off(event: string, listener: (...args: any[]) => void): this
   pause(): void
   resume(): void
 }
