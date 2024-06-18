@@ -46,7 +46,7 @@ const FeatureList: FeatureItem[] = [
     description: (
       <>
         PostgreSQL, MySQL, or SQLite? We've got you covered. There's also a
-        growing ecosystem of third-party dialects, including PlanetScale, D3,
+        growing ecosystem of third-party dialects, including PlanetScale, D1,
         SurrealDB, and more. <a href="/docs/dialects">Learn more.</a>
       </>
     ),
