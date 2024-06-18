@@ -99,7 +99,7 @@ jobs:
 
     strategy:
       matrix:
-        bun-version: [1.0.23]
+        bun-version: [1.1.x]
 
     steps:
       - uses: actions/checkout@v4
