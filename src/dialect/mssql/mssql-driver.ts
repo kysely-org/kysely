@@ -46,14 +46,10 @@ export class MssqlDriver implements Driver {
       create: async () => {
         const connection = await this.#config.tedious.connectionFactory()
 
-        await new Promise((resolve, reject) =>
-          connection.connect((error) => {
-            if (error) reject(error)
-            else resolve(undefined)
-          }),
-        )
-
-        return new MssqlConnection(connection, this.#config.tedious)
+        return await new MssqlConnection(
+          connection,
+          this.#config.tedious,
+        ).connect()
       },
       destroy: async (connection) => {
         await connection[PRIVATE_DESTROY_METHOD]()
@@ -104,6 +100,11 @@ class MssqlConnection implements DatabaseConnection {
   constructor(connection: TediousConnection, tedious: Tedious) {
     this.#connection = connection
     this.#tedious = tedious
+
+    this.#connection.on('error', console.error)
+    this.#connection.once('end', () => {
+      this.#connection.off('error', console.error)
+    })
   }
 
   async beginTransaction(settings: TransactionSettings): Promise<void> {
@@ -130,6 +131,21 @@ class MssqlConnection implements DatabaseConnection {
         else resolve(undefined)
       }),
     )
+  }
+
+  async connect(): Promise<this> {
+    await new Promise((resolve, reject) => {
+      this.#connection.connect((error) => {
+        if (error) {
+          console.error(error)
+          reject(error)
+        } else {
+          resolve(undefined)
+        }
+      })
+    })
+
+    return this
   }
 
   async executeQuery<O>(compiledQuery: CompiledQuery): Promise<QueryResult<O>> {
