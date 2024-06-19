@@ -1952,23 +1952,28 @@ for (const dialect of DIALECTS) {
     describe('refresh materialized view', () => {
       beforeEach(async () => {
         await ctx.db.schema
-          .createView('dogs')
+          .createView('materialized_dogs')
           .materialized()
           .as(ctx.db.selectFrom('pet').selectAll().where('species', '=', 'dog'))
           .execute()
       })
 
       afterEach(async () => {
-        await ctx.db.schema.dropView('dogs').ifExists().execute()
+        await ctx.db.schema
+          .dropView('materialized_dogs')
+          .materialized()
+          .ifExists()
+          .execute()
       })
 
       if (dialect === 'postgres') {
         it('should refresh a materialized view', async () => {
-          const builder = ctx.db.schema.refreshMaterializedView('dogs')
+          const builder = ctx.db.schema
+            .refreshMaterializedView('materialized_dogs')
   
           testSql(builder, dialect, {
             postgres: {
-              sql: `refresh materialized view "dogs" with data`,
+              sql: `refresh materialized view "materialized_dogs" with data`,
               parameters: [],
             },
             mssql: NOT_SUPPORTED,
@@ -1980,11 +1985,13 @@ for (const dialect of DIALECTS) {
         })
 
         it('should refresh a materialized view concurrently', async () => {
-          const builder = ctx.db.schema.refreshMaterializedView('dogs').concurrently()
+          const builder = ctx.db.schema
+            .refreshMaterializedView('materialized_dogs')
+            .concurrently()
 
           testSql(builder, dialect, {
             postgres: {
-              sql: `refresh materialized view concurrently "dogs" with data`,
+              sql: `refresh materialized view concurrently "materialized_dogs" with data`,
               parameters: [],
             },
             mssql: NOT_SUPPORTED,
@@ -1996,11 +2003,13 @@ for (const dialect of DIALECTS) {
         })
 
         it('should refresh a materialized view with no data', async () => {
-          const builder = ctx.db.schema.refreshMaterializedView('dogs').withNoData()
+          const builder = ctx.db.schema
+            .refreshMaterializedView('materialized_dogs')
+            .withNoData()
 
           testSql(builder, dialect, {
             postgres: {
-              sql: `refresh materialized view "dogs" with no data`,
+              sql: `refresh materialized view "materialized_dogs" with no data`,
               parameters: [],
             },
             mssql: NOT_SUPPORTED,
