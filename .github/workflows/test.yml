@@ -39,7 +39,7 @@ jobs:
         run: npm ci
 
       - name: Install playwright
-        run: npx playwright install
+        run: npx playwright install chromium
 
       - name: Run docker compose
         run: docker compose up -d
