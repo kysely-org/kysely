@@ -280,6 +280,22 @@ for (const dialect of DIALECTS) {
                 },
               ],
             },
+            {
+              name: 'pet_partition',
+              isView: false,
+              schema: 'some_schema',
+              columns: [
+                {
+                  name: 'part_column',
+                  dataType: 'text',
+                  dataTypeSchema: 'pg_catalog',
+                  isNullable: true,
+                  isAutoIncrementing: false,
+                  hasDefaultValue: false,
+                  comment: undefined,
+                },
+              ]
+            }
           ])
         } else if (dialect === 'mysql') {
           expect(meta).to.eql([
@@ -827,6 +843,11 @@ for (const dialect of DIALECTS) {
           .addColumn('some_column', 'serial', (col) => col.primaryKey())
           .addColumn('spcies', sql`dtype_schema.species`)
           .execute()
+        await ctx.db.schema
+          .createTable('some_schema.pet_partition')
+          .addColumn('part_column', 'text')
+          .modifyEnd(sql`PARTITION by LIST ("part_column")`)
+          .execute()
       } else {
         await ctx.db.schema
           .createTable('some_schema.pet')
@@ -842,6 +863,7 @@ for (const dialect of DIALECTS) {
 
     async function dropSchema() {
       await ctx.db.schema.dropTable('some_schema.pet').ifExists().execute()
+      await ctx.db.schema.dropTable('some_schema.pet_partition').ifExists().execute()
       await ctx.db.schema.dropSchema('some_schema').ifExists().execute()
 
       if (dialect === 'postgres') {
