@@ -132,7 +132,7 @@ const config = {
               },
               {
                 label: 'Migrations',
-                to: '/docs/migrations',
+                to: '/docs/category/migrations',
               },
 
               {
