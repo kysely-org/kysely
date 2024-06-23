@@ -6,7 +6,7 @@ An [`Expression<T>`](https://kysely-org.github.io/kysely-apidoc/interfaces/Expre
 
 ## Expression builder
 
-Expressions are usually built using an instance of [ExpressionBuilder<DB, TB>](https://kysely-org.github.io/kysely-apidoc/interfaces/ExpressionBuilder.html). `DB` is the same database type you give to `Kysely` when you create an instance. `TB` is the union of all table names that are visible in the context. For example `ExpressionBuilder<DB, 'person' | 'pet'>` means you can access `person` and `pet` tables and all their columns in the expression.
+Expressions are usually built using an instance of [`ExpressionBuilder<DB, TB>`](https://kysely-org.github.io/kysely-apidoc/interfaces/ExpressionBuilder.html). `DB` is the same database type you give to `Kysely` when you create an instance. `TB` is the union of all table names that are visible in the context. For example `ExpressionBuilder<DB, 'person' | 'pet'>` means you can access `person` and `pet` tables and all their columns in the expression.
 
 You can get an instance of the expression builder by using a callback:
 

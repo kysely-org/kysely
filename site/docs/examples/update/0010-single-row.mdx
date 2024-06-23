@@ -1,12 +1,10 @@
 ---
-title: 'Simple transaction'
+title: 'Single row'
 ---
 
-# Simple transaction
+# Single row
 
-This example inserts two rows in a transaction. If an error is thrown inside
-the callback passed to the `execute` method, the transaction is rolled back.
-Otherwise it's committed.
+Update a row in `person` table:
 
 import {
   Playground,
@@ -14,11 +12,11 @@ import {
 } from '../../../src/components/Playground'
 
 import {
-  simpleTransaction
-} from './0010-simple-transaction'
+  singleRow
+} from './0010-single-row'
 
 <div style={{ marginBottom: '1em' }}>
-  <Playground code={simpleTransaction} setupCode={exampleSetup} />
+  <Playground code={singleRow} setupCode={exampleSetup} />
 </div>
 
 :::info[More examples]
@@ -27,5 +25,7 @@ but you can access the same documentation by hovering over functions/methods/cla
 just one hover away!
 
 For example, check out these sections:
- - [transaction method](https://kysely-org.github.io/kysely-apidoc/classes/Kysely.html#transaction)
+ - [set method](https://kysely-org.github.io/kysely-apidoc/classes/UpdateQueryBuilder.html#set)
+ - [returning method](https://kysely-org.github.io/kysely-apidoc/classes/UpdateQueryBuilder.html#returning)
+ - [updateTable method](https://kysely-org.github.io/kysely-apidoc/classes/Kysely.html#updateTable)
 :::
