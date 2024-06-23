@@ -17,7 +17,7 @@ export function Playground({
       v: kyselyVersion,
       d: dialect,
       c: false,
-    })
+    }),
   )
 
   return (

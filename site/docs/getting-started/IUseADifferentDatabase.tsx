@@ -1,4 +1,3 @@
-import React from 'react'
 import Link from '@docusaurus/Link'
 import { PRETTY_DIALECT_NAMES, type PropsWithDialect } from './shared'
 

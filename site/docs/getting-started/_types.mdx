@@ -12,7 +12,7 @@ import {
   Insertable,
   JSONColumnType,
   Selectable,
-  Updateable
+  Updateable,
 } from 'kysely'
 
 export interface Database {
@@ -51,10 +51,10 @@ export interface PersonTable {
   // and the insert and update types are always `string` since you're
   // always stringifying insert/update values.
   metadata: JSONColumnType<{
-    login_at: string;
-    ip: string | null;
-    agent: string | null;
-    plan: 'free' | 'premium';
+    login_at: string
+    ip: string | null
+    agent: string | null
+    plan: 'free' | 'premium'
   }>
 }
 
