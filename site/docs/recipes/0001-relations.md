@@ -11,12 +11,14 @@ Having said all that, there are ways to nest related rows in your queries. You j
 using the tools SQL and the underlying dialect (e.g. PostgreSQL, MySQL, or SQLite) provide. In this recipe
 we show one way to do that when using the built-in PostgreSQL, MySQL, and SQLite dialects.
 
+This recipe is supported on MySQL versions starting from 8.0.14. This is due to the way subqueries use outer references in this recipe (cf. [MySQL 8.0.14 changelog](https://dev.mysql.com/doc/relnotes/mysql/8.0/en/news-8-0-14.html#mysqld-8-0-14-optimizer) | [MariaDB is not supported yet](https://jira.mariadb.org/browse/MDEV-19078)).
+
 ## The `json` data type and functions
 
 PostgreSQL and MySQL have rich JSON support through their `json` data types and functions. `pg` and `mysql2`, the node drivers, automatically parse returned `json` columns as json objects. With the combination of these two things, we can write some super efficient queries with nested relations.
 
-:::info Parsing JSON
-The built in `SqliteDialect` and some 3rd party dialects don't parse the returned JSON columns to objects automatically.
+:::info[Parsing JSON]
+The built in `SqliteDialect` and some third-party dialects don't parse the returned JSON columns to objects automatically.
 Not even if they use `PostgreSQL` or `MySQL` under the hood! Parsing is handled (or not handled) by the database driver
 that Kysely has no control over. If your JSON columns get returned as strings, you can use the `ParseJSONResultsPlugin`:
 
@@ -95,7 +97,7 @@ These helpers are included in Kysely and you can import them from the `helpers` 
 import { jsonArrayFrom, jsonObjectFrom } from 'kysely/helpers/postgres'
 ```
 
-MySQL and SQLite versions of the helpers are slightly different but you can use them the same way. You can import them like this:
+MySQL and SQLite versions of the helpers are slightly different, but you can use them the same way. You can import them like this:
 
 ```ts
 import { jsonArrayFrom, jsonObjectFrom } from 'kysely/helpers/mysql'

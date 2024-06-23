@@ -1,4 +1,3 @@
-import React, { type ReactNode } from 'react'
 import Admonition from '@theme/Admonition'
 import CodeBlock from '@theme/CodeBlock'
 import { IUseADifferentDatabase } from './IUseADifferentDatabase'
@@ -17,7 +16,7 @@ import {
 
 function getNotSupportedCode(
   dialect: Dialect,
-  packageManager: PackageManager
+  packageManager: PackageManager,
 ): string {
   return `/* Kysely doesn't support ${PRETTY_DIALECT_NAMES[dialect]} + ${
     PRETTY_PACKAGE_MANAGER_NAMES[packageManager || 'npm']
@@ -29,14 +28,16 @@ const dialect = /* instantiate the dialect here */`
 
 function getDialectSpecificCodeSnippet(
   dialect: Dialect,
-  packageManager: PackageManager
+  packageManager: PackageManager,
 ): string {
   const driverNPMPackageName = getDriverNPMPackageNames(packageManager)[dialect]
   const dialectClassName = DIALECT_CLASS_NAMES[dialect]
   const poolClassName = 'Pool'
+  const poolClassImport =
+    packageManager === 'deno' ? poolClassName : `{ ${poolClassName} }`
 
   if (dialect === 'postgresql') {
-    return `import { ${poolClassName} } from '${driverNPMPackageName}'
+    return `import ${poolClassImport} from '${driverNPMPackageName}'
 import { Kysely, ${dialectClassName} } from 'kysely'
 
 const dialect = new ${dialectClassName}({
@@ -122,14 +123,14 @@ export function Instantiation(
   props: PropsWithDialect<{
     packageManager: PackageManager | undefined
     packageManagersURL: string
-  }>
+  }>,
 ) {
   const dialect = props.dialect || 'postgresql'
   const packageManager = props.packageManager || 'npm'
 
   const dialectSpecificCodeSnippet = !isDialectSupported(
     dialect,
-    packageManager
+    packageManager,
   )
     ? getNotSupportedCode(dialect, packageManager)
     : getDialectSpecificCodeSnippet(dialect, packageManager)
@@ -172,7 +173,7 @@ export const db = new Kysely<Database>({
         connections at all, so there's no need to create a new instance for each
         request.
       </Admonition>
-      <Admonition type="caution" title="keeping secrets">
+      <Admonition type="warning" title="keeping secrets">
         Use a secrets manager, environment variables (DO NOT commit `.env` files
         to your repository), or a similar solution, to avoid hardcoding database
         credentials in your code.

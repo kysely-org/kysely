@@ -27,7 +27,7 @@ import { Summary } from './getting-started/Summary'
   {() => (
     <Dialects
       packageManager={new URLSearchParams(document.location.search).get(
-        'package-manager'
+        'package-manager',
       )}
       packageManagersURL="#installation"
     />
@@ -42,7 +42,7 @@ import { Summary } from './getting-started/Summary'
       dialect={new URLSearchParams(document.location.search).get('dialect')}
       dialectsURL="#dialects"
       packageManager={new URLSearchParams(document.location.search).get(
-        'package-manager'
+        'package-manager',
       )}
       packageManagersURL="#installation"
     />

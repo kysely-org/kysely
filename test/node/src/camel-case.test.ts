@@ -1,4 +1,11 @@
-import { CamelCasePlugin, Generated, Kysely, RawBuilder, sql } from '../../../'
+import {
+  CamelCasePlugin,
+  Generated,
+  Kysely,
+  ParseJSONResultsPlugin,
+  RawBuilder,
+  sql,
+} from '../../../'
 
 import {
   destroyTest,
@@ -8,6 +15,7 @@ import {
   expect,
   createTableWithId,
   DIALECTS,
+  NOT_SUPPORTED,
 } from './test-setup.js'
 
 for (const dialect of DIALECTS) {
@@ -77,7 +85,7 @@ for (const dialect of DIALECTS) {
 
     // Can't run this test on SQLite because we can't access the same database
     // from the other Kysely instance.
-    if (dialect === 'postgres' || dialect === 'mysql' || dialect === 'mssql') {
+    if (dialect !== 'sqlite') {
       it('should have created the table and its columns in snake_case', async () => {
         const result = await sql<any>`select * from camel_person`.execute(
           ctx.db,
@@ -261,22 +269,82 @@ for (const dialect of DIALECTS) {
       })
     })
 
-    it('should respect maintainNestedObjectKeys', async () => {
-      const data = await camelDb
-        .withoutPlugins()
-        .withPlugin(new CamelCasePlugin({ maintainNestedObjectKeys: true }))
+    it('should map nested objects by default', async () => {
+      let db = camelDb.withoutPlugins()
+
+      if (dialect === 'mssql' || dialect === 'sqlite') {
+        db = db.withPlugin(new ParseJSONResultsPlugin())
+      }
+
+      db = db.withPlugin(new CamelCasePlugin())
+
+      const data = await db
         .selectFrom('camelPerson')
         .selectAll()
         .executeTakeFirstOrThrow()
 
+      expect(data.preferences).to.eql({
+        disableEmails: true,
+      })
+    })
+
+    it('should respect maintainNestedObjectKeys', async () => {
+      let db = camelDb.withoutPlugins()
+
       if (dialect === 'mssql' || dialect === 'sqlite') {
-        data.preferences = JSON.parse(data.preferences.toString())
+        db = db.withPlugin(new ParseJSONResultsPlugin())
       }
+
+      db = db.withPlugin(
+        new CamelCasePlugin({ maintainNestedObjectKeys: true }),
+      )
+
+      const data = await db
+        .selectFrom('camelPerson')
+        .selectAll()
+        .executeTakeFirstOrThrow()
 
       expect(data.preferences).to.eql({
         disable_emails: true,
       })
     })
+
+    if (dialect === 'postgres' || dialect === 'mssql') {
+      it('should convert merge queries', async () => {
+        const query = camelDb
+          .mergeInto('camelPerson')
+          .using(
+            'camelPerson as anotherCamelPerson',
+            'camelPerson.firstName',
+            'anotherCamelPerson.firstName',
+          )
+          .whenMatched()
+          .thenUpdateSet((eb) => ({
+            firstName: sql<string>`concat(${eb.ref('anotherCamelPerson.firstName')}, ${sql.lit('2')})`,
+          }))
+
+        testSql(query, dialect, {
+          postgres: {
+            sql: [
+              `merge into "camel_person"`,
+              `using "camel_person" as "another_camel_person" on "camel_person"."first_name" = "another_camel_person"."first_name"`,
+              `when matched then update set "first_name" = concat("another_camel_person"."first_name", '2')`,
+            ],
+            parameters: [],
+          },
+          mysql: NOT_SUPPORTED,
+          mssql: {
+            sql: [
+              `merge into "camel_person"`,
+              `using "camel_person" as "another_camel_person" on "camel_person"."first_name" = "another_camel_person"."first_name"`,
+              `when matched then update set "first_name" = concat("another_camel_person"."first_name", '2');`,
+            ],
+            parameters: [],
+          },
+          sqlite: NOT_SUPPORTED,
+        })
+      })
+    }
   })
 }
 

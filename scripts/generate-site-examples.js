@@ -187,7 +187,7 @@ function writeSiteExample(state) {
       <div style={{ marginBottom: '1em' }}>
         <Playground code={${codeVariable}} setupCode={exampleSetup} />
       </div>
-    `)
+    `),
   )
 
   const moreExamples = buildMoreExamplesMarkdown(category)
@@ -208,8 +208,8 @@ function buildMoreExamplesMarkdown(category) {
   }
 
   const lines = [
-    ':::info More examples',
-    'The API documentation is packed with examples. The API docs are hosted [here](https://kysely-org.github.io/kysely-apidoc/)',
+    ':::info[More examples]',
+    'The API documentation is packed with examples. The API docs are hosted [here](https://kysely-org.github.io/kysely-apidoc/),',
     'but you can access the same documentation by hovering over functions/methods/classes in your IDE. The examples are always',
     'just one hover away!',
     '',
@@ -220,7 +220,7 @@ function buildMoreExamplesMarkdown(category) {
     lines.push(` - [${linkName}](${links[linkName]})`)
   }
 
-  lines.push(':::')
+  lines.push(':::\n')
 
   return lines.join('\n')
 }
@@ -238,7 +238,7 @@ function addCodeLine(state) {
 
   if (!code) {
     console.error(
-      `found invalid code block in a site example in ${state.filePath}:${state.lineIndex}`
+      `found invalid code block in a site example in ${state.filePath}:${state.lineIndex}`,
     )
 
     process.exit(1)
@@ -260,7 +260,7 @@ function addCommentLine(state) {
 
   if (!comment) {
     console.error(
-      `found invalid comment in a site example in ${state.filePath}:${state.lineIndex}`
+      `found invalid comment in a site example in ${state.filePath}:${state.lineIndex}`,
     )
 
     process.exit(1)
@@ -278,7 +278,7 @@ function enterExample(state) {
 
   if (!state.annotation) {
     console.error(
-      `found invalid site example annotation in ${state.filePath}:${state.lineIndex}`
+      `found invalid site example annotation in ${state.filePath}:${state.lineIndex}`,
     )
 
     process.exit(1)

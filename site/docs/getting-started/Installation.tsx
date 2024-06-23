@@ -1,4 +1,4 @@
-import React, { type ReactNode } from 'react'
+import type { ReactNode } from 'react'
 import CodeBlock from '@theme/CodeBlock'
 import Link from '@docusaurus/Link'
 import Tabs from '@theme/Tabs'

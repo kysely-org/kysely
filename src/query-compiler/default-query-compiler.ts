@@ -126,6 +126,7 @@ export class DefaultQueryCompiler
   compileQuery(node: RootOperationNode): CompiledQuery {
     this.#sql = ''
     this.#parameters = []
+    this.nodeStack.splice(0, this.nodeStack.length)
 
     this.visitNode(node)
 
@@ -1535,7 +1536,7 @@ export class DefaultQueryCompiler
 
     if (node.whens) {
       this.append(' ')
-      this.compileList(node.whens)
+      this.compileList(node.whens, ' ')
     }
 
     if (node.output) {

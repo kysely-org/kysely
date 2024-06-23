@@ -10,7 +10,7 @@ import { Simplify } from '../util/type-utils.js'
  * A MySQL helper for aggregating a subquery into a JSON array.
  *
  * NOTE: This helper is only guaranteed to fully work with the built-in `MysqlDialect`.
- * While the produced SQL is compatible with all MySQL databases, some 3rd party dialects
+ * While the produced SQL is compatible with all MySQL databases, some third-party dialects
  * may not parse the nested JSON into arrays. In these cases you can use the built in
  * `ParseJSONResultsPlugin` to parse the results.
  *
@@ -66,7 +66,7 @@ export function jsonArrayFrom<O>(
  * The subquery must only return one row.
  *
  * NOTE: This helper is only guaranteed to fully work with the built-in `MysqlDialect`.
- * While the produced SQL is compatible with all MySQL databases, some 3rd party dialects
+ * While the produced SQL is compatible with all MySQL databases, some third-party dialects
  * may not parse the nested JSON into objects. In these cases you can use the built in
  * `ParseJSONResultsPlugin` to parse the results.
  *
@@ -120,7 +120,7 @@ export function jsonObjectFrom<O>(
  * The MySQL `json_object` function.
  *
  * NOTE: This helper is only guaranteed to fully work with the built-in `MysqlDialect`.
- * While the produced SQL is compatible with all MySQL databases, some 3rd party dialects
+ * While the produced SQL is compatible with all MySQL databases, some third-party dialects
  * may not parse the nested JSON into objects. In these cases you can use the built in
  * `ParseJSONResultsPlugin` to parse the results.
  *
