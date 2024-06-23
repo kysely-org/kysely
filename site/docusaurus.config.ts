@@ -12,6 +12,13 @@ export default {
     defaultLocale: 'en',
     locales: ['en'],
   },
+  markdown: {
+    mdx1Compat: {
+      admonitions: false,
+      comments: false,
+      headingIds: false,
+    },
+  },
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
   organizationName: 'kysely-org',

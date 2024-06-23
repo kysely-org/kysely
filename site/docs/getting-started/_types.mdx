@@ -80,7 +80,7 @@ export type NewPet = Insertable<PetTable>
 export type PetUpdate = Updateable<PetTable>
 ```
 
-:::tip Codegen
+:::tip[Codegen]
 
 For production apps, it is recommended to automatically generate your <code>Database</code>
 interface by introspecting your production database or Prisma schemas. Generated types
@@ -88,7 +88,7 @@ might differ in naming convention, internal order, etc. Find out more at ["Gener
 
 :::
 
-:::info Runtime types
+:::info[Runtime types]
 
 Kysely only deals with types in the TypeScript level. The runtime JavaScript types are decided
 by the underlying third-party driver such as `pg` or `mysql2` and it's up to you to select the correct

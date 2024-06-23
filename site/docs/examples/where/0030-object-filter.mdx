@@ -1,12 +1,11 @@
 ---
-title: 'Simple transaction'
+title: 'Object filter'
 ---
 
-# Simple transaction
+# Object filter
 
-This example inserts two rows in a transaction. If an error is thrown inside
-the callback passed to the `execute` method, the transaction is rolled back.
-Otherwise it's committed.
+You can use the `and` function to create a simple equality
+filter using an object
 
 import {
   Playground,
@@ -14,11 +13,11 @@ import {
 } from '../../../src/components/Playground'
 
 import {
-  simpleTransaction
-} from './0010-simple-transaction'
+  objectFilter
+} from './0030-object-filter'
 
 <div style={{ marginBottom: '1em' }}>
-  <Playground code={simpleTransaction} setupCode={exampleSetup} />
+  <Playground code={objectFilter} setupCode={exampleSetup} />
 </div>
 
 :::info[More examples]
@@ -27,5 +26,6 @@ but you can access the same documentation by hovering over functions/methods/cla
 just one hover away!
 
 For example, check out these sections:
- - [transaction method](https://kysely-org.github.io/kysely-apidoc/classes/Kysely.html#transaction)
+ - [where method](https://kysely-org.github.io/kysely-apidoc/interfaces/SelectQueryBuilder.html#where)
+ - [whereRef method](https://kysely-org.github.io/kysely-apidoc/interfaces/SelectQueryBuilder.html#whereRef)
 :::
