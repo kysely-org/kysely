@@ -1,3 +1,4 @@
+import type { SVGProps } from 'react'
 import clsx from 'clsx'
 import styles from './styles.module.css'
 import { gray } from '@radix-ui/colors'
@@ -72,7 +73,7 @@ const FeatureList: FeatureItem[] = [
   },
 ]
 
-function TickIcon(props: React.SVGProps<SVGSVGElement>) {
+function TickIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
