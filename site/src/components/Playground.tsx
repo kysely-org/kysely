@@ -1,6 +1,3 @@
-import * as React from 'react'
-import { gray } from '@radix-ui/colors'
-
 export function Playground({
   code,
   setupCode = exampleSetup,
