@@ -1985,6 +1985,14 @@ for (const dialect of DIALECTS) {
         })
 
         it('should refresh a materialized view concurrently', async () => {
+          // concurrent refreshes require a unique index
+          await ctx.db.schema
+            .createIndex('materialized_dogs_index')
+            .unique()
+            .on('materialized_dogs')
+            .columns(['id'])
+            .execute()
+
           const builder = ctx.db.schema
             .refreshMaterializedView('materialized_dogs')
             .concurrently()
