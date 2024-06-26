@@ -1,0 +1,8 @@
+{
+  "label": "JOIN",
+  "position": 3,
+  "link": {
+    "type": "generated-index",
+    "description": "Examples of queries that use JOINs."
+  }
+}
