@@ -1,4 +1,4 @@
-import React, { type ReactNode } from 'react'
+import type { ReactNode } from 'react'
 import packageJson from '../../package.json'
 
 export type Dialect = 'postgresql' | 'mysql' | 'sqlite' | 'mssql'
@@ -21,7 +21,7 @@ const PACKAGE_MANAGER_UNSUPPORTED_DIALECTS: Record<PackageManager, Dialect[]> =
 
 export function isDialectSupported(
   dialect: Dialect,
-  packageManager: PackageManager
+  packageManager: PackageManager,
 ): boolean {
   return !PACKAGE_MANAGER_UNSUPPORTED_DIALECTS[packageManager].includes(dialect)
 }
@@ -34,14 +34,14 @@ export const DIALECT_CLASS_NAMES = {
 } as const satisfies Record<Dialect, string>
 
 export const getDriverNPMPackageNames = (
-  packageManager: PackageManager = 'npm'
+  packageManager: PackageManager = 'npm',
 ) =>
   ({
     postgresql: packageManager === 'deno' ? 'pg-pool' : 'pg',
     mysql: 'mysql2',
     mssql: 'tedious',
     sqlite: 'better-sqlite3',
-  } as const satisfies Record<Dialect, string>)
+  }) as const satisfies Record<Dialect, string>
 
 export const POOL_NPM_PACKAGE_NAMES = {
   mssql: 'tarn',
@@ -79,7 +79,7 @@ export interface Command {
 export function getBashCommand(
   packageManager: PackageManager,
   installedPackage: string,
-  additionalPackages?: string[]
+  additionalPackages?: string[],
 ): Command {
   if (packageManager === 'deno') {
     throw new Error('Deno has no bash command')
@@ -98,7 +98,7 @@ export function getBashCommand(
 }
 
 export function getDenoCommand(
-  additionalImports?: Record<string, string>
+  additionalImports?: Record<string, string>,
 ): Command {
   return {
     content: JSON.stringify(
@@ -109,7 +109,7 @@ export function getDenoCommand(
         },
       },
       null,
-      2
+      2,
     ),
     intro: (
       <>
