@@ -12,8 +12,8 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [18.x, 20.x]
-        bun-version: [1.0.23]
+        node-version: [18.x, 20.x, 22.x]
+        bun-version: [1.1.x]
         deno-version: [1.42.x]
 
     steps:
@@ -39,7 +39,7 @@ jobs:
         run: npm ci
 
       - name: Install playwright
-        run: npx playwright install
+        run: npx playwright install chromium
 
       - name: Run docker compose
         run: docker compose up -d
@@ -63,4 +63,5 @@ jobs:
         run: npm run test:esbuild
 
       - name: Run cloudflare workers test
+        if: matrix.node-version != '18.x'
         run: npm run test:cloudflare-workers

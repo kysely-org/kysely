@@ -15,7 +15,7 @@ There are quite a few guidelines to keep in mind:
 
 * Kysely should have zero dependencies.
 
-* Kysely should work in all javascript environments (node.js, deno & modern browsers), 
+* Kysely should work in all JavaScript environments (node.js, deno & modern browsers), 
 even though the main focus is node.js.
 
 * Everything is immutable.

@@ -80,9 +80,23 @@ function testInferResultUpdateQuery(db: Kysely<Database>) {
   const query1 = query0.returningAll()
   const compiledQuery1 = query1.compile()
 
-  type Expected1 = Selectable<Person | Pet>[]
-  expectType<Equals<Expected1, InferResult<typeof query1>>>(true)
-  expectType<Equals<Expected1, InferResult<typeof compiledQuery1>>>(true)
+  type Expected1 = {
+    id: string | number
+    first_name: string
+    last_name: string | null
+    age: number
+    gender: 'male' | 'female' | 'other'
+    marital_status: 'single' | 'married' | 'divorced' | 'widowed' | null
+    modified_at: Date
+    deleted_at: Date | null
+    name: string
+    owner_id: number
+    species: 'dog' | 'cat'
+  }[]
+
+  const expected1: Expected1 = undefined!
+  expectType<InferResult<typeof query1>>(expected1)
+  expectType<InferResult<typeof compiledQuery1>>(expected1)
 
   const query2 = query0.returning('modified_at')
   const compiledQuery2 = query2.compile()

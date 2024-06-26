@@ -1,6 +1,6 @@
 /**
  * This scripts adds a `/// <reference types="./file.d.ts" />` directive
- * at the beginning of each ESM javascript file so that they work with
+ * at the beginning of each ESM JavaScript file so that they work with
  * deno.
  */
 

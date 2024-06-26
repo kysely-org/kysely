@@ -4,10 +4,10 @@ To work with Kysely, you're required to provide a database schema type definitio
 
 In many cases, defining your database schema definitions manually is good enough.
 
-However, when building production applications, its best to stay aligned with the 
+However, when building production applications, it's best to stay aligned with the 
 database schema, by automatically generating the database schema type definitions.
 
-There are several ways to do this using 3rd party libraries:
+There are several ways to do this using third-party libraries:
 
 - [kysely-codegen](https://github.com/RobinBlomberg/kysely-codegen) - This library 
 generates Kysely database schema type definitions by connecting to and introspecting 
