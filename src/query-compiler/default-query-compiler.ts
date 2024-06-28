@@ -1359,6 +1359,12 @@ export class DefaultQueryCompiler
     }
 
     this.compileList(node.aggregated)
+
+    if (node.orderBy) {
+      this.append(' ')
+      this.visitNode(node.orderBy)
+    }
+
     this.append(')')
 
     if (node.filter) {
