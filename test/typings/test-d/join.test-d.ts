@@ -184,6 +184,31 @@ async function testJoin(db: Kysely<Database>) {
         join.onRef('movie.id', '=', 'person.id'),
       ),
   )
+
+  // Join using
+  const r9 = await db
+    .selectFrom('pet')
+    .innerJoin('book', (join) => join.using(['name']))
+    .selectAll()
+    .executeTakeFirstOrThrow()
+
+  const r10 = await db
+    .selectFrom('person as a')
+    .innerJoin('person as b', (join) => join.using(['first_name', 'last_name']))
+    .select(['a.id', 'b.id'])
+    .executeTakeFirstOrThrow()
+
+  // Refer to a column that's not present in both tables
+  expectError(
+    db
+      .selectFrom('person')
+      .innerJoin('movie', (join) => join.using(['last_name']))
+  )
+
+  // Refer to a column with table qualifier
+  expectError(
+    db.selectFrom('pet').innerJoin('book', (join) => join.using(['pet.name']))
+  )
 }
 
 async function testManyJoins(db: Kysely<Database>) {

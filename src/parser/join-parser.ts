@@ -23,8 +23,12 @@ export type JoinReferenceExpression<
 >
 
 export type JoinCallbackExpression<DB, TB extends keyof DB, TE> = (
-  join: JoinBuilder<From<DB, TE>, FromTables<DB, TB, TE>>,
-) => JoinBuilder<any, any>
+  join: JoinBuilder<
+    From<DB, TE>,
+    FromTables<DB, TB, TE>,
+    AnyJoinUsingColumn<DB, TB, TE>
+  >
+) => JoinBuilder<any, any, any>
 
 type AnyJoinColumn<DB, TB extends keyof DB, TE> = AnyColumn<
   From<DB, TE>,
@@ -35,6 +39,13 @@ type AnyJoinColumnWithTable<DB, TB extends keyof DB, TE> = AnyColumnWithTable<
   From<DB, TE>,
   FromTables<DB, TB, TE>
 >
+
+type AnyJoinUsingColumn<DB, TB extends keyof DB, TE> = AnyJoinColumn<
+  DB,
+  TB,
+  never
+> &
+  AnyJoinColumn<DB, never, TE>
 
 export function parseJoin(joinType: JoinType, args: any[]): JoinNode {
   if (args.length === 3) {
