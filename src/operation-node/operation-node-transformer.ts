@@ -577,6 +577,7 @@ export class OperationNodeTransformer {
       ifNotExists: node.ifNotExists,
       where: this.transformNode(node.where),
       nullsNotDistinct: node.nullsNotDistinct,
+      include: node.include,
     })
   }
 

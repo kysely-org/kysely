@@ -7,6 +7,7 @@ import { RawNode } from '../operation-node/raw-node.js'
 import {
   ExtractColumnNameFromOrderedColumnName,
   OrderedColumnName,
+  parseColumnName,
   parseOrderedColumnName,
 } from '../parser/reference-parser.js'
 import { parseTable } from '../parser/table-parser.js'
@@ -137,6 +138,43 @@ export class CreateIndexBuilder<C = never>
       ]),
     })
   }
+
+  /**
+   * Add INCLUDE clause with columns to the index.
+   *
+   * Also see {@link expression} for
+   * specifying an arbitrary expression.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * await db.schema
+   *         .createIndex('person_first_name_include_age_index')
+   *         .column('first_name')
+   *         .include(['age'])
+   *         .on('person')
+   *         .execute()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * create index "person_first_name_include_age_index" on "person" ("first_name") include ("age")
+   * ```
+   */
+    include(
+      columns: string[],
+    ): CreateIndexBuilder<C> {
+      return new CreateIndexBuilder({
+        ...this.#props,
+        node: CreateIndexNode.cloneWith(
+          this.#props.node,
+          {
+            include: columns.map(parseColumnName)
+          },
+        ),
+      })
+    }
 
   /**
    * Specifies a list of columns for the index.
