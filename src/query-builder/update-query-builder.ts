@@ -752,6 +752,37 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
   }
 
   /**
+   * This can be used to add any additional SQL to the end of the query.
+   *
+   * ### Examples
+   *
+    * ```ts
+   * await db.updateTable('person')
+   * .set({ age: 39 })
+   * .where('first_name', '=', 'John')
+   * .modifyEnd(sql.raw('-- This is a comment'))
+   * .execute()
+   * ```
+   *
+   * The generated SQL (MySQL):
+   *
+   * ```sql
+   * update `person`
+   * set `age` = 39
+   * where `first_name` = "John" -- This is a comment
+   * ```
+   */
+  modifyEnd(modifier: Expression<any>): UpdateQueryBuilder<DB, UT, TB, O> {
+    return new UpdateQueryBuilder({
+      ...this.#props,
+      queryNode: QueryNode.cloneWithEndModifier(
+        this.#props.queryNode,
+        modifier.toOperationNode(),
+      ),
+    })
+  }
+
+  /**
    * Clears all `returning` clauses from the query.
    *
    * ### Examples

@@ -25,6 +25,7 @@ export interface UpdateQueryNode extends OperationNode {
   readonly returning?: ReturningNode
   readonly with?: WithNode
   readonly explain?: ExplainNode
+  readonly endModifiers?: ReadonlyArray<OperationNode>
   readonly limit?: LimitNode
   readonly top?: TopNode
   readonly output?: OutputNode
