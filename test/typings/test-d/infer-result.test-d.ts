@@ -47,7 +47,7 @@ function testInferResultInsertQuery(db: Kysely<Database>) {
   })
   const compiledQuery0 = query0.compile()
 
-  type Expected0 = InsertResult
+  type Expected0 = InsertResult[]
   expectType<Equals<Expected0, InferResult<typeof query0>>>(true)
   expectType<Equals<Expected0, InferResult<typeof compiledQuery0>>>(true)
 
@@ -74,7 +74,7 @@ function testInferResultUpdateQuery(db: Kysely<Database>) {
     .where('pet.id', '=', '1')
   const compiledQuery0 = query0.compile()
 
-  type Expected0 = UpdateResult
+  type Expected0 = UpdateResult[]
   expectType<Equals<Expected0, InferResult<typeof query0>>>(true)
   expectType<Equals<Expected0, InferResult<typeof compiledQuery0>>>(true)
 
@@ -111,7 +111,7 @@ function testInferResultDeleteQuery(db: Kysely<Database>) {
   const query0 = db.deleteFrom('pet').where('id', '=', '1')
   const compiledQuery0 = query0.compile()
 
-  type Expected0 = DeleteResult
+  type Expected0 = DeleteResult[]
   expectType<Equals<Expected0, InferResult<typeof query0>>>(true)
   expectType<Equals<Expected0, InferResult<typeof compiledQuery0>>>(true)
 
@@ -138,7 +138,7 @@ function testInferResultMergeQuery(db: Kysely<Database>) {
     .thenDelete()
   const compiledQuery0 = query0.compile()
 
-  type Expected0 = MergeResult
+  type Expected0 = MergeResult[]
   expectType<Equals<Expected0, InferResult<typeof query0>>>(true)
   expectType<Equals<Expected0, InferResult<typeof compiledQuery0>>>(true)
 }
