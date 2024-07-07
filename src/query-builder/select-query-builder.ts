@@ -1,29 +1,74 @@
+import { ExpressionWrapper } from '../expression/expression-wrapper.js'
+import { AliasedExpression, Expression } from '../expression/expression.js'
 import { AliasNode } from '../operation-node/alias-node.js'
-import { CompiledQuery } from '../query-compiler/compiled-query.js'
+import { FetchModifier } from '../operation-node/fetch-node.js'
+import { IdentifierNode } from '../operation-node/identifier-node.js'
+import { LimitNode } from '../operation-node/limit-node.js'
+import { OffsetNode } from '../operation-node/offset-node.js'
+import { QueryNode } from '../operation-node/query-node.js'
 import { SelectModifierNode } from '../operation-node/select-modifier-node.js'
+import { SelectQueryNode } from '../operation-node/select-query-node.js'
+import { TopModifier } from '../operation-node/top-node.js'
+import {
+  ComparisonOperatorExpression,
+  OperandValueExpressionOrList,
+  parseReferentialBinaryOperation,
+  parseValueBinaryOperationOrExpression,
+} from '../parser/binary-operation-parser.js'
+import {
+  AliasedExpressionFactory,
+  ExpressionOrFactory,
+} from '../parser/expression-parser.js'
+import { parseFetch } from '../parser/fetch-parser.js'
+import { GroupByArg, parseGroupBy } from '../parser/group-by-parser.js'
 import {
   JoinCallbackExpression,
   JoinReferenceExpression,
   parseJoin,
 } from '../parser/join-parser.js'
-import { TableExpression, parseTable } from '../parser/table-parser.js'
 import {
-  parseSelectArg,
-  parseSelectAll,
-  SelectExpression,
-  Selection,
-  SelectArg,
-  AllSelection,
-  SelectCallback,
-  CallbackSelection,
-} from '../parser/select-parser.js'
+  DirectedOrderByStringReference,
+  OrderByDirectionExpression,
+  OrderByExpression,
+  UndirectedOrderByExpression,
+  parseOrderBy,
+} from '../parser/order-by-parser.js'
 import {
-  parseReferenceExpressionOrList,
   ReferenceExpression,
   ReferenceExpressionOrList,
+  parseReferenceExpressionOrList,
 } from '../parser/reference-parser.js'
-import { SelectQueryNode } from '../operation-node/select-query-node.js'
-import { QueryNode } from '../operation-node/query-node.js'
+import {
+  AllSelection,
+  CallbackSelection,
+  SelectArg,
+  SelectCallback,
+  SelectExpression,
+  Selection,
+  parseSelectAll,
+  parseSelectArg,
+} from '../parser/select-parser.js'
+import {
+  SetOperandExpression,
+  parseSetOperations,
+} from '../parser/set-operation-parser.js'
+import { TableExpression, parseTable } from '../parser/table-parser.js'
+import { parseTop } from '../parser/top-parser.js'
+import {
+  ValueExpression,
+  parseValueExpression,
+} from '../parser/value-parser.js'
+import { KyselyPlugin } from '../plugin/kysely-plugin.js'
+import { CompiledQuery } from '../query-compiler/compiled-query.js'
+import { QueryExecutor } from '../query-executor/query-executor.js'
+import { Selectable } from '../util/column-type.js'
+import { Compilable } from '../util/compilable.js'
+import { ExplainFormat, Explainable } from '../util/explainable.js'
+import { asArray, freeze } from '../util/object-utils.js'
+import { preventAwait } from '../util/prevent-await.js'
+import { QueryId } from '../util/query-id.js'
+import { Streamable } from '../util/streamable.js'
+import { KyselyTypeError } from '../util/type-error.js'
 import {
   DrainOuterGeneric,
   NarrowPartial,
@@ -33,56 +78,14 @@ import {
   SimplifySingleResult,
   SqlBool,
 } from '../util/type-utils.js'
+import { HavingInterface } from './having-interface.js'
 import {
-  OrderByDirectionExpression,
-  OrderByExpression,
-  DirectedOrderByStringReference,
-  UndirectedOrderByExpression,
-  parseOrderBy,
-} from '../parser/order-by-parser.js'
-import { preventAwait } from '../util/prevent-await.js'
-import { LimitNode } from '../operation-node/limit-node.js'
-import { OffsetNode } from '../operation-node/offset-node.js'
-import { Compilable } from '../util/compilable.js'
-import { QueryExecutor } from '../query-executor/query-executor.js'
-import { QueryId } from '../util/query-id.js'
-import { asArray, freeze } from '../util/object-utils.js'
-import { GroupByArg, parseGroupBy } from '../parser/group-by-parser.js'
-import { KyselyPlugin } from '../plugin/kysely-plugin.js'
-import { WhereInterface } from './where-interface.js'
-import {
-  isNoResultErrorConstructor,
   NoResultError,
   NoResultErrorConstructor,
+  isNoResultErrorConstructor,
 } from './no-result-error.js'
-import { HavingInterface } from './having-interface.js'
-import { IdentifierNode } from '../operation-node/identifier-node.js'
-import { Explainable, ExplainFormat } from '../util/explainable.js'
-import {
-  SetOperandExpression,
-  parseSetOperations,
-} from '../parser/set-operation-parser.js'
-import { AliasedExpression, Expression } from '../expression/expression.js'
-import {
-  ComparisonOperatorExpression,
-  OperandValueExpressionOrList,
-  parseValueBinaryOperationOrExpression,
-  parseReferentialBinaryOperation,
-} from '../parser/binary-operation-parser.js'
-import { KyselyTypeError } from '../util/type-error.js'
-import { Selectable } from '../util/column-type.js'
-import { Streamable } from '../util/streamable.js'
-import { ExpressionOrFactory } from '../parser/expression-parser.js'
-import { ExpressionWrapper } from '../expression/expression-wrapper.js'
 import { SelectQueryBuilderExpression } from './select-query-builder-expression.js'
-import {
-  ValueExpression,
-  parseValueExpression,
-} from '../parser/value-parser.js'
-import { FetchModifier } from '../operation-node/fetch-node.js'
-import { parseFetch } from '../parser/fetch-parser.js'
-import { TopModifier } from '../operation-node/top-node.js'
-import { parseTop } from '../parser/top-parser.js'
+import { WhereInterface } from './where-interface.js'
 
 export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
   extends WhereInterface<DB, TB>,
@@ -843,6 +846,10 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
   >(
     table: TE,
     callback: FN,
+  ): SelectQueryBuilderWithLeftJoin<DB, TB, O, TE>
+
+  outerApply<TE extends AliasedExpressionFactory<DB, TB>>(
+    table: TE,
   ): SelectQueryBuilderWithLeftJoin<DB, TB, O, TE>
 
   /**
@@ -2118,6 +2125,16 @@ class SelectQueryBuilderImpl<DB, TB extends keyof DB, O>
     })
   }
 
+  outerApply(table: any): any {
+    return new SelectQueryBuilderImpl({
+      ...this.#props,
+      queryNode: QueryNode.cloneWithJoin(
+        this.#props.queryNode,
+        parseJoin('OuterApply', [table]),
+      ),
+    })
+  }
+
   orderBy(...args: any[]): SelectQueryBuilder<DB, TB, O> {
     return new SelectQueryBuilderImpl({
       ...this.#props,
@@ -2504,12 +2521,12 @@ export type SelectQueryBuilderWithInnerJoin<
     ? InnerJoinedBuilder<DB, TB, O, A, DB[T]>
     : never
   : TE extends keyof DB
-  ? SelectQueryBuilder<DB, TB | TE, O>
-  : TE extends AliasedExpression<infer QO, infer QA>
-  ? InnerJoinedBuilder<DB, TB, O, QA, QO>
-  : TE extends (qb: any) => AliasedExpression<infer QO, infer QA>
-  ? InnerJoinedBuilder<DB, TB, O, QA, QO>
-  : never
+    ? SelectQueryBuilder<DB, TB | TE, O>
+    : TE extends AliasedExpression<infer QO, infer QA>
+      ? InnerJoinedBuilder<DB, TB, O, QA, QO>
+      : TE extends (qb: any) => AliasedExpression<infer QO, infer QA>
+        ? InnerJoinedBuilder<DB, TB, O, QA, QO>
+        : never
 
 type InnerJoinedBuilder<
   DB,
@@ -2536,12 +2553,12 @@ export type SelectQueryBuilderWithLeftJoin<
     ? LeftJoinedBuilder<DB, TB, O, A, DB[T]>
     : never
   : TE extends keyof DB
-  ? LeftJoinedBuilder<DB, TB, O, TE, DB[TE]>
-  : TE extends AliasedExpression<infer QO, infer QA>
-  ? LeftJoinedBuilder<DB, TB, O, QA, QO>
-  : TE extends (qb: any) => AliasedExpression<infer QO, infer QA>
-  ? LeftJoinedBuilder<DB, TB, O, QA, QO>
-  : never
+    ? LeftJoinedBuilder<DB, TB, O, TE, DB[TE]>
+    : TE extends AliasedExpression<infer QO, infer QA>
+      ? LeftJoinedBuilder<DB, TB, O, QA, QO>
+      : TE extends (qb: any) => AliasedExpression<infer QO, infer QA>
+        ? LeftJoinedBuilder<DB, TB, O, QA, QO>
+        : never
 
 type LeftJoinedBuilder<
   DB,
@@ -2558,8 +2575,8 @@ type LeftJoinedDB<DB, A extends keyof any, R> = DrainOuterGeneric<{
   [C in keyof DB | A]: C extends A
     ? Nullable<R>
     : C extends keyof DB
-    ? DB[C]
-    : never
+      ? DB[C]
+      : never
 }>
 
 export type SelectQueryBuilderWithRightJoin<
@@ -2572,12 +2589,12 @@ export type SelectQueryBuilderWithRightJoin<
     ? RightJoinedBuilder<DB, TB, O, A, DB[T]>
     : never
   : TE extends keyof DB
-  ? RightJoinedBuilder<DB, TB, O, TE, DB[TE]>
-  : TE extends AliasedExpression<infer QO, infer QA>
-  ? RightJoinedBuilder<DB, TB, O, QA, QO>
-  : TE extends (qb: any) => AliasedExpression<infer QO, infer QA>
-  ? RightJoinedBuilder<DB, TB, O, QA, QO>
-  : never
+    ? RightJoinedBuilder<DB, TB, O, TE, DB[TE]>
+    : TE extends AliasedExpression<infer QO, infer QA>
+      ? RightJoinedBuilder<DB, TB, O, QA, QO>
+      : TE extends (qb: any) => AliasedExpression<infer QO, infer QA>
+        ? RightJoinedBuilder<DB, TB, O, QA, QO>
+        : never
 
 type RightJoinedBuilder<
   DB,
@@ -2596,10 +2613,10 @@ type RightJoinedDB<
   [C in keyof DB | A]: C extends A
     ? R
     : C extends TB
-    ? Nullable<DB[C]>
-    : C extends keyof DB
-    ? DB[C]
-    : never
+      ? Nullable<DB[C]>
+      : C extends keyof DB
+        ? DB[C]
+        : never
 }>
 
 export type SelectQueryBuilderWithFullJoin<
@@ -2612,12 +2629,12 @@ export type SelectQueryBuilderWithFullJoin<
     ? OuterJoinedBuilder<DB, TB, O, A, DB[T]>
     : never
   : TE extends keyof DB
-  ? OuterJoinedBuilder<DB, TB, O, TE, DB[TE]>
-  : TE extends AliasedExpression<infer QO, infer QA>
-  ? OuterJoinedBuilder<DB, TB, O, QA, QO>
-  : TE extends (qb: any) => AliasedExpression<infer QO, infer QA>
-  ? OuterJoinedBuilder<DB, TB, O, QA, QO>
-  : never
+    ? OuterJoinedBuilder<DB, TB, O, TE, DB[TE]>
+    : TE extends AliasedExpression<infer QO, infer QA>
+      ? OuterJoinedBuilder<DB, TB, O, QA, QO>
+      : TE extends (qb: any) => AliasedExpression<infer QO, infer QA>
+        ? OuterJoinedBuilder<DB, TB, O, QA, QO>
+        : never
 
 type OuterJoinedBuilder<
   DB,
@@ -2636,10 +2653,10 @@ type OuterJoinedBuilderDB<
   [C in keyof DB | A]: C extends A
     ? Nullable<R>
     : C extends TB
-    ? Nullable<DB[C]>
-    : C extends keyof DB
-    ? DB[C]
-    : never
+      ? Nullable<DB[C]>
+      : C extends keyof DB
+        ? DB[C]
+        : never
 }>
 
 type TableOrList<TB extends keyof any> =
