@@ -56,5 +56,5 @@ type ResolveResult<O> = O extends
   | UpdateResult
   | DeleteResult
   | MergeResult
-  ? O
+  ? O[]
   : Simplify<O>[]
