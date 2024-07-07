@@ -13,6 +13,10 @@ import {
 import { parseReferentialBinaryOperation } from './binary-operation-parser.js'
 import { JoinBuilder } from '../query-builder/join-builder.js'
 import { createJoinBuilder } from './parse-utils.js'
+import {
+  AliasedExpressionFactory,
+  AliasedExpressionOrFactory,
+} from './expression-parser.js'
 
 export type JoinReferenceExpression<
   DB,
@@ -41,6 +45,8 @@ export function parseJoin(joinType: JoinType, args: any[]): JoinNode {
     return parseSingleOnJoin(joinType, args[0], args[1], args[2])
   } else if (args.length === 2) {
     return parseCallbackJoin(joinType, args[0], args[1])
+  } else if (args.length === 1) {
+    return parseOnlessJoin(joinType, args[0])
   } else {
     throw new Error('not implemented')
   }
@@ -65,4 +71,11 @@ function parseSingleOnJoin(
     parseTableExpression(from),
     parseReferentialBinaryOperation(lhsColumn, '=', rhsColumn),
   )
+}
+
+function parseOnlessJoin(
+  joinType: JoinType,
+  from: AliasedExpressionFactory<any, any>,
+) {
+  return createJoinBuilder(joinType, from).toOperationNode()
 }
