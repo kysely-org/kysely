@@ -909,6 +909,10 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
     table: TE,
   ): SelectQueryBuilderWithLeftJoin<DB, TB, O, TE>
 
+  crossApply<TE extends AliasedExpressionFactory<DB, TB>>(
+    table: TE,
+  ): SelectQueryBuilderWithInnerJoin<DB, TB, O, TE>
+
   /**
    * Adds an `order by` clause to the query.
    *
@@ -2426,6 +2430,16 @@ class SelectQueryBuilderImpl<DB, TB extends keyof DB, O>
       queryNode: QueryNode.cloneWithJoin(
         this.#props.queryNode,
         parseJoin('OuterApply', [table]),
+      ),
+    })
+  }
+
+  crossApply(table: any): any {
+    return new SelectQueryBuilderImpl({
+      ...this.#props,
+      queryNode: QueryNode.cloneWithJoin(
+        this.#props.queryNode,
+        parseJoin('CrossApply', [table]),
       ),
     })
   }
