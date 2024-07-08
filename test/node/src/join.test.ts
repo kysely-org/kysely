@@ -59,7 +59,7 @@ for (const dialect of DIALECTS) {
     })
 
     if (dialect === 'mssql') {
-      describe('outer apply', () => {
+      describe('apply', () => {
         it('should outer apply an expression', async () => {
           const q = ctx.db
             .selectFrom('person')
@@ -79,6 +79,30 @@ for (const dialect of DIALECTS) {
             sqlite: NOT_SUPPORTED,
             mssql: {
               sql: `select * from "person" outer apply (select "pet"."name" from "pet" where "pet"."owner_id" = "person"."id") as "pets" order by "pets"."name"`,
+              parameters: [],
+            },
+          })
+        })
+
+        it('should cross apply an expression', async () => {
+          const q = ctx.db
+            .selectFrom('person')
+            .crossApply((eb) =>
+              eb
+                .selectFrom('pet')
+                .whereRef('pet.owner_id', '=', 'person.id')
+                .select('pet.name')
+                .as('pets'),
+            )
+            .selectAll()
+            .orderBy('pets.name')
+
+          testSql(q, dialect, {
+            postgres: NOT_SUPPORTED,
+            mysql: NOT_SUPPORTED,
+            sqlite: NOT_SUPPORTED,
+            mssql: {
+              sql: `select * from "person" cross apply (select "pet"."name" from "pet" where "pet"."owner_id" = "person"."id") as "pets" order by "pets"."name"`,
               parameters: [],
             },
           })
