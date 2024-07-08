@@ -42,7 +42,7 @@ type OperandExpressionFactory<DB, TB extends keyof DB, V> = (
   eb: ExpressionBuilder<DB, TB>,
 ) => OperandExpression<V>
 
-export type AliasedExpressionFactory<DB, TB extends keyof DB> = (
+type AliasedExpressionFactory<DB, TB extends keyof DB> = (
   eb: ExpressionBuilder<DB, TB>,
 ) => AliasedExpression<any, any>
 
