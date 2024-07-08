@@ -905,11 +905,11 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
     callback: FN,
   ): SelectQueryBuilderWithLeftJoin<DB, TB, O, TE>
 
-  outerApply<TE extends AliasedExpressionFactory<DB, TB>>(
+  outerApply<TE extends TableExpression<DB, TB>>(
     table: TE,
   ): SelectQueryBuilderWithLeftJoin<DB, TB, O, TE>
 
-  crossApply<TE extends AliasedExpressionFactory<DB, TB>>(
+  crossApply<TE extends TableExpression<DB, TB>>(
     table: TE,
   ): SelectQueryBuilderWithInnerJoin<DB, TB, O, TE>
 
