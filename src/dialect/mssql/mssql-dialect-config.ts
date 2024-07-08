@@ -1,9 +1,12 @@
+import { MssqlConnection } from './mssql-driver'
+
 export interface MssqlDialectConfig {
   /**
    * This dialect uses the `tarn` package to manage the connection pool to your
    * database. To use it as a peer dependency and not bundle it with Kysely's code,
    * you need to pass the `tarn` package itself. You also need to pass some pool options
-   * (excluding `create`, `destroy` and `validate` functions which are controlled by this dialect),
+   * (excluding `create` and `destroy` functions which are controlled by this dialect whereas `validate`
+   * may be provided, otherwise it is also controlled by the dialect),
    * `min` & `max` connections at the very least.
    *
    * Example:
@@ -47,6 +50,13 @@ export interface MssqlDialectConfig {
    * ```
    */
   tedious: Tedious
+
+  /**
+   * This controls weather the dialect calls the underlying tedious connection's
+   * [`reset` method](https://github.com/tediousjs/tedious/blob/master/src/connection.ts/#L3190)
+   * when a connection is released back to the pool. Defaults to `true`.
+   */
+  resetOnRelease?: boolean
 }
 
 export interface Tedious {
@@ -143,7 +153,9 @@ export interface Tarn {
    * Tarn.js' pool options, excluding `create`, `destroy` and `validate` functions,
    * which must be implemented by this dialect.
    */
-  options: Omit<TarnPoolOptions<any>, 'create' | 'destroy' | 'validate'>
+  options: Omit<TarnPoolOptions<any>, 'create' | 'destroy' | 'validate'> & {
+    validate?: (connection: MssqlConnection) => Promise<boolean> | boolean
+  }
 
   /**
    * Tarn.js' Pool class.

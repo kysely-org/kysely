@@ -39,7 +39,7 @@ export class MssqlDriver implements Driver {
   readonly #pool: TarnPool<MssqlConnection>
 
   constructor(config: MssqlDialectConfig) {
-    this.#config = freeze({ ...config })
+    this.#config = freeze({ ...{ resetOnRelease: true }, ...config })
 
     this.#pool = new this.#config.tarn.Pool({
       ...this.#config.tarn.options,
@@ -56,7 +56,9 @@ export class MssqlDriver implements Driver {
       },
       // @ts-ignore `tarn` accepts a function that returns a promise here, but
       // the types are not aligned and it type errors.
-      validate: (connection) => connection.validate(),
+      validate: this.#config.tarn.options.validate
+        ? this.#config.tarn.options.validate
+        : (connection) => connection.validate(),
     })
   }
 
@@ -84,7 +86,9 @@ export class MssqlDriver implements Driver {
   }
 
   async releaseConnection(connection: MssqlConnection): Promise<void> {
-    await connection[PRIVATE_RELEASE_METHOD]()
+    if (this.#config.resetOnRelease) {
+      await connection[PRIVATE_RELEASE_METHOD]()
+    }
     this.#pool.release(connection)
   }
 
@@ -93,14 +97,13 @@ export class MssqlDriver implements Driver {
   }
 }
 
-class MssqlConnection implements DatabaseConnection {
+export class MssqlConnection implements DatabaseConnection {
   readonly #connection: TediousConnection
   readonly #tedious: Tedious
 
   constructor(connection: TediousConnection, tedious: Tedious) {
     this.#connection = connection
     this.#tedious = tedious
-
     this.#connection.on('error', console.error)
     this.#connection.once('end', () => {
       this.#connection.off('error', console.error)
@@ -272,6 +275,7 @@ class MssqlConnection implements DatabaseConnection {
   }
 
   [PRIVATE_RELEASE_METHOD](): Promise<void> {
+    console.log('realeseing')
     return new Promise((resolve, reject) => {
       this.#connection.reset((error) => {
         if (error) reject(error)
