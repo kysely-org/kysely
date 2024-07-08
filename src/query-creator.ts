@@ -171,7 +171,7 @@ export class QueryCreator<DB> {
     from: TE[],
   ): SelectQueryBuilder<DB, ExtractTableAlias<DB, TE>, {}>
 
-  selectFrom<TE extends TableExpression<DB, keyof DB>>(
+  selectFrom<TE extends TableExpression<DB, never>>(
     from: TE[],
   ): SelectQueryBuilder<From<DB, TE>, FromTables<DB, never, TE>, {}>
 
@@ -187,7 +187,7 @@ export class QueryCreator<DB> {
     {}
   >
 
-  selectFrom<TE extends TableExpression<DB, keyof DB>>(
+  selectFrom<TE extends TableExpression<DB, never>>(
     from: TE,
   ): SelectQueryBuilder<From<DB, TE>, FromTables<DB, never, TE>, {}>
 

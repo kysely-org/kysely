@@ -126,6 +126,7 @@ export class DefaultQueryCompiler
   compileQuery(node: RootOperationNode): CompiledQuery {
     this.#sql = ''
     this.#parameters = []
+    this.nodeStack.splice(0, this.nodeStack.length)
 
     this.visitNode(node)
 

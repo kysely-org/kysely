@@ -1,4 +1,3 @@
-import React from 'react'
 import Admonition from '@theme/Admonition'
 import CodeBlock from '@theme/CodeBlock'
 import Link from '@docusaurus/Link'
@@ -44,11 +43,12 @@ export async function deletePerson(id: number) {
 export async function createPerson(person: NewPerson) {
   const compiledQuery = db.insertInto('person').values(person).compile()
 
-  compiledQuery.sql += '; select scope_identity() as id'
-
   const {
     rows: [{ id }],
-  } = await db.executeQuery<Pick<Person, 'id'>>(compiledQuery)
+  } = await db.executeQuery<Pick<Person, 'id'>>({
+    ...compiledQuery,
+    sql: \`\${compiledQuery.sql}; select scope_identity() as id\`
+  })
 
   return await findPersonById(id)
 }

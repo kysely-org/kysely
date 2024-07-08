@@ -682,18 +682,28 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
     })
   }
 
-  returningAll(): UpdateQueryBuilder<DB, UT, TB, Selectable<DB[TB]>> {
+  returningAll<T extends TB>(
+    tables: ReadonlyArray<T>,
+  ): UpdateQueryBuilder<DB, UT, TB, ReturningAllRow<DB, T, O>>
+
+  returningAll<T extends TB>(
+    table: T,
+  ): UpdateQueryBuilder<DB, UT, TB, ReturningAllRow<DB, T, O>>
+
+  returningAll(): UpdateQueryBuilder<DB, UT, TB, ReturningAllRow<DB, TB, O>>
+
+  returningAll(table?: any): any {
     return new UpdateQueryBuilder({
       ...this.#props,
       queryNode: QueryNode.cloneWithReturning(
         this.#props.queryNode,
-        parseSelectAll(),
+        parseSelectAll(table),
       ),
     })
   }
 
   output<OE extends OutputExpression<DB, UT>>(
-    selections: readonly OE[]
+    selections: readonly OE[],
   ): UpdateQueryBuilder<
     DB,
     UT,
@@ -702,7 +712,7 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
   >
 
   output<CB extends OutputCallback<DB, TB>>(
-    callback: CB
+    callback: CB,
   ): UpdateQueryBuilder<
     DB,
     UT,
@@ -711,7 +721,7 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
   >
 
   output<OE extends OutputExpression<DB, TB>>(
-    selection: OE
+    selection: OE,
   ): UpdateQueryBuilder<
     DB,
     UT,
@@ -724,19 +734,19 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
       ...this.#props,
       queryNode: QueryNode.cloneWithOutput(
         this.#props.queryNode,
-        parseSelectArg(args)
+        parseSelectArg(args),
       ),
     })
   }
 
   outputAll(
-    table: OutputPrefix
+    table: OutputPrefix,
   ): UpdateQueryBuilder<DB, UT, TB, ReturningAllRow<DB, TB, O>> {
     return new UpdateQueryBuilder({
       ...this.#props,
       queryNode: QueryNode.cloneWithOutput(
         this.#props.queryNode,
-        parseSelectAll(table)
+        parseSelectAll(table),
       ),
     })
   }
@@ -867,8 +877,8 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
   ): O2 extends UpdateResult
     ? UpdateQueryBuilder<DB, UT, TB, UpdateResult>
     : O2 extends O & infer E
-    ? UpdateQueryBuilder<DB, UT, TB, O & Partial<E>>
-    : UpdateQueryBuilder<DB, UT, TB, Partial<O2>> {
+      ? UpdateQueryBuilder<DB, UT, TB, O & Partial<E>>
+      : UpdateQueryBuilder<DB, UT, TB, Partial<O2>> {
     if (condition) {
       return func(this) as any
     }
@@ -1130,12 +1140,12 @@ export type UpdateQueryBuilderWithInnerJoin<
     ? InnerJoinedBuilder<DB, UT, TB, O, A, DB[T]>
     : never
   : TE extends keyof DB
-  ? UpdateQueryBuilder<DB, UT, TB | TE, O>
-  : TE extends AliasedExpression<infer QO, infer QA>
-  ? InnerJoinedBuilder<DB, UT, TB, O, QA, QO>
-  : TE extends (qb: any) => AliasedExpression<infer QO, infer QA>
-  ? InnerJoinedBuilder<DB, UT, TB, O, QA, QO>
-  : never
+    ? UpdateQueryBuilder<DB, UT, TB | TE, O>
+    : TE extends AliasedExpression<infer QO, infer QA>
+      ? InnerJoinedBuilder<DB, UT, TB, O, QA, QO>
+      : TE extends (qb: any) => AliasedExpression<infer QO, infer QA>
+        ? InnerJoinedBuilder<DB, UT, TB, O, QA, QO>
+        : never
 
 type InnerJoinedBuilder<
   DB,
@@ -1164,12 +1174,12 @@ export type UpdateQueryBuilderWithLeftJoin<
     ? LeftJoinedBuilder<DB, UT, TB, O, A, DB[T]>
     : never
   : TE extends keyof DB
-  ? LeftJoinedBuilder<DB, UT, TB, O, TE, DB[TE]>
-  : TE extends AliasedExpression<infer QO, infer QA>
-  ? LeftJoinedBuilder<DB, UT, TB, O, QA, QO>
-  : TE extends (qb: any) => AliasedExpression<infer QO, infer QA>
-  ? LeftJoinedBuilder<DB, UT, TB, O, QA, QO>
-  : never
+    ? LeftJoinedBuilder<DB, UT, TB, O, TE, DB[TE]>
+    : TE extends AliasedExpression<infer QO, infer QA>
+      ? LeftJoinedBuilder<DB, UT, TB, O, QA, QO>
+      : TE extends (qb: any) => AliasedExpression<infer QO, infer QA>
+        ? LeftJoinedBuilder<DB, UT, TB, O, QA, QO>
+        : never
 
 type LeftJoinedBuilder<
   DB,
@@ -1187,8 +1197,8 @@ type LeftJoinedDB<DB, A extends keyof any, R> = DrainOuterGeneric<{
   [C in keyof DB | A]: C extends A
     ? Nullable<R>
     : C extends keyof DB
-    ? DB[C]
-    : never
+      ? DB[C]
+      : never
 }>
 
 export type UpdateQueryBuilderWithRightJoin<
@@ -1202,12 +1212,12 @@ export type UpdateQueryBuilderWithRightJoin<
     ? RightJoinedBuilder<DB, UT, TB, O, A, DB[T]>
     : never
   : TE extends keyof DB
-  ? RightJoinedBuilder<DB, UT, TB, O, TE, DB[TE]>
-  : TE extends AliasedExpression<infer QO, infer QA>
-  ? RightJoinedBuilder<DB, UT, TB, O, QA, QO>
-  : TE extends (qb: any) => AliasedExpression<infer QO, infer QA>
-  ? RightJoinedBuilder<DB, UT, TB, O, QA, QO>
-  : never
+    ? RightJoinedBuilder<DB, UT, TB, O, TE, DB[TE]>
+    : TE extends AliasedExpression<infer QO, infer QA>
+      ? RightJoinedBuilder<DB, UT, TB, O, QA, QO>
+      : TE extends (qb: any) => AliasedExpression<infer QO, infer QA>
+        ? RightJoinedBuilder<DB, UT, TB, O, QA, QO>
+        : never
 
 type RightJoinedBuilder<
   DB,
@@ -1227,10 +1237,10 @@ type RightJoinedDB<
   [C in keyof DB | A]: C extends A
     ? R
     : C extends TB
-    ? Nullable<DB[C]>
-    : C extends keyof DB
-    ? DB[C]
-    : never
+      ? Nullable<DB[C]>
+      : C extends keyof DB
+        ? DB[C]
+        : never
 }>
 
 export type UpdateQueryBuilderWithFullJoin<
@@ -1244,12 +1254,12 @@ export type UpdateQueryBuilderWithFullJoin<
     ? OuterJoinedBuilder<DB, UT, TB, O, A, DB[T]>
     : never
   : TE extends keyof DB
-  ? OuterJoinedBuilder<DB, UT, TB, O, TE, DB[TE]>
-  : TE extends AliasedExpression<infer QO, infer QA>
-  ? OuterJoinedBuilder<DB, UT, TB, O, QA, QO>
-  : TE extends (qb: any) => AliasedExpression<infer QO, infer QA>
-  ? OuterJoinedBuilder<DB, UT, TB, O, QA, QO>
-  : never
+    ? OuterJoinedBuilder<DB, UT, TB, O, TE, DB[TE]>
+    : TE extends AliasedExpression<infer QO, infer QA>
+      ? OuterJoinedBuilder<DB, UT, TB, O, QA, QO>
+      : TE extends (qb: any) => AliasedExpression<infer QO, infer QA>
+        ? OuterJoinedBuilder<DB, UT, TB, O, QA, QO>
+        : never
 
 type OuterJoinedBuilder<
   DB,
@@ -1269,8 +1279,8 @@ type OuterJoinedBuilderDB<
   [C in keyof DB | A]: C extends A
     ? Nullable<R>
     : C extends TB
-    ? Nullable<DB[C]>
-    : C extends keyof DB
-    ? DB[C]
-    : never
+      ? Nullable<DB[C]>
+      : C extends keyof DB
+        ? DB[C]
+        : never
 }>
