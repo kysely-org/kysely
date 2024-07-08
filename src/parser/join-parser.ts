@@ -1,22 +1,18 @@
 import { JoinNode, JoinType } from '../operation-node/join-node.js'
+import { JoinBuilder } from '../query-builder/join-builder.js'
 import {
   AnyColumn,
   AnyColumnWithTable,
   DrainOuterGeneric,
 } from '../util/type-utils.js'
-import {
-  TableExpression,
-  parseTableExpression,
-  From,
-  FromTables,
-} from './table-parser.js'
 import { parseReferentialBinaryOperation } from './binary-operation-parser.js'
-import { JoinBuilder } from '../query-builder/join-builder.js'
 import { createJoinBuilder } from './parse-utils.js'
 import {
-  AliasedExpressionFactory,
-  AliasedExpressionOrFactory,
-} from './expression-parser.js'
+  From,
+  FromTables,
+  TableExpression,
+  parseTableExpression,
+} from './table-parser.js'
 
 export type JoinReferenceExpression<
   DB,
