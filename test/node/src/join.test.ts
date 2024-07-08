@@ -82,6 +82,19 @@ for (const dialect of DIALECTS) {
               parameters: [],
             },
           })
+
+          const result = await q.execute()
+
+          expect(result).to.have.length(3)
+
+          expect(result).to.containSubset([
+            {
+              first_name: 'Jennifer',
+              name: 'Catto',
+            },
+            { first_name: 'Arnold', name: 'Doggo' },
+            { first_name: 'Sylvester', name: 'Hammo' },
+          ] satisfies Partial<(typeof result)[number]>[])
         })
 
         it('should cross apply an expression', async () => {
@@ -106,6 +119,19 @@ for (const dialect of DIALECTS) {
               parameters: [],
             },
           })
+
+          const result = await q.execute()
+
+          expect(result).to.have.length(3)
+
+          expect(result).to.containSubset([
+            {
+              first_name: 'Jennifer',
+              name: 'Catto',
+            },
+            { first_name: 'Arnold', name: 'Doggo' },
+            { first_name: 'Sylvester', name: 'Hammo' },
+          ] satisfies Partial<(typeof result)[number]>[])
         })
       })
     }
