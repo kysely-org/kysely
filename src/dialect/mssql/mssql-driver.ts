@@ -104,6 +104,7 @@ export class MssqlConnection implements DatabaseConnection {
   constructor(connection: TediousConnection, tedious: Tedious) {
     this.#connection = connection
     this.#tedious = tedious
+
     this.#connection.on('error', console.error)
     this.#connection.once('end', () => {
       this.#connection.off('error', console.error)
