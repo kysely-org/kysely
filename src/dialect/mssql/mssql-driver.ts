@@ -275,7 +275,6 @@ export class MssqlConnection implements DatabaseConnection {
   }
 
   [PRIVATE_RELEASE_METHOD](): Promise<void> {
-    console.log('realeseing')
     return new Promise((resolve, reject) => {
       this.#connection.reset((error) => {
         if (error) reject(error)
