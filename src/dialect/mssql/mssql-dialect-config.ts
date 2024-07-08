@@ -1,4 +1,4 @@
-import { MssqlConnection } from './mssql-driver'
+import type { MssqlConnection } from './mssql-driver.js'
 
 export interface MssqlDialectConfig {
   /**
