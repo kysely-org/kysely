@@ -58,84 +58,6 @@ for (const dialect of DIALECTS) {
       await destroyTest(ctx)
     })
 
-    if (dialect === 'mssql') {
-      describe('apply', () => {
-        it('should outer apply an expression', async () => {
-          const q = ctx.db
-            .selectFrom('person')
-            .outerApply((eb) =>
-              eb
-                .selectFrom('pet')
-                .whereRef('pet.owner_id', '=', 'person.id')
-                .select('pet.name')
-                .as('pets'),
-            )
-            .selectAll()
-            .orderBy('pets.name')
-
-          testSql(q, dialect, {
-            postgres: NOT_SUPPORTED,
-            mysql: NOT_SUPPORTED,
-            sqlite: NOT_SUPPORTED,
-            mssql: {
-              sql: `select * from "person" outer apply (select "pet"."name" from "pet" where "pet"."owner_id" = "person"."id") as "pets" order by "pets"."name"`,
-              parameters: [],
-            },
-          })
-
-          const result = await q.execute()
-
-          expect(result).to.have.length(3)
-
-          expect(result).to.containSubset([
-            {
-              first_name: 'Jennifer',
-              name: 'Catto',
-            },
-            { first_name: 'Arnold', name: 'Doggo' },
-            { first_name: 'Sylvester', name: 'Hammo' },
-          ] satisfies Partial<(typeof result)[number]>[])
-        })
-
-        it('should cross apply an expression', async () => {
-          const q = ctx.db
-            .selectFrom('person')
-            .crossApply((eb) =>
-              eb
-                .selectFrom('pet')
-                .whereRef('pet.owner_id', '=', 'person.id')
-                .select('pet.name')
-                .as('pets'),
-            )
-            .selectAll()
-            .orderBy('pets.name')
-
-          testSql(q, dialect, {
-            postgres: NOT_SUPPORTED,
-            mysql: NOT_SUPPORTED,
-            sqlite: NOT_SUPPORTED,
-            mssql: {
-              sql: `select * from "person" cross apply (select "pet"."name" from "pet" where "pet"."owner_id" = "person"."id") as "pets" order by "pets"."name"`,
-              parameters: [],
-            },
-          })
-
-          const result = await q.execute()
-
-          expect(result).to.have.length(3)
-
-          expect(result).to.containSubset([
-            {
-              first_name: 'Jennifer',
-              name: 'Catto',
-            },
-            { first_name: 'Arnold', name: 'Doggo' },
-            { first_name: 'Sylvester', name: 'Hammo' },
-          ] satisfies Partial<(typeof result)[number]>[])
-        })
-      })
-    }
-
     describe('inner join', () => {
       it(`should inner join a table`, async () => {
         const query = ctx.db
@@ -855,6 +777,83 @@ for (const dialect of DIALECTS) {
             { first_name: 'Jennifer', name: 'Catto' },
             { first_name: 'Sylvester', name: 'Hammo' },
           ])
+        })
+      })
+    }
+    if (dialect === 'mssql') {
+      describe('apply', () => {
+        it('should outer apply an expression', async () => {
+          const q = ctx.db
+            .selectFrom('person')
+            .outerApply((eb) =>
+              eb
+                .selectFrom('pet')
+                .whereRef('pet.owner_id', '=', 'person.id')
+                .select('pet.name')
+                .as('pets'),
+            )
+            .selectAll()
+            .orderBy('pets.name')
+
+          testSql(q, dialect, {
+            postgres: NOT_SUPPORTED,
+            mysql: NOT_SUPPORTED,
+            sqlite: NOT_SUPPORTED,
+            mssql: {
+              sql: `select * from "person" outer apply (select "pet"."name" from "pet" where "pet"."owner_id" = "person"."id") as "pets" order by "pets"."name"`,
+              parameters: [],
+            },
+          })
+
+          const result = await q.execute()
+
+          expect(result).to.have.length(3)
+
+          expect(result).to.containSubset([
+            {
+              first_name: 'Jennifer',
+              name: 'Catto',
+            },
+            { first_name: 'Arnold', name: 'Doggo' },
+            { first_name: 'Sylvester', name: 'Hammo' },
+          ] satisfies Partial<(typeof result)[number]>[])
+        })
+
+        it('should cross apply an expression', async () => {
+          const q = ctx.db
+            .selectFrom('person')
+            .crossApply((eb) =>
+              eb
+                .selectFrom('pet')
+                .whereRef('pet.owner_id', '=', 'person.id')
+                .select('pet.name')
+                .as('pets'),
+            )
+            .selectAll()
+            .orderBy('pets.name')
+
+          testSql(q, dialect, {
+            postgres: NOT_SUPPORTED,
+            mysql: NOT_SUPPORTED,
+            sqlite: NOT_SUPPORTED,
+            mssql: {
+              sql: `select * from "person" cross apply (select "pet"."name" from "pet" where "pet"."owner_id" = "person"."id") as "pets" order by "pets"."name"`,
+              parameters: [],
+            },
+          })
+
+          const result = await q.execute()
+
+          expect(result).to.have.length(3)
+
+          expect(result).to.containSubset([
+            {
+              first_name: 'Jennifer',
+              name: 'Catto',
+            },
+            { first_name: 'Arnold', name: 'Doggo' },
+            { first_name: 'Sylvester', name: 'Hammo' },
+          ] satisfies Partial<(typeof result)[number]>[])
         })
       })
     }
