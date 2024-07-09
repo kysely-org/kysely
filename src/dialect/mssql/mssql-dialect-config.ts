@@ -50,13 +50,6 @@ export interface MssqlDialectConfig {
    * ```
    */
   tedious: Tedious
-
-  /**
-   * This controls weather the dialect calls the underlying tedious connection's
-   * [`reset` method](https://github.com/tediousjs/tedious/blob/master/src/connection.ts/#L3190)
-   * when a connection is released back to the pool. Defaults to `true`.
-   */
-  resetOnRelease?: boolean
 }
 
 export interface Tedious {
@@ -64,6 +57,13 @@ export interface Tedious {
   ISOLATION_LEVEL: TediousIsolationLevel
   Request: TediousRequestClass
   TYPES: TediousTypes
+  /**
+   * This controls weather the dialect calls the underlying tedious connection's
+   * [`reset` method](https://github.com/tediousjs/tedious/blob/master/src/connection.ts/#L3190)
+   * when a connection is released back to the pool.
+   * Defaults to `true`.
+   */
+  resetConnectionOnRelease?: boolean
 }
 
 export interface TediousConnection {
@@ -154,7 +154,12 @@ export interface Tarn {
    * which must be implemented by this dialect.
    */
   options: Omit<TarnPoolOptions<any>, 'create' | 'destroy' | 'validate'> & {
-    validate?: (connection: MssqlConnection) => Promise<boolean> | boolean
+    /**
+     * Controls if tarn will validate connections before acquiring them from the pool.
+     * Connections are validated by executing the query `SELECT 1` on the connection.
+     * Defaults to `true`
+     */
+    validateConnections?: boolean
   }
 
   /**
