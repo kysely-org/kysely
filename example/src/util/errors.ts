@@ -8,7 +8,7 @@ export type AuthenticationErrors =
 
 export type UserApiErrors = 'InvalidUser' | 'UserNotFound'
 
-export type SignInMethodApiErros =
+export type SignInMethodApiErrors =
   | 'InvalidSignInMethod'
   | 'UserAlreadyHasSignInMethod'
   | 'PasswordTooWeak'
@@ -21,7 +21,7 @@ export type ErrorCode =
   | 'UnknownError'
   | AuthenticationErrors
   | UserApiErrors
-  | SignInMethodApiErros
+  | SignInMethodApiErrors
 
 export type ErrorStatus = 400 | 401 | 403 | 404 | 409 | 500
 
