@@ -1,5 +1,3 @@
-import type { MssqlConnection } from './mssql-driver.js'
-
 export interface MssqlDialectConfig {
   /**
    * This dialect uses the `tarn` package to manage the connection pool to your
