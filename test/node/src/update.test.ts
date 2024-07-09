@@ -665,6 +665,35 @@ for (const dialect of DIALECTS) {
       })
     }
 
+    if (dialect === 'postgres' || dialect === 'mysql') {
+      it('modifyEnd should add arbitrary SQL to the end of the query', async () => {
+        const query = ctx.db
+        .updateTable('person')
+        .set({
+            gender: 'other'
+        })
+        .where('first_name', '=', 'Jennifer')
+        .modifyEnd(sql.raw('-- this is a comment'))
+
+      testSql(query, dialect, {
+        postgres: {
+          sql: 'update "person" set "gender" = $1 where "first_name" = $2 -- this is a comment',
+          parameters: ['other', 'Jennifer'],
+        },
+        mysql: {
+          sql: 'update `person` set `gender` = ? where `first_name` = ? -- this is a comment',
+          parameters: ['other', 'Jennifer'],
+        },
+        mssql: NOT_SUPPORTED,
+        sqlite: NOT_SUPPORTED,
+      })
+
+        const result = await query.execute()
+
+        expect(result).to.have.length(1)
+      })
+    }
+
     if (dialect === 'mssql') {
       it('should update using a from clause and a join', async () => {
         const query = ctx.db

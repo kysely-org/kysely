@@ -16,6 +16,7 @@ export interface MergeQueryNode extends OperationNode {
   readonly with?: WithNode
   readonly top?: TopNode
   readonly output?: OutputNode
+  readonly endModifiers?: ReadonlyArray<OperationNode>
 }
 
 /**

@@ -873,6 +873,32 @@ for (const dialect of DIALECTS) {
       })
     }
 
+    if (dialect === 'postgres' || dialect === 'mysql') {
+      it('modifyEnd should add arbitrary SQL to the end of the query', async () => {
+        const query = ctx.db
+        .deleteFrom('person')
+        .where('first_name', '=', 'Jennifer')
+        .modifyEnd(sql.raw('-- this is a comment'))
+
+        testSql(query, dialect, {
+          postgres: {
+            sql: 'delete from "person" where "first_name" = $1 -- this is a comment',
+            parameters: ['Jennifer'],
+          },
+          mysql: {
+            sql: 'delete from `person` where `first_name` = ? -- this is a comment',
+            parameters: ['Jennifer'],
+          },
+          mssql: NOT_SUPPORTED,
+          sqlite: NOT_SUPPORTED,
+        })
+
+        const result = await query.execute()
+
+        expect(result).to.have.length(1)
+      })
+    }
+
     if (dialect === 'postgres') {
       it('should delete all rows and stream returned results', async () => {
         const stream = ctx.db
