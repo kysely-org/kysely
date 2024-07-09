@@ -98,7 +98,7 @@ export class MssqlDriver implements Driver {
   }
 }
 
-export class MssqlConnection implements DatabaseConnection {
+class MssqlConnection implements DatabaseConnection {
   readonly #connection: TediousConnection
   readonly #tedious: Tedious
 

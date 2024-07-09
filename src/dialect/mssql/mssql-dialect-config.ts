@@ -3,8 +3,7 @@ export interface MssqlDialectConfig {
    * This dialect uses the `tarn` package to manage the connection pool to your
    * database. To use it as a peer dependency and not bundle it with Kysely's code,
    * you need to pass the `tarn` package itself. You also need to pass some pool options
-   * (excluding `create` and `destroy` functions which are controlled by this dialect whereas `validate`
-   * may be provided, otherwise it is also controlled by the dialect),
+   * (excluding `create`, `destroy` and `validate` functions which are controlled by this dialect),
    * `min` & `max` connections at the very least.
    *
    * Example:
