@@ -58,7 +58,7 @@ export class MssqlDriver implements Driver {
       // the types are not aligned and it type errors.
       validate:
         this.#config.tarn.options.validateConnections === false
-          ? () => true
+          ? undefined
           : (connection) => connection.validate(),
     })
   }
@@ -87,9 +87,7 @@ export class MssqlDriver implements Driver {
   }
 
   async releaseConnection(connection: MssqlConnection): Promise<void> {
-    if (this.#config.tedious.resetConnectionOnRelease !== false) {
-      await connection[PRIVATE_RELEASE_METHOD]()
-    }
+    await connection[PRIVATE_RELEASE_METHOD]()
     this.#pool.release(connection)
   }
 
@@ -277,6 +275,9 @@ class MssqlConnection implements DatabaseConnection {
   }
 
   [PRIVATE_RELEASE_METHOD](): Promise<void> {
+    if (this.#tedious.resetConnectionOnRelease === false) {
+      return Promise.resolve(undefined)
+    }
     return new Promise((resolve, reject) => {
       this.#connection.reset((error) => {
         if (error) reject(error)
