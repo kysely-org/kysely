@@ -199,7 +199,7 @@ export interface TarnPoolOptions<R> {
   min: number
   propagateCreateError?: boolean
   reapIntervalMillis?: number
-  validate?: (resource: R) => boolean
+  validate?(resource: R): boolean
 }
 
 export interface TarnPendingRequest<R> {
