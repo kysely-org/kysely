@@ -41,22 +41,25 @@ export class MssqlDriver implements Driver {
   constructor(config: MssqlDialectConfig) {
     this.#config = freeze({ ...config })
 
-    this.#pool = new this.#config.tarn.Pool({
-      ...this.#config.tarn.options,
-      create: async () => {
-        const connection = await this.#config.tedious.connectionFactory()
+    const { tarn, tedious } = this.#config
+    const { validateConnections, ...poolOptions } = tarn.options
 
-        return await new MssqlConnection(
-          connection,
-          this.#config.tedious,
-        ).connect()
+    this.#pool = new tarn.Pool({
+      ...poolOptions,
+      create: async () => {
+        const connection = await tedious.connectionFactory()
+
+        return await new MssqlConnection(connection, tedious).connect()
       },
       destroy: async (connection) => {
         await connection[PRIVATE_DESTROY_METHOD]()
       },
       // @ts-ignore `tarn` accepts a function that returns a promise here, but
       // the types are not aligned and it type errors.
-      validate: (connection) => connection.validate(),
+      validate:
+        validateConnections === false
+          ? undefined
+          : (connection) => connection.validate(),
     })
   }
 
@@ -271,13 +274,16 @@ class MssqlConnection implements DatabaseConnection {
     })
   }
 
-  [PRIVATE_RELEASE_METHOD](): Promise<void> {
-    return new Promise((resolve, reject) => {
-      this.#connection.reset((error) => {
-        if (error) reject(error)
-        else resolve(undefined)
+  async [PRIVATE_RELEASE_METHOD](): Promise<void> {
+    // TODO: flip this to `if (!this.#tedious.resetConnectionOnRelease) {}` in a future PR.
+    if (this.#tedious.resetConnectionOnRelease !== false) {
+      await new Promise((resolve, reject) => {
+        this.#connection.reset((error) => {
+          if (error) reject(error)
+          else resolve(undefined)
+        })
       })
-    })
+    }
   }
 
   [PRIVATE_DESTROY_METHOD](): Promise<void> {
