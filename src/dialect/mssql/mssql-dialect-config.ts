@@ -54,6 +54,13 @@ export interface Tedious {
   ISOLATION_LEVEL: TediousIsolationLevel
   Request: TediousRequestClass
   TYPES: TediousTypes
+  /**
+   * Controls whether connections are reset to their initial states when released back to the pool. Resetting a connection performs additional requests to the database.
+   * See {@link https://tediousjs.github.io/tedious/api-connection.html#function_reset | connection.reset}.
+   *
+   * Defaults to `true`.
+   */
+  resetConnectionOnRelease?: boolean
 }
 
 export interface TediousConnection {
@@ -143,7 +150,14 @@ export interface Tarn {
    * Tarn.js' pool options, excluding `create`, `destroy` and `validate` functions,
    * which must be implemented by this dialect.
    */
-  options: Omit<TarnPoolOptions<any>, 'create' | 'destroy' | 'validate'>
+  options: Omit<TarnPoolOptions<any>, 'create' | 'destroy' | 'validate'> & {
+    /**
+     * Controls whether connections are validated before being acquired from the pool. Connection validation performs additional requests to the database.
+     *
+     * Defaults to `true`.
+     */
+    validateConnections?: boolean
+  }
 
   /**
    * Tarn.js' Pool class.
@@ -185,7 +199,7 @@ export interface TarnPoolOptions<R> {
   min: number
   propagateCreateError?: boolean
   reapIntervalMillis?: number
-  validate(resource: R): boolean
+  validate?(resource: R): boolean
 }
 
 export interface TarnPendingRequest<R> {

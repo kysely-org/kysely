@@ -25,6 +25,7 @@ export interface InsertQueryNode extends OperationNode {
   readonly replace?: boolean
   readonly explain?: ExplainNode
   readonly defaultValues?: boolean
+  readonly endModifiers?: ReadonlyArray<OperationNode>
   readonly top?: TopNode
   readonly output?: OutputNode
 }
