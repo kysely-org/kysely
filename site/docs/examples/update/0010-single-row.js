@@ -5,6 +5,4 @@ export const singleRow = `const result = await db
     last_name: 'Aniston'
   })
   .where('id', '=', '1')
-  .executeTakeFirst()
-
-console.log(result.numUpdatedRows)`
+  .executeTakeFirst()`

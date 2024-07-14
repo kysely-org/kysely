@@ -2,6 +2,7 @@ import { AggregateFunctionNode } from '../../operation-node/aggregate-function-n
 import { AliasNode } from '../../operation-node/alias-node.js'
 import { FunctionNode } from '../../operation-node/function-node.js'
 import { IdentifierNode } from '../../operation-node/identifier-node.js'
+import { ListNode } from '../../operation-node/list-node.js'
 import { OperationNodeTransformer } from '../../operation-node/operation-node-transformer.js'
 import { OperationNode } from '../../operation-node/operation-node.js'
 import { ReferencesNode } from '../../operation-node/references-node.js'
@@ -198,14 +199,14 @@ export class WithSchemaTransformer extends OperationNodeTransformer {
     node: OperationNode,
     schemableIds: Set<string>,
   ): void {
-    const table = TableNode.is(node)
-      ? node
-      : AliasNode.is(node) && TableNode.is(node.node)
-        ? node.node
-        : null
-
-    if (table) {
-      this.#collectSchemableId(table.table, schemableIds)
+    if (TableNode.is(node)) {
+      this.#collectSchemableId(node.table, schemableIds)
+    } else if (AliasNode.is(node) && TableNode.is(node.node)) {
+      this.#collectSchemableId(node.node.table, schemableIds)
+    } else if (ListNode.is(node)) {
+      for (const table of node.items) {
+        this.#collectSchemableIdsFromTableExpr(table, schemableIds)
+      }
     }
   }
 
