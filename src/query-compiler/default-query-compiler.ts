@@ -798,6 +798,10 @@ export class DefaultQueryCompiler
     }
 
     if (node.joins) {
+      if (!node.from) {
+        throw new Error("Joins in an update query are only supported as a part of a PostgreSQL 'update set from join' query. If you want to create a MySQL 'update join set' query, see https://kysely.dev/docs/examples/update/my-sql-joins")
+      }
+
       this.append(' ')
       this.compileList(node.joins, ' ')
     }
