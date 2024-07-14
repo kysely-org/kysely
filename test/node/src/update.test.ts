@@ -577,6 +577,123 @@ for (const dialect of DIALECTS) {
 
         expect(people).to.have.length(2)
       })
+
+      it('should update joined table using set(column, value) function', async () => {
+        const query = ctx.db
+          .updateTable(['person', 'pet'])
+          .set('person.first_name', 'Jennifer 2')
+          .set('pet.name', 'Doggo 2')
+          .where('person.first_name', '=', 'Jennifer')
+          .whereRef('person.id', '=', 'pet.owner_id')
+
+        testSql(query, dialect, {
+          postgres: NOT_SUPPORTED,
+          mysql: {
+            sql: 'update `person`, `pet` set `person`.`first_name` = ?, `pet`.`name` = ? where `person`.`first_name` = ? and `person`.`id` = `pet`.`owner_id`',
+            parameters: ['Jennifer 2', 'Doggo 2', 'Jennifer'],
+          },
+          mssql: NOT_SUPPORTED,
+          sqlite: NOT_SUPPORTED,
+        })
+
+        await query.execute()
+
+        const jennifer = await ctx.db
+          .selectFrom('person')
+          .select(['id', 'first_name'])
+          .where('first_name', '=', 'Jennifer 2')
+          .execute()
+
+        const doggo = await ctx.db
+          .selectFrom('pet')
+          .select(['name', 'owner_id'])
+          .where('name', '=', 'Doggo 2')
+          .execute()
+
+        expect(jennifer).to.have.length(1)
+        expect(doggo).to.have.length(1)
+        expect(doggo[0].owner_id).to.equal(jennifer[0].id)
+      })
+
+      it('should update joined aliased table using set(column, value) function and', async () => {
+        const query = ctx.db
+          .updateTable(['person as per', 'pet as p'])
+          .set('per.first_name', 'Jennifer 2')
+          .set('p.name', 'Doggo 2')
+          .where('per.first_name', '=', 'Jennifer')
+          .whereRef('per.id', '=', 'p.owner_id')
+
+        testSql(query, dialect, {
+          postgres: NOT_SUPPORTED,
+          mysql: {
+            sql: 'update `person` as `per`, `pet` as `p` set `per`.`first_name` = ?, `p`.`name` = ? where `per`.`first_name` = ? and `per`.`id` = `p`.`owner_id`',
+            parameters: ['Jennifer 2', 'Doggo 2', 'Jennifer'],
+          },
+          mssql: NOT_SUPPORTED,
+          sqlite: NOT_SUPPORTED,
+        })
+
+        await query.execute()
+
+        const jennifer = await ctx.db
+          .selectFrom('person')
+          .select(['id', 'first_name'])
+          .where('first_name', '=', 'Jennifer 2')
+          .execute()
+
+        const doggo = await ctx.db
+          .selectFrom('pet')
+          .select(['name', 'owner_id'])
+          .where('name', '=', 'Doggo 2')
+          .execute()
+
+        expect(jennifer).to.have.length(1)
+        expect(doggo).to.have.length(1)
+        expect(doggo[0].owner_id).to.equal(jennifer[0].id)
+      })
+
+      it('should join expressions', async () => {
+        const query = ctx.db
+          .updateTable([
+            'person',
+            ctx.db.selectFrom('pet').selectAll().as('pet'),
+          ])
+          .set('person.first_name', 'Jennifer 2')
+          .where('person.first_name', '=', 'Jennifer')
+          .whereRef('person.id', '=', 'pet.owner_id')
+
+        testSql(query, dialect, {
+          postgres: NOT_SUPPORTED,
+          mysql: {
+            sql: 'update `person`, (select * from `pet`) as `pet` set `person`.`first_name` = ? where `person`.`first_name` = ? and `person`.`id` = `pet`.`owner_id`',
+            parameters: ['Jennifer 2', 'Jennifer'],
+          },
+          mssql: NOT_SUPPORTED,
+          sqlite: NOT_SUPPORTED,
+        })
+
+        await query.execute()
+      })
+
+      it('should update joined table using set(object) function', async () => {
+        const query = ctx.db
+          .updateTable(['person', 'pet'])
+          .set({ name: 'Doggo 2' })
+          .where('person.first_name', '=', 'Jennifer')
+          .whereRef('person.id', '=', 'pet.owner_id')
+
+        testSql(query, dialect, {
+          postgres: NOT_SUPPORTED,
+          mysql: {
+            sql: 'update `person`, `pet` set `name` = ? where `person`.`first_name` = ? and `person`.`id` = `pet`.`owner_id`',
+            parameters: ['Doggo 2', 'Jennifer'],
+          },
+          mssql: NOT_SUPPORTED,
+          sqlite: NOT_SUPPORTED,
+        })
+
+        await query.execute()
+      })
     }
 
     it('should create an update query that uses a CTE', async () => {

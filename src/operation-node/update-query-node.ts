@@ -12,6 +12,7 @@ import { ExplainNode } from './explain-node.js'
 import { LimitNode } from './limit-node.js'
 import { TopNode } from './top-node.js'
 import { OutputNode } from './output-node.js'
+import { ListNode } from './list-node.js'
 
 export type UpdateValuesNode = ValueListNode | PrimitiveValueListNode
 
@@ -38,10 +39,15 @@ export const UpdateQueryNode = freeze({
     return node.kind === 'UpdateQueryNode'
   },
 
-  create(table: OperationNode, withNode?: WithNode): UpdateQueryNode {
+  create(
+    tables: ReadonlyArray<OperationNode>,
+    withNode?: WithNode,
+  ): UpdateQueryNode {
     return freeze({
       kind: 'UpdateQueryNode',
-      table,
+      // For backwards compatibility, use the raw table node when there's only one table
+      // and don't rename the property to something like `tables`.
+      table: tables.length === 1 ? tables[0] : ListNode.create(tables),
       ...(withNode && { with: withNode }),
     })
   },
