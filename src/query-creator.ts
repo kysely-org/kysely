@@ -463,39 +463,48 @@ export class QueryCreator<DB> {
    * console.log(result.numUpdatedRows)
    * ```
    */
-  updateTable<TR extends keyof DB & string>(
-    table: TR,
+  updateTable<TE extends keyof DB & string>(
+    from: TE[],
   ): UpdateQueryBuilder<
     DB,
-    ExtractTableAlias<DB, TR>,
-    ExtractTableAlias<DB, TR>,
+    ExtractTableAlias<DB, TE>,
+    ExtractTableAlias<DB, TE>,
     UpdateResult
   >
 
-  updateTable<TR extends AnyAliasedTable<DB>>(
-    table: TR,
+  updateTable<TE extends TableExpression<DB, never>>(
+    from: TE[],
   ): UpdateQueryBuilder<
-    DB & PickTableWithAlias<DB, TR>,
-    ExtractTableAlias<DB & PickTableWithAlias<DB, TR>, TR>,
-    ExtractTableAlias<DB & PickTableWithAlias<DB, TR>, TR>,
+    From<DB, TE>,
+    FromTables<DB, never, TE>,
+    FromTables<DB, never, TE>,
     UpdateResult
   >
 
-  updateTable<TR extends TableReference<DB>>(
-    table: TR,
+  updateTable<TE extends keyof DB & string>(
+    from: TE,
   ): UpdateQueryBuilder<
-    From<DB, TR>,
-    FromTables<DB, never, TR>,
-    FromTables<DB, never, TR>,
+    DB,
+    ExtractTableAlias<DB, TE>,
+    ExtractTableAlias<DB, TE>,
     UpdateResult
   >
 
-  updateTable<TR extends TableReference<DB>>(table: TR): any {
+  updateTable<TE extends AnyAliasedTable<DB>>(
+    from: TE,
+  ): UpdateQueryBuilder<
+    DB & PickTableWithAlias<DB, TE>,
+    ExtractTableAlias<DB & PickTableWithAlias<DB, TE>, TE>,
+    ExtractTableAlias<DB & PickTableWithAlias<DB, TE>, TE>,
+    UpdateResult
+  >
+
+  updateTable(tables: TableExpressionOrList<any, any>): any {
     return new UpdateQueryBuilder({
       queryId: createQueryId(),
       executor: this.#props.executor,
       queryNode: UpdateQueryNode.create(
-        parseTableExpression(table),
+        parseTableExpressionOrList(tables),
         this.#props.withNode,
       ),
     })
