@@ -1,9 +1,9 @@
 # Extending kysely
 
-In many cases Kysely doesn't provide a built-in type-safe method for a feature. It's often because adding
-that feature in a generic way that would work in all use cases would be really difficult or impossible.
+In many cases, Kysely doesn't provide a built-in type-safe method for a feature. It's often because adding
+that feature in a generic way that would work in all use cases is difficult or impossible.
 In many cases it's better to create little helper functions in your project that suit your use case.
-Kysely makes this really simple.
+Kysely makes this simple.
 
 The Kysely API is designed around two interfaces [`Expression<T>`](https://kysely-org.github.io/kysely-apidoc/interfaces/Expression.html)
 and [`AliasedExpression<T, A>`](https://kysely-org.github.io/kysely-apidoc/interfaces/AliasedExpression.html).
@@ -21,7 +21,7 @@ that has a type `T` and a single method `toOperationNode()`. `T` tells Kysely's 
 the expression. `toOperationNode()` returns instructions on what SQL should be produced once the
 expression is compiled.
 
-Here's an example of a custom expression for `JSON` or `JSONB` values on postgres:
+Here's an example of a custom expression for `JSON` or `JSONB` values on PostgreSQL:
 
 ```ts
 import { Expression, Kysely, OperationNode, sql } from 'kysely'
@@ -297,11 +297,11 @@ function values<R extends Record<string, unknown>, A extends string>(
   // whole thing. Note that we need to explicitly specify
   // the alias type using `.as<A>` because we are using a
   // raw sql snippet as the alias.
-  return sql`(values ${values})`.as<A>(aliasSql)
+  return sql<R>`(values ${values})`.as<A>(aliasSql)
 }
 ```
 
-There's a lot going on in this function, but it's all documented in the
+A lot is going on in this function, but it's all documented in the
 [sql template tag's documentation.](https://kysely-org.github.io/kysely-apidoc/interfaces/Sql.html)
 
 Most of the time a helper like this would return either an instance of `RawBuilder` or
@@ -356,8 +356,8 @@ variables and a nice discoverable API.
 
 You can override and extend Kysely's builder classes via [Typescript module augmentation](https://www.typescriptlang.org/docs/handbook/declaration-merging.html#module-augmentation).
 
-The following example adds an `addIdColumn` method to `CreateTableBuilder`, that helps
-in adding a postgres uuid primary key column:
+The following example adds an `addIdColumn` method to `CreateTableBuilder`, which helps
+in adding a PostgreSQL UUID primary key column:
 
 ```ts
 declare module 'kysely/dist/cjs/schema/create-table-builder' {
@@ -377,7 +377,7 @@ CreateTableBuilder.prototype.addIdColumn = function (
 }
 ```
 
-Now you can use `addIdColumn` seemlessly to create several tables with a uniform
+Now you can use `addIdColumn` seamlessly to create several tables with a uniform
 primary key definition:
 
 ```ts

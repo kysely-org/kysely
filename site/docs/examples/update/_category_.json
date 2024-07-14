@@ -1,0 +1,8 @@
+{
+  "label": "UPDATE",
+  "position": 5,
+  "link": {
+    "type": "generated-index",
+    "description": "Short and simple examples of how to write UPDATE queries."
+  }
+}

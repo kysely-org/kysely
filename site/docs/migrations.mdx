@@ -28,9 +28,9 @@ Migrations can use the `Kysely.schema` module to modify the schema. Migrations c
 
 ## Execution order
 
-Migrations will be run in the alpha-numeric order of your migration names. An excellent way to name your migrations is to prefix them with an ISO 8601 date string. 
+Migrations will be run in the alpha-numeric order of your migration names. An excellent way to name your migrations is to prefix them with an ISO 8601 date string.
 
-By default, Kysely will also ensure this order matches the execution order of any previously executed migrations in your database. If the orders do not match (for example, a new migration was added alphabetically before a previously executed one), an error will be returned. This adds safety by always executing your migrations in the correct, alphanumeric order. 
+By default, Kysely will also ensure this order matches the execution order of any previously executed migrations in your database. If the orders do not match (for example, a new migration was added alphabetically before a previously executed one), an error will be returned. This adds safety by always executing your migrations in the correct, alphanumeric order.
 
 There is also an `allowUnorderedMigrations` option. This option will allow new migrations to be run even if they are added alphabetically before ones that have already executed. Allowing unordered migrations works well in large teams where multiple team members may add migrations at the same time in parallel commits without knowing about the other migrations. Pending (unexecuted) migrations will be run in alpha-numeric order when migrating up. When migrating down, migrations will be undone in the opposite order in which they were executed (reverse sorted by execution timestamp).
 
@@ -61,7 +61,7 @@ export async function up(db: Kysely<any>): Promise<void> {
     .addColumn('last_name', 'varchar')
     .addColumn('gender', 'varchar(50)', (col) => col.notNull())
     .addColumn('created_at', 'timestamp', (col) =>
-      col.defaultTo(sql`now()`).notNull()
+      col.defaultTo(sql`now()`).notNull(),
     )
     .execute()
 
@@ -70,7 +70,7 @@ export async function up(db: Kysely<any>): Promise<void> {
     .addColumn('id', 'serial', (col) => col.primaryKey())
     .addColumn('name', 'varchar', (col) => col.notNull().unique())
     .addColumn('owner_id', 'integer', (col) =>
-      col.references('person.id').onDelete('cascade').notNull()
+      col.references('person.id').onDelete('cascade').notNull(),
     )
     .addColumn('species', 'varchar', (col) => col.notNull())
     .execute()
@@ -101,7 +101,7 @@ export async function up(db: Kysely<any>): Promise<void> {
     .addColumn('last_name', 'text')
     .addColumn('gender', 'text', (col) => col.notNull())
     .addColumn('created_at', 'text', (col) =>
-      col.defaultTo(sql`CURRENT_TIMESTAMP`).notNull()
+      col.defaultTo(sql`CURRENT_TIMESTAMP`).notNull(),
     )
     .execute()
 
@@ -110,7 +110,7 @@ export async function up(db: Kysely<any>): Promise<void> {
     .addColumn('id', 'integer', (col) => col.primaryKey())
     .addColumn('name', 'text', (col) => col.notNull().unique())
     .addColumn('owner_id', 'integer', (col) =>
-      col.references('person.id').onDelete('cascade').notNull()
+      col.references('person.id').onDelete('cascade').notNull(),
     )
     .addColumn('species', 'text', (col) => col.notNull())
     .execute()
@@ -130,7 +130,7 @@ export async function down(db: Kysely<any>): Promise<void> {
 
 ## CLI (optional)
 
-Kysely offers a CLI you can use for migrations (and more). It can help you create and run migrations. 
+Kysely offers a CLI you can use for migrations (and more). It can help you create and run migrations.
 It is not part of the core, and your mileage may vary.
 
 For more information, visit https://github.com/kysely-org/kysely-ctl.
