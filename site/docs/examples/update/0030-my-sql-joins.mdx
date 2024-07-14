@@ -1,0 +1,40 @@
+---
+title: 'MySQL joins'
+---
+
+# MySQL joins
+
+MySQL allows you to join tables directly to the "main" table and update
+rows of all joined tables. This is possible by passing all tables to the
+`updateTable` method as a list and adding the `ON` conditions as `WHERE`
+statements. You can then use the `set(column, value)` variant to update
+columns using table qualified names.
+
+The `UpdateQueryBuilder` also has `innerJoin` etc. join methods, but those
+can only be used as part of a PostgreSQL `update set from join` query.
+Due to type complexity issues, we unfortunately can't make the same
+methods work in both cases.
+
+import {
+  Playground,
+  exampleSetup,
+} from '../../../src/components/Playground'
+
+import {
+  mySqlJoins
+} from './0030-my-sql-joins'
+
+<div style={{ marginBottom: '1em' }}>
+  <Playground code={mySqlJoins} setupCode={exampleSetup} />
+</div>
+
+:::info[More examples]
+The API documentation is packed with examples. The API docs are hosted [here](https://kysely-org.github.io/kysely-apidoc/),
+but you can access the same documentation by hovering over functions/methods/classes in your IDE. The examples are always
+just one hover away!
+
+For example, check out these sections:
+ - [set method](https://kysely-org.github.io/kysely-apidoc/classes/UpdateQueryBuilder.html#set)
+ - [returning method](https://kysely-org.github.io/kysely-apidoc/classes/UpdateQueryBuilder.html#returning)
+ - [updateTable method](https://kysely-org.github.io/kysely-apidoc/classes/Kysely.html#updateTable)
+:::
