@@ -101,18 +101,6 @@ export const SelectQueryNode = freeze({
     })
   },
 
-  cloneWithEndModifier(
-    select: SelectQueryNode,
-    modifier: SelectModifierNode,
-  ): SelectQueryNode {
-    return freeze({
-      ...select,
-      endModifiers: select.endModifiers
-        ? freeze([...select.endModifiers, modifier])
-        : freeze([modifier]),
-    })
-  },
-
   cloneWithOrderByItems(
     selectNode: SelectQueryNode,
     items: ReadonlyArray<OrderByItemNode>,
