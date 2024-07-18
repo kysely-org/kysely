@@ -55,6 +55,10 @@ export class PostgresDriver implements Driver {
       }
     }
 
+    if (this.#config.onReserveConnection) {
+      await this.#config.onReserveConnection(connection)
+    }
+
     return connection
   }
 

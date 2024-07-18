@@ -78,16 +78,12 @@ Simple right 😅. Yeah, not so much. But it does provide full control over the 
 Fortunately we can improve and simplify this a lot using Kysely. First let's define a couple of helpers:
 
 ```ts
-function jsonArrayFrom<O>(
-  expr: Expression<O>
-): RawBuilder<Simplify<O>[]> {
-  return sql`(select coalesce(json_agg(agg), '[]') from ${expr} as agg)`
+function jsonArrayFrom<O>(expr: Expression<O>) {
+  return sql<Simplify<O>[]>`(select coalesce(json_agg(agg), '[]') from ${expr} as agg)`
 }
 
-export function jsonObjectFrom<O>(
-  expr: Expression<O>
-): RawBuilder<Simplify<O>> {
-  return sql`(select to_json(obj) from ${expr} as obj)`
+function jsonObjectFrom<O>(expr: Expression<O>) {
+  return sql<Simplify<O>>`(select to_json(obj) from ${expr} as obj)`
 }
 ```
 
@@ -132,27 +128,27 @@ const persons = await db
   .execute()
 
 console.log(persons[0].pets[0].name)
-console.log(persons[0].mother.first_name)
+console.log(persons[0].mother?.first_name)
 ```
 
 That's better right? If you need to do this over and over in your codebase, you can create some helpers like these:
 
 ```ts
-function withPets(eb: ExpressionBuilder<DB, 'person'>) {
+function pets(ownerId: Expression<string>) {
   return jsonArrayFrom(
-    eb.selectFrom('pet')
+    db.selectFrom('pet')
       .select(['pet.id', 'pet.name'])
-      .whereRef('pet.owner_id', '=', 'person.id')
+      .where('pet.owner_id', '=', ownerId)
       .orderBy('pet.name')
-  ).as('pets')
+  )
 }
 
-function withMom(eb: ExpressionBuilder<DB, 'person'>) {
+function mother(motherId: Expression<string>) {
   return jsonObjectFrom(
-    eb.selectFrom('person as mother')
+    db.selectFrom('person as mother')
       .select(['mother.id', 'mother.first_name'])
-      .whereRef('mother.id', '=', 'person.mother_id')
-  ).as('mother')
+      .where('mother.id', '=', motherId)
+  )
 }
 ```
 
@@ -162,9 +158,27 @@ And now you get this:
 const persons = await db
   .selectFrom('person')
   .selectAll('person')
-  .select((eb) => [
-    withPets(eb),
-    withMom(eb)
+  .select(({ ref }) => [
+    pets(ref('person.id')).as('pets'),
+    mother(ref('person.mother_id')).as('mother')
+  ])
+  .execute()
+
+console.log(persons[0].pets[0].name)
+console.log(persons[0].mother?.first_name)
+```
+
+In some cases Kysely marks your selections as nullable if it's not able to know the related object
+always exists. If you have that information, you can mark the relation non-null using the
+`$notNull()` helper like this:
+
+```ts
+const persons = await db
+  .selectFrom('person')
+  .selectAll('person')
+  .select(({ ref }) => [
+    pets(ref('person.id')).as('pets'),
+    mother(ref('person.mother_id')).$notNull().as('mother')
   ])
   .execute()
 
@@ -178,7 +192,11 @@ If you need to select relations conditionally, `$if` is your friend:
 const persons = await db
   .selectFrom('person')
   .selectAll('person')
-  .$if(includePets, (qb) => qb.select(withPets))
-  .$if(includeMom, (qb) => qb.select(withMom))
+  .$if(includePets, (qb) => qb.select(
+    (eb) => pets(eb.ref('person.id')).as('pets')
+  ))
+  .$if(includeMom, (qb) => qb.select(
+    (eb) => mother(eb.ref('person.mother_id')).as('mother')
+  ))
   .execute()
 ```
