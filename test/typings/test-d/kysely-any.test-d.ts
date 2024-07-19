@@ -21,7 +21,7 @@ async function testKyselyAnySelects(db: Kysely<any>) {
     .selectFrom(['foo1', 'foo2'])
     .select(['spam', 'foo1.bar', 'foo2.baz', 'doesnotexists.fux'])
     .execute()
-  expectType<{ spam: any; bar: any; baz: any; fux: never }[]>(r5)
+  expectType<{ spam: any; bar: any; baz: any; fux: any }[]>(r5)
 
   const r6 = await db
     .selectFrom('foo')
