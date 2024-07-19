@@ -5,13 +5,7 @@ import {
 import { SelectQueryNode } from '../operation-node/select-query-node.js'
 import {
   parseTableExpressionOrList,
-  TableExpression,
-  From,
   TableExpressionOrList,
-  FromTables,
-  ExtractTableAlias,
-  AnyAliasedTable,
-  PickTableWithAlias,
   parseTable,
 } from '../parser/table-parser.js'
 import { WithSchemaPlugin } from '../plugin/with-schema/with-schema-plugin.js'
@@ -83,6 +77,7 @@ import {
   parseDataTypeExpression,
 } from '../parser/data-type-parser.js'
 import { CastNode } from '../operation-node/cast-node.js'
+import { SelectFrom } from '../parser/select-from-parser.js'
 
 export interface ExpressionBuilder<DB, TB extends keyof DB> {
   /**
@@ -294,29 +289,9 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    * that case Kysely typings wouldn't allow you to reference `pet.owner_id`
    * because `pet` is not joined to that query.
    */
-  selectFrom<TE extends keyof DB & string>(
-    from: TE[],
-  ): SelectQueryBuilder<DB, TB | ExtractTableAlias<DB, TE>, {}>
-
-  selectFrom<TE extends TableExpression<DB, TB>>(
-    from: TE[],
-  ): SelectQueryBuilder<From<DB, TE>, FromTables<DB, TB, TE>, {}>
-
-  selectFrom<TE extends keyof DB & string>(
+  selectFrom<TE extends TableExpressionOrList<DB, TB>>(
     from: TE,
-  ): SelectQueryBuilder<DB, TB | ExtractTableAlias<DB, TE>, {}>
-
-  selectFrom<TE extends AnyAliasedTable<DB>>(
-    from: TE,
-  ): SelectQueryBuilder<
-    DB & PickTableWithAlias<DB, TE>,
-    TB | ExtractTableAlias<DB & PickTableWithAlias<DB, TE>, TE>,
-    {}
-  >
-
-  selectFrom<TE extends TableExpression<DB, TB>>(
-    from: TE,
-  ): SelectQueryBuilder<From<DB, TE>, FromTables<DB, TB, TE>, {}>
+  ): SelectFrom<DB, TB, TE>
 
   /**
    * Creates a `case` statement/operator.
