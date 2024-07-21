@@ -243,7 +243,7 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    * import { sql } from 'kysely'
    *
    * const persons = await db.selectFrom('person')
-   *   .select(({ eb, selectFrom, or }) => [
+   *   .select(({ eb, selectFrom, or, val, lit }) => [
    *     // Select a correlated subquery
    *     selectFrom('pet')
    *       .whereRef('person.id', '=', 'pet.owner_id')
@@ -260,7 +260,13 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    *     ]).as('is_jennifer_or_arnold'),
    *
    *     // Select a raw sql expression
-   *     sql<string>`concat(first_name, ' ', last_name)`.as('full_name')
+   *     sql<string>`concat(first_name, ' ', last_name)`.as('full_name').
+   *
+   *     // Select a static string value
+   *     val('Some value').as('string_value'),
+   *
+   *     // Select a literal value
+   *     lit(42).as('literal_value'),
    *   ])
    *   .execute()
    * ```
@@ -277,7 +283,9 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    *     limit $1
    *   ) as "pet_name",
    *   ("first_name" = $2 or "first_name" = $3) as "jennifer_or_arnold",
-   *   concat(first_name, ' ', last_name) as "full_name"
+   *   concat(first_name, ' ', last_name) as "full_name",
+   *   $4 as "string_value",
+   *   42 as "literal_value"
    * from "person"
    * ```
    *
@@ -1717,6 +1725,54 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
     : KyselyTypeError<'$asTuple() call failed: All selected columns must be provided as arguments'>
 
   /**
+   * Plucks the value type of the output record.
+   *
+   * In SQL, any record type that only has one column can be used as a scalar.
+   * For example a query like this works:
+   *
+   * ```sql
+   * select
+   *   id,
+   *   first_name
+   * from
+   *   person as p
+   * where
+   *   -- This is ok since the query only selects one row
+   *   -- and one column.
+   *  (select name from pet where pet.owner_id = p.id limit 1) = 'Doggo'
+   * ```
+   *
+   * In many cases Kysely handles this automatically and picks the correct
+   * scalar type instead of the record type, but sometimes you need to give
+   * Kysely a hint.
+   *
+   * One such case are custom helper functions that take `Expression<T>`
+   * instances as inputs:
+   *
+   * ```ts
+   * function doStuff(expr: Expression<string>) {
+   *   ...
+   * }
+   *
+   * // Error! This is not ok because the expression type is
+   * // `{ first_name: string }` instead of `string`.
+   * doStuff(db.selectFrom('person').select('first_name'))
+   *
+   * // Ok! This is ok since we've plucked the `string` type of the
+   * // only column in the output type.
+   * doStuff(db.selectFrom('person').select('first_name').$asScalar())
+   * ```
+   *
+   * This function has absolutely no effect on the generated SQL. It's
+   * purely a type-level helper.
+   *
+   * This method returns an `ExpressionWrapper` instead of a `SelectQueryBuilder`
+   * since the return value should only be used as a part of an expression
+   * and never executed as the main query.
+   */
+  $asScalar<K extends keyof O = keyof O>(): ExpressionWrapper<DB, TB, O[K]>
+
+  /**
    * Narrows (parts of) the output type of the query.
    *
    * Kysely tries to be as type-safe as possible, but in some cases we have to make
@@ -2341,6 +2397,10 @@ class SelectQueryBuilderImpl<DB, TB extends keyof DB, O>
     return new ExpressionWrapper(this.toOperationNode())
   }
 
+  $asScalar(): ExpressionWrapper<DB, TB, any> {
+    return new ExpressionWrapper(this.toOperationNode())
+  }
+
   withPlugin(plugin: KyselyPlugin): SelectQueryBuilder<DB, TB, O> {
     return new SelectQueryBuilderImpl({
       ...this.#props,
@@ -2504,12 +2564,12 @@ export type SelectQueryBuilderWithInnerJoin<
     ? InnerJoinedBuilder<DB, TB, O, A, DB[T]>
     : never
   : TE extends keyof DB
-  ? SelectQueryBuilder<DB, TB | TE, O>
-  : TE extends AliasedExpression<infer QO, infer QA>
-  ? InnerJoinedBuilder<DB, TB, O, QA, QO>
-  : TE extends (qb: any) => AliasedExpression<infer QO, infer QA>
-  ? InnerJoinedBuilder<DB, TB, O, QA, QO>
-  : never
+    ? SelectQueryBuilder<DB, TB | TE, O>
+    : TE extends AliasedExpression<infer QO, infer QA>
+      ? InnerJoinedBuilder<DB, TB, O, QA, QO>
+      : TE extends (qb: any) => AliasedExpression<infer QO, infer QA>
+        ? InnerJoinedBuilder<DB, TB, O, QA, QO>
+        : never
 
 type InnerJoinedBuilder<
   DB,
@@ -2536,12 +2596,12 @@ export type SelectQueryBuilderWithLeftJoin<
     ? LeftJoinedBuilder<DB, TB, O, A, DB[T]>
     : never
   : TE extends keyof DB
-  ? LeftJoinedBuilder<DB, TB, O, TE, DB[TE]>
-  : TE extends AliasedExpression<infer QO, infer QA>
-  ? LeftJoinedBuilder<DB, TB, O, QA, QO>
-  : TE extends (qb: any) => AliasedExpression<infer QO, infer QA>
-  ? LeftJoinedBuilder<DB, TB, O, QA, QO>
-  : never
+    ? LeftJoinedBuilder<DB, TB, O, TE, DB[TE]>
+    : TE extends AliasedExpression<infer QO, infer QA>
+      ? LeftJoinedBuilder<DB, TB, O, QA, QO>
+      : TE extends (qb: any) => AliasedExpression<infer QO, infer QA>
+        ? LeftJoinedBuilder<DB, TB, O, QA, QO>
+        : never
 
 type LeftJoinedBuilder<
   DB,
@@ -2558,8 +2618,8 @@ type LeftJoinedDB<DB, A extends keyof any, R> = DrainOuterGeneric<{
   [C in keyof DB | A]: C extends A
     ? Nullable<R>
     : C extends keyof DB
-    ? DB[C]
-    : never
+      ? DB[C]
+      : never
 }>
 
 export type SelectQueryBuilderWithRightJoin<
@@ -2572,12 +2632,12 @@ export type SelectQueryBuilderWithRightJoin<
     ? RightJoinedBuilder<DB, TB, O, A, DB[T]>
     : never
   : TE extends keyof DB
-  ? RightJoinedBuilder<DB, TB, O, TE, DB[TE]>
-  : TE extends AliasedExpression<infer QO, infer QA>
-  ? RightJoinedBuilder<DB, TB, O, QA, QO>
-  : TE extends (qb: any) => AliasedExpression<infer QO, infer QA>
-  ? RightJoinedBuilder<DB, TB, O, QA, QO>
-  : never
+    ? RightJoinedBuilder<DB, TB, O, TE, DB[TE]>
+    : TE extends AliasedExpression<infer QO, infer QA>
+      ? RightJoinedBuilder<DB, TB, O, QA, QO>
+      : TE extends (qb: any) => AliasedExpression<infer QO, infer QA>
+        ? RightJoinedBuilder<DB, TB, O, QA, QO>
+        : never
 
 type RightJoinedBuilder<
   DB,
@@ -2596,10 +2656,10 @@ type RightJoinedDB<
   [C in keyof DB | A]: C extends A
     ? R
     : C extends TB
-    ? Nullable<DB[C]>
-    : C extends keyof DB
-    ? DB[C]
-    : never
+      ? Nullable<DB[C]>
+      : C extends keyof DB
+        ? DB[C]
+        : never
 }>
 
 export type SelectQueryBuilderWithFullJoin<
@@ -2612,12 +2672,12 @@ export type SelectQueryBuilderWithFullJoin<
     ? OuterJoinedBuilder<DB, TB, O, A, DB[T]>
     : never
   : TE extends keyof DB
-  ? OuterJoinedBuilder<DB, TB, O, TE, DB[TE]>
-  : TE extends AliasedExpression<infer QO, infer QA>
-  ? OuterJoinedBuilder<DB, TB, O, QA, QO>
-  : TE extends (qb: any) => AliasedExpression<infer QO, infer QA>
-  ? OuterJoinedBuilder<DB, TB, O, QA, QO>
-  : never
+    ? OuterJoinedBuilder<DB, TB, O, TE, DB[TE]>
+    : TE extends AliasedExpression<infer QO, infer QA>
+      ? OuterJoinedBuilder<DB, TB, O, QA, QO>
+      : TE extends (qb: any) => AliasedExpression<infer QO, infer QA>
+        ? OuterJoinedBuilder<DB, TB, O, QA, QO>
+        : never
 
 type OuterJoinedBuilder<
   DB,
@@ -2636,10 +2696,10 @@ type OuterJoinedBuilderDB<
   [C in keyof DB | A]: C extends A
     ? Nullable<R>
     : C extends TB
-    ? Nullable<DB[C]>
-    : C extends keyof DB
-    ? DB[C]
-    : never
+      ? Nullable<DB[C]>
+      : C extends keyof DB
+        ? DB[C]
+        : never
 }>
 
 type TableOrList<TB extends keyof any> =
