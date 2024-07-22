@@ -213,7 +213,7 @@ export interface Sql {
    * select first_name from "public"."person"
    * ```
    */
-  table(tableReference: string): RawBuilder<unknown>
+  table<T = unknown>(tableReference: string): RawBuilder<T>
 
   /**
    * This can be used to add arbitrary identifiers to SQL snippets.
@@ -256,7 +256,7 @@ export interface Sql {
    * select "public"."person"."first_name" from "public"."person"
    * ```
    */
-  id(...ids: readonly string[]): RawBuilder<unknown>
+  id<T = unknown>(...ids: readonly string[]): RawBuilder<T>
 
   /**
    * This can be used to add literal values to SQL snippets.
@@ -364,10 +364,10 @@ export interface Sql {
    * BEFORE $1::varchar, (1 == 1)::varchar, (select * from "person")::varchar, false::varchar, "first_name" AFTER
    * ```
    */
-  join(
+  join<T = unknown>(
     array: readonly unknown[],
     separator?: RawBuilder<any>,
-  ): RawBuilder<unknown>
+  ): RawBuilder<T>
 }
 
 export const sql: Sql = Object.assign(
@@ -402,14 +402,14 @@ export const sql: Sql = Object.assign(
       return this.val(value)
     },
 
-    table(tableReference: string): RawBuilder<unknown> {
+    table<T = unknown>(tableReference: string): RawBuilder<T> {
       return createRawBuilder({
         queryId: createQueryId(),
         rawNode: RawNode.createWithChild(parseTable(tableReference)),
       })
     },
 
-    id(...ids: readonly string[]): RawBuilder<unknown> {
+    id<T = unknown>(...ids: readonly string[]): RawBuilder<T> {
       const fragments = new Array<string>(ids.length + 1).fill('.')
 
       fragments[0] = ''
@@ -439,10 +439,10 @@ export const sql: Sql = Object.assign(
       })
     },
 
-    join(
+    join<T = unknown>(
       array: readonly unknown[],
       separator: RawBuilder<any> = sql`, `,
-    ): RawBuilder<unknown> {
+    ): RawBuilder<T> {
       const nodes = new Array<OperationNode>(2 * array.length - 1)
       const sep = separator.toOperationNode()
 
