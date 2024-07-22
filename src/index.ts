@@ -228,6 +228,7 @@ export {
   Nullable,
   NotNull,
 } from './util/type-utils.js'
+export { QueryId } from './util/query-id.js'
 export * from './util/infer-result.js'
 export { logOnce } from './util/log-once.js'
 
