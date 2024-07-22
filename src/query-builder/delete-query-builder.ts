@@ -823,6 +823,37 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
     })
   }
 
+  
+  /**
+   * This can be used to add any additional SQL to the end of the query.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * await db.deleteFrom('person')
+   * .where('first_name', '=', 'John')
+   * .modifyEnd(sql.raw('-- This is a comment'))
+   * .execute()
+   * ```
+   *
+   * The generated SQL (MySQL):
+   *
+   * ```sql
+   * delete from `person`
+   * where `first_name` = "John" -- This is a comment
+   * ```
+   */
+  modifyEnd(modifier: Expression<any>): DeleteQueryBuilder<DB, TB, O> {
+    return new DeleteQueryBuilder({
+      ...this.#props,
+      queryNode: QueryNode.cloneWithEndModifier(
+        this.#props.queryNode,
+        modifier.toOperationNode(),
+      ),
+    })
+  }
+
+
   /**
    * Simply calls the provided function passing `this` as the only argument. `$call` returns
    * what the provided function returns.

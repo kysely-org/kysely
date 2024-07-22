@@ -350,6 +350,36 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
     })
   }
 
+
+  /**
+   * This can be used to add any additional SQL to the end of the query.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * await db.insertInto('person')
+   *   .values(values)
+   *   .modifyEnd(sql.raw('-- This is a comment'))
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (MySQL):
+   *
+   * ```sql
+   * insert into `person` 
+   * values (?, ?, ?) -- This is a comment
+   * ```
+   */
+  modifyEnd(modifier: Expression<any>): InsertQueryBuilder<DB, TB, O> {
+    return new InsertQueryBuilder({
+      ...this.#props,
+      queryNode: QueryNode.cloneWithEndModifier(
+        this.#props.queryNode,
+        modifier.toOperationNode(),
+      ),
+    })
+  }
+
   /**
    * Changes an `insert into` query to an `insert ignore into` query.
    *
