@@ -146,7 +146,7 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    * eb.selectFrom('person')
    *   .selectAll()
    *   .where((eb) => eb(
-   *     eb.fn('lower', ['first_name']),
+   *     eb.fn<string>('lower', ['first_name']),
    *     'in',
    *     eb.selectFrom('pet')
    *       .select('pet.name')
@@ -177,12 +177,12 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    *
    * ```ts
    * db.selectFrom('person')
-   *   .where(({ eb, exists, selectFrom }) =>
-   *     eb('first_name', '=', 'Jennifer').and(
-   *       exists(selectFrom('pet').whereRef('owner_id', '=', 'person.id').select('pet.id'))
-   *     )
-   *   )
    *   .selectAll()
+   *   .where(({ eb, exists, selectFrom }) =>
+   *     eb('first_name', '=', 'Jennifer').and(exists(
+   *       selectFrom('pet').whereRef('owner_id', '=', 'person.id').select('pet.id')
+   *     ))
+   *   )
    * ```
    *
    * The generated SQL (PostgreSQL):
@@ -1286,10 +1286,10 @@ export function expressionBuilder<DB, TB extends keyof DB>(
   _: SelectQueryBuilder<DB, TB, any>,
 ): ExpressionBuilder<DB, TB>
 
-export function expressionBuilder<DB, TB extends keyof DB>(): ExpressionBuilder<
+export function expressionBuilder<
   DB,
-  TB
->
+  TB extends keyof DB = never,
+>(): ExpressionBuilder<DB, TB>
 
 export function expressionBuilder<DB, TB extends keyof DB>(
   _?: unknown,
