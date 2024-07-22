@@ -194,9 +194,9 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    * ```ts
    * const result = await db.selectFrom('person')
    *   .where(({ eb, exists, selectFrom }) =>
-   *     eb('first_name', '=', 'Jennifer').and(
-   *       exists(selectFrom('pet').whereRef('owner_id', '=', 'person.id').select('pet.id'))
-   *     )
+   *     eb('first_name', '=', 'Jennifer').and(exists(
+   *       selectFrom('pet').whereRef('owner_id', '=', 'person.id').select('pet.id')
+   *     ))
    *   )
    *   .selectAll()
    *   .execute()
@@ -1379,10 +1379,10 @@ export function expressionBuilder<DB, TB extends keyof DB>(
   _: SelectQueryBuilder<DB, TB, any>,
 ): ExpressionBuilder<DB, TB>
 
-export function expressionBuilder<DB, TB extends keyof DB>(): ExpressionBuilder<
+export function expressionBuilder<
   DB,
-  TB
->
+  TB extends keyof DB = never,
+>(): ExpressionBuilder<DB, TB>
 
 export function expressionBuilder<DB, TB extends keyof DB>(
   _?: unknown,
