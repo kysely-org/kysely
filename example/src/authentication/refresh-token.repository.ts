@@ -2,7 +2,7 @@ import { Kysely } from 'kysely'
 import { Database } from '../database'
 import {
   RefreshTokenRow,
-  UpdateableRefreshTokenRow,
+  UpdatableRefreshTokenRow,
 } from './refresh-token.table'
 
 export async function insertRefreshToken(
@@ -40,7 +40,7 @@ export async function findRefreshToken(
 export async function updateRefreshToken(
   db: Kysely<Database>,
   refreshTokenId: string,
-  patch: Pick<UpdateableRefreshTokenRow, 'last_refreshed_at'>
+  patch: Pick<UpdatableRefreshTokenRow, 'last_refreshed_at'>
 ): Promise<void> {
   await db
     .updateTable('refresh_token')

@@ -15,7 +15,7 @@ import {
   UpdateObjectExpression,
   parseUpdateObjectExpression,
 } from '../parser/update-set-parser.js'
-import { Updateable } from '../util/column-type.js'
+import { Updatable } from '../util/column-type.js'
 import { freeze } from '../util/object-utils.js'
 import { preventAwait } from '../util/prevent-await.js'
 import { AnyColumn, SqlBool } from '../util/type-utils.js'
@@ -254,7 +254,7 @@ export interface OnConflictBuilderProps {
 preventAwait(OnConflictBuilder, "don't await OnConflictBuilder instances.")
 
 export type OnConflictDatabase<DB, TB extends keyof DB> = {
-  [K in keyof DB | 'excluded']: Updateable<K extends keyof DB ? DB[K] : DB[TB]>
+  [K in keyof DB | 'excluded']: Updatable<K extends keyof DB ? DB[K] : DB[TB]>
 }
 
 export type OnConflictTables<TB> = TB | 'excluded'

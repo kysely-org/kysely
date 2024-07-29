@@ -1,4 +1,4 @@
-import { Updateable } from '../../../dist/cjs'
+import { Updatable } from '../../../dist/cjs'
 
 import {
   destroyTest,
@@ -28,7 +28,7 @@ for (const dialect of DIALECTS) {
         'last_name"`': 'bar',
       }
 
-      const person = obj as unknown as Updateable<Person>
+      const person = obj as unknown as Updatable<Person>
       const query = ctx.db.updateTable('person').set(person)
 
       testSql(query, dialect, {
@@ -57,7 +57,7 @@ for (const dialect of DIALECTS) {
         'last_name""``': 'bar',
       }
 
-      const person = obj as unknown as Updateable<Person>
+      const person = obj as unknown as Updatable<Person>
       const query = ctx.db.updateTable('person').set(person)
 
       testSql(query, dialect, {

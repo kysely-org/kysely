@@ -1,4 +1,4 @@
-import { Insertable, Selectable, Updateable } from 'kysely'
+import { Insertable, Selectable, Updatable } from 'kysely'
 
 export interface SignInMethodTable {
   user_id: string
@@ -7,4 +7,4 @@ export interface SignInMethodTable {
 
 export type SignInMethodRow = Selectable<SignInMethodTable>
 export type InsertableSignInMethodRow = Insertable<SignInMethodTable>
-export type UpdateableSignInMethodRow = Updateable<SignInMethodTable>
+export type UpdatableSignInMethodRow = Updatable<SignInMethodTable>

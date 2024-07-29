@@ -197,13 +197,35 @@ export type Insertable<R> = DrainOuterGeneric<
  *   modified_at: ColumnType<Date, string, never>
  * }
  *
- * type UpdateablePerson = Updateable<PersonTable>
+ * type UpdatablePerson = Updatable<PersonTable>
  * // {
  * //   id?: number,
  * //   first_name?: string
  * // }
  * ```
  */
-export type Updateable<R> = DrainOuterGeneric<{
+export type Updatable<R> = DrainOuterGeneric<{
   [K in UpdateKeys<R>]?: UpdateType<R[K]>
 }>
+
+/**
+ * Given a table interface, extracts the update type from all
+ * {@link ColumnType} types.
+ *
+ * ### Examples
+ *
+ * ```ts
+ * interface PersonTable {
+ *   id: Generated<number>
+ *   first_name: string
+ *   modified_at: ColumnType<Date, string, never>
+ * }
+ *
+ * type UpdatablePerson = Updatable<PersonTable>
+ * // {
+ * //   id?: number,
+ * //   first_name?: string
+ * // }
+ * ```
+ */
+export type Updateable<R> = Updatable<R>

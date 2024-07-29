@@ -718,7 +718,7 @@ export class WheneableMergeQueryBuilder<
    * ### Examples
    *
    * ```ts
-   * async function updatePerson(id: number, updates: UpdateablePerson, returnLastName: boolean) {
+   * async function updatePerson(id: number, updates: UpdatablePerson, returnLastName: boolean) {
    *   return await db
    *     .updateTable('person')
    *     .set(updates)

@@ -1,4 +1,4 @@
-import { Generated, Insertable, Selectable, Updateable } from 'kysely'
+import { Generated, Insertable, Selectable, Updatable } from 'kysely'
 
 export interface RefreshTokenTable {
   refresh_token_id: Generated<string>
@@ -9,4 +9,4 @@ export interface RefreshTokenTable {
 
 export type RefreshTokenRow = Selectable<RefreshTokenTable>
 export type InsertableRefreshTokenRow = Insertable<RefreshTokenTable>
-export type UpdateableRefreshTokenRow = Updateable<RefreshTokenTable>
+export type UpdatableRefreshTokenRow = Updatable<RefreshTokenTable>

@@ -1,4 +1,4 @@
-import { Generated, Insertable, Selectable, Updateable } from 'kysely'
+import { Generated, Insertable, Selectable, Updatable } from 'kysely'
 
 export interface UserTable {
   user_id: Generated<string>
@@ -10,4 +10,4 @@ export interface UserTable {
 
 export type UserRow = Selectable<UserTable>
 export type InsertableUserRow = Insertable<UserTable>
-export type UpdateableUserRow = Updateable<UserTable>
+export type UpdatableUserRow = Updatable<UserTable>
