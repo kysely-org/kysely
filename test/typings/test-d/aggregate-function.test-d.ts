@@ -4,8 +4,8 @@ import {
   expectNotAssignable,
   expectType,
 } from 'tsd'
-import { Generated, Kysely, sql } from '..'
-import { Database } from '../shared'
+import { Generated, Kysely, Selectable, sql } from '..'
+import { Database, Pet } from '../shared'
 
 async function testSelectWithoutAs(db: Kysely<Database>) {
   const { avg, count, countAll, max, min, sum } = db.fn
