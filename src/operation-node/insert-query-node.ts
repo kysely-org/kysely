@@ -4,6 +4,7 @@ import { ExplainNode } from './explain-node.js'
 import { OnConflictNode } from './on-conflict-node.js'
 import { OnDuplicateKeyNode } from './on-duplicate-key-node.js'
 import { OperationNode } from './operation-node.js'
+import { OrActionNode } from './or-action-node.js'
 import { OutputNode } from './output-node.js'
 import { ReturningNode } from './returning-node.js'
 import { TableNode } from './table-node.js'
@@ -21,6 +22,7 @@ export interface InsertQueryNode extends OperationNode {
   readonly onConflict?: OnConflictNode
   readonly onDuplicateKey?: OnDuplicateKeyNode
   readonly with?: WithNode
+  readonly or?: OrActionNode
   readonly ignore?: boolean
   readonly replace?: boolean
   readonly explain?: ExplainNode
