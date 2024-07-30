@@ -159,6 +159,46 @@ async function testJoin(db: Kysely<Database>) {
     .set({ last_name: 'Jennifer' })
     .where('pet.id', '=', '1')
 
+  // Cross apply
+  const r9 = await db
+    .selectFrom('person')
+    .crossApply((eb) =>
+      eb
+        .selectFrom('pet')
+        .whereRef('pet.owner_id', '=', 'person.id')
+        .select('pet.name')
+        .as('pets'),
+    )
+    .select(['person.first_name', 'pets.name'])
+    .execute()
+
+  expectType<
+    {
+      first_name: string
+      name: string
+    }[]
+  >(r9)
+
+  // Outer apply
+  const r10 = await db
+    .selectFrom('person')
+    .outerApply((eb) =>
+      eb
+        .selectFrom('pet')
+        .whereRef('pet.owner_id', '=', 'person.id')
+        .select('pet.name')
+        .as('pets'),
+    )
+    .select(['person.first_name', 'pets.name'])
+    .execute()
+
+  expectType<
+    {
+      first_name: string
+      name: string | null
+    }[]
+  >(r10)
+
   // Refer to table that's not joined
   expectError(
     db.selectFrom('person').innerJoin('movie', 'movie.id', 'pet.owner_id'),
