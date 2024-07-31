@@ -94,7 +94,7 @@ import { CastNode } from './cast-node.js'
 import { FetchNode } from './fetch-node.js'
 import { TopNode } from './top-node.js'
 import { OutputNode } from './output-node.js'
-import { RefreshMaterializedViewNode } from './refresh-view-node.js'
+import { RefreshMaterializedViewNode } from './refresh-materialized-view-node.js'
 
 /**
  * Transforms an operation node tree into another one.

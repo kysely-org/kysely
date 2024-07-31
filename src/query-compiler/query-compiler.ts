@@ -12,7 +12,7 @@ import { DropViewNode } from '../operation-node/drop-view-node.js'
 import { MergeQueryNode } from '../operation-node/merge-query-node.js'
 import { QueryNode } from '../operation-node/query-node.js'
 import { RawNode } from '../operation-node/raw-node.js'
-import { RefreshMaterializedViewNode } from '../operation-node/refresh-view-node.js'
+import { RefreshMaterializedViewNode } from '../operation-node/refresh-materialized-view-node.js'
 import { CompiledQuery } from './compiled-query.js'
 
 export type RootOperationNode =

@@ -5,7 +5,7 @@ import { preventAwait } from '../util/prevent-await.js'
 import { QueryExecutor } from '../query-executor/query-executor.js'
 import { QueryId } from '../util/query-id.js'
 import { freeze } from '../util/object-utils.js'
-import { RefreshMaterializedViewNode } from '../operation-node/refresh-view-node.js'
+import { RefreshMaterializedViewNode } from '../operation-node/refresh-materialized-view-node.js'
 
 export class RefreshMaterializedViewBuilder implements OperationNodeSource, Compilable {
   readonly #props: RefreshMaterializedViewBuilderProps

@@ -111,7 +111,7 @@ import { CastNode } from '../operation-node/cast-node.js'
 import { FetchNode } from '../operation-node/fetch-node.js'
 import { TopNode } from '../operation-node/top-node.js'
 import { OutputNode } from '../operation-node/output-node.js'
-import { RefreshMaterializedViewNode } from '../operation-node/refresh-view-node.js'
+import { RefreshMaterializedViewNode } from '../operation-node/refresh-materialized-view-node.js'
 
 export class DefaultQueryCompiler
   extends OperationNodeVisitor

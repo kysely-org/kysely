@@ -27,7 +27,7 @@ import { CreateTypeNode } from '../operation-node/create-type-node.js'
 import { DropTypeNode } from '../operation-node/drop-type-node.js'
 import { parseSchemableIdentifier } from '../parser/identifier-parser.js'
 import { RefreshMaterializedViewBuilder } from './refresh-materialized-view-builder.js'
-import { RefreshMaterializedViewNode } from '../operation-node/refresh-view-node.js'
+import { RefreshMaterializedViewNode } from '../operation-node/refresh-materialized-view-node.js'
 
 /**
  * Provides methods for building database schema.
