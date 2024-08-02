@@ -147,7 +147,7 @@ export interface Sql {
    * select "first_name" from person
    * ```
    *
-   * The refefences can also include a table name:
+   * The references can also include a table name:
    *
    * ```ts
    * const columnRef = 'person.first_name'
@@ -161,7 +161,7 @@ export interface Sql {
    * select "person"."first_name" from person
    * ```
    *
-   * The refefences can also include a schema on supported databases:
+   * The references can also include a schema on supported databases:
    *
    * ```ts
    * const columnRef = 'public.person.first_name'
