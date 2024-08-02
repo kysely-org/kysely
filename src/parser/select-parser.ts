@@ -73,9 +73,10 @@ export type SelectArg<
   | ReadonlyArray<SE>
   | ((eb: ExpressionBuilder<DB, TB>) => ReadonlyArray<SE>)
 
-type FlattenSelectExpression<SE> = SE extends DynamicReferenceBuilder<infer RA>
-  ? { [R in RA]: DynamicReferenceBuilder<R> }[RA]
-  : SE
+type FlattenSelectExpression<SE> =
+  SE extends DynamicReferenceBuilder<infer RA>
+    ? { [R in RA]: DynamicReferenceBuilder<R> }[RA]
+    : SE
 
 type ExtractAliasFromSelectExpression<SE> = SE extends string
   ? ExtractAliasFromStringSelectExpression<SE>
