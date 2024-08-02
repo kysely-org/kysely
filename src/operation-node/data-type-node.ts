@@ -33,6 +33,18 @@ const SIMPLE_COLUMN_DATA_TYPES = [
   'jsonb',
   'blob',
   'varbinary',
+  'int4range',
+  'int4multirange',
+  'int8range',
+  'int8multirange',
+  'numrange',
+  'nummultirange',
+  'tsrange',
+  'tsmultirange',
+  'tstzrange',
+  'tstzmultirange',
+  'daterange',
+  'datemultirange',
 ] as const
 
 const COLUMN_DATA_TYPE_REGEX = [
