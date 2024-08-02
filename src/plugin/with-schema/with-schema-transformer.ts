@@ -24,6 +24,7 @@ const ROOT_OPERATION_NODES: Record<RootOperationNode['kind'], true> = freeze({
   CreateTableNode: true,
   CreateTypeNode: true,
   CreateViewNode: true,
+  RefreshMaterializedViewNode: true,
   DeleteQueryNode: true,
   DropIndexNode: true,
   DropSchemaNode: true,
