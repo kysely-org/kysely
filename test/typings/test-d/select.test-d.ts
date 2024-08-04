@@ -5,11 +5,17 @@ import {
   NotNull,
   RawBuilder,
   Selectable,
+  SelectType,
   Simplify,
   sql,
 } from '..'
-import { Database, Person } from '../shared'
-import { expectType, expectError } from 'tsd'
+import { Database, Person, Pet } from '../shared'
+import {
+  expectType,
+  expectError,
+  expectAssignable,
+  expectNotAssignable,
+} from 'tsd'
 
 async function testSelectSingle(db: Kysely<Database>) {
   const qb = db.selectFrom('person')
@@ -206,6 +212,26 @@ async function testSelectAll(db: Kysely<Database>) {
     species: 'dog' | 'cat'
     deleted_at: Date | null
   }>(r5)
+
+  const r6 = await db
+    .selectFrom('person')
+    .leftJoin('pet', 'person.id', 'pet.owner_id')
+    .selectAll('person')
+    .selectAll('pet')
+    .executeTakeFirstOrThrow()
+
+  expectAssignable<{ id: string | null }>(r6)
+  expectNotAssignable<{ id: number }>(r6)
+
+  const r7 = await db
+    .selectFrom('person')
+    .leftJoin('pet', 'person.id', 'pet.owner_id')
+    .selectAll('pet')
+    .selectAll('person')
+    .executeTakeFirstOrThrow()
+
+  expectAssignable<{ id: number }>(r7)
+  expectNotAssignable<{ id: string | null }>(r7)
 }
 
 async function testSelectMultiple(db: Kysely<Database>) {
