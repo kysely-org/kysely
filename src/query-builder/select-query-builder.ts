@@ -567,13 +567,13 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    */
   selectAll<T extends TB>(
     table: ReadonlyArray<T>,
-  ): SelectQueryBuilder<DB, TB, O & AllSelection<DB, T>>
+  ): SelectQueryBuilder<DB, TB, AllSelection<DB, T, O>>
 
   selectAll<T extends TB>(
     table: T,
-  ): SelectQueryBuilder<DB, TB, O & Selectable<DB[T]>>
+  ): SelectQueryBuilder<DB, TB, AllSelection<DB, T, O>>
 
-  selectAll(): SelectQueryBuilder<DB, TB, O & AllSelection<DB, TB>>
+  selectAll(): SelectQueryBuilder<DB, TB, AllSelection<DB, TB, O>>
 
   /**
    * Joins another table to the query using an inner join.
