@@ -188,12 +188,14 @@ export const DB_CONFIGS: PerDialect<KyselyConfig> = {
         options: {
           max: POOL_SIZE,
           min: 0,
+          validateConnections: false,
         },
         ...Tarn,
       },
       tedious: {
         ...Tedious,
         connectionFactory: () => new Tedious.Connection(DIALECT_CONFIGS.mssql),
+        resetConnectionOnRelease: false,
       },
     }),
     plugins: PLUGINS,
