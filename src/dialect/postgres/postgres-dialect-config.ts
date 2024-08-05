@@ -53,10 +53,6 @@ export interface PostgresPool {
 
 export interface PostgresPoolClient {
   query<R>(queryConfig: PostgresQueryConfig): Promise<PostgresQueryResult<R>>
-  query<R>(
-    sql: string,
-    parameters: ReadonlyArray<unknown>,
-  ): Promise<PostgresQueryResult<R>>
   query<R>(cursor: PostgresCursor<R>): PostgresCursor<R>
   release(): void
 }
@@ -72,7 +68,6 @@ export interface PostgresQueryConfig {
 }
 
 export interface PostgresCursor<T> {
-  read(rowsCount: number): Promise<T[]>
   // https://github.com/brianc/node-pg-cursor/pull/23
   read(
     rowCount: number,
