@@ -1,3 +1,4 @@
+import {expectError, expectType} from 'tsd'
 import {
   ColumnType,
   Expression,
@@ -9,8 +10,7 @@ import {
   Simplify,
   sql,
 } from '..'
-import { Database, Person, PersonMetadata } from '../shared'
-import { expectType, expectError } from 'tsd'
+import {Database, Person, PersonMetadata} from '../shared'
 
 async function testSelectSingle(db: Kysely<Database>) {
   const qb = db.selectFrom('person')
@@ -484,8 +484,16 @@ async function testSelectConflicts(db: Kysely<PGGenDatabase>) {
   expectType<{
     experience: {
       establishment: string
-    }[]
-  }>(r1)
+    }[]}>(r1)
+
+  const r2 = await db
+    .selectFrom('person_metadata')
+    .select(() => sql<number>`1`.as('answer'))
+    .select(sql<string>`foo`.as('answer'))
+    .select([sql<boolean>`true`.as('answer')])
+    .executeTakeFirstOrThrow()
+
+  expectType<{answer: boolean}>(r2)
 }
 
 export function jsonArrayFrom<O>(

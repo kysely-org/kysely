@@ -16,6 +16,7 @@ import {
   AllSelection,
   SelectCallback,
   CallbackSelection,
+  ExtractAliasFromSelectExpression,
 } from '../parser/select-parser.js'
 import {
   parseReferenceExpressionOrList,
@@ -83,6 +84,28 @@ import { FetchModifier } from '../operation-node/fetch-node.js'
 import { parseFetch } from '../parser/fetch-parser.js'
 import { TopModifier } from '../operation-node/top-node.js'
 import { parseTop } from '../parser/top-parser.js'
+
+type RemoveIndex<T> = keyof {
+  [K in keyof T as {} extends Record<K, 1> ? never : K]: never
+}
+
+type ConflictFreeO<O, DB, TB extends keyof DB, SE> = (ExtractAliasFromSelectExpression<SE> extends RemoveIndex<O> ? Omit<O, ExtractAliasFromSelectExpression<SE>> : O) & Selection<DB, TB, SE>
+
+  export type CallbackSelectionAlias<CB> = CB extends (
+    eb: any,
+  ) => ReadonlyArray<infer SE>
+    ? ExtractAliasFromSelectExpression<SE>
+    : never
+
+type ConflictFreeOCB<
+  O,
+  DB,
+  TB extends keyof DB,
+  CB,
+> = (CallbackSelectionAlias<CB> extends RemoveIndex<O>
+  ? Omit<O, CallbackSelectionAlias<CB>>
+  : O) &
+  CallbackSelection<DB, TB, CB>
 
 export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
   extends WhereInterface<DB, TB>,
@@ -360,21 +383,31 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    * persons[0].id
    * ```
    */
+
+
   select<SE extends SelectExpression<DB, TB>>(
     selections: ReadonlyArray<SE>,
-  ): SelectQueryBuilder<DB, TB, O & Selection<DB, TB, SE>>
+  ): SelectQueryBuilder<
+    DB,
+    TB,
+    ConflictFreeO<O, DB, TB, SE>
+  >
 
   select<CB extends SelectCallback<DB, TB>>(
     callback: CB,
   ): SelectQueryBuilder<
     DB,
     TB,
-    Omit<O, keyof CallbackSelection<DB, TB, CB>> & CallbackSelection<DB, TB, CB>
+    ConflictFreeOCB<O, DB, TB, CB>
   >
 
   select<SE extends SelectExpression<DB, TB>>(
     selection: SE,
-  ): SelectQueryBuilder<DB, TB, O & Selection<DB, TB, SE>>
+  ): SelectQueryBuilder<
+    DB,
+    TB,
+    ConflictFreeO<O, DB, TB, SE>
+  >
 
   /**
    * Adds `distinct on` expressions to the select clause.

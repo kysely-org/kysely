@@ -77,7 +77,7 @@ type FlattenSelectExpression<SE> = SE extends DynamicReferenceBuilder<infer RA>
   ? { [R in RA]: DynamicReferenceBuilder<R> }[RA]
   : SE
 
-type ExtractAliasFromSelectExpression<SE> = SE extends string
+export type ExtractAliasFromSelectExpression<SE> = SE extends string
   ? ExtractAliasFromStringSelectExpression<SE>
   : SE extends AliasedExpression<any, infer EA>
     ? EA
