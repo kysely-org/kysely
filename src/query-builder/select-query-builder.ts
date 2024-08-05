@@ -366,7 +366,11 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
 
   select<CB extends SelectCallback<DB, TB>>(
     callback: CB,
-  ): SelectQueryBuilder<DB, TB, O & CallbackSelection<DB, TB, CB>>
+  ): SelectQueryBuilder<
+    DB,
+    TB,
+    Omit<O, keyof CallbackSelection<DB, TB, CB>> & CallbackSelection<DB, TB, CB>
+  >
 
   select<SE extends SelectExpression<DB, TB>>(
     selection: SE,
