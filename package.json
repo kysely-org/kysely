@@ -96,6 +96,6 @@
     "tarn": "^3.0.2",
     "tedious": "^18.2.0",
     "tsd": "^0.30.3",
-    "typescript": "^5.5.2"
+    "typescript": "^5.5.4"
   }
 }
