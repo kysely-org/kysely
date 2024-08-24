@@ -1570,7 +1570,7 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    * method called inside the callback add optional fields to the result type. This is
    * because we can't know if those selections were actually made before running the code.
    *
-   * Also see [this recipe](https://github.com/koskimas/kysely/tree/master/site/docs/recipes/conditional-selects.md)
+   * Also see [this recipe](https://github.com/kysely-org/kysely/blob/master/site/docs/recipes/0005-conditional-selects.md)
    *
    * ### Examples
    *

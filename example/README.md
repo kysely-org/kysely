@@ -19,4 +19,4 @@ npm install
 npm test
 ```
 
-You need to have postgres running in the default port `5432` and the default postgres user `postgres` should exist with no password. You can modify the [test configuration](https://github.com/koskimas/kysely/blob/master/example/test/test-config.ts) if you want to use different settings.
+You need to have postgres running in the default port `5432` and the default postgres user `postgres` should exist with no password. You can modify the [test configuration](https://github.com/kysely-org/kysely/blob/master/example/test/test-config.ts) if you want to use different settings.

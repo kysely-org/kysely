@@ -372,7 +372,7 @@ export class Kysely<DB>
   /**
    * Executes a given compiled query or query builder.
    *
-   * See {@link https://github.com/koskimas/kysely/blob/master/site/docs/recipes/splitting-build-compile-and-execute-code.md#execute-compiled-queries splitting build, compile and execute code recipe} for more information.
+   * See {@link https://github.com/kysely-org/kysely/blob/master/site/docs/recipes/0004-splitting-query-building-and-execution.md#execute-compiled-queries splitting build, compile and execute code recipe} for more information.
    */
   executeQuery<R>(
     query: CompiledQuery<R> | Compilable<R>,

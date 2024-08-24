@@ -11,7 +11,7 @@ import { DeduplicateJoinsTransformer } from './deduplicate-joins-transformer.js'
 /**
  * Plugin that removes duplicate joins from queries.
  *
- * See [this recipe](https://github.com/koskimas/kysely/tree/master/site/docs/recipes/deduplicate-joins.md)
+ * See [this recipe](https://github.com/kysely-org/kysely/blob/master/site/docs/recipes/0008-deduplicate-joins.md)
  */
 export class DeduplicateJoinsPlugin implements KyselyPlugin {
   readonly #transformer = new DeduplicateJoinsTransformer()
