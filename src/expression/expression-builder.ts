@@ -69,7 +69,7 @@ import {
   ValTuple5,
 } from '../parser/tuple-parser.js'
 import { TupleNode } from '../operation-node/tuple-node.js'
-import { Selectable } from '../util/column-type.js'
+import { Selectable, Serialized } from '../util/column-type.js'
 import { JSONPathNode } from '../operation-node/json-path-node.js'
 import { KyselyTypeError } from '../util/type-error.js'
 import {
@@ -78,6 +78,7 @@ import {
 } from '../parser/data-type-parser.js'
 import { CastNode } from '../operation-node/cast-node.js'
 import { SelectFrom } from '../parser/select-from-parser.js'
+import { ValueNode } from '../operation-node/value-node.js'
 
 export interface ExpressionBuilder<DB, TB extends keyof DB> {
   /**
@@ -510,6 +511,42 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
   val<VE>(
     value: VE,
   ): ExpressionWrapper<DB, TB, ExtractTypeFromValueExpression<VE>>
+
+  /**
+   * Returns a value expression that will be serialized before being passed to the database.
+   *
+   * This can be used to pass in an object/array value when inserting/updating a
+   * value to a column defined with `JSONColumnType`.
+   *
+   * ### Example
+   *
+   * ```ts
+   * import { GeneratedAlways, JSONColumnType } from 'kysely'
+   *
+   * interface Database {
+   *   person: {
+   *     id: GeneratedAlways<number>
+   *     name: string
+   *     experience: JSONColumnType<{ title: string; company: string }[]>
+   *     preferences: JSONColumnType<{ locale: string; timezone: string }>
+   *     profile: JSONColumnType<{ email_verified: boolean }>
+   *   }
+   * }
+   *
+   * const result = await db
+   *   .insertInto('person')
+   *   .values(({ valSerialized }) => ({
+   *     name: 'Jennifer Aniston',
+   *     experience: valSerialized([{ title: 'Software Engineer', company: 'Google' }]), // ✔️
+   *     preferences: valSerialized({ locale: 'en' }), // ❌ missing `timezone`
+   *     profile: JSON.stringify({ email_verified: true }), // ❌ doesn't match `Serialized<{ email_verified }>`
+   *   }))
+   *   .execute()
+   * ```
+   */
+  valSerialized<O extends object>(
+    obj: O,
+  ): ExpressionWrapper<DB, TB, Serialized<O>>
 
   /**
    * Creates a tuple expression.
@@ -1138,6 +1175,14 @@ export function createExpressionBuilder<DB, TB extends keyof DB>(
       value: VE,
     ): ExpressionWrapper<DB, TB, ExtractTypeFromValueExpression<VE>> {
       return new ExpressionWrapper(parseValueExpression(value))
+    },
+
+    valSerialized<O extends object>(
+      value: O,
+    ): ExpressionWrapper<DB, TB, Serialized<O>> {
+      return new ExpressionWrapper(
+        ValueNode.create(value, { serialized: true }),
+      )
     },
 
     refTuple(
