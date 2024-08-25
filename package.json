@@ -84,7 +84,7 @@
     "chai": "^4.4.0",
     "chai-as-promised": "^7.1.1",
     "chai-subset": "^1.6.0",
-    "esbuild": "^0.19.11",
+    "esbuild": "^0.23.1",
     "lodash": "^4.17.21",
     "mocha": "^10.7.3",
     "mysql2": "^3.11.0",
