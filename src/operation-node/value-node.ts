@@ -5,6 +5,7 @@ export interface ValueNode extends OperationNode {
   readonly kind: 'ValueNode'
   readonly value: unknown
   readonly immediate?: boolean
+  readonly serialized?: boolean
 }
 
 /**
@@ -15,9 +16,10 @@ export const ValueNode = freeze({
     return node.kind === 'ValueNode'
   },
 
-  create(value: unknown): ValueNode {
+  create(value: unknown, props?: { serialized?: boolean }): ValueNode {
     return freeze({
       kind: 'ValueNode',
+      ...props,
       value,
     })
   },

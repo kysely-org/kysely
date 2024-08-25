@@ -503,7 +503,9 @@ export class DefaultQueryCompiler
     if (node.immediate) {
       this.appendImmediateValue(node.value)
     } else {
-      this.appendValue(node.value)
+      this.appendValue(
+        node.serialized ? JSON.stringify(node.value) : node.value,
+      )
     }
   }
 
