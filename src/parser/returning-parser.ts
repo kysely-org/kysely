@@ -26,4 +26,4 @@ export type ReturningAllRow<DB, TB extends keyof DB, O> = O extends
   | UpdateResult
   | MergeResult
   ? AllSelection<DB, TB>
-  : O & AllSelection<DB, TB>
+  : AllSelection<DB, TB, O>

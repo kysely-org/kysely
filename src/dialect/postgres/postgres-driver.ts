@@ -3,14 +3,17 @@ import {
   QueryResult,
 } from '../../driver/database-connection.js'
 import { Driver, TransactionSettings } from '../../driver/driver.js'
+import { SelectQueryNode } from '../../operation-node/select-query-node.js'
 import { CompiledQuery } from '../../query-compiler/compiled-query.js'
 import { isFunction, freeze } from '../../util/object-utils.js'
 import { extendStackTrace } from '../../util/stack-trace-utils.js'
 import {
   PostgresCursorConstructor,
   PostgresDialectConfig,
+  PostgresField,
   PostgresPool,
   PostgresPoolClient,
+  PostgresQueryResult,
 } from './postgres-dialect-config.js'
 
 const PRIVATE_RELEASE_METHOD = Symbol()
@@ -106,9 +109,13 @@ class PostgresConnection implements DatabaseConnection {
 
   async executeQuery<O>(compiledQuery: CompiledQuery): Promise<QueryResult<O>> {
     try {
-      const result = await this.#client.query<O>(compiledQuery.sql, [
-        ...compiledQuery.parameters,
-      ])
+      const result = await this.#client.query<O>({
+        text: compiledQuery.sql,
+        values: [...compiledQuery.parameters],
+        rowMode: 'array',
+      })
+
+      const rows = this.#processRows<O>(result)
 
       if (
         result.command === 'INSERT' ||
@@ -122,12 +129,12 @@ class PostgresConnection implements DatabaseConnection {
           // TODO: remove.
           numUpdatedOrDeletedRows: numAffectedRows,
           numAffectedRows,
-          rows: result.rows ?? [],
+          rows,
         }
       }
 
       return {
-        rows: result.rows ?? [],
+        rows,
       }
     } catch (err) {
       throw extendStackTrace(err, new Error())
@@ -152,12 +159,24 @@ class PostgresConnection implements DatabaseConnection {
       new this.#options.cursor<O>(
         compiledQuery.sql,
         compiledQuery.parameters.slice(),
+        { rowMode: 'array' },
       ),
     )
 
     try {
       while (true) {
-        const rows = await cursor.read(chunkSize)
+        const result = await new Promise<PostgresQueryResult<O> | undefined>(
+          (resolve, reject) =>
+            cursor.read(chunkSize, (err, _rows, result) => {
+              if (err) {
+                reject(err)
+              } else {
+                resolve(result)
+              }
+            }),
+        )
+
+        const rows = this.#processRows(result)
 
         if (rows.length === 0) {
           break
@@ -170,6 +189,38 @@ class PostgresConnection implements DatabaseConnection {
     } finally {
       await cursor.close()
     }
+  }
+
+  #processRows<R>(
+    result:
+      | Pick<PostgresQueryResult<R>, 'fields' | 'rows' | 'rowAsArray'>
+      | undefined,
+  ): R[] {
+    const { fields, rows, rowAsArray } = result || {}
+
+    if (!rows?.length) {
+      return []
+    }
+
+    if (!rowAsArray) {
+      return rows as R[]
+    }
+
+    const processedRows: R[] = []
+
+    for (let i = 0, len = rows.length; i < len; i++) {
+      const row = rows[i] as unknown[]
+      const processedRow = {} as R
+
+      for (let j = 0, len = row.length; j < len; j++) {
+        const column = fields![j].name
+        processedRow[column] = row[j] as R[keyof R]
+      }
+
+      processedRows.push(processedRow)
+    }
+
+    return processedRows
   }
 
   [PRIVATE_RELEASE_METHOD](): void {
