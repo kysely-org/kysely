@@ -147,7 +147,7 @@ export const SelectQueryNode = freeze({
 
   cloneWithFetch(
     selectNode: SelectQueryNode,
-    fetch: FetchNode
+    fetch: FetchNode,
   ): SelectQueryNode {
     return freeze({
       ...selectNode,

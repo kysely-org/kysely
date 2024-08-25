@@ -85,7 +85,7 @@ export class MergeQueryBuilder<DB, TT extends keyof DB, O>
    *   .modifyEnd(sql.raw('-- this is a comment'))
    *   .execute()
    * ```
-   * 
+   *
    * The generated SQL (PostgreSQL):
    *
    * ```sql
@@ -301,14 +301,16 @@ export class WheneableMergeQueryBuilder<
    *   .modifyEnd(sql.raw('-- this is a comment'))
    *   .execute()
    * ```
-   * 
+   *
    * The generated SQL (PostgreSQL):
    *
    * ```sql
    * merge into "person" using "pet" on "pet"."owner_id" = "person"."id" when matched then delete -- this is a comment
    * ```
    */
-  modifyEnd(modifier: Expression<any>): WheneableMergeQueryBuilder<DB, TT, ST, O> {
+  modifyEnd(
+    modifier: Expression<any>,
+  ): WheneableMergeQueryBuilder<DB, TT, ST, O> {
     return new WheneableMergeQueryBuilder({
       ...this.#props,
       queryNode: QueryNode.cloneWithEndModifier(

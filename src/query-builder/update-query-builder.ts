@@ -756,7 +756,7 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
    *
    * ### Examples
    *
-    * ```ts
+   * ```ts
    * await db.updateTable('person')
    * .set({ age: 39 })
    * .where('first_name', '=', 'John')

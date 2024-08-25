@@ -876,9 +876,9 @@ for (const dialect of DIALECTS) {
     if (dialect === 'postgres' || dialect === 'mysql') {
       it('modifyEnd should add arbitrary SQL to the end of the query', async () => {
         const query = ctx.db
-        .deleteFrom('person')
-        .where('first_name', '=', 'Jennifer')
-        .modifyEnd(sql.raw('-- this is a comment'))
+          .deleteFrom('person')
+          .where('first_name', '=', 'Jennifer')
+          .modifyEnd(sql.raw('-- this is a comment'))
 
         testSql(query, dialect, {
           postgres: {
