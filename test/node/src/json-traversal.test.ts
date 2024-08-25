@@ -798,20 +798,20 @@ async function insertDefaultJSONDataSet(ctx: TestContext) {
 
   await ctx.db
     .insertInto('person_metadata')
-    .values(
+    .values((eb) =>
       people
         .filter((person) => person.first_name && person.last_name)
         .map((person, index) => ({
           person_id: person.id,
-          website: JSON.stringify({
+          website: eb.valSerialized({
             url: `https://www.${person.first_name!.toLowerCase()}${person.last_name!.toLowerCase()}.com`,
           }),
-          nicknames: JSON.stringify([
+          nicknames: eb.valSerialized([
             `${person.first_name![0]}.${person.last_name![0]}.`,
             `${person.first_name} the Great`,
             `${person.last_name} the Magnificent`,
           ]),
-          profile: JSON.stringify({
+          profile: eb.valSerialized({
             tags: ['awesome'],
             auth: {
               roles: ['contributor', 'moderator'],
@@ -823,12 +823,12 @@ async function insertDefaultJSONDataSet(ctx: TestContext) {
             },
             avatar: null,
           }),
-          experience: JSON.stringify([
+          experience: eb.valSerialized([
             {
               establishment: 'The University of Life',
             },
           ]),
-          schedule: JSON.stringify([[[{ name: 'Gym', time: '12:15' }]]]),
+          schedule: sql.valSerialized([[[{ name: 'Gym', time: '12:15' }]]]),
         })),
     )
     .execute()
