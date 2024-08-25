@@ -294,8 +294,8 @@ for (const dialect of DIALECTS) {
                   hasDefaultValue: false,
                   comment: undefined,
                 },
-              ]
-            }
+              ],
+            },
           ])
         } else if (dialect === 'mysql') {
           expect(meta).to.eql([
@@ -852,7 +852,7 @@ for (const dialect of DIALECTS) {
         await ctx.db.schema
           .createTable('some_schema.pet')
           .addColumn('some_column', 'integer', (col) =>
-            col.identity().notNull().primaryKey()
+            col.identity().notNull().primaryKey(),
           )
           .addColumn('some_column_plus_1', sql``, (col) =>
             col.modifyEnd(sql`as (some_column + 1)`),
@@ -863,7 +863,10 @@ for (const dialect of DIALECTS) {
 
     async function dropSchema() {
       await ctx.db.schema.dropTable('some_schema.pet').ifExists().execute()
-      await ctx.db.schema.dropTable('some_schema.pet_partition').ifExists().execute()
+      await ctx.db.schema
+        .dropTable('some_schema.pet_partition')
+        .ifExists()
+        .execute()
       await ctx.db.schema.dropSchema('some_schema').ifExists().execute()
 
       if (dialect === 'postgres') {

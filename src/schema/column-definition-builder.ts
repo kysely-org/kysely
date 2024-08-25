@@ -46,7 +46,7 @@ export class ColumnDefinitionBuilder implements OperationNodeSource {
    */
   identity(): ColumnDefinitionBuilder {
     return new ColumnDefinitionBuilder(
-      ColumnDefinitionNode.cloneWith(this.#node, { identity: true })
+      ColumnDefinitionNode.cloneWith(this.#node, { identity: true }),
     )
   }
 
