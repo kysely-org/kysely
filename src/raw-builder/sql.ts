@@ -6,6 +6,7 @@ import { ValueNode } from '../operation-node/value-node.js'
 import { parseStringReference } from '../parser/reference-parser.js'
 import { parseTable } from '../parser/table-parser.js'
 import { parseValueExpression } from '../parser/value-parser.js'
+import { Serialized } from '../util/column-type.js'
 import { createQueryId } from '../util/query-id.js'
 import { RawBuilder, createRawBuilder } from './raw-builder.js'
 
@@ -119,6 +120,17 @@ export interface Sql {
    * ```
    */
   val<V>(value: V): RawBuilder<V>
+
+  /**
+   * `sql.valSerialized(value)` is a shortcut for:
+   *
+   * ```ts
+   * sql<Serialized<ValueType>>`${serializerFn(obj)}`
+   * ```
+   *
+   * Default serializer function is `JSON.stringify`.
+   */
+  valSerialized<O extends object | null>(value: O): RawBuilder<Serialized<O>>
 
   /**
    * @deprecated Use {@link Sql.val} instead.
@@ -395,6 +407,17 @@ export const sql: Sql = Object.assign(
       return createRawBuilder({
         queryId: createQueryId(),
         rawNode: RawNode.createWithChild(parseValueExpression(value)),
+      })
+    },
+
+    valSerialized<O extends object | null>(
+      value: O,
+    ): RawBuilder<Serialized<O>> {
+      return createRawBuilder({
+        queryId: createQueryId(),
+        rawNode: RawNode.createWithChild(
+          ValueNode.create(value, { serialized: true }),
+        ),
       })
     },
 

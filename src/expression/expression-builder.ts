@@ -518,6 +518,8 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    * This can be used to pass in an object/array value when inserting/updating a
    * value to a column defined with `JSONColumnType`.
    *
+   * Default serializer function is `JSON.stringify`.
+   *
    * ### Example
    *
    * ```ts
@@ -544,7 +546,7 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    *   .execute()
    * ```
    */
-  valSerialized<O extends object>(
+  valSerialized<O extends object | null>(
     obj: O,
   ): ExpressionWrapper<DB, TB, Serialized<O>>
 
@@ -1177,7 +1179,7 @@ export function createExpressionBuilder<DB, TB extends keyof DB>(
       return new ExpressionWrapper(parseValueExpression(value))
     },
 
-    valSerialized<O extends object>(
+    valSerialized<O extends object | null>(
       value: O,
     ): ExpressionWrapper<DB, TB, Serialized<O>> {
       return new ExpressionWrapper(
