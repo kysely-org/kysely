@@ -68,7 +68,7 @@ jobs:
 
     strategy:
       matrix:
-        deno-version: [1.42.x]
+        deno-version: [1.46.x]
 
     steps:
       - uses: actions/checkout@v4
@@ -99,7 +99,7 @@ jobs:
 
     strategy:
       matrix:
-        bun-version: [1.1.x]
+        bun-version: [1.1.26]
 
     steps:
       - uses: actions/checkout@v4
@@ -114,7 +114,7 @@ jobs:
         run: npm ci
 
       - name: Use Bun ${{ matrix.bun-version }}
-        uses: oven-sh/setup-bun@v1
+        uses: oven-sh/setup-bun@v2
         with:
           bun-version: ${{ matrix.bun-version }}
 

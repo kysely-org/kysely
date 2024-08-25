@@ -5,8 +5,8 @@
     "test": "tsx test.ts"
   },
   "devDependencies": {
-    "hono": "^4.2.8",
-    "tsx": "^4.7.3",
-    "wrangler": "^3.52.0"
+    "hono": "^4.5.8",
+    "tsx": "^4.18.0",
+    "wrangler": "^3.72.2"
   }
 }
