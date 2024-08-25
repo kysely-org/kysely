@@ -68,14 +68,26 @@ export type Generated<S> = ColumnType<S, S | undefined, S>
 export type GeneratedAlways<S> = ColumnType<S, never, never>
 
 /**
- * A shortcut for defining JSON columns, which are by default inserted/updated
- * as stringified JSON strings.
+ * A shortcut for defining type-safe JSON columns.
  */
-export type JSONColumnType<
-  SelectType extends object | null,
-  InsertType = string,
-  UpdateType = string,
-> = ColumnType<SelectType, InsertType, UpdateType>
+export type JSONColumnType<SelectType extends object | null> = ColumnType<
+  SelectType,
+  Serialized<SelectType> | Extract<null, SelectType>,
+  Serialized<SelectType> | Extract<null, SelectType>
+>
+
+/**
+ * A symbol that is used to brand serialized objects/arrays.
+ * @internal
+ */
+declare const SerializedBrand: unique symbol
+
+/**
+ * A type that is used to brand serialized objects/arrays.
+ */
+export type Serialized<O extends object | null> = O & {
+  [SerializedBrand]: true
+}
 
 /**
  * Evaluates to `K` if `T` can be `null` or `undefined`.
