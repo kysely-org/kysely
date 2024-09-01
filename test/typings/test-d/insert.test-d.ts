@@ -1,5 +1,5 @@
 import { expectError, expectType } from 'tsd'
-import { InsertResult, Kysely, sql } from '..'
+import { ExpressionBuilder, InsertObject, InsertResult, Kysely, sql } from '..'
 import { Database } from '../shared'
 
 async function testInsert(db: Kysely<Database>) {
@@ -267,4 +267,127 @@ async function testOutput(db: Kysely<Database>) {
   // Wrong prefix
   expectError(db.insertInto('person').output('deleted.age').values(person))
   expectError(db.insertInto('person').outputAll('deleted').values(person))
+}
+
+async function testValJson(db: Kysely<Database>) {
+  const getValues = <
+    O extends Partial<InsertObject<Database, 'person_metadata'>>,
+  >(
+    { valJson }: ExpressionBuilder<Database, 'person_metadata'>,
+    overrides?: O,
+  ) => ({
+    array: valJson(['123']),
+    experience: valJson([{ establishment: 'New York Times' }]),
+    nicknames: valJson(['Jenny']),
+    person_id: 1,
+    profile: valJson({
+      auth: {
+        roles: ['admin'],
+      },
+      tags: ['important'],
+    }),
+    website: valJson({ url: 'http://example.com' }),
+    record: valJson({ key: 'value' }),
+    schedule: valJson([
+      [
+        [
+          {
+            name: 'foo',
+            time: '2024-01-01T00:00:00.000Z',
+          },
+        ],
+      ],
+    ]),
+    ...overrides,
+  })
+
+  db.insertInto('person_metadata').values(getValues).execute()
+
+  db.insertInto('person_metadata').values((eb) =>
+    getValues(eb, {
+      array: null,
+    }),
+  )
+
+  db.insertInto('person_metadata').values((eb) =>
+    getValues(eb, {
+      array: eb.valJson(null),
+    }),
+  )
+
+  db.insertInto('person_metadata').values((eb) =>
+    getValues(eb, {
+      array: sql.valJson(null),
+    }),
+  )
+
+  db.insertInto('person_metadata').values((eb) =>
+    getValues(eb, {
+      website: sql.valJson({ url: 'http://example.com' }),
+    }),
+  )
+
+  expectError(
+    db.insertInto('person_metadata').values((eb) =>
+      getValues(eb, {
+        array: ['123'], // expects `valJson(Array<string> | null)`
+      }),
+    ),
+  )
+
+  expectError(
+    db.insertInto('person_metadata').values((eb) =>
+      getValues(eb, {
+        array: eb.val(['123']), // expects `valJson(Array<string> | null)`
+      }),
+    ),
+  )
+
+  expectError(
+    db.insertInto('person_metadata').values((eb) =>
+      getValues(eb, {
+        array: eb.valJson({}), // expects `valJson(Array<string> | null)`
+      }),
+    ),
+  )
+
+  expectError(
+    db.insertInto('person_metadata').values((eb) =>
+      getValues(eb, {
+        array: eb.valJson([123]), // expects `valJson(Array<string> | null)`
+      }),
+    ),
+  )
+
+  expectError(
+    db.insertInto('person_metadata').values((eb) =>
+      getValues(eb, {
+        experience: [{ establishment: 'New York Times' }], // expects `valJson({ establishment: string }[])`
+      }),
+    ),
+  )
+
+  expectError(
+    db.insertInto('person_metadata').values((eb) =>
+      getValues(eb, {
+        experience: eb.valJson({ establishment: 'New York Times' }), // expects `valJson({ establishment: string }[])`
+      }),
+    ),
+  )
+
+  expectError(
+    db.insertInto('person_metadata').values((eb) =>
+      getValues(eb, {
+        experience: eb.valJson([{}]), // expects `valJson({ establishment: string }[])`
+      }),
+    ),
+  )
+
+  expectError(
+    db.insertInto('person_metadata').values((eb) =>
+      getValues(eb, {
+        experience: eb.valJson([{ establishment: 2 }]), // expects `valJson({ establishment: string }[])`
+      }),
+    ),
+  )
 }
