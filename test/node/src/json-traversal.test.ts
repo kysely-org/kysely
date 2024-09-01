@@ -803,15 +803,15 @@ async function insertDefaultJSONDataSet(ctx: TestContext) {
         .filter((person) => person.first_name && person.last_name)
         .map((person, index) => ({
           person_id: person.id,
-          website: eb.valSerialized({
+          website: eb.valJson({
             url: `https://www.${person.first_name!.toLowerCase()}${person.last_name!.toLowerCase()}.com`,
           }),
-          nicknames: eb.valSerialized([
+          nicknames: eb.valJson([
             `${person.first_name![0]}.${person.last_name![0]}.`,
             `${person.first_name} the Great`,
             `${person.last_name} the Magnificent`,
           ]),
-          profile: eb.valSerialized({
+          profile: eb.valJson({
             tags: ['awesome'],
             auth: {
               roles: ['contributor', 'moderator'],
@@ -823,12 +823,12 @@ async function insertDefaultJSONDataSet(ctx: TestContext) {
             },
             avatar: null,
           }),
-          experience: eb.valSerialized([
+          experience: eb.valJson([
             {
               establishment: 'The University of Life',
             },
           ]),
-          schedule: sql.valSerialized([[[{ name: 'Gym', time: '12:15' }]]]),
+          schedule: sql.valJson([[[{ name: 'Gym', time: '12:15' }]]]),
         })),
     )
     .execute()

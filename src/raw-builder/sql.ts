@@ -122,7 +122,7 @@ export interface Sql {
   val<V>(value: V): RawBuilder<V>
 
   /**
-   * `sql.valSerialized(value)` is a shortcut for:
+   * `sql.valJson(value)` is a shortcut for:
    *
    * ```ts
    * sql<Serialized<ValueType>>`${serializerFn(obj)}`
@@ -130,7 +130,7 @@ export interface Sql {
    *
    * Default serializer function is `JSON.stringify`.
    */
-  valSerialized<O extends object | null>(value: O): RawBuilder<Serialized<O>>
+  valJson<O extends object | null>(value: O): RawBuilder<Serialized<O>>
 
   /**
    * @deprecated Use {@link Sql.val} instead.
@@ -410,9 +410,7 @@ export const sql: Sql = Object.assign(
       })
     },
 
-    valSerialized<O extends object | null>(
-      value: O,
-    ): RawBuilder<Serialized<O>> {
+    valJson<O extends object | null>(value: O): RawBuilder<Serialized<O>> {
       return createRawBuilder({
         queryId: createQueryId(),
         rawNode: RawNode.createWithChild(

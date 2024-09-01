@@ -537,16 +537,16 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    *
    * const result = await db
    *   .insertInto('person')
-   *   .values(({ valSerialized }) => ({
+   *   .values(({ valJson }) => ({
    *     name: 'Jennifer Aniston',
-   *     experience: valSerialized([{ title: 'Software Engineer', company: 'Google' }]), // ✔️
-   *     preferences: valSerialized({ locale: 'en' }), // ❌ missing `timezone`
+   *     experience: valJson([{ title: 'Software Engineer', company: 'Google' }]), // ✔️
+   *     preferences: valJson({ locale: 'en' }), // ❌ missing `timezone`
    *     profile: JSON.stringify({ email_verified: true }), // ❌ doesn't match `Serialized<{ email_verified }>`
    *   }))
    *   .execute()
    * ```
    */
-  valSerialized<O extends object | null>(
+  valJson<O extends object | null>(
     obj: O,
   ): ExpressionWrapper<DB, TB, Serialized<O>>
 
@@ -1179,7 +1179,7 @@ export function createExpressionBuilder<DB, TB extends keyof DB>(
       return new ExpressionWrapper(parseValueExpression(value))
     },
 
-    valSerialized<O extends object | null>(
+    valJson<O extends object | null>(
       value: O,
     ): ExpressionWrapper<DB, TB, Serialized<O>> {
       return new ExpressionWrapper(
