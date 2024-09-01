@@ -86,7 +86,7 @@ declare const SerializedBrand: unique symbol
  * A type that is used to brand serialized objects/arrays.
  */
 export type Serialized<O extends object | null> = O & {
-  [SerializedBrand]: true
+  [SerializedBrand]: '⚠️ When you insert into or update columns of type `JSONColumnType` (or similar), you should wrap your JSON value with `eb.valJson` or `sql.valJson`, instead of `JSON.stringify`. ⚠️'
 }
 
 /**
