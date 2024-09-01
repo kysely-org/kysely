@@ -2327,6 +2327,10 @@ class SelectQueryBuilderImpl<DB, TB extends keyof DB, O>
     return new SelectQueryBuilderImpl(this.#props)
   }
 
+  $castUsing<T extends O, TReturn>(_: (_: T) => TReturn) {
+    return new SelectQueryBuilderImpl<DB, TB, TReturn>(this.#props);
+  }
+
   $narrowType<T>(): SelectQueryBuilder<DB, TB, NarrowPartial<O, T>> {
     return new SelectQueryBuilderImpl(this.#props)
   }
