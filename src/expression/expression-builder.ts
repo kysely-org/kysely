@@ -516,22 +516,22 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    * Returns a value expression that will be serialized before being passed to the database.
    *
    * This can be used to pass in an object/array value when inserting/updating a
-   * value to a column defined with `JSONColumnType`.
+   * value to a column defined with `Json`.
    *
    * Default serializer function is `JSON.stringify`.
    *
    * ### Example
    *
    * ```ts
-   * import { GeneratedAlways, JSONColumnType } from 'kysely'
+   * import { GeneratedAlways, Json } from 'kysely'
    *
    * interface Database {
    *   person: {
    *     id: GeneratedAlways<number>
    *     name: string
-   *     experience: JSONColumnType<{ title: string; company: string }[]>
-   *     preferences: JSONColumnType<{ locale: string; timezone: string }>
-   *     profile: JSONColumnType<{ email_verified: boolean }>
+   *     experience: Json<{ title: string; company: string }[]>
+   *     preferences: Json<{ locale: string; timezone: string }>
+   *     profile: Json<{ email_verified: boolean }>
    *   }
    * }
    *
