@@ -87,6 +87,28 @@ async function testJSONReference(db: Kysely<Database>) {
 
   expectType<{ whenever: string | null }>(r10)
 
+  // `.$castTo()` should support chaining with `.as(...)` #1139
+  const [r11] = await db
+    .selectFrom('person_metadata')
+    .select((eb) =>
+      eb
+        .ref('array', '->')
+        .at(0)
+        .$castTo<string & { _brand: 'whenever' } | null>()
+        .as('whenever'),
+    )
+    .execute()
+
+  expectType<{ whenever: (string & { _brand: 'whenever' }) | null }>(r11)
+
+  // `.$notNull()` should support chaining with `.as(...)` #1139
+  const [r12] = await db
+    .selectFrom('person_metadata')
+    .select((eb) => eb.ref('array', '->').at(0).$notNull().as('whenever'))
+    .execute()
+
+  expectType<{ whenever: string }>(r12)
+
   // missing operator
 
   expectError(
