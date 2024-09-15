@@ -351,6 +351,35 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
   }
 
   /**
+   * This can be used to add any additional SQL to the end of the query.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * await db.insertInto('person')
+   *   .values(values)
+   *   .modifyEnd(sql.raw('-- This is a comment'))
+   *   .execute()
+   * ```
+   *
+   * The generated SQL (MySQL):
+   *
+   * ```sql
+   * insert into `person`
+   * values (?, ?, ?) -- This is a comment
+   * ```
+   */
+  modifyEnd(modifier: Expression<any>): InsertQueryBuilder<DB, TB, O> {
+    return new InsertQueryBuilder({
+      ...this.#props,
+      queryNode: QueryNode.cloneWithEndModifier(
+        this.#props.queryNode,
+        modifier.toOperationNode(),
+      ),
+    })
+  }
+
+  /**
    * Changes an `insert into` query to an `insert ignore into` query.
    *
    * If you use the ignore modifier, ignorable errors that occur while executing the
@@ -675,7 +704,7 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
   }
 
   output<OE extends OutputExpression<DB, TB, 'inserted'>>(
-    selections: readonly OE[]
+    selections: readonly OE[],
   ): InsertQueryBuilder<
     DB,
     TB,
@@ -683,7 +712,7 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
   >
 
   output<CB extends OutputCallback<DB, TB, 'inserted'>>(
-    callback: CB
+    callback: CB,
   ): InsertQueryBuilder<
     DB,
     TB,
@@ -691,7 +720,7 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
   >
 
   output<OE extends OutputExpression<DB, TB, 'inserted'>>(
-    selection: OE
+    selection: OE,
   ): InsertQueryBuilder<
     DB,
     TB,
@@ -703,19 +732,19 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
       ...this.#props,
       queryNode: QueryNode.cloneWithOutput(
         this.#props.queryNode,
-        parseSelectArg(args)
+        parseSelectArg(args),
       ),
     })
   }
 
   outputAll(
-    table: 'inserted'
+    table: 'inserted',
   ): InsertQueryBuilder<DB, TB, ReturningAllRow<DB, TB, O>> {
     return new InsertQueryBuilder({
       ...this.#props,
       queryNode: QueryNode.cloneWithOutput(
         this.#props.queryNode,
-        parseSelectAll(table)
+        parseSelectAll(table),
       ),
     })
   }
@@ -813,8 +842,8 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
   ): O2 extends InsertResult
     ? InsertQueryBuilder<DB, TB, InsertResult>
     : O2 extends O & infer E
-    ? InsertQueryBuilder<DB, TB, O & Partial<E>>
-    : InsertQueryBuilder<DB, TB, Partial<O2>> {
+      ? InsertQueryBuilder<DB, TB, O & Partial<E>>
+      : InsertQueryBuilder<DB, TB, Partial<O2>> {
     if (condition) {
       return func(this) as any
     }

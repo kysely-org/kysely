@@ -148,11 +148,10 @@ export type IsAny<T> = 0 extends T & 1 ? true : false
 /**
  * Evaluates to `true` if the types `T` and `U` are equal.
  */
-export type Equals<T, U> = (<G>() => G extends T ? 1 : 2) extends <
-  G,
->() => G extends U ? 1 : 2
-  ? true
-  : false
+export type Equals<T, U> =
+  (<G>() => G extends T ? 1 : 2) extends <G>() => G extends U ? 1 : 2
+    ? true
+    : false
 
 export type NarrowPartial<O, T> = DrainOuterGeneric<
   T extends object

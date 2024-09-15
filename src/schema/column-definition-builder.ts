@@ -46,7 +46,7 @@ export class ColumnDefinitionBuilder implements OperationNodeSource {
    */
   identity(): ColumnDefinitionBuilder {
     return new ColumnDefinitionBuilder(
-      ColumnDefinitionNode.cloneWith(this.#node, { identity: true })
+      ColumnDefinitionNode.cloneWith(this.#node, { identity: true }),
     )
   }
 
@@ -296,7 +296,7 @@ export class ColumnDefinitionBuilder implements OperationNodeSource {
    * db.schema
    *   .createTable('person')
    *   .addColumn('full_name', 'varchar(255)', (col) => col
-   *     .generatedAlwaysAs("concat(first_name, ' ', last_name)")
+   *     .generatedAlwaysAs(sql`concat(first_name, ' ', last_name)`)
    *     .stored()
    *   )
    *   .execute()

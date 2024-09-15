@@ -1,24 +1,27 @@
-import * as React from 'react'
-import { gray } from '@radix-ui/colors'
-
 export function Playground({
   code,
   setupCode = exampleSetup,
   kyselyVersion,
   dialect = 'postgres',
+  disableIframeMode = false,
 }: PlaygroundProps) {
+  const state: PlaygroundState = {
+    dialect,
+    editors: { query: code, type: setupCode },
+    hideType: true,
+  }
+  if (kyselyVersion) {
+    state.kysely = { type: 'tag', name: kyselyVersion }
+  }
   const params = new URLSearchParams()
-  params.set('p', 'j')
-  params.set(
-    'i',
-    JSON.stringify({
-      q: code.trim(),
-      s: setupCode.trim(),
-      v: kyselyVersion,
-      d: dialect,
-      c: false,
-    })
-  )
+  params.set('theme', 'dark')
+  if (!disableIframeMode) {
+    params.set('open', '1')
+    params.set('nomore', '1')
+    params.set('notheme', '1')
+    params.set('nohotkey', '1')
+  }
+  const hash = '#r' + encodeURIComponent(JSON.stringify(state))
 
   return (
     <iframe
@@ -28,7 +31,7 @@ export function Playground({
         borderRadius: 7,
       }}
       allow="clipboard-write"
-      src={`https://kyse.link/?${params.toString()}`}
+      src={`https://kyse.link/?${params}${hash}`}
     />
   )
 }
@@ -38,32 +41,43 @@ interface PlaygroundProps {
   dialect?: 'postgres'
   code: string
   setupCode?: string
+  disableIframeMode: boolean
 }
 
-export const exampleSetup = `
-import { Generated } from 'kysely'
+interface PlaygroundState {
+  dialect: 'postgres' | 'mysql' | 'mssql' | 'sqlite'
+  editors: {
+    type: string
+    query: string
+  }
+  hideType?: boolean
+  kysely?: {
+    type: 'tag' | 'branch'
+    name: string
+  }
+}
 
-declare global {
-  interface DB {
+export const exampleSetup = `import { Generated } from 'kysely'
+
+export interface Database {
     person: PersonTable
     pet: PetTable
-  }
+}
 
-  interface PersonTable {
-    id: Generated<string>
-    first_name: string
-    last_name: string | null
-    created_at: Generated<Date>
-    age: number
-  }
+interface PersonTable {
+  id: Generated<string>
+  first_name: string
+  last_name: string | null
+  created_at: Generated<Date>
+  age: number
+}
 
-  interface PetTable {
-    id: Generated<string>
-    name: string
-    owner_id: string
-    species: 'cat' | 'dog'
-    is_favorite: boolean
-  }
+interface PetTable {
+  id: Generated<string>
+  name: string
+  owner_id: string
+  species: 'cat' | 'dog'
+  is_favorite: boolean
 }
 `
 

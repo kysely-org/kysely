@@ -246,12 +246,12 @@ export class TraversedJSONPathBuilder<S, O>
    * This method call doesn't change the SQL in any way. This methods simply
    * returns a copy of this `JSONPathBuilder` with a new output type.
    */
-  $castTo<C>(): JSONPathBuilder<C> {
-    return new JSONPathBuilder(this.#node)
+  $castTo<O2>(): TraversedJSONPathBuilder<S, O2> {
+    return new TraversedJSONPathBuilder(this.#node)
   }
 
-  $notNull(): JSONPathBuilder<Exclude<O, null>> {
-    return new JSONPathBuilder(this.#node)
+  $notNull(): TraversedJSONPathBuilder<S, Exclude<O, null>> {
+    return new TraversedJSONPathBuilder(this.#node)
   }
 
   toOperationNode(): OperationNode {

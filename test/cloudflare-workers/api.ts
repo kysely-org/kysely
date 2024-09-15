@@ -37,7 +37,7 @@ app.get('/', async (c) => {
     rows: [row],
   } = await sql`select 1 as ok`.execute(db)
 
-  return c.json(row)
+  return c.json(row as object)
 })
 
 export default app

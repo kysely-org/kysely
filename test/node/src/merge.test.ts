@@ -60,6 +60,28 @@ for (const dialect of DIALECTS.filter(
         expect(result.numChangedRows).to.equal(3n)
       })
 
+      it('should add a modifyEnd clause to the query', async () => {
+        const query = ctx.db
+          .mergeInto('person')
+          .using('pet', 'pet.owner_id', 'person.id')
+          .modifyEnd(sql.raw('-- this is a comment'))
+          .whenMatched()
+          .thenDelete()
+
+        testSql(query, dialect, {
+          postgres: {
+            sql: 'merge into "person" using "pet" on "pet"."owner_id" = "person"."id" when matched then delete -- this is a comment',
+            parameters: [],
+          },
+          mysql: NOT_SUPPORTED,
+          mssql: {
+            sql: 'merge into "person" using "pet" on "pet"."owner_id" = "person"."id" when matched then delete -- this is a comment;',
+            parameters: [],
+          },
+          sqlite: NOT_SUPPORTED,
+        })
+      })
+
       it('should perform a merge...using table alias simple on alias...when matched then delete query', async () => {
         const query = ctx.db
           .mergeInto('person as pr')

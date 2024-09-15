@@ -38,7 +38,7 @@ import { DrainOuterGeneric } from './util/type-utils.js'
  * The main Kysely class.
  *
  * You should create one instance of `Kysely` per database using the {@link Kysely}
- * constructor. Each `Kysely` instance maintains it's own connection pool.
+ * constructor. Each `Kysely` instance maintains its own connection pool.
  *
  * ### Examples
  *
@@ -372,7 +372,7 @@ export class Kysely<DB>
   /**
    * Executes a given compiled query or query builder.
    *
-   * See {@link https://github.com/koskimas/kysely/blob/master/site/docs/recipes/splitting-build-compile-and-execute-code.md#execute-compiled-queries splitting build, compile and execute code recipe} for more information.
+   * See {@link https://github.com/kysely-org/kysely/blob/master/site/docs/recipes/0004-splitting-query-building-and-execution.md#execute-compiled-queries splitting build, compile and execute code recipe} for more information.
    */
   executeQuery<R>(
     query: CompiledQuery<R> | Compilable<R>,

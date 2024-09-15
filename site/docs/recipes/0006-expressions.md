@@ -6,7 +6,7 @@ An [`Expression<T>`](https://kysely-org.github.io/kysely-apidoc/interfaces/Expre
 
 ## Expression builder
 
-Expressions are usually built using an instance of [ExpressionBuilder<DB, TB>](https://kysely-org.github.io/kysely-apidoc/interfaces/ExpressionBuilder.html). `DB` is the same database type you give to `Kysely` when you create an instance. `TB` is the union of all table names that are visible in the context. For example `ExpressionBuilder<DB, 'person' | 'pet'>` means you can access `person` and `pet` tables and all their columns in the expression.
+Expressions are usually built using an instance of [`ExpressionBuilder<DB, TB>`](https://kysely-org.github.io/kysely-apidoc/interfaces/ExpressionBuilder.html). `DB` is the same database type you give to `Kysely` when you create an instance. `TB` is the union of all table names that are visible in the context. For example `ExpressionBuilder<DB, 'person' | 'pet'>` means you can access `person` and `pet` tables and all their columns in the expression.
 
 You can get an instance of the expression builder by using a callback:
 
@@ -26,8 +26,8 @@ const person = await db
       .whereRef('pet.owner_id', '=', 'person.id')
       .limit(1)
       .as('pet_name'),
-      
-    // Select a boolean expression..
+
+    // Select a boolean expression
     eb('first_name', '=', 'Jennifer').as('is_jennifer')
   ])
   // You can also destructure the expression builder like this
@@ -64,7 +64,7 @@ select
   ) as "pet_name",
 
   "first_name" = $1 as "is_jennifer"
-from 
+from
   "person"
 where (
   (
@@ -114,7 +114,7 @@ qb = qb.where(eb.not(eb.exists(
 
 ## Creating reusable helpers
 
-The expression builder can be used to create reusable helper functions. 
+The expression builder can be used to create reusable helper functions.
 Let's say we have a complex `where` expression we want to reuse in multiple queries:
 
 ```ts
@@ -151,27 +151,40 @@ const bigFatFailure = await db
   .execute()
 ```
 
-We can write a more type-safe version of the helper like this:
+It's better to not make assumptions about the calling context and pass in all dependencies
+as arguments. In the following example we pass in the person's id as an expression. We also
+changed the type of `name` from `string` to `Expression<string>`, which allows us to pass
+in arbitrary expressions instead of just values.
 
 ```ts
-function hasDogNamed(name: string) {
-  return (eb: ExpressionBuilder<DB, 'person'>) => {
-    return eb.exists(
-      eb.selectFrom('pet')
-        .select('pet.id')
-        .whereRef('pet.owner_id', '=', 'person.id')
-        .where('pet.species', '=', 'dog')
-        .where('pet.name', '=', name)
-    )
-  }
+function hasDogNamed(name: Expression<string>, ownerId: Expression<number>) {
+  // Create an expression builder without any tables in the context.
+  // This way we make no assumptions about the calling context.
+  const eb = expressionBuilder<DB, never>()
+
+  return eb.exists(
+    eb.selectFrom('pet')
+      .select('pet.id')
+      .where('pet.owner_id', '=', ownerId)
+      .where('pet.species', '=', 'dog')
+      .where('pet.name', '=', name)
+  )
 }
 ```
 
-With this helper, you get a type error when trying to use it in contexts that don't include the "person" table.
+Here's how you'd use our brand new helper:
+
+```ts
+const doggoPersons = await db
+  .selectFrom('person')
+  .selectAll('person')
+  .where((eb) => hasDogNamed(eb.val('Doggo'), eb.ref('person.id')))
+  .execute()
+```
 
 ## Conditional expressions
 
-In the following, we'll only cover `where` expressions. The same logic applies to `having`, `on`, `orderBy`, `groupBy` etc. 
+In the following, we'll only cover `where` expressions. The same logic applies to `having`, `on`, `orderBy`, `groupBy` etc.
 
 > This section should not be confused with conditional selections in `select` clauses, which is a whole 'nother topic we discuss in [this recipe](https://www.kysely.dev/docs/recipes/conditional-selects).
 
@@ -203,7 +216,7 @@ const persons = await db
   .selectFrom('person')
   .selectAll('person')
   .where((eb) => {
-    const filters: Expression<boolean>[] = []
+    const filters: Expression<SqlBool>[] = []
 
     if (firstName) {
       filters.push(eb('first_name', '=', firstName))
@@ -212,9 +225,10 @@ const persons = await db
     if (lastName) {
       filters.push(eb('last_name', '=', lastName))
     }
-    
+
     return eb.and(filters)
   })
+  .execute()
 ```
 
 Using the latter design, you can build conditional expressions of any complexity.
