@@ -222,7 +222,7 @@ export interface Sql {
    * but can also be used for any other identifiers like index names.
    *
    * You should use {@link Sql.ref | ref} and {@link Sql.table | table}
-   * instead of this whenever possible as they produce a more sematic
+   * instead of this whenever possible as they produce a more semantic
    * operation node tree.
    *
    * WARNING! Using this with unchecked inputs WILL lead to SQL injection
