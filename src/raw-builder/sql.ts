@@ -247,7 +247,7 @@ export interface Sql {
    * const columnName = 'first_name'
    * const table = 'person'
    *
-   * sql`select ${sql.id(schema, table, columnName)}} from ${sql.id(schema, table)}`
+   * sql`select ${sql.id(schema, table, columnName)} from ${sql.id(schema, table)}`
    * ```
    *
    * The generated SQL (PostgreSQL):
