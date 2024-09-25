@@ -2,7 +2,9 @@ import {
   AggregateFunctionBuilder,
   ExpressionBuilder,
   SimpleReferenceExpression,
+  ReferenceExpression,
   sql,
+  expressionBuilder,
 } from '../../../'
 import {
   Database,
@@ -12,6 +14,7 @@ import {
   TestContext,
   testSql,
   DIALECTS,
+  BuiltInDialect,
 } from './test-setup.js'
 
 const funcNames = ['avg', 'count', 'max', 'min', 'sum'] as const
@@ -1105,6 +1108,102 @@ for (const dialect of DIALECTS) {
       })
 
       await query.execute()
+    })
+
+    describe('should execute order-sensitive aggregate functions', () => {
+      if (
+        dialect === 'postgres' ||
+        dialect === 'mysql' ||
+        dialect === 'sqlite'
+      ) {
+        const isMySql = dialect === 'mysql'
+        const funcName = isMySql ? 'group_concat' : 'string_agg'
+        const funcArgs: Array<ReferenceExpression<Database, 'person'>> = [
+          'first_name',
+        ]
+        if (!isMySql) {
+          funcArgs.push(sql.lit(','))
+        }
+
+        it(`should execute a query with ${funcName}(column order by column) in select clause`, async () => {
+          const query = ctx.db
+            .selectFrom('person')
+            .select((eb) =>
+              eb.fn
+                .agg(funcName, funcArgs)
+                .orderBy('first_name', 'desc')
+                .as('first_names'),
+            )
+
+          testSql(query, dialect, {
+            postgres: {
+              sql: [
+                `select ${funcName}("first_name", ',' order by "first_name" desc) as "first_names"`,
+                `from "person"`,
+              ],
+              parameters: [],
+            },
+            mysql: {
+              sql: [
+                `select ${funcName}(\`first_name\` order by \`first_name\` desc) as \`first_names\``,
+                `from \`person\``,
+              ],
+              parameters: [],
+            },
+            mssql: NOT_SUPPORTED,
+            sqlite: {
+              sql: [
+                `select ${funcName}("first_name", ',' order by "first_name" desc) as "first_names"`,
+                `from "person"`,
+              ],
+              parameters: [],
+            },
+          })
+
+          await query.execute()
+        })
+      }
+
+      if (dialect === 'postgres' || dialect === 'mssql') {
+        const percentileAgg = 'percentile_cont'
+        const fraction = 0.5
+        const medianFunc = `${percentileAgg}(${fraction})`
+
+        let medianAggExpression = expressionBuilder<Database, 'toy'>()
+          .fn.agg(percentileAgg, [sql.lit(fraction)])
+          .withinGroupOrderBy('toy.price')
+
+        if (dialect === 'mssql') {
+          medianAggExpression = medianAggExpression.over()
+        }
+
+        it(`should execute a query with ${medianFunc} within group (order by column) in select clause`, async () => {
+          const query = ctx.db
+            .selectFrom('toy')
+            .select(() => medianAggExpression.as('median_price'))
+
+          testSql(query, dialect, {
+            postgres: {
+              sql: [
+                `select ${medianFunc} within group (order by "toy"."price") as "median_price"`,
+                `from "toy"`,
+              ],
+              parameters: [],
+            },
+            mssql: {
+              sql: [
+                `select ${medianFunc} within group (order by "toy"."price") over() as "median_price"`,
+                `from "toy"`,
+              ],
+              parameters: [],
+            },
+            mysql: NOT_SUPPORTED,
+            sqlite: NOT_SUPPORTED,
+          })
+
+          await query.execute()
+        })
+      }
     })
   })
 }

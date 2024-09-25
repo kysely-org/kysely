@@ -10,7 +10,10 @@ import {
   AliasedExpression,
   Expression,
 } from '../expression/expression.js'
-import { ReferenceExpression } from '../parser/reference-parser.js'
+import {
+  ReferenceExpression,
+  SimpleReferenceExpression,
+} from '../parser/reference-parser.js'
 import {
   ComparisonOperatorExpression,
   OperandValueExpressionOrList,
@@ -19,6 +22,10 @@ import {
 } from '../parser/binary-operation-parser.js'
 import { SqlBool } from '../util/type-utils.js'
 import { ExpressionOrFactory } from '../parser/expression-parser.js'
+import {
+  OrderByDirectionExpression,
+  parseOrderBy,
+} from '../parser/order-by-parser.js'
 
 export class AggregateFunctionBuilder<DB, TB extends keyof DB, O = unknown>
   implements AliasableExpression<O>
@@ -91,6 +98,81 @@ export class AggregateFunctionBuilder<DB, TB extends keyof DB, O = unknown>
       ...this.#props,
       aggregateFunctionNode: AggregateFunctionNode.cloneWithDistinct(
         this.#props.aggregateFunctionNode,
+      ),
+    })
+  }
+
+  /**
+   * Adds an `order by` clause inside the aggregate function.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * const result = await db
+   *   .selectFrom('person')
+   *   .innerJoin('pet', 'pet.owner_id', 'person.id')
+   *   .select((eb) =>
+   *     eb.fn.jsonAgg('pet.name').orderBy('pet.name').as('person_pets')
+   *   )
+   *   .executeTakeFirstOrThrow()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * select json_agg("pet"."name" order by "pet"."name") as "person_pets"
+   * from "person"
+   * inner join "pet" ON "pet"."owner_id" = "person"."id"
+   * ```
+   */
+  orderBy<OE extends SimpleReferenceExpression<DB, TB>>(
+    orderBy: OE,
+    direction?: OrderByDirectionExpression,
+  ): AggregateFunctionBuilder<DB, TB, O> {
+    return new AggregateFunctionBuilder({
+      ...this.#props,
+      aggregateFunctionNode: AggregateFunctionNode.cloneWithOrderBy(
+        this.#props.aggregateFunctionNode,
+        parseOrderBy([orderBy, direction]),
+      ),
+    })
+  }
+
+  /**
+   * Adds a `withing group` clause with a nested `order by` clause after the function.
+   *
+   * ### Examples
+   *
+   * Most frequent person name:
+   *
+   * ```ts
+   * const result = await db
+   *   .selectFrom('person')
+   *   .select((eb) => [
+   *     eb.fn
+   *       .agg<string>('mode')
+   *       .withinGroupOrderBy('person.name')
+   *       .as('most_frequent_name')
+   *   ])
+   *   .executeTakeFirstOrThrow()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * select mode() within group (order by "person"."name") as "most_frequent_name"
+   * from "person"
+   * ```
+   */
+  withinGroupOrderBy<OE extends SimpleReferenceExpression<DB, TB>>(
+    orderBy: OE,
+    direction?: OrderByDirectionExpression,
+  ): AggregateFunctionBuilder<DB, TB, O> {
+    return new AggregateFunctionBuilder({
+      ...this.#props,
+      aggregateFunctionNode: AggregateFunctionNode.cloneWithWithinGroup(
+        this.#props.aggregateFunctionNode,
+        parseOrderBy([orderBy, direction]),
       ),
     })
   }
