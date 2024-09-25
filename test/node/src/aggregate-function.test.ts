@@ -2,6 +2,7 @@ import {
   AggregateFunctionBuilder,
   ExpressionBuilder,
   SimpleReferenceExpression,
+  ReferenceExpression,
   sql,
 } from '../../../'
 import {
@@ -1105,6 +1106,57 @@ for (const dialect of DIALECTS) {
       })
 
       await query.execute()
+    })
+
+    describe(`should execute order-sensitive aggregate functions`, () => {
+      if (dialect === 'postgres' || dialect === 'mysql' || dialect === 'sqlite') {
+        const isMySql = dialect === 'mysql'
+        const funcName = isMySql ? 'group_concat' : 'string_agg'
+        const funcArgs: Array<ReferenceExpression<Database, 'person'>> = [
+          'first_name',
+        ]
+        if (!isMySql) {
+          funcArgs.push(sql.lit(','))
+        }
+
+        it(`should execute a query with ${funcName}(column order by column) in select clause`, async () => {
+          const query = ctx.db
+            .selectFrom('person')
+            .select((eb) =>
+              eb.fn
+                .agg(funcName, funcArgs)
+                .orderBy('first_name', 'desc')
+                .as('first_names'),
+            )
+
+          testSql(query, dialect, {
+            postgres: {
+              sql: [
+                `select ${funcName}("first_name", ',' order by "first_name" desc) as "first_names"`,
+                `from "person"`,
+              ],
+              parameters: [],
+            },
+            mysql: {
+              sql: [
+                `select ${funcName}(\`first_name\` order by \`first_name\` desc) as \`first_names\``,
+                `from \`person\``,
+              ],
+              parameters: [],
+            },
+            mssql: NOT_SUPPORTED,
+            sqlite: {
+              sql: [
+                `select ${funcName}("first_name", ',' order by "first_name" desc) as "first_names"`,
+                `from "person"`,
+              ],
+              parameters: [],
+            },
+          })
+
+          await query.execute()
+        })
+      }
     })
   })
 }
