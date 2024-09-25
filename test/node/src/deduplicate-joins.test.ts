@@ -128,5 +128,33 @@ for (const dialect of DIALECTS) {
         },
       })
     })
+
+    it('should preserve order of joins', async () => {
+      const query = ctx.db
+        .withPlugin(new DeduplicateJoinsPlugin())
+        .selectFrom('person')
+        .innerJoin('pet', 'pet.owner_id', 'person.id')
+        .innerJoin('toy', 'toy.pet_id', 'pet.id')
+        .innerJoin('pet', 'pet.owner_id', 'person.id')
+
+      testSql(query, dialect, {
+        postgres: {
+          sql: 'select from "person" inner join "pet" on "pet"."owner_id" = "person"."id" inner join "toy" on "toy"."pet_id" = "pet"."id"',
+          parameters: [],
+        },
+        mysql: {
+          sql: 'select from `person` inner join `pet` on `pet`.`owner_id` = `person`.`id` inner join `toy` on `toy`.`pet_id` = `pet`.`id`',
+          parameters: [],
+        },
+        mssql: {
+          sql: 'select from "person" inner join "pet" on "pet"."owner_id" = "person"."id" inner join "toy" on "toy"."pet_id" = "pet"."id"',
+          parameters: [],
+        },
+        sqlite: {
+          sql: 'select from "person" inner join "pet" on "pet"."owner_id" = "person"."id" inner join "toy" on "toy"."pet_id" = "pet"."id"',
+          parameters: [],
+        },
+      })
+    })
   })
 }
