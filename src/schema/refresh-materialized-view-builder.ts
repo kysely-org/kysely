@@ -1,13 +1,14 @@
 import { OperationNodeSource } from '../operation-node/operation-node-source.js'
 import { CompiledQuery } from '../query-compiler/compiled-query.js'
 import { Compilable } from '../util/compilable.js'
-import { preventAwait } from '../util/prevent-await.js'
 import { QueryExecutor } from '../query-executor/query-executor.js'
 import { QueryId } from '../util/query-id.js'
 import { freeze } from '../util/object-utils.js'
 import { RefreshMaterializedViewNode } from '../operation-node/refresh-materialized-view-node.js'
 
-export class RefreshMaterializedViewBuilder implements OperationNodeSource, Compilable {
+export class RefreshMaterializedViewBuilder
+  implements OperationNodeSource, Compilable
+{
   readonly #props: RefreshMaterializedViewBuilderProps
 
   constructor(props: RefreshMaterializedViewBuilderProps) {
@@ -16,9 +17,9 @@ export class RefreshMaterializedViewBuilder implements OperationNodeSource, Comp
 
   /**
    * Adds the "concurrently" modifier.
-   * 
+   *
    * Use this to refresh the view without locking out concurrent selects on the materialized view.
-   * 
+   *
    * WARNING!
    * This cannot be used with the "with no data" modifier.
    */
@@ -34,7 +35,7 @@ export class RefreshMaterializedViewBuilder implements OperationNodeSource, Comp
 
   /**
    * Adds the "with data" modifier.
-   * 
+   *
    * If specified (or defaults) the backing query is executed to provide the new data, and the materialized view is left in a scannable state
    */
   withData(): RefreshMaterializedViewBuilder {
@@ -48,9 +49,9 @@ export class RefreshMaterializedViewBuilder implements OperationNodeSource, Comp
 
   /**
    * Adds the "with no data" modifier.
-   * 
+   *
    * If specified, no new data is generated and the materialized view is left in an unscannable state.
-   * 
+   *
    * WARNING!
    * This cannot be used with the "concurrently" modifier.
    */
@@ -90,11 +91,6 @@ export class RefreshMaterializedViewBuilder implements OperationNodeSource, Comp
     await this.#props.executor.executeQuery(this.compile(), this.#props.queryId)
   }
 }
-
-preventAwait(
-  RefreshMaterializedViewBuilder,
-  "don't await RefreshMaterializedViewBuilder instances directly. To execute the query you need to call `execute`",
-)
 
 export interface RefreshMaterializedViewBuilderProps {
   readonly queryId: QueryId

@@ -2,7 +2,6 @@ import { QueryResult } from '../driver/database-connection.js'
 import { AliasNode } from '../operation-node/alias-node.js'
 import { RawNode } from '../operation-node/raw-node.js'
 import { CompiledQuery } from '../query-compiler/compiled-query.js'
-import { preventAwait } from '../util/prevent-await.js'
 import { QueryExecutor } from '../query-executor/query-executor.js'
 import { freeze } from '../util/object-utils.js'
 import { KyselyPlugin } from '../plugin/kysely-plugin.js'
@@ -221,11 +220,6 @@ export function createRawBuilder<O>(props: RawBuilderProps): RawBuilder<O> {
   return new RawBuilderImpl(props)
 }
 
-preventAwait(
-  RawBuilderImpl,
-  "don't await RawBuilder instances directly. To execute the query you need to call `execute`",
-)
-
 /**
  * {@link RawBuilder} with an alias. The result of calling {@link RawBuilder.as}.
  */
@@ -266,8 +260,3 @@ class AliasedRawBuilderImpl<O = unknown, A extends string = never>
     )
   }
 }
-
-preventAwait(
-  AliasedRawBuilderImpl,
-  "don't await AliasedRawBuilder instances directly. AliasedRawBuilder should never be executed directly since it's always a part of another query.",
-)
