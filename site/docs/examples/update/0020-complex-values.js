@@ -6,6 +6,4 @@ export const complexValues = `const result = await db
     last_name: 'updated',
   }))
   .where('id', '=', '1')
-  .executeTakeFirst()
-
-console.log(result.numUpdatedRows)`
+  .executeTakeFirst()`

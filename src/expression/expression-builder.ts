@@ -5,13 +5,7 @@ import {
 import { SelectQueryNode } from '../operation-node/select-query-node.js'
 import {
   parseTableExpressionOrList,
-  TableExpression,
-  From,
   TableExpressionOrList,
-  FromTables,
-  ExtractTableAlias,
-  AnyAliasedTable,
-  PickTableWithAlias,
   parseTable,
 } from '../parser/table-parser.js'
 import { WithSchemaPlugin } from '../plugin/with-schema/with-schema-plugin.js'
@@ -83,6 +77,7 @@ import {
   parseDataTypeExpression,
 } from '../parser/data-type-parser.js'
 import { CastNode } from '../operation-node/cast-node.js'
+import { SelectFrom } from '../parser/select-from-parser.js'
 
 export interface ExpressionBuilder<DB, TB extends keyof DB> {
   /**
@@ -151,7 +146,7 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    * eb.selectFrom('person')
    *   .selectAll()
    *   .where((eb) => eb(
-   *     eb.fn('lower', ['first_name']),
+   *     eb.fn<string>('lower', ['first_name']),
    *     'in',
    *     eb.selectFrom('pet')
    *       .select('pet.name')
@@ -182,12 +177,12 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    *
    * ```ts
    * db.selectFrom('person')
-   *   .where(({ eb, exists, selectFrom }) =>
-   *     eb('first_name', '=', 'Jennifer').and(
-   *       exists(selectFrom('pet').whereRef('owner_id', '=', 'person.id').select('pet.id'))
-   *     )
-   *   )
    *   .selectAll()
+   *   .where(({ eb, exists, selectFrom }) =>
+   *     eb('first_name', '=', 'Jennifer').and(exists(
+   *       selectFrom('pet').whereRef('owner_id', '=', 'person.id').select('pet.id')
+   *     ))
+   *   )
    * ```
    *
    * The generated SQL (PostgreSQL):
@@ -277,29 +272,9 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    * that case Kysely typings wouldn't allow you to reference `pet.owner_id`
    * because `pet` is not joined to that query.
    */
-  selectFrom<TE extends keyof DB & string>(
-    from: TE[],
-  ): SelectQueryBuilder<DB, TB | ExtractTableAlias<DB, TE>, {}>
-
-  selectFrom<TE extends TableExpression<DB, TB>>(
-    from: TE[],
-  ): SelectQueryBuilder<From<DB, TE>, FromTables<DB, TB, TE>, {}>
-
-  selectFrom<TE extends keyof DB & string>(
+  selectFrom<TE extends TableExpressionOrList<DB, TB>>(
     from: TE,
-  ): SelectQueryBuilder<DB, TB | ExtractTableAlias<DB, TE>, {}>
-
-  selectFrom<TE extends AnyAliasedTable<DB>>(
-    from: TE,
-  ): SelectQueryBuilder<
-    DB & PickTableWithAlias<DB, TE>,
-    TB | ExtractTableAlias<DB & PickTableWithAlias<DB, TE>, TE>,
-    {}
-  >
-
-  selectFrom<TE extends TableExpression<DB, TB>>(
-    from: TE,
-  ): SelectQueryBuilder<From<DB, TE>, FromTables<DB, TB, TE>, {}>
+  ): SelectFrom<DB, TB, TE>
 
   /**
    * Creates a `case` statement/operator.
@@ -1311,10 +1286,10 @@ export function expressionBuilder<DB, TB extends keyof DB>(
   _: SelectQueryBuilder<DB, TB, any>,
 ): ExpressionBuilder<DB, TB>
 
-export function expressionBuilder<DB, TB extends keyof DB>(): ExpressionBuilder<
+export function expressionBuilder<
   DB,
-  TB
->
+  TB extends keyof DB = never,
+>(): ExpressionBuilder<DB, TB>
 
 export function expressionBuilder<DB, TB extends keyof DB>(
   _?: unknown,

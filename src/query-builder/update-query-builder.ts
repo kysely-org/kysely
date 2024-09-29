@@ -521,8 +521,6 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
    *   })
    *   .where('id', '=', '1')
    *   .executeTakeFirst()
-   *
-   * console.log(result.numUpdatedRows)
    * ```
    *
    * The generated SQL (PostgreSQL):
@@ -546,8 +544,6 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
    *   }))
    *   .where('id', '=', '1')
    *   .executeTakeFirst()
-   *
-   * console.log(result.numUpdatedRows)
    * ```
    *
    * The generated SQL (PostgreSQL):
@@ -629,6 +625,43 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
    * "age" = "age" + $2,
    * "last_name" = $3 || $4
    * where "id" = $5
+   * ```
+   *
+   * <!-- siteExample("update", "MySQL joins", 30) -->
+   *
+   * MySQL allows you to join tables directly to the "main" table and update
+   * rows of all joined tables. This is possible by passing all tables to the
+   * `updateTable` method as a list and adding the `ON` conditions as `WHERE`
+   * statements. You can then use the `set(column, value)` variant to update
+   * columns using table qualified names.
+   *
+   * The `UpdateQueryBuilder` also has `innerJoin` etc. join methods, but those
+   * can only be used as part of a PostgreSQL `update set from join` query.
+   * Due to type complexity issues, we unfortunately can't make the same
+   * methods work in both cases.
+   *
+   * ```ts
+   * const result = await db
+   *   .updateTable(['person', 'pet'])
+   *   .set('person.first_name', 'Updated person')
+   *   .set('pet.name', 'Updated doggo')
+   *   .whereRef('person.id', '=', 'pet.owner_id')
+   *   .where('person.id', '=', '1')
+   *   .executeTakeFirst()
+   * ```
+   *
+   * The generated SQL (MySQL):
+   *
+   * ```sql
+   * update
+   *   `person`,
+   *   `pet`
+   * set
+   *   `person`.`first_name` = ?,
+   *   `pet`.`name` = ?
+   * where
+   *   `person`.`id` = `pet`.`owner_id`
+   *   and `person`.`id` = ?
    * ```
    */
   set(
