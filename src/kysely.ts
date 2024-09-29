@@ -16,7 +16,6 @@ import {
   TransactionSettings,
   TRANSACTION_ISOLATION_LEVELS,
 } from './driver/driver.js'
-import { preventAwait } from './util/prevent-await.js'
 import {
   createFunctionModule,
   FunctionModule,
@@ -566,11 +565,6 @@ export class ConnectionBuilder<DB> {
 
 interface ConnectionBuilderProps extends KyselyProps {}
 
-preventAwait(
-  ConnectionBuilder,
-  "don't await ConnectionBuilder instances directly. To execute the query you need to call the `execute` method",
-)
-
 export class TransactionBuilder<DB> {
   readonly #props: TransactionBuilderProps
 
@@ -618,11 +612,6 @@ export class TransactionBuilder<DB> {
 interface TransactionBuilderProps extends KyselyProps {
   readonly isolationLevel?: IsolationLevel
 }
-
-preventAwait(
-  TransactionBuilder,
-  "don't await TransactionBuilder instances directly. To execute the transaction you need to call the `execute` method",
-)
 
 function validateTransactionSettings(settings: TransactionSettings): void {
   if (
