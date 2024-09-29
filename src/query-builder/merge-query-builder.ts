@@ -37,7 +37,6 @@ import { NOOP_QUERY_EXECUTOR } from '../query-executor/noop-query-executor.js'
 import { QueryExecutor } from '../query-executor/query-executor.js'
 import { Compilable } from '../util/compilable.js'
 import { freeze } from '../util/object-utils.js'
-import { preventAwait } from '../util/prevent-await.js'
 import { QueryId } from '../util/query-id.js'
 import {
   ShallowRecord,
@@ -260,11 +259,6 @@ export class MergeQueryBuilder<DB, TT extends keyof DB, O>
     })
   }
 }
-
-preventAwait(
-  MergeQueryBuilder,
-  "don't await MergeQueryBuilder instances directly. To execute the query you need to call `execute` when available.",
-)
 
 export interface MergeQueryBuilderProps {
   readonly queryId: QueryId
@@ -832,11 +826,6 @@ export class WheneableMergeQueryBuilder<
   }
 }
 
-preventAwait(
-  WheneableMergeQueryBuilder,
-  "don't await WheneableMergeQueryBuilder instances directly. To execute the query you need to call `execute`.",
-)
-
 export class MatchedThenableMergeQueryBuilder<
   DB,
   TT extends keyof DB,
@@ -1033,11 +1022,6 @@ export class MatchedThenableMergeQueryBuilder<
   }
 }
 
-preventAwait(
-  MatchedThenableMergeQueryBuilder,
-  "don't await MatchedThenableMergeQueryBuilder instances directly. To execute the query you need to call `execute` when available.",
-)
-
 export class NotMatchedThenableMergeQueryBuilder<
   DB,
   TT extends keyof DB,
@@ -1143,11 +1127,6 @@ export class NotMatchedThenableMergeQueryBuilder<
     })
   }
 }
-
-preventAwait(
-  NotMatchedThenableMergeQueryBuilder,
-  "don't await NotMatchedThenableMergeQueryBuilder instances directly. To execute the query you need to call `execute` when available.",
-)
 
 export type ExtractWheneableMergeQueryBuilder<
   DB,
