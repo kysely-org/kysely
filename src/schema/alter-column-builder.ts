@@ -8,7 +8,6 @@ import {
   DefaultValueExpression,
   parseDefaultValueExpression,
 } from '../parser/default-value-parser.js'
-import { preventAwait } from '../util/prevent-await.js'
 
 export class AlterColumnBuilder {
   readonly #column: string
@@ -64,8 +63,6 @@ export class AlterColumnBuilder {
   }
 }
 
-preventAwait(AlterColumnBuilder, "don't await AlterColumnBuilder instances")
-
 /**
  * Allows us to force consumers to do exactly one alteration to a column.
  *
@@ -110,5 +107,3 @@ export class AlteredColumnBuilder implements OperationNodeSource {
 export type AlterColumnBuilderCallback = (
   builder: AlterColumnBuilder,
 ) => AlteredColumnBuilder
-
-preventAwait(AlteredColumnBuilder, "don't await AlteredColumnBuilder instances")
