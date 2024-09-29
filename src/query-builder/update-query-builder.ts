@@ -41,7 +41,6 @@ import {
   ExtractUpdateTypeFromReferenceExpression,
   parseUpdate,
 } from '../parser/update-set-parser.js'
-import { preventAwait } from '../util/prevent-await.js'
 import { Compilable } from '../util/compilable.js'
 import { QueryExecutor } from '../query-executor/query-executor.js'
 import { QueryId } from '../util/query-id.js'
@@ -1150,11 +1149,6 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
     return await builder.execute()
   }
 }
-
-preventAwait(
-  UpdateQueryBuilder,
-  "don't await UpdateQueryBuilder instances directly. To execute the query you need to call `execute` or `executeTakeFirst`.",
-)
 
 export interface UpdateQueryBuilderProps {
   readonly queryId: QueryId

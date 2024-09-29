@@ -22,7 +22,6 @@ import {
   UpdateObjectExpression,
   parseUpdateObjectExpression,
 } from '../parser/update-set-parser.js'
-import { preventAwait } from '../util/prevent-await.js'
 import { Compilable } from '../util/compilable.js'
 import { QueryExecutor } from '../query-executor/query-executor.js'
 import { QueryId } from '../util/query-id.js'
@@ -1075,11 +1074,6 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
     return await builder.execute()
   }
 }
-
-preventAwait(
-  InsertQueryBuilder,
-  "don't await InsertQueryBuilder instances directly. To execute the query you need to call `execute` or `executeTakeFirst`.",
-)
 
 export interface InsertQueryBuilderProps {
   readonly queryId: QueryId

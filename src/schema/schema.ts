@@ -238,9 +238,9 @@ export class SchemaModule {
 
   /**
    * Refresh a materialized view.
-   * 
+   *
    * ### Examples
-   * 
+   *
    * ```ts
    * await db.schema
    *   .refreshMaterializedView('my_view')

@@ -1968,9 +1968,9 @@ for (const dialect of DIALECTS) {
 
       if (dialect === 'postgres') {
         it('should refresh a materialized view', async () => {
-          const builder = ctx.db.schema
-            .refreshMaterializedView('materialized_dogs')
-  
+          const builder =
+            ctx.db.schema.refreshMaterializedView('materialized_dogs')
+
           testSql(builder, dialect, {
             postgres: {
               sql: `refresh materialized view "materialized_dogs" with data`,

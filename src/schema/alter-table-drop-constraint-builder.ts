@@ -5,7 +5,6 @@ import { CompiledQuery } from '../query-compiler/compiled-query.js'
 import { QueryExecutor } from '../query-executor/query-executor.js'
 import { Compilable } from '../util/compilable.js'
 import { freeze } from '../util/object-utils.js'
-import { preventAwait } from '../util/prevent-await.js'
 import { QueryId } from '../util/query-id.js'
 
 export class AlterTableDropConstraintBuilder
@@ -91,8 +90,3 @@ export interface AlterTableDropConstraintBuilderProps {
   readonly executor: QueryExecutor
   readonly node: AlterTableNode
 }
-
-preventAwait(
-  AlterTableDropConstraintBuilder,
-  "don't await AlterTableDropConstraintBuilder instances directly. To execute the query you need to call `execute`",
-)
