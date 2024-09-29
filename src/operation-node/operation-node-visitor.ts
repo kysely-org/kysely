@@ -279,7 +279,9 @@ export abstract class OperationNodeVisitor {
   protected abstract visitPrimitiveValueList(node: PrimitiveValueListNode): void
   protected abstract visitOperator(node: OperatorNode): void
   protected abstract visitCreateView(node: CreateViewNode): void
-  protected abstract visitRefreshMaterializedView(node: RefreshMaterializedViewNode): void
+  protected abstract visitRefreshMaterializedView(
+    node: RefreshMaterializedViewNode,
+  ): void
   protected abstract visitDropView(node: DropViewNode): void
   protected abstract visitGenerated(node: GeneratedNode): void
   protected abstract visitDefaultValue(node: DefaultValueNode): void
