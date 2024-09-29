@@ -196,7 +196,8 @@ export class OperationNodeTransformer {
     DropConstraintNode: this.transformDropConstraint.bind(this),
     ForeignKeyConstraintNode: this.transformForeignKeyConstraint.bind(this),
     CreateViewNode: this.transformCreateView.bind(this),
-    RefreshMaterializedViewNode: this.transformRefreshMaterializedView.bind(this),
+    RefreshMaterializedViewNode:
+      this.transformRefreshMaterializedView.bind(this),
     DropViewNode: this.transformDropView.bind(this),
     GeneratedNode: this.transformGenerated.bind(this),
     DefaultValueNode: this.transformDefaultValue.bind(this),
@@ -804,7 +805,9 @@ export class OperationNodeTransformer {
     })
   }
 
-  protected transformRefreshMaterializedView(node: RefreshMaterializedViewNode): RefreshMaterializedViewNode {
+  protected transformRefreshMaterializedView(
+    node: RefreshMaterializedViewNode,
+  ): RefreshMaterializedViewNode {
     return requireAllProps<RefreshMaterializedViewNode>({
       kind: 'RefreshMaterializedViewNode',
       name: this.transformNode(node.name),
