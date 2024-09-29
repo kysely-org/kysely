@@ -810,7 +810,9 @@ export class DefaultQueryCompiler
 
     if (node.joins) {
       if (!node.from) {
-        throw new Error("Joins in an update query are only supported as a part of a PostgreSQL 'update set from join' query. If you want to create a MySQL 'update join set' query, see https://kysely.dev/docs/examples/update/my-sql-joins")
+        throw new Error(
+          "Joins in an update query are only supported as a part of a PostgreSQL 'update set from join' query. If you want to create a MySQL 'update join set' query, see https://kysely.dev/docs/examples/update/my-sql-joins",
+        )
       }
 
       this.append(' ')
@@ -1254,8 +1256,10 @@ export class DefaultQueryCompiler
       this.visitNode(node.as)
     }
   }
-  
-  protected override visitRefreshMaterializedView(node: RefreshMaterializedViewNode): void {
+
+  protected override visitRefreshMaterializedView(
+    node: RefreshMaterializedViewNode,
+  ): void {
     this.append('refresh materialized view ')
 
     if (node.concurrently) {

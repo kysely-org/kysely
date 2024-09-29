@@ -2,7 +2,6 @@ import { freeze } from '../util/object-utils.js'
 import { AggregateFunctionNode } from '../operation-node/aggregate-function-node.js'
 import { AliasNode } from '../operation-node/alias-node.js'
 import { IdentifierNode } from '../operation-node/identifier-node.js'
-import { preventAwait } from '../util/prevent-await.js'
 import { OverBuilder } from './over-builder.js'
 import { createOverBuilder } from '../parser/parse-utils.js'
 import {
@@ -299,11 +298,6 @@ export class AggregateFunctionBuilder<DB, TB extends keyof DB, O = unknown>
     return this.#props.aggregateFunctionNode
   }
 }
-
-preventAwait(
-  AggregateFunctionBuilder,
-  "don't await AggregateFunctionBuilder instances. They are never executed directly and are always just a part of a query.",
-)
 
 /**
  * {@link AggregateFunctionBuilder} with an alias. The result of calling {@link AggregateFunctionBuilder.as}.
