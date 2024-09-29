@@ -10,7 +10,10 @@ import {
   AliasedExpression,
   Expression,
 } from '../expression/expression.js'
-import { ReferenceExpression } from '../parser/reference-parser.js'
+import {
+  ReferenceExpression,
+  StringReference,
+} from '../parser/reference-parser.js'
 import {
   ComparisonOperatorExpression,
   OperandValueExpressionOrList,
@@ -19,6 +22,11 @@ import {
 } from '../parser/binary-operation-parser.js'
 import { SqlBool } from '../util/type-utils.js'
 import { ExpressionOrFactory } from '../parser/expression-parser.js'
+import { DynamicReferenceBuilder } from '../dynamic/dynamic-reference-builder.js'
+import {
+  OrderByDirectionExpression,
+  parseOrderBy,
+} from '../parser/order-by-parser.js'
 
 export class AggregateFunctionBuilder<DB, TB extends keyof DB, O = unknown>
   implements AliasableExpression<O>
@@ -60,7 +68,7 @@ export class AggregateFunctionBuilder<DB, TB extends keyof DB, O = unknown>
    * ```
    */
   as<A extends string>(
-    alias: A
+    alias: A,
   ): AliasedAggregateFunctionBuilder<DB, TB, O, A> {
     return new AliasedAggregateFunctionBuilder(this, alias)
   }
@@ -90,7 +98,43 @@ export class AggregateFunctionBuilder<DB, TB extends keyof DB, O = unknown>
     return new AggregateFunctionBuilder({
       ...this.#props,
       aggregateFunctionNode: AggregateFunctionNode.cloneWithDistinct(
-        this.#props.aggregateFunctionNode
+        this.#props.aggregateFunctionNode,
+      ),
+    })
+  }
+
+  /**
+   * Adds an `order by` clause inside the aggregate function.
+   *
+   * ### Examples
+   *
+   * ```ts
+   * const result = await db
+   *   .selectFrom('person')
+   *   .innerJoin('pet', 'pet.owner_id', 'person.id')
+   *   .select((eb) =>
+   *     eb.fn.jsonAgg('pet.name').orderBy('pet.name').as('person_pets')
+   *   )
+   *   .executeTakeFirstOrThrow()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * select json_agg("pet"."name" order by "pet"."name") as "person_pets"
+   * from "person"
+   * inner join "pet" ON "pet"."owner_id" = "person"."id"
+   * ```
+   */
+  orderBy<OE extends StringReference<DB, TB> | DynamicReferenceBuilder<any>>(
+    orderBy: OE,
+    direction?: OrderByDirectionExpression,
+  ): AggregateFunctionBuilder<DB, TB, O> {
+    return new AggregateFunctionBuilder({
+      ...this.#props,
+      aggregateFunctionNode: AggregateFunctionNode.cloneWithOrderBy(
+        this.#props.aggregateFunctionNode,
+        parseOrderBy([orderBy, direction]),
       ),
     })
   }
@@ -138,15 +182,15 @@ export class AggregateFunctionBuilder<DB, TB extends keyof DB, O = unknown>
    */
   filterWhere<
     RE extends ReferenceExpression<DB, TB>,
-    VE extends OperandValueExpressionOrList<DB, TB, RE>
+    VE extends OperandValueExpressionOrList<DB, TB, RE>,
   >(
     lhs: RE,
     op: ComparisonOperatorExpression,
-    rhs: VE
+    rhs: VE,
   ): AggregateFunctionBuilder<DB, TB, O>
 
   filterWhere<E extends ExpressionOrFactory<DB, TB, SqlBool>>(
-    expression: E
+    expression: E,
   ): AggregateFunctionBuilder<DB, TB, O>
 
   filterWhere(...args: any[]): any {
@@ -154,7 +198,7 @@ export class AggregateFunctionBuilder<DB, TB extends keyof DB, O = unknown>
       ...this.#props,
       aggregateFunctionNode: AggregateFunctionNode.cloneWithFilter(
         this.#props.aggregateFunctionNode,
-        parseValueBinaryOperationOrExpression(args)
+        parseValueBinaryOperationOrExpression(args),
       ),
     })
   }
@@ -193,17 +237,17 @@ export class AggregateFunctionBuilder<DB, TB extends keyof DB, O = unknown>
    */
   filterWhereRef<
     LRE extends ReferenceExpression<DB, TB>,
-    RRE extends ReferenceExpression<DB, TB>
+    RRE extends ReferenceExpression<DB, TB>,
   >(
     lhs: LRE,
     op: ComparisonOperatorExpression,
-    rhs: RRE
+    rhs: RRE,
   ): AggregateFunctionBuilder<DB, TB, O> {
     return new AggregateFunctionBuilder({
       ...this.#props,
       aggregateFunctionNode: AggregateFunctionNode.cloneWithFilter(
         this.#props.aggregateFunctionNode,
-        parseReferentialBinaryOperation(lhs, op, rhs)
+        parseReferentialBinaryOperation(lhs, op, rhs),
       ),
     })
   }
@@ -251,7 +295,7 @@ export class AggregateFunctionBuilder<DB, TB extends keyof DB, O = unknown>
    * ```
    */
   over(
-    over?: OverBuilderCallback<DB, TB>
+    over?: OverBuilderCallback<DB, TB>,
   ): AggregateFunctionBuilder<DB, TB, O> {
     const builder = createOverBuilder()
 
@@ -259,7 +303,7 @@ export class AggregateFunctionBuilder<DB, TB extends keyof DB, O = unknown>
       ...this.#props,
       aggregateFunctionNode: AggregateFunctionNode.cloneWithOver(
         this.#props.aggregateFunctionNode,
-        (over ? over(builder) : builder).toOperationNode()
+        (over ? over(builder) : builder).toOperationNode(),
       ),
     })
   }
@@ -302,7 +346,7 @@ export class AggregateFunctionBuilder<DB, TB extends keyof DB, O = unknown>
 
 preventAwait(
   AggregateFunctionBuilder,
-  "don't await AggregateFunctionBuilder instances. They are never executed directly and are always just a part of a query."
+  "don't await AggregateFunctionBuilder instances. They are never executed directly and are always just a part of a query.",
 )
 
 /**
@@ -312,7 +356,7 @@ export class AliasedAggregateFunctionBuilder<
   DB,
   TB extends keyof DB,
   O = unknown,
-  A extends string = never
+  A extends string = never,
 > implements AliasedExpression<O, A>
 {
   readonly #aggregateFunctionBuilder: AggregateFunctionBuilder<DB, TB, O>
@@ -320,7 +364,7 @@ export class AliasedAggregateFunctionBuilder<
 
   constructor(
     aggregateFunctionBuilder: AggregateFunctionBuilder<DB, TB, O>,
-    alias: A
+    alias: A,
   ) {
     this.#aggregateFunctionBuilder = aggregateFunctionBuilder
     this.#alias = alias
@@ -339,7 +383,7 @@ export class AliasedAggregateFunctionBuilder<
   toOperationNode(): AliasNode {
     return AliasNode.create(
       this.#aggregateFunctionBuilder.toOperationNode(),
-      IdentifierNode.create(this.#alias)
+      IdentifierNode.create(this.#alias),
     )
   }
 }
@@ -349,5 +393,5 @@ export interface AggregateFunctionBuilderProps {
 }
 
 export type OverBuilderCallback<DB, TB extends keyof DB> = (
-  builder: OverBuilder<DB, TB>
+  builder: OverBuilder<DB, TB>,
 ) => OverBuilder<any, any>

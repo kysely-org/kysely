@@ -154,7 +154,7 @@ describe('logging', () => {
 function getKysely(
   log: LogConfig,
   executeQuery: DatabaseConnection['executeQuery'] = () =>
-    Promise.resolve({ rows: [] })
+    Promise.resolve({ rows: [] }),
 ): Kysely<Database> {
   return new Kysely({
     dialect: new (class extends PostgresDialect {

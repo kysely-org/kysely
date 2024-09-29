@@ -21,7 +21,7 @@ export const SetOperationNode = freeze({
   create(
     operator: SetOperator,
     expression: OperationNode,
-    all: boolean
+    all: boolean,
   ): SetOperationNode {
     return freeze({
       kind: 'SetOperationNode',

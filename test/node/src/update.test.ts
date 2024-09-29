@@ -75,7 +75,7 @@ for (const dialect of DIALECTS) {
           .select(['first_name', 'last_name', 'gender'])
           .orderBy('first_name')
           .orderBy('last_name')
-          .execute()
+          .execute(),
       ).to.eql([
         { first_name: 'Arnold', last_name: 'Schwarzenegger', gender: 'male' },
         { first_name: 'Foo', last_name: 'Barson', gender: 'female' },
@@ -126,7 +126,7 @@ for (const dialect of DIALECTS) {
           .select(['first_name', 'last_name', 'gender'])
           .orderBy('first_name')
           .orderBy('last_name')
-          .execute()
+          .execute(),
       ).to.eql([
         { first_name: 'Arnold', last_name: 'Schwarzenegger', gender: 'male' },
         { first_name: 'Foo', last_name: 'Barson', gender: 'other' },
@@ -175,7 +175,7 @@ for (const dialect of DIALECTS) {
             .select(['first_name', 'last_name', 'gender'])
             .orderBy('first_name')
             .orderBy('last_name')
-            .execute()
+            .execute(),
         ).to.eql([
           { first_name: 'Arnold', last_name: 'Schwarzenegger', gender: 'male' },
           { first_name: 'Foo', last_name: 'Barson', gender: 'female' },
@@ -214,7 +214,7 @@ for (const dialect of DIALECTS) {
             .select(['first_name', 'last_name', 'gender'])
             .orderBy('first_name')
             .orderBy('last_name')
-            .execute()
+            .execute(),
         ).to.eql([
           { first_name: 'Arnold', last_name: 'Schwarzenegger', gender: 'male' },
           { first_name: 'Foo', last_name: 'Barson', gender: 'female' },
@@ -479,6 +479,34 @@ for (const dialect of DIALECTS) {
     }
 
     if (dialect === 'postgres') {
+      it('should update some rows and return joined rows when `returningAll` is used', async () => {
+        const query = ctx.db
+          .updateTable('person')
+          .from('pet')
+          .set({
+            first_name: (eb) => eb.ref('pet.name'),
+          })
+          .whereRef('pet.owner_id', '=', 'person.id')
+          .where('person.first_name', '=', 'Arnold')
+          .returningAll('pet')
+
+        testSql(query, dialect, {
+          postgres: {
+            sql: 'update "person" set "first_name" = "pet"."name" from "pet" where "pet"."owner_id" = "person"."id" and "person"."first_name" = $1 returning "pet".*',
+            parameters: ['Arnold'],
+          },
+          mysql: NOT_SUPPORTED,
+          mssql: NOT_SUPPORTED,
+          sqlite: NOT_SUPPORTED,
+        })
+
+        const result = await query.execute()
+        expect(result[0].name).to.equal('Doggo')
+        expect(result[0].species).to.equal('dog')
+      })
+    }
+
+    if (dialect === 'postgres') {
       it('should update multiple rows and stream returned results', async () => {
         const stream = ctx.db
           .updateTable('person')
@@ -498,7 +526,7 @@ for (const dialect of DIALECTS) {
             first_name,
             last_name: 'Nobody',
             gender,
-          }))
+          })),
         )
       })
     }
@@ -518,6 +546,37 @@ for (const dialect of DIALECTS) {
         expect(result.numUpdatedRows).to.equal(1n)
         expect(result.numChangedRows).to.equal(0n)
       })
+
+      it('should limit the amount of updated rows', async () => {
+        const query = ctx.db
+          .updateTable('person')
+          .set({ first_name: 'Foo' })
+          .limit(2)
+
+        testSql(query, dialect, {
+          postgres: NOT_SUPPORTED,
+          mysql: {
+            sql: 'update `person` set `first_name` = ? limit ?',
+            parameters: ['Foo', 2],
+          },
+          mssql: NOT_SUPPORTED,
+          sqlite: NOT_SUPPORTED,
+        })
+
+        const result = await query.executeTakeFirst()
+
+        expect(result).to.be.instanceOf(UpdateResult)
+        expect(result.numUpdatedRows).to.equal(2n)
+        expect(result.numChangedRows).to.equal(2n)
+
+        const people = await ctx.db
+          .selectFrom('person')
+          .select('first_name')
+          .where('first_name', '=', 'Foo')
+          .execute()
+
+        expect(people).to.have.length(2)
+      })
     }
 
     it('should create an update query that uses a CTE', async () => {
@@ -527,7 +586,7 @@ for (const dialect of DIALECTS) {
             .selectFrom('person')
             .where('first_name', '=', 'Jennifer')
             .$call(limit(1, dialect))
-            .select('id')
+            .select('id'),
         )
         .updateTable('pet')
         .set((eb) => ({
@@ -544,7 +603,7 @@ for (const dialect of DIALECTS) {
           parameters: ['Jennifer', 1],
         },
         mssql: {
-          sql: 'with "jennifer_id" as (select top 1 "id" from "person" where "first_name" = @1) update "pet" set "owner_id" = (select "id" from "jennifer_id")',
+          sql: 'with "jennifer_id" as (select top(1) "id" from "person" where "first_name" = @1) update "pet" set "owner_id" = (select "id" from "jennifer_id")',
           parameters: ['Jennifer'],
         },
         sqlite: {
@@ -606,6 +665,35 @@ for (const dialect of DIALECTS) {
       })
     }
 
+    if (dialect === 'postgres' || dialect === 'mysql') {
+      it('modifyEnd should add arbitrary SQL to the end of the query', async () => {
+        const query = ctx.db
+          .updateTable('person')
+          .set({
+            gender: 'other',
+          })
+          .where('first_name', '=', 'Jennifer')
+          .modifyEnd(sql.raw('-- this is a comment'))
+
+        testSql(query, dialect, {
+          postgres: {
+            sql: 'update "person" set "gender" = $1 where "first_name" = $2 -- this is a comment',
+            parameters: ['other', 'Jennifer'],
+          },
+          mysql: {
+            sql: 'update `person` set `gender` = ? where `first_name` = ? -- this is a comment',
+            parameters: ['other', 'Jennifer'],
+          },
+          mssql: NOT_SUPPORTED,
+          sqlite: NOT_SUPPORTED,
+        })
+
+        const result = await query.execute()
+
+        expect(result).to.have.length(1)
+      })
+    }
+
     if (dialect === 'mssql') {
       it('should update using a from clause and a join', async () => {
         const query = ctx.db
@@ -638,6 +726,92 @@ for (const dialect of DIALECTS) {
         for (const pet of pets) {
           expect(pet.person_name).to.equal(pet.pet_name)
         }
+      })
+
+      it('should update top', async () => {
+        const query = ctx.db
+          .updateTable('pet')
+          .top(1)
+          .set({ name: 'Lucky' })
+          .where('species', '=', 'dog')
+
+        testSql(query, dialect, {
+          postgres: NOT_SUPPORTED,
+          mysql: NOT_SUPPORTED,
+          mssql: {
+            sql: 'update top(1) "pet" set "name" = @1 where "species" = @2',
+            parameters: ['Lucky', 'dog'],
+          },
+          sqlite: NOT_SUPPORTED,
+        })
+
+        await query.execute()
+      })
+
+      it('should update top percent', async () => {
+        const query = ctx.db
+          .updateTable('pet')
+          .top(50, 'percent')
+          .set({ name: 'Lucky' })
+          .where('species', '=', 'dog')
+
+        testSql(query, dialect, {
+          postgres: NOT_SUPPORTED,
+          mysql: NOT_SUPPORTED,
+          mssql: {
+            sql: 'update top(50) percent "pet" set "name" = @1 where "species" = @2',
+            parameters: ['Lucky', 'dog'],
+          },
+          sqlite: NOT_SUPPORTED,
+        })
+
+        await query.execute()
+      })
+    }
+
+    if (dialect === 'mssql') {
+      it('should update some rows and return updated rows when `output` is used', async () => {
+        const query = ctx.db
+          .updateTable('person')
+          .set({ last_name: 'Barson' })
+          .output(['inserted.first_name', 'inserted.last_name'])
+          .where('gender', '=', 'male')
+
+        testSql(query, dialect, {
+          postgres: NOT_SUPPORTED,
+          mysql: NOT_SUPPORTED,
+          mssql: {
+            sql: 'update "person" set "last_name" = @1 output "inserted"."first_name", "inserted"."last_name" where "gender" = @2',
+            parameters: ['Barson', 'male'],
+          },
+          sqlite: NOT_SUPPORTED,
+        })
+
+        const result = await query.execute()
+
+        expect(result).to.have.length(2)
+        expect(Object.keys(result[0]).sort()).to.eql([
+          'first_name',
+          'last_name',
+        ])
+        expect(result).to.containSubset([
+          { first_name: 'Arnold', last_name: 'Barson' },
+          { first_name: 'Sylvester', last_name: 'Barson' },
+        ])
+      })
+
+      it('should update all rows, returning some fields of updated rows, and conditionally returning additional fields', async () => {
+        const condition = true
+
+        const query = ctx.db
+          .updateTable('person')
+          .set({ last_name: 'Barson' })
+          .output('inserted.first_name')
+          .$if(condition, (qb) => qb.output('inserted.last_name'))
+
+        const result = await query.executeTakeFirstOrThrow()
+
+        expect(result.last_name).to.equal('Barson')
       })
     }
   })

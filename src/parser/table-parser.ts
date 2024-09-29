@@ -40,8 +40,8 @@ export type From<DB, TE> = DrainOuterGeneric<{
       >]: C extends ExtractAliasFromTableExpression<DB, TE>
     ? ExtractRowTypeFromTableExpression<DB, TE, C>
     : C extends keyof DB
-    ? DB[C]
-    : never
+      ? DB[C]
+      : never
 }>
 
 export type FromTables<DB, TB extends keyof DB, TE> = DrainOuterGeneric<
@@ -49,14 +49,16 @@ export type FromTables<DB, TB extends keyof DB, TE> = DrainOuterGeneric<
 >
 
 export type ExtractTableAlias<DB, TE> = TE extends `${string} as ${infer TA}`
-  ? TA
+  ? TA extends keyof DB
+    ? TA
+    : never
   : TE extends keyof DB
-  ? TE
-  : never
+    ? TE
+    : never
 
 export type PickTableWithAlias<
   DB,
-  T extends AnyAliasedTable<DB>
+  T extends AnyAliasedTable<DB>,
 > = T extends `${infer TB} as ${infer A}`
   ? TB extends keyof DB
     ? ShallowRecord<A, DB[TB]>
@@ -64,17 +66,21 @@ export type PickTableWithAlias<
   : never
 
 type ExtractAliasFromTableExpression<DB, TE> = TE extends string
-  ? ExtractTableAlias<DB, TE>
+  ? TE extends `${string} as ${infer TA}`
+    ? TA
+    : TE extends keyof DB
+      ? TE
+      : never
   : TE extends AliasedExpression<any, infer QA>
-  ? QA
-  : TE extends (qb: any) => AliasedExpression<any, infer QA>
-  ? QA
-  : never
+    ? QA
+    : TE extends (qb: any) => AliasedExpression<any, infer QA>
+      ? QA
+      : never
 
 type ExtractRowTypeFromTableExpression<
   DB,
   TE,
-  A extends keyof any
+  A extends keyof any,
 > = TE extends `${infer T} as ${infer TA}`
   ? TA extends A
     ? T extends keyof DB
@@ -82,23 +88,23 @@ type ExtractRowTypeFromTableExpression<
       : never
     : never
   : TE extends A
-  ? TE extends keyof DB
-    ? DB[TE]
-    : never
-  : TE extends AliasedExpression<infer O, infer QA>
-  ? QA extends A
-    ? O
-    : never
-  : TE extends (qb: any) => AliasedExpression<infer O, infer QA>
-  ? QA extends A
-    ? O
-    : never
-  : never
+    ? TE extends keyof DB
+      ? DB[TE]
+      : never
+    : TE extends AliasedExpression<infer O, infer QA>
+      ? QA extends A
+        ? O
+        : never
+      : TE extends (qb: any) => AliasedExpression<infer O, infer QA>
+        ? QA extends A
+          ? O
+          : never
+        : never
 
 type AnyTable<DB> = keyof DB & string
 
 export function parseTableExpressionOrList(
-  table: TableExpressionOrList<any, any>
+  table: TableExpressionOrList<any, any>,
 ): OperationNode[] {
   if (isReadonlyArray(table)) {
     return table.map((it) => parseTableExpression(it))
@@ -108,7 +114,7 @@ export function parseTableExpressionOrList(
 }
 
 export function parseTableExpression(
-  table: TableExpression<any, any>
+  table: TableExpression<any, any>,
 ): OperationNode {
   if (isString(table)) {
     return parseAliasedTable(table)

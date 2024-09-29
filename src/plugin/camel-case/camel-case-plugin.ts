@@ -51,7 +51,7 @@ export interface CamelCasePluginOptions {
 
 /**
  * A plugin that converts snake_case identifiers in the database into
- * camelCase in the javascript side.
+ * camelCase in the JavaScript side.
  *
  * For example let's assume we have a table called `person_table`
  * with columns `first_name` and `last_name` in the database. When
@@ -91,7 +91,7 @@ export interface CamelCasePluginOptions {
  * ```
  *
  * As you can see from the example, __everything__ needs to be defined
- * in camelCase in the typescript code: table names, columns, schemas,
+ * in camelCase in the TypeScript code: table names, columns, schemas,
  * __everything__. When using the `CamelCasePlugin` Kysely works as if
  * the database was defined in camelCase.
  *
@@ -123,7 +123,7 @@ export class CamelCasePlugin implements KyselyPlugin {
     this.#snakeCase = createSnakeCaseMapper(opt)
 
     this.#snakeCaseTransformer = new SnakeCaseTransformer(
-      this.snakeCase.bind(this)
+      this.snakeCase.bind(this),
     )
   }
 
@@ -132,7 +132,7 @@ export class CamelCasePlugin implements KyselyPlugin {
   }
 
   async transformResult(
-    args: PluginTransformResultArgs
+    args: PluginTransformResultArgs,
   ): Promise<QueryResult<UnknownRow>> {
     if (args.result.rows && Array.isArray(args.result.rows)) {
       return {
@@ -170,7 +170,7 @@ export class CamelCasePlugin implements KyselyPlugin {
 
 function canMap(
   obj: unknown,
-  opt: CamelCasePluginOptions
+  opt: CamelCasePluginOptions,
 ): obj is Record<string, unknown> {
   return isPlainObject(obj) && !opt?.maintainNestedObjectKeys
 }

@@ -1,5 +1,5 @@
 import { expectError, expectType } from 'tsd'
-import { Kysely, DeleteResult, Selectable } from '..'
+import { Kysely, DeleteResult, Selectable, sql } from '..'
 import { Database, Person, Pet } from '../shared'
 
 async function testDelete(db: Kysely<Database>) {
@@ -52,6 +52,15 @@ async function testDelete(db: Kysely<Database>) {
     .executeTakeFirstOrThrow()
   expectType<DeleteResult>(r7)
 
+  const r8 = await db
+    .deleteFrom('pet')
+    .using('person')
+    .leftJoin('pet', 'pet.owner_id', 'person.id')
+    .where('person.id', '=', 1)
+    .returningAll('person')
+    .executeTakeFirstOrThrow()
+  expectType<Selectable<Person>>(r8)
+
   expectError(db.deleteFrom('NO_SUCH_TABLE'))
   expectError(db.deleteFrom('pet').where('NO_SUCH_COLUMN', '=', '1'))
   expectError(db.deleteFrom('pet').whereRef('owner_id', '=', 'NO_SUCH_COLUMN'))
@@ -59,43 +68,45 @@ async function testDelete(db: Kysely<Database>) {
   expectError(db.deleteFrom('pet').using('NO_SUCH_TABLE'))
   expectError(db.deleteFrom('pet').using(['pet', 'NO_SUCH_TABLE']))
   expectError(
-    db.deleteFrom('pet').using('pet').innerJoin('NO_SUCH_TABLE', 'pet.id', 'b')
+    db.deleteFrom('pet').using('pet').innerJoin('NO_SUCH_TABLE', 'pet.id', 'b'),
   )
   expectError(
     db
       .deleteFrom('pet')
       .using('pet')
-      .innerJoin('person', 'NO_SUCH_COLUMN', 'pet.owner_id')
+      .innerJoin('person', 'NO_SUCH_COLUMN', 'pet.owner_id'),
   )
   expectError(
-    db.deleteFrom('pet').using('pet').leftJoin('NO_SUCH_TABLE', 'pet.id', 'b')
+    db.deleteFrom('pet').using('pet').leftJoin('NO_SUCH_TABLE', 'pet.id', 'b'),
   )
   expectError(
     db
       .deleteFrom('pet')
       .using('pet')
-      .leftJoin('person', 'NO_SUCH_COLUMN', 'pet.owner_id')
+      .leftJoin('person', 'NO_SUCH_COLUMN', 'pet.owner_id'),
   )
+}
 
-  const r8 = await db
+async function testReturning(db: Kysely<Database>) {
+  const r1 = await db
     .deleteFrom('person')
     .using(['person', 'pet'])
     .leftJoin('toy', 'toy.pet_id', 'pet.id')
     .where((eb) =>
-      eb.or([eb('pet.species', '=', 'cat'), eb('toy.price', '=', 0)])
+      eb.or([eb('pet.species', '=', 'cat'), eb('toy.price', '=', 0)]),
     )
     .returningAll('person')
     .execute()
-  expectType<Selectable<Person>[]>(r8)
+  expectType<Selectable<Person>[]>(r1)
 
-  const r9 = await db
+  const r2 = await db
     .deleteFrom('pet')
     .where('pet.species', '=', 'cat')
     .returningAll('pet')
     .execute()
-  expectType<Selectable<Pet>[]>(r9)
+  expectType<Selectable<Pet>[]>(r2)
 
-  const r10 = await db
+  const r3 = await db
     .deleteFrom('person')
     .using(['person', 'pet'])
     .leftJoin('toy', 'toy.pet_id', 'pet.id')
@@ -120,9 +131,9 @@ async function testDelete(db: Kysely<Database>) {
       price: number | null
       pet_id: string | null
     }[]
-  >(r10)
+  >(r3)
 
-  const r11 = await db
+  const r4 = await db
     .deleteFrom('person')
     .innerJoin('pet', 'pet.owner_id', 'person.id')
     .where('pet.species', '=', 'dog')
@@ -143,23 +154,23 @@ async function testDelete(db: Kysely<Database>) {
       owner_id: number
       species: 'dog' | 'cat'
     }[]
-  >(r11)
+  >(r4)
 
-  const r12 = await db
+  const r5 = await db
     .deleteFrom('pet')
     .where('pet.species', '=', 'cat')
     .returningAll(['pet'])
     .execute()
-  expectType<Selectable<Pet>[]>(r12)
+  expectType<Selectable<Pet>[]>(r5)
 
-  const r13 = await db
+  const r6 = await db
     .deleteFrom('pet')
     .where('pet.species', '=', 'dog')
     .returningAll()
     .execute()
-  expectType<Selectable<Pet>[]>(r13)
+  expectType<Selectable<Pet>[]>(r6)
 
-  const r14 = await db
+  const r7 = await db
     .deleteFrom('person')
     .using(['person', 'pet'])
     .leftJoin('toy', 'toy.pet_id', 'pet.id')
@@ -184,14 +195,14 @@ async function testDelete(db: Kysely<Database>) {
       price: number | null
       pet_id: string | null
     }[]
-  >(r14)
+  >(r7)
 
-  const r15 = await db
+  const r8 = await db
     .deleteFrom('person as p')
     .where('p.first_name', '=', 'Jennifer')
     .returning('p.id')
     .executeTakeFirstOrThrow()
-  expectType<{ id: number }>(r15)
+  expectType<{ id: number }>(r8)
 }
 
 async function testIf(db: Kysely<Database>) {
@@ -243,4 +254,62 @@ async function testIf(db: Kysely<Database>) {
     f19?: string
     f20?: string
   }>(r)
+}
+
+async function testOutput(db: Kysely<Database>) {
+  const r1 = await db
+    .deleteFrom('pet')
+    .outputAll('deleted')
+    .where('pet.species', '=', 'cat')
+    .execute()
+  expectType<Selectable<Pet>[]>(r1)
+
+  const r2 = await db
+    .deleteFrom('person as p')
+    .output('deleted.id')
+    .where('p.first_name', '=', 'Jennifer')
+    .executeTakeFirstOrThrow()
+  expectType<{ id: number }>(r2)
+
+  const r3 = await db
+    .deleteFrom('person as p')
+    .output(['deleted.id', 'deleted.last_name as surname'])
+    .where('p.first_name', '=', 'Jennifer')
+    .executeTakeFirstOrThrow()
+  expectType<{ id: number; surname: string | null }>(r3)
+
+  const r4 = await db
+    .deleteFrom('person')
+    .output((eb) => [
+      'deleted.age',
+      eb
+        .fn<string>('concat', [
+          eb.ref('deleted.first_name'),
+          sql.lit(' '),
+          'deleted.last_name',
+        ])
+        .as('full_name'),
+    ])
+    .where('deleted_at', '<', new Date())
+    .executeTakeFirstOrThrow()
+  expectType<{ age: number; full_name: string }>(r4)
+
+  // Non-existent column
+  expectError(db.deleteFrom('person').output('deleted.NO_SUCH_COLUMN'))
+
+  // Wrong prefix
+  expectError(db.deleteFrom('person').output('inserted.id'))
+  expectError(db.deleteFrom('person').outputAll('inserted'))
+
+  // Non-existent prefix
+  expectError(db.deleteFrom('person').output('NO_SUCH_PREFIX.id'))
+  expectError(db.deleteFrom('person').outputAll('NO_SUCH_PREFIX'))
+
+  // table prefix
+  expectError(db.deleteFrom('person').output('person.id'))
+  expectError(db.deleteFrom('person').outputAll('person'))
+
+  // No prefix
+  expectError(db.deleteFrom('person').output('id'))
+  expectError(db.deleteFrom('person').outputAll())
 }

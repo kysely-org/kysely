@@ -2,64 +2,168 @@ name: tests
 
 on:
   push:
-    branches: [master]
+    branches: [master, v*]
   pull_request:
-    branches: [master]
+    branches: [master, v*]
 
 jobs:
-  run-tests:
+  node:
+    name: Node.js
     runs-on: ubuntu-latest
 
     strategy:
       matrix:
-        node-version: [16.x, 18.x, 20.x]
-        bun-version: [1.x]
-        deno-version: [1.34.x]
+        node-version: [18.x, 20.x, 22.x]
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run docker compose
+        run: docker compose up -d
+
+      - name: Run node tests
+        run: npm test
+
+      - name: Run esbuild test
+        run: npm run test:esbuild
+
+  node-with-transformer:
+    name: Node.js /w transformer
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x, 22.x]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run docker compose
+        run: docker compose up -d
+
+      - name: Run node tests with transformer
+        run: TEST_TRANSFORMER=1 npm test
+
+  deno:
+    name: Deno
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        deno-version: [1.46.x]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.x
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
 
       - name: Use Deno ${{ matrix.deno-version }}
-        uses: denolib/setup-deno@v2
+        uses: denoland/setup-deno@v1
         with:
           deno-version: ${{ matrix.deno-version }}
 
+      - name: Run docker compose
+        run: docker compose up -d
+
+      - name: Run deno tests
+        run: npm run test:deno
+
+  bun:
+    name: Bun
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        bun-version: [1.1.26]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.x
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
       - name: Use Bun ${{ matrix.bun-version }}
-        uses: oven-sh/setup-bun@v1
+        uses: oven-sh/setup-bun@v2
         with:
           bun-version: ${{ matrix.bun-version }}
+
+      - name: Run docker compose
+        run: docker compose up -d
+
+      - name: Run bun tests
+        run: npm run test:bun
+
+  browser:
+    name: Browser
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.x
+          cache: 'npm'
 
       - name: Install dependencies
         run: npm ci
 
       - name: Install playwright
-        run: npx playwright install
-
-      - name: Run docker compose
-        run: docker-compose up -d
-
-      - name: Run node tests
-        run: npm test
-
-      - name: Run node tests with transformer
-        run: TEST_TRANSFORMER=1 npm test
+        run: npx playwright install chromium
 
       - name: Run browser tests
         run: npm run test:browser
 
-      - name: Run deno tests
-        run: npm run test:deno
+  cloudflare-workers:
+    name: Cloudflare Workers
+    runs-on: ubuntu-latest
 
-      - name: Run bun tests
-        run: npm run test:bun
+    steps:
+      - uses: actions/checkout@v4
 
-      - name: Run esbuild test
-        run: npm run test:esbuild
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.x
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run docker compose
+        run: docker compose up -d
 
       - name: Run cloudflare workers test
         run: npm run test:cloudflare-workers

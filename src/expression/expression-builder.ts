@@ -293,7 +293,7 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
     from: TE,
   ): SelectQueryBuilder<
     DB & PickTableWithAlias<DB, TE>,
-    TB | ExtractTableAlias<DB, TE>,
+    TB | ExtractTableAlias<DB & PickTableWithAlias<DB, TE>, TE>,
     {}
   >
 
@@ -323,7 +323,7 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    *       .when('gender', '=', 'female')
    *       .then(
    *         eb
-   *           .case('martialStatus')
+   *           .case('maritalStatus')
    *           .when('single')
    *           .then('Ms.')
    *           .else('Mrs.')
@@ -343,7 +343,7 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    *   case
    *     when "gender" = $1 then $2
    *     when "gender" = $3 then
-   *       case "martialStatus"
+   *       case "maritalStatus"
    *         when $4 then $5
    *         else $6
    *       end
@@ -404,7 +404,7 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    *
    * ```ts
    * db.update('pet').set((eb) => ({
-   *   name: sql`concat(${eb.ref('pet.name')}, ${suffix})`
+   *   name: sql<string>`concat(${eb.ref('pet.name')}, ${suffix})`
    * }))
    * ```
    *
@@ -1047,7 +1047,7 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
   /**
    * Creates a `cast(expr as dataType)` expression.
    *
-   * Since Kysely can't know the mapping between javascript and database types,
+   * Since Kysely can't know the mapping between JavaScript and database types,
    * you need to provide both explicitly.
    *
    * ### Examples

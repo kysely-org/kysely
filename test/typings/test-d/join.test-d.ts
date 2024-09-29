@@ -48,7 +48,7 @@ async function testJoin(db: Kysely<Database>) {
     .innerJoin(
       db.selectFrom('pet').select(['pet.id', 'pet.owner_id as owner']).as('p'),
       'p.owner',
-      'person.id'
+      'person.id',
     )
     .where('p.owner', '>', 2)
     .selectAll('p')
@@ -61,7 +61,7 @@ async function testJoin(db: Kysely<Database>) {
     .selectFrom('person')
     .innerJoin(
       (qb) => qb.selectFrom('pet').selectAll('pet').as('p'),
-      (join) => join.onRef('p.owner_id', '=', 'person.id')
+      (join) => join.onRef('p.owner_id', '=', 'person.id'),
     )
     .where('p.owner_id', '>', 2)
     .selectAll('p')
@@ -161,7 +161,7 @@ async function testJoin(db: Kysely<Database>) {
 
   // Refer to table that's not joined
   expectError(
-    db.selectFrom('person').innerJoin('movie', 'movie.id', 'pet.owner_id')
+    db.selectFrom('person').innerJoin('movie', 'movie.id', 'pet.owner_id'),
   )
 
   // Refer to column that doesn't exist
@@ -171,7 +171,9 @@ async function testJoin(db: Kysely<Database>) {
   expectError(
     db
       .selectFrom('person')
-      .innerJoin('movie as m', (join) => join.onRef('pet.id', '=', 'person.id'))
+      .innerJoin('movie as m', (join) =>
+        join.onRef('pet.id', '=', 'person.id'),
+      ),
   )
 
   // Refer to table with wrong alias
@@ -179,8 +181,8 @@ async function testJoin(db: Kysely<Database>) {
     db
       .selectFrom('person')
       .innerJoin('movie as m', (join) =>
-        join.onRef('movie.id', '=', 'person.id')
-      )
+        join.onRef('movie.id', '=', 'person.id'),
+      ),
   )
 }
 
@@ -242,64 +244,64 @@ async function testManyJoins(db: Kysely<Database>) {
   const r3 = await db
     .selectFrom('person')
     .leftJoin('pet as p1', (join) =>
-      join.onRef('p1.owner_id', '=', 'person.id')
+      join.onRef('p1.owner_id', '=', 'person.id'),
     )
     .leftJoin('pet as p2', (join) =>
-      join.onRef('p2.owner_id', '=', 'person.id')
+      join.onRef('p2.owner_id', '=', 'person.id'),
     )
     .leftJoin('pet as p3', (join) =>
-      join.onRef('p3.owner_id', '=', 'person.id')
+      join.onRef('p3.owner_id', '=', 'person.id'),
     )
     .leftJoin('pet as p4', (join) =>
-      join.onRef('p4.owner_id', '=', 'person.id')
+      join.onRef('p4.owner_id', '=', 'person.id'),
     )
     .leftJoin('pet as p5', (join) =>
-      join.onRef('p5.owner_id', '=', 'person.id')
+      join.onRef('p5.owner_id', '=', 'person.id'),
     )
     .leftJoin('pet as p6', (join) =>
-      join.onRef('p6.owner_id', '=', 'person.id')
+      join.onRef('p6.owner_id', '=', 'person.id'),
     )
     .leftJoin('pet as p7', (join) =>
-      join.onRef('p7.owner_id', '=', 'person.id')
+      join.onRef('p7.owner_id', '=', 'person.id'),
     )
     .leftJoin('pet as p8', (join) =>
-      join.onRef('p8.owner_id', '=', 'person.id')
+      join.onRef('p8.owner_id', '=', 'person.id'),
     )
     .leftJoin('pet as p9', (join) =>
-      join.onRef('p9.owner_id', '=', 'person.id')
+      join.onRef('p9.owner_id', '=', 'person.id'),
     )
     .leftJoin('pet as p10', (join) =>
-      join.onRef('p10.owner_id', '=', 'person.id')
+      join.onRef('p10.owner_id', '=', 'person.id'),
     )
     .leftJoin('pet as p11', (join) =>
-      join.onRef('p11.owner_id', '=', 'person.id')
+      join.onRef('p11.owner_id', '=', 'person.id'),
     )
     .leftJoin('pet as p12', (join) =>
-      join.onRef('p12.owner_id', '=', 'person.id')
+      join.onRef('p12.owner_id', '=', 'person.id'),
     )
     .leftJoin('pet as p13', (join) =>
-      join.onRef('p13.owner_id', '=', 'person.id')
+      join.onRef('p13.owner_id', '=', 'person.id'),
     )
     .leftJoin('pet as p14', (join) =>
-      join.onRef('p14.owner_id', '=', 'person.id')
+      join.onRef('p14.owner_id', '=', 'person.id'),
     )
     .leftJoin('pet as p15', (join) =>
-      join.onRef('p15.owner_id', '=', 'person.id')
+      join.onRef('p15.owner_id', '=', 'person.id'),
     )
     .leftJoin('pet as p16', (join) =>
-      join.onRef('p16.owner_id', '=', 'person.id')
+      join.onRef('p16.owner_id', '=', 'person.id'),
     )
     .leftJoin('pet as p17', (join) =>
-      join.onRef('p17.owner_id', '=', 'person.id')
+      join.onRef('p17.owner_id', '=', 'person.id'),
     )
     .leftJoin('pet as p18', (join) =>
-      join.onRef('p18.owner_id', '=', 'person.id')
+      join.onRef('p18.owner_id', '=', 'person.id'),
     )
     .leftJoin('pet as p19', (join) =>
-      join.onRef('p19.owner_id', '=', 'person.id')
+      join.onRef('p19.owner_id', '=', 'person.id'),
     )
     .leftJoin('pet as p20', (join) =>
-      join.onRef('p20.owner_id', '=', 'person.id')
+      join.onRef('p20.owner_id', '=', 'person.id'),
     )
     .select(['age', 'last_name'])
     .executeTakeFirstOrThrow()

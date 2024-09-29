@@ -4,7 +4,7 @@ import {
 } from '../operation-node/references-node.js'
 
 export function parseOnModifyForeignAction(
-  action: OnModifyForeignAction
+  action: OnModifyForeignAction,
 ): OnModifyForeignAction {
   if (ON_MODIFY_FOREIGN_ACTIONS.includes(action)) {
     return action

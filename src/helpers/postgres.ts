@@ -17,7 +17,7 @@ import { Simplify } from '../util/type-utils.js'
  * Please keep in mind that the helpers under the `kysely/helpers` folder, including
  * `jsonArrayFrom`, are not guaranteed to work with third party dialects. In order for
  * them to work, the dialect must automatically parse the `json` data type into
- * javascript JSON values like objects and arrays. Some dialects might simply return
+ * JavaScript JSON values like objects and arrays. Some dialects might simply return
  * the data as a JSON string. In these cases you can use the built in `ParseJSONResultsPlugin`
  * to parse the results.
  *
@@ -53,7 +53,7 @@ import { Simplify } from '../util/type-utils.js'
  * ```
  */
 export function jsonArrayFrom<O>(
-  expr: Expression<O>
+  expr: Expression<O>,
 ): RawBuilder<Simplify<O>[]> {
   return sql`(select coalesce(json_agg(agg), '[]') from ${expr} as agg)`
 }
@@ -72,9 +72,9 @@ export function jsonArrayFrom<O>(
  * use the `jsonObjectFrom` helper to fetch person's favorite pet along with the person's id.
  *
  * Please keep in mind that the helpers under the `kysely/helpers` folder, including
- * `jsonObjectFrom`, are not guaranteed to work with 3rd party dialects. In order for
+ * `jsonObjectFrom`, are not guaranteed to work with third-party dialects. In order for
  * them to work, the dialect must automatically parse the `json` data type into
- * javascript JSON values like objects and arrays. Some dialects might simply return
+ * JavaScript JSON values like objects and arrays. Some dialects might simply return
  * the data as a JSON string. In these cases you can use the built in `ParseJSONResultsPlugin`
  * to parse the results.
  *
@@ -110,7 +110,7 @@ export function jsonArrayFrom<O>(
  * ```
  */
 export function jsonObjectFrom<O>(
-  expr: Expression<O>
+  expr: Expression<O>,
 ): RawBuilder<Simplify<O> | null> {
   return sql`(select to_json(obj) from ${expr} as obj)`
 }
@@ -119,7 +119,7 @@ export function jsonObjectFrom<O>(
  * The PostgreSQL `json_build_object` function.
  *
  * NOTE: This helper is only guaranteed to fully work with the built-in `PostgresDialect`.
- * While the produced SQL is compatible with all PostgreSQL databases, some 3rd party dialects
+ * While the produced SQL is compatible with all PostgreSQL databases, some third-party dialects
  * may not parse the nested JSON into objects. In these cases you can use the built in
  * `ParseJSONResultsPlugin` to parse the results.
  *
@@ -156,13 +156,13 @@ export function jsonObjectFrom<O>(
  * ```
  */
 export function jsonBuildObject<O extends Record<string, Expression<unknown>>>(
-  obj: O
+  obj: O,
 ): RawBuilder<
   Simplify<{
     [K in keyof O]: O[K] extends Expression<infer V> ? V : never
   }>
 > {
   return sql`json_build_object(${sql.join(
-    Object.keys(obj).flatMap((k) => [sql.lit(k), obj[k]])
+    Object.keys(obj).flatMap((k) => [sql.lit(k), obj[k]]),
   )})`
 }

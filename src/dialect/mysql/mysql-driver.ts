@@ -47,6 +47,10 @@ export class MysqlDriver implements Driver {
       }
     }
 
+    if (this.#config?.onReserveConnection) {
+      await this.#config.onReserveConnection(connection)
+    }
+
     return connection
   }
 
@@ -64,14 +68,14 @@ export class MysqlDriver implements Driver {
 
   async beginTransaction(
     connection: DatabaseConnection,
-    settings: TransactionSettings
+    settings: TransactionSettings,
   ): Promise<void> {
     if (settings.isolationLevel) {
       // On MySQL this sets the isolation level of the next transaction.
       await connection.executeQuery(
         CompiledQuery.raw(
-          `set transaction isolation level ${settings.isolationLevel}`
-        )
+          `set transaction isolation level ${settings.isolationLevel}`,
+        ),
       )
     }
 
@@ -169,14 +173,14 @@ class MysqlConnection implements DatabaseConnection {
           } else {
             resolve(result)
           }
-        }
+        },
       )
     })
   }
 
   async *streamQuery<O>(
     compiledQuery: CompiledQuery,
-    _chunkSize: number
+    _chunkSize: number,
   ): AsyncIterableIterator<QueryResult<O>> {
     const stream = this.#rawConnection
       .query(compiledQuery.sql, compiledQuery.parameters)

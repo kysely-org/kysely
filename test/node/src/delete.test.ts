@@ -67,7 +67,7 @@ for (const dialect of DIALECTS) {
           .select(['first_name', 'last_name', 'gender'])
           .orderBy('first_name')
           .orderBy('last_name')
-          .execute()
+          .execute(),
       ).to.eql([
         { first_name: 'Arnold', last_name: 'Schwarzenegger', gender: 'male' },
         { first_name: 'Sylvester', last_name: 'Stallone', gender: 'male' },
@@ -81,7 +81,7 @@ for (const dialect of DIALECTS) {
           eb.or([
             eb('first_name', '=', 'Jennifer'),
             eb('first_name', '=', 'Arnold'),
-          ])
+          ]),
         )
 
       testSql(query, dialect, {
@@ -288,6 +288,35 @@ for (const dialect of DIALECTS) {
               'and "pet"."owner_id" = "person"."id"',
               'and "person"."first_name" = $1',
               'returning "pet"."name"',
+            ],
+            parameters: ['Bob'],
+          },
+          mysql: NOT_SUPPORTED,
+          mssql: NOT_SUPPORTED,
+          sqlite: NOT_SUPPORTED,
+        })
+
+        await query.execute()
+      })
+
+      it('should delete from t1 using t2, t3 returning t2.*', async () => {
+        const query = ctx.db
+          .deleteFrom('toy')
+          .using(['pet', 'person'])
+          .whereRef('toy.pet_id', '=', 'pet.id')
+          .whereRef('pet.owner_id', '=', 'person.id')
+          .where('person.first_name', '=', 'Bob')
+          .returningAll('pet')
+
+        testSql(query, dialect, {
+          postgres: {
+            sql: [
+              'delete from "toy"',
+              'using "pet", "person"',
+              'where "toy"."pet_id" = "pet"."id"',
+              'and "pet"."owner_id" = "person"."id"',
+              'and "person"."first_name" = $1',
+              'returning "pet".*',
             ],
             parameters: ['Bob'],
           },
@@ -542,7 +571,7 @@ for (const dialect of DIALECTS) {
             or([
               eb('pet.species', '=', sql<Species>`${'NO_SUCH_SPECIES'}`),
               eb('toy.price', '=', 0),
-            ])
+            ]),
           )
 
         testSql(query, dialect, {
@@ -844,6 +873,32 @@ for (const dialect of DIALECTS) {
       })
     }
 
+    if (dialect === 'postgres' || dialect === 'mysql') {
+      it('modifyEnd should add arbitrary SQL to the end of the query', async () => {
+        const query = ctx.db
+          .deleteFrom('person')
+          .where('first_name', '=', 'Jennifer')
+          .modifyEnd(sql.raw('-- this is a comment'))
+
+        testSql(query, dialect, {
+          postgres: {
+            sql: 'delete from "person" where "first_name" = $1 -- this is a comment',
+            parameters: ['Jennifer'],
+          },
+          mysql: {
+            sql: 'delete from `person` where `first_name` = ? -- this is a comment',
+            parameters: ['Jennifer'],
+          },
+          mssql: NOT_SUPPORTED,
+          sqlite: NOT_SUPPORTED,
+        })
+
+        const result = await query.execute()
+
+        expect(result).to.have.length(1)
+      })
+    }
+
     if (dialect === 'postgres') {
       it('should delete all rows and stream returned results', async () => {
         const stream = ctx.db
@@ -863,8 +918,104 @@ for (const dialect of DIALECTS) {
             first_name,
             last_name,
             gender,
-          }))
+          })),
         )
+      })
+    }
+
+    if (dialect === 'mssql') {
+      it('should delete top', async () => {
+        const query = ctx.db
+          .deleteFrom('person')
+          .top(1)
+          .where('gender', '=', 'male')
+
+        testSql(query, dialect, {
+          postgres: NOT_SUPPORTED,
+          mysql: NOT_SUPPORTED,
+          mssql: {
+            sql: 'delete top(1) from "person" where "gender" = @1',
+            parameters: ['male'],
+          },
+          sqlite: NOT_SUPPORTED,
+        })
+
+        const result = await query.executeTakeFirst()
+
+        expect(result).to.be.instanceOf(DeleteResult)
+        expect(result.numDeletedRows).to.equal(1n)
+      })
+
+      it('should delete top percent', async () => {
+        const query = ctx.db
+          .deleteFrom('person')
+          .top(50, 'percent')
+          .where('gender', '=', 'male')
+
+        testSql(query, dialect, {
+          postgres: NOT_SUPPORTED,
+          mysql: NOT_SUPPORTED,
+          mssql: {
+            sql: 'delete top(50) percent from "person" where "gender" = @1',
+            parameters: ['male'],
+          },
+          sqlite: NOT_SUPPORTED,
+        })
+
+        const result = await query.executeTakeFirst()
+
+        expect(result).to.be.instanceOf(DeleteResult)
+      })
+    }
+
+    if (dialect === 'mssql') {
+      it('should return deleted rows when `output` is used', async () => {
+        const query = ctx.db
+          .deleteFrom('person')
+          .output(['deleted.first_name', 'deleted.last_name as last'])
+          .where('gender', '=', 'male')
+
+        testSql(query, dialect, {
+          postgres: NOT_SUPPORTED,
+          mysql: NOT_SUPPORTED,
+          mssql: {
+            sql: 'delete from "person" output "deleted"."first_name", "deleted"."last_name" as "last" where "gender" = @1',
+            parameters: ['male'],
+          },
+          sqlite: NOT_SUPPORTED,
+        })
+
+        const result = await query.execute()
+
+        expect(result).to.have.length(2)
+        expect(Object.keys(result[0]).sort()).to.eql(['first_name', 'last'])
+        expect(result).to.containSubset([
+          { first_name: 'Arnold', last: 'Schwarzenegger' },
+          { first_name: 'Sylvester', last: 'Stallone' },
+        ])
+      })
+
+      it('conditional `output` statement should add optional fields', async () => {
+        const condition = true
+
+        const query = ctx.db
+          .deleteFrom('person')
+          .output('deleted.first_name')
+          .$if(condition, (qb) => qb.output('deleted.last_name'))
+          .where('gender', '=', 'female')
+
+        testSql(query, dialect, {
+          postgres: NOT_SUPPORTED,
+          mysql: NOT_SUPPORTED,
+          mssql: {
+            sql: 'delete from "person" output "deleted"."first_name", "deleted"."last_name" where "gender" = @1',
+            parameters: ['female'],
+          },
+          sqlite: NOT_SUPPORTED,
+        })
+
+        const result = await query.executeTakeFirstOrThrow()
+        expect(result.last_name).to.equal('Aniston')
       })
     }
   })

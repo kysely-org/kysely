@@ -31,12 +31,28 @@ async function testUpdate(db: Kysely<Database>) {
     .executeTakeFirst()
   expectType<UpdateResult>(r4)
 
+  const r5 = await db
+    .updateTable('pet')
+    .from((eb) =>
+      eb
+        .selectFrom('person')
+        .select(['person.id as person_id', 'first_name as fn'])
+        .where('person.first_name', '=', 'Jennifer')
+        .forUpdate()
+        .skipLocked()
+        .as('p'),
+    )
+    .set('name', (eb) => eb.ref('p.fn'))
+    .returningAll('p')
+    .execute()
+  expectType<{ fn: string; person_id: number }[]>(r5)
+
   // Non-existent column
   expectError(
     db
       .updateTable('pet as p')
       .where('p.id', '=', '1')
-      .set({ name: 'Fluffy', not_a_column: 'not_a_column' })
+      .set({ name: 'Fluffy', not_a_column: 'not_a_column' }),
   )
 
   // Non-existent column in a callback
@@ -44,7 +60,7 @@ async function testUpdate(db: Kysely<Database>) {
     db
       .updateTable('pet as p')
       .where('p.id', '=', '1')
-      .set((eb) => ({ not_a_column: eb.val('not_a_column') }))
+      .set((eb) => ({ not_a_column: eb.val('not_a_column') })),
   )
 
   // GeneratedAlways column is not allowed to be updated

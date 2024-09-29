@@ -41,7 +41,7 @@ export interface KyselyPlugin {
    * You can modify the result and return the modifier result.
    */
   transformResult(
-    args: PluginTransformResultArgs
+    args: PluginTransformResultArgs,
   ): Promise<QueryResult<UnknownRow>>
 }
 

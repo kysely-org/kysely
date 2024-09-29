@@ -10,7 +10,7 @@ import { Simplify } from '../util/type-utils.js'
  * A MySQL helper for aggregating a subquery into a JSON array.
  *
  * NOTE: This helper is only guaranteed to fully work with the built-in `MysqlDialect`.
- * While the produced SQL is compatible with all MySQL databases, some 3rd party dialects
+ * While the produced SQL is compatible with all MySQL databases, some third-party dialects
  * may not parse the nested JSON into arrays. In these cases you can use the built in
  * `ParseJSONResultsPlugin` to parse the results.
  *
@@ -53,10 +53,10 @@ import { Simplify } from '../util/type-utils.js'
  * ```
  */
 export function jsonArrayFrom<O>(
-  expr: SelectQueryBuilderExpression<O>
+  expr: SelectQueryBuilderExpression<O>,
 ): RawBuilder<Simplify<O>[]> {
   return sql`(select cast(coalesce(json_arrayagg(json_object(${sql.join(
-    getMysqlJsonObjectArgs(expr.toOperationNode(), 'agg')
+    getMysqlJsonObjectArgs(expr.toOperationNode(), 'agg'),
   )})), '[]') as json) from ${expr} as agg)`
 }
 
@@ -66,7 +66,7 @@ export function jsonArrayFrom<O>(
  * The subquery must only return one row.
  *
  * NOTE: This helper is only guaranteed to fully work with the built-in `MysqlDialect`.
- * While the produced SQL is compatible with all MySQL databases, some 3rd party dialects
+ * While the produced SQL is compatible with all MySQL databases, some third-party dialects
  * may not parse the nested JSON into objects. In these cases you can use the built in
  * `ParseJSONResultsPlugin` to parse the results.
  *
@@ -109,10 +109,10 @@ export function jsonArrayFrom<O>(
  * ```
  */
 export function jsonObjectFrom<O>(
-  expr: SelectQueryBuilderExpression<O>
+  expr: SelectQueryBuilderExpression<O>,
 ): RawBuilder<Simplify<O> | null> {
   return sql`(select json_object(${sql.join(
-    getMysqlJsonObjectArgs(expr.toOperationNode(), 'obj')
+    getMysqlJsonObjectArgs(expr.toOperationNode(), 'obj'),
   )}) from ${expr} as obj)`
 }
 
@@ -120,7 +120,7 @@ export function jsonObjectFrom<O>(
  * The MySQL `json_object` function.
  *
  * NOTE: This helper is only guaranteed to fully work with the built-in `MysqlDialect`.
- * While the produced SQL is compatible with all MySQL databases, some 3rd party dialects
+ * While the produced SQL is compatible with all MySQL databases, some third-party dialects
  * may not parse the nested JSON into objects. In these cases you can use the built in
  * `ParseJSONResultsPlugin` to parse the results.
  *
@@ -157,26 +157,26 @@ export function jsonObjectFrom<O>(
  * ```
  */
 export function jsonBuildObject<O extends Record<string, Expression<unknown>>>(
-  obj: O
+  obj: O,
 ): RawBuilder<
   Simplify<{
     [K in keyof O]: O[K] extends Expression<infer V> ? V : never
   }>
 > {
   return sql`json_object(${sql.join(
-    Object.keys(obj).flatMap((k) => [sql.lit(k), obj[k]])
+    Object.keys(obj).flatMap((k) => [sql.lit(k), obj[k]]),
   )})`
 }
 
 function getMysqlJsonObjectArgs(
   node: SelectQueryNode,
-  table: string
+  table: string,
 ): Expression<unknown>[] {
   try {
     return getJsonObjectArgs(node, table)
   } catch {
     throw new Error(
-      'MySQL jsonArrayFrom and jsonObjectFrom functions can only handle explicit selections due to limitations of the json_object function. selectAll() is not allowed in the subquery.'
+      'MySQL jsonArrayFrom and jsonObjectFrom functions can only handle explicit selections due to limitations of the json_object function. selectAll() is not allowed in the subquery.',
     )
   }
 }

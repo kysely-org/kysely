@@ -1,6 +1,7 @@
 import { AddColumnNode } from '../../operation-node/add-column-node.js'
 import { AlterTableColumnAlterationNode } from '../../operation-node/alter-table-node.js'
 import { DropColumnNode } from '../../operation-node/drop-column-node.js'
+import { OffsetNode } from '../../operation-node/offset-node.js'
 import { MergeQueryNode } from '../../operation-node/merge-query-node.js'
 import { DefaultQueryCompiler } from '../../query-compiler/default-query-compiler.js'
 
@@ -9,13 +10,18 @@ export class MssqlQueryCompiler extends DefaultQueryCompiler {
     return `@${this.numParameters}`
   }
 
+  protected override visitOffset(node: OffsetNode): void {
+    super.visitOffset(node)
+    this.append(' rows')
+  }
+
   // mssql allows multi-column alterations in a single statement,
   // but you can only use the command keyword/s once.
   // it also doesn't support multiple kinds of commands in the same
   // alter table statement, but we compile that anyway for the sake
   // of WYSIWYG.
   protected override compileColumnAlterations(
-    columnAlterations: readonly AlterTableColumnAlterationNode[]
+    columnAlterations: readonly AlterTableColumnAlterationNode[],
   ): void {
     const nodesByKind: Partial<
       Record<

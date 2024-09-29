@@ -22,7 +22,7 @@ async function testJSONReference(db: Kysely<Database>) {
   const [r3] = await db
     .selectFrom('person_metadata')
     .select((eb) =>
-      eb.ref('profile', '->>$').key('auth').key('roles').as('roles')
+      eb.ref('profile', '->>$').key('auth').key('roles').as('roles'),
     )
     .execute()
 
@@ -42,7 +42,7 @@ async function testJSONReference(db: Kysely<Database>) {
         .ref('experience', '->>$')
         .at(0)
         .key('establishment')
-        .as('establishment')
+        .as('establishment'),
     )
     .execute()
 
@@ -51,12 +51,12 @@ async function testJSONReference(db: Kysely<Database>) {
   const [r6] = await db
     .selectFrom('person_metadata')
     .select((eb) =>
-      eb.ref('schedule', '->>$').at(0).at(0).as('january_1st_schedule')
+      eb.ref('schedule', '->>$').at(0).at(0).as('january_1st_schedule'),
     )
     .execute()
 
   expectType<{ january_1st_schedule: { name: string; time: string }[] | null }>(
-    r6
+    r6,
   )
 
   const [r7] = await db
@@ -87,18 +87,40 @@ async function testJSONReference(db: Kysely<Database>) {
 
   expectType<{ whenever: string | null }>(r10)
 
+  // `.$castTo()` should support chaining with `.as(...)` #1139
+  const [r11] = await db
+    .selectFrom('person_metadata')
+    .select((eb) =>
+      eb
+        .ref('array', '->')
+        .at(0)
+        .$castTo<string & { _brand: 'whenever' } | null>()
+        .as('whenever'),
+    )
+    .execute()
+
+  expectType<{ whenever: (string & { _brand: 'whenever' }) | null }>(r11)
+
+  // `.$notNull()` should support chaining with `.as(...)` #1139
+  const [r12] = await db
+    .selectFrom('person_metadata')
+    .select((eb) => eb.ref('array', '->').at(0).$notNull().as('whenever'))
+    .execute()
+
+  expectType<{ whenever: string }>(r12)
+
   // missing operator
 
   expectError(
     db
       .selectFrom('person_metadata')
-      .select((eb) => eb.ref('experience').at(0).as('alias'))
+      .select((eb) => eb.ref('experience').at(0).as('alias')),
   )
 
   expectError(
     db
       .selectFrom('person_metadata')
-      .select((eb) => eb.ref('website').key('url').as('alias'))
+      .select((eb) => eb.ref('website').key('url').as('alias')),
   )
 
   // invalid operator
@@ -107,9 +129,9 @@ async function testJSONReference(db: Kysely<Database>) {
     db
       .selectFrom('person_metadata')
       .select((eb) =>
-        eb.ref('website', 'NO_SUCH_OPERATOR').key('url').as('alias')
+        eb.ref('website', 'NO_SUCH_OPERATOR').key('url').as('alias'),
       )
-      .execute()
+      .execute(),
   )
 
   // use `key` on non-object
@@ -118,7 +140,7 @@ async function testJSONReference(db: Kysely<Database>) {
     db
       .selectFrom('person_metadata')
       .select((eb) => eb.ref('nicknames', '->>$').key('url').as('alias'))
-      .execute()
+      .execute(),
   )
 
   expectError(
@@ -128,7 +150,7 @@ async function testJSONReference(db: Kysely<Database>) {
         eb.ref('website', '->>').key('url').key('length').as('alias'),
         eb.ref('schedule', '->>').key('length').as('alias2'),
       ])
-      .execute()
+      .execute(),
   )
 
   // use `at` on non-array
@@ -137,14 +159,14 @@ async function testJSONReference(db: Kysely<Database>) {
     db
       .selectFrom('person_metadata')
       .select((eb) => eb.ref('website', '->>$').at(0).as('alias'))
-      .execute()
+      .execute(),
   )
 
   expectError(
     db
       .selectFrom('person_metadata')
       .select((eb) => eb.ref('experience', '->>').at(0).at(-1).as('alias'))
-      .execute()
+      .execute(),
   )
 
   // bad key
@@ -153,9 +175,9 @@ async function testJSONReference(db: Kysely<Database>) {
     db
       .selectFrom('person_metadata')
       .select((eb) =>
-        eb.ref('website', '->>$').key('NO_SUCH_FIELD').as('alias')
+        eb.ref('website', '->>$').key('NO_SUCH_FIELD').as('alias'),
       )
-      .execute()
+      .execute(),
   )
 
   // bad index
@@ -164,45 +186,45 @@ async function testJSONReference(db: Kysely<Database>) {
     db
       .selectFrom('person_metadata')
       .select((eb) => eb.ref('nicknames', '->>$').at('0').as('alias'))
-      .execute()
+      .execute(),
   )
 
   expectError(
     db
       .selectFrom('person_metadata')
       .select((eb) => eb.ref('nicknames', '->>$').at(0.5).as('alias'))
-      .execute()
+      .execute(),
   )
 
   expectError(
     db
       .selectFrom('person_metadata')
       .select((eb) => eb.ref('nicknames', '->>$').at('#--1').as('alias'))
-      .execute()
+      .execute(),
   )
 
   expectError(
     db
       .selectFrom('person_metadata')
       .select((eb) => eb.ref('nicknames', '->>$').at('#-1.5').as('alias'))
-      .execute()
+      .execute(),
   )
 
   expectError(
     db
       .selectFrom('person_metadata')
       .select((eb) => eb.ref('nicknames', '->>$').at('last ').as('alias'))
-      .execute()
+      .execute(),
   )
 }
 
 async function testJSONPath(eb: ExpressionBuilder<Database, keyof Database>) {
   expectType<JSONPathBuilder<PersonMetadata['experience']>>(
-    eb.jsonPath<'experience'>()
+    eb.jsonPath<'experience'>(),
   )
 
   expectType<JSONPathBuilder<PersonMetadata['experience']>>(
-    eb.jsonPath<'person_metadata.experience'>()
+    eb.jsonPath<'person_metadata.experience'>(),
   )
 
   expectError(eb.jsonPath('experience'))

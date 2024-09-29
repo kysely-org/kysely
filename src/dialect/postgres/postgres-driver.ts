@@ -48,18 +48,22 @@ export class PostgresDriver implements Driver {
       }
     }
 
+    if (this.#config.onReserveConnection) {
+      await this.#config.onReserveConnection(connection)
+    }
+
     return connection
   }
 
   async beginTransaction(
     connection: DatabaseConnection,
-    settings: TransactionSettings
+    settings: TransactionSettings,
   ): Promise<void> {
     if (settings.isolationLevel) {
       await connection.executeQuery(
         CompiledQuery.raw(
-          `start transaction isolation level ${settings.isolationLevel}`
-        )
+          `start transaction isolation level ${settings.isolationLevel}`,
+        ),
       )
     } else {
       await connection.executeQuery(CompiledQuery.raw('begin'))
@@ -132,11 +136,11 @@ class PostgresConnection implements DatabaseConnection {
 
   async *streamQuery<O>(
     compiledQuery: CompiledQuery,
-    chunkSize: number
+    chunkSize: number,
   ): AsyncIterableIterator<QueryResult<O>> {
     if (!this.#options.cursor) {
       throw new Error(
-        "'cursor' is not present in your postgres dialect config. It's required to make streaming work in postgres."
+        "'cursor' is not present in your postgres dialect config. It's required to make streaming work in postgres.",
       )
     }
 
@@ -147,8 +151,8 @@ class PostgresConnection implements DatabaseConnection {
     const cursor = this.#client.query(
       new this.#options.cursor<O>(
         compiledQuery.sql,
-        compiledQuery.parameters.slice()
-      )
+        compiledQuery.parameters.slice(),
+      ),
     )
 
     try {

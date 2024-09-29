@@ -2,7 +2,9 @@ import { freeze } from '../util/object-utils.js'
 import { AliasNode } from './alias-node.js'
 import { JoinNode } from './join-node.js'
 import { OperationNode } from './operation-node.js'
+import { OutputNode } from './output-node.js'
 import { TableNode } from './table-node.js'
+import { TopNode } from './top-node.js'
 import { WhenNode } from './when-node.js'
 import { WithNode } from './with-node.js'
 
@@ -12,6 +14,9 @@ export interface MergeQueryNode extends OperationNode {
   readonly using?: JoinNode
   readonly whens?: ReadonlyArray<WhenNode>
   readonly with?: WithNode
+  readonly top?: TopNode
+  readonly output?: OutputNode
+  readonly endModifiers?: ReadonlyArray<OperationNode>
 }
 
 /**
@@ -48,7 +53,7 @@ export const MergeQueryNode = freeze({
 
   cloneWithThen(
     mergeNode: MergeQueryNode,
-    then: OperationNode
+    then: OperationNode,
   ): MergeQueryNode {
     return freeze({
       ...mergeNode,
@@ -57,7 +62,7 @@ export const MergeQueryNode = freeze({
             ...mergeNode.whens.slice(0, -1),
             WhenNode.cloneWithResult(
               mergeNode.whens[mergeNode.whens.length - 1],
-              then
+              then,
             ),
           ])
         : undefined,

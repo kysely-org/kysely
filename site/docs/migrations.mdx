@@ -4,6 +4,8 @@ sidebar_position: 4
 
 # Migrations
 
+## Migration files
+
 Migration files should look like this:
 
 ```ts
@@ -18,17 +20,17 @@ export async function down(db: Kysely<any>): Promise<void> {
 }
 ```
 
-The up function is called when you update your database schema to the next version and down when you go back to previous version. The only argument for the functions is an instance of `Kysely<any>`. It's important to use ` Kysely<any>` and not `Kysely<YourDatabase>`.
+The `up` function is called when you update your database schema to the next version and `down` when you go back to previous version. The only argument for the functions is an instance of `Kysely<any>`. It's important to use `Kysely<any>` and not `Kysely<YourDatabase>`.
 
 Migrations should never depend on the current code of your app because they need to work even when the app changes. Migrations need to be "frozen in time".
 
-Migrations can use the `Kysely.schema` module to modify the schema. Migrations can also run normal queries to modify data.
+Migrations can use the `Kysely.schema` module to modify the schema. Migrations can also run normal queries to read/modify data.
 
 ## Execution order
 
-Migrations will be run in the alpha-numeric order of your migration names. An excellent way to name your migrations is to prefix them with an ISO 8601 date string. 
+Migrations will be run in the alpha-numeric order of your migration names. An excellent way to name your migrations is to prefix them with an ISO 8601 date string.
 
-By default, Kysely will also ensure this order matches the execution order of any previously executed migrations in your database. If the orders do not match (for example, a new migration was added alphabetically before a previously executed one), an error will be returned. This adds safety by always executing your migrations in the correct, alphanumeric order. 
+By default, Kysely will also ensure this order matches the execution order of any previously executed migrations in your database. If the orders do not match (for example, a new migration was added alphabetically before a previously executed one), an error will be returned. This adds safety by always executing your migrations in the correct, alphanumeric order.
 
 There is also an `allowUnorderedMigrations` option. This option will allow new migrations to be run even if they are added alphabetically before ones that have already executed. Allowing unordered migrations works well in large teams where multiple team members may add migrations at the same time in parallel commits without knowing about the other migrations. Pending (unexecuted) migrations will be run in alpha-numeric order when migrating up. When migrating down, migrations will be undone in the opposite order in which they were executed (reverse sorted by execution timestamp).
 
@@ -59,7 +61,7 @@ export async function up(db: Kysely<any>): Promise<void> {
     .addColumn('last_name', 'varchar')
     .addColumn('gender', 'varchar(50)', (col) => col.notNull())
     .addColumn('created_at', 'timestamp', (col) =>
-      col.defaultTo(sql`now()`).notNull()
+      col.defaultTo(sql`now()`).notNull(),
     )
     .execute()
 
@@ -68,7 +70,7 @@ export async function up(db: Kysely<any>): Promise<void> {
     .addColumn('id', 'serial', (col) => col.primaryKey())
     .addColumn('name', 'varchar', (col) => col.notNull().unique())
     .addColumn('owner_id', 'integer', (col) =>
-      col.references('person.id').onDelete('cascade').notNull()
+      col.references('person.id').onDelete('cascade').notNull(),
     )
     .addColumn('species', 'varchar', (col) => col.notNull())
     .execute()
@@ -99,7 +101,7 @@ export async function up(db: Kysely<any>): Promise<void> {
     .addColumn('last_name', 'text')
     .addColumn('gender', 'text', (col) => col.notNull())
     .addColumn('created_at', 'text', (col) =>
-      col.defaultTo(sql`CURRENT_TIMESTAMP`).notNull()
+      col.defaultTo(sql`CURRENT_TIMESTAMP`).notNull(),
     )
     .execute()
 
@@ -108,7 +110,7 @@ export async function up(db: Kysely<any>): Promise<void> {
     .addColumn('id', 'integer', (col) => col.primaryKey())
     .addColumn('name', 'text', (col) => col.notNull().unique())
     .addColumn('owner_id', 'integer', (col) =>
-      col.references('person.id').onDelete('cascade').notNull()
+      col.references('person.id').onDelete('cascade').notNull(),
     )
     .addColumn('species', 'text', (col) => col.notNull())
     .execute()
@@ -126,18 +128,25 @@ export async function down(db: Kysely<any>): Promise<void> {
 }
 ```
 
+## CLI (optional)
+
+Kysely offers a CLI you can use for migrations (and more). It can help you create and run migrations.
+It is not part of the core, and your mileage may vary.
+
+For more information, visit https://github.com/kysely-org/kysely-ctl.
+
 ## Running migrations
 
-You can then use
+You can then use:
 
 ```ts
 const migrator = new Migrator(migratorConfig)
-await migrator.migrateToLatest(pathToMigrationsFolder)
+await migrator.migrateToLatest()
 ```
 
 to run all migrations that have not yet been run. See the Migrator class's documentation for more info.
 
-Kysely doesn't have a CLI for running migrations and probably never will. This is because Kysely's migrations are also written in TypeScript. To run the migrations, you need to first build the TypeScript code into JavaScript. A CLI would cause confusion over which migrations are being run, the TypeScript ones or the JavaScript ones. If we added support for both, the CLI would need to depend on a TypeScript compiler, which most production environments don't (and shouldn't) have. You will probably want to add a simple migration script to your projects like this:
+You will probably want to add a simple migration script to your projects like this:
 
 ```ts
 import * as path from 'path'

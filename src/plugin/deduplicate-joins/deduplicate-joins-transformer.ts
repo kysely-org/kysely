@@ -19,7 +19,7 @@ export class DeduplicateJoinsTransformer extends OperationNodeTransformer {
   }
 
   #transformQuery<
-    T extends SelectQueryNode | UpdateQueryNode | DeleteQueryNode
+    T extends SelectQueryNode | UpdateQueryNode | DeleteQueryNode,
   >(node: T): T {
     if (!node.joins || node.joins.length === 0) {
       return node
@@ -37,8 +37,8 @@ export class DeduplicateJoinsTransformer extends OperationNodeTransformer {
     for (let i = 0; i < joins.length; ++i) {
       let foundDuplicate = false
 
-      for (let j = i + 1; j < joins.length; ++j) {
-        if (compare(joins[i], joins[j])) {
+      for (let j = 0; j < out.length; ++j) {
+        if (compare(joins[i], out[j])) {
           foundDuplicate = true
           break
         }

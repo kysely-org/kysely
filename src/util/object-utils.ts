@@ -53,19 +53,26 @@ export function isObject(obj: unknown): obj is ShallowRecord<string, unknown> {
 }
 
 export function isArrayBufferOrView(
-  obj: unknown
+  obj: unknown,
 ): obj is ArrayBuffer | ArrayBufferView {
   return obj instanceof ArrayBuffer || ArrayBuffer.isView(obj)
 }
 
 export function isPlainObject(obj: unknown): obj is Record<string, unknown> {
-  return (
-    isObject(obj) &&
-    !Array.isArray(obj) &&
-    !isDate(obj) &&
-    !isBuffer(obj) &&
-    !isArrayBufferOrView(obj)
-  )
+  if (!isObject(obj) || getTag(obj) !== '[object Object]') {
+    return false
+  }
+
+  if (Object.getPrototypeOf(obj) === null) {
+    return true
+  }
+
+  let proto = obj
+  while (Object.getPrototypeOf(proto) !== null) {
+    proto = Object.getPrototypeOf(proto)
+  }
+
+  return Object.getPrototypeOf(obj) === proto
 }
 
 export function getLast<T>(arr: ArrayLike<T>): T | undefined {
@@ -85,7 +92,7 @@ export function asArray<T>(arg: T | ReadonlyArray<T>): ReadonlyArray<T> {
 }
 
 export function asReadonlyArray<T>(
-  arg: T | ReadonlyArray<T>
+  arg: T | ReadonlyArray<T>,
 ): ReadonlyArray<T> {
   if (isReadonlyArray(arg)) {
     return arg
@@ -114,7 +121,7 @@ export function compare(obj1: unknown, obj2: unknown): boolean {
 
 function compareArrays(
   arr1: ReadonlyArray<unknown>,
-  arr2: ReadonlyArray<unknown>
+  arr2: ReadonlyArray<unknown>,
 ): boolean {
   if (arr1.length !== arr2.length) {
     return false
@@ -131,7 +138,7 @@ function compareArrays(
 
 function compareObjects(
   obj1: Record<string, unknown>,
-  obj2: Record<string, unknown>
+  obj2: Record<string, unknown>,
 ): boolean {
   if (isBuffer(obj1) && isBuffer(obj2)) {
     return compareBuffers(obj1, obj2)
@@ -152,7 +159,7 @@ function compareDates(date1: Date, date2: Date) {
 
 function compareGenericObjects(
   obj1: Record<string, unknown>,
-  obj2: Record<string, unknown>
+  obj2: Record<string, unknown>,
 ): boolean {
   const keys1 = Object.keys(obj1)
   const keys2 = Object.keys(obj2)
@@ -168,4 +175,14 @@ function compareGenericObjects(
   }
 
   return true
+}
+
+const toString = Object.prototype.toString
+
+function getTag(value: unknown): string {
+  if (value == null) {
+    return value === undefined ? '[object Undefined]' : '[object Null]'
+  }
+
+  return toString.call(value)
 }

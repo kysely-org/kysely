@@ -8,6 +8,7 @@ import {
   DefaultValueExpression,
   parseDefaultValueExpression,
 } from '../parser/default-value-parser.js'
+import { preventAwait } from '../util/prevent-await.js'
 
 export class AlterColumnBuilder {
   readonly #column: string
@@ -21,8 +22,8 @@ export class AlterColumnBuilder {
       AlterColumnNode.create(
         this.#column,
         'dataType',
-        parseDataTypeExpression(dataType)
-      )
+        parseDataTypeExpression(dataType),
+      ),
     )
   }
 
@@ -31,26 +32,26 @@ export class AlterColumnBuilder {
       AlterColumnNode.create(
         this.#column,
         'setDefault',
-        parseDefaultValueExpression(value)
-      )
+        parseDefaultValueExpression(value),
+      ),
     )
   }
 
   dropDefault(): AlteredColumnBuilder {
     return new AlteredColumnBuilder(
-      AlterColumnNode.create(this.#column, 'dropDefault', true)
+      AlterColumnNode.create(this.#column, 'dropDefault', true),
     )
   }
 
   setNotNull(): AlteredColumnBuilder {
     return new AlteredColumnBuilder(
-      AlterColumnNode.create(this.#column, 'setNotNull', true)
+      AlterColumnNode.create(this.#column, 'setNotNull', true),
     )
   }
 
   dropNotNull(): AlteredColumnBuilder {
     return new AlteredColumnBuilder(
-      AlterColumnNode.create(this.#column, 'dropNotNull', true)
+      AlterColumnNode.create(this.#column, 'dropNotNull', true),
     )
   }
 
@@ -62,6 +63,8 @@ export class AlterColumnBuilder {
     return func(this)
   }
 }
+
+preventAwait(AlterColumnBuilder, "don't await AlterColumnBuilder instances")
 
 /**
  * Allows us to force consumers to do exactly one alteration to a column.
@@ -91,5 +94,7 @@ export class AlteredColumnBuilder implements OperationNodeSource {
 }
 
 export type AlterColumnBuilderCallback = (
-  builder: AlterColumnBuilder
+  builder: AlterColumnBuilder,
 ) => AlteredColumnBuilder
+
+preventAwait(AlteredColumnBuilder, "don't await AlteredColumnBuilder instances")

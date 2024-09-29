@@ -19,6 +19,11 @@ export interface MysqlDialectConfig {
    * Called once for each created connection.
    */
   onCreateConnection?: (connection: DatabaseConnection) => Promise<void>
+
+  /**
+   * Called every time a connection is acquired from the connection pool.
+   */
+  onReserveConnection?: (connection: DatabaseConnection) => Promise<void>
 }
 
 /**
@@ -31,7 +36,7 @@ export interface MysqlDialectConfig {
  */
 export interface MysqlPool {
   getConnection(
-    callback: (error: unknown, connection: MysqlPoolConnection) => void
+    callback: (error: unknown, connection: MysqlPoolConnection) => void,
   ): void
   end(callback: (error: unknown) => void): void
 }
@@ -39,12 +44,12 @@ export interface MysqlPool {
 export interface MysqlPoolConnection {
   query(
     sql: string,
-    parameters: ReadonlyArray<unknown>
+    parameters: ReadonlyArray<unknown>,
   ): { stream: <T>(options: MysqlStreamOptions) => MysqlStream<T> }
   query(
     sql: string,
     parameters: ReadonlyArray<unknown>,
-    callback: (error: unknown, result: MysqlQueryResult) => void
+    callback: (error: unknown, result: MysqlQueryResult) => void,
   ): void
   release(): void
 }

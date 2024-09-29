@@ -2,12 +2,15 @@ import { freeze } from '../util/object-utils.js'
 import { OperationNode } from './operation-node.js'
 import { OverNode } from './over-node.js'
 import { WhereNode } from './where-node.js'
+import { OrderByNode } from './order-by-node.js'
+import { OrderByItemNode } from './order-by-item-node.js'
 
 export interface AggregateFunctionNode extends OperationNode {
   readonly kind: 'AggregateFunctionNode'
   readonly func: string
   readonly aggregated: readonly OperationNode[]
   readonly distinct?: boolean
+  readonly orderBy?: OrderByNode
   readonly filter?: WhereNode
   readonly over?: OverNode
 }
@@ -22,7 +25,7 @@ export const AggregateFunctionNode = freeze({
 
   create(
     aggregateFunction: string,
-    aggregated: readonly OperationNode[] = []
+    aggregated: readonly OperationNode[] = [],
   ): AggregateFunctionNode {
     return freeze({
       kind: 'AggregateFunctionNode',
@@ -32,7 +35,7 @@ export const AggregateFunctionNode = freeze({
   },
 
   cloneWithDistinct(
-    aggregateFunctionNode: AggregateFunctionNode
+    aggregateFunctionNode: AggregateFunctionNode,
   ): AggregateFunctionNode {
     return freeze({
       ...aggregateFunctionNode,
@@ -40,9 +43,21 @@ export const AggregateFunctionNode = freeze({
     })
   },
 
+  cloneWithOrderBy(
+    aggregateFunctionNode: AggregateFunctionNode,
+    orderItems: ReadonlyArray<OrderByItemNode>,
+  ): AggregateFunctionNode {
+    return freeze({
+      ...aggregateFunctionNode,
+      orderBy: aggregateFunctionNode.orderBy
+        ? OrderByNode.cloneWithItems(aggregateFunctionNode.orderBy, orderItems)
+        : OrderByNode.create(orderItems),
+    })
+  },
+
   cloneWithFilter(
     aggregateFunctionNode: AggregateFunctionNode,
-    filter: OperationNode
+    filter: OperationNode,
   ): AggregateFunctionNode {
     return freeze({
       ...aggregateFunctionNode,
@@ -50,7 +65,7 @@ export const AggregateFunctionNode = freeze({
         ? WhereNode.cloneWithOperation(
             aggregateFunctionNode.filter,
             'And',
-            filter
+            filter,
           )
         : WhereNode.create(filter),
     })
@@ -58,7 +73,7 @@ export const AggregateFunctionNode = freeze({
 
   cloneWithOrFilter(
     aggregateFunctionNode: AggregateFunctionNode,
-    filter: OperationNode
+    filter: OperationNode,
   ): AggregateFunctionNode {
     return freeze({
       ...aggregateFunctionNode,
@@ -66,7 +81,7 @@ export const AggregateFunctionNode = freeze({
         ? WhereNode.cloneWithOperation(
             aggregateFunctionNode.filter,
             'Or',
-            filter
+            filter,
           )
         : WhereNode.create(filter),
     })
@@ -74,7 +89,7 @@ export const AggregateFunctionNode = freeze({
 
   cloneWithOver(
     aggregateFunctionNode: AggregateFunctionNode,
-    over?: OverNode
+    over?: OverNode,
   ): AggregateFunctionNode {
     return freeze({
       ...aggregateFunctionNode,

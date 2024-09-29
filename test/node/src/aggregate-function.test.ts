@@ -2,6 +2,7 @@ import {
   AggregateFunctionBuilder,
   ExpressionBuilder,
   SimpleReferenceExpression,
+  ReferenceExpression,
   sql,
 } from '../../../'
 import {
@@ -44,7 +45,7 @@ for (const dialect of DIALECTS) {
               (eb) =>
                 getAggregateFunctionFromExpressionBuilder(
                   eb,
-                  funcName
+                  funcName,
                 )('person.id').as(`another_${funcName}`),
             ])
 
@@ -94,7 +95,7 @@ for (const dialect of DIALECTS) {
               (eb) =>
                 getAggregateFunctionFromExpressionBuilder(
                   eb,
-                  funcName
+                  funcName,
                 )('person.id')
                   .distinct()
                   .as(`another_${funcName}`),
@@ -146,7 +147,7 @@ for (const dialect of DIALECTS) {
               (eb) =>
                 getAggregateFunctionFromExpressionBuilder(
                   eb,
-                  funcName
+                  funcName,
                 )('person.id')
                   .over()
                   .as(`another_${funcName}`),
@@ -198,7 +199,7 @@ for (const dialect of DIALECTS) {
             (eb) =>
               getAggregateFunctionFromExpressionBuilder(
                 eb,
-                funcName
+                funcName,
               )('person.id')
                 .over((ob) => ob.partitionBy('person.first_name'))
                 .as(`another_${funcName}`),
@@ -254,18 +255,18 @@ for (const dialect of DIALECTS) {
           const query = ctx.db.selectFrom('person').select([
             func('id')
               .over((ob) =>
-                ob.orderBy('last_name', 'asc').orderBy('first_name', 'asc')
+                ob.orderBy('last_name', 'asc').orderBy('first_name', 'asc'),
               )
               .as(funcName),
             (eb) =>
               getAggregateFunctionFromExpressionBuilder(
                 eb,
-                funcName
+                funcName,
               )('person.id')
                 .over((ob) =>
                   ob
                     .orderBy('person.last_name', 'desc')
-                    .orderBy('person.first_name', 'desc')
+                    .orderBy('person.first_name', 'desc'),
                 )
                 .as(`another_${funcName}`),
           ])
@@ -331,19 +332,19 @@ for (const dialect of DIALECTS) {
                 ob
                   .partitionBy(['gender'])
                   .orderBy('last_name', 'asc')
-                  .orderBy('first_name', 'asc')
+                  .orderBy('first_name', 'asc'),
               )
               .as(funcName),
             (eb) =>
               getAggregateFunctionFromExpressionBuilder(
                 eb,
-                funcName
+                funcName,
               )('person.id')
                 .over((ob) =>
                   ob
                     .partitionBy('person.gender')
                     .orderBy('person.last_name', 'desc')
-                    .orderBy('person.first_name', 'desc')
+                    .orderBy('person.first_name', 'desc'),
                 )
                 .as(`another_${funcName}`),
           ])
@@ -518,7 +519,7 @@ for (const dialect of DIALECTS) {
               (eb) =>
                 getAggregateFunctionFromExpressionBuilder(
                   eb,
-                  funcName
+                  funcName,
                 )(dynamicReference).as(`another_${funcName}`),
             ])
 
@@ -669,7 +670,7 @@ for (const dialect of DIALECTS) {
                 (eb) =>
                   getAggregateFunctionFromExpressionBuilder(
                     eb,
-                    funcName
+                    funcName,
                   )('person.id')
                     .filterWhere('person.gender', '=', 'female')
                     .as(`another_${funcName}`),
@@ -714,7 +715,7 @@ for (const dialect of DIALECTS) {
                 (eb) =>
                   getAggregateFunctionFromExpressionBuilder(
                     eb,
-                    funcName
+                    funcName,
                   )('person.id')
                     .filterWhere('person.gender', '=', 'female')
                     .filterWhere('person.middle_name', 'is not', null)
@@ -760,19 +761,19 @@ for (const dialect of DIALECTS) {
                   or([
                     eb('person.gender', '=', 'female'),
                     eb('person.middle_name', 'is not', null),
-                  ])
+                  ]),
                 )
                 .as(funcName),
               (eb) =>
                 getAggregateFunctionFromExpressionBuilder(
                   eb,
-                  funcName
+                  funcName,
                 )('person.id')
                   .filterWhere((eb) =>
                     eb.or([
                       eb('person.gender', '=', 'female'),
                       eb('person.middle_name', 'is not', null),
-                    ])
+                    ]),
                   )
                   .as(`another_${funcName}`),
             ])
@@ -820,7 +821,7 @@ for (const dialect of DIALECTS) {
                 (eb) =>
                   getAggregateFunctionFromExpressionBuilder(
                     eb,
-                    funcName
+                    funcName,
                   )('person.id')
                     .filterWhere('person.gender', '=', 'female')
                     .over()
@@ -1043,7 +1044,7 @@ for (const dialect of DIALECTS) {
             eb.fn
               .agg('rank')
               .over((ob) =>
-                dialect === 'mssql' ? ob.orderBy('first_name') : ob
+                dialect === 'mssql' ? ob.orderBy('first_name') : ob,
               )
               .as('another_rank'),
         ])
@@ -1052,16 +1053,16 @@ for (const dialect of DIALECTS) {
             eb.fn
               .agg('string_agg', ['first_name', sql.lit(',')])
               .$call((eb) => (dialect === 'mssql' ? eb : eb.distinct()))
-              .as('first_names')
-          )
+              .as('first_names'),
+          ),
         )
         .$if(dialect === 'mysql' || dialect === 'sqlite', (qb) =>
           qb.select((eb) =>
             eb.fn
               .agg('group_concat', ['first_name'])
               .distinct()
-              .as('first_names')
-          )
+              .as('first_names'),
+          ),
         )
 
       testSql(query, dialect, {
@@ -1106,19 +1107,70 @@ for (const dialect of DIALECTS) {
 
       await query.execute()
     })
+
+    describe(`should execute order-sensitive aggregate functions`, () => {
+      if (dialect === 'postgres' || dialect === 'mysql' || dialect === 'sqlite') {
+        const isMySql = dialect === 'mysql'
+        const funcName = isMySql ? 'group_concat' : 'string_agg'
+        const funcArgs: Array<ReferenceExpression<Database, 'person'>> = [
+          'first_name',
+        ]
+        if (!isMySql) {
+          funcArgs.push(sql.lit(','))
+        }
+
+        it(`should execute a query with ${funcName}(column order by column) in select clause`, async () => {
+          const query = ctx.db
+            .selectFrom('person')
+            .select((eb) =>
+              eb.fn
+                .agg(funcName, funcArgs)
+                .orderBy('first_name', 'desc')
+                .as('first_names'),
+            )
+
+          testSql(query, dialect, {
+            postgres: {
+              sql: [
+                `select ${funcName}("first_name", ',' order by "first_name" desc) as "first_names"`,
+                `from "person"`,
+              ],
+              parameters: [],
+            },
+            mysql: {
+              sql: [
+                `select ${funcName}(\`first_name\` order by \`first_name\` desc) as \`first_names\``,
+                `from \`person\``,
+              ],
+              parameters: [],
+            },
+            mssql: NOT_SUPPORTED,
+            sqlite: {
+              sql: [
+                `select ${funcName}("first_name", ',' order by "first_name" desc) as "first_names"`,
+                `from "person"`,
+              ],
+              parameters: [],
+            },
+          })
+
+          await query.execute()
+        })
+      }
+    })
   })
 }
 
 function getAggregateFunctionFromTestContext<TB extends keyof Database>(
   ctx: TestContext,
-  funcName: (typeof funcNames)[number]
+  funcName: (typeof funcNames)[number],
 ): AggregateFunction<TB> {
   return ctx.db.fn[funcName] as any
 }
 
 function getAggregateFunctionFromExpressionBuilder<TB extends keyof Database>(
   eb: ExpressionBuilder<Database, TB>,
-  funcName: (typeof funcNames)[number]
+  funcName: (typeof funcNames)[number],
 ): AggregateFunction<TB> {
   return eb.fn[funcName] as any
 }
@@ -1128,5 +1180,5 @@ type AggregateFunction<
   C extends SimpleReferenceExpression<Database, TB> = SimpleReferenceExpression<
     Database,
     TB
-  >
+  >,
 > = (column: C) => AggregateFunctionBuilder<Database, TB>

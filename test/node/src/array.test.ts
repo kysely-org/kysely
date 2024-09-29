@@ -31,7 +31,7 @@ if (DIALECTS.includes('postgres')) {
       await ctx.db.schema
         .alterTable('person')
         .addColumn('lucky_numbers', sql`integer[]`, (col) =>
-          col.notNull().defaultTo(sql`ARRAY[]::integer[]`)
+          col.notNull().defaultTo(sql`ARRAY[]::integer[]`),
         )
         .addColumn('nicknames', sql`text[]`)
         .execute()

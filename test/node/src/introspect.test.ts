@@ -94,6 +94,7 @@ for (const dialect of DIALECTS) {
                   isNullable: false,
                   isAutoIncrementing: true,
                   hasDefaultValue: true,
+                  comment: undefined,
                 },
                 {
                   name: 'first_name',
@@ -102,6 +103,7 @@ for (const dialect of DIALECTS) {
                   isNullable: true,
                   isAutoIncrementing: false,
                   hasDefaultValue: false,
+                  comment: undefined,
                 },
                 {
                   name: 'middle_name',
@@ -110,6 +112,7 @@ for (const dialect of DIALECTS) {
                   isNullable: true,
                   isAutoIncrementing: false,
                   hasDefaultValue: false,
+                  comment: undefined,
                 },
 
                 {
@@ -119,6 +122,7 @@ for (const dialect of DIALECTS) {
                   isNullable: true,
                   isAutoIncrementing: false,
                   hasDefaultValue: false,
+                  comment: undefined,
                 },
                 {
                   name: 'gender',
@@ -127,6 +131,7 @@ for (const dialect of DIALECTS) {
                   isNullable: false,
                   isAutoIncrementing: false,
                   hasDefaultValue: false,
+                  comment: undefined,
                 },
                 {
                   name: 'marital_status',
@@ -135,6 +140,7 @@ for (const dialect of DIALECTS) {
                   isNullable: true,
                   isAutoIncrementing: false,
                   hasDefaultValue: false,
+                  comment: undefined,
                 },
                 {
                   name: 'children',
@@ -143,6 +149,7 @@ for (const dialect of DIALECTS) {
                   isNullable: false,
                   isAutoIncrementing: false,
                   hasDefaultValue: true,
+                  comment: undefined,
                 },
               ],
             },
@@ -158,6 +165,7 @@ for (const dialect of DIALECTS) {
                   isNullable: false,
                   isAutoIncrementing: true,
                   hasDefaultValue: true,
+                  comment: undefined,
                 },
                 {
                   name: 'name',
@@ -166,6 +174,7 @@ for (const dialect of DIALECTS) {
                   isNullable: false,
                   isAutoIncrementing: false,
                   hasDefaultValue: false,
+                  comment: undefined,
                 },
                 {
                   name: 'owner_id',
@@ -174,6 +183,7 @@ for (const dialect of DIALECTS) {
                   isNullable: false,
                   isAutoIncrementing: false,
                   hasDefaultValue: false,
+                  comment: undefined,
                 },
                 {
                   name: 'species',
@@ -182,6 +192,7 @@ for (const dialect of DIALECTS) {
                   isNullable: false,
                   isAutoIncrementing: false,
                   hasDefaultValue: false,
+                  comment: undefined,
                 },
               ],
             },
@@ -197,6 +208,7 @@ for (const dialect of DIALECTS) {
                   isNullable: false,
                   isAutoIncrementing: true,
                   hasDefaultValue: true,
+                  comment: undefined,
                 },
                 {
                   name: 'name',
@@ -205,6 +217,7 @@ for (const dialect of DIALECTS) {
                   isNullable: false,
                   isAutoIncrementing: false,
                   hasDefaultValue: false,
+                  comment: undefined,
                 },
                 {
                   name: 'pet_id',
@@ -213,6 +226,7 @@ for (const dialect of DIALECTS) {
                   isNullable: false,
                   isAutoIncrementing: false,
                   hasDefaultValue: false,
+                  comment: undefined,
                 },
                 {
                   name: 'price',
@@ -221,6 +235,7 @@ for (const dialect of DIALECTS) {
                   isNullable: false,
                   isAutoIncrementing: false,
                   hasDefaultValue: false,
+                  comment: 'Price in USD',
                 },
               ],
             },
@@ -236,6 +251,7 @@ for (const dialect of DIALECTS) {
                   isNullable: true,
                   isAutoIncrementing: false,
                   hasDefaultValue: false,
+                  comment: undefined,
                 },
               ],
             },
@@ -251,6 +267,7 @@ for (const dialect of DIALECTS) {
                   isNullable: false,
                   isAutoIncrementing: true,
                   hasDefaultValue: true,
+                  comment: undefined,
                 },
                 {
                   dataType: 'species',
@@ -259,6 +276,23 @@ for (const dialect of DIALECTS) {
                   isAutoIncrementing: false,
                   isNullable: true,
                   name: 'spcies',
+                  comment: undefined,
+                },
+              ],
+            },
+            {
+              name: 'pet_partition',
+              isView: false,
+              schema: 'some_schema',
+              columns: [
+                {
+                  name: 'part_column',
+                  dataType: 'text',
+                  dataTypeSchema: 'pg_catalog',
+                  isNullable: true,
+                  isAutoIncrementing: false,
+                  hasDefaultValue: false,
+                  comment: undefined,
                 },
               ],
             },
@@ -276,6 +310,7 @@ for (const dialect of DIALECTS) {
                   isNullable: false,
                   isAutoIncrementing: true,
                   hasDefaultValue: false,
+                  comment: undefined,
                 },
                 {
                   name: 'first_name',
@@ -283,6 +318,7 @@ for (const dialect of DIALECTS) {
                   isNullable: true,
                   isAutoIncrementing: false,
                   hasDefaultValue: false,
+                  comment: undefined,
                 },
                 {
                   name: 'middle_name',
@@ -290,6 +326,7 @@ for (const dialect of DIALECTS) {
                   isNullable: true,
                   isAutoIncrementing: false,
                   hasDefaultValue: false,
+                  comment: undefined,
                 },
                 {
                   name: 'last_name',
@@ -297,6 +334,7 @@ for (const dialect of DIALECTS) {
                   isNullable: true,
                   isAutoIncrementing: false,
                   hasDefaultValue: false,
+                  comment: undefined,
                 },
 
                 {
@@ -305,6 +343,7 @@ for (const dialect of DIALECTS) {
                   isNullable: false,
                   isAutoIncrementing: false,
                   hasDefaultValue: false,
+                  comment: undefined,
                 },
                 {
                   name: 'marital_status',
@@ -312,6 +351,7 @@ for (const dialect of DIALECTS) {
                   isNullable: true,
                   isAutoIncrementing: false,
                   hasDefaultValue: false,
+                  comment: undefined,
                 },
                 {
                   name: 'children',
@@ -319,6 +359,7 @@ for (const dialect of DIALECTS) {
                   isNullable: false,
                   isAutoIncrementing: false,
                   hasDefaultValue: true,
+                  comment: undefined,
                 },
               ],
             },
@@ -333,6 +374,7 @@ for (const dialect of DIALECTS) {
                   isNullable: false,
                   isAutoIncrementing: true,
                   hasDefaultValue: false,
+                  comment: undefined,
                 },
                 {
                   name: 'name',
@@ -340,6 +382,7 @@ for (const dialect of DIALECTS) {
                   isNullable: false,
                   isAutoIncrementing: false,
                   hasDefaultValue: false,
+                  comment: undefined,
                 },
                 {
                   name: 'owner_id',
@@ -347,6 +390,7 @@ for (const dialect of DIALECTS) {
                   isNullable: false,
                   isAutoIncrementing: false,
                   hasDefaultValue: false,
+                  comment: undefined,
                 },
                 {
                   name: 'species',
@@ -354,6 +398,7 @@ for (const dialect of DIALECTS) {
                   isNullable: false,
                   isAutoIncrementing: false,
                   hasDefaultValue: false,
+                  comment: undefined,
                 },
               ],
             },
@@ -368,6 +413,7 @@ for (const dialect of DIALECTS) {
                   isNullable: false,
                   isAutoIncrementing: true,
                   hasDefaultValue: false,
+                  comment: undefined,
                 },
                 {
                   name: 'name',
@@ -375,6 +421,7 @@ for (const dialect of DIALECTS) {
                   isNullable: false,
                   isAutoIncrementing: false,
                   hasDefaultValue: false,
+                  comment: undefined,
                 },
                 {
                   name: 'pet_id',
@@ -382,6 +429,7 @@ for (const dialect of DIALECTS) {
                   isNullable: false,
                   isAutoIncrementing: false,
                   hasDefaultValue: false,
+                  comment: undefined,
                 },
                 {
                   name: 'price',
@@ -389,6 +437,7 @@ for (const dialect of DIALECTS) {
                   isNullable: false,
                   isAutoIncrementing: false,
                   hasDefaultValue: false,
+                  comment: 'Price in USD',
                 },
               ],
             },
@@ -403,6 +452,7 @@ for (const dialect of DIALECTS) {
                   isAutoIncrementing: false,
                   isNullable: false,
                   name: 'name',
+                  comment: undefined,
                 },
               ],
             },
@@ -421,6 +471,7 @@ for (const dialect of DIALECTS) {
                   isAutoIncrementing: false,
                   isNullable: false,
                   name: 'children',
+                  comment: undefined,
                 },
                 {
                   dataType: 'varchar',
@@ -429,6 +480,7 @@ for (const dialect of DIALECTS) {
                   isAutoIncrementing: false,
                   isNullable: true,
                   name: 'first_name',
+                  comment: undefined,
                 },
                 {
                   dataType: 'varchar',
@@ -437,6 +489,7 @@ for (const dialect of DIALECTS) {
                   isAutoIncrementing: false,
                   isNullable: false,
                   name: 'gender',
+                  comment: undefined,
                 },
                 {
                   dataType: 'int',
@@ -445,6 +498,7 @@ for (const dialect of DIALECTS) {
                   isAutoIncrementing: true,
                   isNullable: false,
                   name: 'id',
+                  comment: undefined,
                 },
                 {
                   dataType: 'varchar',
@@ -453,6 +507,7 @@ for (const dialect of DIALECTS) {
                   isAutoIncrementing: false,
                   isNullable: true,
                   name: 'last_name',
+                  comment: undefined,
                 },
                 {
                   dataType: 'varchar',
@@ -461,6 +516,7 @@ for (const dialect of DIALECTS) {
                   isAutoIncrementing: false,
                   isNullable: true,
                   name: 'marital_status',
+                  comment: undefined,
                 },
                 {
                   dataType: 'varchar',
@@ -469,6 +525,7 @@ for (const dialect of DIALECTS) {
                   isAutoIncrementing: false,
                   isNullable: true,
                   name: 'middle_name',
+                  comment: undefined,
                 },
               ],
             },
@@ -484,6 +541,7 @@ for (const dialect of DIALECTS) {
                   isAutoIncrementing: true,
                   isNullable: false,
                   name: 'id',
+                  comment: undefined,
                 },
                 {
                   dataType: 'varchar',
@@ -492,6 +550,7 @@ for (const dialect of DIALECTS) {
                   isAutoIncrementing: false,
                   isNullable: false,
                   name: 'name',
+                  comment: undefined,
                 },
                 {
                   dataType: 'int',
@@ -500,6 +559,7 @@ for (const dialect of DIALECTS) {
                   isAutoIncrementing: false,
                   isNullable: false,
                   name: 'owner_id',
+                  comment: undefined,
                 },
                 {
                   dataType: 'varchar',
@@ -508,6 +568,7 @@ for (const dialect of DIALECTS) {
                   isAutoIncrementing: false,
                   isNullable: false,
                   name: 'species',
+                  comment: undefined,
                 },
               ],
             },
@@ -523,6 +584,7 @@ for (const dialect of DIALECTS) {
                   isAutoIncrementing: true,
                   isNullable: false,
                   name: 'id',
+                  comment: undefined,
                 },
                 {
                   dataType: 'varchar',
@@ -531,6 +593,7 @@ for (const dialect of DIALECTS) {
                   isAutoIncrementing: false,
                   isNullable: false,
                   name: 'name',
+                  comment: undefined,
                 },
                 {
                   dataType: 'int',
@@ -539,6 +602,7 @@ for (const dialect of DIALECTS) {
                   isAutoIncrementing: false,
                   isNullable: false,
                   name: 'pet_id',
+                  comment: undefined,
                 },
                 {
                   dataType: 'float',
@@ -547,6 +611,7 @@ for (const dialect of DIALECTS) {
                   isAutoIncrementing: false,
                   isNullable: false,
                   name: 'price',
+                  comment: 'Price in USD',
                 },
               ],
             },
@@ -562,6 +627,7 @@ for (const dialect of DIALECTS) {
                   isAutoIncrementing: false,
                   isNullable: false,
                   name: 'name',
+                  comment: undefined,
                 },
               ],
             },
@@ -577,6 +643,7 @@ for (const dialect of DIALECTS) {
                   isAutoIncrementing: true,
                   isNullable: false,
                   name: 'some_column',
+                  comment: undefined,
                 },
                 {
                   dataType: 'int',
@@ -585,6 +652,7 @@ for (const dialect of DIALECTS) {
                   isAutoIncrementing: false,
                   isNullable: true,
                   name: 'some_column_plus_1',
+                  comment: undefined,
                 },
               ],
             },
@@ -601,6 +669,7 @@ for (const dialect of DIALECTS) {
                   isNullable: true,
                   isAutoIncrementing: true,
                   hasDefaultValue: false,
+                  comment: undefined,
                 },
                 {
                   name: 'first_name',
@@ -608,6 +677,7 @@ for (const dialect of DIALECTS) {
                   isNullable: true,
                   isAutoIncrementing: false,
                   hasDefaultValue: false,
+                  comment: undefined,
                 },
                 {
                   name: 'middle_name',
@@ -615,6 +685,7 @@ for (const dialect of DIALECTS) {
                   isNullable: true,
                   isAutoIncrementing: false,
                   hasDefaultValue: false,
+                  comment: undefined,
                 },
                 {
                   name: 'last_name',
@@ -622,6 +693,7 @@ for (const dialect of DIALECTS) {
                   isNullable: true,
                   isAutoIncrementing: false,
                   hasDefaultValue: false,
+                  comment: undefined,
                 },
 
                 {
@@ -630,6 +702,7 @@ for (const dialect of DIALECTS) {
                   isNullable: false,
                   isAutoIncrementing: false,
                   hasDefaultValue: false,
+                  comment: undefined,
                 },
                 {
                   name: 'marital_status',
@@ -637,6 +710,7 @@ for (const dialect of DIALECTS) {
                   isNullable: true,
                   isAutoIncrementing: false,
                   hasDefaultValue: false,
+                  comment: undefined,
                 },
                 {
                   name: 'children',
@@ -644,6 +718,7 @@ for (const dialect of DIALECTS) {
                   isNullable: false,
                   isAutoIncrementing: false,
                   hasDefaultValue: true,
+                  comment: undefined,
                 },
               ],
             },
@@ -657,6 +732,7 @@ for (const dialect of DIALECTS) {
                   isNullable: true,
                   isAutoIncrementing: true,
                   hasDefaultValue: false,
+                  comment: undefined,
                 },
                 {
                   name: 'name',
@@ -664,6 +740,7 @@ for (const dialect of DIALECTS) {
                   isNullable: false,
                   isAutoIncrementing: false,
                   hasDefaultValue: false,
+                  comment: undefined,
                 },
                 {
                   name: 'owner_id',
@@ -671,6 +748,7 @@ for (const dialect of DIALECTS) {
                   isNullable: false,
                   isAutoIncrementing: false,
                   hasDefaultValue: false,
+                  comment: undefined,
                 },
                 {
                   name: 'species',
@@ -678,6 +756,7 @@ for (const dialect of DIALECTS) {
                   isNullable: false,
                   isAutoIncrementing: false,
                   hasDefaultValue: false,
+                  comment: undefined,
                 },
               ],
             },
@@ -691,6 +770,7 @@ for (const dialect of DIALECTS) {
                   isNullable: true,
                   isAutoIncrementing: true,
                   hasDefaultValue: false,
+                  comment: undefined,
                 },
                 {
                   name: 'name',
@@ -698,6 +778,7 @@ for (const dialect of DIALECTS) {
                   isNullable: false,
                   isAutoIncrementing: false,
                   hasDefaultValue: false,
+                  comment: undefined,
                 },
                 {
                   name: 'pet_id',
@@ -705,6 +786,7 @@ for (const dialect of DIALECTS) {
                   isNullable: false,
                   isAutoIncrementing: false,
                   hasDefaultValue: false,
+                  comment: undefined,
                 },
                 {
                   name: 'price',
@@ -712,6 +794,7 @@ for (const dialect of DIALECTS) {
                   isNullable: false,
                   isAutoIncrementing: false,
                   hasDefaultValue: false,
+                  comment: undefined,
                 },
               ],
             },
@@ -725,6 +808,7 @@ for (const dialect of DIALECTS) {
                   isAutoIncrementing: false,
                   isNullable: true,
                   name: 'name',
+                  comment: undefined,
                 },
               ],
             },
@@ -759,17 +843,19 @@ for (const dialect of DIALECTS) {
           .addColumn('some_column', 'serial', (col) => col.primaryKey())
           .addColumn('spcies', sql`dtype_schema.species`)
           .execute()
+        await ctx.db.schema
+          .createTable('some_schema.pet_partition')
+          .addColumn('part_column', 'text')
+          .modifyEnd(sql`PARTITION by LIST ("part_column")`)
+          .execute()
       } else {
         await ctx.db.schema
           .createTable('some_schema.pet')
           .addColumn('some_column', 'integer', (col) =>
-            col
-              .notNull()
-              .modifyFront(sql`identity(1,1)`)
-              .primaryKey()
+            col.identity().notNull().primaryKey(),
           )
           .addColumn('some_column_plus_1', sql``, (col) =>
-            col.modifyEnd(sql`as (some_column + 1)`)
+            col.modifyEnd(sql`as (some_column + 1)`),
           )
           .execute()
       }
@@ -777,6 +863,10 @@ for (const dialect of DIALECTS) {
 
     async function dropSchema() {
       await ctx.db.schema.dropTable('some_schema.pet').ifExists().execute()
+      await ctx.db.schema
+        .dropTable('some_schema.pet_partition')
+        .ifExists()
+        .execute()
       await ctx.db.schema.dropSchema('some_schema').ifExists().execute()
 
       if (dialect === 'postgres') {

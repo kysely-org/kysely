@@ -32,7 +32,7 @@ export const DropSchemaNode = freeze({
 
   cloneWith(
     dropSchema: DropSchemaNode,
-    params: DropSchemaNodeParams
+    params: DropSchemaNodeParams,
   ): DropSchemaNode {
     return freeze({
       ...dropSchema,

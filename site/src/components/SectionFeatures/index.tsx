@@ -1,4 +1,4 @@
-import React from 'react'
+import type { SVGProps } from 'react'
 import clsx from 'clsx'
 import styles from './styles.module.css'
 import { gray } from '@radix-ui/colors'
@@ -14,8 +14,8 @@ const FeatureList: FeatureItem[] = [
 
     description: (
       <>
-        Kysely let's you write type-safe SQL queries. This eliminates entire
-        classes of errors and let's you sleep peacefully at night.
+        Kysely lets you write type-safe SQL queries. This eliminates entire
+        classes of errors and lets you sleep peacefully at night.
       </>
     ),
   },
@@ -25,7 +25,7 @@ const FeatureList: FeatureItem[] = [
     description: (
       <>
         Kysely is a light abstraction layer over SQL. This makes it easy to
-        reason about performance, and reduces the amount of concepts you need to
+        reason about performance, and reduces the number of concepts you need to
         learn to be proficient with the library.
       </>
     ),
@@ -46,7 +46,7 @@ const FeatureList: FeatureItem[] = [
     description: (
       <>
         PostgreSQL, MySQL, or SQLite? We've got you covered. There's also a
-        growing ecosystem of 3rd party dialects, including PlanetScale, D3,
+        growing ecosystem of third-party dialects, including PlanetScale, D1,
         SurrealDB, and more. <a href="/docs/dialects">Learn more.</a>
       </>
     ),
@@ -73,7 +73,7 @@ const FeatureList: FeatureItem[] = [
   },
 ]
 
-function TickIcon(props: React.SVGProps<SVGSVGElement>) {
+function TickIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"

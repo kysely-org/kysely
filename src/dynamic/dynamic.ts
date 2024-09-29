@@ -6,7 +6,7 @@ export class DynamicModule {
    *
    * Kysely is built in a way that by default you can't refer to tables or columns
    * that are not actually visible in the current query and context. This is all
-   * done by typescript at compile time, which means that you need to know the
+   * done by TypeScript at compile time, which means that you need to know the
    * columns and tables at compile time. This is not always the case of course.
    *
    * This method is meant to be used in those cases where the column names

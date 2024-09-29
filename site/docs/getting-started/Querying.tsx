@@ -1,4 +1,3 @@
-import React from 'react'
 import Admonition from '@theme/Admonition'
 import CodeBlock from '@theme/CodeBlock'
 import Link from '@docusaurus/Link'
@@ -24,8 +23,8 @@ const dialectSpecificCodeSnippets: Record<Dialect, string> = {
   const { insertId } = await db.insertInto('person')
     .values(person)
     .executeTakeFirstOrThrow()
-      
-  return await findPersonById(insertId)
+
+  return await findPersonById(Number(insertId!))
 }
 
 export async function deletePerson(id: number) {
@@ -37,18 +36,19 @@ export async function deletePerson(id: number) {
 
   return person
 }`,
-  mssql: `// As of v0.27.0, Kysely doesn't support the \`OUTPUT\` clause. This will change 
-// in the future. For now, the following implementations achieve the same results 
+  mssql: `// As of v0.27.0, Kysely doesn't support the \`OUTPUT\` clause. This will change
+// in the future. For now, the following implementations achieve the same results
 // as other dialects' examples, but with extra steps.
 
 export async function createPerson(person: NewPerson) {
   const compiledQuery = db.insertInto('person').values(person).compile()
 
-  compiledQuery.sql += '; select scope_identity() as id'
-
   const {
     rows: [{ id }],
-  } = await db.executeQuery<Pick<Person, 'id'>>(compiledQuery)
+  } = await db.executeQuery<Pick<Person, 'id'>>({
+    ...compiledQuery,
+    sql: \`\${compiledQuery.sql}; select scope_identity() as id\`
+  })
 
   return await findPersonById(id)
 }
@@ -100,8 +100,8 @@ export async function findPeople(criteria: Partial<Person>) {
 
   if (criteria.last_name !== undefined) {
     query = query.where(
-      'last_name', 
-      criteria.last_name === null ? 'is' : '=', 
+      'last_name',
+      criteria.last_name === null ? 'is' : '=',
       criteria.last_name
     )
   }

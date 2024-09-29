@@ -52,97 +52,91 @@ export interface MssqlDialectConfig {
 export interface Tedious {
   connectionFactory: () => TediousConnection | Promise<TediousConnection>
   ISOLATION_LEVEL: TediousIsolationLevel
-  Request: typeof TediousRequest
+  Request: TediousRequestClass
   TYPES: TediousTypes
-}
-
-export type TediousIsolationLevel = Record<
-  | 'NO_CHANGE'
-  | 'READ_UNCOMMITTED'
-  | 'READ_COMMITTED'
-  | 'REPEATABLE_READ'
-  | 'SERIALIZABLE'
-  | 'SNAPSHOT',
-  number
->
-
-export type TediousTypes = Record<
-  | 'BigInt'
-  | 'Binary'
-  | 'Bit'
-  | 'Char'
-  | 'Date'
-  | 'DateTime'
-  | 'DateTime2'
-  | 'DateTimeOffset'
-  | 'Decimal'
-  | 'Float'
-  | 'Image'
-  | 'Int'
-  | 'Money'
-  | 'NChar'
-  | 'NText'
-  | 'Null'
-  | 'Numeric'
-  | 'NVarChar'
-  | 'Real'
-  | 'SmallDateTime'
-  | 'SmallInt'
-  | 'SmallMoney'
-  | 'Text'
-  | 'Time'
-  | 'TinyInt'
-  | 'TVP'
-  | 'UDT'
-  | 'UniqueIdentifier'
-  | 'VarBinary'
-  | 'VarChar'
-  // TODO: uncomment once it is introduced in @types/tedious. See https://github.com/DefinitelyTyped/DefinitelyTyped/pull/66369
-  // | 'Variant'
-  | 'Xml',
-  { name: string; type: string }
->
-
-export interface TediousType {
-  name: string
-  type: string
+  /**
+   * Controls whether connections are reset to their initial states when released back to the pool. Resetting a connection performs additional requests to the database.
+   * See {@link https://tediousjs.github.io/tedious/api-connection.html#function_reset | connection.reset}.
+   *
+   * Defaults to `true`.
+   */
+  resetConnectionOnRelease?: boolean
 }
 
 export interface TediousConnection {
   beginTransaction(
-    callback: (error?: Error) => void,
-    transactionId?: string | undefined,
-    isolationLevel?: number | undefined
+    callback: (error?: Error | null, transactionDescriptor?: any) => void,
+    name?: string,
+    isolationLevel?: number,
   ): void
-  cancel(): void
+  cancel(): boolean
   close(): void
-  commitTransaction(callback: (error?: Error) => void): void
-  connect(callback: (error?: Error) => void): void
+  commitTransaction(
+    callback: (error?: Error | null) => void,
+    name?: string,
+  ): void
+  connect(callback?: (error?: Error) => void): void
   execSql(request: TediousRequest): void
-  reset(callback: (error?: Error) => void): void
-  rollbackTransaction(callback: (error?: Error) => void): void
-  once(event: 'end', listener: () => void): void
+  off(event: 'error', listener: (error: unknown) => void): this
+  off(event: string, listener: (...args: any[]) => void): this
+  on(event: 'error', listener: (error: unknown) => void): this
+  on(event: string, listener: (...args: any[]) => void): this
+  once(event: 'end', listener: () => void): this
+  once(event: string, listener: (...args: any[]) => void): this
+  reset(callback: (error?: Error | null) => void): void
+  rollbackTransaction(
+    callback: (error?: Error | null) => void,
+    name?: string,
+  ): void
+  saveTransaction(callback: (error?: Error | null) => void, name: string): void
+}
+
+export type TediousIsolationLevel = Record<string, number>
+
+export interface TediousRequestClass {
+  new (
+    sqlTextOrProcedure: string | undefined,
+    callback: (error?: Error | null, rowCount?: number, rows?: any) => void,
+    options?: {
+      statementColumnEncryptionSetting?: any
+    },
+  ): TediousRequest
 }
 
 export declare class TediousRequest {
-  constructor(
-    sql: string,
-    callback: (error: Error, rowCount: number, rows: any[]) => void
-  )
   addParameter(
     name: string,
-    type: TediousType,
-    value: any,
-    options?: {
-      length?: number | 'max' | undefined
-      precision?: number | undefined
-      scale?: number | undefined
-    }
+    dataType: TediousDataType,
+    value?: unknown,
+    options?: Readonly<{
+      output?: boolean
+      length?: number
+      precision?: number
+      scale?: number
+    }> | null,
   ): void
-  off(event: 'row', listener: (...args: any[]) => void): void
-  on(event: 'row', listener: (columns: TediousColumnValue[]) => void): void
-  once(event: 'requestCompleted', listener: (...args: any[]) => void): void
+  off(event: 'row', listener: (columns: any) => void): this
+  off(event: string, listener: (...args: any[]) => void): this
+  on(event: 'row', listener: (columns: any) => void): this
+  on(event: string, listener: (...args: any[]) => void): this
+  once(event: 'requestCompleted', listener: () => void): this
+  once(event: string, listener: (...args: any[]) => void): this
+  pause(): void
+  resume(): void
 }
+
+export interface TediousTypes {
+  NVarChar: TediousDataType
+  BigInt: TediousDataType
+  Int: TediousDataType
+  Float: TediousDataType
+  Bit: TediousDataType
+  DateTime: TediousDataType
+  VarBinary: TediousDataType
+  [x: string]: TediousDataType
+}
+
+export interface TediousDataType {}
 
 export interface TediousColumnValue {
   metadata: {
@@ -156,7 +150,14 @@ export interface Tarn {
    * Tarn.js' pool options, excluding `create`, `destroy` and `validate` functions,
    * which must be implemented by this dialect.
    */
-  options: Omit<TarnPoolOptions<any>, 'create' | 'destroy' | 'validate'>
+  options: Omit<TarnPoolOptions<any>, 'create' | 'destroy' | 'validate'> & {
+    /**
+     * Controls whether connections are validated before being acquired from the pool. Connection validation performs additional requests to the database.
+     *
+     * Defaults to `true`.
+     */
+    validateConnections?: boolean
+  }
 
   /**
    * Tarn.js' Pool class.
@@ -198,7 +199,7 @@ export interface TarnPoolOptions<R> {
   min: number
   propagateCreateError?: boolean
   reapIntervalMillis?: number
-  validate(resource: R): boolean
+  validate?(resource: R): boolean
 }
 
 export interface TarnPendingRequest<R> {

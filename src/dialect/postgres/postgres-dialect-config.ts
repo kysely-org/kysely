@@ -31,6 +31,11 @@ export interface PostgresDialectConfig {
    * Called once for each created connection.
    */
   onCreateConnection?: (connection: DatabaseConnection) => Promise<void>
+
+  /**
+   * Called every time a connection is acquired from the pool.
+   */
+  onReserveConnection?: (connection: DatabaseConnection) => Promise<void>
 }
 
 /**
@@ -49,7 +54,7 @@ export interface PostgresPool {
 export interface PostgresPoolClient {
   query<R>(
     sql: string,
-    parameters: ReadonlyArray<unknown>
+    parameters: ReadonlyArray<unknown>,
   ): Promise<PostgresQueryResult<R>>
   query<R>(cursor: PostgresCursor<R>): PostgresCursor<R>
   release(): void
@@ -62,7 +67,7 @@ export interface PostgresCursor<T> {
 
 export type PostgresCursorConstructor = new <T>(
   sql: string,
-  parameters: unknown[]
+  parameters: unknown[],
 ) => PostgresCursor<T>
 
 export interface PostgresQueryResult<R> {

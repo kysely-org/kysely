@@ -38,7 +38,7 @@ import { DrainOuterGeneric } from './util/type-utils.js'
  * The main Kysely class.
  *
  * You should create one instance of `Kysely` per database using the {@link Kysely}
- * constructor. Each `Kysely` instance maintains it's own connection pool.
+ * constructor. Each `Kysely` instance maintains its own connection pool.
  *
  * ### Examples
  *
@@ -107,7 +107,7 @@ export class Kysely<DB>
         compiler,
         adapter,
         connectionProvider,
-        args.plugins ?? []
+        args.plugins ?? [],
       )
 
       superProps = { executor }
@@ -159,7 +159,7 @@ export class Kysely<DB>
   case<V>(value?: Expression<V>): any {
     return new CaseBuilder({
       node: CaseNode.create(
-        isUndefined(value) ? undefined : parseExpression(value)
+        isUndefined(value) ? undefined : parseExpression(value),
       ),
     })
   }
@@ -301,7 +301,7 @@ export class Kysely<DB>
     return new Kysely({
       ...this.#props,
       executor: this.#props.executor.withPluginAtFront(
-        new WithSchemaPlugin(schema)
+        new WithSchemaPlugin(schema),
       ),
     })
   }
@@ -372,11 +372,11 @@ export class Kysely<DB>
   /**
    * Executes a given compiled query or query builder.
    *
-   * See {@link https://github.com/koskimas/kysely/blob/master/site/docs/recipes/splitting-build-compile-and-execute-code.md#execute-compiled-queries splitting build, compile and execute code recipe} for more information.
+   * See {@link https://github.com/kysely-org/kysely/blob/master/site/docs/recipes/0004-splitting-query-building-and-execution.md#execute-compiled-queries splitting build, compile and execute code recipe} for more information.
    */
   executeQuery<R>(
     query: CompiledQuery<R> | Compilable<R>,
-    queryId: QueryId = createQueryId()
+    queryId: QueryId = createQueryId(),
   ): Promise<QueryResult<R>> {
     const compiledQuery = isCompilable(query) ? query.compile() : query
 
@@ -401,19 +401,19 @@ export class Transaction<DB> extends Kysely<DB> {
 
   transaction(): TransactionBuilder<DB> {
     throw new Error(
-      'calling the transaction method for a Transaction is not supported'
+      'calling the transaction method for a Transaction is not supported',
     )
   }
 
   connection(): ConnectionBuilder<DB> {
     throw new Error(
-      'calling the connection method for a Transaction is not supported'
+      'calling the connection method for a Transaction is not supported',
     )
   }
 
   async destroy(): Promise<void> {
     throw new Error(
-      'calling the destroy method for a Transaction is not supported'
+      'calling the destroy method for a Transaction is not supported',
     )
   }
 
@@ -438,13 +438,13 @@ export class Transaction<DB> extends Kysely<DB> {
     return new Transaction({
       ...this.#props,
       executor: this.#props.executor.withPluginAtFront(
-        new WithSchemaPlugin(schema)
+        new WithSchemaPlugin(schema),
       ),
     })
   }
 
   override withTables<
-    T extends Record<string, Record<string, any>>
+    T extends Record<string, Record<string, any>>,
   >(): Transaction<DrainOuterGeneric<DB & T>> {
     return new Transaction({ ...this.#props })
   }
@@ -511,7 +511,7 @@ export class ConnectionBuilder<DB> {
   async execute<T>(callback: (db: Kysely<DB>) => Promise<T>): Promise<T> {
     return this.#props.executor.provideConnection(async (connection) => {
       const executor = this.#props.executor.withConnectionProvider(
-        new SingleConnectionProvider(connection)
+        new SingleConnectionProvider(connection),
       )
 
       const db = new Kysely<DB>({
@@ -528,7 +528,7 @@ interface ConnectionBuilderProps extends KyselyProps {}
 
 preventAwait(
   ConnectionBuilder,
-  "don't await ConnectionBuilder instances directly. To execute the query you need to call the `execute` method"
+  "don't await ConnectionBuilder instances directly. To execute the query you need to call the `execute` method",
 )
 
 export class TransactionBuilder<DB> {
@@ -553,7 +553,7 @@ export class TransactionBuilder<DB> {
 
     return this.#props.executor.provideConnection(async (connection) => {
       const executor = this.#props.executor.withConnectionProvider(
-        new SingleConnectionProvider(connection)
+        new SingleConnectionProvider(connection),
       )
 
       const transaction = new Transaction<DB>({
@@ -581,7 +581,7 @@ interface TransactionBuilderProps extends KyselyProps {
 
 preventAwait(
   TransactionBuilder,
-  "don't await TransactionBuilder instances directly. To execute the transaction you need to call the `execute` method"
+  "don't await TransactionBuilder instances directly. To execute the transaction you need to call the `execute` method",
 )
 
 function validateTransactionSettings(settings: TransactionSettings): void {
@@ -590,7 +590,7 @@ function validateTransactionSettings(settings: TransactionSettings): void {
     !TRANSACTION_ISOLATION_LEVELS.includes(settings.isolationLevel)
   ) {
     throw new Error(
-      `invalid transaction isolation level ${settings.isolationLevel}`
+      `invalid transaction isolation level ${settings.isolationLevel}`,
     )
   }
 }

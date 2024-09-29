@@ -28,7 +28,7 @@ async function testIfInSelect(db: Kysely<Database>) {
     .$if(condition, (qb) =>
       qb
         .innerJoin('person', 'person.id', 'p.owner_id')
-        .select('age as person_age')
+        .select('age as person_age'),
     )
     .execute()
 
@@ -50,7 +50,7 @@ async function testIfInSelect(db: Kysely<Database>) {
     .$if(condition, (qb) =>
       qb
         .leftJoin('person', 'person.id', 'p.owner_id')
-        .select('age as person_age')
+        .select('age as person_age'),
     )
     .execute()
 
@@ -79,7 +79,7 @@ async function testIfInInsert(db: Kysely<Database>) {
 
   expectType<{ first_name: string; last_name?: string | null }>(r2)
 
-  // Conditional ingore in insert
+  // Conditional ignore in insert
   const [r3] = await db
     .insertInto('person')
     .values({ first_name: 'Foo', last_name: 'Bar', gender: 'other', age: 0 })

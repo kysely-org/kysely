@@ -4,7 +4,6 @@ import { ColumnNode } from './column-node.js'
 import { DefaultValueNode } from './default-value-node.js'
 import { GeneratedNode } from './generated-node.js'
 import { OperationNode } from './operation-node.js'
-import { RawNode } from './raw-node.js'
 import { ReferencesNode } from './references-node.js'
 
 export type ColumnDefinitionNodeProps = Omit<
@@ -28,6 +27,8 @@ export interface ColumnDefinitionNode extends OperationNode {
   readonly frontModifiers?: ReadonlyArray<OperationNode>
   readonly endModifiers?: ReadonlyArray<OperationNode>
   readonly nullsNotDistinct?: boolean
+  readonly identity?: boolean
+  readonly ifNotExists?: boolean
 }
 
 /**

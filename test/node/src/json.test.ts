@@ -92,7 +92,7 @@ for (const dialect of DIALECTS) {
           .execute()
       } else if (dialect === 'mssql') {
         await sql`if object_id(N'json_table', N'U') is null begin create table json_table (id int primary key identity, data nvarchar(1024)); end;`.execute(
-          ctx.db
+          ctx.db,
         )
       } else {
         await ctx.db.schema
@@ -365,11 +365,11 @@ for (const dialect of DIALECTS) {
                   .selectFrom('toy')
                   .select('toy.name')
                   .whereRef('toy.pet_id', '=', 'pet.id')
-                  .$call(orderBy('toy.name', 'asc', dialect))
+                  .$call(orderBy('toy.name', 'asc', dialect)),
               ).as('toys'),
             ])
             .whereRef('owner_id', '=', 'person.id')
-            .$call(orderBy('pet.name', 'asc', dialect))
+            .$call(orderBy('pet.name', 'asc', dialect)),
         ).as('pets'),
 
         // Nest the first found dog the person owns
@@ -380,7 +380,7 @@ for (const dialect of DIALECTS) {
             .whereRef('owner_id', '=', 'person.id')
             .where('species', '=', 'dog')
             .orderBy('name', 'asc')
-            .$call(limit(1, dialect))
+            .$call(limit(1, dialect)),
         ).as('doggo'),
 
         // Nest an object that holds the person's formatted name
@@ -398,7 +398,7 @@ for (const dialect of DIALECTS) {
           eb
             .selectFrom('pet')
             .select('id')
-            .where(sql<boolean>`1 = 2`)
+            .where(sql<boolean>`1 = 2`),
         ).as('emptyList'),
       ])
 

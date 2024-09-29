@@ -95,7 +95,7 @@ class SqliteConnection implements DatabaseConnection {
 
   async *streamQuery<R>(
     compiledQuery: CompiledQuery,
-    _chunkSize: number
+    _chunkSize: number,
   ): AsyncIterableIterator<QueryResult<R>> {
     const { sql, parameters, query } = compiledQuery
     const stmt = this.#db.prepare(sql)

@@ -95,7 +95,7 @@ export type AnyAliasedColumn<DB, TB extends keyof DB> = `${AnyColumn<
  */
 export type AnyAliasedColumnWithTable<
   DB,
-  TB extends keyof DB
+  TB extends keyof DB,
 > = `${AnyColumnWithTable<DB, TB>} as ${string}`
 
 /**
@@ -106,22 +106,22 @@ export type ArrayItemType<T> = T extends ReadonlyArray<infer I> ? I : never
 export type SimplifySingleResult<O> = O extends InsertResult
   ? O
   : O extends DeleteResult
-  ? O
-  : O extends UpdateResult
-  ? O
-  : O extends MergeResult
-  ? O
-  : Simplify<O> | undefined
+    ? O
+    : O extends UpdateResult
+      ? O
+      : O extends MergeResult
+        ? O
+        : Simplify<O> | undefined
 
 export type SimplifyResult<O> = O extends InsertResult
   ? O
   : O extends DeleteResult
-  ? O
-  : O extends UpdateResult
-  ? O
-  : O extends MergeResult
-  ? O
-  : Simplify<O>
+    ? O
+    : O extends UpdateResult
+      ? O
+      : O extends MergeResult
+        ? O
+        : Simplify<O>
 
 export type Simplify<T> = DrainOuterGeneric<{ [K in keyof T]: T[K] } & {}>
 
@@ -148,11 +148,10 @@ export type IsAny<T> = 0 extends T & 1 ? true : false
 /**
  * Evaluates to `true` if the types `T` and `U` are equal.
  */
-export type Equals<T, U> = (<G>() => G extends T ? 1 : 2) extends <
-  G
->() => G extends U ? 1 : 2
-  ? true
-  : false
+export type Equals<T, U> =
+  (<G>() => G extends T ? 1 : 2) extends <G>() => G extends U ? 1 : 2
+    ? true
+    : false
 
 export type NarrowPartial<O, T> = DrainOuterGeneric<
   T extends object
@@ -161,8 +160,8 @@ export type NarrowPartial<O, T> = DrainOuterGeneric<
           ? T[K] extends NotNull
             ? Exclude<O[K], null>
             : T[K] extends O[K]
-            ? T[K]
-            : KyselyTypeError<`$narrowType() call failed: passed type does not exist in '${K}'s type union`>
+              ? T[K]
+              : KyselyTypeError<`$narrowType() call failed: passed type does not exist in '${K}'s type union`>
           : O[K]
       }
     : never

@@ -12,6 +12,8 @@ import { ExplainNode } from './explain-node.js'
 import { ExplainFormat } from '../util/explainable.js'
 import { Expression } from '../expression/expression.js'
 import { MergeQueryNode } from './merge-query-node.js'
+import { TopNode } from './top-node.js'
+import { OutputNode } from './output-node.js'
 
 export type QueryNode =
   | SelectQueryNode
@@ -24,6 +26,9 @@ type HasJoins = { joins?: ReadonlyArray<JoinNode> }
 type HasWhere = { where?: WhereNode }
 type HasReturning = { returning?: ReturningNode }
 type HasExplain = { explain?: ExplainNode }
+type HasTop = { top?: TopNode }
+type HasOutput = { output?: OutputNode }
+type HasEndModifiers = { endModifiers?: ReadonlyArray<OperationNode> }
 
 /**
  * @internal
@@ -37,6 +42,18 @@ export const QueryNode = freeze({
       DeleteQueryNode.is(node) ||
       MergeQueryNode.is(node)
     )
+  },
+
+  cloneWithEndModifier<T extends HasEndModifiers>(
+    node: T,
+    modifier: OperationNode,
+  ): T {
+    return freeze({
+      ...node,
+      endModifiers: node.endModifiers
+        ? freeze([...node.endModifiers, modifier])
+        : freeze([modifier]),
+    })
   },
 
   cloneWithWhere<T extends HasWhere>(node: T, operation: OperationNode): T {
@@ -57,13 +74,20 @@ export const QueryNode = freeze({
 
   cloneWithReturning<T extends HasReturning>(
     node: T,
-    selections: ReadonlyArray<SelectionNode>
+    selections: ReadonlyArray<SelectionNode>,
   ): T {
     return freeze({
       ...node,
       returning: node.returning
         ? ReturningNode.cloneWithSelections(node.returning, selections)
         : ReturningNode.create(selections),
+    })
+  },
+
+  cloneWithoutReturning<T extends HasReturning>(node: T): T {
+    return freeze({
+      ...node,
+      returning: undefined,
     })
   },
 
@@ -77,11 +101,30 @@ export const QueryNode = freeze({
   cloneWithExplain<T extends HasExplain>(
     node: T,
     format: ExplainFormat | undefined,
-    options: Expression<any> | undefined
+    options: Expression<any> | undefined,
   ): T {
     return freeze({
       ...node,
       explain: ExplainNode.create(format, options?.toOperationNode()),
+    })
+  },
+
+  cloneWithTop<T extends HasTop>(node: T, top: TopNode): T {
+    return freeze({
+      ...node,
+      top,
+    })
+  },
+
+  cloneWithOutput<T extends HasOutput>(
+    node: T,
+    selections: ReadonlyArray<SelectionNode>,
+  ): T {
+    return freeze({
+      ...node,
+      output: node.output
+        ? OutputNode.cloneWithSelections(node.output, selections)
+        : OutputNode.create(selections),
     })
   },
 })
