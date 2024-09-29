@@ -40,7 +40,7 @@ import {
   UndirectedOrderByExpression,
   parseOrderBy,
 } from '../parser/order-by-parser.js'
-import { preventAwait } from '../util/prevent-await.js'
+
 import { LimitNode } from '../operation-node/limit-node.js'
 import { OffsetNode } from '../operation-node/offset-node.js'
 import { Compilable } from '../util/compilable.js'
@@ -2427,11 +2427,6 @@ class SelectQueryBuilderImpl<DB, TB extends keyof DB, O>
   }
 }
 
-preventAwait(
-  SelectQueryBuilderImpl,
-  "don't await SelectQueryBuilder instances directly. To execute the query you need to call `execute` or `executeTakeFirst`.",
-)
-
 export function createSelectQueryBuilder<DB, TB extends keyof DB, O>(
   props: SelectQueryBuilderProps,
 ): SelectQueryBuilder<DB, TB, O> {
@@ -2488,11 +2483,6 @@ class AliasedSelectQueryBuilderImpl<
     )
   }
 }
-
-preventAwait(
-  AliasedSelectQueryBuilderImpl,
-  "don't await AliasedSelectQueryBuilder instances directly. AliasedSelectQueryBuilder should never be executed directly since it's always a part of another query.",
-)
 
 export type SelectQueryBuilderWithInnerJoin<
   DB,

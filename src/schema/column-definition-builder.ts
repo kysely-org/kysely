@@ -6,7 +6,7 @@ import {
 } from '../operation-node/references-node.js'
 import { SelectAllNode } from '../operation-node/select-all-node.js'
 import { parseStringReference } from '../parser/reference-parser.js'
-import { preventAwait } from '../util/prevent-await.js'
+
 import { ColumnDefinitionNode } from '../operation-node/column-definition-node.js'
 import {
   DefaultValueExpression,
@@ -428,11 +428,6 @@ export class ColumnDefinitionBuilder implements OperationNodeSource {
     return this.#node
   }
 }
-
-preventAwait(
-  ColumnDefinitionBuilder,
-  "don't await ColumnDefinitionBuilder instances directly.",
-)
 
 export type ColumnDefinitionBuilderCallback = (
   builder: ColumnDefinitionBuilder,

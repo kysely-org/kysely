@@ -2,7 +2,7 @@ import { DropIndexNode } from '../operation-node/drop-index-node.js'
 import { OperationNodeSource } from '../operation-node/operation-node-source.js'
 import { CompiledQuery } from '../query-compiler/compiled-query.js'
 import { Compilable } from '../util/compilable.js'
-import { preventAwait } from '../util/prevent-await.js'
+
 import { QueryExecutor } from '../query-executor/query-executor.js'
 import { QueryId } from '../util/query-id.js'
 import { parseTable } from '../parser/table-parser.js'
@@ -72,11 +72,6 @@ export class DropIndexBuilder implements OperationNodeSource, Compilable {
     await this.#props.executor.executeQuery(this.compile(), this.#props.queryId)
   }
 }
-
-preventAwait(
-  DropIndexBuilder,
-  "don't await DropIndexBuilder instances directly. To execute the query you need to call `execute`",
-)
 
 export interface DropIndexBuilderProps {
   readonly queryId: QueryId

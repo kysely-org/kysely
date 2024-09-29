@@ -1109,7 +1109,11 @@ for (const dialect of DIALECTS) {
     })
 
     describe(`should execute order-sensitive aggregate functions`, () => {
-      if (dialect === 'postgres' || dialect === 'mysql' || dialect === 'sqlite') {
+      if (
+        dialect === 'postgres' ||
+        dialect === 'mysql' ||
+        dialect === 'sqlite'
+      ) {
         const isMySql = dialect === 'mysql'
         const funcName = isMySql ? 'group_concat' : 'string_agg'
         const funcArgs: Array<ReferenceExpression<Database, 'person'>> = [
