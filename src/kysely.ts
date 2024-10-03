@@ -33,6 +33,9 @@ import { Expression } from './expression/expression.js'
 import { WithSchemaPlugin } from './plugin/with-schema/with-schema-plugin.js'
 import { DrainOuterGeneric } from './util/type-utils.js'
 
+// @ts-ignore
+Symbol.asyncDispose ??= Symbol('Symbol.asyncDispose')
+
 /**
  * The main Kysely class.
  *
