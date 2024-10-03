@@ -42,6 +42,9 @@ import {
   provideControlledConnection,
 } from './util/provide-controlled-connection.js'
 
+// @ts-ignore
+Symbol.asyncDispose ??= Symbol('Symbol.asyncDispose')
+
 /**
  * The main Kysely class.
  *
