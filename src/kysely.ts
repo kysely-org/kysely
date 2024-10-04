@@ -22,10 +22,7 @@ import {
 } from './query-builder/function-module.js'
 import { Log, LogConfig } from './util/log.js'
 import { QueryExecutorProvider } from './query-executor/query-executor-provider.js'
-import {
-  DatabaseConnection,
-  QueryResult,
-} from './driver/database-connection.js'
+import { QueryResult } from './driver/database-connection.js'
 import { CompiledQuery } from './query-compiler/compiled-query.js'
 import { createQueryId, QueryId } from './util/query-id.js'
 import { Compilable, isCompilable } from './util/compilable.js'
@@ -755,11 +752,6 @@ interface ControlledTransactionBuilderProps extends TransactionBuilderProps {
   readonly releaseConnection?: boolean
 }
 
-preventAwait(
-  ControlledTransactionBuilder,
-  "don't await ControlledTransactionBuilder instances directly. To execute the transaction you need to call the `execute` method",
-)
-
 export class ControlledTransaction<
   DB,
   S extends string[] = [],
@@ -1037,8 +1029,3 @@ export class Command<T> {
     return await this.#cb()
   }
 }
-
-preventAwait(
-  Command,
-  "don't await Command instances directly. Call the `execute` method",
-)
