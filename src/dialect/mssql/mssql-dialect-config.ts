@@ -1,5 +1,3 @@
-import { Request } from 'tedious'
-
 export interface MssqlDialectConfig {
   /**
    * This dialect uses the `tarn` package to manage the connection pool to your
