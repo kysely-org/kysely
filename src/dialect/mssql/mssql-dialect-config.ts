@@ -65,14 +65,20 @@ export interface Tedious {
 
 export interface TediousConnection {
   beginTransaction(
-    callback: (error?: Error | null) => void,
-    transactionId?: string | undefined,
+    callback: (
+      err: Error | null | undefined,
+      transactionDescriptor?: any,
+    ) => void,
+    name?: string | undefined,
     isolationLevel?: number | undefined,
   ): void
   cancel(): boolean
   close(): void
-  commitTransaction(callback: (error?: Error | null) => void): void
-  connect(callback: (error?: Error | null) => void): void
+  commitTransaction(
+    callback: (err: Error | null | undefined) => void,
+    name?: string | undefined,
+  ): void
+  connect(connectListener: (err?: Error) => void): void
   execSql(request: TediousRequest): void
   off(event: 'error', listener: (error: unknown) => void): this
   off(event: string, listener: (...args: any[]) => void): this
@@ -80,12 +86,15 @@ export interface TediousConnection {
   on(event: string, listener: (...args: any[]) => void): this
   once(event: 'end', listener: () => void): this
   once(event: string, listener: (...args: any[]) => void): this
-  reset(callback: (error?: Error | null) => void): void
+  reset(callback: (err: Error | null | undefined) => void): void
   rollbackTransaction(
-    callback: (error?: Error | null) => void,
-    name?: string,
+    callback: (err: Error | null | undefined) => void,
+    name?: string | undefined,
   ): void
-  saveTransaction(callback: (error?: Error | null) => void, name: string): void
+  saveTransaction(
+    callback: (err: Error | null | undefined) => void,
+    name: string,
+  ): void
 }
 
 export type TediousIsolationLevel = Record<string, number>
