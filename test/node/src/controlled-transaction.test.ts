@@ -1,6 +1,6 @@
 import * as sinon from 'sinon'
-import { Connection, ISOLATION_LEVEL } from 'tedious'
-import { CompiledQuery, ControlledTransaction, IsolationLevel } from '../../../'
+import { Connection } from 'tedious'
+import { CompiledQuery, IsolationLevel, Kysely } from '../../../'
 import {
   DIALECTS,
   Database,
@@ -10,6 +10,7 @@ import {
   expect,
   initTest,
   insertDefaultDataSet,
+  limit,
 } from './test-setup.js'
 
 for (const dialect of DIALECTS) {
@@ -267,22 +268,35 @@ for (const dialect of DIALECTS) {
     }
 
     it('should be able to start a transaction with a single connection', async () => {
-      const result = await ctx.db.connection().execute(async (conn) => {
+      await ctx.db.connection().execute(async (conn) => {
         const trx = await conn.startTransaction().execute()
 
-        const result = await insertSomething(trx)
+        await insertSomething(trx)
 
         await trx.commit().execute()
 
-        return result
+        await insertSomethingElse(conn)
+
+        const trx2 = await conn.startTransaction().execute()
+
+        await insertSomething(trx2)
+
+        await trx2.rollback().execute()
+
+        await insertSomethingElse(conn)
       })
 
-      expect(result.numInsertedOrUpdatedRows).to.equal(1n)
-      await ctx.db
+      const results = await ctx.db
         .selectFrom('person')
-        .where('first_name', '=', 'Foo')
         .select('first_name')
-        .executeTakeFirstOrThrow()
+        .orderBy('id', 'desc')
+        .$call(limit(3, dialect))
+        .execute()
+      expect(results).to.eql([
+        { first_name: 'Fizz' },
+        { first_name: 'Fizz' },
+        { first_name: 'Foo' },
+      ])
     })
 
     it('should be able to savepoint and rollback to savepoint', async () => {
@@ -508,8 +522,8 @@ for (const dialect of DIALECTS) {
     })
   })
 
-  async function insertSomething(trx: ControlledTransaction<Database>) {
-    return await trx
+  async function insertSomething(db: Kysely<Database>) {
+    return await db
       .insertInto('person')
       .values({
         first_name: 'Foo',
@@ -519,8 +533,8 @@ for (const dialect of DIALECTS) {
       .executeTakeFirstOrThrow()
   }
 
-  async function insertSomethingElse(trx: ControlledTransaction<Database>) {
-    return await trx
+  async function insertSomethingElse(db: Kysely<Database>) {
+    return await db
       .insertInto('person')
       .values({
         first_name: 'Fizz',
