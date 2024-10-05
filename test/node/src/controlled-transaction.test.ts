@@ -1,6 +1,14 @@
 import * as sinon from 'sinon'
 import { Connection } from 'tedious'
-import { CompiledQuery, IsolationLevel, Kysely } from '../../../'
+import {
+  CompiledQuery,
+  ControlledTransaction,
+  Driver,
+  DummyDriver,
+  IsolationLevel,
+  Kysely,
+  SqliteDialect,
+} from '../../../'
 import {
   DIALECTS,
   Database,
@@ -501,6 +509,20 @@ for (const dialect of DIALECTS) {
       })
     }
 
+    if (dialect === 'mssql') {
+      it('should throw an error when trying to release a savepoint as it is not supported', async () => {
+        const trx = await ctx.db.startTransaction().execute()
+
+        await expect(
+          trx.releaseSavepoint('foo' as never).execute(),
+        ).to.be.rejectedWith(
+          'The `releaseSavepoint` method is not supported by this driver',
+        )
+
+        await trx.rollback().execute()
+      })
+    }
+
     it('should throw an error when trying to execute a query after the transaction has been committed', async () => {
       const trx = await ctx.db.startTransaction().execute()
 
@@ -508,7 +530,9 @@ for (const dialect of DIALECTS) {
 
       await trx.commit().execute()
 
-      await expect(insertSomethingElse(trx)).to.be.rejected
+      await expect(insertSomethingElse(trx)).to.be.rejectedWith(
+        'Transaction is already committed',
+      )
     })
 
     it('should throw an error when trying to execute a query after the transaction has been rolled back', async () => {
@@ -518,29 +542,88 @@ for (const dialect of DIALECTS) {
 
       await trx.rollback().execute()
 
-      await expect(insertSomethingElse(trx)).to.be.rejected
+      await expect(insertSomethingElse(trx)).to.be.rejectedWith(
+        'Transaction is already rolled back',
+      )
     })
   })
+}
 
-  async function insertSomething(db: Kysely<Database>) {
-    return await db
-      .insertInto('person')
-      .values({
-        first_name: 'Foo',
-        last_name: 'Barson',
-        gender: 'male',
-      })
-      .executeTakeFirstOrThrow()
-  }
+describe('custom dialect: controlled transaction', () => {
+  const db = new Kysely<Database>({
+    dialect: new (class extends SqliteDialect {
+      createDriver(): Driver {
+        const driver = class extends DummyDriver {}
 
-  async function insertSomethingElse(db: Kysely<Database>) {
-    return await db
-      .insertInto('person')
-      .values({
-        first_name: 'Fizz',
-        last_name: 'Buzzson',
-        gender: 'female',
-      })
-      .executeTakeFirstOrThrow()
-  }
+        // @ts-ignore
+        driver.prototype.releaseSavepoint = undefined
+        // @ts-ignore
+        driver.prototype.rollbackToSavepoint = undefined
+        // @ts-ignore
+        driver.prototype.savepoint = undefined
+
+        return new driver()
+      }
+      // @ts-ignore
+    })({}),
+  })
+  let trx: ControlledTransaction<Database>
+
+  before(async () => {
+    trx = await db.startTransaction().execute()
+  })
+
+  after(async () => {
+    await trx.rollback().execute()
+  })
+
+  it('should throw an error when trying to savepoint on a dialect that does not support it', async () => {
+    const trx = await db.startTransaction().execute()
+
+    await expect(trx.savepoint('foo').execute()).to.be.rejectedWith(
+      'The `savepoint` method is not supported by this driver',
+    )
+  })
+
+  it('should throw an error when trying to rollback to a savepoint on a dialect that does not support it', async () => {
+    const trx = await db.startTransaction().execute()
+
+    await expect(
+      trx.rollbackToSavepoint('foo' as never).execute(),
+    ).to.be.rejectedWith(
+      'The `rollbackToSavepoint` method is not supported by this driver',
+    )
+  })
+
+  it('should throw an error when trying to release a savepoint on a dialect that does not support it', async () => {
+    const trx = await db.startTransaction().execute()
+
+    await expect(
+      trx.releaseSavepoint('foo' as never).execute(),
+    ).to.be.rejectedWith(
+      'The `releaseSavepoint` method is not supported by this driver',
+    )
+  })
+})
+
+async function insertSomething(db: Kysely<Database>) {
+  return await db
+    .insertInto('person')
+    .values({
+      first_name: 'Foo',
+      last_name: 'Barson',
+      gender: 'male',
+    })
+    .executeTakeFirstOrThrow()
+}
+
+async function insertSomethingElse(db: Kysely<Database>) {
+  return await db
+    .insertInto('person')
+    .values({
+      first_name: 'Fizz',
+      last_name: 'Buzzson',
+      gender: 'female',
+    })
+    .executeTakeFirstOrThrow()
 }

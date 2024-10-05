@@ -95,7 +95,7 @@ export class RuntimeDriver implements Driver {
       return this.#driver.savepoint(connection, savepointName, compileQuery)
     }
 
-    throw new Error('savepoints are not supported by this driver')
+    throw new Error('The `savepoint` method is not supported by this driver')
   }
 
   rollbackToSavepoint(
@@ -111,7 +111,9 @@ export class RuntimeDriver implements Driver {
       )
     }
 
-    throw new Error('savepoints are not supported by this driver')
+    throw new Error(
+      'The `rollbackToSavepoint` method is not supported by this driver',
+    )
   }
 
   releaseSavepoint(
@@ -127,7 +129,9 @@ export class RuntimeDriver implements Driver {
       )
     }
 
-    throw new Error('savepoints are not supported by this driver')
+    throw new Error(
+      'The `releaseSavepoint` method is not supported by this driver',
+    )
   }
 
   async destroy(): Promise<void> {

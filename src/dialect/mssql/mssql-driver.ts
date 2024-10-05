@@ -100,12 +100,6 @@ export class MssqlDriver implements Driver {
     await connection.rollbackTransaction(savepointName)
   }
 
-  async releaseSavepoint(): Promise<void> {
-    throw new Error(
-      'MS SQL Server (mssql) does not support releasing savepoints',
-    )
-  }
-
   async releaseConnection(connection: MssqlConnection): Promise<void> {
     await connection[PRIVATE_RELEASE_METHOD]()
     this.#pool.release(connection)
