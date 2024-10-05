@@ -65,6 +65,18 @@ export class DummyDriver implements Driver {
   async destroy(): Promise<void> {
     // Nothing to do here.
   }
+
+  async releaseSavepoint(): Promise<void> {
+    // Nothing to do here.
+  }
+
+  async rollbackToSavepoint(): Promise<void> {
+    // Nothing to do here.
+  }
+
+  async savepoint(): Promise<void> {
+    // Nothing to do here.
+  }
 }
 
 class DummyConnection implements DatabaseConnection {
