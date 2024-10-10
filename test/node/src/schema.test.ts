@@ -233,6 +233,9 @@ for (const dialect of DIALECTS) {
             .addColumn('u', 'char')
             .addColumn('v', 'binary(16)')
             .addColumn('w', 'varbinary(16)')
+            .addColumn('updated_at', 'datetime', (col) =>
+              col.defaultTo(sql`current_timestamp`).onUpdateCurrentTimestamp(),
+            )
 
           testSql(builder, dialect, {
             mysql: {
@@ -260,7 +263,8 @@ for (const dialect of DIALECTS) {
                 '`t` char(4),',
                 '`u` char,',
                 '`v` binary(16),',
-                '`w` varbinary(16))',
+                '`w` varbinary(16),',
+                '`updated_at` datetime default current_timestamp ON UPDATE CURRENT_TIMESTAMP)',
               ],
               parameters: [],
             },

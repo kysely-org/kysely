@@ -15,6 +15,8 @@ import { GeneratedNode } from '../operation-node/generated-node.js'
 import { DefaultValueNode } from '../operation-node/default-value-node.js'
 import { parseOnModifyForeignAction } from '../parser/on-modify-action-parser.js'
 import { Expression } from '../expression/expression.js'
+import { sql } from '../raw-builder/sql.js'
+import { RawNode } from '../operation-node/raw-node.js'
 
 export class ColumnDefinitionBuilder implements OperationNodeSource {
   readonly #node: ColumnDefinitionNode
@@ -235,6 +237,28 @@ export class ColumnDefinitionBuilder implements OperationNodeSource {
           this.#node.references,
           parseOnModifyForeignAction(onUpdate),
         ),
+      }),
+    )
+  }
+
+  /**
+   * Adds an `ON UPDATE CURRENT_TIMESTAMP` clause to a column
+   *
+   * This clause is only supported in MySQL
+   *
+   * ### Examples
+   *
+   * ```ts
+   * ctx.db.schema.createTable('test')
+   *  .addColumn('updated_at', 'datetime', (col) =>
+   *    col.defaultTo(sql`current_timestamp`).onUpdateCurrentTimestamp(),
+   * )
+   * ```
+   */
+  onUpdateCurrentTimestamp(): ColumnDefinitionBuilder {
+    return new ColumnDefinitionBuilder(
+      ColumnDefinitionNode.cloneWith(this.#node, {
+        endModifiers: [RawNode.createWithSql(`ON UPDATE CURRENT_TIMESTAMP`)],
       }),
     )
   }
