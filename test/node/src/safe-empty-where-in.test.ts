@@ -1,4 +1,5 @@
 import {
+  sql,
   UpdateResult,
   WithSafeArrayWhereInPlugin,
 } from '../../../dist/cjs/index.js'
@@ -18,13 +19,9 @@ import {
 for (const dialect of DIALECTS) {
   describe(`${dialect}: safe empty array where in`, () => {
     let ctx: TestContext
-    let db: TestContext['db']
 
     before(async function () {
-      ctx = await initTest(this, dialect)
-
-      db = new Kysely<Database>({
-        ...ctx.config,
+      ctx = await initTest(this, dialect, undefined, {
         plugins: [new WithSafeArrayWhereInPlugin()],
       })
 
@@ -36,7 +33,7 @@ for (const dialect of DIALECTS) {
     })
 
     it('should handle empty array select from statements without throwing runtime errors', async () => {
-      const query = db
+      const query = ctx.db
         .selectFrom('person')
         .where('first_name', 'in', [])
         .where('first_name', 'not in', [])
@@ -87,7 +84,7 @@ for (const dialect of DIALECTS) {
     })
 
     it('regression test: non-empty array select from should return expected results', async () => {
-      const query = db
+      const query = ctx.db
         .selectFrom('person')
         .where('first_name', 'in', ['Jennifer', 'Arnold'])
         .select('person.first_name')
@@ -138,7 +135,7 @@ for (const dialect of DIALECTS) {
 
     it('should handle deleteFrom with returning in supported dialects', async () => {
       if (dialect === 'postgres' || dialect === 'sqlite') {
-        const query = db
+        const query = ctx.db
           .deleteFrom('person')
           .where('first_name', 'in', [])
           .returning(['first_name', 'id'])
@@ -174,7 +171,7 @@ for (const dialect of DIALECTS) {
 
         expect(resultWithReturning).to.deep.equal([])
 
-        const notInWithReturningQuery = db
+        const notInWithReturningQuery = ctx.db
           .deleteFrom('person')
           .where('first_name', 'not in', [])
           .returning(['first_name', 'id'])
@@ -207,7 +204,7 @@ for (const dialect of DIALECTS) {
     })
 
     it('having clause', async () => {
-      const query = db
+      const query = ctx.db
         .selectFrom('person')
         .groupBy('person.first_name')
         .having('first_name', 'in', [])
@@ -258,7 +255,7 @@ for (const dialect of DIALECTS) {
     })
 
     it('should handle updateTable without returning with no runtime errors', async () => {
-      const query = db
+      const query = ctx.db
         .updateTable('person')
         .where('first_name', 'in', [])
         .where('first_name', 'not in', [])
