@@ -140,12 +140,6 @@ for (const dialect of DIALECTS) {
           .where('first_name', 'in', [])
           .returning(['first_name', 'id'])
 
-        console.log(
-          '> delete query with params',
-          query.compile().sql,
-          query.compile().parameters,
-        )
-
         testSql(query, dialect, {
           postgres: {
             sql: [
