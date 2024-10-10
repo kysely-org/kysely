@@ -15,7 +15,6 @@ import { GeneratedNode } from '../operation-node/generated-node.js'
 import { DefaultValueNode } from '../operation-node/default-value-node.js'
 import { parseOnModifyForeignAction } from '../parser/on-modify-action-parser.js'
 import { Expression } from '../expression/expression.js'
-import { sql } from '../raw-builder/sql.js'
 import { RawNode } from '../operation-node/raw-node.js'
 
 export class ColumnDefinitionBuilder implements OperationNodeSource {
