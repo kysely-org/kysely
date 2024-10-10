@@ -15,6 +15,7 @@ import { GeneratedNode } from '../operation-node/generated-node.js'
 import { DefaultValueNode } from '../operation-node/default-value-node.js'
 import { parseOnModifyForeignAction } from '../parser/on-modify-action-parser.js'
 import { Expression } from '../expression/expression.js'
+import { RawNode } from '../operation-node/raw-node.js'
 
 export class ColumnDefinitionBuilder implements OperationNodeSource {
   readonly #node: ColumnDefinitionNode
@@ -367,6 +368,29 @@ export class ColumnDefinitionBuilder implements OperationNodeSource {
     return new ColumnDefinitionBuilder(
       ColumnDefinitionNode.cloneWith(this.#node, {
         defaultTo: DefaultValueNode.create(parseDefaultValueExpression(value)),
+      }),
+    )
+  }
+
+  /**
+   * Adds `DEFAULT CURRENT_TIMESTAMP` for the column.
+   *
+   * ### Examples
+   *
+   * ```ts
+   *  db.schema.createTable('test')
+   *    .addColumn('created_at', 'datetime', (col) =>
+   *      col.defaultToCurrentTimestamp(),
+   *     )
+   *    .execute()
+   * ```
+   */
+  defaultToCurrentTimestamp(): ColumnDefinitionBuilder {
+    return new ColumnDefinitionBuilder(
+      ColumnDefinitionNode.cloneWith(this.#node, {
+        defaultTo: DefaultValueNode.create(
+          RawNode.createWithSql('current_timestamp'),
+        ),
       }),
     )
   }
