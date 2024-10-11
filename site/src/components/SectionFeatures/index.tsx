@@ -1,7 +1,8 @@
+import { useColorMode } from '@docusaurus/theme-common'
+import { gray } from '@radix-ui/colors'
 import type { SVGProps } from 'react'
 import clsx from 'clsx'
 import styles from './styles.module.css'
-import { gray } from '@radix-ui/colors'
 
 type FeatureItem = {
   title: string
@@ -92,12 +93,14 @@ function TickIcon(props: SVGProps<SVGSVGElement>) {
 }
 
 function Feature({ title, description }: FeatureItem) {
+  const { isDarkTheme } = useColorMode()
+
   return (
     <div className={clsx('col col--6')} style={{ padding: 10 }}>
       <div className="padding-horiz--md">
         <h3
           style={{
-            color: gray.gray4,
+            color: isDarkTheme ? gray.gray4 : gray.gray12,
             display: 'inline-flex',
             alignItems: 'center',
             gap: 8,
@@ -120,7 +123,9 @@ function Feature({ title, description }: FeatureItem) {
           </span>
           {title}
         </h3>
-        <p style={{ color: gray.gray8 }}>{description}</p>
+        <p style={{ color: isDarkTheme ? gray.gray8 : gray.gray11 }}>
+          {description}
+        </p>
       </div>
     </div>
   )
