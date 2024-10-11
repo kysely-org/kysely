@@ -1,5 +1,6 @@
 import type { ReactElement } from 'react'
 import clsx from 'clsx'
+import { useColorMode } from '@docusaurus/theme-common'
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext'
 import Layout from '@theme/Layout'
 import { SectionFeatures } from '@site/src/components/SectionFeatures'
@@ -77,6 +78,7 @@ function HomepageHeader() {
 
 export default function Home(): JSX.Element {
   const { siteConfig } = useDocusaurusContext()
+
   return (
     <Layout title={siteConfig.title}>
       <div className={styles.siteWrapper}>
@@ -89,40 +91,7 @@ export default function Home(): JSX.Element {
 
         <SectionPlayground />
 
-        <section
-          style={{
-            display: 'grid',
-            placeItems: 'center',
-            minHeight: '100vh',
-            background: `radial-gradient(circle, var(--blue12) 0%, #171717 40%)`,
-          }}
-        >
-          <div
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              padding: '128px 0',
-              maxWidth: 460,
-              textAlign: 'center',
-            }}
-          >
-            <h1>Looking for code examples?</h1>
-            <p>
-              From finding a single record to complex joins, our docs have
-              examples to get you started quickly.
-            </p>
-            <span style={{ display: 'flex', gap: 8 }}>
-              <a
-                href="/docs/category/examples"
-                style={{ width: '220px' }}
-                className="button button--primary button--lg"
-              >
-                Jump right in
-              </a>
-            </span>
-          </div>
-        </section>
+        <SectionExamplesCTA />
       </main>
     </Layout>
   )
@@ -192,13 +161,15 @@ function Quote({
 }
 
 function SectionQuotes() {
+  const { isDarkTheme } = useColorMode()
+
   return (
     <section
       style={{
         display: 'grid',
         placeItems: 'center',
         minHeight: '100vh',
-        background: `radial-gradient(circle, var(--sky12) 0%, #171717 40%)`,
+        background: `radial-gradient(circle, var(--${isDarkTheme ? 'blue12' : 'sky4'}) 0%, ${isDarkTheme ? '#171717' : 'white'} 40%)`,
       }}
     >
       <div className="container" style={{ textAlign: 'center' }}>
@@ -488,6 +459,8 @@ function GithubIcon() {
 }
 
 function SectionPlayground() {
+  const { isDarkTheme } = useColorMode()
+
   return (
     <section className="container">
       <div
@@ -508,7 +481,7 @@ function SectionPlayground() {
           Modify the query on the left and view the generated SQL on the right.
         </p>
         <iframe
-          src="https://stackblitz.com/edit/react-ts-pppzf5?embed=1&file=playground.ts&hideExplorer=1&hideNavigation=1&theme=dark"
+          src={`https://stackblitz.com/edit/react-ts-pppzf5?embed=1&file=playground.ts&hideExplorer=1&hideNavigation=1&theme=${isDarkTheme ? 'dark' : 'light'}`}
           style={{
             width: '100%',
             height: '100%',
@@ -522,6 +495,47 @@ function SectionPlayground() {
           allow="accelerometer; ambient-light-sensor; camera; encrypted-media; geolocation; gyroscope; hid; microphone; midi; payment; usb; vr; xr-spatial-tracking"
           sandbox="allow-forms allow-modals allow-popups allow-presentation allow-same-origin allow-scripts"
         />
+      </div>
+    </section>
+  )
+}
+
+function SectionExamplesCTA() {
+  const { isDarkTheme } = useColorMode()
+
+  return (
+    <section
+      style={{
+        display: 'grid',
+        placeItems: 'center',
+        minHeight: '100vh',
+        background: `radial-gradient(circle, var(--${isDarkTheme ? 'blue12' : 'sky4'}) 0%, ${isDarkTheme ? '#171717' : 'white'} 40%)`,
+      }}
+    >
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          padding: '128px 0',
+          maxWidth: 460,
+          textAlign: 'center',
+        }}
+      >
+        <h1>Looking for code examples?</h1>
+        <p>
+          From finding a single record to complex joins, our docs have examples
+          to get you started quickly.
+        </p>
+        <span style={{ display: 'flex', gap: 8 }}>
+          <a
+            href="/docs/category/examples"
+            style={{ width: '220px' }}
+            className="button button--primary button--lg"
+          >
+            Jump right in
+          </a>
+        </span>
       </div>
     </section>
   )

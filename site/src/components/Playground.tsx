@@ -1,3 +1,5 @@
+import { useColorMode } from '@docusaurus/theme-common'
+
 export function Playground({
   code,
   setupCode = exampleSetup,
@@ -5,6 +7,8 @@ export function Playground({
   dialect = 'postgres',
   disableIframeMode = false,
 }: PlaygroundProps) {
+  const { isDarkTheme } = useColorMode()
+
   const state: PlaygroundState = {
     dialect,
     editors: { query: code, type: setupCode },
@@ -14,7 +18,7 @@ export function Playground({
     state.kysely = { type: 'tag', name: kyselyVersion }
   }
   const params = new URLSearchParams()
-  params.set('theme', 'dark')
+  params.set('theme', isDarkTheme ? 'dark' : 'light')
   if (!disableIframeMode) {
     params.set('open', '1')
     params.set('nomore', '1')
@@ -29,6 +33,7 @@ export function Playground({
         width: '100%',
         minHeight: '600px',
         borderRadius: 7,
+        border: isDarkTheme ? undefined : '1px solid var(--gray3)',
       }}
       allow="clipboard-write"
       src={`https://kyse.link/?${params}${hash}`}
