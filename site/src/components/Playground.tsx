@@ -1,33 +1,41 @@
-import { useColorMode } from '@docusaurus/theme-common'
-import { useEffect, useState } from 'react'
+import { useColorMode } from '../hooks/use-color-mode'
+import styles from './Playground.module.css'
 
-export function Playground({
-  code,
-  setupCode = exampleSetup,
-  kyselyVersion,
-  dialect = 'postgres',
-  disableIframeMode = false,
-}: PlaygroundProps) {
+export function Playground(props: PlaygroundProps) {
+  const params = usePlaygroundParams(props.disableIframeMode)
+
+  return (
+    <iframe
+      allow="clipboard-write"
+      className={styles.playground}
+      src={`https://kyse.link/?${params}${getPlaygroundStateHash(props)}`}
+    />
+  )
+}
+
+function usePlaygroundParams(disableIframeMode: boolean) {
   const { colorMode } = useColorMode()
-  const [params, setParams] = useState<URLSearchParams>()
 
-  useEffect(() => {
-    const params = new URLSearchParams()
+  const params = new URLSearchParams()
 
-    params.set('theme', colorMode)
+  params.set('theme', colorMode)
 
-    if (!disableIframeMode) {
-      params.set('open', '1')
-      params.set('nomore', '1')
-      params.set('notheme', '1')
-      params.set('nohotkey', '1')
-    }
-    setParams(params)
-  }, [colorMode])
+  if (!disableIframeMode) {
+    params.set('open', '1')
+    params.set('nomore', '1')
+    params.set('notheme', '1')
+    params.set('nohotkey', '1')
+  }
+
+  return params
+}
+
+function getPlaygroundStateHash(props: PlaygroundProps) {
+  const { kyselyVersion } = props
 
   const state: PlaygroundState = {
-    dialect,
-    editors: { query: code, type: setupCode },
+    dialect: props.dialect || 'postgres',
+    editors: { query: props.code, type: props.setupCode },
     hideType: true,
   }
 
@@ -35,20 +43,7 @@ export function Playground({
     state.kysely = { type: 'tag', name: kyselyVersion }
   }
 
-  const hash = '#r' + encodeURIComponent(JSON.stringify(state))
-
-  return (
-    <iframe
-      style={{
-        width: '100%',
-        minHeight: '600px',
-        borderRadius: 7,
-        border: colorMode === 'dark' ? undefined : '1px solid var(--gray3)',
-      }}
-      allow="clipboard-write"
-      src={`https://kyse.link/?${params}${hash}`}
-    />
-  )
+  return '#r' + encodeURIComponent(JSON.stringify(state))
 }
 
 interface PlaygroundProps {
