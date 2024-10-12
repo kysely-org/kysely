@@ -1,23 +1,7 @@
-import {
-  type ColorMode,
-  useColorMode as useColorModeNative,
-} from '@docusaurus/theme-common'
-import { useEffect } from 'react'
+import { useColorMode as useColorModeNative } from '@docusaurus/theme-common'
 
 export function useColorMode() {
-  const { colorMode, setColorMode } = useColorModeNative()
-
-  //   useEffect(() => {
-  //     const theme = localStorage.getItem('theme')
-
-  //     if (isColorMode(theme)) {
-  //       setColorMode(theme)
-  //     }
-  //   }, [])
+  const { colorMode } = useColorModeNative()
 
   return { colorMode }
-}
-
-function isColorMode(value: unknown): value is ColorMode {
-  return ['light', 'dark'].includes(value as any)
 }
