@@ -20,19 +20,19 @@ function useSrc(props: PlaygroundProps) {
   const [src, setSrc] = useState('')
 
   useEffect(() => {
+    const params = new URLSearchParams()
+
+    params.set('theme', colorMode)
+    params.set('notheme', '1')
+
+    if (!props.disableIframeMode) {
+      params.set('open', '1')
+      params.set('nomore', '1')
+      params.set('nohotkey', '1')
+    }
+
     setSrc(`https://kyse.link/?${params}${getPlaygroundStateHash(props)}`)
   }, [colorMode])
-
-  const params = new URLSearchParams()
-
-  params.set('theme', colorMode)
-  params.set('notheme', '1')
-
-  if (!props.disableIframeMode) {
-    params.set('open', '1')
-    params.set('nomore', '1')
-    params.set('nohotkey', '1')
-  }
 
   return src
 }
