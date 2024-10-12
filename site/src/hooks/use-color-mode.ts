@@ -1,17 +1,25 @@
-import { useColorMode as useColorModeNative } from '@docusaurus/theme-common'
-import useIsBrowser from '@docusaurus/useIsBrowser'
+import {
+  type ColorMode,
+  useColorMode as useColorModeNative,
+} from '@docusaurus/theme-common'
+import { useEffect } from 'react'
 
 export function useColorMode() {
-  const colorMode = useColorModeNative()
-  const isBrowser = useIsBrowser()
+  const { colorMode, setColorMode } = useColorModeNative()
 
-  if (isBrowser) {
-    const persistedTheme = localStorage.getItem('theme')
+  useEffect(() => {
+    const theme = localStorage.getItem('theme')
 
-    if (persistedTheme) {
-      console.log({ persistedTheme, colorMode })
+    console.log({ theme, colorMode })
+
+    if (isColorMode(theme) && theme !== colorMode) {
+      setColorMode(theme)
     }
-  }
+  }, [colorMode])
 
-  return colorMode
+  return { colorMode }
+}
+
+function isColorMode(value: unknown): value is ColorMode {
+  return ['light', 'dark'].includes(value as any)
 }
