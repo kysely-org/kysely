@@ -4,7 +4,7 @@ import styles from './Playground.module.css'
 export function Playground(props: PlaygroundProps) {
   const params = usePlaygroundParams(props.disableIframeMode)
 
-  console.log('hi!')
+  console.log({ params })
 
   return (
     <iframe
