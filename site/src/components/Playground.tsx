@@ -1,4 +1,5 @@
 import { useColorMode } from '@docusaurus/theme-common'
+import { useEffect, useState } from 'react'
 
 export function Playground({
   code,
@@ -7,24 +8,33 @@ export function Playground({
   dialect = 'postgres',
   disableIframeMode = false,
 }: PlaygroundProps) {
-  const { isDarkTheme } = useColorMode()
+  const { colorMode } = useColorMode()
+  const [params, setParams] = useState<URLSearchParams>()
+
+  useEffect(() => {
+    const params = new URLSearchParams()
+
+    params.set('theme', colorMode)
+
+    if (!disableIframeMode) {
+      params.set('open', '1')
+      params.set('nomore', '1')
+      params.set('notheme', '1')
+      params.set('nohotkey', '1')
+    }
+    setParams(params)
+  }, [colorMode])
 
   const state: PlaygroundState = {
     dialect,
     editors: { query: code, type: setupCode },
     hideType: true,
   }
+
   if (kyselyVersion) {
     state.kysely = { type: 'tag', name: kyselyVersion }
   }
-  const params = new URLSearchParams()
-  params.set('theme', isDarkTheme ? 'dark' : 'light')
-  if (!disableIframeMode) {
-    params.set('open', '1')
-    params.set('nomore', '1')
-    params.set('notheme', '1')
-    params.set('nohotkey', '1')
-  }
+
   const hash = '#r' + encodeURIComponent(JSON.stringify(state))
 
   return (
@@ -33,7 +43,7 @@ export function Playground({
         width: '100%',
         minHeight: '600px',
         borderRadius: 7,
-        border: isDarkTheme ? undefined : '1px solid var(--gray3)',
+        border: colorMode === 'dark' ? undefined : '1px solid var(--gray3)',
       }}
       allow="clipboard-write"
       src={`https://kyse.link/?${params}${hash}`}
