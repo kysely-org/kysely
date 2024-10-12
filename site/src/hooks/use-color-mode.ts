@@ -10,12 +10,10 @@ export function useColorMode() {
   useEffect(() => {
     const theme = localStorage.getItem('theme')
 
-    console.log({ theme, colorMode })
-
-    if (isColorMode(theme) && theme !== colorMode) {
+    if (isColorMode(theme)) {
       setColorMode(theme)
     }
-  }, [colorMode])
+  }, [])
 
   return { colorMode }
 }
