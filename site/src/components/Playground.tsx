@@ -1,17 +1,21 @@
-import { useRef } from 'react'
-import { useColorMode } from '../hooks/use-color-mode'
+import { useColorMode } from '@docusaurus/theme-common'
+import { useEffect, useState } from 'react'
 import styles from './Playground.module.css'
 
 export function Playground(props: PlaygroundProps) {
-  const playgroundRef = useRef(null)
   const params = usePlaygroundParams(props.disableIframeMode)
+  const [src, setSrc] = useState('')
+
+  useEffect(() => {
+    setSrc(`https://kyse.link/?${params}${getPlaygroundStateHash(props)}`)
+  }, [])
 
   return (
     <iframe
       allow="clipboard-write"
+      autoFocus
       className={styles.playground}
-      ref={playgroundRef}
-      src={`https://kyse.link/?${params}${getPlaygroundStateHash(props)}`}
+      src={src}
     />
   )
 }
