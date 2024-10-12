@@ -8,18 +8,18 @@
   padding: 64px 0;
 }
 
-.feature-title {
+.featureTitle {
   align-items: center;
   color: var(--gray12);
   display: inline-flex;
   gap: 8px;
 }
 
-[data-theme='dark'] .feature-title {
+[data-theme='dark'] .featureTitle {
   color: var(--gray4);
 }
 
-.tick-container {
+.tickContainer {
   background-color: var(--sky7);
   border: 1px solid var(--sky10);
   border-radius: 100%;
@@ -30,16 +30,16 @@
   width: 20px;
 }
 
-.tick-icon {
+.tickIcon {
   height: 12px;
   fill: var(--sky12);
   width: 12px;
 }
 
-.feature-description {
+.featureDescription {
   color: var(--gray11);
 }
 
-[data-theme='dark'] .feature-description {
+[data-theme='dark'] .featureDescription {
   color: var(--gray8);
 }

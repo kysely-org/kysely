@@ -93,13 +93,13 @@ function Feature({ title, description }: FeatureItem) {
   return (
     <div className={clsx('col col--6')} style={{ padding: 10 }}>
       <div className="padding-horiz--md">
-        <h3 className={styles['feature-title']}>
-          <span className={styles['tick-container']}>
-            <TickIcon className={styles['tick-icon']} />
+        <h3 className={styles.featureTitle}>
+          <span className={styles.tickContainer}>
+            <TickIcon className={styles.tickIcon} />
           </span>
           {title}
         </h3>
-        <p className={styles['feature-description']}>{description}</p>
+        <p className={styles.featureDescription}>{description}</p>
       </div>
     </div>
   )
