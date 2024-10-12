@@ -7,3 +7,39 @@
   min-height: 80vh;
   padding: 64px 0;
 }
+
+.feature-title {
+  align-items: center;
+  color: var(--gray12);
+  display: inline-flex;
+  gap: 8px;
+}
+
+[data-theme='dark'] .feature-title {
+  color: var(--gray4);
+}
+
+.tick-container {
+  background-color: var(--sky7);
+  border: 1px solid var(--sky10);
+  border-radius: 100%;
+  display: grid;
+  font-size: 12px;
+  height: 20px;
+  place-items: center;
+  width: 20px;
+}
+
+.tick-icon {
+  height: 12px;
+  fill: var(--sky12);
+  width: 12px;
+}
+
+.feature-description {
+  color: var(--gray11);
+}
+
+[data-theme='dark'] .feature-description {
+  color: var(--gray8);
+}
