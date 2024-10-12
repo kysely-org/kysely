@@ -4,8 +4,6 @@ import styles from './Playground.module.css'
 export function Playground(props: PlaygroundProps) {
   const params = usePlaygroundParams(props.disableIframeMode)
 
-  console.log({ params: Array.from(params.entries()) })
-
   return (
     <iframe
       allow="clipboard-write"
