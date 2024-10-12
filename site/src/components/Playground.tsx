@@ -8,7 +8,7 @@ export function Playground(props: PlaygroundProps) {
 
   useEffect(() => {
     setSrc(`https://kyse.link/?${params}${getPlaygroundStateHash(props)}`)
-  }, [])
+  }, [params.get('theme')])
 
   return (
     <iframe
@@ -42,7 +42,7 @@ function getPlaygroundStateHash(props: PlaygroundProps) {
 
   const state: PlaygroundState = {
     dialect: props.dialect || 'postgres',
-    editors: { query: props.code, type: props.setupCode },
+    editors: { query: props.code, type: props.setupCode || exampleSetup },
     hideType: true,
   }
 
@@ -96,11 +96,4 @@ interface PetTable {
   species: 'cat' | 'dog'
   is_favorite: boolean
 }
-`
-
-export const exampleFilterById = `const person = await db
-  .selectFrom('person')
-  .select(['id', 'first_name'])
-  .where('id', '=', '1')
-  .executeTakeFirst()
 `
