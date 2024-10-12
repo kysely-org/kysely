@@ -7,13 +7,13 @@ import { useEffect } from 'react'
 export function useColorMode() {
   const { colorMode, setColorMode } = useColorModeNative()
 
-  useEffect(() => {
-    const theme = localStorage.getItem('theme')
+  //   useEffect(() => {
+  //     const theme = localStorage.getItem('theme')
 
-    if (isColorMode(theme)) {
-      setColorMode(theme)
-    }
-  }, [])
+  //     if (isColorMode(theme)) {
+  //       setColorMode(theme)
+  //     }
+  //   }, [])
 
   return { colorMode }
 }

@@ -1,14 +1,17 @@
+import { useRef } from 'react'
 import { useColorMode } from '../hooks/use-color-mode'
 import styles from './Playground.module.css'
 
 export function Playground(props: PlaygroundProps) {
+  const playgroundRef = useRef(null)
   const params = usePlaygroundParams(props.disableIframeMode)
 
   return (
     <iframe
       allow="clipboard-write"
       className={styles.playground}
-      src={`https://kyse.link/?theme=${params.get('theme')}${getPlaygroundStateHash(props)}`}
+      ref={playgroundRef}
+      src={`https://kyse.link/?${params}${getPlaygroundStateHash(props)}`}
     />
   )
 }
@@ -23,7 +26,7 @@ function usePlaygroundParams(disableIframeMode: boolean) {
   if (!disableIframeMode) {
     params.set('open', '1')
     params.set('nomore', '1')
-    // params.set('notheme', '1')
+    params.set('notheme', '1')
     params.set('nohotkey', '1')
   }
 
