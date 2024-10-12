@@ -92,7 +92,8 @@ function TickIcon(props: SVGProps<SVGSVGElement>) {
 }
 
 function Feature({ title, description }: FeatureItem) {
-  const { isDarkTheme } = useColorMode()
+  const { colorMode, isDarkTheme } = useColorMode()
+  console.log({ colorMode, isDarkTheme })
 
   return (
     <div className={clsx('col col--6')} style={{ padding: 10 }}>

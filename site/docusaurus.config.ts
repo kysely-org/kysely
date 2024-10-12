@@ -65,7 +65,7 @@ export default {
     colorMode: {
       defaultMode: 'dark',
       disableSwitch: false,
-      respectPrefersColorScheme: false,
+      respectPrefersColorScheme: true,
     },
     docs: {
       sidebar: {
