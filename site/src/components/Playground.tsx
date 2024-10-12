@@ -3,12 +3,7 @@ import { useEffect, useState } from 'react'
 import styles from './Playground.module.css'
 
 export function Playground(props: PlaygroundProps) {
-  const params = usePlaygroundParams(props.disableIframeMode)
-  const [src, setSrc] = useState('')
-
-  useEffect(() => {
-    setSrc(`https://kyse.link/?${params}${getPlaygroundStateHash(props)}`)
-  }, [params.get('theme')])
+  const src = useSrc(props)
 
   return (
     <iframe
@@ -20,21 +15,26 @@ export function Playground(props: PlaygroundProps) {
   )
 }
 
-function usePlaygroundParams(disableIframeMode: boolean) {
+function useSrc(props: PlaygroundProps) {
   const { colorMode } = useColorMode()
+  const [src, setSrc] = useState('')
+
+  useEffect(() => {
+    setSrc(`https://kyse.link/?${params}${getPlaygroundStateHash(props)}`)
+  }, [colorMode])
 
   const params = new URLSearchParams()
 
   params.set('theme', colorMode)
+  params.set('notheme', '1')
 
-  if (!disableIframeMode) {
+  if (!props.disableIframeMode) {
     params.set('open', '1')
     params.set('nomore', '1')
-    params.set('notheme', '1')
     params.set('nohotkey', '1')
   }
 
-  return params
+  return src
 }
 
 function getPlaygroundStateHash(props: PlaygroundProps) {
