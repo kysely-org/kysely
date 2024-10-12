@@ -8,7 +8,7 @@ export function Playground(props: PlaygroundProps) {
     <iframe
       allow="clipboard-write"
       className={styles.playground}
-      src={`https://kyse.link/?${params}${getPlaygroundStateHash(props)}`}
+      src={`https://kyse.link/?theme=${params.get('theme')}${getPlaygroundStateHash(props)}`}
     />
   )
 }
