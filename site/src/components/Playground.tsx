@@ -1,44 +1,56 @@
 import { useColorMode } from '@docusaurus/theme-common'
+import { useEffect, useState } from 'react'
+import styles from './Playground.module.css'
 
-export function Playground({
-  code,
-  setupCode = exampleSetup,
-  kyselyVersion,
-  dialect = 'postgres',
-  disableIframeMode = false,
-}: PlaygroundProps) {
-  const { isDarkTheme } = useColorMode()
-
-  const state: PlaygroundState = {
-    dialect,
-    editors: { query: code, type: setupCode },
-    hideType: true,
-  }
-  if (kyselyVersion) {
-    state.kysely = { type: 'tag', name: kyselyVersion }
-  }
-  const params = new URLSearchParams()
-  params.set('theme', isDarkTheme ? 'dark' : 'light')
-  if (!disableIframeMode) {
-    params.set('open', '1')
-    params.set('nomore', '1')
-    params.set('notheme', '1')
-    params.set('nohotkey', '1')
-  }
-  const hash = '#r' + encodeURIComponent(JSON.stringify(state))
+export function Playground(props: PlaygroundProps) {
+  const src = useSrc(props)
 
   return (
     <iframe
-      style={{
-        width: '100%',
-        minHeight: '600px',
-        borderRadius: 7,
-        border: isDarkTheme ? undefined : '1px solid var(--gray3)',
-      }}
       allow="clipboard-write"
-      src={`https://kyse.link/?${params}${hash}`}
+      autoFocus
+      className={styles.playground}
+      src={src}
     />
   )
+}
+
+function useSrc(props: PlaygroundProps) {
+  const { colorMode } = useColorMode()
+  const [src, setSrc] = useState('')
+
+  useEffect(() => {
+    const params = new URLSearchParams()
+
+    params.set('theme', colorMode)
+    params.set('notheme', '1')
+
+    if (!props.disableIframeMode) {
+      params.set('open', '1')
+      params.set('nomore', '1')
+      params.set('nohotkey', '1')
+    }
+
+    setSrc(`https://kyse.link/?${params}${getPlaygroundStateHash(props)}`)
+  }, [colorMode])
+
+  return src
+}
+
+function getPlaygroundStateHash(props: PlaygroundProps) {
+  const { kyselyVersion } = props
+
+  const state: PlaygroundState = {
+    dialect: props.dialect || 'postgres',
+    editors: { query: props.code, type: props.setupCode || exampleSetup },
+    hideType: true,
+  }
+
+  if (kyselyVersion) {
+    state.kysely = { type: 'tag', name: kyselyVersion }
+  }
+
+  return '#r' + encodeURIComponent(JSON.stringify(state))
 }
 
 interface PlaygroundProps {
@@ -84,11 +96,4 @@ interface PetTable {
   species: 'cat' | 'dog'
   is_favorite: boolean
 }
-`
-
-export const exampleFilterById = `const person = await db
-  .selectFrom('person')
-  .select(['id', 'first_name'])
-  .where('id', '=', '1')
-  .executeTakeFirst()
 `
