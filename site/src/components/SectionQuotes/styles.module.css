@@ -1,0 +1,79 @@
+.quoteContainer {
+  align-items: flex-start;
+  background-color: white;
+  border-radius: 8px;
+  display: flex;
+  flex: 0 1 300px;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px;
+  position: relative;
+  text-decoration: none;
+}
+
+[data-theme='dark'] .quoteContainer {
+  background-color: var(--gray12);
+}
+
+.quoteInnerContainer {
+  display: flex;
+  gap: 8px;
+}
+
+.quoteHeader {
+  align-items: flex-start;
+  display: flex;
+  flex-direction: column;
+}
+
+.quoteTitle,
+.quoteSubtitle {
+  color: var(--gray10);
+}
+
+[data-theme='dark'] .quoteTitle,
+[data-theme='dark'] .quoteSubtitle {
+  color: var(--gray4);
+}
+
+.quoteText {
+  color: var(--gray12);
+  text-align: left;
+}
+
+[data-theme='dark'] .quoteText {
+  color: var(--gray6);
+}
+
+.quotesSection {
+  background: radial-gradient(circle, var(--sky4) 0%, white 65%);
+  display: grid;
+  place-items: center;
+}
+
+[data-theme='dark'] .quotesSection {
+  background: radial-gradient(circle, var(--blue12) 0%, var(--gray12) 65%);
+}
+
+.quotesContainer {
+  text-align: center;
+}
+
+.quotesInnerContainer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  justify-content: center;
+}
+
+.twitterIcon {
+  fill: var(--blue8);
+}
+
+.icon {
+  height: 20px;
+  position: absolute;
+  right: 18px;
+  top: 18px;
+  width: 20px;
+}

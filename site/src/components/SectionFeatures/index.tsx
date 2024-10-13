@@ -1,5 +1,3 @@
-import { useColorMode } from '@docusaurus/theme-common'
-import { gray } from '@radix-ui/colors'
 import type { SVGProps } from 'react'
 import clsx from 'clsx'
 import styles from './styles.module.css'
@@ -52,7 +50,6 @@ const FeatureList: FeatureItem[] = [
       </>
     ),
   },
-
   {
     title: 'Runs on every environment',
 
@@ -93,39 +90,16 @@ function TickIcon(props: SVGProps<SVGSVGElement>) {
 }
 
 function Feature({ title, description }: FeatureItem) {
-  const { isDarkTheme } = useColorMode()
-
   return (
     <div className={clsx('col col--6')} style={{ padding: 10 }}>
       <div className="padding-horiz--md">
-        <h3
-          style={{
-            color: isDarkTheme ? gray.gray4 : gray.gray12,
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 8,
-          }}
-        >
-          <span
-            style={{
-              display: 'grid',
-              placeItems: 'center',
-              color: 'red',
-              width: 20,
-              height: 20,
-              fontSize: 12,
-              background: 'var(--sky7)',
-              borderRadius: 100,
-              border: `1px solid var(--sky10)`,
-            }}
-          >
-            <TickIcon style={{ width: 12, height: 12, fill: 'var(--sky12)' }} />
+        <h3 className={styles.featureTitle}>
+          <span className={styles.tickContainer}>
+            <TickIcon className={styles.tickIcon} />
           </span>
           {title}
         </h3>
-        <p style={{ color: isDarkTheme ? gray.gray8 : gray.gray11 }}>
-          {description}
-        </p>
+        <p className={styles.featureDescription}>{description}</p>
       </div>
     </div>
   )
