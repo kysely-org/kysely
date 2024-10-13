@@ -28,12 +28,12 @@
 
 .quoteTitle,
 .quoteSubtitle {
-  color: var(--gray10);
+  color: var(--gray11);
 }
 
 [data-theme='dark'] .quoteTitle,
 [data-theme='dark'] .quoteSubtitle {
-  color: var(--gray4);
+  color: var(--gray9);
 }
 
 .quoteText {
@@ -66,14 +66,14 @@
   justify-content: center;
 }
 
-.twitterIcon {
-  fill: var(--blue8);
-}
-
 .icon {
-  height: 20px;
+  bottom: 18px;
+  height: 16px;
   position: absolute;
   right: 18px;
-  top: 18px;
-  width: 20px;
+  width: 16px;
+}
+
+[data-theme='dark'] .darkIcon {
+  fill: white;
 }
