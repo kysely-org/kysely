@@ -2,10 +2,7 @@ export * from './kysely.js'
 export * from './query-creator.js'
 
 export * from './expression/expression.js'
-export {
-  ExpressionBuilder,
-  expressionBuilder,
-} from './expression/expression-builder.js'
+export * from './expression/expression-builder.js'
 export * from './expression/expression-wrapper.js'
 
 export * from './query-builder/where-interface.js'
@@ -216,63 +213,18 @@ export * from './util/compilable.js'
 export * from './util/explainable.js'
 export * from './util/streamable.js'
 export * from './util/log.js'
-export {
-  AnyAliasedColumn,
-  AnyAliasedColumnWithTable,
-  AnyColumn,
-  AnyColumnWithTable,
-  Equals,
-  UnknownRow,
-  Simplify,
-  SqlBool,
-  Nullable,
-  NotNull,
-} from './util/type-utils.js'
+export * from './util/type-utils.js'
 export * from './util/infer-result.js'
-export { logOnce } from './util/log-once.js'
+export * from './util/log-once.js'
 
-export {
-  SelectExpression,
-  SelectCallback,
-  SelectArg,
-  Selection,
-  CallbackSelection,
-} from './parser/select-parser.js'
-export {
-  ReferenceExpression,
-  ReferenceExpressionOrList,
-  SimpleReferenceExpression,
-  StringReference,
-  ExtractTypeFromStringReference,
-  ExtractTypeFromReferenceExpression,
-} from './parser/reference-parser.js'
-export {
-  ValueExpression,
-  ValueExpressionOrList,
-} from './parser/value-parser.js'
-export {
-  SimpleTableReference,
-  TableExpression,
-  TableExpressionOrList,
-} from './parser/table-parser.js'
-export {
-  JoinReferenceExpression,
-  JoinCallbackExpression,
-} from './parser/join-parser.js'
-export { InsertObject } from './parser/insert-values-parser.js'
-export { UpdateObject } from './parser/update-set-parser.js'
-export {
-  OrderByExpression,
-  OrderByDirectionExpression,
-} from './parser/order-by-parser.js'
-export {
-  ComparisonOperatorExpression,
-  OperandValueExpression,
-  OperandValueExpressionOrList,
-  FilterObject,
-} from './parser/binary-operation-parser.js'
-export { ExistsExpression } from './parser/unary-operation-parser.js'
-export {
-  OperandExpression,
-  ExpressionOrFactory,
-} from './parser/expression-parser.js'
+export * from './parser/select-parser.js'
+export * from './parser/reference-parser.js'
+export * from './parser/value-parser.js'
+export * from './parser/table-parser.js'
+export * from './parser/join-parser.js'
+export * from './parser/insert-values-parser.js'
+export * from './parser/update-set-parser.js'
+export * from './parser/order-by-parser.js'
+export * from './parser/binary-operation-parser.js'
+export * from './parser/unary-operation-parser.js'
+export * from './parser/expression-parser.js'
