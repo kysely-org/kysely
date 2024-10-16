@@ -1,9 +1,10 @@
-import clsx from 'clsx'
 import { useColorMode } from '@docusaurus/theme-common'
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext'
 import Layout from '@theme/Layout'
-import { SectionFeatures } from '@site/src/components/SectionFeatures'
+import clsx from 'clsx'
+import { useEffect, useState } from 'react'
 
+import { SectionFeatures } from '../components/SectionFeatures'
 import { DemoVideo } from '../components/DemoVideo'
 import { SectionQuotes } from '../components/SectionQuotes'
 import styles from './index.module.css'
@@ -96,8 +97,24 @@ export default function Home(): JSX.Element {
   )
 }
 
+const STACKBLITZ_URL = 'https://stackblitz.com/edit/react-ts-pppzf5'
+const STACKBLITZ_PARAMS = new URLSearchParams({
+  embed: '1',
+  file: 'playground.ts',
+  hideExplorer: '1',
+  hideNavigation: '1',
+})
+
 function SectionPlayground() {
   const { colorMode } = useColorMode()
+
+  const [src, setSrc] = useState('')
+
+  useEffect(() => {
+    STACKBLITZ_PARAMS.set('theme', colorMode)
+
+    setSrc(`${STACKBLITZ_URL}?${STACKBLITZ_PARAMS}`)
+  }, [colorMode])
 
   return (
     <section className={styles.playgroundSection}>
@@ -110,7 +127,7 @@ function SectionPlayground() {
           allow="accelerometer; ambient-light-sensor; camera; encrypted-media; geolocation; gyroscope; hid; microphone; midi; payment; usb; vr; xr-spatial-tracking"
           className={styles.playground}
           sandbox="allow-forms allow-modals allow-popups allow-presentation allow-same-origin allow-scripts"
-          src={`https://stackblitz.com/edit/react-ts-pppzf5?embed=1&file=playground.ts&hideExplorer=1&hideNavigation=1&theme=${colorMode}`}
+          src={src}
           title="Kysely Demo"
         />
       </div>
