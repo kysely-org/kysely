@@ -4,68 +4,95 @@ import styles from './styles.module.css'
 
 type FeatureItem = {
   title: string
-  description: JSX.Element
+  description: string | JSX.Element
 }
 
 const FeatureList: FeatureItem[] = [
   {
-    title: 'Type-safe SQL queries',
-
+    title: 'Type-safety without compromises',
     description: (
       <>
-        Kysely lets you write type-safe SQL queries. This eliminates entire
-        classes of errors and lets you sleep peacefully at night.
+        Kysely's state-of-the-art, type-safe API provides precise result types
+        and catches errors within queries at compile-time, giving
+        high-performing teams the confidence to ship at greater velocity. Use
+        `kysely-codegen` to make the database the source of types.
       </>
     ),
   },
   {
-    title: 'No magic, just SQL',
-
+    title: 'What you see is what you get',
     description: (
       <>
-        Kysely is a light abstraction layer over SQL. This makes it easy to
-        reason about performance, and reduces the number of concepts you need to
-        learn to be proficient with the library.
+        Kysely is a thin abstraction layer over SQL, crafted by SQL lovers for
+        SQL lovers, focusing on familiarity through naming and structure, and
+        predictability through 1:1 compilation. Teams proficient in SQL can pick
+        up Kysely and be productive in minutes.
       </>
     ),
   },
   {
-    title: 'Great autocompletion',
-
+    title: 'Write with great auto-completion',
     description: (
       <>
-        By exposing your database schema to the TypeScript compiler, you get
-        autocompletion on table names, column names, aliases, etc.
+        Your database schema types flow through Kysely's fluent API, offering a
+        typing experience that's second only to full-blown database IDEs. Get
+        intelligent, context-aware suggestions for functions, table names, and
+        column names as you type.
       </>
     ),
   },
   {
-    title: 'Multi-dialect support',
-
+    title: 'Build SQL queries with unmatched depth',
     description: (
       <>
-        PostgreSQL, MySQL, or SQLite? We've got you covered. There's also a
-        growing ecosystem of third-party dialects, including PlanetScale, D1,
-        SurrealDB, and more. <a href="/docs/dialects">Learn more.</a>
+        Kysely supports building a wide range of SQL queries, clauses,
+        functions, and expressions, including SELECT, INSERT, UPDATE, DELETE,
+        MERGE, WITH, and more. When needed, you can also use raw SQL strings,
+        even within structured queries.
       </>
     ),
   },
   {
-    title: 'Runs on every environment',
-
+    title: 'Query any SQL database',
     description: (
       <>
-        Kysely runs on node.js, the browser, serverless and edge environments,
-        even on Deno! <a href="/docs/category/other-runtimes">Learn more.</a>
+        Kysely's community-driven dialect system makes it easy to implement
+        support for any SQL database without waiting for the core team. It ships
+        with official dialects for PostgreSQL, MySQL, MS SQL Server, and SQLite
+        right out of the box.
       </>
     ),
   },
   {
-    title: 'Extensible core',
+    title: 'Run anywhere',
     description: (
       <>
-        Kysely comes with a plugin system that lets you extend the core with
-        your own functionality. <a href="/docs/plugins">Learn more.</a>
+        Kysely is lightweight, ships both CommonJS and ESM, has zero
+        dependencies, and avoids any environment-specific APIs. It can run in
+        any JavaScript environment, including Node.js, Deno, Bun, AWS Lambda,
+        Cloudflare Workers, and browsers.
+      </>
+    ),
+  },
+  {
+    title: 'Take control over your migrations',
+    description: (
+      <>
+        Kysely includes optional up/down migration primitives, allowing you to
+        move away from risky black box migration tools and write your own
+        migrations. Use `kysely-ctl` to run your migrations directly in the
+        terminal or within your CI/CD pipeline.
+      </>
+    ),
+  },
+  {
+    title: 'Extend with plugins',
+    description: (
+      <>
+        Kysely's plugin system allows you tap into the process, and modify
+        queries before compilation and/or their results after execution. This
+        opens up various use cases, such as transforming camelCase names to
+        snake_case and vice versa.
       </>
     ),
   },
