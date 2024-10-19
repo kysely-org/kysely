@@ -1013,6 +1013,148 @@ for (const dialect of DIALECTS.filter(
       })
     })
 
+    if (dialect === 'postgres') {
+      it('should perform a merge...using table simple on...when matched then delete returning id query', async () => {
+        const expected = await ctx.db.selectFrom('pet').select('id').execute()
+
+        const query = ctx.db
+          .mergeInto('pet')
+          .using('person', 'pet.owner_id', 'person.id')
+          .whenMatched()
+          .thenDelete()
+          .returning('pet.id')
+
+        testSql(query, dialect, {
+          postgres: {
+            sql: 'merge into "pet" using "person" on "pet"."owner_id" = "person"."id" when matched then delete returning "pet"."id"',
+            parameters: [],
+          },
+          mysql: NOT_SUPPORTED,
+          mssql: NOT_SUPPORTED,
+          sqlite: NOT_SUPPORTED,
+        })
+
+        const result = await query.execute()
+
+        expect(result).to.eql(expected)
+      })
+
+      it('should perform a merge...using table simple on...when matched then update set name returning {target}.name, {source}.first_name query', async () => {
+        const query = ctx.db
+          .mergeInto('pet')
+          .using('person', 'pet.owner_id', 'person.id')
+          .whenMatched()
+          .thenUpdateSet((eb) => ({
+            name: sql`${eb.ref('person.first_name')} || '''s pet'`,
+          }))
+          .returning([
+            'pet.name as pet_name',
+            'person.first_name as owner_name',
+          ])
+
+        testSql(query, dialect, {
+          postgres: {
+            sql: 'merge into "pet" using "person" on "pet"."owner_id" = "person"."id" when matched then update set "name" = "person"."first_name" || \'\'\'s pet\' returning "pet"."name" as "pet_name", "person"."first_name" as "owner_name"',
+            parameters: [],
+          },
+          mysql: NOT_SUPPORTED,
+          mssql: NOT_SUPPORTED,
+          sqlite: NOT_SUPPORTED,
+        })
+
+        const result = await query.execute()
+
+        expect(result).to.eql([
+          { owner_name: 'Jennifer', pet_name: "Jennifer's pet" },
+          { owner_name: 'Arnold', pet_name: "Arnold's pet" },
+          { owner_name: 'Sylvester', pet_name: "Sylvester's pet" },
+        ])
+      })
+
+      it('should perform a merge...using table simple on...when matched then delete returning * query', async () => {
+        const expected = await ctx.db
+          .selectFrom('pet')
+          .innerJoin('person', 'pet.owner_id', 'person.id')
+          .selectAll()
+          .execute()
+
+        const query = ctx.db
+          .mergeInto('pet')
+          .using('person', 'pet.owner_id', 'person.id')
+          .whenMatched()
+          .thenDelete()
+          .returningAll()
+
+        testSql(query, dialect, {
+          postgres: {
+            sql: 'merge into "pet" using "person" on "pet"."owner_id" = "person"."id" when matched then delete returning *',
+            parameters: [],
+          },
+          mysql: NOT_SUPPORTED,
+          mssql: NOT_SUPPORTED,
+          sqlite: NOT_SUPPORTED,
+        })
+
+        const result = await query.execute()
+
+        expect(result).to.eql(expected)
+      })
+
+      it('should perform a merge...using table simple on...when matched then delete returning {target}.* query', async () => {
+        const expected = await ctx.db.selectFrom('pet').selectAll().execute()
+
+        const query = ctx.db
+          .mergeInto('pet')
+          .using('person', 'pet.owner_id', 'person.id')
+          .whenMatched()
+          .thenDelete()
+          .returningAll('pet')
+
+        testSql(query, dialect, {
+          postgres: {
+            sql: 'merge into "pet" using "person" on "pet"."owner_id" = "person"."id" when matched then delete returning "pet".*',
+            parameters: [],
+          },
+          mysql: NOT_SUPPORTED,
+          mssql: NOT_SUPPORTED,
+          sqlite: NOT_SUPPORTED,
+        })
+
+        const result = await query.execute()
+
+        expect(result).to.eql(expected)
+      })
+
+      it('should perform a merge...using table simple on...when matched then delete returning {source}.* query', async () => {
+        const expected = await ctx.db
+          .selectFrom('pet')
+          .innerJoin('person', 'pet.owner_id', 'person.id')
+          .selectAll('person')
+          .execute()
+
+        const query = ctx.db
+          .mergeInto('pet')
+          .using('person', 'pet.owner_id', 'person.id')
+          .whenMatched()
+          .thenDelete()
+          .returningAll('person')
+
+        testSql(query, dialect, {
+          postgres: {
+            sql: 'merge into "pet" using "person" on "pet"."owner_id" = "person"."id" when matched then delete returning "person".*',
+            parameters: [],
+          },
+          mysql: NOT_SUPPORTED,
+          mssql: NOT_SUPPORTED,
+          sqlite: NOT_SUPPORTED,
+        })
+
+        const result = await query.execute()
+
+        expect(result).to.eql(expected)
+      })
+    }
+
     if (dialect === 'mssql') {
       it('should perform a merge top...using table simple on...when matched then delete query', async () => {
         const query = ctx.db
