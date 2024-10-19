@@ -42,6 +42,9 @@ import {
   provideControlledConnection,
 } from './util/provide-controlled-connection.js'
 
+// @ts-ignore
+Symbol.asyncDispose ??= Symbol('Symbol.asyncDispose')
+
 /**
  * The main Kysely class.
  *
@@ -77,7 +80,7 @@ import {
  */
 export class Kysely<DB>
   extends QueryCreator<DB>
-  implements QueryExecutorProvider
+  implements QueryExecutorProvider, AsyncDisposable
 {
   readonly #props: KyselyProps
 
@@ -535,6 +538,10 @@ export class Kysely<DB>
     const compiledQuery = isCompilable(query) ? query.compile() : query
 
     return this.getExecutor().executeQuery<R>(compiledQuery, queryId)
+  }
+
+  async [Symbol.asyncDispose]() {
+    await this.destroy()
   }
 }
 
