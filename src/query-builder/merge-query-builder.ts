@@ -891,9 +891,12 @@ export class WheneableMergeQueryBuilder<
       this.#props.queryId,
     )
 
+    const { adapter } = this.#props.executor
+    const query = compiledQuery.query as MergeQueryNode
+
     if (
-      (compiledQuery.query as MergeQueryNode).output &&
-      this.#props.executor.adapter.supportsOutput
+      (query.returning && adapter.supportsReturning) ||
+      (query.output && adapter.supportsOutput)
     ) {
       return result.rows as any
     }
