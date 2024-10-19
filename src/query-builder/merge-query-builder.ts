@@ -694,7 +694,7 @@ export class WheneableMergeQueryBuilder<
     tables: ReadonlyArray<T>,
   ): WheneableMergeQueryBuilder<DB, TT, ST, ReturningAllRow<DB, T, O>>
 
-  returningAll<T extends TT>(
+  returningAll<T extends TT | ST>(
     table: T,
   ): WheneableMergeQueryBuilder<DB, TT, ST, ReturningAllRow<DB, T, O>>
 
