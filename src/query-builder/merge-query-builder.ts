@@ -249,10 +249,6 @@ export class MergeQueryBuilder<DB, TT extends keyof DB, O>
   }
 
   returningAll<T extends TT>(
-    tables: ReadonlyArray<T>,
-  ): MergeQueryBuilder<DB, TT, ReturningAllRow<DB, T, O>>
-
-  returningAll<T extends TT>(
     table: T,
   ): MergeQueryBuilder<DB, TT, ReturningAllRow<DB, T, O>>
 
@@ -689,10 +685,6 @@ export class WheneableMergeQueryBuilder<
       ),
     })
   }
-
-  returningAll<T extends TT | ST>(
-    tables: ReadonlyArray<T>,
-  ): WheneableMergeQueryBuilder<DB, TT, ST, ReturningAllRow<DB, T, O>>
 
   returningAll<T extends TT | ST>(
     table: T,
