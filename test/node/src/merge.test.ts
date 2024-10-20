@@ -1,4 +1,5 @@
 import { MergeResult, sql } from '../../..'
+import { mergeAction } from '../../../helpers/postgres'
 import {
   DIALECTS,
   NOT_SUPPORTED,
@@ -1189,7 +1190,7 @@ for (const dialect of DIALECTS.filter(
           }))
           .whenNotMatchedBySource()
           .thenDelete()
-          .returning((eb) => [eb.mergeAction().as('action'), 'pet.name'])
+          .returning([mergeAction().as('action'), 'pet.name'])
 
         testSql(query, dialect, {
           postgres: {
