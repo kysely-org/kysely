@@ -163,27 +163,25 @@ export type AllSelection<DB, TB extends keyof DB> = DrainOuterGeneric<{
 
 export function parseSelectArg(
   selection: SelectArg<any, any, SelectExpression<any, any>>,
-  ebFn = expressionBuilder,
 ): SelectionNode[] {
   if (isFunction(selection)) {
-    return parseSelectArg(selection(ebFn()))
+    return parseSelectArg(selection(expressionBuilder()))
   } else if (isReadonlyArray(selection)) {
-    return selection.map((it) => parseSelectExpression(it, ebFn))
+    return selection.map((it) => parseSelectExpression(it))
   } else {
-    return [parseSelectExpression(selection, ebFn)]
+    return [parseSelectExpression(selection)]
   }
 }
 
-export function parseSelectExpression(
+function parseSelectExpression(
   selection: SelectExpression<any, any>,
-  ebFn = expressionBuilder,
 ): SelectionNode {
   if (isString(selection)) {
     return SelectionNode.create(parseAliasedStringReference(selection))
   } else if (isDynamicReferenceBuilder(selection)) {
     return SelectionNode.create(selection.toOperationNode())
   } else {
-    return SelectionNode.create(parseAliasedExpression(selection, ebFn))
+    return SelectionNode.create(parseAliasedExpression(selection))
   }
 }
 
