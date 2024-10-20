@@ -7,6 +7,7 @@ import {
   MergeQueryBuilder,
   MergeResult,
   NotMatchedThenableMergeQueryBuilder,
+  SelectType,
   Selectable,
   UpdateQueryBuilder,
   WheneableMergeQueryBuilder,
@@ -458,7 +459,11 @@ async function testReturning(
   // Return all columns
   const r5 = await baseQuery.returningAll().executeTakeFirstOrThrow()
 
-  expectType<Selectable<Person & Pet>>(r5)
+  expectType<{
+    [K in keyof Person | keyof Pet]:
+      | (K extends keyof Person ? SelectType<Person[K]> : never)
+      | (K extends keyof Pet ? SelectType<Pet[K]> : never)
+  }>(r5)
 
   // Return all target columns
   const r6 = await baseQuery.returningAll('person').executeTakeFirstOrThrow()
