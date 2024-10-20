@@ -8,7 +8,6 @@ import { OperationNode } from '../operation-node/operation-node.js'
 import { RawNode } from '../operation-node/raw-node.js'
 import { WhenNode } from '../operation-node/when-node.js'
 import { isString } from '../util/object-utils.js'
-
 import {
   parseFilterList,
   parseReferentialBinaryOperation,
