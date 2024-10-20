@@ -1153,6 +1153,64 @@ for (const dialect of DIALECTS.filter(
 
         expect(result).to.eql(expected)
       })
+
+      it('should perform a merge...using table simple on...when matched then delete returning merge_action(), {target}.name', async () => {
+        await ctx.db.connection().execute(async (db) => {
+          await ctx.db
+            .insertInto('person')
+            .values({ first_name: 'Moshe', gender: 'other' })
+            .execute()
+
+          await sql`SET session_replication_role = 'replica'`.execute(db)
+          await db
+            .insertInto('pet')
+            .values({
+              name: 'Ralph',
+              owner_id: 9999,
+              species: 'hamster',
+            })
+            .execute()
+          await sql`SET session_replication_role = 'origin'`.execute(db)
+        })
+
+        const query = ctx.db
+          .mergeInto('pet')
+          .using('person', 'pet.owner_id', 'person.id')
+          .whenMatched()
+          .thenUpdateSet(
+            'name',
+            (eb) => sql`${eb.ref('person.first_name')} || '''s pet'`,
+          )
+          .whenNotMatched()
+          .thenInsertValues((eb) => ({
+            name: sql`${eb.ref('person.first_name')} || '''s pet'`,
+            owner_id: eb.ref('person.id'),
+            species: 'hamster',
+          }))
+          .whenNotMatchedBySource()
+          .thenDelete()
+          .returning((eb) => [eb.mergeAction().as('action'), 'pet.name'])
+
+        testSql(query, dialect, {
+          postgres: {
+            sql: 'merge into "pet" using "person" on "pet"."owner_id" = "person"."id" when matched then update set "name" = "person"."first_name" || \'\'\'s pet\' when not matched then insert ("name", "owner_id", "species") values ("person"."first_name" || \'\'\'s pet\', "person"."id", $1) when not matched by source then delete returning merge_action() as "action", "pet"."name"',
+            parameters: ['hamster'],
+          },
+          mysql: NOT_SUPPORTED,
+          mssql: NOT_SUPPORTED,
+          sqlite: NOT_SUPPORTED,
+        })
+
+        const result = await query.execute()
+
+        expect(result).to.eql([
+          { action: 'UPDATE', name: "Jennifer's pet" },
+          { action: 'UPDATE', name: "Arnold's pet" },
+          { action: 'UPDATE', name: "Sylvester's pet" },
+          { action: 'DELETE', name: 'Ralph' },
+          { action: 'INSERT', name: "Moshe's pet" },
+        ])
+      })
     }
 
     if (dialect === 'mssql') {
