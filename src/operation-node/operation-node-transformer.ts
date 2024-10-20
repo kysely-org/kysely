@@ -1033,6 +1033,7 @@ export class OperationNodeTransformer {
       top: this.transformNode(node.top),
       endModifiers: this.transformNodeList(node.endModifiers),
       output: this.transformNode(node.output),
+      returning: this.transformNode(node.returning),
     })
   }
 
