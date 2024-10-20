@@ -60,12 +60,11 @@ export function parseExpression(
 
 export function parseAliasedExpression(
   exp: AliasedExpressionOrFactory<any, any>,
-  ebFn = expressionBuilder,
 ): AliasNode {
   if (isOperationNodeSource(exp)) {
     return exp.toOperationNode()
   } else if (isFunction(exp)) {
-    return exp(ebFn()).toOperationNode()
+    return exp(expressionBuilder()).toOperationNode()
   }
 
   throw new Error(`invalid aliased expression: ${JSON.stringify(exp)}`)
