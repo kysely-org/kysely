@@ -35,6 +35,10 @@
     -6.6px 22.6px 26.5px -1.8px hsl(var(--shadow-color) / 0.1),
     -10px 34.4px 40.3px -2.1px hsl(var(--shadow-color) / 0.1),
     -14.8px 50.6px 59.3px -2.5px hsl(var(--shadow-color) / 0.1);
+
+  .docItemCol_node_modules-\@docusaurus-theme-classic-lib-theme-DocItem-Layout-styles-module {
+    max-width: unset !important;
+  }
 }
 
 [data-theme='dark'] {
