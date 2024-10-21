@@ -88,6 +88,7 @@ function main() {
     const lines = readLines(filePath)
     const state = {
       filePath,
+      /** @type {string | null} */
       line: null,
       lineIndex: 0,
       annotation: null,
@@ -153,7 +154,8 @@ function writeSiteExample(state) {
   const codeVariable = _.camelCase(name)
 
   const fileName = `${priority.padStart(4, '0')}-${_.kebabCase(name)}`
-  const filePath = path.join(SITE_EXAMPLE_PATH, category, fileName)
+  const folderPath = path.join(SITE_EXAMPLE_PATH, category)
+  const filePath = path.join(folderPath, fileName)
 
   const codeFile = `export const ${codeVariable} = \`${deindent(code)
     .replaceAll('`', '\\`')
@@ -197,7 +199,22 @@ function writeSiteExample(state) {
 
   const exampleFile = parts.join('\n')
 
-  fs.writeFileSync(filePath + '.js', codeFile)
+  if (!fs.existsSync(folderPath)) {
+    fs.mkdirSync(folderPath, { recursive: true })
+    fs.writeFileSync(
+      path.join(folderPath, '_category_.json'),
+      `{
+  "label": "${_.startCase(category)}",
+  "position": 0, // TODO: set the position of the category.
+  "link": {
+    "type": "generated-index",
+    "description": "Short and simple examples of using the ${category} functionality." // TODO: review this.
+  }
+}`,
+    )
+  }
+
+  fs.writeFileSync(filePath + '.js', codeFile, {})
   fs.writeFileSync(filePath + '.mdx', exampleFile)
 }
 
@@ -298,10 +315,10 @@ function deindent(str) {
   let ws = Number.MAX_SAFE_INTEGER
   for (const line of lines) {
     if (line.trim().length > 0) {
-      const wsExec = /^(\s*)/.exec(line)
+      const [, wsExec] = /^(\s*)/.exec(line) || []
 
-      if (wsExec[1].length < ws) {
-        ws = wsExec[1].length
+      if (wsExec != null && wsExec.length < ws) {
+        ws = wsExec.length
       }
     }
   }
