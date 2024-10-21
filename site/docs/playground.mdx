@@ -6,9 +6,16 @@ sidebar_position: 3
 
 [@wirekang](https://github.com/wirekang) has created a [playground for Kysely](https://kyse.link). You can use it to quickly test stuff out and for creating code examples for your issues, PRs and Discord messages.
 
-import { Playground, exampleFilterById } from '../src/components/Playground'
+import { Playground } from '../src/components/Playground'
 
-<Playground code={exampleFilterById} />
+<Playground
+  code={`const person = await db
+  .selectFrom('person')
+  .select(['id', 'first_name'])
+  .where('id', '=', '1')
+  .executeTakeFirst()
+`}
+/>
 
 ## Codesandbox
 
