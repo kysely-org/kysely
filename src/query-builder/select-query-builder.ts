@@ -454,9 +454,9 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
   /**
    * Makes the selection distinct.
    *
-   * <!-- siteExample("select", "Distinct", 70) -->
-   *
    * ### Examples
+   *
+   * <!-- siteExample("select", "Distinct", 70) -->
    *
    * ```ts
    * const persons = await db.selectFrom('person')
