@@ -37,7 +37,7 @@
     -14.8px 50.6px 59.3px -2.5px hsl(var(--shadow-color) / 0.1);
 
   /* remove default theme max-width in examples content */
-  [class*='docItemCol_'] {
+  [class^='col docItemCol_'] {
     max-width: unset !important;
   }
 }
