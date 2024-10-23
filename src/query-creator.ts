@@ -512,14 +512,18 @@ export class QueryCreator<DB> {
    *
    * ### Examples
    *
+   * <!-- siteExample("merge", "Update target column based on existence of source row", 10) -->
+   *
+   * Update a target column based on the existence of a source row:
+   *
    * ```ts
    * const result = await db
-   *   .mergeInto('person')
-   *   .using('pet', 'pet.owner_id', 'person.id')
-   *   .whenMatched((and) => and('has_pets', '!=', 'Y'))
+   *   .mergeInto('person as target')
+   *   .using('pet as source', 'source.owner_id', 'target.id')
+   *   .whenMatchedAnd('target.has_pets', '!=', 'Y')
    *   .thenUpdateSet({ has_pets: 'Y' })
-   *   .whenNotMatched()
-   *   .thenDoNothing()
+   *   .whenNotMatchedBySourceAnd('target.has_pets', '=', 'Y')
+   *   .thenUpdateSet({ has_pets: 'N' })
    *   .executeTakeFirstOrThrow()
    *
    * console.log(result.numChangedRows)
@@ -529,11 +533,12 @@ export class QueryCreator<DB> {
    *
    * ```sql
    * merge into "person"
-   * using "pet" on "pet"."owner_id" = "person"."id"
-   * when matched and "has_pets" != $1 then
-   *   update set "has_pets" = $2
-   * when not matched then
-   *   do nothing
+   * using "pet"
+   * on "pet"."owner_id" = "person"."id"
+   * when matched and "has_pets" != $1
+   * then update set "has_pets" = $2
+   * when not matched by source and "has_pets" = $3
+   * then update set "has_pets" = $4
    * ```
    */
   mergeInto<TR extends keyof DB & string>(

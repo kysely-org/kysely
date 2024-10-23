@@ -71,6 +71,24 @@ const moreExamplesByCategory = {
     'returning method':
       'https://kysely-org.github.io/kysely-apidoc/classes/DeleteQueryBuilder.html#returning',
   },
+  merge: {
+    'mergeInto method':
+      'https://kysely-org.github.io/kysely-apidoc/classes/Kysely.html#mergeInto',
+    'using method':
+      'https://kysely-org.github.io/kysely-apidoc/classes/MergeQueryBuilder.html#using',
+    'whenMatched method':
+      'https://kysely-org.github.io/kysely-apidoc/classes/WheneableMergeQueryBuilder.html#whenMatched',
+    'thenUpdateSet method':
+      'https://kysely-org.github.io/kysely-apidoc/classes/MatchedThenableMergeQueryBuilder.html#thenUpdateSet',
+    'thenDelete method':
+      'https://kysely-org.github.io/kysely-apidoc/classes/MatchedThenableMergeQueryBuilder.html#thenDelete',
+    'thenDoNothing method':
+      'https://kysely-org.github.io/kysely-apidoc/classes/MatchedThenableMergeQueryBuilder.html#thenDoNothing',
+    'whenNotMatched method':
+      'https://kysely-org.github.io/kysely-apidoc/classes/WheneableMergeQueryBuilder.html#whenNotMatched',
+    'thenInsertValues method':
+      'https://kysely-org.github.io/kysely-apidoc/classes/NotMatchedThenableMergeQueryBuilder.html#thenInsertValues',
+  },
   transactions: {
     'transaction method':
       'https://kysely-org.github.io/kysely-apidoc/classes/Kysely.html#transaction',

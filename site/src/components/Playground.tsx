@@ -77,8 +77,8 @@ interface PlaygroundState {
 export const exampleSetup = `import { Generated } from 'kysely'
 
 export interface Database {
-    person: PersonTable
-    pet: PetTable
+  person: PersonTable
+  pet: PetTable
 }
 
 interface PersonTable {
@@ -87,6 +87,7 @@ interface PersonTable {
   last_name: string | null
   created_at: Generated<Date>
   age: number
+  has_pets: Generated<'Y' | 'N'>
 }
 
 interface PetTable {
