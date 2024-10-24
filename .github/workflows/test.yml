@@ -206,9 +206,6 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run docker compose
-        run: docker compose up -d
-
       - name: Run build with newer TypeScript
         run: npm run build
 
