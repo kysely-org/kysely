@@ -37,6 +37,11 @@
     -14.8px 50.6px 59.3px -2.5px hsl(var(--shadow-color) / 0.1);
 }
 
+/* remove default theme max-width in examples content */
+:root [class^='col docItemCol_'] {
+  max-width: unset !important;
+}
+
 [data-theme='dark'] {
   --ifm-color-primary: var(--sky9);
   --ifm-color-primary-dark: var(--sky10);

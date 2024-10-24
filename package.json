@@ -61,6 +61,7 @@
     "script:copy-interface-doc": "node scripts/copy-interface-documentation.js",
     "script:add-deno-type-references": "node scripts/add-deno-type-references.js",
     "script:align-site-version": "node scripts/align-site-version.js",
+    "script:generate-site-examples": "node scripts/generate-site-examples.js",
     "prepublishOnly": "npm run build"
   },
   "author": "Sami Koskimäki <sami@jakso.me>",

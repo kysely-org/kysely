@@ -77,8 +77,10 @@ interface PlaygroundState {
 export const exampleSetup = `import { Generated } from 'kysely'
 
 export interface Database {
-    person: PersonTable
-    pet: PetTable
+  person: PersonTable
+  pet: PetTable
+  wine: WineTable
+  wine_stock_change: WineStockChangeTable
 }
 
 interface PersonTable {
@@ -87,6 +89,7 @@ interface PersonTable {
   last_name: string | null
   created_at: Generated<Date>
   age: number
+  has_pets: Generated<'Y' | 'N'>
 }
 
 interface PetTable {
@@ -95,5 +98,17 @@ interface PetTable {
   owner_id: string
   species: 'cat' | 'dog'
   is_favorite: boolean
+}
+
+interface WineTable {
+  id: Generated<string>
+  name: string
+  stock: number
+}
+
+interface WineStockChangeTable {
+  id: Generated<string>
+  wine_name: string
+  stock_delta: number
 }
 `
