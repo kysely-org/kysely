@@ -95,6 +95,7 @@
     "pg-cursor": "^2.11.0",
     "playwright": "^1.46.1",
     "prettier": "^3.3.3",
+    "semver": "^7.6.3",
     "sinon": "^18.0.0",
     "tarn": "^3.0.2",
     "tedious": "^19.0.0",
