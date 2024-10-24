@@ -7,9 +7,7 @@ export type RollbackToSavepoint<
 > = S extends [...infer L, infer R]
   ? R extends SN
     ? S
-    : L extends string[]
-      ? RollbackToSavepoint<L, SN>
-      : never
+    : RollbackToSavepoint<L extends string[] ? L : never, SN>
   : never
 
 export type ReleaseSavepoint<
@@ -18,9 +16,7 @@ export type ReleaseSavepoint<
 > = S extends [...infer L, infer R]
   ? R extends SN
     ? L
-    : L extends string[]
-      ? ReleaseSavepoint<L, SN>
-      : never
+    : ReleaseSavepoint<L extends string[] ? L : never, SN>
   : never
 
 export function parseSavepointCommand(
