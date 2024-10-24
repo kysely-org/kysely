@@ -168,13 +168,26 @@ jobs:
       - name: Run cloudflare workers test
         run: npm run test:cloudflare-workers
 
-  old-typescript:
-    name: Minimum TypeScript version
+  older-typescript-version:
+    name: Older TypeScript version
     runs-on: ubuntu-latest
 
     strategy:
       matrix:
-        typescript-version: [^4.0, ^4.1, ^4.2, ^4.3, ^4.4, ^4.5, ^4.6, ^4.7]
+        typescript-version: [
+            4.2.4, # 23.2.2021 https://devblogs.microsoft.com/typescript/announcing-typescript-4-2/
+            ^4.3, # 26.5.2021 https://devblogs.microsoft.com/typescript/announcing-typescript-4-3/
+            4.4.3, # 26.8.2021 https://devblogs.microsoft.com/typescript/announcing-typescript-4-4/
+            ^4.5, # 17.11.2021 https://devblogs.microsoft.com/typescript/announcing-typescript-4-5/
+            ^4.6, # 28.2.2022 https://devblogs.microsoft.com/typescript/announcing-typescript-4-6/
+            ^4.7, # 24.5.2022 https://devblogs.microsoft.com/typescript/announcing-typescript-4-7/
+            ^4.8, # 25.8.2022 https://devblogs.microsoft.com/typescript/announcing-typescript-4-8/
+            ^4.9, # 15.11.2022 https://devblogs.microsoft.com/typescript/announcing-typescript-4-9/
+            ^5.0, # 16.3.2023 https://devblogs.microsoft.com/typescript/announcing-typescript-5-0/
+            ^5.2, # 24.8.2023 https://devblogs.microsoft.com/typescript/announcing-typescript-5-1/ https://devblogs.microsoft.com/typescript/announcing-typescript-5-2/
+            ^5.3, # 20.11.2023 https://devblogs.microsoft.com/typescript/announcing-typescript-5-3/
+            ^5.4, # 6.3.2024 https://devblogs.microsoft.com/typescript/announcing-typescript-5-4/
+          ]
 
     steps:
       - uses: actions/checkout@v4
@@ -194,8 +207,8 @@ jobs:
       - name: Run build with newer TypeScript
         run: npm run build
 
-      - name: Install old TypeScript
-        run: npm i -D typescript@${{ matrix.typescript-version }}
+      - name: Install older TypeScript
+        run: npm i -D typescript@${{ matrix.typescript-version }} tsd@${{ fromJson('{ "4.2.4":"0.16.0", "^4.3":"0.17.0", "4.4.3":"0.18.0", "^4.5":"0.19.1", "^4.6":"0.20.0", "^4.7":"0.22.0", "^4.8":"0.24.1", "^4.9":"0.27.0", "^5.0":"0.28.1", "^5.2":"0.29.0", "^5.3":"0.30.7", "^5.4":"0.31.2" }')[matrix.typescript-version] }}
 
-      - name: Run tests with old TypeScript
-        run: npm run test:node:build && npm run test:node:run && npm run test:typings
+      - name: Run tests with older TypeScript
+        run: npm run test:node:build && npm run test:typings
