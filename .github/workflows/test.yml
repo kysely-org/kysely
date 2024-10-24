@@ -174,7 +174,7 @@ jobs:
 
     strategy:
       matrix:
-        typescript-version: [4.9.0]
+        typescript-version: [^4.9]
 
     steps:
       - uses: actions/checkout@v4
