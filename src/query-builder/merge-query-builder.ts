@@ -1,4 +1,4 @@
-import { AliasedExpression, type Expression } from '../expression/expression.js'
+import { AliasedExpression, Expression } from '../expression/expression.js'
 import { InsertQueryNode } from '../operation-node/insert-query-node.js'
 import { MergeQueryNode } from '../operation-node/merge-query-node.js'
 import { OperationNodeSource } from '../operation-node/operation-node-source.js'
@@ -45,7 +45,6 @@ import {
   SimplifySingleResult,
   SqlBool,
 } from '../util/type-utils.js'
-import { InsertQueryBuilder } from './insert-query-builder.js'
 import { MergeResult } from './merge-result.js'
 import {
   NoResultError,
