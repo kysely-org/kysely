@@ -188,8 +188,14 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Run docker compose
+        run: docker compose up -d
+
+      - name: Run build with newer TypeScript
+        run: npm run build
+
       - name: Install old TypeScript
         run: npm i -D typescript@${{ matrix.typescript-version }}
 
-      - name: Run build
-        run: npm run build
+      - name: Run tests with old TypeScript
+        run: npm run test:node:build && npm run test:node:run && npm run test:typings
