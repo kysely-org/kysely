@@ -17,6 +17,7 @@ describe('async dispose', function () {
     const steps: string[] = []
 
     {
+      // @ts-ignore - `using` was only introduced in TS 5.2
       await using db = new Kysely({
         dialect: {
           createAdapter: () => new PostgresAdapter(),
