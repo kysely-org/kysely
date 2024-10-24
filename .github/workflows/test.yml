@@ -212,4 +212,4 @@ jobs:
         run: npm i -D typescript@${{ matrix.typescript-version }} tsd@${{ fromJson('{ "^4.3":"0.17.0", "4.4.3":"0.18.0", "^4.5":"0.19.1", "^4.6":"0.20.0", "^4.7":"0.22.0", "^4.8":"0.24.1", "^4.9":"0.27.0", "^5.0":"0.28.1", "^5.2":"0.29.0", "^5.3":"0.30.7", "^5.4":"0.31.2" }')[matrix.typescript-version] }}
 
       - name: Run tests with older TypeScript
-        run: npm run npm run test:typings && test:node:build
+        run: npm run test:typings && npm run test:node:build
