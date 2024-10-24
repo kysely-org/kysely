@@ -21,3 +21,7 @@ A plugin that converts snake_case identifiers in the database into camelCase in 
 ### Deduplicate joins plugin
 
 Plugin that removes duplicate joins from queries. You can read more about it in the [examples](/docs/recipes/deduplicate-joins) section or check the [API docs](https://kysely-org.github.io/kysely-apidoc/classes/DeduplicateJoinsPlugin.html).
+
+### Safe empty where in plugin
+
+A plugin that prevents empty arrays from breaking queries in the database. All empty arrays are substituted with a (null) value, which essentially translates to a no-op.

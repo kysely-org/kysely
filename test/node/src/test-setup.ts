@@ -218,12 +218,14 @@ export async function initTest(
   ctx: Mocha.Context,
   dialect: BuiltInDialect,
   log?: Logger,
+  dbConfigOverrides?: Partial<KyselyConfig>
 ): Promise<TestContext> {
   const config = DB_CONFIGS[dialect]
 
   ctx.timeout(TEST_INIT_TIMEOUT)
   const db = await connect({
     ...config,
+    ...dbConfigOverrides,
     log,
   })
 
