@@ -167,3 +167,29 @@ jobs:
 
       - name: Run cloudflare workers test
         run: npm run test:cloudflare-workers
+
+  old-typescript:
+    name: Minimum TypeScript version
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        typescript-version: [4.9.0]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18.x
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install old TypeScript
+        run: npm i -D typescript@${{ matrix.typescript-version }}
+
+      - name: Run build
+        run: npm run build
