@@ -111,6 +111,7 @@ import { CastNode } from '../operation-node/cast-node.js'
 import { FetchNode } from '../operation-node/fetch-node.js'
 import { TopNode } from '../operation-node/top-node.js'
 import { OutputNode } from '../operation-node/output-node.js'
+import { OrActionNode } from '../operation-node/or-action-node.js'
 
 export class DefaultQueryCompiler
   extends OperationNodeVisitor
@@ -290,6 +291,16 @@ export class DefaultQueryCompiler
     this.visitNode(node.having)
   }
 
+  protected handleInsertIgnoreAndOrAction(node: InsertQueryNode): void {
+    if (node.ignore) {
+      this.append(' ignore')
+    }
+
+    if (node.or) {
+      this.visitNode(node.or)
+    }
+  }
+
   protected override visitInsertQuery(node: InsertQueryNode): void {
     const rootQueryNode = this.nodeStack.find(QueryNode.is)!
     const isSubQuery = rootQueryNode !== node
@@ -310,9 +321,7 @@ export class DefaultQueryCompiler
 
     this.append(node.replace ? 'replace' : 'insert')
 
-    if (node.ignore) {
-      this.append(' ignore')
-    }
+    this.handleInsertIgnoreAndOrAction(node)
 
     if (node.top) {
       this.append(' ')
@@ -1631,6 +1640,11 @@ export class DefaultQueryCompiler
     if (node.modifiers) {
       this.append(` ${node.modifiers}`)
     }
+  }
+
+  protected override visitOrAction(node: OrActionNode): void {
+    this.append(' or ')
+    this.append(node.action)
   }
 
   protected append(str: string): void {
