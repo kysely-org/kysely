@@ -254,7 +254,7 @@ for (const dialect of DIALECTS) {
         'repeatable read',
         'serializable',
         ...(dialect === 'mssql' ? (['snapshot'] as const) : []),
-      ] satisfies IsolationLevel[]) {
+      ] as const) {
         it(`should set the transaction isolation level as "${isolationLevel}"`, async () => {
           const trx = await ctx.db
             .startTransaction()

@@ -905,7 +905,9 @@ export class ControlledTransaction<
    */
   rollbackToSavepoint<SN extends S[number]>(
     savepointName: SN,
-  ): Command<ControlledTransaction<DB, RollbackToSavepoint<S, SN>>> {
+  ): RollbackToSavepoint<S, SN> extends string[]
+    ? Command<ControlledTransaction<DB, RollbackToSavepoint<S, SN>>>
+    : never {
     this.#assertNotCommittedOrRolledBack()
 
     return new Command(async () => {
@@ -916,7 +918,7 @@ export class ControlledTransaction<
       )
 
       return new ControlledTransaction({ ...this.#props })
-    })
+    }) as any
   }
 
   /**
@@ -947,7 +949,9 @@ export class ControlledTransaction<
    */
   releaseSavepoint<SN extends S[number]>(
     savepointName: SN,
-  ): Command<ControlledTransaction<DB, ReleaseSavepoint<S, SN>>> {
+  ): ReleaseSavepoint<S, SN> extends string[]
+    ? Command<ControlledTransaction<DB, ReleaseSavepoint<S, SN>>>
+    : never {
     this.#assertNotCommittedOrRolledBack()
 
     return new Command(async () => {
@@ -958,7 +962,7 @@ export class ControlledTransaction<
       )
 
       return new ControlledTransaction({ ...this.#props })
-    })
+    }) as any
   }
 
   override withPlugin(plugin: KyselyPlugin): ControlledTransaction<DB, S> {
