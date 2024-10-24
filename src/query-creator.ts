@@ -512,7 +512,7 @@ export class QueryCreator<DB> {
    *
    * ### Examples
    *
-   * <!-- siteExample("merge", "Update target column based on existence of source row", 10) -->
+   * <!-- siteExample("merge", "Source row existence", 10) -->
    *
    * Update a target column based on the existence of a source row:
    *
@@ -539,6 +539,50 @@ export class QueryCreator<DB> {
    * then update set "has_pets" = $2
    * when not matched by source and "has_pets" = $3
    * then update set "has_pets" = $4
+   * ```
+   *
+   * <!-- siteExample("merge", "Temporary changes table", 20) -->
+   *
+   * Merge new entries from a temporary changes table:
+   *
+   * ```ts
+   * const result = await db
+   *   .mergeInto("wine as target")
+   *   .using(
+   *     "wine_stock_change as source",
+   *     "source.wine_name",
+   *     "target.name",
+   *   )
+   *   .whenNotMatchedAnd("source.stock_delta", ">", 0)
+   *   .thenInsertValues(({ ref }) => ({
+   *     name: ref("source.wine_name"),
+   *     stock: ref("source.stock_delta"),
+   *   }))
+   *   .whenMatchedAnd(
+   *     (eb) => eb("target.stock", "+", eb.ref("source.stock_delta")),
+   *     ">",
+   *     0,
+   *   )
+   *   .thenUpdateSet("stock", (eb) =>
+   *     eb("target.stock", "+", eb.ref("source.stock_delta")),
+   *   )
+   *   .whenMatched()
+   *   .thenDelete()
+   *   .executeTakeFirstOrThrow()
+   * ```
+   *
+   * The generated SQL (PostgreSQL):
+   *
+   * ```sql
+   * merge into "wine" as "target"
+   * using "wine_stock_change" as "source"
+   * on "source"."wine_name" = "target"."name"
+   * when not matched and "source"."stock_delta" > $1
+   * then insert ("name", "stock") values ("source"."wine_name", "source"."stock_delta")
+   * when matched and "target"."stock" + "source"."stock_delta" > $2
+   * then update set "stock" = "target"."stock" + "source"."stock_delta"
+   * when matched
+   * then delete
    * ```
    */
   mergeInto<TR extends keyof DB & string>(
