@@ -3,6 +3,7 @@
   "include": ["src/**/*"],
   "compilerOptions": {
     "module": "CommonJS",
-    "outDir": "dist"
+    "outDir": "dist",
+    "skipLibCheck": true
   }
 }
