@@ -1,9 +1,4 @@
-import {
-  ColumnType,
-  Generated,
-  GeneratedAlways,
-  JSONColumnType,
-} from '../../dist/cjs'
+import { ColumnType, Generated, GeneratedAlways, Json } from '../../dist/cjs'
 
 export interface Pet {
   id: Generated<string>
@@ -71,21 +66,21 @@ export interface Person {
 export interface PersonMetadata {
   id: Generated<number>
   person_id: number
-  website: JSONColumnType<{ url: string }>
-  nicknames: JSONColumnType<string[]>
-  profile: JSONColumnType<{
+  website: Json<{ url: string }>
+  nicknames: Json<string[]>
+  profile: Json<{
     auth: {
       roles: string[]
       last_login?: { device: string }
     }
     tags: string[]
   }>
-  experience: JSONColumnType<
+  experience: Json<
     {
       establishment: string
     }[]
   >
-  schedule: JSONColumnType<{ name: string; time: string }[][][]>
-  record: JSONColumnType<Record<string, string>>
-  array: JSONColumnType<Array<string>>
+  schedule: Json<{ name: string; time: string }[][][]>
+  record: Json<Record<string, string>>
+  array: Json<Array<string> | null>
 }
