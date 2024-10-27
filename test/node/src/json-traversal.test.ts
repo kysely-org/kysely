@@ -1,6 +1,6 @@
 import {
   ColumnDefinitionBuilder,
-  JSONColumnType,
+  Json,
   ParseJSONResultsPlugin,
   SqlBool,
   sql,
@@ -756,9 +756,9 @@ async function initJSONTest<D extends DialectDescriptor>(
   let db = testContext.db.withTables<{
     person_metadata: {
       person_id: number
-      website: JSONColumnType<{ url: string }>
-      nicknames: JSONColumnType<string[]>
-      profile: JSONColumnType<{
+      website: Json<{ url: string }>
+      nicknames: Json<string[]>
+      profile: Json<{
         auth: {
           roles: string[]
           last_login?: { device: string }
@@ -768,12 +768,12 @@ async function initJSONTest<D extends DialectDescriptor>(
         avatar: string | null
         tags: string[]
       }>
-      experience: JSONColumnType<
+      experience: Json<
         {
           establishment: string
         }[]
       >
-      schedule: JSONColumnType<{ name: string; time: string }[][][]>
+      schedule: Json<{ name: string; time: string }[][][]>
     }
   }>()
 
@@ -822,20 +822,20 @@ async function insertDefaultJSONDataSet(ctx: TestContext) {
 
   await ctx.db
     .insertInto('person_metadata')
-    .values(
+    .values((eb) =>
       people
         .filter((person) => person.first_name && person.last_name)
         .map((person, index) => ({
           person_id: person.id,
-          website: JSON.stringify({
+          website: eb.jval({
             url: `https://www.${person.first_name!.toLowerCase()}${person.last_name!.toLowerCase()}.com`,
           }),
-          nicknames: JSON.stringify([
+          nicknames: eb.jval([
             `${person.first_name![0]}.${person.last_name![0]}.`,
             `${person.first_name} the Great`,
             `${person.last_name} the Magnificent`,
           ]),
-          profile: JSON.stringify({
+          profile: eb.jval({
             tags: ['awesome'],
             auth: {
               roles: ['contributor', 'moderator'],
@@ -847,12 +847,12 @@ async function insertDefaultJSONDataSet(ctx: TestContext) {
             },
             avatar: null,
           }),
-          experience: JSON.stringify([
+          experience: eb.jval([
             {
               establishment: 'The University of Life',
             },
           ]),
-          schedule: JSON.stringify([[[{ name: 'Gym', time: '12:15' }]]]),
+          schedule: sql.jval([[[{ name: 'Gym', time: '12:15' }]]]),
         })),
     )
     .execute()

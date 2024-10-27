@@ -10,7 +10,7 @@ import {
   ColumnType,
   Generated,
   Insertable,
-  JSONColumnType,
+  Json,
   Selectable,
   Updateable,
 } from 'kysely'
@@ -45,12 +45,10 @@ export interface PersonTable {
   // can never be updated:
   created_at: ColumnType<Date, string | undefined, never>
 
-  // You can specify JSON columns using the `JSONColumnType` wrapper.
-  // It is a shorthand for `ColumnType<T, string, string>`, where T
-  // is the type of the JSON object/array retrieved from the database,
-  // and the insert and update types are always `string` since you're
-  // always stringifying insert/update values.
-  metadata: JSONColumnType<{
+  // You can specify JSON columns using the `Json` wrapper.
+  // When inserting/updating values of such columns, you're required to wrap the
+  // values with `eb.jval` or `sql.jval`.
+  metadata: Json<{
     login_at: string
     ip: string | null
     agent: string | null

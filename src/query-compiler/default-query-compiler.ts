@@ -519,6 +519,8 @@ export class DefaultQueryCompiler
   protected override visitValue(node: ValueNode): void {
     if (node.immediate) {
       this.appendImmediateValue(node.value)
+    } else if (node.serialized) {
+      this.appendSerializedValue(node.value)
     } else {
       this.appendValue(node.value)
     }
@@ -1755,6 +1757,14 @@ export class DefaultQueryCompiler
   protected appendValue(parameter: unknown): void {
     this.addParameter(parameter)
     this.append(this.getCurrentParameterPlaceholder())
+  }
+
+  protected appendSerializedValue(parameter: unknown): void {
+    if (parameter === null) {
+      this.appendValue(null)
+    } else {
+      this.appendValue(JSON.stringify(parameter))
+    }
   }
 
   protected getLeftIdentifierWrapper(): string {

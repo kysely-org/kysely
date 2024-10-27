@@ -12,6 +12,7 @@ const postgresqlCodeSnippet = `    await db.schema.createTable('person')
       .addColumn('created_at', 'timestamp', (cb) =>
         cb.notNull().defaultTo(sql\`now()\`)
       )
+      .addColumn('metadata', 'jsonb', (cb) => cb.notNull())
       .execute()`
 
 const dialectSpecificCodeSnippets: Record<Dialect, string> = {
@@ -24,6 +25,7 @@ const dialectSpecificCodeSnippets: Record<Dialect, string> = {
       .addColumn('created_at', 'timestamp', (cb) =>
         cb.notNull().defaultTo(sql\`now()\`)
       )
+      .addColumn('metadata', 'json', (cb) => cb.notNull())
       .execute()`,
   // TODO: Update line 42's IDENTITY once identity(1,1) is added to core.
   mssql: `    await db.schema.createTable('person')
@@ -34,6 +36,7 @@ const dialectSpecificCodeSnippets: Record<Dialect, string> = {
       .addColumn('created_at', 'datetime', (cb) =>
         cb.notNull().defaultTo(sql\`GETDATE()\`)
       )
+      .addColumn('metadata', sql\`nvarchar(max)\`, (cb) => cb.notNull())
       .execute()`,
   sqlite: `    await db.schema.createTable('person')
       .addColumn('id', 'integer', (cb) => cb.primaryKey().autoIncrement().notNull())
@@ -43,6 +46,7 @@ const dialectSpecificCodeSnippets: Record<Dialect, string> = {
       .addColumn('created_at', 'timestamp', (cb) =>
         cb.notNull().defaultTo(sql\`current_timestamp\`)
       )
+      .addColumn('metadata', 'text', (cb) => cb.notNull())
       .execute()`,
   pglite: postgresqlCodeSnippet,
 }
@@ -109,6 +113,12 @@ ${dialectSpecificCodeSnippet}
       first_name: 'Jennifer',
       last_name: 'Aniston',
       gender: 'woman',
+      metadata: sql.jval({
+        login_at: new Date().toISOString(),
+        ip: null,
+        agent: null,
+        plan: 'free',
+      }),
     })
   })
     
