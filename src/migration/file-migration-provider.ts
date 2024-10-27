@@ -2,7 +2,7 @@ import { isFunction, isObject } from '../util/object-utils.js'
 import { Migration, MigrationProvider } from './migrator.js'
 
 /**
- * Reads all migrations from a folder in node.js.
+ * Reads all migrations from a folder.
  *
  * ### Examples
  *
@@ -29,30 +29,44 @@ export class FileMigrationProvider implements MigrationProvider {
     const files = await this.#props.fs.readdir(this.#props.migrationFolder)
 
     for (const fileName of files) {
-      if (
-        fileName.endsWith('.js') ||
-        (fileName.endsWith('.ts') && !fileName.endsWith('.d.ts')) ||
-        fileName.endsWith('.mjs') ||
-        (fileName.endsWith('.mts') && !fileName.endsWith('.d.mts'))
-      ) {
-        const migration = await import(
-          /* webpackIgnore: true */ this.#props.path.join(
-            this.#props.migrationFolder,
-            fileName,
-          )
-        )
-        const migrationKey = fileName.substring(0, fileName.lastIndexOf('.'))
+      if (!this.hasExpectedExtension(fileName)) {
+        this.#props.onDiscarded?.(fileName, 'Extension')
+        continue
+      }
 
-        // Handle esModuleInterop export's `default` prop...
-        if (isMigration(migration?.default)) {
-          migrations[migrationKey] = migration.default
-        } else if (isMigration(migration)) {
-          migrations[migrationKey] = migration
-        }
+      const filePath = this.#props.path.join(
+        this.#props.migrationFolder,
+        fileName,
+      )
+
+      const migration = this.#props.import
+        ? await this.#props.import(filePath)
+        : await import(/* webpackIgnore: true */ filePath)
+
+      const migrationKey = fileName.substring(0, fileName.lastIndexOf('.'))
+
+      // Handle esModuleInterop export's `default` prop...
+      if (isMigration(migration?.default)) {
+        migrations[migrationKey] = migration.default
+      } else if (isMigration(migration)) {
+        migrations[migrationKey] = migration
+      } else {
+        this.#props.onDiscarded?.(fileName, 'NotMigration')
       }
     }
 
     return migrations
+  }
+
+  protected hasExpectedExtension(fileName: string): boolean {
+    return (
+      fileName.endsWith('.js') ||
+      (fileName.endsWith('.ts') && !fileName.endsWith('.d.ts')) ||
+      fileName.endsWith('.mjs') ||
+      (fileName.endsWith('.mts') && !fileName.endsWith('.d.mts')) ||
+      fileName.endsWith('.cjs') ||
+      (fileName.endsWith('.cts') && !fileName.endsWith('.d.cts'))
+    )
   }
 }
 
@@ -70,6 +84,8 @@ export interface FileMigrationProviderPath {
 
 export interface FileMigrationProviderProps {
   fs: FileMigrationProviderFS
-  path: FileMigrationProviderPath
+  import?(module: string): Promise<any>
   migrationFolder: string
+  onDiscarded?(fileName: string, reason: 'Extension' | 'NotMigration'): void
+  path: FileMigrationProviderPath
 }
