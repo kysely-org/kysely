@@ -233,4 +233,4 @@ jobs:
         run: npm ci
 
       - name: Test outdated TypeScript version
-        run: npm run test:outdatedts
+        run: npm run test:outdatedts && echo "Outdated TypeScript version users are required to upgrade!"
