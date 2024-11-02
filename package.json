@@ -60,6 +60,7 @@
     "test:esmimports": "node scripts/check-esm-imports.js",
     "test:esbuild": "esbuild --bundle --platform=node --external:pg-native dist/esm/index.js --outfile=/dev/null",
     "test:exports": "attw --pack . && node scripts/check-exports.js",
+    "test:outdatedts": "npm run build && cd test/outdated-ts && npm ci && npm test",
     "prettier": "prettier --write 'src/**/*.ts' 'test/**/*.ts'",
     "build": "npm run clean && (npm run build:esm & npm run build:cjs) && npm run script:module-fixup && npm run script:copy-interface-doc",
     "build:esm": "tsc -p tsconfig.json && npm run script:add-deno-type-references",
