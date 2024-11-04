@@ -1,4 +1,6 @@
+import { AggregateFunctionNode } from '../../operation-node/aggregate-function-node.js'
 import { AliasNode } from '../../operation-node/alias-node.js'
+import { FunctionNode } from '../../operation-node/function-node.js'
 import { IdentifierNode } from '../../operation-node/identifier-node.js'
 import { OperationNodeTransformer } from '../../operation-node/operation-node-transformer.js'
 import { OperationNode } from '../../operation-node/operation-node.js'
@@ -33,6 +35,11 @@ const ROOT_OPERATION_NODES: Record<RootOperationNode['kind'], true> = freeze({
   UpdateQueryNode: true,
   MergeQueryNode: true,
 })
+
+const SCHEMALESS_FUNCTIONS: Record<string, true> = {
+  json_agg: true,
+  to_json: true,
+}
 
 export class WithSchemaTransformer extends OperationNodeTransformer {
   readonly #schema: string
@@ -103,6 +110,45 @@ export class WithSchemaTransformer extends OperationNodeTransformer {
         transformed.table.table.identifier.name,
       ),
     }
+  }
+
+  protected override transformAggregateFunction(
+    node: AggregateFunctionNode
+  ): AggregateFunctionNode {
+    const transformed = super.transformAggregateFunction(node)
+
+    return SCHEMALESS_FUNCTIONS[node.func]
+      ? {
+          ...transformed,
+          aggregated: this.#revertTableTransformations(
+            node.aggregated,
+            transformed.aggregated
+          ),
+        }
+      : transformed
+  }
+
+  protected override transformFunction(node: FunctionNode): FunctionNode {
+    const transformed = super.transformFunction(node)
+
+    return SCHEMALESS_FUNCTIONS[node.func]
+      ? {
+          ...transformed,
+          arguments: this.#revertTableTransformations(
+            node.arguments,
+            transformed.arguments
+          ),
+        }
+      : transformed
+  }
+
+  #revertTableTransformations(
+    before: readonly OperationNode[],
+    after: readonly OperationNode[]
+  ): OperationNode[] {
+    return after.map((transformed, index) =>
+      TableNode.is(before[index]) ? before[index] : transformed
+    )
   }
 
   #isRootOperationNode(node: OperationNode): node is RootOperationNode {

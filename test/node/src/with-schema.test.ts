@@ -218,6 +218,52 @@ for (const dialect of DIALECTS.filter(
 
         await query.execute()
       })
+
+      if (dialect === 'postgres') {
+        it('should not add schema for json_agg parameters', async () => {
+          const query = ctx.db
+            .withSchema('mammals')
+            .selectFrom('pet')
+            .select((eb) => [
+              eb.fn.jsonAgg('pet').as('one'),
+              eb.fn.jsonAgg(eb.table('pet')).as('two'),
+            ])
+
+          testSql(query, dialect, {
+            postgres: {
+              sql: 'select json_agg("pet") as "one", json_agg("pet") as "two" from "mammals"."pet"',
+              parameters: [],
+            },
+            mysql: NOT_SUPPORTED,
+            mssql: NOT_SUPPORTED,
+            sqlite: NOT_SUPPORTED,
+          })
+
+          await query.execute()
+        })
+
+        it('should not add schema for to_json parameters', async () => {
+          const query = ctx.db
+            .withSchema('mammals')
+            .selectFrom('pet')
+            .select((eb) => [
+              eb.fn.toJson('pet').as('one'),
+              eb.fn.toJson(eb.table('pet')).as('two'),
+            ])
+
+          testSql(query, dialect, {
+            postgres: {
+              sql: 'select to_json("pet") as "one", to_json("pet") as "two" from "mammals"."pet"',
+              parameters: [],
+            },
+            mysql: NOT_SUPPORTED,
+            mssql: NOT_SUPPORTED,
+            sqlite: NOT_SUPPORTED,
+          })
+
+          await query.execute()
+        })
+      }
     })
 
     describe('insert into', () => {
