@@ -208,13 +208,17 @@ jobs:
       - name: Run build with newer TypeScript
         run: npm run build
 
-      - name: Install older TypeScript
-        run: npm i -D typescript@${{ matrix.typescript-version }} tsd@${{ fromJson('{ "^4.6":"0.20.0", "^4.7":"0.22.0", "^4.8":"0.24.1", "^4.9":"0.27.0", "^5.0":"0.28.1", "^5.2":"0.29.0", "^5.3":"0.30.7", "^5.4":"0.31.2" }')[matrix.typescript-version] }}
+      - run: |
+          echo "TS_VERSION=${{ matrix.typescript-version }}" >> $GITHUB_ENV
+          echo "TSD_VERSION=${{ fromJson('{ "^4.6":"0.20.0", "^4.7":"0.22.0", "^4.8":"0.24.1", "^4.9":"0.27.0", "^5.0":"0.28.1", "^5.2":"0.29.0", "^5.3":"0.30.7", "^5.4":"0.31.2" }')[env.TS_VERSION] }} >> $GITHUB_ENV"
+
+      - name: Install Typescript (${{ env.TS_VERSION }}) and TSD (${{ env.TSD_VERSION }})
+        run: npm i -D typescript@${{ env.TS_VERSION }} tsd@${{ env.TSD_VERSION }}
 
       - name: Exclude non-backward compatible tests
         run: npx tsx ./scripts/exclude-test-files-for-backwards-compat.mts
 
-      - name: Run tests with older TypeScript
+      - name: Run tests with older TypeScript version
         run: npm run test:typings && npm run test:node:build
 
   jsdocs:
