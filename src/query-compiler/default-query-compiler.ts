@@ -112,6 +112,7 @@ import { FetchNode } from '../operation-node/fetch-node.js'
 import { TopNode } from '../operation-node/top-node.js'
 import { OutputNode } from '../operation-node/output-node.js'
 import { RefreshMaterializedViewNode } from '../operation-node/refresh-materialized-view-node.js'
+import { QueryId } from '../util/query-id.js'
 
 export class DefaultQueryCompiler
   extends OperationNodeVisitor
@@ -124,7 +125,7 @@ export class DefaultQueryCompiler
     return this.#parameters.length
   }
 
-  compileQuery(node: RootOperationNode): CompiledQuery {
+  compileQuery(node: RootOperationNode, queryId: QueryId): CompiledQuery {
     this.#sql = ''
     this.#parameters = []
     this.nodeStack.splice(0, this.nodeStack.length)
@@ -133,6 +134,7 @@ export class DefaultQueryCompiler
 
     return freeze({
       query: node,
+      queryId,
       sql: this.getSql(),
       parameters: [...this.#parameters],
     })
