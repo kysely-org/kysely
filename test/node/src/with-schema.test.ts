@@ -1,3 +1,5 @@
+import { Kysely, Sql, sql } from '../../..'
+import { createExpressionBuilder } from '../../../dist/cjs/expression/expression-builder'
 import {
   clearDatabase,
   destroyTest,
@@ -9,6 +11,7 @@ import {
   DIALECTS,
   insert,
   limit,
+  expect,
 } from './test-setup.js'
 
 for (const dialect of DIALECTS.filter(
@@ -514,6 +517,72 @@ for (const dialect of DIALECTS.filter(
         })
 
         await query.execute()
+      })
+    })
+
+    describe('raw sql', () => {
+      let dbWithSchema: Kysely<any>
+      const subsuites = [
+        ['sql', () => sql],
+        [
+          'eb',
+          () => createExpressionBuilder<any, any>(dbWithSchema.getExecutor()),
+        ],
+      ] as unknown as [string, () => Sql][]
+
+      before(() => {
+        dbWithSchema = ctx.db.withSchema('mammals')
+      })
+
+      it('should not add schema for raw sql', async () => {
+        const query =
+          sql`"pet" "mammals"."pet" "id" "pet"."id" "mammals"."pet"."id" pet mammals.pet id pet.id mammals.pet.id`.compile(
+            dbWithSchema
+          )
+
+        expect(query.sql).to.equal(
+          '"pet" "mammals"."pet" "id" "pet"."id" "mammals"."pet"."id" pet mammals.pet id pet.id mammals.pet.id'
+        )
+      })
+
+      subsuites.forEach(([name, builder]) => {
+        describe(`${name}.table`, () => {
+          it('should add schema', () => {
+            const query = sql`${builder().table('pet')}`.compile(dbWithSchema)
+
+            expect(query.sql).to.equal('"mammals"."pet"')
+          })
+
+          it('should not add schema if already specified', () => {
+            const query = sql`${builder().table('mammals.pet')}`.compile(
+              dbWithSchema
+            )
+
+            expect(query.sql).to.equal('"mammals"."pet"')
+          })
+        })
+
+        describe(`${name}.ref`, () => {
+          it('should add schema when table is specified', () => {
+            const query = sql`${builder().ref('pet.id')}`.compile(dbWithSchema)
+
+            expect(query.sql).to.equal('"mammals"."pet"."id"')
+          })
+
+          it('should not add schema when table is not specified', () => {
+            const query = sql`${builder().ref('id')}`.compile(dbWithSchema)
+
+            expect(query.sql).to.equal('"id"')
+          })
+
+          it('should not add schema if already specified', () => {
+            const query = sql`${builder().ref('mammals.pet.id')}`.compile(
+              dbWithSchema
+            )
+
+            expect(query.sql).to.equal('"mammals"."pet"."id"')
+          })
+        })
       })
     })
 

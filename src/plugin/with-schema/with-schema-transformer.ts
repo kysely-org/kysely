@@ -2,6 +2,8 @@ import { AliasNode } from '../../operation-node/alias-node.js'
 import { IdentifierNode } from '../../operation-node/identifier-node.js'
 import { OperationNodeTransformer } from '../../operation-node/operation-node-transformer.js'
 import { OperationNode } from '../../operation-node/operation-node.js'
+import { RawNode } from '../../operation-node/raw-node.js'
+import { ReferenceNode } from '../../operation-node/reference-node.js'
 import { ReferencesNode } from '../../operation-node/references-node.js'
 import { SchemableIdentifierNode } from '../../operation-node/schemable-identifier-node.js'
 import { TableNode } from '../../operation-node/table-node.js'
@@ -89,7 +91,7 @@ export class WithSchemaTransformer extends OperationNodeTransformer {
     }
   }
 
-  protected transformReferences(node: ReferencesNode): ReferencesNode {
+  protected override transformReferences(node: ReferencesNode): ReferencesNode {
     const transformed = super.transformReferences(node)
 
     if (transformed.table.table.schema) {
@@ -140,6 +142,12 @@ export class WithSchemaTransformer extends OperationNodeTransformer {
       this.#collectSchemableIdsFromTableExpr(node.using, schemableIds)
     }
 
+    if (RawNode.is(node)) {
+      for (const parameter of node.parameters) {
+        this.#collectSchemableIdsFromTableExpr(parameter, schemableIds)
+      }
+    }
+
     return schemableIds
   }
 
@@ -157,14 +165,18 @@ export class WithSchemaTransformer extends OperationNodeTransformer {
     node: OperationNode,
     schemableIds: Set<string>,
   ): void {
-    const table = TableNode.is(node)
-      ? node
-      : AliasNode.is(node) && TableNode.is(node.node)
-        ? node.node
-        : null
+    if (TableNode.is(node)) {
+      return this.#collectSchemableId(node.table, schemableIds)
+    }
 
-    if (table) {
-      this.#collectSchemableId(table.table, schemableIds)
+    if (ReferenceNode.is(node)) {
+      if (node.table) {
+        return this.#collectSchemableIdsFromTableExpr(node.table, schemableIds)
+      }
+    }
+
+    if (AliasNode.is(node)) {
+      return this.#collectSchemableIdsFromTableExpr(node.node, schemableIds)
     }
   }
 
