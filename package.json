@@ -4,7 +4,7 @@
   "description": "Type safe SQL query builder",
   "repository": {
     "type": "git",
-    "url": "https://github.com/kysely-org/kysely.git"
+    "url": "git://github.com/kysely-org/kysely.git"
   },
   "engines": {
     "node": ">=14.0.0"
@@ -63,7 +63,7 @@
     "script:align-site-version": "node scripts/align-site-version.js",
     "script:generate-site-examples": "node scripts/generate-site-examples.js",
     "prepublishOnly": "npm run build",
-    "release:preview": "pkg-pr-new publish --template './example' --compact"
+    "release:preview": "pkg-pr-new publish --template './example'"
   },
   "author": "Sami Koskimäki <sami@jakso.me>",
   "license": "MIT",
