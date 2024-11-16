@@ -72,7 +72,7 @@
     "Igal Klebanov <igalklebanov@gmail.com>"
   ],
   "devDependencies": {
-    "@arethetypeswrong/cli": "^0.16.4",
+    "@arethetypeswrong/cli": "^0.17.0",
     "@types/better-sqlite3": "^7.6.11",
     "@types/chai": "^4.3.17",
     "@types/chai-as-promised": "^7.1.8",
