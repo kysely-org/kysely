@@ -210,25 +210,3 @@ jobs:
 
       - name: Run tests with older TypeScript
         run: npm run test:typings && npm run test:node:build
-
-  preview-release:
-    name: Release preview version
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Use Node.js
-        uses: actions/setup-node@v4
-        with:
-          cache: 'npm'
-          node-version: 22.x
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Build
-        run: npm run build
-
-      - name: Release preview version
-        run: npm run release:preview
