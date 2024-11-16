@@ -62,7 +62,8 @@
     "script:add-deno-type-references": "node scripts/add-deno-type-references.js",
     "script:align-site-version": "node scripts/align-site-version.js",
     "script:generate-site-examples": "node scripts/generate-site-examples.js",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "npm run build",
+    "release:preview": "pkg-pr-new publish --template './example'"
   },
   "author": "Sami Koskimäki <sami@jakso.me>",
   "license": "MIT",
@@ -92,6 +93,7 @@
     "mysql2": "^3.11.0",
     "pg": "^8.12.0",
     "pg-cursor": "^2.11.0",
+    "pkg-pr-new": "^0.0.30",
     "playwright": "^1.46.1",
     "prettier": "^3.3.3",
     "sinon": "^18.0.0",
