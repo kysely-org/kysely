@@ -7,7 +7,7 @@
     "url": "git://github.com/kysely-org/kysely.git"
   },
   "engines": {
-    "node": ">=22.11.0"
+    "node": ">=14.0.0"
   },
   "main": "dist/cjs/index.js",
   "module": "dist/esm/index.js",
