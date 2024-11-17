@@ -93,8 +93,15 @@ jobs:
       - name: Run docker compose
         run: docker compose up -d
 
+      - name: Build
+        run: npm run build
+
       - name: Run deno tests
         run: npm run test:deno
+
+      - name: Check jsdocs examples
+        if: matrix.deno-version != '1.x.x'
+        run: npm run test:jsdocs
 
   bun:
     name: Bun
