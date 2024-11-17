@@ -41,7 +41,9 @@ export interface MssqlDialectConfig {
    *   // ...
    *   tedious: {
    *     ...Tedious,
-   *     connectionFactory: () => new Tedious.Connection({ ... }),
+   *     connectionFactory: () => new Tedious.Connection({
+   *       // ...
+   *     }),
    *   },
    * })
    * ```
