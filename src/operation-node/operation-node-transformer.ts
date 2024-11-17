@@ -111,7 +111,7 @@ import { OutputNode } from './output-node.js'
  * ```ts
  * class CamelCaseTransformer extends OperationNodeTransformer {
  *   transformIdentifier(node: IdentifierNode): IdentifierNode {
- *     node = super.transformIdentifier(node),
+ *     node = super.transformIdentifier(node)
  *
  *     return {
  *       ...node,
