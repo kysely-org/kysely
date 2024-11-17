@@ -46,7 +46,7 @@ export interface RawBuilder<O> extends AliasableExpression<O> {
    *
    * The generated SQL (PostgreSQL):
    *
-   * ```ts
+   * ```sql
    * select concat(first_name, ' ', last_name) as "full_name"
    * from "person"
    * ```
@@ -73,7 +73,7 @@ export interface RawBuilder<O> extends AliasableExpression<O> {
    *
    * The generated SQL (PostgreSQL):
    *
-   * ```ts
+   * ```sql
    * insert into "person" ("first_name", "last_name")
    * from (values (1, 'foo')) as t(a, b)
    * select "t"."a", "t"."b"

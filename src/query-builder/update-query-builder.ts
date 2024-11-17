@@ -571,7 +571,7 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
    *   .set('first_name', 'Foo')
    *   // As always, both arguments can be arbitrary expressions or
    *   // callbacks that give you access to an expression builder:
-   *   .set(sql<string>`address['postalCode']`, (eb) => eb.val('61710))
+   *   .set(sql<string>`address['postalCode']`, (eb) => eb.val('61710'))
    *   .where('id', '=', '1')
    *   .executeTakeFirst()
    * ```
@@ -864,11 +864,11 @@ export class UpdateQueryBuilder<DB, UT extends keyof DB, TB extends keyof DB, O>
    * the code. In the example above the return type of the `updatePerson` function is:
    *
    * ```ts
-   * {
+   * Promise<{
    *   id: number
    *   first_name: string
    *   last_name?: string
-   * }
+   * }>
    * ```
    */
   $if<O2>(

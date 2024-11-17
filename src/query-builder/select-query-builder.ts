@@ -341,10 +341,10 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    * // You can use `keyof Person` if any column of an interface is allowed.
    * type PossibleColumns = 'last_name' | 'first_name' | 'birth_date'
    *
-   * const spersons = await db
+   * const persons = await db
    *   .selectFrom('person')
    *   .select([
-   *     ref<PossibleColumns>(columnFromUserInput)
+   *     ref<PossibleColumns>(columnFromUserInput),
    *     'id'
    *   ])
    *   .execute()
@@ -1590,11 +1590,11 @@ export interface SelectQueryBuilder<DB, TB extends keyof DB, O>
    * the code. In the example above the return type of the `getPerson` function is:
    *
    * ```ts
-   * {
+   * Promise<{
    *   id: number
    *   first_name: string
    *   last_name?: string
-   * }
+   * }>
    * ```
    *
    * You can also call any other methods inside the callback:

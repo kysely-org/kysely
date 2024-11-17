@@ -35,9 +35,12 @@ export class JSONPathBuilder<S, O = S> {
    * ### Examples
    *
    * ```ts
-   * db.selectFrom('person').select(eb =>
-   *   eb.ref('nicknames', '->').at(0).as('primary_nickname')
-   * )
+   * await db.selectFrom('person')
+   *   .select(eb =>
+   *     eb.ref('nicknames', '->').at(0).as('primary_nickname')
+   *   )
+   *   .execute()
+   * ```
    *
    * The generated SQL (PostgreSQL):
    *
@@ -229,7 +232,7 @@ export class TraversedJSONPathBuilder<S, O>
    *
    * The generated SQL (PostgreSQL):
    *
-   * ```ts
+   * ```sql
    * select "first_name" = $1 as "is_jennifer"
    * from "person"
    * ```

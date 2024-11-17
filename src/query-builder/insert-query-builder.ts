@@ -561,7 +561,7 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    *   .onConflict((oc) => oc
    *     .column('name')
    *     .doUpdateSet({ species: 'hamster' })
-   *     .where('excluded.name', '!=', 'Catto'')
+   *     .where('excluded.name', '!=', 'Catto')
    *   )
    *   .execute()
    * ```
@@ -829,11 +829,11 @@ export class InsertQueryBuilder<DB, TB extends keyof DB, O>
    * the code. In the example above the return type of the `insertPerson` function is:
    *
    * ```ts
-   * {
+   * Promise<{
    *   id: number
    *   first_name: string
    *   last_name?: string
-   * }
+   * }>
    * ```
    */
   $if<O2>(

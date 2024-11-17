@@ -58,9 +58,9 @@ export interface OutputInterface<
    *
    * const { id, full_name } = await db
    *   .deleteFrom('person')
-   *   .output((eb) => sql<string>`concat(${eb.ref('deleted.first_name')}, ' ', ${eb.ref('deleted.last_name')})`.as('full_name')
+   *   .output((eb) => sql<string>`concat(${eb.ref('deleted.first_name')}, ' ', ${eb.ref('deleted.last_name')})`.as('full_name'))
    *   .where('created_at', '<', new Date())
-   *   .executeTakeFirst()
+   *   .executeTakeFirstOrThrow()
    * ```
    *
    * Return the action performed on the row:
