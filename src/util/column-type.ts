@@ -16,7 +16,7 @@ import { DrainOuterGeneric } from './type-utils.js'
  * type is actually just a shortcut for the type in this example:
  *
  * ```ts
- * ColumnType<number, number | undefined, number>
+ * type GeneratedNumber = ColumnType<number, number | undefined, number>
  * ```
  *
  * The above example makes the column optional in inserts
@@ -25,14 +25,14 @@ import { DrainOuterGeneric } from './type-utils.js'
  * can se the type as `never`:
  *
  * ```ts
- * ColumnType<number, never, never>
+ * type ReadonlyNumber = ColumnType<number, never, never>
  * ```
  *
  * Here's one more example where the type is different
  * for each different operation:
  *
  * ```ts
- * ColumnType<Date, string, never>
+ * type UnupdateableDate = ColumnType<Date, string, never>
  * ```
  */
 export type ColumnType<
@@ -50,12 +50,8 @@ export type ColumnType<
  * is the same for all selects, inserts and updates but the
  * column is optional for inserts and updates.
  *
- * The implementation:
- *
- * ```ts
- * // The update type is `S` instead of `S | undefined` because
- * // updates are always optional --> no need to specify optionality.
- * type Generated<S> = ColumnType<S, S | undefined, S>
+ * The update type is `S` instead of `S | undefined` because updates are always
+ * optional --> no need to specify optionality.
  * ```
  */
 export type Generated<S> = ColumnType<S, S | undefined, S>
