@@ -71,7 +71,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        deno-version: [1.46.x]
+        deno-version: [1.x.x, 2.0.x]
 
     steps:
       - uses: actions/checkout@v4
@@ -86,7 +86,7 @@ jobs:
         run: npm ci
 
       - name: Use Deno ${{ matrix.deno-version }}
-        uses: denoland/setup-deno@v1
+        uses: denoland/setup-deno@v2
         with:
           deno-version: ${{ matrix.deno-version }}
 
