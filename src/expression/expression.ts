@@ -70,7 +70,7 @@ export interface AliasableExpression<T> extends Expression<T> {
    *   .selectFrom('person')
    *   .select((eb) =>
    *     // `eb.fn<string>` returns an AliasableExpression<string>
-   *     eb.fn<string>('concat', ['first_name' eb.val(' '), 'last_name']).as('full_name')
+   *     eb.fn<string>('concat', ['first_name', eb.val(' '), 'last_name']).as('full_name')
    *   )
    *   .executeTakeFirstOrThrow()
    *
@@ -80,7 +80,7 @@ export interface AliasableExpression<T> extends Expression<T> {
    *
    * The generated SQL (PostgreSQL):
    *
-   * ```ts
+   * ```sql
    * select
    *   concat("first_name", $1, "last_name") as "full_name"
    * from
@@ -109,7 +109,7 @@ export interface AliasableExpression<T> extends Expression<T> {
    *
    * The generated SQL (PostgreSQL):
    *
-   * ```ts
+   * ```sql
    * insert into "person" ("first_name", "last_name")
    * from (values (1, 'foo')) as t(a, b)
    * select "t"."a", "t"."b"

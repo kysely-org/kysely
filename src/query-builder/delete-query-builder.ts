@@ -906,11 +906,11 @@ export class DeleteQueryBuilder<DB, TB extends keyof DB, O>
    * the code. In the example above the return type of the `deletePerson` function is:
    *
    * ```ts
-   * {
+   * Promise<{
    *   id: number
    *   first_name: string
    *   last_name?: string
-   * }
+   * }>
    * ```
    */
   $if<O2>(

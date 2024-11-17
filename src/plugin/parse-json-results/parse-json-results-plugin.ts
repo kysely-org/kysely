@@ -32,8 +32,9 @@ type ObjectStrategy = 'in-place' | 'create'
  *
  * ```ts
  * const db = new Kysely<DB>({
- *   ...
+ *   // ...
  *   plugins: [new ParseJSONResultsPlugin()]
+ *   // ...
  * })
  * ```
  */

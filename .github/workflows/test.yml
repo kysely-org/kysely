@@ -82,16 +82,19 @@ jobs:
           node-version: 22.x
           cache: 'npm'
 
-      - name: Install dependencies
-        run: npm ci
-
       - name: Use Deno ${{ matrix.deno-version }}
         uses: denoland/setup-deno@v2
         with:
           deno-version: ${{ matrix.deno-version }}
 
+      - name: Install dependencies
+        run: npm ci
+
       - name: Run docker compose
         run: docker compose up -d
+
+      - name: Build
+        run: npm run build
 
       - name: Run deno tests
         run: npm run test:deno
@@ -210,3 +213,30 @@ jobs:
 
       - name: Run tests with older TypeScript
         run: npm run test:typings && npm run test:node:build
+
+  jsdocs:
+    name: JSDocs
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.x
+          cache: 'npm'
+
+      - name: Use Deno
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: 2.0.x
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Type-check JSDocs code blocks
+        run: npm run test:jsdocs

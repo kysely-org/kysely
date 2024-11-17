@@ -54,7 +54,7 @@ export class ExpressionWrapper<DB, TB extends keyof DB, T>
    *
    * The generated SQL (PostgreSQL):
    *
-   * ```ts
+   * ```sql
    * select "first_name" = $1 as "is_jennifer"
    * from "person"
    * ```
@@ -85,7 +85,7 @@ export class ExpressionWrapper<DB, TB extends keyof DB, T>
    *
    * The generated SQL (PostgreSQL):
    *
-   * ```ts
+   * ```sql
    * select *
    * from "person"
    * where (
@@ -107,13 +107,13 @@ export class ExpressionWrapper<DB, TB extends keyof DB, T>
    *       eb.selectFrom('pet')
    *         .select('id')
    *         .whereRef('pet.owner_id', '=', 'person.id')
-   *     )
+   *     ))
    *   )
    * ```
    *
    * The generated SQL (PostgreSQL):
    *
-   * ```ts
+   * ```sql
    * select *
    * from "person"
    * where (
@@ -168,7 +168,7 @@ export class ExpressionWrapper<DB, TB extends keyof DB, T>
    *
    * The generated SQL (PostgreSQL):
    *
-   * ```ts
+   * ```sql
    * select *
    * from "person"
    * where (
@@ -190,13 +190,13 @@ export class ExpressionWrapper<DB, TB extends keyof DB, T>
    *       eb.selectFrom('pet')
    *         .select('id')
    *         .whereRef('pet.owner_id', '=', 'person.id')
-   *     )
+   *     ))
    *   )
    * ```
    *
    * The generated SQL (PostgreSQL):
    *
-   * ```ts
+   * ```sql
    * select *
    * from "person"
    * where (
@@ -328,7 +328,7 @@ export class OrWrapper<DB, TB extends keyof DB, T extends SqlBool>
    *
    * The generated SQL (PostgreSQL):
    *
-   * ```ts
+   * ```sql
    * select "first_name" = $1 or "first_name" = $2 as "is_jennifer_or_sylvester"
    * from "person"
    * ```
@@ -410,7 +410,7 @@ export class AndWrapper<DB, TB extends keyof DB, T extends SqlBool>
    *
    * The generated SQL (PostgreSQL):
    *
-   * ```ts
+   * ```sql
    * select "first_name" = $1 and "first_name" = $2 as "is_jennifer_aniston"
    * from "person"
    * ```

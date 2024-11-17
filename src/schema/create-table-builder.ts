@@ -95,7 +95,7 @@ export class CreateTableBuilder<TB extends string, C extends string = never>
    *
    * await db.schema
    *   .createTable('person')
-   *   .addColumn('id', 'integer', (col) => col.autoIncrement().primaryKey()),
+   *   .addColumn('id', 'integer', (col) => col.autoIncrement().primaryKey())
    *   .addColumn('first_name', 'varchar(50)', (col) => col.notNull())
    *   .addColumn('last_name', 'varchar(255)')
    *   .addColumn('bank_balance', 'numeric(8, 2)')
@@ -103,7 +103,7 @@ export class CreateTableBuilder<TB extends string, C extends string = never>
    *   // don't include it.
    *   .addColumn('data', sql`any_type_here`)
    *   .addColumn('parent_id', 'integer', (col) =>
-   *     col.references('person.id').onDelete('cascade'))
+   *     col.references('person.id').onDelete('cascade')
    *   )
    * ```
    *
@@ -114,11 +114,14 @@ export class CreateTableBuilder<TB extends string, C extends string = never>
    * `create table` query. See the next example:
    *
    * ```ts
+   * await db.schema
+   *   .createTable('person')
    *   .addColumn('parent_id', 'integer')
    *   .addForeignKeyConstraint(
    *     'person_parent_id_fk', ['parent_id'], 'person', ['id'],
    *     (cb) => cb.onDelete('cascade')
    *   )
+   *   .execute()
    * ```
    *
    * Another good example is that PostgreSQL doesn't support the `auto_increment`
@@ -128,7 +131,8 @@ export class CreateTableBuilder<TB extends string, C extends string = never>
    * ```ts
    * await db.schema
    *   .createTable('person')
-   *   .addColumn('id', 'serial', (col) => col.primaryKey()),
+   *   .addColumn('id', 'serial', (col) => col.primaryKey())
+   *   .execute()
    * ```
    */
   addColumn<CN extends string>(
@@ -310,11 +314,11 @@ export class CreateTableBuilder<TB extends string, C extends string = never>
    * ### Examples
    *
    * ```ts
-   * db.schema.createTable('person')
+   * await db.schema.createTable('person')
    *   .modifyFront(sql`global temporary`)
    *   .addColumn('id', 'integer', col => col.primaryKey())
    *   .addColumn('first_name', 'varchar(64)', col => col.notNull())
-   *   .addColumn('last_name', 'varchar(64), col => col.notNull())
+   *   .addColumn('last_name', 'varchar(64)', col => col.notNull())
    *   .execute()
    * ```
    *
@@ -346,10 +350,10 @@ export class CreateTableBuilder<TB extends string, C extends string = never>
    * ### Examples
    *
    * ```ts
-   * db.schema.createTable('person')
+   * await db.schema.createTable('person')
    *   .addColumn('id', 'integer', col => col => primaryKey())
    *   .addColumn('first_name', 'varchar(64)', col => col.notNull())
-   *   .addColumn('last_name', 'varchar(64), col => col.notNull())
+   *   .addColumn('last_name', 'varchar(64)', col => col.notNull())
    *   .modifyEnd(sql`collate utf8_unicode_ci`)
    *   .execute()
    * ```
