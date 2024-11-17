@@ -995,7 +995,7 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    * ```ts
    * db.selectFrom('person')
    *   .selectAll('person')
-   *   .where((eb) => eb(eb.parens('age', '+', 1), '/', 100), '<', 0.1))
+   *   .where((eb) => eb(eb.parens('age', '+', 1), '/', 100), '<', 0.1)
    * ```
    *
    * The generated SQL (PostgreSQL):
@@ -1015,7 +1015,7 @@ export interface ExpressionBuilder<DB, TB extends keyof DB> {
    *     eb('age', '=', 1).or('age', '=', 2))
    *   ).and(
    *     eb('first_name', '=', 'Jennifer').or('first_name', '=', 'Arnold')
-   *   ))
+   *   )
    * ```
    *
    * The generated SQL (PostgreSQL):
